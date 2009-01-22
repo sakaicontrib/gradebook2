@@ -55,4 +55,14 @@ public abstract class EntityModel extends BaseModel {
 		}
 		return false;
 	}
+	
+	 @Override
+	 public int hashCode() {
+		 String id = getIdentifier();
+		 int hash = 0;
+		 if (id != null) 
+			 hash = id.hashCode();
+		 return hash;
+	 }
+	 
 }
