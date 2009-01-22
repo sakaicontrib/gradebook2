@@ -137,9 +137,8 @@ public abstract class CustomGridView extends BaseCustomGridView {
 					// Shouldn't happen
 					if (categoryColumnMap != null) {
 
-						for(Long categoryId : categoryColumnMap.keySet()) {
-							
-							final List<ColumnModel> columns = categoryColumnMap.get(categoryId);
+						for (final List<ColumnModel> columns : categoryColumnMap.values()) {
+
 							String categoryName = columns.get(0).getCategoryName();
 							
 							MenuItem categoryMenuItem = new MenuItem(categoryName);
