@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+
+	<!-- Hibernate Mappings -->
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.model.hibernateMappings"
+		class="org.sakaiproject.springframework.orm.hibernate.impl.AdditionalHibernateMappingsImpl">
+		<property name="mappingResources">
+			<list>
+				<value>org/sakaiproject/gradebook/gwt/sakai/model/ActionRecord.hbm.xml</value>
+			</list>
+		</property>
+	</bean>
+
+	<!-- Declare service -->
+	<bean id="GradebookService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookToolFacadeImpl">
+	
+		<property name="delegateFacade">
+			<bean class="org.sakaiproject.gradebook.gwt.sakai.DelegateFacadeImpl">
+				<property name="sectionAwareness" ref="org.sakaiproject.section.api.SectionAwareness"/>
+				<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/> 
+				<property name="authn" ref="org_sakaiproject_tool_gradebook_facades_Authn"/>
+				<property name="authz" ref="org_sakaiproject_tool_gradebook_facades_Authz"/>
+				<property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/>
+				<property name="userService" ref="org.sakaiproject.user.api.UserDirectoryService"/>
+				<property name="gradeCalculations" ref="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"/>
+				<property name="frameworkService" ref="org.sakaiproject.service.gradebook.GradebookFrameworkService" />
+				<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>
+			</bean>
+		</property>
+	</bean>
+	
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"
+		class="org.sakaiproject.gradebook.gwt.sakai.GradeCalculationsImpl">
+		
+	</bean>
+	
+	<!-- Gradebook Manager -->
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService" parent="alt.gradebookTxTemplate">
+		<property name="target">
+			<bean class="org.sakaiproject.gradebook.gwt.sakai.hibernate.GradebookToolServiceImpl">
+				<property name="sessionFactory"><ref bean="alt.gradebookSessionFactory"/></property>
+				<property name="sectionAwareness">
+					<ref bean="org.sakaiproject.section.api.SectionAwareness" />
+				</property>
+				<property name="authn">
+					<ref bean="org_sakaiproject_tool_gradebook_facades_Authn" />
+				</property>
+                <property name="eventTrackingService">
+                    <ref bean="org_sakaiproject_tool_gradebook_facades_EventTrackingService"/>
+                </property>
+            </bean>
+		</property>
+	</bean>
+	
+
+	<bean id="alt.gradebookTxTemplate" lazy-init="true" abstract="true" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+		<property name="transactionManager"><ref bean="alt.gradebookTransactionManager"/></property>
+		<property name="transactionAttributes">
+			<props>
+	            <prop key="is*">PROPAGATION_REQUIRED,readOnly,+org.sakaiproject.service.gradebook.shared.GradebookException</prop>
+	            <prop key="get*">PROPAGATION_REQUIRED,readOnly,+org.sakaiproject.service.gradebook.shared.GradebookException</prop>
+	            <prop key="*">PROPAGATION_REQUIRED,+org.sakaiproject.service.gradebook.shared.GradebookException</prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean id="alt.gradebookTransactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		<property name="sessionFactory"><ref bean="alt.gradebookSessionFactory"/></property>
+	</bean>
+	
+	<!-- An application consumer without a component. -->
+	<bean id="alt.gradebookSessionFactory" parent="org.sakaiproject.springframework.orm.hibernate.SessionFactoryBase"
+		class="org.sakaiproject.springframework.orm.hibernate.AddableSessionFactoryBean">
+		<property name="mappingResources">
+		    <list>
+  				<value>org/sakaiproject/tool/gradebook/Gradebook.hbm.xml</value>
+	  			<value>org/sakaiproject/tool/gradebook/GradableObject.hbm.xml</value>
+		  		<value>org/sakaiproject/tool/gradebook/GradeRecord.hbm.xml</value>
+			  	<value>org/sakaiproject/tool/gradebook/GradingEvent.hbm.xml</value>
+				  <value>org/sakaiproject/tool/gradebook/GradingScale.hbm.xml</value>
+  				<value>org/sakaiproject/tool/gradebook/GradebookProperty.hbm.xml</value>
+	  			<value>org/sakaiproject/tool/gradebook/GradeMapping.hbm.xml</value>
+          <value>org/sakaiproject/tool/gradebook/Spreadsheet.hbm.xml</value>                
+          <value>org/sakaiproject/tool/gradebook/Comment.hbm.xml</value>   
+          <value>org/sakaiproject/tool/gradebook/Category.hbm.xml</value>
+          <value>org/sakaiproject/tool/gradebook/LetterGradePercenteMapping.hbm.xml</value>
+          <value>org/sakaiproject/tool/gradebook/Permission.hbm.xml</value>
+        </list>
+		</property>
+	</bean>
+	
+	<!-- External Context Management Service -->
+	<bean id="org.sakaiproject.tool.gradebook.facades.ContextManagement"
+		class="org.sakaiproject.tool.gradebook.facades.sakai2impl.ContextManagementSakai2Impl">
+	</bean>
+
+</beans>

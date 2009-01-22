@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN"
+	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping default-cascade="none" package="org.sakaiproject.gradebook.gwt.sakai.model" default-lazy="false">
+
+	<class name="org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord" table="GB_ACTION_RECORD_T">
+
+		<id name="id" column="ID" type="long">
+			<generator class="native">
+				<param name="sequence">GB_ACTION_RECORD_S</param>
+			</generator>
+		</id>
+
+		<version name="version" type="integer" column="VERSION"/>
+
+		<property name="gradebookUid" column="GRADEBOOK_UID" not-null="true"/>
+
+		<property name="gradebookId" column="GRADEBOOK_ID" />
+
+		<property name="entityType" column="ENTITY_TYPE"/>
+		
+		<property name="actionType" column="ACTION_TYPE"/>
+		
+		<property name="entityName" column="ENTITY_NAME"/>
+		
+		<property name="entityId" column="ENTITY_ID"/>
+		
+		<property name="parentId" column="PARENT_ID"/>
+		
+		<property name="studentUid" column="LEARNER_UID"/>
+		
+		<property name="field" column="FIELD_NAME"/>
+  
+  		<property name="value" column="FIELD_VALUE"/>
+  		
+  		<property name="startValue" column="FIELD_START_VALUE"/>
+  		
+  		<property name="status" column="ACTION_STATUS"/>
+  		
+  		<property name="datePerformed" column="DATE_PERFORMED" type="timestamp" />
+  		
+  		<property name="dateRecorded" column="DATE_RECORDED" type="timestamp" />
+  		
+  		<property name="graderId" column="GRADER_ID"/>
+  		
+  		<map name="propertyMap" table="GB_ACTION_RECORD_PROPERTY_T" cascade="all" lazy="false">
+			<key column="ACTION_RECORD_ID"/>
+			<index column="PROPERTY_NAME" type="string"/>
+			<element column="PROPERTY_VALUE" type="string"/>
+		</map>
+  
+  	</class>
+  
+ 	
+</hibernate-mapping>

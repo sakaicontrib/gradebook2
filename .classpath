@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="test"/>
+	<classpathentry excluding="org/sakaiproject/gradebook/gwt/server/GradebookServiceImpl.java|org/sakaiproject/gradebook/gwt/client/GradebookSetupWidget.java|org/sakaiproject/gradebook/gwt/sakai/mock/GradebookManager.java|org/sakaiproject/gradebook/gwt/sakai/mock/GradeCalculations.java|org/sakaiproject/gradebook/gwt/sakai/GradebookManagerHibernateImpl.java|org/sakaiproject/gradebook/gwt/sakai/BaseHibernateManager.java|org/sakaiproject/gradebook/gwt/sakai/mock/SectionAwareness.java|org/sakaiproject/gradebook/gwt/sakai/mock/Authz.java|org/sakaiproject/gradebook/gwt/sakai/mock/Authn.java|org/sakaiproject/gradebook/gwt/sakai/mock/tool/gradebook/" kind="src" path="client/src/java"/>
+	<classpathentry kind="src" path="api/src/java"/>
+	<classpathentry kind="src" path="model/src/java"/>
+	<classpathentry kind="src" path="model/src/hibernate"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
+	<classpathentry kind="var" path="GWT_HOME/gwt-user.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/springframework/spring/2.0.6/spring-2.0.6.jar" sourcepath="/M2_REPO/org/springframework/spring/2.0.6/spring-2.0.6-sources.jar"/>
+	<classpathentry kind="var" path="GWT_HOME/gwt-dev-linux.jar"/>
+	<classpathentry kind="var" path="M2_REPO/commons-lang/commons-lang/2.1/commons-lang-2.1.jar"/>
+	<classpathentry kind="var" path="GWT_LIB/gwt-sl-0.1.5.jar"/>
+	<classpathentry kind="var" path="GWT_LIB/gxt.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-gradebook-app-business/M2/sakai-gradebook-app-business-M2.jar" sourcepath="/M2_REPO/org/sakaiproject/sakai-gradebook-app-business/M2/sakai-gradebook-app-business-M2-sources.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-gradebook-service-api/M2/sakai-gradebook-service-api-M2.jar" sourcepath="/M2_REPO/org/sakaiproject/sakai-gradebook-service-api/M2/sakai-gradebook-service-api-M2-sources.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-gradebook-service-hibernate/M2/sakai-gradebook-service-hibernate-M2.jar" sourcepath="/M2_REPO/org/sakaiproject/sakai-gradebook-service-hibernate/M2/sakai-gradebook-service-hibernate-M2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/hibernate/hibernate/3.2.5.ga/hibernate-3.2.5.ga.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-sections-api/M2/sakai-sections-api-M2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-authz-api/M2/sakai-authz-api-M2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-site-api/M2/sakai-site-api-M2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-tool-api/M2/sakai-tool-api-M2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-user-api/M2/sakai-user-api-M2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-entity-api/M2/sakai-entity-api-M2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-util-api/M2/sakai-util-api-M2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/commons-logging/commons-logging/1.0.4/commons-logging-1.0.4.jar"/>
+	<classpathentry kind="var" path="GWT_LIB/gwt-gears.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

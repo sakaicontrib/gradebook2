@@ -1,0 +1,57 @@
+Index: src/java/org/sakaiproject/gradebook/gwt/server/GradebookServlet.java
+===================================================================
+--- src/java/org/sakaiproject/gradebook/gwt/server/GradebookServlet.java	(revision 6196)
++++ src/java/org/sakaiproject/gradebook/gwt/server/GradebookServlet.java	(working copy)
+@@ -12,8 +12,8 @@
+ 
+ public class GradebookServlet extends DefaultServlet {
+ 
+-	private static final String DEFAULT_PAGE = "GradebookApplication.html";
+-	private static final String RELATIVE_PREFIX = "/org.sakaiproject.gradebook.gwt.GradebookApplication/";
++	private static final String DEFAULT_PAGE = "GradebookApplicationFirefox.html";
++	private static final String RELATIVE_PREFIX = "/org.sakaiproject.gradebook.gwt.GradebookApplicationFirefox/";
+ 	
+ 	protected void doGet(HttpServletRequest request,
+ 			 			 HttpServletResponse response)
+Index: src/webapp/WEB-INF/web.xml
+===================================================================
+--- src/webapp/WEB-INF/web.xml	(revision 6196)
++++ src/webapp/WEB-INF/web.xml	(working copy)
+@@ -64,7 +64,7 @@
+ 		</init-param>
+ 		<init-param>
+ 			<param-name>relativePrefix</param-name>
+-			<param-value>/org.sakaiproject.gradebook.gwt.GradebookApplication/</param-value>
++			<param-value>/org.sakaiproject.gradebook.gwt.GradebookApplicationFirefox/</param-value>
+ 		</init-param>
+ 		<load-on-startup>2</load-on-startup>
+ 	</servlet>
+@@ -74,6 +74,6 @@
+ 		<url-pattern>/*</url-pattern>
+ 	</servlet-mapping-->
+ 	
+-	<welcome-file-list><welcome-file>/org.sakaiproject.gradebook.gwt.GradebookApplication/GradebookApplication.html</welcome-file></welcome-file-list>
++	<welcome-file-list><welcome-file>/org.sakaiproject.gradebook.gwt.GradebookApplicationFirefox/GradebookApplicationFirefox.html</welcome-file></welcome-file-list>
+ 	
+ </web-app>
+Index: pom.xml
+===================================================================
+--- pom.xml	(revision 6196)
++++ pom.xml	(working copy)
+@@ -130,13 +130,13 @@
+ 					<gwtVersion>${gwt.version}-rc1</gwtVersion>
+ 					<logLevel>INFO</logLevel>
+ 					<compileTargets>
+-						<value>org.sakaiproject.gradebook.gwt.GradebookApplication</value>
++						<value>org.sakaiproject.gradebook.gwt.GradebookApplicationFirefox</value>
+ 					</compileTargets>
+ 					<runTarget>
+-						org.sakaiproject.gradebook.gwt.GradebookApplication/GradebookApplication.html
++						org.sakaiproject.gradebook.gwt.GradebookApplicationFirefox/GradebookApplicationFirefox.html
+ 					</runTarget>
+ 					<!-- use style OBF for prod -->
+-					<style>OBF</style>
++					<style>DETAILED</style>
+ 					<noServer>false</noServer>
+ 					<!--extraJvmArgs>-Dgwt.coverage.enable=true</extraJvmArgs-->
+ 					<extraJvmArgs>-Xmx1g</extraJvmArgs>

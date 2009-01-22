@@ -1,0 +1,3 @@
+#!/bin/sh
+APPDIR=`dirname $0`;
+java  -Dgwt.args="-out www-test" -Xmx256M -cp "$APPDIR/src:$APPDIR/test:$APPDIR/bin:/usr/local/lib/eclipse/plugins/org.junit_3.8.2.v200706111738/junit.jar:/home/jrenfro/Installs/GWT/gwt-linux-1.5.1/gwt-user.jar:/home/jrenfro/Installs/GWT/gwt-linux-1.5.1/gwt-dev-linux.jar" junit.textui.TestRunner org.sakaiproject.gradebook.gwt.client.UITest "$@";

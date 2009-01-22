@@ -1,0 +1,4 @@
+<module>
+        <inherits name="org.sakaiproject.gradebook.gwt.GradebookApplication"/>
+        <set-property name="user.agent" value="gecko"/>
+</module>
