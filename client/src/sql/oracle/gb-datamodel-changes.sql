@@ -44,7 +44,7 @@ create table GB_ACTION_RECORD_T
 	FIELD_VALUE varchar2(756),
 	FIELD_START_VALUE varchar2(756),
 	ACTION_STATUS varchar2(100),
-	DATE_PERFORMED timestamp;
+	DATE_PERFORMED timestamp,
 	DATE_RECORDED timestamp,
 	GRADER_ID varchar2(99)
 );
