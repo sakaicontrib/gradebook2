@@ -29,8 +29,8 @@ public class UserCategoryCreateAction extends UserEntityCreateAction<CategoryMod
 
 	private static final long serialVersionUID = 1L;
 	
-	protected Boolean isEqualWeight;
-	protected Integer dropLowest;
+	//protected Boolean isEqualWeight;
+	//protected Integer dropLowest;
 	
 	public UserCategoryCreateAction() {
 		super();
@@ -39,8 +39,8 @@ public class UserCategoryCreateAction extends UserEntityCreateAction<CategoryMod
 	public UserCategoryCreateAction(GradebookModel gbModel, String name, 
 			Double weight, Boolean isEqualWeight, Integer dropLowest) {
 		super(gbModel, EntityType.CATEGORY, gbModel.getGradebookId(), name, weight);
-		this.isEqualWeight = isEqualWeight;
-		this.dropLowest = dropLowest;
+		setIsEqualWeight(isEqualWeight);
+		setDropLowest(dropLowest);
 	}
 
 	public Boolean getIsEqualWeight() {
