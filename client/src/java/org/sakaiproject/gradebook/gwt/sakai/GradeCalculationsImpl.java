@@ -240,7 +240,7 @@ public class GradeCalculationsImpl implements GradeCalculations {
 		BigDecimal sumAssignmentWeight = BigDecimal.ZERO;
 		
 		// Only sum assignment weights for normal credit categories in this method
-		if (!isExtraCredit(categoryWithAssignments)) {
+		//if (!isExtraCredit(categoryWithAssignments)) {
 		
 			// Grab all of the assignments
 			List<Assignment> assignments = categoryWithAssignments.getAssignmentList();
@@ -267,7 +267,7 @@ public class GradeCalculationsImpl implements GradeCalculations {
 					} // if 
 				} // for
 			} // if 
-		} // if 
+		//} // if 
 		
 		return sumAssignmentWeight;
 	}
@@ -404,8 +404,15 @@ public class GradeCalculationsImpl implements GradeCalculations {
 		if (earnedWeightedPercentage == null)
 			return earnedWeightedPercentageExtraCredit;
 		
-		if (earnedWeightedPercentage.compareTo(BigDecimal.ZERO) == 0)
+		// In the case where our earned weighted percentage is zero and we have some extra credit, just return
+		// the extra credit. 
+		if (earnedWeightedPercentageExtraCredit != null && earnedWeightedPercentage.compareTo(BigDecimal.ZERO) == 0)
 			return earnedWeightedPercentageExtraCredit;
+		
+		// Of course, if there's no extra credit, and the earned weighted percentage is zero, then we want to return zero
+		// and not null, which would be misleading
+		if (earnedWeightedPercentage.compareTo(BigDecimal.ZERO) == 0)
+			return BigDecimal.ZERO;
 		
 		if (assignmentWeights.compareTo(BigDecimal.ZERO) == 0)
 			return null;
@@ -492,6 +499,9 @@ public class GradeCalculationsImpl implements GradeCalculations {
 		if (extraCredit.compareTo(BigDecimal.ZERO) != 0)
 			courseGrade = courseGrade.add(extraCredit);
 
+		// We don't want to return anything larger than 100%
+		if (courseGrade.compareTo(BIG_DECIMAL_100) > 0)
+			courseGrade = BIG_DECIMAL_100;
 		
 		return courseGrade;
 	}
