@@ -24,30 +24,27 @@ package org.sakaiproject.gradebook.gwt.sakai.mock;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.sakai.DelegateFacadeImpl;
 import org.sakaiproject.gradebook.gwt.sakai.GradeCalculations;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
 import org.sakaiproject.gradebook.gwt.sakai.UserRecord;
 import org.sakaiproject.section.api.SectionAwareness;
 import org.sakaiproject.section.api.coursemanagement.CourseSection;
-import org.sakaiproject.service.gradebook.shared.GradebookNotFoundException;
-import org.sakaiproject.service.gradebook.shared.GradebookService;
 import org.sakaiproject.site.api.Site;
-import org.sakaiproject.tool.gradebook.Assignment;
-import org.sakaiproject.tool.gradebook.Category;
-import org.sakaiproject.tool.gradebook.Gradebook;
 import org.sakaiproject.tool.gradebook.facades.Authn;
 import org.sakaiproject.tool.gradebook.facades.Authz;
 import org.sakaiproject.user.api.User;
 
 public class DelegateFacadeMockImpl extends DelegateFacadeImpl {
 
+	private static final int DEFAULT_NUMBER_TEST_LEARNERS = 200;
+	
+	private int numberOfTestLearners;
+	
 	public DelegateFacadeMockImpl(SectionAwareness sectionAwareness, Authz authz, Authn authn, 
 			GradebookToolService gradebookManager, GradeCalculations gradeCalculations) {
 		setSectionAwareness(sectionAwareness);
@@ -55,92 +52,7 @@ public class DelegateFacadeMockImpl extends DelegateFacadeImpl {
 		setAuthn(authn);
 		setGbService(gradebookManager);
 		setGradeCalculations(gradeCalculations);
-	}
-	
-	@Override
-	public List<GradebookModel> getGradebookModels() {
-		String gradebookUid = getGradebookUid();
-		List<GradebookModel> models = new LinkedList<GradebookModel>();
-		
-		if (gradebookUid != null) {
-			Gradebook gradebook = null;
-			try {
-				// First thing, grab the default gradebook if one exists
-				gradebook = gbService.getGradebook(gradebookUid);
-			} catch (GradebookNotFoundException gnfe) {	
-				// If it doesn't exist, then create it
-				//frameworkService.addGradebook(gradebookUid, "My Default Gradebook");
-				//gradebook = gradebookManager.getGradebook(gradebookUid);
-			}
-			
-			// If we have a gradebook already, then we have to ensure that it's set up correctly for the new tool
-			if (gradebook != null) {
-				// We need to ensure that the category setting is correct
-				if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY) {
-					gradebook.setCategory_type(GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY);
-					gbService.updateGradebook(gradebook);
-				}
-				
-				// There are different ways that unassigned assignments can appear - old gradebooks, external apps
-				List<Assignment> unassignedAssigns = gbService.getAssignmentsWithNoCategory(gradebook.getId());
-				
-				// If we have any that are unassigned, we want to assign them to the default category
-				if (unassignedAssigns != null && !unassignedAssigns.isEmpty()) {
-					List<Category> categories = gbService.getCategories(gradebook.getId());
-					
-					// Let's see if we already have a default category in existence
-					Long defaultCategoryId = null;
-					if (categories != null && ! categories.isEmpty()) {
-						// First, look for it by name
-						for (Category category : categories) {
-							if (category.getName().equalsIgnoreCase("Default")) {
-								defaultCategoryId = category.getId();
-								break;
-							}
-						}
-					}
-					
-					boolean isCategoryNew = false;
-					
-					// If we don't have one already, then let's create one
-					if (defaultCategoryId == null) {
-						defaultCategoryId = gbService.createCategory(gradebook.getId(), "Default", Double.valueOf(1d), 0);
-						isCategoryNew = true;
-					} 
-
-					// TODO: This is a just in case check -- we should probably throw an exception here instead, since it means we weren't able to 
-					// TODO: create the category for some reason -- but that probably would throw an exception anyway, so...
-					if (defaultCategoryId != null) {
-						Category defaultCategory = gbService.getCategory(defaultCategoryId);
-
-						// Just in case we just created it, or if it happens to have been deleted since it was created
-						if (isCategoryNew || defaultCategory.isRemoved()) {
-							defaultCategory.setEqualWeightAssignments(Boolean.TRUE);
-							defaultCategory.setRemoved(false);
-							gbService.updateCategory(defaultCategory);
-						}
-						
-						// Assuming we have the default category by now (which we almost definitely should) then we move all the unassigned items into it
-						if (defaultCategory != null) {
-							for (Assignment a : unassignedAssigns) {
-								// Think we need to grab each assignment again - this is stupid, but I'm pretty sure it's what hibernate requires
-								Assignment assignment = gbService.getAssignment(a.getId());
-								assignment.setCategory(defaultCategory);
-								gbService.updateAssignment(assignment);
-							}
-							// This will only recalculate assuming that the category has isEqualWeighting as TRUE
-							recalculateEqualWeightingGradeItems(gradebook.getUid(), gradebook.getId(), defaultCategory.getId(), null);
-						}
-					}
-
-				}
-				
-				GradebookModel model = createGradebookModel(gradebook);
-				models.add(model);
-			}
-		}
-		
-		return models;
+		numberOfTestLearners = DEFAULT_NUMBER_TEST_LEARNERS;
 	}
 	
 	@Override 
@@ -252,7 +164,7 @@ public class DelegateFacadeMockImpl extends DelegateFacadeImpl {
 			
 			if (userRecords == null) {
 				userRecords = new ArrayList<UserRecord>(2000);
-				for (int i=0;i<200;i++) {
+				for (int i=0;i<numberOfTestLearners;i++) {
 					userRecords.add(createUserRecord());
 				}
 			}
@@ -312,6 +224,14 @@ public class DelegateFacadeMockImpl extends DelegateFacadeImpl {
 	@Override
 	protected String getSiteContext() {
 		return "blah";
+	}
+
+	public int getNumberOfTestLearners() {
+		return numberOfTestLearners;
+	}
+
+	public void setNumberOfTestLearners(int numberOfTestLearners) {
+		this.numberOfTestLearners = numberOfTestLearners;
 	}
 	
 	

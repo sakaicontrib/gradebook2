@@ -70,31 +70,35 @@ public class GradebookToolServiceMock implements GradebookToolService {
 	public static final int CATEGORY_TYPE_ONLY_CATEGORY = 2;
 	public static final int CATEGORY_TYPE_WEIGHTED_CATEGORY = 3;
 	
-	private Map<Long, Assignment> assignmentMap;
-	private Gradebook gradebook;
-	private Map<String, Map<Assignment, AssignmentGradeRecord>> studentGradeMap;
-	private List<Assignment> assignments;
-	private List<Long> categoryIds;
-	private Map<Long, Category> categoryMap;
-	private List<CourseGradeRecord> courseGradeRecords;
-	private Map<String, CourseGradeRecord> studentCourseGradeRecords;
-	private Map<String, Map<GradableObject, List<GradingEvent>>> studentGoEventListMap;
-	private Map<String, Set<Comment>> studentAssignmentComments;
-	private List<ActionRecord> actionRecords;
+	//public class GradebookData {
+	
+		private Map<Long, Assignment> assignmentMap;
+		private Gradebook gradebook;
+		private Map<String, Map<Assignment, AssignmentGradeRecord>> studentGradeMap;
+		private List<Assignment> assignments;
+		private List<Long> categoryIds;
+		private Map<Long, Category> categoryMap;
+		private List<CourseGradeRecord> courseGradeRecords;
+		private Map<String, CourseGradeRecord> studentCourseGradeRecords;
+		private Map<String, Map<GradableObject, List<GradingEvent>>> studentGoEventListMap;
+		private List<ActionRecord> actionRecords;
+		private Map<String, Map<Long, Comment>> studentCommentMap;
+	
+		
+	//}
+	
 	private long actionRecordId = 0;
-	
-	private Map<String, Map<Long, Comment>> studentCommentMap;
-	
 	private long categoryCount = 0;
 	private long gradeEventId = 0;
 	
+	
 	public GradebookToolServiceMock() {
 		this.gradebook = new Gradebook();
-		gradebook.setName("My Default Gradebook");
+		//gradebook.setName("My Default Gradebook");
 		gradebook.setId(Long.valueOf(1));
-		gradebook.setCategory_type(CATEGORY_TYPE_ONLY_CATEGORY);
-		gradebook.setGrade_type(GradebookService.GRADE_TYPE_PERCENTAGE);
-		gradebook.setEqualWeightCategories(Boolean.TRUE);
+		//gradebook.setCategory_type(CATEGORY_TYPE_ONLY_CATEGORY);
+		//gradebook.setGrade_type(GradebookService.GRADE_TYPE_PERCENTAGE);
+		//gradebook.setEqualWeightCategories(Boolean.TRUE);
 		
 		GradingScale gradingScale = new GradingScale();
 		gradingScale.setDefaultBottomPercents(getDefaultBottomPercents());
@@ -103,7 +107,6 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		this.gradebook.setSelectedGradeMapping(gradeMapping);
 		this.studentGradeMap = new HashMap<String, Map<Assignment, AssignmentGradeRecord>>();
 		this.studentCourseGradeRecords = new HashMap<String, CourseGradeRecord>();
-		this.studentAssignmentComments = new HashMap<String, Set<Comment>>();
 		
 		this.categoryIds = new LinkedList<Long>();
 		this.categoryMap = new HashMap<Long, Category>();
@@ -117,7 +120,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		assignments = new LinkedList<Assignment>();
 		assignmentMap = new HashMap<Long, Assignment>();
 		
-		try {
+		/*try {
 			Long essaysId = createCategory(Long.valueOf(categoryCount++), "Essays", Double.valueOf(0.60), Integer.valueOf(1));
 			Long hwId = createCategory(Long.valueOf(categoryCount++), "Homework", Double.valueOf(0.40), Integer.valueOf(0));
 			
@@ -161,17 +164,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 			assignmentMap.put(hw6.getId(), hw6);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
-		}
-	}
-	
-	public Long addPermission(Long gradebookId, String userId, String function, Long categoryId, String groupId) throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void addToCategoryResultMap(Map categoryResultMap, List categories, Map gradeRecordMap, Map enrollmentMap) {
-		// TODO Auto-generated method stub
-
+		}*/
 	}
 
 	public void addToGradeRecordMap(Map gradeRecordMap, List gradeRecords) {
@@ -233,30 +226,6 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		return Integer.valueOf(actionRecords.size());
 	}
 
-	public boolean checkStuendsNotSubmitted(Gradebook gradebook) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	public boolean checkValidName(Long gradebookId, Assignment assignment) {
-		return true;
-	}
-
-	public void convertGradePointsForUpdatedTotalPoints(Gradebook gradebook, Assignment assignment, Double newTotal, List studentUids) {
-		// TODO Auto-generated method stub
-
-	}
-
-	public void convertGradingEventsConverted(Assignment assign, GradingEvents events, List studentUids, int grade_type) {
-		// TODO Auto-generated method stub
-
-	}
-
-	public void convertGradingEventsConvertedForStudent(Gradebook gradebook, Map gradableObjectEventListMap, int grade_type) {
-		// TODO Auto-generated method stub
-
-	}
-
 	public Long createAssignment(Long gradebookId, String name, Double points, Date dueDate, Boolean isNotCounted, Boolean isReleased) {
 		Assignment assignment = new Assignment(gradebook, name, points, dueDate, isReleased);
 		assignment.setId(assignmentIdCount++);
@@ -295,11 +264,6 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		return assignment.getId();
 	}
 
-	public void createAssignments(Long gradebookId, List assignList) throws Exception {
-		// TODO Auto-generated method stub
-
-	}
-
 	public Long createCategory(Long gradebookId, String name, Double weight, int drop_lowest) throws RuntimeException {
 		Long id = Long.valueOf(categoryCount++);
 		Category category = new Category();
@@ -314,36 +278,6 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		category.setGradebook(gradebook);
 		
 		return category.getId();
-	}
-
-	public void createDefaultLetterGradePercentMapping(Map gradeMap) {
-		// TODO Auto-generated method stub
-
-	}
-
-	public void createOrUpdateDefaultLetterGradePercentMapping(Map gradeMap) {
-		// TODO Auto-generated method stub
-
-	}
-
-	public Long createSpreadsheet(Long gradebookId, String name, String creator, Date dateCreated, String content)  {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public Long createUngradedAssignment(Long gradebookId, String name, Date dueDate, Boolean isNotCounted, Boolean isReleased) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public Long createUngradedAssignmentForCategory(Long gradebookId, Long categoryId, String name, Date dueDate, Boolean isNotCounted, Boolean isReleased) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void fillInZeroForNullGradeRecords(Gradebook gradebook) {
-		// TODO Auto-generated method stub
-
 	}
 
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(Long gradebookId, Collection<String> studentUids) {
@@ -393,11 +327,6 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		return assignment;
 	}
 
-	public AssignmentGradeRecord getAssignmentGradeRecordById(Long id) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	public AssignmentGradeRecord getAssignmentGradeRecordForAssignmentForStudent(Assignment assignment, String studentId) {
 
 			if (assignment != null) {
@@ -440,28 +369,8 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		return records;
 	}
 
-	public List getAssignmentGradeRecordsConverted(Assignment assignment, Collection studentUids) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public Assignment getAssignmentWithStats(Long assignmentId) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public List getAssignments(Long gradebookId, String sortBy, boolean ascending) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	public List getAssignments(Long gradebookId) {
 		return assignments;
-	}
-
-	public List getAssignmentsAndCourseGradeWithStats(Long gradebookId, String sortBy, boolean ascending) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	public List getAssignmentsForCategory(Long categoryId) throws RuntimeException {
@@ -471,20 +380,10 @@ public class GradebookToolServiceMock implements GradebookToolService {
 	}
 
 	public List getAssignmentsWithNoCategory(Long gradebookId) {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
-
-	public List getAssignmentsWithNoCategoryWithStats(Long gradebookId, String assignmentSort, boolean assignAscending) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public List getAssignmentsWithStats(Long gradebookId, String sortBy, boolean ascending) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
+	
 	public List getCategories(Long gradebookId) throws RuntimeException {
 		List<Category> categories = new LinkedList<Category>();
 		
@@ -1451,6 +1350,10 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		map.put("D-", Double.valueOf(60.0));
 		
 		map.put("F", Double.valueOf(0.0));
+		
+		map.put("I", Double.valueOf(0.0));
+		
+		map.put("NG", Double.valueOf(0.0));
 		
 		return map;
 	}

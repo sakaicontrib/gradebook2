@@ -37,6 +37,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -74,6 +75,7 @@ import org.sakaiproject.section.api.SectionAwareness;
 import org.sakaiproject.section.api.coursemanagement.CourseSection;
 import org.sakaiproject.section.api.coursemanagement.EnrollmentRecord;
 import org.sakaiproject.section.api.facade.Role;
+import org.sakaiproject.service.gradebook.shared.GradebookExistsException;
 import org.sakaiproject.service.gradebook.shared.GradebookFrameworkService;
 import org.sakaiproject.service.gradebook.shared.GradebookNotFoundException;
 import org.sakaiproject.service.gradebook.shared.GradebookService;
@@ -135,6 +137,10 @@ private static final long serialVersionUID = 1L;
 			actionRecord.setDatePerformed(action.getDatePerformed());
 		
 		switch (action.getEntityType()) {
+		case GRADEBOOK:
+			actionRecord.setEntityName(action.getName());
+			entity = (X)addGradebook(action.getName());
+			break;
 		case GRADE_ITEM:
 			UserAssignmentCreateAction assignmentCreateAction = (UserAssignmentCreateAction)action;
 			
@@ -202,6 +208,8 @@ private static final long serialVersionUID = 1L;
 			return (X)getApplicationModel();
 		case COMMENT:
 			return (X)getComment(Long.valueOf(action.getEntityId()), action.getStudentUid());
+		case GRADEBOOK:
+			return (X)getGradebook(action.getEntityId());
 		case GRADE_RECORD:
 			GradeRecordModel gradeRecord = (GradeRecordModel)action.getModel();
 			return (X)getSingleAssignmentForStudent(action.getGradebookUid(), action.getGradebookId(), 
@@ -875,6 +883,12 @@ private static final long serialVersionUID = 1L;
 		return null;
 	}
 	
+	protected GradebookModel getGradebook(String uid) {
+		Gradebook gradebook = gbService.getGradebook(uid);
+		
+		return createGradebookModel(gradebook);
+	}
+	
 	protected List<GradebookModel> getGradebookModels() {
 		String gradebookUid = getGradebookUid();
 		List<GradebookModel> models = new LinkedList<GradebookModel>();
@@ -886,8 +900,10 @@ private static final long serialVersionUID = 1L;
 				gradebook = gbService.getGradebook(gradebookUid);
 			} catch (GradebookNotFoundException gnfe) {	
 				// If it doesn't exist, then create it
-				frameworkService.addGradebook(gradebookUid, "My Default Gradebook");
-				gradebook = gbService.getGradebook(gradebookUid);
+				if (frameworkService != null) {
+					frameworkService.addGradebook(gradebookUid, "My Default Gradebook");
+					gradebook = gbService.getGradebook(gradebookUid);
+				}
 			}
 			
 			// If we have a gradebook already, then we have to ensure that it's set up correctly for the new tool
@@ -1943,7 +1959,9 @@ private static final long serialVersionUID = 1L;
 		
 		for(String letterGrade : letterGradesList) {
 			
-			upperScale = (null == upperScale) ? new Double(100) : (upperScale - new Double(0.00001));
+			upperScale = (null == upperScale) ? new Double(100d) : 
+				upperScale.equals(Double.valueOf(0d)) ? Double.valueOf(0d) :
+				Double.valueOf(upperScale.doubleValue() - 0.00001d);
 			
 			if(affectedLetterGrade.equals(letterGrade)) {
 				gradeScaleModel = new GradeScaleRecordModel(letterGrade, (Double)value, upperScale);
@@ -2026,7 +2044,10 @@ private static final long serialVersionUID = 1L;
 		
 		for(String letterGrade : letterGradesList) {
 			
-			upperScale = (null == upperScale) ? new Double(100d) : (upperScale.doubleValue() - 0.00001d);
+			upperScale = (null == upperScale) ? new Double(100d) : 
+				upperScale.equals(Double.valueOf(0d)) ? Double.valueOf(0d) :
+				Double.valueOf(upperScale.doubleValue() - 0.00001d);
+			
 			GradeScaleRecordModel gradeScaleModel = new GradeScaleRecordModel(letterGrade, gradingScaleMap.get(letterGrade), upperScale);
 			gradeScaleMappings.add((X)gradeScaleModel);
 			upperScale = gradingScaleMap.get(letterGrade);
@@ -2518,6 +2539,26 @@ private static final long serialVersionUID = 1L;
 		gbService.updateCategory(category);
 		
 		return createCategoryModel(gradebook, category);
+	}
+	
+	protected GradebookModel addGradebook(String name) {
+		
+		String uid = null;
+		boolean isAdded = false;
+		while (!isAdded) {
+			uid = UUID.randomUUID().toString();
+			
+			try {
+				frameworkService.addGradebook(uid, name);
+				isAdded = true;
+			} catch (GradebookExistsException gee) {
+				log.warn("Unable to add gradebook with uid " + uid);
+			}
+		}
+		
+		Gradebook gradebook = gbService.getGradebook(uid);
+		
+		return createGradebookModel(gradebook);
 	}
 	
 	// Helper method
