@@ -37,27 +37,8 @@ public abstract class UserEntityAction<M extends EntityModel> extends Action {
 	protected static Notifier notifier = new Notifier();
 	
 	private static final long serialVersionUID = 1L;
-
-	//protected Status status;
 	
 	protected ClassType classType;
-	
-	/*protected String key;
-	protected Long entityId;
-	protected Long parentId;
-	protected ActionType actionType;
-	protected M model;
-	private StudentModel studentModel;
-	
-	protected ClassType classType;
-	protected String stringValue, stringStartValue;
-	protected Double doubleValue, doubleStartValue;
-	protected Long longValue, longStartValue;
-	protected Date dateValue, dateStartValue;
-	protected Boolean booleanValue, booleanStartValue;
-	protected Integer integerValue, integerStartValue;
-	protected CategoryType categoryTypeValue, categoryTypeStartValue;
-	protected GradeType gradeTypeValue, gradeTypeStartValue;*/
 	
 	private UserEntityAction prerequisiteAction;
 	
