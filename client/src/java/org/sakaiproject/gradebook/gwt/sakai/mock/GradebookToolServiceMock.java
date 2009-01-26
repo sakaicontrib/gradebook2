@@ -439,6 +439,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 	}
 
 	public Gradebook getGradebook(String uid) throws RuntimeException {
+		gradebook.setUid(uid);
 		return gradebook;
 	}
 
