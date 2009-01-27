@@ -500,7 +500,7 @@ public class GradeCalculationsImpl implements GradeCalculations {
 			courseGrade = courseGrade.add(extraCredit);
 
 		// We don't want to return anything larger than 100%
-		if (courseGrade.compareTo(BIG_DECIMAL_100) > 0)
+		if (courseGrade != null && courseGrade.compareTo(BIG_DECIMAL_100) > 0)
 			courseGrade = BIG_DECIMAL_100;
 		
 		return courseGrade;
