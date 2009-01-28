@@ -7,12 +7,8 @@
 	<classpathentry kind="src" path="model/src/hibernate"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
-	<classpathentry kind="var" path="GWT_HOME/gwt-user.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/springframework/spring/2.0.6/spring-2.0.6.jar" sourcepath="/M2_REPO/org/springframework/spring/2.0.6/spring-2.0.6-sources.jar"/>
-	<classpathentry kind="var" path="GWT_HOME/gwt-dev-linux.jar"/>
 	<classpathentry kind="var" path="M2_REPO/commons-lang/commons-lang/2.1/commons-lang-2.1.jar"/>
-	<classpathentry kind="var" path="GWT_LIB/gwt-sl-0.1.5.jar"/>
-	<classpathentry kind="var" path="GWT_LIB/gxt.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-gradebook-app-business/M2/sakai-gradebook-app-business-M2.jar" sourcepath="/M2_REPO/org/sakaiproject/sakai-gradebook-app-business/M2/sakai-gradebook-app-business-M2-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-gradebook-service-api/M2/sakai-gradebook-service-api-M2.jar" sourcepath="/M2_REPO/org/sakaiproject/sakai-gradebook-service-api/M2/sakai-gradebook-service-api-M2-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-gradebook-service-hibernate/M2/sakai-gradebook-service-hibernate-M2.jar" sourcepath="/M2_REPO/org/sakaiproject/sakai-gradebook-service-hibernate/M2/sakai-gradebook-service-hibernate-M2.jar"/>
@@ -25,6 +21,10 @@
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-entity-api/M2/sakai-entity-api-M2.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-util-api/M2/sakai-util-api-M2.jar"/>
 	<classpathentry kind="var" path="M2_REPO/commons-logging/commons-logging/1.0.4/commons-logging-1.0.4.jar"/>
-	<classpathentry kind="var" path="GWT_LIB/gwt-gears.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/gwtwidgets/gwt-sl/0.1.5/gwt-sl-0.1.5.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/extjs/gxt/1.2.1/gxt-1.2.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/google/gwt/gears/gwt-gears/1.1.1/gwt-gears-1.1.1.jar"/>
+	<classpathentry kind="var" path="GWT_HOME/gwt-dev-linux.jar"/>
+	<classpathentry kind="var" path="GWT_HOME/gwt-user.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
