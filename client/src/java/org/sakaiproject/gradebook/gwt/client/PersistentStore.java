@@ -22,22 +22,28 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client;
 
+import java.util.Date;
+
+
 import com.google.gwt.user.client.Cookies;
 
 public class PersistentStore {
 
+	// One year in millisecond is 365 days x 24 hours x 60 minutes x 60 seconds x 1000 milliseconds
+	private static long ONE_YEAR = 31536000000l;
+	
 	public static String getPersistentField(String gradebookUid, String storeId, String prefix) {
 		String cookieField = getPersistentFieldName(gradebookUid, storeId, prefix);
 		
-		//System.out.println("Field returned: " + cookieField);
 		return Cookies.getCookie(cookieField);
 	}
 	
 	public static void storePersistentField(String gradebookUid, String storeId, String prefix, String fieldValue) {
 		String cookieField = getPersistentFieldName(gradebookUid, storeId, prefix);
 		
-		//System.out.println("Field saved: " + cookieField);
-		Cookies.setCookie(cookieField, fieldValue);
+		Date expiryDate = new Date(new Date().getTime() + ONE_YEAR);
+		
+		Cookies.setCookie(cookieField, fieldValue, expiryDate);
 	}
 	
 	private static String getPersistentFieldName(String gradebookUid, String storeId, String prefix) {
