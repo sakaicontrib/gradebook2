@@ -205,7 +205,7 @@ public class GradeCalculationsImpl implements GradeCalculations {
 		
 		List<AssignmentGradeRecord> subList = agrs;
 		
-		if (nDropLowest != 0 && sizeOf >= nDropLowest) {
+		if (nDropLowest > 0 && sizeOf >= nDropLowest) {
 			Collections.sort(agrs, new Comparator<AssignmentGradeRecord>() {
 
 				public int compare(AssignmentGradeRecord o1, AssignmentGradeRecord o2) {

@@ -38,6 +38,7 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 	protected Map<String, AssignmentModel> assignmentMap;
 	protected AssignmentModel essay1, essay2, essay3, hw1, hw2, hw3, hw4;
 	
+	
 	/*
 	 * If a learner gets 75% on all grade items, then his/her course grade should be 75%
 	 */
@@ -51,6 +52,15 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 	 */
 	public void testMediocreScoresDropLowestEssay() throws InvalidInputException {
 		essaysCategory = makeCategoryDropLowest(essaysCategory, 1);
+		gradeAllSameScore(ScoreType.MEDIOCRE, "C (75.00%) ");
+	}
+	
+	/*
+	 * Want to ensure that even if we make the drop lowest value negative, it doesn't cause an 
+	 * exception to be thrown
+	 */
+	public void testNegativeDropLowestEssay() throws InvalidInputException  {
+		essaysCategory = makeCategoryDropLowest(essaysCategory, -1);
 		gradeAllSameScore(ScoreType.MEDIOCRE, "C (75.00%) ");
 	}
 	
