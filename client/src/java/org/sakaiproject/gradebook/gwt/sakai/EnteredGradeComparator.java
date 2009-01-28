@@ -53,16 +53,22 @@ public class EnteredGradeComparator implements Comparator<UserRecord> {
 		if (diff != 0)
 			return c0_1<c0_2 ? -1 : (c0_1==c0_2 ? 0 : 1);
 		
-		if (d1.length() <= 1 || d2.length() <= 1)
+		if (d1.length() <= 0 || d2.length() <= 0)
 			return c0_1<c0_2 ? -1 : (c0_1==c0_2 ? 0 : 1);
 		
-		char c1_1 = d1.charAt(1);
-		char c1_2 = d1.charAt(1);
+		char c1_1 = 'y';
+		char c1_2 = 'y';
+		
+		if (d1.length() > 1)
+			c1_1 = d1.charAt(1);
+		
+		if (d2.length() > 1)
+			c1_2 = d2.charAt(1);
 				
 		char s1 = getCompareChar(c1_1);
 		char s2 = getCompareChar(c1_2);;
 		
-		int diff2 = s1 - s2;
+		//int diff2 = s1 - s2;
 		
 		return s1<s2 ? -1 : (s1==s2 ? 0 : 1);
 	}
@@ -77,17 +83,17 @@ public class EnteredGradeComparator implements Comparator<UserRecord> {
 	
 	protected char getCompareChar(char c) {
 		
-		char s1 = 'a';
+		char s1 = 'y';
 		
 		switch (c) {
 		case '+':
-			s1 = 'z';
+			s1 = 'x';
 			break;
 		case ' ':
 			s1 = 'y';
 			break;
 		case '-':
-			s1 = 'x';
+			s1 = 'z';
 			break;
 		}
 		

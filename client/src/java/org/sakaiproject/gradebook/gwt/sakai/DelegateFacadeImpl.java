@@ -1063,8 +1063,8 @@ private static final long serialVersionUID = 1L;
 				}
 			}
 			
-			//if (sortColumnKey == null)
-			//	sortColumnKey = StudentModel.Key.ASSIGNMENT;
+			if (sortColumnKey == null)
+				sortColumnKey = StudentModel.Key.ASSIGNMENT;
 			
 		} 
 		
@@ -1077,6 +1077,7 @@ private static final long serialVersionUID = 1L;
 		if (sortColumnKey != null) {
 			switch (sortColumnKey) {
 			case DISPLAY_NAME:
+			case SORT_NAME:
 			case DISPLAY_ID:
 			case SECTION:
 			case EMAIL:
@@ -1096,6 +1097,7 @@ private static final long serialVersionUID = 1L;
 			Comparator<UserRecord> comparator = null; 
 			switch (sortColumnKey) {
 			case DISPLAY_NAME:
+			case SORT_NAME:
 				comparator = SORT_NAME_COMPARATOR;
 				break;
 			case DISPLAY_ID:
