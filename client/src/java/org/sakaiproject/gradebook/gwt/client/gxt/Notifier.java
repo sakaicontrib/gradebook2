@@ -25,6 +25,7 @@ package org.sakaiproject.gradebook.gwt.client.gxt;
 import org.sakaiproject.gradebook.gwt.client.gxt.settings.LogConfig;
 import org.sakaiproject.gradebook.gwt.client.gxt.settings.LogDisplay;
 
+import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.XDOM;
 import com.extjs.gxt.ui.client.util.Params;
 
@@ -35,11 +36,27 @@ public class Notifier {
 	}
 	
 	public void notify(String title, String text, Object...values) {
-		Params infoParams = new Params(values);
-		//InfoConfig infoConfig = new InfoConfig(title, text, infoParams);
-		//infoConfig.display = 5000;
-		//Info.display(infoConfig);
+		Boolean notificationsEnabled = Registry.get("enableNotifications");
 		
+		if (notificationsEnabled != null && notificationsEnabled.booleanValue()) {
+			Params infoParams = new Params(values);
+			
+			int panelWidth = XDOM.getViewportSize().width / 2;
+			int x = XDOM.getViewportSize().width / 2 - panelWidth / 2;
+			
+			LogConfig infoConfig = new LogConfig(title, text, infoParams);
+			infoConfig.display = 5000;
+			infoConfig.width = panelWidth;
+			infoConfig.height = 60;
+			
+			LogDisplay.display(x, 0, infoConfig);
+		}
+	}
+	
+	
+	public void notifyError(String title, String text, Object...values) {
+		Params infoParams = new Params(values);
+
 		int panelWidth = XDOM.getViewportSize().width / 2;
 		int x = XDOM.getViewportSize().width / 2 - panelWidth / 2;
 		
@@ -50,6 +67,5 @@ public class Notifier {
 		
 		LogDisplay.display(x, 0, infoConfig);
 	}
-	
 	
 }

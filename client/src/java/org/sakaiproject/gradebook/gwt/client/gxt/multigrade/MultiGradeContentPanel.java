@@ -123,7 +123,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	private GridCellRenderer<StudentModel> unweightedNumericCellRenderer;
 	private GridCellRenderer<StudentModel> extraCreditNumericCellRenderer;
 	
-	private ToggleToolItem doNotifyItem;
+	//private ToggleToolItem doNotifyItem;
 	
 	private int currentIndex = -1;
 	
@@ -789,15 +789,15 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			
 		});
 		
-		doNotifyItem = new ToggleToolItem("Show Notifications");
+		//doNotifyItem = new ToggleToolItem("Show Notifications");
 		
 		pagingToolBar.add(searchFieldItem);
 		pagingToolBar.add(doSearchItem);
 		pagingToolBar.add(clearSearchItem);
 		pagingToolBar.add(new SeparatorToolItem());
 		pagingToolBar.add(sectionChooserItem);
-		pagingToolBar.add(new SeparatorToolItem());
-		pagingToolBar.add(doNotifyItem);
+		//pagingToolBar.add(new SeparatorToolItem());
+		//pagingToolBar.add(doNotifyItem);
 		
 		searchToolBar = new ToolBar();
 		
@@ -1164,7 +1164,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		//buffer.append(" : ");
 		//buffer.append(propertyName);
 			
-		if (doNotifyItem != null && doNotifyItem.isPressed())
+		//if (doNotifyItem != null && doNotifyItem.isPressed())
 			notifier.notify(buffer.toString(), 
 				"Stored item grade as '{0}' and recalculated course grade to '{1}' ", model.get(property), model.get(StudentModel.Key.COURSE_GRADE.name()));
 	

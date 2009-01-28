@@ -42,7 +42,7 @@ public abstract class NotifyingAsyncCallback<M> implements AsyncCallback<M> {
 		if (caught.getMessage() != null)
 			message = caught.getMessage();
 		
-		notifier.notify("Request denied", message);
+		notifier.notifyError("Request denied", message);
 	}
 
 }

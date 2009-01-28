@@ -22,6 +22,7 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.gxt;
 
+import org.sakaiproject.gradebook.gwt.client.PersistentStore;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeContentPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.settings.AddAssignmentDialog;
 import org.sakaiproject.gradebook.gwt.client.gxt.settings.AddCategoryDialog;
@@ -43,6 +44,7 @@ import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.Window;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
+import com.extjs.gxt.ui.client.widget.menu.CheckMenuItem;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.extjs.gxt.ui.client.widget.menu.SeparatorMenuItem;
@@ -174,6 +176,7 @@ public class InstructorViewContainer extends ContentPanel {
 		
 		fileItem.setMenu(fileMenu);
 		
+			
 		if (gbModel.isUserAbleToEditAssessments() != null && gbModel.isUserAbleToEditAssessments().booleanValue()) {
 			ToggleToolItem setupItem = new ToggleToolItem("Setup") {
 				
@@ -196,6 +199,35 @@ public class InstructorViewContainer extends ContentPanel {
 				
 			};
 			toolBar.add(setupItem);
+		}
+		
+		TextToolItem preferencesItem = new TextToolItem("Preferences");
+		Menu preferencesMenu = new Menu();
+		
+		CheckMenuItem enableNotifications = new CheckMenuItem("Enable popups");
+		preferencesMenu.add(enableNotifications);
+		preferencesItem.setMenu(preferencesMenu);
+		
+		toolBar.add(preferencesItem);
+		
+		enableNotifications.addListener(Events.CheckChange, new Listener<MenuEvent>() {
+
+			public void handleEvent(MenuEvent me) {
+				CheckMenuItem enableNotifications = (CheckMenuItem)me.item;
+				Boolean isChecked = Boolean.valueOf(enableNotifications.isChecked());
+				if (Registry.get("enableNotifications") != null) 
+					Registry.unregister("enableNotifications");
+				Registry.register("enableNotifications", isChecked);
+				
+				PersistentStore.storePersistentField(gradebookUid, "enableNotifications", "checked", isChecked.toString());
+			}
+			
+		});
+		
+		String storedEnableNotifications = PersistentStore.getPersistentField(gradebookUid, "enableNotifications", "checked");
+		if (storedEnableNotifications != null) {
+			Boolean isChecked = Boolean.valueOf(storedEnableNotifications);
+			Registry.register("enableNotifications", isChecked);
 		}
 		
 		TextToolItem historyItem = new TextToolItem("History", new SelectionListener<ToolBarEvent>() {
