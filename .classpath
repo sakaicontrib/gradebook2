@@ -22,7 +22,7 @@
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-util-api/M2/sakai-util-api-M2.jar"/>
 	<classpathentry kind="var" path="M2_REPO/commons-logging/commons-logging/1.0.4/commons-logging-1.0.4.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/gwtwidgets/gwt-sl/0.1.5/gwt-sl-0.1.5.jar"/>
-	<classpathentry kind="var" path="M2_REPO/com/extjs/gxt/1.2.1/gxt-1.2.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/extjs/gxt/1.2.2/gxt-1.2.2.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/google/gwt/gears/gwt-gears/1.1.1/gwt-gears-1.1.1.jar"/>
 	<classpathentry kind="var" path="GWT_HOME/gwt-dev-linux.jar"/>
 	<classpathentry kind="var" path="GWT_HOME/gwt-user.jar"/>
