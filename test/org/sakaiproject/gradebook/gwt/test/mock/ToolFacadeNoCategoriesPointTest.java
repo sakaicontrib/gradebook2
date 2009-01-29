@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
+import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig;
 import org.sakaiproject.gradebook.gwt.client.model.AssignmentModel;
@@ -15,14 +16,14 @@ import com.extjs.gxt.ui.client.data.PagingLoadResult;
 public class ToolFacadeNoCategoriesPointTest extends AbstractToolFacadePointTest {
 
 	@Override
-	protected void initialize() throws InvalidInputException {
+	protected void initialize() throws InvalidInputException, FatalException {
 		initialize(CategoryType.NO_CATEGORIES);
 	}
 
 	/*
 	 * Overall grade will be points based 20 + 15 + 5 + 10 + 10 + 8 + 2 = 70 points out of 100 possible
 	 */
-	public void testRepresentativeGrade() throws InvalidInputException {
+	public void testRepresentativeGrade() throws InvalidInputException, FatalException {
 		setRepresentativePointsGrade();
 		checkCourseGrade("C- (70.00%) ");
 	}
@@ -33,7 +34,7 @@ public class ToolFacadeNoCategoriesPointTest extends AbstractToolFacadePointTest
 	 * (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.test.mock.AbstractToolFacadeTest#testGetGradeItemsEssaysDeleted()
 	 */
-	public void testGetGradeItemsEssaysDeleted() throws InvalidInputException {
+	public void testGetGradeItemsEssaysDeleted() throws InvalidInputException, FatalException {
 		essaysCategory = makeCategoryDeleted(essaysCategory, true);
 		
 		PageRequestAction action = new PageRequestAction(EntityType.GRADE_ITEM, gbModel.getGradebookUid(), gbModel.getGradebookId());

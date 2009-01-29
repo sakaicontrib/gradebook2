@@ -34,6 +34,7 @@ import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType;
+import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.AssignmentModel;
 import org.sakaiproject.gradebook.gwt.client.model.CategoryModel;
@@ -76,64 +77,69 @@ public class GradebookToolFacadeMockImpl extends RemoteServiceServlet implements
 		//UserEntityCreateAction<GradebookModel> createGradebookAction = new UserEntityCreateAction<GradebookModel>();
 		//createGradebookAction.setName("Test Gradebook");
 		//GradebookModel gbModel = createEntity(createGradebookAction);
-		
-		GradebookModel gbModel = getEntity(new UserEntityGetAction<GradebookModel>(EntityType.GRADEBOOK, "emptyid"));
 		try {
+			
+			GradebookModel gbModel = getEntity(new UserEntityGetAction<GradebookModel>(EntityType.GRADEBOOK, "emptyid"));
+		
 			gbModel = updateEntity(new UserEntityUpdateAction<GradebookModel>(gbModel, gbModel, GradebookModel.Key.NAME.name(), ClassType.STRING, "Test Gradebook", null));
-			gbModel = updateEntity(new UserEntityUpdateAction<GradebookModel>(gbModel, gbModel, GradebookModel.Key.CATEGORYTYPE.name(), ClassType.CATEGORYTYPE, CategoryType.NO_CATEGORIES, null));
+			gbModel = updateEntity(new UserEntityUpdateAction<GradebookModel>(gbModel, gbModel, GradebookModel.Key.CATEGORYTYPE.name(), ClassType.CATEGORYTYPE, CategoryType.WEIGHTED_CATEGORIES, null));
 			gbModel = updateEntity(new UserEntityUpdateAction<GradebookModel>(gbModel, gbModel, GradebookModel.Key.GRADETYPE.name(), ClassType.GRADETYPE, GradeType.PERCENTAGES, null));
+		
+		
+			CategoryModel essaysCategory = createEntity(new UserCategoryCreateAction(gbModel, "My Essays", 
+					Double.valueOf(60d), Boolean.TRUE, Integer.valueOf(1)));
+			
+			CategoryModel hwCategory = createEntity(new UserCategoryCreateAction(gbModel, "My Homework", 
+					Double.valueOf(40d), Boolean.TRUE, Integer.valueOf(0)));
+			
+			
+			AssignmentModel essay1 = createEntity(new UserAssignmentCreateAction(gbModel, 
+					Long.valueOf(essaysCategory.getIdentifier()), 
+					"Essay 1", Double.valueOf(0), Double.valueOf(20), new Date()));
+			AssignmentModel essay2 = createEntity(new UserAssignmentCreateAction(gbModel, 
+					Long.valueOf(essaysCategory.getIdentifier()), 
+					"Essay 2", Double.valueOf(0), Double.valueOf(20), new Date()));
+			AssignmentModel essay3 = createEntity(new UserAssignmentCreateAction(gbModel, 
+					Long.valueOf(essaysCategory.getIdentifier()), 
+					"Essay 3", Double.valueOf(0), Double.valueOf(20), new Date()));
+			
+			AssignmentModel hw1 = createEntity(new UserAssignmentCreateAction(gbModel, 
+					Long.valueOf(hwCategory.getIdentifier()), 
+					"HW 1", Double.valueOf(0), Double.valueOf(10), new Date()));
+			AssignmentModel hw2 = createEntity(new UserAssignmentCreateAction(gbModel, 
+					Long.valueOf(hwCategory.getIdentifier()), 
+					"HW 2", Double.valueOf(0), Double.valueOf(10), new Date()));
+			AssignmentModel hw3 = createEntity(new UserAssignmentCreateAction(gbModel, 
+					Long.valueOf(hwCategory.getIdentifier()), 
+					"HW 3", Double.valueOf(0), Double.valueOf(10), new Date()));
+			AssignmentModel hw4 = createEntity(new UserAssignmentCreateAction(gbModel, 
+					Long.valueOf(hwCategory.getIdentifier()), 
+					"HW 4", Double.valueOf(0), Double.valueOf(10), new Date()));
+		
 		} catch (InvalidInputException e) {
 			GWT.log("Failed to update gradebook properties", e);
+		} catch (FatalException fe) {
+			GWT.log("Failed to update gradebook properties", fe);
 		}
-		
-		CategoryModel essaysCategory = createEntity(new UserCategoryCreateAction(gbModel, "My Essays", 
-				Double.valueOf(60d), Boolean.TRUE, Integer.valueOf(1)));
-		
-		CategoryModel hwCategory = createEntity(new UserCategoryCreateAction(gbModel, "My Homework", 
-				Double.valueOf(40d), Boolean.TRUE, Integer.valueOf(0)));
-		
-		
-		AssignmentModel essay1 = createEntity(new UserAssignmentCreateAction(gbModel, 
-				Long.valueOf(essaysCategory.getIdentifier()), 
-				"Essay 1", Double.valueOf(0), Double.valueOf(20), new Date()));
-		AssignmentModel essay2 = createEntity(new UserAssignmentCreateAction(gbModel, 
-				Long.valueOf(essaysCategory.getIdentifier()), 
-				"Essay 2", Double.valueOf(0), Double.valueOf(20), new Date()));
-		AssignmentModel essay3 = createEntity(new UserAssignmentCreateAction(gbModel, 
-				Long.valueOf(essaysCategory.getIdentifier()), 
-				"Essay 3", Double.valueOf(0), Double.valueOf(20), new Date()));
-		
-		AssignmentModel hw1 = createEntity(new UserAssignmentCreateAction(gbModel, 
-				Long.valueOf(hwCategory.getIdentifier()), 
-				"HW 1", Double.valueOf(0), Double.valueOf(10), new Date()));
-		AssignmentModel hw2 = createEntity(new UserAssignmentCreateAction(gbModel, 
-				Long.valueOf(hwCategory.getIdentifier()), 
-				"HW 2", Double.valueOf(0), Double.valueOf(10), new Date()));
-		AssignmentModel hw3 = createEntity(new UserAssignmentCreateAction(gbModel, 
-				Long.valueOf(hwCategory.getIdentifier()), 
-				"HW 3", Double.valueOf(0), Double.valueOf(10), new Date()));
-		AssignmentModel hw4 = createEntity(new UserAssignmentCreateAction(gbModel, 
-				Long.valueOf(hwCategory.getIdentifier()), 
-				"HW 4", Double.valueOf(0), Double.valueOf(10), new Date()));
 	}
 	
-	public <X extends EntityModel> X createEntity(UserEntityCreateAction<X> action) {
+	public <X extends EntityModel> X createEntity(UserEntityCreateAction<X> action) throws FatalException {
 		
 		return delegateFacade.createEntity(action);
 	}
 	
-	public <X extends EntityModel> X getEntity(UserEntityGetAction<X> action) {
+	public <X extends EntityModel> X getEntity(UserEntityGetAction<X> action) throws FatalException {
 		
 		return delegateFacade.getEntity(action);
 	}
 	
-	public <X extends EntityModel> List<X> getEntityList(UserEntityGetAction<X> action) {
+	public <X extends EntityModel> List<X> getEntityList(UserEntityGetAction<X> action) throws FatalException {
 		
 		return delegateFacade.getEntityList(action);
 	}
 	
 	public <X extends EntityModel> PagingLoadResult<X> getEntityPage(PageRequestAction action,
-			PagingLoadConfig config) {
+			PagingLoadConfig config) throws FatalException {
 		
 		return delegateFacade.getEntityPage(action, config);
 	}
@@ -144,12 +150,12 @@ public class GradebookToolFacadeMockImpl extends RemoteServiceServlet implements
 		return delegateFacade.recalculateEqualWeightingCategories(gradebookUid, gradebookId, isEqualWeighting);
 	}
 	
-	public <X extends EntityModel> X updateEntity(UserEntityUpdateAction<X> action) throws InvalidInputException {
+	public <X extends EntityModel> X updateEntity(UserEntityUpdateAction<X> action) throws InvalidInputException, FatalException {
 		
 		return delegateFacade.updateEntity(action);
 	}
 
-	public <X extends EntityModel> List<X> updateEntityList(UserEntityUpdateAction<X> action) throws InvalidInputException {
+	public <X extends EntityModel> List<X> updateEntityList(UserEntityUpdateAction<X> action) throws InvalidInputException, FatalException {
 	
 		return delegateFacade.updateEntityList(action);
 	}

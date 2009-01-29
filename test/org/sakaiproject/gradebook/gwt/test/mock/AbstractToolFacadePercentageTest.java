@@ -4,6 +4,7 @@ import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType;
+import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
@@ -15,7 +16,7 @@ import com.extjs.gxt.ui.client.data.PagingLoadResult;
 
 public abstract class AbstractToolFacadePercentageTest extends AbstractToolFacadeTest {
 
-	protected void initialize(CategoryType categoryType) throws InvalidInputException {
+	protected void initialize(CategoryType categoryType) throws InvalidInputException, FatalException {
 		initialize(categoryType, GradeType.PERCENTAGES);
 	}
 	
@@ -23,7 +24,7 @@ public abstract class AbstractToolFacadePercentageTest extends AbstractToolFacad
 	 * If a user enters negative scores for a learner when in percentages mode, an exception
 	 * should be thrown
 	 */
-	public void testNegativeScores() {
+	public void testNegativeScores() throws FatalException {
 		boolean isThrown = false;
 		try {
 			gradeAllSameScore(ScoreType.NEGATIVE, null);
@@ -38,7 +39,7 @@ public abstract class AbstractToolFacadePercentageTest extends AbstractToolFacad
 	/*
 	 * Creates a grade that will produce different scores in different configs
 	 */
-	protected void setRepresentativePercentagesGrade() throws InvalidInputException {
+	protected void setRepresentativePercentagesGrade() throws InvalidInputException, FatalException {
 		PagingLoadConfig loadConfig = new MultiGradeLoadConfig();
 		loadConfig.setOffset(0);
 		loadConfig.setLimit(20);

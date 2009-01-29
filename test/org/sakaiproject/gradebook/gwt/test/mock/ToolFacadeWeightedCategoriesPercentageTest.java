@@ -1,12 +1,13 @@
 package org.sakaiproject.gradebook.gwt.test.mock;
 
+import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 
 public class ToolFacadeWeightedCategoriesPercentageTest extends AbstractToolFacadePercentageTest {
 
 	@Override
-	protected void initialize() throws InvalidInputException {
+	protected void initialize() throws InvalidInputException, FatalException {
 		initialize(CategoryType.WEIGHTED_CATEGORIES);
 	}
 	
@@ -14,7 +15,7 @@ public class ToolFacadeWeightedCategoriesPercentageTest extends AbstractToolFaca
 	 * If the essays category has 100% weight, and the hw category has 10% and is an extra credit category,
 	 * then giving a student a 75% on all essays and 100% on all homework should produce an 85%
 	 */
-	public void testMediocreScoresExtraCreditHomework() throws InvalidInputException {
+	public void testMediocreScoresExtraCreditHomework() throws InvalidInputException, FatalException {
 		makeHomeworkTenPercentExtraCredit();
 		gradeCategorySameScore(essaysCategory, ScoreType.MEDIOCRE);
 		gradeCategorySameScore(hwCategory, ScoreType.PERFECT_SCORE);
@@ -38,7 +39,7 @@ public class ToolFacadeWeightedCategoriesPercentageTest extends AbstractToolFaca
 	 * 
 	 * Overall grade will be 71.67
 	 */
-	public void testRepresentativeGrade() throws InvalidInputException {
+	public void testRepresentativeGrade() throws InvalidInputException, FatalException {
 		setRepresentativePercentagesGrade();
 		checkCourseGrade("C- (71.67%) ");
 	}
@@ -53,7 +54,7 @@ public class ToolFacadeWeightedCategoriesPercentageTest extends AbstractToolFaca
 	 *  - 4 : 25% :  2 of 10 =  .20 = 5
 	 *  - Total : 75%
 	 */
-	public void testDeleteEssays() throws InvalidInputException {
+	public void testDeleteEssays() throws InvalidInputException, FatalException {
 		setRepresentativePercentagesGrade();
 		essaysCategory = makeCategoryDeleted(essaysCategory, true);
 		checkCourseGrade("C (75.00%) ");
@@ -68,7 +69,7 @@ public class ToolFacadeWeightedCategoriesPercentageTest extends AbstractToolFaca
 	 *  - 3 : 33.333% :  5 of 20 = 0.25 =  8.3333325
 	 *  - Total : 66.666655
 	 */
-	public void testDeleteHomework() throws InvalidInputException {
+	public void testDeleteHomework() throws InvalidInputException, FatalException {
 		setRepresentativePercentagesGrade();
 		hwCategory = makeCategoryDeleted(hwCategory, true);
 		checkCourseGrade("D (66.67%) ");

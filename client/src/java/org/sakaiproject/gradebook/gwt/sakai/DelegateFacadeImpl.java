@@ -53,6 +53,7 @@ import org.sakaiproject.gradebook.gwt.client.action.UserEntityCreateAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityGradeAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
+import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
@@ -127,291 +128,332 @@ private static final long serialVersionUID = 1L;
 
 	
 	@SuppressWarnings("unchecked")
-	public <X extends EntityModel> X createEntity(UserEntityCreateAction<X> action) {
+	public <X extends EntityModel> X createEntity(UserEntityCreateAction<X> action) throws FatalException {
 	
-		ActionRecord actionRecord = new ActionRecord(action.getGradebookUid(), action.getGradebookId(), action.getEntityType().name(), action.getActionType().name());
-		X entity = null;
-		Map<String, String> actionRecordPropertyMap = actionRecord.getPropertyMap();
-		
-		if (action.getDatePerformed() != null)
-			actionRecord.setDatePerformed(action.getDatePerformed());
-		
-		switch (action.getEntityType()) {
-		case GRADEBOOK:
-			actionRecord.setEntityName(action.getName());
-			entity = (X)addGradebook(action.getName());
-			break;
-		case GRADE_ITEM:
-			UserAssignmentCreateAction assignmentCreateAction = (UserAssignmentCreateAction)action;
-			
-			actionRecord.setParentId(String.valueOf(action.getParentId()));
-			actionRecord.setEntityName(action.getEntityName());
-			
-			//actionRecordPropertyMap.put(Action.Key.NAME.name(), action.getName());
-			actionRecordPropertyMap.put(Action.Key.WEIGHT.name(), String.valueOf(action.getWeight()));
-			actionRecordPropertyMap.put(Action.Key.POINTS.name(), String.valueOf(assignmentCreateAction.getPoints()));
-			actionRecordPropertyMap.put(Action.Key.DUE_DATE.name(), String.valueOf(assignmentCreateAction.getDueDate()));
-			
-			entity = (X)addAssignment(action.getGradebookUid(), action.getGradebookId(), 
-					action.getParentId(), action.getName(), action.getWeight(), 
-					assignmentCreateAction.getPoints(), 
-					assignmentCreateAction.getDueDate());
-			
-			break;
-		case CATEGORY:
-			UserCategoryCreateAction categoryCreateAction = (UserCategoryCreateAction)action;
-			
-			actionRecord.setEntityName(action.getEntityName());
-			
-			//actionRecordPropertyMap.put(Action.Key.NAME.name(), action.getName());
-			actionRecordPropertyMap.put(Action.Key.WEIGHT.name(), String.valueOf(action.getWeight()));
-			actionRecordPropertyMap.put(Action.Key.EQUAL_WEIGHT.name(), String.valueOf(categoryCreateAction.getIsEqualWeight()));
-			actionRecordPropertyMap.put(Action.Key.DROP_LOWEST.name(), String.valueOf(categoryCreateAction.getDropLowest()));
-			
-			entity = (X)addCategory(action.getGradebookUid(), action.getGradebookId(),
-					action.getName(), action.getWeight(), categoryCreateAction.getIsEqualWeight(), 
-					categoryCreateAction.getDropLowest());
-			break;
-		case COMMENT:
-			CommentModel commentModel = (CommentModel)action.getModel();
-			
-			if (commentModel != null) {
-				actionRecord.setParentId(String.valueOf(commentModel.getAssignmentId()));
-				actionRecord.setStudentUid(commentModel.getStudentUid());
-				actionRecordPropertyMap.put(Action.Key.TEXT.name(), commentModel.getText());			
-			}
-			
-			entity = (X)createOrUpdateComment(commentModel.getAssignmentId(), commentModel.getStudentUid(), commentModel.getText());
-			break;
-		}
-		
-		if (entity != null)
-			actionRecord.setEntityId(entity.getIdentifier());
-		
-		if (entity == null)
-			actionRecord.setStatus(ActionRecord.STATUS_FAILURE);
-		else
-			actionRecord.setStatus(ActionRecord.STATUS_SUCCESS);
-		
-		gbService.storeActionRecord(actionRecord);
-		
-		return entity;
-	}
-	
-	@SuppressWarnings("unchecked")
-	public <X extends EntityModel> X getEntity(UserEntityGetAction<X> action) {
-		
-		boolean showAll = action.getIncludeAll() != null && action.getIncludeAll().booleanValue();
-		
-		switch (action.getEntityType()) {
-		case APPLICATION:
-			return (X)getApplicationModel();
-		case COMMENT:
-			return (X)getComment(Long.valueOf(action.getEntityId()), action.getStudentUid());
-		case GRADEBOOK:
-			return (X)getGradebook(action.getEntityId());
-		case GRADE_RECORD:
-			GradeRecordModel gradeRecord = (GradeRecordModel)action.getModel();
-			return (X)getSingleAssignmentForStudent(action.getGradebookUid(), action.getGradebookId(), 
-					action.getStudentUid(), Long.valueOf(action.getEntityId()), Boolean.valueOf(!showAll));
-		}
-		
-		return null;
-	}
-	
-	public <X extends EntityModel> List<X> getEntityList(UserEntityGetAction<X> action) {
-		
-		switch (action.getEntityType()) {
-		case CATEGORY:
-			return getCategories(action.getGradebookUid(), Boolean.FALSE);
-		case COLUMN:	
-			return getColumns(action.getGradebookUid(), action.getGradebookId());
-		case GRADE_EVENT:
-			return getGradeEvents(action.getStudentUid(), Long.valueOf(action.getEntityId()));
-		case GRADE_SCALE:
-			return getSelectedGradeMapping(action.getGradebookUid());
-		}
-		
-		return null;
-	}
-	
-	public <X extends EntityModel> PagingLoadResult<X> getEntityPage(PageRequestAction action, PagingLoadConfig config) {
-	
-		boolean showAll = action.getIncludeAll() != null && action.getIncludeAll().booleanValue();
-		
-		switch (action.getEntityType()) {
-		case ACTION:
-			return getActionHistory(action.getGradebookUid(), config);
-		case GRADE_ITEM:
-			return getAssignments(action.getGradebookUid(), action.getGradebookId(), showAll, config);
-		case CATEGORY:
-			return getCategories(action.getGradebookUid(), action.getGradebookId(), showAll, config);
-		case GRADE_RECORD:
-			return getAssignmentRecords(action.getGradebookUid(), action.getGradebookId(), action.getStudentUid(), Boolean.valueOf(!showAll), config);
-		case SECTION:
-			return getSections(action.getGradebookUid(), action.getGradebookId(), config);
-		case STUDENT:
-			return getStudentRows(action.getGradebookUid(), action.getGradebookId(), config);
-		}
-		
-		return null;
-	}
-	
-	@SuppressWarnings("unchecked")
-	public <X extends EntityModel> X updateEntity(UserEntityUpdateAction<X> action) throws InvalidInputException {
-		
-		if (action.getPrerequisiteAction() != null) {
-			BaseModel result = updateEntity((UserEntityUpdateAction)action.getPrerequisiteAction());
-			
-			// Break out of recursion if we get a null back
-			if (result == null) 
-				return null;
-		}
-		
-		ActionRecord actionRecord = new ActionRecord(action.getGradebookUid(), action.getGradebookId(), action.getEntityType().name(), action.getActionType().name());
 		X entity = null;
 		
-		if (action.getEntityId() != null)
-			actionRecord.setEntityId(action.getEntityId());
-		if (action.getEntityName() != null)
-			actionRecord.setEntityName(action.getEntityName());
-		actionRecord.setField(action.getKey());
-		if (action.getValue() != null)
-			actionRecord.setValue(String.valueOf(action.getValue()));
-		if (action.getStartValue() != null)
-			actionRecord.setStartValue(String.valueOf(action.getStartValue()));
-		if (action.getDatePerformed() != null)
-			actionRecord.setDatePerformed(action.getDatePerformed());
+		try {
 		
-		switch (action.getEntityType()) {
-		case GRADE_ITEM:
-			AssignmentModel assignmentModel = (AssignmentModel)action.getModel();
-			AssignmentModel.Key assignmentKey = AssignmentModel.Key.valueOf(action.getKey());
+			ActionRecord actionRecord = new ActionRecord(action.getGradebookUid(), action.getGradebookId(), action.getEntityType().name(), action.getActionType().name());
 			
-			switch (assignmentKey) {
-			case POINTS:
-				if (action.getDoRecalculateChildren() != null && action.getDoRecalculateChildren().booleanValue())
-					recalculateAssignmentGradeRecords(assignmentModel.getIdentifier(), (Double)action.getValue(), (Double)action.getStartValue());
+			Map<String, String> actionRecordPropertyMap = actionRecord.getPropertyMap();
+			
+			if (action.getDatePerformed() != null)
+				actionRecord.setDatePerformed(action.getDatePerformed());
+			
+			switch (action.getEntityType()) {
+			case GRADEBOOK:
+				actionRecord.setEntityName(action.getName());
+				entity = (X)addGradebook(action.getName());
 				break;
-			}
-			entity = (X)updateAssignmentField(assignmentModel.getIdentifier(), assignmentKey, action.getValue());
-			break;
-		case CATEGORY:
-			CategoryModel categoryModel = (CategoryModel)action.getModel();
-			String categoryId = String.valueOf(action.getEntityId());
-			if (categoryModel != null)
-				categoryId = categoryModel.getIdentifier();
-			CategoryModel.Key categoryKey = CategoryModel.Key.valueOf(action.getKey());
-			entity = (X)updateCategoryField(categoryId, categoryKey, action.getValue());
-			break;
-		case COMMENT:
-			CommentModel commentModel = (CommentModel)action.getModel();
-			
-			if (commentModel != null) {
-				actionRecord.setParentId(String.valueOf(commentModel.getAssignmentId()));
-				actionRecord.setStudentUid(commentModel.getStudentUid());
-			}
-			
-			entity = (X)createOrUpdateComment(commentModel.getAssignmentId(), commentModel.getStudentUid(), (String)action.getValue());
-			break;
-		case GRADEBOOK:
-			GradebookModel gradebookModel = (GradebookModel)action.getModel();
-			GradebookModel.Key gradebookKey = GradebookModel.Key.valueOf(action.getKey());
-			entity = (X)updateGradebookField(gradebookModel.getGradebookId(), gradebookKey, action.getValue());
-			break;
-		case GRADE_RECORD:
-			GradeRecordModel.Key recordModelKey = GradeRecordModel.Key.valueOf(action.getKey());
-			entity = (X)updateGradeRecordModelField(action.getStudentModel().getIdentifier(), 
-					(GradeRecordModel)action.getModel(), recordModelKey, action.getValue());
-			break;
-		case STUDENT:
-			StudentModel student = (StudentModel)action.getModel();
-			
-			if (student != null && student.getIdentifier() != null) {
-				actionRecord.setStudentUid(student.getIdentifier());
-			}
-			
-			/*if (action.getPropertyName() != null) {
-				Map<String, String> propertyMap = actionRecord.getPropertyMap();
-				propertyMap.put(Action.Key.PROPERTY_NAME.name(), action.getPropertyName());
-				actionRecord.setPropertyMap(propertyMap);
-			}*/
-			
-			switch (action.getClassType()) {
-			case DOUBLE:
-				entity = (X)scoreNumericItem(action.getGradebookUid(), student, action.getKey(), (Double)action.getValue(), (Double)action.getStartValue());
-				break;
-			case STRING:
-				entity = (X)scoreTextItem(action.getGradebookUid(), student,  action.getKey(), (String)action.getValue(), (String)action.getStartValue());
-				break;
-			}
-			break;
-			
-		}
-		
-		if (entity == null)
-			actionRecord.setStatus(ActionRecord.STATUS_FAILURE);
-		else
-			actionRecord.setStatus(ActionRecord.STATUS_SUCCESS);
-		
-		if (action.getModel() != null) {
-			EntityModel model = action.getModel();
-			actionRecord.setEntityId(model.getIdentifier());
-			//actionRecord.setEntityName(model.getDisplayName());
-		}
-		
-		gbService.storeActionRecord(actionRecord);
-		
-		return entity;
-	}
-	
-	@SuppressWarnings("unchecked")
-	public <X extends EntityModel> List<X> updateEntityList(UserEntityUpdateAction<X> action) throws InvalidInputException {
+			case GRADE_ITEM:
+				UserAssignmentCreateAction assignmentCreateAction = (UserAssignmentCreateAction)action;
 				
-		if (action.getPrerequisiteAction() != null) {
-			BaseModel result = updateEntity((UserEntityUpdateAction)action.getPrerequisiteAction());
+				actionRecord.setParentId(String.valueOf(action.getParentId()));
+				actionRecord.setEntityName(action.getEntityName());
+				
+				//actionRecordPropertyMap.put(Action.Key.NAME.name(), action.getName());
+				actionRecordPropertyMap.put(Action.Key.WEIGHT.name(), String.valueOf(action.getWeight()));
+				actionRecordPropertyMap.put(Action.Key.POINTS.name(), String.valueOf(assignmentCreateAction.getPoints()));
+				actionRecordPropertyMap.put(Action.Key.DUE_DATE.name(), String.valueOf(assignmentCreateAction.getDueDate()));
+				
+				entity = (X)addAssignment(action.getGradebookUid(), action.getGradebookId(), 
+						action.getParentId(), action.getName(), action.getWeight(), 
+						assignmentCreateAction.getPoints(), 
+						assignmentCreateAction.getDueDate());
+				
+				break;
+			case CATEGORY:
+				UserCategoryCreateAction categoryCreateAction = (UserCategoryCreateAction)action;
+				
+				actionRecord.setEntityName(action.getEntityName());
+				
+				//actionRecordPropertyMap.put(Action.Key.NAME.name(), action.getName());
+				actionRecordPropertyMap.put(Action.Key.WEIGHT.name(), String.valueOf(action.getWeight()));
+				actionRecordPropertyMap.put(Action.Key.EQUAL_WEIGHT.name(), String.valueOf(categoryCreateAction.getIsEqualWeight()));
+				actionRecordPropertyMap.put(Action.Key.DROP_LOWEST.name(), String.valueOf(categoryCreateAction.getDropLowest()));
+				
+				entity = (X)addCategory(action.getGradebookUid(), action.getGradebookId(),
+						action.getName(), action.getWeight(), categoryCreateAction.getIsEqualWeight(), 
+						categoryCreateAction.getDropLowest());
+				break;
+			case COMMENT:
+				CommentModel commentModel = (CommentModel)action.getModel();
+				
+				if (commentModel != null) {
+					actionRecord.setParentId(String.valueOf(commentModel.getAssignmentId()));
+					actionRecord.setStudentUid(commentModel.getStudentUid());
+					actionRecordPropertyMap.put(Action.Key.TEXT.name(), commentModel.getText());			
+				}
+				
+				entity = (X)createOrUpdateComment(commentModel.getAssignmentId(), commentModel.getStudentUid(), commentModel.getText());
+				break;
+			}
 			
-			// Break out of recursion if we get a null back
-			if (result == null) 
-				return null;
+			if (entity != null)
+				actionRecord.setEntityId(entity.getIdentifier());
+			
+			if (entity == null)
+				actionRecord.setStatus(ActionRecord.STATUS_FAILURE);
+			else
+				actionRecord.setStatus(ActionRecord.STATUS_SUCCESS);
+			
+			gbService.storeActionRecord(actionRecord);
+		
+		} catch (Throwable t) {
+			throw new FatalException(t.getMessage(), t);
 		}
 		
-		ActionRecord actionRecord = new ActionRecord(action.getGradebookUid(), action.getGradebookId(), action.getEntityType().toString(), action.getActionType().toString());
+		return entity;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <X extends EntityModel> X getEntity(UserEntityGetAction<X> action) throws FatalException {
+		
+		try {
+			boolean showAll = action.getIncludeAll() != null && action.getIncludeAll().booleanValue();
+			
+			switch (action.getEntityType()) {
+			case APPLICATION:
+				return (X)getApplicationModel();
+			case COMMENT:
+				return (X)getComment(Long.valueOf(action.getEntityId()), action.getStudentUid());
+			case GRADEBOOK:
+				return (X)getGradebook(action.getEntityId());
+			case GRADE_RECORD:
+				GradeRecordModel gradeRecord = (GradeRecordModel)action.getModel();
+				return (X)getSingleAssignmentForStudent(action.getGradebookUid(), action.getGradebookId(), 
+						action.getStudentUid(), Long.valueOf(action.getEntityId()), Boolean.valueOf(!showAll));
+			}
+		
+		} catch (Throwable t) {
+			throw new FatalException(t.getMessage(), t);
+		}
+		
+		return null;
+	}
+	
+	public <X extends EntityModel> List<X> getEntityList(UserEntityGetAction<X> action) throws FatalException {
+		
+		try {
+		
+			switch (action.getEntityType()) {
+			case CATEGORY:
+				return getCategories(action.getGradebookUid(), Boolean.FALSE);
+			case COLUMN:	
+				return getColumns(action.getGradebookUid(), action.getGradebookId());
+			case GRADE_EVENT:
+				return getGradeEvents(action.getStudentUid(), Long.valueOf(action.getEntityId()));
+			case GRADE_SCALE:
+				return getSelectedGradeMapping(action.getGradebookUid());
+			}
+		
+		} catch (Throwable t) {
+			throw new FatalException(t.getMessage(), t);
+		}
+		
+		return null;
+	}
+	
+	public <X extends EntityModel> PagingLoadResult<X> getEntityPage(PageRequestAction action, PagingLoadConfig config) throws FatalException {
+	
+		try {
+		
+			boolean showAll = action.getIncludeAll() != null && action.getIncludeAll().booleanValue();
+			
+			switch (action.getEntityType()) {
+			case ACTION:
+				return getActionHistory(action.getGradebookUid(), config);
+			case GRADE_ITEM:
+				return getAssignments(action.getGradebookUid(), action.getGradebookId(), showAll, config);
+			case CATEGORY:
+				return getCategories(action.getGradebookUid(), action.getGradebookId(), showAll, config);
+			case GRADE_RECORD:
+				return getAssignmentRecords(action.getGradebookUid(), action.getGradebookId(), action.getStudentUid(), Boolean.valueOf(!showAll), config);
+			case SECTION:
+				return getSections(action.getGradebookUid(), action.getGradebookId(), config);
+			case STUDENT:
+				return getStudentRows(action.getGradebookUid(), action.getGradebookId(), config);
+			}
+		
+		} catch (Throwable t) {
+			throw new FatalException(t.getMessage(), t);
+		}
+		
+		return null;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <X extends EntityModel> X updateEntity(UserEntityUpdateAction<X> action) throws InvalidInputException, FatalException {
+		
+		X entity = null;
+		
+		try {
+		
+			if (action.getPrerequisiteAction() != null) {
+				BaseModel result = updateEntity((UserEntityUpdateAction)action.getPrerequisiteAction());
+				
+				// Break out of recursion if we get a null back
+				if (result == null) 
+					return null;
+			}
+			
+			ActionRecord actionRecord = new ActionRecord(action.getGradebookUid(), action.getGradebookId(), action.getEntityType().name(), action.getActionType().name());
+			
+			if (action.getEntityId() != null)
+				actionRecord.setEntityId(action.getEntityId());
+			if (action.getEntityName() != null)
+				actionRecord.setEntityName(action.getEntityName());
+			actionRecord.setField(action.getKey());
+			if (action.getValue() != null)
+				actionRecord.setValue(String.valueOf(action.getValue()));
+			if (action.getStartValue() != null)
+				actionRecord.setStartValue(String.valueOf(action.getStartValue()));
+			if (action.getDatePerformed() != null)
+				actionRecord.setDatePerformed(action.getDatePerformed());
+			
+			switch (action.getEntityType()) {
+			case GRADE_ITEM:
+				AssignmentModel assignmentModel = (AssignmentModel)action.getModel();
+				AssignmentModel.Key assignmentKey = AssignmentModel.Key.valueOf(action.getKey());
+				
+				switch (assignmentKey) {
+				case POINTS:
+					if (action.getDoRecalculateChildren() != null && action.getDoRecalculateChildren().booleanValue())
+						recalculateAssignmentGradeRecords(assignmentModel.getIdentifier(), (Double)action.getValue(), (Double)action.getStartValue());
+					break;
+				}
+				entity = (X)updateAssignmentField(assignmentModel.getIdentifier(), assignmentKey, action.getValue());
+				break;
+			case CATEGORY:
+				CategoryModel categoryModel = (CategoryModel)action.getModel();
+				String categoryId = String.valueOf(action.getEntityId());
+				if (categoryModel != null)
+					categoryId = categoryModel.getIdentifier();
+				CategoryModel.Key categoryKey = CategoryModel.Key.valueOf(action.getKey());
+				entity = (X)updateCategoryField(categoryId, categoryKey, action.getValue());
+				break;
+			case COMMENT:
+				CommentModel commentModel = (CommentModel)action.getModel();
+				
+				if (commentModel != null) {
+					actionRecord.setParentId(String.valueOf(commentModel.getAssignmentId()));
+					actionRecord.setStudentUid(commentModel.getStudentUid());
+				}
+				
+				entity = (X)createOrUpdateComment(commentModel.getAssignmentId(), commentModel.getStudentUid(), (String)action.getValue());
+				break;
+			case GRADEBOOK:
+				GradebookModel gradebookModel = (GradebookModel)action.getModel();
+				GradebookModel.Key gradebookKey = GradebookModel.Key.valueOf(action.getKey());
+				entity = (X)updateGradebookField(gradebookModel.getGradebookId(), gradebookKey, action.getValue());
+				break;
+			case GRADE_RECORD:
+				GradeRecordModel.Key recordModelKey = GradeRecordModel.Key.valueOf(action.getKey());
+				entity = (X)updateGradeRecordModelField(action.getStudentModel().getIdentifier(), 
+						(GradeRecordModel)action.getModel(), recordModelKey, action.getValue());
+				break;
+			case STUDENT:
+				StudentModel student = (StudentModel)action.getModel();
+				
+				if (student != null && student.getIdentifier() != null) {
+					actionRecord.setStudentUid(student.getIdentifier());
+				}
+				
+				/*if (action.getPropertyName() != null) {
+					Map<String, String> propertyMap = actionRecord.getPropertyMap();
+					propertyMap.put(Action.Key.PROPERTY_NAME.name(), action.getPropertyName());
+					actionRecord.setPropertyMap(propertyMap);
+				}*/
+				
+				switch (action.getClassType()) {
+				case DOUBLE:
+					entity = (X)scoreNumericItem(action.getGradebookUid(), student, action.getKey(), (Double)action.getValue(), (Double)action.getStartValue());
+					break;
+				case STRING:
+					entity = (X)scoreTextItem(action.getGradebookUid(), student,  action.getKey(), (String)action.getValue(), (String)action.getStartValue());
+					break;
+				}
+				break;
+				
+			}
+			
+			if (entity == null)
+				actionRecord.setStatus(ActionRecord.STATUS_FAILURE);
+			else
+				actionRecord.setStatus(ActionRecord.STATUS_SUCCESS);
+			
+			if (action.getModel() != null) {
+				EntityModel model = action.getModel();
+				actionRecord.setEntityId(model.getIdentifier());
+				//actionRecord.setEntityName(model.getDisplayName());
+			}
+			
+			gbService.storeActionRecord(actionRecord);
+		
+		} catch (InvalidInputException ie) {
+			throw ie;
+		} catch (Throwable t) {
+			throw new FatalException(t.getMessage(), t);
+		}
+		
+		return entity;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <X extends EntityModel> List<X> updateEntityList(UserEntityUpdateAction<X> action) throws InvalidInputException, FatalException {
+		
 		List<X> entityList = null;
 		
-		if (action.getEntityId() != null)
-			actionRecord.setEntityId(action.getEntityId());
-		if (action.getEntityName() != null)
-			actionRecord.setEntityName(action.getEntityName());
-		actionRecord.setField(action.getKey());
-		if (action.getValue() != null)
-			actionRecord.setValue(String.valueOf(action.getValue()));
-		if (action.getStartValue() != null)
-			actionRecord.setStartValue(String.valueOf(action.getStartValue()));
-		if (action.getDatePerformed() != null)
-			actionRecord.setDatePerformed(action.getDatePerformed());
+		try {
 		
-		switch (action.getEntityType()) {
-		
-		case GRADE_SCALE:
-			GradeScaleRecordModel gradeScaleModel = (GradeScaleRecordModel)action.getModel();
-			
-			if (gradeScaleModel != null) {
-				actionRecord.setEntityId(gradeScaleModel.getLetterGrade());
-				actionRecord.setParentId(gradeScaleModel.getIdentifier());
+			if (action.getPrerequisiteAction() != null) {
+				BaseModel result = updateEntity((UserEntityUpdateAction)action.getPrerequisiteAction());
+				
+				// Break out of recursion if we get a null back
+				if (result == null) 
+					return null;
 			}
 			
-			GradeScaleRecordModel.Key gradeScaleRecordKey = GradeScaleRecordModel.Key.valueOf(action.getKey());
-			entityList = updateGradeScaleField(action.getGradebookUid(), gradeScaleRecordKey, action.getValue(), gradeScaleModel.getLetterGrade());
-			break;
+			ActionRecord actionRecord = new ActionRecord(action.getGradebookUid(), action.getGradebookId(), action.getEntityType().toString(), action.getActionType().toString());
+				
+			if (action.getEntityId() != null)
+				actionRecord.setEntityId(action.getEntityId());
+			if (action.getEntityName() != null)
+				actionRecord.setEntityName(action.getEntityName());
+			actionRecord.setField(action.getKey());
+			if (action.getValue() != null)
+				actionRecord.setValue(String.valueOf(action.getValue()));
+			if (action.getStartValue() != null)
+				actionRecord.setStartValue(String.valueOf(action.getStartValue()));
+			if (action.getDatePerformed() != null)
+				actionRecord.setDatePerformed(action.getDatePerformed());
+			
+			switch (action.getEntityType()) {
+			
+			case GRADE_SCALE:
+				GradeScaleRecordModel gradeScaleModel = (GradeScaleRecordModel)action.getModel();
+				
+				if (gradeScaleModel != null) {
+					actionRecord.setEntityId(gradeScaleModel.getLetterGrade());
+					actionRecord.setParentId(gradeScaleModel.getIdentifier());
+				}
+				
+				GradeScaleRecordModel.Key gradeScaleRecordKey = GradeScaleRecordModel.Key.valueOf(action.getKey());
+				entityList = updateGradeScaleField(action.getGradebookUid(), gradeScaleRecordKey, action.getValue(), gradeScaleModel.getLetterGrade());
+				break;
+			}
+			
+			if (entityList == null)
+				actionRecord.setStatus(ActionRecord.STATUS_FAILURE);
+			else
+				actionRecord.setStatus(ActionRecord.STATUS_SUCCESS);
+			
+			gbService.storeActionRecord(actionRecord);
+		
+		} catch (Throwable t) {
+			throw new FatalException(t.getMessage(), t);
 		}
-		
-		if (entityList == null)
-			actionRecord.setStatus(ActionRecord.STATUS_FAILURE);
-		else
-			actionRecord.setStatus(ActionRecord.STATUS_SUCCESS);
-		
-		gbService.storeActionRecord(actionRecord);
 		
 		return entityList;
 	}

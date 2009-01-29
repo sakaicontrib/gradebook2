@@ -28,6 +28,7 @@ import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityCreateAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
+import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.AssignmentModel;
 import org.sakaiproject.gradebook.gwt.client.model.CategoryModel;
@@ -49,19 +50,19 @@ public interface GradebookToolFacade extends RemoteService {
 	public static final int NAVIGATION_BEHAVIOR_NOWRAP = 2;
 	
 	
-	<X extends EntityModel> X createEntity(UserEntityCreateAction<X> action);
+	<X extends EntityModel> X createEntity(UserEntityCreateAction<X> action) throws FatalException;
 		
-	<X extends EntityModel> X getEntity(UserEntityGetAction<X> action);
+	<X extends EntityModel> X getEntity(UserEntityGetAction<X> action) throws FatalException;
 	
-	<X extends EntityModel> List<X> getEntityList(UserEntityGetAction<X> action);
+	<X extends EntityModel> List<X> getEntityList(UserEntityGetAction<X> action) throws FatalException;
 	
-	<X extends EntityModel> PagingLoadResult<X> getEntityPage(PageRequestAction action, PagingLoadConfig config);
+	<X extends EntityModel> PagingLoadResult<X> getEntityPage(PageRequestAction action, PagingLoadConfig config) throws FatalException;
 
 	List<CategoryModel> recalculateEqualWeightingCategories(String gradebookUid, Long gradebookId, Boolean isEqualWeighting);
 	
-	<X extends EntityModel> X updateEntity(UserEntityUpdateAction<X> action) throws InvalidInputException;
+	<X extends EntityModel> X updateEntity(UserEntityUpdateAction<X> action) throws InvalidInputException, FatalException;
 	
-	<X extends EntityModel> List<X> updateEntityList(UserEntityUpdateAction<X> action) throws InvalidInputException;
+	<X extends EntityModel> List<X> updateEntityList(UserEntityUpdateAction<X> action) throws InvalidInputException, FatalException;
 
 }
 

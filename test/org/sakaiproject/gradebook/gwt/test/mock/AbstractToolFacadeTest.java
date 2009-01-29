@@ -15,6 +15,7 @@ import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType;
+import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig;
 import org.sakaiproject.gradebook.gwt.client.model.AssignmentModel;
@@ -43,7 +44,7 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 	/*
 	 * If a learner gets 75% on all grade items, then his/her course grade should be 75%
 	 */
-	public void testMediocreScores() throws InvalidInputException {
+	public void testMediocreScores() throws InvalidInputException, FatalException {
 		gradeAllSameScore(ScoreType.MEDIOCRE, "C (75.00%) ");
 	}
 	
@@ -51,7 +52,7 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 	 * If a learner gets 75% on all grade items, then his/her course grade should be 75%
 	 * even when we drop the lowest essay
 	 */
-	public void testMediocreScoresDropLowestEssay() throws InvalidInputException {
+	public void testMediocreScoresDropLowestEssay() throws InvalidInputException, FatalException {
 		essaysCategory = makeCategoryDropLowest(essaysCategory, 1);
 		gradeAllSameScore(ScoreType.MEDIOCRE, "C (75.00%) ");
 	}
@@ -60,7 +61,7 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 	 * Want to ensure that even if we make the drop lowest value negative, it doesn't cause an 
 	 * exception to be thrown
 	 */
-	public void testNegativeDropLowestEssay() throws InvalidInputException  {
+	public void testNegativeDropLowestEssay() throws InvalidInputException, FatalException  {
 		essaysCategory = makeCategoryDropLowest(essaysCategory, -1);
 		gradeAllSameScore(ScoreType.MEDIOCRE, "C (75.00%) ");
 	}
@@ -68,7 +69,7 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 	/*
 	 * If a learner gets 100% on all grade items, then his/her course grade should be 100%
 	 */
-	public void testPerfectScores() throws InvalidInputException {
+	public void testPerfectScores() throws InvalidInputException, FatalException {
 		gradeAllSameScore(ScoreType.PERFECT_SCORE, "A+ (100.00%) ");
 	}
 	
@@ -76,7 +77,7 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 	 * If a learner gets 100% on all grade items, then his/her course grade should be 100%
 	 * even when we drop the lowest essay
 	 */
-	public void testPerfectScoresDropLowestEssay() throws InvalidInputException {
+	public void testPerfectScoresDropLowestEssay() throws InvalidInputException, FatalException {
 		essaysCategory = makeCategoryDropLowest(essaysCategory, 1);
 		gradeAllSameScore(ScoreType.PERFECT_SCORE, "A+ (100.00%) ");
 	}
@@ -85,7 +86,7 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 	 * If a learner gets 100% on all grade items, then his/her course grade should be 100%
 	 * even when homework is an extra credit category worth +10%
 	 */
-	public void testPerfectScoresExtraCreditHomework() throws InvalidInputException {
+	public void testPerfectScoresExtraCreditHomework() throws InvalidInputException, FatalException {
 		makeHomeworkTenPercentExtraCredit();
 		gradeAllSameScore(ScoreType.PERFECT_SCORE, "A+ (100.00%) ");
 	}
@@ -93,7 +94,7 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 	/*
 	 * If a learner gets 0% on all grade items, then his/her course grade should be 0%
 	 */
-	public void testZeroScores() throws InvalidInputException {
+	public void testZeroScores() throws InvalidInputException, FatalException {
 		gradeAllSameScore(ScoreType.ZERO, "F (0.00%) ");
 	}
 	
@@ -101,7 +102,7 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 	 * If a learner gets 0% on all grade items, then his/her course grade should be 0%
 	 * even when we drop the lowest essay
 	 */
-	public void testZeroScoresDropLowestEssay() throws InvalidInputException {
+	public void testZeroScoresDropLowestEssay() throws InvalidInputException, FatalException {
 		essaysCategory = makeCategoryDropLowest(essaysCategory, 1);
 		gradeAllSameScore(ScoreType.ZERO, "F (0.00%) ");
 	}
@@ -110,12 +111,12 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 	 * If a learner gets 0% on all grade items, then his/her course grade should be 0%
 	 * even when homework is an extra credit category worth +10%
 	 */
-	public void testZeroScoresExtraCreditHomework() throws InvalidInputException {
+	public void testZeroScoresExtraCreditHomework() throws InvalidInputException, FatalException {
 		makeHomeworkTenPercentExtraCredit();
 		gradeAllSameScore(ScoreType.ZERO, "F (0.00%) ");
 	}
 	
-	public void testGetGradeItems() throws InvalidInputException {
+	public void testGetGradeItems() throws InvalidInputException, FatalException {
 		PageRequestAction action = new PageRequestAction(EntityType.GRADE_ITEM, gbModel.getGradebookUid(), gbModel.getGradebookId());
 		PagingLoadConfig config = new MultiGradeLoadConfig();
 		config.setOffset(0);
@@ -127,7 +128,7 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 		assertEquals(5, gradeItems.size());
 	}
 	
-	public void testGetGradeItemsEqualWeighting() throws InvalidInputException {
+	public void testGetGradeItemsEqualWeighting() throws InvalidInputException, FatalException {
 		essaysCategory = makeCategoryEqualWeighting(essaysCategory, true);
 		
 		PageRequestAction action = new PageRequestAction(EntityType.GRADE_ITEM, gbModel.getGradebookUid(), gbModel.getGradebookId());
@@ -156,7 +157,7 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 	 * when category type is "no categories" -- see the ToolFacadeNoCategories*Test.java classes for 
 	 * override) so we will only see 4 items (the homework items).
 	 */
-	public void testGetGradeItemsEssaysDeleted() throws InvalidInputException {
+	public void testGetGradeItemsEssaysDeleted() throws InvalidInputException, FatalException {
 		essaysCategory = makeCategoryDeleted(essaysCategory, true);
 		
 		PageRequestAction action = new PageRequestAction(EntityType.GRADE_ITEM, gbModel.getGradebookUid(), gbModel.getGradebookId());
@@ -170,7 +171,7 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 		assertEquals(4, gradeItems.size());
 	}
 	
-	public void testGetCategories() throws InvalidInputException {
+	public void testGetCategories() throws InvalidInputException, FatalException {
 		PageRequestAction action = new PageRequestAction(EntityType.CATEGORY, gbModel.getGradebookUid(), gbModel.getGradebookId());
 		PagingLoadConfig config = new MultiGradeLoadConfig();
 		config.setOffset(0);
@@ -185,7 +186,7 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 	/*
 	 * If we delete the essays categories, then the page should only show 1 category
 	 */
-	public void testGetCategoriesEssaysDeleted() throws InvalidInputException {
+	public void testGetCategoriesEssaysDeleted() throws InvalidInputException, FatalException {
 		essaysCategory = makeCategoryDeleted(essaysCategory, true);
 		PageRequestAction action = new PageRequestAction(EntityType.CATEGORY, gbModel.getGradebookUid(), gbModel.getGradebookId());
 		PagingLoadConfig config = new MultiGradeLoadConfig();
@@ -199,9 +200,9 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 	}
 	
 	
-	protected abstract void initialize() throws InvalidInputException;
+	protected abstract void initialize() throws InvalidInputException, FatalException;
 	
-	protected void initialize(CategoryType categoryType, GradeType gradeType) throws InvalidInputException {
+	protected void initialize(CategoryType categoryType, GradeType gradeType) throws InvalidInputException, FatalException {
 		facade = new GradebookToolFacadeMockImpl();
 		
 		assignmentMap = new HashMap<String, AssignmentModel>();
@@ -257,7 +258,7 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 		((GradebookToolFacadeMockImpl)facade).setNumberOfTestLearners(1);
 	}
 
-	protected void setUp() throws InvalidInputException {
+	protected void setUp() throws InvalidInputException, FatalException {
 		initialize();
 	}
 	
@@ -281,7 +282,7 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 		hw4 = null;
 	}
 	
-	protected void makeHomeworkTenPercentExtraCredit() throws InvalidInputException {
+	protected void makeHomeworkTenPercentExtraCredit() throws InvalidInputException, FatalException {
 		// Start by setting the hw category to extra credit
 		hwCategory = facade.updateEntity(new UserEntityUpdateAction<CategoryModel>(gbModel, hwCategory, CategoryModel.Key.EXTRA_CREDIT.name(), ClassType.BOOLEAN, Boolean.TRUE, Boolean.FALSE));
 		
@@ -290,19 +291,19 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 		hwCategory = facade.updateEntity(new UserEntityUpdateAction<CategoryModel>(gbModel, hwCategory, CategoryModel.Key.WEIGHT.name(), ClassType.DOUBLE, Double.valueOf(10d), Double.valueOf(40d)));
 	}
 	
-	protected CategoryModel makeCategoryDropLowest(CategoryModel category, int dropLowest) throws InvalidInputException {
+	protected CategoryModel makeCategoryDropLowest(CategoryModel category, int dropLowest) throws InvalidInputException, FatalException {
 		return facade.updateEntity(new UserEntityUpdateAction<CategoryModel>(gbModel, category, CategoryModel.Key.DROP_LOWEST.name(), ClassType.INTEGER, Integer.valueOf(dropLowest), Integer.valueOf(0)));
 	}
 	
-	protected CategoryModel makeCategoryEqualWeighting(CategoryModel category, boolean isEqual) throws InvalidInputException {
+	protected CategoryModel makeCategoryEqualWeighting(CategoryModel category, boolean isEqual) throws InvalidInputException, FatalException {
 		return facade.updateEntity(new UserEntityUpdateAction<CategoryModel>(gbModel, category, CategoryModel.Key.EQUAL_WEIGHT.name(), ClassType.BOOLEAN,  Boolean.valueOf(isEqual), Boolean.valueOf(!isEqual)));
 	}
 	
-	protected CategoryModel makeCategoryDeleted(CategoryModel category, boolean isRemoved) throws InvalidInputException {
+	protected CategoryModel makeCategoryDeleted(CategoryModel category, boolean isRemoved) throws InvalidInputException, FatalException {
 		return facade.updateEntity(new UserEntityUpdateAction<CategoryModel>(gbModel, category, CategoryModel.Key.REMOVED.name(), ClassType.BOOLEAN, Boolean.valueOf(isRemoved), Boolean.valueOf(!isRemoved)));
 	}
 	
-	protected void gradeAllSameScore(ScoreType outlier, String expectedCourseGrade) throws InvalidInputException {
+	protected void gradeAllSameScore(ScoreType outlier, String expectedCourseGrade) throws InvalidInputException, FatalException {
 		PagingLoadConfig loadConfig = new MultiGradeLoadConfig();
 		loadConfig.setOffset(0);
 		loadConfig.setLimit(20);
@@ -325,7 +326,7 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 		}
 	}
 	
-	protected void gradeCategorySameScore(CategoryModel category, ScoreType outlier) throws InvalidInputException {
+	protected void gradeCategorySameScore(CategoryModel category, ScoreType outlier) throws InvalidInputException, FatalException {
 		PagingLoadConfig loadConfig = new MultiGradeLoadConfig();
 		loadConfig.setOffset(0);
 		loadConfig.setLimit(20);
@@ -351,7 +352,7 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 		}
 	}
 	
-	protected void checkCourseGrade(String expectedCourseGrade) throws InvalidInputException {
+	protected void checkCourseGrade(String expectedCourseGrade) throws InvalidInputException, FatalException {
 		PagingLoadConfig loadConfig = new MultiGradeLoadConfig();
 		loadConfig.setOffset(0);
 		loadConfig.setLimit(20);
@@ -362,7 +363,7 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 		}
 	}
 	
-	protected StudentModel gradeLearner(ScoreType outlier, StudentModel learner, String name) throws InvalidInputException {
+	protected StudentModel gradeLearner(ScoreType outlier, StudentModel learner, String name) throws InvalidInputException, FatalException {
 		Double score = null;
 		switch (outlier) {
 		case MEDIOCRE:

@@ -40,6 +40,7 @@ import java.util.Stack;
 import org.sakaiproject.gradebook.gwt.client.model.GradeEventModel;
 
 import com.extjs.gxt.ui.client.XDOM;
+import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.util.Format;
 import com.extjs.gxt.ui.client.util.Params;
 import com.extjs.gxt.ui.client.util.Point;
@@ -208,7 +209,8 @@ public class LogDisplay extends ContentPanel {
 		setSize(config.width, config.height);
 
 		blur();
-		afterShow();
+		if (!config.isPermanent)
+			afterShow();
 	}
 
 	private Point position() {

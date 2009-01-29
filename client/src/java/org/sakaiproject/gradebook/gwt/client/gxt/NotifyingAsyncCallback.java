@@ -23,6 +23,7 @@
 package org.sakaiproject.gradebook.gwt.client.gxt;
 
 import org.sakaiproject.gradebook.gwt.client.GradebookConstants;
+import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -42,7 +43,10 @@ public abstract class NotifyingAsyncCallback<M> implements AsyncCallback<M> {
 		if (caught.getMessage() != null)
 			message = caught.getMessage();
 		
-		notifier.notifyError("Request denied", message);
+		if (caught instanceof InvalidInputException)
+			notifier.notifyError("Request denied", message);
+		else
+			notifier.notifyError("Unexpected Error", message);
 	}
 
 }

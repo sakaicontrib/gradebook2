@@ -62,6 +62,11 @@ public class LogConfig {
 	public int height = 75;
 
 	/**
+	 * Determines if the window should stick around permanently
+	 */
+	public boolean isPermanent = false;
+	
+	/**
 	 * Listener to be notified when the info is displayed (defaults to null).
 	 */
 	public Listener listener;

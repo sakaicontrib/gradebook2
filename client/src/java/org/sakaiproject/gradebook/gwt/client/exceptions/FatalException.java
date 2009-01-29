@@ -22,9 +22,10 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.exceptions;
 
-import com.google.gwt.user.client.rpc.IsSerializable;
+import java.io.Serializable;
 
-public class FatalException extends Exception implements IsSerializable {
+
+public class FatalException extends Exception implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -40,7 +41,7 @@ public class FatalException extends Exception implements IsSerializable {
 	}
 
 	public FatalException(String message, Throwable cause) {
-		super(message, cause);
+		super(cause.toString(), cause);
 	}
 
 }

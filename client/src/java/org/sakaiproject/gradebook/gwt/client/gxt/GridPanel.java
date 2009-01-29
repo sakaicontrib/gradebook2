@@ -43,6 +43,7 @@ import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.SortDir;
 import com.extjs.gxt.ui.client.data.BasePagingLoader;
+import com.extjs.gxt.ui.client.data.DataReader;
 import com.extjs.gxt.ui.client.data.ModelReader;
 import com.extjs.gxt.ui.client.data.PagingLoadConfig;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
@@ -269,6 +270,32 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 				GradebookToolFacadeAsync service = Registry.get("service");
 				PageRequestAction pageAction = newPageRequestAction();
 				service.getEntityPage(pageAction, loadConfig, callback);
+			}
+			
+			@Override
+			public void load(final DataReader<PagingLoadConfig, PagingLoadResult<M>> reader, final PagingLoadConfig loadConfig, final AsyncCallback<PagingLoadResult<M>> callback) {
+				load(loadConfig, new NotifyingAsyncCallback<PagingLoadResult<M>>() {
+
+					public void onFailure(Throwable caught) {
+						super.onFailure(caught);
+						callback.onFailure(caught);
+					}
+
+					public void onSuccess(PagingLoadResult<M> result) {
+						try {
+							PagingLoadResult<M> data = null;
+							if (reader != null) {
+								data = reader.read(loadConfig, result);
+							} else {
+								data = result;
+							}
+							callback.onSuccess(data);
+						} catch (Exception e) {
+							callback.onFailure(e);
+						}
+					}
+
+				});
 			}
 		};
 		return new BasePagingLoader<PagingLoadConfig, PagingLoadResult<M>>(proxy, new ModelReader<PagingLoadConfig>());

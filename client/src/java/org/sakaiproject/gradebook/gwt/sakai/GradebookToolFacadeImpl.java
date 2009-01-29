@@ -30,6 +30,7 @@ import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityCreateAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
+import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.CategoryModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModel;
@@ -44,23 +45,23 @@ public class GradebookToolFacadeImpl extends GWTSpringController implements Grad
 	private GradebookToolFacade delegateFacade;
 	
 	
-	public <X extends EntityModel> X createEntity(UserEntityCreateAction<X> action) {
+	public <X extends EntityModel> X createEntity(UserEntityCreateAction<X> action) throws FatalException {
 	
 		return delegateFacade.createEntity(action);
 	}
 
-	public <X extends EntityModel> X getEntity(UserEntityGetAction<X> action) {
+	public <X extends EntityModel> X getEntity(UserEntityGetAction<X> action) throws FatalException {
 		
 		return delegateFacade.getEntity(action);
 	}
 	
-	public <X extends EntityModel> List<X> getEntityList(UserEntityGetAction<X> action) {
+	public <X extends EntityModel> List<X> getEntityList(UserEntityGetAction<X> action) throws FatalException {
 		
 		return delegateFacade.getEntityList(action);
 	}
 	
 	public <X extends EntityModel> PagingLoadResult<X> getEntityPage(PageRequestAction action,
-			PagingLoadConfig config) {
+			PagingLoadConfig config) throws FatalException {
 		
 		return delegateFacade.getEntityPage(action, config);
 	}	
@@ -71,12 +72,12 @@ public class GradebookToolFacadeImpl extends GWTSpringController implements Grad
 		return delegateFacade.recalculateEqualWeightingCategories(gradebookUid, gradebookId, isEqualWeighting);
 	}
 
-	public <X extends EntityModel> X updateEntity(UserEntityUpdateAction<X> action) throws InvalidInputException {
+	public <X extends EntityModel> X updateEntity(UserEntityUpdateAction<X> action) throws InvalidInputException, FatalException {
 		
 		return delegateFacade.updateEntity(action);
 	}
 	
-	public <X extends EntityModel> List<X> updateEntityList(UserEntityUpdateAction<X> action) throws InvalidInputException {
+	public <X extends EntityModel> List<X> updateEntityList(UserEntityUpdateAction<X> action) throws InvalidInputException, FatalException {
 		
 		return delegateFacade.updateEntityList(action);
 	}
