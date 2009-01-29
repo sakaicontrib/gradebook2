@@ -27,20 +27,16 @@ import java.util.List;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.GradebookConstants;
-import org.sakaiproject.gradebook.gwt.client.GradebookToolFacadeAsync;
-import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
 import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.custom.widget.grid.CustomColumnModel;
-import org.sakaiproject.gradebook.gwt.client.gxt.NotifyingAsyncCallback;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.RefreshCourseGradesEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
 import org.sakaiproject.gradebook.gwt.client.model.AssignmentModel;
 import org.sakaiproject.gradebook.gwt.client.model.CategoryModel;
-import org.sakaiproject.gradebook.gwt.client.model.EntityModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemEntityModel;
@@ -71,7 +67,6 @@ import com.extjs.gxt.ui.client.widget.grid.SummaryRenderer;
 import com.extjs.gxt.ui.client.widget.grid.SummaryType;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class SettingsAssignmentContentPanel extends SettingsGridPanel<AssignmentModel> {
 	

@@ -799,13 +799,8 @@ private static final long serialVersionUID = 1L;
 						boolean isRemoved = isAssignmentRemoved(gradebook, category, assignment);
 						
 						if (category != null && ! isRemoved) {
-							boolean isUnweighted = assignment.isUnweighted() == null ? false : assignment.isUnweighted().booleanValue();
-							
-							if (category.isUnweighted() != null && category.isUnweighted().booleanValue())
-								isUnweighted = true;
-							
-							boolean isExtraCredit = category.isExtraCredit() != null && category.isExtraCredit().booleanValue();
-							isExtraCredit = isExtraCredit || (assignment.isExtraCredit() != null && assignment.isExtraCredit().booleanValue());
+							boolean isUnweighted = isAssignmentUnweighted(gradebook, category, assignment);
+							boolean isExtraCredit = isAssignmentExtraCredit(gradebook, category, assignment);
 							
 							ColumnModel config = new ColumnModel(assignment.getId(), assignment.getName(), StudentModel.Key.ASSIGNMENT, 80);
 							config.setMaxPoints(assignment.getPointsPossible() == null ? 0.0 : assignment.getPointsPossible().doubleValue());
@@ -1352,6 +1347,28 @@ private static final long serialVersionUID = 1L;
 			isRemoved = isRemoved || category.isRemoved();
 		
 		return isRemoved;
+	}
+	
+	private boolean isAssignmentUnweighted(Gradebook gradebook, Category category, Assignment assignment) {
+		boolean isUnweighted = assignment.isUnweighted() == null ? false : assignment.isUnweighted().booleanValue();
+		
+		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY) {
+			boolean isCategoryUnweighted = category.isUnweighted() != null && category.isUnweighted().booleanValue();
+			isUnweighted = isUnweighted || isCategoryUnweighted;
+		}
+		
+		return isUnweighted;
+	}
+	
+	private boolean isAssignmentExtraCredit(Gradebook gradebook, Category category, Assignment assignment) {
+		boolean isExtraCredit = assignment.isExtraCredit() != null && assignment.isExtraCredit().booleanValue();
+		
+		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY) {
+			boolean isCategoryExtraCredit = category.isExtraCredit() != null && category.isExtraCredit().booleanValue();
+			isExtraCredit = isExtraCredit || isCategoryExtraCredit;
+		}
+			
+		return isExtraCredit;
 	}
 	
 	private StudentModel buildStudentRow(Gradebook gradebook, UserRecord userRecord, 

@@ -65,11 +65,12 @@ import com.extjs.gxt.ui.client.widget.grid.GridView;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 
-	public enum RefreshAction { NONE, REFRESHDATA, REFRESHCOLUMNS };
+	public enum RefreshAction { NONE, REFRESHDATA, REFRESHCOLUMNS, REFRESHLOCALCOLUMNS };
 	
 	public static final String FAILED_FLAG = ":F";
 	
@@ -115,9 +116,10 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 						pagingToolBar.refresh();
 					break;
 				case REFRESHCOLUMNS:
-					refreshGrid();
-					if (pagingToolBar != null)
-						pagingToolBar.refresh();
+					refreshGrid(true);
+					break;
+				case REFRESHLOCALCOLUMNS:
+					refreshGrid(false);
 					break;
 				}
 				refreshAction = RefreshAction.NONE;
@@ -263,6 +265,8 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		return loadConfig;
 	}
 	
+	private Timer t = null;
+	
 	protected BasePagingLoader<PagingLoadConfig, PagingLoadResult<M>> newLoader() {
 		RpcProxy<PagingLoadConfig, PagingLoadResult<M>> proxy = new RpcProxy<PagingLoadConfig, PagingLoadResult<M>>() {
 			@Override
@@ -270,7 +274,22 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 				GradebookToolFacadeAsync service = Registry.get("service");
 				PageRequestAction pageAction = newPageRequestAction();
 				service.getEntityPage(pageAction, loadConfig, callback);
+				
+				//if (grid.isRendered())
+				//	grid.el().unmask();
 			}
+			
+			/*protected void load(final PagingLoadConfig loadConfig, final AsyncCallback<PagingLoadResult<M>> callback) {
+				t = new Timer() {
+				
+					public void run() {
+						GradebookToolFacadeAsync service = Registry.get("service");
+						PageRequestAction pageAction = newPageRequestAction();
+						service.getEntityPage(pageAction, loadConfig, callback);
+					}
+				};
+				t.schedule(8000);
+			}*/
 			
 			@Override
 			public void load(final DataReader<PagingLoadConfig, PagingLoadResult<M>> reader, final PagingLoadConfig loadConfig, final AsyncCallback<PagingLoadResult<M>> callback) {
@@ -317,7 +336,7 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		return store;
 	}
 	
-	protected void refreshGrid() {
+	protected void refreshGrid(boolean refreshFromServer) {
 		cm = newColumnModel();
 		grid.reconfigure(store, cm);
 		grid.el().unmask();

@@ -51,10 +51,12 @@ import org.sakaiproject.gradebook.gwt.client.model.ColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradeRecordModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemEntityModel;
 import org.sakaiproject.gradebook.gwt.client.model.SectionModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
 import com.extjs.gxt.ui.client.Events;
+import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.XDOM;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
@@ -170,17 +172,22 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 							// We want to do this immediately, since a "Create" action probably comes
 							// from the "Add Assignment" dialog box that may be shown while the multigrade
 							// screen is still visible
-							refreshGrid();
+							refreshGrid(true);
 							break;
 						case UPDATE:
 							AssignmentModel.Key assignmentModelKey = AssignmentModel.Key.valueOf(((UserEntityUpdateAction)action).getKey());
+							GradebookModel gbModel = Registry.get(gradebookUid);
 							switch (assignmentModelKey) {
 							// Update actions will (always?) result from user changes on the setup 
 							// screens, so they should be deferred to the "onShow" method
 							
 							// Name changes mean header needs to update, similarly for delete or include
-							case NAME: case REMOVED: case INCLUDED: 
-								queueDeferredRefresh(RefreshAction.REFRESHCOLUMNS);
+							case NAME:
+							case EXTRA_CREDIT:
+							case INCLUDED:
+							case REMOVED: 
+								updateColumns(assignmentModelKey, (AssignmentModel)action.getModel());
+								queueDeferredRefresh(RefreshAction.REFRESHLOCALCOLUMNS);
 								break;
 							// Weight changes just mean we need to refresh the screen
 							case WEIGHT:  
@@ -191,9 +198,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 								if (isRecalculated != null && isRecalculated.booleanValue())
 									queueDeferredRefresh(RefreshAction.REFRESHDATA);
 								break;
-							case EXTRA_CREDIT:
-								queueDeferredRefresh(RefreshAction.REFRESHCOLUMNS);
-								break;
+
 							}
 							break;
 						}
@@ -210,15 +215,12 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 							CategoryModel.Key categoryModelKey = CategoryModel.Key.valueOf(((UserEntityUpdateAction)action).getKey());
 							switch (categoryModelKey) {
 							// Don't need to worry about Category name changes
-							case REMOVED: case INCLUDED:
+							case REMOVED: case INCLUDED: case EXTRA_CREDIT:
 								queueDeferredRefresh(RefreshAction.REFRESHCOLUMNS);
 								break;
 							// Weight changes just mean we need to refresh the screen
 							case WEIGHT: case DROP_LOWEST:
 								queueDeferredRefresh(RefreshAction.REFRESHDATA);
-								break;
-							case EXTRA_CREDIT:
-								queueDeferredRefresh(RefreshAction.REFRESHCOLUMNS);
 								break;
 							}
 							break;
@@ -234,6 +236,9 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 							switch (gradebookModelKey) {
 							case GRADETYPE:
 								queueDeferredRefresh(RefreshAction.REFRESHDATA);
+								break;
+							case CATEGORYTYPE:
+								queueDeferredRefresh(RefreshAction.REFRESHCOLUMNS);
 								break;
 							}
 							
@@ -1096,8 +1101,14 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		return cm;
 	}
 	
+
 	@Override
-	protected void refreshGrid() {
+	protected void refreshGrid(boolean refreshFromServer) {
+		
+		if (!refreshFromServer) {
+			super.refreshGrid(refreshFromServer);
+			return;
+		}
 		
 		GradebookModel gbModel = Registry.get(gradebookUid);
 		UserEntityGetAction<ColumnModel> action = 
@@ -1207,6 +1218,40 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		grid.el().unmask();
 	}
 
+	private void updateColumns(AssignmentModel.Key key, AssignmentModel model) {
+		GradebookModel gbModel = Registry.get(gradebookUid);
+		ColumnModel removeColumn = null;
+		List<ColumnModel> columns = gbModel.getColumns();
+		if (columns != null) {
+			for (ColumnModel column : columns) {
+				if (column.getIdentifier().equals(model.getIdentifier())) {
+					switch (key) {
+					case NAME:
+						column.setName(model.getName());
+						break;
+					case EXTRA_CREDIT:
+						Boolean isExtraCredit = model.getExtraCredit();
+						if (isExtraCredit != null)
+							column.setExtraCredit(isExtraCredit);
+						break;
+					case INCLUDED:
+						Boolean isIncluded = model.getIncluded();
+						if (isIncluded != null)
+							column.setUnweighted(Boolean.valueOf(!isIncluded.booleanValue()));
+						break;
+					case REMOVED: 
+						removeColumn = column;
+						break;
+					}
+				}
+			}
+		}
+		
+		if (removeColumn != null)
+			columns.remove(removeColumn);
+		
+		gbModel.setColumns(columns);
+	}
 
 	public InstructorViewContainer getInstructorViewContainer() {
 		return instructorViewContainer;
