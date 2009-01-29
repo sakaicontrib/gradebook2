@@ -26,11 +26,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.sakaiproject.gradebook.gwt.client.GradebookToolFacadeAsync;
 import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
 import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.GridPanel;
+import org.sakaiproject.gradebook.gwt.client.gxt.NotifyingAsyncCallback;
 import org.sakaiproject.gradebook.gwt.client.model.AssignmentModel;
 import org.sakaiproject.gradebook.gwt.client.model.CategoryModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModel;
@@ -107,6 +109,38 @@ public abstract class SettingsGridPanel<M extends ItemEntityModel> extends GridP
 		super(gradebookUid, gridId, entityType);
 
 		setTopComponent(pagingToolBar);
+	}
+	
+	public void reloadWeights(ItemEntityModel.Key key, M changedModel) {
+		GradebookToolFacadeAsync service = Registry.get("service");
+		PageRequestAction pageAction = newPageRequestAction();
+		
+		boolean isDeleted = changedModel.getRemoved() != null && changedModel.getRemoved().booleanValue();
+		boolean showDeleted = showDeletedItems != null && showDeletedItems.isPressed();
+		
+		if (isDeleted && !showDeleted) 
+			store.remove(changedModel);
+		
+		service.getEntityPage(pageAction, loadConfig, new NotifyingAsyncCallback<PagingLoadResult<EntityModel>>() {
+
+			public void onSuccess(PagingLoadResult<EntityModel> result) {
+				List<EntityModel> models = result.getData();
+				
+				for (EntityModel model : models) {
+					M serverModel = (M)model;
+					Double weight = serverModel.getWeighting();
+					
+					M actualModel = store.findModel(serverModel);
+				
+					if (actualModel.getWeighting() == null || !actualModel.getWeighting().equals(weight))
+						actualModel.setWeighting(weight);
+					
+					store.update(actualModel);
+				}
+				
+			}
+			
+		});
 	}
 	
 	//protected abstract void doCall(GradebookModel model, GradebookToolFacadeAsync service, boolean showDeleted, AsyncCallback<PagingLoadResult<M>> callback);

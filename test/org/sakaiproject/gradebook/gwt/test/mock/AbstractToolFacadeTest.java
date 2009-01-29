@@ -2,6 +2,7 @@ package org.sakaiproject.gradebook.gwt.test.mock;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import junit.framework.TestCase;
@@ -114,6 +115,90 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 		gradeAllSameScore(ScoreType.ZERO, "F (0.00%) ");
 	}
 	
+	public void testGetGradeItems() throws InvalidInputException {
+		PageRequestAction action = new PageRequestAction(EntityType.GRADE_ITEM, gbModel.getGradebookUid(), gbModel.getGradebookId());
+		PagingLoadConfig config = new MultiGradeLoadConfig();
+		config.setOffset(0);
+		config.setLimit(5);
+		PagingLoadResult<AssignmentModel> result = facade.getEntityPage(action, config);
+		
+		List<AssignmentModel> gradeItems = result.getData();
+		
+		assertEquals(5, gradeItems.size());
+	}
+	
+	public void testGetGradeItemsEqualWeighting() throws InvalidInputException {
+		essaysCategory = makeCategoryEqualWeighting(essaysCategory, true);
+		
+		PageRequestAction action = new PageRequestAction(EntityType.GRADE_ITEM, gbModel.getGradebookUid(), gbModel.getGradebookId());
+		PagingLoadConfig config = new MultiGradeLoadConfig();
+		config.setOffset(0);
+		config.setLimit(10);
+		PagingLoadResult<AssignmentModel> result = facade.getEntityPage(action, config);
+		
+		List<AssignmentModel> gradeItems = result.getData();
+		
+		assertEquals(7, gradeItems.size());
+		
+		for (AssignmentModel gradeItem : gradeItems) {
+			// Only look at 'essays'
+			if (gradeItem.getCategoryId().equals(Long.valueOf(essaysCategory.getIdentifier()))) {
+				Double weighting = gradeItem.getWeighting();
+				assertEquals(Double.valueOf(33.33333333333333d), weighting);
+			}
+		}
+	}
+	
+	
+	
+	/*
+	 * We expect that deleting the category will hide all of its grade items (the exception to this is
+	 * when category type is "no categories" -- see the ToolFacadeNoCategories*Test.java classes for 
+	 * override) so we will only see 4 items (the homework items).
+	 */
+	public void testGetGradeItemsEssaysDeleted() throws InvalidInputException {
+		essaysCategory = makeCategoryDeleted(essaysCategory, true);
+		
+		PageRequestAction action = new PageRequestAction(EntityType.GRADE_ITEM, gbModel.getGradebookUid(), gbModel.getGradebookId());
+		PagingLoadConfig config = new MultiGradeLoadConfig();
+		config.setOffset(0);
+		config.setLimit(5);
+		PagingLoadResult<AssignmentModel> result = facade.getEntityPage(action, config);
+		
+		List<AssignmentModel> gradeItems = result.getData();
+		
+		assertEquals(4, gradeItems.size());
+	}
+	
+	public void testGetCategories() throws InvalidInputException {
+		PageRequestAction action = new PageRequestAction(EntityType.CATEGORY, gbModel.getGradebookUid(), gbModel.getGradebookId());
+		PagingLoadConfig config = new MultiGradeLoadConfig();
+		config.setOffset(0);
+		config.setLimit(10);
+		PagingLoadResult<CategoryModel> result = facade.getEntityPage(action, config);
+		
+		List<CategoryModel> categories = result.getData();
+		
+		assertEquals(2, categories.size());
+	}
+	
+	/*
+	 * If we delete the essays categories, then the page should only show 1 category
+	 */
+	public void testGetCategoriesEssaysDeleted() throws InvalidInputException {
+		essaysCategory = makeCategoryDeleted(essaysCategory, true);
+		PageRequestAction action = new PageRequestAction(EntityType.CATEGORY, gbModel.getGradebookUid(), gbModel.getGradebookId());
+		PagingLoadConfig config = new MultiGradeLoadConfig();
+		config.setOffset(0);
+		config.setLimit(10);
+		PagingLoadResult<CategoryModel> result = facade.getEntityPage(action, config);
+		
+		List<CategoryModel> categories = result.getData();
+		
+		assertEquals(1, categories.size());
+	}
+	
+	
 	protected abstract void initialize() throws InvalidInputException;
 	
 	protected void initialize(CategoryType categoryType, GradeType gradeType) throws InvalidInputException {
@@ -207,6 +292,14 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 	
 	protected CategoryModel makeCategoryDropLowest(CategoryModel category, int dropLowest) throws InvalidInputException {
 		return facade.updateEntity(new UserEntityUpdateAction<CategoryModel>(gbModel, category, CategoryModel.Key.DROP_LOWEST.name(), ClassType.INTEGER, Integer.valueOf(dropLowest), Integer.valueOf(0)));
+	}
+	
+	protected CategoryModel makeCategoryEqualWeighting(CategoryModel category, boolean isEqual) throws InvalidInputException {
+		return facade.updateEntity(new UserEntityUpdateAction<CategoryModel>(gbModel, category, CategoryModel.Key.EQUAL_WEIGHT.name(), ClassType.BOOLEAN,  Boolean.valueOf(isEqual), Boolean.valueOf(!isEqual)));
+	}
+	
+	protected CategoryModel makeCategoryDeleted(CategoryModel category, boolean isRemoved) throws InvalidInputException {
+		return facade.updateEntity(new UserEntityUpdateAction<CategoryModel>(gbModel, category, CategoryModel.Key.REMOVED.name(), ClassType.BOOLEAN, Boolean.valueOf(isRemoved), Boolean.valueOf(!isRemoved)));
 	}
 	
 	protected void gradeAllSameScore(ScoreType outlier, String expectedCourseGrade) throws InvalidInputException {

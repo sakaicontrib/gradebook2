@@ -750,10 +750,13 @@ private static final long serialVersionUID = 1L;
 
 		if (categoriesWithAssignments != null) {
 			for (Category category : categoriesWithAssignments) {
+				Gradebook gradebook = category.getGradebook();
 				List<Assignment> assignments = category.getAssignmentList();
 				if (assignments != null) {
 					for (Assignment assignment : assignments) {
-						if (category != null && ! assignment.isRemoved() && ! category.isRemoved()) {
+						boolean isRemoved = isAssignmentRemoved(gradebook, category, assignment);
+						
+						if (category != null && ! isRemoved) {
 							boolean isUnweighted = assignment.isUnweighted() == null ? false : assignment.isUnweighted().booleanValue();
 							
 							if (category.isUnweighted() != null && category.isUnweighted().booleanValue())
@@ -826,6 +829,7 @@ private static final long serialVersionUID = 1L;
 	protected <X extends EntityModel> PagingLoadResult<X> getAssignments(String gradebookUid, Long gradebookId, 
 			boolean includeDeleted, PagingLoadConfig config) {
 		
+		Gradebook gradebook = gbService.getGradebook(gradebookUid);
 		List<X> models = new ArrayList<X>();
 		List<Category> categories = getCategoriesWithAssignments(gradebookId);
 		
@@ -837,8 +841,10 @@ private static final long serialVersionUID = 1L;
 				List<Assignment> assignments = (List<Assignment>)category.getAssignmentList();
 				if (assignments != null && !assignments.isEmpty()) {
 					for (Assignment assignment : assignments) {
-						if (includeDeleted || ! (assignment.isRemoved() || category.isRemoved())) {
-							if (row >= firstRow || row < lastRow) 
+						boolean isRemoved = isAssignmentRemoved(gradebook, category, assignment);
+
+						if (includeDeleted || ! isRemoved) {
+							if (row >= firstRow && row < lastRow) 
 								models.add((X)createAssignmentModel(category, assignment));
 							row++;
 						}
@@ -1295,6 +1301,15 @@ private static final long serialVersionUID = 1L;
 	    }
 	    
 	    return categories;
+	}
+	
+	private boolean isAssignmentRemoved(Gradebook gradebook, Category category, Assignment assignment) {
+		boolean isRemoved = assignment.isRemoved();
+		
+		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY) 
+			isRemoved = isRemoved || category.isRemoved();
+		
+		return isRemoved;
 	}
 	
 	private StudentModel buildStudentRow(Gradebook gradebook, UserRecord userRecord, 
@@ -2065,6 +2080,8 @@ private static final long serialVersionUID = 1L;
 		
 		Category category = assignment.getCategory();
 		
+		Gradebook gradebook = assignment.getGradebook();
+		
 		switch (key) {
 		case NAME:
 			assignment.setName(convertString(value));
@@ -2104,9 +2121,14 @@ private static final long serialVersionUID = 1L;
 			assignment.setDueDate(convertDate(value));
 			break;
 		case INCLUDED:
-			if (category.isRemoved()) 
-				throw new InvalidInputException("You cannot include a grade item whose category has been deleted in grading. Please undelete the category first.");
-			if (assignment.isRemoved() || category.isRemoved()) 
+			boolean isAssignmentRemoved = assignment.isRemoved();
+			if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY) {
+				if (category.isRemoved()) 
+					throw new InvalidInputException("You cannot include a grade item whose category has been deleted in grading. Please undelete the category first.");
+				isAssignmentRemoved = assignment.isRemoved() || category.isRemoved();
+			}
+			
+			if (isAssignmentRemoved) 
 				throw new InvalidInputException("You cannot include a deleted grade item in grading. Please undelete the grade item first.");
 			
 			boolean isUnweighted = !convertBoolean(value).booleanValue();
@@ -2122,7 +2144,7 @@ private static final long serialVersionUID = 1L;
 			} 
 			break;
 		case REMOVED:
-			if (category.isRemoved()) {
+			if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY && category.isRemoved()) {
 				throw new InvalidInputException("You cannot undelete a grade item when the category that owns it has been deleted. Please undelete the category first.");
 			}
 			boolean isRemoved = convertBoolean(value).booleanValue();
@@ -2679,17 +2701,22 @@ private static final long serialVersionUID = 1L;
 		Boolean isAssignmentReleased = Boolean.valueOf(assignment.isReleased());
 		Boolean isAssignmentRemoved = Boolean.valueOf(assignment.isRemoved());
 		
-		if (category.isRemoved())
-			isAssignmentRemoved = Boolean.TRUE;
+		Gradebook gradebook = assignment.getGradebook();
 		
-		if (category.isUnweighted() != null && category.isUnweighted().booleanValue()) 
-			isAssignmentIncluded = Boolean.FALSE;
+		// We don't want to delete assignments based on category when we don't have categories
+		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY) {
+			
+			if (category.isRemoved())
+				isAssignmentRemoved = Boolean.TRUE;
+			
+			if (category.isUnweighted() != null && category.isUnweighted().booleanValue()) 
+				isAssignmentIncluded = Boolean.FALSE;
+		
+		}
 		
 		if (! isAssignmentIncluded.booleanValue() || assignment.isRemoved()) 
 			assignmentWeight = 0.0;
 		
-		
-		Gradebook gradebook = assignment.getGradebook();
 		String categoryName = gradebook.getName();
 		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
 			categoryName = category.getName();

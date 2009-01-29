@@ -43,4 +43,35 @@ public class ToolFacadeWeightedCategoriesPercentageTest extends AbstractToolFaca
 		checkCourseGrade("C- (71.67%) ");
 	}
 	
+	/*
+	 * If we delete the Essays Category then we only have 
+	 * 
+	 * Homework (60%)
+	 *  - 1 : 25% : 10 of 10 = 1.00 = 25
+	 *  - 2 : 25% : 10 of 10 = 1.00 = 25
+	 *  - 3 : 25% :  8 of 10 =  .80 = 20
+	 *  - 4 : 25% :  2 of 10 =  .20 = 5
+	 *  - Total : 75%
+	 */
+	public void testDeleteEssays() throws InvalidInputException {
+		setRepresentativePercentagesGrade();
+		essaysCategory = makeCategoryDeleted(essaysCategory, true);
+		checkCourseGrade("C (75.00%) ");
+	}
+	
+	/*
+	 * If we delete the Homework Category then we only have
+	 *  
+	 * Essays (40%)
+	 * 	- 1 : 33.333% : 20 of 20 = 1.00 = 33.333
+	 *  - 2 : 33.333% : 15 of 20 = 0.75 = 25
+	 *  - 3 : 33.333% :  5 of 20 = 0.25 =  8.3333325
+	 *  - Total : 66.666655
+	 */
+	public void testDeleteHomework() throws InvalidInputException {
+		setRepresentativePercentagesGrade();
+		hwCategory = makeCategoryDeleted(hwCategory, true);
+		checkCourseGrade("D (66.67%) ");
+	}
+	
 }

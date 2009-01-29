@@ -18,4 +18,15 @@ public class ToolFacadeCategoriesPointTest extends AbstractToolFacadePointTest {
 		checkCourseGrade("C- (70.00%) ");
 	}
 	
+	/*
+	 * Overall grade will be points based without the essays 10 + 10 + 8 + 2 = 30 points 
+	 * out of 40 possible
+	 */
+	public void testDeleteEssays() throws InvalidInputException {
+		setRepresentativePointsGrade();
+		essaysCategory = makeCategoryDeleted(essaysCategory, true);
+		checkCourseGrade("C (75.00%) ");
+	}
+
+	
 }

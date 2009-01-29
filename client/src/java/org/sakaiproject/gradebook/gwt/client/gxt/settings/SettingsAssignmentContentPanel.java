@@ -27,16 +27,20 @@ import java.util.List;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.GradebookConstants;
+import org.sakaiproject.gradebook.gwt.client.GradebookToolFacadeAsync;
+import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
 import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.custom.widget.grid.CustomColumnModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.NotifyingAsyncCallback;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.RefreshCourseGradesEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
 import org.sakaiproject.gradebook.gwt.client.model.AssignmentModel;
 import org.sakaiproject.gradebook.gwt.client.model.CategoryModel;
+import org.sakaiproject.gradebook.gwt.client.model.EntityModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemEntityModel;
@@ -67,6 +71,7 @@ import com.extjs.gxt.ui.client.widget.grid.SummaryRenderer;
 import com.extjs.gxt.ui.client.widget.grid.SummaryType;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class SettingsAssignmentContentPanel extends SettingsGridPanel<AssignmentModel> {
 	
@@ -95,11 +100,11 @@ public class SettingsAssignmentContentPanel extends SettingsGridPanel<Assignment
 							reloadData();
 							break;
 						case UPDATE:
-							UserEntityUpdateAction updateAction = (UserEntityUpdateAction)uce.getAction();
+							UserEntityUpdateAction<AssignmentModel> updateAction = (UserEntityUpdateAction<AssignmentModel>)uce.getAction();
 							AssignmentModel.Key assignmentModelKey = AssignmentModel.Key.valueOf(updateAction.getKey());
 							switch (assignmentModelKey) {
-							case INCLUDED: case REMOVED:
-								reloadData();
+							case INCLUDED: case REMOVED: case EXTRA_CREDIT:
+								reloadWeights(assignmentModelKey, updateAction.getModel());
 								break;
 							}
 							break;
@@ -165,6 +170,37 @@ public class SettingsAssignmentContentPanel extends SettingsGridPanel<Assignment
 	public void reloadData() {
 		pagingToolBar.refresh();
 	}
+	
+	/*public void reloadWeights(AssignmentModel.Key key, final AssignmentModel changedModel) {
+		GradebookToolFacadeAsync service = Registry.get("service");
+		PageRequestAction pageAction = newPageRequestAction();
+		
+		boolean isDeleted = changedModel.getRemoved() != null && changedModel.getRemoved().booleanValue();
+		boolean showDeleted = showDeletedItems != null && showDeletedItems.isPressed();
+		
+		if (isDeleted && !showDeleted) 
+			store.remove(changedModel);
+		
+		service.getEntityPage(pageAction, loadConfig, new NotifyingAsyncCallback<PagingLoadResult<EntityModel>>() {
+
+			public void onSuccess(PagingLoadResult<EntityModel> result) {
+				List<EntityModel> models = result.getData();
+				
+				for (EntityModel model : models) {
+					AssignmentModel serverModel = (AssignmentModel)model;
+					Double weight = serverModel.getWeighting();
+					
+					AssignmentModel actualModel = store.findModel(serverModel);
+				
+					actualModel.setWeighting(weight);
+					
+					store.update(actualModel);
+				}
+				
+			}
+			
+		});
+	}*/
 
 	public EditorGrid<AssignmentModel> getAssignmentGrid() {
 		return grid;
@@ -207,7 +243,10 @@ public class SettingsAssignmentContentPanel extends SettingsGridPanel<Assignment
 		pointsColumn.setSummaryType(SummaryType.SUM);
 		pointsColumn.setSummaryRenderer(new SummaryRenderer() {
 			public String render(Double value, Map<String, Double> data) {
-				return "<div style=\"color:darkgray;font-weight:bold\">" + defaultNumberFormat.format(value) + "</div>";
+				String result = "0";
+				if (value != null)
+					result = defaultNumberFormat.format(value);
+				return new StringBuilder("<div style=\"color:darkgray;font-weight:bold\">").append(result).append("</div>").toString();
 			}
 		});
 		columns.add(pointsColumn);
@@ -282,7 +321,7 @@ public class SettingsAssignmentContentPanel extends SettingsGridPanel<Assignment
 		record.set(AssignmentModel.Key.WEIGHT.name(), model.getWeighting());
 		record.set(AssignmentModel.Key.INCLUDED.name(), model.getIncluded());
 		
-		String property = action.getKey();
+		/*String property = action.getKey();
 		AssignmentModel.Key assignmentModelKey = AssignmentModel.Key.valueOf(property);
 		switch (assignmentModelKey) {
 		case REMOVED:
@@ -290,9 +329,9 @@ public class SettingsAssignmentContentPanel extends SettingsGridPanel<Assignment
 		case EXTRA_CREDIT: 
 			// FIXME: Would it be possible to simply refresh the view at this point? It should achieve the
 			// FIXME: same result
-			pagingToolBar.refresh();
+			//pagingToolBar.refresh();
 			//recalculateEqualWeightingAssignments(model.getCategoryId(), null, false);
-		}
+		}*/
 	}
 	
 	@Override

@@ -550,7 +550,8 @@ public class SettingsCategoryContentPanel extends SettingsGridPanel<CategoryMode
 		}
 		
 		if (isRefreshNecessary) {
-			pagingToolBar.refresh();
+			//pagingToolBar.refresh();
+			reloadWeights(categoryModelKey, action.getModel());
 		}
 	}
 	

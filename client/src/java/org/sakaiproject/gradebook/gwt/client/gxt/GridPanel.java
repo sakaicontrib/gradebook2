@@ -403,55 +403,7 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 	protected void doEdit(RemoteCommand<M> remoteCommand, UserEntityUpdateAction<M> action) {
 		
 		remoteCommand.execute(action);
-		
-		/*GradebookToolFacadeAsync service = Registry.get("service");
-		
-		NotifyingAsyncCallback<M> callback = 
-			new NotifyingAsyncCallback<M>(action) {
-			
-			@Override
-			public void onFailure(Throwable caught) {
-				super.onFailure(caught);
-				
-				String property = ((UserEntityUpdateAction<M>)getAction()).getKey();
-				
-				// Save the exception message on the record
-				String failedProperty = property + FAILED_FLAG;
-				record.set(failedProperty, caught.getMessage());
-				
-				// We have to fool the system into thinking that the value has changed, since
-				// we snuck in that "Saving grade..." under the radar.
-				record.set(property, null);
-				record.set(property, getAction().getStartValue());
-				
-				if (gridEvent != null)
-					grid.fireEvent(Events.AfterEdit, gridEvent);
-			}
-			
-			public void onSuccess(M result) {
-				
-				UserEntityUpdateAction<M> action = (UserEntityUpdateAction<M>)getAction();
-				
-				// Ensure that we clear out any older failure messages
-				// Save the exception message on the record
-				String failedProperty = action.getKey() + FAILED_FLAG;
-				record.set(failedProperty, null);
-				
-				beforeUpdateView(action, record, result);
-				
-				updateView(action, record, result);
-				
-				afterUpdateView(action, record, result);
-				
-				if (gridEvent != null) {
-					grid.fireEvent(Events.AfterEdit, gridEvent);
-				}
-				
-			}
-			
-		};
-		
-		service.updateEntity(action, callback);*/
+
 	}
 	
 	protected boolean validateEdit(RemoteCommand<M> remoteCommand, UserEntityUpdateAction<M> action, Record record, GridEvent gridEvent) {
