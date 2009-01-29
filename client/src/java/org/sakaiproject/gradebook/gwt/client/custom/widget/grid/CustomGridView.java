@@ -36,11 +36,15 @@ import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel.Group;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel.Key;
 
+import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.SortDir;
+import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
+import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
+import com.extjs.gxt.ui.client.store.StoreEvent;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.menu.CheckMenuItem;
 import com.extjs.gxt.ui.client.widget.menu.Item;
@@ -57,9 +61,19 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	private final boolean SHOW = true;
 	private String gradebookUid = null;
 	private GradebookModel gradebookModel = null;
-
+	private boolean isDisplayLoadMaskOnRender = true;
+	
+	
 	public CustomGridView(String gradebookUid) {
 		this.gradebookUid = gradebookUid;
+		
+		addListener(Events.Refresh, new Listener() {
+
+			public void handleEvent(BaseEvent be) {
+				grid.el().unmask();
+			}
+			
+		});
 	}
 
 	public void doRowRefresh(int row) {
@@ -197,6 +211,31 @@ public abstract class CustomGridView extends BaseCustomGridView {
 		
 		restrictMenu(rootMenu);
 		return rootMenu;
+	}
+	
+	@Override
+	protected void onBeforeDataChanged(StoreEvent se) {
+	    if (grid.isLoadMask()) {
+	    	isDisplayLoadMaskOnRender = false;
+	    	grid.el().mask(GXT.MESSAGES.loadMask_msg());
+	    }
+	}
+	
+	@Override
+	protected void onDataChanged(StoreEvent se) {
+		super.onDataChanged(se);
+		// Ensure that we set this to false in case the data changes before the grid view is rendered
+		isDisplayLoadMaskOnRender = false;
+	}
+	
+	@Override
+	protected void renderUI() {
+		super.renderUI();
+		
+		if (isDisplayLoadMaskOnRender) {
+			grid.el().mask(GXT.MESSAGES.loadMask_msg());
+			isDisplayLoadMaskOnRender = false;
+		}
 	}
 	
 	// Helper method
@@ -388,5 +427,9 @@ public abstract class CustomGridView extends BaseCustomGridView {
 				}
 			}
 		}
+	}
+
+	public void setDisplayLoadMaskOnRender(boolean isDisplayLoadMaskOnRender) {
+		this.isDisplayLoadMaskOnRender = isDisplayLoadMaskOnRender;
 	}
 }
