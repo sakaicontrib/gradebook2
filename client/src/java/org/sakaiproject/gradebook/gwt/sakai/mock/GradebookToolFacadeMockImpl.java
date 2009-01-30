@@ -66,6 +66,7 @@ public class GradebookToolFacadeMockImpl extends RemoteServiceServlet implements
 
 	private GradebookToolFacade delegateFacade = new DelegateFacadeMockImpl(sectionAwareness, authz, authn, gradebookManager, gradeCalculations);
 
+	private IocMock iocMock = IocMock.getInstance();	
 	
 	/*
 	 * This method does the hosted mode initialization to ensure that the appropriate test data is in place
@@ -78,7 +79,9 @@ public class GradebookToolFacadeMockImpl extends RemoteServiceServlet implements
 		//createGradebookAction.setName("Test Gradebook");
 		//GradebookModel gbModel = createEntity(createGradebookAction);
 		try {
-			
+		
+			iocMock.registerClassInstance(DelegateFacadeMockImpl.class.getName(), delegateFacade);
+
 			GradebookModel gbModel = getEntity(new UserEntityGetAction<GradebookModel>(EntityType.GRADEBOOK, "emptyid"));
 		
 			gbModel = updateEntity(new UserEntityUpdateAction<GradebookModel>(gbModel, gbModel, GradebookModel.Key.NAME.name(), ClassType.STRING, "Test Gradebook", null));
