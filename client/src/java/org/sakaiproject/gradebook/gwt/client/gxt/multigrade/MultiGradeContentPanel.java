@@ -172,7 +172,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 							// We want to do this immediately, since a "Create" action probably comes
 							// from the "Add Assignment" dialog box that may be shown while the multigrade
 							// screen is still visible
-							refreshGrid(true);
+							refreshGrid(RefreshAction.REFRESHCOLUMNS);
 							break;
 						case UPDATE:
 							AssignmentModel.Key assignmentModelKey = AssignmentModel.Key.valueOf(((UserEntityUpdateAction)action).getKey());
@@ -235,9 +235,9 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 							GradebookModel.Key gradebookModelKey = GradebookModel.Key.valueOf(((UserEntityUpdateAction)action).getKey());
 							switch (gradebookModelKey) {
 							case GRADETYPE:
-								queueDeferredRefresh(RefreshAction.REFRESHDATA);
+								queueDeferredRefresh(RefreshAction.REFRESHCOLUMNSANDDATA);
 								break;
-							case CATEGORYTYPE:
+							case CATEGORYTYPE: 
 								queueDeferredRefresh(RefreshAction.REFRESHCOLUMNS);
 								break;
 							}
@@ -1103,13 +1103,21 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	
 
 	@Override
-	protected void refreshGrid(boolean refreshFromServer) {
+	protected void refreshGrid(RefreshAction refreshAction) {
 		
-		if (!refreshFromServer) {
-			super.refreshGrid(refreshFromServer);
+		boolean includeData = false;
+		
+		switch (refreshAction) {
+		case REFRESHLOCALCOLUMNS:
+			super.refreshGrid(refreshAction);
 			return;
+		case REFRESHCOLUMNSANDDATA:
+			includeData = true;
+			break;
 		}
 		
+		
+		final Boolean refreshData = Boolean.valueOf(includeData);
 		GradebookModel gbModel = Registry.get(gradebookUid);
 		UserEntityGetAction<ColumnModel> action = 
 			new UserEntityGetAction<ColumnModel>(gbModel, EntityType.COLUMN);
@@ -1124,6 +1132,9 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 				gbModel.setColumns(columns);
 				
 				reconfigureGrid(gradebookUid, columns);
+				
+				if (refreshData.equals(Boolean.TRUE))
+					pagingToolBar.refresh();
 			}
 		};
 		

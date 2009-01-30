@@ -24,6 +24,7 @@ package org.sakaiproject.gradebook.gwt.sakai;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -109,6 +110,7 @@ import com.extjs.gxt.ui.client.data.BasePagingLoadResult;
 import com.extjs.gxt.ui.client.data.PagingLoadConfig;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.i18n.client.NumberFormat;
 
 public class DelegateFacadeImpl implements GradebookToolFacade {
 
@@ -802,7 +804,23 @@ private static final long serialVersionUID = 1L;
 							boolean isUnweighted = isAssignmentUnweighted(gradebook, category, assignment);
 							boolean isExtraCredit = isAssignmentExtraCredit(gradebook, category, assignment);
 							
-							ColumnModel config = new ColumnModel(assignment.getId(), assignment.getName(), StudentModel.Key.ASSIGNMENT, 80);
+							
+							String name = assignment.getName();
+							
+							switch (gradebook.getGrade_type()) {
+							case GradebookService.GRADE_TYPE_POINTS:
+								String points = DecimalFormat.getInstance().format(assignment.getPointsPossible());
+								name = new StringBuilder(assignment.getName())
+											.append(" (").append(points)
+											.append(")").toString();
+								break;
+							case GradebookService.GRADE_TYPE_PERCENTAGE:
+								name = new StringBuilder(assignment.getName())
+											.append(" (%)").toString();
+								break;
+							} 
+							
+							ColumnModel config = new ColumnModel(assignment.getId(), name, StudentModel.Key.ASSIGNMENT, 80);
 							config.setMaxPoints(assignment.getPointsPossible() == null ? 0.0 : assignment.getPointsPossible().doubleValue());
 							config.setCategoryName(category.getName());
 							config.setCategoryId(category.getId());
@@ -1495,7 +1513,7 @@ private static final long serialVersionUID = 1L;
 		}
 		
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
-		gbService.updateGradebook(gradebook);
+		//gbService.updateGradebook(gradebook);
 		
 		List<CategoryModel> models = new ArrayList<CategoryModel>();
 		

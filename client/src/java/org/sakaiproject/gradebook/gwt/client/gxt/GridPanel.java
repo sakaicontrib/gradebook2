@@ -70,7 +70,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 
-	public enum RefreshAction { NONE, REFRESHDATA, REFRESHCOLUMNS, REFRESHLOCALCOLUMNS };
+	public enum RefreshAction { NONE, REFRESHDATA, REFRESHCOLUMNS, REFRESHLOCALCOLUMNS, REFRESHCOLUMNSANDDATA };
 	
 	public static final String FAILED_FLAG = ":F";
 	
@@ -116,10 +116,9 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 						pagingToolBar.refresh();
 					break;
 				case REFRESHCOLUMNS:
-					refreshGrid(true);
-					break;
 				case REFRESHLOCALCOLUMNS:
-					refreshGrid(false);
+				case REFRESHCOLUMNSANDDATA:
+					refreshGrid(refreshAction);
 					break;
 				}
 				refreshAction = RefreshAction.NONE;
@@ -336,18 +335,50 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		return store;
 	}
 	
-	protected void refreshGrid(boolean refreshFromServer) {
+	protected void refreshGrid(RefreshAction action) {
 		cm = newColumnModel();
 		grid.reconfigure(store, cm);
 		grid.el().unmask();
 	}
 	
-	protected void queueDeferredRefresh(RefreshAction refreshAction) {
+	protected void queueDeferredRefresh(RefreshAction newRefreshAction) {
 		switch (this.refreshAction) {
 		// We don't want to 'demote' a refresh columns action to a refresh data action
 		case NONE:
+			this.refreshAction = newRefreshAction;
+			break;
 		case REFRESHDATA:
-			this.refreshAction = refreshAction;
+			switch (newRefreshAction) {
+			case REFRESHDATA:
+				this.refreshAction = newRefreshAction;
+				break;
+			case REFRESHLOCALCOLUMNS:
+			case REFRESHCOLUMNS:
+				this.refreshAction = RefreshAction.REFRESHCOLUMNSANDDATA;
+				break;
+			}
+			break;
+		case REFRESHLOCALCOLUMNS:
+			switch (newRefreshAction) {
+			case REFRESHDATA:
+				this.refreshAction = RefreshAction.REFRESHCOLUMNSANDDATA;
+				break;
+			case REFRESHLOCALCOLUMNS:
+			case REFRESHCOLUMNS:
+				this.refreshAction = RefreshAction.REFRESHCOLUMNS;
+				break;
+			}
+			break;
+		case REFRESHCOLUMNS:
+			switch (newRefreshAction) {
+			case REFRESHDATA:
+				this.refreshAction = RefreshAction.REFRESHCOLUMNSANDDATA;
+				break;
+			case REFRESHLOCALCOLUMNS:
+			case REFRESHCOLUMNS:
+				this.refreshAction = RefreshAction.REFRESHCOLUMNS;
+				break;
+			}
 			break;
 		}
 	}
