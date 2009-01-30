@@ -210,6 +210,16 @@ public class InstructorViewContainer extends ContentPanel {
 		
 		toolBar.add(preferencesItem);
 		
+		
+		String storedEnableNotifications = PersistentStore.getPersistentField(gradebookUid, "enableNotifications", "checked");
+		if (storedEnableNotifications != null) {
+			Boolean isChecked = Boolean.valueOf(storedEnableNotifications);
+			if (isChecked != null) {
+				Registry.register("enableNotifications", isChecked);
+				enableNotifications.setChecked(isChecked.booleanValue());
+			}
+		}
+		
 		enableNotifications.addListener(Events.CheckChange, new Listener<MenuEvent>() {
 
 			public void handleEvent(MenuEvent me) {
@@ -223,12 +233,6 @@ public class InstructorViewContainer extends ContentPanel {
 			}
 			
 		});
-		
-		String storedEnableNotifications = PersistentStore.getPersistentField(gradebookUid, "enableNotifications", "checked");
-		if (storedEnableNotifications != null) {
-			Boolean isChecked = Boolean.valueOf(storedEnableNotifications);
-			Registry.register("enableNotifications", isChecked);
-		}
 		
 		TextToolItem historyItem = new TextToolItem("History", new SelectionListener<ToolBarEvent>() {
 
