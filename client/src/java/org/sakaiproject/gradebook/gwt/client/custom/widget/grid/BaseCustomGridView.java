@@ -32,9 +32,11 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.GridView;
 
 
-public abstract class BaseCustomGridView extends GridView {
+public class BaseCustomGridView extends GridView {
 	
-	protected abstract boolean isDropped(ModelData model, String property);
+	protected boolean isDropped(ModelData model, String property) {
+		return false;
+	}
 	
 	protected boolean isCommented(ModelData model, String property) {
 		return false;

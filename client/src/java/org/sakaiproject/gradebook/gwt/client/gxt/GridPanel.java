@@ -31,6 +31,7 @@ import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType;
+import org.sakaiproject.gradebook.gwt.client.custom.widget.grid.BaseCustomGridView;
 import org.sakaiproject.gradebook.gwt.client.custom.widget.grid.CustomColumnModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
@@ -250,7 +251,7 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 	}
 	
 	protected GridView newGridView() {
-		return new GridView();
+		return new BaseCustomGridView();
 	}
 	
 	protected PagingLoadConfig newLoadConfig(ListStore<M> store, int pageSize) {

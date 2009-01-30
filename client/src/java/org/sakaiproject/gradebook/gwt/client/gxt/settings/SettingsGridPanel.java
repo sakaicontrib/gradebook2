@@ -31,6 +31,7 @@ import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
 import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
+import org.sakaiproject.gradebook.gwt.client.custom.widget.grid.CustomGroupSummaryView;
 import org.sakaiproject.gradebook.gwt.client.gxt.GridPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.NotifyingAsyncCallback;
 import org.sakaiproject.gradebook.gwt.client.model.AssignmentModel;
@@ -59,7 +60,6 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.EditorGrid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.grid.GridView;
-import com.extjs.gxt.ui.client.widget.grid.GroupSummaryView;
 import com.extjs.gxt.ui.client.widget.grid.SummaryColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.SummaryRenderer;
 import com.extjs.gxt.ui.client.widget.grid.SummaryType;
@@ -244,7 +244,7 @@ public abstract class SettingsGridPanel<M extends ItemEntityModel> extends GridP
 
 	@Override
 	protected GridView newGridView() {
-		GroupSummaryView summary = new GroupSummaryView() {
+		CustomGroupSummaryView summary = new CustomGroupSummaryView() {
 			protected Map<String, Object> calculate(List<ModelData> models, List<ColumnData> cs) {
 			    Map<String, Object> data = new HashMap<String, Object>();
 
