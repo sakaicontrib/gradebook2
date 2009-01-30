@@ -195,7 +195,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	public List<ActionRecord> getActionRecords(final String gradebookUid, final int offset, final int limit) {
 		HibernateCallback hc = new HibernateCallback() {
             public Object doInHibernate(Session session) throws HibernateException {
-                Query q = session.createQuery("from ActionRecord as ar where ar.gradebookUid=:gradebookUid ");
+                Query q = session.createQuery("from ActionRecord as ar where ar.gradebookUid=:gradebookUid order by ar.dateRecorded desc ");
                 q.setString("gradebookUid", gradebookUid);
                 q.setFirstResult(offset);
                 q.setMaxResults(limit);

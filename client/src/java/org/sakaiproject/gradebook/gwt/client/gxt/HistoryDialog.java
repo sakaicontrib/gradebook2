@@ -63,6 +63,11 @@ public class HistoryDialog extends Dialog {
 			new GridPanel<UserEntityAction>(gradebookUid, "history", EntityType.ACTION) {
 
 			@Override
+			protected void addComponents() {
+				setTopComponent(pagingToolBar);
+			}
+			
+			@Override
 			protected CustomColumnModel newColumnModel() {
 				
 				List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
@@ -70,12 +75,13 @@ public class HistoryDialog extends Dialog {
 				ColumnConfig datePerformed = new ColumnConfig(Action.Key.DATE_PERFORMED.name(),
 						"Timestamp", 200);
 				datePerformed.setDateTimeFormat(DateTimeFormat.getMediumDateTimeFormat());
+				datePerformed.setHidden(true);
 				configs.add(datePerformed);
 				
 				ColumnConfig dateRecorded = new ColumnConfig(Action.Key.DATE_RECORDED.name(),
 						"Time Recorded", 200);
 				dateRecorded.setDateTimeFormat(DateTimeFormat.getMediumDateTimeFormat());
-				dateRecorded.setHidden(true);
+				dateRecorded.setHidden(false);
 				configs.add(dateRecorded);
 				
 				ColumnConfig entityType = new ColumnConfig(Action.Key.ENTITY_TYPE.name(),
