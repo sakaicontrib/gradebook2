@@ -70,6 +70,7 @@ import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
 
@@ -105,7 +106,10 @@ public class StudentViewContainer extends LayoutContainer {
 		this.defaultTextField.addInputStyleName("gbTextFieldInput");
 		
 		setLayout(new RowLayout());
-		
+	/*}
+	
+	protected void onRender(Element parent, int pos) {
+		super.onRender(parent, pos);*/
 		studentInformation = new FlexTable(); 
 		studentInformation.setStyleName("gbStudentInformation");
 		studentInformationPanel = new ContentPanel();

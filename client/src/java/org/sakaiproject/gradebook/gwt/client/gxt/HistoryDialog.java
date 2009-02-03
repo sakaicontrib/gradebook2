@@ -31,33 +31,37 @@ import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.custom.widget.grid.CustomColumnModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
+import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
 
-import com.extjs.gxt.ui.client.XDOM;
 import com.extjs.gxt.ui.client.event.Listener;
-import com.extjs.gxt.ui.client.widget.Dialog;
+import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
+import com.extjs.gxt.ui.client.widget.grid.EditorGrid;
+import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Element;
 
-public class HistoryDialog extends Dialog {
+public class HistoryDialog extends ContentPanel {
 
 	private String gradebookUid;
 	
 	public HistoryDialog(String gradebookUid) {
 		super();
 		this.gradebookUid = gradebookUid;
-		setCollapsible(false);
-		setHeading("History");
-		setHideCollapseTool(true);
-		setHideOnButtonClick(true);
+		//setClosable(false);
+		//setDraggable(false);
+		setFrame(false);
+		setHeaderVisible(false);
 		setLayout(new FitLayout());
+		//setModal(false);
+		//setResizable(false);
 	}
 	
 	protected void onRender(Element parent, int pos) {
 		super.onRender(parent, pos);
 		
-		setSize(XDOM.getViewportSize().width - 40, XDOM.getViewportSize().height - 200);
+		//setSize(XDOM.getViewportSize().width - 40, XDOM.getViewportSize().height - 200);
 		
 		final GridPanel<UserEntityAction> gridPanel = 
 			new GridPanel<UserEntityAction>(gradebookUid, "history", EntityType.ACTION) {
@@ -65,6 +69,13 @@ public class HistoryDialog extends Dialog {
 			@Override
 			protected void addComponents() {
 				setTopComponent(pagingToolBar);
+			}
+			
+			@Override
+			protected Grid<UserEntityAction> newGrid() {
+				Grid<UserEntityAction> grid = super.newGrid();
+				grid.setAutoExpandColumn(Action.Key.DESCRIPTION.name());
+				return grid;
 			}
 			
 			@Override
@@ -109,9 +120,8 @@ public class HistoryDialog extends Dialog {
 			
 		};
 		
-		gridPanel.grid.setAutoExpandColumn(Action.Key.DESCRIPTION.name());
-		add(gridPanel);
 		
+		add(gridPanel);
 		
 		addListener(GradebookEvents.UserChange, new Listener<UserChangeEvent>() {
 

@@ -56,6 +56,7 @@ import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
+import com.extjs.gxt.ui.client.widget.Info;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.grid.CellSelectionModel;
@@ -66,6 +67,7 @@ import com.extjs.gxt.ui.client.widget.grid.GridView;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -108,7 +110,27 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		// This event listener takes care of deferred refresh actions, the goal being to avoid
 		// multiple refresh requests coming from other components and resulting in unnecessary repeated
 		// calls to the server
-		addListener(Events.BeforeShow, new Listener<BaseEvent>() {
+		/*addListener(Events.BeforeShow, new Listener<BaseEvent>() {
+
+			public void handleEvent(BaseEvent be) {
+				switch (refreshAction) {
+				case REFRESHDATA:
+					if (pagingToolBar != null)
+						pagingToolBar.refresh();
+					break;
+				case REFRESHCOLUMNS:
+				case REFRESHLOCALCOLUMNS:
+				case REFRESHCOLUMNSANDDATA:
+					refreshGrid(refreshAction);
+					break;
+				}
+				refreshAction = RefreshAction.NONE;
+				Info.display("Hey", "BeforeShow");
+			}
+		
+		});*/
+		
+		addListener(GradebookEvents.Refresh, new Listener<BaseEvent>() {
 
 			public void handleEvent(BaseEvent be) {
 				switch (refreshAction) {
@@ -128,6 +150,12 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		});
 		
 		add(newGrid());
+	}
+	
+	protected void onRender(Element parent, int pos) {
+		super.onRender(parent, pos);
+		//add(newGrid());
+		loader.load(0, pageSize);
 	}
 	
 	public void editCell(Record record, String property, Object value, Object startValue, GridEvent ge) {
@@ -209,7 +237,7 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 
 		loader.useLoadConfig(loadConfig);
 		
-		loader.load(0, pageSize);
+		//loader.load(0, pageSize);
 		
 		pagingToolBar = newPagingToolBar(pageSize);
 		pagingToolBar.bind(loader);
@@ -265,8 +293,6 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		return loadConfig;
 	}
 	
-	private Timer t = null;
-	
 	protected BasePagingLoader<PagingLoadConfig, PagingLoadResult<M>> newLoader() {
 		RpcProxy<PagingLoadConfig, PagingLoadResult<M>> proxy = new RpcProxy<PagingLoadConfig, PagingLoadResult<M>>() {
 			@Override
@@ -274,22 +300,7 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 				GradebookToolFacadeAsync service = Registry.get("service");
 				PageRequestAction pageAction = newPageRequestAction();
 				service.getEntityPage(pageAction, loadConfig, callback);
-				
-				//if (grid.isRendered())
-				//	grid.el().unmask();
 			}
-			
-			/*protected void load(final PagingLoadConfig loadConfig, final AsyncCallback<PagingLoadResult<M>> callback) {
-				t = new Timer() {
-				
-					public void run() {
-						GradebookToolFacadeAsync service = Registry.get("service");
-						PageRequestAction pageAction = newPageRequestAction();
-						service.getEntityPage(pageAction, loadConfig, callback);
-					}
-				};
-				t.schedule(8000);
-			}*/
 			
 			@Override
 			public void load(final DataReader<PagingLoadConfig, PagingLoadResult<M>> reader, final PagingLoadConfig loadConfig, final AsyncCallback<PagingLoadResult<M>> callback) {

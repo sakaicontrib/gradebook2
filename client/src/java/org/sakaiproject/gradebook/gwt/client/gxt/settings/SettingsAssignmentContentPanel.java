@@ -128,11 +128,14 @@ public class SettingsAssignmentContentPanel extends SettingsGridPanel<Assignment
 					case GRADEBOOK:
 						switch (entityAction.getActionType()) {
 						case UPDATE:
-							UserEntityUpdateAction updateAction = (UserEntityUpdateAction)uce.getAction();
+							UserEntityUpdateAction<GradebookModel> updateAction = (UserEntityUpdateAction<GradebookModel>)uce.getAction();
 							
 							GradebookModel.Key gradebookKey = GradebookModel.Key.valueOf(updateAction.getKey());
 	
 							switch (gradebookKey) {
+							case NAME:
+								reloadData();
+								break;
 							case CATEGORYTYPE:
 								CategoryType categoryType = (CategoryType) updateAction.getValue();
 								

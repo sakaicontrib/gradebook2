@@ -42,7 +42,7 @@ public class SettingsContentPanel extends ContentPanel {
 
 	private String gradebookUid;
 	
-	private SettingsGradebookContentPanel gradebookPanel;
+	//private SettingsGradebookContentPanel gradebookPanel;
 	private SettingsCategoryContentPanel categoriesPanel;
 	private SettingsAssignmentContentPanel assignmentsPanel;
 	private SettingsGradingScaleContentPanel gradingScalePanel;
@@ -58,10 +58,10 @@ public class SettingsContentPanel extends ContentPanel {
 		
 		setLayout(new FitLayout());
 		setHeaderVisible(false);
-		setHeading("Settings");
+		setHeading("Setup");
 		setMonitorResize(true);
 		
-		gradebookPanel = new SettingsGradebookContentPanel(gradebookUid);
+		//gradebookPanel = new SettingsGradebookContentPanel(gradebookUid);
 
 		categoriesPanel = new SettingsCategoryContentPanel(gradebookUid);
 		
@@ -71,11 +71,11 @@ public class SettingsContentPanel extends ContentPanel {
 		
 		tabPanel = new TabPanel();
 		
-		TabItem gradebookTab = new TabItem("Gradebook");  
+		/*TabItem gradebookTab = new TabItem("Gradebook");  
 		gradebookTab.addStyleName("pad-text");  
 		gradebookTab.add(gradebookPanel);
 		gradebookTab.setLayout(new FitLayout());
-		tabPanel.add(gradebookTab);
+		tabPanel.add(gradebookTab);*/
 		
 		if (gbModel.getCategoryType() != CategoryType.NO_CATEGORIES) {
 			insertCategoriesTab();
@@ -104,6 +104,47 @@ public class SettingsContentPanel extends ContentPanel {
 					multigrade.fireEvent(GradebookEvents.UserChange, uce);
 					assignmentsPanel.fireEvent(GradebookEvents.UserChange, uce);
 				}
+				
+				UserEntityAction action = uce.getAction();
+				switch (action.getEntityType()) {
+				case GRADEBOOK:
+					switch (action.getActionType()) {
+					case UPDATE:
+						UserEntityUpdateAction<GradebookModel> updateAction = 
+							(UserEntityUpdateAction<GradebookModel>)action;
+						
+						GradebookModel.Key gradebookKey = GradebookModel.Key.valueOf(updateAction.getKey());
+						
+						
+						switch (gradebookKey) {
+						case CATEGORYTYPE:
+							CategoryType categoryType = updateAction.getValue();
+							
+							switch (categoryType) {
+							case NO_CATEGORIES:
+								if (categoriesTab != null) {
+									tabPanel.remove(categoriesTab);
+									categoriesTab = null;
+								}
+								if (instructorViewContainer != null)
+									instructorViewContainer.showAddCategory(false);
+								break;
+							default:
+								if (categoriesTab == null)
+									insertCategoriesTab();
+							
+								if (instructorViewContainer != null)
+									instructorViewContainer.showAddCategory(true);
+								break;
+							}
+							break;
+						}
+						
+						break;
+					}
+					
+					break;
+				}
 			}
 			
 		});
@@ -124,7 +165,7 @@ public class SettingsContentPanel extends ContentPanel {
 			
 		});
 		
-		gradebookPanel.addListener(GradebookEvents.UserChange, new Listener<UserChangeEvent>() {
+		/*gradebookPanel.addListener(GradebookEvents.UserChange, new Listener<UserChangeEvent>() {
 
 			public void handleEvent(UserChangeEvent uce) {
 
@@ -172,7 +213,7 @@ public class SettingsContentPanel extends ContentPanel {
 				}
 			}
 			
-		});
+		});*/
 		
 		gradingScalePanel.addListener(GradebookEvents.UserChange, new Listener<UserChangeEvent>() {
 
@@ -194,7 +235,7 @@ public class SettingsContentPanel extends ContentPanel {
 		categoriesTab.addStyleName("pad-text");  
 		categoriesTab.add(categoriesPanel);
 		categoriesTab.setLayout(new FitLayout());
-		tabPanel.insert(categoriesTab, 1);
+		tabPanel.insert(categoriesTab, 0);
 	}
 	
 	public String getGradebookUid() {

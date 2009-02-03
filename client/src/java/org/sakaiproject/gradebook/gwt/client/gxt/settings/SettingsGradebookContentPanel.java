@@ -41,6 +41,8 @@ import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.FieldEvent;
 import com.extjs.gxt.ui.client.event.KeyListener;
 import com.extjs.gxt.ui.client.event.Listener;
+import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
+import com.extjs.gxt.ui.client.event.SelectionChangedListener;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.form.Field;
@@ -51,12 +53,22 @@ import com.extjs.gxt.ui.client.widget.form.SimpleComboValue;
 import com.extjs.gxt.ui.client.widget.form.FormPanel.LabelAlign;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.KeyboardListener;
 
 public class SettingsGradebookContentPanel extends ContentPanel {
 
+	private String gradebookUid;
+	private Listener<FieldEvent> listener;
+	//private LayoutContainer container;
+	
 	public SettingsGradebookContentPanel(final String gradebookUid) {
-		Listener<FieldEvent> listener =  new Listener<FieldEvent>() {
+		this.gradebookUid = gradebookUid;
+		setHeaderVisible(false);
+		//setLayout(new FitLayout());
+		setScrollMode(Scroll.AUTO);
+		
+		listener =  new Listener<FieldEvent>() {
 
 			public void handleEvent(FieldEvent fe) {
 				
@@ -73,19 +85,6 @@ public class SettingsGradebookContentPanel extends ContentPanel {
 					actionValue = fe.value;
 					
 					actionStartValue = gbModel.getName();
-				} else if (f.getName().equals("organizationtype")) {
-					classType = ClassType.CATEGORYTYPE;
-					property = Key.CATEGORYTYPE;
-					String value = ((SimpleComboValue<String>)fe.value).getValue();
-					actionStartValue = gbModel.getCategoryType();
-					
-					if (value.equals("No Categories"))
-						actionValue = CategoryType.NO_CATEGORIES;
-					else if (value.equals("Categories"))
-						actionValue = CategoryType.SIMPLE_CATEGORIES;
-					else if (value.equals("Weighted Categories"))
-						actionValue = CategoryType.WEIGHTED_CATEGORIES;
-						
 				} else if (f instanceof Radio) {
 					property = Key.GRADETYPE;
 					Radio r = (Radio)f;
@@ -108,21 +107,25 @@ public class SettingsGradebookContentPanel extends ContentPanel {
 							actionValue = GradeType.POINTS;
 						
 						actionStartValue = gbModel.getGradeType();
-					} else if (r.getBoxLabel().equals("Yes")) {
+					} 
+					
+					if (r.getBoxLabel().equals("Yes")) {
 						classType = ClassType.BOOLEAN;
 						property = Key.RELEASEGRADES;
 						Boolean value = (Boolean)fe.value;
-						if (value == null || value.booleanValue())
-							actionValue = Boolean.TRUE;
-						else
+						if (value != null && value.booleanValue())
 							actionValue = Boolean.FALSE;
+						else
+							actionValue = Boolean.TRUE;
 						
 						actionStartValue = gbModel.isReleaseGrades();
-					} else if (r.getBoxLabel().equals("No")) {
+					} 
+					
+					if (r.getBoxLabel().equals("No")) {
 						classType = ClassType.BOOLEAN;
 						property = Key.RELEASEGRADES;
 						Boolean value = (Boolean)fe.value;
-						if (value == null || value.booleanValue())
+						if (value != null && value.booleanValue())
 							actionValue = Boolean.FALSE;
 						else
 							actionValue = Boolean.TRUE;
@@ -131,54 +134,42 @@ public class SettingsGradebookContentPanel extends ContentPanel {
 					}
 				}
 				
-				if (actionStartValue == null || !actionStartValue.equals(actionValue)) {
-					UserEntityUpdateAction<GradebookModel> action = 
-						new UserEntityUpdateAction<GradebookModel>(gbModel, gbModel, 
-								property.name(), classType, actionValue, actionStartValue);
-					
-					final Key p = property;
-					
-					RemoteCommand<GradebookModel> remoteCommand = 
-						new RemoteCommand<GradebookModel>() {
-	
-							@Override
-							public void onCommandSuccess(UserEntityAction<GradebookModel> action, GradebookModel result) {
-								Registry.unregister(gradebookUid);
-								Registry.register(gradebookUid, result);
-								action.announce(result.getName(), p.name(), action.getValue());
-	
-								SettingsGradebookContentPanel.this.fireEvent(GradebookEvents.UserChange, new UserChangeEvent(action));
-							}
-						
-					};
-					
-					
-					remoteCommand.execute(action);
-				}
+				doUpdate(gbModel, property, classType, actionValue, actionStartValue);
 			}
 	    	
 	    };
 	    
-		setHeaderVisible(false);
-		setLayout(new FitLayout());
-		setScrollMode(Scroll.AUTO);
-		
-		LayoutContainer container = new LayoutContainer();
+	    //container = new LayoutContainer();
 
 		FormLayout layout = new FormLayout();
 	    layout.setLabelAlign(LabelAlign.TOP);
 	    layout.setLabelWidth(250);
 	    layout.setPadding(10);
-	    container.setLayout(layout);
-	    //container.setScrollMode(Scroll.AUTO);
+	    //container.
+	    setLayout(layout);
+	   // add(container);
+	}
+	
+	@Override
+	protected void onRender(Element parent, int pos) {
+	    super.onRender(parent, pos);
+		
+		/*LayoutContainer container = new LayoutContainer();
+
+		FormLayout layout = new FormLayout();
+	    layout.setLabelAlign(LabelAlign.TOP);
+	    layout.setLabelWidth(250);
+	    layout.setPadding(10);
+	    container.setLayout(layout);*/
 		
 	    GradebookModel gbModel = Registry.get(gradebookUid);
 	    
 	    final InlineEditField<String> name = new InlineEditField<String>();
 	    name.setFieldLabel("Name");
 	    name.setValue(gbModel.getName());
-	    name.setStyleAttribute("margin", "7 0 18 5");
-	    container.add(name);
+	    //name.setStyleAttribute("margin", "7 0 18 5");
+	    //container.
+	    add(name);
 	    
 	    name.addKeyListener(new KeyListener() {
 	    	public void componentKeyPress(ComponentEvent event) {
@@ -203,7 +194,7 @@ public class SettingsGradebookContentPanel extends ContentPanel {
 	    group.setFieldLabel("How will you enter your grades?");  
 	    group.add(pointsRadio);  
 	    group.add(percentageRadio);
-	    group.setStyleAttribute("margin", "7 0 18 5");
+	    //group.setStyleAttribute("margin", "7 0 18 5");
 	    switch (gbModel.getGradeType()) {
 	    case POINTS:
 	    	group.setValue(pointsRadio);
@@ -215,9 +206,9 @@ public class SettingsGradebookContentPanel extends ContentPanel {
 	    
 	    pointsRadio.addListener(Events.Change, listener);
 	    percentageRadio.addListener(Events.Change, listener);
-	    container.add(group); 
-	    
-	    
+	    //container.
+	    add(group); 
+
 	    SimpleComboBox<String> typePicker = new SimpleComboBox<String>(); 
 		typePicker.setAllQuery(null);
 		typePicker.setEditable(false);
@@ -228,7 +219,7 @@ public class SettingsGradebookContentPanel extends ContentPanel {
 		typePicker.add("Categories");
 		typePicker.add("Weighted Categories");
 	    
-		typePicker.setStyleAttribute("margin", "7 0 18 5");
+		//typePicker.setStyleAttribute("margin", "7 0 18 5");
 	    switch (gbModel.getCategoryType()) {
 	    case NO_CATEGORIES:
 	    	typePicker.setSimpleValue("No Categories");
@@ -240,25 +231,46 @@ public class SettingsGradebookContentPanel extends ContentPanel {
 	    	typePicker.setSimpleValue("Weighted Categories");
 	    	break;	
 	    }
-	    //typePicker.setSimpleValue("Weighted Categories");
-	    //typePicker.setEnabled(false);
-	    container.add(typePicker);
+	    //container.
+	    add(typePicker);
 	    
-	    typePicker.addListener(Events.Change, listener);
-	    
+	    typePicker.addSelectionChangedListener(new SelectionChangedListener<SimpleComboValue<String>>() {
+
+			@Override
+			public void selectionChanged(SelectionChangedEvent<SimpleComboValue<String>> se) {
+				GradebookModel gbModel = Registry.get(gradebookUid);
+				ClassType classType = ClassType.CATEGORYTYPE;
+				Key property = Key.CATEGORYTYPE;
+				String value = se.getSelectedItem().getValue();
+				CategoryType actionValue = null;
+				CategoryType actionStartValue = gbModel.getCategoryType();
+				
+				if (value.equals("No Categories"))
+					actionValue = CategoryType.NO_CATEGORIES;
+				else if (value.equals("Categories"))
+					actionValue = CategoryType.SIMPLE_CATEGORIES;
+				else if (value.equals("Weighted Categories"))
+					actionValue = CategoryType.WEIGHTED_CATEGORIES;
+				
+				doUpdate(gbModel, property, classType, actionValue, actionStartValue);
+			}
+
+	    	
+	    });
+
 	    Radio yesRadio = new Radio();  
 	    yesRadio.setBoxLabel("Yes");
 	    yesRadio.setValue(Boolean.TRUE);
 	    
 	    Radio noRadio = new Radio();  
-	    noRadio.setBoxLabel("No");  
+	    noRadio.setBoxLabel("No");
 	    noRadio.setValue(Boolean.FALSE);
 	    
 	    RadioGroup displayGroup = new RadioGroup();  
 	    displayGroup.setFieldLabel("Display course grade to students?");  
 	    displayGroup.add(yesRadio);
 	    displayGroup.add(noRadio);
-	    displayGroup.setStyleAttribute("margin", "7 0 18 5");
+	    //displayGroup.setStyleAttribute("margin", "7 0 18 5");
 	    if (gbModel.isReleaseGrades().booleanValue())
 	    	displayGroup.setValue(yesRadio);
 	    else
@@ -266,13 +278,39 @@ public class SettingsGradebookContentPanel extends ContentPanel {
 	    
 	    yesRadio.addListener(Events.Change, listener);
 	    noRadio.addListener(Events.Change, listener);
-	    container.add(displayGroup);
 	    
-	    displayGroup.addListener(Events.Change, listener);
-	    
-		add(container);
+	    //container.
+	    add(displayGroup);
+		//add(container);
 	}
 	
+	private void doUpdate(GradebookModel gbModel, Key property, ClassType classType, Object actionValue, Object actionStartValue) {
+		if (actionStartValue == null || !actionStartValue.equals(actionValue)) {
+			
+			UserEntityUpdateAction<GradebookModel> action = 
+				new UserEntityUpdateAction<GradebookModel>(gbModel, gbModel, 
+						property.name(), classType, actionValue, actionStartValue);
+			
+			final Key p = property;
+			
+			RemoteCommand<GradebookModel> remoteCommand = 
+				new RemoteCommand<GradebookModel>() {
+
+					@Override
+					public void onCommandSuccess(UserEntityAction<GradebookModel> action, GradebookModel result) {
+						Registry.unregister(gradebookUid);
+						Registry.register(gradebookUid, result);
+						action.announce(result.getName(), p.name(), action.getValue());
+
+						SettingsGradebookContentPanel.this.fireEvent(GradebookEvents.UserChange, new UserChangeEvent(action));
+					}
+				
+			};
+			
+			
+			remoteCommand.execute(action);
+		}
+	}
 	
 	
 }

@@ -51,12 +51,10 @@ import org.sakaiproject.gradebook.gwt.client.model.ColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradeRecordModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
-import org.sakaiproject.gradebook.gwt.client.model.ItemEntityModel;
 import org.sakaiproject.gradebook.gwt.client.model.SectionModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
 import com.extjs.gxt.ui.client.Events;
-import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.XDOM;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
@@ -101,7 +99,6 @@ import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.extjs.gxt.ui.client.widget.toolbar.AdapterToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.SeparatorToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.TextToolItem;
-import com.extjs.gxt.ui.client.widget.toolbar.ToggleToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
@@ -113,7 +110,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	
 	private static final Notifier notifier = new Notifier();
 
-	private StudentViewDialog singleView; 
+	private StudentViewDialog singleView = null; 
 	private ToolBar searchToolBar;
 	private LayoutContainer toolBarContainer;
 	private InstructorViewContainer instructorViewContainer;
@@ -145,7 +142,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		comments.show(); 
 		comments.hide(); 
 		
-		singleView = new StudentViewDialog(gradebookUid, service); 
+		//singleView = new StudentViewDialog(gradebookUid, service); 
 		
 		
 		// This UserChangeEvent listener
@@ -154,7 +151,8 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			public void handleEvent(UserChangeEvent uce) {
 				
 				// Pass these events on to the single view component
-				singleView.fireEvent(GradebookEvents.UserChange, uce);
+				if (singleView != null)
+					singleView.fireEvent(GradebookEvents.UserChange, uce);
 				
 				// Respond to the events 
 				if (uce.getAction() instanceof UserEntityAction) {
@@ -230,15 +228,15 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 					case GRADEBOOK:
 						switch (action.getActionType()) {
 						case UPDATE:
-							// Update actions will (always?) result from user changes on the setup 
-							// screens, so they should be deferred to the "onShow" method
+							// We want to do this immediately, since these actions are now being
+							// fired from the top level menu and multigrade may well be visible.
 							GradebookModel.Key gradebookModelKey = GradebookModel.Key.valueOf(((UserEntityUpdateAction)action).getKey());
 							switch (gradebookModelKey) {
 							case GRADETYPE:
-								queueDeferredRefresh(RefreshAction.REFRESHCOLUMNSANDDATA);
+								refreshGrid(RefreshAction.REFRESHCOLUMNSANDDATA);
 								break;
 							case CATEGORYTYPE: 
-								queueDeferredRefresh(RefreshAction.REFRESHCOLUMNS);
+								refreshGrid(RefreshAction.REFRESHCOLUMNS);
 								break;
 							}
 							
@@ -276,7 +274,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			
 		});
 		
-		singleView.addListener(GradebookEvents.UserChange, new Listener<UserChangeEvent>() {
+		/*singleView.addListener(GradebookEvents.UserChange, new Listener<UserChangeEvent>() {
 
 			public void handleEvent(UserChangeEvent uce) {
 				if (uce.getAction() instanceof UserEntityAction) {
@@ -335,13 +333,17 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 				}
 			}
 			
-		});
+		});*/
 
-		final Listener<StoreEvent> pageListener = new Listener<StoreEvent>() {
+		/*final Listener<StoreEvent> pageListener = new Listener<StoreEvent>() {
 
 			public void handleEvent(StoreEvent be) {
 				StudentModel freshRow = grid.getStore().getAt(currentIndex);
 				IndividualStudentEvent event = new IndividualStudentEvent(freshRow);
+				
+				if (singleView == null)
+					buildSingleView();
+				
 				if (singleView.fireEvent(GradebookEvents.SingleView, event)) {
 					Point pos = getInstructorViewContainer().getPosition(false);
 					singleView.setPosition(pos.x, pos.y);
@@ -352,80 +354,9 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 				grid.getStore().removeListener(Store.DataChanged, this);
 			}
 		
-		};
+		};*/
 		
-		singleView.addListener(Events.BeforeShow, new Listener<WindowEvent>() {
-
-			public void handleEvent(WindowEvent be) {
-				MultiGradeContentPanel.this.hide();
-			}
-			
-		});
 		
-		singleView.addListener(Events.Close, new Listener<WindowEvent>() {
-
-			public void handleEvent(WindowEvent be) {
-				MultiGradeContentPanel.this.show();
-			}
-			
-		});
-		
-		singleView.addListener(GradebookEvents.BrowseStudent, new Listener<BrowseStudentEvent>() {
-
-			public void handleEvent(BrowseStudentEvent be) {
-				StudentModel current = be.getStudent();
-				currentIndex = grid.getStore().indexOf(current);
-				// Do processing for paging -- if we reach the end or beginning of a page
-				switch (be.getType()) {
-				case PREV:
-					currentIndex--;
-					break;
-				case NEXT:
-					currentIndex++;
-					break;
-				case CURRENT:
-					break;
-				}
-				
-				boolean requiresPageChange = false;
-				
-				int activePage = pagingToolBar.getActivePage();
-				int numberOfPages = pagingToolBar.getTotalPages();
-				
-				if (currentIndex < 0 || currentIndex >= pageSize) {
-					requiresPageChange = true;
-					grid.getStore().addListener(Store.DataChanged, pageListener);
-				}
-
-				// If we are at the first record - 1
-				if (currentIndex < 0) {
-					// And we are on the first page, then go to the last page
-					if (activePage == 1)
-						pagingToolBar.last();
-					// Otherwise, go to the one before
-					else
-						pagingToolBar.previous();
-					// Either way, go to the last record on the page
-					currentIndex = pageSize - 1;
-				// If we are at the last record + 1
-				} else if (currentIndex >= pageSize) {
-					// And if we are on the last page
-					if (activePage == numberOfPages) {
-						pagingToolBar.first();
-					} else {
-						pagingToolBar.next();
-					}
-					currentIndex = 0;
-				}
-				
-				if (!requiresPageChange) {
-					StudentModel freshRow = grid.getStore().getAt(currentIndex);
-					IndividualStudentEvent event = new IndividualStudentEvent(freshRow);
-					singleView.fireEvent(GradebookEvents.SingleView, event);
-				}
-			}
-			
-		});
 	}
 	
 	public StudentModel getSelectedModel() {
@@ -462,6 +393,11 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			protected void init(Grid grid) { 
 				super.init(grid);
 				isShowingToolTip = false;
+			}
+			
+			protected boolean isClickable(ModelData model, String property) {
+				return property.equals(StudentModel.Key.DISPLAY_NAME.name()) ||
+					property.equals(StudentModel.Key.SORT_NAME.name());
 			}
 			
 			protected boolean isCommented(ModelData model, String property) {
@@ -635,6 +571,33 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		
 		return contextMenu;
 	}
+	
+	/*protected ListStore<StudentModel> newStore(BasePagingLoader<PagingLoadConfig, PagingLoadResult<StudentModel>> loader) {
+		ListStore<StudentModel> store = super.newStore(loader);
+		
+		store.addListener(Store.DataChanged, new Listener<StoreEvent>() {
+
+			public void handleEvent(StoreEvent be) {
+				StudentModel freshRow = grid.getStore().getAt(currentIndex);
+				IndividualStudentEvent event = new IndividualStudentEvent(freshRow);
+				
+				if (singleView == null)
+					buildSingleView();
+				
+				if (singleView.fireEvent(GradebookEvents.SingleView, event)) {
+					Point pos = getInstructorViewContainer().getPosition(false);
+					singleView.setPosition(pos.x, pos.y);
+					singleView.setSize(XDOM.getViewportSize().width, XDOM.getViewportSize().height - 35);
+					singleView.show();
+					//MultiGradeContentPanel.this.hide();
+				}
+				grid.getStore().removeListener(Store.DataChanged, this);
+			}
+		
+		});
+		
+		return store;
+	}*/
 
 	protected void addComponents() {
 		unweightedNumericCellRenderer = new UnweightedNumericCellRenderer();
@@ -817,12 +780,16 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	
 	@Override
 	protected void addGridListenersAndPlugins(final EditorGrid<StudentModel> grid) {
-		grid.addListener(Events.CellDoubleClick, new Listener<GridEvent>() {
+		grid.addListener(Events.CellClick, new Listener<GridEvent>() {
 
 			public void handleEvent(GridEvent ge) {
 				if (ge.colIndex == 1 || ge.colIndex == 2) {
 					StudentModel myStudent = store.getAt(ge.rowIndex);
 					IndividualStudentEvent e = new IndividualStudentEvent(myStudent); 
+					
+					if (singleView == null)
+						buildSingleView();
+					
 					if (singleView.fireEvent(GradebookEvents.SingleView, e)) {
 						int frameHeight = getInstructorViewContainer().getFrameHeight();
 						singleView.setPosition(0, frameHeight);
@@ -970,9 +937,11 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	public void onResize(int x, int y) {
 		super.onResize(x, y);
 		
-		int frameHeight = getInstructorViewContainer().getFrameHeight();
-		singleView.setPosition(0, frameHeight);
-		singleView.setSize(XDOM.getViewportSize().width, XDOM.getViewportSize().height - frameHeight);
+		if (singleView != null) {
+			int frameHeight = getInstructorViewContainer().getFrameHeight();
+			singleView.setPosition(0, frameHeight);
+			singleView.setSize(XDOM.getViewportSize().width, XDOM.getViewportSize().height - frameHeight);
+		}
 		
 		toolBarContainer.setWidth(getWidth());
 	}
@@ -1101,6 +1070,160 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		return cm;
 	}
 	
+	private void buildSingleView() {
+		GradebookToolFacadeAsync service = Registry.get("service");
+		singleView = new StudentViewDialog(gradebookUid, service);
+		
+		singleView.addListener(Events.BeforeShow, new Listener<WindowEvent>() {
+
+			public void handleEvent(WindowEvent be) {
+				MultiGradeContentPanel.this.hide();
+			}
+			
+		});
+		
+		singleView.addListener(Events.Close, new Listener<WindowEvent>() {
+
+			public void handleEvent(WindowEvent be) {
+				MultiGradeContentPanel.this.show();
+			}
+			
+		});
+		
+		singleView.addListener(GradebookEvents.BrowseStudent, new Listener<BrowseStudentEvent>() {
+
+			public void handleEvent(BrowseStudentEvent be) {
+				StudentModel current = be.getStudent();
+				currentIndex = grid.getStore().indexOf(current);
+				// Do processing for paging -- if we reach the end or beginning of a page
+				switch (be.getType()) {
+				case PREV:
+					currentIndex--;
+					break;
+				case NEXT:
+					currentIndex++;
+					break;
+				case CURRENT:
+					break;
+				}
+				
+				boolean requiresPageChange = false;
+				
+				int activePage = pagingToolBar.getActivePage();
+				int numberOfPages = pagingToolBar.getTotalPages();
+				
+				if (currentIndex < 0 || currentIndex >= pageSize) {
+					requiresPageChange = true;
+					grid.getStore().addListener(Store.DataChanged, new Listener<StoreEvent>() {
+
+						public void handleEvent(StoreEvent be) {
+							StudentModel freshRow = grid.getStore().getAt(currentIndex);
+							IndividualStudentEvent event = new IndividualStudentEvent(freshRow);
+							
+							if (singleView.fireEvent(GradebookEvents.SingleView, event)) {
+								Point pos = getInstructorViewContainer().getPosition(false);
+								singleView.setPosition(pos.x, pos.y);
+								singleView.setSize(XDOM.getViewportSize().width, XDOM.getViewportSize().height - 35);
+								singleView.show();
+								//MultiGradeContentPanel.this.hide();
+							}
+							grid.getStore().removeListener(Store.DataChanged, this);
+						}
+					
+					});
+				}
+
+				// If we are at the first record - 1
+				if (currentIndex < 0) {
+					// And we are on the first page, then go to the last page
+					if (activePage == 1)
+						pagingToolBar.last();
+					// Otherwise, go to the one before
+					else
+						pagingToolBar.previous();
+					// Either way, go to the last record on the page
+					currentIndex = pageSize - 1;
+				// If we are at the last record + 1
+				} else if (currentIndex >= pageSize) {
+					// And if we are on the last page
+					if (activePage == numberOfPages) {
+						pagingToolBar.first();
+					} else {
+						pagingToolBar.next();
+					}
+					currentIndex = 0;
+				}
+				
+				if (!requiresPageChange) {
+					StudentModel freshRow = grid.getStore().getAt(currentIndex);
+					IndividualStudentEvent event = new IndividualStudentEvent(freshRow);
+					singleView.fireEvent(GradebookEvents.SingleView, event);
+				}
+			}
+			
+		});
+		
+		singleView.addListener(GradebookEvents.UserChange, new Listener<UserChangeEvent>() {
+
+			public void handleEvent(UserChangeEvent uce) {
+				if (uce.getAction() instanceof UserEntityAction) {
+					UserEntityAction action = (UserEntityAction)uce.getAction();
+					
+					// FIXME: Ideally we want to ensure that these methods are only called once at the end of a series of operations
+					switch (action.getEntityType()) {
+						case GRADE_RECORD:
+							switch (action.getActionType()) {
+							case UPDATE:
+								UserEntityUpdateAction<GradeRecordModel> recordUpdateAction = 
+									(UserEntityUpdateAction<GradeRecordModel>)action;
+								GradeRecordModel recordModel = recordUpdateAction.getModel();
+								GradeRecordModel.Key recordModelKey = GradeRecordModel.Key.valueOf(recordUpdateAction.getKey());
+								
+								StudentModel studentModel = recordUpdateAction.getStudentModel();
+								
+								Record r = store.getRecord(studentModel);
+								
+								// First, clear out any currently dropped
+								for (String property : studentModel.getPropertyNames()) {
+									if (property.endsWith(StudentModel.DROP_FLAG)) {
+										int dropFlagIndex = property.indexOf(StudentModel.DROP_FLAG);
+											
+										String assignmentId = property.substring(0, dropFlagIndex);
+										Object value = studentModel.get(assignmentId);
+										Boolean recordDropped = (Boolean)r.get(property);
+										Boolean modelDropped = studentModel.get(property);
+									
+										boolean isDropped = modelDropped != null && modelDropped.booleanValue();
+										boolean wasDropped = recordDropped != null && recordDropped.booleanValue();
+										
+										r.set(property, modelDropped);
+										
+										if (isDropped || wasDropped) {
+											r.set(assignmentId, null);
+											r.set(assignmentId, value);
+											//r.setDirty(true);
+										}
+									}
+								}
+								
+								String courseGrade = studentModel.get(StudentModel.Key.COURSE_GRADE.name());
+								
+								if (courseGrade != null) {
+									r.set(StudentModel.Key.COURSE_GRADE.name(), null);
+									r.set(StudentModel.Key.COURSE_GRADE.name(), courseGrade);
+								}
+								
+								r.endEdit();
+
+								break;
+							}
+							break;
+					}
+				}
+			}
+			
+		});
+	}
 
 	@Override
 	protected void refreshGrid(RefreshAction refreshAction) {

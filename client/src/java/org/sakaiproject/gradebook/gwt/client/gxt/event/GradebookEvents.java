@@ -44,4 +44,6 @@ public class GradebookEvents {
 	
 	public static final int UserChange = 12009;
 	
+	public static final int Refresh = 12010;
+	
 }

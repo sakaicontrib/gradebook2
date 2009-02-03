@@ -34,6 +34,10 @@ import com.extjs.gxt.ui.client.widget.grid.GridView;
 
 public class BaseCustomGridView extends GridView {
 	
+	protected boolean isClickable(ModelData model, String property) {
+		return false;
+	}
+	
 	protected boolean isDropped(ModelData model, String property) {
 		return false;
 	}
@@ -104,6 +108,10 @@ public class BaseCustomGridView extends GridView {
 				if (isCommented(model, c.id)) {
 					innerCssClass.append(" gbCellCommented");
 				} 
+				
+				if (isClickable(model, c.id)) {
+					innerCssClass.append(" gbCellClickable");
+				}
 				
 				if (isDropped(model, c.id)) {
 					css.append(" gbCellDropped");
