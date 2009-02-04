@@ -29,7 +29,6 @@ import org.sakaiproject.gradebook.gwt.client.model.EntityModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeRecordModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
-import org.sakaiproject.gradebook.gwt.client.model.ItemEntityModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
 
@@ -45,6 +44,10 @@ public class UserEntityUpdateAction<M extends EntityModel> extends UserEntityAct
 	
 	public UserEntityUpdateAction(ActionType actionType) {
 		super(actionType);
+	}
+	
+	public UserEntityUpdateAction(EntityType entityType, ActionType actionType) {
+		super(actionType, entityType);
 	}
 	
 	public UserEntityUpdateAction(GradebookModel gbModel, M model, String key, ClassType classType, Object value, Object startValue) {

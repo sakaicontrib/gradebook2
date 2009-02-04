@@ -31,6 +31,7 @@ import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
+import org.sakaiproject.gradebook.gwt.client.action.Action.ActionType;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
@@ -172,7 +173,7 @@ public class SettingsGradingScaleContentPanel extends ContentPanel {
 							if (gridEvent != null)
 								grid.fireEvent(Events.AfterEdit, gridEvent);
 					
-							SettingsGradingScaleContentPanel.this.fireEvent(GradebookEvents.UserChange, new UserChangeEvent(action));
+							SettingsGradingScaleContentPanel.this.fireEvent(GradebookEvents.UserChange, new UserChangeEvent(EntityType.GRADE_SCALE, ActionType.UPDATE));
 						}
 					
 				};
