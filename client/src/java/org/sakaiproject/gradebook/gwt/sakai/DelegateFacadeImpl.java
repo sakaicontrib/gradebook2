@@ -202,6 +202,7 @@ private static final long serialVersionUID = 1L;
 			gbService.storeActionRecord(actionRecord);
 		
 		} catch (Throwable t) {
+			log.warn("FatalException: ", t);
 			throw new FatalException(t.getMessage(), t);
 		}
 		
@@ -228,6 +229,7 @@ private static final long serialVersionUID = 1L;
 			}
 		
 		} catch (Throwable t) {
+			log.warn("FatalException: ", t);
 			throw new FatalException(t.getMessage(), t);
 		}
 		
@@ -250,6 +252,7 @@ private static final long serialVersionUID = 1L;
 			}
 		
 		} catch (Throwable t) {
+			log.warn("FatalException: ", t);
 			throw new FatalException(t.getMessage(), t);
 		}
 		
@@ -278,6 +281,7 @@ private static final long serialVersionUID = 1L;
 			}
 		
 		} catch (Throwable t) {
+			log.warn("FatalException: ", t);
 			throw new FatalException(t.getMessage(), t);
 		}
 		
@@ -395,6 +399,7 @@ private static final long serialVersionUID = 1L;
 		} catch (InvalidInputException ie) {
 			throw ie;
 		} catch (Throwable t) {
+			log.warn("FatalException: ", t);
 			throw new FatalException(t.getMessage(), t);
 		}
 		
@@ -453,6 +458,7 @@ private static final long serialVersionUID = 1L;
 			gbService.storeActionRecord(actionRecord);
 		
 		} catch (Throwable t) {
+			log.warn("FatalException: ", t);
 			throw new FatalException(t.getMessage(), t);
 		}
 		

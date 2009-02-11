@@ -29,5 +29,31 @@ public class ToolFacadeCategoriesPointTest extends AbstractToolFacadePointTest {
 		checkCourseGrade("C (75.00%) ");
 	}
 
+	/*
+	 * Overall grades will be points based 15 + 15 + 15 + 7.5 + 7.5 + 7.5 + 7.5 (+ 20) = 95 out of 100
+	 */
+	public void testExtraCreditCategory() throws InvalidInputException, FatalException {
+		super.testExtraCreditCategory();
+		checkCourseGrade("A (95.00%) ");
+	}
+	
+	/*
+	 * Overall grades will be points based 15 + 15 + 15 + 7.5 + 7.5 + 7.5 + 7.5 (+ 15) = 90 out of 100
+	 * 
+	 */
+	public void testExtraCreditCategoryPartial() throws InvalidInputException, FatalException {
+		super.testExtraCreditCategoryPartial();
+		checkCourseGrade("A- (90.00%) ");
+	}
+	
+	/*
+	 * With points based:
+	 * 15 + 15 + 15 (+20) + 7.5 + 7.5 + 7.5 + 7.5 = 95 out of 100
+	 * 
+	 */
+	public void testExtraCreditItem() throws InvalidInputException, FatalException {
+		super.testExtraCreditItem();
+		checkCourseGrade("A (95.00%) ");
+	}
 	
 }

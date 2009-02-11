@@ -40,7 +40,7 @@ public class GradeCalculationTest extends TestCase {
 		AssignmentGradeRecord assignmentGradeRecord = testData.getAssignmentGradeRecord(assignment, testData.TEST_STUDENT_1);
 		BigDecimal pointsEarnedAsPercent = gradeCalculationMock.getPointsEarnedAsPercent(assignment, assignmentGradeRecord);
 		assertNotNull(pointsEarnedAsPercent);
-		assertEquals(new BigDecimal("65.0"), pointsEarnedAsPercent);
+		assertEquals(new BigDecimal("65.00000"), pointsEarnedAsPercent);
 	}
 	
 	public void testGetEarnedWeightedPercentage() {
@@ -52,7 +52,7 @@ public class GradeCalculationTest extends TestCase {
 		BigDecimal earnedWeightedPercentage = gradeCalculationMock.getEarnedWeightedPercentage(assignment, pointsEarnedAsPercent, Boolean.TRUE);
 		assertNotNull(earnedWeightedPercentage);
 		System.out.println("Earned weighted percentage " + earnedWeightedPercentage);
-		assertEquals(new BigDecimal("13.00"), earnedWeightedPercentage);
+		assertEquals(new BigDecimal("13.000000"), earnedWeightedPercentage);
 	}
 	
 	public void testGetSumAssignmentsEarnedWeightedPercentage() {
@@ -113,7 +113,7 @@ public class GradeCalculationTest extends TestCase {
 		Category category = testData.getCategory(testData.HOME_WORK_ID);
 		BigDecimal sumExtraCreditAssignmentEarnedWeightedPercentage = gradeCalculationMock.sumExtraCreditEarnedWeightedPercentage(category, assignmentGradeRecordMap);
 		assertNotNull(sumExtraCreditAssignmentEarnedWeightedPercentage);
-		assertEquals(new BigDecimal("16.00"), sumExtraCreditAssignmentEarnedWeightedPercentage);
+		assertEquals(new BigDecimal("16.000000"), sumExtraCreditAssignmentEarnedWeightedPercentage);
 	}
 	
 	public void testGetCategoryGrade() {
@@ -138,7 +138,7 @@ public class GradeCalculationTest extends TestCase {
 		category = testData.getCategory(testData.EXAMS_ID);
 		categoryGrade = gradeCalculationMock.getCategoryGrade(category, assignmentGradeRecordMap);
 		assertNotNull(categoryGrade);
-		assertEquals(new BigDecimal("87.2"), categoryGrade);
+		assertEquals(new BigDecimal("87.20000"), categoryGrade);
 		
 		// Testing category Labs
 		category = testData.getCategory(testData.LABS_ID);
@@ -150,7 +150,7 @@ public class GradeCalculationTest extends TestCase {
 		category = testData.getCategory(testData.EXTRA_CREDIT_ID);
 		categoryGrade = gradeCalculationMock.getCategoryGrade(category, assignmentGradeRecordMap);
 		assertNotNull(categoryGrade);
-		assertEquals(new BigDecimal("68.00"), categoryGrade);
+		assertEquals(new BigDecimal("68.000000"), categoryGrade);
 	}
 	
 	public void testGetCourseGrade() {

@@ -75,4 +75,47 @@ public class ToolFacadeWeightedCategoriesPointTest extends AbstractToolFacadePoi
 		checkCourseGrade("D (66.67%) ");
 	}
 	
+	/*
+	 * Overall grades will be 75% + 10% extra credit = 85%
+	 */
+	public void testExtraCreditCategory() throws InvalidInputException, FatalException {
+		super.testExtraCreditCategory();
+		checkCourseGrade("B (85.00%) ");
+	}
+	
+	/*
+	 * Overall grades with weighted categories:
+	 * 75% for all non-extra credit + 7.5% extra credit category = 82.5%
+	 * 
+	 */
+	public void testExtraCreditCategoryPartial() throws InvalidInputException, FatalException {
+		super.testExtraCreditCategoryPartial();
+		checkCourseGrade("B- (82.50%) ");
+	}
+	
+
+	/*
+	 * With weighted categories, we have 
+	 * Essays (40%)
+	 * 	- 1 : 33.333% : 15 of 20 = 0.75 = 25
+	 *  - 2 : 33.333% : 15 of 20 = 0.75 = 25
+	 *  - 3 : 33.333% : 15 of 20 = 0.75 = 25
+	 *  - EC : 5%	  : 20 of 20 = 1.00 =  5
+	 *  - Total : 80 = 32
+	 *  
+	 * Homework (60%)
+	 *  - 1 : 25% : 7.5 of 10 = 0.75 = 18.75
+	 *  - 2 : 25% : 7.5 of 10 = 0.75 = 18.75
+	 *  - 3 : 25% : 7.5 of 10 = 0.75 = 18.75
+	 *  - 4 : 25% : 7.5 of 10 = 0.75 = 18.75
+	 *  - Total : 75 = 45
+	 * 
+	 * Overall grade will be 77
+	 * 
+	 */
+	public void testExtraCreditItem() throws InvalidInputException, FatalException {
+		super.testExtraCreditItem();
+		checkCourseGrade("C+ (77.00%) ");
+	}
+	
 }

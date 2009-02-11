@@ -43,6 +43,9 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 	
 	/*
 	 * If a learner gets 75% on all grade items, then his/her course grade should be 75%
+	 * 
+	 * Points: 15 + 15 + 15 + 7.5 + 7.5 + 7.5 + 7.5 = 75
+	 * 
 	 */
 	public void testMediocreScores() throws InvalidInputException, FatalException {
 		gradeAllSameScore(ScoreType.MEDIOCRE, "C (75.00%) ");
@@ -150,6 +153,34 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 		}
 	}
 	
+	/* 
+	 *
+	 */
+	/*public void testExtraCreditCategory() throws InvalidInputException, FatalException {
+		// Start by grading everything as mediocre
+		gradeAllSameScore(ScoreType.MEDIOCRE, "C (75.00%) ");
+		
+		CategoryModel ecCategory = facade.createEntity(new UserCategoryCreateAction(gbModel, "Extra Credit", 
+				Double.valueOf(10d), Boolean.TRUE, Integer.valueOf(0)));
+		
+		AssignmentModel ec1 = facade.createEntity(new UserAssignmentCreateAction(gbModel, 
+				Long.valueOf(ecCategory.getIdentifier()), 
+				"Extra Credit 1", Double.valueOf(0), Double.valueOf(20), new Date()));
+		assignmentMap.put(ec1.getIdentifier(), ec1);
+		
+		gradeCategorySameScore(ecCategory, ScoreType.PERFECT_SCORE);
+		
+		checkCourseGrade("B (85.00%) ");
+	}*/
+	
+	/*
+	// FIXME : Need a test that checks for drop lowest in points-based, where one assignment is 225 and the other 100
+	public void testDropLowest() throws InvalidInputException, FatalException {
+		
+		
+		
+	}*/
+	
 	
 	
 	/*
@@ -197,6 +228,88 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 		List<CategoryModel> categories = result.getData();
 		
 		assertEquals(1, categories.size());
+	}
+	
+	/*
+	 * Overall grades will be points based 15 + 15 + 15 + 7.5 + 7.5 + 7.5 + 7.5 (+ 20) = 95 out of 100
+	 * or with weighted categories:
+	 * 75% for all non-extra credit + 10% extra credit category = 85%
+	 * 
+	 */
+	public void testExtraCreditCategory() throws InvalidInputException, FatalException {
+		// Start by grading everything as mediocre
+		gradeAllSameScore(ScoreType.MEDIOCRE, "C (75.00%) ");
+		
+		CategoryModel ecCategory = facade.createEntity(new UserCategoryCreateAction(gbModel, "Extra Credit", 
+				Double.valueOf(10d), Boolean.TRUE, Integer.valueOf(0)));
+		ecCategory = makeCategoryExtraCredit(ecCategory, true);
+		
+		AssignmentModel ec1 = facade.createEntity(new UserAssignmentCreateAction(gbModel, 
+				Long.valueOf(ecCategory.getIdentifier()), 
+				"Extra Credit 1", Double.valueOf(100), Double.valueOf(20), new Date()));
+		assignmentMap.put(ec1.getIdentifier(), ec1);
+		
+		gradeCategorySameScore(ecCategory, ScoreType.PERFECT_SCORE);
+	}
+	
+	/*
+	 * Overall grades will be points based 15 + 15 + 15 + 7.5 + 7.5 + 7.5 + 7.5 (+ 15) = 90 out of 100
+	 * or with weighted categories:
+	 * 75% for all non-extra credit + 7.5% extra credit category = 82.5%
+	 * 
+	 */
+	public void testExtraCreditCategoryPartial() throws InvalidInputException, FatalException {
+		// Start by grading everything as mediocre
+		gradeAllSameScore(ScoreType.MEDIOCRE, "C (75.00%) ");
+		
+		CategoryModel ecCategory = facade.createEntity(new UserCategoryCreateAction(gbModel, "Extra Credit", 
+				Double.valueOf(10d), Boolean.TRUE, Integer.valueOf(0)));
+		ecCategory = makeCategoryExtraCredit(ecCategory, true);
+		
+		AssignmentModel ec1 = facade.createEntity(new UserAssignmentCreateAction(gbModel, 
+				Long.valueOf(ecCategory.getIdentifier()), 
+				"Extra Credit 1", Double.valueOf(100), Double.valueOf(20), new Date()));
+		assignmentMap.put(ec1.getIdentifier(), ec1);
+		
+		gradeCategorySameScore(ecCategory, ScoreType.MEDIOCRE);
+	}
+	
+	/*
+	 * With weighted categories, we have 
+	 * Essays (40%)
+	 * 	- 1 : 33.333% : 15 of 20 = 0.75 = 25
+	 *  - 2 : 33.333% : 15 of 20 = 0.75 = 25
+	 *  - 3 : 33.333% : 15 of 20 = 0.75 = 25
+	 *  - EC : 5%	  : 20 of 20 = 1.00 =  5
+	 *  - Total : 80 = 32
+	 *  
+	 * Homework (60%)
+	 *  - 1 : 25% : 7.5 of 10 = 0.75 = 18.75
+	 *  - 2 : 25% : 7.5 of 10 = 0.75 = 18.75
+	 *  - 3 : 25% : 7.5 of 10 = 0.75 = 18.75
+	 *  - 4 : 25% : 7.5 of 10 = 0.75 = 18.75
+	 *  - Total : 75 = 45
+	 * 
+	 * Overall grade will be 77
+	 * 
+	 * 
+	 * With points based:
+	 * 15 + 15 + 15 (+20) + 7.5 + 7.5 + 7.5 + 7.5 = 95 out of 100
+	 * 
+	 */
+	public void testExtraCreditItem() throws InvalidInputException, FatalException {
+		// Start by grading everything as mediocre
+		gradeAllSameScore(ScoreType.MEDIOCRE, "C (75.00%) ");
+		
+		AssignmentModel ec1 = facade.createEntity(new UserAssignmentCreateAction(gbModel, 
+				Long.valueOf(essaysCategory.getIdentifier()), 
+				"Extra Credit Essay", Double.valueOf(20), Double.valueOf(20), new Date()));
+		assignmentMap.put(ec1.getIdentifier(), ec1);
+		
+		ec1 = makeItemExtraCredit(ec1, true);
+		ec1 = setItemWeight(ec1, Double.valueOf(5d));
+		
+		gradeItem(ec1, ScoreType.PERFECT_SCORE);
 	}
 	
 	
@@ -303,6 +416,18 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 		return facade.updateEntity(new UserEntityUpdateAction<CategoryModel>(gbModel, category, CategoryModel.Key.REMOVED.name(), ClassType.BOOLEAN, Boolean.valueOf(isRemoved), Boolean.valueOf(!isRemoved)));
 	}
 	
+	protected CategoryModel makeCategoryExtraCredit(CategoryModel category, boolean isExtraCredit) throws InvalidInputException, FatalException {
+		return facade.updateEntity(new UserEntityUpdateAction<CategoryModel>(gbModel, category, CategoryModel.Key.EXTRA_CREDIT.name(), ClassType.BOOLEAN, Boolean.valueOf(isExtraCredit), Boolean.valueOf(!isExtraCredit)));
+	}
+	
+	protected AssignmentModel makeItemExtraCredit(AssignmentModel item, boolean isExtraCredit) throws InvalidInputException, FatalException {
+		return facade.updateEntity(new UserEntityUpdateAction<AssignmentModel>(gbModel, item, AssignmentModel.Key.EXTRA_CREDIT.name(), ClassType.BOOLEAN, Boolean.valueOf(isExtraCredit), Boolean.valueOf(!isExtraCredit)));
+	}
+	
+	protected AssignmentModel setItemWeight(AssignmentModel item, Double weight) throws InvalidInputException, FatalException {
+		return facade.updateEntity(new UserEntityUpdateAction<AssignmentModel>(gbModel, item, AssignmentModel.Key.WEIGHT.name(), ClassType.DOUBLE, weight, null));
+	}
+	
 	protected void gradeAllSameScore(ScoreType outlier, String expectedCourseGrade) throws InvalidInputException, FatalException {
 		PagingLoadConfig loadConfig = new MultiGradeLoadConfig();
 		loadConfig.setOffset(0);
@@ -352,6 +477,30 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 		}
 	}
 	
+	protected void gradeItem(AssignmentModel assignment, ScoreType outlier) throws InvalidInputException, FatalException {
+		PagingLoadConfig loadConfig = new MultiGradeLoadConfig();
+		loadConfig.setOffset(0);
+		loadConfig.setLimit(20);
+		PagingLoadResult<StudentModel> learnerResult = facade.getEntityPage(new PageRequestAction(EntityType.STUDENT, "emptyid", Long.valueOf(1l)), loadConfig);
+		
+		for (StudentModel learner : learnerResult.getData()) {
+			Map<String, Object> properties = learner.getProperties();
+			
+			StudentModel result = null;
+			for (String name : properties.keySet()) {
+				try {
+					Long.parseLong(name);
+			
+					if (assignment.getIdentifier().equals(name)) {
+						result = gradeLearner(outlier, learner, name);
+					}
+				} catch (NumberFormatException nfe) {
+					// We can safely ignore these exceptions -- we expect to get many of them here
+				}
+			}
+		}
+	}
+	
 	protected void checkCourseGrade(String expectedCourseGrade) throws InvalidInputException, FatalException {
 		PagingLoadConfig loadConfig = new MultiGradeLoadConfig();
 		loadConfig.setOffset(0);
@@ -359,9 +508,12 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 		PagingLoadResult<StudentModel> learnerResult = facade.getEntityPage(new PageRequestAction(EntityType.STUDENT, "emptyid", Long.valueOf(1l)), loadConfig);
 		
 		for (StudentModel learner : learnerResult.getData()) {
+			
 			assertEquals(expectedCourseGrade, learner.getStudentGrade());
 		}
 	}
+	
+	
 	
 	protected StudentModel gradeLearner(ScoreType outlier, StudentModel learner, String name) throws InvalidInputException, FatalException {
 		Double score = null;

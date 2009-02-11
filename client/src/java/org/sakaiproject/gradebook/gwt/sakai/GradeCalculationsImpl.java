@@ -43,7 +43,7 @@ import org.sakaiproject.tool.gradebook.Gradebook;
 public class GradeCalculationsImpl implements GradeCalculations {
 	
 	// Class Members
-	final static BigDecimal BIG_DECIMAL_100 = new BigDecimal("100.0");
+	final static BigDecimal BIG_DECIMAL_100 = new BigDecimal("100.00000");
 	public static final MathContext MATH_CONTEXT = new MathContext(10, RoundingMode.HALF_DOWN);
 	private static final Log log = LogFactory.getLog(GradeCalculationsImpl.class);
 	
@@ -89,9 +89,9 @@ public class GradeCalculationsImpl implements GradeCalculations {
 		return assignment.isExtraCredit() == null ? false : assignment.isExtraCredit().booleanValue();
 	}
 	
-	private boolean isExtraCredit(Category category) {
+	/*private boolean isExtraCredit(Category category) {
 		return category.isExtraCredit() == null ? false : category.isExtraCredit().booleanValue();
-	}
+	}*/
 	
 	private boolean isNormalCredit(Assignment assignment) {
 		boolean isExtraCredit = isExtraCredit(assignment);
@@ -132,6 +132,19 @@ public class GradeCalculationsImpl implements GradeCalculations {
 		percentageEarned = pointsEarned.multiply(BIG_DECIMAL_100).divide(pointsPossible, MATH_CONTEXT);
 
 		return percentageEarned;
+	}
+	
+	public BigDecimal getPointsEarned(Assignment assignment, AssignmentGradeRecord assignmentGradeRecord) {
+
+		BigDecimal pointsEarned = null;
+
+		if (isBlank(assignment, assignmentGradeRecord)) {
+			return pointsEarned;
+		}
+		
+		pointsEarned = new BigDecimal(assignmentGradeRecord.getPointsEarned().toString());
+
+		return pointsEarned;
 	}
 
 	// TPA : Complies with spreadsheet calculations
@@ -234,6 +247,128 @@ public class GradeCalculationsImpl implements GradeCalculations {
 		return sumAssignmentsEarnedWeightedPercentage;
 	}
 
+	public BigDecimal sumPoints(Category categoryWithAssignments, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap) {
+		 
+		BigDecimal sumPoints = null;
+
+		//if (isDeleted(categoryWithAssignments))
+		//	return null;
+		
+		List<Assignment> assignments = categoryWithAssignments.getAssignmentList();
+		List<AssignmentGradeRecord> agrs = new ArrayList<AssignmentGradeRecord>();
+		
+		if (assignments != null && !assignments.isEmpty()) {
+			// Only used to calculate overall weight
+			//BigDecimal categoryWeight = getCategoryWeight(categoryWithAssignments);
+			// Loop over all assignments
+			for (Assignment assignment : assignments) {
+				// For a normal credit assignment
+				if (!isDeleted(assignment)) {
+					// Only used to calculate overall weight
+					BigDecimal assignmentWeight = getAssignmentWeight(assignment);
+					// Find the AssignmentGradeRecord for this assignment
+					AssignmentGradeRecord assignmentGradeRecord = assignmentGradeRecordMap.get(assignment.getId());
+					// Make sure it has a grade 			
+					if (isGraded(assignmentGradeRecord)) {
+						// Make sure it's not excused
+						if (!isExcused(assignmentGradeRecord)) {
+							BigDecimal pointsEarned = getPointsEarned(assignment, assignmentGradeRecord);
+							if (pointsEarned != null) {
+								assignmentGradeRecord.setEarnedWeightedPercentage(pointsEarned);
+								assignmentGradeRecord.setDropped(Boolean.FALSE);
+								//BigDecimal overallWeight = null;
+								//if (categoryWeight != null && assignmentWeight != null)
+								//	overallWeight = categoryWeight.multiply(assignmentWeight);
+								//assignmentGradeRecord.setOverallWeight(overallWeight);
+								agrs.add(assignmentGradeRecord);
+							}
+						} // if
+					} // if 		
+				} // if 
+			} // for 
+		} // if
+		
+		// Check to see if we need to drop the lowest N assignments for a given user
+		int nDropLowest = categoryWithAssignments.getDrop_lowest();
+		int sizeOf = agrs.size();
+		
+		// We cannot drop lowest when we don't have categories
+		Gradebook gradebook = categoryWithAssignments.getGradebook();
+		if (gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_NO_CATEGORY)
+			nDropLowest = 0;
+		
+		List<AssignmentGradeRecord> subList = agrs;
+		
+		if (nDropLowest > 0 && sizeOf >= nDropLowest) {
+			Collections.sort(agrs, new Comparator<AssignmentGradeRecord>() {
+
+				public int compare(AssignmentGradeRecord o1, AssignmentGradeRecord o2) {
+					return o1.getEarnedWeightedPercentage().compareTo(o2.getEarnedWeightedPercentage());
+				}
+			
+			});
+			subList = agrs.subList(nDropLowest, sizeOf);
+			
+			List<AssignmentGradeRecord> excludedSubList = agrs.subList(0, nDropLowest);
+			
+			for (AssignmentGradeRecord excluded : excludedSubList) {
+				excluded.setDropped(Boolean.TRUE);
+				excluded.setOverallWeight(BigDecimal.ZERO);
+			}
+		}
+		
+		for (AssignmentGradeRecord agr : subList) {
+			if (!isDropped(agr) && agr.getEarnedWeightedPercentage() != null) {
+				if (sumPoints == null)
+					sumPoints = BigDecimal.ZERO;
+				sumPoints = sumPoints.add(agr.getEarnedWeightedPercentage());
+			} // if 
+		} // for
+		
+		return sumPoints;
+	}
+	
+	
+	public BigDecimal sumPointsPossible(Category categoryWithAssignments, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap) {
+		 
+		BigDecimal sumPoints = null;
+
+		//if (isDeleted(categoryWithAssignments))
+		//	return null;
+		
+		List<Assignment> assignments = categoryWithAssignments.getAssignmentList();
+		List<AssignmentGradeRecord> agrs = new ArrayList<AssignmentGradeRecord>();
+		
+		if (assignments != null && !assignments.isEmpty()) {
+			// Only used to calculate overall weight
+			//BigDecimal categoryWeight = getCategoryWeight(categoryWithAssignments);
+			// Loop over all assignments
+			for (Assignment assignment : assignments) {
+				// For a non-deleted assignment
+				if (!isDeleted(assignment) && !isExtraCredit(assignment)) {
+					// Only used to calculate overall weight
+					BigDecimal assignmentWeight = getAssignmentWeight(assignment);
+					// Find the AssignmentGradeRecord for this assignment
+					AssignmentGradeRecord assignmentGradeRecord = assignmentGradeRecordMap.get(assignment.getId());
+					// Make sure it has a grade 			
+					if (isGraded(assignmentGradeRecord)) {
+						// Make sure it's not excused
+						if (!isExcused(assignmentGradeRecord) && !isDropped(assignmentGradeRecord)) {
+							BigDecimal pointsEarned = getPointsEarned(assignment, assignmentGradeRecord);
+							if (pointsEarned != null) {
+								if (sumPoints == null)
+									sumPoints = BigDecimal.ZERO;
+								sumPoints = sumPoints.add(assignmentWeight);
+							}
+						} // if
+					} // if 		
+				} // if 
+			} // for 
+		} // if
+			
+		return sumPoints;
+	}
+	
 	
 	public BigDecimal sumAssignmentWeights(Category categoryWithAssignments, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap) {
 
@@ -332,7 +467,49 @@ public class GradeCalculationsImpl implements GradeCalculations {
 		return categoryWeight;
 	}
 
+	public BigDecimal sumExtraCreditPoints(Category categoryWithAssignments, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap) {
 
+		if (isDeleted(categoryWithAssignments))
+			return null;
+		
+		BigDecimal sumAssignmentsExtraCreditPoints = null;
+		
+		List<Assignment> assignments = categoryWithAssignments.getAssignmentList();
+		
+		if (assignments != null && !assignments.isEmpty()) {
+			// Loop over all assignments
+			for(Assignment assignment : assignments) {
+				
+				// Don't sum deleted or null assignments, only ones that are extra credit
+				if (assignment != null && !isDeleted(assignment) && isExtraCredit(assignment)) {
+					// Find the AssignmentGradeRecord for this assignment
+					AssignmentGradeRecord assignmentGradeRecord = assignmentGradeRecordMap.get(assignment.getId());
+		
+					// Make sure we actually have a grade here
+					if (isGraded(assignmentGradeRecord)) {
+
+						// Don't sum assignments that have been excused
+						if (!isExcused(assignmentGradeRecord)) {
+							// Ensure that extra credit records are not dropped
+							if (assignmentGradeRecord != null)
+								assignmentGradeRecord.setDropped(Boolean.FALSE);
+
+							BigDecimal pointsEarned = getPointsEarned(assignment, assignmentGradeRecord);
+							//BigDecimal earnedWeightedPercentage = getEarnedWeightedPercentage(assignment, pointsEarned, Boolean.FALSE);
+							// Ensure we didn't get a null back
+							if (pointsEarned != null) {
+								if (sumAssignmentsExtraCreditPoints == null)
+									sumAssignmentsExtraCreditPoints = BigDecimal.ZERO;
+								sumAssignmentsExtraCreditPoints = sumAssignmentsExtraCreditPoints.add(pointsEarned);
+							} // if 
+						} // if 
+					} // if 
+				} // if 
+			} // for 
+		} // if 
+		
+		return sumAssignmentsExtraCreditPoints;
+	}
 	
 	public BigDecimal sumExtraCreditEarnedWeightedPercentage(Category categoryWithAssignments, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap) {
 
@@ -375,10 +552,64 @@ public class GradeCalculationsImpl implements GradeCalculations {
 			} // for 
 		} // if 
 		
+		//System.out.println("Extra Credit EWP: " + sumAssignmentsExtraCreditEarnedWeightedPercentage);
+		
 		return sumAssignmentsExtraCreditEarnedWeightedPercentage;
 	}	
 
 	
+	public BigDecimal getCategoryPoints(Category categoryWithAssignments,
+			   Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap) {
+		
+		// First we check if category has a ZERO weight
+		BigDecimal categoryWeight = getCategoryWeight(categoryWithAssignments);
+		
+		// A null category weight is a deleted or null category
+		if (null == categoryWeight)
+			return null;
+		
+		// A zero category weight is one that will never produce a non-zero grade
+		if (BigDecimal.ZERO.compareTo(categoryWeight) == 0) {
+			return BigDecimal.ZERO;
+		}
+		
+		BigDecimal earnedPoints = sumPoints(categoryWithAssignments, assignmentGradeRecordMap);
+			
+		BigDecimal earnedExtraCreditPoints = sumExtraCreditPoints(categoryWithAssignments, assignmentGradeRecordMap);
+		
+		//BigDecimal assignmentWeights = sumAssignmentWeights(categoryWithAssignments, assignmentGradeRecordMap);
+		
+		// If earned points is null then the category has been removed or is unweighted
+		if (earnedPoints == null)
+			return earnedPoints;
+		
+		// In the case where our earned weighted percentage is zero and we have some extra credit, just return
+		// the extra credit. 
+		if (earnedExtraCreditPoints != null && earnedPoints.compareTo(BigDecimal.ZERO) == 0)
+			return earnedExtraCreditPoints;
+		
+		// Of course, if there's no extra credit, and the earned weighted percentage is zero, then we want to return zero
+		// and not null, which would be misleading
+		if (earnedPoints.compareTo(BigDecimal.ZERO) == 0)
+			return BigDecimal.ZERO;
+		
+		//if (assignmentWeights.compareTo(BigDecimal.ZERO) == 0)
+		//	return null;
+		
+		BigDecimal assignmentSum = earnedPoints; //.divide(assignmentWeights, MATH_CONTEXT);
+		
+		if (earnedExtraCreditPoints != null)
+			assignmentSum = assignmentSum.add(earnedExtraCreditPoints);
+		
+		return assignmentSum;
+	}
+	
+	public BigDecimal getCategoryPointsPossible(Category categoryWithAssignments,
+			   Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap) {
+		
+		return sumAssignmentWeights(categoryWithAssignments, assignmentGradeRecordMap);
+	}
+
 	public BigDecimal getCategoryGrade(Category categoryWithAssignments,
 			   Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap) {
 		
@@ -444,6 +675,10 @@ public class GradeCalculationsImpl implements GradeCalculations {
 					BigDecimal categoryGrade = getCategoryGrade(category, assignmentGradeRecordMap);
 					BigDecimal categoryWeight = getCategoryWeight(category);
 					
+					//System.out.println("Category: " + category.getName());
+					//System.out.println("Category grade: " + categoryWeight);
+					//System.out.println("Category weight: " + categoryWeight);
+					
 					if (categoryGrade != null) {
 						BigDecimal weightedGrade = categoryGrade.multiply(categoryWeight);
 						
@@ -472,17 +707,31 @@ public class GradeCalculationsImpl implements GradeCalculations {
 			default:
 				BigDecimal categoryGradeSum = BigDecimal.ZERO;
 				for (Category category : categoriesWithAssignments) {
-					BigDecimal categoryGrade = getCategoryGrade(category, assignmentGradeRecordMap);
-					BigDecimal categoryWeight = getCategoryWeight(category);
+
+					if (gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_ONLY_CATEGORY &&
+					    isDeleted(category))
+						continue;
 					
-					if (categoryGrade != null) {
+					BigDecimal categoryPoints = sumPoints(category, assignmentGradeRecordMap);
+					BigDecimal categoryWeight = sumPointsPossible(category, assignmentGradeRecordMap);
+						//getCategoryWeight(category);
+					
+					//System.out.println("Category: " + category.getName());
+					//System.out.println("Category points: " + categoryPoints);
+					//System.out.println("Category weight: " + categoryWeight);
+					
+					if (categoryPoints != null && categoryWeight != null) {
 						boolean isExtraCredit = category.isExtraCredit() == null ? false : category.isExtraCredit().booleanValue();
 						if (isExtraCredit) {
 							extraCreditSum = extraCreditSum.add(categoryWeight);
-							extraCredit = extraCredit.add(categoryGrade);
+							extraCredit = extraCredit.add(categoryPoints);
+							//System.out.println("EC grade sum " + extraCredit);
+							//System.out.println("EC weight sum " + extraCreditSum);
 						} else {
 							categoryWeightSum = categoryWeightSum.add(categoryWeight);
-							categoryGradeSum = categoryGradeSum.add(categoryGrade.multiply(categoryWeight));
+							categoryGradeSum = categoryGradeSum.add(categoryPoints);
+							//System.out.println("Category grade sum " + categoryGradeSum);
+							//System.out.println("Category weight sum " + categoryWeightSum);
 						} // else
 					} // if 
 				}
@@ -490,8 +739,14 @@ public class GradeCalculationsImpl implements GradeCalculations {
 				if (courseGrade == null)
 					courseGrade = BigDecimal.ZERO;
 				
+				if (categoryGradeSum != null)
+					categoryGradeSum = categoryGradeSum.multiply(BIG_DECIMAL_100);
+				
 				if (categoryWeightSum.compareTo(BigDecimal.ZERO) != 0)
 					courseGrade = categoryGradeSum.divide(categoryWeightSum, RoundingMode.HALF_EVEN);
+				
+				//System.out.println("Extra credit " + extraCredit);
+				
 				break;
 			} // switch
 		} // if 
@@ -502,6 +757,8 @@ public class GradeCalculationsImpl implements GradeCalculations {
 		// We don't want to return anything larger than 100%
 		if (courseGrade != null && courseGrade.compareTo(BIG_DECIMAL_100) > 0)
 			courseGrade = BIG_DECIMAL_100;
+		
+		//System.out.println("COURSE GRADE: " + courseGrade);
 		
 		return courseGrade;
 	}
