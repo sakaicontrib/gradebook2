@@ -22,6 +22,8 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.gxt;
 
+import java.util.List;
+
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.GradebookToolFacadeAsync;
 import org.sakaiproject.gradebook.gwt.client.PersistentStore;
@@ -39,24 +41,37 @@ import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig
 import org.sakaiproject.gradebook.gwt.client.model.EntityModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
 import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
+import com.extjs.gxt.ui.client.Style.LayoutRegion;
+import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.Style.SortDir;
+import com.extjs.gxt.ui.client.binder.TreeBinder;
 import com.extjs.gxt.ui.client.data.BasePagingLoader;
+import com.extjs.gxt.ui.client.data.BaseTreeLoader;
 import com.extjs.gxt.ui.client.data.DataReader;
 import com.extjs.gxt.ui.client.data.ModelReader;
 import com.extjs.gxt.ui.client.data.PagingLoadConfig;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 import com.extjs.gxt.ui.client.data.RpcProxy;
 import com.extjs.gxt.ui.client.data.SortInfo;
+import com.extjs.gxt.ui.client.data.TreeLoader;
+import com.extjs.gxt.ui.client.data.TreeModelReader;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.GridEvent;
 import com.extjs.gxt.ui.client.event.Listener;
+import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
+import com.extjs.gxt.ui.client.event.SelectionChangedListener;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
+import com.extjs.gxt.ui.client.store.TreeStore;
+import com.extjs.gxt.ui.client.util.Margins;
+import com.extjs.gxt.ui.client.widget.Component;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
-import com.extjs.gxt.ui.client.widget.Info;
+import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.grid.CellSelectionModel;
@@ -64,11 +79,14 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.EditorGrid;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridView;
+import com.extjs.gxt.ui.client.widget.layout.BorderLayout;
+import com.extjs.gxt.ui.client.widget.layout.BorderLayoutData;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
+import com.extjs.gxt.ui.client.widget.tree.Tree;
+import com.extjs.gxt.ui.client.widget.tree.TreeSelectionModel;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Element;
-import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
@@ -149,7 +167,13 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		
 		});
 		
-		add(newGrid());
+		// GRBK-31 : We only add the categories and items tree to multigrade
+		if(gridId.equals("multigrade")) {
+			add(newLayoutContainer(newGrid(), newTree()));
+		}
+		else {
+			add(newGrid());
+		}
 	}
 	
 	protected void onRender(Element parent, int pos) {
@@ -211,6 +235,105 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 	protected Menu newContextMenu() {
 		return null;
 	}
+	
+	
+	// GRBK-31
+	protected LayoutContainer newLayoutContainer(Component center, Component west) {
+	
+		final LayoutContainer layoutContainer = new LayoutContainer(); 
+		
+		final BorderLayout borderLayout = new BorderLayout();  
+		layoutContainer.setLayout(borderLayout);
+		
+		BorderLayoutData westData = new BorderLayoutData(LayoutRegion.WEST, 150);  
+		westData.setSplit(true);  
+		westData.setCollapsible(true);  
+		westData.setMargins(new Margins(5));  
+
+		BorderLayoutData centerData = new BorderLayoutData(LayoutRegion.CENTER);  
+		centerData.setMargins(new Margins(5, 0, 5, 0));  
+
+		ContentPanel contentPanel = new ContentPanel();
+		contentPanel.add(west);
+		layoutContainer.add(center, centerData);
+		layoutContainer.add(contentPanel, westData);
+		return layoutContainer;
+	}
+	
+	
+	// GRBK-31
+	protected Tree newTree() {
+		
+		GradebookModel model = Registry.get(gradebookUid);
+		ItemModel rootItemModel = model.getRootItemModel();
+		
+		final Tree tree = new Tree();
+		tree.setSelectionModel(new TreeSelectionModel(SelectionMode.MULTI));
+
+		TreeLoader<ItemModel> treeLoader = new BaseTreeLoader(new TreeModelReader());  
+		final TreeStore<ItemModel> treeStore = new TreeStore<ItemModel>(treeLoader);
+		
+		TreeBinder<ItemModel> treeBinder = new TreeBinder<ItemModel>(tree, treeStore);
+		treeBinder.setDisplayProperty(ItemModel.Key.NAME.name());
+		treeBinder.setAutoLoad(true);
+		treeBinder.addSelectionChangedListener(new SelectionChangedListener<ItemModel>() {
+
+			@Override
+			public void selectionChanged(SelectionChangedEvent<ItemModel> se) {
+				
+				List<ItemModel> allItemModels = treeStore.getAllItems();
+				List<ItemModel> selectedItemModels = se.getSelection();
+				
+				// First we hide all the items
+				for(ItemModel itemModel : allItemModels) {
+					
+					if(itemModel.getItemType().equals(Type.ITEM.getName())) {
+						
+						cm.setHidden(cm.getIndexById(itemModel.getIdentifier()), true);
+					}
+				}
+				
+				// Then we show the items that were selected
+				for(ItemModel selectedItemModel : selectedItemModels) {
+					
+					// Check if user selected a gradebook, category, or item
+					if(selectedItemModel.getItemType().equals(Type.GRADEBOOK.getName())) {
+						
+						List<ItemModel> categoryItemModels = treeStore.getChildren(selectedItemModel);
+						
+						for(ItemModel categoryItemModel : categoryItemModels) {
+							
+							List<ItemModel> assignmentItemModels = treeStore.getChildren(categoryItemModel);
+							
+							for(ItemModel assignmentItemModel : assignmentItemModels) {
+								
+								cm.setHidden(cm.getIndexById(assignmentItemModel.getIdentifier()), false);
+							}
+						}
+					}
+					else if(selectedItemModel.getItemType().equals(Type.CATEGORY.getName())) {
+						
+						List<ItemModel> assignmentItemModels = treeStore.getChildren(selectedItemModel);
+						
+						for(ItemModel assignmentItemModel : assignmentItemModels) {
+							
+							cm.setHidden(cm.getIndexById(assignmentItemModel.getIdentifier()), false);
+						}
+					}
+					else if(selectedItemModel.getItemType().equals(Type.ITEM.getName())) {
+						
+						cm.setHidden(cm.getIndexById(selectedItemModel.getIdentifier()), false);
+					}
+				}
+			}
+			
+		});
+
+		treeLoader.load(rootItemModel);
+		
+		return tree;
+	}
+	
 	
 	protected Grid<M> newGrid() {
 

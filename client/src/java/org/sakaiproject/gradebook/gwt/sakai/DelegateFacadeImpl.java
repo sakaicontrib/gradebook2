@@ -67,10 +67,12 @@ import org.sakaiproject.gradebook.gwt.client.model.GradeEventModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeRecordModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.SectionModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
+import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
 import org.sakaiproject.gradebook.gwt.server.DataTypeConversionUtil;
 import org.sakaiproject.section.api.SectionAwareness;
@@ -1322,6 +1324,39 @@ private static final long serialVersionUID = 1L;
 		}
 		
 		return new BasePagingLoadResult<X>(rows, config.getOffset(), userRecords.size());
+	}
+	
+	private ItemModel getItemModel(List<Category> categories) {
+		
+		ItemModel gradebookItemModel = new ItemModel();
+		gradebookItemModel.setItemType(Type.GRADEBOOK.getName());
+		
+		for(Category category : categories) {
+		
+			ItemModel categoryItemModel = new ItemModel();
+			categoryItemModel.setIdentifier(String.valueOf(category.getId()));
+			categoryItemModel.setCategoryId(category.getId());
+			categoryItemModel.setName(category.getName());
+			categoryItemModel.setItemType(Type.CATEGORY.getName());
+			categoryItemModel.setParent(gradebookItemModel);
+			gradebookItemModel.add(categoryItemModel);
+			
+			List<Assignment> assignments = category.getAssignmentList();
+			for(Assignment assignment : assignments) {
+				
+				ItemModel assignmentItemModel = new ItemModel();
+				assignmentItemModel.setIdentifier(String.valueOf(assignment.getId()));
+				assignmentItemModel.setName(assignment.getName());
+				assignmentItemModel.setCategoryId(category.getId());
+				assignmentItemModel.setCategoryName(category.getName());
+				assignmentItemModel.setItemType(Type.ITEM.getName());
+				assignmentItemModel.setParent(categoryItemModel);
+				categoryItemModel.add(assignmentItemModel);
+				
+			}
+		}
+		
+		return gradebookItemModel;
 	}
 	
 	private List<Category> getCategoriesWithAssignments(Long gradebookId) {
@@ -2700,6 +2735,7 @@ private static final long serialVersionUID = 1L;
 		model.setName(gradebook.getName());
 		
 		List<Category> categoriesWithAssignments = getCategoriesWithAssignments(gradebook.getId());
+		model.setRootItemModel(getItemModel(categoriesWithAssignments));
 		List<ColumnModel> columns = getColumns(categoriesWithAssignments);
 		
 		boolean isUserAbleToGrade = authz.isUserAbleToGrade(gradebookUid);
