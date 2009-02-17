@@ -121,11 +121,11 @@ public class BaseCustomGridView extends GridView {
 					rv = "&nbsp;";
 
 				cb.append("<td class=\"x-grid3-col x-grid3-cell x-grid3-td-").append(c.id).append(" ")
-				  .append(css).append("\" style=\"").append(c.style)
+				  .append(css.toString()).append("\" style=\"").append(c.style)
 				  .append("\" tabIndex=0 ")
 				  .append(cellAttr).append(">");
 				
-				cb.append("<div class=\"").append(innerCssClass).append("\" ")
+				cb.append("<div class=\"").append(innerCssClass.toString()).append("\" ")
 					.append(attr).append(">").append(rv).append("</div></td>");
 
 			}
@@ -144,12 +144,12 @@ public class BaseCustomGridView extends GridView {
 			}
 
 			buf.append("<div class=\"x-grid3-row ")
-				.append(altBuffer).append("\" style=\"")
+				.append(altBuffer.toString()).append("\" style=\"")
 				.append(tstyle)
 				.append("\"><table class=x-grid3-row-table border=0 cellspacing=0 cellpadding=0 style=\"")
 				.append(tstyle)
 				.append("\"><tbody><tr>")
-				.append(cb).append("</tr>");
+				.append(cb.toString()).append("</tr>");
 			
 			if (enableRowBody) {
 				buf.append("<tr class=x-grid3-row-body-tr style=\"\"><td colspan=")

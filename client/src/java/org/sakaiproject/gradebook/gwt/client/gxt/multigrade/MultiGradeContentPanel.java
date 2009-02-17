@@ -114,7 +114,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	private ToolBar searchToolBar;
 	private LayoutContainer toolBarContainer;
 	private InstructorViewContainer instructorViewContainer;
-	private ViewEditCommentsDialog comments; 
+	//private ViewEditCommentsDialog comments; 
 	private Long commentingAssignmentId; 
 	private StudentModel commentingStudentModel; 
 	private List<ColumnModel> columnDefinitions;
@@ -138,10 +138,10 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		
 		final GradebookToolFacadeAsync service = Registry.get("service");
 		
-		comments = new ViewEditCommentsDialog(model, service, false); 
+	/*	comments = new ViewEditCommentsDialog(model, service, false); 
 		comments.show(); 
 		comments.hide(); 
-		
+	*/	
 		//singleView = new StudentViewDialog(gradebookUid, service); 
 		
 		
@@ -547,13 +547,13 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 				}
 			}
 			
-			protected void handleComponentEvent(ComponentEvent ce) {
-			    super.handleComponentEvent(ce);
+			protected void handleComponentEvent(GridEvent ge) {
+			    super.handleComponentEvent(ge);
 			    
-			    com.google.gwt.dom.client.Element cell = findCell(ce.getTarget());
-			    switch (ce.type) {
+			    com.google.gwt.dom.client.Element cell = findCell(ge.getTarget());
+			    switch (ge.type) {
 			      case Event.ONMOUSEOVER:
-			        if (cell != null) onCellOver(cell, ce);
+			        if (cell != null) onCellOver(cell, ge);
 			        break;
 			      case Event.ONMOUSEOUT:
 			        if (overCell != null) onCellOut(overCell);
@@ -853,7 +853,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 					int commentsWidth; 
 					int commentsHeight; 
 					
-					if (comments != null) 
+	/*				if (comments != null) 
 					{
 						commentsHeight = comments.getOffsetHeight();
 						commentsWidth = comments.getOffsetWidth(); 
@@ -894,7 +894,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 							bestY = 0; 
 						}
 					}
-					
+					*/
 				}
 				
 				
