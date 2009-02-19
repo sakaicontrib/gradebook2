@@ -7,6 +7,46 @@
 	border-right:1px solid #EDEDED;	
 }*/
 
+.x-btn button {
+	-x-system-font:none;
+	background:transparent none repeat scroll 0 0;
+	border:0 none;
+	cursor:pointer;
+	font-family:tahoma,verdana,helvetica;
+	font-size:10pt;
+	font-size-adjust:none;
+	font-stretch:normal;
+	font-style:normal;
+	font-variant:normal;
+	font-weight:normal;
+	line-height:normal;
+	margin:0;
+	outline-color:-moz-use-text-color;
+	outline-style:none;
+	outline-width:0;
+	overflow:visible;
+	padding-left:3px;
+	padding-right:3px;
+	width:auto;
+}
+
+.my-treetbl-data .my-treetbl-cell-text {
+	font-family:arial,tahoma,helvetica,sans-serif;
+	font-size:12pt;
+	padding:1px 4px;
+}
+
+.my-treetbl-item-text span {
+	cursor:pointer;
+	display:block;
+	font-family:arial,tahoma,helvetica,sans-serif;
+	font-size:12pt;
+	height:15px;
+	padding-left:3px;
+	padding-right:3px;
+	white-space:nowrap;
+}
+
 .x-grid3-hd-inner {
 	cursor:inherit;
 	font-size: 9pt !important;
@@ -37,6 +77,19 @@
 .gbCellDropped {
 	color: red;
 	text-decoration: line-through;
+}
+
+.gbCellClickable {
+	color: blue;
+	cursor: pointer !important;
+}
+
+.gbCellStrong {
+	font-weight: bold;	
+}
+
+.gbCellExtraCredit {
+	color: green;	
 }
 
 .gbCellCommented {

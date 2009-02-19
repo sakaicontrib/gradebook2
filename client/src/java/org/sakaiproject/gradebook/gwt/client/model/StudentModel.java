@@ -44,6 +44,7 @@ public class StudentModel extends EntityModel implements Comparable<StudentModel
 	
 	public enum Key { 
 		UID(Group.STUDENT_INFORMATION, ""), 
+		EID(Group.STUDENT_INFORMATION, ""),
 		DISPLAY_ID(Group.STUDENT_INFORMATION, "Id"), 
 		DISPLAY_NAME(Group.STUDENT_INFORMATION, "Display Name"), 
 		SORT_NAME(Group.STUDENT_INFORMATION, "Sort Name"), 
@@ -74,6 +75,7 @@ public class StudentModel extends EntityModel implements Comparable<StudentModel
 	public static final String DROP_FLAG = ":D";
 	public static final String GRADED_FLAG = ":G";
 	public static final String COMMENTED_FLAG = ":C";
+	public static final String FAILED_FLAG = ":F";
 	
 	private static final long serialVersionUID = 1L;
 
@@ -91,6 +93,14 @@ public class StudentModel extends EntityModel implements Comparable<StudentModel
 
 	public void setIdentifier(String id) {
 		set(Key.UID.name(), id);
+	}
+	
+	public String getEid() {
+		return get(Key.EID.name());
+	}
+	
+	public void setEid(String eid) {
+		set(Key.EID.name(), eid);
 	}
 	
 	public String getDisplayName() {

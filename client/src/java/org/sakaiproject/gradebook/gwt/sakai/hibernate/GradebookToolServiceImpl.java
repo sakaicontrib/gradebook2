@@ -66,7 +66,7 @@ import org.sakaiproject.tool.gradebook.Gradebook;
 import org.sakaiproject.tool.gradebook.GradingEvent;
 import org.sakaiproject.tool.gradebook.LetterGradePercentMapping;
 import org.sakaiproject.tool.gradebook.Permission;
-import org.sakaiproject.tool.gradebook.business.GbSynchronizer;
+//import org.sakaiproject.tool.gradebook.business.GbSynchronizer;
 import org.sakaiproject.tool.gradebook.facades.Authn;
 import org.sakaiproject.tool.gradebook.facades.EventTrackingService;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -99,7 +99,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
     protected Map propertiesMap = new HashMap();
     
 	/** synchronize from external application*/
-    GbSynchronizer synchronizer = null;
+    //GbSynchronizer synchronizer = null;
 	
     /*
 	 * GRADEBOOKTOOLSERVICE IMPLEMENTATION
@@ -144,11 +144,11 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	    			}
 
 	    			/** synchronize from external application */
-	    			if (synchronizer != null && !synchronizer.isProjectSite())
+/*	    			if (synchronizer != null && !synchronizer.isProjectSite())
 	    			{
 	    				synchronizer.addLegacyAssignment(name);
 	    			}  
-
+*/
 	    			Long id = (Long)session.save(asn);
 
 	    			return id;
@@ -316,13 +316,13 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
                 List assignments = getAssignments(gradebookId, session);
                 
                 /** synchronize from external application*/
-                if (synchronizer != null)
+/*                if (synchronizer != null)
                 {
                 	synchronizer.synchrornizeAssignments(assignments);
 
                     assignments = getAssignments(gradebookId, session);
                 }
-                /** end synchronize from external application*/
+*/                /** end synchronize from external application*/
 
                 // JLR - commented out as per doc above
                 //sortAssignments(assignments, sortBy, ascending);
@@ -744,18 +744,20 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
         try {
         	/** synchronize from external application*/
         	String oldTitle = null;
-        	if(synchronizer != null)
+ /*       	if(synchronizer != null)
         	{
         		Assignment assign = getAssignment(assignment.getId());
         		oldTitle = assign.getName();
         	}
-            getHibernateTemplate().execute(hc);
+*/
+        	getHibernateTemplate().execute(hc);
         	/** synchronize from external application*/
-        	if(synchronizer != null && oldTitle != null  && !synchronizer.isProjectSite())
+/*        	if(synchronizer != null && oldTitle != null  && !synchronizer.isProjectSite())
         	{
         		synchronizer.updateAssignment(oldTitle, assignment.getName());
         	}
-        } catch (HibernateOptimisticLockingFailureException holfe) {
+*/
+        	} catch (HibernateOptimisticLockingFailureException holfe) {
             if(log.isInfoEnabled()) log.info("An optimistic locking failure occurred while attempting to update an assignment");
             throw new StaleObjectModificationException(holfe);
         }
@@ -781,7 +783,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				Set studentsWithExcessiveScores = new HashSet();
 
 				/** synchronize from external application */
-				if (synchronizer != null) {
+/*				if (synchronizer != null) {
 					boolean isUpdateAll = Boolean.TRUE.equals(ThreadLocalManager.get("iquiz_update_all"));
 					boolean isIquizCall = Boolean.TRUE.equals(ThreadLocalManager.get("iquiz_call"));
 					boolean isStudentView = Boolean.TRUE.equals(ThreadLocalManager.get("iquiz_student_view"));
@@ -810,7 +812,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 							gradeRecordFromCall.setDateRecorded(now);
 						}
 						try {
-							/** sychronize - add condition for null value */
+							/--** sychronize - add condition for null value *--/
 							if (gradeRecordFromCall != null) {
 								if (gradeRecordFromCall.getId() == null && isIquizCall && isUpdateAll && recordsFromCLDb != null) {
 									AssignmentGradeRecord returnedPersistentItem = (AssignmentGradeRecord) recordsFromCLDb.get(gradeRecordFromCall.getStudentId());
@@ -848,7 +850,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 						}
 
 						// Check for excessive (AKA extra credit) scoring.
-						/** synchronize - add condition for null value */
+						/--** synchronize - add condition for null value *--/
 						if (gradeRecordFromCall != null && updated == true) {
 							if (gradeRecordFromCall.getPointsEarned() != null && !assignment.isUngraded()
 									&& gradeRecordFromCall.getPointsEarned().compareTo(assignment.getPointsPossible()) > 0) {
@@ -859,13 +861,13 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 							studentsWithUpdatedAssignmentGradeRecords.add(gradeRecordFromCall.getStudentId());
 						}
 
-						/** synchronize external records */
+						/--** synchronize external records *--/
 						if (legacyUpdates.size() > 0 && synchronizer != null) {
 							synchronizer.updateLegacyGradeRecords(assignment.getName(), legacyUpdates);
 						}
 					}
 
-				} else {
+				} else {*/
 					for (Iterator iter = gradeRecordsFromCall.iterator(); iter.hasNext();) {
 						AssignmentGradeRecord gradeRecordFromCall = (AssignmentGradeRecord) iter.next();
 						gradeRecordFromCall.setGraderId(graderId);
@@ -894,7 +896,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 						studentsWithUpdatedAssignmentGradeRecords.add(gradeRecordFromCall.getStudentId());
 					}
-				}
+				//}
 				if (logData.isDebugEnabled())
 					logData.debug("Updated " + studentsWithUpdatedAssignmentGradeRecords.size() + " assignment score records");
 
@@ -1465,9 +1467,9 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	}
 	
 	/** synchronize from external application */
-    public void setSynchronizer(GbSynchronizer synchronizer) 
+    /*public void setSynchronizer(GbSynchronizer synchronizer) 
     {
     	this.synchronizer = synchronizer;
-    }
+    }*/
 
 }

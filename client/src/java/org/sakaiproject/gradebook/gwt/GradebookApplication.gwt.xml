@@ -2,6 +2,7 @@
 
 	<!-- Inherit the core Web Toolkit stuff.                  -->
 	<inherits name='com.google.gwt.user.User'/>
+	<inherits name='com.google.gwt.json.JSON'/>
 	<inherits name='com.google.gwt.animation.Animation'/>
 	<!-- Inherit internationalization 						  -->
 	<inherits name='com.google.gwt.i18n.I18N'/>
@@ -23,6 +24,10 @@
   
   	<!-- This is the real sakai servlet. It requires all the sakai dependencies, and needs to be deployed in Tomcat with the rest of sakai -->
   	<!--servlet path="/rpc/grades.rpc" class="org.sakaiproject.gradebook.gwt.sakai.GradebookToolFacadeImpl"/-->
+  
+  	<servlet path="/importHandler" class="org.sakaiproject.gradebook.gwt.server.ImportHandler"/>
+  
+  	<servlet path="/export" class="org.sakaiproject.gradebook.gwt.server.ImportHandler"/>
   
   	<set-property name="gwt.suppressNonStaticFinalFieldWarnings" value="true" /> 
 

@@ -25,7 +25,7 @@ public class ItemModel extends BaseTreeModel {
 		INCLUDED("Include in Grade"), REMOVED("Delete"), GRADEBOOK("Gradebook"), DROP_LOWEST("Drop Lowest"), 
 		CATEGORY_NAME("Category"), CATEGORY_ID("Category Id"), DUE_DATE("Due Date"), POINTS("Points"), 
 		RELEASED("Is Released"), SOURCE("Source"), ITEM_TYPE("Type"), PERCENT_COURSE_GRADE("% Grade"),
-		PERCENT_CATEGORY("% Category");
+		PERCENT_CATEGORY("% Category"), IS_PERCENTAGE("Is Percentage");
 		
 		private String propertyName;
 		
@@ -216,6 +216,14 @@ public class ItemModel extends BaseTreeModel {
 	
 	public void setPercentCategory(Double percent) {
 		set(Key.PERCENT_CATEGORY.name(), percent);
+	}
+	
+	public Boolean getIsPercentage() {
+		return get(Key.IS_PERCENTAGE.name());
+	}
+	
+	public void setIsPercentage(Boolean isPercentage) {
+		set(Key.IS_PERCENTAGE.name(), isPercentage);
 	}
 	
 	@Override

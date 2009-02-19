@@ -7,6 +7,11 @@
 		<property name="mappings">
 			<map>
 				<entry key="/**/rpc/grades.rpc" value-ref="GradebookService" />
+				
+				<entry key="/**/importHandler" value-ref="GradebookImportService" />
+				
+				<entry key="/**/export" value-ref="GradebookExportService" />
+				
 				<entry key="/*" value-ref="myServletForwardingController" />
 			</map>
 		</property>
@@ -15,6 +20,6 @@
 	<bean id="myServletForwardingController" class="org.springframework.web.servlet.mvc.ServletForwardingController">
  		<property name="servletName"><value>sakai.gradebook.gwt</value></property>
  	</bean>
-
+ 	
 
 </beans>

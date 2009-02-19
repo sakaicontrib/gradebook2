@@ -34,6 +34,7 @@ import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.CategoryModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 
 import com.extjs.gxt.ui.client.data.PagingLoadConfig;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
@@ -65,6 +66,12 @@ public class GradebookToolFacadeImpl extends GWTSpringController implements Grad
 		
 		return delegateFacade.getEntityPage(action, config);
 	}	
+	
+	public <X extends ItemModel> List<X> getEntityTreeModel(
+			String gradebookUid, X parent) {
+		
+		return delegateFacade.getEntityTreeModel(gradebookUid, parent);
+	}
 
 	public List<CategoryModel> recalculateEqualWeightingCategories(
 			String gradebookUid, Long gradebookId, Boolean isEqualWeighting) {

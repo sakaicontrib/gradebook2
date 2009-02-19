@@ -40,6 +40,7 @@ import org.sakaiproject.gradebook.gwt.client.model.AssignmentModel;
 import org.sakaiproject.gradebook.gwt.client.model.CategoryModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 import org.sakaiproject.gradebook.gwt.sakai.GradeCalculations;
@@ -145,6 +146,12 @@ public class GradebookToolFacadeMockImpl extends RemoteServiceServlet implements
 			PagingLoadConfig config) throws FatalException {
 		
 		return delegateFacade.getEntityPage(action, config);
+	}
+	
+	public <X extends ItemModel> List<X> getEntityTreeModel(
+			String gradebookUid, X parent) {
+		
+		return delegateFacade.getEntityTreeModel(gradebookUid, parent);
 	}
 
 	public List<CategoryModel> recalculateEqualWeightingCategories(

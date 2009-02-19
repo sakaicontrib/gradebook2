@@ -13,28 +13,42 @@
 		</property>
 	</bean>
 
-	<!-- Declare service -->
-	<bean id="GradebookService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookToolFacadeImpl">
-	
-		<property name="delegateFacade">
-			<bean class="org.sakaiproject.gradebook.gwt.sakai.DelegateFacadeImpl">
-				<property name="sectionAwareness" ref="org.sakaiproject.section.api.SectionAwareness"/>
-				<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/> 
-				<property name="authn" ref="org_sakaiproject_tool_gradebook_facades_Authn"/>
-				<property name="authz" ref="org_sakaiproject_tool_gradebook_facades_Authz"/>
-				<property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/>
-				<property name="userService" ref="org.sakaiproject.user.api.UserDirectoryService"/>
-				<property name="gradeCalculations" ref="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"/>
-				<property name="frameworkService" ref="org.sakaiproject.service.gradebook.GradebookFrameworkService" />
-				<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>
-			</bean>
-		</property>
-	</bean>
-	
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"
 		class="org.sakaiproject.gradebook.gwt.sakai.GradeCalculationsImpl">
 		
 	</bean>
+
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.DelegateFacade" class="org.sakaiproject.gradebook.gwt.sakai.DelegateFacadeImpl">
+		<property name="sectionAwareness" ref="org.sakaiproject.section.api.SectionAwareness"/>
+		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/> 
+		<property name="authn" ref="org_sakaiproject_tool_gradebook_facades_Authn"/>
+		<property name="authz" ref="org_sakaiproject_tool_gradebook_facades_Authz"/>
+		<property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/>
+		<property name="userService" ref="org.sakaiproject.user.api.UserDirectoryService"/>
+		<property name="gradeCalculations" ref="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"/>
+		<property name="frameworkService" ref="org.sakaiproject.service.gradebook.GradebookFrameworkService" />
+		<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>
+	</bean>
+			
+	<!-- Declare service -->
+	<bean id="GradebookService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookToolFacadeImpl">
+		<property name="delegateFacade" ref="org.sakaiproject.gradebook.gwt.sakai.DelegateFacade"/>
+	</bean>
+
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/>
+
+	<bean id="GradebookExportService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookExportController">
+		<property name="delegateFacade" ref="org.sakaiproject.gradebook.gwt.sakai.DelegateFacade"/>
+	</bean>
+	
+	<bean id="GradebookImportService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookImportController">
+		<property name="delegateFacade" ref="org.sakaiproject.gradebook.gwt.sakai.DelegateFacade"/>
+		<property name="userService" ref="org.sakaiproject.user.api.UserDirectoryService"/>
+		<property name="commandClass" value="org.sakaiproject.gradebook.gwt.sakai.FileUploadBean"/>
+        <!--property name="formView" value="fileuploadform"/>
+        <property name="successView" value="confirmation"/-->
+	</bean>
+
 	
 	<!-- Gradebook Manager -->
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService" parent="alt.gradebookTxTemplate">
@@ -92,8 +106,8 @@
 	</bean>
 	
 	<!-- External Context Management Service -->
-	<bean id="org.sakaiproject.tool.gradebook.facades.ContextManagement"
+	<!--bean id="org.sakaiproject.tool.gradebook.facades.ContextManagement"
 		class="org.sakaiproject.tool.gradebook.facades.sakai2impl.ContextManagementSakai2Impl">
-	</bean>
+	</bean-->
 
 </beans>

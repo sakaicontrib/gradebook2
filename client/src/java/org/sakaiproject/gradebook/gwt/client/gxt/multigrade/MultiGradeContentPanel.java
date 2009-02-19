@@ -380,6 +380,13 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		return assembleColumnModel(model.getColumns());
 	}
 	
+	@Override 
+	protected Grid<StudentModel> newGrid() {
+		Grid<StudentModel> grid = super.newGrid();
+		//grid.setSelectionModel(new MultiGradeCellSelectionModel());
+		return grid;
+	}
+	
 	@Override
 	protected GridView newGridView() {
 		// SAK-2378

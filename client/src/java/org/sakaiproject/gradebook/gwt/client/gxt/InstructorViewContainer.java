@@ -27,6 +27,7 @@ import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType;
+import org.sakaiproject.gradebook.gwt.client.gxt.dialog.ImportDialog;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeContentPanel;
@@ -56,7 +57,6 @@ import com.extjs.gxt.ui.client.event.TabPanelEvent;
 import com.extjs.gxt.ui.client.event.WindowEvent;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.TabItem;
 import com.extjs.gxt.ui.client.widget.TabPanel;
 import com.extjs.gxt.ui.client.widget.Window;
@@ -71,16 +71,22 @@ import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.extjs.gxt.ui.client.widget.menu.SeparatorMenuItem;
 import com.extjs.gxt.ui.client.widget.toolbar.TextToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.KeyboardListener;
+import com.google.gwt.user.client.ui.RootPanel;
 
 public class InstructorViewContainer extends ContentPanel {
 
 	private final static String TAB_GRADES_NAME = "Grades";
+	private final static String TAB_ALLITEMS_NAME = "All Items";
 	private final static String TAB_CATEGORIES_NAME = "Categories";
 	private final static String TAB_ITEMS_NAME = "Items";
 	private final static String TAB_SCALE_NAME = "Grading Scale";
 	private final static String TAB_HISTORY_NAME = "History";
+	
+	private Frame downloadFileFrame;
 	
 	private MultiGradeContentPanel multigrade;
 	private SettingsContentPanel settings;
@@ -89,6 +95,7 @@ public class InstructorViewContainer extends ContentPanel {
 	private SettingsCategoryContentPanel categoriesPanel;
 	private SettingsAssignmentContentPanel assignmentsPanel;
 	private SettingsGradingScaleContentPanel gradingScalePanel;
+	private ImportDialog importDialog;
 	private HistoryDialog historyDialog;
 	private Window setupWindow;
 	private LayoutContainer gradebookContainer;
@@ -281,7 +288,10 @@ public class InstructorViewContainer extends ContentPanel {
 
 			@Override
 			public void componentSelected(MenuEvent ce) {
-				MessageBox.alert("Not Implemented", "This is a feature that will be added for milestone 3.", null);
+				int height = InstructorViewContainer.this.getTopComponent().getOffsetHeight();
+				importDialog.setPosition(0, height);
+				importDialog.setSize(XDOM.getViewportSize().width, XDOM.getViewportSize().height - height);
+				importDialog.show();
 			}
 			
 		});
@@ -649,7 +659,23 @@ public class InstructorViewContainer extends ContentPanel {
 
 			@Override
 			public void componentSelected(MenuEvent ce) {
-				MessageBox.alert("Not Implemented", "This is a feature that will be added for milestone 3.", null);
+				//MessageBox.alert("Not Implemented", "This is a feature that will be added for milestone 3.", null);
+				int height = InstructorViewContainer.this.getTopComponent().getOffsetHeight();
+				
+				importDialog = new ImportDialog(gradebookUid);
+				//InstructorViewContainer.this.el().mask("Loading");
+				importDialog.setSize(XDOM.getViewportSize().width - height*4, XDOM.getViewportSize().height - height * 4);
+				importDialog.show();
+				importDialog.center();
+				
+				importDialog.addListener(Events.Close, new Listener<WindowEvent>() {
+
+					public void handleEvent(WindowEvent be) {
+						InstructorViewContainer.this.el().unmask();
+						importDialog.removeListener(Events.Close, this);
+					}
+					
+				});
 			}
 			
 		});
@@ -659,7 +685,14 @@ public class InstructorViewContainer extends ContentPanel {
 
 			@Override
 			public void componentSelected(MenuEvent ce) {
-				MessageBox.alert("Not Implemented", "This is a feature that will be added for milestone 3.", null);
+				String uri = GWT.getModuleBaseURL() + "/export?gradebookUid=" + gradebookUid;
+				
+				if (downloadFileFrame == null) {
+					downloadFileFrame = new Frame(uri);
+					RootPanel.get().add(downloadFileFrame);
+				} else {
+					downloadFileFrame.setUrl(uri);
+				}
 			}
 			
 		});
@@ -953,6 +986,12 @@ public class InstructorViewContainer extends ContentPanel {
 			int height = InstructorViewContainer.this.getTopComponent().getOffsetHeight();
 			setupWindow.setPosition(0, height);
 			setupWindow.setSize(XDOM.getViewportSize().width, XDOM.getViewportSize().height - height);
+		}
+		
+		if (importDialog != null && importDialog.isRendered()) {
+			int height = InstructorViewContainer.this.getTopComponent().getOffsetHeight();
+			importDialog.setSize(XDOM.getViewportSize().width - height*4, XDOM.getViewportSize().height - height * 4);
+			importDialog.center();
 		}
 	}
 

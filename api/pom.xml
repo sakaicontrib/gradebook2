@@ -24,26 +24,31 @@
   	  <groupId>org.sakaiproject</groupId>
       <artifactId>gradebook-gwt-model</artifactId>
       <version>${sakai.version}</version>
+      <scope>provided</scope>
   	</dependency>
     <dependency>
       <groupId>org.sakaiproject</groupId>
       <artifactId>sakai-gradebook-service-api</artifactId>
       <version>${sakai.version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.sakaiproject</groupId>
       <artifactId>sakai-gradebook-service-hibernate</artifactId>
       <version>${sakai.version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.sakaiproject</groupId>
       <artifactId>sakai-entity-api</artifactId>
       <version>${sakai.version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.sakaiproject</groupId>
       <artifactId>sakai-authz-api</artifactId>
       <version>${sakai.version}</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
   <build>

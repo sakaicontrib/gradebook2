@@ -39,6 +39,11 @@ public class UserEntityGetAction<M extends EntityModel> extends UserEntityAction
 		super(ActionType.GET, entityType);
 	}
 	
+	public UserEntityGetAction(String gradebookUid, EntityType entityType) {
+		super(ActionType.GET, entityType);
+		setGradebookUid(gradebookUid);
+	}
+	
 	public UserEntityGetAction(GradebookModel gbModel, EntityType entityType) {
 		super(gbModel, ActionType.GET, entityType);
 	}

@@ -32,6 +32,7 @@ import org.sakaiproject.user.api.User;
 public class UserRecord {
 
 	private String userUid;
+	private String userEid;
 	private String displayId;
 	private String displayName;
 	private String sortName;
@@ -55,6 +56,7 @@ public class UserRecord {
 	
 	public void populate(User user) {
 		this.userUid = user.getId();
+		this.userEid = user.getEid();
 		this.displayId = user.getDisplayId();
 		this.displayName = user.getDisplayName();
 		this.sortName = user.getSortName();
@@ -158,6 +160,14 @@ public class UserRecord {
 
 	public void setCommentMap(Map<Long, Comment> commentMap) {
 		this.commentMap = commentMap;
+	}
+
+	public String getUserEid() {
+		return userEid;
+	}
+
+	public void setUserEid(String userEid) {
+		this.userEid = userEid;
 	}
 	
 	
