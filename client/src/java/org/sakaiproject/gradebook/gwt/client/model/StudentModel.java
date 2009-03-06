@@ -52,7 +52,10 @@ public class StudentModel extends EntityModel implements Comparable<StudentModel
 		SECTION(Group.STUDENT_INFORMATION, "Section"), 
 		COURSE_GRADE(Group.GRADES, "Course Grade"), 
 		GRADE_OVERRIDE(Group.GRADES, "Grade Override"), 
-		ASSIGNMENT(Group.ASSIGNMENTS, "");
+		ASSIGNMENT(Group.ASSIGNMENTS, ""),
+		EXPORT_CM_ID(Group.STUDENT_INFORMATION, "Export CM Id"),
+		EXPORT_USER_ID(Group.STUDENT_INFORMATION, "Export User Id");
+
 	
 		private Group group;
 		private String displayName;
@@ -156,7 +159,26 @@ public class StudentModel extends EntityModel implements Comparable<StudentModel
 	{
 		set(Key.COURSE_GRADE.name(), studentGrade);
 	}
-
+	
+	public String getExportCmId()
+	{
+		return get(Key.EXPORT_CM_ID.name());
+	}
+	
+	public void setExportCmId(String exportCmId)
+	{
+		set(Key.EXPORT_CM_ID.name(), exportCmId);
+	}
+	
+	public String getExportUserId()
+	{
+		return get(Key.EXPORT_USER_ID.name());
+	}
+	
+	public void setExportUserId(String exportUserId)
+	{
+		set(Key.EXPORT_USER_ID.name(), exportUserId);
+	}
 	
 	@Override
 	public boolean equals(Object obj) {

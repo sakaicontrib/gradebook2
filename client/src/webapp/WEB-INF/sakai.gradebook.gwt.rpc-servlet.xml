@@ -12,6 +12,8 @@
 				
 				<entry key="/**/export" value-ref="GradebookExportService" />
 				
+				<entry key="/**/final-grade-submission" value-ref="GradebookFinalGradeSubmissionService" />
+				
 				<entry key="/*" value-ref="myServletForwardingController" />
 			</map>
 		</property>

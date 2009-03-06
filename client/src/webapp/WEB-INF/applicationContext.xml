@@ -3,6 +3,12 @@
 
 <beans>
 
+	<bean id="placeholderConfig" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">  
+		<property name="location">
+			<value>classpath:gradebook2.properties</value>
+		</property>
+	</bean> 
+
 	<!-- Hibernate Mappings -->
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.model.hibernateMappings"
 		class="org.sakaiproject.springframework.orm.hibernate.impl.AdditionalHibernateMappingsImpl">
@@ -12,7 +18,17 @@
 			</list>
 		</property>
 	</bean>
-
+	
+	<!--
+	
+	GRBK-37 : Sample Export Advisor 
+	The Export Advisor is configured via the gradebook2.properties file.
+	The gradebook2.properties file sets the "org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor" property
+	which then is injected vi Spring's Property Placeholder Configuration mechanism
+	-->
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor" class="org.sakaiproject.gradebook.gwt.sakai.SampleExportAdvisor">
+	</bean>
+	
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"
 		class="org.sakaiproject.gradebook.gwt.sakai.GradeCalculationsImpl">
 		
@@ -28,6 +44,7 @@
 		<property name="gradeCalculations" ref="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"/>
 		<property name="frameworkService" ref="org.sakaiproject.service.gradebook.GradebookFrameworkService" />
 		<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>
+		<property name="exportAdvisor" ref="${org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor}"/>
 	</bean>
 			
 	<!-- Declare service -->
@@ -39,6 +56,11 @@
 
 	<bean id="GradebookExportService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookExportController">
 		<property name="delegateFacade" ref="org.sakaiproject.gradebook.gwt.sakai.DelegateFacade"/>
+	</bean>
+	
+	<bean id="GradebookFinalGradeSubmissionService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookFinalGradeSubmissionController">
+		<property name="delegateFacade" ref="org.sakaiproject.gradebook.gwt.sakai.DelegateFacade"/>
+		<property name="exportAdvisor" ref="${org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor}"/>
 	</bean>
 	
 	<bean id="GradebookImportService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookImportController">

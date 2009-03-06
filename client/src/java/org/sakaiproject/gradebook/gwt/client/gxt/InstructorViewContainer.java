@@ -56,11 +56,14 @@ import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.event.TabPanelEvent;
 import com.extjs.gxt.ui.client.event.WindowEvent;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
+import com.extjs.gxt.ui.client.widget.Dialog;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
+import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.TabItem;
 import com.extjs.gxt.ui.client.widget.TabPanel;
 import com.extjs.gxt.ui.client.widget.Window;
 import com.extjs.gxt.ui.client.widget.TabPanel.TabPosition;
+import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.SimpleComboBox;
 import com.extjs.gxt.ui.client.widget.form.SimpleComboValue;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
@@ -72,6 +75,11 @@ import com.extjs.gxt.ui.client.widget.menu.SeparatorMenuItem;
 import com.extjs.gxt.ui.client.widget.toolbar.TextToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.http.client.Request;
+import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.http.client.RequestCallback;
+import com.google.gwt.http.client.RequestException;
+import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.KeyboardListener;
@@ -698,6 +706,66 @@ public class InstructorViewContainer extends ContentPanel {
 		});
 		
 		moreActionsMenu.add(exportItem);
+		
+		// GRBK-37
+		// TODO: make this configurable via sakai.properties
+		MenuItem finalGradeSubmissionMenuItem = new MenuItem("Final Grade Submission", new SelectionListener<MenuEvent>() {
+
+			@Override
+			public void componentSelected(MenuEvent ce) {
+
+				MessageBox.confirm("Confirm", "Are you sure you want to submit the final grades?", new Listener<WindowEvent>() {
+
+					public void handleEvent(WindowEvent be) {
+						
+						Button button = be.buttonClicked;
+						
+						if(button.getItemId().equals(Dialog.YES)) {
+							
+							String uri = GWT.getModuleBaseURL() + "/final-grade-submission?gradebookUid=" + gradebookUid;
+							RequestBuilder requestBuilder = new RequestBuilder(RequestBuilder.GET, uri);
+							requestBuilder.setHeader("Content-Type", "text/html");
+							try {
+								requestBuilder.sendRequest("", new RequestCallback() {
+
+									public void onError(Request request, Throwable exception) {
+
+										GWT.log("onError", null);
+									}
+
+									public void onResponseReceived(Request request, Response response) {
+
+										GWT.log("onResponseReceived", null);
+										
+										if (201 == response.getStatusCode()) {
+											GWT.log("HTTP Status 201", null);
+											GWT.log("Response test = " + response.getText(), null);
+											String responseText = response.getText().trim();
+											if(null == responseText || "".equals(responseText)) {
+												// TODO: display error
+											}
+											else {
+											
+												com.google.gwt.user.client.Window.open(responseText, "_blank","status=0,toolbar=0,menubar=0,location=0,scrollbars=1,resizable=1");
+											}
+										}
+										else if(500 == response.getStatusCode()) {
+											GWT.log("HTTP Status 500", null);
+										}
+									}
+									
+								});
+							} catch (RequestException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+					}	
+				}); 
+			}
+		});
+		
+		moreActionsMenu.add(finalGradeSubmissionMenuItem);
 		
 		return moreActionsMenu;
 	}

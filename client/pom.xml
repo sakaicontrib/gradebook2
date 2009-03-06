@@ -58,6 +58,9 @@
 					<exclude>**/*.java</exclude>
            		</excludes-->
 			</resource>
+			<resource>
+				<directory>${basedir}/src/config</directory>
+			</resource>
 		</resources>
 		<plugins>
 			<plugin>
@@ -425,6 +428,25 @@
       		<artifactId>sakai-util-api</artifactId>
       		<version>${sakai.version}</version>
     	</dependency>
+		
+		<dependency>
+			<groupId>org.sakaiproject</groupId>
+			<artifactId>sakai-component</artifactId>
+			<version>${sakai.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.sakaiproject</groupId>
+			<artifactId>sakai-component-api</artifactId>
+			<version>${sakai.version}</version>
+		</dependency>
+   
+		<dependency>
+			<groupId>org.sakaiproject</groupId>
+			<artifactId>sakai-ucd-enterprise-data-service-api</artifactId>
+			<version>${sakai.version}</version>
+			<scope>provided</scope>
+		</dependency>
     	
     	<dependency>
       		<groupId>org.hibernate</groupId>

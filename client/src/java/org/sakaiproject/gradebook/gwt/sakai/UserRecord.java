@@ -44,6 +44,8 @@ public class UserRecord {
 	private Map<Long, AssignmentGradeRecord> gradeRecordMap;
 	private Map<Long, Comment> commentMap;
 	private String displayGrade;
+	private String exportCourseManagemntId;
+	private String exportUserId;
 
 	public UserRecord(String userUid) {
 		this.userUid = userUid;
@@ -170,5 +172,19 @@ public class UserRecord {
 		this.userEid = userEid;
 	}
 	
+	public String getExportCourseManagemntId() {
+		return exportCourseManagemntId;
+	}
 	
+	public void setExportCourseManagemntId(String exportCourseManagemntId) {
+		this.exportCourseManagemntId = exportCourseManagemntId;
+	}
+	
+	public String getExportUserId() {
+		return exportUserId;
+	}
+	
+	public void setExportUserId(String exportUserId) {
+		this.exportUserId = exportUserId;
+	}
 }

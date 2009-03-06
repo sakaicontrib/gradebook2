@@ -28,6 +28,8 @@
   	<servlet path="/importHandler" class="org.sakaiproject.gradebook.gwt.server.ImportHandler"/>
   
   	<servlet path="/export" class="org.sakaiproject.gradebook.gwt.server.ImportHandler"/>
+  	
+  	<servlet path="/final-grade-submission" class="org.sakaiproject.gradebook.gwt.server.FinalGradeSubmissionHandler"/>
   
   	<set-property name="gwt.suppressNonStaticFinalFieldWarnings" value="true" /> 
 

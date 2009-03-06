@@ -6,5 +6,6 @@ Currently, it should build against a vanilla 2.5.x branch sakai. You will need t
 (2) Apply the patch labeled gb-2-5-x.patch under the original gradebook module.
 (3) Check out this project as "gradebook-gwt" and add it as a module under your sakai pom.xml for the active profile.
 (4) Under your sakai profile in .m2/settings.xml set the <gwt.platform> tag to linux, mac, or windows (only tested on linux so far).
+(5) Optional: Configure Export Advisor by specifying which bean to inject. This is done via the gradebook2.properties file, which is located here: client/src/config/gradebook2.properties
 (5) Build sakai. Note that the GWT build takes quite a while. If you want to speed it up for testing (slightly) you can apply the patch called "client/firefox.patch" to the client directory (cd client; patch -p0 < firefox.patch) and it will then build a version that is only compatible with Firefox/Gecko.
 

@@ -42,7 +42,6 @@ import java.util.UUID;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.StaleObjectStateException;
 import org.sakaiproject.authz.api.Member;
 import org.sakaiproject.exception.IdUnusedException;
 import org.sakaiproject.gradebook.gwt.client.GradebookToolFacade;
@@ -130,6 +129,7 @@ private static final long serialVersionUID = 1L;
 	private GradeCalculations gradeCalculations;
 	private GradebookFrameworkService frameworkService;
 	private SiteService siteService;
+	private ExportAdvisor exportAdvisor;
 
 	
 	@SuppressWarnings("unchecked")
@@ -1612,7 +1612,8 @@ private static final long serialVersionUID = 1L;
 		// This is how we track which column is which - by the user's uid
 		cellMap.put(StudentModel.Key.UID.name(), userRecord.getUserUid());
 		cellMap.put(StudentModel.Key.EID.name(), userRecord.getUserEid());
-		
+		cellMap.put(StudentModel.Key.EXPORT_CM_ID.name(), userRecord.getExportCourseManagemntId());
+		cellMap.put(StudentModel.Key.EXPORT_USER_ID.name(), userRecord.getExportUserId());
 		// Need this to show the grade override
 		CourseGradeRecord courseGradeRecord = userRecord.getCourseGradeRecord(); //gradebookManager.getStudentCourseGradeRecord(gradebook, userRecord.getUserUid());
 	
@@ -3816,6 +3817,10 @@ private static final long serialVersionUID = 1L;
 						}
 						
 						userRecord.setSectionTitle(section.getTitle());
+						
+						// GRBK-37
+						userRecord.setExportCourseManagemntId(exportAdvisor.getExportCourseManagemntId(member.getUserEid(), group.getProviderGroupId()));
+						userRecord.setExportUserId(exportAdvisor.getExportUserId(member.getUserEid()));
 					}
 				}
 			}
@@ -3996,5 +4001,7 @@ private static final long serialVersionUID = 1L;
 		this.gbService = gbService;
 	}
 
-
+	public void setExportAdvisor(ExportAdvisor exportAdvisor) {
+		this.exportAdvisor = exportAdvisor;
+	}
 }
