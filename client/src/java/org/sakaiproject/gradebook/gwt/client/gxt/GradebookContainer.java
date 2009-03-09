@@ -63,8 +63,8 @@ public class GradebookContainer extends LayoutContainer {
 	
 	private void renderStudentView(GradebookModel gbModel) {
 		GradebookToolFacadeAsync service = Registry.get("service");
-		studentViewContainer = new StudentViewContainer(gbModel.getGradebookUid(), service, true);
-		studentViewContainer.fireEvent(GradebookEvents.SingleView, new IndividualStudentEvent(gbModel.getUserAsStudent()));
+		studentViewContainer = new StudentViewContainer(true);
+		studentViewContainer.fireEvent(GradebookEvents.SingleGrade, new IndividualStudentEvent(gbModel.getUserAsStudent()));
 		add(studentViewContainer);
 	}
 

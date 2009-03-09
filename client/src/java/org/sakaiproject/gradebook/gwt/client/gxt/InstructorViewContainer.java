@@ -22,6 +22,8 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.gxt;
 
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.PersistentStore;
 import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
@@ -37,6 +39,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.settings.SettingsAssignmentCont
 import org.sakaiproject.gradebook.gwt.client.gxt.settings.SettingsCategoryContentPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.settings.SettingsContentPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.settings.SettingsGradingScaleContentPanel;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ItemTreePanel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
@@ -125,19 +128,20 @@ public class InstructorViewContainer extends ContentPanel {
 	
 		GradebookModel gbModel = Registry.get(gradebookUid);
 			
-		multigrade = new MultiGradeContentPanel(gradebookUid, this);	
+		I18nConstants i18n = Registry.get(AppConstants.I18N);
+		multigrade = new MultiGradeContentPanel(new ItemTreePanel(i18n));	
 		
 		categoriesPanel = new SettingsCategoryContentPanel(gradebookUid);
 		
 		assignmentsPanel = new SettingsAssignmentContentPanel(gradebookUid, categoriesPanel);
 		
-		gradingScalePanel = new SettingsGradingScaleContentPanel(gradebookUid);
+		gradingScalePanel = new SettingsGradingScaleContentPanel();
 		
-		addAssignmentDialog = new AddAssignmentDialog(gbModel.getGradebookUid(), this);
+		addAssignmentDialog = new AddAssignmentDialog();
 		
-		addCategoryDialog = new AddCategoryDialog(gradebookUid, this);
+		addCategoryDialog = new AddCategoryDialog();
 		
-		historyDialog = new HistoryDialog(gradebookUid);
+		historyDialog = new HistoryDialog();
 		
 		String storedTabMode = PersistentStore.getPersistentField(gradebookUid, "tabMode", "checked");
 		if (storedTabMode != null) {
@@ -772,12 +776,7 @@ public class InstructorViewContainer extends ContentPanel {
 	
 	private void buildSetupWindow() {
 		settings = new SettingsContentPanel(gradebookUid, multigrade, this);
-		
-		if (addAssignmentDialog != null)
-			addAssignmentDialog.setSettingsPanel(settings);
-		if (addCategoryDialog != null)
-			addCategoryDialog.setSettingsPanel(settings);
-		
+
 		setupWindow = new Window();
 		setupWindow.add(settings);
 		setupWindow.setClosable(false);

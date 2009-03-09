@@ -22,12 +22,12 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.gxt.settings;
 
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
 import org.sakaiproject.gradebook.gwt.client.action.UserCategoryCreateAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.gxt.Notifier;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
 import org.sakaiproject.gradebook.gwt.client.model.CategoryModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
@@ -36,6 +36,7 @@ import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.WindowEvent;
+import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.Dialog;
@@ -55,9 +56,7 @@ import com.google.gwt.user.client.Element;
 public class AddCategoryDialog extends Dialog {
 
 	private static final Notifier notifier = new Notifier();
-	
-	private String gradebookUid;
-	private ContentPanel contentPanel;
+
 	private String directionsText;
 	private LabelField directions;
 	private TextField<String> categoryName;
@@ -65,9 +64,7 @@ public class AddCategoryDialog extends Dialog {
 	private CheckBox equalWeight;
 	private NumberField dropLowest;
 	
-	public AddCategoryDialog(String gradebookUid, ContentPanel contentPanel) {
-		this.gradebookUid = gradebookUid;
-		this.contentPanel = contentPanel;
+	public AddCategoryDialog() {
 		this.directionsText = "Please fill out the fields below. If you choose to equally weight assignments, then each assignment will contribute an equal percent to the category grade.";
 		this.directions = new LabelField(directionsText);
 		
@@ -122,7 +119,7 @@ public class AddCategoryDialog extends Dialog {
 	    addListener(Events.BeforeShow, new Listener<WindowEvent>() {
 
 			public void handleEvent(WindowEvent be) {
-				GradebookModel gbModel = Registry.get(getGradebookUid());
+				GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
 				// Ensure that the category name is blank
 				categoryName.setValue(null);
 				// And that it is not showing the "Required" warning
@@ -153,7 +150,7 @@ public class AddCategoryDialog extends Dialog {
 		
 		super.onButtonPressed(button);
 
-		GradebookModel gbModel = Registry.get(gradebookUid);
+		GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
 		UserCategoryCreateAction action = 
 			new UserCategoryCreateAction(gbModel, 
 					getCategoryName().getValue(), 
@@ -169,9 +166,7 @@ public class AddCategoryDialog extends Dialog {
 
 					action.setModel(result);
 					
-					if (contentPanel != null) 
-						contentPanel.fireEvent(GradebookEvents.UserChange, new UserChangeEvent(action));
-					
+					Dispatcher.forwardEvent(GradebookEvents.UserChange, action);
 				}
 		};
 		
@@ -183,10 +178,6 @@ public class AddCategoryDialog extends Dialog {
 		super.onRender(parent, pos);
 		
 		categoryName.focus();
-	}
-
-	public String getGradebookUid() {
-		return gradebookUid;
 	}
 	
 	public TextField<String> getCategoryName() {
@@ -228,13 +219,4 @@ public class AddCategoryDialog extends Dialog {
 		this.dropLowest = dropLowest;
 	}
 
-
-	public ContentPanel getSettingsPanel() {
-		return contentPanel;
-	}
-
-
-	public void setSettingsPanel(ContentPanel contentPanel) {
-		this.contentPanel = contentPanel;
-	}
 }

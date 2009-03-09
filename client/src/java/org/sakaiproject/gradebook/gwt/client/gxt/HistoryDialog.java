@@ -31,6 +31,7 @@ import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.custom.widget.grid.CustomColumnModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
+import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
@@ -44,16 +45,11 @@ public class HistoryDialog extends ContentPanel {
 
 	private String gradebookUid;
 	
-	public HistoryDialog(String gradebookUid) {
+	public HistoryDialog() {
 		super();
-		this.gradebookUid = gradebookUid;
-		//setClosable(false);
-		//setDraggable(false);
 		setFrame(false);
 		setHeaderVisible(false);
 		setLayout(new FitLayout());
-		//setModal(false);
-		//setResizable(false);
 	}
 	
 	protected void onRender(Element parent, int pos) {
@@ -62,7 +58,7 @@ public class HistoryDialog extends ContentPanel {
 		//setSize(XDOM.getViewportSize().width - 40, XDOM.getViewportSize().height - 200);
 		
 		final GridPanel<UserEntityAction> gridPanel = 
-			new GridPanel<UserEntityAction>(gradebookUid, "history", EntityType.ACTION) {
+			new GridPanel<UserEntityAction>("history", EntityType.ACTION) {
 
 			@Override
 			protected void addComponents() {
@@ -70,14 +66,14 @@ public class HistoryDialog extends ContentPanel {
 			}
 			
 			@Override
-			protected Grid<UserEntityAction> newGrid() {
-				Grid<UserEntityAction> grid = super.newGrid();
+			protected Grid<UserEntityAction> newGrid(CustomColumnModel cm) {
+				Grid<UserEntityAction> grid = super.newGrid(cm);
 				grid.setAutoExpandColumn(Action.Key.DESCRIPTION.name());
 				return grid;
 			}
 			
 			@Override
-			protected CustomColumnModel newColumnModel() {
+			protected CustomColumnModel newColumnModel(GradebookModel selectedGradebook) {
 				
 				List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 				

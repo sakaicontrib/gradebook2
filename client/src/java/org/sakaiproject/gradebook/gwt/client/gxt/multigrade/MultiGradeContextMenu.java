@@ -25,6 +25,7 @@ package org.sakaiproject.gradebook.gwt.client.gxt.multigrade;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.GradebookToolFacadeAsync;
 import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
@@ -83,14 +84,12 @@ public class MultiGradeContextMenu extends Menu {
 	
 	private CommentModel commentModel;
 	
-	public MultiGradeContextMenu(final String gradebookUid, final StudentModelOwner owner) {
+	public MultiGradeContextMenu(final StudentModelOwner owner) {
 		super();
 		
 		contextMenuAddCommentItem = new MenuItem("Add Comment");
 		contextMenuEditCommentItem = new MenuItem("Edit Comment");
 		contextMenuViewGradeLogItem = new MenuItem("View Grade History");
-		
-		final GradebookModel gbModel = Registry.get(gradebookUid);
 		
 		addCommentTextArea = new TextArea() {
 			
@@ -108,8 +107,9 @@ public class MultiGradeContextMenu extends Menu {
 				    	commentModel.setAssignmentId(owner.getSelectedAssignment());
 				    	commentModel.setText(getValue());
 				    	
+				    	GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 				    	UserEntityCreateAction<CommentModel> action = 
-				    		new UserEntityCreateAction<CommentModel>(gbModel, EntityType.COMMENT, commentModel);
+				    		new UserEntityCreateAction<CommentModel>(selectedGradebook, EntityType.COMMENT, commentModel);
 				    	
 				    	RemoteCommand<CommentModel> remoteCommand = 
 							new RemoteCommand<CommentModel>() {
@@ -158,8 +158,9 @@ public class MultiGradeContextMenu extends Menu {
 			    case KeyboardListener.KEY_ENTER:
 			    			    	
 			    	if (commentModel != null) {
+			    		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 				    	UserEntityUpdateAction<CommentModel> action = 
-				    		new UserEntityUpdateAction<CommentModel>(gbModel, commentModel, 
+				    		new UserEntityUpdateAction<CommentModel>(selectedGradebook, commentModel, 
 				    				CommentModel.Key.TEXT.name(), ClassType.STRING, getValue(), commentModel.getText());
 				    	
 				    	RemoteCommand<CommentModel> remoteCommand = 
@@ -294,9 +295,9 @@ public class MultiGradeContextMenu extends Menu {
 				
 				if (contextMenuEditCommentItem.isEnabled()) {
 					
-					GradebookModel gbModel = Registry.get(gradebookUid);
+					GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 					UserEntityGetAction<CommentModel> action = 
-			    		new UserEntityGetAction<CommentModel>(gbModel, EntityType.COMMENT, 
+			    		new UserEntityGetAction<CommentModel>(selectedGradebook, EntityType.COMMENT, 
 			    				String.valueOf(owner.getSelectedAssignment()), Boolean.TRUE);
 					action.setStudentUid(owner.getSelectedModel().getIdentifier());
 					

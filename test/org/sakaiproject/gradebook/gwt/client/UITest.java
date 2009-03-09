@@ -81,7 +81,7 @@ public class UITest extends GWTTestCase {
 			  
 			  //System.out.println("Course grade is " + record.get(StudentModel.Key.COURSE_GRADE.name()));
 			  
-			  multigrade.editCell(record, property, newValue, startValue, ge);
+			  multigrade.editCell(null, record, property, newValue, startValue, ge);
 	
 			  Callback c2 = new Callback() {
 				  public void doAction() {

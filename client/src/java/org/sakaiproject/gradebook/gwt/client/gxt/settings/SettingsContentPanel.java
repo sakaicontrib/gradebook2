@@ -67,7 +67,7 @@ public class SettingsContentPanel extends ContentPanel {
 		
 		assignmentsPanel = new SettingsAssignmentContentPanel(gradebookUid, categoriesPanel);
 		
-		gradingScalePanel = new SettingsGradingScaleContentPanel(gradebookUid);
+		gradingScalePanel = new SettingsGradingScaleContentPanel();
 		
 		tabPanel = new TabPanel();
 		

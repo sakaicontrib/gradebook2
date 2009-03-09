@@ -31,8 +31,30 @@ public class DataTypeConversionUtil {
 
 	private static DateTimeFormat dateFormat = DateTimeFormat.getShortDateFormat();
 
+	public static boolean checkBoolean(Boolean b) {
+		return b != null && b.booleanValue();
+	}
+	
+	public static String concat(String... vars) {
+		StringBuilder builder = new StringBuilder();
+		
+		for (int i=0;i<vars.length;i++) {
+			builder.append(vars[i]);
+		}
+		
+		return builder.toString();
+	}
+	
 	public static NumberFormat getDefaultNumberFormat() {
 		return NumberFormat.getFormat("#.#####");
+	}
+	
+	public static NumberFormat getShortNumberFormat() {
+		return NumberFormat.getFormat("#.##");
+	}
+	
+	public static NumberFormat getLongNumberFormat() {
+		return NumberFormat.getFormat("#.############");
 	}
 	
 	public static String convertDateToString(Date d) {

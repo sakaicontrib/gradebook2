@@ -26,7 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.sakaiproject.gradebook.gwt.client.GradebookConstants;
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
@@ -212,7 +213,7 @@ public class SettingsAssignmentContentPanel extends SettingsGridPanel<Assignment
 	}
 
 	@Override
-	protected CustomColumnModel newColumnModel() {
+	protected CustomColumnModel newColumnModel(GradebookModel selectedGradebook) {
 		List<ColumnConfig> columns = new ArrayList<ColumnConfig>();  
 		
 		SummaryColumnConfig categoryColumn = new SummaryColumnConfig(AssignmentModel.Key.CATEGORY_NAME.name(), 
@@ -288,7 +289,7 @@ public class SettingsAssignmentContentPanel extends SettingsGridPanel<Assignment
 		columns.add(removedColumn);
 		
 		
-		GradebookModel gbModel = Registry.get(gradebookUid);
+		GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
 		switch (gbModel.getCategoryType()) {
 		case WEIGHTED_CATEGORIES:
 			weightColumn.setHidden(false);
@@ -298,7 +299,7 @@ public class SettingsAssignmentContentPanel extends SettingsGridPanel<Assignment
 			break;
 		}
 		
-		CustomColumnModel cm = new CustomColumnModel(gradebookUid, gridId, columns);
+		CustomColumnModel cm = new CustomColumnModel(gbModel.getGradebookUid(), gridId, columns);
 		
 		return cm;
 	}
@@ -382,7 +383,7 @@ public class SettingsAssignmentContentPanel extends SettingsGridPanel<Assignment
 					}
 				}
 			};
-			GradebookConstants i18n = Registry.get("i18n");
+			I18nConstants i18n = Registry.get("i18n");
 			verify.addText(i18n.changingPointsRecalculatesGrades());
 			verify.setBodyStyleName("pad-text");
 			verify.setButtons(Dialog.YESNOCANCEL);

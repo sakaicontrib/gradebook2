@@ -25,7 +25,7 @@ package org.sakaiproject.gradebook.gwt.client.gxt;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.sakaiproject.gradebook.gwt.client.GradebookToolFacadeAsync;
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
 import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
@@ -34,12 +34,12 @@ import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.custom.widget.grid.BaseCustomGridView;
 import org.sakaiproject.gradebook.gwt.client.custom.widget.grid.CustomColumnModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.IndividualStudentEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.settings.LogColumnConfig;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradeRecordModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -50,7 +50,6 @@ import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.PagingLoadConfig;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 import com.extjs.gxt.ui.client.event.GridEvent;
-import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.util.Margins;
@@ -79,7 +78,7 @@ public class StudentViewContainer extends LayoutContainer {
 	private static final Notifier notifier = new Notifier();
 	private static final String GRID_ID = "singlegrade";
 	
-	private String gradebookUid;
+	//private String gradebookUid;
 	private TextField<String> defaultTextField= new TextField<String>();
 	private TextArea defaultTextArea = new TextArea();
 	private NumberFormat defaultNumberFormat = NumberFormat.getFormat("#.###");
@@ -92,12 +91,14 @@ public class StudentViewContainer extends LayoutContainer {
 	
 	private int pageSize = 10;
 
-	private StudentModel studentModel;
+	private StudentModel learnerGradeRecordCollection;
 	
 	private boolean isStudentView;
 	
-	public StudentViewContainer(final String gradebookUid, final GradebookToolFacadeAsync toolSrv, final boolean isStudentView) {
-		this.gradebookUid = gradebookUid;
+	private GradebookModel selectedGradebook;
+	
+	public StudentViewContainer(boolean isStudentView) {
+		//this.gradebookUid = gradebookUid;
 		this.isStudentView = isStudentView;
 		this.defaultNumberField.setFormat(defaultNumberFormat);
 		this.defaultNumberField.setSelectOnFocus(true);
@@ -119,12 +120,89 @@ public class StudentViewContainer extends LayoutContainer {
 		studentInformationPanel.setScrollMode(Scroll.AUTO);
 		studentInformationPanel.add(studentInformation);
 		add(studentInformationPanel, new RowData(1, -1, new Margins(5, 0, 0, 0)));
+
+	}
+	
+	public StudentModel getStudentRow() {
+		return learnerGradeRecordCollection;
+	}
+	
+	public void onChangeModel(GradebookModel selectedGradebook, StudentModel learnerGradeRecordCollection) {
+		if (learnerGradeRecordCollection != null) {
+			this.selectedGradebook = selectedGradebook;
+			this.learnerGradeRecordCollection = learnerGradeRecordCollection;
+			
+			if (gradeItemsPanel == null)
+				gradeItemsPanel = newGradeItemsPanel();
+			
+			if (logColumn != null)
+				logColumn.setStudent(learnerGradeRecordCollection);
+			updateCourseGrade(learnerGradeRecordCollection.getStudentGrade());
+			
+			if (gradeItemsPanel != null) {
+				gradeItemsPanel.onSwitchGradebook(selectedGradebook);
+			}
+			
+			//gradeItemsPanel.getLoader().load(0, pageSize);
+			setStudentInfoTable();
+		}
+	}
+	
+	public void onItemUpdated(ItemModel itemModel) {
+		refreshData();
+	}
+	
+	protected void onRender(Element parent, int pos) {
+		super.onRender(parent, pos);
+	
+		if (gradeItemsPanel != null)
+			gradeItemsPanel.getLoader().load(0, pageSize);
 		
-		gradeItemsPanel = new GridPanel<GradeRecordModel>(gradebookUid, GRID_ID, EntityType.GRADE_RECORD) {
+	}
+	
+	public void onResize(int x, int y) {
+		super.onResize(x, y);
+		
+		if (gradeItemsPanel != null && gradeItemsPanel.getBody() != null) {
+			int h = 31; //e.getOffsetHeight();
+			int numRows = gradeItemsPanel.getBody().getHeight() / h - 1;
+			
+			if (pageSize != numRows) {
+				pageSize = numRows;
+				if (gradeItemsPanel != null){
+					gradeItemsPanel.getLoader().load(0, pageSize);
+					
+					if (gradeItemsPanel.getToolBar() != null) {
+						gradeItemsPanel.getToolBar().setPageSize(numRows);		
+					}
+				}
+			}
+		}
+	}
+	
+	public void refreshColumns() {
+		CustomColumnModel cm = new CustomColumnModel(selectedGradebook.getGradebookUid(), GRID_ID, buildColumns(selectedGradebook));
+		EditorGrid<GradeRecordModel> grid = gradeItemsPanel.getGrid();
+		if (grid != null) {
+			grid.reconfigure(gradeItemsPanel.getStore(), gradeItemsPanel.getColumnModel());
+			if (grid.el() != null) {
+				grid.el().unmask();
+			}
+		}
+	}
+	
+	public void refreshData() {
+		if (gradeItemsPanel.getToolBar() != null)
+			gradeItemsPanel.getToolBar().refresh();
+	}
+	
+	private GridPanel<GradeRecordModel> newGradeItemsPanel() {
+		GridPanel<GradeRecordModel> gradeItemsPanel = new GridPanel<GradeRecordModel>(GRID_ID, EntityType.GRADE_RECORD) {
 
 			@Override
-			protected CustomColumnModel newColumnModel() {
-				return new CustomColumnModel(gradebookUid, gridId, buildColumns());
+			protected CustomColumnModel newColumnModel(GradebookModel selectedGradebook) {
+				GradebookModel model = Registry.get(AppConstants.CURRENT);
+				return new CustomColumnModel(model.getGradebookUid(), gridId, buildColumns(model));
 			}
 
 			@Override
@@ -156,15 +234,14 @@ public class StudentViewContainer extends LayoutContainer {
 			}
 
 			@Override
-			protected PageRequestAction newPageRequestAction() {
-				GradebookModel model = Registry.get(gradebookUid);
-				PageRequestAction pageRequestAction = new PageRequestAction(entityType, model.getGradebookUid(), model.getGradebookId());
+			protected PageRequestAction newPageRequestAction(GradebookModel selectedGradebook) {
+				PageRequestAction pageRequestAction = new PageRequestAction(entityType, selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId());
 				StudentModel studentModel = getStudentModel();
 				if (studentModel != null)
 					pageRequestAction.setStudentUid(studentModel.getIdentifier());
 				
 				// The student view is a more restricted view, therefore it's opposite is include all
-				pageRequestAction.setIncludeAll(Boolean.valueOf(!isStudentView));
+				pageRequestAction.setIncludeAll(Boolean.valueOf(!StudentViewContainer.this.isStudentView));
 				
 				return pageRequestAction;
 			}
@@ -188,10 +265,10 @@ public class StudentViewContainer extends LayoutContainer {
 			
 			@Override
 			protected void updateView(UserEntityAction<GradeRecordModel> action, Record record, GradeRecordModel model) {
-				GradebookModel gbModel = Registry.get(gradebookUid);
+				//GradebookModel gbModel = Registry.get(gradebookUid);
 				
 				Object value = null;
-				switch (gbModel.getGradeType()) {
+				switch (selectedGradebook.getGradeType()) {
 				case POINTS:
 					value = model.get(GradeRecordModel.Key.POINTS_EARNED.name());
 					record.set(GradeRecordModel.Key.POINTS_EARNED.name(), value); 
@@ -229,7 +306,7 @@ public class StudentViewContainer extends LayoutContainer {
 				else 
 					syncStudentModel(model);
 							
-				action.setStudentModel(studentModel);
+				action.setStudentModel(learnerGradeRecordCollection);
 				action.setModel(model);
 				UserChangeEvent event = new UserChangeEvent(action);
 				StudentViewContainer.this.fireEvent(GradebookEvents.UserChange, event);
@@ -240,19 +317,19 @@ public class StudentViewContainer extends LayoutContainer {
 
 				switch (recordModelKey) {
 				case COMMENTS:
-					notifier.notify("Comment", "Commented on {0} for {1}. ", model.getAssignmentName(), studentModel.getStudentName());
+					notifier.notify("Comment", "Commented on {0} for {1}. ", model.getAssignmentName(), learnerGradeRecordCollection.getStudentName());
 					break;
 				case EXCLUDED:
 					if (isExcused)
-						notifier.notify("Excuse", "Excused {0} from {1}. Student will no longer be graded for the assignment. ", studentModel.getStudentName(), model.getAssignmentName());
+						notifier.notify("Excuse", "Excused {0} from {1}. Student will no longer be graded for the assignment. ", learnerGradeRecordCollection.getStudentName(), model.getAssignmentName());
 					else
-						notifier.notify("Unexcuse", "Unexcused {0} from {1}. Student will now be graded for the assignment. ", studentModel.getStudentName(), model.getAssignmentName());
+						notifier.notify("Unexcuse", "Unexcused {0} from {1}. Student will now be graded for the assignment. ", learnerGradeRecordCollection.getStudentName(), model.getAssignmentName());
 					break;
 				case POINTS_EARNED:
 				case PERCENT_EARNED:
 				case LETTER_EARNED:
 					StringBuilder buffer = new StringBuilder();
-					buffer.append(studentModel.getStudentName());
+					buffer.append(learnerGradeRecordCollection.getStudentName());
 					buffer.append(" : ");
 					buffer.append(model.getAssignmentName());
 						
@@ -265,8 +342,8 @@ public class StudentViewContainer extends LayoutContainer {
 			}
 			
 			@Override
-			protected UserEntityUpdateAction<GradeRecordModel> newEntityUpdateAction(Record record, String property, Object value, Object startValue, GridEvent gridEvent) {
-				UserEntityUpdateAction<GradeRecordModel> action = super.newEntityUpdateAction(record, property, value, startValue, gridEvent);
+			protected UserEntityUpdateAction<GradeRecordModel> newEntityUpdateAction(GradebookModel selectedGradebook, Record record, String property, Object value, Object startValue, GridEvent gridEvent) {
+				UserEntityUpdateAction<GradeRecordModel> action = super.newEntityUpdateAction(selectedGradebook, record, property, value, startValue, gridEvent);
 				action.setStudentModel(getStudentModel());
 				
 				return action;
@@ -290,73 +367,20 @@ public class StudentViewContainer extends LayoutContainer {
 		//Grid<AssignmentRecordModel> gradeItemsGrid = buildGrid(gradeItemsPanel);
 		//gradeItemsPanel.add(gradeItemsGrid);
 		add(gradeItemsPanel, new RowData(1, 1));
-
 		
-		addListener(GradebookEvents.SingleView, new Listener<IndividualStudentEvent>()  {
-
-			public void handleEvent(IndividualStudentEvent be) {
-				be.doit = true;
-				studentModel = be.getStudent();
-				if (logColumn != null)
-					logColumn.setStudent(studentModel);
-				updateCourseGrade(studentModel.getStudentGrade());
-				gradeItemsPanel.getLoader().load(0, pageSize);
-				setStudentInfoTable();
-			}
-			
-		});
-		
-	}
-	
-	public StudentModel getStudentRow() {
-		return studentModel;
-	}
-	
-	public void onResize(int x, int y) {
-		super.onResize(x, y);
-		
-		if (gradeItemsPanel != null && gradeItemsPanel.getBody() != null) {
-			int h = 31; //e.getOffsetHeight();
-			int numRows = gradeItemsPanel.getBody().getHeight() / h - 1;
-			
-			if (pageSize != numRows) {
-				pageSize = numRows;
-				gradeItemsPanel.getLoader().load(0, pageSize);
-				
-				if (gradeItemsPanel.getToolBar() != null) {
-					gradeItemsPanel.getToolBar().setPageSize(numRows);		
-				}
-			}
-		}
-	}
-	
-	public void refreshColumns() {
-		CustomColumnModel cm = new CustomColumnModel(gradebookUid, GRID_ID, buildColumns());
-		EditorGrid<GradeRecordModel> grid = gradeItemsPanel.getGrid();
-		if (grid != null) {
-			grid.reconfigure(gradeItemsPanel.getStore(), gradeItemsPanel.getColumnModel());
-			if (grid.el() != null) {
-				grid.el().unmask();
-			}
-		}
-	}
-	
-	public void refreshData() {
-		if (gradeItemsPanel.getToolBar() != null)
-			gradeItemsPanel.getToolBar().refresh();
+		return gradeItemsPanel;
 	}
 	
 	private void updateCourseGrade(String newGrade)
 	{
-		GradebookModel gbModel = Registry.get(gradebookUid);
-		if (!isStudentView || (gbModel.isReleaseGrades() != null && gbModel.isReleaseGrades().booleanValue())) {
+		if (!isStudentView || (selectedGradebook.isReleaseGrades() != null && selectedGradebook.isReleaseGrades().booleanValue())) {
 			// To force a refresh, let's first hide the owning panel
 			studentInformationPanel.hide();
 			studentInformation.setText(6, 1, newGrade);
 			studentInformationPanel.show();
 		}
 		
-		studentModel.set(StudentModel.Key.COURSE_GRADE.name(), newGrade);
+		learnerGradeRecordCollection.set(StudentModel.Key.COURSE_GRADE.name(), newGrade);
 	}
 	
 	// FIXME - i18n 
@@ -375,28 +399,27 @@ public class StudentViewContainer extends LayoutContainer {
 		
         studentInformation.setText(1, 0, "Name");
         formatter.setStyleName(1, 0, "gbImpact");
-        studentInformation.setText(1, 1, studentModel.getStudentName());
+        studentInformation.setText(1, 1, learnerGradeRecordCollection.getStudentName());
 
         studentInformation.setText(2, 0, "Email");
         formatter.setStyleName(2, 0, "gbImpact");
-        studentInformation.setText(2, 1, studentModel.getStudentEmail());
+        studentInformation.setText(2, 1, learnerGradeRecordCollection.getStudentEmail());
 
         studentInformation.setText(3, 0, "ID");
         formatter.setStyleName(3, 0, "gbImpact");
-        studentInformation.setText(3, 1, studentModel.getStudentDisplayId());
+        studentInformation.setText(3, 1, learnerGradeRecordCollection.getStudentDisplayId());
 
         studentInformation.setText(4, 0, "Section");
         formatter.setStyleName(4, 0, "gbImpact");
-        studentInformation.setText(4, 1, studentModel.getStudentSections());
+        studentInformation.setText(4, 1, learnerGradeRecordCollection.getStudentSections());
     
         studentInformation.setText(5, 0, "");
         formatter.setColSpan(5, 0, 2);
         
-        GradebookModel gbModel = Registry.get(gradebookUid);
-        if (!isStudentView || (gbModel.isReleaseGrades() != null && gbModel.isReleaseGrades().booleanValue())) {
+        if (!isStudentView || (selectedGradebook.isReleaseGrades() != null && selectedGradebook.isReleaseGrades().booleanValue())) {
 	        studentInformation.setText(6, 0, "Course Grade");
 	        formatter.setStyleName(6, 0, "gbImpact");
-	        studentInformation.setText(6, 1, studentModel.getStudentGrade());
+	        studentInformation.setText(6, 1, learnerGradeRecordCollection.getStudentGrade());
         }
         studentInformationPanel.show();
 	}
@@ -466,9 +489,8 @@ public class StudentViewContainer extends LayoutContainer {
 
 	private CellEditor textCellEditor = new CellEditor(defaultTextField);
 	
-	private List<ColumnConfig> buildColumns() {
-		GradebookModel gbModel = Registry.get(gradebookUid);
-		
+	private List<ColumnConfig> buildColumns(GradebookModel selectedGradebook) {
+
 		// FIXME  - i18n 
 		List<ColumnConfig> columns = new ArrayList<ColumnConfig>();  
 		
@@ -482,7 +504,7 @@ public class StudentViewContainer extends LayoutContainer {
 		nameColumn.setSortable(false);
 		columns.add(nameColumn);
 
-		switch (gbModel.getGradeType()) {
+		switch (selectedGradebook.getGradeType()) {
 		case POINTS:
 			ColumnConfig pointsColumn =  new ColumnConfig(GradeRecordModel.Key.POINTS_EARNED.name(), "Points", 80);
 			pointsColumn.setAlignment(HorizontalAlignment.RIGHT);
@@ -960,7 +982,7 @@ public class StudentViewContainer extends LayoutContainer {
 		
 		protected void changeValue(final Record record, final String property, Boolean value, Boolean startValue) {
 			UserEntityUpdateAction<GradeRecordModel> action = 
-				gradeItemsPanel.newEntityUpdateAction(record, property, value, startValue, null);
+				gradeItemsPanel.newEntityUpdateAction(selectedGradebook, record, property, value, startValue, null);
 			
 			RemoteCommand<GradeRecordModel> remoteCommand = 
 				gradeItemsPanel.newRemoteCommand(record, property, value, startValue, null);
@@ -1216,27 +1238,25 @@ public class StudentViewContainer extends LayoutContainer {
 
 	
 	private void syncStudentModel(GradeRecordModel model) {
-		if (studentModel != null) {
+		if (learnerGradeRecordCollection != null) {
 			String columnId = String.valueOf(model.getAssignmentId());
 			String droppedId = columnId + StudentModel.DROP_FLAG;
-				
-			GradebookModel gbModel = Registry.get(gradebookUid);
-				
-			switch (gbModel.getGradeType()) {
+							
+			switch (selectedGradebook.getGradeType()) {
 			case POINTS:
-				studentModel.set(columnId, model.getPointsEarned());
+				learnerGradeRecordCollection.set(columnId, model.getPointsEarned());
 				break;
 			case PERCENTAGES:
-				studentModel.set(columnId, model.getPercentEarned());
+				learnerGradeRecordCollection.set(columnId, model.getPercentEarned());
 				break;
 			case LETTERS:
-				studentModel.set(columnId, model.getLetterEarned());
+				learnerGradeRecordCollection.set(columnId, model.getLetterEarned());
 				break;
 			};
 			
 			boolean isExcluded = model.getExcluded() != null && model.getExcluded().booleanValue();
 			boolean isDropped = model.getDropped() != null && model.getDropped().booleanValue();
-			studentModel.set(droppedId, Boolean.valueOf(isDropped || isExcluded));
+			learnerGradeRecordCollection.set(droppedId, Boolean.valueOf(isDropped || isExcluded));
 		}
 	}
 	
@@ -1283,7 +1303,7 @@ public class StudentViewContainer extends LayoutContainer {
 	}
 
 	public StudentModel getStudentModel() {
-		return studentModel;
+		return learnerGradeRecordCollection;
 	}
 	
 	

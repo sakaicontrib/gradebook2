@@ -26,12 +26,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.custom.widget.grid.CustomColumnModel;
-import org.sakaiproject.gradebook.gwt.client.gxt.Notifier;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
 import org.sakaiproject.gradebook.gwt.client.model.AssignmentModel;
@@ -213,7 +213,8 @@ public class SettingsCategoryContentPanel extends SettingsGridPanel<CategoryMode
 		grid.addPlugin(equalWeightColumn);
 	}
 	
-	protected CustomColumnModel newColumnModel() {
+	@Override
+	protected CustomColumnModel newColumnModel(GradebookModel selectedGradebook) {
 		List<ColumnConfig> columns = new ArrayList<ColumnConfig>();  
 		
 		SummaryColumnConfig gbColumn = new SummaryColumnConfig(CategoryModel.Key.GRADEBOOK.name(), 
@@ -262,7 +263,7 @@ public class SettingsCategoryContentPanel extends SettingsGridPanel<CategoryMode
 		
 		columns.add(removedColumn);
 		
-		GradebookModel gbModel = Registry.get(gradebookUid);
+		GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
 		switch (gbModel.getCategoryType()) {
 		case WEIGHTED_CATEGORIES:
 			weightColumn.setHidden(false);
@@ -274,7 +275,7 @@ public class SettingsCategoryContentPanel extends SettingsGridPanel<CategoryMode
 			break;
 		}
 		
-		CustomColumnModel columnModel = new CustomColumnModel(gradebookUid, gridId, columns);
+		CustomColumnModel columnModel = new CustomColumnModel(gbModel.getGradebookUid(), gridId, columns);
 		return columnModel;
 	}
 	

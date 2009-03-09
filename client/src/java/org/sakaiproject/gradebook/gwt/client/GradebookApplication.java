@@ -22,30 +22,24 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client;
 
-import java.util.List;
-
 import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
-import org.sakaiproject.gradebook.gwt.client.action.UserActionHistory;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.GradebookContainer;
-import org.sakaiproject.gradebook.gwt.client.gxt.GradebookTabItem;
-import org.sakaiproject.gradebook.gwt.client.gxt.TabContainer;
+import org.sakaiproject.gradebook.gwt.client.gxt.controller.AppController;
+import org.sakaiproject.gradebook.gwt.client.gxt.controller.UpdateController;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 
 import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Registry;
+import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.util.Theme;
 import com.extjs.gxt.ui.client.widget.MessageBox;
-import com.extjs.gxt.ui.client.widget.Viewport;
-import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.gears.client.database.Database;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
-import com.google.gwt.user.client.ui.RootPanel;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -54,21 +48,19 @@ public class GradebookApplication implements EntryPoint {
 	
 	private GradebookToolFacadeAsync dataService;
 	private GradebookContainer gradebookContainer;
-	private Viewport viewport;
 	private int screenHeight = 600;
-	private Database db;
 	
     public GradebookApplication() {
     	GXT.setDefaultTheme(Theme.GRAY, true);
     }
 	
 	public void onModuleLoad() {
-		viewport = new Viewport();
-		viewport.setLayout(new FitLayout());
-		viewport.setHeight(screenHeight);
-		RootPanel.get().add(viewport);
 		
-		GradebookConstants i18n = (GradebookConstants) GWT.create(GradebookConstants.class);
+		final Dispatcher dispatcher = Dispatcher.get();
+		dispatcher.addController(new AppController());
+		dispatcher.addController(new UpdateController());
+		
+		I18nConstants i18n = (I18nConstants) GWT.create(I18nConstants.class);
 		
 		if (dataService == null) {
 			dataService = GWT.create(GradebookToolFacade.class);
@@ -85,9 +77,12 @@ public class GradebookApplication implements EntryPoint {
 			return;
 		}
 		
-		Registry.register("history", new UserActionHistory());
-		Registry.register("service", dataService);
-		Registry.register("i18n", i18n);
+		Registry.register(AppConstants.SERVICE, dataService);
+		Registry.register(AppConstants.I18N, i18n);
+		
+		// FIXME: Are we still using these? 
+		//Registry.register("history", new UserActionHistory());
+		
 
 		UserEntityGetAction<ApplicationModel> action = 
 			new UserEntityGetAction<ApplicationModel>(EntityType.APPLICATION);
@@ -95,6 +90,11 @@ public class GradebookApplication implements EntryPoint {
 		RemoteCommand<ApplicationModel> remoteCommand =
 			new RemoteCommand<ApplicationModel>() {
 		
+			public void onCommandFailure(UserEntityAction<ApplicationModel> action, Throwable caught) {
+				
+				dispatcher.dispatch(GradebookEvents.Exception, caught);
+			}
+			
 			public void onCommandSuccess(UserEntityAction<ApplicationModel> action, ApplicationModel model) {
 				
 				String placementId = model.getPlacementId();
@@ -103,7 +103,7 @@ public class GradebookApplication implements EntryPoint {
 					resizeMainFrame("Main" + modifiedId, screenHeight + 20);
 				}
 				
-				loadGradebooks(screenHeight, model.getGradebookModels());
+				dispatcher.dispatch(GradebookEvents.Startup, model);
 			}
 			
 		};
@@ -111,7 +111,7 @@ public class GradebookApplication implements EntryPoint {
 		remoteCommand.execute(action);
 	}
 	
-	protected void loadGradebooks(final int screenHeight, List<GradebookModel> models) {
+	/*protected void loadGradebooks(final int screenHeight, List<GradebookModel> models) {
 		final GradebookToolFacadeAsync service = (GradebookToolFacadeAsync) Registry.get("service");
 
 		if (service == null) {
@@ -156,7 +156,7 @@ public class GradebookApplication implements EntryPoint {
 			viewport.add(container);
 		}
 		viewport.layout();
-	}
+	}*/
 	
 
 	// FIXME: This needs to be cleaned up

@@ -29,10 +29,13 @@ import org.sakaiproject.gradebook.gwt.client.model.EntityModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeRecordModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
+import com.extjs.gxt.ui.client.data.BaseModel;
 
-public class UserEntityUpdateAction<M extends EntityModel> extends UserEntityAction<M> {
+
+public class UserEntityUpdateAction<M extends BaseModel> extends UserEntityAction<M> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -53,7 +56,8 @@ public class UserEntityUpdateAction<M extends EntityModel> extends UserEntityAct
 	public UserEntityUpdateAction(GradebookModel gbModel, M model, String key, ClassType classType, Object value, Object startValue) {
 		super(gbModel, ActionType.UPDATE);
 		setModel(model);
-		setEntityName(model.getDisplayName());
+		if (model instanceof EntityModel)
+			setEntityName(((EntityModel)model).getDisplayName());
 		setKey(key);
 		this.classType = classType;
 		
@@ -63,6 +67,8 @@ public class UserEntityUpdateAction<M extends EntityModel> extends UserEntityAct
 		if (model instanceof StudentModel) {
 			setEntityType(EntityType.STUDENT);
 			setActionType(ActionType.GRADED);
+		} else if (model instanceof ItemModel) {
+			setEntityType(EntityType.ITEM);
 		} else if (model instanceof GradeRecordModel) {
 			setEntityType(EntityType.GRADE_RECORD);
 		} else if (model instanceof AssignmentModel) {

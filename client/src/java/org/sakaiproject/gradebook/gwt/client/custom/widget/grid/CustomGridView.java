@@ -30,6 +30,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.I18nConstants;
+import org.sakaiproject.gradebook.gwt.client.PersistentStore;
+import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.model.ColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
@@ -43,29 +48,39 @@ import com.extjs.gxt.ui.client.Style.SortDir;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.Listener;
+import com.extjs.gxt.ui.client.event.MenuEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
+import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.StoreEvent;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
+import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.menu.CheckMenuItem;
 import com.extjs.gxt.ui.client.widget.menu.Item;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
-import com.google.gwt.user.client.Cookies;
+import com.extjs.gxt.ui.client.widget.menu.SeparatorMenuItem;
 
 
 // SAK-2394 
 
 public abstract class CustomGridView extends BaseCustomGridView {
 	
+	private enum SelectionType { SORT_ASC, SORT_DESC, ADD_ITEM, DELETE_ITEM, HIDE_ITEM };
+	
+	private static final String selectionTypeField = "selectionType";
+	
+	
 	// Member variables
 	private final boolean SHOW = true;
-	private String gradebookUid = null;
+	//private String gradebookUid = null;
 	private GradebookModel gradebookModel = null;
 	private boolean isDisplayLoadMaskOnRender = true;
+	private String gridId;
 	
+	private SelectionListener<MenuEvent> selectionListener; 
 	
-	public CustomGridView(String gradebookUid) {
-		this.gradebookUid = gradebookUid;
+	public CustomGridView(String gridId) {
+		this.gridId = gridId;
 		
 		addListener(Events.Refresh, new Listener() {
 
@@ -74,6 +89,42 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			}
 			
 		});
+		
+		selectionListener = new SelectionListener<MenuEvent>() {
+
+			@Override
+			public void componentSelected(MenuEvent me) {
+				MenuItem item = (MenuItem)me.item;
+				if (item != null) {
+					SelectionType selectionType = item.getData(selectionTypeField);
+					if (selectionType != null) {
+						Integer colIndexInteger = item.getData("colIndex");
+						int colIndex = colIndexInteger == null ? -1 : colIndexInteger.intValue();
+						switch (selectionType) {
+						case ADD_ITEM:
+							Dispatcher.forwardEvent(GradebookEvents.NewItem);
+							break;
+						case DELETE_ITEM:
+							Dispatcher.forwardEvent(GradebookEvents.DeleteItem, cm.getDataIndex(colIndex));
+							break;
+						case HIDE_ITEM:
+							cm.setHidden(colIndex, true);
+							break;
+						case SORT_ASC:
+							ds.sort(cm.getDataIndex(colIndex), SortDir.ASC);
+							break;
+						case SORT_DESC:
+							ds.sort(cm.getDataIndex(colIndex), SortDir.DESC);
+							break;
+						}
+					}
+				}
+
+			}
+			
+		};
+		
+		
 	}
 
 	public void doRowRefresh(int row) {
@@ -84,15 +135,86 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	 * @see com.extjs.gxt.ui.client.widget.grid.GridView#createContextMenu(int)
 	 */
 	@Override
-	protected Menu createContextMenu(final int colIndex) {
+	protected Menu createContextMenu(int colIndex) {
+		I18nConstants i18n = Registry.get(AppConstants.I18N);
+		
+		ColumnConfig config = cm.getColumn(colIndex);
+		boolean isStatic = isStaticColumn(config.getId()); 
+		
+		Menu menu = new Menu();
+
+		MenuItem item = null;
+		if (cm.isSortable(colIndex)) {
+			item = new AriaMenuItem();
+			item.setData(selectionTypeField, SelectionType.SORT_ASC);
+			item.setData("colIndex", Integer.valueOf(colIndex));
+			item.setText(i18n.headerSortAscending());
+			item.setTitle(i18n.headerSortAscendingTitle());
+			item.setIconStyle("my-icon-asc");
+			item.addSelectionListener(selectionListener);
+			menu.add(item);
+
+			item = new AriaMenuItem();
+			item.setData(selectionTypeField, SelectionType.SORT_DESC);
+			item.setData("colIndex", Integer.valueOf(colIndex));
+			item.setText(i18n.headerSortDescending());
+			item.setTitle(i18n.headerSortDescendingTitle());
+			item.setIconStyle("my-icon-desc");
+			item.addSelectionListener(selectionListener);
+			menu.add(item);
+		}
+		
+		menu.add(new SeparatorMenuItem());
+		
+		if (! isStatic) {
+			item = new AriaMenuItem();
+			item.setData(selectionTypeField, SelectionType.ADD_ITEM);
+			item.setItemId(AppConstants.ID_HD_ADD_ITEM_MENUITEM);
+			item.setData("colIndex", Integer.valueOf(colIndex));
+			item.setText(i18n.headerAddItem());
+			item.setTitle(i18n.headerAddItemTitle());
+			item.setIconStyle("grid-show-columns");
+			item.addSelectionListener(selectionListener);
+			
+			menu.add(item);
+			
+			item = new AriaMenuItem();
+			item.setData(selectionTypeField, SelectionType.DELETE_ITEM);
+			item.setItemId(AppConstants.ID_HD_DELETE_ITEM_MENUITEM);
+			item.setData("colIndex", Integer.valueOf(colIndex));
+			item.setText(i18n.headerDeleteItem());
+			item.setTitle(i18n.headerDeleteItemTitle());
+			item.setIconStyle("grid-hide-columns");
+			item.addSelectionListener(selectionListener);
+			
+			menu.add(item);
+			
+			menu.add(new SeparatorMenuItem());
+		}
+		
+		item = new AriaMenuItem();
+		item.setData(selectionTypeField, SelectionType.HIDE_ITEM);
+		item.setItemId(AppConstants.ID_HD_HIDE_ITEM_MENUITEM);
+		item.setData("colIndex", Integer.valueOf(colIndex));
+		item.setText(i18n.headerHideItem());
+		item.setTitle(i18n.headerHideItemTitle());
+		item.setIconStyle("x-cols-icon");
+		item.addSelectionListener(selectionListener);
+		
+		menu.add(item);
+
+		return menu;
+	}
+	
+	/*protected Menu xcreateContextMenu(final int colIndex) {
 		
 		// Getting the GradebookModel
-		gradebookModel = Registry.get(gradebookUid);
+		gradebookModel = Registry.get(AppConstants.CURRENT);
 		
 		final Menu rootMenu = new Menu();
 
 		if (cm.isSortable(colIndex)) {
-			MenuItem rootMenuItemSortAscDesc = new MenuItem();
+			MenuItem rootMenuItemSortAscDesc = new AriaMenuItem();
 			rootMenuItemSortAscDesc.setText(GXT.MESSAGES.gridView_sortAscText());
 			rootMenuItemSortAscDesc.setIconStyle("my-icon-asc");
 			rootMenuItemSortAscDesc.addSelectionListener(new SelectionListener<ComponentEvent>() {
@@ -103,7 +225,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			});
 			rootMenu.add(rootMenuItemSortAscDesc);
 
-			rootMenuItemSortAscDesc = new MenuItem();
+			rootMenuItemSortAscDesc = new AriaMenuItem();
 			rootMenuItemSortAscDesc.setText(GXT.MESSAGES.gridView_sortDescText());
 			rootMenuItemSortAscDesc.setIconStyle("my-icon-desc");
 			rootMenuItemSortAscDesc.addSelectionListener(new SelectionListener<ComponentEvent>() {
@@ -211,7 +333,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 		
 		restrictMenu(rootMenu);
 		return rootMenu;
-	}
+	}*/
 	
 	@Override
 	protected void onBeforeDataChanged(StoreEvent se) {
@@ -226,6 +348,13 @@ public abstract class CustomGridView extends BaseCustomGridView {
 		super.onDataChanged(se);
 		// Ensure that we set this to false in case the data changes before the grid view is rendered
 		isDisplayLoadMaskOnRender = false;
+	}
+	
+	@Override
+	protected void onHeaderClick(Grid grid, int column) {
+		ColumnConfig columnConfig = grid.getColumnModel().getColumn(column);
+		
+		Dispatcher.forwardEvent(GradebookEvents.SelectItem, columnConfig.getId());
 	}
 	
 	@Override
@@ -273,9 +402,10 @@ public abstract class CustomGridView extends BaseCustomGridView {
 		super.updateColumnWidth(col, width);
 		
 		ColumnConfig column = cm.getColumn(col);
-		String cookieWidthId = "gb:" + gradebookUid + ":prop:column:" + column.getId() + ":width";
+		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		PersistentStore.storePersistentField(selectedGradebook.getGradebookUid(), gridId, new StringBuilder()
+			.append(AppConstants.COLUMN_PREFIX).append(column.getId()).append(AppConstants.WIDTH_SUFFIX).toString(), String.valueOf(width));
 		
-		Cookies.setCookie(cookieWidthId, String.valueOf(width));
 	}
 	
 	public class ColumnGroup {
@@ -383,13 +513,26 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	}
 	
 	
+	private boolean isStaticColumn(String id) {
+		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		List<ColumnModel> columns = selectedGradebook.getColumns();
+		
+		for (ColumnModel column : columns) {
+			if (column.getIdentifier().equals(id))
+				return true;
+		}
+		
+		return false;
+	}
+	
+	
 	/**
 	 * Restrict menu. This is a private method in GridView.
 	 * TPA: I modified the original method to allow for subMenus
 	 * 
 	 * @param menu a menu
 	 */
-	private void restrictMenu(Menu menu) {
+	/*private void restrictMenu(Menu menu) {
 	
 		if(null == menu) {
 			return;
@@ -427,7 +570,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 				}
 			}
 		}
-	}
+	}*/
 
 	public void setDisplayLoadMaskOnRender(boolean isDisplayLoadMaskOnRender) {
 		this.isDisplayLoadMaskOnRender = isDisplayLoadMaskOnRender;

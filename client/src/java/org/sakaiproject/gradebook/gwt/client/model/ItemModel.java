@@ -3,9 +3,13 @@ package org.sakaiproject.gradebook.gwt.client.model;
 import java.util.Date;
 import java.util.Map;
 
+import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType;
+
 import com.extjs.gxt.ui.client.data.BaseTreeModel;
 
-public class ItemModel extends BaseTreeModel {
+public class ItemModel extends BaseTreeModel<ItemModel> {
+
+	private static final long serialVersionUID = 1L;
 
 	public enum Type { ROOT("Root"), GRADEBOOK("Gradebook") , CATEGORY("Category"), ITEM("Item");
 	
@@ -21,11 +25,17 @@ public class ItemModel extends BaseTreeModel {
 	}
 	
 	public enum Key {
-		ID("Id"), NAME("Name"), WEIGHT("Weight"), EQUAL_WEIGHT("Equal Weight Items"), EXTRA_CREDIT("Extra Credit"), 
-		INCLUDED("Include in Grade"), REMOVED("Delete"), GRADEBOOK("Gradebook"), DROP_LOWEST("Drop Lowest"), 
-		CATEGORY_NAME("Category"), CATEGORY_ID("Category Id"), DUE_DATE("Due Date"), POINTS("Points"), 
-		RELEASED("Is Released"), SOURCE("Source"), ITEM_TYPE("Type"), PERCENT_COURSE_GRADE("% Grade"),
-		PERCENT_CATEGORY("% Category"), IS_PERCENTAGE("Is Percentage");
+		ID("Id"), NAME("Name"), WEIGHT("Weight"), EQUAL_WEIGHT("Equal Weight Items"), 
+		EXTRA_CREDIT("Extra Credit"), 
+		INCLUDED("Include in Grade"), REMOVED("Delete"), GRADEBOOK("Gradebook"), 
+		DROP_LOWEST("Drop Lowest"), 
+		CATEGORY_NAME("Category"), CATEGORY_ID("Category Id"), DUE_DATE("Due Date"), 
+		POINTS("Points"), 
+		RELEASED("Is Released"), SOURCE("Source"), ITEM_TYPE("Type"), 
+		PERCENT_COURSE_GRADE("% Grade"),
+		PERCENT_CATEGORY("% Category"), IS_PERCENTAGE("Is Percentage"), 
+		STUDENT_MODEL_KEY("Student Model Key"),
+		ASSIGNMENT_ID("Item Id"), DATA_TYPE("Data Type");
 		
 		private String propertyName;
 		
@@ -48,6 +58,29 @@ public class ItemModel extends BaseTreeModel {
 	
 	public String getDisplayName() {
 		return get(Key.NAME.name());
+	}
+	
+	public static ClassType lookupClassType(String property) {
+		Key key = Key.valueOf(property);
+		
+		switch (key) {
+		case ID: case NAME: case GRADEBOOK: case CATEGORY_NAME: case SOURCE: case ITEM_TYPE:
+		case STUDENT_MODEL_KEY: case DATA_TYPE:
+			return ClassType.STRING;
+		case WEIGHT: case POINTS: case PERCENT_COURSE_GRADE: case PERCENT_CATEGORY:
+			return ClassType.DOUBLE;
+		case EQUAL_WEIGHT: case EXTRA_CREDIT: case INCLUDED: case REMOVED: case RELEASED:
+		case IS_PERCENTAGE:
+			return ClassType.BOOLEAN;
+		case DROP_LOWEST:
+			return ClassType.INTEGER;
+		case CATEGORY_ID: case ASSIGNMENT_ID:
+			return ClassType.LONG;
+		case DUE_DATE:
+			return ClassType.DATE;
+		}
+		
+		return null;
 	}
 	
 	public static String getPropertyName(String property) {
@@ -162,6 +195,14 @@ public class ItemModel extends BaseTreeModel {
 		set(Key.CATEGORY_NAME.name(), categoryName);
 	}
 	
+	public Long getItemId() {
+		return get(Key.ASSIGNMENT_ID.name());
+	}
+	
+	public void setItemId(Long itemId) {
+		set(Key.ASSIGNMENT_ID.name(), itemId);
+	}
+	
 	public Long getCategoryId() {
 		return get(Key.CATEGORY_ID.name());
 	}
@@ -224,6 +265,22 @@ public class ItemModel extends BaseTreeModel {
 	
 	public void setIsPercentage(Boolean isPercentage) {
 		set(Key.IS_PERCENTAGE.name(), isPercentage);
+	}
+	
+	public String getStudentModelKey() {
+		return get(Key.STUDENT_MODEL_KEY.name());
+	}
+	
+	public void setStudentModelKey(String key) {
+		set(Key.STUDENT_MODEL_KEY.name(), key);
+	}
+	
+	public String getDataType() {
+		return get(Key.DATA_TYPE.name());
+	}
+	
+	public void setDataType(String dataType) {
+		set(Key.DATA_TYPE.name(), dataType);
 	}
 	
 	@Override

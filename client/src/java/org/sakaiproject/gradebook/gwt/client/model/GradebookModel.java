@@ -24,9 +24,6 @@ package org.sakaiproject.gradebook.gwt.client.model;
 
 import java.util.List;
 
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
-
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 public class GradebookModel extends EntityModel implements IsSerializable {
@@ -62,7 +59,7 @@ public class GradebookModel extends EntityModel implements IsSerializable {
 	private StudentModel userAsStudent;
 	private List<ColumnModel> columns;
 	private String userName;
-	private ItemModel rootItemModel;
+	private ItemModel gradebookItemModel;
 
 
 	public GradebookModel() {
@@ -188,19 +185,20 @@ public class GradebookModel extends EntityModel implements IsSerializable {
 		this.userName = userName;
 	}
 	
-	public ItemModel getRootItemModel() {	
-		return rootItemModel;
+	public ItemModel getGradebookItemModel() {	
+		return gradebookItemModel;
 	}
 
 	
-	public void setRootItemModel(ItemModel gradebookItemModel) {
-		
-		this.rootItemModel = new ItemModel();
+	public void setGradebookItemModel(ItemModel gradebookItemModel) {
+		/*this.rootItemModel = new ItemModel();
 		rootItemModel.setItemType(Type.ROOT.getName());
 		rootItemModel.setName("Root");
 		gradebookItemModel.setParent(rootItemModel);
 		gradebookItemModel.setName(name);
 		gradebookItemModel.setIdentifier(gradebookUid);
-		rootItemModel.add(gradebookItemModel);
+		rootItemModel.add(gradebookItemModel);*/
+		
+		this.gradebookItemModel = gradebookItemModel;
 	}
 }

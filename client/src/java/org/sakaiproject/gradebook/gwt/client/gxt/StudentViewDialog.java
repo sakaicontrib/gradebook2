@@ -22,26 +22,25 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.gxt;
 
-import org.sakaiproject.gradebook.gwt.client.GradebookToolFacadeAsync;
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseStudentEvent;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.IndividualStudentEvent;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseStudentEvent.BrowseType;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner.BrowseType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
 import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
-import com.extjs.gxt.ui.client.XDOM;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
-import com.extjs.gxt.ui.client.util.Point;
+import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.widget.Dialog;
-import com.extjs.gxt.ui.client.widget.Window;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 
@@ -51,31 +50,34 @@ public class StudentViewDialog extends Dialog {
 	
 	private StudentViewContainer container;
 	private RefreshAction refreshAction = RefreshAction.NONE;
-	private String gradebookUid;
+
+	private boolean isStudentView;
 	
-	public StudentViewDialog(final String gradebookUid, final GradebookToolFacadeAsync toolSrv) {
-		this.gradebookUid = gradebookUid;
-		
+	public StudentViewDialog(boolean isStudentView) {
+		this.isStudentView = isStudentView;
 		setBodyBorder(true);
 		setButtons(Dialog.OK);
-		//setIconStyle("icon-app-side");
-		setHeaderVisible(true);
-		setHeading("Individual Grade Summary");
-		setResizable(false);
-		setDraggable(false);
-		//setFrame(true);
 		setCloseAction(CloseAction.CLOSE);
-		setHideOnButtonClick(false); 
+		setDraggable(true);
+		setHeaderVisible(true);
+		setHideOnButtonClick(false);
 		setLayout(new FitLayout());
-		//setModal(true);
+		setModal(true);
 		setPlain(false);
+		setResizable(true);
+
+		I18nConstants i18n = Registry.get(AppConstants.I18N);
+		if (isStudentView)
+			setHeading(i18n.singleViewHeader());
+		else 
+			setHeading(i18n.singleGradeHeader());
 		
-	    container = new StudentViewContainer(gradebookUid, toolSrv, false);
+	    container = new StudentViewContainer(isStudentView);
 		add(container);
 		
-		setupNavigation();
+		setupNavigation(i18n);
 		
-		container.addListener(GradebookEvents.UserChange, new Listener<UserChangeEvent>() {
+		/*container.addListener(GradebookEvents.UserChange, new Listener<UserChangeEvent>() {
 
 			public void handleEvent(UserChangeEvent uce) {
 				StudentViewDialog.this.fireEvent(GradebookEvents.UserChange, uce);
@@ -95,7 +97,7 @@ public class StudentViewDialog extends Dialog {
 					be.doit = true;
 				}
 			}
-		});
+		});*/
 		
 		addListener(Events.BeforeShow, new Listener() {
 
@@ -112,34 +114,34 @@ public class StudentViewDialog extends Dialog {
 			}
 		
 		});
-		
-		addListener(GradebookEvents.UserChange, new Listener<UserChangeEvent>() {
 
-			public void handleEvent(UserChangeEvent uce) {
-				if (uce.getAction() instanceof UserEntityAction) {
-					UserChangeEvent event = (UserChangeEvent)uce;
-					UserEntityAction action = (UserEntityAction)event.getAction();
-					
-					// FIXME: Ideally we want to ensure that these methods are only called once at the end of a series of operations
-					switch (action.getEntityType()) {
-					case GRADEBOOK:
-						switch (action.getActionType()) {
-						case UPDATE:
-							// Update actions will (always?) result from user changes on the setup 
-							// screens, so they should be deferred to the "onShow" method
-							GradebookModel.Key gradebookModelKey = GradebookModel.Key.valueOf(((UserEntityUpdateAction)action).getKey());
-							switch (gradebookModelKey) {
-							case GRADETYPE:
-								queueDeferredRefresh(RefreshAction.REFRESHCOLUMNS);
-								break;
-							}
-							break;
-						}
-					}
+	}
+	
+	public void onChangeModel(GradebookModel selectedGradebook, StudentModel learnerGradeRecordCollection) {
+		container.onChangeModel(selectedGradebook, learnerGradeRecordCollection);
+	}
+	
+	public void onItemUpdated(ItemModel itemModel) {
+		container.onItemUpdated(itemModel);
+	}
+	
+	public void onUserChange(UserEntityAction<?> action) {
+		// FIXME: Ideally we want to ensure that these methods are only called once at the end of a series of operations
+		switch (action.getEntityType()) {
+		case GRADEBOOK:
+			switch (action.getActionType()) {
+			case UPDATE:
+				// Update actions will (always?) result from user changes on the setup 
+				// screens, so they should be deferred to the "onShow" method
+				GradebookModel.Key gradebookModelKey = GradebookModel.Key.valueOf(((UserEntityUpdateAction)action).getKey());
+				switch (gradebookModelKey) {
+				case GRADETYPE:
+					queueDeferredRefresh(RefreshAction.REFRESHCOLUMNS);
+					break;
 				}
+				break;
 			}
-			
-		});
+		}
 	}
 	
 	protected void queueDeferredRefresh(RefreshAction refreshAction) {
@@ -152,59 +154,46 @@ public class StudentViewDialog extends Dialog {
 		}
 	}
 	
-	private void setupNavigation() {
+	private void setupNavigation(I18nConstants i18n) {
 		
 		getButtonBar().removeAll();
-		Button next = new Button("Next", new SelectionListener<ComponentEvent>() {
+		Button next = new Button(i18n.nextLearner(), new SelectionListener<ComponentEvent>() {
 			@Override
 			public void componentSelected(ComponentEvent ce) {
-				BrowseStudentEvent event = new BrowseStudentEvent(container.getStudentRow(), BrowseType.NEXT);
-				StudentViewDialog.this.fireEvent(GradebookEvents.BrowseStudent, event);
-				//el().mask(GXT.MESSAGES.loadMask_msg());
+				BrowseLearner event = new BrowseLearner(container.getStudentRow(), BrowseType.NEXT);
+				Dispatcher.forwardEvent(GradebookEvents.BrowseLearner, event);
 			}
 		}); 
-		Button prev = new Button("Previous", new SelectionListener<ComponentEvent>() {
+		Button prev = new Button(i18n.prevLearner(), new SelectionListener<ComponentEvent>() {
 			@Override
 			public void componentSelected(ComponentEvent ce) {
-				BrowseStudentEvent event = new BrowseStudentEvent(container.getStudentRow(), BrowseType.PREV);
-				StudentViewDialog.this.fireEvent(GradebookEvents.BrowseStudent, event);
-				//el().mask(GXT.MESSAGES.loadMask_msg());
+				BrowseLearner event = new BrowseLearner(container.getStudentRow(), BrowseType.PREV);
+				Dispatcher.forwardEvent(GradebookEvents.BrowseLearner, event);
 			}
 		}); 
 		
-		/*Button close = new Button("Close", new SelectionListener<ComponentEvent>() {
+		Button close = new Button(i18n.close(), new SelectionListener<ComponentEvent>() {
 
 			@Override
 			public void componentSelected(ComponentEvent ce) {
 				close();
-				
 			}
 			
-		});*/
+		});
 		
-		final GradebookToolFacadeAsync service = Registry.get("service");
-		Button studentView = new Button("View as Student", new SelectionListener<ComponentEvent>() { 
+		// FIXME: This needs to be integrated into MVC
+		Button studentView = new Button(i18n.viewAsLearner(), new SelectionListener<ComponentEvent>() { 
 			@Override
 			public void componentSelected(ComponentEvent ce) {
-				StudentViewContainer studentView = new StudentViewContainer(gradebookUid, service, true);
-				IndividualStudentEvent event = new IndividualStudentEvent(container.getStudentModel());
-				studentView.fireEvent(GradebookEvents.SingleView, event);
-				Window window = new Window();
-				window.setHeading("Student View");
-				window.setLayout(new FitLayout());
-				window.add(studentView);
-				
-				Point pos = StudentViewDialog.this.getPosition(false);
-				window.setPosition(pos.x, pos.y);
-				window.setSize(XDOM.getViewportSize().width, XDOM.getViewportSize().height - pos.y);
-				
-				window.show();
+				Dispatcher.forwardEvent(GradebookEvents.SingleView, container.getStudentModel());
 			}
 		});
 		
+		if (!isStudentView)
+			addButton(studentView);
 		addButton(prev);
-		addButton(studentView);
 		addButton(next);
+		addButton(close);
 		
 	}
 	

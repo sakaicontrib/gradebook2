@@ -25,6 +25,7 @@ package org.sakaiproject.gradebook.gwt.client.gxt.settings;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.GradebookToolFacadeAsync;
 import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
@@ -65,7 +66,7 @@ public class SettingsGradingScaleContentPanel extends ContentPanel {
 
 	
 	@SuppressWarnings("unchecked")
-	public SettingsGradingScaleContentPanel(final String gradebookUid) {
+	public SettingsGradingScaleContentPanel() {
 		
 		super();
 		
@@ -113,7 +114,7 @@ public class SettingsGradingScaleContentPanel extends ContentPanel {
 			
 			@Override
 			protected void load(ListLoadConfig listLoadConfig, AsyncCallback<List<GradeScaleRecordModel>> callback) {
-				GradebookModel gbModel = Registry.get(gradebookUid);
+				GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
 				GradebookToolFacadeAsync service = Registry.get("service");
 				UserEntityGetAction<GradeScaleRecordModel> action = 
 					new UserEntityGetAction<GradeScaleRecordModel>(gbModel, EntityType.GRADE_SCALE);
@@ -157,7 +158,7 @@ public class SettingsGradingScaleContentPanel extends ContentPanel {
 					grid.getView().getCell(gridEvent.rowIndex, gridEvent.colIndex).setInnerText("Saving edit...");
 
 				GradeScaleRecordModel model = (GradeScaleRecordModel)record.getModel();
-				GradebookModel gbModel = Registry.get(gradebookUid);
+				GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
 				UserEntityUpdateAction<GradeScaleRecordModel> action = 
 					new UserEntityUpdateAction<GradeScaleRecordModel>(gbModel, model, property, ClassType.DOUBLE, newValue, originalValue);
 				

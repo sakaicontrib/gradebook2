@@ -22,10 +22,11 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.action;
 
-import org.sakaiproject.gradebook.gwt.client.model.EntityModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 
-public class UserEntityGetAction<M extends EntityModel> extends UserEntityAction<M> {
+import com.extjs.gxt.ui.client.data.BaseModel;
+
+public class UserEntityGetAction<M extends BaseModel> extends UserEntityAction<M> {
 
 	private static final long serialVersionUID = 1L;
 

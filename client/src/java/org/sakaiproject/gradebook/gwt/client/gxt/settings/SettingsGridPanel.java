@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.GradebookToolFacadeAsync;
 import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
 import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
@@ -53,6 +54,7 @@ import com.extjs.gxt.ui.client.store.GroupingStore;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.util.Params;
+import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.grid.CellEditor;
@@ -106,14 +108,15 @@ public abstract class SettingsGridPanel<M extends ItemEntityModel> extends GridP
 	};
 	
 	public SettingsGridPanel(String gradebookUid, String gridId, EntityType entityType) {
-		super(gradebookUid, gridId, entityType);
+		super(gridId, entityType);
 
 		setTopComponent(pagingToolBar);
 	}
 	
 	public void reloadWeights(ItemEntityModel.Key key, M changedModel) {
 		GradebookToolFacadeAsync service = Registry.get("service");
-		PageRequestAction pageAction = newPageRequestAction();
+		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		PageRequestAction pageAction = newPageRequestAction(selectedGradebook);
 		
 		boolean isDeleted = changedModel.getRemoved() != null && changedModel.getRemoved().booleanValue();
 		boolean showDeleted = showDeletedItems != null && showDeletedItems.isPressed();
@@ -184,7 +187,7 @@ public abstract class SettingsGridPanel<M extends ItemEntityModel> extends GridP
 		includedColumn.setMenuDisabled(true);
 		includedColumn.setSortable(false);
 		
-		GradebookModel gbModel = Registry.get(gradebookUid);		
+		GradebookModel gbModel = Registry.get(AppConstants.CURRENT);		
 		weightColumn =  new SummaryColumnConfig(AssignmentModel.Key.WEIGHT.name(), 
 				ItemEntityModel.getPropertyName(CategoryModel.Key.WEIGHT), 80);
 		weightColumn.setAlignment(HorizontalAlignment.RIGHT);
@@ -362,9 +365,8 @@ public abstract class SettingsGridPanel<M extends ItemEntityModel> extends GridP
 	}*/
 
 	@Override
-	protected PageRequestAction newPageRequestAction() {
-		GradebookModel model = Registry.get(gradebookUid);
-		PageRequestAction pageRequestAction = new PageRequestAction(entityType, model.getGradebookUid(), model.getGradebookId());
+	protected PageRequestAction newPageRequestAction(GradebookModel selectedGradebook) {
+		PageRequestAction pageRequestAction = new PageRequestAction(entityType, selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId());
 		
 		boolean showDeleted = showDeletedItems != null && showDeletedItems.isPressed();
 		// The undelete view is the less restricted view, therefore it's equivalent to include all
@@ -388,7 +390,8 @@ public abstract class SettingsGridPanel<M extends ItemEntityModel> extends GridP
 		
 		@Override
 		protected void changeValue(final Record record, final String property, Boolean value, Boolean startValue) {
-			UserEntityUpdateAction<M> action = newEntityUpdateAction(record, property, value, startValue, null);
+			GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+			UserEntityUpdateAction<M> action = newEntityUpdateAction(selectedGradebook, record, property, value, startValue, null);
 			// Since we're not passing a gridEvent on in this case, we need to set the entity name here
 			EntityModel model = (EntityModel)record.getModel();
 			if (model != null) {

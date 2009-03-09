@@ -46,10 +46,12 @@ public interface GradebookToolFacadeAsync {
 	
 	<X extends EntityModel> void getEntityPage(PageRequestAction action, PagingLoadConfig config, AsyncCallback<PagingLoadResult<X>> callback);
 	
-	<X extends ItemModel> void getEntityTreeModel(String gradebookUid, X parent, AsyncCallback<List<X>> callback);
+	<X extends ItemModel> void getEntityTreeModel(String gradebookUid, X parent, AsyncCallback<X> callback);
 	
 	void recalculateEqualWeightingCategories(String gradebookUid, Long gradebookId, Boolean isEqualWeighting, AsyncCallback<List<CategoryModel>> callback);
 
+	<X extends ItemModel> void updateItemEntity(UserEntityUpdateAction<X> action, AsyncCallback<List<X>> callback);
+	
 	<X extends EntityModel> void updateEntity(UserEntityUpdateAction<X> action, AsyncCallback<X> callback);
 	
 	<X extends EntityModel> void updateEntityList(UserEntityUpdateAction<X> action, AsyncCallback<List<X>> callback);

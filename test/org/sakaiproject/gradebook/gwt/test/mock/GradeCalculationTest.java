@@ -2,6 +2,7 @@ package org.sakaiproject.gradebook.gwt.test.mock;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -51,7 +52,7 @@ public class GradeCalculationTest extends TestCase {
 		
 		BigDecimal earnedWeightedPercentage = gradeCalculationMock.getEarnedWeightedPercentage(assignment, pointsEarnedAsPercent, Boolean.TRUE);
 		assertNotNull(earnedWeightedPercentage);
-		System.out.println("Earned weighted percentage " + earnedWeightedPercentage);
+		//System.out.println("Earned weighted percentage " + earnedWeightedPercentage);
 		assertEquals(new BigDecimal("13.000000"), earnedWeightedPercentage);
 	}
 	
@@ -68,7 +69,7 @@ public class GradeCalculationTest extends TestCase {
 		Category category = testData.getCategory(testData.HOME_WORK_ID);
 		BigDecimal sumAssignmentsEarnedWeightedPercentage = gradeCalculationMock.sumEarnedWeightedPercentages(category, assignmentGradeRecordMap);
 		
-		System.out.println("Sum assignments earned weighted percentage " + sumAssignmentsEarnedWeightedPercentage);
+		//System.out.println("Sum assignments earned weighted percentage " + sumAssignmentsEarnedWeightedPercentage);
 		assertNotNull(sumAssignmentsEarnedWeightedPercentage);
 		assertEquals(new BigDecimal("66.233333334"), sumAssignmentsEarnedWeightedPercentage);
 	}
@@ -83,7 +84,7 @@ public class GradeCalculationTest extends TestCase {
 		}
 		Category category = testData.getCategory(testData.HOME_WORK_ID);
 		BigDecimal sumAssignmentWeights = gradeCalculationMock.sumAssignmentWeights(category, assignmentGradeRecordMap);
-		System.out.println("Sum assignment weights " + sumAssignmentWeights);
+		//System.out.println("Sum assignment weights " + sumAssignmentWeights);
 		
 		assertNotNull(sumAssignmentWeights);
 	}
@@ -155,6 +156,7 @@ public class GradeCalculationTest extends TestCase {
 	
 	public void testGetCourseGrade() {
 		
+		long start = System.nanoTime();
 		Collection<Assignment> assignments = testData.getAssignments();
 		Collection<AssignmentGradeRecord> assignmentGradeRecords = testData.getAssignmentGradeRecords(testData.TEST_STUDENT_1);
 		Collection<Category> categories= testData.getCategories();
@@ -164,7 +166,10 @@ public class GradeCalculationTest extends TestCase {
 		}
 		
 		BigDecimal courseGrade = gradeCalculationMock.getCourseGrade(categories, assignmentGradeRecordMap);
-		System.out.println("Course Grade: " + courseGrade.toString());
+		long end = System.nanoTime();
+		System.out.println("Elapsed: " + (end-start));
+		
+		//System.out.println("Course Grade: " + courseGrade.toString());
 		assertNotNull(courseGrade);
 		assertEquals(new BigDecimal("96.437500001"), courseGrade);
 	}
@@ -191,7 +196,7 @@ public class GradeCalculationTest extends TestCase {
 		}
 		
 		BigDecimal courseGrade = gradeCalculationMock.getCourseGrade(categories, assignmentGradeRecordMap);
-		System.out.println("Course Grade: " + courseGrade.toString());
+		//System.out.println("Course Grade: " + courseGrade.toString());
 		assertNotNull(courseGrade);
 		// FIXME: Not verified mathematically outside of this logic
 		// Note : this is the same value (at a different scale) that is returned by getCategoryGrade for "HOME WORK" category
@@ -223,13 +228,13 @@ public class GradeCalculationTest extends TestCase {
 		}
 		
 		BigDecimal courseGrade = gradeCalculationMock.getCourseGrade(categories, assignmentGradeRecordMap);
-		System.out.println("Course Grade: " + courseGrade.toString());
+		//System.out.println("Course Grade: " + courseGrade.toString());
 		assertNotNull(courseGrade);
 		// FIXME: Not verified mathematically outside of this logic
 		// Note : this is the same value (at a different scale) that is returned by getCategoryGrade for "HOME WORK" category
 		//assertEquals(new BigDecimal("98.791666670"), courseGrade);
 		
-		System.out.println("----> Course grade is " + courseGrade);
+		//System.out.println("----> Course grade is " + courseGrade);
 	}
 	
 	public void testGetCourseGradeDeletedAssignment() {
@@ -252,7 +257,7 @@ public class GradeCalculationTest extends TestCase {
 		}
 		
 		BigDecimal courseGrade = gradeCalculationMock.getCourseGrade(categories, assignmentGradeRecordMap);
-		System.out.println("Course Grade: " + courseGrade.toString());
+		//System.out.println("Course Grade: " + courseGrade.toString());
 		assertNotNull(courseGrade);
 		// FIXME: Not verified mathematically outside of this logic
 		//assertEquals(new BigDecimal("96.926388889"), courseGrade);
@@ -282,7 +287,7 @@ public class GradeCalculationTest extends TestCase {
 		}
 		
 		BigDecimal courseGrade = gradeCalculationMock.getCourseGrade(categories, assignmentGradeRecordMap);
-		System.out.println("Course Grade: " + courseGrade.toString());
+		//System.out.println("Course Grade: " + courseGrade.toString());
 		assertNotNull(courseGrade);
 		// FIXME: Not verified mathematically outside of this logic
 		assertEquals(new BigDecimal("96.926388889"), courseGrade);
@@ -305,7 +310,7 @@ public class GradeCalculationTest extends TestCase {
 		}
 		
 		BigDecimal courseGrade = gradeCalculationMock.getCourseGrade(categories, assignmentGradeRecordMap);
-		System.out.println("Course Grade: " + courseGrade.toString());
+		//System.out.println("Course Grade: " + courseGrade.toString());
 		assertNotNull(courseGrade);
 		// FIXME: Not verified mathematically outside of this logic
 		//assertEquals(new BigDecimal("96.926388889"), courseGrade);

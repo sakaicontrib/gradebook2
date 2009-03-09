@@ -24,7 +24,17 @@ package org.sakaiproject.gradebook.gwt.client.model;
 
 import java.util.Map;
 
+import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType;
+import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Key;
+
 public class StudentModel extends EntityModel implements Comparable<StudentModel> {
+	
+	public static final String COMMENTED_FLAG = ":C";
+	public static final String COMMENT_TEXT_FLAG = ":T";
+	public static final String DROP_FLAG = ":D";
+	public static final String FAILED_FLAG = ":F";
+	public static final String GRADED_FLAG = ":G";
+	
 	
 	public enum Group {
 		STUDENT_INFORMATION("Student Information"),
@@ -74,11 +84,6 @@ public class StudentModel extends EntityModel implements Comparable<StudentModel
 		}
 	
 	};
-
-	public static final String DROP_FLAG = ":D";
-	public static final String GRADED_FLAG = ":G";
-	public static final String COMMENTED_FLAG = ":C";
-	public static final String FAILED_FLAG = ":F";
 	
 	private static final long serialVersionUID = 1L;
 
@@ -88,6 +93,14 @@ public class StudentModel extends EntityModel implements Comparable<StudentModel
 	
 	public StudentModel(Map<String, Object> properties) {
 		super(properties);
+	}
+	
+	public static ClassType lookupClassType(String property) {
+		
+		if (property.endsWith(COMMENT_TEXT_FLAG))
+			return ClassType.STRING;
+		
+		return ClassType.DOUBLE;
 	}
 	
 	public String getIdentifier() {

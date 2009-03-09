@@ -46,6 +46,10 @@ public class BaseCustomGridView extends GridView {
 		return false;
 	}
 	
+	protected boolean isReleased(ModelData model, String property) {
+		return false;
+	}
+	
 	@Override
 	protected String doRender(List<ColumnData> cs, List rows, int startRow,
 			int colCount, boolean stripe) {
@@ -117,12 +121,16 @@ public class BaseCustomGridView extends GridView {
 					css.append(" gbCellDropped");
 				}
 				
+				if (isReleased(model, c.id)) {
+					css.append(" gbReleased");
+				}
+				
 				if (rv == null || rv.equals(""))
 					rv = "&nbsp;";
 
 				cb.append("<td class=\"x-grid3-col x-grid3-cell x-grid3-td-").append(c.id).append(" ")
 				  .append(css.toString()).append("\" style=\"").append(c.style)
-				  .append("\" tabIndex=0 ")
+				  .append("\" tabIndex=").append(j*i+1).append(" ")
 				  .append(cellAttr).append(">");
 				
 				cb.append("<div class=\"").append(innerCssClass.toString()).append("\" ")

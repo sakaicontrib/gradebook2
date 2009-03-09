@@ -70,8 +70,8 @@ public class RemoteCommand<M extends EntityModel> {
 			service.updateEntity((UserEntityUpdateAction<M>)action, callback);
 			break;
 		}
-		UserActionHistory history = Registry.get("history");
-		history.storeAction(action);
+		//UserActionHistory history = Registry.get("history");
+		//history.storeAction(action);
 	}
 	
 	public void executeList(final UserEntityAction<M> action) {
@@ -99,8 +99,8 @@ public class RemoteCommand<M extends EntityModel> {
 			break;
 		}
 		
-		UserActionHistory history = Registry.get("history");
-		history.storeAction(action);
+		//UserActionHistory history = Registry.get("history");
+		//history.storeAction(action);
 	}
 
 

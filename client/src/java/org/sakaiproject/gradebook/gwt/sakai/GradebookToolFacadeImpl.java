@@ -67,8 +67,7 @@ public class GradebookToolFacadeImpl extends GWTSpringController implements Grad
 		return delegateFacade.getEntityPage(action, config);
 	}	
 	
-	public <X extends ItemModel> List<X> getEntityTreeModel(
-			String gradebookUid, X parent) {
+	public <X extends ItemModel> X getEntityTreeModel(String gradebookUid, X parent) {
 		
 		return delegateFacade.getEntityTreeModel(gradebookUid, parent);
 	}
@@ -79,6 +78,11 @@ public class GradebookToolFacadeImpl extends GWTSpringController implements Grad
 		return delegateFacade.recalculateEqualWeightingCategories(gradebookUid, gradebookId, isEqualWeighting);
 	}
 
+	public <X extends ItemModel> List<X> updateItemEntity(UserEntityUpdateAction<X> action) throws InvalidInputException, FatalException {
+		
+		return delegateFacade.updateItemEntity(action);
+	}
+	
 	public <X extends EntityModel> X updateEntity(UserEntityUpdateAction<X> action) throws InvalidInputException, FatalException {
 		
 		return delegateFacade.updateEntity(action);

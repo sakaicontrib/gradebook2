@@ -23,12 +23,13 @@
 package org.sakaiproject.gradebook.gwt.client.action;
 
 import org.sakaiproject.gradebook.gwt.client.gxt.Notifier;
-import org.sakaiproject.gradebook.gwt.client.model.EntityModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
+import com.extjs.gxt.ui.client.data.BaseModel;
 
-public abstract class UserEntityAction<M extends EntityModel> extends Action {
+
+public abstract class UserEntityAction<M extends BaseModel> extends Action {
 	
 	public enum ClassType { STRING, DOUBLE, LONG, DATE, BOOLEAN, INTEGER, CATEGORYTYPE, GRADETYPE };
 	
@@ -64,7 +65,6 @@ public abstract class UserEntityAction<M extends EntityModel> extends Action {
 		super(actionType, entityType);
 	}
 	
-
 	
 	
 	/*

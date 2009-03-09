@@ -42,7 +42,7 @@ public class GradeEventModel extends EntityModel {
 		return get(Key.ID.name());
 	}
 	
-	public void setIdentifier(Long id) {
+	public void setIdentifier(String id) {
 		set(Key.ID.name(), id);
 	}
 	

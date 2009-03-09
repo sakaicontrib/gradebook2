@@ -22,10 +22,13 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.gxt.settings;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.GradebookToolFacadeAsync;
+import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
 import org.sakaiproject.gradebook.gwt.client.action.UserAssignmentCreateAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserCategoryCreateAction;
@@ -34,11 +37,12 @@ import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.Notifier;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
 import org.sakaiproject.gradebook.gwt.client.model.AssignmentModel;
 import org.sakaiproject.gradebook.gwt.client.model.CategoryModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
 import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
@@ -50,6 +54,7 @@ import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
 import com.extjs.gxt.ui.client.event.SelectionChangedListener;
 import com.extjs.gxt.ui.client.event.WindowEvent;
+import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
@@ -68,49 +73,55 @@ import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Accessibility;
 
 public class AddAssignmentDialog extends Dialog {
 
 	private static final Notifier notifier = new Notifier();
-	
-	private String gradebookUid;
-	private ContentPanel contentPanel;
-	
-	private String directionsText;
+
 	private LabelField directions;
 	private TextField<String> assignmentName;
 	private NumberField assignmentWeight;
 	private NumberField assignmentPoints;
 	private DateField dueDate;
+	private ListStore<CategoryModel> categoriesStore;
 	private ComboBox<CategoryModel> categoryPicker;
+	private ListLoader<ListLoadConfig> categoriesLoader;
 	
-	public AddAssignmentDialog(final String gradebookUid, ContentPanel contentPanel) {
-		this.gradebookUid = gradebookUid;
-		this.contentPanel = contentPanel;
-		
+	private Listener<WindowEvent> windowListener;
+	
+	private ItemModel itemModel;
+	
+	public AddAssignmentDialog() {
 		setModal(true);
-		setResizable(true);
+		setResizable(true);	
+	}
+	
+	@Override
+	protected void onRender(Element parent, int pos) {
+		super.onRender(parent, pos);
 		
-		directionsText = "Please fill out the fields below. You may either select an existing category or type in the name of a new one.";
-		directions = new LabelField(directionsText);
+		I18nConstants i18n = Registry.get(AppConstants.I18N);
+		
+		directions = new LabelField(i18n.addItemDirections());
 		
 		assignmentName = new TextField<String>();
 		assignmentName.setAllowBlank(false); 
-		assignmentName.setEmptyText("Required");
-		assignmentName.setFieldLabel("Name");   
+		assignmentName.setEmptyText(i18n.requiredLabel());
+		assignmentName.setFieldLabel(i18n.addItemName());   
 		
 		assignmentPoints = new NumberField();
-		assignmentPoints.setEmptyText("Optional - default is 100");
-		assignmentPoints.setFieldLabel("Points");
+		assignmentPoints.setEmptyText(i18n.addItemPointsEmpty());
+		assignmentPoints.setFieldLabel(i18n.addItemPoints());
 		
 		assignmentWeight = new NumberField();
-		assignmentWeight.setEmptyText("Optional - default is same as points");
-		assignmentWeight.setFieldLabel("Weight");
+		assignmentWeight.setEmptyText(i18n.addItemWeightEmpty());
+		assignmentWeight.setFieldLabel(i18n.addItemWeight());
 		assignmentWeight.setVisible(false);
 		
 		dueDate = new DateField();
-		dueDate.setEmptyText("Optional");
-		dueDate.setFieldLabel("Due Date");
+		dueDate.setEmptyText(i18n.addItemDueDateEmpty());
+		dueDate.setFieldLabel(i18n.addItemDueDate());
 		
 		final GradebookToolFacadeAsync service = Registry.get("service");
 		
@@ -118,18 +129,18 @@ public class AddAssignmentDialog extends Dialog {
 			new RpcProxy<ListLoadConfig, List<CategoryModel>>() {
 			@Override
 			protected void load(ListLoadConfig loadConfig, AsyncCallback<List<CategoryModel>> callback) {
-				GradebookModel gbModel = Registry.get(gradebookUid);
+				GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
 				UserEntityGetAction<CategoryModel> action = new UserEntityGetAction<CategoryModel>(gbModel, EntityType.CATEGORY);
 				//action.setShowAll(Boolean.FALSE);
 				service.getEntityList(action, callback);
 			}
 		};
 		
-		final ListLoader<ListLoadConfig> categoriesLoader = new BaseListLoader(categoriesProxy);
+		categoriesLoader = new BaseListLoader(categoriesProxy);
 		
 		categoriesLoader.setRemoteSort(true);
 		
-		ListStore<CategoryModel> categoriesStore = new ListStore<CategoryModel>(categoriesLoader);
+		categoriesStore = new ListStore<CategoryModel>(categoriesLoader);
 		categoriesStore.setModelComparer(new EntityModelComparer<CategoryModel>());
 		
 		categoryPicker = new ComboBox<CategoryModel>(); 
@@ -137,8 +148,8 @@ public class AddAssignmentDialog extends Dialog {
 		categoryPicker.setAllQuery(null);
 		categoryPicker.setDisplayField(CategoryModel.Key.NAME.name());  
 		categoryPicker.setEditable(true);
-		categoryPicker.setEmptyText("Required");
-		categoryPicker.setFieldLabel("Category");
+		categoryPicker.setEmptyText(i18n.requiredLabel());
+		categoryPicker.setFieldLabel(i18n.categoryName());
 		categoryPicker.setForceSelection(false);
 		categoryPicker.setStore(categoriesStore);
 		categoryPicker.addSelectionChangedListener(new SelectionChangedListener<CategoryModel>() {
@@ -164,7 +175,7 @@ public class AddAssignmentDialog extends Dialog {
 		});
 		
 		setButtons(Dialog.OK);
-		setHeading("New Grade Item");
+		setHeading(i18n.addItemHeading());
 		setHideOnButtonClick(true);
 		setLayout(new FitLayout());
 		setWidth(400);
@@ -190,36 +201,12 @@ public class AddAssignmentDialog extends Dialog {
 		
 	    add(panel);
 
-	    // Before we show the dialog box each time we want to ensure that the fields are cleared out
-	    addListener(Events.BeforeShow, new Listener<WindowEvent>() {
-
-			public void handleEvent(WindowEvent be) {
-				GradebookModel gbModel = Registry.get(gradebookUid);
-			    
-			    switch (gbModel.getCategoryType()) {
-			    case NO_CATEGORIES:
-			    	categoryPicker.setVisible(false);
-			    	break;
-			    default:
-			    	categoryPicker.setVisible(true);
-			    	categoryPicker.setValue(null);
-					categoryPicker.clearInvalid();
-					categoriesLoader.load();
-					break;
-			    }
-				
-				assignmentName.setValue(null);
-				assignmentName.clearInvalid();
-				
-				assignmentWeight.setValue(null);
-				assignmentWeight.setVisible(false);
-				assignmentPoints.setValue(null);
-				dueDate.setValue(null);
-				
-			}
-	    	
-	    });
+	    Accessibility.setRole(categoryPicker.getElement(), "combobox");
+	    initListeners();
 	    
+	    onCategorySelected();
+	    // Before we show the dialog box each time we want to ensure that the fields are cleared out
+	    addListener(Events.BeforeShow, windowListener);
 	}
 	
 	
@@ -236,8 +223,9 @@ public class AddAssignmentDialog extends Dialog {
 		}
 		
 		Long categoryId = null;
-		GradebookModel gbModel = Registry.get(gradebookUid);
-	    
+		GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
+		I18nConstants i18n = Registry.get(AppConstants.I18N);
+		
 	    switch (gbModel.getCategoryType()) {
 	    case SIMPLE_CATEGORIES:
 	    case WEIGHTED_CATEGORIES:
@@ -249,35 +237,34 @@ public class AddAssignmentDialog extends Dialog {
 			} else {
 				String categoryName = categoryPicker.getRawValue();
 				if (!categoryName.trim().equals("")) {
-					addCategory(categoryName);
+					addCategory(categoryName, gbModel);
 					super.onButtonPressed(button);
 					return;
 				}
 			}
 			
 			if (categoryId == null) {
-				notifier.notify("No category selected", "You must choose a category");
+				notifier.notify(i18n.addItemNoCategoryHeading(), i18n.addItemNoCategoryMessage());
 				return;
 			}
 			break;
 	    }
 		super.onButtonPressed(button);
 		
-		addAssignment(categoryId);
+		addAssignment(categoryId, gbModel);
 	}
 	
 	
-	@Override
+	/*@Override
 	protected void onRender(Element parent, int pos) {
 		super.onRender(parent, pos);
 		
 		if (categoryPicker.isVisible())
 			categoryPicker.focus();
-	}
+	}*/
 	
-	private void addAssignment(Long categoryId) {
+	private void addAssignment(Long categoryId, GradebookModel gbModel) {
 		
-		GradebookModel gbModel = Registry.get(gradebookUid);
 		UserAssignmentCreateAction action = 
 			new UserAssignmentCreateAction(gbModel, 
 				categoryId, 
@@ -293,8 +280,7 @@ public class AddAssignmentDialog extends Dialog {
 					
 					action.setModel(result);
 
-					if (contentPanel != null)
-						contentPanel.fireEvent(GradebookEvents.UserChange, new UserChangeEvent(action));
+					Dispatcher.forwardEvent(GradebookEvents.UserChange, action);
 				}
 			
 		};
@@ -302,13 +288,11 @@ public class AddAssignmentDialog extends Dialog {
 		remoteCommand.execute(action);
 	}
 	
-	private void addCategory(String categoryName) {
+	private void addCategory(String categoryName, final GradebookModel gbModel) {
 		
 		Double weight = null;
 		Boolean isEqualWeight = null;
 		Integer dropLowest = null;
-		
-		GradebookModel gbModel = Registry.get(gradebookUid);
 		
 		UserCategoryCreateAction action = 
 			new UserCategoryCreateAction(gbModel, 
@@ -321,27 +305,75 @@ public class AddAssignmentDialog extends Dialog {
 				public void onCommandSuccess(UserEntityAction<CategoryModel> action, CategoryModel result) {
 					notifier.notify("Category Added", "Created new category as '{0}' ", result.getName());
 					Long categoryId = result == null ? null : Long.valueOf(result.getIdentifier());
-					addAssignment(categoryId);
+					addAssignment(categoryId, gbModel);
 					
 					action.setModel(result);
 					
-					if (contentPanel != null) 
-						contentPanel.fireEvent(GradebookEvents.UserChange, new UserChangeEvent(action));
+					Dispatcher.forwardEvent(GradebookEvents.UserChange, action);
 					
 				}
 		};
 		
 		remoteCommand.execute(action);
 	}
+	
+	private void initListeners() {
+		windowListener = new Listener<WindowEvent>() {
 
-
-	public ContentPanel getSettingsPanel() {
-		return contentPanel;
+			public void handleEvent(WindowEvent be) {
+				GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
+			    
+			    switch (gbModel.getCategoryType()) {
+			    case NO_CATEGORIES:
+			    	categoryPicker.setVisible(false);
+			    	break;
+			    default:
+			    	categoryPicker.setVisible(true);
+			    	categoryPicker.setValue(null);
+					categoryPicker.clearInvalid();
+					if (categoriesLoader != null)
+						categoriesLoader.load();
+					break;
+			    }
+			    
+			    onCategorySelected();
+				
+				assignmentName.setValue(null);
+				assignmentName.clearInvalid();
+				
+				assignmentWeight.setValue(null);
+				assignmentWeight.setVisible(false);
+				assignmentPoints.setValue(null);
+				dueDate.setValue(null);
+				
+			}
+	    	
+	    };
+	}
+	
+	private void onCategorySelected() {
+		if (categoryPicker == null)
+			return;
+		
+		ItemModel itemModel = getItemModel();
+	    if (itemModel != null) {
+	    	if (!itemModel.getItemType().equals(Type.CATEGORY.getName())) {
+	    		itemModel = itemModel.getParent();
+	    	}
+	    	
+	    	if (itemModel.getItemType().equals(Type.CATEGORY.getName())) {
+		    	CategoryModel categoryModel = categoriesStore.findModel(CategoryModel.Key.ID.name(), getItemModel().getIdentifier());
+		    	categoryPicker.setValue(categoryModel);
+	    	}
+	    }
 	}
 
+	public ItemModel getItemModel() {
+		return itemModel;
+	}
 
-	public void setSettingsPanel(ContentPanel contentParent) {
-		this.contentPanel = contentParent;
+	public void setItemModel(ItemModel itemModel) {
+		this.itemModel = itemModel;
 	}
 	
 }

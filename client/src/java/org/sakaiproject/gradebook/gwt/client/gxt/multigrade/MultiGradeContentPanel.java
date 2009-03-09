@@ -25,25 +25,23 @@ package org.sakaiproject.gradebook.gwt.client.gxt.multigrade;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.GradebookState;
 import org.sakaiproject.gradebook.gwt.client.GradebookToolFacadeAsync;
-import org.sakaiproject.gradebook.gwt.client.PersistentStore;
 import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
-import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.custom.widget.grid.CustomColumnModel;
 import org.sakaiproject.gradebook.gwt.client.custom.widget.grid.CustomGridView;
 import org.sakaiproject.gradebook.gwt.client.gxt.GridPanel;
-import org.sakaiproject.gradebook.gwt.client.gxt.InstructorViewContainer;
 import org.sakaiproject.gradebook.gwt.client.gxt.Notifier;
 import org.sakaiproject.gradebook.gwt.client.gxt.StudentViewDialog;
-import org.sakaiproject.gradebook.gwt.client.gxt.ViewEditCommentsDialog;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseStudentEvent;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.IndividualStudentEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.RefreshCourseGradesEvent;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
 import org.sakaiproject.gradebook.gwt.client.model.AssignmentModel;
 import org.sakaiproject.gradebook.gwt.client.model.CategoryModel;
@@ -51,12 +49,13 @@ import org.sakaiproject.gradebook.gwt.client.model.ColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradeRecordModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.SectionModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
 import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
-import com.extjs.gxt.ui.client.XDOM;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.SortDir;
 import com.extjs.gxt.ui.client.data.BasePagingLoader;
@@ -73,13 +72,14 @@ import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
 import com.extjs.gxt.ui.client.event.SelectionChangedListener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.event.ToolBarEvent;
-import com.extjs.gxt.ui.client.event.WindowEvent;
+import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.store.Store;
 import com.extjs.gxt.ui.client.store.StoreEvent;
-import com.extjs.gxt.ui.client.util.Point;
+import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
+import com.extjs.gxt.ui.client.widget.form.CheckBox;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
 import com.extjs.gxt.ui.client.widget.form.Field;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
@@ -108,45 +108,479 @@ import com.google.gwt.user.client.ui.KeyboardListener;
 
 public class MultiGradeContentPanel extends GridPanel<StudentModel> implements StudentModelOwner {
 	
+	private enum PageOverflow { TOP, BOTTOM, NONE };
+	
 	private static final Notifier notifier = new Notifier();
 
 	private StudentViewDialog singleView = null; 
 	private ToolBar searchToolBar;
 	private LayoutContainer toolBarContainer;
-	private InstructorViewContainer instructorViewContainer;
-	//private ViewEditCommentsDialog comments; 
+	//private LayoutContainer borderLayoutContainer;
+	//private BorderLayoutData westData;
+	//private InstructorViewContainer instructorViewContainer;
 	private Long commentingAssignmentId; 
-	private StudentModel commentingStudentModel; 
-	private List<ColumnModel> columnDefinitions;
+	private StudentModel commentingStudentModel;
 	
 	private GridCellRenderer<StudentModel> unweightedNumericCellRenderer;
 	private GridCellRenderer<StudentModel> extraCreditNumericCellRenderer;
-	
-	//private ToggleToolItem doNotifyItem;
 	
 	private int currentIndex = -1;
 	
 	private MultiGradeContextMenu contextMenu;
 	
+	//private ContentPanel gridOwner;
+	private TextField<String> searchField;
 	
-	public MultiGradeContentPanel(final String gradebookUid, InstructorViewContainer ivContainer) {
-		super(gradebookUid, "multigrade", EntityType.STUDENT);
-		this.instructorViewContainer = ivContainer;
-		setHeaderVisible(false);
+	private Listener<ComponentEvent> componentEventListener;
+	private Listener<GridEvent> gridEventListener;
+	private Listener<RefreshCourseGradesEvent> refreshCourseGradesListener;
+	private Listener<StoreEvent> storeListener;
+	private Listener<UserChangeEvent> userChangeEventListener;
 
-		GradebookModel model = Registry.get(gradebookUid);
-		
-		final GradebookToolFacadeAsync service = Registry.get("service");
-		
-	/*	comments = new ViewEditCommentsDialog(model, service, false); 
-		comments.show(); 
-		comments.hide(); 
-	*/	
-		//singleView = new StudentViewDialog(gradebookUid, service); 
-		
+	private CheckBox includedField;
+	private CheckBox extraCreditField;
+	private NumberField percentCourseGradeField;
+	private NumberField percentCategoryField;
+	
+	//protected CardLayout cardLayout;
+	//protected LayoutContainer mainContainer;
+	//protected FormPanel formPanel;
+	
+	public MultiGradeContentPanel(ContentPanel childPanel) {
+		super(AppConstants.MULTIGRADE, EntityType.STUDENT, childPanel);
+		setHeaderVisible(false);
 		
 		// This UserChangeEvent listener
-		addListener(GradebookEvents.UserChange, new Listener<UserChangeEvent>() {
+		addListener(GradebookEvents.UserChange, userChangeEventListener);
+		addListener(GradebookEvents.RefreshCourseGrades, refreshCourseGradesListener);
+		
+		/*singleView.addListener(GradebookEvents.UserChange, new Listener<UserChangeEvent>() {
+
+			public void handleEvent(UserChangeEvent uce) {
+				if (uce.getAction() instanceof UserEntityAction) {
+					UserEntityAction action = (UserEntityAction)uce.getAction();
+					
+					// FIXME: Ideally we want to ensure that these methods are only called once at the end of a series of operations
+					switch (action.getEntityType()) {
+						case GRADE_RECORD:
+							switch (action.getActionType()) {
+							case UPDATE:
+								UserEntityUpdateAction<GradeRecordModel> recordUpdateAction = 
+									(UserEntityUpdateAction<GradeRecordModel>)action;
+								GradeRecordModel recordModel = recordUpdateAction.getModel();
+								GradeRecordModel.Key recordModelKey = GradeRecordModel.Key.valueOf(recordUpdateAction.getKey());
+								
+								StudentModel studentModel = recordUpdateAction.getStudentModel();
+								
+								Record r = store.getRecord(studentModel);
+								
+								// First, clear out any currently dropped
+								for (String property : studentModel.getPropertyNames()) {
+									if (property.endsWith(StudentModel.DROP_FLAG)) {
+										int dropFlagIndex = property.indexOf(StudentModel.DROP_FLAG);
+											
+										String assignmentId = property.substring(0, dropFlagIndex);
+										Object value = studentModel.get(assignmentId);
+										Boolean recordDropped = (Boolean)r.get(property);
+										Boolean modelDropped = studentModel.get(property);
+									
+										boolean isDropped = modelDropped != null && modelDropped.booleanValue();
+										boolean wasDropped = recordDropped != null && recordDropped.booleanValue();
+										
+										r.set(property, modelDropped);
+										
+										if (isDropped || wasDropped) {
+											r.set(assignmentId, null);
+											r.set(assignmentId, value);
+											//r.setDirty(true);
+										}
+									}
+								}
+								
+								String courseGrade = studentModel.get(StudentModel.Key.COURSE_GRADE.name());
+								
+								if (courseGrade != null) {
+									r.set(StudentModel.Key.COURSE_GRADE.name(), null);
+									r.set(StudentModel.Key.COURSE_GRADE.name(), courseGrade);
+								}
+								
+								r.endEdit();
+
+								break;
+							}
+							break;
+					}
+				}
+			}
+			
+		});*/
+
+		/*final Listener<StoreEvent> pageListener = new Listener<StoreEvent>() {
+
+			public void handleEvent(StoreEvent be) {
+				StudentModel freshRow = grid.getStore().getAt(currentIndex);
+				IndividualStudentEvent event = new IndividualStudentEvent(freshRow);
+				
+				if (singleView == null)
+					buildSingleView();
+				
+				if (singleView.fireEvent(GradebookEvents.SingleView, event)) {
+					Point pos = getInstructorViewContainer().getPosition(false);
+					singleView.setPosition(pos.x, pos.y);
+					singleView.setSize(XDOM.getViewportSize().width, XDOM.getViewportSize().height - 35);
+					singleView.show();
+					//MultiGradeContentPanel.this.hide();
+				}
+				grid.getStore().removeListener(Store.DataChanged, this);
+			}
+		
+		};*/
+		
+		
+	}
+	
+	@Override
+	public void editCell(GradebookModel selectedGradebook, Record record, String property, Object value, Object startValue, GridEvent gridEvent) {
+		
+		if (gridEvent != null) {
+			String className = grid.getView().getCell(gridEvent.rowIndex, gridEvent.colIndex).getClassName();
+			className = className.replace(" gbCellDropped", "");
+			grid.getView().getCell(gridEvent.rowIndex, gridEvent.colIndex).setClassName(className);
+			grid.getView().getCell(gridEvent.rowIndex, gridEvent.colIndex).setInnerText("Saving...");
+		}
+		
+		Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord, new GradeRecordUpdate(record, property, startValue, value));
+	}
+	
+	public StudentModel getSelectedModel() {
+		return commentingStudentModel;
+	}
+	
+	public Long getSelectedAssignment() {
+		return commentingAssignmentId;
+	}
+	
+	/*
+	 * When the user clicks on the next or previous buttons in the student view dialog, an event is thrown to the dispatcher and this 
+	 * method is eventually called. It must decide whether the next learner in the grid is on the current page or not, and choose whether 
+	 * to change pages before throwing the event that notifies the dialog box to show a new learner
+	 */
+	public void onBrowseLearner(BrowseLearner be) {
+		StudentModel current = be.learner;
+		currentIndex = grid.getStore().indexOf(current);
+		PageOverflow pageOverflow = PageOverflow.NONE;
+		// Do processing for paging -- if we reach the end or beginning of a page
+		switch (be.type) {
+		case PREV:
+			currentIndex--;
+			if (currentIndex < 0)
+				pageOverflow = PageOverflow.TOP;
+			break;
+		case NEXT:
+			currentIndex++;
+			if (currentIndex >= pageSize || grid.getStore().getAt(currentIndex) == null) 
+				pageOverflow = PageOverflow.BOTTOM;
+			break;
+		case CURRENT:
+			break;
+		}
+		
+		boolean requiresPageChange = pageOverflow != PageOverflow.NONE;
+		
+		int activePage = pagingToolBar.getActivePage();
+		int numberOfPages = pagingToolBar.getTotalPages();
+		
+		switch (pageOverflow) {
+		case TOP:
+			// Go to the last record on the page
+			currentIndex = pageSize - 1;
+			// And we are on the first page, then go to the last page
+			if (activePage == 1)
+				pagingToolBar.last();
+			// Otherwise, go to the one before
+			else
+				pagingToolBar.previous();
+			break;
+		case BOTTOM:
+			currentIndex = 0;
+			// And if we are on the last page
+			if (activePage == numberOfPages) {
+				pagingToolBar.first();
+			} else {
+				pagingToolBar.next();
+			}
+			break;
+		}
+		
+		// Any of these cases indicate that we may have gone off the page
+		// (1) a negative index
+		// (2) an index greater than the page size
+		// (3) a null item in the store, in particular on the last page when there are fewer populated rows than the page size allows
+		if (requiresPageChange) {
+			grid.getStore().addListener(Store.DataChanged, new Listener<StoreEvent<StudentModel>>() {
+
+				public void handleEvent(StoreEvent<StudentModel> se) {
+					StudentModel selectedLearner = null;
+					while (selectedLearner == null && currentIndex >= 0) {
+						selectedLearner = ((ListStore<StudentModel>)se.store).getAt(currentIndex);
+						if (selectedLearner != null) {
+							Dispatcher.forwardEvent(GradebookEvents.SingleGrade, selectedLearner);
+							//Dispatcher.forwardEvent(GradebookEvents.SingleView, selectedLearner);
+						} else {
+							currentIndex--;
+						}
+					}
+					grid.getStore().removeListener(Store.DataChanged, this);
+					
+					if (selectedLearner != null)
+						grid.getSelectionModel().select(currentIndex);
+					
+				}
+				
+			});
+		} else {
+			StudentModel selectedLearner = grid.getStore().getAt(currentIndex);
+			Dispatcher.forwardEvent(GradebookEvents.SingleGrade, selectedLearner);
+			//Dispatcher.forwardEvent(GradebookEvents.SingleView, selectedLearner);
+			
+			if (selectedLearner != null)
+				grid.getSelectionModel().select(currentIndex);
+		}
+	}
+
+	public void onEditMode(Boolean enable) {
+		/*if (enable.booleanValue()) {
+			int size = 500; //XDOM.getViewportSize().width- 10;
+			westData.setMaxSize(size);
+			westData.setSize(size);
+		} else
+			westData.setSize(150);
+		borderLayoutContainer.layout();*/
+		/*if (enable.booleanValue())
+			cardLayout.setActiveItem(formPanel);
+		else
+			cardLayout.setActiveItem(mainContainer);*/
+	}
+	
+	public void onLearnerGradeRecordUpdated(UserEntityAction<?> action) { 
+		
+		
+	}
+	
+	public void onItemUpdated(ItemModel itemModel) {
+		
+		if (itemModel.getItemType().equals(Type.ITEM.getName())) {
+			
+			for (int i=0;i<cm.getColumnCount();i++) {
+				ColumnConfig column = cm.getColumn(i);
+				
+				if (column.getId().equals(itemModel.getIdentifier())) {
+					column.setHeader(itemModel.getName());
+					boolean isIncluded = itemModel.getIncluded() != null && itemModel.getIncluded().booleanValue();
+					boolean isExtraCredit = itemModel.getExtraCredit() != null && itemModel.getExtraCredit().booleanValue();
+					
+					if (!isIncluded)
+						column.setRenderer(unweightedNumericCellRenderer);
+					else if (isExtraCredit)
+						column.setRenderer(extraCreditNumericCellRenderer);
+					else
+						column.setRenderer(null);
+				}
+			
+			}
+			
+			if (grid.isRendered())
+				grid.getView().refresh(true);
+		}
+		
+/*
+			switch (assignmentModelKey) {
+			// Update actions will (always?) result from user changes on the setup 
+			// screens, so they should be deferred to the "onShow" method
+			
+			// Name changes mean header needs to update, similarly for delete or include
+			case NAME:
+			case EXTRA_CREDIT:
+			case INCLUDED:
+			case REMOVED: 
+				updateColumns(itemModel);
+				queueDeferredRefresh(RefreshAction.REFRESHLOCALCOLUMNS);
+				break;
+			// Weight changes just mean we need to refresh the screen
+			case WEIGHT:  
+				queueDeferredRefresh(RefreshAction.REFRESHDATA);
+				break;
+			case POINTS:
+				Boolean isRecalculated = ((UserEntityUpdateAction)action).getDoRecalculateChildren();
+				if (isRecalculated != null && isRecalculated.booleanValue())
+					queueDeferredRefresh(RefreshAction.REFRESHDATA);
+				break;
+
+			}
+			break;
+		
+		}
+	case CATEGORY:
+		switch (action.getActionType()) {
+		case CREATE:
+			
+			break;
+		case UPDATE:
+			// Update actions will (always?) result from user changes on the setup 
+			// screens, so they should be deferred to the "onShow" method
+			CategoryModel.Key categoryModelKey = CategoryModel.Key.valueOf(((UserEntityUpdateAction)action).getKey());
+			switch (categoryModelKey) {
+			// Don't need to worry about Category name changes
+			case REMOVED: case INCLUDED: case EXTRA_CREDIT:
+				queueDeferredRefresh(RefreshAction.REFRESHCOLUMNS);
+				break;
+			// Weight changes just mean we need to refresh the screen
+			case WEIGHT: case DROP_LOWEST:
+				queueDeferredRefresh(RefreshAction.REFRESHDATA);
+				break;
+			}
+			break;
+		}
+		
+		break;
+	case GRADEBOOK:
+		switch (action.getActionType()) {
+		case UPDATE:
+			// We want to do this immediately, since these actions are now being
+			// fired from the top level menu and multigrade may well be visible.
+			GradebookModel.Key gradebookModelKey = GradebookModel.Key.valueOf(((UserEntityUpdateAction)action).getKey());
+			switch (gradebookModelKey) {
+			case GRADETYPE:
+				refreshGrid(RefreshAction.REFRESHCOLUMNSANDDATA);
+				break;
+			case CATEGORYTYPE: 
+				refreshGrid(RefreshAction.REFRESHCOLUMNS);
+				break;
+			}
+			
+			break;
+		}*/
+	}
+	
+	/*@Override
+	public void onSwitchGradebook(GradebookModel selectedGradebook) {
+		super.onSwitchGradebook(selectedGradebook);
+	}*/
+	
+	protected void initListeners() {
+		
+		componentEventListener = new Listener<ComponentEvent>() {
+
+			public void handleEvent(ComponentEvent ce) {
+				
+				// FIXME: This could be condensed significantly
+				if (ce.type == GradebookEvents.DoSearch) {
+					String searchString = searchField.getValue();
+					String sectionUuid = null;	
+					if (loadConfig != null)
+						sectionUuid = ((MultiGradeLoadConfig) loadConfig).getSectionUuid();
+					loadConfig = new MultiGradeLoadConfig();
+					loadConfig.setLimit(0);
+					loadConfig.setOffset(pageSize);
+					((MultiGradeLoadConfig) loadConfig).setSearchString(searchString);
+					((MultiGradeLoadConfig) loadConfig).setSectionUuid(sectionUuid);
+					loader.useLoadConfig(loadConfig);
+					loader.load(0, pageSize);
+				} else if (ce.type == GradebookEvents.ClearSearch) {
+					searchField.setValue(null);
+					String sectionUuid = null;
+					if (loadConfig != null)
+						sectionUuid = ((MultiGradeLoadConfig) loadConfig).getSectionUuid();
+					loadConfig = new MultiGradeLoadConfig();
+					loadConfig.setLimit(0);
+					loadConfig.setOffset(pageSize);
+					((MultiGradeLoadConfig) loadConfig).setSectionUuid(sectionUuid);
+					loader.useLoadConfig(loadConfig);
+					loader.load(0, pageSize);
+				}
+			}
+			
+		};
+		
+		gridEventListener = new Listener<GridEvent>() {
+
+			public void handleEvent(GridEvent ge) {
+				
+				switch (ge.type) {
+				case Events.CellClick:
+					if (ge.colIndex == 1 || ge.colIndex == 2) {
+						StudentModel selectedLearner = store.getAt(ge.rowIndex);
+						Dispatcher.forwardEvent(GradebookEvents.SingleGrade, selectedLearner);
+					}
+					break;
+				case Events.ContextMenu:
+					if (ge.rowIndex >= 0 && ge.colIndex >= 0) {
+						ColumnConfig c = grid.getColumnModel().getColumn(ge.colIndex);
+						String assignIdStr = c.getId();
+						long assignId;
+
+						try {
+							assignId = Long.parseLong(assignIdStr);
+						} catch (NumberFormatException e) {
+							ge.doit = false;
+							return;
+						}
+						commentingStudentModel = store.getAt(ge.rowIndex);
+						commentingAssignmentId = new Long(assignId);
+						
+						Boolean commentFlag = (Boolean)commentingStudentModel.get(assignId + StudentModel.COMMENTED_FLAG);
+						
+						boolean isCommented = commentFlag != null && commentFlag.booleanValue();
+						
+						if (isCommented) {
+							contextMenu.enableAddComment(false);
+							contextMenu.enableEditComment(true);
+						} else {
+							contextMenu.enableAddComment(true);
+							contextMenu.enableEditComment(false);
+						}
+						
+						Boolean gradedFlag = (Boolean)commentingStudentModel.get(assignId + StudentModel.GRADED_FLAG);
+						
+						boolean isGraded = gradedFlag != null && gradedFlag.booleanValue();
+						
+						contextMenu.enableViewGradeHistory(isGraded);
+					} else
+						ge.doit = false; 
+					break;
+				}
+			}
+		};
+		
+		refreshCourseGradesListener = new Listener<RefreshCourseGradesEvent>() {
+
+			public void handleEvent(RefreshCourseGradesEvent rcge) {
+				// These events are fired from the setup screens or the student view dialog/container
+				// so they can be triggered by onShow rather than via an immediate refresh.
+				
+				queueDeferredRefresh(RefreshAction.REFRESHDATA);
+			}
+			
+		};
+		
+		
+		storeListener = new Listener<StoreEvent>() {
+
+			public void handleEvent(StoreEvent se) {
+				String sortField = ((ListStore)se.store).getSortField();
+				SortDir sortDir = ((ListStore)se.store).getSortDir();
+				boolean isAscending = sortDir == SortDir.ASC;
+				//String sortDirection = sortDir == null || sortDir == SortDir.DESC ? "Descending" : "Ascending";
+				
+				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+				String gradebookUid = selectedGradebook.getGradebookUid();
+				GradebookState.setSortInfo(gradebookUid, AppConstants.MULTIGRADE, sortField, isAscending);
+			}
+			
+		};
+		
+		
+		/*userChangeEventListener = new Listener<UserChangeEvent>() {
 
 			public void handleEvent(UserChangeEvent uce) {
 				
@@ -158,9 +592,11 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 				if (uce.getAction() instanceof UserEntityAction) {
 					UserEntityAction action = uce.getAction();
 					
+					/--*
 					if (instructorViewContainer.getHistoryDialog() != null) {
 						instructorViewContainer.getHistoryDialog().fireEvent(GradebookEvents.UserChange, uce);
 					}
+					*--/
 					
 					// FIXME: Ideally we want to ensure that these methods are only called once at the end of a series of operations
 					switch (action.getEntityType()) {
@@ -259,138 +695,225 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 				
 			}
 			
-		});
-		
-		
-		
-		addListener(GradebookEvents.RefreshCourseGrades, new Listener<RefreshCourseGradesEvent>() {
-
-			public void handleEvent(RefreshCourseGradesEvent rcge) {
-				// These events are fired from the setup screens or the student view dialog/container
-				// so they can be triggered by onShow rather than via an immediate refresh.
-				
-				queueDeferredRefresh(RefreshAction.REFRESHDATA);
-			}
-			
-		});
-		
-		/*singleView.addListener(GradebookEvents.UserChange, new Listener<UserChangeEvent>() {
-
-			public void handleEvent(UserChangeEvent uce) {
-				if (uce.getAction() instanceof UserEntityAction) {
-					UserEntityAction action = (UserEntityAction)uce.getAction();
-					
-					// FIXME: Ideally we want to ensure that these methods are only called once at the end of a series of operations
-					switch (action.getEntityType()) {
-						case GRADE_RECORD:
-							switch (action.getActionType()) {
-							case UPDATE:
-								UserEntityUpdateAction<GradeRecordModel> recordUpdateAction = 
-									(UserEntityUpdateAction<GradeRecordModel>)action;
-								GradeRecordModel recordModel = recordUpdateAction.getModel();
-								GradeRecordModel.Key recordModelKey = GradeRecordModel.Key.valueOf(recordUpdateAction.getKey());
-								
-								StudentModel studentModel = recordUpdateAction.getStudentModel();
-								
-								Record r = store.getRecord(studentModel);
-								
-								// First, clear out any currently dropped
-								for (String property : studentModel.getPropertyNames()) {
-									if (property.endsWith(StudentModel.DROP_FLAG)) {
-										int dropFlagIndex = property.indexOf(StudentModel.DROP_FLAG);
-											
-										String assignmentId = property.substring(0, dropFlagIndex);
-										Object value = studentModel.get(assignmentId);
-										Boolean recordDropped = (Boolean)r.get(property);
-										Boolean modelDropped = studentModel.get(property);
-									
-										boolean isDropped = modelDropped != null && modelDropped.booleanValue();
-										boolean wasDropped = recordDropped != null && recordDropped.booleanValue();
-										
-										r.set(property, modelDropped);
-										
-										if (isDropped || wasDropped) {
-											r.set(assignmentId, null);
-											r.set(assignmentId, value);
-											//r.setDirty(true);
-										}
-									}
-								}
-								
-								String courseGrade = studentModel.get(StudentModel.Key.COURSE_GRADE.name());
-								
-								if (courseGrade != null) {
-									r.set(StudentModel.Key.COURSE_GRADE.name(), null);
-									r.set(StudentModel.Key.COURSE_GRADE.name(), courseGrade);
-								}
-								
-								r.endEdit();
-
-								break;
-							}
-							break;
-					}
-				}
-			}
-			
-		});*/
-
-		/*final Listener<StoreEvent> pageListener = new Listener<StoreEvent>() {
-
-			public void handleEvent(StoreEvent be) {
-				StudentModel freshRow = grid.getStore().getAt(currentIndex);
-				IndividualStudentEvent event = new IndividualStudentEvent(freshRow);
-				
-				if (singleView == null)
-					buildSingleView();
-				
-				if (singleView.fireEvent(GradebookEvents.SingleView, event)) {
-					Point pos = getInstructorViewContainer().getPosition(false);
-					singleView.setPosition(pos.x, pos.y);
-					singleView.setSize(XDOM.getViewportSize().width, XDOM.getViewportSize().height - 35);
-					singleView.show();
-					//MultiGradeContentPanel.this.hide();
-				}
-				grid.getStore().removeListener(Store.DataChanged, this);
-			}
-		
 		};*/
 		
+		/*windowEventListener = new Listener<WindowEvent>() {
+
+			public void handleEvent(WindowEvent be) {
+				switch (be.type) {
+				case Events.BeforeShow:	
+					MultiGradeContentPanel.this.hide();
+					break;
+				case Events.Close:
+					MultiGradeContentPanel.this.show();
+					break;
+				}
+			}
+			
+		};*/
+	}
+	
+	public void onLoadItemTreeModel(GradebookModel selectedGradebook) {
+		cm = assembleColumnModel(selectedGradebook);
+		grid.reconfigure(store, cm);
+		grid.el().unmask();
+	}
+	
+	public void onShowColumns(ShowColumnsEvent event) {
 		
+		// Loop through every column and show/hide it
+		for (int i=0;i<cm.getColumnCount();i++) {
+			ColumnConfig column = cm.getColumn(i);
+			
+			// The first step is to check if this is a static column
+			boolean isStatic = event.fullStaticIdSet.contains(column.getId());
+			// If it is static, then is it even visible? 
+			boolean isStaticVisible = isStatic && event.visibleStaticIdSet.contains(column.getId());
+			
+			if (isStatic)
+				cm.setHidden(i, !isStaticVisible);
+			else if (event.selectedItemModelIdSet != null){
+				boolean showColumn = (!isStatic && event.selectAll) || event.selectedItemModelIdSet.contains(column.getId());
+				if (cm.isHidden(i) == showColumn)
+					cm.setHidden(i, !showColumn);
+			}
+		}
 	}
 	
-	public StudentModel getSelectedModel() {
-		return commentingStudentModel;
-	}
-	
-	public Long getSelectedAssignment() {
-		return commentingAssignmentId;
-	}
-	
-	
-	protected void onShowContextMenu(int x, int y) {
-		super.onShowContextMenu(x, y);
+	public void onSwitchGradebook(GradebookModel selectedGradebook) {
+		String gradebookUid = selectedGradebook.getGradebookUid();
+		if (store != null) {
+			// Set the default sort field and direction on the store based on Cookies
+			String storedSortField = GradebookState.getSortField(gradebookUid, gridId);
+			boolean isAscending = GradebookState.isAscending(gradebookUid, gridId);
+			
+			SortDir sortDir = isAscending ? SortDir.ASC : SortDir.DESC;
+
+			if (storedSortField != null) 
+				store.setDefaultSort(storedSortField, sortDir);
+		}
 		
-		
-		
+		add(newGrid(newColumnModel(selectedGradebook)));
+	
+		if (loader != null) 
+			loader.load(0, pageSize);
 	}
 	
-	protected CustomColumnModel newColumnModel() {
-		GradebookModel model = Registry.get(gradebookUid);
-		return assembleColumnModel(model.getColumns());
+	public void onUserChange(UserEntityAction<?> action) {
+		switch (action.getEntityType()) {
+		case GRADE_ITEM:
+			switch (action.getActionType()) {
+			case CREATE:
+				// We want to do this immediately, since a "Create" action probably comes
+				// from the "Add Assignment" dialog box that may be shown while the multigrade
+				// screen is still visible
+				refreshGrid(RefreshAction.REFRESHCOLUMNS);
+				break;
+			case UPDATE:
+				AssignmentModel.Key assignmentModelKey = AssignmentModel.Key.valueOf(((UserEntityUpdateAction)action).getKey());
+				switch (assignmentModelKey) {
+				// Update actions will (always?) result from user changes on the setup 
+				// screens, so they should be deferred to the "onShow" method
+				
+				// Name changes mean header needs to update, similarly for delete or include
+				case NAME:
+				case EXTRA_CREDIT:
+				case INCLUDED:
+				case REMOVED: 
+					updateColumns(assignmentModelKey, (AssignmentModel)action.getModel());
+					queueDeferredRefresh(RefreshAction.REFRESHLOCALCOLUMNS);
+					break;
+				// Weight changes just mean we need to refresh the screen
+				case WEIGHT:  
+					queueDeferredRefresh(RefreshAction.REFRESHDATA);
+					break;
+				case POINTS:
+					Boolean isRecalculated = ((UserEntityUpdateAction)action).getDoRecalculateChildren();
+					if (isRecalculated != null && isRecalculated.booleanValue())
+						queueDeferredRefresh(RefreshAction.REFRESHDATA);
+					break;
+
+				}
+				break;
+			}
+			
+			break;
+		case CATEGORY:
+			switch (action.getActionType()) {
+			case CREATE:
+				
+				break;
+			case UPDATE:
+				// Update actions will (always?) result from user changes on the setup 
+				// screens, so they should be deferred to the "onShow" method
+				CategoryModel.Key categoryModelKey = CategoryModel.Key.valueOf(((UserEntityUpdateAction)action).getKey());
+				switch (categoryModelKey) {
+				// Don't need to worry about Category name changes
+				case REMOVED: case INCLUDED: case EXTRA_CREDIT:
+					queueDeferredRefresh(RefreshAction.REFRESHCOLUMNS);
+					break;
+				// Weight changes just mean we need to refresh the screen
+				case WEIGHT: case DROP_LOWEST:
+					queueDeferredRefresh(RefreshAction.REFRESHDATA);
+					break;
+				}
+				break;
+			}
+			
+			break;
+		case GRADEBOOK:
+			switch (action.getActionType()) {
+			case UPDATE:
+				// We want to do this immediately, since these actions are now being
+				// fired from the top level menu and multigrade may well be visible.
+				GradebookModel.Key gradebookModelKey = GradebookModel.Key.valueOf(((UserEntityUpdateAction)action).getKey());
+				switch (gradebookModelKey) {
+				case GRADETYPE:
+					refreshGrid(RefreshAction.REFRESHCOLUMNSANDDATA);
+					break;
+				case CATEGORYTYPE: 
+					//addCategoryMenuItem.setVisible(((GradebookModel)action.getModel()).getCategoryType() != CategoryType.NO_CATEGORIES);
+					refreshGrid(RefreshAction.REFRESHCOLUMNS);
+					break;
+				}
+				
+				break;
+			}
+			break;
+		case GRADE_RECORD:
+			switch (action.getActionType()) {
+			case UPDATE:
+				UserEntityUpdateAction<GradeRecordModel> recordUpdateAction = 
+					(UserEntityUpdateAction<GradeRecordModel>)action;
+				GradeRecordModel recordModel = recordUpdateAction.getModel();
+				GradeRecordModel.Key recordModelKey = GradeRecordModel.Key.valueOf(recordUpdateAction.getKey());
+				
+				StudentModel studentModel = recordUpdateAction.getStudentModel();
+				
+				Record r = store.getRecord(studentModel);
+				
+				// First, clear out any currently dropped
+				for (String property : studentModel.getPropertyNames()) {
+					if (property.endsWith(StudentModel.DROP_FLAG)) {
+						int dropFlagIndex = property.indexOf(StudentModel.DROP_FLAG);
+							
+						String assignmentId = property.substring(0, dropFlagIndex);
+						Object value = studentModel.get(assignmentId);
+						Boolean recordDropped = (Boolean)r.get(property);
+						Boolean modelDropped = studentModel.get(property);
+					
+						boolean isDropped = modelDropped != null && modelDropped.booleanValue();
+						boolean wasDropped = recordDropped != null && recordDropped.booleanValue();
+						
+						r.set(property, modelDropped);
+						
+						if (isDropped || wasDropped) {
+							r.set(assignmentId, null);
+							r.set(assignmentId, value);
+							//r.setDirty(true);
+						}
+					}
+				}
+				
+				String courseGrade = studentModel.get(StudentModel.Key.COURSE_GRADE.name());
+				
+				if (courseGrade != null) {
+					r.set(StudentModel.Key.COURSE_GRADE.name(), null);
+					r.set(StudentModel.Key.COURSE_GRADE.name(), courseGrade);
+				}
+				
+				r.endEdit();
+
+				break;
+			}
+			break;
+		case GRADE_SCALE:
+			switch (action.getActionType()) {
+			case UPDATE:
+				queueDeferredRefresh(RefreshAction.REFRESHDATA);
+				break;
+			}
+			
+			break;
+		}
 	}
 	
-	@Override 
+	protected CustomColumnModel newColumnModel(GradebookModel selectedGradebook) {
+		CustomColumnModel columnModel = assembleColumnModel(selectedGradebook);
+		return columnModel;
+	}
+	
+	/*@Override 
 	protected Grid<StudentModel> newGrid() {
 		Grid<StudentModel> grid = super.newGrid();
 		//grid.setSelectionModel(new MultiGradeCellSelectionModel());
 		return grid;
-	}
+	}*/
 	
 	@Override
 	protected GridView newGridView() {
 		// SAK-2378
-		CustomGridView view = new CustomGridView(gradebookUid) {
+		CustomGridView view = new CustomGridView(gridId) {
 			
 			private Timer showTimer;
 			private com.google.gwt.dom.client.Element overCell;
@@ -574,38 +1097,11 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	}
 	
 	protected Menu newContextMenu() {
-		contextMenu = new MultiGradeContextMenu(gradebookUid, this);
-		
+		contextMenu = new MultiGradeContextMenu(this);
 		return contextMenu;
 	}
 	
-	/*protected ListStore<StudentModel> newStore(BasePagingLoader<PagingLoadConfig, PagingLoadResult<StudentModel>> loader) {
-		ListStore<StudentModel> store = super.newStore(loader);
-		
-		store.addListener(Store.DataChanged, new Listener<StoreEvent>() {
-
-			public void handleEvent(StoreEvent be) {
-				StudentModel freshRow = grid.getStore().getAt(currentIndex);
-				IndividualStudentEvent event = new IndividualStudentEvent(freshRow);
-				
-				if (singleView == null)
-					buildSingleView();
-				
-				if (singleView.fireEvent(GradebookEvents.SingleView, event)) {
-					Point pos = getInstructorViewContainer().getPosition(false);
-					singleView.setPosition(pos.x, pos.y);
-					singleView.setSize(XDOM.getViewportSize().width, XDOM.getViewportSize().height - 35);
-					singleView.show();
-					//MultiGradeContentPanel.this.hide();
-				}
-				grid.getStore().removeListener(Store.DataChanged, this);
-			}
-		
-		});
-		
-		return store;
-	}*/
-
+	@Override
 	protected void addComponents() {
 		unweightedNumericCellRenderer = new UnweightedNumericCellRenderer();
 		extraCreditNumericCellRenderer = new ExtraCreditNumericCellRenderer();
@@ -614,7 +1110,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			@Override
 			protected void load(PagingLoadConfig loadConfig, AsyncCallback<PagingLoadResult<SectionModel>> callback) {
 				GradebookToolFacadeAsync service = Registry.get("service");
-				GradebookModel model = Registry.get(gradebookUid);
+				GradebookModel model = Registry.get(AppConstants.CURRENT);
 				PageRequestAction action = new PageRequestAction(EntityType.SECTION, model.getGradebookUid(), model.getGradebookId());
 				service.getEntityPage(action, loadConfig, callback);
 			}
@@ -671,7 +1167,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 
 		AdapterToolItem sectionChooserItem = new AdapterToolItem(sectionListBox);
 		
-		final TextField<String> searchField = new TextField<String>();
+		searchField = new TextField<String>();
 		searchField.setEmptyText("Student name");
 		searchField.setWidth(180);
 		searchField.addKeyListener(new KeyListener() {
@@ -684,62 +1180,11 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			}
 		});
 		
-		store.addListener(Store.Sort, new Listener<StoreEvent>() {
-
-			public void handleEvent(StoreEvent se) {
-				String sortField = ((ListStore)se.store).getSortField();
-				SortDir sortDir = ((ListStore)se.store).getSortDir();
-				String sortDirection = sortDir == null || sortDir == SortDir.DESC ? "Descending" : "Ascending";
-					
-				PersistentStore.storePersistentField(gradebookUid, gridId, "sortField", sortField);
-				PersistentStore.storePersistentField(gradebookUid, gridId, "sortDir", sortDirection);
-			}
-			
-		});
+		store.addListener(Store.Sort, storeListener);
 		
-		addListener(GradebookEvents.DoSearch, new Listener<ComponentEvent>() {
-
-			public void handleEvent(ComponentEvent ce) {
-				
-				String searchString = searchField.getValue();
-				
-				
-				String sectionUuid = null;
-				
-				if (loadConfig != null)
-					sectionUuid = ((MultiGradeLoadConfig) loadConfig).getSectionUuid();
-				
-				loadConfig = new MultiGradeLoadConfig();
-				loadConfig.setLimit(0);
-				loadConfig.setOffset(pageSize);
-				((MultiGradeLoadConfig) loadConfig).setSearchString(searchString);
-				((MultiGradeLoadConfig) loadConfig).setSectionUuid(sectionUuid);
-				loader.useLoadConfig(loadConfig);
-				loader.load(0, pageSize);
-			}
-			
-		});
+		addListener(GradebookEvents.DoSearch, componentEventListener);
 		
-		addListener(GradebookEvents.ClearSearch, new Listener<ComponentEvent>() {
-
-			public void handleEvent(ComponentEvent ce) {
-				
-				searchField.setValue(null);
-				
-				String sectionUuid = null;
-				
-				if (loadConfig != null)
-					sectionUuid = ((MultiGradeLoadConfig) loadConfig).getSectionUuid();
-				
-				loadConfig = new MultiGradeLoadConfig();
-				loadConfig.setLimit(0);
-				loadConfig.setOffset(pageSize);
-				((MultiGradeLoadConfig) loadConfig).setSectionUuid(sectionUuid);
-				loader.useLoadConfig(loadConfig);
-				loader.load(0, pageSize);
-			}
-			
-		});
+		addListener(GradebookEvents.ClearSearch, componentEventListener);
 		
 		AdapterToolItem searchFieldItem = new AdapterToolItem(searchField);
 
@@ -764,154 +1209,29 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			
 		});
 		
-		//doNotifyItem = new ToggleToolItem("Show Notifications");
-		
-		pagingToolBar.add(searchFieldItem);
-		pagingToolBar.add(doSearchItem);
-		pagingToolBar.add(clearSearchItem);
-		pagingToolBar.add(new SeparatorToolItem());
-		pagingToolBar.add(sectionChooserItem);
-		//pagingToolBar.add(new SeparatorToolItem());
-		//pagingToolBar.add(doNotifyItem);
-		
 		searchToolBar = new ToolBar();
+		searchToolBar.add(searchFieldItem);
+		searchToolBar.add(doSearchItem);
+		searchToolBar.add(clearSearchItem);
+		searchToolBar.add(new SeparatorToolItem());
+		searchToolBar.add(sectionChooserItem);
 		
 		toolBarContainer = new LayoutContainer();
 		toolBarContainer.setLayout(new RowLayout());
 		toolBarContainer.add(pagingToolBar, new RowData(1, 1));
 		toolBarContainer.add(searchToolBar, new RowData(1, -1));
 		
-		setTopComponent(toolBarContainer);
-		toolBarContainer.layout();
+		//setTopComponent(toolBarContainer);
+		//toolBarContainer.layout();
+		
+		setTopComponent(searchToolBar);
+		setBottomComponent(pagingToolBar);
 	}
 	
 	@Override
 	protected void addGridListenersAndPlugins(final EditorGrid<StudentModel> grid) {
-		grid.addListener(Events.CellClick, new Listener<GridEvent>() {
-
-			public void handleEvent(GridEvent ge) {
-				if (ge.colIndex == 1 || ge.colIndex == 2) {
-					StudentModel myStudent = store.getAt(ge.rowIndex);
-					IndividualStudentEvent e = new IndividualStudentEvent(myStudent); 
-					
-					if (singleView == null)
-						buildSingleView();
-					
-					if (singleView.fireEvent(GradebookEvents.SingleView, e)) {
-						int frameHeight = getInstructorViewContainer().getFrameHeight();
-						singleView.setPosition(0, frameHeight);
-						singleView.setSize(XDOM.getViewportSize().width, XDOM.getViewportSize().height - frameHeight);
-						singleView.show();
-					}
-				}
-			}
-		});
-		
-		grid.addListener(Events.ContextMenu, new Listener<GridEvent>(){
-
-			public void handleEvent(GridEvent be) {
-				// FIXME - Can this be done better??? 
-				if (be.rowIndex >= 0 && be.colIndex >= 0)
-				{
-					ColumnConfig c = grid.getColumnModel().getColumn(
-							be.colIndex);
-					String assignIdStr = c.getId();
-					long assignId;
-
-					try {
-						assignId = Long.parseLong(assignIdStr);
-					} catch (NumberFormatException e) {
-						be.doit = false;
-						return;
-					}
-					commentingStudentModel = store.getAt(be.rowIndex);
-					commentingAssignmentId = new Long(assignId);
-					
-					Boolean commentFlag = (Boolean)commentingStudentModel.get(assignId + StudentModel.COMMENTED_FLAG);
-					
-					boolean isCommented = commentFlag != null && commentFlag.booleanValue();
-					
-					if (isCommented) {
-						contextMenu.enableAddComment(false);
-						contextMenu.enableEditComment(true);
-					} else {
-						contextMenu.enableAddComment(true);
-						contextMenu.enableEditComment(false);
-					}
-					
-					Boolean gradedFlag = (Boolean)commentingStudentModel.get(assignId + StudentModel.GRADED_FLAG);
-					
-					boolean isGraded = gradedFlag != null && gradedFlag.booleanValue();
-					
-					contextMenu.enableViewGradeHistory(isGraded);
-					
-					
-					int windowWidth = 0; 
-					int windowHeight = 0;
-					int cellLeft = 0; 
-					int cellWidth = 0; 
-
-					int cellTop = 0; 
-					int cellHeight = 0; 
-					
-					int bestX = 0; 
-					int bestY = 0; 
-				
-					int commentsWidth; 
-					int commentsHeight; 
-					
-	/*				if (comments != null) 
-					{
-						commentsHeight = comments.getOffsetHeight();
-						commentsWidth = comments.getOffsetWidth(); 
-					}
-					else
-					{
-						commentsWidth = 0; 
-						commentsHeight = 0; 
-					}
-					windowWidth = XDOM.getViewportSize().width; 
-					windowHeight = XDOM.getViewportSize().height - getInstructorViewContainer().getFrameHeight(); 
-					
-					cellLeft = grid.getView().getCell(be.rowIndex, be.colIndex).getAbsoluteLeft();
-					cellWidth = grid.getView().getCell(be.rowIndex, be.colIndex).getOffsetWidth();
-
-					cellTop = grid.getView().getCell(be.rowIndex, be.colIndex).getAbsoluteTop();
-					cellHeight = grid.getView().getCell(be.rowIndex, be.colIndex).getOffsetHeight();
-					
-					bestX = cellLeft + cellWidth; 
-					bestY = cellTop + cellHeight; 
-					
-					if ( (bestX + commentsWidth) > windowWidth )
-					{
-						bestX = cellLeft - commentsWidth; 
-						if (bestX < 0)
-						{
-							// In this case we'll overlap our cell, but that should be ok
-							bestX = 0; 
-						}
-					}
-					
-					if ( (bestY + commentsHeight) > windowHeight)
-					{
-						bestY = cellTop - commentsHeight;
-						if (bestY  < 0)
-						{
-							// In this case we'll overlap our cell, but that should be ok
-							bestY = 0; 
-						}
-					}
-					*/
-				}
-				
-				
-				else
-				{
-					be.doit = false; 
-				}
-			}
-		
-		});
+		grid.addListener(Events.CellClick, gridEventListener);
+		grid.addListener(Events.ContextMenu, gridEventListener);
 	}
 	
 	// TODO: This can probably be removed
@@ -944,293 +1264,172 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	public void onResize(int x, int y) {
 		super.onResize(x, y);
 		
-		if (singleView != null) {
+		/*if (singleView != null) {
 			int frameHeight = getInstructorViewContainer().getFrameHeight();
 			singleView.setPosition(0, frameHeight);
 			singleView.setSize(XDOM.getViewportSize().width, XDOM.getViewportSize().height - frameHeight);
-		}
+		}*/
 		
-		toolBarContainer.setWidth(getWidth());
+		//if (gridOwner != null) {
+		
+		if (isRendered())
+			toolBarContainer.setWidth(getWidth());
+		
+			/*if (singleView != null) {
+				singleView.setPosition(gridOwner.getAbsoluteLeft(), gridOwner.getAbsoluteTop());
+				singleView.setSize(gridOwner.getWidth(), gridOwner.getHeight());
+			}*/
+			
+		//}
 	}
 
 	
 	@Override
 	protected void onRender(Element parent, int pos) {	    
 	    super.onRender(parent, pos);
-	    
-	    
-		/*if (getBody() != null) {
-			int h = 31; //e.getOffsetHeight();
-			int numRows = getBody().getHeight() / h - 1;
-			
-			if (pageSize != numRows && numRows > 1) {
-				pageSize = numRows;
-				//loader.load(0, pageSize);
-				
-				if (pagingToolBar != null) {
-					pagingToolBar.setPageSize(numRows);
-					pagingToolBar.refresh();
-				}
-			}
-		}*/
+
+	}
+
+	
+	private boolean convertBoolean(Boolean b) {
+		return b != null && b.booleanValue();
 	}
 	
+	private ColumnConfig buildColumn(GradebookModel selectedGradebook, ColumnModel column) {
+		return buildColumn(selectedGradebook, column.getKey(), column.getIdentifier(), column.getName(),
+				true, false, convertBoolean(column.isEditable()), convertBoolean(column.isHidden()));
+	}
 	
-	private CustomColumnModel assembleColumnModel(List<ColumnModel> columns) {
-		this.columnDefinitions = columns;
-		GradebookModel gbModel = Registry.get(gradebookUid);
-
-		List<ColumnConfig> configs = new ArrayList<ColumnConfig>(columns.size());
-		int i = 0;
+	private ColumnConfig buildColumn(GradebookModel selectedGradebook, ItemModel item) {
 		
-		for (ColumnModel column : columns) {
-			int columnWidth = column.getWidth() == null ? 0 : column.getWidth().intValue();
-			boolean isHidden = column.isHidden() != null && column.isHidden().booleanValue();
-			
-			String storedHidden = PersistentStore.getPersistentField(gradebookUid, gridId, "column:" + column.getIdentifier() + ":hidden");
-			if (storedHidden != null) {
-				isHidden = Boolean.valueOf(storedHidden).booleanValue();
-			}
-			String storedWidth = PersistentStore.getPersistentField(gradebookUid, gridId, "column:" + column.getIdentifier() + ":width");
-			if (storedWidth != null) {
-				columnWidth = Integer.parseInt(storedWidth);
-			}
-			
-			ColumnConfig config = new ColumnConfig(column.getIdentifier(), column.getName(), columnWidth);
-			
-			config.setHidden(isHidden);
-			
-			Field<?> field = null;
-			StudentModel.Key key = StudentModel.Key.valueOf(column.getKey());
-			boolean isUnweighted = column.isUnweighted() != null && column.isUnweighted().booleanValue();
-			boolean isExtraCredit = column.isExtraCredit() != null && column.isExtraCredit().booleanValue();
-			switch (key) {
-			case ASSIGNMENT:
-				switch (gbModel.getGradeType()) {
-					case POINTS:
-					case PERCENTAGES:
-						config.setAlignment(HorizontalAlignment.RIGHT);
-						config.setNumberFormat(defaultNumberFormat);
-						
-						NumberField numberField = new NumberField();
-						numberField.setFormat(defaultNumberFormat);
-						numberField.setPropertyEditorType(Double.class);
-						//numberField.setMaxValue(column.getMaxPoints());
-						numberField.setSelectOnFocus(true);
-						numberField.addInputStyleName("gbNumericFieldInput");
-						field = numberField;
-						
-						if (isUnweighted)
-							config.setRenderer(unweightedNumericCellRenderer);
-						else if (isExtraCredit)
-							config.setRenderer(extraCreditNumericCellRenderer);
-						
-						break;
-					case LETTERS:
-						TextField<String> textField = new TextField<String>();
-						textField.setSelectOnFocus(true);
-						textField.addInputStyleName("gbTextFieldInput");
-						field = textField;
-						
-						if (isUnweighted)
-							config.setRenderer(unweightedTextCellRenderer);
-						else if (isExtraCredit)
-							config.setRenderer(extraCreditTextCellRenderer);
-						
-						break;
-				}
-				
-				break;
-			case COURSE_GRADE:
-
-				break;
-			case GRADE_OVERRIDE:
-				TextField<String> textField = new TextField<String>();
-				textField.addInputStyleName("gbTextFieldInput");
-				textField.setSelectOnFocus(true);
-				field = textField;
-				
-				if (isUnweighted)
-					config.setRenderer(unweightedTextCellRenderer);
-				
-				break;
-			}
-			
-			boolean isEditable = column.isEditable() != null && column.isEditable().booleanValue();
-			if (field != null && isEditable) {
-				final CellEditor editor = new CellEditor(field);
-				editor.setCompleteOnEnter(true);
-				editor.setCancelOnEsc(true);
-				config.setEditor(editor);
-			}
-
-			configs.add(config);
-			
-			//if (column.getId().equals(StudentModel.Key.COURSE_GRADE.name()) && config.isHidden() == false)
-			//	courseGradeColumn = i;
-			
-			i++;
+		StringBuilder columnNameBuilder = new StringBuilder().append(item.getName());
+		
+		switch (selectedGradebook.getGradeType()) {
+		case POINTS:
+			columnNameBuilder.append(" (").append(item.getPoints()).append(")");
+			break;
+		case PERCENTAGES:
+			columnNameBuilder.append(" (%)");
+			break;
+		case LETTERS:
+			columnNameBuilder.append(" (A-F)");
+			break;
 		}
+		
+		return buildColumn(selectedGradebook, item.getStudentModelKey(), item.getIdentifier(), 
+				columnNameBuilder.toString(), convertBoolean(item.getIncluded()), 
+				convertBoolean(item.getExtraCredit()), item.getSource() == null, false);
+	}
 	
-		CustomColumnModel cm = new CustomColumnModel(gradebookUid, gridId, configs);
+	private ColumnConfig buildColumn(GradebookModel selectedGradebook, String property, String id, String name, 
+			boolean isIncluded, boolean isExtraCredit, boolean isEditable, boolean defaultHidden) {
+		
+		String gradebookUid = selectedGradebook.getGradebookUid();
+		int columnWidth = GradebookState.getColumnWidth(gradebookUid, gridId, id, name);
+		boolean isHidden = GradebookState.isColumnHidden(gradebookUid, gridId, id, defaultHidden);
+		
+		ColumnConfig config = new ColumnConfig(id, name, columnWidth);
+		
+		config.setHidden(isHidden);
+		
+		Field<?> field = null;
+		StudentModel.Key key = StudentModel.Key.valueOf(property);
+		switch (key) {
+		case ASSIGNMENT:
+			switch (selectedGradebook.getGradeType()) {
+				case POINTS:
+				case PERCENTAGES:
+					config.setAlignment(HorizontalAlignment.RIGHT);
+					config.setNumberFormat(defaultNumberFormat);
+					
+					NumberField numberField = new NumberField();
+					numberField.setFormat(defaultNumberFormat);
+					numberField.setPropertyEditorType(Double.class);
+					//numberField.setMaxValue(column.getMaxPoints());
+					numberField.setSelectOnFocus(true);
+					numberField.addInputStyleName("gbNumericFieldInput");
+					field = numberField;
+					
+					if (!isIncluded)
+						config.setRenderer(unweightedNumericCellRenderer);
+					else if (isExtraCredit)
+						config.setRenderer(extraCreditNumericCellRenderer);
+					
+					break;
+				case LETTERS:
+					TextField<String> textField = new TextField<String>();
+					textField.setSelectOnFocus(true);
+					textField.addInputStyleName("gbTextFieldInput");
+					field = textField;
+					
+					if (!isIncluded)
+						config.setRenderer(unweightedTextCellRenderer);
+					else if (isExtraCredit)
+						config.setRenderer(extraCreditTextCellRenderer);
+					
+					break;
+			}
+			
+			break;
+		case COURSE_GRADE:
+
+			break;
+		case GRADE_OVERRIDE:
+			TextField<String> textField = new TextField<String>();
+			textField.addInputStyleName("gbTextFieldInput");
+			textField.setSelectOnFocus(true);
+			field = textField;
+			
+			if (!isIncluded)
+				config.setRenderer(unweightedTextCellRenderer);
+			
+			break;
+		}
+		
+		if (field != null && isEditable) {
+			final CellEditor editor = new CellEditor(field);
+			editor.setCompleteOnEnter(true);
+			editor.setCancelOnEsc(true);
+			config.setEditor(editor);
+		}
+
+		return config;
+	}
+	
+	// FIXME: When changing gradebooks we will need to re-assemble the column model
+	private CustomColumnModel assembleColumnModel(GradebookModel selectedGradebook) {
+
+		List<ColumnModel> staticColumns = selectedGradebook.getColumns();
+		
+		ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
+		
+		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
+		
+		for (ColumnModel column : staticColumns) {
+			ColumnConfig config = buildColumn(selectedGradebook, column);
+			configs.add(config);
+		}
+		
+		for (ItemModel gradebook : gradebookItemModel.getChildren()) {
+			for (ItemModel child : gradebook.getChildren()) {
+				
+				if (child.getItemType().equals(Type.CATEGORY.getName())) {
+					
+					for (ItemModel item : child.getChildren()) {
+						configs.add(buildColumn(selectedGradebook, item));
+					}
+					
+				} else {
+					configs.add(buildColumn(selectedGradebook, child));
+				}			
+			}
+		}
+		
+		CustomColumnModel cm = new CustomColumnModel(selectedGradebook.getGradebookUid(), gridId, configs);
 		
 		return cm;
 	}
 	
-	private void buildSingleView() {
-		GradebookToolFacadeAsync service = Registry.get("service");
-		singleView = new StudentViewDialog(gradebookUid, service);
-		
-		singleView.addListener(Events.BeforeShow, new Listener<WindowEvent>() {
-
-			public void handleEvent(WindowEvent be) {
-				MultiGradeContentPanel.this.hide();
-			}
-			
-		});
-		
-		singleView.addListener(Events.Close, new Listener<WindowEvent>() {
-
-			public void handleEvent(WindowEvent be) {
-				MultiGradeContentPanel.this.show();
-			}
-			
-		});
-		
-		singleView.addListener(GradebookEvents.BrowseStudent, new Listener<BrowseStudentEvent>() {
-
-			public void handleEvent(BrowseStudentEvent be) {
-				StudentModel current = be.getStudent();
-				currentIndex = grid.getStore().indexOf(current);
-				// Do processing for paging -- if we reach the end or beginning of a page
-				switch (be.getType()) {
-				case PREV:
-					currentIndex--;
-					break;
-				case NEXT:
-					currentIndex++;
-					break;
-				case CURRENT:
-					break;
-				}
-				
-				boolean requiresPageChange = false;
-				
-				int activePage = pagingToolBar.getActivePage();
-				int numberOfPages = pagingToolBar.getTotalPages();
-				
-				if (currentIndex < 0 || currentIndex >= pageSize) {
-					requiresPageChange = true;
-					grid.getStore().addListener(Store.DataChanged, new Listener<StoreEvent>() {
-
-						public void handleEvent(StoreEvent be) {
-							StudentModel freshRow = grid.getStore().getAt(currentIndex);
-							IndividualStudentEvent event = new IndividualStudentEvent(freshRow);
-							
-							if (singleView.fireEvent(GradebookEvents.SingleView, event)) {
-								Point pos = getInstructorViewContainer().getPosition(false);
-								singleView.setPosition(pos.x, pos.y);
-								singleView.setSize(XDOM.getViewportSize().width, XDOM.getViewportSize().height - 35);
-								singleView.show();
-								//MultiGradeContentPanel.this.hide();
-							}
-							grid.getStore().removeListener(Store.DataChanged, this);
-						}
-					
-					});
-				}
-
-				// If we are at the first record - 1
-				if (currentIndex < 0) {
-					// And we are on the first page, then go to the last page
-					if (activePage == 1)
-						pagingToolBar.last();
-					// Otherwise, go to the one before
-					else
-						pagingToolBar.previous();
-					// Either way, go to the last record on the page
-					currentIndex = pageSize - 1;
-				// If we are at the last record + 1
-				} else if (currentIndex >= pageSize) {
-					// And if we are on the last page
-					if (activePage == numberOfPages) {
-						pagingToolBar.first();
-					} else {
-						pagingToolBar.next();
-					}
-					currentIndex = 0;
-				}
-				
-				if (!requiresPageChange) {
-					StudentModel freshRow = grid.getStore().getAt(currentIndex);
-					IndividualStudentEvent event = new IndividualStudentEvent(freshRow);
-					singleView.fireEvent(GradebookEvents.SingleView, event);
-				}
-			}
-			
-		});
-		
-		singleView.addListener(GradebookEvents.UserChange, new Listener<UserChangeEvent>() {
-
-			public void handleEvent(UserChangeEvent uce) {
-				if (uce.getAction() instanceof UserEntityAction) {
-					UserEntityAction action = (UserEntityAction)uce.getAction();
-					
-					// FIXME: Ideally we want to ensure that these methods are only called once at the end of a series of operations
-					switch (action.getEntityType()) {
-						case GRADE_RECORD:
-							switch (action.getActionType()) {
-							case UPDATE:
-								UserEntityUpdateAction<GradeRecordModel> recordUpdateAction = 
-									(UserEntityUpdateAction<GradeRecordModel>)action;
-								GradeRecordModel recordModel = recordUpdateAction.getModel();
-								GradeRecordModel.Key recordModelKey = GradeRecordModel.Key.valueOf(recordUpdateAction.getKey());
-								
-								StudentModel studentModel = recordUpdateAction.getStudentModel();
-								
-								Record r = store.getRecord(studentModel);
-								
-								// First, clear out any currently dropped
-								for (String property : studentModel.getPropertyNames()) {
-									if (property.endsWith(StudentModel.DROP_FLAG)) {
-										int dropFlagIndex = property.indexOf(StudentModel.DROP_FLAG);
-											
-										String assignmentId = property.substring(0, dropFlagIndex);
-										Object value = studentModel.get(assignmentId);
-										Boolean recordDropped = (Boolean)r.get(property);
-										Boolean modelDropped = studentModel.get(property);
-									
-										boolean isDropped = modelDropped != null && modelDropped.booleanValue();
-										boolean wasDropped = recordDropped != null && recordDropped.booleanValue();
-										
-										r.set(property, modelDropped);
-										
-										if (isDropped || wasDropped) {
-											r.set(assignmentId, null);
-											r.set(assignmentId, value);
-											//r.setDirty(true);
-										}
-									}
-								}
-								
-								String courseGrade = studentModel.get(StudentModel.Key.COURSE_GRADE.name());
-								
-								if (courseGrade != null) {
-									r.set(StudentModel.Key.COURSE_GRADE.name(), null);
-									r.set(StudentModel.Key.COURSE_GRADE.name(), courseGrade);
-								}
-								
-								r.endEdit();
-
-								break;
-							}
-							break;
-					}
-				}
-			}
-			
-		});
-	}
 
 	@Override
 	protected void refreshGrid(RefreshAction refreshAction) {
@@ -1248,27 +1447,26 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		
 		
 		final Boolean refreshData = Boolean.valueOf(includeData);
-		GradebookModel gbModel = Registry.get(gradebookUid);
-		UserEntityGetAction<ColumnModel> action = 
-			new UserEntityGetAction<ColumnModel>(gbModel, EntityType.COLUMN);
 		
-		RemoteCommand<ColumnModel> remoteCommand = 
-			new RemoteCommand<ColumnModel>() {
+		GradebookToolFacadeAsync service = Registry.get(AppConstants.SERVICE);
+		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		
+		service.getEntityTreeModel(selectedGradebook.getGradebookUid(), null, new AsyncCallback<ItemModel>() {
 
-			@Override
-			public void onCommandListSuccess(UserEntityAction<ColumnModel> action, List<ColumnModel> columns) {
-	
-				GradebookModel gbModel = Registry.get(gradebookUid);
-				gbModel.setColumns(columns);
-				
-				reconfigureGrid(gradebookUid, columns);
-				
+			public void onFailure(Throwable caught) {
+				Dispatcher.forwardEvent(GradebookEvents.Exception, caught);
+			}
+
+			public void onSuccess(ItemModel result) {
+				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+				selectedGradebook.setGradebookItemModel(result);
+				Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel, selectedGradebook);
 				if (refreshData.equals(Boolean.TRUE))
 					pagingToolBar.refresh();
 			}
-		};
-		
-		remoteCommand.executeList(action);
+			
+		});
+
 	}
 	
 	private void doRefresh(String property, Record record, StudentModel model, StudentModel startModel) {
@@ -1289,10 +1487,12 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		
 	}
 	
-	@Override
+	/*@Override
 	protected void beforeUpdateView(UserEntityAction<StudentModel> action, Record record, StudentModel model) {
-		for (ColumnModel columnDefinition : columnDefinitions) {
-			String id = columnDefinition.getIdentifier();
+		// FIXME: Is this going to be satisfactory?
+		for (int i=0;i<cm.getColumnCount();i++) {
+			ColumnConfig config = cm.getColumn(i);
+			String id = config.getId();
 			StudentModel startModel = action.getModel();
 			doRefresh(id, record, model, startModel);
 		}
@@ -1320,8 +1520,8 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			notifier.notify(buffer.toString(), 
 				"Stored item grade as '{0}' and recalculated course grade to '{1}' ", model.get(property), model.get(StudentModel.Key.COURSE_GRADE.name()));
 	
-		fireEvent(GradebookEvents.UserChange, new UserChangeEvent(action));
-	}
+		Dispatcher.forwardEvent(GradebookEvents.UserChange, action);
+	}*/
 		
 	private GridCellRenderer<StudentModel> unweightedTextCellRenderer = new GridCellRenderer<StudentModel>() {
 
@@ -1353,14 +1553,14 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		}
 	};
 	
-	private void reconfigureGrid(String gradebookUid, List<ColumnModel> columns) {
-		cm = assembleColumnModel(columns);
+	/*private void reconfigureGrid(String gradebookUid, ItemModel rootItemModel) {
+		cm = assembleColumnModel(rootItemModel);
 		grid.reconfigure(store, cm);
 		grid.el().unmask();
-	}
+	}*/
 
 	private void updateColumns(AssignmentModel.Key key, AssignmentModel model) {
-		GradebookModel gbModel = Registry.get(gradebookUid);
+		GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
 		ColumnModel removeColumn = null;
 		List<ColumnModel> columns = gbModel.getColumns();
 		if (columns != null) {
@@ -1394,7 +1594,4 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		gbModel.setColumns(columns);
 	}
 
-	public InstructorViewContainer getInstructorViewContainer() {
-		return instructorViewContainer;
-	}
 }

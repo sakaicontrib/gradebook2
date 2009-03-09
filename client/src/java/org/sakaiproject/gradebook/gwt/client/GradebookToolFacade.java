@@ -58,9 +58,11 @@ public interface GradebookToolFacade extends RemoteService {
 	
 	<X extends EntityModel> PagingLoadResult<X> getEntityPage(PageRequestAction action, PagingLoadConfig config) throws FatalException;
 
-	<X extends ItemModel> List<X> getEntityTreeModel(String gradebookUid, X parent);
+	<X extends ItemModel> X getEntityTreeModel(String gradebookUid, X parent);
 	
 	List<CategoryModel> recalculateEqualWeightingCategories(String gradebookUid, Long gradebookId, Boolean isEqualWeighting);
+	
+	<X extends ItemModel> List<X> updateItemEntity(UserEntityUpdateAction<X> action) throws InvalidInputException, FatalException;
 	
 	<X extends EntityModel> X updateEntity(UserEntityUpdateAction<X> action) throws InvalidInputException, FatalException;
 	
