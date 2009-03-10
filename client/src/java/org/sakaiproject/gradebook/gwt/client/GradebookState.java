@@ -35,7 +35,7 @@ public class GradebookState {
 	}
 	
 	public static boolean isColumnHidden(String gradebookUid, String gridId, String identifier, boolean defaultState) {
-		String stateId = DataTypeConversionUtil.concat(gradebookUid, ":", gridId, ":", identifier);
+		String stateId = DataTypeConversionUtil.concat(gradebookUid, ":", gridId, ":", identifier, AppConstants.HIDDEN_SUFFIX);
 		Boolean hidden = (Boolean)StateManager.get().get(stateId);
 		boolean isHidden = defaultState;
 		if (hidden != null) {
@@ -44,8 +44,13 @@ public class GradebookState {
 		return isHidden;
 	}
 	
+	public static void setColumnHidden(String gradebookUid, String gridId, String identifier, boolean hidden) {
+		String stateId = DataTypeConversionUtil.concat(gradebookUid, ":", gridId, ":", identifier, AppConstants.HIDDEN_SUFFIX);
+		StateManager.get().set(stateId, Boolean.valueOf(hidden));
+	}
+	
 	public static int getColumnWidth(String gradebookUid, String gridId, String identifier, String name) {
-		String stateId = DataTypeConversionUtil.concat(gradebookUid, ":", gridId, ":", identifier);
+		String stateId = DataTypeConversionUtil.concat(gradebookUid, ":", gridId, ":", identifier, AppConstants.WIDTH_SUFFIX);
 		int columnWidth = 200;
 	
 		Integer storedWidth = (Integer)StateManager.get().get(stateId);
@@ -63,5 +68,9 @@ public class GradebookState {
 		return columnWidth;
 	}
 	
+	public static void setColumnWidth(String gradebookUid, String gridId, String identifier, int width) {
+		String stateId = DataTypeConversionUtil.concat(gradebookUid, ":", gridId, ":", identifier, AppConstants.WIDTH_SUFFIX);
+		StateManager.get().set(stateId, Integer.valueOf(width));
+	}
 	
 }

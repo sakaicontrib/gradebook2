@@ -2,12 +2,12 @@
 
 	<!-- Inherit the core Web Toolkit stuff.                  -->
 	<inherits name='com.google.gwt.user.User'/>
-	<inherits name='com.google.gwt.json.JSON'/>
-	<inherits name='com.google.gwt.animation.Animation'/>
+	<!--inherits name='com.google.gwt.json.JSON'/-->
+	<!--inherits name='com.google.gwt.animation.Animation'/-->
 	<!-- Inherit internationalization 						  -->
 	<inherits name='com.google.gwt.i18n.I18N'/>
 	
-	<inherits name="com.google.gwt.gears.Gears" />
+	<!--inherits name="com.google.gwt.gears.Gears" /-->
 	
 	<!-- Inherit the Ext-GWT (gxt-1.1) Toolkit library -->
 	<inherits name='com.extjs.gxt.ui.GXT'/>

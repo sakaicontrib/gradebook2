@@ -26,7 +26,6 @@ import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
-import org.sakaiproject.gradebook.gwt.client.gxt.GradebookContainer;
 import org.sakaiproject.gradebook.gwt.client.gxt.controller.AppController;
 import org.sakaiproject.gradebook.gwt.client.gxt.controller.UpdateController;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
@@ -47,7 +46,6 @@ import com.google.gwt.user.client.rpc.ServiceDefTarget;
 public class GradebookApplication implements EntryPoint {
 	
 	private GradebookToolFacadeAsync dataService;
-	private GradebookContainer gradebookContainer;
 	private int screenHeight = 600;
 	
     public GradebookApplication() {
@@ -248,10 +246,6 @@ public class GradebookApplication implements EntryPoint {
 	 	
 	 	return [x,y];
 	 }-*/;
-
-	public GradebookContainer getGradebookContainer() {
-		return gradebookContainer;
-	}
 
 
 }

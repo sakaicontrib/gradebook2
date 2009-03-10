@@ -1,6 +1,7 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.gxt.Notifier;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ConfirmationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 
@@ -14,10 +15,11 @@ import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.Html;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
-import com.extjs.gxt.ui.client.widget.layout.MarginData;
 
 public class NotificationView extends View {
 
+//	Notifier notifier
+	
 	private static final String decisionFlag = "DecisionType";
 	private enum Decision { OK, CANCEL };
 	

@@ -20,7 +20,7 @@
 * permissions and limitations under the License.
 *
 **********************************************************************************/
-package org.sakaiproject.gradebook.gwt.client.custom.widget.grid;
+package org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid;
 
 import java.util.ArrayList;
 import java.util.Collection;

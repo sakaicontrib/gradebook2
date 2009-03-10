@@ -20,27 +20,31 @@
 * permissions and limitations under the License.
 *
 **********************************************************************************/
-package org.sakaiproject.gradebook.gwt.client.gxt;
+package org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid;
 
-import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.extjs.gxt.ui.client.widget.TabPanel;
-import com.extjs.gxt.ui.client.widget.layout.FitLayout;
+import java.util.List;
 
-public class TabContainer extends LayoutContainer {
-	private TabPanel tabPanel;
+import org.sakaiproject.gradebook.gwt.client.GradebookState;
+
+import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
+import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
+
+public class CustomColumnModel extends ColumnModel {
+
+	private String gradebookUid;
+	private String gridId;
 	
-	public TabContainer() {
-		setLayout(new FitLayout());
-		tabPanel = new TabPanel();
-		tabPanel.setMinTabWidth(150);
-		tabPanel.setResizeTabs(true);
-		tabPanel.setAnimScroll(true);
-		tabPanel.setTabScroll(true);
-		add(tabPanel);
+	public CustomColumnModel(String gradebookUid, String gridId, List<ColumnConfig> columns) {
+		super(columns);
+		this.gradebookUid = gradebookUid;
+		this.gridId = gridId;
 	}
 
-	public TabPanel getTabPanel() {
-		return tabPanel;
+	@Override
+	public void setHidden(int colIndex, boolean hidden) {
+		super.setHidden(colIndex, hidden);
+		ColumnConfig column = getColumn(colIndex);
+		GradebookState.setColumnHidden(gradebookUid, gridId, column.getId(), hidden);
 	}
-
+	
 }

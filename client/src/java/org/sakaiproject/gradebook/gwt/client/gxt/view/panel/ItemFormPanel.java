@@ -16,14 +16,15 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
-import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.binder.TreeTableBinder;
+import com.extjs.gxt.ui.client.binding.Converter;
 import com.extjs.gxt.ui.client.binding.FieldBinding;
 import com.extjs.gxt.ui.client.binding.FormBinding;
+import com.extjs.gxt.ui.client.data.BaseModelData;
 import com.extjs.gxt.ui.client.data.BaseTreeLoader;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.PropertyChangeEvent;
@@ -31,22 +32,24 @@ import com.extjs.gxt.ui.client.data.TreeLoader;
 import com.extjs.gxt.ui.client.data.TreeModelReader;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.FieldEvent;
-import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
 import com.extjs.gxt.ui.client.event.SelectionChangedListener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
-import com.extjs.gxt.ui.client.event.TreeTableEvent;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
+import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.TreeStore;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
+import com.extjs.gxt.ui.client.widget.DataList;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.CheckBox;
 import com.extjs.gxt.ui.client.widget.form.DateField;
 import com.extjs.gxt.ui.client.widget.form.Field;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
+import com.extjs.gxt.ui.client.widget.form.ListField;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
+import com.extjs.gxt.ui.client.widget.form.SimpleComboValue;
 import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.layout.ColumnData;
 import com.extjs.gxt.ui.client.widget.layout.ColumnLayout;
@@ -85,12 +88,14 @@ public class ItemFormPanel extends ContentPanel {
 	private TreeTableBinder<ItemModel> treeBinder;
 	private TreeLoader<ItemModel> treeLoader;
 	private TreeStore<ItemModel> treeStore;
-	private Listener<TreeTableEvent> treeTableEventListener;
-	
+	private SelectionChangedListener<SimpleComboValue<String>> comboSelectionChangedListener;
 	private SelectionChangedListener<ItemModel> selectionChangedListener;
 	
+	private I18nConstants i18n;
+	
 	@SuppressWarnings("unchecked")
-	public ItemFormPanel() {
+	public ItemFormPanel(I18nConstants i18n) {
+		this.i18n = i18n;
 		setHeaderVisible(false);
 		
 		RowLayout layout = new RowLayout();
@@ -99,8 +104,47 @@ public class ItemFormPanel extends ContentPanel {
 		
 		initListeners();
 		
+		treeLoader = new BaseTreeLoader(new TreeModelReader() {
+			
+			@Override
+			protected List<? extends ModelData> getChildren(ModelData parent) {
+				List visibleChildren = new ArrayList();
+				List<? extends ModelData> children = super.getChildren(parent);
+				
+				for (ModelData model : children) {
+					String source = model.get(ItemModel.Key.SOURCE.name());
+					if (source == null || !source.equals("Static"))
+						visibleChildren.add(model);
+				}
+				
+				return visibleChildren;
+			}
+		});
+		
+		treeStore = new TreeStore<ItemModel>(treeLoader);
+		/*treeStore.setStoreSorter(new StoreSorter<ItemModel>() {
+
+			@Override
+			public int compare(Store store, ItemModel m1, ItemModel m2,
+					String property) {
+				boolean m1Category = m1.getItemType().equalsIgnoreCase("Category");
+				boolean m2Category = m2.getItemType().equalsIgnoreCase("Category");
+
+				if (m1Category && !m2Category) {
+					return -1;
+				} else if (!m1Category && m2Category) {
+					return 1;
+				}
+
+				return super.compare(store, m1, m2, property);
+			}
+		});*/
+		treeStore.setModelComparer(new ItemModelComparer());
+		
+		
 		formPanel = new FormPanel();
 		formPanel.setHeaderVisible(false);
+		formPanel.setLabelWidth(120);
 		//setWidth(400);
 
 		TextField<String> name = new TextField<String>();
@@ -108,7 +152,9 @@ public class ItemFormPanel extends ContentPanel {
 		name.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.NAME));
 		
 		formPanel.add(name);
-				
+	
+		//addGradebookFormItems(formPanel, i18n);
+		
 		percentCourseGradeField = new NumberField();
 		percentCourseGradeField.setName(ItemModel.Key.PERCENT_COURSE_GRADE.name());
 		percentCourseGradeField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.PERCENT_COURSE_GRADE));
@@ -155,17 +201,14 @@ public class ItemFormPanel extends ContentPanel {
 		setLayoutData(right, new MarginData(0));
 		
 		FormLayout leftFormLayout = new FormLayout();
-		
-		//leftFormLayout.setLabelAlign(LabelAlign.TOP);
-		//leftFormLayout.setLabelSeparator("");
 		leftFormLayout.setPadding(0);
+		leftFormLayout.setLabelWidth(120);
 		
 		left.setLayout(leftFormLayout);
 		
 		FormLayout rightFormLayout = new FormLayout();
-		//rightFormLayout.setLabelAlign(LabelAlign.TOP);
-		//rightFormLayout.setLabelSeparator("");
 		rightFormLayout.setPadding(0);
+		rightFormLayout.setLabelWidth(120);
 		
 		right.setLayout(rightFormLayout);
 		
@@ -193,9 +236,7 @@ public class ItemFormPanel extends ContentPanel {
 		checkBoxContainer.add(right, new ColumnData(200));
 		
 		formPanel.add(checkBoxContainer);
-		
-		
-		
+	
 		List<TreeTableColumn> columns = new ArrayList<TreeTableColumn>();
 		
 		CellRenderer<TreeItem> cellRenderer = new CellRenderer<TreeItem>() {
@@ -247,15 +288,16 @@ public class ItemFormPanel extends ContentPanel {
 				final ItemModel itemModel = (ItemModel)item.getModel();
 				
 				if (itemModel != null && itemModel.getItemType() != null) {
+					if (value == null)
+						return null;
+					
 					boolean isItem = itemModel.getItemType().equalsIgnoreCase(Type.ITEM.getName());
 					boolean isName = property.equals(ItemModel.Key.NAME.name());
 					boolean isPercentCategory = property.equals(ItemModel.Key.PERCENT_CATEGORY.name());
 					boolean isPercentGrade = property.equals(ItemModel.Key.PERCENT_COURSE_GRADE.name());
 					boolean isIncluded = itemModel.getIncluded() != null && itemModel.getIncluded().booleanValue();				
-					
-					
-					if (value == null)
-						return null;
+					boolean isTooBig = (isPercentCategory || isPercentGrade) 
+						&& ((Double)value).doubleValue() > 100d;
 					
 					result = super.render(item, property, value);
 					
@@ -265,7 +307,10 @@ public class ItemFormPanel extends ContentPanel {
 						cssClasses.append("gbNotIncluded");
 					
 					if (!isItem) 
-						cssClasses.append("gbCellStrong");
+						cssClasses.append(" gbCellStrong");
+					
+					if (isTooBig)
+						cssClasses.append(" gbCellError");
 						
 					boolean isExtraCredit = itemModel.getExtraCredit() != null && itemModel.getExtraCredit().booleanValue();
 					if (isExtraCredit) {
@@ -323,57 +368,10 @@ public class ItemFormPanel extends ContentPanel {
 		//treeTable.addListener(Events.RowClick, treeTableEventListener);
 		treeTable.setSelectionModel(new TreeSelectionModel(SelectionMode.SINGLE));
 		
-		//add(treeTable);
-		
-		treeLoader = new BaseTreeLoader(new TreeModelReader() {
-			
-			@Override
-			protected List<? extends ModelData> getChildren(ModelData parent) {
-				List visibleChildren = new ArrayList();
-				List<? extends ModelData> children = super.getChildren(parent);
-				
-				for (ModelData model : children) {
-					String source = model.get(ItemModel.Key.SOURCE.name());
-					if (source == null || !source.equals("Static"))
-						visibleChildren.add(model);
-				}
-				
-				return visibleChildren;
-			}
-		});
-		
-		treeStore = new TreeStore<ItemModel>(treeLoader);
-		/*treeStore.setStoreSorter(new StoreSorter<ItemModel>() {
-
-			@Override
-			public int compare(Store store, ItemModel m1, ItemModel m2,
-					String property) {
-				boolean m1Category = m1.getItemType().equalsIgnoreCase("Category");
-				boolean m2Category = m2.getItemType().equalsIgnoreCase("Category");
-
-				if (m1Category && !m2Category) {
-					return -1;
-				} else if (!m1Category && m2Category) {
-					return 1;
-				}
-
-				return super.compare(store, m1, m2, property);
-			}
-		});*/
-		treeStore.setModelComparer(new ItemModelComparer());
-		
 		treeBinder = new TreeTableBinder<ItemModel>(treeTable, treeStore);
 		treeBinder.setDisplayProperty(ItemModel.Key.NAME.name());
 		treeBinder.addSelectionChangedListener(selectionChangedListener);
-		
-		/*formPanel.addButton(new Button("Save", new SelectionListener<ButtonEvent>() {  
-			@Override  
-			public void componentSelected(ButtonEvent ce) {  
-				Dispatcher.forwardEvent(GradebookEvents.StopEditItem, Boolean.TRUE);
-			}
-			
-		}));*/
-		
+	
 		addButton(new Button("Close", new SelectionListener<ButtonEvent>() {  
 			@Override  
 			public void componentSelected(ButtonEvent ce) {  
@@ -386,13 +384,30 @@ public class ItemFormPanel extends ContentPanel {
 		add(treeTable, new RowData(1, .5));
 	}
 	
+	
+	/*@Override
+	protected void onRender(Element parent, int pos) {
+	    super.onRender(parent, pos);
+	
+	    if (selectionForRender != null)
+	    	typePickerComboBox.setSelection(selectionForRender);
+	    
+	}*/
+	
 	public void onEditItem(ItemModel itemModel) {
+		
+		if (formBindings == null)
+			initFormBindings();
 		
 		if (itemModel != null) {
 			String itemType = itemModel.get(ItemModel.Key.ITEM_TYPE.name());
+			String source = itemModel.get(ItemModel.Key.SOURCE.name());
 			boolean isNotGradebook = !itemType.equalsIgnoreCase(Type.GRADEBOOK.getName());
 			boolean isCategory = itemType.equalsIgnoreCase(Type.CATEGORY.getName());
 			boolean isItem = itemType.equalsIgnoreCase(Type.ITEM.getName());
+			boolean isExternal = source != null && source.trim().length() > 0;
+			
+			pointsField.setEnabled(!isExternal);
 			
 			extraCreditField.setVisible(isNotGradebook);
 			equallyWeightChildrenField.setVisible(isCategory);
@@ -404,6 +419,7 @@ public class ItemFormPanel extends ContentPanel {
 			pointsField.setVisible(isItem);
 			dueDateField.setVisible(isItem);
 			sourceField.setVisible(isItem);
+			//typePickerComboBox.setVisible(!isNotGradebook);
 			
 			TreeItem treeItem = (TreeItem)treeBinder.findItem(itemModel);
 			TreeItem selectedItem = treeTable.getSelectedItem();
@@ -441,9 +457,11 @@ public class ItemFormPanel extends ContentPanel {
 	}
 	
 	public void onLoadItemTreeModel(ItemModel rootItemModel) {
+		
 		treeStore.removeAll();
 		treeLoader.load(rootItemModel);
-		treeTable.expandAll();
+		if (treeTable != null)
+			treeTable.expandAll();
 		
 		if (formBindings != null) {
 			formBindings.unbind();
@@ -451,6 +469,147 @@ public class ItemFormPanel extends ContentPanel {
 			formBindings = null;
 		}
 		
+		if (! rendered) {
+			return;
+		}
+		
+		initFormBindings();
+		
+//		Info.display("Loading", "Loading tree model");
+	}
+	
+	public void onSwitchGradebook(GradebookModel selectedGradebook) {
+		/*List<ModelData> selection = new ArrayList<ModelData>();
+		ModelData model = getCategoryTypeModel(selectedGradebook.getCategoryType());
+		if (model != null) {
+			selection.add(model);
+			if (typePickerComboBox != null && typePickerComboBox.isRendered()) 
+				typePickerComboBox.setSelection(selection);
+			else
+				selectionForRender = selection;
+		}*/
+	}
+	
+	//private ListField<ModelData> typePickerComboBox;
+	//private List<ModelData> selectionForRender;
+	
+	private ModelData getCategoryTypeModel(CategoryType categoryType) {
+		ModelData model = new BaseModelData();
+		
+		// Initialize type picker
+		switch (categoryType) {
+	    case NO_CATEGORIES:
+	    	model.set("name", i18n.orgTypeNoCategories());
+	    	model.set("value", GradebookModel.CategoryType.NO_CATEGORIES);
+	    	break;
+	    case SIMPLE_CATEGORIES:
+	    	model.set("name", i18n.orgTypeCategories());
+	    	model.set("value", GradebookModel.CategoryType.SIMPLE_CATEGORIES);
+	    	break;	
+	    case WEIGHTED_CATEGORIES:
+	    	model.set("name", i18n.orgTypeWeightedCategories());
+	    	model.set("value", GradebookModel.CategoryType.WEIGHTED_CATEGORIES);
+	    	break;	
+	    }
+		
+		return model;
+	}
+	
+	/*private void addGradebookFormItems(FormPanel formPanel, I18nConstants i18n) {
+		
+		ListStore<ModelData> store = new ListStore<ModelData>();
+		
+		store.add(getCategoryTypeModel(GradebookModel.CategoryType.NO_CATEGORIES));
+		store.add(getCategoryTypeModel(GradebookModel.CategoryType.SIMPLE_CATEGORIES));
+		store.add(getCategoryTypeModel(GradebookModel.CategoryType.WEIGHTED_CATEGORIES));
+		
+		typePickerComboBox = new DataList();
+		*/
+		// Choose a category type
+		/*typePickerComboBox = new DataList<ModelData>() {
+			
+			@Override
+			protected void onRender(Element parent, int pos) {
+			    super.onRender(parent, pos);
+			
+			    if (selectionForRender != null)
+			    	setSelection(selectionForRender);
+			    
+			}
+			
+		}; 
+		typePickerComboBox.setStore(store);
+		//typePickerComboBox.setAllQuery(null);
+		//typePickerComboBox.setEditable(false);
+		typePickerComboBox.setFieldLabel(i18n.prefMenuOrgTypeLabel());
+		//typePickerComboBox.setForceSelection(true);
+		typePickerComboBox.setName(ItemModel.Key.CATEGORYTYPE.name());
+		typePickerComboBox.setDisplayField("name");
+		typePickerComboBox.setValueField("value");*/
+		
+		/*typePickerComboBox.add(i18n.orgTypeNoCategories());
+		typePickerComboBox.add(i18n.orgTypeCategories());
+		typePickerComboBox.add(i18n.orgTypeWeightedCategories());
+		*/
+		/*typePickerComboBox.setPropertyEditor(new ListModelPropertyEditor<SimpleComboValue<String>>(){
+			
+		      public String getStringValue(SimpleComboValue<String> value) {
+		    	  return value.getValue();
+		      }
+		});*/
+	    
+	    //typePickerComboBox.addSelectionChangedListener(comboSelectionChangedListener);
+	    
+		//formPanel.add(typePickerComboBox);
+		
+		/*
+		
+		// Choose a grade type
+		MenuItem chooseGradeType = new AriaMenuItem(i18n.prefMenuGradeTypeHeader());
+		
+		Menu gradeTypeSubMenu = new AriaMenu() {
+			protected void onRender(Element parent, int pos) {
+			    super.onRender(parent, pos);
+			    Accessibility.setRole(el().dom, "menu");
+			}
+		};
+		pointsMenuItem = new AriaCheckMenuItem(i18n.gradeTypePoints());
+		pointsMenuItem.setId(AppConstants.ID_GT_POINTS_MENUITEM);
+		pointsMenuItem.setGroup("gradetype");
+		gradeTypeSubMenu.add(pointsMenuItem);
+		percentagesMenuItem = new AriaCheckMenuItem(i18n.gradeTypePercentages());
+		percentagesMenuItem.setId(AppConstants.ID_GT_PERCENTAGES_MENUITEM);
+		percentagesMenuItem.setGroup("gradetype");
+		
+		gradeTypeSubMenu.add(percentagesMenuItem);
+		
+		pointsMenuItem.addListener(Events.CheckChange, menuListener);
+		percentagesMenuItem.addListener(Events.CheckChange, menuListener);
+		
+		chooseGradeType.setSubMenu(gradeTypeSubMenu);
+		add(chooseGradeType);
+		
+		// Choose a grade type
+		MenuItem releaseCourseGrades = new AriaMenuItem("Do you want to release course grades to learners?");
+		
+		Menu releaseCourseGradesSubMenu = new AriaMenu();
+		releaseGradesYesMenuItem = new AriaCheckMenuItem(i18n.prefMenuReleaseGradesYes());
+		releaseGradesYesMenuItem.setId(AppConstants.ID_RG_YES_MENUITEM);
+		releaseGradesYesMenuItem.setGroup("releasegrades");
+		releaseCourseGradesSubMenu.add(releaseGradesYesMenuItem);
+		releaseGradesNoMenuItem = new AriaCheckMenuItem(i18n.prefMenuReleaseGradesNo());
+		releaseGradesNoMenuItem.setId(AppConstants.ID_RG_NO_MENUITEM);
+		releaseGradesNoMenuItem.setGroup("releasegrades");
+		releaseCourseGradesSubMenu.add(releaseGradesNoMenuItem);
+		
+		releaseGradesYesMenuItem.addListener(Events.CheckChange, menuListener);
+		releaseGradesNoMenuItem.addListener(Events.CheckChange, menuListener);
+		
+		releaseCourseGrades.setSubMenu(releaseCourseGradesSubMenu);
+		add(releaseCourseGrades);*/
+	//}
+	
+	private void initFormBindings() {
 		formBindings = new FormBinding(formPanel, true) {
 			public void autoBind() {
 				for (Field f : panel.getFields()) {
@@ -458,6 +617,17 @@ public class ItemFormPanel extends ContentPanel {
 						String name = f.getName();
 						if (name != null && name.length() > 0) {
 							FieldBinding b = new FieldBinding(f, f.getName()) {
+								
+								@Override
+								public void updateField() {
+									if (field != null && field instanceof ListField) {
+										Object val = onConvertModelValue(model.get(property));
+									    List<Object> values = new ArrayList<Object>();
+									    values.add(val);
+										((ListField)field).setSelection(values);
+									} else
+										super.updateField();
+								}
 								
 								@Override
 								protected void onFieldChange(FieldEvent e) {									
@@ -500,6 +670,17 @@ public class ItemFormPanel extends ContentPanel {
 										field.setEnabled(true);
 								}
 							};
+							if (f instanceof ListField) {
+								b.setConvertor(new Converter() {
+									public Object convertModelValue(Object value) {
+										if (value == null)
+											return null;
+										
+										CategoryType categoryType = (CategoryType)value;
+									    return getCategoryTypeModel(categoryType);
+									}
+								});
+							}
 							bindings.put(f, b);
 						}
 					}
@@ -507,14 +688,20 @@ public class ItemFormPanel extends ContentPanel {
 			}
 		};
 		formBindings.setStore(treeStore);
-//		Info.display("Loading", "Loading tree model");
 	}
 	
-	/*public FormPanel getFormPanel() {
-		return formPanel;
-	}*/
-	
 	private void initListeners() {
+
+		comboSelectionChangedListener = new SelectionChangedListener<SimpleComboValue<String>>() {
+
+			@Override
+			public void selectionChanged(
+					SelectionChangedEvent<SimpleComboValue<String>> se) {
+				
+				
+			}
+			
+		};
 		
 		selectionChangedListener = new SelectionChangedListener<ItemModel>() {
 
@@ -529,7 +716,7 @@ public class ItemFormPanel extends ContentPanel {
 			
 		};
 		
-		treeTableEventListener = new Listener<TreeTableEvent>() {
+		/*treeTableEventListener = new Listener<TreeTableEvent>() {
 			public void handleEvent(TreeTableEvent tte) {
 				switch (tte.type) {
 				case Events.RowClick:
@@ -543,7 +730,7 @@ public class ItemFormPanel extends ContentPanel {
 					break;
 				}
 			}
-		};
+		};*/
 		
 	}
 	

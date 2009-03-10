@@ -405,7 +405,9 @@ private static final long serialVersionUID = 1L;
 					break;
 				}
 				
-				if (itemModel.getItemType().equals(Type.CATEGORY.getName())) {
+				if (itemModel.getItemType().equals(Type.GRADEBOOK.getName())) {
+					entityList = (List<X>)updateGradebookField(itemModel, itemKey, action.getValue());
+				} else if (itemModel.getItemType().equals(Type.CATEGORY.getName())) {
 					String categoryId = String.valueOf(action.getEntityId());
 					if (itemModel != null) {
 						categoryId = itemModel.getIdentifier();
@@ -2483,6 +2485,54 @@ private static final long serialVersionUID = 1L;
 		}
 	}
 	
+	private List<ItemModel> updateGradebookField(ItemModel itemModel, ItemModel.Key key, Object value) {
+		
+		Gradebook gradebook = gbService.getGradebook(itemModel.getIdentifier());
+		
+		switch (key) {
+		case NAME:
+			gradebook.setName((String)value);
+			break;
+		case CATEGORYTYPE:
+			switch ((CategoryType)value) {
+			case NO_CATEGORIES:
+				gradebook.setCategory_type(GradebookService.CATEGORY_TYPE_NO_CATEGORY);
+				break;
+			case SIMPLE_CATEGORIES:
+				gradebook.setCategory_type(GradebookService.CATEGORY_TYPE_ONLY_CATEGORY);
+				break;
+			case WEIGHTED_CATEGORIES:
+				gradebook.setCategory_type(GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY);
+				break;
+			}
+			break;
+		case GRADETYPE:
+			switch ((GradeType)value) {
+			case POINTS: 
+				gradebook.setGrade_type(GradebookService.GRADE_TYPE_POINTS);
+				break;
+			case PERCENTAGES: 
+				gradebook.setGrade_type(GradebookService.GRADE_TYPE_PERCENTAGE);
+				break;
+			case LETTERS:
+				gradebook.setGrade_type(GradebookService.GRADE_TYPE_LETTER);
+				break;
+			}
+			break;
+		case RELEASEGRADES:
+			Boolean b = (Boolean)value;
+			gradebook.setCourseGradeDisplayed(b == null ? false : b.booleanValue());
+			break;
+		}
+		
+		gbService.updateGradebook(gradebook);
+		
+		List<ItemModel> models = new ArrayList<ItemModel>();
+		
+		models.add(createItemModel(gradebook));
+		
+		return models;
+	}
 	
 	private GradebookModel updateGradebookField(Long gradebookId, GradebookModel.Key key, Object value) {
 		
@@ -3322,6 +3372,29 @@ private static final long serialVersionUID = 1L;
 			itemModel.setPercentCourseGrade(Double.valueOf(sum));
 		}
 		itemModel.setItemType(Type.GRADEBOOK.getName());
+		
+		switch (gradebook.getCategory_type()) {
+		case GradebookService.CATEGORY_TYPE_NO_CATEGORY:
+			itemModel.setCategoryType(CategoryType.NO_CATEGORIES);
+			break;
+		case GradebookService.CATEGORY_TYPE_ONLY_CATEGORY:
+			itemModel.setCategoryType(CategoryType.SIMPLE_CATEGORIES);
+			break;
+		case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
+			itemModel.setCategoryType(CategoryType.WEIGHTED_CATEGORIES);
+			break;
+		}
+		switch (gradebook.getGrade_type()) {
+		case GradebookService.GRADE_TYPE_POINTS:
+			itemModel.setGradeType(GradeType.POINTS);
+			break;
+		case GradebookService.GRADE_TYPE_PERCENTAGE:
+			itemModel.setGradeType(GradeType.PERCENTAGES);
+			break;
+		case GradebookService.GRADE_TYPE_LETTER:
+			itemModel.setGradeType(GradeType.LETTERS);
+			break;
+		}
 		
 		return itemModel;
 	}

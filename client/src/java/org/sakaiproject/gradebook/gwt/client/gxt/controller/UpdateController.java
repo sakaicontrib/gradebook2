@@ -80,6 +80,7 @@ public class UpdateController extends Controller {
 				
 				String message = new StringBuilder("Failed to update grade: ").append(caught.getMessage()).toString();
 				
+				notifier.notifyError("Exception", message);
 				Dispatcher.forwardEvent(GradebookEvents.Notification, message);
 			}
 			
@@ -156,6 +157,7 @@ public class UpdateController extends Controller {
 					.append("' and recalculated course grade to '").append(result.get(StudentModel.Key.COURSE_GRADE.name()))
 					.append("'").toString();
 				
+				notifier.notify("Success", message);
 				Dispatcher.forwardEvent(GradebookEvents.Notification, message);
 			}		
 		};
@@ -204,7 +206,7 @@ public class UpdateController extends Controller {
 					
 				record.setValid(property, false);
 				
-				//notifier.notifyError("Error", "Failed to update: {0} ", caught.getMessage());
+				notifier.notifyError("Error", "Failed to update: {0} ", caught.getMessage());
 				
 				String message = new StringBuilder("Failed to update item: ").append(caught.getMessage()).toString();
 				
@@ -231,7 +233,7 @@ public class UpdateController extends Controller {
 				StringBuilder buffer = new StringBuilder();
 				buffer.append(action.getEntityName());
 				//notifier.notify(buffer.toString(), 
-				//		"Stored item grade as '{0}' and recalculated course grade to '{1}' ", result.get(property), result.get(StudentModel.Key.COURSE_GRADE.name()));
+				//		"Stored item grade as '{0}' and recalculated course grade to '{1}' ", value, result.get(StudentModel.Key.COURSE_GRADE.name()));
 				//Info.display("FIXME", "Need to handle the update better");	
 				
 				for (ItemModel itemModel : resultList) {

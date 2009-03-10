@@ -108,6 +108,10 @@
 	cursor: pointer !important;
 }
 
+.gbCellError {
+	color: red;	
+}
+
 .gbCellStrong {
 	font-weight: bold;	
 }

@@ -39,7 +39,7 @@ public class TreeView extends View {
 	public TreeView(Controller controller, I18nConstants i18n) {
 		super(controller);
 		this.treePanel = new ItemTreePanel(i18n);
-		this.formPanel = new ItemFormPanel();
+		this.formPanel = new ItemFormPanel(i18n);
 	}
 
 	@Override
@@ -74,12 +74,7 @@ public class TreeView extends View {
 	}
 	
 	protected void onEditItem(ItemModel itemModel) {
-		//if (itemModel != null) {
-		//	formBindings.bind(itemModel);
-			formPanel.onEditItem(itemModel);
-		//} else {
-		//	formBindings.unbind();
-		//}
+		formPanel.onEditItem(itemModel);
 	}
 	
 	protected void onEditItemComplete(Boolean doCommit) {
@@ -181,6 +176,7 @@ public class TreeView extends View {
 		treePanel.onLoadItemTreeModel(selectedGradebook.getRootItemModel());
 		formPanel.onLoadItemTreeModel(selectedGradebook.getRootItemModel());
 		*/
+		formPanel.onSwitchGradebook(selectedGradebook);
 		treePanel.onSwitchGradebook(selectedGradebook);
 	}
 	

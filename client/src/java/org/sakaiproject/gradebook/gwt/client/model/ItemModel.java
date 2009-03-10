@@ -4,6 +4,8 @@ import java.util.Date;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType;
+import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 
 import com.extjs.gxt.ui.client.data.BaseTreeModel;
 
@@ -35,7 +37,8 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 		PERCENT_COURSE_GRADE("% Grade"),
 		PERCENT_CATEGORY("% Category"), IS_PERCENTAGE("Is Percentage"), 
 		STUDENT_MODEL_KEY("Student Model Key"),
-		ASSIGNMENT_ID("Item Id"), DATA_TYPE("Data Type");
+		ASSIGNMENT_ID("Item Id"), DATA_TYPE("Data Type"), CATEGORYTYPE("Category Type"),
+		GRADETYPE("Grade Type"), RELEASEGRADES("Release Grades");
 		
 		private String propertyName;
 		
@@ -70,7 +73,7 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 		case WEIGHT: case POINTS: case PERCENT_COURSE_GRADE: case PERCENT_CATEGORY:
 			return ClassType.DOUBLE;
 		case EQUAL_WEIGHT: case EXTRA_CREDIT: case INCLUDED: case REMOVED: case RELEASED:
-		case IS_PERCENTAGE:
+		case IS_PERCENTAGE: case RELEASEGRADES:
 			return ClassType.BOOLEAN;
 		case DROP_LOWEST:
 			return ClassType.INTEGER;
@@ -78,6 +81,10 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 			return ClassType.LONG;
 		case DUE_DATE:
 			return ClassType.DATE;
+		case CATEGORYTYPE:
+			return ClassType.CATEGORYTYPE;
+		case GRADETYPE:
+			return ClassType.GRADETYPE;
 		}
 		
 		return null;
@@ -281,6 +288,22 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 	
 	public void setDataType(String dataType) {
 		set(Key.DATA_TYPE.name(), dataType);
+	}
+	
+	public CategoryType getCategoryType() {
+		return get(Key.CATEGORYTYPE.name());
+	}
+	
+	public void setCategoryType(CategoryType type) {
+		set(Key.CATEGORYTYPE.name(), type);
+	}
+	
+	public GradeType getGradeType() {
+		return get(Key.GRADETYPE.name());
+	}
+	
+	public void setGradeType(GradeType type) {
+		set(Key.GRADETYPE.name(), type);
 	}
 	
 	@Override
