@@ -482,10 +482,16 @@ public class InstructorView extends AppView {
 				protected void onRender(Element parent, int index) {
 				    super.onRender(parent, index);
 				    //borderLayout.hide(LayoutRegion.EAST);
+				    //treeView.getTreePanel().expandTrees();
 				}
 			};
 						
-			helpPanel = new HelpPanel();
+			helpPanel = new HelpPanel() {
+				protected void onRender(Element parent, int index) {
+				    super.onRender(parent, index);
+				    borderLayout.collapse(LayoutRegion.EAST);
+				}
+			};
 			
 			cardLayoutContainer.setWidth(400);
 			cardLayoutContainer.setBorders(true);
@@ -580,9 +586,11 @@ public class InstructorView extends AppView {
 		fileMenu = new AriaMenu();
 		addCategoryMenuItem = new AriaMenuItem(i18n.categoryName(), menuSelectionListener);
 		addCategoryMenuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.ADD_CATEGORY);
+		addCategoryMenuItem.setIconStyle("gbAddCategoryIcon");
 		addCategoryMenuItem.setId(AppConstants.ID_ADD_CATEGORY_MENUITEM);
 		MenuItem addItem = new AriaMenuItem(i18n.itemName(), menuSelectionListener);
 		addItem.setData(MENU_SELECTOR_FLAG, MenuSelector.ADD_ITEM);
+		addItem.setIconStyle("gbAddItemIcon");
 		addItem.setId(AppConstants.ID_ADD_ITEM_MENUITEM);
 		
 		// Attach the items to the menu
@@ -595,7 +603,7 @@ public class InstructorView extends AppView {
 	}
 	
 	private Menu newPreferencesMenu(I18nConstants i18n, GradebookModel selectedGradebook) {
-		preferencesMenu = new PreferencesMenu(i18n);
+		preferencesMenu = new PreferencesMenu(i18n, treeView);
 		preferencesMenu.onSwitchGradebook(selectedGradebook);
 		return preferencesMenu;
 	}

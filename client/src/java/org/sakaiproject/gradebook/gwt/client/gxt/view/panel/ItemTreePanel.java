@@ -35,6 +35,7 @@ import com.extjs.gxt.ui.client.data.TreeModelReader;
 import com.extjs.gxt.ui.client.dnd.TreeDragSource;
 import com.extjs.gxt.ui.client.dnd.TreeDropTarget;
 import com.extjs.gxt.ui.client.dnd.DND.Feedback;
+import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.DNDEvent;
 import com.extjs.gxt.ui.client.event.DNDListener;
 import com.extjs.gxt.ui.client.event.Listener;
@@ -45,6 +46,7 @@ import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.event.TreeEvent;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.TreeStore;
+import com.extjs.gxt.ui.client.util.DelayedTask;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.TabItem;
 import com.extjs.gxt.ui.client.widget.TabPanel;
@@ -96,8 +98,15 @@ public class ItemTreePanel extends ContentPanel {
 		add(tabPanel);
 	}
 	
+	public void expandTrees() {
+		learnerAttributeTree.collapseAll();
+		learnerAttributeTree.expandAll();
+		itemTree.collapseAll();
+	    itemTree.expandAll();
+	}
+	
 	public void onLoadItemTreeModel(ItemModel rootItem) {
-		itemTree.expandAll();
+		//itemTree.expandAll();
 	}
 	
 	public void onSwitchGradebook(GradebookModel selectedGradebook) {
@@ -134,6 +143,7 @@ public class ItemTreePanel extends ContentPanel {
 			@Override
 			protected TreeItem createItem(BaseTreeModel<TreeModel> model) {
 				TreeItem item = new AriaTreeItem();
+				
 				Boolean hidden = model.get("hidden");
 				boolean isHidden = hidden != null && hidden.booleanValue();
 				item.setChecked(!isHidden);
@@ -231,7 +241,17 @@ public class ItemTreePanel extends ContentPanel {
 	
 	protected Tree newLearnerAttributeTree(I18nConstants i18n) {
 		
-		learnerAttributeTree = new AriaTree();
+		learnerAttributeTree = new AriaTree() {
+			@Override
+			protected void onRender(Element target, int index) {
+			    super.onRender(target, index);
+			
+			    expandAll();
+			}
+		};
+		learnerAttributeTree.getStyle().setNodeOpenIconStyle("gbAttrIcon");
+		learnerAttributeTree.getStyle().setNodeCloseIconStyle("gbAttrIcon");
+		learnerAttributeTree.getStyle().setLeafIconStyle("gbAttrLeafIcon");
 		learnerAttributeTree.setCheckable(true);
 		learnerAttributeTree.setSelectionModel(new TreeSelectionModel(SelectionMode.SINGLE));
 		learnerAttributeTree.addListener(Events.CheckChange, new Listener<TreeEvent>() {
@@ -263,7 +283,15 @@ public class ItemTreePanel extends ContentPanel {
 
 	protected Tree newNavigationTree(I18nConstants i18n) {
 	
-		itemTree = new AriaTree();
+		itemTree = new AriaTree() {
+			@Override
+			protected void onRender(Element target, int index) {
+			    super.onRender(target, index);
+			
+			    expandAll();
+			}
+		};
+		itemTree.getStyle().setLeafIconStyle("gbItemIcon");
 		itemTree.addListener(Events.SelectionChange, treeEventListener);
 		itemTree.addListener(Events.RowDoubleClick, treeEventListener);
 		itemTree.setSelectionModel(new TreeSelectionModel(SelectionMode.MULTI));
@@ -272,6 +300,7 @@ public class ItemTreePanel extends ContentPanel {
 		treeContextMenu.setWidth(130);
 
 		addCategoryMenuItem = new AriaMenuItem();
+		addCategoryMenuItem.setIconStyle("gbAddCategoryIcon");
 		addCategoryMenuItem.setItemId(AppConstants.ID_CT_ADD_CATEGORY_MENUITEM);
 		addCategoryMenuItem.setText(i18n.addCategoryHeading());
 		addCategoryMenuItem.addSelectionListener(menuSelectionListener);
@@ -280,6 +309,7 @@ public class ItemTreePanel extends ContentPanel {
 		//addCategoryMenuItem.setVisible(selectedGradebook.getCategoryType() != CategoryType.NO_CATEGORIES);
 		
 		MenuItem addItemMenuItem = new AriaMenuItem();
+		addItemMenuItem.setIconStyle("gbAddItemIcon");
 		addItemMenuItem.setItemId(AppConstants.ID_CT_ADD_ITEM_MENUITEM);
 		addItemMenuItem.setText(i18n.addItemHeading());
 		addItemMenuItem.addSelectionListener(menuSelectionListener);
@@ -287,12 +317,27 @@ public class ItemTreePanel extends ContentPanel {
 
 		
 		MenuItem editItemMenuItem = new AriaMenuItem();
+		editItemMenuItem.setIconStyle("gbEditItemIcon");
 		editItemMenuItem.setItemId(AppConstants.ID_CT_EDIT_ITEM_MENUITEM);
 		editItemMenuItem.setText(i18n.editItemHeading());
 		editItemMenuItem.addSelectionListener(menuSelectionListener);
 		treeContextMenu.add(editItemMenuItem);
 		
 		itemTree.setContextMenu(treeContextMenu);  
+		
+		/*MenuItem expandMenuItem = new AriaMenuItem();
+		expandMenuItem.setText("Expand");
+		expandMenuItem.addSelectionListener(new SelectionListener<MenuEvent>() {
+
+			@Override
+			public void componentSelected(MenuEvent ce) {
+				itemTree.expandAll();
+			}
+
+
+			
+		});
+		treeContextMenu.add(expandMenuItem);*/
 		
 		return itemTree;
 	}
@@ -304,8 +349,16 @@ public class ItemTreePanel extends ContentPanel {
 	    Accessibility.setRole(el().dom, "region");
 	    Accessibility.setRole(getHeader().el().dom, "heading");
 	    
-	    learnerAttributeTree.expandAll();
-	    itemTree.expandAll();
+	    //learnerAttributeTree.expandAll();
+	    /*DelayedTask task = new DelayedTask(new Listener() {
+
+			public void handleEvent(BaseEvent be) {
+				itemTree.expandAll();
+				learnerAttributeTree.expandAll();
+			}
+	    	
+	    }); 
+	    task.delay(2000);*/
 	}
 	
 	protected void showColumns(List<ItemModel> selectedItemModels) {

@@ -24,7 +24,6 @@ package org.sakaiproject.gradebook.gwt.sakai;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1621,29 +1620,42 @@ private static final long serialVersionUID = 1L;
 		displayNameModel.setItemType(Type.ITEM.getName());
 		studentInformationModel.add(displayNameModel);*/
 		
+		boolean isNotInCategoryMode = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_NO_CATEGORY;
+		
 		if (categories != null) {
 			for(Category category : categories) {
 			
-				List<Assignment> assignments = category.getAssignmentList();
-				ItemModel categoryItemModel = createItemModel(gradebook, category, assignments);
-
-				categoryItemModel.setParent(gradebookItemModel);
-				gradebookItemModel.add(categoryItemModel);
-				
-				BigDecimal percentGrade = BigDecimal.valueOf(categoryItemModel.getPercentCourseGrade().doubleValue());
-				BigDecimal percentCategory = BigDecimal.valueOf(categoryItemModel.getPercentCategory().doubleValue());
-				
-				if (assignments != null) {
-					for(Assignment assignment : assignments) {
-						BigDecimal assignmentWeight = BigDecimal.valueOf(assignment.getAssignmentWeighting().doubleValue());
-						BigDecimal courseGradePercent = calculateItemGradePercent(percentGrade, percentCategory, assignmentWeight);
-						
-						ItemModel assignmentItemModel = createItemModel(category, assignment, courseGradePercent);
-
-						assignmentItemModel.setParent(categoryItemModel);
-						assignmentItemModel.setStudentModelKey(Key.ASSIGNMENT.name());
-						categoryItemModel.add(assignmentItemModel);
-						
+				if (isNotInCategoryMode || !category.isRemoved()) {
+					List<Assignment> assignments = category.getAssignmentList();
+					ItemModel categoryItemModel = createItemModel(gradebook, category, assignments);
+	
+					if (!isNotInCategoryMode) {
+						categoryItemModel.setParent(gradebookItemModel);
+						gradebookItemModel.add(categoryItemModel);
+					} 
+					
+					BigDecimal percentGrade = BigDecimal.valueOf(categoryItemModel.getPercentCourseGrade().doubleValue());
+					BigDecimal percentCategory = BigDecimal.valueOf(categoryItemModel.getPercentCategory().doubleValue());
+					
+					if (assignments != null) {
+						for (Assignment assignment : assignments) {
+							if (assignment.isRemoved()) 
+								continue;
+							
+							BigDecimal assignmentWeight = BigDecimal.valueOf(assignment.getAssignmentWeighting().doubleValue());
+							BigDecimal courseGradePercent = calculateItemGradePercent(percentGrade, percentCategory, assignmentWeight);
+							
+							ItemModel assignmentItemModel = createItemModel(category, assignment, courseGradePercent);
+							assignmentItemModel.setStudentModelKey(Key.ASSIGNMENT.name());
+							
+							if (isNotInCategoryMode) {
+								assignmentItemModel.setParent(gradebookItemModel);
+								gradebookItemModel.add(assignmentItemModel);
+							} else {
+								assignmentItemModel.setParent(categoryItemModel);
+								categoryItemModel.add(assignmentItemModel);
+							}
+						}
 					}
 				}
 			}

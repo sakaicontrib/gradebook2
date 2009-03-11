@@ -1,7 +1,5 @@
 package org.sakaiproject.gradebook.gwt.client;
 
-import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
-
 import com.extjs.gxt.ui.client.state.StateManager;
 
 public class GradebookState {
@@ -59,7 +57,7 @@ public class GradebookState {
 		} else {
 			// Otherwise calculate the column width based on the length of the name
 			if (name != null)
-				columnWidth = name.length() * 10 + 20;
+				columnWidth = name.length() * 5 + 20;
 		}
 		
 		if (columnWidth < 100)

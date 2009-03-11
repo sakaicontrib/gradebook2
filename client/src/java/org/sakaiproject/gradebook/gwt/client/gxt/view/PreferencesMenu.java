@@ -13,7 +13,9 @@ import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaCheckMenuItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenu;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.Key;
@@ -28,6 +30,7 @@ import com.extjs.gxt.ui.client.event.MenuEvent;
 import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
 import com.extjs.gxt.ui.client.event.SelectionChangedListener;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
+import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.widget.form.SimpleComboBox;
 import com.extjs.gxt.ui.client.widget.form.SimpleComboValue;
 import com.extjs.gxt.ui.client.widget.menu.AdapterMenuItem;
@@ -54,7 +57,10 @@ public class PreferencesMenu extends Menu {
 	private Listener<FieldEvent> fieldEventListener;
 	private SelectionChangedListener<SimpleComboValue<String>> selectionChangedListener;
 	
-	public PreferencesMenu(I18nConstants i18n) {
+	private TreeView treeView;
+	
+	public PreferencesMenu(I18nConstants i18n, TreeView treeView) {
+		this.treeView = treeView;
 		initListeners(i18n);
 		
 		// Enable popups
@@ -65,7 +71,7 @@ public class PreferencesMenu extends Menu {
 		enablePopupsMenuItem.addListener(Events.CheckChange, menuListener);
 		
 		// Separator
-		/*add(new SeparatorMenuItem());
+		add(new SeparatorMenuItem());
 		
 		// Gradebook name
 		gradebookNameTextBox = new InlineEditField<String>();
@@ -147,7 +153,7 @@ public class PreferencesMenu extends Menu {
 		releaseGradesNoMenuItem.addListener(Events.CheckChange, menuListener);
 		
 		releaseCourseGrades.setSubMenu(releaseCourseGradesSubMenu);
-		add(releaseCourseGrades);*/
+		add(releaseCourseGrades);
 	}
 
 	
@@ -245,7 +251,6 @@ public class PreferencesMenu extends Menu {
 			}
 		}
 
-		/*
 		// Initialize gradebook name textbox
 		gradebookNameTextBox.setValue(selectedGradebook.getName());
 		
@@ -282,7 +287,7 @@ public class PreferencesMenu extends Menu {
 		} else {
 			releaseGradesNoMenuItem.setChecked(true);
 			releaseGradesYesMenuItem.setChecked(false);
-		}*/
+		}
 	}
 	
 	private void selectGradeType(GradebookModel selectedGradebook, GradeType gradeType, boolean isChecked) {
@@ -317,6 +322,11 @@ public class PreferencesMenu extends Menu {
 	private void doUpdate(GradebookModel gbModel, Key property, ClassType classType, Object actionValue, Object actionStartValue) {
 		if (actionStartValue == null || !actionStartValue.equals(actionValue)) {
 			
+			/*ItemModel gradebookItemModel = treeView.getFormPanel().getTreeStore().findModel(gbModel.getGradebookItemModel());
+			Record record = treeView.getFormPanel().getTreeStore().getRecord(gradebookItemModel);
+			
+			Dispatcher.forwardEvent(GradebookEvents.UpdateItem, new ItemUpdate(record, property.name(), actionStartValue, actionValue));
+			*/
 			UserEntityUpdateAction<GradebookModel> action = 
 				new UserEntityUpdateAction<GradebookModel>(gbModel, gbModel, 
 						property.name(), classType, actionValue, actionStartValue);

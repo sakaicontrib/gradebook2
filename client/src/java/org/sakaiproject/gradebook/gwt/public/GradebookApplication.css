@@ -233,6 +233,34 @@
 	margin-bottom: 10px;		
 }
 
+.gbAttrIcon {
+	background-image:url(images/default/button/vcard.png);	
+}
+
+.gbAttrLeafIcon {
+	background-image:url(images/default/button/tag_blue.png);	
+}
+
+.gbGradeOverrideIcon {
+	background-image:url(images/default/button/textfield.png);
+}
+
+.gbItemIcon {
+	background-image:url(images/default/button/table.png);	
+}
+
+.gbAddCategoryIcon {
+	background-image:url(images/default/button/folder_add.png);	
+}
+
+.gbAddItemIcon {
+	background-image:url(images/default/button/table_add.png);	
+}
+
+.gbEditItemIcon {
+	background-image:url(images/default/button/table_edit.png);	
+}
+
 .gbColumnButton {
 	background-image:url(images/default/button/text_columns.png);	
 }

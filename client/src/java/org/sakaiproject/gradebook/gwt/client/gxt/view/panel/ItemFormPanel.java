@@ -362,7 +362,7 @@ public class ItemFormPanel extends ContentPanel {
 			}
 		};
 		treeTable.setAnimate(false);
-		treeTable.getStyle().setLeafIconStyle("icon-page");
+		treeTable.getStyle().setLeafIconStyle("gbEditItemIcon");
 		//treeTable.expandAll();
 		treeTable.setHeight(300);
 		//treeTable.addListener(Events.RowClick, treeTableEventListener);
@@ -732,6 +732,16 @@ public class ItemFormPanel extends ContentPanel {
 			}
 		};*/
 		
+	}
+
+
+	public TreeStore<ItemModel> getTreeStore() {
+		return treeStore;
+	}
+
+
+	public void setTreeStore(TreeStore<ItemModel> treeStore) {
+		this.treeStore = treeStore;
 	}
 	
 }

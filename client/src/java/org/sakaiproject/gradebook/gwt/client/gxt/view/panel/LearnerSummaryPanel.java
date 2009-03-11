@@ -69,8 +69,6 @@ public class LearnerSummaryPanel extends ContentPanel {
 	
 	private FormLayout scoreFormLayout;
 	private FormLayout commentFormLayout;
-	private LayoutContainer left;
-	private LayoutContainer right;
 	
 	private FlexTableContainer learnerInfoTable;
 	
@@ -178,7 +176,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 		
 		learnerInfoPanel.setWidth(width);
 		*/
-		commentFormLayout.setDefaultWidth(width - 20);
+		commentFormLayout.setDefaultWidth(width - 40);
 		//commentFormPanel.setWidth(width - 10);
 		
 		super.onResize(width, height);
@@ -291,6 +289,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 		scoreFormLayout.setLabelSeparator("");
 
 		scoreFormPanel.setLayout(scoreFormLayout);
+		scoreFormPanel.setScrollMode(Scroll.AUTOY);
 		
 		return scoreFormPanel;
 	}
