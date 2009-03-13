@@ -51,12 +51,16 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 		}
 	};
 
+	private boolean isNew;
+	
 	public ItemModel() {
 		super();
+		this.isNew = false;
 	}
 
 	public ItemModel(Map<String, Object> properties) {
 		super(properties);
+		this.isNew = false;
 	}
 	
 	public String getDisplayName() {
@@ -330,5 +334,13 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 			 hash = id.hashCode();
 		 return hash;
 	 }
+
+	public boolean isNew() {
+		return isNew;
+	}
+
+	public void setNew(boolean isNew) {
+		this.isNew = isNew;
+	}
 	
 }

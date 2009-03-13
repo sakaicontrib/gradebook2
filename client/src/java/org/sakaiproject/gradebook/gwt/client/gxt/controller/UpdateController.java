@@ -26,6 +26,7 @@ import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.Record;
+import com.extjs.gxt.ui.client.store.Store;
 import com.extjs.gxt.ui.client.store.TreeStore;
 import com.extjs.gxt.ui.client.widget.Info;
 
@@ -84,14 +85,34 @@ public class UpdateController extends Controller {
 			
 			public void onSuccess(List<ItemModel> resultList) {
 
-				for (ItemModel itemModel : resultList) {
-					if (itemModel.equals(event.item)) 
-						Dispatcher.forwardEvent(GradebookEvents.ItemCreated, itemModel);
-					else
-						Dispatcher.forwardEvent(GradebookEvents.ItemUpdated, itemModel);
+				for (ItemModel result : resultList) {
+					
+					if (result.getItemType().equalsIgnoreCase(Type.GRADEBOOK.getName())) {
+						GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+						selectedGradebook.setGradebookItemModel(result);
+						Dispatcher.forwardEvent(GradebookEvents.ItemUpdated, result);
+						Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel, selectedGradebook);
+					} else if (result.getItemType().equalsIgnoreCase(Type.CATEGORY.getName())) {
+						
+						if (result.isNew())
+							doCreateItem(event, result);
+						else
+							doUpdateItem(event.store, null, null, result);
+					
+						for (ItemModel item : result.getChildren()) {
+							if (item.isNew())
+								doCreateItem(event, item);
+							else
+								doUpdateItem(event.store, null, null, item);
+						}
+					} else {
+						if (result.isNew())
+							doCreateItem(event, result);
+						else
+							doUpdateItem(event.store, null, null, result);
+					}
+					
 				}
-				
-				//Info.display("Items", "Number: " + resultList.size());
 			}
 		};
 		
@@ -342,9 +363,19 @@ public class UpdateController extends Controller {
 	
 	}
 	
+	private void doCreateItem(ItemCreate itemCreate, ItemModel createdItem) {
+		TreeStore<ItemModel> treeStore = (TreeStore<ItemModel>)itemCreate.store;
+		treeStore.add(createdItem.getParent(), createdItem, true);
+		Dispatcher.forwardEvent(GradebookEvents.ItemCreated, createdItem);
+	}
+	
 	private void doUpdateItem(ItemUpdate itemUpdate, ItemModel updatedItem) {
-		TreeStore<ItemModel> treeStore = (TreeStore<ItemModel>)itemUpdate.store;
-		if (!doUpdateViaRecord(itemUpdate.property, itemUpdate.record, updatedItem)) {
+		doUpdateItem(itemUpdate.store, itemUpdate.property, itemUpdate.record, updatedItem);
+	}
+	
+	private void doUpdateItem(Store store, String property, Record record, ItemModel updatedItem) {
+		TreeStore<ItemModel> treeStore = (TreeStore<ItemModel>)store;
+		if (property != null && record != null && !doUpdateViaRecord(property, record, updatedItem)) {
 			treeStore.update(updatedItem);
 			Dispatcher.forwardEvent(GradebookEvents.ItemUpdated, updatedItem);
 		}

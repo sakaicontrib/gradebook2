@@ -57,6 +57,10 @@ public class TreeView extends View {
 		case GradebookEvents.LoadItemTreeModel:
 			onLoadItemTreeModel((GradebookModel)event.data);
 			break;
+		case GradebookEvents.NewCategory:
+		case GradebookEvents.NewItem:
+			onNewItem((ItemModel)event.data);
+			break;
 		case GradebookEvents.SelectItem:
 			onSelectItem((String)event.data);
 			break;
@@ -101,6 +105,10 @@ public class TreeView extends View {
 		treePanel.onLoadItemTreeModel(rootItemModel);
 		formPanel.onLoadItemTreeModel(rootItemModel);
 		treePanel.expandTrees();
+	}
+	
+	protected void onNewItem(ItemModel itemModel) {
+		formPanel.onNewItem(itemModel);
 	}
 	
 	protected void onSelectItem(String itemModelId) {

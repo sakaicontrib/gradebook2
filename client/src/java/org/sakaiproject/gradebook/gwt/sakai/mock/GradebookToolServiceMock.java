@@ -384,7 +384,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		return null;
 	}
 	
-	public List getCategories(Long gradebookId) throws RuntimeException {
+	public List<Category> getCategories(Long gradebookId) throws RuntimeException {
 		List<Category> categories = new LinkedList<Category>();
 		
 		for (Long id : categoryIds) {
@@ -878,6 +878,25 @@ public class GradebookToolServiceMock implements GradebookToolService {
 			if (!newList.contains(assignment))
 				newList.add(assignment);
 			c.setAssignmentList(newList);
+		}
+		
+		// Look through all the other categories and make sure that this assignment does not belong to them
+		for (Category oc : getCategories(c.getGradebook().getId())) {
+			// Skip the curent category
+			if (oc.getId().equals(c.getId()))
+				continue;
+			
+			boolean isPresent = false;
+			List<Assignment> children = oc.getAssignmentList();
+			if (children != null) {
+				for (Assignment child : children) {
+					if (child.getId().equals(assignment.getId())) {
+						isPresent = true;
+					}
+				}
+				if (isPresent)
+					children.remove(assignment);
+			}
 		}
 	}
 

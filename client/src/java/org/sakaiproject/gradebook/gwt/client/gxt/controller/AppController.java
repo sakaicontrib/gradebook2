@@ -36,6 +36,7 @@ public class AppController extends Controller {
 		registerEventTypes(GradebookEvents.Confirmation);
 		registerEventTypes(GradebookEvents.ExpandEastPanel);
 		registerEventTypes(GradebookEvents.FullScreen);
+		registerEventTypes(GradebookEvents.ItemCreated);
 		registerEventTypes(GradebookEvents.ItemUpdated);
 		registerEventTypes(GradebookEvents.LearnerGradeRecordUpdated);
 		registerEventTypes(GradebookEvents.LoadItemTreeModel);
@@ -143,10 +144,13 @@ public class AppController extends Controller {
 	}
 		
 	private void onNewItem(AppEvent<?> event) {
-		if (newItemView == null)
+		forwardToView(appView, event);
+		forwardToView(treeView, event);
+		/*if (newItemView == null)
 			newItemView = new NewItemView(this);
 		
 		forwardToView(newItemView, event);
+		*/
 	}
 	
 	private void onNotification(AppEvent<?> event) {

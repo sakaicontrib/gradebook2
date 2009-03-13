@@ -26,6 +26,10 @@ import java.text.NumberFormat;
 
 public class DataTypeConversionUtil {
 
+	public static boolean checkBoolean(Boolean b) {
+		return b != null && b.booleanValue();
+	}
+	
 	public static Double convertStringToDouble(String s) {
 		if (s == null)
 			return null;

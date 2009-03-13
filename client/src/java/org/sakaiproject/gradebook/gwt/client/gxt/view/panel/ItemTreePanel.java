@@ -624,7 +624,7 @@ public class ItemTreePanel extends ContentPanel {
 			
 			public void componentSelected(MenuEvent ce) {
 				String itemId = ce.item.getItemId();
-				TreeItem item = (TreeItem) itemTree.getSelectionModel().getSelectedItem();
+				TreeItem item = (TreeItem) treeTable.getSelectionModel().getSelectedItem();
 				if (item != null) {
 					if (itemId.equals(AppConstants.ID_CT_ADD_CATEGORY_MENUITEM)) 
 						Dispatcher.forwardEvent(GradebookEvents.NewCategory, item.getModel());

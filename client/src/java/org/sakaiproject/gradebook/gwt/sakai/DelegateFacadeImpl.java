@@ -252,9 +252,7 @@ private static final long serialVersionUID = 1L;
 				actionRecordPropertyMap.put(Action.Key.DUE_DATE.name(), String.valueOf(dueDate));
 				
 				entityList = (List<X>)addItem(action.getGradebookUid(), action.getGradebookId(), 
-						action.getParentId(), action.getName(), action.getWeight(), 
-						points, 
-						dueDate);
+						action.getModel());
 				
 				break;
 			case CATEGORY:
@@ -3397,11 +3395,18 @@ private static final long serialVersionUID = 1L;
 
 	}
 	
-	protected List<ItemModel> addItem(String gradebookUid, Long gradebookId, Long categoryId, String name,
-			Double weight, Double points, Date dueDate) {
+	protected List<ItemModel> addItem(String gradebookUid, Long gradebookId, ItemModel item) {
+	
+		Long categoryId = item.getCategoryId(); 
+		String name = item.getName();
+		Double weight = item.getPercentCategory(); 
+		Double points = item.getPoints();
+		Boolean isReleased = item.getReleased();
+		Boolean isIncluded = item.getIncluded();
+		Date dueDate = item.getDueDate();
+		//Boolean isEqualWeightAssignments = item.getEqualWeightAssignments();
 		
 		Boolean isNotCounted = Boolean.FALSE;
-		Boolean isReleased = Boolean.FALSE;
 		
 		if (points == null)
 			points = new Double(100d);
@@ -3432,6 +3437,7 @@ private static final long serialVersionUID = 1L;
 		
 		double w = weight == null ? 0d : ((Double)weight).doubleValue() * 0.01;
 		assignment.setAssignmentWeighting(Double.valueOf(w));
+		assignment.setUnweighted(Boolean.valueOf(!DataTypeConversionUtil.checkBoolean(isIncluded)));
 		
 		gbService.updateAssignment(assignment);
 		
@@ -3439,9 +3445,16 @@ private static final long serialVersionUID = 1L;
 			recalculateEqualWeightingGradeItems(gradebookUid, gradebookId, categoryId, category.isEqualWeightAssignments());
 			assignment = gbService.getAssignment(assignment.getId());
 		}
-		
 
-		return getItemModelsForCategory(category);
+		List<ItemModel> models = getItemModelsForCategory(category);
+		
+		String assignmentIdAsString = String.valueOf(assignmentId);
+		for (ItemModel model : models) {
+			if (model.getIdentifier().equals(assignmentIdAsString)) 
+				model.setNew(true);
+		}
+		
+		return models;
 	}
 	
 	protected List<ItemModel> addItemCategory(String gradebookUid, Long gradebookId,

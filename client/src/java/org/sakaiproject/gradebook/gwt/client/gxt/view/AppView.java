@@ -56,6 +56,10 @@ public abstract class AppView extends View {
 		case GradebookEvents.LearnerGradeRecordUpdated:
 			onLearnerGradeRecordUpdated((UserEntityAction<?>)event.data);
 			break;
+		case GradebookEvents.NewCategory:
+		case GradebookEvents.NewItem:
+			onNewItem((ItemModel)event.data);
+			break;
 		case GradebookEvents.SelectLearner:
 			onSelectLearner((StudentModel)event.data);
 			break;
@@ -147,6 +151,10 @@ public abstract class AppView extends View {
 	}
 	
 	protected void onOpenNotification() {
+		
+	}
+	
+	protected void onNewItem(ItemModel itemModel) {
 		
 	}
 	

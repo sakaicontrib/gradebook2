@@ -294,6 +294,12 @@ public class InstructorView extends AppView {
 	}
 	
 	@Override
+	protected void onNewItem(ItemModel itemModel) {
+		onStartEditItem(null);
+		
+	}
+	
+	@Override
 	protected void onOpenNotification() {
 		//borderLayout.show(LayoutRegion.NORTH);
 	}

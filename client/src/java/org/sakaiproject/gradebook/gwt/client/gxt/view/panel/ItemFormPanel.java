@@ -6,6 +6,7 @@ import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ConfirmationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.FullScreen;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemCreate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.AppView;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
@@ -39,7 +40,6 @@ import com.extjs.gxt.ui.client.widget.form.DateField;
 import com.extjs.gxt.ui.client.widget.form.Field;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
-import com.extjs.gxt.ui.client.widget.form.SimpleComboBox;
 import com.extjs.gxt.ui.client.widget.form.SimpleComboValue;
 import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.layout.ColumnData;
@@ -57,6 +57,7 @@ public class ItemFormPanel extends ContentPanel {
 	private FormPanel formPanel;
 	private FormBinding formBindings;
 	
+	private TextField<String> nameField;
 	private ComboBox<ItemModel> categoryList;
 	private CheckBox includedField;
 	private CheckBox extraCreditField;
@@ -79,7 +80,7 @@ public class ItemFormPanel extends ContentPanel {
 	
 	private RowLayout layout;
 	private RowData topRowData, bottomRowData;
-	private Button fullScreenButton;
+	private Button createButton;
 	private boolean isFull;
 	
 	@SuppressWarnings("unchecked")
@@ -122,11 +123,11 @@ public class ItemFormPanel extends ContentPanel {
 		formPanel.setLabelWidth(120);
 		//setWidth(400);
 
-		TextField<String> name = new TextField<String>();
-		name.setName(ItemModel.Key.NAME.name());
-		name.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.NAME));
+		nameField = new TextField<String>();
+		nameField.setName(ItemModel.Key.NAME.name());
+		nameField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.NAME));
 		
-		formPanel.add(name);
+		formPanel.add(nameField);
 	
 		categoryList = new ComboBox<ItemModel>();
 		categoryList.setDisplayField(ItemModel.Key.NAME.name());
@@ -377,6 +378,33 @@ public class ItemFormPanel extends ContentPanel {
 		
 		*/
 		
+		createButton = new Button("Create", new SelectionListener<ButtonEvent>() {
+			@Override  
+			public void componentSelected(ButtonEvent be) { 
+				ItemModel item = new ItemModel();
+				
+				ItemModel category = categoryList.getValue();
+				
+				if (category != null) 
+					item.setCategoryId(category.getCategoryId());
+				
+				item.setName(nameField.getValue());
+				item.setExtraCredit(extraCreditField.getValue());
+				//item.setEqualWeightAssignments(equallyWeightChildrenField.getValue());
+				item.setIncluded(includedField.getValue());
+				item.setReleased(releasedField.getValue());
+				item.setPercentCategory((Double)percentCategoryField.getValue());
+				item.setPoints((Double)pointsField.getValue());
+				item.setDueDate(dueDateField.getValue());
+							
+				Dispatcher.forwardEvent(GradebookEvents.CreateItem, new ItemCreate(treeStore, item));
+			}
+		});
+		createButton.setVisible(false);
+		
+		addButton(createButton);
+		
+		
 		addButton(new Button("Close", new SelectionListener<ButtonEvent>() {  
 			@Override  
 			public void componentSelected(ButtonEvent ce) { 
@@ -435,6 +463,8 @@ public class ItemFormPanel extends ContentPanel {
 		
 		if (formBindings == null)
 			initFormBindings();
+		
+		createButton.setVisible(false);
 		
 		if (itemModel != null) {
 			String itemType = itemModel.get(ItemModel.Key.ITEM_TYPE.name());
@@ -541,6 +571,53 @@ public class ItemFormPanel extends ContentPanel {
 		*/
 		
 //		Info.display("Loading", "Loading tree model");
+	}
+	
+	public void onNewItem(ItemModel itemModel) {
+		
+		if (formBindings != null) {
+			formBindings.unbind();
+		}
+
+		createButton.setVisible(true);
+		
+		if (itemModel != null) {
+			String itemType = itemModel.get(ItemModel.Key.ITEM_TYPE.name());
+			String source = itemModel.get(ItemModel.Key.SOURCE.name());
+			boolean isNotGradebook = !itemType.equalsIgnoreCase(Type.GRADEBOOK.getName());
+			boolean isCategory = itemType.equalsIgnoreCase(Type.CATEGORY.getName());
+			boolean isItem = itemType.equalsIgnoreCase(Type.ITEM.getName());
+			boolean isExternal = source != null && source.trim().length() > 0;
+			
+			if (itemModel.getCategoryId() != null) {
+				ItemModel category = treeStore.findModel(ItemModel.Key.ID.name(), String.valueOf(itemModel.getCategoryId()));
+				categoryList.setValue(category);
+			}
+			
+			pointsField.setEnabled(!isExternal);
+			percentCategoryField.setEnabled(true);
+			percentCourseGradeField.setEnabled(true);
+			equallyWeightChildrenField.setEnabled(true);
+			extraCreditField.setEnabled(true);
+			dueDateField.setEnabled(!isExternal);
+			includedField.setEnabled(true);
+			releasedField.setEnabled(true);
+			categoryList.setEnabled(true);
+			
+			categoryList.setVisible(isItem);
+			extraCreditField.setVisible(isNotGradebook);
+			equallyWeightChildrenField.setVisible(isCategory);
+			includedField.setVisible(isNotGradebook);
+			releasedField.setVisible(isItem);
+			//percentCategoryField.setEnabled(isItem);
+			percentCategoryField.setVisible(isItem);
+			percentCourseGradeField.setVisible(isCategory);
+			pointsField.setVisible(isItem);
+			dueDateField.setVisible(isItem);
+			sourceField.setVisible(isItem);
+			
+		}
+		
 	}
 	
 	public void onTreeStoreInitialized(TreeStore<ItemModel> treeStore) {
