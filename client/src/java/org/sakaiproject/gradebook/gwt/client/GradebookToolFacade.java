@@ -51,7 +51,9 @@ public interface GradebookToolFacade extends RemoteService {
 	
 	
 	<X extends EntityModel> X createEntity(UserEntityCreateAction<X> action) throws FatalException;
-		
+	
+	<X extends ItemModel> List<X> createItemEntity(UserEntityCreateAction<X> action) throws FatalException;
+	
 	<X extends EntityModel> X getEntity(UserEntityGetAction<X> action) throws FatalException;
 	
 	<X extends EntityModel> List<X> getEntityList(UserEntityGetAction<X> action) throws FatalException;

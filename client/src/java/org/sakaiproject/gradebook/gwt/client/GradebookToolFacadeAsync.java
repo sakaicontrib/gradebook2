@@ -40,6 +40,8 @@ public interface GradebookToolFacadeAsync {
 		
 	<X extends EntityModel> void createEntity(UserEntityCreateAction<X> action, AsyncCallback<X> callback);
 
+	<X extends ItemModel> void createItemEntity(UserEntityCreateAction<X> action, AsyncCallback<List<X>> callback);
+	
 	<X extends EntityModel> void getEntity(UserEntityGetAction<X> action, AsyncCallback<X> callback);
 	
 	<X extends EntityModel> void getEntityList(UserEntityGetAction<X> action, AsyncCallback<List<X>> callback);

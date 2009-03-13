@@ -3,6 +3,7 @@ package org.sakaiproject.gradebook.gwt.client.gxt.view;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.FullScreen;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
@@ -49,8 +50,14 @@ public abstract class AppView extends View {
 		case GradebookEvents.CloseNotification:
 			onCloseNotification();
 			break;
+		case GradebookEvents.FullScreen:
+			onFullScreen((FullScreen)event.data);
+			break;
 		case GradebookEvents.LearnerGradeRecordUpdated:
 			onLearnerGradeRecordUpdated((UserEntityAction<?>)event.data);
+			break;
+		case GradebookEvents.SelectLearner:
+			onSelectLearner((StudentModel)event.data);
 			break;
 		case GradebookEvents.StartEditItem:
 			onStartEditItem((ItemModel)event.data);
@@ -114,8 +121,12 @@ public abstract class AppView extends View {
 	protected void onCloseNotification() {
 		
 	}
-		
+	
 	protected void onExpandEastPanel(EastCard activeCard) {
+		
+	}
+
+	protected void onFullScreen(FullScreen fullscreen) {
 		
 	}
 	
@@ -136,6 +147,10 @@ public abstract class AppView extends View {
 	}
 	
 	protected void onOpenNotification() {
+		
+	}
+	
+	protected void onSelectLearner(StudentModel learner) {
 		
 	}
 	

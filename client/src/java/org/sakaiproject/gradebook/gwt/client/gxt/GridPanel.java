@@ -40,9 +40,11 @@ import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig
 import org.sakaiproject.gradebook.gwt.client.model.EntityModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
 import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
+import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.Style.SortDir;
 import com.extjs.gxt.ui.client.data.BasePagingLoader;
 import com.extjs.gxt.ui.client.data.DataReader;
@@ -54,6 +56,9 @@ import com.extjs.gxt.ui.client.data.SortInfo;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.GridEvent;
 import com.extjs.gxt.ui.client.event.Listener;
+import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
+import com.extjs.gxt.ui.client.event.SelectionChangedListener;
+import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
@@ -312,8 +317,21 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		});
 		
 		addGridListenersAndPlugins(grid);
+		
+		CellSelectionModel<M> cellSelectionModel = new CellSelectionModel<M>();
+		cellSelectionModel.setSelectionMode(SelectionMode.SINGLE);
+		cellSelectionModel.addSelectionChangedListener(new SelectionChangedListener<M>() {
+
+			@Override
+			public void selectionChanged(SelectionChangedEvent<M> sce) {
+				M learner = sce.getSelectedItem();
 				
-		grid.setSelectionModel(new CellSelectionModel<M>());
+				if (learner != null && learner instanceof StudentModel) 
+					Dispatcher.forwardEvent(GradebookEvents.SelectLearner, learner);
+			}
+		
+		});
+		grid.setSelectionModel(cellSelectionModel);
 		grid.setTrackMouseOver(true);
 		grid.setStripeRows(true);
 		

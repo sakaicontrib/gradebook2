@@ -35,6 +35,7 @@ public class AppController extends Controller {
 		registerEventTypes(GradebookEvents.CloseNotification);
 		registerEventTypes(GradebookEvents.Confirmation);
 		registerEventTypes(GradebookEvents.ExpandEastPanel);
+		registerEventTypes(GradebookEvents.FullScreen);
 		registerEventTypes(GradebookEvents.ItemUpdated);
 		registerEventTypes(GradebookEvents.LearnerGradeRecordUpdated);
 		registerEventTypes(GradebookEvents.LoadItemTreeModel);
@@ -42,6 +43,7 @@ public class AppController extends Controller {
 		registerEventTypes(GradebookEvents.NewItem);
 		registerEventTypes(GradebookEvents.Notification);
 		registerEventTypes(GradebookEvents.RevertItem);
+		registerEventTypes(GradebookEvents.SelectLearner);
 		registerEventTypes(GradebookEvents.SelectItem);
 		registerEventTypes(GradebookEvents.ShowColumns);
 		registerEventTypes(GradebookEvents.SingleGrade);
@@ -66,6 +68,9 @@ public class AppController extends Controller {
 		case GradebookEvents.Notification:
 			onNotification(event);
 			break;
+		case GradebookEvents.FullScreen:
+			onFullScreen(event);
+			break;
 		case GradebookEvents.BrowseLearner:
 			onBrowseLearner(event);
 			break;
@@ -75,6 +80,9 @@ public class AppController extends Controller {
 		case GradebookEvents.NewCategory:
 		case GradebookEvents.NewItem:
 			onNewItem(event);
+			break;
+		case GradebookEvents.SelectLearner:
+			onSelectLearner(event);
 			break;
 		case GradebookEvents.StartImport:
 		case GradebookEvents.StartExport:
@@ -117,6 +125,10 @@ public class AppController extends Controller {
 		forwardToView(appView, event);
 	}
 	
+	private void onFullScreen(AppEvent<?> event) {
+		forwardToView(appView, event);
+	}
+	
 	private void onItemUpdated(AppEvent<?> event) {
 		forwardToView(appView, event);
 		forwardToView(treeView, event);
@@ -140,6 +152,10 @@ public class AppController extends Controller {
 	private void onNotification(AppEvent<?> event) {
 		forwardToView(appView, event);
 		forwardToView(notificationView, event);
+	}
+	
+	private void onSelectLearner(AppEvent<?> event) {
+		forwardToView(appView, event);
 	}
 	
 	private void onSingleGrade(AppEvent<?> event) {

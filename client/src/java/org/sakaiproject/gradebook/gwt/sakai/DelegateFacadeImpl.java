@@ -218,6 +218,95 @@ private static final long serialVersionUID = 1L;
 		return entity;
 	}
 	
+	public <X extends ItemModel> List<X> createItemEntity(UserEntityCreateAction<X> action) throws FatalException {
+		
+		X entity = null;
+		List<X> entityList = new ArrayList<X>();
+		
+		try {
+		
+			ActionRecord actionRecord = new ActionRecord(action.getGradebookUid(), action.getGradebookId(), action.getEntityType().name(), action.getActionType().name());
+			
+			Map<String, String> actionRecordPropertyMap = actionRecord.getPropertyMap();
+			
+			if (action.getDatePerformed() != null)
+				actionRecord.setDatePerformed(action.getDatePerformed());
+			
+			switch (action.getEntityType()) {
+			/*case GRADEBOOK:
+				actionRecord.setEntityName(action.getName());
+				entity = (X)addGradebook(action.getName());
+				break;*/
+			case GRADE_ITEM:
+				//UserAssignmentCreateAction assignmentCreateAction = (UserAssignmentCreateAction)action;
+				
+				actionRecord.setParentId(String.valueOf(action.getParentId()));
+				actionRecord.setEntityName(action.getEntityName());
+				
+				Double points = action.get(ItemModel.Key.POINTS.name());
+				Date dueDate = action.get(ItemModel.Key.DUE_DATE.name());
+				
+				//actionRecordPropertyMap.put(Action.Key.NAME.name(), action.getName());
+				actionRecordPropertyMap.put(Action.Key.WEIGHT.name(), String.valueOf(action.getWeight()));
+				actionRecordPropertyMap.put(Action.Key.POINTS.name(), String.valueOf(points));
+				actionRecordPropertyMap.put(Action.Key.DUE_DATE.name(), String.valueOf(dueDate));
+				
+				entityList = (List<X>)addItem(action.getGradebookUid(), action.getGradebookId(), 
+						action.getParentId(), action.getName(), action.getWeight(), 
+						points, 
+						dueDate);
+				
+				break;
+			case CATEGORY:
+				actionRecord.setEntityName(action.getEntityName());
+				
+				Boolean equalWeight = action.get(ItemModel.Key.EQUAL_WEIGHT.name());
+				Integer dropLowest = action.get(ItemModel.Key.DROP_LOWEST.name());
+				
+				//actionRecordPropertyMap.put(Action.Key.NAME.name(), action.getName());
+				actionRecordPropertyMap.put(Action.Key.WEIGHT.name(), String.valueOf(action.getWeight()));
+				actionRecordPropertyMap.put(Action.Key.EQUAL_WEIGHT.name(), String.valueOf(equalWeight));
+				actionRecordPropertyMap.put(Action.Key.DROP_LOWEST.name(), String.valueOf(dropLowest));
+				
+				entity = (X)addItemCategory(action.getGradebookUid(), action.getGradebookId(),
+						action.getName(), action.getWeight(), equalWeight, 
+						dropLowest);
+				break;
+			/*case COMMENT:
+				CommentModel commentModel = (CommentModel)action.getModel();
+				
+				if (commentModel != null) {
+					actionRecord.setParentId(String.valueOf(commentModel.getAssignmentId()));
+					actionRecord.setStudentUid(commentModel.getStudentUid());
+					actionRecordPropertyMap.put(Action.Key.TEXT.name(), commentModel.getText());			
+				}
+				
+				entity = (X)createOrUpdateComment(commentModel.getAssignmentId(), commentModel.getStudentUid(), commentModel.getText());
+				break;
+			case SPREADSHEET:
+				SpreadsheetModel spreadsheetModel = (SpreadsheetModel)action.getModel();
+				
+				entity = (X)createOrUpdateSpreadsheet(action.getGradebookUid(), spreadsheetModel);*/
+			}
+			
+			if (entity != null && entity instanceof ItemModel)
+				actionRecord.setEntityId(((ItemModel)entity).getIdentifier());
+			
+			if (entity == null)
+				actionRecord.setStatus(ActionRecord.STATUS_FAILURE);
+			else
+				actionRecord.setStatus(ActionRecord.STATUS_SUCCESS);
+			
+			gbService.storeActionRecord(actionRecord);
+		
+		} catch (Throwable t) {
+			log.warn("FatalException: ", t);
+			throw new FatalException(t.getMessage(), t);
+		}
+		
+		return entityList;
+	}
+	
 	@SuppressWarnings("unchecked")
 	public <X extends EntityModel> X getEntity(UserEntityGetAction<X> action) throws FatalException {
 		
@@ -417,7 +506,7 @@ private static final long serialVersionUID = 1L;
 					
 					entityList = (List<X>)updateCategoryField(categoryId, itemKey, action.getValue());
 				} else if (itemModel.getItemType().equals(Type.ITEM.getName())) {
-					entityList = (List<X>)updateAssignmentField(itemModel.getIdentifier(), itemKey, action.getValue());
+					entityList = (List<X>)updateItemField(itemModel.getIdentifier(), itemKey, action.getValue());
 				}
 				
 				break;
@@ -2371,7 +2460,7 @@ private static final long serialVersionUID = 1L;
 		
 		ItemModel gradebookItemModel = createItemModel(gradebook);
 		
-		itemModels.add(gradebookItemModel);
+		//itemModels.add(gradebookItemModel);
 		ItemModel categoryItemModel = createItemModel(gradebook, category, assignments);
 		categoryItemModel.setParent(gradebookItemModel);
 		gradebookItemModel.add(categoryItemModel);
@@ -2387,7 +2476,7 @@ private static final long serialVersionUID = 1L;
 				ItemModel assignmentItemModel = createItemModel(category, a, courseGradePercent);
 				assignmentItemModel.setParent(categoryItemModel);
 				categoryItemModel.add(assignmentItemModel);
-				itemModels.add(assignmentItemModel);
+				//itemModels.add(assignmentItemModel);
 			}
 		}
 		
@@ -2706,18 +2795,25 @@ private static final long serialVersionUID = 1L;
 		return gradeScaleMappings;
 	}
 	
-	private List<ItemModel> updateAssignmentField(String assignmentId, ItemModel.Key key, 
+	private List<ItemModel> updateItemField(String assignmentId, ItemModel.Key key, 
 			Object value) throws InvalidInputException {
 		
 		Assignment assignment = gbService.getAssignment(Long.valueOf(assignmentId));
 		
+		Category oldCategory = null;
 		Category category = assignment.getCategory();
 		
 		Gradebook gradebook = assignment.getGradebook();
 		
+		
 		switch (key) {
 		case NAME:
 			assignment.setName(convertString(value));
+			break;
+		case CATEGORY_ID:
+			oldCategory = category;
+			category = gbService.getCategory((Long)value);
+			assignment.setCategory(category);
 			break;
 		case EXTRA_CREDIT:
 			assignment.setExtraCredit(convertBoolean(value));
@@ -2789,12 +2885,12 @@ private static final long serialVersionUID = 1L;
 		gbService.updateAssignment(assignment);
 		
 		
-		List<Assignment> updatedAssignments = null;
 		switch (key) {
+		case CATEGORY_ID:
 		case EXTRA_CREDIT:
 		case INCLUDED:
 		case REMOVED:
-			updatedAssignments = recalculateAssignmentWeights(category.getId(), null);
+			recalculateAssignmentWeights(category.getId(), null);
 			break;
 		}
 		
@@ -2822,7 +2918,40 @@ private static final long serialVersionUID = 1L;
 			itemModels.add(createItemModel(category, assignment, courseGradePercent));
 		}*/
 		
+		/*List<ItemModel> models = new ArrayList<ItemModel>();
+		
+		if (oldCategory != null) {
+			recalculateAssignmentWeights(oldCategory.getId(), null);
+			models.addAll(getItemModelsForCategory(oldCategory));
+		}
+		
+		models.addAll(getItemModelsForCategory(category));
+		*/
+		
+		if (oldCategory != null) 
+			recalculateAssignmentWeights(oldCategory.getId(), null);
+		
+		List<ItemModel> models = new ArrayList<ItemModel>();
+		switch (key) {
+		// Changing categories requires that we rebuild the entire tree
+		case CATEGORY_ID:
+			List<Category> categoriesWithAssignments = getCategoriesWithAssignments(gradebook.getId());
+			ItemModel gradebookItemModel = getItemModel(gradebook, categoriesWithAssignments);
+			
+			models.add(gradebookItemModel);
+			return models;
+		// Changing these properties means that we only need to update the item
+		case NAME:
+		case RELEASED:
+		case POINTS:
+		case DUE_DATE:
+			models.add(createItemModel(category, assignment, null));
+			return models;
+		}
+		
+		// Otherwise, we need to update the item's category -- generally to re-calculate weights
 		return getItemModelsForCategory(category);
+		//return getItemModelsForGradebook(gradebook);
 	}
 	
 	/*
@@ -3268,6 +3397,76 @@ private static final long serialVersionUID = 1L;
 
 	}
 	
+	protected List<ItemModel> addItem(String gradebookUid, Long gradebookId, Long categoryId, String name,
+			Double weight, Double points, Date dueDate) {
+		
+		Boolean isNotCounted = Boolean.FALSE;
+		Boolean isReleased = Boolean.FALSE;
+		
+		if (points == null)
+			points = new Double(100d);
+		if (weight == null)
+			weight = Double.valueOf(points.doubleValue());
+		
+		Category category = null;
+		
+		if (categoryId == null) {
+			category = findDefaultCategory(gradebookId);
+			categoryId = category.getId();
+		}
+		
+		if (category == null)
+			category = gbService.getCategory(categoryId);
+		
+		if (weight == null) {
+			List<Assignment> assignments = gbService.getAssignmentsForCategory(categoryId);
+			
+			if (assignments == null || assignments.isEmpty())
+				weight = new Double(100d);
+		}
+		
+		Long assignmentId = gbService.createAssignmentForCategory(gradebookId, categoryId, name, points, dueDate, isNotCounted, isReleased);
+		
+		Assignment assignment = gbService.getAssignment(assignmentId);
+		
+		
+		double w = weight == null ? 0d : ((Double)weight).doubleValue() * 0.01;
+		assignment.setAssignmentWeighting(Double.valueOf(w));
+		
+		gbService.updateAssignment(assignment);
+		
+		if (category.isEqualWeightAssignments() != null && category.isEqualWeightAssignments().booleanValue()) {
+			recalculateEqualWeightingGradeItems(gradebookUid, gradebookId, categoryId, category.isEqualWeightAssignments());
+			assignment = gbService.getAssignment(assignment.getId());
+		}
+		
+
+		return getItemModelsForCategory(category);
+	}
+	
+	protected List<ItemModel> addItemCategory(String gradebookUid, Long gradebookId,
+			String name, Double weight, Boolean isEqualWeighting,
+			Integer dropLowest) {
+		
+		List<Category> categories = gbService.getCategories(gradebookId);
+		
+		if ((categories == null || categories.isEmpty()) && weight == null)
+			weight = Double.valueOf(100d);
+			
+		double w = weight == null ? 1d : ((Double)weight).doubleValue() * 0.01;
+		int dl = dropLowest == null ? 0 : dropLowest.intValue();
+		
+		Long categoryId = gbService.createCategory(gradebookId, name, Double.valueOf(w), dl);
+		
+		Gradebook gradebook = gbService.getGradebook(gradebookUid);
+		Category category = gbService.getCategory(categoryId);
+		category.setEqualWeightAssignments(isEqualWeighting);
+		category.setUnweighted(Boolean.valueOf(w == 0d));
+		gbService.updateCategory(category);
+		
+		return getItemModelsForCategory(category);
+	}
+	
 	
 	protected AssignmentModel addAssignment(String gradebookUid, Long gradebookId, Long categoryId, String name,
 			Double weight, Double points, Date dueDate) {
@@ -3317,7 +3516,7 @@ private static final long serialVersionUID = 1L;
 		
 		return model;
 	}
-
+	
 	protected CategoryModel addCategory(String gradebookUid, Long gradebookId,
 			String name, Double weight, Boolean isEqualWeighting,
 			Integer dropLowest) {
@@ -3425,6 +3624,7 @@ private static final long serialVersionUID = 1L;
 		//model.setIdentifier(new StringBuilder().append(AppConstants.CATEGORY).append(String.valueOf(category.getId())).toString());
 		model.setIdentifier(String.valueOf(category.getId()));
 		model.setName(category.getName());
+		model.setCategoryId(category.getId());
 		model.setWeighting(Double.valueOf(categoryWeight));
 		model.setEqualWeightAssignments(category.isEqualWeightAssignments());
 		model.setExtraCredit(category.isExtraCredit() == null ? Boolean.FALSE : category.isExtraCredit());
@@ -3498,8 +3698,24 @@ private static final long serialVersionUID = 1L;
 		model.setSource(assignment.getExternalAppName());
 		model.setDataType(AppConstants.NUMERIC_DATA_TYPE);
 		
-		if (percentCourseGrade == null)
-			percentCourseGrade = new BigDecimal(assignmentWeight).multiply(new BigDecimal(String.valueOf(categoryDecimalWeight)));
+		if (percentCourseGrade == null) {
+			List<Assignment> assignments = category.getAssignmentList();
+			
+			boolean isIncluded = category.isUnweighted() == null ? true : ! category.isUnweighted().booleanValue();
+			
+			double sum = 0d;
+			if (assignments != null && isIncluded) {
+				for (Assignment a : assignments) {
+					double assignWeight = a.getAssignmentWeighting() == null ? 0.0 : a.getAssignmentWeighting().doubleValue() * 100.0;
+					boolean isExtraCredit = a.isExtraCredit() != null && a.isExtraCredit().booleanValue();
+					boolean isUnweighted = a.isUnweighted() != null && a.isUnweighted().booleanValue();
+					if (!isExtraCredit && !isUnweighted)
+						sum += assignWeight;
+				}
+			}
+			percentCourseGrade = new BigDecimal(String.valueOf(Double.valueOf(sum)));
+		}
+		
 		
 		model.setPercentCategory(Double.valueOf(assignmentWeight));
 		model.setPercentCourseGrade(Double.valueOf(percentCourseGrade.doubleValue()));

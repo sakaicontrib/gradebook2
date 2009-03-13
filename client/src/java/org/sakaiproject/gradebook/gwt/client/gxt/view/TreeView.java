@@ -55,7 +55,7 @@ public class TreeView extends View {
 			onEditItemComplete((Boolean)event.data);
 			break;
 		case GradebookEvents.LoadItemTreeModel:
-			onLoadItemTreeModel((ItemModel)event.data);
+			onLoadItemTreeModel((GradebookModel)event.data);
 			break;
 		case GradebookEvents.SelectItem:
 			onSelectItem((String)event.data);
@@ -85,12 +85,13 @@ public class TreeView extends View {
 	}
 	
 	protected void onItemUpdated(ItemModel itemModel) {
-		treeStore.update(itemModel);
+		//treeStore.update(itemModel);
 		formPanel.onItemUpdated(itemModel);
 	}
 	
-	protected void onLoadItemTreeModel(ItemModel gradebookItemModel) {
+	protected void onLoadItemTreeModel(GradebookModel selectedGradebook) {
 		treeStore.removeAll();
+		ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
 		ItemModel rootItemModel = new ItemModel();
 		rootItemModel.setItemType(Type.ROOT.getName());
 		rootItemModel.setName("Root");
@@ -99,6 +100,7 @@ public class TreeView extends View {
 		treeLoader.load(rootItemModel);
 		treePanel.onLoadItemTreeModel(rootItemModel);
 		formPanel.onLoadItemTreeModel(rootItemModel);
+		treePanel.expandTrees();
 	}
 	
 	protected void onSelectItem(String itemModelId) {
@@ -161,6 +163,7 @@ public class TreeView extends View {
 			});
 			treeStore.setModelComparer(new ItemModelComparer());
 			treePanel.onTreeStoreInitialized(treeStore);
+			formPanel.onTreeStoreInitialized(treeStore);
 			//formPanel.onTreeStoreInitialized(treeStore);
 		}
 		
@@ -169,7 +172,7 @@ public class TreeView extends View {
 			formBindings.setStore(treeStore);
 		}*/
 		
-		onLoadItemTreeModel(selectedGradebook.getGradebookItemModel());
+		onLoadItemTreeModel(selectedGradebook);
 		
 		/*treeStore.removeAll();
 		treeLoader.load(selectedGradebook.getRootItemModel());

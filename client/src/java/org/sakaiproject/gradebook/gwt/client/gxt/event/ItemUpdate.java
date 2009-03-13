@@ -7,6 +7,7 @@ import com.extjs.gxt.ui.client.store.Store;
 
 public class ItemUpdate {
 
+	public Store store;
 	public Record record;
 	public ItemModel item;
 	public String property;
@@ -19,6 +20,7 @@ public class ItemUpdate {
 		this.oldValue = oldValue;
 		this.value = value;
 		this.record = store.getRecord(item);
+		this.store = store;
 	}
 	
 	public ItemUpdate(Record record, String property, Object oldValue, Object value) {

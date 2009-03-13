@@ -1,9 +1,9 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
-import org.sakaiproject.gradebook.gwt.client.gxt.Notifier;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ConfirmationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.NotificationPanel;
 
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
@@ -14,7 +14,6 @@ import com.extjs.gxt.ui.client.mvc.View;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.Html;
 import com.extjs.gxt.ui.client.widget.button.Button;
-import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 
 public class NotificationView extends View {
 
@@ -103,21 +102,9 @@ public class NotificationView extends View {
 		};
 	}
 	
-	public ContentPanel getNotificationPanel() {
+	public NotificationPanel getNotificationPanel() {
 		return notificationPanel;
 	}
 	
-	public class NotificationPanel extends ContentPanel {
-		
-		public NotificationPanel() {
-			super();
-			baseStyle = "gbNotificationPanel";
-			setFrame(false);
-			setHeaderVisible(false);
-			setLayout(new FitLayout());
-		}
-		
-		
-	}
 
 }

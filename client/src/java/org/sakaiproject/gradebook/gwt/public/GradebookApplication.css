@@ -7,10 +7,39 @@
 	border-right:1px solid #EDEDED;	
 }*/
 
+.my-treeitem, .my-treeitem table, .my-treeitem table td {
+	-moz-user-focus:normal;
+	font-size:12pt;
+	outline-color:-moz-use-text-color;
+	outline-style:none;
+	outline-width:medium;
+}
+
 .my-treetbl-data .my-treetbl-cell-text {
 	font-family:arial,tahoma,helvetica,sans-serif;
 	font-size:12pt;
 	padding:1px 4px;
+}
+
+.my-treetbl-item {
+	-moz-user-focus:normal;
+	border-bottom:1px solid white;
+	border-top:1px solid white;
+	cursor:default;
+	outline-color:-moz-use-text-color;
+	outline-style:none;
+	outline-width:medium;
+}
+
+.my-tree-item-text span {
+	cursor:pointer;
+	display:block;
+	font-family:arial,tahoma,helvetica,sans-serif;
+	font-size:12pt;
+	height:15px;
+	padding-left:3px;
+	padding-right:3px;
+	white-space:nowrap;
 }
 
 .my-treetbl-item-text span {

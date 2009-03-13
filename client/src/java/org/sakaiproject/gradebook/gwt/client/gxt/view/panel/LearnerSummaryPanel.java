@@ -287,7 +287,6 @@ public class LearnerSummaryPanel extends ContentPanel {
 		scoreFormLayout = new FormLayout();
 		scoreFormLayout.setDefaultWidth(50);
 		scoreFormLayout.setLabelSeparator("");
-
 		scoreFormPanel.setLayout(scoreFormLayout);
 		scoreFormPanel.setScrollMode(Scroll.AUTOY);
 		
@@ -335,11 +334,11 @@ public class LearnerSummaryPanel extends ContentPanel {
         
         GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
         
-        if (selectedGradebook.isReleaseGrades() != null && selectedGradebook.isReleaseGrades().booleanValue()) {
+        //if (selectedGradebook.isReleaseGrades() != null && selectedGradebook.isReleaseGrades().booleanValue()) {
         	learnerInfoTable.setText(6, 0, "Course Grade");
 	        formatter.setStyleName(6, 0, "gbImpact");
 	        learnerInfoTable.setText(6, 1, learnerGradeRecordCollection.getStudentGrade());
-        }
+        //}
         learnerInfoPanel.show();
 	}
 	

@@ -875,6 +875,8 @@ public class GradebookToolServiceMock implements GradebookToolService {
 				Assignment modified = getAssignment(a.getId());
 				newList.add(modified);
 			}
+			if (!newList.contains(assignment))
+				newList.add(assignment);
 			c.setAssignmentList(newList);
 		}
 	}

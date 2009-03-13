@@ -132,6 +132,11 @@ public class GradebookToolFacadeMockImpl extends RemoteServiceServlet implements
 		return delegateFacade.createEntity(action);
 	}
 	
+	public <X extends ItemModel> List<X> createItemEntity(UserEntityCreateAction<X> action) throws FatalException {
+		
+		return delegateFacade.createItemEntity(action);
+	}
+	
 	public <X extends EntityModel> X getEntity(UserEntityGetAction<X> action) throws FatalException {
 		
 		return delegateFacade.getEntity(action);

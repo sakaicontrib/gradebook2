@@ -21,6 +21,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTabItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTabPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.FullScreen;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeContentPanel;
@@ -53,6 +54,7 @@ import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.util.Margins;
+import com.extjs.gxt.ui.client.widget.Component;
 import com.extjs.gxt.ui.client.widget.Container;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
@@ -63,8 +65,6 @@ import com.extjs.gxt.ui.client.widget.layout.BorderLayout;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayoutData;
 import com.extjs.gxt.ui.client.widget.layout.CardLayout;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
-import com.extjs.gxt.ui.client.widget.layout.RowData;
-import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.menu.CheckMenuItem;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
@@ -81,6 +81,7 @@ public class InstructorView extends AppView {
 	// The instructor view maintains a link to tree view, since it is required to instantiate multigrade
 	private TreeView treeView;
 	
+	private FitLayout contentPanelLayout;
 	private ContentPanel contentPanel;
 	private LayoutContainer borderLayoutContainer;
 	private ContentPanel cardLayoutContainer;
@@ -131,9 +132,10 @@ public class InstructorView extends AppView {
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 		initTabs(i18n, selectedGradebook);
 		initListeners();
+		contentPanelLayout = new FitLayout();
 		contentPanel = new ContentPanel();
 		contentPanel.setHeaderVisible(false);
-		contentPanel.setLayout(new RowLayout());
+		contentPanel.setLayout(contentPanelLayout);
 		contentPanel.setTopComponent(newToolBar(i18n, selectedGradebook));
 		
 		//contentPanel.add(notificationView.getNotificationPanel(), new RowData(1, 35));
@@ -159,7 +161,7 @@ public class InstructorView extends AppView {
 		northData.setCollapsible(false);
 		//northData.setHidden(true);
 		
-		westData = new BorderLayoutData(LayoutRegion.WEST, 220);  
+		westData = new BorderLayoutData(LayoutRegion.WEST, 400);  
 		westData.setSplit(true);  
 		westData.setCollapsible(true);  
 		westData.setMargins(new Margins(5));
@@ -216,6 +218,8 @@ public class InstructorView extends AppView {
 		store.setMonitorChanges(true);
 		
 		viewport.add(contentPanel);
+		
+		notificationView.getNotificationPanel().onShowNotification(200, 0);
 	}
 	
 	@Override
@@ -231,20 +235,44 @@ public class InstructorView extends AppView {
 	
 	@Override
 	protected void onExpandEastPanel(EastCard activeCard) {
-		borderLayout.show(LayoutRegion.EAST);
-		borderLayout.expand(LayoutRegion.EAST);
-		
-		switch (activeCard) {
-		case HELP:
-			cardLayout.setActiveItem(helpPanel);
-			break;
-		case EDIT_ITEM:
-			cardLayout.setActiveItem(treeView.getFormPanel());
-			break;
-		case EDIT_GRADE:
-			cardLayout.setActiveItem(singleGradeContainer);
-			break;
+		if (!isFull) {
+			borderLayout.show(LayoutRegion.EAST);
+			borderLayout.expand(LayoutRegion.EAST);
+			
+			switch (activeCard) {
+			case HELP:
+				cardLayout.setActiveItem(helpPanel);
+				break;
+			case EDIT_ITEM:
+				cardLayout.setActiveItem(treeView.getFormPanel());
+				break;
+			case EDIT_GRADE:
+				cardLayout.setActiveItem(singleGradeContainer);
+				break;
+			}
 		}
+	}
+	
+	private Component oldActiveItem;
+	private boolean isFull = false;
+	
+	protected void onFullScreen(FullScreen fullscreen) {
+		isFull = fullscreen.isFull;
+		
+		borderLayout.hide(LayoutRegion.CENTER);
+		/*if (fullscreen.isFull) {
+			contentPanel.add(treeView.getFormPanel());
+			cardLayout.setActiveItem(null);
+			oldActiveItem = contentPanelLayout.getActiveItem();
+			contentPanelLayout.setActiveItem(treeView.getFormPanel());
+		} else {
+			contentPanelLayout.setActiveItem(oldActiveItem);
+			cardLayoutContainer.add(treeView.getFormPanel());
+			cardLayout.setActiveItem(treeView.getFormPanel());
+			//cardLayoutContainer.layout();
+			//borderLayoutContainer.layout();
+			//cardLayoutContainer.layout();
+		}*/
 	}
 	
 	@Override
@@ -271,6 +299,13 @@ public class InstructorView extends AppView {
 	}
 	
 	@Override
+	protected void onSelectLearner(StudentModel learner) {
+		if (singleGradeContainer != null && singleGradeContainer.isVisible()) {
+			onSingleGrade(learner);
+		}
+	}
+	
+	@Override
 	protected void onSingleGrade(StudentModel learnerGradeRecordCollection) {
 		if (singleGradeContainer == null) {
 			singleGradeContainer = new LearnerSummaryPanel(multigrade.getStore());
@@ -291,9 +326,11 @@ public class InstructorView extends AppView {
 	
 	@Override
 	protected void onStartEditItem(ItemModel itemModel) {
-		cardLayout.setActiveItem(treeView.getFormPanel());
-		borderLayout.show(LayoutRegion.EAST);
-		borderLayout.expand(LayoutRegion.EAST);
+		if (!isFull) {
+			cardLayout.setActiveItem(treeView.getFormPanel());
+			borderLayout.show(LayoutRegion.EAST);
+			borderLayout.expand(LayoutRegion.EAST);
+		}
 	}
 	
 	@Override
@@ -707,7 +744,7 @@ public class InstructorView extends AppView {
 							// The multigrade item is a special case, since we want to ensure that it gets added
 							// to the content panel rather than simply being discarded. This will remove it
 							// from the tabItem due to a call to item.removeFromParent() 
-							contentPanel.add(getBorderLayoutContainer());
+							addMainContainer(getBorderLayoutContainer());
 						
 						} else {
 							// Otherwise, we want to maintain a reference to this content panel so it doesn't 
@@ -729,13 +766,14 @@ public class InstructorView extends AppView {
 
 		}
 		
-		if (contentPanel.isRendered())
-			contentPanel.layout();
+		//if (contentPanel.isRendered())
+		//	contentPanel.layout();
 	}
 	
 	
 	private void addMainContainer(Container<?> container) {
-		contentPanel.add(container, new RowData(1, 1));
+		contentPanel.add(container);
+		//contentPanelLayout.setActiveItem(container);
 	}
 	
 	private void removeMainContainer(Container<?> container) {

@@ -57,6 +57,7 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
+import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.Style.SortDir;
 import com.extjs.gxt.ui.client.data.BasePagingLoader;
 import com.extjs.gxt.ui.client.data.ModelData;
@@ -511,6 +512,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 					if (ge.colIndex == 1 || ge.colIndex == 2) {
 						StudentModel selectedLearner = store.getAt(ge.rowIndex);
 						Dispatcher.forwardEvent(GradebookEvents.SingleGrade, selectedLearner);
+						ge.grid.getSelectionModel().select(ge.rowIndex);
 					}
 					break;
 				case Events.ContextMenu:
@@ -943,11 +945,14 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 				
 				return isDropped != null && isDropped.booleanValue();
 			}
-			
+			/*
 			protected void onCellOver(com.google.gwt.dom.client.Element cell, ComponentEvent ce) {
 				if (grid.isTrackMouseOver()) {
 					if (overCell != cell) {
 				        overCell = cell;
+				        
+				        if (ce.event == null)
+				        	return;
 				        
 				        int x = ce.event.getClientX();
 				        int y = ce.event.getClientY();
@@ -1089,7 +1094,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			        if (overCell != null) onCellOut(overCell);
 			        break;
 			    }
-			}
+			}*/
 		};
 		view.setEmptyText("-");
 		
@@ -1232,6 +1237,18 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	protected void addGridListenersAndPlugins(final EditorGrid<StudentModel> grid) {
 		grid.addListener(Events.CellClick, gridEventListener);
 		grid.addListener(Events.ContextMenu, gridEventListener);
+		/*grid.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+		grid.getSelectionModel().addSelectionChangedListener(new SelectionChangedListener<StudentModel>() {
+
+			@Override
+			public void selectionChanged(SelectionChangedEvent<StudentModel> sce) {
+				StudentModel learner = sce.getSelectedItem();
+				
+				if (learner != null) 
+					Dispatcher.forwardEvent(GradebookEvents.SelectLearner, learner);
+			}
+		
+		});*/
 	}
 	
 	// TODO: This can probably be removed
