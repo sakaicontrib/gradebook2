@@ -218,8 +218,6 @@ public class InstructorView extends AppView {
 		store.setMonitorChanges(true);
 		
 		viewport.add(contentPanel);
-		
-		notificationView.getNotificationPanel().onShowNotification(200, 0);
 	}
 	
 	@Override

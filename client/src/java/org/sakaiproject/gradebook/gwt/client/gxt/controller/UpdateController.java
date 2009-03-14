@@ -287,7 +287,20 @@ public class UpdateController extends Controller {
 						GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 						selectedGradebook.setGradebookItemModel(result);
 						Dispatcher.forwardEvent(GradebookEvents.ItemUpdated, result);
-						Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel, selectedGradebook);
+						//Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel, selectedGradebook);
+						
+						boolean isGradebookUpdated = false;
+						if (result.getCategoryType() != selectedGradebook.getCategoryType()) {
+							selectedGradebook.setCategoryType(result.getCategoryType());
+							isGradebookUpdated = true;
+						}
+						
+						if (isGradebookUpdated) {
+							Dispatcher.forwardEvent(GradebookEvents.SwitchGradebook, selectedGradebook);
+						} else {
+							Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel, selectedGradebook);
+						}
+						
 					} else if (result.getItemType().equalsIgnoreCase(Type.CATEGORY.getName())) {
 						
 						doUpdateItem(event, result);
@@ -375,7 +388,7 @@ public class UpdateController extends Controller {
 	
 	private void doUpdateItem(Store store, String property, Record record, ItemModel updatedItem) {
 		TreeStore<ItemModel> treeStore = (TreeStore<ItemModel>)store;
-		if (property != null && record != null && !doUpdateViaRecord(property, record, updatedItem)) {
+		if (property == null || record == null || !doUpdateViaRecord(property, record, updatedItem)) {
 			treeStore.update(updatedItem);
 			Dispatcher.forwardEvent(GradebookEvents.ItemUpdated, updatedItem);
 		}

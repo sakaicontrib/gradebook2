@@ -102,7 +102,7 @@ public class TreeView extends View {
 		gradebookItemModel.setParent(rootItemModel);
 		rootItemModel.add(gradebookItemModel);
 		treeLoader.load(rootItemModel);
-		treePanel.onLoadItemTreeModel(rootItemModel);
+		treePanel.onLoadItemTreeModel(selectedGradebook, rootItemModel);
 		formPanel.onLoadItemTreeModel(rootItemModel);
 		treePanel.expandTrees();
 	}

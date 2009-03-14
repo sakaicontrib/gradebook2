@@ -1,34 +1,34 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
-import org.sakaiproject.gradebook.gwt.client.model.GradeEventModel;
-
-import com.extjs.gxt.ui.client.widget.ContentPanel;
+import com.extjs.gxt.ui.client.widget.Window;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
-import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.RootPanel;
 
-public class NotificationPanel extends ContentPanel {
+public class NotificationPanel extends Window {
 
 	public NotificationPanel() {
 		super();
-		baseStyle = "gbNotificationPanel";
+		//baseStyle = "gbNotificationPanel";
+		setClosable(true);
 		setFrame(false);
 		setHeaderVisible(false);
 		setLayout(new FitLayout());
+		setShadow(true);
 	}
 	
 	
-	public void onShowNotification(int x, int y) {
+	/*public void onShowNotification(int x, int y) {
+		
 		RootPanel.get().add(this);
 		el().makePositionable(true);
 
 		el().setLeftTop(x, y);
 		setSize(700, 50);
+		show();
 		//setSize(config.width, config.height);
 
 		//blur();
 		//if (!config.isPermanent)
 		//	afterShow();
-	}
+	}*/
 	
 }

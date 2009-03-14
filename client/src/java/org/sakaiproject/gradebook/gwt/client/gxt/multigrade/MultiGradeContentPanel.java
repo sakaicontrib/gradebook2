@@ -754,9 +754,12 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			if (storedSortField != null) 
 				store.setDefaultSort(storedSortField, sortDir);
 		}
+
+		if (grid == null)
+			add(newGrid(newColumnModel(selectedGradebook)));
+		else
+			onLoadItemTreeModel(selectedGradebook);
 		
-		add(newGrid(newColumnModel(selectedGradebook)));
-	
 		if (loader != null) 
 			loader.load(0, pageSize);
 	}
@@ -1108,9 +1111,14 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	
 	@Override
 	protected void addComponents() {
+		
+		// We only need to do this once
+		if (rendered)
+			return;
+		
 		unweightedNumericCellRenderer = new UnweightedNumericCellRenderer();
 		extraCreditNumericCellRenderer = new ExtraCreditNumericCellRenderer();
-		
+				
 		RpcProxy<PagingLoadConfig, PagingLoadResult<SectionModel>> sectionsProxy = new RpcProxy<PagingLoadConfig, PagingLoadResult<SectionModel>>() {
 			@Override
 			protected void load(PagingLoadConfig loadConfig, AsyncCallback<PagingLoadResult<SectionModel>> callback) {
@@ -1228,7 +1236,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		
 		//setTopComponent(toolBarContainer);
 		//toolBarContainer.layout();
-		
+
 		setTopComponent(searchToolBar);
 		setBottomComponent(pagingToolBar);
 	}

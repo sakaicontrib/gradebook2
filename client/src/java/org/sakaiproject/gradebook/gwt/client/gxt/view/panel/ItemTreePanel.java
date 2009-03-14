@@ -18,6 +18,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTree;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTreeItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.components.ItemTreeTableHeader;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
@@ -50,15 +51,18 @@ import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
 import com.extjs.gxt.ui.client.event.SelectionChangedListener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.event.TreeEvent;
+import com.extjs.gxt.ui.client.event.TreeTableEvent;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.TreeStore;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
+import com.extjs.gxt.ui.client.widget.Info;
 import com.extjs.gxt.ui.client.widget.layout.AccordionLayout;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.extjs.gxt.ui.client.widget.table.CellRenderer;
 import com.extjs.gxt.ui.client.widget.table.NumberCellRenderer;
+import com.extjs.gxt.ui.client.widget.table.TableColumn;
 import com.extjs.gxt.ui.client.widget.tree.Tree;
 import com.extjs.gxt.ui.client.widget.tree.TreeItem;
 import com.extjs.gxt.ui.client.widget.tree.TreeSelectionModel;
@@ -66,6 +70,8 @@ import com.extjs.gxt.ui.client.widget.tree.Tree.CheckCascade;
 import com.extjs.gxt.ui.client.widget.treetable.TreeTable;
 import com.extjs.gxt.ui.client.widget.treetable.TreeTableColumn;
 import com.extjs.gxt.ui.client.widget.treetable.TreeTableColumnModel;
+import com.extjs.gxt.ui.client.widget.treetable.TreeTableHeader;
+import com.extjs.gxt.ui.client.widget.treetable.TreeTableView;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Accessibility;
 
@@ -84,13 +90,22 @@ public class ItemTreePanel extends ContentPanel {
 	private Tree learnerAttributeTree;
 	private Tree itemTree;
 	private TreeTable treeTable;
+	private TreeTableView treeTableView;
+	
+	private TreeTableColumn percentCourseGradeColumn;
+	private TreeTableColumn percentCategoryColumn;
+	private TreeTableColumn pointsColumn;
+	private TreeTableColumnModel treeTableColumnModel;
 
 	// We have to track which static columns are visible somewhere
 	private Set<String> fullStaticIdSet;
 	private Set<String> visibleStaticIdSet;
 		
+	private boolean isLearnerAttributeTreeLoaded;
+	
 	public ItemTreePanel(I18nConstants i18n) {
 		this.fullStaticIdSet = new HashSet<String>();
+		this.isLearnerAttributeTreeLoaded = false;
 		this.visibleStaticIdSet = new HashSet<String>();
 		setBorders(true);
 		setHeading(i18n.navigationPanelHeader());
@@ -154,81 +169,48 @@ public class ItemTreePanel extends ContentPanel {
 			treeTable.expandAll();
 	}
 	
-	public void onLoadItemTreeModel(ItemModel rootItem) {
-		//itemTree.expandAll();
+	public void onLoadItemTreeModel(GradebookModel selectedGradebook, ItemModel rootItem) {
+		
+		addCategoryMenuItem.setVisible(selectedGradebook.getCategoryType() != CategoryType.NO_CATEGORIES);
+		
+		switch (selectedGradebook.getCategoryType()) {
+		case NO_CATEGORIES:
+		case SIMPLE_CATEGORIES:
+			percentCourseGradeColumn.setHidden(true);
+			percentCategoryColumn.setHidden(true);
+			pointsColumn.setHidden(false);
+			Info.display("Unweighted", "Here I am");
+			break;
+		case WEIGHTED_CATEGORIES:
+			percentCourseGradeColumn.setHidden(false);
+			percentCategoryColumn.setHidden(false);
+			pointsColumn.setHidden(true);
+			Info.display("Weighted", "Here I am");
+			break;
+		}
+		
+		//if (rendered)
+		//	treeTable.getTableHeader().
 	}
 	
 	public void onSwitchGradebook(GradebookModel selectedGradebook) {
 		addCategoryMenuItem.setVisible(selectedGradebook.getCategoryType() != CategoryType.NO_CATEGORIES);
 		
-		TreeLoader loader = new BaseTreeLoader(new TreeModelReader());
-	
-		BaseTreeModel<TreeModel> root = new BaseTreeModel<TreeModel>();
-		Map<String, Object> properties = new HashMap<String, Object>();
-		properties.put("name", "Learner Attributes");
-		properties.put("id", "learnerAttributes");
-		BaseTreeModel<TreeModel> learnerAttributes = new BaseTreeModel<TreeModel>(properties);
-		learnerAttributes.setParent(root);
-		root.add(learnerAttributes);
+		/*switch (selectedGradebook.getCategoryType()) {
+		case NO_CATEGORIES:
+		case SIMPLE_CATEGORIES:
+			percentCourseGradeColumn.setHidden(true);
+			percentCategoryColumn.setHidden(true);
+			pointsColumn.setHidden(false);
+			break;
+		case WEIGHTED_CATEGORIES:
+			percentCourseGradeColumn.setHidden(false);
+			percentCategoryColumn.setHidden(false);
+			pointsColumn.setHidden(true);
+			break;
+		}*/
 		
-		properties = new HashMap<String, Object>();
-		properties.put("name", "Grades");
-		properties.put("id", "gradingColumns");
-		BaseTreeModel<TreeModel> gradingColumns = new BaseTreeModel<TreeModel>(properties);
-		gradingColumns.setParent(root);
-		root.add(gradingColumns);
-		
-		fullStaticIdSet.clear();
-		for (org.sakaiproject.gradebook.gwt.client.model.ColumnModel column : selectedGradebook.getColumns()) {
-			properties = new HashMap<String, Object>();
-			properties.put("name", column.getName());
-			properties.put("id", column.getIdentifier());
-			properties.put("hidden", column.isHidden());
-			if (column.isHidden() == null || !column.isHidden().booleanValue()) 
-				visibleStaticIdSet.add(column.getIdentifier());
-			fullStaticIdSet.add(column.getIdentifier());
-			BaseTreeModel<TreeModel> model = new BaseTreeModel<TreeModel>(properties);
-			
-			if (column.getIdentifier().equals(StudentModel.Key.GRADE_OVERRIDE.name()) ||
-					column.getIdentifier().equals(StudentModel.Key.COURSE_GRADE.name())) {
-				model.setParent(gradingColumns);
-				gradingColumns.add(model);
-			} else {
-				model.setParent(learnerAttributes);
-				learnerAttributes.add(model);
-			}
-		}
-		
-		TreeStore<BaseTreeModel<TreeModel>> treeStore = new TreeStore<BaseTreeModel<TreeModel>>(loader);
-	
-		TreeBinder<BaseTreeModel<TreeModel>> treeBinder = 
-			new TreeBinder<BaseTreeModel<TreeModel>>(learnerAttributeTree, treeStore) {
-			
-			@Override
-			protected TreeItem createItem(BaseTreeModel<TreeModel> model) {
-				TreeItem item = new AriaTreeItem();
-				
-				Boolean hidden = model.get("hidden");
-				boolean isHidden = hidden != null && hidden.booleanValue();
-				item.setChecked(!isHidden);
-				
-			    update(item, model);
-
-			    if (loader != null) {
-			      item.setLeaf(!loader.hasChildren(model));
-			    } else {
-			      item.setLeaf(!hasChildren(model));
-			    }
-
-			    setModel(item, model);
-			    return item;
-			}
-		};
-		
-		treeBinder.setDisplayProperty("name");
-		treeBinder.setAutoLoad(true);
-		
-		loader.load(root);
+		loadLearnerAttributeTree(selectedGradebook);
 	}
 	
 	public void onTreeStoreInitialized(TreeStore<ItemModel> treeStore) {
@@ -419,7 +401,7 @@ public class ItemTreePanel extends ContentPanel {
 		
 		GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
 		
-		TreeTableColumn percentCourseGradeColumn =  new TreeTableColumn(ItemModel.Key.PERCENT_COURSE_GRADE.name(), 
+		percentCourseGradeColumn =  new TreeTableColumn(ItemModel.Key.PERCENT_COURSE_GRADE.name(), 
 				ItemModel.getPropertyName(ItemModel.Key.PERCENT_COURSE_GRADE), ItemModel.getPropertyName(ItemModel.Key.PERCENT_COURSE_GRADE).length() * CHARACTER_WIDTH + 30);
 		percentCourseGradeColumn.setAlignment(HorizontalAlignment.RIGHT);
 		percentCourseGradeColumn.setHidden(gbModel.getCategoryType() == CategoryType.SIMPLE_CATEGORIES);
@@ -427,7 +409,7 @@ public class ItemTreePanel extends ContentPanel {
 		percentCourseGradeColumn.setSortable(false);
 		columns.add(percentCourseGradeColumn);
 		
-		TreeTableColumn percentCategoryColumn =  new TreeTableColumn(ItemModel.Key.PERCENT_CATEGORY.name(), 
+		percentCategoryColumn =  new TreeTableColumn(ItemModel.Key.PERCENT_CATEGORY.name(), 
 				ItemModel.getPropertyName(ItemModel.Key.PERCENT_CATEGORY), ItemModel.getPropertyName(ItemModel.Key.PERCENT_CATEGORY).length() * CHARACTER_WIDTH + 30);
 		percentCategoryColumn.setAlignment(HorizontalAlignment.RIGHT);
 		percentCategoryColumn.setHidden(gbModel.getCategoryType() == CategoryType.SIMPLE_CATEGORIES);
@@ -435,7 +417,15 @@ public class ItemTreePanel extends ContentPanel {
 		percentCategoryColumn.setSortable(false);
 		columns.add(percentCategoryColumn);
 		
-		TreeTableColumnModel treeTableColumnModel = new TreeTableColumnModel(columns);
+		pointsColumn = new TreeTableColumn(ItemModel.Key.POINTS.name(), 
+				ItemModel.getPropertyName(ItemModel.Key.POINTS), ItemModel.getPropertyName(ItemModel.Key.POINTS).length() * CHARACTER_WIDTH + 30);
+		pointsColumn.setAlignment(HorizontalAlignment.RIGHT);
+		pointsColumn.setHidden(gbModel.getCategoryType() != CategoryType.WEIGHTED_CATEGORIES);
+		pointsColumn.setRenderer(numericCellRenderer);
+		pointsColumn.setSortable(false);
+		columns.add(pointsColumn);
+		
+		treeTableColumnModel = new TreeTableColumnModel(columns);
 		treeTable = new TreeTable(treeTableColumnModel) {
 			@Override
 			protected void onRender(Element target, int index) {
@@ -446,6 +436,34 @@ public class ItemTreePanel extends ContentPanel {
 				expandAll();
 			}
 		};
+		treeTableView = new TreeTableView() {
+			
+			protected void init(final TreeTable treeTable) {
+				super.init(treeTable);
+				
+				Listener l = new Listener<TreeTableEvent>() {
+
+				      public void handleEvent(TreeTableEvent be) {
+				        switch (be.type) {
+				          case Events.HiddenChange: {
+				            TableColumn c = cm.getColumn(be.columnIndex);
+				            if (c.isHidden())
+				            	((ItemTreeTableHeader)treeTable.getTableHeader()).hideColumn(be.columnIndex);
+				            else
+				            	((ItemTreeTableHeader)treeTable.getTableHeader()).showColumn(be.columnIndex);
+				            break;
+				          }
+				        }
+				      }
+				    };
+
+				    cm.addListener(Events.HiddenChange, l);
+			}
+			
+		};
+		TreeTableHeader treeTableHeader = new ItemTreeTableHeader(treeTable);
+		treeTable.setTableHeader(treeTableHeader);
+		treeTable.setView(treeTableView);
 		treeTable.setCheckable(true);
 		treeTable.setCheckStyle(CheckCascade.CHILDREN);
 		treeTable.setAnimate(true);
@@ -454,8 +472,6 @@ public class ItemTreePanel extends ContentPanel {
 		treeTable.setHeight(300);
 		//treeTable.addListener(Events.RowClick, treeTableEventListener);
 		treeTable.setSelectionModel(new TreeSelectionModel(SelectionMode.SINGLE));
-		
-		
 		treeTable.setContextMenu(newTreeContextMenu(i18n)); 
 		
 		return treeTable;
@@ -538,6 +554,82 @@ public class ItemTreePanel extends ContentPanel {
 		treeContextMenu.add(expandMenuItem);*/
 		
 		return itemTree;
+	}
+	
+	private void loadLearnerAttributeTree(GradebookModel selectedGradebook) {
+		if (isLearnerAttributeTreeLoaded)
+			return;
+		
+		isLearnerAttributeTreeLoaded = true;
+		
+		TreeLoader loader = new BaseTreeLoader(new TreeModelReader());
+		
+		BaseTreeModel<TreeModel> root = new BaseTreeModel<TreeModel>();
+		Map<String, Object> properties = new HashMap<String, Object>();
+		properties.put("name", "Learner Attributes");
+		properties.put("id", "learnerAttributes");
+		BaseTreeModel<TreeModel> learnerAttributes = new BaseTreeModel<TreeModel>(properties);
+		learnerAttributes.setParent(root);
+		root.add(learnerAttributes);
+		
+		properties = new HashMap<String, Object>();
+		properties.put("name", "Grades");
+		properties.put("id", "gradingColumns");
+		BaseTreeModel<TreeModel> gradingColumns = new BaseTreeModel<TreeModel>(properties);
+		gradingColumns.setParent(root);
+		root.add(gradingColumns);
+		
+		fullStaticIdSet.clear();
+		for (org.sakaiproject.gradebook.gwt.client.model.ColumnModel column : selectedGradebook.getColumns()) {
+			properties = new HashMap<String, Object>();
+			properties.put("name", column.getName());
+			properties.put("id", column.getIdentifier());
+			properties.put("hidden", column.isHidden());
+			if (column.isHidden() == null || !column.isHidden().booleanValue()) 
+				visibleStaticIdSet.add(column.getIdentifier());
+			fullStaticIdSet.add(column.getIdentifier());
+			BaseTreeModel<TreeModel> model = new BaseTreeModel<TreeModel>(properties);
+			
+			if (column.getIdentifier().equals(StudentModel.Key.GRADE_OVERRIDE.name()) ||
+					column.getIdentifier().equals(StudentModel.Key.COURSE_GRADE.name())) {
+				model.setParent(gradingColumns);
+				gradingColumns.add(model);
+			} else {
+				model.setParent(learnerAttributes);
+				learnerAttributes.add(model);
+			}
+		}
+		
+		TreeStore<BaseTreeModel<TreeModel>> treeStore = new TreeStore<BaseTreeModel<TreeModel>>(loader);
+	
+		TreeBinder<BaseTreeModel<TreeModel>> treeBinder = 
+			new TreeBinder<BaseTreeModel<TreeModel>>(learnerAttributeTree, treeStore) {
+			
+			@Override
+			protected TreeItem createItem(BaseTreeModel<TreeModel> model) {
+				TreeItem item = new AriaTreeItem();
+				
+				Boolean hidden = model.get("hidden");
+				boolean isHidden = hidden != null && hidden.booleanValue();
+				item.setChecked(!isHidden);
+				
+			    update(item, model);
+
+			    if (loader != null) {
+			      item.setLeaf(!loader.hasChildren(model));
+			    } else {
+			      item.setLeaf(!hasChildren(model));
+			    }
+
+			    setModel(item, model);
+			    return item;
+			}
+		};
+		
+		treeBinder.setDisplayProperty("name");
+		treeBinder.setAutoLoad(true);
+		
+		loader.load(root);
 	}
 	
 	private Menu newTreeContextMenu(I18nConstants i18n) {

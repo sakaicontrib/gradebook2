@@ -2471,6 +2471,9 @@ private static final long serialVersionUID = 1L;
 				BigDecimal assignmentWeight = BigDecimal.valueOf(a.getAssignmentWeighting().doubleValue());
 				BigDecimal courseGradePercent = calculateItemGradePercent(percentGrade, percentCategory, assignmentWeight);
 				
+				if (DataTypeConversionUtil.checkBoolean(a.isUnweighted())) 
+					courseGradePercent = BigDecimal.ZERO;
+				
 				ItemModel assignmentItemModel = createItemModel(category, a, courseGradePercent);
 				assignmentItemModel.setParent(categoryItemModel);
 				categoryItemModel.add(assignmentItemModel);
@@ -2627,8 +2630,9 @@ private static final long serialVersionUID = 1L;
 		gbService.updateGradebook(gradebook);
 		
 		List<ItemModel> models = new ArrayList<ItemModel>();
-		
-		models.add(createItemModel(gradebook));
+		List<Category> categoriesWithAssignments = getCategoriesWithAssignments(gradebook.getId());
+		models.add(getItemModel(gradebook, categoriesWithAssignments));
+		//models.add(createItemModel(gradebook));
 		
 		return models;
 	}
@@ -3441,9 +3445,9 @@ private static final long serialVersionUID = 1L;
 		
 		gbService.updateAssignment(assignment);
 		
-		if (category.isEqualWeightAssignments() != null && category.isEqualWeightAssignments().booleanValue()) {
+		if (DataTypeConversionUtil.checkBoolean(isIncluded) && category.isEqualWeightAssignments() != null && category.isEqualWeightAssignments().booleanValue()) {
 			recalculateEqualWeightingGradeItems(gradebookUid, gradebookId, categoryId, category.isEqualWeightAssignments());
-			assignment = gbService.getAssignment(assignment.getId());
+			//assignment = gbService.getAssignment(assignment.getId());
 		}
 
 		List<ItemModel> models = getItemModelsForCategory(category);
@@ -3452,6 +3456,10 @@ private static final long serialVersionUID = 1L;
 		for (ItemModel model : models) {
 			if (model.getIdentifier().equals(assignmentIdAsString)) 
 				model.setNew(true);
+			for (ItemModel child : model.getChildren()) {
+				if (child.getIdentifier().equals(assignmentIdAsString)) 
+					child.setNew(true);
+			}
 		}
 		
 		return models;

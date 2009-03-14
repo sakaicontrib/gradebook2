@@ -53,7 +53,6 @@ public class GradebookApplication implements EntryPoint {
     }
 	
 	public void onModuleLoad() {
-		
 		final Dispatcher dispatcher = Dispatcher.get();
 		dispatcher.addController(new AppController());
 		dispatcher.addController(new UpdateController());
