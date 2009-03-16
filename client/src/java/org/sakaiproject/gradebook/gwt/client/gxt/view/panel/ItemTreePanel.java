@@ -55,7 +55,6 @@ import com.extjs.gxt.ui.client.event.TreeTableEvent;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.TreeStore;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
-import com.extjs.gxt.ui.client.widget.Info;
 import com.extjs.gxt.ui.client.widget.layout.AccordionLayout;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
@@ -77,6 +76,10 @@ import com.google.gwt.user.client.ui.Accessibility;
 
 public class ItemTreePanel extends ContentPanel {
 	
+	private enum SelectionType { CREATE_CATEGORY, CREATE_ITEM, UPDATE_ITEM, DELETE_ITEM };
+	
+	private static final String selectionTypeField = "selectionType";
+	
 	private static int CHARACTER_WIDTH = 7;
 	
 	private Menu treeContextMenu;
@@ -91,6 +94,7 @@ public class ItemTreePanel extends ContentPanel {
 	private Tree itemTree;
 	private TreeTable treeTable;
 	private TreeTableView treeTableView;
+	private TreeTableBinder<ItemModel> treeBinder;
 	
 	private TreeTableColumn percentCourseGradeColumn;
 	private TreeTableColumn percentCategoryColumn;
@@ -169,6 +173,22 @@ public class ItemTreePanel extends ContentPanel {
 			treeTable.expandAll();
 	}
 	
+	public void onHideColumn(ItemModel itemModel) {
+		TreeItem treeItem = (TreeItem)treeBinder.findItem(itemModel);
+		
+		treeItem.setChecked(false);
+	}
+	
+	public void onItemCreated(ItemModel itemModel) {
+		TreeItem treeItem = (TreeItem)treeBinder.findItem(itemModel);
+		
+		if (treeItem != null) {
+			treeItem.getParentItem().setExpanded(true);
+			//treeItem.setExpanded(true);
+			treeItem.setChecked(true);
+		}
+	}
+	
 	public void onLoadItemTreeModel(GradebookModel selectedGradebook, ItemModel rootItem) {
 		
 		addCategoryMenuItem.setVisible(selectedGradebook.getCategoryType() != CategoryType.NO_CATEGORIES);
@@ -179,71 +199,29 @@ public class ItemTreePanel extends ContentPanel {
 			percentCourseGradeColumn.setHidden(true);
 			percentCategoryColumn.setHidden(true);
 			pointsColumn.setHidden(false);
-			Info.display("Unweighted", "Here I am");
 			break;
 		case WEIGHTED_CATEGORIES:
 			percentCourseGradeColumn.setHidden(false);
 			percentCategoryColumn.setHidden(false);
 			pointsColumn.setHidden(true);
-			Info.display("Weighted", "Here I am");
 			break;
 		}
-		
-		//if (rendered)
-		//	treeTable.getTableHeader().
+
+	}
+	
+	public void onSingleGrade() {
+		treeTable.getSelectionModel().deselectAll();
 	}
 	
 	public void onSwitchGradebook(GradebookModel selectedGradebook) {
 		addCategoryMenuItem.setVisible(selectedGradebook.getCategoryType() != CategoryType.NO_CATEGORIES);
-		
-		/*switch (selectedGradebook.getCategoryType()) {
-		case NO_CATEGORIES:
-		case SIMPLE_CATEGORIES:
-			percentCourseGradeColumn.setHidden(true);
-			percentCategoryColumn.setHidden(true);
-			pointsColumn.setHidden(false);
-			break;
-		case WEIGHTED_CATEGORIES:
-			percentCourseGradeColumn.setHidden(false);
-			percentCategoryColumn.setHidden(false);
-			pointsColumn.setHidden(true);
-			break;
-		}*/
-		
+
 		loadLearnerAttributeTree(selectedGradebook);
 	}
 	
 	public void onTreeStoreInitialized(TreeStore<ItemModel> treeStore) {
 
-		/*TreeBinder<ItemModel> treeBinder = new TreeBinder<ItemModel>(itemTree, treeStore) {
-			
-			@Override
-			protected TreeItem createItem(ItemModel model) {
-				TreeItem item = new AriaTreeItem();
-
-				item.setId(new StringBuilder().append(model.getItemType()).append(":").append(model.getName()).toString());
-				//item.addListener(Events.BeforeCollapse, treeEventListener);
-				//item.addListener(Events.BeforeExpand, treeEventListener);
-				
-			    update(item, model);
-
-			    if (loader != null) {
-			      item.setLeaf(!loader.hasChildren(model));
-			    } else {
-			      item.setLeaf(!hasChildren(model));
-			    }
-
-			    setModel(item, model);
-			    return item;
-			}
-			
-		};
-		treeBinder.setDisplayProperty(ItemModel.Key.NAME.name());
-		treeBinder.setAutoLoad(true);
-		treeBinder.addSelectionChangedListener(selectionChangedListener);
-		*/
-		
-		TreeTableBinder<ItemModel> treeBinder = new TreeTableBinder<ItemModel>(treeTable, treeStore);
+		treeBinder = new TreeTableBinder<ItemModel>(treeTable, treeStore);
 		treeBinder.setDisplayProperty(ItemModel.Key.NAME.name());
 		treeBinder.addSelectionChangedListener(selectionChangedListener);
 		treeBinder.addCheckListener(checkChangedListener);
@@ -342,8 +320,8 @@ public class ItemTreePanel extends ContentPanel {
 				final ItemModel itemModel = (ItemModel)item.getModel();
 				
 				if (itemModel != null && itemModel.getItemType() != null) {
-					boolean isItem = itemModel.getItemType().equalsIgnoreCase(Type.ITEM.getName());
-					boolean isCategory = itemModel.getItemType().equalsIgnoreCase(Type.CATEGORY.getName());
+					boolean isItem = itemModel.getItemType() == Type.ITEM;
+					boolean isCategory = itemModel.getItemType() == Type.CATEGORY;
 					boolean isGradebook = !isItem && !isCategory;
 					boolean isPercentCategory = property.equals(ItemModel.Key.PERCENT_CATEGORY.name());
 					boolean isPercentGrade = property.equals(ItemModel.Key.PERCENT_COURSE_GRADE.name());
@@ -440,24 +418,28 @@ public class ItemTreePanel extends ContentPanel {
 			
 			protected void init(final TreeTable treeTable) {
 				super.init(treeTable);
-				
+
 				Listener l = new Listener<TreeTableEvent>() {
 
-				      public void handleEvent(TreeTableEvent be) {
-				        switch (be.type) {
-				          case Events.HiddenChange: {
-				            TableColumn c = cm.getColumn(be.columnIndex);
-				            if (c.isHidden())
-				            	((ItemTreeTableHeader)treeTable.getTableHeader()).hideColumn(be.columnIndex);
-				            else
-				            	((ItemTreeTableHeader)treeTable.getTableHeader()).showColumn(be.columnIndex);
-				            break;
-				          }
-				        }
-				      }
-				    };
+					public void handleEvent(TreeTableEvent be) {
+						switch (be.type) {
+						case Events.HiddenChange: {
+							TableColumn c = cm.getColumn(be.columnIndex);
+							if (c.isHidden())
+								((ItemTreeTableHeader) treeTable
+										.getTableHeader())
+										.hideColumn(be.columnIndex);
+							else
+								((ItemTreeTableHeader) treeTable
+										.getTableHeader())
+										.showColumn(be.columnIndex);
+							break;
+						}
+						}
+					}
+				};
 
-				    cm.addListener(Events.HiddenChange, l);
+				cm.addListener(Events.HiddenChange, l);
 			}
 			
 		};
@@ -534,9 +516,7 @@ public class ItemTreePanel extends ContentPanel {
 		itemTree.addListener(Events.SelectionChange, treeEventListener);
 		itemTree.addListener(Events.RowDoubleClick, treeEventListener);
 		itemTree.setSelectionModel(new TreeSelectionModel(SelectionMode.MULTI));
-		
-		
-		
+
 		itemTree.setContextMenu(newTreeContextMenu(i18n));  
 		
 		/*MenuItem expandMenuItem = new AriaMenuItem();
@@ -637,28 +617,40 @@ public class ItemTreePanel extends ContentPanel {
 		treeContextMenu.setWidth(130);
 
 		addCategoryMenuItem = new AriaMenuItem();
+		addCategoryMenuItem.setData(selectionTypeField, SelectionType.CREATE_CATEGORY);
 		addCategoryMenuItem.setIconStyle("gbAddCategoryIcon");
 		addCategoryMenuItem.setItemId(AppConstants.ID_CT_ADD_CATEGORY_MENUITEM);
-		addCategoryMenuItem.setText(i18n.addCategoryHeading());
+		addCategoryMenuItem.setText(i18n.headerAddCategory());
+		addCategoryMenuItem.setTitle(i18n.headerAddCategoryTitle());
 		addCategoryMenuItem.addSelectionListener(menuSelectionListener);
 		treeContextMenu.add(addCategoryMenuItem);
 		
 		//addCategoryMenuItem.setVisible(selectedGradebook.getCategoryType() != CategoryType.NO_CATEGORIES);
 		
-		MenuItem addItemMenuItem = new AriaMenuItem();
-		addItemMenuItem.setIconStyle("gbAddItemIcon");
-		addItemMenuItem.setItemId(AppConstants.ID_CT_ADD_ITEM_MENUITEM);
-		addItemMenuItem.setText(i18n.addItemHeading());
-		addItemMenuItem.addSelectionListener(menuSelectionListener);
-		treeContextMenu.add(addItemMenuItem);
+		MenuItem menuItem = new AriaMenuItem();
+		menuItem.setData(selectionTypeField, SelectionType.CREATE_ITEM);
+		menuItem.setIconStyle("gbAddItemIcon");
+		menuItem.setItemId(AppConstants.ID_CT_ADD_ITEM_MENUITEM);
+		menuItem.setText(i18n.headerAddItem());
+		menuItem.setTitle(i18n.headerAddItemTitle());
+		menuItem.addSelectionListener(menuSelectionListener);
+		treeContextMenu.add(menuItem);
 
-		
-		MenuItem editItemMenuItem = new AriaMenuItem();
-		editItemMenuItem.setIconStyle("gbEditItemIcon");
-		editItemMenuItem.setItemId(AppConstants.ID_CT_EDIT_ITEM_MENUITEM);
-		editItemMenuItem.setText(i18n.editItemHeading());
-		editItemMenuItem.addSelectionListener(menuSelectionListener);
-		treeContextMenu.add(editItemMenuItem);
+		menuItem = new AriaMenuItem();
+		menuItem.setData(selectionTypeField, SelectionType.UPDATE_ITEM);
+		menuItem.setIconStyle("gbEditItemIcon");
+		menuItem.setItemId(AppConstants.ID_CT_EDIT_ITEM_MENUITEM);
+		menuItem.setText(i18n.headerEditItem());
+		menuItem.addSelectionListener(menuSelectionListener);
+		treeContextMenu.add(menuItem);
+
+		menuItem = new AriaMenuItem();
+		menuItem.setData(selectionTypeField, SelectionType.DELETE_ITEM);
+		menuItem.setIconStyle("gbDeleteItemIcon");
+		menuItem.setItemId(AppConstants.ID_CT_DELETE_ITEM_MENUITEM);
+		menuItem.setText(i18n.headerDeleteItem());
+		menuItem.addSelectionListener(menuSelectionListener);
+		treeContextMenu.add(menuItem);
 		
 		return treeContextMenu;
 	}
@@ -688,18 +680,25 @@ public class ItemTreePanel extends ContentPanel {
 			
 		for (ItemModel selectedItemModel : selectedItemModels) {
 			// If the root or gradebook is selected then we don't need to mess around any further
-			if (selectedItemModel.getItemType().equals(Type.ROOT.getName()) || selectedItemModel.getItemType().equals(Type.GRADEBOOK.getName())) {
+			switch (selectedItemModel.getItemType()) {
+			case ROOT:
+			case GRADEBOOK:
 				selectAll = true;
 				break;
-			} else if (selectedItemModel.getItemType().equals(Type.CATEGORY.getName())) {
+			case CATEGORY:
 				for (ItemModel childItemModel : selectedItemModel.getChildren()) 
 					selectedItemModelIdSet.add(childItemModel.getIdentifier());
-			} else
+				break;
+			case ITEM:
 				selectedItemModelIdSet.add(selectedItemModel.getIdentifier());
+				break;
+			}
 		}
-		
+
 		Dispatcher.forwardEvent(GradebookEvents.ShowColumns, 
 				new ShowColumnsEvent(selectAll, fullStaticIdSet, visibleStaticIdSet, selectedItemModelIdSet));
+	
+		saveState();
 	}
 	
 	private void initListeners() {
@@ -714,29 +713,27 @@ public class ItemTreePanel extends ContentPanel {
 		
 		menuSelectionListener = new SelectionListener<MenuEvent>() {
 			
-			public void componentSelected(MenuEvent ce) {
-				String itemId = ce.item.getItemId();
+			public void componentSelected(MenuEvent me) {
+				SelectionType selectionType = me.item.getData(selectionTypeField);
 				TreeItem item = (TreeItem) treeTable.getSelectionModel().getSelectedItem();
-				if (item != null) {
-					if (itemId.equals(AppConstants.ID_CT_ADD_CATEGORY_MENUITEM)) 
-						Dispatcher.forwardEvent(GradebookEvents.NewCategory, item.getModel());
-					else if (itemId.equals(AppConstants.ID_CT_ADD_ITEM_MENUITEM)) 
-						Dispatcher.forwardEvent(GradebookEvents.NewItem, item.getModel());
-					else if (itemId.equals(AppConstants.ID_CT_EDIT_ITEM_MENUITEM)) 
-						Dispatcher.forwardEvent(GradebookEvents.StartEditItem, item.getModel());
+				switch (selectionType) {
+				case CREATE_CATEGORY:
+					Dispatcher.forwardEvent(GradebookEvents.NewCategory, item.getModel());
+					break;
+				case CREATE_ITEM:
+					Dispatcher.forwardEvent(GradebookEvents.NewItem, item.getModel());
+					break;
+				case UPDATE_ITEM:
+					Dispatcher.forwardEvent(GradebookEvents.StartEditItem, item.getModel());
+					break;
+				case DELETE_ITEM:
+					Dispatcher.forwardEvent(GradebookEvents.ConfirmDeleteItem, item.getModel());
+					break;
 				}
 			}
 			
 		};
-		/*selectionChangedListener = new SelectionChangedListener<ItemModel>() {
 
-			@Override
-			public void selectionChanged(SelectionChangedEvent<ItemModel> se) {
-				//showColumns(se.getSelection());
-			}
-			
-		};*/
-		
 		selectionChangedListener = new SelectionChangedListener<ItemModel>() {
 
 			@Override

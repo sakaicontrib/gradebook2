@@ -1,10 +1,11 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
+import java.util.List;
+
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ConfirmationEvent;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.FullScreen;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemCreate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
@@ -12,6 +13,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.view.AppView;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -33,14 +35,15 @@ import com.extjs.gxt.ui.client.store.TreeStore;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
+import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.CheckBox;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
 import com.extjs.gxt.ui.client.widget.form.DateField;
 import com.extjs.gxt.ui.client.widget.form.Field;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
+import com.extjs.gxt.ui.client.widget.form.LabelField;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
-import com.extjs.gxt.ui.client.widget.form.SimpleComboValue;
 import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.layout.ColumnData;
 import com.extjs.gxt.ui.client.widget.layout.ColumnLayout;
@@ -48,15 +51,20 @@ import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.layout.MarginData;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
-import com.extjs.gxt.ui.client.widget.treetable.TreeTable;
 
 public class ItemFormPanel extends ContentPanel {
 
+	private enum SelectionType { CLOSE, CREATE, CANCEL, DELETE };
+	
+	private static final String selectionTypeField = "selectionType";
+	
 	private FormPanel formPanel;
 	private FormBinding formBindings;
 	
+	private LabelField directionsField;
 	private TextField<String> nameField;
 	private ComboBox<ModelData> categoryTypePicker;
+	private ComboBox<ModelData> gradeTypePicker;
 	private ComboBox<ItemModel> categoryPicker;
 	private CheckBox includedField;
 	private CheckBox extraCreditField;
@@ -68,21 +76,20 @@ public class ItemFormPanel extends ContentPanel {
 	private DateField dueDateField;
 	private TextField<String> sourceField;
 	
-	private TreeTable treeTable;
-	//private TreeTableBinder<ItemModel> treeBinder;
-	//private TreeLoader<ItemModel> treeLoader;
+	private ListStore<ItemModel> categoryStore;
 	private TreeStore<ItemModel> treeStore;
-	private SelectionChangedListener<SimpleComboValue<String>> comboSelectionChangedListener;
-	private SelectionChangedListener<ItemModel> selectionChangedListener;
+	private SelectionListener<ButtonEvent> selectionListener;
 	
 	private I18nConstants i18n;
 	
 	private RowLayout layout;
 	private RowData topRowData, bottomRowData;
-	private Button createButton;
+	private Button closeButton, createButton, cancelButton, deleteButton;
 	private boolean isFull;
 	
 	private GradebookModel selectedGradebook;
+	private ItemModel selectedItemModel;
+	private Type createItemType;
 	
 	@SuppressWarnings("unchecked")
 	public ItemFormPanel(I18nConstants i18n) {
@@ -96,34 +103,15 @@ public class ItemFormPanel extends ContentPanel {
 		layout.setOrientation(Orientation.VERTICAL);
 		
 		initListeners();
-		/*
-		treeLoader = new BaseTreeLoader(new TreeModelReader() {
-			
-			@Override
-			protected List<? extends ModelData> getChildren(ModelData parent) {
-				List visibleChildren = new ArrayList();
-				List<? extends ModelData> children = super.getChildren(parent);
-				
-				for (ModelData model : children) {
-					String source = model.get(ItemModel.Key.SOURCE.name());
-					if (source == null || !source.equals("Static"))
-						visibleChildren.add(model);
-				}
-				
-				return visibleChildren;
-			}
-		});
-		
-		treeStore = new TreeStore<ItemModel>(treeLoader);
-
-		treeStore.setModelComparer(new ItemModelComparer());
-		*/
 		
 		formPanel = new FormPanel();
 		formPanel.setHeaderVisible(false);
 		formPanel.setLabelWidth(120);
-		//setWidth(400);
 
+		directionsField = new LabelField();
+		directionsField.setName("directions");
+		//formPanel.add(directionsField);
+		
 		nameField = new TextField<String>();
 		nameField.setName(ItemModel.Key.NAME.name());
 		nameField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.NAME));
@@ -155,6 +143,13 @@ public class ItemFormPanel extends ContentPanel {
 		categoryTypePicker.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.CATEGORYTYPE));
 		
 		formPanel.add(categoryTypePicker);
+		
+		gradeTypePicker = new ComboBox<ModelData>();
+		gradeTypePicker.setDisplayField("name");
+		gradeTypePicker.setName(ItemModel.Key.GRADETYPE.name());
+		gradeTypePicker.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.GRADETYPE));
+		
+		formPanel.add(gradeTypePicker);
 		
 		//addGradebookFormItems(formPanel, i18n);
 		
@@ -239,350 +234,104 @@ public class ItemFormPanel extends ContentPanel {
 		checkBoxContainer.add(right, new ColumnData(200));
 		
 		formPanel.add(checkBoxContainer);
-	/*
-		List<TreeTableColumn> columns = new ArrayList<TreeTableColumn>();
 		
-		CellRenderer<TreeItem> cellRenderer = new CellRenderer<TreeItem>() {
-
-			public String render(TreeItem item, String property, Object value) {
-				String prefix = "";
-				String result = null;
-				ItemModel itemModel = (ItemModel)item.getModel();
-				
-				boolean isName = property.equals(ItemModel.Key.NAME.name());
-				boolean isIncluded = itemModel.getIncluded() == null || itemModel.getIncluded().booleanValue();		
-				boolean isExtraCredit = itemModel.getExtraCredit() != null && itemModel.getExtraCredit().booleanValue();
-				boolean isReleased = itemModel.getReleased() != null && itemModel.getReleased().booleanValue();
-				
-				if (value == null)
-					return null;
-				
-				result = (String)value;
-				
-				StringBuilder cssClasses = new StringBuilder();
-				
-				if (!isIncluded && isName)
-					cssClasses.append("gbNotIncluded");
-				
-				if (isExtraCredit) 
-					cssClasses.append(" gbCellExtraCredit");
-				
-				if (isReleased)
-					cssClasses.append(" gbReleased");
-				
-				return new StringBuilder().append("<span class=\"").append(cssClasses)
-					.append("\">").append(prefix).append(result).append("</span>").toString();
-			}
-			
-		};
-		
-		TreeTableColumn nameColumn = new TreeTableColumn(ItemModel.Key.NAME.name(), 
-				ItemModel.getPropertyName(ItemModel.Key.NAME), 180);
-		nameColumn.setRenderer(cellRenderer);
-		nameColumn.setSortable(false);
-		columns.add(nameColumn);
-		
-		NumberCellRenderer<TreeItem> numericCellRenderer = new NumberCellRenderer<TreeItem>(DataTypeConversionUtil.getShortNumberFormat()) {
-			
-			@Override
-			public String render(final TreeItem item, String property, final Object value) {
-				String prefix = "";
-				String result = null;
-				final ItemModel itemModel = (ItemModel)item.getModel();
-				
-				if (itemModel != null && itemModel.getItemType() != null) {
-					boolean isItem = itemModel.getItemType().equalsIgnoreCase(Type.ITEM.getName());
-					boolean isCategory = itemModel.getItemType().equalsIgnoreCase(Type.CATEGORY.getName());
-					boolean isGradebook = !isItem && !isCategory;
-					boolean isPercentCategory = property.equals(ItemModel.Key.PERCENT_CATEGORY.name());
-					boolean isPercentGrade = property.equals(ItemModel.Key.PERCENT_COURSE_GRADE.name());
-					
-					if (isGradebook && isPercentCategory)
-						return "-";
-						
-					if (value == null)
-						return null;
-					
-					boolean isName = property.equals(ItemModel.Key.NAME.name());
-					
-					boolean isIncluded = itemModel.getIncluded() != null && itemModel.getIncluded().booleanValue();				
-					boolean isTooBig = (isPercentCategory || isPercentGrade) 
-						&& ((Double)value).doubleValue() > 100.00001d;
-					boolean isTooSmall = ((isPercentCategory && isCategory) || (isPercentGrade && isGradebook)) && ((Double)value).doubleValue() < 99.9994d;
-					
-					result = super.render(item, property, value);
-					
-					StringBuilder cssClasses = new StringBuilder();
-					
-					if (!isIncluded && isName)
-						cssClasses.append("gbNotIncluded");
-					
-					if (!isItem) 
-						cssClasses.append(" gbCellStrong");
-					
-					if (isTooBig || isTooSmall)
-						cssClasses.append(" gbCellError");
-						
-					boolean isExtraCredit = itemModel.getExtraCredit() != null && itemModel.getExtraCredit().booleanValue();
-					if (isExtraCredit) {
-						
-						if (isPercentGrade || (isPercentCategory && isItem)) {
-							cssClasses.append(" gbCellExtraCredit");
-							prefix = "+";
-						}
-
-					}
-					
-					StringBuilder builder = new StringBuilder().append("<span class=\"").append(cssClasses)
-						.append("\">").append(prefix).append(result).append("</span>");
-					
-					if ((isCategory && isPercentCategory) || (isGradebook && isPercentGrade)) {
-						builder.append(" / 100");
-					} 
- 					
-					
-					return builder.toString();
-				
-				}
-				return "";
-			}
-		};
-		
-		GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
-		
-		TreeTableColumn percentCourseGradeColumn =  new TreeTableColumn(ItemModel.Key.PERCENT_COURSE_GRADE.name(), 
-				ItemModel.getPropertyName(ItemModel.Key.PERCENT_COURSE_GRADE), ItemModel.getPropertyName(ItemModel.Key.PERCENT_COURSE_GRADE).length() * CHARACTER_WIDTH + 30);
-		percentCourseGradeColumn.setAlignment(HorizontalAlignment.RIGHT);
-		percentCourseGradeColumn.setHidden(gbModel.getCategoryType() == CategoryType.SIMPLE_CATEGORIES);
-		percentCourseGradeColumn.setRenderer(numericCellRenderer);
-		percentCourseGradeColumn.setSortable(false);
-		columns.add(percentCourseGradeColumn);
-		
-		TreeTableColumn percentCategoryColumn =  new TreeTableColumn(ItemModel.Key.PERCENT_CATEGORY.name(), 
-				ItemModel.getPropertyName(ItemModel.Key.PERCENT_CATEGORY), ItemModel.getPropertyName(ItemModel.Key.PERCENT_CATEGORY).length() * CHARACTER_WIDTH + 30);
-		percentCategoryColumn.setAlignment(HorizontalAlignment.RIGHT);
-		percentCategoryColumn.setHidden(gbModel.getCategoryType() == CategoryType.SIMPLE_CATEGORIES);
-		percentCategoryColumn.setRenderer(numericCellRenderer);
-		percentCategoryColumn.setSortable(false);
-		columns.add(percentCategoryColumn);
-		
-		TreeTableColumnModel treeTableColumnModel = new TreeTableColumnModel(columns);
-		treeTable = new TreeTable(treeTableColumnModel) {
-			@Override
-			protected void onRender(Element target, int index) {
-				super.onRender(target, index);
-				Accessibility.setRole(el().dom, "treegrid");
-				Accessibility.setState(el().dom, "aria-labelledby", "itemtreelabel");
-			}
-		};
-		treeTable.setAnimate(false);
-		treeTable.getStyle().setLeafIconStyle("gbEditItemIcon");
-		//treeTable.expandAll();
-		treeTable.setHeight(300);
-		//treeTable.addListener(Events.RowClick, treeTableEventListener);
-		treeTable.setSelectionModel(new TreeSelectionModel(SelectionMode.SINGLE));
-		
-		treeBinder = new TreeTableBinder<ItemModel>(treeTable, treeStore);
-		treeBinder.setDisplayProperty(ItemModel.Key.NAME.name());
-		treeBinder.addSelectionChangedListener(selectionChangedListener);
-	
-		fullScreenButton = new Button("Full Screen", new SelectionListener<ButtonEvent>() {
-
-			@Override
-			public void componentSelected(ButtonEvent ce) {
-				doFullScreen();
-			}
-			
-		});
-		
-		addButton(fullScreenButton);
-		
-		*/
-		
-		createButton = new Button("Create", new SelectionListener<ButtonEvent>() {
-			@Override  
-			public void componentSelected(ButtonEvent be) { 
-				ItemModel item = new ItemModel();
-				
-				ItemModel category = categoryPicker.getValue();
-				
-				if (category != null) 
-					item.setCategoryId(category.getCategoryId());
-				
-				item.setName(nameField.getValue());
-				item.setExtraCredit(extraCreditField.getValue());
-				//item.setEqualWeightAssignments(equallyWeightChildrenField.getValue());
-				item.setIncluded(includedField.getValue());
-				item.setReleased(releasedField.getValue());
-				item.setPercentCategory((Double)percentCategoryField.getValue());
-				item.setPoints((Double)pointsField.getValue());
-				item.setDueDate(dueDateField.getValue());
-							
-				Dispatcher.forwardEvent(GradebookEvents.CreateItem, new ItemCreate(treeStore, item));
-			}
-		});
+		createButton = new Button(i18n.createButton(), selectionListener);
+		createButton.setData(selectionTypeField, SelectionType.CREATE);
 		createButton.setVisible(false);
 		
 		addButton(createButton);
 		
+		closeButton = new Button(i18n.closeButton(), selectionListener);
+		closeButton.setData(selectionTypeField, SelectionType.CLOSE);
 		
-		addButton(new Button("Close", new SelectionListener<ButtonEvent>() {  
-			@Override  
-			public void componentSelected(ButtonEvent ce) { 
-				/*if (isFull) {
-					doFullScreen();
-				}*/
-				Dispatcher.forwardEvent(GradebookEvents.HideEastPanel, Boolean.FALSE);
-			}
-			
-		}));
-		topRowData = new RowData(1, 1, new Margins(0, 0, 5, 0));
-		bottomRowData = new RowData(1, .5);
-		add(formPanel, topRowData);
+		addButton(closeButton);
+		
+		deleteButton = new Button(i18n.deleteButton(), selectionListener);
+		deleteButton.setData(selectionTypeField, SelectionType.DELETE);
+		
+		addButton(deleteButton);
+		
+		cancelButton = new Button(i18n.cancelButton(), selectionListener);
+		cancelButton.setData(selectionTypeField, SelectionType.CANCEL);
+		
+		addButton(cancelButton);
+		
+		topRowData = new RowData(1, 70, new Margins(10));
+		bottomRowData = new RowData(1, 1, new Margins(0, 0, 5, 0));
+		add(directionsField, topRowData);
+		add(formPanel, bottomRowData);
 		//add(treeTable, bottomRowData);
 	}
 	
-	
-	/*@Override
-	protected void onRender(Element parent, int pos) {
-	    super.onRender(parent, pos);
-	
-	    if (selectionForRender != null)
-	    	typePickerComboBox.setSelection(selectionForRender);
-	    
-	}*/
-	
-	public void doFullScreen() {
-		/*if (isFull) {
-			fullScreenButton.setText("Full Screen");
-			layout.setOrientation(Orientation.VERTICAL);
-			topRowData.setWidth(1);
-			topRowData.setHeight(.5);
-			bottomRowData.setWidth(1);
-			bottomRowData.setHeight(.5);
-			removeAll();
-			add(formPanel, topRowData);
-			add(treeTable, bottomRowData);
-			layout();
-		} else {
-			fullScreenButton.setText("Reduce");
-			topRowData.setWidth(.5);
-			topRowData.setHeight(1);
-			bottomRowData.setWidth(.5);
-			bottomRowData.setHeight(1);
-			removeAll();
-			add(treeTable, bottomRowData);
-			add(formPanel, topRowData);
-			layout.setOrientation(Orientation.HORIZONTAL);
-			layout();
-		}*/
-		isFull = !isFull;
-		Dispatcher.forwardEvent(GradebookEvents.FullScreen, new FullScreen(AppView.EastCard.EDIT_ITEM, isFull));
-	}
-	
-	public void onEditItem(ItemModel itemModel) {
+	public void onConfirmDeleteItem(ItemModel itemModel) {
+		this.createItemType = null;
+		this.selectedItemModel = itemModel;
 		
 		if (formBindings == null)
 			initFormBindings();
 		
+		closeButton.setVisible(false);
 		createButton.setVisible(false);
+		cancelButton.setVisible(true);
+		deleteButton.setVisible(true);
 		
 		if (itemModel != null) {
-			String itemType = itemModel.get(ItemModel.Key.ITEM_TYPE.name());
+			Type itemType = itemModel.getItemType();
+			initState(itemType, itemModel, true);
+			directionsField.setText(i18n.directionsConfirmDeleteItem());
+			directionsField.setVisible(true);
 			
-			initState(itemType, itemModel);
-			
-			/*String source = itemModel.get(ItemModel.Key.SOURCE.name());
-			boolean isNotGradebook = !itemType.equalsIgnoreCase(Type.GRADEBOOK.getName());
-			boolean isCategory = itemType.equalsIgnoreCase(Type.CATEGORY.getName());
-			boolean isItem = itemType.equalsIgnoreCase(Type.ITEM.getName());
-			boolean isExternal = source != null && source.trim().length() > 0;
-			
-			if (itemModel.getItemType().equals(Type.CATEGORY.getName()))
-					percentCategoryField.setVisible(!DataTypeConversionUtil.checkBoolean(itemModel.getEqualWeightAssignments()));
-			else if (itemModel.getItemType().equals(Type.ITEM.getName())) {
-				ItemModel category = itemModel.getParent();
-				if (category != null && category.getItemType().equals(Type.CATEGORY.getName()))
-					percentCategoryField.setVisible(!DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments()));
-			} else
-				percentCategoryField.setVisible(isItem);
-			
-			pointsField.setEnabled(!isExternal);
-			percentCategoryField.setEnabled(true);
-			percentCourseGradeField.setEnabled(true);
-			equallyWeightChildrenField.setEnabled(true);
-			extraCreditField.setEnabled(true);
-			dueDateField.setEnabled(!isExternal);
-			includedField.setEnabled(true);
-			releasedField.setEnabled(true);
-			categoryList.setEnabled(true);
-			
-			categoryList.setVisible(isItem);
-			extraCreditField.setVisible(isNotGradebook);
-			equallyWeightChildrenField.setVisible(isCategory);
-			includedField.setVisible(isNotGradebook);
-			releasedField.setVisible(isItem);
-			//percentCategoryField.setEnabled(isItem);
-			//percentCategoryField.setVisible(isItem);
-			percentCourseGradeField.setVisible(isCategory);
-			pointsField.setVisible(isItem);
-			dueDateField.setVisible(isItem);
-			sourceField.setVisible(isItem);
-			//typePickerComboBox.setVisible(!isNotGradebook);
-			*/
-			/*TreeItem treeItem = (TreeItem)treeBinder.findItem(itemModel);
-			TreeItem selectedItem = treeTable.getSelectedItem();
-			if (treeItem != null && (selectedItem == null || !treeItem.equals(selectedItem))) {
-				treeBinder.removeSelectionListener(selectionChangedListener);
-				treeTable.setSelectedItem(treeItem);
-				treeBinder.addSelectionChangedListener(selectionChangedListener);
-			}*/
-			
-			//formBindings.unbind();
 			formBindings.bind(itemModel);
 			
+			Dispatcher.forwardEvent(GradebookEvents.ExpandEastPanel, AppView.EastCard.DELETE_ITEM);
+		}
+	}
+	
+	public void onEditItem(ItemModel itemModel) {
+		this.createItemType = null;
+		this.selectedItemModel = itemModel;
+		this.directionsField.setText("");
+		this.directionsField.setVisible(false);
+		
+		if (formBindings == null)
+			initFormBindings();
+		
+		closeButton.setVisible(true);
+		createButton.setVisible(false);
+		cancelButton.setVisible(false);
+		deleteButton.setVisible(false);
+		
+		if (itemModel != null) {
+			Type itemType = itemModel.getItemType();
+			initState(itemType, itemModel, false);
+			formBindings.bind(itemModel);
 			Dispatcher.forwardEvent(GradebookEvents.ExpandEastPanel, AppView.EastCard.EDIT_ITEM);
 		} else {
 			formBindings.unbind();
 		}
-		
-		/*treeStore.removeAll();
-		ItemModel rootItemModel = new ItemModel();
-		rootItemModel.setItemType(Type.ROOT.getName());
-		rootItemModel.setName("Root");
-		itemModel.setParent(rootItemModel);
-		rootItemModel.add(itemModel);
-		treeLoader.load(rootItemModel);*/
 	}
 
+	public void onItemCreated(ItemModel itemModel) {
+		if (itemModel.getItemType() == Type.CATEGORY) {
+			categoryStore.add(itemModel);
+		}
+	}
+	
 	public void onItemUpdated(ItemModel itemModel) {
-		//Record record = treeStore.getRecord(itemModel);
-		
-		//record.set(ItemModel.Key.PERCENT_CATEGORY.name(), itemModel.get(ItemModel.Key.PERCENT_CATEGORY.name()));
-		//treeLoader.load(itemModel);
-		
-		//Info.display("Item Updated", "Percent category is " + itemModel.get(ItemModel.Key.PERCENT_CATEGORY.name()));
-		//treeStore.update(itemModel);
-		
-		//if (itemModel.getItemType().equals(Type.ITEM.name()))
-			categoryPicker.setEnabled(true);
-		
-		//if (itemModel.getItemType().equals(Type.GRADEBOOK.name()))
-			categoryTypePicker.setEnabled(true);
-		
-		//percentCategoryField.setEnabled(true);
-		//percentCourseGradeField.setEnabled(true);
+		categoryPicker.setEnabled(true);
+		categoryTypePicker.setEnabled(true);
+		gradeTypePicker.setEnabled(true);	
 	}
 	
 	public void onLoadItemTreeModel(ItemModel rootItemModel) {
 		
 		// FIXME: Do we need to eliminate old category stores?  
-		ListStore<ItemModel> categoryStore = new ListStore<ItemModel>();
+		categoryStore = new ListStore<ItemModel>();
 		for (ItemModel gradebook : rootItemModel.getChildren()) {
 			for (ItemModel category : gradebook.getChildren()) {
 			
 				// Ensure that we're dealing with a category
-				if (category.getItemType().equalsIgnoreCase(Type.CATEGORY.getName())) {
+				if (category.getItemType() == Type.CATEGORY) {
 					categoryStore.add(category);
 				}
 			
@@ -598,6 +347,14 @@ public class ItemFormPanel extends ContentPanel {
 		categoryTypeStore.add(getCategoryTypeModel(GradebookModel.CategoryType.WEIGHTED_CATEGORIES));
 		
 		categoryTypePicker.setStore(categoryTypeStore);
+		
+		
+		ListStore<ModelData> gradeTypeStore = new ListStore<ModelData>();
+		
+		gradeTypeStore.add(getGradeTypeModel(GradebookModel.GradeType.POINTS));
+		gradeTypeStore.add(getGradeTypeModel(GradebookModel.GradeType.PERCENTAGES));
+		
+		gradeTypePicker.setStore(gradeTypeStore);
 		
 		/*treeStore.removeAll();
 		treeLoader.load(rootItemModel);
@@ -621,72 +378,50 @@ public class ItemFormPanel extends ContentPanel {
 	}
 	
 	public void onNewCategory(ItemModel itemModel) {
+		this.directionsField.setText("");
+		this.directionsField.setVisible(false);
+		this.createItemType = Type.CATEGORY;
+		this.selectedItemModel = null;
+		
 		if (formBindings != null) 
 			formBindings.unbind();
 
+		closeButton.setVisible(true);
 		createButton.setVisible(true);
+		cancelButton.setVisible(false);
+		deleteButton.setVisible(false);
 		
-		if (itemModel != null) {		
-			String itemType = Type.CATEGORY.getName(); //itemModel.get(ItemModel.Key.ITEM_TYPE.name());
-			initState(itemType, itemModel);
-		}
+		if (itemModel != null) 	
+			initState(Type.CATEGORY, itemModel, false);
+		
 	}
 	
 	public void onNewItem(ItemModel itemModel) {
+		this.directionsField.setText("");
+		this.directionsField.setVisible(false);
+		this.createItemType = Type.ITEM;
+		this.selectedItemModel = null;
 		
 		if (formBindings != null) 
 			formBindings.unbind();
 
+		closeButton.setVisible(true);
 		createButton.setVisible(true);
+		cancelButton.setVisible(false);
+		deleteButton.setVisible(false);
 		
 		if (itemModel != null) {
 			if (itemModel.getCategoryId() != null) {
-				ItemModel category = treeStore.findModel(ItemModel.Key.ID.name(), String.valueOf(itemModel.getCategoryId()));
-				categoryPicker.setValue(category);
+				List<ItemModel> models = treeStore.findModels(ItemModel.Key.ID.name(), String.valueOf(itemModel.getCategoryId()));
+				for (ItemModel category : models) {
+					if (category.getItemType() == Type.CATEGORY)
+						categoryPicker.setValue(category);
+				}
 			}
-			
-			String itemType = Type.ITEM.getName(); //itemModel.get(ItemModel.Key.ITEM_TYPE.name());
-			initState(itemType, itemModel);
-			
-			/*
-			String source = itemModel.get(ItemModel.Key.SOURCE.name());
-			boolean isNotGradebook = !itemType.equalsIgnoreCase(Type.GRADEBOOK.getName());
-			boolean isCategory = itemType.equalsIgnoreCase(Type.CATEGORY.getName());
-			boolean isItem = itemType.equalsIgnoreCase(Type.ITEM.getName());
-			boolean isExternal = source != null && source.trim().length() > 0;
-
-			if (itemModel.getItemType().equals(Type.CATEGORY.getName()))
-				percentCategoryField.setVisible(!DataTypeConversionUtil.checkBoolean(itemModel.getEqualWeightAssignments()));
-			else if (itemModel.getItemType().equals(Type.ITEM.getName())) {
-				ItemModel category = itemModel.getParent();
-				if (category != null && category.getItemType().equals(Type.CATEGORY.getName()))
-					percentCategoryField.setVisible(!DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments()));
-			} else 
-				percentCategoryField.setVisible(isItem);
-			
-			pointsField.setEnabled(!isExternal);
-			percentCategoryField.setEnabled(true);
-			percentCourseGradeField.setEnabled(true);
-			equallyWeightChildrenField.setEnabled(true);
-			extraCreditField.setEnabled(true);
-			dueDateField.setEnabled(!isExternal);
-			includedField.setEnabled(true);
-			releasedField.setEnabled(true);
-			categoryList.setEnabled(true);
-			
-			categoryList.setVisible(isItem);
-			extraCreditField.setVisible(isNotGradebook);
-			equallyWeightChildrenField.setVisible(isCategory);
-			includedField.setVisible(isNotGradebook);
-			releasedField.setVisible(isItem);
-			//percentCategoryField.setEnabled(isItem);
-			//percentCategoryField.setVisible(isItem);
-			percentCourseGradeField.setVisible(isCategory);
-			pointsField.setVisible(isItem);
-			dueDateField.setVisible(isItem);
-			sourceField.setVisible(isItem);
-			*/
 		}
+		
+		initState(Type.ITEM, itemModel, false);
+		
 		
 	}
 	
@@ -707,21 +442,9 @@ public class ItemFormPanel extends ContentPanel {
 	}
 	
 	public void onSwitchGradebook(GradebookModel selectedGradebook) {
-		/*List<ModelData> selection = new ArrayList<ModelData>();
-		ModelData model = getCategoryTypeModel(selectedGradebook.getCategoryType());
-		if (model != null) {
-			selection.add(model);
-			if (typePickerComboBox != null && typePickerComboBox.isRendered()) 
-				typePickerComboBox.setSelection(selection);
-			else
-				selectionForRender = selection;
-		}*/
 		this.selectedGradebook = selectedGradebook;
 	}
-	
-	//private ListField<ModelData> typePickerComboBox;
-	//private List<ModelData> selectionForRender;
-	
+
 	private CategoryType getCategoryType(ModelData categoryTypeModel) {
 		return categoryTypeModel.get("value");
 	}
@@ -748,142 +471,74 @@ public class ItemFormPanel extends ContentPanel {
 		return model;
 	}
 	
-	/*private void addGradebookFormItems(FormPanel formPanel, I18nConstants i18n) {
-		
-		ListStore<ModelData> store = new ListStore<ModelData>();
-		
-		store.add(getCategoryTypeModel(GradebookModel.CategoryType.NO_CATEGORIES));
-		store.add(getCategoryTypeModel(GradebookModel.CategoryType.SIMPLE_CATEGORIES));
-		store.add(getCategoryTypeModel(GradebookModel.CategoryType.WEIGHTED_CATEGORIES));
-		
-		typePickerComboBox = new DataList();
-		*/
-		// Choose a category type
-		/*typePickerComboBox = new DataList<ModelData>() {
-			
-			@Override
-			protected void onRender(Element parent, int pos) {
-			    super.onRender(parent, pos);
-			
-			    if (selectionForRender != null)
-			    	setSelection(selectionForRender);
-			    
-			}
-			
-		}; 
-		typePickerComboBox.setStore(store);
-		//typePickerComboBox.setAllQuery(null);
-		//typePickerComboBox.setEditable(false);
-		typePickerComboBox.setFieldLabel(i18n.prefMenuOrgTypeLabel());
-		//typePickerComboBox.setForceSelection(true);
-		typePickerComboBox.setName(ItemModel.Key.CATEGORYTYPE.name());
-		typePickerComboBox.setDisplayField("name");
-		typePickerComboBox.setValueField("value");*/
-		
-		/*typePickerComboBox.add(i18n.orgTypeNoCategories());
-		typePickerComboBox.add(i18n.orgTypeCategories());
-		typePickerComboBox.add(i18n.orgTypeWeightedCategories());
-		*/
-		/*typePickerComboBox.setPropertyEditor(new ListModelPropertyEditor<SimpleComboValue<String>>(){
-			
-		      public String getStringValue(SimpleComboValue<String> value) {
-		    	  return value.getValue();
-		      }
-		});*/
-	    
-	    //typePickerComboBox.addSelectionChangedListener(comboSelectionChangedListener);
-	    
-		//formPanel.add(typePickerComboBox);
-		
-		/*
-		
-		// Choose a grade type
-		MenuItem chooseGradeType = new AriaMenuItem(i18n.prefMenuGradeTypeHeader());
-		
-		Menu gradeTypeSubMenu = new AriaMenu() {
-			protected void onRender(Element parent, int pos) {
-			    super.onRender(parent, pos);
-			    Accessibility.setRole(el().dom, "menu");
-			}
-		};
-		pointsMenuItem = new AriaCheckMenuItem(i18n.gradeTypePoints());
-		pointsMenuItem.setId(AppConstants.ID_GT_POINTS_MENUITEM);
-		pointsMenuItem.setGroup("gradetype");
-		gradeTypeSubMenu.add(pointsMenuItem);
-		percentagesMenuItem = new AriaCheckMenuItem(i18n.gradeTypePercentages());
-		percentagesMenuItem.setId(AppConstants.ID_GT_PERCENTAGES_MENUITEM);
-		percentagesMenuItem.setGroup("gradetype");
-		
-		gradeTypeSubMenu.add(percentagesMenuItem);
-		
-		pointsMenuItem.addListener(Events.CheckChange, menuListener);
-		percentagesMenuItem.addListener(Events.CheckChange, menuListener);
-		
-		chooseGradeType.setSubMenu(gradeTypeSubMenu);
-		add(chooseGradeType);
-		
-		// Choose a grade type
-		MenuItem releaseCourseGrades = new AriaMenuItem("Do you want to release course grades to learners?");
-		
-		Menu releaseCourseGradesSubMenu = new AriaMenu();
-		releaseGradesYesMenuItem = new AriaCheckMenuItem(i18n.prefMenuReleaseGradesYes());
-		releaseGradesYesMenuItem.setId(AppConstants.ID_RG_YES_MENUITEM);
-		releaseGradesYesMenuItem.setGroup("releasegrades");
-		releaseCourseGradesSubMenu.add(releaseGradesYesMenuItem);
-		releaseGradesNoMenuItem = new AriaCheckMenuItem(i18n.prefMenuReleaseGradesNo());
-		releaseGradesNoMenuItem.setId(AppConstants.ID_RG_NO_MENUITEM);
-		releaseGradesNoMenuItem.setGroup("releasegrades");
-		releaseCourseGradesSubMenu.add(releaseGradesNoMenuItem);
-		
-		releaseGradesYesMenuItem.addListener(Events.CheckChange, menuListener);
-		releaseGradesNoMenuItem.addListener(Events.CheckChange, menuListener);
-		
-		releaseCourseGrades.setSubMenu(releaseCourseGradesSubMenu);
-		add(releaseCourseGrades);*/
-	//}
+	private GradeType getGradeType(ModelData gradeTypeModel) {
+		return gradeTypeModel.get("value");
+	}
 	
-	
-	private void initState(String itemType, ItemModel itemModel) {
+	private ModelData getGradeTypeModel(GradeType gradeType) {
+		ModelData model = new BaseModelData();
 		
-		boolean isNotGradebook = !itemType.equalsIgnoreCase(Type.GRADEBOOK.getName());
-		boolean isCategory = itemType.equalsIgnoreCase(Type.CATEGORY.getName());
-		boolean isItem = itemType.equalsIgnoreCase(Type.ITEM.getName());
+		switch (gradeType) {
+		case POINTS:
+			model.set("name", i18n.gradeTypePoints());
+			model.set("value", GradebookModel.GradeType.POINTS);
+			break;
+		case PERCENTAGES:
+			model.set("name", i18n.gradeTypePercentages());
+			model.set("value", GradebookModel.GradeType.PERCENTAGES);
+			break;
+		}
+		
+		return model;
+	}	
+	
+	private void initState(Type itemType, ItemModel itemModel, boolean isDelete) {
+		
+		CategoryType categoryType = selectedGradebook.getCategoryType();
+		
+		boolean hasCategories = categoryType != CategoryType.NO_CATEGORIES;
+		boolean isNotGradebook = itemType != Type.GRADEBOOK;
+		boolean isCategory = itemType == Type.CATEGORY;
+		boolean isItem = itemType == Type.ITEM;
 		boolean isExternal = false;
 		
 		if (itemModel != null) {
 			String source = itemModel.get(ItemModel.Key.SOURCE.name());
 			isExternal = source != null && source.trim().length() > 0;
-			if (itemModel.getItemType().equals(Type.CATEGORY.getName()))
+			switch (itemModel.getItemType()) {
+			case CATEGORY:
 				percentCategoryField.setVisible(!DataTypeConversionUtil.checkBoolean(itemModel.getEqualWeightAssignments()));
-			else if (itemModel.getItemType().equals(Type.ITEM.getName())) {
+				break;
+			case ITEM:
 				ItemModel category = itemModel.getParent();
-				if (category != null && category.getItemType().equals(Type.CATEGORY.getName()))
+				if (category != null && category.getItemType() == Type.CATEGORY)
 					percentCategoryField.setVisible(!DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments()));
-			} else 
+				break;
+			default:
 				percentCategoryField.setVisible(isItem);
+			}
 		} else {
 			percentCategoryField.setVisible(isItem);
 		}
 		
-		pointsField.setEnabled(!isExternal);
-		percentCategoryField.setEnabled(true);
-		percentCourseGradeField.setEnabled(true);
-		equallyWeightChildrenField.setEnabled(true);
-		extraCreditField.setEnabled(true);
-		dueDateField.setEnabled(!isExternal);
-		includedField.setEnabled(true);
-		releasedField.setEnabled(true);
-		categoryPicker.setEnabled(true);
+		nameField.setEnabled(!isDelete);
+		pointsField.setEnabled(!isDelete && !isExternal);
+		percentCategoryField.setEnabled(!isDelete);
+		percentCourseGradeField.setEnabled(!isDelete);
+		equallyWeightChildrenField.setEnabled(!isDelete);
+		extraCreditField.setEnabled(!isDelete);
+		dueDateField.setEnabled(!isDelete && !isExternal);
+		includedField.setEnabled(!isDelete);
+		releasedField.setEnabled(!isDelete);
+		categoryPicker.setEnabled(!isDelete);
 		
-		
-		categoryPicker.setVisible(isItem);
+		categoryPicker.setVisible(hasCategories && isItem);
 		categoryTypePicker.setVisible(!isNotGradebook);
+		gradeTypePicker.setVisible(!isNotGradebook);
 		extraCreditField.setVisible(isNotGradebook);
 		equallyWeightChildrenField.setVisible(isCategory);
 		includedField.setVisible(isNotGradebook);
 		releasedField.setVisible(isItem);
-		//percentCategoryField.setEnabled(isItem);
-		//percentCategoryField.setVisible(isItem);
 		percentCourseGradeField.setVisible(isCategory);
 		pointsField.setVisible(isItem);
 		dueDateField.setVisible(isItem);
@@ -952,6 +607,13 @@ public class ItemFormPanel extends ContentPanel {
 										
 										Dispatcher.forwardEvent(GradebookEvents.UpdateItem, new ItemUpdate(store, itemModel, e.field.getName(), oldCategoryType, newCategoryType));
 										return;
+									} else if (property.equals(ItemModel.Key.GRADETYPE.name())) {
+										
+										GradeType oldGradeType = getGradeType((ModelData)e.oldValue);
+										GradeType newGradeType = getGradeType((ModelData)e.value);
+										
+										Dispatcher.forwardEvent(GradebookEvents.UpdateItem, new ItemUpdate(store, itemModel, e.field.getName(), oldGradeType, newGradeType));
+										return;
 									}
 									
 									Dispatcher.forwardEvent(GradebookEvents.UpdateItem, new ItemUpdate(store, itemModel, e.field.getName(), e.oldValue, e.value));
@@ -1002,7 +664,8 @@ public class ItemFormPanel extends ContentPanel {
 										return null;
 									}
 								});
-							} else if (name.equals(ItemModel.Key.CATEGORYTYPE.name())) {
+							} else if (name.equals(ItemModel.Key.CATEGORYTYPE.name()) ||
+									name.equals(ItemModel.Key.GRADETYPE.name())) {
 								b.setConvertor(new Converter() {
 									public Object convertFieldValue(Object value) {
 										return value;
@@ -1014,6 +677,8 @@ public class ItemFormPanel extends ContentPanel {
 										
 										if (value instanceof CategoryType)
 											return getCategoryTypeModel((CategoryType)value);
+										if (value instanceof GradeType)
+											return getGradeTypeModel((GradeType)value);
 										else if (value instanceof ModelData) {
 											return value;
 										}
@@ -1022,7 +687,7 @@ public class ItemFormPanel extends ContentPanel {
 									}
 								});
 								
-							}
+							} 
 							bindings.put(f, b);
 						}
 					}
@@ -1033,46 +698,59 @@ public class ItemFormPanel extends ContentPanel {
 	}
 	
 	private void initListeners() {
-
-		comboSelectionChangedListener = new SelectionChangedListener<SimpleComboValue<String>>() {
+		
+		selectionListener = new SelectionListener<ButtonEvent>() {
 
 			@Override
-			public void selectionChanged(
-					SelectionChangedEvent<SimpleComboValue<String>> se) {
-				
-				
-			}
-			
-		};
-		
-		selectionChangedListener = new SelectionChangedListener<ItemModel>() {
-
-			@Override
-			public void selectionChanged(SelectionChangedEvent<ItemModel> se) {
-				ItemModel itemModel = se.getSelectedItem();
-				
-				if (itemModel != null) {
-					Dispatcher.forwardEvent(GradebookEvents.StartEditItem, itemModel);
-				}
-			}
-			
-		};
-		
-		/*treeTableEventListener = new Listener<TreeTableEvent>() {
-			public void handleEvent(TreeTableEvent tte) {
-				switch (tte.type) {
-				case Events.RowClick:
-					if (tte.rowIndex > 0) {
-						ItemModel itemModel = (ItemModel)tte.item.getModel();
-						Dispatcher.forwardEvent(GradebookEvents.StartEditItem, itemModel);
-					} else {
-						Dispatcher.forwardEvent(GradebookEvents.StartEditItem, null);
+			public void componentSelected(ButtonEvent be) {
+				Button button = be.button;
+				if (button != null) {
+					SelectionType selectionType = button.getData(selectionTypeField);
+					if (selectionType != null) {
+						switch (selectionType) {
+						case CLOSE:
+							Dispatcher.forwardEvent(GradebookEvents.HideEastPanel, Boolean.FALSE);
+							break;
+						case CREATE:
+							if (nameField.getValue() == null) {
+								MessageBox.alert(i18n.itemNameRequiredTitle(), i18n.itemNameRequiredText(), null);
+								return;
+							}
+							
+							ItemModel item = new ItemModel();
+							
+							ItemModel category = categoryPicker.getValue();
+							
+							if (category != null) 
+								item.setCategoryId(category.getCategoryId());
+							
+							item.setName(nameField.getValue());
+							item.setExtraCredit(extraCreditField.getValue());
+							item.setEqualWeightAssignments(equallyWeightChildrenField.getValue());
+							item.setIncluded(includedField.getValue());
+							item.setReleased(releasedField.getValue());
+							item.setPercentCourseGrade((Double)percentCourseGradeField.getValue());
+							item.setPercentCategory((Double)percentCategoryField.getValue());
+							item.setPoints((Double)pointsField.getValue());
+							item.setDueDate(dueDateField.getValue());
+							item.setItemType(createItemType);
+							
+							Dispatcher.forwardEvent(GradebookEvents.CreateItem, new ItemCreate(treeStore, item));
+							break;
+						case DELETE:
+							Dispatcher.forwardEvent(GradebookEvents.DeleteItem, new ItemUpdate(treeStore, selectedItemModel, ItemModel.Key.REMOVED.name(), Boolean.FALSE, Boolean.TRUE));
+							Dispatcher.forwardEvent(GradebookEvents.HideEastPanel, Boolean.FALSE);
+							break;
+						case CANCEL:
+							Dispatcher.forwardEvent(GradebookEvents.HideEastPanel, Boolean.FALSE);
+							break;
+						}
 					}
-					tte.stopEvent();
-					break;
 				}
+
 			}
-		};*/
+			
+		};
 		
 	}
 

@@ -101,6 +101,8 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 	
 	protected RefreshAction refreshAction = RefreshAction.NONE;
 	
+	protected CellSelectionModel<M> cellSelectionModel;
+	
 	public GridPanel(String gridId, EntityType entityType) {
 		this(gridId, entityType, null);
 	}
@@ -318,7 +320,7 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		
 		addGridListenersAndPlugins(grid);
 		
-		CellSelectionModel<M> cellSelectionModel = new CellSelectionModel<M>();
+		cellSelectionModel = new CellSelectionModel<M>();
 		cellSelectionModel.setSelectionMode(SelectionMode.SINGLE);
 		cellSelectionModel.addSelectionChangedListener(new SelectionChangedListener<M>() {
 

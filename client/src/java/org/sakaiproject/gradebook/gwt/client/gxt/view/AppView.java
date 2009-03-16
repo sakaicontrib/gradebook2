@@ -24,7 +24,7 @@ import com.google.gwt.user.client.ui.RootPanel;
 
 public abstract class AppView extends View {
 
-	public enum EastCard { HELP, EDIT_ITEM, EDIT_GRADE };
+	public enum EastCard { DELETE_ITEM, EDIT_ITEM, HELP, LEARNER_SUMMARY, NEW_CATEGORY, NEW_ITEM };
 	
 	private static final int screenHeight = 600;
 	
@@ -57,6 +57,8 @@ public abstract class AppView extends View {
 			onLearnerGradeRecordUpdated((UserEntityAction<?>)event.data);
 			break;
 		case GradebookEvents.NewCategory:
+			onNewCategory((ItemModel)event.data);
+			break;
 		case GradebookEvents.NewItem:
 			onNewItem((ItemModel)event.data);
 			break;
@@ -71,6 +73,12 @@ public abstract class AppView extends View {
 			break;
 		case GradebookEvents.ExpandEastPanel:
 			onExpandEastPanel((EastCard)event.data);
+			break;
+		case GradebookEvents.ItemCreated:
+			onItemCreated((ItemModel)event.data);
+			break;
+		case GradebookEvents.ItemDeleted:
+			onItemDeleted((ItemModel)event.data);
 			break;
 		case GradebookEvents.ItemUpdated:
 			onItemUpdated((ItemModel)event.data);
@@ -138,6 +146,14 @@ public abstract class AppView extends View {
 		
 	}
 	
+	protected void onItemCreated(ItemModel itemModel) {
+		
+	}
+	
+	protected void onItemDeleted(ItemModel itemModel) {
+		
+	}
+	
 	protected void onItemUpdated(ItemModel itemModel) {
 		
 	}
@@ -151,6 +167,10 @@ public abstract class AppView extends View {
 	}
 	
 	protected void onOpenNotification() {
+		
+	}
+	
+	protected void onNewCategory(ItemModel itemModel) {
 		
 	}
 	

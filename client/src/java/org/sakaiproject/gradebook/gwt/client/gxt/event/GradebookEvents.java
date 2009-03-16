@@ -31,21 +31,25 @@ public class GradebookEvents {
 	
 	public static final int BrowseLearner 				= 14001;
 	public static final int Confirmation				= 14002;
-	public static final int CloseNotification			= 14003;
-	public static final int CreateItem					= 14004;
-	public static final int DeleteItem					= 14005;
-	public static final int ExpandEastPanel 			= 14015;
-	public static final int FullScreen					= 14016;
+	public static final int ConfirmDeleteItem			= 14003;
+	public static final int CloseNotification			= 14004;
+	public static final int CreateItem					= 14005;
+	public static final int DeleteItem					= 14006;
+	public static final int ExpandEastPanel 			= 14014;
+	public static final int FullScreen					= 14015;
+	public static final int HideColumn					= 14016;
 	public static final int ItemCreated					= 14017;
-	public static final int ItemUpdated					= 14018;
-	public static final int LearnerGradeRecordUpdated	= 14019; 
-	public static final int LoadItemTreeModel 			= 14020;
+	public static final int ItemDeleted					= 14018;
+	public static final int ItemUpdated					= 14019;
+	public static final int LearnerGradeRecordUpdated	= 14020; 
+	public static final int LoadItemTreeModel 			= 14021;
 	public static final int NewCategory					= 14025;
 	public static final int NewItem						= 14030;
 	public static final int Notification				= 14031;
 	public static final int RevertItem					= 14034;
-	public static final int SelectItem					= 14035;
-	public static final int SelectLearner				= 14036;
+	public static final int SelectDeleteItem			= 14035;
+	public static final int SelectItem					= 14036;
+	public static final int SelectLearner				= 14037;
 	public static final int ShowColumns					= 14040;
 	public static final int SingleGrade					= 14045;
 	public static final int SingleView 					= 14050;
@@ -58,7 +62,7 @@ public class GradebookEvents {
 	public static final int UpdateLearnerGradeRecord	= 14070;
 	public static final int UpdateItem					= 14075;
 	
-	public static final int Exception 				= 14100;
+	public static final int Exception 					= 14100;
 	
 	
 	public static final int EqualWeight = 12000;

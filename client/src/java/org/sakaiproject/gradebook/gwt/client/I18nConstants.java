@@ -84,10 +84,19 @@ public interface I18nConstants extends Constants {
 	String addItemNoCategoryHeading();
 	String addItemNoCategoryMessage();
 	
+	String deleteItemHeading();
 	String editItemHeading();
+	String helpHeading();
+	String learnerSummaryHeading();
+	String newCategoryHeading();
+	String newItemHeading();
 	
+	String headerAddCategory();
+	String headerAddCategoryTitle();
 	String headerAddItem();
 	String headerAddItemTitle();
+	String headerEditItem();
+	String headerEditItemTitle();
 	String headerDeleteItem();
 	String headerDeleteItemTitle();
 	String headerHideItem();
@@ -97,6 +106,17 @@ public interface I18nConstants extends Constants {
 	String headerSortAscendingTitle();
 	String headerSortDescendingTitle();
 	String requiredLabel();
+	
+	String cancelButton();
+	String closeButton();
+	String createButton();
+	String deleteButton();
+
+	
+	String itemNameRequiredTitle();
+	String itemNameRequiredText();
+	
+	String directionsConfirmDeleteItem();
 	
 	String confirmChangingWeightEquallyWeighted();
 	String changingPointsRecalculatesGrades();

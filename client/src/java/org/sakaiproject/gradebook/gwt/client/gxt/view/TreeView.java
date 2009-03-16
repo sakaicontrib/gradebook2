@@ -45,8 +45,23 @@ public class TreeView extends View {
 	@Override
 	protected void handleEvent(AppEvent<?> event) {
 		switch(event.type) {
+		case GradebookEvents.ConfirmDeleteItem:
+			onConfirmDeleteItem((ItemModel)event.data);
+			break;
+		case GradebookEvents.SelectDeleteItem:
+			onConfirmDeleteItem((String)event.data);
+			break;
+		case GradebookEvents.ItemCreated:
+			onItemCreated((ItemModel)event.data);
+			break;
 		case GradebookEvents.ItemUpdated:
 			onItemUpdated((ItemModel)event.data);
+			break;
+		case GradebookEvents.HideColumn:
+			onHideColumn((String)event.data);
+			break;
+		case GradebookEvents.SingleGrade:
+			onSingleGrade();
 			break;
 		case GradebookEvents.StartEditItem:
 			onEditItem((ItemModel)event.data);
@@ -58,6 +73,8 @@ public class TreeView extends View {
 			onLoadItemTreeModel((GradebookModel)event.data);
 			break;
 		case GradebookEvents.NewCategory:
+			onNewCategory((ItemModel)event.data);
+			break;
 		case GradebookEvents.NewItem:
 			onNewItem((ItemModel)event.data);
 			break;
@@ -77,6 +94,17 @@ public class TreeView extends View {
 		}
 	}
 	
+	protected void onConfirmDeleteItem(String itemModelId) {
+		ItemModel itemModel = findItemByColumnId(itemModelId);
+	
+		if (itemModel != null)
+			formPanel.onConfirmDeleteItem(itemModel);
+	}
+	
+	protected void onConfirmDeleteItem(ItemModel itemModel) {
+		formPanel.onConfirmDeleteItem(itemModel);
+	}
+	
 	protected void onEditItem(ItemModel itemModel) {
 		formPanel.onEditItem(itemModel);
 	}
@@ -88,8 +116,19 @@ public class TreeView extends View {
 			treeStore.rejectChanges();	
 	}
 	
+	protected void onHideColumn(String columnId) {
+		ItemModel itemModel = findItemByColumnId(columnId);
+		
+		if (itemModel != null)
+			treePanel.onHideColumn(itemModel);
+	}
+	
+	protected void onItemCreated(ItemModel itemModel) {
+		treePanel.onItemCreated(itemModel);
+		formPanel.onItemCreated(itemModel);
+	}
+	
 	protected void onItemUpdated(ItemModel itemModel) {
-		//treeStore.update(itemModel);
 		formPanel.onItemUpdated(itemModel);
 	}
 	
@@ -97,7 +136,7 @@ public class TreeView extends View {
 		treeStore.removeAll();
 		ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
 		ItemModel rootItemModel = new ItemModel();
-		rootItemModel.setItemType(Type.ROOT.getName());
+		rootItemModel.setItemType(Type.ROOT);
 		rootItemModel.setName("Root");
 		gradebookItemModel.setParent(rootItemModel);
 		rootItemModel.add(gradebookItemModel);
@@ -105,6 +144,10 @@ public class TreeView extends View {
 		treePanel.onLoadItemTreeModel(selectedGradebook, rootItemModel);
 		formPanel.onLoadItemTreeModel(rootItemModel);
 		treePanel.expandTrees();
+	}
+	
+	protected void onNewCategory(ItemModel itemModel) {
+		formPanel.onNewCategory(itemModel);
 	}
 	
 	protected void onNewItem(ItemModel itemModel) {
@@ -117,15 +160,18 @@ public class TreeView extends View {
 			List<ItemModel> itemModels = treeStore.findModels(ItemModel.Key.ID.name(), itemModelId);
 			if (itemModels != null) {
 				for (ItemModel itemModel : itemModels) {
-					String itemType = itemModel.getItemType();
-					String source = itemModel.getSource();
-					if (itemType.equals(Type.ITEM.getName()) && (source == null || !source.equals("Static"))) {
+					Type itemType = itemModel.getItemType();
+					if (itemType == Type.ITEM) {
 						onEditItem(itemModel);
 						break;
 					}
 				}
 			}
 		}
+	}
+	
+	protected void onSingleGrade() {
+		treePanel.onSingleGrade();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -157,8 +203,8 @@ public class TreeView extends View {
 				@Override
 				public int compare(Store store, ItemModel m1, ItemModel m2,
 						String property) {
-					boolean m1Category = m1.getItemType().equalsIgnoreCase("Category");
-					boolean m2Category = m2.getItemType().equalsIgnoreCase("Category");
+					boolean m1Category = m1.getItemType() == Type.CATEGORY;
+					boolean m2Category = m2.getItemType() == Type.CATEGORY;
 
 					if (m1Category && !m2Category) {
 						return -1;
@@ -193,6 +239,24 @@ public class TreeView extends View {
 	
 	protected void onUserChange(UserEntityAction<?> action) {
 		treePanel.onUserChange(action);
+	}
+	
+	
+	private ItemModel findItemByColumnId(String itemModelId) {
+		ItemModel itemModel = null;
+		
+		List<ItemModel> itemModels = treeStore.findModels(ItemModel.Key.ID.name(), itemModelId);
+		if (itemModels != null) {
+			for (ItemModel current : itemModels) {
+				Type itemType = current.getItemType();
+				if (itemType == Type.ITEM) {
+					itemModel = current;
+					break;
+				}
+			}
+		}
+	
+		return itemModel;
 	}
 	
 	// Public accessors

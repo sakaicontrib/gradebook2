@@ -357,11 +357,9 @@ public class AddAssignmentDialog extends Dialog {
 		
 		ItemModel itemModel = getItemModel();
 	    if (itemModel != null) {
-	    	if (!itemModel.getItemType().equals(Type.CATEGORY.getName())) {
+	    	if (itemModel.getItemType() != Type.CATEGORY) {
 	    		itemModel = itemModel.getParent();
-	    	}
-	    	
-	    	if (itemModel.getItemType().equals(Type.CATEGORY.getName())) {
+	    	} else {
 		    	CategoryModel categoryModel = categoriesStore.findModel(CategoryModel.Key.ID.name(), getItemModel().getIdentifier());
 		    	categoryPicker.setValue(categoryModel);
 	    	}

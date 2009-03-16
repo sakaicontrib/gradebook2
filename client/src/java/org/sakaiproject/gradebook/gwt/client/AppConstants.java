@@ -26,8 +26,10 @@ public interface AppConstants {
 	public static final String ID_RG_NO_MENUITEM			= "releaseGradesNoMenuItem";
 	public static final String ID_CT_ADD_CATEGORY_MENUITEM  = "contextAddCategoryMenuItem";
 	public static final String ID_CT_ADD_ITEM_MENUITEM  	= "contextAddItemMenuItem";
+	public static final String ID_CT_DELETE_ITEM_MENUITEM  	= "contextDeleteItemMenuItem";
 	public static final String ID_CT_EDIT_ITEM_MENUITEM  	= "contextEditItemMenuItem";
 	public static final String ID_HD_ADD_ITEM_MENUITEM		= "headerAddItemMenuItem";
+	public static final String ID_HD_EDIT_ITEM_MENUITEM		= "headerEditItemMenuItem";
 	public static final String ID_HD_DELETE_ITEM_MENUITEM	= "headerDeleteItemMenuItem";
 	public static final String ID_HD_HIDE_ITEM_MENUITEM		= "headerHideItemMenuItem";
 	public static final String ID_CONFIRM_OK_BUTTON			= "confirmationOkButton";

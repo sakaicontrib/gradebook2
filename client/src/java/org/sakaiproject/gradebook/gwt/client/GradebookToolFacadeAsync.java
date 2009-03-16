@@ -40,7 +40,7 @@ public interface GradebookToolFacadeAsync {
 		
 	<X extends EntityModel> void createEntity(UserEntityCreateAction<X> action, AsyncCallback<X> callback);
 
-	<X extends ItemModel> void createItemEntity(UserEntityCreateAction<X> action, AsyncCallback<List<X>> callback);
+	<X extends ItemModel> void createItemEntity(UserEntityCreateAction<X> action, AsyncCallback<X> callback);
 	
 	<X extends EntityModel> void getEntity(UserEntityGetAction<X> action, AsyncCallback<X> callback);
 	
@@ -52,7 +52,7 @@ public interface GradebookToolFacadeAsync {
 	
 	void recalculateEqualWeightingCategories(String gradebookUid, Long gradebookId, Boolean isEqualWeighting, AsyncCallback<List<CategoryModel>> callback);
 
-	<X extends ItemModel> void updateItemEntity(UserEntityUpdateAction<X> action, AsyncCallback<List<X>> callback);
+	<X extends ItemModel> void updateItemEntity(UserEntityUpdateAction<X> action, AsyncCallback<X> callback);
 	
 	<X extends EntityModel> void updateEntity(UserEntityUpdateAction<X> action, AsyncCallback<X> callback);
 	

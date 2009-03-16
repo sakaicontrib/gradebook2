@@ -57,7 +57,6 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
-import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.Style.SortDir;
 import com.extjs.gxt.ui.client.data.BasePagingLoader;
 import com.extjs.gxt.ui.client.data.ModelData;
@@ -96,13 +95,11 @@ import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.tips.ToolTip;
-import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.extjs.gxt.ui.client.widget.toolbar.AdapterToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.SeparatorToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.TextToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.user.client.Element;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.KeyboardListener;
@@ -240,6 +237,10 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		
 	}
 	
+	public void deselectAll() {
+		cellSelectionModel.deselectAll();
+	}
+	
 	@Override
 	public void editCell(GradebookModel selectedGradebook, Record record, String property, Object value, Object startValue, GridEvent gridEvent) {
 		
@@ -334,7 +335,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 					grid.getStore().removeListener(Store.DataChanged, this);
 					
 					if (selectedLearner != null)
-						grid.getSelectionModel().select(currentIndex);
+						cellSelectionModel.select(currentIndex);
 					
 				}
 				
@@ -345,7 +346,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			//Dispatcher.forwardEvent(GradebookEvents.SingleView, selectedLearner);
 			
 			if (selectedLearner != null)
-				grid.getSelectionModel().select(currentIndex);
+				cellSelectionModel.select(currentIndex);
 		}
 	}
 
@@ -368,9 +369,43 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		
 	}
 	
+	public void onItemCreated(ItemModel itemModel) {
+		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+
+		ItemModel gradebookModel = selectedGradebook.getGradebookItemModel();
+		
+		if (gradebookModel.equals(itemModel.getParent())) {
+			gradebookModel.getChildren().add(itemModel);
+		} else {
+			for (ItemModel category : gradebookModel.getChildren()) {
+				if (category.equals(itemModel.getParent()))
+					category.getChildren().add(itemModel);
+			}
+		}
+		
+		onLoadItemTreeModel(selectedGradebook);
+	}
+	
+	public void onItemDeleted(ItemModel itemModel) {
+		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+
+		ItemModel gradebookModel = selectedGradebook.getGradebookItemModel();
+		
+		if (gradebookModel.getChildren().contains(itemModel)) {
+			gradebookModel.getChildren().remove(itemModel);
+		} else {
+			for (ItemModel category : gradebookModel.getChildren()) {
+				if (category.getChildren().contains(itemModel))
+					category.getChildren().remove(itemModel);
+			}
+		}
+		
+		onLoadItemTreeModel(selectedGradebook);
+	}
+	
 	public void onItemUpdated(ItemModel itemModel) {
 		
-		if (itemModel.getItemType().equals(Type.ITEM.getName())) {
+		if (itemModel.getItemType() == Type.ITEM) {
 			
 			for (int i=0;i<cm.getColumnCount();i++) {
 				ColumnConfig column = cm.getColumn(i);
@@ -1351,7 +1386,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		
 		String gradebookUid = selectedGradebook.getGradebookUid();
 		int columnWidth = GradebookState.getColumnWidth(gradebookUid, gridId, id, name);
-		boolean isHidden = GradebookState.isColumnHidden(gradebookUid, gridId, id, defaultHidden);
+		boolean isHidden = true; //GradebookState.isColumnHidden(gradebookUid, gridId, id, defaultHidden);
 		
 		ColumnConfig config = new ColumnConfig(id, name, columnWidth);
 		
@@ -1438,15 +1473,16 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		for (ItemModel gradebook : gradebookItemModel.getChildren()) {
 			for (ItemModel child : gradebook.getChildren()) {
 				
-				if (child.getItemType().equals(Type.CATEGORY.getName())) {
-					
+				switch (child.getItemType()) {
+				case CATEGORY:
 					for (ItemModel item : child.getChildren()) {
 						configs.add(buildColumn(selectedGradebook, item));
 					}
-					
-				} else {
+					break;
+				case ITEM:
 					configs.add(buildColumn(selectedGradebook, child));
-				}			
+					break;
+				}		
 			}
 		}
 		

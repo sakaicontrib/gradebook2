@@ -132,7 +132,7 @@ public class GradebookToolFacadeMockImpl extends RemoteServiceServlet implements
 		return delegateFacade.createEntity(action);
 	}
 	
-	public <X extends ItemModel> List<X> createItemEntity(UserEntityCreateAction<X> action) throws FatalException {
+	public <X extends ItemModel> X createItemEntity(UserEntityCreateAction<X> action) throws FatalException {
 		
 		return delegateFacade.createItemEntity(action);
 	}
@@ -164,7 +164,7 @@ public class GradebookToolFacadeMockImpl extends RemoteServiceServlet implements
 		return delegateFacade.recalculateEqualWeightingCategories(gradebookUid, gradebookId, isEqualWeighting);
 	}
 	
-	public <X extends ItemModel> List<X> updateItemEntity(UserEntityUpdateAction<X> action) throws InvalidInputException, FatalException {
+	public <X extends ItemModel> X updateItemEntity(UserEntityUpdateAction<X> action) throws InvalidInputException, FatalException {
 		
 		return delegateFacade.updateItemEntity(action);
 	}

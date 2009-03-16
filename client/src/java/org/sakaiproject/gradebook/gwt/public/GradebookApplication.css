@@ -286,6 +286,10 @@
 	background-image:url(images/default/button/table_add.png);	
 }
 
+.gbDeleteItemIcon {
+	background-image:url(images/default/button/table_delete.png);	
+}
+
 .gbEditItemIcon {
 	background-image:url(images/default/button/table_edit.png);	
 }

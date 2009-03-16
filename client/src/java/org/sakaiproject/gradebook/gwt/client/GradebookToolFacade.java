@@ -52,7 +52,7 @@ public interface GradebookToolFacade extends RemoteService {
 	
 	<X extends EntityModel> X createEntity(UserEntityCreateAction<X> action) throws FatalException;
 	
-	<X extends ItemModel> List<X> createItemEntity(UserEntityCreateAction<X> action) throws FatalException;
+	<X extends ItemModel> X createItemEntity(UserEntityCreateAction<X> action) throws FatalException;
 	
 	<X extends EntityModel> X getEntity(UserEntityGetAction<X> action) throws FatalException;
 	
@@ -64,7 +64,7 @@ public interface GradebookToolFacade extends RemoteService {
 	
 	List<CategoryModel> recalculateEqualWeightingCategories(String gradebookUid, Long gradebookId, Boolean isEqualWeighting);
 	
-	<X extends ItemModel> List<X> updateItemEntity(UserEntityUpdateAction<X> action) throws InvalidInputException, FatalException;
+	<X extends ItemModel> X updateItemEntity(UserEntityUpdateAction<X> action) throws InvalidInputException, FatalException;
 	
 	<X extends EntityModel> X updateEntity(UserEntityUpdateAction<X> action) throws InvalidInputException, FatalException;
 	

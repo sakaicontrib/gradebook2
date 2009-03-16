@@ -41,11 +41,13 @@ import org.sakaiproject.gradebook.gwt.client.model.GradeEventModel;
 
 import com.extjs.gxt.ui.client.XDOM;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
+import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.util.Format;
 import com.extjs.gxt.ui.client.util.Params;
 import com.extjs.gxt.ui.client.util.Point;
 import com.extjs.gxt.ui.client.util.Size;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
+import com.extjs.gxt.ui.client.widget.button.ToolButton;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -138,7 +140,8 @@ public class LogDisplay extends ContentPanel {
 
 	private LogConfig config;
 	private int level;
-
+	private SelectionListener<ComponentEvent> selectionListener;
+	
 	/**
 	 * Creates a new info instance.
 	 */
@@ -148,6 +151,8 @@ public class LogDisplay extends ContentPanel {
 		setShadow(true);
 		setLayoutOnChange(true);
 		setLayout(new RowLayout());
+		initListeners();
+		getHeader().addTool(new ToolButton("x-tool-close", selectionListener));
 	}
 
 	public void hide() {
@@ -182,6 +187,17 @@ public class LogDisplay extends ContentPanel {
 		t.schedule(config.display);
 	}
 
+	private void initListeners() {
+		selectionListener = new SelectionListener<ComponentEvent>() {
+
+			@Override
+			public void componentSelected(ComponentEvent ce) {
+				afterHide();
+			}
+			
+		};
+	}
+	
 	private void onShowInfo(int x, int y) {
 		RootPanel.get().add(this);
 		el().makePositionable(true);
@@ -208,7 +224,7 @@ public class LogDisplay extends ContentPanel {
 		el().setLeftTop(x, y);
 		setSize(config.width, config.height);
 
-		blur();
+		//blur();
 		if (!config.isPermanent)
 			afterShow();
 	}

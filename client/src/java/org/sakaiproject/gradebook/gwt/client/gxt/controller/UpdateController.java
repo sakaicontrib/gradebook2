@@ -28,7 +28,6 @@ import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.store.Store;
 import com.extjs.gxt.ui.client.store.TreeStore;
-import com.extjs.gxt.ui.client.widget.Info;
 
 public class UpdateController extends Controller {
 
@@ -51,7 +50,7 @@ public class UpdateController extends Controller {
 			onCreateItem((ItemCreate)event.data);
 			break;
 		case GradebookEvents.DeleteItem:
-			onDeleteItem();
+			onDeleteItem((ItemUpdate)event.data);
 			break;
 		case GradebookEvents.RevertItem:
 			onRevertItem((ItemUpdate)event.data);
@@ -68,10 +67,15 @@ public class UpdateController extends Controller {
 	private void onCreateItem(final ItemCreate event) {
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 		
-		final UserEntityCreateAction<ItemModel> action = new UserEntityCreateAction<ItemModel>(selectedGradebook, EntityType.GRADE_ITEM, event.item);		
+		EntityType entityType = EntityType.GRADE_ITEM;
+		
+		if (event.item.getItemType() == Type.CATEGORY)
+			entityType = EntityType.CATEGORY;
+		
+		final UserEntityCreateAction<ItemModel> action = new UserEntityCreateAction<ItemModel>(selectedGradebook, entityType, event.item);		
 		
 		GradebookToolFacadeAsync service = Registry.get("service");
-		NotifyingAsyncCallback<List<ItemModel>> callback = new NotifyingAsyncCallback<List<ItemModel>>() {
+		NotifyingAsyncCallback<ItemModel> callback = new NotifyingAsyncCallback<ItemModel>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				super.onFailure(caught);
@@ -83,35 +87,37 @@ public class UpdateController extends Controller {
 				Dispatcher.forwardEvent(GradebookEvents.Notification, message);
 			}
 			
-			public void onSuccess(List<ItemModel> resultList) {
+			public void onSuccess(ItemModel result) {
 
-				for (ItemModel result : resultList) {
-					
-					if (result.getItemType().equalsIgnoreCase(Type.GRADEBOOK.getName())) {
-						GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-						selectedGradebook.setGradebookItemModel(result);
-						Dispatcher.forwardEvent(GradebookEvents.ItemUpdated, result);
-						Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel, selectedGradebook);
-					} else if (result.getItemType().equalsIgnoreCase(Type.CATEGORY.getName())) {
-						
-						if (result.isNew())
-							doCreateItem(event, result);
+				switch (result.getItemType()) {
+				case GRADEBOOK:
+					GradebookModel selectedGradebook = Registry
+							.get(AppConstants.CURRENT);
+					selectedGradebook.setGradebookItemModel(result);
+					Dispatcher
+							.forwardEvent(GradebookEvents.ItemUpdated, result);
+					Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel,
+							selectedGradebook);
+					break;
+				case CATEGORY:
+					if (result.isNew())
+						doCreateItem(event, result);
+					else
+						doUpdateItem(event.store, null, null, result);
+
+					for (ItemModel item : result.getChildren()) {
+						if (item.isNew())
+							doCreateItem(event, item);
 						else
-							doUpdateItem(event.store, null, null, result);
-					
-						for (ItemModel item : result.getChildren()) {
-							if (item.isNew())
-								doCreateItem(event, item);
-							else
-								doUpdateItem(event.store, null, null, item);
-						}
-					} else {
-						if (result.isNew())
-							doCreateItem(event, result);
-						else
-							doUpdateItem(event.store, null, null, result);
+							doUpdateItem(event.store, null, null, item);
 					}
-					
+					break;
+				case ITEM:
+					if (result.isNew())
+						doCreateItem(event, result);
+					else
+						doUpdateItem(event.store, null, null, result);
+					break;
 				}
 			}
 		};
@@ -119,8 +125,33 @@ public class UpdateController extends Controller {
 		service.createItemEntity(action, callback);
 	}
 	
-	private void onDeleteItem() {
-		Info.display("Delete Item", "Not yet implemented");
+	private void onDeleteItemSuccess(ItemUpdate event) {
+		Dispatcher.forwardEvent(GradebookEvents.ItemDeleted, event.item);
+		TreeStore<ItemModel> treeStore = (TreeStore<ItemModel>)event.store;
+		treeStore.remove(event.item.getParent(), event.item);
+	}
+	
+	private void onDeleteItem(final ItemUpdate event) {
+		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		ClassType classType = ItemModel.lookupClassType(event.property);
+		
+		UserEntityUpdateAction<ItemModel> action = new UserEntityUpdateAction<ItemModel>(selectedGradebook, (ItemModel)event.record.getModel(), event.property, classType, event.value, event.oldValue);		
+		
+		GradebookToolFacadeAsync service = Registry.get("service");
+		NotifyingAsyncCallback<ItemModel> callback = new NotifyingAsyncCallback<ItemModel>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				super.onFailure(caught);
+				onUpdateItemFailure(event, caught);
+			}
+			
+			public void onSuccess(ItemModel result) {
+				onUpdateItemSuccess(event, result);
+				onDeleteItemSuccess(event);
+			}
+		};
+		
+		service.updateItemEntity((UserEntityUpdateAction<ItemModel>)action, callback);
 	}
 	
 	private void onUpdateGradeRecord(GradeRecordUpdate event) {
@@ -147,7 +178,7 @@ public class UpdateController extends Controller {
 				
 				String message = new StringBuilder("Failed to update grade: ").append(caught.getMessage()).toString();
 				
-				notifier.notifyError("Exception", message);
+				//notifier.notifyError("Exception", message);
 				Dispatcher.forwardEvent(GradebookEvents.Notification, message);
 			}
 			
@@ -245,150 +276,120 @@ public class UpdateController extends Controller {
 			
 		record.setValid(property, false);
 	}
+	
+	private void onUpdateItemFailure(ItemUpdate event, Throwable caught) {
+		Record record = event.record;
+		String property = event.property;
+		
+		// Save the exception message on the record
+		String failedProperty = property + FAILED_FLAG;
+		record.set(failedProperty, caught.getMessage());
+				
+		// We have to fool the system into thinking that the value has changed, since
+		// we snuck in that "Saving..." under the radar.
+		record.set(property, null);
+		record.set(property, event.oldValue);
+				
+		record.setValid(property, false);
+		
+		notifier.notifyError("Error", "Failed to update: {0} ", caught.getMessage());
+		
+		String message = new StringBuilder("Failed to update item: ").append(caught.getMessage()).toString();
+		
+		Dispatcher.forwardEvent(GradebookEvents.Notification, message);
+	}
+	
+	private void onUpdateItemSuccess(ItemUpdate event, ItemModel result) {
+
+		switch (result.getItemType()) {
+		case GRADEBOOK:
+			GradebookModel selectedGradebook = Registry
+					.get(AppConstants.CURRENT);
+			selectedGradebook.setGradebookItemModel(result);
+			Dispatcher.forwardEvent(GradebookEvents.ItemUpdated, result);
+			// Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel,
+			// selectedGradebook);
+
+			boolean isGradebookUpdated = false;
+			if (result.getCategoryType() != selectedGradebook.getCategoryType()) {
+				selectedGradebook.setCategoryType(result.getCategoryType());
+				isGradebookUpdated = true;
+			}
+			if (result.getGradeType() != selectedGradebook.getGradeType()) {
+				selectedGradebook.setGradeType(result.getGradeType());
+				isGradebookUpdated = true;
+			}
+
+			if (isGradebookUpdated) {
+				Dispatcher.forwardEvent(GradebookEvents.SwitchGradebook,
+						selectedGradebook);
+			} else {
+				Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel,
+						selectedGradebook);
+			}
+			break;
+		case CATEGORY:
+			doUpdateItem(event, result);
+
+			for (ItemModel item : result.getChildren()) {
+				doUpdateItem(event, item);
+			}
+			break;
+		case ITEM:
+			doUpdateItem(event, result);
+			break;
+		}
+
+	}
 
 	private void onUpdateItem(final ItemUpdate event) {
-		final Record record = event.record;
-		final String property = event.property;
-		
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 		ClassType classType = ItemModel.lookupClassType(event.property);
 		
-		final UserEntityUpdateAction<ItemModel> action = new UserEntityUpdateAction<ItemModel>(selectedGradebook, (ItemModel)record.getModel(), event.property, classType, event.value, event.oldValue);		
+		UserEntityUpdateAction<ItemModel> action = new UserEntityUpdateAction<ItemModel>(selectedGradebook, (ItemModel)event.record.getModel(), event.property, classType, event.value, event.oldValue);		
 		
 		GradebookToolFacadeAsync service = Registry.get("service");
-		NotifyingAsyncCallback<List<ItemModel>> callback = new NotifyingAsyncCallback<List<ItemModel>>() {
+		NotifyingAsyncCallback<ItemModel> callback = new NotifyingAsyncCallback<ItemModel>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				super.onFailure(caught);
-				
-				// Save the exception message on the record
-				String failedProperty = property + FAILED_FLAG;
-				record.set(failedProperty, caught.getMessage());
-						
-				// We have to fool the system into thinking that the value has changed, since
-				// we snuck in that "Saving..." under the radar.
-				record.set(property, null);
-				record.set(property, event.oldValue);
-						
-				record.setValid(property, false);
-				
-				notifier.notifyError("Error", "Failed to update: {0} ", caught.getMessage());
-				
-				String message = new StringBuilder("Failed to update item: ").append(caught.getMessage()).toString();
-				
-				Dispatcher.forwardEvent(GradebookEvents.Notification, message);
+				onUpdateItemFailure(event, caught);
 			}
 			
-			public void onSuccess(List<ItemModel> resultList) {
-				
-				for (ItemModel result : resultList) {
-					
-					if (result.getItemType().equalsIgnoreCase(Type.GRADEBOOK.getName())) {
-						GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-						selectedGradebook.setGradebookItemModel(result);
-						Dispatcher.forwardEvent(GradebookEvents.ItemUpdated, result);
-						//Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel, selectedGradebook);
-						
-						boolean isGradebookUpdated = false;
-						if (result.getCategoryType() != selectedGradebook.getCategoryType()) {
-							selectedGradebook.setCategoryType(result.getCategoryType());
-							isGradebookUpdated = true;
-						}
-						
-						if (isGradebookUpdated) {
-							Dispatcher.forwardEvent(GradebookEvents.SwitchGradebook, selectedGradebook);
-						} else {
-							Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel, selectedGradebook);
-						}
-						
-					} else if (result.getItemType().equalsIgnoreCase(Type.CATEGORY.getName())) {
-						
-						doUpdateItem(event, result);
-					
-						for (ItemModel item : result.getChildren()) {
-							doUpdateItem(event, item);
-						}
-					} else {
-						
-						doUpdateItem(event, result);
-						
-					}
-					
-				}
-				
-				/*boolean rebuildTree = false;
-				
-				TreeStore<ItemModel> treeStore = (TreeStore<ItemModel>)event.store;
-				//treeStore.removeAll();
-				for (ItemModel gradebook : resultList) {
-					treeStore.update(gradebook);
-					for (ItemModel category : gradebook.getChildren()) {
-						treeStore.update(category);
-						for (ItemModel item : category.getChildren()) {
-							if (!item.getParent().equals(category)) {
-								rebuildTree = true;
-							} 
-							Dispatcher.forwardEvent(GradebookEvents.ItemUpdated, item);
-						}
-					}
-
-					if (rebuildTree) {
-						treeStore.removeAll();
-						treeStore.add(gradebook, true);
-					}
-				}
-				
-				*/
-				
-				
-				/*
-				// Ensure that we clear out any older failure messages
-				// Save the exception message on the record
-				String failedProperty = property + FAILED_FLAG;
-				record.set(failedProperty, null);
-			
-				record.setValid(property, true);
-				
-				Object value = event.value;
-				
-				if (value == null)
-					record.set(property, null);
-				else
-					record.set(property, value);
-				
-				//Dispatcher.forwardEvent(GradebookEvents.UserChange, action);
-				
-				StringBuilder buffer = new StringBuilder();
-				buffer.append(action.getEntityName());
-				//notifier.notify(buffer.toString(), 
-				//		"Stored item grade as '{0}' and recalculated course grade to '{1}' ", value, result.get(StudentModel.Key.COURSE_GRADE.name()));
-				//Info.display("FIXME", "Need to handle the update better");	
-				
-				for (ItemModel itemModel : resultList) {
-					Dispatcher.forwardEvent(GradebookEvents.ItemUpdated, itemModel);
-				}
-				*/
-				//Info.display("Items", "Number: " + resultList.size());
+			public void onSuccess(ItemModel result) {
+				onUpdateItemSuccess(event, result);
 			}
 		};
 		
 		service.updateItemEntity((UserEntityUpdateAction<ItemModel>)action, callback);
-	
 	}
 	
 	private void doCreateItem(ItemCreate itemCreate, ItemModel createdItem) {
 		TreeStore<ItemModel> treeStore = (TreeStore<ItemModel>)itemCreate.store;
 		treeStore.add(createdItem.getParent(), createdItem, true);
 		Dispatcher.forwardEvent(GradebookEvents.ItemCreated, createdItem);
+		doUpdatePercentCourseGradeTotal(itemCreate.store, itemCreate.item, createdItem);
+	}
+	
+	private void doUpdatePercentCourseGradeTotal(Store store, ItemModel oldItem, ItemModel updatedItem) {
+		switch (updatedItem.getItemType()) {
+		case CATEGORY:
+			ItemModel gradebookItemModel = updatedItem.getParent();
+			doUpdateItem(store, null, null, gradebookItemModel);
+			break;
+		}
 	}
 	
 	private void doUpdateItem(ItemUpdate itemUpdate, ItemModel updatedItem) {
+		doUpdatePercentCourseGradeTotal(itemUpdate.store, itemUpdate.item, updatedItem);
 		doUpdateItem(itemUpdate.store, itemUpdate.property, itemUpdate.record, updatedItem);
 	}
 	
 	private void doUpdateItem(Store store, String property, Record record, ItemModel updatedItem) {
 		TreeStore<ItemModel> treeStore = (TreeStore<ItemModel>)store;
-		if (property == null || record == null || !doUpdateViaRecord(property, record, updatedItem)) {
+		
+		if (property == null || record == null 
+				|| !doUpdateViaRecord(property, record, updatedItem)) {
 			treeStore.update(updatedItem);
 			Dispatcher.forwardEvent(GradebookEvents.ItemUpdated, updatedItem);
 		}

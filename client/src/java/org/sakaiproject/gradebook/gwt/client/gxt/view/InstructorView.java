@@ -115,7 +115,7 @@ public class InstructorView extends AppView {
 	
 	
 	private ListStore<StudentModel> store;
-	
+	private I18nConstants i18n;
 	
 	public InstructorView(Controller controller, TreeView treeView, NotificationView notificationView) {
 		super(controller, notificationView);
@@ -128,7 +128,7 @@ public class InstructorView extends AppView {
 	protected void initialize() {
 		super.initialize();
 		
-		I18nConstants i18n = Registry.get(AppConstants.I18N);
+		i18n = Registry.get(AppConstants.I18N);
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 		initTabs(i18n, selectedGradebook);
 		initListeners();
@@ -233,44 +233,59 @@ public class InstructorView extends AppView {
 	
 	@Override
 	protected void onExpandEastPanel(EastCard activeCard) {
-		if (!isFull) {
-			borderLayout.show(LayoutRegion.EAST);
-			borderLayout.expand(LayoutRegion.EAST);
-			
-			switch (activeCard) {
-			case HELP:
-				cardLayout.setActiveItem(helpPanel);
-				break;
-			case EDIT_ITEM:
-				cardLayout.setActiveItem(treeView.getFormPanel());
-				break;
-			case EDIT_GRADE:
-				cardLayout.setActiveItem(singleGradeContainer);
-				break;
-			}
+
+		borderLayout.show(LayoutRegion.EAST);
+		borderLayout.expand(LayoutRegion.EAST);
+
+		switch (activeCard) {
+		case DELETE_ITEM:
+			cardLayoutContainer.setHeading(i18n.deleteItemHeading());
+			cardLayout.setActiveItem(treeView.getFormPanel());
+			if (multigrade != null)
+				multigrade.deselectAll();
+			break;
+		case HELP:
+			cardLayoutContainer.setHeading(i18n.helpHeading());
+			cardLayout.setActiveItem(helpPanel);
+			break;
+		case NEW_CATEGORY:
+			cardLayoutContainer.setHeading(i18n.newCategoryHeading());
+			cardLayout.setActiveItem(treeView.getFormPanel());
+			if (multigrade != null)
+				multigrade.deselectAll();
+			break;
+		case NEW_ITEM:
+			cardLayoutContainer.setHeading(i18n.newItemHeading());
+			cardLayout.setActiveItem(treeView.getFormPanel());
+			if (multigrade != null)
+				multigrade.deselectAll();
+			break;
+		case EDIT_ITEM:
+			cardLayoutContainer.setHeading(i18n.editItemHeading());
+			cardLayout.setActiveItem(treeView.getFormPanel());
+			if (multigrade != null)
+				multigrade.deselectAll();
+			break;
+		case LEARNER_SUMMARY:
+			cardLayoutContainer.setHeading(i18n.learnerSummaryHeading());
+			cardLayout.setActiveItem(singleGradeContainer);
+			break;
 		}
+
 	}
 	
-	private Component oldActiveItem;
-	private boolean isFull = false;
-	
-	protected void onFullScreen(FullScreen fullscreen) {
-		isFull = fullscreen.isFull;
+	@Override
+	protected void onItemCreated(ItemModel itemModel) {
+		if (multigrade != null)
+			multigrade.onItemCreated(itemModel);
 		
-		borderLayout.hide(LayoutRegion.CENTER);
-		/*if (fullscreen.isFull) {
-			contentPanel.add(treeView.getFormPanel());
-			cardLayout.setActiveItem(null);
-			oldActiveItem = contentPanelLayout.getActiveItem();
-			contentPanelLayout.setActiveItem(treeView.getFormPanel());
-		} else {
-			contentPanelLayout.setActiveItem(oldActiveItem);
-			cardLayoutContainer.add(treeView.getFormPanel());
-			cardLayout.setActiveItem(treeView.getFormPanel());
-			//cardLayoutContainer.layout();
-			//borderLayoutContainer.layout();
-			//cardLayoutContainer.layout();
-		}*/
+		onHideEastPanel(Boolean.FALSE);
+	}
+	
+	@Override
+	protected void onItemDeleted(ItemModel itemModel) {
+		if (multigrade != null)
+			multigrade.onItemDeleted(itemModel);
 	}
 	
 	@Override
@@ -292,9 +307,13 @@ public class InstructorView extends AppView {
 	}
 	
 	@Override
+	protected void onNewCategory(ItemModel itemModel) {
+		onExpandEastPanel(EastCard.NEW_CATEGORY);
+	}
+	
+	@Override
 	protected void onNewItem(ItemModel itemModel) {
-		onStartEditItem(null);
-		
+		onExpandEastPanel(EastCard.NEW_ITEM);
 	}
 	
 	@Override
@@ -315,11 +334,8 @@ public class InstructorView extends AppView {
 			singleGradeContainer = new LearnerSummaryPanel(multigrade.getStore());
 			cardLayoutContainer.add(singleGradeContainer);
 		}
-		//GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 		singleGradeContainer.onChangeModel(multigrade.getStore(), treeView.getTreeStore(), learnerGradeRecordCollection);
-		borderLayout.show(LayoutRegion.EAST);
-		borderLayout.expand(LayoutRegion.EAST);
-		cardLayout.setActiveItem(singleGradeContainer);
+		onExpandEastPanel(EastCard.LEARNER_SUMMARY);
 	}
 	
 	@Override
@@ -330,11 +346,7 @@ public class InstructorView extends AppView {
 	
 	@Override
 	protected void onStartEditItem(ItemModel itemModel) {
-		if (!isFull) {
-			cardLayout.setActiveItem(treeView.getFormPanel());
-			borderLayout.show(LayoutRegion.EAST);
-			borderLayout.expand(LayoutRegion.EAST);
-		}
+		onExpandEastPanel(EastCard.EDIT_ITEM);
 	}
 	
 	@Override
@@ -345,26 +357,12 @@ public class InstructorView extends AppView {
 	@Override
 	protected void onSwitchGradebook(GradebookModel selectedGradebook) {
 		
-		// FIXME: We need to somehow assemble state (from cookies) each time we switch gradebooks, and this needs
-		// to be tagged on to the information that is passed in this event, so we can compose the column model 
-		// for multigrade and the tree panel checkbox states with the same data
-		
-		/*List<ColumnModel> staticColumns = selectedGradebook.getColumns();
-		for (ColumnModel column : staticColumns) {
-			boolean defaultHidden = column.isHidden() != null && column.isHidden().booleanValue();
-			boolean isHidden = lookupDefaultIsHidden(selectedGradebook.getGradebookUid(), column.getIdentifier(), 
-					defaultHidden);
-			
-			column.setHidden(Boolean.valueOf(isHidden));
-		}*/
-		
-		
-		if (multigrade != null) {
+		if (multigrade != null) 
 			multigrade.onSwitchGradebook(selectedGradebook);
-		}
 		
 		if (preferencesMenu != null)
 			preferencesMenu.onSwitchGradebook(selectedGradebook);
+		
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -492,9 +490,7 @@ public class InstructorView extends AppView {
 
 			@Override
 			public void componentSelected(ToolBarEvent tbe) {
-				cardLayout.setActiveItem(helpPanel);
-				borderLayout.show(LayoutRegion.EAST);
-				borderLayout.expand(LayoutRegion.EAST);
+				onExpandEastPanel(EastCard.HELP);
 			}
 			
 		};
@@ -506,12 +502,6 @@ public class InstructorView extends AppView {
 		tabConfigurations.add(new TabConfig(AppConstants.TAB_HISTORY, i18n.tabHistoryHeader(), true));
 	
 		String gradebookUid = selectedGradebook.getGradebookUid();
-		//String storedTabMode = PersistentStore.getPersistentField(gradebookUid, AppConstants.TAB_MODE, "checked");
-		/*if (storedTabMode != null) {
-			Boolean isChecked = Boolean.valueOf(storedTabMode);
-			tabMode = isChecked != null && isChecked.booleanValue();
-		}*/
-
 		tabMode = GradebookState.getTabMode(gradebookUid);
 	}
 	

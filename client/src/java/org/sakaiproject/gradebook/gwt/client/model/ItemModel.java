@@ -164,12 +164,13 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 		set(Key.REMOVED.name(), removed);
 	}
 	
-	public String getItemType() {
-		return get(Key.ITEM_TYPE.name());
+	public Type getItemType() {
+		String typeName = get(Key.ITEM_TYPE.name());
+		return Type.valueOf(typeName);
 	}
 
-	public void setItemType(String type) {
-		set(Key.ITEM_TYPE.name(), type);
+	public void setItemType(Type type) {
+		set(Key.ITEM_TYPE.name(), type.name());
 	}
 	
 	// Category specific
@@ -318,8 +319,8 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 			if (getIdentifier() == null || other.getIdentifier() == null)
 				return false;
 			
-			String s1 = new StringBuilder().append(getItemType()).append(":").append(getIdentifier()).toString();
-			String s2 = new StringBuilder().append(other.getItemType()).append(":").append(other.getIdentifier()).toString();
+			String s1 = new StringBuilder().append(getItemType().name()).append(":").append(getIdentifier()).toString();
+			String s2 = new StringBuilder().append(other.getItemType().name()).append(":").append(other.getIdentifier()).toString();
 			
 			return s1.equals(s2);
 		}
@@ -328,7 +329,7 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 	
 	 @Override
 	 public int hashCode() {
-		 String id = new StringBuilder().append(getItemType()).append(":").append(getIdentifier()).toString();
+		 String id = new StringBuilder().append(getItemType().name()).append(":").append(getIdentifier()).toString();
 		 int hash = 0;
 		 if (id != null) 
 			 hash = id.hashCode();

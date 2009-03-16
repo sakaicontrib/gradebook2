@@ -34,9 +34,12 @@ public class AppController extends Controller {
 		registerEventTypes(GradebookEvents.BrowseLearner);
 		registerEventTypes(GradebookEvents.CloseNotification);
 		registerEventTypes(GradebookEvents.Confirmation);
+		registerEventTypes(GradebookEvents.ConfirmDeleteItem);
 		registerEventTypes(GradebookEvents.ExpandEastPanel);
 		registerEventTypes(GradebookEvents.FullScreen);
+		registerEventTypes(GradebookEvents.HideColumn);
 		registerEventTypes(GradebookEvents.ItemCreated);
+		registerEventTypes(GradebookEvents.ItemDeleted);
 		registerEventTypes(GradebookEvents.ItemUpdated);
 		registerEventTypes(GradebookEvents.LearnerGradeRecordUpdated);
 		registerEventTypes(GradebookEvents.LoadItemTreeModel);
@@ -44,6 +47,7 @@ public class AppController extends Controller {
 		registerEventTypes(GradebookEvents.NewItem);
 		registerEventTypes(GradebookEvents.Notification);
 		registerEventTypes(GradebookEvents.RevertItem);
+		registerEventTypes(GradebookEvents.SelectDeleteItem);
 		registerEventTypes(GradebookEvents.SelectLearner);
 		registerEventTypes(GradebookEvents.SelectItem);
 		registerEventTypes(GradebookEvents.ShowColumns);
@@ -72,8 +76,15 @@ public class AppController extends Controller {
 		case GradebookEvents.FullScreen:
 			onFullScreen(event);
 			break;
+		case GradebookEvents.HideColumn:
+			onHideColumn(event);
+			break;
 		case GradebookEvents.BrowseLearner:
 			onBrowseLearner(event);
+			break;
+		case GradebookEvents.ConfirmDeleteItem:
+		case GradebookEvents.SelectDeleteItem:
+			onConfirmDeleteItem(event);
 			break;
 		case GradebookEvents.LearnerGradeRecordUpdated:
 			onLearnerGradeRecordUpdated(event);
@@ -114,6 +125,12 @@ public class AppController extends Controller {
 		case GradebookEvents.ItemUpdated:
 			onItemUpdated(event);
 			break;
+		case GradebookEvents.ItemCreated:
+			onItemCreated(event);
+			break;
+		case GradebookEvents.ItemDeleted:
+			onItemDeleted(event);
+			break;
 		}
 	}
 
@@ -126,7 +143,24 @@ public class AppController extends Controller {
 		forwardToView(appView, event);
 	}
 	
+	private void onConfirmDeleteItem(AppEvent<?> event) {
+		forwardToView(treeView, event);
+	}
+	
 	private void onFullScreen(AppEvent<?> event) {
+		forwardToView(appView, event);
+	}
+	
+	private void onHideColumn(AppEvent<?> event) {
+		forwardToView(treeView, event);
+	}
+	
+	private void onItemCreated(AppEvent<?> event) {
+		forwardToView(appView, event);
+		forwardToView(treeView, event);
+	}
+	
+	private void onItemDeleted(AppEvent<?> event) {
 		forwardToView(appView, event);
 	}
 	
@@ -169,6 +203,9 @@ public class AppController extends Controller {
 		//forwardToView(singleGrade, event);
 		
 		forwardToView(appView, event);
+		
+		if (treeView != null)
+			forwardToView(treeView, event);
 		
 		if (singleView != null && singleView.isDialogVisible())
 			forwardToView(singleView, event);

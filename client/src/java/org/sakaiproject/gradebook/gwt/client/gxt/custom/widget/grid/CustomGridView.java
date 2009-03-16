@@ -65,7 +65,7 @@ import com.extjs.gxt.ui.client.widget.menu.SeparatorMenuItem;
 
 public abstract class CustomGridView extends BaseCustomGridView {
 	
-	private enum SelectionType { SORT_ASC, SORT_DESC, ADD_ITEM, DELETE_ITEM, HIDE_ITEM };
+	private enum SelectionType { SORT_ASC, SORT_DESC, ADD_ITEM, DELETE_ITEM, EDIT_ITEM, HIDE_ITEM };
 	
 	private static final String selectionTypeField = "selectionType";
 	
@@ -105,10 +105,14 @@ public abstract class CustomGridView extends BaseCustomGridView {
 							Dispatcher.forwardEvent(GradebookEvents.NewItem);
 							break;
 						case DELETE_ITEM:
-							Dispatcher.forwardEvent(GradebookEvents.DeleteItem, cm.getDataIndex(colIndex));
+							Dispatcher.forwardEvent(GradebookEvents.SelectDeleteItem, cm.getDataIndex(colIndex));
+							break;
+						case EDIT_ITEM:
+							Dispatcher.forwardEvent(GradebookEvents.SelectItem, cm.getDataIndex(colIndex));
 							break;
 						case HIDE_ITEM:
-							cm.setHidden(colIndex, true);
+							Dispatcher.forwardEvent(GradebookEvents.HideColumn, cm.getDataIndex(colIndex));
+							//cm.setHidden(colIndex, true);
 							break;
 						case SORT_ASC:
 							ds.sort(cm.getDataIndex(colIndex), SortDir.ASC);
@@ -173,7 +177,18 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			item.setData("colIndex", Integer.valueOf(colIndex));
 			item.setText(i18n.headerAddItem());
 			item.setTitle(i18n.headerAddItemTitle());
-			item.setIconStyle("grid-show-columns");
+			item.setIconStyle("gbAddItemIcon");
+			item.addSelectionListener(selectionListener);
+			
+			menu.add(item);
+			
+			item = new AriaMenuItem();
+			item.setData(selectionTypeField, SelectionType.EDIT_ITEM);
+			item.setItemId(AppConstants.ID_HD_EDIT_ITEM_MENUITEM);
+			item.setData("colIndex", Integer.valueOf(colIndex));
+			item.setText(i18n.headerEditItem());
+			item.setTitle(i18n.headerEditItemTitle());
+			item.setIconStyle("gbEditItemIcon");
 			item.addSelectionListener(selectionListener);
 			
 			menu.add(item);
@@ -184,7 +199,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			item.setData("colIndex", Integer.valueOf(colIndex));
 			item.setText(i18n.headerDeleteItem());
 			item.setTitle(i18n.headerDeleteItemTitle());
-			item.setIconStyle("grid-hide-columns");
+			item.setIconStyle("gbDeleteItemIcon");
 			item.addSelectionListener(selectionListener);
 			
 			menu.add(item);
@@ -350,12 +365,12 @@ public abstract class CustomGridView extends BaseCustomGridView {
 		isDisplayLoadMaskOnRender = false;
 	}
 	
-	@Override
+	/*@Override
 	protected void onHeaderClick(Grid grid, int column) {
 		ColumnConfig columnConfig = grid.getColumnModel().getColumn(column);
 		
 		Dispatcher.forwardEvent(GradebookEvents.SelectItem, columnConfig.getId());
-	}
+	}*/
 	
 	@Override
 	protected void renderUI() {
