@@ -25,6 +25,7 @@ package org.sakaiproject.gradebook.gwt.client.gxt;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.action.Action;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
@@ -33,6 +34,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 
+import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
@@ -43,21 +45,21 @@ import com.google.gwt.user.client.Element;
 
 public class HistoryDialog extends ContentPanel {
 
-	private String gradebookUid;
+	private GridPanel<UserEntityAction> gridPanel;
 	
 	public HistoryDialog() {
 		super();
 		setFrame(false);
 		setHeaderVisible(false);
 		setLayout(new FitLayout());
-	}
+	/*}
 	
 	protected void onRender(Element parent, int pos) {
 		super.onRender(parent, pos);
-		
+	*/
 		//setSize(XDOM.getViewportSize().width - 40, XDOM.getViewportSize().height - 200);
 		
-		final GridPanel<UserEntityAction> gridPanel = 
+		gridPanel = 
 			new GridPanel<UserEntityAction>("history", EntityType.ACTION) {
 
 			@Override
@@ -74,6 +76,8 @@ public class HistoryDialog extends ContentPanel {
 			
 			@Override
 			protected CustomColumnModel newColumnModel(GradebookModel selectedGradebook) {
+				GradebookModel selectedGradebookModel = Registry.get(AppConstants.CURRENT);
+				String gradebookUid = selectedGradebookModel.getGradebookUid();
 				
 				List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 				
@@ -127,7 +131,12 @@ public class HistoryDialog extends ContentPanel {
 			}
 			
 		});
+	}
+	
+	protected void onRender(Element parent, int pos) {
+		super.onRender(parent, pos);		
 		
+		gridPanel.loader.load(0, gridPanel.pageSize);
 	}	
 
 }

@@ -86,7 +86,9 @@ public interface I18nConstants extends Constants {
 	
 	String deleteItemHeading();
 	String editItemHeading();
+	String gradeScaleHeading();
 	String helpHeading();
+	String historyHeading();
 	String learnerSummaryHeading();
 	String newCategoryHeading();
 	String newItemHeading();

@@ -1470,8 +1470,20 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			configs.add(config);
 		}
 		
-		for (ItemModel gradebook : gradebookItemModel.getChildren()) {
-			for (ItemModel child : gradebook.getChildren()) {
+		for (ItemModel child : gradebookItemModel.getChildren()) {
+			
+			switch (child.getItemType()) {
+			case CATEGORY:
+				for (ItemModel item : child.getChildren()) {
+					configs.add(buildColumn(selectedGradebook, item));
+				}
+				break;
+			case ITEM:
+				configs.add(buildColumn(selectedGradebook, child));
+				break;
+			}
+			
+			/*for (ItemModel child : category.getChildren()) {
 				
 				switch (child.getItemType()) {
 				case CATEGORY:
@@ -1483,7 +1495,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 					configs.add(buildColumn(selectedGradebook, child));
 					break;
 				}		
-			}
+			}*/
 		}
 		
 		CustomColumnModel cm = new CustomColumnModel(selectedGradebook.getGradebookUid(), gridId, configs);

@@ -133,6 +133,7 @@ public class SettingsGradingScaleContentPanel extends ContentPanel {
 
 
 		setBodyBorder(false);
+		setHeaderVisible(false);
 		setHeading("Selected Grade Mapping");
 		setButtonAlign(HorizontalAlignment.CENTER);
 		setLayout(new FitLayout());

@@ -15,13 +15,11 @@ import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.HistoryDialog;
 import org.sakaiproject.gradebook.gwt.client.gxt.NotifyingAsyncCallback;
-import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaCheckMenuItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenu;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTabItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTabPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.FullScreen;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeContentPanel;
@@ -54,7 +52,6 @@ import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.util.Margins;
-import com.extjs.gxt.ui.client.widget.Component;
 import com.extjs.gxt.ui.client.widget.Container;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
@@ -76,7 +73,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public class InstructorView extends AppView {
 	
 	private static final String MENU_SELECTOR_FLAG = "menuSelector";
-	private enum MenuSelector { ADD_CATEGORY, ADD_ITEM, IMPORT, EXPORT };
+	public enum MenuSelector { ADD_CATEGORY, ADD_ITEM, IMPORT, EXPORT, GRADE_SCALE, HISTORY };
 	
 	// The instructor view maintains a link to tree view, since it is required to instantiate multigrade
 	private TreeView treeView;
@@ -89,6 +86,8 @@ public class InstructorView extends AppView {
 	private CardLayout cardLayout;
 	private LearnerSummaryPanel singleGradeContainer;
 	private HelpPanel helpPanel;
+	private SettingsGradingScaleContentPanel gradeScalePanel;
+	private HistoryDialog historyPanel;
 	
 	private MultiGradeContentPanel multigrade;
 	private Map<String, ContentPanel> tabContentPanelMap;
@@ -244,9 +243,17 @@ public class InstructorView extends AppView {
 			if (multigrade != null)
 				multigrade.deselectAll();
 			break;
+		case GRADE_SCALE:
+			cardLayoutContainer.setHeading(i18n.gradeScaleHeading());
+			cardLayout.setActiveItem(gradeScalePanel);
+			break;
 		case HELP:
 			cardLayoutContainer.setHeading(i18n.helpHeading());
 			cardLayout.setActiveItem(helpPanel);
+			break;
+		case HISTORY:
+			cardLayoutContainer.setHeading(i18n.historyHeading());
+			cardLayout.setActiveItem(historyPanel);
 			break;
 		case NEW_CATEGORY:
 			cardLayoutContainer.setHeading(i18n.newCategoryHeading());
@@ -344,6 +351,24 @@ public class InstructorView extends AppView {
 			multigrade.onShowColumns(event);
 	}
 	
+	protected void onShowGradeScale(Boolean show) {
+		if (gradeScalePanel == null) {
+			gradeScalePanel = new SettingsGradingScaleContentPanel();
+			cardLayoutContainer.add(gradeScalePanel);
+		}
+		onExpandEastPanel(EastCard.GRADE_SCALE);
+		//cardLayout.setActiveItem(gradeScalePanel);
+	}
+	
+	protected void onShowHistory(Boolean show) {
+		if (historyPanel == null) {
+			historyPanel = new HistoryDialog();
+			cardLayoutContainer.add(historyPanel);
+		}
+		onExpandEastPanel(EastCard.HISTORY);
+		//cardLayout.setActiveItem(historyPanel);
+	}
+	
 	@Override
 	protected void onStartEditItem(ItemModel itemModel) {
 		onExpandEastPanel(EastCard.EDIT_ITEM);
@@ -399,10 +424,20 @@ public class InstructorView extends AppView {
 
 			public void handleEvent(MenuEvent me) {
 				
-				if (me.type == Events.CheckChange) {
-					CheckMenuItem menuItem = (CheckMenuItem)me.item;
-	
-					String menuItemId = me.item.getId();
+				if (me.type == Events.Select) {
+					MenuItem menuItem = (MenuItem)me.item;
+					MenuSelector menuSelector = menuItem.getData(MENU_SELECTOR_FLAG);
+					
+					switch (menuSelector) {
+					case GRADE_SCALE:
+						onShowGradeScale(Boolean.TRUE);
+						break;
+					case HISTORY:
+						onShowHistory(Boolean.TRUE);
+						break;
+					}
+					
+					/*String menuItemId = me.item.getId();
 					int indexOfPrefix = menuItemId.indexOf(AppConstants.WINDOW_MENU_ITEM_PREFIX);
 					if (indexOfPrefix != -1) {
 						int index = indexOfPrefix + AppConstants.WINDOW_MENU_ITEM_PREFIX.length();
@@ -432,7 +467,7 @@ public class InstructorView extends AppView {
 								tabItem.close();
 							}
 						}
-					}
+					}*/
 				}
 			}
 			
@@ -497,9 +532,9 @@ public class InstructorView extends AppView {
 	}
 	
 	private void initTabs(I18nConstants i18n, GradebookModel selectedGradebook) {
-		tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADES, i18n.tabGradesHeader(), false));
-		tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADESCALE, i18n.tabGradeScaleHeader(), true));
-		tabConfigurations.add(new TabConfig(AppConstants.TAB_HISTORY, i18n.tabHistoryHeader(), true));
+		//tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADES, i18n.tabGradesHeader(), false));
+		tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADESCALE, i18n.tabGradeScaleHeader(), true, MenuSelector.GRADE_SCALE));
+		tabConfigurations.add(new TabConfig(AppConstants.TAB_HISTORY, i18n.tabHistoryHeader(), true, MenuSelector.HISTORY));
 	
 		String gradebookUid = selectedGradebook.getGradebookUid();
 		tabMode = GradebookState.getTabMode(gradebookUid);
@@ -652,9 +687,10 @@ public class InstructorView extends AppView {
 	
 	private MenuItem newWindowMenuItem(TabConfig tabConfig) {
 		String id = new StringBuilder().append(AppConstants.WINDOW_MENU_ITEM_PREFIX).append(tabConfig.id).toString();
-		CheckMenuItem menuItem = new AriaCheckMenuItem();
+		MenuItem menuItem = new AriaMenuItem();
 		menuItem.setText(tabConfig.header);
 		//menuItem.setChecked(!tabMode, true);
+		menuItem.setData(MENU_SELECTOR_FLAG, tabConfig.menuSelector);
 		menuItem.setEnabled(tabConfig.isClosable);
 		menuItem.setId(id);
 		tabConfig.menuItemId = id;
@@ -667,7 +703,7 @@ public class InstructorView extends AppView {
 			}
 		}*/
 
-		menuItem.addListener(Events.CheckChange, menuEventListener);
+		menuItem.addListener(Events.Select, menuEventListener);
 		
 		return menuItem;
 	}

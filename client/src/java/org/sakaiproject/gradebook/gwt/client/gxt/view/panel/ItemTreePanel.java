@@ -683,11 +683,12 @@ public class ItemTreePanel extends ContentPanel {
 			switch (selectedItemModel.getItemType()) {
 			case ROOT:
 			case GRADEBOOK:
-				selectAll = true;
+				//selectAll = true;
 				break;
 			case CATEGORY:
-				for (ItemModel childItemModel : selectedItemModel.getChildren()) 
+				/*for (ItemModel childItemModel : selectedItemModel.getChildren()) 
 					selectedItemModelIdSet.add(childItemModel.getIdentifier());
+				*/
 				break;
 			case ITEM:
 				selectedItemModelIdSet.add(selectedItemModel.getIdentifier());

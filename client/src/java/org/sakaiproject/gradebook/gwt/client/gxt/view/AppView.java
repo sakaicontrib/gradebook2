@@ -24,7 +24,8 @@ import com.google.gwt.user.client.ui.RootPanel;
 
 public abstract class AppView extends View {
 
-	public enum EastCard { DELETE_ITEM, EDIT_ITEM, HELP, LEARNER_SUMMARY, NEW_CATEGORY, NEW_ITEM };
+	public enum EastCard { DELETE_ITEM, EDIT_ITEM, GRADE_SCALE, HELP, HISTORY, LEARNER_SUMMARY, 
+		NEW_CATEGORY, NEW_ITEM };
 	
 	private static final int screenHeight = 600;
 	
