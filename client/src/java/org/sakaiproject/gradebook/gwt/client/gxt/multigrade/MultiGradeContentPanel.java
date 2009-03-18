@@ -225,14 +225,17 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	@Override
 	public void editCell(GradebookModel selectedGradebook, Record record, String property, Object value, Object startValue, GridEvent gridEvent) {
 		
+		String columnHeader = "";
 		if (gridEvent != null) {
 			String className = grid.getView().getCell(gridEvent.rowIndex, gridEvent.colIndex).getClassName();
 			className = className.replace(" gbCellDropped", "");
 			grid.getView().getCell(gridEvent.rowIndex, gridEvent.colIndex).setClassName(className);
 			grid.getView().getCell(gridEvent.rowIndex, gridEvent.colIndex).setInnerText("Saving...");
+			
+			columnHeader = grid.getColumnModel().getColumnHeader(gridEvent.colIndex);
 		}
 		
-		Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord, new GradeRecordUpdate(record, property, startValue, value));
+		Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord, new GradeRecordUpdate(record, property, columnHeader, startValue, value));
 	}
 	
 	public StudentModel getSelectedModel() {

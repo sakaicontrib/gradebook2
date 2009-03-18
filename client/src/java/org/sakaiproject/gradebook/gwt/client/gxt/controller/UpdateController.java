@@ -154,7 +154,84 @@ public class UpdateController extends Controller {
 		service.updateItemEntity((UserEntityUpdateAction<ItemModel>)action, callback);
 	}
 	
-	private void onUpdateGradeRecord(GradeRecordUpdate event) {
+	private void onUpdateGradeRecordSuccess(GradeRecordUpdate event, StudentModel result) {
+		Record record = event.record;
+		String property = event.property;
+		
+		// Need to refresh any items that may have been dropped
+		for (String p : result.getPropertyNames()) {
+			boolean needsRefreshing = false;
+			
+			int index = -1;
+			
+			if (p.endsWith(StudentModel.DROP_FLAG)) {
+				index = p.indexOf(StudentModel.DROP_FLAG);
+				needsRefreshing = true;
+			} else if (p.endsWith(StudentModel.COMMENTED_FLAG)) {
+				index = p.indexOf(StudentModel.COMMENTED_FLAG);
+				needsRefreshing = true;
+			}
+			
+			if (needsRefreshing && index != -1) {
+				String assignmentId = p.substring(0, index);
+				Object value = result.get(assignmentId);
+				Boolean recordFlagValue = (Boolean)record.get(p);
+				Boolean resultFlagValue = result.get(p);
+			
+				boolean isDropped = resultFlagValue != null && resultFlagValue.booleanValue();
+				boolean wasDropped = recordFlagValue != null && recordFlagValue.booleanValue();
+				
+				record.set(p, resultFlagValue);
+				
+				if (isDropped || wasDropped) {
+					record.set(assignmentId, null);
+					record.set(assignmentId, value);
+					//r.setDirty(true);
+				}
+			}
+		}
+		
+		String courseGrade = result.get(StudentModel.Key.COURSE_GRADE.name());
+		
+		result.set(StudentModel.Key.COURSE_GRADE.name(), null);
+		if (courseGrade != null) 
+			result.set(StudentModel.Key.COURSE_GRADE.name(), courseGrade);
+		
+
+		// Ensure that we clear out any older failure messages
+		// Save the exception message on the record
+		String failedProperty = property + FAILED_FLAG;
+		record.set(failedProperty, null);
+	
+		record.setValid(property, true);
+		
+		Object value = result.get(property);
+		
+		if (value == null)
+			record.set(property, null);
+		else
+			record.set(property, value);
+		
+		//record.set(StudentModel.Key.COURSE_GRADE.name(), result.get(StudentModel.Key.COURSE_GRADE.name()));
+
+		// FIXME: Move all this to a log event listener
+		StringBuilder buffer = new StringBuilder();
+		if (event.learner != null && event.learner.getDisplayName() != null)
+			buffer.append(event.learner.getDisplayName());
+		buffer.append(":").append(event.label);
+		//notifier.notify(buffer.toString(), 
+		//		"Stored item grade as '{0}' and recalculated course grade to '{1}' ", result.get(property), result.get(StudentModel.Key.COURSE_GRADE.name()));
+			
+		String message = buffer.append("- stored item grade as '")
+			.append(result.get(property))
+			.append("' and recalculated course grade to '").append(result.get(StudentModel.Key.COURSE_GRADE.name()))
+			.append("'").toString();
+		
+		notifier.notify("Success", message);
+		Dispatcher.forwardEvent(GradebookEvents.Notification, message);
+	}
+	
+	private void onUpdateGradeRecord(final GradeRecordUpdate event) {
 		
 		final Record record = event.record;
 		
@@ -184,8 +261,11 @@ public class UpdateController extends Controller {
 			
 			public void onCommandSuccess(UserEntityAction<StudentModel> action, StudentModel result) {
 				
+				onUpdateGradeRecordSuccess(event, result);
+				Dispatcher.forwardEvent(GradebookEvents.LearnerGradeRecordUpdated, action);
+				
 				// Need to refresh any items that may have been dropped
-				for (String property : result.getPropertyNames()) {
+				/*for (String property : result.getPropertyNames()) {
 					boolean needsRefreshing = false;
 					
 					int index = -1;
@@ -256,7 +336,7 @@ public class UpdateController extends Controller {
 					.append("'").toString();
 				
 				notifier.notify("Success", message);
-				Dispatcher.forwardEvent(GradebookEvents.Notification, message);
+				Dispatcher.forwardEvent(GradebookEvents.Notification, message);*/
 			}		
 		};
 

@@ -394,7 +394,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 								protected void onFieldChange(FieldEvent e) {									
 									StudentModel learner = (StudentModel)this.model;
 									e.field.setEnabled(false);
-									Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord, new GradeRecordUpdate(store, learner, e.field.getName(), e.oldValue, e.value));
+									Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord, new GradeRecordUpdate(store, learner, e.field.getName(), e.field.getFieldLabel(), e.oldValue, e.value));
 								}
 								
 								@Override
