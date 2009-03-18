@@ -140,7 +140,7 @@ private static final long serialVersionUID = 1L;
 		
 		try {
 		
-			ActionRecord actionRecord = new ActionRecord(action.getGradebookUid(), action.getGradebookId(), action.getEntityType().name(), action.getActionType().name());
+			ActionRecord actionRecord = new ActionRecord(action.getGradebookUid(), action.getGradebookId(), action.getEntityType(), action.getActionType());
 			
 			Map<String, String> actionRecordPropertyMap = actionRecord.getPropertyMap();
 			
@@ -224,7 +224,7 @@ private static final long serialVersionUID = 1L;
 		
 		try {
 		
-			ActionRecord actionRecord = new ActionRecord(action.getGradebookUid(), action.getGradebookId(), action.getEntityType().name(), action.getActionType().name());
+			ActionRecord actionRecord = new ActionRecord(action.getGradebookUid(), action.getGradebookId(), action.getEntityType(), action.getActionType());
 			
 			Map<String, String> actionRecordPropertyMap = actionRecord.getPropertyMap();
 			
@@ -462,7 +462,7 @@ private static final long serialVersionUID = 1L;
 					return null;
 			}
 			
-			ActionRecord actionRecord = new ActionRecord(action.getGradebookUid(), action.getGradebookId(), action.getEntityType().name(), action.getActionType().name());
+			ActionRecord actionRecord = new ActionRecord(action.getGradebookUid(), action.getGradebookId(), action.getEntityType(), action.getActionType());
 			
 			if (action.getEntityId() != null)
 				actionRecord.setEntityId(action.getEntityId());
@@ -547,7 +547,7 @@ private static final long serialVersionUID = 1L;
 					return null;
 			}
 			
-			ActionRecord actionRecord = new ActionRecord(action.getGradebookUid(), action.getGradebookId(), action.getEntityType().name(), action.getActionType().name());
+			ActionRecord actionRecord = new ActionRecord(action.getGradebookUid(), action.getGradebookId(), action.getEntityType(), action.getActionType());
 			
 			if (action.getEntityId() != null)
 				actionRecord.setEntityId(action.getEntityId());
@@ -679,7 +679,7 @@ private static final long serialVersionUID = 1L;
 					return null;
 			}
 			
-			ActionRecord actionRecord = new ActionRecord(action.getGradebookUid(), action.getGradebookId(), action.getEntityType().toString(), action.getActionType().toString());
+			ActionRecord actionRecord = new ActionRecord(action.getGradebookUid(), action.getGradebookId(), action.getEntityType(), action.getActionType());
 				
 			if (action.getEntityId() != null)
 				actionRecord.setEntityId(action.getEntityId());
@@ -812,7 +812,7 @@ private static final long serialVersionUID = 1L;
 					if (v != null && v instanceof String) {
 						String strValue = (String)v;
 						if (strValue.trim().length() > 0)
-							value = Double.parseDouble((String)v);
+							value = Double.valueOf(Double.parseDouble((String)v));
 						
 					} else
 						value = (Double)v;

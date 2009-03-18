@@ -28,20 +28,16 @@ import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
+import com.extjs.gxt.ui.client.data.BaseListLoadResult;
 import com.extjs.gxt.ui.client.data.BaseListLoader;
 import com.extjs.gxt.ui.client.data.BaseModel;
-import com.extjs.gxt.ui.client.data.BasePagingLoadResult;
-import com.extjs.gxt.ui.client.data.BasePagingLoader;
 import com.extjs.gxt.ui.client.data.BeanModel;
 import com.extjs.gxt.ui.client.data.BeanModelFactory;
 import com.extjs.gxt.ui.client.data.BeanModelLookup;
-import com.extjs.gxt.ui.client.data.DataProxy;
 import com.extjs.gxt.ui.client.data.ListLoadConfig;
+import com.extjs.gxt.ui.client.data.ListLoadResult;
 import com.extjs.gxt.ui.client.data.ListLoader;
 import com.extjs.gxt.ui.client.data.MemoryProxy;
-import com.extjs.gxt.ui.client.data.ModelReader;
-import com.extjs.gxt.ui.client.data.PagingLoadConfig;
-import com.extjs.gxt.ui.client.data.PagingLoadResult;
 import com.extjs.gxt.ui.client.data.RpcProxy;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
@@ -115,8 +111,8 @@ public class ImportDialog extends Window {
 	
 	private List<ColumnConfig> previewColumns;
 	
-	private DataProxy<Object, PagingLoadResult<List<BaseModel>>> proxy;
-	private BasePagingLoader<PagingLoadConfig, PagingLoadResult<List<BaseModel>>> loader;
+	private MemoryProxy<ListLoadResult<BaseModel>> proxy;
+	private ListLoader<?> loader;
 	private PagingToolBar toolBar;
 	private List<BaseModel> resultModels;
 	private MessageBox uploadBox;
@@ -353,9 +349,10 @@ public class ImportDialog extends Window {
 						resultModels.add(model);
 					}
 					//resultStore.add(models);
-					((MemoryProxy)proxy).setData(new BasePagingLoadResult(resultModels, 0, resultModels.size()));
+					proxy.setData(new BaseListLoadResult<BaseModel>(resultModels)); //, 0, resultModels.size()));
 					//loader.load(0, 50);
-					toolBar.refresh();
+					//toolBar.refresh();
+					loader.load();
 					
 					box.close();
 					
@@ -952,15 +949,16 @@ public class ImportDialog extends Window {
 		
 		ColumnModel resultColumnModel = new ColumnModel(configs);
 		
-		proxy = new MemoryProxy<PagingLoadResult<List<BaseModel>>>(null);
-		loader = new BasePagingLoader(proxy);
+		proxy = new MemoryProxy<ListLoadResult<BaseModel>>(null);
+		loader = new BaseListLoader(proxy);
 		
 		//loader.load(0, 50);  
 		
 		resultStore = new ListStore<BaseModel>(loader);  
-		toolBar = new PagingToolBar(50);  
+		/*toolBar = new PagingToolBar(50);  
 		toolBar.bind(loader); 
 		container.setBottomComponent(toolBar);
+		*/
 		
 		EditorGrid<BaseModel> resultGrid = new EditorGrid<BaseModel>(resultStore, resultColumnModel);
 		//itemGrid.setSelectionModel(sm);
