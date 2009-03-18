@@ -20,7 +20,7 @@
 * permissions and limitations under the License.
 *
 **********************************************************************************/
-package org.sakaiproject.gradebook.gwt.client.gxt.settings;
+package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,11 +62,11 @@ import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-public class SettingsGradingScaleContentPanel extends ContentPanel {
+public class GradeScalePanel extends ContentPanel {
 
 	
 	@SuppressWarnings("unchecked")
-	public SettingsGradingScaleContentPanel() {
+	public GradeScalePanel() {
 		
 		super();
 		
@@ -175,7 +175,7 @@ public class SettingsGradingScaleContentPanel extends ContentPanel {
 							if (gridEvent != null)
 								grid.fireEvent(Events.AfterEdit, gridEvent);
 					
-							SettingsGradingScaleContentPanel.this.fireEvent(GradebookEvents.UserChange, new UserChangeEvent(EntityType.GRADE_SCALE, ActionType.UPDATE));
+							GradeScalePanel.this.fireEvent(GradebookEvents.UserChange, new UserChangeEvent(EntityType.GRADE_SCALE, ActionType.UPDATE));
 						}
 					
 				};

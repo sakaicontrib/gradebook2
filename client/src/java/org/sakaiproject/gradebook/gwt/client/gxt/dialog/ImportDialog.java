@@ -30,11 +30,18 @@ import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.data.BaseListLoader;
 import com.extjs.gxt.ui.client.data.BaseModel;
+import com.extjs.gxt.ui.client.data.BasePagingLoadResult;
+import com.extjs.gxt.ui.client.data.BasePagingLoader;
 import com.extjs.gxt.ui.client.data.BeanModel;
 import com.extjs.gxt.ui.client.data.BeanModelFactory;
 import com.extjs.gxt.ui.client.data.BeanModelLookup;
+import com.extjs.gxt.ui.client.data.DataProxy;
 import com.extjs.gxt.ui.client.data.ListLoadConfig;
 import com.extjs.gxt.ui.client.data.ListLoader;
+import com.extjs.gxt.ui.client.data.MemoryProxy;
+import com.extjs.gxt.ui.client.data.ModelReader;
+import com.extjs.gxt.ui.client.data.PagingLoadConfig;
+import com.extjs.gxt.ui.client.data.PagingLoadResult;
 import com.extjs.gxt.ui.client.data.RpcProxy;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
@@ -45,6 +52,8 @@ import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
+import com.extjs.gxt.ui.client.widget.MessageBox;
+import com.extjs.gxt.ui.client.widget.PagingToolBar;
 import com.extjs.gxt.ui.client.widget.TabItem;
 import com.extjs.gxt.ui.client.widget.TabPanel;
 import com.extjs.gxt.ui.client.widget.Window;
@@ -106,6 +115,12 @@ public class ImportDialog extends Window {
 	
 	private List<ColumnConfig> previewColumns;
 	
+	private DataProxy<Object, PagingLoadResult<List<BaseModel>>> proxy;
+	private BasePagingLoader<PagingLoadConfig, PagingLoadResult<List<BaseModel>>> loader;
+	private PagingToolBar toolBar;
+	private List<BaseModel> resultModels;
+	private MessageBox uploadBox;
+	
 	public ImportDialog(String gradebookUid) {
 		super();
 		this.gradebookUid = gradebookUid;
@@ -139,6 +154,9 @@ public class ImportDialog extends Window {
 		});
 		
 		currentStep = Step.ONE;
+		
+		// Set up store
+		resultStore = new ListStore<BaseModel>();
 	}
 	
 	protected void onClose() {
@@ -156,6 +174,7 @@ public class ImportDialog extends Window {
 		tabPanel = new TabPanel();
 		step1 = new TabItem("Step 1");
 		step1.add(step1Container);
+		step1.setLayout(new FitLayout());
 		tabPanel.add(step1);
 	
 		step2Container = new LayoutContainer();
@@ -163,22 +182,22 @@ public class ImportDialog extends Window {
 
 		step2 = new TabItem("Step 2");
 		step2.setEnabled(false);
+		step2.setLayout(new FitLayout());
 		step2.add(step2Container);
 		tabPanel.add(step2);
 
-		step3Container = new LayoutContainer();
-		step3Container.setLayout(new FitLayout());
+		step3Container = buildResultsContainer();
+		//step3Container.setLayout(new FitLayout());
+		//step3Container.add(buildResultsContainer());
 		
 		step3 = new TabItem("Step 3");
+		step3.setLayout(new FitLayout());
 		step3.setEnabled(false);
 		step3.add(step3Container);
 		tabPanel.add(step3);
 		
 		add(tabPanel, new ColumnData(1));
 		add(buildButtonContainer(), new ColumnData(130));
-		
-		
-		
 	}
 	
 	protected void gotoStep1() {
@@ -233,9 +252,6 @@ public class ImportDialog extends Window {
 	protected void gotoStep3() {
 		step3.setEnabled(true);
 		tabPanel.setSelection(step3);
-		
-		// Set up store
-		resultStore = new ListStore<BaseModel>();
 		
 		/*List<BeanModel> models = new ArrayList<BeanModel>();
 		BeanModelFactory factory = BeanModelLookup.get().getFactory(headers.get(0).getClass());
@@ -304,6 +320,17 @@ public class ImportDialog extends Window {
 		UserEntityCreateAction<SpreadsheetModel> action = 
 			new UserEntityCreateAction<SpreadsheetModel>(gbModel, EntityType.SPREADSHEET, spreadsheetModel);
 		
+		final MessageBox box = MessageBox.wait("Progress", "Uploading grades, please wait...", "Uploading...");
+		/*Timer t = new Timer() {
+			@Override
+			public void run() {
+				Info.display("Message", "Your fake data was saved", "");
+				box.close();
+			}
+		};
+		t.schedule(1000);
+		*/
+		
 		RemoteCommand<SpreadsheetModel> remoteCommand = 
 			new RemoteCommand<SpreadsheetModel>() {
 
@@ -317,14 +344,23 @@ public class ImportDialog extends Window {
 					
 					//resultStore.add(model);
 					
+					
+					resultModels = new ArrayList<BaseModel>();
 					for (String desc : result.getResults()) {
+						//resultDataList.add(desc);
 						BaseModel model = new BaseModel();
 						model.set("desc", desc);
-						resultStore.add(model);
+						resultModels.add(model);
 					}
+					//resultStore.add(models);
+					((MemoryProxy)proxy).setData(new BasePagingLoadResult(resultModels, 0, resultModels.size()));
+					//loader.load(0, 50);
+					toolBar.refresh();
 					
-					step3Container.add(buildResultsContainer());
-					step3.layout();
+					box.close();
+					
+					//step3Container.add(buildResultsContainer());
+					//step3.layout();
 					
 					fireEvent(GradebookEvents.UserChange, new UserChangeEvent(action));
 				}
@@ -576,6 +612,7 @@ public class ImportDialog extends Window {
 
 			@Override
 			public void componentSelected(ButtonEvent ce) {
+				uploadBox = MessageBox.wait("Progress", "Reading file, please wait...", "Parsing...");
 				fileUploadPanel.submit();
 			}
 			
@@ -618,7 +655,7 @@ public class ImportDialog extends Window {
 				
 				rowStore.removeAll();
 				
-				System.out.println(fe.resultHtml);
+				//System.out.println(fe.resultHtml);
 				
 				
 				JSONValue jsonValue = JSONParser.parse(fe.resultHtml);
@@ -694,6 +731,8 @@ public class ImportDialog extends Window {
 					
 					if (models != null)
 						rowStore.add(models);
+					
+					uploadBox.close();
 				}
 				
 				/*
@@ -902,7 +941,8 @@ public class ImportDialog extends Window {
 	
 	private LayoutContainer buildResultsContainer() {
 		
-		final LayoutContainer container = new LayoutContainer();
+		final ContentPanel container = new ContentPanel();
+		container.setHeaderVisible(false);
 		container.setLayout(new FitLayout());
 		
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
@@ -912,13 +952,30 @@ public class ImportDialog extends Window {
 		
 		ColumnModel resultColumnModel = new ColumnModel(configs);
 		
+		proxy = new MemoryProxy<PagingLoadResult<List<BaseModel>>>(null);
+		loader = new BasePagingLoader(proxy);
+		
+		//loader.load(0, 50);  
+		
+		resultStore = new ListStore<BaseModel>(loader);  
+		toolBar = new PagingToolBar(50);  
+		toolBar.bind(loader); 
+		container.setBottomComponent(toolBar);
+		
 		EditorGrid<BaseModel> resultGrid = new EditorGrid<BaseModel>(resultStore, resultColumnModel);
 		//itemGrid.setSelectionModel(sm);
 		//itemGrid.addPlugin(sm);
-		resultGrid.setHeight(300);
+		resultGrid.setHeight(380);
+		resultGrid.setAutoExpandColumn("desc");
+		resultGrid.setAutoExpandMax(2000);
 		
-		
+		/*BasePagingLoader loader;
+		ListView<BaseModel> view = new ListView<BaseModel>(resultStore);
+		view.setDisplayProperty("desc");
+		view.setHeight(300);
+		container.add(view);*/
 		container.add(resultGrid);
+		container.setHeight(380);
 		
 		return container;
 	}

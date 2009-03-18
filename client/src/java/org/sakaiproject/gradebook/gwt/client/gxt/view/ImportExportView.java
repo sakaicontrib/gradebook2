@@ -29,7 +29,7 @@ public class ImportExportView extends View {
 		switch (event.type) {
 		case GradebookEvents.StartImport:
 			importDialog = new ImportDialog(selectedGradebook.getGradebookUid());
-			importDialog.setSize(XDOM.getViewportSize().width - 50, XDOM.getViewportSize().height - 50);
+			importDialog.setSize(XDOM.getViewportSize().width - 50, 500);
 			importDialog.show();
 			importDialog.center();
 			break;

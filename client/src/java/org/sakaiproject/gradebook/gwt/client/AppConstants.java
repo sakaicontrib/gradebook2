@@ -37,6 +37,7 @@ public interface AppConstants {
 
 	// Grid id constants
 	public static final String MULTIGRADE 			= "multigrade";
+	public static final String HISTORY				= "history";
 	
 	// Tab id constants
 	public static final String TAB_GRADES 			= "tabMultiGrade";

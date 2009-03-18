@@ -800,7 +800,12 @@ private static final long serialVersionUID = 1L;
 		Collection<Assignment> assignments = idToAssignmentMap.values();
 		if (assignments != null) {
 			for (StudentModel student : spreadsheetModel.getRows()) {
+				StringBuilder builder = new StringBuilder();
+				
+				builder.append("Grading ").append(student.getDisplayName()).append(": ");
+				
 				for (Assignment assignment : assignments) {
+					builder.append(assignment.getName()).append(" (");
 					Object v = student.get(String.valueOf(assignment.getId()));
 					
 					Double value = null;
@@ -813,22 +818,51 @@ private static final long serialVersionUID = 1L;
 						value = (Double)v;
 					
 					//if (value != null) {
+						AssignmentGradeRecord assignmentGradeRecord = gbService.getAssignmentGradeRecordForAssignmentForStudent(assignment, student.getIdentifier());
+						Double oldValue = null;
+						
+						switch (gradebook.getGrade_type()) {
+						case GradebookService.GRADE_TYPE_POINTS:
+							oldValue = assignmentGradeRecord.getPointsEarned();
+							break;
+						case GradebookService.GRADE_TYPE_PERCENTAGE:
+							oldValue = assignmentGradeRecord.getPercentEarned();
+							break;
+						}
+						
 						try {
 							//scoreNumericItem(gradebookUid, student, assignmentId, value, (Double)null);
-							AssignmentGradeRecord assignmentGradeRecord = gbService.getAssignmentGradeRecordForAssignmentForStudent(assignment, student.getIdentifier());
 							scoreItem(gradebook, assignment, assignmentGradeRecord, student.getIdentifier(), value);
 							//log.info("Scored item " + assignment.getName() + " for " + student.getIdentifier() + " as " + value);
-							results.add("Successfully scored " + assignment.getName() + " for " + student.getIdentifier() + " to " + value);
+							
+							if (oldValue != null)
+								builder.append(oldValue);
+							
+							builder.append("->").append(value).append(") ");
+							
+							//results.add("Successfully scored " + assignment.getName() + " for " + student.getIdentifier() + " to " + value);
 						} catch (InvalidInputException e) {
 							String failedProperty = new StringBuilder().append(assignment.getId()).append(StudentModel.FAILED_FLAG).toString();
 							student.set(failedProperty, e.getMessage());
 							log.warn("Failed to score numeric item for " + student.getIdentifier() + " and item " + assignment.getId() + " to " + value);
-							results.add("Failed to score " + assignment.getName() + " for " + student.getIdentifier() + " to " + value + ": " + e.getMessage());
+							//results.add("Failed to score " + assignment.getName() + " for " + student.getIdentifier() + " to " + value + ": " + e.getMessage());
+							
+							if (oldValue != null)
+								builder.append(oldValue);
+							
+							builder.append("->Invalid) ");
 						} catch (Exception e) {
-							results.add("Failed to score " + assignment.getName() + " for " + student.getIdentifier() + " to " + value + ": " + e.getMessage());
+							//results.add("Failed to score " + assignment.getName() + " for " + student.getIdentifier() + " to " + value + ": " + e.getMessage());
+							
+							if (oldValue != null)
+								builder.append(oldValue);
+							
+							builder.append("->Failed) ");
 						}
 					//}
 				}
+				
+				results.add(builder.toString());
 			}
 		}
 		spreadsheetModel.setResults(results);

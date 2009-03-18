@@ -13,7 +13,6 @@ import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
-import org.sakaiproject.gradebook.gwt.client.gxt.HistoryDialog;
 import org.sakaiproject.gradebook.gwt.client.gxt.NotifyingAsyncCallback;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenu;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
@@ -23,9 +22,10 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeContentPanel;
-import org.sakaiproject.gradebook.gwt.client.gxt.settings.SettingsGradingScaleContentPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.HelpPanel;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.HistoryPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.LearnerSummaryPanel;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.GradeScalePanel;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
@@ -86,8 +86,8 @@ public class InstructorView extends AppView {
 	private CardLayout cardLayout;
 	private LearnerSummaryPanel singleGradeContainer;
 	private HelpPanel helpPanel;
-	private SettingsGradingScaleContentPanel gradeScalePanel;
-	private HistoryDialog historyPanel;
+	private GradeScalePanel gradeScalePanel;
+	private HistoryPanel historyPanel;
 	
 	private MultiGradeContentPanel multigrade;
 	private Map<String, ContentPanel> tabContentPanelMap;
@@ -353,7 +353,7 @@ public class InstructorView extends AppView {
 	
 	protected void onShowGradeScale(Boolean show) {
 		if (gradeScalePanel == null) {
-			gradeScalePanel = new SettingsGradingScaleContentPanel();
+			gradeScalePanel = new GradeScalePanel();
 			cardLayoutContainer.add(gradeScalePanel);
 		}
 		onExpandEastPanel(EastCard.GRADE_SCALE);
@@ -362,7 +362,7 @@ public class InstructorView extends AppView {
 	
 	protected void onShowHistory(Boolean show) {
 		if (historyPanel == null) {
-			historyPanel = new HistoryDialog();
+			historyPanel = new HistoryPanel();
 			cardLayoutContainer.add(historyPanel);
 		}
 		onExpandEastPanel(EastCard.HISTORY);
@@ -597,9 +597,9 @@ public class InstructorView extends AppView {
 				if (tabConfig.id.equals(AppConstants.TAB_GRADES)) {
 					tab.add(getBorderLayoutContainer());
 				} else if (tabConfig.id.equals(AppConstants.TAB_GRADESCALE)) {
-					tab.add(new SettingsGradingScaleContentPanel());
+					tab.add(new GradeScalePanel());
 				} else if (tabConfig.id.equals(AppConstants.TAB_HISTORY)) {
-					tab.add(new HistoryDialog());
+					tab.add(new HistoryPanel());
 				}
 			}
 		}
@@ -712,12 +712,16 @@ public class InstructorView extends AppView {
 	private Menu newMoreActionsMenu() {
 		Menu moreActionsMenu = new Menu();
 		
-		MenuItem menuItem = new MenuItem("Export", menuSelectionListener);
+		MenuItem menuItem = new MenuItem(i18n.headerExport(), menuSelectionListener);
 		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT);
+		menuItem.setIconStyle("gbExportItemIcon");
+		menuItem.setTitle(i18n.headerExportTitle());
 		moreActionsMenu.add(menuItem);
 		
-		menuItem = new MenuItem("Import", menuSelectionListener);
+		menuItem = new MenuItem(i18n.headerImport(), menuSelectionListener);
 		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.IMPORT);
+		menuItem.setIconStyle("gbImportItemIcon");
+		menuItem.setTitle(i18n.headerImportTitle());
 		moreActionsMenu.add(menuItem);
 		
 		return moreActionsMenu;

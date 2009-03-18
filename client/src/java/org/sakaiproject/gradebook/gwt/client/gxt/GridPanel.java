@@ -577,6 +577,10 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 	public PagingToolBar getPagingToolBar() {
 		return pagingToolBar;
 	}
+
+	public int getPageSize() {
+		return pageSize;
+	}
 	
 	
 }

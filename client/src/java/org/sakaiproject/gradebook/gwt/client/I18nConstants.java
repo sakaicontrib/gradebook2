@@ -99,10 +99,14 @@ public interface I18nConstants extends Constants {
 	String headerAddItemTitle();
 	String headerEditItem();
 	String headerEditItemTitle();
+	String headerExport();
+	String headerExportTitle();
 	String headerDeleteItem();
 	String headerDeleteItemTitle();
 	String headerHideItem();
 	String headerHideItemTitle();
+	String headerImport();
+	String headerImportTitle();
 	String headerSortAscending();
 	String headerSortDescending();
 	String headerSortAscendingTitle();

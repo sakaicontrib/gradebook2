@@ -294,6 +294,14 @@
 	background-image:url(images/default/button/table_edit.png);	
 }
 
+.gbExportItemIcon {
+	background-image:url(images/default/button/page_white_put.png);
+}
+
+.gbImportItemIcon {
+	background-image:url(images/default/button/page_white_get.png);
+}
+
 .gbColumnButton {
 	background-image:url(images/default/button/text_columns.png);	
 }

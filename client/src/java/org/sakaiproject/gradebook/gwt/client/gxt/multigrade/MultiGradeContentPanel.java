@@ -33,8 +33,6 @@ import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.GridPanel;
-import org.sakaiproject.gradebook.gwt.client.gxt.Notifier;
-import org.sakaiproject.gradebook.gwt.client.gxt.StudentViewDialog;
 import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.CustomColumnModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.CustomGridView;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
@@ -79,7 +77,6 @@ import com.extjs.gxt.ui.client.store.Store;
 import com.extjs.gxt.ui.client.store.StoreEvent;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.extjs.gxt.ui.client.widget.form.CheckBox;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
 import com.extjs.gxt.ui.client.widget.form.Field;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
@@ -108,14 +105,8 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	
 	private enum PageOverflow { TOP, BOTTOM, NONE };
 	
-	private static final Notifier notifier = new Notifier();
-
-	private StudentViewDialog singleView = null; 
 	private ToolBar searchToolBar;
 	private LayoutContainer toolBarContainer;
-	//private LayoutContainer borderLayoutContainer;
-	//private BorderLayoutData westData;
-	//private InstructorViewContainer instructorViewContainer;
 	private Long commentingAssignmentId; 
 	private StudentModel commentingStudentModel;
 	
@@ -125,8 +116,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	private int currentIndex = -1;
 	
 	private MultiGradeContextMenu contextMenu;
-	
-	//private ContentPanel gridOwner;
+
 	private TextField<String> searchField;
 	
 	private Listener<ComponentEvent> componentEventListener;
@@ -134,15 +124,6 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	private Listener<RefreshCourseGradesEvent> refreshCourseGradesListener;
 	private Listener<StoreEvent> storeListener;
 	private Listener<UserChangeEvent> userChangeEventListener;
-
-	private CheckBox includedField;
-	private CheckBox extraCreditField;
-	private NumberField percentCourseGradeField;
-	private NumberField percentCategoryField;
-	
-	//protected CardLayout cardLayout;
-	//protected LayoutContainer mainContainer;
-	//protected FormPanel formPanel;
 	
 	public MultiGradeContentPanel(ContentPanel childPanel) {
 		super(AppConstants.MULTIGRADE, EntityType.STUDENT, childPanel);
