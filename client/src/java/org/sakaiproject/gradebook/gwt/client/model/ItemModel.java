@@ -311,6 +311,14 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 		set(Key.GRADETYPE.name(), type);
 	}
 	
+	public Boolean getReleaseGrades() {
+		return get(Key.RELEASEGRADES.name());
+	}
+	
+	public void setReleaseGrades(Boolean release) {
+		set(Key.RELEASEGRADES.name(), release);
+	}
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof ItemModel) {

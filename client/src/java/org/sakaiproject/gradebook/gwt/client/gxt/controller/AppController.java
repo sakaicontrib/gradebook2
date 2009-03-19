@@ -46,6 +46,7 @@ public class AppController extends Controller {
 		registerEventTypes(GradebookEvents.NewCategory);
 		registerEventTypes(GradebookEvents.NewItem);
 		registerEventTypes(GradebookEvents.Notification);
+		registerEventTypes(GradebookEvents.RefreshCourseGrades);
 		registerEventTypes(GradebookEvents.RevertItem);
 		registerEventTypes(GradebookEvents.SelectDeleteItem);
 		registerEventTypes(GradebookEvents.SelectLearner);
@@ -92,6 +93,9 @@ public class AppController extends Controller {
 		case GradebookEvents.NewCategory:
 		case GradebookEvents.NewItem:
 			onNewItem(event);
+			break;
+		case GradebookEvents.RefreshCourseGrades:
+			onRefreshCourseGrades(event);
 			break;
 		case GradebookEvents.SelectLearner:
 			onSelectLearner(event);
@@ -190,6 +194,10 @@ public class AppController extends Controller {
 	private void onNotification(AppEvent<?> event) {
 		forwardToView(appView, event);
 		forwardToView(notificationView, event);
+	}
+	
+	private void onRefreshCourseGrades(AppEvent<?> event) {
+		forwardToView(appView, event);
 	}
 	
 	private void onSelectLearner(AppEvent<?> event) {

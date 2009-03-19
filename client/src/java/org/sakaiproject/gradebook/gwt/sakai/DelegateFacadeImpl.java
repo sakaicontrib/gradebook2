@@ -454,6 +454,27 @@ private static final long serialVersionUID = 1L;
 		
 		try {
 		
+			if (action.isBulkUpdate()) {
+				
+				entity = (X)updateItemModel(action.getModel());
+				
+				/*
+				switch (action.getEntityType()) {
+				case CATEGORY:
+					entity = (X)updateCategoryModel(action.getModel());
+					break;
+				case GRADEBOOK:
+					entity = (X)updateGradebookModel(action.getModel());
+					break;
+				case ITEM:
+					entity = (X)updateItemModel(action.getModel());
+					break;
+				}*/
+				
+				return entity;
+			}
+			
+			
 			if (action.getPrerequisiteAction() != null) {
 				BaseModel result = updateEntity((UserEntityUpdateAction)action.getPrerequisiteAction());
 				
@@ -796,13 +817,56 @@ private static final long serialVersionUID = 1L;
 				}
 			}
 		}
+		
+		
+		Long gradebookId = gradebook.getId();
+		
+		Map<String, UserRecord> userRecordMap = findStudentRecords(gradebookUid, gradebookId, null);
+	    List<String> studentUids = new ArrayList<String>(userRecordMap.keySet());
+		
+	   	//Map<String, Map<Long, AssignmentGradeRecord>>  allGradeRecordsMap = new HashMap<String, Map<Long, AssignmentGradeRecord>>();
+    	List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebookId, studentUids);
+		
+    	if (allGradeRecords != null) {
+	    	for (AssignmentGradeRecord gradeRecord : allGradeRecords) {
+				gradeRecord.setUserAbleToView(true);
+				String studentUid = gradeRecord.getStudentId();
+				UserRecord userRecord = userRecordMap.get(studentUid);
+				Map<Long, AssignmentGradeRecord> studentMap = userRecord.getGradeRecordMap();
+				if (studentMap == null) {
+					studentMap = new HashMap<Long, AssignmentGradeRecord>();
+				}
+				GradableObject go = gradeRecord.getGradableObject();
+				studentMap.put(go.getId(), gradeRecord);
+					
+				userRecord.setGradeRecordMap(studentMap);
+			}
+		}
+		
 		List<String> results = new ArrayList<String>();
 		Collection<Assignment> assignments = idToAssignmentMap.values();
 		if (assignments != null) {
 			for (StudentModel student : spreadsheetModel.getRows()) {
+				UserRecord userRecord = userRecordMap.get(student.getIdentifier());
+				
 				StringBuilder builder = new StringBuilder();
 				
-				builder.append("Grading ").append(student.getDisplayName()).append(": ");
+				builder.append("Grading ");
+				
+				if (student.getDisplayName() == null)
+					builder.append(student.getStudentDisplayId()).append(": ");
+				else
+					builder.append(student.getDisplayName()).append(": ");
+				
+				
+				if (userRecord == null) {
+					builder.append("User not found!");
+					results.add(builder.toString());
+					continue;
+				}
+					
+				
+				Map<Long, AssignmentGradeRecord> gradeRecordMap = userRecord.getGradeRecordMap();
 				
 				for (Assignment assignment : assignments) {
 					builder.append(assignment.getName()).append(" (");
@@ -818,7 +882,7 @@ private static final long serialVersionUID = 1L;
 						value = (Double)v;
 					
 					//if (value != null) {
-						AssignmentGradeRecord assignmentGradeRecord = gbService.getAssignmentGradeRecordForAssignmentForStudent(assignment, student.getIdentifier());
+						AssignmentGradeRecord assignmentGradeRecord = gradeRecordMap.get(assignment.getId()); //gbService.getAssignmentGradeRecordForAssignmentForStudent(assignment, student.getIdentifier());
 						Double oldValue = null;
 						
 						switch (gradebook.getGrade_type()) {
@@ -2821,6 +2885,243 @@ private static final long serialVersionUID = 1L;
 		}
 		
 		return gradeScaleMappings;
+	}
+	
+	private ItemModel updateGradebookModel(ItemModel item) {
+		
+		Gradebook gradebook = gbService.getGradebook(item.getIdentifier());
+		
+		gradebook.setName(item.getName());
+		
+		int oldCategoryType = gradebook.getCategory_type();
+		int newCategoryType = -1;
+		
+		switch (item.getCategoryType()) {
+		case NO_CATEGORIES:
+			newCategoryType = GradebookService.CATEGORY_TYPE_NO_CATEGORY;
+			break;
+		case SIMPLE_CATEGORIES:
+			newCategoryType = GradebookService.CATEGORY_TYPE_ONLY_CATEGORY;
+			break;
+		case WEIGHTED_CATEGORIES:
+			newCategoryType = GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY;
+			break;
+		}
+		
+		gradebook.setCategory_type(newCategoryType);
+	
+		int oldGradeType = gradebook.getGrade_type();
+		int newGradeType = -1;
+		
+		switch (item.getGradeType()) {
+		case POINTS: 
+			newGradeType = GradebookService.GRADE_TYPE_POINTS;
+			break;
+		case PERCENTAGES: 
+			newGradeType = GradebookService.GRADE_TYPE_PERCENTAGE;
+			break;
+		case LETTERS:
+			newGradeType = GradebookService.GRADE_TYPE_LETTER;
+			break;
+		}
+		
+		boolean wasReleaseGrades = gradebook.isCourseGradeDisplayed();
+		boolean isReleaseGrades = DataTypeConversionUtil.checkBoolean(item.getReleaseGrades());
+		
+		gradebook.setCourseGradeDisplayed(isReleaseGrades);
+		
+		gbService.updateGradebook(gradebook);
+		
+		List<Category> categoriesWithAssignments = getCategoriesWithAssignments(gradebook.getId());
+		return getItemModel(gradebook, categoriesWithAssignments);
+	}
+	
+	private ItemModel updateCategoryModel(ItemModel item) throws InvalidInputException {
+		
+		boolean isWeightChanged = false;
+		
+		Category category = gbService.getCategory(Long.valueOf(item.getIdentifier()));
+	
+		List<Assignment> updatedAssignments = null;
+		
+		category.setName(convertString(item.getName()));
+		
+		boolean originalExtraCredit = DataTypeConversionUtil.checkBoolean(category.isExtraCredit());
+		boolean currentExtraCredit = DataTypeConversionUtil.checkBoolean(item.getExtraCredit());
+		
+		isWeightChanged = originalExtraCredit != currentExtraCredit;
+		
+		category.setExtraCredit(Boolean.valueOf(currentExtraCredit));
+		
+		Double newCategoryWeight = item.getPercentCourseGrade();
+		Double oldCategoryWeight = category.getWeight();
+		
+		isWeightChanged = isWeightChanged || DataTypeConversionUtil.notEquals(newCategoryWeight, oldCategoryWeight);
+
+		double w = newCategoryWeight == null ? 0d : ((Double)newCategoryWeight).doubleValue() * 0.01;
+		category.setWeight(Double.valueOf(w));
+		
+		if (w == 0d)
+			category.setUnweighted(Boolean.TRUE);
+
+		
+		boolean isEqualWeighting = DataTypeConversionUtil.checkBoolean(item.getEqualWeightAssignments());
+		boolean wasEqualWeighting = DataTypeConversionUtil.checkBoolean(category.isEqualWeightAssignments());
+		
+		category.setEqualWeightAssignments(Boolean.valueOf(isEqualWeighting));
+		
+		isWeightChanged = isWeightChanged || isEqualWeighting != wasEqualWeighting;
+		
+		
+		boolean isUnweighted = !DataTypeConversionUtil.checkBoolean(item.getIncluded());
+		boolean wasUnweighted = DataTypeConversionUtil.checkBoolean(category.isUnweighted());
+		
+		if (wasUnweighted && !isUnweighted && category.isRemoved())
+			throw new InvalidInputException("You cannot include a deleted category in grade. Please undelete the category first.");
+
+		
+		if (!isUnweighted) {
+			// Since we don't want to leave the category weighting as 0 if a category has been re-included,
+			// but we don't know what the user wants it to be, we set it to 1%
+			double aw = category.getWeight() == null ? 0d : category.getWeight().doubleValue();
+			if (aw == 0d)
+				category.setWeight(Double.valueOf(0.01));
+		}
+	
+		int oldDropLowest = category.getDrop_lowest();
+		int newDropLowest = convertInteger(item.getDropLowest()).intValue();
+		
+		category.setDrop_lowest(newDropLowest);
+
+		boolean isRemoved = DataTypeConversionUtil.checkBoolean(item.getRemoved());
+		boolean wasRemoved = category.isRemoved();
+		
+		category.setRemoved(isRemoved);
+		category.setUnweighted(Boolean.valueOf(isUnweighted || isRemoved));
+		
+		gbService.updateCategory(category);
+		
+		if (isEqualWeighting && !wasEqualWeighting) {
+			recalculateAssignmentWeights(category.getId(), Boolean.valueOf(isEqualWeighting));
+		}
+		
+		return getItemModelsForCategory(category);
+	}
+	
+	private ItemModel updateItemModel(ItemModel item) throws InvalidInputException {
+		
+		switch (item.getItemType()) {
+		case CATEGORY:
+			return updateCategoryModel(item);
+		case GRADEBOOK:
+			return updateGradebookModel(item);
+		}
+		
+		boolean isWeightChanged = false;
+		
+		Assignment assignment = gbService.getAssignment(Long.valueOf(item.getIdentifier()));
+		
+		Category oldCategory = null;
+		Category category = assignment.getCategory();
+		
+		Gradebook gradebook = assignment.getGradebook();
+		
+		assignment.setName(convertString(item.getName()));
+		
+		if (!category.getId().equals(item.getCategoryId())) {
+			oldCategory = category;
+			category = gbService.getCategory(item.getCategoryId());
+			assignment.setCategory(category);
+		}
+		
+		boolean originalExtraCredit = DataTypeConversionUtil.checkBoolean(assignment.isExtraCredit());
+		boolean currentExtraCredit = DataTypeConversionUtil.checkBoolean(item.getExtraCredit());
+		
+		isWeightChanged = originalExtraCredit != currentExtraCredit;
+		
+		assignment.setExtraCredit(Boolean.valueOf(currentExtraCredit));
+		assignment.setReleased(convertBoolean(item.getReleased()).booleanValue());
+		
+		assignment.setPointsPossible(convertDouble(item.getPoints()));
+		assignment.setDueDate(convertDate(item.getDueDate()));
+		
+		Double newAssignmentWeight = item.getPercentCategory();
+		Double oldAssignmentWeight = assignment.getAssignmentWeighting();
+		
+		isWeightChanged = isWeightChanged || DataTypeConversionUtil.notEquals(newAssignmentWeight, oldAssignmentWeight);
+		
+		double w = newAssignmentWeight == null ? 0d : ((Double)newAssignmentWeight).doubleValue() * 0.01;
+		assignment.setAssignmentWeighting(Double.valueOf(w));
+		
+		boolean isUnweighted = !convertBoolean(item.getIncluded()).booleanValue();
+		boolean wasUnweighted = DataTypeConversionUtil.checkBoolean(assignment.isUnweighted());
+		
+		isWeightChanged = isWeightChanged || isUnweighted != wasUnweighted;
+		
+		if (!isUnweighted) {
+			boolean isAssignmentRemoved = assignment.isRemoved();
+			if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY) {
+				if (category.isRemoved()) 
+					throw new InvalidInputException("You cannot include a grade item whose category has been deleted in grading. Please undelete the category first.");
+				isAssignmentRemoved = assignment.isRemoved() || category.isRemoved();
+			}
+			
+			if (isAssignmentRemoved) 
+				throw new InvalidInputException("You cannot include a deleted grade item in grading. Please undelete the grade item first.");
+		}
+		
+		boolean isRemoved = convertBoolean(item.getRemoved()).booleanValue();
+		boolean wasRemoved = DataTypeConversionUtil.checkBoolean(assignment.isRemoved());
+		
+		isWeightChanged = isWeightChanged || isRemoved != wasRemoved;
+		
+		if (!isRemoved) {
+			if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY && category.isRemoved()) {
+				throw new InvalidInputException("You cannot undelete a grade item when the category that owns it has been deleted. Please undelete the category first.");
+			}
+			assignment.setRemoved(isRemoved);
+		}
+		
+		assignment.setUnweighted(Boolean.valueOf(isUnweighted || isRemoved || w == 0d));
+		
+		/*if (isUnweighted)
+			assignment.setAssignmentWeighting(Double.valueOf(0.0));
+		else {
+			// Since we don't want to leave the assignment weighting as 0 if an assignment has been re-included,
+			// but we don't know what the user wants it to be, we set it to 1%
+			double aw = assignment.getAssignmentWeighting() == null ? 0d : assignment.getAssignmentWeighting().doubleValue();
+			if (aw == 0d)
+				assignment.setAssignmentWeighting(Double.valueOf(0.01));
+		} */
+
+
+		gbService.updateAssignment(assignment);
+
+		
+		// Since changing the assignment weight implies that the category is not equally weighted,
+		// ensure that we switch it when the assignment weight changes.
+		if (oldAssignmentWeight == null || !oldAssignmentWeight.equals(newAssignmentWeight)) {
+				
+			if (category.isEqualWeightAssignments() != null && category.isEqualWeightAssignments().booleanValue()) {
+				Category editCategory = gbService.getCategory(category.getId());
+				editCategory.setEqualWeightAssignments(Boolean.FALSE);
+				gbService.updateCategory(editCategory);
+			}
+		}
+		
+		if (oldCategory != null) {
+			recalculateAssignmentWeights(oldCategory.getId(), null);
+		
+			List<Category> categoriesWithAssignments = getCategoriesWithAssignments(gradebook.getId());
+			return getItemModel(gradebook, categoriesWithAssignments);
+		}
+		
+		if (!isWeightChanged)
+			return createItemModel(category, assignment, null);
+		
+		
+		// Otherwise, we need to update the item's category -- generally to re-calculate weights
+		return getItemModelsForCategory(category);
 	}
 	
 	private ItemModel updateItemField(String assignmentId, ItemModel.Key key, 

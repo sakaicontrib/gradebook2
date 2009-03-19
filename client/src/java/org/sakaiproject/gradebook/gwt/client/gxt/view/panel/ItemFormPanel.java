@@ -54,7 +54,7 @@ import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 
 public class ItemFormPanel extends ContentPanel {
 
-	private enum SelectionType { CLOSE, CREATE, CANCEL, DELETE };
+	private enum SelectionType { CLOSE, CREATE, CANCEL, DELETE, SAVE };
 	
 	private static final String selectionTypeField = "selectionType";
 	
@@ -73,6 +73,7 @@ public class ItemFormPanel extends ContentPanel {
 	private NumberField percentCourseGradeField;
 	private NumberField percentCategoryField;
 	private NumberField pointsField;
+	private NumberField dropLowestField;
 	private DateField dueDateField;
 	private TextField<String> sourceField;
 	
@@ -84,7 +85,7 @@ public class ItemFormPanel extends ContentPanel {
 	
 	private RowLayout layout;
 	private RowData topRowData, bottomRowData;
-	private Button closeButton, createButton, cancelButton, deleteButton;
+	private Button closeButton, createButton, cancelButton, deleteButton, saveButton;
 	private boolean isFull;
 	
 	private GradebookModel selectedGradebook;
@@ -176,6 +177,13 @@ public class ItemFormPanel extends ContentPanel {
 		pointsField.setAllowDecimals(true);
 		formPanel.add(pointsField);
 		
+		dropLowestField = new NumberField();
+		dropLowestField.setName(ItemModel.Key.DROP_LOWEST.name());
+		dropLowestField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.DROP_LOWEST));
+		dropLowestField.setAllowDecimals(false);
+		dropLowestField.setPropertyEditorType(Integer.class);
+		formPanel.add(dropLowestField);
+		
 		dueDateField = new DateField();
 		dueDateField.setName(ItemModel.Key.DUE_DATE.name());
 		dueDateField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.DUE_DATE));
@@ -251,6 +259,11 @@ public class ItemFormPanel extends ContentPanel {
 		
 		addButton(deleteButton);
 		
+		saveButton = new Button(i18n.saveButton(), selectionListener);
+		saveButton.setData(selectionTypeField, SelectionType.SAVE);
+		
+		addButton(saveButton);
+		
 		cancelButton = new Button(i18n.cancelButton(), selectionListener);
 		cancelButton.setData(selectionTypeField, SelectionType.CANCEL);
 		
@@ -274,6 +287,7 @@ public class ItemFormPanel extends ContentPanel {
 		createButton.setVisible(false);
 		cancelButton.setVisible(true);
 		deleteButton.setVisible(true);
+		saveButton.setVisible(false);
 		
 		if (itemModel != null) {
 			Type itemType = itemModel.getItemType();
@@ -296,10 +310,11 @@ public class ItemFormPanel extends ContentPanel {
 		if (formBindings == null)
 			initFormBindings();
 		
-		closeButton.setVisible(true);
+		closeButton.setVisible(false);
 		createButton.setVisible(false);
-		cancelButton.setVisible(false);
+		cancelButton.setVisible(true);
 		deleteButton.setVisible(false);
+		saveButton.setVisible(true);
 		
 		if (itemModel != null) {
 			Type itemType = itemModel.getItemType();
@@ -386,10 +401,11 @@ public class ItemFormPanel extends ContentPanel {
 		if (formBindings != null) 
 			formBindings.unbind();
 
-		closeButton.setVisible(true);
+		closeButton.setVisible(false);
 		createButton.setVisible(true);
-		cancelButton.setVisible(false);
+		cancelButton.setVisible(true);
 		deleteButton.setVisible(false);
+		saveButton.setVisible(false);
 		
 		if (itemModel != null) 	
 			initState(Type.CATEGORY, itemModel, false);
@@ -405,10 +421,11 @@ public class ItemFormPanel extends ContentPanel {
 		if (formBindings != null) 
 			formBindings.unbind();
 
-		closeButton.setVisible(true);
+		closeButton.setVisible(false);
 		createButton.setVisible(true);
-		cancelButton.setVisible(false);
+		cancelButton.setVisible(true);
 		deleteButton.setVisible(false);
+		saveButton.setVisible(false);
 		
 		if (itemModel != null) {
 			if (itemModel.getCategoryId() != null) {
@@ -527,6 +544,7 @@ public class ItemFormPanel extends ContentPanel {
 		percentCourseGradeField.setEnabled(!isDelete);
 		equallyWeightChildrenField.setEnabled(!isDelete);
 		extraCreditField.setEnabled(!isDelete);
+		dropLowestField.setEnabled(!isDelete);
 		dueDateField.setEnabled(!isDelete && !isExternal);
 		includedField.setEnabled(!isDelete);
 		releasedField.setEnabled(!isDelete);
@@ -539,6 +557,7 @@ public class ItemFormPanel extends ContentPanel {
 		equallyWeightChildrenField.setVisible(isCategory);
 		includedField.setVisible(isNotGradebook);
 		releasedField.setVisible(isItem);
+		dropLowestField.setVisible(isCategory);
 		percentCourseGradeField.setVisible(isCategory);
 		pointsField.setVisible(isItem);
 		dueDateField.setVisible(isItem);
@@ -571,7 +590,9 @@ public class ItemFormPanel extends ContentPanel {
 									
 									String property = e.field.getName();
 									
-									if (property.equals(ItemModel.Key.PERCENT_CATEGORY.name())) {
+									selectedItemModel.set(property, e.value);
+									
+									/*if (property.equals(ItemModel.Key.PERCENT_CATEGORY.name())) {
 										
 										Boolean equalWeight = itemModel.getParent().get(ItemModel.Key.EQUAL_WEIGHT.name());
 										
@@ -591,32 +612,38 @@ public class ItemFormPanel extends ContentPanel {
 											
 											return;
 										}
-									} 
+									}*/
 									
 									if (property.equals(ItemModel.Key.CATEGORY_ID.name())) {
 										
 										ItemModel oldModel = (ItemModel)e.oldValue;
 										ItemModel newModel = (ItemModel)e.value;
 										
-										Dispatcher.forwardEvent(GradebookEvents.UpdateItem, new ItemUpdate(store, itemModel, e.field.getName(), oldModel.getCategoryId(), newModel.getCategoryId()));
+										selectedItemModel.setCategoryId(newModel.getCategoryId());
+										
+										//Dispatcher.forwardEvent(GradebookEvents.UpdateItem, new ItemUpdate(store, itemModel, e.field.getName(), oldModel.getCategoryId(), newModel.getCategoryId()));
 										return;
 									} else if (property.equals(ItemModel.Key.CATEGORYTYPE.name())) {
 										
 										CategoryType oldCategoryType = getCategoryType((ModelData)e.oldValue);
 										CategoryType newCategoryType = getCategoryType((ModelData)e.value);
 										
-										Dispatcher.forwardEvent(GradebookEvents.UpdateItem, new ItemUpdate(store, itemModel, e.field.getName(), oldCategoryType, newCategoryType));
+										selectedItemModel.setCategoryType(newCategoryType);
+										
+										//Dispatcher.forwardEvent(GradebookEvents.UpdateItem, new ItemUpdate(store, itemModel, e.field.getName(), oldCategoryType, newCategoryType));
 										return;
 									} else if (property.equals(ItemModel.Key.GRADETYPE.name())) {
 										
 										GradeType oldGradeType = getGradeType((ModelData)e.oldValue);
 										GradeType newGradeType = getGradeType((ModelData)e.value);
 										
-										Dispatcher.forwardEvent(GradebookEvents.UpdateItem, new ItemUpdate(store, itemModel, e.field.getName(), oldGradeType, newGradeType));
+										selectedItemModel.setGradeType(newGradeType);
+										
+										//Dispatcher.forwardEvent(GradebookEvents.UpdateItem, new ItemUpdate(store, itemModel, e.field.getName(), oldGradeType, newGradeType));
 										return;
 									}
 									
-									Dispatcher.forwardEvent(GradebookEvents.UpdateItem, new ItemUpdate(store, itemModel, e.field.getName(), e.oldValue, e.value));
+									//Dispatcher.forwardEvent(GradebookEvents.UpdateItem, new ItemUpdate(store, itemModel, e.field.getName(), e.oldValue, e.value));
 									
 								}
 								
@@ -743,6 +770,9 @@ public class ItemFormPanel extends ContentPanel {
 							break;
 						case CANCEL:
 							Dispatcher.forwardEvent(GradebookEvents.HideEastPanel, Boolean.FALSE);
+							break;
+						case SAVE:
+							Dispatcher.forwardEvent(GradebookEvents.UpdateItem, new ItemUpdate(treeStore, selectedItemModel));
 							break;
 						}
 					}

@@ -44,6 +44,7 @@ import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.FormEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
+import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
@@ -287,8 +288,12 @@ public class ImportDialog extends Window {
 		List<StudentModel> rows = new ArrayList<StudentModel>();
 		for (BaseModel importRow : rowStore.getModels()) {
 			
+			String uid = importRow.get("userId");
+			if (uid == null)
+				uid = importRow.get("userImportId");
+			
 			StudentModel student = new StudentModel();
-			student.setIdentifier((String)importRow.get("userUid"));
+			student.setIdentifier(uid);
 			
 			for (ColumnConfig column : previewColumns) {
 				String id = column.getId();
@@ -352,9 +357,12 @@ public class ImportDialog extends Window {
 					proxy.setData(new BaseListLoadResult<BaseModel>(resultModels)); //, 0, resultModels.size()));
 					//loader.load(0, 50);
 					//toolBar.refresh();
+					box.setProgressText("Loading");
 					loader.load();
 					
 					box.close();
+					
+					Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades);
 					
 					//step3Container.add(buildResultsContainer());
 					//step3.layout();

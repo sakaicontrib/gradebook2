@@ -87,6 +87,9 @@ public abstract class AppView extends View {
 		case GradebookEvents.LoadItemTreeModel:
 			onLoadItemTreeModel((GradebookModel)event.data);
 			break;
+		case GradebookEvents.RefreshCourseGrades:
+			onRefreshCourseGrades();
+			break;
 		case GradebookEvents.SingleGrade:
 			onSingleGrade((StudentModel)event.data);
 			break;
@@ -176,6 +179,10 @@ public abstract class AppView extends View {
 	}
 	
 	protected void onNewItem(ItemModel itemModel) {
+		
+	}
+	
+	protected void onRefreshCourseGrades() {
 		
 	}
 	

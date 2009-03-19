@@ -41,6 +41,8 @@ public class UserEntityUpdateAction<M extends BaseModel> extends UserEntityActio
 
 	private Boolean doRecalculateChildren;
 	
+	private boolean isBulkUpdate = false;
+	
 	public UserEntityUpdateAction() {
 		super(ActionType.UPDATE);
 	}
@@ -51,6 +53,31 @@ public class UserEntityUpdateAction<M extends BaseModel> extends UserEntityActio
 	
 	public UserEntityUpdateAction(EntityType entityType, ActionType actionType) {
 		super(actionType, entityType);
+	}
+	
+	public UserEntityUpdateAction(GradebookModel gbModel, M model) {
+		super(gbModel, ActionType.UPDATE);
+		setModel(model);
+		this.isBulkUpdate = true;
+		
+		if (model instanceof StudentModel) {
+			setEntityType(EntityType.STUDENT);
+			setActionType(ActionType.GRADED);
+		} else if (model instanceof ItemModel) {
+			setEntityType(EntityType.ITEM);
+		} else if (model instanceof GradeRecordModel) {
+			setEntityType(EntityType.GRADE_RECORD);
+		} else if (model instanceof AssignmentModel) {
+			setEntityType(EntityType.GRADE_ITEM);
+		} else if (model instanceof CategoryModel) {
+			setEntityType(EntityType.CATEGORY);
+		} else if (model instanceof GradebookModel) {
+			setEntityType(EntityType.GRADEBOOK);
+		} else if (model instanceof CommentModel) {
+			setEntityType(EntityType.COMMENT);
+		} else if (model instanceof GradeScaleRecordModel) {
+			setEntityType(EntityType.GRADE_SCALE);
+		}
 	}
 	
 	public UserEntityUpdateAction(GradebookModel gbModel, M model, String key, ClassType classType, Object value, Object startValue) {
@@ -122,6 +149,10 @@ public class UserEntityUpdateAction<M extends BaseModel> extends UserEntityActio
 			text.append(" from '").append(startValue).append("' ");
 		
 		return text.toString();
+	}
+
+	public boolean isBulkUpdate() {
+		return isBulkUpdate;
 	}
 
 	/*public String getPropertyName() {		

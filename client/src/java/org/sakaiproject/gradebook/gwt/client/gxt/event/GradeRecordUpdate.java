@@ -26,6 +26,7 @@ public class GradeRecordUpdate {
 	public GradeRecordUpdate(Record record, String property, String label, Object oldValue, Object value) {
 		this.record = record;
 		this.property = property;
+		this.label = label;
 		this.oldValue = oldValue;
 		this.value = value;
 	}

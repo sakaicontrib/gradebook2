@@ -26,6 +26,18 @@ import java.text.NumberFormat;
 
 public class DataTypeConversionUtil {
 
+	public static boolean notEquals(Object o1, Object o2) {
+		if (o1 == null && o2 == null)
+			return false;
+		
+		return ( 
+				(o1 == null && o2 != null)
+				|| (o1 != null && o2 == null)
+				|| (!o1.equals(o2))
+						);
+	}
+	
+	
 	public static boolean checkBoolean(Boolean b) {
 		return b != null && b.booleanValue();
 	}

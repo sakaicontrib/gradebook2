@@ -14,6 +14,12 @@ public class ItemUpdate {
 	public Object oldValue;
 	public Object value;
 	
+	public ItemUpdate(Store store, ItemModel item) {
+		this.item = item;
+		this.store = store;
+		this.record = store.getRecord(item);
+	}
+	
 	public ItemUpdate(Store store, ItemModel item, String property, Object oldValue, Object value) {
 		this.item = item;
 		this.property = property;

@@ -125,6 +125,8 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	private Listener<StoreEvent> storeListener;
 	private Listener<UserChangeEvent> userChangeEventListener;
 	
+	private ShowColumnsEvent lastShowColumnsEvent;
+	
 	public MultiGradeContentPanel(ContentPanel childPanel) {
 		super(AppConstants.MULTIGRADE, EntityType.STUDENT, childPanel);
 		setHeaderVisible(false);
@@ -389,28 +391,34 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	
 	public void onItemUpdated(ItemModel itemModel) {
 		
-		if (itemModel.getItemType() == Type.ITEM) {
+		switch (itemModel.getItemType()) {
 			
+		case GRADEBOOK:
+			refreshGrid(RefreshAction.REFRESHCOLUMNSANDDATA);
+			showColumns(lastShowColumnsEvent);
+			break;
+		case ITEM:
 			for (int i=0;i<cm.getColumnCount();i++) {
-				ColumnConfig column = cm.getColumn(i);
+				ColumnConfig column = cm.getColumnById(itemModel.getIdentifier());
 				
-				if (column.getId().equals(itemModel.getIdentifier())) {
-					column.setHeader(itemModel.getName());
-					boolean isIncluded = itemModel.getIncluded() != null && itemModel.getIncluded().booleanValue();
-					boolean isExtraCredit = itemModel.getExtraCredit() != null && itemModel.getExtraCredit().booleanValue();
+				column.setHeader(itemModel.getName());
 					
-					if (!isIncluded)
-						column.setRenderer(unweightedNumericCellRenderer);
-					else if (isExtraCredit)
-						column.setRenderer(extraCreditNumericCellRenderer);
-					else
-						column.setRenderer(null);
-				}
-			
+				boolean isIncluded = itemModel.getIncluded() != null && itemModel.getIncluded().booleanValue();
+				boolean isExtraCredit = itemModel.getExtraCredit() != null && itemModel.getExtraCredit().booleanValue();
+					
+				if (!isIncluded)
+					column.setRenderer(unweightedNumericCellRenderer);
+				else if (isExtraCredit)
+					column.setRenderer(extraCreditNumericCellRenderer);
+				else
+					column.setRenderer(null);
 			}
 			
 			if (grid.isRendered())
 				grid.getView().refresh(true);
+			
+			showColumns(lastShowColumnsEvent);
+			break;
 		}
 		
 /*
@@ -741,24 +749,8 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	}
 	
 	public void onShowColumns(ShowColumnsEvent event) {
-		
-		// Loop through every column and show/hide it
-		for (int i=0;i<cm.getColumnCount();i++) {
-			ColumnConfig column = cm.getColumn(i);
-			
-			// The first step is to check if this is a static column
-			boolean isStatic = event.fullStaticIdSet.contains(column.getId());
-			// If it is static, then is it even visible? 
-			boolean isStaticVisible = isStatic && event.visibleStaticIdSet.contains(column.getId());
-			
-			if (isStatic)
-				cm.setHidden(i, !isStaticVisible);
-			else if (event.selectedItemModelIdSet != null){
-				boolean showColumn = (!isStatic && event.selectAll) || event.selectedItemModelIdSet.contains(column.getId());
-				if (cm.isHidden(i) == showColumn)
-					cm.setHidden(i, !showColumn);
-			}
-		}
+		this.lastShowColumnsEvent = event;
+		showColumns(event);
 	}
 	
 	public void onSwitchGradebook(GradebookModel selectedGradebook) {
@@ -784,7 +776,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	}
 	
 	public void onUserChange(UserEntityAction<?> action) {
-		switch (action.getEntityType()) {
+		/*switch (action.getEntityType()) {
 		case GRADE_ITEM:
 			switch (action.getActionType()) {
 			case CREATE:
@@ -805,16 +797,16 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 				case INCLUDED:
 				case REMOVED: 
 					updateColumns(assignmentModelKey, (AssignmentModel)action.getModel());
-					queueDeferredRefresh(RefreshAction.REFRESHLOCALCOLUMNS);
+					refreshGrid(RefreshAction.REFRESHLOCALCOLUMNS);
 					break;
 				// Weight changes just mean we need to refresh the screen
 				case WEIGHT:  
-					queueDeferredRefresh(RefreshAction.REFRESHDATA);
+					refreshGrid(RefreshAction.REFRESHDATA);
 					break;
 				case POINTS:
 					Boolean isRecalculated = ((UserEntityUpdateAction)action).getDoRecalculateChildren();
 					if (isRecalculated != null && isRecalculated.booleanValue())
-						queueDeferredRefresh(RefreshAction.REFRESHDATA);
+						refreshGrid(RefreshAction.REFRESHDATA);
 					break;
 
 				}
@@ -834,11 +826,11 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 				switch (categoryModelKey) {
 				// Don't need to worry about Category name changes
 				case REMOVED: case INCLUDED: case EXTRA_CREDIT:
-					queueDeferredRefresh(RefreshAction.REFRESHCOLUMNS);
+					refreshGrid(RefreshAction.REFRESHCOLUMNS);
 					break;
 				// Weight changes just mean we need to refresh the screen
 				case WEIGHT: case DROP_LOWEST:
-					queueDeferredRefresh(RefreshAction.REFRESHDATA);
+					refreshGrid(RefreshAction.REFRESHDATA);
 					break;
 				}
 				break;
@@ -919,7 +911,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			}
 			
 			break;
-		}
+		}*/
 	}
 	
 	protected CustomColumnModel newColumnModel(GradebookModel selectedGradebook) {
@@ -1304,6 +1296,10 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		}
 	}*/
 	
+	public void onRefreshCourseGrades() {
+		refreshGrid(RefreshAction.REFRESHLOCALCOLUMNS);
+	}
+	
 	@Override
 	public void onResize(int x, int y) {
 		super.onResize(x, y);
@@ -1498,12 +1494,19 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			super.refreshGrid(refreshAction);
 			return;
 		case REFRESHCOLUMNSANDDATA:
+			super.refreshGrid(refreshAction);
+			includeData = true;
+			break;
+		default:
 			includeData = true;
 			break;
 		}
 		
+		if (includeData)
+			pagingToolBar.refresh();
 		
-		final Boolean refreshData = Boolean.valueOf(includeData);
+		
+		/*final Boolean refreshData = Boolean.valueOf(includeData);
 		
 		GradebookToolFacadeAsync service = Registry.get(AppConstants.SERVICE);
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
@@ -1522,7 +1525,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 					pagingToolBar.refresh();
 			}
 			
-		});
+		});*/
 
 	}
 	
@@ -1615,6 +1618,26 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		grid.reconfigure(store, cm);
 		grid.el().unmask();
 	}*/
+	
+	private void showColumns(ShowColumnsEvent event) {
+		// Loop through every column and show/hide it
+		for (int i=0;i<cm.getColumnCount();i++) {
+			ColumnConfig column = cm.getColumn(i);
+			
+			// The first step is to check if this is a static column
+			boolean isStatic = event.fullStaticIdSet.contains(column.getId());
+			// If it is static, then is it even visible? 
+			boolean isStaticVisible = isStatic && event.visibleStaticIdSet.contains(column.getId());
+			
+			if (isStatic)
+				cm.setHidden(i, !isStaticVisible);
+			else if (event.selectedItemModelIdSet != null){
+				boolean showColumn = (!isStatic && event.selectAll) || event.selectedItemModelIdSet.contains(column.getId());
+				if (cm.isHidden(i) == showColumn)
+					cm.setHidden(i, !showColumn);
+			}
+		}
+	}
 
 	private void updateColumns(AssignmentModel.Key key, AssignmentModel model) {
 		GradebookModel gbModel = Registry.get(AppConstants.CURRENT);

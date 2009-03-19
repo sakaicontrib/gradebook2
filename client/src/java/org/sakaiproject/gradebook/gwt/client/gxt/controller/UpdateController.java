@@ -193,9 +193,9 @@ public class UpdateController extends Controller {
 		
 		String courseGrade = result.get(StudentModel.Key.COURSE_GRADE.name());
 		
-		result.set(StudentModel.Key.COURSE_GRADE.name(), null);
+		record.set(StudentModel.Key.COURSE_GRADE.name(), null);
 		if (courseGrade != null) 
-			result.set(StudentModel.Key.COURSE_GRADE.name(), courseGrade);
+			record.set(StudentModel.Key.COURSE_GRADE.name(), courseGrade);
 		
 
 		// Ensure that we clear out any older failure messages
@@ -216,8 +216,9 @@ public class UpdateController extends Controller {
 
 		// FIXME: Move all this to a log event listener
 		StringBuilder buffer = new StringBuilder();
-		if (event.learner != null && event.learner.getDisplayName() != null)
-			buffer.append(event.learner.getDisplayName());
+		String displayName = (String)record.get(StudentModel.Key.DISPLAY_NAME.name());
+		if (displayName != null)
+			buffer.append(displayName);
 		buffer.append(":").append(event.label);
 		//notifier.notify(buffer.toString(), 
 		//		"Stored item grade as '{0}' and recalculated course grade to '{1}' ", result.get(property), result.get(StudentModel.Key.COURSE_GRADE.name()));
@@ -358,7 +359,7 @@ public class UpdateController extends Controller {
 	}
 	
 	private void onUpdateItemFailure(ItemUpdate event, Throwable caught) {
-		Record record = event.record;
+		/*Record record = event.record;
 		String property = event.property;
 		
 		// Save the exception message on the record
@@ -371,6 +372,7 @@ public class UpdateController extends Controller {
 		record.set(property, event.oldValue);
 				
 		record.setValid(property, false);
+		*/
 		
 		notifier.notifyError("Error", "Failed to update: {0} ", caught.getMessage());
 		
@@ -414,6 +416,14 @@ public class UpdateController extends Controller {
 			for (ItemModel item : result.getChildren()) {
 				doUpdateItem(event, item);
 			}
+			
+			/*if (event.property != null) {
+				// The only case where we don't want to refresh course grades on a category change is
+				// when it's just the name that's changed
+				if (!event.property.equals(ItemModel.Key.NAME.name())) {
+					Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades);	
+				}
+			}*/
 			break;
 		case ITEM:
 			doUpdateItem(event, result);
@@ -424,9 +434,10 @@ public class UpdateController extends Controller {
 
 	private void onUpdateItem(final ItemUpdate event) {
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-		ClassType classType = ItemModel.lookupClassType(event.property);
+		//ClassType classType = ItemModel.lookupClassType(event.property);
 		
-		UserEntityUpdateAction<ItemModel> action = new UserEntityUpdateAction<ItemModel>(selectedGradebook, (ItemModel)event.record.getModel(), event.property, classType, event.value, event.oldValue);		
+		//UserEntityUpdateAction<ItemModel> action = new UserEntityUpdateAction<ItemModel>(selectedGradebook, (ItemModel)event.record.getModel(), event.property, classType, event.value, event.oldValue);		
+		UserEntityUpdateAction<ItemModel> action = new UserEntityUpdateAction<ItemModel>(selectedGradebook, (ItemModel)event.item);		
 		
 		GradebookToolFacadeAsync service = Registry.get("service");
 		NotifyingAsyncCallback<ItemModel> callback = new NotifyingAsyncCallback<ItemModel>() {

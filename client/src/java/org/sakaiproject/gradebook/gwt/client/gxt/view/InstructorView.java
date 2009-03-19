@@ -329,6 +329,12 @@ public class InstructorView extends AppView {
 	}
 	
 	@Override
+	protected void onRefreshCourseGrades() {
+		if (multigrade != null)
+			multigrade.onRefreshCourseGrades();
+	}
+	
+	@Override
 	protected void onSelectLearner(StudentModel learner) {
 		if (singleGradeContainer != null && singleGradeContainer.isVisible()) {
 			onSingleGrade(learner);
