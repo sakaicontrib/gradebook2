@@ -64,11 +64,12 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class GradeScalePanel extends ContentPanel {
 
+	private boolean isEditable;
 	
 	@SuppressWarnings("unchecked")
-	public GradeScalePanel() {
-		
+	public GradeScalePanel(boolean isEditable) {
 		super();
+		this.isEditable = isEditable;
 		
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 		
@@ -94,9 +95,11 @@ public class GradeScalePanel extends ContentPanel {
 		column.setMenuDisabled(true);
 		column.setSortable(false);
 		column.setNumberFormat(defaultNumberFormat);
-		NumberField numberField = new NumberField();
-		numberField.addInputStyleName("gbNumericFieldInput");
-		column.setEditor(new CellEditor(numberField));
+		if (isEditable) {
+			NumberField numberField = new NumberField();
+			numberField.addInputStyleName("gbNumericFieldInput");
+			column.setEditor(new CellEditor(numberField));
+		}
 		configs.add(column);
 		
 		column = new ColumnConfig();  

@@ -349,7 +349,7 @@ public class InstructorView extends AppView {
 	
 	protected void onShowGradeScale(Boolean show) {
 		if (gradeScalePanel == null) {
-			gradeScalePanel = new GradeScalePanel();
+			gradeScalePanel = new GradeScalePanel(isEditable);
 			cardLayoutContainer.add(gradeScalePanel);
 		}
 		onExpandEastPanel(EastCard.GRADE_SCALE);
@@ -588,7 +588,7 @@ public class InstructorView extends AppView {
 				if (tabConfig.id.equals(AppConstants.TAB_GRADES)) {
 					tab.add(getBorderLayoutContainer());
 				} else if (tabConfig.id.equals(AppConstants.TAB_GRADESCALE)) {
-					tab.add(new GradeScalePanel());
+					tab.add(new GradeScalePanel(isEditable));
 				} else if (tabConfig.id.equals(AppConstants.TAB_HISTORY)) {
 					tab.add(new HistoryPanel());
 				}
