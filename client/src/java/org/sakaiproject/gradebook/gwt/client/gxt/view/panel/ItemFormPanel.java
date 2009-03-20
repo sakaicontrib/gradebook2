@@ -85,7 +85,8 @@ public class ItemFormPanel extends ContentPanel {
 	
 	private RowLayout layout;
 	private RowData topRowData, bottomRowData;
-	private Button closeButton, createButton, cancelButton, deleteButton, saveButton;
+	//private Button closeButton, createButton, cancelButton, deleteButton, saveButton;
+	private Button okButton, cancelButton;
 	private boolean isFull;
 	
 	private GradebookModel selectedGradebook;
@@ -243,6 +244,15 @@ public class ItemFormPanel extends ContentPanel {
 		
 		formPanel.add(checkBoxContainer);
 		
+		okButton = new Button("Blank", selectionListener);
+		addButton(okButton);
+		
+		cancelButton = new Button(i18n.cancelButton(), selectionListener);
+		cancelButton.setData(selectionTypeField, SelectionType.CANCEL);
+		
+		addButton(cancelButton);
+		
+		/*
 		createButton = new Button(i18n.createButton(), selectionListener);
 		createButton.setData(selectionTypeField, SelectionType.CREATE);
 		createButton.setVisible(false);
@@ -263,11 +273,8 @@ public class ItemFormPanel extends ContentPanel {
 		saveButton.setData(selectionTypeField, SelectionType.SAVE);
 		
 		addButton(saveButton);
+		*/
 		
-		cancelButton = new Button(i18n.cancelButton(), selectionListener);
-		cancelButton.setData(selectionTypeField, SelectionType.CANCEL);
-		
-		addButton(cancelButton);
 		
 		topRowData = new RowData(1, 70, new Margins(10));
 		bottomRowData = new RowData(1, 1, new Margins(0, 0, 5, 0));
@@ -283,11 +290,13 @@ public class ItemFormPanel extends ContentPanel {
 		if (formBindings == null)
 			initFormBindings();
 		
-		closeButton.setVisible(false);
+		okButton.setText(i18n.deleteButton());
+		okButton.setData(selectionTypeField, SelectionType.DELETE);
+		/*closeButton.setVisible(false);
 		createButton.setVisible(false);
 		cancelButton.setVisible(true);
 		deleteButton.setVisible(true);
-		saveButton.setVisible(false);
+		saveButton.setVisible(false);*/
 		
 		if (itemModel != null) {
 			Type itemType = itemModel.getItemType();
@@ -310,11 +319,15 @@ public class ItemFormPanel extends ContentPanel {
 		if (formBindings == null)
 			initFormBindings();
 		
-		closeButton.setVisible(false);
+		okButton.setText(i18n.saveButton());
+		okButton.setData(selectionTypeField, SelectionType.SAVE);
+		
+		/*closeButton.setVisible(false);
 		createButton.setVisible(false);
 		cancelButton.setVisible(true);
 		deleteButton.setVisible(false);
 		saveButton.setVisible(true);
+		*/
 		
 		if (itemModel != null) {
 			Type itemType = itemModel.getItemType();
@@ -401,11 +414,8 @@ public class ItemFormPanel extends ContentPanel {
 		if (formBindings != null) 
 			formBindings.unbind();
 
-		closeButton.setVisible(false);
-		createButton.setVisible(true);
-		cancelButton.setVisible(true);
-		deleteButton.setVisible(false);
-		saveButton.setVisible(false);
+		okButton.setText(i18n.createButton());
+		okButton.setData(selectionTypeField, SelectionType.CREATE);
 		
 		if (itemModel != null) 	
 			initState(Type.CATEGORY, itemModel, false);
@@ -421,11 +431,8 @@ public class ItemFormPanel extends ContentPanel {
 		if (formBindings != null) 
 			formBindings.unbind();
 
-		closeButton.setVisible(false);
-		createButton.setVisible(true);
-		cancelButton.setVisible(true);
-		deleteButton.setVisible(false);
-		saveButton.setVisible(false);
+		okButton.setText(i18n.createButton());
+		okButton.setData(selectionTypeField, SelectionType.CREATE);
 		
 		if (itemModel != null) {
 			if (itemModel.getCategoryId() != null) {
@@ -524,18 +531,18 @@ public class ItemFormPanel extends ContentPanel {
 			isExternal = source != null && source.trim().length() > 0;
 			switch (itemModel.getItemType()) {
 			case CATEGORY:
-				percentCategoryField.setVisible(!DataTypeConversionUtil.checkBoolean(itemModel.getEqualWeightAssignments()));
+				percentCategoryField.setVisible(hasCategories && !DataTypeConversionUtil.checkBoolean(itemModel.getEqualWeightAssignments()));
 				break;
 			case ITEM:
 				ItemModel category = itemModel.getParent();
 				if (category != null && category.getItemType() == Type.CATEGORY)
-					percentCategoryField.setVisible(!DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments()));
+					percentCategoryField.setVisible(hasCategories && !DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments()));
 				break;
 			default:
-				percentCategoryField.setVisible(isItem);
+				percentCategoryField.setVisible(hasCategories && isItem);
 			}
 		} else {
-			percentCategoryField.setVisible(isItem);
+			percentCategoryField.setVisible(hasCategories && isItem);
 		}
 		
 		nameField.setEnabled(!isDelete);
@@ -773,6 +780,7 @@ public class ItemFormPanel extends ContentPanel {
 							break;
 						case SAVE:
 							Dispatcher.forwardEvent(GradebookEvents.UpdateItem, new ItemUpdate(treeStore, selectedItemModel));
+							Dispatcher.forwardEvent(GradebookEvents.HideEastPanel, Boolean.FALSE);
 							break;
 						}
 					}

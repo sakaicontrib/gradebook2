@@ -1,7 +1,5 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.controller;
 
-import java.util.List;
-
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.GradebookToolFacadeAsync;
 import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
@@ -100,20 +98,20 @@ public class UpdateController extends Controller {
 							selectedGradebook);
 					break;
 				case CATEGORY:
-					if (result.isNew())
+					if (result.isActive())
 						doCreateItem(event, result);
 					else
 						doUpdateItem(event.store, null, null, result);
 
 					for (ItemModel item : result.getChildren()) {
-						if (item.isNew())
+						if (item.isActive())
 							doCreateItem(event, item);
 						else
 							doUpdateItem(event.store, null, null, item);
 					}
 					break;
 				case ITEM:
-					if (result.isNew())
+					if (result.isActive())
 						doCreateItem(event, result);
 					else
 						doUpdateItem(event.store, null, null, result);

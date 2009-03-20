@@ -133,6 +133,7 @@ public class TreeView extends View {
 	}
 	
 	protected void onLoadItemTreeModel(GradebookModel selectedGradebook) {
+		//System.out.println("Tree View: Load Tree Model");
 		treeStore.removeAll();
 		ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
 		ItemModel rootItemModel = new ItemModel();
@@ -140,9 +141,11 @@ public class TreeView extends View {
 		rootItemModel.setName("Root");
 		gradebookItemModel.setParent(rootItemModel);
 		rootItemModel.add(gradebookItemModel);
+		treePanel.onBeforeLoadItemTreeModel(selectedGradebook, rootItemModel);
 		treeLoader.load(rootItemModel);
 		treePanel.onLoadItemTreeModel(selectedGradebook, rootItemModel);
 		formPanel.onLoadItemTreeModel(rootItemModel);
+		
 		treePanel.expandTrees();
 	}
 	
@@ -175,7 +178,10 @@ public class TreeView extends View {
 	}
 	
 	@SuppressWarnings("unchecked")
-	protected void onSwitchGradebook(GradebookModel selectedGradebook) {
+	protected void onSwitchGradebook(final GradebookModel selectedGradebook) {
+		//System.out.println("TreeView: Switch Gradebook");
+		formPanel.onSwitchGradebook(selectedGradebook);
+		treePanel.onSwitchGradebook(selectedGradebook);
 		
 		if (treeLoader == null) {
 			treeLoader = new BaseTreeLoader(new TreeModelReader() {
@@ -216,9 +222,15 @@ public class TreeView extends View {
 				}
 			});
 			treeStore.setModelComparer(new ItemModelComparer());
+			/*treeStore.addListener(Store.DataChanged, new Listener<TreeStoreEvent>() {
+
+				public void handleEvent(TreeStoreEvent tse) {
+					treePanel.onTreeStoreDataLoaded();
+				}
+				
+			});*/
 			treePanel.onTreeStoreInitialized(treeStore);
 			formPanel.onTreeStoreInitialized(treeStore);
-			//formPanel.onTreeStoreInitialized(treeStore);
 		}
 		
 		/*if (formBindings == null) {
@@ -233,8 +245,7 @@ public class TreeView extends View {
 		treePanel.onLoadItemTreeModel(selectedGradebook.getRootItemModel());
 		formPanel.onLoadItemTreeModel(selectedGradebook.getRootItemModel());
 		*/
-		formPanel.onSwitchGradebook(selectedGradebook);
-		treePanel.onSwitchGradebook(selectedGradebook);
+		
 	}
 	
 	protected void onUserChange(UserEntityAction<?> action) {

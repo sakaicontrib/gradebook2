@@ -3005,7 +3005,10 @@ private static final long serialVersionUID = 1L;
 			recalculateAssignmentWeights(category.getId(), Boolean.valueOf(isEqualWeighting));
 		}
 		
-		return getItemModelsForCategory(category);
+		ItemModel categoryItemModel = getItemModelsForCategory(category);
+		categoryItemModel.setActive(true);
+		
+		return categoryItemModel;
 	}
 	
 	private ItemModel updateItemModel(ItemModel item) throws InvalidInputException {
@@ -3116,12 +3119,21 @@ private static final long serialVersionUID = 1L;
 			return getItemModel(gradebook, categoriesWithAssignments);
 		}
 		
-		if (!isWeightChanged)
-			return createItemModel(category, assignment, null);
+		if (!isWeightChanged) {
+			ItemModel itemModel = createItemModel(category, assignment, null);
+			itemModel.setActive(true);
+			return itemModel;
+		}
 		
+		ItemModel categoryItemModel = getItemModelsForCategory(category);
 		
-		// Otherwise, we need to update the item's category -- generally to re-calculate weights
-		return getItemModelsForCategory(category);
+		String assignmentIdAsString = String.valueOf(assignment.getId());
+		for (ItemModel model : categoryItemModel.getChildren()) {
+			if (model.getIdentifier().equals(assignmentIdAsString)) 
+				model.setActive(true);
+		}
+		
+		return categoryItemModel;
 	}
 	
 	private ItemModel updateItemField(String assignmentId, ItemModel.Key key, 
@@ -3780,11 +3792,7 @@ private static final long serialVersionUID = 1L;
 		String assignmentIdAsString = String.valueOf(assignmentId);
 		for (ItemModel model : categoryItemModel.getChildren()) {
 			if (model.getIdentifier().equals(assignmentIdAsString)) 
-				model.setNew(true);
-			/*for (ItemModel child : model.getChildren()) {
-				if (child.getIdentifier().equals(assignmentIdAsString)) 
-					child.setNew(true);
-			}*/
+				model.setActive(true);
 		}
 		
 		return categoryItemModel;
@@ -3817,7 +3825,7 @@ private static final long serialVersionUID = 1L;
 		gbService.updateCategory(category);
 		
 		ItemModel categoryItemModel = getItemModelsForCategory(category);
-		categoryItemModel.setNew(true);
+		categoryItemModel.setActive(true);
 		return categoryItemModel;
 	}
 	

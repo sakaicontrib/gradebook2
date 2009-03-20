@@ -1,9 +1,43 @@
 package org.sakaiproject.gradebook.gwt.client;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
+
 import com.extjs.gxt.ui.client.state.StateManager;
 
 public class GradebookState {
 
+	public static List<String> getSelectedMultigradeColumns(String gradebookUid) {
+		String selectedMultigradeColumnId = DataTypeConversionUtil.concat(gradebookUid, ":", AppConstants.SELECTED_COLUMNS);
+		String value = StateManager.get().getString(selectedMultigradeColumnId);
+		
+		List<String> columnIds = new ArrayList<String>();
+		
+		if (value != null) {
+			String[] tokens = value.split(":");
+			for (int i=0;i<tokens.length;i++) {
+				columnIds.add(tokens[i]);
+			}
+		}
+		
+		return columnIds;
+	}
+	
+	public static void setSelectedMultigradeColumns(String gradebookUid, List<ItemModel> selectedColumns) {
+		String selectedMultigradeColumnId = DataTypeConversionUtil.concat(gradebookUid, ":", AppConstants.SELECTED_COLUMNS);
+		
+		StringBuilder builder = new StringBuilder();
+		for (ItemModel item : selectedColumns) {
+			if (item.getItemType() == Type.ITEM)
+				builder.append(item.getIdentifier()).append(":");
+		}
+		
+		StateManager.get().set(selectedMultigradeColumnId, builder.toString());
+	}
+	
 	public static boolean getTabMode(String gradebookUid) {
 		String tabModeStateId = DataTypeConversionUtil.concat(gradebookUid, AppConstants.TAB_MODE);
 		Boolean isChecked = (Boolean)StateManager.get().get(tabModeStateId);

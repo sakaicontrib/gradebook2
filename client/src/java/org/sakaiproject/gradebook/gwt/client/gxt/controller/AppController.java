@@ -8,6 +8,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.AppView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.ImportExportView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.InstructorView;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.MultigradeView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.NewItemView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.NotificationView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.SingleGradeView;
@@ -29,6 +30,7 @@ public class AppController extends Controller {
 	private TreeView treeView;
 	private NotificationView notificationView;
 	private ImportExportView importExportView;
+	private MultigradeView multigradeView;
 	
 	public AppController() {
 		registerEventTypes(GradebookEvents.BrowseLearner);
@@ -114,16 +116,26 @@ public class AppController extends Controller {
 			onSingleView(event);
 			break;
 		case GradebookEvents.SwitchGradebook:
+			forwardToView(appView, event);
+			forwardToView(multigradeView, event);
+			forwardToView(treeView, event);
+			break;
 		case GradebookEvents.UserChange:
 			if (singleGrade != null)
 				forwardToView(singleGrade, event);
+			forwardToView(multigradeView, event);
+			break;
 		case GradebookEvents.LoadItemTreeModel:
+			onLoadItemTreeModel(event);
+			break;
+		case GradebookEvents.ShowColumns:
+			forwardToView(multigradeView, event);
+			break;
 		case GradebookEvents.StartEditItem:
 		case GradebookEvents.HideEastPanel:
 		case GradebookEvents.SelectItem:
 			forwardToView(treeView, event);
 		case GradebookEvents.ExpandEastPanel:
-		case GradebookEvents.ShowColumns:
 			forwardToView(appView, event);
 			break;
 		case GradebookEvents.ItemUpdated:
@@ -144,7 +156,7 @@ public class AppController extends Controller {
 	}
 	
 	private void onBrowseLearner(AppEvent<?> event) {
-		forwardToView(appView, event);
+		forwardToView(multigradeView, event);
 	}
 	
 	private void onConfirmDeleteItem(AppEvent<?> event) {
@@ -161,24 +173,30 @@ public class AppController extends Controller {
 	
 	private void onItemCreated(AppEvent<?> event) {
 		forwardToView(appView, event);
+		forwardToView(multigradeView, event);
 		forwardToView(treeView, event);
 	}
 	
 	private void onItemDeleted(AppEvent<?> event) {
-		forwardToView(appView, event);
+		forwardToView(multigradeView, event);
 	}
 	
 	private void onItemUpdated(AppEvent<?> event) {
-		forwardToView(appView, event);
+		forwardToView(multigradeView, event);
 		forwardToView(treeView, event);
 		if (singleView != null)
 			forwardToView(singleView, event);
 	}
 	
 	private void onLearnerGradeRecordUpdated(AppEvent<?> event) {
-		forwardToView(appView, event);
+		forwardToView(multigradeView, event);
 		if (singleView != null && singleView.isDialogVisible())
 			forwardToView(singleView, event);
+	}
+	
+	private void onLoadItemTreeModel(AppEvent<?> event) {
+		forwardToView(multigradeView, event);
+		forwardToView(treeView, event);
 	}
 		
 	private void onNewItem(AppEvent<?> event) {
@@ -197,7 +215,7 @@ public class AppController extends Controller {
 	}
 	
 	private void onRefreshCourseGrades(AppEvent<?> event) {
-		forwardToView(appView, event);
+		forwardToView(multigradeView, event);
 	}
 	
 	private void onSelectLearner(AppEvent<?> event) {
@@ -250,8 +268,10 @@ public class AppController extends Controller {
 			this.notificationView = new NotificationView(this);
 			if (isUserAbleToGrade) {
 				this.treeView = new TreeView(this, i18n);
-				this.appView = new InstructorView(this, treeView, notificationView);
+				this.multigradeView = new MultigradeView(this, i18n);
+				this.appView = new InstructorView(this, treeView, multigradeView, notificationView);
 				forwardToView(treeView, event);
+				forwardToView(multigradeView, event);
 			} else if (isUserAbleToViewOwnGrades) {
 				this.appView = new StudentView(this, notificationView);
 			}

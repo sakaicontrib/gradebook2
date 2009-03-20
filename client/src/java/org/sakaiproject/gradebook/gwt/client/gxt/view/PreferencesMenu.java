@@ -70,6 +70,7 @@ public class PreferencesMenu extends Menu {
 
 		enablePopupsMenuItem.addListener(Events.CheckChange, menuListener);
 		
+		/*
 		// Separator
 		add(new SeparatorMenuItem());
 		
@@ -153,7 +154,7 @@ public class PreferencesMenu extends Menu {
 		releaseGradesNoMenuItem.addListener(Events.CheckChange, menuListener);
 		
 		releaseCourseGrades.setSubMenu(releaseCourseGradesSubMenu);
-		add(releaseCourseGrades);
+		add(releaseCourseGrades);*/
 	}
 
 	
@@ -251,6 +252,7 @@ public class PreferencesMenu extends Menu {
 			}
 		}
 
+		/*
 		// Initialize gradebook name textbox
 		gradebookNameTextBox.setValue(selectedGradebook.getName());
 		
@@ -287,7 +289,7 @@ public class PreferencesMenu extends Menu {
 		} else {
 			releaseGradesNoMenuItem.setChecked(true);
 			releaseGradesYesMenuItem.setChecked(false);
-		}
+		}*/
 	}
 	
 	private void selectGradeType(GradebookModel selectedGradebook, GradeType gradeType, boolean isChecked) {

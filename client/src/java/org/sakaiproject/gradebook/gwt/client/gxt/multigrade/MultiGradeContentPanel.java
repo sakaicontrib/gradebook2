@@ -391,35 +391,43 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	
 	public void onItemUpdated(ItemModel itemModel) {
 		
+		
 		switch (itemModel.getItemType()) {
 			
 		case GRADEBOOK:
-			refreshGrid(RefreshAction.REFRESHCOLUMNSANDDATA);
-			showColumns(lastShowColumnsEvent);
+			//refreshGrid(RefreshAction.REFRESHCOLUMNSANDDATA);
+			//showColumns(lastShowColumnsEvent);
+			break;
+		case CATEGORY:
+			if (itemModel.isActive()) {
+				refreshGrid(RefreshAction.REFRESHDATA);
+			}
 			break;
 		case ITEM:
-			for (int i=0;i<cm.getColumnCount();i++) {
-				ColumnConfig column = cm.getColumnById(itemModel.getIdentifier());
-				
-				column.setHeader(itemModel.getName());
-					
-				boolean isIncluded = itemModel.getIncluded() != null && itemModel.getIncluded().booleanValue();
-				boolean isExtraCredit = itemModel.getExtraCredit() != null && itemModel.getExtraCredit().booleanValue();
-					
-				if (!isIncluded)
-					column.setRenderer(unweightedNumericCellRenderer);
-				else if (isExtraCredit)
-					column.setRenderer(extraCreditNumericCellRenderer);
-				else
-					column.setRenderer(null);
+			if (itemModel.isActive()) {
+				refreshGrid(RefreshAction.REFRESHDATA);
 			}
+			ColumnConfig column = cm.getColumnById(itemModel.getIdentifier());
+				
+			column.setHeader(itemModel.getName());
+					
+			boolean isIncluded = itemModel.getIncluded() != null && itemModel.getIncluded().booleanValue();
+			boolean isExtraCredit = itemModel.getExtraCredit() != null && itemModel.getExtraCredit().booleanValue();
+					
+			if (!isIncluded)
+				column.setRenderer(unweightedNumericCellRenderer);
+			else if (isExtraCredit)
+				column.setRenderer(extraCreditNumericCellRenderer);
+			else
+				column.setRenderer(null);
 			
-			if (grid.isRendered())
-				grid.getView().refresh(true);
+			//if (grid.isRendered())
+			//	grid.getView().refresh(true);
 			
-			showColumns(lastShowColumnsEvent);
+			//showColumns(lastShowColumnsEvent);
 			break;
 		}
+		
 		
 /*
 			switch (assignmentModelKey) {
@@ -746,6 +754,9 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		cm = assembleColumnModel(selectedGradebook);
 		grid.reconfigure(store, cm);
 		grid.el().unmask();
+		
+		if (lastShowColumnsEvent != null)
+			showColumns(lastShowColumnsEvent);
 	}
 	
 	public void onShowColumns(ShowColumnsEvent event) {
@@ -773,6 +784,9 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		
 		if (loader != null) 
 			loader.load(0, pageSize);
+		
+		//if (lastShowColumnsEvent != null)
+		//	showColumns(lastShowColumnsEvent);
 	}
 	
 	public void onUserChange(UserEntityAction<?> action) {
@@ -1297,7 +1311,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	}*/
 	
 	public void onRefreshCourseGrades() {
-		refreshGrid(RefreshAction.REFRESHLOCALCOLUMNS);
+		//refreshGrid(RefreshAction.REFRESHLOCALCOLUMNS);
 	}
 	
 	@Override
@@ -1312,7 +1326,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		
 		//if (gridOwner != null) {
 		
-		if (isRendered())
+		if (isRendered() && toolBarContainer != null)
 			toolBarContainer.setWidth(getWidth());
 		
 			/*if (singleView != null) {

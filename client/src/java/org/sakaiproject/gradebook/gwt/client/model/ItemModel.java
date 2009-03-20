@@ -51,16 +51,16 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 		}
 	};
 
-	private boolean isNew;
+	private boolean isActive;
 	
 	public ItemModel() {
 		super();
-		this.isNew = false;
+		this.isActive = false;
 	}
 
 	public ItemModel(Map<String, Object> properties) {
 		super(properties);
-		this.isNew = false;
+		this.isActive = false;
 	}
 	
 	public String getDisplayName() {
@@ -344,12 +344,12 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 		 return hash;
 	 }
 
-	public boolean isNew() {
-		return isNew;
+	public boolean isActive() {
+		return isActive;
 	}
 
-	public void setNew(boolean isNew) {
-		this.isNew = isNew;
+	public void setActive(boolean isActive) {
+		this.isActive = isActive;
 	}
 	
 }

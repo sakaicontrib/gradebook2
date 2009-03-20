@@ -48,6 +48,7 @@ public interface AppConstants {
 	
 	// Tab mode cookie id
 	public static final String TAB_MODE				= ":tabMode";
+	public static final String SELECTED_COLUMNS		= ":selectedMultigradeColumns";
 	public static final String SORT_FIELD			= ":sortField";
 	public static final String SORT_DIRECTION		= ":sortDirection";
 	public static final String COLUMN_PREFIX		= "column:";

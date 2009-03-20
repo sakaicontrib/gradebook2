@@ -7,27 +7,19 @@ import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.GradebookState;
-import org.sakaiproject.gradebook.gwt.client.GradebookToolFacadeAsync;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
-import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
-import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
-import org.sakaiproject.gradebook.gwt.client.gxt.NotifyingAsyncCallback;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenu;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTabItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTabPanel;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
-import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeContentPanel;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.GradeScalePanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.HelpPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.HistoryPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.LearnerSummaryPanel;
-import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.GradeScalePanel;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
-import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
@@ -36,13 +28,6 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.LayoutRegion;
-import com.extjs.gxt.ui.client.data.BasePagingLoader;
-import com.extjs.gxt.ui.client.data.DataReader;
-import com.extjs.gxt.ui.client.data.ModelReader;
-import com.extjs.gxt.ui.client.data.PagingLoadConfig;
-import com.extjs.gxt.ui.client.data.PagingLoadResult;
-import com.extjs.gxt.ui.client.data.PagingLoader;
-import com.extjs.gxt.ui.client.data.RpcProxy;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.MenuEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
@@ -50,7 +35,6 @@ import com.extjs.gxt.ui.client.event.TabPanelEvent;
 import com.extjs.gxt.ui.client.event.ToolBarEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
-import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.Container;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
@@ -68,7 +52,6 @@ import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.extjs.gxt.ui.client.widget.toolbar.TextToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.user.client.Element;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class InstructorView extends AppView {
 	
@@ -77,6 +60,7 @@ public class InstructorView extends AppView {
 	
 	// The instructor view maintains a link to tree view, since it is required to instantiate multigrade
 	private TreeView treeView;
+	private MultigradeView multigradeView;
 	
 	private FitLayout contentPanelLayout;
 	private ContentPanel contentPanel;
@@ -89,7 +73,6 @@ public class InstructorView extends AppView {
 	private GradeScalePanel gradeScalePanel;
 	private HistoryPanel historyPanel;
 	
-	private MultiGradeContentPanel multigrade;
 	private Map<String, ContentPanel> tabContentPanelMap;
 	private List<TabConfig> tabConfigurations;
 	
@@ -113,14 +96,15 @@ public class InstructorView extends AppView {
 	private BorderLayoutData westData;
 	
 	
-	private ListStore<StudentModel> store;
+	
 	private I18nConstants i18n;
 	
-	public InstructorView(Controller controller, TreeView treeView, NotificationView notificationView) {
+	public InstructorView(Controller controller, TreeView treeView, MultigradeView multigradeView, NotificationView notificationView) {
 		super(controller, notificationView);
 		this.tabConfigurations = new ArrayList<TabConfig>();
 		this.tabContentPanelMap = new HashMap<String, ContentPanel>();
 		this.treeView = treeView;
+		this.multigradeView = multigradeView;
 	}
 
 	@Override
@@ -128,15 +112,14 @@ public class InstructorView extends AppView {
 		super.initialize();
 		
 		i18n = Registry.get(AppConstants.I18N);
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-		initTabs(i18n, selectedGradebook);
+		//GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		//initTabs(i18n, selectedGradebook);
 		initListeners();
 		contentPanelLayout = new FitLayout();
 		contentPanel = new ContentPanel();
 		contentPanel.setHeaderVisible(false);
 		contentPanel.setLayout(contentPanelLayout);
-		contentPanel.setTopComponent(newToolBar(i18n, selectedGradebook));
-		
+			
 		//contentPanel.add(notificationView.getNotificationPanel(), new RowData(1, 35));
 		
 		borderLayoutContainer = new LayoutContainer(); 
@@ -165,14 +148,23 @@ public class InstructorView extends AppView {
 		westData.setCollapsible(true);  
 		westData.setMargins(new Margins(5));
 		westData.setMinSize(100);
+		
+		addMainContainer(getBorderLayoutContainer());
 	}
 	
 	@Override
 	protected void initUI(ApplicationModel model) {
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);		
-		switchTabMode(selectedGradebook.getGradebookUid(), tabMode, true);
+		//switchTabMode(selectedGradebook.getGradebookUid(), tabMode, true);
 		
-		RpcProxy<PagingLoadConfig, PagingLoadResult<StudentModel>> proxy = 
+		//addMainContainer(getBorderLayoutContainer());
+		
+		tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADESCALE, i18n.tabGradeScaleHeader(), true, MenuSelector.GRADE_SCALE));
+		tabConfigurations.add(new TabConfig(AppConstants.TAB_HISTORY, i18n.tabHistoryHeader(), true, MenuSelector.HISTORY));
+
+		contentPanel.setTopComponent(newToolBar(i18n, selectedGradebook));
+		
+		/*RpcProxy<PagingLoadConfig, PagingLoadResult<StudentModel>> proxy = 
 			new RpcProxy<PagingLoadConfig, PagingLoadResult<StudentModel>>() {
 			@Override
 			protected void load(PagingLoadConfig loadConfig, AsyncCallback<PagingLoadResult<StudentModel>> callback) {
@@ -214,16 +206,16 @@ public class InstructorView extends AppView {
 		
 		store = new ListStore<StudentModel>(loader);
 		store.setModelComparer(new EntityModelComparer<StudentModel>());
-		store.setMonitorChanges(true);
+		store.setMonitorChanges(true);*/
 		
 		viewport.add(contentPanel);
 	}
 	
-	@Override
+	/*@Override
 	protected void onBrowseLearner(BrowseLearner event) {
 		if (multigrade != null)
 			multigrade.onBrowseLearner(event);
-	}
+	}*/
 	
 	@Override
 	protected void onCloseNotification() {
@@ -240,8 +232,7 @@ public class InstructorView extends AppView {
 		case DELETE_ITEM:
 			cardLayoutContainer.setHeading(i18n.deleteItemHeading());
 			cardLayout.setActiveItem(treeView.getFormPanel());
-			if (multigrade != null)
-				multigrade.deselectAll();
+			multigradeView.deselectAll();
 			break;
 		case GRADE_SCALE:
 			cardLayoutContainer.setHeading(i18n.gradeScaleHeading());
@@ -258,20 +249,17 @@ public class InstructorView extends AppView {
 		case NEW_CATEGORY:
 			cardLayoutContainer.setHeading(i18n.newCategoryHeading());
 			cardLayout.setActiveItem(treeView.getFormPanel());
-			if (multigrade != null)
-				multigrade.deselectAll();
+			multigradeView.deselectAll();
 			break;
 		case NEW_ITEM:
 			cardLayoutContainer.setHeading(i18n.newItemHeading());
 			cardLayout.setActiveItem(treeView.getFormPanel());
-			if (multigrade != null)
-				multigrade.deselectAll();
+			multigradeView.deselectAll();
 			break;
 		case EDIT_ITEM:
 			cardLayoutContainer.setHeading(i18n.editItemHeading());
 			cardLayout.setActiveItem(treeView.getFormPanel());
-			if (multigrade != null)
-				multigrade.deselectAll();
+			multigradeView.deselectAll();
 			break;
 		case LEARNER_SUMMARY:
 			cardLayoutContainer.setHeading(i18n.learnerSummaryHeading());
@@ -283,13 +271,13 @@ public class InstructorView extends AppView {
 	
 	@Override
 	protected void onItemCreated(ItemModel itemModel) {
-		if (multigrade != null)
-			multigrade.onItemCreated(itemModel);
+		//if (multigrade != null)
+		//	multigrade.onItemCreated(itemModel);
 		
 		onHideEastPanel(Boolean.FALSE);
 	}
 	
-	@Override
+	/*@Override
 	protected void onItemDeleted(ItemModel itemModel) {
 		if (multigrade != null)
 			multigrade.onItemDeleted(itemModel);
@@ -311,7 +299,7 @@ public class InstructorView extends AppView {
 	protected void onLoadItemTreeModel(GradebookModel selectedGradebook) {
 		if (multigrade != null)
 			multigrade.onLoadItemTreeModel(selectedGradebook);
-	}
+	}*/
 	
 	@Override
 	protected void onNewCategory(ItemModel itemModel) {
@@ -328,11 +316,11 @@ public class InstructorView extends AppView {
 		//borderLayout.show(LayoutRegion.NORTH);
 	}
 	
-	@Override
+	/*@Override
 	protected void onRefreshCourseGrades() {
 		if (multigrade != null)
 			multigrade.onRefreshCourseGrades();
-	}
+	}*/
 	
 	@Override
 	protected void onSelectLearner(StudentModel learner) {
@@ -344,18 +332,18 @@ public class InstructorView extends AppView {
 	@Override
 	protected void onSingleGrade(StudentModel learnerGradeRecordCollection) {
 		if (singleGradeContainer == null) {
-			singleGradeContainer = new LearnerSummaryPanel(multigrade.getStore());
+			singleGradeContainer = new LearnerSummaryPanel(multigradeView.getStore());
 			cardLayoutContainer.add(singleGradeContainer);
 		}
-		singleGradeContainer.onChangeModel(multigrade.getStore(), treeView.getTreeStore(), learnerGradeRecordCollection);
+		singleGradeContainer.onChangeModel(multigradeView.getStore(), treeView.getTreeStore(), learnerGradeRecordCollection);
 		onExpandEastPanel(EastCard.LEARNER_SUMMARY);
 	}
 	
-	@Override
+	/*@Override
 	protected void onShowColumns(ShowColumnsEvent event) {
 		if (multigrade != null)
 			multigrade.onShowColumns(event);
-	}
+	}*/
 	
 	protected void onShowGradeScale(Boolean show) {
 		if (gradeScalePanel == null) {
@@ -388,8 +376,8 @@ public class InstructorView extends AppView {
 	@Override
 	protected void onSwitchGradebook(GradebookModel selectedGradebook) {
 		
-		if (multigrade != null) 
-			multigrade.onSwitchGradebook(selectedGradebook);
+		//if (multigrade != null) 
+		//	multigrade.onSwitchGradebook(selectedGradebook);
 		
 		if (preferencesMenu != null)
 			preferencesMenu.onSwitchGradebook(selectedGradebook);
@@ -417,8 +405,8 @@ public class InstructorView extends AppView {
 			break;
 		}
 
-		if (multigrade != null)
-			multigrade.onUserChange(action);
+		//if (multigrade != null)
+		//	multigrade.onUserChange(action);
 	}
 
 	/*
@@ -547,39 +535,34 @@ public class InstructorView extends AppView {
 	}
 	
 	private LayoutContainer getBorderLayoutContainer() {
-		if (multigrade == null) {
-			multigrade = new MultiGradeContentPanel(null);
-			
-			cardLayoutContainer = new ContentPanel() {
-				protected void onRender(Element parent, int index) {
-				    super.onRender(parent, index);
-				    //borderLayout.hide(LayoutRegion.EAST);
-				    //treeView.getTreePanel().expandTrees();
-				}
-			};
-						
-			helpPanel = new HelpPanel() {
-				protected void onRender(Element parent, int index) {
-				    super.onRender(parent, index);
-				    borderLayout.collapse(LayoutRegion.EAST);
-				}
-			};
-			
-			cardLayoutContainer.setWidth(400);
-			cardLayoutContainer.setBorders(true);
-			cardLayoutContainer.setBodyBorder(true);
-			cardLayoutContainer.setFrame(true);
-			cardLayout = new CardLayout();
-			cardLayoutContainer.setLayout(cardLayout);
-			cardLayoutContainer.add(helpPanel);
-			cardLayoutContainer.add(treeView.getFormPanel());
-			cardLayout.setActiveItem(helpPanel);
-			
-			//borderLayoutContainer.add(notificationView.getNotificationPanel(), northData);
-			borderLayoutContainer.add(treeView.getTreePanel(), westData);
-			borderLayoutContainer.add(multigrade, centerData);
-			borderLayoutContainer.add(cardLayoutContainer, eastData);
-		}
+
+		cardLayoutContainer = new ContentPanel() {
+			protected void onRender(Element parent, int index) {
+				super.onRender(parent, index);
+			}
+		};
+
+		helpPanel = new HelpPanel() {
+			protected void onRender(Element parent, int index) {
+				super.onRender(parent, index);
+				borderLayout.collapse(LayoutRegion.EAST);
+			}
+		};
+
+		cardLayoutContainer.setWidth(400);
+		cardLayoutContainer.setBorders(true);
+		cardLayoutContainer.setBodyBorder(true);
+		cardLayoutContainer.setFrame(true);
+		cardLayout = new CardLayout();
+		cardLayoutContainer.setLayout(cardLayout);
+		cardLayoutContainer.add(helpPanel);
+		cardLayoutContainer.add(treeView.getFormPanel());
+		cardLayout.setActiveItem(helpPanel);
+
+		borderLayoutContainer.add(treeView.getTreePanel(), westData);
+		borderLayoutContainer.add(multigradeView.getMultiGradeContentPanel(), centerData);
+		borderLayoutContainer.add(cardLayoutContainer, eastData);
+
 		
 		return borderLayoutContainer;
 	}

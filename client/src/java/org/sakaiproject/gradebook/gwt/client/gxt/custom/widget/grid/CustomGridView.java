@@ -354,7 +354,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	protected void onBeforeDataChanged(StoreEvent se) {
 	    if (grid.isLoadMask()) {
 	    	isDisplayLoadMaskOnRender = false;
-	    	grid.el().mask(GXT.MESSAGES.loadMask_msg());
+	    	//grid.el().mask(GXT.MESSAGES.loadMask_msg());
 	    }
 	}
 	
@@ -377,7 +377,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 		super.renderUI();
 		
 		if (isDisplayLoadMaskOnRender) {
-			grid.el().mask(GXT.MESSAGES.loadMask_msg());
+			//grid.el().mask(GXT.MESSAGES.loadMask_msg());
 			isDisplayLoadMaskOnRender = false;
 		}
 	}

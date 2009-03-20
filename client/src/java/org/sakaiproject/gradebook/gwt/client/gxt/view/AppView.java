@@ -41,9 +41,6 @@ public abstract class AppView extends View {
 	@Override
 	protected void handleEvent(AppEvent<?> event) {
 		switch(event.type) {
-		case GradebookEvents.BrowseLearner:
-			onBrowseLearner((BrowseLearner)event.data);
-			break;
 		case GradebookEvents.Confirmation:
 		case GradebookEvents.Notification:
 			onOpenNotification();
@@ -53,9 +50,6 @@ public abstract class AppView extends View {
 			break;
 		case GradebookEvents.FullScreen:
 			onFullScreen((FullScreen)event.data);
-			break;
-		case GradebookEvents.LearnerGradeRecordUpdated:
-			onLearnerGradeRecordUpdated((UserEntityAction<?>)event.data);
 			break;
 		case GradebookEvents.NewCategory:
 			onNewCategory((ItemModel)event.data);
@@ -78,23 +72,8 @@ public abstract class AppView extends View {
 		case GradebookEvents.ItemCreated:
 			onItemCreated((ItemModel)event.data);
 			break;
-		case GradebookEvents.ItemDeleted:
-			onItemDeleted((ItemModel)event.data);
-			break;
-		case GradebookEvents.ItemUpdated:
-			onItemUpdated((ItemModel)event.data);
-			break;
-		case GradebookEvents.LoadItemTreeModel:
-			onLoadItemTreeModel((GradebookModel)event.data);
-			break;
-		case GradebookEvents.RefreshCourseGrades:
-			onRefreshCourseGrades();
-			break;
 		case GradebookEvents.SingleGrade:
 			onSingleGrade((StudentModel)event.data);
-			break;
-		case GradebookEvents.ShowColumns:
-			onShowColumns((ShowColumnsEvent)event.data);
 			break;
 		case GradebookEvents.Startup:
 			ApplicationModel applicationModel = (ApplicationModel)event.data;
@@ -129,11 +108,7 @@ public abstract class AppView extends View {
 	
 	protected abstract void initUI(ApplicationModel model);
 
-	
-	protected void onBrowseLearner(BrowseLearner event) {
 		
-	}
-	
 	protected void onCloseNotification() {
 		
 	}
@@ -153,23 +128,7 @@ public abstract class AppView extends View {
 	protected void onItemCreated(ItemModel itemModel) {
 		
 	}
-	
-	protected void onItemDeleted(ItemModel itemModel) {
 		
-	}
-	
-	protected void onItemUpdated(ItemModel itemModel) {
-		
-	}
-	
-	protected void onLearnerGradeRecordUpdated(UserEntityAction<?> action) {
-		
-	}
-	
-	protected void onLoadItemTreeModel(GradebookModel selectedGradebook) {
-		
-	}
-	
 	protected void onOpenNotification() {
 		
 	}
@@ -182,19 +141,11 @@ public abstract class AppView extends View {
 		
 	}
 	
-	protected void onRefreshCourseGrades() {
-		
-	}
-	
 	protected void onSelectLearner(StudentModel learner) {
 		
 	}
 	
 	protected void onSingleGrade(StudentModel student) {
-		
-	}
-	
-	protected void onShowColumns(ShowColumnsEvent event) {
 		
 	}
 	
