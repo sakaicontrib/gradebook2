@@ -1,12 +1,11 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view;
 
 import org.sakaiproject.gradebook.gwt.client.gxt.StudentViewContainer;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 
 import com.extjs.gxt.ui.client.mvc.Controller;
-import com.extjs.gxt.ui.client.mvc.Dispatcher;
+import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 
 public class StudentView extends AppView {
 
@@ -20,8 +19,11 @@ public class StudentView extends AppView {
 	protected void initUI(ApplicationModel model) {
 		GradebookModel gbModel = model.getGradebookModels().get(0);
 		studentViewContainer = new StudentViewContainer(true);
-		Dispatcher.forwardEvent(GradebookEvents.SingleView, gbModel.getUserAsStudent());
+		studentViewContainer.onChangeModel(gbModel, gbModel.getUserAsStudent());
+		//Dispatcher.forwardEvent(GradebookEvents.SingleView, gbModel.getUserAsStudent());
+		viewport.setLayout(new FitLayout());
 		viewport.add(studentViewContainer);
+		//viewport.setHeight(600);
 	}
 	
 }

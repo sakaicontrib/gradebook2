@@ -34,11 +34,12 @@ public class TreeView extends View {
 	private TreeLoader<ItemModel> treeLoader;
 	private TreeStore<ItemModel> treeStore;
 	
-	//private FormBinding formBindings;
+	private boolean isEditable;
 	
-	public TreeView(Controller controller, I18nConstants i18n) {
+	public TreeView(Controller controller, I18nConstants i18n, boolean isEditable) {
 		super(controller);
-		this.treePanel = new ItemTreePanel(i18n);
+		this.isEditable = isEditable;
+		this.treePanel = new ItemTreePanel(i18n, isEditable);
 		this.formPanel = new ItemFormPanel(i18n);
 	}
 

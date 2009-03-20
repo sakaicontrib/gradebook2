@@ -3,6 +3,7 @@ package org.sakaiproject.gradebook.gwt.client.gxt.controller;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.AppView;
@@ -264,12 +265,13 @@ public class AppController extends Controller {
 			Registry.register(AppConstants.CURRENT, gbModel);
 			boolean isUserAbleToGrade = gbModel.isUserAbleToGrade() == null ? false : gbModel.isUserAbleToGrade().booleanValue();
 			boolean isUserAbleToViewOwnGrades = gbModel.isUserAbleToViewOwnGrades() == null ? false : gbModel.isUserAbleToViewOwnGrades().booleanValue();
-	
+			boolean isUserAbleToEditItems = DataTypeConversionUtil.checkBoolean(gbModel.isUserAbleToEditAssessments());
+			
 			this.notificationView = new NotificationView(this);
 			if (isUserAbleToGrade) {
-				this.treeView = new TreeView(this, i18n);
+				this.treeView = new TreeView(this, i18n, isUserAbleToEditItems);
 				this.multigradeView = new MultigradeView(this, i18n);
-				this.appView = new InstructorView(this, treeView, multigradeView, notificationView);
+				this.appView = new InstructorView(this, treeView, multigradeView, notificationView, isUserAbleToEditItems);
 				forwardToView(treeView, event);
 				forwardToView(multigradeView, event);
 			} else if (isUserAbleToViewOwnGrades) {

@@ -22,74 +22,51 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.gxt;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.sakaiproject.gradebook.gwt.client.AppConstants;
-import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
-import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
-import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
-import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.BaseCustomGridView;
-import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.CustomColumnModel;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
+import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.gxt.settings.LogColumnConfig;
-import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradeRecordModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
+import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 
-import com.extjs.gxt.ui.client.Registry;
-import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Scroll;
-import com.extjs.gxt.ui.client.data.BasePagingLoader;
-import com.extjs.gxt.ui.client.data.ModelData;
-import com.extjs.gxt.ui.client.data.PagingLoadConfig;
-import com.extjs.gxt.ui.client.data.PagingLoadResult;
-import com.extjs.gxt.ui.client.event.GridEvent;
+import com.extjs.gxt.ui.client.Style.VerticalAlignment;
 import com.extjs.gxt.ui.client.store.ListStore;
-import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.form.TextArea;
 import com.extjs.gxt.ui.client.widget.form.TextField;
-import com.extjs.gxt.ui.client.widget.grid.CellEditor;
-import com.extjs.gxt.ui.client.widget.grid.CheckColumnConfig;
-import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
-import com.extjs.gxt.ui.client.widget.grid.EditorGrid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
-import com.extjs.gxt.ui.client.widget.grid.GridView;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
 
 public class StudentViewContainer extends LayoutContainer {
 	
-	private static final Notifier notifier = new Notifier();
-	private static final String GRID_ID = "singlegrade";
+	//private static final Notifier notifier = new Notifier();
+	//private static final String GRID_ID = "singlegrade";
 	
 	//private String gradebookUid;
 	private TextField<String> defaultTextField= new TextField<String>();
 	private TextArea defaultTextArea = new TextArea();
 	private NumberFormat defaultNumberFormat = NumberFormat.getFormat("#.###");
 	private NumberField defaultNumberField = new NumberField();
-    private FlexTable studentInformation;
-    private ContentPanel studentInformationPanel;
-    private GridPanel<GradeRecordModel> gradeItemsPanel; 
+    private FlexTable studentInformation, gradeInformation;
+    private ContentPanel studentInformationPanel, gradeInformationPanel;
+    //private GridPanel<GradeRecordModel> gradeItemsPanel; 
 
 	private LogColumnConfig logColumn;
 	
-	private int pageSize = 10;
+	//private int pageSize = 10;
 
 	private StudentModel learnerGradeRecordCollection;
 	
@@ -98,7 +75,6 @@ public class StudentViewContainer extends LayoutContainer {
 	private GradebookModel selectedGradebook;
 	
 	public StudentViewContainer(boolean isStudentView) {
-		//this.gradebookUid = gradebookUid;
 		this.isStudentView = isStudentView;
 		this.defaultNumberField.setFormat(defaultNumberFormat);
 		this.defaultNumberField.setSelectOnFocus(true);
@@ -107,13 +83,12 @@ public class StudentViewContainer extends LayoutContainer {
 		this.defaultTextField.addInputStyleName("gbTextFieldInput");
 		
 		setLayout(new RowLayout());
-	/*}
-	
-	protected void onRender(Element parent, int pos) {
-		super.onRender(parent, pos);*/
+
 		studentInformation = new FlexTable(); 
 		studentInformation.setStyleName("gbStudentInformation");
 		studentInformationPanel = new ContentPanel();
+		studentInformationPanel.setBorders(true);
+		studentInformationPanel.setFrame(true);
 		studentInformationPanel.setHeaderVisible(false);
 		studentInformationPanel.setHeading("Individual Grade Summary");
 		studentInformationPanel.setLayout(new FitLayout());
@@ -121,6 +96,17 @@ public class StudentViewContainer extends LayoutContainer {
 		studentInformationPanel.add(studentInformation);
 		add(studentInformationPanel, new RowData(1, -1, new Margins(5, 0, 0, 0)));
 
+		gradeInformation = new FlexTable();
+		gradeInformation.setStyleName("gbStudentInformation");
+		gradeInformationPanel = new ContentPanel();
+		gradeInformationPanel.setBorders(true);
+		gradeInformationPanel.setFrame(true);
+		gradeInformationPanel.setHeaderVisible(false);
+		gradeInformationPanel.setLayout(new FitLayout());
+		gradeInformationPanel.setScrollMode(Scroll.AUTO);
+		gradeInformationPanel.add(gradeInformation);
+		add(gradeInformationPanel, new RowData(1, -1, new Margins(5, 0, 0, 0)));
+		
 	}
 	
 	public StudentModel getStudentRow() {
@@ -132,38 +118,40 @@ public class StudentViewContainer extends LayoutContainer {
 			this.selectedGradebook = selectedGradebook;
 			this.learnerGradeRecordCollection = learnerGradeRecordCollection;
 			
-			if (gradeItemsPanel == null)
-				gradeItemsPanel = newGradeItemsPanel();
+			//if (gradeItemsPanel == null)
+			//	gradeItemsPanel = newGradeItemsPanel();
 			
 			if (logColumn != null)
 				logColumn.setStudent(learnerGradeRecordCollection);
 			updateCourseGrade(learnerGradeRecordCollection.getStudentGrade());
 			
-			if (gradeItemsPanel != null) {
-				gradeItemsPanel.onSwitchGradebook(selectedGradebook);
-			}
+			//if (gradeItemsPanel != null) {
+			//	gradeItemsPanel.onSwitchGradebook(selectedGradebook);
+			//}
 			
 			//gradeItemsPanel.getLoader().load(0, pageSize);
 			setStudentInfoTable();
+			
+			setGradeInfoTable(selectedGradebook, learnerGradeRecordCollection);
 		}
 	}
 	
 	public void onItemUpdated(ItemModel itemModel) {
-		refreshData();
+		//refreshData();
 	}
 	
 	protected void onRender(Element parent, int pos) {
 		super.onRender(parent, pos);
 	
-		if (gradeItemsPanel != null)
-			gradeItemsPanel.getLoader().load(0, pageSize);
+		//if (gradeItemsPanel != null)
+		//	gradeItemsPanel.getLoader().load(0, pageSize);
 		
 	}
 	
 	public void onResize(int x, int y) {
 		super.onResize(x, y);
 		
-		if (gradeItemsPanel != null && gradeItemsPanel.getBody() != null) {
+		/*if (gradeItemsPanel != null && gradeItemsPanel.getBody() != null) {
 			int h = 31; //e.getOffsetHeight();
 			int numRows = gradeItemsPanel.getBody().getHeight() / h - 1;
 			
@@ -177,26 +165,26 @@ public class StudentViewContainer extends LayoutContainer {
 					}
 				}
 			}
-		}
+		}*/
 	}
 	
 	public void refreshColumns() {
-		CustomColumnModel cm = new CustomColumnModel(selectedGradebook.getGradebookUid(), GRID_ID, buildColumns(selectedGradebook));
+		/*CustomColumnModel cm = new CustomColumnModel(selectedGradebook.getGradebookUid(), GRID_ID, buildColumns(selectedGradebook));
 		EditorGrid<GradeRecordModel> grid = gradeItemsPanel.getGrid();
 		if (grid != null) {
 			grid.reconfigure(gradeItemsPanel.getStore(), gradeItemsPanel.getColumnModel());
 			if (grid.el() != null) {
 				grid.el().unmask();
 			}
-		}
+		}*/
 	}
 	
 	public void refreshData() {
-		if (gradeItemsPanel.getToolBar() != null)
-			gradeItemsPanel.getToolBar().refresh();
+		//if (gradeItemsPanel.getToolBar() != null)
+		//	gradeItemsPanel.getToolBar().refresh();
 	}
 	
-	private GridPanel<GradeRecordModel> newGradeItemsPanel() {
+	/*private GridPanel<GradeRecordModel> newGradeItemsPanel() {
 		GridPanel<GradeRecordModel> gradeItemsPanel = new GridPanel<GradeRecordModel>(GRID_ID, EntityType.GRADE_RECORD) {
 
 			@Override
@@ -223,10 +211,7 @@ public class StudentViewContainer extends LayoutContainer {
 					}
 					
 					protected void onCellSelect(int row, int col) {
-					    /*Element cell = getCell(row, col);
-					    if (cell != null) {
-					      fly(cell).addStyleName("x-grid3-cell-selected");
-					    }*/
+
 					}
 				};
 				
@@ -369,7 +354,7 @@ public class StudentViewContainer extends LayoutContainer {
 		add(gradeItemsPanel, new RowData(1, 1));
 		
 		return gradeItemsPanel;
-	}
+	}*/
 	
 	private void updateCourseGrade(String newGrade)
 	{
@@ -424,6 +409,77 @@ public class StudentViewContainer extends LayoutContainer {
         studentInformationPanel.show();
 	}
 
+	private void populateGradeInfoRow(int row, ItemModel item, StudentModel learner, FlexCellFormatter formatter) {
+		String itemId = item.getIdentifier();
+		Double value = learner.get(itemId);
+		String commentFlag = new StringBuilder().append(itemId).append(StudentModel.COMMENT_TEXT_FLAG).toString();
+		String comment = learner.get(commentFlag);
+		String excusedFlag = new StringBuilder().append(itemId).append(StudentModel.DROP_FLAG).toString();
+		boolean isExcused = DataTypeConversionUtil.checkBoolean((Boolean)learner.get(excusedFlag));
+		
+		gradeInformation.setText(row, 0, item.getName());
+        formatter.setStyleName(row, 0, "gbRecordLabel");
+        formatter.setVerticalAlignment(row, 0, HasVerticalAlignment.ALIGN_TOP);
+        
+        StringBuilder resultBuilder = new StringBuilder();
+        if (value == null)
+        	resultBuilder.append("Ungraded");
+        else
+        	resultBuilder.append(NumberFormat.getDecimalFormat().format(value));
+        if (isExcused)
+        	resultBuilder.append(" (excluded from grade)");
+        gradeInformation.setText(row, 1, resultBuilder.toString());
+        formatter.setStyleName(row, 1, "gbRecordField");
+        gradeInformation.setText(row, 2, comment);
+        formatter.setStyleName(row, 2, "gbRecordField");
+        
+	}
+	
+	private void setGradeInfoTable(GradebookModel selectedGradebook, StudentModel learner) {		
+		// To force a refresh, let's first hide the owning panel
+		gradeInformationPanel.hide();
+	
+		// Now, let's update the student information table
+		FlexCellFormatter formatter = gradeInformation.getFlexCellFormatter();
+		
+		ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
+		
+		int row=0;
+		for (ItemModel child : gradebookItemModel.getChildren()) {
+			
+			switch (child.getItemType()) {
+			case CATEGORY:
+				boolean isCategoryHeaderDisplayed = false;
+				
+				for (ItemModel item : child.getChildren()) {
+					if (DataTypeConversionUtil.checkBoolean(item.getReleased())) {
+						
+						if (!isCategoryHeaderDisplayed) {
+							if (selectedGradebook.getCategoryType() != CategoryType.NO_CATEGORIES) {
+								gradeInformation.setText(row, 0, child.getName());
+						        formatter.setStyleName(row, 0, "gbHeader");
+						        row++;
+							}
+							isCategoryHeaderDisplayed = true;
+						}
+						
+						populateGradeInfoRow(row, item, learner, formatter);
+						row++;
+					}
+				}
+				break;
+			case ITEM:
+				if (DataTypeConversionUtil.checkBoolean(child.getReleased())) {
+					populateGradeInfoRow(row, child, learner, formatter);
+					row++;
+				}
+				break;
+			}
+		}
+
+        gradeInformationPanel.show();
+	}
+	
 	private GridCellRenderer<GradeRecordModel> numericCellRenderer = new GridCellRenderer<GradeRecordModel>() {
 
 		public String render(GradeRecordModel model, String property,
@@ -485,7 +541,7 @@ public class StudentViewContainer extends LayoutContainer {
 		}
 	};
 	
-	private CellEditor numericCellEditor = new CellEditor(defaultNumberField);
+	/*private CellEditor numericCellEditor = new CellEditor(defaultNumberField);
 
 	private CellEditor textCellEditor = new CellEditor(defaultTextField);
 	
@@ -582,7 +638,7 @@ public class StudentViewContainer extends LayoutContainer {
 		columns.add(commentColumn);
 		
 		return columns;
-	}
+	}*/
 	
 	/*
 	private Grid<AssignmentRecordModel> buildGrid(ContentPanel panel) {
@@ -946,7 +1002,7 @@ public class StudentViewContainer extends LayoutContainer {
 		return grid;
 	}*/
 
-	
+	/*
 	public class ExcludeColumnConfig extends CheckColumnConfig {
 		
 		
@@ -989,7 +1045,7 @@ public class StudentViewContainer extends LayoutContainer {
 			
 			gradeItemsPanel.doEdit(remoteCommand, action);
 		}
-	}
+	}*/
 	
 	/*
 	 * ColumnConfig config = cm.getColumn(ge.colIndex);

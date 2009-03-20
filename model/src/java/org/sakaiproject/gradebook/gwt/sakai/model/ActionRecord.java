@@ -26,9 +26,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.sakaiproject.gradebook.gwt.client.action.Action.ActionType;
-import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
-
 public class ActionRecord {
 
 	public static final String STATUS_FAILURE = "Failed";
@@ -58,11 +55,11 @@ public class ActionRecord {
 		
 	}
 	
-	public ActionRecord(String gradebookUid, Long gradebookId, EntityType entityType, ActionType actionType) {
+	public ActionRecord(String gradebookUid, Long gradebookId, String entityType, String actionType) {
 		this.gradebookUid = gradebookUid;
 		this.gradebookId = gradebookId;
-		this.entityType = entityType.name();
-		this.actionType = actionType.name();
+		this.entityType = entityType;
+		this.actionType = actionType;
 	}
 	
 	public String getGradebookUid() {

@@ -107,7 +107,10 @@ public class ItemTreePanel extends ContentPanel {
 	
 	private GradebookModel selectedGradebook;
 	
-	public ItemTreePanel(I18nConstants i18n) {
+	private boolean isEditable;
+	
+	public ItemTreePanel(I18nConstants i18n, boolean isEditable) {
+		this.isEditable = isEditable;
 		this.fullStaticIdSet = new HashSet<String>();
 		this.isLearnerAttributeTreeLoaded = false;
 		this.visibleStaticIdSet = new HashSet<String>();
@@ -196,7 +199,8 @@ public class ItemTreePanel extends ContentPanel {
 	public void onLoadItemTreeModel(GradebookModel selectedGradebook, ItemModel rootItem) {
 		//System.out.println("ItemTreePanel: Load Item Tree Model");
 		this.selectedGradebook = selectedGradebook;
-		addCategoryMenuItem.setVisible(selectedGradebook.getCategoryType() != CategoryType.NO_CATEGORIES);
+		if (addCategoryMenuItem != null)
+			addCategoryMenuItem.setVisible(selectedGradebook.getCategoryType() != CategoryType.NO_CATEGORIES);
 		
 		switch (selectedGradebook.getCategoryType()) {
 		case NO_CATEGORIES:
@@ -262,7 +266,8 @@ public class ItemTreePanel extends ContentPanel {
 		//Info.display("Item Tree Panel", "Switch Gradebook");
 		
 		this.selectedGradebook = selectedGradebook;
-		addCategoryMenuItem.setVisible(selectedGradebook.getCategoryType() != CategoryType.NO_CATEGORIES);
+		if (addCategoryMenuItem != null)
+			addCategoryMenuItem.setVisible(selectedGradebook.getCategoryType() != CategoryType.NO_CATEGORIES);
 
 		loadLearnerAttributeTree(selectedGradebook);
 	}
@@ -525,7 +530,8 @@ public class ItemTreePanel extends ContentPanel {
 		treeTable.setHeight(300);
 		//treeTable.addListener(Events.RowClick, treeTableEventListener);
 		treeTable.setSelectionModel(new TreeSelectionModel(SelectionMode.SINGLE));
-		treeTable.setContextMenu(newTreeContextMenu(i18n)); 
+		if (isEditable)
+			treeTable.setContextMenu(newTreeContextMenu(i18n)); 
 		
 		return treeTable;
 	}
@@ -817,7 +823,7 @@ public class ItemTreePanel extends ContentPanel {
 			public void selectionChanged(SelectionChangedEvent<ItemModel> se) {
 				ItemModel itemModel = se.getSelectedItem();
 				
-				if (itemModel != null) {
+				if (itemModel != null && isEditable) {
 					boolean isNotGradebook = itemModel.getItemType() != Type.GRADEBOOK;
 					
 					//updateItemMenuItem.setVisible(isNotGradebook);

@@ -252,7 +252,7 @@ public class AuthzMock implements Authz {
 	}
 
 	public boolean isUserAbleToEditAssessments(String gradebookUid) {
-		return true;
+		return false;
 	}
 
 	public boolean isUserAbleToGrade(String gradebookUid) {
@@ -264,12 +264,12 @@ public class AuthzMock implements Authz {
 	}
 
 	public boolean isUserAbleToGradeItemForStudent(String gradebookUid, Long itemId, String studentUid) throws IllegalArgumentException {
-		return true;
+		return false;
 	}
 
 	public boolean isUserAbleToViewItemForStudent(String gradebookUid, Long itemId, String studentUid) throws IllegalArgumentException {
 		// TODO Auto-generated method stub
-		return true;
+		return false;
 	}
 
 	public boolean isUserAbleToViewOwnGrades(String gradebookUid) {

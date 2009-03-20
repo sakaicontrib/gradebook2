@@ -100,6 +100,8 @@ public class GradebookToolFacadeMockImpl extends RemoteServiceServlet implements
 			AssignmentModel essay1 = createEntity(new UserAssignmentCreateAction(gbModel, 
 					Long.valueOf(essaysCategory.getIdentifier()), 
 					"Essay 1", Double.valueOf(0), Double.valueOf(20), new Date()));
+			essay1 = updateEntity(new UserEntityUpdateAction<AssignmentModel>(gbModel, essay1, AssignmentModel.Key.RELEASED.name(), ClassType.BOOLEAN, Boolean.TRUE, Boolean.FALSE));
+			
 			AssignmentModel essay2 = createEntity(new UserAssignmentCreateAction(gbModel, 
 					Long.valueOf(essaysCategory.getIdentifier()), 
 					"Essay 2", Double.valueOf(0), Double.valueOf(20), new Date()));

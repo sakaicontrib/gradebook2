@@ -98,9 +98,11 @@ public class InstructorView extends AppView {
 	
 	
 	private I18nConstants i18n;
+	private boolean isEditable;
 	
-	public InstructorView(Controller controller, TreeView treeView, MultigradeView multigradeView, NotificationView notificationView) {
+	public InstructorView(Controller controller, TreeView treeView, MultigradeView multigradeView, NotificationView notificationView, boolean isEditable) {
 		super(controller, notificationView);
+		this.isEditable = isEditable;
 		this.tabConfigurations = new ArrayList<TabConfig>();
 		this.tabContentPanelMap = new HashMap<String, ContentPanel>();
 		this.treeView = treeView;
@@ -607,8 +609,11 @@ public class InstructorView extends AppView {
 	private ToolBar newToolBar(I18nConstants i18n, GradebookModel selectedGradebook) {
 		
 		ToolBar toolBar = new ToolBar();
-		TextToolItem fileItem = new TextToolItem(i18n.newMenuHeader());
-		fileItem.setMenu(newFileMenu(i18n, selectedGradebook));
+		if (isEditable) {
+			TextToolItem fileItem = new TextToolItem(i18n.newMenuHeader());
+			fileItem.setMenu(newFileMenu(i18n, selectedGradebook));
+			toolBar.add(fileItem);
+		}
 		
 		TextToolItem preferencesItem = new TextToolItem(i18n.prefMenuHeader());
 		preferencesItem.setMenu(newPreferencesMenu(i18n, selectedGradebook));
@@ -623,7 +628,6 @@ public class InstructorView extends AppView {
 		TextToolItem helpItem = new TextToolItem(i18n.helpMenuHeader());
 		helpItem.addSelectionListener(toolBarSelectionListener);
 		
-		toolBar.add(fileItem);
 		toolBar.add(preferencesItem);
 		toolBar.add(windowItem);
 		toolBar.add(moreItem);
@@ -707,11 +711,13 @@ public class InstructorView extends AppView {
 		menuItem.setTitle(i18n.headerExportTitle());
 		moreActionsMenu.add(menuItem);
 		
-		menuItem = new MenuItem(i18n.headerImport(), menuSelectionListener);
-		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.IMPORT);
-		menuItem.setIconStyle("gbImportItemIcon");
-		menuItem.setTitle(i18n.headerImportTitle());
-		moreActionsMenu.add(menuItem);
+		if (isEditable) {
+			menuItem = new MenuItem(i18n.headerImport(), menuSelectionListener);
+			menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.IMPORT);
+			menuItem.setIconStyle("gbImportItemIcon");
+			menuItem.setTitle(i18n.headerImportTitle());
+			moreActionsMenu.add(menuItem);
+		}
 		
 		return moreActionsMenu;
 	}

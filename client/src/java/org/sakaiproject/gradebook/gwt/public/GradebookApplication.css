@@ -213,7 +213,7 @@
 }
 
 .gbHeader {
-	font-size: 14pt;
+	font-size: 12pt;
 	font-weight: bold;
 	padding-bottom: 10px;	
 }
@@ -221,7 +221,19 @@
 .gbImpact {
 	color: darkgray;
 	font-weight: bold;
-	width: 200px;
+	width: 120px;
+}
+
+.gbRecordLabel {
+	color: darkgray;
+	font-weight: bold;
+	padding-top: 10;
+	width: 120px;	
+}
+
+.gbRecordField {
+	padding: 10;
+	vertical-align: top;	
 }
 
 .gbUneditable {

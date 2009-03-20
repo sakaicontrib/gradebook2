@@ -155,7 +155,7 @@ public class DelegateFacadeMockImpl extends DelegateFacadeImpl {
 	protected Map<String, UserRecord> findStudentRecords(String gradebookUid, Long gradebookId, String optionalSectionUid) {
 		Map<String, UserRecord> studentRecords = new HashMap<String, UserRecord>();
 		
-		boolean canGradeAll = isUserAbleToGradeAll(gradebookUid);
+		boolean canGradeAll = true; //isUserAbleToGradeAll(gradebookUid);
 		
 		if (canGradeAll && optionalSectionUid == null) {
 			// If so, then grab all the members for the site

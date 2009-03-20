@@ -140,7 +140,7 @@ private static final long serialVersionUID = 1L;
 		
 		try {
 		
-			ActionRecord actionRecord = new ActionRecord(action.getGradebookUid(), action.getGradebookId(), action.getEntityType(), action.getActionType());
+			ActionRecord actionRecord = new ActionRecord(action.getGradebookUid(), action.getGradebookId(), action.getEntityType().name(), action.getActionType().name());
 			
 			Map<String, String> actionRecordPropertyMap = actionRecord.getPropertyMap();
 			
@@ -224,7 +224,7 @@ private static final long serialVersionUID = 1L;
 		
 		try {
 		
-			ActionRecord actionRecord = new ActionRecord(action.getGradebookUid(), action.getGradebookId(), action.getEntityType(), action.getActionType());
+			ActionRecord actionRecord = new ActionRecord(action.getGradebookUid(), action.getGradebookId(), action.getEntityType().name(), action.getActionType().name());
 			
 			Map<String, String> actionRecordPropertyMap = actionRecord.getPropertyMap();
 			
@@ -483,7 +483,7 @@ private static final long serialVersionUID = 1L;
 					return null;
 			}
 			
-			ActionRecord actionRecord = new ActionRecord(action.getGradebookUid(), action.getGradebookId(), action.getEntityType(), action.getActionType());
+			ActionRecord actionRecord = new ActionRecord(action.getGradebookUid(), action.getGradebookId(), action.getEntityType().name(), action.getActionType().name());
 			
 			if (action.getEntityId() != null)
 				actionRecord.setEntityId(action.getEntityId());
@@ -568,7 +568,7 @@ private static final long serialVersionUID = 1L;
 					return null;
 			}
 			
-			ActionRecord actionRecord = new ActionRecord(action.getGradebookUid(), action.getGradebookId(), action.getEntityType(), action.getActionType());
+			ActionRecord actionRecord = new ActionRecord(action.getGradebookUid(), action.getGradebookId(), action.getEntityType().name(), action.getActionType().name());
 			
 			if (action.getEntityId() != null)
 				actionRecord.setEntityId(action.getEntityId());
@@ -700,7 +700,7 @@ private static final long serialVersionUID = 1L;
 					return null;
 			}
 			
-			ActionRecord actionRecord = new ActionRecord(action.getGradebookUid(), action.getGradebookId(), action.getEntityType(), action.getActionType());
+			ActionRecord actionRecord = new ActionRecord(action.getGradebookUid(), action.getGradebookId(), action.getEntityType().name(), action.getActionType().name());
 				
 			if (action.getEntityId() != null)
 				actionRecord.setEntityId(action.getEntityId());
@@ -4163,7 +4163,10 @@ private static final long serialVersionUID = 1L;
 				model.setUserName(user.getDisplayName());
 			}
 		} else {
-			model.setUserName("Test User");
+			Map<String, UserRecord> userRecordMap = findStudentRecords(gradebookUid, gradebook.getId(), null);
+			UserRecord userRecord = userRecordMap.values().iterator().next();
+			model.setUserName(userRecord.getDisplayName());
+			model.setUserAsStudent(buildStudentRow(gradebook, userRecord, columns, gradebookItemModel, categoriesWithAssignments));
 		}
 			
 		model.setColumns(columns);
