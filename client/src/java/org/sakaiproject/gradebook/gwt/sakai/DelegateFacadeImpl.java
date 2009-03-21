@@ -649,6 +649,8 @@ private static final long serialVersionUID = 1L;
 					}
 					
 					entity = (X)student;
+				} else if (action.getKey().endsWith(StudentModel.EXCUSE_FLAG)) {
+					entity = (X)excuseNumericItem(action.getGradebookUid(), student, action.getKey(), (Boolean)action.getValue(), (Boolean)action.getStartValue());
 				} else {
 					switch (action.getClassType()) {
 					case DOUBLE:
@@ -2024,7 +2026,10 @@ private static final long serialVersionUID = 1L;
 				
 				if (isDropped || isExcused)
 					cellMap.put(concat(id, StudentModel.DROP_FLAG), Boolean.TRUE);
-					
+				
+				if (isExcused)
+					cellMap.put(concat(id, StudentModel.EXCUSE_FLAG), Boolean.TRUE);
+				
 				boolean isGraded = gbService.isStudentGraded(userRecord.getUserUid(), assignmentId);
 				
 				if (isGraded)
@@ -2298,14 +2303,7 @@ private static final long serialVersionUID = 1L;
 		return displayGrade;
 	}
 	
-	public StudentModel scoreNumericItem(String gradebookUid, StudentModel student, String assignmentId, Double value, Double previousValue) throws InvalidInputException {
-		
-		Gradebook gradebook = gbService.getGradebook(gradebookUid);
-		Assignment assignment = gbService.getAssignment(Long.valueOf(assignmentId));
-		AssignmentGradeRecord assignmentGradeRecord = gbService.getAssignmentGradeRecordForAssignmentForStudent(assignment, student.getIdentifier());
-		
-		scoreItem(gradebook, assignment, assignmentGradeRecord, student.getIdentifier(), value);
-		
+	private StudentModel refreshLearnerData(Gradebook gradebook, StudentModel student, Assignment assignment) {
 		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
 		Map<Long, AssignmentGradeRecord> studentGradeMap = new HashMap<Long, AssignmentGradeRecord>();
 		if (assignments != null) {
@@ -2322,7 +2320,8 @@ private static final long serialVersionUID = 1L;
 		
 		for (AssignmentGradeRecord record : studentGradeMap.values()) {
 			Long aId = record.getGradableObject().getId();
-			String dropProperty = aId + StudentModel.DROP_FLAG;
+			String dropProperty =  concat(String.valueOf(aId), StudentModel.DROP_FLAG);
+			String excuseProperty = concat(String.valueOf(aId), StudentModel.EXCUSE_FLAG);
 			boolean isDropped = record.isDropped() != null && record.isDropped().booleanValue();
 			boolean isExcluded = record.isExcluded() != null && record.isExcluded().booleanValue();
 			
@@ -2330,6 +2329,96 @@ private static final long serialVersionUID = 1L;
 				student.set(dropProperty, Boolean.TRUE);
 			else if (student.get(dropProperty) != null) 
 				student.set(dropProperty, null);
+			
+			if (isExcluded) 
+				student.set(excuseProperty, Boolean.TRUE);
+		}
+		
+		String gradedProperty = assignment.getId() + StudentModel.GRADED_FLAG;
+		if (gbService.isStudentGraded(student.getIdentifier(), assignment.getId())) 		
+			student.set(gradedProperty, Boolean.TRUE);
+		else
+			student.set(gradedProperty, null);
+		
+		String commentedProperty = assignment.getId() + StudentModel.COMMENTED_FLAG;
+		if (gbService.isStudentCommented(student.getIdentifier(), assignment.getId())) 		
+			student.set(commentedProperty, Boolean.TRUE);
+		else
+			student.set(commentedProperty, null);
+		
+		student.set(StudentModel.Key.COURSE_GRADE.name(), displayGrade);
+		
+		return student;
+	}
+	
+	public StudentModel excuseNumericItem(String gradebookUid, StudentModel student, String id, Boolean value, Boolean previousValue) throws InvalidInputException {
+		
+		int indexOf = id.indexOf(StudentModel.EXCUSE_FLAG);
+		
+		if (indexOf == -1)
+			return null;
+		
+		String assignmentId = id.substring(0, indexOf);
+		
+		Gradebook gradebook = gbService.getGradebook(gradebookUid);
+		Assignment assignment = gbService.getAssignment(Long.valueOf(assignmentId));
+		AssignmentGradeRecord assignmentGradeRecord = gbService.getAssignmentGradeRecordForAssignmentForStudent(assignment, student.getIdentifier());
+		
+		assignmentGradeRecord.setExcluded(value);
+		
+		// Prepare record for update
+		assignmentGradeRecord.setGradableObject(assignment);
+		assignmentGradeRecord.setStudentId(student.getIdentifier());
+		
+		Collection<AssignmentGradeRecord> gradeRecords = new LinkedList<AssignmentGradeRecord>();
+		gradeRecords.add(assignmentGradeRecord);
+		gbService.updateAssignmentGradeRecords(assignment, gradeRecords, gradebook.getGrade_type());
+
+		refreshLearnerData(gradebook, student, assignment);
+		//student.set(id, value);
+		
+		return student;
+	}
+	
+	public StudentModel scoreNumericItem(String gradebookUid, StudentModel student, String assignmentId, Double value, Double previousValue) throws InvalidInputException {
+		
+		Gradebook gradebook = gbService.getGradebook(gradebookUid);
+		Assignment assignment = gbService.getAssignment(Long.valueOf(assignmentId));
+		AssignmentGradeRecord assignmentGradeRecord = gbService.getAssignmentGradeRecordForAssignmentForStudent(assignment, student.getIdentifier());
+		
+		scoreItem(gradebook, assignment, assignmentGradeRecord, student.getIdentifier(), value);
+		
+		refreshLearnerData(gradebook, student, assignment);
+		student.set(assignmentId, value);
+		
+		/*List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
+		Map<Long, AssignmentGradeRecord> studentGradeMap = new HashMap<Long, AssignmentGradeRecord>();
+		if (assignments != null) {
+			for (Assignment a : assignments) {
+				AssignmentGradeRecord record = gbService.getAssignmentGradeRecordForAssignmentForStudent(a, student.getIdentifier());
+				record.setGradableObject(a);
+				studentGradeMap.put(a.getId(), record);
+			}
+		}
+		List<Category> categoriesWithAssignments = getCategoriesWithAssignments(gradebook.getId(), assignments);
+		
+		CourseGradeRecord courseGradeRecord = gbService.getStudentCourseGradeRecord(gradebook, student.getIdentifier());
+		String displayGrade = getDisplayGrade(gradebook, courseGradeRecord, categoriesWithAssignments, studentGradeMap);
+		
+		for (AssignmentGradeRecord record : studentGradeMap.values()) {
+			Long aId = record.getGradableObject().getId();
+			String dropProperty =  concat(String.valueOf(aId), StudentModel.DROP_FLAG);
+			String excuseProperty = concat(String.valueOf(aId), StudentModel.EXCUSE_FLAG);
+			boolean isDropped = record.isDropped() != null && record.isDropped().booleanValue();
+			boolean isExcluded = record.isExcluded() != null && record.isExcluded().booleanValue();
+			
+			if (isDropped || isExcluded)
+				student.set(dropProperty, Boolean.TRUE);
+			else if (student.get(dropProperty) != null) 
+				student.set(dropProperty, null);
+			
+			if (isExcluded) 
+				student.set(excuseProperty, Boolean.TRUE);
 		}
 		
 		String gradedProperty = assignment.getId() + StudentModel.GRADED_FLAG;
@@ -2345,7 +2434,7 @@ private static final long serialVersionUID = 1L;
 			student.set(commentedProperty, null);
 		
 		student.set(assignmentId, value);
-		student.set(StudentModel.Key.COURSE_GRADE.name(), displayGrade);
+		student.set(StudentModel.Key.COURSE_GRADE.name(), displayGrade);*/
 		
 		return student;
 	}

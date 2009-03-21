@@ -334,7 +334,7 @@ public class InstructorView extends AppView {
 	@Override
 	protected void onSingleGrade(StudentModel learnerGradeRecordCollection) {
 		if (singleGradeContainer == null) {
-			singleGradeContainer = new LearnerSummaryPanel(multigradeView.getStore());
+			singleGradeContainer = new LearnerSummaryPanel();
 			cardLayoutContainer.add(singleGradeContainer);
 		}
 		singleGradeContainer.onChangeModel(multigradeView.getStore(), treeView.getTreeStore(), learnerGradeRecordCollection);

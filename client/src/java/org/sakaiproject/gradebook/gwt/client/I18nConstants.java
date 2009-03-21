@@ -129,9 +129,10 @@ public interface I18nConstants extends Constants {
 	String changingPointsRecalculatesGrades();
 	
 	String helpHtml();
-	
-	String learnerTabGradeHeader();
+
 	String learnerTabCommentHeader();
-	
+	String learnerTabExcuseHeader();
+	String learnerTabGradeHeader();
+		
 	String unknownException();
 }

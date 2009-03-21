@@ -252,7 +252,7 @@ public class AuthzMock implements Authz {
 	}
 
 	public boolean isUserAbleToEditAssessments(String gradebookUid) {
-		return false;
+		return true;
 	}
 
 	public boolean isUserAbleToGrade(String gradebookUid) {

@@ -80,6 +80,16 @@
 	border:2px solid #7eadd9;
 }
 
+.x-form-item {
+	font-family:tahoma,arial,helvetica,sans-serif;
+	font-size:12pt;
+	font-size-adjust:none;
+	font-style:normal;
+	font-variant:normal;
+	font-weight:normal;
+	line-height:normal;
+}
+
 .x-grid3-hd-inner {
 	cursor:inherit;
 	font-size: 9pt !important;
@@ -238,6 +248,11 @@
 
 .gbUneditable {
 	color: darkgray;	
+}
+
+.gbScoreFormTable {
+	font-size: 12pt;
+	padding: 5;	
 }
 
 .gbStudentInformation {

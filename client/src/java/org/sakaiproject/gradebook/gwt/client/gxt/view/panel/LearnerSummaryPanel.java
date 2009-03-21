@@ -13,7 +13,6 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner.BrowseType;
-import org.sakaiproject.gradebook.gwt.client.gxt.view.components.BlurringNumberField;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
@@ -38,8 +37,10 @@ import com.extjs.gxt.ui.client.widget.TabItem;
 import com.extjs.gxt.ui.client.widget.TabPanel;
 import com.extjs.gxt.ui.client.widget.WidgetComponent;
 import com.extjs.gxt.ui.client.widget.button.Button;
+import com.extjs.gxt.ui.client.widget.form.CheckBox;
 import com.extjs.gxt.ui.client.widget.form.Field;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
+import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.form.TextArea;
 import com.extjs.gxt.ui.client.widget.form.FormPanel.LabelAlign;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
@@ -48,6 +49,7 @@ import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.KeyboardListener;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
 
 public class LearnerSummaryPanel extends ContentPanel {
@@ -62,18 +64,20 @@ public class LearnerSummaryPanel extends ContentPanel {
 	private FormBinding formBinding;
 	private FormPanel formPanel;
 	private LayoutContainer commentFormPanel;
+	private LayoutContainer excuseFormPanel;
 	private LayoutContainer scoreFormPanel;
 	private KeyListener keyListener;
 	private SelectionListener<ComponentEvent> selectionListener;
 	private StudentModel learner;
 	
-	private FormLayout scoreFormLayout;
 	private FormLayout commentFormLayout;
+	private FormLayout excuseFormLayout;
+	private FormLayout scoreFormLayout;
 	
 	private FlexTableContainer learnerInfoTable;
 	
 	
-	public LearnerSummaryPanel(final ListStore<StudentModel> store) {
+	public LearnerSummaryPanel() {
 		setHeaderVisible(false);
 		setLayout(new RowLayout());
 		
@@ -99,6 +103,11 @@ public class LearnerSummaryPanel extends ContentPanel {
 		tab = new TabItem(i18n.learnerTabCommentHeader());
 		tab.setLayout(new FitLayout());
 		tab.add(newCommentFormPanel());
+		tabPanel.add(tab);
+		
+		tab = new TabItem(i18n.learnerTabExcuseHeader());
+		tab.setLayout(new FitLayout());
+		tab.add(newExcuseFormPanel());
 		tabPanel.add(tab);
 		
 		formPanel.add(tabPanel);
@@ -127,7 +136,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 		
 	}
 
-	public void onChangeModel(ListStore<StudentModel> store, TreeStore<ItemModel> treeStore, StudentModel learner) {
+	public void onChangeModel(ListStore<StudentModel> learnerStore, TreeStore<ItemModel> treeStore, StudentModel learner) {
 		this.learner = learner;
 		updateLearnerInfo(learner);
 
@@ -143,14 +152,19 @@ public class LearnerSummaryPanel extends ContentPanel {
 				((Field<?>)item).setEnabled(true);
 		}
 		
+		for (Component item : excuseFormPanel.getItems()) {
+			if (item instanceof Field)
+				((Field<?>)item).setEnabled(true);
+		}
+		
 		if (learner != null) {
 			
 			//displayName.setHtml(learner.getDisplayName());
 			//section.setHtml(learner.getStudentSections());
 			
-			verifyFormPanelComponents(treeStore);
+			verifyFormPanelComponents(treeStore, learnerStore);
 			
-			formBinding.setStore(store);
+			formBinding.setStore(learnerStore);
 			formBinding.bind(learner);
 			
 			
@@ -165,9 +179,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 			updateCourseGrade(learnerGradeRecordCollection.getStudentGrade());
 			gradeItemsPanel.getLoader().load(0, pageSize);
 			setStudentInfoTable();*/
-		} else if (formBinding != null) {
-			formBinding.unbind();
-		}
+		} 
 	}
 	
 	@Override
@@ -182,7 +194,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 		super.onResize(width, height);
 	}
 	
-	private void addField(Set<String> itemIdSet, ItemModel item) {
+	private void addField(Set<String> itemIdSet, ItemModel item, int row) {
 		String itemId = new StringBuilder().append(AppConstants.LEARNER_SUMMARY_FIELD_PREFIX).append(item.getIdentifier()).toString();
 		String source = item.getSource();
 		boolean isStatic = source != null && source.equals(AppConstants.STATIC);
@@ -192,7 +204,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 			String dataType = item.getDataType();
 			
 			if (dataType != null && dataType.equals(AppConstants.NUMERIC_DATA_TYPE)) {
-				BlurringNumberField field = new BlurringNumberField();
+				NumberField field = new NumberField();
 				
 				field.setItemId(itemId);
 				field.addInputStyleName("gbNumericFieldInput");
@@ -200,8 +212,17 @@ public class LearnerSummaryPanel extends ContentPanel {
 				field.setFieldLabel(item.getName());
 				field.setFormat(DataTypeConversionUtil.getDefaultNumberFormat());
 				field.setName(item.getIdentifier());
-				
+				field.setWidth(50);
+								
 				scoreFormPanel.add(field);
+				
+				String checkBoxName = new StringBuilder().append(item.getIdentifier()).append(StudentModel.EXCUSE_FLAG).toString();
+				CheckBox checkbox = new CheckBox();
+				
+				checkbox.setFieldLabel(item.getName());
+				checkbox.setName(checkBoxName);
+				
+				excuseFormPanel.add(checkbox);
 				
 				String commentId = new StringBuilder(item.getIdentifier()).append(StudentModel.COMMENT_TEXT_FLAG).toString();
 				TextArea textArea = new TextArea();
@@ -281,14 +302,29 @@ public class LearnerSummaryPanel extends ContentPanel {
 		return commentFormPanel;
 	}
 	
+	private LayoutContainer newExcuseFormPanel() {
+		excuseFormPanel = new LayoutContainer();
+		excuseFormLayout = new FormLayout();
+		excuseFormLayout.setLabelAlign(LabelAlign.LEFT);
+		excuseFormPanel.setLayout(excuseFormLayout);
+		excuseFormPanel.setScrollMode(Scroll.AUTOY);
+		
+		return excuseFormPanel;
+	}
+	
 	private LayoutContainer newGradeFormPanel() {
 		scoreFormPanel = new LayoutContainer();
 
+		//scoreFormTable = new FlexTableContainer(new FlexTable());
+		//scoreFormTable.setStylePrimaryName("gbScoreFormTable");
 		scoreFormLayout = new FormLayout();
 		scoreFormLayout.setDefaultWidth(50);
 		scoreFormLayout.setLabelSeparator("");
 		scoreFormPanel.setLayout(scoreFormLayout);
 		scoreFormPanel.setScrollMode(Scroll.AUTOY);
+		
+		//scoreFormPanel.add(scoreFormTable);
+		//scoreFormPanel.setLayoutData(scoreFormTable, new MarginData(10));
 		
 		return scoreFormPanel;
 	}
@@ -342,7 +378,7 @@ public class LearnerSummaryPanel extends ContentPanel {
         learnerInfoPanel.show();
 	}
 	
-	private void verifyFormPanelComponents(TreeStore<ItemModel> treeStore) {
+	private void verifyFormPanelComponents(TreeStore<ItemModel> treeStore, final ListStore<StudentModel> learnerStore) {
 		
 		List<ItemModel> rootItems = treeStore.getRootItems();
 		
@@ -354,6 +390,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 			}
 		}
 		
+		int row = 0;
 		if (rootItems != null) {
 			for (ItemModel root : rootItems) {
 				
@@ -363,11 +400,13 @@ public class LearnerSummaryPanel extends ContentPanel {
 						if (child.getChildCount() > 0) {
 							
 							for (ItemModel subchild : child.getChildren()) {
-								addField(itemIdSet, subchild);
+								addField(itemIdSet, subchild, row);
+								row++;
 							}
 							
 						} else {
-							addField(itemIdSet, child);
+							addField(itemIdSet, child, row);
+							row++;
 						}
 						
 					}
@@ -376,41 +415,37 @@ public class LearnerSummaryPanel extends ContentPanel {
 			}
 		}
 		
-		if (formBinding != null) {
-			formBinding.unbind();
-			formBinding.clear();
-			formBinding = null;
-		}
-		
-		formBinding = new FormBinding(formPanel, true) {
-			public void autoBind() {
-				for (Field f : panel.getFields()) {
-					if (!bindings.containsKey(f)) {
-						String name = f.getName();
-						if (name != null && name.length() > 0) {
-							FieldBinding b = new FieldBinding(f, f.getName()) {
-								
-								@Override
-								protected void onFieldChange(FieldEvent e) {									
-									StudentModel learner = (StudentModel)this.model;
-									e.field.setEnabled(false);
-									Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord, new GradeRecordUpdate(store, learner, e.field.getName(), e.field.getFieldLabel(), e.oldValue, e.value));
-								}
-								
-								@Override
-								protected void onModelChange(PropertyChangeEvent event) {
-									super.onModelChange(event);
+		if (formBinding == null) {
+			formBinding = new FormBinding(formPanel, true) {
+				public void autoBind() {
+					for (Field f : panel.getFields()) {
+						if (!bindings.containsKey(f)) {
+							String name = f.getName();
+							if (name != null && name.length() > 0) {
+								FieldBinding b = new FieldBinding(f, f.getName()) {
 									
-									if (field != null)
-										field.setEnabled(true);
-								}
-							};
-							bindings.put(f, b);
+									@Override
+									protected void onFieldChange(FieldEvent e) {									
+										StudentModel learner = (StudentModel)this.model;
+										e.field.setEnabled(false);
+										Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord, new GradeRecordUpdate(learnerStore, learner, e.field.getName(), e.field.getFieldLabel(), e.oldValue, e.value));
+									}
+									
+									@Override
+									protected void onModelChange(PropertyChangeEvent event) {
+										super.onModelChange(event);
+										
+										if (field != null)
+											field.setEnabled(true);
+									}
+								};
+								bindings.put(f, b);
+							}
 						}
 					}
 				}
-			}
-		};
+			};
+		}
 	}
 	
 	
@@ -430,8 +465,12 @@ public class LearnerSummaryPanel extends ContentPanel {
 			return table.getFlexCellFormatter();
 		}
 		
-		 public void setText(int row, int column, String text) {
+		public void setText(int row, int column, String text) {
 			table.setText(row, column, text);
+		}
+		
+		public void setWidget(int row, int column, Widget widget) {
+			table.setWidget(row, column, widget);
 		}
 		
 	}
