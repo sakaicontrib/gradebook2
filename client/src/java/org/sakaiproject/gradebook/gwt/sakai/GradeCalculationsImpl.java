@@ -102,6 +102,10 @@ public class GradeCalculationsImpl implements GradeCalculations {
 		return assignment.isUnweighted() == null ? false : assignment.isUnweighted().booleanValue();
 	}
 	
+	private boolean isUnweighted(Category category) {
+		return category.isUnweighted() == null ? false : category.isUnweighted().booleanValue();
+	}
+	
 	// We assume that a null assignmentGradeRecord or a null points earned means that this assignment is not yet graded
 	// this is the same behavior as when a given assignment grade record has been excluded from the calculations
 	private boolean isGraded(AssignmentGradeRecord assignmentGradeRecord) {
@@ -447,6 +451,8 @@ public class GradeCalculationsImpl implements GradeCalculations {
 		
 		switch (gradebook.getCategory_type()) {
 		case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
+			if (null == category.getWeight() || isUnweighted(category))
+				return null;
 			categoryWeight = new BigDecimal(category.getWeight().toString());
 			break;
 		default:

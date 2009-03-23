@@ -2,10 +2,8 @@ package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import java.util.List;
 
-import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.ConfirmationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemCreate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
@@ -16,7 +14,6 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
-import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.binding.Converter;
 import com.extjs.gxt.ui.client.binding.FieldBinding;
@@ -115,6 +112,7 @@ public class ItemFormPanel extends ContentPanel {
 		//formPanel.add(directionsField);
 		
 		nameField = new TextField<String>();
+		nameField.setAllowBlank(false);
 		nameField.setName(ItemModel.Key.NAME.name());
 		nameField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.NAME));
 		
@@ -160,6 +158,7 @@ public class ItemFormPanel extends ContentPanel {
 		percentCourseGradeField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.PERCENT_COURSE_GRADE));
 		percentCourseGradeField.setFormat(DataTypeConversionUtil.getLongNumberFormat());
 		percentCourseGradeField.setAllowDecimals(true);
+		percentCourseGradeField.setMinValue(Double.valueOf(0.000000d));
 		percentCourseGradeField.setMaxValue(Double.valueOf(100.000000d));
 		formPanel.add(percentCourseGradeField);
 		
@@ -168,6 +167,7 @@ public class ItemFormPanel extends ContentPanel {
 		percentCategoryField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.PERCENT_CATEGORY));
 		percentCategoryField.setFormat(DataTypeConversionUtil.getLongNumberFormat());
 		percentCategoryField.setAllowDecimals(true);
+		percentCategoryField.setMinValue(Double.valueOf(0.000000d));
 		percentCategoryField.setMaxValue(Double.valueOf(100.000000d));
 		formPanel.add(percentCategoryField);
 			
@@ -176,6 +176,7 @@ public class ItemFormPanel extends ContentPanel {
 		pointsField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.POINTS));
 		pointsField.setFormat(DataTypeConversionUtil.getDefaultNumberFormat());
 		pointsField.setAllowDecimals(true);
+		pointsField.setMinValue(Double.valueOf(0.000000d));
 		formPanel.add(pointsField);
 		
 		dropLowestField = new NumberField();
@@ -779,8 +780,10 @@ public class ItemFormPanel extends ContentPanel {
 							Dispatcher.forwardEvent(GradebookEvents.HideEastPanel, Boolean.FALSE);
 							break;
 						case SAVE:
-							Dispatcher.forwardEvent(GradebookEvents.UpdateItem, new ItemUpdate(treeStore, selectedItemModel));
-							Dispatcher.forwardEvent(GradebookEvents.HideEastPanel, Boolean.FALSE);
+							if (nameField.validate() && percentCategoryField.validate() && percentCourseGradeField.validate() && pointsField.validate()) {
+								Dispatcher.forwardEvent(GradebookEvents.UpdateItem, new ItemUpdate(treeStore, selectedItemModel));
+								Dispatcher.forwardEvent(GradebookEvents.HideEastPanel, Boolean.FALSE);
+							}
 							break;
 						}
 					}

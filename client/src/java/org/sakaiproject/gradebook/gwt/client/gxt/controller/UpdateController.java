@@ -431,6 +431,8 @@ public class UpdateController extends Controller {
 	}
 
 	private void onUpdateItem(final ItemUpdate event) {
+		Dispatcher.forwardEvent(GradebookEvents.MaskItemTree);
+		
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 		//ClassType classType = ItemModel.lookupClassType(event.property);
 		
@@ -443,10 +445,12 @@ public class UpdateController extends Controller {
 			public void onFailure(Throwable caught) {
 				super.onFailure(caught);
 				onUpdateItemFailure(event, caught);
+				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree);
 			}
 			
 			public void onSuccess(ItemModel result) {
 				onUpdateItemSuccess(event, result);
+				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree);
 			}
 		};
 		

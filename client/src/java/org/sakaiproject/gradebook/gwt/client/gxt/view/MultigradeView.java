@@ -50,6 +50,7 @@ public class MultigradeView extends View {
 				return multigradeStore;
 			}
 		};
+		this.multigrade.setHeight(550);
 	}
 	
 	public ListStore<StudentModel> getStore() {

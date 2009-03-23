@@ -3,9 +3,29 @@
  * Gradebook specific css
  */
  
-/*.x-grid3-cell {
-	border-right:1px solid #EDEDED;	
-}*/
+#loading a {
+  color: #225588;
+}
+
+#loading .loading-indicator {
+  background: white;
+  color: #444;
+  font: bold 13px tahoma, arial, helvetica;
+  padding: 10px;
+  margin: 0;
+  height: auto;
+}
+
+#loading .loading-indicator img {
+  margin-right:8px;
+  float:left;
+  vertical-align:top;
+}
+
+#loading-msg {
+  font: normal 10px arial, tahoma, sans-serif;
+}
+
 
 .my-treeitem, .my-treeitem table, .my-treeitem table td {
 	-moz-user-focus:normal;
@@ -299,6 +319,14 @@
 
 .gbGradeOverrideIcon {
 	background-image:url(images/default/button/textfield.png);
+}
+
+.gbGradebookIcon {
+	background-image:url(images/default/button/book_open.png);
+}
+
+.gbGradebookIcon tree-folder-open {
+	background-image:url(images/default/button/book_open.png);
 }
 
 .gbItemIcon {

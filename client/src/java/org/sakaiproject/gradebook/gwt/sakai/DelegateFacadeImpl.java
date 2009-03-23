@@ -3068,15 +3068,7 @@ private static final long serialVersionUID = 1L;
 		if (wasUnweighted && !isUnweighted && category.isRemoved())
 			throw new InvalidInputException("You cannot include a deleted category in grade. Please undelete the category first.");
 
-		
-		if (!isUnweighted) {
-			// Since we don't want to leave the category weighting as 0 if a category has been re-included,
-			// but we don't know what the user wants it to be, we set it to 1%
-			double aw = category.getWeight() == null ? 0d : category.getWeight().doubleValue();
-			if (aw == 0d)
-				category.setWeight(Double.valueOf(0.01));
-		}
-	
+
 		int oldDropLowest = category.getDrop_lowest();
 		int newDropLowest = convertInteger(item.getDropLowest()).intValue();
 		
@@ -3087,6 +3079,15 @@ private static final long serialVersionUID = 1L;
 		
 		category.setRemoved(isRemoved);
 		category.setUnweighted(Boolean.valueOf(isUnweighted || isRemoved));
+
+		// FIXME: Do we want to do this?
+		if (!isUnweighted && !isRemoved) {
+			// Since we don't want to leave the category weighting as 0 if a category has been re-included,
+			// but we don't know what the user wants it to be, we set it to 1%
+			double aw = category.getWeight() == null ? 0d : category.getWeight().doubleValue();
+			if (aw == 0d)
+				category.setWeight(Double.valueOf(0.01));
+		}
 		
 		gbService.updateCategory(category);
 		
@@ -3126,12 +3127,12 @@ private static final long serialVersionUID = 1L;
 			assignment.setCategory(category);
 		}
 		
-		boolean originalExtraCredit = DataTypeConversionUtil.checkBoolean(assignment.isExtraCredit());
-		boolean currentExtraCredit = DataTypeConversionUtil.checkBoolean(item.getExtraCredit());
+		boolean wasExtraCredit = DataTypeConversionUtil.checkBoolean(assignment.isExtraCredit());
+		boolean isExtraCredit = DataTypeConversionUtil.checkBoolean(item.getExtraCredit());
 		
-		isWeightChanged = originalExtraCredit != currentExtraCredit;
+		isWeightChanged = wasExtraCredit != isExtraCredit;
 		
-		assignment.setExtraCredit(Boolean.valueOf(currentExtraCredit));
+		assignment.setExtraCredit(Boolean.valueOf(isExtraCredit));
 		assignment.setReleased(convertBoolean(item.getReleased()).booleanValue());
 		
 		assignment.setPointsPossible(convertDouble(item.getPoints()));
@@ -3141,12 +3142,15 @@ private static final long serialVersionUID = 1L;
 		Double oldAssignmentWeight = assignment.getAssignmentWeighting();
 		
 		isWeightChanged = isWeightChanged || DataTypeConversionUtil.notEquals(newAssignmentWeight, oldAssignmentWeight);
-		
-		double w = newAssignmentWeight == null ? 0d : ((Double)newAssignmentWeight).doubleValue() * 0.01;
-		assignment.setAssignmentWeighting(Double.valueOf(w));
-		
+				
 		boolean isUnweighted = !convertBoolean(item.getIncluded()).booleanValue();
 		boolean wasUnweighted = DataTypeConversionUtil.checkBoolean(assignment.isUnweighted());
+		
+		// We only want to update the weights when we're not in 
+		if (!isUnweighted) {
+			double w = newAssignmentWeight == null ? 0d : ((Double)newAssignmentWeight).doubleValue() * 0.01;
+			assignment.setAssignmentWeighting(Double.valueOf(w));
+		}
 		
 		isWeightChanged = isWeightChanged || isUnweighted != wasUnweighted;
 		
@@ -3174,7 +3178,7 @@ private static final long serialVersionUID = 1L;
 			assignment.setRemoved(isRemoved);
 		}
 		
-		assignment.setUnweighted(Boolean.valueOf(isUnweighted || isRemoved || w == 0d));
+		assignment.setUnweighted(Boolean.valueOf(isUnweighted || isRemoved));
 		
 		/*if (isUnweighted)
 			assignment.setAssignmentWeighting(Double.valueOf(0.0));
@@ -3192,12 +3196,14 @@ private static final long serialVersionUID = 1L;
 		
 		// Since changing the assignment weight implies that the category is not equally weighted,
 		// ensure that we switch it when the assignment weight changes.
-		if (oldAssignmentWeight == null || !oldAssignmentWeight.equals(newAssignmentWeight)) {
-				
-			if (category.isEqualWeightAssignments() != null && category.isEqualWeightAssignments().booleanValue()) {
-				Category editCategory = gbService.getCategory(category.getId());
-				editCategory.setEqualWeightAssignments(Boolean.FALSE);
-				gbService.updateCategory(editCategory);
+		if (!isUnweighted && !wasUnweighted) {
+			if (oldAssignmentWeight == null || !oldAssignmentWeight.equals(newAssignmentWeight)) {
+					
+				if (category.isEqualWeightAssignments() != null && category.isEqualWeightAssignments().booleanValue()) {
+					Category editCategory = gbService.getCategory(category.getId());
+					editCategory.setEqualWeightAssignments(Boolean.FALSE);
+					gbService.updateCategory(editCategory);
+				}
 			}
 		}
 		
@@ -3206,6 +3212,11 @@ private static final long serialVersionUID = 1L;
 		
 			List<Category> categoriesWithAssignments = getCategoriesWithAssignments(gradebook.getId());
 			return getItemModel(gradebook, categoriesWithAssignments);
+		} 
+		
+		if (isUnweighted != wasUnweighted || isRemoved != wasRemoved || isExtraCredit != wasExtraCredit) {
+			isWeightChanged = true;
+			recalculateAssignmentWeights(category.getId(), null);
 		}
 		
 		if (!isWeightChanged) {

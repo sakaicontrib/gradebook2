@@ -62,9 +62,9 @@ public class InstructorView extends AppView {
 	private TreeView treeView;
 	private MultigradeView multigradeView;
 	
-	private FitLayout contentPanelLayout;
-	private ContentPanel contentPanel;
-	private LayoutContainer borderLayoutContainer;
+	//private FitLayout contentPanelLayout;
+	//private ContentPanel contentPanel;
+	private ContentPanel borderLayoutContainer;
 	private ContentPanel cardLayoutContainer;
 	private BorderLayout borderLayout;
 	private CardLayout cardLayout;
@@ -79,7 +79,7 @@ public class InstructorView extends AppView {
 	private Listener<MenuEvent> menuEventListener;
 	private SelectionListener<MenuEvent> menuSelectionListener;
 	private SelectionListener<ToolBarEvent> toolBarSelectionListener;
-	private Listener<TabPanelEvent> tabPanelEventListener;
+	//private Listener<TabPanelEvent> tabPanelEventListener;
 	
 	private Menu fileMenu;
 	private Menu windowMenu;
@@ -87,8 +87,8 @@ public class InstructorView extends AppView {
 	
 	private MenuItem addCategoryMenuItem;
 	
-	private TabPanel tabPanel;
-	private boolean tabMode = false;
+	//private TabPanel tabPanel;
+	//private boolean tabMode = false;
 	
 	private BorderLayoutData centerData;
 	private BorderLayoutData eastData;
@@ -117,14 +117,15 @@ public class InstructorView extends AppView {
 		//GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 		//initTabs(i18n, selectedGradebook);
 		initListeners();
-		contentPanelLayout = new FitLayout();
+		/*contentPanelLayout = new FitLayout();
 		contentPanel = new ContentPanel();
 		contentPanel.setHeaderVisible(false);
-		contentPanel.setLayout(contentPanelLayout);
-			
+		contentPanel.setLayout(contentPanelLayout);*/
+		
 		//contentPanel.add(notificationView.getNotificationPanel(), new RowData(1, 35));
 		
-		borderLayoutContainer = new LayoutContainer(); 
+		borderLayoutContainer = new ContentPanel(); 
+		borderLayoutContainer.setHeaderVisible(false);
 		
 		borderLayout = new BorderLayout();  
 		borderLayoutContainer.setLayout(borderLayout);
@@ -151,7 +152,8 @@ public class InstructorView extends AppView {
 		westData.setMargins(new Margins(5));
 		westData.setMinSize(100);
 		
-		addMainContainer(getBorderLayoutContainer());
+		//addMainContainer(getBorderLayoutContainer());
+		viewport.add(getBorderLayoutContainer());
 	}
 	
 	@Override
@@ -164,7 +166,7 @@ public class InstructorView extends AppView {
 		tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADESCALE, i18n.tabGradeScaleHeader(), true, MenuSelector.GRADE_SCALE));
 		tabConfigurations.add(new TabConfig(AppConstants.TAB_HISTORY, i18n.tabHistoryHeader(), true, MenuSelector.HISTORY));
 
-		contentPanel.setTopComponent(newToolBar(i18n, selectedGradebook));
+		borderLayoutContainer.setTopComponent(newToolBar(i18n, selectedGradebook));
 		
 		/*RpcProxy<PagingLoadConfig, PagingLoadResult<StudentModel>> proxy = 
 			new RpcProxy<PagingLoadConfig, PagingLoadResult<StudentModel>>() {
@@ -210,7 +212,7 @@ public class InstructorView extends AppView {
 		store.setModelComparer(new EntityModelComparer<StudentModel>());
 		store.setMonitorChanges(true);*/
 		
-		viewport.add(contentPanel);
+		//viewport.add(getBorderLayoutContainer());
 	}
 	
 	/*@Override
@@ -493,7 +495,7 @@ public class InstructorView extends AppView {
 		
 		};
 		
-		tabPanelEventListener = new Listener<TabPanelEvent>() {
+		/*tabPanelEventListener = new Listener<TabPanelEvent>() {
 
 			public void handleEvent(TabPanelEvent tpe) {
 				// Ensure that we only response to Remove events
@@ -510,12 +512,12 @@ public class InstructorView extends AppView {
 					if (tpe.container.getItemCount() == 1) {
 						GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 						//PersistentStore.storePersistentField(selectedGradebook.getGradebookUid(), AppConstants.TAB_MODE, "checked", Boolean.FALSE.toString());
-						switchTabMode(selectedGradebook.getGradebookUid(), false, false);
+						//switchTabMode(selectedGradebook.getGradebookUid(), false, false);
 					}
 				}
 			}
 			
-		};
+		};*/
 		
 		toolBarSelectionListener = new SelectionListener<ToolBarEvent>() {
 
@@ -527,14 +529,15 @@ public class InstructorView extends AppView {
 		};
 	}
 	
+	/*
 	private void initTabs(I18nConstants i18n, GradebookModel selectedGradebook) {
 		//tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADES, i18n.tabGradesHeader(), false));
 		tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADESCALE, i18n.tabGradeScaleHeader(), true, MenuSelector.GRADE_SCALE));
 		tabConfigurations.add(new TabConfig(AppConstants.TAB_HISTORY, i18n.tabHistoryHeader(), true, MenuSelector.HISTORY));
 	
-		String gradebookUid = selectedGradebook.getGradebookUid();
-		tabMode = GradebookState.getTabMode(gradebookUid);
-	}
+		//String gradebookUid = selectedGradebook.getGradebookUid();
+		//tabMode = GradebookState.getTabMode(gradebookUid);
+	}*/
 	
 	private LayoutContainer getBorderLayoutContainer() {
 
@@ -722,10 +725,11 @@ public class InstructorView extends AppView {
 		return moreActionsMenu;
 	}
 
+	/*
 	private void switchTabMode(String gradebookUid, boolean tabMode, boolean populateTabItems) {
 		this.tabMode = tabMode;
 		
-		if (contentPanel == null)
+		if (borderLayoutContainer == null)
 			return;
 		
 		GradebookState.setTabMode(gradebookUid, tabMode);
@@ -797,9 +801,9 @@ public class InstructorView extends AppView {
 		
 		//if (contentPanel.isRendered())
 		//	contentPanel.layout();
-	}
+	}*/
 	
-	
+	/*
 	private void addMainContainer(Container<?> container) {
 		contentPanel.add(container);
 		//contentPanelLayout.setActiveItem(container);
@@ -808,5 +812,5 @@ public class InstructorView extends AppView {
 	private void removeMainContainer(Container<?> container) {
 		contentPanel.remove(container);
 	}
-	
+	*/
 }

@@ -15,6 +15,8 @@ import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenu;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
+import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTabItem;
+import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTabPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTree;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTreeItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
@@ -51,7 +53,9 @@ import com.extjs.gxt.ui.client.event.TreeTableEvent;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.TreeStore;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
-import com.extjs.gxt.ui.client.widget.layout.AccordionLayout;
+import com.extjs.gxt.ui.client.widget.Info;
+import com.extjs.gxt.ui.client.widget.TabItem;
+import com.extjs.gxt.ui.client.widget.TabPanel;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
@@ -60,14 +64,18 @@ import com.extjs.gxt.ui.client.widget.table.NumberCellRenderer;
 import com.extjs.gxt.ui.client.widget.table.TableColumn;
 import com.extjs.gxt.ui.client.widget.tree.Tree;
 import com.extjs.gxt.ui.client.widget.tree.TreeItem;
+import com.extjs.gxt.ui.client.widget.tree.TreeItemUI;
 import com.extjs.gxt.ui.client.widget.tree.TreeSelectionModel;
 import com.extjs.gxt.ui.client.widget.tree.Tree.CheckCascade;
 import com.extjs.gxt.ui.client.widget.treetable.TreeTable;
 import com.extjs.gxt.ui.client.widget.treetable.TreeTableColumn;
 import com.extjs.gxt.ui.client.widget.treetable.TreeTableColumnModel;
 import com.extjs.gxt.ui.client.widget.treetable.TreeTableHeader;
+import com.extjs.gxt.ui.client.widget.treetable.TreeTableItem;
+import com.extjs.gxt.ui.client.widget.treetable.TreeTableItemUI;
 import com.extjs.gxt.ui.client.widget.treetable.TreeTableView;
 import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Accessibility;
 
 public class ItemTreePanel extends ContentPanel {
@@ -85,6 +93,7 @@ public class ItemTreePanel extends ContentPanel {
 	private SelectionListener<MenuEvent> menuSelectionListener;
 	private SelectionChangedListener<ItemModel> selectionChangedListener;
 	private Listener<TreeEvent> treeEventListener;
+	private Listener<TreeTableEvent> treeTableEventListener;
 
 	private Tree learnerAttributeTree;
 	private Tree itemTree;
@@ -119,7 +128,7 @@ public class ItemTreePanel extends ContentPanel {
 		setLayout(new FitLayout());
 		initListeners();
 
-		/*TabPanel tabPanel = new AriaTabPanel();
+		TabPanel tabPanel = new AriaTabPanel();
 		
 		TabItem item = new AriaTabItem(i18n.navigationPanelFixedTabHeader());
 		item.setLayout(new FitLayout());
@@ -132,9 +141,9 @@ public class ItemTreePanel extends ContentPanel {
 		item.add(newLearnerAttributeTree(i18n));
 		tabPanel.add(item);
 		
-		add(tabPanel);*/
+		add(tabPanel);
 		
-		AccordionLayout accordionLayout = new AccordionLayout();
+		/*AccordionLayout accordionLayout = new AccordionLayout();
 		accordionLayout.setAutoWidth(true);
 		accordionLayout.setFill(true);
 		
@@ -161,10 +170,10 @@ public class ItemTreePanel extends ContentPanel {
 				fixedColumnsPanel.expand();
 			}
 			
-		});
+		});*/
 		
 		
-		add(panel);
+		//add(panel);
 	}
 	
 	public void expandTrees() {
@@ -220,42 +229,71 @@ public class ItemTreePanel extends ContentPanel {
 			selectedItemModels = new ArrayList<ItemModel>();
 			List<String> selectedItemModelIds = GradebookState.getSelectedMultigradeColumns(selectedGradebook.getGradebookUid());
 			if (rootItem != null) {
+				boolean isEntireGradebookChecked = true;
 				for (ItemModel c1 : rootItem.getChildren()) {
-					
 					switch (c1.getItemType()) {
 					case GRADEBOOK:
 						for (ItemModel c2 : c1.getChildren()) {
 							switch (c2.getItemType()) {
 							case CATEGORY:
+								boolean isEntireCategoryChecked = true;
 								for (ItemModel c3 : c2.getChildren()) {
 									if (selectedItemModelIds.contains(c3.getIdentifier()))
 										selectedItemModels.add(c3);
+									else {
+										isEntireCategoryChecked = false;
+										isEntireGradebookChecked = false;
+									}
 								}
+								if (isEntireCategoryChecked)
+									selectedItemModels.add(c2);
 								break;
 							case ITEM:
 								if (selectedItemModelIds.contains(c2.getIdentifier()))
 									selectedItemModels.add(c2);
+								else
+									isEntireGradebookChecked = false;
 								break;
 							}
 						}
+						if (isEntireGradebookChecked)
+							selectedItemModels.add(c1);
+						isEntireGradebookChecked = false;
 					case CATEGORY:
+						boolean isEntireCategoryChecked = true;
 						for (ItemModel c2 : c1.getChildren()) {
 							if (selectedItemModelIds.contains(c2.getIdentifier()))
 								selectedItemModels.add(c2);
+							else {
+								isEntireCategoryChecked = false;
+								isEntireGradebookChecked = false;
+							}
 						}
+						if (isEntireCategoryChecked)
+							selectedItemModels.add(c1);
 						break;
 					case ITEM:
 						if (selectedItemModelIds.contains(c1.getIdentifier()))
 							selectedItemModels.add(c1);
+						else {
+							isEntireCategoryChecked = false;
+							isEntireGradebookChecked = false;
+						}
 						break;
 					}
 				}
+				//if (isEntireGradebookChecked)
+				//	selectedItemModels.add(rootItem);
 			}
 		}
 		//showColumns(selectedItemModels);
 		
 		if (rendered)
 			treeBinder.setCheckedSelection(selectedItemModels);
+	}
+	
+	public void onMaskItemTree() {
+		treeTable.mask("Saving changes");
 	}
 	
 	public void onSingleGrade() {
@@ -288,7 +326,74 @@ public class ItemTreePanel extends ContentPanel {
 			
 			@Override
 			protected TreeItem createItem(ItemModel model) {
-				TreeItem item = super.createItem(model);
+				int cols = treeTable.getColumnCount();
+			    TreeTableItem item = new TreeTableItem(new Object[cols]) {
+			    	@Override
+			    	protected TreeItemUI getTreeItemUI() {
+			    	    return new TreeTableItemUI(this) {
+			    	    	protected void handleClickEvent(TreeEvent te) {
+							    TreeItem item = te.item;
+							    if (te.type == Event.ONCLICK) {
+							      Element target = te.getTarget();
+							      if (target != null && te.within(item.getUI().getJointEl())) {
+							        item.toggle();
+							      }
+							      te.cancelBubble();
+							    } 
+							}
+							
+							@Override
+							public void onClick(TreeEvent te) {
+								te.cancelBubble();
+							}
+							@Override
+							public void onDoubleClick(ComponentEvent ce) {
+								ce.cancelBubble();
+							}
+			    	    };
+			    	}
+			    };
+			    setModel(item, model);
+			    for (int j = 0; j < cols; j++) {
+			      String id = getColumnId(j);
+			      Object val = getTextValue(model, id);
+			      if (val == null) val = model.get(id);
+			      item.setValue(j, val);
+			    }
+			    for (int i = 0; i < cols; i++) {
+			        String id = getColumnId(i);
+			        String style = (styleProvider == null) ? null : styleProvider.getStringValue(model, id);
+			        item.setCellStyle(i, style == null ? "" : style);
+			    }
+			    //update(model);
+			    //updateItemValues(item);
+			    //updateItemStyles(item);
+
+			    String txt = getTextValue(model, displayProperty);
+			    if (txt == null && displayProperty != null) {
+			      txt = model.get(displayProperty);
+			    } else {
+			      txt = model.toString();
+			    }
+
+			    String icon = getIconValue(model, displayProperty);
+
+			    item.setIconStyle(icon);
+			    item.setText(txt);
+				
+				//TreeItem item = super.createItem(model);
+
+			    if (loader != null) {
+			      item.setLeaf(!loader.hasChildren(model));
+			    } else {
+			      item.setLeaf(!hasChildren(model));
+			    }
+
+				boolean isGradebook = model.getItemType() == Type.GRADEBOOK;
+				if (isGradebook)
+					item.setIconStyle("gbGradebookIcon");
+				
+				
 				
 				return item;
 			}
@@ -320,6 +425,9 @@ public class ItemTreePanel extends ContentPanel {
 		
 	}
 
+	public void onUnmaskItemTree() {
+		treeTable.unmask();
+	}
 	
 	public void onUserChange(UserEntityAction<?> action) {
 		switch (action.getEntityType()) {
@@ -352,6 +460,7 @@ public class ItemTreePanel extends ContentPanel {
 				String result = null;
 				ItemModel itemModel = (ItemModel)item.getModel();
 				
+				boolean isItem = itemModel.getItemType() == Type.ITEM;
 				boolean isName = property.equals(ItemModel.Key.NAME.name());
 				boolean isIncluded = itemModel.getIncluded() == null || itemModel.getIncluded().booleanValue();		
 				boolean isExtraCredit = itemModel.getExtraCredit() != null && itemModel.getExtraCredit().booleanValue();
@@ -364,8 +473,14 @@ public class ItemTreePanel extends ContentPanel {
 				
 				StringBuilder cssClasses = new StringBuilder();
 				
-				if (!isIncluded && isName)
-					cssClasses.append("gbNotIncluded");
+				if (isName) {
+					if (!isIncluded) {
+						cssClasses.append("gbNotIncluded");
+						if (isItem)
+							item.setIconStyle("gbItemIcon");
+					} else if (isItem)
+						item.setIconStyle("gbEditItemIcon");
+				}
 				
 				if (isExtraCredit) 
 					cssClasses.append(" gbCellExtraCredit");
@@ -528,7 +643,7 @@ public class ItemTreePanel extends ContentPanel {
 		treeTable.getStyle().setLeafIconStyle("gbEditItemIcon");
 		//treeTable.expandAll();
 		treeTable.setHeight(300);
-		//treeTable.addListener(Events.RowClick, treeTableEventListener);
+		treeTable.addListener(Events.RowDoubleClick, treeTableEventListener);
 		treeTable.setSelectionModel(new TreeSelectionModel(SelectionMode.SINGLE));
 		if (isEditable)
 			treeTable.setContextMenu(newTreeContextMenu(i18n)); 
@@ -669,8 +784,8 @@ public class ItemTreePanel extends ContentPanel {
 				Boolean hidden = model.get("hidden");
 				boolean isHidden = hidden != null && hidden.booleanValue();
 				item.setChecked(!isHidden);
-				
-			    update(item, model);
+
+				update(item, model);
 
 			    if (loader != null) {
 			      item.setLeaf(!loader.hasChildren(model));
@@ -755,24 +870,14 @@ public class ItemTreePanel extends ContentPanel {
 		boolean selectAll = false;
 			
 		for (ItemModel selectedItemModel : selectedItemModels) {
-			selectedItemModelIdSet.add(selectedItemModel.getIdentifier());
+			//selectedItemModelIdSet.add(selectedItemModel.getIdentifier());
 			
-			/*
 			// If the root or gradebook is selected then we don't need to mess around any further
 			switch (selectedItemModel.getItemType()) {
-			case ROOT:
-			case GRADEBOOK:
-				//selectAll = true;
-				break;
-			case CATEGORY:
-				/--*for (ItemModel childItemModel : selectedItemModel.getChildren()) 
-					selectedItemModelIdSet.add(childItemModel.getIdentifier());
-				*--/
-				break;
 			case ITEM:
 				selectedItemModelIdSet.add(selectedItemModel.getIdentifier());
 				break;
-			}*/
+			}
 		}
 
 		Dispatcher.forwardEvent(GradebookEvents.ShowColumns, 
@@ -829,7 +934,7 @@ public class ItemTreePanel extends ContentPanel {
 					//updateItemMenuItem.setVisible(isNotGradebook);
 					deleteItemMenuItem.setVisible(isNotGradebook);
 					
-					Dispatcher.forwardEvent(GradebookEvents.StartEditItem, itemModel);
+					//Dispatcher.forwardEvent(GradebookEvents.StartEditItem, itemModel);
 				}
 			}
 			
@@ -866,6 +971,21 @@ public class ItemTreePanel extends ContentPanel {
 				}
 			}
 
+		};
+		
+		treeTableEventListener = new Listener<TreeTableEvent>() {
+			
+			public void handleEvent(TreeTableEvent tte) {
+				switch (tte.type) {
+				case Events.RowDoubleClick:
+					ItemModel itemModel = (ItemModel)tte.item.getModel();
+					Dispatcher.forwardEvent(GradebookEvents.StartEditItem, itemModel);
+					
+					tte.stopEvent();
+					break;
+				}
+			}
+			
 		};
 
 	}

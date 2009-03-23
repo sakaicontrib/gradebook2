@@ -46,6 +46,7 @@ public class AppController extends Controller {
 		registerEventTypes(GradebookEvents.ItemUpdated);
 		registerEventTypes(GradebookEvents.LearnerGradeRecordUpdated);
 		registerEventTypes(GradebookEvents.LoadItemTreeModel);
+		registerEventTypes(GradebookEvents.MaskItemTree);
 		registerEventTypes(GradebookEvents.NewCategory);
 		registerEventTypes(GradebookEvents.NewItem);
 		registerEventTypes(GradebookEvents.Notification);
@@ -63,6 +64,7 @@ public class AppController extends Controller {
 		registerEventTypes(GradebookEvents.Startup);
 		registerEventTypes(GradebookEvents.HideEastPanel);
 		registerEventTypes(GradebookEvents.SwitchGradebook);
+		registerEventTypes(GradebookEvents.UnmaskItemTree);
 		registerEventTypes(GradebookEvents.UpdateLearnerGradeRecord);
 		registerEventTypes(GradebookEvents.UserChange);
 	}
@@ -127,7 +129,8 @@ public class AppController extends Controller {
 			forwardToView(multigradeView, event);
 			break;
 		case GradebookEvents.LoadItemTreeModel:
-			onLoadItemTreeModel(event);
+			forwardToView(multigradeView, event);
+			forwardToView(treeView, event);
 			break;
 		case GradebookEvents.ShowColumns:
 			forwardToView(multigradeView, event);
@@ -136,17 +139,28 @@ public class AppController extends Controller {
 		case GradebookEvents.HideEastPanel:
 		case GradebookEvents.SelectItem:
 			forwardToView(treeView, event);
+			forwardToView(appView, event);
+			break;
 		case GradebookEvents.ExpandEastPanel:
 			forwardToView(appView, event);
 			break;
 		case GradebookEvents.ItemUpdated:
-			onItemUpdated(event);
+			forwardToView(multigradeView, event);
+			forwardToView(treeView, event);
+			if (singleView != null)
+				forwardToView(singleView, event);
 			break;
 		case GradebookEvents.ItemCreated:
-			onItemCreated(event);
+			forwardToView(appView, event);
+			forwardToView(multigradeView, event);
+			forwardToView(treeView, event);
 			break;
 		case GradebookEvents.ItemDeleted:
-			onItemDeleted(event);
+			forwardToView(multigradeView, event);
+			break;
+		case GradebookEvents.MaskItemTree:
+		case GradebookEvents.UnmaskItemTree:
+			forwardToView(treeView, event);
 			break;
 		}
 	}
@@ -172,22 +186,6 @@ public class AppController extends Controller {
 		forwardToView(treeView, event);
 	}
 	
-	private void onItemCreated(AppEvent<?> event) {
-		forwardToView(appView, event);
-		forwardToView(multigradeView, event);
-		forwardToView(treeView, event);
-	}
-	
-	private void onItemDeleted(AppEvent<?> event) {
-		forwardToView(multigradeView, event);
-	}
-	
-	private void onItemUpdated(AppEvent<?> event) {
-		forwardToView(multigradeView, event);
-		forwardToView(treeView, event);
-		if (singleView != null)
-			forwardToView(singleView, event);
-	}
 	
 	private void onLearnerGradeRecordUpdated(AppEvent<?> event) {
 		forwardToView(multigradeView, event);
@@ -195,10 +193,6 @@ public class AppController extends Controller {
 			forwardToView(singleView, event);
 	}
 	
-	private void onLoadItemTreeModel(AppEvent<?> event) {
-		forwardToView(multigradeView, event);
-		forwardToView(treeView, event);
-	}
 		
 	private void onNewItem(AppEvent<?> event) {
 		forwardToView(appView, event);

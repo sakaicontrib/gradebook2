@@ -92,6 +92,12 @@ public class TreeView extends View {
 		case GradebookEvents.UserChange:
 			onUserChange((UserEntityAction<?>)event.data);
 			break;
+		case GradebookEvents.MaskItemTree:
+			onMaskItemTree();
+			break;
+		case GradebookEvents.UnmaskItemTree:
+			onUnmaskItemTree();
+			break;
 		}
 	}
 	
@@ -148,6 +154,10 @@ public class TreeView extends View {
 		formPanel.onLoadItemTreeModel(rootItemModel);
 		
 		treePanel.expandTrees();
+	}
+	
+	protected void onMaskItemTree() {
+		treePanel.onMaskItemTree();
 	}
 	
 	protected void onNewCategory(ItemModel itemModel) {
@@ -247,6 +257,10 @@ public class TreeView extends View {
 		formPanel.onLoadItemTreeModel(selectedGradebook.getRootItemModel());
 		*/
 		
+	}
+	
+	protected void onUnmaskItemTree() {
+		treePanel.onUnmaskItemTree();
 	}
 	
 	protected void onUserChange(UserEntityAction<?> action) {

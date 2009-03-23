@@ -43,6 +43,7 @@ public class GradebookEvents {
 	public static final int ItemUpdated					= 14019;
 	public static final int LearnerGradeRecordUpdated	= 14020; 
 	public static final int LoadItemTreeModel 			= 14021;
+	public static final int MaskItemTree				= 14022;
 	public static final int NewCategory					= 14025;
 	public static final int NewItem						= 14030;
 	public static final int Notification				= 14031;
@@ -59,6 +60,7 @@ public class GradebookEvents {
 	public static final int Startup 					= 14055;
 	public static final int HideEastPanel				= 14060;
 	public static final int SwitchGradebook 			= 14065;
+	public static final int UnmaskItemTree				= 14066;
 	public static final int UpdateLearnerGradeRecord	= 14070;
 	public static final int UpdateItem					= 14075;
 	
