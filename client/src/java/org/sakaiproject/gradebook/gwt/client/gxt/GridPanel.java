@@ -75,6 +75,7 @@ import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.KeyboardListener;
 
 public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 
@@ -95,7 +96,7 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 	
 	protected CustomColumnModel cm;
 	protected PagingLoadConfig loadConfig;
-	protected int pageSize = 15;
+	protected int pageSize = 19;
 	
 	protected ContentPanel gridOwner;
 	

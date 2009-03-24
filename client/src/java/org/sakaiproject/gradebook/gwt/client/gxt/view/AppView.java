@@ -34,6 +34,17 @@ public abstract class AppView extends View {
 	public AppView(Controller controller, NotificationView notificationView) {
 		super(controller);
 		this.notificationView = notificationView;
+		
+		this.viewport = new Viewport() {
+			protected void onRender(Element parent, int pos) {
+			    super.onRender(parent, pos);
+			    Accessibility.setRole(el().dom, "application");
+			}
+		};
+		viewport.setHeight(screenHeight);
+		viewport.setLayout(new FitLayout());
+		viewport.setLoadingPanelId("loading");
+		RootPanel.get().add(viewport);
 	}
 
 	@Override
@@ -93,15 +104,7 @@ public abstract class AppView extends View {
 	
 	@Override
 	protected void initialize() {
-		this.viewport = new Viewport() {
-			protected void onRender(Element parent, int pos) {
-			    super.onRender(parent, pos);
-			    Accessibility.setRole(el().dom, "application");
-			}
-		};
-		viewport.setHeight(screenHeight);
-		viewport.setLayout(new FitLayout());
-		RootPanel.get().add(viewport);
+		
 	}
 	
 	protected abstract void initUI(ApplicationModel model);

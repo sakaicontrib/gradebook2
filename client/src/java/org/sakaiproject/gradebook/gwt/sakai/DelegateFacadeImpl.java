@@ -834,6 +834,19 @@ private static final long serialVersionUID = 1L;
 				gradeRecord.setUserAbleToView(true);
 				String studentUid = gradeRecord.getStudentId();
 				UserRecord userRecord = userRecordMap.get(studentUid);
+				if (!userRecord.isPopulated()) {
+					User user = null;
+					try {
+						user = userService.getUser(userRecord.getUserUid());
+						userRecord.setUserEid(user.getEid());
+						userRecord.setDisplayId(user.getDisplayId());
+						userRecord.setDisplayName(user.getDisplayName());
+						userRecord.setSortName(user.getSortName());
+						userRecord.setEmail(user.getEmail());
+					} catch (UserNotDefinedException e) {
+						log.error("No sakai user defined for this member '" + userRecord.getUserUid() + "'", e);
+					}
+				}
 				Map<Long, AssignmentGradeRecord> studentMap = userRecord.getGradeRecordMap();
 				if (studentMap == null) {
 					studentMap = new HashMap<Long, AssignmentGradeRecord>();
@@ -855,10 +868,10 @@ private static final long serialVersionUID = 1L;
 				
 				builder.append("Grading ");
 				
-				if (student.getDisplayName() == null)
-					builder.append(student.getStudentDisplayId()).append(": ");
+				if (userRecord.getDisplayName() == null)
+					builder.append(userRecord.getDisplayId()).append(": ");
 				else
-					builder.append(student.getDisplayName()).append(": ");
+					builder.append(userRecord.getDisplayName()).append(": ");
 				
 				
 				if (userRecord == null) {
@@ -871,7 +884,7 @@ private static final long serialVersionUID = 1L;
 				Map<Long, AssignmentGradeRecord> gradeRecordMap = userRecord.getGradeRecordMap();
 				
 				for (Assignment assignment : assignments) {
-					builder.append(assignment.getName()).append(" (");
+					
 					Object v = student.get(String.valueOf(assignment.getId()));
 					
 					Double value = null;
@@ -887,6 +900,9 @@ private static final long serialVersionUID = 1L;
 						AssignmentGradeRecord assignmentGradeRecord = gradeRecordMap.get(assignment.getId()); //gbService.getAssignmentGradeRecordForAssignmentForStudent(assignment, student.getIdentifier());
 						Double oldValue = null;
 						
+						if (assignmentGradeRecord == null)
+							assignmentGradeRecord = new AssignmentGradeRecord();
+						
 						switch (gradebook.getGrade_type()) {
 						case GradebookService.GRADE_TYPE_POINTS:
 							oldValue = assignmentGradeRecord.getPointsEarned();
@@ -896,10 +912,16 @@ private static final long serialVersionUID = 1L;
 							break;
 						}
 						
+						if (oldValue == null && value == null)
+							continue;
+						
 						try {
 							//scoreNumericItem(gradebookUid, student, assignmentId, value, (Double)null);
 							scoreItem(gradebook, assignment, assignmentGradeRecord, student.getIdentifier(), value);
 							//log.info("Scored item " + assignment.getName() + " for " + student.getIdentifier() + " as " + value);
+							
+							
+							builder.append(assignment.getName()).append(" (");
 							
 							if (oldValue != null)
 								builder.append(oldValue);

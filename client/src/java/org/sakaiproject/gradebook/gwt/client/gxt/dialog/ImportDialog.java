@@ -288,7 +288,7 @@ public class ImportDialog extends Window {
 		List<StudentModel> rows = new ArrayList<StudentModel>();
 		for (BaseModel importRow : rowStore.getModels()) {
 			
-			String uid = importRow.get("userId");
+			String uid = importRow.get("userUid");
 			if (uid == null)
 				uid = importRow.get("userImportId");
 			
@@ -298,9 +298,8 @@ public class ImportDialog extends Window {
 			for (ColumnConfig column : previewColumns) {
 				String id = column.getId();
 				student.set(id, importRow.get(id));
-				rows.add(student);
 			}
-			
+			rows.add(student);
 		}
 		
 		spreadsheetModel.setRows(rows);
@@ -952,7 +951,7 @@ public class ImportDialog extends Window {
 		
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 		
-		ColumnConfig desc = new ColumnConfig("desc", "Description", 600);
+		ColumnConfig desc = new ColumnConfig("desc", "Description", 2000);
 		configs.add(desc);
 		
 		ColumnModel resultColumnModel = new ColumnModel(configs);
@@ -972,7 +971,8 @@ public class ImportDialog extends Window {
 		//itemGrid.setSelectionModel(sm);
 		//itemGrid.addPlugin(sm);
 		resultGrid.setHeight(380);
-		resultGrid.setAutoExpandColumn("desc");
+		resultGrid.setWidth(2000);
+		//resultGrid.setAutoExpandColumn("desc");
 		resultGrid.setAutoExpandMax(2000);
 		
 		/*BasePagingLoader loader;

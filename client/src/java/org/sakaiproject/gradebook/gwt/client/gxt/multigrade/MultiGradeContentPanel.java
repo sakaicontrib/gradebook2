@@ -753,14 +753,11 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		cm = assembleColumnModel(selectedGradebook);
 		grid.reconfigure(store, cm);
 		grid.el().unmask();
-		
-		if (lastShowColumnsEvent != null)
-			showColumns(lastShowColumnsEvent);
 	}
 	
 	public void onShowColumns(ShowColumnsEvent event) {
 		this.lastShowColumnsEvent = event;
-		showColumns(event);
+		showColumns(event, cm);
 	}
 	
 	public void onSwitchGradebook(GradebookModel selectedGradebook) {
@@ -1479,6 +1476,9 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		
 		CustomColumnModel cm = new CustomColumnModel(selectedGradebook.getGradebookUid(), gridId, configs);
 		
+		if (lastShowColumnsEvent != null)
+			showColumns(lastShowColumnsEvent, cm);
+		
 		return cm;
 	}
 	
@@ -1618,22 +1618,24 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		grid.el().unmask();
 	}*/
 	
-	private void showColumns(ShowColumnsEvent event) {
-		// Loop through every column and show/hide it
-		for (int i=0;i<cm.getColumnCount();i++) {
-			ColumnConfig column = cm.getColumn(i);
-			
-			// The first step is to check if this is a static column
-			boolean isStatic = event.fullStaticIdSet.contains(column.getId());
-			// If it is static, then is it even visible? 
-			boolean isStaticVisible = isStatic && event.visibleStaticIdSet.contains(column.getId());
-			
-			if (isStatic)
-				cm.setHidden(i, !isStaticVisible);
-			else if (event.selectedItemModelIdSet != null){
-				boolean showColumn = (!isStatic && event.selectAll) || event.selectedItemModelIdSet.contains(column.getId());
-				if (cm.isHidden(i) == showColumn)
-					cm.setHidden(i, !showColumn);
+	private void showColumns(ShowColumnsEvent event, CustomColumnModel cm) {
+		if (cm != null) {
+			// Loop through every column and show/hide it
+			for (int i=0;i<cm.getColumnCount();i++) {
+				ColumnConfig column = cm.getColumn(i);
+				
+				// The first step is to check if this is a static column
+				boolean isStatic = event.fullStaticIdSet.contains(column.getId());
+				// If it is static, then is it even visible? 
+				boolean isStaticVisible = isStatic && event.visibleStaticIdSet.contains(column.getId());
+				
+				if (isStatic)
+					cm.setHidden(i, !isStaticVisible);
+				else if (event.selectedItemModelIdSet != null){
+					boolean showColumn = (!isStatic && event.selectAll) || event.selectedItemModelIdSet.contains(column.getId());
+					if (cm.isHidden(i) == showColumn)
+						cm.setHidden(i, !showColumn);
+				}
 			}
 		}
 	}

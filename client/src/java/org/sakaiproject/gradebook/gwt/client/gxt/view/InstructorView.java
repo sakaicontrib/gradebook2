@@ -6,14 +6,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
-import org.sakaiproject.gradebook.gwt.client.GradebookState;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenu;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTabItem;
-import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTabPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.GradeScalePanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.HelpPanel;
@@ -31,17 +29,13 @@ import com.extjs.gxt.ui.client.Style.LayoutRegion;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.MenuEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
-import com.extjs.gxt.ui.client.event.TabPanelEvent;
 import com.extjs.gxt.ui.client.event.ToolBarEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.util.Margins;
-import com.extjs.gxt.ui.client.widget.Container;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.TabItem;
-import com.extjs.gxt.ui.client.widget.TabPanel;
-import com.extjs.gxt.ui.client.widget.TabPanel.TabPosition;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayout;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayoutData;
 import com.extjs.gxt.ui.client.widget.layout.CardLayout;
@@ -107,22 +101,6 @@ public class InstructorView extends AppView {
 		this.tabContentPanelMap = new HashMap<String, ContentPanel>();
 		this.treeView = treeView;
 		this.multigradeView = multigradeView;
-	}
-
-	@Override
-	protected void initialize() {
-		super.initialize();
-		
-		i18n = Registry.get(AppConstants.I18N);
-		//GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-		//initTabs(i18n, selectedGradebook);
-		initListeners();
-		/*contentPanelLayout = new FitLayout();
-		contentPanel = new ContentPanel();
-		contentPanel.setHeaderVisible(false);
-		contentPanel.setLayout(contentPanelLayout);*/
-		
-		//contentPanel.add(notificationView.getNotificationPanel(), new RowData(1, 35));
 		
 		borderLayoutContainer = new ContentPanel(); 
 		borderLayoutContainer.setHeaderVisible(false);
@@ -146,7 +124,7 @@ public class InstructorView extends AppView {
 		northData.setCollapsible(false);
 		//northData.setHidden(true);
 		
-		westData = new BorderLayoutData(LayoutRegion.WEST, 400);  
+		westData = new BorderLayoutData(LayoutRegion.WEST, 400, 100, 800);  
 		westData.setSplit(true);  
 		westData.setCollapsible(true);  
 		westData.setMargins(new Margins(5));
@@ -154,6 +132,23 @@ public class InstructorView extends AppView {
 		
 		//addMainContainer(getBorderLayoutContainer());
 		viewport.add(getBorderLayoutContainer());
+	}
+
+	@Override
+	protected void initialize() {
+		super.initialize();
+		
+		i18n = Registry.get(AppConstants.I18N);
+		//GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		//initTabs(i18n, selectedGradebook);
+		initListeners();
+		/*contentPanelLayout = new FitLayout();
+		contentPanel = new ContentPanel();
+		contentPanel.setHeaderVisible(false);
+		contentPanel.setLayout(contentPanelLayout);*/
+		
+		//contentPanel.add(notificationView.getNotificationPanel(), new RowData(1, 35));
+
 	}
 	
 	@Override
@@ -564,10 +559,11 @@ public class InstructorView extends AppView {
 		cardLayoutContainer.add(treeView.getFormPanel());
 		cardLayout.setActiveItem(helpPanel);
 
+		treeView.getTreePanel().setHeight(viewport.getHeight() - 50);
+		
 		borderLayoutContainer.add(treeView.getTreePanel(), westData);
 		borderLayoutContainer.add(multigradeView.getMultiGradeContentPanel(), centerData);
 		borderLayoutContainer.add(cardLayoutContainer, eastData);
-
 		
 		return borderLayoutContainer;
 	}

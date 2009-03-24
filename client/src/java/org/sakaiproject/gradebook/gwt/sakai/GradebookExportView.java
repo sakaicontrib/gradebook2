@@ -109,14 +109,14 @@ public class GradebookExportView extends AbstractView {
 		writer.close();
 	}
 
-	private String getExportId(StudentModel model) {
+	/*private String getExportId(StudentModel model) {
 		String exportId = model.getEid();
 		
 		if (exportId == null)
 			exportId = model.getIdentifier();
 		
 		return exportId;
-	}
+	}*/
 	
 	public GradebookToolFacade getDelegateFacade() {
 		return delegateFacade;

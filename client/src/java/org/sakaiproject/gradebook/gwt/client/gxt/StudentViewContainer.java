@@ -22,6 +22,7 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.gxt;
 
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.gxt.settings.LogColumnConfig;
 import org.sakaiproject.gradebook.gwt.client.model.GradeRecordModel;
@@ -441,6 +442,8 @@ public class StudentViewContainer extends LayoutContainer {
 	
 		// Now, let's update the student information table
 		FlexCellFormatter formatter = gradeInformation.getFlexCellFormatter();
+		
+		gradeInformation.clear();
 		
 		ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
 		

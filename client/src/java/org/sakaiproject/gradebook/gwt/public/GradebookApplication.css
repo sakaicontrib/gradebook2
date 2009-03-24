@@ -56,7 +56,7 @@
 	display:block;
 	font-family:arial,tahoma,helvetica,sans-serif;
 	font-size:12pt;
-	height:15px;
+	height: 1.2em; /*15px;*/
 	padding-left:3px;
 	padding-right:3px;
 	white-space:nowrap;
@@ -67,7 +67,7 @@
 	display:block;
 	font-family:arial,tahoma,helvetica,sans-serif;
 	font-size:12pt;
-	height:15px;
+	height: 1.2em; /*15px;*/
 	padding-left:3px;
 	padding-right:3px;
 	white-space:nowrap;
@@ -118,7 +118,7 @@
 }
 
 .x-grid3-row td, .x-grid3-summary-row td {
-	line-height:23px;
+	line-height: 1.5em; /*23px;*/
 }
 
  
@@ -223,7 +223,7 @@
 
 .gbTextFieldInput {
 	font-size: 12pt !important;
-	height: 30px !important;
+	height: 1.8em !important;
 	padding-top: 4px !important;
 	text-align: left;
 }
@@ -236,7 +236,7 @@
 
 .gbNumericFieldInput {
 	font-size: 12pt !important;
-	height: 30px !important;
+	height: 1.8em !important;
 	padding-left: 3px !important;
 	padding-top: 4px !important;
 	text-align: right;

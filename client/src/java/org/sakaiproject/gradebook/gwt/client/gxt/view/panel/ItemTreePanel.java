@@ -53,7 +53,6 @@ import com.extjs.gxt.ui.client.event.TreeTableEvent;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.TreeStore;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
-import com.extjs.gxt.ui.client.widget.Info;
 import com.extjs.gxt.ui.client.widget.TabItem;
 import com.extjs.gxt.ui.client.widget.TabPanel;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
@@ -85,22 +84,22 @@ public class ItemTreePanel extends ContentPanel {
 	private static final String selectionTypeField = "selectionType";
 	
 	private static int CHARACTER_WIDTH = 7;
-	
-	private Menu treeContextMenu;
-	private MenuItem addCategoryMenuItem, updateItemMenuItem, deleteItemMenuItem;
-	
+		
+	// Listeners
 	private CheckChangedListener checkChangedListener;
 	private SelectionListener<MenuEvent> menuSelectionListener;
 	private SelectionChangedListener<ItemModel> selectionChangedListener;
 	private Listener<TreeEvent> treeEventListener;
 	private Listener<TreeTableEvent> treeTableEventListener;
 
+	// Components
+	private Menu treeContextMenu;
+	private MenuItem addCategoryMenuItem, updateItemMenuItem, deleteItemMenuItem;
 	private Tree learnerAttributeTree;
 	private Tree itemTree;
 	private TreeTable treeTable;
 	private TreeTableView treeTableView;
 	private TreeTableBinder<ItemModel> treeBinder;
-	
 	private TreeTableColumn percentCourseGradeColumn;
 	private TreeTableColumn percentCategoryColumn;
 	private TreeTableColumn pointsColumn;
@@ -109,7 +108,7 @@ public class ItemTreePanel extends ContentPanel {
 	// We have to track which static columns are visible somewhere
 	private Set<String> fullStaticIdSet;
 	private Set<String> visibleStaticIdSet;
-		
+	
 	private boolean isLearnerAttributeTreeLoaded;
 	
 	private List<ItemModel> selectedItemModels;
@@ -117,8 +116,11 @@ public class ItemTreePanel extends ContentPanel {
 	private GradebookModel selectedGradebook;
 	
 	private boolean isEditable;
+	private I18nConstants i18n;
 	
 	public ItemTreePanel(I18nConstants i18n, boolean isEditable) {
+		this.enableLayout = false;
+		this.i18n = i18n;
 		this.isEditable = isEditable;
 		this.fullStaticIdSet = new HashSet<String>();
 		this.isLearnerAttributeTreeLoaded = false;
@@ -127,53 +129,36 @@ public class ItemTreePanel extends ContentPanel {
 		setHeading(i18n.navigationPanelHeader());
 		setLayout(new FitLayout());
 		initListeners();
-
+		newEditableTree(i18n);
+		newLearnerAttributeTree(i18n);
+	}
+	
+	@Override
+	protected boolean doLayout() {
+		return super.doLayout();
+	}
+	
+	@Override
+	protected void onRender(Element parent, int pos) {
 		TabPanel tabPanel = new AriaTabPanel();
 		
 		TabItem item = new AriaTabItem(i18n.navigationPanelFixedTabHeader());
 		item.setLayout(new FitLayout());
 		//item.add(newNavigationTree(i18n));
-		item.add(newEditableTree(i18n));
+		item.add(treeTable);
 		tabPanel.add(item);
 		
 		item = new AriaTabItem(i18n.navigationPanelDynamicTabHeader());
 		item.setLayout(new FitLayout());
-		item.add(newLearnerAttributeTree(i18n));
+		item.add(learnerAttributeTree);
 		tabPanel.add(item);
 		
 		add(tabPanel);
 		
-		/*AccordionLayout accordionLayout = new AccordionLayout();
-		accordionLayout.setAutoWidth(true);
-		accordionLayout.setFill(true);
-		
-		ContentPanel panel = new ContentPanel();
-		panel.setHeaderVisible(false);
-		panel.setIconStyle("icon-accordion");
-		panel.setLayout(accordionLayout);
-		
-		final ContentPanel gradingColumnsPanel = new ContentPanel();
-		gradingColumnsPanel.setHeading("Grading Columns");
-		gradingColumnsPanel.setLayout(new FitLayout());
-		gradingColumnsPanel.add(newEditableTree(i18n));
-		panel.add(gradingColumnsPanel);
-		
-		final ContentPanel fixedColumnsPanel = new ContentPanel();
-		fixedColumnsPanel.setHeading("Others");
-		fixedColumnsPanel.setLayout(new FitLayout());
-		fixedColumnsPanel.add(newLearnerAttributeTree(i18n));
-		panel.add(fixedColumnsPanel);
-		
-		gradingColumnsPanel.addListener(Events.Collapse, new Listener<ComponentEvent>() {
-
-			public void handleEvent(ComponentEvent ce) {
-				fixedColumnsPanel.expand();
-			}
-			
-		});*/
-		
-		
-		//add(panel);
+		super.onRender(parent, pos);
+	    getHeader().setId("itemtreelabel");
+	    Accessibility.setRole(el().dom, "region");
+	    Accessibility.setRole(getHeader().el().dom, "heading");
 	}
 	
 	public void expandTrees() {
@@ -285,8 +270,8 @@ public class ItemTreePanel extends ContentPanel {
 				//if (isEntireGradebookChecked)
 				//	selectedItemModels.add(rootItem);
 			}
+			showColumns(selectedItemModels);
 		}
-		//showColumns(selectedItemModels);
 		
 		if (rendered)
 			treeBinder.setCheckedSelection(selectedItemModels);
@@ -301,26 +286,16 @@ public class ItemTreePanel extends ContentPanel {
 	}
 	
 	public void onSwitchGradebook(GradebookModel selectedGradebook) {
-		//Info.display("Item Tree Panel", "Switch Gradebook");
-		
 		this.selectedGradebook = selectedGradebook;
 		if (addCategoryMenuItem != null)
 			addCategoryMenuItem.setVisible(selectedGradebook.getCategoryType() != CategoryType.NO_CATEGORIES);
 
 		loadLearnerAttributeTree(selectedGradebook);
+		this.enableLayout = true;
+		//layout();
 	}
 	
-	/*public void onTreeStoreDataLoaded() {
-		showColumns(selectedItemModels);
-		treeBinder.setCheckedSelection(selectedItemModels);
-		
-		//Info.display("Item Tree Panel", "Data changed");
-	}*/
-	
 	public void onTreeStoreInitialized(TreeStore<ItemModel> treeStore) {
-
-		//System.out.println("ItemTreePanel: onTreeStoreInitialized");
-		//Info.display("Item Tree Panel", "Tree Store Initialized");
 		
 		treeBinder = new TreeTableBinder<ItemModel>(treeTable, treeStore) {
 			
@@ -845,26 +820,7 @@ public class ItemTreePanel extends ContentPanel {
 		
 		return treeContextMenu;
 	}
-	
-	@Override
-	protected void onRender(Element parent, int pos) {
-	    super.onRender(parent, pos);
-	    getHeader().setId("itemtreelabel");
-	    Accessibility.setRole(el().dom, "region");
-	    Accessibility.setRole(getHeader().el().dom, "heading");
-	    
-	    //learnerAttributeTree.expandAll();
-	    /*DelayedTask task = new DelayedTask(new Listener() {
-
-			public void handleEvent(BaseEvent be) {
-				itemTree.expandAll();
-				learnerAttributeTree.expandAll();
-			}
-	    	
-	    }); 
-	    task.delay(2000);*/
-	}
-	
+		
 	protected void showColumns(List<ItemModel> selectedItemModels) {
 		Set<String> selectedItemModelIdSet = new HashSet<String>();
 		boolean selectAll = false;

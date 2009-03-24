@@ -31,8 +31,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.GradebookState;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
-import org.sakaiproject.gradebook.gwt.client.PersistentStore;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.model.ColumnModel;
@@ -42,18 +42,15 @@ import org.sakaiproject.gradebook.gwt.client.model.StudentModel.Group;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel.Key;
 
 import com.extjs.gxt.ui.client.Events;
-import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.SortDir;
 import com.extjs.gxt.ui.client.event.BaseEvent;
-import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.MenuEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.StoreEvent;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
-import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.menu.CheckMenuItem;
 import com.extjs.gxt.ui.client.widget.menu.Item;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
@@ -354,7 +351,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	protected void onBeforeDataChanged(StoreEvent se) {
 	    if (grid.isLoadMask()) {
 	    	isDisplayLoadMaskOnRender = false;
-	    	//grid.el().mask(GXT.MESSAGES.loadMask_msg());
+	    	grid.el().mask("Loading learner data...");
 	    }
 	}
 	
@@ -377,7 +374,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 		super.renderUI();
 		
 		if (isDisplayLoadMaskOnRender) {
-			//grid.el().mask(GXT.MESSAGES.loadMask_msg());
+			grid.el().mask("Loading learner data...");
 			isDisplayLoadMaskOnRender = false;
 		}
 	}
@@ -418,9 +415,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 		
 		ColumnConfig column = cm.getColumn(col);
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-		PersistentStore.storePersistentField(selectedGradebook.getGradebookUid(), gridId, new StringBuilder()
-			.append(AppConstants.COLUMN_PREFIX).append(column.getId()).append(AppConstants.WIDTH_SUFFIX).toString(), String.valueOf(width));
-		
+		GradebookState.setColumnWidth(selectedGradebook.getGradebookUid(), gridId, column.getId(), width);
 	}
 	
 	public class ColumnGroup {

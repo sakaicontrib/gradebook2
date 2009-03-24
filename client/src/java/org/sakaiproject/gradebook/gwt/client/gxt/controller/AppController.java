@@ -77,46 +77,59 @@ public class AppController extends Controller {
 		case GradebookEvents.Confirmation:
 		case GradebookEvents.CloseNotification:
 		case GradebookEvents.Notification:
-			onNotification(event);
-			break;
-		case GradebookEvents.FullScreen:
-			onFullScreen(event);
+			forwardToView(appView, event);
+			forwardToView(notificationView, event);
 			break;
 		case GradebookEvents.HideColumn:
-			onHideColumn(event);
+			forwardToView(treeView, event);
 			break;
 		case GradebookEvents.BrowseLearner:
-			onBrowseLearner(event);
+			forwardToView(multigradeView, event);
 			break;
 		case GradebookEvents.ConfirmDeleteItem:
 		case GradebookEvents.SelectDeleteItem:
-			onConfirmDeleteItem(event);
+			forwardToView(treeView, event);
 			break;
 		case GradebookEvents.LearnerGradeRecordUpdated:
-			onLearnerGradeRecordUpdated(event);
+			forwardToView(multigradeView, event);
+			if (singleView != null && singleView.isDialogVisible())
+				forwardToView(singleView, event);
 			break;
 		case GradebookEvents.NewCategory:
 		case GradebookEvents.NewItem:
-			onNewItem(event);
+			forwardToView(appView, event);
+			forwardToView(treeView, event);
 			break;
 		case GradebookEvents.RefreshCourseGrades:
-			onRefreshCourseGrades(event);
+			forwardToView(multigradeView, event);
 			break;
 		case GradebookEvents.SelectLearner:
-			onSelectLearner(event);
+			forwardToView(appView, event);
 			break;
 		case GradebookEvents.StartImport:
 		case GradebookEvents.StartExport:
-			onStartImport(event);
+			if (importExportView == null)
+				importExportView = new ImportExportView(this);
+			
+			forwardToView(importExportView, event);
 			break;
 		case GradebookEvents.Startup:
 			onStartup(event);
 			break;
 		case GradebookEvents.SingleGrade:
-			onSingleGrade(event);
+			forwardToView(appView, event);
+			
+			if (treeView != null)
+				forwardToView(treeView, event);
+			
+			if (singleView != null && singleView.isDialogVisible())
+				forwardToView(singleView, event);
 			break;
 		case GradebookEvents.SingleView:
-			onSingleView(event);
+			if (singleView == null)
+				singleView = new SingleGradeView(this, false);
+			
+			forwardToView(singleView, event);
 			break;
 		case GradebookEvents.SwitchGradebook:
 			forwardToView(appView, event);
@@ -170,81 +183,6 @@ public class AppController extends Controller {
 		
 	}
 	
-	private void onBrowseLearner(AppEvent<?> event) {
-		forwardToView(multigradeView, event);
-	}
-	
-	private void onConfirmDeleteItem(AppEvent<?> event) {
-		forwardToView(treeView, event);
-	}
-	
-	private void onFullScreen(AppEvent<?> event) {
-		forwardToView(appView, event);
-	}
-	
-	private void onHideColumn(AppEvent<?> event) {
-		forwardToView(treeView, event);
-	}
-	
-	
-	private void onLearnerGradeRecordUpdated(AppEvent<?> event) {
-		forwardToView(multigradeView, event);
-		if (singleView != null && singleView.isDialogVisible())
-			forwardToView(singleView, event);
-	}
-	
-		
-	private void onNewItem(AppEvent<?> event) {
-		forwardToView(appView, event);
-		forwardToView(treeView, event);
-		/*if (newItemView == null)
-			newItemView = new NewItemView(this);
-		
-		forwardToView(newItemView, event);
-		*/
-	}
-	
-	private void onNotification(AppEvent<?> event) {
-		forwardToView(appView, event);
-		forwardToView(notificationView, event);
-	}
-	
-	private void onRefreshCourseGrades(AppEvent<?> event) {
-		forwardToView(multigradeView, event);
-	}
-	
-	private void onSelectLearner(AppEvent<?> event) {
-		forwardToView(appView, event);
-	}
-	
-	private void onSingleGrade(AppEvent<?> event) {
-		//if (singleGrade == null)
-		//	singleGrade = new SingleGradeView(this, true);
-		
-		//forwardToView(singleGrade, event);
-		
-		forwardToView(appView, event);
-		
-		if (treeView != null)
-			forwardToView(treeView, event);
-		
-		if (singleView != null && singleView.isDialogVisible())
-			forwardToView(singleView, event);
-	}
-	
-	private void onSingleView(AppEvent<?> event) {
-		if (singleView == null)
-			singleView = new SingleGradeView(this, false);
-		
-		forwardToView(singleView, event);
-	}
-	
-	private void onStartImport(AppEvent<?> event) {
-		if (importExportView == null)
-			importExportView = new ImportExportView(this);
-		
-		forwardToView(importExportView, event);
-	}
 	
 	private void onStartup(AppEvent<?> event) {
 		ApplicationModel model = (ApplicationModel)event.data;
