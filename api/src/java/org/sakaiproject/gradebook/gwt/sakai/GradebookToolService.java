@@ -50,6 +50,10 @@ public interface GradebookToolService {
 	
 	public Integer getActionRecordSize(final String gradebookUid);
 	
+	public List<ActionRecord> getActionRecords(final String gradebookUid, final String learnerUid, final int offset, final int limit);
+	
+	public Integer getActionRecordSize(final String gradebookUid, final String learnerUid);
+	
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(Long gradebookId, Collection<String> studentUids);
 	
 	public List<CourseGradeRecord> getAllCourseGradeRecords(Gradebook gradebook);

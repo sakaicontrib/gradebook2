@@ -1808,6 +1808,7 @@ private static final long serialVersionUID = 1L;
 		boolean isNotInCategoryMode = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_NO_CATEGORY;
 		
 		if (categories != null) {
+			BigDecimal gradebookPointsSum = BigDecimal.ZERO;
 			for(Category category : categories) {
 			
 				if (isNotInCategoryMode || !category.isRemoved()) {
@@ -1819,6 +1820,7 @@ private static final long serialVersionUID = 1L;
 						gradebookItemModel.add(categoryItemModel);
 					} 
 					
+					BigDecimal categoryPointsSum = BigDecimal.ZERO;
 					BigDecimal percentGrade = BigDecimal.valueOf(categoryItemModel.getPercentCourseGrade().doubleValue());
 					BigDecimal percentCategory = BigDecimal.valueOf(categoryItemModel.getPercentCategory().doubleValue());
 					
@@ -1829,9 +1831,13 @@ private static final long serialVersionUID = 1L;
 							
 							BigDecimal assignmentWeight = BigDecimal.valueOf(assignment.getAssignmentWeighting().doubleValue());
 							BigDecimal courseGradePercent = calculateItemGradePercent(percentGrade, percentCategory, assignmentWeight);
+							BigDecimal points = BigDecimal.valueOf(assignment.getPointsPossible().doubleValue());
 							
 							ItemModel assignmentItemModel = createItemModel(category, assignment, courseGradePercent);
 							//assignmentItemModel.setStudentModelKey(Key.ASSIGNMENT.name());
+							
+							if (!DataTypeConversionUtil.checkBoolean(assignment.isUnweighted()))
+								categoryPointsSum = categoryPointsSum.add(points);
 							
 							if (isNotInCategoryMode) {
 								assignmentItemModel.setParent(gradebookItemModel);
@@ -1841,9 +1847,12 @@ private static final long serialVersionUID = 1L;
 								categoryItemModel.add(assignmentItemModel);
 							}
 						}
+						categoryItemModel.setPoints(Double.valueOf(categoryPointsSum.doubleValue()));
+						gradebookPointsSum = gradebookPointsSum.add(categoryPointsSum);
 					}
 				}
 			}
+			gradebookItemModel.setPoints(Double.valueOf(gradebookPointsSum.doubleValue()));
 		}
 		
 		return gradebookItemModel;
@@ -2645,21 +2654,24 @@ private static final long serialVersionUID = 1L;
 		
 		BigDecimal percentGrade = BigDecimal.valueOf(categoryItemModel.getPercentCourseGrade().doubleValue());
 		BigDecimal percentCategory = BigDecimal.valueOf(categoryItemModel.getPercentCategory().doubleValue());
-		BigDecimal Big_100 = new BigDecimal(100d);
+		BigDecimal pointsSum = BigDecimal.ZERO;
 		if (assignments != null) {
 			for (Assignment a : assignments) {
+				BigDecimal points = BigDecimal.valueOf(a.getPointsPossible().doubleValue());
 				BigDecimal assignmentWeight = BigDecimal.valueOf(a.getAssignmentWeighting().doubleValue());
 				BigDecimal courseGradePercent = BigDecimal.ZERO;
 				
-				if (!DataTypeConversionUtil.checkBoolean(a.isUnweighted()))
+				if (!DataTypeConversionUtil.checkBoolean(a.isUnweighted())) {
 					courseGradePercent = calculateItemGradePercent(percentGrade, percentCategory, assignmentWeight);
-								
+					pointsSum = pointsSum.add(points);
+				}
+				
 				ItemModel assignmentItemModel = createItemModel(category, a, courseGradePercent);
 				assignmentItemModel.setParent(categoryItemModel);
 				categoryItemModel.add(assignmentItemModel);
-				//itemModels.add(assignmentItemModel);
 			}
 		}
+		categoryItemModel.setPoints(Double.valueOf(pointsSum.doubleValue()));
 		
 		return categoryItemModel;
 	}

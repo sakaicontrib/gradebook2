@@ -776,7 +776,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 				store.setDefaultSort(storedSortField, sortDir);
 		}
 
-		if (grid == null)
+		if (grid == null) 
 			add(newGrid(newColumnModel(selectedGradebook)));
 		else
 			onLoadItemTreeModel(selectedGradebook);

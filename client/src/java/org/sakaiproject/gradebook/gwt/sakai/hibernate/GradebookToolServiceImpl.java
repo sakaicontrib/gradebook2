@@ -216,6 +216,33 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		
 		return size;
 	}
+	
+	public List<ActionRecord> getActionRecords(final String gradebookUid, final String learnerUid, final int offset, final int limit) {
+		HibernateCallback hc = new HibernateCallback() {
+            public Object doInHibernate(Session session) throws HibernateException {
+                Query q = session.createQuery("from ActionRecord as ar where ar.gradebookUid=:gradebookUid and ar.studentUid=:learnerUid order by ar.dateRecorded desc ");
+                q.setString("gradebookUid", gradebookUid);
+                q.setString("learnerUid", learnerUid);
+                q.setFirstResult(offset);
+                q.setMaxResults(limit);
+                return q.list();
+            }
+        };
+        return (List<ActionRecord>)getHibernateTemplate().execute(hc);	
+	}
+	
+	public Integer getActionRecordSize(final String gradebookUid, final String learnerUid) {
+		Integer size = (Integer)getHibernateTemplate().execute(new HibernateCallback() {
+            public Object doInHibernate(Session session) throws HibernateException {
+                Query q = session.createQuery("select count(*) from ActionRecord as ar where ar.gradebookUid=:gradebookUid and ar.studentUid=:learnerUid ");
+                q.setString("gradebookUid", gradebookUid);
+                q.setString("learnerUid", learnerUid);
+                return (Integer) q.iterate().next();
+            }
+        });
+		
+		return size;
+	}
 
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(final Long gradebookId, final Collection<String> studentUids) {
 		HibernateCallback hc = new HibernateCallback() {

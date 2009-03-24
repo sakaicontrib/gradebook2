@@ -95,7 +95,7 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 	
 	protected CustomColumnModel cm;
 	protected PagingLoadConfig loadConfig;
-	protected int pageSize = 16;
+	protected int pageSize = 15;
 	
 	protected ContentPanel gridOwner;
 	

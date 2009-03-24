@@ -226,6 +226,33 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		return Integer.valueOf(actionRecords.size());
 	}
 
+	public List<ActionRecord> getActionRecords(final String gradebookUid, final String learnerUid, int offset, int limit) {
+		List<ActionRecord> learnerActionRecords = new ArrayList<ActionRecord>();
+		
+		for (ActionRecord record : actionRecords) {
+			if (record.getStudentUid() != null && record.getStudentUid().equals(learnerUid))
+				learnerActionRecords.add(record);
+		}
+		
+    	if ((limit+offset) > learnerActionRecords.size())
+    		limit = learnerActionRecords.size() - offset;
+    	if (limit < 0)
+    		limit = 0;
+    	
+    	return learnerActionRecords.subList(offset, limit);	
+	}
+	
+	public Integer getActionRecordSize(final String gradebookUid, final String learnerUid) {
+		List<ActionRecord> learnerActionRecords = new ArrayList<ActionRecord>();
+		
+		for (ActionRecord record : actionRecords) {
+			if (record.getStudentUid() != null && record.getStudentUid().equals(learnerUid))
+				learnerActionRecords.add(record);
+		}
+		
+		return Integer.valueOf(learnerActionRecords.size());
+	}
+	
 	public Long createAssignment(Long gradebookId, String name, Double points, Date dueDate, Boolean isNotCounted, Boolean isReleased) {
 		Assignment assignment = new Assignment(gradebook, name, points, dueDate, isReleased);
 		assignment.setId(assignmentIdCount++);
