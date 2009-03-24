@@ -404,18 +404,21 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 				refreshGrid(RefreshAction.REFRESHDATA);
 			}
 			ColumnConfig column = cm.getColumnById(itemModel.getIdentifier());
-				
-			column.setHeader(itemModel.getName());
-					
-			boolean isIncluded = itemModel.getIncluded() != null && itemModel.getIncluded().booleanValue();
-			boolean isExtraCredit = itemModel.getExtraCredit() != null && itemModel.getExtraCredit().booleanValue();
-					
-			if (!isIncluded)
-				column.setRenderer(unweightedNumericCellRenderer);
-			else if (isExtraCredit)
-				column.setRenderer(extraCreditNumericCellRenderer);
-			else
-				column.setRenderer(null);
+			
+			if (column != null) {
+				if (itemModel.getName() != null)
+					column.setHeader(itemModel.getName());
+						
+				boolean isIncluded = itemModel.getIncluded() != null && itemModel.getIncluded().booleanValue();
+				boolean isExtraCredit = itemModel.getExtraCredit() != null && itemModel.getExtraCredit().booleanValue();
+						
+				if (!isIncluded)
+					column.setRenderer(unweightedNumericCellRenderer);
+				else if (isExtraCredit)
+					column.setRenderer(extraCreditNumericCellRenderer);
+				else
+					column.setRenderer(null);
+			}
 			
 			//if (grid.isRendered())
 			//	grid.getView().refresh(true);

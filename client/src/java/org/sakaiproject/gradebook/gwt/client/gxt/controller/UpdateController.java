@@ -63,6 +63,7 @@ public class UpdateController extends Controller {
 	}
 	
 	private void onCreateItem(final ItemCreate event) {
+		Dispatcher.forwardEvent(GradebookEvents.MaskItemTree);
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 		
 		EntityType entityType = EntityType.GRADE_ITEM;
@@ -83,6 +84,7 @@ public class UpdateController extends Controller {
 				String message = new StringBuilder("Failed to create item: ").append(caught.getMessage()).toString();
 				
 				Dispatcher.forwardEvent(GradebookEvents.Notification, message);
+				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree);
 			}
 			
 			public void onSuccess(ItemModel result) {
@@ -117,6 +119,8 @@ public class UpdateController extends Controller {
 						doUpdateItem(event.store, null, null, result);
 					break;
 				}
+				
+				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree);
 			}
 		};
 		
@@ -130,6 +134,7 @@ public class UpdateController extends Controller {
 	}
 	
 	private void onDeleteItem(final ItemUpdate event) {
+		Dispatcher.forwardEvent(GradebookEvents.MaskItemTree);
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 		ClassType classType = ItemModel.lookupClassType(event.property);
 		
@@ -141,11 +146,13 @@ public class UpdateController extends Controller {
 			public void onFailure(Throwable caught) {
 				super.onFailure(caught);
 				onUpdateItemFailure(event, caught);
+				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree);
 			}
 			
 			public void onSuccess(ItemModel result) {
 				onUpdateItemSuccess(event, result);
 				onDeleteItemSuccess(event);
+				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree);
 			}
 		};
 		
@@ -239,6 +246,8 @@ public class UpdateController extends Controller {
 			private static final long serialVersionUID = 1L;
 
 			public void onCommandFailure(UserEntityAction<StudentModel> action, Throwable caught) {
+				record.beginEdit();
+				
 				String property = action.getKey();
 						
 				// Save the exception message on the record
@@ -254,13 +263,16 @@ public class UpdateController extends Controller {
 				
 				String message = new StringBuilder("Failed to update grade: ").append(caught.getMessage()).toString();
 				
+				record.endEdit();
+				
 				//notifier.notifyError("Exception", message);
-				Dispatcher.forwardEvent(GradebookEvents.Notification, message);
+				Dispatcher.forwardEvent(GradebookEvents.Notification, message);			
 			}
 			
 			public void onCommandSuccess(UserEntityAction<StudentModel> action, StudentModel result) {
-				
+				record.beginEdit();
 				onUpdateGradeRecordSuccess(event, result);
+				record.endEdit();
 				Dispatcher.forwardEvent(GradebookEvents.LearnerGradeRecordUpdated, action);
 				
 				// Need to refresh any items that may have been dropped
@@ -493,6 +505,8 @@ public class UpdateController extends Controller {
 		if (!record.getModel().equals(item)) 
 			return false;
 		
+		record.beginEdit();
+		
 		// Do it for the property being explicitly changed
 		replaceProperty(property, record, item);
 		
@@ -506,6 +520,8 @@ public class UpdateController extends Controller {
 			replaceProperty(ItemModel.Key.PERCENT_COURSE_GRADE.name(), record, item);
 			break;
 		}
+		
+		record.endEdit();
 		
 		return true;
 	}

@@ -2374,10 +2374,7 @@ private static final long serialVersionUID = 1L;
 		gradeRecords.add(assignmentGradeRecord);
 		gbService.updateAssignmentGradeRecords(assignment, gradeRecords, gradebook.getGrade_type());
 
-		refreshLearnerData(gradebook, student, assignment);
-		//student.set(id, value);
-		
-		return student;
+		return refreshLearnerData(gradebook, student, assignment);
 	}
 	
 	public StudentModel scoreNumericItem(String gradebookUid, StudentModel student, String assignmentId, Double value, Double previousValue) throws InvalidInputException {
@@ -2652,11 +2649,11 @@ private static final long serialVersionUID = 1L;
 		if (assignments != null) {
 			for (Assignment a : assignments) {
 				BigDecimal assignmentWeight = BigDecimal.valueOf(a.getAssignmentWeighting().doubleValue());
-				BigDecimal courseGradePercent = calculateItemGradePercent(percentGrade, percentCategory, assignmentWeight);
+				BigDecimal courseGradePercent = BigDecimal.ZERO;
 				
-				if (DataTypeConversionUtil.checkBoolean(a.isUnweighted())) 
-					courseGradePercent = BigDecimal.ZERO;
-				
+				if (!DataTypeConversionUtil.checkBoolean(a.isUnweighted()))
+					courseGradePercent = calculateItemGradePercent(percentGrade, percentCategory, assignmentWeight);
+								
 				ItemModel assignmentItemModel = createItemModel(category, a, courseGradePercent);
 				assignmentItemModel.setParent(categoryItemModel);
 				categoryItemModel.add(assignmentItemModel);

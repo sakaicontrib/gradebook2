@@ -415,6 +415,8 @@ public class ItemFormPanel extends ContentPanel {
 		if (formBindings != null) 
 			formBindings.unbind();
 
+		includedField.setValue(Boolean.TRUE);
+		
 		okButton.setText(i18n.createButton());
 		okButton.setData(selectionTypeField, SelectionType.CREATE);
 		
@@ -434,6 +436,8 @@ public class ItemFormPanel extends ContentPanel {
 
 		okButton.setText(i18n.createButton());
 		okButton.setData(selectionTypeField, SelectionType.CREATE);
+		
+		includedField.setValue(Boolean.TRUE);
 		
 		if (itemModel != null) {
 			if (itemModel.getCategoryId() != null) {
@@ -532,7 +536,7 @@ public class ItemFormPanel extends ContentPanel {
 			isExternal = source != null && source.trim().length() > 0;
 			switch (itemModel.getItemType()) {
 			case CATEGORY:
-				percentCategoryField.setVisible(hasCategories && !DataTypeConversionUtil.checkBoolean(itemModel.getEqualWeightAssignments()));
+				percentCategoryField.setVisible(false);
 				break;
 			case ITEM:
 				ItemModel category = itemModel.getParent();
@@ -773,16 +777,16 @@ public class ItemFormPanel extends ContentPanel {
 							Dispatcher.forwardEvent(GradebookEvents.CreateItem, new ItemCreate(treeStore, item));
 							break;
 						case DELETE:
-							Dispatcher.forwardEvent(GradebookEvents.DeleteItem, new ItemUpdate(treeStore, selectedItemModel, ItemModel.Key.REMOVED.name(), Boolean.FALSE, Boolean.TRUE));
 							Dispatcher.forwardEvent(GradebookEvents.HideEastPanel, Boolean.FALSE);
+							Dispatcher.forwardEvent(GradebookEvents.DeleteItem, new ItemUpdate(treeStore, selectedItemModel, ItemModel.Key.REMOVED.name(), Boolean.FALSE, Boolean.TRUE));
 							break;
 						case CANCEL:
 							Dispatcher.forwardEvent(GradebookEvents.HideEastPanel, Boolean.FALSE);
 							break;
 						case SAVE:
 							if (nameField.validate() && percentCategoryField.validate() && percentCourseGradeField.validate() && pointsField.validate()) {
-								Dispatcher.forwardEvent(GradebookEvents.UpdateItem, new ItemUpdate(treeStore, selectedItemModel));
 								Dispatcher.forwardEvent(GradebookEvents.HideEastPanel, Boolean.FALSE);
+								Dispatcher.forwardEvent(GradebookEvents.UpdateItem, new ItemUpdate(treeStore, selectedItemModel));
 							}
 							break;
 						}

@@ -17,6 +17,7 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
+import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.binding.FieldBinding;
@@ -25,6 +26,7 @@ import com.extjs.gxt.ui.client.data.PropertyChangeEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.FieldEvent;
 import com.extjs.gxt.ui.client.event.KeyListener;
+import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
@@ -204,7 +206,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 			String dataType = item.getDataType();
 			
 			if (dataType != null && dataType.equals(AppConstants.NUMERIC_DATA_TYPE)) {
-				NumberField field = new NumberField();
+				final NumberField field = new NumberField();
 				
 				field.setItemId(itemId);
 				field.addInputStyleName("gbNumericFieldInput");
@@ -218,10 +220,8 @@ public class LearnerSummaryPanel extends ContentPanel {
 				
 				String checkBoxName = new StringBuilder().append(item.getIdentifier()).append(StudentModel.EXCUSE_FLAG).toString();
 				CheckBox checkbox = new CheckBox();
-				
 				checkbox.setFieldLabel(item.getName());
 				checkbox.setName(checkBoxName);
-				
 				excuseFormPanel.add(checkbox);
 				
 				String commentId = new StringBuilder(item.getIdentifier()).append(StudentModel.COMMENT_TEXT_FLAG).toString();
@@ -435,8 +435,11 @@ public class LearnerSummaryPanel extends ContentPanel {
 									protected void onModelChange(PropertyChangeEvent event) {
 										super.onModelChange(event);
 										
-										if (field != null)
-											field.setEnabled(true);
+										if (field != null) {
+											boolean isEnabled = true;
+											if (!field.isEnabled())
+												field.setEnabled(isEnabled);
+										}
 									}
 								};
 								bindings.put(f, b);
