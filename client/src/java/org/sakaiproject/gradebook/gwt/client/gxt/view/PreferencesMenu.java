@@ -219,7 +219,7 @@ public class PreferencesMenu extends Menu {
 				Key property = Key.CATEGORYTYPE;
 				String value = se.getSelectedItem().getValue();
 				CategoryType actionValue = null;
-				CategoryType actionStartValue = gbModel.getCategoryType();
+				CategoryType actionStartValue = gbModel.getGradebookItemModel().getCategoryType();
 				
 				if (value.equals(i18n.orgTypeNoCategories())) {
 					actionValue = CategoryType.NO_CATEGORIES;
@@ -297,7 +297,7 @@ public class PreferencesMenu extends Menu {
 			return;
 		
 		GradeType actionValue = gradeType;
-		GradeType actionStartValue = selectedGradebook.getGradeType();;
+		GradeType actionStartValue = selectedGradebook.getGradebookItemModel().getGradeType();;
 
 		doUpdate(selectedGradebook, GradebookModel.Key.GRADETYPE, ClassType.GRADETYPE, actionValue, actionStartValue);
 	}

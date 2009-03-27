@@ -2,6 +2,7 @@ package org.sakaiproject.gradebook.gwt.client.gxt.view;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
+import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.FullScreen;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
@@ -59,6 +60,9 @@ public abstract class AppView extends View {
 			break;
 		case GradebookEvents.FullScreen:
 			onFullScreen((FullScreen)event.data);
+			break;
+		case GradebookEvents.LearnerGradeRecordUpdated:
+			onLearnerGradeRecordUpdated((UserEntityUpdateAction)event.data);
 			break;
 		case GradebookEvents.NewCategory:
 			onNewCategory((ItemModel)event.data);
@@ -127,6 +131,10 @@ public abstract class AppView extends View {
 	}
 	
 	protected void onItemCreated(ItemModel itemModel) {
+		
+	}
+	
+	protected void onLearnerGradeRecordUpdated(UserEntityUpdateAction action) {
 		
 	}
 		

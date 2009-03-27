@@ -9,8 +9,6 @@ import junit.framework.TestCase;
 
 import org.sakaiproject.gradebook.gwt.client.GradebookToolFacade;
 import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
-import org.sakaiproject.gradebook.gwt.client.action.UserAssignmentCreateAction;
-import org.sakaiproject.gradebook.gwt.client.action.UserCategoryCreateAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
@@ -18,9 +16,8 @@ import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig;
-import org.sakaiproject.gradebook.gwt.client.model.AssignmentModel;
-import org.sakaiproject.gradebook.gwt.client.model.CategoryModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
@@ -36,9 +33,9 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 	protected GradebookToolFacade facade = null;
 	
 	protected GradebookModel gbModel;
-	protected CategoryModel essaysCategory, hwCategory;
-	protected Map<String, AssignmentModel> assignmentMap;
-	protected AssignmentModel essay1, essay2, essay3, hw1, hw2, hw3, hw4;
+	protected ItemModel essaysCategory, hwCategory;
+	protected Map<String, ItemModel> assignmentMap;
+	protected ItemModel essay1, essay2, essay3, hw1, hw2, hw3, hw4;
 	
 	
 	/*
@@ -397,19 +394,19 @@ public abstract class AbstractToolFacadeTest extends TestCase {
 	
 	protected void makeHomeworkTenPercentExtraCredit() throws InvalidInputException, FatalException {
 		// Start by setting the hw category to extra credit
-		hwCategory = facade.updateEntity(new UserEntityUpdateAction<CategoryModel>(gbModel, hwCategory, CategoryModel.Key.EXTRA_CREDIT.name(), ClassType.BOOLEAN, Boolean.TRUE, Boolean.FALSE));
+		hwCategory = facade.updateItemEntity(new UserEntityUpdateAction<ItemModel>(gbModel, hwCategory, CategoryModel.Key.EXTRA_CREDIT.name(), ClassType.BOOLEAN, Boolean.TRUE, Boolean.FALSE));
 		
 		// Reweight the categories to 100% (Essays) and 10% (Homework)
-		essaysCategory = facade.updateEntity(new UserEntityUpdateAction<CategoryModel>(gbModel, essaysCategory, CategoryModel.Key.WEIGHT.name(), ClassType.DOUBLE, Double.valueOf(100d), Double.valueOf(60d)));
-		hwCategory = facade.updateEntity(new UserEntityUpdateAction<CategoryModel>(gbModel, hwCategory, CategoryModel.Key.WEIGHT.name(), ClassType.DOUBLE, Double.valueOf(10d), Double.valueOf(40d)));
+		essaysCategory = facade.updateItemEntity(new UserEntityUpdateAction<ItemModel>(gbModel, essaysCategory, CategoryModel.Key.WEIGHT.name(), ClassType.DOUBLE, Double.valueOf(100d), Double.valueOf(60d)));
+		hwCategory = facade.updateItemEntity(new UserEntityUpdateAction<ItemModel>(gbModel, hwCategory, CategoryModel.Key.WEIGHT.name(), ClassType.DOUBLE, Double.valueOf(10d), Double.valueOf(40d)));
 	}
 	
-	protected CategoryModel makeCategoryDropLowest(CategoryModel category, int dropLowest) throws InvalidInputException, FatalException {
-		return facade.updateEntity(new UserEntityUpdateAction<CategoryModel>(gbModel, category, CategoryModel.Key.DROP_LOWEST.name(), ClassType.INTEGER, Integer.valueOf(dropLowest), Integer.valueOf(0)));
+	protected ItemModel makeCategoryDropLowest(ItemModel category, int dropLowest) throws InvalidInputException, FatalException {
+		return facade.updateItemEntity(new UserEntityUpdateAction<ItemModel>(gbModel, category, CategoryModel.Key.DROP_LOWEST.name(), ClassType.INTEGER, Integer.valueOf(dropLowest), Integer.valueOf(0)));
 	}
 	
-	protected CategoryModel makeCategoryEqualWeighting(CategoryModel category, boolean isEqual) throws InvalidInputException, FatalException {
-		return facade.updateEntity(new UserEntityUpdateAction<CategoryModel>(gbModel, category, CategoryModel.Key.EQUAL_WEIGHT.name(), ClassType.BOOLEAN,  Boolean.valueOf(isEqual), Boolean.valueOf(!isEqual)));
+	protected CategoryModel makeCategoryEqualWeighting(ItemModel category, boolean isEqual) throws InvalidInputException, FatalException {
+		return facade.updateEntity(new UserEntityUpdateAction<ItemModel>(gbModel, category, CategoryModel.Key.EQUAL_WEIGHT.name(), ClassType.BOOLEAN,  Boolean.valueOf(isEqual), Boolean.valueOf(!isEqual)));
 	}
 	
 	protected CategoryModel makeCategoryDeleted(CategoryModel category, boolean isRemoved) throws InvalidInputException, FatalException {

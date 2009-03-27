@@ -27,6 +27,8 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -218,6 +220,20 @@ public class GradebookToolServiceMock implements GradebookToolService {
     		limit = actionRecords.size() - offset;
     	if (limit < 0)
     		limit = 0;
+    	
+    	Collections.sort(actionRecords, new Comparator<ActionRecord>() {
+
+			public int compare(ActionRecord o1, ActionRecord o2) {
+				if (o1 == null || o2 == null)
+					return 0;
+				
+				if (o1.getDateRecorded() == null || o2.getDateRecorded() == null)
+					return 0;
+				
+				return o2.getDateRecorded().compareTo(o1.getDateRecorded());
+			}
+    		
+    	});
     	
     	return actionRecords.subList(offset, limit);	
 	}
@@ -885,6 +901,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 	public Long storeActionRecord(ActionRecord actionRecord) {
 		
 		actionRecordId++;
+		actionRecord.setId(Long.valueOf(actionRecordId));
 		actionRecord.setDateRecorded(new Date());
 		actionRecord.setGraderId("Test Grader");
 		actionRecords.add(actionRecord);

@@ -2,6 +2,7 @@ package org.sakaiproject.gradebook.gwt.sakai;
 
 import java.io.PrintWriter;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -13,8 +14,8 @@ import org.sakaiproject.gradebook.gwt.client.GradebookToolFacade;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
-import org.sakaiproject.gradebook.gwt.client.model.AssignmentModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
@@ -41,8 +42,23 @@ public class GradebookExportController implements Controller {
 			getGradebookAction.setEntityId(gradebookUid);
 			GradebookModel gradebook = delegateFacade.getEntity(getGradebookAction);
 				
-			UserEntityGetAction<AssignmentModel> getHeadersAction = new UserEntityGetAction<AssignmentModel>(gradebookUid, EntityType.GRADE_ITEM);
-			List<AssignmentModel> headers = delegateFacade.getEntityList(getHeadersAction);
+			//UserEntityGetAction<ItemModel> getHeadersAction = new UserEntityGetAction<ItemModel>(gradebookUid, EntityType.ITEM);
+
+			List<ItemModel> headers = new ArrayList<ItemModel>(); //delegateFacade.getEntityList(getHeadersAction);
+			
+			for (ItemModel child : gradebook.getGradebookItemModel().getChildren()) {
+				switch (child.getItemType()) {
+				case CATEGORY:
+					for (ItemModel item : child.getChildren()) {
+						headers.add(item);
+					}
+					break;
+				case ITEM:
+					headers.add(child);
+					break;
+				}
+			}
+			
 			
 			UserEntityGetAction<StudentModel> getRowsAction = new UserEntityGetAction<StudentModel>(gradebookUid, EntityType.STUDENT);
 			List<StudentModel> rows = delegateFacade.getEntityList(getRowsAction);
@@ -52,12 +68,12 @@ public class GradebookExportController implements Controller {
 				writer.print("Learner,Id");	
 				headerIds = new String[headers.size()];
 				int i=0;
-				for (AssignmentModel header : headers) {
+				for (ItemModel header : headers) {
 					headerIds[i] = header.getIdentifier();
 					writer.print(",");
 					writer.print(header.getName());
 					
-					switch (gradebook.getGradeType()) {
+					switch (gradebook.getGradebookItemModel().getGradeType()) {
 					case POINTS:
 						String points = DecimalFormat.getInstance().format(header.getPoints());
 						writer.print(" (");

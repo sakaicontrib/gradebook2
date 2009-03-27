@@ -359,7 +359,7 @@ public class StudentViewContainer extends LayoutContainer {
 	
 	private void updateCourseGrade(String newGrade)
 	{
-		if (!isStudentView || (selectedGradebook.isReleaseGrades() != null && selectedGradebook.isReleaseGrades().booleanValue())) {
+		if (!isStudentView || (DataTypeConversionUtil.checkBoolean(selectedGradebook.getGradebookItemModel().getReleaseGrades()))) {
 			// To force a refresh, let's first hide the owning panel
 			studentInformationPanel.hide();
 			studentInformation.setText(6, 1, newGrade);
@@ -402,7 +402,7 @@ public class StudentViewContainer extends LayoutContainer {
         studentInformation.setText(5, 0, "");
         formatter.setColSpan(5, 0, 2);
         
-        if (!isStudentView || (selectedGradebook.isReleaseGrades() != null && selectedGradebook.isReleaseGrades().booleanValue())) {
+        if (!isStudentView || (DataTypeConversionUtil.checkBoolean(selectedGradebook.getGradebookItemModel().getReleaseGrades()))) {
 	        studentInformation.setText(6, 0, "Course Grade");
 	        formatter.setStyleName(6, 0, "gbImpact");
 	        studentInformation.setText(6, 1, learnerGradeRecordCollection.getStudentGrade());
@@ -458,7 +458,7 @@ public class StudentViewContainer extends LayoutContainer {
 					if (DataTypeConversionUtil.checkBoolean(item.getReleased())) {
 						
 						if (!isCategoryHeaderDisplayed) {
-							if (selectedGradebook.getCategoryType() != CategoryType.NO_CATEGORIES) {
+							if (selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES) {
 								gradeInformation.setText(row, 0, child.getName());
 						        formatter.setStyleName(row, 0, "gbHeader");
 						        row++;
@@ -1301,7 +1301,7 @@ public class StudentViewContainer extends LayoutContainer {
 			String columnId = String.valueOf(model.getAssignmentId());
 			String droppedId = columnId + StudentModel.DROP_FLAG;
 							
-			switch (selectedGradebook.getGradeType()) {
+			switch (selectedGradebook.getGradebookItemModel().getGradeType()) {
 			case POINTS:
 				learnerGradeRecordCollection.set(columnId, model.getPointsEarned());
 				break;

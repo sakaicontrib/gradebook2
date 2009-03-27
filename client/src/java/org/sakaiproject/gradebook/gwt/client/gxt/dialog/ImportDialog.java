@@ -1,25 +1,19 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.dialog;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.GradebookToolFacadeAsync;
 import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
-import org.sakaiproject.gradebook.gwt.client.action.UserAssignmentCreateAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityCreateAction;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader.Field;
-import org.sakaiproject.gradebook.gwt.client.model.AssignmentModel;
-import org.sakaiproject.gradebook.gwt.client.model.CategoryModel;
-import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.SpreadsheetModel;
@@ -34,11 +28,9 @@ import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.BeanModel;
 import com.extjs.gxt.ui.client.data.BeanModelFactory;
 import com.extjs.gxt.ui.client.data.BeanModelLookup;
-import com.extjs.gxt.ui.client.data.ListLoadConfig;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
 import com.extjs.gxt.ui.client.data.ListLoader;
 import com.extjs.gxt.ui.client.data.MemoryProxy;
-import com.extjs.gxt.ui.client.data.RpcProxy;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.FormEvent;
@@ -86,7 +78,6 @@ import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Element;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class ImportDialog extends Window {
 
@@ -98,6 +89,7 @@ public class ImportDialog extends Window {
 	private ListStore<BaseModel> rowStore;
 	private ListStore<BeanModel> itemStore;
 	private ListStore<BaseModel> resultStore;
+	private ListStore<ItemModel> categoriesStore;
 	private Grid<BaseModel> grid;
 	private FormPanel fileUploadPanel;
 	private Map<String, ImportHeader> headerMap;
@@ -154,6 +146,8 @@ public class ImportDialog extends Window {
 		
 		// Set up store
 		resultStore = new ListStore<BaseModel>();
+		
+		categoriesStore = new ListStore<ItemModel>();
 	}
 	
 	protected void onClose() {
@@ -374,7 +368,7 @@ public class ImportDialog extends Window {
 		remoteCommand.execute(action);
 	}
 	
-	private void createNewItem(Long categoryId, String assignmentName, Double assignmentWeight, Double assignmentPoints, Date dueDate) {
+	/*private void createNewItem(Long categoryId, String assignmentName, Double assignmentWeight, Double assignmentPoints, Date dueDate) {
 		GradebookModel gbModel = Registry.get(gradebookUid);
 		UserAssignmentCreateAction action = 
 			new UserAssignmentCreateAction(gbModel, 
@@ -402,7 +396,7 @@ public class ImportDialog extends Window {
 		};
 		
 		remoteCommand.execute(action);
-	}
+	}*/
 	
 	private LayoutContainer buildButtonContainer() {
 		LayoutContainer buttonContainer = new LayoutContainer();
@@ -789,7 +783,7 @@ public class ImportDialog extends Window {
 		
 		final GradebookToolFacadeAsync service = Registry.get("service");
 		
-		RpcProxy<ListLoadConfig, List<CategoryModel>> categoriesProxy = 
+		/*RpcProxy<ListLoadConfig, List<CategoryModel>> categoriesProxy = 
 			new RpcProxy<ListLoadConfig, List<CategoryModel>>() {
 			@Override
 			protected void load(ListLoadConfig loadConfig, AsyncCallback<List<CategoryModel>> callback) {
@@ -805,12 +799,12 @@ public class ImportDialog extends Window {
 		categoriesLoader.setRemoteSort(true);
 		
 		final ListStore<CategoryModel> categoriesStore = new ListStore<CategoryModel>(categoriesLoader);
-		categoriesStore.setModelComparer(new EntityModelComparer<CategoryModel>());
+		categoriesStore.setModelComparer(new EntityModelComparer<CategoryModel>());*/
 		
-		ComboBox<CategoryModel> categoryPicker = new ComboBox<CategoryModel>(); 
+		ComboBox<ItemModel> categoryPicker = new ComboBox<ItemModel>(); 
 		categoryPicker.setAllowBlank(false); 
 		categoryPicker.setAllQuery(null);
-		categoryPicker.setDisplayField(CategoryModel.Key.NAME.name());  
+		categoryPicker.setDisplayField(ItemModel.Key.NAME.name());  
 		categoryPicker.setEditable(true);
 		categoryPicker.setEmptyText("Required");
 		categoryPicker.setFieldLabel("Category");
@@ -818,7 +812,7 @@ public class ImportDialog extends Window {
 		categoryPicker.setStore(categoriesStore);
 		categoryPicker.addInputStyleName("gbTextFieldInput");
 		
-		categoriesLoader.load();
+		//categoriesLoader.load();
 		
 		ColumnConfig category = new ColumnConfig("categoryName", "Category", 140);
 		category.setEditor(new CellEditor(categoryPicker) {
@@ -826,7 +820,7 @@ public class ImportDialog extends Window {
 			@Override
 			public Object postProcessValue(Object value) {
 			    if (value != null) {
-			    	CategoryModel model = (CategoryModel)value;
+			    	ItemModel model = (ItemModel)value;
 			    	return model.getName();
 			    }
 				return "None/Default";
@@ -834,10 +828,10 @@ public class ImportDialog extends Window {
 
 			@Override
 			public Object preProcessValue(Object value) {
-				ComboBox<CategoryModel> combo = (ComboBox<CategoryModel>)getField();
-				List<CategoryModel> models = categoriesStore.getModels();
+				ComboBox<ItemModel> combo = (ComboBox<ItemModel>)getField();
+				List<ItemModel> models = categoriesStore.getModels();
 				
-				for (CategoryModel model : models) {
+				for (ItemModel model : models) {
 					if (model.getName().equals(value))
 						return model;
 				}

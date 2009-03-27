@@ -32,7 +32,6 @@ import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
-import org.sakaiproject.gradebook.gwt.client.model.CategoryModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 
@@ -75,12 +74,6 @@ public class GradebookToolFacadeImpl extends GWTSpringController implements Grad
 	public <X extends ItemModel> X getEntityTreeModel(String gradebookUid, X parent) {
 		
 		return delegateFacade.getEntityTreeModel(gradebookUid, parent);
-	}
-
-	public List<CategoryModel> recalculateEqualWeightingCategories(
-			String gradebookUid, Long gradebookId, Boolean isEqualWeighting) {
-		
-		return delegateFacade.recalculateEqualWeightingCategories(gradebookUid, gradebookId, isEqualWeighting);
 	}
 
 	public <X extends ItemModel> X updateItemEntity(UserEntityUpdateAction<X> action) throws InvalidInputException, FatalException {

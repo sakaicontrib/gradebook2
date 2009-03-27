@@ -31,6 +31,7 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
+import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.binder.TreeBinder;
 import com.extjs.gxt.ui.client.binder.TreeTableBinder;
@@ -56,6 +57,7 @@ import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.TabItem;
 import com.extjs.gxt.ui.client.widget.TabPanel;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
+import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.extjs.gxt.ui.client.widget.table.CellRenderer;
@@ -143,16 +145,18 @@ public class ItemTreePanel extends ContentPanel {
 		TabPanel tabPanel = new AriaTabPanel();
 		
 		TabItem item = new AriaTabItem(i18n.navigationPanelFixedTabHeader());
-		item.setLayout(new FitLayout());
-		//item.add(newNavigationTree(i18n));
+		item.setLayout(new FlowLayout());
+		treeTable.setWidth(450);
 		item.add(treeTable);
+		item.setScrollMode(Scroll.AUTO);
 		tabPanel.add(item);
 		
 		item = new AriaTabItem(i18n.navigationPanelDynamicTabHeader());
-		item.setLayout(new FitLayout());
+		item.setLayout(new FlowLayout());
+		learnerAttributeTree.setWidth(450);
 		item.add(learnerAttributeTree);
+		item.setScrollMode(Scroll.AUTO);
 		tabPanel.add(item);
-		
 		add(tabPanel);
 		
 		super.onRender(parent, pos);
@@ -160,7 +164,7 @@ public class ItemTreePanel extends ContentPanel {
 	    Accessibility.setRole(el().dom, "region");
 	    Accessibility.setRole(getHeader().el().dom, "heading");
 	}
-	
+
 	public void expandTrees() {
 		if (learnerAttributeTree != null)
 			learnerAttributeTree.expandAll();
@@ -194,9 +198,9 @@ public class ItemTreePanel extends ContentPanel {
 		//System.out.println("ItemTreePanel: Load Item Tree Model");
 		this.selectedGradebook = selectedGradebook;
 		if (addCategoryMenuItem != null)
-			addCategoryMenuItem.setVisible(selectedGradebook.getCategoryType() != CategoryType.NO_CATEGORIES);
+			addCategoryMenuItem.setVisible(selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
 		
-		switch (selectedGradebook.getCategoryType()) {
+		switch (selectedGradebook.getGradebookItemModel().getCategoryType()) {
 		case NO_CATEGORIES:
 		case SIMPLE_CATEGORIES:
 			percentCourseGradeColumn.setHidden(true);
@@ -288,7 +292,7 @@ public class ItemTreePanel extends ContentPanel {
 	public void onSwitchGradebook(GradebookModel selectedGradebook) {
 		this.selectedGradebook = selectedGradebook;
 		if (addCategoryMenuItem != null)
-			addCategoryMenuItem.setVisible(selectedGradebook.getCategoryType() != CategoryType.NO_CATEGORIES);
+			addCategoryMenuItem.setVisible(selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
 
 		loadLearnerAttributeTree(selectedGradebook);
 		this.enableLayout = true;
@@ -414,7 +418,7 @@ public class ItemTreePanel extends ContentPanel {
 				GradebookModel.Key gradebookModelKey = GradebookModel.Key.valueOf(((UserEntityUpdateAction)action).getKey());
 				switch (gradebookModelKey) {
 				case CATEGORYTYPE: 
-					addCategoryMenuItem.setVisible(((GradebookModel)action.getModel()).getCategoryType() != CategoryType.NO_CATEGORIES);
+					addCategoryMenuItem.setVisible(((GradebookModel)action.getModel()).getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
 					break;
 				}
 				
@@ -546,7 +550,7 @@ public class ItemTreePanel extends ContentPanel {
 		percentCourseGradeColumn =  new TreeTableColumn(ItemModel.Key.PERCENT_COURSE_GRADE.name(), 
 				ItemModel.getPropertyName(ItemModel.Key.PERCENT_COURSE_GRADE), ItemModel.getPropertyName(ItemModel.Key.PERCENT_COURSE_GRADE).length() * CHARACTER_WIDTH + 30);
 		percentCourseGradeColumn.setAlignment(HorizontalAlignment.RIGHT);
-		percentCourseGradeColumn.setHidden(gbModel.getCategoryType() == CategoryType.SIMPLE_CATEGORIES);
+		percentCourseGradeColumn.setHidden(gbModel.getGradebookItemModel().getCategoryType() == CategoryType.SIMPLE_CATEGORIES);
 		percentCourseGradeColumn.setRenderer(numericCellRenderer);
 		percentCourseGradeColumn.setSortable(false);
 		columns.add(percentCourseGradeColumn);
@@ -554,7 +558,7 @@ public class ItemTreePanel extends ContentPanel {
 		percentCategoryColumn =  new TreeTableColumn(ItemModel.Key.PERCENT_CATEGORY.name(), 
 				ItemModel.getPropertyName(ItemModel.Key.PERCENT_CATEGORY), ItemModel.getPropertyName(ItemModel.Key.PERCENT_CATEGORY).length() * CHARACTER_WIDTH + 30);
 		percentCategoryColumn.setAlignment(HorizontalAlignment.RIGHT);
-		percentCategoryColumn.setHidden(gbModel.getCategoryType() == CategoryType.SIMPLE_CATEGORIES);
+		percentCategoryColumn.setHidden(gbModel.getGradebookItemModel().getCategoryType() == CategoryType.SIMPLE_CATEGORIES);
 		percentCategoryColumn.setRenderer(numericCellRenderer);
 		percentCategoryColumn.setSortable(false);
 		columns.add(percentCategoryColumn);
@@ -562,7 +566,7 @@ public class ItemTreePanel extends ContentPanel {
 		pointsColumn = new TreeTableColumn(ItemModel.Key.POINTS.name(), 
 				ItemModel.getPropertyName(ItemModel.Key.POINTS), ItemModel.getPropertyName(ItemModel.Key.POINTS).length() * CHARACTER_WIDTH + 30);
 		pointsColumn.setAlignment(HorizontalAlignment.RIGHT);
-		pointsColumn.setHidden(gbModel.getCategoryType() != CategoryType.WEIGHTED_CATEGORIES);
+		pointsColumn.setHidden(gbModel.getGradebookItemModel().getCategoryType() != CategoryType.WEIGHTED_CATEGORIES);
 		pointsColumn.setRenderer(numericCellRenderer);
 		pointsColumn.setSortable(false);
 		columns.add(pointsColumn);
@@ -574,7 +578,6 @@ public class ItemTreePanel extends ContentPanel {
 				super.onRender(target, index);
 				Accessibility.setRole(el().dom, "treegrid");
 				Accessibility.setState(el().dom, "aria-labelledby", "itemtreelabel");
-				
 				treeBinder.setCheckedSelection(selectedItemModels);
 				
 				expandAll();
@@ -609,15 +612,18 @@ public class ItemTreePanel extends ContentPanel {
 			}
 			
 		};
+		
 		TreeTableHeader treeTableHeader = new ItemTreeTableHeader(treeTable);
 		treeTable.setTableHeader(treeTableHeader);
+		treeTable.setDeferHeight(true);
 		treeTable.setView(treeTableView);
 		treeTable.setCheckable(true);
 		treeTable.setCheckStyle(CheckCascade.CHILDREN);
 		treeTable.setAnimate(true);
 		treeTable.getStyle().setLeafIconStyle("gbEditItemIcon");
 		//treeTable.expandAll();
-		treeTable.setHeight(300);
+		//treeTable.setHeight(300);
+		//treeTable.setWidth(500);
 		treeTable.addListener(Events.RowDoubleClick, treeTableEventListener);
 		treeTable.setSelectionModel(new TreeSelectionModel(SelectionMode.SINGLE));
 		if (isEditable)

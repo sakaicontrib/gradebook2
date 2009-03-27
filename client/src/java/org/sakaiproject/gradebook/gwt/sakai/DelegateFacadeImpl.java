@@ -47,19 +47,17 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.GradebookToolFacade;
 import org.sakaiproject.gradebook.gwt.client.action.Action;
 import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
-import org.sakaiproject.gradebook.gwt.client.action.UserAssignmentCreateAction;
-import org.sakaiproject.gradebook.gwt.client.action.UserCategoryCreateAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityCreateAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityGradeAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
+import org.sakaiproject.gradebook.gwt.client.action.Action.ActionType;
+import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
-import org.sakaiproject.gradebook.gwt.client.model.AssignmentModel;
-import org.sakaiproject.gradebook.gwt.client.model.CategoryModel;
 import org.sakaiproject.gradebook.gwt.client.model.ColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.CommentModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModel;
@@ -152,7 +150,7 @@ private static final long serialVersionUID = 1L;
 				actionRecord.setEntityName(action.getName());
 				entity = (X)addGradebook(action.getName());
 				break;
-			case GRADE_ITEM:
+			/*case GRADE_ITEM:
 				UserAssignmentCreateAction assignmentCreateAction = (UserAssignmentCreateAction)action;
 				
 				actionRecord.setParentId(String.valueOf(action.getParentId()));
@@ -182,7 +180,7 @@ private static final long serialVersionUID = 1L;
 				entity = (X)addCategory(action.getGradebookUid(), action.getGradebookId(),
 						action.getName(), action.getWeight(), categoryCreateAction.getIsEqualWeight(), 
 						categoryCreateAction.getDropLowest());
-				break;
+				break;*/
 			case COMMENT:
 				CommentModel commentModel = (CommentModel)action.getModel();
 				
@@ -236,6 +234,7 @@ private static final long serialVersionUID = 1L;
 				actionRecord.setEntityName(action.getName());
 				entity = (X)addGradebook(action.getName());
 				break;*/
+			case ITEM:
 			case GRADE_ITEM:
 				//UserAssignmentCreateAction assignmentCreateAction = (UserAssignmentCreateAction)action;
 				
@@ -337,20 +336,20 @@ private static final long serialVersionUID = 1L;
 			boolean showAll = action.getIncludeAll() != null && action.getIncludeAll().booleanValue();
 			
 			switch (action.getEntityType()) {
-			case CATEGORY:
-				return getCategories(action.getGradebookUid(), Boolean.FALSE);
+			/*case CATEGORY:
+				return getCategories(action.getGradebookUid(), Boolean.FALSE);*/
 			case COLUMN:	
 				return getColumns();
 			case GRADE_EVENT:
 				return getGradeEvents(action.getStudentUid(), Long.valueOf(action.getEntityId()));
-			case GRADE_ITEM:
+			/*case GRADE_ITEM:
 				
 				if (action.getGradebookId() == null) {
 					Gradebook gradebook = gbService.getGradebook(action.getGradebookUid());
 					action.setGradebookId(gradebook.getId());
 				}
 				
-				return getAssignments(action.getGradebookUid(), action.getGradebookId(), showAll);
+				return getAssignments(action.getGradebookUid(), action.getGradebookId(), showAll);*/
 			case GRADE_SCALE:
 				return getSelectedGradeMapping(action.getGradebookUid());
 			case STUDENT:
@@ -381,10 +380,10 @@ private static final long serialVersionUID = 1L;
 			switch (action.getEntityType()) {
 			case ACTION:
 				return getActionHistory(action.getGradebookUid(), config);
-			case GRADE_ITEM:
+			/*case GRADE_ITEM:
 				return getAssignments(action.getGradebookUid(), action.getGradebookId(), showAll, config);
 			case CATEGORY:
-				return getCategories(action.getGradebookUid(), action.getGradebookId(), showAll, config);
+				return getCategories(action.getGradebookUid(), action.getGradebookId(), showAll, config);*/
 			case GRADE_RECORD:
 				return getAssignmentRecords(action.getGradebookUid(), action.getGradebookId(), action.getStudentUid(), Boolean.valueOf(!showAll), config);
 			case SECTION:
@@ -582,8 +581,9 @@ private static final long serialVersionUID = 1L;
 			if (action.getDatePerformed() != null)
 				actionRecord.setDatePerformed(action.getDatePerformed());
 			
+			
 			switch (action.getEntityType()) {
-			case GRADE_ITEM:
+			/*case GRADE_ITEM:
 				AssignmentModel assignmentModel = (AssignmentModel)action.getModel();
 				AssignmentModel.Key assignmentKey = AssignmentModel.Key.valueOf(action.getKey());
 				
@@ -594,6 +594,11 @@ private static final long serialVersionUID = 1L;
 					break;
 				}
 				entity = (X)updateAssignmentField(assignmentModel.getIdentifier(), assignmentKey, action.getValue());
+				
+				if (action.getEntityName() == null)
+					actionRecord.setEntityName(entity.getDisplayName());
+				
+				
 				break;
 			case CATEGORY:
 				CategoryModel categoryModel = (CategoryModel)action.getModel();
@@ -602,7 +607,7 @@ private static final long serialVersionUID = 1L;
 					categoryId = categoryModel.getIdentifier();
 				CategoryModel.Key categoryKey = CategoryModel.Key.valueOf(action.getKey());
 				entity = (X)updateCategoryField(categoryId, categoryKey, action.getValue());
-				break;
+				break;*/
 			case COMMENT:
 				CommentModel commentModel = (CommentModel)action.getModel();
 				
@@ -628,7 +633,11 @@ private static final long serialVersionUID = 1L;
 				
 				if (student != null && student.getIdentifier() != null) {
 					actionRecord.setStudentUid(student.getIdentifier());
+				
+					if (action.getEntityName() == null)
+						actionRecord.setEntityName(student.getDisplayName());
 				}
+				
 				
 				/*if (action.getPropertyName() != null) {
 					Map<String, String> propertyMap = actionRecord.getPropertyMap();
@@ -809,7 +818,12 @@ private static final long serialVersionUID = 1L;
 					Double weight = null;
 					Double points = item.getPoints();
 					Date dueDate = null;
-					AssignmentModel model = addAssignment(gradebookUid, gradebook.getId(), categoryId, name, weight, points, dueDate);
+					ItemModel itemModel = new ItemModel();
+					itemModel.setName(name);
+					itemModel.setPercentCategory(weight);
+					itemModel.setPoints(points);
+					ItemModel model = addItem(gradebookUid, gradebook.getId(), itemModel);
+					//AssignmentModel model = addAssignment(gradebookUid, gradebook.getId(), categoryId, name, weight, points, dueDate);
 					Assignment assignment = gbService.getAssignment(Long.valueOf(model.getIdentifier()));
 					idToAssignmentMap.put(id, assignment);
 					item.setIdentifier(model.getIdentifier());
@@ -968,63 +982,83 @@ private static final long serialVersionUID = 1L;
 		
 		for (ActionRecord actionRecord : actionRecords) {
 			UserEntityAction actionModel = null;
-			
-			UserEntityAction.ActionType actionType = UserEntityAction.ActionType.valueOf(actionRecord.getActionType());
-			switch (actionType) {
-			case CREATE:
-				actionModel = new UserEntityCreateAction();
-				break;
-			case GRADED:
-				actionModel = new UserEntityGradeAction();
-				break;
-			case UPDATE:
-				actionModel = new UserEntityUpdateAction();
-				break;
-			}
-			
-			actionModel.setIdentifier(String.valueOf(actionRecord.getId()));
-			actionModel.setGradebookUid(actionRecord.getGradebookUid());
-			actionModel.setGradebookId(actionRecord.getGradebookId());
-			actionModel.setEntityType(UserEntityAction.EntityType.valueOf(actionRecord.getEntityType()));
-			if (actionRecord.getEntityId() != null)
-				actionModel.setEntityId(actionRecord.getEntityId());
-			if (actionRecord.getEntityName() != null)
-				actionModel.setEntityName(actionRecord.getEntityName());
-			if (actionRecord.getParentId() != null)
-				actionModel.setParentId(Long.valueOf(actionRecord.getParentId()));
-			actionModel.setStudentUid(actionRecord.getStudentUid());
-			actionModel.setKey(actionRecord.getField());
-			actionModel.setValue(actionRecord.getValue());
-			actionModel.setStartValue(actionRecord.getStartValue());
-			
-			actionModel.setGraderName(actionRecord.getGraderId());
-			
-			if (userService != null && actionRecord.getGraderId() != null) {
-				
-				try {
-					User user = userService.getUser(actionRecord.getGraderId());
-					actionModel.setGraderName(user.getDisplayName());
-				} catch (UserNotDefinedException e) {
-					log.warn("Unable to find grader name for " + actionRecord.getGraderId(), e);
+			try {
+				UserEntityAction.ActionType actionType = UserEntityAction.ActionType.valueOf(actionRecord.getActionType());
+				UserEntityAction.EntityType entityType = UserEntityAction.EntityType.valueOf(actionRecord.getEntityType());
+				switch (actionType) {
+				case CREATE:
+					actionModel = new UserEntityCreateAction();
+					break;
+				case GRADED:
+					actionModel = new UserEntityGradeAction();
+					break;
+				case UPDATE:
+					actionModel = new UserEntityUpdateAction();
+					break;
 				}
 				
-			}
-			
-			actionModel.setDatePerformed(actionRecord.getDatePerformed());
-			actionModel.setDateRecorded(actionRecord.getDateRecorded());
-			
-			Map<String, String> propertyMap = actionRecord.getPropertyMap();
-			
-			if (propertyMap != null) {
-				for (String key : propertyMap.keySet()) {
-					String value = propertyMap.get(key);
-					actionModel.set(key, value);
+				actionModel.setIdentifier(String.valueOf(actionRecord.getId()));
+				actionModel.setGradebookUid(actionRecord.getGradebookUid());
+				actionModel.setGradebookId(actionRecord.getGradebookId());
+				actionModel.setEntityType(entityType);
+				if (actionRecord.getEntityId() != null)
+					actionModel.setEntityId(actionRecord.getEntityId());
+				if (actionRecord.getEntityName() != null)
+					actionModel.setEntityName(actionRecord.getEntityName());
+				if (actionRecord.getParentId() != null)
+					actionModel.setParentId(Long.valueOf(actionRecord.getParentId()));
+				actionModel.setStudentUid(actionRecord.getStudentUid());
+				actionModel.setKey(actionRecord.getField());
+				actionModel.setValue(actionRecord.getValue());
+				actionModel.setStartValue(actionRecord.getStartValue());
+				
+				actionModel.setGraderName(actionRecord.getGraderId());
+				
+				if (userService != null && actionRecord.getGraderId() != null) {
+					
+					try {
+						User user = userService.getUser(actionRecord.getGraderId());
+						actionModel.setGraderName(user.getDisplayName());
+					} catch (UserNotDefinedException e) {
+						log.warn("Unable to find grader name for " + actionRecord.getGraderId(), e);
+					}
+					
 				}
+				
+				actionModel.setDatePerformed(actionRecord.getDatePerformed());
+				actionModel.setDateRecorded(actionRecord.getDateRecorded());
+				
+				Map<String, String> propertyMap = actionRecord.getPropertyMap();
+				
+				/*switch (entityType) {
+				case CATEGORY:
+				case GRADEBOOK:
+				case ITEM:
+					ItemModel itemModel = new ItemModel();
+					if (propertyMap != null) {
+						for (String key : propertyMap.keySet()) {
+							String value = propertyMap.get(key);
+							itemModel.set(key, value);
+						}
+					}
+					actionModel.setModel(itemModel);
+					break;
+				default:*/
+					if (propertyMap != null) {
+						for (String key : propertyMap.keySet()) {
+							String value = propertyMap.get(key);
+							actionModel.set(key, value);
+						}
+					}
+				//}
+				
+				
+				actionModel.setDescription(actionModel.toString());
+				
+				models.add((X)actionModel);
+			} catch (Exception e) {
+				log.warn("Failed to retrieve history record for " + actionRecord.getId());
 			}
-			
-			actionModel.setDescription(actionModel.toString());
-			
-			models.add((X)actionModel);
 		}
 		
 		return new BasePagingLoadResult<X>(models, config.getOffset(), size.intValue());
@@ -1175,7 +1209,7 @@ private static final long serialVersionUID = 1L;
 		return r; 
 	}
 
-	@SuppressWarnings("unchecked")
+	/*@SuppressWarnings("unchecked")
 	protected <X extends BaseModel> List<X> getCategories(String gradebookUid,
 			boolean includeDeleted) {
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
@@ -1222,7 +1256,7 @@ private static final long serialVersionUID = 1L;
 		}
 		
 		return new BasePagingLoadResult<X>(models, config.getOffset(), numberOfRows);
-	}
+	}*/
 	
 	private <X extends BaseModel> List<X> getColumns() {
 		List<X> columns = new LinkedList<X>();
@@ -1328,7 +1362,7 @@ private static final long serialVersionUID = 1L;
 	}
 	
 	
-	protected <X extends BaseModel> List<X> getAssignments(String gradebookUid, Long gradebookId, 
+	/*protected <X extends BaseModel> List<X> getAssignments(String gradebookUid, Long gradebookId, 
 			boolean includeDeleted) {
 		
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
@@ -1382,7 +1416,7 @@ private static final long serialVersionUID = 1L;
 		}
 		
 		return new BasePagingLoadResult<X>(models, config.getOffset(), row);
-	}
+	}*/
 	
 	protected Category findDefaultCategory(Long gradebookId) {
 		List<Category> categories = gbService.getCategories(gradebookId);
@@ -1442,12 +1476,7 @@ private static final long serialVersionUID = 1L;
 			
 			// If we have a gradebook already, then we have to ensure that it's set up correctly for the new tool
 			if (gradebook != null) {
-				// We need to ensure that the category setting is correct
-				/*if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY) {
-					gradebook.setCategory_type(GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY);
-					gradebookManager.updateGradebook(gradebook);
-				}*/
-				
+
 				// There are different ways that unassigned assignments can appear - old gradebooks, external apps
 				List<Assignment> unassignedAssigns = gbService.getAssignmentsWithNoCategory(gradebook.getId());
 				
@@ -1802,36 +1831,13 @@ private static final long serialVersionUID = 1L;
 	
 	private ItemModel getItemModel(Gradebook gradebook, List<Category> categories) {
 		
-		ItemModel gradebookItemModel = createItemModel(gradebook);
-		
-		/*ItemModel studentInformationModel = new ItemModel();
-		studentInformationModel.setIdentifier(StudentModel.Group.STUDENT_INFORMATION.name());
-		studentInformationModel.setName(StudentModel.Group.STUDENT_INFORMATION.getDisplayName());
-		studentInformationModel.setSource("Static");
-		studentInformationModel.setItemType(Type.CATEGORY.getName());
-		gradebookItemModel.add(studentInformationModel);
-		
-		ItemModel displayIdModel = new ItemModel();
-		displayIdModel.setIdentifier(StudentModel.Key.DISPLAY_ID.name());
-		displayIdModel.setName(StudentModel.Key.DISPLAY_ID.getDisplayName());
-		displayIdModel.setStudentModelKey(StudentModel.Key.DISPLAY_ID.name());
-		displayIdModel.setSource("Static");
-		displayIdModel.setItemType(Type.ITEM.getName());
-		studentInformationModel.add(displayIdModel);
-		
-		ItemModel displayNameModel = new ItemModel();
-		displayNameModel.setIdentifier(StudentModel.Key.DISPLAY_NAME.name());
-		displayNameModel.setName(StudentModel.Key.DISPLAY_NAME.getDisplayName());
-		displayNameModel.setStudentModelKey(StudentModel.Key.DISPLAY_NAME.name());
-		displayNameModel.setSource("Static");
-		displayNameModel.setItemType(Type.ITEM.getName());
-		studentInformationModel.add(displayNameModel);*/
+		ItemModel gradebookItemModel = createItemModel(gradebook, categories);
 		
 		boolean isNotInCategoryMode = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_NO_CATEGORY;
 		
 		if (categories != null) {
 			BigDecimal gradebookPointsSum = BigDecimal.ZERO;
-			for(Category category : categories) {
+			for (Category category : categories) {
 			
 				if (isNotInCategoryMode || !category.isRemoved()) {
 					List<Assignment> assignments = category.getAssignmentList();
@@ -2095,7 +2101,7 @@ private static final long serialVersionUID = 1L;
 		return cellMap;
 	}
 	
-
+	/*
 	public List<CategoryModel> recalculateEqualWeightingCategories(
 			String gradebookUid, Long gradebookId, Boolean isEqualWeighting) {
 		
@@ -2135,7 +2141,7 @@ private static final long serialVersionUID = 1L;
 		}
 		
 		return models;
-	}
+	}*/
 
 	protected List<Assignment> recalculateAssignmentWeights(Long categoryId, Boolean isEqualWeighting) {
 		List<Assignment> updatedAssignments = new ArrayList<Assignment>();
@@ -2185,7 +2191,7 @@ private static final long serialVersionUID = 1L;
 	}
 	
 
-	public List<AssignmentModel> recalculateEqualWeightingGradeItems(String gradebookUid, Long gradebookId, Long categoryId,
+	public void recalculateEqualWeightingGradeItems(String gradebookUid, Long gradebookId, Long categoryId,
 			Boolean isEqualWeighting) {
 		List<Assignment> assignments = gbService.getAssignmentsForCategory(categoryId);
 		
@@ -2210,7 +2216,7 @@ private static final long serialVersionUID = 1L;
 		
 		doRecalculate = category.isEqualWeightAssignments() == null ? true : category.isEqualWeightAssignments().booleanValue();
 		
-		List<AssignmentModel> models = new ArrayList<AssignmentModel>();
+		//List<ItemModel> models = new ArrayList<ItemModel>();
 		if (doRecalculate) {
 			Double newWeight = calculateEqualWeight(weightedCount);
 			if (assignments != null) {
@@ -2221,13 +2227,13 @@ private static final long serialVersionUID = 1L;
 						Assignment persistAssignment = gbService.getAssignment(assignment.getId());
 						persistAssignment.setAssignmentWeighting(newWeight);
 						gbService.updateAssignment(persistAssignment);
-						models.add(createAssignmentModel(category, persistAssignment));
+						//models.add(createItemModel(category, persistAssignment));
 					}
 				}
 			}
 		}
 		
-		return models;
+		//return models;
 	}
 	
 	public String requestCourseGrade(String gradebookUid, String studentId) {
@@ -2666,11 +2672,12 @@ private static final long serialVersionUID = 1L;
 	private ItemModel getItemModelsForCategory(Category category) {
 		Gradebook gradebook = category.getGradebook();
 		
+		List<Category> categoriesWithAssignments = getCategoriesWithAssignments(gradebook.getId());
 		List<Assignment> assignments = gbService.getAssignmentsForCategory(category.getId());
 		
-		ItemModel gradebookItemModel = createItemModel(gradebook);
+		ItemModel gradebookItemModel = createItemModel(gradebook, categoriesWithAssignments);
 		
-		ItemModel categoryItemModel = createItemModel(gradebook, category, assignments);
+		ItemModel categoryItemModel = createItemModel(gradebook, category, null);
 		categoryItemModel.setParent(gradebookItemModel);
 		gradebookItemModel.add(categoryItemModel);
 		
@@ -2698,6 +2705,7 @@ private static final long serialVersionUID = 1L;
 		return categoryItemModel;
 	}
 	
+	/*
 	private CategoryModel updateCategoryField(String categoryId, CategoryModel.Key key, Object value) 
 		throws InvalidInputException {
 		Category category = gbService.getCategory(Long.valueOf(categoryId));
@@ -2761,7 +2769,7 @@ private static final long serialVersionUID = 1L;
 		
 		Gradebook gradebook = category.getGradebook();
 		return createCategoryModel(gradebook, category);
-	}
+	}*/
 	
 	/*public StudentModel updateEntity(String gradebookUid, StudentModel student, String property, Double value, Double startValue) throws InvalidInputException {
 		return scoreNumericItem(gradebookUid, student, property, value, startValue);
@@ -3007,9 +3015,26 @@ private static final long serialVersionUID = 1L;
 		return gradeScaleMappings;
 	}
 	
+	private void logActionRecord(ActionRecord actionRecord, ItemModel item) {
+		Map<String, String> propertyMap = actionRecord.getPropertyMap();
+		for (String propertyName : item.getPropertyNames()) {
+			Object value = item.get(propertyName);
+			if (value != null)
+				propertyMap.put(propertyName, String.valueOf(value));
+		}
+		
+		gbService.storeActionRecord(actionRecord);
+	}
+	
 	private ItemModel updateGradebookModel(ItemModel item) {
 		
 		Gradebook gradebook = gbService.getGradebook(item.getIdentifier());
+		
+		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.GRADEBOOK.name(), ActionType.UPDATE.name());
+		actionRecord.setEntityName(gradebook.getName());
+		actionRecord.setEntityId(gradebook.getUid());
+		
+		logActionRecord(actionRecord, item);
 		
 		gradebook.setName(item.getName());
 		
@@ -3045,6 +3070,8 @@ private static final long serialVersionUID = 1L;
 			break;
 		}
 		
+		gradebook.setGrade_type(newGradeType);
+		
 		boolean wasReleaseGrades = gradebook.isCourseGradeDisplayed();
 		boolean isReleaseGrades = DataTypeConversionUtil.checkBoolean(item.getReleaseGrades());
 		
@@ -3061,7 +3088,14 @@ private static final long serialVersionUID = 1L;
 		boolean isWeightChanged = false;
 		
 		Category category = gbService.getCategory(Long.valueOf(item.getIdentifier()));
-	
+		Gradebook gradebook = category.getGradebook();
+		
+		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.CATEGORY.name(), ActionType.UPDATE.name());
+		actionRecord.setEntityName(category.getName());
+		actionRecord.setEntityId(String.valueOf(category.getId()));
+		logActionRecord(actionRecord, item);
+		
+		
 		List<Assignment> updatedAssignments = null;
 		
 		category.setName(convertString(item.getName()));
@@ -3140,7 +3174,7 @@ private static final long serialVersionUID = 1L;
 		case GRADEBOOK:
 			return updateGradebookModel(item);
 		}
-		
+
 		boolean isWeightChanged = false;
 		
 		Assignment assignment = gbService.getAssignment(Long.valueOf(item.getIdentifier()));
@@ -3149,6 +3183,12 @@ private static final long serialVersionUID = 1L;
 		Category category = assignment.getCategory();
 		
 		Gradebook gradebook = assignment.getGradebook();
+
+		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.ITEM.name(), ActionType.UPDATE.name());
+		actionRecord.setEntityName(assignment.getName());
+		actionRecord.setEntityId(String.valueOf(assignment.getId()));
+		
+		logActionRecord(actionRecord, item);
 		
 		assignment.setName(convertString(item.getName()));
 		
@@ -3447,7 +3487,7 @@ private static final long serialVersionUID = 1L;
 	}
 	
 	
-	
+	/*
 	private AssignmentModel updateAssignmentField(String assignmentId, AssignmentModel.Key key, 
 			Object value) throws InvalidInputException {
 		
@@ -3539,7 +3579,7 @@ private static final long serialVersionUID = 1L;
 		}
 		
 		return createAssignmentModel(category, assignment);
-	}
+	}*/
 	
 	/*public AssignmentRecordModel updateGradeRecordModel(String gradebookUid,
 			Long gradebookId, String studentUid, AssignmentRecordModel model, AssignmentRecordModel.Key key, Boolean value) {
@@ -3873,8 +3913,8 @@ private static final long serialVersionUID = 1L;
 		String name = item.getName();
 		Double weight = item.getPercentCategory(); 
 		Double points = item.getPoints();
-		Boolean isReleased = item.getReleased();
-		Boolean isIncluded = item.getIncluded();
+		Boolean isReleased = Boolean.valueOf(DataTypeConversionUtil.checkBoolean(item.getReleased()));
+		Boolean isIncluded = Boolean.valueOf(DataTypeConversionUtil.checkBoolean(item.getIncluded()));
 		Date dueDate = item.getDueDate();
 		//Boolean isEqualWeightAssignments = item.getEqualWeightAssignments();
 		
@@ -3960,7 +4000,7 @@ private static final long serialVersionUID = 1L;
 		return categoryItemModel;
 	}
 	
-	
+	/*
 	protected AssignmentModel addAssignment(String gradebookUid, Long gradebookId, Long categoryId, String name,
 			Double weight, Double points, Date dueDate) {
 		
@@ -4031,7 +4071,7 @@ private static final long serialVersionUID = 1L;
 		gbService.updateCategory(category);
 		
 		return createCategoryModel(gradebook, category);
-	}
+	}*/
 	
 	protected GradebookModel addGradebook(String name) {
 		
@@ -4054,14 +4094,14 @@ private static final long serialVersionUID = 1L;
 	}
 	
 	// Helper method
-	private ItemModel createItemModel(Gradebook gradebook) {
+	private ItemModel createItemModel(Gradebook gradebook, List<Category> categories) {
 		ItemModel itemModel = new ItemModel();
 		itemModel.setName(gradebook.getName());
 		itemModel.setItemType(Type.GRADEBOOK);
 		//itemModel.setIdentifier(new StringBuilder().append(AppConstants.GRADEBOOK).append(gradebook.getUid()).toString());
 		itemModel.setIdentifier(gradebook.getUid());
 		
-		List<Category> categories = gbService.getCategories(gradebook.getId());
+		//List<Category> categories = gbService.getCategories(gradebook.getId());
 		
 		if (categories != null) {
 			double sum = 0d;
@@ -4125,8 +4165,10 @@ private static final long serialVersionUID = 1L;
 		model.setRemoved(Boolean.valueOf(category.isRemoved()));
 		model.setPercentCourseGrade(Double.valueOf(categoryWeight));
 		
-		if (assignments == null)
+		if (assignments == null) {
+			assert(category.getAssignmentList() != null);
 			assignments = category.getAssignmentList();
+		}
 		
 		double sum = 0d;
 		if (assignments != null && isIncluded) {
@@ -4148,7 +4190,7 @@ private static final long serialVersionUID = 1L;
 	private ItemModel createItemModel(Category category, Assignment assignment, BigDecimal percentCourseGrade) {
 		ItemModel model = new ItemModel();
 		
-		double categoryDecimalWeight = category.getWeight() == null ? 0d : category.getWeight().doubleValue();
+		//double categoryDecimalWeight = category.getWeight() == null ? 0d : category.getWeight().doubleValue();
 		double assignmentWeight = assignment.getAssignmentWeighting() == null ? 0d : assignment.getAssignmentWeighting().doubleValue() * 100.0;
 		Boolean isAssignmentIncluded = assignment.isUnweighted() == null ? Boolean.TRUE : Boolean.valueOf(!assignment.isUnweighted().booleanValue());
 		Boolean isAssignmentExtraCredit = assignment.isExtraCredit() == null ? Boolean.FALSE : assignment.isExtraCredit();
@@ -4219,7 +4261,7 @@ private static final long serialVersionUID = 1L;
 	
 	
 	// Helper method
-	private CategoryModel createCategoryModel(Gradebook gradebook, Category category) {
+	/*private CategoryModel createCategoryModel(Gradebook gradebook, Category category) {
 		CategoryModel model = new CategoryModel();
 		
 		double categoryWeight = category.getWeight() == null ? 0d : category.getWeight().doubleValue() * 100d;
@@ -4239,7 +4281,7 @@ private static final long serialVersionUID = 1L;
 		model.setRemoved(Boolean.valueOf(category.isRemoved()));
 		
 		return model;
-	}
+	}*/
 	
 	// Helper method
 	public GradebookModel createGradebookModel(Gradebook gradebook) {
@@ -4264,7 +4306,6 @@ private static final long serialVersionUID = 1L;
 		model.setUserAbleToEditAssessments(authz.isUserAbleToEditAssessments(gradebookUid));
 		model.setUserAbleToViewOwnGrades(isUserAbleToViewOwnGrades);
 		model.setUserHasGraderPermissions(authz.isUserHasGraderPermissions(gradebookUid));
-		
 		
 		if (userService != null) {
 			User user = userService.getCurrentUser();
@@ -4302,35 +4343,11 @@ private static final long serialVersionUID = 1L;
 			
 		model.setColumns(columns);
 		
-		switch (gradebook.getCategory_type()) {
-		case GradebookService.CATEGORY_TYPE_NO_CATEGORY:
-			model.setCategoryType(CategoryType.NO_CATEGORIES);
-			break;
-		case GradebookService.CATEGORY_TYPE_ONLY_CATEGORY:
-			model.setCategoryType(CategoryType.SIMPLE_CATEGORIES);
-			break;
-		case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
-			model.setCategoryType(CategoryType.WEIGHTED_CATEGORIES);
-			break;
-		}
-		switch (gradebook.getGrade_type()) {
-		case GradebookService.GRADE_TYPE_POINTS:
-			model.setGradeType(GradeType.POINTS);
-			break;
-		case GradebookService.GRADE_TYPE_PERCENTAGE:
-			model.setGradeType(GradeType.PERCENTAGES);
-			break;
-		case GradebookService.GRADE_TYPE_LETTER:
-			model.setGradeType(GradeType.LETTERS);
-			break;
-		}
-		model.setReleaseGrades(Boolean.valueOf(gradebook.isCourseGradeDisplayed()));
-		
 		return model;
 	}
 	
 	// Helper method
-	private AssignmentModel createAssignmentModel(Category category, Assignment assignment) {
+	/*private AssignmentModel createAssignmentModel(Category category, Assignment assignment) {
 		AssignmentModel model = new AssignmentModel();
 		
 		double assignmentWeight = assignment.getAssignmentWeighting() == null ? 0.0 : assignment.getAssignmentWeighting().doubleValue() * 100.0;
@@ -4373,7 +4390,7 @@ private static final long serialVersionUID = 1L;
 		model.setSource(assignment.getExternalAppName());
 		
 		return model;
-	}
+	}*/
 	
 	private GradeRecordModel createOrUpdateAssignmentRecordModel(Long gradebookId, GradeRecordModel model, AssignmentGradeRecord record, Category category, Assignment a, boolean hasGradingEvents) {
 

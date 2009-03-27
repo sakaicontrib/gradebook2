@@ -103,7 +103,7 @@ public class GradebookModel extends EntityModel implements IsSerializable {
 		this.columns = columns;
 	}
 
-	public GradeType getGradeType() {
+	/*public GradeType getGradeType() {
 		return gradeType;
 	}
 
@@ -125,7 +125,7 @@ public class GradebookModel extends EntityModel implements IsSerializable {
 
 	public void setCategoryType(CategoryType categoryType) {
 		this.categoryType = categoryType;
-	}
+	}*/
 
 	public Boolean isUserAbleToViewOwnGrades() {
 		return isUserAbleToViewOwnGrades;

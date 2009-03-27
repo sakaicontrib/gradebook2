@@ -28,7 +28,6 @@ import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityCreateAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
-import org.sakaiproject.gradebook.gwt.client.model.CategoryModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 
@@ -50,7 +49,7 @@ public interface GradebookToolFacadeAsync {
 	
 	<X extends ItemModel> void getEntityTreeModel(String gradebookUid, X parent, AsyncCallback<X> callback);
 	
-	void recalculateEqualWeightingCategories(String gradebookUid, Long gradebookId, Boolean isEqualWeighting, AsyncCallback<List<CategoryModel>> callback);
+	//void recalculateEqualWeightingCategories(String gradebookUid, Long gradebookId, Boolean isEqualWeighting, AsyncCallback<List<CategoryModel>> callback);
 
 	<X extends ItemModel> void updateItemEntity(UserEntityUpdateAction<X> action, AsyncCallback<X> callback);
 	

@@ -403,12 +403,12 @@ public class UpdateController extends Controller {
 			// selectedGradebook);
 
 			boolean isGradebookUpdated = false;
-			if (result.getCategoryType() != selectedGradebook.getCategoryType()) {
-				selectedGradebook.setCategoryType(result.getCategoryType());
+			if (result.getCategoryType() != selectedGradebook.getGradebookItemModel().getCategoryType()) {
+				selectedGradebook.getGradebookItemModel().setCategoryType(result.getCategoryType());
 				isGradebookUpdated = true;
 			}
-			if (result.getGradeType() != selectedGradebook.getGradeType()) {
-				selectedGradebook.setGradeType(result.getGradeType());
+			if (result.getGradeType() != selectedGradebook.getGradebookItemModel().getGradeType()) {
+				selectedGradebook.getGradebookItemModel().setGradeType(result.getGradeType());
 				isGradebookUpdated = true;
 			}
 

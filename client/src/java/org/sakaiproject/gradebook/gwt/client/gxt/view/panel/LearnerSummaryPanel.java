@@ -100,16 +100,19 @@ public class LearnerSummaryPanel extends ContentPanel {
 		
 		TabItem tab = new TabItem(i18n.learnerTabGradeHeader());
 		tab.add(newGradeFormPanel());
+		tab.setScrollMode(Scroll.AUTOY);
 		tabPanel.add(tab);
 		
 		tab = new TabItem(i18n.learnerTabCommentHeader());
 		tab.setLayout(new FitLayout());
 		tab.add(newCommentFormPanel());
+		tab.setScrollMode(Scroll.AUTOY);
 		tabPanel.add(tab);
 		
 		tab = new TabItem(i18n.learnerTabExcuseHeader());
 		tab.setLayout(new FitLayout());
 		tab.add(newExcuseFormPanel());
+		tab.setScrollMode(Scroll.AUTOY);
 		tabPanel.add(tab);
 		
 		formPanel.add(tabPanel);
@@ -184,6 +187,11 @@ public class LearnerSummaryPanel extends ContentPanel {
 		} 
 	}
 	
+	public void onLearnerGradeRecordUpdated(StudentModel learner) {
+		this.learner = learner;
+		updateLearnerInfo(learner);
+	}
+	
 	@Override
 	protected void onResize(final int width, final int height) {
 		/*System.out.println("Width: " + width);
@@ -206,7 +214,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 			String dataType = item.getDataType();
 			
 			if (dataType != null && dataType.equals(AppConstants.NUMERIC_DATA_TYPE)) {
-				final NumberField field = new NumberField();
+				NumberField field = new NumberField();
 				
 				field.setItemId(itemId);
 				field.addInputStyleName("gbNumericFieldInput");

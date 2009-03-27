@@ -16,11 +16,8 @@ import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportFile;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportRow;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader.Field;
-import org.sakaiproject.gradebook.gwt.client.model.AssignmentModel;
-import org.sakaiproject.gradebook.gwt.client.model.CategoryModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
-import org.sakaiproject.gradebook.gwt.client.model.SpreadsheetModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.user.api.User;
 import org.sakaiproject.user.api.UserDirectoryService;
@@ -38,25 +35,35 @@ public class ImportExportUtility {
 		UserEntityGetAction<GradebookModel> getGradebookAction = new UserEntityGetAction<GradebookModel>(gradebookUid, EntityType.GRADEBOOK);
 		GradebookModel gradebook = delegateFacade.getEntity(getGradebookAction);
 
-		UserEntityGetAction<AssignmentModel> getHeadersAction = new UserEntityGetAction<AssignmentModel>(gradebookUid, EntityType.GRADE_ITEM);
-		List<AssignmentModel> headers = delegateFacade.getEntityList(getHeadersAction);
-
-		UserEntityGetAction<StudentModel> getRowsAction = new UserEntityGetAction<StudentModel>(gradebookUid, EntityType.STUDENT);
-		List<StudentModel> rows = delegateFacade.getEntityList(getRowsAction);
-
-		String[] headerIds = null;
-		if (headers != null) {
-			writer.print("Learner,Id");
-			headerIds = new String[headers.size()];
-			int i = 0;
-			for (AssignmentModel header : headers) {
-				headerIds[i] = header.getIdentifier();
+		List<String> headerIds = new ArrayList<String>();
+		writer.print("Learner,Id");
+		for (ItemModel child : gradebook.getGradebookItemModel().getChildren()) {
+			switch (child.getItemType()) {
+			case CATEGORY:
+				for (ItemModel item : child.getChildren()) {
+					headerIds.add(item.getIdentifier());
+					writer.print(",");
+					writer.print(item.getName());
+					switch (gradebook.getGradebookItemModel().getGradeType()) {
+					case POINTS:
+						String points = DecimalFormat.getInstance().format(item.getPoints());
+						writer.print(" (");
+						writer.print(points);
+						writer.print(")");
+						break;
+					case PERCENTAGES:
+						writer.print(" (%)");
+						break;
+					}
+				}
+				break;
+			case ITEM:
+				headerIds.add(child.getIdentifier());
 				writer.print(",");
-				writer.print(header.getName());
-
-				switch (gradebook.getGradeType()) {
+				writer.print(child.getName());
+				switch (gradebook.getGradebookItemModel().getGradeType()) {
 				case POINTS:
-					String points = DecimalFormat.getInstance().format(header.getPoints());
+					String points = DecimalFormat.getInstance().format(child.getPoints());
 					writer.print(" (");
 					writer.print(points);
 					writer.print(")");
@@ -65,20 +72,26 @@ public class ImportExportUtility {
 					writer.print(" (%)");
 					break;
 				}
-
-				i++;
+				break;
 			}
-			writer.println();
+		}
+		writer.println();
+		
+		UserEntityGetAction<StudentModel> getRowsAction = new UserEntityGetAction<StudentModel>(gradebookUid, EntityType.STUDENT);
+		List<StudentModel> rows = delegateFacade.getEntityList(getRowsAction);
 
+		
+		if (headerIds != null) {
+			
 			if (rows != null) {
 				for (StudentModel row : rows) {
 					writer.print(row.getDisplayName());
 					writer.print(",");
 					writer.print(getExportId(row));
-					for (int column = 0; column < headerIds.length; column++) {
+					for (int column = 0; column < headerIds.size(); column++) {
 						writer.print(",");
-						if (headerIds[column] != null) {
-							Object value = row.get(headerIds[column]);
+						if (headerIds.get(column) != null) {
+							Object value = row.get(headerIds.get(column));
 							if (value != null)
 								writer.print(value);
 						} else {
@@ -134,13 +147,8 @@ public class ImportExportUtility {
 	}*/
 
 	public static ImportFile parseImportX(GradebookToolFacade delegateFacade, UserDirectoryService userService, String gradebookUid, String content, EnumSet<Delimiter> delimiterSet) throws FatalException {
-		UserEntityGetAction<CategoryModel> categoryAction = new UserEntityGetAction<CategoryModel>(EntityType.CATEGORY);
-		categoryAction.setGradebookUid(gradebookUid);
-		UserEntityGetAction<AssignmentModel> itemAction = new UserEntityGetAction<AssignmentModel>(EntityType.GRADE_ITEM);
-		itemAction.setGradebookUid(gradebookUid);
-		//GradebookToolFacade delegateFacade = (GradebookToolFacade)iocMock.getClassInstance(DelegateFacadeMockImpl.class.getName());
-		List<CategoryModel> categories = delegateFacade.getEntityList(categoryAction);
-		List<AssignmentModel> gradeItems = delegateFacade.getEntityList(itemAction);
+		UserEntityGetAction<GradebookModel> getGradebookAction = new UserEntityGetAction<GradebookModel>(gradebookUid, EntityType.GRADEBOOK);
+		GradebookModel gradebook = delegateFacade.getEntity(getGradebookAction);
 		
 		ImportFile importFile = new ImportFile();
 		//System.out.println(content);
@@ -191,7 +199,7 @@ public class ImportExportUtility {
 						}
 						
 						if (name != null) {
-							AssignmentModel model = findModelByName(name, gradeItems);
+							ItemModel model = findModelByName(name, gradebook.getGradebookItemModel());
 						
 							StringBuffer value = new StringBuffer(name);
 							
@@ -212,14 +220,14 @@ public class ImportExportUtility {
 							} else {
 								header.setId(new StringBuilder().append("NEW:").append(i).toString());
 								
-								if (categories != null) {
+								/*if (categories != null) {
 									for (CategoryModel category : categories) {
 										header.setCategoryName(category.getName());
 										break;
 									}
-								} else {
+								} else {*/
 									header.setCategoryName("Default");
-								}
+								//}
 
 							}
 							header.setHeaderName(name);
@@ -330,12 +338,16 @@ public class ImportExportUtility {
 		return fields;
 	}
 	
-	private static AssignmentModel findModelByName(String name, List<AssignmentModel> models) {
-		for (AssignmentModel model : models) {
+	private static ItemModel findModelByName(String name, ItemModel root) {
+		for (ItemModel child : root.getChildren()) {
 			
-			if (model.getName().equals(name))
-				return model;
+			if (child.getName().equals(name))
+				return child;
 			
+		}
+		
+		for (ItemModel child : root.getChildren()) {
+			return findModelByName(name, child);
 		}
 		
 		return null;

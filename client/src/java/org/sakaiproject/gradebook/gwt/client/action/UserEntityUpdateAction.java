@@ -22,8 +22,6 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.action;
 
-import org.sakaiproject.gradebook.gwt.client.model.AssignmentModel;
-import org.sakaiproject.gradebook.gwt.client.model.CategoryModel;
 import org.sakaiproject.gradebook.gwt.client.model.CommentModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeRecordModel;
@@ -64,14 +62,24 @@ public class UserEntityUpdateAction<M extends BaseModel> extends UserEntityActio
 			setEntityType(EntityType.STUDENT);
 			setActionType(ActionType.GRADED);
 		} else if (model instanceof ItemModel) {
-			setEntityType(EntityType.ITEM);
+			switch (((ItemModel)model).getItemType()) {
+			case ITEM:
+				setEntityType(EntityType.ITEM);
+				break;
+			case CATEGORY:
+				setEntityType(EntityType.CATEGORY);
+				break;
+			case GRADEBOOK:
+				setEntityType(EntityType.GRADEBOOK);
+				break;
+			}
 		} else if (model instanceof GradeRecordModel) {
 			setEntityType(EntityType.GRADE_RECORD);
-		} else if (model instanceof AssignmentModel) {
+		} /*else if (model instanceof AssignmentModel) {
 			setEntityType(EntityType.GRADE_ITEM);
 		} else if (model instanceof CategoryModel) {
 			setEntityType(EntityType.CATEGORY);
-		} else if (model instanceof GradebookModel) {
+		}*/ else if (model instanceof GradebookModel) {
 			setEntityType(EntityType.GRADEBOOK);
 		} else if (model instanceof CommentModel) {
 			setEntityType(EntityType.COMMENT);
@@ -98,11 +106,11 @@ public class UserEntityUpdateAction<M extends BaseModel> extends UserEntityActio
 			setEntityType(EntityType.ITEM);
 		} else if (model instanceof GradeRecordModel) {
 			setEntityType(EntityType.GRADE_RECORD);
-		} else if (model instanceof AssignmentModel) {
+		} /*else if (model instanceof AssignmentModel) {
 			setEntityType(EntityType.GRADE_ITEM);
 		} else if (model instanceof CategoryModel) {
 			setEntityType(EntityType.CATEGORY);
-		} else if (model instanceof GradebookModel) {
+		}*/ else if (model instanceof GradebookModel) {
 			setEntityType(EntityType.GRADEBOOK);
 		} else if (model instanceof CommentModel) {
 			setEntityType(EntityType.COMMENT);

@@ -40,7 +40,6 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.RefreshCourseGradesEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
-import org.sakaiproject.gradebook.gwt.client.model.AssignmentModel;
 import org.sakaiproject.gradebook.gwt.client.model.ColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
@@ -51,6 +50,7 @@ import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
+import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.Style.SortDir;
 import com.extjs.gxt.ui.client.data.BasePagingLoader;
 import com.extjs.gxt.ui.client.data.ModelData;
@@ -78,6 +78,7 @@ import com.extjs.gxt.ui.client.widget.form.Field;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.grid.CellEditor;
+import com.extjs.gxt.ui.client.widget.grid.CellSelectionModel;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.EditorGrid;
@@ -123,8 +124,11 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	
 	private ShowColumnsEvent lastShowColumnsEvent;
 	
+	private CellSelectionModel<StudentModel> cellSelectionModel;
+	
 	public MultiGradeContentPanel(ContentPanel childPanel) {
 		super(AppConstants.MULTIGRADE, EntityType.STUDENT, childPanel);
+		setId(AppConstants.MULTIGRADE);
 		setHeaderVisible(false);
 		
 		// This UserChangeEvent listener
@@ -929,12 +933,26 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		return columnModel;
 	}
 	
-	/*@Override 
-	protected Grid<StudentModel> newGrid() {
-		Grid<StudentModel> grid = super.newGrid();
+	@Override 
+	protected Grid<StudentModel> newGrid(CustomColumnModel cm) {
+		Grid<StudentModel> grid = super.newGrid(cm);
+		cellSelectionModel = new CellSelectionModel<StudentModel>();
+		cellSelectionModel.setSelectionMode(SelectionMode.SINGLE);
+		cellSelectionModel.addSelectionChangedListener(new SelectionChangedListener<StudentModel>() {
+
+			@Override
+			public void selectionChanged(SelectionChangedEvent<StudentModel> sce) {
+				StudentModel learner = sce.getSelectedItem();
+				
+				if (learner != null && learner instanceof StudentModel) 
+					Dispatcher.forwardEvent(GradebookEvents.SelectLearner, learner);
+			}
+		
+		});
+		grid.setSelectionModel(cellSelectionModel);
 		//grid.setSelectionModel(new MultiGradeCellSelectionModel());
 		return grid;
-	}*/
+	}
 	
 	@Override
 	protected GridView newGridView() {
@@ -1337,7 +1355,6 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	@Override
 	protected void onRender(Element parent, int pos) {	    
 	    super.onRender(parent, pos);
-
 	}
 
 	
@@ -1354,7 +1371,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		
 		StringBuilder columnNameBuilder = new StringBuilder().append(item.getName());
 		
-		switch (selectedGradebook.getGradeType()) {
+		switch (selectedGradebook.getGradebookItemModel().getGradeType()) {
 		case POINTS:
 			columnNameBuilder.append(" (").append(item.getPoints()).append(")");
 			break;
@@ -1386,7 +1403,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		StudentModel.Key key = StudentModel.Key.valueOf(property);
 		switch (key) {
 		case ASSIGNMENT:
-			switch (selectedGradebook.getGradeType()) {
+			switch (selectedGradebook.getGradebookItemModel().getGradeType()) {
 				case POINTS:
 				case PERCENTAGES:
 					config.setAlignment(HorizontalAlignment.RIGHT);
@@ -1640,7 +1657,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		}
 	}
 
-	private void updateColumns(AssignmentModel.Key key, AssignmentModel model) {
+	/*private void updateColumns(AssignmentModel.Key key, AssignmentModel model) {
 		GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
 		ColumnModel removeColumn = null;
 		List<ColumnModel> columns = gbModel.getColumns();
@@ -1673,6 +1690,6 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			columns.remove(removeColumn);
 		
 		gbModel.setColumns(columns);
-	}
+	}*/
 
 }

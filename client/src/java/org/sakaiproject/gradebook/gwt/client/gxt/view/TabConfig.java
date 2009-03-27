@@ -9,10 +9,12 @@ public class TabConfig {
 	public boolean isClosable;
 	public String menuItemId;
 	public MenuSelector menuSelector;
+	public String iconStyle;
 	
-	public TabConfig(String id, String header, boolean isClosable, MenuSelector menuSelector) {
+	public TabConfig(String id, String header, String iconStyle, boolean isClosable, MenuSelector menuSelector) {
 		this.id = id;
 		this.header = header;
+		this.iconStyle = iconStyle;
 		this.isClosable = isClosable;
 		this.menuSelector = menuSelector;
 	}

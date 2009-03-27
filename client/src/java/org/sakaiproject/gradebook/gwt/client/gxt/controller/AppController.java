@@ -10,7 +10,6 @@ import org.sakaiproject.gradebook.gwt.client.gxt.view.AppView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.ImportExportView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.InstructorView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.MultigradeView;
-import org.sakaiproject.gradebook.gwt.client.gxt.view.NewItemView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.NotificationView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.SingleGradeView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.StudentView;
@@ -25,7 +24,6 @@ import com.extjs.gxt.ui.client.mvc.Controller;
 public class AppController extends Controller {
 	
 	private AppView appView;
-	private NewItemView newItemView;
 	private SingleGradeView singleGrade;
 	private SingleGradeView singleView;
 	private TreeView treeView;
@@ -92,6 +90,7 @@ public class AppController extends Controller {
 			break;
 		case GradebookEvents.LearnerGradeRecordUpdated:
 			forwardToView(multigradeView, event);
+			forwardToView(appView, event);
 			if (singleView != null && singleView.isDialogVisible())
 				forwardToView(singleView, event);
 			break;

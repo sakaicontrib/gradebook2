@@ -27,22 +27,18 @@ import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.GradebookToolFacade;
 import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
-import org.sakaiproject.gradebook.gwt.client.action.UserAssignmentCreateAction;
-import org.sakaiproject.gradebook.gwt.client.action.UserCategoryCreateAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityCreateAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
-import org.sakaiproject.gradebook.gwt.client.model.AssignmentModel;
-import org.sakaiproject.gradebook.gwt.client.model.CategoryModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
+import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 import org.sakaiproject.gradebook.gwt.sakai.GradeCalculations;
 import org.sakaiproject.gradebook.gwt.sakai.GradeCalculationsImpl;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
@@ -84,47 +80,114 @@ public class GradebookToolFacadeMockImpl extends RemoteServiceServlet implements
 			iocMock.registerClassInstance(DelegateFacadeMockImpl.class.getName(), delegateFacade);
 
 			GradebookModel gbModel = getEntity(new UserEntityGetAction<GradebookModel>(EntityType.GRADEBOOK, "emptyid"));
+
+			ItemModel gradebook = new ItemModel();
+			gradebook.setName("Test Gradebook");
+			gradebook.setCategoryType(CategoryType.WEIGHTED_CATEGORIES);
+			gradebook.setGradeType(GradeType.PERCENTAGES);
+			gradebook.setItemType(Type.GRADEBOOK);
+			
+			gradebook = updateItemEntity(new UserEntityUpdateAction<ItemModel>(gbModel, gradebook));
+			
+			ItemModel essaysCategory = new ItemModel();
+			essaysCategory.setName("My Essays");
+			essaysCategory.setPercentCourseGrade(Double.valueOf(60d));
+			essaysCategory.setDropLowest(Integer.valueOf(1));
+			essaysCategory.setEqualWeightAssignments(Boolean.TRUE);
+			essaysCategory.setItemType(Type.CATEGORY);
+			essaysCategory.setIncluded(Boolean.TRUE);
+			essaysCategory = createItemEntity(new UserEntityCreateAction<ItemModel>(gbModel, EntityType.CATEGORY, 
+					essaysCategory));
+			
+			ItemModel hwCategory = new ItemModel();
+			hwCategory.setName("My Homework");
+			hwCategory.setPercentCourseGrade(Double.valueOf(60d));
+			hwCategory.setDropLowest(Integer.valueOf(1));
+			hwCategory.setEqualWeightAssignments(Boolean.TRUE);
+			hwCategory.setItemType(Type.CATEGORY);
+			hwCategory.setIncluded(Boolean.TRUE);
+			hwCategory = createItemEntity(new UserEntityCreateAction<ItemModel>(gbModel, EntityType.CATEGORY, 
+					hwCategory));
+			
+			ItemModel essay1 = new ItemModel();
+			essay1.setName("Essay 1");
+			essay1.setPoints(Double.valueOf(20d));
+			essay1.setDueDate(new Date());
+			essay1.setCategoryId(essaysCategory.getCategoryId());
+			essay1.setReleased(Boolean.TRUE);
+			essay1.setItemType(Type.ITEM);
+			essay1.setIncluded(Boolean.TRUE);
+			essay1 = createItemEntity(new UserEntityCreateAction<ItemModel>(gbModel, EntityType.ITEM, 
+					essay1));
+			
+			ItemModel essay2 = new ItemModel();
+			essay2.setName("Essay 2");
+			essay2.setPoints(Double.valueOf(20d));
+			essay2.setDueDate(new Date());
+			essay2.setCategoryId(essaysCategory.getCategoryId());
+			essay2.setReleased(Boolean.TRUE);
+			essay2.setItemType(Type.ITEM);
+			essay2.setIncluded(Boolean.TRUE);
+			essay2 = createItemEntity(new UserEntityCreateAction<ItemModel>(gbModel, EntityType.ITEM, 
+					essay2));
+			
+			ItemModel essay3 = new ItemModel();
+			essay3.setName("Essay 3");
+			essay3.setPoints(Double.valueOf(20d));
+			essay3.setDueDate(new Date());
+			essay3.setCategoryId(essaysCategory.getCategoryId());
+			essay3.setReleased(Boolean.TRUE);
+			essay3.setItemType(Type.ITEM);
+			essay3.setIncluded(Boolean.TRUE);
+			essay3 = createItemEntity(new UserEntityCreateAction<ItemModel>(gbModel, EntityType.ITEM, 
+					essay3));
 		
-			gbModel = updateEntity(new UserEntityUpdateAction<GradebookModel>(gbModel, gbModel, GradebookModel.Key.NAME.name(), ClassType.STRING, "Test Gradebook", null));
-			gbModel = updateEntity(new UserEntityUpdateAction<GradebookModel>(gbModel, gbModel, GradebookModel.Key.CATEGORYTYPE.name(), ClassType.CATEGORYTYPE, CategoryType.WEIGHTED_CATEGORIES, null));
-			gbModel = updateEntity(new UserEntityUpdateAction<GradebookModel>(gbModel, gbModel, GradebookModel.Key.GRADETYPE.name(), ClassType.GRADETYPE, GradeType.PERCENTAGES, null));
-		
-		
-			CategoryModel essaysCategory = createEntity(new UserCategoryCreateAction(gbModel, "My Essays", 
-					Double.valueOf(60d), Boolean.TRUE, Integer.valueOf(1)));
+
+			ItemModel hw1 = new ItemModel();
+			hw1.setName("HW 1");
+			hw1.setPoints(Double.valueOf(10d));
+			hw1.setDueDate(new Date());
+			hw1.setCategoryId(hwCategory.getCategoryId());
+			hw1.setItemType(Type.ITEM);
+			hw1.setIncluded(Boolean.TRUE);
+			hw1.setReleased(Boolean.FALSE);
+			hw1 = createItemEntity(new UserEntityCreateAction<ItemModel>(gbModel, EntityType.ITEM, 
+					hw1));
 			
-			CategoryModel hwCategory = createEntity(new UserCategoryCreateAction(gbModel, "My Homework", 
-					Double.valueOf(40d), Boolean.TRUE, Integer.valueOf(0)));
+			ItemModel hw2 = new ItemModel();
+			hw2.setName("HW 2");
+			hw2.setPoints(Double.valueOf(10d));
+			hw2.setDueDate(new Date());
+			hw2.setCategoryId(hwCategory.getCategoryId());
+			hw2.setItemType(Type.ITEM);
+			hw2.setIncluded(Boolean.TRUE);
+			hw2.setReleased(Boolean.FALSE);
+			hw2 = createItemEntity(new UserEntityCreateAction<ItemModel>(gbModel, EntityType.ITEM, 
+					hw2));
 			
+			ItemModel hw3 = new ItemModel();
+			hw3.setName("HW 3");
+			hw3.setPoints(Double.valueOf(10d));
+			hw3.setDueDate(new Date());
+			hw3.setCategoryId(hwCategory.getCategoryId());
+			hw3.setItemType(Type.ITEM);
+			hw3.setIncluded(Boolean.TRUE);
+			hw3.setReleased(Boolean.FALSE);
+			hw3 = createItemEntity(new UserEntityCreateAction<ItemModel>(gbModel, EntityType.ITEM, 
+					hw3));
 			
-			AssignmentModel essay1 = createEntity(new UserAssignmentCreateAction(gbModel, 
-					Long.valueOf(essaysCategory.getIdentifier()), 
-					"Essay 1", Double.valueOf(0), Double.valueOf(20), new Date()));
-			essay1 = updateEntity(new UserEntityUpdateAction<AssignmentModel>(gbModel, essay1, AssignmentModel.Key.RELEASED.name(), ClassType.BOOLEAN, Boolean.TRUE, Boolean.FALSE));
-			
-			AssignmentModel essay2 = createEntity(new UserAssignmentCreateAction(gbModel, 
-					Long.valueOf(essaysCategory.getIdentifier()), 
-					"Essay 2", Double.valueOf(0), Double.valueOf(20), new Date()));
-			AssignmentModel essay3 = createEntity(new UserAssignmentCreateAction(gbModel, 
-					Long.valueOf(essaysCategory.getIdentifier()), 
-					"Essay 3", Double.valueOf(0), Double.valueOf(20), new Date()));
-			
-			AssignmentModel hw1 = createEntity(new UserAssignmentCreateAction(gbModel, 
-					Long.valueOf(hwCategory.getIdentifier()), 
-					"HW 1", Double.valueOf(0), Double.valueOf(10), new Date()));
-			AssignmentModel hw2 = createEntity(new UserAssignmentCreateAction(gbModel, 
-					Long.valueOf(hwCategory.getIdentifier()), 
-					"HW 2", Double.valueOf(0), Double.valueOf(10), new Date()));
-			AssignmentModel hw3 = createEntity(new UserAssignmentCreateAction(gbModel, 
-					Long.valueOf(hwCategory.getIdentifier()), 
-					"HW 3", Double.valueOf(0), Double.valueOf(10), new Date()));
-			AssignmentModel hw4 = createEntity(new UserAssignmentCreateAction(gbModel, 
-					Long.valueOf(hwCategory.getIdentifier()), 
-					"HW 4", Double.valueOf(0), Double.valueOf(10), new Date()));
-		
-		} catch (InvalidInputException e) {
-			GWT.log("Failed to update gradebook properties", e);
-		} catch (FatalException fe) {
+			ItemModel hw4 = new ItemModel();
+			hw4.setName("HW 4");
+			hw4.setPoints(Double.valueOf(10d));
+			hw4.setDueDate(new Date());
+			hw4.setCategoryId(hwCategory.getCategoryId());
+			hw4.setItemType(Type.ITEM);
+			hw4.setIncluded(Boolean.TRUE);
+			hw4.setReleased(Boolean.FALSE);
+			hw4 = createItemEntity(new UserEntityCreateAction<ItemModel>(gbModel, EntityType.ITEM, 
+					hw4));
+
+		} catch (Exception fe) {
 			GWT.log("Failed to update gradebook properties", fe);
 		}
 	}
@@ -160,12 +223,6 @@ public class GradebookToolFacadeMockImpl extends RemoteServiceServlet implements
 		return delegateFacade.getEntityTreeModel(gradebookUid, parent);
 	}
 
-	public List<CategoryModel> recalculateEqualWeightingCategories(
-			String gradebookUid, Long gradebookId, Boolean isEqualWeighting) {
-		
-		return delegateFacade.recalculateEqualWeightingCategories(gradebookUid, gradebookId, isEqualWeighting);
-	}
-	
 	public <X extends ItemModel> X updateItemEntity(UserEntityUpdateAction<X> action) throws InvalidInputException, FatalException {
 		
 		return delegateFacade.updateItemEntity(action);

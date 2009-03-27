@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="test"/>
-	<classpathentry excluding="org/sakaiproject/gradebook/gwt/server/GradebookServiceImpl.java|org/sakaiproject/gradebook/gwt/client/GradebookSetupWidget.java|org/sakaiproject/gradebook/gwt/sakai/mock/GradebookManager.java|org/sakaiproject/gradebook/gwt/sakai/mock/GradeCalculations.java|org/sakaiproject/gradebook/gwt/sakai/GradebookManagerHibernateImpl.java|org/sakaiproject/gradebook/gwt/sakai/BaseHibernateManager.java|org/sakaiproject/gradebook/gwt/sakai/mock/SectionAwareness.java|org/sakaiproject/gradebook/gwt/sakai/mock/Authz.java|org/sakaiproject/gradebook/gwt/sakai/mock/Authn.java|org/sakaiproject/gradebook/gwt/sakai/mock/tool/gradebook/" kind="src" path="client/src/java"/>
+	<classpathentry excluding="org/sakaiproject/gradebook/gwt/server/GradebookServiceImpl.java|org/sakaiproject/gradebook/gwt/client/GradebookSetupWidget.java|org/sakaiproject/gradebook/gwt/sakai/mock/GradebookManager.java|org/sakaiproject/gradebook/gwt/sakai/mock/GradeCalculations.java|org/sakaiproject/gradebook/gwt/sakai/GradebookManagerHibernateImpl.java|org/sakaiproject/gradebook/gwt/sakai/BaseHibernateManager.java|org/sakaiproject/gradebook/gwt/sakai/mock/SectionAwareness.java|org/sakaiproject/gradebook/gwt/sakai/mock/Authz.java|org/sakaiproject/gradebook/gwt/sakai/mock/Authn.java|org/sakaiproject/gradebook/gwt/sakai/mock/tool/gradebook/|org/sakaiproject/gradebook/gwt/client/model/AssignmentModel.java|org/sakaiproject/gradebook/gwt/client/model/CategoryModel.java|org/sakaiproject/gradebook/gwt/client/action/UserAssignmentCreateAction.java" kind="src" path="client/src/java"/>
 	<classpathentry kind="src" path="api/src/java"/>
 	<classpathentry kind="src" path="model/src/java"/>
 	<classpathentry kind="src" path="model/src/hibernate"/>
@@ -33,5 +32,6 @@
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-component/M2/sakai-component-M2.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-component-api/M2/sakai-component-api-M2.jar"/>
 	<classpathentry kind="var" path="M2_REPO/javax/servlet/servlet-api/2.4/servlet-api-2.4.jar" sourcepath="M2_REPO/javax/servlet/servlet-api/2.4/servlet-api-2.4-sources.jar"/>
+	<classpathentry kind="lib" path="client/src/java/org/sakaiproject/gradebook/gwt/client/model/CategoryModel.java"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

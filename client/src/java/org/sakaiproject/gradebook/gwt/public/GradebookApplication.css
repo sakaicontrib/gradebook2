@@ -2,6 +2,10 @@
 /*
  * Gradebook specific css
  */
+
+#cardLayoutContainer {
+	z-index: 5;
+}
  
 #loading a {
   color: #225588;
@@ -26,6 +30,13 @@
   font: normal 10px arial, tahoma, sans-serif;
 }
 
+#multigrade {
+	z-index: 1;	
+}
+
+.my-treetbl {
+	border:0 solid #C6C5C5;
+}
 
 .my-treeitem, .my-treeitem table, .my-treeitem table td {
 	-moz-user-focus:normal;
@@ -375,6 +386,14 @@
 	height: 14px;
 	margin-top: 0px;
 	margin-bottom: 10px;		
+}
+
+.gbGradeScaleButton {
+	background-image:url(images/default/button/calculator_edit.png);	
+}
+
+.gbHistoryButton {
+	background-image:url(images/default/button/calendar.png);
 }
 
 .grid-show-columns {

@@ -103,6 +103,7 @@ public class InstructorView extends AppView {
 		this.multigradeView = multigradeView;
 		
 		borderLayoutContainer = new ContentPanel(); 
+		borderLayoutContainer.setId("borderLayoutContainer");
 		borderLayoutContainer.setHeaderVisible(false);
 		
 		borderLayout = new BorderLayout();  
@@ -158,8 +159,8 @@ public class InstructorView extends AppView {
 		
 		//addMainContainer(getBorderLayoutContainer());
 		
-		tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADESCALE, i18n.tabGradeScaleHeader(), true, MenuSelector.GRADE_SCALE));
-		tabConfigurations.add(new TabConfig(AppConstants.TAB_HISTORY, i18n.tabHistoryHeader(), true, MenuSelector.HISTORY));
+		tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADESCALE, i18n.tabGradeScaleHeader(), "gbGradeScaleButton", true, MenuSelector.GRADE_SCALE));
+		tabConfigurations.add(new TabConfig(AppConstants.TAB_HISTORY, i18n.tabHistoryHeader(), "gbHistoryButton", true, MenuSelector.HISTORY));
 
 		borderLayoutContainer.setTopComponent(newToolBar(i18n, selectedGradebook));
 		
@@ -274,6 +275,13 @@ public class InstructorView extends AppView {
 		//	multigrade.onItemCreated(itemModel);
 		
 		onHideEastPanel(Boolean.FALSE);
+	}
+	
+	@Override
+	protected void onLearnerGradeRecordUpdated(UserEntityUpdateAction action) {
+		if (singleGradeContainer != null && singleGradeContainer.isVisible()) {
+			singleGradeContainer.onLearnerGradeRecordUpdated((StudentModel)action.getModel());
+		}
 	}
 	
 	/*@Override
@@ -396,7 +404,7 @@ public class InstructorView extends AppView {
 				switch (gradebookModelKey) {
 				case CATEGORYTYPE:
 					GradebookModel selectedGradebook = updateAction.getModel();
-					addCategoryMenuItem.setVisible(selectedGradebook.getCategoryType() != CategoryType.NO_CATEGORIES);
+					addCategoryMenuItem.setVisible(selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
 					break;
 				}
 				break;
@@ -549,6 +557,7 @@ public class InstructorView extends AppView {
 			}
 		};
 
+		cardLayoutContainer.setId("cardLayoutContainer");
 		cardLayoutContainer.setWidth(400);
 		cardLayoutContainer.setBorders(true);
 		cardLayoutContainer.setBodyBorder(true);
@@ -655,7 +664,7 @@ public class InstructorView extends AppView {
 		fileMenu.add(addCategoryMenuItem);
 		fileMenu.add(addItem);
 		
-		addCategoryMenuItem.setVisible(selectedGradebook.getCategoryType() != CategoryType.NO_CATEGORIES);
+		addCategoryMenuItem.setVisible(selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
 
 		return fileMenu;
 	}
@@ -685,6 +694,7 @@ public class InstructorView extends AppView {
 		menuItem.setData(MENU_SELECTOR_FLAG, tabConfig.menuSelector);
 		menuItem.setEnabled(tabConfig.isClosable);
 		menuItem.setId(id);
+		menuItem.setIconStyle(tabConfig.iconStyle);
 		tabConfig.menuItemId = id;
 		
 		/*String storedTabVisibility = PersistentStore.getPersistentField(gradebookUid, "tab", name);
