@@ -32,9 +32,11 @@ public class GradebookState {
 		String selectedMultigradeColumnId = DataTypeConversionUtil.concat(gradebookUid, ":", AppConstants.SELECTED_COLUMNS);
 		
 		StringBuilder builder = new StringBuilder();
-		for (ItemModel item : selectedColumns) {
-			if (item.getItemType() == Type.ITEM)
-				builder.append(item.getIdentifier()).append(":");
+		if (selectedColumns != null) {
+			for (ItemModel item : selectedColumns) {
+				if (item.getItemType() == Type.ITEM)
+					builder.append(item.getIdentifier()).append(":");
+			}
 		}
 		
 		for (Iterator<String> it = visibleStaticIdSet.iterator();it.hasNext();) {

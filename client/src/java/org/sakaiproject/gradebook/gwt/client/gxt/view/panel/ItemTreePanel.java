@@ -30,12 +30,15 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
 import com.extjs.gxt.ui.client.Events;
+import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Registry;
+import com.extjs.gxt.ui.client.XDOM;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.binder.TreeBinder;
 import com.extjs.gxt.ui.client.binder.TreeTableBinder;
+import com.extjs.gxt.ui.client.core.El;
 import com.extjs.gxt.ui.client.data.BaseTreeLoader;
 import com.extjs.gxt.ui.client.data.BaseTreeModel;
 import com.extjs.gxt.ui.client.data.ModelData;
@@ -76,6 +79,7 @@ import com.extjs.gxt.ui.client.widget.treetable.TreeTableHeader;
 import com.extjs.gxt.ui.client.widget.treetable.TreeTableItem;
 import com.extjs.gxt.ui.client.widget.treetable.TreeTableItemUI;
 import com.extjs.gxt.ui.client.widget.treetable.TreeTableView;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Accessibility;
@@ -147,7 +151,7 @@ public class ItemTreePanel extends ContentPanel {
 		//treeTable.setDeferHeight(true);
 		//treeTable.setSize(450, 483);
 		treeTable.setWidth(450);
-		treeTable.setHorizontalScroll(false);
+		treeTable.setHorizontalScroll(true);
 		item.add(treeTable);
 		item.setScrollMode(Scroll.AUTO);
 		tabPanel.add(item);
@@ -224,9 +228,9 @@ public class ItemTreePanel extends ContentPanel {
 			break;
 		}
 		
-		fullStaticIdSet.clear();
-		visibleStaticIdSet.clear();
 		if (selectedItemModels == null) {
+			fullStaticIdSet.clear();
+			visibleStaticIdSet.clear();
 			selectedItemModels = new ArrayList<ItemModel>();
 			List<String> selectedItemModelIds = GradebookState.getSelectedMultigradeColumns(selectedGradebook.getGradebookUid());
 			// Deal with static visible columns
@@ -272,9 +276,10 @@ public class ItemTreePanel extends ContentPanel {
 				if (isEntireGradebookChecked)
 					selectedItemModels.add(gradebookItemModel);
 			}
-			showColumns(selectedItemModels);
 		}
 
+		showColumns(selectedItemModels);
+	
 		treeLoader.load(rootItem);
 		loadLearnerAttributeTree(selectedGradebook);
 		
@@ -614,6 +619,34 @@ public class ItemTreePanel extends ContentPanel {
 				cm.addListener(Events.HiddenChange, l);
 			}
 			
+			protected void render() {
+			    scrollBarWidth = XDOM.getScrollBarWidth();
+
+			    StringBuffer sb = new StringBuffer();
+			    sb.append("<div style='overflow: hidden;'>");
+			    sb.append("<div style='overflow: auto;'>");
+			    sb.append("<div class='my-treetbl-data'>");
+			    sb.append("<div class='my-treetbl-tree'></div>");
+			    sb.append("</div></div></div>");
+			    String bodyHTML = sb.toString();
+			    
+			    Element div = DOM.createDiv();
+			    DOM.setInnerHTML(div, bodyHTML.toString());
+			    scrollEl = new El(El.fly(div).getSubChild(2));
+			    dataEl = new El(DOM.getFirstChild(scrollEl.dom));
+			    treeDiv = dataEl.firstChild().dom;
+			    DOM.appendChild(treeDiv, treeTable.getRootItem().getElement());
+			    DOM.appendChild(treeTable.getElement(), DOM.getFirstChild(div));
+
+			    if (!GXT.isIE) {
+			      DOM.setElementPropertyInt(treeTable.getElement(), "tabIndex", 0);
+			    }
+
+			    treeTable.disableTextSelection(true);
+
+			    DOM.sinkEvents(scrollEl.dom, Event.ONSCROLL);
+			  }
+			
 		};
 		
 		TreeTableHeader treeTableHeader = new ItemTreeTableHeader(treeTable);
@@ -848,18 +881,20 @@ public class ItemTreePanel extends ContentPanel {
 	protected void showColumns(List<ItemModel> selectedItemModels) {
 		Set<String> selectedItemModelIdSet = new HashSet<String>();
 		boolean selectAll = false;
-			
-		for (ItemModel selectedItemModel : selectedItemModels) {
-			//selectedItemModelIdSet.add(selectedItemModel.getIdentifier());
-			
-			// If the root or gradebook is selected then we don't need to mess around any further
-			switch (selectedItemModel.getItemType()) {
-			case ITEM:
-				selectedItemModelIdSet.add(selectedItemModel.getIdentifier());
-				break;
+		
+		if (selectedItemModels != null) {
+			for (ItemModel selectedItemModel : selectedItemModels) {
+				//selectedItemModelIdSet.add(selectedItemModel.getIdentifier());
+				
+				// If the root or gradebook is selected then we don't need to mess around any further
+				switch (selectedItemModel.getItemType()) {
+				case ITEM:
+					selectedItemModelIdSet.add(selectedItemModel.getIdentifier());
+					break;
+				}
 			}
 		}
-
+		
 		Dispatcher.forwardEvent(GradebookEvents.ShowColumns, 
 				new ShowColumnsEvent(selectAll, fullStaticIdSet, visibleStaticIdSet, selectedItemModelIdSet));
 	

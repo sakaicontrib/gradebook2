@@ -1730,7 +1730,7 @@ private static final long serialVersionUID = 1L;
 	   
 	    List<Category> categories = getCategoriesWithAssignments(gradebookId);
 	    
-	    ItemModel gradebookItemModel = getItemModel(gradebook, categories);
+	    //ItemModel gradebookItemModel = getItemModel(gradebook, categories);
 	    
 	    Map<String, UserRecord> userRecordMap = findStudentRecords(gradebookUid, gradebookId, sectionUuid);
 	    List<String> studentUids = new ArrayList<String>(userRecordMap.keySet());
@@ -1823,7 +1823,7 @@ private static final long serialVersionUID = 1L;
 				}
 			}
 			
-			rows.add((X)buildStudentRow(gradebook, userRecord, columns, gradebookItemModel, categories));
+			rows.add((X)buildStudentRow(gradebook, userRecord, columns, categories));
 		}
 		
 		return new BasePagingLoadResult<X>(rows, startRow, userRecords.size());
@@ -1836,10 +1836,15 @@ private static final long serialVersionUID = 1L;
 		boolean isNotInCategoryMode = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_NO_CATEGORY;
 		
 		if (categories != null) {
+			BigDecimal gradebookWeightSum = BigDecimal.ZERO;
 			BigDecimal gradebookPointsSum = BigDecimal.ZERO;
 			for (Category category : categories) {
-			
-				if (isNotInCategoryMode || !category.isRemoved()) {
+				boolean isExtraCredit = category.isExtraCredit() != null && category.isExtraCredit().booleanValue();
+				boolean isUnweighted = category.isUnweighted() != null && category.isUnweighted().booleanValue();
+				
+				if (!category.isRemoved() || isNotInCategoryMode) {
+					double categoryWeight = category.getWeight() == null ? 0d : category.getWeight().doubleValue() * 100d;
+					
 					List<Assignment> assignments = category.getAssignmentList();
 					ItemModel categoryItemModel = createItemModel(gradebook, category, assignments);
 	
@@ -1848,10 +1853,24 @@ private static final long serialVersionUID = 1L;
 						gradebookItemModel.add(categoryItemModel);
 					} 
 					
-					BigDecimal categoryPointsSum = BigDecimal.ZERO;
-					BigDecimal percentGrade = BigDecimal.valueOf(categoryItemModel.getPercentCourseGrade().doubleValue());
-					BigDecimal percentCategory = BigDecimal.valueOf(categoryItemModel.getPercentCategory().doubleValue());
+					calculateItemCategoryPercent(gradebook, category, gradebookItemModel, categoryItemModel, assignments);
 					
+					double categoryPoints = categoryItemModel.getPoints() == null ? 0d : categoryItemModel.getPoints().doubleValue();
+					
+					if (!isExtraCredit && !isUnweighted) {
+						gradebookWeightSum = gradebookWeightSum.add(BigDecimal.valueOf(categoryWeight));
+						gradebookPointsSum = gradebookPointsSum.add(BigDecimal.valueOf(categoryPoints));
+					}
+					
+					/*BigDecimal categoryPointsSum = BigDecimal.ZERO;
+					BigDecimal categoryPercentSum = BigDecimal.ZERO;
+					
+					double pG = categoryItemModel.getPercentCourseGrade() == null ? 0d : categoryItemModel.getPercentCourseGrade().doubleValue();
+					double pC = categoryItemModel.getPercentCategory() == null ? 0d : categoryItemModel.getPercentCategory().doubleValue();
+					
+					BigDecimal percentGrade = BigDecimal.valueOf(pG);
+					BigDecimal percentCategory = BigDecimal.valueOf(pC);
+
 					if (assignments != null) {
 						for (Assignment assignment : assignments) {
 							if (assignment.isRemoved()) 
@@ -1877,10 +1896,11 @@ private static final long serialVersionUID = 1L;
 						}
 						categoryItemModel.setPoints(Double.valueOf(categoryPointsSum.doubleValue()));
 						gradebookPointsSum = gradebookPointsSum.add(categoryPointsSum);
-					}
+					}*/
 				}
 			}
 			gradebookItemModel.setPoints(Double.valueOf(gradebookPointsSum.doubleValue()));
+			gradebookItemModel.setPercentCourseGrade(Double.valueOf(gradebookWeightSum.doubleValue()));
 		}
 		
 		return gradebookItemModel;
@@ -1957,7 +1977,7 @@ private static final long serialVersionUID = 1L;
 	}
 	
 	private StudentModel buildStudentRow(Gradebook gradebook, UserRecord userRecord, 
-			List<ColumnModel> columns, ItemModel gradebookItemModel,
+			List<ColumnModel> columns, 
 			List<Category> categoriesWithAssignments) {
 		
 		Map<Long, AssignmentGradeRecord> studentGradeMap = userRecord.getGradeRecordMap();
@@ -2016,19 +2036,14 @@ private static final long serialVersionUID = 1L;
 			}
 		}
 		
-		if (gradebookItemModel != null) {
+		if (categoriesWithAssignments != null) {
 			
-			for (ItemModel child : gradebookItemModel.getChildren()) {
+			for (Category category : categoriesWithAssignments) {
 				
-				if (child.getItemType() == Type.CATEGORY) {
-					
-					for (ItemModel item : child.getChildren()) {
-						cellMap = appendItemData(item, cellMap, userRecord, gradebook);
-					}
-					
-				} else {
-					cellMap = appendItemData(child, cellMap, userRecord, gradebook);
+				for (Assignment assignment : (List<Assignment>)category.getAssignmentList()) {
+					cellMap = appendItemData(assignment.getId(), cellMap, userRecord, gradebook);
 				}
+
 			}
 			
 		}
@@ -2046,12 +2061,13 @@ private static final long serialVersionUID = 1L;
 		return builder.toString();
 	}
 	
-	private Map<String, Object> appendItemData(ItemModel item, Map<String, Object> cellMap, 
+	private Map<String, Object> appendItemData(Long assignmentId, Map<String, Object> cellMap, 
 			UserRecord userRecord, Gradebook gradebook) {
 		AssignmentGradeRecord gradeRecord = null;
 		
-		String id = item.getIdentifier();
-		Long assignmentId = Long.valueOf(id);
+		String id = String.valueOf(assignmentId);
+		//String id = item.getIdentifier();
+		//Long assignmentId = Long.valueOf(id);
 		
 		Map<Long, AssignmentGradeRecord> studentGradeMap = userRecord.getGradeRecordMap();
 		if (studentGradeMap != null) {
@@ -2583,9 +2599,7 @@ private static final long serialVersionUID = 1L;
 	private ItemModel updateCategoryField(String categoryId, ItemModel.Key key, Object value) 
 		throws InvalidInputException {
 		Category category = gbService.getCategory(Long.valueOf(categoryId));
-	
-		List<Assignment> updatedAssignments = null;
-		
+
 		boolean isChanged = true;
 		switch (key) {
 		case NAME:
@@ -2639,32 +2653,9 @@ private static final long serialVersionUID = 1L;
 		switch (key) {
 		case EQUAL_WEIGHT:
 			Boolean isEqualWeighting = convertBoolean(value);
-			updatedAssignments = recalculateAssignmentWeights(category.getId(), isEqualWeighting);
+			recalculateAssignmentWeights(category.getId(), isEqualWeighting);
 			break;
 		}
-		
-		
-		/*Gradebook gradebook = category.getGradebook();
-		List<ItemModel> itemModels = new ArrayList<ItemModel>();
-		
-		if (updatedAssignments == null || updatedAssignments.isEmpty())
-			updatedAssignments = gbService.getAssignmentsForCategory(category.getId());
-		
-		itemModels.add(createItemModel(gradebook));
-		ItemModel categoryItemModel = createItemModel(gradebook, category, updatedAssignments);
-		itemModels.add(categoryItemModel);
-		BigDecimal percentGrade = BigDecimal.valueOf(categoryItemModel.getPercentCourseGrade().doubleValue());
-		BigDecimal percentCategory = BigDecimal.valueOf(categoryItemModel.getPercentCategory().doubleValue());
-		BigDecimal Big_100 = new BigDecimal(100d);
-		if (updatedAssignments != null) {
-			for (Assignment a : updatedAssignments) {
-				BigDecimal assignmentWeight = BigDecimal.valueOf(a.getAssignmentWeighting().doubleValue());
-				BigDecimal courseGradePercent = calculateItemGradePercent(percentGrade, percentCategory, assignmentWeight);
-				
-				itemModels.add(createItemModel(category, a, courseGradePercent));
-			}
-		}
-		*/
 		
 		return getItemModelsForCategory(category);
 	}
@@ -2680,30 +2671,62 @@ private static final long serialVersionUID = 1L;
 		ItemModel categoryItemModel = createItemModel(gradebook, category, null);
 		categoryItemModel.setParent(gradebookItemModel);
 		gradebookItemModel.add(categoryItemModel);
-		
-		BigDecimal percentGrade = BigDecimal.valueOf(categoryItemModel.getPercentCourseGrade().doubleValue());
-		BigDecimal percentCategory = BigDecimal.valueOf(categoryItemModel.getPercentCategory().doubleValue());
-		BigDecimal pointsSum = BigDecimal.ZERO;
-		if (assignments != null) {
-			for (Assignment a : assignments) {
-				BigDecimal points = BigDecimal.valueOf(a.getPointsPossible().doubleValue());
-				BigDecimal assignmentWeight = BigDecimal.valueOf(a.getAssignmentWeighting().doubleValue());
-				BigDecimal courseGradePercent = BigDecimal.ZERO;
 				
-				if (!DataTypeConversionUtil.checkBoolean(a.isUnweighted())) {
-					courseGradePercent = calculateItemGradePercent(percentGrade, percentCategory, assignmentWeight);
-					pointsSum = pointsSum.add(points);
-				}
-				
-				ItemModel assignmentItemModel = createItemModel(category, a, courseGradePercent);
-				assignmentItemModel.setParent(categoryItemModel);
-				categoryItemModel.add(assignmentItemModel);
-			}
-		}
-		categoryItemModel.setPoints(Double.valueOf(pointsSum.doubleValue()));
+		calculateItemCategoryPercent(gradebook, category, gradebookItemModel, categoryItemModel, assignments);
 		
 		return categoryItemModel;
 	}
+	
+	private void calculateItemCategoryPercent(Gradebook gradebook, Category category, ItemModel gradebookItemModel, ItemModel categoryItemModel, List<Assignment> assignments) {
+		double pG = categoryItemModel.getPercentCourseGrade() == null ? 0d : categoryItemModel.getPercentCourseGrade().doubleValue();
+		double pC = categoryItemModel.getPercentCategory() == null ? 0d : categoryItemModel.getPercentCategory().doubleValue();
+		
+		BigDecimal percentGrade = BigDecimal.valueOf(pG);
+		BigDecimal percentCategory = BigDecimal.valueOf(pC);
+		BigDecimal percentCategorySum = BigDecimal.ZERO;
+		BigDecimal pointsSum = BigDecimal.ZERO;
+		if (assignments != null) {
+			for (Assignment a : assignments) {
+				double assignmentCategoryPercent = a.getAssignmentWeighting() == null ? 0.0 : a.getAssignmentWeighting().doubleValue() * 100.0;
+				BigDecimal points = BigDecimal.valueOf(a.getPointsPossible().doubleValue());
+
+				boolean isExtraCredit = a.isExtraCredit() != null && a.isExtraCredit().booleanValue();
+				boolean isUnweighted = a.isUnweighted() != null && a.isUnweighted().booleanValue();
+				
+				if (!isExtraCredit && !isUnweighted) {
+					percentCategorySum = percentCategorySum.add(BigDecimal.valueOf(assignmentCategoryPercent));
+					pointsSum = pointsSum.add(points);
+				}
+
+			}
+			
+			for (Assignment a : assignments) {
+				
+				boolean isExtraCredit = a.isExtraCredit() != null && a.isExtraCredit().booleanValue();
+				boolean isUnweighted = a.isUnweighted() != null && a.isUnweighted().booleanValue();
+				
+				BigDecimal courseGradePercent = BigDecimal.ZERO;
+				if (!isExtraCredit && !isUnweighted) {
+					BigDecimal assignmentWeight = BigDecimal.valueOf(a.getAssignmentWeighting().doubleValue());
+					courseGradePercent = calculateItemGradePercent(percentGrade, percentCategorySum, assignmentWeight);
+				}
+				
+				ItemModel assignmentItemModel = createItemModel(category, a, courseGradePercent);
+				
+				if (gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_NO_CATEGORY) {
+					assignmentItemModel.setParent(gradebookItemModel);
+					gradebookItemModel.add(assignmentItemModel);
+				} else {
+					assignmentItemModel.setParent(categoryItemModel);
+					categoryItemModel.add(assignmentItemModel);
+				}
+			}
+			
+		}
+		categoryItemModel.setPercentCategory(Double.valueOf(percentCategorySum.doubleValue()));
+		categoryItemModel.setPoints(Double.valueOf(pointsSum.doubleValue()));
+	}
+	
 	
 	/*
 	private CategoryModel updateCategoryField(String categoryId, CategoryModel.Key key, Object value) 
@@ -4103,18 +4126,19 @@ private static final long serialVersionUID = 1L;
 		
 		//List<Category> categories = gbService.getCategories(gradebook.getId());
 		
-		if (categories != null) {
+		/*if (categories != null) {
 			double sum = 0d;
 			for (Category category : categories) {
 				double categoryWeight = category.getWeight() == null ? 0d : category.getWeight().doubleValue() * 100d;
 				boolean isExtraCredit = category.isExtraCredit() != null && category.isExtraCredit().booleanValue();
 				boolean isUnweighted = category.isUnweighted() != null && category.isUnweighted().booleanValue();
+				boolean isRemoved = 
 				
 				if (!isExtraCredit && !isUnweighted)
 					sum += categoryWeight;
 			}
 			itemModel.setPercentCourseGrade(Double.valueOf(sum));
-		}
+		}*/
 		
 		switch (gradebook.getCategory_type()) {
 		case GradebookService.CATEGORY_TYPE_NO_CATEGORY:
@@ -4165,7 +4189,7 @@ private static final long serialVersionUID = 1L;
 		model.setRemoved(Boolean.valueOf(category.isRemoved()));
 		model.setPercentCourseGrade(Double.valueOf(categoryWeight));
 		
-		if (assignments == null) {
+		/*if (assignments == null) {
 			assert(category.getAssignmentList() != null);
 			assignments = category.getAssignmentList();
 		}
@@ -4180,7 +4204,7 @@ private static final long serialVersionUID = 1L;
 					sum += assignmentWeight;
 			}
 		}
-		model.setPercentCategory(Double.valueOf(sum));
+		model.setPercentCategory(Double.valueOf(sum));*/
 		model.setItemType(Type.CATEGORY);
 		
 		return model;
@@ -4329,7 +4353,7 @@ private static final long serialVersionUID = 1L;
 						log.error("Unable to find the current user", e);
 					}
 		
-					model.setUserAsStudent(buildStudentRow(gradebook, userRecord, columns, gradebookItemModel, categoriesWithAssignments));
+					model.setUserAsStudent(buildStudentRow(gradebook, userRecord, columns, categoriesWithAssignments));
 				}
 				
 				model.setUserName(user.getDisplayName());
@@ -4338,7 +4362,7 @@ private static final long serialVersionUID = 1L;
 			Map<String, UserRecord> userRecordMap = findStudentRecords(gradebookUid, gradebook.getId(), null);
 			UserRecord userRecord = userRecordMap.values().iterator().next();
 			model.setUserName(userRecord.getDisplayName());
-			model.setUserAsStudent(buildStudentRow(gradebook, userRecord, columns, gradebookItemModel, categoriesWithAssignments));
+			model.setUserAsStudent(buildStudentRow(gradebook, userRecord, columns, categoriesWithAssignments));
 		}
 			
 		model.setColumns(columns);
