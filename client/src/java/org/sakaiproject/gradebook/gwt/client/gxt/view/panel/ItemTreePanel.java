@@ -22,6 +22,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTreeItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.ItemTreeTableHeader;
+import org.sakaiproject.gradebook.gwt.client.model.ColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
@@ -56,7 +57,7 @@ import com.extjs.gxt.ui.client.store.TreeStore;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.TabItem;
 import com.extjs.gxt.ui.client.widget.TabPanel;
-import com.extjs.gxt.ui.client.widget.layout.FitLayout;
+import com.extjs.gxt.ui.client.widget.layout.FillLayout;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
@@ -101,11 +102,12 @@ public class ItemTreePanel extends ContentPanel {
 	private Tree itemTree;
 	private TreeTable treeTable;
 	private TreeTableView treeTableView;
-	private TreeTableBinder<ItemModel> treeBinder;
+	private TreeTableBinder<ItemModel> treeTableBinder;
 	private TreeTableColumn percentCourseGradeColumn;
 	private TreeTableColumn percentCategoryColumn;
 	private TreeTableColumn pointsColumn;
 	private TreeTableColumnModel treeTableColumnModel;
+	private TreeBinder<BaseTreeModel<TreeModel>> treeBinder;
 
 	// We have to track which static columns are visible somewhere
 	private Set<String> fullStaticIdSet;
@@ -114,6 +116,7 @@ public class ItemTreePanel extends ContentPanel {
 	private boolean isLearnerAttributeTreeLoaded;
 	
 	private List<ItemModel> selectedItemModels;
+	private List<BaseTreeModel<TreeModel>> checkedSelection;
 	
 	private GradebookModel selectedGradebook;
 	
@@ -129,24 +132,22 @@ public class ItemTreePanel extends ContentPanel {
 		this.visibleStaticIdSet = new HashSet<String>();
 		setBorders(true);
 		setHeading(i18n.navigationPanelHeader());
-		setLayout(new FitLayout());
+		//setLayout(new FitLayout());
+		setLayout(new FillLayout());
 		initListeners();
 		newEditableTree(i18n);
 		newLearnerAttributeTree(i18n);
-	}
 	
-	@Override
-	protected boolean doLayout() {
-		return super.doLayout();
-	}
-	
-	@Override
-	protected void onRender(Element parent, int pos) {
 		TabPanel tabPanel = new AriaTabPanel();
 		
 		TabItem item = new AriaTabItem(i18n.navigationPanelFixedTabHeader());
 		item.setLayout(new FlowLayout());
+		item.setAutoHeight(true);
+		treeTable.setAutoHeight(true);
+		//treeTable.setDeferHeight(true);
+		//treeTable.setSize(450, 483);
 		treeTable.setWidth(450);
+		treeTable.setHorizontalScroll(false);
 		item.add(treeTable);
 		item.setScrollMode(Scroll.AUTO);
 		tabPanel.add(item);
@@ -157,8 +158,17 @@ public class ItemTreePanel extends ContentPanel {
 		item.add(learnerAttributeTree);
 		item.setScrollMode(Scroll.AUTO);
 		tabPanel.add(item);
-		add(tabPanel);
 		
+		add(tabPanel);
+	}
+	
+	/*@Override
+	protected boolean doLayout() {
+		return super.doLayout();
+	}*/
+	
+	@Override
+	protected void onRender(Element parent, int pos) {
 		super.onRender(parent, pos);
 	    getHeader().setId("itemtreelabel");
 	    Accessibility.setRole(el().dom, "region");
@@ -179,13 +189,13 @@ public class ItemTreePanel extends ContentPanel {
 	}
 	
 	public void onHideColumn(ItemModel itemModel) {
-		TreeItem treeItem = (TreeItem)treeBinder.findItem(itemModel);
+		TreeItem treeItem = (TreeItem)treeTableBinder.findItem(itemModel);
 		
 		treeItem.setChecked(false);
 	}
 	
 	public void onItemCreated(ItemModel itemModel) {
-		TreeItem treeItem = (TreeItem)treeBinder.findItem(itemModel);
+		TreeItem treeItem = (TreeItem)treeTableBinder.findItem(itemModel);
 		
 		if (treeItem != null) {
 			treeItem.getParentItem().setExpanded(true);
@@ -194,7 +204,7 @@ public class ItemTreePanel extends ContentPanel {
 		}
 	}
 	
-	public void onLoadItemTreeModel(GradebookModel selectedGradebook, ItemModel rootItem) {
+	public void onLoadItemTreeModel(GradebookModel selectedGradebook, TreeLoader<ItemModel> treeLoader, ItemModel rootItem) {
 		//System.out.println("ItemTreePanel: Load Item Tree Model");
 		this.selectedGradebook = selectedGradebook;
 		if (addCategoryMenuItem != null)
@@ -214,40 +224,28 @@ public class ItemTreePanel extends ContentPanel {
 			break;
 		}
 		
+		fullStaticIdSet.clear();
+		visibleStaticIdSet.clear();
 		if (selectedItemModels == null) {
 			selectedItemModels = new ArrayList<ItemModel>();
 			List<String> selectedItemModelIds = GradebookState.getSelectedMultigradeColumns(selectedGradebook.getGradebookUid());
-			if (rootItem != null) {
+			// Deal with static visible columns
+			for (ColumnModel column : selectedGradebook.getColumns()) {
+				fullStaticIdSet.add(column.getIdentifier());
+				if (selectedItemModelIds.contains(column.getIdentifier()))
+					visibleStaticIdSet.add(column.getIdentifier());
+			}
+			// Ensure that either the ID or DISPLAY NAME or SORT NAME is visible
+			if (!visibleStaticIdSet.contains(StudentModel.Key.DISPLAY_ID.name()) && !visibleStaticIdSet.contains(StudentModel.Key.DISPLAY_NAME.name())
+					&& !visibleStaticIdSet.contains(StudentModel.Key.SORT_NAME.name()))
+				visibleStaticIdSet.add(StudentModel.Key.DISPLAY_NAME.name());
+			
+			// Deal with the dynamic columns now
+			ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
+			if (gradebookItemModel != null) {
 				boolean isEntireGradebookChecked = true;
-				for (ItemModel c1 : rootItem.getChildren()) {
+				for (ItemModel c1 : gradebookItemModel.getChildren()) {
 					switch (c1.getItemType()) {
-					case GRADEBOOK:
-						for (ItemModel c2 : c1.getChildren()) {
-							switch (c2.getItemType()) {
-							case CATEGORY:
-								boolean isEntireCategoryChecked = true;
-								for (ItemModel c3 : c2.getChildren()) {
-									if (selectedItemModelIds.contains(c3.getIdentifier()))
-										selectedItemModels.add(c3);
-									else {
-										isEntireCategoryChecked = false;
-										isEntireGradebookChecked = false;
-									}
-								}
-								if (isEntireCategoryChecked)
-									selectedItemModels.add(c2);
-								break;
-							case ITEM:
-								if (selectedItemModelIds.contains(c2.getIdentifier()))
-									selectedItemModels.add(c2);
-								else
-									isEntireGradebookChecked = false;
-								break;
-							}
-						}
-						if (isEntireGradebookChecked)
-							selectedItemModels.add(c1);
-						isEntireGradebookChecked = false;
 					case CATEGORY:
 						boolean isEntireCategoryChecked = true;
 						for (ItemModel c2 : c1.getChildren()) {
@@ -271,14 +269,20 @@ public class ItemTreePanel extends ContentPanel {
 						break;
 					}
 				}
-				//if (isEntireGradebookChecked)
-				//	selectedItemModels.add(rootItem);
+				if (isEntireGradebookChecked)
+					selectedItemModels.add(gradebookItemModel);
 			}
 			showColumns(selectedItemModels);
 		}
+
+		treeLoader.load(rootItem);
+		loadLearnerAttributeTree(selectedGradebook);
 		
-		if (rendered)
-			treeBinder.setCheckedSelection(selectedItemModels);
+		if (rendered) {
+			treeTableBinder.setCheckedSelection(selectedItemModels);
+			treeBinder.setCheckedSelection(checkedSelection);
+		}
+	
 	}
 	
 	public void onMaskItemTree() {
@@ -294,14 +298,13 @@ public class ItemTreePanel extends ContentPanel {
 		if (addCategoryMenuItem != null)
 			addCategoryMenuItem.setVisible(selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
 
-		loadLearnerAttributeTree(selectedGradebook);
+		//loadLearnerAttributeTree(selectedGradebook);
 		this.enableLayout = true;
-		//layout();
 	}
 	
 	public void onTreeStoreInitialized(TreeStore<ItemModel> treeStore) {
 		
-		treeBinder = new TreeTableBinder<ItemModel>(treeTable, treeStore) {
+		treeTableBinder = new TreeTableBinder<ItemModel>(treeTable, treeStore) {
 			
 			@Override
 			protected TreeItem createItem(ItemModel model) {
@@ -378,10 +381,10 @@ public class ItemTreePanel extends ContentPanel {
 			}
 			
 		};
-		treeBinder.setDisplayProperty(ItemModel.Key.NAME.name());
-		treeBinder.addSelectionChangedListener(selectionChangedListener);
-		treeBinder.addCheckListener(checkChangedListener);
-		
+		treeTableBinder.setDisplayProperty(ItemModel.Key.NAME.name());
+		treeTableBinder.addSelectionChangedListener(selectionChangedListener);
+		treeTableBinder.addCheckListener(checkChangedListener);
+		treeTableBinder.setAutoLoad(true);
 		
 		/*TreeDragSource source = new TreeDragSource(treeBinder);
 		source.addDNDListener(new DNDListener() {
@@ -578,8 +581,8 @@ public class ItemTreePanel extends ContentPanel {
 				super.onRender(target, index);
 				Accessibility.setRole(el().dom, "treegrid");
 				Accessibility.setState(el().dom, "aria-labelledby", "itemtreelabel");
-				treeBinder.setCheckedSelection(selectedItemModels);
-				
+				treeTableBinder.setCheckedSelection(selectedItemModels);
+				//treeTable.setHeight(483); //ItemTreePanel.this.getHeight(true));
 				expandAll();
 			}
 		};
@@ -639,6 +642,11 @@ public class ItemTreePanel extends ContentPanel {
 			protected void onRender(Element target, int index) {
 			    super.onRender(target, index);
 			
+			    if (checkedSelection != null)
+			    	treeBinder.setCheckedSelection(checkedSelection);
+			    
+			    learnerAttributeTree.setHeight(ItemTreePanel.this.getHeight(true));
+			    
 			    expandAll();
 			}
 		};
@@ -709,6 +717,8 @@ public class ItemTreePanel extends ContentPanel {
 		return itemTree;
 	}
 	
+	
+	
 	private void loadLearnerAttributeTree(GradebookModel selectedGradebook) {
 		if (isLearnerAttributeTreeLoaded)
 			return;
@@ -732,15 +742,18 @@ public class ItemTreePanel extends ContentPanel {
 		gradingColumns.setParent(root);
 		root.add(gradingColumns);
 		
-		fullStaticIdSet.clear();
+		checkedSelection = new ArrayList<BaseTreeModel<TreeModel>>();
+		
+		//fullStaticIdSet.clear();
 		for (org.sakaiproject.gradebook.gwt.client.model.ColumnModel column : selectedGradebook.getColumns()) {
 			properties = new HashMap<String, Object>();
 			properties.put("name", column.getName());
 			properties.put("id", column.getIdentifier());
 			properties.put("hidden", column.isHidden());
-			if (column.isHidden() == null || !column.isHidden().booleanValue()) 
-				visibleStaticIdSet.add(column.getIdentifier());
-			fullStaticIdSet.add(column.getIdentifier());
+			
+			//if (column.isHidden() == null || !column.isHidden().booleanValue()) 
+			//	visibleStaticIdSet.add(column.getIdentifier());
+			//fullStaticIdSet.add(column.getIdentifier());
 			BaseTreeModel<TreeModel> model = new BaseTreeModel<TreeModel>(properties);
 			
 			if (column.getIdentifier().equals(StudentModel.Key.GRADE_OVERRIDE.name()) ||
@@ -751,11 +764,14 @@ public class ItemTreePanel extends ContentPanel {
 				model.setParent(learnerAttributes);
 				learnerAttributes.add(model);
 			}
+			
+			if (visibleStaticIdSet.contains(column.getIdentifier()))
+				checkedSelection.add(model);
 		}
 		
 		TreeStore<BaseTreeModel<TreeModel>> treeStore = new TreeStore<BaseTreeModel<TreeModel>>(loader);
 	
-		TreeBinder<BaseTreeModel<TreeModel>> treeBinder = 
+		treeBinder = 
 			new TreeBinder<BaseTreeModel<TreeModel>>(learnerAttributeTree, treeStore) {
 			
 			@Override
@@ -781,6 +797,8 @@ public class ItemTreePanel extends ContentPanel {
 		
 		treeBinder.setDisplayProperty("name");
 		treeBinder.setAutoLoad(true);
+		
+		treeBinder.addCheckListener(checkChangedListener);
 		
 		loader.load(root);
 	}
@@ -852,11 +870,12 @@ public class ItemTreePanel extends ContentPanel {
 		checkChangedListener = new CheckChangedListener() {
 			
 			public void checkChanged(CheckChangedEvent event) {
-				selectedItemModels = (List<ItemModel>)event.getCheckedSelection();
+				if (event.getCheckProvider() instanceof TreeTableBinder)
+					selectedItemModels = (List<ItemModel>)event.getCheckedSelection();
 				showColumns(selectedItemModels);
 				
 				if (selectedGradebook != null)
-					GradebookState.setSelectedMultigradeColumns(selectedGradebook.getGradebookUid(), selectedItemModels);				
+					GradebookState.setSelectedMultigradeColumns(selectedGradebook.getGradebookUid(), visibleStaticIdSet, selectedItemModels);				
 			}
 			
 		};
@@ -950,6 +969,10 @@ public class ItemTreePanel extends ContentPanel {
 			
 		};
 
+	}
+
+	public TreeTable getTreeTable() {
+		return treeTable;
 	}
 	
 }

@@ -1,7 +1,9 @@
 package org.sakaiproject.gradebook.gwt.client;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
@@ -26,13 +28,17 @@ public class GradebookState {
 		return columnIds;
 	}
 	
-	public static void setSelectedMultigradeColumns(String gradebookUid, List<ItemModel> selectedColumns) {
+	public static void setSelectedMultigradeColumns(String gradebookUid, Set<String> visibleStaticIdSet, List<ItemModel> selectedColumns) {
 		String selectedMultigradeColumnId = DataTypeConversionUtil.concat(gradebookUid, ":", AppConstants.SELECTED_COLUMNS);
 		
 		StringBuilder builder = new StringBuilder();
 		for (ItemModel item : selectedColumns) {
 			if (item.getItemType() == Type.ITEM)
 				builder.append(item.getIdentifier()).append(":");
+		}
+		
+		for (Iterator<String> it = visibleStaticIdSet.iterator();it.hasNext();) {
+			builder.append(it.next()).append(":");
 		}
 		
 		StateManager.get().set(selectedMultigradeColumnId, builder.toString());

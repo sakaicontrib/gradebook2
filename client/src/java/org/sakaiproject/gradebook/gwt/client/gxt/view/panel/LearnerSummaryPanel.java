@@ -17,16 +17,15 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
-import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.binding.FieldBinding;
 import com.extjs.gxt.ui.client.binding.FormBinding;
+import com.extjs.gxt.ui.client.data.Model;
 import com.extjs.gxt.ui.client.data.PropertyChangeEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.FieldEvent;
 import com.extjs.gxt.ui.client.event.KeyListener;
-import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
@@ -56,6 +55,7 @@ import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
 
 public class LearnerSummaryPanel extends ContentPanel {
 
+	private static final String FIELD_STATE_FIELD = "fieldState";
 	private static final String ITEM_IDENTIFIER_FLAG = "itemIdentifier";
 	private static final String BUTTON_SELECTOR_FLAG = "buttonSelector";
 	private enum ButtonSelector { CLOSE, COMMENT, NEXT, PREVIOUS, VIEW_AS_LEARNER };
@@ -145,10 +145,18 @@ public class LearnerSummaryPanel extends ContentPanel {
 		this.learner = learner;
 		updateLearnerInfo(learner);
 
+		if (learner != null) {
+			verifyFormPanelComponents(treeStore, learnerStore);
+			
+			formBinding.setStore(learnerStore);
+			formBinding.bind(learner);
+		}
+		
 		for (Component item : scoreFormPanel.getItems()) {
 			if (item instanceof Field) {
 				Field<?> field = (Field<?>)item;
 				field.setEnabled(true);
+				verifyFieldState(field, learner);
 			}
 		}
 		
@@ -161,30 +169,6 @@ public class LearnerSummaryPanel extends ContentPanel {
 			if (item instanceof Field)
 				((Field<?>)item).setEnabled(true);
 		}
-		
-		if (learner != null) {
-			
-			//displayName.setHtml(learner.getDisplayName());
-			//section.setHtml(learner.getStudentSections());
-			
-			verifyFormPanelComponents(treeStore, learnerStore);
-			
-			formBinding.setStore(learnerStore);
-			formBinding.bind(learner);
-			
-			
-			/*this.selectedGradebook = selectedGradebook;
-			this.learnerGradeRecordCollection = learnerGradeRecordCollection;
-			
-			if (gradeItemsPanel == null)
-				gradeItemsPanel = newGradeItemsPanel();
-			
-			if (logColumn != null)
-				logColumn.setStudent(learnerGradeRecordCollection);
-			updateCourseGrade(learnerGradeRecordCollection.getStudentGrade());
-			gradeItemsPanel.getLoader().load(0, pageSize);
-			setStudentInfoTable();*/
-		} 
 	}
 	
 	public void onLearnerGradeRecordUpdated(StudentModel learner) {
@@ -223,7 +207,9 @@ public class LearnerSummaryPanel extends ContentPanel {
 				field.setFormat(DataTypeConversionUtil.getDefaultNumberFormat());
 				field.setName(item.getIdentifier());
 				field.setWidth(50);
-								
+					
+				verifyFieldState(field, item);
+				
 				scoreFormPanel.add(field);
 				
 				String checkBoxName = new StringBuilder().append(item.getIdentifier()).append(StudentModel.EXCUSE_FLAG).toString();
@@ -436,6 +422,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 									protected void onFieldChange(FieldEvent e) {									
 										StudentModel learner = (StudentModel)this.model;
 										e.field.setEnabled(false);
+										
 										Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord, new GradeRecordUpdate(learnerStore, learner, e.field.getName(), e.field.getFieldLabel(), e.oldValue, e.value));
 									}
 									
@@ -444,6 +431,8 @@ public class LearnerSummaryPanel extends ContentPanel {
 										super.onModelChange(event);
 										
 										if (field != null) {
+											verifyFieldState(field, event.source);
+											
 											boolean isEnabled = true;
 											if (!field.isEnabled())
 												field.setEnabled(isEnabled);
@@ -459,6 +448,27 @@ public class LearnerSummaryPanel extends ContentPanel {
 		}
 	}
 	
+	
+	private void verifyFieldState(Field field, Model model) {
+		String dropFlag = new StringBuilder().append(field.getName()).append(StudentModel.DROP_FLAG).toString();
+		
+		Boolean dropFlagValue = model.get(dropFlag);
+		boolean isDropped = dropFlagValue != null && dropFlagValue.booleanValue();
+		
+		if (isDropped) {
+			//dropFlagValue = field.getData(FIELD_STATE_FIELD);
+			//isDropped = dropFlagValue != null && dropFlagValue.booleanValue();
+			//if (!isDropped) {
+				field.setData(FIELD_STATE_FIELD, Boolean.TRUE);
+				field.addInputStyleName("gbCellDropped");
+			//}
+		} else {
+			dropFlagValue = field.getData(FIELD_STATE_FIELD);
+			isDropped = dropFlagValue != null && dropFlagValue.booleanValue();
+			if (isDropped)
+				field.removeInputStyleName("gbCellDropped");
+		}
+	}
 	
 	
 	public class FlexTableContainer extends WidgetComponent {

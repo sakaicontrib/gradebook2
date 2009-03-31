@@ -34,6 +34,15 @@ public class TreeView extends View {
 	private TreeLoader<ItemModel> treeLoader;
 	private TreeStore<ItemModel> treeStore;
 	
+	// We have to track which dynamic columns are visible somewhere, makes sense to do it in the view, since it
+	// distinguishes between things that need to be rendered (components) and things that don't (views)
+	// Multigrade depends on TreeView to establish the visible columns
+	//private List<ItemModel> selectedItemModels;
+	
+	// We have to track which static columns are visible somewhere
+	//private Set<String> fullStaticIdSet;
+	//private Set<String> visibleStaticIdSet;
+	
 	private boolean isEditable;
 	
 	public TreeView(Controller controller, I18nConstants i18n, boolean isEditable) {
@@ -41,6 +50,8 @@ public class TreeView extends View {
 		this.isEditable = isEditable;
 		this.treePanel = new ItemTreePanel(i18n, isEditable);
 		this.formPanel = new ItemFormPanel(i18n);
+		//this.fullStaticIdSet = new HashSet<String>();
+		//this.visibleStaticIdSet = new HashSet<String>();
 	}
 
 	@Override
@@ -149,8 +160,8 @@ public class TreeView extends View {
 		gradebookItemModel.setParent(rootItemModel);
 		rootItemModel.add(gradebookItemModel);
 		treePanel.onBeforeLoadItemTreeModel(selectedGradebook, rootItemModel);
-		treeLoader.load(rootItemModel);
-		treePanel.onLoadItemTreeModel(selectedGradebook, rootItemModel);
+		//treeLoader.load(rootItemModel);
+		treePanel.onLoadItemTreeModel(selectedGradebook, treeLoader, rootItemModel);
 		formPanel.onLoadItemTreeModel(rootItemModel);
 		
 		treePanel.expandTrees();
@@ -194,6 +205,10 @@ public class TreeView extends View {
 		formPanel.onSwitchGradebook(selectedGradebook);
 		treePanel.onSwitchGradebook(selectedGradebook);
 		
+		
+		// FIXME: Need to send an event to show which ones are checked
+		
+		
 		if (treeLoader == null) {
 			treeLoader = new BaseTreeLoader(new TreeModelReader() {
 	
@@ -203,9 +218,9 @@ public class TreeView extends View {
 					List<? extends ModelData> children = super.getChildren(parent);
 					
 					for (ModelData model : children) {
-						String source = model.get(ItemModel.Key.SOURCE.name());
-						if (source == null || !source.equals("Static"))
-							visibleChildren.add(model);
+						//String source = model.get(ItemModel.Key.SOURCE.name());
+						//if (source == null || !source.equals("Static"))
+						visibleChildren.add(model);
 					}
 					
 					return visibleChildren;
@@ -233,30 +248,12 @@ public class TreeView extends View {
 				}
 			});
 			treeStore.setModelComparer(new ItemModelComparer());
-			/*treeStore.addListener(Store.DataChanged, new Listener<TreeStoreEvent>() {
 
-				public void handleEvent(TreeStoreEvent tse) {
-					treePanel.onTreeStoreDataLoaded();
-				}
-				
-			});*/
 			treePanel.onTreeStoreInitialized(treeStore);
 			formPanel.onTreeStoreInitialized(treeStore);
 		}
-		
-		/*if (formBindings == null) {
-			formBindings = new FormBinding(formPanel.getFormPanel(), true);
-			formBindings.setStore(treeStore);
-		}*/
-		
+
 		onLoadItemTreeModel(selectedGradebook);
-		
-		/*treeStore.removeAll();
-		treeLoader.load(selectedGradebook.getRootItemModel());
-		treePanel.onLoadItemTreeModel(selectedGradebook.getRootItemModel());
-		formPanel.onLoadItemTreeModel(selectedGradebook.getRootItemModel());
-		*/
-		
 	}
 	
 	protected void onUnmaskItemTree() {
@@ -284,6 +281,26 @@ public class TreeView extends View {
 	
 		return itemModel;
 	}
+	
+	/*private void showColumns(List<ItemModel> selectedItemModels) {
+		Set<String> selectedItemModelIdSet = new HashSet<String>();
+		boolean selectAll = false;
+		
+		for (ItemModel selectedItemModel : selectedItemModels) {
+			//selectedItemModelIdSet.add(selectedItemModel.getIdentifier());
+			
+			// If the root or gradebook is selected then we don't need to mess around any further
+			switch (selectedItemModel.getItemType()) {
+			case ITEM:
+				selectedItemModelIdSet.add(selectedItemModel.getIdentifier());
+				break;
+			}
+		}
+
+		Dispatcher.forwardEvent(GradebookEvents.ShowColumns, 
+				new ShowColumnsEvent(selectAll, fullStaticIdSet, visibleStaticIdSet, selectedItemModelIdSet));
+	
+	}*/
 	
 	// Public accessors
 	

@@ -13,6 +13,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenu;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTabItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.BorderLayoutPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.GradeScalePanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.HelpPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.HistoryPanel;
@@ -102,9 +103,10 @@ public class InstructorView extends AppView {
 		this.treeView = treeView;
 		this.multigradeView = multigradeView;
 		
-		borderLayoutContainer = new ContentPanel(); 
+		borderLayoutContainer = new BorderLayoutPanel(); 
 		borderLayoutContainer.setId("borderLayoutContainer");
 		borderLayoutContainer.setHeaderVisible(false);
+		viewport.add(borderLayoutContainer);
 		
 		borderLayout = new BorderLayout();  
 		borderLayoutContainer.setLayout(borderLayout);
@@ -129,10 +131,38 @@ public class InstructorView extends AppView {
 		westData.setSplit(true);  
 		westData.setCollapsible(true);  
 		westData.setMargins(new Margins(5));
-		westData.setMinSize(100);
+		//westData.setMinSize(100);
 		
 		//addMainContainer(getBorderLayoutContainer());
-		viewport.add(getBorderLayoutContainer());
+		
+		cardLayoutContainer = new ContentPanel() {
+			protected void onRender(Element parent, int index) {
+				super.onRender(parent, index);
+			}
+		};
+
+		helpPanel = new HelpPanel() {
+			protected void onRender(Element parent, int index) {
+				super.onRender(parent, index);
+				borderLayout.collapse(LayoutRegion.EAST);
+				//borderLayout.collapse(LayoutRegion.WEST);
+			}
+		};
+
+		cardLayoutContainer.setId("cardLayoutContainer");
+		cardLayoutContainer.setWidth(400);
+		cardLayoutContainer.setBorders(true);
+		cardLayoutContainer.setBodyBorder(true);
+		cardLayoutContainer.setFrame(true);
+		cardLayout = new CardLayout();
+		cardLayoutContainer.setLayout(cardLayout);
+		cardLayoutContainer.add(helpPanel);
+		cardLayoutContainer.add(treeView.getFormPanel());
+		cardLayout.setActiveItem(helpPanel);
+
+		borderLayoutContainer.add(treeView.getTreePanel(), westData);
+		borderLayoutContainer.add(multigradeView.getMultiGradeContentPanel(), centerData);
+		borderLayoutContainer.add(cardLayoutContainer, eastData);
 	}
 
 	@Override
@@ -163,6 +193,13 @@ public class InstructorView extends AppView {
 		tabConfigurations.add(new TabConfig(AppConstants.TAB_HISTORY, i18n.tabHistoryHeader(), "gbHistoryButton", true, MenuSelector.HISTORY));
 
 		borderLayoutContainer.setTopComponent(newToolBar(i18n, selectedGradebook));
+		
+		/*treeView.getTreePanel().setHeight(viewport.getHeight() - 70);
+		treeView.getTreePanel().setWidth(400);*/
+		//treeView.getTreePanel().setHeight(1);
+		//treeView.getTreePanel().getTreeTable().setHeight(treeView.getTreePanel().getHeight()); //viewport.getHeight() - 120);
+		//treeView.getTreePanel().getTreeTable().setWidth(400);
+		
 		
 		/*RpcProxy<PagingLoadConfig, PagingLoadResult<StudentModel>> proxy = 
 			new RpcProxy<PagingLoadConfig, PagingLoadResult<StudentModel>>() {
@@ -554,6 +591,7 @@ public class InstructorView extends AppView {
 			protected void onRender(Element parent, int index) {
 				super.onRender(parent, index);
 				borderLayout.collapse(LayoutRegion.EAST);
+				//borderLayout.collapse(LayoutRegion.WEST);
 			}
 		};
 
@@ -569,6 +607,7 @@ public class InstructorView extends AppView {
 		cardLayout.setActiveItem(helpPanel);
 
 		treeView.getTreePanel().setHeight(viewport.getHeight() - 50);
+		treeView.getTreePanel().getTreeTable().setHeight(viewport.getHeight() - 50);
 		
 		borderLayoutContainer.add(treeView.getTreePanel(), westData);
 		borderLayoutContainer.add(multigradeView.getMultiGradeContentPanel(), centerData);

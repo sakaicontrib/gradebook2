@@ -312,7 +312,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 					while (selectedLearner == null && currentIndex >= 0) {
 						selectedLearner = ((ListStore<StudentModel>)se.store).getAt(currentIndex);
 						if (selectedLearner != null) {
-							Dispatcher.forwardEvent(GradebookEvents.SingleGrade, selectedLearner);
+							//--Dispatcher.forwardEvent(GradebookEvents.SingleGrade, selectedLearner);
 							//Dispatcher.forwardEvent(GradebookEvents.SingleView, selectedLearner);
 						} else {
 							currentIndex--;
@@ -328,7 +328,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			});
 		} else {
 			StudentModel selectedLearner = grid.getStore().getAt(currentIndex);
-			Dispatcher.forwardEvent(GradebookEvents.SingleGrade, selectedLearner);
+			//--Dispatcher.forwardEvent(GradebookEvents.SingleGrade, selectedLearner);
 			//Dispatcher.forwardEvent(GradebookEvents.SingleView, selectedLearner);
 			
 			if (selectedLearner != null)
