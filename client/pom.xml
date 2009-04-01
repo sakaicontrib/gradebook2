@@ -299,7 +299,7 @@
 		<dependency>
         	<groupId>org.gwtwidgets</groupId>
             <artifactId>gwt-sl</artifactId>
-            <version>0.1.5</version>
+            <version>0.1.5b</version>
         </dependency>
         
 		<!-- GXT dependency -->

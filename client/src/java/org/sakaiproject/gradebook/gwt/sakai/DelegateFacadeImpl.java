@@ -1861,42 +1861,7 @@ private static final long serialVersionUID = 1L;
 						gradebookWeightSum = gradebookWeightSum.add(BigDecimal.valueOf(categoryWeight));
 						gradebookPointsSum = gradebookPointsSum.add(BigDecimal.valueOf(categoryPoints));
 					}
-					
-					/*BigDecimal categoryPointsSum = BigDecimal.ZERO;
-					BigDecimal categoryPercentSum = BigDecimal.ZERO;
-					
-					double pG = categoryItemModel.getPercentCourseGrade() == null ? 0d : categoryItemModel.getPercentCourseGrade().doubleValue();
-					double pC = categoryItemModel.getPercentCategory() == null ? 0d : categoryItemModel.getPercentCategory().doubleValue();
-					
-					BigDecimal percentGrade = BigDecimal.valueOf(pG);
-					BigDecimal percentCategory = BigDecimal.valueOf(pC);
 
-					if (assignments != null) {
-						for (Assignment assignment : assignments) {
-							if (assignment.isRemoved()) 
-								continue;
-							
-							BigDecimal assignmentWeight = BigDecimal.valueOf(assignment.getAssignmentWeighting().doubleValue());
-							BigDecimal courseGradePercent = calculateItemGradePercent(percentGrade, percentCategory, assignmentWeight);
-							BigDecimal points = BigDecimal.valueOf(assignment.getPointsPossible().doubleValue());
-							
-							ItemModel assignmentItemModel = createItemModel(category, assignment, courseGradePercent);
-							//assignmentItemModel.setStudentModelKey(Key.ASSIGNMENT.name());
-							
-							if (!DataTypeConversionUtil.checkBoolean(assignment.isUnweighted()))
-								categoryPointsSum = categoryPointsSum.add(points);
-							
-							if (isNotInCategoryMode) {
-								assignmentItemModel.setParent(gradebookItemModel);
-								gradebookItemModel.add(assignmentItemModel);
-							} else {
-								assignmentItemModel.setParent(categoryItemModel);
-								categoryItemModel.add(assignmentItemModel);
-							}
-						}
-						categoryItemModel.setPoints(Double.valueOf(categoryPointsSum.doubleValue()));
-						gradebookPointsSum = gradebookPointsSum.add(categoryPointsSum);
-					}*/
 				}
 			}
 			gradebookItemModel.setPoints(Double.valueOf(gradebookPointsSum.doubleValue()));
@@ -2040,10 +2005,12 @@ private static final long serialVersionUID = 1L;
 			
 			for (Category category : categoriesWithAssignments) {
 				
-				for (Assignment assignment : (List<Assignment>)category.getAssignmentList()) {
-					cellMap = appendItemData(assignment.getId(), cellMap, userRecord, gradebook);
+				List<Assignment> assignments = (List<Assignment>)category.getAssignmentList();
+				if (assignments != null) {
+					for (Assignment assignment : assignments) {
+						cellMap = appendItemData(assignment.getId(), cellMap, userRecord, gradebook);
+					}
 				}
-
 			}
 			
 		}
@@ -2378,13 +2345,19 @@ private static final long serialVersionUID = 1L;
 			boolean isDropped = record.isDropped() != null && record.isDropped().booleanValue();
 			boolean isExcluded = record.isExcluded() != null && record.isExcluded().booleanValue();
 			
-			if (isDropped || isExcluded)
+			if (isDropped)
 				student.set(dropProperty, Boolean.TRUE);
-			else if (student.get(dropProperty) != null) 
+			else 
 				student.set(dropProperty, null);
 			
-			if (isExcluded) 
+			if (isExcluded) {
 				student.set(excuseProperty, Boolean.TRUE);
+				student.set(dropProperty, Boolean.TRUE);
+			} else {
+				student.set(excuseProperty, null);
+				if (!isDropped)
+					student.set(dropProperty, null);
+			}
 		}
 		
 		String gradedProperty = assignment.getId() + StudentModel.GRADED_FLAG;

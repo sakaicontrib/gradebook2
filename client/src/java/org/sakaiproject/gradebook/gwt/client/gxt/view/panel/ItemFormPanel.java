@@ -135,6 +135,7 @@ public class ItemFormPanel extends ContentPanel {
 			}
 		
 		});
+		categoryPicker.setVisible(false);
 		formPanel.add(categoryPicker);
 		
 		
@@ -142,14 +143,14 @@ public class ItemFormPanel extends ContentPanel {
 		categoryTypePicker.setDisplayField("name");
 		categoryTypePicker.setName(ItemModel.Key.CATEGORYTYPE.name());
 		categoryTypePicker.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.CATEGORYTYPE));
-		
+		categoryTypePicker.setVisible(false);
 		formPanel.add(categoryTypePicker);
 		
 		gradeTypePicker = new ComboBox<ModelData>();
 		gradeTypePicker.setDisplayField("name");
 		gradeTypePicker.setName(ItemModel.Key.GRADETYPE.name());
 		gradeTypePicker.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.GRADETYPE));
-		
+		gradeTypePicker.setVisible(false);
 		formPanel.add(gradeTypePicker);
 		
 		//addGradebookFormItems(formPanel, i18n);
@@ -161,6 +162,7 @@ public class ItemFormPanel extends ContentPanel {
 		percentCourseGradeField.setAllowDecimals(true);
 		percentCourseGradeField.setMinValue(Double.valueOf(0.000000d));
 		percentCourseGradeField.setMaxValue(Double.valueOf(100.000000d));
+		percentCourseGradeField.setVisible(false);
 		formPanel.add(percentCourseGradeField);
 		
 		percentCategoryField = new NumberField();
@@ -170,6 +172,7 @@ public class ItemFormPanel extends ContentPanel {
 		percentCategoryField.setAllowDecimals(true);
 		percentCategoryField.setMinValue(Double.valueOf(0.000000d));
 		percentCategoryField.setMaxValue(Double.valueOf(100.000000d));
+		percentCategoryField.setVisible(false);
 		formPanel.add(percentCategoryField);
 			
 		pointsField = new NumberField();
@@ -178,6 +181,7 @@ public class ItemFormPanel extends ContentPanel {
 		pointsField.setFormat(DataTypeConversionUtil.getDefaultNumberFormat());
 		pointsField.setAllowDecimals(true);
 		pointsField.setMinValue(Double.valueOf(0.000000d));
+		pointsField.setVisible(false);
 		formPanel.add(pointsField);
 		
 		dropLowestField = new NumberField();
@@ -185,11 +189,13 @@ public class ItemFormPanel extends ContentPanel {
 		dropLowestField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.DROP_LOWEST));
 		dropLowestField.setAllowDecimals(false);
 		dropLowestField.setPropertyEditorType(Integer.class);
+		dropLowestField.setVisible(false);
 		formPanel.add(dropLowestField);
 		
 		dueDateField = new DateField();
 		dueDateField.setName(ItemModel.Key.DUE_DATE.name());
 		dueDateField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.DUE_DATE));
+		dueDateField.setVisible(false);
 		formPanel.add(dueDateField);
 		
 		sourceField = new TextField<String>();
@@ -197,6 +203,7 @@ public class ItemFormPanel extends ContentPanel {
 		sourceField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.SOURCE));
 		sourceField.setEnabled(false);
 		sourceField.setEmptyText("Gradebook");
+		sourceField.setVisible(false);
 		formPanel.add(sourceField);
 		
 		LayoutContainer checkBoxContainer = new LayoutContainer();
@@ -224,21 +231,25 @@ public class ItemFormPanel extends ContentPanel {
 		includedField = new CheckBox();
 		includedField.setName(ItemModel.Key.INCLUDED.name());
 		includedField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.INCLUDED));
+		includedField.setVisible(false);
 		left.add(includedField);
 		
 		extraCreditField = new CheckBox();
 		extraCreditField.setName(ItemModel.Key.EXTRA_CREDIT.name());
 		extraCreditField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.EXTRA_CREDIT));
+		extraCreditField.setVisible(false);
 		left.add(extraCreditField);
 		
 		equallyWeightChildrenField = new CheckBox();
 		equallyWeightChildrenField.setName(ItemModel.Key.EQUAL_WEIGHT.name());
 		equallyWeightChildrenField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.EQUAL_WEIGHT));
+		equallyWeightChildrenField.setVisible(false);
 		right.add(equallyWeightChildrenField);
 		
 		releasedField = new CheckBox();
 		releasedField.setName(ItemModel.Key.RELEASED.name());
 		releasedField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.RELEASED));
+		releasedField.setVisible(false);
 		right.add(releasedField);
 		
 		checkBoxContainer.add(left, new ColumnData(200));
