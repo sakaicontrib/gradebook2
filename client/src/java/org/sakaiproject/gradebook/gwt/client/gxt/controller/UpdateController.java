@@ -26,6 +26,7 @@ import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.store.Store;
 import com.extjs.gxt.ui.client.store.TreeStore;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class UpdateController extends Controller {
 
@@ -74,12 +75,11 @@ public class UpdateController extends Controller {
 		final UserEntityCreateAction<ItemModel> action = new UserEntityCreateAction<ItemModel>(selectedGradebook, entityType, event.item);		
 		
 		GradebookToolFacadeAsync service = Registry.get("service");
-		NotifyingAsyncCallback<ItemModel> callback = new NotifyingAsyncCallback<ItemModel>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				super.onFailure(caught);
+		AsyncCallback<ItemModel> callback = new AsyncCallback<ItemModel>() {
 
-				notifier.notifyError("Error", "Failed to create: {0} ", caught.getMessage());
+			public void onFailure(Throwable caught) {
+				
+				notifier.notifyError("Error", "{0} ", caught.getMessage());
 				
 				String message = new StringBuilder("Failed to create item: ").append(caught.getMessage()).toString();
 				
@@ -120,6 +120,7 @@ public class UpdateController extends Controller {
 					break;
 				}
 				
+				Dispatcher.forwardEvent(GradebookEvents.HideEastPanel, Boolean.FALSE);
 				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree);
 			}
 		};
@@ -452,16 +453,16 @@ public class UpdateController extends Controller {
 		UserEntityUpdateAction<ItemModel> action = new UserEntityUpdateAction<ItemModel>(selectedGradebook, (ItemModel)event.item);		
 		
 		GradebookToolFacadeAsync service = Registry.get("service");
-		NotifyingAsyncCallback<ItemModel> callback = new NotifyingAsyncCallback<ItemModel>() {
-			@Override
+		AsyncCallback<ItemModel> callback = new AsyncCallback<ItemModel>() {
+
 			public void onFailure(Throwable caught) {
-				super.onFailure(caught);
 				onUpdateItemFailure(event, caught);
 				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree);
 			}
 			
 			public void onSuccess(ItemModel result) {
 				onUpdateItemSuccess(event, result);
+				Dispatcher.forwardEvent(GradebookEvents.HideEastPanel, Boolean.FALSE);
 				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree);
 			}
 		};

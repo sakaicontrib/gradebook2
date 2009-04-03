@@ -39,6 +39,7 @@ public class AppController extends Controller {
 		registerEventTypes(GradebookEvents.ExpandEastPanel);
 		registerEventTypes(GradebookEvents.FullScreen);
 		registerEventTypes(GradebookEvents.HideColumn);
+		registerEventTypes(GradebookEvents.HideEastPanel);
 		registerEventTypes(GradebookEvents.ItemCreated);
 		registerEventTypes(GradebookEvents.ItemDeleted);
 		registerEventTypes(GradebookEvents.ItemUpdated);
@@ -54,13 +55,16 @@ public class AppController extends Controller {
 		registerEventTypes(GradebookEvents.SelectLearner);
 		registerEventTypes(GradebookEvents.SelectItem);
 		registerEventTypes(GradebookEvents.ShowColumns);
+		registerEventTypes(GradebookEvents.ShowGradeScale);
+		registerEventTypes(GradebookEvents.ShowHistory);
 		registerEventTypes(GradebookEvents.SingleGrade);
 		registerEventTypes(GradebookEvents.SingleView);
 		registerEventTypes(GradebookEvents.StartEditItem);
 		registerEventTypes(GradebookEvents.StartExport);
 		registerEventTypes(GradebookEvents.StartImport);
 		registerEventTypes(GradebookEvents.Startup);
-		registerEventTypes(GradebookEvents.HideEastPanel);
+		registerEventTypes(GradebookEvents.StopImport);
+		registerEventTypes(GradebookEvents.SwitchEditItem);
 		registerEventTypes(GradebookEvents.SwitchGradebook);
 		registerEventTypes(GradebookEvents.UnmaskItemTree);
 		registerEventTypes(GradebookEvents.UpdateLearnerGradeRecord);
@@ -111,6 +115,10 @@ public class AppController extends Controller {
 				importExportView = new ImportExportView(this);
 			
 			forwardToView(importExportView, event);
+			forwardToView(appView, event);
+			break;
+		case GradebookEvents.StopImport:
+			forwardToView(appView, event);
 			break;
 		case GradebookEvents.Startup:
 			onStartup(event);
@@ -147,9 +155,14 @@ public class AppController extends Controller {
 		case GradebookEvents.ShowColumns:
 			forwardToView(multigradeView, event);
 			break;
+		case GradebookEvents.ShowGradeScale:
+		case GradebookEvents.ShowHistory:	
+			forwardToView(appView, event);
+			break;
 		case GradebookEvents.StartEditItem:
 		case GradebookEvents.HideEastPanel:
 		case GradebookEvents.SelectItem:
+		case GradebookEvents.SwitchEditItem:
 			forwardToView(treeView, event);
 			forwardToView(appView, event);
 			break;
@@ -202,7 +215,8 @@ public class AppController extends Controller {
 			if (isUserAbleToGrade) {
 				this.treeView = new TreeView(this, i18n, isUserAbleToEditItems);
 				this.multigradeView = new MultigradeView(this, i18n);
-				this.appView = new InstructorView(this, treeView, multigradeView, notificationView, isUserAbleToEditItems);
+				this.importExportView = new ImportExportView(this);
+				this.appView = new InstructorView(this, treeView, multigradeView, notificationView, importExportView, isUserAbleToEditItems);
 				forwardToView(treeView, event);
 				forwardToView(multigradeView, event);
 			} else if (isUserAbleToViewOwnGrades) {

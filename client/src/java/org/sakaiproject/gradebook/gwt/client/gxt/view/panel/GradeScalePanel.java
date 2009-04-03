@@ -28,6 +28,7 @@ import java.util.List;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.GradebookToolFacadeAsync;
+import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
@@ -35,6 +36,7 @@ import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.ActionType;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType;
+import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
@@ -48,11 +50,15 @@ import com.extjs.gxt.ui.client.data.BaseListLoader;
 import com.extjs.gxt.ui.client.data.ListLoadConfig;
 import com.extjs.gxt.ui.client.data.ListLoader;
 import com.extjs.gxt.ui.client.data.RpcProxy;
+import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.GridEvent;
 import com.extjs.gxt.ui.client.event.Listener;
+import com.extjs.gxt.ui.client.event.SelectionListener;
+import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
+import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.grid.CellEditor;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
@@ -67,7 +73,7 @@ public class GradeScalePanel extends ContentPanel {
 	private boolean isEditable;
 	
 	@SuppressWarnings("unchecked")
-	public GradeScalePanel(boolean isEditable) {
+	public GradeScalePanel(I18nConstants i18n, boolean isEditable) {
 		super();
 		this.isEditable = isEditable;
 		
@@ -138,7 +144,7 @@ public class GradeScalePanel extends ContentPanel {
 		setBodyBorder(false);
 		setHeaderVisible(false);
 		setHeading("Selected Grade Mapping");
-		setButtonAlign(HorizontalAlignment.CENTER);
+		setButtonAlign(HorizontalAlignment.RIGHT);
 		setLayout(new FitLayout());
 		setSize(600, 300);
 		
@@ -188,5 +194,15 @@ public class GradeScalePanel extends ContentPanel {
 		});
 		
 		add(grid); 
+		
+		Button button = new AriaButton(i18n.close(), new SelectionListener<ButtonEvent>() {
+
+			@Override
+			public void componentSelected(ButtonEvent be) {
+				Dispatcher.forwardEvent(GradebookEvents.HideEastPanel, Boolean.FALSE);
+			}
+			
+		});
+		addButton(button);
 	}
 }

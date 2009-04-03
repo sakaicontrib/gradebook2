@@ -119,10 +119,6 @@ public class LearnerSummaryPanel extends ContentPanel {
 		
 		add(formPanel, new RowData(1, 1));
 		
-		/*TextField<String> first = new TextField<String>();
-		first.setFieldLabel("First Name");
-		left.add(first, formData);*/ 
-		
 		Button button = new AriaButton(i18n.prevLearner(), selectionListener);
 		button.setData(BUTTON_SELECTOR_FLAG, ButtonSelector.PREVIOUS);
 		addButton(button);
@@ -138,7 +134,6 @@ public class LearnerSummaryPanel extends ContentPanel {
 		button = new AriaButton(i18n.close(), selectionListener);
 		button.setData(BUTTON_SELECTOR_FLAG, ButtonSelector.CLOSE);
 		addButton(button);
-		
 	}
 
 	public void onChangeModel(ListStore<StudentModel> learnerStore, TreeStore<ItemModel> treeStore, StudentModel learner) {

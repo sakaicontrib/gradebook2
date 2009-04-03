@@ -52,13 +52,17 @@ public class GradebookEvents {
 	public static final int SelectItem					= 14036;
 	public static final int SelectLearner				= 14037;
 	public static final int ShowColumns					= 14040;
+	public static final int ShowGradeScale				= 14041;
+	public static final int ShowHistory					= 14042;
 	public static final int SingleGrade					= 14045;
 	public static final int SingleView 					= 14050;
 	public static final int StartEditItem				= 14051;
 	public static final int StartExport					= 14052;
 	public static final int StartImport					= 14053;
 	public static final int Startup 					= 14055;
+	public static final int StopImport					= 14056;
 	public static final int HideEastPanel				= 14060;
+	public static final int SwitchEditItem				= 14061;
 	public static final int SwitchGradebook 			= 14065;
 	public static final int UnmaskItemTree				= 14066;
 	public static final int UpdateLearnerGradeRecord	= 14070;

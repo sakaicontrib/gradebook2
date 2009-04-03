@@ -11,7 +11,6 @@ import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenu;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
-import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTabItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.BorderLayoutPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.GradeScalePanel;
@@ -27,6 +26,7 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.LayoutRegion;
+import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.MenuEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
@@ -36,12 +36,9 @@ import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.extjs.gxt.ui.client.widget.TabItem;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayout;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayoutData;
 import com.extjs.gxt.ui.client.widget.layout.CardLayout;
-import com.extjs.gxt.ui.client.widget.layout.FitLayout;
-import com.extjs.gxt.ui.client.widget.menu.CheckMenuItem;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.extjs.gxt.ui.client.widget.toolbar.TextToolItem;
@@ -56,6 +53,7 @@ public class InstructorView extends AppView {
 	// The instructor view maintains a link to tree view, since it is required to instantiate multigrade
 	private TreeView treeView;
 	private MultigradeView multigradeView;
+	private ImportExportView importExportView;
 	
 	//private FitLayout contentPanelLayout;
 	//private ContentPanel contentPanel;
@@ -74,16 +72,14 @@ public class InstructorView extends AppView {
 	private Listener<MenuEvent> menuEventListener;
 	private SelectionListener<MenuEvent> menuSelectionListener;
 	private SelectionListener<ToolBarEvent> toolBarSelectionListener;
-	//private Listener<TabPanelEvent> tabPanelEventListener;
+	
+	private ToolBar toolBar;
 	
 	private Menu fileMenu;
 	private Menu windowMenu;
 	private PreferencesMenu preferencesMenu;
 	
 	private MenuItem addCategoryMenuItem;
-	
-	//private TabPanel tabPanel;
-	//private boolean tabMode = false;
 	
 	private BorderLayoutData centerData;
 	private BorderLayoutData eastData;
@@ -95,18 +91,22 @@ public class InstructorView extends AppView {
 	private I18nConstants i18n;
 	private boolean isEditable;
 	
-	public InstructorView(Controller controller, TreeView treeView, MultigradeView multigradeView, NotificationView notificationView, boolean isEditable) {
+	public InstructorView(Controller controller, TreeView treeView, MultigradeView multigradeView, NotificationView notificationView, ImportExportView importExportView, boolean isEditable) {
 		super(controller, notificationView);
 		this.isEditable = isEditable;
 		this.tabConfigurations = new ArrayList<TabConfig>();
 		this.tabContentPanelMap = new HashMap<String, ContentPanel>();
 		this.treeView = treeView;
 		this.multigradeView = multigradeView;
+		this.importExportView = importExportView;
 		
+		toolBar = new ToolBar();
 		borderLayoutContainer = new BorderLayoutPanel(); 
 		borderLayoutContainer.setId("borderLayoutContainer");
 		borderLayoutContainer.setHeaderVisible(false);
+		borderLayoutContainer.setTopComponent(toolBar);
 		viewport.add(borderLayoutContainer);
+		viewportLayout.setActiveItem(borderLayoutContainer);
 		
 		borderLayout = new BorderLayout();  
 		borderLayoutContainer.setLayout(borderLayout);
@@ -119,21 +119,16 @@ public class InstructorView extends AppView {
 		eastData.setSplit(true);
 		eastData.setCollapsible(true);
 		eastData.setFloatable(false);
-		//eastData.setHidden(true);
 		eastData.setMargins(new Margins(5));
 		eastData.setMaxSize(800);
 		
 		northData = new BorderLayoutData(LayoutRegion.NORTH, 50);
 		northData.setCollapsible(false);
-		//northData.setHidden(true);
 		
 		westData = new BorderLayoutData(LayoutRegion.WEST, 400, 100, 800);  
 		westData.setSplit(true);  
 		westData.setCollapsible(true);  
 		westData.setMargins(new Margins(5));
-		//westData.setMinSize(100);
-		
-		//addMainContainer(getBorderLayoutContainer());
 		
 		cardLayoutContainer = new ContentPanel() {
 			protected void onRender(Element parent, int index) {
@@ -168,92 +163,23 @@ public class InstructorView extends AppView {
 	@Override
 	protected void initialize() {
 		super.initialize();
-		
+	
 		i18n = Registry.get(AppConstants.I18N);
-		//GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-		//initTabs(i18n, selectedGradebook);
-		initListeners();
-		/*contentPanelLayout = new FitLayout();
-		contentPanel = new ContentPanel();
-		contentPanel.setHeaderVisible(false);
-		contentPanel.setLayout(contentPanelLayout);*/
-		
-		//contentPanel.add(notificationView.getNotificationPanel(), new RowData(1, 35));
 
+		initListeners();
 	}
 	
 	@Override
 	protected void initUI(ApplicationModel model) {
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);		
-		//switchTabMode(selectedGradebook.getGradebookUid(), tabMode, true);
-		
-		//addMainContainer(getBorderLayoutContainer());
-		
+
 		tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADESCALE, i18n.tabGradeScaleHeader(), "gbGradeScaleButton", true, MenuSelector.GRADE_SCALE));
 		tabConfigurations.add(new TabConfig(AppConstants.TAB_HISTORY, i18n.tabHistoryHeader(), "gbHistoryButton", true, MenuSelector.HISTORY));
 
-		borderLayoutContainer.setTopComponent(newToolBar(i18n, selectedGradebook));
-		
-		/*treeView.getTreePanel().setHeight(viewport.getHeight() - 70);
-		treeView.getTreePanel().setWidth(400);*/
-		//treeView.getTreePanel().setHeight(1);
-		//treeView.getTreePanel().getTreeTable().setHeight(treeView.getTreePanel().getHeight()); //viewport.getHeight() - 120);
-		//treeView.getTreePanel().getTreeTable().setWidth(400);
-		
-		
-		/*RpcProxy<PagingLoadConfig, PagingLoadResult<StudentModel>> proxy = 
-			new RpcProxy<PagingLoadConfig, PagingLoadResult<StudentModel>>() {
-			@Override
-			protected void load(PagingLoadConfig loadConfig, AsyncCallback<PagingLoadResult<StudentModel>> callback) {
-				GradebookToolFacadeAsync service = Registry.get("service");
-				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-				PageRequestAction pageAction = new PageRequestAction(EntityType.STUDENT, selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId());
-				service.getEntityPage(pageAction, loadConfig, callback);
-			}
-			
-			@Override
-			public void load(final DataReader<PagingLoadConfig, PagingLoadResult<StudentModel>> reader, 
-					final PagingLoadConfig loadConfig, final AsyncCallback<PagingLoadResult<StudentModel>> callback) {
-				load(loadConfig, new NotifyingAsyncCallback<PagingLoadResult<StudentModel>>() {
+		populateToolBar(i18n, selectedGradebook);
 
-					public void onFailure(Throwable caught) {
-						super.onFailure(caught);
-						callback.onFailure(caught);
-					}
-
-					public void onSuccess(PagingLoadResult<StudentModel> result) {
-						try {
-							PagingLoadResult<StudentModel> data = null;
-							if (reader != null) {
-								data = reader.read(loadConfig, result);
-							} else {
-								data = result;
-							}
-							callback.onSuccess(data);
-						} catch (Exception e) {
-							callback.onFailure(e);
-						}
-					}
-
-				});
-			}
-		};
-		
-		PagingLoader<PagingLoadConfig> loader = new BasePagingLoader<PagingLoadConfig, PagingLoadResult<StudentModel>>(proxy, new ModelReader<PagingLoadConfig>());
-		
-		store = new ListStore<StudentModel>(loader);
-		store.setModelComparer(new EntityModelComparer<StudentModel>());
-		store.setMonitorChanges(true);*/
-		
-		//viewport.add(getBorderLayoutContainer());
 	}
-	
-	/*@Override
-	protected void onBrowseLearner(BrowseLearner event) {
-		if (multigrade != null)
-			multigrade.onBrowseLearner(event);
-	}*/
-	
+
 	@Override
 	protected void onCloseNotification() {
 		//borderLayout.hide(LayoutRegion.NORTH);
@@ -321,29 +247,6 @@ public class InstructorView extends AppView {
 		}
 	}
 	
-	/*@Override
-	protected void onItemDeleted(ItemModel itemModel) {
-		if (multigrade != null)
-			multigrade.onItemDeleted(itemModel);
-	}
-	
-	@Override
-	protected void onItemUpdated(ItemModel itemModel) {	
-		if (multigrade != null)
-			multigrade.onItemUpdated(itemModel);
-	}
-	
-	@Override
-	protected void onLearnerGradeRecordUpdated(UserEntityAction<?> action) {
-		if (multigrade != null)
-			multigrade.onLearnerGradeRecordUpdated(action);
-	}
-	
-	@Override
-	protected void onLoadItemTreeModel(GradebookModel selectedGradebook) {
-		if (multigrade != null)
-			multigrade.onLoadItemTreeModel(selectedGradebook);
-	}*/
 	
 	@Override
 	protected void onNewCategory(ItemModel itemModel) {
@@ -357,14 +260,9 @@ public class InstructorView extends AppView {
 	
 	@Override
 	protected void onOpenNotification() {
-		//borderLayout.show(LayoutRegion.NORTH);
+		
 	}
-	
-	/*@Override
-	protected void onRefreshCourseGrades() {
-		if (multigrade != null)
-			multigrade.onRefreshCourseGrades();
-	}*/
+
 	
 	@Override
 	protected void onSelectLearner(StudentModel learner) {
@@ -382,34 +280,39 @@ public class InstructorView extends AppView {
 		singleGradeContainer.onChangeModel(multigradeView.getStore(), treeView.getTreeStore(), learnerGradeRecordCollection);
 		onExpandEastPanel(EastCard.LEARNER_SUMMARY);
 	}
-	
-	/*@Override
-	protected void onShowColumns(ShowColumnsEvent event) {
-		if (multigrade != null)
-			multigrade.onShowColumns(event);
-	}*/
-	
+
+	@Override
 	protected void onShowGradeScale(Boolean show) {
 		if (gradeScalePanel == null) {
-			gradeScalePanel = new GradeScalePanel(isEditable);
+			gradeScalePanel = new GradeScalePanel(i18n, isEditable);
 			cardLayoutContainer.add(gradeScalePanel);
 		}
 		onExpandEastPanel(EastCard.GRADE_SCALE);
-		//cardLayout.setActiveItem(gradeScalePanel);
 	}
 	
-	protected void onShowHistory(Boolean show) {
+	@Override
+	protected void onShowHistory(String identifier) {
 		if (historyPanel == null) {
-			historyPanel = new HistoryPanel();
+			historyPanel = new HistoryPanel(i18n);
 			cardLayoutContainer.add(historyPanel);
 		}
 		onExpandEastPanel(EastCard.HISTORY);
-		//cardLayout.setActiveItem(historyPanel);
 	}
 	
 	@Override
 	protected void onStartEditItem(ItemModel itemModel) {
 		onExpandEastPanel(EastCard.EDIT_ITEM);
+	}
+	
+	@Override
+	protected void onStartImport() {
+		viewport.add(importExportView.getImportDialog());
+		viewportLayout.setActiveItem(importExportView.getImportDialog());
+	}
+	
+	@Override
+	protected void onStopImport() {
+		viewportLayout.setActiveItem(borderLayoutContainer);
 	}
 	
 	@Override
@@ -419,10 +322,7 @@ public class InstructorView extends AppView {
 	
 	@Override
 	protected void onSwitchGradebook(GradebookModel selectedGradebook) {
-		
-		//if (multigrade != null) 
-		//	multigrade.onSwitchGradebook(selectedGradebook);
-		
+
 		if (preferencesMenu != null)
 			preferencesMenu.onSwitchGradebook(selectedGradebook);
 		
@@ -471,7 +371,7 @@ public class InstructorView extends AppView {
 						onShowGradeScale(Boolean.TRUE);
 						break;
 					case HISTORY:
-						onShowHistory(Boolean.TRUE);
+						onShowHistory(null);
 						break;
 					}
 					
@@ -605,6 +505,7 @@ public class InstructorView extends AppView {
 		cardLayoutContainer.add(helpPanel);
 		cardLayoutContainer.add(treeView.getFormPanel());
 		cardLayout.setActiveItem(helpPanel);
+		cardLayoutContainer.setScrollMode(Scroll.AUTO);
 
 		treeView.getTreePanel().setHeight(viewport.getHeight() - 50);
 		treeView.getTreePanel().getTreeTable().setHeight(viewport.getHeight() - 50);
@@ -616,7 +517,7 @@ public class InstructorView extends AppView {
 		return borderLayoutContainer;
 	}
 	
-	private TabItem newTabItem(TabConfig tabConfig) {
+	/*private TabItem newTabItem(TabConfig tabConfig) {
 		TabItem tab = new AriaTabItem(tabConfig.header);  
 		tab.addStyleName("pad-text");  
 		//tab.add(contentPanel);
@@ -635,9 +536,9 @@ public class InstructorView extends AppView {
 				if (tabConfig.id.equals(AppConstants.TAB_GRADES)) {
 					tab.add(getBorderLayoutContainer());
 				} else if (tabConfig.id.equals(AppConstants.TAB_GRADESCALE)) {
-					tab.add(new GradeScalePanel(isEditable));
+					tab.add(new GradeScalePanel(i18n, isEditable));
 				} else if (tabConfig.id.equals(AppConstants.TAB_HISTORY)) {
-					tab.add(new HistoryPanel());
+					tab.add(new HistoryPanel(i18n));
 				}
 			}
 		}
@@ -648,14 +549,14 @@ public class InstructorView extends AppView {
 			checkMenuItem.setChecked(true, true);
 		
 		return tab;
-	}
+	}*/
 	
 	/*
 	 * Create a top-level toolbar with menu drop downs
 	 */
-	private ToolBar newToolBar(I18nConstants i18n, GradebookModel selectedGradebook) {
+	private ToolBar populateToolBar(I18nConstants i18n, GradebookModel selectedGradebook) {
 		
-		ToolBar toolBar = new ToolBar();
+		//ToolBar toolBar = new ToolBar();
 		if (isEditable) {
 			TextToolItem fileItem = new TextToolItem(i18n.newMenuHeader());
 			fileItem.setMenu(newFileMenu(i18n, selectedGradebook));

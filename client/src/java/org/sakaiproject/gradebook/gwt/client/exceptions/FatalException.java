@@ -41,7 +41,7 @@ public class FatalException extends Exception implements Serializable {
 	}
 
 	public FatalException(String message, Throwable cause) {
-		super(cause.toString(), cause);
+		super(message, cause);
 	}
 
 }

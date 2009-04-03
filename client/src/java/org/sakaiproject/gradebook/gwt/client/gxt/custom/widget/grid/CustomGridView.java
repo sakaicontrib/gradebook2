@@ -62,7 +62,7 @@ import com.extjs.gxt.ui.client.widget.menu.SeparatorMenuItem;
 
 public abstract class CustomGridView extends BaseCustomGridView {
 	
-	private enum SelectionType { SORT_ASC, SORT_DESC, ADD_ITEM, DELETE_ITEM, EDIT_ITEM, HIDE_ITEM };
+	private enum SelectionType { SORT_ASC, SORT_DESC, ADD_ITEM, DELETE_ITEM, EDIT_ITEM, GRADE_SCALE, HIDE_ITEM, HISTORY };
 	
 	private static final String selectionTypeField = "selectionType";
 	
@@ -107,9 +107,15 @@ public abstract class CustomGridView extends BaseCustomGridView {
 						case EDIT_ITEM:
 							Dispatcher.forwardEvent(GradebookEvents.SelectItem, cm.getDataIndex(colIndex));
 							break;
+						case GRADE_SCALE:
+							Dispatcher.forwardEvent(GradebookEvents.ShowGradeScale, Boolean.TRUE);
+							break;
 						case HIDE_ITEM:
 							Dispatcher.forwardEvent(GradebookEvents.HideColumn, cm.getDataIndex(colIndex));
 							//cm.setHidden(colIndex, true);
+							break;
+						case HISTORY:
+							Dispatcher.forwardEvent(GradebookEvents.ShowHistory, cm.getDataIndex(colIndex));
 							break;
 						case SORT_ASC:
 							ds.sort(cm.getDataIndex(colIndex), SortDir.ASC);
@@ -163,22 +169,47 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			item.setIconStyle("my-icon-desc");
 			item.addSelectionListener(selectionListener);
 			menu.add(item);
+		
+			menu.add(new SeparatorMenuItem());
 		}
 		
-		menu.add(new SeparatorMenuItem());
-		
-		if (! isStatic) {
+		if (config.getId().equals(StudentModel.Key.COURSE_GRADE.name())) {
 			item = new AriaMenuItem();
-			item.setData(selectionTypeField, SelectionType.ADD_ITEM);
-			item.setItemId(AppConstants.ID_HD_ADD_ITEM_MENUITEM);
+			item.setData(selectionTypeField, SelectionType.GRADE_SCALE);
+			item.setItemId(AppConstants.ID_HD_GRADESCALE_MENUITEM);
 			item.setData("colIndex", Integer.valueOf(colIndex));
-			item.setText(i18n.headerAddItem());
-			item.setTitle(i18n.headerAddItemTitle());
-			item.setIconStyle("gbAddItemIcon");
+			item.setText(i18n.headerGradeScale());
+			item.setTitle(i18n.headerGradeScaleTitle());
+			item.setIconStyle("gbGradeScaleButton");
 			item.addSelectionListener(selectionListener);
 			
 			menu.add(item);
+		}
+		
+		item = new AriaMenuItem();
+		item.setData(selectionTypeField, SelectionType.HISTORY);
+		item.setItemId(AppConstants.ID_HD_HISTORY_MENUITEM);
+		item.setData("colIndex", Integer.valueOf(colIndex));
+		item.setText(i18n.headerHistory());
+		item.setTitle(i18n.headerHistoryTitle());
+		item.setIconStyle("gbHistoryButton");
+		item.addSelectionListener(selectionListener);
 			
+		menu.add(item);
+		menu.add(new SeparatorMenuItem());
+		
+		item = new AriaMenuItem();
+		item.setData(selectionTypeField, SelectionType.ADD_ITEM);
+		item.setItemId(AppConstants.ID_HD_ADD_ITEM_MENUITEM);
+		item.setData("colIndex", Integer.valueOf(colIndex));
+		item.setText(i18n.headerAddItem());
+		item.setTitle(i18n.headerAddItemTitle());
+		item.setIconStyle("gbAddItemIcon");
+		item.addSelectionListener(selectionListener);
+			
+		menu.add(item);
+		
+		if (! isStatic) {
 			item = new AriaMenuItem();
 			item.setData(selectionTypeField, SelectionType.EDIT_ITEM);
 			item.setItemId(AppConstants.ID_HD_EDIT_ITEM_MENUITEM);
@@ -201,8 +232,9 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			
 			menu.add(item);
 			
-			menu.add(new SeparatorMenuItem());
 		}
+
+		menu.add(new SeparatorMenuItem());
 		
 		item = new AriaMenuItem();
 		item.setData(selectionTypeField, SelectionType.HIDE_ITEM);
@@ -214,6 +246,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 		item.addSelectionListener(selectionListener);
 		
 		menu.add(item);
+			
 
 		return menu;
 	}

@@ -29,12 +29,6 @@
 		<property name="parentId" column="PARENT_ID"/>
 		
 		<property name="studentUid" column="LEARNER_UID"/>
-		
-		<property name="field" column="FIELD_NAME"/>
-  
-  		<property name="value" column="FIELD_VALUE"/>
-  		
-  		<property name="startValue" column="FIELD_START_VALUE"/>
   		
   		<property name="status" column="ACTION_STATUS"/>
   		

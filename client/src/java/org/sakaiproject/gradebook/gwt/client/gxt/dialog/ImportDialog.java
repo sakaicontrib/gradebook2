@@ -79,7 +79,7 @@ import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Element;
 
-public class ImportDialog extends Window {
+public class ImportDialog extends ContentPanel {
 
 	private enum Step { ONE, TWO, THREE };
 	
@@ -106,14 +106,14 @@ public class ImportDialog extends Window {
 	
 	private MemoryProxy<ListLoadResult<BaseModel>> proxy;
 	private ListLoader<?> loader;
-	private PagingToolBar toolBar;
+	//private PagingToolBar toolBar;
 	private List<BaseModel> resultModels;
 	private MessageBox uploadBox;
 	
 	public ImportDialog(String gradebookUid) {
 		super();
 		this.gradebookUid = gradebookUid;
-		setCloseAction(CloseAction.CLOSE);
+		//setCloseAction(CloseAction.CLOSE);
 		setCollapsible(false);
 		setHeaderVisible(true);
 		setHeading("Import");
@@ -368,51 +368,9 @@ public class ImportDialog extends Window {
 		remoteCommand.execute(action);
 	}
 	
-	/*private void createNewItem(Long categoryId, String assignmentName, Double assignmentWeight, Double assignmentPoints, Date dueDate) {
-		GradebookModel gbModel = Registry.get(gradebookUid);
-		UserAssignmentCreateAction action = 
-			new UserAssignmentCreateAction(gbModel, 
-				categoryId, 
-				assignmentName, assignmentWeight, 
-				assignmentPoints, dueDate);
-		
-		RemoteCommand<AssignmentModel> remoteCommand = 
-			new RemoteCommand<AssignmentModel>() {
-
-				@Override
-				public void onCommandSuccess(UserEntityAction<AssignmentModel> action, AssignmentModel result) {
-					//notifier.notify("Grade Item Added", "Created new assignment as '{0}' ", result.getName());
-					
-					action.setModel(result);
-					
-					BaseModel model = new BaseModel();
-					model.set("desc", new StringBuilder().append("Created new assignment as ").append(result.getName()).toString());
-					
-					resultStore.add(model);
-					
-					fireEvent(GradebookEvents.UserChange, new UserChangeEvent(action));
-				}
-			
-		};
-		
-		remoteCommand.execute(action);
-	}*/
-	
 	private LayoutContainer buildButtonContainer() {
 		LayoutContainer buttonContainer = new LayoutContainer();
 		buttonContainer.setLayout(new RowLayout());
-		
-		/*readFileButton = new Button("Read File");
-		readFileButton.setMinWidth(120);
-		readFileButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
-
-			@Override
-			public void componentSelected(ButtonEvent ce) {
-				fileUploadPanel.submit();
-			}
-		});
-		buttonContainer.add(readFileButton, new RowData(120, 20, new Margins(5)));
-		*/
 		
 		backButton = new Button("Back");
 		backButton.setMinWidth(120);
@@ -448,7 +406,7 @@ public class ImportDialog extends Window {
 					gotoStep3();
 					break;
 				case THREE:
-					close();
+					Dispatcher.forwardEvent(GradebookEvents.StopImport);
 					break;
 				}
 			}
@@ -457,34 +415,14 @@ public class ImportDialog extends Window {
 		nextButton.setEnabled(false);
 		
 		buttonContainer.add(backButton, new RowData(120, 20, new Margins(5)));
-		
-		/*
-		confirmButton = new Button("Confirm");
-		confirmButton.setMinWidth(120);
-		confirmButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
-
-			@Override
-			public void componentSelected(ButtonEvent ce) {
 				
-				step3.setEnabled(true);
-				tabPanel.setSelection(step3);
-
-				step3Container.add(buildStudentContainer(itemStore.getModels(), store.getModels()));
-				step3.layout();
-				
-			}
-		});
-		buttonContainer.add(confirmButton, new RowData(120, 20, new Margins(5)));
-		confirmButton.setEnabled(false);
-		*/
-		
 		cancelButton = new Button("Cancel");
 		cancelButton.setMinWidth(120);
 		cancelButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
 
 			@Override
 			public void componentSelected(ButtonEvent ce) {
-				ImportDialog.this.close();	
+				Dispatcher.forwardEvent(GradebookEvents.StopImport);
 				fileUploadPanel.clear();
 			}
 		});

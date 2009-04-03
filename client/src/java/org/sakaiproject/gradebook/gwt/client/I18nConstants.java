@@ -103,8 +103,12 @@ public interface I18nConstants extends Constants {
 	String headerExportTitle();
 	String headerDeleteItem();
 	String headerDeleteItemTitle();
+	String headerGradeScale();
+	String headerGradeScaleTitle();
 	String headerHideItem();
 	String headerHideItemTitle();
+	String headerHistory();
+	String headerHistoryTitle();
 	String headerImport();
 	String headerImportTitle();
 	String headerSortAscending();

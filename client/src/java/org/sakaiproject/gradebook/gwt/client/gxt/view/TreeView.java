@@ -97,6 +97,9 @@ public class TreeView extends View {
 			GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 			onSwitchGradebook(selectedGradebook);
 			break;
+		case GradebookEvents.SwitchEditItem:
+			onSwitchEditItem((ItemModel)event.data);
+			break;
 		case GradebookEvents.SwitchGradebook:
 			onSwitchGradebook((GradebookModel)event.data);
 			break;
@@ -124,7 +127,7 @@ public class TreeView extends View {
 	}
 	
 	protected void onEditItem(ItemModel itemModel) {
-		formPanel.onEditItem(itemModel);
+		formPanel.onEditItem(itemModel, true);
 	}
 	
 	protected void onEditItemComplete(Boolean doCommit) {
@@ -199,6 +202,10 @@ public class TreeView extends View {
 		treePanel.onSingleGrade();
 	}
 	
+	protected void onSwitchEditItem(ItemModel itemModel) {
+		formPanel.onEditItem(itemModel, false);
+	}
+	
 	@SuppressWarnings("unchecked")
 	protected void onSwitchGradebook(final GradebookModel selectedGradebook) {
 		//System.out.println("TreeView: Switch Gradebook");
@@ -258,6 +265,7 @@ public class TreeView extends View {
 	
 	protected void onUnmaskItemTree() {
 		treePanel.onUnmaskItemTree();
+		formPanel.onActionCompleted();
 	}
 	
 	protected void onUserChange(UserEntityAction<?> action) {

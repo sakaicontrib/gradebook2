@@ -28,6 +28,7 @@ import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityCreateAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
+import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModel;
@@ -51,7 +52,7 @@ public interface GradebookToolFacade extends RemoteService {
 	
 	<X extends EntityModel> X createEntity(UserEntityCreateAction<X> action) throws FatalException;
 	
-	<X extends ItemModel> X createItemEntity(UserEntityCreateAction<X> action) throws FatalException;
+	<X extends ItemModel> X createItemEntity(UserEntityCreateAction<X> action) throws BusinessRuleException, FatalException;
 	
 	<X extends EntityModel> X getEntity(UserEntityGetAction<X> action) throws FatalException;
 	
@@ -60,8 +61,6 @@ public interface GradebookToolFacade extends RemoteService {
 	<X extends EntityModel> PagingLoadResult<X> getEntityPage(PageRequestAction action, PagingLoadConfig config) throws FatalException;
 
 	<X extends ItemModel> X getEntityTreeModel(String gradebookUid, X parent);
-	
-	//List<CategoryModel> recalculateEqualWeightingCategories(String gradebookUid, Long gradebookId, Boolean isEqualWeighting);
 	
 	<X extends ItemModel> X updateItemEntity(UserEntityUpdateAction<X> action) throws InvalidInputException, FatalException;
 	

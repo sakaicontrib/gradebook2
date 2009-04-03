@@ -26,21 +26,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.action.Action;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.GridPanel;
+import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.CustomColumnModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 
 import com.extjs.gxt.ui.client.Registry;
-import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.core.XTemplate;
 import com.extjs.gxt.ui.client.data.BaseModel;
+import com.extjs.gxt.ui.client.event.ButtonEvent;
+import com.extjs.gxt.ui.client.event.SelectionListener;
+import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.ComponentPlugin;
-import com.extjs.gxt.ui.client.widget.ContentPanel;
+import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
@@ -52,7 +57,10 @@ import com.google.gwt.user.client.Element;
 @SuppressWarnings("unchecked")
 public class HistoryPanel extends GridPanel<UserEntityAction> {
 
-	public HistoryPanel() {
+	private static final String BUTTON_SELECTOR_FLAG = "buttonSelector";
+	private enum ButtonSelector { CLOSE };
+	
+	public HistoryPanel(I18nConstants i18n) {
 		super(AppConstants.HISTORY, EntityType.ACTION);
 		setFrame(false);
 		setHeaderVisible(false);
@@ -61,26 +69,20 @@ public class HistoryPanel extends GridPanel<UserEntityAction> {
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 		//add(newGrid(newColumnModel(selectedGradebook)));
 	
-		
 		createExpander();
 	
+		Button button = new AriaButton(i18n.close(), new SelectionListener<ButtonEvent>() {
+
+			@Override
+			public void componentSelected(ButtonEvent be) {
+				Dispatcher.forwardEvent(GradebookEvents.HideEastPanel, Boolean.FALSE);
+			}
+			
+		});
+		addButton(button);
 	}
 	
 	 private void createExpander() {
-		/*List<BaseModel> stocks = new ArrayList<BaseModel>();
-		BaseModel model = new BaseModel();
-		model.set("name", "International Business Machines");
-		stocks.add(model);
-		
-		model = new BaseModel();
-		model.set("name", "Cisco");
-		stocks.add(model);
-		
-		for (BaseModel s : stocks) {
-			s.set(
-							"desc",
-							"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Sed metus nibh, sodales a, porta at, vulputate eget, dui. Pellentesque ut nisl. Maecenas tortor turpis, interdum non, sodales non, iaculis ac, lacus. Vestibulum auctor, tortor quis iaculis malesuada, libero lectus bibendum purus, sit amet tincidunt quam turpis vel lacus. In pellentesque nisl non sem. Suspendisse nunc sem, pretium eget, cursus a, fringilla vel, urna.<br/><br/>Aliquam commodo ullamcorper erat. Nullam vel justo in neque porttitor laoreet. Aenean lacus dui, consequat eu, adipiscing eget, nonummy non, nisi. Morbi nunc est, dignissim non, ornare sed, luctus eu, massa. Vivamus eget quam. Vivamus tincidunt diam nec urna. Curabitur velit.");
-		}*/
 
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 
@@ -105,6 +107,7 @@ public class HistoryPanel extends GridPanel<UserEntityAction> {
 		ColumnModel cm = new ColumnModel(configs);
 
 		Grid<BaseModel> grid = new Grid<BaseModel>(store, cm);
+		grid.setBorders(true);
 		grid.addPlugin(expander);
 		grid.getView().setForceFit(true);
 		add(grid);

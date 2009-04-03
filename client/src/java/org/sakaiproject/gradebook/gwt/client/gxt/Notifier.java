@@ -61,10 +61,10 @@ public class Notifier {
 		int x = XDOM.getViewportSize().width / 2 - panelWidth / 2;
 		
 		LogConfig infoConfig = new LogConfig(title, text, infoParams);
-		infoConfig.display = 12000;
+		infoConfig.display = 60000;
 		infoConfig.width = panelWidth;
 		infoConfig.height = 60;
-		//infoConfig.isPermanent = true;
+		infoConfig.isPermanent = true;
 		
 		LogDisplay.display(x, 0, infoConfig);
 	}

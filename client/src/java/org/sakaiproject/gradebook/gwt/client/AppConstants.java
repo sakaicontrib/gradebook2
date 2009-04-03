@@ -31,7 +31,9 @@ public interface AppConstants {
 	public static final String ID_HD_ADD_ITEM_MENUITEM		= "headerAddItemMenuItem";
 	public static final String ID_HD_EDIT_ITEM_MENUITEM		= "headerEditItemMenuItem";
 	public static final String ID_HD_DELETE_ITEM_MENUITEM	= "headerDeleteItemMenuItem";
+	public static final String ID_HD_GRADESCALE_MENUITEM	= "headerGradeScaleMenuItem";
 	public static final String ID_HD_HIDE_ITEM_MENUITEM		= "headerHideItemMenuItem";
+	public static final String ID_HD_HISTORY_MENUITEM		= "headerHistoryMenuItem";
 	public static final String ID_CONFIRM_OK_BUTTON			= "confirmationOkButton";
 	public static final String ID_CONFIRM_CANCEL_BUTTON		= "confirmationCancelButton";
 

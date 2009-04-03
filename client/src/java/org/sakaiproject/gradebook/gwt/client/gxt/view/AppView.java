@@ -16,7 +16,7 @@ import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.View;
 import com.extjs.gxt.ui.client.widget.Viewport;
-import com.extjs.gxt.ui.client.widget.layout.FitLayout;
+import com.extjs.gxt.ui.client.widget.layout.CardLayout;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Accessibility;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -30,12 +30,13 @@ public abstract class AppView extends View {
 	
 	protected NotificationView notificationView;
 	protected Viewport viewport;
+	protected CardLayout viewportLayout;
 
 	
 	public AppView(Controller controller, NotificationView notificationView) {
 		super(controller);
 		this.notificationView = notificationView;
-		
+		this.viewportLayout = new CardLayout();
 		this.viewport = new Viewport() {
 			protected void onRender(Element parent, int pos) {
 			    super.onRender(parent, pos);
@@ -43,7 +44,7 @@ public abstract class AppView extends View {
 			}
 		};
 		viewport.setHeight(screenHeight);
-		viewport.setLayout(new FitLayout());
+		viewport.setLayout(viewportLayout);
 		viewport.setLoadingPanelId("loading");
 		RootPanel.get().add(viewport);
 	}
@@ -73,8 +74,20 @@ public abstract class AppView extends View {
 		case GradebookEvents.SelectLearner:
 			onSelectLearner((StudentModel)event.data);
 			break;
+		case GradebookEvents.ShowGradeScale:
+			onShowGradeScale((Boolean)event.data);
+			break;
+		case GradebookEvents.ShowHistory:
+			onShowHistory((String)event.data);
+			break;
+		case GradebookEvents.StartImport:
+			onStartImport();
+			break;
 		case GradebookEvents.StartEditItem:
 			onStartEditItem((ItemModel)event.data);
+			break;
+		case GradebookEvents.StopImport:
+			onStopImport();
 			break;
 		case GradebookEvents.HideEastPanel:
 			onHideEastPanel((Boolean)event.data);
@@ -130,6 +143,10 @@ public abstract class AppView extends View {
 		
 	}
 	
+	protected void onHideEastPanel(Boolean doCommit) {
+		
+	}
+	
 	protected void onItemCreated(ItemModel itemModel) {
 		
 	}
@@ -154,6 +171,14 @@ public abstract class AppView extends View {
 		
 	}
 	
+	protected void onShowGradeScale(Boolean show) {
+		
+	}
+	
+	protected void onShowHistory(String identifier) {
+		
+	}
+	
 	protected void onSingleGrade(StudentModel student) {
 		
 	}
@@ -162,10 +187,14 @@ public abstract class AppView extends View {
 		
 	}
 	
-	protected void onHideEastPanel(Boolean doCommit) {
+	protected void onStartImport() {
 		
 	}
 	
+	protected void onStopImport() {
+		
+	}
+		
 	protected void onSwitchGradebook(GradebookModel selectedGradebook) {
 		
 	}

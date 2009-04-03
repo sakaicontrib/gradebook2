@@ -107,7 +107,8 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	 */
     
 	public Long createAssignmentForCategory(final Long gradebookId, final Long categoryId,
-			final String name, final Double points, final Date dueDate, final Boolean isNotCounted,
+			final String name, final Double points, final Double weight, final Date dueDate,
+			final Boolean isUnweighted, final Boolean isExtraCredit, final Boolean isNotCounted, 
 			final Boolean isReleased) throws ConflictingAssignmentNameException, StaleObjectModificationException, IllegalArgumentException
 	    {
 	    	if(gradebookId == null || categoryId == null)
@@ -119,21 +120,24 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	    		public Object doInHibernate(Session session) throws HibernateException {
 	    			Gradebook gb = (Gradebook)session.load(Gradebook.class, gradebookId);
 	    			Category cat = (Category)session.load(Category.class, categoryId);
-	    			List conflictList = ((List)session.createQuery(
+	    			/*List conflictList = ((List)session.createQuery(
 	    			"select go from GradableObject as go where go.name = ? and go.gradebook = ? and go.removed=false").
 	    			setString(0, name).
 	    			setEntity(1, gb).list());
 	    			int numNameConflicts = conflictList.size();
 	    			if(numNameConflicts > 0) {
 	    				throw new ConflictingAssignmentNameException("You can not save multiple assignments in a gradebook with the same name");
-	    			}
+	    			}*/
 
 	    			Assignment asn = new Assignment();
 	    			asn.setGradebook(gb);
 	    			asn.setCategory(cat);
 	    			asn.setName(name.trim());
 	    			asn.setPointsPossible(points);
+	    			asn.setAssignmentWeighting(weight);
 	    			asn.setDueDate(dueDate);
+	    			asn.setUnweighted(isUnweighted);
+	    			asn.setExtraCredit(isExtraCredit);
 	    			asn.setUngraded(false);
 	    			if (isNotCounted != null) {
 	    				asn.setNotCounted(isNotCounted.booleanValue());
@@ -158,7 +162,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	    	return (Long)getHibernateTemplate().execute(hc);
 	    }
 
-	public Long createCategory(final Long gradebookId, final String name, final Double weight, final int drop_lowest) 
+	public Long createCategory(final Long gradebookId, final String name, final Double weight, final Integer dropLowest, final Boolean equalWeightAssignments, final Boolean isUnweighted) 
     throws ConflictingCategoryNameException, StaleObjectModificationException {
     	HibernateCallback hc = new HibernateCallback() {
     		public Object doInHibernate(Session session) throws HibernateException {
@@ -176,11 +180,15 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
     				throw new IllegalArgumentException("weight for category is greater than 1 or less than 0 in createCategory of BaseHibernateManager");
     			}
 
+    			int dl = dropLowest == null ? 0 : dropLowest.intValue();
+    			
     			Category ca = new Category();
     			ca.setGradebook(gb);
     			ca.setName(name);
     			ca.setWeight(weight);
-    			ca.setDrop_lowest(drop_lowest);
+    			ca.setDrop_lowest(dl);
+    			ca.setEqualWeightAssignments(equalWeightAssignments);
+    			ca.setUnweighted(isUnweighted);
     			ca.setRemoved(false);
 
     			Long id = (Long)session.save(ca);

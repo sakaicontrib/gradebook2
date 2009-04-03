@@ -31,6 +31,7 @@ import org.sakaiproject.gradebook.gwt.client.action.UserEntityCreateAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
+import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModel;
@@ -197,7 +198,7 @@ public class GradebookToolFacadeMockImpl extends RemoteServiceServlet implements
 		return delegateFacade.createEntity(action);
 	}
 	
-	public <X extends ItemModel> X createItemEntity(UserEntityCreateAction<X> action) throws FatalException {
+	public <X extends ItemModel> X createItemEntity(UserEntityCreateAction<X> action) throws BusinessRuleException, FatalException {
 		
 		return delegateFacade.createItemEntity(action);
 	}

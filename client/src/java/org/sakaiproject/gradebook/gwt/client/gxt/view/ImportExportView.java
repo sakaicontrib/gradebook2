@@ -6,7 +6,6 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 
 import com.extjs.gxt.ui.client.Registry;
-import com.extjs.gxt.ui.client.XDOM;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.View;
@@ -29,9 +28,9 @@ public class ImportExportView extends View {
 		switch (event.type) {
 		case GradebookEvents.StartImport:
 			importDialog = new ImportDialog(selectedGradebook.getGradebookUid());
-			importDialog.setSize(XDOM.getViewportSize().width - 50, 500);
-			importDialog.show();
-			importDialog.center();
+			//importDialog.setSize(XDOM.getViewportSize().width - 50, 500);
+			//importDialog.show();
+			//importDialog.center();
 			break;
 		case GradebookEvents.StartExport:
 			String uri = GWT.getModuleBaseURL() + "/export?gradebookUid=" + selectedGradebook.getGradebookUid();
@@ -44,6 +43,10 @@ public class ImportExportView extends View {
 			}
 			break;
 		}
+	}
+
+	public ImportDialog getImportDialog() {
+		return importDialog;
 	}
 
 }

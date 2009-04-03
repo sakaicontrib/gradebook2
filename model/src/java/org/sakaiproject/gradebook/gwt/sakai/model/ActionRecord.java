@@ -41,9 +41,6 @@ public class ActionRecord {
 	private String entityId;
 	private String parentId;
 	private String studentUid;
-	private String field;
-	private String value;
-	private String startValue;
 	private String status;
 	private String graderId;
 	private Date datePerformed;
@@ -97,24 +94,6 @@ public class ActionRecord {
 	}
 	public void setParentId(String parentId) {
 		this.parentId = parentId;
-	}
-	public String getField() {
-		return field;
-	}
-	public void setField(String field) {
-		this.field = field;
-	}
-	public String getValue() {
-		return value;
-	}
-	public void setValue(String value) {
-		this.value = value;
-	}
-	public String getStartValue() {
-		return startValue;
-	}
-	public void setStartValue(String startValue) {
-		this.startValue = startValue;
 	}
 	public String getStatus() {
 		return status;

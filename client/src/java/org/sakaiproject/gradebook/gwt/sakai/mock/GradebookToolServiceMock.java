@@ -280,14 +280,17 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		return assignment.getId();
 	}
 
-	public Long createAssignmentForCategory(Long gradebookId, Long categoryId, String name, Double points, Date dueDate, Boolean isNotCounted, Boolean isReleased)
+	public Long createAssignmentForCategory(Long gradebookId, Long categoryId, String name, Double points, Double weight, Date dueDate, Boolean isUnweighted, Boolean isExtraCredit, Boolean isNotCounted, Boolean isReleased)
 			throws RuntimeException {
 		Category category = getCategory(categoryId);
 		Assignment assignment = new Assignment(gradebook, name, points, dueDate, isReleased);
 		assignment.setId(assignmentIdCount++);
 		assignment.setNotCounted(isNotCounted);
 		assignment.setUnweighted(Boolean.FALSE);
-		assignment.setAssignmentWeighting(Double.valueOf(0.0));
+		assignment.setExtraCredit(isExtraCredit);
+		assignment.setReleased(isReleased);
+		assignment.setPointsPossible(points);
+		assignment.setAssignmentWeighting(weight);
 		assignmentMap.put(assignment.getId(), assignment);
 		assignments.add(assignment);
 		
@@ -307,15 +310,16 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		return assignment.getId();
 	}
 
-	public Long createCategory(Long gradebookId, String name, Double weight, int drop_lowest) throws RuntimeException {
+	public Long createCategory(Long gradebookId, String name, Double weight, Integer dropLowest, Boolean equalWeightAssignments, Boolean isUnweighted) throws RuntimeException {
 		Long id = Long.valueOf(categoryCount++);
+		int dl = dropLowest == null ? 0 : dropLowest.intValue();
 		Category category = new Category();
 		category.setId(id);
 		category.setName(name);
 		category.setWeight(weight);
-		category.setUnweighted(Boolean.FALSE);
-		category.setDrop_lowest(drop_lowest);
-		category.setEqualWeightAssignments(Boolean.TRUE);
+		category.setUnweighted(isUnweighted);
+		category.setDrop_lowest(dl);
+		category.setEqualWeightAssignments(equalWeightAssignments);
 		categoryMap.put(id, category);
 		categoryIds.add(id);
 		category.setGradebook(gradebook);

@@ -48,6 +48,7 @@ import com.extjs.gxt.ui.client.data.TreeModelReader;
 import com.extjs.gxt.ui.client.event.CheckChangedEvent;
 import com.extjs.gxt.ui.client.event.CheckChangedListener;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
+import com.extjs.gxt.ui.client.event.KeyListener;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.MenuEvent;
 import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
@@ -83,6 +84,7 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Accessibility;
+import com.google.gwt.user.client.ui.KeyboardListener;
 
 public class ItemTreePanel extends ContentPanel {
 	
@@ -177,6 +179,7 @@ public class ItemTreePanel extends ContentPanel {
 	    getHeader().setId("itemtreelabel");
 	    Accessibility.setRole(el().dom, "region");
 	    Accessibility.setRole(getHeader().el().dom, "heading");
+	    treeTable.setHeight(getHeight(true));
 	}
 
 	public void expandTrees() {
@@ -242,7 +245,7 @@ public class ItemTreePanel extends ContentPanel {
 			// Ensure that either the ID or DISPLAY NAME or SORT NAME is visible
 			if (!visibleStaticIdSet.contains(StudentModel.Key.DISPLAY_ID.name()) && !visibleStaticIdSet.contains(StudentModel.Key.DISPLAY_NAME.name())
 					&& !visibleStaticIdSet.contains(StudentModel.Key.SORT_NAME.name()))
-				visibleStaticIdSet.add(StudentModel.Key.DISPLAY_NAME.name());
+				visibleStaticIdSet.add(StudentModel.Key.SORT_NAME.name());
 			
 			// Deal with the dynamic columns now
 			ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
@@ -811,6 +814,19 @@ public class ItemTreePanel extends ContentPanel {
 			protected TreeItem createItem(BaseTreeModel<TreeModel> model) {
 				TreeItem item = new AriaTreeItem();
 				
+				item.addListener(Events.KeyPress, new KeyListener() {
+					public void componentKeyPress(ComponentEvent event) {
+						switch (event.getKeyCode()) {
+						case KeyboardListener.KEY_ENTER:
+							TreeItem item = treeTable.getSelectedItem();
+							if (item != null) {
+								item.setChecked(true);	
+							}
+							break;
+						}
+					}
+				});
+				
 				Boolean hidden = model.get("hidden");
 				boolean isHidden = hidden != null && hidden.booleanValue();
 				item.setChecked(!isHidden);
@@ -950,6 +966,7 @@ public class ItemTreePanel extends ContentPanel {
 					//updateItemMenuItem.setVisible(isNotGradebook);
 					deleteItemMenuItem.setVisible(isNotGradebook);
 					
+					Dispatcher.forwardEvent(GradebookEvents.SwitchEditItem, itemModel);
 					//Dispatcher.forwardEvent(GradebookEvents.StartEditItem, itemModel);
 				}
 			}
