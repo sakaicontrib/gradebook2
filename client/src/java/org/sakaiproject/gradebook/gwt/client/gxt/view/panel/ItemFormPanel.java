@@ -87,7 +87,6 @@ public class ItemFormPanel extends ContentPanel {
 	
 	private RowLayout layout;
 	private RowData topRowData, bottomRowData;
-	//private Button closeButton, createButton, cancelButton, deleteButton, saveButton;
 	private Button okButton, cancelButton;
 	private boolean isFull;
 	
@@ -130,19 +129,6 @@ public class ItemFormPanel extends ContentPanel {
 		categoryPicker.setName(ItemModel.Key.CATEGORY_ID.name());
 		categoryPicker.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.CATEGORY_NAME));
 		categoryPicker.addSelectionChangedListener(categorySelectionChangedListener);
-		/*categoryPicker.addSelectionChangedListener(new SelectionChangedListener<ItemModel>() {
-
-			@Override
-			public void selectionChanged(SelectionChangedEvent<ItemModel> sce) {
-				ItemModel model = sce.getSelectedItem();
-				boolean hasCategories = selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES;
-				boolean isItem = model != null && model.getItemType() == Type.ITEM;
-				
-				if (model != null) 
-					percentCategoryField.setVisible(isItem && hasCategories && !DataTypeConversionUtil.checkBoolean(model.getEqualWeightAssignments()));
-			}
-		
-		});*/
 		categoryPicker.setVisible(false);
 		formPanel.add(categoryPicker);
 		
@@ -160,9 +146,7 @@ public class ItemFormPanel extends ContentPanel {
 		gradeTypePicker.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.GRADETYPE));
 		gradeTypePicker.setVisible(false);
 		formPanel.add(gradeTypePicker);
-		
-		//addGradebookFormItems(formPanel, i18n);
-		
+
 		percentCourseGradeField = new NumberField();
 		percentCourseGradeField.setName(ItemModel.Key.PERCENT_COURSE_GRADE.name());
 		percentCourseGradeField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.PERCENT_COURSE_GRADE));
@@ -274,35 +258,10 @@ public class ItemFormPanel extends ContentPanel {
 		
 		addButton(cancelButton);
 		
-		/*
-		createButton = new Button(i18n.createButton(), selectionListener);
-		createButton.setData(selectionTypeField, SelectionType.CREATE);
-		createButton.setVisible(false);
-		
-		addButton(createButton);
-		
-		closeButton = new Button(i18n.closeButton(), selectionListener);
-		closeButton.setData(selectionTypeField, SelectionType.CLOSE);
-		
-		addButton(closeButton);
-		
-		deleteButton = new Button(i18n.deleteButton(), selectionListener);
-		deleteButton.setData(selectionTypeField, SelectionType.DELETE);
-		
-		addButton(deleteButton);
-		
-		saveButton = new Button(i18n.saveButton(), selectionListener);
-		saveButton.setData(selectionTypeField, SelectionType.SAVE);
-		
-		addButton(saveButton);
-		*/
-		
-		
 		topRowData = new RowData(1, 70, new Margins(10));
 		bottomRowData = new RowData(1, 1, new Margins(0, 0, 5, 0));
 		add(directionsField, topRowData);
 		add(formPanel, bottomRowData);
-		//add(treeTable, bottomRowData);
 	}
 	
 	public void onActionCompleted() {
@@ -318,11 +277,6 @@ public class ItemFormPanel extends ContentPanel {
 		
 		okButton.setText(i18n.deleteButton());
 		okButton.setData(selectionTypeField, SelectionType.DELETE);
-		/*closeButton.setVisible(false);
-		createButton.setVisible(false);
-		cancelButton.setVisible(true);
-		deleteButton.setVisible(true);
-		saveButton.setVisible(false);*/
 		
 		if (itemModel != null) {
 			Type itemType = itemModel.getItemType();
@@ -541,6 +495,7 @@ public class ItemFormPanel extends ContentPanel {
 		CategoryType categoryType = selectedGradebook.getGradebookItemModel().getCategoryType();
 		
 		boolean hasCategories = categoryType != CategoryType.NO_CATEGORIES;
+		boolean hasWeights = categoryType == CategoryType.WEIGHTED_CATEGORIES;
 		boolean isNotGradebook = itemType != Type.GRADEBOOK;
 		boolean isCategory = itemType == Type.CATEGORY;
 		boolean isItem = itemType == Type.ITEM;
@@ -559,25 +514,25 @@ public class ItemFormPanel extends ContentPanel {
 			case CATEGORY:
 				category = itemModel;
 				if (category != null && category.getItemType() == Type.CATEGORY)
-					isPercentCategoryVisible = hasCategories && !DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments());
+					isPercentCategoryVisible = hasCategories && hasWeights && !DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments());
 				break;
 			case ITEM:
 				category = itemModel.getParent();
 				if (category != null && category.getItemType() == Type.CATEGORY)
-					isPercentCategoryVisible = hasCategories && !DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments());
+					isPercentCategoryVisible = hasCategories && hasWeights && !DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments());
 				break;
 			default:
-				isPercentCategoryVisible = hasCategories && isItem;
+				isPercentCategoryVisible = hasCategories && hasWeights && isItem;
 			}
 		} else {
-			isPercentCategoryVisible = hasCategories && isItem;
+			isPercentCategoryVisible = hasCategories && hasWeights && isItem;
 		}
 		
 		initField(nameField, !isDelete, true);
 		initField(pointsField, !isDelete && !isExternal, isItem);
 		initField(percentCategoryField, !isDelete, isPercentCategoryVisible);
 		initField(percentCourseGradeField, !isDelete, isCategory);
-		initField(equallyWeightChildrenField, !isDelete, isCategory);
+		initField(equallyWeightChildrenField, !isDelete, isCategory && hasWeights);
 		initField(extraCreditField, !isDelete, isNotGradebook);
 		initField(dropLowestField, !isDelete, isCategory);
 		initField(dueDateField, !isDelete && !isExternal, isItem);
@@ -599,6 +554,12 @@ public class ItemFormPanel extends ContentPanel {
 		
 		field.clearInvalid();
 		field.clearState();
+		
+		if (formBindings != null) {
+			FieldBinding fieldBinding = formBindings.getBinding(field);
+			if (fieldBinding != null && fieldBinding.getModel() != null && fieldBinding.getProperty() != null)
+				fieldBinding.updateField();
+		}
 	}
 	
 	
@@ -749,6 +710,7 @@ public class ItemFormPanel extends ContentPanel {
 				CategoryType categoryType = selectedGradebook.getGradebookItemModel().getCategoryType();
 				
 				boolean hasCategories = categoryType != CategoryType.NO_CATEGORIES;
+				boolean hasWeights = categoryType == CategoryType.WEIGHTED_CATEGORIES;
 				boolean isPercentCategoryVisible = false;
 				
 				if (itemModel != null) {
@@ -761,12 +723,16 @@ public class ItemFormPanel extends ContentPanel {
 					case CATEGORY:
 						category = itemModel;
 						if (category != null && category.getItemType() == Type.CATEGORY)
-							isPercentCategoryVisible = hasCategories && !DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments());
+							isPercentCategoryVisible = hasCategories && hasWeights 
+								&& (!DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments()) || 
+								DataTypeConversionUtil.checkBoolean(extraCreditField.getValue()));
 						break;
 					case ITEM:
 						category = itemModel.getParent();
 						if (category != null && category.getItemType() == Type.CATEGORY)
-							isPercentCategoryVisible = hasCategories && !DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments());
+							isPercentCategoryVisible = hasCategories && hasWeights && 
+								(!DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments()) || 
+										DataTypeConversionUtil.checkBoolean(extraCreditField.getValue()));
 						break;
 					}
 				} 
@@ -780,15 +746,22 @@ public class ItemFormPanel extends ContentPanel {
 
 			public void handleEvent(FieldEvent fe) {
 				Boolean isChecked = ((CheckBox)fe.field).getValue();
+				CategoryType categoryType = selectedGradebook.getGradebookItemModel().getCategoryType();
+				ItemModel category = categoryPicker.getValue();
+				Boolean isEqualWeight = category == null ? Boolean.FALSE : category.getEqualWeightAssignments();
+				boolean hasWeights = categoryType == CategoryType.WEIGHTED_CATEGORIES;
 				
 				if (selectedItemModel != null) {
 					switch (selectedItemModel.getItemType()) {
 					case ITEM:
-						initField(percentCategoryField, !isDelete, isChecked != null && isChecked.booleanValue());
+						initField(percentCategoryField, !isDelete, hasWeights 
+								&& (!DataTypeConversionUtil.checkBoolean(isEqualWeight) 
+										|| (isChecked != null && isChecked.booleanValue())));
 						break;
 					}
 				} else if (createItemType == Type.ITEM) {
-					initField(percentCategoryField, !isDelete, isChecked != null && isChecked.booleanValue());
+					initField(percentCategoryField, !isDelete, hasWeights 
+							&& (!DataTypeConversionUtil.checkBoolean(isEqualWeight) || (isChecked != null && isChecked.booleanValue())));
 				}
 				
 			}

@@ -29,12 +29,14 @@ public class GradebookEvents {
 		
 	}
 	
+	public static final int BeginItemUpdates			= 14000;
 	public static final int BrowseLearner 				= 14001;
 	public static final int Confirmation				= 14002;
 	public static final int ConfirmDeleteItem			= 14003;
 	public static final int CloseNotification			= 14004;
 	public static final int CreateItem					= 14005;
 	public static final int DeleteItem					= 14006;
+	public static final int EndItemUpdates				= 14007;
 	public static final int ExpandEastPanel 			= 14014;
 	public static final int FullScreen					= 14015;
 	public static final int HideColumn					= 14016;

@@ -32,10 +32,12 @@ public class AppController extends Controller {
 	private MultigradeView multigradeView;
 	
 	public AppController() {
+		registerEventTypes(GradebookEvents.BeginItemUpdates);
 		registerEventTypes(GradebookEvents.BrowseLearner);
 		registerEventTypes(GradebookEvents.CloseNotification);
 		registerEventTypes(GradebookEvents.Confirmation);
 		registerEventTypes(GradebookEvents.ConfirmDeleteItem);
+		registerEventTypes(GradebookEvents.EndItemUpdates);
 		registerEventTypes(GradebookEvents.ExpandEastPanel);
 		registerEventTypes(GradebookEvents.FullScreen);
 		registerEventTypes(GradebookEvents.HideColumn);
@@ -76,6 +78,10 @@ public class AppController extends Controller {
 		// Note: the 'missing' break statements in this switch are intentional, they
 		// allow certain events to drop through to multiple views
 		switch (event.type) {
+		case GradebookEvents.BeginItemUpdates:
+		case GradebookEvents.EndItemUpdates:
+			forwardToView(multigradeView, event);
+			break;
 		case GradebookEvents.Confirmation:
 		case GradebookEvents.CloseNotification:
 		case GradebookEvents.Notification:

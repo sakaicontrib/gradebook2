@@ -79,13 +79,12 @@ public class LearnerSummaryPanel extends ContentPanel {
 	private FlexTableContainer learnerInfoTable;
 	
 	
-	public LearnerSummaryPanel() {
+	public LearnerSummaryPanel(I18nConstants i18n) {
+		this.i18n = i18n;
+		
 		setHeaderVisible(false);
 		setLayout(new RowLayout());
-		
-		// TODO: Should this be passed in as an argument to the constructor?
-		i18n = Registry.get(AppConstants.I18N);
-		
+				
 		initListeners();
 		
 		add(newLearnerInfoPanel(), new RowData(1, -1));

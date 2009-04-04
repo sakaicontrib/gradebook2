@@ -63,8 +63,14 @@ public class MultigradeView extends View {
 	@Override
 	protected void handleEvent(AppEvent<?> event) {
 		switch(event.type) {
+		case GradebookEvents.BeginItemUpdates:
+			onBeginItemUpdates();
+			break;
 		case GradebookEvents.BrowseLearner:
 			onBrowseLearner((BrowseLearner)event.data);
+			break;
+		case GradebookEvents.EndItemUpdates:
+			onEndItemUpdates();
 			break;
 		case GradebookEvents.LearnerGradeRecordUpdated:
 			onLearnerGradeRecordUpdated((UserEntityAction<?>)event.data);
@@ -149,8 +155,16 @@ public class MultigradeView extends View {
 		multigradeStore.setMonitorChanges(true);
 	}
 	
+	protected void onBeginItemUpdates() {
+		multigrade.onBeginItemUpdates();
+	}
+	
 	protected void onBrowseLearner(BrowseLearner event) {
 		multigrade.onBrowseLearner(event);
+	}
+	
+	protected void onEndItemUpdates() {
+		multigrade.onEndItemUpdates();
 	}
 	
 	protected void onItemCreated(ItemModel itemModel) {

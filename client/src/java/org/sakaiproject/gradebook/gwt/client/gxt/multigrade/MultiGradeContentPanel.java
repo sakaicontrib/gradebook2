@@ -248,6 +248,10 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		return commentingAssignmentId;
 	}
 	
+	public void onBeginItemUpdates() {
+		refreshAction = RefreshAction.NONE;
+	}
+	
 	/*
 	 * When the user clicks on the next or previous buttons in the student view dialog, an event is thrown to the dispatcher and this 
 	 * method is eventually called. It must decide whether the next learner in the grid is on the current page or not, and choose whether 
@@ -337,17 +341,11 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	}
 
 	public void onEditMode(Boolean enable) {
-		/*if (enable.booleanValue()) {
-			int size = 500; //XDOM.getViewportSize().width- 10;
-			westData.setMaxSize(size);
-			westData.setSize(size);
-		} else
-			westData.setSize(150);
-		borderLayoutContainer.layout();*/
-		/*if (enable.booleanValue())
-			cardLayout.setActiveItem(formPanel);
-		else
-			cardLayout.setActiveItem(mainContainer);*/
+
+	}
+	
+	public void onEndItemUpdates() {
+		refreshGrid(refreshAction);
 	}
 	
 	public void onLearnerGradeRecordUpdated(UserEntityAction<?> action) { 
@@ -390,8 +388,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	}
 	
 	public void onItemUpdated(ItemModel itemModel) {
-		
-		
+
 		switch (itemModel.getItemType()) {
 			
 		case GRADEBOOK:
@@ -400,19 +397,21 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			break;
 		case CATEGORY:
 			if (itemModel.isActive()) {
-				refreshGrid(RefreshAction.REFRESHDATA);
+				queueDeferredRefresh(RefreshAction.REFRESHDATA);
 			}
 			break;
 		case ITEM:
 			if (itemModel.isActive()) {
-				refreshGrid(RefreshAction.REFRESHDATA);
+				queueDeferredRefresh(RefreshAction.REFRESHDATA);
 			}
 			ColumnConfig column = cm.getColumnById(itemModel.getIdentifier());
 			
 			if (column != null) {
-				if (itemModel.getName() != null)
+				if (itemModel.getName() != null) {
 					column.setHeader(itemModel.getName());
-						
+					queueDeferredRefresh(RefreshAction.REFRESHLOCALCOLUMNS);
+				}
+				
 				boolean isIncluded = itemModel.getIncluded() != null && itemModel.getIncluded().booleanValue();
 				boolean isExtraCredit = itemModel.getExtraCredit() != null && itemModel.getExtraCredit().booleanValue();
 						
@@ -1506,12 +1505,18 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		boolean includeData = false;
 		
 		switch (refreshAction) {
+		case REFRESHDATA:
+			includeData = true;
+			break;
 		case REFRESHLOCALCOLUMNS:
 			super.refreshGrid(refreshAction);
 			return;
 		case REFRESHCOLUMNSANDDATA:
 			super.refreshGrid(refreshAction);
 			includeData = true;
+			break;
+		case NONE:
+			// Do nothing
 			break;
 		default:
 			includeData = true;

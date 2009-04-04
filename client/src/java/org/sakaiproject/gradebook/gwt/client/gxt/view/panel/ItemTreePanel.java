@@ -103,7 +103,7 @@ public class ItemTreePanel extends ContentPanel {
 
 	// Components
 	private Menu treeContextMenu;
-	private MenuItem addCategoryMenuItem, updateItemMenuItem, deleteItemMenuItem;
+	private MenuItem addCategoryMenuItem, updateCategoryMenuItem, updateItemMenuItem, deleteCategoryMenuItem, deleteItemMenuItem;
 	private Tree learnerAttributeTree;
 	private Tree itemTree;
 	private TreeTable treeTable;
@@ -138,7 +138,6 @@ public class ItemTreePanel extends ContentPanel {
 		this.visibleStaticIdSet = new HashSet<String>();
 		setBorders(true);
 		setHeading(i18n.navigationPanelHeader());
-		//setLayout(new FitLayout());
 		setLayout(new FillLayout());
 		initListeners();
 		newEditableTree(i18n);
@@ -167,11 +166,6 @@ public class ItemTreePanel extends ContentPanel {
 		
 		add(tabPanel);
 	}
-	
-	/*@Override
-	protected boolean doLayout() {
-		return super.doLayout();
-	}*/
 	
 	@Override
 	protected void onRender(Element parent, int pos) {
@@ -504,6 +498,7 @@ public class ItemTreePanel extends ContentPanel {
 					boolean isGradebook = !isItem && !isCategory;
 					boolean isPercentCategory = property.equals(ItemModel.Key.PERCENT_CATEGORY.name());
 					boolean isPercentGrade = property.equals(ItemModel.Key.PERCENT_COURSE_GRADE.name());
+					boolean isPoints = property.equals(ItemModel.Key.POINTS.name());
 					
 					if (isGradebook && isPercentCategory)
 						return "-";
@@ -534,9 +529,9 @@ public class ItemTreePanel extends ContentPanel {
 					boolean isExtraCredit = itemModel.getExtraCredit() != null && itemModel.getExtraCredit().booleanValue();
 					if (isExtraCredit) {
 						
-						if (isPercentGrade || (isPercentCategory && isItem)) {
+						if (isPercentGrade || (isPercentCategory && isItem) || isPoints) {
 							cssClasses.append(" gbCellExtraCredit");
-							prefix = "+";
+							prefix = "+ ";
 						}
 
 					}
@@ -866,6 +861,23 @@ public class ItemTreePanel extends ContentPanel {
 		addCategoryMenuItem.addSelectionListener(menuSelectionListener);
 		treeContextMenu.add(addCategoryMenuItem);
 		
+		updateCategoryMenuItem = new AriaMenuItem();
+		updateCategoryMenuItem.setData(selectionTypeField, SelectionType.UPDATE_ITEM);
+		updateCategoryMenuItem.setIconStyle("gbEditCategoryIcon");
+		updateCategoryMenuItem.setItemId(AppConstants.ID_CT_EDIT_CATEGORY_MENUITEM);
+		updateCategoryMenuItem.setText(i18n.headerEditCategory());
+		updateCategoryMenuItem.addSelectionListener(menuSelectionListener);
+		treeContextMenu.add(updateCategoryMenuItem);
+	
+		deleteCategoryMenuItem = new AriaMenuItem();
+		deleteCategoryMenuItem.setData(selectionTypeField, SelectionType.DELETE_ITEM);
+		deleteCategoryMenuItem.setIconStyle("gbDeleteCategoryIcon");
+		deleteCategoryMenuItem.setItemId(AppConstants.ID_CT_DELETE_ITEM_MENUITEM);
+		deleteCategoryMenuItem.setText(i18n.headerDeleteCategory());
+		deleteCategoryMenuItem.addSelectionListener(menuSelectionListener);
+		treeContextMenu.add(deleteCategoryMenuItem);
+		
+		
 		MenuItem menuItem = new AriaMenuItem();
 		menuItem.setData(selectionTypeField, SelectionType.CREATE_ITEM);
 		menuItem.setIconStyle("gbAddItemIcon");
@@ -963,8 +975,28 @@ public class ItemTreePanel extends ContentPanel {
 				if (itemModel != null && isEditable) {
 					boolean isNotGradebook = itemModel.getItemType() != Type.GRADEBOOK;
 					
-					//updateItemMenuItem.setVisible(isNotGradebook);
-					deleteItemMenuItem.setVisible(isNotGradebook);
+					switch (itemModel.getItemType()) {
+					case CATEGORY:
+						updateCategoryMenuItem.setVisible(true);
+						updateItemMenuItem.setVisible(false);
+						deleteCategoryMenuItem.setVisible(true);
+						deleteItemMenuItem.setVisible(false);	
+						break;
+					case GRADEBOOK:
+						updateCategoryMenuItem.setVisible(false);
+						updateItemMenuItem.setVisible(false);
+						deleteCategoryMenuItem.setVisible(false);
+						deleteItemMenuItem.setVisible(false);		
+						break;
+					case ITEM:
+						updateCategoryMenuItem.setVisible(false);
+						updateItemMenuItem.setVisible(true);
+						deleteCategoryMenuItem.setVisible(false);
+						deleteItemMenuItem.setVisible(true);
+						break;
+					}
+					
+					
 					
 					Dispatcher.forwardEvent(GradebookEvents.SwitchEditItem, itemModel);
 					//Dispatcher.forwardEvent(GradebookEvents.StartEditItem, itemModel);

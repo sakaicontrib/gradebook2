@@ -2854,6 +2854,49 @@ private static final long serialVersionUID = 1L;
 		gbService.storeActionRecord(actionRecord);
 	}
 	
+	private class NoDuplicateCategoryNamesRule implements BusinessRule {
+
+		private Long categoryId;
+		private Long gradebookId;
+		private String name;
+		private List<Category> categories;
+		
+		public NoDuplicateCategoryNamesRule(Long gradebookId, String name) {
+			this.gradebookId = gradebookId;
+			this.name = name;
+		}
+		
+		public NoDuplicateCategoryNamesRule(Long gradebookId, String name, Long categoryId) {
+			this(gradebookId, name);
+			this.categoryId = categoryId;
+		}
+		
+		public NoDuplicateCategoryNamesRule(Long gradebookId, String name, Long categoryId, List<Category> categories) {
+			this(gradebookId, name, categoryId);
+			this.categories = categories;
+		}
+		
+		public void isSatisfied() throws BusinessRuleException {
+			if (categories == null)
+				categories = gbService.getCategories(gradebookId);
+			
+			if (categories != null) {
+				for (Category c : categories) {
+					if (!c.isRemoved() && c.getName() != null && name != null && c.getName().trim().equalsIgnoreCase(name.trim())) {
+						if (categoryId != null && categoryId.equals(c.getId()))
+							continue;
+						
+						StringBuilder builder = new StringBuilder();
+						builder.append("There is already an existing category called \"").append(name).append("\" ").append("in this gradebook. ")
+							.append("Please enter a different name for this category.");
+						
+						throw new BusinessRuleException(builder.toString());
+					}
+				}
+			}
+		}
+	}
+	
 	private class NoDuplicateItemNamesRule implements BusinessRule {
 
 		private Long assignmentId;
@@ -3155,13 +3198,17 @@ private static final long serialVersionUID = 1L;
 	/**
 	 * Method to add a new category to a gradebook
 	 * 
+	 * Business rules:
+	 *  (1) if no other categories exist, then make the category weight 100%
+	 * 	(2) new category name must not duplicate an existing category name
 	 * 
 	 * @param gradebookUid
 	 * @param gradebookId
 	 * @param item
 	 * @return
+	 * @throws BusinessRuleException 
 	 */
-	protected ItemModel addItemCategory(String gradebookUid, Long gradebookId, ItemModel item) {
+	protected ItemModel addItemCategory(String gradebookUid, Long gradebookId, ItemModel item) throws BusinessRuleException {
 		
 		ActionRecord actionRecord = new ActionRecord(gradebookUid, gradebookId, EntityType.ITEM.name(), ActionType.CREATE.name());
 		Map<String, String> propertyMap = actionRecord.getPropertyMap();
@@ -3185,12 +3232,38 @@ private static final long serialVersionUID = 1L;
 			
 			Gradebook gradebook = gbService.getGradebook(gradebookUid);
 			List<Category> categories = gbService.getCategories(gradebook.getId()); //getCategoriesWithAssignments(gradebook.getId());
+			// Business rule #1
+			// FIXME: Does not take into account removed categories
 			if (!isUnweighted && (categories == null || categories.isEmpty()) && weight == null)
 				weight = Double.valueOf(100d);
 				
 			double w = weight == null ? 0d : ((Double)weight).doubleValue() * 0.01;
 			
+
+			List<BusinessRule> beforeCreateRules = new ArrayList<BusinessRule>();
+			List<BusinessRule> afterCreateRules = new ArrayList<BusinessRule>();
+			switch (gradebook.getCategory_type()) {
+			case GradebookService.CATEGORY_TYPE_NO_CATEGORY:
+
+				break;
+			default:
+				// Business rule #2
+				beforeCreateRules.add(new NoDuplicateCategoryNamesRule(gradebook.getId(), item.getName(), null, categories));					
+			}
+			
+			if (beforeCreateRules != null) {
+				for (BusinessRule rule : beforeCreateRules) {
+					rule.isSatisfied();
+				}
+			}
+			
 			Long categoryId = gbService.createCategory(gradebookId, name, Double.valueOf(w), dropLowest, isEqualWeighting, isUnweighted);
+			
+			if (afterCreateRules != null) {
+				for (BusinessRule rule : afterCreateRules) {
+					rule.isSatisfied();
+				}
+			}
 			
 			category = gbService.getCategory(categoryId);
 		} catch (RuntimeException e) {
@@ -3264,6 +3337,18 @@ private static final long serialVersionUID = 1L;
 		return getItemModel(gradebook, categoriesWithAssignments);
 	}
 	
+	/**
+	 * Method to update a category model
+	 * 
+	 * Business rules:
+	 * 	(1) if weight is null or zero, uninclude it
+	 *  (2) new category name must not duplicate an existing category name
+	 *  (3) if equal weighting is set, then recalculate all item weights of child items
+	 * 
+	 * @param item
+	 * @return
+	 * @throws InvalidInputException
+	 */
 	private ItemModel updateCategoryModel(ItemModel item) throws InvalidInputException {
 		
 		boolean isWeightChanged = false;
@@ -3284,8 +3369,7 @@ private static final long serialVersionUID = 1L;
 		}
 		
 		try {
-			List<Assignment> updatedAssignments = null;
-			
+
 			category.setName(convertString(item.getName()));
 			
 			boolean originalExtraCredit = DataTypeConversionUtil.checkBoolean(category.isExtraCredit());
@@ -3303,6 +3387,7 @@ private static final long serialVersionUID = 1L;
 			double w = newCategoryWeight == null ? 0d : ((Double)newCategoryWeight).doubleValue() * 0.01;
 			category.setWeight(Double.valueOf(w));
 			
+			// Business rule #1
 			if (w == 0d)
 				category.setUnweighted(Boolean.TRUE);
 	
@@ -3342,11 +3427,38 @@ private static final long serialVersionUID = 1L;
 					category.setWeight(Double.valueOf(0.01));
 			}
 			
+			List<BusinessRule> beforeCreateRules = new ArrayList<BusinessRule>();
+			List<BusinessRule> afterCreateRules = new ArrayList<BusinessRule>();
+			switch (gradebook.getCategory_type()) {
+			case GradebookService.CATEGORY_TYPE_NO_CATEGORY:
+
+				break;
+			default:
+				// Business rule #2
+				beforeCreateRules.add(new NoDuplicateCategoryNamesRule(gradebook.getId(), item.getName(), category.getId()));
+					
+				// Business rule #3
+				if (isEqualWeighting && !wasEqualWeighting) 
+					afterCreateRules.add(new RecalculateEqualWeightingRule(category, !wasUnweighted));
+			}
+			
+			if (beforeCreateRules != null) {
+				for (BusinessRule rule : beforeCreateRules) {
+					rule.isSatisfied();
+				}
+			}
+			
 			gbService.updateCategory(category);
 			
-			if (isEqualWeighting && !wasEqualWeighting) {
-				recalculateAssignmentWeights(category.getId(), Boolean.valueOf(isEqualWeighting));
+			if (afterCreateRules != null) {
+				for (BusinessRule rule : afterCreateRules) {
+					rule.isSatisfied();
+				}
 			}
+			
+			/*if (isEqualWeighting && !wasEqualWeighting) {
+				recalculateAssignmentWeights(category.getId(), Boolean.valueOf(isEqualWeighting));
+			}*/
 			
 		} catch (RuntimeException e) {
 			actionRecord.setStatus(ActionRecord.STATUS_FAILURE);
@@ -3415,9 +3527,6 @@ private static final long serialVersionUID = 1L;
 		
 		
 		try {
-						
-			// First, modify the assignment name
-			assignment.setName(convertString(item.getName()));
 			
 			// Check to see if the category id has changed -- this means the user switched the item's category
 			if (!category.getId().equals(item.getCategoryId())) {
@@ -3435,9 +3544,11 @@ private static final long serialVersionUID = 1L;
 			assignment.setReleased(convertBoolean(item.getReleased()).booleanValue());
 			
 			// Business rule #1
-			Double points = convertDouble(item.getPoints());
-			if (points == null)
+			Double points = null; 
+			if (item.getPoints() == null)
 				points = Double.valueOf(100.0d);
+			else
+				points = convertDouble(item.getPoints());
 			
 			assignment.setPointsPossible(points);
 			assignment.setDueDate(convertDate(item.getDueDate()));
@@ -3450,38 +3561,30 @@ private static final long serialVersionUID = 1L;
 			boolean isUnweighted = !convertBoolean(item.getIncluded()).booleanValue();
 			boolean wasUnweighted = DataTypeConversionUtil.checkBoolean(assignment.isUnweighted());
 			
-			// We only want to update the weights when we're dealing with an included item
-			if (!isUnweighted) {
-				// Business rule #2
-				double w = newAssignmentWeight == null ? points.doubleValue() : ((Double)newAssignmentWeight).doubleValue() * 0.01;
-				assignment.setAssignmentWeighting(Double.valueOf(w));
-			}
-			
-			isWeightChanged = isWeightChanged || isUnweighted != wasUnweighted;
-			
-			/*if (!isUnweighted) {
-				boolean isAssignmentRemoved = assignment.isRemoved();
-				if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY) {
-					if (category.isRemoved()) 
-						throw new InvalidInputException("You cannot include a grade item whose category has been deleted in grading. Please undelete the category first.");
-					isAssignmentRemoved = assignment.isRemoved() || category.isRemoved();
-				}
-				
-				if (isAssignmentRemoved) 
-					throw new InvalidInputException("You cannot include a deleted grade item in grading. Please undelete the grade item first.");
-			}*/
-			
 			boolean isRemoved = convertBoolean(item.getRemoved()).booleanValue();
 			boolean wasRemoved = DataTypeConversionUtil.checkBoolean(assignment.isRemoved());
 			
+			// We only want to update the weights when we're dealing with an included item
+			if (!isUnweighted && !isRemoved) {
+				// Business rule #2
+				double w = newAssignmentWeight == null ? points.doubleValue() : ((Double)newAssignmentWeight).doubleValue() * 0.01;
+				newAssignmentWeight = Double.valueOf(w);
+				assignment.setAssignmentWeighting(newAssignmentWeight);
+			} else {
+				newAssignmentWeight = oldAssignmentWeight;
+			}
+			
+			isWeightChanged = isWeightChanged || isUnweighted != wasUnweighted;
+
 			isWeightChanged = isWeightChanged || isRemoved != wasRemoved;
 			
 			if (!isRemoved) {
 				if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY && category.isRemoved()) {
 					throw new InvalidInputException("You cannot undelete a grade item when the category that owns it has been deleted. Please undelete the category first.");
 				}
-				assignment.setRemoved(isRemoved);
 			}
+			
+			assignment.setRemoved(isRemoved);
 			
 			assignment.setUnweighted(Boolean.valueOf(isUnweighted || isRemoved));
 			
@@ -3503,8 +3606,8 @@ private static final long serialVersionUID = 1L;
 				// Business rule #6 
 				beforeCreateRules.add(new CannotIncludeDeletedItemRule(assignment.isRemoved(), category.isRemoved(), isUnweighted));
 				
-				// Business rule #7 -- only apply this rule when included/unincluded, deleted/undeleted, made extra-credit/non-extra-credit
-				if (isUnweighted != wasUnweighted || isRemoved != wasRemoved || isExtraCredit != wasExtraCredit) {
+				// Business rule #7 -- only apply this rule when included/unincluded, deleted/undeleted, made extra-credit/non-extra-credit, or changed category
+				if (isUnweighted != wasUnweighted || isRemoved != wasRemoved || isExtraCredit != wasExtraCredit || oldCategory != null) {
 					isWeightChanged = true;
 					afterCreateRules.add(new RecalculateEqualWeightingRule(category, !isUnweighted));
 				}
@@ -3525,6 +3628,9 @@ private static final long serialVersionUID = 1L;
 				}
 			}
 			
+			// Modify the assignment name
+			assignment.setName(convertString(item.getName()));
+			
 			gbService.updateAssignment(assignment);
 	
 			if (afterCreateRules != null) {
@@ -3532,20 +3638,7 @@ private static final long serialVersionUID = 1L;
 					rule.isSatisfied();
 				}
 			}
-			
-			// Since changing the assignment weight implies that the category is not equally weighted,
-			// ensure that we switch it when the assignment weight changes.
-			/*if (!isUnweighted && !wasUnweighted) {
-				if (oldAssignmentWeight == null || !oldAssignmentWeight.equals(newAssignmentWeight)) {
-						
-					if (!isExtraCredit && category.isEqualWeightAssignments() != null && category.isEqualWeightAssignments().booleanValue()) {
-						Category editCategory = gbService.getCategory(category.getId());
-						editCategory.setEqualWeightAssignments(Boolean.FALSE);
-						gbService.updateCategory(editCategory);
-					}
-				}
-			}*/
-		
+
 		} catch (RuntimeException e) {
 			actionRecord.setStatus(ActionRecord.STATUS_FAILURE);
 			throw e;
@@ -3554,17 +3647,11 @@ private static final long serialVersionUID = 1L;
 		}
 		
 		
-		if (oldCategory != null) {
-			//recalculateAssignmentWeights(oldCategory.getId(), null);
-		
+		if (oldCategory != null || gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_NO_CATEGORY) {
+	
 			List<Category> categoriesWithAssignments = getCategoriesWithAssignments(gradebook.getId());
 			return getItemModel(gradebook, categoriesWithAssignments);
 		} 
-		
-		/*if (isUnweighted != wasUnweighted || isRemoved != wasRemoved || isExtraCredit != wasExtraCredit) {
-			isWeightChanged = true;
-			recalculateAssignmentWeights(category.getId(), null);
-		}*/
 		
 		if (!isWeightChanged) {
 			ItemModel itemModel = createItemModel(category, assignment, null);

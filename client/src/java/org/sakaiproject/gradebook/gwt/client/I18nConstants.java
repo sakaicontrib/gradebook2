@@ -97,10 +97,14 @@ public interface I18nConstants extends Constants {
 	String headerAddCategoryTitle();
 	String headerAddItem();
 	String headerAddItemTitle();
+	String headerEditCategory();
+	String headerEditCategoryTitle();
 	String headerEditItem();
 	String headerEditItemTitle();
 	String headerExport();
 	String headerExportTitle();
+	String headerDeleteCategory();
+	String headerDeleteCategoryTitle();
 	String headerDeleteItem();
 	String headerDeleteItemTitle();
 	String headerGradeScale();

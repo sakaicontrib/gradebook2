@@ -132,9 +132,10 @@ public class GradeCalculationsImpl implements GradeCalculations {
 		}
 		
 		pointsEarned = new BigDecimal(assignmentGradeRecord.getPointsEarned().toString());
-		pointsPossible = new BigDecimal(assignment.getPointsPossible().toString());
-		percentageEarned = pointsEarned.multiply(BIG_DECIMAL_100).divide(pointsPossible, MATH_CONTEXT);
-
+		if (assignment.getPointsPossible() != null) {
+			pointsPossible = new BigDecimal(assignment.getPointsPossible().toString());
+			percentageEarned = pointsEarned.multiply(BIG_DECIMAL_100).divide(pointsPossible, MATH_CONTEXT);
+		}
 		return percentageEarned;
 	}
 	

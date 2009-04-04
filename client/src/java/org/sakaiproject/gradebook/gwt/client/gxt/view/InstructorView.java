@@ -1,9 +1,7 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
@@ -35,7 +33,6 @@ import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
-import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayout;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayoutData;
 import com.extjs.gxt.ui.client.widget.layout.CardLayout;
@@ -55,8 +52,6 @@ public class InstructorView extends AppView {
 	private MultigradeView multigradeView;
 	private ImportExportView importExportView;
 	
-	//private FitLayout contentPanelLayout;
-	//private ContentPanel contentPanel;
 	private ContentPanel borderLayoutContainer;
 	private ContentPanel cardLayoutContainer;
 	private BorderLayout borderLayout;
@@ -66,7 +61,6 @@ public class InstructorView extends AppView {
 	private GradeScalePanel gradeScalePanel;
 	private HistoryPanel historyPanel;
 	
-	private Map<String, ContentPanel> tabContentPanelMap;
 	private List<TabConfig> tabConfigurations;
 	
 	private Listener<MenuEvent> menuEventListener;
@@ -95,7 +89,6 @@ public class InstructorView extends AppView {
 		super(controller, notificationView);
 		this.isEditable = isEditable;
 		this.tabConfigurations = new ArrayList<TabConfig>();
-		this.tabContentPanelMap = new HashMap<String, ContentPanel>();
 		this.treeView = treeView;
 		this.multigradeView = multigradeView;
 		this.importExportView = importExportView;
@@ -140,7 +133,6 @@ public class InstructorView extends AppView {
 			protected void onRender(Element parent, int index) {
 				super.onRender(parent, index);
 				borderLayout.collapse(LayoutRegion.EAST);
-				//borderLayout.collapse(LayoutRegion.WEST);
 			}
 		};
 
@@ -149,6 +141,7 @@ public class InstructorView extends AppView {
 		cardLayoutContainer.setBorders(true);
 		cardLayoutContainer.setBodyBorder(true);
 		cardLayoutContainer.setFrame(true);
+		cardLayoutContainer.setScrollMode(Scroll.AUTO);
 		cardLayout = new CardLayout();
 		cardLayoutContainer.setLayout(cardLayout);
 		cardLayoutContainer.add(helpPanel);
@@ -182,7 +175,6 @@ public class InstructorView extends AppView {
 
 	@Override
 	protected void onCloseNotification() {
-		//borderLayout.hide(LayoutRegion.NORTH);
 	}
 	
 	@Override
@@ -234,9 +226,6 @@ public class InstructorView extends AppView {
 	
 	@Override
 	protected void onItemCreated(ItemModel itemModel) {
-		//if (multigrade != null)
-		//	multigrade.onItemCreated(itemModel);
-		
 		onHideEastPanel(Boolean.FALSE);
 	}
 	
@@ -274,7 +263,7 @@ public class InstructorView extends AppView {
 	@Override
 	protected void onSingleGrade(StudentModel learnerGradeRecordCollection) {
 		if (singleGradeContainer == null) {
-			singleGradeContainer = new LearnerSummaryPanel();
+			singleGradeContainer = new LearnerSummaryPanel(i18n);
 			cardLayoutContainer.add(singleGradeContainer);
 		}
 		singleGradeContainer.onChangeModel(multigradeView.getStore(), treeView.getTreeStore(), learnerGradeRecordCollection);
@@ -348,9 +337,6 @@ public class InstructorView extends AppView {
 			}
 			break;
 		}
-
-		//if (multigrade != null)
-		//	multigrade.onUserChange(action);
 	}
 
 	/*
@@ -374,38 +360,6 @@ public class InstructorView extends AppView {
 						onShowHistory(null);
 						break;
 					}
-					
-					/*String menuItemId = me.item.getId();
-					int indexOfPrefix = menuItemId.indexOf(AppConstants.WINDOW_MENU_ITEM_PREFIX);
-					if (indexOfPrefix != -1) {
-						int index = indexOfPrefix + AppConstants.WINDOW_MENU_ITEM_PREFIX.length();
-						String tabItemId = menuItemId.substring(index);
-						GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-						if (!tabMode)
-							switchTabMode(selectedGradebook.getGradebookUid(), true, false);
-						
-						TabItem tabItem = tabPanel.findItem(tabItemId, false);
-					
-						if (menuItem.isChecked()) {
-		
-							if (tabItem == null) {
-								for (TabConfig tabConfig : tabConfigurations) {
-									if (tabConfig.id.equals(tabItemId)) {
-										tabItem = newTabItem(tabConfig);
-										tabPanel.add(tabItem);
-										break;
-									}
-								}
-							} 
-							
-							tabPanel.setSelection(tabItem);
-							tabPanel.saveState();
-						} else {
-							if (tabItem != null) {
-								tabItem.close();
-							}
-						}
-					}*/
 				}
 			}
 			
@@ -434,31 +388,7 @@ public class InstructorView extends AppView {
 			}
 		
 		};
-		
-		/*tabPanelEventListener = new Listener<TabPanelEvent>() {
-
-			public void handleEvent(TabPanelEvent tpe) {
-				// Ensure that we only response to Remove events
-				if (tpe.type == Events.Remove) {
-					// First thing, we need to make sure we uncheck the relevant menu item
-					// So we generate the menu item id (by convention)
-					String menuItemId = new StringBuilder().append(AppConstants.WINDOW_MENU_ITEM_PREFIX).append(tpe.item.getItemId()).toString();
-					// Look for it in the window menu
-					CheckMenuItem checkMenuItem = (CheckMenuItem)windowMenu.getItemByItemId(menuItemId);
-					if (checkMenuItem != null)
-						checkMenuItem.setChecked(false, true);
-					
-					// Now, in the case where we have only one tab, we can switch off tab mode
-					if (tpe.container.getItemCount() == 1) {
-						GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-						//PersistentStore.storePersistentField(selectedGradebook.getGradebookUid(), AppConstants.TAB_MODE, "checked", Boolean.FALSE.toString());
-						//switchTabMode(selectedGradebook.getGradebookUid(), false, false);
-					}
-				}
-			}
-			
-		};*/
-		
+				
 		toolBarSelectionListener = new SelectionListener<ToolBarEvent>() {
 
 			@Override
@@ -468,89 +398,7 @@ public class InstructorView extends AppView {
 			
 		};
 	}
-	
-	/*
-	private void initTabs(I18nConstants i18n, GradebookModel selectedGradebook) {
-		//tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADES, i18n.tabGradesHeader(), false));
-		tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADESCALE, i18n.tabGradeScaleHeader(), true, MenuSelector.GRADE_SCALE));
-		tabConfigurations.add(new TabConfig(AppConstants.TAB_HISTORY, i18n.tabHistoryHeader(), true, MenuSelector.HISTORY));
-	
-		//String gradebookUid = selectedGradebook.getGradebookUid();
-		//tabMode = GradebookState.getTabMode(gradebookUid);
-	}*/
-	
-	private LayoutContainer getBorderLayoutContainer() {
-
-		cardLayoutContainer = new ContentPanel() {
-			protected void onRender(Element parent, int index) {
-				super.onRender(parent, index);
-			}
-		};
-
-		helpPanel = new HelpPanel() {
-			protected void onRender(Element parent, int index) {
-				super.onRender(parent, index);
-				borderLayout.collapse(LayoutRegion.EAST);
-				//borderLayout.collapse(LayoutRegion.WEST);
-			}
-		};
-
-		cardLayoutContainer.setId("cardLayoutContainer");
-		cardLayoutContainer.setWidth(400);
-		cardLayoutContainer.setBorders(true);
-		cardLayoutContainer.setBodyBorder(true);
-		cardLayoutContainer.setFrame(true);
-		cardLayout = new CardLayout();
-		cardLayoutContainer.setLayout(cardLayout);
-		cardLayoutContainer.add(helpPanel);
-		cardLayoutContainer.add(treeView.getFormPanel());
-		cardLayout.setActiveItem(helpPanel);
-		cardLayoutContainer.setScrollMode(Scroll.AUTO);
-
-		treeView.getTreePanel().setHeight(viewport.getHeight() - 50);
-		treeView.getTreePanel().getTreeTable().setHeight(viewport.getHeight() - 50);
 		
-		borderLayoutContainer.add(treeView.getTreePanel(), westData);
-		borderLayoutContainer.add(multigradeView.getMultiGradeContentPanel(), centerData);
-		borderLayoutContainer.add(cardLayoutContainer, eastData);
-		
-		return borderLayoutContainer;
-	}
-	
-	/*private TabItem newTabItem(TabConfig tabConfig) {
-		TabItem tab = new AriaTabItem(tabConfig.header);  
-		tab.addStyleName("pad-text");  
-		//tab.add(contentPanel);
-		tab.setClosable(tabConfig.isClosable);
-		tab.setLayout(new FitLayout());
-		tab.setItemId(tabConfig.id);
-		
-		ContentPanel tabContentPanel = null;
-		if (tab.getItemCount() > 0)
-			tabContentPanel = (ContentPanel)tab.getItem(0);
-		
-		if (tabContentPanel == null) {
-			if (tabContentPanelMap.containsKey(tabConfig.id)) 
-				tabContentPanel = tabContentPanelMap.get(tabConfig.id);
-			else {
-				if (tabConfig.id.equals(AppConstants.TAB_GRADES)) {
-					tab.add(getBorderLayoutContainer());
-				} else if (tabConfig.id.equals(AppConstants.TAB_GRADESCALE)) {
-					tab.add(new GradeScalePanel(i18n, isEditable));
-				} else if (tabConfig.id.equals(AppConstants.TAB_HISTORY)) {
-					tab.add(new HistoryPanel(i18n));
-				}
-			}
-		}
-		
-		String menuItemId = new StringBuilder().append(AppConstants.WINDOW_MENU_ITEM_PREFIX).append(tabConfig.id).toString();
-		CheckMenuItem checkMenuItem = (CheckMenuItem)windowMenu.getItemByItemId(menuItemId);
-		if (checkMenuItem != null)
-			checkMenuItem.setChecked(true, true);
-		
-		return tab;
-	}*/
-	
 	/*
 	 * Create a top-level toolbar with menu drop downs
 	 */
@@ -630,20 +478,11 @@ public class InstructorView extends AppView {
 		String id = new StringBuilder().append(AppConstants.WINDOW_MENU_ITEM_PREFIX).append(tabConfig.id).toString();
 		MenuItem menuItem = new AriaMenuItem();
 		menuItem.setText(tabConfig.header);
-		//menuItem.setChecked(!tabMode, true);
 		menuItem.setData(MENU_SELECTOR_FLAG, tabConfig.menuSelector);
 		menuItem.setEnabled(tabConfig.isClosable);
 		menuItem.setId(id);
 		menuItem.setIconStyle(tabConfig.iconStyle);
 		tabConfig.menuItemId = id;
-		
-		/*String storedTabVisibility = PersistentStore.getPersistentField(gradebookUid, "tab", name);
-		if (storedTabVisibility != null) {
-			Boolean isChecked = Boolean.valueOf(storedTabVisibility);
-			if (isChecked != null) {
-				menuItem.setChecked(isChecked.booleanValue());
-			}
-		}*/
 
 		menuItem.addListener(Events.Select, menuEventListener);
 		
@@ -670,93 +509,5 @@ public class InstructorView extends AppView {
 		
 		return moreActionsMenu;
 	}
-
-	/*
-	private void switchTabMode(String gradebookUid, boolean tabMode, boolean populateTabItems) {
-		this.tabMode = tabMode;
-		
-		if (borderLayoutContainer == null)
-			return;
-		
-		GradebookState.setTabMode(gradebookUid, tabMode);
-		//PersistentStore.storePersistentField(gradebookUid, AppConstants.TAB_MODE, "checked", Boolean.valueOf(tabMode).toString());
-		
-		LayoutContainer borderLayoutContainer = getBorderLayoutContainer();
-		
-		if (tabMode) {
-			if (tabPanel == null) {
-				tabPanel = new AriaTabPanel();
-				tabPanel.addListener(Events.Remove, tabPanelEventListener);
-			}
-			
-			tabPanel.setResizeTabs(true);
-			tabPanel.setMinTabWidth(150);
-			tabPanel.setTabPosition(TabPosition.TOP);
-			
-			for (TabConfig tabConfig : tabConfigurations) {
-				TabItem tabItem = tabPanel.findItem(tabConfig.id, false);
-					
-				if (tabItem == null) {
-					if (populateTabItems || tabConfig.id.equals(AppConstants.TAB_GRADES)) {
-						tabItem = newTabItem(tabConfig);
-						tabPanel.add(tabItem);
-					}
-				}
-			}
 	
-			if (contentPanel.getItemCount() > 1)
-				removeMainContainer(borderLayoutContainer);
-			
-			
-			addMainContainer(tabPanel);
-		} else {
-			
-			if (tabPanel != null) {
-				List<TabItem> tabItems = tabPanel.getItems();
-				
-				removeMainContainer(tabPanel);
-				if (tabItems != null) {
-					// Iterate through the tab items and make sure we've cleared out their child components
-					for (TabItem tabItem : tabItems) {
-						
-						if (tabItem.getItemId().equals(AppConstants.TAB_GRADES)) {
-							// The multigrade item is a special case, since we want to ensure that it gets added
-							// to the content panel rather than simply being discarded. This will remove it
-							// from the tabItem due to a call to item.removeFromParent() 
-							addMainContainer(getBorderLayoutContainer());
-						
-						} else {
-							// Otherwise, we want to maintain a reference to this content panel so it doesn't 
-							// simply get thrown away
-							ContentPanel tabContentPanel = (ContentPanel)tabItem.getItem(0);
-							if (tabContentPanel != null)
-								tabContentPanelMap.put(tabItem.getItemId(), tabContentPanel);
-							
-							// Now remove the child components
-							tabItem.removeAll();
-						}
-					}
-					// Now we can remove all of the tab items
-					tabPanel.removeAll();
-				}
-			} else {
-				addMainContainer(getBorderLayoutContainer());
-			}
-
-		}
-		
-		//if (contentPanel.isRendered())
-		//	contentPanel.layout();
-	}*/
-	
-	/*
-	private void addMainContainer(Container<?> container) {
-		contentPanel.add(container);
-		//contentPanelLayout.setActiveItem(container);
-	}
-	
-	private void removeMainContainer(Container<?> container) {
-		contentPanel.remove(container);
-	}
-	*/
 }

@@ -139,7 +139,8 @@ public class UpdateController extends Controller {
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 		ClassType classType = ItemModel.lookupClassType(event.property);
 		
-		UserEntityUpdateAction<ItemModel> action = new UserEntityUpdateAction<ItemModel>(selectedGradebook, (ItemModel)event.record.getModel(), event.property, classType, event.value, event.oldValue);		
+		event.item.setRemoved(Boolean.TRUE);
+		UserEntityUpdateAction<ItemModel> action = new UserEntityUpdateAction<ItemModel>(selectedGradebook, (ItemModel)event.item);
 		
 		GradebookToolFacadeAsync service = Registry.get("service");
 		NotifyingAsyncCallback<ItemModel> callback = new NotifyingAsyncCallback<ItemModel>() {
@@ -275,80 +276,6 @@ public class UpdateController extends Controller {
 				onUpdateGradeRecordSuccess(event, result);
 				record.endEdit();
 				Dispatcher.forwardEvent(GradebookEvents.LearnerGradeRecordUpdated, action);
-				
-				// Need to refresh any items that may have been dropped
-				/*for (String property : result.getPropertyNames()) {
-					boolean needsRefreshing = false;
-					
-					int index = -1;
-					
-					if (property.endsWith(StudentModel.DROP_FLAG)) {
-						index = property.indexOf(StudentModel.DROP_FLAG);
-						needsRefreshing = true;
-					} else if (property.endsWith(StudentModel.COMMENTED_FLAG)) {
-						index = property.indexOf(StudentModel.COMMENTED_FLAG);
-						needsRefreshing = true;
-					}
-					
-					if (needsRefreshing && index != -1) {
-						String assignmentId = property.substring(0, index);
-						Object value = result.get(assignmentId);
-						Boolean recordFlagValue = (Boolean)record.get(property);
-						Boolean resultFlagValue = result.get(property);
-					
-						boolean isDropped = resultFlagValue != null && resultFlagValue.booleanValue();
-						boolean wasDropped = recordFlagValue != null && recordFlagValue.booleanValue();
-						
-						record.set(property, resultFlagValue);
-						
-						if (isDropped || wasDropped) {
-							record.set(assignmentId, null);
-							record.set(assignmentId, value);
-							//r.setDirty(true);
-						}
-					}
-				}
-				
-				String courseGrade = result.get(StudentModel.Key.COURSE_GRADE.name());
-				
-				if (courseGrade != null) {
-					result.set(StudentModel.Key.COURSE_GRADE.name(), null);
-					result.set(StudentModel.Key.COURSE_GRADE.name(), courseGrade);
-				}
-				
-				String property = action.getKey();
-				
-				// Ensure that we clear out any older failure messages
-				// Save the exception message on the record
-				String failedProperty = property + FAILED_FLAG;
-				record.set(failedProperty, null);
-			
-				record.setValid(property, true);
-				
-				Object value = result.get(property);
-				
-				if (value == null)
-					record.set(property, null);
-				else
-					record.set(property, value);
-				
-				//record.set(StudentModel.Key.COURSE_GRADE.name(), result.get(StudentModel.Key.COURSE_GRADE.name()));
-						
-				Dispatcher.forwardEvent(GradebookEvents.LearnerGradeRecordUpdated, action);
-				
-				// FIXME: Move all this to a log event listener
-				StringBuilder buffer = new StringBuilder();
-				buffer.append(action.getEntityName());
-				//notifier.notify(buffer.toString(), 
-				//		"Stored item grade as '{0}' and recalculated course grade to '{1}' ", result.get(property), result.get(StudentModel.Key.COURSE_GRADE.name()));
-					
-				String message = new StringBuilder(action.getEntityName()).append(": stored item grade as '")
-					.append(result.get(property))
-					.append("' and recalculated course grade to '").append(result.get(StudentModel.Key.COURSE_GRADE.name()))
-					.append("'").toString();
-				
-				notifier.notify("Success", message);
-				Dispatcher.forwardEvent(GradebookEvents.Notification, message);*/
 			}		
 		};
 
@@ -370,21 +297,6 @@ public class UpdateController extends Controller {
 	}
 	
 	private void onUpdateItemFailure(ItemUpdate event, Throwable caught) {
-		/*Record record = event.record;
-		String property = event.property;
-		
-		// Save the exception message on the record
-		String failedProperty = property + FAILED_FLAG;
-		record.set(failedProperty, caught.getMessage());
-				
-		// We have to fool the system into thinking that the value has changed, since
-		// we snuck in that "Saving..." under the radar.
-		record.set(property, null);
-		record.set(property, event.oldValue);
-				
-		record.setValid(property, false);
-		*/
-		
 		notifier.notifyError("Error", "Failed to update: {0} ", caught.getMessage());
 		
 		String message = new StringBuilder("Failed to update item: ").append(caught.getMessage()).toString();
@@ -400,8 +312,6 @@ public class UpdateController extends Controller {
 					.get(AppConstants.CURRENT);
 			selectedGradebook.setGradebookItemModel(result);
 			Dispatcher.forwardEvent(GradebookEvents.ItemUpdated, result);
-			// Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel,
-			// selectedGradebook);
 
 			boolean isGradebookUpdated = false;
 			if (result.getCategoryType() != selectedGradebook.getGradebookItemModel().getCategoryType()) {
@@ -428,13 +338,6 @@ public class UpdateController extends Controller {
 				doUpdateItem(event, item);
 			}
 			
-			/*if (event.property != null) {
-				// The only case where we don't want to refresh course grades on a category change is
-				// when it's just the name that's changed
-				if (!event.property.equals(ItemModel.Key.NAME.name())) {
-					Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades);	
-				}
-			}*/
 			break;
 		case ITEM:
 			doUpdateItem(event, result);
@@ -447,9 +350,7 @@ public class UpdateController extends Controller {
 		Dispatcher.forwardEvent(GradebookEvents.MaskItemTree);
 		
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-		//ClassType classType = ItemModel.lookupClassType(event.property);
 		
-		//UserEntityUpdateAction<ItemModel> action = new UserEntityUpdateAction<ItemModel>(selectedGradebook, (ItemModel)event.record.getModel(), event.property, classType, event.value, event.oldValue);		
 		UserEntityUpdateAction<ItemModel> action = new UserEntityUpdateAction<ItemModel>(selectedGradebook, (ItemModel)event.item);		
 		
 		GradebookToolFacadeAsync service = Registry.get("service");
@@ -461,8 +362,9 @@ public class UpdateController extends Controller {
 			}
 			
 			public void onSuccess(ItemModel result) {
+				Dispatcher.forwardEvent(GradebookEvents.BeginItemUpdates);
 				onUpdateItemSuccess(event, result);
-				Dispatcher.forwardEvent(GradebookEvents.HideEastPanel, Boolean.FALSE);
+				Dispatcher.forwardEvent(GradebookEvents.EndItemUpdates);
 				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree);
 			}
 		};

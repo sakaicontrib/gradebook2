@@ -38,6 +38,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.model.ColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
+import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel.Group;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel.Key;
 
@@ -62,7 +63,7 @@ import com.extjs.gxt.ui.client.widget.menu.SeparatorMenuItem;
 
 public abstract class CustomGridView extends BaseCustomGridView {
 	
-	private enum SelectionType { SORT_ASC, SORT_DESC, ADD_ITEM, DELETE_ITEM, EDIT_ITEM, GRADE_SCALE, HIDE_ITEM, HISTORY };
+	private enum SelectionType { SORT_ASC, SORT_DESC, ADD_CATEGORY, ADD_ITEM, DELETE_ITEM, EDIT_ITEM, GRADE_SCALE, HIDE_ITEM, HISTORY };
 	
 	private static final String selectionTypeField = "selectionType";
 	
@@ -98,6 +99,9 @@ public abstract class CustomGridView extends BaseCustomGridView {
 						Integer colIndexInteger = item.getData("colIndex");
 						int colIndex = colIndexInteger == null ? -1 : colIndexInteger.intValue();
 						switch (selectionType) {
+						case ADD_CATEGORY:
+							Dispatcher.forwardEvent(GradebookEvents.NewCategory);
+							break;
 						case ADD_ITEM:
 							Dispatcher.forwardEvent(GradebookEvents.NewItem);
 							break;
@@ -112,7 +116,6 @@ public abstract class CustomGridView extends BaseCustomGridView {
 							break;
 						case HIDE_ITEM:
 							Dispatcher.forwardEvent(GradebookEvents.HideColumn, cm.getDataIndex(colIndex));
-							//cm.setHidden(colIndex, true);
 							break;
 						case HISTORY:
 							Dispatcher.forwardEvent(GradebookEvents.ShowHistory, cm.getDataIndex(colIndex));
@@ -144,6 +147,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	@Override
 	protected Menu createContextMenu(int colIndex) {
 		I18nConstants i18n = Registry.get(AppConstants.I18N);
+		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 		
 		ColumnConfig config = cm.getColumn(colIndex);
 		boolean isStatic = isStaticColumn(config.getId()); 
@@ -196,7 +200,21 @@ public abstract class CustomGridView extends BaseCustomGridView {
 		item.addSelectionListener(selectionListener);
 			
 		menu.add(item);
+		
 		menu.add(new SeparatorMenuItem());
+		
+		if (selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES) {
+			item = new AriaMenuItem();
+			item.setData(selectionTypeField, SelectionType.ADD_CATEGORY);
+			item.setItemId(AppConstants.ID_HD_ADD_CATEGORY_MENUITEM);
+			item.setData("colIndex", Integer.valueOf(colIndex));
+			item.setText(i18n.headerAddCategory());
+			item.setTitle(i18n.headerAddCategoryTitle());
+			item.setIconStyle("gbAddCategoryIcon");
+			item.addSelectionListener(selectionListener);
+			
+			menu.add(item);
+		}
 		
 		item = new AriaMenuItem();
 		item.setData(selectionTypeField, SelectionType.ADD_ITEM);

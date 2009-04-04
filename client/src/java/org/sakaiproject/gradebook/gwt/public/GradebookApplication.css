@@ -352,8 +352,16 @@
 	background-image:url(images/default/button/table_add.png);	
 }
 
+.gbDeleteCategoryIcon {
+	background-image:url(images/default/button/folder_delete.png);	
+}
+
 .gbDeleteItemIcon {
 	background-image:url(images/default/button/table_delete.png);	
+}
+
+.gbEditCategoryIcon {
+	background-image:url(images/default/button/folder_edit.png);	
 }
 
 .gbEditItemIcon {
