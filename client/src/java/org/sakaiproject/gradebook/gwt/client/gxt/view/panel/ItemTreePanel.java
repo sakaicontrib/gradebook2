@@ -114,6 +114,7 @@ public class ItemTreePanel extends ContentPanel {
 	private TreeTableColumn pointsColumn;
 	private TreeTableColumnModel treeTableColumnModel;
 	private TreeBinder<BaseTreeModel<TreeModel>> treeBinder;
+	private TreeStore<BaseTreeModel<TreeModel>> staticColumnStore;
 
 	// We have to track which static columns are visible somewhere
 	private Set<String> fullStaticIdSet;
@@ -189,6 +190,12 @@ public class ItemTreePanel extends ContentPanel {
 		
 	}
 	
+	public void onShowStaticColumn(String id) {
+		BaseTreeModel<TreeModel> model = staticColumnStore.findModel("id", id);
+		TreeItem treeItem = (TreeItem)treeBinder.findItem(model);
+		treeItem.setChecked(true);
+	}
+	
 	public void onHideColumn(ItemModel itemModel) {
 		TreeItem treeItem = (TreeItem)treeTableBinder.findItem(itemModel);
 		
@@ -236,10 +243,6 @@ public class ItemTreePanel extends ContentPanel {
 				if (selectedItemModelIds.contains(column.getIdentifier()))
 					visibleStaticIdSet.add(column.getIdentifier());
 			}
-			// Ensure that either the ID or DISPLAY NAME or SORT NAME is visible
-			if (!visibleStaticIdSet.contains(StudentModel.Key.DISPLAY_ID.name()) && !visibleStaticIdSet.contains(StudentModel.Key.DISPLAY_NAME.name())
-					&& !visibleStaticIdSet.contains(StudentModel.Key.SORT_NAME.name()))
-				visibleStaticIdSet.add(StudentModel.Key.SORT_NAME.name());
 			
 			// Deal with the dynamic columns now
 			ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
@@ -800,10 +803,10 @@ public class ItemTreePanel extends ContentPanel {
 				checkedSelection.add(model);
 		}
 		
-		TreeStore<BaseTreeModel<TreeModel>> treeStore = new TreeStore<BaseTreeModel<TreeModel>>(loader);
+		staticColumnStore = new TreeStore<BaseTreeModel<TreeModel>>(loader);
 	
 		treeBinder = 
-			new TreeBinder<BaseTreeModel<TreeModel>>(learnerAttributeTree, treeStore) {
+			new TreeBinder<BaseTreeModel<TreeModel>>(learnerAttributeTree, staticColumnStore) {
 			
 			@Override
 			protected TreeItem createItem(BaseTreeModel<TreeModel> model) {
@@ -923,6 +926,12 @@ public class ItemTreePanel extends ContentPanel {
 			}
 		}
 		
+		// Ensure that either the ID or DISPLAY NAME or SORT NAME is visible
+		/*if (!visibleStaticIdSet.contains(StudentModel.Key.DISPLAY_ID.name()) && !visibleStaticIdSet.contains(StudentModel.Key.DISPLAY_NAME.name())
+				&& !visibleStaticIdSet.contains(StudentModel.Key.SORT_NAME.name()))
+			visibleStaticIdSet.add(StudentModel.Key.SORT_NAME.name());
+		*/
+		
 		Dispatcher.forwardEvent(GradebookEvents.ShowColumns, 
 				new ShowColumnsEvent(selectAll, fullStaticIdSet, visibleStaticIdSet, selectedItemModelIdSet));
 	
@@ -935,6 +944,12 @@ public class ItemTreePanel extends ContentPanel {
 			public void checkChanged(CheckChangedEvent event) {
 				if (event.getCheckProvider() instanceof TreeTableBinder)
 					selectedItemModels = (List<ItemModel>)event.getCheckedSelection();
+				
+				if (!visibleStaticIdSet.contains(StudentModel.Key.DISPLAY_ID.name()) && !visibleStaticIdSet.contains(StudentModel.Key.DISPLAY_NAME.name())
+						&& !visibleStaticIdSet.contains(StudentModel.Key.SORT_NAME.name())) {
+					onShowStaticColumn(StudentModel.Key.SORT_NAME.name());
+				} 
+				
 				showColumns(selectedItemModels);
 				
 				if (selectedGradebook != null)

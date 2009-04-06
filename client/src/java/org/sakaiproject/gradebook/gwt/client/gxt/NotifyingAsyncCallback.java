@@ -37,16 +37,7 @@ public abstract class NotifyingAsyncCallback<M> implements AsyncCallback<M> {
 	}
 	
 	public void onFailure(Throwable caught) {
-		I18nConstants i18n = Registry.get("i18n");
-		String message = i18n.unknownException();
-		
-		if (caught.getMessage() != null)
-			message = caught.getMessage();
-		
-		if (caught instanceof InvalidInputException)
-			notifier.notifyError("Request denied", message);
-		else
-			notifier.notifyError("Unexpected Error", message);
+		notifier.notifyError(caught);
 	}
 
 }

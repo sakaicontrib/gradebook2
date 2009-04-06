@@ -970,7 +970,8 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			
 			protected boolean isClickable(ModelData model, String property) {
 				return property.equals(StudentModel.Key.DISPLAY_NAME.name()) ||
-					property.equals(StudentModel.Key.SORT_NAME.name());
+					property.equals(StudentModel.Key.SORT_NAME.name()) ||
+					property.equals(StudentModel.Key.DISPLAY_ID.name());
 			}
 			
 			protected boolean isCommented(ModelData model, String property) {

@@ -1231,7 +1231,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	
 	protected List<Assignment> getAssignments(Long gradebookId, Session session) throws HibernateException {
         List<Assignment> assignments = session.createQuery(
-        	"from Assignment as asn where asn.gradebook.id=? and asn.removed=false").
+        	"from Assignment as asn where asn.gradebook.id=? and asn.removed=false order by asn.id desc").
         	setLong(0, gradebookId.longValue()).
         	list();
         return assignments;

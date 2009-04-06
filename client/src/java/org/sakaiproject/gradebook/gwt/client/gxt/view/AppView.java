@@ -12,6 +12,7 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
 import com.extjs.gxt.ui.client.Registry;
+import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.View;
@@ -46,6 +47,7 @@ public abstract class AppView extends View {
 		viewport.setHeight(screenHeight);
 		viewport.setLayout(viewportLayout);
 		viewport.setLoadingPanelId("loading");
+		viewport.setScrollMode(Scroll.AUTO);
 		RootPanel.get().add(viewport);
 	}
 

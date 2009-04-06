@@ -79,7 +79,7 @@ public class UpdateController extends Controller {
 
 			public void onFailure(Throwable caught) {
 				
-				notifier.notifyError("Error", "{0} ", caught.getMessage());
+				notifier.notifyError(caught);
 				
 				String message = new StringBuilder("Failed to create item: ").append(caught.getMessage()).toString();
 				
@@ -297,7 +297,7 @@ public class UpdateController extends Controller {
 	}
 	
 	private void onUpdateItemFailure(ItemUpdate event, Throwable caught) {
-		notifier.notifyError("Error", "Failed to update: {0} ", caught.getMessage());
+		notifier.notifyError(caught);
 		
 		String message = new StringBuilder("Failed to update item: ").append(caught.getMessage()).toString();
 		

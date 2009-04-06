@@ -141,7 +141,6 @@ public class InstructorView extends AppView {
 		cardLayoutContainer.setBorders(true);
 		cardLayoutContainer.setBodyBorder(true);
 		cardLayoutContainer.setFrame(true);
-		cardLayoutContainer.setScrollMode(Scroll.AUTO);
 		cardLayout = new CardLayout();
 		cardLayoutContainer.setLayout(cardLayout);
 		cardLayoutContainer.add(helpPanel);

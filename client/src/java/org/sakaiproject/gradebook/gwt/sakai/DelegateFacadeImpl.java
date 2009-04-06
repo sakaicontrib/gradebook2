@@ -203,7 +203,8 @@ private static final long serialVersionUID = 1L;
 				entity= (X)addItemCategory(action.getGradebookUid(), action.getGradebookId(), action.getModel());
 				break;
 			}
-				
+		} catch (BusinessRuleException bre) {
+			throw bre;
 		} catch (Throwable t) {
 			log.warn("FatalException: ", t);
 			throw new FatalException(t.getMessage(), t);
@@ -396,6 +397,8 @@ private static final long serialVersionUID = 1L;
 			
 			gbService.storeActionRecord(actionRecord);
 			*/
+		} catch (BusinessRuleException bre) {
+			throw bre;
 		} catch (InvalidInputException ie) {
 			throw ie;
 		} catch (Throwable t) {
