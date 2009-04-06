@@ -33,7 +33,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.collections.keyvalue.MultiKey;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Hibernate;
@@ -97,6 +99,8 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	
     // Local cache of static-between-deployment properties.
     protected Map propertiesMap = new HashMap();
+    protected Map<MultiKey, Boolean> isStudentGradeCache = new ConcurrentHashMap<MultiKey, Boolean>();
+    
     
 	/** synchronize from external application*/
     //GbSynchronizer synchronizer = null;
@@ -252,6 +256,43 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		return size;
 	}
 
+	// GRBK-40 : TPA : Eliminated the in java filtering
+	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(final Long gradebookId, final String siteId, final String realmGroupId) {
+		HibernateCallback hc = new HibernateCallback() {
+            public Object doInHibernate(Session session) throws HibernateException {
+            	
+            	Query query = null;
+            	
+                if(null != realmGroupId) {
+
+                	query = session.createQuery("select agr from AssignmentGradeRecord as agr, GradableObject as go, Realm as r, RealmGroup rg where " +
+                			"agr.gradableObject = go.id and agr.studentId = rg.userId and rg.realmKey = r.realmKey " +
+                			"and go.gradebook.id=:gradebookId and r.realmId=:realmId and go.removed=false order by agr.pointsEarned");
+                	query.setLong("gradebookId", gradebookId.longValue());
+                	query.setString("realmId", realmGroupId);
+                	
+                	return query.list();
+                    
+                } else if(null != siteId) {
+                	
+                	query = session.createQuery("select agr from AssignmentGradeRecord as agr, GradableObject as go, Realm as r, RealmGroup rg where " +
+                			"agr.gradableObject = go.id and agr.studentId = rg.userId and rg.realmKey = r.realmKey " +
+                			"and go.gradebook.id=:gradebookId and r.realmId=:realmId and go.removed=false order by agr.pointsEarned");
+                	query.setLong("gradebookId", gradebookId.longValue());
+                	query.setString("realmId", new StringBuffer().append("/site/").append(siteId).toString());
+                	
+                	return query.list();
+                	
+                } else {
+                	
+                    if(log.isInfoEnabled()) log.info("No siteId defined");
+                    return new ArrayList<AssignmentGradeRecord>();
+                }
+            }
+        };
+        return (List<AssignmentGradeRecord>)getHibernateTemplate().execute(hc);
+	}
+	
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(final Long gradebookId, final Collection<String> studentUids) {
 		HibernateCallback hc = new HibernateCallback() {
             public Object doInHibernate(Session session) throws HibernateException {
@@ -260,6 +301,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
                     if(log.isInfoEnabled()) log.info("No enrollments were specified.  Returning an empty List of grade records");
                     return new ArrayList();
                 } else {
+                	
                     Query q = session.createQuery("from AssignmentGradeRecord as agr where agr.gradableObject.removed=false and " +
                             "agr.gradableObject.gradebook.id=:gradebookId order by agr.pointsEarned");
                     q.setLong("gradebookId", gradebookId.longValue());
@@ -500,6 +542,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
         return isGraded != null && isGraded.booleanValue();
 	}
 	
+	// GRBK-40 : TPA : Added caching
 	public boolean isStudentGraded(final String studentId, final Long assignmentId) {
 		if (log.isDebugEnabled()) log.debug("isStudentGraded called for studentId:" + studentId);
     	
@@ -512,21 +555,40 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
         	log.debug("No student id was specified.  Returning false.");
         	return false;
         }
+        
+        MultiKey multiKey = new MultiKey(studentId, assignmentId);
 
-        HibernateCallback hc = new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException, SQLException {
+        if(null == isStudentGradeCache.get(multiKey)) {
 
-                Query q = session.createQuery("select count(*) from GradingEvent as ge where ge.studentId=:studentId and ge.gradableObject.id=:assignmentId");
-                q.setParameter("assignmentId", assignmentId);
-                q.setParameter("studentId", studentId);
-                return Boolean.valueOf(((Integer) q.iterate().next() ).intValue() > 0);
-            
-            }
-        };
+            HibernateCallback hc = new HibernateCallback() {
+            	
+        		public List<GradingEvent> doInHibernate(Session session) throws HibernateException, SQLException {
 
-        Boolean isGraded = (Boolean)getHibernateTemplate().execute(hc);
-
-        return isGraded != null && isGraded.booleanValue();
+        			Query q = session.createQuery("from GradingEvent as ge where ge.gradableObject.id=:assignmentId");
+        			q.setParameter("assignmentId", assignmentId);
+    				return q.list();
+        		}
+        	};
+        	
+        	List<GradingEvent> gradingEvents = (List<GradingEvent>) getHibernateTemplate().execute(hc);
+        	
+        	for(GradingEvent gradingEvent : gradingEvents) {
+        		
+        		isStudentGradeCache.put(new MultiKey(gradingEvent.getStudentId(), assignmentId), Boolean.TRUE);
+        	}
+        	
+        	if(isStudentGradeCache.get(multiKey).booleanValue()) {
+        	
+        		return true;
+        	}
+        	else {
+        		
+        		return false;
+        	}
+        }
+        else {
+        	return isStudentGradeCache.get(multiKey).booleanValue();
+        }
 	}
 
 	public Map<GradableObject, List<GradingEvent>> getGradingEventsForStudent(final String studentId, final Collection<GradableObject> gradableObjects) {
@@ -544,8 +606,8 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
         }
         
         
-        for (Iterator goIter = gradableObjects.iterator(); goIter.hasNext();) {
-        	GradableObject go = (GradableObject) goIter.next();
+        for (Iterator<GradableObject> goIter = gradableObjects.iterator(); goIter.hasNext();) {
+        	GradableObject go = goIter.next();
         	goEventListMap.put(go, new ArrayList());
         }
 
@@ -577,7 +639,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
         for(Iterator iter = list.iterator(); iter.hasNext();) {
             GradingEvent event = (GradingEvent)iter.next();
             GradableObject go = event.getGradableObject();
-            List goEventList = (List) goEventListMap.get(go);
+            List<GradingEvent> goEventList = goEventListMap.get(go);
             if (goEventList != null) {
             	goEventList.add(event);
                 goEventListMap.put(go, goEventList);
@@ -603,7 +665,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
     			return q.list();
     		}
     	};
-    	return (List)getHibernateTemplate().execute(hc);   
+    	return (List<Permission>)getHibernateTemplate().execute(hc);   
 	}
 
 	public List<Permission> getPermissionsForUserForGroup(final Long gradebookId, final String userId, final List<String> groupIds) throws IllegalArgumentException {
@@ -624,7 +686,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 					return q.list();
 				}
 			};
-			return (List) getHibernateTemplate().execute(hc);
+			return (List<Permission>) getHibernateTemplate().execute(hc);
 		} else {
 			return null;
 		}
@@ -633,8 +695,8 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	public List<Comment> getComments(final Long gradebookId) {
 		return (List<Comment>)getHibernateTemplate().execute(new HibernateCallback() {
             public Object doInHibernate(Session session) throws HibernateException {
-                List comments;
-                comments = new ArrayList();
+                List<Comment> comments;
+                comments = new ArrayList<Comment>();
                 Query q = session.createQuery("from Comment as c where c.gradableObject.gradebook.id=:gradebookId");
                 q.setParameter("gradebookId",gradebookId);
                 List allComments = q.list();
@@ -650,8 +712,8 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	public List<Comment> getStudentAssignmentComments(final String studentId, final Long gradebookId) {
 		return (List<Comment>)getHibernateTemplate().execute(new HibernateCallback() {
             public Object doInHibernate(Session session) throws HibernateException {
-                List comments;
-                comments = new ArrayList();
+                List<Comment> comments;
+                comments = new ArrayList<Comment>();
                 Query q = session.createQuery("from Comment as c where c.studentId=:studentId and c.gradableObject.gradebook.id=:gradebookId");
                 q.setParameter("studentId", studentId);
                 q.setParameter("gradebookId",gradebookId);
@@ -714,7 +776,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
     	if(lgpm == null)
     	{
-    		Set keySet = gradeMap.keySet();
+    		Set<String> keySet = gradeMap.keySet();
 
     		if(keySet.size() != GradebookService.validLetterGrade.length) //we only consider letter grade with -/+ now.
     			throw new IllegalArgumentException("gradeMap doesn't have right size in BaseHibernateManager.saveOrUpdateLetterGradePercentMapping");
@@ -730,10 +792,10 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
     				LetterGradePercentMapping lgpm = new LetterGradePercentMapping();
     				if (lgpm != null)
     				{                    
-    					Map saveMap = new HashMap();
-    					for (Iterator gradeIter = gradeMap.keySet().iterator(); gradeIter.hasNext();) {
-    						String letterGrade = (String)gradeIter.next();
-    						Double value = (Double)gradeMap.get(letterGrade);
+    					Map<String, Double> saveMap = new HashMap<String, Double>();
+    					for (Iterator<String> gradeIter = gradeMap.keySet().iterator(); gradeIter.hasNext();) {
+    						String letterGrade = gradeIter.next();
+    						Double value = gradeMap.get(letterGrade);
     						saveMap.put(letterGrade, value);
     					}
     					
@@ -803,7 +865,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		// If no grade records are sent, don't bother doing anything with the db
 		if (gradeRecordsFromCall.size() == 0) {
 			log.debug("updateAssignmentGradeRecords called for zero grade records");
-			return new HashSet();
+			return new HashSet<AssignmentGradeRecord>();
 		}
 
 		if (logData.isDebugEnabled())
@@ -814,8 +876,8 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				Date now = new Date();
 				String graderId = authn.getUserUid();
 
-				Set studentsWithUpdatedAssignmentGradeRecords = new HashSet();
-				Set studentsWithExcessiveScores = new HashSet();
+				Set<String> studentsWithUpdatedAssignmentGradeRecords = new HashSet<String>();
+				Set<String> studentsWithExcessiveScores = new HashSet<String>();
 
 				/** synchronize from external application */
 /*				if (synchronizer != null) {
@@ -903,8 +965,8 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 					}
 
 				} else {*/
-					for (Iterator iter = gradeRecordsFromCall.iterator(); iter.hasNext();) {
-						AssignmentGradeRecord gradeRecordFromCall = (AssignmentGradeRecord) iter.next();
+					for (Iterator<AssignmentGradeRecord> iter = gradeRecordsFromCall.iterator(); iter.hasNext();) {
+						AssignmentGradeRecord gradeRecordFromCall = iter.next();
 						gradeRecordFromCall.setGraderId(graderId);
 						gradeRecordFromCall.setDateRecorded(now);
 						try {
@@ -939,7 +1001,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 			}
 		};
 
-		Set studentsWithExcessiveScores = (Set) getHibernateTemplate().execute(hc);
+		Set<AssignmentGradeRecord> studentsWithExcessiveScores = (Set<AssignmentGradeRecord>) getHibernateTemplate().execute(hc);
 		if (logData.isDebugEnabled())
 			logData.debug("END: Update " + gradeRecordsFromCall.size() + " scores for gradebook=" + assignment.getGradebook().getUid() + ", assignment=" + assignment.getName());
 		return studentsWithExcessiveScores;
@@ -949,9 +1011,9 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		if (grade_type == GradebookService.GRADE_TYPE_POINTS)
 			return updateAssignmentGradeRecords(assignment, gradeRecords);
 		else if (grade_type == GradebookService.GRADE_TYPE_PERCENTAGE) {
-			Collection convertList = new ArrayList();
-			for (Iterator iter = gradeRecords.iterator(); iter.hasNext();) {
-				AssignmentGradeRecord agr = (AssignmentGradeRecord) iter.next();
+			Collection<AssignmentGradeRecord> convertList = new ArrayList<AssignmentGradeRecord>();
+			for (Iterator<AssignmentGradeRecord> iter = gradeRecords.iterator(); iter.hasNext();) {
+				AssignmentGradeRecord agr = iter.next();
 				Double doubleValue = calculateDoublePointForRecord(agr);
 				if (agr != null && doubleValue != null) {
 					agr.setPointsEarned(doubleValue);
@@ -963,9 +1025,9 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 			}
 			return updateAssignmentGradeRecords(assignment, convertList);
 		} else if (grade_type == GradebookService.GRADE_TYPE_LETTER) {
-			Collection convertList = new ArrayList();
-			for (Iterator iter = gradeRecords.iterator(); iter.hasNext();) {
-				AssignmentGradeRecord agr = (AssignmentGradeRecord) iter.next();
+			Collection<AssignmentGradeRecord> convertList = new ArrayList<AssignmentGradeRecord>();
+			for (Iterator<AssignmentGradeRecord> iter = gradeRecords.iterator(); iter.hasNext();) {
+				AssignmentGradeRecord agr = iter.next();
 				Double doubleValue = calculateDoublePointForLetterGradeRecord(agr);
 				if (agr != null && doubleValue != null) {
 					agr.setPointsEarned(doubleValue);
@@ -1022,8 +1084,8 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		// which were changed by other sessions.
 		HibernateCallback hc = new HibernateCallback() {
 			public Object doInHibernate(Session session) throws HibernateException {
-				for (Iterator iter = comments.iterator(); iter.hasNext();) {
-					Comment comment = (Comment)iter.next();
+				for (Iterator<Comment> iter = comments.iterator(); iter.hasNext();) {
+					Comment comment = iter.next();
 					comment.setGraderId(graderId);
 					comment.setDateRecorded(now);
 					session.saveOrUpdate(comment);
@@ -1210,7 +1272,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	 * wanted because they're either no longer officially enrolled in the
 	 * course or they're not members of the selected section.)
 	 */
-	protected List<AbstractGradeRecord> filterGradeRecordsByStudents(Collection<AbstractGradeRecord> gradeRecords, Collection studentUids) {
+	protected List<AbstractGradeRecord> filterGradeRecordsByStudents(Collection<AbstractGradeRecord> gradeRecords, Collection<String> studentUids) {
 		List<AbstractGradeRecord> filteredRecords = new ArrayList<AbstractGradeRecord>();
 		for (AbstractGradeRecord agr : gradeRecords) {
 			if (studentUids.contains(agr.getStudentId())) {
@@ -1220,9 +1282,9 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		return filteredRecords;
 	}
 	
-	protected Set getAllStudentUids(String gradebookUid) {
+	protected Set<String> getAllStudentUids(String gradebookUid) {
 		List enrollments = getSectionAwareness().getSiteMembersInRole(gradebookUid, Role.STUDENT);
-        Set studentUids = new HashSet();
+        Set<String> studentUids = new HashSet<String>();
         for(Iterator iter = enrollments.iterator(); iter.hasNext();) {
             studentUids.add(((EnrollmentRecord)iter.next()).getUser().getUserUid());
         }
@@ -1338,7 +1400,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	}
 
 	protected boolean isExplicitlyEnteredCourseGradeRecords(final Long gradebookId) {
-        final Set studentUids = getAllStudentUids(getGradebookUid(gradebookId));
+        final Set<String> studentUids = getAllStudentUids(getGradebookUid(gradebookId));
         if (studentUids.isEmpty()) {
             return false;
         }
@@ -1416,7 +1478,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		session.update(assignment);
 	}
 	
-	protected void updateLetterGradePercentMapping(final Map gradeMap, final Gradebook gradebook) {
+	protected void updateLetterGradePercentMapping(final Map<String, Double> gradeMap, final Gradebook gradebook) {
 		HibernateCallback hcb = new HibernateCallback() {
 			public Object doInHibernate(Session session) throws HibernateException, SQLException {
 				LetterGradePercentMapping lgpm = getLetterGradePercentMapping(gradebook);
@@ -1427,7 +1489,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				if (gradeMap == null)
 					throw new IllegalArgumentException("gradeMap is null in BaseHibernateManager.updateLetterGradePercentMapping");
 
-				Set keySet = gradeMap.keySet();
+				Set<String> keySet = gradeMap.keySet();
 
 				if (keySet.size() != GradebookService.validLetterGrade.length) // we only consider letter grade with -/+ now.
 					throw new IllegalArgumentException("gradeMap doesn't have right size in BaseHibernateManager.udpateLetterGradePercentMapping");
@@ -1435,9 +1497,9 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				if (validateLetterGradeMapping(gradeMap) == false)
 					throw new IllegalArgumentException("gradeMap contains invalid letter in BaseHibernateManager.udpateLetterGradePercentMapping");
 
-				Map saveMap = new HashMap();
-				for (Iterator iter = gradeMap.keySet().iterator(); iter.hasNext();) {
-					String key = (String) iter.next();
+				Map<String, Double> saveMap = new HashMap<String, Double>();
+				for (Iterator<String> iter = gradeMap.keySet().iterator(); iter.hasNext();) {
+					String key = iter.next();
 					saveMap.put(key, gradeMap.get(key));
 				}
 
@@ -1450,12 +1512,12 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		getHibernateTemplate().execute(hcb);
 	}
 	
-    protected boolean validateLetterGradeMapping(Map gradeMap) {
-    	Set keySet = gradeMap.keySet();
+    protected boolean validateLetterGradeMapping(Map<String, Double> gradeMap) {
+    	Set<String> keySet = gradeMap.keySet();
 
-    	for(Iterator iter = keySet.iterator(); iter.hasNext(); )
+    	for(Iterator<String> iter = keySet.iterator(); iter.hasNext(); )
     	{
-    		String key = (String) iter.next();
+    		String key = iter.next();
     		boolean validLetter = false;
     		for(int i=0; i<GradebookService.validLetterGrade.length; i++)
     		{

@@ -32,6 +32,7 @@
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-component/M2/sakai-component-M2.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-component-api/M2/sakai-component-api-M2.jar"/>
 	<classpathentry kind="var" path="M2_REPO/javax/servlet/servlet-api/2.4/servlet-api-2.4.jar" sourcepath="M2_REPO/javax/servlet/servlet-api/2.4/servlet-api-2.4-sources.jar"/>
+	<classpathentry kind="var" path="M2_REPO/commons-collections/commons-collections/3.2.1"/>
 	<classpathentry kind="lib" path="client/src/java/org/sakaiproject/gradebook/gwt/client/model/CategoryModel.java"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

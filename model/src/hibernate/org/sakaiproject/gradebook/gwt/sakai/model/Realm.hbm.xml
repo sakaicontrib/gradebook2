@@ -1,0 +1,21 @@
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+
+<hibernate-mapping>
+
+    <class name="org.sakaiproject.gradebook.gwt.sakai.model.Realm"
+    	table="SAKAI_REALM" mutable="false">
+
+    	<cache usage="read-only" />
+        
+        <id name="realmKey">
+        	<column name="REALM_KEY"/>
+       		<generator class="native"/>
+       	</id>
+       	<property name="realmId" column="REALM_ID"/>
+       	<property name="providerId" column="PROVIDER_ID"/>
+    </class>
+    	
+</hibernate-mapping>
+

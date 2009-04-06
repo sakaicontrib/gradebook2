@@ -56,6 +56,9 @@ public interface GradebookToolService {
 	
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(Long gradebookId, Collection<String> studentUids);
 	
+	// GRBK-40 : TPA 
+	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(Long gradebookId, String siteId, String realmGroupId);
+	
 	public List<CourseGradeRecord> getAllCourseGradeRecords(Gradebook gradebook);
 	
 	public Assignment getAssignment(Long assignmentId);

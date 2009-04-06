@@ -327,6 +327,11 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		return category.getId();
 	}
 
+	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(Long gradebookId, String siteId, String sectionEid) {
+		// TPA: TODO
+		return null;
+	}
+	
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(Long gradebookId, Collection<String> studentUids) {
 		List<AssignmentGradeRecord> grades = new ArrayList<AssignmentGradeRecord>(studentUids.size());
 		List<AssignmentGradeRecord> assignmentGradeRecord = new ArrayList<AssignmentGradeRecord>(studentUids.size());

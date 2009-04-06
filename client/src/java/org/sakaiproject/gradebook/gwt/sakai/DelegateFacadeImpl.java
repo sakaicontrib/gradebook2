@@ -1382,6 +1382,24 @@ private static final long serialVersionUID = 1L;
 		return toolManager.getCurrentPlacement().getContext();
 	}
 	
+	protected String getSiteId() {
+		
+		String context = getSiteContext();
+	    String siteId = null;
+	    
+		try {
+			
+			Site site = siteService.getSite(context);
+			siteId = site.getId();
+			
+		} catch (IdUnusedException iue) {
+			log.error("IDUnusedException : SiteContext = " + context);
+			iue.printStackTrace();
+		}
+		
+		return siteId;
+	}
+	
 	protected <X extends BaseModel> PagingLoadResult<X> getSections(String gradebookUid,
 			Long gradebookId, PagingLoadConfig config) {
 		
@@ -1570,8 +1588,11 @@ private static final long serialVersionUID = 1L;
 	    List<String> studentUids = new ArrayList<String>(userRecordMap.keySet());
 		
 	   	//Map<String, Map<Long, AssignmentGradeRecord>>  allGradeRecordsMap = new HashMap<String, Map<Long, AssignmentGradeRecord>>();
-    	List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebookId, studentUids);
-		
+	    
+	    List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebookId, studentUids);
+	    // GRBK-40 : TPA : Replace above call with the one bellow once the Mock getAllAssignmentGradeRecords methods has been adjusted
+    	// List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebookId, getSiteId(), sectionUuid);
+		    	
     	if (allGradeRecords != null) {
 	    	for (AssignmentGradeRecord gradeRecord : allGradeRecords) {
 				gradeRecord.setUserAbleToView(true);
@@ -1712,36 +1733,63 @@ private static final long serialVersionUID = 1L;
 	}
 	
 	private List<Category> getCategoriesWithAssignments(Long gradebookId, List<Assignment> assignments) {
-		// The following chunk of logic seems inefficient, since there is a method called
-	    // getCategoriesWithAssignments, but in fact that method results in N+1 distinct db calls,
-	    // where N is the number of categories, whereas this is 2 calls.
-		List<Category> categories = gbService.getCategories(gradebookId);
-	     
-	    Map<Long, List<Assignment>> categoryAssignmentMap = new HashMap<Long, List<Assignment>>();
-	    
-	    for (Assignment assignment : assignments) {
-	    	// It may be that we could simply aggregate these Category children of the Assignment,
-	    	// but that would of course mean that we would not include a Category with 0 assignments 
-	    	// under it. That _may_ be safe, but for the moment, I'm using this slightly less efficient
-	    	// method
-	    	Category category = assignment.getCategory();
-	    	
-	    	List<Assignment> assignmentList = categoryAssignmentMap.get(category.getId());
-	    	
-	    	// Ensure that it's populated 
-	    	if (assignmentList == null) 
-	    		assignmentList = new ArrayList<Assignment>();
-	    	
-	    	assignmentList.add(assignment);
-	    	categoryAssignmentMap.put(category.getId(), assignmentList);
-	    }
-	  
-	    for (Category category : categories) {
-	    	List<Assignment> assignmentList = categoryAssignmentMap.get(category.getId());
-	    	category.setAssignmentList(assignmentList);
-	    }
-	    
-	    return categories;
+		
+		Map<Long, Category> categoryMap = new HashMap<Long, Category>();
+		
+		for(Assignment assignment : assignments) {
+			
+			Category category = categoryMap.get(assignment.getCategory().getId());
+			
+			if(null == category) {
+				
+				category = assignment.getCategory();
+				
+				List<Assignment> assignmentList = category.getAssignmentList();
+				
+				if(null == assignmentList) {
+				
+					assignmentList = new ArrayList<Assignment>();
+					category.setAssignmentList(assignmentList);
+				}
+				
+				category.getAssignmentList().add(assignment);
+				categoryMap.put(category.getId(), category);
+			}
+		}
+		
+		return new ArrayList<Category>(categoryMap.values());
+//		// The following chunk of logic seems inefficient, since there is a method called
+//	    // getCategoriesWithAssignments, but in fact that method results in N+1 distinct db calls,
+//	    // where N is the number of categories, whereas this is 2 calls.
+//		List<Category> categories = gbService.getCategories(gradebookId);
+//	     
+//	    Map<Long, List<Assignment>> categoryAssignmentMap = new HashMap<Long, List<Assignment>>();
+//	    
+//	    for (Assignment assignment : assignments) {
+//	    	// It may be that we could simply aggregate these Category children of the Assignment,
+//	    	// but that would of course mean that we would not include a Category with 0 assignments 
+//	    	// under it. That _may_ be safe, but for the moment, I'm using this slightly less efficient
+//	    	// method
+//	    	Category category = assignment.getCategory();
+//	    	
+//	    	System.out.println("XXXXX: category assignemnt count = " + category.getAssignmentCount());
+//	    	
+//	    	List<Assignment> assignmentList = categoryAssignmentMap.get(category.getId());
+//	    	
+//	    	// Ensure that it's populated 
+//	    	if (assignmentList == null) 
+//	    		assignmentList = new ArrayList<Assignment>();
+//	    	
+//	    	assignmentList.add(assignment);
+//	    	categoryAssignmentMap.put(category.getId(), assignmentList);
+//	    }
+//	  
+//	    for (Category category : categories) {
+//	    	List<Assignment> assignmentList = categoryAssignmentMap.get(category.getId());
+//	    	category.setAssignmentList(assignmentList);
+//	    }
+//	    
+//	    return categories;
 	}
 	
 	private boolean isAssignmentRemoved(Gradebook gradebook, Category category, Assignment assignment) {
