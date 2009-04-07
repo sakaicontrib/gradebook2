@@ -1732,64 +1732,36 @@ private static final long serialVersionUID = 1L;
 	    return getCategoriesWithAssignments(gradebookId, assignments);
 	}
 	
+	// GRBK-40 : TPA
 	private List<Category> getCategoriesWithAssignments(Long gradebookId, List<Assignment> assignments) {
-		
+
 		Map<Long, Category> categoryMap = new HashMap<Long, Category>();
+
+		Category category = null;
+		List<Assignment> assignmentList = null;
 		
 		for(Assignment assignment : assignments) {
-			
-			Category category = categoryMap.get(assignment.getCategory().getId());
-			
+
+			category = categoryMap.get(assignment.getCategory().getId());
+
 			if(null == category) {
-				
+
 				category = assignment.getCategory();
-				
-				List<Assignment> assignmentList = category.getAssignmentList();
-				
-				if(null == assignmentList) {
-				
-					assignmentList = new ArrayList<Assignment>();
-					category.setAssignmentList(assignmentList);
-				}
-				
-				category.getAssignmentList().add(assignment);
 				categoryMap.put(category.getId(), category);
 			}
+			
+			assignmentList = category.getAssignmentList();
+
+			if(null == assignmentList) {
+
+				assignmentList = new ArrayList<Assignment>();
+				category.setAssignmentList(assignmentList);
+			}
+
+			assignmentList.add(assignment);
 		}
-		
-		return new ArrayList<Category>(categoryMap.values());
-//		// The following chunk of logic seems inefficient, since there is a method called
-//	    // getCategoriesWithAssignments, but in fact that method results in N+1 distinct db calls,
-//	    // where N is the number of categories, whereas this is 2 calls.
-//		List<Category> categories = gbService.getCategories(gradebookId);
-//	     
-//	    Map<Long, List<Assignment>> categoryAssignmentMap = new HashMap<Long, List<Assignment>>();
-//	    
-//	    for (Assignment assignment : assignments) {
-//	    	// It may be that we could simply aggregate these Category children of the Assignment,
-//	    	// but that would of course mean that we would not include a Category with 0 assignments 
-//	    	// under it. That _may_ be safe, but for the moment, I'm using this slightly less efficient
-//	    	// method
-//	    	Category category = assignment.getCategory();
-//	    	
-//	    	System.out.println("XXXXX: category assignemnt count = " + category.getAssignmentCount());
-//	    	
-//	    	List<Assignment> assignmentList = categoryAssignmentMap.get(category.getId());
-//	    	
-//	    	// Ensure that it's populated 
-//	    	if (assignmentList == null) 
-//	    		assignmentList = new ArrayList<Assignment>();
-//	    	
-//	    	assignmentList.add(assignment);
-//	    	categoryAssignmentMap.put(category.getId(), assignmentList);
-//	    }
-//	  
-//	    for (Category category : categories) {
-//	    	List<Assignment> assignmentList = categoryAssignmentMap.get(category.getId());
-//	    	category.setAssignmentList(assignmentList);
-//	    }
-//	    
-//	    return categories;
+
+		return new ArrayList<Category>(categoryMap.values());	
 	}
 	
 	private boolean isAssignmentRemoved(Gradebook gradebook, Category category, Assignment assignment) {
