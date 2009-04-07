@@ -16,7 +16,7 @@
 	</bean>
 	
 	
-	<!-- AOP: Interceptors for performance analysis 
+	<!-- AOP: Interceptors for performance analysis
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"
 		class="org.springframework.aop.framework.ProxyFactoryBean">
 		<property name="proxyInterfaces">
@@ -111,7 +111,8 @@
 		
 	</bean>
 
-	<bean id="org.sakaiproject.gradebook.gwt.sakai.DelegateFacadeTarget" class="org.sakaiproject.gradebook.gwt.sakai.DelegateFacadeImpl">
+	<!-- TARGET -->
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.DelegateFacade" class="org.sakaiproject.gradebook.gwt.sakai.DelegateFacadeImpl">
 		<property name="sectionAwareness" ref="org.sakaiproject.section.api.SectionAwareness"/>
 		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/> 
 		<property name="authn" ref="org_sakaiproject_tool_gradebook_facades_Authn"/>
@@ -151,7 +152,8 @@
 
 	
 	<!-- Gradebook Manager -->
-	<bean id="org.sakaiproject.gradebook.gwt.sakai.GradebookToolServiceTarget" parent="alt.gradebookTxTemplate">
+	<!-- TARGET -->
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService" parent="alt.gradebookTxTemplate">
 		<property name="target">
 			<bean class="org.sakaiproject.gradebook.gwt.sakai.hibernate.GradebookToolServiceImpl">
 				<property name="sessionFactory"><ref bean="alt.gradebookSessionFactory"/></property>

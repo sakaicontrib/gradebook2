@@ -63,6 +63,7 @@ public class GradebookEvents {
 	public static final int StartImport					= 14053;
 	public static final int Startup 					= 14055;
 	public static final int StopImport					= 14056;
+	public static final int StartFinalgrade				= 14057;
 	public static final int HideEastPanel				= 14060;
 	public static final int SwitchEditItem				= 14061;
 	public static final int SwitchGradebook 			= 14065;

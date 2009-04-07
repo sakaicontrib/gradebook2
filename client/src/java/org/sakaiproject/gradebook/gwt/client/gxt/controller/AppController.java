@@ -7,6 +7,7 @@ import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.AppView;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.FinalGradeSubmissionView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.ImportExportView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.InstructorView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.MultigradeView;
@@ -30,6 +31,7 @@ public class AppController extends Controller {
 	private NotificationView notificationView;
 	private ImportExportView importExportView;
 	private MultigradeView multigradeView;
+	private FinalGradeSubmissionView finalGradeSubmissionView;
 	
 	public AppController() {
 		registerEventTypes(GradebookEvents.BeginItemUpdates);
@@ -71,6 +73,7 @@ public class AppController extends Controller {
 		registerEventTypes(GradebookEvents.UnmaskItemTree);
 		registerEventTypes(GradebookEvents.UpdateLearnerGradeRecord);
 		registerEventTypes(GradebookEvents.UserChange);
+		registerEventTypes(GradebookEvents.StartFinalgrade);
 	}
 	
 	@Override
@@ -192,6 +195,11 @@ public class AppController extends Controller {
 		case GradebookEvents.MaskItemTree:
 		case GradebookEvents.UnmaskItemTree:
 			forwardToView(treeView, event);
+			break;
+		case GradebookEvents.StartFinalgrade:
+			finalGradeSubmissionView = new FinalGradeSubmissionView(this);
+			forwardToView(finalGradeSubmissionView, event);
+			//forwardToView(appView, event);
 			break;
 		}
 	}

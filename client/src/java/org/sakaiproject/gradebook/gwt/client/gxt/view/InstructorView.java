@@ -24,7 +24,6 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.LayoutRegion;
-import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.MenuEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
@@ -45,7 +44,7 @@ import com.google.gwt.user.client.Element;
 public class InstructorView extends AppView {
 	
 	private static final String MENU_SELECTOR_FLAG = "menuSelector";
-	public enum MenuSelector { ADD_CATEGORY, ADD_ITEM, IMPORT, EXPORT, GRADE_SCALE, HISTORY };
+	public enum MenuSelector { ADD_CATEGORY, ADD_ITEM, IMPORT, EXPORT, FINAL_GRADE, GRADE_SCALE, HISTORY };
 	
 	// The instructor view maintains a link to tree view, since it is required to instantiate multigrade
 	private TreeView treeView;
@@ -383,6 +382,9 @@ public class InstructorView extends AppView {
 				case IMPORT:
 					Dispatcher.forwardEvent(GradebookEvents.StartImport);
 					break;
+				case FINAL_GRADE:
+					Dispatcher.forwardEvent(GradebookEvents.StartFinalgrade);
+					break;
 				}
 			}
 		
@@ -505,6 +507,13 @@ public class InstructorView extends AppView {
 			menuItem.setTitle(i18n.headerImportTitle());
 			moreActionsMenu.add(menuItem);
 		}
+		
+		// GRBK-37 : TPA
+		menuItem = new MenuItem(i18n.headerFinalGrade(), menuSelectionListener);
+		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.FINAL_GRADE);
+		menuItem.setIconStyle("gbExportItemIcon");
+		menuItem.setTitle(i18n.headerFinalGradeTitle());
+		moreActionsMenu.add(menuItem);
 		
 		return moreActionsMenu;
 	}
