@@ -579,9 +579,9 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 							contextMenu.enableEditComment(false);
 						}
 						
-						Boolean gradedFlag = (Boolean)commentingStudentModel.get(assignId + StudentModel.GRADED_FLAG);
+						//Boolean gradedFlag = (Boolean)commentingStudentModel.get(assignId + StudentModel.GRADED_FLAG);
 						
-						boolean isGraded = gradedFlag != null && gradedFlag.booleanValue();
+						boolean isGraded = true; //gradedFlag != null && gradedFlag.booleanValue();
 						
 						contextMenu.enableViewGradeHistory(isGraded);
 					} else

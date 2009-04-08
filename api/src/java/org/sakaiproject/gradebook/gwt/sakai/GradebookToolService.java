@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
+import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.AssignmentGradeRecord;
 import org.sakaiproject.tool.gradebook.Category;
@@ -39,6 +40,7 @@ import org.sakaiproject.tool.gradebook.GradableObject;
 import org.sakaiproject.tool.gradebook.Gradebook;
 import org.sakaiproject.tool.gradebook.GradingEvent;
 import org.sakaiproject.tool.gradebook.Permission;
+import org.sakaiproject.user.api.User;
 
 public interface GradebookToolService {
 	
@@ -58,6 +60,9 @@ public interface GradebookToolService {
 	
 	// GRBK-40 : TPA 
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(Long gradebookId, String siteId, String realmGroupId);
+	
+	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(Long gradebookId, String siteId, String realmGroupId, String sortField, 
+			String searchField, String searchCriteria, int offset, int limit, boolean isAsc);
 	
 	public List<CourseGradeRecord> getAllCourseGradeRecords(Gradebook gradebook);
 	
@@ -95,6 +100,9 @@ public interface GradebookToolService {
 	
 	public CourseGradeRecord getStudentCourseGradeRecord(Gradebook gradebook, String studentId);
 	
+	public List<UserDereference> getUserUidsForSite(final String siteId, final String realmGroupId, final String sortField, 
+			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc);
+	
 	public boolean isStudentGraded(String studentId);
 	
 	public boolean isStudentGraded(String studentId, Long assignmentId);
@@ -104,6 +112,8 @@ public interface GradebookToolService {
 	public void saveOrUpdateLetterGradePercentMapping(Map<String, Double> gradeMap, Gradebook gradebook);
 	
 	public Long storeActionRecord(ActionRecord actionRecord);
+	
+	public void syncUserDereferenceBySite(final String siteId, final List<User> users);
 	
 	public void updateAssignment(Assignment assignment);
 	

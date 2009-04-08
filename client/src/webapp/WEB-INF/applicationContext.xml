@@ -16,7 +16,9 @@
 	</bean>
 	
 	
-	<!-- AOP: Interceptors for performance analysis
+
+	<!-- AOP: Interceptors for performance analysis -->
+
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"
 		class="org.springframework.aop.framework.ProxyFactoryBean">
 		<property name="proxyInterfaces">
@@ -75,7 +77,7 @@
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.aop.GradebookToolFacadeAroundAdvice"
 		class="org.sakaiproject.gradebook.gwt.sakai.aop.GradebookToolFacadeAroundAdvice">
 	</bean>
-	-->
+	<!-- -->
 
 	<!-- Hibernate Mappings -->
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.model.hibernateMappings"
@@ -85,6 +87,7 @@
 				<value>org/sakaiproject/gradebook/gwt/sakai/model/ActionRecord.hbm.xml</value>
 				<value>org/sakaiproject/gradebook/gwt/sakai/model/Realm.hbm.xml</value>
 				<value>org/sakaiproject/gradebook/gwt/sakai/model/RealmGroup.hbm.xml</value>
+				<value>org/sakaiproject/gradebook/gwt/sakai/model/UserDereference.hbm.xml</value>
 			</list>
 		</property>
 	</bean>
@@ -112,7 +115,7 @@
 	</bean>
 
 	<!-- TARGET -->
-	<bean id="org.sakaiproject.gradebook.gwt.sakai.DelegateFacade" class="org.sakaiproject.gradebook.gwt.sakai.DelegateFacadeImpl">
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.DelegateFacadeTarget" class="org.sakaiproject.gradebook.gwt.sakai.DelegateFacadeImpl">
 		<property name="sectionAwareness" ref="org.sakaiproject.section.api.SectionAwareness"/>
 		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/> 
 		<property name="authn" ref="org_sakaiproject_tool_gradebook_facades_Authn"/>
@@ -153,7 +156,7 @@
 	
 	<!-- Gradebook Manager -->
 	<!-- TARGET -->
-	<bean id="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService" parent="alt.gradebookTxTemplate">
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.GradebookToolServiceTarget" parent="alt.gradebookTxTemplate">
 		<property name="target">
 			<bean class="org.sakaiproject.gradebook.gwt.sakai.hibernate.GradebookToolServiceImpl">
 				<property name="sessionFactory"><ref bean="alt.gradebookSessionFactory"/></property>

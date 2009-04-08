@@ -47,7 +47,7 @@ public abstract class AppView extends View {
 		viewport.setHeight(screenHeight);
 		viewport.setLayout(viewportLayout);
 		viewport.setLoadingPanelId("loading");
-		viewport.setScrollMode(Scroll.AUTO);
+		//viewport.setScrollMode(Scroll.AUTO);
 		RootPanel.get().add(viewport);
 	}
 

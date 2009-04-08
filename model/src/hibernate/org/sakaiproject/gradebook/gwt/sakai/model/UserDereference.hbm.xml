@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN"
+	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping default-cascade="none" package="org.sakaiproject.gradebook.gwt.sakai.model" default-lazy="false">
+
+	<class name="org.sakaiproject.gradebook.gwt.sakai.model.UserDereference" table="GB_USER_DEREFERENCE_T">
+
+		<id name="id" column="ID" type="long">
+			<generator class="native">
+				<param name="sequence">GB_USER_DEREFERENCE_S</param>
+			</generator>
+		</id>
+
+		<property name="userUid" column="USER_UID" not-null="true"/>
+
+		<property name="displayId" column="DISPLAY_ID" />
+
+		<property name="sortName" column="SORT_NAME" />
+		
+		<property name="email" column="EMAIL"/>
+		
+		<property name="sectionTitle" column="SECTION_TITLE"/>
+		
+		<property name="sectionUid" column="SECTION_UID"/>
+		
+		<property name="siteId" column="SITE_ID" not-null="true"/>
+		
+  		<property name="createdOn" column="CREATED_ON" type="timestamp" />
+  
+  	</class>
+  
+ 	
+</hibernate-mapping>

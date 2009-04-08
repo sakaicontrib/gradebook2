@@ -62,5 +62,25 @@ create table GB_ACTION_RECORD_PROPERTY_T
 
 create index GB_ACTION_RECORD_PROP_ID_IDX on GB_ACTION_RECORD_PROPERTY_T(ACTION_RECORD_ID);
 
+create table GB_USER_DEREFERENCE_T 
+(
+	ID number(19),
+	USER_UID varchar2(99),
+	DISPLAY_ID varchar2(99),
+	SORT_NAME varchar2(756),
+	EMAIL varchar2(756),
+	SECTION_TITLE varchar2(756),
+	SECTION_UID varchar2(255),
+	SITE_ID varchar2(99),
+	CREATED_ON timestamp
+);
+
+create index GB_USER_DEREFERENCE_IDX on GB_USER_DEREFERENCE_T(SITE_ID);
+
+create sequence GB_USER_DEREFERENCE_S
+start with 1000
+increment by 1
+nocache
+nocycle;
 
 

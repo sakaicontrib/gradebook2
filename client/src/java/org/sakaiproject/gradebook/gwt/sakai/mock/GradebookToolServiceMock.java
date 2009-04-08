@@ -41,6 +41,7 @@ import java.util.Set;
 
 import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
+import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.tool.gradebook.AbstractGradeRecord;
 import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.AssignmentGradeRecord;
@@ -57,6 +58,7 @@ import org.sakaiproject.tool.gradebook.GradingScale;
 import org.sakaiproject.tool.gradebook.LetterGradePercentMapping;
 import org.sakaiproject.tool.gradebook.Permission;
 import org.sakaiproject.tool.gradebook.Spreadsheet;
+import org.sakaiproject.user.api.User;
 
 public class GradebookToolServiceMock implements GradebookToolService {
 
@@ -1518,5 +1520,20 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		return comments;
 	}
 
+	public List<UserDereference> getUserUidsForSite(final String siteId, final String realmGroupId, final String sortField, 
+			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc) {
+		
+		return null;
+	}
+	
+	public void syncUserDereferenceBySite(final String siteId, final List<User> users) {
+		
+	}
+	
+	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(final Long gradebookId, final String siteId, final String realmGroupId, final String sortField, 
+			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc) {
+
+		return null;
+	}
 
 }

@@ -75,6 +75,7 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel.Key;
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
+import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.gradebook.gwt.server.DataTypeConversionUtil;
 import org.sakaiproject.section.api.SectionAwareness;
 import org.sakaiproject.section.api.coursemanagement.CourseSection;
@@ -670,7 +671,7 @@ private static final long serialVersionUID = 1L;
 		
 		Long gradebookId = gradebook.getId();
 		
-		Map<String, UserRecord> userRecordMap = findStudentRecords(gradebookUid, gradebookId, null);
+		Map<String, UserRecord> userRecordMap = findStudentRecords(gradebookUid, gradebookId, null, null);
 	    List<String> studentUids = new ArrayList<String>(userRecordMap.keySet());
 		
 	   	//Map<String, Map<Long, AssignmentGradeRecord>>  allGradeRecordsMap = new HashMap<String, Map<Long, AssignmentGradeRecord>>();
@@ -901,6 +902,10 @@ private static final long serialVersionUID = 1L;
 		ApplicationModel model = new ApplicationModel();
 		model.setPlacementId(getPlacementId());
 		model.setGradebookModels(getGradebookModels());
+		
+		Site site = getSite();
+		
+		gbService.syncUserDereferenceBySite(getSiteId(), findAllStudents(site));
 		
 		return model;
 	}
@@ -1400,6 +1405,24 @@ private static final long serialVersionUID = 1L;
 		return siteId;
 	}
 	
+	protected Site getSite() {
+		
+		String context = getSiteContext();
+	    Site site = null;
+	    
+		try {
+			
+			site = siteService.getSite(context);
+			
+			
+		} catch (IdUnusedException iue) {
+			log.error("IDUnusedException : SiteContext = " + context);
+			iue.printStackTrace();
+		}
+		
+		return site;
+	}
+	
 	protected <X extends BaseModel> PagingLoadResult<X> getSections(String gradebookUid,
 			Long gradebookId, PagingLoadConfig config) {
 		
@@ -1571,76 +1594,126 @@ private static final long serialVersionUID = 1L;
 	
 	protected <X extends BaseModel> PagingLoadResult<X> getStudentRows(String gradebookUid, Long gradebookId, PagingLoadConfig config) {
 		
+		List<UserRecord> userRecords = null;
+		
 		String sectionUuid = null;
 
 		if (config != null && config instanceof MultiGradeLoadConfig) {
 			sectionUuid = ((MultiGradeLoadConfig)config).getSectionUuid();
 		}
 		
-	    Gradebook gradebook = gbService.getGradebook(gradebookId);
-	    
+	    Gradebook gradebook = null;
+	    Site site = getSite();
 	   
-	    List<Category> categories = getCategoriesWithAssignments(gradebookId);
+	    List<Category> categories = null; // getCategoriesWithAssignments(gradebookId);
 	    
-	    //ItemModel gradebookItemModel = getItemModel(gradebook, categories);
+	    if (categories != null && categories.size() > 0) 
+	    	gradebook = categories.get(0).getGradebook();
+	    else 
+	    	gradebook = gbService.getGradebook(gradebookId);
 	    
-	    Map<String, UserRecord> userRecordMap = findStudentRecords(gradebookUid, gradebookId, sectionUuid);
-	    List<String> studentUids = new ArrayList<String>(userRecordMap.keySet());
-		
-	   	//Map<String, Map<Long, AssignmentGradeRecord>>  allGradeRecordsMap = new HashMap<String, Map<Long, AssignmentGradeRecord>>();
+	    String columnId = null;
+	    StudentModel.Key sortColumnKey = null;
 	    
-	    List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebookId, studentUids);
-	    // GRBK-40 : TPA : Replace above call with the one bellow once the Mock getAllAssignmentGradeRecords methods has been adjusted
-    	// List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebookId, getSiteId(), sectionUuid);
-		    	
-    	if (allGradeRecords != null) {
-	    	for (AssignmentGradeRecord gradeRecord : allGradeRecords) {
-				gradeRecord.setUserAbleToView(true);
-				String studentUid = gradeRecord.getStudentId();
-				UserRecord userRecord = userRecordMap.get(studentUid);
-				Map<Long, AssignmentGradeRecord> studentMap = userRecord.getGradeRecordMap();
-				if (studentMap == null) {
-					studentMap = new HashMap<Long, AssignmentGradeRecord>();
-				}
-				GradableObject go = gradeRecord.getGradableObject();
-				studentMap.put(go.getId(), gradeRecord);
-					
-				userRecord.setGradeRecordMap(studentMap);
-			}
-		}
-    	    	
-		List<CourseGradeRecord> courseGradeRecords = gbService.getAllCourseGradeRecords(gradebook);
-		
-		if (courseGradeRecords != null) {
-			for (CourseGradeRecord courseGradeRecord : courseGradeRecords) {
-				String studentUid = courseGradeRecord.getStudentId();
-				UserRecord userRecord = userRecordMap.get(studentUid);
-				if (userRecord != null)
-					userRecord.setCourseGradeRecord(courseGradeRecord);
-				else
-					log.warn("Looking up user record for " + studentUid + " failed." );
-			}
-		}
-		
-		List<Comment> comments = gbService.getComments(gradebookId);
-		
-		if (comments != null) {
-			for (Comment comment : comments) {
-				String studentUid = comment.getStudentId();
-				UserRecord userRecord = userRecordMap.get(studentUid);
-				if (userRecord != null) {
-					Map<Long, Comment> commentMap = userRecord.getCommentMap();
-					if (commentMap == null)
-						commentMap = new HashMap<Long, Comment>();
-					commentMap.put(comment.getGradableObject().getId(), comment);
-					userRecord.setCommentMap(commentMap);
+	    // This is slightly painful, but since it's a String that gets passed up, we have to iterate
+		if (config != null && config.getSortInfo() != null && config.getSortInfo().getSortField() != null) {
+			columnId = config.getSortInfo().getSortField();
+			
+			for (StudentModel.Key key : EnumSet.allOf(StudentModel.Key.class)) {
+				if (columnId.equals(key.name())) {
+					sortColumnKey = key;
+					break;
 				}
 			}
-		}
+			
+			if (sortColumnKey == null)
+				sortColumnKey = StudentModel.Key.ASSIGNMENT;
+			
+		} 
 		
+		if (sortColumnKey == null)
+			sortColumnKey = StudentModel.Key.DISPLAY_NAME;
+		
+		boolean isAscending = config != null && config.getSortInfo() != null && config.getSortInfo().getSortDir() == SortDir.ASC;
+		
+		// Check to see if we're sorting or not
+		if (sortColumnKey != null) {
+			switch (sortColumnKey) {
+			case DISPLAY_NAME:
+			case SORT_NAME:
+			case DISPLAY_ID:
+			case SECTION:
+			case EMAIL:
+				userRecords = findStudentRecordPage(gradebook, site, sortColumnKey, sectionUuid, config.getOffset(), config.getLimit(), isAscending);
+				break;
+			case COURSE_GRADE:
+			case GRADE_OVERRIDE:
+			case ASSIGNMENT:
+				Map<String, UserRecord> userRecordMap = findStudentRecords(gradebookUid, gradebookId, site, sectionUuid);
+			    List<String> studentUids = new ArrayList<String>(userRecordMap.keySet());
 				
-		List<UserRecord> userRecords = doSearchAndSortUserRecords(gradebook, categories, studentUids, userRecordMap, config);
-
+			   	//Map<String, Map<Long, AssignmentGradeRecord>>  allGradeRecordsMap = new HashMap<String, Map<Long, AssignmentGradeRecord>>();
+			    String siteId = site.getId();
+			    
+			    List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebookId, siteId, sectionUuid);
+			    // GRBK-40 : TPA : Replace above call with the one bellow once the Mock getAllAssignmentGradeRecords methods has been adjusted
+		    	// List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebookId, getSiteId(), sectionUuid);
+				    	
+		    	if (allGradeRecords != null) {
+			    	for (AssignmentGradeRecord gradeRecord : allGradeRecords) {
+						gradeRecord.setUserAbleToView(true);
+						String studentUid = gradeRecord.getStudentId();
+						UserRecord userRecord = userRecordMap.get(studentUid);
+						Map<Long, AssignmentGradeRecord> studentMap = userRecord.getGradeRecordMap();
+						if (studentMap == null) {
+							studentMap = new HashMap<Long, AssignmentGradeRecord>();
+						}
+						GradableObject go = gradeRecord.getGradableObject();
+						studentMap.put(go.getId(), gradeRecord);
+							
+						userRecord.setGradeRecordMap(studentMap);
+					}
+				}
+		    	    	
+				List<CourseGradeRecord> courseGradeRecords = gbService.getAllCourseGradeRecords(gradebook);
+				
+				if (courseGradeRecords != null) {
+					for (CourseGradeRecord courseGradeRecord : courseGradeRecords) {
+						String studentUid = courseGradeRecord.getStudentId();
+						UserRecord userRecord = userRecordMap.get(studentUid);
+						if (userRecord != null)
+							userRecord.setCourseGradeRecord(courseGradeRecord);
+						else
+							log.warn("Looking up user record for " + studentUid + " failed." );
+					}
+				}
+				
+				List<Comment> comments = gbService.getComments(gradebookId);
+				
+				if (comments != null) {
+					for (Comment comment : comments) {
+						String studentUid = comment.getStudentId();
+						UserRecord userRecord = userRecordMap.get(studentUid);
+						if (userRecord != null) {
+							Map<Long, Comment> commentMap = userRecord.getCommentMap();
+							if (commentMap == null)
+								commentMap = new HashMap<Long, Comment>();
+							commentMap.put(comment.getGradableObject().getId(), comment);
+							userRecord.setCommentMap(commentMap);
+						}
+					}
+				}
+				
+						
+				userRecords = doSearchAndSortUserRecords(gradebook, categories, studentUids, userRecordMap, config);
+				break;
+			}
+		}
+	    
+	    
+	    
+		
+		
 		int startRow = 0;
 		int lastRow = userRecords.size();
 		
@@ -1867,6 +1940,13 @@ private static final long serialVersionUID = 1L;
 				}
 			}
 			
+		} else {
+			
+			for (AssignmentGradeRecord gradeRecord : studentGradeMap.values()) {
+				Assignment assignment = gradeRecord.getAssignment();
+				cellMap = appendItemData(assignment.getId(), cellMap, userRecord, gradebook);
+			}
+			
 		}
 	
 		return new StudentModel(cellMap);
@@ -1904,10 +1984,10 @@ private static final long serialVersionUID = 1L;
 				if (isExcused)
 					cellMap.put(concat(id, StudentModel.EXCUSE_FLAG), Boolean.TRUE);
 				
-				boolean isGraded = gbService.isStudentGraded(userRecord.getUserUid(), assignmentId);
+				//boolean isGraded = gbService.isStudentGraded(userRecord.getUserUid(), assignmentId);
 				
-				if (isGraded)
-					cellMap.put(concat(id, StudentModel.GRADED_FLAG), Boolean.TRUE);
+				//if (isGraded)
+				//	cellMap.put(concat(id, StudentModel.GRADED_FLAG), Boolean.TRUE);
 				
 				boolean isCommented = userRecord.getCommentMap() != null && userRecord.getCommentMap().get(assignmentId) != null;
 				
@@ -2134,30 +2214,66 @@ private static final long serialVersionUID = 1L;
 		
 		String missingGradesMarker = "";
 		
-		for (Category category : categoriesWithAssignments) {
-			if (category != null) {
-				List<Assignment> assignments = category.getAssignmentList();
-				if (assignments != null) {
-					for (Assignment assignment : assignments) {
-						// The student is missing one or more grades if 
-						/// (a) there's no studentGradeMap
-						/// (b) there's no AssignmentGradeRecord for this assignment
-						/// (c) there's no points earned for this AssignmentGradeRecord
-						if (studentGradeMap != null && studentGradeMap.get(assignment.getId()) != null) {
+		if (categoriesWithAssignments == null) {
+			for (AssignmentGradeRecord gradeRecord : studentGradeMap.values()) {
+				Assignment assignment = gradeRecord.getAssignment();
+				Category category = assignment.getCategory();
+				
+				if (category != null && (gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_NO_CATEGORY || 
+						(!category.isRemoved() && !DataTypeConversionUtil.checkBoolean(category.isUnweighted())))) {
+					if (assignment.isRemoved() || DataTypeConversionUtil.checkBoolean(assignment.isUnweighted()))
+						continue;
 							
-							AssignmentGradeRecord record = studentGradeMap.get(assignment.getId());
+					// The student is missing one or more grades if 
+					/// (a) there's no studentGradeMap
+					/// (b) there's no AssignmentGradeRecord for this assignment
+					/// (c) there's no points earned for this AssignmentGradeRecord
+					if (studentGradeMap != null && studentGradeMap.get(assignment.getId()) != null) {
+						
+						AssignmentGradeRecord record = studentGradeMap.get(assignment.getId());
+						
+						boolean isExcused = record.isExcluded() != null && record.isExcluded().booleanValue();
+						boolean isDropped = record.isDropped() != null && record.isDropped().booleanValue();
+						if (record.getPointsEarned() == null && !isExcused && !isDropped) { 
+							missingGradesMarker = "***";
+						}
 							
-							boolean isExcused = record.isExcluded() != null && record.isExcluded().booleanValue();
-							boolean isDropped = record.isDropped() != null && record.isDropped().booleanValue();
-							if (record.getPointsEarned() == null && !isExcused && !isDropped) { 
+					} else {
+						missingGradesMarker = "***";
+					}			
+				}
+			}
+			
+		} else {
+			for (Category category : categoriesWithAssignments) {
+				if (category != null && (gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_NO_CATEGORY || 
+						(!category.isRemoved() && !DataTypeConversionUtil.checkBoolean(category.isUnweighted())))) {
+					List<Assignment> assignments = category.getAssignmentList();
+					if (assignments != null) {
+						for (Assignment assignment : assignments) {
+							if (assignment.isRemoved() || DataTypeConversionUtil.checkBoolean(assignment.isUnweighted()))
+								continue;
+							
+							// The student is missing one or more grades if 
+							/// (a) there's no studentGradeMap
+							/// (b) there's no AssignmentGradeRecord for this assignment
+							/// (c) there's no points earned for this AssignmentGradeRecord
+							if (studentGradeMap != null && studentGradeMap.get(assignment.getId()) != null) {
+								
+								AssignmentGradeRecord record = studentGradeMap.get(assignment.getId());
+								
+								boolean isExcused = record.isExcluded() != null && record.isExcluded().booleanValue();
+								boolean isDropped = record.isDropped() != null && record.isDropped().booleanValue();
+								if (record.getPointsEarned() == null && !isExcused && !isDropped) { 
+									missingGradesMarker = "***";
+								}
+								
+							} else {
 								missingGradesMarker = "***";
 							}
 							
-						} else {
-							missingGradesMarker = "***";
+							
 						}
-						
-						
 					}
 				}
 			}
@@ -4579,7 +4695,7 @@ private static final long serialVersionUID = 1L;
 				model.setUserName(user.getDisplayName());
 			}
 		} else {
-			Map<String, UserRecord> userRecordMap = findStudentRecords(gradebookUid, gradebook.getId(), null);
+			Map<String, UserRecord> userRecordMap = findStudentRecords(gradebookUid, gradebook.getId(), null, null);
 			UserRecord userRecord = userRecordMap.values().iterator().next();
 			model.setUserName(userRecord.getDisplayName());
 			model.setUserAsStudent(buildStudentRow(gradebook, userRecord, columns, categoriesWithAssignments));
@@ -5273,18 +5389,141 @@ private static final long serialVersionUID = 1L;
 	}
 	
 	
-	protected Map<String, UserRecord> findStudentRecords(String gradebookUid, Long gradebookId, String optionalSectionUid) {
+	protected List<UserRecord> findStudentRecordPage(Gradebook gradebook, Site site, StudentModel.Key sortKey, String sectionUuid, int offset, int limit, 
+			boolean isAscending) {
+		List<UserRecord> userRecords = new ArrayList<UserRecord>();
+		
+		String sortField = "sortName";
+		String searchField = null;
+		String searchCriteria = null;
+		
+		switch (sortKey) {
+		case DISPLAY_ID:
+			sortField = "displayId";
+			break;
+		case DISPLAY_NAME:
+		case SORT_NAME:
+			sortField = "sortName";
+			break;
+		case EMAIL:
+			sortField = "email";
+			break;
+		}
+		
+		List<UserDereference> dereferences = gbService.getUserUidsForSite(site.getId(), sectionUuid, sortField, searchField, searchCriteria, offset, limit, isAscending);
+		
+		//List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebook.getId(), site.getId(), sectionUuid);
+		List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebook.getId(), site.getId(), sectionUuid, sortField, searchField, searchCriteria, offset, limit, isAscending);
+		Map<String, Map<Long, AssignmentGradeRecord>> studentGradeRecordMap = new HashMap<String, Map<Long, AssignmentGradeRecord>>();
+		
+		
+	    if (allGradeRecords != null) {
+		    for (AssignmentGradeRecord gradeRecord : allGradeRecords) {
+				gradeRecord.setUserAbleToView(true);
+				String studentUid = gradeRecord.getStudentId();
+				Map<Long, AssignmentGradeRecord> studentMap = studentGradeRecordMap.get(studentUid);
+				if (studentMap == null) {
+					studentMap = new HashMap<Long, AssignmentGradeRecord>();
+				}
+				GradableObject go = gradeRecord.getGradableObject();
+				studentMap.put(go.getId(), gradeRecord);
+						
+				studentGradeRecordMap.put(studentUid, studentMap);
+			}
+		}
+	    	    	
+		List<CourseGradeRecord> courseGradeRecords = gbService.getAllCourseGradeRecords(gradebook);
+		Map<String, CourseGradeRecord> studentCourseGradeRecordMap = new HashMap<String, CourseGradeRecord>();
+		
+		if (courseGradeRecords != null) {
+			for (CourseGradeRecord courseGradeRecord : courseGradeRecords) {
+				String studentUid = courseGradeRecord.getStudentId();
+				studentCourseGradeRecordMap.put(studentUid, courseGradeRecord);
+			}
+		}
+			
+		List<Comment> comments = gbService.getComments(gradebook.getId());
+		Map<String, Map<Long, Comment>> studentItemCommentMap = new HashMap<String, Map<Long, Comment>>();
+		
+		if (comments != null) {
+			for (Comment comment : comments) {
+				String studentUid = comment.getStudentId();
+				Map<Long, Comment> commentMap = studentItemCommentMap.get(studentUid);
+				if (commentMap == null)
+					commentMap = new HashMap<Long, Comment>();
+				
+				commentMap.put(comment.getGradableObject().getId(), comment);
+				studentItemCommentMap.put(studentUid, commentMap);
+			}
+		}
+		
+		
+		for (UserDereference dereference : dereferences) {
+			UserRecord userRecord = null;
+			if (userService != null) {
+				try {
+					User user = userService.getUser(dereference.getUserUid());
+					userRecord = new UserRecord(user);
+				} catch (UserNotDefinedException e) {
+					log.info("Unable to retrieve a user object for " + dereference.getUserUid());
+				}
+			} else {
+				userRecord = new UserRecord(dereference.getUserUid());
+			}
+			
+			Map<Long, AssignmentGradeRecord> gradeRecordMap = studentGradeRecordMap.get(dereference.getUserUid());
+			userRecord.setGradeRecordMap(gradeRecordMap);
+			CourseGradeRecord courseGradeRecord = studentCourseGradeRecordMap.get(dereference.getUserUid());
+			userRecord.setCourseGradeRecord(courseGradeRecord);
+			Map<Long, Comment> commentMap = studentItemCommentMap.get(dereference.getUserUid());
+			userRecord.setCommentMap(commentMap);
+			userRecords.add(userRecord);
+		}
+		
+		return userRecords;
+	}
+	
+	protected List<User> findAllStudents(Site site) {
+		List<User> users = new ArrayList<User>();
+		if (site != null) {
+			Set<Member> members = site.getMembers();
+			for (Member member : members) {
+				if (accessAdvisor.isLearner(member)) {
+					String userUid = member.getUserId();
+
+					try {
+						User user = userService.getUser(userUid);
+						users.add(user);
+					} catch (UserNotDefinedException e) {
+						log.info("Unable to retrieve user for " + userUid);
+					}
+					
+				}
+			}
+		}
+		return users;
+	}
+	
+	
+	protected Map<String, UserRecord> findStudentRecords(String gradebookUid, Long gradebookId, Site site, String optionalSectionUid) {
 		Map<String, UserRecord> studentRecords = new HashMap<String, UserRecord>();
 		
 		boolean canGradeAll = isUserAbleToGradeAll(gradebookUid);
 		
 		if (canGradeAll && optionalSectionUid == null) {
 			// If so, then grab all the members for the site
-			String context = getSiteContext();
-			Site site = null;
-			try {
-				site = siteService.getSite(context);
 			
+			if (site == null) {
+				String context = getSiteContext();
+				
+				try {
+					site = siteService.getSite(context);
+				} catch (IdUnusedException idue) {
+					log.error("Unable to find a site for this gradebook", idue);
+				}
+			}
+			
+			if (site != null) {
 				Set<Member> members = site.getMembers();
 				for (Member member : members) {
 					if (accessAdvisor.isLearner(member)) {
@@ -5292,8 +5531,6 @@ private static final long serialVersionUID = 1L;
 						studentRecords.put(userUid, new UserRecord(userUid));
 					}
 				}
-			} catch (IdUnusedException idue) {
-				log.error("Unable to find a site for this gradebook", idue);
 			}
 		} 
 		

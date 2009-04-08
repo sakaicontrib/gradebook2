@@ -152,15 +152,13 @@ public class DelegateFacadeMockImpl extends DelegateFacadeImpl {
 	
 	
 	@Override
-	protected Map<String, UserRecord> findStudentRecords(String gradebookUid, Long gradebookId, String optionalSectionUid) {
+	protected Map<String, UserRecord> findStudentRecords(String gradebookUid, Long gradebookId, Site site, String optionalSectionUid) {
 		Map<String, UserRecord> studentRecords = new HashMap<String, UserRecord>();
 		
 		boolean canGradeAll = true; //isUserAbleToGradeAll(gradebookUid);
 		
 		if (canGradeAll && optionalSectionUid == null) {
 			// If so, then grab all the members for the site
-			String context = getSiteContext();
-			Site site = null;
 			
 			if (userRecords == null) {
 				userRecords = new ArrayList<UserRecord>(2000);
