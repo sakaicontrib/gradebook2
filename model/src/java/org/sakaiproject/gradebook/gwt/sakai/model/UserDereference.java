@@ -9,21 +9,21 @@ public class UserDereference {
 	private String displayId;
 	private String sortName;
 	private String email;
-	private String sectionTitle;
-	private String sectionUid;
-	private String siteId;
 	private Date createdOn;
 	
 	public UserDereference() {
 		
 	}
 	
-	public UserDereference(String userUid, String displayId, String sortName, String email, String siteId) {
+	public UserDereference(String userUid) {
+		this.userUid = userUid;
+	}
+	
+	public UserDereference(String userUid, String displayId, String sortName, String email) {
 		this.userUid = userUid;
 		this.displayId = displayId;
 		this.sortName = sortName;
 		this.email = email;
-		this.siteId = siteId;
 		this.createdOn = new Date();
 	}
 	
@@ -44,24 +44,6 @@ public class UserDereference {
 	}
 	public void setEmail(String email) {
 		this.email = email;
-	}
-	public String getSectionTitle() {
-		return sectionTitle;
-	}
-	public void setSectionTitle(String sectionTitle) {
-		this.sectionTitle = sectionTitle;
-	}
-	public String getSectionUid() {
-		return sectionUid;
-	}
-	public void setSectionUid(String sectionUid) {
-		this.sectionUid = sectionUid;
-	}
-	public String getSiteId() {
-		return siteId;
-	}
-	public void setSiteId(String siteId) {
-		this.siteId = siteId;
 	}
 
 	public Date getCreatedOn() {

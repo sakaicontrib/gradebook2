@@ -97,6 +97,9 @@ public class StudentModel extends EntityModel implements Comparable<StudentModel
 	
 	public static ClassType lookupClassType(String property) {
 		
+		if (property.equals(Key.GRADE_OVERRIDE.name()))
+			return ClassType.STRING;
+		
 		if (property.endsWith(COMMENT_TEXT_FLAG))
 			return ClassType.STRING;
 		

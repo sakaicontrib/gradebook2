@@ -29,6 +29,7 @@
 				<value>org/sakaiproject/gradebook/gwt/sakai/model/Realm.hbm.xml</value>
 				<value>org/sakaiproject/gradebook/gwt/sakai/model/RealmGroup.hbm.xml</value>
 				<value>org/sakaiproject/gradebook/gwt/sakai/model/UserDereference.hbm.xml</value>
+				<value>org/sakaiproject/gradebook/gwt/sakai/model/UserDereferenceRealmUpdate.hbm.xml</value>
 			</list>
 		</property>
 	</bean>

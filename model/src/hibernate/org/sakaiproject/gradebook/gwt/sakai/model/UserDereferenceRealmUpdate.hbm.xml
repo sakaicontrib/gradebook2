@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN"
+	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping default-cascade="none" package="org.sakaiproject.gradebook.gwt.sakai.model" default-lazy="false">
+
+	<class name="org.sakaiproject.gradebook.gwt.sakai.model.UserDereferenceRealmUpdate" table="GB_USER_DEREF_RM_UPDATE_T">
+
+		<id name="id" column="ID" type="long">
+			<generator class="native">
+				<param name="sequence">GB_USER_DEREF_RM_UPDATE_S</param>
+			</generator>
+		</id>
+
+		<property name="realmId" column="REALM_ID" not-null="true"/>
+
+  		<property name="lastUpdate" column="LAST_UPDATE" type="timestamp"  not-null="true"/>
+  
+  	</class>
+  
+ 	
+</hibernate-mapping>

@@ -88,12 +88,12 @@ public class GradebookApplication implements EntryPoint {
 			new RemoteCommand<ApplicationModel>() {
 		
 			public void onCommandFailure(UserEntityAction<ApplicationModel> action, Throwable caught) {
-				
+				GXT.hideLoadingPanel("loading");
 				dispatcher.dispatch(GradebookEvents.Exception, caught);
 			}
 			
 			public void onCommandSuccess(UserEntityAction<ApplicationModel> action, ApplicationModel model) {
-				
+				GXT.hideLoadingPanel("loading");
 				String placementId = model.getPlacementId();
 				if (placementId != null) {
 					String modifiedId = placementId.replace('-', 'x');

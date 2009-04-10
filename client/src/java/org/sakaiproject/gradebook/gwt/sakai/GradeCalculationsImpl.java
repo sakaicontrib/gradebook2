@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -671,6 +672,38 @@ public class GradeCalculationsImpl implements GradeCalculations {
 		BigDecimal categoryWeightSum = BigDecimal.ZERO;
 		BigDecimal extraCreditSum = BigDecimal.ZERO;
 		BigDecimal extraCredit = BigDecimal.ZERO;
+		
+		
+		// We can figure out what the relevant categories with assignments are from the assignmentGradeRecordMap. This saves us a database call.
+		if (categoriesWithAssignments == null && assignmentGradeRecordMap != null) {
+			
+			Map<Long, Category> categoryMap = new HashMap<Long, Category>();
+			for (AssignmentGradeRecord gradeRecord : assignmentGradeRecordMap.values()) {
+				if (gradeRecord != null) {
+					Assignment assignment = gradeRecord.getAssignment();
+					if (assignment != null) {
+						Category category = assignment.getCategory();
+						if (category != null) {
+							Long categoryId = category.getId();
+					
+							Category storedCategory = categoryMap.get(categoryId);
+							
+							if (storedCategory != null)
+								category = storedCategory;
+							else {
+								categoryMap.put(categoryId, category);
+								category.setAssignmentList(new ArrayList<Assignment>());
+							}
+							
+							category.getAssignmentList().add(assignment);
+						}
+					}
+				}
+				
+				categoriesWithAssignments = categoryMap.values();
+			}
+			
+		} 
 		
 		if (categoriesWithAssignments != null && !categoriesWithAssignments.isEmpty() && assignmentGradeRecordMap != null) {
 		

@@ -296,8 +296,8 @@ private static final long serialVersionUID = 1L;
 				return getAssignments(action.getGradebookUid(), action.getGradebookId(), showAll, config);
 			case CATEGORY:
 				return getCategories(action.getGradebookUid(), action.getGradebookId(), showAll, config);*/
-			case GRADE_RECORD:
-				return getAssignmentRecords(action.getGradebookUid(), action.getGradebookId(), action.getStudentUid(), Boolean.valueOf(!showAll), config);
+			/*case GRADE_RECORD:
+				return getAssignmentRecords(action.getGradebookUid(), action.getGradebookId(), action.getStudentUid(), Boolean.valueOf(!showAll), config);*/
 			case SECTION:
 				return getSections(action.getGradebookUid(), action.getGradebookId(), config);
 			case STUDENT:
@@ -457,11 +457,11 @@ private static final long serialVersionUID = 1L;
 				GradebookModel.Key gradebookKey = GradebookModel.Key.valueOf(action.getKey());
 				entity = (X)updateGradebookField(gradebookModel.getGradebookId(), gradebookKey, action.getValue());
 				break;
-			case GRADE_RECORD:
+			/*case GRADE_RECORD:
 				GradeRecordModel.Key recordModelKey = GradeRecordModel.Key.valueOf(action.getKey());
 				entity = (X)updateGradeRecordModelField(action.getStudentModel().getIdentifier(), 
 						(GradeRecordModel)action.getModel(), recordModelKey, action.getValue());
-				break;
+				break;*/
 			case STUDENT:
 				StudentModel student = (StudentModel)action.getModel();
 				
@@ -674,8 +674,7 @@ private static final long serialVersionUID = 1L;
 		Map<String, UserRecord> userRecordMap = findStudentRecords(gradebookUid, gradebookId, null, null);
 	    List<String> studentUids = new ArrayList<String>(userRecordMap.keySet());
 		
-	   	//Map<String, Map<Long, AssignmentGradeRecord>>  allGradeRecordsMap = new HashMap<String, Map<Long, AssignmentGradeRecord>>();
-    	List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebookId, studentUids);
+	   	List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebookId, studentUids);
 		
     	if (allGradeRecords != null) {
 	    	for (AssignmentGradeRecord gradeRecord : allGradeRecords) {
@@ -905,12 +904,15 @@ private static final long serialVersionUID = 1L;
 		
 		Site site = getSite();
 		
-		gbService.syncUserDereferenceBySite(getSiteId(), findAllStudents(site));
+		Date lastUpdate = gbService.getLastUserDereferenceSync(getSiteId(), null);
+		long ONEHOUR = 1000l * 60l * 60l;
+		if (lastUpdate == null || lastUpdate.getTime() + ONEHOUR < new Date().getTime())
+			gbService.syncUserDereferenceBySite(getSiteId(), null, findAllStudents(site));
 		
 		return model;
 	}
 	
-	@SuppressWarnings("unchecked")
+	/*@SuppressWarnings("unchecked")
 	protected <X extends BaseModel> PagingLoadResult<X> getAssignmentRecords(
 			String gradebookUid, Long gradebookId, String studentUid,
 			Boolean isStudentView, PagingLoadConfig config) {
@@ -1021,7 +1023,7 @@ private static final long serialVersionUID = 1L;
 		}
 
 		return new BasePagingLoadResult<X>(models, config.getOffset(), fullListSize);
-	}
+	}*/
 	
 	@SuppressWarnings("unchecked")
 	protected GradeRecordModel getSingleAssignmentForStudent(
@@ -1605,7 +1607,7 @@ private static final long serialVersionUID = 1L;
 	    Gradebook gradebook = null;
 	    Site site = getSite();
 	   
-	    List<Category> categories = null; // getCategoriesWithAssignments(gradebookId);
+	    List<Category> categories = getCategoriesWithAssignments(gradebookId);
 	    
 	    if (categories != null && categories.size() > 0) 
 	    	gradebook = categories.get(0).getGradebook();
@@ -1615,26 +1617,34 @@ private static final long serialVersionUID = 1L;
 	    String columnId = null;
 	    StudentModel.Key sortColumnKey = null;
 	    
+	    int offset = -1;
+	    int limit = -1;
+	    
 	    // This is slightly painful, but since it's a String that gets passed up, we have to iterate
-		if (config != null && config.getSortInfo() != null && config.getSortInfo().getSortField() != null) {
-			columnId = config.getSortInfo().getSortField();
-			
-			for (StudentModel.Key key : EnumSet.allOf(StudentModel.Key.class)) {
-				if (columnId.equals(key.name())) {
-					sortColumnKey = key;
-					break;
+		if (config != null) { 
+			offset = config.getOffset();
+			limit = config.getLimit();
+			if (config.getSortInfo() != null && config.getSortInfo().getSortField() != null) {
+				columnId = config.getSortInfo().getSortField();
+				
+				for (StudentModel.Key key : EnumSet.allOf(StudentModel.Key.class)) {
+					if (columnId.equals(key.name())) {
+						sortColumnKey = key;
+						break;
+					}
 				}
+				
+				if (sortColumnKey == null)
+					sortColumnKey = StudentModel.Key.ASSIGNMENT;
 			}
-			
-			if (sortColumnKey == null)
-				sortColumnKey = StudentModel.Key.ASSIGNMENT;
-			
 		} 
 		
 		if (sortColumnKey == null)
 			sortColumnKey = StudentModel.Key.DISPLAY_NAME;
 		
-		boolean isAscending = config != null && config.getSortInfo() != null && config.getSortInfo().getSortDir() == SortDir.ASC;
+		boolean isDescending = config != null && config.getSortInfo() != null && config.getSortInfo().getSortDir() == SortDir.DESC;
+		
+		int totalUsers = 0;
 		
 		// Check to see if we're sorting or not
 		if (sortColumnKey != null) {
@@ -1644,8 +1654,64 @@ private static final long serialVersionUID = 1L;
 			case DISPLAY_ID:
 			case SECTION:
 			case EMAIL:
-				userRecords = findStudentRecordPage(gradebook, site, sortColumnKey, sectionUuid, config.getOffset(), config.getLimit(), isAscending);
-				break;
+				String sortField = "sortName";
+				String searchField = null;
+				String searchCriteria = null;
+				
+				switch (sortColumnKey) {
+				case DISPLAY_ID:
+					sortField = "displayId";
+					break;
+				case DISPLAY_NAME:
+				case SORT_NAME:
+					sortField = "sortName";
+					break;
+				case EMAIL:
+					sortField = "email";
+					break;
+				}
+				totalUsers = gbService.getUserCountForSite(site.getId(), sectionUuid, sortField, searchField, searchCriteria);
+				userRecords = findStudentRecordPage(gradebook, site, sectionUuid,  sortField, searchField, searchCriteria, offset, limit, !isDescending);
+				
+				int startRow = 0;
+				int lastRow = totalUsers;
+				
+				if (config != null) {
+					startRow = config.getOffset();
+					lastRow = startRow + config.getLimit();
+				}
+				
+				if (lastRow > totalUsers) {
+					lastRow = totalUsers;
+				}
+					
+				List<ColumnModel> columns = getColumns();
+				
+				List<X> rows = new ArrayList<X>();
+				
+				
+				// We only want to populate the rowData and rowValues for the requested rows
+				for (UserRecord userRecord : userRecords) {
+					
+					// Populate the user record on the fly if necessary
+					if (!userRecord.isPopulated()) {
+						User user = null;
+						try {
+							user = userService.getUser(userRecord.getUserUid());
+							userRecord.setUserEid(user.getEid());
+							userRecord.setDisplayId(user.getDisplayId());
+							userRecord.setDisplayName(user.getDisplayName());
+							userRecord.setSortName(user.getSortName());
+							userRecord.setEmail(user.getEmail());
+						} catch (UserNotDefinedException e) {
+							log.error("No sakai user defined for this member '" + userRecord.getUserUid() + "'", e);
+						}
+					}
+					
+					rows.add((X)buildStudentRow(gradebook, userRecord, columns, categories));
+				}
+				
+				return new BasePagingLoadResult<X>(rows, startRow, totalUsers);
 			case COURSE_GRADE:
 			case GRADE_OVERRIDE:
 			case ASSIGNMENT:
@@ -1706,6 +1772,7 @@ private static final long serialVersionUID = 1L;
 				
 						
 				userRecords = doSearchAndSortUserRecords(gradebook, categories, studentUids, userRecordMap, config);
+				totalUsers = userRecords.size();
 				break;
 			}
 		}
@@ -1715,15 +1782,15 @@ private static final long serialVersionUID = 1L;
 		
 		
 		int startRow = 0;
-		int lastRow = userRecords.size();
+		int lastRow = totalUsers;
 		
 		if (config != null) {
 			startRow = config.getOffset();
 			lastRow = startRow + config.getLimit();
 		}
 		
-		if (lastRow > userRecords.size()) {
-			lastRow = userRecords.size();
+		if (lastRow > totalUsers) {
+			lastRow = totalUsers;
 		}
 			
 		List<ColumnModel> columns = getColumns();
@@ -1754,7 +1821,7 @@ private static final long serialVersionUID = 1L;
 			rows.add((X)buildStudentRow(gradebook, userRecord, columns, categories));
 		}
 		
-		return new BasePagingLoadResult<X>(rows, startRow, userRecords.size());
+		return new BasePagingLoadResult<X>(rows, startRow, totalUsers);
 	}
 	
 	private ItemModel getItemModel(Gradebook gradebook, List<Category> categories) {
@@ -2214,37 +2281,7 @@ private static final long serialVersionUID = 1L;
 		
 		String missingGradesMarker = "";
 		
-		if (categoriesWithAssignments == null) {
-			for (AssignmentGradeRecord gradeRecord : studentGradeMap.values()) {
-				Assignment assignment = gradeRecord.getAssignment();
-				Category category = assignment.getCategory();
-				
-				if (category != null && (gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_NO_CATEGORY || 
-						(!category.isRemoved() && !DataTypeConversionUtil.checkBoolean(category.isUnweighted())))) {
-					if (assignment.isRemoved() || DataTypeConversionUtil.checkBoolean(assignment.isUnweighted()))
-						continue;
-							
-					// The student is missing one or more grades if 
-					/// (a) there's no studentGradeMap
-					/// (b) there's no AssignmentGradeRecord for this assignment
-					/// (c) there's no points earned for this AssignmentGradeRecord
-					if (studentGradeMap != null && studentGradeMap.get(assignment.getId()) != null) {
-						
-						AssignmentGradeRecord record = studentGradeMap.get(assignment.getId());
-						
-						boolean isExcused = record.isExcluded() != null && record.isExcluded().booleanValue();
-						boolean isDropped = record.isDropped() != null && record.isDropped().booleanValue();
-						if (record.getPointsEarned() == null && !isExcused && !isDropped) { 
-							missingGradesMarker = "***";
-						}
-							
-					} else {
-						missingGradesMarker = "***";
-					}			
-				}
-			}
-			
-		} else {
+		if (categoriesWithAssignments != null) {
 			for (Category category : categoriesWithAssignments) {
 				if (category != null && (gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_NO_CATEGORY || 
 						(!category.isRemoved() && !DataTypeConversionUtil.checkBoolean(category.isUnweighted())))) {
@@ -2294,22 +2331,32 @@ private static final long serialVersionUID = 1L;
 		return displayGrade;
 	}
 	
-	private StudentModel refreshLearnerData(Gradebook gradebook, StudentModel student, Assignment assignment) {
-		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
+	private StudentModel refreshLearnerData(Gradebook gradebook, StudentModel student, Assignment assignment, List<AssignmentGradeRecord> assignmentGradeRecords) {
+		
 		Map<Long, AssignmentGradeRecord> studentGradeMap = new HashMap<Long, AssignmentGradeRecord>();
-		if (assignments != null) {
+		
+		for (AssignmentGradeRecord gradeRecord : assignmentGradeRecords) {
+			Assignment a = gradeRecord.getAssignment();
+			studentGradeMap.put(a.getId(), gradeRecord);
+		}
+		
+		/*if (assignments != null) {
 			for (Assignment a : assignments) {
 				AssignmentGradeRecord record = gbService.getAssignmentGradeRecordForAssignmentForStudent(a, student.getIdentifier());
 				record.setGradableObject(a);
 				studentGradeMap.put(a.getId(), record);
 			}
-		}
+		}*/
+		
+		// FIXME: There has to be a more efficient way of doing this -- all we really need this for is to determine if the learner has been graded for all assignments
+		// FIXME: We should be able to replace that logic in getDisplayGrade with a clever db query.
+		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
 		List<Category> categoriesWithAssignments = getCategoriesWithAssignments(gradebook.getId(), assignments);
 		
 		CourseGradeRecord courseGradeRecord = gbService.getStudentCourseGradeRecord(gradebook, student.getIdentifier());
 		String displayGrade = getDisplayGrade(gradebook, courseGradeRecord, categoriesWithAssignments, studentGradeMap);
 		
-		for (AssignmentGradeRecord record : studentGradeMap.values()) {
+		for (AssignmentGradeRecord record : assignmentGradeRecords) {
 			Long aId = record.getGradableObject().getId();
 			String dropProperty =  concat(String.valueOf(aId), StudentModel.DROP_FLAG);
 			String excuseProperty = concat(String.valueOf(aId), StudentModel.EXCUSE_FLAG);
@@ -2331,11 +2378,11 @@ private static final long serialVersionUID = 1L;
 			}
 		}
 		
-		String gradedProperty = assignment.getId() + StudentModel.GRADED_FLAG;
+		/*String gradedProperty = assignment.getId() + StudentModel.GRADED_FLAG;
 		if (gbService.isStudentGraded(student.getIdentifier(), assignment.getId())) 		
 			student.set(gradedProperty, Boolean.TRUE);
 		else
-			student.set(gradedProperty, null);
+			student.set(gradedProperty, null);*/
 		
 		String commentedProperty = assignment.getId() + StudentModel.COMMENTED_FLAG;
 		if (gbService.isStudentCommented(student.getIdentifier(), assignment.getId())) 		
@@ -2357,9 +2404,19 @@ private static final long serialVersionUID = 1L;
 		
 		String assignmentId = id.substring(0, indexOf);
 		
-		Gradebook gradebook = gbService.getGradebook(gradebookUid);
+		
 		Assignment assignment = gbService.getAssignment(Long.valueOf(assignmentId));
-		AssignmentGradeRecord assignmentGradeRecord = gbService.getAssignmentGradeRecordForAssignmentForStudent(assignment, student.getIdentifier());
+		Gradebook gradebook = assignment.getGradebook();
+		
+		List<AssignmentGradeRecord> gradeRecords = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), student.getIdentifier());
+		
+		AssignmentGradeRecord assignmentGradeRecord = null;
+		
+		for (AssignmentGradeRecord currentGradeRecord : gradeRecords) {
+			Assignment a = currentGradeRecord.getAssignment();
+			if (a.getId().equals(assignment.getId()))
+				assignmentGradeRecord = currentGradeRecord;
+		}
 		
 		assignmentGradeRecord.setExcluded(value);
 		
@@ -2367,73 +2424,40 @@ private static final long serialVersionUID = 1L;
 		assignmentGradeRecord.setGradableObject(assignment);
 		assignmentGradeRecord.setStudentId(student.getIdentifier());
 		
-		Collection<AssignmentGradeRecord> gradeRecords = new LinkedList<AssignmentGradeRecord>();
-		gradeRecords.add(assignmentGradeRecord);
-		gbService.updateAssignmentGradeRecords(assignment, gradeRecords, gradebook.getGrade_type());
+		Collection<AssignmentGradeRecord> updateGradeRecords = new LinkedList<AssignmentGradeRecord>();
+		updateGradeRecords.add(assignmentGradeRecord);
+		gbService.updateAssignmentGradeRecords(assignment, updateGradeRecords, gradebook.getGrade_type());
 
-		return refreshLearnerData(gradebook, student, assignment);
+		return refreshLearnerData(gradebook, student, assignment, gradeRecords);
 	}
 	
 	public StudentModel scoreNumericItem(String gradebookUid, StudentModel student, String assignmentId, Double value, Double previousValue) throws InvalidInputException {
 		
-		Gradebook gradebook = gbService.getGradebook(gradebookUid);
 		Assignment assignment = gbService.getAssignment(Long.valueOf(assignmentId));
-		AssignmentGradeRecord assignmentGradeRecord = gbService.getAssignmentGradeRecordForAssignmentForStudent(assignment, student.getIdentifier());
+		Gradebook gradebook = assignment.getGradebook();
+
+		List<AssignmentGradeRecord> gradeRecords = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), student.getIdentifier());
+		
+		AssignmentGradeRecord assignmentGradeRecord = null;
+		
+		for (AssignmentGradeRecord currentGradeRecord : gradeRecords) {
+			Assignment a = currentGradeRecord.getAssignment();
+			if (a.getId().equals(assignment.getId()))
+				assignmentGradeRecord = currentGradeRecord;
+		}
+		
+		if (assignmentGradeRecord == null)
+			assignmentGradeRecord = new AssignmentGradeRecord();
 		
 		scoreItem(gradebook, assignment, assignmentGradeRecord, student.getIdentifier(), value);
 		
-		refreshLearnerData(gradebook, student, assignment);
+		refreshLearnerData(gradebook, student, assignment, gradeRecords);
 		student.set(assignmentId, value);
-		
-		/*List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
-		Map<Long, AssignmentGradeRecord> studentGradeMap = new HashMap<Long, AssignmentGradeRecord>();
-		if (assignments != null) {
-			for (Assignment a : assignments) {
-				AssignmentGradeRecord record = gbService.getAssignmentGradeRecordForAssignmentForStudent(a, student.getIdentifier());
-				record.setGradableObject(a);
-				studentGradeMap.put(a.getId(), record);
-			}
-		}
-		List<Category> categoriesWithAssignments = getCategoriesWithAssignments(gradebook.getId(), assignments);
-		
-		CourseGradeRecord courseGradeRecord = gbService.getStudentCourseGradeRecord(gradebook, student.getIdentifier());
-		String displayGrade = getDisplayGrade(gradebook, courseGradeRecord, categoriesWithAssignments, studentGradeMap);
-		
-		for (AssignmentGradeRecord record : studentGradeMap.values()) {
-			Long aId = record.getGradableObject().getId();
-			String dropProperty =  concat(String.valueOf(aId), StudentModel.DROP_FLAG);
-			String excuseProperty = concat(String.valueOf(aId), StudentModel.EXCUSE_FLAG);
-			boolean isDropped = record.isDropped() != null && record.isDropped().booleanValue();
-			boolean isExcluded = record.isExcluded() != null && record.isExcluded().booleanValue();
-			
-			if (isDropped || isExcluded)
-				student.set(dropProperty, Boolean.TRUE);
-			else if (student.get(dropProperty) != null) 
-				student.set(dropProperty, null);
-			
-			if (isExcluded) 
-				student.set(excuseProperty, Boolean.TRUE);
-		}
-		
-		String gradedProperty = assignment.getId() + StudentModel.GRADED_FLAG;
-		if (gbService.isStudentGraded(student.getIdentifier(), assignment.getId())) 		
-			student.set(gradedProperty, Boolean.TRUE);
-		else
-			student.set(gradedProperty, null);
-		
-		String commentedProperty = assignment.getId() + StudentModel.COMMENTED_FLAG;
-		if (gbService.isStudentCommented(student.getIdentifier(), assignment.getId())) 		
-			student.set(commentedProperty, Boolean.TRUE);
-		else
-			student.set(commentedProperty, null);
-		
-		student.set(assignmentId, value);
-		student.set(StudentModel.Key.COURSE_GRADE.name(), displayGrade);*/
 		
 		return student;
 	}
 
-	public GradeRecordModel scoreNumericItem(String gradebookUid, Long gradebookId,
+	/*public GradeRecordModel scoreNumericItem(String gradebookUid, Long gradebookId,
 			String studentUid, GradeRecordModel assignmentModel, Double value,
 			Double previousValue) throws InvalidInputException {
 
@@ -2449,8 +2473,8 @@ private static final long serialVersionUID = 1L;
 		String courseGrade = requestCourseGrade(gradebookUid, studentUid);
 		assignmentModel.setCourseGrade(courseGrade);
 		return assignmentModel;
-	}
-	
+	}*/
+		
 	private void scoreItem(Gradebook gradebook, Assignment assignment, 
 			AssignmentGradeRecord assignmentGradeRecord,
 			String studentUid, Double value) throws InvalidInputException {
@@ -2540,7 +2564,7 @@ private static final long serialVersionUID = 1L;
 		return assignmentModel;
 	}
 	
-	private ItemModel updateCategoryField(String categoryId, ItemModel.Key key, Object value) 
+	/*private ItemModel updateCategoryField(String categoryId, ItemModel.Key key, Object value) 
 		throws InvalidInputException {
 		Category category = gbService.getCategory(Long.valueOf(categoryId));
 
@@ -2569,10 +2593,10 @@ private static final long serialVersionUID = 1L;
 			}
 			boolean isUnweighted = ! convertBoolean(value).booleanValue();
 			category.setUnweighted(Boolean.valueOf(isUnweighted));
-			/*if (isUnweighted) {
+			/--*if (isUnweighted) {
 				category.setWeight(Double.valueOf(0d));
 			}
-			else*/ if (!isUnweighted) {
+			else*--/ if (!isUnweighted) {
 				// Since we don't want to leave the category weighting as 0 if a category has been re-included,
 				// but we don't know what the user wants it to be, we set it to 1%
 				double aw = category.getWeight() == null ? 0d : category.getWeight().doubleValue();
@@ -2602,7 +2626,7 @@ private static final long serialVersionUID = 1L;
 		}
 		
 		return getItemModelsForCategory(category);
-	}
+	}*/
 	
 	private ItemModel getItemModelsForCategory(Category category) {
 		Gradebook gradebook = category.getGradebook();
@@ -3809,7 +3833,7 @@ private static final long serialVersionUID = 1L;
 		return categoryItemModel;
 	}
 	
-	private ItemModel updateItemField(String assignmentId, ItemModel.Key key, 
+	/*private ItemModel updateItemField(String assignmentId, ItemModel.Key key, 
 			Object value) throws InvalidInputException {
 		
 		Assignment assignment = gbService.getAssignment(Long.valueOf(assignmentId));
@@ -3907,41 +3931,7 @@ private static final long serialVersionUID = 1L;
 			recalculateAssignmentWeights(category.getId(), null);
 			break;
 		}
-		
-		/*if (updatedAssignments == null || updatedAssignments.isEmpty())
-			updatedAssignments = gbService.getAssignmentsForCategory(category.getId());
-		
-		List<ItemModel> itemModels = new ArrayList<ItemModel>();
-		
-		ItemModel categoryItemModel = createItemModel(gradebook, category, updatedAssignments);
-		itemModels.add(categoryItemModel);
-		BigDecimal percentGrade = BigDecimal.valueOf(categoryItemModel.getPercentCourseGrade().doubleValue());
-		BigDecimal percentCategory = BigDecimal.valueOf(categoryItemModel.getPercentCategory().doubleValue());
-		BigDecimal Big_100 = new BigDecimal(100d);
-		if (updatedAssignments != null) {
-			for (Assignment a : updatedAssignments) {
-				BigDecimal assignmentWeight = BigDecimal.valueOf(a.getAssignmentWeighting().doubleValue());
-				BigDecimal courseGradePercent = calculateItemGradePercent(percentGrade, percentCategory, assignmentWeight);
 				
-				itemModels.add(createItemModel(category, a, courseGradePercent));
-			}
-		} else {
-			BigDecimal assignmentWeight = BigDecimal.valueOf(assignment.getAssignmentWeighting().doubleValue());
-			BigDecimal courseGradePercent = calculateItemGradePercent(percentGrade, percentCategory, assignmentWeight);
-			
-			itemModels.add(createItemModel(category, assignment, courseGradePercent));
-		}*/
-		
-		/*List<ItemModel> models = new ArrayList<ItemModel>();
-		
-		if (oldCategory != null) {
-			recalculateAssignmentWeights(oldCategory.getId(), null);
-			models.addAll(getItemModelsForCategory(oldCategory));
-		}
-		
-		models.addAll(getItemModelsForCategory(category));
-		*/
-		
 		if (oldCategory != null) 
 			recalculateAssignmentWeights(oldCategory.getId(), null);
 		
@@ -3962,7 +3952,7 @@ private static final long serialVersionUID = 1L;
 		// Otherwise, we need to update the item's category -- generally to re-calculate weights
 		return getItemModelsForCategory(category);
 		//return getItemModelsForGradebook(gradebook);
-	}
+	}*/
 	
 	/*
 	 *  For examine, 
@@ -4093,7 +4083,7 @@ private static final long serialVersionUID = 1L;
 		return updateGradeRecordModelField(gradebookUid, gradebookId, studentUid, model, key, value);
 	}*/
 	
-	private GradeRecordModel updateGradeRecordModelField(String studentUid, GradeRecordModel model, 
+	/*private GradeRecordModel updateGradeRecordModelField(String studentUid, GradeRecordModel model, 
 			GradeRecordModel.Key key, Object value) throws InvalidInputException {
 		
 		Assignment assignment  = gbService.getAssignment(model.getAssignmentId());
@@ -4168,7 +4158,7 @@ private static final long serialVersionUID = 1L;
 		assignmentModel.setCourseGrade(displayGrade);
 		
 		return assignmentModel;	
-	}
+	}*/
 	
 	// Helper method
 	private Double calculateEqualWeight(int numberOfItems) {
@@ -5389,30 +5379,39 @@ private static final long serialVersionUID = 1L;
 	}
 	
 	
-	protected List<UserRecord> findStudentRecordPage(Gradebook gradebook, Site site, StudentModel.Key sortKey, String sectionUuid, int offset, int limit, 
+	protected List<UserRecord> findStudentRecordPage(Gradebook gradebook, Site site, String sectionUuid, String sortField, String searchField, String searchCriteria,
+			int offset, int limit, 
 			boolean isAscending) {
 		List<UserRecord> userRecords = new ArrayList<UserRecord>();
 		
-		String sortField = "sortName";
-		String searchField = null;
-		String searchCriteria = null;
 		
-		switch (sortKey) {
-		case DISPLAY_ID:
-			sortField = "displayId";
-			break;
-		case DISPLAY_NAME:
-		case SORT_NAME:
-			sortField = "sortName";
-			break;
-		case EMAIL:
-			sortField = "email";
-			break;
-		}
+		/*List<UserDereference> dereferences = new ArrayList<UserDereference>();
+		
+		List<Object[]> objects = gbService.getUserData(gradebook.getId(), site.getId(), sectionUuid, sortField, searchField, searchCriteria, offset, limit, isAscending);
+		
+		Map<String, Map<Long, AssignmentGradeRecord>> studentGradeRecordMap = new HashMap<String, Map<Long, AssignmentGradeRecord>>();
+		for (Object[] a : objects) {
+			UserDereference userDereference = (UserDereference)a[0];
+			AssignmentGradeRecord gradeRecord = (AssignmentGradeRecord)a[1];
+			
+			dereferences.add(userDereference);
+			
+			if (gradeRecord != null) {
+				gradeRecord.setUserAbleToView(true);
+				String studentUid = gradeRecord.getStudentId();
+				Map<Long, AssignmentGradeRecord> studentMap = studentGradeRecordMap.get(studentUid);
+				if (studentMap == null) {
+					studentMap = new HashMap<Long, AssignmentGradeRecord>();
+				}
+				GradableObject go = gradeRecord.getGradableObject();
+				studentMap.put(go.getId(), gradeRecord);
+						
+				studentGradeRecordMap.put(studentUid, studentMap);
+			}
+		}*/
 		
 		List<UserDereference> dereferences = gbService.getUserUidsForSite(site.getId(), sectionUuid, sortField, searchField, searchCriteria, offset, limit, isAscending);
 		
-		//List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebook.getId(), site.getId(), sectionUuid);
 		List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebook.getId(), site.getId(), sectionUuid, sortField, searchField, searchCriteria, offset, limit, isAscending);
 		Map<String, Map<Long, AssignmentGradeRecord>> studentGradeRecordMap = new HashMap<String, Map<Long, AssignmentGradeRecord>>();
 		
@@ -5432,7 +5431,7 @@ private static final long serialVersionUID = 1L;
 			}
 		}
 	    	    	
-		List<CourseGradeRecord> courseGradeRecords = gbService.getAllCourseGradeRecords(gradebook);
+		List<CourseGradeRecord> courseGradeRecords = gbService.getAllCourseGradeRecords(gradebook.getId(), site.getId(), sectionUuid, sortField, searchField, searchCriteria, offset, limit, isAscending);
 		Map<String, CourseGradeRecord> studentCourseGradeRecordMap = new HashMap<String, CourseGradeRecord>();
 		
 		if (courseGradeRecords != null) {
@@ -5442,7 +5441,7 @@ private static final long serialVersionUID = 1L;
 			}
 		}
 			
-		List<Comment> comments = gbService.getComments(gradebook.getId());
+		List<Comment> comments = gbService.getComments(gradebook.getId(), site.getId(), sectionUuid, sortField, searchField, searchCriteria, offset, limit, isAscending);
 		Map<String, Map<Long, Comment>> studentItemCommentMap = new HashMap<String, Map<Long, Comment>>();
 		
 		if (comments != null) {
@@ -5456,7 +5455,6 @@ private static final long serialVersionUID = 1L;
 				studentItemCommentMap.put(studentUid, commentMap);
 			}
 		}
-		
 		
 		for (UserDereference dereference : dereferences) {
 			UserRecord userRecord = null;
@@ -5477,8 +5475,18 @@ private static final long serialVersionUID = 1L;
 			userRecord.setCourseGradeRecord(courseGradeRecord);
 			Map<Long, Comment> commentMap = studentItemCommentMap.get(dereference.getUserUid());
 			userRecord.setCommentMap(commentMap);
+			
+			// Add section info
+			Collection<Group> groups = site.getGroupsWithMember(userRecord.getUserUid());
+			for (Group group : groups) {
+				userRecord.setSectionTitle(group.getTitle());
+				userRecord.setExportCourseManagemntId(exportAdvisor.getExportCourseManagemntId(userRecord.getUserEid(), group.getProviderGroupId()));
+				userRecord.setExportUserId(exportAdvisor.getExportUserId(userRecord.getUserEid()));
+			}
+						
 			userRecords.add(userRecord);
 		}
+
 		
 		return userRecords;
 	}
@@ -5503,7 +5511,6 @@ private static final long serialVersionUID = 1L;
 		}
 		return users;
 	}
-	
 	
 	protected Map<String, UserRecord> findStudentRecords(String gradebookUid, Long gradebookId, Site site, String optionalSectionUid) {
 		Map<String, UserRecord> studentRecords = new HashMap<String, UserRecord>();

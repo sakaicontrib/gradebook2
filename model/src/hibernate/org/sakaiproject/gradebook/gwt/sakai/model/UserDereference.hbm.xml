@@ -20,12 +20,6 @@
 		
 		<property name="email" column="EMAIL"/>
 		
-		<property name="sectionTitle" column="SECTION_TITLE"/>
-		
-		<property name="sectionUid" column="SECTION_UID"/>
-		
-		<property name="siteId" column="SITE_ID" not-null="true"/>
-		
   		<property name="createdOn" column="CREATED_ON" type="timestamp" />
   
   	</class>

@@ -1519,6 +1519,10 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		
 		return comments;
 	}
+	
+	public Date getLastUserDereferenceSync(String siteId, String realmGroupId) {
+		return null;
+	}
 
 	public List<UserDereference> getUserUidsForSite(final String siteId, final String realmGroupId, final String sortField, 
 			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc) {
@@ -1526,7 +1530,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		return null;
 	}
 	
-	public void syncUserDereferenceBySite(final String siteId, final List<User> users) {
+	public void syncUserDereferenceBySite(final String siteId, final String realmGroupId, final List<User> users) {
 		
 	}
 	
@@ -1535,5 +1539,34 @@ public class GradebookToolServiceMock implements GradebookToolService {
 
 		return null;
 	}
+	
+	public List<AssignmentGradeRecord> getAssignmentGradeRecordsForStudent(final Long gradebookId, final String studentUid) { 
+		
+		return null;
+	}
+	
+	public int getUserCountForSite(final String siteId, final String realmGroupId, final String sortField, 
+			final String searchField, final String searchCriteria) {
+		return -1;
+	}
+	
+	public List<Comment> getComments(final Long gradebookId, final String siteId, final String realmGroupId, final String sortField, 
+			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc) {
 
+		return null;
+	}
+	
+	public List<Object[]> getUserData(final Long gradebookId, final String siteId, final String realmGroupId, final String sortField, 
+			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc) {
+		
+		return null;
+	}
+	
+	public List<CourseGradeRecord> getAllCourseGradeRecords(final Long gradebookId, final String siteId, final String realmGroupId, final String sortField, 
+			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc) {
+		
+		return null;
+	}
+
+	
 }

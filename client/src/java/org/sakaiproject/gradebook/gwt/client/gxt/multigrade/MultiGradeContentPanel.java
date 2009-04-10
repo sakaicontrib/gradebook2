@@ -1393,7 +1393,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		
 		String gradebookUid = selectedGradebook.getGradebookUid();
 		int columnWidth = GradebookState.getColumnWidth(gradebookUid, gridId, id, name);
-		boolean isHidden = true; //GradebookState.isColumnHidden(gradebookUid, gridId, id, defaultHidden);
+		boolean isHidden = !id.equals(StudentModel.Key.SORT_NAME); //GradebookState.isColumnHidden(gradebookUid, gridId, id, defaultHidden);
 		
 		ColumnConfig config = new ColumnConfig(id, name, columnWidth);
 		

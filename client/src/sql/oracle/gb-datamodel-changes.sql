@@ -69,9 +69,6 @@ create table GB_USER_DEREFERENCE_T
 	DISPLAY_ID varchar2(99),
 	SORT_NAME varchar2(756),
 	EMAIL varchar2(756),
-	SECTION_TITLE varchar2(756),
-	SECTION_UID varchar2(255),
-	SITE_ID varchar2(99),
 	CREATED_ON timestamp
 );
 
@@ -82,5 +79,33 @@ start with 1000
 increment by 1
 nocache
 nocycle;
+
+create table GB_USER_DEREF_RM_UPDATE_T 
+(
+	ID number(19),
+	REALM_ID varchar2(99),
+	LAST_UPDATE timestamp
+);
+
+create sequence GB_USER_DEREF_RM_UPDATE_S
+start with 1000
+increment by 1
+nocache
+nocycle;
+
+create index GB_USER_DEREF_RM_UP_IDX on GB_USER_DEREF_RM_UPDATE_T(REALM_ID);
+
+
+create table GB_LEARNER_INSTANCE_T 
+(
+	ID number(19)
+);
+
+create sequence GB_LEARNER_INSTANCE_S
+start with 1000
+increment by 1
+nocache
+nocycle;
+
 
 
