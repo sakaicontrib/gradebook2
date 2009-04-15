@@ -2,11 +2,12 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 
 <beans>
-	
+
 	<!-- Performance analysis using AOP -->
-	<!--
-	<import resource="performanceAnalysis.xml" />
-	-->
+	<import resource="performanceAnalysis.xml"/>
+	
+	<!-- Normal injection of services w/o performance analysis -->
+	<!--import resource="gbServices.xml" /-->
 	
 	<bean id="placeholderConfig" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">  
 		<property name="location">
@@ -16,9 +17,10 @@
     		<props>  
        			<prop key="org.sakaiproject.gradebook.gwt.sakai.api.AccessAdvisor">org.sakaiproject.gradebook.gwt.sakai.api.AccessAdvisor</prop>  
        			<prop key="org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor">org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor</prop>
-    		</props>  
+       		</props>  
 		</property>
 	</bean>
+
 	
 	<!-- Hibernate Mappings -->
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.model.hibernateMappings"
@@ -57,7 +59,7 @@
 	</bean>
 
 	<!-- Performance Target -->
-	<bean id="org.sakaiproject.gradebook.gwt.sakai.DelegateFacade" class="org.sakaiproject.gradebook.gwt.sakai.DelegateFacadeImpl">
+	<!--bean id="org.sakaiproject.gradebook.gwt.sakai.DelegateFacade" class="org.sakaiproject.gradebook.gwt.sakai.DelegateFacadeImpl">
 		<property name="sectionAwareness" ref="org.sakaiproject.section.api.SectionAwareness"/>
 		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/> 
 		<property name="authn" ref="org_sakaiproject_tool_gradebook_facades_Authn"/>
@@ -69,7 +71,7 @@
 		<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>
 		<property name="accessAdvisor" ref="${org.sakaiproject.gradebook.gwt.sakai.api.AccessAdvisor}"/>
 		<property name="exportAdvisor" ref="${org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor}"/>
-	</bean>
+	</bean-->
 			
 	<!-- Declare service -->
 	<bean id="GradebookService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookToolFacadeImpl">
@@ -98,7 +100,7 @@
 	
 	<!-- Gradebook Manager -->
 	<!-- Performance Target -->
-	<bean id="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService" parent="alt.gradebookTxTemplate">
+	<!--bean id="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService" parent="alt.gradebookTxTemplate">
 		<property name="target">
 			<bean class="org.sakaiproject.gradebook.gwt.sakai.hibernate.GradebookToolServiceImpl">
 				<property name="sessionFactory"><ref bean="alt.gradebookSessionFactory"/></property>
@@ -113,7 +115,7 @@
                 </property>
             </bean>
 		</property>
-	</bean>
+	</bean-->
 	
 
 	<bean id="alt.gradebookTxTemplate" lazy-init="true" abstract="true" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">

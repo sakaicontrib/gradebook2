@@ -16,6 +16,8 @@
 
   		<property name="lastUpdate" column="LAST_UPDATE" type="timestamp"  not-null="true"/>
   
+  		<property name="realmCount" column="REALM_COUNT" />
+  
   	</class>
   
  	

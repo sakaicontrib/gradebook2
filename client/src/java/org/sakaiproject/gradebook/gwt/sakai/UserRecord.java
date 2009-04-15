@@ -56,6 +56,17 @@ public class UserRecord {
 		populate(user);
 	}
 	
+	public UserRecord(String userUid, String userEid, String displayId, String displayName, String sortName,
+			String email) {
+		this.userUid = userUid;
+		this.userEid = userEid;
+		this.displayId = displayId;
+		this.displayName = displayName;
+		this.sortName = sortName;
+		this.email = email;
+		this.isPopulated = true;
+	}
+	
 	public void populate(User user) {
 		this.userUid = user.getId();
 		this.userEid = user.getEid();

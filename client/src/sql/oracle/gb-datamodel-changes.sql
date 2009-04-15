@@ -66,13 +66,16 @@ create table GB_USER_DEREFERENCE_T
 (
 	ID number(19),
 	USER_UID varchar2(99),
+	EID varchar2(99),
 	DISPLAY_ID varchar2(99),
+	DISPLAY_NAME varchar2(756),
 	SORT_NAME varchar2(756),
 	EMAIL varchar2(756),
 	CREATED_ON timestamp
 );
 
 create index GB_USER_DEREFERENCE_IDX on GB_USER_DEREFERENCE_T(SITE_ID);
+create unique index GB_USER_DEREF_USER_IDX on GB_USER_DEREFERENCE_T(USER_UID);
 
 create sequence GB_USER_DEREFERENCE_S
 start with 1000
@@ -84,7 +87,8 @@ create table GB_USER_DEREF_RM_UPDATE_T
 (
 	ID number(19),
 	REALM_ID varchar2(99),
-	LAST_UPDATE timestamp
+	LAST_UPDATE timestamp,
+	REALM_COUNT number(19)
 );
 
 create sequence GB_USER_DEREF_RM_UPDATE_S

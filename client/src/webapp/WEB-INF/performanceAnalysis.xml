@@ -3,6 +3,39 @@
 
 <beans>
 	
+	<!-- Performance Target -->
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.GradebookToolServiceTarget" parent="alt.gradebookTxTemplate">
+		<property name="target">
+			<bean class="org.sakaiproject.gradebook.gwt.sakai.hibernate.GradebookToolServiceImpl">
+				<property name="sessionFactory"><ref bean="alt.gradebookSessionFactory"/></property>
+				<property name="sectionAwareness">
+					<ref bean="org.sakaiproject.section.api.SectionAwareness" />
+				</property>
+				<property name="authn">
+					<ref bean="org_sakaiproject_tool_gradebook_facades_Authn" />
+				</property>
+                <property name="eventTrackingService">
+                    <ref bean="org_sakaiproject_tool_gradebook_facades_EventTrackingService"/>
+                </property>
+            </bean>
+		</property>
+	</bean>
+	
+	<!-- Performance Target -->
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.DelegateFacadeTarget" class="org.sakaiproject.gradebook.gwt.sakai.DelegateFacadeImpl">
+		<property name="sectionAwareness" ref="org.sakaiproject.section.api.SectionAwareness"/>
+		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/> 
+		<property name="authn" ref="org_sakaiproject_tool_gradebook_facades_Authn"/>
+		<property name="authz" ref="org_sakaiproject_tool_gradebook_facades_Authz"/>
+		<property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/>
+		<property name="userService" ref="org.sakaiproject.user.api.UserDirectoryService"/>
+		<property name="gradeCalculations" ref="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"/>
+		<property name="frameworkService" ref="org.sakaiproject.service.gradebook.GradebookFrameworkService" />
+		<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>
+		<property name="accessAdvisor" ref="${org.sakaiproject.gradebook.gwt.sakai.api.AccessAdvisor}"/>
+		<property name="exportAdvisor" ref="${org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor}"/>
+	</bean>
+	
 
 	<!-- AOP: Interceptors for performance analysis -->
 

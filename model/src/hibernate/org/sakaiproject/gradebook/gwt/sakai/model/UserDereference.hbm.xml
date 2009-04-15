@@ -14,7 +14,11 @@
 
 		<property name="userUid" column="USER_UID" not-null="true"/>
 
+		<property name="eid" column="EID" />
+
 		<property name="displayId" column="DISPLAY_ID" />
+		
+		<property name="displayName" column="DISPLAY_NAME" />
 
 		<property name="sortName" column="SORT_NAME" />
 		

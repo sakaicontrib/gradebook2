@@ -42,6 +42,7 @@ import java.util.Set;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
+import org.sakaiproject.gradebook.gwt.sakai.model.UserDereferenceRealmUpdate;
 import org.sakaiproject.tool.gradebook.AbstractGradeRecord;
 import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.AssignmentGradeRecord;
@@ -1520,7 +1521,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		return comments;
 	}
 	
-	public Date getLastUserDereferenceSync(String siteId, String realmGroupId) {
+	public UserDereferenceRealmUpdate getLastUserDereferenceSync(String siteId, String realmGroupId) {
 		return null;
 	}
 
@@ -1530,7 +1531,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		return null;
 	}
 	
-	public void syncUserDereferenceBySite(final String siteId, final String realmGroupId, final List<User> users) {
+	public void syncUserDereferenceBySite(final String siteId, final String realmGroupId, final List<User> users, int realmCount) {
 		
 	}
 	
@@ -1568,5 +1569,19 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		return null;
 	}
 
+	public List<Object[]> getUserGroupReferences(final String siteId, final String realmGroupId, final List<String> groupReferences, final String sortField, 
+			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc) {
+		
+		return null;
+	}
 	
+	public int getFullUserCountForSite(final String siteId, final String realmGroupId) {
+	
+		return -1;
+	}
+	
+	public List<Object[]> getUserGroupReferences(final String siteId, final String realmGroupId, final List<String> groupReferences) {
+		
+		return null;
+	}
 }

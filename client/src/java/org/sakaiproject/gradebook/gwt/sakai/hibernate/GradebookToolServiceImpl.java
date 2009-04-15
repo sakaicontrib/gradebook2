@@ -42,6 +42,7 @@ import org.hibernate.Criteria;
 import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
+import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.TransientObjectException;
@@ -259,7 +260,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		return size;
 	}
 	
-	public Date getLastUserDereferenceSync(final String siteId, final String realmGroupId) {
+	public UserDereferenceRealmUpdate getLastUserDereferenceSync(final String siteId, final String realmGroupId) {
 		HibernateCallback hc = new HibernateCallback() {
             public Object doInHibernate(Session session) throws HibernateException {
             	String realmId = realmGroupId;
@@ -274,19 +275,15 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
             	
             	Criteria criteria = session.createCriteria(UserDereferenceRealmUpdate.class);
             	criteria.add(Restrictions.eq("realmId", realmId));
-            	UserDereferenceRealmUpdate update = (UserDereferenceRealmUpdate)criteria.uniqueResult();
             	
-            	if (update != null)
-            		return update.getLastUpdate();
-            	
-            	return null;
+            	return criteria.uniqueResult();
             }
 		};
 		
-		return (Date)getHibernateTemplate().execute(hc);
+		return (UserDereferenceRealmUpdate)getHibernateTemplate().execute(hc);
 	}
 	
-	public void syncUserDereferenceBySite(final String siteId, final String realmGroupId, final List<User> users) {
+	public void syncUserDereferenceBySite(final String siteId, final String realmGroupId, final List<User> users, final int realmCount) {
 		HibernateCallback hc = new HibernateCallback() {
             public Object doInHibernate(Session session) throws HibernateException {
             	
@@ -323,7 +320,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
             		UserDereference dereference = userDereferenceMap.get(user.getId());
             		
             		if (dereference == null) {
-            			dereference = new UserDereference(user.getId(), user.getDisplayId(), user.getSortName(), user.getEmail());
+            			dereference = new UserDereference(user.getId(), user.getEid(), user.getDisplayId(), user.getDisplayName(), user.getSortName(), user.getEmail());
             			session.save(dereference);
             			i++;
             		
@@ -335,8 +332,18 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
             		} else {
             			boolean isModified = false;
             			
+            			if (!user.getEid().equals(dereference.getEid())) {
+            				dereference.setEid(user.getEid());
+            				isModified = true;
+            			}
+            			
             			if (!user.getDisplayId().equals(dereference.getDisplayId())) {
             				dereference.setDisplayId(user.getDisplayId());
+            				isModified = true;
+            			}
+            			
+            			if (!user.getDisplayName().equals(dereference.getDisplayName())) {
+            				dereference.setDisplayName(user.getDisplayName());
             				isModified = true;
             			}
             			
@@ -377,16 +384,17 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
             	        session.clear();
             	    }
             	}
-            	  
+            	
             	Criteria criteria = session.createCriteria(UserDereferenceRealmUpdate.class);
             	criteria.add(Restrictions.eq("realmId", realmId));
             	
             	UserDereferenceRealmUpdate lastUpdate = (UserDereferenceRealmUpdate)criteria.uniqueResult();
             	
             	if (lastUpdate == null) {
-            		lastUpdate = new UserDereferenceRealmUpdate(realmId);
+            		lastUpdate = new UserDereferenceRealmUpdate(realmId, Integer.valueOf(realmCount));
             		session.save(lastUpdate);
             	} else {
+            		lastUpdate.setRealmCount(Integer.valueOf(realmCount));
             		lastUpdate.setLastUpdate(new Date());
             		session.update(lastUpdate);
             	}
@@ -397,10 +405,55 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		getHibernateTemplate().execute(hc);
 	}
 	
+	public int getFullUserCountForSite(final String siteId, final String realmGroupId) {
+		HibernateCallback hc = new HibernateCallback() {
+            public Object doInHibernate(Session session) throws HibernateException {
+            	
+            	String realmId = realmGroupId;
+            	
+            	if (realmGroupId == null)
+            		realmId = new StringBuffer().append("/site/").append(siteId).toString();
+            	else if (siteId == null) {
+            		if (log.isInfoEnabled())
+						log.info("No siteId defined");
+					return new ArrayList<AssignmentGradeRecord>();
+            	}
+            	
+            	Query query = null;
+
+				StringBuilder builder = new StringBuilder()
+					.append("select count(rg) from Realm as r, RealmGroup rg ")
+					.append("where rg.realmKey=r.realmKey ")
+					.append("and r.realmId=:realmId ");
+
+				query = session.createQuery(builder.toString());
+				query.setString("realmId", realmId);
+				
+				Number realmCount = (Number)query.uniqueResult();
+
+				return realmCount;
+            }
+		};
+        Number result = (Number)getHibernateTemplate().execute(hc);
+    		
+        return result == null ? 0 : result.intValue();
+	}
+	
+	
 	public int getUserCountForSite(final String siteId, final String realmGroupId, final String sortField, 
 			final String searchField, final String searchCriteria) {
 		HibernateCallback hc = new HibernateCallback() {
             public Object doInHibernate(Session session) throws HibernateException {
+            	
+            	String realmId = realmGroupId;
+            	
+            	if (realmGroupId == null)
+            		realmId = new StringBuffer().append("/site/").append(siteId).toString();
+            	else if (siteId == null) {
+            		if (log.isInfoEnabled())
+						log.info("No siteId defined");
+					return new ArrayList<AssignmentGradeRecord>();
+            	}
             	
             	Query query = null;
 
@@ -415,18 +468,11 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				}
 
 				query = session.createQuery(builder.toString());
+				query.setString("realmId", realmId);
+				
+				Number realmCount = (Number)query.uniqueResult();
 
-				if (realmGroupId != null)
-					query.setString("realmId", realmGroupId);
-				else if (siteId != null)
-					query.setString("realmId", new StringBuffer().append("/site/").append(siteId).toString());
-				else {
-					if (log.isInfoEnabled())
-						log.info("No siteId defined");
-					return new ArrayList<AssignmentGradeRecord>();
-				}
-
-				return query.uniqueResult();
+				return realmCount;
             }
 		};
 		
@@ -451,14 +497,14 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 					return new ArrayList<Object[]>();
             	}
             	
-            	Query query = null;
+            	SQLQuery query = null;
 
 				StringBuilder builder = new StringBuilder()
-					.append("select user, agr from Realm as r, RealmGroup as rg, UserDereference as user ")
+					.append("select usr, agr from SAKAI_REALM as r, SAKAI_REALM_ as rg, UserDereference as usr ")
 					.append("left outer join AssignmentGradeRecord as agr ")
 					.append("where rg.realmKey=r.realmKey ")
 					.append("and r.realmId=:realmId ")
-					.append("and user.userUid=rg.userId ")
+					.append("and usr.userUid=rg.userId ")
 					.append("and agr.studentId=user.userUid ")
 					.append("and agr.gradableObject.removed = false ")
 					.append("and agr.gradableObject.gradebook.id=:gradebookId ");
@@ -490,10 +536,93 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 				}
 
-				query = session.createQuery(builder.toString());
+				query = session.createSQLQuery(builder.toString());
 
+				query.addEntity(UserDereference.class);
+				query.addEntity(AssignmentGradeRecord.class);
 				query.setString("realmId", realmId);
 				query.setLong("gradebookId", gradebookId);
+				
+				if (offset != -1)
+					query.setFirstResult(offset);
+				if (limit != -1)
+					query.setMaxResults(limit);
+
+				return query.list();
+            }
+        };
+        return (List<Object[]>)getHibernateTemplate().execute(hc);
+	}
+	
+	public List<Object[]> getUserGroupReferences(final String siteId, final String realmGroupId, final List<String> groupReferences) {
+		
+		HibernateCallback hc = new HibernateCallback() {
+            public Object doInHibernate(Session session) throws HibernateException {
+            	
+            	Query query = null;
+
+            	StringBuilder builder = new StringBuilder()
+				.append("select rg.userId, r.realmId ")
+				.append("from Realm as r, RealmGroup as rg ")
+				.append("where rg.realmKey=r.realmKey ")
+				.append("and r.realmId in (:groupReferences) ");
+
+				query = session.createQuery(builder.toString());
+				query.setParameterList("groupReferences", groupReferences);
+
+				return query.list();
+            }
+        };
+        return (List<Object[]>)getHibernateTemplate().execute(hc);
+	}
+	
+	public List<Object[]> getUserGroupReferences(final String siteId, final String realmGroupId, final List<String> groupReferences, final String sortField, 
+			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc) {
+		
+		HibernateCallback hc = new HibernateCallback() {
+            public Object doInHibernate(Session session) throws HibernateException {
+            	
+            	Query query = null;
+
+            	StringBuilder builder = new StringBuilder()
+				.append("select user.userUid, r2.realmId ")
+				.append("from Realm as r, RealmGroup as rg, UserDereference as user, ")
+				.append("  Realm as r2, RealmGroup as rg2 ")
+				.append("where rg.realmKey=r.realmKey ")
+				.append("and r.realmId=:realmId ")
+				.append("and user.userUid=rg.userId ")
+				.append("and rg2.realmKey=r2.realmKey ")
+				.append("and rg2.userId=user.userUid ")
+				.append("and r2.realmId in (:groupReferences) ");
+
+            	if (searchField != null && searchCriteria != null) {
+					builder.append("and user.").append(searchField).append(" like ").append("%").append(searchCriteria).append("% ");
+				}
+
+				if (sortField != null) {
+
+					builder.append("order by user.").append(sortField);
+
+					if (isAsc)
+						builder.append(" asc ");
+					else
+						builder.append(" desc ");
+
+				}
+
+				query = session.createQuery(builder.toString());
+
+				if (realmGroupId != null)
+					query.setString("realmId", realmGroupId);
+				else if (siteId != null)
+					query.setString("realmId", new StringBuffer().append("/site/").append(siteId).toString());
+				else {
+					if (log.isInfoEnabled())
+						log.info("No siteId defined");
+					return new ArrayList<AssignmentGradeRecord>();
+				}
+
+				query.setParameterList("groupReferences", groupReferences);
 				
 				if (offset != -1)
 					query.setFirstResult(offset);

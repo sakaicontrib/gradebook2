@@ -32,6 +32,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -76,6 +77,7 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel.Key;
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
+import org.sakaiproject.gradebook.gwt.sakai.model.UserDereferenceRealmUpdate;
 import org.sakaiproject.gradebook.gwt.server.DataTypeConversionUtil;
 import org.sakaiproject.section.api.SectionAwareness;
 import org.sakaiproject.section.api.coursemanagement.CourseSection;
@@ -902,13 +904,13 @@ private static final long serialVersionUID = 1L;
 		model.setPlacementId(getPlacementId());
 		model.setGradebookModels(getGradebookModels());
 		
-		Site site = getSite();
+		/*Site site = getSite();
 		
 		Date lastUpdate = gbService.getLastUserDereferenceSync(getSiteId(), null);
 		long ONEHOUR = 1000l * 60l * 60l;
 		if (lastUpdate == null || lastUpdate.getTime() + ONEHOUR < new Date().getTime())
 			gbService.syncUserDereferenceBySite(getSiteId(), null, findAllStudents(site));
-		
+		*/
 		return model;
 	}
 	
@@ -1595,7 +1597,7 @@ private static final long serialVersionUID = 1L;
 	
 	
 	protected <X extends BaseModel> PagingLoadResult<X> getStudentRows(String gradebookUid, Long gradebookId, PagingLoadConfig config) {
-		
+
 		List<UserRecord> userRecords = null;
 		
 		String sectionUuid = null;
@@ -1605,7 +1607,6 @@ private static final long serialVersionUID = 1L;
 		}
 		
 	    Gradebook gradebook = null;
-	    Site site = getSite();
 	   
 	    List<Category> categories = getCategoriesWithAssignments(gradebookId);
 	    
@@ -1645,6 +1646,7 @@ private static final long serialVersionUID = 1L;
 		boolean isDescending = config != null && config.getSortInfo() != null && config.getSortInfo().getSortDir() == SortDir.DESC;
 		
 		int totalUsers = 0;
+		Site site = getSite();
 		
 		// Check to see if we're sorting or not
 		if (sortColumnKey != null) {
@@ -1652,7 +1654,6 @@ private static final long serialVersionUID = 1L;
 			case DISPLAY_NAME:
 			case SORT_NAME:
 			case DISPLAY_ID:
-			case SECTION:
 			case EMAIL:
 				String sortField = "sortName";
 				String searchField = null;
@@ -1670,48 +1671,24 @@ private static final long serialVersionUID = 1L;
 					sortField = "email";
 					break;
 				}
-				totalUsers = gbService.getUserCountForSite(site.getId(), sectionUuid, sortField, searchField, searchCriteria);
+						
 				userRecords = findStudentRecordPage(gradebook, site, sectionUuid,  sortField, searchField, searchCriteria, offset, limit, !isDescending);
+				totalUsers = gbService.getUserCountForSite(site.getId(), sectionUuid, sortField, searchField, searchCriteria);
 				
-				int startRow = 0;
-				int lastRow = totalUsers;
+				int startRow = config == null ? 0 : config.getOffset();
 				
-				if (config != null) {
-					startRow = config.getOffset();
-					lastRow = startRow + config.getLimit();
-				}
-				
-				if (lastRow > totalUsers) {
-					lastRow = totalUsers;
-				}
-					
 				List<ColumnModel> columns = getColumns();
 				
-				List<X> rows = new ArrayList<X>();
-				
+				List<X> rows = new ArrayList<X>(userRecords == null ? 0 : userRecords.size());
 				
 				// We only want to populate the rowData and rowValues for the requested rows
 				for (UserRecord userRecord : userRecords) {
-					
-					// Populate the user record on the fly if necessary
-					if (!userRecord.isPopulated()) {
-						User user = null;
-						try {
-							user = userService.getUser(userRecord.getUserUid());
-							userRecord.setUserEid(user.getEid());
-							userRecord.setDisplayId(user.getDisplayId());
-							userRecord.setDisplayName(user.getDisplayName());
-							userRecord.setSortName(user.getSortName());
-							userRecord.setEmail(user.getEmail());
-						} catch (UserNotDefinedException e) {
-							log.error("No sakai user defined for this member '" + userRecord.getUserUid() + "'", e);
-						}
-					}
-					
 					rows.add((X)buildStudentRow(gradebook, userRecord, columns, categories));
 				}
 				
 				return new BasePagingLoadResult<X>(rows, startRow, totalUsers);
+				
+			case SECTION:
 			case COURSE_GRADE:
 			case GRADE_OVERRIDE:
 			case ASSIGNMENT:
@@ -5383,38 +5360,20 @@ private static final long serialVersionUID = 1L;
 			int offset, int limit, 
 			boolean isAscending) {
 		List<UserRecord> userRecords = new ArrayList<UserRecord>();
+
+		int totalUsers = gbService.getFullUserCountForSite(site.getId(), null);
+		UserDereferenceRealmUpdate lastUpdate = gbService.getLastUserDereferenceSync(site.getId(), null);
 		
-		
-		/*List<UserDereference> dereferences = new ArrayList<UserDereference>();
-		
-		List<Object[]> objects = gbService.getUserData(gradebook.getId(), site.getId(), sectionUuid, sortField, searchField, searchCriteria, offset, limit, isAscending);
-		
-		Map<String, Map<Long, AssignmentGradeRecord>> studentGradeRecordMap = new HashMap<String, Map<Long, AssignmentGradeRecord>>();
-		for (Object[] a : objects) {
-			UserDereference userDereference = (UserDereference)a[0];
-			AssignmentGradeRecord gradeRecord = (AssignmentGradeRecord)a[1];
-			
-			dereferences.add(userDereference);
-			
-			if (gradeRecord != null) {
-				gradeRecord.setUserAbleToView(true);
-				String studentUid = gradeRecord.getStudentId();
-				Map<Long, AssignmentGradeRecord> studentMap = studentGradeRecordMap.get(studentUid);
-				if (studentMap == null) {
-					studentMap = new HashMap<Long, AssignmentGradeRecord>();
-				}
-				GradableObject go = gradeRecord.getGradableObject();
-				studentMap.put(go.getId(), gradeRecord);
-						
-				studentGradeRecordMap.put(studentUid, studentMap);
-			}
-		}*/
+		// Obviously if the realm count has changed, then we need to update, but let's also do it if more than an hour has passed
+		long ONEHOUR = 1000l * 60l * 60l;
+		if (lastUpdate == null || lastUpdate.getRealmCount() == null || ! lastUpdate.getRealmCount().equals(Integer.valueOf(totalUsers)) ||
+				lastUpdate.getLastUpdate() == null || lastUpdate.getLastUpdate().getTime() + ONEHOUR < new Date().getTime()) {
+			gbService.syncUserDereferenceBySite(site.getId(), null, findAllStudents(site), totalUsers);
+		}
 		
 		List<UserDereference> dereferences = gbService.getUserUidsForSite(site.getId(), sectionUuid, sortField, searchField, searchCriteria, offset, limit, isAscending);
-		
-		List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebook.getId(), site.getId(), sectionUuid, sortField, searchField, searchCriteria, offset, limit, isAscending);
+		List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebook.getId(), site.getId(), sectionUuid);
 		Map<String, Map<Long, AssignmentGradeRecord>> studentGradeRecordMap = new HashMap<String, Map<Long, AssignmentGradeRecord>>();
-		
 		
 	    if (allGradeRecords != null) {
 		    for (AssignmentGradeRecord gradeRecord : allGradeRecords) {
@@ -5456,18 +5415,38 @@ private static final long serialVersionUID = 1L;
 			}
 		}
 		
-		for (UserDereference dereference : dereferences) {
-			UserRecord userRecord = null;
-			if (userService != null) {
-				try {
-					User user = userService.getUser(dereference.getUserUid());
-					userRecord = new UserRecord(user);
-				} catch (UserNotDefinedException e) {
-					log.info("Unable to retrieve a user object for " + dereference.getUserUid());
-				}
-			} else {
-				userRecord = new UserRecord(dereference.getUserUid());
+		Collection<Group> groups = site.getGroups();
+		Map<String, Group> groupReferenceMap = new HashMap<String, Group>();
+		List<String> groupReferences = new ArrayList<String>();
+		for (Group group : groups) {
+			String reference = group.getReference();
+			groupReferences.add(reference);
+			groupReferenceMap.put(reference, group);
+		}
+		
+		Map<String, Set<Group>> userGroupMap = new HashMap<String, Set<Group>>();
+		
+		List<Object[]> tuples = gbService.getUserGroupReferences(site.getId(), sectionUuid, groupReferences);
+		
+		for (Object[] tuple : tuples) {
+			String userUid = (String)tuple[0];
+			String realmId = (String)tuple[1];
+			
+			Group group = groupReferenceMap.get(realmId);
+			
+			Set<Group> userGroups = userGroupMap.get(userUid);
+			
+			if (userGroups == null) {
+				userGroups = new HashSet<Group>();
+				userGroupMap.put(userUid, userGroups);
 			}
+			
+			userGroups.add(group);
+		}
+				
+		for (UserDereference dereference : dereferences) {
+			UserRecord userRecord = new UserRecord(dereference.getUserUid(), dereference.getEid(), dereference.getDisplayId(), dereference.getDisplayName(),
+					dereference.getSortName(), dereference.getEmail());
 			
 			Map<Long, AssignmentGradeRecord> gradeRecordMap = studentGradeRecordMap.get(dereference.getUserUid());
 			userRecord.setGradeRecordMap(gradeRecordMap);
@@ -5476,14 +5455,37 @@ private static final long serialVersionUID = 1L;
 			Map<Long, Comment> commentMap = studentItemCommentMap.get(dereference.getUserUid());
 			userRecord.setCommentMap(commentMap);
 			
-			// Add section info
-			Collection<Group> groups = site.getGroupsWithMember(userRecord.getUserUid());
-			for (Group group : groups) {
-				userRecord.setSectionTitle(group.getTitle());
-				userRecord.setExportCourseManagemntId(exportAdvisor.getExportCourseManagemntId(userRecord.getUserEid(), group.getProviderGroupId()));
+			Set<Group> userGroupSet = userGroupMap.get(userRecord.getUserUid());
+			if (userGroupSet != null) {
+				List<Group> userGroups = new ArrayList(userGroupSet);
+				Collections.sort(userGroups, new Comparator<Group>() {
+
+					public int compare(Group o1, Group o2) {
+						if (o1 != null && o2 != null && o1.getTitle() != null && o2.getTitle() != null) {
+							return o1.getTitle().compareTo(o2.getTitle());
+						}
+						
+						return 0;
+					}
+					
+				});
+				StringBuilder groupTitles = new StringBuilder();
+				StringBuilder courseManagementIds = new StringBuilder();
+				for (Iterator<Group> groupIter = userGroups.iterator();groupIter.hasNext();) {
+					Group group = groupIter.next();
+					groupTitles.append(group.getTitle());
+					courseManagementIds.append(exportAdvisor.getExportCourseManagemntId(userRecord.getUserEid(), group.getProviderGroupId()));
+				
+					if (groupIter.hasNext()) {
+						groupTitles.append(",");
+						courseManagementIds.append(",");
+					}
+				}
+				userRecord.setSectionTitle(groupTitles.toString());
+				userRecord.setExportCourseManagemntId(courseManagementIds.toString());
 				userRecord.setExportUserId(exportAdvisor.getExportUserId(userRecord.getUserEid()));
 			}
-						
+		
 			userRecords.add(userRecord);
 		}
 

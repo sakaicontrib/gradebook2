@@ -5,8 +5,10 @@ import java.util.Date;
 public class UserDereference {
 
 	private Long id;
+	private String eid;
 	private String userUid;
 	private String displayId;
+	private String displayName;
 	private String sortName;
 	private String email;
 	private Date createdOn;
@@ -19,9 +21,11 @@ public class UserDereference {
 		this.userUid = userUid;
 	}
 	
-	public UserDereference(String userUid, String displayId, String sortName, String email) {
+	public UserDereference(String userUid, String eid, String displayId, String displayName, String sortName, String email) {
 		this.userUid = userUid;
+		this.eid = eid;
 		this.displayId = displayId;
+		this.displayName = displayName;
 		this.sortName = sortName;
 		this.email = email;
 		this.createdOn = new Date();
@@ -68,6 +72,22 @@ public class UserDereference {
 
 	public void setDisplayId(String displayId) {
 		this.displayId = displayId;
+	}
+
+	public String getEid() {
+		return eid;
+	}
+
+	public void setEid(String eid) {
+		this.eid = eid;
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
 	}
 
 	
