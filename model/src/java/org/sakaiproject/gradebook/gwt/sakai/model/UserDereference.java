@@ -9,6 +9,7 @@ public class UserDereference {
 	private String userUid;
 	private String displayId;
 	private String displayName;
+	private String lastNameFirst;
 	private String sortName;
 	private String email;
 	private Date createdOn;
@@ -21,11 +22,12 @@ public class UserDereference {
 		this.userUid = userUid;
 	}
 	
-	public UserDereference(String userUid, String eid, String displayId, String displayName, String sortName, String email) {
+	public UserDereference(String userUid, String eid, String displayId, String displayName, String lastNameFirst, String sortName, String email) {
 		this.userUid = userUid;
 		this.eid = eid;
 		this.displayId = displayId;
 		this.displayName = displayName;
+		this.lastNameFirst = lastNameFirst;
 		this.sortName = sortName;
 		this.email = email;
 		this.createdOn = new Date();
@@ -88,6 +90,14 @@ public class UserDereference {
 
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
+	}
+
+	public String getLastNameFirst() {
+		return lastNameFirst;
+	}
+
+	public void setLastNameFirst(String lastNameFirst) {
+		this.lastNameFirst = lastNameFirst;
 	}
 
 	

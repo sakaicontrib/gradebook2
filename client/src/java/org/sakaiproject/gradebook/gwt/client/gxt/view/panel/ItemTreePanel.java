@@ -22,7 +22,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTreeItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.ItemTreeTableHeader;
-import org.sakaiproject.gradebook.gwt.client.model.ColumnModel;
+import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
@@ -238,7 +238,7 @@ public class ItemTreePanel extends ContentPanel {
 			selectedItemModels = new ArrayList<ItemModel>();
 			List<String> selectedItemModelIds = GradebookState.getSelectedMultigradeColumns(selectedGradebook.getGradebookUid());
 			// Deal with static visible columns
-			for (ColumnModel column : selectedGradebook.getColumns()) {
+			for (FixedColumnModel column : selectedGradebook.getColumns()) {
 				fullStaticIdSet.add(column.getIdentifier());
 				if (selectedItemModelIds.contains(column.getIdentifier()))
 					visibleStaticIdSet.add(column.getIdentifier());
@@ -779,7 +779,7 @@ public class ItemTreePanel extends ContentPanel {
 		checkedSelection = new ArrayList<BaseTreeModel<TreeModel>>();
 		
 		//fullStaticIdSet.clear();
-		for (org.sakaiproject.gradebook.gwt.client.model.ColumnModel column : selectedGradebook.getColumns()) {
+		for (org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel column : selectedGradebook.getColumns()) {
 			properties = new HashMap<String, Object>();
 			properties.put("name", column.getName());
 			properties.put("id", column.getIdentifier());
@@ -946,8 +946,8 @@ public class ItemTreePanel extends ContentPanel {
 					selectedItemModels = (List<ItemModel>)event.getCheckedSelection();
 				
 				if (!visibleStaticIdSet.contains(StudentModel.Key.DISPLAY_ID.name()) && !visibleStaticIdSet.contains(StudentModel.Key.DISPLAY_NAME.name())
-						&& !visibleStaticIdSet.contains(StudentModel.Key.SORT_NAME.name())) {
-					onShowStaticColumn(StudentModel.Key.SORT_NAME.name());
+						&& !visibleStaticIdSet.contains(StudentModel.Key.LAST_NAME_FIRST.name())) {
+					onShowStaticColumn(StudentModel.Key.LAST_NAME_FIRST.name());
 				} 
 				
 				showColumns(selectedItemModels);

@@ -116,8 +116,8 @@ public interface GradebookToolService {
 	public int getUserCountForSite(String siteId, String realmGroupId, String sortField, 
 			String searchField, String searchCriteria);
 	
-	public List<Object[]> getUserData(final Long gradebookId, final String siteId, final String realmGroupId, final String sortField, 
-			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc);
+	//public List<Object[]> getUserData(final Long gradebookId, final String siteId, final String realmGroupId, final String sortField, 
+	//		final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc);
 	
 	public List<Object[]> getUserGroupReferences(final String siteId, final String realmGroupId, final List<String> groupReferences);
 	

@@ -40,7 +40,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.RefreshCourseGradesEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
-import org.sakaiproject.gradebook.gwt.client.model.ColumnModel;
+import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
@@ -970,7 +970,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			
 			protected boolean isClickable(ModelData model, String property) {
 				return property.equals(StudentModel.Key.DISPLAY_NAME.name()) ||
-					property.equals(StudentModel.Key.SORT_NAME.name()) ||
+					property.equals(StudentModel.Key.LAST_NAME_FIRST.name()) ||
 					property.equals(StudentModel.Key.DISPLAY_ID.name());
 			}
 			
@@ -1362,7 +1362,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		return b != null && b.booleanValue();
 	}
 	
-	private ColumnConfig buildColumn(GradebookModel selectedGradebook, ColumnModel column) {
+	private ColumnConfig buildColumn(GradebookModel selectedGradebook, FixedColumnModel column) {
 		return buildColumn(selectedGradebook, column.getKey(), column.getIdentifier(), column.getName(),
 				true, false, convertBoolean(column.isEditable()), convertBoolean(column.isHidden()));
 	}
@@ -1393,7 +1393,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		
 		String gradebookUid = selectedGradebook.getGradebookUid();
 		int columnWidth = GradebookState.getColumnWidth(gradebookUid, gridId, id, name);
-		boolean isHidden = !id.equals(StudentModel.Key.SORT_NAME); //GradebookState.isColumnHidden(gradebookUid, gridId, id, defaultHidden);
+		boolean isHidden = !id.equals(StudentModel.Key.LAST_NAME_FIRST); //GradebookState.isColumnHidden(gradebookUid, gridId, id, defaultHidden);
 		
 		ColumnConfig config = new ColumnConfig(id, name, columnWidth);
 		
@@ -1466,13 +1466,13 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	// FIXME: When changing gradebooks we will need to re-assemble the column model
 	private CustomColumnModel assembleColumnModel(GradebookModel selectedGradebook) {
 
-		List<ColumnModel> staticColumns = selectedGradebook.getColumns();
+		List<FixedColumnModel> staticColumns = selectedGradebook.getColumns();
 		
 		ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
 		
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 		
-		for (ColumnModel column : staticColumns) {
+		for (FixedColumnModel column : staticColumns) {
 			ColumnConfig config = buildColumn(selectedGradebook, column);
 			configs.add(config);
 		}

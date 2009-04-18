@@ -1,4 +1,4 @@
-package org.sakaiproject.gradebook.gwt.client.gxt.dialog;
+package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -79,7 +79,7 @@ import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Element;
 
-public class ImportDialog extends ContentPanel {
+public class ImportPanel extends ContentPanel {
 
 	private enum Step { ONE, TWO, THREE };
 	
@@ -110,11 +110,12 @@ public class ImportDialog extends ContentPanel {
 	private List<BaseModel> resultModels;
 	private MessageBox uploadBox;
 	
-	public ImportDialog(String gradebookUid) {
+	public ImportPanel(String gradebookUid) {
 		super();
 		this.gradebookUid = gradebookUid;
 		//setCloseAction(CloseAction.CLOSE);
 		setCollapsible(false);
+		setFrame(true);
 		setHeaderVisible(true);
 		setHeading("Import");
 		setHideCollapseTool(true);
@@ -159,8 +160,8 @@ public class ImportDialog extends ContentPanel {
 
 		step1Container = new LayoutContainer();
 		step1Container.setLayout(new RowLayout());
-		step1Container.add(buildFileUploadPanel(), new RowData(1, 120));
-		step1Container.add(buildPreviewFieldSet(), new RowData(1, 300, new Margins(5)));
+		step1Container.add(buildFileUploadPanel(), new RowData(1, 190));
+		step1Container.add(buildPreviewFieldSet(), new RowData(1, 1, new Margins(5)));
 		
 		tabPanel = new TabPanel();
 		step1 = new TabItem("Step 1");
@@ -329,6 +330,12 @@ public class ImportDialog extends ContentPanel {
 			new RemoteCommand<SpreadsheetModel>() {
 
 				@Override
+				public void onCommandFailure(UserEntityAction<SpreadsheetModel> action, Throwable caught) {
+					box.close();
+				}
+				
+			
+				@Override
 				public void onCommandSuccess(UserEntityAction<SpreadsheetModel> action, SpreadsheetModel result) {
 					
 					action.setModel(result);
@@ -439,35 +446,20 @@ public class ImportDialog extends ContentPanel {
 		//String uri = "/rest/upload/" + gradebookUid;
 		
 		fileUploadPanel = new FormPanel();
-		//panel.setHeading("Import");
+
 		fileUploadPanel.setHeaderVisible(false);
-		//panel.setFieldWidth(400);
+
 		fileUploadPanel.setFrame(true);
-		//fileUploadPanel.setAction(uri);
 		fileUploadPanel.setAction(GWT.getModuleBaseURL() + "/importHandler");
 		fileUploadPanel.setEncoding(Encoding.MULTIPART);
 		fileUploadPanel.setMethod(Method.POST);
 		fileUploadPanel.setPadding(4);
 		fileUploadPanel.setButtonAlign(HorizontalAlignment.RIGHT);
-		//fileUploadPanel.setWidth(parent.getOffsetWidth());
+
 		fileUploadPanel.setWidth(1);
 		fileUploadPanel.setLayout(formLayout);
 		
-		/*TextField<String> name = new TextField<String>();
-		name.setFieldLabel("Name");
-		panel.add(name);*/
 
-		/*LayoutContainer container = new LayoutContainer();
-		container.setLayout(new ColumnLayout());
-		panel.add(container);
-		
-		FormLayout formLayout = new FormLayout();
-		formLayout.setDefaultWidth(300);
-		formLayout.setLabelWidth(120);
-		LayoutContainer left = new LayoutContainer();
-		left.setLayout(formLayout);
-		*/
-		
 		FileUploadField file = new FileUploadField() {
 			@Override
 			protected void onChange(ComponentEvent ce) {
@@ -478,42 +470,28 @@ public class ImportDialog extends ContentPanel {
 		file.setAllowBlank(false);
 		file.setFieldLabel("File");
 		file.setName("Test");
-		//file.setWidth(400);
 
-		//left.add(file);
-		
 		fileUploadPanel.add(file);
 		
-		/*Listener<FieldEvent> listener = new Listener<FieldEvent>() {
-
-			public void handleEvent(FieldEvent fe) {
-				
-			}
-			
-		};*/
 		
 		CheckBox delimiterComma = new CheckBox();
 		delimiterComma.setId("delimiter:comma");
 		delimiterComma.setBoxLabel("Comma");
-		//delimiterComma.addListener(Events.Change, listener);
 		delimiterComma.setValue(Boolean.TRUE);
 		
 		CheckBox delimiterTab = new CheckBox();
 		delimiterTab.setId("delimiter:tab");
 		delimiterTab.setBoxLabel("Tab");
-		//delimiterTab.addListener(Events.Change, listener);
 		delimiterTab.setValue(Boolean.TRUE);
 		
 		CheckBox delimiterSpace = new CheckBox();
 		delimiterSpace.setId("delimiter:space");
 		delimiterSpace.setBoxLabel("Space");
-		//delimiterSpace.addListener(Events.Change, listener);
-		
+
 		CheckBox delimiterColon = new CheckBox();
 		delimiterColon.setId("delimiter:colon");
 		delimiterColon.setBoxLabel("Colon");
-		//delimiterColon.addListener(Events.Change, listener);
-		
+
 		CheckBoxGroup group = new CheckBoxGroup();
 		group.setId("delimiters");
 		group.setName("Delimiters");
@@ -522,7 +500,6 @@ public class ImportDialog extends ContentPanel {
 		group.add(delimiterTab);
 		group.add(delimiterSpace);
 		group.add(delimiterColon);
-		//left.add(group); 
 		fileUploadPanel.add(group);
 		
 		delimiterComma.setName("delimiter:comma");
@@ -556,43 +533,12 @@ public class ImportDialog extends ContentPanel {
 		fileUploadPanel.addButton(previewButton);
 		
 		previewButton.setEnabled(false);
-		
-		/*LayoutContainer right = new LayoutContainer();
-		right.setLayout(new FormLayout());
-		Button btn = new Button("Load");
-		btn.addSelectionListener(new SelectionListener<ButtonEvent>() {
-
-			@Override
-			public void componentSelected(ButtonEvent ce) {
-
-
-				// normally would submit the form but for example no server set
-				// up to
-				// handle the post
-				panel.submit();
-
-				//MessageBox.info("Action", "You file was uploaded", null);
-			}
-		});
-		right.add(btn);
-
-		container.add(left, new ColumnData(0.9));
-		container.add(right, new ColumnData(0.1));
-		
-		*/
-		
-		//LayoutContainer formWrapper = new LayoutContainer();
-		//formWrapper.setLayout(new FitLayout());
-		//formWrapper.add(formPanel);
-		
+				
 		fileUploadPanel.addListener(Events.Submit, new Listener<FormEvent>() {
 
 			public void handleEvent(FormEvent fe) {
 				
 				rowStore.removeAll();
-				
-				//System.out.println(fe.resultHtml);
-				
 				
 				JSONValue jsonValue = JSONParser.parse(fe.resultHtml);
 				JSONObject jsonObject = jsonValue.isObject().get("org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportFile").isObject();
@@ -603,7 +549,6 @@ public class ImportDialog extends ContentPanel {
 				if (headersArray != null) {	
 					headerMap.clear();
 					for (int i=0;i<headersArray.size();i++) {
-						//String id = getString(headersArray.get(i).isObject(), "id");
 						String name = getString(headersArray.get(i).isObject(), "value");
 						String id = getString(headersArray.get(i).isObject(), "id");
 						String headerName = getString(headersArray.get(i).isObject(), "headerName");
@@ -671,24 +616,6 @@ public class ImportDialog extends ContentPanel {
 					uploadBox.close();
 				}
 				
-				/*
-				importFile = parseImport(fe.resultHtml);
-				
-				List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
-				
-				for (ImportHeader header : importFile.getHeaders()) {
-					String id = String.valueOf(header);
-					String name = header.getHeaderName();
-					ColumnConfig column = new ColumnConfig(id, name, 200);
-					configs.add(column);
-				}
-				
-				ColumnModel cm = new ColumnModel(configs);
-				
-				grid.reconfigure(store, cm);
-				
-				store.add(importFile.getModels());
-				*/
 			}
 			
 		});
@@ -701,11 +628,7 @@ public class ImportDialog extends ContentPanel {
 		panel.setLayout(new FitLayout());
 		panel.setHeaderVisible(false);
 		
-		//CheckBoxSelectionModel<BeanModel> sm = new CheckBoxSelectionModel<BeanModel>(); 
-		
 		List<ColumnConfig> itemColumns = new ArrayList<ColumnConfig>();
-		
-		//itemColumns.add(sm.getColumn());
 		
 		TextField<String> textField = new TextField<String>();
 		textField.addInputStyleName("gbTextFieldInput");
@@ -718,27 +641,7 @@ public class ImportDialog extends ContentPanel {
 		ColumnConfig points = new ColumnConfig("points", "Points", 100);
 		points.setEditor(textCellEditor);
 		itemColumns.add(points);
-		
-		final GradebookToolFacadeAsync service = Registry.get("service");
-		
-		/*RpcProxy<ListLoadConfig, List<CategoryModel>> categoriesProxy = 
-			new RpcProxy<ListLoadConfig, List<CategoryModel>>() {
-			@Override
-			protected void load(ListLoadConfig loadConfig, AsyncCallback<List<CategoryModel>> callback) {
-				GradebookModel gbModel = Registry.get(gradebookUid);
-				UserEntityGetAction<CategoryModel> action = new UserEntityGetAction<CategoryModel>(gbModel, EntityType.CATEGORY);
-				//action.setShowAll(Boolean.FALSE);
-				service.getEntityList(action, callback);
-			}
-		};
-		
-		final ListLoader<ListLoadConfig> categoriesLoader = new BaseListLoader(categoriesProxy);
-		
-		categoriesLoader.setRemoteSort(true);
-		
-		final ListStore<CategoryModel> categoriesStore = new ListStore<CategoryModel>(categoriesLoader);
-		categoriesStore.setModelComparer(new EntityModelComparer<CategoryModel>());*/
-		
+
 		ComboBox<ItemModel> categoryPicker = new ComboBox<ItemModel>(); 
 		categoryPicker.setAllowBlank(false); 
 		categoryPicker.setAllQuery(null);
@@ -749,9 +652,7 @@ public class ImportDialog extends ContentPanel {
 		categoryPicker.setForceSelection(false);
 		categoryPicker.setStore(categoriesStore);
 		categoryPicker.addInputStyleName("gbTextFieldInput");
-		
-		//categoriesLoader.load();
-		
+
 		ColumnConfig category = new ColumnConfig("categoryName", "Category", 140);
 		category.setEditor(new CellEditor(categoryPicker) {
 			

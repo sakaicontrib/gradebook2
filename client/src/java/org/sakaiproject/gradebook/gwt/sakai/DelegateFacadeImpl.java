@@ -60,7 +60,7 @@ import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
-import org.sakaiproject.gradebook.gwt.client.model.ColumnModel;
+import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.CommentModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeEventModel;
@@ -113,6 +113,7 @@ import org.sakaiproject.user.api.UserNotDefinedException;
 import com.extjs.gxt.ui.client.Style.SortDir;
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.BasePagingLoadResult;
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.PagingLoadConfig;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 import com.google.gwt.core.client.GWT;
@@ -228,7 +229,7 @@ private static final long serialVersionUID = 1L;
 			case COMMENT:
 				return (X)getComment(Long.valueOf(action.getEntityId()), action.getStudentUid());
 			case GRADEBOOK:
-				return (X)getGradebook(action.getEntityId());
+				return (X)getGradebook(action.getGradebookUid());
 			case GRADE_RECORD:
 				GradeRecordModel gradeRecord = (GradeRecordModel)action.getModel();
 				return (X)getSingleAssignmentForStudent(action.getGradebookUid(), action.getGradebookId(), 
@@ -673,8 +674,16 @@ private static final long serialVersionUID = 1L;
 		
 		Long gradebookId = gradebook.getId();
 		
-		Map<String, UserRecord> userRecordMap = findStudentRecords(gradebookUid, gradebookId, null, null);
-	    List<String> studentUids = new ArrayList<String>(userRecordMap.keySet());
+		Site site = getSite();
+		List<UserRecord> userRecords = findStudentRecordPage(gradebook, site, null, "sortName", null, null, -1, -1, true);
+		
+		Map<String, UserRecord> userRecordMap = new HashMap<String, UserRecord>(); //findStudentRecords(gradebookUid, gradebookId, null, null);
+	    
+		for (UserRecord userRecord : userRecords) {
+			userRecordMap.put(userRecord.getUserUid(), userRecord);
+		}
+		
+		List<String> studentUids = new ArrayList<String>(userRecordMap.keySet());
 		
 	   	List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebookId, studentUids);
 		
@@ -687,10 +696,17 @@ private static final long serialVersionUID = 1L;
 					User user = null;
 					try {
 						user = userService.getUser(userRecord.getUserUid());
+						String lastName = user.getLastName() == null ? "" : user.getLastName();
+	        			String firstName = user.getFirstName() == null ? "" : user.getFirstName();
+	        			
+	        			String sortName = new StringBuilder().append(lastName.toUpperCase()).append(" ").append(firstName.toUpperCase()).toString();
+	        			String lastNameFirst = new StringBuilder().append(lastName).append(", ").append(firstName).toString();
+	        			
 						userRecord.setUserEid(user.getEid());
 						userRecord.setDisplayId(user.getDisplayId());
 						userRecord.setDisplayName(user.getDisplayName());
-						userRecord.setSortName(user.getSortName());
+						userRecord.setLastNameFirst(lastNameFirst);
+						userRecord.setSortName(sortName);
 						userRecord.setEmail(user.getEmail());
 					} catch (UserNotDefinedException e) {
 						log.error("No sakai user defined for this member '" + userRecord.getUserUid() + "'", e);
@@ -745,58 +761,57 @@ private static final long serialVersionUID = 1L;
 					} else
 						value = (Double)v;
 					
-					//if (value != null) {
-						AssignmentGradeRecord assignmentGradeRecord = gradeRecordMap.get(assignment.getId()); //gbService.getAssignmentGradeRecordForAssignmentForStudent(assignment, student.getIdentifier());
-						Double oldValue = null;
+					AssignmentGradeRecord assignmentGradeRecord = null;
+					
+					if (gradeRecordMap != null) 
+						assignmentGradeRecord = gradeRecordMap.get(assignment.getId()); //gbService.getAssignmentGradeRecordForAssignmentForStudent(assignment, student.getIdentifier());
+					
+					Double oldValue = null;
 						
-						if (assignmentGradeRecord == null)
-							assignmentGradeRecord = new AssignmentGradeRecord();
+					if (assignmentGradeRecord == null)
+						assignmentGradeRecord = new AssignmentGradeRecord();
 						
-						switch (gradebook.getGrade_type()) {
-						case GradebookService.GRADE_TYPE_POINTS:
-							oldValue = assignmentGradeRecord.getPointsEarned();
-							break;
-						case GradebookService.GRADE_TYPE_PERCENTAGE:
-							oldValue = assignmentGradeRecord.getPercentEarned();
-							break;
-						}
+					switch (gradebook.getGrade_type()) {
+					case GradebookService.GRADE_TYPE_POINTS:
+						oldValue = assignmentGradeRecord.getPointsEarned();
+						break;
+					case GradebookService.GRADE_TYPE_PERCENTAGE:
+						oldValue = assignmentGradeRecord.getPercentEarned();
+						break;
+					}
 						
-						if (oldValue == null && value == null)
-							continue;
+					if (oldValue == null && value == null)
+						continue;
 						
-						try {
-							//scoreNumericItem(gradebookUid, student, assignmentId, value, (Double)null);
-							scoreItem(gradebook, assignment, assignmentGradeRecord, student.getIdentifier(), value);
-							//log.info("Scored item " + assignment.getName() + " for " + student.getIdentifier() + " as " + value);
+					try {
+						scoreItem(gradebook, assignment, assignmentGradeRecord, student.getIdentifier(), value, true);
 							
 							
-							builder.append(assignment.getName()).append(" (");
+						builder.append(assignment.getName()).append(" (");
 							
-							if (oldValue != null)
-								builder.append(oldValue);
+						if (oldValue != null)
+							builder.append(oldValue);
 							
-							builder.append("->").append(value).append(") ");
+						builder.append("->").append(value).append(") ");
 							
-							//results.add("Successfully scored " + assignment.getName() + " for " + student.getIdentifier() + " to " + value);
-						} catch (InvalidInputException e) {
-							String failedProperty = new StringBuilder().append(assignment.getId()).append(StudentModel.FAILED_FLAG).toString();
-							student.set(failedProperty, e.getMessage());
-							log.warn("Failed to score numeric item for " + student.getIdentifier() + " and item " + assignment.getId() + " to " + value);
-							//results.add("Failed to score " + assignment.getName() + " for " + student.getIdentifier() + " to " + value + ": " + e.getMessage());
+						//results.add("Successfully scored " + assignment.getName() + " for " + student.getIdentifier() + " to " + value);
+					} catch (InvalidInputException e) {
+						String failedProperty = new StringBuilder().append(assignment.getId()).append(StudentModel.FAILED_FLAG).toString();
+						student.set(failedProperty, e.getMessage());
+						log.warn("Failed to score numeric item for " + student.getIdentifier() + " and item " + assignment.getId() + " to " + value);
+						
+						if (oldValue != null)
+							builder.append(oldValue);
 							
-							if (oldValue != null)
-								builder.append(oldValue);
+						builder.append("->Invalid) ");
+					} catch (Exception e) {
+								
+						if (oldValue != null)
+							builder.append(oldValue);
 							
-							builder.append("->Invalid) ");
-						} catch (Exception e) {
-							//results.add("Failed to score " + assignment.getName() + " for " + student.getIdentifier() + " to " + value + ": " + e.getMessage());
-							
-							if (oldValue != null)
-								builder.append(oldValue);
-							
-							builder.append("->Failed) ");
-						}
-					//}
+						builder.append("->Failed) ");
+					}
+					
 				}
 				
 				results.add(builder.toString());
@@ -1103,13 +1118,13 @@ private static final long serialVersionUID = 1L;
 	private <X extends BaseModel> List<X> getColumns() {
 		List<X> columns = new LinkedList<X>();
 				
-		columns.add((X)new ColumnModel("Id", StudentModel.Key.DISPLAY_ID, 80, true));
-		columns.add((X)new ColumnModel("Full Name", StudentModel.Key.DISPLAY_NAME, 180, false));
-		columns.add((X)new ColumnModel("Sort Name", StudentModel.Key.SORT_NAME, 180, true));
-		columns.add((X)new ColumnModel("Email", StudentModel.Key.EMAIL, 230, true));
-		columns.add((X)new ColumnModel("Section", StudentModel.Key.SECTION, 120, true));
-		columns.add((X)new ColumnModel("Course Grade", StudentModel.Key.COURSE_GRADE, 120, true));
-		ColumnModel gradeOverrideColumn = new ColumnModel("Grade Override", StudentModel.Key.GRADE_OVERRIDE, 120, true);
+		columns.add((X)new FixedColumnModel(StudentModel.Key.DISPLAY_ID, 80, true));
+		columns.add((X)new FixedColumnModel(StudentModel.Key.DISPLAY_NAME, 180, false));
+		columns.add((X)new FixedColumnModel(StudentModel.Key.LAST_NAME_FIRST, 180, true));
+		columns.add((X)new FixedColumnModel(StudentModel.Key.EMAIL, 230, true));
+		columns.add((X)new FixedColumnModel(StudentModel.Key.SECTION, 120, true));
+		columns.add((X)new FixedColumnModel(StudentModel.Key.COURSE_GRADE, 120, true));
+		FixedColumnModel gradeOverrideColumn = new FixedColumnModel(StudentModel.Key.GRADE_OVERRIDE, 120, true);
 		gradeOverrideColumn.setEditable(true);
 		columns.add((X)gradeOverrideColumn);
 
@@ -1416,7 +1431,8 @@ private static final long serialVersionUID = 1L;
 	    
 		try {
 			
-			site = siteService.getSite(context);
+			if (siteService != null)
+				site = siteService.getSite(context);
 			
 			
 		} catch (IdUnusedException iue) {
@@ -1464,8 +1480,11 @@ private static final long serialVersionUID = 1L;
 		
 		if (users != null) {
 			for (User user : users) {
-				String sortName = user.getSortName();
-				// Make sure that our search field is case insensitive
+				String lastName = user.getLastName() == null ? "" : user.getLastName();
+    			String firstName = user.getFirstName() == null ? "" : user.getFirstName();
+    			
+				String sortName = new StringBuilder().append(lastName.toUpperCase()).append("::").append(firstName.toUpperCase()).toString();
+    			// Make sure that our search field is case insensitive
 				if (sortName != null) 
 					sortName = sortName.toUpperCase();
 				
@@ -1519,7 +1538,7 @@ private static final long serialVersionUID = 1L;
 		if (sortColumnKey != null) {
 			switch (sortColumnKey) {
 			case DISPLAY_NAME:
-			case SORT_NAME:
+			case LAST_NAME_FIRST:
 			case DISPLAY_ID:
 			case SECTION:
 			case EMAIL:
@@ -1539,7 +1558,7 @@ private static final long serialVersionUID = 1L;
 			Comparator<UserRecord> comparator = null; 
 			switch (sortColumnKey) {
 			case DISPLAY_NAME:
-			case SORT_NAME:
+			case LAST_NAME_FIRST:
 				comparator = SORT_NAME_COMPARATOR;
 				break;
 			case DISPLAY_ID:
@@ -1647,15 +1666,16 @@ private static final long serialVersionUID = 1L;
 		
 		int totalUsers = 0;
 		Site site = getSite();
+		String siteId = site == null ? null : site.getId();
 		
 		// Check to see if we're sorting or not
 		if (sortColumnKey != null) {
 			switch (sortColumnKey) {
 			case DISPLAY_NAME:
-			case SORT_NAME:
+			case LAST_NAME_FIRST:
 			case DISPLAY_ID:
 			case EMAIL:
-				String sortField = "sortName";
+				String sortField = "lastNameFirst";
 				String searchField = null;
 				String searchCriteria = null;
 				
@@ -1664,7 +1684,7 @@ private static final long serialVersionUID = 1L;
 					sortField = "displayId";
 					break;
 				case DISPLAY_NAME:
-				case SORT_NAME:
+				case LAST_NAME_FIRST:
 					sortField = "sortName";
 					break;
 				case EMAIL:
@@ -1673,11 +1693,11 @@ private static final long serialVersionUID = 1L;
 				}
 						
 				userRecords = findStudentRecordPage(gradebook, site, sectionUuid,  sortField, searchField, searchCriteria, offset, limit, !isDescending);
-				totalUsers = gbService.getUserCountForSite(site.getId(), sectionUuid, sortField, searchField, searchCriteria);
+				totalUsers = gbService.getUserCountForSite(siteId, sectionUuid, sortField, searchField, searchCriteria);
 				
 				int startRow = config == null ? 0 : config.getOffset();
 				
-				List<ColumnModel> columns = getColumns();
+				List<FixedColumnModel> columns = getColumns();
 				
 				List<X> rows = new ArrayList<X>(userRecords == null ? 0 : userRecords.size());
 				
@@ -1696,8 +1716,7 @@ private static final long serialVersionUID = 1L;
 			    List<String> studentUids = new ArrayList<String>(userRecordMap.keySet());
 				
 			   	//Map<String, Map<Long, AssignmentGradeRecord>>  allGradeRecordsMap = new HashMap<String, Map<Long, AssignmentGradeRecord>>();
-			    String siteId = site.getId();
-			    
+
 			    List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebookId, siteId, sectionUuid);
 			    // GRBK-40 : TPA : Replace above call with the one bellow once the Mock getAllAssignmentGradeRecords methods has been adjusted
 		    	// List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebookId, getSiteId(), sectionUuid);
@@ -1770,7 +1789,7 @@ private static final long serialVersionUID = 1L;
 			lastRow = totalUsers;
 		}
 			
-		List<ColumnModel> columns = getColumns();
+		List<FixedColumnModel> columns = getColumns();
 		
 		List<X> rows = new ArrayList<X>();
 		
@@ -1875,7 +1894,8 @@ private static final long serialVersionUID = 1L;
 				category.setAssignmentList(assignmentList);
 			}
 
-			assignmentList.add(assignment);
+			if (!assignmentList.contains(assignment))
+				assignmentList.add(assignment);
 		}
 
 		return new ArrayList<Category>(categoryMap.values());	
@@ -1913,7 +1933,7 @@ private static final long serialVersionUID = 1L;
 	}
 	
 	private StudentModel buildStudentRow(Gradebook gradebook, UserRecord userRecord, 
-			List<ColumnModel> columns, 
+			List<FixedColumnModel> columns, 
 			List<Category> categoriesWithAssignments) {
 		
 		Map<Long, AssignmentGradeRecord> studentGradeMap = userRecord.getGradeRecordMap();
@@ -1941,7 +1961,7 @@ private static final long serialVersionUID = 1L;
 			displayGrade = getDisplayGrade(gradebook, courseGradeRecord, categoriesWithAssignments, studentGradeMap);
 			
 		if (columns != null) {
-			for (ColumnModel column : columns) {
+			for (FixedColumnModel column : columns) {
 				StudentModel.Key key = StudentModel.Key.valueOf(column.getKey());
 				switch(key) {
 				case DISPLAY_ID:
@@ -1955,7 +1975,7 @@ private static final long serialVersionUID = 1L;
 						displayName = "[User name not found]";
 					
 					cellMap.put(StudentModel.Key.DISPLAY_NAME.name(), displayName);
-					cellMap.put(StudentModel.Key.SORT_NAME.name(), userRecord.getSortName());
+					cellMap.put(StudentModel.Key.LAST_NAME_FIRST.name(), userRecord.getLastNameFirst());
 					cellMap.put(StudentModel.Key.EMAIL.name(), userRecord.getEmail());
 					break;
 				case SECTION:
@@ -2426,7 +2446,7 @@ private static final long serialVersionUID = 1L;
 		if (assignmentGradeRecord == null)
 			assignmentGradeRecord = new AssignmentGradeRecord();
 		
-		scoreItem(gradebook, assignment, assignmentGradeRecord, student.getIdentifier(), value);
+		scoreItem(gradebook, assignment, assignmentGradeRecord, student.getIdentifier(), value, false);
 		
 		refreshLearnerData(gradebook, student, assignment, gradeRecords);
 		student.set(assignmentId, value);
@@ -2454,7 +2474,7 @@ private static final long serialVersionUID = 1L;
 		
 	private void scoreItem(Gradebook gradebook, Assignment assignment, 
 			AssignmentGradeRecord assignmentGradeRecord,
-			String studentUid, Double value) throws InvalidInputException {
+			String studentUid, Double value, boolean includeExcluded) throws InvalidInputException {
 		boolean isUserAbleToGrade = isUserAbleToGradeAll(gradebook.getUid()) || authz.isUserAbleToGradeItemForStudent(gradebook.getUid(), assignment.getId(), studentUid);
 
 		if (!isUserAbleToGrade)
@@ -2472,7 +2492,7 @@ private static final long serialVersionUID = 1L;
 				throw new InvalidInputException("This grade cannot be less than "+ DataTypeConversionUtil.formatDoubleAsPointsString(0d) + "%");
 		}
 	
-		if (assignmentGradeRecord.isExcluded() != null && assignmentGradeRecord.isExcluded().booleanValue()) 
+		if (!includeExcluded && assignmentGradeRecord.isExcluded() != null && assignmentGradeRecord.isExcluded().booleanValue()) 
 			throw new InvalidInputException("The student has been excused from this assignment. It is no longer possible to assign him or her a grade.");
 		
 		switch (gradebook.getGrade_type()) {
@@ -3327,9 +3347,10 @@ private static final long serialVersionUID = 1L;
 		ItemModel categoryItemModel = getItemModelsForCategory(category);
 		
 		String assignmentIdAsString = String.valueOf(assignmentId);
-		for (ItemModel model : categoryItemModel.getChildren()) {
-			if (model.getIdentifier().equals(assignmentIdAsString)) 
-				model.setActive(true);
+		for (ModelData model : categoryItemModel.getChildren()) {
+			ItemModel itemModel = (ItemModel)model;
+			if (itemModel.getIdentifier().equals(assignmentIdAsString)) 
+				itemModel.setActive(true);
 		}
 		
 		return categoryItemModel;
@@ -3802,9 +3823,10 @@ private static final long serialVersionUID = 1L;
 		ItemModel categoryItemModel = getItemModelsForCategory(category);
 		
 		String assignmentIdAsString = String.valueOf(assignment.getId());
-		for (ItemModel model : categoryItemModel.getChildren()) {
-			if (model.getIdentifier().equals(assignmentIdAsString)) 
-				model.setActive(true);
+		for (ModelData model : categoryItemModel.getChildren()) {
+			ItemModel itemModel = (ItemModel) model;
+			if (itemModel.getIdentifier().equals(assignmentIdAsString)) 
+				itemModel.setActive(true);
 		}
 		
 		return categoryItemModel;
@@ -4353,10 +4375,10 @@ private static final long serialVersionUID = 1L;
 		String userUid = authn.getUserUid();
 		
 		if (isUserHasGraderPermissions(gradebookId, userUid)) {
-			List<String> viewableSectionIds = getViewableGroupsForUser(gradebookId, userUid, new ArrayList(sectionIdCourseSectionMap.keySet()));
+			List<String> viewableSectionIds = getViewableGroupsForUser(gradebookId, userUid, new ArrayList<String>(sectionIdCourseSectionMap.keySet()));
 			if (viewableSectionIds != null && !viewableSectionIds.isEmpty()) {
 				for (String sectionUuid : viewableSectionIds) {
-					CourseSection viewableSection = (CourseSection)sectionIdCourseSectionMap.get(sectionUuid);
+					CourseSection viewableSection = sectionIdCourseSectionMap.get(sectionUuid);
 					if (viewableSection != null)
 						viewableSections.add(viewableSection);
 				}
@@ -4365,7 +4387,7 @@ private static final long serialVersionUID = 1L;
 			// return all sections that the current user is a TA for
 			for (String sectionUuid : sectionIdCourseSectionMap.keySet()) {
 				if (isUserTAinSection(sectionUuid)) {
-					CourseSection viewableSection = (CourseSection)sectionIdCourseSectionMap.get(sectionUuid);
+					CourseSection viewableSection = sectionIdCourseSectionMap.get(sectionUuid);
 					if (viewableSection != null)
 						viewableSections.add(viewableSection);
 				}
@@ -4622,7 +4644,7 @@ private static final long serialVersionUID = 1L;
 		List<Category> categoriesWithAssignments = getCategoriesWithAssignments(gradebook.getId());
 		ItemModel gradebookItemModel = getItemModel(gradebook, categoriesWithAssignments);
 		model.setGradebookItemModel(gradebookItemModel);
-		List<ColumnModel> columns = getColumns();
+		List<FixedColumnModel> columns = getColumns();
 		
 		boolean isUserAbleToGrade = authz.isUserAbleToGrade(gradebookUid);
 		boolean isUserAbleToViewOwnGrades = authz.isUserAbleToViewOwnGrades(gradebookUid);
@@ -5082,7 +5104,7 @@ private static final long serialVersionUID = 1L;
 		for (EnrollmentRecord enr : filteredEnrollments) {
 			String studentId = enr.getUser().getUserUid();
 			
-			EnrollmentRecord sub = (EnrollmentRecord)studentsInSectionMap.get(studentId);
+			EnrollmentRecord sub = studentsInSectionMap.get(studentId);
 			if (sub == null)
 				sub = enr;
 			if (optionalSectionUid != null) {
@@ -5281,11 +5303,11 @@ private static final long serialVersionUID = 1L;
 		return enrollmentMap;
 	}*/
 	
-	private List getViewableStudentsForUser(Long gradebookId, String userId, List studentIds, List sections) {
+	private List<String> getViewableStudentsForUser(Long gradebookId, String userId, List<String> studentIds, List sections) {
 		if(gradebookId == null || userId == null)
 			throw new IllegalArgumentException("Null parameter(s) in GradebookPermissionServiceImpl.getAvailableItemsForStudent");
 		
-		List viewableStudents = new ArrayList();
+		List<String> viewableStudents = new ArrayList<String>();
 		
 		if (studentIds == null || studentIds.isEmpty())
 			return viewableStudents;
@@ -5296,7 +5318,7 @@ private static final long serialVersionUID = 1L;
 			return studentIds;
 		}
 		
-		Map sectionIdStudentIdsMap = getSectionIdStudentIdsMap(sections, studentIds);
+		Map<String, List<String>> sectionIdStudentIdsMap = getSectionIdStudentIdsMap(sections, studentIds);
 		
 		if (sectionIdStudentIdsMap.isEmpty()) {
 			return null;
@@ -5306,7 +5328,7 @@ private static final long serialVersionUID = 1L;
 		Map studentMap = new HashMap();
 		
 		// Next, check for permissions for specific sections
-		List groupIds = new ArrayList(sectionIdStudentIdsMap.keySet());
+		List<String> groupIds = new ArrayList<String>(sectionIdStudentIdsMap.keySet());
 		List permsForGroupsAnyCategory = gbService.getPermissionsForUserForGroup(gradebookId, userId, groupIds);
 		
 		if (permsForGroupsAnyCategory.isEmpty()) {
@@ -5328,21 +5350,21 @@ private static final long serialVersionUID = 1L;
 			}
 		}
 		
-		return new ArrayList(studentMap.keySet());
+		return new ArrayList<String>(studentMap.keySet());
 	}
 	
-	private Map getSectionIdStudentIdsMap(Collection courseSections, Collection studentIds) {
-		Map sectionIdStudentIdsMap = new HashMap();
+	private Map<String, List<String>> getSectionIdStudentIdsMap(Collection courseSections, Collection<String> studentIds) {
+		Map<String, List<String>> sectionIdStudentIdsMap = new HashMap<String, List<String>>();
 		if (courseSections != null) {
 			for (Iterator sectionIter = courseSections.iterator(); sectionIter.hasNext();) {
 				CourseSection section = (CourseSection)sectionIter.next();
 				if (section != null) {
 					String sectionId = section.getUuid();
-					List members = sectionAwareness.getSectionMembersInRole(sectionId, Role.STUDENT);
-					List sectionMembersFiltered = new ArrayList();
+					List<EnrollmentRecord> members = sectionAwareness.getSectionMembersInRole(sectionId, Role.STUDENT);
+					List<String> sectionMembersFiltered = new ArrayList<String>();
 					if (!members.isEmpty()) {
-						for (Iterator memberIter = members.iterator(); memberIter.hasNext();) {
-							EnrollmentRecord enr = (EnrollmentRecord) memberIter.next();
+						for (Iterator<EnrollmentRecord> memberIter = members.iterator(); memberIter.hasNext();) {
+							EnrollmentRecord enr = memberIter.next();
 							String studentId = enr.getUser().getUserUid();
 							if (studentIds.contains(studentId))
 								sectionMembersFiltered.add(studentId);
@@ -5359,20 +5381,23 @@ private static final long serialVersionUID = 1L;
 	protected List<UserRecord> findStudentRecordPage(Gradebook gradebook, Site site, String sectionUuid, String sortField, String searchField, String searchCriteria,
 			int offset, int limit, 
 			boolean isAscending) {
+		
+		String siteId = site == null ? null : site.getId();
+		
 		List<UserRecord> userRecords = new ArrayList<UserRecord>();
 
-		int totalUsers = gbService.getFullUserCountForSite(site.getId(), null);
-		UserDereferenceRealmUpdate lastUpdate = gbService.getLastUserDereferenceSync(site.getId(), null);
+		int totalUsers = gbService.getFullUserCountForSite(siteId, null);
+		UserDereferenceRealmUpdate lastUpdate = gbService.getLastUserDereferenceSync(siteId, null);
 		
 		// Obviously if the realm count has changed, then we need to update, but let's also do it if more than an hour has passed
 		long ONEHOUR = 1000l * 60l * 60l;
 		if (lastUpdate == null || lastUpdate.getRealmCount() == null || ! lastUpdate.getRealmCount().equals(Integer.valueOf(totalUsers)) ||
 				lastUpdate.getLastUpdate() == null || lastUpdate.getLastUpdate().getTime() + ONEHOUR < new Date().getTime()) {
-			gbService.syncUserDereferenceBySite(site.getId(), null, findAllStudents(site), totalUsers);
+			gbService.syncUserDereferenceBySite(siteId, null, findAllStudents(site), totalUsers);
 		}
 		
-		List<UserDereference> dereferences = gbService.getUserUidsForSite(site.getId(), sectionUuid, sortField, searchField, searchCriteria, offset, limit, isAscending);
-		List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebook.getId(), site.getId(), sectionUuid);
+		List<UserDereference> dereferences = gbService.getUserUidsForSite(siteId, sectionUuid, sortField, searchField, searchCriteria, offset, limit, isAscending);
+		List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebook.getId(), siteId, sectionUuid);
 		Map<String, Map<Long, AssignmentGradeRecord>> studentGradeRecordMap = new HashMap<String, Map<Long, AssignmentGradeRecord>>();
 		
 	    if (allGradeRecords != null) {
@@ -5390,7 +5415,7 @@ private static final long serialVersionUID = 1L;
 			}
 		}
 	    	    	
-		List<CourseGradeRecord> courseGradeRecords = gbService.getAllCourseGradeRecords(gradebook.getId(), site.getId(), sectionUuid, sortField, searchField, searchCriteria, offset, limit, isAscending);
+		List<CourseGradeRecord> courseGradeRecords = gbService.getAllCourseGradeRecords(gradebook.getId(), siteId, sectionUuid, sortField, searchField, searchCriteria, offset, limit, isAscending);
 		Map<String, CourseGradeRecord> studentCourseGradeRecordMap = new HashMap<String, CourseGradeRecord>();
 		
 		if (courseGradeRecords != null) {
@@ -5400,7 +5425,7 @@ private static final long serialVersionUID = 1L;
 			}
 		}
 			
-		List<Comment> comments = gbService.getComments(gradebook.getId(), site.getId(), sectionUuid, sortField, searchField, searchCriteria, offset, limit, isAscending);
+		List<Comment> comments = gbService.getComments(gradebook.getId(), siteId, sectionUuid, sortField, searchField, searchCriteria, offset, limit, isAscending);
 		Map<String, Map<Long, Comment>> studentItemCommentMap = new HashMap<String, Map<Long, Comment>>();
 		
 		if (comments != null) {
@@ -5415,7 +5440,7 @@ private static final long serialVersionUID = 1L;
 			}
 		}
 		
-		Collection<Group> groups = site.getGroups();
+		Collection<Group> groups = site == null ? new ArrayList<Group>() : site.getGroups();
 		Map<String, Group> groupReferenceMap = new HashMap<String, Group>();
 		List<String> groupReferences = new ArrayList<String>();
 		for (Group group : groups) {
@@ -5426,67 +5451,71 @@ private static final long serialVersionUID = 1L;
 		
 		Map<String, Set<Group>> userGroupMap = new HashMap<String, Set<Group>>();
 		
-		List<Object[]> tuples = gbService.getUserGroupReferences(site.getId(), sectionUuid, groupReferences);
+		List<Object[]> tuples = gbService.getUserGroupReferences(siteId, sectionUuid, groupReferences);
 		
-		for (Object[] tuple : tuples) {
-			String userUid = (String)tuple[0];
-			String realmId = (String)tuple[1];
-			
-			Group group = groupReferenceMap.get(realmId);
-			
-			Set<Group> userGroups = userGroupMap.get(userUid);
-			
-			if (userGroups == null) {
-				userGroups = new HashSet<Group>();
-				userGroupMap.put(userUid, userGroups);
-			}
-			
-			userGroups.add(group);
-		}
+		if (tuples != null) {
+			for (Object[] tuple : tuples) {
+				String userUid = (String)tuple[0];
+				String realmId = (String)tuple[1];
 				
-		for (UserDereference dereference : dereferences) {
-			UserRecord userRecord = new UserRecord(dereference.getUserUid(), dereference.getEid(), dereference.getDisplayId(), dereference.getDisplayName(),
-					dereference.getSortName(), dereference.getEmail());
-			
-			Map<Long, AssignmentGradeRecord> gradeRecordMap = studentGradeRecordMap.get(dereference.getUserUid());
-			userRecord.setGradeRecordMap(gradeRecordMap);
-			CourseGradeRecord courseGradeRecord = studentCourseGradeRecordMap.get(dereference.getUserUid());
-			userRecord.setCourseGradeRecord(courseGradeRecord);
-			Map<Long, Comment> commentMap = studentItemCommentMap.get(dereference.getUserUid());
-			userRecord.setCommentMap(commentMap);
-			
-			Set<Group> userGroupSet = userGroupMap.get(userRecord.getUserUid());
-			if (userGroupSet != null) {
-				List<Group> userGroups = new ArrayList(userGroupSet);
-				Collections.sort(userGroups, new Comparator<Group>() {
-
-					public int compare(Group o1, Group o2) {
-						if (o1 != null && o2 != null && o1.getTitle() != null && o2.getTitle() != null) {
-							return o1.getTitle().compareTo(o2.getTitle());
+				Group group = groupReferenceMap.get(realmId);
+				
+				Set<Group> userGroups = userGroupMap.get(userUid);
+				
+				if (userGroups == null) {
+					userGroups = new HashSet<Group>();
+					userGroupMap.put(userUid, userGroups);
+				}
+				
+				userGroups.add(group);
+			}
+		}
+		
+		if (dereferences != null) {
+			for (UserDereference dereference : dereferences) {
+				UserRecord userRecord = new UserRecord(dereference.getUserUid(), dereference.getEid(), dereference.getDisplayId(), dereference.getDisplayName(),
+						dereference.getLastNameFirst(), dereference.getSortName(), dereference.getEmail());
+				
+				Map<Long, AssignmentGradeRecord> gradeRecordMap = studentGradeRecordMap.get(dereference.getUserUid());
+				userRecord.setGradeRecordMap(gradeRecordMap);
+				CourseGradeRecord courseGradeRecord = studentCourseGradeRecordMap.get(dereference.getUserUid());
+				userRecord.setCourseGradeRecord(courseGradeRecord);
+				Map<Long, Comment> commentMap = studentItemCommentMap.get(dereference.getUserUid());
+				userRecord.setCommentMap(commentMap);
+				
+				Set<Group> userGroupSet = userGroupMap.get(userRecord.getUserUid());
+				if (userGroupSet != null) {
+					List<Group> userGroups = new ArrayList<Group>(userGroupSet);
+					Collections.sort(userGroups, new Comparator<Group>() {
+	
+						public int compare(Group o1, Group o2) {
+							if (o1 != null && o2 != null && o1.getTitle() != null && o2.getTitle() != null) {
+								return o1.getTitle().compareTo(o2.getTitle());
+							}
+							
+							return 0;
 						}
 						
-						return 0;
-					}
+					});
+					StringBuilder groupTitles = new StringBuilder();
+					StringBuilder courseManagementIds = new StringBuilder();
+					for (Iterator<Group> groupIter = userGroups.iterator();groupIter.hasNext();) {
+						Group group = groupIter.next();
+						groupTitles.append(group.getTitle());
+						courseManagementIds.append(exportAdvisor.getExportCourseManagemntId(userRecord.getUserEid(), group.getProviderGroupId()));
 					
-				});
-				StringBuilder groupTitles = new StringBuilder();
-				StringBuilder courseManagementIds = new StringBuilder();
-				for (Iterator<Group> groupIter = userGroups.iterator();groupIter.hasNext();) {
-					Group group = groupIter.next();
-					groupTitles.append(group.getTitle());
-					courseManagementIds.append(exportAdvisor.getExportCourseManagemntId(userRecord.getUserEid(), group.getProviderGroupId()));
-				
-					if (groupIter.hasNext()) {
-						groupTitles.append(",");
-						courseManagementIds.append(",");
+						if (groupIter.hasNext()) {
+							groupTitles.append(",");
+							courseManagementIds.append(",");
+						}
 					}
+					userRecord.setSectionTitle(groupTitles.toString());
+					userRecord.setExportCourseManagemntId(courseManagementIds.toString());
+					userRecord.setExportUserId(exportAdvisor.getExportUserId(userRecord.getUserEid()));
 				}
-				userRecord.setSectionTitle(groupTitles.toString());
-				userRecord.setExportCourseManagemntId(courseManagementIds.toString());
-				userRecord.setExportUserId(exportAdvisor.getExportUserId(userRecord.getUserEid()));
+			
+				userRecords.add(userRecord);
 			}
-		
-			userRecords.add(userRecord);
 		}
 
 		
@@ -5496,14 +5525,16 @@ private static final long serialVersionUID = 1L;
 	protected List<User> findAllStudents(Site site) {
 		List<User> users = new ArrayList<User>();
 		if (site != null) {
-			Set<Member> members = site.getMembers();
+			Set<Member> members = site == null ? new HashSet<Member>() : site.getMembers();
 			for (Member member : members) {
 				if (accessAdvisor.isLearner(member)) {
 					String userUid = member.getUserId();
 
 					try {
-						User user = userService.getUser(userUid);
-						users.add(user);
+						if (userService != null) {
+							User user = userService.getUser(userUid);
+							users.add(user);
+						}
 					} catch (UserNotDefinedException e) {
 						log.info("Unable to retrieve user for " + userUid);
 					}

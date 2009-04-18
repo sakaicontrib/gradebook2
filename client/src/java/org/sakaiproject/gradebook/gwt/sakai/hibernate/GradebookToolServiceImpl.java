@@ -319,8 +319,16 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
             	for (User user : users) {
             		UserDereference dereference = userDereferenceMap.get(user.getId());
             		
+            		String lastName = user.getLastName() == null ? "" : user.getLastName();
+        			String firstName = user.getFirstName() == null ? "" : user.getFirstName();
+        			
+        			String sortName = new StringBuilder().append(lastName.toUpperCase()).append("   ").append(firstName.toUpperCase()).toString();
+        			String lastNameFirst = new StringBuilder().append(lastName).append(", ").append(firstName).toString();
+        			
+            		
             		if (dereference == null) {
-            			dereference = new UserDereference(user.getId(), user.getEid(), user.getDisplayId(), user.getDisplayName(), user.getSortName(), user.getEmail());
+            				
+            			dereference = new UserDereference(user.getId(), user.getEid(), user.getDisplayId(), user.getDisplayName(), lastNameFirst, sortName, user.getEmail());
             			session.save(dereference);
             			i++;
             		
@@ -347,8 +355,13 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
             				isModified = true;
             			}
             			
-            			if (!user.getSortName().equals(dereference.getSortName())) {
-            				dereference.setSortName(user.getSortName());
+            			if (!lastNameFirst.equals(dereference.getLastNameFirst())) {
+            				dereference.setLastNameFirst(lastNameFirst);
+            				isModified = true;
+            			} 
+            			
+            			if (!sortName.equals(dereference.getSortName())) {
+            				dereference.setSortName(sortName);
             				isModified = true;
             			}
             			
@@ -555,6 +568,10 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	}
 	
 	public List<Object[]> getUserGroupReferences(final String siteId, final String realmGroupId, final List<String> groupReferences) {
+		
+		if (groupReferences == null || groupReferences.size() == 0)
+			return new ArrayList<Object[]>();
+		
 		
 		HibernateCallback hc = new HibernateCallback() {
             public Object doInHibernate(Session session) throws HibernateException {

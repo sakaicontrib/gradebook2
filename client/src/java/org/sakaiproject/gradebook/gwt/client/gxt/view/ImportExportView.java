@@ -1,8 +1,8 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
-import org.sakaiproject.gradebook.gwt.client.gxt.dialog.ImportDialog;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ImportPanel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -15,7 +15,7 @@ import com.google.gwt.user.client.ui.RootPanel;
 
 public class ImportExportView extends View {
 
-	private ImportDialog importDialog;
+	private ImportPanel importDialog;
 	private Frame downloadFileFrame;
 	
 	public ImportExportView(Controller controller) {
@@ -27,7 +27,7 @@ public class ImportExportView extends View {
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 		switch (event.type) {
 		case GradebookEvents.StartImport:
-			importDialog = new ImportDialog(selectedGradebook.getGradebookUid());
+			importDialog = new ImportPanel(selectedGradebook.getGradebookUid());
 			//importDialog.setSize(XDOM.getViewportSize().width - 50, 500);
 			//importDialog.show();
 			//importDialog.center();
@@ -45,7 +45,7 @@ public class ImportExportView extends View {
 		}
 	}
 
-	public ImportDialog getImportDialog() {
+	public ImportPanel getImportDialog() {
 		return importDialog;
 	}
 

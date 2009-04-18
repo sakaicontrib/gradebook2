@@ -40,6 +40,7 @@ import java.util.Random;
 import java.util.Set;
 
 import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
+import org.sakaiproject.gradebook.gwt.sakai.UserRecord;
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereferenceRealmUpdate;
@@ -1521,34 +1522,136 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		return comments;
 	}
 	
+	private static final int DEFAULT_NUMBER_TEST_LEARNERS = 200;
+	
+	private List<UserDereference> userDereferences;
+	
+	private static final String[] FIRST_NAMES = { "Joel", "John", "Kelly",
+		"Freeland", "Bruce", "Rajeev", "Thomas", "Jon", "Mary", "Jane",
+		"Susan", "Cindy", "Veronica", "Shana", "Shania", "Olin", "Brenda",
+		"Lowell", "Doug", "Yiyun", "Xi-Ming", "Grady", "Martha", "Stewart", 
+		"Kennedy", "Joseph", "Iosef", "Sean", "Timothy", "Paula", "Keith",
+		"Ignatius", "Iona", "Owen", "Ian", "Ewan", "Rachel", "Wendy", 
+		"Quentin", "Nancy", "Mckenna", "Kaylee", "Aaron", "Erin", "Maris", 
+		"D.", "Quin", "Tara", "Moira", "Bristol" };
+
+	private static final String[] LAST_NAMES = { "Smith", "Paterson",
+		"Haterson", "Raterson", "Johnson", "Sonson", "Paulson", "Li",
+		"Yang", "Redford", "Shaner", "Bradley", "Herzog", "O'Neil", "Williams",
+		"Simone", "Oppenheimer", "Brown", "Colgan", "Frank", "Grant", "Klein",
+		"Miller", "Taylor", "Schwimmer", "Rourer", "Depuis", "Vaugh", "Auerbach", 
+		"Shannon", "Stepford", "Banks", "Ashby", "Lynne", "Barclay", "Barton",
+		"Cromwell", "Dering", "Dunlevy", "Ethelstan", "Fry", "Gilly",
+		"Goodrich", "Granger", "Griffith", "Herbert", "Hurst", "Keigwin", 
+		"Paddock", "Pillings", "Landon", "Lawley", "Osborne", "Scarborough",
+		"Whiting", "Wibert", "Worth", "Tremaine", "Barnum", "Beal", "Beers", 
+		"Bellamy", "Barnwell", "Beckett", "Breck", "Cotesworth", 
+		"Coventry", "Elphinstone", "Farnham", "Ely", "Dutton", "Durham",
+		"Eberlee", "Eton", "Edgecomb", "Eastcote", "Gloucester", "Lewes", 
+		"Leland", "Mansfield", "Lancaster", "Oakham", "Nottingham", "Norfolk",
+		"Poole", "Ramsey", "Rawdon", "Rhodes", "Riddell", "Vesey", "Van Wyck",
+		"Van Ness", "Twickenham", "Trowbridge", "Ames", "Agnew", "Adlam", 
+		"Aston", "Askew", "Alford", "Bedeau", "Beauchamp" };
+	
+	private static final String[] SECTIONS = { "001", "002", "003", "004" };
+	
+	private String getRandomSection() {
+		return SECTIONS[getRandomInt(SECTIONS.length)];
+	}
+	
+	private UserDereference createUserDereference() {
+		String studentId = String.valueOf(100000 + getRandomInt(899999));
+		String firstName = FIRST_NAMES[getRandomInt(FIRST_NAMES.length)];
+		String lastName = LAST_NAMES[getRandomInt(LAST_NAMES.length)];
+		String lastNameFirst = lastName + ", " + firstName;
+		String sortName = lastName.toUpperCase() + firstName.toUpperCase();
+		String displayName = firstName + " " + lastName;
+		String section = getRandomSection();
+		String email = lastName + "@qau.edu";
+	
+		User user = new SakaiUserMock(studentId, studentId, displayName, sortName);
+		
+		UserDereference userRecord = new UserDereference(studentId, studentId, studentId, displayName, lastNameFirst, sortName, email);
+		
+		return userRecord;
+	}
+	
+	
+	
 	public UserDereferenceRealmUpdate getLastUserDereferenceSync(String siteId, String realmGroupId) {
-		return null;
+		return new UserDereferenceRealmUpdate(siteId, DEFAULT_NUMBER_TEST_LEARNERS);
 	}
 
 	public List<UserDereference> getUserUidsForSite(final String siteId, final String realmGroupId, final String sortField, 
 			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc) {
 		
-		return null;
+		if (userDereferences == null) {
+			userDereferences = new ArrayList<UserDereference>();
+			
+			for (int i=0;i<DEFAULT_NUMBER_TEST_LEARNERS;i++) {
+				userDereferences.add(createUserDereference());
+			}
+			
+		}
+				
+		int firstRow = offset;
+		int lastRow = offset + limit;
+		
+		if (firstRow == -1)
+			firstRow = 0;
+		
+		if (lastRow == -1 || lastRow > DEFAULT_NUMBER_TEST_LEARNERS)
+			lastRow = DEFAULT_NUMBER_TEST_LEARNERS;
+		
+		List<UserDereference> records = new ArrayList<UserDereference>();
+		for (int i=firstRow;i<lastRow;i++) {
+			records.add(userDereferences.get(i));
+		}
+		
+		return records;
 	}
 	
 	public void syncUserDereferenceBySite(final String siteId, final String realmGroupId, final List<User> users, int realmCount) {
 		
 	}
 	
-	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(final Long gradebookId, final String siteId, final String realmGroupId, final String sortField, 
-			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc) {
-
-		return null;
-	}
-	
 	public List<AssignmentGradeRecord> getAssignmentGradeRecordsForStudent(final Long gradebookId, final String studentUid) { 
+		Map<Assignment, AssignmentGradeRecord> assignmentGradeMap = studentGradeMap.get(studentUid);
 		
-		return null;
+		List<AssignmentGradeRecord> gradeRecords = new ArrayList<AssignmentGradeRecord>();
+		
+		
+		for (Assignment assignment : assignments) {
+			Double points = assignment.getPointsPossible();
+			
+			AssignmentGradeRecord gradeRecord = null;
+			if (assignmentGradeMap == null) {
+				assignmentGradeMap = new HashMap<Assignment, AssignmentGradeRecord>();
+				gradeRecord = new AssignmentGradeRecord(assignment, studentUid, generateRandomGrade(points));
+				logAssignmentGradingEvent(gradeRecord, "Nobody", assignment);
+				assignmentGradeMap.put(assignment, gradeRecord);
+				studentGradeMap.put(studentUid, assignmentGradeMap);
+			} else {
+				gradeRecord = assignmentGradeMap.get(assignment);
+				
+				if (gradeRecord == null) {
+					gradeRecord = new AssignmentGradeRecord(assignment, studentUid, generateRandomGrade(points));
+					assignmentGradeMap.put(assignment, gradeRecord);
+					logAssignmentGradingEvent(gradeRecord, "Nobody", assignment);
+				} 
+			}
+			
+			if (gradeRecord != null)
+				gradeRecords.add(gradeRecord);
+		}
+		
+		
+		return gradeRecords;
 	}
 	
 	public int getUserCountForSite(final String siteId, final String realmGroupId, final String sortField, 
 			final String searchField, final String searchCriteria) {
-		return -1;
+		return DEFAULT_NUMBER_TEST_LEARNERS;
 	}
 	
 	public List<Comment> getComments(final Long gradebookId, final String siteId, final String realmGroupId, final String sortField, 
@@ -1557,19 +1660,8 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		return null;
 	}
 	
-	public List<Object[]> getUserData(final Long gradebookId, final String siteId, final String realmGroupId, final String sortField, 
-			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc) {
-		
-		return null;
-	}
 	
 	public List<CourseGradeRecord> getAllCourseGradeRecords(final Long gradebookId, final String siteId, final String realmGroupId, final String sortField, 
-			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc) {
-		
-		return null;
-	}
-
-	public List<Object[]> getUserGroupReferences(final String siteId, final String realmGroupId, final List<String> groupReferences, final String sortField, 
 			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc) {
 		
 		return null;
@@ -1577,7 +1669,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 	
 	public int getFullUserCountForSite(final String siteId, final String realmGroupId) {
 	
-		return -1;
+		return DEFAULT_NUMBER_TEST_LEARNERS;
 	}
 	
 	public List<Object[]> getUserGroupReferences(final String siteId, final String realmGroupId, final List<String> groupReferences) {

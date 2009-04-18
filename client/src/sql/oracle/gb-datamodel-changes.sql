@@ -69,6 +69,7 @@ create table GB_USER_DEREFERENCE_T
 	EID varchar2(99),
 	DISPLAY_ID varchar2(99),
 	DISPLAY_NAME varchar2(756),
+	LAST_NAME_FIRST varchar2(756),
 	SORT_NAME varchar2(756),
 	EMAIL varchar2(756),
 	CREATED_ON timestamp

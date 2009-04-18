@@ -57,7 +57,7 @@ public class GradebookModel extends EntityModel implements IsSerializable {
 	private Boolean isUserAbleToGrade;
 	private Boolean isUserAbleToEditAssessments;
 	private StudentModel userAsStudent;
-	private List<ColumnModel> columns;
+	private List<FixedColumnModel> columns;
 	private String userName;
 	private ItemModel gradebookItemModel;
 
@@ -95,11 +95,11 @@ public class GradebookModel extends EntityModel implements IsSerializable {
 		this.name = name;
 	}	
 	
-	public List<ColumnModel> getColumns() {
+	public List<FixedColumnModel> getColumns() {
 		return columns;
 	}
 
-	public void setColumns(List<ColumnModel> columns) {
+	public void setColumns(List<FixedColumnModel> columns) {
 		this.columns = columns;
 	}
 

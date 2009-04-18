@@ -20,6 +20,8 @@
 		
 		<property name="displayName" column="DISPLAY_NAME" />
 
+		<property name="lastNameFirst" column="LAST_NAME_FIRST" />
+
 		<property name="sortName" column="SORT_NAME" />
 		
 		<property name="email" column="EMAIL"/>

@@ -35,7 +35,7 @@ import org.sakaiproject.gradebook.gwt.client.GradebookState;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
-import org.sakaiproject.gradebook.gwt.client.model.ColumnModel;
+import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
@@ -431,13 +431,13 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	}
 	
 	// Helper method
-	protected void showAllColumns(Menu categoryMenu, List<ColumnModel> columns, boolean show) {
+	protected void showAllColumns(Menu categoryMenu, List<FixedColumnModel> columns, boolean show) {
 		
 		List<Item> menuItems = categoryMenu.getItems();
 		// Determine the number of check menu items, accounting for any regular menu item such as show/hide all, etc.
 		int menuIndex = categoryMenu.getItemCount() - columns.size();
 		
-		for (ColumnModel column : columns) {
+		for (FixedColumnModel column : columns) {
 			
 			int columnIndex = cm.getIndexById(column.getIdentifier());
 			
@@ -472,32 +472,32 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	public class ColumnGroup {
 		
 		private Group group;
-		private List<ColumnModel> columns;
-		Map<Long, List<ColumnModel>> categoryColumnMap;
+		private List<FixedColumnModel> columns;
+		Map<Long, List<FixedColumnModel>> categoryColumnMap;
 		
 		public ColumnGroup(Group group) {
 			this.group = group;
-			this.columns = new LinkedList<ColumnModel>();
+			this.columns = new LinkedList<FixedColumnModel>();
 		}
 		
-		public List<ColumnModel> getColumns() {
+		public List<FixedColumnModel> getColumns() {
 			return columns;
 		}
 		
-		public Map<Long, List<ColumnModel>> getCategoryColumnMap() {
+		public Map<Long, List<FixedColumnModel>> getCategoryColumnMap() {
 			return categoryColumnMap;
 		}
 		
-		public void addColumn(ColumnModel column) {
+		public void addColumn(FixedColumnModel column) {
 			// If there is a category, then use it
 			if (column.getCategoryId() != null) {
 				// We only need to instantiate this object for the ASSIGNMENTS ColumnGroup
 				if (categoryColumnMap == null) 
-					categoryColumnMap = new HashMap<Long, List<ColumnModel>>();
+					categoryColumnMap = new HashMap<Long, List<FixedColumnModel>>();
 				
-				List<ColumnModel> categoryColumns = categoryColumnMap.get(column.getCategoryId());
+				List<FixedColumnModel> categoryColumns = categoryColumnMap.get(column.getCategoryId());
 				if (categoryColumns == null) {
-					categoryColumns = new LinkedList<ColumnModel>();
+					categoryColumns = new LinkedList<FixedColumnModel>();
 					categoryColumnMap.put(column.getCategoryId(), categoryColumns);
 				}
 				categoryColumns.add(column);
@@ -516,9 +516,9 @@ public abstract class CustomGridView extends BaseCustomGridView {
 		
 		Map<Group, ColumnGroup> columnGroupMap = new LinkedHashMap<Group, ColumnGroup>();
 		//ArrayList<ColumnGroup> columnGroups = new ArrayList<ColumnGroup>();
-		List<ColumnModel> gradebookColumunConfigs = gradebookModel.getColumns();
+		List<FixedColumnModel> gradebookColumunConfigs = gradebookModel.getColumns();
 		
-		for(ColumnModel gradebookColumnConfig : gradebookColumunConfigs) {
+		for(FixedColumnModel gradebookColumnConfig : gradebookColumunConfigs) {
 			StudentModel.Key key = StudentModel.Key.valueOf(gradebookColumnConfig.getKey());
 			Group group = key.getGroup();
 			ColumnGroup columnGroup = columnGroupMap.get(group);
@@ -537,9 +537,9 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	protected Collection<Key> getGroupColumnKeys(Group group) {
 		
 		ArrayList<Key> groupColumnKeys = new ArrayList<Key>();
-		List<ColumnModel> gradebookColumunConfigs = gradebookModel.getColumns();
+		List<FixedColumnModel> gradebookColumunConfigs = gradebookModel.getColumns();
 		
-		for(ColumnModel gradebookColumnConfig : gradebookColumunConfigs) {
+		for(FixedColumnModel gradebookColumnConfig : gradebookColumunConfigs) {
 			
 			StudentModel.Key key = StudentModel.Key.valueOf(gradebookColumnConfig.getKey());
 			
@@ -555,9 +555,9 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	protected Collection<Key> getGroupColumnKeys(ColumnGroup columnGroup) {
 		
 		ArrayList<Key> groupColumnKeys = new ArrayList<Key>();
-		List<ColumnModel> gradebookColumunConfigs = columnGroup.getColumns();
+		List<FixedColumnModel> gradebookColumunConfigs = columnGroup.getColumns();
 		
-		for(ColumnModel gradebookColumnConfig : gradebookColumunConfigs) {
+		for(FixedColumnModel gradebookColumnConfig : gradebookColumunConfigs) {
 			
 			StudentModel.Key key = StudentModel.Key.valueOf(gradebookColumnConfig.getKey());
 		
@@ -576,9 +576,9 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	
 	private boolean isStaticColumn(String id) {
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-		List<ColumnModel> columns = selectedGradebook.getColumns();
+		List<FixedColumnModel> columns = selectedGradebook.getColumns();
 		
-		for (ColumnModel column : columns) {
+		for (FixedColumnModel column : columns) {
 			if (column.getIdentifier().equals(id))
 				return true;
 		}

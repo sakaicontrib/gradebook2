@@ -22,23 +22,23 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.model;
 
-public class ColumnModel extends EntityModel {
+public class FixedColumnModel extends EntityModel {
 
 	public enum Key {ID, NAME, ASSIGNMENT_ID, CATEGORY_ID, CATEGORY_NAME, WIDTH, POINTS, UNWEIGHTED, 
 		HIDDEN, EDITABLE, STUDENT_MODEL_KEY, EXTRA_CREDIT };
 	
 	private static final long serialVersionUID = 1L;
 	
-	public ColumnModel() {
+	public FixedColumnModel() {
 		super();
 		setUnweighted(Boolean.FALSE);
 		setHidden(Boolean.FALSE);
 		setEditable(Boolean.FALSE);
 	}
 	
-	public ColumnModel(String name, StudentModel.Key key, Integer width, Boolean isHidden) {
+	public FixedColumnModel(StudentModel.Key key, Integer width, Boolean isHidden) {
 		setIdentifier(key.name());
-		setName(name);
+		setName(key.getDisplayName());
 		setKey(key.name());
 		setWidth(width);
 		setUnweighted(Boolean.FALSE);
@@ -46,7 +46,7 @@ public class ColumnModel extends EntityModel {
 		setEditable(Boolean.FALSE);
 	}
 	
-	public ColumnModel(Long assignmentId, String name, StudentModel.Key key, Integer width) {
+	public FixedColumnModel(Long assignmentId, String name, StudentModel.Key key, Integer width) {
 		setIdentifier(String.valueOf(assignmentId));
 		setName(name);
 		setAssignmentId(assignmentId);

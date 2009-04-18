@@ -57,7 +57,7 @@ public class StudentModel extends EntityModel implements Comparable<StudentModel
 		EID(Group.STUDENT_INFORMATION, ""),
 		DISPLAY_ID(Group.STUDENT_INFORMATION, "Id"), 
 		DISPLAY_NAME(Group.STUDENT_INFORMATION, "Display Name"), 
-		SORT_NAME(Group.STUDENT_INFORMATION, "Sort Name"), 
+		LAST_NAME_FIRST(Group.STUDENT_INFORMATION, "Last Name, First"),
 		EMAIL(Group.STUDENT_INFORMATION, "Email"), 
 		SECTION(Group.STUDENT_INFORMATION, "Section"), 
 		COURSE_GRADE(Group.GRADES, "Course Grade"), 

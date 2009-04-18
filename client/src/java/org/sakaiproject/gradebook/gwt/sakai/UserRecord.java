@@ -35,6 +35,7 @@ public class UserRecord {
 	private String userEid;
 	private String displayId;
 	private String displayName;
+	private String lastNameFirst;
 	private String sortName;
 	private String email;
 	private String sectionTitle;
@@ -56,23 +57,31 @@ public class UserRecord {
 		populate(user);
 	}
 	
-	public UserRecord(String userUid, String userEid, String displayId, String displayName, String sortName,
+	public UserRecord(String userUid, String userEid, String displayId, String displayName, String lastNameFirst, String sortName,
 			String email) {
 		this.userUid = userUid;
 		this.userEid = userEid;
 		this.displayId = displayId;
 		this.displayName = displayName;
+		this.lastNameFirst = lastNameFirst;
 		this.sortName = sortName;
 		this.email = email;
 		this.isPopulated = true;
 	}
 	
 	public void populate(User user) {
+		String lastName = user.getLastName() == null ? "" : user.getLastName();
+		String firstName = user.getFirstName() == null ? "" : user.getFirstName();
+		
+		String sortName = new StringBuilder().append(lastName.toUpperCase()).append(firstName.toUpperCase()).toString();
+		String lastNameFirst = new StringBuilder().append(lastName).append(", ").append(firstName).toString();
+	
 		this.userUid = user.getId();
 		this.userEid = user.getEid();
 		this.displayId = user.getDisplayId();
 		this.displayName = user.getDisplayName();
-		this.sortName = user.getSortName();
+		this.lastNameFirst = lastNameFirst;
+		this.sortName = sortName;
 		this.email = user.getEmail();
 		this.isPopulated = true;
 	}
@@ -197,5 +206,13 @@ public class UserRecord {
 	
 	public void setExportUserId(String exportUserId) {
 		this.exportUserId = exportUserId;
+	}
+
+	public String getLastNameFirst() {
+		return lastNameFirst;
+	}
+
+	public void setLastNameFirst(String lastNameFirst) {
+		this.lastNameFirst = lastNameFirst;
 	}
 }

@@ -35,6 +35,7 @@ import org.sakaiproject.gradebook.gwt.sakai.UserRecord;
 import org.sakaiproject.section.api.SectionAwareness;
 import org.sakaiproject.section.api.coursemanagement.CourseSection;
 import org.sakaiproject.site.api.Site;
+import org.sakaiproject.tool.gradebook.Gradebook;
 import org.sakaiproject.tool.gradebook.facades.Authn;
 import org.sakaiproject.tool.gradebook.facades.Authz;
 import org.sakaiproject.user.api.User;
@@ -150,6 +151,31 @@ public class DelegateFacadeMockImpl extends DelegateFacadeImpl {
 		return userRecord;
 	}
 	
+	/*@Override
+	protected List<UserRecord> findStudentRecordPage(Gradebook gradebook, Site site, String sectionUuid, String sortField, String searchField, String searchCriteria,
+			int offset, int limit, 
+			boolean isAscending) {
+		List<UserRecord> records = new ArrayList<UserRecord>();
+		
+		if (userRecords == null) {
+			userRecords = new ArrayList<UserRecord>(2000);
+			for (int i=0;i<numberOfTestLearners;i++) {
+				userRecords.add(createUserRecord());
+			}
+		}
+		
+		int firstRow = offset;
+		int lastRow = offset + limit;
+		
+		if (lastRow < numberOfTestLearners)
+			lastRow = numberOfTestLearners;
+		
+		for (int i=firstRow;i<lastRow;i++) {
+			records.add(userRecords.get(i));
+		}
+		
+		return records;
+	}*/
 	
 	@Override
 	protected Map<String, UserRecord> findStudentRecords(String gradebookUid, Long gradebookId, Site site, String optionalSectionUid) {
