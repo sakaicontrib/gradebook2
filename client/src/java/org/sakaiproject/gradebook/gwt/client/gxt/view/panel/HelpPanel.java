@@ -29,7 +29,7 @@ public class HelpPanel extends ContentPanel {
 		addButton(new Button(i18n.close(), new SelectionListener<ButtonEvent>() {  
 			@Override  
 			public void componentSelected(ButtonEvent ce) {  
-				Dispatcher.forwardEvent(GradebookEvents.HideEastPanel, Boolean.FALSE);
+				Dispatcher.forwardEvent(GradebookEvents.HideEastPanel.getEventType(), Boolean.FALSE);
 			}
 			
 		}));

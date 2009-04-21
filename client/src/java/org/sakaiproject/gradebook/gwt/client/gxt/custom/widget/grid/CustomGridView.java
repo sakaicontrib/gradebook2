@@ -100,25 +100,25 @@ public abstract class CustomGridView extends BaseCustomGridView {
 						int colIndex = colIndexInteger == null ? -1 : colIndexInteger.intValue();
 						switch (selectionType) {
 						case ADD_CATEGORY:
-							Dispatcher.forwardEvent(GradebookEvents.NewCategory);
+							Dispatcher.forwardEvent(GradebookEvents.NewCategory.getEventType());
 							break;
 						case ADD_ITEM:
-							Dispatcher.forwardEvent(GradebookEvents.NewItem);
+							Dispatcher.forwardEvent(GradebookEvents.NewItem.getEventType());
 							break;
 						case DELETE_ITEM:
-							Dispatcher.forwardEvent(GradebookEvents.SelectDeleteItem, cm.getDataIndex(colIndex));
+							Dispatcher.forwardEvent(GradebookEvents.SelectDeleteItem.getEventType(), cm.getDataIndex(colIndex));
 							break;
 						case EDIT_ITEM:
-							Dispatcher.forwardEvent(GradebookEvents.SelectItem, cm.getDataIndex(colIndex));
+							Dispatcher.forwardEvent(GradebookEvents.SelectItem.getEventType(), cm.getDataIndex(colIndex));
 							break;
 						case GRADE_SCALE:
-							Dispatcher.forwardEvent(GradebookEvents.ShowGradeScale, Boolean.TRUE);
+							Dispatcher.forwardEvent(GradebookEvents.ShowGradeScale.getEventType(), Boolean.TRUE);
 							break;
 						case HIDE_ITEM:
-							Dispatcher.forwardEvent(GradebookEvents.HideColumn, cm.getDataIndex(colIndex));
+							Dispatcher.forwardEvent(GradebookEvents.HideColumn.getEventType(), cm.getDataIndex(colIndex));
 							break;
 						case HISTORY:
-							Dispatcher.forwardEvent(GradebookEvents.ShowHistory, cm.getDataIndex(colIndex));
+							Dispatcher.forwardEvent(GradebookEvents.ShowHistory.getEventType(), cm.getDataIndex(colIndex));
 							break;
 						case SORT_ASC:
 							ds.sort(cm.getDataIndex(colIndex), SortDir.ASC);

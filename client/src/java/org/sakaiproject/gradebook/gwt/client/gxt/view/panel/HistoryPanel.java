@@ -37,7 +37,6 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 
-import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.core.XTemplate;
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
@@ -66,7 +65,7 @@ public class HistoryPanel extends GridPanel<UserEntityAction> {
 		setHeaderVisible(false);
 		setLayout(new FitLayout());
 		
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		//GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 		//add(newGrid(newColumnModel(selectedGradebook)));
 	
 		createExpander();
@@ -75,7 +74,7 @@ public class HistoryPanel extends GridPanel<UserEntityAction> {
 
 			@Override
 			public void componentSelected(ButtonEvent be) {
-				Dispatcher.forwardEvent(GradebookEvents.HideEastPanel, Boolean.FALSE);
+				Dispatcher.forwardEvent(GradebookEvents.HideEastPanel.getEventType(), Boolean.FALSE);
 			}
 			
 		});
@@ -86,7 +85,7 @@ public class HistoryPanel extends GridPanel<UserEntityAction> {
 
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 
-		XTemplate tpl = XTemplate.create("<p><b>Type:</b> {ENTITY_TYPE}</p>");
+		XTemplate tpl = XTemplate.create(getTemplate());
 
 		RowExpander expander = new RowExpander();
 		expander.setTemplate(tpl);
@@ -113,6 +112,15 @@ public class HistoryPanel extends GridPanel<UserEntityAction> {
 		add(grid);
 
 	} 
+	 
+	private native String getTemplate() /*-{
+		var html = [ 
+		'<p><b>Type:</b> {ENTITY_TYPE}</p>', 
+		'<p><b>Action:</b> {ACTION_TYPE}</p>',  
+		'<tpl if="ACTION_TYPE ==\'GRADED\'"><p><b>Score:</b> {score}</p></tpl>' 
+		]; 
+		return html.join("");
+	}-*/;  
 	
 	@Override
 	protected void addComponents() {

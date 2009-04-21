@@ -53,69 +53,66 @@ public abstract class AppView extends View {
 
 	@Override
 	protected void handleEvent(AppEvent<?> event) {
-		switch(event.type) {
-		case GradebookEvents.Confirmation:
-		case GradebookEvents.Notification:
+		switch(GradebookEvents.getEvent(event.type).getEventKey()) {
+		case CONFIRMATION:
+		case NOTIFICATION:
 			onOpenNotification();
 			break;
-		case GradebookEvents.CloseNotification:
+		case CLOSE_NOTIFICATION:
 			onCloseNotification();
 			break;
-		case GradebookEvents.FullScreen:
-			onFullScreen((FullScreen)event.data);
-			break;
-		case GradebookEvents.LearnerGradeRecordUpdated:
+		case LEARNER_GRADE_RECORD_UPDATED:
 			onLearnerGradeRecordUpdated((UserEntityUpdateAction)event.data);
 			break;
-		case GradebookEvents.NewCategory:
+		case NEW_CATEGORY:
 			onNewCategory((ItemModel)event.data);
 			break;
-		case GradebookEvents.NewItem:
+		case NEW_ITEM:
 			onNewItem((ItemModel)event.data);
 			break;
-		case GradebookEvents.SelectLearner:
+		case SELECT_LEARNER:
 			onSelectLearner((StudentModel)event.data);
 			break;
-		case GradebookEvents.ShowGradeScale:
+		case SHOW_GRADE_SCALE:
 			onShowGradeScale((Boolean)event.data);
 			break;
-		case GradebookEvents.ShowHistory:
+		case SHOW_HISTORY:
 			onShowHistory((String)event.data);
 			break;
-		case GradebookEvents.StartImport:
+		case START_IMPORT:
 			onStartImport();
 			break;
-		case GradebookEvents.StartEditItem:
+		case START_EDIT_ITEM:
 			onStartEditItem((ItemModel)event.data);
 			break;
-		case GradebookEvents.StopImport:
+		case STOP_IMPORT:
 			onStopImport();
 			break;
-		case GradebookEvents.HideEastPanel:
+		case HIDE_EAST_PANEL:
 			onHideEastPanel((Boolean)event.data);
 			break;
-		case GradebookEvents.ExpandEastPanel:
+		case EXPAND_EAST_PANEL:
 			onExpandEastPanel((EastCard)event.data);
 			break;
-		case GradebookEvents.ItemCreated:
+		case ITEM_CREATED:
 			onItemCreated((ItemModel)event.data);
 			break;
-		case GradebookEvents.SingleGrade:
+		case SINGLE_GRADE:
 			onSingleGrade((StudentModel)event.data);
 			break;
-		case GradebookEvents.Startup:
+		case STARTUP:
 			ApplicationModel applicationModel = (ApplicationModel)event.data;
 			initUI(applicationModel);
 			GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 			onSwitchGradebook(selectedGradebook);
 			break;
-		case GradebookEvents.SwitchGradebook:
+		case SWITCH_GRADEBOOK:
 			onSwitchGradebook((GradebookModel)event.data);
 			break;
-		case GradebookEvents.UpdateLearnerGradeRecord:
+		case UPDATE_LEARNER_GRADE_RECORD:
 			onGradeStudent((GradeRecordUpdate)event.data);
 			break;
-		case GradebookEvents.UserChange:
+		case USER_CHANGE:
 			onUserChange((UserEntityAction<?>)event.data);
 			break;
 		}

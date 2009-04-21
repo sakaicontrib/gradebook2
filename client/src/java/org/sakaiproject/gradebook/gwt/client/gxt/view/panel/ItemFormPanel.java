@@ -286,7 +286,7 @@ public class ItemFormPanel extends ContentPanel {
 			
 			formBindings.bind(itemModel);
 			
-			Dispatcher.forwardEvent(GradebookEvents.ExpandEastPanel, AppView.EastCard.DELETE_ITEM);
+			Dispatcher.forwardEvent(GradebookEvents.ExpandEastPanel.getEventType(), AppView.EastCard.DELETE_ITEM);
 		}
 	}
 	
@@ -295,7 +295,7 @@ public class ItemFormPanel extends ContentPanel {
 			return;
 		
 		if (expand)
-			Dispatcher.forwardEvent(GradebookEvents.ExpandEastPanel, AppView.EastCard.EDIT_ITEM);
+			Dispatcher.forwardEvent(GradebookEvents.ExpandEastPanel.getEventType(), AppView.EastCard.EDIT_ITEM);
 		
 		if (selectedItemModel != null && itemModel != null && itemModel.equals(selectedItemModel))
 			return;
@@ -778,7 +778,7 @@ public class ItemFormPanel extends ContentPanel {
 					if (selectionType != null) {
 						switch (selectionType) {
 						case CLOSE:
-							Dispatcher.forwardEvent(GradebookEvents.HideEastPanel, Boolean.FALSE);
+							Dispatcher.forwardEvent(GradebookEvents.HideEastPanel.getEventType(), Boolean.FALSE);
 							break;
 						case CREATE:
 							if (nameField.getValue() == null) {
@@ -806,14 +806,14 @@ public class ItemFormPanel extends ContentPanel {
 							
 							okButton.setEnabled(false);
 							
-							Dispatcher.forwardEvent(GradebookEvents.CreateItem, new ItemCreate(treeStore, item));
+							Dispatcher.forwardEvent(GradebookEvents.CreateItem.getEventType(), new ItemCreate(treeStore, item));
 							break;
 						case DELETE:
-							Dispatcher.forwardEvent(GradebookEvents.HideEastPanel, Boolean.FALSE);
-							Dispatcher.forwardEvent(GradebookEvents.DeleteItem, new ItemUpdate(treeStore, selectedItemModel, ItemModel.Key.REMOVED.name(), Boolean.FALSE, Boolean.TRUE));
+							Dispatcher.forwardEvent(GradebookEvents.HideEastPanel.getEventType(), Boolean.FALSE);
+							Dispatcher.forwardEvent(GradebookEvents.DeleteItem.getEventType(), new ItemUpdate(treeStore, selectedItemModel, ItemModel.Key.REMOVED.name(), Boolean.FALSE, Boolean.TRUE));
 							break;
 						case CANCEL:
-							Dispatcher.forwardEvent(GradebookEvents.HideEastPanel, Boolean.FALSE);
+							Dispatcher.forwardEvent(GradebookEvents.HideEastPanel.getEventType(), Boolean.FALSE);
 							break;
 						case SAVE:
 							if (nameField.validate() 
@@ -821,7 +821,7 @@ public class ItemFormPanel extends ContentPanel {
 									&& (!percentCourseGradeField.isVisible() || percentCourseGradeField.validate())
 									&& (!pointsField.isVisible() || pointsField.validate())) {
 								okButton.setEnabled(false);
-								Dispatcher.forwardEvent(GradebookEvents.UpdateItem, new ItemUpdate(treeStore, selectedItemModel));
+								Dispatcher.forwardEvent(GradebookEvents.UpdateItem.getEventType(), new ItemUpdate(treeStore, selectedItemModel));
 							}
 							break;
 						}

@@ -3,7 +3,6 @@ package org.sakaiproject.gradebook.gwt.client.gxt.view;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.gxt.StudentViewDialog;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
@@ -33,16 +32,21 @@ public class SingleGradeView extends View {
 
 	@Override
 	protected void handleEvent(AppEvent<?> event) {
-		switch (event.type) {
-		case GradebookEvents.ItemUpdated:
+		StudentModel learnerGradeRecordCollection = null;
+		switch (GradebookEvents.getEvent(event.type).getEventKey()) {
+		case ITEM_UPDATED:
 			onItemUpdated((ItemModel)event.data);
 			break;
-		case GradebookEvents.SingleGrade:
-		case GradebookEvents.SingleView:
-			StudentModel learnerGradeRecordCollection = (StudentModel)event.data;
+		case SINGLE_GRADE:
+		case SINGLE_VIEW:
+			learnerGradeRecordCollection = (StudentModel)event.data;
 			onChangeModel(learnerGradeRecordCollection);
 			break;
-		case GradebookEvents.UserChange:
+		case SELECT_LEARNER:
+			learnerGradeRecordCollection = (StudentModel)event.data;
+			onChangeModel(learnerGradeRecordCollection);
+			break;
+		case USER_CHANGE:
 			onUserChange((UserEntityAction<?>)event.data);
 			break;
 		}

@@ -28,43 +28,43 @@ import com.extjs.gxt.ui.client.store.Store;
 import com.extjs.gxt.ui.client.store.TreeStore;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-public class UpdateController extends Controller {
+public class ServiceController extends Controller {
 
 	private static final Notifier notifier = new Notifier();
 	
 	public static final String FAILED_FLAG = ":F";
 	
-	public UpdateController() {
-		registerEventTypes(GradebookEvents.CreateItem);
-		registerEventTypes(GradebookEvents.DeleteItem);
-		registerEventTypes(GradebookEvents.RevertItem);
-		registerEventTypes(GradebookEvents.UpdateLearnerGradeRecord);
-		registerEventTypes(GradebookEvents.UpdateItem);
+	public ServiceController() {
+		registerEventTypes(GradebookEvents.CreateItem.getEventType());
+		registerEventTypes(GradebookEvents.DeleteItem.getEventType());
+		registerEventTypes(GradebookEvents.RevertItem.getEventType());
+		registerEventTypes(GradebookEvents.UpdateLearnerGradeRecord.getEventType());
+		registerEventTypes(GradebookEvents.UpdateItem.getEventType());
 	}
 	
 	@Override
 	public void handleEvent(AppEvent<?> event) {
-		switch (event.type) {
-		case GradebookEvents.CreateItem:
+		switch (GradebookEvents.getEvent(event.type).getEventKey()) {
+		case CREATE_ITEM:
 			onCreateItem((ItemCreate)event.data);
 			break;
-		case GradebookEvents.DeleteItem:
+		case DELETE_ITEM:
 			onDeleteItem((ItemUpdate)event.data);
 			break;
-		case GradebookEvents.RevertItem:
+		case REVERT_ITEM:
 			onRevertItem((ItemUpdate)event.data);
 			break;
-		case GradebookEvents.UpdateLearnerGradeRecord:
+		case UPDATE_LEARNER_GRADE_RECORD:
 			onUpdateGradeRecord((GradeRecordUpdate)event.data);
 			break;
-		case GradebookEvents.UpdateItem:
+		case UPDATE_ITEM:
 			onUpdateItem((ItemUpdate)event.data);
 			break;
 		}
 	}
 	
 	private void onCreateItem(final ItemCreate event) {
-		Dispatcher.forwardEvent(GradebookEvents.MaskItemTree);
+		Dispatcher.forwardEvent(GradebookEvents.MaskItemTree.getEventType());
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 		
 		EntityType entityType = EntityType.GRADE_ITEM;
@@ -83,8 +83,8 @@ public class UpdateController extends Controller {
 				
 				String message = new StringBuilder("Failed to create item: ").append(caught.getMessage()).toString();
 				
-				Dispatcher.forwardEvent(GradebookEvents.Notification, message);
-				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree);
+				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), message);
+				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
 			}
 			
 			public void onSuccess(ItemModel result) {
@@ -95,8 +95,8 @@ public class UpdateController extends Controller {
 							.get(AppConstants.CURRENT);
 					selectedGradebook.setGradebookItemModel(result);
 					Dispatcher
-							.forwardEvent(GradebookEvents.ItemUpdated, result);
-					Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel,
+							.forwardEvent(GradebookEvents.ItemUpdated.getEventType(), result);
+					Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel.getEventType(),
 							selectedGradebook);
 					break;
 				case CATEGORY:
@@ -120,8 +120,8 @@ public class UpdateController extends Controller {
 					break;
 				}
 				
-				Dispatcher.forwardEvent(GradebookEvents.HideEastPanel, Boolean.FALSE);
-				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree);
+				Dispatcher.forwardEvent(GradebookEvents.HideEastPanel.getEventType(), Boolean.FALSE);
+				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
 			}
 		};
 		
@@ -129,13 +129,13 @@ public class UpdateController extends Controller {
 	}
 	
 	private void onDeleteItemSuccess(ItemUpdate event) {
-		Dispatcher.forwardEvent(GradebookEvents.ItemDeleted, event.item);
+		Dispatcher.forwardEvent(GradebookEvents.ItemDeleted.getEventType(), event.item);
 		TreeStore<ItemModel> treeStore = (TreeStore<ItemModel>)event.store;
 		treeStore.remove(event.item.getParent(), event.item);
 	}
 	
 	private void onDeleteItem(final ItemUpdate event) {
-		Dispatcher.forwardEvent(GradebookEvents.MaskItemTree);
+		Dispatcher.forwardEvent(GradebookEvents.MaskItemTree.getEventType());
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 		ClassType classType = ItemModel.lookupClassType(event.property);
 		
@@ -148,13 +148,13 @@ public class UpdateController extends Controller {
 			public void onFailure(Throwable caught) {
 				super.onFailure(caught);
 				onUpdateItemFailure(event, caught);
-				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree);
+				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
 			}
 			
 			public void onSuccess(ItemModel result) {
 				onUpdateItemSuccess(event, result);
 				onDeleteItemSuccess(event);
-				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree);
+				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
 			}
 		};
 		
@@ -236,7 +236,7 @@ public class UpdateController extends Controller {
 			.append("'").toString();
 		
 		notifier.notify("Success", message);
-		Dispatcher.forwardEvent(GradebookEvents.Notification, message);
+		Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), message);
 	}
 	
 	private void onUpdateGradeRecord(final GradeRecordUpdate event) {
@@ -268,14 +268,14 @@ public class UpdateController extends Controller {
 				record.endEdit();
 				
 				//notifier.notifyError("Exception", message);
-				Dispatcher.forwardEvent(GradebookEvents.Notification, message);			
+				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), message);			
 			}
 			
 			public void onCommandSuccess(UserEntityAction<StudentModel> action, StudentModel result) {
 				record.beginEdit();
 				onUpdateGradeRecordSuccess(event, result);
 				record.endEdit();
-				Dispatcher.forwardEvent(GradebookEvents.LearnerGradeRecordUpdated, action);
+				Dispatcher.forwardEvent(GradebookEvents.LearnerGradeRecordUpdated.getEventType(), action);
 			}		
 		};
 
@@ -301,7 +301,7 @@ public class UpdateController extends Controller {
 		
 		String message = new StringBuilder("Failed to update item: ").append(caught.getMessage()).toString();
 		
-		Dispatcher.forwardEvent(GradebookEvents.Notification, message);
+		Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), message);
 	}
 	
 	private void onUpdateItemSuccess(ItemUpdate event, ItemModel result) {
@@ -311,7 +311,7 @@ public class UpdateController extends Controller {
 			GradebookModel selectedGradebook = Registry
 					.get(AppConstants.CURRENT);
 			selectedGradebook.setGradebookItemModel(result);
-			Dispatcher.forwardEvent(GradebookEvents.ItemUpdated, result);
+			Dispatcher.forwardEvent(GradebookEvents.ItemUpdated.getEventType(), result);
 
 			boolean isGradebookUpdated = false;
 			if (result.getCategoryType() != selectedGradebook.getGradebookItemModel().getCategoryType()) {
@@ -324,10 +324,10 @@ public class UpdateController extends Controller {
 			}
 
 			if (isGradebookUpdated) {
-				Dispatcher.forwardEvent(GradebookEvents.SwitchGradebook,
+				Dispatcher.forwardEvent(GradebookEvents.SwitchGradebook.getEventType(),
 						selectedGradebook);
 			} else {
-				Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel,
+				Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel.getEventType(),
 						selectedGradebook);
 			}
 			break;
@@ -347,7 +347,7 @@ public class UpdateController extends Controller {
 	}
 
 	private void onUpdateItem(final ItemUpdate event) {
-		Dispatcher.forwardEvent(GradebookEvents.MaskItemTree);
+		Dispatcher.forwardEvent(GradebookEvents.MaskItemTree.getEventType());
 		
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 		
@@ -358,14 +358,14 @@ public class UpdateController extends Controller {
 
 			public void onFailure(Throwable caught) {
 				onUpdateItemFailure(event, caught);
-				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree);
+				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
 			}
 			
 			public void onSuccess(ItemModel result) {
-				Dispatcher.forwardEvent(GradebookEvents.BeginItemUpdates);
+				Dispatcher.forwardEvent(GradebookEvents.BeginItemUpdates.getEventType());
 				onUpdateItemSuccess(event, result);
-				Dispatcher.forwardEvent(GradebookEvents.EndItemUpdates);
-				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree);
+				Dispatcher.forwardEvent(GradebookEvents.EndItemUpdates.getEventType());
+				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
 			}
 		};
 		
@@ -375,7 +375,7 @@ public class UpdateController extends Controller {
 	private void doCreateItem(ItemCreate itemCreate, ItemModel createdItem) {
 		TreeStore<ItemModel> treeStore = (TreeStore<ItemModel>)itemCreate.store;
 		treeStore.add(createdItem.getParent(), createdItem, true);
-		Dispatcher.forwardEvent(GradebookEvents.ItemCreated, createdItem);
+		Dispatcher.forwardEvent(GradebookEvents.ItemCreated.getEventType(), createdItem);
 		doUpdatePercentCourseGradeTotal(itemCreate.store, itemCreate.item, createdItem);
 	}
 	
@@ -399,7 +399,7 @@ public class UpdateController extends Controller {
 		if (property == null || record == null 
 				|| !doUpdateViaRecord(property, record, updatedItem)) {
 			treeStore.update(updatedItem);
-			Dispatcher.forwardEvent(GradebookEvents.ItemUpdated, updatedItem);
+			Dispatcher.forwardEvent(GradebookEvents.ItemUpdated.getEventType(), updatedItem);
 		}
 	}
 	

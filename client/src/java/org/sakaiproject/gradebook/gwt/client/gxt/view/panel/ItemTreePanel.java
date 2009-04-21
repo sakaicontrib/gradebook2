@@ -703,7 +703,7 @@ public class ItemTreePanel extends ContentPanel {
 					else
 						visibleStaticIdSet.remove(id);
 				
-					Dispatcher.forwardEvent(GradebookEvents.ShowColumns, 
+					Dispatcher.forwardEvent(GradebookEvents.ShowColumns.getEventType(), 
 							new ShowColumnsEvent(false, fullStaticIdSet, visibleStaticIdSet, null));
 				}
 			}
@@ -932,7 +932,7 @@ public class ItemTreePanel extends ContentPanel {
 			visibleStaticIdSet.add(StudentModel.Key.SORT_NAME.name());
 		*/
 		
-		Dispatcher.forwardEvent(GradebookEvents.ShowColumns, 
+		Dispatcher.forwardEvent(GradebookEvents.ShowColumns.getEventType(), 
 				new ShowColumnsEvent(selectAll, fullStaticIdSet, visibleStaticIdSet, selectedItemModelIdSet));
 	
 	}
@@ -965,16 +965,16 @@ public class ItemTreePanel extends ContentPanel {
 				TreeItem item = (TreeItem) treeTable.getSelectionModel().getSelectedItem();
 				switch (selectionType) {
 				case CREATE_CATEGORY:
-					Dispatcher.forwardEvent(GradebookEvents.NewCategory, item.getModel());
+					Dispatcher.forwardEvent(GradebookEvents.NewCategory.getEventType(), item.getModel());
 					break;
 				case CREATE_ITEM:
-					Dispatcher.forwardEvent(GradebookEvents.NewItem, item.getModel());
+					Dispatcher.forwardEvent(GradebookEvents.NewItem.getEventType(), item.getModel());
 					break;
 				case UPDATE_ITEM:
-					Dispatcher.forwardEvent(GradebookEvents.StartEditItem, item.getModel());
+					Dispatcher.forwardEvent(GradebookEvents.StartEditItem.getEventType(), item.getModel());
 					break;
 				case DELETE_ITEM:
-					Dispatcher.forwardEvent(GradebookEvents.ConfirmDeleteItem, item.getModel());
+					Dispatcher.forwardEvent(GradebookEvents.ConfirmDeleteItem.getEventType(), item.getModel());
 					break;
 				}
 			}
@@ -1013,7 +1013,7 @@ public class ItemTreePanel extends ContentPanel {
 					
 					
 					
-					Dispatcher.forwardEvent(GradebookEvents.SwitchEditItem, itemModel);
+					Dispatcher.forwardEvent(GradebookEvents.SwitchEditItem.getEventType(), itemModel);
 					//Dispatcher.forwardEvent(GradebookEvents.StartEditItem, itemModel);
 				}
 			}
@@ -1033,9 +1033,9 @@ public class ItemTreePanel extends ContentPanel {
 				case Events.RowDoubleClick:
 					if (te.index > 0) {
 						ItemModel itemModel = (ItemModel)te.item.getModel();
-						Dispatcher.forwardEvent(GradebookEvents.StartEditItem, itemModel);
+						Dispatcher.forwardEvent(GradebookEvents.StartEditItem.getEventType(), itemModel);
 					} else {
-						Dispatcher.forwardEvent(GradebookEvents.StartEditItem, null);
+						Dispatcher.forwardEvent(GradebookEvents.StartEditItem.getEventType(), null);
 					}
 					te.stopEvent();
 					break;
@@ -1059,7 +1059,7 @@ public class ItemTreePanel extends ContentPanel {
 				switch (tte.type) {
 				case Events.RowDoubleClick:
 					ItemModel itemModel = (ItemModel)tte.item.getModel();
-					Dispatcher.forwardEvent(GradebookEvents.StartEditItem, itemModel);
+					Dispatcher.forwardEvent(GradebookEvents.StartEditItem.getEventType(), itemModel);
 					
 					tte.stopEvent();
 					break;

@@ -100,7 +100,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 	
 	public GradebookToolServiceMock() {
 		this.gradebook = new Gradebook();
-		//gradebook.setName("My Default Gradebook");
+		gradebook.setName("My Default Gradebook");
 		gradebook.setId(Long.valueOf(1));
 		//gradebook.setCategory_type(CATEGORY_TYPE_ONLY_CATEGORY);
 		//gradebook.setGrade_type(GradebookService.GRADE_TYPE_PERCENTAGE);
@@ -1600,7 +1600,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		if (firstRow == -1)
 			firstRow = 0;
 		
-		if (lastRow == -1 || lastRow > DEFAULT_NUMBER_TEST_LEARNERS)
+		if (lastRow < 0 || lastRow > DEFAULT_NUMBER_TEST_LEARNERS)
 			lastRow = DEFAULT_NUMBER_TEST_LEARNERS;
 		
 		List<UserDereference> records = new ArrayList<UserDereference>();

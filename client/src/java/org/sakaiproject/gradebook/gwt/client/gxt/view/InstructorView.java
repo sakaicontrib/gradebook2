@@ -371,19 +371,19 @@ public class InstructorView extends AppView {
 				
 				switch (selector) {
 				case ADD_CATEGORY:
-					Dispatcher.forwardEvent(GradebookEvents.NewCategory);
+					Dispatcher.forwardEvent(GradebookEvents.NewCategory.getEventType());
 					break;
 				case ADD_ITEM:
-					Dispatcher.forwardEvent(GradebookEvents.NewItem);
+					Dispatcher.forwardEvent(GradebookEvents.NewItem.getEventType());
 					break;
 				case EXPORT:
-					Dispatcher.forwardEvent(GradebookEvents.StartExport);
+					Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType());
 					break;
 				case IMPORT:
-					Dispatcher.forwardEvent(GradebookEvents.StartImport);
+					Dispatcher.forwardEvent(GradebookEvents.StartImport.getEventType());
 					break;
 				case FINAL_GRADE:
-					Dispatcher.forwardEvent(GradebookEvents.StartFinalgrade);
+					Dispatcher.forwardEvent(GradebookEvents.StartFinalgrade.getEventType());
 					break;
 				}
 			}

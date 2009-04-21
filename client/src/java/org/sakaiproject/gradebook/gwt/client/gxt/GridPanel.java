@@ -141,7 +141,7 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		
 		});*/
 		
-		addListener(GradebookEvents.Refresh, new Listener<BaseEvent>() {
+		addListener(GradebookEvents.Refresh.getEventType(), new Listener<BaseEvent>() {
 
 			public void handleEvent(BaseEvent be) {
 				switch (refreshAction) {
@@ -252,7 +252,7 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		
 		action.announce(model.getDisplayName(), propertyName, model.get(property));				
 	
-		fireEvent(GradebookEvents.UserChange, new UserChangeEvent(action));
+		fireEvent(GradebookEvents.UserChange.getEventType(), new UserChangeEvent(action));
 	}
 	
 	protected void beforeUpdateView(UserEntityAction<M> action, Record record, M model) {

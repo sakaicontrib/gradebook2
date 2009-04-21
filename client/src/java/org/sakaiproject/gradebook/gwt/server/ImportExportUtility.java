@@ -9,6 +9,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.gradebook.gwt.client.GradebookToolFacade;
+import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
@@ -23,6 +24,8 @@ import org.sakaiproject.user.api.User;
 import org.sakaiproject.user.api.UserDirectoryService;
 import org.sakaiproject.user.api.UserNotDefinedException;
 
+import com.extjs.gxt.ui.client.data.PagingLoadResult;
+
 public class ImportExportUtility {
 
 	private static final Log log = LogFactory.getLog(ImportExportUtility.class);
@@ -35,6 +38,7 @@ public class ImportExportUtility {
 		UserEntityGetAction<GradebookModel> getGradebookAction = new UserEntityGetAction<GradebookModel>(gradebookUid, EntityType.GRADEBOOK);
 		GradebookModel gradebook = delegateFacade.getEntity(getGradebookAction);
 
+		Long gradebookId = gradebook.getGradebookId();
 		List<String> headerIds = new ArrayList<String>();
 		writer.print("Learner,Id");
 		for (ItemModel child : gradebook.getGradebookItemModel().getChildren()) {
@@ -77,9 +81,13 @@ public class ImportExportUtility {
 		}
 		writer.println();
 		
-		UserEntityGetAction<StudentModel> getRowsAction = new UserEntityGetAction<StudentModel>(gradebookUid, EntityType.STUDENT);
-		List<StudentModel> rows = delegateFacade.getEntityList(getRowsAction);
+		//UserEntityGetAction<StudentModel> getRowsAction = new UserEntityGetAction<StudentModel>(gradebookUid, EntityType.STUDENT);
+		//List<StudentModel> rows = delegateFacade.getEntityList(getRowsAction);
 
+		PageRequestAction action = new PageRequestAction(EntityType.STUDENT, gradebookUid, gradebookId);
+		PagingLoadResult<StudentModel> result = delegateFacade.getEntityPage(action, null);
+		
+		List<StudentModel> rows = result.getData();
 		
 		if (headerIds != null) {
 			

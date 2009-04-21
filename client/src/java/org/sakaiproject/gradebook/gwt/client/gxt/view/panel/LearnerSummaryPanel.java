@@ -254,7 +254,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 				
 				switch (selector) {
 				case CLOSE:
-					Dispatcher.forwardEvent(GradebookEvents.HideEastPanel, Boolean.FALSE);
+					Dispatcher.forwardEvent(GradebookEvents.HideEastPanel.getEventType(), Boolean.FALSE);
 					break;
 				case COMMENT:
 					String id = be.component.getData(ITEM_IDENTIFIER_FLAG);
@@ -263,14 +263,14 @@ public class LearnerSummaryPanel extends ContentPanel {
 					break;
 				case NEXT:
 					bse = new BrowseLearner(learner, BrowseType.NEXT);
-					Dispatcher.forwardEvent(GradebookEvents.BrowseLearner, bse);
+					Dispatcher.forwardEvent(GradebookEvents.BrowseLearner.getEventType(), bse);
 					break;
 				case PREVIOUS:
 					bse = new BrowseLearner(learner, BrowseType.PREV);
-					Dispatcher.forwardEvent(GradebookEvents.BrowseLearner, bse);
+					Dispatcher.forwardEvent(GradebookEvents.BrowseLearner.getEventType(), bse);
 					break;
 				case VIEW_AS_LEARNER:
-					Dispatcher.forwardEvent(GradebookEvents.SingleView, learner);
+					Dispatcher.forwardEvent(GradebookEvents.SingleView.getEventType(), learner);
 					break;
 				}
 				
@@ -420,7 +420,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 										StudentModel learner = (StudentModel)this.model;
 										e.field.setEnabled(false);
 										
-										Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord, new GradeRecordUpdate(learnerStore, learner, e.field.getName(), e.field.getFieldLabel(), e.oldValue, e.value));
+										Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord.getEventType(), new GradeRecordUpdate(learnerStore, learner, e.field.getName(), e.field.getFieldLabel(), e.oldValue, e.value));
 									}
 									
 									@Override

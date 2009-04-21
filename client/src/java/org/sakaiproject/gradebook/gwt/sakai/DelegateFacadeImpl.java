@@ -2433,6 +2433,13 @@ private static final long serialVersionUID = 1L;
 		Assignment assignment = gbService.getAssignment(Long.valueOf(assignmentId));
 		Gradebook gradebook = assignment.getGradebook();
 
+		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.GRADE_RECORD.name(), ActionType.GRADED.name());
+		actionRecord.setEntityName(new StringBuilder().append(student.getDisplayName()).append(" : ").append(assignment.getName()).toString());
+		actionRecord.setEntityId(String.valueOf(assignment.getId()));
+		Map<String, String> propertyMap = actionRecord.getPropertyMap();
+		
+		propertyMap.put("score", String.valueOf(value));
+		
 		List<AssignmentGradeRecord> gradeRecords = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), student.getIdentifier());
 		
 		AssignmentGradeRecord assignmentGradeRecord = null;
@@ -2450,6 +2457,9 @@ private static final long serialVersionUID = 1L;
 		
 		refreshLearnerData(gradebook, student, assignment, gradeRecords);
 		student.set(assignmentId, value);
+		
+		
+		gbService.storeActionRecord(actionRecord);
 		
 		return student;
 	}
@@ -3247,6 +3257,7 @@ private static final long serialVersionUID = 1L;
 	protected ItemModel addItem(String gradebookUid, Long gradebookId, final ItemModel item) throws InvalidInputException {
 		
 		ActionRecord actionRecord = new ActionRecord(gradebookUid, gradebookId, EntityType.ITEM.name(), ActionType.CREATE.name());
+		actionRecord.setEntityName(item.getName());
 		Map<String, String> propertyMap = actionRecord.getPropertyMap();
 		
 		for (String property : item.getPropertyNames()) {
@@ -3371,7 +3382,8 @@ private static final long serialVersionUID = 1L;
 	 */
 	protected ItemModel addItemCategory(String gradebookUid, Long gradebookId, ItemModel item) throws BusinessRuleException {
 		
-		ActionRecord actionRecord = new ActionRecord(gradebookUid, gradebookId, EntityType.ITEM.name(), ActionType.CREATE.name());
+		ActionRecord actionRecord = new ActionRecord(gradebookUid, gradebookId, EntityType.CATEGORY.name(), ActionType.CREATE.name());
+		actionRecord.setEntityName(item.getName());
 		Map<String, String> propertyMap = actionRecord.getPropertyMap();
 		
 		for (String property : item.getPropertyNames()) {

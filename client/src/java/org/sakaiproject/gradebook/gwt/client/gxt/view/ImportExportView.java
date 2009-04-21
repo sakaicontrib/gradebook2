@@ -24,15 +24,16 @@ public class ImportExportView extends View {
 
 	@Override
 	protected void handleEvent(AppEvent<?> event) {
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-		switch (event.type) {
-		case GradebookEvents.StartImport:
-			importDialog = new ImportPanel(selectedGradebook.getGradebookUid());
+		
+		switch (GradebookEvents.getEvent(event.type).getEventKey()) {
+		case START_IMPORT:
+			importDialog = new ImportPanel();
 			//importDialog.setSize(XDOM.getViewportSize().width - 50, 500);
 			//importDialog.show();
 			//importDialog.center();
 			break;
-		case GradebookEvents.StartExport:
+		case START_EXPORT:
+			GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 			String uri = GWT.getModuleBaseURL() + "/export?gradebookUid=" + selectedGradebook.getGradebookUid();
 			
 			if (downloadFileFrame == null) {

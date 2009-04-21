@@ -62,47 +62,47 @@ public class MultigradeView extends View {
 	
 	@Override
 	protected void handleEvent(AppEvent<?> event) {
-		switch(event.type) {
-		case GradebookEvents.BeginItemUpdates:
+		switch(GradebookEvents.getEvent(event.type).getEventKey()) {
+		case BEGIN_ITEM_UPDATES:
 			onBeginItemUpdates();
 			break;
-		case GradebookEvents.BrowseLearner:
+		case BROWSE_LEARNER:
 			onBrowseLearner((BrowseLearner)event.data);
 			break;
-		case GradebookEvents.EndItemUpdates:
+		case END_ITEM_UPDATES:
 			onEndItemUpdates();
 			break;
-		case GradebookEvents.LearnerGradeRecordUpdated:
+		case LEARNER_GRADE_RECORD_UPDATED:
 			onLearnerGradeRecordUpdated((UserEntityAction<?>)event.data);
 			break;
-		case GradebookEvents.ItemCreated:
+		case ITEM_CREATED:
 			onItemCreated((ItemModel)event.data);
 			break;
-		case GradebookEvents.ItemDeleted:
+		case ITEM_DELETED:
 			onItemDeleted((ItemModel)event.data);
 			break;
-		case GradebookEvents.ItemUpdated:
+		case ITEM_UPDATED:
 			onItemUpdated((ItemModel)event.data);
 			break;
-		case GradebookEvents.LoadItemTreeModel:
+		case LOAD_ITEM_TREE_MODEL:
 			onLoadItemTreeModel((GradebookModel)event.data);
 			break;
-		case GradebookEvents.RefreshCourseGrades:
+		case REFRESH_COURSE_GRADES:
 			onRefreshCourseGrades();
 			break;
-		case GradebookEvents.ShowColumns:
+		case SHOW_COLUMNS:
 			onShowColumns((ShowColumnsEvent)event.data);
 			break;
-		case GradebookEvents.Startup:
+		case STARTUP:
 			ApplicationModel applicationModel = (ApplicationModel)event.data;
 			initUI(applicationModel);
 			GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 			onSwitchGradebook(selectedGradebook);
 			break;
-		case GradebookEvents.SwitchGradebook:
+		case SWITCH_GRADEBOOK:
 			onSwitchGradebook((GradebookModel)event.data);
 			break;
-		case GradebookEvents.UserChange:
+		case USER_CHANGE:
 			onUserChange((UserEntityAction<?>)event.data);
 			break;
 		}

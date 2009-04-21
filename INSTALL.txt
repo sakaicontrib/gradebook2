@@ -4,8 +4,7 @@ Currently, it should build against a vanilla 2.5.x branch sakai. You will need t
 
 (1) Run the sql script under client/src/sql/oracle/gb-datamodel-changes.sql against your sakai database (or set auto.ddl to true).
 (2) Apply the patch labeled gb-2-5-x.patch under the original gradebook module.
-(3) Check out this project as "gradebook-gwt" and add it as a module under your sakai pom.xml for the active profile.
-(4) Under your sakai profile in .m2/settings.xml set the <gwt.platform> tag to linux, mac, or windows (only tested on linux so far).
+(3) Check out this project as "gradebook2" and add it as a module under your sakai pom.xml for the active profile.
+(4) Under your sakai profile in .m2/settings.xml set the <gwt.platform> tag to linux, mac, or windows (only tested on linux and mac so far).
 (5) Optional: Configure Export Advisor by specifying which bean to inject. This is in the applicationContext.xml file via the placeholderConfig spring bean.
-(6) Build sakai. Note that the GWT build takes quite a while. If you want to speed it up for testing (slightly) you can apply the patch called "client/firefox.patch" to the client directory (cd client; patch -p0 < firefox.patch) and it will then build a version that is only compatible with Firefox/Gecko.
 

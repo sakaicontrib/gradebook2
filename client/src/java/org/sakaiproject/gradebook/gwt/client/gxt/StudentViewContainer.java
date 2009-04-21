@@ -22,7 +22,6 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.gxt;
 
-import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.gxt.settings.LogColumnConfig;
 import org.sakaiproject.gradebook.gwt.client.model.GradeRecordModel;
@@ -32,7 +31,6 @@ import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 
 import com.extjs.gxt.ui.client.Style.Scroll;
-import com.extjs.gxt.ui.client.Style.VerticalAlignment;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;

@@ -34,105 +34,106 @@ public class AppController extends Controller {
 	private FinalGradeSubmissionView finalGradeSubmissionView;
 	
 	public AppController() {
-		registerEventTypes(GradebookEvents.BeginItemUpdates);
-		registerEventTypes(GradebookEvents.BrowseLearner);
-		registerEventTypes(GradebookEvents.CloseNotification);
-		registerEventTypes(GradebookEvents.Confirmation);
-		registerEventTypes(GradebookEvents.ConfirmDeleteItem);
-		registerEventTypes(GradebookEvents.EndItemUpdates);
-		registerEventTypes(GradebookEvents.ExpandEastPanel);
-		registerEventTypes(GradebookEvents.FullScreen);
-		registerEventTypes(GradebookEvents.HideColumn);
-		registerEventTypes(GradebookEvents.HideEastPanel);
-		registerEventTypes(GradebookEvents.ItemCreated);
-		registerEventTypes(GradebookEvents.ItemDeleted);
-		registerEventTypes(GradebookEvents.ItemUpdated);
-		registerEventTypes(GradebookEvents.LearnerGradeRecordUpdated);
-		registerEventTypes(GradebookEvents.LoadItemTreeModel);
-		registerEventTypes(GradebookEvents.MaskItemTree);
-		registerEventTypes(GradebookEvents.NewCategory);
-		registerEventTypes(GradebookEvents.NewItem);
-		registerEventTypes(GradebookEvents.Notification);
-		registerEventTypes(GradebookEvents.RefreshCourseGrades);
-		registerEventTypes(GradebookEvents.RevertItem);
-		registerEventTypes(GradebookEvents.SelectDeleteItem);
-		registerEventTypes(GradebookEvents.SelectLearner);
-		registerEventTypes(GradebookEvents.SelectItem);
-		registerEventTypes(GradebookEvents.ShowColumns);
-		registerEventTypes(GradebookEvents.ShowGradeScale);
-		registerEventTypes(GradebookEvents.ShowHistory);
-		registerEventTypes(GradebookEvents.SingleGrade);
-		registerEventTypes(GradebookEvents.SingleView);
-		registerEventTypes(GradebookEvents.StartEditItem);
-		registerEventTypes(GradebookEvents.StartExport);
-		registerEventTypes(GradebookEvents.StartImport);
-		registerEventTypes(GradebookEvents.Startup);
-		registerEventTypes(GradebookEvents.StopImport);
-		registerEventTypes(GradebookEvents.SwitchEditItem);
-		registerEventTypes(GradebookEvents.SwitchGradebook);
-		registerEventTypes(GradebookEvents.UnmaskItemTree);
-		registerEventTypes(GradebookEvents.UpdateLearnerGradeRecord);
-		registerEventTypes(GradebookEvents.UserChange);
-		registerEventTypes(GradebookEvents.StartFinalgrade);
+		registerEventTypes(GradebookEvents.BeginItemUpdates.getEventType());
+		registerEventTypes(GradebookEvents.BrowseLearner.getEventType());
+		registerEventTypes(GradebookEvents.CloseNotification.getEventType());
+		registerEventTypes(GradebookEvents.Confirmation.getEventType());
+		registerEventTypes(GradebookEvents.ConfirmDeleteItem.getEventType());
+		registerEventTypes(GradebookEvents.EndItemUpdates.getEventType());
+		registerEventTypes(GradebookEvents.ExpandEastPanel.getEventType());
+		registerEventTypes(GradebookEvents.HideColumn.getEventType());
+		registerEventTypes(GradebookEvents.HideEastPanel.getEventType());
+		registerEventTypes(GradebookEvents.ItemCreated.getEventType());
+		registerEventTypes(GradebookEvents.ItemDeleted.getEventType());
+		registerEventTypes(GradebookEvents.ItemUpdated.getEventType());
+		registerEventTypes(GradebookEvents.LearnerGradeRecordUpdated.getEventType());
+		registerEventTypes(GradebookEvents.LoadItemTreeModel.getEventType());
+		registerEventTypes(GradebookEvents.MaskItemTree.getEventType());
+		registerEventTypes(GradebookEvents.NewCategory.getEventType());
+		registerEventTypes(GradebookEvents.NewItem.getEventType());
+		registerEventTypes(GradebookEvents.Notification.getEventType());
+		registerEventTypes(GradebookEvents.RefreshCourseGrades.getEventType());
+		registerEventTypes(GradebookEvents.RevertItem.getEventType());
+		registerEventTypes(GradebookEvents.SelectDeleteItem.getEventType());
+		registerEventTypes(GradebookEvents.SelectLearner.getEventType());
+		registerEventTypes(GradebookEvents.SelectItem.getEventType());
+		registerEventTypes(GradebookEvents.ShowColumns.getEventType());
+		registerEventTypes(GradebookEvents.ShowGradeScale.getEventType());
+		registerEventTypes(GradebookEvents.ShowHistory.getEventType());
+		registerEventTypes(GradebookEvents.SingleGrade.getEventType());
+		registerEventTypes(GradebookEvents.SingleView.getEventType());
+		registerEventTypes(GradebookEvents.StartEditItem.getEventType());
+		registerEventTypes(GradebookEvents.StartExport.getEventType());
+		registerEventTypes(GradebookEvents.StartImport.getEventType());
+		registerEventTypes(GradebookEvents.Startup.getEventType());
+		registerEventTypes(GradebookEvents.StopImport.getEventType());
+		registerEventTypes(GradebookEvents.SwitchEditItem.getEventType());
+		registerEventTypes(GradebookEvents.SwitchGradebook.getEventType());
+		registerEventTypes(GradebookEvents.UnmaskItemTree.getEventType());
+		registerEventTypes(GradebookEvents.UpdateLearnerGradeRecord.getEventType());
+		registerEventTypes(GradebookEvents.UserChange.getEventType());
+		registerEventTypes(GradebookEvents.StartFinalgrade.getEventType());
 	}
 	
 	@Override
 	public void handleEvent(AppEvent<?> event) {
 		// Note: the 'missing' break statements in this switch are intentional, they
 		// allow certain events to drop through to multiple views
-		switch (event.type) {
-		case GradebookEvents.BeginItemUpdates:
-		case GradebookEvents.EndItemUpdates:
+		switch (GradebookEvents.getEvent(event.type).getEventKey()) {
+		case BEGIN_ITEM_UPDATES:
+		case END_ITEM_UPDATES:
 			forwardToView(multigradeView, event);
 			break;
-		case GradebookEvents.Confirmation:
-		case GradebookEvents.CloseNotification:
-		case GradebookEvents.Notification:
+		case CONFIRMATION:
+		case CLOSE_NOTIFICATION:
+		case NOTIFICATION:
 			forwardToView(appView, event);
 			forwardToView(notificationView, event);
 			break;
-		case GradebookEvents.HideColumn:
+		case HIDE_COLUMN:
 			forwardToView(treeView, event);
 			break;
-		case GradebookEvents.BrowseLearner:
+		case BROWSE_LEARNER:
 			forwardToView(multigradeView, event);
 			break;
-		case GradebookEvents.ConfirmDeleteItem:
-		case GradebookEvents.SelectDeleteItem:
+		case CONFIRM_DELETE_ITEM:
+		case SELECT_DELETE_ITEM:
 			forwardToView(treeView, event);
 			break;
-		case GradebookEvents.LearnerGradeRecordUpdated:
+		case LEARNER_GRADE_RECORD_UPDATED:
 			forwardToView(multigradeView, event);
 			forwardToView(appView, event);
 			if (singleView != null && singleView.isDialogVisible())
 				forwardToView(singleView, event);
 			break;
-		case GradebookEvents.NewCategory:
-		case GradebookEvents.NewItem:
+		case NEW_CATEGORY:
+		case NEW_ITEM:
 			forwardToView(appView, event);
 			forwardToView(treeView, event);
 			break;
-		case GradebookEvents.RefreshCourseGrades:
+		case REFRESH_COURSE_GRADES:
 			forwardToView(multigradeView, event);
 			break;
-		case GradebookEvents.SelectLearner:
+		case SELECT_LEARNER:
 			forwardToView(appView, event);
+			if (singleView != null && singleView.isDialogVisible())
+				forwardToView(singleView, event);
 			break;
-		case GradebookEvents.StartImport:
-		case GradebookEvents.StartExport:
+		case START_IMPORT:
+		case START_EXPORT:
 			if (importExportView == null)
 				importExportView = new ImportExportView(this);
 			
 			forwardToView(importExportView, event);
 			forwardToView(appView, event);
 			break;
-		case GradebookEvents.StopImport:
+		case STOP_IMPORT:
 			forwardToView(appView, event);
 			break;
-		case GradebookEvents.Startup:
+		case STARTUP:
 			onStartup(event);
 			break;
-		case GradebookEvents.SingleGrade:
+		case SINGLE_GRADE:
 			forwardToView(appView, event);
 			
 			if (treeView != null)
@@ -141,62 +142,62 @@ public class AppController extends Controller {
 			if (singleView != null && singleView.isDialogVisible())
 				forwardToView(singleView, event);
 			break;
-		case GradebookEvents.SingleView:
+		case SINGLE_VIEW:
 			if (singleView == null)
 				singleView = new SingleGradeView(this, false);
 			
 			forwardToView(singleView, event);
 			break;
-		case GradebookEvents.SwitchGradebook:
+		case SWITCH_GRADEBOOK:
 			forwardToView(appView, event);
 			forwardToView(multigradeView, event);
 			forwardToView(treeView, event);
 			break;
-		case GradebookEvents.UserChange:
+		case USER_CHANGE:
 			if (singleGrade != null)
 				forwardToView(singleGrade, event);
 			forwardToView(multigradeView, event);
 			break;
-		case GradebookEvents.LoadItemTreeModel:
+		case LOAD_ITEM_TREE_MODEL:
 			forwardToView(multigradeView, event);
 			forwardToView(treeView, event);
 			break;
-		case GradebookEvents.ShowColumns:
+		case SHOW_COLUMNS:
 			forwardToView(multigradeView, event);
 			break;
-		case GradebookEvents.ShowGradeScale:
-		case GradebookEvents.ShowHistory:	
+		case SHOW_GRADE_SCALE:
+		case SHOW_HISTORY:	
 			forwardToView(appView, event);
 			break;
-		case GradebookEvents.StartEditItem:
-		case GradebookEvents.HideEastPanel:
-		case GradebookEvents.SelectItem:
-		case GradebookEvents.SwitchEditItem:
+		case START_EDIT_ITEM:
+		case HIDE_EAST_PANEL:
+		case SELECT_ITEM:
+		case SWITCH_EDIT_ITEM:
 			forwardToView(treeView, event);
 			forwardToView(appView, event);
 			break;
-		case GradebookEvents.ExpandEastPanel:
+		case EXPAND_EAST_PANEL:
 			forwardToView(appView, event);
 			break;
-		case GradebookEvents.ItemUpdated:
+		case ITEM_UPDATED:
 			forwardToView(multigradeView, event);
 			forwardToView(treeView, event);
 			if (singleView != null)
 				forwardToView(singleView, event);
 			break;
-		case GradebookEvents.ItemCreated:
+		case ITEM_CREATED:
 			forwardToView(appView, event);
 			forwardToView(multigradeView, event);
 			forwardToView(treeView, event);
 			break;
-		case GradebookEvents.ItemDeleted:
+		case ITEM_DELETED:
 			forwardToView(multigradeView, event);
 			break;
-		case GradebookEvents.MaskItemTree:
-		case GradebookEvents.UnmaskItemTree:
+		case MASK_ITEM_TREE:
+		case UNMASK_ITEM_TREE:
 			forwardToView(treeView, event);
 			break;
-		case GradebookEvents.StartFinalgrade:
+		case START_FINAL_GRADE:
 			finalGradeSubmissionView = new FinalGradeSubmissionView(this);
 			forwardToView(finalGradeSubmissionView, event);
 			//forwardToView(appView, event);

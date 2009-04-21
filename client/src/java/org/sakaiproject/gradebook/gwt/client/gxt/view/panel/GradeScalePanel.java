@@ -184,7 +184,7 @@ public class GradeScalePanel extends ContentPanel {
 							if (gridEvent != null)
 								grid.fireEvent(Events.AfterEdit, gridEvent);
 					
-							GradeScalePanel.this.fireEvent(GradebookEvents.UserChange, new UserChangeEvent(EntityType.GRADE_SCALE, ActionType.UPDATE));
+							GradeScalePanel.this.fireEvent(GradebookEvents.UserChange.getEventType(), new UserChangeEvent(EntityType.GRADE_SCALE, ActionType.UPDATE));
 						}
 					
 				};
@@ -199,7 +199,7 @@ public class GradeScalePanel extends ContentPanel {
 
 			@Override
 			public void componentSelected(ButtonEvent be) {
-				Dispatcher.forwardEvent(GradebookEvents.HideEastPanel, Boolean.FALSE);
+				Dispatcher.forwardEvent(GradebookEvents.HideEastPanel.getEventType(), Boolean.FALSE);
 			}
 			
 		});

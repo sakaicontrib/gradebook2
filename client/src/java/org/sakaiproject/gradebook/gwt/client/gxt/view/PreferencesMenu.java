@@ -350,7 +350,7 @@ public class PreferencesMenu extends Menu {
 						Registry.register(AppConstants.CURRENT, result);
 						
 						action.setModel(result);
-						Dispatcher.forwardEvent(GradebookEvents.UserChange, action);
+						Dispatcher.forwardEvent(GradebookEvents.UserChange.getEventType(), action);
 					}
 				
 			};

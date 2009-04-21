@@ -51,20 +51,20 @@ public class NotificationView extends View {
 
 	@Override
 	protected void handleEvent(AppEvent<?> event) {
-		switch (event.type) {
-		case GradebookEvents.CloseNotification:
+		switch (GradebookEvents.getEvent(event.type).getEventKey()) {
+		case CLOSE_NOTIFICATION:
 			text.setHtml("");
 			okButton.setVisible(false);
 			cancelButton.setVisible(false);
 			break;
-		case GradebookEvents.Confirmation:
+		case CONFIRMATION:
 			confirmationEvent = (ConfirmationEvent)event.data;
 			text.setHtml(confirmationEvent.text);
 			okButton.setVisible(true);
 			cancelButton.setVisible(true);
 			notificationPanel.layout();
 			break;
-		case GradebookEvents.Notification:
+		case NOTIFICATION:
 			text.setHtml((String)event.data);
 			confirmationEvent = null;
 			okButton.setVisible(false);
@@ -86,13 +86,13 @@ public class NotificationView extends View {
 					if (confirmationEvent != null && confirmationEvent.okEventType != -1) {
 						Dispatcher.forwardEvent(confirmationEvent.okEventType, confirmationEvent.okEventData);
 					}
-					Dispatcher.forwardEvent(GradebookEvents.CloseNotification);
+					Dispatcher.forwardEvent(GradebookEvents.CloseNotification.getEventType());
 					break;
 				case CANCEL:
 					if (confirmationEvent != null && confirmationEvent.cancelEventType != -1) {
 						Dispatcher.forwardEvent(confirmationEvent.cancelEventType, confirmationEvent.cancelEventData);
 					}
-					Dispatcher.forwardEvent(GradebookEvents.CloseNotification);
+					Dispatcher.forwardEvent(GradebookEvents.CloseNotification.getEventType());
 					break;
 				}
 				

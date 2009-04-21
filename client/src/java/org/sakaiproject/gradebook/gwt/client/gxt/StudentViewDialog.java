@@ -161,14 +161,14 @@ public class StudentViewDialog extends Dialog {
 			@Override
 			public void componentSelected(ComponentEvent ce) {
 				BrowseLearner event = new BrowseLearner(container.getStudentRow(), BrowseType.NEXT);
-				Dispatcher.forwardEvent(GradebookEvents.BrowseLearner, event);
+				Dispatcher.forwardEvent(GradebookEvents.BrowseLearner.getEventType(), event);
 			}
 		}); 
 		Button prev = new Button(i18n.prevLearner(), new SelectionListener<ComponentEvent>() {
 			@Override
 			public void componentSelected(ComponentEvent ce) {
 				BrowseLearner event = new BrowseLearner(container.getStudentRow(), BrowseType.PREV);
-				Dispatcher.forwardEvent(GradebookEvents.BrowseLearner, event);
+				Dispatcher.forwardEvent(GradebookEvents.BrowseLearner.getEventType(), event);
 			}
 		}); 
 		
@@ -185,7 +185,7 @@ public class StudentViewDialog extends Dialog {
 		Button studentView = new Button(i18n.viewAsLearner(), new SelectionListener<ComponentEvent>() { 
 			@Override
 			public void componentSelected(ComponentEvent ce) {
-				Dispatcher.forwardEvent(GradebookEvents.SingleView, container.getStudentModel());
+				Dispatcher.forwardEvent(GradebookEvents.SingleView.getEventType(), container.getStudentModel());
 			}
 		});
 		

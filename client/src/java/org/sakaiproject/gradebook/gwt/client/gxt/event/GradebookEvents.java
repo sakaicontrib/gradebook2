@@ -22,72 +22,86 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.gxt.event;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvent.EventKey;
+
 
 public class GradebookEvents {
 
+	private static Map<Integer, GradebookEvent> eventMap = new HashMap<Integer, GradebookEvent>();
+	
 	protected GradebookEvents() {
-		
+
 	}
 	
-	public static final int BeginItemUpdates			= 14000;
-	public static final int BrowseLearner 				= 14001;
-	public static final int Confirmation				= 14002;
-	public static final int ConfirmDeleteItem			= 14003;
-	public static final int CloseNotification			= 14004;
-	public static final int CreateItem					= 14005;
-	public static final int DeleteItem					= 14006;
-	public static final int EndItemUpdates				= 14007;
-	public static final int ExpandEastPanel 			= 14014;
-	public static final int FullScreen					= 14015;
-	public static final int HideColumn					= 14016;
-	public static final int ItemCreated					= 14017;
-	public static final int ItemDeleted					= 14018;
-	public static final int ItemUpdated					= 14019;
-	public static final int LearnerGradeRecordUpdated	= 14020; 
-	public static final int LoadItemTreeModel 			= 14021;
-	public static final int MaskItemTree				= 14022;
-	public static final int NewCategory					= 14025;
-	public static final int NewItem						= 14030;
-	public static final int Notification				= 14031;
-	public static final int RevertItem					= 14034;
-	public static final int SelectDeleteItem			= 14035;
-	public static final int SelectItem					= 14036;
-	public static final int SelectLearner				= 14037;
-	public static final int ShowColumns					= 14040;
-	public static final int ShowGradeScale				= 14041;
-	public static final int ShowHistory					= 14042;
-	public static final int SingleGrade					= 14045;
-	public static final int SingleView 					= 14050;
-	public static final int StartEditItem				= 14051;
-	public static final int StartExport					= 14052;
-	public static final int StartImport					= 14053;
-	public static final int Startup 					= 14055;
-	public static final int StopImport					= 14056;
-	public static final int StartFinalgrade				= 14057;
-	public static final int HideEastPanel				= 14060;
-	public static final int SwitchEditItem				= 14061;
-	public static final int SwitchGradebook 			= 14065;
-	public static final int UnmaskItemTree				= 14066;
-	public static final int UpdateLearnerGradeRecord	= 14070;
-	public static final int UpdateItem					= 14075;
+	public static GradebookEvent registerEvent(EventKey eventKey) {
+		GradebookEvent gradebookEvent = new GradebookEvent(eventKey);
+
+		eventMap.put(Integer.valueOf(eventKey.getEventType()), gradebookEvent);
+		return gradebookEvent;
+	}
 	
-	public static final int Exception 					= 14100;
+	public static GradebookEvent getEvent(int eventType) {
+		GradebookEvent gradebookEvent = eventMap.get(Integer.valueOf(eventType));
+	
+		if (gradebookEvent == null)
+			return None;
+		
+		return gradebookEvent;
+	}
 	
 	
-	public static final int EqualWeight = 12000;
+	public static final GradebookEvent BeginItemUpdates				= registerEvent(EventKey.BEGIN_ITEM_UPDATES);
+	public static final GradebookEvent BrowseLearner 				= registerEvent(EventKey.BROWSE_LEARNER);
+	public static final GradebookEvent Confirmation					= registerEvent(EventKey.CONFIRMATION);
+	public static final GradebookEvent ConfirmDeleteItem			= registerEvent(EventKey.CONFIRM_DELETE_ITEM);
+	public static final GradebookEvent ClearSearch 					= registerEvent(EventKey.CLEAR_SEARCH);
+	public static final GradebookEvent CloseNotification			= registerEvent(EventKey.CLOSE_NOTIFICATION);
+	public static final GradebookEvent CreateItem					= registerEvent(EventKey.CREATE_ITEM);
+	public static final GradebookEvent DeleteItem					= registerEvent(EventKey.DELETE_ITEM);
+	public static final GradebookEvent DoSearch 					= registerEvent(EventKey.DO_SEARCH);
+	public static final GradebookEvent EndItemUpdates				= registerEvent(EventKey.END_ITEM_UPDATES);
+	public static final GradebookEvent EqualWeight 					= registerEvent(EventKey.EQUL_WEIGHT);
+	public static final GradebookEvent Exception 					= registerEvent(EventKey.EXCEPTION);
+	public static final GradebookEvent ExpandEastPanel 				= registerEvent(EventKey.EXPAND_EAST_PANEL);
+	public static final GradebookEvent GradebookChange 				= registerEvent(EventKey.GRADEBOOK_CHANGE);
+	public static final GradebookEvent HideColumn					= registerEvent(EventKey.HIDE_COLUMN);
+	public static final GradebookEvent HideEastPanel				= registerEvent(EventKey.HIDE_EAST_PANEL);
+	public static final GradebookEvent ItemCreated					= registerEvent(EventKey.ITEM_CREATED);
+	public static final GradebookEvent ItemDeleted					= registerEvent(EventKey.ITEM_DELETED);
+	public static final GradebookEvent ItemUpdated					= registerEvent(EventKey.ITEM_UPDATED);
+	public static final GradebookEvent LearnerGradeRecordUpdated	= registerEvent(EventKey.LEARNER_GRADE_RECORD_UPDATED); 
+	public static final GradebookEvent LoadItemTreeModel 			= registerEvent(EventKey.LOAD_ITEM_TREE_MODEL);
+	public static final GradebookEvent MaskItemTree					= registerEvent(EventKey.MASK_ITEM_TREE);
+	public static final GradebookEvent NewCategory					= registerEvent(EventKey.NEW_CATEGORY);
+	public static final GradebookEvent NewItem						= registerEvent(EventKey.NEW_ITEM);
+	public static final GradebookEvent None							= registerEvent(EventKey.NONE);
+	public static final GradebookEvent Notification					= registerEvent(EventKey.NOTIFICATION);
+	public static final GradebookEvent Refresh 						= registerEvent(EventKey.REFESH);
+	public static final GradebookEvent RefreshCourseGrades 			= registerEvent(EventKey.REFRESH_COURSE_GRADES);
+	public static final GradebookEvent RevertItem					= registerEvent(EventKey.REVERT_ITEM);
+	public static final GradebookEvent SelectDeleteItem				= registerEvent(EventKey.SELECT_DELETE_ITEM);
+	public static final GradebookEvent SelectItem					= registerEvent(EventKey.SELECT_ITEM);
+	public static final GradebookEvent SelectLearner				= registerEvent(EventKey.SELECT_LEARNER);
+	public static final GradebookEvent ShowColumns					= registerEvent(EventKey.SHOW_COLUMNS);
+	public static final GradebookEvent ShowGradeScale				= registerEvent(EventKey.SHOW_GRADE_SCALE);
+	public static final GradebookEvent ShowHistory					= registerEvent(EventKey.SHOW_HISTORY);
+	public static final GradebookEvent SingleGrade					= registerEvent(EventKey.SINGLE_GRADE);
+	public static final GradebookEvent SingleView 					= registerEvent(EventKey.SINGLE_VIEW);
+	public static final GradebookEvent StartEditItem				= registerEvent(EventKey.START_EDIT_ITEM);
+	public static final GradebookEvent StartExport					= registerEvent(EventKey.START_EXPORT);
+	public static final GradebookEvent StartImport					= registerEvent(EventKey.START_IMPORT);
+	public static final GradebookEvent Startup 						= registerEvent(EventKey.STARTUP);
+	public static final GradebookEvent StopImport					= registerEvent(EventKey.STOP_IMPORT);
+	public static final GradebookEvent StartFinalgrade				= registerEvent(EventKey.START_FINAL_GRADE);
+	public static final GradebookEvent SwitchEditItem				= registerEvent(EventKey.SWITCH_EDIT_ITEM);
+	public static final GradebookEvent SwitchGradebook 				= registerEvent(EventKey.SWITCH_GRADEBOOK);
+	public static final GradebookEvent UnmaskItemTree				= registerEvent(EventKey.UNMASK_ITEM_TREE);
+	public static final GradebookEvent UpdateLearnerGradeRecord		= registerEvent(EventKey.UPDATE_LEARNER_GRADE_RECORD);
+	public static final GradebookEvent UpdateItem					= registerEvent(EventKey.UPDATE_ITEM);
+	public static final GradebookEvent UserChange 					= registerEvent(EventKey.USER_CHANGE);
 	
-	public static final int DoSearch = 12001;
-	
-	public static final int ClearSearch = 12002;
-	
-	public static final int RefreshCourseGrades = 12003;
-	
-	//public static final int SingleView = 12004;
-	
-	public static final int GradebookChange = 12005;
-	
-	public static final int UserChange = 12009;
-	
-	public static final int Refresh = 12010;
-	
+		
 }

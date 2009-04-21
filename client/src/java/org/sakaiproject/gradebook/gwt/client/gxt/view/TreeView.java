@@ -56,60 +56,60 @@ public class TreeView extends View {
 
 	@Override
 	protected void handleEvent(AppEvent<?> event) {
-		switch(event.type) {
-		case GradebookEvents.ConfirmDeleteItem:
+		switch(GradebookEvents.getEvent(event.type).getEventKey()) {
+		case CONFIRM_DELETE_ITEM:
 			onConfirmDeleteItem((ItemModel)event.data);
 			break;
-		case GradebookEvents.SelectDeleteItem:
+		case SELECT_DELETE_ITEM:
 			onConfirmDeleteItem((String)event.data);
 			break;
-		case GradebookEvents.ItemCreated:
+		case ITEM_CREATED:
 			onItemCreated((ItemModel)event.data);
 			break;
-		case GradebookEvents.ItemUpdated:
+		case ITEM_UPDATED:
 			onItemUpdated((ItemModel)event.data);
 			break;
-		case GradebookEvents.HideColumn:
+		case HIDE_COLUMN:
 			onHideColumn((String)event.data);
 			break;
-		case GradebookEvents.SingleGrade:
+		case SINGLE_GRADE:
 			onSingleGrade();
 			break;
-		case GradebookEvents.StartEditItem:
+		case START_EDIT_ITEM:
 			onEditItem((ItemModel)event.data);
 			break;
-		case GradebookEvents.HideEastPanel:
+		case HIDE_EAST_PANEL:
 			onEditItemComplete((Boolean)event.data);
 			break;
-		case GradebookEvents.LoadItemTreeModel:
+		case LOAD_ITEM_TREE_MODEL:
 			onLoadItemTreeModel((GradebookModel)event.data);
 			break;
-		case GradebookEvents.NewCategory:
+		case NEW_CATEGORY:
 			onNewCategory((ItemModel)event.data);
 			break;
-		case GradebookEvents.NewItem:
+		case NEW_ITEM:
 			onNewItem((ItemModel)event.data);
 			break;
-		case GradebookEvents.SelectItem:
+		case SELECT_ITEM:
 			onSelectItem((String)event.data);
 			break;
-		case GradebookEvents.Startup:
+		case STARTUP:
 			GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 			onSwitchGradebook(selectedGradebook);
 			break;
-		case GradebookEvents.SwitchEditItem:
+		case SWITCH_EDIT_ITEM:
 			onSwitchEditItem((ItemModel)event.data);
 			break;
-		case GradebookEvents.SwitchGradebook:
+		case SWITCH_GRADEBOOK:
 			onSwitchGradebook((GradebookModel)event.data);
 			break;
-		case GradebookEvents.UserChange:
+		case USER_CHANGE:
 			onUserChange((UserEntityAction<?>)event.data);
 			break;
-		case GradebookEvents.MaskItemTree:
+		case MASK_ITEM_TREE:
 			onMaskItemTree();
 			break;
-		case GradebookEvents.UnmaskItemTree:
+		case UNMASK_ITEM_TREE:
 			onUnmaskItemTree();
 			break;
 		}

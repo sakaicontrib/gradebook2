@@ -132,8 +132,8 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		setHeaderVisible(false);
 		
 		// This UserChangeEvent listener
-		addListener(GradebookEvents.UserChange, userChangeEventListener);
-		addListener(GradebookEvents.RefreshCourseGrades, refreshCourseGradesListener);
+		addListener(GradebookEvents.UserChange.getEventType(), userChangeEventListener);
+		addListener(GradebookEvents.RefreshCourseGrades.getEventType(), refreshCourseGradesListener);
 		
 		/*singleView.addListener(GradebookEvents.UserChange, new Listener<UserChangeEvent>() {
 
@@ -237,7 +237,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			columnHeader = grid.getColumnModel().getColumnHeader(gridEvent.colIndex);
 		}
 		
-		Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord, new GradeRecordUpdate(record, property, columnHeader, startValue, value));
+		Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord.getEventType(), new GradeRecordUpdate(record, property, columnHeader, startValue, value));
 	}
 	
 	public StudentModel getSelectedModel() {
@@ -512,7 +512,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			public void handleEvent(ComponentEvent ce) {
 				
 				// FIXME: This could be condensed significantly
-				if (ce.type == GradebookEvents.DoSearch) {
+				if (ce.type == GradebookEvents.DoSearch.getEventType()) {
 					String searchString = searchField.getValue();
 					String sectionUuid = null;	
 					if (loadConfig != null)
@@ -524,7 +524,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 					((MultiGradeLoadConfig) loadConfig).setSectionUuid(sectionUuid);
 					loader.useLoadConfig(loadConfig);
 					loader.load(0, pageSize);
-				} else if (ce.type == GradebookEvents.ClearSearch) {
+				} else if (ce.type == GradebookEvents.ClearSearch.getEventType()) {
 					searchField.setValue(null);
 					String sectionUuid = null;
 					if (loadConfig != null)
@@ -548,7 +548,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 				case Events.CellClick:
 					if (ge.colIndex == 1 || ge.colIndex == 2) {
 						StudentModel selectedLearner = store.getAt(ge.rowIndex);
-						Dispatcher.forwardEvent(GradebookEvents.SingleGrade, selectedLearner);
+						Dispatcher.forwardEvent(GradebookEvents.SingleGrade.getEventType(), selectedLearner);
 						ge.grid.getSelectionModel().select(ge.rowIndex);
 					}
 					break;
@@ -944,7 +944,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 				StudentModel learner = sce.getSelectedItem();
 				
 				if (learner != null && learner instanceof StudentModel) 
-					Dispatcher.forwardEvent(GradebookEvents.SelectLearner, learner);
+					Dispatcher.forwardEvent(GradebookEvents.SelectLearner.getEventType(), learner);
 			}
 		
 		});
@@ -1226,7 +1226,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			public void componentKeyPress(ComponentEvent event) {
 			    switch (event.getKeyCode()) {
 			    case KeyboardListener.KEY_ENTER:
-			    	fireEvent(GradebookEvents.DoSearch, event);
+			    	fireEvent(GradebookEvents.DoSearch.getEventType(), event);
 			    	break;
 			    }
 			}
@@ -1234,9 +1234,9 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		
 		store.addListener(Store.Sort, storeListener);
 		
-		addListener(GradebookEvents.DoSearch, componentEventListener);
+		addListener(GradebookEvents.DoSearch.getEventType(), componentEventListener);
 		
-		addListener(GradebookEvents.ClearSearch, componentEventListener);
+		addListener(GradebookEvents.ClearSearch.getEventType(), componentEventListener);
 		
 		AdapterToolItem searchFieldItem = new AdapterToolItem(searchField);
 
@@ -1244,7 +1244,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 
 			@Override
 			public void componentSelected(ToolBarEvent ce) {
-				fireEvent(GradebookEvents.DoSearch, ce);
+				fireEvent(GradebookEvents.DoSearch.getEventType(), ce);
 			}
 			
 		});
@@ -1256,7 +1256,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 
 			@Override
 			public void componentSelected(ToolBarEvent ce) {
-				fireEvent(GradebookEvents.ClearSearch, ce);
+				fireEvent(GradebookEvents.ClearSearch.getEventType(), ce);
 			}
 			
 		});

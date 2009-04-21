@@ -27,7 +27,7 @@ import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.controller.AppController;
-import org.sakaiproject.gradebook.gwt.client.gxt.controller.UpdateController;
+import org.sakaiproject.gradebook.gwt.client.gxt.controller.ServiceController;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
 
@@ -55,7 +55,7 @@ public class GradebookApplication implements EntryPoint {
 	public void onModuleLoad() {
 		final Dispatcher dispatcher = Dispatcher.get();
 		dispatcher.addController(new AppController());
-		dispatcher.addController(new UpdateController());
+		dispatcher.addController(new ServiceController());
 		
 		I18nConstants i18n = (I18nConstants) GWT.create(I18nConstants.class);
 		
@@ -89,7 +89,7 @@ public class GradebookApplication implements EntryPoint {
 		
 			public void onCommandFailure(UserEntityAction<ApplicationModel> action, Throwable caught) {
 				GXT.hideLoadingPanel("loading");
-				dispatcher.dispatch(GradebookEvents.Exception, caught);
+				dispatcher.dispatch(GradebookEvents.Exception.getEventType(), caught);
 			}
 			
 			public void onCommandSuccess(UserEntityAction<ApplicationModel> action, ApplicationModel model) {
@@ -100,7 +100,7 @@ public class GradebookApplication implements EntryPoint {
 					resizeMainFrame("Main" + modifiedId, screenHeight + 20);
 				}
 				
-				dispatcher.dispatch(GradebookEvents.Startup, model);
+				dispatcher.dispatch(GradebookEvents.Startup.getEventType(), model);
 			}
 			
 		};
