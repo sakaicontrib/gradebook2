@@ -464,7 +464,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 				
 				switch (ge.type) {
 				case Events.CellClick:
-					if (ge.colIndex == 1 || ge.colIndex == 2) {
+					if (ge.colIndex == 0 || ge.colIndex == 1 || ge.colIndex == 2) {
 						StudentModel selectedLearner = store.getAt(ge.rowIndex);
 						Dispatcher.forwardEvent(GradebookEvents.SingleGrade.getEventType(), selectedLearner);
 						ge.grid.getSelectionModel().select(ge.rowIndex);
