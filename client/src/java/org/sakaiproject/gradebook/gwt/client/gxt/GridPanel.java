@@ -22,6 +22,8 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.gxt;
 
+import java.util.ArrayList;
+
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.GradebookToolFacadeAsync;
@@ -40,11 +42,9 @@ import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig
 import org.sakaiproject.gradebook.gwt.client.model.EntityModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
-import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
 import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
-import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.Style.SortDir;
 import com.extjs.gxt.ui.client.data.BasePagingLoader;
 import com.extjs.gxt.ui.client.data.DataReader;
@@ -56,9 +56,6 @@ import com.extjs.gxt.ui.client.data.SortInfo;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.GridEvent;
 import com.extjs.gxt.ui.client.event.Listener;
-import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
-import com.extjs.gxt.ui.client.event.SelectionChangedListener;
-import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
@@ -66,16 +63,13 @@ import com.extjs.gxt.ui.client.widget.PagingToolBar;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.form.TextField;
-import com.extjs.gxt.ui.client.widget.grid.CellSelectionModel;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.EditorGrid;
-import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridView;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.KeyboardListener;
 
 public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 
@@ -118,29 +112,6 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 	
 		this.defaultNumberFormat = DataTypeConversionUtil.getDefaultNumberFormat();
 		
-		// This event listener takes care of deferred refresh actions, the goal being to avoid
-		// multiple refresh requests coming from other components and resulting in unnecessary repeated
-		// calls to the server
-		/*addListener(Events.BeforeShow, new Listener<BaseEvent>() {
-
-			public void handleEvent(BaseEvent be) {
-				switch (refreshAction) {
-				case REFRESHDATA:
-					if (pagingToolBar != null)
-						pagingToolBar.refresh();
-					break;
-				case REFRESHCOLUMNS:
-				case REFRESHLOCALCOLUMNS:
-				case REFRESHCOLUMNSANDDATA:
-					refreshGrid(refreshAction);
-					break;
-				}
-				refreshAction = RefreshAction.NONE;
-				Info.display("Hey", "BeforeShow");
-			}
-		
-		});*/
-		
 		addListener(GradebookEvents.Refresh.getEventType(), new Listener<BaseEvent>() {
 
 			public void handleEvent(BaseEvent be) {
@@ -160,16 +131,50 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		
 		});
 		
-		// GRBK-31 : We only add the categories and items tree to multigrade
-		/*if(gridId.equals("multigrade")) {
-			add(newLayoutContainer(newTree()));
-		}
-		else {
-			this.gridOwner = this;
-			add(newGrid());
-		}*/
-		//add(newPanel(childPanel));
-		//add(newGrid(childPanel));
+		
+		initListeners();
+		
+		pagingToolBar = newPagingToolBar(pageSize);
+
+		//addComponents();
+
+		store = new ListStore<M>();
+		cm  = new CustomColumnModel("", gridId, new ArrayList<ColumnConfig>());
+	
+		grid = new EditorGrid<M>(store, cm);
+		
+		GridView view = newGridView();
+		
+		grid.setView(view);
+		grid.setLoadMask(true);
+		grid.setBorders(true);
+	
+		grid.addListener(Events.ValidateEdit, new Listener<GridEvent>() {
+
+			public void handleEvent(final GridEvent ge) {
+				// By setting ge.doit to false, we ensure that the AfterEdit event is not thrown. Which means we have to throw it ourselves onSuccess
+				ge.doit = false;
+				
+				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+				
+				if (selectedGradebook != null)
+					editCell(selectedGradebook, ge.record, ge.property, ge.value, ge.startValue, ge);
+			}
+
+		});
+		
+		addGridListenersAndPlugins(grid);
+		
+		grid.setStripeRows(true);
+		grid.setDeferHeight(true);
+		
+		Menu gridContextMenu = newContextMenu();
+		
+		if (gridContextMenu != null)
+			grid.setContextMenu(gridContextMenu);
+		
+		
+		add(grid);
 	}
 
 	
@@ -199,7 +204,7 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 				store.setDefaultSort(storedSortField, sortDir);
 		}
 		
-		add(newGrid(newColumnModel(selectedGradebook)));
+		//add(newGrid(newColumnModel(selectedGradebook)));
 	
 		if (loader != null) 
 			loader.load(0, pageSize);
@@ -275,10 +280,8 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		return container;
 	}*/
 	
-	protected Grid<M> newGrid(CustomColumnModel cm) {
+	protected void reconfigureGrid(CustomColumnModel cm) {
 		this.cm = cm;
-		
-		initListeners();
 		
 		loader = newLoader();
 		loader.setRemoteSort(true);
@@ -288,61 +291,18 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		loadConfig = newLoadConfig(store, pageSize);
 
 		loader.useLoadConfig(loadConfig);
-		
-		//loader.load(0, pageSize);
-		
-		pagingToolBar = newPagingToolBar(pageSize);
+
 		pagingToolBar.bind(loader);
 		
 		addComponents();
 
-		//cm = newColumnModel();
-		grid = new EditorGrid<M>(store, cm);
+		grid.reconfigure(store, cm);
 		
-		GridView view = newGridView();
-		
-		grid.setView(view);
-		grid.setLoadMask(true);
-		grid.setBorders(true);
-	
-		grid.addListener(Events.ValidateEdit, new Listener<GridEvent>() {
-
-			public void handleEvent(final GridEvent ge) {
-				// By setting ge.doit to false, we ensure that the AfterEdit event is not thrown. Which means we have to throw it ourselves onSuccess
-				ge.doit = false;
-				
-				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-				editCell(selectedGradebook, ge.record, ge.property, ge.value, ge.startValue, ge);
-			}
-
-		});
+		if (grid.isRendered())
+			grid.el().unmask();
 		
 		addGridListenersAndPlugins(grid);
 		
-		/*cellSelectionModel = new CellSelectionModel<M>();
-		cellSelectionModel.setSelectionMode(SelectionMode.SINGLE);
-		cellSelectionModel.addSelectionChangedListener(new SelectionChangedListener<M>() {
-
-			@Override
-			public void selectionChanged(SelectionChangedEvent<M> sce) {
-				M learner = sce.getSelectedItem();
-				
-				if (learner != null && learner instanceof StudentModel) 
-					Dispatcher.forwardEvent(GradebookEvents.SelectLearner, learner);
-			}
-		
-		});
-		grid.setSelectionModel(cellSelectionModel);*/
-		//grid.setTrackMouseOver(true);
-		grid.setStripeRows(true);
-		grid.setDeferHeight(true);
-		
-		Menu gridContextMenu = newContextMenu();
-		
-		if (gridContextMenu != null)
-			grid.setContextMenu(gridContextMenu);
-		
-		return grid;
 	}
 	
 	protected GridView newGridView() {

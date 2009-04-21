@@ -58,6 +58,7 @@ import com.extjs.gxt.ui.client.data.ModelReader;
 import com.extjs.gxt.ui.client.data.PagingLoadConfig;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 import com.extjs.gxt.ui.client.data.RpcProxy;
+import com.extjs.gxt.ui.client.data.SortInfo;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.GridEvent;
 import com.extjs.gxt.ui.client.event.KeyListener;
@@ -134,89 +135,6 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		// This UserChangeEvent listener
 		addListener(GradebookEvents.UserChange.getEventType(), userChangeEventListener);
 		addListener(GradebookEvents.RefreshCourseGrades.getEventType(), refreshCourseGradesListener);
-		
-		/*singleView.addListener(GradebookEvents.UserChange, new Listener<UserChangeEvent>() {
-
-			public void handleEvent(UserChangeEvent uce) {
-				if (uce.getAction() instanceof UserEntityAction) {
-					UserEntityAction action = (UserEntityAction)uce.getAction();
-					
-					// FIXME: Ideally we want to ensure that these methods are only called once at the end of a series of operations
-					switch (action.getEntityType()) {
-						case GRADE_RECORD:
-							switch (action.getActionType()) {
-							case UPDATE:
-								UserEntityUpdateAction<GradeRecordModel> recordUpdateAction = 
-									(UserEntityUpdateAction<GradeRecordModel>)action;
-								GradeRecordModel recordModel = recordUpdateAction.getModel();
-								GradeRecordModel.Key recordModelKey = GradeRecordModel.Key.valueOf(recordUpdateAction.getKey());
-								
-								StudentModel studentModel = recordUpdateAction.getStudentModel();
-								
-								Record r = store.getRecord(studentModel);
-								
-								// First, clear out any currently dropped
-								for (String property : studentModel.getPropertyNames()) {
-									if (property.endsWith(StudentModel.DROP_FLAG)) {
-										int dropFlagIndex = property.indexOf(StudentModel.DROP_FLAG);
-											
-										String assignmentId = property.substring(0, dropFlagIndex);
-										Object value = studentModel.get(assignmentId);
-										Boolean recordDropped = (Boolean)r.get(property);
-										Boolean modelDropped = studentModel.get(property);
-									
-										boolean isDropped = modelDropped != null && modelDropped.booleanValue();
-										boolean wasDropped = recordDropped != null && recordDropped.booleanValue();
-										
-										r.set(property, modelDropped);
-										
-										if (isDropped || wasDropped) {
-											r.set(assignmentId, null);
-											r.set(assignmentId, value);
-											//r.setDirty(true);
-										}
-									}
-								}
-								
-								String courseGrade = studentModel.get(StudentModel.Key.COURSE_GRADE.name());
-								
-								if (courseGrade != null) {
-									r.set(StudentModel.Key.COURSE_GRADE.name(), null);
-									r.set(StudentModel.Key.COURSE_GRADE.name(), courseGrade);
-								}
-								
-								r.endEdit();
-
-								break;
-							}
-							break;
-					}
-				}
-			}
-			
-		});*/
-
-		/*final Listener<StoreEvent> pageListener = new Listener<StoreEvent>() {
-
-			public void handleEvent(StoreEvent be) {
-				StudentModel freshRow = grid.getStore().getAt(currentIndex);
-				IndividualStudentEvent event = new IndividualStudentEvent(freshRow);
-				
-				if (singleView == null)
-					buildSingleView();
-				
-				if (singleView.fireEvent(GradebookEvents.SingleView, event)) {
-					Point pos = getInstructorViewContainer().getPosition(false);
-					singleView.setPosition(pos.x, pos.y);
-					singleView.setSize(XDOM.getViewportSize().width, XDOM.getViewportSize().height - 35);
-					singleView.show();
-					//MultiGradeContentPanel.this.hide();
-				}
-				grid.getStore().removeListener(Store.DataChanged, this);
-			}
-		
-		};*/
-		
 		
 	}
 	
@@ -753,9 +671,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	}
 	
 	public void onLoadItemTreeModel(GradebookModel selectedGradebook) {
-		cm = assembleColumnModel(selectedGradebook);
-		grid.reconfigure(store, cm);
-		grid.el().unmask();
+		reconfigureGrid(newColumnModel(selectedGradebook));
 	}
 	
 	public void onShowColumns(ShowColumnsEvent event) {
@@ -776,10 +692,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 				store.setDefaultSort(storedSortField, sortDir);
 		}
 
-		if (grid == null) 
-			add(newGrid(newColumnModel(selectedGradebook)));
-		else
-			onLoadItemTreeModel(selectedGradebook);
+		onLoadItemTreeModel(selectedGradebook);
 		
 		if (loader != null) 
 			loader.load(0, pageSize);
@@ -931,28 +844,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		CustomColumnModel columnModel = assembleColumnModel(selectedGradebook);
 		return columnModel;
 	}
-	
-	@Override 
-	protected Grid<StudentModel> newGrid(CustomColumnModel cm) {
-		Grid<StudentModel> grid = super.newGrid(cm);
-		cellSelectionModel = new CellSelectionModel<StudentModel>();
-		cellSelectionModel.setSelectionMode(SelectionMode.SINGLE);
-		cellSelectionModel.addSelectionChangedListener(new SelectionChangedListener<StudentModel>() {
-
-			@Override
-			public void selectionChanged(SelectionChangedEvent<StudentModel> sce) {
-				StudentModel learner = sce.getSelectedItem();
-				
-				if (learner != null && learner instanceof StudentModel) 
-					Dispatcher.forwardEvent(GradebookEvents.SelectLearner.getEventType(), learner);
-			}
 		
-		});
-		grid.setSelectionModel(cellSelectionModel);
-		//grid.setSelectionModel(new MultiGradeCellSelectionModel());
-		return grid;
-	}
-	
 	@Override
 	protected GridView newGridView() {
 		// SAK-2378
@@ -1143,9 +1035,24 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		return view;
 	}
 	
+	@Override
 	protected Menu newContextMenu() {
 		contextMenu = new MultiGradeContextMenu(this);
 		return contextMenu;
+	}
+	
+	@Override
+	protected PagingLoadConfig newLoadConfig(ListStore<StudentModel> store, int pageSize) {
+		SortInfo sortInfo = store.getSortState();
+		MultiGradeLoadConfig loadConfig = new MultiGradeLoadConfig();
+		loadConfig.setLimit(0);
+		loadConfig.setOffset(pageSize);	
+		if (sortInfo == null)
+			sortInfo = new SortInfo(StudentModel.Key.LAST_NAME_FIRST.name(), SortDir.ASC);
+			
+		loadConfig.setSortInfo(sortInfo);
+		
+		return loadConfig;
 	}
 	
 	@Override
@@ -1282,20 +1189,28 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	
 	@Override
 	protected void addGridListenersAndPlugins(final EditorGrid<StudentModel> grid) {
+		
+		// We only need to do this once
+		if (rendered)
+			return;
+		
 		grid.addListener(Events.CellClick, gridEventListener);
 		grid.addListener(Events.ContextMenu, gridEventListener);
-		/*grid.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-		grid.getSelectionModel().addSelectionChangedListener(new SelectionChangedListener<StudentModel>() {
+		
+		cellSelectionModel = new CellSelectionModel<StudentModel>();
+		cellSelectionModel.setSelectionMode(SelectionMode.SINGLE);
+		cellSelectionModel.addSelectionChangedListener(new SelectionChangedListener<StudentModel>() {
 
 			@Override
 			public void selectionChanged(SelectionChangedEvent<StudentModel> sce) {
 				StudentModel learner = sce.getSelectedItem();
 				
-				if (learner != null) 
-					Dispatcher.forwardEvent(GradebookEvents.SelectLearner, learner);
+				if (learner != null && learner instanceof StudentModel) 
+					Dispatcher.forwardEvent(GradebookEvents.SelectLearner.getEventType(), learner);
 			}
 		
-		});*/
+		});
+		grid.setSelectionModel(cellSelectionModel);
 	}
 	
 	// TODO: This can probably be removed

@@ -47,6 +47,7 @@ import com.extjs.gxt.ui.client.widget.ComponentPlugin;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
+import com.extjs.gxt.ui.client.widget.grid.EditorGrid;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.RowExpander;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
@@ -128,13 +129,19 @@ public class HistoryPanel extends GridPanel<UserEntityAction> {
 	}
 	
 	@Override
-	protected Grid<UserEntityAction> newGrid(CustomColumnModel cm) {
+	protected void addGridListenersAndPlugins(final EditorGrid<UserEntityAction> grid) {
+		// We only need to do this once
+		if (rendered)
+			return;
+		
 		ComponentPlugin plugin = (ComponentPlugin)cm.getColumn(0);
-		Grid<UserEntityAction> grid = super.newGrid(cm);
 		grid.addPlugin(plugin);
 		grid.getView().setForceFit(true); 
-		//grid.setAutoExpandColumn(Action.Key.DESCRIPTION.name());
-		return grid;
+	}
+	
+	@Override
+	protected void reconfigureGrid(CustomColumnModel cm) {
+		super.reconfigureGrid(cm);
 	}
 	
 	@Override
