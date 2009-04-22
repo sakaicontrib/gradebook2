@@ -147,6 +147,7 @@ public class AppController extends Controller {
 				singleView = new SingleGradeView(this, false);
 			
 			forwardToView(singleView, event);
+			forwardToView(appView, event);
 			break;
 		case SWITCH_GRADEBOOK:
 			forwardToView(appView, event);
@@ -228,10 +229,11 @@ public class AppController extends Controller {
 			
 			this.notificationView = new NotificationView(this);
 			if (isUserAbleToGrade) {
+				this.singleView = new SingleGradeView(this, false);
 				this.treeView = new TreeView(this, i18n, isUserAbleToEditItems);
 				this.multigradeView = new MultigradeView(this, i18n);
 				this.importExportView = new ImportExportView(this);
-				this.appView = new InstructorView(this, treeView, multigradeView, notificationView, importExportView, isUserAbleToEditItems);
+				this.appView = new InstructorView(this, treeView, multigradeView, notificationView, importExportView, singleView, isUserAbleToEditItems);
 				forwardToView(treeView, event);
 				forwardToView(multigradeView, event);
 			} else if (isUserAbleToViewOwnGrades) {

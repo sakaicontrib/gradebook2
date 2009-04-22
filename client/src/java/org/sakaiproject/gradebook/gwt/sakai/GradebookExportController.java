@@ -27,8 +27,11 @@ public class GradebookExportController implements Controller {
 	private GradebookToolFacade delegateFacade;
 	
 	public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
-		response.setContentType("application/ms-excel");
-		//response.setHeader("Content-Disposition", "inline; filename=" + "gradebook.csv");
+		String filename = "gradebook.csv";
+		
+		response.setContentType("application/x-download");
+		
+		response.setHeader("Pragma", "no-cache");
 		
 		PrintWriter writer = response.getWriter();
 		
@@ -41,7 +44,14 @@ public class GradebookExportController implements Controller {
 			UserEntityGetAction<GradebookModel> getGradebookAction = new UserEntityGetAction<GradebookModel>(gradebookUid, EntityType.GRADEBOOK);
 			getGradebookAction.setEntityId(gradebookUid);
 			GradebookModel gradebook = delegateFacade.getEntity(getGradebookAction);
-				
+			
+			if (gradebook.getName() != null) {
+				filename = gradebook.getName();
+				filename = new StringBuilder().append(filename.replace(' ', '_')).append(".csv").toString();
+			}
+			
+			response.setHeader("Content-Disposition", "attachment; filename=" + filename);
+			
 			//UserEntityGetAction<ItemModel> getHeadersAction = new UserEntityGetAction<ItemModel>(gradebookUid, EntityType.ITEM);
 
 			List<ItemModel> headers = new ArrayList<ItemModel>(); //delegateFacade.getEntityList(getHeadersAction);

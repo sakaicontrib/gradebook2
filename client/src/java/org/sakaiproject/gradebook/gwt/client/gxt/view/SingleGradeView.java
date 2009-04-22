@@ -71,5 +71,9 @@ public class SingleGradeView extends View {
 	private void onUserChange(UserEntityAction<?> action) {
 		dialog.onUserChange(action);
 	}
+
+	public StudentViewDialog getDialog() {
+		return dialog;
+	}
 	
 }

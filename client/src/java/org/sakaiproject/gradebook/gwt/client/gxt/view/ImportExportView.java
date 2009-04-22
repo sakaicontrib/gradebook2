@@ -34,7 +34,7 @@ public class ImportExportView extends View {
 			break;
 		case START_EXPORT:
 			GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-			String uri = GWT.getModuleBaseURL() + "/export?gradebookUid=" + selectedGradebook.getGradebookUid();
+			String uri = GWT.getModuleBaseURL() + "/exportGradebook.csv?gradebookUid=" + selectedGradebook.getGradebookUid();
 			
 			if (downloadFileFrame == null) {
 				downloadFileFrame = new Frame(uri);

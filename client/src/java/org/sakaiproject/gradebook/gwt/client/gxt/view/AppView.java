@@ -79,6 +79,9 @@ public abstract class AppView extends View {
 		case SHOW_HISTORY:
 			onShowHistory((String)event.data);
 			break;
+		case SINGLE_VIEW:
+			onSingleView((StudentModel)event.data);
+			break;
 		case START_IMPORT:
 			onStartImport();
 			break;
@@ -167,6 +170,10 @@ public abstract class AppView extends View {
 	}
 	
 	protected void onSelectLearner(StudentModel learner) {
+		
+	}
+	
+	protected void onSingleView(StudentModel learner) {
 		
 	}
 	

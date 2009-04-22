@@ -13,6 +13,7 @@ import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
+import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportFile;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportRow;
@@ -346,19 +347,30 @@ public class ImportExportUtility {
 		return fields;
 	}
 	
-	private static ItemModel findModelByName(String name, ItemModel root) {
-		for (ItemModel child : root.getChildren()) {
-			
-			if (child.getName().equals(name))
-				return child;
-			
-		}
+	private static ItemModel findModelByName(final String name, ItemModel root) {
 		
-		for (ItemModel child : root.getChildren()) {
-			return findModelByName(name, child);
-		}
+		ItemModelProcessor processor = new ItemModelProcessor(root) {
+			
+			@Override
+			public void doItem(ItemModel itemModel) {
+			
+				String itemName = itemModel.getName();
+				
+				if (itemName != null) {
+					String trimmed = itemName.trim();
+					
+					if (trimmed.equals(name))
+						this.result = itemModel;
+				}
+				
+			}
+
+		};
 		
-		return null;
+		
+		processor.process();
+		
+		return processor.getResult();
 	}
 
 }

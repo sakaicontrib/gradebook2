@@ -55,7 +55,7 @@ public interface GradeCalculations {
 	 * 
 	 * @return points earned as a weighted percentage for an assignment, or null if assignment or assignmentGradeRecord are null
 	 */
-	public BigDecimal getEarnedWeightedPercentage(Assignment assignment, BigDecimal pointsEarnedAsPercent, Boolean enableAssignmentConstraints);
+	//public BigDecimal getEarnedWeightedPercentage(Assignment assignment, BigDecimal pointsEarnedAsPercent, Boolean enableAssignmentConstraints);
 	
 	
 	/**
@@ -66,7 +66,7 @@ public interface GradeCalculations {
 	 * 
 	 * @return the sum of adding results from getPointsEarnedAsPercent(...) for a specific category, where result >= BigDecimal.ZERO
 	 */
-	public BigDecimal sumEarnedWeightedPercentages(Category categoryWithAssignments, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap);
+	//public BigDecimal sumEarnedWeightedPercentages(Category categoryWithAssignments, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap);
 	
 	
 	/**
@@ -77,7 +77,7 @@ public interface GradeCalculations {
 	 * 
 	 * @return the sum of adding up all the assignment weights for a specific category, where result >= BigDecimal.ZERO
 	 */
-	public BigDecimal sumAssignmentWeights(Category categoryWithAssignments, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap);
+	//public BigDecimal sumAssignmentWeights(Category categoryWithAssignments, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap);
 
 	
 	/**
@@ -98,7 +98,7 @@ public interface GradeCalculations {
 	 * 
 	 * @return the sum of all weighed extra credit assignments for a specific category, where result >= BigDecimal.ZERO
 	 */
-	public BigDecimal sumExtraCreditEarnedWeightedPercentage(Category categoryWithAssignments, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap);
+	//public BigDecimal sumExtraCreditEarnedWeightedPercentage(Category categoryWithAssignments, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap);
 
 	
 	/**
@@ -109,7 +109,7 @@ public interface GradeCalculations {
 	 * 
 	 * @return the category grade, where result >= BigDecimal.ZERO
 	 */
-	public BigDecimal getCategoryGrade(Category categoryWithAssignments, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap);
+	//public BigDecimal getCategoryGrade(Category categoryWithAssignments, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap);
 	
 	
 	/**

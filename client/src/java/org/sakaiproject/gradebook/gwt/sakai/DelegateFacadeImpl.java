@@ -200,7 +200,7 @@ private static final long serialVersionUID = 1L;
 			switch (action.getEntityType()) {
 			case ITEM:
 			case GRADE_ITEM:
-				entity = (X)addItem(action.getGradebookUid(), action.getGradebookId(), action.getModel());
+				entity = (X)addItem(action.getGradebookUid(), action.getGradebookId(), action.getModel(), true);
 				
 				break;
 			case CATEGORY:
@@ -650,16 +650,17 @@ private static final long serialVersionUID = 1L;
 			String id = item.getIdentifier();
 			if (id != null) { 
 				if (id.startsWith("NEW:")) {
-					Long categoryId = null;
+					Long categoryId = item.getCategoryId();
 					String name = item.getName();
 					Double weight = null;
 					Double points = item.getPoints();
 					Date dueDate = null;
 					ItemModel itemModel = new ItemModel();
+					itemModel.setCategoryId(categoryId);
 					itemModel.setName(name);
 					itemModel.setPercentCategory(weight);
 					itemModel.setPoints(points);
-					ItemModel model = addItem(gradebookUid, gradebook.getId(), itemModel);
+					ItemModel model = addItem(gradebookUid, gradebook.getId(), itemModel, false);
 					//AssignmentModel model = addAssignment(gradebookUid, gradebook.getId(), categoryId, name, weight, points, dueDate);
 					Assignment assignment = gbService.getAssignment(Long.valueOf(model.getIdentifier()));
 					idToAssignmentMap.put(id, assignment);
@@ -3254,7 +3255,7 @@ private static final long serialVersionUID = 1L;
 	 * @return ItemModel representing either (a) the gradebook, (b) the item's category, or (c) the item
 	 * @throws InvalidInputException
 	 */
-	protected ItemModel addItem(String gradebookUid, Long gradebookId, final ItemModel item) throws InvalidInputException {
+	protected ItemModel addItem(String gradebookUid, Long gradebookId, final ItemModel item, boolean enforceNoNewCategories) throws InvalidInputException {
 		
 		ActionRecord actionRecord = new ActionRecord(gradebookUid, gradebookId, EntityType.ITEM.name(), ActionType.CREATE.name());
 		actionRecord.setEntityName(item.getName());
@@ -3313,7 +3314,8 @@ private static final long serialVersionUID = 1L;
 				// Business rule #5
 				afterCreateRules.add(new RecalculateEqualWeightingRule(category, includeInGrade));
 				// Business rule #6
-				beforeCreateRules.add(new MustIncludeCategoryRule(item.getCategoryId()));
+				if (enforceNoNewCategories)
+					beforeCreateRules.add(new MustIncludeCategoryRule(item.getCategoryId()));
 			}
 			
 			
@@ -4690,6 +4692,23 @@ private static final long serialVersionUID = 1L;
 						log.error("Unable to find the current user", e);
 					}
 		
+					List<AssignmentGradeRecord> records = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), userRecord.getUserUid());
+					
+					if (records != null) {
+					    for (AssignmentGradeRecord gradeRecord : records) {
+							gradeRecord.setUserAbleToView(true);
+							String studentUid = gradeRecord.getStudentId();
+							Map<Long, AssignmentGradeRecord> studentMap = userRecord.getGradeRecordMap();
+							if (studentMap == null) {
+								studentMap = new HashMap<Long, AssignmentGradeRecord>();
+								userRecord.setGradeRecordMap(studentMap);
+							}
+							GradableObject go = gradeRecord.getGradableObject();
+							studentMap.put(go.getId(), gradeRecord);
+						}
+					}
+					
+					
 					model.setUserAsStudent(buildStudentRow(gradebook, userRecord, columns, categoriesWithAssignments));
 				}
 				

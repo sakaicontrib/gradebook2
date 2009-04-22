@@ -166,6 +166,8 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 	
 	public Type getItemType() {
 		String typeName = get(Key.ITEM_TYPE.name());
+		if (typeName == null)
+			return null;
 		return Type.valueOf(typeName);
 	}
 

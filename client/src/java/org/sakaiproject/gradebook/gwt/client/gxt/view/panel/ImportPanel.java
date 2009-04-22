@@ -10,6 +10,7 @@ import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityCreateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
+import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader;
@@ -163,6 +164,24 @@ public class ImportPanel extends ContentPanel {
 	protected void onRender(Element parent, int pos) {
 		super.onRender(parent, pos);
 
+		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		
+		categoriesStore.removeAll();
+		if (selectedGradebook != null) {
+			ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
+		
+			ItemModelProcessor processor = new ItemModelProcessor(gradebookItemModel) {
+				
+				@Override
+				public void doCategory(ItemModel categoryModel) {
+					categoriesStore.add(categoryModel);
+				}
+				
+			};
+			
+			processor.process();
+		}
+		
 		
 		int fileUploadHeight = 190;
 		int subHeight = getHeight() - fileUploadHeight;
@@ -205,39 +224,7 @@ public class ImportPanel extends ContentPanel {
 		
 		subCardLayoutContainer.add(resultsContainer);
 		
-		add(mainCardLayoutContainer); //, new ColumnData(1));
-		//add(buildButtonContainer(), new ColumnData(130));
-		
-		
-		/*
-		tabPanel = new TabPanel();
-		step1 = new TabItem("Step 1");
-		step1.add(step1Container);
-		step1.setLayout(new FitLayout());
-		tabPanel.add(step1);
-	
-		step2Container = new LayoutContainer();
-		step2Container.setLayout(new FitLayout());
-
-		step2 = new TabItem("Step 2");
-		step2.setEnabled(false);
-		step2.setLayout(new FitLayout());
-		step2.add(step2Container);
-		tabPanel.add(step2);
-
-		step3Container = buildResultsContainer();
-		//step3Container.setLayout(new FitLayout());
-		//step3Container.add(buildResultsContainer());
-		
-		step3 = new TabItem("Step 3");
-		step3.setLayout(new FitLayout());
-		step3.setEnabled(false);
-		step3.add(step3Container);
-		tabPanel.add(step3);
-		
-		add(tabPanel, new ColumnData(1));
-		add(buildButtonContainer(), new ColumnData(130));
-		*/
+		add(mainCardLayoutContainer); 
 	}
 	
 	/*protected void gotoStep1() {

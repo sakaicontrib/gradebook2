@@ -40,11 +40,11 @@ import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
-import com.extjs.gxt.ui.client.widget.Dialog;
+import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 
-public class StudentViewDialog extends Dialog {
+public class StudentViewDialog extends ContentPanel {
 
 	public enum RefreshAction { NONE, REFRESHDATA, REFRESHCOLUMNS };
 	
@@ -56,15 +56,15 @@ public class StudentViewDialog extends Dialog {
 	public StudentViewDialog(boolean isStudentView) {
 		this.isStudentView = isStudentView;
 		setBodyBorder(true);
-		setButtons(Dialog.OK);
-		setCloseAction(CloseAction.CLOSE);
-		setDraggable(true);
+		//setButtons(Dialog.OK);
+		//setCloseAction(CloseAction.CLOSE);
+		//setDraggable(true);
 		setHeaderVisible(true);
-		setHideOnButtonClick(false);
+		//setHideOnButtonClick(false);
 		setLayout(new FitLayout());
-		setModal(true);
-		setPlain(false);
-		setResizable(true);
+		//setModal(true);
+		//setPlain(false);
+		//setResizable(true);
 
 		I18nConstants i18n = Registry.get(AppConstants.I18N);
 		if (isStudentView)
@@ -176,7 +176,8 @@ public class StudentViewDialog extends Dialog {
 
 			@Override
 			public void componentSelected(ComponentEvent ce) {
-				close();
+				Dispatcher.forwardEvent(GradebookEvents.StopImport.getEventType());
+				//close();
 			}
 			
 		});

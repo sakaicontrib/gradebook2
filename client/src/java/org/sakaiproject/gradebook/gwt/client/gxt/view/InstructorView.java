@@ -50,6 +50,7 @@ public class InstructorView extends AppView {
 	private TreeView treeView;
 	private MultigradeView multigradeView;
 	private ImportExportView importExportView;
+	private SingleGradeView singleGradeView;
 	
 	private ContentPanel borderLayoutContainer;
 	private ContentPanel cardLayoutContainer;
@@ -84,13 +85,16 @@ public class InstructorView extends AppView {
 	private I18nConstants i18n;
 	private boolean isEditable;
 	
-	public InstructorView(Controller controller, TreeView treeView, MultigradeView multigradeView, NotificationView notificationView, ImportExportView importExportView, boolean isEditable) {
+	public InstructorView(Controller controller, TreeView treeView, MultigradeView multigradeView, 
+			NotificationView notificationView, ImportExportView importExportView, 
+			SingleGradeView singleGradeView, boolean isEditable) {
 		super(controller, notificationView);
 		this.isEditable = isEditable;
 		this.tabConfigurations = new ArrayList<TabConfig>();
 		this.treeView = treeView;
 		this.multigradeView = multigradeView;
 		this.importExportView = importExportView;
+		this.singleGradeView = singleGradeView;
 		
 		toolBar = new ToolBar();
 		borderLayoutContainer = new BorderLayoutPanel(); 
@@ -266,6 +270,12 @@ public class InstructorView extends AppView {
 		}
 		singleGradeContainer.onChangeModel(multigradeView.getStore(), treeView.getTreeStore(), learnerGradeRecordCollection);
 		onExpandEastPanel(EastCard.LEARNER_SUMMARY);
+	}
+	
+	@Override
+	protected void onSingleView(StudentModel learner) {
+		viewport.add(singleGradeView.getDialog());
+		viewportLayout.setActiveItem(singleGradeView.getDialog());
 	}
 
 	@Override

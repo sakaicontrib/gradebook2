@@ -1240,7 +1240,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	}*/
 	
 	public void onRefreshCourseGrades() {
-		//refreshGrid(RefreshAction.REFRESHLOCALCOLUMNS);
+		refreshGrid(RefreshAction.REFRESHDATA);
 	}
 	
 	@Override
@@ -1558,6 +1558,12 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	
 	private void showColumns(ShowColumnsEvent event, CustomColumnModel cm) {
 		if (cm != null) {
+			
+			if (!event.visibleStaticIdSet.contains(StudentModel.Key.DISPLAY_ID.name()) 
+					&& !event.visibleStaticIdSet.contains(StudentModel.Key.DISPLAY_NAME.name())
+					&& !event.visibleStaticIdSet.contains(StudentModel.Key.LAST_NAME_FIRST.name())) 
+				event.visibleStaticIdSet.add(StudentModel.Key.LAST_NAME_FIRST.name());
+			
 			// Loop through every column and show/hide it
 			for (int i=0;i<cm.getColumnCount();i++) {
 				ColumnConfig column = cm.getColumn(i);

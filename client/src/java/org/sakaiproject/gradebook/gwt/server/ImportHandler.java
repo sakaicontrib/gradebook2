@@ -43,69 +43,13 @@ public class ImportHandler extends HttpServlet {
 			delegateFacade = (GradebookToolFacade)iocMock.getClassInstance(DelegateFacadeMockImpl.class.getName());
 		
 		response.setContentType("application/ms-excel");
-		response.setHeader("Content-Disposition", "inline; filename=" + "gradebook.csv");
+		response.setHeader("Content-Disposition", "attachment; filename=" + "gradebook.csv");
 		
 		PrintWriter writer = response.getWriter();
 		
 		String gradebookUid = req.getParameter("gradebookUid");
 		try {
 			ImportExportUtility.exportGradebook(delegateFacade, gradebookUid, writer);
-			/*UserEntityGetAction<GradebookModel> getGradebookAction = new UserEntityGetAction<GradebookModel>(gradebookUid, EntityType.GRADEBOOK);
-			GradebookModel gradebook = delegateFacade.getEntity(getGradebookAction);
-				
-			UserEntityGetAction<AssignmentModel> getHeadersAction = new UserEntityGetAction<AssignmentModel>(gradebookUid, EntityType.GRADE_ITEM);
-			List<AssignmentModel> headers = delegateFacade.getEntityList(getHeadersAction);
-			
-			UserEntityGetAction<StudentModel> getRowsAction = new UserEntityGetAction<StudentModel>(gradebookUid, EntityType.STUDENT);
-			List<StudentModel> rows = delegateFacade.getEntityList(getRowsAction);
-			
-			String[] headerIds = null;
-			if (headers != null) {
-				writer.print("Learner,Id");	
-				headerIds = new String[headers.size()];
-				int i=0;
-				for (AssignmentModel header : headers) {
-					headerIds[i] = header.getIdentifier();
-					writer.print(",");
-					writer.print(header.getName());
-					
-					switch (gradebook.getGradeType()) {
-					case POINTS:
-						String points = DecimalFormat.getInstance().format(header.getPoints());
-						writer.print(" (");
-						writer.print(points);
-						writer.print(")");
-						break;
-					case PERCENTAGES:
-						writer.print(" (%)");
-						break;
-					} 
-					
-					i++;
-				}
-				writer.println();
-			
-				if (rows != null) {
-					for (StudentModel row : rows) {
-						writer.print(row.getDisplayName());
-						writer.print(",");
-						writer.print(getExportId(row));
-						for (int column = 0;column<headerIds.length;column++) {
-							writer.print(",");
-							if (headerIds[column] != null) {
-								Object value = row.get(headerIds[column]);
-								if (value != null)
-									writer.print(value);
-							} else {
-								System.out.println("Null column at " + column);
-							}
-						}
-						writer.println();
-					}
-				} else {
-					writer.println();
-				}
-			}*/
 		} catch (FatalException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
