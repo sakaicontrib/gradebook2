@@ -237,7 +237,7 @@ public class TreeView extends View {
 		
 		if (treeStore == null) {
 			treeStore = new TreeStore<ItemModel>(treeLoader);
-			treeStore.setStoreSorter(new StoreSorter<ItemModel>() {
+			/*treeStore.setStoreSorter(new StoreSorter<ItemModel>() {
 
 				@Override
 				public int compare(Store store, ItemModel m1, ItemModel m2,
@@ -253,7 +253,7 @@ public class TreeView extends View {
 
 					return super.compare(store, m1, m2, property);
 				}
-			});
+			});*/
 			treeStore.setModelComparer(new ItemModelComparer());
 
 			treePanel.onTreeStoreInitialized(treeStore);

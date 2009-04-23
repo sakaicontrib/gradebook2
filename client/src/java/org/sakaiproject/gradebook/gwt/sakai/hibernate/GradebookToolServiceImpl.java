@@ -1120,7 +1120,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
     		public Object doInHibernate(Session session) throws HibernateException {
     			// JLR : removed logic to ignore removed, since we want to show these in UI
     			List categories = session.createQuery(
-					"from Category as ca where ca.gradebook=? " /*and ca.removed=false*/).
+					"from Category as ca where ca.gradebook=? order by ca.id asc " /*and ca.removed=false*/).
 					setLong(0, gradebookId.longValue()).
 					list();
     			return categories;
@@ -2005,7 +2005,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	
 	protected List<Assignment> getAssignments(Long gradebookId, Session session) throws HibernateException {
         List<Assignment> assignments = session.createQuery(
-        	"from Assignment as asn where asn.gradebook.id=? and asn.removed=false order by asn.id desc").
+        	"from Assignment as asn where asn.gradebook.id=? and asn.removed=false order by asn.id asc").
         	setLong(0, gradebookId.longValue()).
         	list();
         return assignments;

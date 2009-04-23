@@ -14,14 +14,6 @@ public class ItemModelComparer<M extends ItemModel> implements ModelComparer<M> 
 			return false;
 		
 		return m1.equals(m2);
-		
-		/*String id1 = new StringBuilder().append(m1.getItemType()).append(m1.getIdentifier()).toString();
-		String id2 = new StringBuilder().append(m2.getItemType()).append(m2.getIdentifier()).toString();
-		
-		if (id1 != null && id2 != null)
-			return id1.equals(id2);
-		
-		return false;*/
 	}
 
 }

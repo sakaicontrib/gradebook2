@@ -658,6 +658,7 @@ public class ItemTreePanel extends ContentPanel {
 		treeTable.setCheckStyle(CheckCascade.CHILDREN);
 		treeTable.setAnimate(true);
 		treeTable.getStyle().setLeafIconStyle("gbEditItemIcon");
+		
 		//treeTable.expandAll();
 		//treeTable.setHeight(300);
 		//treeTable.setWidth(500);
