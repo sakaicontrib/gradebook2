@@ -32,9 +32,9 @@ import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityCreateAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.model.CommentModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradeEventModel;
@@ -53,6 +53,7 @@ import com.extjs.gxt.ui.client.data.RpcProxy;
 import com.extjs.gxt.ui.client.event.FieldEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.MenuEvent;
+import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
@@ -81,8 +82,7 @@ public class MultiGradeContextMenu extends Menu {
 	private TextArea addCommentTextArea;
 	private TextArea editCommentTextArea;
 	private Grid<GradeEventModel> viewGradeHistoryGrid;
-	
-	private CommentModel commentModel;
+
 	
 	public MultiGradeContextMenu(final StudentModelOwner owner) {
 		super();
@@ -99,8 +99,19 @@ public class MultiGradeContextMenu extends Menu {
 
 			    switch (fe.getKeyCode()) {
 			    case KeyboardListener.KEY_ENTER:
-			    	final StudentModel studentModel = owner.getSelectedModel();
 			    	
+			    	ListStore<StudentModel> learnerStore = owner.getStore();
+			    	StudentModel learner = owner.getSelectedModel();
+			    	Long itemId = owner.getSelectedAssignment();
+			    	
+			    	String property = new StringBuilder().append(String.valueOf(itemId)).append(StudentModel.COMMENT_TEXT_FLAG).toString();
+			    	
+			    	String newCommentText = getValue();
+			    	String oldCommentText = learner.get(property);
+			    	
+			    	Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord.getEventType(), new GradeRecordUpdate(learnerStore, learner, property, "Comment", oldCommentText, newCommentText));
+			    	
+			    	/*
 			    	if (studentModel != null) {
 				    	CommentModel commentModel = new CommentModel();
 				    	commentModel.setStudentUid(studentModel.getIdentifier());
@@ -132,7 +143,7 @@ public class MultiGradeContextMenu extends Menu {
 				    	};
 				    	
 				    	remoteCommand.execute(action);
-			    	}
+			    	}*/
 			    	
 			    	break;
 			    }
@@ -157,7 +168,18 @@ public class MultiGradeContextMenu extends Menu {
 			    switch (fe.getKeyCode()) {
 			    case KeyboardListener.KEY_ENTER:
 			    			    	
-			    	if (commentModel != null) {
+			    	ListStore<StudentModel> learnerStore = owner.getStore();
+			    	StudentModel learner = owner.getSelectedModel();
+			    	Long itemId = owner.getSelectedAssignment();
+			    	
+			    	String property = new StringBuilder().append(String.valueOf(itemId)).append(StudentModel.COMMENT_TEXT_FLAG).toString();
+			    	
+			    	String newCommentText = getValue();
+			    	String oldCommentText = learner.get(property);
+			    	
+			    	Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord.getEventType(), new GradeRecordUpdate(learnerStore, learner, property, "Comment", oldCommentText, newCommentText));
+			    	
+			    	/*if (commentModel != null) {
 			    		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 				    	UserEntityUpdateAction<CommentModel> action = 
 				    		new UserEntityUpdateAction<CommentModel>(selectedGradebook, commentModel, 
@@ -191,7 +213,7 @@ public class MultiGradeContextMenu extends Menu {
 				    	};
 				    	
 				    	remoteCommand.execute(action);
-			    	}
+			    	}*/
 			    	
 			    	break;
 			    }
@@ -295,11 +317,23 @@ public class MultiGradeContextMenu extends Menu {
 				
 				if (contextMenuEditCommentItem.isEnabled()) {
 					
-					GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+					StudentModel learner = owner.getSelectedModel();
+					Long itemId = owner.getSelectedAssignment();
+					
+					if (learner != null && itemId != null) {
+						String property = new StringBuilder().append(String.valueOf(itemId)).append(StudentModel.COMMENT_TEXT_FLAG).toString();
+						
+						String commentText = learner.get(property);
+						editCommentTextArea.setValue(commentText);
+					}
+					/*GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 					UserEntityGetAction<CommentModel> action = 
 			    		new UserEntityGetAction<CommentModel>(selectedGradebook, EntityType.COMMENT, 
 			    				String.valueOf(owner.getSelectedAssignment()), Boolean.TRUE);
 					action.setStudentUid(owner.getSelectedModel().getIdentifier());
+					
+					
+					
 					
 					RemoteCommand<CommentModel> remoteCommand = 
 						new RemoteCommand<CommentModel>() {
@@ -315,7 +349,7 @@ public class MultiGradeContextMenu extends Menu {
 						
 					};
 					
-					remoteCommand.execute(action);
+					remoteCommand.execute(action);*/
 				}
 				
 				if (contextMenuViewGradeLogItem.isEnabled()) {
