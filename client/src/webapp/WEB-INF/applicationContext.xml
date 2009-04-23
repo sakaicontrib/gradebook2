@@ -47,9 +47,12 @@
 	GRBK-37 : Sample Export Advisor 
 	The Export Advisor is configured via the gradebook2.properties file.
 	The gradebook2.properties file sets the "org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor" property
-	which then is injected vi Spring's Property Placeholder Configuration mechanism
+	which then is injected via Spring's Property Placeholder Configuration mechanism
 	-->
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor" class="org.sakaiproject.gradebook.gwt.sakai.SampleExportAdvisor">
+		<property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/>
+		<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>
+		<property name="finalGradeSubmissionPath" value="/tmp"/>
 	</bean>
 
 	

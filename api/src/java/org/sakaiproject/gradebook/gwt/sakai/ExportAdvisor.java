@@ -6,6 +6,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.sakaiproject.site.api.Group;
+
 
 
 public interface ExportAdvisor {
@@ -17,7 +19,7 @@ public interface ExportAdvisor {
 	 * @param providerGroupId : Group.getProviderGroupId();
 	 * 
 	 */
-	public String getExportCourseManagemntId(String userEid, String providerGroupId);
+	public String getExportCourseManagemntId(String userEid, Group group);
 	
 	/*
 	 * @param userEid : The user's EID

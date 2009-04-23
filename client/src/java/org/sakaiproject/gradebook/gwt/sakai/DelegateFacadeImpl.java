@@ -5533,7 +5533,7 @@ private static final long serialVersionUID = 1L;
 					for (Iterator<Group> groupIter = userGroups.iterator();groupIter.hasNext();) {
 						Group group = groupIter.next();
 						groupTitles.append(group.getTitle());
-						courseManagementIds.append(exportAdvisor.getExportCourseManagemntId(userRecord.getUserEid(), group.getProviderGroupId()));
+						courseManagementIds.append(exportAdvisor.getExportCourseManagemntId(userRecord.getUserEid(), group));
 					
 						if (groupIter.hasNext()) {
 							groupTitles.append(",");
@@ -5625,7 +5625,7 @@ private static final long serialVersionUID = 1L;
 						userRecord.setSectionTitle(section.getTitle());
 						
 						// GRBK-37
-						userRecord.setExportCourseManagemntId(exportAdvisor.getExportCourseManagemntId(member.getUserEid(), group.getProviderGroupId()));
+						userRecord.setExportCourseManagemntId(exportAdvisor.getExportCourseManagemntId(member.getUserEid(), group));
 						userRecord.setExportUserId(exportAdvisor.getExportUserId(member.getUserEid()));
 					}
 				}

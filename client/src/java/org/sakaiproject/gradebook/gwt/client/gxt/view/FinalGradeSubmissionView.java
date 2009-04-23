@@ -2,7 +2,11 @@ package org.sakaiproject.gradebook.gwt.client.gxt.view;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
+import org.sakaiproject.gradebook.gwt.client.advisor.SampleClientExportAdvisor;
+import org.sakaiproject.gradebook.gwt.client.advisor.UcdClientExportAdvisor;
+import org.sakaiproject.gradebook.gwt.client.api.ClientExportAdvisor;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.event.Listener;
@@ -72,15 +76,11 @@ public class FinalGradeSubmissionView extends View {
 									
 									String responseText = response.getText().trim();
 									
-									if(null == responseText || "".equals(responseText)) {
-										
-										Info.display(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText3a());
-									}
-									else {
-										
-										Info.display(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText4a());
-										com.google.gwt.user.client.Window.open(responseText, "_blank","status=0,toolbar=0,menubar=0,location=0,scrollbars=1,resizable=1");
-									}
+									// FIXME : Find a GWT IOC solution, so that we can inject the desired implementation
+									ClientExportAdvisor clientExportAdvisor = new SampleClientExportAdvisor();
+									//ClientExportAdvisor clientExportAdvisor = new UcdClientExportAdvisor();
+									
+									clientExportAdvisor.handleServerResponse(responseText);
 								}
 								else if(500 == response.getStatusCode()) {
 									
