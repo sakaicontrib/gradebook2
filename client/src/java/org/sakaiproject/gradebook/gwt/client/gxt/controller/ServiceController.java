@@ -2,14 +2,11 @@ package org.sakaiproject.gradebook.gwt.client.gxt.controller;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.GradebookToolFacadeAsync;
-import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityCreateAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType;
 import org.sakaiproject.gradebook.gwt.client.gxt.Notifier;
-import org.sakaiproject.gradebook.gwt.client.gxt.NotifyingAsyncCallback;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemCreate;
@@ -143,10 +140,9 @@ public class ServiceController extends Controller {
 		UserEntityUpdateAction<ItemModel> action = new UserEntityUpdateAction<ItemModel>(selectedGradebook, (ItemModel)event.item);
 		
 		GradebookToolFacadeAsync service = Registry.get("service");
-		NotifyingAsyncCallback<ItemModel> callback = new NotifyingAsyncCallback<ItemModel>() {
-			@Override
+		AsyncCallback<ItemModel> callback = new AsyncCallback<ItemModel>() {
+
 			public void onFailure(Throwable caught) {
-				super.onFailure(caught);
 				onUpdateItemFailure(event, caught);
 				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
 			}
@@ -241,9 +237,53 @@ public class ServiceController extends Controller {
 	
 	private void onUpdateGradeRecord(final GradeRecordUpdate event) {
 		
-		final Record record = event.record;
+		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		ClassType classType = StudentModel.lookupClassType(event.property);
 		
-		RemoteCommand<StudentModel> remoteCommand = new RemoteCommand<StudentModel>() {
+		final Record record = event.record;
+		final UserEntityUpdateAction<StudentModel> action = new UserEntityUpdateAction<StudentModel>(selectedGradebook, (StudentModel)record.getModel(), event.property, classType, event.value, event.oldValue);		
+		
+		AsyncCallback<StudentModel> callback = new AsyncCallback<StudentModel>() {
+			
+			public void onFailure(Throwable caught) {
+				record.beginEdit();
+				
+				String property = event.property;
+						
+				// Save the exception message on the record
+				String failedProperty = property + FAILED_FLAG;
+				record.set(failedProperty, caught.getMessage());
+						
+				// We have to fool the system into thinking that the value has changed, since
+				// we snuck in that "Saving grade..." under the radar.
+				record.set(property, null);
+				record.set(property, event.oldValue);
+					
+				record.setValid(property, false);
+				
+				String message = new StringBuilder("Failed to update grade: ").append(caught.getMessage()).toString();
+				
+				record.endEdit();
+				
+				notifier.notifyError(caught);
+				
+				//notifier.notifyError("Exception", message);
+				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), message);			
+			}
+			
+			public void onSuccess(StudentModel result) {
+				record.beginEdit();
+				onUpdateGradeRecordSuccess(event, result);
+				record.endEdit();
+				Dispatcher.forwardEvent(GradebookEvents.LearnerGradeRecordUpdated.getEventType(), action);
+			}		
+			
+		};
+		
+		GradebookToolFacadeAsync service = Registry.get("service");
+		service.updateEntity(action, callback);
+		
+		/*RemoteCommand<StudentModel> remoteCommand = new RemoteCommand<StudentModel>() {
 			
 			private static final long serialVersionUID = 1L;
 
@@ -283,7 +323,7 @@ public class ServiceController extends Controller {
 		ClassType classType = StudentModel.lookupClassType(event.property);
 		
 		UserEntityUpdateAction<StudentModel> action = new UserEntityUpdateAction<StudentModel>(selectedGradebook, (StudentModel)record.getModel(), event.property, classType, event.value, event.oldValue);		
-		remoteCommand.execute(action);
+		remoteCommand.execute(action);*/
 	}
 
 	private void onRevertItem(final ItemUpdate event) {
