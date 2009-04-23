@@ -424,19 +424,19 @@ public class GradebookToolServiceMock implements GradebookToolService {
 					Double points = assignment.getPointsPossible();
 					
 					if (assignmentGradeMap == null) {
-						assignmentGradeMap = new HashMap<Assignment, AssignmentGradeRecord>();
+						/*assignmentGradeMap = new HashMap<Assignment, AssignmentGradeRecord>();
 						gradeRecord = new AssignmentGradeRecord(assignment, studentId, generateRandomGrade(points));
 						logAssignmentGradingEvent(gradeRecord, "Nobody", assignment);
 						assignmentGradeMap.put(assignment, gradeRecord);
-						studentGradeMap.put(studentId, assignmentGradeMap);
+						studentGradeMap.put(studentId, assignmentGradeMap);*/
 					} else {
 						gradeRecord = assignmentGradeMap.get(assignment);
 						
-						if (gradeRecord == null) {
+						/*if (gradeRecord == null) {
 							gradeRecord = new AssignmentGradeRecord(assignment, studentId, generateRandomGrade(points));
 							assignmentGradeMap.put(assignment, gradeRecord);
 							logAssignmentGradingEvent(gradeRecord, "Nobody", assignment);
-						} 
+						} */
 					}
 					
 					
