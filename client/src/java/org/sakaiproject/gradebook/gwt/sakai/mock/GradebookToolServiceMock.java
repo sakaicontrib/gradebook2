@@ -332,8 +332,38 @@ public class GradebookToolServiceMock implements GradebookToolService {
 	}
 
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(Long gradebookId, String siteId, String sectionEid) {
-		// TPA: TODO
-		return null;
+		List<AssignmentGradeRecord> grades = new ArrayList<AssignmentGradeRecord>();
+		List<AssignmentGradeRecord> assignmentGradeRecord = new ArrayList<AssignmentGradeRecord>();
+		
+		for (Long gradableObjectId : assignmentMap.keySet()) {
+			Assignment assignment = assignmentMap.get(gradableObjectId);
+			
+			if (assignment != null) {
+				for (String studentUid : studentGradeMap.keySet()) {
+					Map<Assignment, AssignmentGradeRecord> assignmentGradeMap = studentGradeMap.get(studentUid);
+					AssignmentGradeRecord gradeRecord = null;
+						
+					Double points = assignment.getPointsPossible();
+						
+					if (assignmentGradeMap == null) {
+						/*assignmentGradeMap = new HashMap<Assignment, AssignmentGradeRecord>();
+						gradeRecord = new AssignmentGradeRecord(assignment, studentUid, generateRandomGrade(points));
+						assignmentGradeMap.put(assignment, gradeRecord);
+						studentGradeMap.put(studentUid, assignmentGradeMap);*/
+					} else {
+						gradeRecord = assignmentGradeMap.get(assignment);
+							
+						/*if (gradeRecord == null) {
+							gradeRecord = new AssignmentGradeRecord(assignment, studentUid, generateRandomGrade(points));
+							assignmentGradeMap.put(assignment, gradeRecord);
+						} */
+					}
+					if (gradeRecord != null)
+						grades.add(gradeRecord);
+				}
+			}
+		}
+		return grades;
 	}
 	
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(Long gradebookId, Collection<String> studentUids) {
