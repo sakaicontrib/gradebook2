@@ -41,6 +41,7 @@ import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
+import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.google.gwt.i18n.client.NumberFormat;
@@ -51,22 +52,15 @@ import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
 
 public class StudentViewContainer extends LayoutContainer {
 	
-	//private static final Notifier notifier = new Notifier();
-	//private static final String GRID_ID = "singlegrade";
-	
-	//private String gradebookUid;
 	private TextField<String> defaultTextField= new TextField<String>();
 	private TextArea defaultTextArea = new TextArea();
 	private NumberFormat defaultNumberFormat = NumberFormat.getFormat("#.###");
 	private NumberField defaultNumberField = new NumberField();
     private FlexTable studentInformation, gradeInformation;
     private ContentPanel studentInformationPanel, gradeInformationPanel;
-    //private GridPanel<GradeRecordModel> gradeItemsPanel; 
-
+    
 	private LogColumnConfig logColumn;
 	
-	//private int pageSize = 10;
-
 	private StudentModel learnerGradeRecordCollection;
 	
 	private boolean isStudentView;
@@ -93,7 +87,7 @@ public class StudentViewContainer extends LayoutContainer {
 		studentInformationPanel.setLayout(new FitLayout());
 		studentInformationPanel.setScrollMode(Scroll.AUTO);
 		studentInformationPanel.add(studentInformation);
-		add(studentInformationPanel, new RowData(1, -1, new Margins(5, 0, 0, 0)));
+		add(studentInformationPanel, new RowData(-1, -1, new Margins(5, 0, 0, 0)));
 
 		gradeInformation = new FlexTable();
 		gradeInformation.setStyleName("gbStudentInformation");
@@ -101,10 +95,10 @@ public class StudentViewContainer extends LayoutContainer {
 		gradeInformationPanel.setBorders(true);
 		gradeInformationPanel.setFrame(true);
 		gradeInformationPanel.setHeaderVisible(false);
-		gradeInformationPanel.setLayout(new FitLayout());
+		gradeInformationPanel.setLayout(new FlowLayout());
 		gradeInformationPanel.setScrollMode(Scroll.AUTO);
 		gradeInformationPanel.add(gradeInformation);
-		add(gradeInformationPanel, new RowData(1, -1, new Margins(5, 0, 0, 0)));
+		add(gradeInformationPanel, new RowData(1, 1, new Margins(5, 0, 0, 0)));
 		
 	}
 	
