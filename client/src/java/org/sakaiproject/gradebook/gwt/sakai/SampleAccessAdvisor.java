@@ -5,8 +5,11 @@ import org.sakaiproject.authz.api.Member;
 public class SampleAccessAdvisor implements AccessAdvisor {
 
 	public boolean isLearner(Member member) {
-		return (member.getRole().getId().equals("Student") 
-				|| member.getRole().getId().equals("Open Campus"))
+		String role = member.getRole() == null ? "" : member.getRole().getId();
+		
+		return (role.equalsIgnoreCase("Student") 
+				|| role.equalsIgnoreCase("Open Campus")
+				|| role.equalsIgnoreCase("Access"))
 				&& member.isActive();
 	}
 

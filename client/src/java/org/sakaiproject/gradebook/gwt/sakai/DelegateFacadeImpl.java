@@ -5642,7 +5642,7 @@ private static final long serialVersionUID = 1L;
 			Group group = siteService.findGroup(section.getUuid());
 			Set<Member> members = group.getMembers();
 			for (Member member : members) {
-				if (member.getRole().getId().equals("Student") && member.isActive()) {
+				if (accessAdvisor.isLearner(member)) {
 					// Filter by section, if such a filter exists
 					if (optionalSectionUid == null || section.getUuid().equals(optionalSectionUid)) {
 						String userUid = member.getUserId();
