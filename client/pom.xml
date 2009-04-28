@@ -306,15 +306,15 @@
 		<dependency>
 			<groupId>com.extjs</groupId>
 			<artifactId>gxt</artifactId>
-			<version>1.2.3</version>
+			<version>1.2.4</version>
 		</dependency>
 		
 		<!-- Gears dependency -->
-		<dependency>
+		<!--dependency>
 			<groupId>com.google.gwt.gears</groupId>
 			<artifactId>gwt-gears</artifactId>
 			<version>1.1.1</version>
-		</dependency>
+		</dependency-->
 		
 		<!-- XStream dependency -->
 		<dependency>
@@ -345,6 +345,12 @@
 			<groupId>commons-collections</groupId>
 			<artifactId>commons-collections</artifactId>
 			<version>3.2.1</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>net.sf.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+			<version>1.8</version>
 		</dependency>
 
 		<!-- SAKAI DEPENDENCIES -->

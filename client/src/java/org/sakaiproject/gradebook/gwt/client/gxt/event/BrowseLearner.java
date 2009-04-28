@@ -34,10 +34,11 @@ public class BrowseLearner extends BaseEvent {
 	public StudentModel learner;
 	
 	public BrowseLearner() {
-		
+		super(null);
 	}
 	
 	public BrowseLearner(StudentModel learner, BrowseType type) {
+		super(null);
 		this.learner = learner;
 		this.type = type;
 	}

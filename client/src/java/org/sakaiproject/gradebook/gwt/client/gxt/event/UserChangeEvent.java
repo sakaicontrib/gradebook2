@@ -35,20 +35,18 @@ public class UserChangeEvent extends BaseEvent {
 	private boolean isTransferred;
 	
 	public UserChangeEvent() {
-		super();
+		super(null);
 		this.isTransferred = false;
 	}
 	
 	public UserChangeEvent(UserEntityAction action) {
-		super();
+		this();
 		this.action = action;
-		this.isTransferred = false;
 	}
 
 	public UserChangeEvent(EntityType entityEventType, ActionType actionEventType) {
-		super();
+		this();
 		this.action = new UserEntityUpdateAction(entityEventType, actionEventType);
-		this.isTransferred = false;
 	}
 	
 	public UserEntityAction getAction() {

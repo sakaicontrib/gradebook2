@@ -36,10 +36,12 @@ public class RefreshCourseGradesEvent extends BaseEvent {
 	private boolean isSingleChange;
 	
 	public RefreshCourseGradesEvent() {
+		super(null);
 		this.isSingleChange = false;
 	}
 
 	public RefreshCourseGradesEvent(StudentModel student, String courseGrade, Long assignmentId, Object value) {
+		super(null);
 		this.student = student;
 		this.courseGrade = courseGrade;
 		this.isSingleChange = true;
