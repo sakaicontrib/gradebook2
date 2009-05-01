@@ -35,7 +35,7 @@ public class GradebookFinalGradeSubmissionController implements Controller {
 		
 		List<StudentModel> rows = null;
 
-		UserEntityGetAction<StudentModel> getRowsAction = new UserEntityGetAction<StudentModel>(gradebookUid, EntityType.STUDENT);
+		UserEntityGetAction<StudentModel> getRowsAction = new UserEntityGetAction<StudentModel>(gradebookUid, EntityType.LEARNER);
 		
 		try {
 

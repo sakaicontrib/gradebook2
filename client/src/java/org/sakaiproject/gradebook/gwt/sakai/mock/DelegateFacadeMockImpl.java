@@ -28,14 +28,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import org.sakaiproject.gradebook.gwt.sakai.AccessAdvisor;
 import org.sakaiproject.gradebook.gwt.sakai.DelegateFacadeImpl;
+import org.sakaiproject.gradebook.gwt.sakai.ExportAdvisor;
 import org.sakaiproject.gradebook.gwt.sakai.GradeCalculations;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
 import org.sakaiproject.gradebook.gwt.sakai.UserRecord;
 import org.sakaiproject.section.api.SectionAwareness;
 import org.sakaiproject.section.api.coursemanagement.CourseSection;
 import org.sakaiproject.site.api.Site;
-import org.sakaiproject.tool.gradebook.Gradebook;
 import org.sakaiproject.tool.gradebook.facades.Authn;
 import org.sakaiproject.tool.gradebook.facades.Authz;
 import org.sakaiproject.user.api.User;
@@ -47,12 +48,14 @@ public class DelegateFacadeMockImpl extends DelegateFacadeImpl {
 	private int numberOfTestLearners;
 	
 	public DelegateFacadeMockImpl(SectionAwareness sectionAwareness, Authz authz, Authn authn, 
-			GradebookToolService gradebookManager, GradeCalculations gradeCalculations) {
+			GradebookToolService gradebookManager, GradeCalculations gradeCalculations, AccessAdvisor accessAdvisor, ExportAdvisor exportAdvisor) {
 		setSectionAwareness(sectionAwareness);
 		setAuthz(authz);
 		setAuthn(authn);
 		setGbService(gradebookManager);
 		setGradeCalculations(gradeCalculations);
+		setAccessAdvisor(accessAdvisor);
+		setExportAdvisor(exportAdvisor);
 		numberOfTestLearners = DEFAULT_NUMBER_TEST_LEARNERS;
 	}
 	

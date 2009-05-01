@@ -1,6 +1,5 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.upload;
 
-import java.util.List;
 
 public class ImportRow {
 
@@ -9,7 +8,7 @@ public class ImportRow {
 	private String userDisplayName;
 	private boolean isUserNotFound;
 	
-	private List<String> columns;
+	private String[] columns;
 	
 	public ImportRow() {
 		this.isUserNotFound = false;
@@ -39,11 +38,11 @@ public class ImportRow {
 		this.userDisplayName = userDisplayName;
 	}
 
-	public List<String> getColumns() {
+	public String[] getColumns() {
 		return columns;
 	}
 
-	public void setColumns(List<String> columns) {
+	public void setColumns(String[] columns) {
 		this.columns = columns;
 	}
 

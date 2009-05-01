@@ -26,6 +26,7 @@ import java.util.ArrayList;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
+import org.sakaiproject.gradebook.gwt.client.GradebookState;
 import org.sakaiproject.gradebook.gwt.client.GradebookToolFacadeAsync;
 import org.sakaiproject.gradebook.gwt.client.PersistentStore;
 import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
@@ -204,8 +205,17 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 				store.setDefaultSort(storedSortField, sortDir);
 		}
 		
-		//add(newGrid(newColumnModel(selectedGradebook)));
-	
+		//add(newGrid(newColumnModel(selectedGradebook));
+		
+		int pageSize = GradebookState.getPageSize(selectedGradebook.getGradebookUid(), gridId);
+		
+		if (pageSize != -1) {
+			setPageSize(pageSize);
+		
+			if (pagingToolBar != null)
+				pagingToolBar.setPageSize(pageSize);
+		}
+		
 		if (loader != null) 
 			loader.load(0, pageSize);
 	}
@@ -540,6 +550,10 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 
 	public int getPageSize() {
 		return pageSize;
+	}
+
+	public void setPageSize(int pageSize) {
+		this.pageSize = pageSize;
 	}
 	
 	

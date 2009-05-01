@@ -83,22 +83,7 @@
 
 	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/>
 
-	<bean id="GradebookExportService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookExportController">
-		<property name="delegateFacade" ref="org.sakaiproject.gradebook.gwt.sakai.DelegateFacade"/>
-	</bean>
 	
-	<bean id="GradebookFinalGradeSubmissionService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookFinalGradeSubmissionController">
-		<property name="delegateFacade" ref="org.sakaiproject.gradebook.gwt.sakai.DelegateFacade"/>
-		<property name="exportAdvisor" ref="${org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor}"/>
-	</bean>
-	
-	<bean id="GradebookImportService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookImportController">
-		<property name="delegateFacade" ref="org.sakaiproject.gradebook.gwt.sakai.DelegateFacade"/>
-		<property name="userService" ref="org.sakaiproject.user.api.UserDirectoryService"/>
-		<property name="commandClass" value="org.sakaiproject.gradebook.gwt.sakai.FileUploadBean"/>
-        <!--property name="formView" value="fileuploadform"/>
-        <property name="successView" value="confirmation"/-->
-	</bean>
 
 	
 	<!-- Gradebook Manager -->

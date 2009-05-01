@@ -69,6 +69,7 @@ public class GradebookEvents {
 	public static final GradebookEvent GradebookChange 				= registerEvent(EventKey.GRADEBOOK_CHANGE);
 	public static final GradebookEvent HideColumn					= registerEvent(EventKey.HIDE_COLUMN);
 	public static final GradebookEvent HideEastPanel				= registerEvent(EventKey.HIDE_EAST_PANEL);
+	public static final GradebookEvent HideFormPanel				= registerEvent(EventKey.HIDE_FORM_PANEL);
 	public static final GradebookEvent ItemCreated					= registerEvent(EventKey.ITEM_CREATED);
 	public static final GradebookEvent ItemDeleted					= registerEvent(EventKey.ITEM_DELETED);
 	public static final GradebookEvent ItemUpdated					= registerEvent(EventKey.ITEM_UPDATED);

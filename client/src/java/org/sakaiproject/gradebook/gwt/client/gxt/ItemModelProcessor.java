@@ -17,7 +17,7 @@ public abstract class ItemModelProcessor {
 	
 	public void process() {
 		
-		processItem(gradebookItemModel);
+		processItem(gradebookItemModel, -1);
 
 	}
 	
@@ -25,12 +25,20 @@ public abstract class ItemModelProcessor {
 		
 	}
 	
+	public void doCategory(ItemModel categoryModel, int childIndex) {
+		doCategory(categoryModel);
+	}
+	
 	public void doItem(ItemModel itemModel) {
 		
 	}
 	
+	public void doItem(ItemModel itemModel, int childIndex) {
+		doItem(itemModel);
+	}
 	
-	private void processItem(ItemModel itemModel) {
+	
+	private void processItem(ItemModel itemModel, int childIndex) {
 		
 		if (itemModel == null)
 			return;
@@ -40,10 +48,10 @@ public abstract class ItemModelProcessor {
 		if (itemType != null) {
 			switch (itemType) {
 			case CATEGORY:
-				doCategory(itemModel);
+				doCategory(itemModel, childIndex);
 				break;
 			case ITEM:
-				doItem(itemModel);
+				doItem(itemModel, childIndex);
 				break;
 			}
 		}
@@ -52,7 +60,7 @@ public abstract class ItemModelProcessor {
 		
 		if (children != null) {
 			for (int i=0;i<children.size();i++) {
-				processItem((ItemModel)children.get(i));
+				processItem((ItemModel)children.get(i), i);
 			}
 		}
 		

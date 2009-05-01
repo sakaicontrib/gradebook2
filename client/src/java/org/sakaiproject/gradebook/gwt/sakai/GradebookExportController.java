@@ -17,6 +17,7 @@ import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
+import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
 
@@ -30,15 +31,35 @@ public class GradebookExportController implements Controller {
 		String filename = "gradebook.csv";
 		
 		response.setContentType("application/x-download");
-		
+		response.setHeader("Content-Disposition", "attachment; filename=gradebook.csv");
 		response.setHeader("Pragma", "no-cache");
 		
 		PrintWriter writer = response.getWriter();
 		
 		String queryString = request.getQueryString();
 		int n = queryString.indexOf("gradebookUid=") + 13;
+		int m = queryString.indexOf("&include=");
+		
+		boolean doIncludeStructure = m != -1;
+		
 		String gradebookUid = queryString.substring(n);
 		
+		if (doIncludeStructure)
+			gradebookUid = queryString.substring(n, m);
+		
+		
+		log.warn("GradebookUid: " + gradebookUid);
+		log.warn("Content-Disposition: attachment");
+		try {
+			ImportExportUtility.exportGradebook(delegateFacade, gradebookUid, doIncludeStructure, writer);
+		} catch (FatalException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		writer.flush();
+		writer.close();
+		
+		/*
 		log.warn("GradebookUid: " + gradebookUid);
 		try {
 			UserEntityGetAction<GradebookModel> getGradebookAction = new UserEntityGetAction<GradebookModel>(gradebookUid, EntityType.GRADEBOOK);
@@ -70,7 +91,7 @@ public class GradebookExportController implements Controller {
 			}
 			
 			
-			UserEntityGetAction<StudentModel> getRowsAction = new UserEntityGetAction<StudentModel>(gradebookUid, EntityType.STUDENT);
+			UserEntityGetAction<StudentModel> getRowsAction = new UserEntityGetAction<StudentModel>(gradebookUid, EntityType.LEARNER);
 			List<StudentModel> rows = delegateFacade.getEntityList(getRowsAction);
 			
 			String[] headerIds = null;
@@ -126,7 +147,7 @@ public class GradebookExportController implements Controller {
 		}
 		writer.flush();
 		//writer.close();
-		
+		*/
 		return null;
 	}
 

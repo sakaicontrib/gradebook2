@@ -129,6 +129,14 @@ public class StudentModel extends EntityModel implements Comparable<StudentModel
 		return get(Key.DISPLAY_NAME.name());
 	}
 	
+	public String getLastNameFirst() {
+		return get(Key.LAST_NAME_FIRST.name());
+	}
+	
+	public void setLastNameFirst(String name) {
+		set(Key.LAST_NAME_FIRST.name(), name);
+	}
+	
 	public String getStudentName()
 	{
 		return get(Key.DISPLAY_NAME.name());

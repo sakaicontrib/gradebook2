@@ -12,7 +12,6 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
 import com.extjs.gxt.ui.client.Registry;
-import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.View;
@@ -24,8 +23,8 @@ import com.google.gwt.user.client.ui.RootPanel;
 
 public abstract class AppView extends View {
 
-	public enum EastCard { DELETE_ITEM, EDIT_ITEM, GRADE_SCALE, HELP, HISTORY, LEARNER_SUMMARY, 
-		NEW_CATEGORY, NEW_ITEM };
+	public enum EastCard { DELETE_CATEGORY, DELETE_ITEM, EDIT_CATEGORY, EDIT_GRADEBOOK, EDIT_ITEM, 
+		GRADE_SCALE, HELP, HISTORY, LEARNER_SUMMARY, NEW_CATEGORY, NEW_ITEM };
 	
 	private static final int screenHeight = 600;
 	
@@ -44,9 +43,10 @@ public abstract class AppView extends View {
 			    Accessibility.setRole(el().dom, "application");
 			}
 		};
+		viewport.setPosition(0, 0);
 		viewport.setHeight(screenHeight);
 		viewport.setLayout(viewportLayout);
-		viewport.setLoadingPanelId("loading");
+		//viewport.setLoadingPanelId("loading");
 		//viewport.setScrollMode(Scroll.AUTO);
 		RootPanel.get().add(viewport);
 	}
@@ -93,6 +93,9 @@ public abstract class AppView extends View {
 			break;
 		case HIDE_EAST_PANEL:
 			onHideEastPanel((Boolean)event.data);
+			break;
+		case HIDE_FORM_PANEL:
+			onHideFormPanel();
 			break;
 		case EXPAND_EAST_PANEL:
 			onExpandEastPanel((EastCard)event.data);
@@ -146,6 +149,10 @@ public abstract class AppView extends View {
 	}
 	
 	protected void onHideEastPanel(Boolean doCommit) {
+		
+	}
+	
+	protected void onHideFormPanel() {
 		
 	}
 	

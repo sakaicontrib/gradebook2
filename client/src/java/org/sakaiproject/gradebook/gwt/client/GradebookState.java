@@ -99,7 +99,7 @@ public class GradebookState {
 		} else {
 			// Otherwise calculate the column width based on the length of the name
 			if (name != null)
-				columnWidth = name.length() * 5 + 20;
+				columnWidth = name.length() * 7;
 		}
 		
 		if (columnWidth < 100)
@@ -111,6 +111,18 @@ public class GradebookState {
 	public static void setColumnWidth(String gradebookUid, String gridId, String identifier, int width) {
 		String stateId = DataTypeConversionUtil.concat(gradebookUid, ":", gridId, ":", identifier, AppConstants.WIDTH_SUFFIX);
 		StateManager.get().set(stateId, Integer.valueOf(width));
+	}
+	
+	public static void setPageSize(String gradebookUid, String gridId, int pageSize) {
+		String stateId = DataTypeConversionUtil.concat(gradebookUid, ":", gridId, ":", AppConstants.PAGE_SIZE);
+		StateManager.get().set(stateId, Integer.valueOf(pageSize));
+	}
+	
+	public static int getPageSize(String gradebookUid, String gridId) {
+		String stateId = DataTypeConversionUtil.concat(gradebookUid, ":", gridId, ":", AppConstants.PAGE_SIZE);
+		Integer pageSize = (Integer)StateManager.get().get(stateId);
+		
+		return pageSize == null ? -1 : pageSize.intValue();
 	}
 	
 }

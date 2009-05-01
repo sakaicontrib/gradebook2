@@ -60,7 +60,7 @@ public interface GradebookToolService {
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(Long gradebookId, Collection<String> studentUids);
 	
 	// GRBK-40 : TPA 
-	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(Long gradebookId, String siteId, String realmGroupId);
+	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(Long gradebookId, String siteId, String realmGroupId, Long[] roleKeys);
 	
 	//public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(Long gradebookId, String siteId, String realmGroupId, String sortField, 
 	//		String searchField, String searchCriteria, int offset, int limit, boolean isAsc);
@@ -68,7 +68,7 @@ public interface GradebookToolService {
 	public List<CourseGradeRecord> getAllCourseGradeRecords(Gradebook gradebook);
 	
 	public List<CourseGradeRecord> getAllCourseGradeRecords(Long gradebookId, String siteId, String realmGroupId, String sortField, 
-			String searchField, String searchCriteria, int offset, int limit, boolean isAsc);
+			String searchField, String searchCriteria, int offset, int limit, boolean isAsc, Long[] roleKeys);
 	
 	public Assignment getAssignment(Long assignmentId);
 	
@@ -111,21 +111,23 @@ public interface GradebookToolService {
 	
 	public CourseGradeRecord getStudentCourseGradeRecord(Gradebook gradebook, String studentId);
 	
-	public int getFullUserCountForSite(final String siteId, final String realmGroupId);
+	public int getDereferencedUserCountForSite(String siteId, String realmGroupId, Long[] roleKeys);
+	
+	public int getFullUserCountForSite(String siteId, String realmGroupId, Long[] roleKeys);
 	
 	public int getUserCountForSite(String siteId, String realmGroupId, String sortField, 
-			String searchField, String searchCriteria);
+			String searchField, String searchCriteria, Long[] roleKeys);
 	
 	//public List<Object[]> getUserData(final Long gradebookId, final String siteId, final String realmGroupId, final String sortField, 
 	//		final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc);
 	
-	public List<Object[]> getUserGroupReferences(final String siteId, final String realmGroupId, final List<String> groupReferences);
+	public List<Object[]> getUserGroupReferences(String siteId, String realmGroupId, List<String> groupReferences, Long[] roleKeys);
 	
 	//public List<Object[]> getUserGroupReferences(final String siteId, final String realmGroupId, final List<String> groupReferences, final String sortField, 
 	//		final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc);
 	
 	public List<UserDereference> getUserUidsForSite(String siteId, String realmGroupId, String sortField, 
-			String searchField, String searchCriteria, int offset, int limit, boolean isAsc);
+			String searchField, String searchCriteria, int offset, int limit, boolean isAsc, Long[] roleKeys);
 	
 	public boolean isStudentGraded(String studentId);
 	
@@ -137,7 +139,7 @@ public interface GradebookToolService {
 	
 	public Long storeActionRecord(ActionRecord actionRecord);
 	
-	public void syncUserDereferenceBySite(final String siteId, String realmGroupId, final List<User> users, int realmCount);
+	public void syncUserDereferenceBySite(final String siteId, String realmGroupId, final List<User> users, int realmCount, Long[] roleKeys);
 	
 	public void updateAssignment(Assignment assignment);
 	

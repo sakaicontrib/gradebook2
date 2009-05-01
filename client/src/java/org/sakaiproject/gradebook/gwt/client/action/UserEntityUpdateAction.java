@@ -59,7 +59,7 @@ public class UserEntityUpdateAction<M extends BaseModel> extends UserEntityActio
 		this.isBulkUpdate = true;
 		
 		if (model instanceof StudentModel) {
-			setEntityType(EntityType.STUDENT);
+			setEntityType(EntityType.LEARNER);
 			setActionType(ActionType.GRADED);
 		} else if (model instanceof ItemModel) {
 			switch (((ItemModel)model).getItemType()) {
@@ -100,7 +100,7 @@ public class UserEntityUpdateAction<M extends BaseModel> extends UserEntityActio
 		setStartValue(startValue);
 		
 		if (model instanceof StudentModel) {
-			setEntityType(EntityType.STUDENT);
+			setEntityType(EntityType.LEARNER);
 			setActionType(ActionType.GRADED);
 		} else if (model instanceof ItemModel) {
 			setEntityType(EntityType.ITEM);

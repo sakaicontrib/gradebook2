@@ -21,6 +21,9 @@ import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTree;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTreeItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.components.ItemCellRenderer;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.components.ItemNumberCellRenderer;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.components.ItemTreeTableBinder;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.ItemTreeTableHeader;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
@@ -65,20 +68,15 @@ import com.extjs.gxt.ui.client.widget.layout.FillLayout;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
-import com.extjs.gxt.ui.client.widget.table.CellRenderer;
-import com.extjs.gxt.ui.client.widget.table.NumberCellRenderer;
 import com.extjs.gxt.ui.client.widget.table.TableColumn;
 import com.extjs.gxt.ui.client.widget.tree.Tree;
 import com.extjs.gxt.ui.client.widget.tree.TreeItem;
-import com.extjs.gxt.ui.client.widget.tree.TreeItemUI;
 import com.extjs.gxt.ui.client.widget.tree.TreeSelectionModel;
 import com.extjs.gxt.ui.client.widget.tree.Tree.CheckCascade;
 import com.extjs.gxt.ui.client.widget.treetable.TreeTable;
 import com.extjs.gxt.ui.client.widget.treetable.TreeTableColumn;
 import com.extjs.gxt.ui.client.widget.treetable.TreeTableColumnModel;
 import com.extjs.gxt.ui.client.widget.treetable.TreeTableHeader;
-import com.extjs.gxt.ui.client.widget.treetable.TreeTableItem;
-import com.extjs.gxt.ui.client.widget.treetable.TreeTableItemUI;
 import com.extjs.gxt.ui.client.widget.treetable.TreeTableView;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
@@ -309,89 +307,12 @@ public class ItemTreePanel extends ContentPanel {
 	
 	public void onTreeStoreInitialized(TreeStore<ItemModel> treeStore) {
 		
-		treeTableBinder = new TreeTableBinder<ItemModel>(treeTable, treeStore) {
-			
-			@Override
-			protected TreeItem createItem(ItemModel model) {
-				int cols = treeTable.getColumnCount();
-			    TreeTableItem item = new TreeTableItem(new Object[cols]) {
-			    	@Override
-			    	protected TreeItemUI getTreeItemUI() {
-			    	    return new TreeTableItemUI(this) {
-			    	    	protected void handleClickEvent(TreeEvent te) {
-							    TreeItem item = te.item;
-							    if (te.type == Event.ONCLICK) {
-							      Element target = te.getTarget();
-							      if (target != null && te.within(item.getUI().getJointEl())) {
-							        item.toggle();
-							      }
-							      te.cancelBubble();
-							    } 
-							}
-							
-							@Override
-							public void onClick(TreeEvent te) {
-								te.cancelBubble();
-							}
-							@Override
-							public void onDoubleClick(ComponentEvent ce) {
-								ce.cancelBubble();
-							}
-			    	    };
-			    	}
-			    };
-			    setModel(item, model);
-			    for (int j = 0; j < cols; j++) {
-			      String id = getColumnId(j);
-			      Object val = getTextValue(model, id);
-			      if (val == null) val = model.get(id);
-			      item.setValue(j, val);
-			    }
-			    for (int i = 0; i < cols; i++) {
-			        String id = getColumnId(i);
-			        String style = (styleProvider == null) ? null : styleProvider.getStringValue(model, id);
-			        item.setCellStyle(i, style == null ? "" : style);
-			    }
-			    //update(model);
-			    //updateItemValues(item);
-			    //updateItemStyles(item);
-
-			    String txt = getTextValue(model, displayProperty);
-			    if (txt == null && displayProperty != null) {
-			      txt = model.get(displayProperty);
-			    } else {
-			      txt = model.toString();
-			    }
-
-			    String icon = getIconValue(model, displayProperty);
-
-			    item.setIconStyle(icon);
-			    item.setText(txt);
-				
-				//TreeItem item = super.createItem(model);
-
-			    if (loader != null) {
-			      item.setLeaf(!loader.hasChildren(model));
-			    } else {
-			      item.setLeaf(!hasChildren(model));
-			    }
-
-				boolean isGradebook = model.getItemType() == Type.GRADEBOOK;
-				if (isGradebook)
-					item.setIconStyle("gbGradebookIcon");
-				
-				
-				
-				return item;
-			}
-			
-		};
-		treeTableBinder.setDisplayProperty(ItemModel.Key.NAME.name());
+		treeTableBinder = new ItemTreeTableBinder(treeTable, treeStore);
 		treeTableBinder.addSelectionChangedListener(selectionChangedListener);
 		treeTableBinder.addCheckListener(checkChangedListener);
-		treeTableBinder.setAutoLoad(true);
+
 		
-		/*TreeDragSource source = new TreeDragSource(treeBinder);
+		/*TreeDragSource source = new TreeDragSource(treeTableBinder);
 		source.addDNDListener(new DNDListener() {
 			@Override
 			public void dragStart(DNDEvent e) {
@@ -406,7 +327,7 @@ public class ItemTreePanel extends ContentPanel {
 			}
 		});
 
-		TreeDropTarget target = new TreeDropTarget(treeBinder);
+		TreeDropTarget target = new TreeDropTarget(treeTableBinder);
 		target.setAllowSelfAsSource(true);
 		target.setFeedback(Feedback.BOTH); */
 		
@@ -440,46 +361,7 @@ public class ItemTreePanel extends ContentPanel {
 	protected TreeTable newEditableTree(I18nConstants i18n) {
 		List<TreeTableColumn> columns = new ArrayList<TreeTableColumn>();
 		
-		CellRenderer<TreeItem> cellRenderer = new CellRenderer<TreeItem>() {
-
-			public String render(TreeItem item, String property, Object value) {
-				String prefix = "";
-				String result = null;
-				ItemModel itemModel = (ItemModel)item.getModel();
-				
-				boolean isItem = itemModel.getItemType() == Type.ITEM;
-				boolean isName = property.equals(ItemModel.Key.NAME.name());
-				boolean isIncluded = itemModel.getIncluded() == null || itemModel.getIncluded().booleanValue();		
-				boolean isExtraCredit = itemModel.getExtraCredit() != null && itemModel.getExtraCredit().booleanValue();
-				boolean isReleased = itemModel.getReleased() != null && itemModel.getReleased().booleanValue();
-				
-				if (value == null)
-					return null;
-				
-				result = (String)value;
-				
-				StringBuilder cssClasses = new StringBuilder();
-				
-				if (isName) {
-					if (!isIncluded) {
-						cssClasses.append("gbNotIncluded");
-						if (isItem)
-							item.setIconStyle("gbItemIcon");
-					} else if (isItem)
-						item.setIconStyle("gbEditItemIcon");
-				}
-				
-				if (isExtraCredit) 
-					cssClasses.append(" gbCellExtraCredit");
-				
-				if (isReleased)
-					cssClasses.append(" gbReleased");
-				
-				return new StringBuilder().append("<span class=\"").append(cssClasses)
-					.append("\">").append(prefix).append(result).append("</span>").toString();
-			}
-			
-		};
+		ItemCellRenderer cellRenderer = new ItemCellRenderer();
 		
 		TreeTableColumn nameColumn = new TreeTableColumn(ItemModel.Key.NAME.name(), 
 				ItemModel.getPropertyName(ItemModel.Key.NAME), 180);
@@ -487,73 +369,7 @@ public class ItemTreePanel extends ContentPanel {
 		nameColumn.setSortable(false);
 		columns.add(nameColumn);
 		
-		NumberCellRenderer<TreeItem> numericCellRenderer = new NumberCellRenderer<TreeItem>(DataTypeConversionUtil.getShortNumberFormat()) {
-			
-			@Override
-			public String render(final TreeItem item, String property, final Object value) {
-				String prefix = "";
-				String result = null;
-				final ItemModel itemModel = (ItemModel)item.getModel();
-				
-				if (itemModel != null && itemModel.getItemType() != null) {
-					boolean isItem = itemModel.getItemType() == Type.ITEM;
-					boolean isCategory = itemModel.getItemType() == Type.CATEGORY;
-					boolean isGradebook = !isItem && !isCategory;
-					boolean isPercentCategory = property.equals(ItemModel.Key.PERCENT_CATEGORY.name());
-					boolean isPercentGrade = property.equals(ItemModel.Key.PERCENT_COURSE_GRADE.name());
-					boolean isPoints = property.equals(ItemModel.Key.POINTS.name());
-					
-					if (isGradebook && isPercentCategory)
-						return "-";
-						
-					if (value == null)
-						return null;
-					
-					boolean isName = property.equals(ItemModel.Key.NAME.name());
-					
-					boolean isIncluded = itemModel.getIncluded() != null && itemModel.getIncluded().booleanValue();				
-					boolean isTooBig = (isPercentCategory || isPercentGrade) 
-						&& ((Double)value).doubleValue() > 100.00001d;
-					boolean isTooSmall = ((isPercentCategory && isCategory) || (isPercentGrade && isGradebook)) && ((Double)value).doubleValue() < 99.9994d;
-					
-					result = super.render(item, property, value);
-					
-					StringBuilder cssClasses = new StringBuilder();
-					
-					if (!isIncluded && isName)
-						cssClasses.append("gbNotIncluded");
-					
-					if (!isItem) 
-						cssClasses.append(" gbCellStrong");
-					
-					if (isTooBig || isTooSmall)
-						cssClasses.append(" gbCellError");
-						
-					boolean isExtraCredit = itemModel.getExtraCredit() != null && itemModel.getExtraCredit().booleanValue();
-					if (isExtraCredit) {
-						
-						if (isPercentGrade || (isPercentCategory && isItem) || isPoints) {
-							cssClasses.append(" gbCellExtraCredit");
-							prefix = "+ ";
-						}
-
-					}
-					
-					StringBuilder builder = new StringBuilder().append("<span class=\"").append(cssClasses)
-						.append("\">").append(prefix).append(result).append("</span>");
-					
-					if ((isCategory && isPercentCategory) || (isGradebook && isPercentGrade)) {
-						builder.append(" / 100");
-					} 
- 					
-					
-					return builder.toString();
-				
-				}
-				return "";
-			}
-		};
-		
+		ItemNumberCellRenderer numericCellRenderer = new ItemNumberCellRenderer(DataTypeConversionUtil.getShortNumberFormat());		
 		GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
 		
 		percentCourseGradeColumn =  new TreeTableColumn(ItemModel.Key.PERCENT_COURSE_GRADE.name(), 
@@ -592,6 +408,7 @@ public class ItemTreePanel extends ContentPanel {
 				expandAll();
 			}
 		};
+		
 		treeTableView = new TreeTableView() {
 			
 			protected void init(final TreeTable treeTable) {
@@ -659,10 +476,9 @@ public class ItemTreePanel extends ContentPanel {
 		treeTable.setAnimate(true);
 		treeTable.getStyle().setLeafIconStyle("gbEditItemIcon");
 		
-		//treeTable.expandAll();
-		//treeTable.setHeight(300);
-		//treeTable.setWidth(500);
+		treeTable.addListener(Events.KeyPress, treeEventListener);
 		treeTable.addListener(Events.RowDoubleClick, treeTableEventListener);
+
 		treeTable.setSelectionModel(new TreeSelectionModel(SelectionMode.SINGLE));
 		if (isEditable)
 			treeTable.setContextMenu(newTreeContextMenu(i18n)); 

@@ -58,6 +58,7 @@ public interface AppConstants {
 	public static final String COLUMN_PREFIX		= "column:";
 	public static final String HIDDEN_SUFFIX		= ":hidden";
 	public static final String WIDTH_SUFFIX			= ":width";
+	public static final String PAGE_SIZE			= ":pageSize";
 	
 	// Data type constants
 	public static final String NUMERIC_DATA_TYPE		= "Number";

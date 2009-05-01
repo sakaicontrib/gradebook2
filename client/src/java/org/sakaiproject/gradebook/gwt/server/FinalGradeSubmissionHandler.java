@@ -56,7 +56,7 @@ public class FinalGradeSubmissionHandler extends HttpServlet {
 		
 		List<StudentModel> rows = null;
 
-		UserEntityGetAction<StudentModel> getRowsAction = new UserEntityGetAction<StudentModel>(gradebookUid, EntityType.STUDENT);
+		UserEntityGetAction<StudentModel> getRowsAction = new UserEntityGetAction<StudentModel>(gradebookUid, EntityType.LEARNER);
 		try {
 
 			rows = delegateFacade.getEntityList(getRowsAction);

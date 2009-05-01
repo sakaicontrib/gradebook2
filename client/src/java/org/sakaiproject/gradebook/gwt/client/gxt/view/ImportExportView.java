@@ -1,6 +1,8 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
+import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ImportPanel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
@@ -17,9 +19,11 @@ public class ImportExportView extends View {
 
 	private ImportPanel importDialog;
 	private Frame downloadFileFrame;
+	private I18nConstants i18n;
 	
-	public ImportExportView(Controller controller) {
+	public ImportExportView(Controller controller, I18nConstants i18n) {
 		super(controller);
+		this.i18n = i18n;
 	}
 
 	@Override
@@ -27,14 +31,16 @@ public class ImportExportView extends View {
 		
 		switch (GradebookEvents.getEvent(event.type).getEventKey()) {
 		case START_IMPORT:
-			importDialog = new ImportPanel();
-			//importDialog.setSize(XDOM.getViewportSize().width - 50, 500);
-			//importDialog.show();
-			//importDialog.center();
+			importDialog = new ImportPanel(i18n);
 			break;
 		case START_EXPORT:
+			boolean includeStructure = DataTypeConversionUtil.checkBoolean((Boolean)event.data);
+			
 			GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 			String uri = GWT.getModuleBaseURL() + "/exportGradebook.csv?gradebookUid=" + selectedGradebook.getGradebookUid();
+			
+			if (includeStructure)
+				uri += "&include=true";
 			
 			if (downloadFileFrame == null) {
 				downloadFileFrame = new Frame(uri);

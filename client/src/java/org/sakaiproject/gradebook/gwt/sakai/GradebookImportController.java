@@ -1,5 +1,6 @@
 package org.sakaiproject.gradebook.gwt.sakai;
 
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.EnumSet;
 import java.util.Enumeration;
@@ -15,7 +16,6 @@ import org.sakaiproject.gradebook.gwt.client.GradebookToolFacade;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportFile;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility.Delimiter;
-import org.sakaiproject.user.api.UserDirectoryService;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,7 +32,7 @@ public class GradebookImportController extends SimpleFormController {
 	private static final Log log = LogFactory.getLog(GradebookImportController.class);
 	
 	private GradebookToolFacade delegateFacade;
-	private UserDirectoryService userService;
+	private ExportAdvisor exportAdvisor;
 	
 	/*protected ModelAndView showForm(
 			HttpServletRequest request, HttpServletResponse response, BindException errors)
@@ -70,11 +70,13 @@ public class GradebookImportController extends SimpleFormController {
 				MultipartFile file = multipartRequest.getFile(fileName);
 				
 				//InputStream fileInputStream = file.getInputStream();
-				byte[] bytes = file.getBytes();
-				if (bytes != null) {
-					String content = new String(bytes);
+				//byte[] bytes = file.getBytes();
+				//if (bytes != null) {
+				//	String content = new String(bytes);
 					
-					ImportFile importFile = ImportExportUtility.parseImportX(delegateFacade, userService, gradebookUid, content, delimiterSet);
+					InputStreamReader reader = new InputStreamReader(file.getInputStream());
+					
+					ImportFile importFile = ImportExportUtility.parseImportX(delegateFacade, exportAdvisor, gradebookUid, reader, delimiterSet);
 			        
 		        	PrintWriter writer = response.getWriter();
 		        	response.setContentType("text/html");
@@ -83,7 +85,7 @@ public class GradebookImportController extends SimpleFormController {
 		        	writer.write(xstream.toXML(importFile)); 
 		        	writer.flush();
 		        	writer.close();
-				}
+				//}
 			}
 
 			return null; //super.onSubmit(request, response, command, errors);
@@ -105,12 +107,14 @@ public class GradebookImportController extends SimpleFormController {
 		this.delegateFacade = delegateFacade;
 	}
 
-	public UserDirectoryService getUserService() {
-		return userService;
+	public ExportAdvisor getExportAdvisor() {
+		return exportAdvisor;
 	}
 
-	public void setUserService(UserDirectoryService userService) {
-		this.userService = userService;
+	public void setExportAdvisor(ExportAdvisor exportAdvisor) {
+		this.exportAdvisor = exportAdvisor;
 	}
+
+
 
 }

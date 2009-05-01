@@ -7,6 +7,8 @@ import com.extjs.gxt.ui.client.data.BeanModelTag;
 
 public class SpreadsheetModel extends EntityModel implements BeanModelTag {
 
+	private static final long serialVersionUID = 1L;
+	
 	private String displayName;
 	private List<ItemModel> headers;
 	private List<StudentModel> rows;
@@ -44,7 +46,6 @@ public class SpreadsheetModel extends EntityModel implements BeanModelTag {
 
 	@Override
 	public String getIdentifier() {
-		// TODO Auto-generated method stub
 		return displayName;
 	}
 

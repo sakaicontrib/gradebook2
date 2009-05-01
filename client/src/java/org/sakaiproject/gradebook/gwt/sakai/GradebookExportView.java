@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.gradebook.gwt.client.GradebookToolFacade;
+import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
 import org.springframework.web.servlet.view.AbstractView;
@@ -19,6 +20,7 @@ public class GradebookExportView extends AbstractView {
 	private static final Log log = LogFactory.getLog(GradebookExportView.class);
 	
 	private GradebookToolFacade delegateFacade;
+	
 	
 	public GradebookExportView(GradebookToolFacade delegateFacade) {
 		super();
@@ -41,10 +43,14 @@ public class GradebookExportView extends AbstractView {
 		int n = queryString.indexOf("gradebookUid=") + 13;
 		String gradebookUid = queryString.substring(n);
 		
+		n = queryString.indexOf("include=");
+		
+		boolean doIncludeStructure = n != -1;
+		
 		log.warn("GradebookUid: " + gradebookUid);
 		log.warn("Content-Disposition: attachment");
 		try {
-			ImportExportUtility.exportGradebook(delegateFacade, gradebookUid, writer);
+			ImportExportUtility.exportGradebook(delegateFacade, gradebookUid, doIncludeStructure, writer);
 		} catch (FatalException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

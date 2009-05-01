@@ -1,6 +1,6 @@
 /**********************************************************************************
 *
-* $Id:$
+* $Id$
 *
 ***********************************************************************************
 *
@@ -28,6 +28,8 @@ public class RealmGroup {
 	
 	Long realmKey;
 	String userId;
+	Long roleKey;
+	Boolean active;
 	
 	public Long getRealmKey() {
 	
@@ -47,5 +49,21 @@ public class RealmGroup {
 	public void setUserId(String userId) {
 	
 		this.userId = userId;
+	}
+
+	public Long getRoleKey() {
+		return roleKey;
+	}
+
+	public void setRoleKey(Long roleKey) {
+		this.roleKey = roleKey;
+	}
+
+	public Boolean getActive() {
+		return active;
+	}
+
+	public void setActive(Boolean active) {
+		this.active = active;
 	}
 }

@@ -33,7 +33,6 @@ import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.TreeStore;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
-import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.CheckBox;
@@ -44,10 +43,6 @@ import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.LabelField;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.form.TextField;
-import com.extjs.gxt.ui.client.widget.layout.ColumnData;
-import com.extjs.gxt.ui.client.widget.layout.ColumnLayout;
-import com.extjs.gxt.ui.client.widget.layout.FormLayout;
-import com.extjs.gxt.ui.client.widget.layout.MarginData;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 
@@ -100,7 +95,7 @@ public class ItemFormPanel extends ContentPanel {
 	public ItemFormPanel(I18nConstants i18n) {
 		this.i18n = i18n;
 		this.isFull = false;
-		setHeaderVisible(false);
+		setHeaderVisible(true);
 		setFrame(true);
 		
 		layout = new RowLayout();
@@ -169,6 +164,7 @@ public class ItemFormPanel extends ContentPanel {
 			
 		pointsField = new NumberField();
 		pointsField.setName(ItemModel.Key.POINTS.name());
+		pointsField.setEmptyText("100");
 		pointsField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.POINTS));
 		pointsField.setFormat(DataTypeConversionUtil.getDefaultNumberFormat());
 		pointsField.setAllowDecimals(true);
@@ -198,7 +194,7 @@ public class ItemFormPanel extends ContentPanel {
 		sourceField.setVisible(false);
 		formPanel.add(sourceField);
 		
-		LayoutContainer checkBoxContainer = new LayoutContainer();
+		/*LayoutContainer checkBoxContainer = new LayoutContainer();
 		ColumnLayout columnLayout = new ColumnLayout();
 		checkBoxContainer.setLayout(columnLayout);
 		
@@ -218,42 +214,42 @@ public class ItemFormPanel extends ContentPanel {
 		rightFormLayout.setPadding(0);
 		rightFormLayout.setLabelWidth(120);
 		
-		right.setLayout(rightFormLayout);
+		right.setLayout(rightFormLayout);*/
 		
 		includedField = new CheckBox();
 		includedField.setName(ItemModel.Key.INCLUDED.name());
 		includedField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.INCLUDED));
 		includedField.setVisible(false);
-		left.add(includedField);
+		formPanel.add(includedField);
 		
 		extraCreditField = new CheckBox();
 		extraCreditField.setName(ItemModel.Key.EXTRA_CREDIT.name());
 		extraCreditField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.EXTRA_CREDIT));
 		extraCreditField.setVisible(false);
 		extraCreditField.addListener(Events.Change, extraCreditChangeListener);
-		left.add(extraCreditField);
+		formPanel.add(extraCreditField);
 		
 		equallyWeightChildrenField = new CheckBox();
 		equallyWeightChildrenField.setName(ItemModel.Key.EQUAL_WEIGHT.name());
 		equallyWeightChildrenField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.EQUAL_WEIGHT));
 		equallyWeightChildrenField.setVisible(false);
-		right.add(equallyWeightChildrenField);
+		formPanel.add(equallyWeightChildrenField);
 		
 		releasedField = new CheckBox();
 		releasedField.setName(ItemModel.Key.RELEASED.name());
 		releasedField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.RELEASED));
 		releasedField.setVisible(false);
-		right.add(releasedField);
+		formPanel.add(releasedField);
 		
-		checkBoxContainer.add(left, new ColumnData(200));
+		/*checkBoxContainer.add(left, new ColumnData(200));
 		checkBoxContainer.add(right, new ColumnData(200));
 		
-		formPanel.add(checkBoxContainer);
+		formPanel.add(checkBoxContainer);*/
 		
 		okButton = new Button("Blank", selectionListener);
 		addButton(okButton);
 		
-		cancelButton = new Button(i18n.cancelButton(), selectionListener);
+		cancelButton = new Button(i18n.closeButton(), selectionListener);
 		cancelButton.setData(selectionTypeField, SelectionType.CANCEL);
 		
 		addButton(cancelButton);
@@ -294,8 +290,17 @@ public class ItemFormPanel extends ContentPanel {
 		if (!expand && !isVisible())
 			return;
 		
-		if (expand)
-			Dispatcher.forwardEvent(GradebookEvents.ExpandEastPanel.getEventType(), AppView.EastCard.EDIT_ITEM);
+		//if (expand) {
+			AppView.EastCard activeCard = AppView.EastCard.EDIT_ITEM;
+			switch (itemModel.getItemType()) {
+			case CATEGORY:
+				activeCard = AppView.EastCard.EDIT_CATEGORY;
+				break;
+			case GRADEBOOK:
+				activeCard = AppView.EastCard.EDIT_GRADEBOOK;
+			}
+			Dispatcher.forwardEvent(GradebookEvents.ExpandEastPanel.getEventType(), activeCard);
+		//}
 		
 		if (selectedItemModel != null && itemModel != null && itemModel.equals(selectedItemModel))
 			return;
@@ -386,9 +391,7 @@ public class ItemFormPanel extends ContentPanel {
 		okButton.setText(i18n.createButton());
 		okButton.setData(selectionTypeField, SelectionType.CREATE);
 		
-		if (itemModel != null) 	
-			initState(Type.CATEGORY, itemModel, false);
-		
+		initState(Type.CATEGORY, itemModel, false);
 	}
 	
 	public void onNewItem(ItemModel itemModel) {
@@ -504,6 +507,7 @@ public class ItemFormPanel extends ContentPanel {
 		boolean isPercentCategoryVisible = false;
 
 		if (itemModel != null) {
+			boolean isExtraCredit = DataTypeConversionUtil.checkBoolean(itemModel.getExtraCredit());
 			String source = itemModel.get(ItemModel.Key.SOURCE.name());
 			isExternal = source != null && source.trim().length() > 0;
 			ItemModel category = null;
@@ -514,18 +518,18 @@ public class ItemFormPanel extends ContentPanel {
 			case CATEGORY:
 				category = itemModel;
 				if (category != null && category.getItemType() == Type.CATEGORY)
-					isPercentCategoryVisible = hasCategories && hasWeights && !DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments());
+					isPercentCategoryVisible = hasWeights || isExtraCredit || !DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments());
 				break;
 			case ITEM:
 				category = itemModel.getParent();
 				if (category != null && category.getItemType() == Type.CATEGORY)
-					isPercentCategoryVisible = hasCategories && hasWeights && !DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments());
+					isPercentCategoryVisible = hasWeights || isExtraCredit || !DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments());
 				break;
 			default:
-				isPercentCategoryVisible = hasCategories && hasWeights && isItem;
+				isPercentCategoryVisible = (hasWeights || isExtraCredit) && isItem;
 			}
 		} else {
-			isPercentCategoryVisible = hasCategories && hasWeights && isItem;
+			isPercentCategoryVisible = hasWeights && isItem;
 		}
 		
 		initField(nameField, !isDelete, true);
@@ -778,7 +782,7 @@ public class ItemFormPanel extends ContentPanel {
 					if (selectionType != null) {
 						switch (selectionType) {
 						case CLOSE:
-							Dispatcher.forwardEvent(GradebookEvents.HideEastPanel.getEventType(), Boolean.FALSE);
+							Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
 							break;
 						case CREATE:
 							if (nameField.getValue() == null) {
@@ -809,11 +813,11 @@ public class ItemFormPanel extends ContentPanel {
 							Dispatcher.forwardEvent(GradebookEvents.CreateItem.getEventType(), new ItemCreate(treeStore, item));
 							break;
 						case DELETE:
-							Dispatcher.forwardEvent(GradebookEvents.HideEastPanel.getEventType(), Boolean.FALSE);
+							Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
 							Dispatcher.forwardEvent(GradebookEvents.DeleteItem.getEventType(), new ItemUpdate(treeStore, selectedItemModel, ItemModel.Key.REMOVED.name(), Boolean.FALSE, Boolean.TRUE));
 							break;
 						case CANCEL:
-							Dispatcher.forwardEvent(GradebookEvents.HideEastPanel.getEventType(), Boolean.FALSE);
+							Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
 							break;
 						case SAVE:
 							if (nameField.validate() 

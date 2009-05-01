@@ -331,7 +331,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		return category.getId();
 	}
 
-	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(Long gradebookId, String siteId, String sectionEid) {
+	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(Long gradebookId, String siteId, String sectionEid, Long[] roleKeys) {
 		List<AssignmentGradeRecord> grades = new ArrayList<AssignmentGradeRecord>();
 		List<AssignmentGradeRecord> assignmentGradeRecord = new ArrayList<AssignmentGradeRecord>();
 		
@@ -1613,7 +1613,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 	}
 
 	public List<UserDereference> getUserUidsForSite(final String siteId, final String realmGroupId, final String sortField, 
-			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc) {
+			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc, Long[] roleKeys) {
 		
 		if (userDereferences == null) {
 			userDereferences = new ArrayList<UserDereference>();
@@ -1641,7 +1641,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		return records;
 	}
 	
-	public void syncUserDereferenceBySite(final String siteId, final String realmGroupId, final List<User> users, int realmCount) {
+	public void syncUserDereferenceBySite(final String siteId, final String realmGroupId, final List<User> users, int realmCount, Long[] roleKeys) {
 		
 	}
 	
@@ -1680,7 +1680,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 	}
 	
 	public int getUserCountForSite(final String siteId, final String realmGroupId, final String sortField, 
-			final String searchField, final String searchCriteria) {
+			final String searchField, final String searchCriteria, Long[] roleKeys) {
 		return DEFAULT_NUMBER_TEST_LEARNERS;
 	}
 	
@@ -1692,17 +1692,22 @@ public class GradebookToolServiceMock implements GradebookToolService {
 	
 	
 	public List<CourseGradeRecord> getAllCourseGradeRecords(final Long gradebookId, final String siteId, final String realmGroupId, final String sortField, 
-			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc) {
+			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc, Long[] roleKeys) {
 		
 		return null;
 	}
 	
-	public int getFullUserCountForSite(final String siteId, final String realmGroupId) {
+	public int getDereferencedUserCountForSite(final String siteId, final String realmGroupId, final Long[] roleKeys) {
+		
+		return DEFAULT_NUMBER_TEST_LEARNERS;
+	}
+	
+	public int getFullUserCountForSite(final String siteId, final String realmGroupId, Long[] roleKeys) {
 	
 		return DEFAULT_NUMBER_TEST_LEARNERS;
 	}
 	
-	public List<Object[]> getUserGroupReferences(final String siteId, final String realmGroupId, final List<String> groupReferences) {
+	public List<Object[]> getUserGroupReferences(final String siteId, final String realmGroupId, final List<String> groupReferences, Long[] roleKeys) {
 		
 		return null;
 	}

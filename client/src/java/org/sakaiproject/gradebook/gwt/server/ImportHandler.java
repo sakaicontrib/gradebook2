@@ -1,6 +1,7 @@
 package org.sakaiproject.gradebook.gwt.server;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.EnumSet;
 import java.util.List;
@@ -17,26 +18,24 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.sakaiproject.gradebook.gwt.client.GradebookToolFacade;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportFile;
+import org.sakaiproject.gradebook.gwt.sakai.ExportAdvisor;
+import org.sakaiproject.gradebook.gwt.sakai.SampleExportAdvisor;
 import org.sakaiproject.gradebook.gwt.sakai.mock.DelegateFacadeMockImpl;
 import org.sakaiproject.gradebook.gwt.sakai.mock.IocMock;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility.Delimiter;
-import org.sakaiproject.user.api.UserDirectoryService;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
 
-
 public class ImportHandler extends HttpServlet {
 
-	//private static enum Delimiter { TAB, COMMA, SPACE, COLON };
-	
 	private static final String CONTENT_TYPE = "text/html";
 	private static final long serialVersionUID = 1L;
 
 	private IocMock iocMock = IocMock.getInstance();
 	
 	private GradebookToolFacade delegateFacade;
-	private UserDirectoryService userService;
+	private ExportAdvisor exportAdvisor;
 	
 	public void doGet(HttpServletRequest req, HttpServletResponse response) throws ServletException, IOException {
 		if (delegateFacade == null)
@@ -48,8 +47,10 @@ public class ImportHandler extends HttpServlet {
 		PrintWriter writer = response.getWriter();
 		
 		String gradebookUid = req.getParameter("gradebookUid");
+		String include = req.getParameter("include");
 		try {
-			ImportExportUtility.exportGradebook(delegateFacade, gradebookUid, writer);
+			boolean doIncludeStructure = include != null;
+			ImportExportUtility.exportGradebook(delegateFacade, gradebookUid, doIncludeStructure, writer);
 		} catch (FatalException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -58,7 +59,11 @@ public class ImportHandler extends HttpServlet {
 	}
 	
 	public void doPost(HttpServletRequest req, HttpServletResponse response) throws ServletException, IOException {
-
+		if (delegateFacade == null)
+			delegateFacade = (GradebookToolFacade)iocMock.getClassInstance(DelegateFacadeMockImpl.class.getName());
+		
+		if (exportAdvisor == null)
+			exportAdvisor = new SampleExportAdvisor();
 		
 		XStream xstream = new XStream(new JsonHierarchicalStreamDriver());
 		
@@ -102,7 +107,9 @@ public class ImportHandler extends HttpServlet {
                                 
                        }
                        
-                       ImportFile importFile = ImportExportUtility.parseImportX(delegateFacade, userService, gradebookUid, uploadedFile.getString(), delimiterSet);
+                       InputStreamReader reader = new InputStreamReader(uploadedFile.getInputStream());
+                       
+                       ImportFile importFile = ImportExportUtility.parseImportX(delegateFacade, exportAdvisor, gradebookUid, reader, delimiterSet);
                         
                        out.write(xstream.toXML(importFile)); 
                        
@@ -119,227 +126,8 @@ public class ImportHandler extends HttpServlet {
         } else {
         	System.out.println("Not multipart");
         }
-
-        
-	}
-
-	/*public ImportFile parse(String gradebookUid, String content, EnumSet<Delimiter> delimiterSet) throws FatalException {
-		UserEntityGetAction<CategoryModel> categoryAction = new UserEntityGetAction<CategoryModel>(EntityType.CATEGORY);
-		categoryAction.setGradebookUid(gradebookUid);
-		UserEntityGetAction<AssignmentModel> itemAction = new UserEntityGetAction<AssignmentModel>(EntityType.GRADE_ITEM);
-		itemAction.setGradebookUid(gradebookUid);
-		GradebookToolFacade delegateFacade = (GradebookToolFacade)iocMock.getClassInstance(DelegateFacadeMockImpl.class.getName());
-		List<CategoryModel> categories = delegateFacade.getEntityList(categoryAction);
-		List<AssignmentModel> gradeItems = delegateFacade.getEntityList(itemAction);
-		
-		ImportFile importFile = new ImportFile();
-		//System.out.println(content);
-		List<ImportHeader> headers = new ArrayList<ImportHeader>();
-		List<ImportRow> importRows = new ArrayList<ImportRow>();
-		
-		DecimalFormat decimalFormat = new DecimalFormat();
-		
-		String[] rows = content.split("\n");
-		
-		if (rows.length > 0) {
-			String[] headerFields = splitFields(rows[0], delimiterSet);
-			
-			int idFieldIndex = -1;
-			int nameFieldIndex = -1;
-			
-			for (int i=0;i<headerFields.length;i++) {
-				
-				String text = headerFields[i];
-				
-				if (text != null && !text.trim().equals("")) {
-					ImportHeader header = null;
-					// Check for name field
-					if (text.equalsIgnoreCase("student") || text.equalsIgnoreCase("name") ||
-							text.equalsIgnoreCase("learner")) {
-						header = new ImportHeader(Field.NAME, text);
-						header.setId("NAME");
-						nameFieldIndex = i;
-					} else if (text.equalsIgnoreCase("id") || text.equalsIgnoreCase("identifier") ||
-							text.equalsIgnoreCase("userId") || text.equalsIgnoreCase("learnerid")) {
-						header = new ImportHeader(Field.ID, text);
-						header.setId("ID");
-						idFieldIndex = i;
-					} else {
-						
-						String name = text;
-						String points = null;
-						
-						int startParen = text.indexOf("(");
-						int endParen = text.indexOf(")");
-						
-						if (startParen != -1 && endParen != -1 && endParen > startParen+1) {
-							points = text.substring(startParen+1, endParen);
-							name = text.substring(0, startParen);
-							
-							if (name != null)
-								name = name.trim();
-						}
-						
-						if (name != null) {
-							AssignmentModel model = findModelByName(name, gradeItems);
-						
-							StringBuffer value = new StringBuffer(name);
-							
-							if (model != null) 
-								points = decimalFormat.format(model.getPoints());
-							
-							if (points == null)
-								points = "100";
-							
-							if (points != null && points.length() > 0)
-								value.append(" (").append(points).append(")");
-							
-							header = new ImportHeader(Field.ITEM, value.toString());
-							
-							if (model != null) { 
-								header.setId(model.getIdentifier());
-								header.setCategoryName(model.getCategoryName());
-							} else {
-								header.setId(new StringBuilder().append("NEW:").append(i).toString());
-								
-								if (categories != null) {
-									for (CategoryModel category : categories) {
-										header.setCategoryName(category.getName());
-										break;
-									}
-								} else {
-									header.setCategoryName("Default");
-								}
-
-							}
-							header.setHeaderName(name);
-							if (points != null && points.equals("%"))
-								header.setPercentage(true);
-							else {
-								try {
-									header.setPoints(Double.parseDouble(points));
-								} catch (NumberFormatException nfe) {
-									System.out.println("Could not parse points " + points);
-								}
-							}
-						}
-						
-					}
-					
-					headers.add(header);
-				}
-			}
-			
-			for (int r=1;r<rows.length;r++) {
-				String[] rowFields = splitFields(rows[r], delimiterSet);
-				
-				ImportRow row = new ImportRow();
-				
-				// First, based on whichever column is the id column, look up this row's user
-				if (rowFields.length > idFieldIndex && idFieldIndex != -1) {
-					String userImportId = rowFields[idFieldIndex];
-					row.setUserImportId(userImportId);
-				
-					if (userService != null) {
-						try {
-							User user = userService.getUserByEid(userImportId);
-							
-							if (user != null) {
-								row.setUserUid(user.getId());
-								row.setUserDisplayName(user.getDisplayName());
-							}
-							
-						} catch (UserNotDefinedException e) {
-							row.setUserNotFound(true);
-						}
-					}
-				}
-				List<String> columns = new ArrayList<String>();
-				for (int i=0;i<rowFields.length;i++) {	
-					columns.add(rowFields[i]);
-				}
-				row.setColumns(columns);
-				
-				importRows.add(row);
-			}
-		}
-		
-		importFile.setItems(headers);
-		//importFile.setHeaders(headers);
-		importFile.setRows(importRows);
-		
-		return importFile;
 	}
 	
-	
-	private String getExportId(StudentModel model) {
-		String exportId = model.getEid();
-		
-		if (exportId == null)
-			exportId = model.getIdentifier();
-		
-		return exportId;
-	}
-	
-
-	private String[] splitFields(String value, EnumSet<Delimiter> delimiterSet) {
-		
-		List<String> regexList = new ArrayList<String>();
-		
-		for (Delimiter delimiter : delimiterSet) {
-			switch (delimiter) {
-			case COMMA:
-				regexList.add(",");
-				break;
-			case TAB:
-				regexList.add("\t");
-				break;
-			case SPACE:
-				regexList.add(" ");
-				break;
-			case COLON:
-				regexList.add(":");
-				break;
-			}
-		}
-		
-		StringBuilder regex = new StringBuilder();
-		
-		for (int i=0;i<regexList.size();i++) {
-			regex.append(regexList.get(i));
-			if (i+1 < regexList.size())
-				regex.append("|");
-		}
-		
-		String[] fields = value.split(regex.toString());
-		
-		for (int i=0;i<fields.length;i++) {
-			if (fields[i].startsWith("\"") && fields[i].endsWith("\""))
-				fields[i] = fields[i].substring(1, fields[i].length() - 1);
-			
-		}
-		
-		return fields;
-	}
-	
-	private AssignmentModel findModelByName(String name, List<AssignmentModel> models) {
-		for (AssignmentModel model : models) {
-			
-			if (model.getName().equals(name))
-				return model;
-			
-		}
-		
-		return null;
-	}*/
-
-	public UserDirectoryService getUserService() {
-		return userService;
-	}
-
-	public void setUserService(UserDirectoryService userService) {
-		this.userService = userService;
-	}
 
 	public GradebookToolFacade getDelegateFacade() {
 		return delegateFacade;
@@ -347,6 +135,14 @@ public class ImportHandler extends HttpServlet {
 
 	public void setDelegateFacade(GradebookToolFacade delegateFacade) {
 		this.delegateFacade = delegateFacade;
+	}
+
+	public ExportAdvisor getExportAdvisor() {
+		return exportAdvisor;
+	}
+
+	public void setExportAdvisor(ExportAdvisor exportAdvisor) {
+		this.exportAdvisor = exportAdvisor;
 	}
 
 }

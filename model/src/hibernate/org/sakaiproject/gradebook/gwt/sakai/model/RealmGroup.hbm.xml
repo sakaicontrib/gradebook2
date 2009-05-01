@@ -14,6 +14,8 @@
        		<generator class="native"/>
        	</id>
        	<property name="userId" column="USER_ID"/>
+       	<property name="roleKey" column="ROLE_KEY"/>
+       	<property name="active" column="ACTIVE"/>
     </class>
     	
 </hibernate-mapping>

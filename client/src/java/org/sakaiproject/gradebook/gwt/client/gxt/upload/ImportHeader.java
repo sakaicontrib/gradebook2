@@ -12,6 +12,7 @@ public class ImportHeader implements Serializable {
 	private String id;
 	private String field;
 	private String assignmentId;
+	private String categoryId;
 	private String headerName;
 	private Mode mode;
 	private String value;
@@ -120,6 +121,14 @@ public class ImportHeader implements Serializable {
 
 	public void setPercentage(boolean isPercentage) {
 		this.isPercentage = isPercentage;
+	}
+
+	public String getCategoryId() {
+		return categoryId;
+	}
+
+	public void setCategoryId(String categoryId) {
+		this.categoryId = categoryId;
 	}
 	
 	

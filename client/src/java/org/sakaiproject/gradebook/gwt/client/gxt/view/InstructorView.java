@@ -14,6 +14,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.BorderLayoutPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.GradeScalePanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.HelpPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.HistoryPanel;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ItemFormPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.LearnerSummaryPanel;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
@@ -32,11 +33,13 @@ import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
+import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayout;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayoutData;
 import com.extjs.gxt.ui.client.widget.layout.CardLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
+import com.extjs.gxt.ui.client.widget.menu.SeparatorMenuItem;
 import com.extjs.gxt.ui.client.widget.toolbar.TextToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.user.client.Element;
@@ -44,7 +47,7 @@ import com.google.gwt.user.client.Element;
 public class InstructorView extends AppView {
 	
 	private static final String MENU_SELECTOR_FLAG = "menuSelector";
-	public enum MenuSelector { ADD_CATEGORY, ADD_ITEM, IMPORT, EXPORT, FINAL_GRADE, GRADE_SCALE, HISTORY };
+	public enum MenuSelector { ADD_CATEGORY, ADD_ITEM, IMPORT, EXPORT, EXPORT_DATA, EXPORT_STRUCTURE, FINAL_GRADE, GRADE_SCALE, HISTORY };
 	
 	// The instructor view maintains a link to tree view, since it is required to instantiate multigrade
 	private TreeView treeView;
@@ -53,9 +56,11 @@ public class InstructorView extends AppView {
 	private SingleGradeView singleGradeView;
 	
 	private ContentPanel borderLayoutContainer;
-	private ContentPanel cardLayoutContainer;
+	private LayoutContainer centerLayoutContainer;
+	private ContentPanel eastLayoutContainer;
 	private BorderLayout borderLayout;
-	private CardLayout cardLayout;
+	private CardLayout centerCardLayout;
+	private CardLayout eastCardLayout;
 	private LearnerSummaryPanel singleGradeContainer;
 	private HelpPanel helpPanel;
 	private GradeScalePanel gradeScalePanel;
@@ -126,7 +131,15 @@ public class InstructorView extends AppView {
 		westData.setCollapsible(true);  
 		westData.setMargins(new Margins(5));
 		
-		cardLayoutContainer = new ContentPanel() {
+		centerLayoutContainer = new LayoutContainer();
+		centerCardLayout = new CardLayout();
+		centerLayoutContainer.setLayout(centerCardLayout);
+		
+		centerLayoutContainer.add(multigradeView.getMultiGradeContentPanel());
+		centerLayoutContainer.add(treeView.getFormPanel());
+		centerCardLayout.setActiveItem(multigradeView.getMultiGradeContentPanel());
+		
+		eastLayoutContainer = new ContentPanel() {
 			protected void onRender(Element parent, int index) {
 				super.onRender(parent, index);
 			}
@@ -139,20 +152,20 @@ public class InstructorView extends AppView {
 			}
 		};
 
-		cardLayoutContainer.setId("cardLayoutContainer");
-		cardLayoutContainer.setWidth(400);
-		cardLayoutContainer.setBorders(true);
-		cardLayoutContainer.setBodyBorder(true);
-		cardLayoutContainer.setFrame(true);
-		cardLayout = new CardLayout();
-		cardLayoutContainer.setLayout(cardLayout);
-		cardLayoutContainer.add(helpPanel);
-		cardLayoutContainer.add(treeView.getFormPanel());
-		cardLayout.setActiveItem(helpPanel);
+		eastLayoutContainer.setId("cardLayoutContainer");
+		eastLayoutContainer.setWidth(400);
+		eastLayoutContainer.setBorders(true);
+		eastLayoutContainer.setBodyBorder(true);
+		eastLayoutContainer.setFrame(true);
+		eastCardLayout = new CardLayout();
+		eastLayoutContainer.setLayout(eastCardLayout);
+		eastLayoutContainer.add(helpPanel);
+		//eastLayoutContainer.add(treeView.getFormPanel());
+		eastCardLayout.setActiveItem(helpPanel);
 
 		borderLayoutContainer.add(treeView.getTreePanel(), westData);
-		borderLayoutContainer.add(multigradeView.getMultiGradeContentPanel(), centerData);
-		borderLayoutContainer.add(cardLayoutContainer, eastData);
+		borderLayoutContainer.add(centerLayoutContainer, centerData);
+		borderLayoutContainer.add(eastLayoutContainer, eastData);
 	}
 
 	@Override
@@ -169,7 +182,7 @@ public class InstructorView extends AppView {
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);		
 
 		tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADESCALE, i18n.tabGradeScaleHeader(), "gbGradeScaleButton", true, MenuSelector.GRADE_SCALE));
-		tabConfigurations.add(new TabConfig(AppConstants.TAB_HISTORY, i18n.tabHistoryHeader(), "gbHistoryButton", true, MenuSelector.HISTORY));
+		//tabConfigurations.add(new TabConfig(AppConstants.TAB_HISTORY, i18n.tabHistoryHeader(), "gbHistoryButton", true, MenuSelector.HISTORY));
 
 		populateToolBar(i18n, selectedGradebook);
 
@@ -182,45 +195,75 @@ public class InstructorView extends AppView {
 	@Override
 	protected void onExpandEastPanel(EastCard activeCard) {
 
-		borderLayout.show(LayoutRegion.EAST);
-		borderLayout.expand(LayoutRegion.EAST);
+		//borderLayout.show(LayoutRegion.EAST);
+		//borderLayout.expand(LayoutRegion.EAST);
 
+		ItemFormPanel formPanel = treeView.getFormPanel();
+		
 		switch (activeCard) {
+		case GRADE_SCALE:
+		case HELP:
+		case HISTORY:
+		case LEARNER_SUMMARY:
+			borderLayout.show(LayoutRegion.EAST);
+			borderLayout.expand(LayoutRegion.EAST);
+			break;
+		default:
+			borderLayout.hide(LayoutRegion.EAST);
+			break;
+		}
+		
+		switch (activeCard) {
+		case DELETE_CATEGORY:
+			formPanel.setHeading(i18n.deleteCategoryHeading());
+			centerCardLayout.setActiveItem(treeView.getFormPanel());
+			multigradeView.deselectAll();
+			break;
 		case DELETE_ITEM:
-			cardLayoutContainer.setHeading(i18n.deleteItemHeading());
-			cardLayout.setActiveItem(treeView.getFormPanel());
+			formPanel.setHeading(i18n.deleteItemHeading());
+			centerCardLayout.setActiveItem(treeView.getFormPanel());
 			multigradeView.deselectAll();
 			break;
 		case GRADE_SCALE:
-			cardLayoutContainer.setHeading(i18n.gradeScaleHeading());
-			cardLayout.setActiveItem(gradeScalePanel);
+			eastLayoutContainer.setHeading(i18n.gradeScaleHeading());
+			eastCardLayout.setActiveItem(gradeScalePanel);
 			break;
 		case HELP:
-			cardLayoutContainer.setHeading(i18n.helpHeading());
-			cardLayout.setActiveItem(helpPanel);
+			eastLayoutContainer.setHeading(i18n.helpHeading());
+			eastCardLayout.setActiveItem(helpPanel);
 			break;
 		case HISTORY:
-			cardLayoutContainer.setHeading(i18n.historyHeading());
-			cardLayout.setActiveItem(historyPanel);
+			eastLayoutContainer.setHeading(i18n.historyHeading());
+			eastCardLayout.setActiveItem(historyPanel);
 			break;
 		case NEW_CATEGORY:
-			cardLayoutContainer.setHeading(i18n.newCategoryHeading());
-			cardLayout.setActiveItem(treeView.getFormPanel());
+			formPanel.setHeading(i18n.newCategoryHeading());
+			centerCardLayout.setActiveItem(treeView.getFormPanel());
 			multigradeView.deselectAll();
 			break;
 		case NEW_ITEM:
-			cardLayoutContainer.setHeading(i18n.newItemHeading());
-			cardLayout.setActiveItem(treeView.getFormPanel());
+			formPanel.setHeading(i18n.newItemHeading());
+			centerCardLayout.setActiveItem(treeView.getFormPanel());
+			multigradeView.deselectAll();
+			break;
+		case EDIT_CATEGORY:
+			formPanel.setHeading(i18n.editCategoryHeading());
+			centerCardLayout.setActiveItem(treeView.getFormPanel());
+			multigradeView.deselectAll();
+			break;
+		case EDIT_GRADEBOOK:
+			formPanel.setHeading(i18n.editGradebookHeading());
+			centerCardLayout.setActiveItem(treeView.getFormPanel());
 			multigradeView.deselectAll();
 			break;
 		case EDIT_ITEM:
-			cardLayoutContainer.setHeading(i18n.editItemHeading());
-			cardLayout.setActiveItem(treeView.getFormPanel());
+			formPanel.setHeading(i18n.editItemHeading());
+			centerCardLayout.setActiveItem(treeView.getFormPanel());
 			multigradeView.deselectAll();
 			break;
 		case LEARNER_SUMMARY:
-			cardLayoutContainer.setHeading(i18n.learnerSummaryHeading());
-			cardLayout.setActiveItem(singleGradeContainer);
+			eastLayoutContainer.setHeading(i18n.learnerSummaryHeading());
+			eastCardLayout.setActiveItem(singleGradeContainer);
 			break;
 		}
 
@@ -266,7 +309,7 @@ public class InstructorView extends AppView {
 	protected void onSingleGrade(StudentModel learnerGradeRecordCollection) {
 		if (singleGradeContainer == null) {
 			singleGradeContainer = new LearnerSummaryPanel(i18n);
-			cardLayoutContainer.add(singleGradeContainer);
+			eastLayoutContainer.add(singleGradeContainer);
 		}
 		singleGradeContainer.onChangeModel(multigradeView.getStore(), treeView.getTreeStore(), learnerGradeRecordCollection);
 		onExpandEastPanel(EastCard.LEARNER_SUMMARY);
@@ -282,7 +325,7 @@ public class InstructorView extends AppView {
 	protected void onShowGradeScale(Boolean show) {
 		if (gradeScalePanel == null) {
 			gradeScalePanel = new GradeScalePanel(i18n, isEditable);
-			cardLayoutContainer.add(gradeScalePanel);
+			eastLayoutContainer.add(gradeScalePanel);
 		}
 		onExpandEastPanel(EastCard.GRADE_SCALE);
 	}
@@ -291,14 +334,25 @@ public class InstructorView extends AppView {
 	protected void onShowHistory(String identifier) {
 		if (historyPanel == null) {
 			historyPanel = new HistoryPanel(i18n);
-			cardLayoutContainer.add(historyPanel);
+			eastLayoutContainer.add(historyPanel);
 		}
 		onExpandEastPanel(EastCard.HISTORY);
 	}
 	
 	@Override
 	protected void onStartEditItem(ItemModel itemModel) {
-		onExpandEastPanel(EastCard.EDIT_ITEM);
+		AppView.EastCard activeCard = AppView.EastCard.EDIT_ITEM;
+		
+		if (itemModel != null) {
+		switch (itemModel.getItemType()) {
+			case CATEGORY:
+				activeCard = AppView.EastCard.EDIT_CATEGORY;
+				break;
+			case GRADEBOOK:
+				activeCard = AppView.EastCard.EDIT_GRADEBOOK;
+			}
+		}
+		onExpandEastPanel(activeCard);
 	}
 	
 	@Override
@@ -315,6 +369,10 @@ public class InstructorView extends AppView {
 	@Override
 	protected void onHideEastPanel(Boolean doCommit) {
 		borderLayout.hide(LayoutRegion.EAST);
+	}
+	
+	protected void onHideFormPanel() {
+		centerCardLayout.setActiveItem(multigradeView.getMultiGradeContentPanel());
 	}
 	
 	@Override
@@ -386,8 +444,11 @@ public class InstructorView extends AppView {
 				case ADD_ITEM:
 					Dispatcher.forwardEvent(GradebookEvents.NewItem.getEventType());
 					break;
-				case EXPORT:
-					Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType());
+				case EXPORT_DATA:
+					Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType(), Boolean.FALSE);
+					break;
+				case EXPORT_STRUCTURE:
+					Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType(), Boolean.TRUE);
 					break;
 				case IMPORT:
 					Dispatcher.forwardEvent(GradebookEvents.StartImport.getEventType());
@@ -502,24 +563,42 @@ public class InstructorView extends AppView {
 	
 	
 	private Menu newMoreActionsMenu() {
-		Menu moreActionsMenu = new Menu();
+		Menu moreActionsMenu = new AriaMenu();
 		
-		MenuItem menuItem = new MenuItem(i18n.headerExport(), menuSelectionListener);
+		MenuItem menuItem = new AriaMenuItem(i18n.headerExport()); //, menuSelectionListener);
 		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT);
 		menuItem.setIconStyle("gbExportItemIcon");
 		menuItem.setTitle(i18n.headerExportTitle());
 		moreActionsMenu.add(menuItem);
 		
+		Menu subMenu = new AriaMenu();
+		menuItem.setSubMenu(subMenu);
+		
+		menuItem = new AriaMenuItem(i18n.headerExportData(), menuSelectionListener);
+		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_DATA);
+		//menuItem.setIconStyle("gbExportItemIcon");
+		menuItem.setTitle(i18n.headerExportDataTitle());
+		subMenu.add(menuItem);
+		
+		menuItem = new AriaMenuItem(i18n.headerExportStructure(), menuSelectionListener);
+		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_STRUCTURE);
+		//menuItem.setIconStyle("gbExportItemIcon");
+		menuItem.setTitle(i18n.headerExportStructureTitle());
+		subMenu.add(menuItem);
+		
+		
 		if (isEditable) {
-			menuItem = new MenuItem(i18n.headerImport(), menuSelectionListener);
+			menuItem = new AriaMenuItem(i18n.headerImport(), menuSelectionListener);
 			menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.IMPORT);
 			menuItem.setIconStyle("gbImportItemIcon");
 			menuItem.setTitle(i18n.headerImportTitle());
 			moreActionsMenu.add(menuItem);
 		}
 		
+		moreActionsMenu.add(new SeparatorMenuItem());
+		
 		// GRBK-37 : TPA
-		menuItem = new MenuItem(i18n.headerFinalGrade(), menuSelectionListener);
+		menuItem = new AriaMenuItem(i18n.headerFinalGrade(), menuSelectionListener);
 		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.FINAL_GRADE);
 		menuItem.setIconStyle("gbExportItemIcon");
 		menuItem.setTitle(i18n.headerFinalGradeTitle());

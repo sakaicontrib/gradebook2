@@ -84,7 +84,10 @@ public interface I18nConstants extends Constants {
 	String addItemNoCategoryHeading();
 	String addItemNoCategoryMessage();
 	
+	String deleteCategoryHeading();
 	String deleteItemHeading();
+	String editCategoryHeading();
+	String editGradebookHeading();
 	String editItemHeading();
 	String gradeScaleHeading();
 	String helpHeading();
@@ -105,6 +108,10 @@ public interface I18nConstants extends Constants {
 	String headerFinalGradeTitle();
 	String headerExport();
 	String headerExportTitle();
+	String headerExportData();
+	String headerExportDataTitle();
+	String headerExportStructure();
+	String headerExportStructureTitle();
 	String headerDeleteCategory();
 	String headerDeleteCategoryTitle();
 	String headerDeleteItem();
@@ -144,7 +151,14 @@ public interface I18nConstants extends Constants {
 	String learnerTabExcuseHeader();
 	String learnerTabGradeHeader();
 		
+	String searchLearnerEmptyText();
+	
 	String unknownException();
+	
+	String uploadingLearnerGradesPrefix();
+	String uploadingLearnerGradesSuffix();
+	String uploadingLearnerGradesStatus();
+	String uploadingLearnerGradesTitle();
 	
 	String finalGradeSubmissionTitle();
 	String finalGradeSubmissionConfirmTitle();

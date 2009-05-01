@@ -36,4 +36,21 @@
 		<property name="exportAdvisor" ref="${org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor}"/>
 	</bean>
 	
+	<bean id="GradebookExportService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookExportController">
+		<property name="delegateFacade" ref="org.sakaiproject.gradebook.gwt.sakai.DelegateFacade"/>
+	</bean>
+	
+	<bean id="GradebookFinalGradeSubmissionService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookFinalGradeSubmissionController">
+		<property name="delegateFacade" ref="org.sakaiproject.gradebook.gwt.sakai.DelegateFacade"/>
+		<property name="exportAdvisor" ref="${org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor}"/>
+	</bean>
+	
+	<bean id="GradebookImportService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookImportController">
+		<property name="delegateFacade" ref="org.sakaiproject.gradebook.gwt.sakai.DelegateFacade"/>
+		<property name="exportAdvisor" ref="${org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor}"/>
+		<property name="commandClass" value="org.sakaiproject.gradebook.gwt.sakai.FileUploadBean"/>
+        <!--property name="formView" value="fileuploadform"/>
+        <property name="successView" value="confirmation"/-->
+	</bean>
+	
 </beans>

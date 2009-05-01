@@ -34,21 +34,16 @@ import com.extjs.gxt.ui.client.widget.grid.GridView;
 
 public class BaseCustomGridView extends GridView {
 	
-	protected boolean isClickable(ModelData model, String property) {
-		return false;
+	protected String markupCss(Record r, ModelData model, String property, boolean isShowDirtyCells, boolean isPropertyChanged) {
+
+		return null;
 	}
 	
-	protected boolean isDropped(ModelData model, String property) {
-		return false;
+	protected String markupInnerCss(ModelData model, String property, boolean isShowDirtyCells, boolean isPropertyChanged) {
+
+		return null;
 	}
 	
-	protected boolean isCommented(ModelData model, String property) {
-		return false;
-	}
-	
-	protected boolean isReleased(ModelData model, String property) {
-		return false;
-	}
 	
 	@Override
 	protected String doRender(List<ColumnData> cs, List rows, int startRow,
@@ -81,49 +76,24 @@ public class BaseCustomGridView extends GridView {
 				
 				if (c.css != null)
 					css.append(c.css);
-				
-				//String css = (i == 0 ? "x-grid-cell-first "
-				//		: (i == last ? "x-grid3-cell-last " : " "))
-				//		+ " " + (c.css == null ? "" : c.css);
+
 				String attr = c.cellAttr != null ? c.cellAttr : "";
 				String cellAttr = c.cellAttr != null ? c.cellAttr : "";
 
 				StringBuilder innerCssClass = new StringBuilder().append("x-grid3-cell-inner x-grid3-col-")
 					.append(c.id);
 				
+				boolean isDirty = isShowDirtyCells();
+				boolean isChanged = r != null && r.getChanges().containsKey(c.id);
 				
-				if (isShowDirtyCells() && r != null
-						&& r.getChanges().containsKey(c.id)) {
-					
-					Object startValue = r.getChanges().get(c.id);
-					Object currentValue = r.get(c.id);
-					
-					String failedProperty = new StringBuilder().append(c.id).append(GridPanel.FAILED_FLAG).toString();
-					String failedMessage = (String)r.get(failedProperty);
-					
-					if (failedMessage != null) {
-						css.append(" gbCellFailed");
-					} else if (startValue == null || !startValue.equals(currentValue)) {
-						css.append(" gbCellSucceeded");
-					} 
-					//css += " x-grid3-dirty-cell";
-				}
+				String markedUpCss = markupCss(r, model, c.id, isDirty, isChanged);
+				String markedUpInnerCss = markupInnerCss(model, c.id, isDirty, isChanged);
 				
-				if (isCommented(model, c.id)) {
-					innerCssClass.append(" gbCellCommented");
-				} 
+				if (markedUpCss != null)
+					css.append(markedUpCss);
 				
-				if (isClickable(model, c.id)) {
-					innerCssClass.append(" gbCellClickable");
-				}
-				
-				if (isDropped(model, c.id)) {
-					css.append(" gbCellDropped");
-				}
-				
-				if (isReleased(model, c.id)) {
-					css.append(" gbReleased");
-				}
+				if (markedUpInnerCss != null)
+					innerCssClass.append(markedUpInnerCss);
 				
 				if (rv == null || rv.equals(""))
 					rv = "&nbsp;";

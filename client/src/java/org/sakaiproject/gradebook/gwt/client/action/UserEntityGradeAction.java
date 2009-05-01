@@ -36,7 +36,7 @@ public class UserEntityGradeAction extends UserEntityUpdateAction<StudentModel> 
 	public UserEntityGradeAction(GradebookModel gbModel, StudentModel model, String key, 
 			ClassType classType, Object value, Object startValue) {
 		super(gbModel, model, key, classType, value, startValue);
-		setEntityType(EntityType.STUDENT);
+		setEntityType(EntityType.LEARNER);
 		setActionType(ActionType.GRADED);
 	}
 	

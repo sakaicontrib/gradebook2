@@ -42,6 +42,7 @@ public class AppController extends Controller {
 		registerEventTypes(GradebookEvents.EndItemUpdates.getEventType());
 		registerEventTypes(GradebookEvents.ExpandEastPanel.getEventType());
 		registerEventTypes(GradebookEvents.HideColumn.getEventType());
+		registerEventTypes(GradebookEvents.HideFormPanel.getEventType());
 		registerEventTypes(GradebookEvents.HideEastPanel.getEventType());
 		registerEventTypes(GradebookEvents.ItemCreated.getEventType());
 		registerEventTypes(GradebookEvents.ItemDeleted.getEventType());
@@ -121,9 +122,10 @@ public class AppController extends Controller {
 			break;
 		case START_IMPORT:
 		case START_EXPORT:
-			if (importExportView == null)
-				importExportView = new ImportExportView(this);
-			
+			if (importExportView == null) {
+				I18nConstants i18n = Registry.get(AppConstants.I18N);
+				importExportView = new ImportExportView(this, i18n);
+			}
 			forwardToView(importExportView, event);
 			forwardToView(appView, event);
 			break;
@@ -168,6 +170,9 @@ public class AppController extends Controller {
 			break;
 		case SHOW_GRADE_SCALE:
 		case SHOW_HISTORY:	
+			forwardToView(appView, event);
+			break;
+		case HIDE_FORM_PANEL:
 			forwardToView(appView, event);
 			break;
 		case START_EDIT_ITEM:
@@ -232,7 +237,7 @@ public class AppController extends Controller {
 				this.singleView = new SingleGradeView(this, false);
 				this.treeView = new TreeView(this, i18n, isUserAbleToEditItems);
 				this.multigradeView = new MultigradeView(this, i18n);
-				this.importExportView = new ImportExportView(this);
+				this.importExportView = new ImportExportView(this, i18n);
 				this.appView = new InstructorView(this, treeView, multigradeView, notificationView, importExportView, singleView, isUserAbleToEditItems);
 				forwardToView(treeView, event);
 				forwardToView(multigradeView, event);

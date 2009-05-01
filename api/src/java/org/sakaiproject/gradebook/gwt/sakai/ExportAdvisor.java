@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.site.api.Group;
 
 
@@ -25,7 +26,7 @@ public interface ExportAdvisor {
 	 * @param userEid : The user's EID
 	 * 
 	 */
-	public String getExportUserId(String userEid);
+	public String getExportUserId(UserDereference dereference);
 	
 	/*
 	 * 

@@ -4,6 +4,8 @@ import org.sakaiproject.authz.api.Member;
 
 public interface AccessAdvisor {
 	
+	public Long[] getLearnerRoleKeys();
+	
 	public boolean isLearner(Member member);
 	
 }

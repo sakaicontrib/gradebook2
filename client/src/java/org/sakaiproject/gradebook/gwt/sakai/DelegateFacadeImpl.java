@@ -58,6 +58,7 @@ import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
+import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.model.CommentModel;
@@ -251,23 +252,13 @@ private static final long serialVersionUID = 1L;
 			boolean showAll = action.getIncludeAll() != null && action.getIncludeAll().booleanValue();
 			
 			switch (action.getEntityType()) {
-			/*case CATEGORY:
-				return getCategories(action.getGradebookUid(), Boolean.FALSE);*/
 			case COLUMN:	
 				return getColumns();
 			case GRADE_EVENT:
 				return getGradeEvents(action.getStudentUid(), Long.valueOf(action.getEntityId()));
-			/*case GRADE_ITEM:
-				
-				if (action.getGradebookId() == null) {
-					Gradebook gradebook = gbService.getGradebook(action.getGradebookUid());
-					action.setGradebookId(gradebook.getId());
-				}
-				
-				return getAssignments(action.getGradebookUid(), action.getGradebookId(), showAll);*/
 			case GRADE_SCALE:
 				return getSelectedGradeMapping(action.getGradebookUid());
-			case STUDENT:
+			case LEARNER:
 				
 				if (action.getGradebookId() == null) {
 					Gradebook gradebook = gbService.getGradebook(action.getGradebookUid());
@@ -276,6 +267,9 @@ private static final long serialVersionUID = 1L;
 				
 				PagingLoadResult<X> result = getStudentRows(action.getGradebookUid(), action.getGradebookId(), null);
 				return result.getData();
+			case LEARNER_ID:
+				
+				break;
 			}
 		
 		} catch (Throwable t) {
@@ -303,7 +297,7 @@ private static final long serialVersionUID = 1L;
 				return getAssignmentRecords(action.getGradebookUid(), action.getGradebookId(), action.getStudentUid(), Boolean.valueOf(!showAll), config);*/
 			case SECTION:
 				return getSections(action.getGradebookUid(), action.getGradebookId(), config);
-			case STUDENT:
+			case LEARNER:
 				return getStudentRows(action.getGradebookUid(), action.getGradebookId(), config);
 			}
 		
@@ -465,7 +459,7 @@ private static final long serialVersionUID = 1L;
 				entity = (X)updateGradeRecordModelField(action.getStudentModel().getIdentifier(), 
 						(GradeRecordModel)action.getModel(), recordModelKey, action.getValue());
 				break;*/
-			case STUDENT:
+			case LEARNER:
 				StudentModel student = (StudentModel)action.getModel();
 				
 				/*if (student != null && student.getIdentifier() != null) {
@@ -662,9 +656,17 @@ private static final long serialVersionUID = 1L;
 					itemModel.setPoints(points);
 					ItemModel model = addItem(gradebookUid, gradebook.getId(), itemModel, false);
 					//AssignmentModel model = addAssignment(gradebookUid, gradebook.getId(), categoryId, name, weight, points, dueDate);
-					Assignment assignment = gbService.getAssignment(Long.valueOf(model.getIdentifier()));
-					idToAssignmentMap.put(id, assignment);
-					item.setIdentifier(model.getIdentifier());
+					
+					for (ItemModel child : model.getChildren()) {
+						if (child.isActive()) {
+							Assignment assignment = gbService.getAssignment(Long.valueOf(child.getIdentifier()));
+							idToAssignmentMap.put(id, assignment);
+							item.setIdentifier(child.getIdentifier());
+							break;
+						}
+					}
+					
+					
 				} else {
 					Assignment assignment = gbService.getAssignment(Long.valueOf(id));
 					idToAssignmentMap.put(id, assignment);
@@ -676,7 +678,7 @@ private static final long serialVersionUID = 1L;
 		Long gradebookId = gradebook.getId();
 		
 		Site site = getSite();
-		List<UserRecord> userRecords = findStudentRecordPage(gradebook, site, null, "sortName", null, null, -1, -1, true);
+		List<UserRecord> userRecords = findLearnerRecordPage(gradebook, site, null, "sortName", null, null, -1, -1, true);
 		
 		Map<String, UserRecord> userRecordMap = new HashMap<String, UserRecord>(); //findStudentRecords(gradebookUid, gradebookId, null, null);
 	    
@@ -1284,7 +1286,7 @@ private static final long serialVersionUID = 1L;
 		if (categories != null && ! categories.isEmpty()) {
 			// First, look for it by name
 			for (Category category : categories) {
-				if (category.getName().equalsIgnoreCase("Default")) {
+				if (category.getName().equalsIgnoreCase("Unassigned")) {
 					defaultCategoryId = category.getId();
 					break;
 				}
@@ -1295,7 +1297,7 @@ private static final long serialVersionUID = 1L;
 		
 		// If we don't have one already, then let's create one
 		if (defaultCategoryId == null) {
-			defaultCategoryId = gbService.createCategory(gradebookId, "Default", Double.valueOf(1d), 0, null, null);
+			defaultCategoryId = gbService.createCategory(gradebookId, "Unassigned", Double.valueOf(1d), 0, null, null);
 			isCategoryNew = true;
 		} 
 
@@ -1347,7 +1349,7 @@ private static final long serialVersionUID = 1L;
 					if (categories != null && ! categories.isEmpty()) {
 						// First, look for it by name
 						for (Category category : categories) {
-							if (category.getName().equalsIgnoreCase("Default")) {
+							if (category.getName().equalsIgnoreCase("Unassigned")) {
 								defaultCategoryId = category.getId();
 								break;
 							}
@@ -1358,7 +1360,7 @@ private static final long serialVersionUID = 1L;
 					
 					// If we don't have one already, then let's create one
 					if (defaultCategoryId == null) {
-						defaultCategoryId = gbService.createCategory(gradebook.getId(), "Default", Double.valueOf(1d), 0, null, null);
+						defaultCategoryId = gbService.createCategory(gradebook.getId(), "Unassigned", Double.valueOf(1d), 0, null, null);
 						isCategoryNew = true;
 					} 
 
@@ -1618,6 +1620,8 @@ private static final long serialVersionUID = 1L;
 	
 	protected <X extends BaseModel> PagingLoadResult<X> getStudentRows(String gradebookUid, Long gradebookId, PagingLoadConfig config) {
 
+		Long[] learnerRoleKeys = accessAdvisor.getLearnerRoleKeys();
+		
 		List<UserRecord> userRecords = null;
 		
 		String sectionUuid = null;
@@ -1641,6 +1645,9 @@ private static final long serialVersionUID = 1L;
 	    int offset = -1;
 	    int limit = -1;
 	    
+	    String searchField = null;
+		String searchCriteria = null;
+		
 	    // This is slightly painful, but since it's a String that gets passed up, we have to iterate
 		if (config != null) { 
 			offset = config.getOffset();
@@ -1657,6 +1664,14 @@ private static final long serialVersionUID = 1L;
 				
 				if (sortColumnKey == null)
 					sortColumnKey = StudentModel.Key.ASSIGNMENT;
+			}
+			
+			if (config instanceof MultiGradeLoadConfig) {
+				searchField = "sortName";
+				searchCriteria = ((MultiGradeLoadConfig)config).getSearchString();
+				
+				if (searchCriteria != null)
+					searchCriteria = searchCriteria.toUpperCase();
 			}
 		} 
 		
@@ -1677,8 +1692,7 @@ private static final long serialVersionUID = 1L;
 			case DISPLAY_ID:
 			case EMAIL:
 				String sortField = "lastNameFirst";
-				String searchField = null;
-				String searchCriteria = null;
+				
 				
 				switch (sortColumnKey) {
 				case DISPLAY_ID:
@@ -1693,8 +1707,8 @@ private static final long serialVersionUID = 1L;
 					break;
 				}
 						
-				userRecords = findStudentRecordPage(gradebook, site, sectionUuid,  sortField, searchField, searchCriteria, offset, limit, !isDescending);
-				totalUsers = gbService.getUserCountForSite(siteId, sectionUuid, sortField, searchField, searchCriteria);
+				userRecords = findLearnerRecordPage(gradebook, site, sectionUuid,  sortField, searchField, searchCriteria, offset, limit, !isDescending);
+				totalUsers = gbService.getUserCountForSite(siteId, sectionUuid, sortField, searchField, searchCriteria, learnerRoleKeys);
 				
 				int startRow = config == null ? 0 : config.getOffset();
 				
@@ -1718,7 +1732,7 @@ private static final long serialVersionUID = 1L;
 				
 			   	//Map<String, Map<Long, AssignmentGradeRecord>>  allGradeRecordsMap = new HashMap<String, Map<Long, AssignmentGradeRecord>>();
 
-			    List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebookId, siteId, sectionUuid);
+			    List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebookId, siteId, sectionUuid, learnerRoleKeys);
 			    // GRBK-40 : TPA : Replace above call with the one bellow once the Mock getAllAssignmentGradeRecords methods has been adjusted
 		    	// List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebookId, getSiteId(), sectionUuid);
 				    	
@@ -1808,6 +1822,7 @@ private static final long serialVersionUID = 1L;
 					userRecord.setUserEid(user.getEid());
 					userRecord.setDisplayId(user.getDisplayId());
 					userRecord.setDisplayName(user.getDisplayName());
+					userRecord.setLastNameFirst(user.getSortName());
 					userRecord.setSortName(user.getSortName());
 					userRecord.setEmail(user.getEmail());
 				} catch (UserNotDefinedException e) {
@@ -2297,13 +2312,17 @@ private static final long serialVersionUID = 1L;
 		String displayGrade = null;
 		String letterGrade = null;
 	
+		boolean isOverridden = false;
+		
 		if (courseGradeRecord != null) 
 			enteredGrade = courseGradeRecord.getEnteredGrade();
 		
 		if (enteredGrade == null && calculatedGrade != null) 
 			letterGrade = gradebook.getSelectedGradeMapping().getGrade(calculatedGrade);
-		else
+		else {
 			letterGrade = enteredGrade;
+			isOverridden = true;
+		}
 		
 		String missingGradesMarker = "";
 		
@@ -2345,7 +2364,9 @@ private static final long serialVersionUID = 1L;
 		if (letterGrade != null) {
 			StringBuilder buffer = new StringBuilder(letterGrade);
 			
-			if (autoCalculatedGrade != null) {
+			if (isOverridden) {
+				buffer.append(" (override)");
+			} else if (autoCalculatedGrade != null) {
 				buffer.append(" (")
 				.append(autoCalculatedGrade.setScale(2, RoundingMode.HALF_EVEN).toString())
 				.append("%) ").append(missingGradesMarker);
@@ -2664,12 +2685,12 @@ private static final long serialVersionUID = 1L;
 		return getItemModelsForCategory(category);
 	}*/
 	
-	private ItemModel getItemModelsForCategory(Category category) {
+	private ItemModel getItemModelsForCategory(Category category, ItemModel gradebookItemModel) {
 		Gradebook gradebook = category.getGradebook();
 		
 		List<Assignment> assignments = gbService.getAssignmentsForCategory(category.getId());
 		
-		ItemModel gradebookItemModel = createItemModel(gradebook);
+		//ItemModel gradebookItemModel = createItemModel(gradebook);
 		
 		ItemModel categoryItemModel = createItemModel(gradebook, category, null);
 		categoryItemModel.setParent(gradebookItemModel);
@@ -3387,7 +3408,7 @@ private static final long serialVersionUID = 1L;
 			return getItemModel(gradebook, assignments);
 		}
 		
-		ItemModel categoryItemModel = getItemModelsForCategory(category);
+		ItemModel categoryItemModel = getItemModelsForCategory(category, createItemModel(gradebook));
 		
 		String assignmentIdAsString = String.valueOf(assignmentId);
 		for (ModelData model : categoryItemModel.getChildren()) {
@@ -3479,7 +3500,7 @@ private static final long serialVersionUID = 1L;
 		}
 		
 		
-		ItemModel categoryItemModel = getItemModelsForCategory(category);
+		ItemModel categoryItemModel = getItemModelsForCategory(category, createItemModel(category.getGradebook()));
 		categoryItemModel.setActive(true);
 		return categoryItemModel;
 	}
@@ -3672,10 +3693,21 @@ private static final long serialVersionUID = 1L;
 			gbService.storeActionRecord(actionRecord);
 		}
 		
-		ItemModel categoryItemModel = getItemModelsForCategory(category);
-		categoryItemModel.setActive(true);
+		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
+		ItemModel gradebookItemModel = getItemModel(gradebook, assignments);
 		
-		return categoryItemModel;
+		for (ItemModel child : gradebookItemModel.getChildren()) {
+			if (child.equals(item)) {
+				child.setActive(true);
+			}
+		}
+		
+		return gradebookItemModel;
+		
+		//ItemModel categoryItemModel = getItemModelsForCategory(category);
+		//categoryItemModel.setActive(true);
+		
+		//return categoryItemModel;
 	}
 	
 	/**
@@ -3802,14 +3834,14 @@ private static final long serialVersionUID = 1L;
 				beforeCreateRules.add(new NoDuplicateItemNamesRule(gradebook.getId(), item.getName(), assignment.getId()));
 				
 				// Business rule #4 
-				beforeCreateRules.add(new CannotIncludeDeletedItemRule(assignment.isRemoved(), false, isUnweighted));
+				beforeCreateRules.add(new CannotIncludeDeletedItemRule(wasRemoved && isRemoved, false, isUnweighted));
 				break;
 			default:
 				// Business rule #5
 				beforeCreateRules.add(new NoDuplicateItemNamesWithinCategoryRule(item.getCategoryId(), item.getName(), assignment.getId()));
 			
 				// Business rule #6 
-				beforeCreateRules.add(new CannotIncludeDeletedItemRule(assignment.isRemoved(), category.isRemoved(), isUnweighted));
+				beforeCreateRules.add(new CannotIncludeDeletedItemRule(wasRemoved && isRemoved, category.isRemoved(), isUnweighted));
 				
 				// Business rule #7 -- only apply this rule when included/unincluded, deleted/undeleted, made extra-credit/non-extra-credit, or changed category
 				if (isUnweighted != wasUnweighted || isRemoved != wasRemoved || isExtraCredit != wasExtraCredit || oldCategory != null) {
@@ -3864,7 +3896,7 @@ private static final long serialVersionUID = 1L;
 			return itemModel;
 		}
 		
-		ItemModel categoryItemModel = getItemModelsForCategory(category);
+		ItemModel categoryItemModel = getItemModelsForCategory(category, item.getParent());
 		
 		String assignmentIdAsString = String.valueOf(assignment.getId());
 		for (ModelData model : categoryItemModel.getChildren()) {
@@ -5439,8 +5471,34 @@ private static final long serialVersionUID = 1L;
 		return sectionIdStudentIdsMap;
 	}
 	
+	public List<UserDereference> findAllUserDeferences() {
+		
+		Site site = getSite();
+		String siteId = site == null ? null : site.getId();
+		
+		Long[] learnerRoleKeys = accessAdvisor.getLearnerRoleKeys();
+		
+		int totalUsers = gbService.getFullUserCountForSite(siteId, null, learnerRoleKeys);
+		int dereferencedUsers = gbService.getDereferencedUserCountForSite(siteId, null, learnerRoleKeys);
+		
+		UserDereferenceRealmUpdate lastUpdate = gbService.getLastUserDereferenceSync(siteId, null);
+		
+		log.info("Total users: " + totalUsers + " Dereferenced users: " + dereferencedUsers);
+		
+		// Obviously if the realm count has changed, then we need to update, but let's also do it if more than an hour has passed
+		long ONEHOUR = 1000l * 60l * 60l;
+		if (totalUsers != dereferencedUsers || 
+				lastUpdate == null || lastUpdate.getRealmCount() == null || ! lastUpdate.getRealmCount().equals(Integer.valueOf(totalUsers)) ||
+				lastUpdate.getLastUpdate() == null || lastUpdate.getLastUpdate().getTime() + ONEHOUR < new Date().getTime()) {
+			gbService.syncUserDereferenceBySite(siteId, null, findAllMembers(site), totalUsers, learnerRoleKeys);
+		}
+		
+		List<UserDereference> dereferences = gbService.getUserUidsForSite(siteId, null, "sortName", null, null, -1, -1, true, learnerRoleKeys);
+		
+		return dereferences;
+	}
 	
-	protected List<UserRecord> findStudentRecordPage(Gradebook gradebook, Site site, String sectionUuid, String sortField, String searchField, String searchCriteria,
+	protected List<UserRecord> findLearnerRecordPage(Gradebook gradebook, Site site, String sectionUuid, String sortField, String searchField, String searchCriteria,
 			int offset, int limit, 
 			boolean isAscending) {
 		
@@ -5448,18 +5506,26 @@ private static final long serialVersionUID = 1L;
 		
 		List<UserRecord> userRecords = new ArrayList<UserRecord>();
 
-		int totalUsers = gbService.getFullUserCountForSite(siteId, null);
+		Long[] learnerRoleKeys = accessAdvisor.getLearnerRoleKeys();
+		
+		int totalUsers = gbService.getFullUserCountForSite(siteId, null, learnerRoleKeys);
+		int dereferencedUsers = gbService.getDereferencedUserCountForSite(siteId, null, learnerRoleKeys);
+		
+		int diff = totalUsers - dereferencedUsers;
+		
 		UserDereferenceRealmUpdate lastUpdate = gbService.getLastUserDereferenceSync(siteId, null);
+		
+		log.info("Total users: " + totalUsers + " Dereferenced users: " + dereferencedUsers);
 		
 		// Obviously if the realm count has changed, then we need to update, but let's also do it if more than an hour has passed
 		long ONEHOUR = 1000l * 60l * 60l;
-		if (lastUpdate == null || lastUpdate.getRealmCount() == null || ! lastUpdate.getRealmCount().equals(Integer.valueOf(totalUsers)) ||
+		if (lastUpdate == null || lastUpdate.getRealmCount() == null || ! lastUpdate.getRealmCount().equals(Integer.valueOf(diff)) ||
 				lastUpdate.getLastUpdate() == null || lastUpdate.getLastUpdate().getTime() + ONEHOUR < new Date().getTime()) {
-			gbService.syncUserDereferenceBySite(siteId, null, findAllStudents(site), totalUsers);
+			gbService.syncUserDereferenceBySite(siteId, null, findAllMembers(site), diff, learnerRoleKeys);
 		}
 		
-		List<UserDereference> dereferences = gbService.getUserUidsForSite(siteId, sectionUuid, sortField, searchField, searchCriteria, offset, limit, isAscending);
-		List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebook.getId(), siteId, sectionUuid);
+		List<UserDereference> dereferences = gbService.getUserUidsForSite(siteId, sectionUuid, sortField, searchField, searchCriteria, offset, limit, isAscending, learnerRoleKeys);
+		List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebook.getId(), siteId, sectionUuid, learnerRoleKeys);
 		Map<String, Map<Long, AssignmentGradeRecord>> studentGradeRecordMap = new HashMap<String, Map<Long, AssignmentGradeRecord>>();
 		
 	    if (allGradeRecords != null) {
@@ -5477,7 +5543,7 @@ private static final long serialVersionUID = 1L;
 			}
 		}
 	    	    	
-		List<CourseGradeRecord> courseGradeRecords = gbService.getAllCourseGradeRecords(gradebook.getId(), siteId, sectionUuid, sortField, searchField, searchCriteria, offset, limit, isAscending);
+		List<CourseGradeRecord> courseGradeRecords = gbService.getAllCourseGradeRecords(gradebook.getId(), siteId, sectionUuid, sortField, searchField, searchCriteria, offset, limit, isAscending, learnerRoleKeys);
 		Map<String, CourseGradeRecord> studentCourseGradeRecordMap = new HashMap<String, CourseGradeRecord>();
 		
 		if (courseGradeRecords != null) {
@@ -5513,7 +5579,7 @@ private static final long serialVersionUID = 1L;
 		
 		Map<String, Set<Group>> userGroupMap = new HashMap<String, Set<Group>>();
 		
-		List<Object[]> tuples = gbService.getUserGroupReferences(siteId, sectionUuid, groupReferences);
+		List<Object[]> tuples = gbService.getUserGroupReferences(siteId, sectionUuid, groupReferences, learnerRoleKeys);
 		
 		if (tuples != null) {
 			for (Object[] tuple : tuples) {
@@ -5572,10 +5638,10 @@ private static final long serialVersionUID = 1L;
 						}
 					}
 					userRecord.setSectionTitle(groupTitles.toString());
-					userRecord.setExportCourseManagemntId(courseManagementIds.toString());
-					userRecord.setExportUserId(exportAdvisor.getExportUserId(userRecord.getUserEid()));
+					userRecord.setExportCourseManagemntId(courseManagementIds.toString());	
 				}
-			
+				userRecord.setExportUserId(exportAdvisor.getExportUserId(dereference));
+				
 				userRecords.add(userRecord);
 			}
 		}
@@ -5584,24 +5650,24 @@ private static final long serialVersionUID = 1L;
 		return userRecords;
 	}
 	
-	protected List<User> findAllStudents(Site site) {
+	protected List<User> findAllMembers(Site site) {
 		List<User> users = new ArrayList<User>();
 		if (site != null) {
 			Set<Member> members = site == null ? new HashSet<Member>() : site.getMembers();
 			for (Member member : members) {
-				if (accessAdvisor.isLearner(member)) {
+				//if (accessAdvisor.isLearner(member)) {
 					String userUid = member.getUserId();
-
+					
 					try {
 						if (userService != null) {
 							User user = userService.getUser(userUid);
 							users.add(user);
 						}
 					} catch (UserNotDefinedException e) {
-						log.info("Unable to retrieve user for " + userUid);
+						log.info("Unable to retrieve user for " + userUid );
 					}
 					
-				}
+				//}
 			}
 		}
 		return users;
@@ -5657,7 +5723,6 @@ private static final long serialVersionUID = 1L;
 						
 						// GRBK-37
 						userRecord.setExportCourseManagemntId(exportAdvisor.getExportCourseManagemntId(member.getUserEid(), group));
-						userRecord.setExportUserId(exportAdvisor.getExportUserId(member.getUserEid()));
 					}
 				}
 			}

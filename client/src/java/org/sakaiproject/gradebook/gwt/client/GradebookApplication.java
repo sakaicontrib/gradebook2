@@ -22,6 +22,8 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client;
 
+import java.util.Date;
+
 import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
@@ -34,6 +36,8 @@ import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
 import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
+import com.extjs.gxt.ui.client.state.CookieProvider;
+import com.extjs.gxt.ui.client.state.StateManager;
 import com.extjs.gxt.ui.client.util.Theme;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.google.gwt.core.client.EntryPoint;
@@ -45,11 +49,18 @@ import com.google.gwt.user.client.rpc.ServiceDefTarget;
  */
 public class GradebookApplication implements EntryPoint {
 	
+	// One year in millisecond is 365 days x 24 hours x 60 minutes x 60 seconds x 1000 milliseconds
+	private static long ONE_YEAR = 31536000000l;
+	
 	private GradebookToolFacadeAsync dataService;
 	private int screenHeight = 600;
 	
     public GradebookApplication() {
     	GXT.setDefaultTheme(Theme.GRAY, true);
+    	
+    	Date expiryDate = new Date(new Date().getTime() + ONE_YEAR);
+    	CookieProvider provider = new CookieProvider("/", expiryDate, null, true);
+        StateManager.get().setProvider(provider);
     }
 	
 	public void onModuleLoad() {

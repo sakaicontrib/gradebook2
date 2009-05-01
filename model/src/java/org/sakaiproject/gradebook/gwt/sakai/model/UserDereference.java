@@ -1,8 +1,9 @@
 package org.sakaiproject.gradebook.gwt.sakai.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class UserDereference {
+public class UserDereference implements Serializable {
 
 	private Long id;
 	private String eid;

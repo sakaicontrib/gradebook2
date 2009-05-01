@@ -40,7 +40,7 @@ public class MultigradeView extends View {
 	
 	public MultigradeView(Controller controller, I18nConstants i18n) {
 		super(controller);
-		this.multigrade = new MultiGradeContentPanel(null) {
+		this.multigrade = new MultiGradeContentPanel(null, i18n) {
 			
 			protected BasePagingLoader<PagingLoadConfig, PagingLoadResult<StudentModel>> newLoader() {
 				return multigradeLoader;
@@ -116,7 +116,7 @@ public class MultigradeView extends View {
 			protected void load(PagingLoadConfig loadConfig, AsyncCallback<PagingLoadResult<StudentModel>> callback) {
 				GradebookToolFacadeAsync service = Registry.get("service");
 				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-				PageRequestAction pageAction = new PageRequestAction(EntityType.STUDENT, selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId());
+				PageRequestAction pageAction = new PageRequestAction(EntityType.LEARNER, selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId());
 				service.getEntityPage(pageAction, loadConfig, callback);
 			}
 			

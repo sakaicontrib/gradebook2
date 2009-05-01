@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.exception.IdUnusedException;
+import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.site.api.Group;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SiteService;
@@ -52,9 +53,9 @@ public class SampleExportAdvisor implements ExportAdvisor {
 		return stringBuilder.toString();
 	}
 
-	public String getExportUserId(String userEid) {
+	public String getExportUserId(UserDereference dereference) {
 
-		return userEid;
+		return dereference.getEid();
 	}
 
 	public void submitFinalGrade(List<Map<Column, String>> studentDataList, String gradebookUid, HttpServletRequest request, HttpServletResponse response) {
