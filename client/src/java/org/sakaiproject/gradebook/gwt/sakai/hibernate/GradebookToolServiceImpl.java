@@ -42,7 +42,6 @@ import org.hibernate.Criteria;
 import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
-import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.TransientObjectException;
@@ -1493,8 +1492,8 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
     	{
     		Set<String> keySet = gradeMap.keySet();
 
-    		if(keySet.size() != GradebookService.validLetterGrade.length) //we only consider letter grade with -/+ now.
-    			throw new IllegalArgumentException("gradeMap doesn't have right size in BaseHibernateManager.saveOrUpdateLetterGradePercentMapping");
+    		//if(keySet.size() != GradebookService.validLetterGrade.length) //we only consider letter grade with -/+ now.
+    		//	throw new IllegalArgumentException("gradeMap doesn't have right size in BaseHibernateManager.saveOrUpdateLetterGradePercentMapping");
 
     		if(validateLetterGradeMapping(gradeMap) == false)
     			throw new IllegalArgumentException("gradeMap contains invalid letter in BaseHibernateManager.saveOrUpdateLetterGradePercentMapping");
@@ -2181,7 +2180,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		// assignment
 		session.evict(assignment);
 
-		Assignment asnFromDb = (Assignment) session.load(Assignment.class, assignment.getId());
+		/*Assignment asnFromDb = (Assignment) session.load(Assignment.class, assignment.getId());
 		List conflictList = ((List) session.createQuery("select go from GradableObject as go where go.name = ? and go.gradebook = ? and go.removed=false and go.id != ?")
 				.setString(0, assignment.getName()).setEntity(1, assignment.getGradebook()).setLong(2, assignment.getId().longValue()).list());
 		int numNameConflicts = conflictList.size();
@@ -2189,7 +2188,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 			throw new ConflictingAssignmentNameException("You can not save multiple assignments in a gradebook with the same name");
 		}
 
-		session.evict(asnFromDb);
+		session.evict(asnFromDb);*/
 		session.update(assignment);
 	}
 	

@@ -4,10 +4,13 @@ import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
+import org.sakaiproject.gradebook.gwt.client.gxt.InlineEditField;
+import org.sakaiproject.gradebook.gwt.client.gxt.InlineEditNumberField;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemCreate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.AppView;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.components.NullSensitiveCheckBox;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
@@ -48,6 +51,7 @@ import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 
 public class ItemFormPanel extends ContentPanel {
 
+	private enum Mode { DELETE, EDIT, NEW };
 	private enum SelectionType { CLOSE, CREATE, CANCEL, DELETE, SAVE };
 	
 	private static final String selectionTypeField = "selectionType";
@@ -90,6 +94,9 @@ public class ItemFormPanel extends ContentPanel {
 	private Type createItemType;
 	
 	private boolean isDelete;
+	private boolean hasChanges;
+	
+	private Mode mode;
 	
 	@SuppressWarnings("unchecked")
 	public ItemFormPanel(I18nConstants i18n) {
@@ -112,7 +119,7 @@ public class ItemFormPanel extends ContentPanel {
 		directionsField.setName("directions");
 		//formPanel.add(directionsField);
 		
-		nameField = new TextField<String>();
+		nameField = new InlineEditField<String>();
 		nameField.setAllowBlank(false);
 		nameField.setName(ItemModel.Key.NAME.name());
 		nameField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.NAME));
@@ -142,7 +149,7 @@ public class ItemFormPanel extends ContentPanel {
 		gradeTypePicker.setVisible(false);
 		formPanel.add(gradeTypePicker);
 
-		percentCourseGradeField = new NumberField();
+		percentCourseGradeField = new InlineEditNumberField();
 		percentCourseGradeField.setName(ItemModel.Key.PERCENT_COURSE_GRADE.name());
 		percentCourseGradeField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.PERCENT_COURSE_GRADE));
 		percentCourseGradeField.setFormat(DataTypeConversionUtil.getLongNumberFormat());
@@ -152,7 +159,7 @@ public class ItemFormPanel extends ContentPanel {
 		percentCourseGradeField.setVisible(false);
 		formPanel.add(percentCourseGradeField);
 		
-		percentCategoryField = new NumberField();
+		percentCategoryField = new InlineEditNumberField();
 		percentCategoryField.setName(ItemModel.Key.PERCENT_CATEGORY.name());
 		percentCategoryField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.PERCENT_CATEGORY));
 		percentCategoryField.setFormat(DataTypeConversionUtil.getLongNumberFormat());
@@ -162,7 +169,7 @@ public class ItemFormPanel extends ContentPanel {
 		percentCategoryField.setVisible(false);
 		formPanel.add(percentCategoryField);
 			
-		pointsField = new NumberField();
+		pointsField = new InlineEditNumberField();
 		pointsField.setName(ItemModel.Key.POINTS.name());
 		pointsField.setEmptyText("100");
 		pointsField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.POINTS));
@@ -172,7 +179,7 @@ public class ItemFormPanel extends ContentPanel {
 		pointsField.setVisible(false);
 		formPanel.add(pointsField);
 		
-		dropLowestField = new NumberField();
+		dropLowestField = new InlineEditNumberField();
 		dropLowestField.setName(ItemModel.Key.DROP_LOWEST.name());
 		dropLowestField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.DROP_LOWEST));
 		dropLowestField.setAllowDecimals(false);
@@ -193,59 +200,32 @@ public class ItemFormPanel extends ContentPanel {
 		sourceField.setEmptyText("Gradebook");
 		sourceField.setVisible(false);
 		formPanel.add(sourceField);
-		
-		/*LayoutContainer checkBoxContainer = new LayoutContainer();
-		ColumnLayout columnLayout = new ColumnLayout();
-		checkBoxContainer.setLayout(columnLayout);
-		
-		LayoutContainer left = new LayoutContainer();
-		LayoutContainer right = new LayoutContainer();
-		
-		setLayoutData(left, new MarginData(0));
-		setLayoutData(right, new MarginData(0));
-		
-		FormLayout leftFormLayout = new FormLayout();
-		leftFormLayout.setPadding(0);
-		leftFormLayout.setLabelWidth(120);
-		
-		left.setLayout(leftFormLayout);
-		
-		FormLayout rightFormLayout = new FormLayout();
-		rightFormLayout.setPadding(0);
-		rightFormLayout.setLabelWidth(120);
-		
-		right.setLayout(rightFormLayout);*/
-		
-		includedField = new CheckBox();
+
+		includedField = new NullSensitiveCheckBox();
 		includedField.setName(ItemModel.Key.INCLUDED.name());
 		includedField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.INCLUDED));
 		includedField.setVisible(false);
 		formPanel.add(includedField);
 		
-		extraCreditField = new CheckBox();
+		extraCreditField = new NullSensitiveCheckBox();
 		extraCreditField.setName(ItemModel.Key.EXTRA_CREDIT.name());
 		extraCreditField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.EXTRA_CREDIT));
 		extraCreditField.setVisible(false);
 		extraCreditField.addListener(Events.Change, extraCreditChangeListener);
 		formPanel.add(extraCreditField);
 		
-		equallyWeightChildrenField = new CheckBox();
+		equallyWeightChildrenField = new NullSensitiveCheckBox();
 		equallyWeightChildrenField.setName(ItemModel.Key.EQUAL_WEIGHT.name());
 		equallyWeightChildrenField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.EQUAL_WEIGHT));
 		equallyWeightChildrenField.setVisible(false);
 		formPanel.add(equallyWeightChildrenField);
 		
-		releasedField = new CheckBox();
+		releasedField = new NullSensitiveCheckBox();
 		releasedField.setName(ItemModel.Key.RELEASED.name());
 		releasedField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.RELEASED));
 		releasedField.setVisible(false);
 		formPanel.add(releasedField);
-		
-		/*checkBoxContainer.add(left, new ColumnData(200));
-		checkBoxContainer.add(right, new ColumnData(200));
-		
-		formPanel.add(checkBoxContainer);*/
-		
+			
 		okButton = new Button("Blank", selectionListener);
 		addButton(okButton);
 		
@@ -261,10 +241,11 @@ public class ItemFormPanel extends ContentPanel {
 	}
 	
 	public void onActionCompleted() {
-		okButton.setEnabled(true);
+		//okButton.setEnabled(true);
 	}
 	
 	public void onConfirmDeleteItem(ItemModel itemModel) {
+		this.mode = Mode.DELETE;
 		this.createItemType = null;
 		this.selectedItemModel = itemModel;
 		
@@ -278,6 +259,7 @@ public class ItemFormPanel extends ContentPanel {
 			Type itemType = itemModel.getItemType();
 			initState(itemType, itemModel, true);
 			directionsField.setText(i18n.directionsConfirmDeleteItem());
+			directionsField.setStyleName("gbWarning");
 			directionsField.setVisible(true);
 			
 			formBindings.bind(itemModel);
@@ -302,9 +284,10 @@ public class ItemFormPanel extends ContentPanel {
 			Dispatcher.forwardEvent(GradebookEvents.ExpandEastPanel.getEventType(), activeCard);
 		//}
 		
-		if (selectedItemModel != null && itemModel != null && itemModel.equals(selectedItemModel))
+		if (mode == Mode.EDIT && selectedItemModel != null && itemModel != null && itemModel.equals(selectedItemModel))
 			return;
 		
+		this.mode = Mode.EDIT;
 		this.createItemType = null;
 		this.selectedItemModel = itemModel;
 		this.directionsField.setText("");
@@ -319,6 +302,7 @@ public class ItemFormPanel extends ContentPanel {
 		if (itemModel != null) {
 			Type itemType = itemModel.getItemType();
 			initState(itemType, itemModel, false);
+			okButton.setEnabled(false);
 			formBindings.bind(itemModel);
 		} else {
 			formBindings.unbind();
@@ -378,6 +362,8 @@ public class ItemFormPanel extends ContentPanel {
 	}
 	
 	public void onNewCategory(ItemModel itemModel) {
+		this.mode = Mode.NEW;
+		
 		this.directionsField.setText("");
 		this.directionsField.setVisible(false);
 		this.createItemType = Type.CATEGORY;
@@ -395,6 +381,8 @@ public class ItemFormPanel extends ContentPanel {
 	}
 	
 	public void onNewItem(ItemModel itemModel) {
+		this.mode = Mode.NEW;
+		
 		this.directionsField.setText("");
 		this.directionsField.setVisible(false);
 		this.createItemType = Type.ITEM;
@@ -492,6 +480,7 @@ public class ItemFormPanel extends ContentPanel {
 	
 	private void initState(Type itemType, ItemModel itemModel, boolean isDelete) {
 		this.isDelete = isDelete;
+		clearChanges();
 		
 		okButton.setEnabled(true);
 		
@@ -534,7 +523,7 @@ public class ItemFormPanel extends ContentPanel {
 		
 		initField(nameField, !isDelete, true);
 		initField(pointsField, !isDelete && !isExternal, isItem);
-		initField(percentCategoryField, !isDelete, isPercentCategoryVisible);
+		initField(percentCategoryField, !isDelete && isItem, isPercentCategoryVisible);
 		initField(percentCourseGradeField, !isDelete, isCategory);
 		initField(equallyWeightChildrenField, !isDelete, isCategory && hasWeights);
 		initField(extraCreditField, !isDelete, isNotGradebook);
@@ -546,11 +535,10 @@ public class ItemFormPanel extends ContentPanel {
 		initField(categoryTypePicker, true, !isNotGradebook);
 		initField(gradeTypePicker, true, !isNotGradebook);
 		initField(sourceField, false, isItem);
-
 	}
 	
 	private void initField(Field field, boolean isEnabled, boolean isVisible) {
-		if (field.isEnabled() != isEnabled)
+		//if (field.isEnabled() != isEnabled)
 			field.setEnabled(isEnabled);
 		
 		//if (!field.isRendered() || field.isVisible() != isVisible)
@@ -588,7 +576,9 @@ public class ItemFormPanel extends ContentPanel {
 								@Override
 								protected void onFieldChange(FieldEvent e) {									
 									ItemModel itemModel = (ItemModel)this.model;
-									e.field.setEnabled(false);
+									//e.field.setEnabled(false);
+									
+									setChanges();
 									
 									String property = e.field.getName();
 									
@@ -631,8 +621,8 @@ public class ItemFormPanel extends ContentPanel {
 								protected void onModelChange(PropertyChangeEvent event) {
 									super.onModelChange(event);
 									
-									if (field != null)
-										field.setEnabled(true);
+									//if (field != null)
+									//	field.setEnabled(true);
 								}
 							};
 							/*if (f instanceof ListField) {
@@ -716,6 +706,7 @@ public class ItemFormPanel extends ContentPanel {
 				boolean hasCategories = categoryType != CategoryType.NO_CATEGORIES;
 				boolean hasWeights = categoryType == CategoryType.WEIGHTED_CATEGORIES;
 				boolean isPercentCategoryVisible = false;
+				boolean isItem = selectedItemModel != null && selectedItemModel.getItemType() == ItemModel.Type.ITEM;
 				
 				if (itemModel != null) {
 				
@@ -741,7 +732,7 @@ public class ItemFormPanel extends ContentPanel {
 					}
 				} 
 				
-				initField(percentCategoryField, !isDelete, isPercentCategoryVisible || DataTypeConversionUtil.checkBoolean(extraCreditField.getValue()));
+				initField(percentCategoryField, !isDelete && isItem, isPercentCategoryVisible || DataTypeConversionUtil.checkBoolean(extraCreditField.getValue()));
 			}
 			
 		};
@@ -780,6 +771,7 @@ public class ItemFormPanel extends ContentPanel {
 				if (button != null) {
 					SelectionType selectionType = button.getData(selectionTypeField);
 					if (selectionType != null) {
+						
 						switch (selectionType) {
 						case CLOSE:
 							Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
@@ -825,6 +817,7 @@ public class ItemFormPanel extends ContentPanel {
 									&& (!percentCourseGradeField.isVisible() || percentCourseGradeField.validate())
 									&& (!pointsField.isVisible() || pointsField.validate())) {
 								okButton.setEnabled(false);
+								//clearChanges();
 								Dispatcher.forwardEvent(GradebookEvents.UpdateItem.getEventType(), new ItemUpdate(treeStore, selectedItemModel));
 							}
 							break;
@@ -843,5 +836,15 @@ public class ItemFormPanel extends ContentPanel {
 		return treeStore;
 	}
 
+	
+	public void setChanges() {
+		hasChanges = true;
+		okButton.setEnabled(true);
+	}
+	
+	public void clearChanges() {
+		hasChanges = false;
+		okButton.setEnabled(false);
+	}
 	
 }

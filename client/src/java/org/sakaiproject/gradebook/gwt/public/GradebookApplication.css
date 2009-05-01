@@ -265,6 +265,11 @@
 	width: 120px;
 }
 
+.gbWarning {
+	color: red;
+	font-weight: bold;
+}
+
 .gbRecordLabel {
 	color: darkgray;
 	font-weight: bold;

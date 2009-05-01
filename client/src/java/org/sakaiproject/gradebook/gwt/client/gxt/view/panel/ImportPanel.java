@@ -318,6 +318,10 @@ public class ImportPanel extends ContentPanel {
 					
 					Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades.getEventType());
 					
+					GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+					selectedGradebook.setGradebookItemModel(result.getGradebookItemModel());
+					Dispatcher.forwardEvent(GradebookEvents.SwitchGradebook.getEventType(), selectedGradebook);
+					
 					fireEvent(GradebookEvents.UserChange.getEventType(), new UserChangeEvent(action));
 				}
 			
@@ -572,6 +576,9 @@ public class ImportPanel extends ContentPanel {
 				spreadsheetModel.setRows(rows);
 				
 				uploadSpreadsheet(spreadsheetModel);
+				
+				submitButton.setVisible(false);
+				cancelButton.setText("Done");
 				
 			}
 		});

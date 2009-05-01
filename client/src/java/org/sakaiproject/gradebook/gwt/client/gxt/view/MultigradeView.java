@@ -18,12 +18,14 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
 import com.extjs.gxt.ui.client.Registry;
+import com.extjs.gxt.ui.client.Style.SortDir;
 import com.extjs.gxt.ui.client.data.BasePagingLoader;
 import com.extjs.gxt.ui.client.data.DataReader;
 import com.extjs.gxt.ui.client.data.ModelReader;
 import com.extjs.gxt.ui.client.data.PagingLoadConfig;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 import com.extjs.gxt.ui.client.data.RpcProxy;
+import com.extjs.gxt.ui.client.data.SortInfo;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.View;
@@ -153,6 +155,7 @@ public class MultigradeView extends View {
 		multigradeStore = new ListStore<StudentModel>(multigradeLoader);
 		multigradeStore.setModelComparer(new EntityModelComparer<StudentModel>());
 		multigradeStore.setMonitorChanges(true);
+		multigradeStore.setDefaultSort(StudentModel.Key.LAST_NAME_FIRST.name(), SortDir.ASC);
 	}
 	
 	protected void onBeginItemUpdates() {

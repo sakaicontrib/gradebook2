@@ -24,8 +24,6 @@ package org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid;
 
 import java.util.List;
 
-import org.sakaiproject.gradebook.gwt.client.gxt.GridPanel;
-
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;

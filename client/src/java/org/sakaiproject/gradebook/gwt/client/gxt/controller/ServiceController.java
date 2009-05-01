@@ -225,11 +225,18 @@ public class ServiceController extends Controller {
 		buffer.append(":").append(event.label);
 		//notifier.notify(buffer.toString(), 
 		//		"Stored item grade as '{0}' and recalculated course grade to '{1}' ", result.get(property), result.get(StudentModel.Key.COURSE_GRADE.name()));
-			
-		String message = buffer.append("- stored item grade as '")
-			.append(result.get(property))
-			.append("' and recalculated course grade to '").append(result.get(StudentModel.Key.COURSE_GRADE.name()))
-			.append("'").toString();
+	
+		String message = null;
+		if (property.endsWith(StudentModel.COMMENT_TEXT_FLAG)) {
+			message = buffer.append("- stored comment as '")
+				.append(result.get(property))
+				.append("'").toString();
+		} else {
+			message = buffer.append("- stored item grade as '")
+				.append(result.get(property))
+				.append("' and recalculated course grade to '").append(result.get(StudentModel.Key.COURSE_GRADE.name()))
+				.append("'").toString();
+		}
 		
 		notifier.notify("Success", message);
 		Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), message);

@@ -727,8 +727,11 @@ private static final long serialVersionUID = 1L;
 		}
 		
 		List<String> results = new ArrayList<String>();
-		Collection<Assignment> assignments = idToAssignmentMap.values();
-		if (assignments != null) {
+		
+		// Since we index the new items by a phony id e.g. "NEW:123", we need to use this set to iterate
+		Set<String> idKeySet = idToAssignmentMap.keySet();
+		//Collection<Assignment> assignments = idToAssignmentMap.values();
+		if (idKeySet != null) {
 			for (StudentModel student : spreadsheetModel.getRows()) {
 				UserRecord userRecord = userRecordMap.get(student.getIdentifier());
 				
@@ -751,9 +754,10 @@ private static final long serialVersionUID = 1L;
 				
 				Map<Long, AssignmentGradeRecord> gradeRecordMap = userRecord.getGradeRecordMap();
 				
-				for (Assignment assignment : assignments) {
-					
-					Object v = student.get(String.valueOf(assignment.getId()));
+				for (String id : idKeySet) {
+					Assignment assignment = idToAssignmentMap.get(id);
+					// This is the value stored on the client
+					Object v = student.get(id);
 					
 					Double value = null;
 					if (v != null && v instanceof String) {
@@ -793,9 +797,9 @@ private static final long serialVersionUID = 1L;
 						builder.append(assignment.getName()).append(" (");
 							
 						if (oldValue != null)
-							builder.append(oldValue);
+							builder.append(oldValue).append("->");
 							
-						builder.append("->").append(value).append(") ");
+						builder.append(value).append(") ");
 							
 						//results.add("Successfully scored " + assignment.getName() + " for " + student.getIdentifier() + " to " + value);
 					} catch (InvalidInputException e) {
@@ -806,13 +810,13 @@ private static final long serialVersionUID = 1L;
 						if (oldValue != null)
 							builder.append(oldValue);
 							
-						builder.append("->Invalid) ");
+						builder.append("Invalid) ");
 					} catch (Exception e) {
 								
 						if (oldValue != null)
 							builder.append(oldValue);
 							
-						builder.append("->Failed) ");
+						builder.append("Failed) ");
 					}
 					
 				}
@@ -821,6 +825,8 @@ private static final long serialVersionUID = 1L;
 			}
 		}
 		spreadsheetModel.setResults(results);
+		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
+		spreadsheetModel.setGradebookItemModel(getItemModel(gradebook, assignments));
 		
 		return spreadsheetModel;
 	}
@@ -5481,16 +5487,17 @@ private static final long serialVersionUID = 1L;
 		int totalUsers = gbService.getFullUserCountForSite(siteId, null, learnerRoleKeys);
 		int dereferencedUsers = gbService.getDereferencedUserCountForSite(siteId, null, learnerRoleKeys);
 		
+		int diff = totalUsers - dereferencedUsers;
+		
 		UserDereferenceRealmUpdate lastUpdate = gbService.getLastUserDereferenceSync(siteId, null);
 		
 		log.info("Total users: " + totalUsers + " Dereferenced users: " + dereferencedUsers);
 		
 		// Obviously if the realm count has changed, then we need to update, but let's also do it if more than an hour has passed
 		long ONEHOUR = 1000l * 60l * 60l;
-		if (totalUsers != dereferencedUsers || 
-				lastUpdate == null || lastUpdate.getRealmCount() == null || ! lastUpdate.getRealmCount().equals(Integer.valueOf(totalUsers)) ||
+		if (lastUpdate == null || lastUpdate.getRealmCount() == null || ! lastUpdate.getRealmCount().equals(Integer.valueOf(diff)) ||
 				lastUpdate.getLastUpdate() == null || lastUpdate.getLastUpdate().getTime() + ONEHOUR < new Date().getTime()) {
-			gbService.syncUserDereferenceBySite(siteId, null, findAllMembers(site), totalUsers, learnerRoleKeys);
+			gbService.syncUserDereferenceBySite(siteId, null, findAllMembers(site), diff, learnerRoleKeys);
 		}
 		
 		List<UserDereference> dereferences = gbService.getUserUidsForSite(siteId, null, "sortName", null, null, -1, -1, true, learnerRoleKeys);

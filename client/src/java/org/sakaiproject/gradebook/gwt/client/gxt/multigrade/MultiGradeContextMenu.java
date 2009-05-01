@@ -25,21 +25,15 @@ package org.sakaiproject.gradebook.gwt.client.gxt.multigrade;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.GradebookToolFacadeAsync;
-import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityCreateAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
-import org.sakaiproject.gradebook.gwt.client.model.CommentModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradeEventModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordModel;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
 import com.extjs.gxt.ui.client.Events;
@@ -50,13 +44,16 @@ import com.extjs.gxt.ui.client.data.BaseListLoader;
 import com.extjs.gxt.ui.client.data.ListLoadConfig;
 import com.extjs.gxt.ui.client.data.ListLoader;
 import com.extjs.gxt.ui.client.data.RpcProxy;
+import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.FieldEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.MenuEvent;
+import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
-import com.extjs.gxt.ui.client.store.Record;
+import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
+import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.TextArea;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
@@ -83,6 +80,7 @@ public class MultiGradeContextMenu extends Menu {
 	private TextArea editCommentTextArea;
 	private Grid<GradeEventModel> viewGradeHistoryGrid;
 
+	private ContentPanel editCommentContainer;
 	
 	public MultiGradeContextMenu(final StudentModelOwner owner) {
 		super();
@@ -91,6 +89,8 @@ public class MultiGradeContextMenu extends Menu {
 		contextMenuEditCommentItem = new MenuItem("Edit Comment");
 		contextMenuViewGradeLogItem = new MenuItem("View Grade History");
 		
+		ContentPanel addCommentContainer = new ContentPanel();
+		addCommentContainer.setHeaderVisible(false);
 		addCommentTextArea = new TextArea() {
 			
 			@Override
@@ -99,52 +99,7 @@ public class MultiGradeContextMenu extends Menu {
 
 			    switch (fe.getKeyCode()) {
 			    case KeyboardListener.KEY_ENTER:
-			    	
-			    	ListStore<StudentModel> learnerStore = owner.getStore();
-			    	StudentModel learner = owner.getSelectedModel();
-			    	Long itemId = owner.getSelectedAssignment();
-			    	
-			    	String property = new StringBuilder().append(String.valueOf(itemId)).append(StudentModel.COMMENT_TEXT_FLAG).toString();
-			    	
-			    	String newCommentText = getValue();
-			    	String oldCommentText = learner.get(property);
-			    	
-			    	Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord.getEventType(), new GradeRecordUpdate(learnerStore, learner, property, "Comment", oldCommentText, newCommentText));
-			    	
-			    	/*
-			    	if (studentModel != null) {
-				    	CommentModel commentModel = new CommentModel();
-				    	commentModel.setStudentUid(studentModel.getIdentifier());
-				    	commentModel.setAssignmentId(owner.getSelectedAssignment());
-				    	commentModel.setText(getValue());
-				    	
-				    	GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-				    	UserEntityCreateAction<CommentModel> action = 
-				    		new UserEntityCreateAction<CommentModel>(selectedGradebook, EntityType.COMMENT, commentModel);
-				    	
-				    	RemoteCommand<CommentModel> remoteCommand = 
-							new RemoteCommand<CommentModel>() {
-
-								@Override
-								public void onCommandSuccess(UserEntityAction<CommentModel> action, CommentModel result) {
-									MultiGradeContextMenu.this.hide();
-									
-									String property = String.valueOf(owner.getSelectedAssignment());
-									
-									Record record = owner.getStore().getRecord(studentModel);
-									// Force refresh of cell
-									Object value = record.get(property);
-									record.set(property, null);
-									record.set(property, value);
-									record.set(property + StudentModel.COMMENTED_FLAG, Boolean.TRUE);
-									record.endEdit();
-								}
-								
-				    	};
-				    	
-				    	remoteCommand.execute(action);
-			    	}*/
-			    	
+			    	addComment(owner, getValue());
 			    	break;
 			    }
 			    
@@ -152,13 +107,25 @@ public class MultiGradeContextMenu extends Menu {
 			
 		};
 		addCommentTextArea.setSize(200, 150);
-		AdapterMenuItem addTextBox = new AdapterMenuItem(addCommentTextArea);
+		
+		addCommentContainer.add(addCommentTextArea);
+		addCommentContainer.addButton(new Button("Submit", new SelectionListener<ButtonEvent>() {
+
+			@Override
+			public void componentSelected(ButtonEvent be) {
+				addComment(owner, addCommentTextArea.getValue());
+			}
+			
+		}));
+		
+		AdapterMenuItem addTextBox = new AdapterMenuItem(addCommentContainer);
 		addTextBox.setHideOnClick(false);
 		
 		contextMenuAddSubMenu = new Menu();
 		contextMenuAddSubMenu.add(addTextBox);
 		
-		
+		ContentPanel editCommentContainer = new ContentPanel();
+		editCommentContainer.setHeaderVisible(false);
 		editCommentTextArea = new TextArea() {
 			
 			@Override
@@ -166,55 +133,8 @@ public class MultiGradeContextMenu extends Menu {
 			    super.onKeyPress(fe);
 
 			    switch (fe.getKeyCode()) {
-			    case KeyboardListener.KEY_ENTER:
-			    			    	
-			    	ListStore<StudentModel> learnerStore = owner.getStore();
-			    	StudentModel learner = owner.getSelectedModel();
-			    	Long itemId = owner.getSelectedAssignment();
-			    	
-			    	String property = new StringBuilder().append(String.valueOf(itemId)).append(StudentModel.COMMENT_TEXT_FLAG).toString();
-			    	
-			    	String newCommentText = getValue();
-			    	String oldCommentText = learner.get(property);
-			    	
-			    	Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord.getEventType(), new GradeRecordUpdate(learnerStore, learner, property, "Comment", oldCommentText, newCommentText));
-			    	
-			    	/*if (commentModel != null) {
-			    		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-				    	UserEntityUpdateAction<CommentModel> action = 
-				    		new UserEntityUpdateAction<CommentModel>(selectedGradebook, commentModel, 
-				    				CommentModel.Key.TEXT.name(), ClassType.STRING, getValue(), commentModel.getText());
-				    	
-				    	RemoteCommand<CommentModel> remoteCommand = 
-							new RemoteCommand<CommentModel>() {
-
-								@Override
-								public void onCommandSuccess(UserEntityAction<CommentModel> action, CommentModel result) {
-									commentModel = result;
-									
-									if (commentModel != null) {
-										editCommentTextArea.setValue(commentModel.getText());
-									}
-									
-									MultiGradeContextMenu.this.hide();
-									
-									String property = String.valueOf(owner.getSelectedAssignment());
-									
-									StudentModel studentModel = owner.getSelectedModel();
-									Record record = owner.getStore().getRecord(studentModel);
-									// Force refresh of cell
-									Object value = record.get(property);
-									record.set(property, null);
-									record.set(property, value);
-									record.set(property + StudentModel.COMMENTED_FLAG, Boolean.TRUE);
-									record.endEdit();
-								}
-				    	
-				    	};
-				    	
-				    	remoteCommand.execute(action);
-			    	}*/
-			    	
+			    case KeyboardListener.KEY_ENTER:		    
+			    	editComment(owner, getValue());
 			    	break;
 			    }
 			    
@@ -222,7 +142,18 @@ public class MultiGradeContextMenu extends Menu {
 			
 		};
 		editCommentTextArea.setSize(200, 150);
-		AdapterMenuItem editTextBox = new AdapterMenuItem(editCommentTextArea);
+		
+		editCommentContainer.add(editCommentTextArea);
+		editCommentContainer.addButton(new Button("Submit", new SelectionListener<ButtonEvent>() {
+
+			@Override
+			public void componentSelected(ButtonEvent be) {
+				editComment(owner, editCommentTextArea.getValue());
+			}
+			
+		}));
+		
+		AdapterMenuItem editTextBox = new AdapterMenuItem(editCommentContainer);
 		editTextBox.setHideOnClick(false);
 		
 		contextMenuEditSubMenu = new Menu();
@@ -374,5 +305,31 @@ public class MultiGradeContextMenu extends Menu {
 	}
 	
 	
+	private void addComment(StudentModelOwner owner, String value) {
+		ListStore<StudentModel> learnerStore = owner.getStore();
+    	StudentModel learner = owner.getSelectedModel();
+    	Long itemId = owner.getSelectedAssignment();
+    	
+    	String property = new StringBuilder().append(String.valueOf(itemId)).append(StudentModel.COMMENT_TEXT_FLAG).toString();
+    	
+    	String newCommentText = value;
+    	String oldCommentText = learner.get(property);
+    	
+    	Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord.getEventType(), new GradeRecordUpdate(learnerStore, learner, property, "Comment", oldCommentText, newCommentText));
+	}
+	
+	private void editComment(StudentModelOwner owner, String value) {
+		ListStore<StudentModel> learnerStore = owner.getStore();
+    	StudentModel learner = owner.getSelectedModel();
+    	Long itemId = owner.getSelectedAssignment();
+    	
+    	String property = new StringBuilder().append(String.valueOf(itemId)).append(StudentModel.COMMENT_TEXT_FLAG).toString();
+    	
+    	String newCommentText = value;
+    	String oldCommentText = learner.get(property);
+    	
+    	Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord.getEventType(), new GradeRecordUpdate(learnerStore, learner, property, "Comment", oldCommentText, newCommentText));
+
+	}
 	
 }

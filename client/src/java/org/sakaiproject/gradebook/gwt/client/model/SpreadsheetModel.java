@@ -14,6 +14,7 @@ public class SpreadsheetModel extends EntityModel implements BeanModelTag {
 	private List<StudentModel> rows;
 	private boolean isPercentage;
 	private List<String> results;
+	private ItemModel gradebookItemModel;
 	
 	public SpreadsheetModel() {
 		
@@ -63,6 +64,14 @@ public class SpreadsheetModel extends EntityModel implements BeanModelTag {
 
 	public void setResults(List<String> results) {
 		this.results = results;
+	}
+
+	public ItemModel getGradebookItemModel() {
+		return gradebookItemModel;
+	}
+
+	public void setGradebookItemModel(ItemModel gradebookItemModel) {
+		this.gradebookItemModel = gradebookItemModel;
 	}
 	
 }
