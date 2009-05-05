@@ -524,7 +524,7 @@ public class ItemFormPanel extends ContentPanel {
 		initField(nameField, !isDelete, true);
 		initField(pointsField, !isDelete && !isExternal, isItem);
 		initField(percentCategoryField, !isDelete && isItem, isPercentCategoryVisible);
-		initField(percentCourseGradeField, !isDelete, isCategory);
+		initField(percentCourseGradeField, !isDelete, isCategory && hasWeights);
 		initField(equallyWeightChildrenField, !isDelete, isCategory && hasWeights);
 		initField(extraCreditField, !isDelete, isNotGradebook);
 		initField(dropLowestField, !isDelete, isCategory);
