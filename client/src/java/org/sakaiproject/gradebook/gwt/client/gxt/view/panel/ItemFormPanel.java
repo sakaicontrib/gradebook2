@@ -171,7 +171,7 @@ public class ItemFormPanel extends ContentPanel {
 			
 		pointsField = new InlineEditNumberField();
 		pointsField.setName(ItemModel.Key.POINTS.name());
-		pointsField.setEmptyText("100");
+		pointsField.setEmptyText("Default is 100 points");
 		pointsField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.POINTS));
 		pointsField.setFormat(DataTypeConversionUtil.getDefaultNumberFormat());
 		pointsField.setAllowDecimals(true);
@@ -521,7 +521,7 @@ public class ItemFormPanel extends ContentPanel {
 			isPercentCategoryVisible = hasWeights && isItem;
 		}
 		
-		initField(nameField, !isDelete, true);
+		initField(nameField, !isDelete && !isExternal, true);
 		initField(pointsField, !isDelete && !isExternal, isItem);
 		initField(percentCategoryField, !isDelete && isItem, isPercentCategoryVisible);
 		initField(percentCourseGradeField, !isDelete, isCategory && hasWeights);
