@@ -703,8 +703,10 @@ private static final long serialVersionUID = 1L;
 				String studentUid = gradeRecord.getStudentId();
 				UserRecord userRecord = userRecordMap.get(studentUid);
 				
-				if (userRecord == null)
+				if (userRecord == null) {
 					userRecord = new UserRecord(studentUid);
+					userRecordMap.put(studentUid, userRecord);
+				}
 				
 				/*if (!userRecord.isPopulated()) {
 					User user = null;
@@ -828,7 +830,12 @@ private static final long serialVersionUID = 1L;
 							
 						builder.append("Invalid) ");
 					} catch (Exception e) {
-								
+						
+						String failedProperty = new StringBuilder().append(assignment.getId()).append(StudentModel.FAILED_FLAG).toString();
+						student.set(failedProperty, e.getMessage());
+						
+						log.warn("Failed to score numeric item for " + student.getIdentifier() + " and item " + assignment.getId() + " to " + value, e);
+						
 						if (oldValue != null)
 							builder.append(oldValue);
 							
