@@ -44,7 +44,7 @@ public class ItemNumberCellRenderer extends NumberCellRenderer<TreeItem> {
 			
 			StringBuilder cssClasses = new StringBuilder();
 			
-			if (!isIncluded && isName)
+			if (!isIncluded && (isItem || isCategory))
 				cssClasses.append("gbNotIncluded");
 			
 			if (!isItem) 
