@@ -1374,18 +1374,18 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		
 		switch (selectedGradebook.getGradebookItemModel().getGradeType()) {
 		case POINTS:
-			columnNameBuilder.append(" (").append(item.getPoints()).append("pts)");
+			columnNameBuilder.append(" [").append(item.getPoints()).append("pts]");
 			break;
 		case PERCENTAGES:
-			columnNameBuilder.append(" (%)");
+			columnNameBuilder.append(" [%]");
 			break;
 		case LETTERS:
-			columnNameBuilder.append(" (A-F)");
+			columnNameBuilder.append(" [A-F]");
 			break;
 		}
 		
 		if (item.getStudentModelKey() != null && item.getStudentModelKey().equals(StudentModel.Key.GRADE_OVERRIDE.name()))
-			columnNameBuilder.append(" (A-F)");
+			columnNameBuilder.append(" [A-F]");
 		
 		return buildColumn(selectedGradebook, item.getStudentModelKey(), item.getIdentifier(), 
 				columnNameBuilder.toString(), convertBoolean(item.getIncluded()), 

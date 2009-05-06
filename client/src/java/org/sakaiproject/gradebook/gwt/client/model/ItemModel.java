@@ -37,7 +37,7 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 		PERCENT_COURSE_GRADE("% Grade"),
 		PERCENT_CATEGORY("% Category"), IS_PERCENTAGE("Is Percentage"), 
 		STUDENT_MODEL_KEY("Student Model Key"),
-		ASSIGNMENT_ID("Item Id"), DATA_TYPE("Data Type"), CATEGORYTYPE("Category Type"),
+		ASSIGNMENT_ID("Item Id"), DATA_TYPE("Data Type"), CATEGORYTYPE("Organization"),
 		GRADETYPE("Grade Type"), RELEASEGRADES("Release Grades");
 		
 		private String propertyName;
