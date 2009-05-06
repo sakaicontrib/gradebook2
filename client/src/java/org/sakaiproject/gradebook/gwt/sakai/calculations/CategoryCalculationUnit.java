@@ -1,35 +1,158 @@
 package org.sakaiproject.gradebook.gwt.sakai.calculations;
 
-import java.io.PrintWriter;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 
-import org.sakaiproject.gradebook.gwt.sakai.calculations.Calculation.Mode;
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 
 public class CategoryCalculationUnit {
 
+	private BigDecimal categoryGrade;
+	
 	// This is the desired weight for the category that the user enters
 	private BigDecimal categoryWeightTotal;
 	// This is the weight for the category based on the items that have been graded and not excused
-	private BigDecimal categoryActualPercentTotal;
+	/*private BigDecimal categoryActualPercentTotal;
 	// This is the actual weight for the category based on the items that have been graded, not excused, and not dropped
 	private BigDecimal adjustedCategoryActualPercentTotal;
 	
 	private BigDecimal factorXPass1;
-	private BigDecimal factorXPass2;
+	private BigDecimal factorXPass2;*/
 	
-	private Integer dropLowest;
+	private int dropLowest;
+	private boolean isExtraCredit;
 	
 	private List<GradeRecordCalculationUnit> unitsToDrop;
 	
-	public CategoryCalculationUnit(BigDecimal categoryWeightTotal, Integer dropLowest) {
+	public CategoryCalculationUnit(BigDecimal categoryWeightTotal, Integer dropLowest, Boolean extraCredit) {
 		this.categoryWeightTotal = categoryWeightTotal;
-		this.dropLowest = dropLowest;
+		this.dropLowest = dropLowest == null ? 0 : dropLowest.intValue();
+		this.isExtraCredit = extraCredit == null ? false : extraCredit.booleanValue();
+		this.unitsToDrop = new LinkedList<GradeRecordCalculationUnit>();
 	}
 	
 	
+	public BigDecimal calculate(List<GradeRecordCalculationUnit> units) {	
+		
+		BigDecimal sumScores = sumScaledScores(units);
+		
+		// When drop lowest is not set, the calculation is very straightforward
+		if (dropLowest <= 0) {
+			categoryGrade = sumScores;
+			return categoryGrade;
+		}
+		
+		// Note that drop lowest only works when all the scores for this category are equally weighted
+		Collections.sort(units, new Comparator<GradeRecordCalculationUnit>() {
+
+			public int compare(GradeRecordCalculationUnit o1, GradeRecordCalculationUnit o2) {
+				if (o2 == null || o1 == null)
+					return 0;
+
+				if (o1.getScaledScore() == null || o2.getScaledScore() == null)
+					return 0;
+				
+				return o1.getScaledScore().compareTo(o2.getScaledScore());
+			}
+			
+		});
+		
+		int numberOfUnitsDropped = 0;
+		
+		List<GradeRecordCalculationUnit> unitsToCount = new ArrayList<GradeRecordCalculationUnit>();
+		
+		// We don't want to include excused records in our determination of drop lowest items
+		for (GradeRecordCalculationUnit unit : units) {
+			if (numberOfUnitsDropped < dropLowest && !unit.isExcused()) {
+				unit.setDropped(true);
+				unitsToDrop.add(unit);
+				numberOfUnitsDropped++;
+			} else {
+				unit.setDropped(false);
+				unitsToCount.add(unit);
+			}
+		}
+
+		categoryGrade = sumScaledScores(unitsToCount);
+		return categoryGrade;
+	}
+	
+	
+	private BigDecimal sumScaledScores(List<GradeRecordCalculationUnit> units) {
+		BigDecimal sum = sumUnitWeights(units, false);
+		
+		if (sum == null)
+			return null;
+		
+		BigDecimal ratio = BigDecimal.ONE;
+		
+		if (sum.compareTo(BigDecimal.ZERO) != 0) 
+			ratio = BigDecimal.ONE.setScale(AppConstants.SCALE).divide(sum, RoundingMode.HALF_EVEN);
+		
+		BigDecimal sumScores = null;
+		
+		for (GradeRecordCalculationUnit unit : units) {
+
+			if (unit.isExcused())
+				continue;
+			
+			BigDecimal scaledItemWeight = findScaledItemWeight(ratio, unit.getPercentOfCategory());
+			BigDecimal scaledScore = unit.calculate(scaledItemWeight);
+			
+			if (scaledScore != null) {
+				if (sumScores == null)
+					sumScores = BigDecimal.ZERO;
+				
+				sumScores = sumScores.add(scaledScore);
+			}
+		}
+				
+		return sumScores;
+	}
+	
+	
+	private BigDecimal findScaledItemWeight(BigDecimal ratio, BigDecimal itemWeight) {
+		if (ratio == null || itemWeight == null)
+			return null;
+		
+		return ratio.multiply(itemWeight);
+	}
+	
+	private BigDecimal sumUnitWeights(List<GradeRecordCalculationUnit> units, boolean doExtraCredit) {
+		
+		BigDecimal sumUnitWeight = null;
+		
+		if (units != null) {
+			for (GradeRecordCalculationUnit unit : units) {
+				
+				if (unit.isExtraCredit() != doExtraCredit)
+					continue;
+				
+				if (unit.isExcused())
+					continue;
+				
+				BigDecimal itemWeight = unit.getPercentOfCategory();
+				
+				if (itemWeight != null) {
+					if (sumUnitWeight == null) 
+						sumUnitWeight = BigDecimal.ZERO;
+						
+					sumUnitWeight = sumUnitWeight.add(itemWeight);
+				}
+			}
+		}
+		
+		return sumUnitWeight;
+	}
+	
+	
+	
+	/*
 	public BigDecimal calculateGrade(List<GradeRecordCalculationUnit> units, Mode mode, PrintWriter writer) {
 		
 		pass1(units, mode, writer);
@@ -47,7 +170,9 @@ public class CategoryCalculationUnit {
 			unit.calculateIdealPercentOverall(categoryWeightTotal, mode, writer);
 			unit.calculateGradedPercentOverall(mode, writer);
 			BigDecimal actualPercent = unit.getActualPercentOverall(mode, writer);
-			sum.add(actualPercent);
+			
+			if (!unit.isExcused())
+				sum.add(actualPercent);
 		}
 		
 		categoryActualPercentTotal = sum.calculate();
@@ -79,13 +204,14 @@ public class CategoryCalculationUnit {
 		int sizeOf = units.size();
 		
 		if (writer != null) writer.println("Calculating factorXPass2");
-		if (dropLowest != null && dropLowest.intValue() > 0 && sizeOf >= dropLowest.intValue()) {
+		if (dropLowest > 0) { // && sizeOf >= dropLowest) {
 			
 			Collections.sort(units, new Comparator<GradeRecordCalculationUnit>() {
 
 				public int compare(GradeRecordCalculationUnit o1, GradeRecordCalculationUnit o2) {
 					if (o2 == null || o1 == null)
 						return 0;
+
 					if (o2.getScaledScoreBeforeDropLowestDifferential() == null || o1.getScaledScoreBeforeDropLowestDifferential() == null)
 						return 0;
 					
@@ -94,7 +220,20 @@ public class CategoryCalculationUnit {
 				
 			});
 			
-			unitsToDrop = units.subList(0, dropLowest.intValue());
+			int numberOfUnitsDropped = 0;
+			
+			// We don't want to include excused records in our determination of drop lowest items
+			for (GradeRecordCalculationUnit unit : units) {
+				if (numberOfUnitsDropped >= dropLowest)
+					break;
+				
+				if (!unit.isExcused()) {
+					unitsToDrop.add(unit);
+					numberOfUnitsDropped++;
+				}
+			}
+			
+			//unitsToDrop = units.subList(0, dropLowest);
 			BigDecimal droppedWeightTotalAdjustment = calculateDroppedUnitsWeightTotal(unitsToDrop, mode, writer);
 			
 			Subtraction s = new Subtraction(categoryActualPercentTotal, droppedWeightTotalAdjustment, mode, writer);
@@ -118,7 +257,8 @@ public class CategoryCalculationUnit {
 		for (GradeRecordCalculationUnit unit : units) {
 			if (unitsToDrop == null || !unitsToDrop.contains(unit)) {
 				unit.calculateScalingFactorForPass3(factorXPass2, mode, writer);
-				s.add(unit.calculateScaledScoreAfterDropLowest(mode, writer));
+				if (!unit.isExcused())
+					s.add(unit.calculateScaledScoreAfterDropLowest(mode, writer));
 			}
 		}
 		
@@ -131,6 +271,26 @@ public class CategoryCalculationUnit {
 			sum.add(unit.getActualPercentOverall());
 		}
 		return sum.perform();
+	}*/
+
+
+	public boolean isExtraCredit() {
+		return isExtraCredit;
+	}
+
+
+	public BigDecimal getCategoryWeightTotal() {
+		return categoryWeightTotal;
+	}
+
+
+	public BigDecimal getCategoryGrade() {
+		return categoryGrade;
+	}
+
+
+	public int getDropLowest() {
+		return dropLowest;
 	}
 	
 	

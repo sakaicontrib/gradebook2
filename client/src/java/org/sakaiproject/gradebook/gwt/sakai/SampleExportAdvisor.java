@@ -147,6 +147,8 @@ public class SampleExportAdvisor implements ExportAdvisor {
 		finalGradeSubmissionFile.append(FILE_EXTENSION);
 		File finalGradesFile = new File(finalGradeSubmissionFile.toString());
 		
+		log.info("Writing final grades to " + finalGradesFile.getPath());
+		
 		PrintWriter filePrintWriter = null;
 
 		try {

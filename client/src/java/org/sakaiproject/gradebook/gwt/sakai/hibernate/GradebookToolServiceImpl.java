@@ -46,6 +46,7 @@ import org.hibernate.Session;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.TransientObjectException;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.exception.ConstraintViolationException;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
@@ -282,7 +283,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		return (UserDereferenceRealmUpdate)getHibernateTemplate().execute(hc);
 	}
 	
-	public void syncUserDereferenceBySite(final String siteId, final String realmGroupId, final List<User> users, final int realmCount, final Long[] roleKeys) {
+	public synchronized void syncUserDereferenceBySite(final String siteId, final String realmGroupId, final List<User> users, final int realmCount, final Long[] roleKeys) {
 		HibernateCallback hc = new HibernateCallback() {
             public Object doInHibernate(Session session) throws HibernateException {
             	
@@ -301,21 +302,21 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 					.append("where rg.realmKey=r.realmKey ")
 					.append("and r.realmId=:realmId ")
 					.append("and user.userUid=rg.userId ")
-					.append("and rg.roleKey in (:roleKeys) ")
+					//.append("and rg.roleKey in (:roleKeys) ")
 					.append("and rg.active=true ");
             	
 				Query query = session.createQuery(builder.toString());
 				query.setString("realmId", realmId);
-				query.setParameterList("roleKeys", roleKeys);
+				//query.setParameterList("roleKeys", roleKeys);
 				
             	List<UserDereference> userDereferences = query.list();
             	Map<String, UserDereference> userDereferenceMap = new HashMap<String, UserDereference>();
             	for (UserDereference user : userDereferences) {
             		userDereferenceMap.put(user.getUserUid(), user);
+            		log.info("Current list: " + user.getUserUid() + " " + user.getDisplayName());
             	}
-
             	
-            	Set<String> addedUserIds = new HashSet<String>();
+            	Set<String> addedUserIds = new HashSet<String>(userDereferenceMap.keySet());
             	
             	int i=0;
             	for (User user : users) {
@@ -333,13 +334,22 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
             			dereference = new UserDereference(user.getId(), user.getEid(), user.getDisplayId(), user.getDisplayName(), lastNameFirst, sortName, user.getEmail());
             			
             			if (!addedUserIds.contains(user.getId())) {
-	            			session.save(dereference);
-	            			i++;
+            				try {
+            					log.info("Saving " + user.getId() + " " + dereference.getUserUid() + " " + user.getDisplayName());
+		            			session.save(dereference);
+		            			i++;
+            				} catch (ConstraintViolationException he) {
+            					log.info("Caught a constraint violation exception trying to save a user record. This is not necessarily a bug. ", he);
+            				}
 	          
 	            			if ( i % 20 == 0 ) { //20, same as the JDBC batch size
 	                	        //flush a batch of inserts/updates and release memory:
-	                	        session.flush();
-	                	        session.clear();
+	                	        try {
+		            				session.flush();
+		                	        session.clear();
+	                	        } catch (ConstraintViolationException he) {
+	            					log.info("Caught a constraint violation exception trying to save a user record. This is not necessarily a bug. ", he);
+	            				}
 	                	    }
 	            			
 	            			addedUserIds.add(user.getId());
@@ -379,13 +389,21 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
             			}
             			
             			if (isModified) {
-            				session.update(dereference);
-            				i++;
+            				try {
+	            				session.update(dereference);
+	            				i++;
+	            			} catch (ConstraintViolationException he) {
+	        					log.info("Caught a constraint violation exception trying to save a user record. This is not necessarily a bug. ", he);
+	        				}
             				
             				if ( i % 20 == 0 ) { //20, same as the JDBC batch size
-                    	        //flush a batch of inserts/updates and release memory:
-                    	        session.flush();
-                    	        session.clear();
+                    	        try {
+	            					//flush a batch of inserts/updates and release memory:
+	                    	        session.flush();
+	                    	        session.clear();
+	            				} catch (ConstraintViolationException he) {
+		        					log.info("Caught a constraint violation exception trying to save a user record. This is not necessarily a bug. ", he);
+		        				}
                     	    }
             			}
             			
@@ -423,7 +441,12 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
             	return null;
             }
 		};
-		getHibernateTemplate().execute(hc);
+		
+		try {
+			getHibernateTemplate().execute(hc);
+		} catch (ConstraintViolationException he) {
+			log.info("Caught a constraint violation exception trying to save a user record. This is not necessarily a bug. ", he);
+		}
 	}
 	
 	public int getFullUserCountForSite(final String siteId, final String realmGroupId, final Long[] roleKeys) {

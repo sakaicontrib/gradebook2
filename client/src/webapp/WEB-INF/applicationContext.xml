@@ -57,7 +57,7 @@
 
 	
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"
-		class="org.sakaiproject.gradebook.gwt.sakai.GradeCalculationsImpl">
+		class="org.sakaiproject.gradebook.gwt.sakai.calculations.GradeCalculationsOOImpl">
 		
 	</bean>
 

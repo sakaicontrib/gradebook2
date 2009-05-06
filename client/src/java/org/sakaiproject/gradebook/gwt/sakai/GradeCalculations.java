@@ -29,6 +29,7 @@ import java.util.Map;
 import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.AssignmentGradeRecord;
 import org.sakaiproject.tool.gradebook.Category;
+import org.sakaiproject.tool.gradebook.Gradebook;
 
 public interface GradeCalculations {
 
@@ -120,6 +121,11 @@ public interface GradeCalculations {
 	 * 
 	 * @return the course grade, where result >= BigDecimal.ZERO
 	 */
-	public BigDecimal getCourseGrade(Collection<Category> categoriesWithAssignments, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap);
+	//public BigDecimal getCourseGrade(Collection<Category> categoriesWithAssignments, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap);
+	
+	
+	
+	public BigDecimal getCourseGrade(Gradebook gradebook, Collection<?> items, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap);
+	
 	
 }

@@ -41,7 +41,7 @@ import org.sakaiproject.tool.gradebook.AssignmentGradeRecord;
 import org.sakaiproject.tool.gradebook.Category;
 import org.sakaiproject.tool.gradebook.Gradebook;
 
-public class GradeCalculationsImpl implements GradeCalculations {
+public class GradeCalculationsImpl /*implements GradeCalculations*/ {
 	
 	// Class Members
 	final static BigDecimal BIG_DECIMAL_100 = new BigDecimal("100.00000");

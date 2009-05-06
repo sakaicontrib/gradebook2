@@ -75,7 +75,6 @@ create table GB_USER_DEREFERENCE_T
 	CREATED_ON timestamp
 );
 
-create index GB_USER_DEREFERENCE_IDX on GB_USER_DEREFERENCE_T(SITE_ID);
 create unique index GB_USER_DEREF_USER_IDX on GB_USER_DEREFERENCE_T(USER_UID);
 
 create sequence GB_USER_DEREFERENCE_S

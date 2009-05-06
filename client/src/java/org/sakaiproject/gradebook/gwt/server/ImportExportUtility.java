@@ -47,6 +47,7 @@ public class ImportExportUtility {
 		TAB, COMMA, SPACE, COLON
 	};
 	
+	
 	private static enum StructureRow {
 		GRADEBOOK("Gradebook:"), CATEGORY("Category:"), PERCENT_GRADE("% Grade:"), POINTS("Points:"), 
 		PERCENT_CATEGORY("% Category:"), DROP_LOWEST("Drop Lowest:"), EQUAL_WEIGHT("Equal Weight Items:");
@@ -68,7 +69,7 @@ public class ImportExportUtility {
 		GradebookModel gradebook = delegateFacade.getEntity(getGradebookAction);
 		ItemModel gradebookItemModel = gradebook.getGradebookItemModel();
 		
-		CSVWriter csvWriter = new CSVWriter(writer, '\t');
+		CSVWriter csvWriter = new CSVWriter(writer);
 		
 		Long gradebookId = gradebook.getGradebookId();
 		final List<String> headerIds = new ArrayList<String>();
@@ -174,9 +175,8 @@ public class ImportExportUtility {
 		
 		final List<String> headerColumns = new LinkedList<String>();
 		
-		headerColumns.add("Learner");
-		headerColumns.add("Id");
-		headerColumns.add("Course Grade");
+		headerColumns.add("Student Id");
+		headerColumns.add("Student Name");
 		
 		ItemModelProcessor processor = new ItemModelProcessor(gradebookItemModel) {
 			
@@ -187,7 +187,7 @@ public class ImportExportUtility {
 				
 				if (!includeStructure) {
 					String points = DecimalFormat.getInstance().format(itemModel.getPoints());
-					text.append(" (").append(points).append("pts)");
+					text.append(" [").append(points).append("]");
 				}
 				
 				headerIds.add(itemModel.getIdentifier());
@@ -197,6 +197,8 @@ public class ImportExportUtility {
 		};
 		
 		processor.process();
+		
+		headerColumns.add("Course Grade");
 		
 		csvWriter.writeNext(headerColumns.toArray(new String[headerColumns.size()]));
 		
@@ -213,9 +215,9 @@ public class ImportExportUtility {
 				for (StudentModel row : rows) {
 					List<String> dataColumns = new LinkedList<String>();
 					
-					dataColumns.add(row.getLastNameFirst());
 					dataColumns.add(getExportId(row));
-					dataColumns.add(row.getStudentGrade());
+					dataColumns.add(row.getLastNameFirst());
+					
 					for (int column = 0; column < headerIds.size(); column++) {
 						if (headerIds.get(column) != null) {
 							Object value = row.get(headerIds.get(column));
@@ -229,6 +231,8 @@ public class ImportExportUtility {
 							dataColumns.add("");
 						}
 					}
+					
+					dataColumns.add(row.getStudentGrade());
 					
 					csvWriter.writeNext(dataColumns.toArray(new String[dataColumns.size()]));
 				}
@@ -262,7 +266,7 @@ public class ImportExportUtility {
 		DecimalFormat decimalFormat = new DecimalFormat();
 		
 		
-		CSVReader csvReader = new CSVReader(reader, '\t');
+		CSVReader csvReader = new CSVReader(reader);
 		
 		String[] headerColumns = null;
 		
@@ -274,7 +278,7 @@ public class ImportExportUtility {
 		
 		try {
 			
-			String[] headerLineIndicators = { "student", "name", "learner", "id", "identifier", "userid", "learnerid" };
+			String[] headerLineIndicators = { "student id", "student name", "learner", "id", "identifier", "userid", "learnerid" };
 			Set<String> headerLineIndicatorSet = new HashSet<String>();
 			
 			Map<String, StructureRow> structureLineIndicatorMap = new HashMap<String, StructureRow>();
@@ -329,12 +333,12 @@ public class ImportExportUtility {
 						
 						ImportHeader header = null;
 						// Check for name field
-						if (text.equalsIgnoreCase("student") || text.equalsIgnoreCase("name") ||
+						if (text.equalsIgnoreCase("student name") || text.equalsIgnoreCase("name") ||
 								text.equalsIgnoreCase("learner")) {
 							header = new ImportHeader(Field.NAME, text);
 							header.setId("NAME");
 							nameFieldIndex = i;
-						} else if (text.equalsIgnoreCase("id") || text.equalsIgnoreCase("identifier") ||
+						} else if (text.equalsIgnoreCase("student id") || text.equalsIgnoreCase("identifier") ||
 								text.equalsIgnoreCase("userId") || text.equalsIgnoreCase("learnerid")) {
 							header = new ImportHeader(Field.ID, text);
 							header.setId("ID");

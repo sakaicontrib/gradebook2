@@ -33,6 +33,7 @@ import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.GridPanel;
+import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.CustomColumnModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.CustomGridView;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
@@ -313,47 +314,41 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	
 	public void onItemUpdated(ItemModel itemModel) {
 
-		switch (itemModel.getItemType()) {
+		ItemModelProcessor processor = new ItemModelProcessor(itemModel) {
 			
-		case GRADEBOOK:
-			//refreshGrid(RefreshAction.REFRESHCOLUMNSANDDATA);
-			//showColumns(lastShowColumnsEvent);
-			break;
-		case CATEGORY:
-			if (itemModel.isActive()) {
-				queueDeferredRefresh(RefreshAction.REFRESHDATA);
+			public void doCategory(ItemModel categoryModel) {
+				if (categoryModel.isActive()) 
+					queueDeferredRefresh(RefreshAction.REFRESHDATA);
 			}
-			break;
-		case ITEM:
-			if (itemModel.isActive()) {
-				queueDeferredRefresh(RefreshAction.REFRESHDATA);
-			}
-			ColumnConfig column = cm.getColumnById(itemModel.getIdentifier());
 			
-			if (column != null) {
-				if (itemModel.getName() != null) {
-					column.setHeader(itemModel.getName());
-					queueDeferredRefresh(RefreshAction.REFRESHLOCALCOLUMNS);
-				}
+			public void doItem(ItemModel itemModel) {
+				if (itemModel.isActive()) 
+					queueDeferredRefresh(RefreshAction.REFRESHDATA);
 				
-				boolean isIncluded = itemModel.getIncluded() != null && itemModel.getIncluded().booleanValue();
-				boolean isExtraCredit = itemModel.getExtraCredit() != null && itemModel.getExtraCredit().booleanValue();
-						
-				if (!isIncluded)
-					column.setRenderer(unweightedNumericCellRenderer);
-				else if (isExtraCredit)
-					column.setRenderer(extraCreditNumericCellRenderer);
-				else
-					column.setRenderer(null);
+				ColumnConfig column = cm.getColumnById(itemModel.getIdentifier());
+				
+				if (column != null) {
+					if (itemModel.getName() != null) {
+						column.setHeader(itemModel.getName());
+						queueDeferredRefresh(RefreshAction.REFRESHLOCALCOLUMNS);
+					}
+					
+					boolean isIncluded = itemModel.getIncluded() != null && itemModel.getIncluded().booleanValue();
+					boolean isExtraCredit = itemModel.getExtraCredit() != null && itemModel.getExtraCredit().booleanValue();
+							
+					if (!isIncluded)
+						column.setRenderer(unweightedNumericCellRenderer);
+					else if (isExtraCredit)
+						column.setRenderer(extraCreditNumericCellRenderer);
+					else
+						column.setRenderer(null);
+				}	
 			}
 			
-			//if (grid.isRendered())
-			//	grid.getView().refresh(true);
-			
-			//showColumns(lastShowColumnsEvent);
-			break;
-		}
+		};
 		
+		processor.process();
+				
 		
 /*
 			switch (assignmentModelKey) {

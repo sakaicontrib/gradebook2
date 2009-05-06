@@ -54,12 +54,120 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		return categoryWeight;
 	}
 
-	public BigDecimal getCourseGrade(Collection<Category> categoriesWithAssignments, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap) {
-		if (categoriesWithAssignments == null && assignmentGradeRecordMap != null) 
-			categoriesWithAssignments = generateCategoriesWithAssignments(assignmentGradeRecordMap);
-			
+	@SuppressWarnings("unchecked")
+	public BigDecimal getCourseGrade(Gradebook gradebook, Collection<?> items, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap) {
+		boolean isWeighted = true;
+		switch (gradebook.getCategory_type()) {
+		case GradebookService.CATEGORY_TYPE_NO_CATEGORY:
+			return getNoCategoriesCourseGrade((Collection<Assignment>)items, assignmentGradeRecordMap);
+		case GradebookService.CATEGORY_TYPE_ONLY_CATEGORY:
+			isWeighted = false;
+		case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
+			return getCategoriesCourseGrade((Collection<Category>)items, assignmentGradeRecordMap, isWeighted);
+		}
+		
 		return null;
 	}
+	
+	private BigDecimal getNoCategoriesCourseGrade(Collection<Assignment> assignments, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap) {
+		List<GradeRecordCalculationUnit> gradeRecordUnits = new ArrayList<GradeRecordCalculationUnit>();
+		
+		populateGradeRecordUnits(assignments, gradeRecordUnits, assignmentGradeRecordMap);
+				
+		GradebookCalculationUnit gradebookUnit = new GradebookCalculationUnit();
+		
+		return gradebookUnit.calculatePointsBasedCourseGrade(gradeRecordUnits);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private BigDecimal getCategoriesCourseGrade(Collection<Category> categoriesWithAssignments, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap,
+			boolean isWeighted) {
+		
+		if (categoriesWithAssignments == null && assignmentGradeRecordMap != null) 
+			categoriesWithAssignments = generateCategoriesWithAssignments(assignmentGradeRecordMap);
+		
+		if (categoriesWithAssignments == null || assignmentGradeRecordMap == null)
+			return null;
+		
+		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
+
+		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
+		
+		for (Category category : categoriesWithAssignments) {
+		
+			if (category == null || category.isRemoved())
+				continue;
+			
+			String categoryKey = String.valueOf(category.getId());
+			
+			BigDecimal categoryWeight = getCategoryWeight(category);
+			CategoryCalculationUnit categoryCalculationUnit = new CategoryCalculationUnit(categoryWeight, Integer.valueOf(category.getDrop_lowest()), category.isExtraCredit());
+			categoryUnitMap.put(categoryKey, categoryCalculationUnit);
+			
+			List<GradeRecordCalculationUnit> gradeRecordUnits = new ArrayList<GradeRecordCalculationUnit>();
+		
+			List<Assignment> assignments = category.getAssignmentList();
+			if (assignments == null)
+				continue;
+			
+			populateGradeRecordUnits(assignments, gradeRecordUnits, assignmentGradeRecordMap);
+			
+			categoryGradeUnitListMap.put(categoryKey, gradeRecordUnits);
+
+		} // for
+		
+		GradebookCalculationUnit gradebookUnit = new GradebookCalculationUnit(categoryUnitMap);
+
+		if (isWeighted)
+			return gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap);
+		
+		return gradebookUnit.calculatePointsBasedCourseGrade(categoryGradeUnitListMap);
+	}
+	
+	
+	private void populateGradeRecordUnits(Collection<Assignment> assignments, List<GradeRecordCalculationUnit> gradeRecordUnits, 
+			Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap) {
+		
+		if (assignmentGradeRecordMap == null) 
+			return;
+		
+		for (Assignment assignment : assignments) {
+			
+			if (assignment.isRemoved())
+				continue;
+			
+			AssignmentGradeRecord assignmentGradeRecord = assignmentGradeRecordMap.get(assignment.getId());
+				
+			if (isGraded(assignmentGradeRecord)) {
+				// Make sure it's not excused
+				if (!isExcused(assignmentGradeRecord)) {
+			
+					BigDecimal pointsEarned = new BigDecimal(assignmentGradeRecord.getPointsEarned().toString());
+					BigDecimal pointsPossible = new BigDecimal(assignment.getPointsPossible().toString());
+					BigDecimal assignmentWeight = getAssignmentWeight(assignment);
+					
+					GradeRecordCalculationUnit gradeRecordUnit = new GradeRecordCalculationUnit(pointsEarned, 
+							pointsPossible, assignmentWeight, assignment.isExtraCredit()) {
+						
+						@Override
+						public void setDropped(boolean isDropped) {
+							super.setDropped(isDropped);
+							
+							AssignmentGradeRecord gradeRecord = (AssignmentGradeRecord)getActualRecord();
+							
+							gradeRecord.setDropped(Boolean.valueOf(isDropped));
+						}
+						
+					};
+			
+					gradeRecordUnit.setActualRecord(assignmentGradeRecord);
+					
+					gradeRecordUnits.add(gradeRecordUnit);
+				}
+			}
+		}
+	}
+	
 
 	public BigDecimal getNewPointsGrade(Double pointValue, Double maxPointValue, Double maxPointStartValue) {
 
@@ -175,9 +283,18 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		return assignment.isExtraCredit() == null ? false : assignment.isExtraCredit().booleanValue();
 	}
 	
-	/*private boolean isExtraCredit(Category category) {
-		return category.isExtraCredit() == null ? false : category.isExtraCredit().booleanValue();
-	}*/
+	private boolean isGraded(AssignmentGradeRecord assignmentGradeRecord) {
+		return assignmentGradeRecord != null && assignmentGradeRecord.getPointsEarned() != null;
+	}
+	
+	private boolean isDropped(AssignmentGradeRecord assignmentGradeRecord) {
+		return assignmentGradeRecord != null && assignmentGradeRecord.isDropped() != null && assignmentGradeRecord.isDropped().booleanValue();
+	}
+	
+	private boolean isExcused(AssignmentGradeRecord assignmentGradeRecord) {
+		return assignmentGradeRecord.isExcluded() == null ? false : assignmentGradeRecord.isExcluded().booleanValue();
+	}
+	
 	
 	private boolean isNormalCredit(Assignment assignment) {
 		boolean isExtraCredit = isExtraCredit(assignment);

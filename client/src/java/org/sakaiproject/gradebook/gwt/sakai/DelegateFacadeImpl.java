@@ -1509,7 +1509,7 @@ private static final long serialVersionUID = 1L;
 		return userRecords;
 	}
 	
-	private List<UserRecord> doSearchAndSortUserRecords(Gradebook gradebook, List<Category> categoriesWithAssignments, 
+	private List<UserRecord> doSearchAndSortUserRecords(Gradebook gradebook, List<Assignment> assignments, 
 			List<String> studentUids, Map<String, UserRecord> userRecordMap, PagingLoadConfig config) {
 		
 		String searchString = null;
@@ -1582,7 +1582,7 @@ private static final long serialVersionUID = 1L;
 			case COURSE_GRADE:
 				// In this case we need to ensure that we've calculated everybody's course grade
 				for (UserRecord record : userRecords) {
-					record.setDisplayGrade(getDisplayGrade(gradebook, record.getCourseGradeRecord(), categoriesWithAssignments, record.getGradeRecordMap()));
+					record.setDisplayGrade(getDisplayGrade(gradebook, record.getCourseGradeRecord(), assignments, record.getGradeRecordMap()));
 					record.setCalculated(true);
 				}
 				comparator = new CourseGradeComparator(isDescending);
@@ -1638,11 +1638,15 @@ private static final long serialVersionUID = 1L;
 		
 	    Gradebook gradebook = null;
 	   
-	    List<Category> categories = getCategoriesWithAssignments(gradebookId);
+	    List<Assignment> assignments = gbService.getAssignments(gradebookId);
 	    
-	    if (categories != null && categories.size() > 0) 
-	    	gradebook = categories.get(0).getGradebook();
-	    else 
+	    //List<Category> categories = getCategoriesWithAssignments(gradebookId);
+	    
+	    // Don't bother going out to the db for the Gradebook if we've already retrieved it
+	    if (assignments != null && assignments.size() > 0) 
+	    	gradebook = assignments.get(0).getGradebook();
+	    
+	    if (gradebook == null)
 	    	gradebook = gbService.getGradebook(gradebookId);
 	    
 	    String columnId = null;
@@ -1724,7 +1728,7 @@ private static final long serialVersionUID = 1L;
 				
 				// We only want to populate the rowData and rowValues for the requested rows
 				for (UserRecord userRecord : userRecords) {
-					rows.add((X)buildStudentRow(gradebook, userRecord, columns, categories));
+					rows.add((X)buildStudentRow(gradebook, userRecord, columns, assignments));
 				}
 				
 				return new BasePagingLoadResult<X>(rows, startRow, totalUsers);
@@ -1788,7 +1792,7 @@ private static final long serialVersionUID = 1L;
 				}
 				
 						
-				userRecords = doSearchAndSortUserRecords(gradebook, categories, studentUids, userRecordMap, config);
+				userRecords = doSearchAndSortUserRecords(gradebook, assignments, studentUids, userRecordMap, config);
 				totalUsers = userRecords.size();
 				break;
 			}
@@ -1836,7 +1840,7 @@ private static final long serialVersionUID = 1L;
 				}
 			}
 			
-			rows.add((X)buildStudentRow(gradebook, userRecord, columns, categories));
+			rows.add((X)buildStudentRow(gradebook, userRecord, columns, assignments));
 		}
 		
 		return new BasePagingLoadResult<X>(rows, startRow, totalUsers);
@@ -1984,7 +1988,7 @@ private static final long serialVersionUID = 1L;
 	
 	private StudentModel buildStudentRow(Gradebook gradebook, UserRecord userRecord, 
 			List<FixedColumnModel> columns, 
-			List<Category> categoriesWithAssignments) {
+			List<Assignment> assignments) {
 		
 		Map<Long, AssignmentGradeRecord> studentGradeMap = userRecord.getGradeRecordMap();
 		
@@ -2008,7 +2012,7 @@ private static final long serialVersionUID = 1L;
 		if (userRecord.isCalculated())
 			displayGrade = userRecord.getDisplayGrade();
 		else
-			displayGrade = getDisplayGrade(gradebook, courseGradeRecord, categoriesWithAssignments, studentGradeMap);
+			displayGrade = getDisplayGrade(gradebook, courseGradeRecord, assignments, studentGradeMap);
 			
 		if (columns != null) {
 			for (FixedColumnModel column : columns) {
@@ -2042,16 +2046,10 @@ private static final long serialVersionUID = 1L;
 			}
 		}
 		
-		if (categoriesWithAssignments != null) {
+		if (assignments != null) {
 			
-			for (Category category : categoriesWithAssignments) {
-				
-				List<Assignment> assignments = (List<Assignment>)category.getAssignmentList();
-				if (assignments != null) {
-					for (Assignment assignment : assignments) {
-						cellMap = appendItemData(assignment.getId(), cellMap, userRecord, gradebook);
-					}
-				}
+			for (Assignment assignment : assignments) {
+				cellMap = appendItemData(assignment.getId(), cellMap, userRecord, gradebook);
 			}
 			
 		} else {
@@ -2278,23 +2276,22 @@ private static final long serialVersionUID = 1L;
 		
 		if (gradebook != null) {
 			
-			Collection<Assignment> assignments = gbService.getAssignments(gradebook.getId());
+			List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
 			Map<Long, AssignmentGradeRecord> studentGradeMap = new HashMap<Long, AssignmentGradeRecord>();
 			if (assignments != null) {
 				for (Assignment assignment : assignments) {
 					studentGradeMap.put(assignment.getId(), gbService.getAssignmentGradeRecordForAssignmentForStudent(assignment, studentId));
 				}
 			}
-			List<Category> categoriesWithAssignments = getCategoriesWithAssignments(gradebook.getId());
-			
+
 			CourseGradeRecord courseGradeRecord = gbService.getStudentCourseGradeRecord(gradebook, studentId);
-			return getDisplayGrade(gradebook, courseGradeRecord, categoriesWithAssignments, studentGradeMap);
+			return getDisplayGrade(gradebook, courseGradeRecord, assignments, studentGradeMap);
 		}
 		return null;
 	}
 	
 	
-	public String requestCourseGrade(String gradebookUid, String studentId, List<Category> categoriesWithAssignments, Map<Long, AssignmentGradeRecord> studentGradeMap) {
+	/*public String requestCourseGrade(String gradebookUid, String studentId, List<Category> categoriesWithAssignments, Map<Long, AssignmentGradeRecord> studentGradeMap) {
 		Gradebook gradebook = null;
 		try {
 			gradebook = gbService.getGradebook(gradebookUid);
@@ -2307,11 +2304,22 @@ private static final long serialVersionUID = 1L;
 			return getDisplayGrade(gradebook, courseGradeRecord, categoriesWithAssignments, studentGradeMap);
 		}
 		return null;
-	}
+	}*/
 	
 	private String getDisplayGrade(Gradebook gradebook, CourseGradeRecord courseGradeRecord, 
-			List<Category> categoriesWithAssignments, Map<Long, AssignmentGradeRecord> studentGradeMap) {
-		BigDecimal autoCalculatedGrade = gradeCalculations.getCourseGrade(categoriesWithAssignments, studentGradeMap);
+			List<Assignment> assignments, Map<Long, AssignmentGradeRecord> studentGradeMap) {
+		
+		BigDecimal autoCalculatedGrade = null;
+		
+		switch (gradebook.getCategory_type()) {
+		case GradebookService.CATEGORY_TYPE_NO_CATEGORY:
+			autoCalculatedGrade = gradeCalculations.getCourseGrade(gradebook, assignments, studentGradeMap);
+			break;
+		default: 
+			List<Category> categories = getCategoriesWithAssignments(gradebook.getId(), assignments);
+			autoCalculatedGrade = gradeCalculations.getCourseGrade(gradebook, categories, studentGradeMap);
+		}
+		
 		Double calculatedGrade = autoCalculatedGrade == null ? null : Double.valueOf(autoCalculatedGrade.doubleValue());
 		
 		String enteredGrade = null;
@@ -2332,46 +2340,44 @@ private static final long serialVersionUID = 1L;
 		
 		String missingGradesMarker = "";
 		
-		if (categoriesWithAssignments != null) {
-			for (Category category : categoriesWithAssignments) {
-				if (category != null && (gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_NO_CATEGORY || 
-						(!category.isRemoved() && !DataTypeConversionUtil.checkBoolean(category.isUnweighted())))) {
-					List<Assignment> assignments = category.getAssignmentList();
-					if (assignments != null) {
-						for (Assignment assignment : assignments) {
-							if (assignment.isRemoved() || DataTypeConversionUtil.checkBoolean(assignment.isUnweighted()))
-								continue;
+		if (assignments != null) {
+			for (Assignment assignment : assignments) {
+				if (assignment.isRemoved() || DataTypeConversionUtil.checkBoolean(assignment.isUnweighted()))
+					continue;
 							
-							// The student is missing one or more grades if 
-							/// (a) there's no studentGradeMap
-							/// (b) there's no AssignmentGradeRecord for this assignment
-							/// (c) there's no points earned for this AssignmentGradeRecord
-							if (studentGradeMap != null && studentGradeMap.get(assignment.getId()) != null) {
+				if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY) {
+					Category category = assignment.getCategory();
 								
-								AssignmentGradeRecord record = studentGradeMap.get(assignment.getId());
-								
-								boolean isExcused = record.isExcluded() != null && record.isExcluded().booleanValue();
-								boolean isDropped = record.isDropped() != null && record.isDropped().booleanValue();
-								if (record.getPointsEarned() == null && !isExcused && !isDropped) { 
-									missingGradesMarker = "***";
-								}
-								
-							} else {
-								missingGradesMarker = "***";
-							}
+					// If the assignment belongs to a category that's removed or unweighted, skip
+					if (category != null && 
+						(category.isRemoved() || DataTypeConversionUtil.checkBoolean(category.isUnweighted())))
+						continue;
 							
-							
-						}
-					}
-				}
-			}
-		}
+					// The student is missing one or more grades if 
+					/// (a) there's no studentGradeMap
+					/// (b) there's no AssignmentGradeRecord for this assignment
+					/// (c) there's no points earned for this AssignmentGradeRecord
+					if (studentGradeMap != null && studentGradeMap.get(assignment.getId()) != null) {
+								
+						AssignmentGradeRecord record = studentGradeMap.get(assignment.getId());
+								
+						boolean isExcused = record.isExcluded() != null && record.isExcluded().booleanValue();
+						boolean isDropped = record.isDropped() != null && record.isDropped().booleanValue();
+						if (record.getPointsEarned() == null && !isExcused && !isDropped) 
+							missingGradesMarker = "***";
+			
+					} else 
+						missingGradesMarker = "***";
+				} // if 
+			} // for
+		} // if 
+
 		
 		if (letterGrade != null) {
 			StringBuilder buffer = new StringBuilder(letterGrade);
 			
 			if (isOverridden) {
-				buffer.append(" (override)");
+				buffer.append(" (override)").append(missingGradesMarker);
 			} else if (autoCalculatedGrade != null) {
 				buffer.append(" (")
 				.append(autoCalculatedGrade.setScale(2, RoundingMode.HALF_EVEN).toString())
@@ -2404,10 +2410,8 @@ private static final long serialVersionUID = 1L;
 		// FIXME: There has to be a more efficient way of doing this -- all we really need this for is to determine if the learner has been graded for all assignments
 		// FIXME: We should be able to replace that logic in getDisplayGrade with a clever db query.
 		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
-		List<Category> categoriesWithAssignments = getCategoriesWithAssignments(gradebook.getId(), assignments);
-		
 		CourseGradeRecord courseGradeRecord = gbService.getStudentCourseGradeRecord(gradebook, student.getIdentifier());
-		String displayGrade = getDisplayGrade(gradebook, courseGradeRecord, categoriesWithAssignments, studentGradeMap);
+		String displayGrade = getDisplayGrade(gradebook, courseGradeRecord, assignments, studentGradeMap);
 		
 		for (AssignmentGradeRecord record : assignmentGradeRecords) {
 			Long aId = record.getGradableObject().getId();
@@ -2597,7 +2601,7 @@ private static final long serialVersionUID = 1L;
 		CourseGrade courseGrade = gbService.getCourseGrade(gradebook.getId());
 		gbService.updateCourseGradeRecords(courseGrade, gradeRecords);
 		
-		String freshCourseGrade = requestCourseGrade(gradebookUid, student.getIdentifier());
+		String freshCourseGrade = getDisplayGrade(gradebook, courseGradeRecord, null, null);//requestCourseGrade(gradebookUid, student.getIdentifier());
 		student.set(StudentModel.Key.GRADE_OVERRIDE.name(), courseGradeRecord.getEnteredGrade());
 		student.set(StudentModel.Key.COURSE_GRADE.name(), freshCourseGrade);
 		
@@ -2605,7 +2609,7 @@ private static final long serialVersionUID = 1L;
 	}
 	
 	
-	public GradeRecordModel scoreTextItem(String gradebookUid, Long gradebookId, 
+	/*public GradeRecordModel scoreTextItem(String gradebookUid, Long gradebookId, 
 			String studentUid, GradeRecordModel assignmentModel, String value, String previousValue) throws InvalidInputException {
 
 		Assignment assignment = gbService.getAssignment((Long) assignmentModel.getAssignmentId());
@@ -2625,7 +2629,7 @@ private static final long serialVersionUID = 1L;
 		String courseGrade = requestCourseGrade(gradebookUid, studentUid);
 		assignmentModel.setCourseGrade(courseGrade);
 		return assignmentModel;
-	}
+	}*/
 	
 	/*private ItemModel updateCategoryField(String categoryId, ItemModel.Key key, Object value) 
 		throws InvalidInputException {
@@ -3082,6 +3086,33 @@ private static final long serialVersionUID = 1L;
 		gbService.storeActionRecord(actionRecord);
 	}
 	
+	private class OnlyEqualWeightDropLowestRule implements BusinessRule {
+		
+		private int dropLowest;
+		private boolean isEqualWeight;
+		
+		public OnlyEqualWeightDropLowestRule(int dropLowest, boolean isEqualWeight) {
+			this.dropLowest = dropLowest;
+			this.isEqualWeight = isEqualWeight;
+		}
+		
+		public void isSatisfied() throws BusinessRuleException {
+			
+			if (!isEqualWeight) {
+				if (dropLowest > 0) {
+					StringBuilder builder = new StringBuilder();
+					builder.append("Drop lowest is only valid for categories with equally weighted items. ")
+						.append("Please select equally weighted before setting a drop lowest value.");
+					
+					throw new BusinessRuleException(builder.toString());
+				}
+				
+			}
+			
+		}
+		
+	}
+	
 	private class NoDuplicateCategoryNamesRule implements BusinessRule {
 
 		private Long categoryId;
@@ -3480,7 +3511,9 @@ private static final long serialVersionUID = 1L;
 				break;
 			default:
 				// Business rule #2
-				beforeCreateRules.add(new NoDuplicateCategoryNamesRule(gradebook.getId(), item.getName(), null, categories));					
+				beforeCreateRules.add(new NoDuplicateCategoryNamesRule(gradebook.getId(), item.getName(), null, categories));		
+			
+				beforeCreateRules.add(new OnlyEqualWeightDropLowestRule(dropLowest, isEqualWeighting));
 			}
 			
 			if (beforeCreateRules != null) {
@@ -3672,6 +3705,8 @@ private static final long serialVersionUID = 1L;
 				// Business rule #3
 				if (isEqualWeighting && !wasEqualWeighting) 
 					afterCreateRules.add(new RecalculateEqualWeightingRule(category, !wasUnweighted));
+				
+				beforeCreateRules.add(new OnlyEqualWeightDropLowestRule(newDropLowest, isEqualWeighting));
 			}
 			
 			if (beforeCreateRules != null) {
@@ -4778,7 +4813,7 @@ private static final long serialVersionUID = 1L;
 					}
 					
 					
-					model.setUserAsStudent(buildStudentRow(gradebook, userRecord, columns, getCategoriesWithAssignments(gradebook.getId(), assignments)));
+					model.setUserAsStudent(buildStudentRow(gradebook, userRecord, columns, assignments));
 				}
 				
 				model.setUserName(user.getDisplayName());
@@ -4787,7 +4822,7 @@ private static final long serialVersionUID = 1L;
 			Map<String, UserRecord> userRecordMap = findStudentRecords(gradebookUid, gradebook.getId(), null, null);
 			UserRecord userRecord = userRecordMap.values().iterator().next();
 			model.setUserName(userRecord.getDisplayName());
-			model.setUserAsStudent(buildStudentRow(gradebook, userRecord, columns, getCategoriesWithAssignments(gradebook.getId(), assignments)));
+			model.setUserAsStudent(buildStudentRow(gradebook, userRecord, columns, assignments));
 		}
 			
 		model.setColumns(columns);
@@ -5491,7 +5526,9 @@ private static final long serialVersionUID = 1L;
 		
 		UserDereferenceRealmUpdate lastUpdate = gbService.getLastUserDereferenceSync(siteId, null);
 		
-		log.info("Total users: " + totalUsers + " Dereferenced users: " + dereferencedUsers);
+		int realmCount = lastUpdate == null || lastUpdate.getRealmCount() == null ? -1 : lastUpdate.getRealmCount().intValue();
+		
+		log.info("Total users: " + totalUsers + " Dereferenced users: " + dereferencedUsers + " Realm count: " + realmCount);
 		
 		// Obviously if the realm count has changed, then we need to update, but let's also do it if more than an hour has passed
 		long ONEHOUR = 1000l * 60l * 60l;
@@ -5522,7 +5559,9 @@ private static final long serialVersionUID = 1L;
 		
 		UserDereferenceRealmUpdate lastUpdate = gbService.getLastUserDereferenceSync(siteId, null);
 		
-		log.info("Total users: " + totalUsers + " Dereferenced users: " + dereferencedUsers);
+		int realmCount = lastUpdate == null || lastUpdate.getRealmCount() == null ? -1 : lastUpdate.getRealmCount().intValue();
+		
+		log.info("Total users: " + totalUsers + " Dereferenced users: " + dereferencedUsers + " Realm count: " + realmCount);
 		
 		// Obviously if the realm count has changed, then we need to update, but let's also do it if more than an hour has passed
 		long ONEHOUR = 1000l * 60l * 60l;

@@ -21,6 +21,8 @@ import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTree;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTreeItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
+import org.sakaiproject.gradebook.gwt.client.gxt.settings.LogConfig;
+import org.sakaiproject.gradebook.gwt.client.gxt.settings.LogDisplay;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.ItemCellRenderer;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.ItemNumberCellRenderer;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.ItemTreeTableBinder;
@@ -61,6 +63,7 @@ import com.extjs.gxt.ui.client.event.TreeEvent;
 import com.extjs.gxt.ui.client.event.TreeTableEvent;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.TreeStore;
+import com.extjs.gxt.ui.client.util.Point;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.TabItem;
 import com.extjs.gxt.ui.client.widget.TabPanel;
@@ -144,9 +147,29 @@ public class ItemTreePanel extends ContentPanel {
 	
 		TabPanel tabPanel = new AriaTabPanel();
 		
-		TabItem item = new AriaTabItem(i18n.navigationPanelFixedTabHeader());
+		TabItem item = new AriaTabItem(i18n.navigationPanelFixedTabHeader()) {
+			@Override
+			protected void onResize(int width, int height) {
+				super.onResize(width, height);
+			
+				treeTable.setHeight(height);
+				
+				/*
+				LogConfig infoConfig = new LogConfig("Test", "Some info");
+				infoConfig.display = 5000;
+				infoConfig.width = 300;
+				infoConfig.height = 200;
+				infoConfig.isPermanent = true;
+				
+				Point point = getPosition(false);
+				
+				int y = point.y + getHeight(); // - infoConfig.height;
+				
+				LogDisplay.display(point.x, y, infoConfig);*/
+			}
+		};
 		item.setLayout(new FlowLayout());
-		item.setAutoHeight(true);
+		//item.setAutoHeight(true);
 		treeTable.setAutoHeight(true);
 		//treeTable.setDeferHeight(true);
 		//treeTable.setSize(450, 483);

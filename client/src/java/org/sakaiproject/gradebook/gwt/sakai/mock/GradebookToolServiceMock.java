@@ -382,19 +382,21 @@ public class GradebookToolServiceMock implements GradebookToolService {
 					Double points = assignment.getPointsPossible();
 					
 					if (assignmentGradeMap == null) {
-						assignmentGradeMap = new HashMap<Assignment, AssignmentGradeRecord>();
+						/*assignmentGradeMap = new HashMap<Assignment, AssignmentGradeRecord>();
 						gradeRecord = new AssignmentGradeRecord(assignment, studentId, generateRandomGrade(points));
 						assignmentGradeMap.put(assignment, gradeRecord);
-						studentGradeMap.put(studentId, assignmentGradeMap);
+						studentGradeMap.put(studentId, assignmentGradeMap);*/
 					} else {
 						gradeRecord = assignmentGradeMap.get(assignment);
 						
-						if (gradeRecord == null) {
+						/*if (gradeRecord == null) {
 							gradeRecord = new AssignmentGradeRecord(assignment, studentId, generateRandomGrade(points));
 							assignmentGradeMap.put(assignment, gradeRecord);
-						} 
+						} */
 					}
-					grades.add(gradeRecord);
+					
+					if (gradeRecord != null)
+						grades.add(gradeRecord);
 					
 				}
 			}
@@ -876,7 +878,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 			// IGNORE COMMENT - JLR - We need to autocalculate each time
 	        // Only take the hit of autocalculating the course grade if no explicit
 	        // grade has been entered.
-	        if (courseGradeRecord.getEnteredGrade() == null) {
+	       /* if (courseGradeRecord.getEnteredGrade() == null) {
 	            // TODO We could easily get everything we need in a single query by using an outer join if we
 	            // weren't mapping the different classes together into single sparsely populated
 	            // tables. When we finally break up the current mungings of Assignment with CourseGrade
@@ -889,7 +891,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 	        	double totalPointsEarned = ((Double)totalEarned.get(0)).doubleValue();
 	        	double literalTotalPointsEarned = ((Double)totalEarned.get(1)).doubleValue();
 	        	courseGradeRecord.initNonpersistentFields(totalPointsPossible, totalPointsEarned, literalTotalPointsEarned);
-	        }
+	        }*/
 	        return courseGradeRecord;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -1656,19 +1658,19 @@ public class GradebookToolServiceMock implements GradebookToolService {
 			
 			AssignmentGradeRecord gradeRecord = null;
 			if (assignmentGradeMap == null) {
-				assignmentGradeMap = new HashMap<Assignment, AssignmentGradeRecord>();
+				/*assignmentGradeMap = new HashMap<Assignment, AssignmentGradeRecord>();
 				gradeRecord = new AssignmentGradeRecord(assignment, studentUid, generateRandomGrade(points));
 				logAssignmentGradingEvent(gradeRecord, "Nobody", assignment);
 				assignmentGradeMap.put(assignment, gradeRecord);
-				studentGradeMap.put(studentUid, assignmentGradeMap);
+				studentGradeMap.put(studentUid, assignmentGradeMap);*/
 			} else {
 				gradeRecord = assignmentGradeMap.get(assignment);
 				
-				if (gradeRecord == null) {
+				/*if (gradeRecord == null) {
 					gradeRecord = new AssignmentGradeRecord(assignment, studentUid, generateRandomGrade(points));
 					assignmentGradeMap.put(assignment, gradeRecord);
 					logAssignmentGradingEvent(gradeRecord, "Nobody", assignment);
-				} 
+				} */
 			}
 			
 			if (gradeRecord != null)

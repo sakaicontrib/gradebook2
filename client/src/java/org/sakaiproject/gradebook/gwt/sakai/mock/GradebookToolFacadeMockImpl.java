@@ -43,10 +43,10 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 import org.sakaiproject.gradebook.gwt.sakai.AccessAdvisor;
 import org.sakaiproject.gradebook.gwt.sakai.ExportAdvisor;
 import org.sakaiproject.gradebook.gwt.sakai.GradeCalculations;
-import org.sakaiproject.gradebook.gwt.sakai.GradeCalculationsImpl;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
 import org.sakaiproject.gradebook.gwt.sakai.SampleAccessAdvisor;
 import org.sakaiproject.gradebook.gwt.sakai.SampleExportAdvisor;
+import org.sakaiproject.gradebook.gwt.sakai.calculations.GradeCalculationsOOImpl;
 import org.sakaiproject.section.api.SectionAwareness;
 import org.sakaiproject.tool.gradebook.facades.Authn;
 import org.sakaiproject.tool.gradebook.facades.Authz;
@@ -64,7 +64,7 @@ public class GradebookToolFacadeMockImpl extends RemoteServiceServlet implements
 	private Authz authz = new AuthzMock(sectionAwareness);
 	private Authn authn = new AuthnMock();
 	private GradebookToolService gradebookManager = new GradebookToolServiceMock();
-	private GradeCalculations gradeCalculations = new GradeCalculationsImpl();
+	private GradeCalculations gradeCalculations = new GradeCalculationsOOImpl();
 	private AccessAdvisor accessAdvisor = new SampleAccessAdvisor();
 	private ExportAdvisor exportAdvisor = new SampleExportAdvisor();
 

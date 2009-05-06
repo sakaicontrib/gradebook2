@@ -4,6 +4,7 @@
 	<classpathentry kind="src" path="api/src/java"/>
 	<classpathentry kind="src" path="model/src/java"/>
 	<classpathentry kind="src" path="model/src/hibernate"/>
+	<classpathentry excluding="org/sakaiproject/gradebook/gwt/test/mock/" kind="src" path="test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
 	<classpathentry kind="var" path="M2_REPO/org/springframework/spring/2.0.6/spring-2.0.6.jar" sourcepath="/M2_REPO/org/springframework/spring/2.0.6/spring-2.0.6-sources.jar"/>
