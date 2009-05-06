@@ -33,6 +33,7 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
+import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.data.BaseListLoader;
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.BaseTreeLoader;
@@ -75,6 +76,7 @@ import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.form.FormPanel.Encoding;
 import com.extjs.gxt.ui.client.widget.form.FormPanel.Method;
 import com.extjs.gxt.ui.client.widget.grid.CellEditor;
+import com.extjs.gxt.ui.client.widget.grid.CellSelectionModel;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
@@ -223,14 +225,17 @@ public class ImportPanel extends ContentPanel {
 		rowStore.setMonitorChanges(true);
 		rowStore.setModelComparer(new EntityModelComparer<StudentModel>());
 		
-		final ColumnModel cm = new ColumnModel(configs);
+		ColumnModel cm = new ColumnModel(configs);
 		grid = new Grid<StudentModel>(rowStore, cm);
 		grid.setLoadMask(false);
 		grid.setHeight(300);
 		
+		CellSelectionModel<StudentModel> cellSelectionModel = new CellSelectionModel<StudentModel>();
+		cellSelectionModel.setSelectionMode(SelectionMode.SINGLE);
+		grid.setSelectionModel(cellSelectionModel);
 		grid.setView(new BaseCustomGridView() {
 			
-			protected void onCellSelect(int row, int col) {
+			/*protected void onCellSelect(int row, int col) {
 				super.onCellSelect(row, col);
 				
 				if (col >= 0 && col < cm.getColumnCount()) {
@@ -247,7 +252,7 @@ public class ImportPanel extends ContentPanel {
 					}
 					
 				}
-			}
+			}*/
 			
 			
 			protected boolean isClickable(ModelData model, String property) {
