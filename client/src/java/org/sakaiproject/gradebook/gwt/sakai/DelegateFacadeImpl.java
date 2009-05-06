@@ -3246,7 +3246,7 @@ private static final long serialVersionUID = 1L;
 		
 		public void isSatisfied() throws BusinessRuleException {
 			boolean hasEqualWeighting = DataTypeConversionUtil.checkBoolean(category.isEqualWeightAssignments());
-			if (includeInGrade && hasEqualWeighting) {
+			if (hasEqualWeighting) {
 				//Gradebook gradebook = category.getGradebook();
 				recalculateAssignmentWeights(category.getId(), null);
 				//recalculateEqualWeightingGradeItems(gradebook.getUid(), gradebook.getId(), category.getId(), null);	
