@@ -41,6 +41,9 @@ public class ImportHandler extends HttpServlet {
 		if (delegateFacade == null)
 			delegateFacade = (GradebookToolFacade)iocMock.getClassInstance(DelegateFacadeMockImpl.class.getName());
 		
+		if (exportAdvisor == null)
+			exportAdvisor = new SampleExportAdvisor();
+		
 		response.setContentType("application/ms-excel");
 		response.setHeader("Content-Disposition", "attachment; filename=" + "gradebook.csv");
 		
@@ -50,7 +53,7 @@ public class ImportHandler extends HttpServlet {
 		String include = req.getParameter("include");
 		try {
 			boolean doIncludeStructure = include != null;
-			ImportExportUtility.exportGradebook(delegateFacade, gradebookUid, doIncludeStructure, writer);
+			ImportExportUtility.exportGradebook(delegateFacade, gradebookUid, exportAdvisor, doIncludeStructure, writer);
 		} catch (FatalException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

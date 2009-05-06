@@ -42,6 +42,7 @@ public interface AppConstants {
 	// Grid id constants
 	public static final String MULTIGRADE 			= "multigrade";
 	public static final String HISTORY				= "history";
+	public static final String IMPORT				= "import";
 	
 	// Tab id constants
 	public static final String TAB_GRADES 			= "tabMultiGrade";
@@ -67,4 +68,6 @@ public interface AppConstants {
 	public static final String LEARNER_SUMMARY_FIELD_PREFIX		= "learnerField:";
 	
 	public static final int SCALE = 10;	
+	
+	public static final String IMPORT_CHANGES		= "importChangesMade";
 }

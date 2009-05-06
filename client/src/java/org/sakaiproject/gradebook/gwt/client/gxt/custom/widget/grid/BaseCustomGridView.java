@@ -32,6 +32,7 @@ import com.extjs.gxt.ui.client.widget.grid.GridView;
 
 public class BaseCustomGridView extends GridView {
 	
+
 	protected String markupCss(Record r, ModelData model, String property, boolean isShowDirtyCells, boolean isPropertyChanged) {
 
 		return null;

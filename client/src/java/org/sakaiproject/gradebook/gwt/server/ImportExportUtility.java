@@ -64,7 +64,8 @@ public class ImportExportUtility {
 	};
 
 	public static void exportGradebook(GradebookToolFacade delegateFacade, String gradebookUid, 
-			final boolean includeStructure, PrintWriter writer) throws FatalException {
+			ExportAdvisor exportAdvisor, final boolean includeStructure, PrintWriter writer) 
+		throws FatalException {
 		UserEntityGetAction<GradebookModel> getGradebookAction = new UserEntityGetAction<GradebookModel>(gradebookUid, EntityType.GRADEBOOK);
 		GradebookModel gradebook = delegateFacade.getEntity(getGradebookAction);
 		ItemModel gradebookItemModel = gradebook.getGradebookItemModel();
@@ -215,7 +216,7 @@ public class ImportExportUtility {
 				for (StudentModel row : rows) {
 					List<String> dataColumns = new LinkedList<String>();
 					
-					dataColumns.add(getExportId(row));
+					dataColumns.add(row.getExportUserId());
 					dataColumns.add(row.getLastNameFirst());
 					
 					for (int column = 0; column < headerIds.size(); column++) {
@@ -453,16 +454,7 @@ public class ImportExportUtility {
 		
 		return importFile;
 	}
-	
-	private static String getExportId(StudentModel model) {
-		String exportId = model.getEid();
 
-		if (exportId == null)
-			exportId = model.getIdentifier();
-
-		return exportId;
-	}
-	
 	private static ItemModel findModelByName(final String name, ItemModel root) {
 		
 		ItemModelProcessor processor = new ItemModelProcessor(root) {

@@ -639,45 +639,48 @@ private static final long serialVersionUID = 1L;
 		
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
 		Map<String, Assignment> idToAssignmentMap = new HashMap<String, Assignment>();
-		for (ItemModel item : spreadsheetModel.getHeaders()) {
-			String id = item.getIdentifier();
-			if (id != null) { 
-				if (id.startsWith("NEW:")) {
-					Long categoryId = item.getCategoryId();
-					String name = item.getName();
-					Double weight = null;
-					Double points = item.getPoints();
-					Date dueDate = null;
-					ItemModel itemModel = new ItemModel();
-					itemModel.setCategoryId(categoryId);
-					itemModel.setName(name);
-					itemModel.setPercentCategory(weight);
-					itemModel.setPoints(points);
-					ItemModel model = addItem(gradebookUid, gradebook.getId(), itemModel, false);
-					//AssignmentModel model = addAssignment(gradebookUid, gradebook.getId(), categoryId, name, weight, points, dueDate);
-					
-					for (ItemModel child : model.getChildren()) {
-						if (child.isActive()) {
-							Assignment assignment = gbService.getAssignment(Long.valueOf(child.getIdentifier()));
-							idToAssignmentMap.put(id, assignment);
-							item.setIdentifier(child.getIdentifier());
-							break;
+		List<ItemModel> headers = spreadsheetModel.getHeaders();
+		
+		if (headers != null) {
+			for (ItemModel item : headers) {
+				String id = item.getIdentifier();
+				if (id != null) { 
+					if (id.startsWith("NEW:")) {
+						Long categoryId = item.getCategoryId();
+						String name = item.getName();
+						Double weight = null;
+						Double points = item.getPoints();
+						Date dueDate = null;
+						ItemModel itemModel = new ItemModel();
+						itemModel.setCategoryId(categoryId);
+						itemModel.setName(name);
+						itemModel.setPercentCategory(weight);
+						itemModel.setPoints(points);
+						ItemModel model = addItem(gradebookUid, gradebook.getId(), itemModel, false);
+						//AssignmentModel model = addAssignment(gradebookUid, gradebook.getId(), categoryId, name, weight, points, dueDate);
+						
+						for (ItemModel child : model.getChildren()) {
+							if (child.isActive()) {
+								Assignment assignment = gbService.getAssignment(Long.valueOf(child.getIdentifier()));
+								idToAssignmentMap.put(id, assignment);
+								item.setIdentifier(child.getIdentifier());
+								break;
+							}
 						}
+						
+						
+					} else {
+						Assignment assignment = gbService.getAssignment(Long.valueOf(id));
+						idToAssignmentMap.put(id, assignment);
 					}
-					
-					
-				} else {
-					Assignment assignment = gbService.getAssignment(Long.valueOf(id));
-					idToAssignmentMap.put(id, assignment);
 				}
 			}
 		}
 		
-		
 		Long gradebookId = gradebook.getId();
 		
 		Site site = getSite();
-		List<UserRecord> userRecords = findLearnerRecordPage(gradebook, site, null, "sortName", null, null, -1, -1, true);
+		/*List<UserRecord> userRecords = findLearnerRecordPage(gradebook, site, null, "sortName", null, null, -1, -1, true);
 		
 		Map<String, UserRecord> userRecordMap = new HashMap<String, UserRecord>(); //findStudentRecords(gradebookUid, gradebookId, null, null);
 	    
@@ -685,16 +688,25 @@ private static final long serialVersionUID = 1L;
 			userRecordMap.put(userRecord.getUserUid(), userRecord);
 		}
 		
-		List<String> studentUids = new ArrayList<String>(userRecordMap.keySet());
+		List<String> studentUids = new ArrayList<String>(userRecordMap.keySet());*/
 		
-	   	List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebookId, studentUids);
+		Map<String, UserRecord> userRecordMap = new HashMap<String, UserRecord>();
+		
+		Long[] learnerRoleKeys = accessAdvisor.getLearnerRoleKeys();
+		String siteId = site == null ? null : site.getId();
+	   	List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebookId, siteId, null, learnerRoleKeys);
+	   		//gbService.getAllAssignmentGradeRecords(gradebookId, studentUids);
 		
     	if (allGradeRecords != null) {
 	    	for (AssignmentGradeRecord gradeRecord : allGradeRecords) {
 				gradeRecord.setUserAbleToView(true);
 				String studentUid = gradeRecord.getStudentId();
 				UserRecord userRecord = userRecordMap.get(studentUid);
-				if (!userRecord.isPopulated()) {
+				
+				if (userRecord == null)
+					userRecord = new UserRecord(studentUid);
+				
+				/*if (!userRecord.isPopulated()) {
 					User user = null;
 					try {
 						user = userService.getUser(userRecord.getUserUid());
@@ -713,7 +725,7 @@ private static final long serialVersionUID = 1L;
 					} catch (UserNotDefinedException e) {
 						log.error("No sakai user defined for this member '" + userRecord.getUserUid() + "'", e);
 					}
-				}
+				}*/
 				Map<Long, AssignmentGradeRecord> studentMap = userRecord.getGradeRecordMap();
 				if (studentMap == null) {
 					studentMap = new HashMap<Long, AssignmentGradeRecord>();
@@ -738,20 +750,23 @@ private static final long serialVersionUID = 1L;
 				
 				builder.append("Grading ");
 				
-				if (userRecord.getDisplayName() == null)
-					builder.append(userRecord.getDisplayId()).append(": ");
-				else
-					builder.append(userRecord.getDisplayName()).append(": ");
+				if (userRecord != null) {
+					if (userRecord.getDisplayName() == null)
+						builder.append(userRecord.getDisplayId()).append(": ");
+					else
+						builder.append(userRecord.getDisplayName()).append(": ");
+				} else {
+					builder.append(student.get("NAME")).append(": ");
+				}
 				
-				
-				if (userRecord == null) {
+				/*if (userRecord == null) {
 					builder.append("User not found!");
 					results.add(builder.toString());
 					continue;
-				}
+				}*/
 					
 				
-				Map<Long, AssignmentGradeRecord> gradeRecordMap = userRecord.getGradeRecordMap();
+				Map<Long, AssignmentGradeRecord> gradeRecordMap = userRecord == null ? null : userRecord.getGradeRecordMap();
 				
 				for (String id : idKeySet) {
 					Assignment assignment = idToAssignmentMap.get(id);
@@ -788,7 +803,9 @@ private static final long serialVersionUID = 1L;
 						
 					if (oldValue == null && value == null)
 						continue;
-						
+					
+					student.set(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
+					
 					try {
 						scoreItem(gradebook, assignment, assignmentGradeRecord, student.getIdentifier(), value, true);
 							
@@ -2355,23 +2372,23 @@ private static final long serialVersionUID = 1L;
 					if (category != null && 
 						(category.isRemoved() || DataTypeConversionUtil.checkBoolean(category.isUnweighted())))
 						continue;
-							
-					// The student is missing one or more grades if 
-					/// (a) there's no studentGradeMap
-					/// (b) there's no AssignmentGradeRecord for this assignment
-					/// (c) there's no points earned for this AssignmentGradeRecord
-					if (studentGradeMap != null && studentGradeMap.get(assignment.getId()) != null) {
+				}
+				
+				// The student is missing one or more grades if 
+				/// (a) there's no studentGradeMap
+				/// (b) there's no AssignmentGradeRecord for this assignment
+				/// (c) there's no points earned for this AssignmentGradeRecord
+				if (studentGradeMap != null && studentGradeMap.get(assignment.getId()) != null) {
 								
-						AssignmentGradeRecord record = studentGradeMap.get(assignment.getId());
+					AssignmentGradeRecord record = studentGradeMap.get(assignment.getId());
 								
-						boolean isExcused = record.isExcluded() != null && record.isExcluded().booleanValue();
-						boolean isDropped = record.isDropped() != null && record.isDropped().booleanValue();
-						if (record.getPointsEarned() == null && !isExcused && !isDropped) 
-							missingGradesMarker = "***";
-			
-					} else 
+					boolean isExcused = record.isExcluded() != null && record.isExcluded().booleanValue();
+					boolean isDropped = record.isDropped() != null && record.isDropped().booleanValue();
+					if (record.getPointsEarned() == null && !isExcused && !isDropped) 
 						missingGradesMarker = "***";
-				} // if 
+			
+				} else 
+					missingGradesMarker = "***"; 
 			} // for
 		} // if 
 

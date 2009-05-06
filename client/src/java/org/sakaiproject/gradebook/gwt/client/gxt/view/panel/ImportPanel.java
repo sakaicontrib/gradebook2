@@ -12,6 +12,7 @@ import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityCreateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
+import org.sakaiproject.gradebook.gwt.client.gxt.GridPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.BaseCustomGridView;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
@@ -21,6 +22,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader.Field;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.ItemCellRenderer;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.ItemNumberCellRenderer;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.ItemTreeTableBinder;
+import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.SpreadsheetModel;
@@ -31,7 +33,6 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
-import com.extjs.gxt.ui.client.data.BaseListLoadResult;
 import com.extjs.gxt.ui.client.data.BaseListLoader;
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.BaseTreeLoader;
@@ -57,6 +58,7 @@ import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.store.TreeStore;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
+import com.extjs.gxt.ui.client.widget.Info;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.TabItem;
@@ -82,6 +84,7 @@ import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.layout.CardLayout;
 import com.extjs.gxt.ui.client.widget.layout.FillLayout;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
+import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.layout.MarginData;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
@@ -113,11 +116,11 @@ public class ImportPanel extends ContentPanel {
 
 	private FileUploadField file;
 	
-	private ListStore<BaseModel> rowStore;
+	private ListStore<StudentModel> rowStore;
 	private ListStore<BeanModel> itemStore;
 	private ListStore<BaseModel> resultStore;
 	private ListStore<ItemModel> categoriesStore;
-	private Grid<BaseModel> grid;
+	private Grid<StudentModel> grid;
 	private FormPanel fileUploadPanel;
 	private Map<String, ImportHeader> headerMap;
 	
@@ -216,22 +219,96 @@ public class ImportPanel extends ContentPanel {
 		
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 
-		rowStore = new ListStore<BaseModel>();
+		rowStore = new ListStore<StudentModel>();
 		rowStore.setMonitorChanges(true);
-		ColumnModel cm = new ColumnModel(configs);
-		grid = new Grid<BaseModel>(rowStore, cm);
+		rowStore.setModelComparer(new EntityModelComparer<StudentModel>());
+		
+		final ColumnModel cm = new ColumnModel(configs);
+		grid = new Grid<StudentModel>(rowStore, cm);
 		grid.setLoadMask(false);
 		grid.setHeight(300);
 		
 		grid.setView(new BaseCustomGridView() {
+			
+			protected void onCellSelect(int row, int col) {
+				super.onCellSelect(row, col);
+				
+				if (col >= 0 && col < cm.getColumnCount()) {
+					ColumnConfig config = cm.getColumn(col);
+				
+					StudentModel model = rowStore.getAt(row);
+					Record record = rowStore.getRecord(model);
+					
+					String property = new StringBuilder().append(config.getId()).append(StudentModel.FAILED_FLAG).toString();
+					String message = (String)record.get(property);
+					
+					if (message != null) {
+						Info.display("Failed", message);
+					}
+					
+				}
+			}
+			
+			
+			protected boolean isClickable(ModelData model, String property) {
+				return property.equals(StudentModel.Key.DISPLAY_NAME.name()) ||
+					property.equals(StudentModel.Key.LAST_NAME_FIRST.name()) ||
+					property.equals(StudentModel.Key.DISPLAY_ID.name());
+			}
+			
+			protected boolean isCommented(ModelData model, String property) {
+				String commentedProperty = property + StudentModel.COMMENTED_FLAG;
+				Boolean isCommented = model.get(commentedProperty);
+				
+				return isCommented != null && isCommented.booleanValue();
+			}
+			
+			protected boolean isDropped(ModelData model, String property) {
+				String droppedProperty = property + StudentModel.DROP_FLAG;
+				Boolean isDropped = model.get(droppedProperty);
+				
+				return isDropped != null && isDropped.booleanValue();
+			}
+			
+			protected boolean isReleased(ModelData model, String property) {
+				return false;
+			}
+			
 			@Override
-			protected String markupCss(Record record, ModelData model, String property, boolean isShowDirtyCells, boolean isPropertyChanged) {
+			protected String markupCss(Record r, ModelData model, String property, boolean isShowDirtyCells, boolean isPropertyChanged) {
 				
 				boolean isUserNotFound = DataTypeConversionUtil.checkBoolean((Boolean)model.get("userNotFound"));
 					
 				if (isUserNotFound)
 					return "gbCellDropped";
 				
+				StringBuilder css = new StringBuilder();
+				
+				if (isShowDirtyCells && isPropertyChanged) {
+					
+					Object startValue = r.getChanges().get(property);
+					Object currentValue = r.get(property);
+					
+					String failedProperty = new StringBuilder().append(property).append(GridPanel.FAILED_FLAG).toString();
+					String failedMessage = (String)r.get(failedProperty);
+					
+					if (failedMessage != null) {
+						css.append(" gbCellFailed");
+					} else if (startValue == null || !startValue.equals(currentValue)) {
+						css.append(" gbCellSucceeded");
+					}
+				}
+
+				if (isDropped(model, property)) {
+					css.append(" gbCellDropped");
+				}
+				
+				if (isReleased(model, property)) {
+					css.append(" gbReleased");
+				}
+				
+				if (css.length() > 0)
+					return css.toString();
 				
 				return null;
 			}
@@ -243,18 +320,31 @@ public class ImportPanel extends ContentPanel {
 		previewFieldSet.setHeight(330);
 		previewFieldSet.add(grid, new MarginData(5));*/
 		
-		previewTab = new TabItem("Data");
-		previewTab.setLayout(new FillLayout());
-		previewTab.add(grid);
+		boolean hasCategories = selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES;
 		
-		tabPanel.add(previewTab);
+		if (hasCategories) {
+			previewTab = new TabItem("Data");
+			previewTab.setLayout(new FillLayout());
+			previewTab.add(grid);
+			
+			tabPanel.add(previewTab);
+			
+			columnsTab = new TabItem("Setup");
+			tabPanel.add(columnsTab);
+			
+			tabPanel.setHeight(400);
+			
+			subCardLayoutContainer.add(tabPanel);
+		} else {
+			previewFieldSet = new FieldSet(); 
+			previewFieldSet.setLayout(new FlowLayout());
+			previewFieldSet.setHeading("Data"); 
+			previewFieldSet.setHeight(400);
+			previewFieldSet.add(grid, new MarginData(5));
+			
+			subCardLayoutContainer.add(previewFieldSet);
+		}
 		
-		columnsTab = new TabItem("Setup");
-		tabPanel.add(columnsTab);
-		
-		tabPanel.setHeight(400);
-		
-		subCardLayoutContainer.add(tabPanel);
 		subCardLayoutContainer.setHeight(subHeight);
 				
 		step1Container = new LayoutContainer();
@@ -265,9 +355,9 @@ public class ImportPanel extends ContentPanel {
 		mainCardLayoutContainer.add(step1Container);
 		mainCardLayout.setActiveItem(step1Container);
 		
-		resultsContainer = buildResultsContainer();
+		//resultsContainer = buildResultsContainer();
 		
-		subCardLayoutContainer.add(resultsContainer);
+		//subCardLayoutContainer.add(resultsContainer);
 		
 		add(mainCardLayoutContainer); 
 	}
@@ -300,19 +390,71 @@ public class ImportPanel extends ContentPanel {
 				@Override
 				public void onCommandSuccess(UserEntityAction<SpreadsheetModel> action, SpreadsheetModel result) {
 					
-					subCardLayout.setActiveItem(resultsContainer);
+					//subCardLayout.setActiveItem(resultsContainer);
 					
 					action.setModel(result);
 					
-					resultModels = new ArrayList<BaseModel>();
+					/*resultModels = new ArrayList<BaseModel>();
 					for (String desc : result.getResults()) {
 						BaseModel model = new BaseModel();
 						model.set("desc", desc);
 						resultModels.add(model);
 					}
-					proxy.setData(new BaseListLoadResult<BaseModel>(resultModels)); 
+					proxy.setData(new BaseListLoadResult<BaseModel>(resultModels));*/
+					
+					for (StudentModel student : result.getRows()) {
+						
+						boolean hasChanges = DataTypeConversionUtil.checkBoolean((Boolean)student.get(AppConstants.IMPORT_CHANGES));
+						
+						if (hasChanges) {
+							Record record = rowStore.getRecord(student);
+							record.beginEdit();
+							
+							/*for (String property : student.getPropertyNames()) {
+								Object value = student.get(property);
+								record.set(property, value);
+							}
+							record.endEdit();*/
+							
+							for (String p : student.getPropertyNames()) {
+								boolean needsRefreshing = false;
+								
+								int index = -1;
+								
+								if (p.endsWith(StudentModel.FAILED_FLAG)) {
+									index = p.indexOf(StudentModel.FAILED_FLAG);
+									needsRefreshing = true;
+								} 
+								
+								if (needsRefreshing && index != -1) {
+									String assignmentId = p.substring(0, index);
+									Object value = result.get(assignmentId);
+									
+									record.set(assignmentId, null);
+									record.set(assignmentId, value);
+									
+									/*Boolean recordFlagValue = (Boolean)record.get(p);
+									Boolean resultFlagValue = result.get(p);
+								
+									boolean isDropped = resultFlagValue != null && resultFlagValue.booleanValue();
+									boolean wasDropped = recordFlagValue != null && recordFlagValue.booleanValue();
+									
+									record.set(p, resultFlagValue);
+									
+									if (isDropped || wasDropped) {
+										record.set(assignmentId, null);
+										record.set(assignmentId, value);
+										//r.setDirty(true);
+									}*/
+								}
+							}
+							record.endEdit();
+						}
+						//rowStore.update(student);
+					}
+	
 					box.setProgressText("Loading");
-					loader.load();
+					//loader.load();
 					
 					box.close();
 					
@@ -320,9 +462,11 @@ public class ImportPanel extends ContentPanel {
 					
 					GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 					selectedGradebook.setGradebookItemModel(result.getGradebookItemModel());
-					Dispatcher.forwardEvent(GradebookEvents.SwitchGradebook.getEventType(), selectedGradebook);
+					Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel.getEventType(), selectedGradebook);
 					
 					fireEvent(GradebookEvents.UserChange.getEventType(), new UserChangeEvent(action));
+					
+					cancelButton.setText("Done");
 				}
 			
 		};
@@ -524,32 +668,39 @@ public class ImportPanel extends ContentPanel {
 			public void componentSelected(ButtonEvent ce) {
 				SpreadsheetModel spreadsheetModel = new SpreadsheetModel();
 				
+
 				// Create new items
 				List<ItemModel> items = new ArrayList<ItemModel>();
-				for (BeanModel importHeader : itemStore.getModels()) {
-					//String assignmentId = importHeader.get("id");
-					//if (assignmentId == null)
-					//	createNewItem((Long)ImportHeader.get("categoryId"), (String)ImportHeader.get("headerName"), Double.valueOf(0d), Double.parseDouble((String)ImportHeader.get("points")), new Date());			
-				
-					Object categoryId = importHeader.get("categoryId");
-					
-					ItemModel item = new ItemModel();
-					item.setIdentifier((String)importHeader.get("id"));
-					if (categoryId != null)
-						item.setCategoryId(Long.valueOf((String)categoryId));
-					item.setCategoryName((String)importHeader.get("categoryName"));
-					item.setName((String)importHeader.get("headerName"));
-					
-					boolean isPercentage = importHeader.get("isPercentage") != null && ((Boolean)importHeader.get("isPercentage")).booleanValue();
-					if (!isPercentage) 
-						item.setPoints((Double)importHeader.get("points"));
-					
-					item.setIsPercentage(Boolean.valueOf(isPercentage));
-					
-					items.add(item);
+				List<BeanModel> headers = itemStore.getModels();
+				if (headers != null) {
+					for (BeanModel importHeader : headers) {
+						//String assignmentId = importHeader.get("id");
+						//if (assignmentId == null)
+						//	createNewItem((Long)ImportHeader.get("categoryId"), (String)ImportHeader.get("headerName"), Double.valueOf(0d), Double.parseDouble((String)ImportHeader.get("points")), new Date());			
+						
+						String categoryId = importHeader.get("categoryId");
+						String categoryName = importHeader.get("categoryName");
+						
+						ItemModel item = new ItemModel();
+						item.setIdentifier((String)importHeader.get("id"));
+						if (categoryId != null && !categoryId.equals("null"))
+							item.setCategoryId(Long.valueOf(categoryId));
+						if (categoryName != null && !categoryName.equals("null"))
+							item.setCategoryName(categoryName);
+						item.setName((String)importHeader.get("headerName"));
+							
+						boolean isPercentage = importHeader.get("isPercentage") != null && ((Boolean)importHeader.get("isPercentage")).booleanValue();
+						if (!isPercentage) 
+							item.setPoints((Double)importHeader.get("points"));
+							
+						item.setIsPercentage(Boolean.valueOf(isPercentage));
+							
+						items.add(item);
+					}
 				}
-				
+					
 				spreadsheetModel.setHeaders(items);
+
 				
 				List<StudentModel> rows = new ArrayList<StudentModel>();
 				for (BaseModel importRow : rowStore.getModels()) {
@@ -578,7 +729,7 @@ public class ImportPanel extends ContentPanel {
 				uploadSpreadsheet(spreadsheetModel);
 				
 				submitButton.setVisible(false);
-				cancelButton.setText("Done");
+				//cancelButton.setText("Done");
 				
 			}
 		});
@@ -688,10 +839,14 @@ public class ImportPanel extends ContentPanel {
 				//boolean isGradeDataExcluded = excludeGradeData.getValue() != null && excludeGradeData.getValue().booleanValue();
 				//if (! isGradeDataExcluded) {
 					JSONArray rowsArray = getArray(jsonObject, "rows");
-					List<BaseModel> models = new ArrayList<BaseModel>();
+					List<StudentModel> models = new ArrayList<StudentModel>();
 					if (rowsArray != null) {
 						StringBuilder heading = new StringBuilder("Data (").append(rowsArray.size()).append(" records)");
-						previewTab.setText(heading.toString());
+						if (hasCategories)
+							previewTab.setText(heading.toString());
+						else
+							previewFieldSet.setTitle(heading.toString());
+						
 						for (int i=0;i<rowsArray.size();i++) {
 							JSONObject rowObject = rowsArray.get(i).isObject();
 							String userUid = getString(rowObject.isObject(), "userUid");
@@ -700,7 +855,12 @@ public class ImportPanel extends ContentPanel {
 							Boolean userNotFound = getBoolean(rowObject.isObject(), "isUserNotFound");
 							JSONArray columnsArray = getArray(rowObject, "columns");
 							
-							BaseModel model = new BaseModel();
+							StudentModel model = new StudentModel();
+							if (userUid != null)
+								model.setIdentifier(userUid);
+							else if (userImportId != null)
+								model.setIdentifier(userImportId);
+							
 							model.set("userUid", userUid);
 							model.set("userImportId", userImportId);
 							model.set("userDisplayName", userDisplayName);
@@ -725,7 +885,11 @@ public class ImportPanel extends ContentPanel {
 					if (models != null)
 						rowStore.add(models);
 					
-					subCardLayout.setActiveItem(tabPanel);
+					if (hasCategories)
+						subCardLayout.setActiveItem(tabPanel);
+					else
+						subCardLayout.setActiveItem(previewFieldSet);
+					
 					uploadBox.close();
 					
 					ColumnModel cm = grid.getColumnModel();
@@ -750,8 +914,22 @@ public class ImportPanel extends ContentPanel {
 							
 					}
 						
-					advancedContainer = buildItemContainerX(headers);
-					columnsTab.add(advancedContainer);
+					if (hasCategories) {
+						advancedContainer = buildItemContainerX(headers);
+						columnsTab.add(advancedContainer);
+					} else {
+						itemStore = new ListStore<BeanModel>();
+						
+						List<BeanModel> beanModels = new ArrayList<BeanModel>();
+						BeanModelFactory factory = BeanModelLookup.get().getFactory(headers.get(0).getClass());
+				        if (factory == null) {
+				          throw new RuntimeException("No BeanModelFactory found for " + headers.get(0).getClass());
+				        }
+				        List<BeanModel> converted = factory.createModel(headers);
+				        beanModels.addAll(converted);
+						
+				        itemStore.add(beanModels);
+					}
 					
 					//subCardLayoutContainer.add(columnsTab);
 					

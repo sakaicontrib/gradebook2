@@ -55,7 +55,7 @@ public class SampleExportAdvisor implements ExportAdvisor {
 
 	public String getExportUserId(UserDereference dereference) {
 
-		return dereference.getEid();
+		return dereference.getDisplayId();
 	}
 
 	public void submitFinalGrade(List<Map<Column, String>> studentDataList, String gradebookUid, HttpServletRequest request, HttpServletResponse response) {

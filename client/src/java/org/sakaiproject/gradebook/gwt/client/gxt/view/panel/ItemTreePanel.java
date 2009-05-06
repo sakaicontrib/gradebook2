@@ -307,6 +307,8 @@ public class ItemTreePanel extends ContentPanel {
 		if (rendered) {
 			treeTableBinder.setCheckedSelection(selectedItemModels);
 			treeBinder.setCheckedSelection(checkedSelection);
+			
+			layout();
 		}
 	
 	}

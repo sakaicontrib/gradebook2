@@ -5,5 +5,8 @@
 
 		<category name="course" />
 		<category name="project" />
+		
+		<configuration name="displayid.value" value="student" />
+		
 	</tool>
 </registration>
