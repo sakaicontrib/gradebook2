@@ -2513,14 +2513,17 @@ private static final long serialVersionUID = 1L;
 				assignmentGradeRecord = currentGradeRecord;
 		}
 		
-		if (assignmentGradeRecord == null)
+		if (assignmentGradeRecord == null) {
 			assignmentGradeRecord = new AssignmentGradeRecord();
+			//gradeRecords.add(assignmentGradeRecord);
+		}
 		
 		scoreItem(gradebook, assignment, assignmentGradeRecord, student.getIdentifier(), value, false);
 		
+		gradeRecords = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), student.getIdentifier());
+		
 		refreshLearnerData(gradebook, student, assignment, gradeRecords);
 		student.set(assignmentId, value);
-		
 		
 		gbService.storeActionRecord(actionRecord);
 		

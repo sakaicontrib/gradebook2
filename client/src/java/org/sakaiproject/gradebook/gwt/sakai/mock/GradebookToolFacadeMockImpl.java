@@ -99,7 +99,7 @@ public class GradebookToolFacadeMockImpl extends RemoteServiceServlet implements
 			ItemModel essaysCategory = new ItemModel();
 			essaysCategory.setName("My Essays");
 			essaysCategory.setPercentCourseGrade(Double.valueOf(60d));
-			essaysCategory.setDropLowest(Integer.valueOf(1));
+			essaysCategory.setDropLowest(Integer.valueOf(0));
 			essaysCategory.setEqualWeightAssignments(Boolean.TRUE);
 			essaysCategory.setItemType(Type.CATEGORY);
 			essaysCategory.setIncluded(Boolean.TRUE);
@@ -109,7 +109,7 @@ public class GradebookToolFacadeMockImpl extends RemoteServiceServlet implements
 			ItemModel hwCategory = new ItemModel();
 			hwCategory.setName("My Homework");
 			hwCategory.setPercentCourseGrade(Double.valueOf(60d));
-			hwCategory.setDropLowest(Integer.valueOf(1));
+			hwCategory.setDropLowest(Integer.valueOf(0));
 			hwCategory.setEqualWeightAssignments(Boolean.TRUE);
 			hwCategory.setItemType(Type.CATEGORY);
 			hwCategory.setIncluded(Boolean.TRUE);
