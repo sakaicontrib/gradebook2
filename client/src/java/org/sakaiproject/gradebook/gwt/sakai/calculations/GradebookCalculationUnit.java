@@ -88,7 +88,8 @@ public class GradebookCalculationUnit {
 						sumExtraCreditPoints = BigDecimal.ZERO.setScale(AppConstants.SCALE);
 					
 					sumExtraCreditPoints = sumExtraCreditPoints.add(categoryPointsReceived);
-					sumExtraCreditPoints = sumExtraCreditPoints.add(categoryExtraCreditPoints);
+					if (categoryExtraCreditPoints != null)
+						sumExtraCreditPoints = sumExtraCreditPoints.add(categoryExtraCreditPoints);
 				} else {
 					if (sumPoints == null)
 						sumPoints = BigDecimal.ZERO.setScale(AppConstants.SCALE);
@@ -103,7 +104,8 @@ public class GradebookCalculationUnit {
 						if (sumExtraCreditPoints == null)
 							sumExtraCreditPoints = BigDecimal.ZERO.setScale(AppConstants.SCALE);
 						
-						sumExtraCreditPoints = sumExtraCreditPoints.add(categoryExtraCreditPoints);
+						if (categoryExtraCreditPoints != null)
+							sumExtraCreditPoints = sumExtraCreditPoints.add(categoryExtraCreditPoints);
 					}
 				}
 			}
