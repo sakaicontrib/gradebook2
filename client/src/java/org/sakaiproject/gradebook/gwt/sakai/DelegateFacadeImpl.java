@@ -58,7 +58,6 @@ import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
-import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.model.CommentModel;
@@ -1909,33 +1908,37 @@ private static final long serialVersionUID = 1L;
 
 		Map<Long, Category> categoryMap = new HashMap<Long, Category>();
 
-		for (Category category : categories) {
-			categoryMap.put(category.getId(), category);
+		if (categories != null) {
+			for (Category category : categories) {
+				categoryMap.put(category.getId(), category);
+			}
 		}
 		
 		Category category = null;
 		List<Assignment> assignmentList = null;
 		
-		for(Assignment assignment : assignments) {
-
-			category = categoryMap.get(assignment.getCategory().getId());
-
-			if(null == category) {
-
-				category = assignment.getCategory();
-				categoryMap.put(category.getId(), category);
+		if (assignments != null) {
+			for(Assignment assignment : assignments) {
+	
+				category = categoryMap.get(assignment.getCategory().getId());
+	
+				if(null == category) {
+	
+					category = assignment.getCategory();
+					categoryMap.put(category.getId(), category);
+				}
+				
+				assignmentList = category.getAssignmentList();
+	
+				if(null == assignmentList) {
+	
+					assignmentList = new ArrayList<Assignment>();
+					category.setAssignmentList(assignmentList);
+				}
+	
+				if (!assignmentList.contains(assignment))
+					assignmentList.add(assignment);
 			}
-			
-			assignmentList = category.getAssignmentList();
-
-			if(null == assignmentList) {
-
-				assignmentList = new ArrayList<Assignment>();
-				category.setAssignmentList(assignmentList);
-			}
-
-			if (!assignmentList.contains(assignment))
-				assignmentList.add(assignment);
 		}
 
 		//ArrayList<Category> categories = new ArrayList<Category>(categoryMap.values());
