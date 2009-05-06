@@ -351,11 +351,11 @@ public class ImportExportUtility {
 							String name = text;
 							String points = null;
 							
-							int startParen = text.indexOf("(");
-							int endParen = text.indexOf("pts)");
+							int startParen = text.indexOf("[");
+							int endParen = text.indexOf("pts]");
 							
 							if (endParen == -1)
-								endParen = text.indexOf(")");
+								endParen = text.indexOf("]");
 							
 							if (startParen != -1 && endParen != -1 && endParen > startParen+1) {
 								points = text.substring(startParen+1, endParen);
@@ -377,7 +377,7 @@ public class ImportExportUtility {
 									points = "100";
 								
 								if (points != null && points.length() > 0)
-									value.append(" (").append(points).append(")");
+									value.append(" [").append(points).append("]");
 								
 								header = new ImportHeader(Field.ITEM, value.toString());
 								
