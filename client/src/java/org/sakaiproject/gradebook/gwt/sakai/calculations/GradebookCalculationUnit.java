@@ -155,7 +155,7 @@ public class GradebookCalculationUnit {
 			if (categoryWeight != null && !categoryUnit.isExtraCredit())
 				categoryWeightDesiredSum = categoryWeightDesiredSum.add(categoryWeight);
 			
-			if (categoryGrade != null) {
+			if (categoryGrade != null && categoryWeight != null) {
 				if (categoryUnit.isExtraCredit()) {
 					extraCreditSum = extraCreditSum.add(categoryWeight);
 				} else {
