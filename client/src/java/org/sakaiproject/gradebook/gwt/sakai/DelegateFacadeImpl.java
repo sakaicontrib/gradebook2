@@ -2846,8 +2846,8 @@ private static final long serialVersionUID = 1L;
 	}*/
 	
 	
-	private void recalculateAssignmentGradeRecords(String assignmentId, Double value, Double startValue) {
-		Assignment assignment = gbService.getAssignment(Long.valueOf(assignmentId));
+	private void recalculateAssignmentGradeRecords(Long assignmentId, Double value, Double startValue) {
+		Assignment assignment = gbService.getAssignment(assignmentId);
 		Gradebook gradebook = assignment.getGradebook();
 		
 		// FIXME: Ensure that only users with access to all the students' records can call this method!!!
@@ -3254,6 +3254,30 @@ private static final long serialVersionUID = 1L;
 			
 		}
 	}
+	
+	private class RecalculatePointsRule implements BusinessRule {
+		
+		private Long assignmentId;
+		private Double newPoints;
+		private Double oldPoints;
+		
+		public RecalculatePointsRule(Long assignmentId, Double newPoints, Double oldPoints) {
+			this.assignmentId = assignmentId;
+			this.newPoints = newPoints;
+			this.oldPoints = oldPoints;
+		}
+		
+		public void isSatisfied() throws BusinessRuleException {
+			
+			if (newPoints != null && oldPoints != null && newPoints.compareTo(oldPoints) != 0) {
+				recalculateAssignmentGradeRecords(assignmentId, newPoints, oldPoints);
+			}
+			
+		}
+		
+		
+	}
+	
 	
 	private class MustIncludeCategoryRule implements BusinessRule {
 		
@@ -3791,7 +3815,8 @@ private static final long serialVersionUID = 1L;
 		
 		boolean isWeightChanged = false;
 		
-		Assignment assignment = gbService.getAssignment(Long.valueOf(item.getIdentifier()));
+		Long assignmentId = Long.valueOf(item.getIdentifier());
+		Assignment assignment = gbService.getAssignment(assignmentId);
 		
 		Category oldCategory = null;
 		Category category = assignment.getCategory();
@@ -3828,7 +3853,8 @@ private static final long serialVersionUID = 1L;
 			assignment.setReleased(convertBoolean(item.getReleased()).booleanValue());
 			
 			// Business rule #1
-			Double points = null; 
+			Double points = null;
+			Double oldPoints = assignment.getPointsPossible();
 			if (item.getPoints() == null)
 				points = Double.valueOf(100.0d);
 			else
@@ -3905,6 +3931,8 @@ private static final long serialVersionUID = 1L;
 				// Business rule #10
 				afterCreateRules.add(new RemoveEqualWeightingWhenItemWeightChangesRules(category, oldAssignmentWeight, newAssignmentWeight, isExtraCredit, isUnweighted, wasUnweighted));
 			}
+			
+			afterCreateRules.add(new RecalculatePointsRule(assignmentId, points, oldPoints));
 			
 			if (beforeCreateRules != null) {
 				for (BusinessRule rule : beforeCreateRules) {

@@ -248,7 +248,7 @@ public class ItemTreePanel extends ContentPanel {
 			break;
 		case WEIGHTED_CATEGORIES:
 			percentCourseGradeColumn.setHidden(false);
-			percentCategoryColumn.setHidden(true);
+			percentCategoryColumn.setHidden(false);
 			pointsColumn.setHidden(true);
 			break;
 		}
@@ -406,7 +406,7 @@ public class ItemTreePanel extends ContentPanel {
 		percentCategoryColumn =  new TreeTableColumn(ItemModel.Key.PERCENT_CATEGORY.name(), 
 				ItemModel.getPropertyName(ItemModel.Key.PERCENT_CATEGORY), ItemModel.getPropertyName(ItemModel.Key.PERCENT_CATEGORY).length() * CHARACTER_WIDTH + 30);
 		percentCategoryColumn.setAlignment(HorizontalAlignment.RIGHT);
-		percentCategoryColumn.setHidden(true); //gbModel.getGradebookItemModel().getCategoryType() == CategoryType.SIMPLE_CATEGORIES);
+		percentCategoryColumn.setHidden(gbModel.getGradebookItemModel().getCategoryType() == CategoryType.SIMPLE_CATEGORIES);
 		percentCategoryColumn.setRenderer(numericCellRenderer);
 		percentCategoryColumn.setSortable(false);
 		columns.add(percentCategoryColumn);
