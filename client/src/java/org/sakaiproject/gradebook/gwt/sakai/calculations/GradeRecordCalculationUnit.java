@@ -78,7 +78,7 @@ public class GradeRecordCalculationUnit {
 		if (pointsReceived.compareTo(BigDecimal.ZERO) == 0 || pointsPossible.compareTo(BigDecimal.ZERO) == 0)
 			percentageScore = BigDecimal.ZERO.setScale(AppConstants.SCALE);
 		
-		percentageScore = pointsReceived.divide(pointsPossible);
+		percentageScore = pointsReceived.divide(pointsPossible, RoundingMode.HALF_EVEN);
 	}
 	
 	public void calculateRawDifference() {
