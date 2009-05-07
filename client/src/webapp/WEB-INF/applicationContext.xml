@@ -16,7 +16,8 @@
 		<property name="properties">  
     		<props>  
        			<prop key="org.sakaiproject.gradebook.gwt.sakai.api.AccessAdvisor">org.sakaiproject.gradebook.gwt.sakai.api.AccessAdvisor</prop>  
-       			<prop key="org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor">org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor</prop>
+       			<!--prop key="org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor">org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor</prop-->
+       			<prop key="org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor">org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisorUcd</prop>
        		</props>  
 		</property>
 	</bean>

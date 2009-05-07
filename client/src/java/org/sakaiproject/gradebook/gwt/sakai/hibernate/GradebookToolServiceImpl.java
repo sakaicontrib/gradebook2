@@ -1518,8 +1518,8 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
     		//if(keySet.size() != GradebookService.validLetterGrade.length) //we only consider letter grade with -/+ now.
     		//	throw new IllegalArgumentException("gradeMap doesn't have right size in BaseHibernateManager.saveOrUpdateLetterGradePercentMapping");
 
-    		if(validateLetterGradeMapping(gradeMap) == false)
-    			throw new IllegalArgumentException("gradeMap contains invalid letter in BaseHibernateManager.saveOrUpdateLetterGradePercentMapping");
+    		//if(validateLetterGradeMapping(gradeMap) == false)
+    		//	throw new IllegalArgumentException("gradeMap contains invalid letter in BaseHibernateManager.saveOrUpdateLetterGradePercentMapping");
 
     		HibernateCallback hcb = new HibernateCallback()
     		{

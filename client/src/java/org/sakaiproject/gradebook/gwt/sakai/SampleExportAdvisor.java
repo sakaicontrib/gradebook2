@@ -168,7 +168,7 @@ public class SampleExportAdvisor implements ExportAdvisor {
 
 				for (Map<Column, String> studentData : studentDataList) {
 					exportData = new StringBuffer();
-					exportData.append(studentData.get(Column.EXPORT_USER_ID));
+					exportData.append(studentData.get(Column.FINAL_GRADE_USER_ID));
 					exportData.append(",");
 					exportData.append(studentData.get(Column.STUDENT_NAME));
 					exportData.append(",");

@@ -55,6 +55,7 @@ public class GradebookFinalGradeSubmissionController implements Controller {
 		for (StudentModel studentModel : rows) {
 			
 			Map<Column, String> studentData = new HashMap<Column, String>();
+			studentData.put(Column.FINAL_GRADE_USER_ID, studentModel.getFinalGradeUserId());
 			studentData.put(Column.EXPORT_USER_ID, studentModel.getExportUserId());
 			studentData.put(Column.STUDENT_NAME, studentModel.getStudentName());
 			studentData.put(Column.EXPORT_CM_ID, studentModel.getExportCmId());

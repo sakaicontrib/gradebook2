@@ -2027,7 +2027,7 @@ private static final long serialVersionUID = 1L;
 		cellMap.put(StudentModel.Key.EID.name(), userRecord.getUserEid());
 		cellMap.put(StudentModel.Key.EXPORT_CM_ID.name(), userRecord.getExportCourseManagemntId());
 		cellMap.put(StudentModel.Key.EXPORT_USER_ID.name(), userRecord.getExportUserId());
-		cellMap.put(ExportAdvisor.Column.FINAL_GRADE_USER_ID.name(), userRecord.getFinalGradeUserId());
+		cellMap.put(StudentModel.Key.FINAL_GRADE_USER_ID.name(), userRecord.getFinalGradeUserId());
 		// Need this to show the grade override
 		CourseGradeRecord courseGradeRecord = userRecord.getCourseGradeRecord(); //gradebookManager.getStudentCourseGradeRecord(gradebook, userRecord.getUserUid());
 	
