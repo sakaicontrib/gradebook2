@@ -6,6 +6,7 @@ import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.InlineEditField;
 import org.sakaiproject.gradebook.gwt.client.gxt.InlineEditNumberField;
+import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemCreate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
@@ -26,13 +27,18 @@ import com.extjs.gxt.ui.client.data.BaseModelData;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.PropertyChangeEvent;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
+import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.FieldEvent;
+import com.extjs.gxt.ui.client.event.KeyListener;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
 import com.extjs.gxt.ui.client.event.SelectionChangedListener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
+import com.extjs.gxt.ui.client.store.Record;
+import com.extjs.gxt.ui.client.store.StoreEvent;
+import com.extjs.gxt.ui.client.store.StoreListener;
 import com.extjs.gxt.ui.client.store.TreeStore;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
@@ -52,7 +58,7 @@ import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 public class ItemFormPanel extends ContentPanel {
 
 	private enum Mode { DELETE, EDIT, NEW };
-	private enum SelectionType { CLOSE, CREATE, CANCEL, DELETE, SAVE };
+	private enum SelectionType { CLOSE, CREATE, CANCEL, DELETE, SAVE, SAVECLOSE };
 	
 	private static final String selectionTypeField = "selectionType";
 	
@@ -78,20 +84,23 @@ public class ItemFormPanel extends ContentPanel {
 	private ListStore<ItemModel> categoryStore;
 	private TreeStore<ItemModel> treeStore;
 	
+	private KeyListener keyListener;
 	private Listener<FieldEvent> extraCreditChangeListener;
 	private SelectionListener<ButtonEvent> selectionListener;
 	private SelectionChangedListener<ItemModel> categorySelectionChangedListener;
+	//private StoreListener<ItemModel> storeListener;
 	
 	private I18nConstants i18n;
 	
 	private RowLayout layout;
 	private RowData topRowData, bottomRowData;
-	private Button okButton, cancelButton;
+	private Button okButton, okCloseButton, cancelButton;
 	private boolean isFull;
 	
 	private GradebookModel selectedGradebook;
 	private ItemModel selectedItemModel;
 	private Type createItemType;
+	private Record record;
 	
 	private boolean isDelete;
 	private boolean hasChanges;
@@ -123,6 +132,7 @@ public class ItemFormPanel extends ContentPanel {
 		nameField.setAllowBlank(false);
 		nameField.setName(ItemModel.Key.NAME.name());
 		nameField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.NAME));
+		nameField.addKeyListener(keyListener);
 		
 		formPanel.add(nameField);
 	
@@ -177,6 +187,7 @@ public class ItemFormPanel extends ContentPanel {
 		pointsField.setAllowDecimals(true);
 		pointsField.setMinValue(Double.valueOf(0.000000d));
 		pointsField.setVisible(false);
+		pointsField.addKeyListener(keyListener);
 		formPanel.add(pointsField);
 		
 		dropLowestField = new InlineEditNumberField();
@@ -185,12 +196,14 @@ public class ItemFormPanel extends ContentPanel {
 		dropLowestField.setAllowDecimals(false);
 		dropLowestField.setPropertyEditorType(Integer.class);
 		dropLowestField.setVisible(false);
+		dropLowestField.addKeyListener(keyListener);
 		formPanel.add(dropLowestField);
 		
 		dueDateField = new DateField();
 		dueDateField.setName(ItemModel.Key.DUE_DATE.name());
 		dueDateField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.DUE_DATE));
 		dueDateField.setVisible(false);
+		dueDateField.addKeyListener(keyListener);
 		formPanel.add(dueDateField);
 		
 		sourceField = new TextField<String>();
@@ -226,10 +239,13 @@ public class ItemFormPanel extends ContentPanel {
 		releasedField.setVisible(false);
 		formPanel.add(releasedField);
 			
-		okButton = new Button("Blank", selectionListener);
+		okButton = new Button("", selectionListener);
 		addButton(okButton);
 		
-		cancelButton = new Button(i18n.closeButton(), selectionListener);
+		okCloseButton = new Button(i18n.saveAndCloseButton(), selectionListener);
+		addButton(okCloseButton);
+		
+		cancelButton = new Button(i18n.cancelButton(), selectionListener);
 		cancelButton.setData(selectionTypeField, SelectionType.CANCEL);
 		
 		addButton(cancelButton);
@@ -254,6 +270,7 @@ public class ItemFormPanel extends ContentPanel {
 		
 		okButton.setText(i18n.deleteButton());
 		okButton.setData(selectionTypeField, SelectionType.DELETE);
+		okCloseButton.setVisible(false);
 		
 		if (itemModel != null) {
 			Type itemType = itemModel.getItemType();
@@ -269,6 +286,7 @@ public class ItemFormPanel extends ContentPanel {
 	}
 	
 	public void onEditItem(ItemModel itemModel, boolean expand) {
+		
 		if (!expand && !isVisible())
 			return;
 		
@@ -298,11 +316,14 @@ public class ItemFormPanel extends ContentPanel {
 		
 		okButton.setText(i18n.saveButton());
 		okButton.setData(selectionTypeField, SelectionType.SAVE);
+		okCloseButton.setVisible(true);
+		okCloseButton.setData(selectionTypeField, SelectionType.SAVECLOSE);
 		
 		if (itemModel != null) {
 			Type itemType = itemModel.getItemType();
 			initState(itemType, itemModel, false);
 			okButton.setEnabled(false);
+			okCloseButton.setEnabled(false);
 			formBindings.bind(itemModel);
 		} else {
 			formBindings.unbind();
@@ -318,7 +339,39 @@ public class ItemFormPanel extends ContentPanel {
 	public void onItemUpdated(ItemModel itemModel) {
 		categoryPicker.setEnabled(true);
 		categoryTypePicker.setEnabled(true);
-		gradeTypePicker.setEnabled(true);	
+		gradeTypePicker.setEnabled(true);
+		
+		
+		/*ItemModelProcessor processor = new ItemModelProcessor(itemModel) {
+			
+			public void doCategory(ItemModel categoryModel) {
+				resetValues(categoryModel, false);
+			}
+			
+			public void doItem(ItemModel itemModel) {
+				resetValues(itemModel, true);
+			}
+			
+			
+			private void resetValues(ItemModel itemModel, boolean isItem) {
+		
+				if (itemModel != null && itemModel.isActive()) {
+					if (selectedItemModel != null && selectedItemModel.equals(itemModel)) {
+						switch (mode) {
+						case EDIT:
+							onEditItem(itemModel, false);
+							
+							break;
+						}
+					}
+				}
+				
+			}
+			
+		};
+		
+		processor.process();*/
+		
 	}
 	
 	public void onLoadItemTreeModel(ItemModel rootItemModel) {
@@ -376,6 +429,7 @@ public class ItemFormPanel extends ContentPanel {
 		
 		okButton.setText(i18n.createButton());
 		okButton.setData(selectionTypeField, SelectionType.CREATE);
+		okCloseButton.setVisible(false);
 		
 		initState(Type.CATEGORY, itemModel, false);
 	}
@@ -393,6 +447,7 @@ public class ItemFormPanel extends ContentPanel {
 
 		okButton.setText(i18n.createButton());
 		okButton.setData(selectionTypeField, SelectionType.CREATE);
+		okCloseButton.setVisible(false);
 		
 		includedField.setValue(Boolean.TRUE);
 		
@@ -413,6 +468,7 @@ public class ItemFormPanel extends ContentPanel {
 	
 	public void onTreeStoreInitialized(TreeStore<ItemModel> treeStore) {
 		this.treeStore = treeStore;
+		//this.treeStore.addStoreListener(storeListener);
 		
 		if (formBindings != null) {
 			formBindings.unbind();
@@ -483,6 +539,7 @@ public class ItemFormPanel extends ContentPanel {
 		clearChanges();
 		
 		okButton.setEnabled(true);
+		okCloseButton.setEnabled(true);
 		
 		CategoryType categoryType = selectedGradebook.getGradebookItemModel().getCategoryType();
 		
@@ -582,35 +639,32 @@ public class ItemFormPanel extends ContentPanel {
 									
 									String property = e.field.getName();
 									
-									selectedItemModel.set(property, e.value);
-
+									record = store.getRecord(selectedItemModel);
+									record.beginEdit();
+									
 									if (property.equals(ItemModel.Key.CATEGORY_ID.name())) {
 										
 										ItemModel oldModel = (ItemModel)e.oldValue;
 										ItemModel newModel = (ItemModel)e.value;
 										
-										selectedItemModel.setCategoryId(newModel.getCategoryId());
-										
-										//Dispatcher.forwardEvent(GradebookEvents.UpdateItem, new ItemUpdate(store, itemModel, e.field.getName(), oldModel.getCategoryId(), newModel.getCategoryId()));
-										return;
+										record.set(property, newModel.getCategoryId());
+		
 									} else if (property.equals(ItemModel.Key.CATEGORYTYPE.name())) {
 										
 										CategoryType oldCategoryType = getCategoryType((ModelData)e.oldValue);
 										CategoryType newCategoryType = getCategoryType((ModelData)e.value);
 										
-										selectedItemModel.setCategoryType(newCategoryType);
-										
-										//Dispatcher.forwardEvent(GradebookEvents.UpdateItem, new ItemUpdate(store, itemModel, e.field.getName(), oldCategoryType, newCategoryType));
-										return;
+										record.set(property, newCategoryType);
+
 									} else if (property.equals(ItemModel.Key.GRADETYPE.name())) {
 										
 										GradeType oldGradeType = getGradeType((ModelData)e.oldValue);
 										GradeType newGradeType = getGradeType((ModelData)e.value);
 										
-										selectedItemModel.setGradeType(newGradeType);
-										
-										//Dispatcher.forwardEvent(GradebookEvents.UpdateItem, new ItemUpdate(store, itemModel, e.field.getName(), oldGradeType, newGradeType));
-										return;
+										record.set(property, newGradeType);
+
+									} else {
+										record.set(property, e.value);
 									}
 									
 									//Dispatcher.forwardEvent(GradebookEvents.UpdateItem, new ItemUpdate(store, itemModel, e.field.getName(), e.oldValue, e.value));
@@ -620,23 +674,10 @@ public class ItemFormPanel extends ContentPanel {
 								@Override
 								protected void onModelChange(PropertyChangeEvent event) {
 									super.onModelChange(event);
-									
-									//if (field != null)
-									//	field.setEnabled(true);
+
 								}
 							};
-							/*if (f instanceof ListField) {
-								b.setConvertor(new Converter() {
-									public Object convertModelValue(Object value) {
-										if (value == null)
-											return null;
-										
-										CategoryType categoryType = (CategoryType)value;
-									    return getCategoryTypeModel(categoryType);
-									}
-								});
-							}*/
-							
+
 							if (name.equals(ItemModel.Key.CATEGORY_ID.name())) {
 								b.setConvertor(new Converter() {
 									public Object convertFieldValue(Object value) {
@@ -737,6 +778,14 @@ public class ItemFormPanel extends ContentPanel {
 			
 		};
 		
+		keyListener = new KeyListener() {
+
+			public void componentKeyPress(ComponentEvent event) {
+				setChanges();
+			}
+			
+		};
+		
 		extraCreditChangeListener = new Listener<FieldEvent>() {
 
 			public void handleEvent(FieldEvent fe) {
@@ -772,6 +821,8 @@ public class ItemFormPanel extends ContentPanel {
 					SelectionType selectionType = button.getData(selectionTypeField);
 					if (selectionType != null) {
 						
+						boolean close = false;
+						
 						switch (selectionType) {
 						case CLOSE:
 							Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
@@ -800,7 +851,7 @@ public class ItemFormPanel extends ContentPanel {
 							item.setDueDate(dueDateField.getValue());
 							item.setItemType(createItemType);
 							
-							okButton.setEnabled(false);
+							clearChanges();
 							
 							Dispatcher.forwardEvent(GradebookEvents.CreateItem.getEventType(), new ItemCreate(treeStore, item));
 							break;
@@ -811,14 +862,15 @@ public class ItemFormPanel extends ContentPanel {
 						case CANCEL:
 							Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
 							break;
+						case SAVECLOSE:
+							close = true;
 						case SAVE:
 							if (nameField.validate() 
 									&& (!percentCategoryField.isVisible() || percentCategoryField.validate()) 
 									&& (!percentCourseGradeField.isVisible() || percentCourseGradeField.validate())
 									&& (!pointsField.isVisible() || pointsField.validate())) {
-								okButton.setEnabled(false);
-								//clearChanges();
-								Dispatcher.forwardEvent(GradebookEvents.UpdateItem.getEventType(), new ItemUpdate(treeStore, selectedItemModel));
+								clearChanges();
+								Dispatcher.forwardEvent(GradebookEvents.UpdateItem.getEventType(), new ItemUpdate(treeStore, record, selectedItemModel, close));
 							}
 							break;
 						}
@@ -829,6 +881,25 @@ public class ItemFormPanel extends ContentPanel {
 			
 		};
 		
+/*		storeListener = new StoreListener<ItemModel>() {
+			
+			public void storeUpdate(StoreEvent<ItemModel> se) {
+				switch (se.operation) {
+				case REJECT:
+					if (selectedItemModel != null) {
+						switch (mode) {
+						case EDIT:
+							Type itemType = selectedItemModel.getItemType();
+							//initState(itemType, selectedItemModel, false);
+							break;
+						};
+					}
+					break;
+				}
+			}
+			
+		};*/
+		
 	}
 
 
@@ -838,13 +909,17 @@ public class ItemFormPanel extends ContentPanel {
 
 	
 	public void setChanges() {
-		hasChanges = true;
-		okButton.setEnabled(true);
+		if (!hasChanges) {
+			hasChanges = true;
+			okButton.setEnabled(true);
+			okCloseButton.setEnabled(true);
+		}
 	}
 	
 	public void clearChanges() {
 		hasChanges = false;
 		okButton.setEnabled(false);
+		okCloseButton.setEnabled(false);
 	}
 	
 }

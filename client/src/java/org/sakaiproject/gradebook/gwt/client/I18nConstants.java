@@ -135,6 +135,7 @@ public interface I18nConstants extends Constants {
 	String createButton();
 	String deleteButton();
 	String saveButton();
+	String saveAndCloseButton();
 
 	
 	String itemNameRequiredTitle();

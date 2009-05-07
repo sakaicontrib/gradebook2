@@ -13,6 +13,14 @@ public class ItemUpdate {
 	public String property;
 	public Object oldValue;
 	public Object value;
+	public boolean close;
+	
+	public ItemUpdate(Store store, Record record, ItemModel item, boolean close) {
+		this.store = store;
+		this.record = record;
+		this.item = item;
+		this.close = close;
+	}
 	
 	public ItemUpdate(Store store, ItemModel item) {
 		this.item = item;
@@ -34,6 +42,14 @@ public class ItemUpdate {
 		this.property = property;
 		this.oldValue = oldValue;
 		this.value = value;
+	}
+	
+	public ItemModel getModifiedItem() {
+		if (record != null) {
+			return (ItemModel)record.getModel();
+		}
+		
+		return null;
 	}
 	
 }

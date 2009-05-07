@@ -323,77 +323,6 @@ private static final long serialVersionUID = 1L;
 		
 			entity = (X)updateItemModel(action.getModel());
 
-			/*}
-			
-			
-			if (action.getPrerequisiteAction() != null) {
-				BaseModel result = updateEntity((UserEntityUpdateAction)action.getPrerequisiteAction());
-				
-				// Break out of recursion if we get a null back
-				if (result == null) 
-					return null;
-			}
-			
-			ActionRecord actionRecord = new ActionRecord(action.getGradebookUid(), action.getGradebookId(), action.getEntityType().name(), action.getActionType().name());
-			
-			if (action.getEntityId() != null)
-				actionRecord.setEntityId(action.getEntityId());
-			if (action.getEntityName() != null)
-				actionRecord.setEntityName(action.getEntityName());
-			actionRecord.setField(action.getKey());
-			if (action.getValue() != null)
-				actionRecord.setValue(String.valueOf(action.getValue()));
-			if (action.getStartValue() != null)
-				actionRecord.setStartValue(String.valueOf(action.getStartValue()));
-			if (action.getDatePerformed() != null)
-				actionRecord.setDatePerformed(action.getDatePerformed());
-			
-			switch (action.getEntityType()) {
-			case ITEM:
-				ItemModel itemModel = (ItemModel)action.getModel();
-				ItemModel.Key itemKey = ItemModel.Key.valueOf(action.getKey());
-				
-				switch (itemKey) {
-				case POINTS:
-					if (action.getDoRecalculateChildren() != null && action.getDoRecalculateChildren().booleanValue())
-						recalculateAssignmentGradeRecords(itemModel.getIdentifier(), (Double)action.getValue(), (Double)action.getStartValue());
-					break;
-				}
-				
-				switch (itemModel.getItemType()) {
-				case GRADEBOOK:
-					entity = (X)updateGradebookField(itemModel, itemKey, action.getValue());
-					break;
-				case CATEGORY:
-					String categoryId = String.valueOf(action.getEntityId());
-					if (itemModel != null) {
-						categoryId = itemModel.getIdentifier();
-						
-						if (categoryId.startsWith(Type.CATEGORY.getName()))
-							categoryId = categoryId.substring(Type.CATEGORY.getName().length());
-					}
-					
-					entity = (X)updateCategoryField(categoryId, itemKey, action.getValue());
-					break;
-				case ITEM:
-					entity = (X)updateItemField(itemModel.getIdentifier(), itemKey, action.getValue());
-					break;
-				}
-				
-				break;
-			}
-			
-			if (entity == null)
-				actionRecord.setStatus(ActionRecord.STATUS_FAILURE);
-			else
-				actionRecord.setStatus(ActionRecord.STATUS_SUCCESS);
-			
-			if (action.getModel() != null) {
-				actionRecord.setEntityId(action.getModel().getIdentifier());
-			}
-			
-			gbService.storeActionRecord(actionRecord);
-			*/
 		} catch (BusinessRuleException bre) {
 			throw bre;
 		} catch (InvalidInputException ie) {
@@ -3690,14 +3619,14 @@ private static final long serialVersionUID = 1L;
 		
 		try {
 
-			category.setName(convertString(item.getName()));
+			//category.setName(convertString(item.getName()));
 			
 			boolean originalExtraCredit = DataTypeConversionUtil.checkBoolean(category.isExtraCredit());
 			boolean currentExtraCredit = DataTypeConversionUtil.checkBoolean(item.getExtraCredit());
 			
 			isWeightChanged = originalExtraCredit != currentExtraCredit;
 			
-			category.setExtraCredit(Boolean.valueOf(currentExtraCredit));
+			//category.setExtraCredit(Boolean.valueOf(currentExtraCredit));
 			
 			Double newCategoryWeight = item.getPercentCourseGrade();
 			Double oldCategoryWeight = category.getWeight();
@@ -3705,17 +3634,17 @@ private static final long serialVersionUID = 1L;
 			isWeightChanged = isWeightChanged || DataTypeConversionUtil.notEquals(newCategoryWeight, oldCategoryWeight);
 	
 			double w = newCategoryWeight == null ? 0d : ((Double)newCategoryWeight).doubleValue() * 0.01;
-			category.setWeight(Double.valueOf(w));
+			//category.setWeight(Double.valueOf(w));
 			
 			// Business rule #1
-			if (w == 0d)
-				category.setUnweighted(Boolean.TRUE);
+			//if (w == 0d)
+			//	category.setUnweighted(Boolean.TRUE);
 	
 			
 			boolean isEqualWeighting = DataTypeConversionUtil.checkBoolean(item.getEqualWeightAssignments());
 			boolean wasEqualWeighting = DataTypeConversionUtil.checkBoolean(category.isEqualWeightAssignments());
 			
-			category.setEqualWeightAssignments(Boolean.valueOf(isEqualWeighting));
+			//category.setEqualWeightAssignments(Boolean.valueOf(isEqualWeighting));
 			
 			isWeightChanged = isWeightChanged || isEqualWeighting != wasEqualWeighting;
 			
@@ -3730,13 +3659,13 @@ private static final long serialVersionUID = 1L;
 			int oldDropLowest = category.getDrop_lowest();
 			int newDropLowest = convertInteger(item.getDropLowest()).intValue();
 			
-			category.setDrop_lowest(newDropLowest);
+			//category.setDrop_lowest(newDropLowest);
 	
 			boolean isRemoved = DataTypeConversionUtil.checkBoolean(item.getRemoved());
 			boolean wasRemoved = category.isRemoved();
 			
-			category.setRemoved(isRemoved);
-			category.setUnweighted(Boolean.valueOf(isUnweighted || isRemoved));
+			//category.setRemoved(isRemoved);
+			//category.setUnweighted(Boolean.valueOf(isUnweighted || isRemoved));
 	
 			// FIXME: Do we want to do this?
 			if (!isUnweighted && !isRemoved) {
@@ -3769,6 +3698,18 @@ private static final long serialVersionUID = 1L;
 					rule.isSatisfied();
 				}
 			}
+			
+			
+			category.setName(convertString(item.getName()));
+			category.setExtraCredit(Boolean.valueOf(currentExtraCredit));
+			category.setWeight(Double.valueOf(w));
+			// Business rule #1
+			if (w == 0d)
+				category.setUnweighted(Boolean.TRUE);
+			category.setEqualWeightAssignments(Boolean.valueOf(isEqualWeighting));
+			category.setDrop_lowest(newDropLowest);
+			category.setRemoved(isRemoved);
+			category.setUnweighted(Boolean.valueOf(isUnweighted || isRemoved));
 			
 			gbService.updateCategory(category);
 			
@@ -3865,8 +3806,8 @@ private static final long serialVersionUID = 1L;
 			// Check to see if the category id has changed -- this means the user switched the item's category
 			if (!category.getId().equals(item.getCategoryId())) {
 				oldCategory = category;
-				category = gbService.getCategory(item.getCategoryId());
-				assignment.setCategory(category);
+				//category = gbService.getCategory(item.getCategoryId());
+				//assignment.setCategory(category);
 			}
 			
 			boolean wasExtraCredit = DataTypeConversionUtil.checkBoolean(assignment.isExtraCredit());
@@ -3874,8 +3815,8 @@ private static final long serialVersionUID = 1L;
 			
 			isWeightChanged = wasExtraCredit != isExtraCredit;
 			
-			assignment.setExtraCredit(Boolean.valueOf(isExtraCredit));
-			assignment.setReleased(convertBoolean(item.getReleased()).booleanValue());
+			//assignment.setExtraCredit(Boolean.valueOf(isExtraCredit));
+			//assignment.setReleased(convertBoolean(item.getReleased()).booleanValue());
 			
 			// Business rule #1
 			Double points = null;
@@ -3885,8 +3826,8 @@ private static final long serialVersionUID = 1L;
 			else
 				points = convertDouble(item.getPoints());
 			
-			assignment.setPointsPossible(points);
-			assignment.setDueDate(convertDate(item.getDueDate()));
+			//assignment.setPointsPossible(points);
+			//assignment.setDueDate(convertDate(item.getDueDate()));
 			
 			Double newAssignmentWeight = item.getPercentCategory();
 			Double oldAssignmentWeight = assignment.getAssignmentWeighting();
@@ -3919,9 +3860,9 @@ private static final long serialVersionUID = 1L;
 				}
 			}
 			
-			assignment.setRemoved(isRemoved);
+			//assignment.setRemoved(isRemoved);
 			
-			assignment.setUnweighted(Boolean.valueOf(isUnweighted || isRemoved));
+			//assignment.setUnweighted(Boolean.valueOf(isUnweighted || isRemoved));
 			
 			
 			List<BusinessRule> beforeCreateRules = new ArrayList<BusinessRule>();
@@ -3967,6 +3908,17 @@ private static final long serialVersionUID = 1L;
 			
 			// Modify the assignment name
 			assignment.setName(convertString(item.getName()));
+			if (!category.getId().equals(item.getCategoryId())) {
+				category = gbService.getCategory(item.getCategoryId());
+				assignment.setCategory(category);
+			}
+			assignment.setExtraCredit(Boolean.valueOf(isExtraCredit));
+			assignment.setReleased(convertBoolean(item.getReleased()).booleanValue());
+			assignment.setPointsPossible(points);
+			assignment.setDueDate(convertDate(item.getDueDate()));
+			assignment.setRemoved(isRemoved);
+			assignment.setUnweighted(Boolean.valueOf(isUnweighted || isRemoved));
+			
 			
 			gbService.updateAssignment(assignment);
 	

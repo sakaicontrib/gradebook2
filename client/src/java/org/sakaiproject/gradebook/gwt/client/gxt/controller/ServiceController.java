@@ -344,6 +344,10 @@ public class ServiceController extends Controller {
 	}
 	
 	private void onUpdateItemFailure(ItemUpdate event, Throwable caught) {
+		
+		event.record.reject(true);
+		event.record.cancelEdit();
+		
 		notifier.notifyError(caught);
 		
 		String message = new StringBuilder("Failed to update item: ").append(caught.getMessage()).toString();
@@ -352,7 +356,9 @@ public class ServiceController extends Controller {
 	}
 	
 	private void onUpdateItemSuccess(ItemUpdate event, ItemModel result) {
-
+		if (event.close)
+			Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
+		
 		switch (result.getItemType()) {
 		case GRADEBOOK:
 			GradebookModel selectedGradebook = Registry
@@ -391,6 +397,9 @@ public class ServiceController extends Controller {
 			break;
 		}
 
+		event.record.commit(false);
+		event.record.endEdit();
+		
 	}
 
 	private void onUpdateItem(final ItemUpdate event) {
@@ -398,7 +407,7 @@ public class ServiceController extends Controller {
 		
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 		
-		UserEntityUpdateAction<ItemModel> action = new UserEntityUpdateAction<ItemModel>(selectedGradebook, (ItemModel)event.item);		
+		UserEntityUpdateAction<ItemModel> action = new UserEntityUpdateAction<ItemModel>(selectedGradebook, (ItemModel)event.getModifiedItem());		
 		
 		GradebookToolFacadeAsync service = Registry.get("service");
 		AsyncCallback<ItemModel> callback = new AsyncCallback<ItemModel>() {
@@ -430,7 +439,8 @@ public class ServiceController extends Controller {
 		switch (updatedItem.getItemType()) {
 		case CATEGORY:
 			ItemModel gradebookItemModel = updatedItem.getParent();
-			doUpdateItem(store, null, null, gradebookItemModel);
+			if (gradebookItemModel != null)
+				doUpdateItem(store, null, null, gradebookItemModel);
 			break;
 		}
 	}
@@ -445,8 +455,10 @@ public class ServiceController extends Controller {
 		
 		if (property == null || record == null 
 				|| !doUpdateViaRecord(property, record, updatedItem)) {
-			treeStore.update(updatedItem);
-			Dispatcher.forwardEvent(GradebookEvents.ItemUpdated.getEventType(), updatedItem);
+			if (updatedItem != null) {
+				treeStore.update(updatedItem);
+				Dispatcher.forwardEvent(GradebookEvents.ItemUpdated.getEventType(), updatedItem);
+			}
 		}
 	}
 	
@@ -455,7 +467,7 @@ public class ServiceController extends Controller {
 		if (!record.getModel().equals(item)) 
 			return false;
 		
-		record.beginEdit();
+		//record.beginEdit();
 		
 		// Do it for the property being explicitly changed
 		replaceProperty(property, record, item);
@@ -471,7 +483,7 @@ public class ServiceController extends Controller {
 			break;
 		}
 		
-		record.endEdit();
+		//record.endEdit();
 		
 		return true;
 	}
