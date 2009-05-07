@@ -47,6 +47,7 @@ public class UserRecord {
 	private String displayGrade;
 	private String exportCourseManagemntId;
 	private String exportUserId;
+	private String finalGradeUserId;
 
 	public UserRecord(String userUid) {
 		this.userUid = userUid;
@@ -214,5 +215,13 @@ public class UserRecord {
 
 	public void setLastNameFirst(String lastNameFirst) {
 		this.lastNameFirst = lastNameFirst;
+	}
+
+	public String getFinalGradeUserId() {
+		return finalGradeUserId;
+	}
+
+	public void setFinalGradeUserId(String finalGradeUserId) {
+		this.finalGradeUserId = finalGradeUserId;
 	}
 }

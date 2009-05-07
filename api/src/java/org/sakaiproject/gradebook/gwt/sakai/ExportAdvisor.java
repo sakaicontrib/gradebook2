@@ -13,7 +13,7 @@ import org.sakaiproject.site.api.Group;
 
 public interface ExportAdvisor {
 	
-	public enum Column { STUDENT_NAME, STUDENT_GRADE, EXPORT_USER_ID, EXPORT_CM_ID };
+	public enum Column { STUDENT_NAME, STUDENT_GRADE, EXPORT_USER_ID, EXPORT_CM_ID, FINAL_GRADE_USER_ID };
 	
 	/*
 	 * @param userEid : The user's EID
@@ -27,6 +27,8 @@ public interface ExportAdvisor {
 	 * 
 	 */
 	public String getExportUserId(UserDereference dereference);
+	
+	public String getFinalGradeUserId(UserDereference dereference);
 	
 	/*
 	 * 
