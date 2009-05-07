@@ -6,7 +6,6 @@ import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.InlineEditField;
 import org.sakaiproject.gradebook.gwt.client.gxt.InlineEditNumberField;
-import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemCreate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
@@ -37,8 +36,6 @@ import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
-import com.extjs.gxt.ui.client.store.StoreEvent;
-import com.extjs.gxt.ui.client.store.StoreListener;
 import com.extjs.gxt.ui.client.store.TreeStore;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
@@ -322,8 +319,7 @@ public class ItemFormPanel extends ContentPanel {
 		if (itemModel != null) {
 			Type itemType = itemModel.getItemType();
 			initState(itemType, itemModel, false);
-			okButton.setEnabled(false);
-			okCloseButton.setEnabled(false);
+			clearChanges();
 			formBindings.bind(itemModel);
 		} else {
 			formBindings.unbind();
@@ -907,6 +903,11 @@ public class ItemFormPanel extends ContentPanel {
 		return treeStore;
 	}
 
+	
+	public boolean hasChanges() {
+		return hasChanges;
+	}
+	
 	
 	public void setChanges() {
 		if (!hasChanges) {
