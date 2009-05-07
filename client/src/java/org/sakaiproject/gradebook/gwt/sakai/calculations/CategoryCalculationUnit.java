@@ -68,7 +68,7 @@ public class CategoryCalculationUnit {
 		
 		// We don't want to include excused records in our determination of drop lowest items
 		for (GradeRecordCalculationUnit unit : units) {
-			if (numberOfUnitsDropped < dropLowest && !unit.isExcused()) {
+			if (numberOfUnitsDropped < dropLowest && !unit.isExcused() && !unit.isExtraCredit()) {
 				unit.setDropped(true);
 				unitsToDrop.add(unit);
 				numberOfUnitsDropped++;
