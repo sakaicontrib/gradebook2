@@ -2236,11 +2236,11 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 				Set<String> keySet = gradeMap.keySet();
 
-				if (keySet.size() != GradebookService.validLetterGrade.length) // we only consider letter grade with -/+ now.
-					throw new IllegalArgumentException("gradeMap doesn't have right size in BaseHibernateManager.udpateLetterGradePercentMapping");
+				//if (keySet.size() != GradebookService.validLetterGrade.length) // we only consider letter grade with -/+ now.
+				//	throw new IllegalArgumentException("gradeMap doesn't have right size in BaseHibernateManager.udpateLetterGradePercentMapping");
 
-				if (validateLetterGradeMapping(gradeMap) == false)
-					throw new IllegalArgumentException("gradeMap contains invalid letter in BaseHibernateManager.udpateLetterGradePercentMapping");
+				//if (validateLetterGradeMapping(gradeMap) == false)
+				//	throw new IllegalArgumentException("gradeMap contains invalid letter in BaseHibernateManager.udpateLetterGradePercentMapping");
 
 				Map<String, Double> saveMap = new HashMap<String, Double>();
 				for (Iterator<String> iter = gradeMap.keySet().iterator(); iter.hasNext();) {
