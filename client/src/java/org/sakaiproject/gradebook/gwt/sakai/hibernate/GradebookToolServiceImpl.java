@@ -1098,6 +1098,11 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	 * 
 	 */
 	public List<Assignment> getAssignmentsForCategory(final Long categoryId) {
+		
+		if (categoryId == null)
+			return null;
+		
+		
 		HibernateCallback hc = new HibernateCallback() {
     		public Object doInHibernate(Session session) throws HibernateException {
     			// Removed logic to ignore removed items, since we want to control this in UI
@@ -1155,6 +1160,9 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	}
 
 	public Category getCategory(final Long categoryId) throws HibernateException{
+		if (categoryId == null)
+			return null;
+		
     	HibernateCallback hc = new HibernateCallback() {
     		public Object doInHibernate(Session session) throws HibernateException {
     			return session.createQuery(

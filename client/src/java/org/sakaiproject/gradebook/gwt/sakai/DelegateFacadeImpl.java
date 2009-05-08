@@ -1343,7 +1343,7 @@ private static final long serialVersionUID = 1L;
 								gbService.updateAssignment(assignment);
 							}
 							// This will only recalculate assuming that the category has isEqualWeighting as TRUE
-							this.recalculateAssignmentWeights(defaultCategory.getId(), null);
+							recalculateAssignmentWeights(defaultCategory.getId(), null);
 							//recalculateEqualWeightingGradeItems(gradebook.getUid(), gradebook.getId(), defaultCategory.getId(), null);
 						}
 					}
@@ -2656,6 +2656,9 @@ private static final long serialVersionUID = 1L;
 	}*/
 	
 	private ItemModel getItemModelsForCategory(Category category, ItemModel gradebookItemModel) {
+		if (category == null)
+			return null;
+		
 		Gradebook gradebook = category.getGradebook();
 		
 		List<Assignment> assignments = gbService.getAssignmentsForCategory(category.getId());
@@ -3780,6 +3783,7 @@ private static final long serialVersionUID = 1L;
 		}
 		
 		boolean isWeightChanged = false;
+		boolean havePointsChanged = false;
 		
 		Long assignmentId = Long.valueOf(item.getIdentifier());
 		Assignment assignment = gbService.getAssignment(assignmentId);
@@ -3789,6 +3793,16 @@ private static final long serialVersionUID = 1L;
 		
 		Gradebook gradebook = assignment.getGradebook();
 
+		if (category == null) 
+			category = findDefaultCategory(gradebook.getId());
+
+		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;		
+		boolean hasCategoryChanged = false;
+		
+		if (hasCategories && category != null) 
+			hasCategoryChanged = !category.getId().equals(item.getCategoryId());
+		
+		
 		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.ITEM.name(), ActionType.UPDATE.name());
 		actionRecord.setEntityName(assignment.getName());
 		actionRecord.setEntityId(String.valueOf(assignment.getId()));
@@ -3804,11 +3818,9 @@ private static final long serialVersionUID = 1L;
 		try {
 			
 			// Check to see if the category id has changed -- this means the user switched the item's category
-			if (!category.getId().equals(item.getCategoryId())) {
+			if (hasCategories && hasCategoryChanged) 
 				oldCategory = category;
-				//category = gbService.getCategory(item.getCategoryId());
-				//assignment.setCategory(category);
-			}
+			
 			
 			boolean wasExtraCredit = DataTypeConversionUtil.checkBoolean(assignment.isExtraCredit());
 			boolean isExtraCredit = DataTypeConversionUtil.checkBoolean(item.getExtraCredit());
@@ -3825,6 +3837,8 @@ private static final long serialVersionUID = 1L;
 				points = Double.valueOf(100.0d);
 			else
 				points = convertDouble(item.getPoints());
+			
+			havePointsChanged = points != null && oldPoints != null && points.compareTo(oldPoints) != 0;
 			
 			//assignment.setPointsPossible(points);
 			//assignment.setDueDate(convertDate(item.getDueDate()));
@@ -3855,9 +3869,9 @@ private static final long serialVersionUID = 1L;
 			isWeightChanged = isWeightChanged || isRemoved != wasRemoved;
 			
 			if (!isRemoved) {
-				if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY && category.isRemoved()) {
+				if (hasCategories && category != null && category.isRemoved()) 
 					throw new InvalidInputException("You cannot undelete a grade item when the category that owns it has been deleted. Please undelete the category first.");
-				}
+				
 			}
 			
 			//assignment.setRemoved(isRemoved);
@@ -3908,7 +3922,7 @@ private static final long serialVersionUID = 1L;
 			
 			// Modify the assignment name
 			assignment.setName(convertString(item.getName()));
-			if (!category.getId().equals(item.getCategoryId())) {
+			if (hasCategories && hasCategoryChanged) {
 				category = gbService.getCategory(item.getCategoryId());
 				assignment.setCategory(category);
 			}
@@ -3935,19 +3949,25 @@ private static final long serialVersionUID = 1L;
 			gbService.storeActionRecord(actionRecord);
 		}
 		
-		
-		if (oldCategory != null || gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_NO_CATEGORY) {
-	
+		// The first case is that we're in categories mode and the category has changed
+		if (hasCategories && oldCategory != null) {
 			List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
 			return getItemModel(gradebook, assignments);
-		} 
+		}
 		
-		if (!isWeightChanged) {
+		// If neither the weight nor the points have changed, then we can just return 
+		// the item model itself
+		if (!isWeightChanged && !havePointsChanged) {
 			ItemModel itemModel = createItemModel(category, assignment, null);
 			itemModel.setActive(true);
 			return itemModel;
+		} else if (! hasCategories) {
+			// Otherwise if we're in no categories mode then we want to return the gradebook
+			List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
+			return getItemModel(gradebook, assignments);
 		}
 		
+		// Otherwise we can return the category parent
 		ItemModel categoryItemModel = getItemModelsForCategory(category, item.getParent());
 		
 		String assignmentIdAsString = String.valueOf(assignment.getId());
@@ -4665,6 +4685,7 @@ private static final long serialVersionUID = 1L;
 	
 	// Helper method
 	private ItemModel createItemModel(Category category, Assignment assignment, BigDecimal percentCourseGrade) {
+		
 		ItemModel model = new ItemModel();
 		
 		//double categoryDecimalWeight = category.getWeight() == null ? 0d : category.getWeight().doubleValue();
@@ -4675,9 +4696,11 @@ private static final long serialVersionUID = 1L;
 		Boolean isAssignmentRemoved = Boolean.valueOf(assignment.isRemoved());
 		
 		Gradebook gradebook = assignment.getGradebook();
+		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
+		
 		
 		// We don't want to delete assignments based on category when we don't have categories
-		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY) {
+		if (hasCategories && category != null) {
 			
 			if (category.isRemoved())
 				isAssignmentRemoved = Boolean.TRUE;
@@ -4691,7 +4714,7 @@ private static final long serialVersionUID = 1L;
 			assignmentWeight = 0d;
 		
 		String categoryName = gradebook.getName();
-		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY) {
+		if (hasCategories && category != null) {
 			categoryName = category.getName();
 			model.setCategoryName(categoryName);
 			model.setCategoryId(category.getId());
@@ -4711,7 +4734,7 @@ private static final long serialVersionUID = 1L;
 		model.setDataType(AppConstants.NUMERIC_DATA_TYPE);
 		model.setStudentModelKey(Key.ASSIGNMENT.name());
 		
-		if (percentCourseGrade == null && category != null) {
+		if (percentCourseGrade == null && hasCategories && category != null) {
 			List<Assignment> assignments = category.getAssignmentList();
 			
 			boolean isIncluded = category.isUnweighted() == null ? true : ! category.isUnweighted().booleanValue();
