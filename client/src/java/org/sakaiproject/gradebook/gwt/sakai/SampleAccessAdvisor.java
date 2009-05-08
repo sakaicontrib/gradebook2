@@ -5,7 +5,7 @@ import org.sakaiproject.authz.api.Member;
 public class SampleAccessAdvisor implements AccessAdvisor {
 
 	public Long[] getLearnerRoleKeys() {
-		Long[] roleKeys = { Long.valueOf(8l), Long.valueOf(110l) };
+		Long[] roleKeys = { Long.valueOf(3l), Long.valueOf(8l), Long.valueOf(110l) };
 		return roleKeys;
 	}
 	
