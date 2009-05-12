@@ -15,12 +15,10 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.sakaiproject.gradebook.gwt.client.GradebookToolFacade;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportFile;
-import org.sakaiproject.gradebook.gwt.sakai.ExportAdvisor;
-import org.sakaiproject.gradebook.gwt.sakai.SampleExportAdvisor;
-import org.sakaiproject.gradebook.gwt.sakai.mock.DelegateFacadeMockImpl;
+import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service;
+import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ServiceImpl;
 import org.sakaiproject.gradebook.gwt.sakai.mock.IocMock;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility.Delimiter;
 
@@ -34,18 +32,14 @@ public class ImportHandler extends HttpServlet {
 
 	private IocMock iocMock = IocMock.getInstance();
 	
-	private GradebookToolFacade delegateFacade;
-	private ExportAdvisor exportAdvisor;
+	private Gradebook2Service service;
 	
 	public void doGet(HttpServletRequest req, HttpServletResponse response) throws ServletException, IOException {
-		if (delegateFacade == null)
-			delegateFacade = (GradebookToolFacade)iocMock.getClassInstance(DelegateFacadeMockImpl.class.getName());
-		
-		if (exportAdvisor == null)
-			exportAdvisor = new SampleExportAdvisor();
-		
-		response.setContentType("application/ms-excel");
-		response.setHeader("Content-Disposition", "attachment; filename=" + "gradebook.csv");
+		if (service == null)
+			service = (Gradebook2Service)iocMock.getClassInstance(Gradebook2ServiceImpl.class.getName());
+
+		//response.setContentType("application/ms-excel");
+		//response.setHeader("Content-Disposition", "attachment; filename=" + "gradebook.csv");
 		
 		PrintWriter writer = response.getWriter();
 		
@@ -53,7 +47,7 @@ public class ImportHandler extends HttpServlet {
 		String include = req.getParameter("include");
 		try {
 			boolean doIncludeStructure = include != null;
-			ImportExportUtility.exportGradebook(delegateFacade, gradebookUid, exportAdvisor, doIncludeStructure, writer);
+			ImportExportUtility.exportGradebook(service, gradebookUid, doIncludeStructure, writer, response);
 		} catch (FatalException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -62,11 +56,8 @@ public class ImportHandler extends HttpServlet {
 	}
 	
 	public void doPost(HttpServletRequest req, HttpServletResponse response) throws ServletException, IOException {
-		if (delegateFacade == null)
-			delegateFacade = (GradebookToolFacade)iocMock.getClassInstance(DelegateFacadeMockImpl.class.getName());
-		
-		if (exportAdvisor == null)
-			exportAdvisor = new SampleExportAdvisor();
+		if (service == null)
+			service = (Gradebook2Service)iocMock.getClassInstance(Gradebook2ServiceImpl.class.getName());
 		
 		XStream xstream = new XStream(new JsonHierarchicalStreamDriver());
 		
@@ -112,7 +103,7 @@ public class ImportHandler extends HttpServlet {
                        
                        InputStreamReader reader = new InputStreamReader(uploadedFile.getInputStream());
                        
-                       ImportFile importFile = ImportExportUtility.parseImportX(delegateFacade, exportAdvisor, gradebookUid, reader, delimiterSet);
+                       ImportFile importFile = ImportExportUtility.parseImportX(service, gradebookUid, reader, delimiterSet);
                         
                        out.write(xstream.toXML(importFile)); 
                        
@@ -131,21 +122,4 @@ public class ImportHandler extends HttpServlet {
         }
 	}
 	
-
-	public GradebookToolFacade getDelegateFacade() {
-		return delegateFacade;
-	}
-
-	public void setDelegateFacade(GradebookToolFacade delegateFacade) {
-		this.delegateFacade = delegateFacade;
-	}
-
-	public ExportAdvisor getExportAdvisor() {
-		return exportAdvisor;
-	}
-
-	public void setExportAdvisor(ExportAdvisor exportAdvisor) {
-		this.exportAdvisor = exportAdvisor;
-	}
-
 }

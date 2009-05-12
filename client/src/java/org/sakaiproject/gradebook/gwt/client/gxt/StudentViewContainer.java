@@ -23,7 +23,6 @@
 package org.sakaiproject.gradebook.gwt.client.gxt;
 
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
-import org.sakaiproject.gradebook.gwt.client.gxt.settings.LogColumnConfig;
 import org.sakaiproject.gradebook.gwt.client.model.GradeRecordModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
@@ -58,9 +57,7 @@ public class StudentViewContainer extends LayoutContainer {
 	private NumberField defaultNumberField = new NumberField();
     private FlexTable studentInformation, gradeInformation;
     private ContentPanel studentInformationPanel, gradeInformationPanel;
-    
-	private LogColumnConfig logColumn;
-	
+
 	private StudentModel learnerGradeRecordCollection;
 	
 	private boolean isStudentView;
@@ -111,18 +108,8 @@ public class StudentViewContainer extends LayoutContainer {
 			this.selectedGradebook = selectedGradebook;
 			this.learnerGradeRecordCollection = learnerGradeRecordCollection;
 			
-			//if (gradeItemsPanel == null)
-			//	gradeItemsPanel = newGradeItemsPanel();
-			
-			if (logColumn != null)
-				logColumn.setStudent(learnerGradeRecordCollection);
 			updateCourseGrade(learnerGradeRecordCollection.getStudentGrade());
 			
-			//if (gradeItemsPanel != null) {
-			//	gradeItemsPanel.onSwitchGradebook(selectedGradebook);
-			//}
-			
-			//gradeItemsPanel.getLoader().load(0, pageSize);
 			setStudentInfoTable();
 			
 			setGradeInfoTable(selectedGradebook, learnerGradeRecordCollection);

@@ -8,21 +8,7 @@
 	
 	<!-- Normal injection of services w/o performance analysis -->
 	<!--import resource="gbServices.xml" /-->
-	
-	<bean id="placeholderConfig" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">  
-		<property name="location">
-			<value>classpath:gradebook2.properties</value>
-		</property>
-		<property name="properties">  
-    		<props>  
-       			<prop key="org.sakaiproject.gradebook.gwt.sakai.api.AccessAdvisor">org.sakaiproject.gradebook.gwt.sakai.api.AccessAdvisor</prop>  
-       			<!--prop key="org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor">org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor</prop-->
-       			<prop key="org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor">org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisorUcd</prop>
-       		</props>  
-		</property>
-	</bean>
-
-	
+		
 	<!-- Hibernate Mappings -->
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.model.hibernateMappings"
 		class="org.sakaiproject.springframework.orm.hibernate.impl.AdditionalHibernateMappingsImpl">
@@ -31,80 +17,56 @@
 				<value>org/sakaiproject/gradebook/gwt/sakai/model/ActionRecord.hbm.xml</value>
 				<value>org/sakaiproject/gradebook/gwt/sakai/model/Realm.hbm.xml</value>
 				<value>org/sakaiproject/gradebook/gwt/sakai/model/RealmGroup.hbm.xml</value>
+				<value>org/sakaiproject/gradebook/gwt/sakai/model/RealmRole.hbm.xml</value>
 				<value>org/sakaiproject/gradebook/gwt/sakai/model/UserDereference.hbm.xml</value>
 				<value>org/sakaiproject/gradebook/gwt/sakai/model/UserDereferenceRealmUpdate.hbm.xml</value>
 			</list>
 		</property>
 	</bean>
 	
-	<!--
-	Sample Access Advisor
-	-->	
-	<bean id="org.sakaiproject.gradebook.gwt.sakai.api.AccessAdvisor" class="org.sakaiproject.gradebook.gwt.sakai.SampleAccessAdvisor">
+		
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Security" class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2SecurityImpl">
+		<property name="authn" ref="org_sakaiproject_tool_gradebook_facades_Authn"/>
+		<property name="authz" ref="org_sakaiproject_tool_gradebook_facades_Authz"/>
+		<property name="sectionAwareness" ref="org.sakaiproject.section.api.SectionAwareness"/>
 	</bean>
 	
+	
+	<bean id="GradebookExportService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookExportController">
+		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service"/>
+	</bean>
+	
+	<bean id="GradebookFinalGradeSubmissionService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookFinalGradeSubmissionController">
+		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service"/>
+	</bean>
+	
+	<bean id="GradebookImportService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookImportController">
+		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service"/>
+		<property name="commandClass" value="org.sakaiproject.gradebook.gwt.sakai.FileUploadBean"/>
+	</bean>
+	
+	
 	<!--
 	
-	GRBK-37 : Sample Export Advisor 
-	The Export Advisor is configured via the gradebook2.properties file.
-	The gradebook2.properties file sets the "org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor" property
-	which then is injected via Spring's Property Placeholder Configuration mechanism
+	GRBK-37 : Sample Institutional Advisor 
+	The Institutional Advisor is configured via the sakai.properties file.
+	The sakai.properties file sets the "advisor@org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service" property
+	which then is injected via Sakai's bean configuration mechanism
 	-->
-	<bean id="org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor" class="org.sakaiproject.gradebook.gwt.sakai.SampleExportAdvisor">
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.api.InstitutionalAdvisor" class="org.sakaiproject.gradebook.gwt.sakai.SampleInstitutionalAdvisor">
 		<property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/>
 		<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>
 		<property name="finalGradeSubmissionPath" value="/tmp"/>
 	</bean>
-
+	
 	
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"
 		class="org.sakaiproject.gradebook.gwt.sakai.calculations.GradeCalculationsOOImpl">
 		
 	</bean>
 
-	<!-- Performance Target -->
-	<!--bean id="org.sakaiproject.gradebook.gwt.sakai.DelegateFacade" class="org.sakaiproject.gradebook.gwt.sakai.DelegateFacadeImpl">
-		<property name="sectionAwareness" ref="org.sakaiproject.section.api.SectionAwareness"/>
-		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/> 
-		<property name="authn" ref="org_sakaiproject_tool_gradebook_facades_Authn"/>
-		<property name="authz" ref="org_sakaiproject_tool_gradebook_facades_Authz"/>
-		<property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/>
-		<property name="userService" ref="org.sakaiproject.user.api.UserDirectoryService"/>
-		<property name="gradeCalculations" ref="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"/>
-		<property name="frameworkService" ref="org.sakaiproject.service.gradebook.GradebookFrameworkService" />
-		<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>
-		<property name="accessAdvisor" ref="${org.sakaiproject.gradebook.gwt.sakai.api.AccessAdvisor}"/>
-		<property name="exportAdvisor" ref="${org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor}"/>
-	</bean-->
-			
-	<!-- Declare service -->
-	<bean id="GradebookService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookToolFacadeImpl">
-		<property name="delegateFacade" ref="org.sakaiproject.gradebook.gwt.sakai.DelegateFacade"/>
-	</bean>
-
+	
 	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/>
-
-	
-
-	
-	<!-- Gradebook Manager -->
-	<!-- Performance Target -->
-	<!--bean id="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService" parent="alt.gradebookTxTemplate">
-		<property name="target">
-			<bean class="org.sakaiproject.gradebook.gwt.sakai.hibernate.GradebookToolServiceImpl">
-				<property name="sessionFactory"><ref bean="alt.gradebookSessionFactory"/></property>
-				<property name="sectionAwareness">
-					<ref bean="org.sakaiproject.section.api.SectionAwareness" />
-				</property>
-				<property name="authn">
-					<ref bean="org_sakaiproject_tool_gradebook_facades_Authn" />
-				</property>
-                <property name="eventTrackingService">
-                    <ref bean="org_sakaiproject_tool_gradebook_facades_EventTrackingService"/>
-                </property>
-            </bean>
-		</property>
-	</bean-->
 	
 
 	<bean id="alt.gradebookTxTemplate" lazy-init="true" abstract="true" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
@@ -142,10 +104,6 @@
         </list>
 		</property>
 	</bean>
-	
-	<!-- External Context Management Service -->
-	<!--bean id="org.sakaiproject.tool.gradebook.facades.ContextManagement"
-		class="org.sakaiproject.tool.gradebook.facades.sakai2impl.ContextManagementSakai2Impl">
-	</bean-->
+
 
 </beans>

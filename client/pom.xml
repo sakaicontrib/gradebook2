@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project>
 	<parent>
-    	<artifactId>gradebook-gwt-base</artifactId>
+    	<artifactId>gradebook2-base</artifactId>
     	<groupId>org.sakaiproject</groupId>
     	<version>M2</version>
    		<relativePath>../pom.xml</relativePath>
@@ -9,7 +9,7 @@
   	
 	<modelVersion>4.0.0</modelVersion>
 	<name>Sakai Gradebook2 Client</name>
-	<artifactId>gradebook-gwt-client</artifactId>
+	<artifactId>gradebook2-client</artifactId>
 	<packaging>war</packaging>
 	
 	<pluginRepositories>
@@ -357,14 +357,14 @@
 		
 		<dependency>
   	  		<groupId>org.sakaiproject</groupId>
-      		<artifactId>gradebook-gwt-model</artifactId>
+      		<artifactId>gradebook2-model</artifactId>
       		<version>${sakai.version}</version>
       		<scope>provided</scope>
   		</dependency>
   	
 		<dependency>
       		<groupId>org.sakaiproject</groupId>
-      		<artifactId>gradebook-gwt-api</artifactId>
+      		<artifactId>gradebook2-api</artifactId>
       		<version>${sakai.version}</version>
       		<scope>provided</scope>
    		</dependency>

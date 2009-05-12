@@ -26,8 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.GradebookState;
-import org.sakaiproject.gradebook.gwt.client.GradebookToolFacadeAsync;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
@@ -1126,10 +1126,9 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		RpcProxy<PagingLoadConfig, PagingLoadResult<SectionModel>> sectionsProxy = new RpcProxy<PagingLoadConfig, PagingLoadResult<SectionModel>>() {
 			@Override
 			protected void load(PagingLoadConfig loadConfig, AsyncCallback<PagingLoadResult<SectionModel>> callback) {
-				GradebookToolFacadeAsync service = Registry.get("service");
+				Gradebook2RPCServiceAsync service = Registry.get("service");
 				GradebookModel model = Registry.get(AppConstants.CURRENT);
-				PageRequestAction action = new PageRequestAction(EntityType.SECTION, model.getGradebookUid(), model.getGradebookId());
-				service.getEntityPage(action, loadConfig, callback);
+				service.getPage(model.getGradebookUid(), model.getGradebookId(), EntityType.SECTION, loadConfig, callback);
 			}
 		};
 		

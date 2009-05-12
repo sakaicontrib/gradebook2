@@ -7,16 +7,14 @@ import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
+import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
-import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityCreateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.GridPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.BaseCustomGridView;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader.Field;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.ItemCellRenderer;
@@ -59,7 +57,6 @@ import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.store.TreeStore;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
-import com.extjs.gxt.ui.client.widget.Info;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.TabItem;
@@ -103,6 +100,7 @@ import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Accessibility;
 
 public class ImportPanel extends ContentPanel {
@@ -369,8 +367,8 @@ public class ImportPanel extends ContentPanel {
 
 	private void uploadSpreadsheet(SpreadsheetModel spreadsheetModel) {
 		GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
-		UserEntityCreateAction<SpreadsheetModel> action = 
-			new UserEntityCreateAction<SpreadsheetModel>(gbModel, EntityType.SPREADSHEET, spreadsheetModel);
+		//UserEntityCreateAction<SpreadsheetModel> action = 
+		//	new UserEntityCreateAction<SpreadsheetModel>(gbModel, EntityType.SPREADSHEET, spreadsheetModel);
 		
 		int numberOfLearners = 0;
 		List<StudentModel> learners = spreadsheetModel.getRows();
@@ -383,30 +381,15 @@ public class ImportPanel extends ContentPanel {
 		
 		final MessageBox box = MessageBox.wait(i18n.uploadingLearnerGradesTitle(), message, i18n.uploadingLearnerGradesStatus());
 		
-		RemoteCommand<SpreadsheetModel> remoteCommand = 
-			new RemoteCommand<SpreadsheetModel>() {
+		AsyncCallback<SpreadsheetModel> callback =
+			new AsyncCallback<SpreadsheetModel>() {
 
-				@Override
-				public void onCommandFailure(UserEntityAction<SpreadsheetModel> action, Throwable caught) {
+				public void onFailure(Throwable caught) {
+					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught));
 					box.close();
 				}
-				
-			
-				@Override
-				public void onCommandSuccess(UserEntityAction<SpreadsheetModel> action, SpreadsheetModel result) {
-					
-					//subCardLayout.setActiveItem(resultsContainer);
-					
-					action.setModel(result);
-					
-					/*resultModels = new ArrayList<BaseModel>();
-					for (String desc : result.getResults()) {
-						BaseModel model = new BaseModel();
-						model.set("desc", desc);
-						resultModels.add(model);
-					}
-					proxy.setData(new BaseListLoadResult<BaseModel>(resultModels));*/
-					
+
+				public void onSuccess(SpreadsheetModel result) {
 					for (StudentModel student : result.getRows()) {
 						
 						boolean hasChanges = DataTypeConversionUtil.checkBoolean((Boolean)student.get(AppConstants.IMPORT_CHANGES));
@@ -414,12 +397,6 @@ public class ImportPanel extends ContentPanel {
 						if (hasChanges) {
 							Record record = rowStore.getRecord(student);
 							record.beginEdit();
-							
-							/*for (String property : student.getPropertyNames()) {
-								Object value = student.get(property);
-								record.set(property, value);
-							}
-							record.endEdit();*/
 							
 							for (String p : student.getPropertyNames()) {
 								boolean needsRefreshing = false;
@@ -437,20 +414,77 @@ public class ImportPanel extends ContentPanel {
 									
 									record.set(assignmentId, null);
 									record.set(assignmentId, value);
-									
-									/*Boolean recordFlagValue = (Boolean)record.get(p);
-									Boolean resultFlagValue = result.get(p);
+
+								}
+							}
+							record.endEdit();
+						}
+					}
+	
+					box.setProgressText("Loading");
+					box.close();
+					
+					Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades.getEventType());
+					
+					GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+					selectedGradebook.setGradebookItemModel(result.getGradebookItemModel());
+					Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel.getEventType(), selectedGradebook);
+					
+					//fireEvent(GradebookEvents.UserChange.getEventType(), new UserChangeEvent(action));
+					
+					cancelButton.setText("Done");
+				}
+			
+			
+		};
+		
+		Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
+		
+		service.create(gbModel.getGradebookUid(), gbModel.getGradebookId(), spreadsheetModel, EntityType.SPREADSHEET, callback);
+		
+		/*
+		RemoteCommand<SpreadsheetModel> remoteCommand = 
+			new RemoteCommand<SpreadsheetModel>() {
+
+				@Override
+				public void onCommandFailure(UserEntityAction<SpreadsheetModel> action, Throwable caught) {
+					box.close();
+				}
+				
+			
+				@Override
+				public void onCommandSuccess(UserEntityAction<SpreadsheetModel> action, SpreadsheetModel result) {
+					
+					//subCardLayout.setActiveItem(resultsContainer);
+					
+					action.setModel(result);
+
+					for (StudentModel student : result.getRows()) {
+						
+						boolean hasChanges = DataTypeConversionUtil.checkBoolean((Boolean)student.get(AppConstants.IMPORT_CHANGES));
+						
+						if (hasChanges) {
+							Record record = rowStore.getRecord(student);
+							record.beginEdit();
+
+							
+							for (String p : student.getPropertyNames()) {
+								boolean needsRefreshing = false;
 								
-									boolean isDropped = resultFlagValue != null && resultFlagValue.booleanValue();
-									boolean wasDropped = recordFlagValue != null && recordFlagValue.booleanValue();
+								int index = -1;
+								
+								if (p.endsWith(StudentModel.FAILED_FLAG)) {
+									index = p.indexOf(StudentModel.FAILED_FLAG);
+									needsRefreshing = true;
+								} 
+								
+								if (needsRefreshing && index != -1) {
+									String assignmentId = p.substring(0, index);
+									Object value = result.get(assignmentId);
 									
-									record.set(p, resultFlagValue);
-									
-									if (isDropped || wasDropped) {
-										record.set(assignmentId, null);
-										record.set(assignmentId, value);
-										//r.setDirty(true);
-									}*/
+									record.set(assignmentId, null);
+									record.set(assignmentId, value);
+
 								}
 							}
 							record.endEdit();
@@ -476,7 +510,7 @@ public class ImportPanel extends ContentPanel {
 			
 		};
 		
-		remoteCommand.execute(action);
+		remoteCommand.execute(action);*/
 	}
 	
 	/*

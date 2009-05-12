@@ -13,12 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.sakaiproject.gradebook.gwt.client.GradebookToolFacade;
-import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
-import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportFile;
@@ -30,8 +28,7 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
-import org.sakaiproject.gradebook.gwt.sakai.DelegateFacadeImpl;
-import org.sakaiproject.gradebook.gwt.sakai.ExportAdvisor;
+import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 
 import au.com.bytecode.opencsv.CSVReader;
@@ -63,12 +60,30 @@ public class ImportExportUtility {
 		}
 	};
 
-	public static void exportGradebook(GradebookToolFacade delegateFacade, String gradebookUid, 
-			ExportAdvisor exportAdvisor, final boolean includeStructure, PrintWriter writer) 
+	public static void exportGradebook(Gradebook2Service service, String gradebookUid, 
+			final boolean includeStructure, PrintWriter writer, HttpServletResponse response) 
 		throws FatalException {
-		UserEntityGetAction<GradebookModel> getGradebookAction = new UserEntityGetAction<GradebookModel>(gradebookUid, EntityType.GRADEBOOK);
-		GradebookModel gradebook = delegateFacade.getEntity(getGradebookAction);
+
+		GradebookModel gradebook = service.getGradebook(gradebookUid);
 		ItemModel gradebookItemModel = gradebook.getGradebookItemModel();
+		
+		StringBuilder filename = new StringBuilder();
+		
+		if (gradebook.getName() == null)
+			filename.append("gradebook");
+		else {
+			String name = gradebook.getName();
+			name.replaceAll(" ", "");
+			
+			filename.append(name);
+		}
+		
+		filename.append(".csv");
+				
+		response.setContentType("application/x-download");
+		response.setHeader("Content-Disposition", "attachment; filename=" + filename.toString());
+		response.setHeader("Pragma", "no-cache");
+		
 		
 		CSVWriter csvWriter = new CSVWriter(writer);
 		
@@ -81,7 +96,7 @@ public class ImportExportUtility {
 			String gradeTypeText = gradebookItemModel.getGradeType().getDisplayName();
 			
 			// First, we need to add a row for basic gradebook info
-			String[] gradebookInfoRow = { "", "", StructureRow.GRADEBOOK.getDisplayName(), gradebook.getName(), categoryTypeText, gradeTypeText};
+			String[] gradebookInfoRow = { "", StructureRow.GRADEBOOK.getDisplayName(), gradebook.getName(), categoryTypeText, gradeTypeText};
 			csvWriter.writeNext(gradebookInfoRow);
 			
 			final List<String> categoriesRow = new LinkedList<String>();
@@ -91,22 +106,22 @@ public class ImportExportUtility {
 			final List<String> dropLowestRow = new LinkedList<String>();
 			final List<String> equalWeightRow = new LinkedList<String>();
 			
-			categoriesRow.add("");
+
 			categoriesRow.add("");
 			categoriesRow.add(StructureRow.CATEGORY.getDisplayName());
-			percentageGradeRow.add("");
+
 			percentageGradeRow.add("");
 			percentageGradeRow.add(StructureRow.PERCENT_GRADE.getDisplayName());
-			pointsRow.add("");
+
 			pointsRow.add("");
 			pointsRow.add(StructureRow.POINTS.getDisplayName());
-			percentCategoryRow.add("");
+
 			percentCategoryRow.add("");
 			percentCategoryRow.add(StructureRow.PERCENT_CATEGORY.getDisplayName());
-			dropLowestRow.add("");
+
 			dropLowestRow.add("");
 			dropLowestRow.add(StructureRow.DROP_LOWEST.getDisplayName());
-			equalWeightRow.add("");
+
 			equalWeightRow.add("");
 			equalWeightRow.add(StructureRow.EQUAL_WEIGHT.getDisplayName());
 			
@@ -203,8 +218,7 @@ public class ImportExportUtility {
 		
 		csvWriter.writeNext(headerColumns.toArray(new String[headerColumns.size()]));
 		
-		PageRequestAction action = new PageRequestAction(EntityType.LEARNER, gradebookUid, gradebookId);
-		PagingLoadResult<StudentModel> result = delegateFacade.getEntityPage(action, null);
+		PagingLoadResult<StudentModel> result = service.getStudentRows(gradebookUid, gradebookId, null);
 		
 		List<StudentModel> rows = result.getData();
 		
@@ -248,15 +262,17 @@ public class ImportExportUtility {
 		}
 	}
 
-	public static ImportFile parseImportX(GradebookToolFacade delegateFacade, ExportAdvisor exportAdvisor, String gradebookUid, Reader reader, EnumSet<Delimiter> delimiterSet) throws FatalException {
-		UserEntityGetAction<GradebookModel> getGradebookAction = new UserEntityGetAction<GradebookModel>(gradebookUid, EntityType.GRADEBOOK);
-		GradebookModel gradebook = delegateFacade.getEntity(getGradebookAction);
+	public static ImportFile parseImportX(Gradebook2Service service, 
+			String gradebookUid, Reader reader,
+			EnumSet<Delimiter> delimiterSet) throws FatalException {
 		
-		List<UserDereference> userDereferences = ((DelegateFacadeImpl)delegateFacade).findAllUserDeferences();
+		GradebookModel gradebook = service.getGradebook(gradebookUid);
+		
+		List<UserDereference> userDereferences = service.findAllUserDeferences();
 		Map<String, UserDereference> userDereferenceMap = new HashMap<String, UserDereference>();
 		
 		for (UserDereference dereference : userDereferences) {
-			String exportUserId = exportAdvisor.getExportUserId(dereference); 
+			String exportUserId = service.getExportUserId(dereference); 
 			userDereferenceMap.put(exportUserId, dereference);
 		}
 		

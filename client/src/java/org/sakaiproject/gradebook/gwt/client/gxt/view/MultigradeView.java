@@ -1,7 +1,7 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
-import org.sakaiproject.gradebook.gwt.client.GradebookToolFacadeAsync;
+import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
@@ -25,7 +25,6 @@ import com.extjs.gxt.ui.client.data.ModelReader;
 import com.extjs.gxt.ui.client.data.PagingLoadConfig;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 import com.extjs.gxt.ui.client.data.RpcProxy;
-import com.extjs.gxt.ui.client.data.SortInfo;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.View;
@@ -116,10 +115,9 @@ public class MultigradeView extends View {
 			new RpcProxy<PagingLoadConfig, PagingLoadResult<StudentModel>>() {
 			@Override
 			protected void load(PagingLoadConfig loadConfig, AsyncCallback<PagingLoadResult<StudentModel>> callback) {
-				GradebookToolFacadeAsync service = Registry.get("service");
+				Gradebook2RPCServiceAsync service = Registry.get("service");
 				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-				PageRequestAction pageAction = new PageRequestAction(EntityType.LEARNER, selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId());
-				service.getEntityPage(pageAction, loadConfig, callback);
+				service.getPage(selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId(), EntityType.LEARNER, loadConfig, callback);
 			}
 			
 			@Override

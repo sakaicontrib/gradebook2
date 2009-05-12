@@ -26,11 +26,9 @@ import java.util.ArrayList;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
+import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.GradebookState;
-import org.sakaiproject.gradebook.gwt.client.GradebookToolFacadeAsync;
 import org.sakaiproject.gradebook.gwt.client.PersistentStore;
-import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
-import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
@@ -38,6 +36,7 @@ import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType;
 import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.BaseCustomGridView;
 import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.CustomColumnModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModel;
@@ -57,6 +56,7 @@ import com.extjs.gxt.ui.client.data.SortInfo;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.GridEvent;
 import com.extjs.gxt.ui.client.event.Listener;
+import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
@@ -229,10 +229,10 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 	public void editCell(GradebookModel selectedGradebook, Record record, String property, Object value, Object startValue, GridEvent ge) {
 		UserEntityUpdateAction<M> action = newEntityUpdateAction(selectedGradebook, record, property, value, startValue, ge);
 		
-		RemoteCommand<M> remoteCommand = newRemoteCommand(record, property, value, startValue, ge);
+		//RemoteCommand<M> remoteCommand = newRemoteCommand(record, property, value, startValue, ge);
 		
-		if (validateEdit(remoteCommand, action, record, ge)) {
-			doEdit(remoteCommand, action);
+		if (validateEdit(property, value, startValue, record, ge)) {
+			doEdit(record, action, ge);
 		}
 	}
 	
@@ -334,10 +334,9 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		RpcProxy<PagingLoadConfig, PagingLoadResult<M>> proxy = new RpcProxy<PagingLoadConfig, PagingLoadResult<M>>() {
 			@Override
 			protected void load(PagingLoadConfig loadConfig, AsyncCallback<PagingLoadResult<M>> callback) {
-				GradebookToolFacadeAsync service = Registry.get("service");
+				Gradebook2RPCServiceAsync service = Registry.get("service");
 				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-				PageRequestAction pageAction = newPageRequestAction(selectedGradebook);
-				service.getEntityPage(pageAction, loadConfig, callback);
+				service.getPage(selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId(), entityType, loadConfig, callback);
 			}
 			
 			@Override
@@ -369,9 +368,9 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		return new BasePagingLoader<PagingLoadConfig, PagingLoadResult<M>>(proxy, new ModelReader<PagingLoadConfig>());
 	}
 	
-	protected PageRequestAction newPageRequestAction(GradebookModel selectedGradebook) {
+	/*protected PageRequestAction newPageRequestAction(GradebookModel selectedGradebook) {
 		return new PageRequestAction(entityType, selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId());
-	}
+	}*/
 	
 	protected PagingToolBar newPagingToolBar(int pageSize) {
 		return new PagingToolBar(pageSize);
@@ -483,7 +482,7 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		return action;
 	}
 	
-	protected RemoteCommand<M> newRemoteCommand(final Record record, final String property, 
+	/*protected RemoteCommand<M> newRemoteCommand(final Record record, final String property, 
 			final Object value, final Object startValue, final GridEvent gridEvent) {
 		return new RemoteCommand<M>() {
 			
@@ -524,15 +523,58 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 						
 			}		
 		};
-	}
+	}*/
 	
-	protected void doEdit(RemoteCommand<M> remoteCommand, UserEntityUpdateAction<M> action) {
+	protected void doEdit(final Record record, final UserEntityUpdateAction<M> action, final GridEvent gridEvent) {
+		Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
 		
-		remoteCommand.execute(action);
+		AsyncCallback<M> callback = new AsyncCallback<M>() {
+
+			public void onFailure(Throwable caught) {
+				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught));
+				
+				String property = action.getKey();
+
+				// Save the exception message on the record
+				String failedProperty = property + FAILED_FLAG;
+				record.set(failedProperty, caught.getMessage());
+						
+				// We have to fool the system into thinking that the value has changed, since
+				// we snuck in that "Saving grade..." under the radar.
+				record.set(property, null);
+				record.set(property, action.getStartValue());
+						
+				if (gridEvent != null)
+					grid.fireEvent(Events.AfterEdit, gridEvent);
+			}
+
+			public void onSuccess(M result) {
+				// Ensure that we clear out any older failure messages
+				// Save the exception message on the record
+				String failedProperty = action.getKey() + FAILED_FLAG;
+				record.set(failedProperty, null);
+						
+				beforeUpdateView(action, record, result);
+				
+				updateView(action, record, result);
+						
+				afterUpdateView(action, record, result);
+				
+				if (gridEvent != null) {
+					grid.fireEvent(Events.AfterEdit, gridEvent);
+				}
+			}
+			
+		};
+		
+		service.update(action.getModel(), action.getEntityType(), null, callback);
+		
+		
+		//remoteCommand.execute(action);
 
 	}
 	
-	protected boolean validateEdit(RemoteCommand<M> remoteCommand, UserEntityUpdateAction<M> action, Record record, GridEvent gridEvent) {
+	protected boolean validateEdit(String property, Object value, Object startValue, Record record, GridEvent gridEvent) {
 		return true;
 	}
 

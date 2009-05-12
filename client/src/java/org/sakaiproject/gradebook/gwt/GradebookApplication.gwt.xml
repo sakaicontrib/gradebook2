@@ -20,7 +20,10 @@
   	<!--servlet path="/rpc/grades.rpc" class="org.sakaiproject.gradebook.gwt.server.GradebookServiceImpl"/-->
   	
   	<!-- This servlet is the mock sakai one. It doesn't require any sakai dependencies, and won't work with the default checked in pom.xml : you should copy over it with standalone-pom.xml to run this -->
-  	<servlet path="/rpc/grades.rpc" class="org.sakaiproject.gradebook.gwt.sakai.mock.GradebookToolFacadeMockImpl"/>
+  	<!--servlet path="/rpc/grades.rpc" class="org.sakaiproject.gradebook.gwt.sakai.mock.GradebookToolFacadeMockImpl"/-->
+  	
+  	
+  	<servlet path="/rpc/grades.rpc" class="org.sakaiproject.gradebook.gwt.sakai.mock.Gradebook2ResourceProducerMock"/>
   
   	<!-- This is the real sakai servlet. It requires all the sakai dependencies, and needs to be deployed in Tomcat with the rest of sakai -->
   	<!--servlet path="/rpc/grades.rpc" class="org.sakaiproject.gradebook.gwt.sakai.GradebookToolFacadeImpl"/-->

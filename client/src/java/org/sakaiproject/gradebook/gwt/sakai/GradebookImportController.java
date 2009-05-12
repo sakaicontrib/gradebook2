@@ -12,7 +12,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.sakaiproject.gradebook.gwt.client.GradebookToolFacade;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportFile;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility.Delimiter;
@@ -31,22 +30,12 @@ public class GradebookImportController extends SimpleFormController {
 	
 	private static final Log log = LogFactory.getLog(GradebookImportController.class);
 	
-	private GradebookToolFacade delegateFacade;
-	private ExportAdvisor exportAdvisor;
+	private Gradebook2Service service;
 	
-	/*protected ModelAndView showForm(
-			HttpServletRequest request, HttpServletResponse response, BindException errors)
-			throws Exception {
-
-		return new ModelAndView(new GradebookExportView(delegateFacade));
-	}*/
 	
 	protected ModelAndView onSubmit(HttpServletRequest request,
 	        HttpServletResponse response,
 	        Object command, BindException errors) throws Exception {
-
-	         // cast the bean
-	        //FileUploadBean bean = (FileUploadBean) command;
 
 			MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest)request;
 		
@@ -69,26 +58,20 @@ public class GradebookImportController extends SimpleFormController {
 				String fileName = fileNameIterator.next();
 				MultipartFile file = multipartRequest.getFile(fileName);
 				
-				//InputStream fileInputStream = file.getInputStream();
-				//byte[] bytes = file.getBytes();
-				//if (bytes != null) {
-				//	String content = new String(bytes);
+				InputStreamReader reader = new InputStreamReader(file.getInputStream());
 					
-					InputStreamReader reader = new InputStreamReader(file.getInputStream());
-					
-					ImportFile importFile = ImportExportUtility.parseImportX(delegateFacade, exportAdvisor, gradebookUid, reader, delimiterSet);
+				ImportFile importFile = ImportExportUtility.parseImportX(service, gradebookUid, reader, delimiterSet);
 			        
-		        	PrintWriter writer = response.getWriter();
-		        	response.setContentType("text/html");
-		    		
-		        	XStream xstream = new XStream(new JsonHierarchicalStreamDriver());
-		        	writer.write(xstream.toXML(importFile)); 
-		        	writer.flush();
-		        	writer.close();
-				//}
+		        PrintWriter writer = response.getWriter();
+		        response.setContentType("text/html");
+		    	
+		        XStream xstream = new XStream(new JsonHierarchicalStreamDriver());
+		        writer.write(xstream.toXML(importFile)); 
+		        writer.flush();
+		        writer.close();
 			}
 
-			return null; //super.onSubmit(request, response, command, errors);
+			return null;
 	    }
 
 	protected void initBinder(HttpServletRequest request, ServletRequestDataBinder binder) throws ServletException {
@@ -98,23 +81,12 @@ public class GradebookImportController extends SimpleFormController {
 		// now Spring knows how to handle multipart object and convert them
 	}
 
-	
-	public GradebookToolFacade getDelegateFacade() {
-		return delegateFacade;
+	public Gradebook2Service getService() {
+		return service;
 	}
 
-	public void setDelegateFacade(GradebookToolFacade delegateFacade) {
-		this.delegateFacade = delegateFacade;
+	public void setService(Gradebook2Service service) {
+		this.service = service;
 	}
-
-	public ExportAdvisor getExportAdvisor() {
-		return exportAdvisor;
-	}
-
-	public void setExportAdvisor(ExportAdvisor exportAdvisor) {
-		this.exportAdvisor = exportAdvisor;
-	}
-
-
 
 }

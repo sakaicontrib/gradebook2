@@ -3,44 +3,22 @@ package org.sakaiproject.gradebook.gwt.client.gxt.view;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.PersistentStore;
-import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType;
 import org.sakaiproject.gradebook.gwt.client.gxt.InlineEditField;
-import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaAdapterMenuItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaCheckMenuItem;
-import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenu;
-import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.Key;
 
 import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
-import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.FieldEvent;
 import com.extjs.gxt.ui.client.event.KeyListener;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.MenuEvent;
-import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
 import com.extjs.gxt.ui.client.event.SelectionChangedListener;
-import com.extjs.gxt.ui.client.mvc.Dispatcher;
-import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.widget.form.SimpleComboBox;
 import com.extjs.gxt.ui.client.widget.form.SimpleComboValue;
-import com.extjs.gxt.ui.client.widget.menu.AdapterMenuItem;
 import com.extjs.gxt.ui.client.widget.menu.CheckMenuItem;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
-import com.extjs.gxt.ui.client.widget.menu.MenuItem;
-import com.extjs.gxt.ui.client.widget.menu.SeparatorMenuItem;
-import com.google.gwt.user.client.Element;
-import com.google.gwt.user.client.ui.Accessibility;
-import com.google.gwt.user.client.ui.KeyboardListener;
 
 public class PreferencesMenu extends Menu {
 
@@ -159,7 +137,7 @@ public class PreferencesMenu extends Menu {
 
 	
 	protected void initListeners(final I18nConstants i18n) {
-		fieldEventListener = new Listener<FieldEvent>() {
+		/*fieldEventListener = new Listener<FieldEvent>() {
 
 			public void handleEvent(FieldEvent fe) {
 				Object actionValue = fe.value;
@@ -237,7 +215,7 @@ public class PreferencesMenu extends Menu {
 			}
 
 	    	
-	    };
+	    };*/
 	}
 	
 
@@ -299,7 +277,7 @@ public class PreferencesMenu extends Menu {
 		GradeType actionValue = gradeType;
 		GradeType actionStartValue = selectedGradebook.getGradebookItemModel().getGradeType();;
 
-		doUpdate(selectedGradebook, GradebookModel.Key.GRADETYPE, ClassType.GRADETYPE, actionValue, actionStartValue);
+		//doUpdate(selectedGradebook, GradebookModel.Key.GRADETYPE, ClassType.GRADETYPE, actionValue, actionStartValue);
 	}
 	
 	private void selectReleaseGrades(GradebookModel selectedGradebook, boolean isYes, boolean isChecked) {
@@ -317,18 +295,13 @@ public class PreferencesMenu extends Menu {
 			actionStartValue = Boolean.TRUE;
 		}
 		
-		doUpdate(selectedGradebook, GradebookModel.Key.RELEASEGRADES, ClassType.BOOLEAN, actionValue, actionStartValue);
+		//doUpdate(selectedGradebook, GradebookModel.Key.RELEASEGRADES, ClassType.BOOLEAN, actionValue, actionStartValue);
 
 	}
 	
-	private void doUpdate(GradebookModel gbModel, Key property, ClassType classType, Object actionValue, Object actionStartValue) {
+	/*private void doUpdate(GradebookModel gbModel, Key property, ClassType classType, Object actionValue, Object actionStartValue) {
 		if (actionStartValue == null || !actionStartValue.equals(actionValue)) {
-			
-			/*ItemModel gradebookItemModel = treeView.getFormPanel().getTreeStore().findModel(gbModel.getGradebookItemModel());
-			Record record = treeView.getFormPanel().getTreeStore().getRecord(gradebookItemModel);
-			
-			Dispatcher.forwardEvent(GradebookEvents.UpdateItem, new ItemUpdate(record, property.name(), actionStartValue, actionValue));
-			*/
+
 			UserEntityUpdateAction<GradebookModel> action = 
 				new UserEntityUpdateAction<GradebookModel>(gbModel, gbModel, 
 						property.name(), classType, actionValue, actionStartValue);
@@ -358,5 +331,5 @@ public class PreferencesMenu extends Menu {
 			
 			remoteCommand.execute(action);
 		}
-	}
+	}*/
 }

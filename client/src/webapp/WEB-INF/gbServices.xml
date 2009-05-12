@@ -2,6 +2,11 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 
 <beans>
+
+	<!-- Declare service -->
+    <bean id="GradebookService" class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ResourceProducer">
+    	<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service"/>
+    </bean>
 	
 	<!-- Tool Service -->
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService" parent="alt.gradebookTxTemplate">
@@ -21,37 +26,5 @@
 		</property>
 	</bean>
 	
-	<!-- Delegate Facade -->
-	<bean id="org.sakaiproject.gradebook.gwt.sakai.DelegateFacade" class="org.sakaiproject.gradebook.gwt.sakai.DelegateFacadeImpl">
-		<property name="sectionAwareness" ref="org.sakaiproject.section.api.SectionAwareness"/>
-		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/> 
-		<property name="authn" ref="org_sakaiproject_tool_gradebook_facades_Authn"/>
-		<property name="authz" ref="org_sakaiproject_tool_gradebook_facades_Authz"/>
-		<property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/>
-		<property name="userService" ref="org.sakaiproject.user.api.UserDirectoryService"/>
-		<property name="gradeCalculations" ref="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"/>
-		<property name="frameworkService" ref="org.sakaiproject.service.gradebook.GradebookFrameworkService" />
-		<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>
-		<property name="accessAdvisor" ref="${org.sakaiproject.gradebook.gwt.sakai.api.AccessAdvisor}"/>
-		<property name="exportAdvisor" ref="${org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor}"/>
-	</bean>
-	
-	<bean id="GradebookExportService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookExportController">
-		<property name="delegateFacade" ref="org.sakaiproject.gradebook.gwt.sakai.DelegateFacade"/>
-		<property name="exportAdvisor" ref="${org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor}"/>
-	</bean>
-	
-	<bean id="GradebookFinalGradeSubmissionService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookFinalGradeSubmissionController">
-		<property name="delegateFacade" ref="org.sakaiproject.gradebook.gwt.sakai.DelegateFacade"/>
-		<property name="exportAdvisor" ref="${org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor}"/>
-	</bean>
-	
-	<bean id="GradebookImportService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookImportController">
-		<property name="delegateFacade" ref="org.sakaiproject.gradebook.gwt.sakai.DelegateFacade"/>
-		<property name="exportAdvisor" ref="${org.sakaiproject.gradebook.gwt.sakai.api.ExportAdvisor}"/>
-		<property name="commandClass" value="org.sakaiproject.gradebook.gwt.sakai.FileUploadBean"/>
-        <!--property name="formView" value="fileuploadform"/>
-        <property name="successView" value="confirmation"/-->
-	</bean>
 	
 </beans>

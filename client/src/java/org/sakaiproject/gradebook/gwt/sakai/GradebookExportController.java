@@ -7,7 +7,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.sakaiproject.gradebook.gwt.client.GradebookToolFacade;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
 import org.springframework.web.servlet.ModelAndView;
@@ -17,15 +16,9 @@ public class GradebookExportController implements Controller {
 
 	private static final Log log = LogFactory.getLog(GradebookExportController.class);
 			
-	private GradebookToolFacade delegateFacade;
-	private ExportAdvisor exportAdvisor;
+	private Gradebook2Service service;
 	
 	public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
-		String filename = "gradebook.csv";
-		
-		response.setContentType("application/x-download");
-		response.setHeader("Content-Disposition", "attachment; filename=gradebook.csv");
-		response.setHeader("Pragma", "no-cache");
 		
 		PrintWriter writer = response.getWriter();
 		
@@ -40,35 +33,27 @@ public class GradebookExportController implements Controller {
 		if (doIncludeStructure)
 			gradebookUid = queryString.substring(n, m);
 		
-		
-		log.warn("GradebookUid: " + gradebookUid);
-		log.warn("Content-Disposition: attachment");
 		try {
-			ImportExportUtility.exportGradebook(delegateFacade, gradebookUid, exportAdvisor, doIncludeStructure, writer);
+			ImportExportUtility.exportGradebook(service, gradebookUid, doIncludeStructure, writer, response);
 		} catch (FatalException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error("EXCEPTION: Wasn't able to export gradebook: " + gradebookUid, e);
+			// 500 Internal Server Error
+			response.setStatus(500);
 		}
 		writer.flush();
 		writer.close();
 		
 		return null;
 	}
-	
-	public GradebookToolFacade getDelegateFacade() {
-		return delegateFacade;
+
+	public Gradebook2Service getService() {
+		return service;
 	}
 
-	public void setDelegateFacade(GradebookToolFacade delegateFacade) {
-		this.delegateFacade = delegateFacade;
+	public void setService(Gradebook2Service service) {
+		this.service = service;
 	}
 
-	public ExportAdvisor getExportAdvisor() {
-		return exportAdvisor;
-	}
 
-	public void setExportAdvisor(ExportAdvisor exportAdvisor) {
-		this.exportAdvisor = exportAdvisor;
-	}
 
 }

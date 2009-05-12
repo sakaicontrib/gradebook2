@@ -10,7 +10,7 @@
   	</parent>
   	<name>Sakai Gradebook2 Project</name>
 	<groupId>org.sakaiproject</groupId>
-	<artifactId>gradebook-gwt-base</artifactId>
+	<artifactId>gradebook2-base</artifactId>
 	<packaging>pom</packaging>
 
 	<modules>

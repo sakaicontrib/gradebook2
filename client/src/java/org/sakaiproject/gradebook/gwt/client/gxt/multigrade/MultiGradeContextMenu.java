@@ -25,9 +25,7 @@ package org.sakaiproject.gradebook.gwt.client.gxt.multigrade;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
-import org.sakaiproject.gradebook.gwt.client.GradebookToolFacadeAsync;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
+import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
@@ -42,6 +40,7 @@ import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.data.BaseListLoader;
 import com.extjs.gxt.ui.client.data.ListLoadConfig;
+import com.extjs.gxt.ui.client.data.ListLoadResult;
 import com.extjs.gxt.ui.client.data.ListLoader;
 import com.extjs.gxt.ui.client.data.RpcProxy;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
@@ -62,7 +61,6 @@ import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.menu.AdapterMenuItem;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
-import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.KeyboardListener;
 
@@ -80,7 +78,6 @@ public class MultiGradeContextMenu extends Menu {
 	private TextArea editCommentTextArea;
 	private Grid<GradeEventModel> viewGradeHistoryGrid;
 
-	private ContentPanel editCommentContainer;
 	
 	public MultiGradeContextMenu(final StudentModelOwner owner) {
 		super();
@@ -161,28 +158,22 @@ public class MultiGradeContextMenu extends Menu {
 		
 		contextMenuViewSubMenu = new Menu();
 		
-		RpcProxy<ListLoadConfig, List<GradeScaleRecordModel>> proxy = new RpcProxy<ListLoadConfig, List<GradeScaleRecordModel>>() {
+		RpcProxy<ListLoadConfig, ListLoadResult<GradeScaleRecordModel>> proxy = new RpcProxy<ListLoadConfig, ListLoadResult<GradeScaleRecordModel>>() {
 			
 			@Override
-			protected void load(ListLoadConfig listLoadConfig, AsyncCallback<List<GradeScaleRecordModel>> callback) {
-				
-				GradebookToolFacadeAsync service = Registry.get("service");
-				UserEntityGetAction<GradeScaleRecordModel> action = 
-					new UserEntityGetAction<GradeScaleRecordModel>(EntityType.GRADE_EVENT, String.valueOf(owner.getSelectedAssignment()));
-				action.setStudentUid(owner.getSelectedModel().getIdentifier());
-				service.getEntityList(action, callback);
-				
+			protected void load(ListLoadConfig listLoadConfig, AsyncCallback<ListLoadResult<GradeScaleRecordModel>> callback) {
+				Gradebook2RPCServiceAsync service = Registry.get("service");
+				service.getPage(owner.getSelectedModel().getIdentifier(), owner.getSelectedAssignment(), EntityType.GRADE_EVENT, null, callback);
 			}
+			
 		};
 		
 		
-		final ListLoader loader = new BaseListLoader(proxy);  
+		final ListLoader<ListLoadConfig> loader = new BaseListLoader<ListLoadConfig, ListLoadResult<GradeScaleRecordModel>>(proxy);  
 		
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 		
-		// Currently, the default number format is #.#####
-		NumberFormat defaultNumberFormat = DataTypeConversionUtil.getDefaultNumberFormat();
-
+		
 		ColumnConfig column = new ColumnConfig();  
 		column.setId(GradeEventModel.Key.DATE_GRADED.name());  
 		column.setHeader("Date");

@@ -33,7 +33,7 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 		DROP_LOWEST("Drop Lowest"), 
 		CATEGORY_NAME("Category"), CATEGORY_ID("Category Id"), DUE_DATE("Due Date"), 
 		POINTS("Points"), 
-		RELEASED("Is Released"), SOURCE("Source"), ITEM_TYPE("Type"), 
+		RELEASED("Release to Learners"), SOURCE("Source"), ITEM_TYPE("Type"), 
 		PERCENT_COURSE_GRADE("% Grade"),
 		PERCENT_CATEGORY("% Category"), IS_PERCENTAGE("Is Percentage"), 
 		STUDENT_MODEL_KEY("Student Model Key"),

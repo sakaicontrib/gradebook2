@@ -33,6 +33,10 @@ import org.sakaiproject.tool.gradebook.Gradebook;
 
 public interface GradeCalculations {
 
+	public Double calculateEqualWeight(int numberOfItems);
+	
+	public BigDecimal calculateItemGradePercent(BigDecimal percentGrade, BigDecimal sumCategoryPercents, BigDecimal assignmentWeight);
+	
 	public BigDecimal getNewPointsGrade(Double pointValue, Double maxPointValue, Double maxPointStartValue);
 	
 	public BigDecimal getPercentAsPointsEarned(Assignment assignment, Double percentage);

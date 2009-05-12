@@ -13,16 +13,15 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.sakaiproject.gradebook.gwt.client.GradebookToolFacade;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
-import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
-import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
-import org.sakaiproject.gradebook.gwt.sakai.ExportAdvisor;
-import org.sakaiproject.gradebook.gwt.sakai.SampleExportAdvisor;
-import org.sakaiproject.gradebook.gwt.sakai.ExportAdvisor.Column;
-import org.sakaiproject.gradebook.gwt.sakai.mock.DelegateFacadeMockImpl;
+import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service;
+import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ServiceImpl;
+import org.sakaiproject.gradebook.gwt.sakai.InstitutionalAdvisor;
+import org.sakaiproject.gradebook.gwt.sakai.SampleInstitutionalAdvisor;
+import org.sakaiproject.gradebook.gwt.sakai.InstitutionalAdvisor.Column;
 import org.sakaiproject.gradebook.gwt.sakai.mock.IocMock;
+
+import com.extjs.gxt.ui.client.data.PagingLoadResult;
 
 /*
  * Only used in GWT hosted mode
@@ -36,17 +35,16 @@ public class FinalGradeSubmissionHandler extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	private IocMock iocMock = IocMock.getInstance();
-	private GradebookToolFacade delegateFacade;
-	private ExportAdvisor exportAdvisor;
+	private Gradebook2Service service;
+	private InstitutionalAdvisor advisor;
 	
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
-		if (delegateFacade == null) {
-			
-			delegateFacade = (GradebookToolFacade)iocMock.getClassInstance(DelegateFacadeMockImpl.class.getName());
-		}
+		if (service == null) 
+			service = (Gradebook2Service)iocMock.getClassInstance(Gradebook2ServiceImpl.class.getName());
 		
-		exportAdvisor = new SampleExportAdvisor();
+		if (advisor == null)
+			advisor = new SampleInstitutionalAdvisor();
 		
 		
 		String queryString = request.getQueryString();
@@ -56,12 +54,14 @@ public class FinalGradeSubmissionHandler extends HttpServlet {
 		
 		List<StudentModel> rows = null;
 
-		UserEntityGetAction<StudentModel> getRowsAction = new UserEntityGetAction<StudentModel>(gradebookUid, EntityType.LEARNER);
 		try {
 
-			rows = delegateFacade.getEntityList(getRowsAction);
-
-		} catch (FatalException e) {
+			PagingLoadResult<StudentModel> result = service.getStudentRows(gradebookUid, null, null);
+			
+			if (result != null)
+				rows = result.getData();
+			
+		} catch (Exception e) {
 
 			log.error("EXCEPTION: Wasn't able to get the list of Student Models");
 			// 500 Internal Server Error
@@ -82,7 +82,7 @@ public class FinalGradeSubmissionHandler extends HttpServlet {
 			studentDataList.add(studentData);
 		}
 				
-		exportAdvisor.submitFinalGrade(studentDataList, gradebookUid, request, response);
+		advisor.submitFinalGrade(studentDataList, gradebookUid, request, response);
 	}
 	
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

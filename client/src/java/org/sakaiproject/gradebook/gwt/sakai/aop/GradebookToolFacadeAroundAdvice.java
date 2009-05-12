@@ -18,9 +18,11 @@ public class GradebookToolFacadeAroundAdvice implements MethodInterceptor {
 		
 		System.out.print("# : GTF start -> " + methodName + "(");
 		for(Object obj : arguments) {
-			System.out.print(obj.getClass().getName() + " ");
-			if(obj instanceof PageRequestAction) {
-				entityName = ((PageRequestAction) obj).getEntityType().name();
+			if (obj != null && obj.getClass() != null) {
+				System.out.print(obj.getClass().getName() + " ");
+				if(obj instanceof PageRequestAction) {
+					entityName = ((PageRequestAction) obj).getEntityType().name();
+				}
 			}
 		}
 		if(null == entityName) {

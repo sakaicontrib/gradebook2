@@ -24,9 +24,6 @@ package org.sakaiproject.gradebook.gwt.client;
 
 import java.util.Date;
 
-import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.controller.AppController;
 import org.sakaiproject.gradebook.gwt.client.gxt.controller.ServiceController;
@@ -42,6 +39,7 @@ import com.extjs.gxt.ui.client.util.Theme;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
 
 /**
@@ -52,7 +50,7 @@ public class GradebookApplication implements EntryPoint {
 	// One year in millisecond is 365 days x 24 hours x 60 minutes x 60 seconds x 1000 milliseconds
 	private static long ONE_YEAR = 31536000000l;
 	
-	private GradebookToolFacadeAsync dataService;
+	private Gradebook2RPCServiceAsync dataService;
 	private int screenHeight = 600;
 	
     public GradebookApplication() {
@@ -71,7 +69,7 @@ public class GradebookApplication implements EntryPoint {
 		I18nConstants i18n = (I18nConstants) GWT.create(I18nConstants.class);
 		
 		if (dataService == null) {
-			dataService = GWT.create(GradebookToolFacade.class);
+			dataService = GWT.create(Gradebook2RPCService.class);
 			EndpointUtil.setEndpoint((ServiceDefTarget) dataService);
 		}
 		
@@ -87,11 +85,32 @@ public class GradebookApplication implements EntryPoint {
 		
 		Registry.register(AppConstants.SERVICE, dataService);
 		Registry.register(AppConstants.I18N, i18n);
-		
-		// FIXME: Are we still using these? 
-		//Registry.register("history", new UserActionHistory());
-		
 
+		
+		AsyncCallback<ApplicationModel> callback = 
+			new AsyncCallback<ApplicationModel>() {
+
+				public void onFailure(Throwable caught) {
+					GXT.hideLoadingPanel("loading");
+					dispatcher.dispatch(GradebookEvents.Exception.getEventType(), caught);
+				}
+
+				public void onSuccess(ApplicationModel result) {
+					GXT.hideLoadingPanel("loading");
+					String placementId = result.getPlacementId();
+					if (placementId != null) {
+						String modifiedId = placementId.replace('-', 'x');
+						resizeMainFrame("Main" + modifiedId, screenHeight + 20);
+					}
+					
+					dispatcher.dispatch(GradebookEvents.Startup.getEventType(), result);
+				}
+			
+		};
+		
+		dataService.get(null, null, EntityType.APPLICATION, null, null, callback);
+		
+		/*
 		UserEntityGetAction<ApplicationModel> action = 
 			new UserEntityGetAction<ApplicationModel>(EntityType.APPLICATION);
 		
@@ -116,56 +135,8 @@ public class GradebookApplication implements EntryPoint {
 			
 		};
 		
-		remoteCommand.execute(action);
+		remoteCommand.execute(action);*/
 	}
-	
-	/*protected void loadGradebooks(final int screenHeight, List<GradebookModel> models) {
-		final GradebookToolFacadeAsync service = (GradebookToolFacadeAsync) Registry.get("service");
-
-		if (service == null) {
-			MessageBox box = new MessageBox();
-			box.setButtons(MessageBox.OK);
-			box.setIcon(MessageBox.INFO);
-			box.setTitle("Information");
-			box.setMessage("No service detected");
-			box.show();
-			return;
-		}
-
-		int index = 0;
-		boolean isTabbed = models.size() > 1;
-		TabContainer container = null;
-				
-		if (isTabbed) {
-			container = new TabContainer();
-			container.setHeight(screenHeight);
-		}
-				
-		for (GradebookModel model : models) {
-			Registry.register(model.getGradebookUid(), model);
-								
-			// Okay, now build the UI component
-			if (isTabbed) {
-				GradebookTabItem item = new GradebookTabItem(model.getGradebookUid());
-				item.setText(model.getName());
-				item.setClosable(false);
-				item.addStyleName("pad-text");
-				gradebookContainer = new GradebookContainer(model.getGradebookUid());
-				item.add(gradebookContainer);
-				container.getTabPanel().add(item);
-			} else {
-				gradebookContainer = new GradebookContainer(model.getGradebookUid());
-				viewport.add(gradebookContainer);
-			}
-					
-			index++;
-		}
-		if (isTabbed) {
-			viewport.add(container);
-		}
-		viewport.layout();
-	}*/
-	
 
 	// FIXME: This needs to be cleaned up
 	public native void resizeMainFrame(String placementId, int setHeight) /*-{

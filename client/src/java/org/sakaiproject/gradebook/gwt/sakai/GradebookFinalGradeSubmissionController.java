@@ -10,21 +10,18 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.sakaiproject.gradebook.gwt.client.GradebookToolFacade;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
-import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
-import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
-import org.sakaiproject.gradebook.gwt.sakai.ExportAdvisor.Column;
+import org.sakaiproject.gradebook.gwt.sakai.InstitutionalAdvisor.Column;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
+
+import com.extjs.gxt.ui.client.data.PagingLoadResult;
 
 public class GradebookFinalGradeSubmissionController implements Controller {
 
 	private static final Log log = LogFactory.getLog(GradebookFinalGradeSubmissionController.class);
 	
-	private GradebookToolFacade delegateFacade;
-	private ExportAdvisor exportAdvisor;
+	private Gradebook2Service service;
 	
 	public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
 		
@@ -35,14 +32,14 @@ public class GradebookFinalGradeSubmissionController implements Controller {
 		
 		List<StudentModel> rows = null;
 
-		UserEntityGetAction<StudentModel> getRowsAction = new UserEntityGetAction<StudentModel>(gradebookUid, EntityType.LEARNER);
-		
 		try {
 
-			rows = delegateFacade.getEntityList(getRowsAction);
+			PagingLoadResult<StudentModel> result = service.getStudentRows(gradebookUid, null, null);
+			
+			if (result != null)
+				rows = result.getData();
 
-		} catch (FatalException e) {
-
+		} catch (Exception e) {
 			log.error("EXCEPTION: Wasn't able to get the list of Student Models");
 			// 500 Internal Server Error
 			response.setStatus(500);
@@ -63,17 +60,18 @@ public class GradebookFinalGradeSubmissionController implements Controller {
 			studentDataList.add(studentData);
 		}
 
-		exportAdvisor.submitFinalGrade(studentDataList, gradebookUid, request, response);
+		service.submitFinalGrade(studentDataList, gradebookUid, request, response);
 		
 		return null;
 	}
-	
-	public void setDelegateFacade(GradebookToolFacade delegateFacade) {
-		this.delegateFacade = delegateFacade;
+
+	public Gradebook2Service getService() {
+		return service;
 	}
-	
-	public void setExportAdvisor(ExportAdvisor exportAdvisor) {
-		this.exportAdvisor = exportAdvisor;
+
+	public void setService(Gradebook2Service service) {
+		this.service = service;
 	}
+
 
 }

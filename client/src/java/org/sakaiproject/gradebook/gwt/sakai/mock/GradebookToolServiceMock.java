@@ -331,7 +331,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		return category.getId();
 	}
 
-	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(Long gradebookId, String siteId, String sectionEid, Long[] roleKeys) {
+	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(Long gradebookId, String siteId, String sectionEid, String[] roleNames) {
 		List<AssignmentGradeRecord> grades = new ArrayList<AssignmentGradeRecord>();
 		List<AssignmentGradeRecord> assignmentGradeRecord = new ArrayList<AssignmentGradeRecord>();
 		
@@ -1615,7 +1615,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 	}
 
 	public List<UserDereference> getUserUidsForSite(final String siteId, final String realmGroupId, final String sortField, 
-			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc, Long[] roleKeys) {
+			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc, String[] roleNames) {
 		
 		if (userDereferences == null) {
 			userDereferences = new ArrayList<UserDereference>();
@@ -1643,7 +1643,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		return records;
 	}
 	
-	public void syncUserDereferenceBySite(final String siteId, final String realmGroupId, final List<User> users, int realmCount, Long[] roleKeys) {
+	public void syncUserDereferenceBySite(final String siteId, final String realmGroupId, final List<User> users, int realmCount, String[] roleNames) {
 		
 	}
 	
@@ -1682,7 +1682,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 	}
 	
 	public int getUserCountForSite(final String siteId, final String realmGroupId, final String sortField, 
-			final String searchField, final String searchCriteria, Long[] roleKeys) {
+			final String searchField, final String searchCriteria, String[] roleKeys) {
 		return DEFAULT_NUMBER_TEST_LEARNERS;
 	}
 	
@@ -1694,22 +1694,22 @@ public class GradebookToolServiceMock implements GradebookToolService {
 	
 	
 	public List<CourseGradeRecord> getAllCourseGradeRecords(final Long gradebookId, final String siteId, final String realmGroupId, final String sortField, 
-			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc, Long[] roleKeys) {
+			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc, String[] roleNames) {
 		
 		return null;
 	}
 	
-	public int getDereferencedUserCountForSite(final String siteId, final String realmGroupId, final Long[] roleKeys) {
+	public int getDereferencedUserCountForSite(final String siteId, final String realmGroupId, final String[] roleNames) {
 		
 		return DEFAULT_NUMBER_TEST_LEARNERS;
 	}
 	
-	public int getFullUserCountForSite(final String siteId, final String realmGroupId, Long[] roleKeys) {
+	public int getFullUserCountForSite(final String siteId, final String realmGroupId, String[] roleNames) {
 	
 		return DEFAULT_NUMBER_TEST_LEARNERS;
 	}
 	
-	public List<Object[]> getUserGroupReferences(final String siteId, final String realmGroupId, final List<String> groupReferences, Long[] roleKeys) {
+	public List<Object[]> getUserGroupReferences(final String siteId, final String realmGroupId, final List<String> groupReferences, String[] roleNames) {
 		
 		return null;
 	}

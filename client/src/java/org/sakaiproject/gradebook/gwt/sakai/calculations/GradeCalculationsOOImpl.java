@@ -21,6 +21,41 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 	final static BigDecimal BIG_DECIMAL_100 = new BigDecimal("100.00000");
 	public static final MathContext MATH_CONTEXT = new MathContext(10, RoundingMode.HALF_DOWN);
 	
+	
+	public Double calculateEqualWeight(int numberOfItems) {
+		if (numberOfItems <= 1)
+			return Double.valueOf(1d);
+	
+		BigDecimal result = BigDecimal.ONE.divide(BigDecimal.valueOf(numberOfItems), MATH_CONTEXT);
+		
+		return Double.valueOf(result.doubleValue());
+	}
+	
+	/*
+	 *  For example: 
+	 *  
+	 *  (a) If percentGrade is 60, sumCategoryPercents is 100, and assignmentWeight is 0.25, then this item should be worth 15 % of the course grade
+	 *  
+	 *  	15 = ( 60 * .25 ) / 1
+	 *  	
+	 *  (b) If percentGrade is 60, sumCategoryPercents is 80, and assignmentWeight is 0.25, then this item should be worth > 15 % of the course grade
+	 * 
+	 * 		x  = ( 60 * .25 ) / .8
+	 * 
+	 */
+	public BigDecimal calculateItemGradePercent(BigDecimal percentGrade, BigDecimal sumCategoryPercents, BigDecimal assignmentWeight) {
+		
+		if (percentGrade.compareTo(BigDecimal.ZERO) == 0 
+				|| sumCategoryPercents.compareTo(BigDecimal.ZERO) == 0 
+				|| assignmentWeight.compareTo(BigDecimal.ZERO) == 0)
+			return BigDecimal.ZERO;
+		
+		BigDecimal categoryPercentRatio = sumCategoryPercents.divide(BigDecimal.valueOf(100d), MATH_CONTEXT);
+		
+		return assignmentWeight.multiply(percentGrade).divide(categoryPercentRatio, MATH_CONTEXT);
+	}
+	
+	
 	public BigDecimal getCategoryWeight(Category category) {
 		BigDecimal categoryWeight = null;
 		

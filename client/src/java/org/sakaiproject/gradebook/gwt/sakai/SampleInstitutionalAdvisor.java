@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.sakaiproject.authz.api.Member;
 import org.sakaiproject.exception.IdUnusedException;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.site.api.Group;
@@ -23,9 +24,9 @@ import org.sakaiproject.site.api.SiteService;
 import org.sakaiproject.tool.api.ToolManager;
 
 
-public class SampleExportAdvisor implements ExportAdvisor {
+public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 	
-	private static final Log log = LogFactory.getLog(SampleExportAdvisor.class);
+	private static final Log log = LogFactory.getLog(SampleInstitutionalAdvisor.class);
 	
 	private final String CONTENT_TYPE_TEXT_HTML_UTF8 = "text/html; charset=UTF-8";
 	private final char PLUS = '+';
@@ -38,7 +39,7 @@ public class SampleExportAdvisor implements ExportAdvisor {
 	private SiteService siteService = null;
 	private ToolManager toolManager = null;
 	
-	public String getExportCourseManagemntId(String userEid, Group group) {
+	public String getExportCourseManagementId(String userEid, Group group) {
 
 		if(null == group) {
 			log.error("ERROR : Group is null");
@@ -61,6 +62,21 @@ public class SampleExportAdvisor implements ExportAdvisor {
 	public String getFinalGradeUserId(UserDereference dereference) {
 		
 		return dereference.getEid();
+	}
+	
+	public String[] getLearnerRoleNames() {
+		String[] roleKeys = { "Student", "Open Campus", "access" };
+		return roleKeys;
+	}
+	
+	
+	public boolean isLearner(Member member) {
+		String role = member.getRole() == null ? "" : member.getRole().getId();
+		
+		return (role.equalsIgnoreCase("Student") 
+				|| role.equalsIgnoreCase("Open Campus")
+				|| role.equalsIgnoreCase("Access"))
+				&& member.isActive();
 	}
 
 	public void submitFinalGrade(List<Map<Column, String>> studentDataList, String gradebookUid, HttpServletRequest request, HttpServletResponse response) {

@@ -283,7 +283,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		return (UserDereferenceRealmUpdate)getHibernateTemplate().execute(hc);
 	}
 	
-	public synchronized void syncUserDereferenceBySite(final String siteId, final String realmGroupId, final List<User> users, final int realmCount, final Long[] roleKeys) {
+	public synchronized void syncUserDereferenceBySite(final String siteId, final String realmGroupId, final List<User> users, final int realmCount, final String[] roleNames) {
 		HibernateCallback hc = new HibernateCallback() {
             public Object doInHibernate(Session session) throws HibernateException {
             	
@@ -302,7 +302,6 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 					.append("where rg.realmKey=r.realmKey ")
 					.append("and r.realmId=:realmId ")
 					.append("and user.userUid=rg.userId ")
-					//.append("and rg.roleKey in (:roleKeys) ")
 					.append("and rg.active=true ");
             	
 				Query query = session.createQuery(builder.toString());
@@ -449,7 +448,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		}
 	}
 	
-	public int getFullUserCountForSite(final String siteId, final String realmGroupId, final Long[] roleKeys) {
+	public int getFullUserCountForSite(final String siteId, final String realmGroupId, final String[] roleNames) {
 		HibernateCallback hc = new HibernateCallback() {
             public Object doInHibernate(Session session) throws HibernateException {
             	
@@ -466,15 +465,16 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
             	Query query = null;
 
 				StringBuilder builder = new StringBuilder()
-					.append("select count(rg) from Realm as r, RealmGroup rg ")
+					.append("select count(rg) from Realm as r, RealmGroup rg, RealmRole rr ")
 					.append("where rg.realmKey=r.realmKey ")
 					.append("and r.realmId=:realmId ")
-					.append("and rg.roleKey in (:roleKeys) ")
+					.append("and rr.roleKey = rg.roleKey ")
+					.append("and rr.roleName in (:roleKeys) ")
 					.append("and rg.active=true ");
 
 				query = session.createQuery(builder.toString());
 				query.setString("realmId", realmId);
-				query.setParameterList("roleKeys", roleKeys);
+				query.setParameterList("roleKeys", roleNames);
 				
 				Number realmCount = (Number)query.uniqueResult();
 
@@ -486,7 +486,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
         return result == null ? 0 : result.intValue();
 	}
 	
-	public int getDereferencedUserCountForSite(final String siteId, final String realmGroupId, final Long[] roleKeys) {
+	public int getDereferencedUserCountForSite(final String siteId, final String realmGroupId, final String[] roleNames) {
 		HibernateCallback hc = new HibernateCallback() {
             public Object doInHibernate(Session session) throws HibernateException {
             	
@@ -503,16 +503,17 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
             	Query query = null;
 
 				StringBuilder builder = new StringBuilder()
-					.append("select count(rg) from Realm as r, RealmGroup rg, UserDereference u ")
+					.append("select count(rg) from Realm as r, RealmGroup rg, RealmRole rr, UserDereference u ")
 					.append("where rg.realmKey=r.realmKey ")
 					.append("and u.userUid = rg.userId ")
 					.append("and r.realmId=:realmId ")
-					.append("and rg.roleKey in (:roleKeys) ")
+					.append("and rr.roleKey = rg.roleKey ")
+					.append("and rr.roleName in (:roleKeys) ")
 					.append("and rg.active=true ");
 
 				query = session.createQuery(builder.toString());
 				query.setString("realmId", realmId);
-				query.setParameterList("roleKeys", roleKeys);
+				query.setParameterList("roleKeys", roleNames);
 				
 				Number realmCount = (Number)query.uniqueResult();
 
@@ -526,7 +527,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	
 	
 	public int getUserCountForSite(final String siteId, final String realmGroupId, final String sortField, 
-			final String searchField, final String searchCriteria, final Long[] roleKeys) {
+			final String searchField, final String searchCriteria, final String[] roleNames) {
 		HibernateCallback hc = new HibernateCallback() {
             public Object doInHibernate(Session session) throws HibernateException {
             	
@@ -543,11 +544,12 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
             	Query query = null;
 
 				StringBuilder builder = new StringBuilder()
-					.append("select count(user) from Realm as r, RealmGroup rg, UserDereference user ")
+					.append("select count(user) from Realm as r, RealmGroup rg, RealmRole rr, UserDereference user ")
 					.append("where rg.realmKey=r.realmKey ")
 					.append("and r.realmId=:realmId ")
 					.append("and user.userUid=rg.userId ")
-					.append("and rg.roleKey in (:roleKeys) ")
+					.append("and rr.roleKey = rg.roleKey ")
+					.append("and rr.roleName in (:roleKeys) ")
 					.append("and rg.active=true ");
 
 				if (searchField != null && searchCriteria != null) {
@@ -556,7 +558,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 				query = session.createQuery(builder.toString());
 				query.setString("realmId", realmId);
-				query.setParameterList("roleKeys", roleKeys);
+				query.setParameterList("roleKeys", roleNames);
 				
 				Number realmCount = (Number)query.uniqueResult();
 
@@ -630,7 +632,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
         return (List<Object[]>)getHibernateTemplate().execute(hc);
 	}*/
 	
-	public List<Object[]> getUserGroupReferences(final String siteId, final String realmGroupId, final List<String> groupReferences, final Long[] roleKeys) {
+	public List<Object[]> getUserGroupReferences(final String siteId, final String realmGroupId, final List<String> groupReferences, final String[] roleNames) {
 		
 		if (groupReferences == null || groupReferences.size() == 0)
 			return new ArrayList<Object[]>();
@@ -643,15 +645,16 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
             	StringBuilder builder = new StringBuilder()
 				.append("select rg.userId, r.realmId ")
-				.append("from Realm as r, RealmGroup as rg ")
+				.append("from Realm as r, RealmGroup as rg, RealmRole rr ")
 				.append("where rg.realmKey=r.realmKey ")
 				.append("and r.realmId in (:groupReferences) ")
-				.append("and rg.roleKey in (:roleKeys) ")
+				.append("and rr.roleKey = rg.roleKey ")
+				.append("and rr.roleName in (:roleKeys) ")
 				.append("and rg.active=true ");
 
 				query = session.createQuery(builder.toString());
 				query.setParameterList("groupReferences", groupReferences);
-				query.setParameterList("roleKeys", roleKeys);
+				query.setParameterList("roleKeys", roleNames);
 
 				return query.list();
             }
@@ -719,7 +722,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	}*/
 	
 	public List<UserDereference> getUserUidsForSite(final String siteId, final String realmGroupId, final String sortField, 
-			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc, final Long[] roleKeys) {
+			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc, final String[] roleNames) {
 		
 		HibernateCallback hc = new HibernateCallback() {
             public Object doInHibernate(Session session) throws HibernateException {
@@ -737,11 +740,12 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
             	Query query = null;
 
 				StringBuilder builder = new StringBuilder()
-					.append("select user from Realm as r, RealmGroup rg, UserDereference user ")
+					.append("select user from Realm as r, RealmGroup rg, RealmRole rr, UserDereference user ")
 					.append("where rg.realmKey=r.realmKey ")
 					.append("and r.realmId=:realmId ")
 					.append("and user.userUid=rg.userId ")
-					.append("and rg.roleKey in (:roleKeys) ")
+					.append("and rr.roleKey = rg.roleKey ")
+					.append("and rr.roleName in (:roleKeys) ")
 					.append("and rg.active=true ");
 
 				if (searchField != null && searchCriteria != null) {
@@ -762,7 +766,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				query = session.createQuery(builder.toString());
 
 				query.setString("realmId", realmId);	
-				query.setParameterList("roleKeys", roleKeys);
+				query.setParameterList("roleKeys", roleNames);
 
 				if (offset != -1)
 					query.setFirstResult(offset);
@@ -777,7 +781,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 	// GRBK-40 : TPA : Eliminated the in java filtering
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(final Long gradebookId, final String siteId, final String realmGroupId, 
-			final Long[] roleKeys) {
+			final String[] roleNames) {
 		HibernateCallback hc = new HibernateCallback() {
             public Object doInHibernate(Session session) throws HibernateException {
             	
@@ -793,12 +797,12 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
             	
             	Query query = null;
             	
-                query = session.createQuery("select agr from AssignmentGradeRecord as agr, GradableObject as go, Realm as r, RealmGroup rg where " +
-                			"agr.gradableObject = go.id and agr.studentId = rg.userId and rg.realmKey = r.realmKey " +
-                			"and go.gradebook.id=:gradebookId and r.realmId=:realmId and go.removed=false and rg.roleKey in (:roleKeys) order by agr.pointsEarned ");
+                query = session.createQuery("select agr from AssignmentGradeRecord as agr, GradableObject as go, Realm as r, RealmGroup rg, RealmRole rr where " +
+                			"agr.gradableObject = go.id and agr.studentId = rg.userId and rg.roleKey = rr.roleKey " +
+                			"and go.gradebook.id=:gradebookId and r.realmId=:realmId and go.removed=false and rr.roleName in (:roleKeys) order by agr.pointsEarned ");
                 query.setLong("gradebookId", gradebookId.longValue());
                 query.setString("realmId", realmId);
-                query.setParameterList("roleKeys", roleKeys);
+                query.setParameterList("roleKeys", roleNames);
                 	
                 return query.list();
             }
@@ -901,7 +905,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	}
 	
 	public List<CourseGradeRecord> getAllCourseGradeRecords(final Long gradebookId, final String siteId, final String realmGroupId, final String sortField, 
-			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc, final Long[] roleKeys) {
+			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc, final String[] roleNames) {
 		
 		HibernateCallback hc = new HibernateCallback() {
             public Object doInHibernate(Session session) throws HibernateException {
@@ -919,14 +923,15 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
             	Query query = null;
 
 				StringBuilder builder = new StringBuilder()
-					.append("select c from Realm as r, RealmGroup as rg, UserDereference as user, CourseGradeRecord c ")
+					.append("select c from Realm as r, RealmGroup as rg, RealmRole rr, UserDereference as user, CourseGradeRecord c ")
 					.append("where rg.realmKey=r.realmKey ")
 					.append("and r.realmId=:realmId ")
 					.append("and user.userUid=rg.userId ")
 					.append("and c.studentId=user.userUid ")
 					.append("and c.gradableObject.removed = false ")
 					.append("and c.gradableObject.gradebook.id=:gradebookId ")
-					.append("and rg.roleKey in (:roleKeys) ")
+					.append("and rr.roleKey = rg.roleKey ")
+					.append("and rr.roleName in (:roleKeys) ")
 					.append("and rg.active=true ");
 
 				if (searchField != null && searchCriteria != null) {
@@ -948,7 +953,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 				query.setString("realmId", realmId);
 				query.setLong("gradebookId", gradebookId);
-				query.setParameterList("roleKeys", roleKeys);
+				query.setParameterList("roleKeys", roleNames);
 				
 				if (offset != -1)
 					query.setFirstResult(offset);

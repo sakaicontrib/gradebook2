@@ -27,19 +27,16 @@ import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
-import org.sakaiproject.gradebook.gwt.client.GradebookToolFacadeAsync;
+import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
-import org.sakaiproject.gradebook.gwt.client.action.RemoteCommand;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityGetAction;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.ActionType;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
+import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordMapModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 
@@ -48,6 +45,7 @@ import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.data.BaseListLoader;
 import com.extjs.gxt.ui.client.data.ListLoadConfig;
+import com.extjs.gxt.ui.client.data.ListLoadResult;
 import com.extjs.gxt.ui.client.data.ListLoader;
 import com.extjs.gxt.ui.client.data.RpcProxy;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
@@ -120,16 +118,15 @@ public class GradeScalePanel extends ContentPanel {
 		column.setNumberFormat(defaultNumberFormat);
 		configs.add(column);
 		
-		RpcProxy<ListLoadConfig, List<GradeScaleRecordModel>> proxy = new RpcProxy<ListLoadConfig, List<GradeScaleRecordModel>>() {
+		RpcProxy<ListLoadConfig, ListLoadResult<GradeScaleRecordModel>> proxy = new RpcProxy<ListLoadConfig, ListLoadResult<GradeScaleRecordModel>>() {
 			
 			@Override
-			protected void load(ListLoadConfig listLoadConfig, AsyncCallback<List<GradeScaleRecordModel>> callback) {
+			protected void load(ListLoadConfig listLoadConfig, AsyncCallback<ListLoadResult<GradeScaleRecordModel>> callback) {
 				GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
-				GradebookToolFacadeAsync service = Registry.get("service");
-				UserEntityGetAction<GradeScaleRecordModel> action = 
-					new UserEntityGetAction<GradeScaleRecordModel>(gbModel, EntityType.GRADE_SCALE);
-				service.getEntityList(action, callback);
+				Gradebook2RPCServiceAsync service = Registry.get("service");
+				service.getPage(gbModel.getGradebookUid(), gbModel.getGradebookId(), EntityType.GRADE_SCALE, null, callback);
 			}
+			
 		};
 		
 		ListLoader loader = new BaseListLoader(proxy);  
@@ -170,9 +167,37 @@ public class GradeScalePanel extends ContentPanel {
 
 				GradeScaleRecordModel model = (GradeScaleRecordModel)record.getModel();
 				GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
-				UserEntityUpdateAction<GradeScaleRecordModel> action = 
-					new UserEntityUpdateAction<GradeScaleRecordModel>(gbModel, model, property, ClassType.DOUBLE, newValue, originalValue);
+				//UserEntityUpdateAction<GradeScaleRecordModel> action = 
+				//	new UserEntityUpdateAction<GradeScaleRecordModel>(gbModel, model, property, ClassType.DOUBLE, newValue, originalValue);
 				
+				AsyncCallback<GradeScaleRecordMapModel> callback = 
+					new AsyncCallback<GradeScaleRecordMapModel>() {
+
+						public void onFailure(Throwable caught) {
+							Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught));
+						}
+
+						public void onSuccess(GradeScaleRecordMapModel result) {
+							
+							for(GradeScaleRecordModel baseModel : result.getRecords()) {
+								store.update(baseModel);
+							}
+							
+							if (gridEvent != null)
+								grid.fireEvent(Events.AfterEdit, gridEvent);
+					
+							GradeScalePanel.this.fireEvent(GradebookEvents.UserChange.getEventType(), new UserChangeEvent(EntityType.GRADE_SCALE, ActionType.UPDATE));
+
+						}
+					
+					
+				};
+				
+				Gradebook2RPCServiceAsync service = Registry.get("service");
+				
+				service.update(new GradeScaleRecordMapModel(gbModel.getGradebookUid(), gbModel.getGradebookId(), model), EntityType.GRADE_SCALE, null, callback);
+				
+				/*
 				RemoteCommand<GradeScaleRecordModel> remoteCommand = 
 					new RemoteCommand<GradeScaleRecordModel>() {
 
@@ -190,7 +215,7 @@ public class GradeScalePanel extends ContentPanel {
 					
 				};
 				
-				remoteCommand.executeList(action);
+				remoteCommand.executeList(action);*/
 			}
 		});
 		
