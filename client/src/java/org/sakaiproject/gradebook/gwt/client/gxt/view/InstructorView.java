@@ -43,6 +43,7 @@ import com.extjs.gxt.ui.client.widget.menu.SeparatorMenuItem;
 import com.extjs.gxt.ui.client.widget.toolbar.TextToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.ui.RootPanel;
 
 public class InstructorView extends AppView {
 	
@@ -166,6 +167,8 @@ public class InstructorView extends AppView {
 		borderLayoutContainer.add(treeView.getTreePanel(), westData);
 		borderLayoutContainer.add(centerLayoutContainer, centerData);
 		borderLayoutContainer.add(eastLayoutContainer, eastData);
+		
+		RootPanel.get().add(viewport);
 	}
 
 	@Override
@@ -186,6 +189,7 @@ public class InstructorView extends AppView {
 
 		populateToolBar(i18n, selectedGradebook);
 
+		
 	}
 
 	@Override

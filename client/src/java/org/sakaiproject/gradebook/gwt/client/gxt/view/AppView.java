@@ -15,8 +15,10 @@ import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.View;
+import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.Viewport;
 import com.extjs.gxt.ui.client.widget.layout.CardLayout;
+import com.extjs.gxt.ui.client.widget.layout.FillLayout;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Accessibility;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -29,26 +31,34 @@ public abstract class AppView extends View {
 	private static final int screenHeight = 600;
 	
 	protected NotificationView notificationView;
-	protected Viewport viewport;
+	protected Viewport realViewport;
 	protected CardLayout viewportLayout;
+	
+	protected LayoutContainer viewport;
 
 	
 	public AppView(Controller controller, NotificationView notificationView) {
 		super(controller);
 		this.notificationView = notificationView;
 		this.viewportLayout = new CardLayout();
-		this.viewport = new Viewport() {
+		this.realViewport = new Viewport() {
 			protected void onRender(Element parent, int pos) {
 			    super.onRender(parent, pos);
 			    Accessibility.setRole(el().dom, "application");
 			}
 		};
+		realViewport.setLayout(new FillLayout());
+		
+		viewport = new LayoutContainer();
+		
+		realViewport.add(viewport);
+		
 		viewport.setPosition(0, 0);
 		viewport.setHeight(screenHeight);
 		viewport.setLayout(viewportLayout);
 		//viewport.setLoadingPanelId("loading");
 		//viewport.setScrollMode(Scroll.AUTO);
-		RootPanel.get().add(viewport);
+		//RootPanel.get().add(viewport);
 	}
 
 	@Override

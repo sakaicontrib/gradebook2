@@ -595,6 +595,15 @@ private static final long serialVersionUID = 1L;
 								item.setIdentifier(child.getIdentifier());
 								break;
 							}
+							
+							if (child.getChildCount() > 0) {
+								for (ItemModel c2 : child.getChildren()) {
+									Assignment assignment = gbService.getAssignment(Long.valueOf(c2.getIdentifier()));
+									idToAssignmentMap.put(id, assignment);
+									item.setIdentifier(c2.getIdentifier());
+								}
+							}
+							
 						}
 						
 						
