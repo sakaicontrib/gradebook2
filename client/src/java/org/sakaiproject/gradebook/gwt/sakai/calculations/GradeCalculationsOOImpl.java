@@ -130,7 +130,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		
 		for (Category category : categoriesWithAssignments) {
 		
-			if (category == null || category.isRemoved())
+			if (category == null || category.isRemoved() || isUnweighted(category))
 				continue;
 			
 			String categoryKey = String.valueOf(category.getId());
@@ -170,6 +170,10 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 			
 			if (assignment.isRemoved())
 				continue;
+			
+			if (isUnweighted(assignment))
+				continue;
+			
 			
 			AssignmentGradeRecord assignmentGradeRecord = assignmentGradeRecordMap.get(assignment.getId());
 				
