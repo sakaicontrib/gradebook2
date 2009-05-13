@@ -329,34 +329,34 @@ public class ItemFormPanel extends ContentPanel {
 	}
 
 	public void onItemCreated(ItemModel itemModel) {
-		if (itemModel.getItemType() == Type.CATEGORY) {
-			categoryStore.add(itemModel);
-		}
+		//if (itemModel.getItemType() == Type.CATEGORY) {
+		//	categoryStore.add(itemModel);
+		//}
 		
 		ItemModelProcessor processor = new ItemModelProcessor(itemModel) {
 			
 			public void doCategory(ItemModel categoryModel) {
-				if (categoryModel != null && categoryModel.isActive()) {
-					if (selectedItemModel != null && selectedItemModel.equals(categoryModel)) {
-						switch (mode) {
-						case EDIT:
-							onNewCategory(categoryModel);
-							
-							break;
-						}
-					}
-				}
+				clearForm(categoryModel);
+				categoryStore.add(categoryModel);
 			}
 			
 			public void doItem(ItemModel itemModel) {
+				clearForm(itemModel);
+			}
+			
+			private void clearForm(ItemModel itemModel) {
 				if (itemModel != null && itemModel.isActive()) {
-					if (selectedItemModel != null && selectedItemModel.equals(itemModel)) {
-						switch (mode) {
-						case EDIT:
-							onNewItem(itemModel);
-							
-							break;
-						}
+					switch (mode) {
+					case NEW:
+						formPanel.clear();
+						Type itemType = Type.ITEM;
+						
+						if (itemModel.getItemType() != null)
+							itemType = itemModel.getItemType();
+						
+						initState(itemType, itemModel, false);
+						establishSelectedCategoryState(itemModel);
+						break;
 					}
 				}
 			}
@@ -466,6 +466,7 @@ public class ItemFormPanel extends ContentPanel {
 		clearFields();
 		
 		initState(Type.CATEGORY, itemModel, false);
+		establishSelectedCategoryState(itemModel);
 	}
 	
 	public void onNewItem(ItemModel itemModel) {
@@ -500,29 +501,7 @@ public class ItemFormPanel extends ContentPanel {
 		clearFields();
 		
 		initState(Type.ITEM, itemModel, false);
-		
-
-		if (itemModel != null) {
-			
-			/*ItemModel category = null;
-			switch (itemModel.getItemType()) {
-			case CATEGORY:
-				category = itemModel;
-				if (category != null && category.getItemType() == Type.CATEGORY)
-					categoryPicker.
-				break;
-			case ITEM:
-				category = itemModel.getParent();
-				if (category != null && category.getItemType() == Type.CATEGORY)
-					isPercentCategoryVisible = hasCategories && hasWeights && 
-						(!DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments()) || 
-								DataTypeConversionUtil.checkBoolean(extraCreditField.getValue()));
-				break;
-			}*/
-		}
-		
-		//if (itemModel != null)
-		//	refreshSelectedCategoryState(itemModel);
+		establishSelectedCategoryState(itemModel);
 	}
 	
 	public void onTreeStoreInitialized(TreeStore<ItemModel> treeStore) {
@@ -611,6 +590,9 @@ public class ItemFormPanel extends ContentPanel {
 		
 		boolean isPercentCategoryVisible = false;
 
+		formPanel.clear();
+		
+		
 		if (itemModel != null) {
 			boolean isExtraCredit = DataTypeConversionUtil.checkBoolean(itemModel.getExtraCredit());
 			String source = itemModel.get(ItemModel.Key.SOURCE.name());
@@ -930,6 +912,32 @@ public class ItemFormPanel extends ContentPanel {
 			
 		};*/
 		
+	}
+	
+	private void establishSelectedCategoryState(ItemModel itemModel) {
+		if (itemModel == null)
+			return;
+		
+		CategoryType categoryType = selectedGradebook.getGradebookItemModel().getCategoryType();
+		
+		boolean hasCategories = categoryType != CategoryType.NO_CATEGORIES;
+		
+		if (hasCategories) {
+			
+			ItemModel category = null;
+			switch (itemModel.getItemType()) {
+			case GRADEBOOK:
+				break;
+			case CATEGORY:
+				categoryPicker.setValue(itemModel);
+				break;
+			case ITEM:
+				category = itemModel.getParent();
+				if (category != null && category.getItemType() == Type.CATEGORY)
+					categoryPicker.setValue(category);
+				break;
+			}
+		} 
 	}
 
 	private void refreshSelectedCategoryState(ItemModel itemModel) {

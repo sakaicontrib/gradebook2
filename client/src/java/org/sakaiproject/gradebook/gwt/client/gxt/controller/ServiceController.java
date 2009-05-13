@@ -118,7 +118,7 @@ public class ServiceController extends Controller {
 					break;
 				}
 				
-				Dispatcher.forwardEvent(GradebookEvents.HideEastPanel.getEventType(), Boolean.FALSE);
+				//Dispatcher.forwardEvent(GradebookEvents.HideEastPanel.getEventType(), Boolean.FALSE);
 				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
 			}
 		};		
