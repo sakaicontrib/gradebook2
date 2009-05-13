@@ -133,6 +133,7 @@ public interface I18nConstants extends Constants {
 	String cancelButton();
 	String closeButton();
 	String createButton();
+	String createAndCloseButton();
 	String deleteButton();
 	String saveButton();
 	String saveAndCloseButton();

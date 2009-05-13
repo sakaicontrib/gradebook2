@@ -31,6 +31,28 @@ public class GradeCalculationTest extends TestCase {
 	}
 	
 	
+	public void testRobertPoints() {
+
+		Double[][] values = {
+				{ 10d, 10d, 0.20d, null },
+				{ 10d, 10d, 0.20d, null },
+				{ 50d, 50d, 0.10d, null },
+				{ 75d, 75d, 0.10d, null },
+				{  4d,  5d, 0.40d, 1d },
+				{  3d,  5d, 0.30d, 1d },
+				{ 10d, 10d, 0.0d, null}
+		};
+
+		
+		List<GradeRecordCalculationUnit> units = getRecordUnits(values);
+		
+		BigDecimal courseGrade = gradebookUnit.calculatePointsBasedCourseGrade(units);
+
+		System.out.println("COURSE GRADE: " + courseGrade);
+		
+		assertEqualsAtScale2(BigDecimal.valueOf(100.00d), courseGrade);
+	}
+	
 	
 	public void testPerfectPoints() {
 

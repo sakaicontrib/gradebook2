@@ -8,10 +8,12 @@ public class ItemCreate {
 
 	public ItemModel item;
 	public Store store;
+	public boolean close;
 	
-	public ItemCreate(Store store, ItemModel item) {
+	public ItemCreate(Store store, ItemModel item, boolean close) {
 		this.store = store;
 		this.item = item;
+		this.close = close;
 	}
 	
 }

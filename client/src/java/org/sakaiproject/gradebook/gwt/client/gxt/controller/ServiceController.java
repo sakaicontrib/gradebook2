@@ -84,7 +84,9 @@ public class ServiceController extends Controller {
 			}
 			
 			public void onSuccess(ItemModel result) {
-
+				if (event.close)
+					Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
+				
 				switch (result.getItemType()) {
 				case GRADEBOOK:
 					GradebookModel selectedGradebook = Registry

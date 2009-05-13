@@ -3417,7 +3417,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 		
 		public void isSatisfied() throws BusinessRuleException {
-			if (isCategoryIncluded) {		
+			if (!isCategoryIncluded) {		
 				if (isItemIncluded && !wasItemIncluded)
 					throw new BusinessRuleException("You cannot include a grade item whose category is not included in grading. Please include the category first.");
 			}

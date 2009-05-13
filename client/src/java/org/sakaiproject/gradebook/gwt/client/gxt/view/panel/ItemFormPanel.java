@@ -6,6 +6,7 @@ import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.InlineEditField;
 import org.sakaiproject.gradebook.gwt.client.gxt.InlineEditNumberField;
+import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemCreate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
@@ -55,7 +56,7 @@ import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 public class ItemFormPanel extends ContentPanel {
 
 	private enum Mode { DELETE, EDIT, NEW };
-	private enum SelectionType { CLOSE, CREATE, CANCEL, DELETE, SAVE, SAVECLOSE };
+	private enum SelectionType { CLOSE, CREATE, CREATECLOSE, CANCEL, DELETE, SAVE, SAVECLOSE };
 	
 	private static final String selectionTypeField = "selectionType";
 	
@@ -315,6 +316,7 @@ public class ItemFormPanel extends ContentPanel {
 		okButton.setData(selectionTypeField, SelectionType.SAVE);
 		okCloseButton.setVisible(true);
 		okCloseButton.setData(selectionTypeField, SelectionType.SAVECLOSE);
+		okCloseButton.setText(i18n.saveAndCloseButton());
 		
 		if (itemModel != null) {
 			Type itemType = itemModel.getItemType();
@@ -330,6 +332,38 @@ public class ItemFormPanel extends ContentPanel {
 		if (itemModel.getItemType() == Type.CATEGORY) {
 			categoryStore.add(itemModel);
 		}
+		
+		ItemModelProcessor processor = new ItemModelProcessor(itemModel) {
+			
+			public void doCategory(ItemModel categoryModel) {
+				if (categoryModel != null && categoryModel.isActive()) {
+					if (selectedItemModel != null && selectedItemModel.equals(categoryModel)) {
+						switch (mode) {
+						case EDIT:
+							onNewCategory(categoryModel);
+							
+							break;
+						}
+					}
+				}
+			}
+			
+			public void doItem(ItemModel itemModel) {
+				if (itemModel != null && itemModel.isActive()) {
+					if (selectedItemModel != null && selectedItemModel.equals(itemModel)) {
+						switch (mode) {
+						case EDIT:
+							onNewItem(itemModel);
+							
+							break;
+						}
+					}
+				}
+			}
+			
+		};
+		
+		processor.process();
 	}
 	
 	public void onItemUpdated(ItemModel itemModel) {
@@ -425,7 +459,11 @@ public class ItemFormPanel extends ContentPanel {
 		
 		okButton.setText(i18n.createButton());
 		okButton.setData(selectionTypeField, SelectionType.CREATE);
-		okCloseButton.setVisible(false);
+		okCloseButton.setVisible(true);
+		okCloseButton.setData(selectionTypeField, SelectionType.CREATECLOSE);
+		okCloseButton.setText(i18n.createAndCloseButton());
+		
+		clearFields();
 		
 		initState(Type.CATEGORY, itemModel, false);
 	}
@@ -443,7 +481,9 @@ public class ItemFormPanel extends ContentPanel {
 
 		okButton.setText(i18n.createButton());
 		okButton.setData(selectionTypeField, SelectionType.CREATE);
-		okCloseButton.setVisible(false);
+		okCloseButton.setVisible(true);
+		okCloseButton.setData(selectionTypeField, SelectionType.CREATECLOSE);
+		okCloseButton.setText(i18n.createAndCloseButton());
 		
 		includedField.setValue(Boolean.TRUE);
 		
@@ -457,9 +497,32 @@ public class ItemFormPanel extends ContentPanel {
 			}
 		}
 		
+		clearFields();
+		
 		initState(Type.ITEM, itemModel, false);
 		
+
+		if (itemModel != null) {
+			
+			/*ItemModel category = null;
+			switch (itemModel.getItemType()) {
+			case CATEGORY:
+				category = itemModel;
+				if (category != null && category.getItemType() == Type.CATEGORY)
+					categoryPicker.
+				break;
+			case ITEM:
+				category = itemModel.getParent();
+				if (category != null && category.getItemType() == Type.CATEGORY)
+					isPercentCategoryVisible = hasCategories && hasWeights && 
+						(!DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments()) || 
+								DataTypeConversionUtil.checkBoolean(extraCreditField.getValue()));
+				break;
+			}*/
+		}
 		
+		//if (itemModel != null)
+		//	refreshSelectedCategoryState(itemModel);
 	}
 	
 	public void onTreeStoreInitialized(TreeStore<ItemModel> treeStore) {
@@ -738,38 +801,7 @@ public class ItemFormPanel extends ContentPanel {
 			@Override
 			public void selectionChanged(SelectionChangedEvent<ItemModel> se) {
 				ItemModel itemModel = se.getSelectedItem();
-				CategoryType categoryType = selectedGradebook.getGradebookItemModel().getCategoryType();
-				
-				boolean hasCategories = categoryType != CategoryType.NO_CATEGORIES;
-				boolean hasWeights = categoryType == CategoryType.WEIGHTED_CATEGORIES;
-				boolean isPercentCategoryVisible = false;
-				boolean isItem = selectedItemModel != null && selectedItemModel.getItemType() == ItemModel.Type.ITEM;
-				
-				if (itemModel != null) {
-				
-					ItemModel category = null;
-					switch (itemModel.getItemType()) {
-					case GRADEBOOK:
-						isPercentCategoryVisible = false;
-						break;
-					case CATEGORY:
-						category = itemModel;
-						if (category != null && category.getItemType() == Type.CATEGORY)
-							isPercentCategoryVisible = hasCategories && hasWeights 
-								&& (!DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments()) || 
-								DataTypeConversionUtil.checkBoolean(extraCreditField.getValue()));
-						break;
-					case ITEM:
-						category = itemModel.getParent();
-						if (category != null && category.getItemType() == Type.CATEGORY)
-							isPercentCategoryVisible = hasCategories && hasWeights && 
-								(!DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments()) || 
-										DataTypeConversionUtil.checkBoolean(extraCreditField.getValue()));
-						break;
-					}
-				} 
-				
-				initField(percentCategoryField, !isDelete && isItem, isPercentCategoryVisible || DataTypeConversionUtil.checkBoolean(extraCreditField.getValue()));
+				refreshSelectedCategoryState(itemModel);
 			}
 			
 		};
@@ -823,6 +855,8 @@ public class ItemFormPanel extends ContentPanel {
 						case CLOSE:
 							Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
 							break;
+						case CREATECLOSE:
+							close = true;
 						case CREATE:
 							if (nameField.getValue() == null) {
 								MessageBox.alert(i18n.itemNameRequiredTitle(), i18n.itemNameRequiredText(), null);
@@ -849,7 +883,7 @@ public class ItemFormPanel extends ContentPanel {
 							
 							clearChanges();
 							
-							Dispatcher.forwardEvent(GradebookEvents.CreateItem.getEventType(), new ItemCreate(treeStore, item));
+							Dispatcher.forwardEvent(GradebookEvents.CreateItem.getEventType(), new ItemCreate(treeStore, item, close));
 							break;
 						case DELETE:
 							Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
@@ -898,6 +932,41 @@ public class ItemFormPanel extends ContentPanel {
 		
 	}
 
+	private void refreshSelectedCategoryState(ItemModel itemModel) {
+		CategoryType categoryType = selectedGradebook.getGradebookItemModel().getCategoryType();
+		
+		boolean hasCategories = categoryType != CategoryType.NO_CATEGORIES;
+		boolean hasWeights = categoryType == CategoryType.WEIGHTED_CATEGORIES;
+		boolean isPercentCategoryVisible = false;
+		boolean isItem = selectedItemModel != null && selectedItemModel.getItemType() == ItemModel.Type.ITEM;
+		
+		if (itemModel != null) {
+		
+			ItemModel category = null;
+			switch (itemModel.getItemType()) {
+			case GRADEBOOK:
+				isPercentCategoryVisible = false;
+				break;
+			case CATEGORY:
+				category = itemModel;
+				if (category != null && category.getItemType() == Type.CATEGORY)
+					isPercentCategoryVisible = hasCategories && hasWeights 
+						&& (!DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments()) || 
+						DataTypeConversionUtil.checkBoolean(extraCreditField.getValue()));
+				break;
+			case ITEM:
+				category = itemModel.getParent();
+				if (category != null && category.getItemType() == Type.CATEGORY)
+					isPercentCategoryVisible = hasCategories && hasWeights && 
+						(!DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments()) || 
+								DataTypeConversionUtil.checkBoolean(extraCreditField.getValue()));
+				break;
+			}
+		} 
+		
+		initField(percentCategoryField, !isDelete && isItem, isPercentCategoryVisible || DataTypeConversionUtil.checkBoolean(extraCreditField.getValue()));
+	}
+	
 
 	public TreeStore<ItemModel> getTreeStore() {
 		return treeStore;
@@ -921,6 +990,10 @@ public class ItemFormPanel extends ContentPanel {
 		hasChanges = false;
 		okButton.setEnabled(false);
 		okCloseButton.setEnabled(false);
+	}
+	
+	private void clearFields() {
+		
 	}
 	
 }
