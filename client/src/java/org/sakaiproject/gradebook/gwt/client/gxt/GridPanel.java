@@ -28,6 +28,7 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.GradebookState;
+import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.PersistentStore;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
@@ -96,15 +97,17 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 	protected ContentPanel gridOwner;
 	
 	protected RefreshAction refreshAction = RefreshAction.NONE;
+	protected I18nConstants i18n;
 	
-	public GridPanel(String gridId, EntityType entityType) {
-		this(gridId, entityType, null);
+	public GridPanel(String gridId, EntityType entityType, I18nConstants i18n) {
+		this(gridId, entityType, null, i18n);
 	}
 	
-	public GridPanel(String gridId, EntityType entityType, ContentPanel childPanel) {
+	public GridPanel(String gridId, EntityType entityType, ContentPanel childPanel, I18nConstants i18n) {
 		super();
 		this.gridId = gridId;
 		this.entityType = entityType;
+		this.i18n = i18n;
 		
 		setHeaderVisible(false);
 		setLayout( new FitLayout());
@@ -137,12 +140,14 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		
 		pagingToolBar = newPagingToolBar(pageSize);
 
-		//addComponents();
+		addComponents();
 
 		store = new ListStore<M>();
 		cm  = new CustomColumnModel("", gridId, new ArrayList<ColumnConfig>());
 	
 		grid = new EditorGrid<M>(store, cm);
+		
+		addGridListenersAndPlugins(grid);
 		
 		GridView view = newGridView();
 		
@@ -304,15 +309,15 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 
 		pagingToolBar.bind(loader);
 		
-		addComponents();
+		//addComponents();
 
 		grid.reconfigure(store, cm);
 		
 		if (grid.isRendered())
 			grid.el().unmask();
 		
-		addGridListenersAndPlugins(grid);
-		
+		//addGridListenersAndPlugins(grid);
+
 	}
 	
 	protected GridView newGridView() {

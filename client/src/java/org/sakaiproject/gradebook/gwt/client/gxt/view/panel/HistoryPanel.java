@@ -61,7 +61,7 @@ public class HistoryPanel extends GridPanel<UserEntityAction> {
 	private enum ButtonSelector { CLOSE };
 	
 	public HistoryPanel(I18nConstants i18n) {
-		super(AppConstants.HISTORY, EntityType.ACTION);
+		super(AppConstants.HISTORY, EntityType.ACTION, i18n);
 		setFrame(false);
 		setHeaderVisible(false);
 		setLayout(new FitLayout());

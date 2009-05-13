@@ -18,7 +18,7 @@
 		<property name="frameworkService" ref="org.sakaiproject.service.gradebook.GradebookFrameworkService" />
 		<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>
 		<property name="security" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Security"/>
-		<property name="advisor" ref="org.sakaiproject.gradebook.gwt.sakai.api.InstitutionalAdvisor"/>
+		<property name="advisor" ref="org.sakaiproject.gradebook.gwt.sakai.api.UcdInstitutionalAdvisor"/>
 	</bean>
 	
 	<!-- Performance Target -->

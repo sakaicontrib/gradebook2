@@ -44,6 +44,7 @@ public class ImportExportView extends View {
 			
 			if (downloadFileFrame == null) {
 				downloadFileFrame = new Frame(uri);
+				downloadFileFrame.setVisible(false);
 				RootPanel.get().add(downloadFileFrame);
 			} else {
 				downloadFileFrame.setUrl(uri);

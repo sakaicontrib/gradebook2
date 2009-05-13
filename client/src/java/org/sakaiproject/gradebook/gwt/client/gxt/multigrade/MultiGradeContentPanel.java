@@ -124,20 +124,18 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	private Listener<ComponentEvent> componentEventListener;
 	private Listener<GridEvent> gridEventListener;
 	private Listener<RefreshCourseGradesEvent> refreshCourseGradesListener;
-	private Listener<StoreEvent> storeListener;
+	//private Listener<StoreEvent> storeListener;
 	private Listener<UserChangeEvent> userChangeEventListener;
 	
 	private ShowColumnsEvent lastShowColumnsEvent;
 	
 	private CellSelectionModel<StudentModel> cellSelectionModel;
 	
-	private I18nConstants i18n;
+	
 	
 	public MultiGradeContentPanel(ContentPanel childPanel, I18nConstants i18n) {
-		super(AppConstants.MULTIGRADE, EntityType.LEARNER, childPanel);
-		setId(AppConstants.MULTIGRADE);
+		super(AppConstants.MULTIGRADE, EntityType.LEARNER, childPanel, i18n);
 		setHeaderVisible(false);
-		this.i18n = i18n;
 		
 		// This UserChangeEvent listener
 		addListener(GradebookEvents.UserChange.getEventType(), userChangeEventListener);
@@ -522,7 +520,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		};
 		
 		
-		storeListener = new Listener<StoreEvent>() {
+		/*storeListener = new Listener<StoreEvent>() {
 
 			public void handleEvent(StoreEvent se) {
 				String sortField = ((ListStore)se.store).getSortField();
@@ -535,7 +533,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 				GradebookState.setSortInfo(gradebookUid, AppConstants.MULTIGRADE, sortField, isAscending);
 			}
 			
-		};
+		};*/
 		
 		
 		/*userChangeEventListener = new Listener<UserChangeEvent>() {
@@ -1196,7 +1194,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			}
 		});
 		
-		store.addListener(Store.Sort, storeListener);
+		//store.addListener(Store.Sort, storeListener);
 		
 		addListener(GradebookEvents.DoSearch.getEventType(), componentEventListener);
 		

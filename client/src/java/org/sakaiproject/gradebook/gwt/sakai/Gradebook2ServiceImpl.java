@@ -421,7 +421,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		
 		String[] learnerRoleNames = advisor.getLearnerRoleNames();
 		String siteId = site == null ? null : site.getId();
-	   	List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebookId, siteId, null, learnerRoleNames);
+	   	List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebookId, null, learnerRoleNames);
 
     	if (allGradeRecords != null) {
 	    	for (AssignmentGradeRecord gradeRecord : allGradeRecords) {
@@ -767,7 +767,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			gbService.syncUserDereferenceBySite(siteId, null, findAllMembers(site), diff, learnerRoleNames);
 		}
 		
-		List<UserDereference> dereferences = gbService.getUserUidsForSite(siteId, null, "sortName", null, null, -1, -1, true, learnerRoleNames);
+		List<UserDereference> dereferences = gbService.getUserUidsForSite(null, "sortName", null, null, -1, -1, true, learnerRoleNames);
 		
 		return dereferences;
 	}
@@ -989,6 +989,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	public <X extends BaseModel> PagingLoadResult<X> getStudentRows(String gradebookUid, 
 			Long gradebookId, PagingLoadConfig config) {
 
+		List<X> rows = new ArrayList<X>();
+		
 		String[] learnerRoleNames = advisor.getLearnerRoleNames();
 		
 		List<UserRecord> userRecords = null;
@@ -1086,14 +1088,59 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					break;
 				}
 						
-				userRecords = findLearnerRecordPage(gradebook, site, sectionUuid,  sortField, searchField, searchCriteria, offset, limit, !isDescending);
-				totalUsers = gbService.getUserCountForSite(siteId, sectionUuid, sortField, searchField, searchCriteria, learnerRoleNames);
+				boolean isUserAuthorizedToGradeAll = security.isUserAbleToGradeAll(gradebook.getUid());
+				boolean isLimitedToSection = false;
+				Set<String> authorizedGroups = new HashSet<String>();
+				if (sectionUuid != null) {
+					if (!security.isUserTAinSection(sectionUuid))
+						return new BasePagingLoadResult<X>(rows, 0, totalUsers);
+					
+					authorizedGroups.add(sectionUuid);
+					isLimitedToSection = true;
+				}
+				
+				
+				Collection<Group> groups = site == null ? new ArrayList<Group>() : site.getGroups();
+				Map<String, Group> groupReferenceMap = new HashMap<String, Group>();
+				List<String> groupReferences = new ArrayList<String>();
+				for (Group group : groups) {
+					String reference = group.getReference();
+					groupReferences.add(reference);
+					groupReferenceMap.put(reference, group);
+					
+					String sectionUid = group.getProviderGroupId();
+					
+					if (! isLimitedToSection) {
+						if (!isUserAuthorizedToGradeAll && sectionUid != null && security.isUserTAinSection(reference)) {
+							authorizedGroups.add(reference);
+						}
+					} 
+				}
+				
+				
+				String[] realmGroupIds = null;
+				if (!authorizedGroups.isEmpty()) 
+					realmGroupIds = authorizedGroups.toArray(new String[authorizedGroups.size()]);
+				
+				String[] realmIds = realmGroupIds;
+            	
+            	if (realmGroupIds == null) {
+            		realmIds = new String[1];
+            		realmIds[0] = new StringBuffer().append("/site/").append(siteId).toString();
+            	} else if (siteId == null) {
+            		if (log.isInfoEnabled())
+						log.info("No siteId defined");
+            		return new BasePagingLoadResult<X>(rows, 0, totalUsers);
+            	} 
+				
+				userRecords = findLearnerRecordPage(gradebook, site, realmGroupIds, groupReferences, groupReferenceMap,  sortField, searchField, searchCriteria, offset, limit, !isDescending);
+				totalUsers = gbService.getUserCountForSite(realmIds, sortField, searchField, searchCriteria, learnerRoleNames);
 				
 				int startRow = config == null ? 0 : config.getOffset();
 				
 				List<FixedColumnModel> columns = getColumns();
 				
-				List<X> rows = new ArrayList<X>(userRecords == null ? 0 : userRecords.size());
+				rows = new ArrayList<X>(userRecords == null ? 0 : userRecords.size());
 				
 				// We only want to populate the rowData and rowValues for the requested rows
 				for (UserRecord userRecord : userRecords) {
@@ -1111,9 +1158,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				
 			   	//Map<String, Map<Long, AssignmentGradeRecord>>  allGradeRecordsMap = new HashMap<String, Map<Long, AssignmentGradeRecord>>();
 
-			    List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebookId, siteId, sectionUuid, learnerRoleNames);
-			    // GRBK-40 : TPA : Replace above call with the one bellow once the Mock getAllAssignmentGradeRecords methods has been adjusted
-		    	// List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebookId, getSiteId(), sectionUuid);
+			    List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebookId, studentUids);
+			   // List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebookId, siteId, sectionUuid, learnerRoleNames);
+
 				    	
 		    	if (allGradeRecords != null) {
 			    	for (AssignmentGradeRecord gradeRecord : allGradeRecords) {
@@ -1185,7 +1232,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			
 		List<FixedColumnModel> columns = getColumns();
 		
-		List<X> rows = new ArrayList<X>();
+		
 		
 		
 		// We only want to populate the rowData and rowValues for the requested rows
@@ -2076,7 +2123,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		return null;
 	}
 	
-	private List<UserRecord> findLearnerRecordPage(Gradebook gradebook, Site site, String sectionUuid, String sortField, String searchField, String searchCriteria,
+	private List<UserRecord> findLearnerRecordPage(Gradebook gradebook, Site site, String[] realmIds, List<String> groupReferences, 
+			Map<String, Group> groupReferenceMap, String sortField, String searchField, String searchCriteria,
 			int offset, int limit, 
 			boolean isAscending) {
 		
@@ -2084,6 +2132,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		
 		List<UserRecord> userRecords = new ArrayList<UserRecord>();
 
+		
+		
 		String[] learnerRoleKeys = advisor.getLearnerRoleNames();
 		
 		int totalUsers = gbService.getFullUserCountForSite(siteId, null, learnerRoleKeys);
@@ -2104,8 +2154,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			gbService.syncUserDereferenceBySite(siteId, null, findAllMembers(site), diff, learnerRoleKeys);
 		}
 		
-		List<UserDereference> dereferences = gbService.getUserUidsForSite(siteId, sectionUuid, sortField, searchField, searchCriteria, offset, limit, isAscending, learnerRoleKeys);
-		List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebook.getId(), siteId, sectionUuid, learnerRoleKeys);
+		List<UserDereference> dereferences = gbService.getUserUidsForSite(realmIds, sortField, searchField, searchCriteria, offset, limit, isAscending, learnerRoleKeys);
+		List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebook.getId(), realmIds, learnerRoleKeys);
 		Map<String, Map<Long, AssignmentGradeRecord>> studentGradeRecordMap = new HashMap<String, Map<Long, AssignmentGradeRecord>>();
 		
 	    if (allGradeRecords != null) {
@@ -2123,7 +2173,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			}
 		}
 	    	    	
-		List<CourseGradeRecord> courseGradeRecords = gbService.getAllCourseGradeRecords(gradebook.getId(), siteId, sectionUuid, sortField, searchField, searchCriteria, offset, limit, isAscending, learnerRoleKeys);
+		List<CourseGradeRecord> courseGradeRecords = gbService.getAllCourseGradeRecords(gradebook.getId(), realmIds, sortField, searchField, searchCriteria, offset, limit, isAscending, learnerRoleKeys);
 		Map<String, CourseGradeRecord> studentCourseGradeRecordMap = new HashMap<String, CourseGradeRecord>();
 		
 		if (courseGradeRecords != null) {
@@ -2133,7 +2183,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			}
 		}
 			
-		List<Comment> comments = gbService.getComments(gradebook.getId(), siteId, sectionUuid, sortField, searchField, searchCriteria, offset, limit, isAscending);
+		List<Comment> comments = gbService.getComments(gradebook.getId(), realmIds, learnerRoleKeys, sortField, searchField, searchCriteria, offset, limit, isAscending);
 		Map<String, Map<Long, Comment>> studentItemCommentMap = new HashMap<String, Map<Long, Comment>>();
 		
 		if (comments != null) {
@@ -2148,18 +2198,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			}
 		}
 		
-		Collection<Group> groups = site == null ? new ArrayList<Group>() : site.getGroups();
-		Map<String, Group> groupReferenceMap = new HashMap<String, Group>();
-		List<String> groupReferences = new ArrayList<String>();
-		for (Group group : groups) {
-			String reference = group.getReference();
-			groupReferences.add(reference);
-			groupReferenceMap.put(reference, group);
-		}
+		
 		
 		Map<String, Set<Group>> userGroupMap = new HashMap<String, Set<Group>>();
 		
-		List<Object[]> tuples = gbService.getUserGroupReferences(siteId, sectionUuid, groupReferences, learnerRoleKeys);
+		List<Object[]> tuples = gbService.getUserGroupReferences(groupReferences, learnerRoleKeys);
 		
 		if (tuples != null) {
 			for (Object[] tuple : tuples) {
@@ -2178,7 +2221,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				userGroups.add(group);
 			}
 		}
-		
+			
 		if (dereferences != null) {
 			for (UserDereference dereference : dereferences) {
 				UserRecord userRecord = new UserRecord(dereference.getUserUid(), dereference.getEid(), dereference.getDisplayId(), dereference.getDisplayName(),
@@ -2190,7 +2233,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				userRecord.setCourseGradeRecord(courseGradeRecord);
 				Map<Long, Comment> commentMap = studentItemCommentMap.get(dereference.getUserUid());
 				userRecord.setCommentMap(commentMap);
-				
+
 				Set<Group> userGroupSet = userGroupMap.get(userRecord.getUserUid());
 				if (userGroupSet != null) {
 					List<Group> userGroups = new ArrayList<Group>(userGroupSet);

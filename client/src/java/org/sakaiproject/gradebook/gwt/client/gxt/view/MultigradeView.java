@@ -2,6 +2,7 @@ package org.sakaiproject.gradebook.gwt.client.gxt.view;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
+import org.sakaiproject.gradebook.gwt.client.GradebookState;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
@@ -25,10 +26,13 @@ import com.extjs.gxt.ui.client.data.ModelReader;
 import com.extjs.gxt.ui.client.data.PagingLoadConfig;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 import com.extjs.gxt.ui.client.data.RpcProxy;
+import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.View;
 import com.extjs.gxt.ui.client.store.ListStore;
+import com.extjs.gxt.ui.client.store.Store;
+import com.extjs.gxt.ui.client.store.StoreEvent;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class MultigradeView extends View {
@@ -37,10 +41,24 @@ public class MultigradeView extends View {
 	
 	private BasePagingLoader<PagingLoadConfig, PagingLoadResult<StudentModel>> multigradeLoader;
 	private ListStore<StudentModel> multigradeStore;
-	
+	private Listener<StoreEvent> storeListener;
 	
 	public MultigradeView(Controller controller, I18nConstants i18n) {
 		super(controller);
+		storeListener = new Listener<StoreEvent>() {
+
+			public void handleEvent(StoreEvent se) {
+				String sortField = ((ListStore)se.store).getSortField();
+				SortDir sortDir = ((ListStore)se.store).getSortDir();
+				boolean isAscending = sortDir == SortDir.ASC;
+				//String sortDirection = sortDir == null || sortDir == SortDir.DESC ? "Descending" : "Ascending";
+				
+				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+				String gradebookUid = selectedGradebook.getGradebookUid();
+				GradebookState.setSortInfo(gradebookUid, AppConstants.MULTIGRADE, sortField, isAscending);
+			}
+			
+		};
 		this.multigrade = new MultiGradeContentPanel(null, i18n) {
 			
 			protected BasePagingLoader<PagingLoadConfig, PagingLoadResult<StudentModel>> newLoader() {
@@ -154,6 +172,8 @@ public class MultigradeView extends View {
 		multigradeStore.setModelComparer(new EntityModelComparer<StudentModel>());
 		multigradeStore.setMonitorChanges(true);
 		multigradeStore.setDefaultSort(StudentModel.Key.LAST_NAME_FIRST.name(), SortDir.ASC);
+		
+		multigradeStore.addListener(Store.Sort, storeListener);
 	}
 	
 	protected void onBeginItemUpdates() {

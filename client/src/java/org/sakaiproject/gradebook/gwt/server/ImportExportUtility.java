@@ -73,7 +73,7 @@ public class ImportExportUtility {
 			filename.append("gradebook");
 		else {
 			String name = gradebook.getName();
-			name.replaceAll(" ", "");
+			name.replaceAll("\\s", "");
 			
 			filename.append(name);
 		}
@@ -451,7 +451,8 @@ public class ImportExportUtility {
 						for (int i=0;i<columns.length;i++) {
 							if (courseGradeFieldIndex == i)
 								continue;
-							strippedColumns[n] = columns[i];
+							if (n < columns.length)
+								strippedColumns[n] = columns[i];
 							n++;
 						}
 						row.setColumns(strippedColumns);
