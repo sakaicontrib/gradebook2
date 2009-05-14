@@ -31,7 +31,6 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
-import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.data.BaseListLoader;
 import com.extjs.gxt.ui.client.data.BaseModel;
@@ -106,15 +105,10 @@ import com.google.gwt.user.client.ui.Accessibility;
 
 public class ImportPanel extends ContentPanel {
 
-	private static final String ADVANCED_SHOW = "Edit Columns";
-	private static final String ADVANCED_HIDE = "Hide Columns";
-	
 	private static int CHARACTER_WIDTH = 7;
 	
 	private enum Step { ONE, TWO, THREE };
 	
-	private Step currentStep;
-
 	private FileUploadField file;
 	
 	private ListStore<StudentModel> rowStore;
@@ -128,27 +122,24 @@ public class ImportPanel extends ContentPanel {
 	private LayoutContainer mainCardLayoutContainer, subCardLayoutContainer;
 	private CardLayout mainCardLayout, subCardLayout;
 	
-	private LayoutContainer advancedContainer, resultsContainer;
+	private LayoutContainer advancedContainer;
 	
 	private TabPanel tabPanel;
-	private TabItem step1, step2, step3;
 	
 	private TabItem previewTab, columnsTab;
 	
 	private FieldSet previewFieldSet;
-	private Button previewButton, advancedButton, submitButton, cancelButton; //, nextButton, backButton, cancelButton;
+	private Button submitButton, cancelButton; 
 	
-	private LayoutContainer step1Container, step2Container, step3Container;
+	private LayoutContainer step1Container;
 	
 	private List<ColumnConfig> previewColumns;
 	
 	private MemoryProxy<ListLoadResult<BaseModel>> proxy;
 	private ListLoader<?> loader;
-	//private PagingToolBar toolBar;
-	private List<BaseModel> resultModels;
 	private MessageBox uploadBox;
 	
-	private Listener fieldListener;
+
 	private I18nConstants i18n;
 	
 	public ImportPanel(I18nConstants i18n) {
@@ -163,7 +154,7 @@ public class ImportPanel extends ContentPanel {
 		
 		headerMap = new HashMap<String, ImportHeader>();
 		
-		fieldListener = new Listener<FieldEvent>() {
+		/*fieldListener = new Listener<FieldEvent>() {
 
 			public void handleEvent(FieldEvent be) {
 				readFile();
@@ -171,7 +162,7 @@ public class ImportPanel extends ContentPanel {
 			
 		};
 		
-		currentStep = Step.ONE;
+		currentStep = Step.ONE;*/
 		
 		// Set up store
 		resultStore = new ListStore<BaseModel>();
@@ -298,7 +289,7 @@ public class ImportPanel extends ContentPanel {
 					
 					if (failedMessage != null) {
 						css.append(" gbCellFailed");
-					} else if (startValue == null || !startValue.equals(currentValue)) {
+					} else {
 						css.append(" gbCellSucceeded");
 					}
 				}

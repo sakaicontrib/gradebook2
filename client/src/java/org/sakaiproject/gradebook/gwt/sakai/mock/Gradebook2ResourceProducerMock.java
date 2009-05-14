@@ -26,6 +26,8 @@ import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
 import org.sakaiproject.gradebook.gwt.sakai.SampleInstitutionalAdvisor;
 import org.sakaiproject.gradebook.gwt.sakai.UserRecord;
 import org.sakaiproject.gradebook.gwt.sakai.calculations.GradeCalculationsOOImpl;
+import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
+import org.sakaiproject.gradebook.gwt.sakai.model.UserDereferenceRealmUpdate;
 import org.sakaiproject.section.api.SectionAwareness;
 import org.sakaiproject.site.api.Group;
 import org.sakaiproject.site.api.Site;
@@ -61,7 +63,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 				return new SiteMock("mock");
 			}
 			
-			private List<UserRecord> userRecords;
+			private List<UserDereference> dereferences;
 			private final int DEFAULT_NUMBER_TEST_LEARNERS = 200;
 			
 			protected List<UserRecord> findLearnerRecordPage(Gradebook gradebook, Site site, String[] realmIds, List<String> groupReferences, 
@@ -69,14 +71,36 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 					int offset, int limit, 
 					boolean isAscending) {
 				
+				List<UserRecord> userRecords = null;
 				if (userRecords == null) {
-					userRecords = new ArrayList<UserRecord>(2000);
-					for (int i=0;i<DEFAULT_NUMBER_TEST_LEARNERS;i++) {
-						userRecords.add(createUserRecord());
+					if (dereferences == null)
+						findAllUserDeferences();
+					
+					userRecords = new ArrayList<UserRecord>(DEFAULT_NUMBER_TEST_LEARNERS);
+					for (int i=offset;i<offset+limit;i++) {
+						UserDereference dereference = dereferences.get(i);
+						UserRecord userRecord = new UserRecord(dereference.getUserUid(), dereference.getEid(), dereference.getDisplayId(), dereference.getDisplayName(),
+								dereference.getLastNameFirst(), dereference.getSortName(), dereference.getEmail());
+						userRecord.setExportUserId(getExportUserId(dereference));
+						userRecord.setFinalGradeUserId(getFinalGradeUserId(dereference));
+						userRecords.add(userRecord);
 					}
 				}
 				
 				return userRecords;
+			}
+			
+			
+			public List<UserDereference> findAllUserDeferences() {
+				
+				if (dereferences == null) {
+					dereferences = new ArrayList<UserDereference>(DEFAULT_NUMBER_TEST_LEARNERS);
+					for (int i=0;i<DEFAULT_NUMBER_TEST_LEARNERS;i++) {
+						dereferences.add(createUserRecord());
+					}
+				}
+				
+				return dereferences;
 			}
 			
 			
@@ -122,7 +146,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 				return SECTIONS[getRandomInt(SECTIONS.length)];
 			}
 			
-			private UserRecord createUserRecord() {
+			private UserDereference createUserRecord() {
 				String studentId = String.valueOf(100000 + getRandomInt(899999));
 				String firstName = FIRST_NAMES[getRandomInt(FIRST_NAMES.length)];
 				String lastName = LAST_NAMES[getRandomInt(LAST_NAMES.length)];
@@ -133,9 +157,10 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 				String section = getRandomSection();
 				String email = firstName.toLowerCase() + "." + lastName.toLowerCase() + "@nowhere.edu";
 			
-				UserRecord userRecord = new UserRecord(studentId, eid, studentId, displayName,
+				UserDereference userRecord = new UserDereference(studentId, eid, studentId, displayName,
 						lastNameFirst, sortName, email);
-				userRecord.setSectionTitle("Section " + section);
+				//userRecord.setSectionTitle("Section " + section);
+				//userRecord.setExportUserId(studentId);
 				
 				return userRecord;
 			}
