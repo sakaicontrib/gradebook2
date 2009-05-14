@@ -16,6 +16,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner.BrowseType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
+import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.Scroll;
@@ -185,7 +186,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 		super.onResize(width, height);
 	}
 	
-	private void addField(Set<String> itemIdSet, ItemModel item, int row) {
+	private void addField(Set<String> itemIdSet, ItemModel item, int row, boolean isPercentages) {
 		String itemId = new StringBuilder().append(AppConstants.LEARNER_SUMMARY_FIELD_PREFIX).append(item.getIdentifier()).toString();
 		String source = item.getSource();
 		boolean isStatic = source != null && source.equals(AppConstants.STATIC);
@@ -197,10 +198,18 @@ public class LearnerSummaryPanel extends ContentPanel {
 			if (dataType != null && dataType.equals(AppConstants.NUMERIC_DATA_TYPE)) {
 				NumberField field = new NumberField();
 				
+				String amountIndicator = "%";
+				
+				if (!isPercentages) 
+					amountIndicator = DataTypeConversionUtil.formatDoubleAsPointsString(item.getPoints());
+				
+				String itemName = new StringBuilder().append(item.getName())
+					.append("  [").append(amountIndicator).append("]").toString();
+				
 				field.setItemId(itemId);
 				field.addInputStyleName("gbNumericFieldInput");
 				field.addKeyListener(keyListener);
-				field.setFieldLabel(item.getName());
+				field.setFieldLabel(itemName);
 				field.setFormat(DataTypeConversionUtil.getDefaultNumberFormat());
 				field.setName(item.getIdentifier());
 				field.setWidth(50);
@@ -381,6 +390,9 @@ public class LearnerSummaryPanel extends ContentPanel {
 			}
 		}
 		
+		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		boolean isPercentages = selectedGradebook.getGradebookItemModel().getGradeType() == GradeType.PERCENTAGES;
+		
 		int row = 0;
 		if (rootItems != null) {
 			for (ItemModel root : rootItems) {
@@ -391,12 +403,12 @@ public class LearnerSummaryPanel extends ContentPanel {
 						if (child.getChildCount() > 0) {
 							
 							for (ItemModel subchild : child.getChildren()) {
-								addField(itemIdSet, subchild, row);
+								addField(itemIdSet, subchild, row, isPercentages);
 								row++;
 							}
 							
 						} else {
-							addField(itemIdSet, child, row);
+							addField(itemIdSet, child, row, isPercentages);
 							row++;
 						}
 						

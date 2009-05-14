@@ -336,7 +336,7 @@ public class ImportPanel extends ContentPanel {
 			columnsTab = new TabItem("Setup");
 			tabPanel.add(columnsTab);
 			
-			tabPanel.setHeight(400);
+			tabPanel.setHeight(450);
 			
 			subCardLayoutContainer.add(tabPanel);
 		} else {
@@ -1186,6 +1186,7 @@ public class ImportPanel extends ContentPanel {
 		ContentPanel panel = new ContentPanel();
 		panel.setLayout(new FitLayout());
 		panel.setHeaderVisible(false);
+		panel.setHeight(400);
 		
 		List<ColumnConfig> itemColumns = new ArrayList<ColumnConfig>();
 		
@@ -1261,7 +1262,8 @@ public class ImportPanel extends ContentPanel {
 		itemStore = new ListStore<BeanModel>();
 		
 		EditorGrid<BeanModel> itemGrid = new EditorGrid<BeanModel>(itemStore, itemColumnModel);
-		itemGrid.setHeight(300);
+		itemGrid.setHeight(370);
+		itemGrid.setBorders(true);
 		List<BeanModel> models = new ArrayList<BeanModel>();
 		BeanModelFactory factory = BeanModelLookup.get().getFactory(headers.get(0).getClass());
         if (factory == null) {
@@ -1296,7 +1298,7 @@ public class ImportPanel extends ContentPanel {
 		FieldSet itemFieldSet = new FieldSet(); 
 		itemFieldSet.setLayout(fitLayout);
 		itemFieldSet.setHeading("Items"); 
-		itemFieldSet.setHeight(320);  
+		itemFieldSet.setHeight(390);  
 		itemFieldSet.add(panel, new MarginData(5));
 		
 		container.add(itemFieldSet, new RowData(1, 1));

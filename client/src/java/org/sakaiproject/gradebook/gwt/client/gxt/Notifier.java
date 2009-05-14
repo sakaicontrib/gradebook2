@@ -78,22 +78,24 @@ public class Notifier {
 			return;
 		}
 		
-		String title = "Request Failed"; 
-		String text = " {0} : {1} "; 
-		Object[] values = { message, cause };
-		
-		Params infoParams = new Params(values);
-
-		int panelWidth = XDOM.getViewportSize().width / 2;
-		int x = XDOM.getViewportSize().width / 2 - panelWidth / 2;
-		
-		LogConfig infoConfig = new LogConfig(title, text, infoParams);
-		//infoConfig.display = 20000;
-		infoConfig.width = panelWidth;
-		infoConfig.height = 60;
-		infoConfig.isPermanent = true;
-		
-		LogDisplay.display(x, 0, infoConfig);
+		if (e instanceof Exception) {
+			String title = "Request Failed"; 
+			String text = " {0} : {1} "; 
+			Object[] values = { message, cause };
+			
+			Params infoParams = new Params(values);
+	
+			int panelWidth = XDOM.getViewportSize().width / 2;
+			int x = XDOM.getViewportSize().width / 2 - panelWidth / 2;
+			
+			LogConfig infoConfig = new LogConfig(title, text, infoParams);
+			//infoConfig.display = 20000;
+			infoConfig.width = panelWidth;
+			infoConfig.height = 60;
+			infoConfig.isPermanent = true;
+			
+			LogDisplay.display(x, 0, infoConfig);
+		}
 	}
 	
 	public void notifyUserError(String title, String text, Object...values) {

@@ -15,7 +15,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -90,7 +89,6 @@ import com.extjs.gxt.ui.client.data.PagingLoadResult;
 
 public class Gradebook2ServiceImpl implements Gradebook2Service {
 
-	private static final int DEFAULT_NUMBER_TEST_LEARNERS = 200;
 	
 	private static final Log log = LogFactory.getLog(Gradebook2ServiceImpl.class);
 	
@@ -767,7 +765,17 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			gbService.syncUserDereferenceBySite(siteId, null, findAllMembers(site), diff, learnerRoleNames);
 		}
 		
-		List<UserDereference> dereferences = gbService.getUserUidsForSite(null, "sortName", null, null, -1, -1, true, learnerRoleNames);
+		String[] realmIds = null;
+		if (siteId == null) {
+    		if (log.isInfoEnabled())
+				log.info("No siteId defined");
+    		return new ArrayList<UserDereference>();
+    	}
+		
+		realmIds = new String[1];
+		realmIds[0] = new StringBuffer().append("/site/").append(siteId).toString();
+		
+		List<UserDereference> dereferences = gbService.getUserUidsForSite(realmIds, "sortName", null, null, -1, -1, true, learnerRoleNames);
 		
 		return dereferences;
 	}
@@ -1065,6 +1073,55 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		Site site = getSite();
 		String siteId = site == null ? null : site.getId();
 		
+		
+		boolean isUserAuthorizedToGradeAll = security.isUserAbleToGradeAll(gradebook.getUid());
+		boolean isLimitedToSection = false;
+		Set<String> authorizedGroups = new HashSet<String>();
+		if (sectionUuid != null) {
+			if (!security.isUserTAinSection(sectionUuid))
+				return new BasePagingLoadResult<X>(rows, 0, totalUsers);
+			
+			authorizedGroups.add(sectionUuid);
+			isLimitedToSection = true;
+		}
+		
+		
+		Collection<Group> groups = site == null ? new ArrayList<Group>() : site.getGroups();
+		Map<String, Group> groupReferenceMap = new HashMap<String, Group>();
+		List<String> groupReferences = new ArrayList<String>();
+		if (groups != null) {
+			for (Group group : groups) {
+				String reference = group.getReference();
+				groupReferences.add(reference);
+				groupReferenceMap.put(reference, group);
+				
+				String sectionUid = group.getProviderGroupId();
+				
+				if (! isLimitedToSection) {
+					if (!isUserAuthorizedToGradeAll && sectionUid != null && security.isUserTAinSection(reference)) {
+						authorizedGroups.add(reference);
+					}
+				} 
+			}
+		}
+		
+		String[] realmGroupIds = null;
+		if (!authorizedGroups.isEmpty()) 
+			realmGroupIds = authorizedGroups.toArray(new String[authorizedGroups.size()]);
+		
+		String[] realmIds = realmGroupIds;
+    	
+    	if (realmIds == null) {
+    		if (siteId == null) {
+        		if (log.isInfoEnabled())
+					log.info("No siteId defined");
+        		return new BasePagingLoadResult<X>(rows, 0, totalUsers);
+        	}
+    		
+    		realmIds = new String[1];
+    		realmIds[0] = new StringBuffer().append("/site/").append(siteId).toString();
+    	} 
+		
 		// Check to see if we're sorting or not
 		if (sortColumnKey != null) {
 			switch (sortColumnKey) {
@@ -1088,52 +1145,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					break;
 				}
 						
-				boolean isUserAuthorizedToGradeAll = security.isUserAbleToGradeAll(gradebook.getUid());
-				boolean isLimitedToSection = false;
-				Set<String> authorizedGroups = new HashSet<String>();
-				if (sectionUuid != null) {
-					if (!security.isUserTAinSection(sectionUuid))
-						return new BasePagingLoadResult<X>(rows, 0, totalUsers);
-					
-					authorizedGroups.add(sectionUuid);
-					isLimitedToSection = true;
-				}
 				
 				
-				Collection<Group> groups = site == null ? new ArrayList<Group>() : site.getGroups();
-				Map<String, Group> groupReferenceMap = new HashMap<String, Group>();
-				List<String> groupReferences = new ArrayList<String>();
-				for (Group group : groups) {
-					String reference = group.getReference();
-					groupReferences.add(reference);
-					groupReferenceMap.put(reference, group);
-					
-					String sectionUid = group.getProviderGroupId();
-					
-					if (! isLimitedToSection) {
-						if (!isUserAuthorizedToGradeAll && sectionUid != null && security.isUserTAinSection(reference)) {
-							authorizedGroups.add(reference);
-						}
-					} 
-				}
-				
-				
-				String[] realmGroupIds = null;
-				if (!authorizedGroups.isEmpty()) 
-					realmGroupIds = authorizedGroups.toArray(new String[authorizedGroups.size()]);
-				
-				String[] realmIds = realmGroupIds;
-            	
-            	if (realmGroupIds == null) {
-            		realmIds = new String[1];
-            		realmIds[0] = new StringBuffer().append("/site/").append(siteId).toString();
-            	} else if (siteId == null) {
-            		if (log.isInfoEnabled())
-						log.info("No siteId defined");
-            		return new BasePagingLoadResult<X>(rows, 0, totalUsers);
-            	} 
-				
-				userRecords = findLearnerRecordPage(gradebook, site, realmGroupIds, groupReferences, groupReferenceMap,  sortField, searchField, searchCriteria, offset, limit, !isDescending);
+				userRecords = findLearnerRecordPage(gradebook, site, realmIds, groupReferences, groupReferenceMap,  sortField, searchField, searchCriteria, offset, limit, !isDescending);
 				totalUsers = gbService.getUserCountForSite(realmIds, sortField, searchField, searchCriteria, learnerRoleNames);
 				
 				int startRow = config == null ? 0 : config.getOffset();
@@ -1153,11 +1167,21 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			case COURSE_GRADE:
 			case GRADE_OVERRIDE:
 			case ASSIGNMENT:
-				Map<String, UserRecord> userRecordMap = findStudentRecords(gradebookUid, gradebookId, site, sectionUuid);
+				
+				userRecords = findLearnerRecordPage(gradebook, site, realmIds, groupReferences, groupReferenceMap, null, searchField, searchCriteria, -1, -1, !isDescending);
+				
+				Map<String, UserRecord> userRecordMap = new HashMap<String, UserRecord>(); //findStudentRecords(gradebookUid, gradebookId, site, sectionUuid);
+				
+				for (UserRecord userRecord : userRecords) {
+					userRecordMap.put(userRecord.getUserUid(), userRecord);
+				}
+				
+				
 			    List<String> studentUids = new ArrayList<String>(userRecordMap.keySet());
 				
 			   	//Map<String, Map<Long, AssignmentGradeRecord>>  allGradeRecordsMap = new HashMap<String, Map<Long, AssignmentGradeRecord>>();
 
+			    /*
 			    List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebookId, studentUids);
 			   // List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebookId, siteId, sectionUuid, learnerRoleNames);
 
@@ -1206,7 +1230,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 						}
 					}
 				}
-				
+				*/
 						
 				userRecords = doSearchAndSortUserRecords(gradebook, assignments, categories, studentUids, userRecordMap, config);
 				totalUsers = userRecords.size();
@@ -1883,10 +1907,13 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				model.setUserName(user.getDisplayName());
 			}
 		} else {
-			Map<String, UserRecord> userRecordMap = findStudentRecords(gradebookUid, gradebook.getId(), null, null);
+			String[] realmIds = { "/site/mock" };
+			List<UserRecord> userRecords = findLearnerRecordPage(gradebook, getSite(), realmIds, null, null, null, null, null, -1, -1, true);
 			
-			if (userRecordMap != null && userRecordMap.size() > 0) {
-				UserRecord userRecord = userRecordMap.values().iterator().next();
+			//Map<String, UserRecord> userRecordMap = //findStudentRecords(gradebookUid, gradebook.getId(), null, null);
+			
+			if (userRecords != null && userRecords.size() > 0) {
+				UserRecord userRecord = userRecords.get(0);
 				model.setUserName(userRecord.getDisplayName());
 				model.setUserAsStudent(buildStudentRow(gradebook, userRecord, columns, assignments, categories));
 			}
@@ -2123,7 +2150,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		return null;
 	}
 	
-	private List<UserRecord> findLearnerRecordPage(Gradebook gradebook, Site site, String[] realmIds, List<String> groupReferences, 
+	protected List<UserRecord> findLearnerRecordPage(Gradebook gradebook, Site site, String[] realmIds, List<String> groupReferences, 
 			Map<String, Group> groupReferenceMap, String sortField, String searchField, String searchCriteria,
 			int offset, int limit, 
 			boolean isAscending) {
@@ -2132,8 +2159,6 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		
 		List<UserRecord> userRecords = new ArrayList<UserRecord>();
 
-		
-		
 		String[] learnerRoleKeys = advisor.getLearnerRoleNames();
 		
 		int totalUsers = gbService.getFullUserCountForSite(siteId, null, learnerRoleKeys);
@@ -2278,10 +2303,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		List<User> users = new ArrayList<User>();
 		if (site != null) {
 			Set<Member> members = site == null ? new HashSet<Member>() : site.getMembers();
-			for (Member member : members) {
-				//if (accessAdvisor.isLearner(member)) {
-					String userUid = member.getUserId();
-					
+			if (members != null) {
+				for (Member member : members) {
+					String userUid = member.getUserId();	
 					try {
 						if (userService != null) {
 							User user = userService.getUser(userUid);
@@ -2290,8 +2314,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					} catch (UserNotDefinedException e) {
 						log.info("Unable to retrieve user for " + userUid );
 					}
-					
-				//}
+				}
 			}
 		}
 		return users;
@@ -2312,24 +2335,15 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			
 			if (site != null) {
 				Set<Member> members = site.getMembers();
-				for (Member member : members) {
-					if (advisor.isLearner(member)) {
-						String userUid = member.getUserId();
-						studentRecords.put(userUid, new UserRecord(userUid));
+				if (members != null) {
+					for (Member member : members) {
+						if (advisor.isLearner(member)) {
+							String userUid = member.getUserId();
+							studentRecords.put(userUid, new UserRecord(userUid));
+						}
 					}
 				}
-			} else {
-				if (userRecords == null) {
-					userRecords = new ArrayList<UserRecord>(2000);
-					for (int i=0;i<DEFAULT_NUMBER_TEST_LEARNERS;i++) {
-						userRecords.add(createUserRecord());
-					}
-				}
-				
-				for (UserRecord userRecord : userRecords) {
-					studentRecords.put(userRecord.getUserUid(), userRecord);
-				}
-			}
+			} 
 		} 
 		
 		List<CourseSection> viewableSections = security.getViewableSections(gradebookUid, gradebookId);
@@ -2672,7 +2686,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	}
 	
 
-	private Site getSite() {
+	protected Site getSite() {
 		
 		String context = getSiteContext();
 	    Site site = null;
@@ -3564,64 +3578,6 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 	};
 
-	/*
-	 * TEST DATA
-	 */
-	private static final String[] FIRST_NAMES = { "Joel", "John", "Kelly",
-		"Freeland", "Bruce", "Rajeev", "Thomas", "Jon", "Mary", "Jane",
-		"Susan", "Cindy", "Veronica", "Shana", "Shania", "Olin", "Brenda",
-		"Lowell", "Doug", "Yiyun", "Xi-Ming", "Grady", "Martha", "Stewart", 
-		"Kennedy", "Joseph", "Iosef", "Sean", "Timothy", "Paula", "Keith",
-		"Ignatius", "Iona", "Owen", "Ian", "Ewan", "Rachel", "Wendy", 
-		"Quentin", "Nancy", "Mckenna", "Kaylee", "Aaron", "Erin", "Maris", 
-		"D.", "Quin", "Tara", "Moira", "Bristol" };
-
-	private static final String[] LAST_NAMES = { "Smith", "Paterson",
-		"Haterson", "Raterson", "Johnson", "Sonson", "Paulson", "Li",
-		"Yang", "Redford", "Shaner", "Bradley", "Herzog", "O'Neil", "Williams",
-		"Simone", "Oppenheimer", "Brown", "Colgan", "Frank", "Grant", "Klein",
-		"Miller", "Taylor", "Schwimmer", "Rourer", "Depuis", "Vaugh", "Auerbach", 
-		"Shannon", "Stepford", "Banks", "Ashby", "Lynne", "Barclay", "Barton",
-		"Cromwell", "Dering", "Dunlevy", "Ethelstan", "Fry", "Gilly",
-		"Goodrich", "Granger", "Griffith", "Herbert", "Hurst", "Keigwin", 
-		"Paddock", "Pillings", "Landon", "Lawley", "Osborne", "Scarborough",
-		"Whiting", "Wibert", "Worth", "Tremaine", "Barnum", "Beal", "Beers", 
-		"Bellamy", "Barnwell", "Beckett", "Breck", "Cotesworth", 
-		"Coventry", "Elphinstone", "Farnham", "Ely", "Dutton", "Durham",
-		"Eberlee", "Eton", "Edgecomb", "Eastcote", "Gloucester", "Lewes", 
-		"Leland", "Mansfield", "Lancaster", "Oakham", "Nottingham", "Norfolk",
-		"Poole", "Ramsey", "Rawdon", "Rhodes", "Riddell", "Vesey", "Van Wyck",
-		"Van Ness", "Twickenham", "Trowbridge", "Ames", "Agnew", "Adlam", 
-		"Aston", "Askew", "Alford", "Bedeau", "Beauchamp" };
-	
-	private static final String[] SECTIONS = { "001", "002", "003", "004" };
-	
-	private Random random = new Random();
-	
-	private int getRandomInt(int max) {
-		return random.nextInt(max);
-	}
-	
-	private String getRandomSection() {
-		return SECTIONS[getRandomInt(SECTIONS.length)];
-	}
-	
-	private UserRecord createUserRecord() {
-		String studentId = String.valueOf(100000 + getRandomInt(899999));
-		String firstName = FIRST_NAMES[getRandomInt(FIRST_NAMES.length)];
-		String lastName = LAST_NAMES[getRandomInt(LAST_NAMES.length)];
-		String sortName = lastName + ", " + firstName;
-		String displayName = firstName + " " + lastName;
-		String section = getRandomSection();
-	
-		User user = new org.sakaiproject.gradebook.gwt.sakai.mock.SakaiUserMock(studentId, studentId, displayName, sortName);
-		
-		UserRecord userRecord = new UserRecord(user);
-		userRecord.setSectionTitle("Section " + section);
-		
-		return userRecord;
-	}
-	
 	
 	
 	/*

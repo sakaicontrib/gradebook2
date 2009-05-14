@@ -1,6 +1,10 @@
 package org.sakaiproject.gradebook.gwt.sakai.mock;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCService;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
@@ -20,8 +24,13 @@ import org.sakaiproject.gradebook.gwt.sakai.Gradebook2SecurityImpl;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ServiceImpl;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
 import org.sakaiproject.gradebook.gwt.sakai.SampleInstitutionalAdvisor;
+import org.sakaiproject.gradebook.gwt.sakai.UserRecord;
 import org.sakaiproject.gradebook.gwt.sakai.calculations.GradeCalculationsOOImpl;
 import org.sakaiproject.section.api.SectionAwareness;
+import org.sakaiproject.site.api.Group;
+import org.sakaiproject.site.api.Site;
+import org.sakaiproject.tool.gradebook.Gradebook;
+import org.sakaiproject.user.api.User;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
@@ -45,6 +54,90 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			@Override
 			protected String getSiteContext() {
 				return "blah";
+			}
+			
+			@Override
+			protected Site getSite() {
+				return new SiteMock("mock");
+			}
+			
+			private List<UserRecord> userRecords;
+			private final int DEFAULT_NUMBER_TEST_LEARNERS = 200;
+			
+			protected List<UserRecord> findLearnerRecordPage(Gradebook gradebook, Site site, String[] realmIds, List<String> groupReferences, 
+					Map<String, Group> groupReferenceMap, String sortField, String searchField, String searchCriteria,
+					int offset, int limit, 
+					boolean isAscending) {
+				
+				if (userRecords == null) {
+					userRecords = new ArrayList<UserRecord>(2000);
+					for (int i=0;i<DEFAULT_NUMBER_TEST_LEARNERS;i++) {
+						userRecords.add(createUserRecord());
+					}
+				}
+				
+				return userRecords;
+			}
+			
+			
+			/*
+			 * TEST DATA
+			 */
+			private final String[] FIRST_NAMES = { "Joel", "John", "Kelly",
+				"Freeland", "Bruce", "Rajeev", "Thomas", "Jon", "Mary", "Jane",
+				"Susan", "Cindy", "Veronica", "Shana", "Shania", "Olin", "Brenda",
+				"Lowell", "Doug", "Yiyun", "Xi-Ming", "Grady", "Martha", "Stewart", 
+				"Kennedy", "Joseph", "Iosef", "Sean", "Timothy", "Paula", "Keith",
+				"Ignatius", "Iona", "Owen", "Ian", "Ewan", "Rachel", "Wendy", 
+				"Quentin", "Nancy", "Mckenna", "Kaylee", "Aaron", "Erin", "Maris", 
+				"D.", "Quin", "Tara", "Moira", "Bristol" };
+
+			private  final String[] LAST_NAMES = { "Smith", "Paterson",
+				"Haterson", "Raterson", "Johnson", "Sonson", "Paulson", "Li",
+				"Yang", "Redford", "Shaner", "Bradley", "Herzog", "O'Neil", "Williams",
+				"Simone", "Oppenheimer", "Brown", "Colgan", "Frank", "Grant", "Klein",
+				"Miller", "Taylor", "Schwimmer", "Rourer", "Depuis", "Vaugh", "Auerbach", 
+				"Shannon", "Stepford", "Banks", "Ashby", "Lynne", "Barclay", "Barton",
+				"Cromwell", "Dering", "Dunlevy", "Ethelstan", "Fry", "Gilly",
+				"Goodrich", "Granger", "Griffith", "Herbert", "Hurst", "Keigwin", 
+				"Paddock", "Pillings", "Landon", "Lawley", "Osborne", "Scarborough",
+				"Whiting", "Wibert", "Worth", "Tremaine", "Barnum", "Beal", "Beers", 
+				"Bellamy", "Barnwell", "Beckett", "Breck", "Cotesworth", 
+				"Coventry", "Elphinstone", "Farnham", "Ely", "Dutton", "Durham",
+				"Eberlee", "Eton", "Edgecomb", "Eastcote", "Gloucester", "Lewes", 
+				"Leland", "Mansfield", "Lancaster", "Oakham", "Nottingham", "Norfolk",
+				"Poole", "Ramsey", "Rawdon", "Rhodes", "Riddell", "Vesey", "Van Wyck",
+				"Van Ness", "Twickenham", "Trowbridge", "Ames", "Agnew", "Adlam", 
+				"Aston", "Askew", "Alford", "Bedeau", "Beauchamp" };
+			
+			private final String[] SECTIONS = { "001", "002", "003", "004" };
+			
+			private Random random = new Random();
+			
+			private int getRandomInt(int max) {
+				return random.nextInt(max);
+			}
+			
+			private String getRandomSection() {
+				return SECTIONS[getRandomInt(SECTIONS.length)];
+			}
+			
+			private UserRecord createUserRecord() {
+				String studentId = String.valueOf(100000 + getRandomInt(899999));
+				String firstName = FIRST_NAMES[getRandomInt(FIRST_NAMES.length)];
+				String lastName = LAST_NAMES[getRandomInt(LAST_NAMES.length)];
+				String eid = lastName.toLowerCase();
+				String lastNameFirst = lastName + ", " + firstName;
+				String sortName = lastName.toUpperCase() + "  " + firstName.toUpperCase();
+				String displayName = firstName + " " + lastName;
+				String section = getRandomSection();
+				String email = firstName.toLowerCase() + "." + lastName.toLowerCase() + "@nowhere.edu";
+			
+				UserRecord userRecord = new UserRecord(studentId, eid, studentId, displayName,
+						lastNameFirst, sortName, email);
+				userRecord.setSectionTitle("Section " + section);
+				
+				return userRecord;
 			}
 		};
 		

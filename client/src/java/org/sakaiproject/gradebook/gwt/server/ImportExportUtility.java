@@ -73,7 +73,7 @@ public class ImportExportUtility {
 			filename.append("gradebook");
 		else {
 			String name = gradebook.getName();
-			name.replaceAll("\\s", "");
+			name = name.replaceAll("\\s", "");
 			
 			filename.append(name);
 		}
