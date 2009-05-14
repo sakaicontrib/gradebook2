@@ -2401,6 +2401,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		if (assignments != null) {
 			for(Assignment assignment : assignments) {
 	
+				if (assignment.isRemoved())
+					continue;
+				
 				category = categoryMap.get(assignment.getCategory().getId());
 	
 				if(null == category) {
