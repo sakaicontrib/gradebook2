@@ -174,7 +174,7 @@ public class BusinessLogicImpl implements BusinessLogic {
 	public void applyCannotIncludeItemFromUnincludedCategoryRule(boolean isCategoryIncluded, boolean isItemIncluded, boolean wasItemIncluded)
 	throws BusinessRuleException {
 		if (!isCategoryIncluded) {		
-			if (isItemIncluded && !wasItemIncluded)
+			if (isItemIncluded)
 				throw new BusinessRuleException("You cannot include a grade item whose category is not included in grading. Please include the category first.");
 		}
 	}	

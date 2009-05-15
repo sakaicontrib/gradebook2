@@ -227,17 +227,17 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 		
 		if (! hasCategories) {
-			return getItemModel(gradebook, assignments);
+			return getItemModel(gradebook, assignments, assignmentId);
 		}
 		
-		ItemModel categoryItemModel = getItemModelsForCategory(category, createItemModel(gradebook));
+		ItemModel categoryItemModel = getItemModelsForCategory(category, createItemModel(gradebook), assignmentId);
 		
-		String assignmentIdAsString = String.valueOf(assignmentId);
+		/*String assignmentIdAsString = String.valueOf(assignmentId);
 		for (ModelData model : categoryItemModel.getChildren()) {
 			ItemModel itemModel = (ItemModel)model;
 			if (itemModel.getIdentifier().equals(assignmentIdAsString)) 
 				itemModel.setActive(true);
-		}
+		}*/
 		
 		return categoryItemModel;
 	}
@@ -311,7 +311,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 		
 		
-		ItemModel categoryItemModel = getItemModelsForCategory(category, createItemModel(category.getGradebook()));
+		ItemModel categoryItemModel = getItemModelsForCategory(category, createItemModel(category.getGradebook()), null);
 		categoryItemModel.setActive(true);
 		return categoryItemModel;
 	}
@@ -542,7 +542,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 		spreadsheetModel.setResults(results);
 		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
-		spreadsheetModel.setGradebookItemModel(getItemModel(gradebook, assignments));
+		spreadsheetModel.setGradebookItemModel(getItemModel(gradebook, assignments, null));
 		
 		return spreadsheetModel;
 	}
@@ -1330,8 +1330,22 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		CourseGrade courseGrade = gbService.getCourseGrade(gradebook.getId());
 		gbService.updateCourseGradeRecords(courseGrade, gradeRecords);
 		
+		List<Category> categories = null;
 		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
-		String freshCourseGrade = getDisplayGrade(gradebook, courseGradeRecord, assignments, null, null);//requestCourseGrade(gradebookUid, student.getIdentifier());
+		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
+			categories = getCategoriesWithAssignments(gradebook.getId(), assignments);
+		
+		Map<Long, AssignmentGradeRecord> studentGradeMap = new HashMap<Long, AssignmentGradeRecord>();
+		List<AssignmentGradeRecord> records = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), student.getIdentifier());
+		
+		if (records != null) {
+			for (AssignmentGradeRecord record : records) {
+				studentGradeMap.put(record.getAssignment().getId(), record);
+			}
+		}
+		
+		
+		String freshCourseGrade = getDisplayGrade(gradebook, courseGradeRecord, assignments, categories, studentGradeMap);//requestCourseGrade(gradebookUid, student.getIdentifier());
 		student.set(StudentModel.Key.GRADE_OVERRIDE.name(), courseGradeRecord.getEnteredGrade());
 		student.set(StudentModel.Key.COURSE_GRADE.name(), freshCourseGrade);
 		
@@ -1535,7 +1549,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		// The first case is that we're in categories mode and the category has changed
 		if (hasCategories && oldCategory != null) {
 			assignments = gbService.getAssignments(gradebook.getId());
-			return getItemModel(gradebook, assignments);
+			return getItemModel(gradebook, assignments, assignment.getId());
 		}
 		
 		// If neither the weight nor the points have changed, then we can just return 
@@ -1546,11 +1560,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			return itemModel;
 		} else if (! hasCategories) {
 			// Otherwise if we're in no categories mode then we want to return the gradebook
-			return getItemModel(gradebook, assignments);
+			return getItemModel(gradebook, assignments, assignment.getId());
 		}
 		
 		// Otherwise we can return the category parent
-		ItemModel categoryItemModel = getItemModelsForCategory(category, item.getParent());
+		ItemModel categoryItemModel = getItemModelsForCategory(category, item.getParent(), assignment.getId());
 		
 		String assignmentIdAsString = String.valueOf(assignment.getId());
 		for (ModelData model : categoryItemModel.getChildren()) {
@@ -1759,9 +1773,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	}
 	
 	// FIXME: This should be moved into GradeCalculations
-	private void calculateItemCategoryPercent(Gradebook gradebook, Category category, ItemModel gradebookItemModel, ItemModel categoryItemModel, List<Assignment> assignments) {
+	private void calculateItemCategoryPercent(Gradebook gradebook, Category category, ItemModel gradebookItemModel, ItemModel categoryItemModel, List<Assignment> assignments,
+			Long assignmentId) {
 		double pG = categoryItemModel == null || categoryItemModel.getPercentCourseGrade() == null ? 0d : categoryItemModel.getPercentCourseGrade().doubleValue();
-		//double pC = categoryItemModel == null || categoryItemModel.getPercentCategory() == null ? 0d : categoryItemModel.getPercentCategory().doubleValue();
+		
 		
 		BigDecimal percentGrade = BigDecimal.valueOf(pG);
 		BigDecimal percentCategorySum = BigDecimal.ZERO;
@@ -1794,6 +1809,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				
 				ItemModel assignmentItemModel = createItemModel(category, a, courseGradePercent);
 				
+				if (assignmentId != null && a.getId().equals(assignmentId))
+					assignmentItemModel.setActive(true);
+				
 				if (gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_NO_CATEGORY) {
 					assignmentItemModel.setParent(gradebookItemModel);
 					gradebookItemModel.add(assignmentItemModel);
@@ -1823,7 +1841,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		List<Category> categories = null;
 		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
 			categories = getCategoriesWithAssignments(gradebook.getId(), assignments);
-		ItemModel gradebookItemModel = getItemModel(gradebook, assignments);
+		ItemModel gradebookItemModel = getItemModel(gradebook, assignments, null);
 		model.setGradebookItemModel(gradebookItemModel);
 		List<FixedColumnModel> columns = getColumns();
 		
@@ -1963,7 +1981,6 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		
 		ItemModel model = new ItemModel();
 		
-		//double categoryDecimalWeight = category.getWeight() == null ? 0d : category.getWeight().doubleValue();
 		double assignmentWeight = assignment.getAssignmentWeighting() == null ? 0d : assignment.getAssignmentWeighting().doubleValue() * 100.0;
 		Boolean isAssignmentIncluded = assignment.isUnweighted() == null ? Boolean.TRUE : Boolean.valueOf(!assignment.isUnweighted().booleanValue());
 		Boolean isAssignmentExtraCredit = assignment.isExtraCredit() == null ? Boolean.FALSE : assignment.isExtraCredit();
@@ -2602,14 +2619,14 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		return models;
 	}
 	
-	private ItemModel getItemModel(Gradebook gradebook, List<Assignment> assignments) {
+	private ItemModel getItemModel(Gradebook gradebook, List<Assignment> assignments, Long assignmentId) {
 		
 		ItemModel gradebookItemModel = createItemModel(gradebook);
 		
 		boolean isNotInCategoryMode = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_NO_CATEGORY;
 		
 		if (isNotInCategoryMode) {
-			calculateItemCategoryPercent(gradebook, null, gradebookItemModel, null, assignments);
+			calculateItemCategoryPercent(gradebook, null, gradebookItemModel, null, assignments, assignmentId);
 			
 		} else {
 			List<Category> categories = getCategoriesWithAssignments(gradebook.getId(), assignments);
@@ -2632,7 +2649,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 							gradebookItemModel.add(categoryItemModel);
 						} 
 						
-						calculateItemCategoryPercent(gradebook, category, gradebookItemModel, categoryItemModel, items);
+						calculateItemCategoryPercent(gradebook, category, gradebookItemModel, categoryItemModel, items, assignmentId);
 						
 						double categoryPoints = categoryItemModel.getPoints() == null ? 0d : categoryItemModel.getPoints().doubleValue();
 						
@@ -2651,7 +2668,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		return gradebookItemModel;
 	}
 	
-	private ItemModel getItemModelsForCategory(Category category, ItemModel gradebookItemModel) {
+	private ItemModel getItemModelsForCategory(Category category, ItemModel gradebookItemModel, Long assignmentId) {
 		if (category == null)
 			return null;
 		
@@ -2665,7 +2682,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		categoryItemModel.setParent(gradebookItemModel);
 		gradebookItemModel.add(categoryItemModel);
 				
-		calculateItemCategoryPercent(gradebook, category, gradebookItemModel, categoryItemModel, assignments);
+		calculateItemCategoryPercent(gradebook, category, gradebookItemModel, categoryItemModel, assignments, assignmentId);
 		
 		return categoryItemModel;
 	}
@@ -3049,7 +3066,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		gbService.updateGradebook(gradebook);
 		
 		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
-		return getItemModel(gradebook, assignments);
+		return getItemModel(gradebook, assignments, null);
 	}
 	
 	/**
@@ -3100,18 +3117,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			isWeightChanged = isWeightChanged || DataTypeConversionUtil.notEquals(newCategoryWeight, oldCategoryWeight);
 	
 			double w = newCategoryWeight == null ? 0d : ((Double)newCategoryWeight).doubleValue() * 0.01;
-			//category.setWeight(Double.valueOf(w));
-			
-			// Business rule #1
-			//if (w == 0d)
-			//	category.setUnweighted(Boolean.TRUE);
-	
-			
+
 			boolean isEqualWeighting = DataTypeConversionUtil.checkBoolean(item.getEqualWeightAssignments());
 			boolean wasEqualWeighting = DataTypeConversionUtil.checkBoolean(category.isEqualWeightAssignments());
-			
-			//category.setEqualWeightAssignments(Boolean.valueOf(isEqualWeighting));
-			
+
 			isWeightChanged = isWeightChanged || isEqualWeighting != wasEqualWeighting;
 			
 			
@@ -3121,26 +3130,20 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			if (wasUnweighted && !isUnweighted && category.isRemoved())
 				throw new InvalidInputException("You cannot include a deleted category in grade. Please undelete the category first.");
 	
-	
 			int oldDropLowest = category.getDrop_lowest();
 			int newDropLowest = convertInteger(item.getDropLowest()).intValue();
 			
-			//category.setDrop_lowest(newDropLowest);
-	
 			boolean isRemoved = DataTypeConversionUtil.checkBoolean(item.getRemoved());
 			boolean wasRemoved = category.isRemoved();
-			
-			//category.setRemoved(isRemoved);
-			//category.setUnweighted(Boolean.valueOf(isUnweighted || isRemoved));
-	
+
 			// FIXME: Do we want to do this?
-			if (!isUnweighted && !isRemoved) {
+			/*if (!isUnweighted && !isRemoved) {
 				// Since we don't want to leave the category weighting as 0 if a category has been re-included,
 				// but we don't know what the user wants it to be, we set it to 1%
 				double aw = category.getWeight() == null ? 0d : category.getWeight().doubleValue();
 				if (aw == 0d)
 					category.setWeight(Double.valueOf(0.01));
-			}
+			}*/
 			
 			List<BusinessLogicImpl> beforeCreateRules = new ArrayList<BusinessLogicImpl>();
 			List<BusinessLogicImpl> afterCreateRules = new ArrayList<BusinessLogicImpl>();
@@ -3189,7 +3192,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 		
 		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
-		ItemModel gradebookItemModel = getItemModel(gradebook, assignments);
+		ItemModel gradebookItemModel = getItemModel(gradebook, assignments, null);
 		
 		for (ItemModel child : gradebookItemModel.getChildren()) {
 			if (child.equals(item)) {

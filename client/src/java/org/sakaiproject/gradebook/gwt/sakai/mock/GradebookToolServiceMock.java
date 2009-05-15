@@ -968,9 +968,11 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		if (c != null) {
 			List<Assignment> oldList = c.getAssignmentList();
 			List<Assignment> newList = new LinkedList<Assignment>();
-			for (Assignment a : oldList) {
-				Assignment modified = getAssignment(a.getId());
-				newList.add(modified);
+			if (oldList != null) {
+				for (Assignment a : oldList) {
+					Assignment modified = getAssignment(a.getId());
+					newList.add(modified);
+				}
 			}
 			if (!newList.contains(assignment))
 				newList.add(assignment);
