@@ -268,7 +268,7 @@ public class ImportExportUtility {
 		
 		GradebookModel gradebook = service.getGradebook(gradebookUid);
 		
-		List<UserDereference> userDereferences = service.findAllUserDeferences();
+		List<UserDereference> userDereferences = service.findAllUserDereferences();
 		Map<String, UserDereference> userDereferenceMap = new HashMap<String, UserDereference>();
 		
 		for (UserDereference dereference : userDereferences) {

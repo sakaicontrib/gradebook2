@@ -19,7 +19,7 @@ import org.sakaiproject.tool.gradebook.Gradebook;
 public class GradeCalculationsOOImpl implements GradeCalculations {
 
 	final static BigDecimal BIG_DECIMAL_100 = new BigDecimal("100.00000");
-	public static final MathContext MATH_CONTEXT = new MathContext(10, RoundingMode.HALF_DOWN);
+	public static final MathContext MATH_CONTEXT = new MathContext(10, RoundingMode.HALF_EVEN);
 	
 	
 	public Double calculateEqualWeight(int numberOfItems) {
@@ -27,6 +27,20 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 			return Double.valueOf(1d);
 	
 		BigDecimal result = BigDecimal.ONE.divide(BigDecimal.valueOf(numberOfItems), MATH_CONTEXT);
+		
+		return Double.valueOf(result.doubleValue());
+	}
+	
+	public Double calculateItemWeightAsPercentage(Double requestedItemWeight, Double requestedItemPoints) {
+		BigDecimal weight = null;
+		
+		// Obviously, if the user asks for a non-null value, give it to them
+		if (requestedItemWeight != null)
+			weight = BigDecimal.valueOf(requestedItemWeight.doubleValue());
+		else
+			weight = BigDecimal.valueOf(requestedItemPoints.doubleValue());
+		
+		BigDecimal result = weight.divide(BIG_DECIMAL_100, MATH_CONTEXT);
 		
 		return Double.valueOf(result.doubleValue());
 	}

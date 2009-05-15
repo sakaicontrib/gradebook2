@@ -78,6 +78,8 @@ public interface GradebookToolService {
 	
 	public List<Assignment> getAssignmentsWithNoCategory(Long gradebookId);
 	
+	public List<AssignmentGradeRecord> getAssignmentGradeRecords(Assignment assignment);
+	
 	public List<AssignmentGradeRecord> getAssignmentGradeRecords(Assignment assignment, Collection<String> studentUids);
 	
 	public List<AssignmentGradeRecord> getAssignmentGradeRecordsForStudent(Long gradebookId, String studentUid);

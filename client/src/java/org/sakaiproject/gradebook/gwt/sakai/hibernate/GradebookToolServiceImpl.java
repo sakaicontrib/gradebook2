@@ -603,12 +603,12 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 				StringBuilder builder = new StringBuilder()
 					.append("select user from Realm as r, RealmGroup rg, RealmRole rr, UserDereference user ")
-					.append("where rg.realmKey=r.realmKey ")
+					.append("where rg.realmKey = r.realmKey ")
 					.append("and r.realmId in (:realmIds) ")
-					.append("and user.userUid=rg.userId ")
+					.append("and user.userUid = rg.userId ")
 					.append("and rr.roleKey = rg.roleKey ")
 					.append("and rr.roleName in (:roleKeys) ")
-					.append("and rg.active=true ");
+					.append("and rg.active = true ");
 
 				if (searchField != null && searchCriteria != null) {
 					builder.append("and user.").append(searchField).append(" like '").append("%").append(searchCriteria).append("%' ");
@@ -648,9 +648,40 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
             	
             	Query query = null;
             	
-                query = session.createQuery("select agr from AssignmentGradeRecord as agr, GradableObject as go, Realm as r, RealmGroup rg, RealmRole rr where " +
-                			"agr.gradableObject = go.id and agr.studentId = rg.userId and rg.roleKey = rr.roleKey " +
-                			"and go.gradebook.id=:gradebookId and r.realmId in (:realmIds) and go.removed=false and rr.roleName in (:roleKeys) order by agr.pointsEarned ");
+            	StringBuilder builder = new StringBuilder();
+            	
+            	/*
+            	 
+            	select agr.* 
+				from GB_GRADE_RECORD_T agr, GB_GRADABLE_OBJECT_T g, 
+				SAKAI_REALM r, SAKAI_REALM_RL_GR rg, SAKAI_REALM_ROLE rr
+				where agr.GRADABLE_OBJECT_ID = g.ID 
+				and agr.STUDENT_ID = rg.USER_ID 
+				and rg.ROLE_KEY = rr.ROLE_KEY
+				and r.REALM_KEY = rg.REALM_KEY
+				and g.GRADEBOOK_ID=6290 
+				and r.REALM_ID in ('/site/7c9d5da1-07b8-482e-82a6-c03b4f5b76e5') 
+				and g.REMOVED=0 
+				and rr.ROLE_NAME in ('Student', 'Open Campus', 'Wait List', 'access') 
+            	
+            	*/
+            	
+            	
+            	builder.append(" select agr from AssignmentGradeRecord agr, GradableObject go, Realm as r, RealmGroup rg, RealmRole rr ")
+            		   .append(" where agr.gradableObject = go.id ")
+            		   .append(" and agr.studentId = rg.userId ")
+            		   .append(" and rg.roleKey = rr.roleKey ")
+            		   .append(" and r.realmKey = rg.realmKey ")
+            		   .append(" and go.gradebook.id=:gradebookId ")
+            		   .append(" and r.realmId in (:realmIds) ")
+            		   .append(" and go.removed=false ")
+            		   .append(" and rr.roleName in (:roleKeys) ");
+            	
+            	query = session.createQuery(builder.toString());
+            	
+                //query = session.createQuery("select agr from AssignmentGradeRecord as agr, GradableObject as go, Realm as r, RealmGroup rg, RealmRole rr where " +
+                //			"agr.gradableObject = go.id and agr.studentId = rg.userId and rg.roleKey = rr.roleKey " +
+                //			"and go.gradebook.id=:gradebookId and r.realmId in (:realmIds) and go.removed=false and rr.roleName in (:roleKeys) order by agr.pointsEarned ");
                 query.setLong("gradebookId", gradebookId.longValue());
                 query.setParameterList("realmIds", realmIds);
                 query.setParameterList("roleKeys", roleNames);
@@ -835,6 +866,24 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	    	return new AssignmentGradeRecord();
 	    }
 	}
+	
+	
+	public List<AssignmentGradeRecord> getAssignmentGradeRecords(final Assignment assignment) {
+		 HibernateCallback hc = new HibernateCallback() {
+	            public Object doInHibernate(Session session) throws HibernateException {
+	                if (assignment.isRemoved()) {
+	                    return new ArrayList();                	
+	                }
+
+	                Query q = session.createQuery("from AssignmentGradeRecord as agr where agr.gradableObject.id=:gradableObjectId order by agr.pointsEarned");
+	                q.setLong("gradableObjectId", assignment.getId().longValue());
+	                
+	                return q.list();
+	            }
+	        };
+	        return (List<AssignmentGradeRecord>)getHibernateTemplate().execute(hc);
+	}
+	
 
 	public List<AssignmentGradeRecord> getAssignmentGradeRecords(final Assignment assignment, final Collection<String> studentUids) {
 		 HibernateCallback hc = new HibernateCallback() {

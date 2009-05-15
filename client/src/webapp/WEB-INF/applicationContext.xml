@@ -24,6 +24,9 @@
 		</property>
 	</bean>
 	
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.BusinessLogic" class="org.sakaiproject.gradebook.gwt.sakai.BusinessLogicImpl">
+		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/> 
+	</bean>
 		
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Security" class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2SecurityImpl">
 		<property name="authn" ref="org_sakaiproject_tool_gradebook_facades_Authn"/>

@@ -18,6 +18,8 @@ import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
+import org.sakaiproject.gradebook.gwt.sakai.BusinessLogic;
+import org.sakaiproject.gradebook.gwt.sakai.BusinessLogicImpl;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ResourceProducer;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Security;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2SecurityImpl;
@@ -27,12 +29,10 @@ import org.sakaiproject.gradebook.gwt.sakai.SampleInstitutionalAdvisor;
 import org.sakaiproject.gradebook.gwt.sakai.UserRecord;
 import org.sakaiproject.gradebook.gwt.sakai.calculations.GradeCalculationsOOImpl;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
-import org.sakaiproject.gradebook.gwt.sakai.model.UserDereferenceRealmUpdate;
 import org.sakaiproject.section.api.SectionAwareness;
 import org.sakaiproject.site.api.Group;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.tool.gradebook.Gradebook;
-import org.sakaiproject.user.api.User;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
@@ -74,7 +74,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 				List<UserRecord> userRecords = null;
 				if (userRecords == null) {
 					if (dereferences == null)
-						findAllUserDeferences();
+						findAllUserDereferences();
 					
 					userRecords = new ArrayList<UserRecord>(DEFAULT_NUMBER_TEST_LEARNERS);
 					for (int i=offset;i<offset+limit;i++) {
@@ -91,7 +91,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			}
 			
 			
-			public List<UserDereference> findAllUserDeferences() {
+			public List<UserDereference> findAllUserDereferences() {
 				
 				if (dereferences == null) {
 					dereferences = new ArrayList<UserDereference>(DEFAULT_NUMBER_TEST_LEARNERS);
@@ -168,8 +168,13 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 		
 		IocMock.getInstance().registerClassInstance(Gradebook2ServiceImpl.class.getName(), service);
 		
+		
+		
 		GradebookToolService gbService = new GradebookToolServiceMock();		
 		SectionAwareness sectionAwareness = new SectionAwarenessMock();
+		
+		BusinessLogicImpl businessLogic = new BusinessLogicImpl();
+		businessLogic.setGbService(gbService);
 		
 		Gradebook2Security security = new Gradebook2SecurityImpl();
 		security.setAuthz(new AuthzMock(sectionAwareness));
@@ -178,6 +183,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 		security.setGbService(gbService);
 		
 		service.setAdvisor(new SampleInstitutionalAdvisor());
+		service.setBusinessLogic(businessLogic);
 		service.setGbService(gbService);
 		service.setGradeCalculations(new GradeCalculationsOOImpl());
 		service.setSecurity(security);
@@ -227,7 +233,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			essay1.setReleased(Boolean.TRUE);
 			essay1.setItemType(Type.ITEM);
 			essay1.setIncluded(Boolean.TRUE);
-			service.addItem(gradebookUid, gradebookId, essay1, true);
+			service.createItem(gradebookUid, gradebookId, essay1, true);
 			
 			ItemModel essay2 = new ItemModel();
 			essay2.setName("Essay 2");
@@ -237,7 +243,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			essay2.setReleased(Boolean.TRUE);
 			essay2.setItemType(Type.ITEM);
 			essay2.setIncluded(Boolean.TRUE);
-			service.addItem(gradebookUid, gradebookId, essay2, true);
+			service.createItem(gradebookUid, gradebookId, essay2, true);
 			
 			ItemModel essay3 = new ItemModel();
 			essay3.setName("Essay 3");
@@ -247,7 +253,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			essay3.setReleased(Boolean.TRUE);
 			essay3.setItemType(Type.ITEM);
 			essay3.setIncluded(Boolean.TRUE);
-			service.addItem(gradebookUid, gradebookId, essay3, true);
+			service.createItem(gradebookUid, gradebookId, essay3, true);
 			
 
 			ItemModel hw1 = new ItemModel();
@@ -258,7 +264,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			hw1.setItemType(Type.ITEM);
 			hw1.setIncluded(Boolean.TRUE);
 			hw1.setReleased(Boolean.FALSE);
-			service.addItem(gradebookUid, gradebookId, hw1, true);
+			service.createItem(gradebookUid, gradebookId, hw1, true);
 			
 			ItemModel hw2 = new ItemModel();
 			hw2.setName("HW 2");
@@ -268,7 +274,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			hw2.setItemType(Type.ITEM);
 			hw2.setIncluded(Boolean.TRUE);
 			hw2.setReleased(Boolean.FALSE);
-			service.addItem(gradebookUid, gradebookId, hw2, true);
+			service.createItem(gradebookUid, gradebookId, hw2, true);
 			
 			ItemModel hw3 = new ItemModel();
 			hw3.setName("HW 3");
@@ -278,7 +284,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			hw3.setItemType(Type.ITEM);
 			hw3.setIncluded(Boolean.TRUE);
 			hw3.setReleased(Boolean.FALSE);
-			service.addItem(gradebookUid, gradebookId, hw3, true);
+			service.createItem(gradebookUid, gradebookId, hw3, true);
 			
 			ItemModel hw4 = new ItemModel();
 			hw4.setName("HW 4");
@@ -288,7 +294,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			hw4.setItemType(Type.ITEM);
 			hw4.setIncluded(Boolean.TRUE);
 			hw4.setReleased(Boolean.FALSE);
-			service.addItem(gradebookUid, gradebookId, hw4, true);
+			service.createItem(gradebookUid, gradebookId, hw4, true);
 
 		} catch (Exception fe) {
 			GWT.log("Failed to update gradebook properties", fe);

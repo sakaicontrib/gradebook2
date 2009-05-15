@@ -35,6 +35,8 @@ public interface GradeCalculations {
 
 	public Double calculateEqualWeight(int numberOfItems);
 	
+	public Double calculateItemWeightAsPercentage(Double requestedItemWeight, Double requestedItemPoints);
+	
 	public BigDecimal calculateItemGradePercent(BigDecimal percentGrade, BigDecimal sumCategoryPercents, BigDecimal assignmentWeight);
 	
 	public BigDecimal getNewPointsGrade(Double pointValue, Double maxPointValue, Double maxPointStartValue);

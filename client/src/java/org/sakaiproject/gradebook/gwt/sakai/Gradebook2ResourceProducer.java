@@ -41,7 +41,7 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 			case ITEM:
 			case GRADE_ITEM:
 			case CATEGORY:
-				entity = (X)service.addItem(entityUid, entityId, (ItemModel)model, true);
+				entity = (X)service.createItem(entityUid, entityId, (ItemModel)model, true);
 				break;
 			case SPREADSHEET:
 				SpreadsheetModel spreadsheetModel = (SpreadsheetModel)model;

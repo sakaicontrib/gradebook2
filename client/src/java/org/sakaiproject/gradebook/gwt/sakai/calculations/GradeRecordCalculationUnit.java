@@ -1,12 +1,14 @@
 package org.sakaiproject.gradebook.gwt.sakai.calculations;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 
 public class GradeRecordCalculationUnit {
 
+	public static final MathContext MATH_CONTEXT = new MathContext(10, RoundingMode.HALF_EVEN);
 	private static final int SCALE = 10;
 	
 	private BigDecimal pointsReceived;
@@ -76,7 +78,7 @@ public class GradeRecordCalculationUnit {
 			return;
 		
 		if (pointsReceived.compareTo(BigDecimal.ZERO) == 0 || pointsPossible.compareTo(BigDecimal.ZERO) == 0)
-			percentageScore = BigDecimal.ZERO.setScale(AppConstants.SCALE);
+			percentageScore = BigDecimal.ZERO.setScale(AppConstants.SCALE, RoundingMode.HALF_EVEN);
 		
 		percentageScore = pointsReceived.divide(pointsPossible, RoundingMode.HALF_EVEN);
 	}

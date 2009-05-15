@@ -45,7 +45,7 @@ public interface Gradebook2Service {
 	 * @return ItemModel representing either (a) the gradebook, (b) the item's category, or (c) the item
 	 * @throws InvalidInputException
 	 */
-	public ItemModel addItem(String gradebookUid, Long gradebookId, final ItemModel item, boolean enforceNoNewCategories) throws InvalidInputException;
+	public ItemModel createItem(String gradebookUid, Long gradebookId, final ItemModel item, boolean enforceNoNewCategories) throws InvalidInputException;
 	
 	
 	public CommentModel createOrUpdateComment(Long assignmentId, String studentUid, String text);
@@ -66,7 +66,7 @@ public interface Gradebook2Service {
 	public StudentModel excuseNumericItem(String gradebookUid, StudentModel student, String id, Boolean value, Boolean previousValue) 
 	throws InvalidInputException;
 	
-	public List<UserDereference> findAllUserDeferences();
+	public List<UserDereference> findAllUserDereferences();
 	
 	/**
 	 * 
@@ -128,7 +128,9 @@ public interface Gradebook2Service {
 	 * 		(8) item must include a valid category id
 	 * 		(9) if category has changed, then if the old category had equal weighting and the item was included in that category, then recalculate all item weights for that category
 	 * 	   (10) if item weight changes then remove the equal weighting flag (set to false) for the owning category
-	 * 
+	 * 	   (11) if category is not included, then cannot include item
+	 *     (12) if category is removed, then cannot unremove item
+	 *     
 	 * @param item
 	 * @return
 	 * @throws InvalidInputException

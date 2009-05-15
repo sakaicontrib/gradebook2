@@ -449,6 +449,14 @@ public class GradebookToolServiceMock implements GradebookToolService {
 			return null;
 	}
 
+	public List getAssignmentGradeRecords(Assignment assignment) {
+		List<AssignmentGradeRecord> records = new ArrayList<AssignmentGradeRecord>();
+		for (String student : studentGradeMap.keySet()) {
+			records.add(getAssignmentGradeRecordForAssignmentForStudent(assignment, student));
+		}
+		return records;
+	}	
+	
 	public List getAssignmentGradeRecords(Assignment assignment, Collection studentUids) {
 		List<AssignmentGradeRecord> records = new ArrayList<AssignmentGradeRecord>();
 		for (String student : (Collection<String>)studentUids) {
