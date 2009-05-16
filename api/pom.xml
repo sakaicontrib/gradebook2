@@ -22,7 +22,7 @@
   <dependencies>
   	<dependency>
   	  <groupId>org.sakaiproject</groupId>
-      <artifactId>gradebook2-model</artifactId>
+      <artifactId>gradebook-gwt-model</artifactId>
       <version>${sakai.version}</version>
       <scope>provided</scope>
   	</dependency>

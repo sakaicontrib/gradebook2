@@ -41,23 +41,6 @@
         <dispatcher>INCLUDE</dispatcher>
     </filter-mapping>
 
-
-	<!-- Open session in view filter -->
-	<!-- Speeds up CM access for users with roles in many sites (when using the CM RI) -->
-	<filter>
-		<filter-name>hibernateFilter</filter-name>
-		<filter-class>org.springframework.orm.hibernate3.support.OpenSessionInViewFilter</filter-class>
-		<init-param>
-			<param-name>singleSession</param-name>
-			<param-value>true</param-value>
-		</init-param>
-		<init-param>
-			<param-name>sessionFactoryBeanName</param-name>
-			<param-value>edu.ucdavis.sakai.external.GlobalSessionFactory</param-value>
-		</init-param>
-	</filter>
-
-
 	<servlet>
 		<servlet-name>sakai.gradebook.gwt.rpc</servlet-name>
 		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
@@ -69,14 +52,6 @@
 		<url-pattern>/*</url-pattern>
 		<!--url-pattern>/org.sakaiproject.gradebook.gwt.GradebookApplication/rpc/*</url-pattern-->
 	</servlet-mapping>
-
-	<filter-mapping>
-		<filter-name>hibernateFilter</filter-name>
-		<servlet-name>sakai.gradebook.gwt.rpc</servlet-name>
-		<dispatcher>REQUEST</dispatcher>
-		<dispatcher>FORWARD</dispatcher>
-		<dispatcher>INCLUDE</dispatcher>
-	</filter-mapping>
 
 	<servlet>
 		<servlet-name>sakai.gradebook.gwt</servlet-name>
