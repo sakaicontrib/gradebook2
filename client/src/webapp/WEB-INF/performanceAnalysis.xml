@@ -11,6 +11,7 @@
 	
 	<!-- Performance Target -->
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service" class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ServiceImpl">
+		<property name="businessLogic" ref="org.sakaiproject.gradebook.gwt.sakai.BusinessLogic"/>
 		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/> 
 		<property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/>
 		<property name="userService" ref="org.sakaiproject.user.api.UserDirectoryService"/>

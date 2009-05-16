@@ -10,6 +10,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemCreate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
@@ -77,9 +78,7 @@ public class ServiceController extends Controller {
 				
 				notifier.notifyError(caught);
 				
-				String message = new StringBuilder("Failed to create item: ").append(caught.getMessage()).toString();
-				
-				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), message);
+				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught, "Failed to create item: "));
 				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
 			}
 			
@@ -236,7 +235,7 @@ public class ServiceController extends Controller {
 		}
 		
 		notifier.notify("Success", message);
-		Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), message);
+		Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(message));
 	}
 	
 	private void onUpdateGradeRecord(final GradeRecordUpdate event) {
@@ -264,15 +263,12 @@ public class ServiceController extends Controller {
 				record.set(property, event.oldValue);
 					
 				record.setValid(property, false);
-				
-				String message = new StringBuilder("Failed to update grade: ").append(caught.getMessage()).toString();
-				
+
 				record.endEdit();
 				
 				notifier.notifyError(caught);
-				
-				//notifier.notifyError("Exception", message);
-				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), message);			
+
+				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught, "Failed to update grade: "));			
 			}
 			
 			public void onSuccess(StudentModel result) {
@@ -305,9 +301,7 @@ public class ServiceController extends Controller {
 		
 		notifier.notifyError(caught);
 		
-		String message = new StringBuilder("Failed to update item: ").append(caught.getMessage()).toString();
-		
-		Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), message);
+		Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught, "Failed to update item: "));
 	}
 	
 	private void onUpdateItemSuccess(ItemUpdate event, ItemModel result) {

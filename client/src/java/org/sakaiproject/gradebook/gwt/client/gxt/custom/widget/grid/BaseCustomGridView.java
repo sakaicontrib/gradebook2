@@ -45,28 +45,28 @@ public class BaseCustomGridView extends GridView {
 	
 	
 	@Override
-	protected String doRender(List<ColumnData> cs, List rows, int startRow,
-			int colCount, boolean stripe) {
-		int last = colCount - 1;
-		String tstyle = new StringBuilder("width:").append(getTotalWidth()).append(";").toString();
+	protected String doRender(List<ColumnData> cs, List rows, int startRow, int colCount,
+		      boolean stripe) {
+		    int last = colCount - 1;
+		    
+		    String tstyle = new StringBuilder("width:").append(getTotalWidth()).append(";").toString();
+		    
+		    StringBuilder buf = new StringBuilder();
+		    StringBuilder cb = new StringBuilder();
 
-		StringBuilder buf = new StringBuilder();
-		StringBuilder cb = new StringBuilder();
+		    for (int j = 0; j < rows.size(); j++) {
+		      ModelData model = (ModelData) rows.get(j);
+		      Record r = ds.hasRecord(model) ? ds.getRecord(model) : null;
 
-		for (int j = 0; j < rows.size(); j++) {
-			ModelData model = (ModelData) rows.get(j);
-			Record r = ds.hasRecord(model) ? ds.getRecord(model) : null;
+		      int rowIndex = (j + startRow);
 
-			int rowIndex = (j + startRow);
+		      for (int i = 0; i < colCount; i++) {
+		        ColumnData c = cs.get(i);
+		        c.css = c.css == null ? "" : c.css;
+		        String rv = getRenderedValue(c, rowIndex, i, model, c.name);
 
-			for (int i = 0; i < colCount; i++) {
-				ColumnData c = cs.get(i);
-				c.css = c.css == null ? "" : c.css;
-				String rv = getRenderedValue(c, rowIndex, i, model, c.id);
-
-				StringBuilder css = new StringBuilder();
-				
-				if (i == 0)
+		        StringBuilder css = new StringBuilder();
+		        if (i == 0)
 					css.append("x-grid-cell-first ");
 				else if (i == last)
 					css.append("x-grid3-cell-last ");
@@ -76,69 +76,81 @@ public class BaseCustomGridView extends GridView {
 				if (c.css != null)
 					css.append(c.css);
 
-				String attr = c.cellAttr != null ? c.cellAttr : "";
-				String cellAttr = c.cellAttr != null ? c.cellAttr : "";
+		        String attr = c.cellAttr != null ? c.cellAttr : "";
+		        String cellAttr = c.cellAttr != null ? c.cellAttr : "";
 
-				StringBuilder innerCssClass = new StringBuilder().append("x-grid3-cell-inner x-grid3-col-")
-					.append(c.id);
-				
-				boolean isDirty = isShowDirtyCells();
+		        StringBuilder cssBuilder = new StringBuilder().append(css);
+		        StringBuilder innerCssClass = new StringBuilder().append("x-grid3-cell-inner x-grid3-col-").append(c.id);
+		        
+		        boolean isDirty = isShowDirtyCells();
 				boolean isChanged = r != null && r.getChanges().containsKey(c.id);
 				
 				String markedUpCss = markupCss(r, model, c.id, isDirty, isChanged);
 				String markedUpInnerCss = markupInnerCss(model, c.id, isDirty, isChanged);
 				
 				if (markedUpCss != null)
-					css.append(markedUpCss);
+					cssBuilder.append(markedUpCss);
 				
 				if (markedUpInnerCss != null)
 					innerCssClass.append(markedUpInnerCss);
-				
+		        
 				if (rv == null || rv.equals(""))
 					rv = "&nbsp;";
 
-				cb.append("<td class=\"x-grid3-col x-grid3-cell x-grid3-td-").append(c.id).append(" ")
-				  .append(css.toString()).append("\" style=\"").append(c.style)
-				  .append("\" tabIndex=").append(j*i+1).append(" ")
-				  .append(cellAttr).append(">");
-				
-				cb.append("<div class=\"").append(innerCssClass.toString()).append("\" ")
-					.append(attr).append(">").append(rv).append("</div></td>");
+		        cb.append("<td class=\"x-grid3-col x-grid3-cell x-grid3-td-");
+		        cb.append(c.id);
+		        cb.append(" ");
+		        cb.append(cssBuilder.toString());
+		        cb.append("\" style=\"");
+		        cb.append(c.style);
+		        cb.append("\" tabIndex=0 ");
+		        cb.append(cellAttr);
+		        cb.append("><div class=\"").append(innerCssClass.toString()).append("\" ");
+		        cb.append(attr);
+		        cb.append(">");
+		        cb.append(rv);
+		        cb.append("</div></td>");
 
-			}
+		      }
 
-			StringBuilder altBuffer = new StringBuilder();
-			if (stripe && ((rowIndex + 1) % 2 == 0)) {
-				altBuffer.append(" x-grid3-row-alt");
-			}
+		      StringBuilder altBuffer = new StringBuilder();
+		      if (stripe && ((rowIndex + 1) % 2 == 0)) {
+		    	altBuffer.append(" x-grid3-row-alt");
+		      }
 
-			if (isShowDirtyCells() && r != null && r.isDirty()) {
-				altBuffer.append(" x-grid3-dirty-row");
-			}
+		      /*if (isShowDirtyCells() && r != null && r.isDirty()) {
+		    	altBuffer.append(" x-grid3-dirty-row");
+		      }*/
 
-			if (viewConfig != null) {
-				altBuffer.append(" ").append(viewConfig.getRowStyle(model, rowIndex, ds));
-			}
+		      if (viewConfig != null) {
+		    	altBuffer.append(" ").append(viewConfig.getRowStyle(model, rowIndex, ds));
+		      }
 
-			buf.append("<div class=\"x-grid3-row ")
-				.append(altBuffer.toString()).append("\" style=\"")
-				.append(tstyle)
-				.append("\"><table class=x-grid3-row-table border=0 cellspacing=0 cellpadding=0 style=\"")
-				.append(tstyle)
-				.append("\"><tbody><tr>")
-				.append(cb.toString()).append("</tr>");
-			
-			if (enableRowBody) {
-				buf.append("<tr class=x-grid3-row-body-tr style=\"\"><td colspan=")
-				   .append(colCount)
-				   .append(" class=x-grid3-body-cell tabIndex=0><div class=x-grid3-row-body>${body}</div></td></tr>");
-			} else {
-			   	buf.append("</tbody></table></div>");
+		      buf.append("<div class=\"x-grid3-row ");
+		      buf.append(altBuffer.toString());
+		      buf.append("\" style=\"");
+		      buf.append(tstyle);
+		      buf.append("\"><table class=x-grid3-row-table border=0 cellspacing=0 cellpadding=0 style=\"");
+		      buf.append(tstyle);
+		      buf.append("\"><tbody><tr>");
+		      buf.append(cb.toString());
+		      buf.append("</tr>");
+
+		      if (enableRowBody) {
+		    	  buf.append("<tr class=x-grid3-row-body-tr style=\"\"><td colspan=")
+					   .append(colCount)
+					   .append(" class=x-grid3-body-cell tabIndex=0><div class=x-grid3-row-body>${body}</div></td></tr>");
+		      }
+		      
+		      buf.append("</tbody></table></div>");
+
+		      cb = new StringBuilder();
 		    }
-			cb = new StringBuilder();
-		}
-		return buf.toString();
-	}
+		    return buf.toString();
+		  }
+	
+
+	
 	
 
 }

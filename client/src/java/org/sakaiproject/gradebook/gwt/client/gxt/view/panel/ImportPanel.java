@@ -122,7 +122,7 @@ public class ImportPanel extends ContentPanel {
 	private LayoutContainer mainCardLayoutContainer, subCardLayoutContainer;
 	private CardLayout mainCardLayout, subCardLayout;
 	
-	private LayoutContainer advancedContainer;
+	//private LayoutContainer advancedContainer;
 	
 	private TabPanel tabPanel;
 	
@@ -206,6 +206,7 @@ public class ImportPanel extends ContentPanel {
 		subCardLayout = new CardLayout();
 		subCardLayoutContainer = new LayoutContainer();
 		subCardLayoutContainer.setLayout(subCardLayout);
+		//subCardLayoutContainer.setHeight(400);
 		
 		tabPanel = new TabPanel();
 		
@@ -319,15 +320,18 @@ public class ImportPanel extends ContentPanel {
 		
 		if (hasCategories) {
 			previewTab = new TabItem("Data");
-			previewTab.setLayout(new FillLayout());
+			previewTab.setLayout(new FlowLayout());
 			previewTab.add(grid);
 			
 			tabPanel.add(previewTab);
 			
 			columnsTab = new TabItem("Setup");
+			columnsTab.setLayout(new FlowLayout());
+			columnsTab.add(buildItemGrid());
+			
 			tabPanel.add(columnsTab);
 			
-			tabPanel.setHeight(450);
+			tabPanel.setHeight(380);
 			
 			subCardLayoutContainer.add(tabPanel);
 		} else {
@@ -415,6 +419,10 @@ public class ImportPanel extends ContentPanel {
 	
 					box.setProgressText("Loading");
 					box.close();
+					
+					
+					
+					//advancedContainer.layout();
 					
 					Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades.getEventType());
 					
@@ -946,8 +954,18 @@ public class ImportPanel extends ContentPanel {
 					}
 						
 					if (hasCategories) {
-						advancedContainer = buildItemContainerX(headers);
-						columnsTab.add(advancedContainer);
+						//advancedContainer = buildItemGrid(headers);
+						//columnsTab.add(buildItemGrid(headers));
+						
+						List<BeanModel> itemModels = new ArrayList<BeanModel>();
+						BeanModelFactory factory = BeanModelLookup.get().getFactory(headers.get(0).getClass());
+				        if (factory == null) {
+				          throw new RuntimeException("No BeanModelFactory found for " + headers.get(0).getClass());
+				        }
+				        List<BeanModel> converted = factory.createModel(headers);
+				        itemModels.addAll(converted);
+						
+				        itemStore.add(itemModels);
 					} else {
 						itemStore = new ListStore<BeanModel>();
 						
@@ -1173,11 +1191,10 @@ public class ImportPanel extends ContentPanel {
 		return container;
 	}
 	
-	private LayoutContainer buildItemContainerX(List<ImportHeader> headers) {
+	private EditorGrid<BeanModel> buildItemGrid() {
 		ContentPanel panel = new ContentPanel();
 		panel.setLayout(new FitLayout());
 		panel.setHeaderVisible(false);
-		panel.setHeight(400);
 		
 		List<ColumnConfig> itemColumns = new ArrayList<ColumnConfig>();
 		
@@ -1253,25 +1270,17 @@ public class ImportPanel extends ContentPanel {
 		itemStore = new ListStore<BeanModel>();
 		
 		EditorGrid<BeanModel> itemGrid = new EditorGrid<BeanModel>(itemStore, itemColumnModel);
-		itemGrid.setHeight(370);
+		itemGrid.setHeight(300);
 		itemGrid.setBorders(true);
-		List<BeanModel> models = new ArrayList<BeanModel>();
-		BeanModelFactory factory = BeanModelLookup.get().getFactory(headers.get(0).getClass());
-        if (factory == null) {
-          throw new RuntimeException("No BeanModelFactory found for " + headers.get(0).getClass());
-        }
-        List<BeanModel> converted = factory.createModel(headers);
-        models.addAll(converted);
-		
-        itemStore.add(models);
+
         
-		panel.add(itemGrid);
+		//panel.add(itemGrid);
 		
 		
 		LayoutContainer container = new LayoutContainer();
-		container.setLayout(new RowLayout());
+		container.setLayout(new FitLayout());
 		
-		ContentPanel directionsPanel = new ContentPanel();
+		/*ContentPanel directionsPanel = new ContentPanel();
 		directionsPanel.setFrame(true);
 		directionsPanel.setWidth(1);
 		directionsPanel.setHeaderVisible(false);
@@ -1283,18 +1292,18 @@ public class ImportPanel extends ContentPanel {
 		directionsPanel.add(new LabelField(text));
 		
 		container.add(directionsPanel, new RowData(1, -1));
-		
-		
+		*/
+		/*
 		FitLayout fitLayout = new FitLayout();
 		FieldSet itemFieldSet = new FieldSet(); 
 		itemFieldSet.setLayout(fitLayout);
 		itemFieldSet.setHeading("Items"); 
-		itemFieldSet.setHeight(390);  
-		itemFieldSet.add(panel, new MarginData(5));
+		itemFieldSet.setHeight(300);  
+		itemFieldSet.add(panel, new MarginData(5));*/
 		
-		container.add(itemFieldSet, new RowData(1, 1));
+		//container.add(itemGrid);
 		
-		return container;
+		return itemGrid;
 	}
 	
 	/*private FieldSet buildPreviewFieldSet() {

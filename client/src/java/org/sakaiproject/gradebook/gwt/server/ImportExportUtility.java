@@ -291,6 +291,8 @@ public class ImportExportUtility {
 		int nameFieldIndex = -1;
 		int courseGradeFieldIndex = -1;
 		
+		Set<Integer> ignoreColumns = new HashSet<Integer>();
+		
 		boolean isStructureInfoProcessed = false;
 		
 		try {
@@ -350,7 +352,10 @@ public class ImportExportUtility {
 						
 						ImportHeader header = null;
 						// Check for name field
-						if (text.equalsIgnoreCase("student name") || text.equalsIgnoreCase("name") ||
+						if (text == null || text.trim().equals("")) {
+							ignoreColumns.add(Integer.valueOf(i));
+							continue;
+						} else if (text.equalsIgnoreCase("student name") || text.equalsIgnoreCase("name") ||
 								text.equalsIgnoreCase("learner")) {
 							header = new ImportHeader(Field.NAME, text);
 							header.setId("NAME");
@@ -449,9 +454,14 @@ public class ImportExportUtility {
 						String[] strippedColumns = new String[columns.length - 1];
 						int n = 0;
 						for (int i=0;i<columns.length;i++) {
+							Integer columnNumber = Integer.valueOf(i);
+							
+							if (ignoreColumns.contains(columnNumber))
+								continue;
+							
 							if (courseGradeFieldIndex == i)
 								continue;
-							if (n < columns.length)
+							if (n < strippedColumns.length)
 								strippedColumns[n] = columns[i];
 							n++;
 						}

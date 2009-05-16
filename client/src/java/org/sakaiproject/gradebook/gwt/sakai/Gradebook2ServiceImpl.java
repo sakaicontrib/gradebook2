@@ -736,24 +736,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		String siteId = site == null ? null : site.getId();
 		
 		String[] learnerRoleNames = advisor.getLearnerRoleNames();
-		
-		int totalUsers = gbService.getFullUserCountForSite(siteId, null, learnerRoleNames);
-		int dereferencedUsers = gbService.getDereferencedUserCountForSite(siteId, null, learnerRoleNames);
-		
-		int diff = totalUsers - dereferencedUsers;
-		
-		UserDereferenceRealmUpdate lastUpdate = gbService.getLastUserDereferenceSync(siteId, null);
-		
-		int realmCount = lastUpdate == null || lastUpdate.getRealmCount() == null ? -1 : lastUpdate.getRealmCount().intValue();
-		
-		log.info("Total users: " + totalUsers + " Dereferenced users: " + dereferencedUsers + " Realm count: " + realmCount);
-		
-		// Obviously if the realm count has changed, then we need to update, but let's also do it if more than an hour has passed
-		long ONEHOUR = 1000l * 60l * 60l;
-		if (lastUpdate == null || lastUpdate.getRealmCount() == null || ! lastUpdate.getRealmCount().equals(Integer.valueOf(diff)) ||
-				lastUpdate.getLastUpdate() == null || lastUpdate.getLastUpdate().getTime() + ONEHOUR < new Date().getTime()) {
-			gbService.syncUserDereferenceBySite(siteId, null, findAllMembers(site), diff, learnerRoleNames);
-		}
+		verifyUserDataIsUpToDate(site, learnerRoleNames);
 		
 		String[] realmIds = null;
 		if (siteId == null) {
@@ -862,18 +845,34 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	}
 	
 	
+	public class WorkerThread extends Thread {
+		
+		private Site site;
+		private String[] learnerRoleKeys;
+		
+		public WorkerThread(Site site, String[] learnerRoleKeys) {
+			this.site = site;
+			this.learnerRoleKeys = learnerRoleKeys;
+		}
+		
+		public void run() {
+			verifyUserDataIsUpToDate(site, learnerRoleKeys);
+		}
+	}
+	
+	
 	public ApplicationModel getApplicationModel() {
+		
+		/*Site site = getSite();
+		String[] learnerRoleKeys = advisor.getLearnerRoleNames();
+		
+		WorkerThread worker = new WorkerThread(site, learnerRoleKeys);
+		worker.start();*/
+		
 		ApplicationModel model = new ApplicationModel();
 		model.setPlacementId(getPlacementId());
 		model.setGradebookModels(getGradebookModels());
 		
-		/*Site site = getSite();
-		
-		Date lastUpdate = gbService.getLastUserDereferenceSync(getSiteId(), null);
-		long ONEHOUR = 1000l * 60l * 60l;
-		if (lastUpdate == null || lastUpdate.getTime() + ONEHOUR < new Date().getTime())
-			gbService.syncUserDereferenceBySite(getSiteId(), null, findAllStudents(site));
-		*/
 		return model;
 	}
 	
@@ -2147,29 +2146,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			int offset, int limit, 
 			boolean isAscending) {
 		
-		String siteId = site == null ? null : site.getId();
-		
-		List<UserRecord> userRecords = new ArrayList<UserRecord>();
-
 		String[] learnerRoleKeys = advisor.getLearnerRoleNames();
-		
-		int totalUsers = gbService.getFullUserCountForSite(siteId, null, learnerRoleKeys);
-		int dereferencedUsers = gbService.getDereferencedUserCountForSite(siteId, null, learnerRoleKeys);
-		
-		int diff = totalUsers - dereferencedUsers;
-		
-		UserDereferenceRealmUpdate lastUpdate = gbService.getLastUserDereferenceSync(siteId, null);
-		
-		int realmCount = lastUpdate == null || lastUpdate.getRealmCount() == null ? -1 : lastUpdate.getRealmCount().intValue();
-		
-		log.info("Total users: " + totalUsers + " Dereferenced users: " + dereferencedUsers + " Realm count: " + realmCount);
-		
-		// Obviously if the realm count has changed, then we need to update, but let's also do it if more than an hour has passed
-		long ONEHOUR = 1000l * 60l * 60l;
-		if (lastUpdate == null || lastUpdate.getRealmCount() == null || ! lastUpdate.getRealmCount().equals(Integer.valueOf(diff)) ||
-				lastUpdate.getLastUpdate() == null || lastUpdate.getLastUpdate().getTime() + ONEHOUR < new Date().getTime()) {
-			gbService.syncUserDereferenceBySite(siteId, null, findAllMembers(site), diff, learnerRoleKeys);
-		}
+		verifyUserDataIsUpToDate(site, learnerRoleKeys);
 		
 		List<UserDereference> dereferences = gbService.getUserUidsForSite(realmIds, sortField, searchField, searchCriteria, offset, limit, isAscending, learnerRoleKeys);
 		List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebook.getId(), realmIds, learnerRoleKeys);
@@ -2238,7 +2216,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				userGroups.add(group);
 			}
 		}
-			
+		
+		List<UserRecord> userRecords = new ArrayList<UserRecord>();
 		if (dereferences != null) {
 			for (UserDereference dereference : dereferences) {
 				UserRecord userRecord = new UserRecord(dereference.getUserUid(), dereference.getEid(), dereference.getDisplayId(), dereference.getDisplayName(),
@@ -2309,69 +2288,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 		return users;
 	}
-	
-	private List<UserRecord> userRecords;
-	
-	private Map<String, UserRecord> findStudentRecords(String gradebookUid, Long gradebookId, Site site, String optionalSectionUid) {
-		Map<String, UserRecord> studentRecords = new HashMap<String, UserRecord>();
-		
-		boolean canGradeAll = security.isUserAbleToGradeAll(gradebookUid);
-		
-		if (canGradeAll && optionalSectionUid == null) {
-			// If so, then grab all the members for the site
-			
-			if (site == null) 
-				site = getSite();
-			
-			if (site != null) {
-				Set<Member> members = site.getMembers();
-				if (members != null) {
-					for (Member member : members) {
-						if (advisor.isLearner(member)) {
-							String userUid = member.getUserId();
-							studentRecords.put(userUid, new UserRecord(userUid));
-						}
-					}
-				}
-			} 
-		} 
-		
-		List<CourseSection> viewableSections = security.getViewableSections(gradebookUid, gradebookId);
-		
-		if (siteService != null) {
-			for (CourseSection section : viewableSections) {
-				Group group = siteService.findGroup(section.getUuid());
-				Set<Member> members = group.getMembers();
-				for (Member member : members) {
-					if (advisor.isLearner(member)) {
-						// Filter by section, if such a filter exists
-						if (optionalSectionUid == null || section.getUuid().equals(optionalSectionUid)) {
-							String userUid = member.getUserId();
-							UserRecord userRecord = studentRecords.get(userUid);
-							
-							if (userRecord == null) {
-								userRecord = new UserRecord(userUid);
-								studentRecords.put(userUid, userRecord);
-							}
-							
-							userRecord.setSectionTitle(section.getTitle());
-							
-							// GRBK-37
-							userRecord.setExportCourseManagemntId(advisor.getExportCourseManagementId(member.getUserEid(), group));
-						}
-					}
-				}
-			}
-		}
-		
-		return studentRecords;
-	}
-	
-	private List<Category> getCategoriesWithAssignments(Long gradebookId) {
-	    List<Assignment> assignments = gbService.getAssignments(gradebookId);
-	 
-	    return getCategoriesWithAssignments(gradebookId, assignments);
-	}
+
 	
 	private List<Category> getCategoriesWithAssignments(Long gradebookId, List<Assignment> assignments) {
 
@@ -3009,6 +2926,29 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 		
 		return assignmentGradeRecord;
+	}
+	
+	
+	private void verifyUserDataIsUpToDate(Site site, String[] learnerRoleKeys) {
+		String siteId = site == null ? null : site.getId();
+		
+		int totalUsers = gbService.getFullUserCountForSite(siteId, null, learnerRoleKeys);
+		int dereferencedUsers = gbService.getDereferencedUserCountForSite(siteId, null, learnerRoleKeys);
+		
+		int diff = totalUsers - dereferencedUsers;
+		
+		UserDereferenceRealmUpdate lastUpdate = gbService.getLastUserDereferenceSync(siteId, null);
+		
+		int realmCount = lastUpdate == null || lastUpdate.getRealmCount() == null ? -1 : lastUpdate.getRealmCount().intValue();
+		
+		log.info("Total users: " + totalUsers + " Dereferenced users: " + dereferencedUsers + " Realm count: " + realmCount);
+		
+		// Obviously if the realm count has changed, then we need to update, but let's also do it if more than an hour has passed
+		long ONEHOUR = 1000l * 60l * 60l;
+		if (lastUpdate == null || lastUpdate.getRealmCount() == null || ! lastUpdate.getRealmCount().equals(Integer.valueOf(diff)) ||
+				lastUpdate.getLastUpdate() == null || lastUpdate.getLastUpdate().getTime() + ONEHOUR < new Date().getTime()) {
+			gbService.syncUserDereferenceBySite(siteId, null, findAllMembers(site), diff, learnerRoleKeys);
+		}
 	}
 	
 	
