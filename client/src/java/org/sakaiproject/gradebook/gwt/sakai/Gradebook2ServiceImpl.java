@@ -1805,7 +1805,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				
 				BigDecimal courseGradePercent = BigDecimal.ZERO;
 				if (!isUnweighted) {
-					BigDecimal assignmentWeight = BigDecimal.valueOf(a.getAssignmentWeighting().doubleValue());
+					double w = a == null ? 0d : a.getAssignmentWeighting().doubleValue();
+					BigDecimal assignmentWeight = BigDecimal.valueOf(w);
 					courseGradePercent = gradeCalculations.calculateItemGradePercent(percentGrade, percentCategorySum, assignmentWeight);
 				}
 				
