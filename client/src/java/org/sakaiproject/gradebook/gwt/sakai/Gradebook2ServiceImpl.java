@@ -295,8 +295,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			//businessLogic.applyRulesBeforeAddingCategory(hasCategories, gradebook.getId(), item.getName(), categories, dropLowest, isEqualWeighting);
 			
 			if (hasCategories) {
+				int dropLowestInt = dropLowest == null ? 0 : dropLowest.intValue();
+				boolean equalWeighting = isEqualWeighting == null ? false : isEqualWeighting.booleanValue();
+				
 				businessLogic.applyNoDuplicateCategoryNamesRule(gradebook.getId(), item.getName(), null, categories);		
-				businessLogic.applyOnlyEqualWeightDropLowestRule(dropLowest, isEqualWeighting);
+				businessLogic.applyOnlyEqualWeightDropLowestRule(dropLowestInt, equalWeighting);
 			}
 			
 			Long categoryId = gbService.createCategory(gradebookId, name, Double.valueOf(w), dropLowest, isEqualWeighting, isUnweighted);
