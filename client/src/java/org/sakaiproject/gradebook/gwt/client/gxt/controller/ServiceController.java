@@ -23,6 +23,8 @@ import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.store.Store;
 import com.extjs.gxt.ui.client.store.TreeStore;
+import com.extjs.gxt.ui.client.widget.Info;
+import com.extjs.gxt.ui.client.widget.InfoConfig;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class ServiceController extends Controller {
@@ -384,7 +386,7 @@ public class ServiceController extends Controller {
 		switch (updatedItem.getItemType()) {
 		case CATEGORY:
 			ItemModel gradebookItemModel = updatedItem.getParent();
-			if (gradebookItemModel != null)
+			if (gradebookItemModel != null && gradebookItemModel.getItemType() == Type.GRADEBOOK)
 				doUpdateItem(store, null, null, gradebookItemModel);
 			break;
 		}
@@ -398,27 +400,46 @@ public class ServiceController extends Controller {
 	private void doUpdateItem(Store store, String property, Record record, ItemModel updatedItem) {
 		TreeStore<ItemModel> treeStore = (TreeStore<ItemModel>)store;
 		
-		if (property == null || record == null 
-				|| !doUpdateViaRecord(property, record, updatedItem)) {
+		if (updatedItem.isActive()) {
+			record.beginEdit();
+			for (String p : updatedItem.getPropertyNames()) {
+				replaceProperty(p, record, updatedItem);
+			}
+			record.endEdit();
+		} else {
+			treeStore.update(updatedItem);
+		}
+		
+		Dispatcher.forwardEvent(GradebookEvents.ItemUpdated.getEventType(), updatedItem);
+		
+		/*
+		//if (property == null || record == null 
+		//		|| !doUpdateViaRecord(property, record, updatedItem)) {
 			if (updatedItem != null) {
+				InfoConfig config = new InfoConfig("percent grade: " + updatedItem.getName(), String.valueOf(updatedItem.getPercentCourseGrade()));
+				config.display = 10000;
+				Info.display(config);
+				
 				treeStore.update(updatedItem);
 				Dispatcher.forwardEvent(GradebookEvents.ItemUpdated.getEventType(), updatedItem);
 			}
-		}
+		//}*/
 	}
 	
-	private boolean doUpdateViaRecord(String property, Record record, ItemModel item) {
+	private boolean doUpdateViaRecord(Record record, ItemModel item) {
 		// Don't modify the record unless the record's item model has been passed in
 		if (!record.getModel().equals(item)) 
 			return false;
 		
-		//record.beginEdit();
+		record.beginEdit();
 		
-		// Do it for the property being explicitly changed
-		replaceProperty(property, record, item);
+		for (String property : item.getPropertyNames()) {
+			// Do it for the property being explicitly changed
+			replaceProperty(property, record, item);
+		}
 		
 		// Do it for properties that may be implicitly changed
-		ItemModel.Key key = ItemModel.Key.valueOf(property);
+		/*ItemModel.Key key = ItemModel.Key.valueOf(property);
 		switch (key) {
 		case EXTRA_CREDIT:
 		case EQUAL_WEIGHT:
@@ -426,9 +447,9 @@ public class ServiceController extends Controller {
 			replaceProperty(ItemModel.Key.PERCENT_CATEGORY.name(), record, item);
 			replaceProperty(ItemModel.Key.PERCENT_COURSE_GRADE.name(), record, item);
 			break;
-		}
+		}*/
 		
-		//record.endEdit();
+		record.endEdit();
 		
 		return true;
 	}

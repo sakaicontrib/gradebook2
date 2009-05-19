@@ -20,6 +20,7 @@ public class ImportHeader implements Serializable {
 	private String categoryName;
 	private Double points;
 	private boolean isPercentage;
+	private Double percentCategory;
 	
 	private boolean checker;
 	
@@ -129,6 +130,14 @@ public class ImportHeader implements Serializable {
 
 	public void setCategoryId(String categoryId) {
 		this.categoryId = categoryId;
+	}
+
+	public Double getPercentCategory() {
+		return percentCategory;
+	}
+
+	public void setPercentCategory(Double percentCategory) {
+		this.percentCategory = percentCategory;
 	}
 	
 	

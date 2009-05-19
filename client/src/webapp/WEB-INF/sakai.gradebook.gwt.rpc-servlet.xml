@@ -16,7 +16,20 @@
 
                                 <entry key="/" value-ref="myServletForwardingController" />
 
-                                <entry key="/**/org.sakaiproject.gradebook.gwt.GradebookApplication/**" value-ref="myServletForwardingController" />
+                                <entry key="/**/org.sakaiproject.gradebook.gwt.GradebookApplication/*.html" value-ref="myServletForwardingController" />
+                                
+                                <entry key="/**/org.sakaiproject.gradebook.gwt.GradebookApplication/*.png" value-ref="myServletForwardingController" />
+                                
+                                <entry key="/**/org.sakaiproject.gradebook.gwt.GradebookApplication/*.css" value-ref="myServletForwardingController" />
+                                
+                                <entry key="/**/org.sakaiproject.gradebook.gwt.GradebookApplication/*.gif" value-ref="myServletForwardingController" />
+                                
+                                <entry key="/**/org.sakaiproject.gradebook.gwt.GradebookApplication/*.js" value-ref="myServletForwardingController" />
+                                
+                                <entry key="/**/org.sakaiproject.gradebook.gwt.GradebookApplication/css/**" value-ref="myServletForwardingController" />
+                                
+                                <entry key="/**/org.sakaiproject.gradebook.gwt.GradebookApplication/images/**" value-ref="myServletForwardingController" />
+                                
                         </map>
         </property>
    	</bean>

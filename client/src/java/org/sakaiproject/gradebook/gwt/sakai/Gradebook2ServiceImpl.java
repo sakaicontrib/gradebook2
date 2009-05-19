@@ -1555,8 +1555,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				// Business rule #7 -- only apply this rule when included/unincluded, deleted/undeleted, made extra-credit/non-extra-credit, or changed category
 				if (isUnweighted != wasUnweighted || isRemoved != wasRemoved || isExtraCredit != wasExtraCredit || oldCategory != null) {
 					isWeightChanged = true;
-					if (businessLogic.checkRecalculateEqualWeightingRule(category))
+					if (businessLogic.checkRecalculateEqualWeightingRule(category)) {
+						assignments = gbService.getAssignmentsForCategory(category.getId());
 						recalculateAssignmentWeights(category, !isUnweighted, assignments);
+					}
 				}
 				
 				// Business rule #9
@@ -1837,7 +1839,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				
 				BigDecimal courseGradePercent = BigDecimal.ZERO;
 				if (!isUnweighted) {
-					double w = a == null ? 0d : a.getAssignmentWeighting().doubleValue();
+					double w = a == null || a.getAssignmentWeighting() == null ? 0d : a.getAssignmentWeighting().doubleValue();
 					BigDecimal assignmentWeight = BigDecimal.valueOf(w);
 					courseGradePercent = gradeCalculations.calculateItemGradePercent(percentGrade, percentCategorySum, assignmentWeight);
 				}
@@ -1854,6 +1856,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					assignmentItemModel.setParent(categoryItemModel);
 					categoryItemModel.add(assignmentItemModel);
 				}
+				
 			}
 			
 		}

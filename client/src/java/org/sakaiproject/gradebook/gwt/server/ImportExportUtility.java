@@ -280,6 +280,7 @@ public class ImportExportUtility {
 		
 		ImportFile importFile = new ImportFile();
 		List<ImportHeader> headers = new ArrayList<ImportHeader>();
+		Map<String, ImportHeader> headerMap = new HashMap<String, ImportHeader>();
 		List<ImportRow> importRows = new ArrayList<ImportRow>();
 		
 		DecimalFormat decimalFormat = new DecimalFormat();
@@ -429,7 +430,7 @@ public class ImportExportUtility {
 						}
 						
 						headers.add(header);
-						
+						headerMap.put(text, header);
 					}
 					
 				} else {
@@ -492,12 +493,12 @@ public class ImportExportUtility {
 			String categoryType = null;
 			String gradeType = null;
 			
-			if (gradebookColumns.length >= 2)
-				gradebookName = gradebookColumns[1];
 			if (gradebookColumns.length >= 3)
-				categoryType = gradebookColumns[2];
+				gradebookName = gradebookColumns[2];
 			if (gradebookColumns.length >= 4)
-				gradeType = gradebookColumns[3];
+				categoryType = gradebookColumns[3];
+			if (gradebookColumns.length >= 5)
+				gradeType = gradebookColumns[4];
 			
 			if (gradebookName != null)
 				gradebookItemModel.setName(gradebookName);
@@ -535,11 +536,10 @@ public class ImportExportUtility {
 		String[] percentCategoryColumns = structureColumnsMap.get(StructureRow.PERCENT_CATEGORY);
 		
 		String[] categoryRangeColumns = new String[headerColumns.length];
-		
+		Map<String, ItemModel> categoryMap = new HashMap<String, ItemModel>();
 		
 		if (categoryColumns != null) {
 			
-			Map<String, ItemModel> categoryMap = new HashMap<String, ItemModel>();
 			for (ItemModel child : gradebookItemModel.getChildren()) {
 				if (child.getItemType() != null && child.getItemType() == Type.CATEGORY)
 					categoryMap.put(child.getName(), child);
@@ -549,7 +549,8 @@ public class ImportExportUtility {
 			
 			for (int i=0;i<categoryColumns.length;i++) {
 				if (categoryColumns[i].trim().equals("")) {
-					
+					if (currentCategoryId != null)
+						categoryRangeColumns[i] = currentCategoryId;
 					
 					continue;
 				}
@@ -563,6 +564,8 @@ public class ImportExportUtility {
 				if (!categoryMap.containsKey(categoryColumns[i])) {
 					categoryModel = new ItemModel();
 					categoryModel.setItemType(Type.CATEGORY);
+					categoryModel.setName(categoryColumns[i]);
+					categoryModel.setIncluded(Boolean.TRUE);
 					isModelNew = true;
 				} else {
 					// Otherwise, we may still want to update scores
@@ -576,6 +579,7 @@ public class ImportExportUtility {
 						
 						if (percentGrade != null) {
 							try {
+								percentGrade = percentGrade.replace("%", "");
 								double pG = Double.parseDouble(percentGrade);
 								categoryModel.setPercentCourseGrade(Double.valueOf(pG));								
 								isModelUpdated = true;
@@ -590,6 +594,9 @@ public class ImportExportUtility {
 						
 						if (dropLowest != null) {
 							try {
+								if (dropLowest.trim().equals(""))
+									dropLowest = "0";
+								
 								int dL = Integer.parseInt(dropLowest);
 								categoryModel.setDropLowest(Integer.valueOf(dL));
 								isModelUpdated = true;
@@ -614,30 +621,86 @@ public class ImportExportUtility {
 						}
 					}
 					
-					
-					if (isModelNew) {
-						ItemModel result = service.createItem(gradebook.getGradebookUid(), gradebook.getGradebookId(), categoryModel, false);
+					ItemModel result = null;
+					if (isModelNew) 
+						result = service.createItem(gradebook.getGradebookUid(), gradebook.getGradebookId(), categoryModel, false);
+					else if (isModelUpdated) 
+						result = service.updateItemModel(categoryModel);
+
+					if (result != null) {
 						ItemModel activeModel = getActiveModel(result);
 						
-						if (activeModel != null)
+						if (activeModel != null) {
 							currentCategoryId = activeModel.getIdentifier();
-					} else if (isModelUpdated) {
-						ItemModel result = service.updateItemModel(categoryModel);
-						ItemModel activeModel = getActiveModel(result);
-						
-						if (activeModel != null)
-							currentCategoryId = activeModel.getIdentifier();
+							categoryRangeColumns[i] = currentCategoryId;
+						}
 					}
 					
 				}
 			}
-			
-			
-			
 		}
 		
-		
-		
+		if (headerColumns != null) {
+			
+			for (int i=0;i<headerColumns.length;i++) {
+				String text = headerColumns[i];
+				if (text == null || text.trim().equals("")) {
+					continue;
+				} else if (text.equalsIgnoreCase("student name") || text.equalsIgnoreCase("name") ||
+						text.equalsIgnoreCase("learner")) {
+					continue;
+				} else if (text.equalsIgnoreCase("student id") || text.equalsIgnoreCase("identifier") ||
+						text.equalsIgnoreCase("userId") || text.equalsIgnoreCase("learnerid")) {
+					continue;
+				} else if (text.equalsIgnoreCase("course grade")) {
+					continue;
+				}
+				
+				ImportHeader header = headerMap.get(text);
+				
+				if (header != null) {
+					
+					if (pointsColumns != null && pointsColumns.length > i) {
+						String points = pointsColumns[i];
+						
+						if (points != null) {
+							try {
+								double p = Double.parseDouble(points);
+								header.setPoints(Double.valueOf(p));
+							} catch (NumberFormatException nfe) {
+								log.info("Failed to parse " + points + " as a Double");
+							}
+						}
+						
+					}
+					
+					if (percentCategoryColumns != null && percentCategoryColumns.length > i) {
+						String percentCategory = percentCategoryColumns[i];
+						
+						if (percentCategory != null) {
+							try {
+								percentCategory = percentCategory.replace("%", "");
+								double p = Double.parseDouble(percentCategory);
+								header.setPercentCategory(Double.valueOf(p));
+							} catch (NumberFormatException nfe) {
+								log.info("Failed to parse " + percentCategory + " as a Double");
+							}
+						}
+					}
+					
+					if (categoryRangeColumns != null && categoryRangeColumns.length > i) {
+						String categoryId = categoryRangeColumns[i];
+						
+						if (categoryId != null) {
+							header.setCategoryId(categoryId);
+						}
+						
+					}
+					
+				}
+			}
+		}
+
 		return importFile;
 	}
 	

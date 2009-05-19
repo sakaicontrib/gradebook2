@@ -49,7 +49,7 @@ public class ItemUpdate {
 			return (ItemModel)record.getModel();
 		}
 		
-		return null;
+		return item;
 	}
 	
 }
