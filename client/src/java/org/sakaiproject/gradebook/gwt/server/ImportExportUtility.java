@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
+import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportFile;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader;
@@ -28,6 +29,7 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
+import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 
@@ -264,7 +266,7 @@ public class ImportExportUtility {
 
 	public static ImportFile parseImportX(Gradebook2Service service, 
 			String gradebookUid, Reader reader,
-			EnumSet<Delimiter> delimiterSet) throws FatalException {
+			EnumSet<Delimiter> delimiterSet) throws InvalidInputException, FatalException {
 		
 		GradebookModel gradebook = service.getGradebook(gradebookUid);
 		
@@ -295,12 +297,15 @@ public class ImportExportUtility {
 		
 		boolean isStructureInfoProcessed = false;
 		
+		Map<String, StructureRow> structureLineIndicatorMap = new HashMap<String, StructureRow>();
+		Map<StructureRow, String[]> structureColumnsMap = new HashMap<StructureRow, String[]>();
+		
 		try {
 			
 			String[] headerLineIndicators = { "student id", "student name", "learner", "id", "identifier", "userid", "learnerid" };
 			Set<String> headerLineIndicatorSet = new HashSet<String>();
 			
-			Map<String, StructureRow> structureLineIndicatorMap = new HashMap<String, StructureRow>();
+			
 			
 			for (int i=0;i<headerLineIndicators.length;i++) {
 				headerLineIndicatorSet.add(headerLineIndicators[i]);
@@ -311,9 +316,7 @@ public class ImportExportUtility {
 				structureLineIndicatorMap.put(lowercase, structureRow);
 			}
 			
-			Map<StructureRow, String[]> structureColumnsMap = new HashMap<StructureRow, String[]>();
-			
-			
+
 			String[] columns;
 		    while ((columns = csvReader.readNext()) != null) {
 
@@ -479,7 +482,182 @@ public class ImportExportUtility {
 		importFile.setItems(headers);
 		importFile.setRows(importRows);
 		
+		
+		// Now, modify gradebook structure according to the data stored
+		String[] gradebookColumns = structureColumnsMap.get(StructureRow.GRADEBOOK);
+		ItemModel gradebookItemModel = gradebook.getGradebookItemModel();
+		
+		if (gradebookColumns != null && gradebookItemModel != null) {
+			String gradebookName = null;
+			String categoryType = null;
+			String gradeType = null;
+			
+			if (gradebookColumns.length >= 2)
+				gradebookName = gradebookColumns[1];
+			if (gradebookColumns.length >= 3)
+				categoryType = gradebookColumns[2];
+			if (gradebookColumns.length >= 4)
+				gradeType = gradebookColumns[3];
+			
+			if (gradebookName != null)
+				gradebookItemModel.setName(gradebookName);
+			if (categoryType != null) {
+				CategoryType cType = gradebookItemModel.getCategoryType();
+				
+				if (CategoryType.NO_CATEGORIES.getDisplayName().equals(categoryType))
+					cType = CategoryType.NO_CATEGORIES;
+				else if (CategoryType.SIMPLE_CATEGORIES.getDisplayName().equals(categoryType))
+					cType = CategoryType.SIMPLE_CATEGORIES;
+				else if (CategoryType.WEIGHTED_CATEGORIES.getDisplayName().equals(categoryType))
+					cType = CategoryType.WEIGHTED_CATEGORIES;
+			
+				gradebookItemModel.setCategoryType(cType);
+			}
+			if (gradeType != null) {
+				GradeType gType = gradebookItemModel.getGradeType();
+				
+				if (GradeType.PERCENTAGES.getDisplayName().equals(gradeType))
+					gType = GradeType.PERCENTAGES;
+				else if (GradeType.POINTS.getDisplayName().equals(gradeType))
+					gType = GradeType.POINTS;
+				
+				gradebookItemModel.setGradeType(gType);
+			}
+			
+			gradebookItemModel = service.updateItemModel(gradebookItemModel);
+		}
+		
+		String[] categoryColumns = structureColumnsMap.get(StructureRow.CATEGORY);
+		String[] percentGradeColumns = structureColumnsMap.get(StructureRow.PERCENT_GRADE);
+		String[] dropLowestColumns = structureColumnsMap.get(StructureRow.DROP_LOWEST);
+		String[] equalWeightColumns = structureColumnsMap.get(StructureRow.EQUAL_WEIGHT);
+		String[] pointsColumns = structureColumnsMap.get(StructureRow.POINTS);
+		String[] percentCategoryColumns = structureColumnsMap.get(StructureRow.PERCENT_CATEGORY);
+		
+		String[] categoryRangeColumns = new String[headerColumns.length];
+		
+		
+		if (categoryColumns != null) {
+			
+			Map<String, ItemModel> categoryMap = new HashMap<String, ItemModel>();
+			for (ItemModel child : gradebookItemModel.getChildren()) {
+				if (child.getItemType() != null && child.getItemType() == Type.CATEGORY)
+					categoryMap.put(child.getName(), child);
+			}
+			
+			String currentCategoryId = null;
+			
+			for (int i=0;i<categoryColumns.length;i++) {
+				if (categoryColumns[i].trim().equals("")) {
+					
+					
+					continue;
+				}
+					
+				if (categoryColumns[i].equals(StructureRow.CATEGORY.getDisplayName()))
+					continue;
+			
+				boolean isModelNew = false;
+				ItemModel categoryModel = null;
+				// In this case, we have a new category that needs to be added to the gradebook
+				if (!categoryMap.containsKey(categoryColumns[i])) {
+					categoryModel = new ItemModel();
+					categoryModel.setItemType(Type.CATEGORY);
+					isModelNew = true;
+				} else {
+					// Otherwise, we may still want to update scores
+					categoryModel = categoryMap.get(categoryColumns[i]);
+				}
+				
+				boolean isModelUpdated = false;
+				if (categoryModel != null) {
+					if (percentGradeColumns != null && percentGradeColumns.length > i) {
+						String percentGrade = percentGradeColumns[i];
+						
+						if (percentGrade != null) {
+							try {
+								double pG = Double.parseDouble(percentGrade);
+								categoryModel.setPercentCourseGrade(Double.valueOf(pG));								
+								isModelUpdated = true;
+							} catch (NumberFormatException nfe) {
+								log.info("Failed to parse " + percentGrade + " as a Double");
+							}
+						}
+					}
+					
+					if (dropLowestColumns != null && dropLowestColumns.length > i) {
+						String dropLowest = dropLowestColumns[i];
+						
+						if (dropLowest != null) {
+							try {
+								int dL = Integer.parseInt(dropLowest);
+								categoryModel.setDropLowest(Integer.valueOf(dL));
+								isModelUpdated = true;
+							} catch (NumberFormatException nfe) {
+								log.info("Failed to parse " + dropLowest + " as an Integer");
+							}
+						}
+						
+					}
+					
+					if (equalWeightColumns != null && equalWeightColumns.length > i) {
+						String equalWeight = equalWeightColumns[i];
+						
+						if (equalWeight != null) {
+							try {
+								boolean isEqualWeight = Boolean.parseBoolean(equalWeight);
+								categoryModel.setEqualWeightAssignments(Boolean.valueOf(isEqualWeight));
+								isModelUpdated = true;
+							} catch (NumberFormatException nfe) {
+								log.info("Failed to parse " + equalWeight + " as an Boolean");
+							}
+						}
+					}
+					
+					
+					if (isModelNew) {
+						ItemModel result = service.createItem(gradebook.getGradebookUid(), gradebook.getGradebookId(), categoryModel, false);
+						ItemModel activeModel = getActiveModel(result);
+						
+						if (activeModel != null)
+							currentCategoryId = activeModel.getIdentifier();
+					} else if (isModelUpdated) {
+						ItemModel result = service.updateItemModel(categoryModel);
+						ItemModel activeModel = getActiveModel(result);
+						
+						if (activeModel != null)
+							currentCategoryId = activeModel.getIdentifier();
+					}
+					
+				}
+			}
+			
+			
+			
+		}
+		
+		
+		
 		return importFile;
+	}
+	
+	private static ItemModel getActiveModel(ItemModel itemModel) {
+		
+		if (itemModel.isActive())
+			return itemModel;
+		
+		for (ItemModel child : itemModel.getChildren()) {
+			if (child.isActive())
+				return child;
+			
+			ItemModel c2 = getActiveModel(child);
+			
+			if (c2 != null)
+				return c2;
+		}
+		
+		
+		return null;
 	}
 
 	private static ItemModel findModelByName(final String name, ItemModel root) {
@@ -509,4 +687,35 @@ public class ImportExportUtility {
 	}
 	
 
+	private class CategoryRange {
+		
+		private ItemModel categoryModel;
+		private int startColumn;
+		private int endColumn;
+		
+		public CategoryRange(ItemModel categoryModel) {
+			this.categoryModel = categoryModel;
+			this.startColumn = -1;
+			this.endColumn = -1;
+		}
+
+		public int getStartColumn() {
+			return startColumn;
+		}
+
+		public void setStartColumn(int startColumn) {
+			this.startColumn = startColumn;
+		}
+
+		public int getEndColumn() {
+			return endColumn;
+		}
+
+		public void setEndColumn(int endColumn) {
+			this.endColumn = endColumn;
+		}
+		
+	}
+	
+	
 }

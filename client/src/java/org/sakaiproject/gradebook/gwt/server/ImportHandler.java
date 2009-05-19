@@ -16,6 +16,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
+import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportFile;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ServiceImpl;
@@ -110,6 +111,8 @@ public class ImportHandler extends HttpServlet {
 
                 } catch (FileUploadException e) {
                         System.out.println(e.getMessage());
+                } catch (InvalidInputException iee) {
+                		System.out.println(iee.getMessage());
                 } catch (FatalException fe) {
                 		System.out.println(fe.getMessage());
                 }

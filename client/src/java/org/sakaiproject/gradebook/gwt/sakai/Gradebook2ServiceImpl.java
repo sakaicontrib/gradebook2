@@ -359,6 +359,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		List<ItemModel> headers = spreadsheetModel.getHeaders();
 		
 		if (headers != null) {
+			
+			Set<Long> newCategoryIdSet = new HashSet<Long>();
 			for (ItemModel item : headers) {
 				String id = item.getIdentifier();
 				if (id != null) { 
@@ -376,6 +378,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 						ItemModel model = createItem(gradebookUid, gradebook.getId(), itemModel, false);
 						//AssignmentModel model = addAssignment(gradebookUid, gradebook.getId(), categoryId, name, weight, points, dueDate);
 						
+						if (categoryId != null) {
+							newCategoryIdSet.add(categoryId);
+						}
+						
 						for (ItemModel child : model.getChildren()) {
 							if (child.isActive()) {
 								Assignment assignment = gbService.getAssignment(Long.valueOf(child.getIdentifier()));
@@ -390,6 +396,31 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 						Assignment assignment = gbService.getAssignment(Long.valueOf(id));
 						idToAssignmentMap.put(id, assignment);
 					}
+				}
+			}
+					
+			boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
+			// Apply business rules after item creation
+			if (hasCategories) {
+				List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
+				List<Category> categories = getCategoriesWithAssignments(gradebook.getId(), assignments);
+				
+				Map<Long, Category> categoryMap = new HashMap<Long, Category>();
+				
+				for (Category category : categories) {
+					categoryMap.put(category.getId(), category);
+				}
+				
+				if (newCategoryIdSet != null && ! newCategoryIdSet.isEmpty()) {
+
+					for (Long categoryId : newCategoryIdSet) {
+						Category category = categoryMap.get(categoryId);
+						List<Assignment> assigns = category.getAssignmentList();
+						// Business rule #5
+						if (businessLogic.checkRecalculateEqualWeightingRule(category))
+							recalculateAssignmentWeights(category, Boolean.FALSE, assigns);
+					}
+				
 				}
 			}
 		}

@@ -467,6 +467,14 @@ public class ItemFormPanel extends ContentPanel {
 		
 		initState(Type.CATEGORY, itemModel, false);
 		establishSelectedCategoryState(itemModel);
+		
+		ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
+		
+		if (gradebookItemModel != null) {
+			
+			
+		}
+		
 	}
 	
 	public void onNewItem(ItemModel itemModel) {
