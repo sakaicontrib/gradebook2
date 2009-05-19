@@ -375,8 +375,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 						itemModel.setName(name);
 						itemModel.setPercentCategory(weight);
 						itemModel.setPoints(points);
+						itemModel.setIncluded(Boolean.TRUE);
 						ItemModel model = createItem(gradebookUid, gradebook.getId(), itemModel, false);
-						//AssignmentModel model = addAssignment(gradebookUid, gradebook.getId(), categoryId, name, weight, points, dueDate);
 						
 						if (categoryId != null) {
 							newCategoryIdSet.add(categoryId);
