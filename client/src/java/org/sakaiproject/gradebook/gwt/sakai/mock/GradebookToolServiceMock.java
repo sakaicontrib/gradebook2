@@ -314,7 +314,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		return assignment.getId();
 	}
 
-	public Long createCategory(Long gradebookId, String name, Double weight, Integer dropLowest, Boolean equalWeightAssignments, Boolean isUnweighted) throws RuntimeException {
+	public Long createCategory(Long gradebookId, String name, Double weight, Integer dropLowest, Boolean equalWeightAssignments, Boolean isUnweighted, Boolean isExtraCredit) throws RuntimeException {
 		Long id = Long.valueOf(categoryCount++);
 		int dl = dropLowest == null ? 0 : dropLowest.intValue();
 		Category category = new Category();

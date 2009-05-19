@@ -276,6 +276,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			Boolean isEqualWeighting = item.getEqualWeightAssignments();
 			Boolean isIncluded = item.getIncluded();
 			Integer dropLowest = item.getDropLowest();
+			Boolean isExtraCredit = item.getExtraCredit();
 			
 			boolean isUnweighted = !DataTypeConversionUtil.checkBoolean(isIncluded);
 			
@@ -302,7 +303,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				businessLogic.applyOnlyEqualWeightDropLowestRule(dropLowestInt, equalWeighting);
 			}
 			
-			Long categoryId = gbService.createCategory(gradebookId, name, Double.valueOf(w), dropLowest, isEqualWeighting, isUnweighted);
+			Long categoryId = gbService.createCategory(gradebookId, name, Double.valueOf(w), dropLowest, isEqualWeighting, Boolean.valueOf(isUnweighted), isExtraCredit);
 			category = gbService.getCategory(categoryId);
 			
 			
@@ -2131,7 +2132,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		
 		// If we don't have one already, then let's create one
 		if (defaultCategoryId == null) {
-			defaultCategoryId = gbService.createCategory(gradebookId, "Unassigned", Double.valueOf(1d), 0, null, null);
+			defaultCategoryId = gbService.createCategory(gradebookId, "Unassigned", Double.valueOf(1d), 0, null, null, null);
 			isCategoryNew = true;
 		} 
 
@@ -2500,7 +2501,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					
 					// If we don't have one already, then let's create one
 					if (defaultCategoryId == null) {
-						defaultCategoryId = gbService.createCategory(gradebook.getId(), "Unassigned", Double.valueOf(1d), 0, null, null);
+						defaultCategoryId = gbService.createCategory(gradebook.getId(), "Unassigned", Double.valueOf(1d), 0, null, null, null);
 						isCategoryNew = true;
 					} 
 
