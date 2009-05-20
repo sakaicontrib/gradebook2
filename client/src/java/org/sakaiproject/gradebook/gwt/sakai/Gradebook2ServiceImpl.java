@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -2309,15 +2310,18 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		return userRecords;
 	}
 	
-	protected List<User> findAllMembers(Site site) {
+	protected List<User> findAllMembers(Site site, String[] learnerRoleKeys) {
 		List<User> users = new ArrayList<User>();
 		if (site != null) {
 			Set<Member> members = site == null ? new HashSet<Member>() : site.getMembers();
+			List<String> learnerRoleKeySet = Arrays.asList(learnerRoleKeys);
 			if (members != null) {
 				Set<String> userUids = new HashSet<String>();
 				for (Member member : members) {
-					String userUid = member.getUserId();	
-					userUids.add(userUid);
+					String userUid = member.getUserId();
+					
+					if (learnerRoleKeySet.contains(member.getRole().getId()))
+						userUids.add(userUid);
 				}
 				
 				if (userService != null) {
@@ -2986,7 +2990,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		long ONEHOUR = 1000l * 60l * 60l;
 		if (lastUpdate == null || lastUpdate.getRealmCount() == null || ! lastUpdate.getRealmCount().equals(Integer.valueOf(diff)) ||
 				lastUpdate.getLastUpdate() == null || lastUpdate.getLastUpdate().getTime() + ONEHOUR < new Date().getTime()) {
-			gbService.syncUserDereferenceBySite(siteId, null, findAllMembers(site), diff, learnerRoleKeys);
+			gbService.syncUserDereferenceBySite(siteId, null, findAllMembers(site, learnerRoleKeys), diff, learnerRoleKeys);
 		}
 	}
 	
