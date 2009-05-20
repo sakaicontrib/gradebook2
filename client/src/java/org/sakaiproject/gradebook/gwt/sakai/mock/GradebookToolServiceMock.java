@@ -1723,4 +1723,11 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		
 		return null;
 	}
+	
+	
+	public List<String> getFullUserListForSite(final String siteId, final String[] roleNames) {
+		
+		return null;
+	}
+	
 }
