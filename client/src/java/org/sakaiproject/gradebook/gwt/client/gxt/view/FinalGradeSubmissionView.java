@@ -77,8 +77,8 @@ public class FinalGradeSubmissionView extends View {
 									String responseText = response.getText().trim();
 									
 									// FIXME : Find a GWT IOC solution, so that we can inject the desired implementation
-									ClientExportAdvisor clientExportAdvisor = new SampleClientExportAdvisor();
-									//ClientExportAdvisor clientExportAdvisor = new UcdClientExportAdvisor();
+									//ClientExportAdvisor clientExportAdvisor = new SampleClientExportAdvisor();
+									ClientExportAdvisor clientExportAdvisor = new UcdClientExportAdvisor();
 									
 									clientExportAdvisor.handleServerResponse(responseText);
 								}
