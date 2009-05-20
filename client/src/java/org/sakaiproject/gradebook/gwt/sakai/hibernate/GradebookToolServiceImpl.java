@@ -451,6 +451,37 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		}
 	}
 	
+	
+	public List<String> getFullUserListForSite(final String siteId, final String[] roleNames) {
+		HibernateCallback hc = new HibernateCallback() {
+            public Object doInHibernate(Session session) throws HibernateException {
+            	
+            	String realmId = new StringBuffer().append("/site/").append(siteId).toString();
+            	
+            	
+            	Query query = null;
+
+				StringBuilder builder = new StringBuilder()
+					.append("select rg.userId from Realm as r, RealmGroup rg, RealmRole rr ")
+					.append("where rg.realmKey=r.realmKey ")
+					.append("and r.realmId=:realmId ")
+					.append("and rr.roleKey = rg.roleKey ")
+					.append("and rr.roleName in (:roleKeys) ")
+					.append("and rg.active=true ");
+
+				query = session.createQuery(builder.toString());
+				query.setString("realmId", realmId);
+				query.setParameterList("roleKeys", roleNames);
+				
+				return query.list();
+            }
+		};
+		
+        List<String> result = (List<String>)getHibernateTemplate().execute(hc);
+    		
+        return result;
+	}
+	
 	public int getFullUserCountForSite(final String siteId, final String realmGroupId, final String[] roleNames) {
 		HibernateCallback hc = new HibernateCallback() {
             public Object doInHibernate(Session session) throws HibernateException {
@@ -462,7 +493,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
             	else if (siteId == null) {
             		if (log.isInfoEnabled())
 						log.info("No siteId defined");
-					return new ArrayList<AssignmentGradeRecord>();
+					return Integer.valueOf(0);
             	}
             	
             	Query query = null;

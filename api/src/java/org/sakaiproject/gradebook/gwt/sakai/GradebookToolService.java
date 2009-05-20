@@ -115,6 +115,8 @@ public interface GradebookToolService {
 	
 	public int getDereferencedUserCountForSite(String siteId, String realmGroupId, String[] roleNames);
 	
+	public List<String> getFullUserListForSite(String siteId, String[] roleNames);
+	
 	public int getFullUserCountForSite(String siteId, String realmGroupId, String[] roleNames);
 	
 	public int getUserCountForSite(String[] realmIds, String sortField, 

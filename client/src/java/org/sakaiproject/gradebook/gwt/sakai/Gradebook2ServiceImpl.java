@@ -2313,6 +2313,12 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	protected List<User> findAllMembers(Site site, String[] learnerRoleKeys) {
 		List<User> users = new ArrayList<User>();
 		if (site != null) {
+			List<String> userUids = gbService.getFullUserListForSite(site.getId(), learnerRoleKeys);
+			
+			if (userService != null && userUids != null && !userUids.isEmpty())
+				users = userService.getUsers(userUids);
+			
+			/*
 			Set<Member> members = site == null ? new HashSet<Member>() : site.getMembers();
 			List<String> learnerRoleKeySet = Arrays.asList(learnerRoleKeys);
 			if (members != null) {
@@ -2328,7 +2334,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				if (userService != null) {
 					users = userService.getUsers(userUids);
 				}
-			}
+			}*/
 		}
 		return users;
 	}
