@@ -2320,7 +2320,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				for (Member member : members) {
 					String userUid = member.getUserId();
 					
-					if (learnerRoleKeySet.contains(member.getRole().getId()))
+					if (learnerRoleKeySet.contains(member.getRole().getId())
+							&& !userUids.contains(userUid))
 						userUids.add(userUid);
 				}
 				

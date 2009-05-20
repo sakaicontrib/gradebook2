@@ -6,13 +6,13 @@
 	<bean id="urlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
     	<property name="mappings">
                         <map>
-                                <entry key="/**/org.sakaiproject.gradebook.gwt.GradebookApplication/rpc/grades.rpc" value-ref="GradebookService" />
+                                <entry key="/**/rpc/grades.rpc" value-ref="GradebookService" />
 
-                                <entry key="/**/org.sakaiproject.gradebook.gwt.GradebookApplication/importHandler" value-ref="GradebookImportService" />
+                                <entry key="/**/importHandler" value-ref="GradebookImportService" />
 
-                                <entry key="/**/org.sakaiproject.gradebook.gwt.GradebookApplication/exportGradebook.csv" value-ref="GradebookExportService" />
+                                <entry key="/**/exportGradebook.csv" value-ref="GradebookExportService" />
 
-                                <entry key="/**/org.sakaiproject.gradebook.gwt.GradebookApplication/final-grade-submission" value-ref="GradebookFinalGradeSubmissionService" />
+                                <entry key="/**/final-grade-submission" value-ref="GradebookFinalGradeSubmissionService" />
 
                                 <entry key="/" value-ref="myServletForwardingController" />
 
