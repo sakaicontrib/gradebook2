@@ -334,7 +334,7 @@ public class ServiceController extends Controller {
 				Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel.getEventType(),
 						selectedGradebook);
 			}
-			break;
+			return;
 		case CATEGORY:
 			doUpdateItem(event, result);
 
