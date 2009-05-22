@@ -632,7 +632,8 @@ public class ImportExportUtility {
 						
 						if (activeModel != null) {
 							currentCategoryId = activeModel.getIdentifier();
-							categoryRangeColumns[i] = currentCategoryId;
+							if (categoryRangeColumns.length > i)
+								categoryRangeColumns[i] = currentCategoryId;
 						}
 					}
 					

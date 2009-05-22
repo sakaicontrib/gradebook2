@@ -342,6 +342,9 @@ public class ServiceController extends Controller {
 				doUpdateItem(event, item);
 			}
 			
+			if (event.getModifiedItem() != null && event.getModifiedItem().getItemType() != Type.CATEGORY)
+				return;
+			
 			break;
 		case ITEM:
 			doUpdateItem(event, result);

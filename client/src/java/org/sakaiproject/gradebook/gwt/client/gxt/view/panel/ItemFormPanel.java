@@ -165,6 +165,7 @@ public class ItemFormPanel extends ContentPanel {
 		percentCourseGradeField.setMinValue(Double.valueOf(0.000000d));
 		percentCourseGradeField.setMaxValue(Double.valueOf(100.000000d));
 		percentCourseGradeField.setVisible(false);
+		percentCourseGradeField.addKeyListener(keyListener);
 		formPanel.add(percentCourseGradeField);
 		
 		percentCategoryField = new InlineEditNumberField();
@@ -175,6 +176,7 @@ public class ItemFormPanel extends ContentPanel {
 		percentCategoryField.setMinValue(Double.valueOf(0.000000d));
 		percentCategoryField.setMaxValue(Double.valueOf(100.000000d));
 		percentCategoryField.setVisible(false);
+		percentCategoryField.addKeyListener(keyListener);
 		formPanel.add(percentCategoryField);
 			
 		pointsField = new InlineEditNumberField();

@@ -1355,6 +1355,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		if (value != null && value.trim().equals(""))
 			value = null;
 		
+		value = value.toUpperCase();
+		
 		// FIXME: Currently only handles grade override edits -- this should handle non-numeric grades too
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
 		CourseGradeRecord courseGradeRecord = gbService.getStudentCourseGradeRecord(gradebook, student.getIdentifier());
@@ -1363,6 +1365,13 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		gradeRecords.add(courseGradeRecord);
 		// FIXME: We shouldn't be looking up the CourseGrade if we don't use it anywhere.
 		CourseGrade courseGrade = gbService.getCourseGrade(gradebook.getId());
+		
+		GradeMapping gradeMapping = gradebook.getSelectedGradeMapping();
+		GradingScale gradingScale = gradeMapping.getGradingScale();
+		
+		if (!advisor.isValidOverrideGrade(value, student.getEid(), student.getStudentDisplayId(), gradebook, gradingScale)) 
+			throw new InvalidInputException("This is not a valid override grade for this individual in this course.");
+		
 		gbService.updateCourseGradeRecords(courseGrade, gradeRecords);
 		
 		List<Category> categories = null;

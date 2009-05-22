@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -22,6 +23,9 @@ import org.sakaiproject.site.api.Group;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SiteService;
 import org.sakaiproject.tool.api.ToolManager;
+import org.sakaiproject.tool.gradebook.GradeMapping;
+import org.sakaiproject.tool.gradebook.Gradebook;
+import org.sakaiproject.tool.gradebook.GradingScale;
 
 
 public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
@@ -79,6 +83,14 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 				&& member.isActive();
 	}
 
+	public boolean isValidOverrideGrade(String grade, String learnerEid, String learnerDisplayId, Gradebook gradebook, GradingScale gradingScale) {
+
+		if (gradingScale.getGrades().contains(grade))
+			return true;
+		
+		return false;
+	}
+	
 	public void submitFinalGrade(List<Map<Column, String>> studentDataList, String gradebookUid, HttpServletRequest request, HttpServletResponse response) {
 
 		if (null == finalGradeSubmissionPath || "".equals(finalGradeSubmissionPath)) {
