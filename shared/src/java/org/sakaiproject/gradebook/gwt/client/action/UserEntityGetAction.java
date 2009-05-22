@@ -60,9 +60,4 @@ public class UserEntityGetAction<M extends BaseModel> extends UserEntityAction<M
 		setEntityId(entityId);
 	}
 	
-	@Override
-	public void announce(Object... params) {
-		notifyUser(" '{0}' ", params);
-	}
-	
 }

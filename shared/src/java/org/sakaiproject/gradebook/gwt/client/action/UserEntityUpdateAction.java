@@ -120,11 +120,6 @@ public class UserEntityUpdateAction<M extends BaseModel> extends UserEntityActio
 		
 	}
 		
-	@Override
-	public void announce(Object... params) {
-		notifyUser(" '{0}', set '{1}' to '{2}' ", params);
-	}
-	
 	public Boolean getDoRecalculateChildren() {
 		return doRecalculateChildren;
 	}

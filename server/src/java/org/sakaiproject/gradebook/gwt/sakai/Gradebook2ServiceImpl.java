@@ -1666,7 +1666,12 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		if (toolManager == null)
 			return null;
 		
-		return toolManager.getCurrentPlacement().getId();
+		Placement placement = toolManager.getCurrentPlacement();
+		
+		if (placement == null)
+			return null;
+		
+		return placement.getId();
 	}
 	
 	

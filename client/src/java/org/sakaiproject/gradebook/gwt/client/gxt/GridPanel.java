@@ -270,7 +270,8 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		ColumnConfig config = cm.getColumnById(property);
 		propertyName = config.getHeader();
 		
-		action.announce(model.getDisplayName(), propertyName, model.get(property));				
+		// FIXME: Send notification here
+		//action.announce(model.getDisplayName(), propertyName, model.get(property));				
 	
 		fireEvent(GradebookEvents.UserChange.getEventType(), new UserChangeEvent(action));
 	}

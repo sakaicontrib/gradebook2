@@ -22,7 +22,6 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.action;
 
-import org.sakaiproject.gradebook.gwt.client.gxt.Notifier;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
@@ -35,7 +34,6 @@ public abstract class UserEntityAction<M extends BaseModel> extends Action {
 	
 	public enum Status { UNSUBMITTED, FAILED, SUCCEEDED };
 	
-	protected static Notifier notifier = new Notifier();
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -124,24 +122,8 @@ public abstract class UserEntityAction<M extends BaseModel> extends Action {
 		return classType;
 	}
 	
-	/*protected abstract void doExecute(GradebookToolFacadeAsync service, AsyncCallback<M> callback);
+	//public abstract void announce(Object... params);
 	
-	protected void doExecuteList(GradebookToolFacadeAsync service, AsyncCallback<List<M>> callback) {
-		
-	}*/
-	
-	
-	public abstract void announce(Object... params);
-	
-	public void notifyUser(String formatText, Object... params) {
-		StringBuilder text = new StringBuilder();
-		
-		text.append(getActionType().getVerb()).append(" ")
-			.append(getEntityType()).append(formatText);
-		
-		notifier.notify(getActionType().toString(), text.toString(), params);
-	}
-
 	public Long getParentId() {
 		return get(Key.PARENT_ID.name());
 	}
@@ -157,14 +139,6 @@ public abstract class UserEntityAction<M extends BaseModel> extends Action {
 	public void setModel(M model) {
 		set(Key.MODEL.name(), model);
 	}
-
-	/*public void setCallback(UserActionCallback callback) {
-		this.actionCallback = callback;
-	}*/
-
-	/*public Status getStatus() {
-		return status;
-	}*/
 
 	public String getKey() {
 		return get(Key.PROPERTY.name());

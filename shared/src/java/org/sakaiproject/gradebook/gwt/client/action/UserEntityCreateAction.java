@@ -47,11 +47,7 @@ public class UserEntityCreateAction<M extends BaseModel> extends UserEntityActio
 		setWeight(weight);
 	}
 
-	@Override
-	public void announce(Object... params) {
-		notifyUser(" '{0}' ", params);
-	}
-	
+		
 	public String getName() {
 		return get(Key.NAME.name());
 	}
