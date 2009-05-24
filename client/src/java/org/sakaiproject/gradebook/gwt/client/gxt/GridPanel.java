@@ -30,6 +30,7 @@ import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.GradebookState;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.PersistentStore;
+import org.sakaiproject.gradebook.gwt.client.SecureToken;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
@@ -342,7 +343,7 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 			protected void load(PagingLoadConfig loadConfig, AsyncCallback<PagingLoadResult<M>> callback) {
 				Gradebook2RPCServiceAsync service = Registry.get("service");
 				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-				service.getPage(selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId(), entityType, loadConfig, callback);
+				service.getPage(selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId(), entityType, loadConfig, SecureToken.get(), callback);
 			}
 			
 			@Override
@@ -573,7 +574,7 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 			
 		};
 		
-		service.update(action.getModel(), action.getEntityType(), null, callback);
+		service.update(action.getModel(), action.getEntityType(), null, SecureToken.get(), callback);
 		
 		
 		//remoteCommand.execute(action);

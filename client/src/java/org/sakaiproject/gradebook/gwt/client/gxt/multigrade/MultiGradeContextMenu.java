@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
+import org.sakaiproject.gradebook.gwt.client.SecureToken;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
@@ -163,7 +164,7 @@ public class MultiGradeContextMenu extends Menu {
 			@Override
 			protected void load(ListLoadConfig listLoadConfig, AsyncCallback<ListLoadResult<GradeScaleRecordModel>> callback) {
 				Gradebook2RPCServiceAsync service = Registry.get("service");
-				service.getPage(owner.getSelectedModel().getIdentifier(), owner.getSelectedAssignment(), EntityType.GRADE_EVENT, null, callback);
+				service.getPage(owner.getSelectedModel().getIdentifier(), owner.getSelectedAssignment(), EntityType.GRADE_EVENT, null, SecureToken.get(), callback);
 			}
 			
 		};

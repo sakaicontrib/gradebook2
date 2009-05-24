@@ -2,6 +2,7 @@ package org.sakaiproject.gradebook.gwt.client.gxt.controller;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
+import org.sakaiproject.gradebook.gwt.client.SecureToken;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType;
@@ -124,7 +125,7 @@ public class ServiceController extends Controller {
 			}
 		};		
 		
-		service.create(selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId(), event.item, entityType, callback);
+		service.create(selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId(), event.item, entityType, SecureToken.get(), callback);
 	}
 	
 	private void onDeleteItemSuccess(ItemUpdate event) {
@@ -152,7 +153,7 @@ public class ServiceController extends Controller {
 			}
 		};
 		
-		service.update((ItemModel)event.item, EntityType.ITEM, null, callback);
+		service.update((ItemModel)event.item, EntityType.ITEM, null, SecureToken.get(), callback);
 	}
 	
 	private void onUpdateGradeRecordSuccess(GradeRecordUpdate event, StudentModel result) {
@@ -283,7 +284,7 @@ public class ServiceController extends Controller {
 		};
 		
 		Gradebook2RPCServiceAsync service = Registry.get("service");
-		service.update((StudentModel)record.getModel(), EntityType.LEARNER, action, callback);
+		service.update((StudentModel)record.getModel(), EntityType.LEARNER, action, SecureToken.get(), callback);
 	}
 
 	private void onRevertItem(final ItemUpdate event) {
@@ -375,7 +376,7 @@ public class ServiceController extends Controller {
 			}
 		};
 		
-		service.update((ItemModel)event.getModifiedItem(), EntityType.ITEM, null, callback);
+		service.update((ItemModel)event.getModifiedItem(), EntityType.ITEM, null, SecureToken.get(), callback);
 	}
 	
 	private void doCreateItem(ItemCreate itemCreate, ItemModel createdItem) {

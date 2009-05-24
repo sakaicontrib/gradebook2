@@ -11,6 +11,7 @@ import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
+import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 import org.sakaiproject.gradebook.gwt.client.model.CommentModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordMapModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordModel;
@@ -18,6 +19,9 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.SpreadsheetModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.server.DataTypeConversionUtil;
+import org.sakaiproject.tool.api.Session;
+import org.sakaiproject.tool.api.SessionManager;
+import org.sakaiproject.user.api.UserDirectoryService;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
@@ -28,13 +32,20 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 	private static final Log log = LogFactory.getLog(Gradebook2ResourceProducer.class);
 	
 	private Gradebook2Service service;
+	private UserDirectoryService userDirectoryService;
+	private SessionManager sessionManager;
 	
 	
 	@SuppressWarnings("unchecked")
-	public <X extends BaseModel> X create(String entityUid, Long entityId, X model, EntityType type) 
-	throws BusinessRuleException, FatalException {
+	public <X extends BaseModel> X create(String entityUid, Long entityId, X model, EntityType type, String secureToken) 
+	throws BusinessRuleException, FatalException, SecurityException {
+
+		if(!isSecure(secureToken)) {
+			throw new SecurityException("Security Exception");
+		}
+
 		X entity = null;
-		
+
 		try {
 		
 			switch (type) {
@@ -57,9 +68,13 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 		return entity;
 	}
 	
-	public <X extends BaseModel> X get(String entityUid, Long entityId, EntityType type, String learnerUid, Boolean doShowAll) 
-	throws FatalException {
+	public <X extends BaseModel> X get(String entityUid, Long entityId, EntityType type, String learnerUid, Boolean doShowAll, String secureToken) 
+	throws FatalException, SecurityException {
 
+		if(!isSecure(secureToken)) {
+			throw new SecurityException("Security Exception");
+		}
+		
 		try {
 			boolean showAll = DataTypeConversionUtil.checkBoolean(doShowAll);
 			
@@ -78,8 +93,13 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 		return null;
 	}
 	
-	public <X extends BaseModel, Y extends ListLoadResult<X>> Y getPage(String uid, Long id, EntityType type, PagingLoadConfig config) 
-	throws FatalException {
+	public <X extends BaseModel, Y extends ListLoadResult<X>> Y getPage(String uid, Long id, EntityType type, PagingLoadConfig config, String secureToken) 
+	throws FatalException, SecurityException {
+		
+		if(!isSecure(secureToken)) {
+			throw new SecurityException("Security Exception");
+		}
+		
 		try {
 			
 			switch (type) {
@@ -103,8 +123,13 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 		return null;
 	}
 	
-	public <X extends BaseModel> X update(X model, EntityType type, UserEntityUpdateAction<StudentModel> action) 
-	throws InvalidInputException, FatalException {
+	public <X extends BaseModel> X update(X model, EntityType type, UserEntityUpdateAction<StudentModel> action, String secureToken) 
+	throws InvalidInputException, FatalException, SecurityException {
+		
+		if(!isSecure(secureToken)) {
+			throw new SecurityException("Security Exception");
+		}
+		
 		X entity = null;
 		
 		try {
@@ -162,12 +187,50 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 		return entity;
 	}
 	
-	public <X extends BaseModel> X delete(X model) {
+	public <X extends BaseModel> X delete(X model, String secureToken) 
+	throws SecurityException {
 		
-		
+		if(!isSecure(secureToken)) {
+			throw new SecurityException("Security Exception");
+		}
+
 		return null;
 	}
 
+	/*
+	 * First, we check if both the client and server session match
+	 * Second, we check if current user is null
+	 */
+	private boolean isSecure(String clientSecureToken) {
+
+		String serverSecureToken = "";
+
+		if((null != sessionManager) && (null != userDirectoryService)) {
+
+			Session session = sessionManager.getCurrentSession();
+
+			if(null != session) {
+
+				serverSecureToken = session.getId();
+
+				// Check if the client and server secure tokens match
+				// The client's secure token has more characters so we only test for startsWith
+				if(clientSecureToken.startsWith(serverSecureToken)) {
+
+					// Check that current user is not null or empty string
+					String userId = userDirectoryService.getCurrentUser().getId();
+					
+					if(null != userId && !"".equals(userId)) {
+
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+	}
+	
 	public Gradebook2Service getService() {
 		return service;
 	}
@@ -176,5 +239,13 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 		this.service = service;
 	}
 	
+	// Spring DI
+	public void setUserDirectoryService(UserDirectoryService userDirectoryService) {
+		this.userDirectoryService = userDirectoryService;
+	}
 	
+	// Spring DI
+	public void setSessionManager(SessionManager sessionManager) {
+		this.sessionManager = sessionManager;
+	}
 }

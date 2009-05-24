@@ -9,6 +9,7 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
+import org.sakaiproject.gradebook.gwt.client.SecureToken;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.GridPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
@@ -437,7 +438,7 @@ public class ImportPanel extends ContentPanel {
 		
 		Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
 		
-		service.create(gbModel.getGradebookUid(), gbModel.getGradebookId(), spreadsheetModel, EntityType.SPREADSHEET, callback);
+		service.create(gbModel.getGradebookUid(), gbModel.getGradebookId(), spreadsheetModel, EntityType.SPREADSHEET, SecureToken.get(), callback);
 		
 		/*
 		RemoteCommand<SpreadsheetModel> remoteCommand = 

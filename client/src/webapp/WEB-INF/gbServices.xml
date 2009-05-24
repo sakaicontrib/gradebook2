@@ -6,6 +6,8 @@
 	<!-- Declare service -->
     <bean id="GradebookService" class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ResourceProducer">
     	<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service"/>
+		<property name="userDirectoryService" ref="org.sakaiproject.user.api.UserDirectoryService"/>
+    	<property name="sessionManager" ref="org.sakaiproject.tool.api.SessionManager" />
     </bean>
 	
 	<!-- Tool Service -->

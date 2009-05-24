@@ -29,6 +29,7 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.GradebookState;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
+import org.sakaiproject.gradebook.gwt.client.SecureToken;
 import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
@@ -1126,7 +1127,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			protected void load(PagingLoadConfig loadConfig, AsyncCallback<PagingLoadResult<SectionModel>> callback) {
 				Gradebook2RPCServiceAsync service = Registry.get("service");
 				GradebookModel model = Registry.get(AppConstants.CURRENT);
-				service.getPage(model.getGradebookUid(), model.getGradebookId(), EntityType.SECTION, loadConfig, callback);
+				service.getPage(model.getGradebookUid(), model.getGradebookId(), EntityType.SECTION, loadConfig, SecureToken.get(), callback);
 			}
 		};
 		

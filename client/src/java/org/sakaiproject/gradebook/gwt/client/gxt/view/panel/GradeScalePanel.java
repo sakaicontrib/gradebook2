@@ -29,6 +29,7 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
+import org.sakaiproject.gradebook.gwt.client.SecureToken;
 import org.sakaiproject.gradebook.gwt.client.action.Action.ActionType;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
@@ -124,7 +125,7 @@ public class GradeScalePanel extends ContentPanel {
 			protected void load(ListLoadConfig listLoadConfig, AsyncCallback<ListLoadResult<GradeScaleRecordModel>> callback) {
 				GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
 				Gradebook2RPCServiceAsync service = Registry.get("service");
-				service.getPage(gbModel.getGradebookUid(), gbModel.getGradebookId(), EntityType.GRADE_SCALE, null, callback);
+				service.getPage(gbModel.getGradebookUid(), gbModel.getGradebookId(), EntityType.GRADE_SCALE, null, SecureToken.get(), callback);
 			}
 			
 		};
@@ -195,7 +196,7 @@ public class GradeScalePanel extends ContentPanel {
 				
 				Gradebook2RPCServiceAsync service = Registry.get("service");
 				
-				service.update(new GradeScaleRecordMapModel(gbModel.getGradebookUid(), gbModel.getGradebookId(), model), EntityType.GRADE_SCALE, null, callback);
+				service.update(new GradeScaleRecordMapModel(gbModel.getGradebookUid(), gbModel.getGradebookId(), model), EntityType.GRADE_SCALE, null, SecureToken.get(), callback);
 				
 				/*
 				RemoteCommand<GradeScaleRecordModel> remoteCommand = 

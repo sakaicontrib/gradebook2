@@ -12,6 +12,7 @@ import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
+import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
@@ -301,24 +302,24 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 		}
 	}
 	
-	public <X extends BaseModel> X create(String entityUid, Long entityId, X model, EntityType type) throws BusinessRuleException, FatalException {
-		return producer.create(entityUid, entityId, model, type);
+	public <X extends BaseModel> X create(String entityUid, Long entityId, X model, EntityType type, String secureToken) throws BusinessRuleException, FatalException, SecurityException {
+		return producer.create(entityUid, entityId, model, type, secureToken);
 	}
 
-	public <X extends BaseModel> X delete(X model) {
-		return producer.delete(model);
+	public <X extends BaseModel> X delete(X model, String secureToken) throws SecurityException {
+		return producer.delete(model, secureToken);
 	}
 
-	public <X extends BaseModel> X get(String entityUid, Long entityId, EntityType type, String learnerUid, Boolean doShowAll) throws FatalException {
-		return producer.<X>get(entityUid, entityId, type, learnerUid, doShowAll);
+	public <X extends BaseModel> X get(String entityUid, Long entityId, EntityType type, String learnerUid, Boolean doShowAll, String secureToken) throws FatalException, SecurityException {
+		return producer.<X>get(entityUid, entityId, type, learnerUid, doShowAll, secureToken);
 	}
 
-	public <X extends BaseModel, Y extends ListLoadResult<X>> Y getPage(String uid, Long id, EntityType type, PagingLoadConfig config) throws FatalException {
-		return producer.<X,Y>getPage(uid, id, type, config);
+	public <X extends BaseModel, Y extends ListLoadResult<X>> Y getPage(String uid, Long id, EntityType type, PagingLoadConfig config, String secureToken) throws FatalException, SecurityException {
+		return producer.<X,Y>getPage(uid, id, type, config, secureToken);
 	}
 
-	public <X extends BaseModel> X update(X model, EntityType type, UserEntityUpdateAction<StudentModel> action) throws InvalidInputException, FatalException {
-		return producer.update(model, type, action);
+	public <X extends BaseModel> X update(X model, EntityType type, UserEntityUpdateAction<StudentModel> action, String secureToken) throws InvalidInputException, FatalException, SecurityException {
+		return producer.update(model, type, action, secureToken);
 	}
 
 }

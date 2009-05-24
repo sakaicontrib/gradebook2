@@ -39,6 +39,7 @@ import com.extjs.gxt.ui.client.util.Theme;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
 
@@ -108,7 +109,7 @@ public class GradebookApplication implements EntryPoint {
 			
 		};
 		
-		dataService.get(null, null, EntityType.APPLICATION, null, null, callback);
+		dataService.get(null, null, EntityType.APPLICATION, null, null, SecureToken.get(), callback);
 		
 		/*
 		UserEntityGetAction<ApplicationModel> action = 
@@ -227,6 +228,5 @@ public class GradebookApplication implements EntryPoint {
 	 	
 	 	return [x,y];
 	 }-*/;
-
-
+	
 }

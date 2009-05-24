@@ -11,14 +11,14 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface Gradebook2RPCServiceAsync {
 
-	<X extends BaseModel> void create(String entityUid, Long entityId, X model, EntityType type, AsyncCallback<X> callback);
+	<X extends BaseModel> void create(String entityUid, Long entityId, X model, EntityType type, String secureToken, AsyncCallback<X> callback);
 	
-	<X extends BaseModel> void get(String entityUid, Long entityId, EntityType type, String learnerUid, Boolean doShowAll, AsyncCallback<X> callback);
+	<X extends BaseModel> void get(String entityUid, Long entityId, EntityType type, String learnerUid, Boolean doShowAll, String secureToken, AsyncCallback<X> callback);
 	
-	<X extends BaseModel, Y extends ListLoadResult<X>> void getPage(String uid, Long id, EntityType type, PagingLoadConfig config, AsyncCallback<Y> callback);
+	<X extends BaseModel, Y extends ListLoadResult<X>> void getPage(String uid, Long id, EntityType type, PagingLoadConfig config, String secureToken, AsyncCallback<Y> callback);
 	
-	<X extends BaseModel> void update(X model, EntityType type, UserEntityUpdateAction<StudentModel> action, AsyncCallback<X> callback);
+	<X extends BaseModel> void update(X model, EntityType type, UserEntityUpdateAction<StudentModel> action, String secureToken, AsyncCallback<X> callback);
 	
-	<X extends BaseModel> void delete(X model, AsyncCallback<X> callback);
+	<X extends BaseModel> void delete(X model, String secureToken, AsyncCallback<X> callback);
 
 }
