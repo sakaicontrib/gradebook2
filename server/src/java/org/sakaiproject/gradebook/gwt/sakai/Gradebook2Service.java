@@ -137,4 +137,11 @@ public interface Gradebook2Service {
 	 */
 	public ItemModel updateItemModel(ItemModel item) throws InvalidInputException;
 	
+
+	/*
+	 * The following two methods are used by a security check method
+	 */
+	public String getCurrentUser();
+	public String getCurrentSession();
+	
 }

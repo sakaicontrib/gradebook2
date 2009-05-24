@@ -32,17 +32,13 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 	private static final Log log = LogFactory.getLog(Gradebook2ResourceProducer.class);
 	
 	private Gradebook2Service service;
-	private UserDirectoryService userDirectoryService;
-	private SessionManager sessionManager;
 	
 	
 	@SuppressWarnings("unchecked")
 	public <X extends BaseModel> X create(String entityUid, Long entityId, X model, EntityType type, String secureToken) 
 	throws BusinessRuleException, FatalException, SecurityException {
 
-		if(!isSecure(secureToken)) {
-			throw new SecurityException("Security Exception");
-		}
+		isSecure(secureToken);
 
 		X entity = null;
 
@@ -71,9 +67,7 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 	public <X extends BaseModel> X get(String entityUid, Long entityId, EntityType type, String learnerUid, Boolean doShowAll, String secureToken) 
 	throws FatalException, SecurityException {
 
-		if(!isSecure(secureToken)) {
-			throw new SecurityException("Security Exception");
-		}
+		isSecure(secureToken);
 		
 		try {
 			boolean showAll = DataTypeConversionUtil.checkBoolean(doShowAll);
@@ -96,9 +90,7 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 	public <X extends BaseModel, Y extends ListLoadResult<X>> Y getPage(String uid, Long id, EntityType type, PagingLoadConfig config, String secureToken) 
 	throws FatalException, SecurityException {
 		
-		if(!isSecure(secureToken)) {
-			throw new SecurityException("Security Exception");
-		}
+		isSecure(secureToken);
 		
 		try {
 			
@@ -126,9 +118,7 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 	public <X extends BaseModel> X update(X model, EntityType type, UserEntityUpdateAction<StudentModel> action, String secureToken) 
 	throws InvalidInputException, FatalException, SecurityException {
 		
-		if(!isSecure(secureToken)) {
-			throw new SecurityException("Security Exception");
-		}
+		isSecure(secureToken);
 		
 		X entity = null;
 		
@@ -190,9 +180,7 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 	public <X extends BaseModel> X delete(X model, String secureToken) 
 	throws SecurityException {
 		
-		if(!isSecure(secureToken)) {
-			throw new SecurityException("Security Exception");
-		}
+		isSecure(secureToken);
 
 		return null;
 	}
@@ -201,34 +189,21 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 	 * First, we check if both the client and server session match
 	 * Second, we check if current user is null
 	 */
-	private boolean isSecure(String clientSecureToken) {
+	private void isSecure(String clientSecureToken) throws SecurityException {
 
-		String serverSecureToken = "";
-
-		if((null != sessionManager) && (null != userDirectoryService)) {
-
-			Session session = sessionManager.getCurrentSession();
-
-			if(null != session) {
-
-				serverSecureToken = session.getId();
-
-				// Check if the client and server secure tokens match
-				// The client's secure token has more characters so we only test for startsWith
-				if(clientSecureToken.startsWith(serverSecureToken)) {
-
-					// Check that current user is not null or empty string
-					String userId = userDirectoryService.getCurrentUser().getId();
-					
-					if(null != userId && !"".equals(userId)) {
-
-						return true;
-					}
-				}
-			}
+		String serverSecureToken = service.getCurrentSession();
+		String currentUser = service.getCurrentUser();
+		
+		if(null == serverSecureToken || null == currentUser || "".equals(serverSecureToken) || "".equals(currentUser)) {
+			log.error("Was not able to get currentUser and currentSession");
+			//throw new SecurityException("Security Exception");
+			return; // FIXME : need to find solution for hosted mode
 		}
-
-		return false;
+		
+		if(!clientSecureToken.startsWith(serverSecureToken)) {
+			log.warn("SECURITY: client and server secure tokens did not match");
+			//throw new SecurityException("Security Exception");
+		}
 	}
 	
 	public Gradebook2Service getService() {
@@ -237,15 +212,5 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 
 	public void setService(Gradebook2Service service) {
 		this.service = service;
-	}
-	
-	// Spring DI
-	public void setUserDirectoryService(UserDirectoryService userDirectoryService) {
-		this.userDirectoryService = userDirectoryService;
-	}
-	
-	// Spring DI
-	public void setSessionManager(SessionManager sessionManager) {
-		this.sessionManager = sessionManager;
 	}
 }

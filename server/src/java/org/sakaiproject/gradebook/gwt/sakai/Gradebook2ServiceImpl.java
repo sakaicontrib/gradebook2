@@ -63,6 +63,8 @@ import org.sakaiproject.site.api.Group;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SiteService;
 import org.sakaiproject.tool.api.Placement;
+import org.sakaiproject.tool.api.Session;
+import org.sakaiproject.tool.api.SessionManager;
 import org.sakaiproject.tool.api.ToolManager;
 import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.AssignmentGradeRecord;
@@ -102,6 +104,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	private SiteService siteService;
 	private ToolManager toolManager;
 	private UserDirectoryService userService;
+	private SessionManager sessionManager;
 	
 	
 	/**
@@ -3207,6 +3210,31 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		return gradebookItemModel;
 	}
 	
+	public String getCurrentUser() {
+		
+		if(null == userService) {
+			return null;
+		}
+		
+		return userService.getCurrentUser().getId();
+	}
+
+
+	public String getCurrentSession() {
+		
+		if(null == sessionManager) {
+			return null;
+		}
+		
+		Session session = sessionManager.getCurrentSession();
+		
+		if(null == session) {
+			return null;
+		}
+		
+		
+		return session.getId();
+	}
 	
 	/*
 	 * UTILITY HELPER METHODS
@@ -3737,6 +3765,13 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	public void setBusinessLogic(BusinessLogic businessLogic) {
 		this.businessLogic = businessLogic;
 	}
-	
 
+
+	public SessionManager getSessionManager() {
+		return sessionManager;
+	}
+
+	public void setSessionManager(SessionManager sessionManager) {
+		this.sessionManager = sessionManager;
+	}
 }

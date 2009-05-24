@@ -20,6 +20,7 @@
 		<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>
 		<property name="security" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Security"/>
 		<property name="advisor" ref="org.sakaiproject.gradebook.gwt.sakai.api.UcdInstitutionalAdvisor"/>
+    	<property name="sessionManager" ref="org.sakaiproject.tool.api.SessionManager" />
 	</bean>
 	
 	<!-- Performance Target -->
