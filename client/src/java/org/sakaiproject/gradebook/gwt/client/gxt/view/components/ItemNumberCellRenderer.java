@@ -63,7 +63,7 @@ public class ItemNumberCellRenderer extends NumberCellRenderer<TreeItem> {
 
 			}
 			
-			StringBuilder builder = new StringBuilder().append("<span class=\"").append(cssClasses)
+			StringBuilder builder = new StringBuilder().append("<span class=\"").append(cssClasses.toString())
 				.append("\">").append(prefix).append(result).append("</span>");
 			
 			if ((isCategory && isPercentCategory) || (isGradebook && isPercentGrade)) {

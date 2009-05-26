@@ -90,6 +90,8 @@ public class GradebookApplication implements EntryPoint {
 		Registry.register(AppConstants.SERVICE, dataService);
 		Registry.register(AppConstants.I18N, i18n);
 
+		if (GWT.isScript())
+			resizeMainFrame(screenHeight + 20);
 		
 		AsyncCallback<ApplicationModel> callback = 
 			new AsyncCallback<ApplicationModel>() {
@@ -101,8 +103,6 @@ public class GradebookApplication implements EntryPoint {
 
 				public void onSuccess(ApplicationModel result) {
 					GXT.hideLoadingPanel("loading");
-					if (GWT.isScript())
-						resizeMainFrame(screenHeight + 20);
 					
 					dispatcher.dispatch(GradebookEvents.Startup.getEventType(), result);
 				}

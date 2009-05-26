@@ -1226,7 +1226,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
             	
             	if (hasCategories) 
             		query.append(", Category cat where a.category.id = cat.id ")
-            			 .append(" and cat.removed = false ");
+            			 .append(" and cat.removed = false and ");
             	else
             		query.append(" where ");
             	
@@ -1234,10 +1234,11 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
             		 .append("and a.removed = false ")
             		 .append("and a.name != 'Course Grade' ")
             		 .append("and a.id not in ( ")
-            		 	.append("select r.assignment.id ")
-            		 	.append("AssignmentGradeRecord r ")
+            		 	.append("select r.gradableObject.id ")
+            		 	.append("from AssignmentGradeRecord r ")
             		 	.append("where r.studentId = :studentId ")
-            		 	.append("and (r.pointsEarned is not null or r.excluded = true ")
+            		 	.append("and (r.pointsEarned is not null or r.excluded = true) ")
+            		 	.append("and r.gradableObject.id = a.id ")
             		 .append(") ");
             	
             	Query q = session.createQuery(query.toString());

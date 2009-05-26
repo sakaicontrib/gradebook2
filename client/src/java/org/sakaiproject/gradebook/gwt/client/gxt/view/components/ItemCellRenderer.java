@@ -42,7 +42,7 @@ public class ItemCellRenderer implements CellRenderer<TreeItem> {
 		if (isReleased)
 			cssClasses.append(" gbReleased");
 		
-		return new StringBuilder().append("<span class=\"").append(cssClasses)
+		return new StringBuilder().append("<span class=\"").append(cssClasses.toString())
 			.append("\">").append(prefix).append(result).append("</span>").toString();
 	}
 	

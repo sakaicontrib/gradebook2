@@ -459,6 +459,7 @@ public class ItemTreePanel extends ContentPanel {
 				cm.addListener(Events.HiddenChange, l);
 			}
 			
+			
 			protected void render() {
 			    scrollBarWidth = XDOM.getScrollBarWidth();
 

@@ -166,7 +166,7 @@
     	</dependency>
     	
     	<dependency>
-        	<groupId>org.gwtwidgets</groupId>
+        	<groupId>net.sf.gwt-widget</groupId>
             <artifactId>gwt-sl</artifactId>
             <version>0.1.5b</version>
         </dependency>

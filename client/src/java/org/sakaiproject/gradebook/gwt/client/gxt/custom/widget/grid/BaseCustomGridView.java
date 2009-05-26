@@ -79,7 +79,7 @@ public class BaseCustomGridView extends GridView {
 		        String attr = c.cellAttr != null ? c.cellAttr : "";
 		        String cellAttr = c.cellAttr != null ? c.cellAttr : "";
 
-		        StringBuilder cssBuilder = new StringBuilder().append(css);
+		        StringBuilder cssBuilder = new StringBuilder().append(css.toString());
 		        StringBuilder innerCssClass = new StringBuilder().append("x-grid3-cell-inner x-grid3-col-").append(c.id);
 		        
 		        boolean isDirty = isShowDirtyCells();

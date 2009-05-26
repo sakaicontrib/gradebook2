@@ -205,8 +205,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				businessLogic.applyNoDuplicateItemNamesRule(gradebook.getId(), name, null, assignments);
 			}
 			
-			if (assignments == null || assignments.isEmpty())
-				weight = new Double(100d);
+			//if (assignments == null || assignments.isEmpty())
+			//	weight = new Double(100d);
 	
 			double w = weight == null ? 0d : ((Double)weight).doubleValue() * 0.01;
 			
