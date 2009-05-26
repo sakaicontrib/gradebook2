@@ -38,10 +38,10 @@ import org.sakaiproject.tool.gradebook.Gradebook;
 
 public class Gradebook2ServiceTest extends TestCase {
 
-	private static final String GRADEBOOK_UID = "12312409345";
-	private Gradebook2ServiceImpl service;
-	private ItemModel category;
-	private GradebookModel gbModel;
+	protected static final String GRADEBOOK_UID = "12312409345";
+	protected Gradebook2ServiceImpl service;
+	protected ItemModel category;
+	protected GradebookModel gbModel;
 	
 	public Gradebook2ServiceTest(String name) {
 		super(name);

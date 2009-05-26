@@ -32,6 +32,7 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
+import org.sakaiproject.service.gradebook.shared.GradebookService;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
@@ -81,11 +82,12 @@ public class ImportExportUtility {
 		}
 		
 		filename.append(".csv");
-				
-		response.setContentType("application/x-download");
-		response.setHeader("Content-Disposition", "attachment; filename=" + filename.toString());
-		response.setHeader("Pragma", "no-cache");
-		
+			
+		if (response != null) {
+			response.setContentType("application/x-download");
+			response.setHeader("Content-Disposition", "attachment; filename=" + filename.toString());
+			response.setHeader("Pragma", "no-cache");
+		}
 		
 		CSVWriter csvWriter = new CSVWriter(writer);
 		
@@ -220,7 +222,7 @@ public class ImportExportUtility {
 		
 		csvWriter.writeNext(headerColumns.toArray(new String[headerColumns.size()]));
 		
-		PagingLoadResult<StudentModel> result = service.getStudentRows(gradebookUid, gradebookId, null);
+		PagingLoadResult<StudentModel> result = service.getStudentRows(gradebookUid, gradebookId, null, Boolean.TRUE);
 		
 		List<StudentModel> rows = result.getData();
 		
@@ -264,11 +266,11 @@ public class ImportExportUtility {
 		}
 	}
 
-	public static ImportFile parseImportX(Gradebook2Service service, 
-			String gradebookUid, Reader reader,
-			EnumSet<Delimiter> delimiterSet) throws InvalidInputException, FatalException {
+	public static ImportFile parseImport(Gradebook2Service service, 
+			String gradebookUid, Reader reader) throws InvalidInputException, FatalException {
 		
 		GradebookModel gradebook = service.getGradebook(gradebookUid);
+		boolean hasCategories = gradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES;
 		
 		List<UserDereference> userDereferences = service.findAllUserDereferences();
 		Map<String, UserDereference> userDereferenceMap = new HashMap<String, UserDereference>();
@@ -512,6 +514,9 @@ public class ImportExportUtility {
 				else if (CategoryType.WEIGHTED_CATEGORIES.getDisplayName().equals(categoryType))
 					cType = CategoryType.WEIGHTED_CATEGORIES;
 			
+				// If the upload changes the status of having categories, then update this local var
+				hasCategories = cType != CategoryType.NO_CATEGORIES;
+				
 				gradebookItemModel.setCategoryType(cType);
 			}
 			if (gradeType != null) {
@@ -701,6 +706,8 @@ public class ImportExportUtility {
 				}
 			}
 		}
+		
+		importFile.setHasCategories(Boolean.valueOf(hasCategories));
 
 		return importFile;
 	}

@@ -1624,7 +1624,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		return new UserDereferenceRealmUpdate(siteId, DEFAULT_NUMBER_TEST_LEARNERS);
 	}
 
-	public List<UserDereference> getUserUidsForSite(final String[] realmIds, final String sortField, final String searchField, 
+	public List<UserDereference> getUserDereferences(final String[] realmIds, final String sortField, final String searchField, 
 			final String searchCriteria, final int offset, final int limit, final boolean isAsc, String[] roleNames) {
 		
 		if (userDereferences == null) {
@@ -1728,6 +1728,11 @@ public class GradebookToolServiceMock implements GradebookToolService {
 	public List<String> getFullUserListForSite(final String siteId, final String[] roleNames) {
 		
 		return null;
+	}
+	
+	public boolean isStudentMissingScores(final Long gradebookId, final String studentId, final boolean hasCategories) {
+
+		return false;
 	}
 	
 }

@@ -31,7 +31,7 @@ public class GradeCalculationTest extends TestCase {
 	}
 	
 	
-	public void testRobertPoints() {
+	/*public void testRobertPoints() {
 
 		Double[][] values = {
 				{ 10d, 10d, 0.20d, null },
@@ -51,9 +51,9 @@ public class GradeCalculationTest extends TestCase {
 		System.out.println("COURSE GRADE: " + courseGrade);
 		
 		assertEqualsAtScale2(BigDecimal.valueOf(100.00d), courseGrade);
-	}
+	}*/
 	
-	
+
 	public void testPerfectPoints() {
 
 		Double[][] values = {

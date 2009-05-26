@@ -23,6 +23,7 @@ import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 
 import com.extjs.gxt.ui.client.Events;
+import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.LayoutRegion;
 import com.extjs.gxt.ui.client.event.Listener;
@@ -168,7 +169,8 @@ public class InstructorView extends AppView {
 		borderLayoutContainer.add(centerLayoutContainer, centerData);
 		borderLayoutContainer.add(eastLayoutContainer, eastData);
 		
-		RootPanel.get().add(viewport);
+		//RootPanel.get().add(viewport);
+		RootPanel.get().add(realViewport);
 	}
 
 	@Override

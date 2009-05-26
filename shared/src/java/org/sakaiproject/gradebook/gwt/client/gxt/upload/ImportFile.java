@@ -11,6 +11,7 @@ public class ImportFile implements Serializable {
 	
 	private List<ImportRow> rows;
 	
+	private Boolean hasCategories;
 	
 	public ImportFile() {
 		
@@ -30,6 +31,14 @@ public class ImportFile implements Serializable {
 
 	public void setItems(List<ImportHeader> items) {
 		this.items = items;
+	}
+
+	public Boolean getHasCategories() {
+		return hasCategories;
+	}
+
+	public void setHasCategories(Boolean hasCategories) {
+		this.hasCategories = hasCategories;
 	}
 
 	

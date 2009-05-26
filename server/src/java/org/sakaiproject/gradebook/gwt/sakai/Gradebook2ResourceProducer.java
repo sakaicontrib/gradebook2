@@ -29,6 +29,8 @@ import com.extjs.gxt.ui.client.data.PagingLoadConfig;
 
 public class Gradebook2ResourceProducer extends GWTSpringController implements Gradebook2RPCService {
 
+	private static final long serialVersionUID = 1L;
+
 	private static final Log log = LogFactory.getLog(Gradebook2ResourceProducer.class);
 	
 	private Gradebook2Service service;
@@ -77,6 +79,8 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 				return (X)service.getApplicationModel();
 			case GRADEBOOK:
 				return (X)service.getGradebook(entityUid);
+			case SUBMISSION_VERIFICATION:
+				return (X)service.getSubmissionVerification(entityUid, entityId);
 			}
 		
 		} catch (Throwable t) {
@@ -100,7 +104,7 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 			case SECTION:
 				return (Y)service.getSections(uid, id, config);
 			case LEARNER:
-				return (Y)service.getStudentRows(uid, id, config);
+				return (Y)service.getStudentRows(uid, id, config, Boolean.FALSE);
 			case GRADE_EVENT:
 				return (Y)service.getGradeEvents(uid, id);
 			case GRADE_SCALE:

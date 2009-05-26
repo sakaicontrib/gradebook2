@@ -1,50 +1,34 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view;
 
-import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
-import org.sakaiproject.gradebook.gwt.client.advisor.SampleClientExportAdvisor;
-import org.sakaiproject.gradebook.gwt.client.advisor.UcdClientExportAdvisor;
-import org.sakaiproject.gradebook.gwt.client.api.ClientExportAdvisor;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.components.GradeSubmissionDialog;
 
-
-import com.extjs.gxt.ui.client.Registry;
-import com.extjs.gxt.ui.client.event.Listener;
-import com.extjs.gxt.ui.client.event.WindowEvent;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.View;
-import com.extjs.gxt.ui.client.widget.Dialog;
-import com.extjs.gxt.ui.client.widget.Info;
 import com.extjs.gxt.ui.client.widget.MessageBox;
-import com.extjs.gxt.ui.client.widget.button.Button;
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.http.client.Request;
-import com.google.gwt.http.client.RequestException;
-import com.google.gwt.http.client.Response;
-import com.google.gwt.http.client.RequestBuilder;
-import com.google.gwt.http.client.RequestCallback;
 
 
 public class FinalGradeSubmissionView extends View {
 
-	private I18nConstants i18n;
+	private GradeSubmissionDialog dialog;
 	
-	public FinalGradeSubmissionView(Controller controller) {
+	public FinalGradeSubmissionView(Controller controller, I18nConstants i18n) {
 		super(controller);
+		this.dialog = new GradeSubmissionDialog(i18n);
 	}
 
 	@Override
 	protected void initialize() {
 		super.initialize();
-	
-		i18n = Registry.get(AppConstants.I18N);
 	}
 	
 	@Override
 	protected void handleEvent(AppEvent<?> event) {
+
+		dialog.verify();
 		
-		final GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		/*final GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 		
 		MessageBox.confirm(i18n.finalGradeSubmissionConfirmTitle(), i18n.finalGradeSubmissionConfirmText(), new Listener<WindowEvent>() {
 
@@ -96,6 +80,6 @@ public class FinalGradeSubmissionView extends View {
 					}
 				}
 			}	
-		}); 
+		}); */
 	}
 }

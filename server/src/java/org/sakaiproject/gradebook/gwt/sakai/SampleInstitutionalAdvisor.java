@@ -43,7 +43,16 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 	private SiteService siteService = null;
 	private ToolManager toolManager = null;
 	
-	public String getExportCourseManagementId(String userEid, Group group) {
+	public List<String> getExportCourseManagementSetEids(Group group) {
+		if(null == group) {
+			log.error("ERROR : Group is null");
+			return null;
+		}
+		
+		return null;
+	}
+	
+	public String getExportCourseManagementId(String userEid, Group group, List<String> enrollmentSetEids) {
 
 		if(null == group) {
 			log.error("ERROR : Group is null");
@@ -81,6 +90,10 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 				|| role.equalsIgnoreCase("Open Campus")
 				|| role.equalsIgnoreCase("Access"))
 				&& member.isActive();
+	}
+	
+	public boolean isExportCourseManagementIdByGroup() {
+		return false;
 	}
 
 	public boolean isValidOverrideGrade(String grade, String learnerEid, String learnerDisplayId, Gradebook gradebook, GradingScale gradingScale) {

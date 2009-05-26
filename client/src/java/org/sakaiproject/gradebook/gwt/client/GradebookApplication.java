@@ -39,7 +39,10 @@ import com.extjs.gxt.ui.client.util.Theme;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.Cookies;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.IFrameElement;
+import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
 
@@ -98,11 +101,8 @@ public class GradebookApplication implements EntryPoint {
 
 				public void onSuccess(ApplicationModel result) {
 					GXT.hideLoadingPanel("loading");
-					String placementId = result.getPlacementId();
-					if (placementId != null) {
-						String modifiedId = placementId.replace('-', 'x');
-						resizeMainFrame("Main" + modifiedId, screenHeight + 20);
-					}
+					if (GWT.isScript())
+						resizeMainFrame(screenHeight + 20);
 					
 					dispatcher.dispatch(GradebookEvents.Startup.getEventType(), result);
 				}
@@ -110,37 +110,29 @@ public class GradebookApplication implements EntryPoint {
 		};
 		
 		dataService.get(null, null, EntityType.APPLICATION, null, null, SecureToken.get(), callback);
-		
-		/*
-		UserEntityGetAction<ApplicationModel> action = 
-			new UserEntityGetAction<ApplicationModel>(EntityType.APPLICATION);
-		
-		RemoteCommand<ApplicationModel> remoteCommand =
-			new RemoteCommand<ApplicationModel>() {
-		
-			public void onCommandFailure(UserEntityAction<ApplicationModel> action, Throwable caught) {
-				GXT.hideLoadingPanel("loading");
-				dispatcher.dispatch(GradebookEvents.Exception.getEventType(), caught);
-			}
-			
-			public void onCommandSuccess(UserEntityAction<ApplicationModel> action, ApplicationModel model) {
-				GXT.hideLoadingPanel("loading");
-				String placementId = model.getPlacementId();
-				if (placementId != null) {
-					String modifiedId = placementId.replace('-', 'x');
-					resizeMainFrame("Main" + modifiedId, screenHeight + 20);
-				}
-				
-				dispatcher.dispatch(GradebookEvents.Startup.getEventType(), model);
-			}
-			
-		};
-		
-		remoteCommand.execute(action);*/
-	}
 
+	}
+	
+	
+	private native Document getWindowParentDocument() /*-{
+	    	return $wnd.parent.document
+	}-*/;
+	  
+	private void resizeMainFrame(int setHeight) {
+	 		Document doc = getWindowParentDocument();
+	 		NodeList<Element> nodeList = doc.getElementsByTagName("iframe");
+	 		for(int i = 0; i < nodeList.getLength(); i++) {
+	 		    IFrameElement iframe = (IFrameElement) nodeList.getItem(i);
+	 		    if(iframe.getId().startsWith("Main")) {
+	 		        iframe.setAttribute("style", "height: " + setHeight + "px;");
+	 		        break;
+	 		    }
+	 		}
+	 	}
+
+	/*
 	// FIXME: This needs to be cleaned up
-	public native void resizeMainFrame(String placementId, int setHeight) /*-{
+	public native void resizeMainFrame(String placementId, int setHeight) /--*-{
 		
 		//	$wnd.alert("Is " + placementId + " equal to Mainff1e8b82x01e4x4d00x9a17x3982e11d5bd1 ? ");
 	
@@ -204,10 +196,10 @@ public class GradebookApplication implements EntryPoint {
 		       
 		    } 
 		    
-	 }-*/;
+	 }-*--/;
 
 
-	public native void findScroll() /*-{
+	public native void findScroll() /--*-{
 	 	var x = 0;
 	 	var y = 0;
 	 	if (self.pageYOffset)
@@ -227,6 +219,6 @@ public class GradebookApplication implements EntryPoint {
 	 	}
 	 	
 	 	return [x,y];
-	 }-*/;
-	
+	 }-*--/;
+	*/
 }

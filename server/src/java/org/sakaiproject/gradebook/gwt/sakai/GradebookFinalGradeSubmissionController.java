@@ -34,7 +34,7 @@ public class GradebookFinalGradeSubmissionController implements Controller {
 
 		try {
 
-			PagingLoadResult<StudentModel> result = service.getStudentRows(gradebookUid, null, null);
+			PagingLoadResult<StudentModel> result = service.getStudentRows(gradebookUid, null, null, Boolean.TRUE);
 			
 			if (result != null)
 				rows = result.getData();

@@ -16,18 +16,15 @@ import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.BaseCustomGridView;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
+import org.sakaiproject.gradebook.gwt.client.gxt.upload.ClientUploadUtility;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader.Field;
-import org.sakaiproject.gradebook.gwt.client.gxt.view.components.ItemCellRenderer;
-import org.sakaiproject.gradebook.gwt.client.gxt.view.components.ItemNumberCellRenderer;
-import org.sakaiproject.gradebook.gwt.client.gxt.view.components.ItemTreeTableBinder;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.SpreadsheetModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
 import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
@@ -35,16 +32,10 @@ import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.data.BaseListLoader;
 import com.extjs.gxt.ui.client.data.BaseModel;
-import com.extjs.gxt.ui.client.data.BaseTreeLoader;
-import com.extjs.gxt.ui.client.data.BeanModel;
-import com.extjs.gxt.ui.client.data.BeanModelFactory;
-import com.extjs.gxt.ui.client.data.BeanModelLookup;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
 import com.extjs.gxt.ui.client.data.ListLoader;
 import com.extjs.gxt.ui.client.data.MemoryProxy;
 import com.extjs.gxt.ui.client.data.ModelData;
-import com.extjs.gxt.ui.client.data.TreeLoader;
-import com.extjs.gxt.ui.client.data.TreeModelReader;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.FormEvent;
@@ -54,7 +45,6 @@ import com.extjs.gxt.ui.client.event.WindowEvent;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
-import com.extjs.gxt.ui.client.store.TreeStore;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
@@ -83,12 +73,8 @@ import com.extjs.gxt.ui.client.widget.layout.CardLayout;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
-import com.extjs.gxt.ui.client.widget.layout.MarginData;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
-import com.extjs.gxt.ui.client.widget.treetable.TreeTable;
-import com.extjs.gxt.ui.client.widget.treetable.TreeTableColumn;
-import com.extjs.gxt.ui.client.widget.treetable.TreeTableColumnModel;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONBoolean;
@@ -99,7 +85,6 @@ import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Accessibility;
 
 public class ImportPanel extends ContentPanel {
 
@@ -110,7 +95,7 @@ public class ImportPanel extends ContentPanel {
 	private FileUploadField file;
 	
 	private ListStore<StudentModel> rowStore;
-	private ListStore<BeanModel> itemStore;
+	private ListStore<ItemModel> itemStore;
 	private ListStore<BaseModel> resultStore;
 	private ListStore<ItemModel> categoriesStore;
 	private Grid<StudentModel> grid;
@@ -172,15 +157,10 @@ public class ImportPanel extends ContentPanel {
 		
 	}
 	
-	protected void onRender(Element parent, int pos) {
-		super.onRender(parent, pos);
-
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-		
+	private void refreshCategoryPickerStore(ItemModel gradebookItemModel) {
 		categoriesStore.removeAll();
-		if (selectedGradebook != null) {
-			ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
-		
+		if (gradebookItemModel != null) {
+			
 			ItemModelProcessor processor = new ItemModelProcessor(gradebookItemModel) {
 				
 				@Override
@@ -192,6 +172,15 @@ public class ImportPanel extends ContentPanel {
 			
 			processor.process();
 		}
+	}
+	
+	protected void onRender(Element parent, int pos) {
+		super.onRender(parent, pos);
+
+		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		
+		if (selectedGradebook != null) 
+			refreshCategoryPickerStore(selectedGradebook.getGradebookItemModel());
 		
 		
 		int fileUploadHeight = 100;
@@ -316,30 +305,33 @@ public class ImportPanel extends ContentPanel {
 		
 		boolean hasCategories = selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES;
 		
+		previewTab = new TabItem("Data");
+		previewTab.setLayout(new FlowLayout());
+		previewTab.add(grid);
+		
+		tabPanel.add(previewTab);
+		
+		columnsTab = new TabItem("Setup");
+		columnsTab.setLayout(new FlowLayout());
+		columnsTab.add(buildItemGrid());
+		
+		tabPanel.add(columnsTab);
+		
+		tabPanel.setHeight(380);
+		
+		subCardLayoutContainer.add(tabPanel);
+		
 		if (hasCategories) {
-			previewTab = new TabItem("Data");
-			previewTab.setLayout(new FlowLayout());
-			previewTab.add(grid);
 			
-			tabPanel.add(previewTab);
-			
-			columnsTab = new TabItem("Setup");
-			columnsTab.setLayout(new FlowLayout());
-			columnsTab.add(buildItemGrid());
-			
-			tabPanel.add(columnsTab);
-			
-			tabPanel.setHeight(380);
-			
-			subCardLayoutContainer.add(tabPanel);
 		} else {
-			previewFieldSet = new FieldSet(); 
+			columnsTab.setVisible(false);
+			/*previewFieldSet = new FieldSet(); 
 			previewFieldSet.setLayout(new FlowLayout());
 			previewFieldSet.setHeading("Data"); 
 			previewFieldSet.setHeight(400);
 			previewFieldSet.add(grid, new MarginData(5));
 			
-			subCardLayoutContainer.add(previewFieldSet);
+			subCardLayoutContainer.add(previewFieldSet);*/
 		}
 		
 		subCardLayoutContainer.setHeight(subHeight);
@@ -703,7 +695,8 @@ public class ImportPanel extends ContentPanel {
 
 			@Override
 			public void componentSelected(ButtonEvent ce) {
-				SpreadsheetModel spreadsheetModel = new SpreadsheetModel();
+				
+				/*SpreadsheetModel spreadsheetModel = new SpreadsheetModel();
 				
 
 				// Create new items
@@ -763,7 +756,9 @@ public class ImportPanel extends ContentPanel {
 					rows.add(student);
 				}
 				
-				spreadsheetModel.setRows(rows);
+				spreadsheetModel.setRows(rows);*/
+				
+				SpreadsheetModel spreadsheetModel = ClientUploadUtility.composeSpreadsheetModel(itemStore.getModels(), rowStore.getModels(), previewColumns);
 				
 				uploadSpreadsheet(spreadsheetModel);
 				
@@ -806,8 +801,47 @@ public class ImportPanel extends ContentPanel {
 				JSONArray headersArray = getArray(jsonObject, "items");
 				previewColumns = new ArrayList<ColumnConfig>();
 				
+				Boolean hasCategoriesBoolean = getBoolean(jsonObject, "hasCategories");
 				
-				boolean hasCategories = gbModel.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES;
+				boolean hasCategories = DataTypeConversionUtil.checkBoolean(hasCategoriesBoolean);
+				
+				if (hasCategories) {
+					columnsTab.setVisible(true);
+				
+					final GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+					
+					if (selectedGradebook != null) {
+						
+						if (selectedGradebook.getGradebookItemModel().getCategoryType() == CategoryType.NO_CATEGORIES) {
+							
+							Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
+					
+							AsyncCallback<GradebookModel> callback = new AsyncCallback<GradebookModel>() {
+
+								public void onFailure(Throwable caught) {
+									// FIXME: Need to throw an exception
+								}
+
+								public void onSuccess(GradebookModel result) {
+									
+									if (result.getGradebookItemModel() != null) {
+										refreshCategoryPickerStore(result.getGradebookItemModel());
+										
+										selectedGradebook.setGradebookItemModel(result.getGradebookItemModel());
+										Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel.getEventType(), selectedGradebook);
+									}
+								}
+							};
+							
+							service.get(selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId(), EntityType.GRADEBOOK, null, null, SecureToken.get(), callback);
+							
+							refreshCategoryPickerStore(selectedGradebook.getGradebookItemModel());
+						}
+						
+					}
+				}
+				
+					//gbModel.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES;
 				boolean hasUnassignedItem = false;
 				
 				if (headersArray != null) {	
@@ -821,7 +855,8 @@ public class ImportPanel extends ContentPanel {
 						String field = getString(jsonHeaderObject, "field");
 						String categoryName = getString(jsonHeaderObject, "categoryName");
 						String categoryId = getString(jsonHeaderObject, "categoryId");
-									
+						Double percentCategory = getDouble(jsonHeaderObject, "percentCategory");
+						
 						int width = 200;
 									
 						StringBuilder nameBuilder = new StringBuilder();
@@ -857,6 +892,7 @@ public class ImportPanel extends ContentPanel {
 						header.setField(field);
 						header.setCategoryName(categoryName);
 						header.setCategoryId(categoryId);
+						header.setPercentCategory(percentCategory);
 						
 						if (header.getField() != null && header.getField().equals("ITEM"))
 							headerMap.put(id, header);
@@ -881,10 +917,10 @@ public class ImportPanel extends ContentPanel {
 					List<StudentModel> models = new ArrayList<StudentModel>();
 					if (rowsArray != null) {
 						StringBuilder heading = new StringBuilder("Data (").append(rowsArray.size()).append(" records)");
-						if (hasCategories)
+						//if (hasCategories)
 							previewTab.setText(heading.toString());
-						else
-							previewFieldSet.setTitle(heading.toString());
+						//else
+						//	previewFieldSet.setTitle(heading.toString());
 						
 						for (int i=0;i<rowsArray.size();i++) {
 							JSONObject rowObject = rowsArray.get(i).isObject();
@@ -924,10 +960,10 @@ public class ImportPanel extends ContentPanel {
 					if (models != null)
 						rowStore.add(models);
 					
-					if (hasCategories)
+					//if (hasCategories)
 						subCardLayout.setActiveItem(tabPanel);
-					else
-						subCardLayout.setActiveItem(previewFieldSet);
+					//else
+					//	subCardLayout.setActiveItem(previewFieldSet);
 					
 					uploadBox.close();
 					
@@ -953,32 +989,21 @@ public class ImportPanel extends ContentPanel {
 							
 					}
 						
-					if (hasCategories) {
-						//advancedContainer = buildItemGrid(headers);
-						//columnsTab.add(buildItemGrid(headers));
-						
-						List<BeanModel> itemModels = new ArrayList<BeanModel>();
-						BeanModelFactory factory = BeanModelLookup.get().getFactory(headers.get(0).getClass());
-				        if (factory == null) {
-				          throw new RuntimeException("No BeanModelFactory found for " + headers.get(0).getClass());
-				        }
-				        List<BeanModel> converted = factory.createModel(headers);
-				        itemModels.addAll(converted);
-						
+					/*if (hasCategories) {
+
+						List<ItemModel> itemModels = ClientUploadUtility.convertHeadersToItemModels(headers);
+					
 				        itemStore.add(itemModels);
 					} else {
-						itemStore = new ListStore<BeanModel>();
 						
-						List<BeanModel> beanModels = new ArrayList<BeanModel>();
-						BeanModelFactory factory = BeanModelLookup.get().getFactory(headers.get(0).getClass());
-				        if (factory == null) {
-				          throw new RuntimeException("No BeanModelFactory found for " + headers.get(0).getClass());
-				        }
-				        List<BeanModel> converted = factory.createModel(headers);
-				        beanModels.addAll(converted);
+						List<ItemModel> itemModels = ClientUploadUtility.convertHeadersToItemModels(headers);
 						
-				        itemStore.add(beanModels);
-					}
+						
+				        itemStore.add(itemModels);
+					}*/
+					
+					List<ItemModel> itemModels = ClientUploadUtility.convertHeadersToItemModels(headers);
+			        itemStore.add(itemModels);
 					
 					//subCardLayoutContainer.add(columnsTab);
 					
@@ -991,7 +1016,7 @@ public class ImportPanel extends ContentPanel {
 		return fileUploadPanel;
 	}
 	
-	private LayoutContainer buildItemContainer(List<ImportHeader> headers) {
+	/*private LayoutContainer buildItemContainer(List<ImportHeader> headers) {
 		LayoutContainer container = new LayoutContainer();
 		
 		ItemNumberCellRenderer numericCellRenderer = new ItemNumberCellRenderer(DataTypeConversionUtil.getShortNumberFormat());		
@@ -1078,120 +1103,12 @@ public class ImportPanel extends ContentPanel {
 		
 		
 		treeLoader.load(rootItemModel);
-		
-		
-		
-		
-		
-		
-		
-		
-		/*
-		ContentPanel panel = new ContentPanel();
-		panel.setLayout(new FitLayout());
-		panel.setHeaderVisible(false);
-		
-		List<ColumnConfig> itemColumns = new ArrayList<ColumnConfig>();
-		
-		TextField<String> textField = new TextField<String>();
-		textField.addInputStyleName("gbTextFieldInput");
-		CellEditor textCellEditor = new CellEditor(textField);
-		
-		ColumnConfig name = new ColumnConfig("headerName", "Item", 200);
-		name.setEditor(textCellEditor);
-		itemColumns.add(name);
-		
-		ColumnConfig points = new ColumnConfig("points", "Points", 100);
-		points.setEditor(new CellEditor(new NumberField()));
-		itemColumns.add(points);
 
-		ComboBox<ItemModel> categoryPicker = new ComboBox<ItemModel>(); 
-		categoryPicker.setAllowBlank(false); 
-		categoryPicker.setAllQuery(null);
-		categoryPicker.setDisplayField(ItemModel.Key.NAME.name());  
-		categoryPicker.setEditable(true);
-		categoryPicker.setEmptyText("Required");
-		categoryPicker.setFieldLabel("Category");
-		categoryPicker.setForceSelection(true);
-		categoryPicker.setStore(categoriesStore);
-		categoryPicker.addInputStyleName("gbTextFieldInput");
-
-		ColumnConfig category = new ColumnConfig("categoryName", "Category", 140);
-		category.setEditor(new CellEditor(categoryPicker) {
-			
-			@Override
-			public Object postProcessValue(Object value) {
-			    if (value != null) {
-			    	ItemModel model = (ItemModel)value;
-			    	return model.getName();
-			    }
-				return "None/Default";
-			}
-
-			@Override
-			public Object preProcessValue(Object value) {
-				ComboBox<ItemModel> combo = (ComboBox<ItemModel>)getField();
-				List<ItemModel> models = categoriesStore.getModels();
-				
-				for (ItemModel model : models) {
-					if (model.getName().equals(value))
-						return model;
-				}
-				
-				return null;
-			}
-			
-		});
-		itemColumns.add(category);
-		
-		ColumnModel itemColumnModel = new ColumnModel(itemColumns);
-		itemStore = new ListStore<BeanModel>();
-		
-		EditorGrid<BeanModel> itemGrid = new EditorGrid<BeanModel>(itemStore, itemColumnModel);
-		itemGrid.setHeight(300);
-		List<BeanModel> models = new ArrayList<BeanModel>();
-		BeanModelFactory factory = BeanModelLookup.get().getFactory(headers.get(0).getClass());
-        if (factory == null) {
-          throw new RuntimeException("No BeanModelFactory found for " + headers.get(0).getClass());
-        }
-        List<BeanModel> converted = factory.createModel(headers);
-        models.addAll(converted);
-		
-        itemStore.add(models);
-        
-		panel.add(itemGrid);
-		
-		
-		LayoutContainer container = new LayoutContainer();
-		container.setLayout(new RowLayout());
-		
-		ContentPanel directionsPanel = new ContentPanel();
-		directionsPanel.setFrame(true);
-		directionsPanel.setWidth(1);
-		directionsPanel.setHeaderVisible(false);
-		
-		String text = "Listed below are the items that will be imported, according to the column headers "
-			+ "you provided in your file. Note that items that do not yet exist in the current gradebook, "
-			+ "or that exist in a different category from the one selected, will be created on import. ";
-		
-		directionsPanel.add(new LabelField(text));
-		
-		container.add(directionsPanel, new RowData(1, -1));
-		
-		
-		FitLayout fitLayout = new FitLayout();
-		FieldSet itemFieldSet = new FieldSet(); 
-		itemFieldSet.setLayout(fitLayout);
-		itemFieldSet.setHeading("Items"); 
-		itemFieldSet.setHeight(320);  
-		itemFieldSet.add(panel, new MarginData(5));
-		
-		container.add(itemFieldSet, new RowData(1, 1));*/
 		
 		return container;
-	}
+	}*/
 	
-	private EditorGrid<BeanModel> buildItemGrid() {
+	private EditorGrid<ItemModel> buildItemGrid() {
 		ContentPanel panel = new ContentPanel();
 		panel.setLayout(new FitLayout());
 		panel.setHeaderVisible(false);
@@ -1202,11 +1119,15 @@ public class ImportPanel extends ContentPanel {
 		textField.addInputStyleName("gbTextFieldInput");
 		CellEditor textCellEditor = new CellEditor(textField);
 		
-		ColumnConfig name = new ColumnConfig("headerName", "Item", 200);
+		ColumnConfig name = new ColumnConfig(ItemModel.Key.NAME.name(), "Item", 200);
 		name.setEditor(textCellEditor);
 		itemColumns.add(name);
 		
-		ColumnConfig points = new ColumnConfig("points", "Points", 100);
+		ColumnConfig percentCategory = new ColumnConfig(ItemModel.Key.PERCENT_CATEGORY.name(), "% Category", 100);
+		percentCategory.setEditor(new CellEditor(new NumberField()));
+		itemColumns.add(percentCategory);
+		
+		ColumnConfig points = new ColumnConfig(ItemModel.Key.POINTS.name(), "Points", 100);
 		points.setEditor(new CellEditor(new NumberField()));
 		itemColumns.add(points);
 
@@ -1221,7 +1142,7 @@ public class ImportPanel extends ContentPanel {
 		categoryPicker.setStore(categoriesStore);
 		categoryPicker.addInputStyleName("gbTextFieldInput");
 
-		ColumnConfig category = new ColumnConfig("categoryId", "Category", 140);
+		ColumnConfig category = new ColumnConfig(ItemModel.Key.CATEGORY_ID.name(), "Category", 140);
 		category.setEditor(new CellEditor(categoryPicker) {
 			
 			@Override
@@ -1235,7 +1156,7 @@ public class ImportPanel extends ContentPanel {
 
 			@Override
 			public Object preProcessValue(Object value) {
-				String id = (String)value;
+				Long id = (Long)value;
 				
 				ComboBox<ItemModel> combo = (ComboBox<ItemModel>)getField();
 				/*List<ItemModel> models = categoriesStore.getModels();
@@ -1245,7 +1166,7 @@ public class ImportPanel extends ContentPanel {
 						return model;
 				}*/
 				
-				return categoriesStore.findModel(ItemModel.Key.ID.name(), id);
+				return categoriesStore.findModel(ItemModel.Key.ID.name(), String.valueOf(id));
 			}
 			
 		});
@@ -1254,8 +1175,8 @@ public class ImportPanel extends ContentPanel {
 
 			public String render(ModelData model, String property, ColumnData config, int rowIndex, int colIndex, ListStore store) {
 			
-				String identifier = model.get(property);
-				ItemModel itemModel = categoriesStore.findModel(ItemModel.Key.ID.name(), identifier);
+				Long identifier = model.get(property);
+				ItemModel itemModel = categoriesStore.findModel(ItemModel.Key.ID.name(), String.valueOf(identifier));
 				
 				if (itemModel == null)
 					return "Unassigned";
@@ -1267,12 +1188,12 @@ public class ImportPanel extends ContentPanel {
 		itemColumns.add(category);
 		
 		ColumnModel itemColumnModel = new ColumnModel(itemColumns);
-		itemStore = new ListStore<BeanModel>();
+		itemStore = new ListStore<ItemModel>();
 		
-		EditorGrid<BeanModel> itemGrid = new EditorGrid<BeanModel>(itemStore, itemColumnModel);
+		EditorGrid<ItemModel> itemGrid = new EditorGrid<ItemModel>(itemStore, itemColumnModel);
 		itemGrid.setHeight(300);
 		itemGrid.setBorders(true);
-
+		itemGrid.setView(new BaseCustomGridView());
         
 		//panel.add(itemGrid);
 		

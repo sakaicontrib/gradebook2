@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -23,7 +22,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.sakaiproject.authz.api.Member;
 import org.sakaiproject.exception.IdUnusedException;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
@@ -45,6 +43,7 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.SectionModel;
 import org.sakaiproject.gradebook.gwt.client.model.SpreadsheetModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
+import org.sakaiproject.gradebook.gwt.client.model.SubmissionVerificationModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
@@ -231,7 +230,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 		
 		if (! hasCategories) {
-			return getItemModel(gradebook, assignments, assignmentId);
+			return getItemModel(gradebook, assignments, null, assignmentId);
 		}
 		
 		ItemModel categoryItemModel = getItemModelsForCategory(category, createItemModel(gradebook), assignmentId);
@@ -359,6 +358,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	public SpreadsheetModel createOrUpdateSpreadsheet(String gradebookUid, SpreadsheetModel spreadsheetModel) throws InvalidInputException {
 		
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
+		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
 		Map<String, Assignment> idToAssignmentMap = new HashMap<String, Assignment>();
 		List<ItemModel> headers = spreadsheetModel.getHeaders();
 		
@@ -368,11 +368,12 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			for (ItemModel item : headers) {
 				String id = item.getIdentifier();
 				if (id != null) { 
-					if (id.startsWith("NEW:")) {
-						Long categoryId = item.getCategoryId();
-						String name = item.getName();
-						Double weight = null;
-						Double points = item.getPoints();
+					Long categoryId = item.getCategoryId();
+					String name = item.getName();
+					Double weight = item.getPercentCategory();
+					Double points = item.getPoints();
+					
+					if (id.startsWith("NEW:")) {	
 						Date dueDate = null;
 						ItemModel itemModel = new ItemModel();
 						itemModel.setCategoryId(categoryId);
@@ -398,16 +399,37 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 						
 					} else {
 						Assignment assignment = gbService.getAssignment(Long.valueOf(id));
+						
+						boolean isModified = false;
+						
+						if (points != null && assignment.getPointsPossible() != null 
+								&& !points.equals(assignment.getPointsPossible())) {
+							assignment.setPointsPossible(points);
+							isModified = true;
+						}
+						
+						if (weight != null && assignment.getAssignmentWeighting() != null 
+								&& !weight.equals(assignment.getAssignmentWeighting())) {
+							
+							weight = weight.doubleValue() * 0.01d;
+							
+							assignment.setAssignmentWeighting(weight);
+							isModified = true;
+						}
+						
+						if (isModified) 
+							gbService.updateAssignment(assignment);
+						
 						idToAssignmentMap.put(id, assignment);
 					}
 				}
 			}
 					
-			boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
+			
 			// Apply business rules after item creation
 			if (hasCategories) {
 				List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
-				List<Category> categories = getCategoriesWithAssignments(gradebook.getId(), assignments);
+				List<Category> categories = getCategoriesWithAssignments(gradebook.getId(), assignments, false);
 				
 				Map<Long, Category> categoryMap = new HashMap<Long, Category>();
 				
@@ -581,7 +603,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 		spreadsheetModel.setResults(results);
 		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
-		spreadsheetModel.setGradebookItemModel(getItemModel(gradebook, assignments, null));
+		List<Category> categories = null;
+		if (hasCategories)
+			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+		spreadsheetModel.setGradebookItemModel(getItemModel(gradebook, assignments, categories, null));
 		
 		return spreadsheetModel;
 	}
@@ -692,7 +717,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			case COURSE_GRADE:
 				// In this case we need to ensure that we've calculated everybody's course grade
 				for (UserRecord record : userRecords) {
-					record.setDisplayGrade(getDisplayGrade(gradebook, record.getCourseGradeRecord(), assignments, categories, record.getGradeRecordMap()));
+					record.setDisplayGrade(getDisplayGrade(gradebook, record.getUserUid(), record.getCourseGradeRecord(), assignments, categories, record.getGradeRecordMap()));
 					record.setCalculated(true);
 				}
 				comparator = new CourseGradeComparator(isDescending);
@@ -756,6 +781,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				assignmentGradeRecord = currentGradeRecord;
 		}
 		
+		if (assignmentGradeRecord == null) {
+			assignmentGradeRecord = new AssignmentGradeRecord();
+		}
+		
 		assignmentGradeRecord.setExcluded(value);
 		
 		// Prepare record for update
@@ -766,6 +795,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		updateGradeRecords.add(assignmentGradeRecord);
 		gbService.updateAssignmentGradeRecords(assignment, updateGradeRecords, gradebook.getGrade_type());
 
+		gradeRecords = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), student.getIdentifier());
+		
 		return refreshLearnerData(gradebook, student, assignment, gradeRecords);
 	}
 	
@@ -787,7 +818,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		realmIds = new String[1];
 		realmIds[0] = new StringBuffer().append("/site/").append(siteId).toString();
 		
-		List<UserDereference> dereferences = gbService.getUserUidsForSite(realmIds, "sortName", null, null, -1, -1, true, learnerRoleNames);
+		List<UserDereference> dereferences = gbService.getUserDereferences(realmIds, "sortName", null, null, -1, -1, true, learnerRoleNames);
 		
 		return dereferences;
 	}
@@ -909,14 +940,18 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		worker.start();*/
 		
 		ApplicationModel model = new ApplicationModel();
-		model.setPlacementId(getPlacementId());
+		//model.setPlacementId(getPlacementId());
 		model.setGradebookModels(getGradebookModels());
 		
 		return model;
 	}
 	
-	public String getExportCourseManagementId(String userEid, Group group) {
-		return advisor.getExportCourseManagementId(userEid, group);
+	public List<String> getExportCourseManagementSetEids(Group group) {
+		return advisor.getExportCourseManagementSetEids(group);
+	}
+	
+	public String getExportCourseManagementId(String userEid, Group group, List<String> enrollmentSetEids) {
+		return advisor.getExportCourseManagementId(userEid, group, enrollmentSetEids);
 	}
 	
 	public String getExportUserId(UserDereference dereference) {
@@ -926,11 +961,14 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	public String getFinalGradeUserId(UserDereference dereference) {
 		return advisor.getFinalGradeUserId(dereference);
 	}
-	
+		
 	public GradebookModel getGradebook(String uid) {
 		Gradebook gradebook = gbService.getGradebook(uid);
 		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
-		return createGradebookModel(gradebook, assignments);
+		List<Category> categories = null;
+		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
+			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+		return createGradebookModel(gradebook, assignments, categories);
 	}
 	
 	public <X extends BaseModel> ListLoadResult<X> getGradeEvents(String studentId, Long assignmentId) {
@@ -1023,8 +1061,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	}
 	
 	public <X extends BaseModel> PagingLoadResult<X> getStudentRows(String gradebookUid, 
-			Long gradebookId, PagingLoadConfig config) {
+			Long gradebookId, PagingLoadConfig config, Boolean includeExportCourseManagementId) {
 
+		boolean includeCMId = DataTypeConversionUtil.checkBoolean(includeExportCourseManagementId);
+		
 		List<X> rows = new ArrayList<X>();
 		
 		String[] learnerRoleNames = advisor.getLearnerRoleNames();
@@ -1054,7 +1094,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	    
 	    List<Category> categories = null;
 		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
-			categories = getCategoriesWithAssignments(gradebook.getId(), assignments);
+			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
 	    
 	    String columnId = null;
 	    StudentModel.Key sortColumnKey = null;
@@ -1175,7 +1215,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 						
 				
 				
-				userRecords = findLearnerRecordPage(gradebook, site, realmIds, groupReferences, groupReferenceMap,  sortField, searchField, searchCriteria, offset, limit, !isDescending);
+				userRecords = findLearnerRecordPage(gradebook, site, realmIds, groupReferences, groupReferenceMap,  sortField, searchField, searchCriteria, offset, limit, !isDescending, includeCMId);
 				totalUsers = gbService.getUserCountForSite(realmIds, sortField, searchField, searchCriteria, learnerRoleNames);
 				
 				int startRow = config == null ? 0 : config.getOffset();
@@ -1196,7 +1236,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			case GRADE_OVERRIDE:
 			case ASSIGNMENT:
 				
-				userRecords = findLearnerRecordPage(gradebook, site, realmIds, groupReferences, groupReferenceMap, null, searchField, searchCriteria, -1, -1, !isDescending);
+				userRecords = findLearnerRecordPage(gradebook, site, realmIds, groupReferences, groupReferenceMap, null, searchField, searchCriteria, -1, -1, !isDescending, includeCMId);
 				
 				Map<String, UserRecord> userRecordMap = new HashMap<String, UserRecord>(); //findStudentRecords(gradebookUid, gradebookId, site, sectionUuid);
 				
@@ -1314,6 +1354,28 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		return new BasePagingLoadResult<X>(rows, startRow, totalUsers);
 	}
 	
+	public SubmissionVerificationModel getSubmissionVerification(String gradebookUid, Long gradebookId) {
+		
+		String[] roleNames = advisor.getLearnerRoleNames();
+		Site site = getSite();
+		String siteId = site == null ? null : site.getId();
+		String[] realmIds = new String[1];
+		realmIds[0] = new StringBuffer().append("/site/").append(siteId).toString();
+		
+		verifyUserDataIsUpToDate(site, roleNames);
+		
+		List<UserDereference> dereferences = gbService.getUserDereferences(realmIds, "sortName", null, null, -1, -1, true, roleNames);
+		
+		List<AssignmentGradeRecord> records = gbService.getAllAssignmentGradeRecords(gradebookId, realmIds, roleNames);
+		
+		
+		
+		
+		int numberOfLearners = dereferences == null ? 0 : dereferences.size();
+		
+		return new SubmissionVerificationModel(numberOfLearners, false);
+	}
+	
 	
 	public StudentModel scoreNumericItem(String gradebookUid, StudentModel student, String assignmentId, Double value, Double previousValue) throws InvalidInputException {
 		
@@ -1358,7 +1420,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		if (value != null && value.trim().equals(""))
 			value = null;
 		
-		value = value.toUpperCase();
+		if (value != null)
+			value = value.toUpperCase();
 		
 		// FIXME: Currently only handles grade override edits -- this should handle non-numeric grades too
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
@@ -1372,7 +1435,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		GradeMapping gradeMapping = gradebook.getSelectedGradeMapping();
 		GradingScale gradingScale = gradeMapping.getGradingScale();
 		
-		if (!advisor.isValidOverrideGrade(value, student.getEid(), student.getStudentDisplayId(), gradebook, gradingScale)) 
+		if (value != null && !advisor.isValidOverrideGrade(value, student.getEid(), student.getStudentDisplayId(), gradebook, gradingScale)) 
 			throw new InvalidInputException("This is not a valid override grade for this individual in this course.");
 		
 		gbService.updateCourseGradeRecords(courseGrade, gradeRecords);
@@ -1380,7 +1443,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		List<Category> categories = null;
 		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
 		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
-			categories = getCategoriesWithAssignments(gradebook.getId(), assignments);
+			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, false);
 		
 		Map<Long, AssignmentGradeRecord> studentGradeMap = new HashMap<Long, AssignmentGradeRecord>();
 		List<AssignmentGradeRecord> records = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), student.getIdentifier());
@@ -1392,7 +1455,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 		
 		
-		String freshCourseGrade = getDisplayGrade(gradebook, courseGradeRecord, assignments, categories, studentGradeMap);//requestCourseGrade(gradebookUid, student.getIdentifier());
+		String freshCourseGrade = getDisplayGrade(gradebook, student.getIdentifier(), courseGradeRecord, assignments, categories, studentGradeMap);//requestCourseGrade(gradebookUid, student.getIdentifier());
 		student.set(StudentModel.Key.GRADE_OVERRIDE.name(), courseGradeRecord.getEnteredGrade());
 		student.set(StudentModel.Key.COURSE_GRADE.name(), freshCourseGrade);
 		
@@ -1598,7 +1661,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		// The first case is that we're in categories mode and the category has changed
 		if (hasCategories && oldCategory != null) {
 			assignments = gbService.getAssignments(gradebook.getId());
-			return getItemModel(gradebook, assignments, assignment.getId());
+			List<Category> categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+			return getItemModel(gradebook, assignments, categories, assignment.getId());
 		}
 		
 		// If neither the weight nor the points have changed, then we can just return 
@@ -1609,7 +1673,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			return itemModel;
 		} else if (! hasCategories) {
 			// Otherwise if we're in no categories mode then we want to return the gradebook
-			return getItemModel(gradebook, assignments, assignment.getId());
+			return getItemModel(gradebook, assignments, null, assignment.getId());
 		}
 		
 		// Otherwise we can return the category parent
@@ -1774,7 +1838,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		if (userRecord.isCalculated())
 			displayGrade = userRecord.getDisplayGrade();
 		else
-			displayGrade = getDisplayGrade(gradebook, courseGradeRecord, assignments, categories, studentGradeMap);
+			displayGrade = getDisplayGrade(gradebook, userRecord.getUserUid(), courseGradeRecord, assignments, categories, studentGradeMap);
 			
 		if (columns != null) {
 			for (FixedColumnModel column : columns) {
@@ -1885,7 +1949,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 	}
 	
-	private GradebookModel createGradebookModel(Gradebook gradebook, List<Assignment> assignments) {
+	private GradebookModel createGradebookModel(Gradebook gradebook, List<Assignment> assignments, List<Category> categories) {
 		GradebookModel model = new GradebookModel();
 		String gradebookUid = gradebook.getUid();
 		
@@ -1893,11 +1957,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		model.setGradebookId(gradebook.getId());
 		model.setName(gradebook.getName());
 		
-		//List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
-		List<Category> categories = null;
-		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
-			categories = getCategoriesWithAssignments(gradebook.getId(), assignments);
-		ItemModel gradebookItemModel = getItemModel(gradebook, assignments, null);
+		ItemModel gradebookItemModel = getItemModel(gradebook, assignments, categories, null);
 		model.setGradebookItemModel(gradebookItemModel);
 		List<FixedColumnModel> columns = getColumns();
 		
@@ -1957,7 +2017,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			}
 		} else {
 			String[] realmIds = { "/site/mock" };
-			List<UserRecord> userRecords = findLearnerRecordPage(gradebook, getSite(), realmIds, null, null, null, null, null, -1, -1, true);
+			List<UserRecord> userRecords = findLearnerRecordPage(gradebook, getSite(), realmIds, null, null, null, null, null, -1, -1, true, false);
 			
 			//Map<String, UserRecord> userRecordMap = //findStudentRecords(gradebookUid, gradebook.getId(), null, null);
 			
@@ -2201,12 +2261,12 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	protected List<UserRecord> findLearnerRecordPage(Gradebook gradebook, Site site, String[] realmIds, List<String> groupReferences, 
 			Map<String, Group> groupReferenceMap, String sortField, String searchField, String searchCriteria,
 			int offset, int limit, 
-			boolean isAscending) {
+			boolean isAscending, boolean includeCMId) {
 		
 		String[] learnerRoleKeys = advisor.getLearnerRoleNames();
 		verifyUserDataIsUpToDate(site, learnerRoleKeys);
 		
-		List<UserDereference> dereferences = gbService.getUserUidsForSite(realmIds, sortField, searchField, searchCriteria, offset, limit, isAscending, learnerRoleKeys);
+		List<UserDereference> dereferences = gbService.getUserDereferences(realmIds, sortField, searchField, searchCriteria, offset, limit, isAscending, learnerRoleKeys);
 		List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebook.getId(), realmIds, learnerRoleKeys);
 		Map<String, Map<Long, AssignmentGradeRecord>> studentGradeRecordMap = new HashMap<String, Map<Long, AssignmentGradeRecord>>();
 		
@@ -2253,6 +2313,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		
 		
 		Map<String, Set<Group>> userGroupMap = new HashMap<String, Set<Group>>();
+		Map<String, List<String>> groupEnrollmentSetEidsMap = new HashMap<String, List<String>>();
 		
 		List<Object[]> tuples = gbService.getUserGroupReferences(groupReferences, learnerRoleKeys);
 		
@@ -2262,6 +2323,12 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				String realmId = (String)tuple[1];
 				
 				Group group = groupReferenceMap.get(realmId);
+				
+				if (includeCMId && advisor.isExportCourseManagementIdByGroup()) {
+					List<String> enrollmentSetEids = advisor.getExportCourseManagementSetEids(group);
+					if (enrollmentSetEids != null) 
+						groupEnrollmentSetEidsMap.put(group.getId(), enrollmentSetEids);
+				}
 				
 				Set<Group> userGroups = userGroupMap.get(userUid);
 				
@@ -2306,18 +2373,26 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					for (Iterator<Group> groupIter = userGroups.iterator();groupIter.hasNext();) {
 						Group group = groupIter.next();
 						groupTitles.append(group.getTitle());
-						courseManagementIds.append(advisor.getExportCourseManagementId(userRecord.getUserEid(), group));
-					
+						
+						if (includeCMId) {
+							List<String> enrollmentSetEids = groupEnrollmentSetEidsMap.get(group.getId());
+							courseManagementIds.append(advisor.getExportCourseManagementId(userRecord.getUserEid(), group, enrollmentSetEids));
+						}
+						
 						if (groupIter.hasNext()) {
 							groupTitles.append(",");
 							courseManagementIds.append(",");
 						}
 					}
 					userRecord.setSectionTitle(groupTitles.toString());
-					userRecord.setExportCourseManagemntId(courseManagementIds.toString());	
+					
+					if (includeCMId)
+						userRecord.setExportCourseManagemntId(courseManagementIds.toString());	
 				}
-				userRecord.setExportUserId(advisor.getExportUserId(dereference));
-				userRecord.setFinalGradeUserId(advisor.getFinalGradeUserId(dereference));
+				if (includeCMId) {
+					userRecord.setExportUserId(advisor.getExportUserId(dereference));
+					userRecord.setFinalGradeUserId(advisor.getFinalGradeUserId(dereference));
+				}
 				
 				userRecords.add(userRecord);
 			}
@@ -2357,9 +2432,13 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	}
 
 	
-	private List<Category> getCategoriesWithAssignments(Long gradebookId, List<Assignment> assignments) {
+	private List<Category> getCategoriesWithAssignments(Long gradebookId, List<Assignment> assignments, boolean includeEmpty) {
 
-		List<Category> categories = gbService.getCategories(gradebookId);
+		List<Category> categories = null;
+		
+		// If we need to include categories that do not have any items under them (as we do for the item tree), then we have to do an additional query.
+		if (includeEmpty)
+			categories = gbService.getCategories(gradebookId);
 
 		Map<Long, Category> categoryMap = new HashMap<Long, Category>();
 
@@ -2373,14 +2452,14 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		List<Assignment> assignmentList = null;
 		
 		if (assignments != null) {
-			for(Assignment assignment : assignments) {
+			for (Assignment assignment : assignments) {
 	
 				if (assignment.isRemoved())
 					continue;
 				
 				category = categoryMap.get(assignment.getCategory().getId());
 	
-				if(null == category) {
+				if (null == category) {
 	
 					category = assignment.getCategory();
 					categoryMap.put(category.getId(), category);
@@ -2388,7 +2467,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				
 				assignmentList = category.getAssignmentList();
 	
-				if(null == assignmentList) {
+				if (null == assignmentList) {
 	
 					assignmentList = new ArrayList<Assignment>();
 					category.setAssignmentList(assignmentList);
@@ -2398,6 +2477,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					assignmentList.add(assignment);
 			}
 		}
+		
+		if (categories == null && categoryMap.size() > 0)
+			categories = new ArrayList<Category>(categoryMap.values());
+		
 
 		return categories;	
 	}
@@ -2418,10 +2501,12 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		return columns;
 	}
 	
-	private String getDisplayGrade(Gradebook gradebook, CourseGradeRecord courseGradeRecord, 
-			List<Assignment> assignments, List<Category> categories, Map<Long, AssignmentGradeRecord> studentGradeMap) {
+	private String getDisplayGrade(Gradebook gradebook, String studentUid, 
+			CourseGradeRecord courseGradeRecord, List<Assignment> assignments, List<Category> categories, Map<Long, AssignmentGradeRecord> studentGradeMap) {
 		
 		BigDecimal autoCalculatedGrade = null;
+		
+		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
 		
 		switch (gradebook.getCategory_type()) {
 		case GradebookService.CATEGORY_TYPE_NO_CATEGORY:
@@ -2449,9 +2534,14 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			isOverridden = true;
 		}
 		
+		
 		String missingGradesMarker = "";
 		
-		if (assignments != null) {
+		if (gbService.isStudentMissingScores(gradebook.getId(), studentUid, hasCategories))
+			missingGradesMarker = "***"; 
+		
+		
+		/*if (assignments != null) {
 			for (Assignment assignment : assignments) {
 				if (assignment.isRemoved() || DataTypeConversionUtil.checkBoolean(assignment.isUnweighted()))
 					continue;
@@ -2482,7 +2572,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					missingGradesMarker = "***"; 
 			} // for
 		} // if 
-
+		*/
 		
 		if (letterGrade != null) {
 			StringBuilder buffer = new StringBuilder(letterGrade);
@@ -2533,8 +2623,12 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 				List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
 				
+				List<Category> categories = null;
+				if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
+					categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+				
 				// There are different ways that unassigned assignments can appear - old gradebooks, external apps
-				List<Assignment> unassignedAssigns = new ArrayList<Assignment>();//gbService.getAssignmentsWithNoCategory(gradebook.getId());
+				List<Assignment> unassignedAssigns = new ArrayList<Assignment>();
 				
 				if (assignments != null) {
 					for (Assignment assignment : assignments) {
@@ -2545,8 +2639,6 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				
 				// If we have any that are unassigned, we want to assign them to the default category
 				if (unassignedAssigns != null && !unassignedAssigns.isEmpty()) {
-					List<Category> categories = gbService.getCategories(gradebook.getId());
-					
 					// Let's see if we already have a default category in existence
 					Long defaultCategoryId = null;
 					if (categories != null && ! categories.isEmpty()) {
@@ -2595,7 +2687,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 				}
 				
-				GradebookModel model = createGradebookModel(gradebook, assignments);
+				GradebookModel model = createGradebookModel(gradebook, assignments, categories);
 				models.add(model);
 			}
 		}
@@ -2603,7 +2695,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		return models;
 	}
 	
-	private ItemModel getItemModel(Gradebook gradebook, List<Assignment> assignments, Long assignmentId) {
+	private ItemModel getItemModel(Gradebook gradebook, List<Assignment> assignments, List<Category> categories, Long assignmentId) {
 		
 		ItemModel gradebookItemModel = createItemModel(gradebook);
 		
@@ -2613,7 +2705,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			calculateItemCategoryPercent(gradebook, null, gradebookItemModel, null, assignments, assignmentId);
 			
 		} else {
-			List<Category> categories = getCategoriesWithAssignments(gradebook.getId(), assignments);
+			//List<Category> categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
 		
 			if (categories != null) {
 				BigDecimal gradebookWeightSum = BigDecimal.ZERO;
@@ -2904,9 +2996,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
 		List<Category> categories = null;
 		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
-			categories = getCategoriesWithAssignments(gradebook.getId(), assignments);
+			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, false);
 		CourseGradeRecord courseGradeRecord = gbService.getStudentCourseGradeRecord(gradebook, student.getIdentifier());
-		String displayGrade = getDisplayGrade(gradebook, courseGradeRecord, assignments, categories, studentGradeMap);
+		String displayGrade = getDisplayGrade(gradebook, student.getIdentifier(), courseGradeRecord, assignments, categories, studentGradeMap);
 		
 		for (AssignmentGradeRecord record : assignmentGradeRecords) {
 			Long aId = record.getGradableObject().getId();
@@ -3034,6 +3126,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		int oldCategoryType = gradebook.getCategory_type();
 		int newCategoryType = -1;
 		
+		boolean hasCategories = item.getCategoryType() != CategoryType.NO_CATEGORIES;
+		
 		switch (item.getCategoryType()) {
 		case NO_CATEGORIES:
 			newCategoryType = GradebookService.CATEGORY_TYPE_NO_CATEGORY;
@@ -3073,7 +3167,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		gbService.updateGradebook(gradebook);
 		
 		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
-		return getItemModel(gradebook, assignments, null);
+		List<Category> categories = null;
+		if (hasCategories)
+			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+		return getItemModel(gradebook, assignments, categories, null);
 	}
 	
 	/**
@@ -3199,7 +3296,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 		
 		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
-		ItemModel gradebookItemModel = getItemModel(gradebook, assignments, null);
+		List<Category> categories = getCategoriesWithAssignments(gradebook.getId(), assignments, false);
+		
+		ItemModel gradebookItemModel = getItemModel(gradebook, assignments, categories, null);
 		
 		for (ItemModel child : gradebookItemModel.getChildren()) {
 			if (child.equals(item)) {

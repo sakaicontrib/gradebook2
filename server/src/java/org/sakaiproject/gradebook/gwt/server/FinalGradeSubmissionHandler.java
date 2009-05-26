@@ -56,7 +56,7 @@ public class FinalGradeSubmissionHandler extends HttpServlet {
 
 		try {
 
-			PagingLoadResult<StudentModel> result = service.getStudentRows(gradebookUid, null, null);
+			PagingLoadResult<StudentModel> result = service.getStudentRows(gradebookUid, null, null, Boolean.TRUE);
 			
 			if (result != null)
 				rows = result.getData();

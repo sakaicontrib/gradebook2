@@ -198,7 +198,7 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 		int numberOfRows = 19;
 		
 		PagingLoadConfig config = new BasePagingLoadConfig(0, numberOfRows);
-		PagingLoadResult<StudentModel> learnerResult = service.getStudentRows(gbModel.getGradebookUid(), gbModel.getGradebookId(), config);
+		PagingLoadResult<StudentModel> learnerResult = service.getStudentRows(gbModel.getGradebookUid(), gbModel.getGradebookId(), config, Boolean.TRUE);
 		
 		assertNotNull(learnerResult);
 		

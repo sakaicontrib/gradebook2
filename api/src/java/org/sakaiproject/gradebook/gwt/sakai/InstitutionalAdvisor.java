@@ -2,7 +2,6 @@ package org.sakaiproject.gradebook.gwt.sakai;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -10,7 +9,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.sakaiproject.authz.api.Member;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.site.api.Group;
-import org.sakaiproject.tool.gradebook.GradeMapping;
 import org.sakaiproject.tool.gradebook.Gradebook;
 import org.sakaiproject.tool.gradebook.GradingScale;
 
@@ -20,13 +18,20 @@ public interface InstitutionalAdvisor {
 	
 	/**
 	 * 
+	 * @param group : The Authz Group
+	 * @return List of enrollment set eids
+	 */
+	public List<String> getExportCourseManagementSetEids(Group group);
+	
+	/**
+	 * 
 	 * 
 	 * @param userEid : The user's EID
 	 * @param group : The user's Authz Group
 	 * 
 	 * @return the export course management id 
 	 */
-	public String getExportCourseManagementId(String userEid, Group group);
+	public String getExportCourseManagementId(String userEid, Group group, List<String> enrollmentSetEids);
 	
 	/**
 	 * 
@@ -57,6 +62,7 @@ public interface InstitutionalAdvisor {
 	 */
 	public boolean isLearner(Member member);
 
+	public boolean isExportCourseManagementIdByGroup();
 	
 	public boolean isValidOverrideGrade(String grade, String learnerEid, String learnerDisplayId, Gradebook gradebook, GradingScale gradingScale);
 	

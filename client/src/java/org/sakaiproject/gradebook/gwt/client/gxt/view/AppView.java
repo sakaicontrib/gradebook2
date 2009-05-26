@@ -11,6 +11,7 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
+import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
@@ -48,6 +49,7 @@ public abstract class AppView extends View {
 			}
 		};
 		realViewport.setLayout(new FillLayout());
+		realViewport.setLoadingPanelId("loading");
 		
 		viewport = new LayoutContainer();
 		
@@ -58,7 +60,7 @@ public abstract class AppView extends View {
 		viewport.setLayout(viewportLayout);
 		//viewport.setLoadingPanelId("loading");
 		//viewport.setScrollMode(Scroll.AUTO);
-		//RootPanel.get().add(viewport);
+		//RootPanel.get().add(realViewport);
 	}
 
 	@Override

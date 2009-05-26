@@ -13,6 +13,7 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.SpreadsheetModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
+import org.sakaiproject.gradebook.gwt.client.model.SubmissionVerificationModel;
 import org.sakaiproject.gradebook.gwt.sakai.InstitutionalAdvisor.Column;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.site.api.Group;
@@ -81,7 +82,9 @@ public interface Gradebook2Service {
 	
 	public ApplicationModel getApplicationModel();
 	
-	public String getExportCourseManagementId(String userEid, Group group);
+	public List<String> getExportCourseManagementSetEids(Group group);
+	
+	public String getExportCourseManagementId(String userEid, Group group, List<String> enrollmentSetEids);
 	
 	public String getExportUserId(UserDereference dereference);
 	
@@ -97,8 +100,9 @@ public interface Gradebook2Service {
 	
 	public <X extends BaseModel> ListLoadResult<X> getSelectedGradeMapping(String gradebookUid);
 	
-	public <X extends BaseModel> PagingLoadResult<X> getStudentRows(String gradebookUid, Long gradebookId, PagingLoadConfig config);
+	public <X extends BaseModel> PagingLoadResult<X> getStudentRows(String gradebookUid, Long gradebookId, PagingLoadConfig config, Boolean includeExportCourseManagementId);
 	
+	public SubmissionVerificationModel getSubmissionVerification(String gradebookUid, Long gradebookId);
 	
 	public StudentModel scoreNumericItem(String gradebookUid, StudentModel student, String assignmentId, Double value, Double previousValue) 
 	throws InvalidInputException;

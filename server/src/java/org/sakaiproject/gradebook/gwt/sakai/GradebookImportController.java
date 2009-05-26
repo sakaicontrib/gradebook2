@@ -60,7 +60,7 @@ public class GradebookImportController extends SimpleFormController {
 				
 				InputStreamReader reader = new InputStreamReader(file.getInputStream());
 					
-				ImportFile importFile = ImportExportUtility.parseImportX(service, gradebookUid, reader, delimiterSet);
+				ImportFile importFile = ImportExportUtility.parseImport(service, gradebookUid, reader);
 			        
 		        PrintWriter writer = response.getWriter();
 		        response.setContentType("text/html");

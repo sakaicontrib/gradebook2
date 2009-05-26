@@ -204,7 +204,8 @@ public class AppController extends Controller {
 			forwardToView(treeView, event);
 			break;
 		case START_FINAL_GRADE:
-			finalGradeSubmissionView = new FinalGradeSubmissionView(this);
+			I18nConstants i18n = Registry.get(AppConstants.I18N);
+			finalGradeSubmissionView = new FinalGradeSubmissionView(this, i18n);
 			forwardToView(finalGradeSubmissionView, event);
 			//forwardToView(appView, event);
 			break;

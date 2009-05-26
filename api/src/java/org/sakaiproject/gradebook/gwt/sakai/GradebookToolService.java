@@ -124,8 +124,10 @@ public interface GradebookToolService {
 	
 	public List<Object[]> getUserGroupReferences(List<String> groupReferences, String[] roleNames);
 
-	public List<UserDereference> getUserUidsForSite(String[] realmIds, String sortField, String searchField, 
+	public List<UserDereference> getUserDereferences(String[] realmIds, String sortField, String searchField, 
 			String searchCriteria, int offset, int limit, boolean isAsc, String[] roleNames);
+	
+	public boolean isStudentMissingScores(Long gradebookId, String studentId, boolean hasCategories);
 	
 	public boolean isStudentGraded(String studentId);
 	

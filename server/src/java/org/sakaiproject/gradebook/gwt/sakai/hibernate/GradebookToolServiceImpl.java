@@ -627,7 +627,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	}
 
 	
-	public List<UserDereference> getUserUidsForSite(final String[] realmIds, final String sortField, final String searchField, 
+	public List<UserDereference> getUserDereferences(final String[] realmIds, final String sortField, final String searchField, 
 			final String searchCriteria, final int offset, final int limit, final boolean isAsc, final String[] roleNames) {
 		
 		HibernateCallback hc = new HibernateCallback() {
@@ -1207,6 +1207,50 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
         else {
         	return isStudentGradeCache.get(multiKey).booleanValue();
         }
+	}
+	
+	public boolean isStudentMissingScores(final Long gradebookId, final String studentId, final boolean hasCategories) {
+		if (log.isDebugEnabled()) log.debug("isStudentMissingScores called for studentId:" + studentId);
+    	
+        if (studentId == null) {
+        	log.debug("No student id was specified.  Returning false.");
+        	return false;
+        }
+
+        HibernateCallback hc = new HibernateCallback() {
+            public Object doInHibernate(Session session) throws HibernateException, SQLException {
+
+            	StringBuilder query = new StringBuilder();
+            	
+            	query.append("select count(*) from Assignment a");
+            	
+            	if (hasCategories) 
+            		query.append(", Category cat where a.category.id = cat.id ")
+            			 .append(" and cat.removed = false ");
+            	else
+            		query.append(" where ");
+            	
+            	query.append(" a.gradebook.id = :gradebookId ")
+            		 .append("and a.removed = false ")
+            		 .append("and a.name != 'Course Grade' ")
+            		 .append("and a.id not in ( ")
+            		 	.append("select r.assignment.id ")
+            		 	.append("AssignmentGradeRecord r ")
+            		 	.append("where r.studentId = :studentId ")
+            		 	.append("and (r.pointsEarned is not null or r.excluded = true ")
+            		 .append(") ");
+            	
+            	Query q = session.createQuery(query.toString());
+            	q.setParameter("gradebookId", gradebookId);
+            	q.setParameter("studentId", studentId);
+            	return Boolean.valueOf(((Integer) q.iterate().next() ).intValue() > 0);
+               
+            }
+        };
+
+        Boolean isGraded = (Boolean)getHibernateTemplate().execute(hc);
+
+        return isGraded != null && isGraded.booleanValue();
 	}
 
 	public Map<GradableObject, List<GradingEvent>> getGradingEventsForStudent(final String studentId, final Collection<GradableObject> gradableObjects) {

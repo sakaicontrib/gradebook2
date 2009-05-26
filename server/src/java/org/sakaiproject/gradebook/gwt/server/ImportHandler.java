@@ -104,7 +104,7 @@ public class ImportHandler extends HttpServlet {
                        
                        InputStreamReader reader = new InputStreamReader(uploadedFile.getInputStream());
                        
-                       ImportFile importFile = ImportExportUtility.parseImportX(service, gradebookUid, reader, delimiterSet);
+                       ImportFile importFile = ImportExportUtility.parseImport(service, gradebookUid, reader);
                         
                        out.write(xstream.toXML(importFile)); 
                        

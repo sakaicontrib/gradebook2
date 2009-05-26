@@ -139,6 +139,14 @@ public class ImportHeader implements Serializable {
 	public void setPercentCategory(Double percentCategory) {
 		this.percentCategory = percentCategory;
 	}
+
+	public String getValue() {
+		return value;
+	}
+
+	public void setValue(String value) {
+		this.value = value;
+	}
 	
 	
 }
