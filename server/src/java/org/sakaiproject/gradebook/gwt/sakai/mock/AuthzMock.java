@@ -303,4 +303,8 @@ public class AuthzMock implements Authz {
 		return getSectionAwareness().getSectionMembersInRole(sectionUid, Role.STUDENT);
 	}
 
+	public void setSectionAwareness(SectionAwareness sectionAwareness) {
+		this.sectionAwareness = sectionAwareness;
+	}
+
 }

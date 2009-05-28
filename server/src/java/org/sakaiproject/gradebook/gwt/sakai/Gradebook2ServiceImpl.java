@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.sakaiproject.component.api.ServerConfigurationService;
 import org.sakaiproject.exception.IdUnusedException;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
@@ -104,6 +105,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	private ToolManager toolManager;
 	private UserDirectoryService userService;
 	private SessionManager sessionManager;
+	private ServerConfigurationService configService;
 	
 	
 	/**
@@ -933,15 +935,14 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	
 	public ApplicationModel getApplicationModel() {
 		
-		/*Site site = getSite();
-		String[] learnerRoleKeys = advisor.getLearnerRoleNames();
-		
-		WorkerThread worker = new WorkerThread(site, learnerRoleKeys);
-		worker.start();*/
 		
 		ApplicationModel model = new ApplicationModel();
 		//model.setPlacementId(getPlacementId());
 		model.setGradebookModels(getGradebookModels());
+		
+		if (configService == null)
+			model.setHelpUrl("http://www.google.com");
+		
 		
 		return model;
 	}
@@ -3872,5 +3873,15 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 	public void setSessionManager(SessionManager sessionManager) {
 		this.sessionManager = sessionManager;
+	}
+
+
+	public ServerConfigurationService getConfigService() {
+		return configService;
+	}
+
+
+	public void setConfigService(ServerConfigurationService configService) {
+		this.configService = configService;
 	}
 }

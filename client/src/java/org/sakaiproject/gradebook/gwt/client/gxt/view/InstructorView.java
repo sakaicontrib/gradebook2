@@ -23,7 +23,6 @@ import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 
 import com.extjs.gxt.ui.client.Events;
-import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.LayoutRegion;
 import com.extjs.gxt.ui.client.event.Listener;
@@ -44,7 +43,7 @@ import com.extjs.gxt.ui.client.widget.menu.SeparatorMenuItem;
 import com.extjs.gxt.ui.client.widget.toolbar.TextToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.user.client.Element;
-import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.Window;
 
 public class InstructorView extends AppView {
 	
@@ -108,8 +107,6 @@ public class InstructorView extends AppView {
 		borderLayoutContainer.setId("borderLayoutContainer");
 		borderLayoutContainer.setHeaderVisible(false);
 		borderLayoutContainer.setTopComponent(toolBar);
-		viewport.add(borderLayoutContainer);
-		viewportLayout.setActiveItem(borderLayoutContainer);
 		
 		borderLayout = new BorderLayout();  
 		borderLayoutContainer.setLayout(borderLayout);
@@ -169,8 +166,13 @@ public class InstructorView extends AppView {
 		borderLayoutContainer.add(centerLayoutContainer, centerData);
 		borderLayoutContainer.add(eastLayoutContainer, eastData);
 		
+		
+		viewport.add(borderLayoutContainer);
+		viewportLayout.setActiveItem(borderLayoutContainer);
+		
 		//RootPanel.get().add(viewport);
-		RootPanel.get().add(realViewport);
+		//viewport.layout();
+		//RootPanel.get().add(realViewport);
 	}
 
 	@Override
@@ -287,6 +289,11 @@ public class InstructorView extends AppView {
 		}
 	}
 	
+	@Override
+	protected void onLoadItemTreeModel(GradebookModel selectedGradebook) {
+		if (addCategoryMenuItem != null)
+			addCategoryMenuItem.setVisible(selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
+	}
 	
 	@Override
 	protected void onNewCategory(ItemModel itemModel) {
@@ -386,7 +393,10 @@ public class InstructorView extends AppView {
 
 		if (preferencesMenu != null)
 			preferencesMenu.onSwitchGradebook(selectedGradebook);
-		
+
+		if (addCategoryMenuItem != null)
+			addCategoryMenuItem.setVisible(selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
+
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -471,7 +481,10 @@ public class InstructorView extends AppView {
 
 			@Override
 			public void componentSelected(ToolBarEvent tbe) {
-				onExpandEastPanel(EastCard.HELP);
+				//onExpandEastPanel(EastCard.HELP);
+			
+				String helpUrl = Registry.get(AppConstants.HELP_URL);
+				Window.open(helpUrl, "_blank", null);
 			}
 			
 		};

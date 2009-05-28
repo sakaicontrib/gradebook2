@@ -70,4 +70,6 @@ public interface AppConstants {
 	public static final int SCALE = 10;	
 	
 	public static final String IMPORT_CHANGES		= "importChangesMade";
+
+	public static final String HELP_URL				= "helpUrl";
 }

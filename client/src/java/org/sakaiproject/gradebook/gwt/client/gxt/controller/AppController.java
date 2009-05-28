@@ -164,6 +164,7 @@ public class AppController extends Controller {
 		case LOAD_ITEM_TREE_MODEL:
 			forwardToView(multigradeView, event);
 			forwardToView(treeView, event);
+			forwardToView(appView, event);
 			break;
 		case SHOW_COLUMNS:
 			forwardToView(multigradeView, event);
@@ -223,6 +224,8 @@ public class AppController extends Controller {
 		
 		List<GradebookModel> gradebookModels = model.getGradebookModels();
 		I18nConstants i18n = Registry.get(AppConstants.I18N);
+		
+		Registry.register(AppConstants.HELP_URL, model.getHelpUrl());
 		
 		// FIXME: Currently we only evaluate the first gradebook model to determine if we have
 		// FIXME: an instructor or a student. This needs to be refined.

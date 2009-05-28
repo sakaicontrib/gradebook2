@@ -52,7 +52,6 @@ public abstract class AppView extends View {
 		realViewport.setLoadingPanelId("loading");
 		
 		viewport = new LayoutContainer();
-		
 		realViewport.add(viewport);
 		
 		viewport.setPosition(0, 0);
@@ -72,6 +71,9 @@ public abstract class AppView extends View {
 			break;
 		case CLOSE_NOTIFICATION:
 			onCloseNotification();
+			break;
+		case LOAD_ITEM_TREE_MODEL:
+			onLoadItemTreeModel((GradebookModel)event.data);
 			break;
 		case LEARNER_GRADE_RECORD_UPDATED:
 			onLearnerGradeRecordUpdated((UserEntityUpdateAction)event.data);
@@ -119,6 +121,7 @@ public abstract class AppView extends View {
 			onSingleGrade((StudentModel)event.data);
 			break;
 		case STARTUP:
+			RootPanel.get().add(realViewport);
 			ApplicationModel applicationModel = (ApplicationModel)event.data;
 			initUI(applicationModel);
 			GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
@@ -173,6 +176,10 @@ public abstract class AppView extends View {
 	}
 	
 	protected void onLearnerGradeRecordUpdated(UserEntityUpdateAction action) {
+		
+	}
+	
+	protected void onLoadItemTreeModel(GradebookModel selectedGradebook) {
 		
 	}
 		

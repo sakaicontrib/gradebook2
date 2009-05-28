@@ -31,6 +31,7 @@ public class ApplicationModel extends EntityModel {
 	private List<GradebookModel> gradebookModels;
 	private String placementId;
 	private String userName;
+	private String helpUrl;
 
 	public ApplicationModel() {
 		
@@ -62,6 +63,14 @@ public class ApplicationModel extends EntityModel {
 	public String getIdentifier() {
 		
 		return getPlacementId();
+	}
+
+	public String getHelpUrl() {
+		return helpUrl;
+	}
+
+	public void setHelpUrl(String helpUrl) {
+		this.helpUrl = helpUrl;
 	}
 	
 }
