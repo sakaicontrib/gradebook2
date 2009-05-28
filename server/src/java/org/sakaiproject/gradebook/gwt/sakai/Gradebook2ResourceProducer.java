@@ -190,23 +190,28 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 	}
 
 	/*
-	 * First, we check if both the client and server session match
-	 * Second, we check if current user is null
+	 * This security check can be disabled by setting the java property
+	 * -Dgb2.security=false
+	 * This needs to be done in GWT hosted mode
 	 */
 	private void isSecure(String clientSecureToken) throws SecurityException {
-
+		
+		String securityProperty = System.getProperty("gb2.security");
+		if("false".equals(securityProperty)) {
+			return;
+		}
+		
 		String serverSecureToken = service.getCurrentSession();
 		String currentUser = service.getCurrentUser();
 		
 		if(null == serverSecureToken || null == currentUser || "".equals(serverSecureToken) || "".equals(currentUser)) {
-			log.error("Was not able to get currentUser and currentSession");
-			//throw new SecurityException("Security Exception");
-			return; // FIXME : need to find solution for hosted mode
+			log.error("GB2 SECURITY : Was not able to get currentUser and currentSession");
+			throw new SecurityException("Security Exception");
 		}
 		
 		if(!clientSecureToken.startsWith(serverSecureToken)) {
-			log.warn("SECURITY: client and server secure tokens did not match");
-			//throw new SecurityException("Security Exception");
+			log.warn("GB2 SECURITY : Client and server secure tokens did not match");
+			throw new SecurityException("Security Exception");
 		}
 	}
 	
