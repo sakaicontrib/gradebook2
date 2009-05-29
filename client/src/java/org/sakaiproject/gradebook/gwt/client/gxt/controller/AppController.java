@@ -41,6 +41,7 @@ public class AppController extends Controller {
 		registerEventTypes(GradebookEvents.ConfirmDeleteItem.getEventType());
 		registerEventTypes(GradebookEvents.EndItemUpdates.getEventType());
 		registerEventTypes(GradebookEvents.ExpandEastPanel.getEventType());
+		registerEventTypes(GradebookEvents.Exception.getEventType());
 		registerEventTypes(GradebookEvents.HideColumn.getEventType());
 		registerEventTypes(GradebookEvents.HideFormPanel.getEventType());
 		registerEventTypes(GradebookEvents.HideEastPanel.getEventType());
@@ -85,6 +86,7 @@ public class AppController extends Controller {
 		case END_ITEM_UPDATES:
 			forwardToView(multigradeView, event);
 			break;
+		case EXCEPTION:
 		case CONFIRMATION:
 		case CLOSE_NOTIFICATION:
 		case NOTIFICATION:

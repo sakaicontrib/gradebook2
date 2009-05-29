@@ -5,8 +5,7 @@ import com.google.gwt.user.client.Cookies;
 
 public class SecureToken {
 
-	static public String get() {
-		
+	public static String get() {
 	    return Cookies.getCookie("JSESSIONID");
-	  }
+	}
 }

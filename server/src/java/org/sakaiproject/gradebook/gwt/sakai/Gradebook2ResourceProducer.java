@@ -19,9 +19,6 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.SpreadsheetModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.server.DataTypeConversionUtil;
-import org.sakaiproject.tool.api.Session;
-import org.sakaiproject.tool.api.SessionManager;
-import org.sakaiproject.user.api.UserDirectoryService;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
@@ -197,7 +194,7 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 	private void isSecure(String clientSecureToken) throws SecurityException {
 		
 		String securityProperty = System.getProperty("gb2.security");
-		if("false".equals(securityProperty)) {
+		if(null == securityProperty || "false".equals(securityProperty)) {
 			return;
 		}
 		

@@ -1,7 +1,6 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view;
 
-import org.sakaiproject.gradebook.gwt.client.AppConstants;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.ConfirmationEvent;
+import org.sakaiproject.gradebook.gwt.client.gxt.Notifier;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.NotificationPanel;
@@ -12,27 +11,27 @@ import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.mvc.View;
-import com.extjs.gxt.ui.client.widget.Html;
-import com.extjs.gxt.ui.client.widget.button.Button;
 
 public class NotificationView extends View {
 
-//	Notifier notifier
+	private static Notifier notifier;
 	
 	private static final String decisionFlag = "DecisionType";
 	private enum Decision { OK, CANCEL };
 	
-	private NotificationPanel notificationPanel;
+	/*private NotificationPanel notificationPanel;
 	private Html text;
 	private Button okButton;
 	private Button cancelButton;
 	private ConfirmationEvent confirmationEvent;
-	private SelectionListener<ButtonEvent> selectionListener ;
+	private SelectionListener<ButtonEvent> selectionListener ;*/
 	
 	public NotificationView(Controller controller) {
 		super(controller);
-		initListeners();
-		this.notificationPanel = new NotificationPanel();
+		this.notifier = new Notifier();
+		
+		//initListeners();
+		/*this.notificationPanel = new NotificationPanel();
 		this.text = this.notificationPanel.addText("");
 		this.okButton = new Button("Ok");
 		this.okButton.setData(decisionFlag, Decision.OK);
@@ -46,13 +45,22 @@ public class NotificationView extends View {
 		this.notificationPanel.addButton(cancelButton);
 		
 		okButton.setVisible(false);
-		cancelButton.setVisible(false);
+		cancelButton.setVisible(false);*/
 	}
 
 	@Override
 	protected void handleEvent(AppEvent<?> event) {
+		NotificationEvent notification = (NotificationEvent)event.data;
+		
 		switch (GradebookEvents.getEvent(event.type).getEventKey()) {
-		case CLOSE_NOTIFICATION:
+		case EXCEPTION:
+			notifier.notifyError(notification.getError());
+			break;
+		default:
+			notifier.notifyUserError("Request Failed", notification.getText());
+			
+		
+		/*case CLOSE_NOTIFICATION:
 			text.setHtml("");
 			okButton.setVisible(false);
 			cancelButton.setVisible(false);
@@ -70,10 +78,11 @@ public class NotificationView extends View {
 			confirmationEvent = null;
 			okButton.setVisible(false);
 			cancelButton.setVisible(false);
-			break;
+			break;*/
 		}
 	}
 
+	/*
 	private void initListeners() {
 		selectionListener = new SelectionListener<ButtonEvent>() {
 
@@ -106,6 +115,6 @@ public class NotificationView extends View {
 	public NotificationPanel getNotificationPanel() {
 		return notificationPanel;
 	}
-	
+	*/
 
 }

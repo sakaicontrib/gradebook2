@@ -35,7 +35,6 @@ import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.state.CookieProvider;
 import com.extjs.gxt.ui.client.state.StateManager;
-import com.extjs.gxt.ui.client.util.Theme;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -110,7 +109,6 @@ public class GradebookApplication implements EntryPoint {
 		};
 		
 		dataService.get(null, null, EntityType.APPLICATION, null, null, SecureToken.get(), callback);
-
 	}
 	
 	

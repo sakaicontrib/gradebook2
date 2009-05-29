@@ -2688,7 +2688,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	protected String lookupDefaultGradebookUid() {
 		
 		if (toolManager == null)
-			return null;
+			return "TESTGRADEBOOK";
 		
 		Placement placement = toolManager.getCurrentPlacement();
 	    if (placement == null) {
@@ -2702,7 +2702,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	private List<GradebookModel> getGradebookModels(String[] gradebookUids) {
 		List<GradebookModel> models = new LinkedList<GradebookModel>();
 
-		if (gradebookUids == null) 
+		if (gradebookUids == null || gradebookUids.length == 0) 
 			gradebookUids = new String[] { lookupDefaultGradebookUid() };
 			
 		for (int i=0;i<gradebookUids.length;i++) 
