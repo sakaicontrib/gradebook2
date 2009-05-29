@@ -58,7 +58,7 @@ public class GradebookApplication implements EntryPoint {
 	private int screenHeight = 600;
 	
     public GradebookApplication() {
-    	GXT.setDefaultTheme(Theme.GRAY, true);
+    	//GXT.setDefaultTheme(Theme.GRAY, true);
     	
     	Date expiryDate = new Date(new Date().getTime() + ONE_YEAR);
     	CookieProvider provider = new CookieProvider("/", expiryDate, null, true);

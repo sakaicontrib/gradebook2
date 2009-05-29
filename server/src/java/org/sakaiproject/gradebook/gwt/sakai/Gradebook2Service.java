@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.model.CommentModel;
@@ -25,6 +26,8 @@ import com.extjs.gxt.ui.client.data.PagingLoadResult;
 
 public interface Gradebook2Service {
 
+	public ItemModel addItemCategory(String gradebookUid, Long gradebookId, ItemModel item) throws BusinessRuleException;
+	
 	/**
 	 * Method to add a new grade item to the gradebook. 
 	 * 
@@ -79,8 +82,7 @@ public interface Gradebook2Service {
 	 */
 	public <X extends BaseModel> PagingLoadResult<X> getActionHistory(String gradebookUid, PagingLoadConfig config);
 	
-	
-	public ApplicationModel getApplicationModel();
+	public ApplicationModel getApplicationModel(String... gradebookUids);
 	
 	public List<String> getExportCourseManagementSetEids(Group group);
 	

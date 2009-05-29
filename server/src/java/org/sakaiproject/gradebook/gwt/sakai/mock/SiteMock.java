@@ -24,6 +24,10 @@ public class SiteMock implements Site {
 
 	private String id;
 	
+	public SiteMock() {
+		
+	}
+	
 	public SiteMock(String id) {
 		this.id = id;
 	}

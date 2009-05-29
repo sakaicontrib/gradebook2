@@ -1,4 +1,4 @@
-package org.sakaiproject.gradebook.gwt.test;
+package org.sakaiproject.gradebook2.test;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -29,7 +29,9 @@ public class Gradebook2ServiceImportTest extends Gradebook2ServiceTest {
 
 	public void testImportExport() throws Exception {
 		
-		ApplicationModel applicationModel = service.getApplicationModel();
+		onSetup();
+		
+		ApplicationModel applicationModel = service.getApplicationModel(getName());
 		
 		List<GradebookModel> gbModels = applicationModel.getGradebookModels();
 		
@@ -39,7 +41,7 @@ public class Gradebook2ServiceImportTest extends Gradebook2ServiceTest {
 		// Export to a temp file
 		File tempFile = File.createTempFile("imp", ".csv");
 		PrintWriter writer = new PrintWriter(new FileOutputStream(tempFile));
-		ImportExportUtility.exportGradebook(service, GRADEBOOK_UID, true, writer, null);
+		ImportExportUtility.exportGradebook(service, getName(), true, writer, null);
 		writer.close();
 		
 		// Update the category weightings
@@ -65,7 +67,7 @@ public class Gradebook2ServiceImportTest extends Gradebook2ServiceTest {
 		
 		// Import the temp file back into the gradebook
 		FileReader reader = new FileReader(modifiedTempFile);
-		ImportFile importFile = ImportExportUtility.parseImport(service, GRADEBOOK_UID, reader);
+		ImportFile importFile = ImportExportUtility.parseImport(service, getName(), reader);
 	
 		
 		List<ColumnConfig> previewColumns = new ArrayList<ColumnConfig>();
@@ -79,9 +81,9 @@ public class Gradebook2ServiceImportTest extends Gradebook2ServiceTest {
 		List<ItemModel> items = ClientUploadUtility.convertHeadersToItemModels(importFile.getItems());
 		
 		SpreadsheetModel spreadsheetModel = ClientUploadUtility.composeSpreadsheetModel(items, students, previewColumns);
-		service.createOrUpdateSpreadsheet(GRADEBOOK_UID, spreadsheetModel);
+		service.createOrUpdateSpreadsheet(getName(), spreadsheetModel);
 		
-		applicationModel = service.getApplicationModel();
+		applicationModel = service.getApplicationModel(getName());
 		
 		gbModels = applicationModel.getGradebookModels();
 		

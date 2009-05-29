@@ -50,7 +50,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 	public void init() {
 		Gradebook2ServiceImpl service = new Gradebook2ServiceImpl() {
 			@Override
-			protected String getGradebookUid() {
+			protected String lookupDefaultGradebookUid() {
 				return "12312409345";
 			}
 			

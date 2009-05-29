@@ -1,4 +1,4 @@
-package org.sakaiproject.gradebook.gwt.test;
+package org.sakaiproject.gradebook2.test;
 
 import java.io.PrintWriter;
 import java.math.BigDecimal;

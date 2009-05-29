@@ -26,6 +26,10 @@ import org.sakaiproject.tool.gradebook.facades.Authn;
 
 public class AuthnMock implements Authn {
 
+	public AuthnMock() {
+		
+	}
+	
 	public String getUserUid() {
 		return "prof123";
 	}

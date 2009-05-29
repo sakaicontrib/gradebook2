@@ -39,6 +39,10 @@ public class AuthzMock implements Authz {
 
 	private SectionAwareness sectionAwareness;
 	
+	public AuthzMock() {
+		
+	}
+	
 	public AuthzMock(SectionAwareness sectionAwareness) {
 		this.sectionAwareness = sectionAwareness;
 	}

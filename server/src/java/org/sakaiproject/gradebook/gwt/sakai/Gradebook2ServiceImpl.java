@@ -50,6 +50,7 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel.Key;
 import org.sakaiproject.gradebook.gwt.sakai.InstitutionalAdvisor.Column;
+import org.sakaiproject.gradebook.gwt.sakai.mock.SiteMock;
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereferenceRealmUpdate;
@@ -933,12 +934,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	}
 	
 	
-	public ApplicationModel getApplicationModel() {
-		
+	public ApplicationModel getApplicationModel(String... gradebookUids) {
 		
 		ApplicationModel model = new ApplicationModel();
-		//model.setPlacementId(getPlacementId());
-		model.setGradebookModels(getGradebookModels());
+		model.setGradebookModels(getGradebookModels(gradebookUids));
 		
 		if (configService != null) {
 			String url = configService.getString(AppConstants.HELP_URL_CONFIG_ID);
@@ -2229,6 +2228,97 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		return model;
 	}
 	
+	
+	private GradebookModel createOrRetrieveGradebookModel(String gradebookUid) {
+		GradebookModel model = null;
+		Gradebook gradebook = null;
+		
+		try {
+			// First thing, grab the default gradebook if one exists
+			gradebook = gbService.getGradebook(gradebookUid);
+		} catch (GradebookNotFoundException gnfe) {	
+			// If it doesn't exist, then create it
+			if (frameworkService != null) {
+				frameworkService.addGradebook(gradebookUid, "My Default Gradebook");
+				gradebook = gbService.getGradebook(gradebookUid);
+			} 
+		}
+		
+		// If we have a gradebook already, then we have to ensure that it's set up correctly for the new tool
+		if (gradebook != null) {
+
+			List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
+			
+			List<Category> categories = null;
+			if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
+				categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+			
+			// There are different ways that unassigned assignments can appear - old gradebooks, external apps
+			List<Assignment> unassignedAssigns = new ArrayList<Assignment>();
+			
+			if (assignments != null) {
+				for (Assignment assignment : assignments) {
+					if (assignment.getCategory() == null)
+						unassignedAssigns.add(assignment);
+				}
+			}
+			
+			// If we have any that are unassigned, we want to assign them to the default category
+			if (unassignedAssigns != null && !unassignedAssigns.isEmpty()) {
+				// Let's see if we already have a default category in existence
+				Long defaultCategoryId = null;
+				if (categories != null && ! categories.isEmpty()) {
+					// First, look for it by name
+					for (Category category : categories) {
+						if (category.getName().equalsIgnoreCase("Unassigned")) {
+							defaultCategoryId = category.getId();
+							break;
+						}
+					}
+				}
+				
+				boolean isCategoryNew = false;
+				
+				// If we don't have one already, then let's create one
+				if (defaultCategoryId == null) {
+					defaultCategoryId = gbService.createCategory(gradebook.getId(), "Unassigned", Double.valueOf(1d), 0, null, null, null);
+					isCategoryNew = true;
+				} 
+
+				// TODO: This is a just in case check -- we should probably throw an exception here instead, since it means we weren't able to 
+				// TODO: create the category for some reason -- but that probably would throw an exception anyway, so...
+				if (defaultCategoryId != null) {
+					Category defaultCategory = gbService.getCategory(defaultCategoryId);
+
+					// Just in case we just created it, or if it happens to have been deleted since it was created
+					if (isCategoryNew || defaultCategory.isRemoved()) {
+						defaultCategory.setEqualWeightAssignments(Boolean.TRUE);
+						defaultCategory.setRemoved(false);
+						gbService.updateCategory(defaultCategory);
+					}
+					
+					// Assuming we have the default category by now (which we almost definitely should) then we move all the unassigned items into it
+					if (defaultCategory != null) {
+						for (Assignment assignment : unassignedAssigns) {
+							// Think we need to grab each assignment again - this is stupid, but I'm pretty sure it's what hibernate requires
+							//Assignment assignment = gbService.getAssignment(a.getId());
+							//assignment.setCategory(defaultCategory);
+							gbService.updateAssignment(assignment);
+						}
+						List<Assignment> unassignedAssignments = gbService.getAssignmentsForCategory(defaultCategory.getId());
+						// This will only recalculate assuming that the category has isEqualWeighting as TRUE
+						recalculateAssignmentWeights(defaultCategory, null, unassignedAssignments);
+					}
+				}
+
+			}
+			
+			model = createGradebookModel(gradebook, assignments, categories);
+		}
+		
+		return model;
+	}
+	
 	private Category findDefaultCategory(Long gradebookId) {
 		List<Category> categories = gbService.getCategories(gradebookId);
 	
@@ -2595,7 +2685,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		return displayGrade;
 	}
 	
-	protected String getGradebookUid() {
+	protected String lookupDefaultGradebookUid() {
+		
+		if (toolManager == null)
+			return null;
+		
 		Placement placement = toolManager.getCurrentPlacement();
 	    if (placement == null) {
 	    	log.error("Placement is null!");
@@ -2605,96 +2699,14 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	    return placement.getContext();
 	}
 	
-	private List<GradebookModel> getGradebookModels() {
-		String gradebookUid = getGradebookUid();
+	private List<GradebookModel> getGradebookModels(String[] gradebookUids) {
 		List<GradebookModel> models = new LinkedList<GradebookModel>();
-		
-		if (gradebookUid != null) {
-			Gradebook gradebook = null;
-			try {
-				// First thing, grab the default gradebook if one exists
-				gradebook = gbService.getGradebook(gradebookUid);
-			} catch (GradebookNotFoundException gnfe) {	
-				// If it doesn't exist, then create it
-				if (frameworkService != null) {
-					frameworkService.addGradebook(gradebookUid, "My Default Gradebook");
-					gradebook = gbService.getGradebook(gradebookUid);
-				}
-			}
+
+		if (gradebookUids == null) 
+			gradebookUids = new String[] { lookupDefaultGradebookUid() };
 			
-			// If we have a gradebook already, then we have to ensure that it's set up correctly for the new tool
-			if (gradebook != null) {
-
-				List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
-				
-				List<Category> categories = null;
-				if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
-					categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
-				
-				// There are different ways that unassigned assignments can appear - old gradebooks, external apps
-				List<Assignment> unassignedAssigns = new ArrayList<Assignment>();
-				
-				if (assignments != null) {
-					for (Assignment assignment : assignments) {
-						if (assignment.getCategory() == null)
-							unassignedAssigns.add(assignment);
-					}
-				}
-				
-				// If we have any that are unassigned, we want to assign them to the default category
-				if (unassignedAssigns != null && !unassignedAssigns.isEmpty()) {
-					// Let's see if we already have a default category in existence
-					Long defaultCategoryId = null;
-					if (categories != null && ! categories.isEmpty()) {
-						// First, look for it by name
-						for (Category category : categories) {
-							if (category.getName().equalsIgnoreCase("Unassigned")) {
-								defaultCategoryId = category.getId();
-								break;
-							}
-						}
-					}
-					
-					boolean isCategoryNew = false;
-					
-					// If we don't have one already, then let's create one
-					if (defaultCategoryId == null) {
-						defaultCategoryId = gbService.createCategory(gradebook.getId(), "Unassigned", Double.valueOf(1d), 0, null, null, null);
-						isCategoryNew = true;
-					} 
-
-					// TODO: This is a just in case check -- we should probably throw an exception here instead, since it means we weren't able to 
-					// TODO: create the category for some reason -- but that probably would throw an exception anyway, so...
-					if (defaultCategoryId != null) {
-						Category defaultCategory = gbService.getCategory(defaultCategoryId);
-
-						// Just in case we just created it, or if it happens to have been deleted since it was created
-						if (isCategoryNew || defaultCategory.isRemoved()) {
-							defaultCategory.setEqualWeightAssignments(Boolean.TRUE);
-							defaultCategory.setRemoved(false);
-							gbService.updateCategory(defaultCategory);
-						}
-						
-						// Assuming we have the default category by now (which we almost definitely should) then we move all the unassigned items into it
-						if (defaultCategory != null) {
-							for (Assignment assignment : unassignedAssigns) {
-								// Think we need to grab each assignment again - this is stupid, but I'm pretty sure it's what hibernate requires
-								//Assignment assignment = gbService.getAssignment(a.getId());
-								//assignment.setCategory(defaultCategory);
-								gbService.updateAssignment(assignment);
-							}
-							List<Assignment> unassignedAssignments = gbService.getAssignmentsForCategory(defaultCategory.getId());
-							// This will only recalculate assuming that the category has isEqualWeighting as TRUE
-							recalculateAssignmentWeights(defaultCategory, null, unassignedAssignments);
-						}
-					}
-
-				}
-				
-				GradebookModel model = createGradebookModel(gradebook, assignments, categories);
-				models.add(model);
-			}
-		}
+		for (int i=0;i<gradebookUids.length;i++) 
+			models.add(createOrRetrieveGradebookModel(gradebookUids[i]));
 		
 		return models;
 	}
@@ -2777,7 +2789,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			
 			if (siteService != null)
 				site = siteService.getSite(context);
-			
+			else
+				site = new SiteMock(getSiteId());
 			
 		} catch (IdUnusedException iue) {
 			log.error("IDUnusedException : SiteContext = " + context);
@@ -2788,6 +2801,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	}
 	
 	protected String getSiteContext() {
+		if (toolManager == null)
+			return "TESTSITECONTEXT";
+		
 		return toolManager.getCurrentPlacement().getContext();
 	}
 	
@@ -2795,6 +2811,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		
 		String context = getSiteContext();
 	    String siteId = null;
+	    
+	    if (siteService == null)
+	    	return "TESTSITEID";
 	    
 		try {
 			

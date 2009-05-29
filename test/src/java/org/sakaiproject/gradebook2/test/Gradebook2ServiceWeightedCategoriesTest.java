@@ -1,4 +1,4 @@
-package org.sakaiproject.gradebook.gwt.test;
+package org.sakaiproject.gradebook2.test;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -52,7 +52,7 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 		super(name);
 		service = new Gradebook2ServiceImpl() {
 			@Override
-			protected String getGradebookUid() {
+			protected String lookupDefaultGradebookUid() {
 				return GRADEBOOK_UID;
 			}
 			
