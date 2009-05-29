@@ -31,6 +31,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.settings.LogDisplay;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.XDOM;
 import com.extjs.gxt.ui.client.util.Params;
+import com.google.gwt.user.client.rpc.StatusCodeException;
 
 public class Notifier {
 
@@ -66,6 +67,10 @@ public class Notifier {
 		
 		if (e.getCause() != null && e.getCause().getMessage() != null) {
 			cause = e.getCause().getMessage();
+		}
+		
+		if (e instanceof StatusCodeException) {
+			notifyUserError("Server Error", "The server returned an error code {0} on a recent request. This may be due to some network problem or a delay on the server. Please refresh your window if you are seeing strange behavior.", ((StatusCodeException)e).getStatusCode());
 		}
 		
 		if (e instanceof BusinessRuleException) {
