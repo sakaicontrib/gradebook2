@@ -33,6 +33,7 @@
 	<classpathentry kind="var" path="M2_REPO/javax/servlet/servlet-api/2.4/servlet-api-2.4.jar" sourcepath="M2_REPO/javax/servlet/servlet-api/2.4/servlet-api-2.4-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/commons-collections/commons-collections/3.2.1/commons-collections-3.2.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/net/sf/opencsv/opencsv/1.8/opencsv-1.8.jar"/>
-	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER/GWT 1.5.3"/>
+	<classpathentry kind="var" path="GWT_HOME/gwt-dev-linux.jar"/>
+	<classpathentry kind="var" path="GWT_HOME/gwt-user.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

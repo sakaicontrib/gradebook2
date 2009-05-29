@@ -72,4 +72,6 @@ public interface AppConstants {
 	public static final String IMPORT_CHANGES		= "importChangesMade";
 
 	public static final String HELP_URL				= "helpUrl";
+	public static final String HELP_URL_CONFIG_ID	= "gb2.help.url";
+	
 }

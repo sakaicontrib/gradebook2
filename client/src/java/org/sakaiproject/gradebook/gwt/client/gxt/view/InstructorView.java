@@ -484,7 +484,7 @@ public class InstructorView extends AppView {
 				//onExpandEastPanel(EastCard.HELP);
 			
 				String helpUrl = Registry.get(AppConstants.HELP_URL);
-				Window.open(helpUrl, "_blank", null);
+				Window.open(helpUrl, "_blank", "resizable=yes,scrollbars=yes,outerHeight=300,outerWidth=350");
 			}
 			
 		};

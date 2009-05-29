@@ -940,10 +940,13 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		//model.setPlacementId(getPlacementId());
 		model.setGradebookModels(getGradebookModels());
 		
-		if (configService == null)
-			model.setHelpUrl("http://www.google.com");
-		
-		
+		if (configService != null) {
+			String url = configService.getString(AppConstants.HELP_URL_CONFIG_ID);
+			
+			if (url != null)
+				model.setHelpUrl(url);
+		}
+
 		return model;
 	}
 	
