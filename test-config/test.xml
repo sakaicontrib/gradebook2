@@ -10,7 +10,7 @@
 		<property name="businessLogic" ref="org.sakaiproject.gradebook.gwt.sakai.BusinessLogic"/>
 		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/> 
 		<!--property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/-->
-		<!--property name="userService" ref="org.sakaiproject.user.api.UserDirectoryService"/-->
+		<property name="userService" ref="org.sakaiproject.user.api.UserDirectoryService"/>
 		<property name="gradeCalculations" ref="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"/>
 		<property name="frameworkService" ref="org.sakaiproject.service.gradebook.GradebookFrameworkService" />
 		<!--property name="siteService" ref="org.sakaiproject.site.api.SiteService"/-->
@@ -41,6 +41,10 @@
 		<property name="authn">
 					<ref bean="org_sakaiproject_tool_gradebook_facades_Authn" />
 				</property>
+	</bean>
+	
+	<bean id="org.sakaiproject.user.api.UserDirectoryService"
+		class="org.sakaiproject.gradebook.gwt.sakai.mock.UserDirectoryServiceMock">
 	</bean>
 	
 	<!--bean id="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService" parent="alt.gradebookTxTemplate">

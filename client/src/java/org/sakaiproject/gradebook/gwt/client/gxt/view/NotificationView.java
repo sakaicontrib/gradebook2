@@ -57,7 +57,10 @@ public class NotificationView extends View {
 			notifier.notifyError(notification.getError());
 			break;
 		default:
-			notifier.notifyUserError("Request Failed", notification.getText());
+			if (notification.isFailure())
+				notifier.notifyUserError("Request Failed", notification.getText());
+			else
+				notifier.notify(notification.getTitle(), notification.getText());
 			
 		
 		/*case CLOSE_NOTIFICATION:

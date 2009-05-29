@@ -13,6 +13,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
+import org.sakaiproject.gradebook.gwt.sakai.model.Realm;
+import org.sakaiproject.gradebook.gwt.sakai.model.RealmGroup;
+import org.sakaiproject.gradebook.gwt.sakai.model.RealmRole;
 import org.sakaiproject.service.gradebook.shared.GradebookExistsException;
 import org.sakaiproject.service.gradebook.shared.GradebookFrameworkService;
 import org.sakaiproject.service.gradebook.shared.GradebookNotFoundException;
@@ -114,6 +117,32 @@ public class GradebookFrameworkServiceMock extends HibernateDaoSupport implement
 				// Update the gradebook with the new selected grade mapping
 				session.update(gradebook);
 
+				
+				// Now let's create the appropriate realms for this site (this is an odd place to do this, but we need a db connection, so why not)
+				
+				RealmRole realmRole = new RealmRole();
+				realmRole.setRoleKey(Long.valueOf(1l));
+				realmRole.setRoleName("Student");
+				session.save(realmRole);
+				
+				
+				for (int i=0;i<200;i++) {
+					// This is actually totally wrong... in sakai there is only one realm per site, but it's a workaround
+					// to Hibernate's screwy behavior with ids
+					Realm realm = new Realm();
+					realm.setRealmKey(Long.valueOf(i));
+					realm.setRealmId("/site/TESTSITEID");
+					session.save(realm);
+					
+					RealmGroup group = new RealmGroup();
+					group.setRealmKey(Long.valueOf(i));
+					group.setUserId(String.valueOf(i));
+					group.setRoleKey(Long.valueOf(1l));
+					group.setActive(Boolean.TRUE);
+					session.save(group);
+				}
+				
+				
 				return null;
 
 			}

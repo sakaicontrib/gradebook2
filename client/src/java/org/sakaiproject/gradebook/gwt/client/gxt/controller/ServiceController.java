@@ -237,8 +237,8 @@ public class ServiceController extends Controller {
 				.append("'").toString();
 		}
 		
-		notifier.notify("Success", message);
-		Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(message));
+		//notifier.notify("Success", message);
+		Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent("Success", message));
 	}
 	
 	private void onUpdateGradeRecord(final GradeRecordUpdate event) {

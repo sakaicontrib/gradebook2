@@ -2501,7 +2501,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		if (site != null) {
 			List<String> userUids = gbService.getFullUserListForSite(site.getId(), learnerRoleKeys);
 			
-			if (userService != null && userUids != null && !userUids.isEmpty())
+			if (userService != null && userUids != null)
 				users = userService.getUsers(userUids);
 			
 			/*

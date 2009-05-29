@@ -75,6 +75,8 @@ public class AppController extends Controller {
 		registerEventTypes(GradebookEvents.UpdateLearnerGradeRecord.getEventType());
 		registerEventTypes(GradebookEvents.UserChange.getEventType());
 		registerEventTypes(GradebookEvents.StartFinalgrade.getEventType());
+	
+		this.notificationView = new NotificationView(this);
 	}
 	
 	@Override
@@ -90,8 +92,10 @@ public class AppController extends Controller {
 		case CONFIRMATION:
 		case CLOSE_NOTIFICATION:
 		case NOTIFICATION:
-			forwardToView(appView, event);
-			forwardToView(notificationView, event);
+			//if (appView != null)
+			//	forwardToView(appView, event);
+			if (notificationView != null)
+				forwardToView(notificationView, event);
 			break;
 		case HIDE_COLUMN:
 			forwardToView(treeView, event);
@@ -238,7 +242,7 @@ public class AppController extends Controller {
 			boolean isUserAbleToViewOwnGrades = gbModel.isUserAbleToViewOwnGrades() == null ? false : gbModel.isUserAbleToViewOwnGrades().booleanValue();
 			boolean isUserAbleToEditItems = DataTypeConversionUtil.checkBoolean(gbModel.isUserAbleToEditAssessments());
 			
-			this.notificationView = new NotificationView(this);
+			
 			if (isUserAbleToGrade) {
 				this.singleView = new SingleGradeView(this, false);
 				this.treeView = new TreeView(this, i18n, isUserAbleToEditItems);

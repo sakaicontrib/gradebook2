@@ -1,10 +1,6 @@
 package org.sakaiproject.gradebook.gwt.sakai.mock;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
 
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCService;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
@@ -13,27 +9,16 @@ import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
+import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
-import org.sakaiproject.gradebook.gwt.sakai.BusinessLogic;
-import org.sakaiproject.gradebook.gwt.sakai.BusinessLogicImpl;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ResourceProducer;
-import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Security;
-import org.sakaiproject.gradebook.gwt.sakai.Gradebook2SecurityImpl;
-import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ServiceImpl;
-import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
-import org.sakaiproject.gradebook.gwt.sakai.SampleInstitutionalAdvisor;
-import org.sakaiproject.gradebook.gwt.sakai.UserRecord;
-import org.sakaiproject.gradebook.gwt.sakai.calculations.GradeCalculationsOOImpl;
-import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
-import org.sakaiproject.section.api.SectionAwareness;
-import org.sakaiproject.site.api.Group;
-import org.sakaiproject.site.api.Site;
-import org.sakaiproject.tool.gradebook.Gradebook;
+import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
@@ -48,7 +33,13 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 	private Gradebook2ResourceProducer producer;
 	
 	public void init() {
-		Gradebook2ServiceImpl service = new Gradebook2ServiceImpl() {
+		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"test.xml", "db.xml"});
+
+		Gradebook2Service service = (Gradebook2Service)context.getBean("org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service");
+		
+		
+		
+		/*Gradebook2ServiceImpl service = new Gradebook2ServiceImpl() {
 			@Override
 			protected String lookupDefaultGradebookUid() {
 				return "12312409345";
@@ -105,9 +96,9 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			}
 			
 			
-			/*
-			 * TEST DATA
-			 */
+			//
+			// TEST DATA
+			//
 			private final String[] FIRST_NAMES = { "Joel", "John", "Kelly",
 				"Freeland", "Bruce", "Rajeev", "Thomas", "Jon", "Mary", "Jane",
 				"Susan", "Cindy", "Veronica", "Shana", "Shania", "Olin", "Brenda",
@@ -188,15 +179,20 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 		service.setGbService(gbService);
 		service.setGradeCalculations(new GradeCalculationsOOImpl());
 		service.setSecurity(security);
+	*/
 		
 		producer = new Gradebook2ResourceProducer();
 		producer.setService(service);
 		
 		try {
 
-			GradebookModel gbModel = service.getGradebook("emptyid");
+			ApplicationModel applicationModel = service.getApplicationModel();
+
+			GradebookModel gbModel = applicationModel.getGradebookModels().get(0);
 			
-			ItemModel gradebook = new ItemModel();
+			//GradebookModel gbModel = service.getGradebook("emptyid");
+			
+			ItemModel gradebook = gbModel.getGradebookItemModel();
 			gradebook.setName("Test Gradebook");
 			gradebook.setCategoryType(CategoryType.WEIGHTED_CATEGORIES);
 			gradebook.setGradeType(GradeType.PERCENTAGES);

@@ -161,7 +161,7 @@ public class SectionAwarenessMock implements SectionAwareness {
 		"Yang", "Redford", "Shaner", "Bradly", "Herzog" };
 	
 	private EnrollmentRecord createParticipationRecord() {
-		String studentId = String.valueOf(100000 + getRandomInt(899999));
+		/*String studentId = String.valueOf(100000 + getRandomInt(899999));
 		String firstName = FIRST_NAMES[getRandomInt(FIRST_NAMES.length)];
 		String lastName = LAST_NAMES[getRandomInt(LAST_NAMES.length)];
 		String sortName = lastName + ", " + firstName;
@@ -172,6 +172,9 @@ public class SectionAwarenessMock implements SectionAwareness {
 		User user = new UserMock(studentId, studentId, displayName, sortName);
 		
 		return new EnrollmentRecordMock(learningContext, Role.STUDENT, user);
+		*/
+		
+		return null;
 	}
 	
 	
