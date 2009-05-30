@@ -252,24 +252,28 @@ public class ServiceController extends Controller {
 		AsyncCallback<StudentModel> callback = new AsyncCallback<StudentModel>() {
 			
 			public void onFailure(Throwable caught) {
-				record.beginEdit();
 				
+				record.beginEdit();
+					
 				String property = event.property;
-						
+							
 				// Save the exception message on the record
 				String failedProperty = property + FAILED_FLAG;
 				record.set(failedProperty, caught.getMessage());
-						
+							
 				// We have to fool the system into thinking that the value has changed, since
 				// we snuck in that "Saving grade..." under the radar.
-				record.set(property, null);
+				if (event.oldValue == null && event.value != null)
+					record.set(property, event.value);
+				else 
+					record.set(property, null);
 				record.set(property, event.oldValue);
 					
 				record.setValid(property, false);
-
+	
 				record.endEdit();
 				
-				notifier.notifyError(caught);
+				//notifier.notifyError(caught);
 
 				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught, "Failed to update grade: "));			
 			}
@@ -302,7 +306,7 @@ public class ServiceController extends Controller {
 		event.record.reject(true);
 		event.record.cancelEdit();
 		
-		notifier.notifyError(caught);
+		//notifier.notifyError(caught);
 		
 		Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught, "Failed to update item: "));
 	}
