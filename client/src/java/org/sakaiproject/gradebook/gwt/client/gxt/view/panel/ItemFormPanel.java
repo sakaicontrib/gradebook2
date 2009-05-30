@@ -146,15 +146,20 @@ public class ItemFormPanel extends ContentPanel {
 		categoryTypePicker = new ComboBox<ModelData>();
 		categoryTypePicker.setDisplayField("name");
 		categoryTypePicker.setName(ItemModel.Key.CATEGORYTYPE.name());
+		categoryTypePicker.setEditable(false);
 		categoryTypePicker.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.CATEGORYTYPE));
+		categoryTypePicker.setForceSelection(true);
 		categoryTypePicker.setVisible(false);
 		formPanel.add(categoryTypePicker);
 		
 		gradeTypePicker = new ComboBox<ModelData>();
 		gradeTypePicker.setDisplayField("name");
+		gradeTypePicker.setEditable(false);
 		gradeTypePicker.setName(ItemModel.Key.GRADETYPE.name());
 		gradeTypePicker.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.GRADETYPE));
+		gradeTypePicker.setForceSelection(true);
 		gradeTypePicker.setVisible(false);
+		
 		formPanel.add(gradeTypePicker);
 
 		percentCourseGradeField = new InlineEditNumberField();
@@ -331,15 +336,47 @@ public class ItemFormPanel extends ContentPanel {
 	}
 
 	public void onItemCreated(ItemModel itemModel) {
-		//if (itemModel.getItemType() == Type.CATEGORY) {
-		//	categoryStore.add(itemModel);
-		//}
-		
+
 		ItemModelProcessor processor = new ItemModelProcessor(itemModel) {
 			
 			public void doCategory(ItemModel categoryModel) {
 				clearForm(categoryModel);
 				categoryStore.add(categoryModel);
+			}
+			
+			public void doItem(ItemModel itemModel) {
+				clearForm(itemModel);
+			}
+			
+			private void clearForm(ItemModel itemModel) {
+				if (itemModel != null && itemModel.isActive()) {
+					switch (mode) {
+					case NEW:
+						formPanel.clear();
+						Type itemType = Type.ITEM;
+						
+						if (itemModel.getItemType() != null)
+							itemType = itemModel.getItemType();
+						
+						initState(itemType, itemModel, false);
+						establishSelectedCategoryState(itemModel);
+						break;
+					}
+				}
+			}
+			
+		};
+		
+		processor.process();
+	}
+	
+	public void onItemDeleted(ItemModel itemModel) {
+		ItemModelProcessor processor = new ItemModelProcessor(itemModel) {
+			
+			public void doCategory(ItemModel categoryModel) {
+				clearForm(categoryModel);
+				if (DataTypeConversionUtil.checkBoolean(categoryModel.getRemoved()))
+					categoryStore.remove(categoryModel);
 			}
 			
 			public void doItem(ItemModel itemModel) {
@@ -374,7 +411,7 @@ public class ItemFormPanel extends ContentPanel {
 		gradeTypePicker.setEnabled(true);
 		
 		
-		ItemModelProcessor processor = new ItemModelProcessor(itemModel) {
+		/*ItemModelProcessor processor = new ItemModelProcessor(itemModel) {
 			
 			public void doCategory(ItemModel categoryModel) {
 				clearForm(categoryModel);
@@ -407,7 +444,7 @@ public class ItemFormPanel extends ContentPanel {
 		};
 		
 		processor.process();
-		
+		*/
 		/*ItemModelProcessor processor = new ItemModelProcessor(itemModel) {
 			
 			public void doCategory(ItemModel categoryModel) {
@@ -511,6 +548,7 @@ public class ItemFormPanel extends ContentPanel {
 			
 		}
 		
+		includedField.setValue(Boolean.TRUE);
 	}
 	
 	public void onNewItem(ItemModel itemModel) {
@@ -546,6 +584,8 @@ public class ItemFormPanel extends ContentPanel {
 		
 		initState(Type.ITEM, itemModel, false);
 		establishSelectedCategoryState(itemModel);
+		
+		includedField.setValue(Boolean.TRUE);
 	}
 	
 	public void onTreeStoreInitialized(TreeStore<ItemModel> treeStore) {

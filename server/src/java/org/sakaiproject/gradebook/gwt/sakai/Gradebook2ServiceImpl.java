@@ -233,7 +233,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 		
 		if (! hasCategories) {
-			return getItemModel(gradebook, assignments, null, assignmentId);
+			return getItemModel(gradebook, assignments, null, null, assignmentId);
 		}
 		
 		ItemModel categoryItemModel = getItemModelsForCategory(category, createItemModel(gradebook), assignmentId);
@@ -609,7 +609,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		List<Category> categories = null;
 		if (hasCategories)
 			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
-		spreadsheetModel.setGradebookItemModel(getItemModel(gradebook, assignments, categories, null));
+		spreadsheetModel.setGradebookItemModel(getItemModel(gradebook, assignments, categories, null, null));
 		
 		return spreadsheetModel;
 	}
@@ -1665,7 +1665,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		if (hasCategories && oldCategory != null) {
 			assignments = gbService.getAssignments(gradebook.getId());
 			List<Category> categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
-			return getItemModel(gradebook, assignments, categories, assignment.getId());
+			return getItemModel(gradebook, assignments, categories, null, assignment.getId());
 		}
 		
 		// If neither the weight nor the points have changed, then we can just return 
@@ -1676,7 +1676,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			return itemModel;
 		} else if (! hasCategories) {
 			// Otherwise if we're in no categories mode then we want to return the gradebook
-			return getItemModel(gradebook, assignments, null, assignment.getId());
+			return getItemModel(gradebook, assignments, null, null, assignment.getId());
 		}
 		
 		// Otherwise we can return the category parent
@@ -1960,7 +1960,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		model.setGradebookId(gradebook.getId());
 		model.setName(gradebook.getName());
 		
-		ItemModel gradebookItemModel = getItemModel(gradebook, assignments, categories, null);
+		ItemModel gradebookItemModel = getItemModel(gradebook, assignments, categories, null, null);
 		model.setGradebookItemModel(gradebookItemModel);
 		List<FixedColumnModel> columns = getColumns();
 		
@@ -2711,7 +2711,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		return models;
 	}
 	
-	private ItemModel getItemModel(Gradebook gradebook, List<Assignment> assignments, List<Category> categories, Long assignmentId) {
+	private ItemModel getItemModel(Gradebook gradebook, List<Assignment> assignments, List<Category> categories, Long categoryId, Long assignmentId) {
 		
 		ItemModel gradebookItemModel = createItemModel(gradebook);
 		
@@ -2740,6 +2740,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 							categoryItemModel.setParent(gradebookItemModel);
 							gradebookItemModel.add(categoryItemModel);
 						} 
+						
+						if (categoryId != null && category.getId().equals(categoryId))
+							categoryItemModel.setActive(true);
 						
 						calculateItemCategoryPercent(gradebook, category, gradebookItemModel, categoryItemModel, items, assignmentId);
 						
@@ -3193,7 +3196,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		List<Category> categories = null;
 		if (hasCategories)
 			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
-		return getItemModel(gradebook, assignments, categories, null);
+		return getItemModel(gradebook, assignments, categories, null, null);
 	}
 	
 	/**
@@ -3321,13 +3324,13 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
 		List<Category> categories = getCategoriesWithAssignments(gradebook.getId(), assignments, false);
 		
-		ItemModel gradebookItemModel = getItemModel(gradebook, assignments, categories, null);
+		ItemModel gradebookItemModel = getItemModel(gradebook, assignments, categories, category.getId(), null);
 		
-		for (ItemModel child : gradebookItemModel.getChildren()) {
+		/*for (ItemModel child : gradebookItemModel.getChildren()) {
 			if (child.equals(item)) {
 				child.setActive(true);
 			}
-		}
+		}*/
 		
 		return gradebookItemModel;
 	}

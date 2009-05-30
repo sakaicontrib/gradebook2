@@ -66,6 +66,9 @@ public class TreeView extends View {
 		case ITEM_CREATED:
 			onItemCreated((ItemModel)event.data);
 			break;
+		case ITEM_DELETED:
+			onItemDeleted((ItemModel)event.data);
+			break;
 		case ITEM_UPDATED:
 			onItemUpdated((ItemModel)event.data);
 			break;
@@ -147,6 +150,10 @@ public class TreeView extends View {
 	protected void onItemCreated(ItemModel itemModel) {
 		treePanel.onItemCreated(itemModel);
 		formPanel.onItemCreated(itemModel);
+	}
+	
+	protected void onItemDeleted(ItemModel itemModel) {
+		formPanel.onItemDeleted(itemModel);
 	}
 	
 	protected void onItemUpdated(ItemModel itemModel) {

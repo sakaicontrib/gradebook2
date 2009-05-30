@@ -205,6 +205,7 @@ public class AppController extends Controller {
 			break;
 		case ITEM_DELETED:
 			forwardToView(multigradeView, event);
+			forwardToView(treeView, event);
 			break;
 		case MASK_ITEM_TREE:
 		case UNMASK_ITEM_TREE:
