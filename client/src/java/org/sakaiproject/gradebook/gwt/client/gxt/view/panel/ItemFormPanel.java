@@ -671,6 +671,7 @@ public class ItemFormPanel extends ContentPanel {
 		boolean isCategory = itemType == Type.CATEGORY;
 		boolean isItem = itemType == Type.ITEM;
 		boolean isExternal = false;
+		boolean isCreateNewItem = createItemType == Type.ITEM && mode == Mode.NEW;
 		
 		boolean isPercentCategoryVisible = false;
 
@@ -705,7 +706,7 @@ public class ItemFormPanel extends ContentPanel {
 		
 		initField(nameField, !isDelete && !isExternal, true);
 		initField(pointsField, !isDelete && !isExternal, isItem);
-		initField(percentCategoryField, !isDelete && isItem, isPercentCategoryVisible);
+		initField(percentCategoryField, !isDelete && (isItem || isCreateNewItem), isPercentCategoryVisible);
 		initField(percentCourseGradeField, !isDelete, isCategory && hasWeights);
 		initField(equallyWeightChildrenField, !isDelete, isCategory && hasWeights);
 		initField(extraCreditField, !isDelete, isNotGradebook);
@@ -1031,6 +1032,7 @@ public class ItemFormPanel extends ContentPanel {
 		boolean hasWeights = categoryType == CategoryType.WEIGHTED_CATEGORIES;
 		boolean isPercentCategoryVisible = false;
 		boolean isItem = selectedItemModel != null && selectedItemModel.getItemType() == ItemModel.Type.ITEM;
+		boolean isCreateNewItem = createItemType == Type.ITEM && mode == Mode.NEW;
 		
 		if (itemModel != null) {
 		
@@ -1056,7 +1058,7 @@ public class ItemFormPanel extends ContentPanel {
 			}
 		} 
 		
-		initField(percentCategoryField, !isDelete && isItem, isPercentCategoryVisible || DataTypeConversionUtil.checkBoolean(extraCreditField.getValue()));
+		initField(percentCategoryField, !isDelete && (isItem || isCreateNewItem), isPercentCategoryVisible || DataTypeConversionUtil.checkBoolean(extraCreditField.getValue()));
 	}
 	
 
