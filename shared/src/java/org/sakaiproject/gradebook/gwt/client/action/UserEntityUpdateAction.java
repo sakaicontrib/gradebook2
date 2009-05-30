@@ -52,7 +52,7 @@ public class UserEntityUpdateAction<M extends BaseModel> extends UserEntityActio
 	public UserEntityUpdateAction(EntityType entityType, ActionType actionType) {
 		super(actionType, entityType);
 	}
-	
+		
 	public UserEntityUpdateAction(GradebookModel gbModel, M model) {
 		super(gbModel, ActionType.UPDATE);
 		setModel(model);

@@ -374,6 +374,40 @@ public class ItemFormPanel extends ContentPanel {
 		gradeTypePicker.setEnabled(true);
 		
 		
+		ItemModelProcessor processor = new ItemModelProcessor(itemModel) {
+			
+			public void doCategory(ItemModel categoryModel) {
+				clearForm(categoryModel);
+				
+				if (DataTypeConversionUtil.checkBoolean(categoryModel.getRemoved()))
+					categoryStore.remove(categoryModel);
+			}
+			
+			public void doItem(ItemModel itemModel) {
+				clearForm(itemModel);
+			}
+			
+			private void clearForm(ItemModel itemModel) {
+				if (itemModel != null && itemModel.isActive()) {
+					switch (mode) {
+					case NEW:
+						formPanel.clear();
+						Type itemType = Type.ITEM;
+						
+						if (itemModel.getItemType() != null)
+							itemType = itemModel.getItemType();
+						
+						initState(itemType, itemModel, false);
+						establishSelectedCategoryState(itemModel);
+						break;
+					}
+				}
+			}
+			
+		};
+		
+		processor.process();
+		
 		/*ItemModelProcessor processor = new ItemModelProcessor(itemModel) {
 			
 			public void doCategory(ItemModel categoryModel) {

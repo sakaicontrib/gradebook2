@@ -30,6 +30,7 @@ import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.SecureToken;
+import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.ActionType;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
@@ -40,6 +41,7 @@ import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordMapModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
 import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
@@ -168,8 +170,8 @@ public class GradeScalePanel extends ContentPanel {
 
 				GradeScaleRecordModel model = (GradeScaleRecordModel)record.getModel();
 				GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
-				//UserEntityUpdateAction<GradeScaleRecordModel> action = 
-				//	new UserEntityUpdateAction<GradeScaleRecordModel>(gbModel, model, property, ClassType.DOUBLE, newValue, originalValue);
+				UserEntityUpdateAction<StudentModel> action = 
+					new UserEntityUpdateAction<StudentModel>(gbModel, null, property, org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType.DOUBLE, newValue, originalValue);
 				
 				AsyncCallback<GradeScaleRecordMapModel> callback = 
 					new AsyncCallback<GradeScaleRecordMapModel>() {
@@ -196,7 +198,7 @@ public class GradeScalePanel extends ContentPanel {
 				
 				Gradebook2RPCServiceAsync service = Registry.get("service");
 				
-				service.update(new GradeScaleRecordMapModel(gbModel.getGradebookUid(), gbModel.getGradebookId(), model), EntityType.GRADE_SCALE, null, SecureToken.get(), callback);
+				service.update(new GradeScaleRecordMapModel(gbModel.getGradebookUid(), gbModel.getGradebookId(), model), EntityType.GRADE_SCALE, action, SecureToken.get(), callback);
 				
 				/*
 				RemoteCommand<GradeScaleRecordModel> remoteCommand = 
