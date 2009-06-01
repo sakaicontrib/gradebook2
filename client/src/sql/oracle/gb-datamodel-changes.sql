@@ -100,16 +100,6 @@ nocycle;
 create index GB_USER_DEREF_RM_UP_IDX on GB_USER_DEREF_RM_UPDATE_T(REALM_ID);
 
 
-create table GB_LEARNER_INSTANCE_T 
-(
-	ID number(19)
-);
-
-create sequence GB_LEARNER_INSTANCE_S
-start with 1000
-increment by 1
-nocache
-nocycle;
 
 
 
