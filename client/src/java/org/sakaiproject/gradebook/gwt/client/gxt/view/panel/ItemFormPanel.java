@@ -938,6 +938,10 @@ public class ItemFormPanel extends ContentPanel {
 							
 							if (category != null) 
 								item.setCategoryId(category.getCategoryId());
+							else {
+								String categoryName = categoryPicker.getRawValue();
+								item.setCategoryName(categoryName);
+							}
 							
 							item.setName(nameField.getValue());
 							item.setExtraCredit(extraCreditField.getValue());

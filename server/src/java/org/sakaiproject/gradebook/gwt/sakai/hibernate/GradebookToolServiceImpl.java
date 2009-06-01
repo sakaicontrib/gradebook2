@@ -330,6 +330,10 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
         			String sortName = new StringBuilder().append(lastName.toUpperCase()).append("   ").append(firstName.toUpperCase()).toString();
         			String lastNameFirst = new StringBuilder().append(lastName).append(", ").append(firstName).toString();
         			
+        			if (user.getLastName() == null && user.getFirstName() == null) {
+        				sortName = user.getEid();
+        				lastNameFirst = user.getEid();
+        			}
             		
             		if (dereference == null) {
             				

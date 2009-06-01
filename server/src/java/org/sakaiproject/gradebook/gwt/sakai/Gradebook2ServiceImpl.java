@@ -131,7 +131,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	 * @throws InvalidInputException
 	 */
 	public ItemModel createItem(String gradebookUid, Long gradebookId, final ItemModel item, boolean enforceNoNewCategories) throws InvalidInputException {
-		
+				
 		if (item.getItemType() != null) {
 			switch (item.getItemType()) {
 			case CATEGORY:
@@ -149,17 +149,20 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				propertyMap.put(property, value);
 		}
 		
-		Gradebook gradebook = null;
+		boolean hasNewCategory = false;
+		
+		Gradebook gradebook = gbService.getGradebook(gradebookUid);
 		Category category = null;
 		Long assignmentId = null;
 		
-		boolean hasCategories = false;
+		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
 		List<Assignment> assignments = null;
+		Long categoryId = null;
 		
 		try {
 			boolean includeInGrade = DataTypeConversionUtil.checkBoolean(item.getIncluded());
 			
-			Long categoryId = item.getCategoryId(); 
+			categoryId = item.getCategoryId(); 
 			String name = item.getName();
 			Double weight = item.getPercentCategory(); 
 			Double points = item.getPoints();
@@ -174,6 +177,16 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			// Business rule #2
 			if (weight == null)
 				weight = Double.valueOf(points.doubleValue());
+			
+			if (hasCategories && item.getCategoryId() == null && item.getCategoryName() != null) {
+				ItemModel newCategory = new ItemModel();
+				newCategory.setName(item.getCategoryName());
+				newCategory.setIncluded(Boolean.TRUE);
+				newCategory = addItemCategory(gradebookUid, gradebookId, newCategory);
+				categoryId = newCategory.getCategoryId();
+				item.setCategoryId(categoryId);
+				hasNewCategory = true;
+			}
 			
 			if (categoryId == null) {
 				category = findDefaultCategory(gradebookId);
@@ -190,11 +203,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				category = gbService.getCategory(categoryId);
 			
 			
-			gradebook = category.getGradebook();
-	
-			hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
+			//gradebook = category.getGradebook();
 
-			
 			// Apply business rules before item creation
 			if (hasCategories) {
 				assignments = gbService.getAssignmentsForCategory(categoryId);
@@ -234,6 +244,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		
 		if (! hasCategories) {
 			return getItemModel(gradebook, assignments, null, null, assignmentId);
+		} else if (hasNewCategory) {
+			assignments = gbService.getAssignments(gradebookId);
+			List<Category> categories = getCategoriesWithAssignments(gradebookId, assignments, true);
+			return getItemModel(gradebook, assignments, categories, categoryId, assignmentId);
 		}
 		
 		ItemModel categoryItemModel = getItemModelsForCategory(category, createItemModel(gradebook), assignmentId);
@@ -1521,9 +1535,17 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;		
 		boolean hasCategoryChanged = false;
 		
-		if (hasCategories && category != null) 
-			hasCategoryChanged = !category.getId().equals(item.getCategoryId());
-		
+		if (hasCategories) {
+			if (item.getCategoryId() == null && item.getCategoryName() != null) {
+				ItemModel newCategory = new ItemModel();
+				newCategory.setName(item.getCategoryName());
+				newCategory.setIncluded(Boolean.TRUE);
+				newCategory = addItemCategory(gradebook.getUid(), gradebook.getId(), newCategory);
+				item.setCategoryId(newCategory.getCategoryId());
+				hasCategoryChanged = true;
+			} else
+				hasCategoryChanged = !category.getId().equals(item.getCategoryId());
+		}
 		
 		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.ITEM.name(), ActionType.UPDATE.name());
 		actionRecord.setEntityName(assignment.getName());
