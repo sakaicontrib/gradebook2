@@ -386,7 +386,7 @@ public class ItemTreePanel extends ContentPanel {
 		ItemCellRenderer cellRenderer = new ItemCellRenderer();
 		
 		TreeTableColumn nameColumn = new TreeTableColumn(ItemModel.Key.NAME.name(), 
-				ItemModel.getPropertyName(ItemModel.Key.NAME), 210);
+				ItemModel.getPropertyName(ItemModel.Key.NAME), 240);
 		nameColumn.setRenderer(cellRenderer);
 		nameColumn.setSortable(false);
 		columns.add(nameColumn);
@@ -403,7 +403,7 @@ public class ItemTreePanel extends ContentPanel {
 		columns.add(percentCourseGradeColumn);
 		
 		percentCategoryColumn =  new TreeTableColumn(ItemModel.Key.PERCENT_CATEGORY.name(), 
-				ItemModel.getPropertyName(ItemModel.Key.PERCENT_CATEGORY), ItemModel.getPropertyName(ItemModel.Key.PERCENT_CATEGORY).length() * CHARACTER_WIDTH + 30);
+				ItemModel.getPropertyName(ItemModel.Key.PERCENT_CATEGORY), ItemModel.getPropertyName(ItemModel.Key.PERCENT_CATEGORY).length() * CHARACTER_WIDTH);
 		percentCategoryColumn.setAlignment(HorizontalAlignment.RIGHT);
 		percentCategoryColumn.setHidden(gbModel.getGradebookItemModel().getCategoryType() == CategoryType.SIMPLE_CATEGORIES);
 		percentCategoryColumn.setRenderer(numericCellRenderer);

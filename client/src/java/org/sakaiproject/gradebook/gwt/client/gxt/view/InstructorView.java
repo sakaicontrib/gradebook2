@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
@@ -86,14 +87,12 @@ public class InstructorView extends AppView {
 	private BorderLayoutData northData;
 	private BorderLayoutData westData;
 	
-	
-	
 	private I18nConstants i18n;
 	private boolean isEditable;
 	
 	public InstructorView(Controller controller, TreeView treeView, MultigradeView multigradeView, 
 			NotificationView notificationView, ImportExportView importExportView, 
-			SingleGradeView singleGradeView, boolean isEditable) {
+			SingleGradeView singleGradeView, boolean isEditable, final boolean isNewGradebook) {
 		super(controller, notificationView);
 		this.isEditable = isEditable;
 		this.tabConfigurations = new ArrayList<TabConfig>();
@@ -148,6 +147,9 @@ public class InstructorView extends AppView {
 			protected void onRender(Element parent, int index) {
 				super.onRender(parent, index);
 				borderLayout.collapse(LayoutRegion.EAST);
+				/*if (isNewGradebook) {
+					borderLayout.collapse(LayoutRegion.WEST);
+				}*/
 			}
 		};
 
@@ -193,7 +195,9 @@ public class InstructorView extends AppView {
 
 		populateToolBar(i18n, selectedGradebook);
 
-		
+		if (DataTypeConversionUtil.checkBoolean(selectedGradebook.isNewGradebook()))
+			Dispatcher.forwardEvent(GradebookEvents.StartEditItem.getEventType(), selectedGradebook.getGradebookItemModel());
+
 	}
 
 	@Override

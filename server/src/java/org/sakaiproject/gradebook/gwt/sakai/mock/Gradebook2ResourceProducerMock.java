@@ -193,7 +193,8 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			//GradebookModel gbModel = service.getGradebook("emptyid");
 			
 			ItemModel gradebook = gbModel.getGradebookItemModel();
-			gradebook.setName("Test Gradebook");
+			
+			/*gradebook.setName("Test Gradebook");
 			gradebook.setCategoryType(CategoryType.WEIGHTED_CATEGORIES);
 			gradebook.setGradeType(GradeType.PERCENTAGES);
 			gradebook.setItemType(Type.GRADEBOOK);
@@ -292,7 +293,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			hw4.setIncluded(Boolean.TRUE);
 			hw4.setReleased(Boolean.FALSE);
 			service.createItem(gradebookUid, gradebookId, hw4, true);
-
+*/
 		} catch (Exception fe) {
 			GWT.log("Failed to update gradebook properties", fe);
 		}

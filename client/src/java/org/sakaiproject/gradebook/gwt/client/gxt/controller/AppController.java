@@ -242,14 +242,14 @@ public class AppController extends Controller {
 			boolean isUserAbleToGrade = gbModel.isUserAbleToGrade() == null ? false : gbModel.isUserAbleToGrade().booleanValue();
 			boolean isUserAbleToViewOwnGrades = gbModel.isUserAbleToViewOwnGrades() == null ? false : gbModel.isUserAbleToViewOwnGrades().booleanValue();
 			boolean isUserAbleToEditItems = DataTypeConversionUtil.checkBoolean(gbModel.isUserAbleToEditAssessments());
-			
+			boolean isNewGradebook = DataTypeConversionUtil.checkBoolean(gbModel.isNewGradebook());
 			
 			if (isUserAbleToGrade) {
 				this.singleView = new SingleGradeView(this, false);
 				this.treeView = new TreeView(this, i18n, isUserAbleToEditItems);
 				this.multigradeView = new MultigradeView(this, i18n);
 				this.importExportView = new ImportExportView(this, i18n);
-				this.appView = new InstructorView(this, treeView, multigradeView, notificationView, importExportView, singleView, isUserAbleToEditItems);
+				this.appView = new InstructorView(this, treeView, multigradeView, notificationView, importExportView, singleView, isUserAbleToEditItems, isNewGradebook);
 				forwardToView(treeView, event);
 				forwardToView(multigradeView, event);
 			} else if (isUserAbleToViewOwnGrades) {

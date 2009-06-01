@@ -85,10 +85,10 @@ public class GradebookModel extends EntityModel implements IsSerializable {
 	private List<FixedColumnModel> columns;
 	private String userName;
 	private ItemModel gradebookItemModel;
-
+	private Boolean isNewGradebook;
 
 	public GradebookModel() {
-		
+		this.isNewGradebook = Boolean.FALSE;
 	}
 
 	public String getGradebookUid() {
@@ -127,30 +127,6 @@ public class GradebookModel extends EntityModel implements IsSerializable {
 	public void setColumns(List<FixedColumnModel> columns) {
 		this.columns = columns;
 	}
-
-	/*public GradeType getGradeType() {
-		return gradeType;
-	}
-
-	public void setGradeType(GradeType gradeType) {
-		this.gradeType = gradeType;
-	}
-	
-	public Boolean isReleaseGrades() {
-		return isReleaseGrades;
-	}
-
-	public void setReleaseGrades(Boolean isReleaseGrades) {
-		this.isReleaseGrades = isReleaseGrades;
-	}
-
-	public CategoryType getCategoryType() {
-		return categoryType;
-	}
-
-	public void setCategoryType(CategoryType categoryType) {
-		this.categoryType = categoryType;
-	}*/
 
 	public Boolean isUserAbleToViewOwnGrades() {
 		return isUserAbleToViewOwnGrades;
@@ -213,17 +189,16 @@ public class GradebookModel extends EntityModel implements IsSerializable {
 	public ItemModel getGradebookItemModel() {	
 		return gradebookItemModel;
 	}
-
 	
 	public void setGradebookItemModel(ItemModel gradebookItemModel) {
-		/*this.rootItemModel = new ItemModel();
-		rootItemModel.setItemType(Type.ROOT.getName());
-		rootItemModel.setName("Root");
-		gradebookItemModel.setParent(rootItemModel);
-		gradebookItemModel.setName(name);
-		gradebookItemModel.setIdentifier(gradebookUid);
-		rootItemModel.add(gradebookItemModel);*/
-		
 		this.gradebookItemModel = gradebookItemModel;
+	}
+
+	public Boolean isNewGradebook() {
+		return isNewGradebook;
+	}
+
+	public void setNewGradebook(Boolean isNewGradebook) {
+		this.isNewGradebook = isNewGradebook;
 	}
 }

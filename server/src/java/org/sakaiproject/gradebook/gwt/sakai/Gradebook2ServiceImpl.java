@@ -971,7 +971,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		List<Category> categories = null;
 		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
 			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
-		return createGradebookModel(gradebook, assignments, categories);
+		return createGradebookModel(gradebook, assignments, categories, false);
 	}
 	
 	public <X extends BaseModel> ListLoadResult<X> getGradeEvents(String studentId, Long assignmentId) {
@@ -1952,8 +1952,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 	}
 	
-	private GradebookModel createGradebookModel(Gradebook gradebook, List<Assignment> assignments, List<Category> categories) {
+	private GradebookModel createGradebookModel(Gradebook gradebook, List<Assignment> assignments, List<Category> categories, boolean isNewGradebook) {
 		GradebookModel model = new GradebookModel();
+		model.setNewGradebook(Boolean.valueOf(isNewGradebook));
 		String gradebookUid = gradebook.getUid();
 		
 		model.setGradebookUid(gradebookUid);
@@ -2233,6 +2234,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		GradebookModel model = null;
 		Gradebook gradebook = null;
 		
+		boolean isNewGradebook = false;
+		
 		try {
 			// First thing, grab the default gradebook if one exists
 			gradebook = gbService.getGradebook(gradebookUid);
@@ -2241,6 +2244,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			if (frameworkService != null) {
 				frameworkService.addGradebook(gradebookUid, "My Default Gradebook");
 				gradebook = gbService.getGradebook(gradebookUid);
+				isNewGradebook = true;
 			} 
 		}
 		
@@ -2313,7 +2317,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 			}*/
 			
-			model = createGradebookModel(gradebook, assignments, categories);
+			model = createGradebookModel(gradebook, assignments, categories, isNewGradebook);
 		}
 		
 		return model;
