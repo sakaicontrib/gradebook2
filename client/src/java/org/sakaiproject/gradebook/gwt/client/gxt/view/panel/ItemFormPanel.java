@@ -135,6 +135,7 @@ public class ItemFormPanel extends ContentPanel {
 		formPanel.add(nameField);
 	
 		categoryPicker = new ComboBox<ItemModel>();
+		categoryPicker.addKeyListener(keyListener);
 		categoryPicker.setDisplayField(ItemModel.Key.NAME.name());
 		categoryPicker.setName(ItemModel.Key.CATEGORY_ID.name());
 		categoryPicker.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.CATEGORY_NAME));

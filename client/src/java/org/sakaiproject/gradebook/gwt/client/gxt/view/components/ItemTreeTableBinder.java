@@ -96,7 +96,7 @@ public class ItemTreeTableBinder extends TreeTableBinder<ItemModel> {
 			item.setIconStyle("gbGradebookIcon");
 			break;
 		case CATEGORY:
-			item.setIconStyle("gbEditCategoryIcon");
+			item.setLeaf(false);
 			break;
 		}
 		
