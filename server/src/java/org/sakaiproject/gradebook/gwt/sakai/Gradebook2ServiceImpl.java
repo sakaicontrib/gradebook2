@@ -2619,7 +2619,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		columns.add((X)new FixedColumnModel(StudentModel.Key.LAST_NAME_FIRST, 180, true));
 		columns.add((X)new FixedColumnModel(StudentModel.Key.EMAIL, 230, true));
 		columns.add((X)new FixedColumnModel(StudentModel.Key.SECTION, 120, true));
-		columns.add((X)new FixedColumnModel(StudentModel.Key.COURSE_GRADE, 120, true));
+		columns.add((X)new FixedColumnModel(StudentModel.Key.COURSE_GRADE, 120, false));
 		FixedColumnModel gradeOverrideColumn = new FixedColumnModel(StudentModel.Key.GRADE_OVERRIDE, 120, true);
 		gradeOverrideColumn.setEditable(true);
 		columns.add((X)gradeOverrideColumn);

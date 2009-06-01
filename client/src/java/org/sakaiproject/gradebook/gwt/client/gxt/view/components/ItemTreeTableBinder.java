@@ -1,7 +1,6 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view.components;
 
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
 import com.extjs.gxt.ui.client.binder.TreeTableBinder;
 import com.extjs.gxt.ui.client.event.ComponentEvent;

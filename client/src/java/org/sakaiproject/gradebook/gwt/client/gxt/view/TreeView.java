@@ -22,8 +22,6 @@ import com.extjs.gxt.ui.client.data.TreeModelReader;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.View;
-import com.extjs.gxt.ui.client.store.Store;
-import com.extjs.gxt.ui.client.store.StoreSorter;
 import com.extjs.gxt.ui.client.store.TreeStore;
 
 public class TreeView extends View {
@@ -34,24 +32,10 @@ public class TreeView extends View {
 	private TreeLoader<ItemModel> treeLoader;
 	private TreeStore<ItemModel> treeStore;
 	
-	// We have to track which dynamic columns are visible somewhere, makes sense to do it in the view, since it
-	// distinguishes between things that need to be rendered (components) and things that don't (views)
-	// Multigrade depends on TreeView to establish the visible columns
-	//private List<ItemModel> selectedItemModels;
-	
-	// We have to track which static columns are visible somewhere
-	//private Set<String> fullStaticIdSet;
-	//private Set<String> visibleStaticIdSet;
-	
-	private boolean isEditable;
-	
 	public TreeView(Controller controller, I18nConstants i18n, boolean isEditable) {
 		super(controller);
-		this.isEditable = isEditable;
 		this.treePanel = new ItemTreePanel(i18n, isEditable);
 		this.formPanel = new ItemFormPanel(i18n);
-		//this.fullStaticIdSet = new HashSet<String>();
-		//this.visibleStaticIdSet = new HashSet<String>();
 	}
 
 	@Override
@@ -215,7 +199,6 @@ public class TreeView extends View {
 	
 	@SuppressWarnings("unchecked")
 	protected void onSwitchGradebook(final GradebookModel selectedGradebook) {
-		//System.out.println("TreeView: Switch Gradebook");
 		formPanel.onSwitchGradebook(selectedGradebook);
 		treePanel.onSwitchGradebook(selectedGradebook);
 		
@@ -244,23 +227,6 @@ public class TreeView extends View {
 		
 		if (treeStore == null) {
 			treeStore = new TreeStore<ItemModel>(treeLoader);
-			/*treeStore.setStoreSorter(new StoreSorter<ItemModel>() {
-
-				@Override
-				public int compare(Store store, ItemModel m1, ItemModel m2,
-						String property) {
-					boolean m1Category = m1.getItemType() == Type.CATEGORY;
-					boolean m2Category = m2.getItemType() == Type.CATEGORY;
-
-					if (m1Category && !m2Category) {
-						return -1;
-					} else if (!m1Category && m2Category) {
-						return 1;
-					}
-
-					return super.compare(store, m1, m2, property);
-				}
-			});*/
 			treeStore.setModelComparer(new ItemModelComparer());
 
 			treePanel.onTreeStoreInitialized(treeStore);
@@ -296,26 +262,6 @@ public class TreeView extends View {
 	
 		return itemModel;
 	}
-	
-	/*private void showColumns(List<ItemModel> selectedItemModels) {
-		Set<String> selectedItemModelIdSet = new HashSet<String>();
-		boolean selectAll = false;
-		
-		for (ItemModel selectedItemModel : selectedItemModels) {
-			//selectedItemModelIdSet.add(selectedItemModel.getIdentifier());
-			
-			// If the root or gradebook is selected then we don't need to mess around any further
-			switch (selectedItemModel.getItemType()) {
-			case ITEM:
-				selectedItemModelIdSet.add(selectedItemModel.getIdentifier());
-				break;
-			}
-		}
-
-		Dispatcher.forwardEvent(GradebookEvents.ShowColumns, 
-				new ShowColumnsEvent(selectAll, fullStaticIdSet, visibleStaticIdSet, selectedItemModelIdSet));
-	
-	}*/
 	
 	// Public accessors
 	

@@ -7,6 +7,7 @@ import java.util.Set;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
+import org.sakaiproject.gradebook.gwt.client.gxt.InlineEditNumberField;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTabPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
@@ -196,22 +197,30 @@ public class LearnerSummaryPanel extends ContentPanel {
 			String dataType = item.getDataType();
 			
 			if (dataType != null && dataType.equals(AppConstants.NUMERIC_DATA_TYPE)) {
-				NumberField field = new NumberField();
+				NumberField field = new InlineEditNumberField();
 				
-				String amountIndicator = "%";
+				//String amountIndicator = "%";
 				
-				if (!isPercentages) 
-					amountIndicator = DataTypeConversionUtil.formatDoubleAsPointsString(item.getPoints());
+				//if (!isPercentages) 
+				//	amountIndicator = DataTypeConversionUtil.formatDoubleAsPointsString(item.getPoints());
 				
-				String itemName = new StringBuilder().append(item.getName())
-					.append("  [").append(amountIndicator).append("]").toString();
+				//String itemName = new StringBuilder().append(item.getName())
+				//	.append("  [").append(amountIndicator).append("]").toString();
+				
+				StringBuilder emptyText = new StringBuilder();
+				
+				if (isPercentages) 
+					emptyText.append("Enter a value between 0 and 100");
+				else
+					emptyText.append("Enter a value between 0 and ").append(DataTypeConversionUtil.formatDoubleAsPointsString(item.getPoints()));
 				
 				field.setItemId(itemId);
 				field.addInputStyleName("gbNumericFieldInput");
 				field.addKeyListener(keyListener);
-				field.setFieldLabel(itemName);
+				field.setFieldLabel(item.getName());
 				field.setFormat(DataTypeConversionUtil.getDefaultNumberFormat());
 				field.setName(item.getIdentifier());
+				field.setToolTip(emptyText.toString());
 				field.setWidth(50);
 					
 				verifyFieldState(field, item);
@@ -320,6 +329,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 		scoreFormLayout = new FormLayout();
 		scoreFormLayout.setDefaultWidth(50);
 		scoreFormLayout.setLabelSeparator("");
+		scoreFormLayout.setLabelWidth(180);
 		scoreFormPanel.setLayout(scoreFormLayout);
 		scoreFormPanel.setScrollMode(Scroll.AUTOY);
 		
