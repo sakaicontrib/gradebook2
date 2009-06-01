@@ -86,7 +86,6 @@ public class ItemFormPanel extends ContentPanel {
 	private Listener<FieldEvent> extraCreditChangeListener;
 	private SelectionListener<ButtonEvent> selectionListener;
 	private SelectionChangedListener<ItemModel> categorySelectionChangedListener;
-	//private StoreListener<ItemModel> storeListener;
 	
 	private I18nConstants i18n;
 	
