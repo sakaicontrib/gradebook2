@@ -91,10 +91,14 @@ public class ItemTreeTableBinder extends TreeTableBinder<ItemModel> {
 	      item.setLeaf(!hasChildren(model));
 	    }
 
-		boolean isGradebook = model.getItemType() == Type.GRADEBOOK;
-		if (isGradebook)
+		switch (model.getItemType()) {
+		case GRADEBOOK:
 			item.setIconStyle("gbGradebookIcon");
-		
+			break;
+		case CATEGORY:
+			item.setIconStyle("gbEditCategoryIcon");
+			break;
+		}
 		
 		
 		return item;

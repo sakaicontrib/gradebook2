@@ -567,7 +567,7 @@ public class ItemTreePanel extends ContentPanel {
 			    expandAll();
 			}
 		};
-		itemTree.getStyle().setLeafIconStyle("gbItemIcon");
+		//itemTree.getStyle().setLeafIconStyle("gbItemIcon");
 		itemTree.addListener(Events.SelectionChange, treeEventListener);
 		itemTree.addListener(Events.RowDoubleClick, treeEventListener);
 		itemTree.setSelectionModel(new TreeSelectionModel(SelectionMode.MULTI));
@@ -651,6 +651,7 @@ public class ItemTreePanel extends ContentPanel {
 			@Override
 			protected TreeItem createItem(BaseTreeModel<TreeModel> model) {
 				TreeItem item = new AriaTreeItem();
+				
 				
 				item.addListener(Events.KeyPress, new KeyListener() {
 					public void componentKeyPress(ComponentEvent event) {
