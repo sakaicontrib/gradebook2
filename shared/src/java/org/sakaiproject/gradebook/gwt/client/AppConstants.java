@@ -74,4 +74,5 @@ public interface AppConstants {
 	public static final String HELP_URL				= "helpUrl";
 	public static final String HELP_URL_CONFIG_ID	= "gb2.help.url";
 	
+	public static final String DEFAULT_CATEGORY_NAME = "Unassigned";
 }

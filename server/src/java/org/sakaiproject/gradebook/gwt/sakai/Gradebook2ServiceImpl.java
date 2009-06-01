@@ -2254,7 +2254,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
 			
 			// There are different ways that unassigned assignments can appear - old gradebooks, external apps
-			List<Assignment> unassignedAssigns = new ArrayList<Assignment>();
+			/*List<Assignment> unassignedAssigns = new ArrayList<Assignment>();
 			
 			if (assignments != null) {
 				for (Assignment assignment : assignments) {
@@ -2270,7 +2270,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				if (categories != null && ! categories.isEmpty()) {
 					// First, look for it by name
 					for (Category category : categories) {
-						if (category.getName().equalsIgnoreCase("Unassigned")) {
+						if (category.getName().equalsIgnoreCase(AppConstants.DEFAULT_CATEGORY_NAME)) {
 							defaultCategoryId = category.getId();
 							break;
 						}
@@ -2281,7 +2281,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				
 				// If we don't have one already, then let's create one
 				if (defaultCategoryId == null) {
-					defaultCategoryId = gbService.createCategory(gradebook.getId(), "Unassigned", Double.valueOf(1d), 0, null, null, null);
+					defaultCategoryId = gbService.createCategory(gradebook.getId(), AppConstants.DEFAULT_CATEGORY_NAME, Double.valueOf(1d), 0, null, null, null);
 					isCategoryNew = true;
 				} 
 
@@ -2311,7 +2311,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					}
 				}
 
-			}
+			}*/
 			
 			model = createGradebookModel(gradebook, assignments, categories);
 		}
@@ -2319,7 +2319,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		return model;
 	}
 	
-	private Category findDefaultCategory(Long gradebookId) {
+	private synchronized Category findDefaultCategory(Long gradebookId) {
 		List<Category> categories = gbService.getCategories(gradebookId);
 	
 		// Let's see if we already have a default category in existence
@@ -2327,25 +2327,27 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		if (categories != null && ! categories.isEmpty()) {
 			// First, look for it by name
 			for (Category category : categories) {
-				if (category.getName().equalsIgnoreCase("Unassigned")) {
+				if (category.getName().equalsIgnoreCase(AppConstants.DEFAULT_CATEGORY_NAME)) {
 					defaultCategoryId = category.getId();
 					break;
 				}
 			}
 		}
 		
-		boolean isCategoryNew = false;
-		
 		// If we don't have one already, then let's create one
 		if (defaultCategoryId == null) {
-			defaultCategoryId = gbService.createCategory(gradebookId, "Unassigned", Double.valueOf(1d), 0, null, null, null);
-			isCategoryNew = true;
+			defaultCategoryId = gbService.createCategory(gradebookId, AppConstants.DEFAULT_CATEGORY_NAME, Double.valueOf(1d), 0, null, null, null);
 		} 
 
 		// TODO: This is a just in case check -- we should probably throw an exception here instead, since it means we weren't able to 
 		// TODO: create the category for some reason -- but that probably would throw an exception anyway, so...
 		if (defaultCategoryId != null) {
 			Category defaultCategory = gbService.getCategory(defaultCategoryId);
+			
+			if (defaultCategory.isRemoved()) {
+				defaultCategory.setRemoved(false);
+				gbService.updateCategory(defaultCategory);
+			}
 			return defaultCategory;
 		}
 		
@@ -2528,17 +2530,25 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	
 	private List<Category> getCategoriesWithAssignments(Long gradebookId, List<Assignment> assignments, boolean includeEmpty) {
 
+		Map<Long, Category> categoryMap = new HashMap<Long, Category>();
 		List<Category> categories = null;
+
+		Category defaultCategory = null;
 		
 		// If we need to include categories that do not have any items under them (as we do for the item tree), then we have to do an additional query.
-		if (includeEmpty)
+		if (includeEmpty) {
 			categories = gbService.getCategories(gradebookId);
 
-		Map<Long, Category> categoryMap = new HashMap<Long, Category>();
-
-		if (categories != null) {
-			for (Category category : categories) {
-				categoryMap.put(category.getId(), category);
+			if (categories != null) {
+				for (Category category : categories) {
+					if (!category.isRemoved()) {
+						categoryMap.put(category.getId(), category);
+						
+						if (category.getName().equalsIgnoreCase(AppConstants.DEFAULT_CATEGORY_NAME)) {
+							defaultCategory = category;
+						}
+					}
+				}
 			}
 		}
 		
@@ -2551,29 +2561,51 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				if (assignment.isRemoved())
 					continue;
 				
-				category = categoryMap.get(assignment.getCategory().getId());
+				if (assignment.getCategory() != null)
+					category = categoryMap.get(assignment.getCategory().getId());
 	
 				if (null == category) {
 	
 					category = assignment.getCategory();
+					
+					if (null == category) {
+						if (defaultCategory == null)
+							defaultCategory = findDefaultCategory(gradebookId);
+						
+						category = defaultCategory;
+					}
+					
 					categoryMap.put(category.getId(), category);
 				}
-				
-				assignmentList = category.getAssignmentList();
-	
-				if (null == assignmentList) {
-	
-					assignmentList = new ArrayList<Assignment>();
-					category.setAssignmentList(assignmentList);
+								
+				if (null != category) {
+					assignmentList = category.getAssignmentList();
+		
+					if (null == assignmentList) {
+						assignmentList = new ArrayList<Assignment>();
+						category.setAssignmentList(assignmentList);
+					}
+		
+					if (!assignmentList.contains(assignment))
+						assignmentList.add(assignment);
 				}
-	
-				if (!assignmentList.contains(assignment))
-					assignmentList.add(assignment);
 			}
 		}
 		
 		if (categories == null && categoryMap.size() > 0)
 			categories = new ArrayList<Category>(categoryMap.values());
+
+		
+		// Make sure the default category has one or more children if it's going to be visible
+		if (defaultCategory != null) {
+			
+			if (defaultCategory.getAssignmentList() == null || defaultCategory.getAssignmentList().isEmpty()) {
+				defaultCategory.setRemoved(true);
+				gbService.updateCategory(defaultCategory);
+				categories.remove(defaultCategory);
+			}
+			
+		}
 		
 
 		return categories;	

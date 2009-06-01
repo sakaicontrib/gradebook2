@@ -23,6 +23,7 @@ public class StudentView extends AppView {
 		//Dispatcher.forwardEvent(GradebookEvents.SingleView, gbModel.getUserAsStudent());
 		viewport.setLayout(new FitLayout());
 		viewport.add(studentViewContainer);
+		viewportLayout.setActiveItem(studentViewContainer);
 		//viewport.setHeight(600);
 	}
 	

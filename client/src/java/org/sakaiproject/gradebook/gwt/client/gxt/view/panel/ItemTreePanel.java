@@ -386,7 +386,7 @@ public class ItemTreePanel extends ContentPanel {
 		ItemCellRenderer cellRenderer = new ItemCellRenderer();
 		
 		TreeTableColumn nameColumn = new TreeTableColumn(ItemModel.Key.NAME.name(), 
-				ItemModel.getPropertyName(ItemModel.Key.NAME), 180);
+				ItemModel.getPropertyName(ItemModel.Key.NAME), 210);
 		nameColumn.setRenderer(cellRenderer);
 		nameColumn.setSortable(false);
 		columns.add(nameColumn);

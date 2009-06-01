@@ -254,13 +254,14 @@
 }
 
 .gbHeader {
+	color: black;
 	font-size: 12pt;
 	font-weight: bold;
 	padding-bottom: 10px;	
 }
 
 .gbImpact {
-	color: darkgray;
+	color: darkblue;
 	font-weight: bold;
 	width: 120px;
 }
@@ -271,7 +272,7 @@
 }
 
 .gbRecordLabel {
-	color: darkgray;
+	color: darkblue;
 	font-weight: bold;
 	padding-top: 10;
 	width: 120px;	

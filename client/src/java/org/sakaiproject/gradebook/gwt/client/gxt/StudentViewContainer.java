@@ -49,7 +49,7 @@ import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
 
-public class StudentViewContainer extends LayoutContainer {
+public class StudentViewContainer extends ContentPanel {
 	
 	private TextField<String> defaultTextField= new TextField<String>();
 	private TextArea defaultTextArea = new TextArea();
@@ -72,6 +72,8 @@ public class StudentViewContainer extends LayoutContainer {
 		this.defaultTextArea.addInputStyleName("gbTextAreaInput");
 		this.defaultTextField.addInputStyleName("gbTextFieldInput");
 		
+		setFrame(true);
+		setHeaderVisible(false);
 		setLayout(new RowLayout());
 
 		studentInformation = new FlexTable(); 

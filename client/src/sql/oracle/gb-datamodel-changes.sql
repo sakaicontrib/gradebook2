@@ -1,3 +1,5 @@
+
+
 alter table GB_CATEGORY_T
 add (
 	IS_EXTRA_CREDIT number(1,0),

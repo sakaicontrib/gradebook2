@@ -120,7 +120,7 @@ public class ItemFormPanel extends ContentPanel {
 		
 		formPanel = new FormPanel();
 		formPanel.setHeaderVisible(false);
-		formPanel.setLabelWidth(120);
+		formPanel.setLabelWidth(180);
 
 		directionsField = new LabelField();
 		directionsField.setName("directions");
@@ -196,6 +196,7 @@ public class ItemFormPanel extends ContentPanel {
 		formPanel.add(pointsField);
 		
 		dropLowestField = new InlineEditNumberField();
+		dropLowestField.setEmptyText("0");
 		dropLowestField.setName(ItemModel.Key.DROP_LOWEST.name());
 		dropLowestField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.DROP_LOWEST));
 		dropLowestField.setAllowDecimals(false);
@@ -869,6 +870,7 @@ public class ItemFormPanel extends ContentPanel {
 			public void selectionChanged(SelectionChangedEvent<ItemModel> se) {
 				ItemModel itemModel = se.getSelectedItem();
 				refreshSelectedCategoryState(itemModel);
+				setChanges();
 			}
 			
 		};
