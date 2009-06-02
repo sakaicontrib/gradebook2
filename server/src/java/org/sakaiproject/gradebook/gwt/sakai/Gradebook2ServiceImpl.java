@@ -288,7 +288,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				propertyMap.put(property, value);
 		}
 		
-		Category category = null;
+		//Category category = null;
+		Gradebook gradebook = null;
+		List<Assignment> assignments = null;
+		List<Category> categories = null;
+		Long categoryId = null;
 		
 		try {
 			String name = item.getName();
@@ -300,17 +304,19 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			
 			boolean isUnweighted = !DataTypeConversionUtil.checkBoolean(isIncluded);
 			
-			Gradebook gradebook = gbService.getGradebook(gradebookUid);
-			List<Category> categories = gbService.getCategories(gradebook.getId()); //getCategoriesWithAssignments(gradebook.getId());
+			gradebook = gbService.getGradebook(gradebookUid);
+			
+			boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
+			
+			if (hasCategories)
+				categories = gbService.getCategories(gradebook.getId()); //getCategoriesWithAssignments(gradebook.getId());
 			// Business rule #1
 			// FIXME: Does not take into account removed categories
-			if (!isUnweighted && (categories == null || categories.isEmpty()) && weight == null)
-				weight = Double.valueOf(100d);
+			//if (!isUnweighted && (categories == null || categories.isEmpty()) && weight == null)
+			//	weight = Double.valueOf(100d);
 				
 			double w = weight == null ? 0d : ((Double)weight).doubleValue() * 0.01;
 			
-			
-			boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
 			
 			
 			//businessLogic.applyRulesBeforeAddingCategory(hasCategories, gradebook.getId(), item.getName(), categories, dropLowest, isEqualWeighting);
@@ -323,9 +329,13 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				businessLogic.applyOnlyEqualWeightDropLowestRule(dropLowestInt, equalWeighting);
 			}
 			
-			Long categoryId = gbService.createCategory(gradebookId, name, Double.valueOf(w), dropLowest, isEqualWeighting, Boolean.valueOf(isUnweighted), isExtraCredit);
-			category = gbService.getCategory(categoryId);
-			
+			categoryId = gbService.createCategory(gradebookId, name, Double.valueOf(w), dropLowest, isEqualWeighting, Boolean.valueOf(isUnweighted), isExtraCredit);
+			//category = gbService.getCategory(categoryId);
+		
+			assignments = gbService.getAssignments(gradebook.getId());
+			categories = null;
+			if (hasCategories)
+				categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
 			
 		} catch (RuntimeException e) {
 			actionRecord.setStatus(ActionRecord.STATUS_FAILURE);
@@ -335,9 +345,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 		
 		
-		ItemModel categoryItemModel = getItemModelsForCategory(category, createItemModel(category.getGradebook()), null);
-		categoryItemModel.setActive(true);
-		return categoryItemModel;
+		return getItemModel(gradebook, assignments, categories, categoryId, null);
+		
+		//ItemModel categoryItemModel = getItemModelsForCategory(category, createItemModel(category.getGradebook()), null);
+		//categoryItemModel.setActive(true);
+		//return categoryItemModel;
 	}
 	
 	
@@ -1023,6 +1035,20 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		return result;
 	}
 	
+	public <X extends BaseModel> ListLoadResult<X> getCategories(String gradebookUid,
+			Long gradebookId, PagingLoadConfig config) {
+		
+		List<Category> categories = gbService.getCategories(gradebookId);
+		
+		List<X> models = new LinkedList<X>();
+		
+		for (Category category : categories) {
+			models.add((X)createItemModel(null, category, null));
+		}
+		
+		return new BaseListLoadResult<X>(models);
+	}
+	
 	public <X extends BaseModel> PagingLoadResult<X> getSections(String gradebookUid,
 			Long gradebookId, PagingLoadConfig config) {
 		
@@ -1697,6 +1723,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			itemModel.setActive(true);
 			return itemModel;
 		} else if (! hasCategories) {
+			assignments = gbService.getAssignments(gradebook.getId());
 			// Otherwise if we're in no categories mode then we want to return the gradebook
 			return getItemModel(gradebook, assignments, null, null, assignment.getId());
 		}
@@ -2101,7 +2128,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		//if (! isIncluded || category.isRemoved()) 
 		//	categoryWeight = 0d;
 		
-		model.setGradebook(gradebook.getName());
+		if (gradebook != null)
+			model.setGradebook(gradebook.getName());
 		//model.setIdentifier(new StringBuilder().append(AppConstants.CATEGORY).append(String.valueOf(category.getId())).toString());
 		model.setIdentifier(String.valueOf(category.getId()));
 		model.setName(category.getName());
@@ -3380,7 +3408,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 		
 		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
-		List<Category> categories = getCategoriesWithAssignments(gradebook.getId(), assignments, false);
+		List<Category> categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
 		
 		ItemModel gradebookItemModel = getItemModel(gradebook, assignments, categories, category.getId(), null);
 		

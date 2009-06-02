@@ -14,6 +14,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.view.AppView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.NullSensitiveCheckBox;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
@@ -40,6 +41,7 @@ import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.store.TreeStore;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
+import com.extjs.gxt.ui.client.widget.ListView;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.CheckBox;
@@ -133,13 +135,18 @@ public class ItemFormPanel extends ContentPanel {
 		
 		formPanel.add(nameField);
 	
+		categoryStore = new ListStore<ItemModel>();
+		categoryStore.setModelComparer(new ItemModelComparer<ItemModel>());
+		
 		categoryPicker = new ComboBox<ItemModel>();
-		categoryPicker.addKeyListener(keyListener);
+		//categoryPicker.setNullQuery(null);
+		//categoryPicker.addKeyListener(keyListener);
 		categoryPicker.setDisplayField(ItemModel.Key.NAME.name());
 		categoryPicker.setName(ItemModel.Key.CATEGORY_ID.name());
 		categoryPicker.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.CATEGORY_NAME));
 		categoryPicker.addSelectionChangedListener(categorySelectionChangedListener);
 		categoryPicker.setVisible(false);
+		categoryPicker.setStore(categoryStore);
 		formPanel.add(categoryPicker);
 		
 		
@@ -480,13 +487,20 @@ public class ItemFormPanel extends ContentPanel {
 	
 	public void onLoadItemTreeModel(ItemModel rootItemModel) {
 		
+		
+		
 		if (categoryStore != null) {
 			//categoryStore.removeAllListeners();
 			categoryStore.removeAll();
+			//categoryStore = null;
 		}
 		
 		// FIXME: Do we need to eliminate old category stores?  
-		categoryStore = new ListStore<ItemModel>();
+		/*if (categoryStore == null) {
+			categoryStore = new ListStore<ItemModel>();
+			categoryStore.setModelComparer(new ItemModelComparer<ItemModel>());
+			
+		}*/
 		for (ItemModel gradebook : rootItemModel.getChildren()) {
 			for (ItemModel category : gradebook.getChildren()) {
 			
@@ -497,8 +511,8 @@ public class ItemFormPanel extends ContentPanel {
 			
 			}
 		}
-		categoryPicker.setStore(categoryStore);
-		
+		//categoryPicker.setStore(categoryStore);
+		//categoryPicker.select(0);
 		
 		ListStore<ModelData> categoryTypeStore = new ListStore<ModelData>();
 		
@@ -608,6 +622,31 @@ public class ItemFormPanel extends ContentPanel {
 	
 	public void onSwitchGradebook(GradebookModel selectedGradebook) {
 		this.selectedGradebook = selectedGradebook;
+		
+		/*if (categoryStore != null) {
+			//categoryStore.removeAllListeners();
+			categoryStore.removeAll();
+		}
+		
+		ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
+		
+		// FIXME: Do we need to eliminate old category stores?  
+		categoryStore = new ListStore<ItemModel>();
+		
+		if (gradebookItemModel != null) {
+			for (ItemModel gradebook : gradebookItemModel.getChildren()) {
+				for (ItemModel category : gradebook.getChildren()) {
+				
+					// Ensure that we're dealing with a category
+					if (category.getItemType() == Type.CATEGORY) {
+						categoryStore.add(category);
+					}
+				
+				}
+			}
+		}
+		*/
+		
 	}
 
 	private CategoryType getCategoryType(ModelData categoryTypeModel) {
@@ -676,8 +715,7 @@ public class ItemFormPanel extends ContentPanel {
 		
 		boolean isPercentCategoryVisible = false;
 
-		//formPanel.clear();
-		
+		formPanel.clear();
 		
 		if (itemModel != null) {
 			boolean isExtraCredit = DataTypeConversionUtil.checkBoolean(itemModel.getExtraCredit());

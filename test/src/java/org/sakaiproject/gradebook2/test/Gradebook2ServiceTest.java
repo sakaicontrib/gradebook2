@@ -57,8 +57,8 @@ public class Gradebook2ServiceTest extends AbstractDependencyInjectionSpringCont
 		essaysCategory.setEqualWeightAssignments(Boolean.TRUE);
 		essaysCategory.setItemType(Type.CATEGORY);
 		essaysCategory.setIncluded(Boolean.TRUE);
-		essaysCategory = service.addItemCategory(gradebookUid, gradebookId,
-				essaysCategory);
+		essaysCategory = getActiveItem(service.addItemCategory(gradebookUid, gradebookId,
+				essaysCategory));
 
 		ItemModel essay1 = new ItemModel();
 		essay1.setName("Essay 1");
@@ -264,6 +264,27 @@ public class Gradebook2ServiceTest extends AbstractDependencyInjectionSpringCont
 				assertEquals(BigDecimal.valueOf(33.3333d).setScale(4, RoundingMode.HALF_EVEN), BigDecimal.valueOf(c.getPercentCategory().doubleValue()).setScale(4, RoundingMode.HALF_EVEN));
 			}
 		}
+	}
+	
+	
+	private ItemModel getActiveItem(ItemModel parent) {
+		if (parent.isActive())
+			return parent;
+		
+		for (ItemModel c : parent.getChildren()) {
+			if (c.isActive()) {
+				return c;
+			}
+			
+			if (c.getChildCount() > 0) {
+				ItemModel activeItem = getActiveItem(c);
+				
+				if (activeItem != null)
+					return activeItem;
+			}
+		}
+		
+		return null;
 	}
 	
 	

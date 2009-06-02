@@ -63,7 +63,7 @@ public class GradebookApplication implements EntryPoint {
     	//GXT.setDefaultTheme(Theme.GRAY, true);
     	
     	Date expiryDate = new Date(new Date().getTime() + ONE_YEAR);
-    	CookieProvider provider = new CookieProvider("/", expiryDate, null, true);
+    	CookieProvider provider = new CookieProvider("/", expiryDate, "subdomain", true);
         StateManager.get().setProvider(provider);
     }
 	

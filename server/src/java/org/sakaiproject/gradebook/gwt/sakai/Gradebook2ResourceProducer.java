@@ -98,6 +98,8 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 			switch (type) {
 			case ACTION:
 				return (Y)service.getActionHistory(uid, config);
+			case CATEGORY:
+				return (Y)service.getCategories(uid, id, config);
 			case SECTION:
 				return (Y)service.getSections(uid, id, config);
 			case LEARNER:

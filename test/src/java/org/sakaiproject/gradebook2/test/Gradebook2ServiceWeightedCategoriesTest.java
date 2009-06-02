@@ -292,7 +292,7 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 		
 		boolean isExceptionThrown = false;
 		try {
-			essaysCategory = service.addItemCategory(gbModel.getGradebookUid(), gbModel.getGradebookId(), essaysCategory);
+			service.addItemCategory(gbModel.getGradebookUid(), gbModel.getGradebookId(), essaysCategory);
 		} catch (BusinessRuleException bre) {
 			isExceptionThrown = true;
 		}
@@ -687,12 +687,12 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 		
 		ItemModel essaysCategory = new ItemModel();
 		essaysCategory.setName("My Essays");
-		essaysCategory.setPercentCourseGrade(null);
+		essaysCategory.setPercentCourseGrade(Double.valueOf(100d));
 		essaysCategory.setDropLowest(Integer.valueOf(0));
 		essaysCategory.setEqualWeightAssignments(Boolean.TRUE);
 		essaysCategory.setItemType(Type.CATEGORY);
 		essaysCategory.setIncluded(Boolean.TRUE);
-		ItemModel addedCategory = service.addItemCategory(gradebookUid, gradebookId, essaysCategory);
+		ItemModel addedCategory = getActiveItem(service.addItemCategory(gradebookUid, gradebookId, essaysCategory));
 		
 		assertEquals(Type.CATEGORY, addedCategory.getItemType());
 		assertEquals(Double.valueOf(100d), addedCategory.getPercentCourseGrade());
