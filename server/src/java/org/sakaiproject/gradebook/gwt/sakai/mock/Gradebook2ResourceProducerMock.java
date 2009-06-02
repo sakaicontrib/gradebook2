@@ -194,13 +194,14 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			
 			ItemModel gradebook = gbModel.getGradebookItemModel();
 			
-			/*gradebook.setName("Test Gradebook");
+			gradebook.setName("Test Gradebook");
 			gradebook.setCategoryType(CategoryType.WEIGHTED_CATEGORIES);
 			gradebook.setGradeType(GradeType.PERCENTAGES);
 			gradebook.setItemType(Type.GRADEBOOK);
 			
 			service.updateItemModel(gradebook);
 			
+			/*
 			String gradebookUid = gbModel.getGradebookUid();
 			Long gradebookId = gbModel.getGradebookId();
 			

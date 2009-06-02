@@ -341,12 +341,12 @@ public class ItemFormPanel extends ContentPanel {
 		ItemModelProcessor processor = new ItemModelProcessor(itemModel) {
 			
 			public void doCategory(ItemModel categoryModel) {
-				clearForm(categoryModel);
+				//clearForm(categoryModel);
 				categoryStore.add(categoryModel);
 			}
 			
 			public void doItem(ItemModel itemModel) {
-				clearForm(itemModel);
+				//clearForm(itemModel);
 			}
 			
 			private void clearForm(ItemModel itemModel) {
@@ -372,7 +372,7 @@ public class ItemFormPanel extends ContentPanel {
 	}
 	
 	public void onItemDeleted(ItemModel itemModel) {
-		ItemModelProcessor processor = new ItemModelProcessor(itemModel) {
+		/*ItemModelProcessor processor = new ItemModelProcessor(itemModel) {
 			
 			public void doCategory(ItemModel categoryModel) {
 				clearForm(categoryModel);
@@ -403,7 +403,7 @@ public class ItemFormPanel extends ContentPanel {
 			
 		};
 		
-		processor.process();
+		processor.process();*/
 	}
 	
 	public void onItemUpdated(ItemModel itemModel) {
@@ -481,7 +481,7 @@ public class ItemFormPanel extends ContentPanel {
 	public void onLoadItemTreeModel(ItemModel rootItemModel) {
 		
 		if (categoryStore != null) {
-			categoryStore.removeAllListeners();
+			//categoryStore.removeAllListeners();
 			categoryStore.removeAll();
 		}
 		
@@ -576,7 +576,7 @@ public class ItemFormPanel extends ContentPanel {
 				List<ItemModel> models = treeStore.findModels(ItemModel.Key.ID.name(), String.valueOf(itemModel.getCategoryId()));
 				for (ItemModel category : models) {
 					if (category.getItemType() == Type.CATEGORY)
-						categoryPicker.setValue(category);
+						categoryPicker.select(category);
 				}
 			}
 		}
@@ -676,7 +676,7 @@ public class ItemFormPanel extends ContentPanel {
 		
 		boolean isPercentCategoryVisible = false;
 
-		formPanel.clear();
+		//formPanel.clear();
 		
 		
 		if (itemModel != null) {
@@ -1020,12 +1020,12 @@ public class ItemFormPanel extends ContentPanel {
 			case GRADEBOOK:
 				break;
 			case CATEGORY:
-				categoryPicker.setValue(itemModel);
+				categoryPicker.select(itemModel);
 				break;
 			case ITEM:
 				category = itemModel.getParent();
 				if (category != null && category.getItemType() == Type.CATEGORY)
-					categoryPicker.setValue(category);
+					categoryPicker.select(category);
 				break;
 			}
 		} 
