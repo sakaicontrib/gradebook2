@@ -243,6 +243,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 		
 		if (! hasCategories) {
+			assignments = gbService.getAssignments(gradebookId);
 			return getItemModel(gradebook, assignments, null, null, assignmentId);
 		} else if (hasNewCategory) {
 			assignments = gbService.getAssignments(gradebookId);
