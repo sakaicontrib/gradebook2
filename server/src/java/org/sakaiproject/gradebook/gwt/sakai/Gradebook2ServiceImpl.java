@@ -182,7 +182,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				ItemModel newCategory = new ItemModel();
 				newCategory.setName(item.getCategoryName());
 				newCategory.setIncluded(Boolean.TRUE);
-				newCategory = addItemCategory(gradebookUid, gradebookId, newCategory);
+				newCategory = getActiveItem(addItemCategory(gradebookUid, gradebookId, newCategory));
 				categoryId = newCategory.getCategoryId();
 				item.setCategoryId(categoryId);
 				hasNewCategory = true;
@@ -2783,6 +2783,26 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	    }
 
 	    return placement.getContext();
+	}
+	
+	private ItemModel getActiveItem(ItemModel parent) {
+		if (parent.isActive())
+			return parent;
+		
+		for (ItemModel c : parent.getChildren()) {
+			if (c.isActive()) {
+				return c;
+			}
+			
+			if (c.getChildCount() > 0) {
+				ItemModel activeItem = getActiveItem(c);
+				
+				if (activeItem != null)
+					return activeItem;
+			}
+		}
+		
+		return null;
 	}
 	
 	private List<GradebookModel> getGradebookModels(String[] gradebookUids) {
