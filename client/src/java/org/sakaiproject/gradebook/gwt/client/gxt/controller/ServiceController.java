@@ -77,7 +77,7 @@ public class ServiceController extends Controller {
 
 			public void onFailure(Throwable caught) {
 				
-				notifier.notifyError(caught);
+				//notifier.notifyError(caught);
 				
 				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught, "Failed to create item: "));
 				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());

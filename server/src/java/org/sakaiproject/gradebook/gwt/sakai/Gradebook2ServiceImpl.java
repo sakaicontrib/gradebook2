@@ -178,7 +178,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			if (weight == null)
 				weight = Double.valueOf(points.doubleValue());
 			
-			if (hasCategories && item.getCategoryId() == null && item.getCategoryName() != null) {
+			if (hasCategories && item.getCategoryId() == null && item.getCategoryName() != null && item.getCategoryName().trim().length() > 0) {
 				ItemModel newCategory = new ItemModel();
 				newCategory.setName(item.getCategoryName());
 				newCategory.setIncluded(Boolean.TRUE);
