@@ -1816,6 +1816,13 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		//String id = item.getIdentifier();
 		//Long assignmentId = Long.valueOf(id);
 		
+		boolean isCommented = userRecord.getCommentMap() != null && userRecord.getCommentMap().get(assignmentId) != null;
+		
+		if (isCommented) {
+			cellMap.put(concat(id, StudentModel.COMMENTED_FLAG), Boolean.TRUE);
+			cellMap.put(concat(id, StudentModel.COMMENT_TEXT_FLAG), userRecord.getCommentMap().get(assignmentId).getCommentText());
+		}
+		
 		Map<Long, AssignmentGradeRecord> studentGradeMap = userRecord.getGradeRecordMap();
 		if (studentGradeMap != null) {
 			gradeRecord = studentGradeMap.get(assignmentId);
@@ -1830,18 +1837,6 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				if (isExcused)
 					cellMap.put(concat(id, StudentModel.EXCUSE_FLAG), Boolean.TRUE);
 				
-				//boolean isGraded = gbService.isStudentGraded(userRecord.getUserUid(), assignmentId);
-				
-				//if (isGraded)
-				//	cellMap.put(concat(id, StudentModel.GRADED_FLAG), Boolean.TRUE);
-				
-				boolean isCommented = userRecord.getCommentMap() != null && userRecord.getCommentMap().get(assignmentId) != null;
-				
-				if (isCommented) {
-					cellMap.put(concat(id, StudentModel.COMMENTED_FLAG), Boolean.TRUE);
-					cellMap.put(concat(id, StudentModel.COMMENT_TEXT_FLAG), userRecord.getCommentMap().get(assignmentId).getCommentText());
-				}
-					
 				switch (gradebook.getGrade_type()) {
 				case GradebookService.GRADE_TYPE_POINTS:
 					cellMap.put(id, gradeRecord.getPointsEarned());
@@ -2236,7 +2231,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		if (userService != null) {
 			try {
 				User grader = userService.getUser(comment.getGraderId());
-				graderName = grader.getDisplayName();
+				if (grader != null)
+					graderName = grader.getDisplayName();
 			} catch (UserNotDefinedException e) {
 				log.warn("Couldn't find the grader for " + comment.getGraderId());
 			}
