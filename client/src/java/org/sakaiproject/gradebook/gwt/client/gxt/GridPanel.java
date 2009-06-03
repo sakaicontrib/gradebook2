@@ -146,7 +146,7 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		store = new ListStore<M>();
 		cm  = new CustomColumnModel("", gridId, new ArrayList<ColumnConfig>());
 	
-		grid = new EditorGrid<M>(store, cm);
+		grid = new GbEditorGrid<M>(store, cm);
 		
 		addGridListenersAndPlugins(grid);
 		

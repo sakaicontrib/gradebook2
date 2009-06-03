@@ -129,7 +129,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	
 	private ShowColumnsEvent lastShowColumnsEvent;
 	
-	private CellSelectionModel<StudentModel> cellSelectionModel;
+	private MultigradeSelectionModel<StudentModel> cellSelectionModel;
 	
 	
 	
@@ -1277,7 +1277,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		grid.addListener(Events.CellClick, gridEventListener);
 		grid.addListener(Events.ContextMenu, gridEventListener);
 		
-		cellSelectionModel = new CellSelectionModel<StudentModel>();
+		cellSelectionModel = new MultigradeSelectionModel<StudentModel>();
 		cellSelectionModel.setSelectionMode(SelectionMode.SINGLE);
 		cellSelectionModel.addSelectionChangedListener(new SelectionChangedListener<StudentModel>() {
 
