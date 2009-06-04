@@ -1080,9 +1080,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
 		GradeMapping gradeMapping = gradebook.getSelectedGradeMapping();
 		GradingScale gradingScale = gradeMapping.getGradingScale();
-		Map<String, Double> gradingScaleMap = gradingScale.getDefaultBottomPercents();
+		//Map<String, Double> gradingScaleMap = gradingScale.getDefaultBottomPercents();
 		
-		List<String> letterGradesList = new ArrayList<String>(gradingScaleMap.keySet());
+		List<String> letterGradesList = new ArrayList<String>(gradeMapping.getGradeMap().keySet());
 
 		Collections.sort(letterGradesList, LETTER_GRADE_COMPARATOR);
 
@@ -1094,9 +1094,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				upperScale.equals(Double.valueOf(0d)) ? Double.valueOf(0d) :
 				Double.valueOf(upperScale.doubleValue() - 0.00001d);
 			
-			GradeScaleRecordModel gradeScaleModel = new GradeScaleRecordModel(letterGrade, gradingScaleMap.get(letterGrade), upperScale);
+			GradeScaleRecordModel gradeScaleModel = new GradeScaleRecordModel(letterGrade, gradeMapping.getGradeMap().get(letterGrade), upperScale);
 			gradeScaleMappings.add((X)gradeScaleModel);
-			upperScale = gradingScaleMap.get(letterGrade);
+			upperScale = gradeMapping.getGradeMap().get(letterGrade);
 		}
 		
 		ListLoadResult<X> result = new BaseListLoadResult<X>(gradeScaleMappings);
@@ -1487,7 +1487,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		List<Category> categories = null;
 		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
 		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
-			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, false);
+			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
 		
 		Map<Long, AssignmentGradeRecord> studentGradeMap = new HashMap<Long, AssignmentGradeRecord>();
 		List<AssignmentGradeRecord> records = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), student.getIdentifier());
@@ -1750,9 +1750,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
 		GradeMapping gradeMapping = gradebook.getSelectedGradeMapping();
 		GradingScale gradingScale = gradeMapping.getGradingScale();
-		Map<String, Double> gradingScaleMap = gradingScale.getDefaultBottomPercents();
-		Map<String, Double> newGradingSacleMap = new HashMap<String, Double>();
-		List<String> letterGradesList = new ArrayList<String>(gradingScaleMap.keySet());
+		//Map<String, Double> gradingScaleMap = gradingScale.getDefaultBottomPercents();
+		//Map<String, Double> newGradingScaleMap = new HashMap<String, Double>();
+		List<String> letterGradesList = new ArrayList<String>(gradeMapping.getGradeMap().keySet());
 
 		Collections.sort(letterGradesList, LETTER_GRADE_COMPARATOR);
 
@@ -1766,23 +1766,24 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				upperScale.equals(Double.valueOf(0d)) ? Double.valueOf(0d) :
 				Double.valueOf(upperScale.doubleValue() - 0.00001d);
 			
-			if(affectedLetterGrade.equals(letterGrade)) {
+			if (affectedLetterGrade.equals(letterGrade)) {
 				gradeScaleModel = new GradeScaleRecordModel(letterGrade, (Double)value, upperScale);
-				newGradingSacleMap.put(letterGrade, (Double)value);
+				gradeMapping.getGradeMap().put(letterGrade, (Double)value);
 				upperScale = (Double)value;
 			}
 			else {
-				gradeScaleModel = new GradeScaleRecordModel(letterGrade, gradingScaleMap.get(letterGrade), upperScale);
-				newGradingSacleMap.put(letterGrade, gradingScaleMap.get(letterGrade));
-				upperScale = gradingScaleMap.get(letterGrade);
+				gradeScaleModel = new GradeScaleRecordModel(letterGrade, gradeMapping.getGradeMap().get(letterGrade), upperScale);
+				//gradeMapping.getGradeMap().put(letterGrade, gradingScaleMap.get(letterGrade));
+				upperScale = gradeMapping.getGradeMap().get(letterGrade);
 			}
 			
 			gradeScaleMappings.add((X)gradeScaleModel);
 		}
 		
-		gradingScale.setDefaultBottomPercents(newGradingSacleMap);
-		gradebook.setSelectedGradeMapping(new GradeMapping(gradingScale));
-		gbService.saveOrUpdateLetterGradePercentMapping(newGradingSacleMap, gradebook);
+		//gradingScale.setDefaultBottomPercents(newGradingScaleMap);
+		//gradebook.setSelectedGradeMapping(new GradeMapping(gradingScale));
+		//gbService.saveOrUpdateLetterGradePercentMapping(newGradingScaleMap, gradebook);
+		gbService.updateGradebook(gradebook);
 		
 		return gradeScaleMappings;
 	}
@@ -3127,7 +3128,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
 		List<Category> categories = null;
 		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
-			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, false);
+			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
 		CourseGradeRecord courseGradeRecord = gbService.getStudentCourseGradeRecord(gradebook, student.getIdentifier());
 		String displayGrade = getDisplayGrade(gradebook, student.getIdentifier(), courseGradeRecord, assignments, categories, studentGradeMap);
 		
