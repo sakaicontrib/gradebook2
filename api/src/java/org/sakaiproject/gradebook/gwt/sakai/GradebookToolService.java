@@ -109,6 +109,8 @@ public interface GradebookToolService {
 	
 	public List<Permission> getPermissionsForUserForGroup(Long gradebookId, String userId, List<String> groupIds);
 	
+	public Comment getCommentForItemForStudent(Long assignmentId, String studentId);
+	
 	public List<Comment> getStudentAssignmentComments(String studentId, Long gradebookId);
 	
 	public CourseGradeRecord getStudentCourseGradeRecord(Gradebook gradebook, String studentId);
@@ -150,6 +152,8 @@ public interface GradebookToolService {
 	public void updateCourseGradeRecords(CourseGrade courseGrade, Collection<CourseGradeRecord> gradeRecords);
 	
 	public void updateCategory(Category category);
+	
+	public void updateComment(Comment comment);
 	
 	public void updateComments(Collection<Comment> comments);
 	

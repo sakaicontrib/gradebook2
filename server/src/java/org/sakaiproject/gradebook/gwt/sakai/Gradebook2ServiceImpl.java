@@ -355,31 +355,32 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	
 	
 	public CommentModel createOrUpdateComment(Long assignmentId, String studentUid, String text) {
-		Assignment assignment = gbService.getAssignment(assignmentId);
-		Gradebook gradebook = assignment.getGradebook();
+		//Assignment assignment = gbService.getAssignment(assignmentId);
+		//Gradebook gradebook = assignment.getGradebook();
 		
-		List<Comment> comments = gbService.getStudentAssignmentComments(studentUid, gradebook.getId());
-		Comment comment = null;
+		//List<Comment> comments = gbService.getStudentAssignmentComments(studentUid, gradebook.getId());
+		Comment comment = gbService.getCommentForItemForStudent(assignmentId, studentUid);
 		
 		// TODO: Make sure that there is only one comment per assignment
-		if (comments != null && !comments.isEmpty()) {
+		/*if (comments != null && !comments.isEmpty()) {
 			for (Comment c : comments) {
 				if (c.getGradableObject().getId().equals(assignment.getId())) {
 					comment = c;
 					break;
 				}
 			}
-		}
+		}*/
 		
-		if (comment == null) 
+		if (comment == null) {
+			Assignment assignment = gbService.getAssignment(assignmentId);
 			comment = new Comment(studentUid, text, assignment);
-		else
+		} else
 			comment.setCommentText(text);
 		
-		List<Comment> updatedComments = new ArrayList<Comment>();
-		updatedComments.add(comment);
+		//List<Comment> updatedComments = new ArrayList<Comment>();
+		//updatedComments.add(comment);
 		
-		gbService.updateComments(updatedComments);
+		gbService.updateComment(comment);
 		
 		return createOrUpdateCommentModel(null, comment);
 	}

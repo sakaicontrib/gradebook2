@@ -44,6 +44,7 @@ import org.sakaiproject.gradebook.gwt.sakai.UserRecord;
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereferenceRealmUpdate;
+import org.sakaiproject.service.gradebook.shared.StaleObjectModificationException;
 import org.sakaiproject.tool.gradebook.AbstractGradeRecord;
 import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.AssignmentGradeRecord;
@@ -1733,6 +1734,14 @@ public class GradebookToolServiceMock implements GradebookToolService {
 	public boolean isStudentMissingScores(final Long gradebookId, final String studentId, final boolean hasCategories) {
 
 		return false;
+	}
+	
+	public Comment getCommentForItemForStudent(final Long assignmentId, final String studentId) {
+		return null;
+	}
+	
+	public void updateComment(final Comment comment) throws StaleObjectModificationException {
+		
 	}
 	
 }

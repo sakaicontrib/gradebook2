@@ -1427,6 +1427,18 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		return (List<Comment>) getHibernateTemplate().execute(hc);
 	}
 
+	
+	public Comment getCommentForItemForStudent(final Long assignmentId, final String studentId) {
+		return (Comment)getHibernateTemplate().execute(new HibernateCallback() {
+            public Object doInHibernate(Session session) throws HibernateException {
+                Query q = session.createQuery("from Comment as c where c.studentId=:studentId and c.gradableObject.id=:assignmentId");
+                q.setParameter("studentId", studentId);
+                q.setParameter("assignmentId", assignmentId);
+                return q.uniqueResult();
+            }
+        });
+	}
+	
 	public List<Comment> getStudentAssignmentComments(final String studentId, final Long gradebookId) {
 		return (List<Comment>)getHibernateTemplate().execute(new HibernateCallback() {
             public Object doInHibernate(Session session) throws HibernateException {
@@ -1791,6 +1803,37 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
     		throw new StaleObjectModificationException(e);
     	}
     }
+	
+	public void updateComment(final Comment comment) throws StaleObjectModificationException {
+		final Date now = new Date();
+        final String graderId = authn.getUserUid();
+
+        // Unlike the complex grade update logic, this method assumes that
+		// the client has done the work of filtering out any unchanged records
+		// and isn't interested in throwing an optimistic locking exception for untouched records
+		// which were changed by other sessions.
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException {
+				comment.setGraderId(graderId);
+				comment.setDateRecorded(now);
+				session.saveOrUpdate(comment);
+				return null;
+			}
+		};
+		try {
+			getHibernateTemplate().execute(hc);
+		} catch (DataIntegrityViolationException e) {
+			// If a student hasn't yet received a comment for this
+			// assignment, and two graders try to save a new comment record at the
+			// same time, the database should report a unique constraint violation.
+			// Since that's similar to the conflict between two graders who
+			// are trying to update an existing comment record at the same
+			// same time, this method translates the exception into an
+			// optimistic locking failure.
+			if(log.isInfoEnabled()) log.info("An optimistic locking failure occurred while attempting to update comment");
+			throw new StaleObjectModificationException(e);
+		}
+	}
 
 	public void updateComments(final Collection<Comment> comments) throws StaleObjectModificationException {
         final Date now = new Date();
