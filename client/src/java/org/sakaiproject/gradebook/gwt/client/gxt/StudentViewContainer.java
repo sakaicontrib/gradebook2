@@ -467,6 +467,7 @@ public class StudentViewContainer extends ContentPanel {
 							if (selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES) {
 								gradeInformation.setText(row, 0, child.getName());
 						        formatter.setStyleName(row, 0, "gbHeader");
+						        formatter.setColSpan(row, 0, 3);
 						        row++;
 							}
 							isCategoryHeaderDisplayed = true;
