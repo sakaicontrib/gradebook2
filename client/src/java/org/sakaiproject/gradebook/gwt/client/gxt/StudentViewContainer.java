@@ -33,7 +33,6 @@ import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
-import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.form.TextArea;
 import com.extjs.gxt.ui.client.widget.form.TextField;
@@ -345,6 +344,11 @@ public class StudentViewContainer extends ContentPanel {
 			studentInformationPanel.hide();
 			studentInformation.setText(6, 1, newGrade);
 			studentInformationPanel.show();
+		} else {
+			studentInformationPanel.hide();
+			studentInformation.setText(6, 0, "");
+			studentInformation.setText(6, 1, "");
+			studentInformationPanel.show();
 		}
 		
 		learnerGradeRecordCollection.set(StudentModel.Key.COURSE_GRADE.name(), newGrade);
@@ -393,7 +397,7 @@ public class StudentViewContainer extends ContentPanel {
 
 	private void populateGradeInfoRow(int row, ItemModel item, StudentModel learner, FlexCellFormatter formatter) {
 		String itemId = item.getIdentifier();
-		Double value = learner.get(itemId);
+		Object value = learner.get(itemId);
 		String commentFlag = new StringBuilder().append(itemId).append(StudentModel.COMMENT_TEXT_FLAG).toString();
 		String comment = learner.get(commentFlag);
 		String excusedFlag = new StringBuilder().append(itemId).append(StudentModel.DROP_FLAG).toString();
@@ -406,8 +410,29 @@ public class StudentViewContainer extends ContentPanel {
         StringBuilder resultBuilder = new StringBuilder();
         if (value == null)
         	resultBuilder.append("Ungraded");
-        else
-        	resultBuilder.append(NumberFormat.getDecimalFormat().format(value));
+        else {
+        	
+        	switch (selectedGradebook.getGradebookItemModel().getGradeType()) {
+        	case POINTS:
+        		resultBuilder.append(NumberFormat.getDecimalFormat().format(((Double)value).doubleValue()));
+        		
+        		if (item.getPoints() != null)
+        			resultBuilder.append(" out of ").append(item.getPoints()).append(" points");
+        		
+        		break;
+        	case PERCENTAGES:
+        		resultBuilder.append(NumberFormat.getDecimalFormat().format(((Double)value).doubleValue()))
+        			.append("%");
+        		
+        		break;
+        	case LETTERS:
+        		resultBuilder.append(value);
+        		break;
+        	}
+        	
+        	
+        }
+        	
         if (isExcused)
         	resultBuilder.append(" (excluded from grade)");
         gradeInformation.setText(row, 1, resultBuilder.toString());

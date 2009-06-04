@@ -74,6 +74,7 @@ public class ItemFormPanel extends ContentPanel {
 	private CheckBox extraCreditField;
 	private CheckBox equallyWeightChildrenField;
 	private CheckBox releasedField;
+	private CheckBox releaseGradesField;
 	private NumberField percentCourseGradeField;
 	private NumberField percentCategoryField;
 	private NumberField pointsField;
@@ -169,6 +170,12 @@ public class ItemFormPanel extends ContentPanel {
 		
 		formPanel.add(gradeTypePicker);
 
+		releaseGradesField = new NullSensitiveCheckBox();
+		releaseGradesField.setName(ItemModel.Key.RELEASEGRADES.name());
+		releaseGradesField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.RELEASEGRADES));
+		releaseGradesField.setVisible(false);
+		formPanel.add(releaseGradesField);
+		
 		percentCourseGradeField = new InlineEditNumberField();
 		percentCourseGradeField.setName(ItemModel.Key.PERCENT_COURSE_GRADE.name());
 		percentCourseGradeField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.PERCENT_COURSE_GRADE));
@@ -753,6 +760,7 @@ public class ItemFormPanel extends ContentPanel {
 		initField(dueDateField, !isDelete && !isExternal, isItem);
 		initField(includedField, !isDelete, isNotGradebook);
 		initField(releasedField, !isDelete, isItem);
+		initField(releaseGradesField, !isDelete, !isNotGradebook);
 		initField(categoryPicker, !isDelete, hasCategories && isItem);
 		initField(categoryTypePicker, true, !isNotGradebook);
 		initField(gradeTypePicker, true, !isNotGradebook);

@@ -2111,6 +2111,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			break;
 		}
 		
+		itemModel.setReleaseGrades(Boolean.valueOf(gradebook.isCourseGradeDisplayed()));
+		
 		return itemModel;
 	}
 	

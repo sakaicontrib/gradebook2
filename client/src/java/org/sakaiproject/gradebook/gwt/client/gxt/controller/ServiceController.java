@@ -6,7 +6,6 @@ import org.sakaiproject.gradebook.gwt.client.SecureToken;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType;
-import org.sakaiproject.gradebook.gwt.client.gxt.Notifier;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemCreate;
@@ -28,8 +27,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class ServiceController extends Controller {
 
-	private static final Notifier notifier = new Notifier();
-	
 	public static final String FAILED_FLAG = ":F";
 	
 	public ServiceController() {
@@ -315,8 +312,7 @@ public class ServiceController extends Controller {
 		
 		switch (result.getItemType()) {
 		case GRADEBOOK:
-			GradebookModel selectedGradebook = Registry
-					.get(AppConstants.CURRENT);
+			GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 			selectedGradebook.setGradebookItemModel(result);
 			Dispatcher.forwardEvent(GradebookEvents.ItemUpdated.getEventType(), result);
 
