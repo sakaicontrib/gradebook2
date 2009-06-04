@@ -171,8 +171,9 @@ public class LearnerSummaryPanel extends ContentPanel {
 	}
 	
 	public void onLearnerGradeRecordUpdated(StudentModel learner) {
-		this.learner = learner;
-		updateLearnerInfo(learner);
+		if (this.learner != null && learner != null 
+				&& this.learner.getIdentifier().equals(learner.getIdentifier())) 
+			updateLearnerInfo(learner);
 	}
 	
 	@Override
