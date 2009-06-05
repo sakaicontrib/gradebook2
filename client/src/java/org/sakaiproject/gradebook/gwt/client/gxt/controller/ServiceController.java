@@ -298,8 +298,10 @@ public class ServiceController extends Controller {
 	
 	private void onUpdateItemFailure(ItemUpdate event, Throwable caught) {
 		
-		event.record.reject(true);
-		event.record.cancelEdit();
+		if (event.record != null)
+			event.record.reject(false);
+		
+		//event.record.cancelEdit();
 		
 		//notifier.notifyError(caught);
 		
@@ -333,7 +335,7 @@ public class ServiceController extends Controller {
 				Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel.getEventType(),
 						selectedGradebook);
 			}
-			return;
+			break;
 		case CATEGORY:
 			doUpdateItem(event, result);
 
@@ -350,8 +352,10 @@ public class ServiceController extends Controller {
 			break;
 		}
 
-		event.record.commit(false);
-		event.record.endEdit();
+		if (event.record != null && event.record.isEditing()) {
+			event.record.commit(false);
+			//event.record.endEdit();
+		}
 		
 	}
 
@@ -402,17 +406,18 @@ public class ServiceController extends Controller {
 	private void doUpdateItem(Store store, String property, Record record, ItemModel updatedItem) {
 		TreeStore<ItemModel> treeStore = (TreeStore<ItemModel>)store;
 		
-		if (updatedItem.isActive()) {
+		if (updatedItem.isActive() && record != null) {
 			record.beginEdit();
 			for (String p : updatedItem.getPropertyNames()) {
 				replaceProperty(p, record, updatedItem);
 			}
-			record.endEdit();
-		} else {
+			record.commit(false);
+			Dispatcher.forwardEvent(GradebookEvents.ItemUpdated.getEventType(), updatedItem);
+		} /*else {
 			treeStore.update(updatedItem);
-		}
+		}*/
 		
-		Dispatcher.forwardEvent(GradebookEvents.ItemUpdated.getEventType(), updatedItem);
+		//Dispatcher.forwardEvent(GradebookEvents.ItemUpdated.getEventType(), updatedItem);
 		
 		/*
 		//if (property == null || record == null 

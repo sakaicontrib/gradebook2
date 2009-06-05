@@ -36,151 +36,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"test.xml", "db.xml"});
 
 		Gradebook2Service service = (Gradebook2Service)context.getBean("org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service");
-		
-		
-		
-		/*Gradebook2ServiceImpl service = new Gradebook2ServiceImpl() {
-			@Override
-			protected String lookupDefaultGradebookUid() {
-				return "12312409345";
-			}
-			
-			@Override
-			protected String getSiteContext() {
-				return "blah";
-			}
-			
-			@Override
-			protected Site getSite() {
-				return new SiteMock("mock");
-			}
-			
-			private List<UserDereference> dereferences;
-			private final int DEFAULT_NUMBER_TEST_LEARNERS = 200;
-			
-			protected List<UserRecord> findLearnerRecordPage(Gradebook gradebook, Site site, String[] realmIds, List<String> groupReferences, 
-					Map<String, Group> groupReferenceMap, String sortField, String searchField, String searchCriteria,
-					int offset, int limit, 
-					boolean isAscending) {
-				
-				List<UserRecord> userRecords = null;
-				if (userRecords == null) {
-					if (dereferences == null)
-						findAllUserDereferences();
-					
-					userRecords = new ArrayList<UserRecord>(DEFAULT_NUMBER_TEST_LEARNERS);
-					for (int i=offset;i<offset+limit;i++) {
-						UserDereference dereference = dereferences.get(i);
-						UserRecord userRecord = new UserRecord(dereference.getUserUid(), dereference.getEid(), dereference.getDisplayId(), dereference.getDisplayName(),
-								dereference.getLastNameFirst(), dereference.getSortName(), dereference.getEmail());
-						userRecord.setExportUserId(getExportUserId(dereference));
-						userRecord.setFinalGradeUserId(getFinalGradeUserId(dereference));
-						userRecords.add(userRecord);
-					}
-				}
-				
-				return userRecords;
-			}
-			
-			
-			public List<UserDereference> findAllUserDereferences() {
-				
-				if (dereferences == null) {
-					dereferences = new ArrayList<UserDereference>(DEFAULT_NUMBER_TEST_LEARNERS);
-					for (int i=0;i<DEFAULT_NUMBER_TEST_LEARNERS;i++) {
-						dereferences.add(createUserRecord());
-					}
-				}
-				
-				return dereferences;
-			}
-			
-			
-			//
-			// TEST DATA
-			//
-			private final String[] FIRST_NAMES = { "Joel", "John", "Kelly",
-				"Freeland", "Bruce", "Rajeev", "Thomas", "Jon", "Mary", "Jane",
-				"Susan", "Cindy", "Veronica", "Shana", "Shania", "Olin", "Brenda",
-				"Lowell", "Doug", "Yiyun", "Xi-Ming", "Grady", "Martha", "Stewart", 
-				"Kennedy", "Joseph", "Iosef", "Sean", "Timothy", "Paula", "Keith",
-				"Ignatius", "Iona", "Owen", "Ian", "Ewan", "Rachel", "Wendy", 
-				"Quentin", "Nancy", "Mckenna", "Kaylee", "Aaron", "Erin", "Maris", 
-				"D.", "Quin", "Tara", "Moira", "Bristol" };
 
-			private  final String[] LAST_NAMES = { "Smith", "Paterson",
-				"Haterson", "Raterson", "Johnson", "Sonson", "Paulson", "Li",
-				"Yang", "Redford", "Shaner", "Bradley", "Herzog", "O'Neil", "Williams",
-				"Simone", "Oppenheimer", "Brown", "Colgan", "Frank", "Grant", "Klein",
-				"Miller", "Taylor", "Schwimmer", "Rourer", "Depuis", "Vaugh", "Auerbach", 
-				"Shannon", "Stepford", "Banks", "Ashby", "Lynne", "Barclay", "Barton",
-				"Cromwell", "Dering", "Dunlevy", "Ethelstan", "Fry", "Gilly",
-				"Goodrich", "Granger", "Griffith", "Herbert", "Hurst", "Keigwin", 
-				"Paddock", "Pillings", "Landon", "Lawley", "Osborne", "Scarborough",
-				"Whiting", "Wibert", "Worth", "Tremaine", "Barnum", "Beal", "Beers", 
-				"Bellamy", "Barnwell", "Beckett", "Breck", "Cotesworth", 
-				"Coventry", "Elphinstone", "Farnham", "Ely", "Dutton", "Durham",
-				"Eberlee", "Eton", "Edgecomb", "Eastcote", "Gloucester", "Lewes", 
-				"Leland", "Mansfield", "Lancaster", "Oakham", "Nottingham", "Norfolk",
-				"Poole", "Ramsey", "Rawdon", "Rhodes", "Riddell", "Vesey", "Van Wyck",
-				"Van Ness", "Twickenham", "Trowbridge", "Ames", "Agnew", "Adlam", 
-				"Aston", "Askew", "Alford", "Bedeau", "Beauchamp" };
-			
-			private final String[] SECTIONS = { "001", "002", "003", "004" };
-			
-			private Random random = new Random();
-			
-			private int getRandomInt(int max) {
-				return random.nextInt(max);
-			}
-			
-			private String getRandomSection() {
-				return SECTIONS[getRandomInt(SECTIONS.length)];
-			}
-			
-			private UserDereference createUserRecord() {
-				String studentId = String.valueOf(100000 + getRandomInt(899999));
-				String firstName = FIRST_NAMES[getRandomInt(FIRST_NAMES.length)];
-				String lastName = LAST_NAMES[getRandomInt(LAST_NAMES.length)];
-				String eid = lastName.toLowerCase();
-				String lastNameFirst = lastName + ", " + firstName;
-				String sortName = lastName.toUpperCase() + "  " + firstName.toUpperCase();
-				String displayName = firstName + " " + lastName;
-				String section = getRandomSection();
-				String email = firstName.toLowerCase() + "." + lastName.toLowerCase() + "@nowhere.edu";
-			
-				UserDereference userRecord = new UserDereference(studentId, eid, studentId, displayName,
-						lastNameFirst, sortName, email);
-				//userRecord.setSectionTitle("Section " + section);
-				//userRecord.setExportUserId(studentId);
-				
-				return userRecord;
-			}
-		};
-		
-		IocMock.getInstance().registerClassInstance(Gradebook2ServiceImpl.class.getName(), service);
-		
-		
-		
-		GradebookToolService gbService = new GradebookToolServiceMock();		
-		SectionAwareness sectionAwareness = new SectionAwarenessMock();
-		
-		BusinessLogicImpl businessLogic = new BusinessLogicImpl();
-		businessLogic.setGbService(gbService);
-		
-		Gradebook2Security security = new Gradebook2SecurityImpl();
-		security.setAuthz(new AuthzMock(sectionAwareness));
-		security.setAuthn(new AuthnMock());
-		security.setSectionAwareness(sectionAwareness);
-		security.setGbService(gbService);
-		
-		service.setAdvisor(new SampleInstitutionalAdvisor());
-		service.setBusinessLogic(businessLogic);
-		service.setGbService(gbService);
-		service.setGradeCalculations(new GradeCalculationsOOImpl());
-		service.setSecurity(security);
-	*/
-		
 		producer = new Gradebook2ResourceProducer();
 		producer.setService(service);
 		
@@ -212,7 +68,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			essaysCategory.setEqualWeightAssignments(Boolean.TRUE);
 			essaysCategory.setItemType(Type.CATEGORY);
 			essaysCategory.setIncluded(Boolean.TRUE);
-			essaysCategory = service.addItemCategory(gradebookUid, gradebookId, essaysCategory);
+			essaysCategory = getActiveItem(service.addItemCategory(gradebookUid, gradebookId, essaysCategory));
 
 			
 			ItemModel hwCategory = new ItemModel();
@@ -222,7 +78,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			hwCategory.setEqualWeightAssignments(Boolean.TRUE);
 			hwCategory.setItemType(Type.CATEGORY);
 			hwCategory.setIncluded(Boolean.TRUE);
-			hwCategory = service.addItemCategory(gradebookUid, gradebookId, hwCategory);
+			hwCategory = getActiveItem(service.addItemCategory(gradebookUid, gradebookId, hwCategory));
 			
 			ItemModel essay1 = new ItemModel();
 			essay1.setName("Essay 1");
@@ -320,4 +176,24 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 		return producer.update(model, type, action, secureToken);
 	}
 
+	
+	private ItemModel getActiveItem(ItemModel parent) {
+		if (parent.isActive())
+			return parent;
+		
+		for (ItemModel c : parent.getChildren()) {
+			if (c.isActive()) {
+				return c;
+			}
+			
+			if (c.getChildCount() > 0) {
+				ItemModel activeItem = getActiveItem(c);
+				
+				if (activeItem != null)
+					return activeItem;
+			}
+		}
+		
+		return null;
+	}
 }
