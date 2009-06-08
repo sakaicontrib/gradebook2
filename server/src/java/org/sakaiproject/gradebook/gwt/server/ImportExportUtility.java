@@ -386,13 +386,15 @@ public class ImportExportUtility {
 							courseGradeFieldIndex = i;
 						} else {
 							
-							String name = text;
+							String name = null;
 							String points = null;
 							boolean isExtraCredit = text.contains(AppConstants.EXTRA_CREDIT_INDICATOR);
 							
 							if (isExtraCredit) {
 								text = text.replace(AppConstants.EXTRA_CREDIT_INDICATOR, "");
 							}
+							
+							name = text;
 							
 							int startParen = text.indexOf("[");
 							int endParen = text.indexOf("pts]");

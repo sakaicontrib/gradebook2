@@ -750,15 +750,15 @@ public class ItemFormPanel extends ContentPanel {
 			case CATEGORY:
 				category = itemModel;
 				if (category != null && category.getItemType() == Type.CATEGORY)
-					isPercentCategoryVisible = hasWeights || isExtraCredit || !DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments());
+					isPercentCategoryVisible = hasWeights && (isExtraCredit || !DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments()));
 				break;
 			case ITEM:
 				category = itemModel.getParent();
 				if (category != null && category.getItemType() == Type.CATEGORY)
-					isPercentCategoryVisible = hasWeights || isExtraCredit || !DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments());
+					isPercentCategoryVisible = hasWeights && (isExtraCredit || !DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments()));
 				break;
 			default:
-				isPercentCategoryVisible = (hasWeights || isExtraCredit) && isItem;
+				isPercentCategoryVisible = (hasWeights && isExtraCredit) && isItem;
 			}
 		} else {
 			isPercentCategoryVisible = hasWeights && isItem;
