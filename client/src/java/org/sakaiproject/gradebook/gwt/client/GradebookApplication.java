@@ -153,7 +153,11 @@ public class GradebookApplication implements EntryPoint {
 	
 	
 	private native Document getWindowParentDocument() /*-{
-	    	return $wnd.parent.document
+	    return $wnd.parent.document
+	}-*/;
+	
+	private native void resizeOnIE(IFrameElement iframe, int setHeight) /*-{
+		iframe.height = setHeight + "px";
 	}-*/;
 	
 	private void resizeMainFrame(int setHeight) {
@@ -162,7 +166,13 @@ public class GradebookApplication implements EntryPoint {
 		for (int i = 0; i < nodeList.getLength(); i++) {
 			IFrameElement iframe = (IFrameElement) nodeList.getItem(i);
 			if (iframe.getId().startsWith("Main")) {
-				iframe.setAttribute("style", "height: " + setHeight + "px;");
+				
+				if (GXT.isIE)
+					iframe.setAttribute("height", setHeight + "px");
+					//resizeOnIE(iframe, setHeight);
+				else
+					iframe.setAttribute("style", "height: " + setHeight + "px;");
+				
 				break;
 			}
 		}
