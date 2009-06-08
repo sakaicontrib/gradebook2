@@ -37,7 +37,6 @@ import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.state.CookieProvider;
 import com.extjs.gxt.ui.client.state.StateManager;
-import com.extjs.gxt.ui.client.widget.Info;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -45,6 +44,7 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.IFrameElement;
 import com.google.gwt.dom.client.NodeList;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
 
@@ -168,8 +168,9 @@ public class GradebookApplication implements EntryPoint {
 			IFrameElement iframe = (IFrameElement) nodeList.getItem(i);
 			if (iframe.getId().startsWith("Main")) {
 				
-				if (GXT.isIE) {
-					Info.display("Notice", "Resizing for IE");
+				if (GXT.isIE7 || GXT.isIE) {
+					Window.alert("Resizing for IE");
+					//Info.display("Notice", "Resizing for IE");
 					//iframe.setAttribute("height", setHeight + "px");
 					resizeOnIE(iframe, setHeight);
 				} else
