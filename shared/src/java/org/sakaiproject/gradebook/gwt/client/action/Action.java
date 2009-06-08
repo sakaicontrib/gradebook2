@@ -56,7 +56,7 @@ public abstract class Action extends EntityModel {
 		
 	};
 	
-	public enum EntityType { APPLICATION("application"), GRADE_ITEM("grade item"),
+	public enum EntityType { AUTH("authorization"), APPLICATION("application"), GRADE_ITEM("grade item"),
 		CATEGORY("category"), COLUMN("column"), COMMENT("comment"), 
 		GRADEBOOK("gradebook"), GRADE_SCALE("grade scale"), GRADE_RECORD("grade record"), 
 		GRADE_EVENT("grade event"),

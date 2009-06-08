@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
@@ -32,7 +33,6 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
-import org.sakaiproject.service.gradebook.shared.GradebookService;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
@@ -133,7 +133,13 @@ public class ImportExportUtility {
 				
 				@Override
 				public void doCategory(ItemModel itemModel, int childIndex) {
-					categoriesRow.add(itemModel.getName());
+					StringBuilder categoryName = new StringBuilder().append(itemModel.getName());
+					
+					if (DataTypeConversionUtil.checkBoolean(itemModel.getExtraCredit())) {
+						categoryName.append(AppConstants.EXTRA_CREDIT_INDICATOR);
+					}
+					
+					categoriesRow.add(categoryName.toString());
 					percentageGradeRow.add(new StringBuilder()
 						.append(String.valueOf(itemModel.getPercentCourseGrade()))
 						.append("%").toString());
@@ -204,6 +210,10 @@ public class ImportExportUtility {
 			public void doItem(ItemModel itemModel) {
 				StringBuilder text = new StringBuilder();
 				text.append(itemModel.getName());
+				
+				if (DataTypeConversionUtil.checkBoolean(itemModel.getExtraCredit())) {
+					text.append(AppConstants.EXTRA_CREDIT_INDICATOR);
+				}
 				
 				if (!includeStructure) {
 					String points = DecimalFormat.getInstance().format(itemModel.getPoints());
@@ -378,6 +388,11 @@ public class ImportExportUtility {
 							
 							String name = text;
 							String points = null;
+							boolean isExtraCredit = text.contains(AppConstants.EXTRA_CREDIT_INDICATOR);
+							
+							if (isExtraCredit) {
+								text = text.replace(AppConstants.EXTRA_CREDIT_INDICATOR, "");
+							}
 							
 							int startParen = text.indexOf("[");
 							int endParen = text.indexOf("pts]");
@@ -418,11 +433,12 @@ public class ImportExportUtility {
 									header.setCategoryName("Unassigned");
 								}
 								header.setHeaderName(name);
+								header.setExtraCredit(Boolean.valueOf(isExtraCredit));
 								if (points != null && points.equals("%"))
 									header.setPercentage(true);
 								else {
 									try {
-										header.setPoints(Double.parseDouble(points));
+										header.setPoints(Double.valueOf(Double.parseDouble(points)));
 									} catch (NumberFormatException nfe) {
 										System.out.println("Could not parse points " + points);
 									}
@@ -567,10 +583,17 @@ public class ImportExportUtility {
 				ItemModel categoryModel = null;
 				// In this case, we have a new category that needs to be added to the gradebook
 				if (!categoryMap.containsKey(categoryColumns[i])) {
+					String categoryName = categoryColumns[i];
+					boolean isExtraCredit = categoryName.contains(AppConstants.EXTRA_CREDIT_INDICATOR);
+					
+					if (isExtraCredit)
+						categoryName = categoryName.replace(AppConstants.EXTRA_CREDIT_INDICATOR, "");
+					
 					categoryModel = new ItemModel();
 					categoryModel.setItemType(Type.CATEGORY);
-					categoryModel.setName(categoryColumns[i]);
+					categoryModel.setName(categoryName);
 					categoryModel.setIncluded(Boolean.TRUE);
+					categoryModel.setExtraCredit(Boolean.valueOf(isExtraCredit));
 					isModelNew = true;
 				} else {
 					// Otherwise, we may still want to update scores

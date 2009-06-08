@@ -96,17 +96,23 @@ public class Gradebook2ServiceImportTest extends Gradebook2ServiceTest {
 	private void verifyCategoryPercentsForItems(GradebookModel model, Double... values) {
 		ItemModel gradebookItemModel = model.getGradebookItemModel();
 		
+		for (int i=0;i<gradebookItemModel.getChildCount();i++) {
+			ItemModel child = gradebookItemModel.getChild(i);
+			System.out.println("Child: " + child.getName());
+		}
+		
 		assertEquals(1, gradebookItemModel.getChildCount());
 		
 		ItemModel essaysItemModel = gradebookItemModel.getChildren().get(0);
 		
-		assertEquals(4, essaysItemModel.getChildCount());
+		assertEquals(5, essaysItemModel.getChildCount());
 		
 		List<ItemModel> children = essaysItemModel.getChildren();
 		ItemModel essay1 = children.get(0);
 		ItemModel essay2 = children.get(1);
 		ItemModel essay3 = children.get(2);
 		ItemModel essay4 = children.get(3);
+		ItemModel ec = children.get(4);
 		
 		assertEquals(values[0], essay1.getPercentCategory());
 		assertEquals(values[1], essay2.getPercentCategory());

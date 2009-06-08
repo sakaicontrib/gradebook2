@@ -74,6 +74,7 @@ public class GradebookEvents {
 	public static final GradebookEvent ItemDeleted					= registerEvent(EventKey.ITEM_DELETED);
 	public static final GradebookEvent ItemUpdated					= registerEvent(EventKey.ITEM_UPDATED);
 	public static final GradebookEvent LearnerGradeRecordUpdated	= registerEvent(EventKey.LEARNER_GRADE_RECORD_UPDATED); 
+	public static final GradebookEvent Load				 			= registerEvent(EventKey.LOAD);
 	public static final GradebookEvent LoadItemTreeModel 			= registerEvent(EventKey.LOAD_ITEM_TREE_MODEL);
 	public static final GradebookEvent MaskItemTree					= registerEvent(EventKey.MASK_ITEM_TREE);
 	public static final GradebookEvent NewCategory					= registerEvent(EventKey.NEW_CATEGORY);

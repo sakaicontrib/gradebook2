@@ -16,6 +16,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.view.SingleGradeView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.StudentView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.TreeView;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
+import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -49,6 +50,7 @@ public class AppController extends Controller {
 		registerEventTypes(GradebookEvents.ItemDeleted.getEventType());
 		registerEventTypes(GradebookEvents.ItemUpdated.getEventType());
 		registerEventTypes(GradebookEvents.LearnerGradeRecordUpdated.getEventType());
+		registerEventTypes(GradebookEvents.Load.getEventType());
 		registerEventTypes(GradebookEvents.LoadItemTreeModel.getEventType());
 		registerEventTypes(GradebookEvents.MaskItemTree.getEventType());
 		registerEventTypes(GradebookEvents.NewCategory.getEventType());
@@ -138,6 +140,9 @@ public class AppController extends Controller {
 		case STOP_IMPORT:
 			forwardToView(appView, event);
 			break;
+		case LOAD:
+			onLoad(event);
+			break;
 		case STARTUP:
 			onStartup(event);
 			break;
@@ -225,12 +230,32 @@ public class AppController extends Controller {
 		
 	}
 	
+	private void onLoad(AppEvent<?> event) {
+		AuthModel authModel = (AuthModel)event.data;
+		
+		boolean isUserAbleToGrade = authModel.isUserAbleToGrade() == null ? false : authModel.isUserAbleToGrade().booleanValue();
+		boolean isUserAbleToViewOwnGrades = authModel.isUserAbleToViewOwnGrades() == null ? false : authModel.isUserAbleToViewOwnGrades().booleanValue();
+		boolean isUserAbleToEditItems = DataTypeConversionUtil.checkBoolean(authModel.isUserAbleToEditAssessments());
+		boolean isNewGradebook = DataTypeConversionUtil.checkBoolean(authModel.isNewGradebook());
+		
+		I18nConstants i18n = Registry.get(AppConstants.I18N);
+		
+		if (isUserAbleToGrade) {
+			this.singleView = new SingleGradeView(this, false);
+			this.treeView = new TreeView(this, i18n, isUserAbleToEditItems);
+			this.multigradeView = new MultigradeView(this, i18n);
+			this.importExportView = new ImportExportView(this, i18n);
+			this.appView = new InstructorView(this, treeView, multigradeView, notificationView, importExportView, singleView, isUserAbleToEditItems, isNewGradebook);
+		} else if (isUserAbleToViewOwnGrades) {
+			this.appView = new StudentView(this, notificationView);
+		}
+	}
 	
 	private void onStartup(AppEvent<?> event) {
 		ApplicationModel model = (ApplicationModel)event.data;
 		
 		List<GradebookModel> gradebookModels = model.getGradebookModels();
-		I18nConstants i18n = Registry.get(AppConstants.I18N);
+		//I18nConstants i18n = Registry.get(AppConstants.I18N);
 		
 		Registry.register(AppConstants.HELP_URL, model.getHelpUrl());
 		
@@ -241,19 +266,19 @@ public class AppController extends Controller {
 			Registry.register(AppConstants.CURRENT, gbModel);
 			boolean isUserAbleToGrade = gbModel.isUserAbleToGrade() == null ? false : gbModel.isUserAbleToGrade().booleanValue();
 			boolean isUserAbleToViewOwnGrades = gbModel.isUserAbleToViewOwnGrades() == null ? false : gbModel.isUserAbleToViewOwnGrades().booleanValue();
-			boolean isUserAbleToEditItems = DataTypeConversionUtil.checkBoolean(gbModel.isUserAbleToEditAssessments());
-			boolean isNewGradebook = DataTypeConversionUtil.checkBoolean(gbModel.isNewGradebook());
+			//boolean isUserAbleToEditItems = DataTypeConversionUtil.checkBoolean(gbModel.isUserAbleToEditAssessments());
+			//boolean isNewGradebook = DataTypeConversionUtil.checkBoolean(gbModel.isNewGradebook());
 			
 			if (isUserAbleToGrade) {
-				this.singleView = new SingleGradeView(this, false);
-				this.treeView = new TreeView(this, i18n, isUserAbleToEditItems);
-				this.multigradeView = new MultigradeView(this, i18n);
-				this.importExportView = new ImportExportView(this, i18n);
-				this.appView = new InstructorView(this, treeView, multigradeView, notificationView, importExportView, singleView, isUserAbleToEditItems, isNewGradebook);
+				//this.singleView = new SingleGradeView(this, false);
+				//this.treeView = new TreeView(this, i18n, isUserAbleToEditItems);
+				//this.multigradeView = new MultigradeView(this, i18n);
+				//this.importExportView = new ImportExportView(this, i18n);
+				//this.appView = new InstructorView(this, treeView, multigradeView, notificationView, importExportView, singleView, isUserAbleToEditItems, isNewGradebook);
 				forwardToView(treeView, event);
 				forwardToView(multigradeView, event);
 			} else if (isUserAbleToViewOwnGrades) {
-				this.appView = new StudentView(this, notificationView);
+				//this.appView = new StudentView(this, notificationView);
 			}
 			
 			forwardToView(appView, event);

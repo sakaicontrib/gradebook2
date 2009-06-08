@@ -72,6 +72,8 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 			boolean showAll = DataTypeConversionUtil.checkBoolean(doShowAll);
 			
 			switch (type) {
+			case AUTH:
+				return (X)service.getAuthorization();
 			case APPLICATION:
 				return (X)service.getApplicationModel();
 			case GRADEBOOK:

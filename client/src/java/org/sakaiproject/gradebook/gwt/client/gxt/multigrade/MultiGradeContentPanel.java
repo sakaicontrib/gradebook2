@@ -82,7 +82,6 @@ import com.extjs.gxt.ui.client.widget.form.LabelField;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.grid.CellEditor;
-import com.extjs.gxt.ui.client.widget.grid.CellSelectionModel;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.EditorGrid;
@@ -130,7 +129,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	private ShowColumnsEvent lastShowColumnsEvent;
 	
 	private MultigradeSelectionModel<StudentModel> cellSelectionModel;
-	
+	private BasePagingLoader<PagingLoadConfig, PagingLoadResult<SectionModel>> sectionsLoader;
 	
 	
 	public MultiGradeContentPanel(ContentPanel childPanel, I18nConstants i18n) {
@@ -695,6 +694,9 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		
 		if (loader != null) 
 			loader.load(0, pageSize);
+		
+		if (sectionsLoader != null)
+			sectionsLoader.load(0, 50);
 	}
 	
 	public void onUserChange(UserEntityAction<?> action) {
@@ -1127,11 +1129,11 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			}
 		};
 		
-		BasePagingLoader<PagingLoadConfig, PagingLoadResult<SectionModel>> sectionsLoader = 
+		sectionsLoader = 
 			new BasePagingLoader<PagingLoadConfig, PagingLoadResult<SectionModel>>(sectionsProxy, new ModelReader<PagingLoadConfig>());
 		
 		sectionsLoader.setRemoteSort(true);
-		sectionsLoader.load(0, 50);
+		//sectionsLoader.load(0, 50);
 		
 		SectionModel allSections = new SectionModel();
 		allSections.setSectionId("all");

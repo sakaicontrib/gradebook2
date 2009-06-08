@@ -30,6 +30,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.controller.ServiceController;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
+import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
 
 import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Registry;
@@ -45,7 +46,6 @@ import com.google.gwt.dom.client.IFrameElement;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
-import com.google.gwt.user.client.rpc.StatusCodeException;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -95,31 +95,52 @@ public class GradebookApplication implements EntryPoint {
 		if (GWT.isScript())
 			resizeMainFrame(screenHeight + 20);
 		
-		getApplicationModel(0);
-		
+		getAuthorization(0);		
 	}
 	
-	private void getApplicationModel(final int i) {
+	private void getAuthorization(final int i) {
+		AsyncCallback<AuthModel> callback = 
+			new AsyncCallback<AuthModel>() {
+
+				public void onFailure(Throwable caught) {
+					GXT.hideLoadingPanel("loading");
+	
+					// If this is the first try, then give it another shot
+					if (i == 0)
+						getAuthorization(i+1);
+					else
+						dispatcher.dispatch(GradebookEvents.Exception.getEventType(), new NotificationEvent(caught));
+				}
+
+				public void onSuccess(AuthModel result) {
+					GXT.hideLoadingPanel("loading");
+					
+					dispatcher.dispatch(GradebookEvents.Load.getEventType(), result);
+					getApplicationModel(0, result);
+				}
+			
+		};
+		
+		dataService.get(null, null, EntityType.AUTH, null, null, SecureToken.get(), callback);
+
+	}
+	
+	private void getApplicationModel(final int i, final AuthModel authModel) {
 		AsyncCallback<ApplicationModel> callback = 
 			new AsyncCallback<ApplicationModel>() {
 
 				public void onFailure(Throwable caught) {
-					GXT.hideLoadingPanel("loading");
-					
-					if (caught instanceof StatusCodeException) {
-						System.out.println("Status code exception!");
-						caught.printStackTrace();
-					} 
-					
+					//GXT.hideLoadingPanel("loading");
+	
 					// If this is the first try, then give it another shot
 					if (i == 0)
-						getApplicationModel(i+1);
+						getApplicationModel(i+1, authModel);
 					else
 						dispatcher.dispatch(GradebookEvents.Exception.getEventType(), new NotificationEvent(caught));
 				}
 
 				public void onSuccess(ApplicationModel result) {
-					GXT.hideLoadingPanel("loading");
+					//GXT.hideLoadingPanel("loading");
 					
 					dispatcher.dispatch(GradebookEvents.Startup.getEventType(), result);
 				}

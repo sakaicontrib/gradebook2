@@ -52,14 +52,14 @@ public interface AppConstants {
 	public static final String WINDOW_MENU_ITEM_PREFIX = "windowMenuItem:";
 	
 	// Tab mode cookie id
-	public static final String TAB_MODE				= ":tabMode";
-	public static final String SELECTED_COLUMNS		= ":selectedMultigradeColumns";
-	public static final String SORT_FIELD			= ":sortField";
-	public static final String SORT_DIRECTION		= ":sortDirection";
-	public static final String COLUMN_PREFIX		= "column:";
-	public static final String HIDDEN_SUFFIX		= ":hidden";
-	public static final String WIDTH_SUFFIX			= ":width";
-	public static final String PAGE_SIZE			= ":pageSize";
+	public static final String TAB_MODE				= ":tm";
+	public static final String SELECTED_COLUMNS		= ":selMCols";
+	public static final String SORT_FIELD			= ":sf";
+	public static final String SORT_DIRECTION		= ":sd";
+	public static final String COLUMN_PREFIX		= "c:";
+	public static final String HIDDEN_SUFFIX		= ":h";
+	public static final String WIDTH_SUFFIX			= ":w";
+	public static final String PAGE_SIZE			= ":ps";
 	
 	// Data type constants
 	public static final String NUMERIC_DATA_TYPE		= "Number";
@@ -75,4 +75,6 @@ public interface AppConstants {
 	public static final String HELP_URL_CONFIG_ID	= "gb2.help.url";
 	
 	public static final String DEFAULT_CATEGORY_NAME = "Unassigned";
+	
+	public static final String EXTRA_CREDIT_INDICATOR = " (+)";
 }

@@ -46,7 +46,7 @@ public class GradebookState {
 		StateManager.get().set(selectedMultigradeColumnId, builder.toString());
 	}
 	
-	public static boolean getTabMode(String gradebookUid) {
+	/*public static boolean getTabMode(String gradebookUid) {
 		String tabModeStateId = DataTypeConversionUtil.concat(gradebookUid, AppConstants.TAB_MODE);
 		Boolean isChecked = (Boolean)StateManager.get().get(tabModeStateId);
 		return DataTypeConversionUtil.checkBoolean(isChecked);
@@ -55,7 +55,7 @@ public class GradebookState {
 	public static void setTabMode(String gradebookUid, boolean tabMode) {
 		String tabModeStateId = DataTypeConversionUtil.concat(gradebookUid, AppConstants.TAB_MODE);
 		StateManager.get().set(tabModeStateId, Boolean.valueOf(tabMode));
-	}
+	}*/
 	
 	public static void setSortInfo(String gradebookUid, String gridId, String sortField, boolean isAscending) {
 		String sortFieldId = DataTypeConversionUtil.concat(gradebookUid, ":", gridId, AppConstants.SORT_FIELD);

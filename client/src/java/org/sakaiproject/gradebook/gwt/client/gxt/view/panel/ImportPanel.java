@@ -53,7 +53,6 @@ import com.extjs.gxt.ui.client.widget.TabItem;
 import com.extjs.gxt.ui.client.widget.TabPanel;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
-import com.extjs.gxt.ui.client.widget.form.FieldSet;
 import com.extjs.gxt.ui.client.widget.form.FileUploadField;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.HiddenField;
@@ -88,10 +87,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class ImportPanel extends ContentPanel {
 
-	private static int CHARACTER_WIDTH = 7;
-	
-	private enum Step { ONE, TWO, THREE };
-	
 	private FileUploadField file;
 	
 	private ListStore<StudentModel> rowStore;
@@ -104,14 +99,11 @@ public class ImportPanel extends ContentPanel {
 	
 	private LayoutContainer mainCardLayoutContainer, subCardLayoutContainer;
 	private CardLayout mainCardLayout, subCardLayout;
-	
-	//private LayoutContainer advancedContainer;
-	
+
 	private TabPanel tabPanel;
 	
 	private TabItem previewTab, columnsTab;
-	
-	private FieldSet previewFieldSet;
+
 	private Button submitButton, cancelButton; 
 	
 	private LayoutContainer step1Container;
@@ -819,7 +811,7 @@ public class ImportPanel extends ContentPanel {
 							AsyncCallback<GradebookModel> callback = new AsyncCallback<GradebookModel>() {
 
 								public void onFailure(Throwable caught) {
-									// FIXME: Need to throw an exception
+									Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught));
 								}
 
 								public void onSuccess(GradebookModel result) {
@@ -856,6 +848,7 @@ public class ImportPanel extends ContentPanel {
 						String categoryName = getString(jsonHeaderObject, "categoryName");
 						String categoryId = getString(jsonHeaderObject, "categoryId");
 						Double percentCategory = getDouble(jsonHeaderObject, "percentCategory");
+						Boolean isExtraCredit = getBoolean(jsonHeaderObject, "extraCredit");
 						
 						int width = 200;
 									
@@ -893,6 +886,7 @@ public class ImportPanel extends ContentPanel {
 						header.setCategoryName(categoryName);
 						header.setCategoryId(categoryId);
 						header.setPercentCategory(percentCategory);
+						header.setExtraCredit(isExtraCredit);
 						
 						if (header.getField() != null && header.getField().equals("ITEM"))
 							headerMap.put(id, header);

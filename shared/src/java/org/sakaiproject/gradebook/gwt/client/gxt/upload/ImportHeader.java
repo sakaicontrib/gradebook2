@@ -21,6 +21,7 @@ public class ImportHeader implements Serializable {
 	private Double points;
 	private boolean isPercentage;
 	private Double percentCategory;
+	private Boolean extraCredit;
 	
 	private boolean checker;
 	
@@ -146,6 +147,14 @@ public class ImportHeader implements Serializable {
 
 	public void setValue(String value) {
 		this.value = value;
+	}
+
+	public Boolean getExtraCredit() {
+		return extraCredit;
+	}
+
+	public void setExtraCredit(Boolean extraCredit) {
+		this.extraCredit = extraCredit;
 	}
 	
 	

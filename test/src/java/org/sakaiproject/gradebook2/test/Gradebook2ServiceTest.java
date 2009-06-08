@@ -98,14 +98,25 @@ public class Gradebook2ServiceTest extends AbstractDependencyInjectionSpringCont
 		essay4.setReleased(Boolean.TRUE);
 		essay4.setItemType(Type.ITEM);
 		essay4.setIncluded(Boolean.TRUE);
-
-		category = service.createItem(gradebookUid, gradebookId, essay4, true);
+		service.createItem(gradebookUid, gradebookId, essay4, true);
+		
+		ItemModel ec1 = new ItemModel();
+		ec1.setName("Extra Credit");
+		ec1.setPoints(Double.valueOf(20d));
+		ec1.setDueDate(new Date());
+		ec1.setCategoryId(essaysCategory.getCategoryId());
+		ec1.setReleased(Boolean.TRUE);
+		ec1.setItemType(Type.ITEM);
+		ec1.setIncluded(Boolean.TRUE);
+		ec1.setExtraCredit(Boolean.TRUE);
+		category = service.createItem(gradebookUid, gradebookId, ec1, true);
 
 		for (ItemModel child : category.getChildren()) {
 			Double percentCategory = child.getPercentCategory();
 			BigDecimal pC = BigDecimal.valueOf(percentCategory.doubleValue());
 
-			assertTrue(pC.setScale(2).compareTo(BigDecimal.valueOf(25.0)) == 0);
+			if (!child.getExtraCredit())
+				assertTrue(pC.setScale(2).compareTo(BigDecimal.valueOf(25.0)) == 0);
 		}
 
 	}
@@ -260,7 +271,7 @@ public class Gradebook2ServiceTest extends AbstractDependencyInjectionSpringCont
 		ItemModel parent = service.updateItemModel(item);
 		
 		for (ItemModel c : parent.getChildren()) {
-			if (!c.isActive()) {
+			if (!c.isActive() && !c.getExtraCredit()) {
 				assertEquals(BigDecimal.valueOf(33.3333d).setScale(4, RoundingMode.HALF_EVEN), BigDecimal.valueOf(c.getPercentCategory().doubleValue()).setScale(4, RoundingMode.HALF_EVEN));
 			}
 		}

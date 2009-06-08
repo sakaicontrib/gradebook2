@@ -397,7 +397,7 @@ public class ItemTreePanel extends ContentPanel {
 		percentCourseGradeColumn =  new TreeTableColumn(ItemModel.Key.PERCENT_COURSE_GRADE.name(), 
 				ItemModel.getPropertyName(ItemModel.Key.PERCENT_COURSE_GRADE), ItemModel.getPropertyName(ItemModel.Key.PERCENT_COURSE_GRADE).length() * CHARACTER_WIDTH + 30);
 		percentCourseGradeColumn.setAlignment(HorizontalAlignment.RIGHT);
-		percentCourseGradeColumn.setHidden(gbModel.getGradebookItemModel().getCategoryType() == CategoryType.SIMPLE_CATEGORIES);
+		//percentCourseGradeColumn.setHidden(gbModel.getGradebookItemModel().getCategoryType() == CategoryType.SIMPLE_CATEGORIES);
 		percentCourseGradeColumn.setRenderer(numericCellRenderer);
 		percentCourseGradeColumn.setSortable(false);
 		columns.add(percentCourseGradeColumn);
@@ -405,7 +405,7 @@ public class ItemTreePanel extends ContentPanel {
 		percentCategoryColumn =  new TreeTableColumn(ItemModel.Key.PERCENT_CATEGORY.name(), 
 				ItemModel.getPropertyName(ItemModel.Key.PERCENT_CATEGORY), ItemModel.getPropertyName(ItemModel.Key.PERCENT_CATEGORY).length() * CHARACTER_WIDTH);
 		percentCategoryColumn.setAlignment(HorizontalAlignment.RIGHT);
-		percentCategoryColumn.setHidden(gbModel.getGradebookItemModel().getCategoryType() == CategoryType.SIMPLE_CATEGORIES);
+		//percentCategoryColumn.setHidden(gbModel.getGradebookItemModel().getCategoryType() == CategoryType.SIMPLE_CATEGORIES);
 		percentCategoryColumn.setRenderer(numericCellRenderer);
 		percentCategoryColumn.setSortable(false);
 		columns.add(percentCategoryColumn);
@@ -413,7 +413,7 @@ public class ItemTreePanel extends ContentPanel {
 		pointsColumn = new TreeTableColumn(ItemModel.Key.POINTS.name(), 
 				ItemModel.getPropertyName(ItemModel.Key.POINTS), ItemModel.getPropertyName(ItemModel.Key.POINTS).length() * CHARACTER_WIDTH + 30);
 		pointsColumn.setAlignment(HorizontalAlignment.RIGHT);
-		pointsColumn.setHidden(gbModel.getGradebookItemModel().getCategoryType() != CategoryType.WEIGHTED_CATEGORIES);
+		//pointsColumn.setHidden(gbModel.getGradebookItemModel().getCategoryType() != CategoryType.WEIGHTED_CATEGORIES);
 		pointsColumn.setRenderer(numericCellRenderer);
 		pointsColumn.setSortable(false);
 		columns.add(pointsColumn);

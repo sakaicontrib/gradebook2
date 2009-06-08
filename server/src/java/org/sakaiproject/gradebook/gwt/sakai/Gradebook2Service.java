@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
+import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
 import org.sakaiproject.gradebook.gwt.client.model.CommentModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
@@ -83,6 +84,8 @@ public interface Gradebook2Service {
 	public <X extends BaseModel> PagingLoadResult<X> getActionHistory(String gradebookUid, PagingLoadConfig config);
 	
 	public ApplicationModel getApplicationModel(String... gradebookUids);
+	
+	public AuthModel getAuthorization(String... gradebookUids);
 	
 	public List<String> getExportCourseManagementSetEids(Group group);
 	

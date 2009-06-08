@@ -35,6 +35,7 @@ import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
+import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
 import org.sakaiproject.gradebook.gwt.client.model.CommentModel;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeEventModel;
@@ -403,6 +404,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					String name = item.getName();
 					Double weight = item.getPercentCategory();
 					Double points = item.getPoints();
+					boolean isExtraCredit = name.contains(AppConstants.EXTRA_CREDIT_INDICATOR);
+					
+					if (isExtraCredit) 
+						name = name.replace(AppConstants.EXTRA_CREDIT_INDICATOR, "");
 					
 					if (id.startsWith("NEW:")) {	
 						Date dueDate = null;
@@ -412,6 +417,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 						itemModel.setPercentCategory(weight);
 						itemModel.setPoints(points);
 						itemModel.setIncluded(Boolean.TRUE);
+						itemModel.setExtraCredit(Boolean.valueOf(isExtraCredit));
 						ItemModel model = createItem(gradebookUid, gradebook.getId(), itemModel, false);
 						
 						if (categoryId != null) {
@@ -975,6 +981,26 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 
 		return model;
+	}
+	
+	public AuthModel getAuthorization(String... gradebookUids) {
+		if (gradebookUids == null || gradebookUids.length == 0) 
+			gradebookUids = new String[] { lookupDefaultGradebookUid() };
+			
+		for (int i=0;i<gradebookUids.length;i++) {
+			Gradebook gradebook = gbService.getGradebook(gradebookUids[i]);
+			AuthModel authModel = new AuthModel();
+			boolean isUserAbleToGrade = security.isUserAbleToGrade(gradebookUids[i]);
+			boolean isUserAbleToViewOwnGrades = security.isUserAbleToViewOwnGrades(gradebookUids[i]);
+
+			authModel.setUserAbleToGrade(Boolean.valueOf(isUserAbleToGrade));
+			authModel.setUserAbleToEditAssessments(Boolean.valueOf(security.isUserAbleToEditAssessments(gradebookUids[i])));
+			authModel.setUserAbleToViewOwnGrades(Boolean.valueOf(isUserAbleToViewOwnGrades));
+			authModel.setUserHasGraderPermissions(Boolean.valueOf(security.isUserHasGraderPermissions(gradebook.getId())));
+			
+			return authModel;
+		}
+		return null;
 	}
 	
 	public List<String> getExportCourseManagementSetEids(Group group) {
