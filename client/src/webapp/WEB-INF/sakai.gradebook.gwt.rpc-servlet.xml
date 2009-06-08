@@ -30,6 +30,7 @@
                                 
                                 <entry key="/**/org.sakaiproject.gradebook.gwt.GradebookApplication/images/**" value-ref="myServletForwardingController" />
                                 
+                                <entry key="/**/org.sakaiproject.gradebook.gwt.GradebookApplication/*.gwt.rpc" value-ref="myServletForwardingController" />
                         </map>
         </property>
    	</bean>
