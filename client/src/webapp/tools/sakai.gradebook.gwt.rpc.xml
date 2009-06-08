@@ -7,6 +7,7 @@
 		<category name="project" />
 		
 		<configuration name="displayid.value" value="student" />
+		<configuration name="height" value="620px" />
 		
 	</tool>
 </registration>

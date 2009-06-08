@@ -93,8 +93,9 @@ public class GradebookApplication implements EntryPoint {
 		Registry.register(AppConstants.SERVICE, dataService);
 		Registry.register(AppConstants.I18N, i18n);
 
-		if (GWT.isScript())
-			resizeMainFrame(screenHeight + 20);
+		// No longer necessary, we use a configuration param in tool registration
+		//if (GWT.isScript())
+		//	resizeMainFrame(screenHeight + 20);
 		
 		getAuthorization(0);		
 	}
@@ -156,11 +157,7 @@ public class GradebookApplication implements EntryPoint {
 	private native Document getWindowParentDocument() /*-{
 	    return $wnd.parent.document
 	}-*/;
-	
-	private native void resizeOnIE(IFrameElement iframe, int setHeight) /*-{
-		iframe.height = setHeight + "px";
-	}-*/;
-	
+
 	private void resizeMainFrame(int setHeight) {
 		Document doc = getWindowParentDocument();
 		NodeList<Element> nodeList = doc.getElementsByTagName("iframe");
@@ -168,13 +165,7 @@ public class GradebookApplication implements EntryPoint {
 			IFrameElement iframe = (IFrameElement) nodeList.getItem(i);
 			if (iframe.getId().startsWith("Main")) {
 				
-				if (GXT.isIE7 || GXT.isIE) {
-					Window.alert("Resizing for IE");
-					//Info.display("Notice", "Resizing for IE");
-					//iframe.setAttribute("height", setHeight + "px");
-					resizeOnIE(iframe, setHeight);
-				} else
-					iframe.setAttribute("style", "height: " + setHeight + "px;");
+				iframe.setAttribute("style", "height: " + setHeight + "px;");
 				
 				break;
 			}
