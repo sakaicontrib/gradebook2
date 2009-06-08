@@ -168,8 +168,8 @@ public class GradebookApplication implements EntryPoint {
 			if (iframe.getId().startsWith("Main")) {
 				
 				if (GXT.isIE)
-					iframe.setAttribute("height", setHeight + "px");
-					//resizeOnIE(iframe, setHeight);
+					//iframe.setAttribute("height", setHeight + "px");
+					resizeOnIE(iframe, setHeight);
 				else
 					iframe.setAttribute("style", "height: " + setHeight + "px;");
 				
