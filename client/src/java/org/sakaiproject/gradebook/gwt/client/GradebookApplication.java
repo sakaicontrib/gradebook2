@@ -93,9 +93,8 @@ public class GradebookApplication implements EntryPoint {
 		Registry.register(AppConstants.SERVICE, dataService);
 		Registry.register(AppConstants.I18N, i18n);
 
-		// No longer necessary, we use a configuration param in tool registration
-		//if (GWT.isScript())
-		//	resizeMainFrame(screenHeight + 20);
+		if (GWT.isScript())
+			resizeMainFrame(screenHeight + 20);
 		
 		getAuthorization(0);		
 	}
@@ -105,7 +104,7 @@ public class GradebookApplication implements EntryPoint {
 			new AsyncCallback<AuthModel>() {
 
 				public void onFailure(Throwable caught) {
-					GXT.hideLoadingPanel("loading");
+					//GXT.hideLoadingPanel("loading");
 	
 					// If this is the first try, then give it another shot
 					if (i == 0)
@@ -115,7 +114,7 @@ public class GradebookApplication implements EntryPoint {
 				}
 
 				public void onSuccess(AuthModel result) {
-					GXT.hideLoadingPanel("loading");
+					//GXT.hideLoadingPanel("loading");
 					
 					dispatcher.dispatch(GradebookEvents.Load.getEventType(), result);
 					getApplicationModel(0, result);
@@ -132,7 +131,7 @@ public class GradebookApplication implements EntryPoint {
 			new AsyncCallback<ApplicationModel>() {
 
 				public void onFailure(Throwable caught) {
-					//GXT.hideLoadingPanel("loading");
+					GXT.hideLoadingPanel("loading");
 	
 					// If this is the first try, then give it another shot
 					if (i == 0)
@@ -142,7 +141,7 @@ public class GradebookApplication implements EntryPoint {
 				}
 
 				public void onSuccess(ApplicationModel result) {
-					//GXT.hideLoadingPanel("loading");
+					GXT.hideLoadingPanel("loading");
 					
 					dispatcher.dispatch(GradebookEvents.Startup.getEventType(), result);
 				}
@@ -165,6 +164,7 @@ public class GradebookApplication implements EntryPoint {
 			IFrameElement iframe = (IFrameElement) nodeList.getItem(i);
 			if (iframe.getId().startsWith("Main")) {
 				
+				iframe.setAttribute("height", setHeight + "px");
 				iframe.setAttribute("style", "height: " + setHeight + "px;");
 				
 				break;
