@@ -3209,9 +3209,17 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		if (assignment.isExternallyMaintained())
 			throw new InvalidInputException("This grade item is maintained externally. Please input and edit grades through " + assignment.getExternalAppName());
 		
-		if (gradebook.getGrade_type() == GradebookService.GRADE_TYPE_POINTS && value != null && value.compareTo(assignment.getPointsPossible()) > 0)
-			throw new InvalidInputException("This grade cannot be larger than "+ DataTypeConversionUtil.formatDoubleAsPointsString(assignment.getPointsPossible()));
-		else if (gradebook.getGrade_type() == GradebookService.GRADE_TYPE_PERCENTAGE && value != null) {
+		if (gradebook.getGrade_type() == GradebookService.GRADE_TYPE_POINTS && value != null ) {
+			if (value.compareTo(assignment.getPointsPossible()) > 0)
+				throw new InvalidInputException("This grade cannot be larger than "+ DataTypeConversionUtil.formatDoubleAsPointsString(assignment.getPointsPossible()));
+			else if (value.compareTo(Double.valueOf(0d)) < 0) {
+				double v = value.doubleValue();
+				
+				if (v < -1d * assignment.getPointsPossible().doubleValue()) 
+					throw new InvalidInputException("The absolute value of a negative point score assigned to a student cannot be greater than the total possible points allowed for an item");
+			}
+			
+		} else if (gradebook.getGrade_type() == GradebookService.GRADE_TYPE_PERCENTAGE && value != null) {
 			if (value.compareTo(Double.valueOf(100d)) > 0) 
 				throw new InvalidInputException("This grade cannot be larger than "+ DataTypeConversionUtil.formatDoubleAsPointsString(100d) + "%");
 			else if (value.compareTo(Double.valueOf(0d)) < 0)
