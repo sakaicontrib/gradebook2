@@ -1217,7 +1217,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		boolean isLimitedToSection = false;
 		Set<String> authorizedGroups = new HashSet<String>();
 		if (sectionUuid != null) {
-			if (!security.isUserTAinSection(sectionUuid))
+			if (!security.isUserTAinSection(sectionUuid) && !security.isUserAbleToGradeAll(gradebookUid))
 				return new BasePagingLoadResult<X>(rows, 0, totalUsers);
 			
 			authorizedGroups.add(sectionUuid);
