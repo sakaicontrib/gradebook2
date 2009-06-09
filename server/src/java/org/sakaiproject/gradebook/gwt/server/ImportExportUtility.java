@@ -715,6 +715,8 @@ public class ImportExportUtility {
 				ImportHeader header = headerMap.get(name);
 				
 				if (header != null) {
+					if (isExtraCredit)
+						header.setExtraCredit(Boolean.valueOf(isExtraCredit));
 					
 					if (pointsColumns != null && pointsColumns.length > i) {
 						String points = pointsColumns[i];

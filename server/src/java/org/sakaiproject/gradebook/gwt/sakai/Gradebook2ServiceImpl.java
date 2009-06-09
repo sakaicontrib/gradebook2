@@ -404,10 +404,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					String name = item.getName();
 					Double weight = item.getPercentCategory();
 					Double points = item.getPoints();
-					boolean isExtraCredit = name.contains(AppConstants.EXTRA_CREDIT_INDICATOR);
+					boolean isExtraCredit = DataTypeConversionUtil.checkBoolean(item.getExtraCredit());
 					
-					if (isExtraCredit) 
-						name = name.replace(AppConstants.EXTRA_CREDIT_INDICATOR, "");
+					//if (isExtraCredit) 
+					//	name = name.replace(AppConstants.EXTRA_CREDIT_INDICATOR, "");
 					
 					if (id.startsWith("NEW:")) {	
 						Date dueDate = null;

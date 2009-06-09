@@ -48,6 +48,7 @@ public class ClientUploadUtility {
 			itemModel.setItemType(Type.ITEM);
 			itemModel.setName(header.getHeaderName());
 			itemModel.setPoints(header.getPoints());
+			itemModel.setExtraCredit(header.getExtraCredit());
 			if (header.getCategoryId() != null) {
 				itemModel.setCategoryId(Long.valueOf(header.getCategoryId()));
 				itemModel.setCategoryName(header.getCategoryName());
