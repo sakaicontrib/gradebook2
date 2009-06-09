@@ -988,7 +988,18 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			gradebookUids = new String[] { lookupDefaultGradebookUid() };
 			
 		for (int i=0;i<gradebookUids.length;i++) {
-			Gradebook gradebook = gbService.getGradebook(gradebookUids[i]);
+			boolean isNewGradebook = false;
+			Gradebook gradebook = null;
+			try {
+				// First thing, grab the default gradebook if one exists
+				gradebook = gbService.getGradebook(gradebookUids[i]);
+			} catch (GradebookNotFoundException gnfe) {	
+				// If it doesn't exist, then create it
+				if (frameworkService != null) {
+					frameworkService.addGradebook(gradebookUids[i], "My Default Gradebook");
+					gradebook = gbService.getGradebook(gradebookUids[i]);
+				} 
+			}
 			AuthModel authModel = new AuthModel();
 			boolean isUserAbleToGrade = security.isUserAbleToGrade(gradebookUids[i]);
 			boolean isUserAbleToViewOwnGrades = security.isUserAbleToViewOwnGrades(gradebookUids[i]);
@@ -997,6 +1008,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			authModel.setUserAbleToEditAssessments(Boolean.valueOf(security.isUserAbleToEditAssessments(gradebookUids[i])));
 			authModel.setUserAbleToViewOwnGrades(Boolean.valueOf(isUserAbleToViewOwnGrades));
 			authModel.setUserHasGraderPermissions(Boolean.valueOf(security.isUserHasGraderPermissions(gradebook.getId())));
+			authModel.setNewGradebook(Boolean.valueOf(isNewGradebook));
 			
 			return authModel;
 		}

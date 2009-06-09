@@ -26,6 +26,7 @@ import com.extjs.gxt.ui.client.binding.FieldBinding;
 import com.extjs.gxt.ui.client.binding.FormBinding;
 import com.extjs.gxt.ui.client.data.BaseModelData;
 import com.extjs.gxt.ui.client.data.ModelData;
+import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.FieldEvent;
@@ -87,6 +88,7 @@ public class ItemFormPanel extends ContentPanel {
 	private Listener<FieldEvent> extraCreditChangeListener;
 	private SelectionListener<ButtonEvent> selectionListener;
 	private SelectionChangedListener<ItemModel> categorySelectionChangedListener;
+	private SelectionChangedListener otherSelectionChangedListener;
 	
 	private I18nConstants i18n;
 	
@@ -156,6 +158,7 @@ public class ItemFormPanel extends ContentPanel {
 		categoryTypePicker.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.CATEGORYTYPE));
 		categoryTypePicker.setForceSelection(true);
 		categoryTypePicker.setVisible(false);
+		categoryTypePicker.addSelectionChangedListener(otherSelectionChangedListener);
 		formPanel.add(categoryTypePicker);
 		
 		gradeTypePicker = new ComboBox<ModelData>();
@@ -165,6 +168,7 @@ public class ItemFormPanel extends ContentPanel {
 		gradeTypePicker.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.GRADETYPE));
 		gradeTypePicker.setForceSelection(true);
 		gradeTypePicker.setVisible(false);
+		gradeTypePicker.addSelectionChangedListener(otherSelectionChangedListener);
 		
 		formPanel.add(gradeTypePicker);
 
@@ -941,6 +945,19 @@ public class ItemFormPanel extends ContentPanel {
 			public void selectionChanged(SelectionChangedEvent<ItemModel> se) {
 				ItemModel itemModel = se.getSelectedItem();
 				refreshSelectedCategoryState(itemModel);
+				setChanges();
+			}
+			
+		};
+		
+		otherSelectionChangedListener = new SelectionChangedListener() {
+
+			@Override
+			public void selectionChanged(SelectionChangedEvent se) {
+				
+			}
+
+			public void handleEvent(BaseEvent be) {
 				setChanges();
 			}
 			
