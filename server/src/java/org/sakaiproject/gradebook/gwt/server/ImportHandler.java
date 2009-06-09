@@ -19,9 +19,9 @@ import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportFile;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service;
-import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ServiceImpl;
 import org.sakaiproject.gradebook.gwt.sakai.mock.IocMock;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility.Delimiter;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
@@ -35,13 +35,15 @@ public class ImportHandler extends HttpServlet {
 	
 	private Gradebook2Service service;
 	
-	public void doGet(HttpServletRequest req, HttpServletResponse response) throws ServletException, IOException {
-		if (service == null)
-			service = (Gradebook2Service)iocMock.getClassInstance(Gradebook2ServiceImpl.class.getName());
+	public void init() {
+		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"test.xml", "db.xml"});
 
-		//response.setContentType("application/ms-excel");
-		//response.setHeader("Content-Disposition", "attachment; filename=" + "gradebook.csv");
+		service = (Gradebook2Service)context.getBean("org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service");
 		
+	}
+	
+	public void doGet(HttpServletRequest req, HttpServletResponse response) throws ServletException, IOException {
+
 		PrintWriter writer = response.getWriter();
 		
 		String gradebookUid = req.getParameter("gradebookUid");
@@ -57,9 +59,7 @@ public class ImportHandler extends HttpServlet {
 	}
 	
 	public void doPost(HttpServletRequest req, HttpServletResponse response) throws ServletException, IOException {
-		if (service == null)
-			service = (Gradebook2Service)iocMock.getClassInstance(Gradebook2ServiceImpl.class.getName());
-		
+
 		XStream xstream = new XStream(new JsonHierarchicalStreamDriver());
 		
 		response.setContentType(CONTENT_TYPE);

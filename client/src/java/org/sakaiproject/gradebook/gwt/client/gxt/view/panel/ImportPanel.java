@@ -1134,6 +1134,7 @@ public class ImportPanel extends ContentPanel {
 		categoryPicker.setFieldLabel("Category");
 		categoryPicker.setForceSelection(true);
 		categoryPicker.setStore(categoriesStore);
+		categoryPicker.setValueField(ItemModel.Key.ID.name());
 		categoryPicker.addInputStyleName("gbTextFieldInput");
 
 		ColumnConfig category = new ColumnConfig(ItemModel.Key.CATEGORY_ID.name(), "Category", 140);
@@ -1169,8 +1170,16 @@ public class ImportPanel extends ContentPanel {
 
 			public String render(ModelData model, String property, ColumnData config, int rowIndex, int colIndex, ListStore store) {
 			
-				Long identifier = model.get(property);
-				ItemModel itemModel = categoriesStore.findModel(ItemModel.Key.ID.name(), String.valueOf(identifier));
+				Object identifier = model.get(property);
+				
+				String lookupId = null;
+				
+				if (identifier instanceof Long) 
+					lookupId = String.valueOf(identifier);
+				else
+					lookupId = (String)identifier;
+				
+				ItemModel itemModel = categoriesStore.findModel(ItemModel.Key.ID.name(), lookupId);
 				
 				if (itemModel == null)
 					return "Unassigned";

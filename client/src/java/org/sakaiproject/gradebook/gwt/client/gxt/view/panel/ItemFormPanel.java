@@ -880,7 +880,6 @@ public class ItemFormPanel extends ContentPanel {
 										if (value instanceof ItemModel)
 											return ((ItemModel)value).getCategoryId();
 										
-										
 										return value;
 									}
 									 
@@ -891,7 +890,7 @@ public class ItemFormPanel extends ContentPanel {
 										if (value instanceof Long) {
 											Long categoryId = (Long)value;
 										
-											return store.findModel(ItemModel.Key.ID.name(), String.valueOf(categoryId));
+											return (ItemModel)store.findModel(ItemModel.Key.ID.name(), String.valueOf(categoryId));
 										}
 										
 										return null;
@@ -901,6 +900,10 @@ public class ItemFormPanel extends ContentPanel {
 									name.equals(ItemModel.Key.GRADETYPE.name())) {
 								b.setConvertor(new Converter() {
 									public Object convertFieldValue(Object value) {
+										if (value instanceof ModelData && ((ModelData)value).get("value") != null) {
+											return ((ModelData)value).get("value");
+										}
+										
 										return value;
 									}
 									 

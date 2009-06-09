@@ -297,7 +297,7 @@ public class ImportExportUtility {
 		
 		DecimalFormat decimalFormat = new DecimalFormat();
 		
-		
+		Map<Long, String> categoryIdNameMap = new HashMap<Long, String>();
 		CSVReader csvReader = new CSVReader(reader);
 		
 		String[] headerColumns = null;
@@ -430,6 +430,8 @@ public class ImportExportUtility {
 									header.setId(model.getIdentifier());
 									header.setCategoryName(model.getCategoryName());
 									header.setCategoryId(String.valueOf(model.getCategoryId()));
+									
+									categoryIdNameMap.put(model.getCategoryId(), model.getCategoryName());
 								} else {
 									header.setId(new StringBuilder().append("NEW:").append(i).toString());
 									header.setCategoryName("Unassigned");
@@ -584,13 +586,14 @@ public class ImportExportUtility {
 				boolean isModelNew = false;
 				ItemModel categoryModel = null;
 				// In this case, we have a new category that needs to be added to the gradebook
-				if (!categoryMap.containsKey(categoryColumns[i])) {
-					String categoryName = categoryColumns[i];
-					boolean isExtraCredit = categoryName.contains(AppConstants.EXTRA_CREDIT_INDICATOR);
-					
-					if (isExtraCredit)
-						categoryName = categoryName.replace(AppConstants.EXTRA_CREDIT_INDICATOR, "");
-					
+				String categoryName = categoryColumns[i];
+				boolean isExtraCredit = categoryName.contains(AppConstants.EXTRA_CREDIT_INDICATOR);
+				
+				if (isExtraCredit)
+					categoryName = categoryName.replace(AppConstants.EXTRA_CREDIT_INDICATOR, "");
+
+				if (!categoryMap.containsKey(categoryName)) {
+										
 					categoryModel = new ItemModel();
 					categoryModel.setItemType(Type.CATEGORY);
 					categoryModel.setName(categoryName);
@@ -599,7 +602,7 @@ public class ImportExportUtility {
 					isModelNew = true;
 				} else {
 					// Otherwise, we may still want to update scores
-					categoryModel = categoryMap.get(categoryColumns[i]);
+					categoryModel = categoryMap.get(categoryName);
 				}
 				
 				boolean isModelUpdated = false;
@@ -687,7 +690,29 @@ public class ImportExportUtility {
 					continue;
 				}
 				
-				ImportHeader header = headerMap.get(text);
+				boolean isExtraCredit = text.contains(AppConstants.EXTRA_CREDIT_INDICATOR);
+				
+				if (isExtraCredit) {
+					text = text.replace(AppConstants.EXTRA_CREDIT_INDICATOR, "");
+				}
+				
+				String name = text;
+				
+				int startParen = text.indexOf("[");
+				int endParen = text.indexOf("pts]");
+				
+				if (endParen == -1)
+					endParen = text.indexOf("]");
+				
+				if (startParen != -1 && endParen != -1 && endParen > startParen+1) {
+					name = text.substring(0, startParen);
+					
+					if (name != null)
+						name = name.trim();
+				}
+				
+				
+				ImportHeader header = headerMap.get(name);
 				
 				if (header != null) {
 					
@@ -723,6 +748,9 @@ public class ImportExportUtility {
 						String categoryId = categoryRangeColumns[i];
 						
 						if (categoryId != null) {
+							String categoryName = categoryIdNameMap.get(categoryId);
+							if (categoryName != null)
+								header.setCategoryName(categoryName);
 							header.setCategoryId(categoryId);
 						}
 						

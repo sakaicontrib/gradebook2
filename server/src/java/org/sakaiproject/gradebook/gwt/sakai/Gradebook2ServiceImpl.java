@@ -2019,6 +2019,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			
 		}
 		
+		if (gradebookItemModel != null) {
+			gradebookItemModel.setPoints(Double.valueOf(pointsSum.doubleValue()));
+		}
+		
 		if (categoryItemModel != null) {
 			categoryItemModel.setPercentCategory(Double.valueOf(percentCategorySum.doubleValue()));
 			categoryItemModel.setPoints(Double.valueOf(pointsSum.doubleValue()));
