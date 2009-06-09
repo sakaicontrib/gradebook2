@@ -86,6 +86,7 @@ public class ItemFormPanel extends ContentPanel {
 	
 	private KeyListener keyListener;
 	private Listener<FieldEvent> extraCreditChangeListener;
+	private Listener<FieldEvent> checkboxChangeListener;
 	private SelectionListener<ButtonEvent> selectionListener;
 	private SelectionChangedListener<ItemModel> categorySelectionChangedListener;
 	private SelectionChangedListener otherSelectionChangedListener;
@@ -240,6 +241,7 @@ public class ItemFormPanel extends ContentPanel {
 		includedField.setName(ItemModel.Key.INCLUDED.name());
 		includedField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.INCLUDED));
 		includedField.setVisible(false);
+		includedField.addListener(Events.Change, checkboxChangeListener);
 		formPanel.add(includedField);
 		
 		extraCreditField = new NullSensitiveCheckBox();
@@ -253,12 +255,14 @@ public class ItemFormPanel extends ContentPanel {
 		equallyWeightChildrenField.setName(ItemModel.Key.EQUAL_WEIGHT.name());
 		equallyWeightChildrenField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.EQUAL_WEIGHT));
 		equallyWeightChildrenField.setVisible(false);
+		equallyWeightChildrenField.addListener(Events.Change, checkboxChangeListener);
 		formPanel.add(equallyWeightChildrenField);
 		
 		releasedField = new NullSensitiveCheckBox();
 		releasedField.setName(ItemModel.Key.RELEASED.name());
 		releasedField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.RELEASED));
 		releasedField.setVisible(false);
+		releasedField.addListener(Events.Change, checkboxChangeListener);
 		formPanel.add(releasedField);
 			
 		okButton = new Button("", selectionListener);
@@ -971,6 +975,14 @@ public class ItemFormPanel extends ContentPanel {
 			
 		};
 		
+		checkboxChangeListener = new Listener<FieldEvent>() {
+			
+			public void handleEvent(FieldEvent fe) {
+				setChanges();
+			}
+			
+		};
+		
 		extraCreditChangeListener = new Listener<FieldEvent>() {
 
 			public void handleEvent(FieldEvent fe) {
@@ -979,6 +991,8 @@ public class ItemFormPanel extends ContentPanel {
 				ItemModel category = categoryPicker.getValue();
 				Boolean isEqualWeight = category == null ? Boolean.FALSE : category.getEqualWeightAssignments();
 				boolean hasWeights = categoryType == CategoryType.WEIGHTED_CATEGORIES;
+				
+				setChanges();
 				
 				if (selectedItemModel != null) {
 					switch (selectedItemModel.getItemType()) {

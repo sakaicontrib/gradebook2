@@ -1,5 +1,7 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.controller;
 
+import java.util.Map;
+
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.SecureToken;
@@ -312,6 +314,10 @@ public class ServiceController extends Controller {
 		if (event.close)
 			Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
 		
+		if (event.record != null && event.record.isEditing()) {
+			event.record.commit(false);
+		}
+		
 		switch (result.getItemType()) {
 		case GRADEBOOK:
 			GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
@@ -350,11 +356,6 @@ public class ServiceController extends Controller {
 		case ITEM:
 			doUpdateItem(event, result);
 			break;
-		}
-
-		if (event.record != null && event.record.isEditing()) {
-			event.record.commit(false);
-			//event.record.endEdit();
 		}
 		
 	}
@@ -413,9 +414,9 @@ public class ServiceController extends Controller {
 			}
 			record.commit(false);
 			Dispatcher.forwardEvent(GradebookEvents.ItemUpdated.getEventType(), updatedItem);
-		} /*else {
+		} else {
 			treeStore.update(updatedItem);
-		}*/
+		}
 		
 		//Dispatcher.forwardEvent(GradebookEvents.ItemUpdated.getEventType(), updatedItem);
 		
@@ -470,4 +471,23 @@ public class ServiceController extends Controller {
 			record.set(property, value);
 	}
 	
+	private ItemModel getActiveItem(ItemModel parent) {
+		if (parent.isActive())
+			return parent;
+		
+		for (ItemModel c : parent.getChildren()) {
+			if (c.isActive()) {
+				return c;
+			}
+			
+			if (c.getChildCount() > 0) {
+				ItemModel activeItem = getActiveItem(c);
+				
+				if (activeItem != null)
+					return activeItem;
+			}
+		}
+		
+		return null;
+	}
 }
