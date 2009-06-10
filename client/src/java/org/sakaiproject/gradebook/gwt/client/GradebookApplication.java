@@ -115,8 +115,13 @@ public class GradebookApplication implements EntryPoint {
 
 				public void onSuccess(AuthModel result) {
 					
-					if (GWT.isScript())
-						resizeMainFrame(new StringBuilder("Main").append(result.getPlacementId()).toString(), screenHeight + 20);
+					if (GWT.isScript()) {
+						String placementId = result.getPlacementId();
+						if (placementId != null) {
+							String modifiedId = placementId.replace('-', 'x');
+							resizeMainFrame("Main" + modifiedId, screenHeight + 20);
+						}
+					}
 					
 					dispatcher.dispatch(GradebookEvents.Load.getEventType(), result);
 					getApplicationModel(0, result);
