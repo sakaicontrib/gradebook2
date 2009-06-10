@@ -4,10 +4,10 @@
 <beans>
 
 	<!-- Performance analysis using AOP -->
-	<import resource="performanceAnalysis.xml"/>
+	<!--import resource="performanceAnalysis.xml"/-->
 	
 	<!-- Normal injection of services w/o performance analysis -->
-	<!--import resource="gbServices.xml" /-->
+	<import resource="gbServices.xml" />
 		
 	<!-- Hibernate Mappings -->
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.model.hibernateMappings"
