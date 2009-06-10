@@ -208,7 +208,7 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 	private void isSecure(String clientSecureToken) throws SecurityException {
 		
 		String securityProperty = System.getProperty("gb2.security");
-		if(null == securityProperty || "false".equals(securityProperty)) {
+		if ("false".equals(securityProperty)) {
 			return;
 		}
 		
