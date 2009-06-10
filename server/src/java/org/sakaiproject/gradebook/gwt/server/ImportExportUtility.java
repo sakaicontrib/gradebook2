@@ -139,6 +139,10 @@ public class ImportExportUtility {
 						categoryName.append(AppConstants.EXTRA_CREDIT_INDICATOR);
 					}
 					
+					if (!DataTypeConversionUtil.checkBoolean(itemModel.getIncluded())) {
+						categoryName.append(AppConstants.UNINCLUDED_INDICATOR);
+					}
+					
 					categoriesRow.add(categoryName.toString());
 					percentageGradeRow.add(new StringBuilder()
 						.append(String.valueOf(itemModel.getPercentCourseGrade()))
@@ -213,6 +217,10 @@ public class ImportExportUtility {
 				
 				if (DataTypeConversionUtil.checkBoolean(itemModel.getExtraCredit())) {
 					text.append(AppConstants.EXTRA_CREDIT_INDICATOR);
+				}
+				
+				if (!DataTypeConversionUtil.checkBoolean(itemModel.getIncluded())) {
+					text.append(AppConstants.UNINCLUDED_INDICATOR);
 				}
 				
 				if (!includeStructure) {
@@ -394,6 +402,12 @@ public class ImportExportUtility {
 								text = text.replace(AppConstants.EXTRA_CREDIT_INDICATOR, "");
 							}
 							
+							boolean isUnincluded = text.contains(AppConstants.UNINCLUDED_INDICATOR);
+							
+							if (isUnincluded) {
+								text = text.replace(AppConstants.UNINCLUDED_INDICATOR, "");
+							}
+							
 							name = text;
 							
 							int startParen = text.indexOf("[");
@@ -438,6 +452,7 @@ public class ImportExportUtility {
 								}
 								header.setHeaderName(name);
 								header.setExtraCredit(Boolean.valueOf(isExtraCredit));
+								header.setUnincluded(Boolean.valueOf(isUnincluded));
 								if (points != null && points.equals("%"))
 									header.setPercentage(true);
 								else {
@@ -592,12 +607,17 @@ public class ImportExportUtility {
 				if (isExtraCredit)
 					categoryName = categoryName.replace(AppConstants.EXTRA_CREDIT_INDICATOR, "");
 
+				boolean isUnincluded = categoryName.contains(AppConstants.UNINCLUDED_INDICATOR);
+				
+				if (isUnincluded)
+					categoryName = categoryName.replace(AppConstants.UNINCLUDED_INDICATOR, "");
+				
 				if (!categoryMap.containsKey(categoryName)) {
 										
 					categoryModel = new ItemModel();
 					categoryModel.setItemType(Type.CATEGORY);
 					categoryModel.setName(categoryName);
-					categoryModel.setIncluded(Boolean.TRUE);
+					categoryModel.setIncluded(Boolean.valueOf(!isUnincluded));
 					categoryModel.setExtraCredit(Boolean.valueOf(isExtraCredit));
 					isModelNew = true;
 				} else {

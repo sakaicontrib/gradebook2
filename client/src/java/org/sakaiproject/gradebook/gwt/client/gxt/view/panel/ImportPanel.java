@@ -849,6 +849,7 @@ public class ImportPanel extends ContentPanel {
 						String categoryId = getString(jsonHeaderObject, "categoryId");
 						Double percentCategory = getDouble(jsonHeaderObject, "percentCategory");
 						Boolean isExtraCredit = getBoolean(jsonHeaderObject, "extraCredit");
+						Boolean isUnincluded = getBoolean(jsonHeaderObject, "unincluded");
 						
 						int width = 200;
 									
@@ -887,6 +888,7 @@ public class ImportPanel extends ContentPanel {
 						header.setCategoryId(categoryId);
 						header.setPercentCategory(percentCategory);
 						header.setExtraCredit(isExtraCredit);
+						header.setUnincluded(isUnincluded);
 						
 						if (header.getField() != null && header.getField().equals("ITEM"))
 							headerMap.put(id, header);

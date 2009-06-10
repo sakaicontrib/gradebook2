@@ -1,11 +1,13 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
-import org.sakaiproject.gradebook.gwt.client.GradebookState;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.SecureToken;
-import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.NotifyingAsyncCallback;
@@ -14,6 +16,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeContentPanel;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
+import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
@@ -52,11 +55,39 @@ public class MultigradeView extends View {
 				String sortField = ((ListStore)se.store).getSortField();
 				SortDir sortDir = ((ListStore)se.store).getSortDir();
 				boolean isAscending = sortDir == SortDir.ASC;
-				//String sortDirection = sortDir == null || sortDir == SortDir.DESC ? "Descending" : "Ascending";
-				
+
 				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-				String gradebookUid = selectedGradebook.getGradebookUid();
-				GradebookState.setSortInfo(gradebookUid, AppConstants.MULTIGRADE, sortField, isAscending);
+				ConfigurationModel configModel = new ConfigurationModel(selectedGradebook.getGradebookId());
+				configModel.setSortField(AppConstants.MULTIGRADE, sortField);
+				configModel.setSortDirection(AppConstants.MULTIGRADE, Boolean.valueOf(isAscending));
+				
+				Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
+				
+				AsyncCallback<ConfigurationModel> callback = new AsyncCallback<ConfigurationModel>() {
+
+					public void onFailure(Throwable caught) {
+						// FIXME: Should we notify the user when this fails?
+					}
+
+					public void onSuccess(ConfigurationModel result) {
+						GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+						ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
+						
+						Collection<String> propertyNames = result.getPropertyNames();
+						if (propertyNames != null) {
+							List<String> names = new ArrayList<String>(propertyNames);
+							
+							for (int i=0;i<names.size();i++) {
+								String name = names.get(i);
+								String value = result.get(name);
+								configModel.set(name, value);
+							}
+						}
+					}
+					
+				};
+				
+				service.update(configModel, EntityType.CONFIGURATION, null, SecureToken.get(), callback);
 			}
 			
 		};

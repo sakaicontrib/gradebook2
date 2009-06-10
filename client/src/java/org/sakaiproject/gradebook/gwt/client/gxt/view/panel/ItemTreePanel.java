@@ -1,6 +1,7 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -9,10 +10,12 @@ import java.util.Set;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
-import org.sakaiproject.gradebook.gwt.client.GradebookState;
+import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
+import org.sakaiproject.gradebook.gwt.client.SecureToken;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
+import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenu;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTabItem;
@@ -25,6 +28,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.view.components.ItemCellRendere
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.ItemNumberCellRenderer;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.ItemTreeTableBinder;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.ItemTreeTableHeader;
+import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
@@ -81,6 +85,7 @@ import com.extjs.gxt.ui.client.widget.treetable.TreeTableView;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Accessibility;
 import com.google.gwt.user.client.ui.KeyboardListener;
 
@@ -254,7 +259,10 @@ public class ItemTreePanel extends ContentPanel {
 			fullStaticIdSet.clear();
 			visibleStaticIdSet.clear();
 			selectedItemModels = new ArrayList<ItemModel>();
-			List<String> selectedItemModelIds = GradebookState.getSelectedMultigradeColumns(selectedGradebook.getGradebookUid());
+			
+			ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
+			
+			List<String> selectedItemModelIds = configModel.getSelectedMultigradeColumns();
 			// Deal with static visible columns
 			for (FixedColumnModel column : selectedGradebook.getColumns()) {
 				fullStaticIdSet.add(column.getIdentifier());
@@ -793,10 +801,67 @@ public class ItemTreePanel extends ContentPanel {
 				
 				showColumns(selectedItemModels);
 				
-				if (selectedGradebook != null)
-					GradebookState.setSelectedMultigradeColumns(selectedGradebook.getGradebookUid(), visibleStaticIdSet, selectedItemModels);				
+				if (selectedGradebook != null) {
+					//GradebookState.setSelectedMultigradeColumns(selectedGradebook.getGradebookUid(), visibleStaticIdSet, selectedItemModels);				
+				
+					GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+					
+					ConfigurationModel oldConfigModel = selectedGradebook.getConfigurationModel();
+					
+					List<String> selectedModels = oldConfigModel.getSelectedMultigradeColumns();
+					
+					boolean isUpdateRequired = false;
+					
+					Set<String> selectedItemModelSet = new HashSet<String>();
+					for (int i=0;i<selectedItemModels.size();i++) {
+						selectedItemModelSet.add(selectedItemModels.get(i).getIdentifier());
+					}
+					
+					for (int i=0;i<selectedModels.size();i++) {
+						String selected = selectedModels.get(i);
+					
+						if (!visibleStaticIdSet.contains(selected) && !selectedItemModelSet.contains(selected)) {
+							isUpdateRequired = true;
+							break;
+						}
+					}
+					
+					
+					if (true) {
+						ConfigurationModel configModel = new ConfigurationModel(selectedGradebook.getGradebookId());
+						configModel.setSelectedMultigradeColumns(visibleStaticIdSet, selectedItemModels);
+						
+						Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
+						
+						AsyncCallback<ConfigurationModel> callback = new AsyncCallback<ConfigurationModel>() {
+	
+							public void onFailure(Throwable caught) {
+								// FIXME: Should we notify the user when this fails?
+							}
+	
+							public void onSuccess(ConfigurationModel result) {
+								GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+								ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
+								
+								Collection<String> propertyNames = result.getPropertyNames();
+								if (propertyNames != null) {
+									List<String> names = new ArrayList<String>(propertyNames);
+									
+									for (int i=0;i<names.size();i++) {
+										String name = names.get(i);
+										String value = result.get(name);
+										configModel.set(name, value);
+									}
+								}
+							}
+							
+						};
+						
+						service.update(configModel, EntityType.CONFIGURATION, null, SecureToken.get(), callback);
+						
+					}
+				}
 			}
-			
 		};
 		
 		menuSelectionListener = new SelectionListener<MenuEvent>() {

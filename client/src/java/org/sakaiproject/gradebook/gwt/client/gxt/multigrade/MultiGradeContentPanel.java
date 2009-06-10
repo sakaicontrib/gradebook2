@@ -23,11 +23,11 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.multigrade;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
-import org.sakaiproject.gradebook.gwt.client.GradebookState;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.SecureToken;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
@@ -42,6 +42,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.RefreshCourseGradesEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
+import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
@@ -680,9 +681,11 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	public void onSwitchGradebook(GradebookModel selectedGradebook) {
 		String gradebookUid = selectedGradebook.getGradebookUid();
 		if (store != null) {
+			ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
+			
 			// Set the default sort field and direction on the store based on Cookies
-			String storedSortField = GradebookState.getSortField(gradebookUid, gridId);
-			boolean isAscending = GradebookState.isAscending(gradebookUid, gridId);
+			String storedSortField = configModel.getSortField(gridId);
+			boolean isAscending = configModel.isAscending(gridId);
 			
 			SortDir sortDir = isAscending ? SortDir.ASC : SortDir.DESC;
 
@@ -1234,7 +1237,40 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			    	
 			    	if (pageSize != null && pageSize.intValue() > 0 && pageSize.intValue() <= Integer.MAX_VALUE) {
 			    		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-			    		GradebookState.setPageSize(selectedGradebook.getGradebookUid(), gridId, pageSize.intValue());
+			    		ConfigurationModel model = new ConfigurationModel(selectedGradebook.getGradebookId());
+			    		model.setPageSize(gridId, Integer.valueOf(pageSize.intValue()));
+			    		
+			    		Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
+			    		
+			    		AsyncCallback<ConfigurationModel> callback = new AsyncCallback<ConfigurationModel>() {
+
+			    			public void onFailure(Throwable caught) {
+			    				// FIXME: Should we notify the user when this fails?
+			    			}
+
+			    			public void onSuccess(ConfigurationModel result) {
+			    				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+			    				ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
+			    				
+			    				Collection<String> propertyNames = result.getPropertyNames();
+			    				if (propertyNames != null) {
+			    					List<String> names = new ArrayList<String>(propertyNames);
+			    					
+			    					for (int i=0;i<names.size();i++) {
+			    						String name = names.get(i);
+			    						String value = result.get(name);
+			    						configModel.set(name, value);
+			    					}
+			    				}
+			    			}
+			    			
+			    		};
+			    		
+			    		service.update(model, EntityType.CONFIGURATION, null, SecureToken.get(), callback);
+			    		
+			    		//GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+
+			    		//GradebookState.setPageSize(selectedGradebook.getGradebookUid(), gridId, pageSize.intValue());
 			    		pagingToolBar.setPageSize(pageSize.intValue());
 			    		pagingToolBar.refresh();
 			    	}
@@ -1390,14 +1426,16 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	
 	private ColumnConfig buildColumn(GradebookModel selectedGradebook, String property, String id, String name, 
 			boolean isIncluded, boolean isExtraCredit, boolean isEditable, boolean defaultHidden) {
+
+		ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
+		int columnWidth = configModel.getColumnWidth(gridId, id, name);
+		boolean isHidden = configModel.isColumnHidden(gridId, id);
 		
-		String gradebookUid = selectedGradebook.getGradebookUid();
-		int columnWidth = GradebookState.getColumnWidth(gradebookUid, gridId, id, name);
-		boolean isHidden = !id.equals(StudentModel.Key.LAST_NAME_FIRST); //GradebookState.isColumnHidden(gradebookUid, gridId, id, defaultHidden);
+			//!id.equals(StudentModel.Key.LAST_NAME_FIRST); //GradebookState.isColumnHidden(gradebookUid, gridId, id, defaultHidden);
 		
 		ColumnConfig config = new ColumnConfig(id, name, columnWidth);
 		
-		config.setHidden(isHidden);
+		//config.setHidden(isHidden);
 		
 		Field<?> field = null;
 		StudentModel.Key key = StudentModel.Key.valueOf(property);

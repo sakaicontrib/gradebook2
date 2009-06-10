@@ -11,6 +11,7 @@ import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
 import org.sakaiproject.gradebook.gwt.client.model.CommentModel;
+import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.SpreadsheetModel;
@@ -55,6 +56,7 @@ public interface Gradebook2Service {
 	
 	public CommentModel createOrUpdateComment(Long assignmentId, String studentUid, String text);
 	
+	public ConfigurationModel createOrUpdateConfigurationModel(Long gradebookId, String field, String value);
 	
 	/**
 	 * Method to bulk update grades and gradebook structure for a given gradebook

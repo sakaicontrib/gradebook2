@@ -31,10 +31,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
-import org.sakaiproject.gradebook.gwt.client.GradebookState;
+import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
+import org.sakaiproject.gradebook.gwt.client.SecureToken;
+import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
+import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
@@ -57,6 +60,7 @@ import com.extjs.gxt.ui.client.widget.menu.Item;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.extjs.gxt.ui.client.widget.menu.SeparatorMenuItem;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 
 
 // SAK-2394 
@@ -465,8 +469,41 @@ public abstract class CustomGridView extends BaseCustomGridView {
 		super.updateColumnWidth(col, width);
 		
 		ColumnConfig column = cm.getColumn(col);
+		String columnId = column == null ? null : column.getId();
+		//GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		//GradebookState.setColumnWidth(selectedGradebook.getGradebookUid(), gridId, column.getId(), width);
+		
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-		GradebookState.setColumnWidth(selectedGradebook.getGradebookUid(), gridId, column.getId(), width);
+		ConfigurationModel model = new ConfigurationModel(selectedGradebook.getGradebookId());
+		model.setColumnWidth(gridId, columnId, Integer.valueOf(width));
+		
+		Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
+		
+		AsyncCallback<ConfigurationModel> callback = new AsyncCallback<ConfigurationModel>() {
+
+			public void onFailure(Throwable caught) {
+				// FIXME: Should we notify the user when this fails?
+			}
+
+			public void onSuccess(ConfigurationModel result) {
+				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+				ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
+				
+				Collection<String> propertyNames = result.getPropertyNames();
+				if (propertyNames != null) {
+					List<String> names = new ArrayList<String>(propertyNames);
+					
+					for (int i=0;i<names.size();i++) {
+						String name = names.get(i);
+						String value = result.get(name);
+						configModel.set(name, value);
+					}
+				}
+			}
+			
+		};
+		
+		service.update(model, EntityType.CONFIGURATION, null, SecureToken.get(), callback);
 	}
 	
 	public class ColumnGroup {

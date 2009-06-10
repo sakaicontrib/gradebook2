@@ -118,6 +118,7 @@ public class Gradebook2ServiceImportTest extends Gradebook2ServiceTest {
 		assertEquals(values[1], essay2.getPercentCategory());
 		assertEquals(values[2], essay3.getPercentCategory());
 		assertEquals(values[3], essay4.getPercentCategory());
+		assertFalse(ec.getIncluded());
 	}
 	
 }

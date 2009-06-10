@@ -40,8 +40,8 @@ import java.util.Random;
 import java.util.Set;
 
 import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
-import org.sakaiproject.gradebook.gwt.sakai.UserRecord;
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
+import org.sakaiproject.gradebook.gwt.sakai.model.UserConfiguration;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereferenceRealmUpdate;
 import org.sakaiproject.service.gradebook.shared.StaleObjectModificationException;
@@ -1744,4 +1744,15 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		
 	}
 	
+	public void createOrUpdateUserConfiguration(final String userUid, final Long gradebookId, final String configField, final String configValue) {
+
+	}
+
+	public List<UserConfiguration> getUserConfigurations(String userUid, Long gradebookId) {
+		return null;
+	}
+	
+	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(final Long[] assignmentIds) {
+		return null;
+	}
 }

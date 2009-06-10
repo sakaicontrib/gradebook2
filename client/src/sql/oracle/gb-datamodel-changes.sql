@@ -102,6 +102,25 @@ nocycle;
 create index GB_USER_DEREF_RM_UP_IDX on GB_USER_DEREF_RM_UPDATE_T(REALM_ID);
 
 
+-- The following should be run when moving from QA-8 to QA-9
+
+create index GB_USER_DEREF_SORT_NM_IDX on GB_USER_DEREFERENCE_T(SORT_NAME);
+create index GB_USER_DEREF_EMAIL_IDX on GB_USER_DEREFERENCE_T(EMAIL);
+
+create table GB_USER_CONFIG_T 
+(
+	ID number(19),
+	USER_UID varchar2(99),
+	GRADEBOOK_ID number(19),
+	CONFIG_FIELD varchar2(99),
+	CONFIG_VALUE varchar2(756)
+);
+
+create sequence GB_USER_CONFIG_S
+start with 1000
+increment by 1
+nocache
+nocycle;
 
 
 

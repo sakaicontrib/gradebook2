@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="client/src/java"/>
+	<classpathentry excluding="org/sakaiproject/gradebook/gwt/client/GradebookState.java" kind="src" path="client/src/java"/>
 	<classpathentry kind="src" path="api/src/java"/>
 	<classpathentry kind="src" path="model/src/java"/>
 	<classpathentry kind="src" path="model/src/hibernate"/>

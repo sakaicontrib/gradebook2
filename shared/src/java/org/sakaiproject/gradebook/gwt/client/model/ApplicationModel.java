@@ -32,7 +32,7 @@ public class ApplicationModel extends EntityModel {
 	private String placementId;
 	private String userName;
 	private String helpUrl;
-
+		
 	public ApplicationModel() {
 		
 	}
@@ -44,7 +44,7 @@ public class ApplicationModel extends EntityModel {
 	public void setGradebookModels(List<GradebookModel> gradebookModels) {
 		this.gradebookModels = gradebookModels;
 	}
-
+	
 	public String getPlacementId() {
 		return placementId;
 	}

@@ -53,7 +53,7 @@ public interface AppConstants {
 	
 	// Tab mode cookie id
 	public static final String TAB_MODE				= ":tm";
-	public static final String SELECTED_COLUMNS		= ":selMCols";
+	public static final String SELECTED_COLUMNS		= "selMCols";
 	public static final String SORT_FIELD			= ":sf";
 	public static final String SORT_DIRECTION		= ":sd";
 	public static final String COLUMN_PREFIX		= "c:";
@@ -77,4 +77,11 @@ public interface AppConstants {
 	public static final String DEFAULT_CATEGORY_NAME = "Unassigned";
 	
 	public static final String EXTRA_CREDIT_INDICATOR = " (+)";
+	public static final String UNINCLUDED_INDICATOR = " (-)";
+	
+	
+	
+	
+	
+	
 }

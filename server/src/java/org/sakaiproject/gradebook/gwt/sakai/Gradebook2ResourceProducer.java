@@ -13,6 +13,7 @@ import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 import org.sakaiproject.gradebook.gwt.client.model.CommentModel;
+import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordMapModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
@@ -130,6 +131,13 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 		try {
 	
 			switch (type) {
+			case CONFIGURATION:
+				ConfigurationModel configModel = (ConfigurationModel)model;
+				for (String field : configModel.getPropertyNames()) {
+					String value = configModel.get(field);
+					entity = (X)service.createOrUpdateConfigurationModel(configModel.getGradebookId(), field, value);
+				}
+				break;
 			case GRADE_SCALE:
 				GradeScaleRecordMapModel map = (GradeScaleRecordMapModel)model;
 				GradeScaleRecordModel gradeScaleModel = map.getUpdatedRecord();

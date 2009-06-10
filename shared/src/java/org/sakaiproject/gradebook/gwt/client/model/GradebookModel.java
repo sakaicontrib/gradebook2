@@ -86,6 +86,8 @@ public class GradebookModel extends EntityModel implements IsSerializable {
 	private String userName;
 	private ItemModel gradebookItemModel;
 	private Boolean isNewGradebook;
+	private ConfigurationModel configurationModel;
+	
 
 	public GradebookModel() {
 		this.isNewGradebook = Boolean.FALSE;
@@ -110,6 +112,13 @@ public class GradebookModel extends EntityModel implements IsSerializable {
 		this.gradebookId = gradebookId;
 	}
 
+	public ConfigurationModel getConfigurationModel() {
+		return configurationModel;
+	}
+
+	public void setConfigurationModel(ConfigurationModel configurationModel) {
+		this.configurationModel = configurationModel;
+	}
 
 	public String getName() {
 		return name;

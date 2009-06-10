@@ -104,20 +104,19 @@ public class GradebookApplication implements EntryPoint {
 			new AsyncCallback<AuthModel>() {
 
 				public void onFailure(Throwable caught) {
-					//GXT.hideLoadingPanel("loading");
-	
 					// If this is the first try, then give it another shot
 					if (i == 0)
 						getAuthorization(i+1);
-					else
+					else {
 						dispatcher.dispatch(GradebookEvents.Exception.getEventType(), new NotificationEvent(caught));
+						GXT.hideLoadingPanel("loading");
+					}
 				}
 
 				public void onSuccess(AuthModel result) {
-					//GXT.hideLoadingPanel("loading");
-					
 					dispatcher.dispatch(GradebookEvents.Load.getEventType(), result);
 					getApplicationModel(0, result);
+					GXT.hideLoadingPanel("loading");
 				}
 			
 		};
@@ -131,8 +130,6 @@ public class GradebookApplication implements EntryPoint {
 			new AsyncCallback<ApplicationModel>() {
 
 				public void onFailure(Throwable caught) {
-					GXT.hideLoadingPanel("loading");
-	
 					// If this is the first try, then give it another shot
 					if (i == 0)
 						getApplicationModel(i+1, authModel);
@@ -141,7 +138,6 @@ public class GradebookApplication implements EntryPoint {
 				}
 
 				public void onSuccess(ApplicationModel result) {
-					GXT.hideLoadingPanel("loading");
 					
 					dispatcher.dispatch(GradebookEvents.Startup.getEventType(), result);
 				}

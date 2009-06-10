@@ -49,6 +49,7 @@ import org.hibernate.criterion.Restrictions;
 import org.hibernate.exception.ConstraintViolationException;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
+import org.sakaiproject.gradebook.gwt.sakai.model.UserConfiguration;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereferenceRealmUpdate;
 import org.sakaiproject.section.api.SectionAwareness;
@@ -210,6 +211,44 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
     	return (Long)getHibernateTemplate().execute(hc);
     }
+	
+	
+	public void createOrUpdateUserConfiguration(final String userUid, final Long gradebookId, final String configField, final String configValue) {
+		HibernateCallback hc = new HibernateCallback() {
+    		public Object doInHibernate(Session session) throws HibernateException {
+    			
+    			Long id = null;
+    			
+    			Query q = session.createQuery("from UserConfiguration as config where config.userUid = :userUid and config.gradebookId = :gradebookId and config.configField = :configField ");
+    			q.setString("userUid", userUid);
+    			q.setLong("gradebookId", gradebookId);
+    			q.setString("configField", configField);
+    			
+    			UserConfiguration config = (UserConfiguration)q.uniqueResult();
+    			
+    			if (config != null) {
+    				
+    				config.setConfigValue(configValue);
+
+    			} else {
+    			
+	    			config = new UserConfiguration();
+	    			config.setUserUid(userUid);
+	    			config.setGradebookId(gradebookId);
+	    			config.setConfigField(configField);
+	    			config.setConfigValue(configValue);
+
+    			}
+    			
+    			session.saveOrUpdate(config);
+    			
+    			return null;
+    		}
+    	};
+
+    	getHibernateTemplate().execute(hc);
+	}
+	
 	
 	public List<ActionRecord> getActionRecords(final String gradebookUid, final int offset, final int limit) {
 		HibernateCallback hc = new HibernateCallback() {
@@ -563,6 +602,31 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
         return result == null ? 0 : result.intValue();
 	}
 	
+	public List<UserConfiguration> getUserConfigurations(final String userUid, final Long gradebookId) {
+		
+		if (gradebookId == null || userUid == null)
+			return new ArrayList<UserConfiguration>();
+		
+		HibernateCallback hc = new HibernateCallback() {
+            public Object doInHibernate(Session session) throws HibernateException {
+            	
+            	Query query = null;
+
+            	StringBuilder builder = new StringBuilder()
+				.append("select config ")
+				.append("from UserConfiguration config ")
+				.append("where config.userUid = :userUid ")
+				.append("and config.gradebookId = :gradebookId ");
+
+				query = session.createQuery(builder.toString());
+				query.setString("userUid", userUid);
+				query.setLong("gradebookId", gradebookId);
+
+				return query.list();
+            }
+        };
+        return (List<UserConfiguration>)getHibernateTemplate().execute(hc);
+	}
 	
 	public int getUserCountForSite(final String[] realmIds, final String sortField, 
 			final String searchField, final String searchCriteria, final String[] roleNames) {
@@ -679,6 +743,29 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
         return (List<UserDereference>)getHibernateTemplate().execute(hc);
 	}
 
+	
+	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(final Long[] assignmentIds) {
+		HibernateCallback hc = new HibernateCallback() {
+            public Object doInHibernate(Session session) throws HibernateException {
+            	
+            	Query query = null;
+            	
+            	StringBuilder builder = new StringBuilder();
+ 
+            	builder.append(" select agr from AssignmentGradeRecord agr ")
+            		   .append(" where agr.gradableObject.id in (:assignmentIds) ");
+            	
+            	query = session.createQuery(builder.toString());
+
+                query.setParameterList("assignmentIds", assignmentIds);
+                	
+                return query.list();
+            }
+        };
+        return (List<AssignmentGradeRecord>)getHibernateTemplate().execute(hc);
+	}
+	
+	
 	// GRBK-40 : TPA : Eliminated the in java filtering
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(final Long gradebookId, final String[] realmIds, final String[] roleNames) {
 		HibernateCallback hc = new HibernateCallback() {
@@ -1964,6 +2051,28 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
         getHibernateTemplate().execute(hc);	
 	}
 
+	
+	public void updateUserConfiguration(final UserConfiguration userConfiguration) throws StaleObjectModificationException {
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException {
+				session.saveOrUpdate(userConfiguration);
+				return null;
+			}
+		};
+		try {
+			getHibernateTemplate().execute(hc);
+		} catch (DataIntegrityViolationException e) {
+			// If a student hasn't yet received a comment for this
+			// assignment, and two graders try to save a new comment record at the
+			// same time, the database should report a unique constraint violation.
+			// Since that's similar to the conflict between two graders who
+			// are trying to update an existing comment record at the same
+			// same time, this method translates the exception into an
+			// optimistic locking failure.
+			if(log.isInfoEnabled()) log.info("An optimistic locking failure occurred while attempting to update comment");
+			throw new StaleObjectModificationException(e);
+		}
+	}
 
 	
 	/*

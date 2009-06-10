@@ -1,0 +1,21 @@
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+
+<hibernate-mapping>
+
+    <class name="org.sakaiproject.gradebook.gwt.sakai.model.UserConfiguration"
+    	table="GB_USER_CONFIG_T">
+
+        <id name="id" column="ID" type="long">
+			<generator class="native">
+				<param name="sequence">GB_USER_CONFIG_S</param>
+			</generator>
+		</id>
+       	<property name="userUid" column="USER_UID"/>
+       	<property name="gradebookId" column="GRADEBOOK_ID"/>
+       	<property name="configField" column="CONFIG_FIELD"/>
+       	<property name="configValue" column="CONFIG_VALUE"/>
+    </class>
+    	
+</hibernate-mapping>

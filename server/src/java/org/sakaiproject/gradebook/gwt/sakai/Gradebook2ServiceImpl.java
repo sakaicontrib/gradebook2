@@ -37,6 +37,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
 import org.sakaiproject.gradebook.gwt.client.model.CommentModel;
+import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeEventModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordModel;
@@ -53,6 +54,7 @@ import org.sakaiproject.gradebook.gwt.client.model.StudentModel.Key;
 import org.sakaiproject.gradebook.gwt.sakai.InstitutionalAdvisor.Column;
 import org.sakaiproject.gradebook.gwt.sakai.mock.SiteMock;
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
+import org.sakaiproject.gradebook.gwt.sakai.model.UserConfiguration;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereferenceRealmUpdate;
 import org.sakaiproject.gradebook.gwt.server.DataTypeConversionUtil;
@@ -262,6 +264,17 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}*/
 		
 		return categoryItemModel;
+	}
+
+	public ConfigurationModel createOrUpdateConfigurationModel(Long gradebookId, String field, String value) {
+		
+		ConfigurationModel model = new ConfigurationModel();
+		
+		gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebookId, field, value);
+		
+		model.set(field, value);
+		
+		return model;
 	}
 	
 	
@@ -1449,14 +1462,26 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		
 		List<UserDereference> dereferences = gbService.getUserDereferences(realmIds, "sortName", null, null, -1, -1, true, roleNames);
 		
-		List<AssignmentGradeRecord> records = gbService.getAllAssignmentGradeRecords(gradebookId, realmIds, roleNames);
+		//List<AssignmentGradeRecord> records = gbService.getAllAssignmentGradeRecords(gradebookId, realmIds, roleNames);
 		
+		Gradebook gradebook = gbService.getGradebook(gradebookId);
 		
+		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
+		boolean isMissingScores = false;
 		
+		if (dereferences != null) {
+			for (UserDereference dereference : dereferences) {
+				
+				if (gbService.isStudentMissingScores(gradebookId, dereference.getUserUid(), hasCategories)) {
+					isMissingScores = true;
+					break;
+				}
+			}
+		}
 		
 		int numberOfLearners = dereferences == null ? 0 : dereferences.size();
 		
-		return new SubmissionVerificationModel(numberOfLearners, false);
+		return new SubmissionVerificationModel(numberOfLearners, isMissingScores);
 	}
 	
 	
@@ -2064,10 +2089,24 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		model.setUserAbleToViewOwnGrades(isUserAbleToViewOwnGrades);
 		model.setUserHasGraderPermissions(security.isUserHasGraderPermissions(gradebook.getId()));
 		
+				
 		if (userService != null) {
 			User user = userService.getCurrentUser();
 			
 			if (user != null) {
+				
+				List<UserConfiguration> configs = gbService.getUserConfigurations(user.getId(), gradebook.getId());
+				
+				ConfigurationModel configModel = new ConfigurationModel();
+				
+				if (configs != null) {
+					for (UserConfiguration config : configs) {
+						configModel.set(config.getConfigField(), config.getConfigValue());
+					}
+				}
+				
+				model.setConfigurationModel(configModel);
+				
 				// Don't take the hit of looking this stuff up unless we're in single user view
 				if (isSingleUserView) {
 					
@@ -3494,11 +3533,17 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	
 	public String getCurrentUser() {
 		
-		if(null == userService) {
+		/*if(null == userService) {
 			return null;
 		}
 		
-		return userService.getCurrentUser().getId();
+		return userService.getCurrentUser().getId();**/
+		
+		if(null == sessionManager) {
+			return null;
+		}
+		
+		return sessionManager.getCurrentSessionUserId();
 	}
 
 

@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
-import org.sakaiproject.gradebook.gwt.client.GradebookState;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.PersistentStore;
 import org.sakaiproject.gradebook.gwt.client.SecureToken;
@@ -41,6 +40,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig;
+import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
@@ -211,15 +211,15 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 				store.setDefaultSort(storedSortField, sortDir);
 		}
 		
-		//add(newGrid(newColumnModel(selectedGradebook));
+		ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
 		
-		int pageSize = GradebookState.getPageSize(selectedGradebook.getGradebookUid(), gridId);
+		int ps = configModel.getPageSize(gridId);
 		
-		if (pageSize != -1) {
-			setPageSize(pageSize);
+		if (ps != -1) {
+			setPageSize(ps);
 		
 			if (pagingToolBar != null)
-				pagingToolBar.setPageSize(pageSize);
+				pagingToolBar.setPageSize(ps);
 		}
 		
 		if (loader != null) 

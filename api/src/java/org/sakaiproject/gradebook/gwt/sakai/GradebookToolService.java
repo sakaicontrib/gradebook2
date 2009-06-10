@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
+import org.sakaiproject.gradebook.gwt.sakai.model.UserConfiguration;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereferenceRealmUpdate;
 import org.sakaiproject.tool.gradebook.Assignment;
@@ -49,6 +50,8 @@ public interface GradebookToolService {
 	
 	public Long createCategory(Long gradebookId, String name, Double weight, Integer dropLowest, Boolean equalWeightAssignments, Boolean isUnweighted, Boolean isExtraCredit);
 	
+	public void createOrUpdateUserConfiguration(String userUid, Long gradebookId, String configField, String configValue);
+	
 	public List<ActionRecord> getActionRecords(final String gradebookUid, final int offset, final int limit);
 	
 	public Integer getActionRecordSize(final String gradebookUid);
@@ -57,13 +60,11 @@ public interface GradebookToolService {
 	
 	public Integer getActionRecordSize(final String gradebookUid, final String learnerUid);
 	
+	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(final Long[] assignmentIds);
+	
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(Long gradebookId, Collection<String> studentUids);
 	
-	// GRBK-40 : TPA 
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(Long gradebookId, String[] realmIds, String[] roleNames);
-	
-	//public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(Long gradebookId, String siteId, String realmGroupId, String sortField, 
-	//		String searchField, String searchCriteria, int offset, int limit, boolean isAsc);
 	
 	public List<CourseGradeRecord> getAllCourseGradeRecords(Gradebook gradebook);
 	
@@ -120,6 +121,8 @@ public interface GradebookToolService {
 	public List<String> getFullUserListForSite(String siteId, String[] roleNames);
 	
 	public int getFullUserCountForSite(String siteId, String realmGroupId, String[] roleNames);
+	
+	public List<UserConfiguration> getUserConfigurations(String userUid, Long gradebookId);
 	
 	public int getUserCountForSite(String[] realmIds, String sortField, 
 			String searchField, String searchCriteria, String[] roleNames);
