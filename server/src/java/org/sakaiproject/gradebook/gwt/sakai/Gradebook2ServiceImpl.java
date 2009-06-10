@@ -3329,7 +3329,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		
 		int realmCount = lastUpdate == null || lastUpdate.getRealmCount() == null ? -1 : lastUpdate.getRealmCount().intValue();
 		
-		log.info("Total users: " + totalUsers + " Dereferenced users: " + dereferencedUsers + " Realm count: " + realmCount);
+		//log.info("Total users: " + totalUsers + " Dereferenced users: " + dereferencedUsers + " Realm count: " + realmCount);
 		
 		// Obviously if the realm count has changed, then we need to update, but let's also do it if more than an hour has passed
 		long ONEHOUR = 1000l * 60l * 60l;
