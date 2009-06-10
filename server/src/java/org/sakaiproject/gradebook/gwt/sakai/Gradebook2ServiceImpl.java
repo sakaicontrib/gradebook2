@@ -322,6 +322,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			gradebook = gbService.getGradebook(gradebookUid);
 			
 			boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
+			boolean hasWeights = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY;
 			
 			if (hasCategories)
 				categories = gbService.getCategories(gradebook.getId()); //getCategoriesWithAssignments(gradebook.getId());
@@ -341,7 +342,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				boolean equalWeighting = isEqualWeighting == null ? false : isEqualWeighting.booleanValue();
 				
 				businessLogic.applyNoDuplicateCategoryNamesRule(gradebook.getId(), item.getName(), null, categories);		
-				businessLogic.applyOnlyEqualWeightDropLowestRule(dropLowestInt, equalWeighting);
+				if (hasWeights)
+					businessLogic.applyOnlyEqualWeightDropLowestRule(dropLowestInt, equalWeighting);
 			}
 			
 			categoryId = gbService.createCategory(gradebookId, name, Double.valueOf(w), dropLowest, isEqualWeighting, Boolean.valueOf(isUnweighted), isExtraCredit);
@@ -3474,14 +3476,15 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			List<BusinessLogicImpl> beforeCreateRules = new ArrayList<BusinessLogicImpl>();
 			List<BusinessLogicImpl> afterCreateRules = new ArrayList<BusinessLogicImpl>();
 			boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
-
+			boolean hasWeights = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY;
 			
 			if (hasCategories) {
 				List<Category> categories = gbService.getCategories(gradebook.getId());
 				// Business rule #2
 				businessLogic.applyNoDuplicateCategoryNamesRule(gradebook.getId(), item.getName(), category.getId(), categories);
-					
-				businessLogic.applyOnlyEqualWeightDropLowestRule(newDropLowest, isEqualWeighting);
+				
+				if (hasWeights)
+					businessLogic.applyOnlyEqualWeightDropLowestRule(newDropLowest, isEqualWeighting);
 			}
 			
 			
