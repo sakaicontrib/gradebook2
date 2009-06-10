@@ -58,6 +58,7 @@ public abstract class AppView extends View {
 		viewport.setHeight(screenHeight);
 		viewport.setLayout(viewportLayout);
 		realViewport.setHeight(screenHeight);
+		realViewport.setDelay(400);
 	}
 
 	@Override
