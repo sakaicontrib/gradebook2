@@ -2092,6 +2092,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		model.setUserHasGraderPermissions(security.isUserHasGraderPermissions(gradebook.getId()));
 		
 				
+		ConfigurationModel configModel = new ConfigurationModel();
+		
 		if (userService != null) {
 			User user = userService.getCurrentUser();
 			
@@ -2099,7 +2101,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				
 				List<UserConfiguration> configs = gbService.getUserConfigurations(user.getId(), gradebook.getId());
 				
-				ConfigurationModel configModel = new ConfigurationModel();
+				
 				
 				if (configs != null) {
 					for (UserConfiguration config : configs) {
@@ -2107,7 +2109,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					}
 				}
 				
-				model.setConfigurationModel(configModel);
+				
 				
 				// Don't take the hit of looking this stuff up unless we're in single user view
 				if (isSingleUserView) {
@@ -2161,6 +2163,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				model.setUserAsStudent(buildStudentRow(gradebook, userRecord, columns, assignments, categories));
 			}
 		}
+		
+		model.setConfigurationModel(configModel);
 			
 		model.setColumns(columns);
 		
