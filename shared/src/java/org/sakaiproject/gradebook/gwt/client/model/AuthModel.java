@@ -11,6 +11,7 @@ public class AuthModel extends BaseModel {
 	private Boolean isUserAbleToGrade;
 	private Boolean isUserAbleToEditAssessments;
 	private Boolean isNewGradebook;
+	private String placementId;
 	
 	public AuthModel() {
 		
@@ -54,6 +55,14 @@ public class AuthModel extends BaseModel {
 
 	public void setNewGradebook(Boolean isNewGradebook) {
 		this.isNewGradebook = isNewGradebook;
+	}
+
+	public String getPlacementId() {
+		return placementId;
+	}
+
+	public void setPlacementId(String placementId) {
+		this.placementId = placementId;
 	}
 	
 	

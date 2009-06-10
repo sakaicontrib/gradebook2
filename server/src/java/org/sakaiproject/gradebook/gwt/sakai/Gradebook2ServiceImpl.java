@@ -1024,6 +1024,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			authModel.setUserAbleToViewOwnGrades(Boolean.valueOf(isUserAbleToViewOwnGrades));
 			authModel.setUserHasGraderPermissions(Boolean.valueOf(security.isUserHasGraderPermissions(gradebook.getId())));
 			authModel.setNewGradebook(Boolean.valueOf(isNewGradebook));
+			authModel.setPlacementId(getPlacementId());
 			
 			return authModel;
 		}

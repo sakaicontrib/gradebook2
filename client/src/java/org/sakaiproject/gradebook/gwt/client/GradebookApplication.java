@@ -93,8 +93,8 @@ public class GradebookApplication implements EntryPoint {
 		Registry.register(AppConstants.SERVICE, dataService);
 		Registry.register(AppConstants.I18N, i18n);
 
-		if (GWT.isScript())
-			resizeMainFrame(screenHeight + 20);
+		//if (GWT.isScript())
+		//	resizeMainFrame(screenHeight + 20);
 		
 		getAuthorization(0);		
 	}
@@ -114,6 +114,10 @@ public class GradebookApplication implements EntryPoint {
 				}
 
 				public void onSuccess(AuthModel result) {
+					
+					if (GWT.isScript())
+						resizeMainFrame(result.getPlacementId(), screenHeight + 20);
+					
 					dispatcher.dispatch(GradebookEvents.Load.getEventType(), result);
 					getApplicationModel(0, result);
 					GXT.hideLoadingPanel("loading");
@@ -167,5 +171,71 @@ public class GradebookApplication implements EntryPoint {
 			}
 		}
 	}
+	
+	public native void resizeMainFrame(String placementId, int setHeight) /*-{
+		
+		//	$wnd.alert("Is " + placementId + " equal to Mainff1e8b82x01e4x4d00x9a17x3982e11d5bd1 ? ");
+	
+		
+			var frame = $wnd.parent.document.getElementById(placementId);
+
+			if (frame)
+		   	{
+		       // reset the scroll
+		 //      $wnd.parent.window.scrollTo(0,0);
+	
+		       var objToResize = (frame.style) ? frame.style : frame;
+		       var height;                
+		       var offsetH = $wnd.parent.document.body.offsetHeight;
+		       
+		       //$wnd.alert($doc.body.offsetHeight + " and " + offsetH);
+		       
+		       var innerDocScrollH = null;
+
+		       if (typeof(frame.contentDocument) != 'undefined' || typeof(frame.contentWindow) != 'undefined')
+		       {
+		           // very special way to get the height from IE on Windows!
+		           // note that the above special way of testing for undefined variables is necessary for older browsers
+		           // (IE 5.5 Mac) to not choke on the undefined variables.
+		           var innerDoc = (frame.contentDocument) ? frame.contentDocument : frame.contentWindow.document;
+		           innerDocScrollH = (innerDoc != null) ? innerDoc.body.scrollHeight : null;
+		       }
+		       
+		       if ($wnd.parent.document.all && innerDocScrollH != null)
+		       {
+		           // IE on Windows only
+		           height = innerDocScrollH;
+		       }
+		       else
+		       {
+		           // every other browser!
+		           height = offsetH;
+		       }
+	
+		       // here we fudge to get a little bigger
+		       var newHeight = setHeight;
+
+	
+		       // but not too big!
+		       if (newHeight > 32760) newHeight = 32760;
+	
+		       // capture my current scroll position
+	//	       var scroll = findScroll();
+	
+		       // resize parent frame (this resets the scroll as well)
+		       objToResize.height=newHeight + "px";
+	
+		       // reset the scroll, unless it was y=0)
+	//	       if (scroll[1] > 0)
+	//	       {
+	//	           var position = findPosition(frame);
+	//	           $wnd.parent.window.scrollTo(position[0]+scroll[0], position[1]+scroll[1]);
+	//	       }
+		       
+		       //objToResize.height=offsetH + "px";
+		       
+		    } 
+		    
+	 }-*/;
 
 }
