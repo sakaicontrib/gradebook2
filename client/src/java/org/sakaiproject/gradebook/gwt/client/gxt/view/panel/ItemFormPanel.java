@@ -7,6 +7,7 @@ import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.InlineEditField;
 import org.sakaiproject.gradebook.gwt.client.gxt.InlineEditNumberField;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
+import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemCreate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
@@ -265,13 +266,13 @@ public class ItemFormPanel extends ContentPanel {
 		releasedField.addListener(Events.Change, checkboxChangeListener);
 		formPanel.add(releasedField);
 			
-		okButton = new Button("", selectionListener);
+		okButton = new AriaButton("", selectionListener, 's');
 		addButton(okButton);
 		
-		okCloseButton = new Button(i18n.saveAndCloseButton(), selectionListener);
+		okCloseButton = new AriaButton(i18n.saveAndCloseButton(), selectionListener, 'm');
 		addButton(okCloseButton);
 		
-		cancelButton = new Button(i18n.cancelButton(), selectionListener);
+		cancelButton = new AriaButton(i18n.cancelButton(), selectionListener, 'x');
 		cancelButton.setData(selectionTypeField, SelectionType.CANCEL);
 		
 		addButton(cancelButton);

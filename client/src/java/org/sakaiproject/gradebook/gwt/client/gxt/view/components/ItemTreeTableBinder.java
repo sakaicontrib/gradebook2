@@ -28,6 +28,16 @@ public class ItemTreeTableBinder extends TreeTableBinder<ItemModel> {
 	protected TreeItem createItem(ItemModel model) {
 		int cols = treeTable.getColumnCount();
 	    TreeTableItem item = new TreeTableItem(new Object[cols]) {
+	    	
+	    	@Override
+	    	protected void onRender(Element target, int index) {
+	    		super.onRender(target, index);
+	    		
+	    		if (isRoot())
+	    			getElement().setAttribute("accesskey", "g");
+	    	}
+	    	
+	    	// This is overridden to prevent double click 
 	    	@Override
 	    	protected TreeItemUI getTreeItemUI() {
 	    	    TreeTableItemUI itemUI = new TreeTableItemUI(this) {
@@ -83,7 +93,7 @@ public class ItemTreeTableBinder extends TreeTableBinder<ItemModel> {
 	    item.setText(txt);
 		
 		//TreeItem item = super.createItem(model);
-
+	    
 	    if (loader != null) {
 	      item.setLeaf(!loader.hasChildren(model));
 	    } else {

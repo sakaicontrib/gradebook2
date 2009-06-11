@@ -32,15 +32,23 @@ public abstract class AbstractServiceTest extends AbstractDependencyInjectionSpr
 		return context;
 	}
 	
-	protected void onSetup(GradeType gradeType, CategoryType categoryType) throws Exception {
+	protected GradebookModel getGradebookModel(String gradebookUid) throws Exception {
 		ConfigurableApplicationContext context = applicationContext;
 		service = (Gradebook2ServiceImpl) context
 				.getBean("org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service");
-		ApplicationModel applicationModel = service.getApplicationModel(getName());
+		ApplicationModel applicationModel = service.getApplicationModel(gradebookUid);
 
-		gbModel = applicationModel.getGradebookModels().get(0);
+		GradebookModel gbModel = applicationModel.getGradebookModels().get(0);
+		
+		return gbModel;
+	}
+	
+	protected void onSetup(GradeType gradeType, CategoryType categoryType) throws Exception {
+
+		gbModel = getGradebookModel(getName());
 
 		ItemModel gradebookItemModel = gbModel.getGradebookItemModel();
+		gradebookItemModel.setName("My Test Gradebook");
 		gradebookItemModel.setGradeType(gradeType);
 		gradebookItemModel.setCategoryType(categoryType);
 		service.updateItemModel(gradebookItemModel);
@@ -105,7 +113,7 @@ public abstract class AbstractServiceTest extends AbstractDependencyInjectionSpr
 		ec1.setCategoryId(essaysCategory.getCategoryId());
 		ec1.setReleased(Boolean.TRUE);
 		ec1.setItemType(Type.ITEM);
-		ec1.setIncluded(Boolean.TRUE);
+		ec1.setIncluded(Boolean.FALSE);
 		ec1.setExtraCredit(Boolean.TRUE);
 		category = service.createItem(gradebookUid, gradebookId, ec1, true);
 

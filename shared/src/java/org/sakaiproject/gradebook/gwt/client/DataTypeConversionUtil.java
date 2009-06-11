@@ -29,8 +29,6 @@ import com.google.gwt.i18n.client.NumberFormat;
 
 public class DataTypeConversionUtil {
 
-	private static DateTimeFormat dateFormat = DateTimeFormat.getShortDateFormat();
-
 	public static boolean checkBoolean(Boolean b) {
 		return b != null && b.booleanValue();
 	}
@@ -58,7 +56,7 @@ public class DataTypeConversionUtil {
 	}
 	
 	public static String convertDateToString(Date d) {
-		return dateFormat.format(d);
+		return DateTimeFormat.getShortDateFormat().format(d);
 	}
 	
 	public static Integer convertStringToInteger(String s) {

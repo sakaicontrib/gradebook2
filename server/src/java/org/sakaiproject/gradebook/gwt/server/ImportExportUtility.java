@@ -716,6 +716,12 @@ public class ImportExportUtility {
 					text = text.replace(AppConstants.EXTRA_CREDIT_INDICATOR, "");
 				}
 				
+				boolean isUnincluded = text.contains(AppConstants.UNINCLUDED_INDICATOR);
+				
+				if (isUnincluded) {
+					text = text.replace(AppConstants.UNINCLUDED_INDICATOR, "");
+				}
+				
 				String name = text;
 				
 				int startParen = text.indexOf("[");

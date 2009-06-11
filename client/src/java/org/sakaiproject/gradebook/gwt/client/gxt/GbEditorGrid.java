@@ -11,7 +11,7 @@ public class GbEditorGrid<M extends ModelData> extends EditorGrid<M> {
 		super(store, cm);
 
 	}
-	
+		
 	public GbCell doWalkCells(int row, int col, int step, GbGridCallback callback,
 		      boolean acceptNavs) {
 		    boolean first = true;

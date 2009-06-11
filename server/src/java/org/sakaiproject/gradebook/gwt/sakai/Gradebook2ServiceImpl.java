@@ -420,18 +420,15 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					Double weight = item.getPercentCategory();
 					Double points = item.getPoints();
 					boolean isExtraCredit = DataTypeConversionUtil.checkBoolean(item.getExtraCredit());
-					
-					//if (isExtraCredit) 
-					//	name = name.replace(AppConstants.EXTRA_CREDIT_INDICATOR, "");
-					
-					if (id.startsWith("NEW:")) {	
-						Date dueDate = null;
+					boolean isIncluded = DataTypeConversionUtil.checkBoolean(item.getIncluded());
+
+					if (id.startsWith("NEW:")) {
 						ItemModel itemModel = new ItemModel();
 						itemModel.setCategoryId(categoryId);
 						itemModel.setName(name);
 						itemModel.setPercentCategory(weight);
 						itemModel.setPoints(points);
-						itemModel.setIncluded(Boolean.TRUE);
+						itemModel.setIncluded(Boolean.valueOf(isIncluded));
 						itemModel.setExtraCredit(Boolean.valueOf(isExtraCredit));
 						ItemModel model = createItem(gradebookUid, gradebook.getId(), itemModel, false);
 						
