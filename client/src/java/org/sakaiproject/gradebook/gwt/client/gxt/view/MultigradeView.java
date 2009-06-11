@@ -15,6 +15,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeContentPanel;
+import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
@@ -55,7 +56,7 @@ public class MultigradeView extends View {
 				String sortField = ((ListStore)se.store).getSortField();
 				SortDir sortDir = ((ListStore)se.store).getSortDir();
 				boolean isAscending = sortDir == SortDir.ASC;
-
+				
 				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 				ConfigurationModel configModel = new ConfigurationModel(selectedGradebook.getGradebookId());
 				configModel.setSortField(AppConstants.MULTIGRADE, sortField);
@@ -198,7 +199,13 @@ public class MultigradeView extends View {
 			}
 		};
 		
-		multigradeLoader = new BasePagingLoader<PagingLoadConfig, PagingLoadResult<StudentModel>>(proxy, new ModelReader<PagingLoadConfig>());
+		multigradeLoader = new BasePagingLoader<PagingLoadConfig, PagingLoadResult<StudentModel>>(proxy, new ModelReader<PagingLoadConfig>()) {
+			protected PagingLoadConfig newLoadConfig() {
+				PagingLoadConfig config = new MultiGradeLoadConfig();
+				return config;
+			}
+		};
+		multigradeLoader.setReuseLoadConfig(false);
 		
 		multigradeStore = new ListStore<StudentModel>(multigradeLoader);
 		multigradeStore.setModelComparer(new EntityModelComparer<StudentModel>());

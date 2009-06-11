@@ -183,6 +183,9 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	public void onBrowseLearner(BrowseLearner be) {
 		StudentModel current = be.learner;
 		currentIndex = grid.getStore().indexOf(current);
+		
+		int pageSize = getPageSize();
+		
 		PageOverflow pageOverflow = PageOverflow.NONE;
 		// Do processing for paging -- if we reach the end or beginning of a page
 		switch (be.type) {
@@ -428,8 +431,10 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 
 			public void handleEvent(ComponentEvent ce) {
 				
+				
 				// FIXME: This could be condensed significantly
 				if (ce.type == GradebookEvents.DoSearch.getEventType()) {
+					int pageSize = getPageSize();
 					String searchString = searchField.getValue();
 					String sectionUuid = null;	
 					if (loadConfig != null)
@@ -442,6 +447,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 					loader.useLoadConfig(loadConfig);
 					loader.load(0, pageSize);
 				} else if (ce.type == GradebookEvents.ClearSearch.getEventType()) {
+					int pageSize = getPageSize();
 					searchField.setValue(null);
 					String sectionUuid = null;
 					if (loadConfig != null)
@@ -695,6 +701,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 
 		onLoadItemTreeModel(selectedGradebook);
 		
+		int pageSize = getPageSize();
 		if (loader != null) 
 			loader.load(0, pageSize);
 		
@@ -1170,6 +1177,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 				if (model != null) 
 					sectionUuid = model.getSectionId();
 				
+				int pageSize = getPageSize();
 				loadConfig = new MultiGradeLoadConfig();
 				loadConfig.setLimit(0);
 				loadConfig.setOffset(pageSize);				
@@ -1225,7 +1233,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			
 		});
 		
-		
+		int pageSize = getPageSize();
 		pageSizeField = new NumberField();
 		pageSizeField.setValue(Integer.valueOf(pageSize));
 		pageSizeField.setWidth(35);
@@ -1239,6 +1247,8 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			    		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 			    		ConfigurationModel model = new ConfigurationModel(selectedGradebook.getGradebookId());
 			    		model.setPageSize(gridId, Integer.valueOf(pageSize.intValue()));
+			    		
+			    		//pageSizeField.setValue(Integer.valueOf(pageSize.intValue()));
 			    		
 			    		Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
 			    		
@@ -1271,6 +1281,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			    		//GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 
 			    		//GradebookState.setPageSize(selectedGradebook.getGradebookUid(), gridId, pageSize.intValue());
+			    		newLoader().setLimit(pageSize.intValue());
 			    		pagingToolBar.setPageSize(pageSize.intValue());
 			    		pagingToolBar.refresh();
 			    	}
@@ -1742,11 +1753,11 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		gbModel.setColumns(columns);
 	}*/
 
-	@Override
+	/*@Override
 	public void setPageSize(int pageSize) {
 		super.setPageSize(pageSize);
 		if (pageSizeField != null)
 			pageSizeField.setValue(Integer.valueOf(pageSize));
-	}
+	}*/
 	
 }

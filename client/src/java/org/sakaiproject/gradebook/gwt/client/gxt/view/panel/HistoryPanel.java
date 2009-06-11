@@ -203,7 +203,7 @@ public class HistoryPanel extends GridPanel<UserEntityAction> {
 	
 	protected void onRender(Element parent, int pos) {
 		super.onRender(parent, pos);
-		loader.load(0, pageSize);
+		loader.load(0, getPageSize());
 	}
 
 }

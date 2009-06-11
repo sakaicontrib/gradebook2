@@ -76,6 +76,8 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 
+	protected static final int DEFAULT_PAGE_SIZE = 19;
+	
 	public enum RefreshAction { NONE, REFRESHDATA, REFRESHCOLUMNS, REFRESHLOCALCOLUMNS, REFRESHCOLUMNSANDDATA };
 	
 	public static final String FAILED_FLAG = ":F";
@@ -93,7 +95,7 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 	
 	protected CustomColumnModel cm;
 	protected PagingLoadConfig loadConfig;
-	protected int pageSize = 19;
+	//protected int pageSize = 19;
 	
 	protected ContentPanel gridOwner;
 	
@@ -138,8 +140,8 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		
 		
 		initListeners();
-		
-		pagingToolBar = newPagingToolBar(pageSize);
+
+		pagingToolBar = newPagingToolBar(DEFAULT_PAGE_SIZE);
 
 		addComponents();
 
@@ -216,14 +218,14 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		int ps = configModel.getPageSize(gridId);
 		
 		if (ps != -1) {
-			setPageSize(ps);
+			//setPageSize(ps);
 		
 			if (pagingToolBar != null)
 				pagingToolBar.setPageSize(ps);
 		}
 		
 		if (loader != null) 
-			loader.load(0, pageSize);
+			loader.load(0, ps);
 	}
 	
 	/*protected void onRender(Element parent, int pos) {
@@ -305,7 +307,7 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		
 		store = newStore(loader);
 		
-		loadConfig = newLoadConfig(store, pageSize);
+		loadConfig = newLoadConfig(store, getPageSize());
 
 		loader.useLoadConfig(loadConfig);
 
@@ -598,11 +600,12 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 	}
 
 	public int getPageSize() {
+		int pageSize = DEFAULT_PAGE_SIZE;
+		
+		if (pagingToolBar != null) 
+			pageSize = pagingToolBar.getPageSize();
+		
 		return pageSize;
-	}
-
-	public void setPageSize(int pageSize) {
-		this.pageSize = pageSize;
 	}
 	
 	
