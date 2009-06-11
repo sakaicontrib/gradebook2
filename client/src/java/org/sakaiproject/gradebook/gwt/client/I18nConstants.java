@@ -26,6 +26,8 @@ import com.google.gwt.i18n.client.Constants;
 
 public interface I18nConstants extends Constants {
 
+	String allyItemTreeTableSummary();
+	
 	String categoryName();
 	String itemName();
 	

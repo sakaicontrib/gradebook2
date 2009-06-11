@@ -22,6 +22,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTabItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTabPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTree;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTreeItem;
+import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTreeTable;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.ItemCellRenderer;
@@ -101,7 +102,7 @@ public class ItemTreePanel extends ContentPanel {
 	private CheckChangedListener checkChangedListener;
 	private SelectionListener<MenuEvent> menuSelectionListener;
 	private SelectionChangedListener<ItemModel> selectionChangedListener;
-	private Listener<TreeEvent> treeEventListener;
+	//private Listener<TreeEvent> treeEventListener;
 	private Listener<TreeTableEvent> treeTableEventListener;
 
 	// Components
@@ -427,18 +428,27 @@ public class ItemTreePanel extends ContentPanel {
 		columns.add(pointsColumn);
 		
 		treeTableColumnModel = new TreeTableColumnModel(columns);
-		treeTable = new TreeTable(treeTableColumnModel) {
+		treeTable = new AriaTreeTable(treeTableColumnModel, i18n.allyItemTreeTableSummary()) {
+			
+			@Override
+			public void doSelectNode(TreeTableEvent tte) {
+				doSelectItem(tte);
+			}
+			
+			@Override
+			public void doUnselectNode(TreeTableEvent tte) {
+				doUnselectItem(tte);
+			}
+			
 			@Override
 			protected void onRender(Element target, int index) {
 				super.onRender(target, index);
-				Accessibility.setRole(el().dom, "treegrid");
 				Accessibility.setState(el().dom, "aria-labelledby", "itemtreelabel");
 				treeTableBinder.setCheckedSelection(selectedItemModels);
-				//treeTable.setHeight(483); //ItemTreePanel.this.getHeight(true));
 				expandAll();
 			}
 		};
-		
+
 		treeTableView = new TreeTableView() {
 			
 			protected void init(final TreeTable treeTable) {
@@ -507,7 +517,6 @@ public class ItemTreePanel extends ContentPanel {
 		treeTable.setAnimate(true);
 		treeTable.getStyle().setLeafIconStyle("gbEditItemIcon");
 		
-		treeTable.addListener(Events.KeyPress, treeEventListener);
 		treeTable.addListener(Events.RowDoubleClick, treeTableEventListener);
 
 		treeTable.setSelectionModel(new TreeSelectionModel(SelectionMode.SINGLE));
@@ -565,7 +574,7 @@ public class ItemTreePanel extends ContentPanel {
 		return learnerAttributeTree;
 	}
 
-	protected Tree newNavigationTree(I18nConstants i18n) {
+	/*protected Tree newNavigationTree(I18nConstants i18n) {
 	
 		itemTree = new AriaTree() {
 			@Override
@@ -581,23 +590,10 @@ public class ItemTreePanel extends ContentPanel {
 		itemTree.setSelectionModel(new TreeSelectionModel(SelectionMode.MULTI));
 
 		itemTree.setContextMenu(newTreeContextMenu(i18n));  
-		
-		/*MenuItem expandMenuItem = new AriaMenuItem();
-		expandMenuItem.setText("Expand");
-		expandMenuItem.addSelectionListener(new SelectionListener<MenuEvent>() {
 
-			@Override
-			public void componentSelected(MenuEvent ce) {
-				itemTree.expandAll();
-			}
-
-
-			
-		});
-		treeContextMenu.add(expandMenuItem);*/
 		
 		return itemTree;
-	}
+	}*/
 	
 	
 	
@@ -926,6 +922,7 @@ public class ItemTreePanel extends ContentPanel {
 			
 		};
 		
+		/*
 		treeEventListener = new Listener<TreeEvent>() {
 
 			public void handleEvent(TreeEvent te) {
@@ -957,17 +954,14 @@ public class ItemTreePanel extends ContentPanel {
 				}
 			}
 
-		};
+		};*/
 		
 		treeTableEventListener = new Listener<TreeTableEvent>() {
 			
 			public void handleEvent(TreeTableEvent tte) {
 				switch (tte.type) {
 				case Events.RowDoubleClick:
-					ItemModel itemModel = (ItemModel)tte.item.getModel();
-					Dispatcher.forwardEvent(GradebookEvents.StartEditItem.getEventType(), itemModel);
-					
-					tte.stopEvent();
+					doSelectItem(tte);
 					break;
 				}
 			}
@@ -978,6 +972,19 @@ public class ItemTreePanel extends ContentPanel {
 
 	public TreeTable getTreeTable() {
 		return treeTable;
+	}
+	
+	private void doSelectItem(TreeTableEvent tte) {
+		ItemModel itemModel = (ItemModel)tte.item.getModel();
+		Dispatcher.forwardEvent(GradebookEvents.StartEditItem.getEventType(), itemModel);
+		
+		tte.stopEvent();
+	}
+	
+	private void doUnselectItem(TreeTableEvent tte) {
+		Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
+		
+		tte.stopEvent();
 	}
 	
 }
