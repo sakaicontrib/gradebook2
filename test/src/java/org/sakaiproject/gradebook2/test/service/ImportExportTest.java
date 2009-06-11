@@ -1,4 +1,4 @@
-package org.sakaiproject.gradebook2.test;
+package org.sakaiproject.gradebook2.test.service;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -16,20 +16,22 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.SpreadsheetModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
+import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
 
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 
-public class Gradebook2ServiceImportTest extends Gradebook2ServiceTest {
+public class ImportExportTest extends AbstractServiceTest {
 
 	
-	public Gradebook2ServiceImportTest(String name) {
+	public ImportExportTest(String name) {
 		super(name);
 	}
 
 	public void testImportExport() throws Exception {
 		
-		onSetup();
+		onSetup(GradeType.PERCENTAGES, CategoryType.WEIGHTED_CATEGORIES);
 		
 		ApplicationModel applicationModel = service.getApplicationModel(getName());
 		

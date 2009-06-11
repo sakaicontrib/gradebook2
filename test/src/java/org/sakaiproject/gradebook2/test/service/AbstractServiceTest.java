@@ -1,10 +1,8 @@
-package org.sakaiproject.gradebook2.test;
+package org.sakaiproject.gradebook2.test.service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Date;
 
-import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
@@ -16,13 +14,13 @@ import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ServiceImpl;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
-public class Gradebook2ServiceTest extends AbstractDependencyInjectionSpringContextTests {
+public abstract class AbstractServiceTest extends AbstractDependencyInjectionSpringContextTests {
 
 	protected Gradebook2Service service;
 	protected ItemModel category;
 	protected GradebookModel gbModel;
 	
-	public Gradebook2ServiceTest(String name) {
+	public AbstractServiceTest(String name) {
 		super(name);
 		setAutowireMode(AUTOWIRE_BY_NAME);
 	}
@@ -34,7 +32,7 @@ public class Gradebook2ServiceTest extends AbstractDependencyInjectionSpringCont
 		return context;
 	}
 	
-	protected void onSetup() throws Exception {
+	protected void onSetup(GradeType gradeType, CategoryType categoryType) throws Exception {
 		ConfigurableApplicationContext context = applicationContext;
 		service = (Gradebook2ServiceImpl) context
 				.getBean("org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service");
@@ -43,8 +41,8 @@ public class Gradebook2ServiceTest extends AbstractDependencyInjectionSpringCont
 		gbModel = applicationModel.getGradebookModels().get(0);
 
 		ItemModel gradebookItemModel = gbModel.getGradebookItemModel();
-		gradebookItemModel.setGradeType(GradeType.PERCENTAGES);
-		gradebookItemModel.setCategoryType(CategoryType.WEIGHTED_CATEGORIES);
+		gradebookItemModel.setGradeType(gradeType);
+		gradebookItemModel.setCategoryType(categoryType);
 		service.updateItemModel(gradebookItemModel);
 
 		String gradebookUid = gbModel.getGradebookUid();
@@ -121,164 +119,8 @@ public class Gradebook2ServiceTest extends AbstractDependencyInjectionSpringCont
 
 	}
 
-	
-	/*
-	 * Tests item update business rule #1
-	 * 
-	 * (1) If points is null, set points to 100
-	 */
-	public void testSetItemPointsNull() throws Exception {
 		
-		onSetup();
-		
-		// Grab first item from category
-		ItemModel item = null;
-		for (ItemModel child : category.getChildren()) {
-			item = child;
-			break;
-		}
-		
-		item.setPoints(null);
-		
-		ItemModel parent = service.updateItemModel(item);
-		
-		for (ItemModel c : parent.getChildren()) {
-			if (c.isActive()) {
-				assertEquals(Double.valueOf(100d), c.getPoints());
-			}
-			
-		}
-		
-	}
-	
-	/*
-	 * Test item update business rule #2
-	 * 
-	 * (2) If weight is null, set weight to be equivalent to points value -- needs to happen after #1
-	 */
-	public void testSetItemWeightNull() throws Exception {
-		
-		onSetup();
-		
-		// Grab first item from category
-		ItemModel item = null;
-		for (ItemModel child : category.getChildren()) {
-			item = child;
-			break;
-		}
-		
-		item.setPercentCategory(null);
-		
-		ItemModel parent = service.updateItemModel(item);
-		
-		for (ItemModel c : parent.getChildren()) {
-			if (c.isActive()) {
-				assertEquals(Double.valueOf(20d), c.getPercentCategory());
-			}
-		}	
-	}
-	
-	
-	/*
-	 * Test item update business rule #5
-	 * 
-	 * (5) new item name must not duplicate an active (removed = false) item name in the same category, otherwise throw exception
-	 */
-	public void testCreateDuplicateItemNameInCategory() throws Exception {
-		
-		onSetup();
-		
-		ItemModel essay1 = new ItemModel();
-		essay1.setName("Essay 1");
-		essay1.setPoints(Double.valueOf(20d));
-		essay1.setDueDate(new Date());
-		essay1.setCategoryId(category.getCategoryId());
-		essay1.setReleased(Boolean.TRUE);
-		essay1.setItemType(Type.ITEM);
-		essay1.setIncluded(Boolean.TRUE);
-	
-		boolean isExceptionThrown = false;
-		
-		try {
-			service.createItem(gbModel.getGradebookUid(), gbModel.getGradebookId(), essay1, true);
-		} catch (BusinessRuleException bre) {
-			isExceptionThrown = true;
-		}
-		
-		assertTrue(isExceptionThrown);
-	}
-	
-	/*
-	 * Test item update business rule #6
-	 * 
-	 * (6) must not include an item in grading that has been deleted (removed = true) or that has a category that has been deleted (removed = true)
-	 */
-	public void testIncludeDeletedItemFromDeletedCategory() throws Exception {
-		
-		onSetup();
-		
-		// Grab first item from category
-		ItemModel item = null;
-		for (ItemModel child : category.getChildren()) {
-			item = child;
-			break;
-		}
-		
-		item.setRemoved(Boolean.TRUE);
-		
-		ItemModel parent = service.updateItemModel(item);
-		
-		for (ItemModel c : parent.getChildren()) {
-			if (c.isActive()) {
-				assertTrue(c.getRemoved());
-				item = c;
-			}
-		}
-		
-		item.setIncluded(Boolean.TRUE);
-		
-		boolean isExceptionThrown = false;
-		
-		try {
-			parent = service.updateItemModel(item);
-		} catch (BusinessRuleException bre) {
-			isExceptionThrown = true;
-		}
-		
-		assertTrue(isExceptionThrown);
-		
-		// FIXME: Need to handle deleted category/included item case
-	}
-	
-	/*
-	 * Test item update business rule #
-	 * 
-	 * (7) if item is "included" and category has "equal weighting" then recalculate all item weights for this category
-	 */
-	public void testRecalculateItemWeightsOnIncludedOrUnincludedItem() throws Exception {
-		
-		onSetup();
-		
-		// Grab first item from category
-		ItemModel item = null;
-		for (ItemModel child : category.getChildren()) {
-			item = child;
-			break;
-		}
-		
-		item.setIncluded(Boolean.FALSE);
-		
-		ItemModel parent = service.updateItemModel(item);
-		
-		for (ItemModel c : parent.getChildren()) {
-			if (!c.isActive() && !c.getExtraCredit()) {
-				assertEquals(BigDecimal.valueOf(33.3333d).setScale(4, RoundingMode.HALF_EVEN), BigDecimal.valueOf(c.getPercentCategory().doubleValue()).setScale(4, RoundingMode.HALF_EVEN));
-			}
-		}
-	}
-	
-	
-	private ItemModel getActiveItem(ItemModel parent) {
+	protected ItemModel getActiveItem(ItemModel parent) {
 		if (parent.isActive())
 			return parent;
 		
