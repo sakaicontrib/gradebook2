@@ -78,7 +78,7 @@ public class InstructorView extends AppView {
 	
 	private Menu fileMenu;
 	private Menu windowMenu;
-	private PreferencesMenu preferencesMenu;
+	//private PreferencesMenu preferencesMenu;
 	
 	private MenuItem addCategoryMenuItem;
 	
@@ -395,8 +395,8 @@ public class InstructorView extends AppView {
 	@Override
 	protected void onSwitchGradebook(GradebookModel selectedGradebook) {
 
-		if (preferencesMenu != null)
-			preferencesMenu.onSwitchGradebook(selectedGradebook);
+		//if (preferencesMenu != null)
+		//	preferencesMenu.onSwitchGradebook(selectedGradebook);
 
 		if (addCategoryMenuItem != null)
 			addCategoryMenuItem.setVisible(selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
@@ -506,8 +506,8 @@ public class InstructorView extends AppView {
 			toolBar.add(fileItem);
 		}
 		
-		TextToolItem preferencesItem = new TextToolItem(i18n.prefMenuHeader());
-		preferencesItem.setMenu(newPreferencesMenu(i18n, selectedGradebook));
+		//TextToolItem preferencesItem = new TextToolItem(i18n.prefMenuHeader());
+		//preferencesItem.setMenu(newPreferencesMenu(i18n, selectedGradebook));
 		
 		TextToolItem windowItem = new TextToolItem(i18n.viewMenuHeader());
 		windowMenu = newWindowMenu(i18n, selectedGradebook);
@@ -519,7 +519,7 @@ public class InstructorView extends AppView {
 		TextToolItem helpItem = new TextToolItem(i18n.helpMenuHeader());
 		helpItem.addSelectionListener(toolBarSelectionListener);
 		
-		toolBar.add(preferencesItem);
+		//toolBar.add(preferencesItem);
 		toolBar.add(windowItem);
 		toolBar.add(moreItem);
 		toolBar.add(helpItem);
@@ -552,11 +552,11 @@ public class InstructorView extends AppView {
 		return fileMenu;
 	}
 	
-	private Menu newPreferencesMenu(I18nConstants i18n, GradebookModel selectedGradebook) {
+	/*private Menu newPreferencesMenu(I18nConstants i18n, GradebookModel selectedGradebook) {
 		preferencesMenu = new PreferencesMenu(i18n, treeView);
 		preferencesMenu.onSwitchGradebook(selectedGradebook);
 		return preferencesMenu;
-	}
+	}*/
 	
 	private Menu newWindowMenu(I18nConstants i18n, GradebookModel selectedGradebook) {
 		Menu windowMenu = new AriaMenu();

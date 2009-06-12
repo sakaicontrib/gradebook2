@@ -194,7 +194,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			menu.add(item);
 		}
 		
-		item = new AriaMenuItem();
+		/*item = new AriaMenuItem();
 		item.setData(selectionTypeField, SelectionType.HISTORY);
 		item.setItemId(AppConstants.ID_HD_HISTORY_MENUITEM);
 		item.setData("colIndex", Integer.valueOf(colIndex));
@@ -205,7 +205,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			
 		menu.add(item);
 		
-		menu.add(new SeparatorMenuItem());
+		menu.add(new SeparatorMenuItem());*/
 		
 		if (selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES) {
 			item = new AriaMenuItem();
