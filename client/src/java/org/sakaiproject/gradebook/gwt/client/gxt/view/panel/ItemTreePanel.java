@@ -156,19 +156,6 @@ public class ItemTreePanel extends ContentPanel {
 				super.onResize(width, height);
 			
 				treeTable.setHeight(height);
-				
-				/*
-				LogConfig infoConfig = new LogConfig("Test", "Some info");
-				infoConfig.display = 5000;
-				infoConfig.width = 300;
-				infoConfig.height = 200;
-				infoConfig.isPermanent = true;
-				
-				Point point = getPosition(false);
-				
-				int y = point.y + getHeight(); // - infoConfig.height;
-				
-				LogDisplay.display(point.x, y, infoConfig);*/
 			}
 		};
 		item.setLayout(new FlowLayout());

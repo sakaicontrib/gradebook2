@@ -49,8 +49,7 @@ public class ClientUploadUtility {
 			itemModel.setName(header.getHeaderName());
 			itemModel.setPoints(header.getPoints());
 			itemModel.setExtraCredit(header.getExtraCredit());
-			if (DataTypeConversionUtil.checkBoolean(header.getUnincluded()))
-				itemModel.setIncluded(Boolean.FALSE);
+			itemModel.setIncluded(Boolean.valueOf(!DataTypeConversionUtil.checkBoolean(header.getUnincluded())));
 			if (header.getCategoryId() != null) {
 				itemModel.setCategoryId(Long.valueOf(header.getCategoryId()));
 				itemModel.setCategoryName(header.getCategoryName());

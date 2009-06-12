@@ -111,10 +111,6 @@ public class ImportExportTest extends AbstractServiceTest {
 	private void verifyCategoryPercentsForItems(GradebookModel model, Double... values) {
 		ItemModel gradebookItemModel = model.getGradebookItemModel();
 		
-		//for (int i=0;i<gradebookItemModel.getChildCount();i++) {
-		//	ItemModel child = gradebookItemModel.getChild(i);
-		//}
-		
 		assertEquals(1, gradebookItemModel.getChildCount());
 		
 		ItemModel essaysItemModel = gradebookItemModel.getChildren().get(0);
@@ -134,6 +130,10 @@ public class ImportExportTest extends AbstractServiceTest {
 		assertEquals(values[3], essay4.getPercentCategory());
 		assertEquals(values[4], ec.getPercentCategory());
 		
+		assertTrue(essay1.getIncluded());
+		assertTrue(essay2.getIncluded());
+		assertTrue(essay3.getIncluded());
+		assertTrue(essay4.getIncluded());
 		assertFalse(ec.getIncluded());
 	}
 	
