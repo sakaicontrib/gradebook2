@@ -43,6 +43,7 @@ public interface AppConstants {
 	public static final String MULTIGRADE 			= "multigrade";
 	public static final String HISTORY				= "history";
 	public static final String IMPORT				= "import";
+	public static final String ITEMTREE				= "itemtree";
 	
 	// Tab id constants
 	public static final String TAB_GRADES 			= "tabMultiGrade";

@@ -50,10 +50,14 @@ public class ConfigurationModel extends BaseModel {
 	}
 	
 	public boolean isColumnHidden(String gridId, String columnId) {
+		return isColumnHidden(gridId, columnId, true);
+	}
+	
+	public boolean isColumnHidden(String gridId, String columnId, boolean valueForNull) {
 		String hidden = get(getColumnHiddenId(gridId, columnId));
 		
 		if (hidden == null)
-			return true;
+			return valueForNull;
 		
 		return Boolean.valueOf(hidden).booleanValue();
 	}

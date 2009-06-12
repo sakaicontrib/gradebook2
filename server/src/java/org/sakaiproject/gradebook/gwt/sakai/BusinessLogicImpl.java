@@ -3,7 +3,6 @@ package org.sakaiproject.gradebook.gwt.sakai;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
-import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.server.DataTypeConversionUtil;
 import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.Category;

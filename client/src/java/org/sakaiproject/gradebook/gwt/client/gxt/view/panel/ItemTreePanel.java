@@ -172,11 +172,8 @@ public class ItemTreePanel extends ContentPanel {
 			}
 		};
 		item.setLayout(new FlowLayout());
-		//item.setAutoHeight(true);
 		treeTable.setAutoHeight(true);
-		//treeTable.setDeferHeight(true);
-		//treeTable.setSize(450, 483);
-		treeTable.setWidth(450);
+		treeTable.setWidth(500);
 		treeTable.setHorizontalScroll(true);
 		item.add(treeTable);
 		item.setScrollMode(Scroll.AUTO);
@@ -242,17 +239,19 @@ public class ItemTreePanel extends ContentPanel {
 		if (addCategoryMenuItem != null)
 			addCategoryMenuItem.setVisible(selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
 		
+		ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
+		
 		switch (selectedGradebook.getGradebookItemModel().getCategoryType()) {
 		case NO_CATEGORIES:
 		case SIMPLE_CATEGORIES:
-			percentCourseGradeColumn.setHidden(true);
-			percentCategoryColumn.setHidden(true);
-			pointsColumn.setHidden(false);
+			percentCourseGradeColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE, String.valueOf(1), true));
+			percentCategoryColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE, String.valueOf(2), true));
+			pointsColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE, String.valueOf(3), false));
 			break;
 		case WEIGHTED_CATEGORIES:
-			percentCourseGradeColumn.setHidden(false);
-			percentCategoryColumn.setHidden(false);
-			pointsColumn.setHidden(true);
+			percentCourseGradeColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE, String.valueOf(1), false));
+			percentCategoryColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE, String.valueOf(2), false));
+			pointsColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE, String.valueOf(3), true));
 			break;
 		}
 		
@@ -260,9 +259,7 @@ public class ItemTreePanel extends ContentPanel {
 			fullStaticIdSet.clear();
 			visibleStaticIdSet.clear();
 			selectedItemModels = new ArrayList<ItemModel>();
-			
-			ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
-			
+
 			List<String> selectedItemModelIds = configModel.getSelectedMultigradeColumns();
 			// Deal with static visible columns
 			for (FixedColumnModel column : selectedGradebook.getColumns()) {

@@ -1760,7 +1760,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				}
 				
 				// Business rule #10
-				businessLogic.applyRemoveEqualWeightingWhenItemWeightChangesRules(category, oldAssignmentWeight, newAssignmentWeight, isExtraCredit, isUnweighted, wasUnweighted);
+				//businessLogic.applyRemoveEqualWeightingWhenItemWeightChangesRules(category, oldAssignmentWeight, newAssignmentWeight, isExtraCredit, isUnweighted, wasUnweighted);
 			}
 			
 			if (businessLogic.checkRecalculatePointsRule(assignmentId, points, oldPoints))
