@@ -52,15 +52,18 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 	};
 
 	private boolean isActive;
+	private boolean isEditable;
 	
 	public ItemModel() {
 		super();
 		this.isActive = false;
+		this.isEditable = true;
 	}
 
 	public ItemModel(Map<String, Object> properties) {
 		super(properties);
 		this.isActive = false;
+		this.isEditable = true;
 	}
 	
 	public String getDisplayName() {
@@ -352,6 +355,14 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 
 	public void setActive(boolean isActive) {
 		this.isActive = isActive;
+	}
+
+	public boolean isEditable() {
+		return isEditable;
+	}
+
+	public void setEditable(boolean isEditable) {
+		this.isEditable = isEditable;
 	}
 	
 }

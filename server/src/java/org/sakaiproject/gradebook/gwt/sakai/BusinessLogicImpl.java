@@ -143,7 +143,7 @@ public class BusinessLogicImpl implements BusinessLogic {
 			boolean isExtraCredit, boolean isUnweighted, boolean wasUnweighted) throws BusinessRuleException {
 		if (!isUnweighted && !wasUnweighted) {
 			if (oldAssignmentWeight == null || !oldAssignmentWeight.equals(newAssignmentWeight)) {
-				if (!isExtraCredit && category.isEqualWeightAssignments() != null && category.isEqualWeightAssignments().booleanValue()) {
+				if (!isExtraCredit && category != null && category.isEqualWeightAssignments() != null && category.isEqualWeightAssignments().booleanValue()) {
 					// FIXME: Do we really need to go back to the db and get this category again? 
 					Category editCategory = gbService.getCategory(category.getId());
 					editCategory.setEqualWeightAssignments(Boolean.FALSE);
@@ -182,7 +182,7 @@ public class BusinessLogicImpl implements BusinessLogic {
 	 * @see org.sakaiproject.gradebook.gwt.sakai.BusinessLogic#checkRecalculateEqualWeightingRule(org.sakaiproject.tool.gradebook.Category, java.lang.Boolean, java.util.List)
 	 */
 	public boolean checkRecalculateEqualWeightingRule(Category category) {
-		boolean hasEqualWeighting = DataTypeConversionUtil.checkBoolean(category.isEqualWeightAssignments());
+		boolean hasEqualWeighting = category != null && DataTypeConversionUtil.checkBoolean(category.isEqualWeightAssignments());
 		//if (hasEqualWeighting)
 		//	recalculateAssignmentWeights(category, enforeEqualWeighting, assignments);
 		return hasEqualWeighting;

@@ -2207,11 +2207,14 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	private ItemModel createItemModel(Gradebook gradebook, Category category, List<Assignment> assignments) {
 		ItemModel model = new ItemModel();
 		
+		boolean isDefaultCategory = category.getName().equalsIgnoreCase(AppConstants.DEFAULT_CATEGORY_NAME);
+		
 		double categoryWeight = category.getWeight() == null ? 0d : category.getWeight().doubleValue() * 100d;
-		boolean isIncluded = category.isUnweighted() == null ? true : ! category.isUnweighted().booleanValue();
+		boolean isIncluded = category.isUnweighted() == null ? !isDefaultCategory : !isDefaultCategory && ! category.isUnweighted().booleanValue();
 		
 		//if (! isIncluded || category.isRemoved()) 
 		//	categoryWeight = 0d;
+		
 		
 		if (gradebook != null)
 			model.setGradebook(gradebook.getName());
@@ -2227,6 +2230,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		model.setRemoved(Boolean.valueOf(category.isRemoved()));
 		model.setPercentCourseGrade(Double.valueOf(categoryWeight));
 		model.setItemType(Type.CATEGORY);
+		model.setEditable(!isDefaultCategory);
 		
 		return model;
 	}
@@ -2460,7 +2464,16 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	}
 	
 	private synchronized Category findDefaultCategory(Long gradebookId) {
-		List<Category> categories = gbService.getCategories(gradebookId);
+		Category category = new Category();
+		category.setName(AppConstants.DEFAULT_CATEGORY_NAME);
+		category.setWeight(Double.valueOf(0d));
+		category.setExtraCredit(Boolean.FALSE);
+		category.setUnweighted(Boolean.TRUE);
+		category.setId(Long.valueOf(-1l));
+		
+		return category;
+		
+		/*List<Category> categories = gbService.getCategories(gradebookId);
 	
 		// Let's see if we already have a default category in existence
 		Long defaultCategoryId = null;
@@ -2476,7 +2489,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		
 		// If we don't have one already, then let's create one
 		if (defaultCategoryId == null) {
-			defaultCategoryId = gbService.createCategory(gradebookId, AppConstants.DEFAULT_CATEGORY_NAME, Double.valueOf(1d), 0, null, null, null);
+			defaultCategoryId = gbService.createCategory(gradebookId, AppConstants.DEFAULT_CATEGORY_NAME, Double.valueOf(0d), 0, null, null, null);
 		} 
 
 		// TODO: This is a just in case check -- we should probably throw an exception here instead, since it means we weren't able to 
@@ -2491,7 +2504,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			return defaultCategory;
 		}
 		
-		return null;
+		return null;*/
 	}
 	
 	protected List<UserRecord> findLearnerRecordPage(Gradebook gradebook, Site site, String[] realmIds, List<String> groupReferences, 
@@ -2684,20 +2697,21 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					if (!category.isRemoved()) {
 						categoryMap.put(category.getId(), category);
 						
-						if (category.getName().equalsIgnoreCase(AppConstants.DEFAULT_CATEGORY_NAME)) {
-							defaultCategory = category;
-						}
+						//if (category.getName().equalsIgnoreCase(AppConstants.DEFAULT_CATEGORY_NAME)) {
+						//	defaultCategory = category;
+						//}
 					}
 				}
 			}
 		}
 		
-		Category category = null;
+
 		List<Assignment> assignmentList = null;
 		
 		if (assignments != null) {
 			for (Assignment assignment : assignments) {
-	
+				Category category = null;
+				
 				if (assignment.isRemoved())
 					continue;
 				
@@ -2709,9 +2723,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					category = assignment.getCategory();
 					
 					if (null == category) {
-						if (defaultCategory == null)
+						if (defaultCategory == null) {
 							defaultCategory = findDefaultCategory(gradebookId);
-						
+							categories.add(defaultCategory);
+						}
 						category = defaultCategory;
 					}
 					
@@ -2737,7 +2752,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 		
 		// Make sure the default category has one or more children if it's going to be visible
-		if (defaultCategory != null) {
+		/*if (defaultCategory != null) {
 			
 			if (defaultCategory.getAssignmentList() == null || defaultCategory.getAssignmentList().isEmpty()) {
 				defaultCategory.setRemoved(true);
@@ -2745,7 +2760,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				categories.remove(defaultCategory);
 			}
 			
-		}
+		}*/
 		
 
 		return categories;	

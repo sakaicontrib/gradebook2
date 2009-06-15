@@ -747,8 +747,11 @@ public class ItemFormPanel extends ContentPanel {
 
 		formPanel.clear();
 		
+		boolean isEditable = true;
+		
 		if (itemModel != null) {
 			boolean isExtraCredit = DataTypeConversionUtil.checkBoolean(itemModel.getExtraCredit());
+			isEditable = itemModel.isEditable();
 			String source = itemModel.get(ItemModel.Key.SOURCE.name());
 			isExternal = source != null && source.trim().length() > 0;
 			ItemModel category = null;
@@ -773,21 +776,21 @@ public class ItemFormPanel extends ContentPanel {
 			isPercentCategoryVisible = hasWeights && isItem;
 		}
 		
-		initField(nameField, !isDelete && !isExternal, true);
-		initField(pointsField, !isDelete && !isExternal, isItem);
-		initField(percentCategoryField, !isDelete && (isItem || isCreateNewItem), isPercentCategoryVisible);
-		initField(percentCourseGradeField, !isDelete, isCategory && hasWeights);
-		initField(equallyWeightChildrenField, !isDelete, isCategory && hasWeights);
-		initField(extraCreditField, !isDelete, isNotGradebook);
-		initField(dropLowestField, !isDelete, isCategory);
-		initField(dueDateField, !isDelete && !isExternal, isItem);
-		initField(includedField, !isDelete, isNotGradebook);
-		initField(releasedField, !isDelete, isItem);
-		initField(releaseGradesField, !isDelete, !isNotGradebook);
-		initField(categoryPicker, !isDelete, hasCategories && isItem);
-		initField(categoryTypePicker, true, !isNotGradebook);
-		initField(gradeTypePicker, true, !isNotGradebook);
-		initField(sourceField, false, isItem);
+		initField(nameField, isEditable && !isDelete && !isExternal, true);
+		initField(pointsField, !isDelete && !isExternal, isEditable && isItem);
+		initField(percentCategoryField, !isDelete && (isItem || isCreateNewItem), isEditable && isPercentCategoryVisible);
+		initField(percentCourseGradeField, !isDelete, isEditable && isCategory && hasWeights);
+		initField(equallyWeightChildrenField, !isDelete, isEditable && isCategory && hasWeights);
+		initField(extraCreditField, !isDelete, isEditable && isNotGradebook);
+		initField(dropLowestField, !isDelete, isEditable && isCategory);
+		initField(dueDateField, !isDelete && !isExternal, isEditable && isItem);
+		initField(includedField, !isDelete, isEditable && isNotGradebook);
+		initField(releasedField, !isDelete, isEditable && isItem);
+		initField(releaseGradesField, !isDelete, isEditable && !isNotGradebook);
+		initField(categoryPicker, !isDelete, isEditable && hasCategories && isItem);
+		initField(categoryTypePicker, true, isEditable && !isNotGradebook);
+		initField(gradeTypePicker, true, isEditable && !isNotGradebook);
+		initField(sourceField, false, isEditable && isItem);
 	}
 	
 	private void initField(Field field, boolean isEnabled, boolean isVisible) {
