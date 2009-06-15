@@ -2,6 +2,7 @@ package org.sakaiproject.gradebook.gwt.sakai;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -10,7 +11,6 @@ import org.sakaiproject.authz.api.Member;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.site.api.Group;
 import org.sakaiproject.tool.gradebook.Gradebook;
-import org.sakaiproject.tool.gradebook.GradingScale;
 
 public interface InstitutionalAdvisor {
 
@@ -64,7 +64,7 @@ public interface InstitutionalAdvisor {
 
 	public boolean isExportCourseManagementIdByGroup();
 	
-	public boolean isValidOverrideGrade(String grade, String learnerEid, String learnerDisplayId, Gradebook gradebook, GradingScale gradingScale);
+	public boolean isValidOverrideGrade(String grade, String learnerEid, String learnerDisplayId, Gradebook gradebook, Set<String> scaledGrades);
 	
 	
 	/**

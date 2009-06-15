@@ -25,7 +25,6 @@ import org.sakaiproject.site.api.SiteService;
 import org.sakaiproject.tool.api.ToolManager;
 import org.sakaiproject.tool.gradebook.GradeMapping;
 import org.sakaiproject.tool.gradebook.Gradebook;
-import org.sakaiproject.tool.gradebook.GradingScale;
 
 
 public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
@@ -96,9 +95,9 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 		return false;
 	}
 
-	public boolean isValidOverrideGrade(String grade, String learnerEid, String learnerDisplayId, Gradebook gradebook, GradingScale gradingScale) {
+	public boolean isValidOverrideGrade(String grade, String learnerEid, String learnerDisplayId, Gradebook gradebook, Set<String> scaledGrades) {
 
-		if (gradingScale.getGrades().contains(grade))
+		if (scaledGrades.contains(grade))
 			return true;
 		
 		return false;

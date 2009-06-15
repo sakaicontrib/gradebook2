@@ -1541,9 +1541,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		CourseGrade courseGrade = gbService.getCourseGrade(gradebook.getId());
 		
 		GradeMapping gradeMapping = gradebook.getSelectedGradeMapping();
-		GradingScale gradingScale = gradeMapping.getGradingScale();
+		Set<String> scaledGrades = gradeMapping.getGradeMap().keySet();
 		
-		if (value != null && !advisor.isValidOverrideGrade(value, student.getEid(), student.getStudentDisplayId(), gradebook, gradingScale)) 
+		if (value != null && !advisor.isValidOverrideGrade(value, student.getEid(), student.getStudentDisplayId(), gradebook, scaledGrades)) 
 			throw new InvalidInputException("This is not a valid override grade for this individual in this course.");
 		
 		gbService.updateCourseGradeRecords(courseGrade, gradeRecords);
