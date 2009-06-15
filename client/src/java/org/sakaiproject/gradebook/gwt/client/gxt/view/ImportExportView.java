@@ -37,7 +37,7 @@ public class ImportExportView extends View {
 			boolean includeStructure = DataTypeConversionUtil.checkBoolean((Boolean)event.data);
 			
 			GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-			String uri = GWT.getModuleBaseURL() + "/exportGradebook.csv?gradebookUid=" + selectedGradebook.getGradebookUid();
+			String uri = GWT.getModuleBaseURL() + "exportGradebook.csv?gradebookUid=" + selectedGradebook.getGradebookUid();
 			
 			if (includeStructure)
 				uri += "&include=true";
