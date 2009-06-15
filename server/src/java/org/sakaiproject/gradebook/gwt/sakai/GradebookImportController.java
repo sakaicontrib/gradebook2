@@ -54,13 +54,26 @@ public class GradebookImportController extends SimpleFormController {
         			delimiterSet.add(Delimiter.COLON);
 			}
 			
+			
+			
 			for (Iterator<String> fileNameIterator = multipartRequest.getFileNames();fileNameIterator.hasNext();) {
 				String fileName = fileNameIterator.next();
-				MultipartFile file = multipartRequest.getFile(fileName);
 				
-				InputStreamReader reader = new InputStreamReader(file.getInputStream());
-					
-				ImportFile importFile = ImportExportUtility.parseImport(service, gradebookUid, reader);
+				MultipartFile file = multipartRequest.getFile(fileName);
+				String origName = file.getOriginalFilename(); 
+				ImportFile importFile;
+				
+				log.warn("Original Name: " + origName);
+				if (origName.toLowerCase().endsWith("xls"))
+				{
+					importFile = ImportExportUtility.parseImportXLS(service, gradebookUid, file.getInputStream());
+				}
+				else
+				{
+					log.warn("fileName: " + fileName);
+					InputStreamReader reader = new InputStreamReader(file.getInputStream());
+					importFile = ImportExportUtility.parseImportCSV(service, gradebookUid, reader);
+				}
 			        
 		        PrintWriter writer = response.getWriter();
 		        response.setContentType("text/html");

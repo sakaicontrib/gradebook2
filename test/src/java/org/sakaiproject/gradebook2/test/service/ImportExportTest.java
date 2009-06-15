@@ -29,6 +29,18 @@ public class ImportExportTest extends AbstractServiceTest {
 		super(name);
 	}
 
+	public void testXls() throws Exception
+	{
+		onSetup();
+		ApplicationModel applicationModel = service.getApplicationModel(getName());
+		
+		List<GradebookModel> gbModels = applicationModel.getGradebookModels();
+		
+		GradebookModel model = gbModels.get(0);
+		verifyCategoryPercentsForItems(model, Double.valueOf(25d), Double.valueOf(25d), Double.valueOf(25d), Double.valueOf(25d));
+
+		
+	}
 	public void testImportExport() throws Exception {
 		
 		onSetup(GradeType.PERCENTAGES, CategoryType.WEIGHTED_CATEGORIES);
@@ -73,7 +85,7 @@ public class ImportExportTest extends AbstractServiceTest {
 		
 		// Import the temp file back into the gradebook
 		FileReader reader = new FileReader(modifiedTempFile);
-		ImportFile importFile = ImportExportUtility.parseImport(service, newGradebookUid, reader);
+		ImportFile importFile = ImportExportUtility.parseImportCSV(service, getName(), reader);
 	
 		
 		List<ColumnConfig> previewColumns = new ArrayList<ColumnConfig>();

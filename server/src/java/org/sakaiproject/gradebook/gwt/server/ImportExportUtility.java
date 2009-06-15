@@ -1,6 +1,7 @@
 package org.sakaiproject.gradebook.gwt.server;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.text.DecimalFormat;
@@ -8,6 +9,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +20,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFDataFormatter;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
@@ -38,6 +45,80 @@ import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
+class RawFile 
+{
+	private List<String[]> allRows; 
+	private int curRow; 
+	
+	public List<String[]> getAllRows() {
+		return allRows;
+	}
+
+	public void setAllRows(List<String[]> allRows) {
+		this.allRows = allRows;
+	}
+
+	public RawFile()
+	{
+		allRows = new ArrayList<String[]>(); 
+	}
+	
+	public void close() 
+	{
+		this.allRows = null; 
+		this.curRow = -2; 
+	}
+	public void startReading() 
+	{
+		this.curRow = -1; 
+	}
+	
+	public String[] readNext() 
+	{
+		if (curRow == -2)
+		{
+			return null; 
+		}
+		
+		this.curRow++; 
+		if (curRow >= allRows.size())
+		{
+			return null; 
+		}
+		else
+		{
+			return allRows.get(curRow); 
+		}
+		
+	}
+	
+	public void addRow(String[] rowData)
+	{
+		if (allRows != null)
+		{
+			allRows.add(rowData);
+		}
+	}
+	
+	public String[] getRow(int idx)
+	{
+		if (allRows != null)
+		{
+			if (idx < allRows.size())
+			{
+				return allRows.get(idx);
+			}
+			else
+			{
+				return null; 
+			}
+		}
+		else
+		{
+			return null; 
+		}
+	}
+}
 
 public class ImportExportUtility {
 
@@ -311,8 +392,221 @@ public class ImportExportUtility {
 		}
 	}
 
-	public static ImportFile parseImport(Gradebook2Service service, 
-			String gradebookUid, Reader reader) throws InvalidInputException, FatalException {
+	/*
+	 * so basically, we'll do: 
+	 * 1) Scan the sheet for scantron artifacts, and if so convert to a simple CSV file which is 
+	 */
+	public static ImportFile parseImportXLS(Gradebook2Service service, 
+			String gradebookUid, InputStream is) throws InvalidInputException, FatalException {
+		
+		HSSFWorkbook inspread = null;
+		try {
+			inspread = new HSSFWorkbook(is);
+		} 
+		catch (IOException e) 
+		{
+			// FIXME - some error correction
+			return null; 
+		} 
+		// FIXME - need to do multiple sheets, and structure
+		int numSheets = inspread.getNumberOfSheets(); 
+		if (numSheets > 0)
+		{
+			HSSFSheet cur = inspread.getSheetAt(0);
+			RawFile ret; 
+			if (isScantronSheet(cur))
+			{
+				log.warn("Here1");
+				ret = processScantronXls(cur); 
+			}
+			else
+			{
+				log.warn("Here2");
+				ret = processNormalXls(cur); 
+			}
+
+			return parseImportGeneric(service, gradebookUid, ret);
+		}
+		return null; 
+	}
+	
+	private static RawFile processNormalXls(HSSFSheet s) {
+		
+		RawFile data = new RawFile(); 
+		Iterator<HSSFRow> rowIter = s.rowIterator(); 
+		boolean headerFound = false;
+		int id_col = -1; 
+		while (rowIter.hasNext())
+		{
+			
+			HSSFRow curRow = rowIter.next();  
+			if (!headerFound)
+			{
+				id_col = readHeaderRow(curRow); 
+				headerFound = true; 
+			}
+
+			int numCells = curRow.getPhysicalNumberOfCells();
+			String[] dataEntity = new String[numCells]; 
+			int i = 0; 
+			
+			Iterator<HSSFCell> cellIterator = curRow.cellIterator(); 
+			
+			while (cellIterator.hasNext())
+			{
+				HSSFCell cl = cellIterator.next();
+				String cellData;
+				log.warn("cl.getColumnIndex() is " + cl.getColumnIndex());
+				log.warn("id_col=" + id_col); 
+				
+				if (cl.getColumnIndex()== id_col) 
+				{
+					if (cl.getCellType() == HSSFCell.CELL_TYPE_NUMERIC)
+					{
+						log.warn("numeric type");
+						cellData = 	String.format("%.0f", cl.getNumericCellValue());
+						log.warn("numeric value from cell: " + cl.getNumericCellValue());
+					}
+					else
+					{
+						log.warn("non numeric type"); 
+						cellData = new HSSFDataFormatter().formatCellValue(cl);
+
+					}
+				}
+				else
+				{
+					
+					cellData =  new HSSFDataFormatter().formatCellValue(cl);
+					
+				}
+				if (cellData.length() > 0)
+				{
+					log.warn("cellData: " + cellData);
+					dataEntity[i] = cellData; 
+					i++; 
+				}
+			}
+			data.addRow(dataEntity);
+			
+		}
+		
+		return data; 
+	}
+
+	private static int readHeaderRow(HSSFRow curRow) {
+		int ret = -1; 
+		Iterator<HSSFCell> cellIterator = curRow.cellIterator(); 
+		// FIXME - need to decide to take this out into the institutional adviser 
+		
+		while (cellIterator.hasNext())
+		{
+			HSSFCell cl = cellIterator.next();
+			String cellData =  new HSSFDataFormatter().formatCellValue(cl).toLowerCase();
+			
+			if ("student id".equals(cellData))
+			{
+				return cl.getColumnIndex(); 
+			}
+			
+		}
+		return ret; 
+	}
+
+	private static RawFile processScantronXls(HSSFSheet s) {
+		RawFile data = new RawFile(); 
+		Iterator<HSSFRow> rowIter = s.rowIterator(); 
+		
+		while (rowIter.hasNext())
+		{
+			HSSFRow curRow = rowIter.next();  
+			int numCells = curRow.getPhysicalNumberOfCells();
+			String[] dataEntity = new String[2]; 
+			int i = 0; 
+	
+			if (numCells == 5)
+			{
+				HSSFCell idField = curRow.getCell(0);
+				HSSFCell scoreField = curRow.getCell(4);
+				
+				String idString = getStringValueFromCell(idField); 
+				String scoreString = getStringValueFromCell(scoreField);
+				
+				dataEntity[0] = idString; 
+				dataEntity[1] = scoreString;
+				data.addRow(dataEntity);
+			}
+			else
+			{
+				log.warn("Row #" + curRow.getRowNum() + " has " + numCells + " cells.");
+			}
+		}
+		
+		return data; 
+	}
+
+	private static String getStringValueFromCell(HSSFCell c)
+	{
+		String ret = ""; 
+		StringBuilder sb = new StringBuilder(); 
+		
+		switch (c.getCellType())
+		{
+			case HSSFCell.CELL_TYPE_NUMERIC:
+				log.warn("Type Numeric, value: " + c.getNumericCellValue());
+				sb.append( Double.toString( c.getNumericCellValue() ) );
+				break; 
+			case HSSFCell.CELL_TYPE_STRING: 
+				log.warn("Type String, value: " + c.getRichStringCellValue().getString());
+				sb.append(c.getRichStringCellValue().getString());
+				break;
+				
+			default:
+				sb.append(""); 
+		}
+		
+		ret = sb.toString();
+		sb = null; 
+		return ret; 
+	}
+	private static boolean isScantronSheet(HSSFSheet s) {
+		Iterator<HSSFRow> rowIter = s.rowIterator(); 
+		while (rowIter.hasNext())
+		{
+			HSSFRow curRow = rowIter.next();  
+			HSSFCell possibleHeader = curRow.getCell(0); 
+			
+			if (possibleHeader != null && possibleHeader.getCellType() == HSSFCell.CELL_TYPE_STRING &&  "student_row".equals(possibleHeader.getRichStringCellValue().getString()) )
+			{
+				return true; 
+			}
+		}
+		// If after all that, we don't find a line starting with "student_row", we're not a scantron.. 
+		return false;
+	}
+
+	public static ImportFile parseImportCSV(Gradebook2Service service, 
+			String gradebookUid, Reader reader) throws InvalidInputException, FatalException 
+			{
+		
+		RawFile rawData = new RawFile(); 
+		CSVReader csvReader = new CSVReader(reader);
+		String[] ent;
+		try {
+			while ( (ent = csvReader.readNext() ) != null)
+			{
+				rawData.addRow(ent); 
+			}
+			csvReader.close();
+		} catch (IOException e) {
+			// FIXME - error handling
+		}
+	
+ 
+		return parseImportGeneric(service, gradebookUid, rawData );
+	}	
+	public static ImportFile parseImportGeneric(Gradebook2Service service, 
+			String gradebookUid, RawFile rawdata) throws InvalidInputException, FatalException {
 		
 		GradebookModel gradebook = service.getGradebook(gradebookUid);
 		boolean hasCategories = gradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES;
@@ -332,8 +626,7 @@ public class ImportExportUtility {
 		
 		DecimalFormat decimalFormat = new DecimalFormat();
 		
-		Map<Long, String> categoryIdNameMap = new HashMap<Long, String>();
-		CSVReader csvReader = new CSVReader(reader);
+		rawdata.startReading(); 
 		
 		String[] headerColumns = null;
 		
@@ -348,200 +641,176 @@ public class ImportExportUtility {
 		Map<String, StructureRow> structureLineIndicatorMap = new HashMap<String, StructureRow>();
 		Map<StructureRow, String[]> structureColumnsMap = new HashMap<StructureRow, String[]>();
 		
-		try {
-			
-			String[] headerLineIndicators = { "student id", "student name", "learner", "id", "identifier", "userid", "learnerid" };
-			Set<String> headerLineIndicatorSet = new HashSet<String>();
-			
-			
-			
-			for (int i=0;i<headerLineIndicators.length;i++) {
-				headerLineIndicatorSet.add(headerLineIndicators[i]);
-			}
-			
-			for (StructureRow structureRow : EnumSet.allOf(StructureRow.class)) {
-				String lowercase = structureRow.getDisplayName().toLowerCase();
-				structureLineIndicatorMap.put(lowercase, structureRow);
-			}
-			
+		String[] headerLineIndicators = { "student id", "student name", "learner", "id", "identifier", "userid", "learnerid" };
+		Set<String> headerLineIndicatorSet = new HashSet<String>();
+		
+		
+		
+		for (int i=0;i<headerLineIndicators.length;i++) {
+			headerLineIndicatorSet.add(headerLineIndicators[i]);
+		}
+		
+		for (StructureRow structureRow : EnumSet.allOf(StructureRow.class)) {
+			String lowercase = structureRow.getDisplayName().toLowerCase();
+			structureLineIndicatorMap.put(lowercase, structureRow);
+		}
+		
 
-			String[] columns;
-		    while ((columns = csvReader.readNext()) != null) {
+		String[] columns;
+		while ((columns = rawdata.readNext()) != null) {
 
-		    	// First we need to decide if there is any structure information in this file
-		    	if (!isStructureInfoProcessed) {
-		    		// Until we run into a line that begins with one of the header line indicators, we can safely 
-		    		// assume that we might find some structure info
-		    		if (columns[0] == null)
-		    			continue;
-		    		
-		    		String firstColumnLowerCase = columns[0].toLowerCase();
-		    		if (!headerLineIndicatorSet.contains(firstColumnLowerCase)) {
-		    			// Since it's not processed yet, check to see if the current row has any useful info
-		    			for (int i=0;i<columns.length;i++) {
-		    				String columnLowerCase = columns[i].trim().toLowerCase();
-		    				
-		    				StructureRow structureRow = structureLineIndicatorMap.get(columnLowerCase);
-		    				
-		    				if (structureRow != null) {
-		    					structureColumnsMap.put(structureRow, columns);
-		    				}
-		    			}
-		    		
-		    			continue;
-		    		} else {
-		    			isStructureInfoProcessed = true;
-		    		}
-		    	}
-		    	
-		    	
-				if (headerColumns == null) {
-					headerColumns = columns;
-					
-					for (int i=0;i<headerColumns.length;i++) {
-						String text = headerColumns[i];
+			// First we need to decide if there is any structure information in this file
+			if (!isStructureInfoProcessed) {
+				// Until we run into a line that begins with one of the header line indicators, we can safely 
+				// assume that we might find some structure info
+				if (columns[0] == null)
+					continue;
+				
+				String firstColumnLowerCase = columns[0].toLowerCase();
+				if (!headerLineIndicatorSet.contains(firstColumnLowerCase)) {
+					// Since it's not processed yet, check to see if the current row has any useful info
+					for (int i=0;i<columns.length;i++) {
+						String columnLowerCase = columns[i].trim().toLowerCase();
 						
-						ImportHeader header = null;
-						// Check for name field
-						if (text == null || text.trim().equals("")) {
-							ignoreColumns.add(Integer.valueOf(i));
-							continue;
-						} else if (text.equalsIgnoreCase("student name") || text.equalsIgnoreCase("name") ||
-								text.equalsIgnoreCase("learner")) {
-							header = new ImportHeader(Field.NAME, text);
-							header.setId("NAME");
-							nameFieldIndex = i;
-						} else if (text.equalsIgnoreCase("student id") || text.equalsIgnoreCase("identifier") ||
-								text.equalsIgnoreCase("userId") || text.equalsIgnoreCase("learnerid")) {
-							header = new ImportHeader(Field.ID, text);
-							header.setId("ID");
-							idFieldIndex = i;
-						} else if (text.equalsIgnoreCase("course grade")) {
-							// Do nothing
-							courseGradeFieldIndex = i;
-						} else {
-							
-							String name = null;
-							String points = null;
-							boolean isExtraCredit = text.contains(AppConstants.EXTRA_CREDIT_INDICATOR);
-							
-							if (isExtraCredit) {
-								text = text.replace(AppConstants.EXTRA_CREDIT_INDICATOR, "");
-							}
-							
-							boolean isUnincluded = text.contains(AppConstants.UNINCLUDED_INDICATOR);
-							
-							if (isUnincluded) {
-								text = text.replace(AppConstants.UNINCLUDED_INDICATOR, "");
-							}
-							
-							name = text;
-							
-							int startParen = text.indexOf("[");
-							int endParen = text.indexOf("pts]");
-							
-							if (endParen == -1)
-								endParen = text.indexOf("]");
-							
-							if (startParen != -1 && endParen != -1 && endParen > startParen+1) {
-								points = text.substring(startParen+1, endParen);
-								name = text.substring(0, startParen);
-								
-								if (name != null)
-									name = name.trim();
-							}
-							
-							if (name != null) {
-								ItemModel model = findModelByName(name, gradebook.getGradebookItemModel());
-							
-								StringBuffer value = new StringBuffer(name);
-								
-								if (model != null) 
-									points = decimalFormat.format(model.getPoints());
-								
-								if (points == null)
-									points = "100";
-								
-								if (points != null && points.length() > 0)
-									value.append(" [").append(points).append("]");
-								
-								header = new ImportHeader(Field.ITEM, value.toString());
-								
-								if (model != null) { 
-									header.setId(model.getIdentifier());
-									header.setCategoryName(model.getCategoryName());
-									header.setCategoryId(String.valueOf(model.getCategoryId()));
-									
-									categoryIdNameMap.put(model.getCategoryId(), model.getCategoryName());
-								} else {
-									header.setId(new StringBuilder().append("NEW:").append(i).toString());
-									header.setCategoryName("Unassigned");
-								}
-								header.setHeaderName(name);
-								header.setExtraCredit(Boolean.valueOf(isExtraCredit));
-								header.setUnincluded(Boolean.valueOf(isUnincluded));
-								if (points != null && points.equals("%"))
-									header.setPercentage(true);
-								else {
-									try {
-										header.setPoints(Double.valueOf(Double.parseDouble(points)));
-									} catch (NumberFormatException nfe) {
-										System.out.println("Could not parse points " + points);
-									}
-								}
-							}
-							
+						StructureRow structureRow = structureLineIndicatorMap.get(columnLowerCase);
+						
+						if (structureRow != null) {
+							structureColumnsMap.put(structureRow, columns);
 						}
-						
-						headers.add(header);
-						headerMap.put(text, header);
 					}
-					
+				
+					continue;
 				} else {
-					ImportRow row = new ImportRow();
-					
-					// First, based on whichever column is the id column, populate it
-					if (columns.length > idFieldIndex && idFieldIndex != -1) {
-						String userImportId = columns[idFieldIndex];
-						row.setUserImportId(userImportId);
-					
-						UserDereference userDereference = userDereferenceMap.get(userImportId);
-						
-						if (userDereference == null)
-							row.setUserNotFound(true);
-						else {
-							row.setUserNotFound(false);
-							row.setUserUid(userDereference.getUserUid());
-							row.setUserDisplayName(userDereference.getLastNameFirst());
-						}
-					}
-					
-					if (courseGradeFieldIndex == -1)
-						row.setColumns(columns);
-					else {
-						String[] strippedColumns = new String[columns.length - 1];
-						int n = 0;
-						for (int i=0;i<columns.length;i++) {
-							Integer columnNumber = Integer.valueOf(i);
-							
-							if (ignoreColumns.contains(columnNumber))
-								continue;
-							
-							if (courseGradeFieldIndex == i)
-								continue;
-							if (n < strippedColumns.length)
-								strippedColumns[n] = columns[i];
-							n++;
-						}
-						row.setColumns(strippedColumns);
-					}
-					importRows.add(row);
-				}	
+					isStructureInfoProcessed = true;
+				}
 			}
 			
-			csvReader.close();
-		} catch (IOException ioe) {
-			log.error("Caught an ioexception: ", ioe);
+			
+			if (headerColumns == null) {
+				headerColumns = columns;
+				
+				for (int i=0;i<headerColumns.length;i++) {
+					String text = headerColumns[i];
+					
+					ImportHeader header = null;
+					// Check for name field
+					if (text == null || text.trim().equals("")) {
+						ignoreColumns.add(Integer.valueOf(i));
+						continue;
+					} else if (text.equalsIgnoreCase("student name") || text.equalsIgnoreCase("name") ||
+							text.equalsIgnoreCase("learner")) {
+						header = new ImportHeader(Field.NAME, text);
+						header.setId("NAME");
+						nameFieldIndex = i;
+					} else if (text.equalsIgnoreCase("student id") || text.equalsIgnoreCase("identifier") ||
+							text.equalsIgnoreCase("userId") || text.equalsIgnoreCase("learnerid")) {
+						header = new ImportHeader(Field.ID, text);
+						header.setId("ID");
+						idFieldIndex = i;
+					} else if (text.equalsIgnoreCase("course grade")) {
+						// Do nothing
+						courseGradeFieldIndex = i;
+					} else {
+						
+						String name = text;
+						String points = null;
+						
+						int startParen = text.indexOf("[");
+						int endParen = text.indexOf("pts]");
+						
+						if (endParen == -1)
+							endParen = text.indexOf("]");
+						
+						if (startParen != -1 && endParen != -1 && endParen > startParen+1) {
+							points = text.substring(startParen+1, endParen);
+							name = text.substring(0, startParen);
+							
+							if (name != null)
+								name = name.trim();
+						}
+						
+						if (name != null) {
+							ItemModel model = findModelByName(name, gradebook.getGradebookItemModel());
+						
+							StringBuffer value = new StringBuffer(name);
+							
+							if (model != null) 
+								points = decimalFormat.format(model.getPoints());
+							
+							if (points == null)
+								points = "100";
+							
+							if (points != null && points.length() > 0)
+								value.append(" [").append(points).append("]");
+							
+							header = new ImportHeader(Field.ITEM, value.toString());
+							
+							if (model != null) { 
+								header.setId(model.getIdentifier());
+								header.setCategoryName(model.getCategoryName());
+								header.setCategoryId(String.valueOf(model.getCategoryId()));
+							} else {
+								header.setId(new StringBuilder().append("NEW:").append(i).toString());
+								header.setCategoryName("Unassigned");
+							}
+							header.setHeaderName(name);
+							if (points != null && points.equals("%"))
+								header.setPercentage(true);
+							else {
+								try {
+									header.setPoints(Double.parseDouble(points));
+								} catch (NumberFormatException nfe) {
+									System.out.println("Could not parse points " + points);
+								}
+							}
+						}
+						
+					}
+					
+					headers.add(header);
+					headerMap.put(text, header);
+				}
+				
+			} else {
+				ImportRow row = new ImportRow();
+				
+				// First, based on whichever column is the id column, populate it
+				if (columns.length > idFieldIndex && idFieldIndex != -1) {
+					String userImportId = columns[idFieldIndex];
+					row.setUserImportId(userImportId);
+				
+					UserDereference userDereference = userDereferenceMap.get(userImportId);
+					
+					if (userDereference == null)
+						row.setUserNotFound(true);
+					else {
+						row.setUserNotFound(false);
+						row.setUserUid(userDereference.getUserUid());
+						row.setUserDisplayName(userDereference.getLastNameFirst());
+					}
+				}
+				
+				if (courseGradeFieldIndex == -1)
+					row.setColumns(columns);
+				else {
+					String[] strippedColumns = new String[columns.length - 1];
+					int n = 0;
+					for (int i=0;i<columns.length;i++) {
+						Integer columnNumber = Integer.valueOf(i);
+						
+						if (ignoreColumns.contains(columnNumber))
+							continue;
+						
+						if (courseGradeFieldIndex == i)
+							continue;
+						if (n < strippedColumns.length)
+							strippedColumns[n] = columns[i];
+						n++;
+					}
+					row.setColumns(strippedColumns);
+				}
+				importRows.add(row);
+			}	
 		}
 
 		importFile.setItems(headers);
