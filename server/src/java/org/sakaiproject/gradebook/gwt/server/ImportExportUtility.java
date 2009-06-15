@@ -84,7 +84,7 @@ public class ImportExportUtility {
 		filename.append(".csv");
 			
 		if (response != null) {
-			response.setContentType("application/x-download");
+			response.setContentType("application/ms-excel");
 			response.setHeader("Content-Disposition", "attachment; filename=" + filename.toString());
 			response.setHeader("Pragma", "no-cache");
 		}
@@ -93,6 +93,12 @@ public class ImportExportUtility {
 		
 		Long gradebookId = gradebook.getGradebookId();
 		final List<String> headerIds = new ArrayList<String>();
+		List<Long> itemCategoryIdList = new LinkedList<Long>(); 
+		
+		final List<String> headerColumns = new LinkedList<String>();
+		
+		headerColumns.add("Student Id");
+		headerColumns.add("Student Name");
 		
 		if (includeStructure) {
 			CategoryType categoryType = gradebookItemModel.getCategoryType();
@@ -158,6 +164,12 @@ public class ImportExportUtility {
 					else
 						equalWeightRow.add(String.valueOf(isEqualWeight));
 					
+					
+					if (itemModel.getChildCount() == 0) {
+						headerIds.add("");
+						headerColumns.add("");
+					}
+					
 				}
 				
 				@Override
@@ -168,6 +180,25 @@ public class ImportExportUtility {
 						dropLowestRow.add("");
 						equalWeightRow.add("");
 					}
+					
+					StringBuilder text = new StringBuilder();
+					text.append(itemModel.getName());
+					
+					if (DataTypeConversionUtil.checkBoolean(itemModel.getExtraCredit())) {
+						text.append(AppConstants.EXTRA_CREDIT_INDICATOR);
+					}
+					
+					if (!DataTypeConversionUtil.checkBoolean(itemModel.getIncluded())) {
+						text.append(AppConstants.UNINCLUDED_INDICATOR);
+					}
+					
+					if (!includeStructure) {
+						String points = DecimalFormat.getInstance().format(itemModel.getPoints());
+						text.append(" [").append(points).append("]");
+					}
+					
+					headerIds.add(itemModel.getIdentifier());
+					headerColumns.add(text.toString());
 					
 					pointsRow.add(String.valueOf(itemModel.getPoints()));
 					percentCategoryRow.add(new StringBuilder()
@@ -200,41 +231,37 @@ public class ImportExportUtility {
 			
 			String[] blankLine = { "" };
 			csvWriter.writeNext(blankLine);
+		} else {
+		
+			ItemModelProcessor processor = new ItemModelProcessor(gradebookItemModel) {
+				
+				@Override
+				public void doItem(ItemModel itemModel) {
+					StringBuilder text = new StringBuilder();
+					text.append(itemModel.getName());
+					
+					if (DataTypeConversionUtil.checkBoolean(itemModel.getExtraCredit())) {
+						text.append(AppConstants.EXTRA_CREDIT_INDICATOR);
+					}
+					
+					if (!DataTypeConversionUtil.checkBoolean(itemModel.getIncluded())) {
+						text.append(AppConstants.UNINCLUDED_INDICATOR);
+					}
+					
+					if (!includeStructure) {
+						String points = DecimalFormat.getInstance().format(itemModel.getPoints());
+						text.append(" [").append(points).append("]");
+					}
+					
+					headerIds.add(itemModel.getIdentifier());
+					headerColumns.add(text.toString());
+				}
+				
+			};
+			
+			processor.process();
+		
 		}
-		
-		
-		final List<String> headerColumns = new LinkedList<String>();
-		
-		headerColumns.add("Student Id");
-		headerColumns.add("Student Name");
-		
-		ItemModelProcessor processor = new ItemModelProcessor(gradebookItemModel) {
-			
-			@Override
-			public void doItem(ItemModel itemModel) {
-				StringBuilder text = new StringBuilder();
-				text.append(itemModel.getName());
-				
-				if (DataTypeConversionUtil.checkBoolean(itemModel.getExtraCredit())) {
-					text.append(AppConstants.EXTRA_CREDIT_INDICATOR);
-				}
-				
-				if (!DataTypeConversionUtil.checkBoolean(itemModel.getIncluded())) {
-					text.append(AppConstants.UNINCLUDED_INDICATOR);
-				}
-				
-				if (!includeStructure) {
-					String points = DecimalFormat.getInstance().format(itemModel.getPoints());
-					text.append(" [").append(points).append("]");
-				}
-				
-				headerIds.add(itemModel.getIdentifier());
-				headerColumns.add(text.toString());
-			}
-			
-		};
-		
-		processor.process();
 		
 		headerColumns.add("Course Grade");
 		
@@ -589,7 +616,7 @@ public class ImportExportUtility {
 			
 			for (int i=0;i<categoryColumns.length;i++) {
 				if (categoryColumns[i].trim().equals("")) {
-					if (currentCategoryId != null)
+					if (currentCategoryId != null && i < categoryRangeColumns.length)
 						categoryRangeColumns[i] = currentCategoryId;
 					
 					continue;
@@ -611,6 +638,8 @@ public class ImportExportUtility {
 				
 				if (isUnincluded)
 					categoryName = categoryName.replace(AppConstants.UNINCLUDED_INDICATOR, "");
+				
+				boolean isDefaultCategory = categoryName.equalsIgnoreCase(AppConstants.DEFAULT_CATEGORY_NAME);
 				
 				if (!categoryMap.containsKey(categoryName)) {
 										
@@ -675,11 +704,17 @@ public class ImportExportUtility {
 					}
 					
 					ItemModel result = null;
-					if (isModelNew) 
-						result = service.createItem(gradebook.getGradebookUid(), gradebook.getGradebookId(), categoryModel, false);
-					else if (isModelUpdated) 
-						result = service.updateItemModel(categoryModel);
-
+					if (!isDefaultCategory) {
+						if (isModelNew) 
+							result = service.createItem(gradebook.getGradebookUid(), gradebook.getGradebookId(), categoryModel, false);
+						else if (isModelUpdated) 
+							result = service.updateItemModel(categoryModel);
+					} else {
+						currentCategoryId = "-1";
+						if (categoryRangeColumns.length > i)
+							categoryRangeColumns[i] = "-1";
+					}
+					
 					if (result != null) {
 						ItemModel activeModel = getActiveModel(result);
 						

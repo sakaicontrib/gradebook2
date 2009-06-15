@@ -352,7 +352,8 @@ public class ItemFormPanel extends ContentPanel {
 		
 		okButton.setText(i18n.saveButton());
 		okButton.setData(selectionTypeField, SelectionType.SAVE);
-		okCloseButton.setVisible(true);
+		okButton.setVisible(itemModel != null && itemModel.isEditable());
+		okCloseButton.setVisible(itemModel != null && itemModel.isEditable());
 		okCloseButton.setData(selectionTypeField, SelectionType.SAVECLOSE);
 		okCloseButton.setText(i18n.saveAndCloseButton());
 		

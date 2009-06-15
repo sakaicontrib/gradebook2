@@ -880,7 +880,7 @@ public class ItemTreePanel extends ContentPanel {
 					case CATEGORY:
 						updateCategoryMenuItem.setVisible(true);
 						updateItemMenuItem.setVisible(false);
-						deleteCategoryMenuItem.setVisible(true);
+						deleteCategoryMenuItem.setVisible(itemModel.isEditable());
 						deleteItemMenuItem.setVisible(false);	
 						break;
 					case GRADEBOOK:

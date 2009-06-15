@@ -120,7 +120,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 			final Boolean isUnweighted, final Boolean isExtraCredit, final Boolean isNotCounted, 
 			final Boolean isReleased) throws ConflictingAssignmentNameException, StaleObjectModificationException, IllegalArgumentException
 	    {
-	    	if(gradebookId == null || categoryId == null)
+	    	if(gradebookId == null)
 	    	{
 	    		throw new IllegalArgumentException("gradebookId or categoryId is null in BaseHibernateManager.createAssignmentForCategory");
 	    	}
@@ -128,7 +128,10 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	    	HibernateCallback hc = new HibernateCallback() {
 	    		public Object doInHibernate(Session session) throws HibernateException {
 	    			Gradebook gb = (Gradebook)session.load(Gradebook.class, gradebookId);
-	    			Category cat = (Category)session.load(Category.class, categoryId);
+	    			Category cat = null;
+	    			
+	    			if (categoryId != null)
+	    				cat = (Category)session.load(Category.class, categoryId);
 	    			/*List conflictList = ((List)session.createQuery(
 	    			"select go from GradableObject as go where go.name = ? and go.gradebook = ? and go.removed=false").
 	    			setString(0, name).
@@ -140,7 +143,8 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 	    			Assignment asn = new Assignment();
 	    			asn.setGradebook(gb);
-	    			asn.setCategory(cat);
+	    			if (cat != null)
+	    				asn.setCategory(cat);
 	    			asn.setName(name.trim());
 	    			asn.setPointsPossible(points);
 	    			asn.setAssignmentWeighting(weight);
