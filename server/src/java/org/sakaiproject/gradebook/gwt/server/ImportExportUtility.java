@@ -100,7 +100,7 @@ public class ImportExportUtility {
 		if (response != null) {
 			response.setContentType("application/ms-excel");
 			response.setHeader("Content-Disposition", "attachment; filename=" + filename.toString());
-			response.setHeader("Pragma", "no-cache");
+			//response.setHeader("Pragma", "no-cache");
 		}
 		
 		CSVWriter csvWriter = new CSVWriter(writer);
