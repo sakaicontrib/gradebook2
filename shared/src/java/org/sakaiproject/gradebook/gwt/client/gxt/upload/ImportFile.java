@@ -13,8 +13,38 @@ public class ImportFile implements Serializable {
 	
 	private Boolean hasCategories;
 	
+	private String notes; 
+	
+	private String errNotes; 
+	
+	private boolean hasErrors; 
+	
 	public ImportFile() {
-		
+		hasErrors = false; 
+	}
+
+	public String getNotes() {
+		return notes;
+	}
+
+	public void setNotes(String notes) {
+		this.notes = notes;
+	}
+
+	public String getErrNotes() {
+		return errNotes;
+	}
+
+	public void setErrNotes(String errNotes) {
+		this.errNotes = errNotes;
+	}
+
+	public boolean isHasErrors() {
+		return hasErrors;
+	}
+
+	public void setHasErrors(boolean hasErrors) {
+		this.hasErrors = hasErrors;
 	}
 
 	public List<ImportRow> getRows() {

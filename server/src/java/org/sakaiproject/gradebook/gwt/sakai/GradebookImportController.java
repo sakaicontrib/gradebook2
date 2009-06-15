@@ -63,14 +63,16 @@ public class GradebookImportController extends SimpleFormController {
 				String origName = file.getOriginalFilename(); 
 				ImportFile importFile;
 				
-				log.warn("Original Name: " + origName);
+				log.debug("Original Name: " + origName);
 				if (origName.toLowerCase().endsWith("xls"))
 				{
+					log.debug("Excel file detected"); 
 					importFile = ImportExportUtility.parseImportXLS(service, gradebookUid, file.getInputStream());
+
 				}
 				else
 				{
-					log.warn("fileName: " + fileName);
+					log.debug("Assuming CSV file"); 
 					InputStreamReader reader = new InputStreamReader(file.getInputStream());
 					importFile = ImportExportUtility.parseImportCSV(service, gradebookUid, reader);
 				}

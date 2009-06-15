@@ -1,5 +1,6 @@
 package org.sakaiproject.gradebook.gwt.server;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -17,14 +18,20 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
+import jxl.Cell;
+import jxl.Sheet;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFDataFormatter;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
@@ -45,80 +52,6 @@ import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
-class RawFile 
-{
-	private List<String[]> allRows; 
-	private int curRow; 
-	
-	public List<String[]> getAllRows() {
-		return allRows;
-	}
-
-	public void setAllRows(List<String[]> allRows) {
-		this.allRows = allRows;
-	}
-
-	public RawFile()
-	{
-		allRows = new ArrayList<String[]>(); 
-	}
-	
-	public void close() 
-	{
-		this.allRows = null; 
-		this.curRow = -2; 
-	}
-	public void startReading() 
-	{
-		this.curRow = -1; 
-	}
-	
-	public String[] readNext() 
-	{
-		if (curRow == -2)
-		{
-			return null; 
-		}
-		
-		this.curRow++; 
-		if (curRow >= allRows.size())
-		{
-			return null; 
-		}
-		else
-		{
-			return allRows.get(curRow); 
-		}
-		
-	}
-	
-	public void addRow(String[] rowData)
-	{
-		if (allRows != null)
-		{
-			allRows.add(rowData);
-		}
-	}
-	
-	public String[] getRow(int idx)
-	{
-		if (allRows != null)
-		{
-			if (idx < allRows.size())
-			{
-				return allRows.get(idx);
-			}
-			else
-			{
-				return null; 
-			}
-		}
-		else
-		{
-			return null; 
-		}
-	}
-}
 
 public class ImportExportUtility {
 
@@ -391,37 +324,184 @@ public class ImportExportUtility {
 			log.error("Caught ioexception: ", ioe);
 		}
 	}
-
+	
+	
+	private static HSSFWorkbook readPoiSpreadsheet(BufferedInputStream is) throws IOException 
+	{
+		HSSFWorkbook ret = null; 
+		HSSFWorkbook inspread = null;
+		
+		
+		is.mark(1024*1024*512); 
+		try {
+			inspread = new HSSFWorkbook(POIFSFileSystem.createNonClosingInputStream(is));
+			log.debug("here!"); 
+		} 
+		catch (IOException e) 
+		{
+			log.debug("Caught I/O Exception", e);
+			ret = null; 
+		} 
+		catch (IllegalArgumentException iae)
+		{
+			log.debug("Caught IllegalArgumentException Exception", iae);
+			ret = null; 
+		}
+		if (ret == null)
+		{
+			is.reset(); 
+		}
+		
+		return inspread; 
+		
+	}
+	
+	
 	/*
 	 * so basically, we'll do: 
 	 * 1) Scan the sheet for scantron artifacts, and if so convert to a simple CSV file which is 
 	 */
 	public static ImportFile parseImportXLS(Gradebook2Service service, 
-			String gradebookUid, InputStream is) throws InvalidInputException, FatalException {
+			String gradebookUid, InputStream is) throws InvalidInputException, FatalException, IOException {
+		log.debug("parseImportXLS() called"); 
 		
 		HSSFWorkbook inspread = null;
-		try {
-			inspread = new HSSFWorkbook(is);
-		} 
-		catch (IOException e) 
+		
+		BufferedInputStream bufStream = new BufferedInputStream(is); 
+		
+		inspread = readPoiSpreadsheet(bufStream);
+		
+		if (inspread != null)
 		{
-			// FIXME - some error correction
+			log.debug("Found a POI readable spreadsheet");
+			bufStream.close(); 
+			return handlePoiSpreadSheet(inspread, service, gradebookUid);
+		}
+		else
+		{
+			log.debug("POI couldn't handle the spreadsheet, using jexcelapi");
+			return handleJExcelAPISpreadSheet(bufStream, service, gradebookUid); 
+		}
+		
+		
+	}
+	
+	private static ImportFile handleJExcelAPISpreadSheet(BufferedInputStream is,
+			Gradebook2Service service, String gradebookUid) throws InvalidInputException, FatalException, IOException {
+		Workbook wb = null; 
+		try {
+			 wb = Workbook.getWorkbook(is);
+		} catch (BiffException e) {
+			log.error("Caught a biff exception from JExcelAPI: " + e.getLocalizedMessage(), e); 
+			return null; 
+		} catch (IOException e) {
+			log.error("Caught an IO exception from JExcelAPI: " + e.getLocalizedMessage(), e); 
 			return null; 
 		} 
+		
+		is.close();
+		Sheet s = wb.getSheet(0); 
+		if (s != null)
+		{
+			if (isScantronSheetForJExcelApi(s))
+			{
+				return handleScantronSheetForJExcelApi(s, service, gradebookUid);
+			}
+			else
+			{
+				return handleNormalXLSSheetForJExcelApi(s, service, gradebookUid);
+			}
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	private static ImportFile handleNormalXLSSheetForJExcelApi(Sheet s,
+			Gradebook2Service service, String gradebookUid) throws InvalidInputException, FatalException {
+		RawFile raw = new RawFile(); 
+		int numRows; 
+		
+		numRows = s.getRows(); 
+		
+		for (int i = 0; i < numRows; i++)
+		{
+			Cell[] row = null; 
+			String[] data = null; 
+			
+			row = s.getRow(i);
+			
+			data = new String[row.length]; 
+			for (int j = 0; j < row.length ; j++)
+			{
+				data[j] = row[j].getContents(); 
+			}
+			raw.addRow(data); 
+		}
+		
+		return parseImportGeneric(service, gradebookUid, raw);
+	}
+
+	private static ImportFile handleScantronSheetForJExcelApi(Sheet s,
+			Gradebook2Service service, String gradebookUid) throws InvalidInputException, FatalException 
+	{
+		RawFile raw = new RawFile(); 
+
+		Cell studentIdHeader = s.findCell("student_id");
+		Cell scoreHeader = s.findCell("score");
+		
+		String[] header = new String[2]; 
+		header[0] = "Student Id"; 
+		header[1] = "Scantron Item"; 
+		
+		raw.addRow(header); 
+		header = null; 
+		for (int i = 0 ; i < s.getRows() ; i++)
+		{
+			Cell idCell; 
+			Cell score; 
+			
+			idCell = s.getCell(studentIdHeader.getColumn(), i);
+			score = s.getCell(scoreHeader.getColumn(), i); 
+			
+			if (!idCell.getContents().equals(studentIdHeader.getContents()))
+			{
+				String[] item = new String[2]; 
+				item[0] = idCell.getContents(); 
+				item[1] = score.getContents(); 
+				raw.addRow(item); 
+				item = null; 
+			}
+		}
+		return parseImportGeneric(service, gradebookUid, raw);
+
+	}
+
+	private static boolean isScantronSheetForJExcelApi(Sheet s) {
+		Cell studentIdHeader = s.findCell("student_id");
+		Cell scoreHeader = s.findCell("score");
+		
+		return (studentIdHeader != null && scoreHeader != null); 
+	}
+
+	private static ImportFile handlePoiSpreadSheet(HSSFWorkbook inspread, Gradebook2Service service, String gradebookUid ) throws InvalidInputException, FatalException
+	{
+		log.debug("handlePoiSpreadSheet() called"); 
 		// FIXME - need to do multiple sheets, and structure
 		int numSheets = inspread.getNumberOfSheets(); 
 		if (numSheets > 0)
 		{
 			HSSFSheet cur = inspread.getSheetAt(0);
 			RawFile ret; 
-			if (isScantronSheet(cur))
+			if (isScantronSheetFromPoi(cur))
 			{
-				log.warn("Here1");
+				log.debug("POI: Scantron");
 				ret = processScantronXls(cur); 
 			}
 			else
 			{
-				log.warn("Here2");
+				log.debug("POI: Not scantron");
 				ret = processNormalXls(cur); 
 			}
 
@@ -431,11 +511,13 @@ public class ImportExportUtility {
 	}
 	
 	private static RawFile processNormalXls(HSSFSheet s) {
-		
+		log.debug("processNormalXls() called");
 		RawFile data = new RawFile(); 
 		Iterator<HSSFRow> rowIter = s.rowIterator(); 
 		boolean headerFound = false;
 		int id_col = -1; 
+		int numCols = -1;
+
 		while (rowIter.hasNext())
 		{
 			
@@ -444,53 +526,46 @@ public class ImportExportUtility {
 			{
 				id_col = readHeaderRow(curRow); 
 				headerFound = true; 
+				log.debug("Header Row # is " + id_col);
+				numCols = curRow.getPhysicalNumberOfCells();
 			}
 
-			int numCells = curRow.getPhysicalNumberOfCells();
-			String[] dataEntity = new String[numCells]; 
-			int i = 0; 
+			String[] dataEntity = new String[numCols]; 
 			
-			Iterator<HSSFCell> cellIterator = curRow.cellIterator(); 
+			log.debug("numCols = " + numCols); 
 			
-			while (cellIterator.hasNext())
-			{
-				HSSFCell cl = cellIterator.next();
+			for (int i = 0; i < numCols; i++) {
+				HSSFCell cl = curRow.getCell(i);
 				String cellData;
-				log.warn("cl.getColumnIndex() is " + cl.getColumnIndex());
-				log.warn("id_col=" + id_col); 
-				
-				if (cl.getColumnIndex()== id_col) 
-				{
-					if (cl.getCellType() == HSSFCell.CELL_TYPE_NUMERIC)
-					{
-						log.warn("numeric type");
-						cellData = 	String.format("%.0f", cl.getNumericCellValue());
-						log.warn("numeric value from cell: " + cl.getNumericCellValue());
-					}
-					else
-					{
-						log.warn("non numeric type"); 
+				if (i == id_col && null != cl) {
+					if (cl.getCellType() == HSSFCell.CELL_TYPE_NUMERIC) {
+						cellData = String.format("%.0f", cl
+								.getNumericCellValue());
+						log.debug("#1:cellData=" + cellData);
+					} else {
 						cellData = new HSSFDataFormatter().formatCellValue(cl);
+						log.debug("#2:cellData=" + cellData);
 
 					}
+				} else {
+
+					cellData = new HSSFDataFormatter().formatCellValue(cl);
+					log.debug("#3:cellData=" + cellData);
+				}
+				if (cellData.length() > 0) {
+					dataEntity[i] = cellData;
+					log.debug("Setting dataEntity[" + i + "] = "
+							+ dataEntity[i]);
 				}
 				else
 				{
-					
-					cellData =  new HSSFDataFormatter().formatCellValue(cl);
-					
-				}
-				if (cellData.length() > 0)
-				{
-					log.warn("cellData: " + cellData);
-					dataEntity[i] = cellData; 
-					i++; 
+					dataEntity[i] = ""; 
+					log.debug("Inserted empty string at " + i ); 
 				}
 			}
 			data.addRow(dataEntity);
-			
 		}
-		
+			
 		return data; 
 	}
 
@@ -538,7 +613,7 @@ public class ImportExportUtility {
 			}
 			else
 			{
-				log.warn("Row #" + curRow.getRowNum() + " has " + numCells + " cells.");
+				log.debug("Row #" + curRow.getRowNum() + " has " + numCells + " cells.");
 			}
 		}
 		
@@ -553,11 +628,11 @@ public class ImportExportUtility {
 		switch (c.getCellType())
 		{
 			case HSSFCell.CELL_TYPE_NUMERIC:
-				log.warn("Type Numeric, value: " + c.getNumericCellValue());
+				log.debug("Type Numeric, value: " + c.getNumericCellValue());
 				sb.append( Double.toString( c.getNumericCellValue() ) );
 				break; 
 			case HSSFCell.CELL_TYPE_STRING: 
-				log.warn("Type String, value: " + c.getRichStringCellValue().getString());
+				log.debug("Type String, value: " + c.getRichStringCellValue().getString());
 				sb.append(c.getRichStringCellValue().getString());
 				break;
 				
@@ -569,7 +644,7 @@ public class ImportExportUtility {
 		sb = null; 
 		return ret; 
 	}
-	private static boolean isScantronSheet(HSSFSheet s) {
+	private static boolean isScantronSheetFromPoi(HSSFSheet s) {
 		Iterator<HSSFRow> rowIter = s.rowIterator(); 
 		while (rowIter.hasNext())
 		{
@@ -605,8 +680,9 @@ public class ImportExportUtility {
  
 		return parseImportGeneric(service, gradebookUid, rawData );
 	}	
+	
 	public static ImportFile parseImportGeneric(Gradebook2Service service, 
-			String gradebookUid, RawFile rawdata) throws InvalidInputException, FatalException {
+			String gradebookUid, RawFile rawData) throws InvalidInputException, FatalException {
 		
 		GradebookModel gradebook = service.getGradebook(gradebookUid);
 		boolean hasCategories = gradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES;
@@ -626,8 +702,11 @@ public class ImportExportUtility {
 		
 		DecimalFormat decimalFormat = new DecimalFormat();
 		
-		rawdata.startReading(); 
+		Map<Long, String> categoryIdNameMap = new HashMap<Long, String>();
+		//CSVReader csvReader = new CSVReader(reader);
 		
+		rawData.startReading(); 
+		rawData.dumpFileToLog(); 
 		String[] headerColumns = null;
 		
 		int idFieldIndex = -1;
@@ -657,7 +736,7 @@ public class ImportExportUtility {
 		
 
 		String[] columns;
-		while ((columns = rawdata.readNext()) != null) {
+		while ((columns = rawData.readNext()) != null) {
 
 			// First we need to decide if there is any structure information in this file
 			if (!isStructureInfoProcessed) {
@@ -712,8 +791,21 @@ public class ImportExportUtility {
 						courseGradeFieldIndex = i;
 					} else {
 						
-						String name = text;
+						String name = null;
 						String points = null;
+						boolean isExtraCredit = text.contains(AppConstants.EXTRA_CREDIT_INDICATOR);
+						
+						if (isExtraCredit) {
+							text = text.replace(AppConstants.EXTRA_CREDIT_INDICATOR, "");
+						}
+						
+						boolean isUnincluded = text.contains(AppConstants.UNINCLUDED_INDICATOR);
+						
+						if (isUnincluded) {
+							text = text.replace(AppConstants.UNINCLUDED_INDICATOR, "");
+						}
+						
+						name = text;
 						
 						int startParen = text.indexOf("[");
 						int endParen = text.indexOf("pts]");
@@ -749,16 +841,20 @@ public class ImportExportUtility {
 								header.setId(model.getIdentifier());
 								header.setCategoryName(model.getCategoryName());
 								header.setCategoryId(String.valueOf(model.getCategoryId()));
+								
+								categoryIdNameMap.put(model.getCategoryId(), model.getCategoryName());
 							} else {
 								header.setId(new StringBuilder().append("NEW:").append(i).toString());
 								header.setCategoryName("Unassigned");
 							}
 							header.setHeaderName(name);
+							header.setExtraCredit(Boolean.valueOf(isExtraCredit));
+							header.setUnincluded(Boolean.valueOf(isUnincluded));
 							if (points != null && points.equals("%"))
 								header.setPercentage(true);
 							else {
 								try {
-									header.setPoints(Double.parseDouble(points));
+									header.setPoints(Double.valueOf(Double.parseDouble(points)));
 								} catch (NumberFormatException nfe) {
 									System.out.println("Could not parse points " + points);
 								}
@@ -1174,4 +1270,106 @@ public class ImportExportUtility {
 	}
 	
 	
+}
+
+class RawFile 
+{
+	private static final Log log = LogFactory.getLog(RawFile.class);
+
+	private List<String[]> allRows; 
+	private int curRow; 
+	
+	public List<String[]> getAllRows() {
+		return allRows;
+	}
+
+	public void setAllRows(List<String[]> allRows) {
+		this.allRows = allRows;
+	}
+
+	public RawFile()
+	{
+		allRows = new ArrayList<String[]>(); 
+	}
+	
+	public void dumpFileToLog()
+	{
+		int row = 1; 
+		log.debug("---> Starting to dump to log");
+		for (String[] cur : allRows) 
+		{
+			StringBuilder msg = new StringBuilder("Row #"); 
+			msg.append(row); 
+			msg.append(" = "); 
+			for (int j = 0; j < cur.length ; j++)
+			{
+				msg.append("C"); 
+				msg.append(j); 
+				msg.append(": "); 
+				msg.append(cur[j]); 
+				msg.append(" "); 
+			}
+			log.debug(msg.toString()); 
+		}
+		log.debug("---> Finished dump to log");
+
+		
+		
+	}
+	
+	public void close() 
+	{
+		this.allRows = null; 
+		this.curRow = -2; 
+	}
+	public void startReading() 
+	{
+		this.curRow = -1; 
+	}
+	
+	public String[] readNext() 
+	{
+		if (curRow == -2)
+		{
+			return null; 
+		}
+		
+		this.curRow++; 
+		if (curRow >= allRows.size())
+		{
+			return null; 
+		}
+		else
+		{
+			return allRows.get(curRow); 
+		}
+		
+	}
+	
+	public void addRow(String[] rowData)
+	{
+		if (allRows != null)
+		{
+			allRows.add(rowData);
+		}
+	}
+	
+	public String[] getRow(int idx)
+	{
+		if (allRows != null)
+		{
+			if (idx < allRows.size())
+			{
+				return allRows.get(idx);
+			}
+			else
+			{
+				return null; 
+			}
+		}
+		else
+		{
+			return null; 
+		}
+	}
 }
