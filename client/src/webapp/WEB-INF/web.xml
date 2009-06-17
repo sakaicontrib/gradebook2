@@ -19,6 +19,18 @@
         <listener-class>org.sakaiproject.util.ToolListener</listener-class>
     </listener>
 
+	<!-- GRBK-202 -->
+	<filter>
+		<filter-name>gwt.security</filter-name>
+		<filter-class>org.sakaiproject.gradebook.gwt.server.SecurityFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>gwt.security</filter-name>
+		<servlet-name>sakai.gradebook.gwt.rpc</servlet-name>
+		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>FORWARD</dispatcher>
+	</filter-mapping>
+	
 	<!--  Sakai filter -->
     <filter>
         <filter-name>sakai.request</filter-name>
