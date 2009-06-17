@@ -25,7 +25,18 @@ import org.w3c.dom.Element;
 
 public class UserDirectoryServiceMock implements UserDirectoryService {
 
+	private List<User> users;
+	private static int DEFAULT_NUMBER_TEST_LEARNERS = 200;
 	
+	public void init() {
+		
+		if (users == null) {
+			users = new ArrayList<User>(DEFAULT_NUMBER_TEST_LEARNERS);
+			for (int i=0;i<DEFAULT_NUMBER_TEST_LEARNERS;i++) {
+				users.add(createUserRecord(i));
+			}
+		}
+	}
 	
 	public UserEdit addUser(String arg0, String arg1)
 			throws UserIdInvalidException, UserAlreadyDefinedException,
@@ -129,7 +140,13 @@ public class UserDirectoryServiceMock implements UserDirectoryService {
 	}
 
 	public User getUser(String arg0) throws UserNotDefinedException {
-		// TODO Auto-generated method stub
+		
+		for(User user : users) {
+			if(user.getId().equals(arg0)){
+				return user;
+			}
+		}
+		
 		return null;
 	}
 
@@ -150,20 +167,19 @@ public class UserDirectoryServiceMock implements UserDirectoryService {
 
 	public List getUsers() {
 		// TODO Auto-generated method stub
-		return null;
+		return users;
 	}
 
-	private List<User> users;
-	private static int DEFAULT_NUMBER_TEST_LEARNERS = 200;
+	
 	
 	public List getUsers(Collection arg0) {
 		
-		if (users == null) {
-			users = new ArrayList<User>(DEFAULT_NUMBER_TEST_LEARNERS);
-			for (int i=0;i<DEFAULT_NUMBER_TEST_LEARNERS;i++) {
-				users.add(createUserRecord(i));
-			}
-		}
+//		if (users == null) {
+//			users = new ArrayList<User>(DEFAULT_NUMBER_TEST_LEARNERS);
+//			for (int i=0;i<DEFAULT_NUMBER_TEST_LEARNERS;i++) {
+//				users.add(createUserRecord(i));
+//			}
+//		}
 		
 		return users;
 	}

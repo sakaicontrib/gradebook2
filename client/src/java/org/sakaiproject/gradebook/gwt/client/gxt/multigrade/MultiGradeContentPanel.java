@@ -1157,7 +1157,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		sectionListBox.setAllQuery(null);
 		sectionListBox.setEditable(false);
 		sectionListBox.setFieldLabel("Sections");
-		sectionListBox.setDisplayField("sectionName");  
+		sectionListBox.setDisplayField(SectionModel.Key.SECTION_NAME.name());  
 		sectionListBox.setStore(sectionStore);
 		sectionListBox.setForceSelection(true);
 		//sectionListBox.select(0);

@@ -2055,7 +2055,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
         getHibernateTemplate().execute(hc);	
 	}
 
-	
+
 	public void updateUserConfiguration(final UserConfiguration userConfiguration) throws StaleObjectModificationException {
 		HibernateCallback hc = new HibernateCallback() {
 			public Object doInHibernate(Session session) throws HibernateException {
@@ -2076,6 +2076,30 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 			if(log.isInfoEnabled()) log.info("An optimistic locking failure occurred while attempting to update comment");
 			throw new StaleObjectModificationException(e);
 		}
+	}
+	
+	public Long createPermission(Permission permission) {
+		return (Long) getHibernateTemplate().save(permission);
+	}
+
+	public void deletePermission(Permission permission) {
+		getHibernateTemplate().delete(permission);
+	}
+
+	public List<Permission> getPermissionsForUser(final Long gradebookId, final String userId) throws IllegalArgumentException {
+		if(gradebookId == null || userId == null)
+			throw new IllegalArgumentException("Null parameter(s) in BaseHibernateManager.getPermissionsForUserAnyGroup");
+
+    	HibernateCallback hc = new HibernateCallback() {
+    		public Object doInHibernate(Session session) throws HibernateException {
+    			Query q = session.createQuery("from Permission as perm where perm.gradebookId=:gradebookId and perm.userId=:userId");
+    			q.setLong("gradebookId", gradebookId);
+    			q.setString("userId", userId);
+
+    			return q.list();
+    		}
+    	};
+    	return (List<Permission>)getHibernateTemplate().execute(hc);   
 	}
 
 	

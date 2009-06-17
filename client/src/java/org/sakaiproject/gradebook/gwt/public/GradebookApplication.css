@@ -406,6 +406,10 @@
 	background-image:url(images/default/button/calculator_edit.png);	
 }
 
+.gbGraderPermissionSettings {
+	background-image:url(images/default/button/table_add.png);	
+}
+
 .gbHistoryButton {
 	background-image:url(images/default/button/calendar.png);
 }

@@ -162,4 +162,10 @@ public interface GradebookToolService {
 	
 	public void updateGradebook(Gradebook gradebook);
 	
+	public Long createPermission(Permission permission);
+	
+	public void deletePermission(Permission permission);
+	
+	public List<Permission> getPermissionsForUser(final Long gradebookId, final String userId) throws IllegalArgumentException;
+	
 }

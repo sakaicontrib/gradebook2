@@ -13,6 +13,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.BorderLayoutPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.GradeScalePanel;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.GraderPermissionSettingsPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.HelpPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.HistoryPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ItemFormPanel;
@@ -43,13 +44,14 @@ import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.extjs.gxt.ui.client.widget.menu.SeparatorMenuItem;
 import com.extjs.gxt.ui.client.widget.toolbar.TextToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
 
 public class InstructorView extends AppView {
 	
 	private static final String MENU_SELECTOR_FLAG = "menuSelector";
-	public enum MenuSelector { ADD_CATEGORY, ADD_ITEM, IMPORT, EXPORT, EXPORT_DATA, EXPORT_STRUCTURE, FINAL_GRADE, GRADE_SCALE, HISTORY };
+	public enum MenuSelector { ADD_CATEGORY, ADD_ITEM, IMPORT, EXPORT, EXPORT_DATA, EXPORT_STRUCTURE, FINAL_GRADE, GRADE_SCALE, HISTORY, GRADER_PERMISSION_SETTINGS };
 	
 	// The instructor view maintains a link to tree view, since it is required to instantiate multigrade
 	private TreeView treeView;
@@ -67,6 +69,7 @@ public class InstructorView extends AppView {
 	private HelpPanel helpPanel;
 	private GradeScalePanel gradeScalePanel;
 	private HistoryPanel historyPanel;
+	private GraderPermissionSettingsPanel graderPermissionSettingsPanel;
 	
 	private List<TabConfig> tabConfigurations;
 	
@@ -192,12 +195,11 @@ public class InstructorView extends AppView {
 
 		tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADESCALE, i18n.tabGradeScaleHeader(), "gbGradeScaleButton", true, MenuSelector.GRADE_SCALE));
 		//tabConfigurations.add(new TabConfig(AppConstants.TAB_HISTORY, i18n.tabHistoryHeader(), "gbHistoryButton", true, MenuSelector.HISTORY));
-
+		tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADER_PER_SET, i18n.tabGraderPermissionSettingsHeader(), "gbGraderPermissionSettings", true, MenuSelector.GRADER_PERMISSION_SETTINGS));
 		populateToolBar(i18n, selectedGradebook);
 
 		if (DataTypeConversionUtil.checkBoolean(selectedGradebook.isNewGradebook()))
 			Dispatcher.forwardEvent(GradebookEvents.StartEditItem.getEventType(), selectedGradebook.getGradebookItemModel());
-
 	}
 
 	@Override
@@ -217,6 +219,7 @@ public class InstructorView extends AppView {
 		case HELP:
 		case HISTORY:
 		case LEARNER_SUMMARY:
+		case GRADER_PERMISSION_SETTINGS:
 			borderLayout.show(LayoutRegion.EAST);
 			borderLayout.expand(LayoutRegion.EAST);
 			break;
@@ -239,6 +242,10 @@ public class InstructorView extends AppView {
 		case GRADE_SCALE:
 			eastLayoutContainer.setHeading(i18n.gradeScaleHeading());
 			eastCardLayout.setActiveItem(gradeScalePanel);
+			break;
+		case GRADER_PERMISSION_SETTINGS:
+			eastLayoutContainer.setHeading(i18n.graderPermissionSettingsHeading());
+			eastCardLayout.setActiveItem(graderPermissionSettingsPanel);
 			break;
 		case HELP:
 			eastLayoutContainer.setHeading(i18n.helpHeading());
@@ -348,6 +355,15 @@ public class InstructorView extends AppView {
 	}
 	
 	@Override
+	protected void onShowGraderPermissionSettings(Boolean show) {
+		if(graderPermissionSettingsPanel == null) {
+			graderPermissionSettingsPanel = new GraderPermissionSettingsPanel(i18n, isEditable);
+			eastLayoutContainer.add(graderPermissionSettingsPanel);
+		}
+		onExpandEastPanel(EastCard.GRADER_PERMISSION_SETTINGS);
+	}
+	
+	@Override
 	protected void onShowHistory(String identifier) {
 		if (historyPanel == null) {
 			historyPanel = new HistoryPanel(i18n);
@@ -444,6 +460,9 @@ public class InstructorView extends AppView {
 						break;
 					case HISTORY:
 						onShowHistory(null);
+						break;
+					case GRADER_PERMISSION_SETTINGS:
+						onShowGraderPermissionSettings(Boolean.TRUE);
 						break;
 					}
 				}

@@ -90,6 +90,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		private Map<String, Map<GradableObject, List<GradingEvent>>> studentGoEventListMap;
 		private List<ActionRecord> actionRecords;
 		private Map<String, Map<Long, Comment>> studentCommentMap;
+		private List<Permission> permissions;
 	
 		
 	//}
@@ -97,6 +98,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 	private long actionRecordId = 0;
 	private long categoryCount = 0;
 	private long gradeEventId = 0;
+	private long permissionId = 0;
 	
 	
 	public GradebookToolServiceMock() {
@@ -126,6 +128,8 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		
 		assignments = new LinkedList<Assignment>();
 		assignmentMap = new HashMap<Long, Assignment>();
+		
+		permissions = new LinkedList<Permission>();
 		
 		/*try {
 			Long essaysId = createCategory(Long.valueOf(categoryCount++), "Essays", Double.valueOf(0.60), Integer.valueOf(1));
@@ -490,7 +494,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		
 		return categories;
 	}
-
+	
 	public List getCategoriesWithAssignments(Long gradebookId)  {
 		List<Category> categories = new LinkedList<Category>();
 		
@@ -631,8 +635,16 @@ public class GradebookToolServiceMock implements GradebookToolService {
 	}
 
 	public List getPermissionsForUser(Long gradebookId, String userId) throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		return null;
+		
+		List<Permission> permissionList = new LinkedList<Permission>();
+		
+		for(Permission permission : permissions) {
+			if(permission.getUserId().equals(userId) && permission.getGradebookId().equals(gradebookId)) {
+				permissionList.add(permission);
+			}
+		}
+
+		return permissionList;
 	}
 
 	public List getPermissionsForUserAnyCategory(Long gradebookId, String userId) throws IllegalArgumentException {
@@ -1754,5 +1766,11 @@ public class GradebookToolServiceMock implements GradebookToolService {
 	
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(final Long[] assignmentIds) {
 		return null;
+	}
+	
+	public Long createPermission(Permission permission) {
+		permission.setId(permissionId);
+		permissions.add(permission);
+		return permissionId++;
 	}
 }

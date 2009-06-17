@@ -67,7 +67,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public abstract class CustomGridView extends BaseCustomGridView {
 	
-	private enum SelectionType { SORT_ASC, SORT_DESC, ADD_CATEGORY, ADD_ITEM, DELETE_ITEM, EDIT_ITEM, GRADE_SCALE, HIDE_ITEM, HISTORY };
+	private enum SelectionType { SORT_ASC, SORT_DESC, ADD_CATEGORY, ADD_ITEM, DELETE_ITEM, EDIT_ITEM, GRADE_SCALE, HIDE_ITEM, HISTORY, GRADER_PERMISSION_SETTINGS };
 	
 	private static final String selectionTypeField = "selectionType";
 	
@@ -117,6 +117,9 @@ public abstract class CustomGridView extends BaseCustomGridView {
 							break;
 						case GRADE_SCALE:
 							Dispatcher.forwardEvent(GradebookEvents.ShowGradeScale.getEventType(), Boolean.TRUE);
+							break;
+						case GRADER_PERMISSION_SETTINGS:
+							Dispatcher.forwardEvent(GradebookEvents.ShowGraderPermissionSettings.getEventType(), Boolean.TRUE);
 							break;
 						case HIDE_ITEM:
 							Dispatcher.forwardEvent(GradebookEvents.HideColumn.getEventType(), cm.getDataIndex(colIndex));

@@ -20,48 +20,49 @@
 * permissions and limitations under the License.
 *
 **********************************************************************************/
+
 package org.sakaiproject.gradebook.gwt.client.model;
 
-import java.util.Map;
-
-public class SectionModel extends EntityModel {
+public class CategoryModel extends EntityModel {
 
 	private static final long serialVersionUID = 1L;
 	
-	public enum Key { ID, SECTION_NAME }
+	public enum Key { ID, CATEGORY_DISPLAY_NAME };
 
-	public SectionModel() {
+	public CategoryModel() {
 		super();
 	}
 	
-	public SectionModel(Map<String, Object> properties) {
-		super(properties);
+	public CategoryModel(Long categoryId, String categoryDisplayName) {
+		super();
+		setCategoryId(categoryId);
+		setCategoryDisplayName(categoryDisplayName);
 	}
 	
-	public String getSectionId() {
+	public void setCategoryId(Long categoryId) {
+		set(Key.ID.name(), categoryId);
+	}
+	
+	public Long getCategoryId() {
 		return get(Key.ID.name());
 	}
 	
-	public void setSectionId(String sectionId) {
-		set(Key.ID.name(), sectionId);
+	public void setCategoryDisplayName(String categoryDisplayName) {
+		set(Key.CATEGORY_DISPLAY_NAME.name(), categoryDisplayName);
 	}
 	
-	public String getSectionName() {
-		return get(Key.SECTION_NAME.name());
+	public String getCategoryDisplayName() {
+		return get(Key.CATEGORY_DISPLAY_NAME.name());
 	}
 	
-	public void setSectionName(String sectionName) {
-		set(Key.SECTION_NAME.name(), sectionName);
-	}
-
-	@Override
-	public String getDisplayName() {
-		return getSectionName();
-	}
-
 	@Override
 	public String getIdentifier() {
-		return getSectionId();
+		Long categoryId = getCategoryId();
+		return (null == categoryId) ? null : getCategoryId().toString();
 	}
 	
+	@Override
+	public String getDisplayName() {
+		return getIdentifier();
+	}
 }

@@ -160,8 +160,8 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 		return producer.create(entityUid, entityId, model, type, secureToken);
 	}
 
-	public <X extends BaseModel> X delete(X model, String secureToken) throws SecurityException {
-		return producer.delete(model, secureToken);
+	public <X extends BaseModel> X delete(String entityUid, Long entityId, X model, EntityType type, String secureToken) throws FatalException, SecurityException {
+		return producer.delete(entityUid, entityId, model, type, secureToken);
 	}
 
 	public <X extends BaseModel> X get(String entityUid, Long entityId, EntityType type, String learnerUid, Boolean doShowAll, String secureToken) throws FatalException, SecurityException {

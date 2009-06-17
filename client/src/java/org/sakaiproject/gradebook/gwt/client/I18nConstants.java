@@ -63,6 +63,7 @@ public interface I18nConstants extends Constants {
 	String tabGradesHeader();
 	String tabGradeScaleHeader();
 	String tabHistoryHeader();
+	String tabGraderPermissionSettingsHeader();
 	
 	String singleViewHeader();
 	String singleGradeHeader();
@@ -92,6 +93,7 @@ public interface I18nConstants extends Constants {
 	String editGradebookHeading();
 	String editItemHeading();
 	String gradeScaleHeading();
+	String graderPermissionSettingsHeading();
 	String helpHeading();
 	String historyHeading();
 	String learnerSummaryHeading();

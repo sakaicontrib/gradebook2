@@ -14,6 +14,8 @@ import org.sakaiproject.gradebook.gwt.client.model.CommentModel;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.PermissionEntryListModel;
+import org.sakaiproject.gradebook.gwt.client.model.PermissionEntryModel;
 import org.sakaiproject.gradebook.gwt.client.model.SpreadsheetModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.SubmissionVerificationModel;
@@ -27,7 +29,7 @@ import com.extjs.gxt.ui.client.data.PagingLoadConfig;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 
 public interface Gradebook2Service {
-
+	
 	public ItemModel addItemCategory(String gradebookUid, Long gradebookId, ItemModel item) throws BusinessRuleException;
 	
 	/**
@@ -105,13 +107,15 @@ public interface Gradebook2Service {
 			Long gradebookId, PagingLoadConfig config);
 	
 	public <X extends BaseModel> PagingLoadResult<X> getSections(String gradebookUid,
-			Long gradebookId, PagingLoadConfig config);
+			Long gradebookId, PagingLoadConfig config, boolean enableAllSectionsEntry, String allSectionsEntryTitle);
 	
 	public <X extends BaseModel> ListLoadResult<X> getSelectedGradeMapping(String gradebookUid);
 	
 	public <X extends BaseModel> PagingLoadResult<X> getStudentRows(String gradebookUid, Long gradebookId, PagingLoadConfig config, Boolean includeExportCourseManagementId);
 	
 	public SubmissionVerificationModel getSubmissionVerification(String gradebookUid, Long gradebookId);
+	
+	public PermissionEntryListModel getPermissionEntryList(Long gradebookId, String learnerId);
 	
 	public StudentModel scoreNumericItem(String gradebookUid, StudentModel student, String assignmentId, Double value, Double previousValue) 
 	throws InvalidInputException;
@@ -156,5 +160,11 @@ public interface Gradebook2Service {
 	 */
 	public String getCurrentUser();
 	public String getCurrentSession();
+	
+	
+	public PermissionEntryModel createPermissionEntry(Long gradebookId, PermissionEntryModel permissionEntryModel);
+	public <X extends BaseModel> ListLoadResult<X> getUsers();
+	public <X extends BaseModel> ListLoadResult<X> getCategoriesNotRemoved(Long gradebookId);
+	public PermissionEntryModel deletePermissionEntry(Long gradebookId, PermissionEntryModel permissionEntryModel);
 	
 }

@@ -17,9 +17,12 @@ import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordMapModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.PermissionEntryModel;
 import org.sakaiproject.gradebook.gwt.client.model.SpreadsheetModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.server.DataTypeConversionUtil;
+
+import sun.security.provider.PolicyParser.PermissionEntry;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
@@ -53,7 +56,13 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 			case SPREADSHEET:
 				SpreadsheetModel spreadsheetModel = (SpreadsheetModel)model;
 				entity = (X)service.createOrUpdateSpreadsheet(entityUid, spreadsheetModel);
+				break;
+			case PERMISSION_ENTRY:
+				PermissionEntryModel permissionEntryModel = (PermissionEntryModel)model;
+				entity = (X)service.createPermissionEntry(entityId, permissionEntryModel);
+				break;
 			}
+			
 		} catch (BusinessRuleException bre) {
 			throw bre;
 		} catch (Throwable t) {
@@ -81,6 +90,8 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 				return (X)service.getGradebook(entityUid);
 			case SUBMISSION_VERIFICATION:
 				return (X)service.getSubmissionVerification(entityUid, entityId);
+			case PERMISSION_ENTRY:
+				return (X)service.getPermissionEntryList(entityId, learnerUid);
 			}
 		
 		} catch (Throwable t) {
@@ -104,13 +115,19 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 			case CATEGORY:
 				return (Y)service.getCategories(uid, id, config);
 			case SECTION:
-				return (Y)service.getSections(uid, id, config);
+				return (Y)service.getSections(uid, id, config, true, "All Viewable Sections");
 			case LEARNER:
 				return (Y)service.getStudentRows(uid, id, config, Boolean.FALSE);
 			case GRADE_EVENT:
 				return (Y)service.getGradeEvents(uid, id);
 			case GRADE_SCALE:
 				return (Y)service.getSelectedGradeMapping(uid);
+			case USER:
+				return (Y)service.getUsers();
+			case CATEGORY_NOT_REMOVED:
+				return (Y)service.getCategoriesNotRemoved(id);
+			case PERMISSION_SECTIONS:
+				return (Y)service.getSections(uid, id, config, true, "All Sections/Groups");
 			}
 		
 		} catch (Throwable t) {
@@ -192,10 +209,23 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 		return entity;
 	}
 	
-	public <X extends BaseModel> X delete(X model, String secureToken) 
-	throws SecurityException {
+	public <X extends BaseModel> X delete(String entityUid, Long entityId, X model, EntityType type, String secureToken) 
+	throws FatalException, SecurityException {
 		
 		isSecure(secureToken);
+
+		try {
+			switch(type) {
+
+				case PERMISSION_ENTRY:
+					PermissionEntryModel permissionEntryModel = (PermissionEntryModel) model;
+					return (X) service.deletePermissionEntry(entityId, permissionEntryModel);
+			}
+
+		} catch (Throwable t) {
+			log.warn("FatalException: ", t);
+			throw new FatalException(t.getMessage(), t);
+		}
 
 		return null;
 	}

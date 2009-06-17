@@ -49,6 +49,7 @@ public interface AppConstants {
 	public static final String TAB_GRADES 			= "tabMultiGrade";
 	public static final String TAB_GRADESCALE 		= "tabGradeScale";
 	public static final String TAB_HISTORY			= "tabHistory";
+	public static final String TAB_GRADER_PER_SET 	= "tabGraderPermissionSettings";
 		
 	public static final String WINDOW_MENU_ITEM_PREFIX = "windowMenuItem:";
 	
@@ -79,10 +80,4 @@ public interface AppConstants {
 	
 	public static final String EXTRA_CREDIT_INDICATOR = " (+)";
 	public static final String UNINCLUDED_INDICATOR = " (-)";
-	
-	
-	
-	
-	
-	
 }

@@ -44,7 +44,8 @@
 	</bean>
 	
 	<bean id="org.sakaiproject.user.api.UserDirectoryService"
-		class="org.sakaiproject.gradebook.gwt.sakai.mock.UserDirectoryServiceMock">
+		class="org.sakaiproject.gradebook.gwt.sakai.mock.UserDirectoryServiceMock"
+		init-method="init">
 	</bean>
 	
 	<!--bean id="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService" parent="alt.gradebookTxTemplate">
@@ -97,7 +98,9 @@
 	<bean id="org_sakaiproject_tool_gradebook_facades_Authn" class="org.sakaiproject.gradebook.gwt.sakai.mock.AuthnMock">
 	</bean>
 	
-	<bean id="org.sakaiproject.section.api.SectionAwareness" class="org.sakaiproject.gradebook.gwt.sakai.mock.SectionAwarenessMock">
+	<bean id="org.sakaiproject.section.api.SectionAwareness" class="org.sakaiproject.gradebook.gwt.sakai.mock.SectionAwarenessMock"
+		init-method="init">
+		<property name="userDirectoryService" ref="org.sakaiproject.user.api.UserDirectoryService"/>
 	</bean>
 	
 	<bean id="GradebookExportService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookExportController">

@@ -55,12 +55,13 @@ public abstract class Action extends EntityModel {
 		}
 		
 	};
-	
+
+
 	public enum EntityType { AUTH("authorization"), APPLICATION("application"), GRADE_ITEM("grade item"),
-		CATEGORY("category"), COLUMN("column"), COMMENT("comment"),  CONFIGURATION("configuration"),
+		CATEGORY("category"), COLUMN("column"), COMMENT("comment"), CONFIGURATION("configuration"), CATEGORY_NOT_REMOVED("category not removed"),
 		GRADEBOOK("gradebook"), GRADE_SCALE("grade scale"), GRADE_RECORD("grade record"), 
-		GRADE_EVENT("grade event"),
-		SECTION("section"), LEARNER("learner"), LEARNER_ID("learner id"), ACTION("action"), ITEM("item"),
+		GRADE_EVENT("grade event"), USER("user"), PERMISSION_ENTRY("permission entry"),
+		SECTION("section"), PERMISSION_SECTIONS("permission sections"), LEARNER("learner"), LEARNER_ID("learner id"), ACTION("action"), ITEM("item"),
 		SPREADSHEET("spreadsheet"), SUBMISSION_VERIFICATION("submission verification");
 	
 		private String name;

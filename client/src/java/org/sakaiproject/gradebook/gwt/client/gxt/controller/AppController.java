@@ -77,8 +77,9 @@ public class AppController extends Controller {
 		registerEventTypes(GradebookEvents.UpdateLearnerGradeRecord.getEventType());
 		registerEventTypes(GradebookEvents.UserChange.getEventType());
 		registerEventTypes(GradebookEvents.StartFinalgrade.getEventType());
-	
+		registerEventTypes(GradebookEvents.ShowGraderPermissionSettings.getEventType());
 		this.notificationView = new NotificationView(this);
+
 	}
 	
 	@Override
@@ -221,6 +222,9 @@ public class AppController extends Controller {
 			finalGradeSubmissionView = new FinalGradeSubmissionView(this, i18n);
 			forwardToView(finalGradeSubmissionView, event);
 			//forwardToView(appView, event);
+			break;
+		case SHOW_GRADER_PERMISSION_SETTINGS:
+			forwardToView(appView, event);
 			break;
 		}
 	}

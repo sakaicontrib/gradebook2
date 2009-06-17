@@ -28,7 +28,7 @@ public interface Gradebook2RPCService extends RemoteService {
 	<X extends BaseModel> X update(X model, EntityType type, UserEntityUpdateAction<StudentModel> action, String secureToken) 
 	throws InvalidInputException, FatalException, SecurityException;
 	
-	<X extends BaseModel> X delete(X model, String secureToken)
-	throws SecurityException;
+	<X extends BaseModel> X delete(String entityUid, Long entityId, X model, EntityType type, String secureToken)
+	throws FatalException, SecurityException;
 	
 }

@@ -19,6 +19,6 @@ public interface Gradebook2RPCServiceAsync {
 	
 	<X extends BaseModel> void update(X model, EntityType type, UserEntityUpdateAction<StudentModel> action, String secureToken, AsyncCallback<X> callback);
 	
-	<X extends BaseModel> void delete(X model, String secureToken, AsyncCallback<X> callback);
+	<X extends BaseModel> void delete(String entityUid, Long entityId, X model, EntityType type, String secureToken, AsyncCallback<X> callback);
 
 }
