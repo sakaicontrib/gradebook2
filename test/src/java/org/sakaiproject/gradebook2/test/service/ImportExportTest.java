@@ -31,7 +31,7 @@ public class ImportExportTest extends AbstractServiceTest {
 
 	public void testXls() throws Exception
 	{
-		onSetup();
+		onSetup(GradeType.PERCENTAGES, CategoryType.WEIGHTED_CATEGORIES);
 		ApplicationModel applicationModel = service.getApplicationModel(getName());
 		
 		List<GradebookModel> gbModels = applicationModel.getGradebookModels();
