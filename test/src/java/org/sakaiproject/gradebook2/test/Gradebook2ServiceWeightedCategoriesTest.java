@@ -181,7 +181,7 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 		security.setAuthz(new AuthzMock(sectionAwareness));
 		security.setAuthn(new AuthnMock());
 		security.setSectionAwareness(sectionAwareness);
-		security.setGbService(gbService);
+		security.setGbToolService(gbService);
 		
 		service.setAdvisor(new SampleInstitutionalAdvisor());
 		service.setBusinessLogic(businessLogic);

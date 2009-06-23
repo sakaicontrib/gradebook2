@@ -4106,6 +4106,23 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 		return session.getId();
 	}
+	
+	public List getCategoriesWithAssignments(Long gradebookId) {
+		List categories = gbService.getCategories(gradebookId);
+    	List categoriesWithAssignments = new ArrayList();
+    	if (categories != null) {
+    		for (Iterator catIter = categories.iterator(); catIter.hasNext();) {
+    			Category category = (Category) catIter.next();
+    			if (category != null) {
+    				List assignments = gbService.getAssignmentsForCategory(category.getId());
+    				category.setAssignmentList(assignments);
+    				categoriesWithAssignments.add(category);
+    			}
+    		}
+    	}
+    	
+    	return categoriesWithAssignments;
+	}
 
 	/*
 	 * UTILITY HELPER METHODS
@@ -4578,4 +4595,5 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	public void setConfigService(ServerConfigurationService configService) {
 		this.configService = configService;
 	}
+
 }

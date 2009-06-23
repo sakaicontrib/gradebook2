@@ -6,11 +6,10 @@ import java.util.Map;
 import org.sakaiproject.section.api.SectionAwareness;
 import org.sakaiproject.section.api.coursemanagement.CourseSection;
 import org.sakaiproject.section.api.coursemanagement.EnrollmentRecord;
-import org.sakaiproject.tool.gradebook.facades.Authn;
-import org.sakaiproject.tool.gradebook.facades.Authz;
+
 
 public interface Gradebook2Security {
-
+	
 	// New helper method to replace old code in getWorkingEnrollments
 	public Map<String, EnrollmentRecord> findEnrollmentRecords(String gradebookUid, Long gradebookId, String optionalSearchString, String optionalSectionUid);
 
@@ -45,20 +44,20 @@ public interface Gradebook2Security {
 
 	public boolean isUserTAinSection(String sectionUid);
 
-	public Authz getAuthz();
+	public Gradebook2Authz getAuthz();
 
-	public void setAuthz(Authz authz);
+	public void setAuthz(Gradebook2Authz authz);
 
-	public Authn getAuthn();
+	public Gradebook2Authn getAuthn();
 
-	public void setAuthn(Authn authn);
+	public void setAuthn(Gradebook2Authn authn);
 
-	public GradebookToolService getGbService();
+	public GradebookToolService getGbToolService();
 
-	public void setGbService(GradebookToolService gbService);
+	public void setGbToolService(GradebookToolService gbToolService);
 
 	public SectionAwareness getSectionAwareness();
 
 	public void setSectionAwareness(SectionAwareness sectionAwareness);
-
+	
 }

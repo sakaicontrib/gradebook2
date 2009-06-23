@@ -1,25 +1,25 @@
 /**********************************************************************************
-*
-* $Id:$
-*
-***********************************************************************************
-*
-* Copyright (c) 2005, 2006, 2008, 2009 The Regents of the University of California, The MIT Corporation
-*
-* Licensed under the
-* Educational Community License, Version 2.0 (the "License"); you may
-* not use this file except in compliance with the License. You may
-* obtain a copy of the License at
-* 
-* http://www.osedu.org/licenses/ECL-2.0
-* 
-* Unless required by applicable law or agreed to in writing,
-* software distributed under the License is distributed on an "AS IS"
-* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-* or implied. See the License for the specific language governing
-* permissions and limitations under the License.
-*
-**********************************************************************************/
+ *
+ * $Id:$
+ *
+ ***********************************************************************************
+ *
+ * Copyright (c) 2005, 2006, 2008, 2009 The Regents of the University of California, The MIT Corporation
+ *
+ * Licensed under the
+ * Educational Community License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may
+ * obtain a copy of the License at
+ * 
+ * http://www.osedu.org/licenses/ECL-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS"
+ * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ *
+ **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.sakai.hibernate;
 
 import java.math.BigDecimal;
@@ -47,6 +47,7 @@ import org.hibernate.StaleObjectStateException;
 import org.hibernate.TransientObjectException;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.exception.ConstraintViolationException;
+import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authn;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserConfiguration;
@@ -73,7 +74,6 @@ import org.sakaiproject.tool.gradebook.Gradebook;
 import org.sakaiproject.tool.gradebook.GradingEvent;
 import org.sakaiproject.tool.gradebook.LetterGradePercentMapping;
 import org.sakaiproject.tool.gradebook.Permission;
-import org.sakaiproject.tool.gradebook.facades.Authn;
 import org.sakaiproject.tool.gradebook.facades.EventTrackingService;
 import org.sakaiproject.user.api.User;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -93,46 +93,46 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 public class GradebookToolServiceImpl extends HibernateDaoSupport implements GradebookToolService {
 
 	private static final Log log = LogFactory.getLog(GradebookToolServiceImpl.class);
-	 // Special logger for data contention analysis.
-    private static final Log logData = LogFactory.getLog(GradebookToolServiceImpl.class.getName() + ".GB_DATA");
+	// Special logger for data contention analysis.
+	private static final Log logData = LogFactory.getLog(GradebookToolServiceImpl.class.getName() + ".GB_DATA");
 
 	public static int MAX_NUMBER_OF_SQL_PARAMETERS_IN_LIST = 1000;
 
-    protected SectionAwareness sectionAwareness;
-    protected Authn authn;
-    protected EventTrackingService eventTrackingService;
-	
-    // Local cache of static-between-deployment properties.
-    protected Map propertiesMap = new HashMap();
-    protected Map<MultiKey, Boolean> isStudentGradeCache = new ConcurrentHashMap<MultiKey, Boolean>();
-    
-    
+	protected SectionAwareness sectionAwareness;
+	protected Gradebook2Authn authn;
+	protected EventTrackingService eventTrackingService;
+
+	// Local cache of static-between-deployment properties.
+	protected Map propertiesMap = new HashMap();
+	protected Map<MultiKey, Boolean> isStudentGradeCache = new ConcurrentHashMap<MultiKey, Boolean>();
+
+
 	/** synchronize from external application*/
-    //GbSynchronizer synchronizer = null;
-	
-    /*
+	//GbSynchronizer synchronizer = null;
+
+	/*
 	 * GRADEBOOKTOOLSERVICE IMPLEMENTATION
 	 * 
 	 */
-    
+
 	public Long createAssignmentForCategory(final Long gradebookId, final Long categoryId,
 			final String name, final Double points, final Double weight, final Date dueDate,
 			final Boolean isUnweighted, final Boolean isExtraCredit, final Boolean isNotCounted, 
 			final Boolean isReleased) throws ConflictingAssignmentNameException, StaleObjectModificationException, IllegalArgumentException
-	    {
-	    	if(gradebookId == null)
-	    	{
-	    		throw new IllegalArgumentException("gradebookId or categoryId is null in BaseHibernateManager.createAssignmentForCategory");
-	    	}
+			{
+		if(gradebookId == null)
+		{
+			throw new IllegalArgumentException("gradebookId or categoryId is null in BaseHibernateManager.createAssignmentForCategory");
+		}
 
-	    	HibernateCallback hc = new HibernateCallback() {
-	    		public Object doInHibernate(Session session) throws HibernateException {
-	    			Gradebook gb = (Gradebook)session.load(Gradebook.class, gradebookId);
-	    			Category cat = null;
-	    			
-	    			if (categoryId != null)
-	    				cat = (Category)session.load(Category.class, categoryId);
-	    			/*List conflictList = ((List)session.createQuery(
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException {
+				Gradebook gb = (Gradebook)session.load(Gradebook.class, gradebookId);
+				Category cat = null;
+
+				if (categoryId != null)
+					cat = (Category)session.load(Category.class, categoryId);
+				/*List conflictList = ((List)session.createQuery(
 	    			"select go from GradableObject as go where go.name = ? and go.gradebook = ? and go.removed=false").
 	    			setString(0, name).
 	    			setEntity(1, gb).list());
@@ -141,482 +141,482 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	    				throw new ConflictingAssignmentNameException("You can not save multiple assignments in a gradebook with the same name");
 	    			}*/
 
-	    			Assignment asn = new Assignment();
-	    			asn.setGradebook(gb);
-	    			if (cat != null)
-	    				asn.setCategory(cat);
-	    			asn.setName(name.trim());
-	    			asn.setPointsPossible(points);
-	    			asn.setAssignmentWeighting(weight);
-	    			asn.setDueDate(dueDate);
-	    			asn.setUnweighted(isUnweighted);
-	    			asn.setExtraCredit(isExtraCredit);
-	    			asn.setUngraded(false);
-	    			if (isNotCounted != null) {
-	    				asn.setNotCounted(isNotCounted.booleanValue());
-	    			}
+				Assignment asn = new Assignment();
+				asn.setGradebook(gb);
+				if (cat != null)
+					asn.setCategory(cat);
+				asn.setName(name.trim());
+				asn.setPointsPossible(points);
+				asn.setAssignmentWeighting(weight);
+				asn.setDueDate(dueDate);
+				asn.setUnweighted(isUnweighted);
+				asn.setExtraCredit(isExtraCredit);
+				asn.setUngraded(false);
+				if (isNotCounted != null) {
+					asn.setNotCounted(isNotCounted.booleanValue());
+				}
 
-	    			if(isReleased!=null){
-	    				asn.setReleased(isReleased.booleanValue());
-	    			}
+				if(isReleased!=null){
+					asn.setReleased(isReleased.booleanValue());
+				}
 
-	    			/** synchronize from external application */
-/*	    			if (synchronizer != null && !synchronizer.isProjectSite())
+				/** synchronize from external application */
+				/*	    			if (synchronizer != null && !synchronizer.isProjectSite())
 	    			{
 	    				synchronizer.addLegacyAssignment(name);
 	    			}  
-*/
-	    			Long id = (Long)session.save(asn);
+				 */
+				Long id = (Long)session.save(asn);
 
-	    			return id;
-	    		}
-	    	};
+				return id;
+			}
+		};
 
-	    	return (Long)getHibernateTemplate().execute(hc);
-	    }
+		return (Long)getHibernateTemplate().execute(hc);
+			}
 
 	public Long createCategory(final Long gradebookId, final String name, final Double weight, final Integer dropLowest, final Boolean equalWeightAssignments, final Boolean isUnweighted, final Boolean isExtraCredit) 
-    throws ConflictingCategoryNameException, StaleObjectModificationException {
-    	HibernateCallback hc = new HibernateCallback() {
-    		public Object doInHibernate(Session session) throws HibernateException {
-    			Gradebook gb = (Gradebook)session.load(Gradebook.class, gradebookId);
-    			List conflictList = ((List)session.createQuery(
-    					"select ca from Category as ca where ca.name = ? and ca.gradebook = ? and ca.removed=false ").
-    					setString(0, name).
-    					setEntity(1, gb).list());
-    			int numNameConflicts = conflictList.size();
-    			if(numNameConflicts > 0) {
-    				throw new ConflictingCategoryNameException("You can not save multiple catetories in a gradebook with the same name");
-    			}
-    			if (weight != null) {
-	    			if ( weight.intValue() > 1 || weight.intValue() < 0)
-	    			{
-	    				throw new IllegalArgumentException("weight for category is greater than 1 or less than 0 in createCategory of BaseHibernateManager");
-	    			}
-    			}
+	throws ConflictingCategoryNameException, StaleObjectModificationException {
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException {
+				Gradebook gb = (Gradebook)session.load(Gradebook.class, gradebookId);
+				List conflictList = ((List)session.createQuery(
+						"select ca from Category as ca where ca.name = ? and ca.gradebook = ? and ca.removed=false ").
+						setString(0, name).
+						setEntity(1, gb).list());
+				int numNameConflicts = conflictList.size();
+				if(numNameConflicts > 0) {
+					throw new ConflictingCategoryNameException("You can not save multiple catetories in a gradebook with the same name");
+				}
+				if (weight != null) {
+					if ( weight.intValue() > 1 || weight.intValue() < 0)
+					{
+						throw new IllegalArgumentException("weight for category is greater than 1 or less than 0 in createCategory of BaseHibernateManager");
+					}
+				}
 
-    			int dl = dropLowest == null ? 0 : dropLowest.intValue();
-    			
-    			Category ca = new Category();
-    			ca.setGradebook(gb);
-    			ca.setName(name);
-    			ca.setWeight(weight);
-    			ca.setDrop_lowest(dl);
-    			ca.setEqualWeightAssignments(equalWeightAssignments);
-    			ca.setUnweighted(isUnweighted);
-    			ca.setRemoved(false);
-    			ca.setExtraCredit(isExtraCredit);
+				int dl = dropLowest == null ? 0 : dropLowest.intValue();
 
-    			Long id = (Long)session.save(ca);
+				Category ca = new Category();
+				ca.setGradebook(gb);
+				ca.setName(name);
+				ca.setWeight(weight);
+				ca.setDrop_lowest(dl);
+				ca.setEqualWeightAssignments(equalWeightAssignments);
+				ca.setUnweighted(isUnweighted);
+				ca.setRemoved(false);
+				ca.setExtraCredit(isExtraCredit);
 
-    			return id;
-    		}
-    	};
+				Long id = (Long)session.save(ca);
 
-    	return (Long)getHibernateTemplate().execute(hc);
-    }
-	
-	
+				return id;
+			}
+		};
+
+		return (Long)getHibernateTemplate().execute(hc);
+	}
+
+
 	public void createOrUpdateUserConfiguration(final String userUid, final Long gradebookId, final String configField, final String configValue) {
 		HibernateCallback hc = new HibernateCallback() {
-    		public Object doInHibernate(Session session) throws HibernateException {
-    			
-    			Long id = null;
-    			
-    			Query q = session.createQuery("from UserConfiguration as config where config.userUid = :userUid and config.gradebookId = :gradebookId and config.configField = :configField ");
-    			q.setString("userUid", userUid);
-    			q.setLong("gradebookId", gradebookId);
-    			q.setString("configField", configField);
-    			
-    			UserConfiguration config = (UserConfiguration)q.uniqueResult();
-    			
-    			if (config != null) {
-    				
-    				config.setConfigValue(configValue);
+			public Object doInHibernate(Session session) throws HibernateException {
 
-    			} else {
-    			
-	    			config = new UserConfiguration();
-	    			config.setUserUid(userUid);
-	    			config.setGradebookId(gradebookId);
-	    			config.setConfigField(configField);
-	    			config.setConfigValue(configValue);
+				Long id = null;
 
-    			}
-    			
-    			session.saveOrUpdate(config);
-    			
-    			return null;
-    		}
-    	};
+				Query q = session.createQuery("from UserConfiguration as config where config.userUid = :userUid and config.gradebookId = :gradebookId and config.configField = :configField ");
+				q.setString("userUid", userUid);
+				q.setLong("gradebookId", gradebookId);
+				q.setString("configField", configField);
 
-    	getHibernateTemplate().execute(hc);
+				UserConfiguration config = (UserConfiguration)q.uniqueResult();
+
+				if (config != null) {
+
+					config.setConfigValue(configValue);
+
+				} else {
+
+					config = new UserConfiguration();
+					config.setUserUid(userUid);
+					config.setGradebookId(gradebookId);
+					config.setConfigField(configField);
+					config.setConfigValue(configValue);
+
+				}
+
+				session.saveOrUpdate(config);
+
+				return null;
+			}
+		};
+
+		getHibernateTemplate().execute(hc);
 	}
-	
-	
+
+
 	public List<ActionRecord> getActionRecords(final String gradebookUid, final int offset, final int limit) {
 		HibernateCallback hc = new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-                Query q = session.createQuery("from ActionRecord as ar where ar.gradebookUid=:gradebookUid order by ar.dateRecorded desc ");
-                q.setString("gradebookUid", gradebookUid);
-                q.setFirstResult(offset);
-                q.setMaxResults(limit);
-                return q.list();
-            }
-        };
-        return (List<ActionRecord>)getHibernateTemplate().execute(hc);	
+			public Object doInHibernate(Session session) throws HibernateException {
+				Query q = session.createQuery("from ActionRecord as ar where ar.gradebookUid=:gradebookUid order by ar.dateRecorded desc ");
+				q.setString("gradebookUid", gradebookUid);
+				q.setFirstResult(offset);
+				q.setMaxResults(limit);
+				return q.list();
+			}
+		};
+		return (List<ActionRecord>)getHibernateTemplate().execute(hc);	
 	}
-	
+
 	public Integer getActionRecordSize(final String gradebookUid) {
 		Integer size = (Integer)getHibernateTemplate().execute(new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-                Query q = session.createQuery("select count(*) from ActionRecord as ar where ar.gradebookUid=:gradebookUid ");
-                q.setString("gradebookUid", gradebookUid);
-                return (Integer) q.iterate().next();
-            }
-        });
-		
+			public Object doInHibernate(Session session) throws HibernateException {
+				Query q = session.createQuery("select count(*) from ActionRecord as ar where ar.gradebookUid=:gradebookUid ");
+				q.setString("gradebookUid", gradebookUid);
+				return (Integer) q.iterate().next();
+			}
+		});
+
 		return size;
 	}
-	
+
 	public List<ActionRecord> getActionRecords(final String gradebookUid, final String learnerUid, final int offset, final int limit) {
 		HibernateCallback hc = new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-                Query q = session.createQuery("from ActionRecord as ar where ar.gradebookUid=:gradebookUid and ar.studentUid=:learnerUid order by ar.dateRecorded desc ");
-                q.setString("gradebookUid", gradebookUid);
-                q.setString("learnerUid", learnerUid);
-                q.setFirstResult(offset);
-                q.setMaxResults(limit);
-                return q.list();
-            }
-        };
-        return (List<ActionRecord>)getHibernateTemplate().execute(hc);	
+			public Object doInHibernate(Session session) throws HibernateException {
+				Query q = session.createQuery("from ActionRecord as ar where ar.gradebookUid=:gradebookUid and ar.studentUid=:learnerUid order by ar.dateRecorded desc ");
+				q.setString("gradebookUid", gradebookUid);
+				q.setString("learnerUid", learnerUid);
+				q.setFirstResult(offset);
+				q.setMaxResults(limit);
+				return q.list();
+			}
+		};
+		return (List<ActionRecord>)getHibernateTemplate().execute(hc);	
 	}
-	
+
 	public Integer getActionRecordSize(final String gradebookUid, final String learnerUid) {
 		Integer size = (Integer)getHibernateTemplate().execute(new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-                Query q = session.createQuery("select count(*) from ActionRecord as ar where ar.gradebookUid=:gradebookUid and ar.studentUid=:learnerUid ");
-                q.setString("gradebookUid", gradebookUid);
-                q.setString("learnerUid", learnerUid);
-                return (Integer) q.iterate().next();
-            }
-        });
-		
+			public Object doInHibernate(Session session) throws HibernateException {
+				Query q = session.createQuery("select count(*) from ActionRecord as ar where ar.gradebookUid=:gradebookUid and ar.studentUid=:learnerUid ");
+				q.setString("gradebookUid", gradebookUid);
+				q.setString("learnerUid", learnerUid);
+				return (Integer) q.iterate().next();
+			}
+		});
+
 		return size;
 	}
-	
+
 	public UserDereferenceRealmUpdate getLastUserDereferenceSync(final String siteId, final String realmGroupId) {
 		HibernateCallback hc = new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-            	String realmId = realmGroupId;
-            	
-            	if (realmGroupId == null)
-            		realmId = new StringBuffer().append("/site/").append(siteId).toString();
-            	else if (siteId == null) {
-            		if (log.isInfoEnabled())
+			public Object doInHibernate(Session session) throws HibernateException {
+				String realmId = realmGroupId;
+
+				if (realmGroupId == null)
+					realmId = new StringBuffer().append("/site/").append(siteId).toString();
+				else if (siteId == null) {
+					if (log.isInfoEnabled())
 						log.info("No siteId defined");
 					return null;
-            	}
-            	
-            	Criteria criteria = session.createCriteria(UserDereferenceRealmUpdate.class);
-            	criteria.add(Restrictions.eq("realmId", realmId));
-            	
-            	return criteria.uniqueResult();
-            }
+				}
+
+				Criteria criteria = session.createCriteria(UserDereferenceRealmUpdate.class);
+				criteria.add(Restrictions.eq("realmId", realmId));
+
+				return criteria.uniqueResult();
+			}
 		};
-		
+
 		return (UserDereferenceRealmUpdate)getHibernateTemplate().execute(hc);
 	}
-	
+
 	public synchronized void syncUserDereferenceBySite(final String siteId, final String realmGroupId, final List<User> users, final int realmCount, final String[] roleNames) {
 		HibernateCallback hc = new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-            	
-            	String realmId = realmGroupId;
-            	
-            	if (realmGroupId == null)
-            		realmId = new StringBuffer().append("/site/").append(siteId).toString();
-            	else if (siteId == null) {
-            		if (log.isInfoEnabled())
+			public Object doInHibernate(Session session) throws HibernateException {
+
+				String realmId = realmGroupId;
+
+				if (realmGroupId == null)
+					realmId = new StringBuffer().append("/site/").append(siteId).toString();
+				else if (siteId == null) {
+					if (log.isInfoEnabled())
 						log.info("No siteId defined");
 					return new ArrayList<AssignmentGradeRecord>();
-            	}
-            	
+				}
+
 				StringBuilder builder = new StringBuilder()
-					.append("select user from Realm as r, RealmGroup rg, UserDereference user ")
-					.append("where rg.realmKey=r.realmKey ")
-					.append("and r.realmId=:realmId ")
-					.append("and user.userUid=rg.userId ")
-					.append("and rg.active=true ");
-            	
+				.append("select user from Realm as r, RealmGroup rg, UserDereference user ")
+				.append("where rg.realmKey=r.realmKey ")
+				.append("and r.realmId=:realmId ")
+				.append("and user.userUid=rg.userId ")
+				.append("and rg.active=true ");
+
 				Query query = session.createQuery(builder.toString());
 				query.setString("realmId", realmId);
 				//query.setParameterList("roleKeys", roleKeys);
-				
-            	List<UserDereference> userDereferences = query.list();
-            	Map<String, UserDereference> userDereferenceMap = new HashMap<String, UserDereference>();
-            	for (UserDereference user : userDereferences) {
-            		userDereferenceMap.put(user.getUserUid(), user);
-            		//log.info("Current list: " + user.getUserUid() + " " + user.getDisplayName());
-            	}
-            	
-            	Set<String> addedUserIds = new HashSet<String>(userDereferenceMap.keySet());
-            	
-            	int i=0;
-            	for (User user : users) {
-            		UserDereference dereference = userDereferenceMap.get(user.getId());
-            		
-            		String lastName = user.getLastName() == null ? "" : user.getLastName();
-        			String firstName = user.getFirstName() == null ? "" : user.getFirstName();
-        			
-        			String sortName = new StringBuilder().append(lastName.toUpperCase()).append("   ").append(firstName.toUpperCase()).toString();
-        			String lastNameFirst = new StringBuilder().append(lastName).append(", ").append(firstName).toString();
-        			
-        			if (lastName.equals("") && firstName.equals("")) {
-        				sortName = user.getEid();
-        				lastNameFirst = user.getEid();
-        			}
-            		
-            		if (dereference == null) {
-            				
-            			dereference = new UserDereference(user.getId(), user.getEid(), user.getDisplayId(), user.getDisplayName(), lastNameFirst, sortName, user.getEmail());
-            			
-            			if (!addedUserIds.contains(user.getId())) {
-            				try {
-            					//log.info("Saving " + user.getId() + " " + dereference.getUserUid() + " " + user.getDisplayName());
-		            			session.save(dereference);
-		            			i++;
-            				} catch (ConstraintViolationException he) {
-            					log.info("Caught a constraint violation exception trying to save a user record. This is not necessarily a bug. ", he);
-            				}
-	          
-	            			if ( i % 20 == 0 ) { //20, same as the JDBC batch size
-	                	        //flush a batch of inserts/updates and release memory:
-	                	        try {
-		            				session.flush();
-		                	        session.clear();
-	                	        } catch (ConstraintViolationException he) {
-	            					log.info("Caught a constraint violation exception trying to save a user record. This is not necessarily a bug. ", he);
-	            				}
-	                	    }
-	            			
-	            			addedUserIds.add(user.getId());
-            			}
-            		} else {
-            			
-            			boolean isModified = false;
-            			
-            			if (!user.getEid().equals(dereference.getEid())) {
-            				dereference.setEid(user.getEid());
-            				isModified = true;
-            			}
-            			
-            			if (!user.getDisplayId().equals(dereference.getDisplayId())) {
-            				dereference.setDisplayId(user.getDisplayId());
-            				isModified = true;
-            			}
-            			
-            			if (!user.getDisplayName().equals(dereference.getDisplayName())) {
-            				dereference.setDisplayName(user.getDisplayName());
-            				isModified = true;
-            			}
-            			
-            			if (!lastNameFirst.equals(dereference.getLastNameFirst())) {
-            				dereference.setLastNameFirst(lastNameFirst);
-            				isModified = true;
-            			} 
-            			
-            			if (!sortName.equals(dereference.getSortName())) {
-            				dereference.setSortName(sortName);
-            				isModified = true;
-            			}
-            			
-            			if (!user.getEmail().equals(dereference.getEmail())) {
-            				dereference.setEmail(user.getEmail());
-            				isModified = true;
-            			}
-            			
-            			if (isModified) {
-            				try {
-	            				session.update(dereference);
-	            				i++;
-	            			} catch (ConstraintViolationException he) {
-	        					log.info("Caught a constraint violation exception trying to save a user record. This is not necessarily a bug. ", he);
-	        				}
-            				
-            				if ( i % 20 == 0 ) { //20, same as the JDBC batch size
-                    	        try {
-	            					//flush a batch of inserts/updates and release memory:
-	                    	        session.flush();
-	                    	        session.clear();
-	            				} catch (ConstraintViolationException he) {
-		        					log.info("Caught a constraint violation exception trying to save a user record. This is not necessarily a bug. ", he);
-		        				}
-                    	    }
-            			}
-            			
-            			// Now we remove the keyed value from the map so we know it should stay in DB
-            			userDereferenceMap.remove(user.getId());
-            		}
-            	}
-            	
-            	// Finally, we remove any dereferences that are still in the map
-            	for (UserDereference dereference : userDereferenceMap.values()) {
-            		session.delete(dereference);
-            		i++;
-            		
-            		if ( i % 20 == 0 ) { //20, same as the JDBC batch size
-            	        //flush a batch of deletes and release memory:
-            	        session.flush();
-            	        session.clear();
-            	    }
-            	}
-            	
-            	Criteria criteria = session.createCriteria(UserDereferenceRealmUpdate.class);
-            	criteria.add(Restrictions.eq("realmId", realmId));
-            	
-            	UserDereferenceRealmUpdate lastUpdate = (UserDereferenceRealmUpdate)criteria.uniqueResult();
-            	
-            	if (lastUpdate == null) {
-            		lastUpdate = new UserDereferenceRealmUpdate(realmId, Integer.valueOf(realmCount));
-            		session.save(lastUpdate);
-            	} else {
-            		lastUpdate.setRealmCount(Integer.valueOf(realmCount));
-            		lastUpdate.setLastUpdate(new Date());
-            		session.update(lastUpdate);
-            	}
-            	
-            	return null;
-            }
+
+				List<UserDereference> userDereferences = query.list();
+				Map<String, UserDereference> userDereferenceMap = new HashMap<String, UserDereference>();
+				for (UserDereference user : userDereferences) {
+					userDereferenceMap.put(user.getUserUid(), user);
+					//log.info("Current list: " + user.getUserUid() + " " + user.getDisplayName());
+				}
+
+				Set<String> addedUserIds = new HashSet<String>(userDereferenceMap.keySet());
+
+				int i=0;
+				for (User user : users) {
+					UserDereference dereference = userDereferenceMap.get(user.getId());
+
+					String lastName = user.getLastName() == null ? "" : user.getLastName();
+					String firstName = user.getFirstName() == null ? "" : user.getFirstName();
+
+					String sortName = new StringBuilder().append(lastName.toUpperCase()).append("   ").append(firstName.toUpperCase()).toString();
+					String lastNameFirst = new StringBuilder().append(lastName).append(", ").append(firstName).toString();
+
+					if (lastName.equals("") && firstName.equals("")) {
+						sortName = user.getEid();
+						lastNameFirst = user.getEid();
+					}
+
+					if (dereference == null) {
+
+						dereference = new UserDereference(user.getId(), user.getEid(), user.getDisplayId(), user.getDisplayName(), lastNameFirst, sortName, user.getEmail());
+
+						if (!addedUserIds.contains(user.getId())) {
+							try {
+								//log.info("Saving " + user.getId() + " " + dereference.getUserUid() + " " + user.getDisplayName());
+								session.save(dereference);
+								i++;
+							} catch (ConstraintViolationException he) {
+								log.info("Caught a constraint violation exception trying to save a user record. This is not necessarily a bug. ", he);
+							}
+
+							if ( i % 20 == 0 ) { //20, same as the JDBC batch size
+								//flush a batch of inserts/updates and release memory:
+								try {
+									session.flush();
+									session.clear();
+								} catch (ConstraintViolationException he) {
+									log.info("Caught a constraint violation exception trying to save a user record. This is not necessarily a bug. ", he);
+								}
+							}
+
+							addedUserIds.add(user.getId());
+						}
+					} else {
+
+						boolean isModified = false;
+
+						if (!user.getEid().equals(dereference.getEid())) {
+							dereference.setEid(user.getEid());
+							isModified = true;
+						}
+
+						if (!user.getDisplayId().equals(dereference.getDisplayId())) {
+							dereference.setDisplayId(user.getDisplayId());
+							isModified = true;
+						}
+
+						if (!user.getDisplayName().equals(dereference.getDisplayName())) {
+							dereference.setDisplayName(user.getDisplayName());
+							isModified = true;
+						}
+
+						if (!lastNameFirst.equals(dereference.getLastNameFirst())) {
+							dereference.setLastNameFirst(lastNameFirst);
+							isModified = true;
+						} 
+
+						if (!sortName.equals(dereference.getSortName())) {
+							dereference.setSortName(sortName);
+							isModified = true;
+						}
+
+						if (!user.getEmail().equals(dereference.getEmail())) {
+							dereference.setEmail(user.getEmail());
+							isModified = true;
+						}
+
+						if (isModified) {
+							try {
+								session.update(dereference);
+								i++;
+							} catch (ConstraintViolationException he) {
+								log.info("Caught a constraint violation exception trying to save a user record. This is not necessarily a bug. ", he);
+							}
+
+							if ( i % 20 == 0 ) { //20, same as the JDBC batch size
+								try {
+									//flush a batch of inserts/updates and release memory:
+										session.flush();
+							session.clear();
+								} catch (ConstraintViolationException he) {
+									log.info("Caught a constraint violation exception trying to save a user record. This is not necessarily a bug. ", he);
+								}
+							}
+						}
+
+						// Now we remove the keyed value from the map so we know it should stay in DB
+						userDereferenceMap.remove(user.getId());
+					}
+				}
+
+				// Finally, we remove any dereferences that are still in the map
+				for (UserDereference dereference : userDereferenceMap.values()) {
+					session.delete(dereference);
+					i++;
+
+					if ( i % 20 == 0 ) { //20, same as the JDBC batch size
+						//flush a batch of deletes and release memory:
+						session.flush();
+						session.clear();
+					}
+				}
+
+				Criteria criteria = session.createCriteria(UserDereferenceRealmUpdate.class);
+				criteria.add(Restrictions.eq("realmId", realmId));
+
+				UserDereferenceRealmUpdate lastUpdate = (UserDereferenceRealmUpdate)criteria.uniqueResult();
+
+				if (lastUpdate == null) {
+					lastUpdate = new UserDereferenceRealmUpdate(realmId, Integer.valueOf(realmCount));
+					session.save(lastUpdate);
+				} else {
+					lastUpdate.setRealmCount(Integer.valueOf(realmCount));
+					lastUpdate.setLastUpdate(new Date());
+					session.update(lastUpdate);
+				}
+
+				return null;
+			}
 		};
-		
+
 		try {
 			getHibernateTemplate().execute(hc);
 		} catch (ConstraintViolationException he) {
 			log.info("Caught a constraint violation exception trying to save a user record. This is not necessarily a bug. ", he);
 		}
 	}
-	
-	
+
+
 	public List<String> getFullUserListForSite(final String siteId, final String[] roleNames) {
 		HibernateCallback hc = new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-            	
-            	String realmId = new StringBuffer().append("/site/").append(siteId).toString();
-            	
-            	
-            	Query query = null;
+			public Object doInHibernate(Session session) throws HibernateException {
+
+				String realmId = new StringBuffer().append("/site/").append(siteId).toString();
+
+
+				Query query = null;
 
 				StringBuilder builder = new StringBuilder()
-					.append("select rg.userId from Realm as r, RealmGroup rg, RealmRole rr ")
-					.append("where rg.realmKey=r.realmKey ")
-					.append("and r.realmId=:realmId ")
-					.append("and rr.roleKey = rg.roleKey ")
-					.append("and rr.roleName in (:roleKeys) ")
-					.append("and rg.active=true ");
+				.append("select rg.userId from Realm as r, RealmGroup rg, RealmRole rr ")
+				.append("where rg.realmKey=r.realmKey ")
+				.append("and r.realmId=:realmId ")
+				.append("and rr.roleKey = rg.roleKey ")
+				.append("and rr.roleName in (:roleKeys) ")
+				.append("and rg.active=true ");
 
 				query = session.createQuery(builder.toString());
 				query.setString("realmId", realmId);
 				query.setParameterList("roleKeys", roleNames);
-				
+
 				return query.list();
-            }
+			}
 		};
-		
-        List<String> result = (List<String>)getHibernateTemplate().execute(hc);
-    		
-        return result;
+
+		List<String> result = (List<String>)getHibernateTemplate().execute(hc);
+
+		return result;
 	}
-	
+
 	public int getFullUserCountForSite(final String siteId, final String realmGroupId, final String[] roleNames) {
 		HibernateCallback hc = new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-            	
-            	String realmId = realmGroupId;
-            	
-            	if (realmGroupId == null)
-            		realmId = new StringBuffer().append("/site/").append(siteId).toString();
-            	else if (siteId == null) {
-            		if (log.isInfoEnabled())
+			public Object doInHibernate(Session session) throws HibernateException {
+
+				String realmId = realmGroupId;
+
+				if (realmGroupId == null)
+					realmId = new StringBuffer().append("/site/").append(siteId).toString();
+				else if (siteId == null) {
+					if (log.isInfoEnabled())
 						log.info("No siteId defined");
 					return Integer.valueOf(0);
-            	}
-            	
-            	Query query = null;
+				}
+
+				Query query = null;
 
 				StringBuilder builder = new StringBuilder()
-					.append("select count(rg) from Realm as r, RealmGroup rg, RealmRole rr ")
-					.append("where rg.realmKey=r.realmKey ")
-					.append("and r.realmId=:realmId ")
-					.append("and rr.roleKey = rg.roleKey ")
-					.append("and rr.roleName in (:roleKeys) ")
-					.append("and rg.active=true ");
+				.append("select count(rg) from Realm as r, RealmGroup rg, RealmRole rr ")
+				.append("where rg.realmKey=r.realmKey ")
+				.append("and r.realmId=:realmId ")
+				.append("and rr.roleKey = rg.roleKey ")
+				.append("and rr.roleName in (:roleKeys) ")
+				.append("and rg.active=true ");
 
 				query = session.createQuery(builder.toString());
 				query.setString("realmId", realmId);
 				query.setParameterList("roleKeys", roleNames);
-				
+
 				Number realmCount = (Number)query.uniqueResult();
 
 				return realmCount;
-            }
+			}
 		};
-        Number result = (Number)getHibernateTemplate().execute(hc);
-    		
-        return result == null ? 0 : result.intValue();
+		Number result = (Number)getHibernateTemplate().execute(hc);
+
+		return result == null ? 0 : result.intValue();
 	}
-	
+
 	public int getDereferencedUserCountForSite(final String siteId, final String realmGroupId, final String[] roleNames) {
 		HibernateCallback hc = new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-            	
-            	String realmId = realmGroupId;
-            	
-            	if (realmGroupId == null)
-            		realmId = new StringBuffer().append("/site/").append(siteId).toString();
-            	else if (siteId == null) {
-            		if (log.isInfoEnabled())
+			public Object doInHibernate(Session session) throws HibernateException {
+
+				String realmId = realmGroupId;
+
+				if (realmGroupId == null)
+					realmId = new StringBuffer().append("/site/").append(siteId).toString();
+				else if (siteId == null) {
+					if (log.isInfoEnabled())
 						log.info("No siteId defined");
 					return new ArrayList<AssignmentGradeRecord>();
-            	}
-            	
-            	Query query = null;
+				}
+
+				Query query = null;
 
 				StringBuilder builder = new StringBuilder()
-					.append("select count(rg) from Realm as r, RealmGroup rg, RealmRole rr, UserDereference u ")
-					.append("where rg.realmKey=r.realmKey ")
-					.append("and u.userUid = rg.userId ")
-					.append("and r.realmId=:realmId ")
-					.append("and rr.roleKey = rg.roleKey ")
-					.append("and rr.roleName in (:roleKeys) ")
-					.append("and rg.active=true ");
+				.append("select count(rg) from Realm as r, RealmGroup rg, RealmRole rr, UserDereference u ")
+				.append("where rg.realmKey=r.realmKey ")
+				.append("and u.userUid = rg.userId ")
+				.append("and r.realmId=:realmId ")
+				.append("and rr.roleKey = rg.roleKey ")
+				.append("and rr.roleName in (:roleKeys) ")
+				.append("and rg.active=true ");
 
 				query = session.createQuery(builder.toString());
 				query.setString("realmId", realmId);
 				query.setParameterList("roleKeys", roleNames);
-				
+
 				Number realmCount = (Number)query.uniqueResult();
 
 				return realmCount;
-            }
+			}
 		};
-        Number result = (Number)getHibernateTemplate().execute(hc);
-    		
-        return result == null ? 0 : result.intValue();
+		Number result = (Number)getHibernateTemplate().execute(hc);
+
+		return result == null ? 0 : result.intValue();
 	}
-	
+
 	public List<UserConfiguration> getUserConfigurations(final String userUid, final Long gradebookId) {
-		
+
 		if (gradebookId == null || userUid == null)
 			return new ArrayList<UserConfiguration>();
-		
-		HibernateCallback hc = new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-            	
-            	Query query = null;
 
-            	StringBuilder builder = new StringBuilder()
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException {
+
+				Query query = null;
+
+				StringBuilder builder = new StringBuilder()
 				.append("select config ")
 				.append("from UserConfiguration config ")
 				.append("where config.userUid = :userUid ")
@@ -627,26 +627,26 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				query.setLong("gradebookId", gradebookId);
 
 				return query.list();
-            }
-        };
-        return (List<UserConfiguration>)getHibernateTemplate().execute(hc);
+			}
+		};
+		return (List<UserConfiguration>)getHibernateTemplate().execute(hc);
 	}
-	
+
 	public int getUserCountForSite(final String[] realmIds, final String sortField, 
 			final String searchField, final String searchCriteria, final String[] roleNames) {
 		HibernateCallback hc = new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-            	
-            	Query query = null;
+			public Object doInHibernate(Session session) throws HibernateException {
+
+				Query query = null;
 
 				StringBuilder builder = new StringBuilder()
-					.append("select count(user) from Realm as r, RealmGroup rg, RealmRole rr, UserDereference user ")
-					.append("where rg.realmKey=r.realmKey ")
-					.append("and r.realmId in (:realmIds) ")
-					.append("and user.userUid=rg.userId ")
-					.append("and rr.roleKey = rg.roleKey ")
-					.append("and rr.roleName in (:roleKeys) ")
-					.append("and rg.active=true ");
+				.append("select count(user) from Realm as r, RealmGroup rg, RealmRole rr, UserDereference user ")
+				.append("where rg.realmKey=r.realmKey ")
+				.append("and r.realmId in (:realmIds) ")
+				.append("and user.userUid=rg.userId ")
+				.append("and rr.roleKey = rg.roleKey ")
+				.append("and rr.roleName in (:roleKeys) ")
+				.append("and rg.active=true ");
 
 				if (searchField != null && searchCriteria != null) {
 					builder.append("and user.").append(searchField).append(" like '").append("%").append(searchCriteria).append("%' ");
@@ -655,66 +655,66 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				query = session.createQuery(builder.toString());
 				query.setParameterList("realmIds", realmIds);
 				query.setParameterList("roleKeys", roleNames);
-				
+
 				Number realmCount = (Number)query.uniqueResult();
 
 				return realmCount;
-            }
+			}
 		};
-		
+
 		Number result = (Number)getHibernateTemplate().execute(hc);
-		
+
 		return result == null ? 0 : result.intValue();
 	}
-	
-	
+
+
 	public List<Object[]> getUserGroupReferences(final List<String> groupReferences, final String[] roleNames) {
-		
+
 		if (groupReferences == null || groupReferences.size() == 0)
 			return new ArrayList<Object[]>();
-		
-		
-		HibernateCallback hc = new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-            	
-            	Query query = null;
 
-            	StringBuilder builder = new StringBuilder()
-				.append("select rg.userId, r.realmId ")
-				.append("from Realm as r, RealmGroup as rg, RealmRole rr ")
-				.append("where rg.realmKey=r.realmKey ")
-				.append("and r.realmId in (:groupReferences) ")
-				.append("and rr.roleKey = rg.roleKey ")
-				.append("and rr.roleName in (:roleKeys) ")
-				.append("and rg.active=true ");
 
-				query = session.createQuery(builder.toString());
-				query.setParameterList("groupReferences", groupReferences);
-				query.setParameterList("roleKeys", roleNames);
+			HibernateCallback hc = new HibernateCallback() {
+				public Object doInHibernate(Session session) throws HibernateException {
 
-				return query.list();
-            }
-        };
-        return (List<Object[]>)getHibernateTemplate().execute(hc);
-	}
+					Query query = null;
 
-	
-	public List<UserDereference> getUserDereferences(final String[] realmIds, final String sortField, final String searchField, 
-			final String searchCriteria, final int offset, final int limit, final boolean isAsc, final String[] roleNames) {
-		
-		HibernateCallback hc = new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-            	            	
-            	Query query = null;
-
-				StringBuilder builder = new StringBuilder()
-					.append("select user from Realm as r, RealmGroup rg, RealmRole rr, UserDereference user ")
-					.append("where rg.realmKey = r.realmKey ")
-					.append("and r.realmId in (:realmIds) ")
-					.append("and user.userUid = rg.userId ")
+					StringBuilder builder = new StringBuilder()
+					.append("select rg.userId, r.realmId ")
+					.append("from Realm as r, RealmGroup as rg, RealmRole rr ")
+					.append("where rg.realmKey=r.realmKey ")
+					.append("and r.realmId in (:groupReferences) ")
 					.append("and rr.roleKey = rg.roleKey ")
 					.append("and rr.roleName in (:roleKeys) ")
-					.append("and rg.active = true ");
+					.append("and rg.active=true ");
+
+					query = session.createQuery(builder.toString());
+					query.setParameterList("groupReferences", groupReferences);
+					query.setParameterList("roleKeys", roleNames);
+
+					return query.list();
+				}
+			};
+			return (List<Object[]>)getHibernateTemplate().execute(hc);
+	}
+
+
+	public List<UserDereference> getUserDereferences(final String[] realmIds, final String sortField, final String searchField, 
+			final String searchCriteria, final int offset, final int limit, final boolean isAsc, final String[] roleNames) {
+
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException {
+
+				Query query = null;
+
+				StringBuilder builder = new StringBuilder()
+				.append("select user from Realm as r, RealmGroup rg, RealmRole rr, UserDereference user ")
+				.append("where rg.realmKey = r.realmKey ")
+				.append("and r.realmId in (:realmIds) ")
+				.append("and user.userUid = rg.userId ")
+				.append("and rr.roleKey = rg.roleKey ")
+				.append("and rr.roleName in (:roleKeys) ")
+				.append("and rg.active = true ");
 
 				if (searchField != null && searchCriteria != null) {
 					builder.append("and user.").append(searchField).append(" like '").append("%").append(searchCriteria).append("%' ");
@@ -742,45 +742,45 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 					query.setMaxResults(limit);
 
 				return query.list();
-            }
-        };
-        return (List<UserDereference>)getHibernateTemplate().execute(hc);
+			}
+		};
+		return (List<UserDereference>)getHibernateTemplate().execute(hc);
 	}
 
-	
+
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(final Long[] assignmentIds) {
 		HibernateCallback hc = new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-            	
-            	Query query = null;
-            	
-            	StringBuilder builder = new StringBuilder();
- 
-            	builder.append(" select agr from AssignmentGradeRecord agr ")
-            		   .append(" where agr.gradableObject.id in (:assignmentIds) ");
-            	
-            	query = session.createQuery(builder.toString());
+			public Object doInHibernate(Session session) throws HibernateException {
 
-                query.setParameterList("assignmentIds", assignmentIds);
-                	
-                return query.list();
-            }
-        };
-        return (List<AssignmentGradeRecord>)getHibernateTemplate().execute(hc);
+				Query query = null;
+
+				StringBuilder builder = new StringBuilder();
+
+				builder.append(" select agr from AssignmentGradeRecord agr ")
+				.append(" where agr.gradableObject.id in (:assignmentIds) ");
+
+				query = session.createQuery(builder.toString());
+
+				query.setParameterList("assignmentIds", assignmentIds);
+
+				return query.list();
+			}
+		};
+		return (List<AssignmentGradeRecord>)getHibernateTemplate().execute(hc);
 	}
-	
-	
+
+
 	// GRBK-40 : TPA : Eliminated the in java filtering
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(final Long gradebookId, final String[] realmIds, final String[] roleNames) {
 		HibernateCallback hc = new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-            	
-            	Query query = null;
-            	
-            	StringBuilder builder = new StringBuilder();
-            	
-            	/*
-            	 
+			public Object doInHibernate(Session session) throws HibernateException {
+
+				Query query = null;
+
+				StringBuilder builder = new StringBuilder();
+
+				/*
+
             	select agr.* 
 				from GB_GRADE_RECORD_T agr, GB_GRADABLE_OBJECT_T g, 
 				SAKAI_REALM r, SAKAI_REALM_RL_GR rg, SAKAI_REALM_ROLE rr
@@ -792,35 +792,35 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				and r.REALM_ID in ('/site/7c9d5da1-07b8-482e-82a6-c03b4f5b76e5') 
 				and g.REMOVED=0 
 				and rr.ROLE_NAME in ('Student', 'Open Campus', 'Wait List', 'access') 
-            	
-            	*/
-            	
-            	
-            	builder.append(" select agr from AssignmentGradeRecord agr, GradableObject go, Realm as r, RealmGroup rg, RealmRole rr ")
-            		   .append(" where agr.gradableObject = go.id ")
-            		   .append(" and agr.studentId = rg.userId ")
-            		   .append(" and rg.roleKey = rr.roleKey ")
-            		   .append(" and r.realmKey = rg.realmKey ")
-            		   .append(" and go.gradebook.id=:gradebookId ")
-            		   .append(" and r.realmId in (:realmIds) ")
-            		   .append(" and go.removed=false ")
-            		   .append(" and rr.roleName in (:roleKeys) ");
-            	
-            	query = session.createQuery(builder.toString());
-            	
-                //query = session.createQuery("select agr from AssignmentGradeRecord as agr, GradableObject as go, Realm as r, RealmGroup rg, RealmRole rr where " +
-                //			"agr.gradableObject = go.id and agr.studentId = rg.userId and rg.roleKey = rr.roleKey " +
-                //			"and go.gradebook.id=:gradebookId and r.realmId in (:realmIds) and go.removed=false and rr.roleName in (:roleKeys) order by agr.pointsEarned ");
-                query.setLong("gradebookId", gradebookId.longValue());
-                query.setParameterList("realmIds", realmIds);
-                query.setParameterList("roleKeys", roleNames);
-                	
-                return query.list();
-            }
-        };
-        return (List<AssignmentGradeRecord>)getHibernateTemplate().execute(hc);
+
+				 */
+
+
+				builder.append(" select agr from AssignmentGradeRecord agr, GradableObject go, Realm as r, RealmGroup rg, RealmRole rr ")
+				.append(" where agr.gradableObject = go.id ")
+				.append(" and agr.studentId = rg.userId ")
+				.append(" and rg.roleKey = rr.roleKey ")
+				.append(" and r.realmKey = rg.realmKey ")
+				.append(" and go.gradebook.id=:gradebookId ")
+				.append(" and r.realmId in (:realmIds) ")
+				.append(" and go.removed=false ")
+				.append(" and rr.roleName in (:roleKeys) ");
+
+				query = session.createQuery(builder.toString());
+
+				//query = session.createQuery("select agr from AssignmentGradeRecord as agr, GradableObject as go, Realm as r, RealmGroup rg, RealmRole rr where " +
+				//			"agr.gradableObject = go.id and agr.studentId = rg.userId and rg.roleKey = rr.roleKey " +
+				//			"and go.gradebook.id=:gradebookId and r.realmId in (:realmIds) and go.removed=false and rr.roleName in (:roleKeys) order by agr.pointsEarned ");
+				query.setLong("gradebookId", gradebookId.longValue());
+				query.setParameterList("realmIds", realmIds);
+				query.setParameterList("roleKeys", roleNames);
+
+				return query.list();
+			}
+		};
+		return (List<AssignmentGradeRecord>)getHibernateTemplate().execute(hc);
 	}
-	
+
 	/*public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(final Long gradebookId, final String siteId, final String realmGroupId, final String sortField, 
 			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc) {
 		HibernateCallback hc = new HibernateCallback() {
@@ -837,7 +837,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 					.append("and agr.gradableObject.removed=false ")
 					.append("and user.userUid=rg.userId ");
 
-				
+
 				if (searchField != null && searchCriteria != null) {
 					builder.append("and user.").append(searchField).append(" like ").append("%").append(searchCriteria).append("% ");
 				}
@@ -877,24 +877,24 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		};
 		return (List<AssignmentGradeRecord>) getHibernateTemplate().execute(hc);
 	}*/
-	
+
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(final Long gradebookId, final Collection<String> studentUids) {
 		HibernateCallback hc = new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-                if(studentUids.size() == 0) {
-                    // If there are no enrollments, no need to execute the query.
-                    if(log.isInfoEnabled()) log.info("No enrollments were specified.  Returning an empty List of grade records");
-                    return new ArrayList();
-                } else {
-                	
-                    Query q = session.createQuery("from AssignmentGradeRecord as agr where agr.gradableObject.removed=false and " +
-                            "agr.gradableObject.gradebook.id=:gradebookId order by agr.pointsEarned");
-                    q.setLong("gradebookId", gradebookId.longValue());
-                    return filterGradeRecordsByStudents(q.list(), studentUids);
-                }
-            }
-        };
-        return (List<AssignmentGradeRecord>)getHibernateTemplate().execute(hc);
+			public Object doInHibernate(Session session) throws HibernateException {
+				if(studentUids.size() == 0) {
+					// If there are no enrollments, no need to execute the query.
+					if(log.isInfoEnabled()) log.info("No enrollments were specified.  Returning an empty List of grade records");
+					return new ArrayList();
+				} else {
+
+					Query q = session.createQuery("from AssignmentGradeRecord as agr where agr.gradableObject.removed=false and " +
+					"agr.gradableObject.gradebook.id=:gradebookId order by agr.pointsEarned");
+					q.setLong("gradebookId", gradebookId.longValue());
+					return filterGradeRecordsByStudents(q.list(), studentUids);
+				}
+			}
+		};
+		return (List<AssignmentGradeRecord>)getHibernateTemplate().execute(hc);
 	}
 
 	/*
@@ -907,33 +907,33 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	 * 
 	 */
 	public List<CourseGradeRecord> getAllCourseGradeRecords(final Gradebook gradebook) {
-    	return (List<CourseGradeRecord>)getHibernateTemplate().execute(new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-            	List<CourseGradeRecord> records = getCourseGradeRecords(gradebook, session);
-            	return records;
-            }
-    	});
+		return (List<CourseGradeRecord>)getHibernateTemplate().execute(new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException {
+				List<CourseGradeRecord> records = getCourseGradeRecords(gradebook, session);
+				return records;
+			}
+		});
 	}
-	
+
 	public List<CourseGradeRecord> getAllCourseGradeRecords(final Long gradebookId, final String[] realmIds, final String sortField, final String searchField, 
 			final String searchCriteria, final int offset, final int limit, final boolean isAsc, final String[] roleNames) {
-		
+
 		HibernateCallback hc = new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-            	
-            	Query query = null;
+			public Object doInHibernate(Session session) throws HibernateException {
+
+				Query query = null;
 
 				StringBuilder builder = new StringBuilder()
-					.append("select c from Realm as r, RealmGroup as rg, RealmRole rr, UserDereference as user, CourseGradeRecord c ")
-					.append("where rg.realmKey=r.realmKey ")
-					.append("and r.realmId in (:realmIds) ")
-					.append("and user.userUid=rg.userId ")
-					.append("and c.studentId=user.userUid ")
-					.append("and c.gradableObject.removed = false ")
-					.append("and c.gradableObject.gradebook.id=:gradebookId ")
-					.append("and rr.roleKey = rg.roleKey ")
-					.append("and rr.roleName in (:roleKeys) ")
-					.append("and rg.active=true ");
+				.append("select c from Realm as r, RealmGroup as rg, RealmRole rr, UserDereference as user, CourseGradeRecord c ")
+				.append("where rg.realmKey=r.realmKey ")
+				.append("and r.realmId in (:realmIds) ")
+				.append("and user.userUid=rg.userId ")
+				.append("and c.studentId=user.userUid ")
+				.append("and c.gradableObject.removed = false ")
+				.append("and c.gradableObject.gradebook.id=:gradebookId ")
+				.append("and rr.roleKey = rg.roleKey ")
+				.append("and rr.roleName in (:roleKeys) ")
+				.append("and rg.active=true ");
 
 				if (searchField != null && searchCriteria != null) {
 					builder.append("and user.").append(searchField).append(" like '").append("%").append(searchCriteria).append("%' ");
@@ -955,100 +955,100 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				query.setParameterList("realmIds", realmIds);
 				query.setLong("gradebookId", gradebookId);
 				query.setParameterList("roleKeys", roleNames);
-				
+
 				if (offset != -1)
 					query.setFirstResult(offset);
 				if (limit != -1)
 					query.setMaxResults(limit);
 
 				return query.list();
-            }
-        };
-        return (List<CourseGradeRecord>)getHibernateTemplate().execute(hc);
+			}
+		};
+		return (List<CourseGradeRecord>)getHibernateTemplate().execute(hc);
 	}
 
 	public Assignment getAssignment(Long assignmentId) {
 		return (Assignment)getHibernateTemplate().load(Assignment.class, assignmentId);
 	}
-	
-	public AssignmentGradeRecord getAssignmentGradeRecordForAssignmentForStudent(final Assignment assignment, final String studentUid) {
-	    HibernateCallback hc = new HibernateCallback() {
-	        public Object doInHibernate(Session session) throws HibernateException {
-	            if(studentUid == null) {
-	                if(log.isInfoEnabled()) log.info("Returning no grade records for a null student UID");
-	                return new ArrayList();
-	            } else if (assignment.isRemoved()) {
-	                return new ArrayList();                	
-	            }
-	
-	            Query q = session.createQuery("from AssignmentGradeRecord as agr where agr.gradableObject.id=:gradableObjectId " +
-	            		"and agr.studentId=:student");
-	            q.setLong("gradableObjectId", assignment.getId().longValue());
-	            q.setString("student", studentUid);
-	            return q.list();
-	        }
-	    };
-	    List results = (List) getHibernateTemplate().execute(hc);
-	    if (results.size() > 0){
-	    	return (AssignmentGradeRecord)results.get(0);
-	    } else {
-	    	return new AssignmentGradeRecord();
-	    }
-	}
-	
-	
-	public List<AssignmentGradeRecord> getAssignmentGradeRecords(final Assignment assignment) {
-		 HibernateCallback hc = new HibernateCallback() {
-	            public Object doInHibernate(Session session) throws HibernateException {
-	                if (assignment.isRemoved()) {
-	                    return new ArrayList();                	
-	                }
 
-	                Query q = session.createQuery("from AssignmentGradeRecord as agr where agr.gradableObject.id=:gradableObjectId order by agr.pointsEarned");
-	                q.setLong("gradableObjectId", assignment.getId().longValue());
-	                
-	                return q.list();
-	            }
-	        };
-	        return (List<AssignmentGradeRecord>)getHibernateTemplate().execute(hc);
+	public AssignmentGradeRecord getAssignmentGradeRecordForAssignmentForStudent(final Assignment assignment, final String studentUid) {
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException {
+				if(studentUid == null) {
+					if(log.isInfoEnabled()) log.info("Returning no grade records for a null student UID");
+					return new ArrayList();
+				} else if (assignment.isRemoved()) {
+					return new ArrayList();                	
+				}
+
+				Query q = session.createQuery("from AssignmentGradeRecord as agr where agr.gradableObject.id=:gradableObjectId " +
+				"and agr.studentId=:student");
+				q.setLong("gradableObjectId", assignment.getId().longValue());
+				q.setString("student", studentUid);
+				return q.list();
+			}
+		};
+		List results = (List) getHibernateTemplate().execute(hc);
+		if (results.size() > 0){
+			return (AssignmentGradeRecord)results.get(0);
+		} else {
+			return new AssignmentGradeRecord();
+		}
 	}
-	
+
+
+	public List<AssignmentGradeRecord> getAssignmentGradeRecords(final Assignment assignment) {
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException {
+				if (assignment.isRemoved()) {
+					return new ArrayList();                	
+				}
+
+				Query q = session.createQuery("from AssignmentGradeRecord as agr where agr.gradableObject.id=:gradableObjectId order by agr.pointsEarned");
+				q.setLong("gradableObjectId", assignment.getId().longValue());
+
+				return q.list();
+			}
+		};
+		return (List<AssignmentGradeRecord>)getHibernateTemplate().execute(hc);
+	}
+
 
 	public List<AssignmentGradeRecord> getAssignmentGradeRecords(final Assignment assignment, final Collection<String> studentUids) {
-		 HibernateCallback hc = new HibernateCallback() {
-	            public Object doInHibernate(Session session) throws HibernateException {
-	                if(studentUids == null || studentUids.size() == 0) {
-	                    if(log.isInfoEnabled()) log.info("Returning no grade records for an empty collection of student UIDs");
-	                    return new ArrayList();
-	                } else if (assignment.isRemoved()) {
-	                    return new ArrayList();                	
-	                }
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException {
+				if(studentUids == null || studentUids.size() == 0) {
+					if(log.isInfoEnabled()) log.info("Returning no grade records for an empty collection of student UIDs");
+					return new ArrayList();
+				} else if (assignment.isRemoved()) {
+					return new ArrayList();                	
+				}
 
-	                Query q = session.createQuery("from AssignmentGradeRecord as agr where agr.gradableObject.id=:gradableObjectId order by agr.pointsEarned");
-	                q.setLong("gradableObjectId", assignment.getId().longValue());
-	                List records = filterGradeRecordsByStudents(q.list(), studentUids);
-	                return records;
-	            }
-	        };
-	        return (List<AssignmentGradeRecord>)getHibernateTemplate().execute(hc);
+				Query q = session.createQuery("from AssignmentGradeRecord as agr where agr.gradableObject.id=:gradableObjectId order by agr.pointsEarned");
+				q.setLong("gradableObjectId", assignment.getId().longValue());
+				List records = filterGradeRecordsByStudents(q.list(), studentUids);
+				return records;
+			}
+		};
+		return (List<AssignmentGradeRecord>)getHibernateTemplate().execute(hc);
 	}
-	
+
 	public List<AssignmentGradeRecord> getAssignmentGradeRecordsForStudent(final Long gradebookId, final String studentUid) {
 		HibernateCallback hc = new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-                if(studentUid == null) {
-                    if(log.isInfoEnabled()) log.info("Returning no grade records for a  null studentUid");
-                    return new ArrayList();
-                } 
+			public Object doInHibernate(Session session) throws HibernateException {
+				if(studentUid == null) {
+					if(log.isInfoEnabled()) log.info("Returning no grade records for a  null studentUid");
+					return new ArrayList();
+				} 
 
-                Query q = session.createQuery("from AssignmentGradeRecord as agr where agr.gradableObject.removed=false and agr.gradableObject.gradebook.id=:gradebookId and agr.studentId=:studentUid");
-                q.setLong("gradebookId", gradebookId);
-                q.setString("studentUid", studentUid);
-                
-                return q.list();
-            }
-        };
-        return (List<AssignmentGradeRecord>)getHibernateTemplate().execute(hc);
+				Query q = session.createQuery("from AssignmentGradeRecord as agr where agr.gradableObject.removed=false and agr.gradableObject.gradebook.id=:gradebookId and agr.studentId=:studentUid");
+				q.setLong("gradebookId", gradebookId);
+				q.setString("studentUid", studentUid);
+
+				return q.list();
+			}
+		};
+		return (List<AssignmentGradeRecord>)getHibernateTemplate().execute(hc);
 	}
 
 	/*public boolean hasUngradedAssignments(final Long gradebookId, final String studentUid) {
@@ -1061,9 +1061,9 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
             		.createAlias("gradebook", "gb")
             		.add(Expression.eq("gb.id", gradebookId))
             		.setProjection(Projections.count("id"));
-            
+
             	Number numberOfAssignments = (Number)assignmentCriteria.uniqueResult();       	
-            	
+
             	Criteria agrCriteria = session.createCriteria(AssignmentGradeRecord.class)
 	        		.add(Restrictions.eq("studentId", studentUid))
 	        		.createAlias("gradableObject", "assignment")
@@ -1071,18 +1071,18 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	        		.add(Restrictions.eq("unweighted", false))
 	        		.add(Expression.eq("assignment.gradebook.id", gradebookId))
 	        		.setProjection(Projections.count("assignment.id"));
-            	
+
             	Number numberOfGradeRecords = (Number)agrCriteria.uniqueResult();
-            	
+
             	return !numberOfAssignments.equals(numberOfGradeRecords);
             }
         };
-        
+
         Boolean result = (Boolean)getHibernateTemplate().execute(hc);
-        
+
         return result != null && result.booleanValue();
 	}*/
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.sakai.GradebookToolService#getAssignments(java.lang.Long)
@@ -1094,23 +1094,23 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	 */
 	public List<Assignment> getAssignments(final Long gradebookId) {
 		return (List<Assignment>)getHibernateTemplate().execute(new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-                List assignments = getAssignments(gradebookId, session);
-                
-                /** synchronize from external application*/
-               /*if (synchronizer != null)
+			public Object doInHibernate(Session session) throws HibernateException {
+				List assignments = getAssignments(gradebookId, session);
+
+				/** synchronize from external application*/
+				/*if (synchronizer != null)
                 {
                 	synchronizer.synchrornizeAssignments(assignments);
 
                     assignments = getAssignments(gradebookId, session);
                 }*/
-                /** end synchronize from external application*/
+				/** end synchronize from external application*/
 
-                // JLR - commented out as per doc above
-                //sortAssignments(assignments, sortBy, ascending);
-                return assignments;
-            }
-        });
+				// JLR - commented out as per doc above
+				//sortAssignments(assignments, sortBy, ascending);
+				return assignments;
+			}
+		});
 	}
 
 	/*
@@ -1122,22 +1122,22 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	 * 
 	 */
 	public List<Assignment> getAssignmentsForCategory(final Long categoryId) {
-		
+
 		if (categoryId == null)
 			return null;
-		
-		
+
+
 		HibernateCallback hc = new HibernateCallback() {
-    		public Object doInHibernate(Session session) throws HibernateException {
-    			// Removed logic to ignore removed items, since we want to control this in UI
-    			List assignments = session.createQuery(
-					"from Assignment as assign where assign.category=? " /*and assign.removed=false*/).
-					setLong(0, categoryId.longValue()).
-					list();
-    			return assignments;
-    		}
-    	};
-    	return (List<Assignment>) getHibernateTemplate().execute(hc);
+			public Object doInHibernate(Session session) throws HibernateException {
+				// Removed logic to ignore removed items, since we want to control this in UI
+				List assignments = session.createQuery(
+				"from Assignment as assign where assign.category=? " /*and assign.removed=false*/).
+				setLong(0, categoryId.longValue()).
+				list();
+				return assignments;
+			}
+		};
+		return (List<Assignment>) getHibernateTemplate().execute(hc);
 	}
 
 	/*
@@ -1149,59 +1149,59 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	 * 
 	 */
 	public List<Assignment> getAssignmentsWithNoCategory(final Long gradebookId /*, String assignmentSort, boolean assignAscending*/) {
-		
+
 		HibernateCallback hc = new HibernateCallback() {
-    		public Object doInHibernate(Session session) throws HibernateException {
-    			List assignments = session.createQuery(
-    					"from Assignment as asn where asn.gradebook.id=? and asn.removed=false and asn.category is null").
-    					setLong(0, gradebookId.longValue()).
-    					list();
-    			return assignments;
-    		}
-    	};
-    	
-    	List<Assignment> assignList = (List)getHibernateTemplate().execute(hc);
-    	/*if(assignmentSort != null)
+			public Object doInHibernate(Session session) throws HibernateException {
+				List assignments = session.createQuery(
+						"from Assignment as asn where asn.gradebook.id=? and asn.removed=false and asn.category is null").
+						setLong(0, gradebookId.longValue()).
+						list();
+				return assignments;
+			}
+		};
+
+		List<Assignment> assignList = (List)getHibernateTemplate().execute(hc);
+		/*if(assignmentSort != null)
     		sortAssignments(assignList, assignmentSort, assignAscending);
     	else
     		sortAssignments(assignList, Assignment.DEFAULT_SORT, assignAscending);
-    	*/
-    	return assignList;
+		 */
+		return assignList;
 	}
 
 	public List<Category> getCategories(final Long gradebookId) throws HibernateException {
-    	HibernateCallback hc = new HibernateCallback() {
-    		public Object doInHibernate(Session session) throws HibernateException {
-    			// JLR : removed logic to ignore removed, since we want to show these in UI
-    			List categories = session.createQuery(
-					"from Category as ca where ca.gradebook.id=? order by ca.id asc " /*and ca.removed=false*/).
-					setLong(0, gradebookId.longValue()).
-					list();
-    			return categories;
-    		}
-    	};
-    	return (List<Category>) getHibernateTemplate().execute(hc);
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException {
+				// JLR : removed logic to ignore removed, since we want to show these in UI
+				List categories = session.createQuery(
+				"from Category as ca where ca.gradebook.id=? order by ca.id asc " /*and ca.removed=false*/).
+				setLong(0, gradebookId.longValue()).
+				list();
+				return categories;
+			}
+		};
+		return (List<Category>) getHibernateTemplate().execute(hc);
 	}
 
 	public Category getCategory(final Long categoryId) throws HibernateException{
 		if (categoryId == null)
 			return null;
-		
-    	HibernateCallback hc = new HibernateCallback() {
-    		public Object doInHibernate(Session session) throws HibernateException {
-    			return session.createQuery(
-    			"from Category as cat where cat.id=?").
-    			setLong(0, categoryId.longValue()).
-    			uniqueResult();
-    		}
-    	};
-    	return (Category) getHibernateTemplate().execute(hc);
+
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException {
+				return session.createQuery(
+						"from Category as cat where cat.id=?").
+						setLong(0, categoryId.longValue()).
+						uniqueResult();
+			}
+		};
+		return (Category) getHibernateTemplate().execute(hc);
 	}
 
 	public CourseGrade getCourseGrade(Long gradebookId) {
 		return (CourseGrade)getHibernateTemplate().find(
-                "from CourseGrade as cg where cg.gradebook.id=?",
-                gradebookId).get(0);
+				"from CourseGrade as cg where cg.gradebook.id=?",
+				gradebookId).get(0);
 	}
 
 	public Gradebook getGradebook(Long id) {
@@ -1209,7 +1209,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	}
 
 	public Gradebook getGradebook(String uid) throws GradebookNotFoundException {
-    	List list = getHibernateTemplate().find(
+		List list = getHibernateTemplate().find(
 				"from Gradebook as gb where gb.uid=?", uid);
 		if (list.size() == 1) {
 			return (Gradebook) list.get(0);
@@ -1218,225 +1218,225 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 					"Could not find gradebook uid=" + uid);
 		}
 	}
-	
+
 	public boolean isStudentCommented(final String studentId, final Long assignmentId) {
 		Boolean isCommented = (Boolean)getHibernateTemplate().execute(new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-                Query q = session.createQuery("select count(*) from Comment as c where c.studentId=:studentId and c.gradableObject.id=:assignmentId");
-                q.setParameter("studentId", studentId);
-                q.setParameter("assignmentId",assignmentId);
-                return Boolean.valueOf(((Integer) q.iterate().next() ).intValue() > 0);
-            }
-        });
-		
+			public Object doInHibernate(Session session) throws HibernateException {
+				Query q = session.createQuery("select count(*) from Comment as c where c.studentId=:studentId and c.gradableObject.id=:assignmentId");
+				q.setParameter("studentId", studentId);
+				q.setParameter("assignmentId",assignmentId);
+				return Boolean.valueOf(((Integer) q.iterate().next() ).intValue() > 0);
+			}
+		});
+
 		return isCommented != null && isCommented.booleanValue();
 	}
-	
+
 	public boolean isStudentGraded(final String studentId) {
 		if (log.isDebugEnabled()) log.debug("isStudentGraded called for studentId:" + studentId);
-    	
-        if (studentId == null) {
-        	log.debug("No student id was specified.  Returning false.");
-        	return false;
-        }
 
-        HibernateCallback hc = new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException, SQLException {
+		if (studentId == null) {
+			log.debug("No student id was specified.  Returning false.");
+			return false;
+		}
 
-               Query q = session.createQuery("select count(*) from GradingEvent as ge where ge.studentId=:studentId and ge.gradableObject.removed=false");
-               q.setParameter("studentId", studentId);
-               return Boolean.valueOf(((Integer) q.iterate().next() ).intValue() > 0);
-               
-            }
-        };
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException, SQLException {
 
-        Boolean isGraded = (Boolean)getHibernateTemplate().execute(hc);
+				Query q = session.createQuery("select count(*) from GradingEvent as ge where ge.studentId=:studentId and ge.gradableObject.removed=false");
+				q.setParameter("studentId", studentId);
+				return Boolean.valueOf(((Integer) q.iterate().next() ).intValue() > 0);
 
-        return isGraded != null && isGraded.booleanValue();
+			}
+		};
+
+		Boolean isGraded = (Boolean)getHibernateTemplate().execute(hc);
+
+		return isGraded != null && isGraded.booleanValue();
 	}
-	
+
 	// GRBK-40 : TPA : Added caching
 	public boolean isStudentGraded(final String studentId, final Long assignmentId) {
 		if (log.isDebugEnabled()) log.debug("isStudentGraded called for studentId:" + studentId);
-    	
-        // Don't attempt to run the query if there are no gradableObjects or student id
-        if (assignmentId == null) {
-            log.debug("No assignment specified.  Returning false.");
-            return false;
-        }
-        if (studentId == null) {
-        	log.debug("No student id was specified.  Returning false.");
-        	return false;
-        }
-        
-        MultiKey multiKey = new MultiKey(studentId, assignmentId);
 
-        if(null == isStudentGradeCache.get(multiKey)) {
+		// Don't attempt to run the query if there are no gradableObjects or student id
+		if (assignmentId == null) {
+			log.debug("No assignment specified.  Returning false.");
+			return false;
+		}
+		if (studentId == null) {
+			log.debug("No student id was specified.  Returning false.");
+			return false;
+		}
 
-            HibernateCallback hc = new HibernateCallback() {
-            	
-        		public List<GradingEvent> doInHibernate(Session session) throws HibernateException, SQLException {
+		MultiKey multiKey = new MultiKey(studentId, assignmentId);
 
-        			Query q = session.createQuery("from GradingEvent as ge where ge.gradableObject.id=:assignmentId");
-        			q.setParameter("assignmentId", assignmentId);
-    				return q.list();
-        		}
-        	};
-        	
-        	List<GradingEvent> gradingEvents = (List<GradingEvent>) getHibernateTemplate().execute(hc);
-        	
-        	for(GradingEvent gradingEvent : gradingEvents) {
-        		
-        		isStudentGradeCache.put(new MultiKey(gradingEvent.getStudentId(), assignmentId), Boolean.TRUE);
-        	}
-        	
-        	if(isStudentGradeCache.get(multiKey).booleanValue()) {
-        	
-        		return true;
-        	}
-        	else {
-        		
-        		return false;
-        	}
-        }
-        else {
-        	return isStudentGradeCache.get(multiKey).booleanValue();
-        }
+		if(null == isStudentGradeCache.get(multiKey)) {
+
+			HibernateCallback hc = new HibernateCallback() {
+
+				public List<GradingEvent> doInHibernate(Session session) throws HibernateException, SQLException {
+
+					Query q = session.createQuery("from GradingEvent as ge where ge.gradableObject.id=:assignmentId");
+					q.setParameter("assignmentId", assignmentId);
+					return q.list();
+				}
+			};
+
+			List<GradingEvent> gradingEvents = (List<GradingEvent>) getHibernateTemplate().execute(hc);
+
+			for(GradingEvent gradingEvent : gradingEvents) {
+
+				isStudentGradeCache.put(new MultiKey(gradingEvent.getStudentId(), assignmentId), Boolean.TRUE);
+			}
+
+			if(isStudentGradeCache.get(multiKey).booleanValue()) {
+
+				return true;
+			}
+			else {
+
+				return false;
+			}
+		}
+		else {
+			return isStudentGradeCache.get(multiKey).booleanValue();
+		}
 	}
-	
+
 	public boolean isStudentMissingScores(final Long gradebookId, final String studentId, final boolean hasCategories) {
 		if (log.isDebugEnabled()) log.debug("isStudentMissingScores called for studentId:" + studentId);
-    	
-        if (studentId == null) {
-        	log.debug("No student id was specified.  Returning false.");
-        	return false;
-        }
 
-        HibernateCallback hc = new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException, SQLException {
+		if (studentId == null) {
+			log.debug("No student id was specified.  Returning false.");
+			return false;
+		}
 
-            	StringBuilder query = new StringBuilder();
-            	
-            	query.append("select count(*) from Assignment a");
-            	
-            	if (hasCategories) 
-            		query.append(", Category cat where a.category.id = cat.id ")
-            			 .append(" and cat.removed = false and ");
-            	else
-            		query.append(" where ");
-            	
-            	query.append(" a.gradebook.id = :gradebookId ")
-            		 .append("and a.removed = false ")
-            		 .append("and a.name != 'Course Grade' ")
-            		 .append("and a.id not in ( ")
-            		 	.append("select r.gradableObject.id ")
-            		 	.append("from AssignmentGradeRecord r ")
-            		 	.append("where r.studentId = :studentId ")
-            		 	.append("and (r.pointsEarned is not null or r.excluded = true) ")
-            		 	.append("and r.gradableObject.id = a.id ")
-            		 .append(") ");
-            	
-            	Query q = session.createQuery(query.toString());
-            	q.setParameter("gradebookId", gradebookId);
-            	q.setParameter("studentId", studentId);
-            	return Boolean.valueOf(((Integer) q.iterate().next() ).intValue() > 0);
-               
-            }
-        };
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException, SQLException {
 
-        Boolean isGraded = (Boolean)getHibernateTemplate().execute(hc);
+				StringBuilder query = new StringBuilder();
 
-        return isGraded != null && isGraded.booleanValue();
+				query.append("select count(*) from Assignment a");
+
+				if (hasCategories) 
+					query.append(", Category cat where a.category.id = cat.id ")
+					.append(" and cat.removed = false and ");
+				else
+					query.append(" where ");
+
+				query.append(" a.gradebook.id = :gradebookId ")
+				.append("and a.removed = false ")
+				.append("and a.name != 'Course Grade' ")
+				.append("and a.id not in ( ")
+				.append("select r.gradableObject.id ")
+				.append("from AssignmentGradeRecord r ")
+				.append("where r.studentId = :studentId ")
+				.append("and (r.pointsEarned is not null or r.excluded = true) ")
+				.append("and r.gradableObject.id = a.id ")
+				.append(") ");
+
+				Query q = session.createQuery(query.toString());
+				q.setParameter("gradebookId", gradebookId);
+				q.setParameter("studentId", studentId);
+				return Boolean.valueOf(((Integer) q.iterate().next() ).intValue() > 0);
+
+			}
+		};
+
+		Boolean isGraded = (Boolean)getHibernateTemplate().execute(hc);
+
+		return isGraded != null && isGraded.booleanValue();
 	}
 
 	public Map<GradableObject, List<GradingEvent>> getGradingEventsForStudent(final String studentId, final Collection<GradableObject> gradableObjects) {
 		if (log.isDebugEnabled()) log.debug("getGradingEventsForStudent called for studentId:" + studentId);
-    	Map<GradableObject, List<GradingEvent>> goEventListMap = new HashMap<GradableObject, List<GradingEvent>>();
-    	
-        // Don't attempt to run the query if there are no gradableObjects or student id
-        if(gradableObjects == null || gradableObjects.size() == 0) {
-            log.debug("No gb items were specified.  Returning an empty GradingEvents object");
-            return goEventListMap;
-        }
-        if (studentId == null) {
-        	log.debug("No student id was specified.  Returning an empty GradingEvents object");
-        	return goEventListMap;
-        }
-        
-        
-        for (Iterator<GradableObject> goIter = gradableObjects.iterator(); goIter.hasNext();) {
-        	GradableObject go = goIter.next();
-        	goEventListMap.put(go, new ArrayList());
-        }
+		Map<GradableObject, List<GradingEvent>> goEventListMap = new HashMap<GradableObject, List<GradingEvent>>();
 
-        HibernateCallback hc = new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException, SQLException {
-                List eventsList;
-                if (gradableObjects.size() <= MAX_NUMBER_OF_SQL_PARAMETERS_IN_LIST) {
-                    Query q = session.createQuery("from GradingEvent as ge where ge.studentId=:studentId and ge.gradableObject in (:gradableObjects)");
-                    q.setParameterList("gradableObjects", gradableObjects, Hibernate.entity(GradableObject.class));
-                    q.setParameter("studentId", studentId);
-                    eventsList = q.list();
-                } else {
-                    Query q = session.createQuery("from GradingEvent as ge where ge.studentId=:studentId");
-                    q.setParameter("studentId", studentId);
-                    eventsList = new ArrayList();
-                    for (Iterator iter = q.list().iterator(); iter.hasNext(); ) {
-                        GradingEvent event = (GradingEvent)iter.next();
-                        if (gradableObjects.contains(event.getGradableObject())) {
-                            eventsList.add(event);
-                        }
-                    }
-                }
-                return eventsList;
-            }
-        };
+		// Don't attempt to run the query if there are no gradableObjects or student id
+		if(gradableObjects == null || gradableObjects.size() == 0) {
+			log.debug("No gb items were specified.  Returning an empty GradingEvents object");
+			return goEventListMap;
+		}
+		if (studentId == null) {
+			log.debug("No student id was specified.  Returning an empty GradingEvents object");
+			return goEventListMap;
+		}
 
-        List list = (List)getHibernateTemplate().execute(hc);
 
-        for(Iterator iter = list.iterator(); iter.hasNext();) {
-            GradingEvent event = (GradingEvent)iter.next();
-            GradableObject go = event.getGradableObject();
-            List<GradingEvent> goEventList = goEventListMap.get(go);
-            if (goEventList != null) {
-            	goEventList.add(event);
-                goEventListMap.put(go, goEventList);
-            } 
-            else {
-            	log.debug("event retrieved by getGradingEventsForStudent not associated with passed go list");
-            }
-        }
-        
-        return goEventListMap;
+		for (Iterator<GradableObject> goIter = gradableObjects.iterator(); goIter.hasNext();) {
+			GradableObject go = goIter.next();
+			goEventListMap.put(go, new ArrayList());
+		}
+
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException, SQLException {
+				List eventsList;
+				if (gradableObjects.size() <= MAX_NUMBER_OF_SQL_PARAMETERS_IN_LIST) {
+					Query q = session.createQuery("from GradingEvent as ge where ge.studentId=:studentId and ge.gradableObject in (:gradableObjects)");
+					q.setParameterList("gradableObjects", gradableObjects, Hibernate.entity(GradableObject.class));
+					q.setParameter("studentId", studentId);
+					eventsList = q.list();
+				} else {
+					Query q = session.createQuery("from GradingEvent as ge where ge.studentId=:studentId");
+					q.setParameter("studentId", studentId);
+					eventsList = new ArrayList();
+					for (Iterator iter = q.list().iterator(); iter.hasNext(); ) {
+						GradingEvent event = (GradingEvent)iter.next();
+						if (gradableObjects.contains(event.getGradableObject())) {
+							eventsList.add(event);
+						}
+					}
+				}
+				return eventsList;
+			}
+		};
+
+		List list = (List)getHibernateTemplate().execute(hc);
+
+		for(Iterator iter = list.iterator(); iter.hasNext();) {
+			GradingEvent event = (GradingEvent)iter.next();
+			GradableObject go = event.getGradableObject();
+			List<GradingEvent> goEventList = goEventListMap.get(go);
+			if (goEventList != null) {
+				goEventList.add(event);
+				goEventListMap.put(go, goEventList);
+			} 
+			else {
+				log.debug("event retrieved by getGradingEventsForStudent not associated with passed go list");
+			}
+		}
+
+		return goEventListMap;
 	}
 
 	public List<Permission> getPermissionsForUserAnyGroup(final Long gradebookId, final String userId) throws IllegalArgumentException {
-    	if(gradebookId == null || userId == null)
-    		throw new IllegalArgumentException("Null parameter(s) in BaseHibernateManager.getPermissionsForUserAnyGroup");
+		if(gradebookId == null || userId == null)
+			throw new IllegalArgumentException("Null parameter(s) in BaseHibernateManager.getPermissionsForUserAnyGroup");
 
-    	HibernateCallback hc = new HibernateCallback() {
-    		public Object doInHibernate(Session session) throws HibernateException {
-    			Query q = session.createQuery("from Permission as perm where perm.gradebookId=:gradebookId and perm.userId=:userId and perm.groupId is null");
-    			q.setLong("gradebookId", gradebookId);
-    			q.setString("userId", userId);
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException {
+				Query q = session.createQuery("from Permission as perm where perm.gradebookId=:gradebookId and perm.userId=:userId and perm.groupId is null");
+				q.setLong("gradebookId", gradebookId);
+				q.setString("userId", userId);
 
-    			return q.list();
-    		}
-    	};
-    	return (List<Permission>)getHibernateTemplate().execute(hc);   
+				return q.list();
+			}
+		};
+		return (List<Permission>)getHibernateTemplate().execute(hc);   
 	}
 
 	public List<Permission> getPermissionsForUserForGroup(final Long gradebookId, final String userId, final List<String> groupIds) throws IllegalArgumentException {
-		    	if (gradebookId == null || userId == null)
+		if (gradebookId == null || userId == null)
 			throw new IllegalArgumentException(
-					"Null parameter(s) in BaseHibernateManager.getPermissionsForUserForGroup");
+			"Null parameter(s) in BaseHibernateManager.getPermissionsForUserForGroup");
 
 		if (groupIds != null && groupIds.size() > 0) {
 			HibernateCallback hc = new HibernateCallback() {
 				public Object doInHibernate(Session session)
-						throws HibernateException {
+				throws HibernateException {
 					Query q = session
-							.createQuery("from Permission as perm where perm.gradebookId=:gradebookId and perm.userId=:userId and perm.groupId in (:groupIds) ");
+					.createQuery("from Permission as perm where perm.gradebookId=:gradebookId and perm.userId=:userId and perm.groupId in (:groupIds) ");
 					q.setLong("gradebookId", gradebookId);
 					q.setString("userId", userId);
 					q.setParameterList("groupIds", groupIds);
@@ -1449,41 +1449,41 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 			return null;
 		}
 	}
-	
+
 	public List<Comment> getComments(final Long gradebookId) {
 		return (List<Comment>)getHibernateTemplate().execute(new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-                List<Comment> comments;
-                comments = new ArrayList<Comment>();
-                Query q = session.createQuery("from Comment as c where c.gradableObject.gradebook.id=:gradebookId");
-                q.setParameter("gradebookId",gradebookId);
-                List allComments = q.list();
-                for (Iterator iter = allComments.iterator(); iter.hasNext(); ) {
-                    Comment comment = (Comment)iter.next();
-                    comments.add(comment);
-                }
-                return comments;
-            }
-        });
+			public Object doInHibernate(Session session) throws HibernateException {
+				List<Comment> comments;
+				comments = new ArrayList<Comment>();
+				Query q = session.createQuery("from Comment as c where c.gradableObject.gradebook.id=:gradebookId");
+				q.setParameter("gradebookId",gradebookId);
+				List allComments = q.list();
+				for (Iterator iter = allComments.iterator(); iter.hasNext(); ) {
+					Comment comment = (Comment)iter.next();
+					comments.add(comment);
+				}
+				return comments;
+			}
+		});
 	}
-	
+
 	public List<Comment> getComments(final Long gradebookId, final String[] realmIds, final String[] roleNames, final String sortField, 
 			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc) {
 		HibernateCallback hc = new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
+			public Object doInHibernate(Session session) throws HibernateException {
 
 				Query query = null;
 
 				StringBuilder builder = new StringBuilder()
-					.append("select c from Comment as c, Realm as r, RealmGroup rg, RealmRole rr, UserDereference user ")
-					.append("where c.studentId=rg.userId ")
-					.append("and rg.realmKey=r.realmKey ")
-					.append("and c.gradableObject.gradebook.id=:gradebookId ")
-					.append("and r.realmId in (:realmIds) ")
-					.append("and rr.roleKey = rg.roleKey ")
-					.append("and rr.roleName in (:roleKeys) ")
-					.append("and c.gradableObject.removed=false ")
-					.append("and user.userUid=rg.userId ");
+				.append("select c from Comment as c, Realm as r, RealmGroup rg, RealmRole rr, UserDereference user ")
+				.append("where c.studentId=rg.userId ")
+				.append("and rg.realmKey=r.realmKey ")
+				.append("and c.gradableObject.gradebook.id=:gradebookId ")
+				.append("and r.realmId in (:realmIds) ")
+				.append("and rr.roleKey = rg.roleKey ")
+				.append("and rr.roleName in (:roleKeys) ")
+				.append("and c.gradableObject.removed=false ")
+				.append("and user.userUid=rg.userId ");
 
 				if (searchField != null && searchCriteria != null) {
 					builder.append("and user.").append(searchField).append(" like '").append("%").append(searchCriteria).append("%' ");
@@ -1518,34 +1518,34 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		return (List<Comment>) getHibernateTemplate().execute(hc);
 	}
 
-	
+
 	public Comment getCommentForItemForStudent(final Long assignmentId, final String studentId) {
 		return (Comment)getHibernateTemplate().execute(new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-                Query q = session.createQuery("from Comment as c where c.studentId=:studentId and c.gradableObject.id=:assignmentId");
-                q.setParameter("studentId", studentId);
-                q.setParameter("assignmentId", assignmentId);
-                return q.uniqueResult();
-            }
-        });
+			public Object doInHibernate(Session session) throws HibernateException {
+				Query q = session.createQuery("from Comment as c where c.studentId=:studentId and c.gradableObject.id=:assignmentId");
+				q.setParameter("studentId", studentId);
+				q.setParameter("assignmentId", assignmentId);
+				return q.uniqueResult();
+			}
+		});
 	}
-	
+
 	public List<Comment> getStudentAssignmentComments(final String studentId, final Long gradebookId) {
 		return (List<Comment>)getHibernateTemplate().execute(new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-                List<Comment> comments;
-                comments = new ArrayList<Comment>();
-                Query q = session.createQuery("from Comment as c where c.studentId=:studentId and c.gradableObject.gradebook.id=:gradebookId");
-                q.setParameter("studentId", studentId);
-                q.setParameter("gradebookId",gradebookId);
-                List allComments = q.list();
-                for (Iterator iter = allComments.iterator(); iter.hasNext(); ) {
-                    Comment comment = (Comment)iter.next();
-                    comments.add(comment);
-                }
-                return comments;
-            }
-        });
+			public Object doInHibernate(Session session) throws HibernateException {
+				List<Comment> comments;
+				comments = new ArrayList<Comment>();
+				Query q = session.createQuery("from Comment as c where c.studentId=:studentId and c.gradableObject.gradebook.id=:gradebookId");
+				q.setParameter("studentId", studentId);
+				q.setParameter("gradebookId",gradebookId);
+				List allComments = q.list();
+				for (Iterator iter = allComments.iterator(); iter.hasNext(); ) {
+					Comment comment = (Comment)iter.next();
+					comments.add(comment);
+				}
+				return comments;
+			}
+		});
 	}
 
 	/*
@@ -1559,15 +1559,15 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	 */
 	public CourseGradeRecord getStudentCourseGradeRecord(final Gradebook gradebook, final String studentId) {
 		if (logData.isDebugEnabled()) logData.debug("About to read student course grade for gradebook=" + gradebook.getUid());
-    	return (CourseGradeRecord)getHibernateTemplate().execute(new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-                CourseGradeRecord courseGradeRecord = getCourseGradeRecord(gradebook, studentId, session);
-                if (courseGradeRecord == null) {
-                	courseGradeRecord = new CourseGradeRecord(getCourseGrade(gradebook.getId()), studentId);
-                }
-                
-                // JLR - commented out as per doc above
-                /*
+		return (CourseGradeRecord)getHibernateTemplate().execute(new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException {
+				CourseGradeRecord courseGradeRecord = getCourseGradeRecord(gradebook, studentId, session);
+				if (courseGradeRecord == null) {
+					courseGradeRecord = new CourseGradeRecord(getCourseGrade(gradebook.getId()), studentId);
+				}
+
+				// JLR - commented out as per doc above
+				/*
                 // Only take the hit of autocalculating the course grade if no explicit
                 // grade has been entered.
                 if (courseGradeRecord.getEnteredGrade() == null) {
@@ -1584,105 +1584,105 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
                 	double literalTotalPointsEarned = ((Double)totalEarned.get(1)).doubleValue();
                 	courseGradeRecord.initNonpersistentFields(totalPointsPossible, totalPointsEarned, literalTotalPointsEarned);
                 } */            
-                return courseGradeRecord;
-            }
-        });
+				return courseGradeRecord;
+			}
+		});
 	}
 
 	public void saveOrUpdateLetterGradePercentMapping(final Map<String, Double> gradeMap, final Gradebook gradebook) {
 		if(gradeMap == null)
-    		throw new IllegalArgumentException("gradeMap is null in BaseHibernateManager.saveOrUpdateLetterGradePercentMapping");
+			throw new IllegalArgumentException("gradeMap is null in BaseHibernateManager.saveOrUpdateLetterGradePercentMapping");
 
-    	LetterGradePercentMapping lgpm = getLetterGradePercentMappingForGradebook(gradebook);
+		LetterGradePercentMapping lgpm = getLetterGradePercentMappingForGradebook(gradebook);
 
-    	if(lgpm == null)
-    	{
-    		Set<String> keySet = gradeMap.keySet();
+		if(lgpm == null)
+		{
+			Set<String> keySet = gradeMap.keySet();
 
-    		//if(keySet.size() != GradebookService.validLetterGrade.length) //we only consider letter grade with -/+ now.
-    		//	throw new IllegalArgumentException("gradeMap doesn't have right size in BaseHibernateManager.saveOrUpdateLetterGradePercentMapping");
+			//if(keySet.size() != GradebookService.validLetterGrade.length) //we only consider letter grade with -/+ now.
+			//	throw new IllegalArgumentException("gradeMap doesn't have right size in BaseHibernateManager.saveOrUpdateLetterGradePercentMapping");
 
-    		//if(validateLetterGradeMapping(gradeMap) == false)
-    		//	throw new IllegalArgumentException("gradeMap contains invalid letter in BaseHibernateManager.saveOrUpdateLetterGradePercentMapping");
+			//if(validateLetterGradeMapping(gradeMap) == false)
+			//	throw new IllegalArgumentException("gradeMap contains invalid letter in BaseHibernateManager.saveOrUpdateLetterGradePercentMapping");
 
-    		HibernateCallback hcb = new HibernateCallback()
-    		{
-    			public Object doInHibernate(Session session) throws HibernateException,
-    			SQLException
-    			{
-    				LetterGradePercentMapping lgpm = new LetterGradePercentMapping();
-    				if (lgpm != null)
-    				{                    
-    					Map<String, Double> saveMap = new HashMap<String, Double>();
-    					for (Iterator<String> gradeIter = gradeMap.keySet().iterator(); gradeIter.hasNext();) {
-    						String letterGrade = gradeIter.next();
-    						Double value = gradeMap.get(letterGrade);
-    						saveMap.put(letterGrade, value);
-    					}
-    					
-    					lgpm.setGradeMap(saveMap);
-    					lgpm.setGradebookId(gradebook.getId());
-    					lgpm.setMappingType(2);
-    					session.save(lgpm);
-    				}
-    				return null;
-    			}
-    		}; 
-    		getHibernateTemplate().execute(hcb);
-    	}
-    	else
-    	{
-    		updateLetterGradePercentMapping(gradeMap, gradebook);
-    	}	
-    }
-	
+			HibernateCallback hcb = new HibernateCallback()
+			{
+				public Object doInHibernate(Session session) throws HibernateException,
+				SQLException
+				{
+					LetterGradePercentMapping lgpm = new LetterGradePercentMapping();
+					if (lgpm != null)
+					{                    
+						Map<String, Double> saveMap = new HashMap<String, Double>();
+						for (Iterator<String> gradeIter = gradeMap.keySet().iterator(); gradeIter.hasNext();) {
+							String letterGrade = gradeIter.next();
+							Double value = gradeMap.get(letterGrade);
+							saveMap.put(letterGrade, value);
+						}
+
+						lgpm.setGradeMap(saveMap);
+						lgpm.setGradebookId(gradebook.getId());
+						lgpm.setMappingType(2);
+						session.save(lgpm);
+					}
+					return null;
+				}
+			}; 
+			getHibernateTemplate().execute(hcb);
+		}
+		else
+		{
+			updateLetterGradePercentMapping(gradeMap, gradebook);
+		}	
+	}
+
 	public Long storeActionRecord(final ActionRecord actionRecord) {
 		HibernateCallback hc = new HibernateCallback() {
-    		public Object doInHibernate(Session session) throws HibernateException {
-    			String graderId = authn.getUserUid();
-    			actionRecord.setDateRecorded(new Date());
-    			actionRecord.setGraderId(graderId);
-    			
-    			Long id = (Long)session.save(actionRecord);
+			public Object doInHibernate(Session session) throws HibernateException {
+				String graderId = authn.getUserUid();
+				actionRecord.setDateRecorded(new Date());
+				actionRecord.setGraderId(graderId);
 
-    			return id;
-    		}
-    	};
+				Long id = (Long)session.save(actionRecord);
 
-    	return (Long)getHibernateTemplate().execute(hc);
+				return id;
+			}
+		};
+
+		return (Long)getHibernateTemplate().execute(hc);
 	}
 
 	public void updateAssignment(final Assignment assignment)  throws ConflictingAssignmentNameException, StaleObjectModificationException {
-        HibernateCallback hc = new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-            	updateAssignment(assignment, session);
-                return null;
-            }
-        };
-        try {
-        	/** synchronize from external application*/
-        	String oldTitle = null;
- /*       	if(synchronizer != null)
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException {
+				updateAssignment(assignment, session);
+				return null;
+			}
+		};
+		try {
+			/** synchronize from external application*/
+			String oldTitle = null;
+			/*       	if(synchronizer != null)
         	{
         		Assignment assign = getAssignment(assignment.getId());
         		oldTitle = assign.getName();
         	}
-*/
-        	getHibernateTemplate().execute(hc);
-        	/** synchronize from external application*/
-/*        	if(synchronizer != null && oldTitle != null  && !synchronizer.isProjectSite())
+			 */
+			getHibernateTemplate().execute(hc);
+			/** synchronize from external application*/
+			/*        	if(synchronizer != null && oldTitle != null  && !synchronizer.isProjectSite())
         	{
         		synchronizer.updateAssignment(oldTitle, assignment.getName());
         	}
-*/
-        	} catch (HibernateOptimisticLockingFailureException holfe) {
-            if(log.isInfoEnabled()) log.info("An optimistic locking failure occurred while attempting to update an assignment");
-            throw new StaleObjectModificationException(holfe);
-        }
+			 */
+		} catch (HibernateOptimisticLockingFailureException holfe) {
+			if(log.isInfoEnabled()) log.info("An optimistic locking failure occurred while attempting to update an assignment");
+			throw new StaleObjectModificationException(holfe);
+		}
 	}
 
 	public Set<AssignmentGradeRecord> updateAssignmentGradeRecords(final Assignment assignment, final Collection<AssignmentGradeRecord> gradeRecordsFromCall)
-			throws StaleObjectModificationException {
+	throws StaleObjectModificationException {
 		// If no grade records are sent, don't bother doing anything with the db
 		if (gradeRecordsFromCall.size() == 0) {
 			log.debug("updateAssignmentGradeRecords called for zero grade records");
@@ -1701,7 +1701,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				Set<String> studentsWithExcessiveScores = new HashSet<String>();
 
 				/** synchronize from external application */
-/*				if (synchronizer != null) {
+				/*				if (synchronizer != null) {
 					boolean isUpdateAll = Boolean.TRUE.equals(ThreadLocalManager.get("iquiz_update_all"));
 					boolean isIquizCall = Boolean.TRUE.equals(ThreadLocalManager.get("iquiz_call"));
 					boolean isStudentView = Boolean.TRUE.equals(ThreadLocalManager.get("iquiz_student_view"));
@@ -1786,34 +1786,34 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 					}
 
 				} else {*/
-					for (Iterator<AssignmentGradeRecord> iter = gradeRecordsFromCall.iterator(); iter.hasNext();) {
-						AssignmentGradeRecord gradeRecordFromCall = iter.next();
-						gradeRecordFromCall.setGraderId(graderId);
-						gradeRecordFromCall.setDateRecorded(now);
-						try {
-							session.saveOrUpdate(gradeRecordFromCall);
-						} catch (TransientObjectException e) {
-							// It's possible that a previously unscored student
-							// was scored behind the current user's back before
-							// the user saved the new score. This translates
-							// that case into an optimistic locking failure.
-							if (log.isInfoEnabled())
-								log.info("An optimistic locking failure occurred while attempting to add a new assignment grade record");
-							throw new StaleObjectModificationException(e);
-						}
-
-						// Check for excessive (AKA extra credit) scoring.
-						if (gradeRecordFromCall.getPointsEarned() != null && !assignment.isUngraded()
-								&& gradeRecordFromCall.getPointsEarned().compareTo(assignment.getPointsPossible()) > 0) {
-							studentsWithExcessiveScores.add(gradeRecordFromCall.getStudentId());
-						}
-
-						// Log the grading event, and keep track of the students
-						// with saved/updated grades
-						logAssignmentGradingEvent(gradeRecordFromCall, graderId, assignment, session);
-
-						studentsWithUpdatedAssignmentGradeRecords.add(gradeRecordFromCall.getStudentId());
+				for (Iterator<AssignmentGradeRecord> iter = gradeRecordsFromCall.iterator(); iter.hasNext();) {
+					AssignmentGradeRecord gradeRecordFromCall = iter.next();
+					gradeRecordFromCall.setGraderId(graderId);
+					gradeRecordFromCall.setDateRecorded(now);
+					try {
+						session.saveOrUpdate(gradeRecordFromCall);
+					} catch (TransientObjectException e) {
+						// It's possible that a previously unscored student
+						// was scored behind the current user's back before
+						// the user saved the new score. This translates
+						// that case into an optimistic locking failure.
+						if (log.isInfoEnabled())
+							log.info("An optimistic locking failure occurred while attempting to add a new assignment grade record");
+						throw new StaleObjectModificationException(e);
 					}
+
+					// Check for excessive (AKA extra credit) scoring.
+					if (gradeRecordFromCall.getPointsEarned() != null && !assignment.isUngraded()
+							&& gradeRecordFromCall.getPointsEarned().compareTo(assignment.getPointsPossible()) > 0) {
+						studentsWithExcessiveScores.add(gradeRecordFromCall.getStudentId());
+					}
+
+					// Log the grading event, and keep track of the students
+					// with saved/updated grades
+					logAssignmentGradingEvent(gradeRecordFromCall, graderId, assignment, session);
+
+					studentsWithUpdatedAssignmentGradeRecords.add(gradeRecordFromCall.getStudentId());
+				}
 				//}
 				if (logData.isDebugEnabled())
 					logData.debug("Updated " + studentsWithUpdatedAssignmentGradeRecords.size() + " assignment score records");
@@ -1866,40 +1866,40 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	}
 
 	public void updateCategory(final Category category) throws ConflictingCategoryNameException, StaleObjectModificationException{
-    	HibernateCallback hc = new HibernateCallback() {
-    		public Object doInHibernate(Session session) throws HibernateException {
-    			session.evict(category);
-    			Category persistentCat = (Category)session.load(Category.class, category.getId());
-    			List conflictList = ((List)session.createQuery(
-    			"select ca from Category as ca where ca.name = ? and ca.gradebook = ? and ca.id != ? and ca.removed=false").
-    			setString(0, category.getName()).
-    			setEntity(1, category.getGradebook()).
-    			setLong(2, category.getId().longValue()).list());
-    			int numNameConflicts = conflictList.size();
-    			if(numNameConflicts > 0) {
-    				throw new ConflictingCategoryNameException("You can not save multiple category in a gradebook with the same name");
-    			}
-    			if(category.getWeight().doubleValue() > 1 || category.getWeight().doubleValue() < 0)
-    			{
-    				throw new IllegalArgumentException("weight for category is greater than 1 or less than 0 in updateCategory of BaseHibernateManager");
-    			}
-    			session.evict(persistentCat);
-    			session.update(category);
-    			return null;
-    		}
-    	};
-    	try {
-    		getHibernateTemplate().execute(hc);
-    	} catch (Exception e) {
-    		throw new StaleObjectModificationException(e);
-    	}
-    }
-	
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException {
+				session.evict(category);
+				Category persistentCat = (Category)session.load(Category.class, category.getId());
+				List conflictList = ((List)session.createQuery(
+						"select ca from Category as ca where ca.name = ? and ca.gradebook = ? and ca.id != ? and ca.removed=false").
+						setString(0, category.getName()).
+						setEntity(1, category.getGradebook()).
+						setLong(2, category.getId().longValue()).list());
+				int numNameConflicts = conflictList.size();
+				if(numNameConflicts > 0) {
+					throw new ConflictingCategoryNameException("You can not save multiple category in a gradebook with the same name");
+				}
+				if(category.getWeight().doubleValue() > 1 || category.getWeight().doubleValue() < 0)
+				{
+					throw new IllegalArgumentException("weight for category is greater than 1 or less than 0 in updateCategory of BaseHibernateManager");
+				}
+				session.evict(persistentCat);
+				session.update(category);
+				return null;
+			}
+		};
+		try {
+			getHibernateTemplate().execute(hc);
+		} catch (Exception e) {
+			throw new StaleObjectModificationException(e);
+		}
+	}
+
 	public void updateComment(final Comment comment) throws StaleObjectModificationException {
 		final Date now = new Date();
-        final String graderId = authn.getUserUid();
+		final String graderId = authn.getUserUid();
 
-        // Unlike the complex grade update logic, this method assumes that
+		// Unlike the complex grade update logic, this method assumes that
 		// the client has done the work of filtering out any unchanged records
 		// and isn't interested in throwing an optimistic locking exception for untouched records
 		// which were changed by other sessions.
@@ -1927,10 +1927,10 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	}
 
 	public void updateComments(final Collection<Comment> comments) throws StaleObjectModificationException {
-        final Date now = new Date();
-        final String graderId = authn.getUserUid();
+		final Date now = new Date();
+		final String graderId = authn.getUserUid();
 
-        // Unlike the complex grade update logic, this method assumes that
+		// Unlike the complex grade update logic, this method assumes that
 		// the client has done the work of filtering out any unchanged records
 		// and isn't interested in throwing an optimistic locking exception for untouched records
 		// which were changed by other sessions.
@@ -2020,39 +2020,39 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	}
 
 	public void updateGradebook(final Gradebook gradebook) throws StaleObjectModificationException {
-        HibernateCallback hc = new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-                // Get the gradebook and selected mapping from persistence
-                Gradebook gradebookFromPersistence = (Gradebook)session.load(
-                        gradebook.getClass(), gradebook.getId());
-                GradeMapping mappingFromPersistence = gradebookFromPersistence.getSelectedGradeMapping();
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException {
+				// Get the gradebook and selected mapping from persistence
+				Gradebook gradebookFromPersistence = (Gradebook)session.load(
+						gradebook.getClass(), gradebook.getId());
+				GradeMapping mappingFromPersistence = gradebookFromPersistence.getSelectedGradeMapping();
 
-                // If the mapping has changed, and there are explicitly entered
-                // course grade records, disallow this update.
-                if (!mappingFromPersistence.getId().equals(gradebook.getSelectedGradeMapping().getId())) {
-                    if(isExplicitlyEnteredCourseGradeRecords(gradebook.getId())) {
-                        throw new IllegalStateException("Selected grade mapping can not be changed, since explicit course grades exist.");
-                    }
-                }
+				// If the mapping has changed, and there are explicitly entered
+				// course grade records, disallow this update.
+				if (!mappingFromPersistence.getId().equals(gradebook.getSelectedGradeMapping().getId())) {
+					if(isExplicitlyEnteredCourseGradeRecords(gradebook.getId())) {
+						throw new IllegalStateException("Selected grade mapping can not be changed, since explicit course grades exist.");
+					}
+				}
 
-                // Evict the persisted objects from the session and update the gradebook
-                // so the new grade mapping is used in the sort column update
-                //session.evict(mappingFromPersistence);
-                for(Iterator iter = gradebookFromPersistence.getGradeMappings().iterator(); iter.hasNext();) {
-                    session.evict(iter.next());
-                }
-                session.evict(gradebookFromPersistence);
-                try {
-                    session.update(gradebook);
-                    session.flush();
-                } catch (StaleObjectStateException e) {
-                    throw new StaleObjectModificationException(e);
-                }
+				// Evict the persisted objects from the session and update the gradebook
+				// so the new grade mapping is used in the sort column update
+				//session.evict(mappingFromPersistence);
+				for(Iterator iter = gradebookFromPersistence.getGradeMappings().iterator(); iter.hasNext();) {
+					session.evict(iter.next());
+				}
+				session.evict(gradebookFromPersistence);
+				try {
+					session.update(gradebook);
+					session.flush();
+				} catch (StaleObjectStateException e) {
+					throw new StaleObjectModificationException(e);
+				}
 
-                return null;
-            }
-        };
-        getHibernateTemplate().execute(hc);	
+				return null;
+			}
+		};
+		getHibernateTemplate().execute(hc);	
 	}
 
 
@@ -2077,7 +2077,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 			throw new StaleObjectModificationException(e);
 		}
 	}
-	
+
 	public Long createPermission(Permission permission) {
 		return (Long) getHibernateTemplate().save(permission);
 	}
@@ -2090,77 +2090,165 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		if(gradebookId == null || userId == null)
 			throw new IllegalArgumentException("Null parameter(s) in BaseHibernateManager.getPermissionsForUserAnyGroup");
 
-    	HibernateCallback hc = new HibernateCallback() {
-    		public Object doInHibernate(Session session) throws HibernateException {
-    			Query q = session.createQuery("from Permission as perm where perm.gradebookId=:gradebookId and perm.userId=:userId");
-    			q.setLong("gradebookId", gradebookId);
-    			q.setString("userId", userId);
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException {
+				Query q = session.createQuery("from Permission as perm where perm.gradebookId=:gradebookId and perm.userId=:userId");
+				q.setLong("gradebookId", gradebookId);
+				q.setString("userId", userId);
 
-    			return q.list();
-    		}
-    	};
-    	return (List<Permission>)getHibernateTemplate().execute(hc);   
+				return q.list();
+			}
+		};
+		return (List<Permission>)getHibernateTemplate().execute(hc);   
 	}
 
-	
+	public List<Permission> getPermissionsForUserAnyGroupForCategory(final Long gradebookId, final String userId, final List<Long> cateIds) throws IllegalArgumentException {
+		
+		if(gradebookId == null || userId == null)
+			throw new IllegalArgumentException("Null parameter(s) in BaseHibernateManager.getPermissionsForUserAnyGroupForCategory");
+
+		if(cateIds != null && cateIds.size() > 0)
+		{
+			HibernateCallback hc = new HibernateCallback() {
+				public Object doInHibernate(Session session) throws HibernateException {
+					Query q = session.createQuery("from Permission as perm where perm.gradebookId=:gradebookId and perm.userId=:userId and perm.categoryId in (:cateIds) and perm.groupId is null");
+					q.setLong("gradebookId", gradebookId);
+					q.setString("userId", userId);
+					q.setParameterList("cateIds", cateIds);
+
+					return q.list();
+				}
+			};
+			return (List)getHibernateTemplate().execute(hc);
+		}
+		else
+		{
+			return null;
+		}    	
+	}
+
+	public List getPermissionsForUserAnyGroupAnyCategory(final Long gradebookId, final String userId) throws IllegalArgumentException {
+		
+		if(gradebookId == null || userId == null)
+			throw new IllegalArgumentException("Null parameter(s) in BaseHibernateManager.getPermissionsForUserAnyGroupForCategory");
+
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException {
+				Query q = session.createQuery("from Permission as perm where perm.gradebookId=:gradebookId and perm.userId=:userId and perm.categoryId is null and perm.groupId is null");
+				q.setLong("gradebookId", gradebookId);
+				q.setString("userId", userId);
+
+				return q.list();
+			}
+		};
+		return (List)getHibernateTemplate().execute(hc);
+	}
+
+	public List<Permission> getPermissionsForUserForGoupsAnyCategory(final Long gradebookId, final String userId, final List<String> groupIds) throws IllegalArgumentException {
+		
+		if(gradebookId == null || userId == null)
+			throw new IllegalArgumentException("Null parameter(s) in BaseHibernateManager.getPermissionsForUserForGoupsAnyCategory");
+
+		if (groupIds != null && groupIds.size() > 0) {
+			HibernateCallback hc = new HibernateCallback() {
+				public Object doInHibernate(Session session) throws HibernateException {
+					Query q = session.createQuery("from Permission as perm where perm.gradebookId=:gradebookId and perm.userId=:userId and perm.categoryId is null and perm.groupId in (:groupIds) ");
+					q.setLong("gradebookId", gradebookId);
+					q.setString("userId", userId);
+					q.setParameterList("groupIds", groupIds);
+
+					return q.list();
+				}
+			};
+			return (List)getHibernateTemplate().execute(hc);
+		} else {
+			return null;
+		}
+	}
+
+	public List<Permission> getPermissionsForUserForCategory(final Long gradebookId, final String userId, final List<Long> cateIds) throws IllegalArgumentException {
+
+		if(gradebookId == null || userId == null)
+			throw new IllegalArgumentException("Null parameter(s) in BaseHibernateManager.getPermissionsForUserForCategory");
+
+		if(cateIds != null && cateIds.size() > 0)
+		{
+			HibernateCallback hc = new HibernateCallback() {
+				public Object doInHibernate(Session session) throws HibernateException {
+					Query q = session.createQuery("from Permission as perm where perm.gradebookId=:gradebookId and perm.userId=:userId and perm.categoryId in (:cateIds)");
+					q.setLong("gradebookId", gradebookId);
+					q.setString("userId", userId);
+					q.setParameterList("cateIds", cateIds);
+
+					return q.list();
+				}
+			};
+			return (List)getHibernateTemplate().execute(hc);
+		}
+		else
+		{
+			return null;
+		}
+	}
+
 	/*
 	 * HELPER METHODS
 	 * 
 	 */
-	
+
 	// FIXME: Need to move this to GradeCalculations
 	protected Double calculateDoublePointForRecord(AssignmentGradeRecord gradeRecordFromCall)
-    {
-    	Assignment assign = getAssignment(gradeRecordFromCall.getAssignment().getId()); 
-    	Gradebook gradebook = getGradebook(assign.getGradebook().getId());
-    	if(gradeRecordFromCall.getPercentEarned() != null)
-    	{
-    		if(gradeRecordFromCall.getPercentEarned().doubleValue() / 100.0 < 0)
-    		{
-    			throw new IllegalArgumentException("percent for record is less than 0 for percentage points in GradebookManagerHibernateImpl.calculateDoublePointForRecord");
-    		}
-    		return new Double(assign.getPointsPossible().doubleValue() * (gradeRecordFromCall.getPercentEarned().doubleValue() / 100.0));
-    	}
-    	else
-    		return null;
-    }
-	
+	{
+		Assignment assign = getAssignment(gradeRecordFromCall.getAssignment().getId()); 
+		Gradebook gradebook = getGradebook(assign.getGradebook().getId());
+		if(gradeRecordFromCall.getPercentEarned() != null)
+		{
+			if(gradeRecordFromCall.getPercentEarned().doubleValue() / 100.0 < 0)
+			{
+				throw new IllegalArgumentException("percent for record is less than 0 for percentage points in GradebookManagerHibernateImpl.calculateDoublePointForRecord");
+			}
+			return new Double(assign.getPointsPossible().doubleValue() * (gradeRecordFromCall.getPercentEarned().doubleValue() / 100.0));
+		}
+		else
+			return null;
+	}
+
 	// FIXME: Need to move this to GradeCalculations
 	protected Double calculateDoublePointForLetterGradeRecord(AssignmentGradeRecord gradeRecordFromCall)
-    {
-    	Assignment assign = getAssignment(gradeRecordFromCall.getAssignment().getId()); 
-    	Gradebook gradebook = getGradebook(assign.getGradebook().getId());
-    	if(gradeRecordFromCall.getLetterEarned() != null)
-    	{
-    		LetterGradePercentMapping lgpm = getLetterGradePercentMapping(gradebook);
-    		if(lgpm != null && lgpm.getGradeMap() != null)
-    		{
-    			Double doublePercentage = lgpm.getValue(gradeRecordFromCall.getLetterEarned());
-    			if(doublePercentage == null)
-    			{
-    				log.error("percentage for " + gradeRecordFromCall.getLetterEarned() + " is not found in letter grade mapping in GradebookManagerHibernateImpl.calculateDoublePointForLetterGradeRecord");
-    				return null;
-    			}
-    			
-    			return calculateEquivalentPointValueForPercent(assign.getPointsPossible(), doublePercentage);
-    		}
-    		return null;
-    	}
-    	else
-    		return null;
-    }
-	
+	{
+		Assignment assign = getAssignment(gradeRecordFromCall.getAssignment().getId()); 
+		Gradebook gradebook = getGradebook(assign.getGradebook().getId());
+		if(gradeRecordFromCall.getLetterEarned() != null)
+		{
+			LetterGradePercentMapping lgpm = getLetterGradePercentMapping(gradebook);
+			if(lgpm != null && lgpm.getGradeMap() != null)
+			{
+				Double doublePercentage = lgpm.getValue(gradeRecordFromCall.getLetterEarned());
+				if(doublePercentage == null)
+				{
+					log.error("percentage for " + gradeRecordFromCall.getLetterEarned() + " is not found in letter grade mapping in GradebookManagerHibernateImpl.calculateDoublePointForLetterGradeRecord");
+					return null;
+				}
+
+				return calculateEquivalentPointValueForPercent(assign.getPointsPossible(), doublePercentage);
+			}
+			return null;
+		}
+		else
+			return null;
+	}
+
 	// FIXME: Need to move this to GradeCalculations
 	protected Double calculateEquivalentPointValueForPercent(Double doublePointsPossible, Double doublePercentEarned) {
-    	if (doublePointsPossible == null || doublePercentEarned == null)
-    		return null;
-    	
-    	BigDecimal pointsPossible = new BigDecimal(doublePointsPossible.toString());
+		if (doublePointsPossible == null || doublePercentEarned == null)
+			return null;
+
+		BigDecimal pointsPossible = new BigDecimal(doublePointsPossible.toString());
 		BigDecimal percentEarned = new BigDecimal(doublePercentEarned.toString());
 		BigDecimal equivPoints = pointsPossible.multiply(percentEarned.divide(new BigDecimal("100"), GradebookService.MATH_CONTEXT));
 		return new Double(equivPoints.doubleValue());
-    }
-	
+	}
+
 	/**
 	 * Oracle has a low limit on the maximum length of a parameter list
 	 * in SQL queries of the form "WHERE tbl.col IN (:paramList)".
@@ -2179,62 +2267,62 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		}
 		return filteredRecords;
 	}
-	
+
 	protected Set<String> getAllStudentUids(String gradebookUid) {
 		List enrollments = getSectionAwareness().getSiteMembersInRole(gradebookUid, Role.STUDENT);
-        Set<String> studentUids = new HashSet<String>();
-        for(Iterator iter = enrollments.iterator(); iter.hasNext();) {
-            studentUids.add(((EnrollmentRecord)iter.next()).getUser().getUserUid());
-        }
-        return studentUids;
+		Set<String> studentUids = new HashSet<String>();
+		for(Iterator iter = enrollments.iterator(); iter.hasNext();) {
+			studentUids.add(((EnrollmentRecord)iter.next()).getUser().getUserUid());
+		}
+		return studentUids;
 	}
-	
+
 	protected List<Assignment> getAssignments(Long gradebookId, Session session) throws HibernateException {
-        List<Assignment> assignments = session.createQuery(
-        	"from Assignment as asn where asn.gradebook.id=? and asn.removed=false order by asn.id asc").
-        	setLong(0, gradebookId.longValue()).
-        	list();
-        return assignments;
-    }
-	
+		List<Assignment> assignments = session.createQuery(
+				"from Assignment as asn where asn.gradebook.id=? and asn.removed=false order by asn.id asc").
+				setLong(0, gradebookId.longValue()).
+				list();
+		return assignments;
+	}
+
 	/**
-     * Gets the course grade record for a student, or null if it does not yet exist.
-     *
-     * @param studentId The student ID
-     * @param session The hibernate session
-     * @return A List of grade records
-     *
-     * @throws HibernateException
-     */
-    protected CourseGradeRecord getCourseGradeRecord(Gradebook gradebook, String studentId, Session session) throws HibernateException {
-        return (CourseGradeRecord)session.createQuery(
-        	"from CourseGradeRecord as cgr where cgr.studentId=? and cgr.gradableObject.gradebook=?").
-        	setString(0, studentId).
-        	setEntity(1, gradebook).
-        	uniqueResult();
-    }
-	
+	 * Gets the course grade record for a student, or null if it does not yet exist.
+	 *
+	 * @param studentId The student ID
+	 * @param session The hibernate session
+	 * @return A List of grade records
+	 *
+	 * @throws HibernateException
+	 */
+	protected CourseGradeRecord getCourseGradeRecord(Gradebook gradebook, String studentId, Session session) throws HibernateException {
+		return (CourseGradeRecord)session.createQuery(
+		"from CourseGradeRecord as cgr where cgr.studentId=? and cgr.gradableObject.gradebook=?").
+		setString(0, studentId).
+		setEntity(1, gradebook).
+		uniqueResult();
+	}
+
 	protected List<CourseGradeRecord> getCourseGradeRecords(Gradebook gradebook, Session session) {
-    	return (List<CourseGradeRecord>)session.createQuery(
-    		"from CourseGradeRecord as cgr where cgr.gradableObject.gradebook=?").
-    		setEntity(0, gradebook).list();	
-    }
-	
+		return (List<CourseGradeRecord>)session.createQuery(
+		"from CourseGradeRecord as cgr where cgr.gradableObject.gradebook=?").
+		setEntity(0, gradebook).list();	
+	}
+
 	protected LetterGradePercentMapping getDefaultLetterGradePercentMapping() {
 		HibernateCallback hc = new HibernateCallback() {
 			public Object doInHibernate(Session session)
-					throws HibernateException {
+			throws HibernateException {
 				List defaultMapping = (session
 						.createQuery("select lgpm from LetterGradePercentMapping as lgpm where lgpm.mappingType = 1"))
 						.list();
 				if (defaultMapping == null || defaultMapping.size() == 0) {
 					log
-							.info("Default letter grade mapping hasn't been created in DB in BaseHibernateManager.getDefaultLetterGradePercentMapping");
+					.info("Default letter grade mapping hasn't been created in DB in BaseHibernateManager.getDefaultLetterGradePercentMapping");
 					return null;
 				}
 				if (defaultMapping.size() > 1) {
 					log
-							.error("Duplicate default letter grade mapping was created in DB in BaseHibernateManager.getDefaultLetterGradePercentMapping");
+					.error("Duplicate default letter grade mapping was created in DB in BaseHibernateManager.getDefaultLetterGradePercentMapping");
 					return null;
 				}
 
@@ -2245,16 +2333,16 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 		return (LetterGradePercentMapping) getHibernateTemplate().execute(hc);
 	}
-	
-	protected String getGradebookUid(Long id) {
-        return ((Gradebook)getHibernateTemplate().load(Gradebook.class, id)).getUid();
-    }
+
+	public String getGradebookUid(Long id) {
+		return ((Gradebook)getHibernateTemplate().load(Gradebook.class, id)).getUid();
+	}
 
 	protected LetterGradePercentMapping getLetterGradePercentMapping(
 			final Gradebook gradebook) {
 		HibernateCallback hc = new HibernateCallback() {
 			public Object doInHibernate(Session session)
-					throws HibernateException {
+			throws HibernateException {
 				LetterGradePercentMapping mapping = (LetterGradePercentMapping) ((session
 						.createQuery("from LetterGradePercentMapping as lgpm where lgpm.gradebookId=:gradebookId and lgpm.mappingType=2"))
 						.setLong("gradebookId", gradebook.getId().longValue()))
@@ -2284,7 +2372,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 			final Gradebook gradebook) {
 		HibernateCallback hc = new HibernateCallback() {
 			public Object doInHibernate(Session session)
-					throws HibernateException {
+			throws HibernateException {
 				LetterGradePercentMapping mapping = (LetterGradePercentMapping) ((session
 						.createQuery("from LetterGradePercentMapping as lgpm where lgpm.gradebookId=:gradebookId and lgpm.mappingType=2"))
 						.setLong("gradebookId", gradebook.getId().longValue()))
@@ -2298,46 +2386,46 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	}
 
 	protected boolean isExplicitlyEnteredCourseGradeRecords(final Long gradebookId) {
-        final Set<String> studentUids = getAllStudentUids(getGradebookUid(gradebookId));
-        if (studentUids.isEmpty()) {
-            return false;
-        }
+		final Set<String> studentUids = getAllStudentUids(getGradebookUid(gradebookId));
+		if (studentUids.isEmpty()) {
+			return false;
+		}
 
-        HibernateCallback hc = new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-                Integer total;
-                if (studentUids.size() <= MAX_NUMBER_OF_SQL_PARAMETERS_IN_LIST) {
-                    Query q = session.createQuery(
-                            "select cgr from CourseGradeRecord as cgr where cgr.enteredGrade is not null and cgr.gradableObject.gradebook.id=:gradebookId and cgr.studentId in (:studentUids)");
-                    q.setLong("gradebookId", gradebookId.longValue());
-                    q.setParameterList("studentUids", studentUids);
-                    List totalList = (List)q.list();
-                    total = new Integer(totalList.size());
-                    if (log.isInfoEnabled()) log.info("total number of explicitly entered course grade records = " + total);
-                } else {
-                    total = new Integer(0);
-                    Query q = session.createQuery(
-                            "select cgr.studentId from CourseGradeRecord as cgr where cgr.enteredGrade is not null and cgr.gradableObject.gradebook.id=:gradebookId");
-                    q.setLong("gradebookId", gradebookId.longValue());
-                    for (Iterator iter = q.list().iterator(); iter.hasNext(); ) {
-                        String studentId = (String)iter.next();
-                        if (studentUids.contains(studentId)) {
-                            total = new Integer(1);
-                            break;
-                        }
-                    }
-                }
-                return total;
-            }
-        };
-        return ((Integer)getHibernateTemplate().execute(hc)).intValue() > 0;
-    }
-	
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException {
+				Integer total;
+				if (studentUids.size() <= MAX_NUMBER_OF_SQL_PARAMETERS_IN_LIST) {
+					Query q = session.createQuery(
+							"select cgr from CourseGradeRecord as cgr where cgr.enteredGrade is not null and cgr.gradableObject.gradebook.id=:gradebookId and cgr.studentId in (:studentUids)");
+					q.setLong("gradebookId", gradebookId.longValue());
+					q.setParameterList("studentUids", studentUids);
+					List totalList = (List)q.list();
+					total = new Integer(totalList.size());
+					if (log.isInfoEnabled()) log.info("total number of explicitly entered course grade records = " + total);
+				} else {
+					total = new Integer(0);
+					Query q = session.createQuery(
+							"select cgr.studentId from CourseGradeRecord as cgr where cgr.enteredGrade is not null and cgr.gradableObject.gradebook.id=:gradebookId");
+					q.setLong("gradebookId", gradebookId.longValue());
+					for (Iterator iter = q.list().iterator(); iter.hasNext(); ) {
+						String studentId = (String)iter.next();
+						if (studentUids.contains(studentId)) {
+							total = new Integer(1);
+							break;
+						}
+					}
+				}
+				return total;
+			}
+		};
+		return ((Integer)getHibernateTemplate().execute(hc)).intValue() > 0;
+	}
+
 	protected void logAssignmentGradingEvent(AssignmentGradeRecord gradeRecord, String graderId, Assignment assignment, Session session) {
 		if (gradeRecord == null || assignment == null) {
 			throw new IllegalArgumentException("null gradeRecord or assignment passed to logAssignmentGradingEvent");
 		}
-		
+
 		// Log the grading event, and keep track of the students with saved/updated grades
 		// we need to log what the user entered depending on the grade entry type
 		Gradebook gradebook = assignment.getGradebook();
@@ -2351,13 +2439,13 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 			if (gradeRecord.getPointsEarned() != null)
 				gradeEntry = gradeRecord.getPointsEarned().toString();
 		}
-		
+
 		if (gradeRecord.isExcluded() != null && gradeRecord.isExcluded().booleanValue())
 			gradeEntry = "excused";
-		
+
 		session.save(new GradingEvent(assignment, graderId, gradeRecord.getStudentId(), gradeEntry));
 	}
-	
+
 	protected void updateAssignment(Assignment assignment, Session session) throws ConflictingAssignmentNameException, HibernateException {
 		// Ensure that we don't have the assignment in the session, since
 		// we need to compare the existing one in the db to our edited
@@ -2375,7 +2463,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		session.evict(asnFromDb);*/
 		session.update(assignment);
 	}
-	
+
 	protected void updateLetterGradePercentMapping(final Map<String, Double> gradeMap, final Gradebook gradebook) {
 		HibernateCallback hcb = new HibernateCallback() {
 			public Object doInHibernate(Session session) throws HibernateException, SQLException {
@@ -2409,34 +2497,34 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		};
 		getHibernateTemplate().execute(hcb);
 	}
-	
-    protected boolean validateLetterGradeMapping(Map<String, Double> gradeMap) {
-    	Set<String> keySet = gradeMap.keySet();
 
-    	for(Iterator<String> iter = keySet.iterator(); iter.hasNext(); )
-    	{
-    		String key = iter.next();
-    		boolean validLetter = false;
-    		for(int i=0; i<GradebookService.validLetterGrade.length; i++)
-    		{
-    			if(key.equalsIgnoreCase(GradebookService.validLetterGrade[i]))
-    			{
-    				validLetter = true;
-    				break;
-    			}
-    		}
-    		if(validLetter == false)
-    			return false;
-    	}
-    	return true;
-    }
-	
-    
+	protected boolean validateLetterGradeMapping(Map<String, Double> gradeMap) {
+		Set<String> keySet = gradeMap.keySet();
+
+		for(Iterator<String> iter = keySet.iterator(); iter.hasNext(); )
+		{
+			String key = iter.next();
+			boolean validLetter = false;
+			for(int i=0; i<GradebookService.validLetterGrade.length; i++)
+			{
+				if(key.equalsIgnoreCase(GradebookService.validLetterGrade[i]))
+				{
+					validLetter = true;
+					break;
+				}
+			}
+			if(validLetter == false)
+				return false;
+		}
+		return true;
+	}
+
+
 	/*
 	 * DEPENDENCY INJECTION ACCESSORS
 	 * 
 	 */
-	
+
 	public SectionAwareness getSectionAwareness() {
 		return sectionAwareness;
 	}
@@ -2445,11 +2533,11 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		this.sectionAwareness = sectionAwareness;
 	}
 
-	public Authn getAuthn() {
+	public Gradebook2Authn getAuthn() {
 		return authn;
 	}
 
-	public void setAuthn(Authn authn) {
+	public void setAuthn(Gradebook2Authn authn) {
 		this.authn = authn;
 	}
 
@@ -2460,9 +2548,9 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	public void setEventTrackingService(EventTrackingService eventTrackingService) {
 		this.eventTrackingService = eventTrackingService;
 	}
-	
+
 	/** synchronize from external application */
-    /*public void setSynchronizer(GbSynchronizer synchronizer) 
+	/*public void setSynchronizer(GbSynchronizer synchronizer) 
     {
     	this.synchronizer = synchronizer;
     }*/

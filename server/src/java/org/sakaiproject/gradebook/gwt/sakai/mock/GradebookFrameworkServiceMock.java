@@ -13,6 +13,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
+import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authn;
 import org.sakaiproject.gradebook.gwt.sakai.model.Realm;
 import org.sakaiproject.gradebook.gwt.sakai.model.RealmGroup;
 import org.sakaiproject.gradebook.gwt.sakai.model.RealmRole;
@@ -39,7 +40,7 @@ public class GradebookFrameworkServiceMock extends HibernateDaoSupport implement
 
 	public static final String UID_OF_DEFAULT_GRADING_SCALE_PROPERTY = "uidOfDefaultGradingScale";
 	
-	private Authn authn;
+	private Gradebook2Authn authn;
 	
 	public void addGradebook(final String uid, final String name) {
 		if(isGradebookDefined(uid)) {
@@ -169,10 +170,10 @@ public class GradebookFrameworkServiceMock extends HibernateDaoSupport implement
 
 	}
 	
-	public Authn getAuthn() {
+	public Gradebook2Authn getAuthn() {
         return authn;
     }
-    public void setAuthn(Authn authn) {
+    public void setAuthn(Gradebook2Authn authn) {
         this.authn = authn;
     }
 

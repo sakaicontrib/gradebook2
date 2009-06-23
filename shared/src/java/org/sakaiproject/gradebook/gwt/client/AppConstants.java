@@ -80,4 +80,11 @@ public interface AppConstants {
 	
 	public static final String EXTRA_CREDIT_INDICATOR = " (+)";
 	public static final String UNINCLUDED_INDICATOR = " (-)";
+	
+	public static final String gradePermission = "grade";
+	public static final String viewPermission = "view";
+	
+	public static final int CATEGORY_TYPE_NO_CATEGORY = 1;
+	public static final int CATEGORY_TYPE_ONLY_CATEGORY = 2;
+	public static final int CATEGORY_TYPE_WEIGHTED_CATEGORY = 3;
 }

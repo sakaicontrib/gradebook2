@@ -166,5 +166,7 @@ public interface Gradebook2Service {
 	public <X extends BaseModel> ListLoadResult<X> getUsers();
 	public <X extends BaseModel> ListLoadResult<X> getCategoriesNotRemoved(Long gradebookId);
 	public PermissionEntryModel deletePermissionEntry(Long gradebookId, PermissionEntryModel permissionEntryModel);
+
+	public List getCategoriesWithAssignments(Long gradebookId);
 	
 }

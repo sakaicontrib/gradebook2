@@ -33,7 +33,7 @@
 					<ref bean="org.sakaiproject.section.api.SectionAwareness" />
 				</property>
 				<property name="authn">
-					<ref bean="org_sakaiproject_tool_gradebook_facades_Authn" />
+					<ref bean="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authn" />
 				</property>
                 <property name="eventTrackingService">
                     <ref bean="org_sakaiproject_tool_gradebook_facades_EventTrackingService"/>

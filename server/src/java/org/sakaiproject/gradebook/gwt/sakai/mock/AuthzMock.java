@@ -24,18 +24,19 @@ package org.sakaiproject.gradebook.gwt.sakai.mock;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authz;
 import org.sakaiproject.section.api.SectionAwareness;
 import org.sakaiproject.section.api.coursemanagement.EnrollmentRecord;
 import org.sakaiproject.section.api.facade.Role;
 import org.sakaiproject.tool.gradebook.Assignment;
-import org.sakaiproject.tool.gradebook.facades.Authz;
 
-public class AuthzMock implements Authz {
+public class AuthzMock implements Gradebook2Authz {
 
 	private SectionAwareness sectionAwareness;
 	
@@ -309,6 +310,29 @@ public class AuthzMock implements Authz {
 
 	public void setSectionAwareness(SectionAwareness sectionAwareness) {
 		this.sectionAwareness = sectionAwareness;
+	}
+
+	public Map getAvailableItemsForStudent(String gradebookUid, String userId,
+			String studentId, Collection courseSections)
+			throws IllegalArgumentException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public List getGraderPermissionsForUser(String gradebookUid, String userId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public List getGraderPermissionsForUser(Long gradebookId, String userId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public List getViewableGroupsForUser(String gradebookUid, String userId,
+			List groupIds) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
