@@ -447,6 +447,7 @@ public class GradeCalculationIncompletePercentTest extends TestCase {
 
 		assertEqualsAtScale2(BigDecimal.valueOf(80.00d), courseGrade);
 	}
+
 	
 	public void testPerfectWithExtraCreditCategoryWeighting() {
 
@@ -527,7 +528,7 @@ public class GradeCalculationIncompletePercentTest extends TestCase {
 	
 	
 	private void assertEqualsAtScale2(BigDecimal first, BigDecimal second) {
-		System.out.println("Comparing " + first + " to " + second);
+		System.out.println("Comparing " + first + " to " + second.setScale(2, RoundingMode.HALF_EVEN));
 		assertTrue(first.setScale(2, RoundingMode.HALF_EVEN).equals(second.setScale(2, RoundingMode.HALF_EVEN)));
 	}
 	

@@ -101,7 +101,12 @@ public class CategoryCalculationUnit {
 			if (unit.isExcused())
 				continue;
 			
-			BigDecimal scaledItemWeight = findScaledItemWeight(ratio, unit.getPercentOfCategory());
+			BigDecimal multiplicand = ratio;
+			
+			if (unit.isExtraCredit())
+				multiplicand = BigDecimal.ONE;
+			
+			BigDecimal scaledItemWeight = findScaledItemWeight(multiplicand, unit.getPercentOfCategory());
 			BigDecimal scaledScore = unit.calculate(scaledItemWeight);
 			
 			if (scaledScore != null) {
