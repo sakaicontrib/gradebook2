@@ -45,7 +45,6 @@ import com.extjs.gxt.ui.client.event.WindowEvent;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
-import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
@@ -69,11 +68,10 @@ import com.extjs.gxt.ui.client.widget.grid.EditorGrid;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.layout.CardLayout;
+import com.extjs.gxt.ui.client.widget.layout.FillLayout;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
-import com.extjs.gxt.ui.client.widget.layout.RowData;
-import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONBoolean;
@@ -106,7 +104,8 @@ public class ImportPanel extends ContentPanel {
 
 	private Button submitButton, cancelButton; 
 	
-	private LayoutContainer step1Container;
+	private ContentPanel step1Container;
+	private LayoutContainer fileUploadContainer;
 	
 	private List<ColumnConfig> previewColumns;
 	
@@ -328,13 +327,49 @@ public class ImportPanel extends ContentPanel {
 		
 		subCardLayoutContainer.setHeight(subHeight);
 				
-		step1Container = new LayoutContainer();
-		step1Container.setLayout(new RowLayout());
-		step1Container.add(buildFileUploadPanel(), new RowData(1, fileUploadHeight));
-		step1Container.add(subCardLayoutContainer, new RowData(1, subHeight, new Margins(5)));
+		step1Container = new ContentPanel();
+		step1Container.setHeaderVisible(false);
+		step1Container.setLayout(new FitLayout());
+		step1Container.add(subCardLayoutContainer);
 		
+		submitButton = new Button("Next");
+		submitButton.setMinWidth(120);
+		submitButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
+
+			@Override
+			public void componentSelected(ButtonEvent ce) {		
+				SpreadsheetModel spreadsheetModel = ClientUploadUtility.composeSpreadsheetModel(itemStore.getModels(), rowStore.getModels(), previewColumns);
+				
+				uploadSpreadsheet(spreadsheetModel);
+				
+				submitButton.setVisible(false);
+			}
+		});
+		step1Container.addButton(submitButton);
+		//submitButton.setEnabled(false);
+		
+		
+		
+		Button cancelButton = new Button("Cancel");
+		cancelButton.setMinWidth(120);
+		cancelButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
+
+			@Override
+			public void componentSelected(ButtonEvent ce) {
+				Dispatcher.forwardEvent(GradebookEvents.StopImport.getEventType());
+				fileUploadPanel.clear();
+			}
+		});
+		
+		step1Container.addButton(cancelButton);
+		
+		fileUploadContainer = new LayoutContainer();
+		fileUploadContainer.setLayout(new FlowLayout());
+		fileUploadContainer.add(buildFileUploadPanel());
+		
+		mainCardLayoutContainer.add(fileUploadContainer);
 		mainCardLayoutContainer.add(step1Container);
-		mainCardLayout.setActiveItem(step1Container);
+		mainCardLayout.setActiveItem(fileUploadContainer);
 		
 		//resultsContainer = buildResultsContainer();
 		
@@ -579,7 +614,7 @@ public class ImportPanel extends ContentPanel {
 		fileUploadPanel.setPadding(4);
 		fileUploadPanel.setButtonAlign(HorizontalAlignment.RIGHT);
 
-		fileUploadPanel.setWidth(1);
+		//fileUploadPanel.setWidth(1);
 		fileUploadPanel.setLayout(formLayout);
 		
 
@@ -587,7 +622,7 @@ public class ImportPanel extends ContentPanel {
 			@Override
 			protected void onChange(ComponentEvent ce) {
 				super.onChange(ce);
-				readFile();
+				//readFile();
 			}
 		};
 		file.setAllowBlank(false);
@@ -681,86 +716,17 @@ public class ImportPanel extends ContentPanel {
 		});
 		fileUploadPanel.addButton(previewButton);*/
 		
-		submitButton = new Button("Import");
+		Button submitButton = new Button("Next");
 		submitButton.setMinWidth(120);
 		submitButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
 
 			@Override
 			public void componentSelected(ButtonEvent ce) {
-				
-				/*SpreadsheetModel spreadsheetModel = new SpreadsheetModel();
-				
-
-				// Create new items
-				List<ItemModel> items = new ArrayList<ItemModel>();
-				List<BeanModel> headers = itemStore.getModels();
-				if (headers != null) {
-					for (BeanModel importHeader : headers) {
-						//String assignmentId = importHeader.get("id");
-						//if (assignmentId == null)
-						//	createNewItem((Long)ImportHeader.get("categoryId"), (String)ImportHeader.get("headerName"), Double.valueOf(0d), Double.parseDouble((String)ImportHeader.get("points")), new Date());			
-						
-						String categoryId = importHeader.get("categoryId");
-						String categoryName = importHeader.get("categoryName");
-						
-						ItemModel item = new ItemModel();
-						item.setIdentifier((String)importHeader.get("id"));
-						if (categoryId != null && !categoryId.equals("null"))
-							item.setCategoryId(Long.valueOf(categoryId));
-						if (categoryName != null && !categoryName.equals("null"))
-							item.setCategoryName(categoryName);
-						item.setName((String)importHeader.get("headerName"));
-							
-						boolean isPercentage = importHeader.get("isPercentage") != null && ((Boolean)importHeader.get("isPercentage")).booleanValue();
-						if (!isPercentage) 
-							item.setPoints((Double)importHeader.get("points"));
-						
-						item.setPercentCategory((Double)importHeader.get("percentCategory"));
-							
-						item.setIsPercentage(Boolean.valueOf(isPercentage));
-							
-						items.add(item);
-					}
-				}
-					
-				spreadsheetModel.setHeaders(items);
-
-				
-				List<StudentModel> rows = new ArrayList<StudentModel>();
-				for (BaseModel importRow : rowStore.getModels()) {
-					
-					boolean isUserNotFound = DataTypeConversionUtil.checkBoolean((Boolean)importRow.get("userNotFound"));
-					
-					if (isUserNotFound)
-						continue;
-					
-					String uid = importRow.get("userUid");
-					if (uid == null)
-						uid = importRow.get("userImportId");
-					
-					StudentModel student = new StudentModel();
-					student.setIdentifier(uid);
-					
-					for (ColumnConfig column : previewColumns) {
-						String id = column.getId();
-						student.set(id, importRow.get(id));
-					}
-					rows.add(student);
-				}
-				
-				spreadsheetModel.setRows(rows);*/
-				
-				SpreadsheetModel spreadsheetModel = ClientUploadUtility.composeSpreadsheetModel(itemStore.getModels(), rowStore.getModels(), previewColumns);
-				
-				uploadSpreadsheet(spreadsheetModel);
-				
-				submitButton.setVisible(false);
-				//cancelButton.setText("Done");
-				
+				readFile();
 			}
+			
 		});
 		fileUploadPanel.addButton(submitButton);
-		submitButton.setEnabled(false);
 		
 		cancelButton = new Button("Cancel");
 		cancelButton.setMinWidth(120);
@@ -783,7 +749,9 @@ public class ImportPanel extends ContentPanel {
 
 			public void handleEvent(FormEvent fe) {
 				
-				submitButton.setEnabled(true);
+				mainCardLayout.setActiveItem(step1Container);
+				
+				//submitButton.setEnabled(true);
 				
 				rowStore.removeAll();
 				
