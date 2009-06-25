@@ -107,7 +107,7 @@ public class ImportPanel extends ContentPanel {
 	private ContentPanel step1Container;
 	private LayoutContainer fileUploadContainer;
 	
-	private List<ColumnConfig> previewColumns;
+	private ArrayList<ColumnConfig> previewColumns;
 	
 	private MemoryProxy<ListLoadResult<BaseModel>> proxy;
 	private ListLoader<?> loader;
@@ -203,26 +203,6 @@ public class ImportPanel extends ContentPanel {
 		cellSelectionModel.setSelectionMode(SelectionMode.SINGLE);
 		grid.setSelectionModel(cellSelectionModel);
 		grid.setView(new BaseCustomGridView() {
-			
-			/*protected void onCellSelect(int row, int col) {
-				super.onCellSelect(row, col);
-				
-				if (col >= 0 && col < cm.getColumnCount()) {
-					ColumnConfig config = cm.getColumn(col);
-				
-					StudentModel model = rowStore.getAt(row);
-					Record record = rowStore.getRecord(model);
-					
-					String property = new StringBuilder().append(config.getId()).append(StudentModel.FAILED_FLAG).toString();
-					String message = (String)record.get(property);
-					
-					if (message != null) {
-						Info.display("Failed", message);
-					}
-					
-				}
-			}*/
-			
 			
 			protected boolean isClickable(ModelData model, String property) {
 				return property.equals(StudentModel.Key.DISPLAY_NAME.name()) ||
@@ -371,17 +351,11 @@ public class ImportPanel extends ContentPanel {
 		mainCardLayoutContainer.add(step1Container);
 		mainCardLayout.setActiveItem(fileUploadContainer);
 		
-		//resultsContainer = buildResultsContainer();
-		
-		//subCardLayoutContainer.add(resultsContainer);
-		
 		add(mainCardLayoutContainer); 
 	}
 
 	private void uploadSpreadsheet(SpreadsheetModel spreadsheetModel) {
 		GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
-		//UserEntityCreateAction<SpreadsheetModel> action = 
-		//	new UserEntityCreateAction<SpreadsheetModel>(gbModel, EntityType.SPREADSHEET, spreadsheetModel);
 		
 		int numberOfLearners = 0;
 		List<StudentModel> learners = spreadsheetModel.getRows();
@@ -458,141 +432,7 @@ public class ImportPanel extends ContentPanel {
 		Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
 		
 		service.create(gbModel.getGradebookUid(), gbModel.getGradebookId(), spreadsheetModel, EntityType.SPREADSHEET, SecureToken.get(), callback);
-		
-		/*
-		RemoteCommand<SpreadsheetModel> remoteCommand = 
-			new RemoteCommand<SpreadsheetModel>() {
-
-				@Override
-				public void onCommandFailure(UserEntityAction<SpreadsheetModel> action, Throwable caught) {
-					box.close();
-				}
-				
-			
-				@Override
-				public void onCommandSuccess(UserEntityAction<SpreadsheetModel> action, SpreadsheetModel result) {
-					
-					//subCardLayout.setActiveItem(resultsContainer);
-					
-					action.setModel(result);
-
-					for (StudentModel student : result.getRows()) {
-						
-						boolean hasChanges = DataTypeConversionUtil.checkBoolean((Boolean)student.get(AppConstants.IMPORT_CHANGES));
-						
-						if (hasChanges) {
-							Record record = rowStore.getRecord(student);
-							record.beginEdit();
-
-							
-							for (String p : student.getPropertyNames()) {
-								boolean needsRefreshing = false;
-								
-								int index = -1;
-								
-								if (p.endsWith(StudentModel.FAILED_FLAG)) {
-									index = p.indexOf(StudentModel.FAILED_FLAG);
-									needsRefreshing = true;
-								} 
-								
-								if (needsRefreshing && index != -1) {
-									String assignmentId = p.substring(0, index);
-									Object value = result.get(assignmentId);
-									
-									record.set(assignmentId, null);
-									record.set(assignmentId, value);
-
-								}
-							}
-							record.endEdit();
-						}
-						//rowStore.update(student);
-					}
-	
-					box.setProgressText("Loading");
-					//loader.load();
-					
-					box.close();
-					
-					Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades.getEventType());
-					
-					GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-					selectedGradebook.setGradebookItemModel(result.getGradebookItemModel());
-					Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel.getEventType(), selectedGradebook);
-					
-					fireEvent(GradebookEvents.UserChange.getEventType(), new UserChangeEvent(action));
-					
-					cancelButton.setText("Done");
-				}
-			
-		};
-		
-		remoteCommand.execute(action);*/
 	}
-	
-	/*
-	private LayoutContainer buildButtonContainer() {
-		LayoutContainer buttonContainer = new LayoutContainer();
-		buttonContainer.setLayout(new RowLayout());
-		
-		backButton = new Button("Back");
-		backButton.setMinWidth(120);
-		backButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
-
-			@Override
-			public void componentSelected(ButtonEvent ce) {
-				switch (currentStep) {
-				case TWO:	
-					gotoStep1();
-					break;
-				case THREE:
-					gotoStep2();
-					break;
-				}
-			}
-			
-		});
-		
-		backButton.setEnabled(false);
-		
-		nextButton = new Button("Next");
-		nextButton.setMinWidth(120);
-		nextButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
-
-			@Override
-			public void componentSelected(ButtonEvent ce) {
-				switch (currentStep) {
-				case ONE:	
-					gotoStep2();
-					break;
-				case TWO:
-					gotoStep3();
-					break;
-				case THREE:
-					Dispatcher.forwardEvent(GradebookEvents.StopImport);
-					break;
-				}
-			}
-		});
-		buttonContainer.add(nextButton, new RowData(120, 20, new Margins(5)));
-		nextButton.setEnabled(false);
-		
-		buttonContainer.add(backButton, new RowData(120, 20, new Margins(5)));
-				
-		cancelButton = new Button("Cancel");
-		cancelButton.setMinWidth(120);
-		cancelButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
-
-			@Override
-			public void componentSelected(ButtonEvent ce) {
-				Dispatcher.forwardEvent(GradebookEvents.StopImport);
-				fileUploadPanel.clear();
-			}
-		});
-		buttonContainer.add(cancelButton, new RowData(120, 20, new Margins(5)));
-		
-		return buttonContainer;
-	}*/
 	
 	private FormPanel buildFileUploadPanel() {
 		final GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
@@ -631,91 +471,11 @@ public class ImportPanel extends ContentPanel {
 
 		fileUploadPanel.add(file);
 		
-		/*
-		CheckBox delimiterComma = new CheckBox();
-		delimiterComma.setId("delimiter:comma");
-		delimiterComma.setBoxLabel("Comma");
-		delimiterComma.addListener(Events.Change, fieldListener);
-		
-		CheckBox delimiterTab = new CheckBox();
-		delimiterTab.setId("delimiter:tab");
-		delimiterTab.setBoxLabel("Tab");
-		delimiterTab.setValue(Boolean.TRUE);
-		delimiterTab.addListener(Events.Change, fieldListener);
-		
-		CheckBox delimiterSpace = new CheckBox();
-		delimiterSpace.setId("delimiter:space");
-		delimiterSpace.setBoxLabel("Space");
-		delimiterSpace.addListener(Events.Change, fieldListener);
-
-		CheckBox delimiterColon = new CheckBox();
-		delimiterColon.setId("delimiter:colon");
-		delimiterColon.setBoxLabel("Colon");
-		delimiterColon.addListener(Events.Change, fieldListener);
-		
-
-		CheckBoxGroup group = new CheckBoxGroup();
-		group.setId("delimiters");
-		group.setName("Delimiters");
-		group.setFieldLabel("Separator");
-		group.add(delimiterComma);
-		group.add(delimiterTab);
-		group.add(delimiterSpace);
-		group.add(delimiterColon);
-		fileUploadPanel.add(group);
-		
-		delimiterComma.setName("delimiter:comma");
-		delimiterTab.setName("delimiter:tab");
-		delimiterSpace.setName("delimiter:space");
-		delimiterColon.setName("delimiter:colon");*/
-		
 		HiddenField<String> gradebookUidField = new HiddenField<String>();
 		gradebookUidField.setName("gradebookUid");
 		gradebookUidField.setValue(gbModel.getGradebookUid());
-		//left.add(gradebookUidField);
 		fileUploadPanel.add(gradebookUidField);
-		
-		
-		/*final CheckBox excludeGradeData = new CheckBox();
-		excludeGradeData.setName("excludegrades");
-		excludeGradeData.setFieldLabel("Exclude grades");
-		fileUploadPanel.add(excludeGradeData);*/
-		
-		/*advancedButton = new Button(ADVANCED_SHOW);
-		advancedButton.setMinWidth(120);
-		advancedButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
-
-			@Override
-			public void componentSelected(ButtonEvent ce) {
 				
-				Component activeItem = subCardLayout.getActiveItem();
-				if (activeItem != null && activeItem.equals(previewFieldSet)) {
-					subCardLayout.setActiveItem(advancedContainer);
-					advancedButton.setText(ADVANCED_HIDE);
-				} else {
-					subCardLayout.setActiveItem(previewFieldSet);
-					advancedButton.setText(ADVANCED_SHOW);
-				}
-			}
-			
-		});
-		fileUploadPanel.addButton(advancedButton);*/
-		
-		/*previewButton = new Button("Read File");
-		previewButton.setMinWidth(120);
-		previewButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
-
-			@Override
-			public void componentSelected(ButtonEvent ce) {
-				subCardLayout.setActiveItem(tabPanel);
-				uploadBox = MessageBox.wait("Progress", "Reading file, please wait...", "Parsing...");
-				fileUploadPanel.submit();
-				submitButton.setEnabled(true);
-			}
-			
-		});
-		fileUploadPanel.addButton(previewButton);*/
-		
 		Button submitButton = new Button("Next");
 		submitButton.setMinWidth(120);
 		submitButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
@@ -740,344 +500,221 @@ public class ImportPanel extends ContentPanel {
 		});
 		
 		fileUploadPanel.addButton(cancelButton);
-		
-		
-		//advancedButton.setEnabled(false);
-		//previewButton.setEnabled(false);
 				
 		fileUploadPanel.addListener(Events.Submit, new Listener<FormEvent>() {
 
 			public void handleEvent(FormEvent fe) {
-				
-				mainCardLayout.setActiveItem(step1Container);
-				
-				//submitButton.setEnabled(true);
-				
-				rowStore.removeAll();
-				
-				JSONValue jsonValue = JSONParser.parse(fe.resultHtml);
-				JSONObject jsonObject = jsonValue.isObject().get("org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportFile").isObject();
-				
-				JSONArray headersArray = getArray(jsonObject, "items");
-				previewColumns = new ArrayList<ColumnConfig>();
-				
-				Boolean hasCategoriesBoolean = getBoolean(jsonObject, "hasCategories");
-				
-				boolean hasCategories = DataTypeConversionUtil.checkBoolean(hasCategoriesBoolean);
-				
-				if (hasCategories) {
-					columnsTab.setVisible(true);
-				
-					final GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-					
-					if (selectedGradebook != null) {
-						
-						if (selectedGradebook.getGradebookItemModel().getCategoryType() == CategoryType.NO_CATEGORIES) {
+				readSubmitResponse(fe.resultHtml);
+			}
 							
-							Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
-					
-							AsyncCallback<GradebookModel> callback = new AsyncCallback<GradebookModel>() {
-
-								public void onFailure(Throwable caught) {
-									Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught));
-								}
-
-								public void onSuccess(GradebookModel result) {
-									
-									if (result.getGradebookItemModel() != null) {
-										refreshCategoryPickerStore(result.getGradebookItemModel());
-										
-										selectedGradebook.setGradebookItemModel(result.getGradebookItemModel());
-										Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel.getEventType(), selectedGradebook);
-									}
-								}
-							};
-							
-							service.get(selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId(), EntityType.GRADEBOOK, null, null, SecureToken.get(), callback);
-							
-							refreshCategoryPickerStore(selectedGradebook.getGradebookItemModel());
-						}
-						
-					}
-				}
-				
-					//gbModel.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES;
-				boolean hasUnassignedItem = false;
-				
-				if (headersArray != null) {	
-					headerMap.clear();
-					for (int i=0;i<headersArray.size();i++) {
-						JSONObject jsonHeaderObject = headersArray.get(i).isObject();
-						String name = getString(jsonHeaderObject, "value");
-						String id = getString(jsonHeaderObject, "id");
-						String headerName = getString(jsonHeaderObject, "headerName");
-						Double points = getDouble(jsonHeaderObject, "points");
-						String field = getString(jsonHeaderObject, "field");
-						String categoryName = getString(jsonHeaderObject, "categoryName");
-						String categoryId = getString(jsonHeaderObject, "categoryId");
-						Double percentCategory = getDouble(jsonHeaderObject, "percentCategory");
-						Boolean isExtraCredit = getBoolean(jsonHeaderObject, "extraCredit");
-						Boolean isUnincluded = getBoolean(jsonHeaderObject, "unincluded");
-						
-						int width = 200;
-									
-						StringBuilder nameBuilder = new StringBuilder();
-						
-						//if (!hasNoCategories && categoryName != null && headerName != null)
-						//	nameBuilder.append(categoryName).append(" : ").append(headerName);
-						//else
-						nameBuilder.append(name);
-						
-						if (id == null)
-							continue;
-						
-						if (id.equals("ID"))
-							width = 100;
-						else if (!id.equals("NAME"))
-							width = name.length() * 7;
-
-						if (id.startsWith("NEW:")) {
-							nameBuilder.append("*");
-						
-							if (categoryId == null)
-								hasUnassignedItem = true;
-						}
-						
-						ColumnConfig column = new ColumnConfig(id, nameBuilder.toString(), width);
-						previewColumns.add(column);
-						
-						
-						ImportHeader header = new ImportHeader(Field.valueOf(field), headerName);
-						header.setId(id);
-						header.setHeaderName(headerName);
-						header.setPoints(points);
-						header.setField(field);
-						header.setCategoryName(categoryName);
-						header.setCategoryId(categoryId);
-						header.setPercentCategory(percentCategory);
-						header.setExtraCredit(isExtraCredit);
-						header.setUnincluded(isUnincluded);
-						
-						if (header.getField() != null && header.getField().equals("ITEM"))
-							headerMap.put(id, header);
-					}
-					ColumnModel cm = new ColumnModel(previewColumns);
-					grid.reconfigure(rowStore, cm);
-					
-					//advancedButton.setEnabled(true);
-					//grid.setVisible(true);
-					//nextButton.setEnabled(true);
-				}
-				
-				
-				if (hasUnassignedItem && hasCategories) {
-					showSetupPanel();
-				}
-				
-
-				//boolean isGradeDataExcluded = excludeGradeData.getValue() != null && excludeGradeData.getValue().booleanValue();
-				//if (! isGradeDataExcluded) {
-					JSONArray rowsArray = getArray(jsonObject, "rows");
-					List<StudentModel> models = new ArrayList<StudentModel>();
-					if (rowsArray != null) {
-						StringBuilder heading = new StringBuilder("Data (").append(rowsArray.size()).append(" records)");
-						//if (hasCategories)
-							previewTab.setText(heading.toString());
-						//else
-						//	previewFieldSet.setTitle(heading.toString());
-						
-						for (int i=0;i<rowsArray.size();i++) {
-							JSONObject rowObject = rowsArray.get(i).isObject();
-							String userUid = getString(rowObject.isObject(), "userUid");
-							String userImportId = getString(rowObject.isObject(), "userImportId");
-							String userDisplayName = getString(rowObject.isObject(), "userDisplayName");
-							Boolean userNotFound = getBoolean(rowObject.isObject(), "isUserNotFound");
-							JSONArray columnsArray = getArray(rowObject, "columns");
-							
-							StudentModel model = new StudentModel();
-							if (userUid != null)
-								model.setIdentifier(userUid);
-							else if (userImportId != null)
-								model.setIdentifier(userImportId);
-							
-							model.set("userUid", userUid);
-							model.set("userImportId", userImportId);
-							model.set("userDisplayName", userDisplayName);
-							model.set("userNotFound", userNotFound);
-							
-							if (columnsArray != null) {
-								for (int j=0;j<columnsArray.size();j++) {
-									if (previewColumns != null && previewColumns.size() > j) {
-										ColumnConfig config = previewColumns.get(j);
-										if (config != null)
-											model.set(config.getId(), columnsArray.get(j).isString().stringValue());
-									
-									}
-								}
-								
-							}
-							
-							models.add(model);
-						}
-					}
-					
-					if (models != null)
-						rowStore.add(models);
-					
-					//if (hasCategories)
-						subCardLayout.setActiveItem(tabPanel);
-					//else
-					//	subCardLayout.setActiveItem(previewFieldSet);
-					
-					uploadBox.close();
-					
-					ColumnModel cm = grid.getColumnModel();
-					List<ImportHeader> headers = new ArrayList<ImportHeader>();
-						
-					// First, we need to ensure that all of the assignments exist
-					for (int i=0;i<cm.getColumnCount();i++) {
-						ColumnConfig config = cm.getColumn(i);
-						
-							//if (!config.isHidden()) {
-							BaseModel model = new BaseModel();
-								
-							String id = config.getId();
-								
-							ImportHeader header = headerMap.get(id);
-							
-							if (header != null) {
-								//header.setChecker(config.isHidden());
-								headers.add(header);
-							}
-						//}
-							
-					}
-						
-					/*if (hasCategories) {
-
-						List<ItemModel> itemModels = ClientUploadUtility.convertHeadersToItemModels(headers);
-					
-				        itemStore.add(itemModels);
-					} else {
-						
-						List<ItemModel> itemModels = ClientUploadUtility.convertHeadersToItemModels(headers);
-						
-						
-				        itemStore.add(itemModels);
-					}*/
-					
-					List<ItemModel> itemModels = ClientUploadUtility.convertHeadersToItemModels(headers);
-			        itemStore.add(itemModels);
-					
-					//subCardLayoutContainer.add(columnsTab);
-					
-				}
-				
-			//}
-			
 		});
 		
 		return fileUploadPanel;
 	}
 	
-	/*private LayoutContainer buildItemContainer(List<ImportHeader> headers) {
-		LayoutContainer container = new LayoutContainer();
-		
-		ItemNumberCellRenderer numericCellRenderer = new ItemNumberCellRenderer(DataTypeConversionUtil.getShortNumberFormat());		
+	private void readSubmitResponse(String result) {
 
-		List<TreeTableColumn> columns = new ArrayList<TreeTableColumn>();
-		GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
+		try {
 		
-		ItemCellRenderer cellRenderer = new ItemCellRenderer();
-		TreeTableColumn nameColumn = new TreeTableColumn(ItemModel.Key.NAME.name(), 
-				ItemModel.getPropertyName(ItemModel.Key.NAME), 180);
-		nameColumn.setRenderer(cellRenderer);
-		nameColumn.setSortable(false);
-		columns.add(nameColumn);
-		
-		TreeTableColumn percentCourseGradeColumn =  new TreeTableColumn(ItemModel.Key.PERCENT_COURSE_GRADE.name(), 
-				ItemModel.getPropertyName(ItemModel.Key.PERCENT_COURSE_GRADE), ItemModel.getPropertyName(ItemModel.Key.PERCENT_COURSE_GRADE).length() * CHARACTER_WIDTH + 30);
-		percentCourseGradeColumn.setAlignment(HorizontalAlignment.RIGHT);
-		percentCourseGradeColumn.setHidden(gbModel.getGradebookItemModel().getCategoryType() == CategoryType.SIMPLE_CATEGORIES);
-		percentCourseGradeColumn.setRenderer(numericCellRenderer);
-		percentCourseGradeColumn.setSortable(false);
-		columns.add(percentCourseGradeColumn);
-		
-		TreeTableColumn percentCategoryColumn =  new TreeTableColumn(ItemModel.Key.PERCENT_CATEGORY.name(), 
-				ItemModel.getPropertyName(ItemModel.Key.PERCENT_CATEGORY), ItemModel.getPropertyName(ItemModel.Key.PERCENT_CATEGORY).length() * CHARACTER_WIDTH + 30);
-		percentCategoryColumn.setAlignment(HorizontalAlignment.RIGHT);
-		percentCategoryColumn.setHidden(gbModel.getGradebookItemModel().getCategoryType() == CategoryType.SIMPLE_CATEGORIES);
-		percentCategoryColumn.setRenderer(numericCellRenderer);
-		percentCategoryColumn.setSortable(false);
-		columns.add(percentCategoryColumn);
-		
-		TreeTableColumn pointsColumn = new TreeTableColumn(ItemModel.Key.POINTS.name(), 
-				ItemModel.getPropertyName(ItemModel.Key.POINTS), ItemModel.getPropertyName(ItemModel.Key.POINTS).length() * CHARACTER_WIDTH + 30);
-		pointsColumn.setAlignment(HorizontalAlignment.RIGHT);
-		pointsColumn.setHidden(gbModel.getGradebookItemModel().getCategoryType() != CategoryType.WEIGHTED_CATEGORIES);
-		pointsColumn.setRenderer(numericCellRenderer);
-		pointsColumn.setSortable(false);
-		columns.add(pointsColumn);
-		
-		TreeTableColumnModel treeTableColumnModel = new TreeTableColumnModel(columns);
-		TreeTable treeTable = new TreeTable(treeTableColumnModel) {
-			@Override
-			protected void onRender(Element target, int index) {
-				super.onRender(target, index);
-				Accessibility.setRole(el().dom, "treegrid");
-				Accessibility.setState(el().dom, "aria-labelledby", "itemtreelabel");
-				//treeTableBinder.setCheckedSelection(selectedItemModels);
-				//treeTable.setHeight(483); //ItemTreePanel.this.getHeight(true));
-				expandAll();
-			}
-		};
-		
-		container.add(treeTable);
-		
-		TreeLoader treeLoader = new BaseTreeLoader(new TreeModelReader() {
+			mainCardLayout.setActiveItem(step1Container);
 			
-			@Override
-			protected List<? extends ModelData> getChildren(ModelData parent) {
-				List visibleChildren = new ArrayList();
-				List<? extends ModelData> children = super.getChildren(parent);
+			rowStore.removeAll();
+			
+			JSONValue jsonValue = JSONParser.parse(result);
+			JSONObject jsonObject = jsonValue.isObject().get("org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportFile").isObject();
+			
+			JSONArray headersArray = getArray(jsonObject, "items");
+			previewColumns = new ArrayList<ColumnConfig>();
+			
+			Boolean hasCategoriesBoolean = getBoolean(jsonObject, "hasCategories");
+			
+			boolean hasCategories = DataTypeConversionUtil.checkBoolean(hasCategoriesBoolean);
+			
+			if (hasCategories) {
+				columnsTab.setVisible(true);
+			
+				final GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 				
-				for (ModelData model : children) {
-					//String source = model.get(ItemModel.Key.SOURCE.name());
-					//if (source == null || !source.equals("Static"))
-					visibleChildren.add(model);
-				}
+				if (selectedGradebook != null) {
+					
+					if (selectedGradebook.getGradebookItemModel().getCategoryType() == CategoryType.NO_CATEGORIES) {
+						
+						Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
 				
-				return visibleChildren;
-			}
-		});
-		
-		TreeStore<ItemModel> treeStore = new TreeStore<ItemModel>(treeLoader);
-		
-		ItemTreeTableBinder treeTableBinder = new ItemTreeTableBinder(treeTable, treeStore);
-		
-		
-		
-		
-		ItemModel gradebookItemModel = gbModel.getGradebookItemModel();
-		ItemModel rootItemModel = new ItemModel();
-		rootItemModel.setItemType(Type.ROOT);
-		rootItemModel.setName("Root");
-		gradebookItemModel.setParent(rootItemModel);
-		rootItemModel.add(gradebookItemModel);
-		
-		
-		treeLoader.load(rootItemModel);
-
-		
-		return container;
-	}*/
+						AsyncCallback<GradebookModel> callback = new AsyncCallback<GradebookModel>() {
 	
+							public void onFailure(Throwable caught) {
+								Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught));
+							}
+	
+							public void onSuccess(GradebookModel result) {
+								
+								if (result.getGradebookItemModel() != null) {
+									refreshCategoryPickerStore(result.getGradebookItemModel());
+									
+									selectedGradebook.setGradebookItemModel(result.getGradebookItemModel());
+									Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel.getEventType(), selectedGradebook);
+								}
+							}
+						};
+						
+						service.get(selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId(), EntityType.GRADEBOOK, null, null, SecureToken.get(), callback);
+						
+						refreshCategoryPickerStore(selectedGradebook.getGradebookItemModel());
+					}
+					
+				}
+			}
+			
+				//gbModel.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES;
+			boolean hasUnassignedItem = false;
+			
+			if (headersArray != null) {	
+				headerMap.clear();
+				for (int i=0;i<headersArray.size();i++) {
+					JSONObject jsonHeaderObject = headersArray.get(i).isObject();
+					String name = getString(jsonHeaderObject, "value");
+					String id = getString(jsonHeaderObject, "id");
+					String headerName = getString(jsonHeaderObject, "headerName");
+					Double points = getDouble(jsonHeaderObject, "points");
+					String field = getString(jsonHeaderObject, "field");
+					String categoryName = getString(jsonHeaderObject, "categoryName");
+					String categoryId = getString(jsonHeaderObject, "categoryId");
+					Double percentCategory = getDouble(jsonHeaderObject, "percentCategory");
+					Boolean isExtraCredit = getBoolean(jsonHeaderObject, "extraCredit");
+					Boolean isUnincluded = getBoolean(jsonHeaderObject, "unincluded");
+					
+					int width = 200;
+								
+					StringBuilder nameBuilder = new StringBuilder();
+					
+					//if (!hasNoCategories && categoryName != null && headerName != null)
+					//	nameBuilder.append(categoryName).append(" : ").append(headerName);
+					//else
+					nameBuilder.append(name);
+					
+					if (id == null)
+						continue;
+					
+					if (id.equals("ID"))
+						width = 100;
+					else if (!id.equals("NAME"))
+						width = name.length() * 7;
+	
+					if (id.startsWith("NEW:")) {
+						nameBuilder.append("*");
+					
+						if (categoryId == null)
+							hasUnassignedItem = true;
+					}
+					
+					ColumnConfig column = new ColumnConfig(id, nameBuilder.toString(), width);
+					previewColumns.add(column);
+					
+					
+					ImportHeader header = new ImportHeader(Field.valueOf(field), headerName);
+					header.setId(id);
+					header.setHeaderName(headerName);
+					header.setPoints(points);
+					header.setField(field);
+					header.setCategoryName(categoryName);
+					header.setCategoryId(categoryId);
+					header.setPercentCategory(percentCategory);
+					header.setExtraCredit(isExtraCredit);
+					header.setUnincluded(isUnincluded);
+					
+					if (header.getField() != null && header.getField().equals("ITEM"))
+						headerMap.put(id, header);
+				}
+				ColumnModel cm = new ColumnModel(previewColumns);
+				grid.reconfigure(rowStore, cm);
+			}
+			
+			
+			if (hasUnassignedItem && hasCategories) {
+				showSetupPanel();
+			}
+			
+	
+			JSONArray rowsArray = getArray(jsonObject, "rows");
+			ArrayList<StudentModel> models = new ArrayList<StudentModel>();
+			if (rowsArray != null) {
+				StringBuilder heading = new StringBuilder("Data (").append(rowsArray.size()).append(" records)");
+				previewTab.setText(heading.toString());
+					
+				for (int i=0;i<rowsArray.size();i++) {
+					JSONObject rowObject = rowsArray.get(i).isObject();
+					String userUid = getString(rowObject.isObject(), "userUid");
+					String userImportId = getString(rowObject.isObject(), "userImportId");
+					String userDisplayName = getString(rowObject.isObject(), "userDisplayName");
+					Boolean userNotFound = getBoolean(rowObject.isObject(), "isUserNotFound");
+					JSONArray columnsArray = getArray(rowObject, "columns");
+						
+					StudentModel model = new StudentModel();
+					if (userUid != null)
+						model.setIdentifier(userUid);
+					else if (userImportId != null)
+						model.setIdentifier(userImportId);
+					
+					model.set("userUid", userUid);
+					model.set("userImportId", userImportId);
+					model.set("userDisplayName", userDisplayName);
+					model.set("userNotFound", userNotFound);
+					
+					if (columnsArray != null) {
+						for (int j=0;j<columnsArray.size();j++) {
+							if (previewColumns != null && previewColumns.size() > j) {
+								ColumnConfig config = previewColumns.get(j);
+								if (config != null)
+									model.set(config.getId(), columnsArray.get(j).isString().stringValue());
+							
+							}
+						}
+							
+					}
+						
+					models.add(model);
+				}
+			}
+				
+			if (models != null)
+				rowStore.add(models);
+				
+			subCardLayout.setActiveItem(tabPanel);
+				
+			ColumnModel cm = grid.getColumnModel();
+			ArrayList<ImportHeader> headers = new ArrayList<ImportHeader>();
+					
+			// First, we need to ensure that all of the assignments exist
+			for (int i=0;i<cm.getColumnCount();i++) {
+				ColumnConfig config = cm.getColumn(i);
+					
+				String id = config.getId();
+							
+				ImportHeader header = headerMap.get(id);
+						
+				if (header != null) {
+					headers.add(header);
+				}					
+			}
+				
+			ArrayList<ItemModel> itemModels = ClientUploadUtility.convertHeadersToItemModels(headers);
+	        itemStore.add(itemModels);
+		        
+		} catch (Exception e) {
+			Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(e));
+		} finally {
+			uploadBox.close();
+		}
+			        
+	}
+		
 	private EditorGrid<ItemModel> buildItemGrid() {
 		ContentPanel panel = new ContentPanel();
 		panel.setLayout(new FitLayout());
 		panel.setHeaderVisible(false);
 		
-		List<ColumnConfig> itemColumns = new ArrayList<ColumnConfig>();
+		ArrayList<ColumnConfig> itemColumns = new ArrayList<ColumnConfig>();
 		
 		TextField<String> textField = new TextField<String>();
 		textField.addInputStyleName("gbTextFieldInput");
@@ -1242,7 +879,7 @@ public class ImportPanel extends ContentPanel {
 		container.setHeaderVisible(false);
 		container.setLayout(new FitLayout());
 		
-		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
+		ArrayList<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 		
 		ColumnConfig desc = new ColumnConfig("desc", "Description", 2000);
 		configs.add(desc);

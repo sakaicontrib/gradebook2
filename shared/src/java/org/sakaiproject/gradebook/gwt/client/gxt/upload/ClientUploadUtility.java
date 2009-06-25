@@ -29,8 +29,9 @@ public class ClientUploadUtility {
         return itemModels;
 	}
 	
-	public static List<ItemModel> convertHeadersToItemModels(List<ImportHeader> headers) {
-		List<ItemModel> items = new ArrayList<ItemModel>();
+	public static ArrayList<ItemModel> convertHeadersToItemModels(ArrayList<ImportHeader> headers) {
+		ArrayList<ItemModel> items = new ArrayList<ItemModel>();
+		
 		
 		for (ImportHeader header : headers) {
 			ItemModel itemModel = new ItemModel();
