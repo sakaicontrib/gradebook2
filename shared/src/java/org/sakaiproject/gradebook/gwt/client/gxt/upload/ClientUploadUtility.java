@@ -32,32 +32,33 @@ public class ClientUploadUtility {
 	public static ArrayList<ItemModel> convertHeadersToItemModels(ArrayList<ImportHeader> headers) {
 		ArrayList<ItemModel> items = new ArrayList<ItemModel>();
 		
-		
-		for (ImportHeader header : headers) {
-			ItemModel itemModel = new ItemModel();
+		if (headers != null) {
+			for (ImportHeader header : headers) {
+				ItemModel itemModel = new ItemModel();
+				
+				if (header == null)
+					continue;
+				
+				if (header.getId().equals("ID"))
+					continue;
+				
+				if (header.getId().equals("NAME"))
+					continue;
+				
+				itemModel.setIdentifier(header.getId());
+				itemModel.setItemType(Type.ITEM);
+				itemModel.setName(header.getHeaderName());
+				itemModel.setPoints(header.getPoints());
+				itemModel.setExtraCredit(header.getExtraCredit());
+				itemModel.setIncluded(Boolean.valueOf(!DataTypeConversionUtil.checkBoolean(header.getUnincluded())));
+				if (header.getCategoryId() != null) {
+					itemModel.setCategoryId(Long.valueOf(header.getCategoryId()));
+					itemModel.setCategoryName(header.getCategoryName());
+				}
+				itemModel.setPercentCategory(header.getPercentCategory());
 			
-			if (header == null)
-				continue;
-			
-			if (header.getId().equals("ID"))
-				continue;
-			
-			if (header.getId().equals("NAME"))
-				continue;
-			
-			itemModel.setIdentifier(header.getId());
-			itemModel.setItemType(Type.ITEM);
-			itemModel.setName(header.getHeaderName());
-			itemModel.setPoints(header.getPoints());
-			itemModel.setExtraCredit(header.getExtraCredit());
-			itemModel.setIncluded(Boolean.valueOf(!DataTypeConversionUtil.checkBoolean(header.getUnincluded())));
-			if (header.getCategoryId() != null) {
-				itemModel.setCategoryId(Long.valueOf(header.getCategoryId()));
-				itemModel.setCategoryName(header.getCategoryName());
+				items.add(itemModel);
 			}
-			itemModel.setPercentCategory(header.getPercentCategory());
-		
-			items.add(itemModel);
 		}
 
 		return items;

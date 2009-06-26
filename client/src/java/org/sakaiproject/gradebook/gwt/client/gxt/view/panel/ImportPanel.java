@@ -521,7 +521,16 @@ public class ImportPanel extends ContentPanel {
 			rowStore.removeAll();
 			
 			JSONValue jsonValue = JSONParser.parse(result);
-			JSONObject jsonObject = jsonValue.isObject().get("org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportFile").isObject();
+			
+			if (jsonValue == null)
+				throw new Exception("Server response incorrect. Unable to parse result.");
+			
+			JSONObject jsonWrapper = jsonValue.isObject();
+			
+			if (jsonWrapper == null)
+				throw new Exception("Server response incorrect. Unable to read data.");
+			
+			JSONObject jsonObject = jsonWrapper.get("org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportFile").isObject();
 			
 			JSONArray headersArray = getArray(jsonObject, "items");
 			previewColumns = new ArrayList<ColumnConfig>();
@@ -566,13 +575,20 @@ public class ImportPanel extends ContentPanel {
 				}
 			}
 			
-				//gbModel.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES;
 			boolean hasUnassignedItem = false;
 			
 			if (headersArray != null) {	
 				headerMap.clear();
 				for (int i=0;i<headersArray.size();i++) {
-					JSONObject jsonHeaderObject = headersArray.get(i).isObject();
+					JSONValue value = headersArray.get(i);
+					if (value == null) 
+						continue;
+					
+					JSONObject jsonHeaderObject = value.isObject();
+					
+					if (jsonHeaderObject == null)
+						continue;
+					
 					String name = getString(jsonHeaderObject, "value");
 					String id = getString(jsonHeaderObject, "id");
 					String headerName = getString(jsonHeaderObject, "headerName");
@@ -587,10 +603,6 @@ public class ImportPanel extends ContentPanel {
 					int width = 200;
 								
 					StringBuilder nameBuilder = new StringBuilder();
-					
-					//if (!hasNoCategories && categoryName != null && headerName != null)
-					//	nameBuilder.append(categoryName).append(" : ").append(headerName);
-					//else
 					nameBuilder.append(name);
 					
 					if (id == null)
@@ -639,11 +651,15 @@ public class ImportPanel extends ContentPanel {
 			JSONArray rowsArray = getArray(jsonObject, "rows");
 			ArrayList<StudentModel> models = new ArrayList<StudentModel>();
 			if (rowsArray != null) {
-				StringBuilder heading = new StringBuilder("Data (").append(rowsArray.size()).append(" records)");
+				StringBuilder heading = new StringBuilder().append("Data (").append(rowsArray.size()).append(" records)");
 				previewTab.setText(heading.toString());
 					
 				for (int i=0;i<rowsArray.size();i++) {
-					JSONObject rowObject = rowsArray.get(i).isObject();
+					JSONValue value = rowsArray.get(i);
+					if (value == null)
+						continue;
+					
+					JSONObject rowObject = value.isObject();
 					String userUid = getString(rowObject.isObject(), "userUid");
 					String userImportId = getString(rowObject.isObject(), "userImportId");
 					String userDisplayName = getString(rowObject.isObject(), "userDisplayName");
@@ -665,9 +681,15 @@ public class ImportPanel extends ContentPanel {
 						for (int j=0;j<columnsArray.size();j++) {
 							if (previewColumns != null && previewColumns.size() > j) {
 								ColumnConfig config = previewColumns.get(j);
-								if (config != null)
-									model.set(config.getId(), columnsArray.get(j).isString().stringValue());
-							
+								if (config != null) {
+									JSONValue itemValue = columnsArray.get(j);
+									if (itemValue == null)
+										continue;
+									JSONString itemString = itemValue.isString();
+									if (itemString == null)
+										continue;
+									model.set(config.getId(), itemString.stringValue());
+								}
 							}
 						}
 							
@@ -688,7 +710,10 @@ public class ImportPanel extends ContentPanel {
 			// First, we need to ensure that all of the assignments exist
 			for (int i=0;i<cm.getColumnCount();i++) {
 				ColumnConfig config = cm.getColumn(i);
-					
+				
+				if (config == null)
+					continue;
+				
 				String id = config.getId();
 							
 				ImportHeader header = headerMap.get(id);
