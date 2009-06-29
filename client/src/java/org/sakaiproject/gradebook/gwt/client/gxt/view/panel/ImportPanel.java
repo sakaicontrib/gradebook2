@@ -330,7 +330,7 @@ public class ImportPanel extends ContentPanel {
 		
 		
 		
-		Button cancelButton = new Button("Cancel");
+		cancelButton = new Button("Cancel");
 		cancelButton.setMinWidth(120);
 		cancelButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
 
@@ -377,53 +377,58 @@ public class ImportPanel extends ContentPanel {
 				}
 
 				public void onSuccess(SpreadsheetModel result) {
-					for (StudentModel student : result.getRows()) {
-						
-						boolean hasChanges = DataTypeConversionUtil.checkBoolean((Boolean)student.get(AppConstants.IMPORT_CHANGES));
-						
-						if (hasChanges) {
-							Record record = rowStore.getRecord(student);
-							record.beginEdit();
+					
+					try {
+						for (StudentModel student : result.getRows()) {
 							
-							for (String p : student.getPropertyNames()) {
-								boolean needsRefreshing = false;
+							boolean hasChanges = DataTypeConversionUtil.checkBoolean((Boolean)student.get(AppConstants.IMPORT_CHANGES));
+							
+							if (hasChanges) {
+								Record record = rowStore.getRecord(student);
+								record.beginEdit();
 								
-								int index = -1;
-								
-								if (p.endsWith(StudentModel.FAILED_FLAG)) {
-									index = p.indexOf(StudentModel.FAILED_FLAG);
-									needsRefreshing = true;
-								} 
-								
-								if (needsRefreshing && index != -1) {
-									String assignmentId = p.substring(0, index);
-									Object value = result.get(assignmentId);
+								for (String p : student.getPropertyNames()) {
+									boolean needsRefreshing = false;
 									
-									record.set(assignmentId, null);
-									record.set(assignmentId, value);
-
-								}
-							}
-							record.endEdit();
-						}
-					}
+									int index = -1;
+									
+									if (p.endsWith(StudentModel.FAILED_FLAG)) {
+										index = p.indexOf(StudentModel.FAILED_FLAG);
+										needsRefreshing = true;
+									} 
+									
+									if (needsRefreshing && index != -1) {
+										String assignmentId = p.substring(0, index);
+										Object value = result.get(assignmentId);
+										
+										record.set(assignmentId, null);
+										record.set(assignmentId, value);
 	
-					box.setProgressText("Loading");
-					box.close();
-					
-					
-					
-					//advancedContainer.layout();
-					
-					Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades.getEventType());
-					
-					GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-					selectedGradebook.setGradebookItemModel(result.getGradebookItemModel());
-					Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel.getEventType(), selectedGradebook);
+									}
+								}
+								record.endEdit();
+							}
+						}
+		
+						box.setProgressText("Loading");
+						
+						cancelButton.setText("Done");
+						
+						//advancedContainer.layout();
+						
+						Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades.getEventType());
+						
+						GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+						selectedGradebook.setGradebookItemModel(result.getGradebookItemModel());
+						Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel.getEventType(), selectedGradebook);
+					} catch (Exception e) {
+						Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(e));
+					} finally {
+						box.close();
+					}
 					
 					//fireEvent(GradebookEvents.UserChange.getEventType(), new UserChangeEvent(action));
 					
-					cancelButton.setText("Done");
 				}
 			
 			
@@ -432,6 +437,7 @@ public class ImportPanel extends ContentPanel {
 		Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
 		
 		service.create(gbModel.getGradebookUid(), gbModel.getGradebookId(), spreadsheetModel, EntityType.SPREADSHEET, SecureToken.get(), callback);
+		
 	}
 	
 	private FormPanel buildFileUploadPanel() {
@@ -488,7 +494,7 @@ public class ImportPanel extends ContentPanel {
 		});
 		fileUploadPanel.addButton(submitButton);
 		
-		cancelButton = new Button("Cancel");
+		Button cancelButton = new Button("Cancel");
 		cancelButton.setMinWidth(120);
 		cancelButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
 
