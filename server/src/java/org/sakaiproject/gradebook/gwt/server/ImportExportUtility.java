@@ -696,9 +696,9 @@ public class ImportExportUtility {
 		}
 		
 		ImportFile importFile = new ImportFile();
-		List<ImportHeader> headers = new ArrayList<ImportHeader>();
+		ArrayList<ImportHeader> headers = new ArrayList<ImportHeader>();
 		Map<String, ImportHeader> headerMap = new HashMap<String, ImportHeader>();
-		List<ImportRow> importRows = new ArrayList<ImportRow>();
+		ArrayList<ImportRow> importRows = new ArrayList<ImportRow>();
 		
 		DecimalFormat decimalFormat = new DecimalFormat();
 		

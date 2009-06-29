@@ -96,7 +96,7 @@ public class ImportExportTest extends AbstractServiceTest {
 				previewColumns.add(new ColumnConfig(header.getId(), header.getValue(), 100));
 		}
 		
-		List<ItemModel> items = ClientUploadUtility.convertHeadersToItemModels(importFile.getItems());
+		ArrayList<ItemModel> items = ClientUploadUtility.convertHeadersToItemModels(importFile.getItems());
 		
 		SpreadsheetModel spreadsheetModel = ClientUploadUtility.composeSpreadsheetModel(items, students, previewColumns);
 		service.createOrUpdateSpreadsheet(newGradebookUid, spreadsheetModel);

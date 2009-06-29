@@ -46,6 +46,7 @@ import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
+import com.extjs.gxt.ui.client.widget.Info;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.TabItem;
@@ -68,7 +69,6 @@ import com.extjs.gxt.ui.client.widget.grid.EditorGrid;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.layout.CardLayout;
-import com.extjs.gxt.ui.client.widget.layout.FillLayout;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
@@ -95,8 +95,8 @@ public class ImportPanel extends ContentPanel {
 	private FormPanel fileUploadPanel;
 	private Map<String, ImportHeader> headerMap;
 	
-	private LayoutContainer mainCardLayoutContainer, subCardLayoutContainer;
-	private CardLayout mainCardLayout, subCardLayout;
+	private LayoutContainer mainCardLayoutContainer; //, subCardLayoutContainer;
+	private CardLayout mainCardLayout; //, subCardLayout;
 
 	private TabPanel tabPanel;
 	
@@ -181,9 +181,9 @@ public class ImportPanel extends ContentPanel {
 		mainCardLayoutContainer = new LayoutContainer();
 		mainCardLayoutContainer.setLayout(mainCardLayout);
 		
-		subCardLayout = new CardLayout();
-		subCardLayoutContainer = new LayoutContainer();
-		subCardLayoutContainer.setLayout(subCardLayout);
+		//subCardLayout = new CardLayout();
+		//subCardLayoutContainer = new LayoutContainer();
+		//subCardLayoutContainer.setLayout(subCardLayout);
 		//subCardLayoutContainer.setHeight(400);
 		
 		tabPanel = new TabPanel();
@@ -290,7 +290,7 @@ public class ImportPanel extends ContentPanel {
 		
 		tabPanel.setHeight(380);
 		
-		subCardLayoutContainer.add(tabPanel);
+		//subCardLayoutContainer.add(tabPanel);
 		
 		if (hasCategories) {
 			
@@ -305,12 +305,12 @@ public class ImportPanel extends ContentPanel {
 			subCardLayoutContainer.add(previewFieldSet);*/
 		}
 		
-		subCardLayoutContainer.setHeight(subHeight);
+		//subCardLayoutContainer.setHeight(subHeight);
 				
 		step1Container = new ContentPanel();
 		step1Container.setHeaderVisible(false);
 		step1Container.setLayout(new FitLayout());
-		step1Container.add(subCardLayoutContainer);
+		step1Container.add(tabPanel);
 		
 		submitButton = new Button("Next");
 		submitButton.setMinWidth(120);
@@ -515,8 +515,6 @@ public class ImportPanel extends ContentPanel {
 	private void readSubmitResponse(String result) {
 
 		try {
-		
-			mainCardLayout.setActiveItem(step1Container);
 			
 			rowStore.removeAll();
 			
@@ -643,9 +641,12 @@ public class ImportPanel extends ContentPanel {
 			}
 			
 			
+			mainCardLayout.setActiveItem(step1Container);
+			
 			if (hasUnassignedItem && hasCategories) {
 				showSetupPanel();
 			}
+			
 			
 	
 			JSONArray rowsArray = getArray(jsonObject, "rows");
@@ -702,7 +703,6 @@ public class ImportPanel extends ContentPanel {
 			if (models != null)
 				rowStore.add(models);
 				
-			subCardLayout.setActiveItem(tabPanel);
 				
 			ColumnModel cm = grid.getColumnModel();
 			ArrayList<ImportHeader> headers = new ArrayList<ImportHeader>();

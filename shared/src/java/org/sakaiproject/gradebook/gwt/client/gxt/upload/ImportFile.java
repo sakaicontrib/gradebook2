@@ -1,15 +1,16 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.upload;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ImportFile implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
-	private List<ImportHeader> items;
+	private ArrayList<ImportHeader> items;
 	
-	private List<ImportRow> rows;
+	private ArrayList<ImportRow> rows;
 	
 	private Boolean hasCategories;
 	
@@ -51,15 +52,15 @@ public class ImportFile implements Serializable {
 		return rows;
 	}
 
-	public void setRows(List<ImportRow> rows) {
+	public void setRows(ArrayList<ImportRow> rows) {
 		this.rows = rows;
 	}
 
-	public List<ImportHeader> getItems() {
+	public ArrayList<ImportHeader> getItems() {
 		return items;
 	}
 
-	public void setItems(List<ImportHeader> items) {
+	public void setItems(ArrayList<ImportHeader> items) {
 		this.items = items;
 	}
 
