@@ -3232,6 +3232,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					categories, studentGradeMap);
 		}
 
+		if (autoCalculatedGrade != null)
+			autoCalculatedGrade = autoCalculatedGrade.setScale(2, RoundingMode.HALF_EVEN);
+		
 		Double calculatedGrade = autoCalculatedGrade == null ? null : Double
 				.valueOf(autoCalculatedGrade.doubleValue());
 
@@ -3245,8 +3248,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			enteredGrade = courseGradeRecord.getEnteredGrade();
 
 		if (enteredGrade == null && calculatedGrade != null)
-			letterGrade = gradebook.getSelectedGradeMapping().getGrade(
-					calculatedGrade);
+			letterGrade = getLetterGrade(autoCalculatedGrade, gradebook.getSelectedGradeMapping());
+				//gradebook.getSelectedGradeMapping().getGrade(
+				//	calculatedGrade);
 		else {
 			letterGrade = enteredGrade;
 			isOverridden = true;
@@ -3298,8 +3302,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				buffer.append(" (override)").append(missingGradesMarker);
 			} else if (autoCalculatedGrade != null) {
 				buffer.append(" (").append(
-						autoCalculatedGrade.setScale(2, RoundingMode.HALF_EVEN)
-								.toString()).append("%) ").append(
+						autoCalculatedGrade.toString()).append("%) ").append(
 						missingGradesMarker);
 			}
 
@@ -3444,6 +3447,32 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				categoryItemModel, assignments, assignmentId);
 
 		return categoryItemModel;
+	}
+	
+	private String getLetterGrade(BigDecimal value, GradeMapping mapping) {
+		if (value == null || mapping == null) 
+			return null;
+
+		Map<String, Double> gradeMap = mapping.getGradeMap();
+		Collection<String> grades = mapping.getGrades();
+		
+		if (gradeMap == null || grades == null)
+			return null;
+		
+	    for (Iterator<String> iter = grades.iterator(); iter.hasNext();) {
+			String grade = iter.next();
+			Double mapVal = (Double) gradeMap.get(grade);
+			double m = mapVal == null ? 0d : mapVal.doubleValue();
+			BigDecimal bigMapVal = BigDecimal.valueOf(m).setScale(2, RoundingMode.HALF_EVEN);
+			
+			// If the value in the map is less than the value passed, then the
+			// map value is the letter grade for this value
+			if (bigMapVal != null && bigMapVal.compareTo(value) <= 0) {
+				return grade;
+			}
+		}
+		// As long as 'F' is zero, this should never happen.
+		return null;
 	}
 
 	protected Site getSite() {
