@@ -512,7 +512,21 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 							assignment.setAssignmentWeighting(weight);
 							isModified = true;
 						}
-
+						
+						boolean wasIncluded = !DataTypeConversionUtil.checkBoolean(assignment.isUnweighted());
+						
+						if (wasIncluded != isIncluded) {
+							assignment.setUnweighted(Boolean.valueOf(!isIncluded));
+							isModified = true;
+						}
+						
+						boolean wasExtraCredit = DataTypeConversionUtil.checkBoolean(assignment.isExtraCredit());
+						
+						if (wasExtraCredit != isExtraCredit) {
+							assignment.setExtraCredit(Boolean.valueOf(isExtraCredit));
+							isModified = true;
+						}
+						
 						if (isModified)
 							gbService.updateAssignment(assignment);
 
