@@ -540,12 +540,14 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				List<Assignment> assignments = gbService
 						.getAssignments(gradebook.getId());
 				List<Category> categories = getCategoriesWithAssignments(
-						gradebook.getId(), assignments, false);
+						gradebook.getId(), assignments, true);
 
 				Map<Long, Category> categoryMap = new HashMap<Long, Category>();
 
-				for (Category category : categories) {
-					categoryMap.put(category.getId(), category);
+				if (categories != null) {
+					for (Category category : categories) {
+						categoryMap.put(category.getId(), category);
+					}
 				}
 
 				if (newCategoryIdSet != null && !newCategoryIdSet.isEmpty()) {
