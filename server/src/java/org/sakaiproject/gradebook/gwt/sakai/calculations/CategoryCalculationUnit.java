@@ -135,7 +135,7 @@ public class CategoryCalculationUnit {
 		if (units != null) {
 			for (GradeRecordCalculationUnit unit : units) {
 				
-				if (unit.isExtraCredit() != doExtraCredit)
+				if (unit.isExtraCredit() && !isExtraCredit)
 					continue;
 				
 				if (unit.isExcused())
@@ -154,9 +154,7 @@ public class CategoryCalculationUnit {
 		
 		return sumUnitWeight;
 	}
-	
-	
-	
+
 	/*
 	public BigDecimal calculateGrade(List<GradeRecordCalculationUnit> units, Mode mode, PrintWriter writer) {
 		

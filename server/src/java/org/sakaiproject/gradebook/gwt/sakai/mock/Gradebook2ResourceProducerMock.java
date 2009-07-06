@@ -73,12 +73,24 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			
 			ItemModel hwCategory = new ItemModel();
 			hwCategory.setName("My Homework");
-			hwCategory.setPercentCourseGrade(Double.valueOf(60d));
+			hwCategory.setPercentCourseGrade(Double.valueOf(40d));
 			hwCategory.setDropLowest(Integer.valueOf(0));
 			hwCategory.setEqualWeightAssignments(Boolean.TRUE);
 			hwCategory.setItemType(Type.CATEGORY);
 			hwCategory.setIncluded(Boolean.TRUE);
 			hwCategory = getActiveItem(service.addItemCategory(gradebookUid, gradebookId, hwCategory));
+			
+			
+			ItemModel ecCategory = new ItemModel();
+			ecCategory.setName("Extra Credit");
+			ecCategory.setPercentCourseGrade(Double.valueOf(10d));
+			ecCategory.setDropLowest(Integer.valueOf(0));
+			ecCategory.setEqualWeightAssignments(Boolean.TRUE);
+			ecCategory.setItemType(Type.CATEGORY);
+			ecCategory.setExtraCredit(Boolean.TRUE);
+			ecCategory.setIncluded(Boolean.TRUE);
+			ecCategory = getActiveItem(service.addItemCategory(gradebookUid, gradebookId, ecCategory));
+			
 			
 			ItemModel essay1 = new ItemModel();
 			essay1.setName("Essay 1");
@@ -151,6 +163,19 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			hw4.setReleased(Boolean.FALSE);
 			service.createItem(gradebookUid, gradebookId, hw4, true);
 
+			
+			ItemModel ec1 = new ItemModel();
+			ec1.setName("EC 1");
+			ec1.setPercentCategory(Double.valueOf(100d));
+			ec1.setPoints(Double.valueOf(10d));
+			ec1.setDueDate(new Date());
+			ec1.setCategoryId(ecCategory.getCategoryId());
+			ec1.setIncluded(Boolean.TRUE);
+			ec1.setExtraCredit(Boolean.TRUE);
+			ec1.setReleased(Boolean.FALSE);
+			service.createItem(gradebookUid, gradebookId, ec1, true);
+			
+			
 		} catch (Exception fe) {
 			GWT.log("Failed to update gradebook properties", fe);
 		}

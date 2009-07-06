@@ -749,6 +749,7 @@ public class ItemFormPanel extends ContentPanel {
 		formPanel.clear();
 		
 		boolean isEditable = true;
+		boolean isEqualWeight = false;
 		
 		if (itemModel != null) {
 			boolean isExtraCredit = DataTypeConversionUtil.checkBoolean(itemModel.getExtraCredit());
@@ -762,17 +763,22 @@ public class ItemFormPanel extends ContentPanel {
 				break;
 			case CATEGORY:
 				category = itemModel;
-				if (category != null && category.getItemType() == Type.CATEGORY)
-					isPercentCategoryVisible = hasWeights && (isExtraCredit || !DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments()));
+				//if (category != null && category.getItemType() == Type.CATEGORY)
+				//	isPercentCategoryVisible = hasWeights && (!DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments()) || isExtraCredit);
 				break;
 			case ITEM:
 				category = itemModel.getParent();
-				if (category != null && category.getItemType() == Type.CATEGORY)
-					isPercentCategoryVisible = hasWeights && (isExtraCredit || !DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments()));
+				
+				//if (category != null && category.getItemType() == Type.CATEGORY)
+				//	isPercentCategoryVisible = hasWeights && (!DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments()) || isExtraCredit);
 				break;
 			default:
 				isPercentCategoryVisible = (hasWeights && isExtraCredit) && isItem;
 			}
+			
+			isEqualWeight = category == null ? false : DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments());
+			isPercentCategoryVisible = hasWeights && (!isEqualWeight || isExtraCredit);
+			
 		} else {
 			isPercentCategoryVisible = hasWeights && isItem;
 		}

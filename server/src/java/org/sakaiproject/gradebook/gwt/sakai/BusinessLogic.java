@@ -34,4 +34,6 @@ public interface BusinessLogic {
 
 	public boolean checkRecalculatePointsRule(Long assignmentId, Double newPoints, Double oldPoints);
 
+	public void makeItemsNonExtraCredit(List<Assignment> assignments);
+	
 }

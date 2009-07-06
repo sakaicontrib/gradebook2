@@ -179,6 +179,11 @@ public class GradebookCalculationUnit {
 			
 			if (categoryGrade != null) {
 
+				BigDecimal multiplicand = ratio;
+				
+				if (categoryUnit.isExtraCredit())
+					multiplicand = BigDecimal.ONE;
+				
 				if (categoryGrade.compareTo(BigDecimal.ONE) > 0)
 					categoryGrade = BigDecimal.ONE.setScale(AppConstants.SCALE);
 			
@@ -186,7 +191,7 @@ public class GradebookCalculationUnit {
 					categoryGrade = BigDecimal.ZERO.setScale(AppConstants.SCALE);
 	
 				if (categoryWeight != null) {
-					categoryWeight = categoryWeight.multiply(ratio);
+					categoryWeight = categoryWeight.multiply(multiplicand);
 					
 					BigDecimal contributionToCourseGrade = categoryGrade.multiply(categoryWeight);
 	

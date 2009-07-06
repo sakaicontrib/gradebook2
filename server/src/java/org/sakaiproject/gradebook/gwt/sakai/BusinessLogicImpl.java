@@ -196,6 +196,20 @@ public class BusinessLogicImpl implements BusinessLogic {
 		//	recalculateAssignmentGradeRecords(assignmentId, newPoints, oldPoints);
 	}
 	
+	public void makeItemsNonExtraCredit(List<Assignment> assignments) {
+		
+		if (assignments != null) {
+			for (Assignment assignment : assignments) {
+				
+				if (DataTypeConversionUtil.checkBoolean(assignment.isExtraCredit())) {
+					assignment.setExtraCredit(Boolean.FALSE);
+					gbService.updateAssignment(assignment);
+				}
+			}
+		}
+		
+	}
+	
 	
 
 	public GradebookToolService getGbService() {

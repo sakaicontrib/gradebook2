@@ -2371,7 +2371,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		double pG = categoryItemModel == null
 				|| categoryItemModel.getPercentCourseGrade() == null ? 0d
 				: categoryItemModel.getPercentCourseGrade().doubleValue();
-
+		
+		boolean isCategoryExtraCredit = category != null && DataTypeConversionUtil.checkBoolean(category.isExtraCredit());
 		BigDecimal percentGrade = BigDecimal.valueOf(pG);
 		BigDecimal percentCategorySum = BigDecimal.ZERO;
 		BigDecimal pointsSum = BigDecimal.ZERO;
@@ -2388,7 +2389,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				boolean isUnweighted = a.isUnweighted() != null
 						&& a.isUnweighted().booleanValue();
 
-				if (!isExtraCredit && !isUnweighted && !isRemoved) {
+				if ((isCategoryExtraCredit || !isExtraCredit) && !isUnweighted && !isRemoved) {
 					percentCategorySum = percentCategorySum.add(BigDecimal
 							.valueOf(assignmentCategoryPercent));
 					pointsSum = pointsSum.add(points);
@@ -2664,6 +2665,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					&& category.isUnweighted().booleanValue())
 				isAssignmentIncluded = Boolean.FALSE;
 
+			
+			isAssignmentExtraCredit = isAssignmentExtraCredit || DataTypeConversionUtil.checkBoolean(category.isExtraCredit());
 		}
 
 		// if (! isAssignmentIncluded.booleanValue() || assignment.isRemoved())
@@ -3969,7 +3972,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	 * 
 	 * Business rules: (1) if weight is null or zero, uninclude it (2) new
 	 * category name must not duplicate an existing category name (3) if equal
-	 * weighting is set, then recalculate all item weights of child items
+	 * weighting is set, then recalculate all item weights of child items, 
+	 * (4) if category is extra credit, ensure that none of its items are extra credit
 	 * 
 	 * @param item
 	 * @return
@@ -4099,7 +4103,6 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 								.checkRecalculateEqualWeightingRule(category))
 					recalculateAssignmentWeights(category, Boolean.FALSE,
 							assignmentsForCategory);
-
 			}
 
 		} catch (RuntimeException e) {
