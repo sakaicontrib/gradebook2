@@ -856,13 +856,13 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 						businessLogic.applyMustIncludeCategoryRule(item.getCategoryId());
 				}
 				
-				//if (itemOrder == null)
-				//	itemOrder = assignments.isEmpty() ? Integer.valueOf(0) : Integer.valueOf(assignments.size());
-				
 			} else {
 				assignments = gbService.getAssignments(gradebook.getId());
 				businessLogic.applyNoDuplicateItemNamesRule(gradebook.getId(), name, null, assignments);
 			}
+
+			if (itemOrder == null)
+				itemOrder = assignments.isEmpty() ? Integer.valueOf(0) : Integer.valueOf(assignments.size());
 			
 			//if (assignments == null || assignments.isEmpty())
 			//	weight = new Double(100d);

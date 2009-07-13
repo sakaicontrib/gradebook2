@@ -364,28 +364,7 @@ public class ItemTreePanel extends ContentPanel {
 			
 			@Override
 			protected void onDragDrop(DNDEvent event) {
-				/*if (event.operation == Operation.MOVE) {
-					if (binder != null) {
-						List<TreeModel> sel = (List) event.data;
-						for (TreeModel tm : sel) {
-							ModelData m = (ModelData) tm.get("model");
-							ModelData p = binder.getTreeStore().getParent(m);
-							if (p != null) {
-								binder.getTreeStore().remove(p, m);
-							} else {
-								binder.getTreeStore().remove(m);
-							}
-						}
-					} else {
-						List<TreeItem> sel = (List) event.data;
-						for (TreeItem item : sel) {
-							TreeItem p = item.getParentItem();
-							if (p != null) {
-								p.remove(item);
-							}
-						}
-					}
-				}*/
+
 			}
 			
 			@Override
@@ -573,61 +552,6 @@ public class ItemTreePanel extends ContentPanel {
 				service.update((ItemModel)child, EntityType.ITEM, null, SecureToken.get(), callback);
 
 			}
-			
-			/*
-			@Override
-			protected void handleAppendDrop(DNDEvent event, TreeItem item) {
-			    List sel = (List) event.data;
-			    if (sel.size() > 0) {
-			      if (sel.get(0) instanceof ModelData) {
-			        TreeModel tm = (TreeModel) sel.get(0);
-			        ModelData p = item.getModel();
-			        appendModel(p, tm, item.getItemCount());
-			      } else {
-			        for (int i = 0; i < sel.size(); i++) {
-			          TreeItem ti = (TreeItem) sel.get(i);
-			          item.add(ti);
-			        }
-			      }
-			    }
-			  }
-			
-			
-			@Override
-			protected void handleInsertDrop(DNDEvent event, TreeItem item,
-					int index) {
-				List sel = (List) event.data;
-				if (sel.size() > 0) {
-					ItemModel itemModel = (ItemModel)item.getModel();
-					ItemModel oldParentModel = (ItemModel) item.getParentItem()
-							.getModel();
-					int idx = item.getParentItem().indexOf(item);
-					if (sel.get(0) instanceof ModelData) {
-						BaseTreeModel baseModel = (BaseTreeModel)sel.get(0);
-						ItemModel movingItemModel = baseModel.get("model");
-						ItemModel newParentModel = (ItemModel) movingItemModel.getParent();
-
-						String oldName = oldParentModel.getName();
-						String newName = newParentModel.getName();
-						String aName = itemModel.getName();
-						String mName = movingItemModel.getName();
-						
-						Type aType = itemModel.getItemType();
-						Type mType = movingItemModel.getItemType();
-						
-						Type oldItemType = oldParentModel.getItemType();
-						Type newItemType = newParentModel.getItemType();
-						
-						if (oldItemType == mType || oldItemType == Type.ROOT) {
-							event.doit = false;
-							return;
-						}
-					}
-				}
-
-				super.handleInsertDrop(event, item, index);
-			}*/
-			
 		};
 		
 		target.setAllowSelfAsSource(true);
@@ -673,11 +597,6 @@ public class ItemTreePanel extends ContentPanel {
 		
 		ItemNumberCellRenderer numericCellRenderer = new ItemNumberCellRenderer(DataTypeConversionUtil.getShortNumberFormat());		
 		GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
-		
-		
-		TreeTableColumn orderColumn = new TreeTableColumn(ItemModel.Key.ITEM_ORDER.name(),
-				"Item Order", 200);
-		columns.add(orderColumn);
 		
 		percentCourseGradeColumn =  new TreeTableColumn(ItemModel.Key.PERCENT_COURSE_GRADE.name(), 
 				ItemModel.getPropertyName(ItemModel.Key.PERCENT_COURSE_GRADE), ItemModel.getPropertyName(ItemModel.Key.PERCENT_COURSE_GRADE).length() * CHARACTER_WIDTH + 30);
