@@ -100,6 +100,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			essay1.setReleased(Boolean.TRUE);
 			essay1.setItemType(Type.ITEM);
 			essay1.setIncluded(Boolean.TRUE);
+			//essay1.setItemOrder(2);
 			service.createItem(gradebookUid, gradebookId, essay1, true);
 			
 			ItemModel essay2 = new ItemModel();
@@ -110,6 +111,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			essay2.setReleased(Boolean.TRUE);
 			essay2.setItemType(Type.ITEM);
 			essay2.setIncluded(Boolean.TRUE);
+			//essay2.setItemOrder(1);
 			service.createItem(gradebookUid, gradebookId, essay2, true);
 			
 			ItemModel essay3 = new ItemModel();
@@ -120,6 +122,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			essay3.setReleased(Boolean.TRUE);
 			essay3.setItemType(Type.ITEM);
 			essay3.setIncluded(Boolean.TRUE);
+			//essay3.setItemOrder(0);
 			service.createItem(gradebookUid, gradebookId, essay3, true);
 			
 
@@ -131,6 +134,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			hw1.setItemType(Type.ITEM);
 			hw1.setIncluded(Boolean.TRUE);
 			hw1.setReleased(Boolean.FALSE);
+			//hw1.setItemOrder(0);
 			service.createItem(gradebookUid, gradebookId, hw1, true);
 			
 			ItemModel hw2 = new ItemModel();
@@ -141,6 +145,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			hw2.setItemType(Type.ITEM);
 			hw2.setIncluded(Boolean.TRUE);
 			hw2.setReleased(Boolean.FALSE);
+			//hw2.setItemOrder(1);
 			service.createItem(gradebookUid, gradebookId, hw2, true);
 			
 			ItemModel hw3 = new ItemModel();
@@ -151,6 +156,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			hw3.setItemType(Type.ITEM);
 			hw3.setIncluded(Boolean.TRUE);
 			hw3.setReleased(Boolean.FALSE);
+			//hw3.setItemOrder(2);
 			service.createItem(gradebookUid, gradebookId, hw3, true);
 			
 			ItemModel hw4 = new ItemModel();
@@ -161,6 +167,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			hw4.setItemType(Type.ITEM);
 			hw4.setIncluded(Boolean.TRUE);
 			hw4.setReleased(Boolean.FALSE);
+			//hw4.setItemOrder(3);
 			service.createItem(gradebookUid, gradebookId, hw4, true);
 
 			

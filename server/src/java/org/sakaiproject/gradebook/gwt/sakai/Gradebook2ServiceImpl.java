@@ -818,6 +818,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			Boolean isIncluded = Boolean.valueOf(includeInGrade);
 			Boolean isExtraCredit = Boolean.valueOf(DataTypeConversionUtil.checkBoolean(item.getExtraCredit()));
 			Date dueDate = item.getDueDate();
+			Integer itemOrder = item.getItemOrder();
 	
 			// Business rule #1
 			if (points == null)
@@ -854,6 +855,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					if (enforceNoNewCategories)
 						businessLogic.applyMustIncludeCategoryRule(item.getCategoryId());
 				}
+				
+				//if (itemOrder == null)
+				//	itemOrder = assignments.isEmpty() ? Integer.valueOf(0) : Integer.valueOf(assignments.size());
+				
 			} else {
 				assignments = gbService.getAssignments(gradebook.getId());
 				businessLogic.applyNoDuplicateItemNamesRule(gradebook.getId(), name, null, assignments);
@@ -865,7 +870,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			double w = weight == null ? 0d : ((Double)weight).doubleValue() * 0.01;
 
 			assignmentId = gbService.createAssignmentForCategory(gradebook.getId(), categoryId, name, points, Double.valueOf(w), dueDate, 
-					Boolean.valueOf(!DataTypeConversionUtil.checkBoolean(isIncluded)), isExtraCredit, Boolean.FALSE, isReleased);
+					Boolean.valueOf(!DataTypeConversionUtil.checkBoolean(isIncluded)), isExtraCredit, Boolean.FALSE, isReleased, itemOrder);
 			
 			// Apply business rules after item creation
 			if (hasCategories) {
@@ -1867,8 +1872,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	 * category (8) item must include a valid category id (9) if category has
 	 * changed, then if the old category had equal weighting and the item was
 	 * included in that category, then recalculate all item weights for that
-	 * category (10) if item weight changes then remove the equal weighting flag
-	 * (set to false) for the owning category (11) if category is not included,
+	 * category (10) if item order changes, re-order remaining items for that category 
+	 * (11) if category is not included,
 	 * then cannot include item (12) if category is removed, then cannot
 	 * unremove item
 	 * 
@@ -1955,6 +1960,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			Double newAssignmentWeight = item.getPercentCategory();
 			Double oldAssignmentWeight = assignment.getAssignmentWeighting();
 
+			Integer newItemOrder = item.getItemOrder();
+			Integer oldItemOrder = assignment.getItemOrder();
+			
 			isWeightChanged = isWeightChanged
 					|| DataTypeConversionUtil.notEquals(newAssignmentWeight,
 							oldAssignmentWeight);
@@ -1966,8 +1974,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 			boolean isRemoved = convertBoolean(item.getRemoved())
 					.booleanValue();
-			boolean wasRemoved = DataTypeConversionUtil.checkBoolean(assignment
-					.isRemoved());
+			boolean wasRemoved = assignment.isRemoved();
 
 			// We only want to update the weights when we're dealing with an
 			// included item
@@ -2010,6 +2017,12 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				businessLogic
 						.applyMustIncludeCategoryRule(item.getCategoryId());
 
+				
+				if (hasCategoryChanged) {
+					category = gbService.getCategory(item.getCategoryId());
+					assignment.setCategory(category);
+				}
+				
 			} else {
 				assignments = gbService.getAssignments(gradebook.getId());
 
@@ -2020,14 +2033,27 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				// Business rule #4
 				businessLogic.applyCannotIncludeDeletedItemRule(wasRemoved
 						&& isRemoved, false, isUnweighted);
+				
 			}
+			
+			// If we don't know the old item order then we need to determine it
+			if (oldItemOrder == null) {
+				if (assignments != null) {
+					int count = 0;
+					for (Assignment a : assignments) {
+						if (a.getId().equals(assignmentId))
+							oldItemOrder = Integer.valueOf(count);
+					}
+				}
+			}
+			
+			if ((!hasCategories || oldCategory == null) 
+					&& oldItemOrder != null && oldItemOrder.compareTo(newItemOrder) < 0)
+				newItemOrder = Integer.valueOf(newItemOrder.intValue() - 1);
 
 			// Modify the assignment name
 			assignment.setName(convertString(item.getName()));
-			if (hasCategories && hasCategoryChanged) {
-				category = gbService.getCategory(item.getCategoryId());
-				assignment.setCategory(category);
-			}
+			
 			assignment.setExtraCredit(Boolean.valueOf(isExtraCredit));
 			assignment.setReleased(convertBoolean(item.getReleased())
 					.booleanValue());
@@ -2036,20 +2062,33 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			assignment.setRemoved(isRemoved);
 			assignment
 					.setUnweighted(Boolean.valueOf(isUnweighted || isRemoved));
-
+			assignment.setItemOrder(newItemOrder);
 			gbService.updateAssignment(assignment);
 
 			if (hasCategories) {
-
+				
+				List<Assignment> oldAssignments = null;
+				
+				boolean applyBusinessRule7 = isUnweighted != wasUnweighted || isRemoved != wasRemoved
+					|| isExtraCredit != wasExtraCredit
+					|| oldCategory != null;
+				
+				// Business rule #9
+				if (oldCategory != null
+						&& businessLogic
+								.checkRecalculateEqualWeightingRule(oldCategory)) {
+					oldAssignments = gbService
+							.getAssignmentsForCategory(oldCategory.getId());
+					recalculateAssignmentWeights(oldCategory, Boolean.valueOf(!wasUnweighted),
+							oldAssignments);
+				}
+					
 				// Business rule #7 -- only apply this rule when
 				// included/unincluded, deleted/undeleted, made
 				// extra-credit/non-extra-credit, or changed category
-				if (isUnweighted != wasUnweighted || isRemoved != wasRemoved
-						|| isExtraCredit != wasExtraCredit
-						|| oldCategory != null) {
+				if (applyBusinessRule7) {
 					isWeightChanged = true;
-					if (businessLogic
-							.checkRecalculateEqualWeightingRule(category)) {
+					if (businessLogic.checkRecalculateEqualWeightingRule(category)) {
 						assignments = gbService
 								.getAssignmentsForCategory(category.getId());
 						recalculateAssignmentWeights(category, !isUnweighted,
@@ -2057,18 +2096,15 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					}
 				}
 
-				// Business rule #9
-				if (oldCategory != null
-						&& businessLogic
-								.checkRecalculateEqualWeightingRule(oldCategory)) {
-					List<Assignment> oldAssignments = gbService
-							.getAssignmentsForCategory(oldCategory.getId());
-					recalculateAssignmentWeights(oldCategory, !wasUnweighted,
-							oldAssignments);
-				}
+				boolean applyBusinessRule10 = oldItemOrder == null || newItemOrder.compareTo(oldItemOrder) != 0 || oldCategory != null;
 
-				// Business rule #10
-				//businessLogic.applyRemoveEqualWeightingWhenItemWeightChangesRules(category, oldAssignmentWeight, newAssignmentWeight, isExtraCredit, isUnweighted, wasUnweighted);
+				if (applyBusinessRule10)
+					businessLogic.reorderAllItemsInCategory(assignmentId, category, oldCategory, newItemOrder, oldItemOrder);
+			} else {
+				
+				if (oldItemOrder == null || (newItemOrder != null && newItemOrder.compareTo(oldItemOrder) != 0))
+					businessLogic.reorderAllItems(gradebook.getId(), assignment.getId(), newItemOrder, oldItemOrder);
+
 			}
 
 			if (businessLogic.checkRecalculatePointsRule(assignmentId, points,
@@ -2633,6 +2669,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		model.setPercentCourseGrade(Double.valueOf(categoryWeight));
 		model.setItemType(Type.CATEGORY);
 		model.setEditable(!isDefaultCategory);
+		model.setItemOrder(category.getCategoryOrder());
 
 		return model;
 	}
@@ -2665,8 +2702,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					&& category.isUnweighted().booleanValue())
 				isAssignmentIncluded = Boolean.FALSE;
 
-			
-			isAssignmentExtraCredit = isAssignmentExtraCredit || DataTypeConversionUtil.checkBoolean(category.isExtraCredit());
+			isAssignmentExtraCredit = Boolean.valueOf(DataTypeConversionUtil.checkBoolean(isAssignmentExtraCredit) || DataTypeConversionUtil.checkBoolean(category.isExtraCredit()));
 		}
 
 		// if (! isAssignmentIncluded.booleanValue() || assignment.isRemoved())
@@ -2692,6 +2728,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		model.setSource(assignment.getExternalAppName());
 		model.setDataType(AppConstants.NUMERIC_DATA_TYPE);
 		model.setStudentModelKey(Key.ASSIGNMENT.name());
+		model.setItemOrder(assignment.getItemOrder());
 
 		if (percentCourseGrade == null && hasCategories && category != null) {
 			List<Assignment> assignments = category.getAssignmentList();
@@ -3136,6 +3173,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 		Category defaultCategory = null;
 
+		int categoryOrder = 0;
+		
 		// If we need to include categories that do not have any items under
 		// them (as we do for the item tree), then we have to do an additional
 		// query.
@@ -3146,6 +3185,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				for (Category category : categories) {
 					if (!category.isRemoved()) {
 						categoryMap.put(category.getId(), category);
+						Integer order = category.getCategoryOrder();
+						if (order == null)
+							category.setCategoryOrder(categoryOrder++);
 						
 						//if (category.getName().equalsIgnoreCase(AppConstants.DEFAULT_CATEGORY_NAME)) {
 						//	defaultCategory = category;
@@ -3156,7 +3198,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 		
 		List<Assignment> assignmentList = null;
-
+		
+		
 		if (assignments != null) {
 			for (Assignment assignment : assignments) {
 				Category category = null;
@@ -3175,9 +3218,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					if (null == category) {
 						if (defaultCategory == null) {
 							defaultCategory = findDefaultCategory(gradebookId);
-							if (categories != null)
+							if (categories != null) {
 								categories.add(defaultCategory);
-							else
+								defaultCategory.setCategoryOrder(categoryOrder++);
+							} else
 								categoryMap.put(defaultCategory.getId(), defaultCategory);
 						}
 
@@ -3186,6 +3230,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				}
 
 				if (null != category) {
+					
 					assignmentList = category.getAssignmentList();
 
 					if (null == assignmentList) {
@@ -3193,8 +3238,12 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 						category.setAssignmentList(assignmentList);
 					}
 
-					if (!assignmentList.contains(assignment))
+					if (!assignmentList.contains(assignment)) {
+						Integer itemOrder = assignment.getItemOrder();
+						if (itemOrder == null)
+							itemOrder = Integer.valueOf(assignmentList.size());
 						assignmentList.add(assignment);
+					}
 				}
 			}
 		}
@@ -4049,6 +4098,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					.getRemoved());
 			boolean wasRemoved = category.isRemoved();
 
+			
+			Integer newCategoryOrder = item.getItemOrder();
+			Integer oldCategoryOrder = category.getCategoryOrder();
+			
+			
 			// FIXME: Do we want to do this?
 			/*
 			 * if (!isUnweighted && !isRemoved) { // Since we don't want to
@@ -4072,8 +4126,21 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				
 				if (hasWeights)
 					businessLogic.applyOnlyEqualWeightDropLowestRule(newDropLowest, isEqualWeighting);
+			
+				if (oldCategoryOrder == null) {
+					if (categories != null) {
+						int count = 0;
+						for (Category c : categories) {
+							if (c.getId().equals(category.getId()))
+								oldCategoryOrder = Integer.valueOf(count);
+						}
+					}
+				}
 			}
-
+			
+			if (oldCategoryOrder != null && oldCategoryOrder.compareTo(newCategoryOrder) < 0)
+				newCategoryOrder = Integer.valueOf(newCategoryOrder.intValue() - 1);
+			
 			category.setName(convertString(item.getName()));
 			category.setExtraCredit(Boolean.valueOf(currentExtraCredit));
 			category.setWeight(Double.valueOf(w));
@@ -4085,7 +4152,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			category.setDrop_lowest(newDropLowest);
 			category.setRemoved(isRemoved);
 			category.setUnweighted(Boolean.valueOf(isUnweighted || isRemoved));
-
+			category.setCategoryOrder(newCategoryOrder);
+			
 			gbService.updateCategory(category);
 
 			if (hasCategories) {
@@ -4103,6 +4171,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 								.checkRecalculateEqualWeightingRule(category))
 					recalculateAssignmentWeights(category, Boolean.FALSE,
 							assignmentsForCategory);
+				
+				if (oldCategoryOrder == null || (newCategoryOrder != null && newCategoryOrder.compareTo(oldCategoryOrder) != 0))
+					businessLogic.reorderAllCategories(gradebook.getId(), category.getId(), newCategoryOrder, oldCategoryOrder);
 			}
 
 		} catch (RuntimeException e) {

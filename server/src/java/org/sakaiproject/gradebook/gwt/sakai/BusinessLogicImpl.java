@@ -207,9 +207,247 @@ public class BusinessLogicImpl implements BusinessLogic {
 				}
 			}
 		}
+	}
+	
+	public void reorderAllItems(Long gradebookId, Long assignmentId, Integer newItemOrder, Integer oldItemOrder) {
+		List<Assignment> assignments = gbService.getAssignments(gradebookId);
+		
+		// If the old item was below the new item then we need to modify the new item order
+		//if (oldItemOrder.compareTo(newItemOrder) < 0)
+		//	newItemOrder = Integer.valueOf(newItemOrder.intValue() - 1);
+		
+		if (assignments != null) {
+			int count = 0;
+			for (Assignment assignment : assignments) {
+				Integer itemOrder = Integer.valueOf(count);
+				
+				if (itemOrder.equals(newItemOrder)) {
+					count++;
+					itemOrder = Integer.valueOf(count);
+				}
+				
+				Integer existingItemOrder = assignment.getItemOrder();
+				
+				if (!assignment.getId().equals(assignmentId)) {
+					
+					if (existingItemOrder == null || !existingItemOrder.equals(itemOrder)) {
+						assignment.setItemOrder(itemOrder);
+						gbService.updateAssignment(assignment);
+					}
+					
+					count++;
+				}
+			}
+		}
 		
 	}
 	
+	public void reorderAllCategories(Long gradebookId, Long categoryId, Integer newCategoryOrder, Integer oldCategoryOrder) {
+		List<Category> categories = gbService.getCategories(gradebookId);
+		
+		//if (oldCategoryOrder.compareTo(newCategoryOrder) < 0)
+		//	newCategoryOrder = Integer.valueOf(newCategoryOrder.intValue() - 1);
+		
+		if (categories != null) {
+			int count = 0;
+			for (Category category : categories) {
+				Integer categoryOrder = Integer.valueOf(count);
+			
+				if (categoryOrder.equals(newCategoryOrder)) {
+					count++;
+					categoryOrder = Integer.valueOf(count);
+				}
+				
+				Integer existingCategoryOrder = category.getCategoryOrder();
+				
+				// Assuming we're not dealing with the category we've just updated the order on
+				if (!category.getId().equals(categoryId)) {
+					
+					if (existingCategoryOrder == null || !existingCategoryOrder.equals(categoryOrder)) {
+						category.setCategoryOrder(categoryOrder);
+						gbService.updateCategory(category);
+					}
+					
+					count++;
+				}
+				
+			}
+		}
+	}
+	
+	public void reorderAllItemsInCategory(Long assignmentId, Category category, Category oldCategory, Integer newItemOrder, Integer oldItemOrder) {
+
+		// We can't run this code if the category is null
+		if (category == null)
+			return;
+		
+		// Okay, so assume that the re-ordered item itself already has the correct 
+		// order, so we don't need to touch it
+		
+		// First, we need to check to see if this is a category switch, in which case we need to reorder
+		// now that we've removed the item from that old category
+		
+		boolean isSwitchOfCategories = oldCategory != null;
+	
+		if (isSwitchOfCategories) {
+			
+			List<Assignment> oldAssignments = gbService.getAssignmentsForCategory(oldCategory.getId());
+			// Clean up the old assignments' order
+			if (oldAssignments != null) {
+				int count = 0;
+				for (Assignment assignment : oldAssignments) {
+				
+					Integer itemOrder = Integer.valueOf(count);
+					Integer existingItemOrder = assignment.getItemOrder();
+					
+					// We need to update if the existing item order has changed or if it's null 
+					// (as it would be with an older gradebook)
+					if (existingItemOrder == null || !existingItemOrder.equals(itemOrder)) {
+						assignment.setItemOrder(itemOrder);
+						gbService.updateAssignment(assignment);
+					}
+					count++;
+				}
+			}
+		} 
+		
+		
+		// Now we can focus our attention on the current category
+		List<Assignment> assignments = gbService.getAssignmentsForCategory(category.getId());
+		
+		if (assignments != null) {
+			int count = 0;
+			for (Assignment assignment : assignments) {
+				
+				Integer itemOrder = Integer.valueOf(count);
+			
+				// When we reach the new item that has been injected, skip it,
+				// since that number has already been taken
+				if (itemOrder.equals(newItemOrder)) {
+					count++;
+					itemOrder = Integer.valueOf(count);
+				}
+				
+				
+				Integer existingItemOrder = assignment.getItemOrder();
+				
+				// We need to update if the existing item order has changed or if it's null 
+				// (as it would be with an older gradebook)
+				
+				// Assuming we're not dealing with the assignment we've just updated the order on
+				if (!assignment.getId().equals(assignmentId)) {
+					
+					if (existingItemOrder == null || !existingItemOrder.equals(itemOrder)) {
+						assignment.setItemOrder(itemOrder);
+						gbService.updateAssignment(assignment);
+					}
+					
+					count++;
+				} 
+			}
+		}
+	}
+	
+	public void reorderRemainingItemsInCategory(Category category, Category oldCategory, Integer newItemOrder, Integer oldItemOrder) {
+
+		boolean isSwitchOfCategories = oldCategory != null;
+	
+		List<Assignment> assignments = gbService.getAssignmentsForCategory(category.getId());
+		
+		if (isSwitchOfCategories) {
+			List<Assignment> oldAssignments = gbService.getAssignmentsForCategory(oldCategory.getId());
+			// Clean up the old assignments' order
+			if (oldAssignments != null) {
+				int count = 0;
+				for (Assignment assignment : oldAssignments) {
+				
+					Integer itemOrder = assignment.getItemOrder();
+
+					if (itemOrder == null)
+						itemOrder = Integer.valueOf(count);
+					
+					count++;
+					
+					// Anything below (greater than) the old item needs to be advanced
+					if (oldItemOrder.compareTo(itemOrder) < 0) {
+						int idx = itemOrder.intValue() - 1;
+						assignment.setItemOrder(Integer.valueOf(idx));
+						gbService.updateAssignment(assignment);
+					}
+				}
+			}
+		}
+		
+		
+		
+		if (oldItemOrder != null && (isSwitchOfCategories || newItemOrder.compareTo(oldItemOrder) < 0)) {
+			// Either we have moved something up, and we need to increase everything that follows its new place
+			// until we reach its old place
+			
+			boolean isModifying = false;
+			if (assignments != null) {
+				int count = 0;
+				for (Assignment assignment : assignments) {
+					
+					Integer itemOrder = assignment.getItemOrder();
+					if (itemOrder == null)
+						itemOrder = Integer.valueOf(count);
+					
+					count++;
+					
+					// We want to stop modifying immediately before pass this one
+					if (!isSwitchOfCategories && itemOrder.equals(oldItemOrder)) {
+						isModifying = false;
+						break;
+					}
+					
+					// We want to start modifying at the newItemOrder, which is not the item we've just updated
+					// but the one it's replacing
+					if (itemOrder.equals(newItemOrder))
+						isModifying = true;
+					
+					if (isModifying) {
+						int idx = itemOrder.intValue() + 1;
+						assignment.setItemOrder(Integer.valueOf(idx));
+						gbService.updateAssignment(assignment);
+					}
+				}
+			}
+		} else {
+			// Or we have moved something down, in which case we need to take everything that follows 
+			// its old place and reduce by 1 until we get to its new place
+			
+			boolean isModifying = false;
+			if (assignments != null) {
+				int count = 0;
+				for (Assignment assignment : assignments) {
+					
+					Integer itemOrder = assignment.getItemOrder();
+					if (itemOrder == null)
+						itemOrder = Integer.valueOf(count);
+					
+					count++;
+					
+					if (isModifying) {
+						int idx = itemOrder.intValue() - 1;
+						assignment.setItemOrder(Integer.valueOf(idx));
+						gbService.updateAssignment(assignment);
+					}
+					
+					// We don't want to start modifying until we pass this one
+					if (oldItemOrder == null || itemOrder.equals(oldItemOrder)) 
+						isModifying = true;
+					
+					if (oldItemOrder != null && itemOrder.equals(newItemOrder)) {
+						isModifying = false;
+						break;
+					}
+				}
+			}
+			
+		} 
+		
+	}
 	
 
 	public GradebookToolService getGbService() {

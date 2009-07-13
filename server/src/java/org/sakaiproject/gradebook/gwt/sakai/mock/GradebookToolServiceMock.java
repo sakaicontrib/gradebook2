@@ -289,7 +289,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		return assignment.getId();
 	}
 
-	public Long createAssignmentForCategory(Long gradebookId, Long categoryId, String name, Double points, Double weight, Date dueDate, Boolean isUnweighted, Boolean isExtraCredit, Boolean isNotCounted, Boolean isReleased)
+	public Long createAssignmentForCategory(Long gradebookId, Long categoryId, String name, Double points, Double weight, Date dueDate, Boolean isUnweighted, Boolean isExtraCredit, Boolean isNotCounted, Boolean isReleased, Integer itemOrder)
 			throws RuntimeException {
 		Category category = getCategory(categoryId);
 		Assignment assignment = new Assignment(gradebook, name, points, dueDate, isReleased);

@@ -38,7 +38,8 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 		PERCENT_CATEGORY("% Category"), IS_PERCENTAGE("Is Percentage"), 
 		STUDENT_MODEL_KEY("Student Model Key"),
 		ASSIGNMENT_ID("Item Id"), DATA_TYPE("Data Type"), CATEGORYTYPE("Organization"),
-		GRADETYPE("Grade Type"), RELEASEGRADES("Display course grades");
+		GRADETYPE("Grade Type"), RELEASEGRADES("Display course grades"), 
+		ITEM_ORDER("Order");
 		
 		private String propertyName;
 		
@@ -322,6 +323,14 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 	
 	public void setReleaseGrades(Boolean release) {
 		set(Key.RELEASEGRADES.name(), release);
+	}
+	
+	public Integer getItemOrder() {
+		return get(Key.ITEM_ORDER.name());
+	}
+	
+	public void setItemOrder(Integer itemOrder) {
+		set(Key.ITEM_ORDER.name(), itemOrder);
 	}
 	
 	@Override

@@ -22,6 +22,14 @@ public abstract class ItemModelProcessor {
 
 	}
 	
+	public void doGradebook(ItemModel gradebookModel, int childIndex) {
+		doGradebook(gradebookModel);
+	}
+	
+	public void doGradebook(ItemModel gradebookModel) {
+		
+	}
+	
 	public void doCategory(ItemModel categoryModel) {
 		
 	}
@@ -48,6 +56,9 @@ public abstract class ItemModelProcessor {
 		
 		if (itemType != null) {
 			switch (itemType) {
+			case GRADEBOOK:
+				doGradebook(itemModel, childIndex);
+				break;
 			case CATEGORY:
 				doCategory(itemModel, childIndex);
 				break;
@@ -66,6 +77,27 @@ public abstract class ItemModelProcessor {
 		}
 		
 	}
+	
+	public static ItemModel getActiveItem(ItemModel parent) {
+		if (parent.isActive())
+			return parent;
+		
+		for (ItemModel c : parent.getChildren()) {
+			if (c.isActive()) {
+				return c;
+			}
+			
+			if (c.getChildCount() > 0) {
+				ItemModel activeItem = getActiveItem(c);
+				
+				if (activeItem != null)
+					return activeItem;
+			}
+		}
+		
+		return null;
+	}
+	
 
 	public ItemModel getResult() {
 		return result;

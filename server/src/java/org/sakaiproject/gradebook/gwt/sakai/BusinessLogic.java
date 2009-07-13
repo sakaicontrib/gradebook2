@@ -35,5 +35,13 @@ public interface BusinessLogic {
 	public boolean checkRecalculatePointsRule(Long assignmentId, Double newPoints, Double oldPoints);
 
 	public void makeItemsNonExtraCredit(List<Assignment> assignments);
+
+	public void reorderAllCategories(Long gradebookId, Long categoryId, Integer newCategoryOrder, Integer oldCategoryOrder);
+	
+	public void reorderAllItems(Long gradebookId, Long assignmentId, Integer newItemOrder, Integer oldItemOrder);
+	
+	public void reorderAllItemsInCategory(Long assignmentId, Category category, Category oldCategory, Integer newItemOrder, Integer oldItemOrder);
+	
+	public void reorderRemainingItemsInCategory(Category category, Category oldCategory, Integer newItemOrder, Integer oldItemOrder);
 	
 }

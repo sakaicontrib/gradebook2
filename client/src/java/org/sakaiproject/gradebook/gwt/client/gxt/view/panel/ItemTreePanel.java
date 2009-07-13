@@ -16,6 +16,7 @@ import org.sakaiproject.gradebook.gwt.client.SecureToken;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
+import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenu;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTabItem;
@@ -53,9 +54,16 @@ import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.TreeLoader;
 import com.extjs.gxt.ui.client.data.TreeModel;
 import com.extjs.gxt.ui.client.data.TreeModelReader;
+import com.extjs.gxt.ui.client.dnd.TreeDragSource;
+import com.extjs.gxt.ui.client.dnd.TreeDropTarget;
+import com.extjs.gxt.ui.client.dnd.DND.Feedback;
+import com.extjs.gxt.ui.client.dnd.DND.Operation;
+import com.extjs.gxt.ui.client.dnd.DND.TreeSource;
 import com.extjs.gxt.ui.client.event.CheckChangedEvent;
 import com.extjs.gxt.ui.client.event.CheckChangedListener;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
+import com.extjs.gxt.ui.client.event.DNDEvent;
+import com.extjs.gxt.ui.client.event.DNDListener;
 import com.extjs.gxt.ui.client.event.KeyListener;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.MenuEvent;
@@ -66,6 +74,7 @@ import com.extjs.gxt.ui.client.event.TreeEvent;
 import com.extjs.gxt.ui.client.event.TreeTableEvent;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.TreeStore;
+import com.extjs.gxt.ui.client.util.Format;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.TabItem;
 import com.extjs.gxt.ui.client.widget.TabPanel;
@@ -301,6 +310,7 @@ public class ItemTreePanel extends ContentPanel {
 			layout();
 		}
 	
+		//treeTable.addListener(Events.Add, treeTableEventListener);
 	}
 	
 	public void onMaskItemTree() {
@@ -320,32 +330,309 @@ public class ItemTreePanel extends ContentPanel {
 		this.enableLayout = true;
 	}
 	
+	
+	private boolean isValidMove(ModelData activeItem, ModelData parentItem, ModelData targetItem) {
+		
+		if (activeItem != null) {
+			ItemModel a = (ItemModel)activeItem;
+		
+			if (targetItem != null) {
+				ItemModel t = (ItemModel)targetItem;
+				
+				return !(t.getItemType() == Type.ITEM && a.getItemType() == Type.CATEGORY);
+				
+			} else if (parentItem != null) {
+				ItemModel p = (ItemModel)parentItem;
+				
+				return !(p.getItemType() == Type.CATEGORY && a.getItemType() == Type.CATEGORY);
+			}
+		
+		}
+		
+		return false;
+	}
+	
+	
+	
 	public void onTreeStoreInitialized(TreeStore<ItemModel> treeStore) {
 		
 		treeTableBinder = new ItemTreeTableBinder(treeTable, treeStore);
 		treeTableBinder.addSelectionChangedListener(selectionChangedListener);
 		treeTableBinder.addCheckListener(checkChangedListener);
 
-		
-		/*TreeDragSource source = new TreeDragSource(treeTableBinder);
+		TreeDragSource source = new TreeDragSource(treeTableBinder) {
+			
+			@Override
+			protected void onDragDrop(DNDEvent event) {
+				/*if (event.operation == Operation.MOVE) {
+					if (binder != null) {
+						List<TreeModel> sel = (List) event.data;
+						for (TreeModel tm : sel) {
+							ModelData m = (ModelData) tm.get("model");
+							ModelData p = binder.getTreeStore().getParent(m);
+							if (p != null) {
+								binder.getTreeStore().remove(p, m);
+							} else {
+								binder.getTreeStore().remove(m);
+							}
+						}
+					} else {
+						List<TreeItem> sel = (List) event.data;
+						for (TreeItem item : sel) {
+							TreeItem p = item.getParentItem();
+							if (p != null) {
+								p.remove(item);
+							}
+						}
+					}
+				}*/
+			}
+			
+			@Override
+			protected void onDragStart(DNDEvent e) {
+				TreeItem item = tree.findItem(e.getTarget());
+				if (item == null || e.getTarget(".my-tree-joint", 3) != null) {
+					e.doit = false;
+					return;
+				}
+
+				boolean leaf = treeSource == TreeSource.LEAF
+						|| treeSource == TreeSource.BOTH;
+				boolean node = treeSource == TreeSource.NODE
+						|| treeSource == TreeSource.BOTH;
+
+				List<TreeItem> sel = tree.getSelectionModel()
+						.getSelectedItems();
+
+				if (sel.size() > 0) {
+					boolean ok = true;
+					for (TreeItem ti : sel) {
+						ItemModel m = (ItemModel)ti.getModel();
+						Type t = m.getItemType();
+						
+						if ((t != Type.GRADEBOOK)) {
+							continue;
+						}
+
+						ok = false;
+						break;
+					}
+
+					if (ok) {
+						if (sel.get(0).getModel() != null) {
+							List models = new ArrayList();
+							for (TreeItem ti : sel) {
+								models.add(binder.getTreeStore().getModelState(
+										ti.getModel()));
+							}
+							e.data = models;
+						} else {
+							e.data = sel;
+						}
+
+						e.doit = true;
+						e.status.update(Format.substitute(getStatusText(), sel
+								.size()));
+
+					} else {
+						e.doit = false;
+					}
+
+				} else {
+					e.doit = false;
+				}
+			}
+		};
 		source.addDNDListener(new DNDListener() {
 			@Override
 			public void dragStart(DNDEvent e) {
-				TreeItem item = itemTree.findItem(e.getTarget());
-				if (item != null && item == itemTree.getRootItem().getItem(0)
-						&& itemTree.getRootItem().getItemCount() == 1) {
+				TreeItem item = treeTable.findItem(e.getTarget());
+				if (item != null && item == treeTable.getRootItem().getItem(0)
+						&& treeTable.getRootItem().getItemCount() == 1) {
 					e.doit = false;
 					e.status.setStatus(false);
 					return;
 				}
 				super.dragStart(e);
 			}
+			
+			
 		});
 
-		TreeDropTarget target = new TreeDropTarget(treeTableBinder);
-		target.setAllowSelfAsSource(true);
-		target.setFeedback(Feedback.BOTH); */
+		TreeDropTarget target = new TreeDropTarget(treeTableBinder) {
+
+			@Override
+			protected void appendModel(final ModelData p, final TreeModel model, final int index) {
+				
+				final ItemModel child = model.get("model");
+				child.setItemOrder(Integer.valueOf(index));
+				
+				Type childType = child.getItemType();
+				
+				if (childType == Type.GRADEBOOK)
+					return;
+				
+				if (p == null) {
+					return;
+				} else {
+					ItemModel destParent = (ItemModel)p;
+					ItemModel orgParent = child.getParent();
+					
+					Long destParentId = destParent == null ? null : destParent.getCategoryId();
+					Long orgParentId = orgParent == null ? null : orgParent.getCategoryId();
+					
+					Type parentType = destParent.getItemType();
+					
+					if (childType == Type.ITEM && parentType == Type.CATEGORY && destParentId != null && orgParentId != null
+							&& destParentId.compareTo(orgParentId) != 0)
+						child.setCategoryId(destParentId);
+	
+					Type allowedParentType = Type.CATEGORY;
+					
+					GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+					if (selectedGradebook.getGradebookItemModel().getCategoryType() == CategoryType.NO_CATEGORIES)
+						allowedParentType = Type.GRADEBOOK;
+					
+					if (childType == Type.ITEM && parentType != allowedParentType)
+						return;
+					if (childType == Type.CATEGORY && parentType != Type.GRADEBOOK)
+						return;
+					if (parentType == Type.ROOT)
+						return;
+					
+				}
+				
+				Dispatcher.forwardEvent(GradebookEvents.MaskItemTree.getEventType());
+				
+				Gradebook2RPCServiceAsync service = Registry.get("service");
+				AsyncCallback<ItemModel> callback = new AsyncCallback<ItemModel>() {
+
+					public void onFailure(Throwable caught) {
+						//onUpdateItemFailure(event, caught);
+						Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
+					}
+					
+					public void onSuccess(ItemModel result) {
+						Dispatcher.forwardEvent(GradebookEvents.BeginItemUpdates.getEventType());
+						
+						ItemModel activeItem = ItemModelProcessor.getActiveItem(result);
+						
+						int realIndex = activeItem.getItemOrder().intValue();
+						
+						if (binder != null) {
+							ModelData m = (ModelData) model.get("model");
+							ModelData px = binder.getTreeStore().getParent(m);
+							if (px != null) {
+								ItemModel pxi = (ItemModel)px;
+								
+								//if (pxi.equals((ItemModel)p))
+								//	realIndex--;
+								
+								binder.getTreeStore().remove(px, m);
+							} else {
+								binder.getTreeStore().remove(m);
+							}
+						} 
+						
+						if (p == null) {
+							binder.getTreeStore().insert(activeItem, realIndex, false);
+						} else {
+							binder.getTreeStore().insert(p, activeItem, realIndex, false);
+						}
+						List<TreeModel> children = model.getChildren();
+						for (int i = 0; i < children.size(); i++) {
+							appendModel(activeItem, children.get(i), i);
+						}
+						
+						ItemModelProcessor processor = new ItemModelProcessor(result) {
+							
+							public void doGradebook(ItemModel itemModel) {
+								if (!itemModel.isActive())
+									binder.getTreeStore().update(itemModel);
+							}
+							
+							public void doCategory(ItemModel itemModel) {
+								if (!itemModel.isActive())
+									binder.getTreeStore().update(itemModel);
+							}
+							
+							public void doItem(ItemModel itemModel) {
+								if (!itemModel.isActive())
+									binder.getTreeStore().update(itemModel);
+							}
+							
+						};
+						
+						processor.process();
+						
+						Dispatcher.forwardEvent(GradebookEvents.EndItemUpdates.getEventType());
+						Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
+					}
+				};
+				
+				service.update((ItemModel)child, EntityType.ITEM, null, SecureToken.get(), callback);
+
+			}
+			
+			/*
+			@Override
+			protected void handleAppendDrop(DNDEvent event, TreeItem item) {
+			    List sel = (List) event.data;
+			    if (sel.size() > 0) {
+			      if (sel.get(0) instanceof ModelData) {
+			        TreeModel tm = (TreeModel) sel.get(0);
+			        ModelData p = item.getModel();
+			        appendModel(p, tm, item.getItemCount());
+			      } else {
+			        for (int i = 0; i < sel.size(); i++) {
+			          TreeItem ti = (TreeItem) sel.get(i);
+			          item.add(ti);
+			        }
+			      }
+			    }
+			  }
+			
+			
+			@Override
+			protected void handleInsertDrop(DNDEvent event, TreeItem item,
+					int index) {
+				List sel = (List) event.data;
+				if (sel.size() > 0) {
+					ItemModel itemModel = (ItemModel)item.getModel();
+					ItemModel oldParentModel = (ItemModel) item.getParentItem()
+							.getModel();
+					int idx = item.getParentItem().indexOf(item);
+					if (sel.get(0) instanceof ModelData) {
+						BaseTreeModel baseModel = (BaseTreeModel)sel.get(0);
+						ItemModel movingItemModel = baseModel.get("model");
+						ItemModel newParentModel = (ItemModel) movingItemModel.getParent();
+
+						String oldName = oldParentModel.getName();
+						String newName = newParentModel.getName();
+						String aName = itemModel.getName();
+						String mName = movingItemModel.getName();
+						
+						Type aType = itemModel.getItemType();
+						Type mType = movingItemModel.getItemType();
+						
+						Type oldItemType = oldParentModel.getItemType();
+						Type newItemType = newParentModel.getItemType();
+						
+						if (oldItemType == mType || oldItemType == Type.ROOT) {
+							event.doit = false;
+							return;
+						}
+					}
+				}
+
+				super.handleInsertDrop(event, item, index);
+			}*/
+			
+		};
 		
+		target.setAllowSelfAsSource(true);
+		target.setFeedback(Feedback.BOTH); 
+		source.setTreeSource(TreeSource.LEAF);
 	}
 
 	public void onUnmaskItemTree() {
@@ -386,6 +673,11 @@ public class ItemTreePanel extends ContentPanel {
 		
 		ItemNumberCellRenderer numericCellRenderer = new ItemNumberCellRenderer(DataTypeConversionUtil.getShortNumberFormat());		
 		GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
+		
+		
+		TreeTableColumn orderColumn = new TreeTableColumn(ItemModel.Key.ITEM_ORDER.name(),
+				"Item Order", 200);
+		columns.add(orderColumn);
 		
 		percentCourseGradeColumn =  new TreeTableColumn(ItemModel.Key.PERCENT_COURSE_GRADE.name(), 
 				ItemModel.getPropertyName(ItemModel.Key.PERCENT_COURSE_GRADE), ItemModel.getPropertyName(ItemModel.Key.PERCENT_COURSE_GRADE).length() * CHARACTER_WIDTH + 30);
@@ -501,6 +793,7 @@ public class ItemTreePanel extends ContentPanel {
 		treeTable.setAnimate(true);
 		treeTable.getStyle().setLeafIconStyle("gbEditItemIcon");
 		
+		//treeTable.addListener(Events.Add, treeTableEventListener);
 		treeTable.addListener(Events.RowDoubleClick, treeTableEventListener);
 
 		treeTable.setSelectionModel(new TreeSelectionModel(SelectionMode.SINGLE));
@@ -944,6 +1237,25 @@ public class ItemTreePanel extends ContentPanel {
 			
 			public void handleEvent(TreeTableEvent tte) {
 				switch (tte.type) {
+				/*case Events.Add:
+					StringBuilder buffer = new StringBuilder();
+					TreeItem item = tte.item;
+					
+					if (item == null)
+						return;
+					
+					ItemModel itemModel = (ItemModel)tte.item.getModel();	
+					
+					if (itemModel != null) {
+						buffer.append("Column idx: ").append(tte.columnIndex)
+							.append(" Cell idx: ").append(tte.cellIndex)
+							.append(" Row idx: ").append(tte.rowIndex)
+							.append("Item: " + itemModel.getName())
+							.append("Order: " + itemModel.getItemOrder());
+						
+						Info.display("Item Added", buffer.toString());
+					}
+					break;*/
 				case Events.RowDoubleClick:
 					doSelectItem(tte);
 					break;
