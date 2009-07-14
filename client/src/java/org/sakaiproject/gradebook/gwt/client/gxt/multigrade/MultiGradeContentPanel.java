@@ -118,6 +118,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	
 	private MultiGradeContextMenu contextMenu;
 
+	private LabelField modeLabel;
 	private TextField<String> searchField;
 	private NumberField pageSizeField;
 	
@@ -677,6 +678,17 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	
 	public void onLoadItemTreeModel(GradebookModel selectedGradebook) {
 		reconfigureGrid(newColumnModel(selectedGradebook));
+		if (modeLabel != null) {
+			StringBuilder modeLabelText = new StringBuilder();
+			
+			modeLabelText
+				.append(selectedGradebook.getGradebookItemModel().getCategoryType().getDisplayName())
+				.append("/")
+				.append(selectedGradebook.getGradebookItemModel().getGradeType().getDisplayName())
+				.append(" Mode");
+			
+			modeLabel.setText(modeLabelText.toString());	
+		}
 	}
 	
 	public void onShowColumns(ShowColumnsEvent event) {
@@ -1233,6 +1245,9 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			
 		});
 		
+		modeLabel = new LabelField();
+		AdapterToolItem modeLabelItem = new AdapterToolItem(modeLabel);
+		
 		int pageSize = getPageSize();
 		pageSizeField = new NumberField();
 		pageSizeField.setValue(Integer.valueOf(pageSize));
@@ -1300,6 +1315,10 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		searchToolBar.add(clearSearchItem);
 		searchToolBar.add(new SeparatorToolItem());
 		searchToolBar.add(sectionChooserItem);
+		searchToolBar.add(new SeparatorToolItem());
+		searchToolBar.add(modeLabelItem);
+		
+		
 		pagingToolBar.add(new SeparatorToolItem());
 		pagingToolBar.add(pageSizeLabelItem);
 		pagingToolBar.add(pageSizeFieldItem);
