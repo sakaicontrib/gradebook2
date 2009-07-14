@@ -2807,7 +2807,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		try {
 			if (userService != null) {
 				User grader = userService.getUser(event.getGraderId());
-				graderName = grader.getDisplayName();
+				if (grader != null)
+					graderName = grader.getDisplayName();
 			}
 		} catch (UserNotDefinedException e) {
 			log.info("Failed to find a user for the id " + event.getGraderId());
