@@ -199,26 +199,6 @@ public class GradeScalePanel extends ContentPanel {
 				Gradebook2RPCServiceAsync service = Registry.get("service");
 				
 				service.update(new GradeScaleRecordMapModel(gbModel.getGradebookUid(), gbModel.getGradebookId(), model), EntityType.GRADE_SCALE, action, SecureToken.get(), callback);
-				
-				/*
-				RemoteCommand<GradeScaleRecordModel> remoteCommand = 
-					new RemoteCommand<GradeScaleRecordModel>() {
-
-						@Override
-						public void onCommandListSuccess(UserEntityAction<GradeScaleRecordModel> action, List<GradeScaleRecordModel> result) {
-							for(GradeScaleRecordModel baseModel : result) {
-								store.update(baseModel);
-							}
-							
-							if (gridEvent != null)
-								grid.fireEvent(Events.AfterEdit, gridEvent);
-					
-							GradeScalePanel.this.fireEvent(GradebookEvents.UserChange.getEventType(), new UserChangeEvent(EntityType.GRADE_SCALE, ActionType.UPDATE));
-						}
-					
-				};
-				
-				remoteCommand.executeList(action);*/
 			}
 		});
 		
