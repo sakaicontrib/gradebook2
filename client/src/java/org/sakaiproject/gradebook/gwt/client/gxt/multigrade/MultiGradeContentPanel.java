@@ -94,6 +94,7 @@ import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.tips.ToolTip;
 import com.extjs.gxt.ui.client.widget.toolbar.AdapterToolItem;
+import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.SeparatorToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.TextToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
@@ -1315,7 +1316,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		searchToolBar.add(clearSearchItem);
 		searchToolBar.add(new SeparatorToolItem());
 		searchToolBar.add(sectionChooserItem);
-		searchToolBar.add(new SeparatorToolItem());
+		searchToolBar.add(new FillToolItem());
 		searchToolBar.add(modeLabelItem);
 		
 		
