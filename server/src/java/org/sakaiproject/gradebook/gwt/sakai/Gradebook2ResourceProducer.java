@@ -128,6 +128,8 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 				return (Y)service.getCategoriesNotRemoved(id);
 			case PERMISSION_SECTIONS:
 				return (Y)service.getSections(uid, id, config, true, "All Sections/Groups");
+			case STATISTICS:
+				return (Y)service.getStatistics(uid, id);
 			}
 		
 		} catch (Throwable t) {

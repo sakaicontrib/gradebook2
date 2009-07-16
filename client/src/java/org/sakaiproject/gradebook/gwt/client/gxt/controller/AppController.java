@@ -64,6 +64,7 @@ public class AppController extends Controller {
 		registerEventTypes(GradebookEvents.ShowColumns.getEventType());
 		registerEventTypes(GradebookEvents.ShowGradeScale.getEventType());
 		registerEventTypes(GradebookEvents.ShowHistory.getEventType());
+		registerEventTypes(GradebookEvents.ShowStatistics.getEventType());
 		registerEventTypes(GradebookEvents.SingleGrade.getEventType());
 		registerEventTypes(GradebookEvents.SingleView.getEventType());
 		registerEventTypes(GradebookEvents.StartEditItem.getEventType());
@@ -183,6 +184,7 @@ public class AppController extends Controller {
 			break;
 		case SHOW_GRADE_SCALE:
 		case SHOW_HISTORY:	
+		case SHOW_STATISTICS:
 			forwardToView(appView, event);
 			break;
 		case HIDE_FORM_PANEL:

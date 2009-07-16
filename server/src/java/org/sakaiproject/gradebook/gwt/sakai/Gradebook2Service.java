@@ -111,6 +111,8 @@ public interface Gradebook2Service {
 	
 	public <X extends BaseModel> ListLoadResult<X> getSelectedGradeMapping(String gradebookUid);
 	
+	public <X extends BaseModel> ListLoadResult<X> getStatistics(String gradebookUid, Long gradebookId);
+	
 	public <X extends BaseModel> PagingLoadResult<X> getStudentRows(String gradebookUid, Long gradebookId, PagingLoadConfig config, Boolean includeExportCourseManagementId);
 	
 	public SubmissionVerificationModel getSubmissionVerification(String gradebookUid, Long gradebookId);

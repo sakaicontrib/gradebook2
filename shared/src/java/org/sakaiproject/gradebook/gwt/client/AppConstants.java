@@ -50,6 +50,7 @@ public interface AppConstants {
 	public static final String TAB_GRADESCALE 		= "tabGradeScale";
 	public static final String TAB_HISTORY			= "tabHistory";
 	public static final String TAB_GRADER_PER_SET 	= "tabGraderPermissionSettings";
+	public static final String TAB_STATISTICS 		= "tabStatistics";
 		
 	public static final String WINDOW_MENU_ITEM_PREFIX = "windowMenuItem:";
 	

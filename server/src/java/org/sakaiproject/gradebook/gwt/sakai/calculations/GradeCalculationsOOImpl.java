@@ -5,11 +5,13 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.sakai.GradeCalculations;
+import org.sakaiproject.gradebook.gwt.sakai.model.GradeStatistics;
 import org.sakaiproject.service.gradebook.shared.GradebookService;
 import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.AssignmentGradeRecord;
@@ -67,6 +69,87 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		BigDecimal categoryPercentRatio = sumCategoryPercents.divide(BigDecimal.valueOf(100d), MATH_CONTEXT);
 		
 		return assignmentWeight.multiply(percentGrade).divide(categoryPercentRatio, MATH_CONTEXT);
+	}
+	
+	
+	public GradeStatistics calculateStatistics(List<BigDecimal> gradeList, BigDecimal sum) {
+		GradeStatistics statistics = new GradeStatistics();
+		
+		if (gradeList == null || gradeList.isEmpty())
+			return statistics;
+		
+		BigDecimal count = BigDecimal.valueOf(gradeList.size());
+		BigDecimal mean = null;
+		
+		if (count.compareTo(BigDecimal.ZERO) != 0)
+			mean = sum.divide(count, RoundingMode.HALF_EVEN);
+		
+		BigDecimal mode = null;
+		Integer highestFrequency = Integer.valueOf(0);
+		Map<BigDecimal, Integer> frequencyMap = new HashMap<BigDecimal, Integer>();
+		BigDecimal standardDeviation = null;
+		// Once we have the mean course grade, we can calculate the standard deviation from that mean
+		// That is, for the equation S = sqrt(A/c)
+		if (gradeList != null && mean != null) {
+			BigDecimal sumOfSquareOfDifferences = BigDecimal.ZERO;
+			for (BigDecimal courseGrade : gradeList) {
+				// Take the square of the difference and add it to the sum, A 
+				BigDecimal difference = courseGrade.subtract(mean);
+				BigDecimal square = difference.multiply(difference);
+				sumOfSquareOfDifferences = sumOfSquareOfDifferences.add(square);
+			
+				Integer frequency = frequencyMap.get(courseGrade);
+				if (frequency == null)
+					frequency = Integer.valueOf(1);
+				else
+					frequency = Integer.valueOf(1 + frequency.intValue());
+				
+				frequencyMap.put(courseGrade, frequency);
+				
+				if (frequency.compareTo(highestFrequency) > 0) {
+					highestFrequency = frequency;
+					mode = courseGrade;
+				}
+			}
+			
+			if (count.compareTo(BigDecimal.ZERO) != 0 && sumOfSquareOfDifferences.compareTo(BigDecimal.ZERO) != 0) {
+				BigDecimal fraction = sumOfSquareOfDifferences.divide(count, RoundingMode.HALF_EVEN);
+				BigSquareRoot squareRoot = new BigSquareRoot();
+				standardDeviation = squareRoot.get(fraction);
+			}
+		}
+		
+		BigDecimal median = null;
+		if (gradeList != null && gradeList.size() > 0) {
+			if (gradeList.size() == 1) {
+				median = gradeList.get(0);
+			} else {
+				Collections.sort(gradeList);
+				int middle = gradeList.size() / 2;
+				if (gradeList.size() % 2 == 0) {
+					// If we have an even number of elements then grab the middle two
+					BigDecimal first = gradeList.get(middle - 1);
+					BigDecimal second = gradeList.get(middle);
+					
+					BigDecimal s = first.add(second);
+					
+					if (s.compareTo(BigDecimal.ZERO) == 0)
+						median = BigDecimal.ZERO;
+					else
+						median = s.divide(new BigDecimal("2"), RoundingMode.HALF_EVEN);
+				} else {
+					// If we have an odd number of elements, simply choose the middle one
+					median = gradeList.get(middle);
+				}
+			}
+		}
+		
+		statistics.setMean(mean);
+		statistics.setMedian(median);
+		statistics.setMode(mode);
+		statistics.setStandardDeviation(standardDeviation);
+		
+		return statistics;
 	}
 	
 	
@@ -142,28 +225,30 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 
 		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
 		
-		for (Category category : categoriesWithAssignments) {
-		
-			if (category == null || category.isRemoved() || isUnweighted(category))
-				continue;
+		if (categoriesWithAssignments != null) {
+			for (Category category : categoriesWithAssignments) {
 			
-			String categoryKey = String.valueOf(category.getId());
+				if (category == null || category.isRemoved() || isUnweighted(category))
+					continue;
+				
+				String categoryKey = String.valueOf(category.getId());
+				
+				BigDecimal categoryWeight = getCategoryWeight(category);
+				CategoryCalculationUnit categoryCalculationUnit = new CategoryCalculationUnit(categoryWeight, Integer.valueOf(category.getDrop_lowest()), category.isExtraCredit());
+				categoryUnitMap.put(categoryKey, categoryCalculationUnit);
+				
+				List<GradeRecordCalculationUnit> gradeRecordUnits = new ArrayList<GradeRecordCalculationUnit>();
 			
-			BigDecimal categoryWeight = getCategoryWeight(category);
-			CategoryCalculationUnit categoryCalculationUnit = new CategoryCalculationUnit(categoryWeight, Integer.valueOf(category.getDrop_lowest()), category.isExtraCredit());
-			categoryUnitMap.put(categoryKey, categoryCalculationUnit);
-			
-			List<GradeRecordCalculationUnit> gradeRecordUnits = new ArrayList<GradeRecordCalculationUnit>();
-		
-			List<Assignment> assignments = category.getAssignmentList();
-			if (assignments == null)
-				continue;
-			
-			populateGradeRecordUnits(assignments, gradeRecordUnits, assignmentGradeRecordMap);
-			
-			categoryGradeUnitListMap.put(categoryKey, gradeRecordUnits);
-
-		} // for
+				List<Assignment> assignments = category.getAssignmentList();
+				if (assignments == null)
+					continue;
+				
+				populateGradeRecordUnits(assignments, gradeRecordUnits, assignmentGradeRecordMap);
+				
+				categoryGradeUnitListMap.put(categoryKey, gradeRecordUnits);
+	
+			} // for
+		}
 		
 		GradebookCalculationUnit gradebookUnit = new GradebookCalculationUnit(categoryUnitMap);
 

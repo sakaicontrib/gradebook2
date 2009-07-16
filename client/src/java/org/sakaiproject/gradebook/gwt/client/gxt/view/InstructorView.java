@@ -18,6 +18,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.HelpPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.HistoryPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ItemFormPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.LearnerSummaryPanel;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.StatisticsPanel;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
@@ -44,14 +45,13 @@ import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.extjs.gxt.ui.client.widget.menu.SeparatorMenuItem;
 import com.extjs.gxt.ui.client.widget.toolbar.TextToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
 
 public class InstructorView extends AppView {
 	
 	private static final String MENU_SELECTOR_FLAG = "menuSelector";
-	public enum MenuSelector { ADD_CATEGORY, ADD_ITEM, IMPORT, EXPORT, EXPORT_DATA, EXPORT_STRUCTURE, FINAL_GRADE, GRADE_SCALE, HISTORY, GRADER_PERMISSION_SETTINGS };
+	public enum MenuSelector { ADD_CATEGORY, ADD_ITEM, IMPORT, EXPORT, EXPORT_DATA, EXPORT_STRUCTURE, FINAL_GRADE, GRADE_SCALE, HISTORY, GRADER_PERMISSION_SETTINGS, STATISTICS };
 	
 	// The instructor view maintains a link to tree view, since it is required to instantiate multigrade
 	private TreeView treeView;
@@ -70,6 +70,7 @@ public class InstructorView extends AppView {
 	private GradeScalePanel gradeScalePanel;
 	private HistoryPanel historyPanel;
 	private GraderPermissionSettingsPanel graderPermissionSettingsPanel;
+	private StatisticsPanel statisticsPanel;
 	
 	private List<TabConfig> tabConfigurations;
 	
@@ -95,7 +96,8 @@ public class InstructorView extends AppView {
 	
 	public InstructorView(Controller controller, TreeView treeView, MultigradeView multigradeView, 
 			NotificationView notificationView, ImportExportView importExportView, 
-			SingleGradeView singleGradeView, boolean isEditable, final boolean isNewGradebook) {
+			SingleGradeView singleGradeView, 
+			boolean isEditable, final boolean isNewGradebook) {
 		super(controller, notificationView);
 		this.isEditable = isEditable;
 		this.tabConfigurations = new ArrayList<TabConfig>();
@@ -174,10 +176,6 @@ public class InstructorView extends AppView {
 		
 		viewport.add(borderLayoutContainer);
 		viewportLayout.setActiveItem(borderLayoutContainer);
-		
-		//RootPanel.get().add(viewport);
-		//viewport.layout();
-		//RootPanel.get().add(realViewport);
 	}
 
 	@Override
@@ -196,6 +194,8 @@ public class InstructorView extends AppView {
 		tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADESCALE, i18n.tabGradeScaleHeader(), "gbGradeScaleButton", true, MenuSelector.GRADE_SCALE));
 		//tabConfigurations.add(new TabConfig(AppConstants.TAB_HISTORY, i18n.tabHistoryHeader(), "gbHistoryButton", true, MenuSelector.HISTORY));
 		tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADER_PER_SET, i18n.tabGraderPermissionSettingsHeader(), "gbGraderPermissionSettings", true, MenuSelector.GRADER_PERMISSION_SETTINGS));
+		tabConfigurations.add(new TabConfig(AppConstants.TAB_STATISTICS, i18n.tabStatisticsHeader(), "gbStatisticsButton", true, MenuSelector.STATISTICS));
+		
 		populateToolBar(i18n, selectedGradebook);
 
 		if (DataTypeConversionUtil.checkBoolean(selectedGradebook.isNewGradebook()))
@@ -220,6 +220,7 @@ public class InstructorView extends AppView {
 		case HISTORY:
 		case LEARNER_SUMMARY:
 		case GRADER_PERMISSION_SETTINGS:
+		case STATISTICS:
 			borderLayout.show(LayoutRegion.EAST);
 			borderLayout.expand(LayoutRegion.EAST);
 			break;
@@ -242,6 +243,10 @@ public class InstructorView extends AppView {
 		case GRADE_SCALE:
 			eastLayoutContainer.setHeading(i18n.gradeScaleHeading());
 			eastCardLayout.setActiveItem(gradeScalePanel);
+			break;
+		case STATISTICS:
+			eastLayoutContainer.setHeading(i18n.statisticsHeading());
+			eastCardLayout.setActiveItem(statisticsPanel);
 			break;
 		case GRADER_PERMISSION_SETTINGS:
 			eastLayoutContainer.setHeading(i18n.graderPermissionSettingsHeading());
@@ -297,6 +302,10 @@ public class InstructorView extends AppView {
 	protected void onLearnerGradeRecordUpdated(UserEntityUpdateAction action) {
 		if (singleGradeContainer != null && singleGradeContainer.isVisible()) {
 			singleGradeContainer.onLearnerGradeRecordUpdated((StudentModel)action.getModel());
+		}
+		
+		if (statisticsPanel != null && statisticsPanel.isVisible()) {
+			statisticsPanel.onLearnerGradeRecordUpdated((StudentModel)action.getModel());
 		}
 	}
 	
@@ -370,6 +379,16 @@ public class InstructorView extends AppView {
 			eastLayoutContainer.add(historyPanel);
 		}
 		onExpandEastPanel(EastCard.HISTORY);
+	}
+	
+	@Override
+	protected void onShowStatistics() {
+		if (statisticsPanel == null) {
+			statisticsPanel = new StatisticsPanel(i18n);
+			eastLayoutContainer.add(statisticsPanel);
+		}
+		statisticsPanel.onLearnerGradeRecordUpdated(null);
+		onExpandEastPanel(EastCard.STATISTICS);
 	}
 	
 	@Override
@@ -463,6 +482,9 @@ public class InstructorView extends AppView {
 						break;
 					case GRADER_PERMISSION_SETTINGS:
 						onShowGraderPermissionSettings(Boolean.TRUE);
+						break;
+					case STATISTICS:
+						onShowStatistics();
 						break;
 					}
 				}

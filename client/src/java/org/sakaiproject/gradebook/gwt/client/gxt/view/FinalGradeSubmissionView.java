@@ -6,8 +6,6 @@ import org.sakaiproject.gradebook.gwt.client.gxt.view.components.GradeSubmission
 import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.View;
-import com.extjs.gxt.ui.client.widget.MessageBox;
-
 
 public class FinalGradeSubmissionView extends View {
 

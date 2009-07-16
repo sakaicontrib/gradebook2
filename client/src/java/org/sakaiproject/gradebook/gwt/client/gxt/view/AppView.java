@@ -26,7 +26,8 @@ import com.google.gwt.user.client.ui.RootPanel;
 public abstract class AppView extends View {
 
 	public enum EastCard { DELETE_CATEGORY, DELETE_ITEM, EDIT_CATEGORY, EDIT_GRADEBOOK, EDIT_ITEM, 
-		GRADE_SCALE, HELP, HISTORY, LEARNER_SUMMARY, NEW_CATEGORY, NEW_ITEM, GRADER_PERMISSION_SETTINGS };
+		GRADE_SCALE, HELP, HISTORY, LEARNER_SUMMARY, NEW_CATEGORY, NEW_ITEM, GRADER_PERMISSION_SETTINGS,
+		STATISTICS };
 	
 	private static final int screenHeight = 600;
 	
@@ -93,6 +94,9 @@ public abstract class AppView extends View {
 			break;
 		case SHOW_HISTORY:
 			onShowHistory((String)event.data);
+			break;
+		case SHOW_STATISTICS:
+			onShowStatistics();
 			break;
 		case SINGLE_VIEW:
 			onSingleView((StudentModel)event.data);
@@ -209,6 +213,10 @@ public abstract class AppView extends View {
 	}
 	
 	protected void onShowHistory(String identifier) {
+		
+	}
+	
+	protected void onShowStatistics() {
 		
 	}
 	
