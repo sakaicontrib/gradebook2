@@ -414,6 +414,10 @@
 	background-image:url(images/default/button/calendar.png);
 }
 
+.gbStatisticsButton {
+	background-image:url(images/default/button/chart_curve.png);
+}
+
 .grid-show-columns {
 	background-image:url(images/default/grid/table_row_insert.png);
 }
