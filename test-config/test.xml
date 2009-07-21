@@ -14,9 +14,10 @@
 		<property name="gradeCalculations" ref="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"/>
 		<property name="frameworkService" ref="org.sakaiproject.service.gradebook.GradebookFrameworkService" />
 		<!--property name="siteService" ref="org.sakaiproject.site.api.SiteService"/-->
-		<property name="security" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Security"/>
+		<property name="authz" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authz"/>
 		<property name="advisor" ref="org.sakaiproject.gradebook.gwt.sakai.api.SampleInstitutionalAdvisor"/>
     	<!--property name="sessionManager" ref="org.sakaiproject.tool.api.SessionManager" /-->
+    	<property name="sectionAwareness" ref="org.sakaiproject.section.api.SectionAwareness"/>
 	</bean>
 	
 	<!-- Performance Target -->
@@ -85,10 +86,11 @@
 		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/> 
 	</bean>
 		
-	<bean id="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Security" class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2SecurityImpl">
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authz" class="org.sakaiproject.gradebook.gwt.sakai.mock.AuthzMock">
 		<property name="authn" ref="org_sakaiproject_tool_gradebook_facades_Authn"/>
-		<property name="authz" ref="org_sakaiproject_tool_gradebook_facades_Authz"/>
 		<property name="sectionAwareness" ref="org.sakaiproject.section.api.SectionAwareness"/>
+		<property name="gbToolService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/>
+		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service"/> 
 	</bean>
 	
 	<bean id="org_sakaiproject_tool_gradebook_facades_Authz" class="org.sakaiproject.gradebook.gwt.sakai.mock.AuthzMock">

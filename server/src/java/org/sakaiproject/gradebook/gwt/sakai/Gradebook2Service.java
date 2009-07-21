@@ -22,6 +22,7 @@ import org.sakaiproject.gradebook.gwt.client.model.SubmissionVerificationModel;
 import org.sakaiproject.gradebook.gwt.sakai.InstitutionalAdvisor.Column;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.site.api.Group;
+import org.sakaiproject.tool.gradebook.Category;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
@@ -169,6 +170,6 @@ public interface Gradebook2Service {
 	public <X extends BaseModel> ListLoadResult<X> getCategoriesNotRemoved(Long gradebookId);
 	public PermissionEntryModel deletePermissionEntry(Long gradebookId, PermissionEntryModel permissionEntryModel);
 
-	public List getCategoriesWithAssignments(Long gradebookId);
+	public List<Category> getCategoriesWithAssignments(Long gradebookId);
 	
 }

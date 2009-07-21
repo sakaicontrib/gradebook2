@@ -18,15 +18,11 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 import org.sakaiproject.gradebook.gwt.sakai.BusinessLogicImpl;
-import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Security;
-import org.sakaiproject.gradebook.gwt.sakai.Gradebook2SecurityImpl;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ServiceImpl;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
 import org.sakaiproject.gradebook.gwt.sakai.SampleInstitutionalAdvisor;
 import org.sakaiproject.gradebook.gwt.sakai.UserRecord;
 import org.sakaiproject.gradebook.gwt.sakai.calculations.GradeCalculationsOOImpl;
-import org.sakaiproject.gradebook.gwt.sakai.mock.AuthnMock;
-import org.sakaiproject.gradebook.gwt.sakai.mock.AuthzMock;
 import org.sakaiproject.gradebook.gwt.sakai.mock.GradebookToolServiceMock;
 import org.sakaiproject.gradebook.gwt.sakai.mock.IocMock;
 import org.sakaiproject.gradebook.gwt.sakai.mock.SectionAwarenessMock;
@@ -177,17 +173,18 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 		BusinessLogicImpl businessLogic = new BusinessLogicImpl();
 		businessLogic.setGbService(gbService);
 		
-		Gradebook2Security security = new Gradebook2SecurityImpl();
+		//Gradebook2Authz authz = new Gradebook2AuthzImpl();
+		//Gradebook2Security security = new Gradebook2SecurityImpl();
 		//security.setAuthz(new AuthzMock(sectionAwareness));
 		//security.setAuthn(new AuthnMock());
-		security.setSectionAwareness(sectionAwareness);
+	//	authz.setSectionAwareness(sectionAwareness);
 		//security.setGbToolService(gbService);
 		
 		service.setAdvisor(new SampleInstitutionalAdvisor());
 		service.setBusinessLogic(businessLogic);
 		service.setGbService(gbService);
 		service.setGradeCalculations(new GradeCalculationsOOImpl());
-		service.setSecurity(security);
+		//service.setSecurity(security);
 	}
 
 	/*

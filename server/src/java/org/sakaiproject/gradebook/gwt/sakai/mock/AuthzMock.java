@@ -24,40 +24,28 @@ package org.sakaiproject.gradebook.gwt.sakai.mock;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authz;
+import org.sakaiproject.gradebook.gwt.sakai.Gradebook2AuthzImpl;
 import org.sakaiproject.section.api.SectionAwareness;
 import org.sakaiproject.section.api.coursemanagement.EnrollmentRecord;
 import org.sakaiproject.section.api.facade.Role;
 import org.sakaiproject.tool.gradebook.Assignment;
 
-public class AuthzMock implements Gradebook2Authz {
+public class AuthzMock extends Gradebook2AuthzImpl {
 
-	private SectionAwareness sectionAwareness;
-	
 	public AuthzMock() {
 		
 	}
 	
 	public AuthzMock(SectionAwareness sectionAwareness) {
-		this.sectionAwareness = sectionAwareness;
+		setSectionAwareness(sectionAwareness);
 	}
 	
-	public Map findMatchingEnrollmentsForItem(String gradebookUid, Long categoryId, int gbCategoryType, String optionalSearchString, String optionalSectionUid) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public Map findMatchingEnrollmentsForViewableCourseGrade(String gradebookUid, int gbCategoryType, String optionalSearchString, String optionalSectionUid) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
+	
 	public Map findMatchingEnrollmentsForViewableItems(String gradebookUid, List allGbItems, String optionalSearchString, String optionalSectionUid) {
 		Map enrollmentMap = new HashMap();
 		List filteredEnrollments = new ArrayList();
@@ -229,31 +217,11 @@ public class AuthzMock implements Gradebook2Authz {
 
 		return enrollmentMap;
 	}
-
-	public List findStudentSectionMemberships(String gradebookUid, String studentUid) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public List getAllSections(String gradebookUid) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public String getGradeViewFunctionForUserForStudentForItem(String gradebookUid, Long itemId, String studentUid) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 	
 	private static final String[] SECTIONS = { "001", "002", "003", "004" };
 
 	public List getStudentSectionMembershipNames(String gradebookUid, String studentUid) {
 		return Arrays.asList(SECTIONS);
-	}
-
-	public List getViewableSections(String gradebookUid) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	public boolean isUserAbleToEditAssessments(String gradebookUid) {
@@ -301,38 +269,16 @@ public class AuthzMock implements Gradebook2Authz {
 	}
 
 	public SectionAwareness getSectionAwareness() {
-		return sectionAwareness;
+		return getSectionAwareness();
 	}
 	
 	private List getSectionEnrollmentsTrusted(String sectionUid) {
 		return getSectionAwareness().getSectionMembersInRole(sectionUid, Role.STUDENT);
 	}
 
-	public void setSectionAwareness(SectionAwareness sectionAwareness) {
-		this.sectionAwareness = sectionAwareness;
-	}
 
-	public Map getAvailableItemsForStudent(String gradebookUid, String userId,
-			String studentId, Collection courseSections)
-			throws IllegalArgumentException {
+	public boolean isUserTAinSection(String sectionUid) {
 		// TODO Auto-generated method stub
-		return null;
+		return false;
 	}
-
-	public List getGraderPermissionsForUser(String gradebookUid, String userId) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public List getGraderPermissionsForUser(Long gradebookId, String userId) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public List getViewableGroupsForUser(String gradebookUid, String userId,
-			List groupIds) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }

@@ -64,6 +64,7 @@ import org.sakaiproject.gradebook.gwt.sakai.model.UserConfiguration;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereferenceRealmUpdate;
 import org.sakaiproject.gradebook.gwt.server.DataTypeConversionUtil;
+import org.sakaiproject.section.api.SectionAwareness;
 import org.sakaiproject.section.api.coursemanagement.CourseSection;
 import org.sakaiproject.section.api.coursemanagement.EnrollmentRecord;
 import org.sakaiproject.section.api.coursemanagement.ParticipationRecord;
@@ -105,14 +106,14 @@ import com.extjs.gxt.ui.client.data.PagingLoadResult;
 
 public class Gradebook2ServiceImpl implements Gradebook2Service {
 
-	private static final Log log = LogFactory
-			.getLog(Gradebook2ServiceImpl.class);
+	private static final Log log = LogFactory.getLog(Gradebook2ServiceImpl.class);
 
 	private BusinessLogic businessLogic;
 	private GradebookFrameworkService frameworkService;
 	private GradebookToolService gbService;
 	private GradeCalculations gradeCalculations;
-	private Gradebook2Security security;
+	private Gradebook2Authz authz;
+	private SectionAwareness sectionAwareness;
 	private InstitutionalAdvisor advisor;
 	private SiteService siteService;
 	private ToolManager toolManager;
@@ -359,7 +360,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			if (null != permission.getGroupId()) {
 				
 				permissionEntryModel.setSectionId(permission.getGroupId());
-				CourseSection courseSection = security.getSectionAwareness().getSection(permission.getGroupId());
+				CourseSection courseSection = sectionAwareness.getSection(permission.getGroupId());
 				if(null != courseSection) {
 					permissionEntryModel.setSectionDisplayName(courseSection.getTitle());
 				}
@@ -1240,13 +1241,13 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				} 
 			}
 			AuthModel authModel = new AuthModel();
-			boolean isUserAbleToGrade = security.isUserAbleToGrade(gradebookUids[i]);
-			boolean isUserAbleToViewOwnGrades = security.isUserAbleToViewOwnGrades(gradebookUids[i]);
+			boolean isUserAbleToGrade = authz.isUserAbleToGrade(gradebookUids[i]);
+			boolean isUserAbleToViewOwnGrades = authz.isUserAbleToViewOwnGrades(gradebookUids[i]);
 
 			authModel.setUserAbleToGrade(Boolean.valueOf(isUserAbleToGrade));
-			authModel.setUserAbleToEditAssessments(Boolean.valueOf(security.isUserAbleToEditAssessments(gradebookUids[i])));
+			authModel.setUserAbleToEditAssessments(Boolean.valueOf(authz.isUserAbleToEditAssessments(gradebookUids[i])));
 			authModel.setUserAbleToViewOwnGrades(Boolean.valueOf(isUserAbleToViewOwnGrades));
-			authModel.setUserHasGraderPermissions(Boolean.valueOf(security.isUserHasGraderPermissions(gradebook.getId())));
+			authModel.setUserHasGraderPermissions(Boolean.valueOf(authz.isUserHasGraderPermissions(gradebook.getId())));
 			authModel.setNewGradebook(Boolean.valueOf(isNewGradebook));
 			authModel.setPlacementId(getPlacementId());
 			
@@ -1339,7 +1340,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	public <X extends BaseModel> PagingLoadResult<X> getSections(String gradebookUid,
 			Long gradebookId, PagingLoadConfig config, boolean enableAllSectionsEntry, String allSectionsEntryTitle) {
 		
-		List<CourseSection> viewableSections = security.getViewableSections(gradebookUid, gradebookId);
+		List<CourseSection> viewableSections = authz.getViewableSections(gradebookUid, gradebookId);
 		
 		List<X> sections = new LinkedList<X>();
 
@@ -1648,12 +1649,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		Site site = getSite();
 		String siteId = site == null ? null : site.getId();
 
-		boolean isUserAuthorizedToGradeAll = security
-				.isUserAbleToGradeAll(gradebook.getUid());
+		boolean isUserAuthorizedToGradeAll = authz.isUserAbleToGradeAll(gradebook.getUid());
 		boolean isLimitedToSection = false;
 		Set<String> authorizedGroups = new HashSet<String>();
 		if (sectionUuid != null) {
-			if (!security.isUserTAinSection(sectionUuid) && !security.isUserAbleToGradeAll(gradebookUid))
+			if (!authz.isUserTAinSection(sectionUuid) && !authz.isUserAbleToGradeAll(gradebookUid))
 				return new BasePagingLoadResult<X>(rows, 0, totalUsers);
 
 			authorizedGroups.add(sectionUuid);
@@ -1674,7 +1674,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 				if (!isLimitedToSection) {
 					if (!isUserAuthorizedToGradeAll && sectionUid != null
-							&& security.isUserTAinSection(reference)) {
+							&& authz.isUserTAinSection(reference)) {
 						authorizedGroups.add(reference);
 					}
 				}
@@ -2373,9 +2373,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		List<X> userList = new ArrayList<X>();
 
 		String placementId = lookupDefaultGradebookUid();
-		List<ParticipationRecord> participationList = security
-				.getSectionAwareness().getSiteMembersInRole(placementId,
-						Role.TA);
+		List<ParticipationRecord> participationList = sectionAwareness.getSiteMembersInRole(placementId, Role.TA);
 
 		for (ParticipationRecord participationRecord : participationList) {
 
@@ -2674,18 +2672,16 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		model.setGradebookItemModel(gradebookItemModel);
 		List<FixedColumnModel> columns = getColumns();
 
-		boolean isUserAbleToGrade = security.isUserAbleToGrade(gradebookUid);
-		boolean isUserAbleToViewOwnGrades = security
-				.isUserAbleToViewOwnGrades(gradebookUid);
+		boolean isUserAbleToGrade = authz.isUserAbleToGrade(gradebookUid);
+		boolean isUserAbleToViewOwnGrades = authz.isUserAbleToViewOwnGrades(gradebookUid);
 
 		boolean isSingleUserView = isUserAbleToViewOwnGrades
 				&& !isUserAbleToGrade;
 
 		model.setUserAbleToGrade(isUserAbleToGrade);
-		model.setUserAbleToEditAssessments(security
-				.isUserAbleToEditAssessments(gradebookUid));
+		model.setUserAbleToEditAssessments(authz.isUserAbleToEditAssessments(gradebookUid));
 		model.setUserAbleToViewOwnGrades(isUserAbleToViewOwnGrades);
-		model.setUserHasGraderPermissions(security.isUserHasGraderPermissions(gradebook.getId()));
+		model.setUserHasGraderPermissions(authz.isUserHasGraderPermissions(gradebook.getId()));
 		
 		ConfigurationModel configModel = new ConfigurationModel();
 
@@ -3778,7 +3774,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		// FIXME: Ensure that only users with access to all the students'
 		// records can call this method!!!
 		// Map<String, EnrollmentRecord> enrollmentRecordMap =
-		// security.findEnrollmentRecords(gradebook.getUid(), gradebook.getId(),
+		// authz.findEnrollmentRecords(gradebook.getUid(), gradebook.getId(),
 		// null, null);
 		// List<String> studentUids = new
 		// ArrayList<String>(enrollmentRecordMap.keySet());
@@ -3874,7 +3870,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	 * 
 	 * // FIXME: Ensure that only users with access to all the students' records
 	 * can call this method!!! Map<String, EnrollmentRecord> enrollmentRecordMap
-	 * = security.findEnrollmentRecords(gradebook.getUid(), gradebook.getId(),
+	 * = authz.findEnrollmentRecords(gradebook.getUid(), gradebook.getId(),
 	 * null, null); List<String> studentUids = new
 	 * ArrayList<String>(enrollmentRecordMap.keySet()); List<EnrollmentRecord>
 	 * enrollmentRecords = new
@@ -4021,9 +4017,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			Assignment assignment, AssignmentGradeRecord assignmentGradeRecord,
 			String studentUid, Double value, boolean includeExcluded,
 			boolean deferUpdate) throws InvalidInputException {
-		boolean isUserAbleToGrade = security.isUserAbleToGradeAll(gradebook
-				.getUid())
-				|| security.isUserAbleToGradeItemForStudent(gradebook.getUid(),
+		boolean isUserAbleToGrade = authz.isUserAbleToGradeAll(gradebook.getUid())
+				|| authz.isUserAbleToGradeItemForStudent(gradebook.getUid(),
 						assignment.getId(), studentUid);
 
 		if (!isUserAbleToGrade)
@@ -4393,14 +4388,14 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		return session.getId();
 	}
 	
-	public List getCategoriesWithAssignments(Long gradebookId) {
-		List categories = gbService.getCategories(gradebookId);
-    	List categoriesWithAssignments = new ArrayList();
+	public List<Category> getCategoriesWithAssignments(Long gradebookId) {
+		List<Category> categories = gbService.getCategories(gradebookId);
+    	List<Category> categoriesWithAssignments = new ArrayList<Category>();
     	if (categories != null) {
-    		for (Iterator catIter = categories.iterator(); catIter.hasNext();) {
-    			Category category = (Category) catIter.next();
+    		for(Category category : categories) {
+    			
     			if (category != null) {
-    				List assignments = gbService.getAssignmentsForCategory(category.getId());
+    				List<Assignment> assignments = gbService.getAssignmentsForCategory(category.getId());
     				category.setAssignmentList(assignments);
     				categoriesWithAssignments.add(category);
     			}
@@ -4818,14 +4813,14 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		this.gradeCalculations = gradeCalculations;
 	}
 
-	public Gradebook2Security getSecurity() {
-		return security;
+	public void setAuthz(Gradebook2Authz authz) {
+		this.authz = authz;
 	}
-
-	public void setSecurity(Gradebook2Security security) {
-		this.security = security;
+	
+	public void setSectionAwareness(SectionAwareness sectionAwareness) {
+		this.sectionAwareness = sectionAwareness;
 	}
-
+	
 	public InstitutionalAdvisor getAdvisor() {
 		return advisor;
 	}
