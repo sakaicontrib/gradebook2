@@ -86,7 +86,8 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public class ImportPanel extends ContentPanel {
 
 	private FileUploadField file;
-	
+	private boolean hasErrors; 
+	private String msgsFromServer; 
 	private ListStore<StudentModel> rowStore;
 	private ListStore<ItemModel> itemStore;
 	private ListStore<BaseModel> resultStore;
@@ -102,9 +103,12 @@ public class ImportPanel extends ContentPanel {
 	
 	private TabItem previewTab, columnsTab;
 
-	private Button submitButton, cancelButton; 
+	private Button submitButton, cancelButton, errorReturnButton; 
 	
 	private ContentPanel step1Container;
+	private ContentPanel errorContainer; 
+	
+
 	private LayoutContainer fileUploadContainer;
 	
 	private ArrayList<ColumnConfig> previewColumns;
@@ -342,15 +346,30 @@ public class ImportPanel extends ContentPanel {
 		});
 		
 		step1Container.addButton(cancelButton);
-		
+
+		errorReturnButton = new Button("Return");
+		errorReturnButton.setMinWidth(120);
+		errorReturnButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
+
+			@Override
+			public void componentSelected(ButtonEvent ce) {
+				Dispatcher.forwardEvent(GradebookEvents.StopImport.getEventType());
+				fileUploadPanel.clear();
+			}
+		});
+		errorContainer = new ContentPanel(); 
+		errorContainer.setHeaderVisible(false); 
+		errorContainer.setLayout(new FitLayout()); 
+		errorContainer.addButton(errorReturnButton);
+
 		fileUploadContainer = new LayoutContainer();
 		fileUploadContainer.setLayout(new FlowLayout());
 		fileUploadContainer.add(buildFileUploadPanel());
 		
 		mainCardLayoutContainer.add(fileUploadContainer);
 		mainCardLayoutContainer.add(step1Container);
+		mainCardLayoutContainer.add(errorContainer); 
 		mainCardLayout.setActiveItem(fileUploadContainer);
-		
 		add(mainCardLayoutContainer); 
 	}
 
@@ -536,9 +555,25 @@ public class ImportPanel extends ContentPanel {
 			
 			JSONObject jsonObject = jsonWrapper.get("org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportFile").isObject();
 			
+			
+			
 			JSONArray headersArray = getArray(jsonObject, "items");
 			previewColumns = new ArrayList<ColumnConfig>();
-			
+
+			Boolean hasErrors = getBoolean(jsonObject, "hasErrors");
+			hasErrors = DataTypeConversionUtil.checkBoolean(hasErrors); 
+
+			msgsFromServer = getString(jsonObject, "notes");
+
+			// If we have errors we want to do something different
+			if (hasErrors) 
+			{
+
+				errorContainer.addText(msgsFromServer); 
+				mainCardLayout.setActiveItem(errorContainer); 
+				tabPanel.hide();
+				return; 
+			}
 			Boolean hasCategoriesBoolean = getBoolean(jsonObject, "hasCategories");
 			
 			boolean hasCategories = DataTypeConversionUtil.checkBoolean(hasCategoriesBoolean);

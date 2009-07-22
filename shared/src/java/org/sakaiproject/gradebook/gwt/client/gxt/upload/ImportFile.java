@@ -16,8 +16,6 @@ public class ImportFile implements Serializable {
 	
 	private String notes; 
 	
-	private String errNotes; 
-	
 	private boolean hasErrors; 
 	
 	public ImportFile() {
@@ -32,13 +30,6 @@ public class ImportFile implements Serializable {
 		this.notes = notes;
 	}
 
-	public String getErrNotes() {
-		return errNotes;
-	}
-
-	public void setErrNotes(String errNotes) {
-		this.errNotes = errNotes;
-	}
 
 	public boolean isHasErrors() {
 		return hasErrors;

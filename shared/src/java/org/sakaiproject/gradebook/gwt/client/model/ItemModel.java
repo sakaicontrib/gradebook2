@@ -222,7 +222,28 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 	}
 	
 	public Long getCategoryId() {
-		return get(Key.CATEGORY_ID.name());
+		Object o = get(Key.CATEGORY_ID.name());
+		/* 
+		 * This hack exists because for some odd reason, the category ID is sometimes a string.  Maybe bad serialization? 
+		 */
+		if (null == o) 
+		{
+			return new Long(-1); 
+		}
+		else if (o instanceof Long)
+		{
+			return (Long) o; 
+		}
+		else
+		{
+			Long ret = null; 
+			try {
+				ret= Long.decode((String) o);
+			} catch (NumberFormatException e) {
+				ret = new Long(-1); 
+			}
+			return ret; 
+		}
 	}
 	
 	public void setCategoryId(Long categoryId) {

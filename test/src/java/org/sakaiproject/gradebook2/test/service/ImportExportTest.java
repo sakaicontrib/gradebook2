@@ -29,7 +29,7 @@ public class ImportExportTest extends AbstractServiceTest {
 		super(name);
 	}
 
-	public void testXls() throws Exception
+/*	public void testXls() throws Exception
 	{
 		onSetup(GradeType.PERCENTAGES, CategoryType.WEIGHTED_CATEGORIES);
 		ApplicationModel applicationModel = service.getApplicationModel(getName());
@@ -40,7 +40,7 @@ public class ImportExportTest extends AbstractServiceTest {
 		verifyCategoryPercentsForItems(model, Double.valueOf(25d), Double.valueOf(25d), Double.valueOf(25d), Double.valueOf(25d));
 
 		
-	}
+	}*/
 	public void testImportExport() throws Exception {
 		
 		onSetup(GradeType.PERCENTAGES, CategoryType.WEIGHTED_CATEGORIES);
