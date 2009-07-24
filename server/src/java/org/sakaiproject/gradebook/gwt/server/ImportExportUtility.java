@@ -444,6 +444,8 @@ public class ImportExportUtility {
 		raw.setFileType("Excel 5.0/7.0 Non Scantron"); 
 		return parseImportGeneric(service, gradebookUid, raw);
 	}
+	private final static int RAWFIELD_FIRST_POSITION = 0; 
+	private final static int RAWFIELD_SECOND_POSITION = 0; 
 
 	private static ImportFile handleScantronSheetForJExcelApi(Sheet s,
 			Gradebook2Service service, String gradebookUid) throws InvalidInputException, FatalException 
@@ -474,16 +476,16 @@ public class ImportExportUtility {
 			for (int i = 0 ; i < s.getRows() ; i++)
 			{
 				Cell idCell; 
-				Cell score; 
+				Cell scoreCell; 
 
 				idCell = s.getCell(studentIdHeader.getColumn(), i);
-				score = s.getCell(scoreHeader.getColumn(), i); 
+				scoreCell = s.getCell(scoreHeader.getColumn(), i); 
 
 				if (!idCell.getContents().equals(studentIdHeader.getContents()))
 				{
 					String[] item = new String[2]; 
-					item[0] = idCell.getContents(); 
-					item[1] = score.getContents(); 
+					item[RAWFIELD_FIRST_POSITION] = idCell.getContents(); 
+					item[RAWFIELD_SECOND_POSITION] = scoreCell.getContents(); 
 					raw.addRow(item); 
 					item = null; 
 				}
@@ -504,8 +506,8 @@ public class ImportExportUtility {
 	private static String[] getScantronHeaderLine()
 	{
 		String[] header = new String[2]; 
-		header[0] = "Student Id"; 
-		header[1] = "Scantron Item"; 
+		header[RAWFIELD_FIRST_POSITION] = "Student Id"; 
+		header[RAWFIELD_SECOND_POSITION] = "Scantron Item"; 
 
 		return header; 
 	}
@@ -881,18 +883,18 @@ public class ImportExportUtility {
 
 				name = text;
 
-				int startParen = text.indexOf("[");
-				int endParen = text.indexOf("pts]");
+				int startParenthesis = text.indexOf("[");
+				int endParenthesis = text.indexOf("pts]");
 
-				if (endParen == -1)
-					endParen = text.indexOf("]");
+				if (endParenthesis == -1)
+					endParenthesis = text.indexOf("]");
 
-				if (startParen != -1 && endParen != -1
-						&& endParen > startParen + 1) {
+				if (startParenthesis != -1 && endParenthesis != -1
+						&& endParenthesis > startParenthesis + 1) {
 					log.debug("X: Column " + i + " has pts indicated");
-					points = text.substring(startParen + 1, endParen);
+					points = text.substring(startParenthesis + 1, endParenthesis);
 					log.debug("X: Column " + i + " points are " + points);
-					name = text.substring(0, startParen);
+					name = text.substring(0, startParenthesis);
 					log.debug("X: Column " + i + " name is " + points);
 
 					if (name != null)
@@ -1213,14 +1215,14 @@ public class ImportExportUtility {
 				
 				String name = text;
 				
-				int startParen = text.indexOf("[");
-				int endParen = text.indexOf("pts]");
+				int startParenthesis = text.indexOf("[");
+				int endParenthesis = text.indexOf("pts]");
 				
-				if (endParen == -1)
-					endParen = text.indexOf("]");
+				if (endParenthesis == -1)
+					endParenthesis = text.indexOf("]");
 				
-				if (startParen != -1 && endParen != -1 && endParen > startParen+1) {
-					name = text.substring(0, startParen);
+				if (startParenthesis != -1 && endParenthesis != -1 && endParenthesis > startParenthesis+1) {
+					name = text.substring(0, startParenthesis);
 					
 					if (name != null)
 						name = name.trim();
