@@ -1247,7 +1247,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			authModel.setUserAbleToGrade(Boolean.valueOf(isUserAbleToGrade));
 			authModel.setUserAbleToEditAssessments(Boolean.valueOf(authz.isUserAbleToEditAssessments(gradebookUids[i])));
 			authModel.setUserAbleToViewOwnGrades(Boolean.valueOf(isUserAbleToViewOwnGrades));
-			authModel.setUserHasGraderPermissions(Boolean.valueOf(authz.isUserHasGraderPermissions(gradebook.getId())));
+			authModel.setUserHasGraderPermissions(Boolean.valueOf(authz.hasUserGraderPermissions(gradebook.getId())));
 			authModel.setNewGradebook(Boolean.valueOf(isNewGradebook));
 			authModel.setPlacementId(getPlacementId());
 			
@@ -1648,10 +1648,20 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		int totalUsers = 0;
 		Site site = getSite();
 		String siteId = site == null ? null : site.getId();
+		
+		// Do a check to make sure we only show data to TAs and or Instructors
+		
 
+		// Checking if the current user is an Instructor
 		boolean isUserAuthorizedToGradeAll = authz.isUserAbleToGradeAll(gradebook.getUid());
+		
 		boolean isLimitedToSection = false;
 		Set<String> authorizedGroups = new HashSet<String>();
+		
+		// sectionUuid is only set if a section was selected from the multigrade section pull down selection
+		
+		// If the user is a TA, and that TA has not been assigned to a section via the 
+		// section info tool and the uer is not an instructor, we don't show anything
 		if (sectionUuid != null) {
 			if (!authz.isUserTAinSection(sectionUuid) && !authz.isUserAbleToGradeAll(gradebookUid))
 				return new BasePagingLoadResult<X>(rows, 0, totalUsers);
@@ -2681,7 +2691,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		model.setUserAbleToGrade(isUserAbleToGrade);
 		model.setUserAbleToEditAssessments(authz.isUserAbleToEditAssessments(gradebookUid));
 		model.setUserAbleToViewOwnGrades(isUserAbleToViewOwnGrades);
-		model.setUserHasGraderPermissions(authz.isUserHasGraderPermissions(gradebook.getId()));
+		model.setUserHasGraderPermissions(authz.hasUserGraderPermissions(gradebook.getId()));
 		
 		ConfigurationModel configModel = new ConfigurationModel();
 

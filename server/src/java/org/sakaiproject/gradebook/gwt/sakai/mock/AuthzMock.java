@@ -253,12 +253,12 @@ public class AuthzMock extends Gradebook2AuthzImpl {
 		return false;
 	}
 
-	public boolean isUserHasGraderPermissions(Long gradebookId) {
+	public boolean hasUserGraderPermissions(Long gradebookId) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	public boolean isUserHasGraderPermissions(Long gradebookId, String userUid) {
+	public boolean hasUserGraderPermissions(Long gradebookId, String userUid) {
 		// TODO Auto-generated method stub
 		return false;
 	}

@@ -48,26 +48,6 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 	// New helper method to replace old code in getWorkingEnrollments
 	public Map<String, EnrollmentRecord> findEnrollmentRecords(String gradebookUid, Long gradebookId, String optionalSearchString, String optionalSectionUid) {
 
-		// FIXME: Strategy here is copied from old code -- that is, get all the
-		// site members (regardless of groups), then replace those that have
-		// a group. What would potentially be more efficient would be to get all
-		// the group members, then call
-		// sectionAwareness.getUnassignedMembersInRole
-		/*
-		 * List<EnrollmentRecord> filteredEnrollments = new
-		 * ArrayList<EnrollmentRecord>(); if (optionalSearchString != null)
-		 * filteredEnrollments =
-		 * sectionAwareness.findSiteMembersInRole(gradebookUid, Role.STUDENT,
-		 * optionalSearchString); else filteredEnrollments =
-		 * sectionAwareness.getSiteMembersInRole(gradebookUid, Role.STUDENT);
-		 * 
-		 * 
-		 * Map<String, EnrollmentRecord> enrollMap = new HashMap<String,
-		 * EnrollmentRecord>(); for (EnrollmentRecord record :
-		 * filteredEnrollments) { enrollMap.put(record.getUser().getUserUid(),
-		 * record); }
-		 */
-
 		if (optionalSearchString != null)
 			optionalSearchString = optionalSearchString.toUpperCase();
 
@@ -126,17 +106,11 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 		return enrollMap;
 	}
 
-	/*
-	 * Old code from the original gradebook project, slightly refactored
-	 */
 	public List<CourseSection> getAllSections(String siteContext) {
 
 		return sectionAwareness.getSections(siteContext);
 	}
 
-	/*
-	 * Old code from the original gradebook project, slightly refactored
-	 */
 	public List<String> getViewableGroupsForUser(Long gradebookId, String userId, List<String> groupIds) {
 
 		if (gradebookId == null || userId == null)
@@ -167,9 +141,6 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 
 	}
 
-	/*
-	 * Old code from the original gradebook project, slightly refactored
-	 */
 	public List<CourseSection> getViewableSections(String gradebookUid, Long gradebookId) {
 
 		List<CourseSection> viewableSections = new ArrayList<CourseSection>();
@@ -194,7 +165,7 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 
 		String userUid = authn.getUserUid();
 
-		if (isUserHasGraderPermissions(gradebookId, userUid)) {
+		if (hasUserGraderPermissions(gradebookId, userUid)) {
 			List<String> viewableSectionIds = getViewableGroupsForUser(gradebookId, userUid, new ArrayList<String>(sectionIdCourseSectionMap.keySet()));
 			if (viewableSectionIds != null && !viewableSectionIds.isEmpty()) {
 				for (String sectionUuid : viewableSectionIds) {
@@ -247,14 +218,14 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 		return sectionAwareness.isSiteMemberInRole(gradebookUid, userUid, Role.INSTRUCTOR);
 	}
 
-	public boolean isUserHasGraderPermissions(Long gradebookId) {
+	public boolean hasUserGraderPermissions(Long gradebookId) {
 
 		String userUid = authn.getUserUid();
 		List<Permission> permissions = getGraderPermissionsForUser(gradebookId, userUid);
 		return permissions != null && permissions.size() > 0;
 	}
 
-	public boolean isUserHasGraderPermissions(Long gradebookId, String userUid) {
+	public boolean hasUserGraderPermissions(Long gradebookId, String userUid) {
 
 		List<Permission> permissions = getGraderPermissionsForUser(gradebookId, userUid);
 		return permissions != null && permissions.size() > 0;
@@ -264,27 +235,6 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 
 		String userUid = authn.getUserUid();
 		return sectionAwareness.isSectionMemberInRole(sectionUid, userUid, Role.TA);
-	}
-
-	public List<Permission> getGraderPermissionsForUser(String gradebookUid, String userId) {
-
-		if (gradebookUid == null || userId == null) {
-			throw new IllegalArgumentException("Null gradebookUid or userId passed to getGraderPermissionsForUser");
-		}
-
-		Long gradebookId = gbToolService.getGradebook(gradebookUid).getId();
-
-		return gbToolService.getPermissionsForUser(gradebookId, userId);
-	}
-
-	public List<String> getViewableGroupsForUser(String gradebookUid, String userId, List<String> groupIds) {
-
-		if (gradebookUid == null || userId == null)
-			throw new IllegalArgumentException("Null parameter(s) in GradebookPermissionServiceImpl.getViewableSectionsForUser");
-
-		Long gradebookId = gbToolService.getGradebook(gradebookUid).getId();
-
-		return getViewableGroupsForUser(gradebookId, userId, groupIds);
 	}
 
 	public Map<Long, String> getAvailableItemsForStudent(String gradebookUid, String userId, String studentId, Collection<CourseSection> courseSections) throws IllegalArgumentException {
@@ -333,8 +283,10 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 		String userUid = authn.getUserUid();
 
 		if (isUserHasGraderPermissions(gradebookUid, userUid)) {
+			
+			Long gradebookId = gbToolService.getGradebook(gradebookUid).getId();
 
-			List<String> viewableSectionIds = getViewableGroupsForUser(gradebookUid, userUid, new ArrayList<String>(sectionIdCourseSectionMap.keySet()));
+			List<String> viewableSectionIds = getViewableGroupsForUser(gradebookId, userUid, new ArrayList<String>(sectionIdCourseSectionMap.keySet()));
 			
 			if (viewableSectionIds != null && !viewableSectionIds.isEmpty()) {
 			
@@ -488,8 +440,9 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 	}
 
 	private boolean isUserHasGraderPermissions(String gradebookUid, String userUid) {
-
-		List<Permission> permissions = getGraderPermissionsForUser(gradebookUid, userUid);
+		
+		Long gradebookId = gbToolService.getGradebook(gradebookUid).getId();
+		List<Permission> permissions = getGraderPermissionsForUser(gradebookId, userUid);
 		return permissions != null && permissions.size() > 0;
 	}
 
