@@ -1649,23 +1649,34 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		Site site = getSite();
 		String siteId = site == null ? null : site.getId();
 		
-		// Do a check to make sure we only show data to TAs and or Instructors
 		
+		// Check if the user is a TA and assigned to a section via the Section Info tool
+		List<CourseSection> courseSections = sectionAwareness.getSections(getSiteContext());
+		boolean isUserAssignedSectionTa = false;
+		
+		for(CourseSection courseSection : courseSections) {
+			isUserAssignedSectionTa = authz.isUserTAinSection(courseSection.getUuid());
+			if(isUserAssignedSectionTa) {
+				break;
+			}
+		}
+		// Is the user an Instructor or is the user a TA?
+		boolean isInstructor = authz.isUserAbleToGradeAll(gradebook.getUid());
+		
+		// Is the user a TA and was he/she granted view/grade access via the Grader Permission UI?
+		boolean hasUserGraderPermissions = authz.hasUserGraderPermissions(gradebook.getId());
+		
+		// If the user doesn't have any of the necessary credentials we return an empty data set 
+		if(!isInstructor && !hasUserGraderPermissions && !isUserAssignedSectionTa) {
+			return new BasePagingLoadResult<X>(rows, 0, totalUsers);
+		}
 
-		// Checking if the current user is an Instructor
-		boolean isUserAuthorizedToGradeAll = authz.isUserAbleToGradeAll(gradebook.getUid());
-		
+
+		boolean isUserAuthorizedToGradeAll = authz.isUserAbleToGradeAll(gradebook.getUid());		
 		boolean isLimitedToSection = false;
 		Set<String> authorizedGroups = new HashSet<String>();
-		
-		// sectionUuid is only set if a section was selected from the multigrade section pull down selection
-		
-		// If the user is a TA, and that TA has not been assigned to a section via the 
-		// section info tool and the uer is not an instructor, we don't show anything
-		if (sectionUuid != null) {
-			if (!authz.isUserTAinSection(sectionUuid) && !authz.isUserAbleToGradeAll(gradebookUid))
-				return new BasePagingLoadResult<X>(rows, 0, totalUsers);
 
+		if (sectionUuid != null) {
 			authorizedGroups.add(sectionUuid);
 			isLimitedToSection = true;
 		}
