@@ -254,6 +254,23 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 
 		return gbToolService.getPermissionsForUser(gradebookId, userId);
 	}
+	
+	public boolean hasUserGraderPermission(Long gradebookId, String groupId) {
+
+		String userUid = authn.getUserUid();
+		
+		List<String> groupIds = new ArrayList<String>();
+		groupIds.add(groupId);
+		
+		List<Permission> permissions = gbToolService.getPermissionsForUserForGroup(gradebookId, userUid, groupIds);
+		
+		if(null != permissions && permissions.size() > 0) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
 
 	/*
 	 * 

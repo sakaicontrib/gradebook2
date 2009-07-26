@@ -111,7 +111,9 @@ public interface Gradebook2Authz {
 	 * @return true, if is user has grader permissions
 	 */
 	public boolean hasUserGraderPermissions(Long gradebookId);
-
+	
+	public boolean hasUserGraderPermission(Long gradebookId, String groupId);
+	
 	/**
 	 * Checks if is user has grader permissions.
 	 * 
