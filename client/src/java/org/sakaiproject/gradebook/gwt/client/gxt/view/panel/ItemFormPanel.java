@@ -350,10 +350,13 @@ public class ItemFormPanel extends ContentPanel {
 			formBindings.unbind();
 		}
 		
+		boolean isAllowedToEdit = DataTypeConversionUtil.checkBoolean(selectedGradebook.isUserAbleToEditAssessments());
+		
+		
 		okButton.setText(i18n.saveButton());
 		okButton.setData(selectionTypeField, SelectionType.SAVE);
-		okButton.setVisible(itemModel != null && itemModel.isEditable());
-		okCloseButton.setVisible(itemModel != null && itemModel.isEditable());
+		okButton.setVisible(isAllowedToEdit && itemModel != null && itemModel.isEditable());
+		okCloseButton.setVisible(isAllowedToEdit && itemModel != null && itemModel.isEditable());
 		okCloseButton.setData(selectionTypeField, SelectionType.SAVECLOSE);
 		okCloseButton.setText(i18n.saveAndCloseButton());
 		
@@ -736,6 +739,7 @@ public class ItemFormPanel extends ContentPanel {
 		
 		CategoryType categoryType = selectedGradebook.getGradebookItemModel().getCategoryType();
 		
+		boolean isAllowedToEdit = DataTypeConversionUtil.checkBoolean(selectedGradebook.isUserAbleToEditAssessments());
 		boolean hasCategories = categoryType != CategoryType.NO_CATEGORIES;
 		boolean hasWeights = categoryType == CategoryType.WEIGHTED_CATEGORIES;
 		boolean isNotGradebook = itemType != Type.GRADEBOOK;
@@ -763,14 +767,9 @@ public class ItemFormPanel extends ContentPanel {
 				break;
 			case CATEGORY:
 				category = itemModel;
-				//if (category != null && category.getItemType() == Type.CATEGORY)
-				//	isPercentCategoryVisible = hasWeights && (!DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments()) || isExtraCredit);
 				break;
 			case ITEM:
 				category = itemModel.getParent();
-				
-				//if (category != null && category.getItemType() == Type.CATEGORY)
-				//	isPercentCategoryVisible = hasWeights && (!DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments()) || isExtraCredit);
 				break;
 			default:
 				isPercentCategoryVisible = (hasWeights && isExtraCredit) && isItem;
@@ -783,20 +782,20 @@ public class ItemFormPanel extends ContentPanel {
 			isPercentCategoryVisible = hasWeights && isItem;
 		}
 		
-		initField(nameField, isEditable && !isDelete && !isExternal, true);
-		initField(pointsField, !isDelete && !isExternal, isEditable && isItem);
-		initField(percentCategoryField, !isDelete && (isItem || isCreateNewItem), isEditable && isPercentCategoryVisible);
-		initField(percentCourseGradeField, !isDelete, isEditable && isCategory && hasWeights);
-		initField(equallyWeightChildrenField, !isDelete, isEditable && isCategory && hasWeights);
-		initField(extraCreditField, !isDelete, isEditable && isNotGradebook);
-		initField(dropLowestField, !isDelete, isEditable && isCategory);
-		initField(dueDateField, !isDelete && !isExternal, isEditable && isItem);
-		initField(includedField, !isDelete, isEditable && isNotGradebook);
-		initField(releasedField, !isDelete, isEditable && isItem);
-		initField(releaseGradesField, !isDelete, isEditable && !isNotGradebook);
-		initField(categoryPicker, !isDelete, isEditable && hasCategories && isItem);
-		initField(categoryTypePicker, true, isEditable && !isNotGradebook);
-		initField(gradeTypePicker, true, isEditable && !isNotGradebook);
+		initField(nameField, isAllowedToEdit && isEditable && !isDelete && !isExternal, true);
+		initField(pointsField, isAllowedToEdit && !isDelete && !isExternal, isEditable && isItem);
+		initField(percentCategoryField, isAllowedToEdit && !isDelete && (isItem || isCreateNewItem), isEditable && isPercentCategoryVisible);
+		initField(percentCourseGradeField, isAllowedToEdit && !isDelete, isEditable && isCategory && hasWeights);
+		initField(equallyWeightChildrenField, isAllowedToEdit && !isDelete, isEditable && isCategory && hasWeights);
+		initField(extraCreditField, isAllowedToEdit && !isDelete, isEditable && isNotGradebook);
+		initField(dropLowestField, isAllowedToEdit && !isDelete, isEditable && isCategory);
+		initField(dueDateField, isAllowedToEdit && !isDelete && !isExternal, isEditable && isItem);
+		initField(includedField, isAllowedToEdit && !isDelete, isEditable && isNotGradebook);
+		initField(releasedField, isAllowedToEdit && !isDelete, isEditable && isItem);
+		initField(releaseGradesField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
+		initField(categoryPicker, isAllowedToEdit && !isDelete, isEditable && hasCategories && isItem);
+		initField(categoryTypePicker, isAllowedToEdit, isEditable && !isNotGradebook);
+		initField(gradeTypePicker, isAllowedToEdit, isEditable && !isNotGradebook);
 		initField(sourceField, false, isEditable && isItem);
 	}
 	
