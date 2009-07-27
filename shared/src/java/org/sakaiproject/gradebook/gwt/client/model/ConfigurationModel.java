@@ -10,7 +10,6 @@ import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
-import com.extjs.gxt.ui.client.state.StateManager;
 
 public class ConfigurationModel extends BaseModel {
 
@@ -122,7 +121,7 @@ public class ConfigurationModel extends BaseModel {
 		set(getColumnWidthId(gridId, columnId), String.valueOf(width));
 	}
 	
-	public void setSelectedMultigradeColumns(Set<String> visibleStaticIdSet, List<ItemModel> selectedColumns) {
+	/*public void setSelectedMultigradeColumns(Set<String> visibleStaticIdSet, List<ItemModel> selectedColumns) {
 		
 		StringBuilder builder = new StringBuilder();
 		if (selectedColumns != null) {
@@ -137,7 +136,7 @@ public class ConfigurationModel extends BaseModel {
 		}
 		
 		set(AppConstants.SELECTED_COLUMNS, builder.toString());
-	}
+	}*/
 	
 	public void setSortDirection(String gridId, Boolean isAscending) {
 		set(getAscendingId(gridId), String.valueOf(isAscending));
@@ -153,7 +152,7 @@ public class ConfigurationModel extends BaseModel {
 		return new StringBuilder().append(gridId).append(AppConstants.SORT_DIRECTION).toString();
 	}
 	
-	private String getColumnHiddenId(String gridId, String columnId) {
+	public static String getColumnHiddenId(String gridId, String columnId) {
 		return new StringBuilder().append(gridId).append(":").append(columnId).append(AppConstants.HIDDEN_SUFFIX).toString();
 	}
 	

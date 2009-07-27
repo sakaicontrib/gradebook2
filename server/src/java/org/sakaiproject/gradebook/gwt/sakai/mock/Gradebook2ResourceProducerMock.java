@@ -10,6 +10,7 @@ import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
+import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
@@ -41,13 +42,12 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 		producer.setService(service);
 		
 		try {
-
+			AuthModel authModel = service.getAuthorization();
+			
 			ApplicationModel applicationModel = service.getApplicationModel();
 
 			GradebookModel gbModel = applicationModel.getGradebookModels().get(0);
-			
-			//GradebookModel gbModel = service.getGradebook("emptyid");
-			
+
 			ItemModel gradebook = gbModel.getGradebookItemModel();
 			
 			gradebook.setName("Test Gradebook");

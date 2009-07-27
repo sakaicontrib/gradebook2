@@ -48,6 +48,8 @@ public class MultigradeView extends View {
 	private ListStore<StudentModel> multigradeStore;
 	private Listener<StoreEvent> storeListener;
 	
+	//private GradeType currentGradeType;
+	
 	public MultigradeView(Controller controller, I18nConstants i18n) {
 		super(controller);
 		storeListener = new Listener<StoreEvent>() {
@@ -141,6 +143,12 @@ public class MultigradeView extends View {
 			break;
 		case REFRESH_COURSE_GRADES:
 			onRefreshCourseGrades();
+			break;
+		case REFRESH_GRADEBOOK_ITEMS:
+			onRefreshGradebookItems((GradebookModel)event.data);
+			break;
+		case REFRESH_GRADEBOOK_SETUP:
+			onRefreshGradebookSetup((GradebookModel)event.data);
 			break;
 		case SHOW_COLUMNS:
 			onShowColumns((ShowColumnsEvent)event.data);
@@ -249,6 +257,14 @@ public class MultigradeView extends View {
 	
 	protected void onRefreshCourseGrades() {
 		multigrade.onRefreshCourseGrades();
+	}
+	
+	protected void onRefreshGradebookItems(GradebookModel gradebookModel) {
+		multigrade.onRefreshGradebookItems(gradebookModel);
+	}
+	
+	protected void onRefreshGradebookSetup(GradebookModel gradebookModel) {
+		multigrade.onRefreshGradebookSetup(gradebookModel);
 	}
 	
 	protected void onShowColumns(ShowColumnsEvent event) {

@@ -12,6 +12,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ItemTreePanel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModelComparer;
+import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -32,10 +33,15 @@ public class TreeView extends View {
 	private TreeLoader<ItemModel> treeLoader;
 	private TreeStore<ItemModel> treeStore;
 	
+	private GradebookModel selectedGradebook;
+	
+	private boolean isInitialized;
+	
 	public TreeView(Controller controller, I18nConstants i18n, boolean isEditable) {
 		super(controller);
 		this.treePanel = new ItemTreePanel(i18n, isEditable);
 		this.formPanel = new ItemFormPanel(i18n);
+		this.isInitialized = false;
 	}
 
 	@Override
@@ -77,6 +83,12 @@ public class TreeView extends View {
 		case NEW_ITEM:
 			onNewItem((ItemModel)event.data);
 			break;
+		case REFRESH_GRADEBOOK_ITEMS:
+			onRefreshGradebookItems((GradebookModel)event.data);
+			break;
+		case REFRESH_GRADEBOOK_SETUP:
+			onRefreshGradebookSetup((GradebookModel)event.data);
+			break;
 		case SELECT_ITEM:
 			onSelectItem((String)event.data);
 			break;
@@ -93,12 +105,12 @@ public class TreeView extends View {
 		case USER_CHANGE:
 			onUserChange((UserEntityAction<?>)event.data);
 			break;
-		case MASK_ITEM_TREE:
+		/*case MASK_ITEM_TREE:
 			onMaskItemTree();
 			break;
 		case UNMASK_ITEM_TREE:
 			onUnmaskItemTree();
-			break;
+			break;*/
 		}
 	}
 	
@@ -145,7 +157,11 @@ public class TreeView extends View {
 	}
 	
 	protected void onLoadItemTreeModel(GradebookModel selectedGradebook) {
-		//System.out.println("Tree View: Load Tree Model");
+		/*
+		if (isTreeRefreshUnnecessary(selectedGradebook)) 
+			return;
+		
+		onMaskItemTree();
 		treeStore.removeAll();
 		ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
 		ItemModel rootItemModel = new ItemModel();
@@ -154,11 +170,11 @@ public class TreeView extends View {
 		gradebookItemModel.setParent(rootItemModel);
 		rootItemModel.add(gradebookItemModel);
 		treePanel.onBeforeLoadItemTreeModel(selectedGradebook, rootItemModel);
-		//treeLoader.load(rootItemModel);
 		treePanel.onLoadItemTreeModel(selectedGradebook, treeLoader, rootItemModel);
 		formPanel.onLoadItemTreeModel(rootItemModel);
 		
 		treePanel.expandTrees();
+		onUnmaskItemTree();*/
 	}
 	
 	protected void onMaskItemTree() {
@@ -171,6 +187,27 @@ public class TreeView extends View {
 	
 	protected void onNewItem(ItemModel itemModel) {
 		formPanel.onNewItem(itemModel);
+	}
+	
+	protected void onRefreshGradebookItems(GradebookModel gradebookModel) {
+		onMaskItemTree();
+		treeStore.removeAll();
+		ItemModel gradebookItemModel = gradebookModel.getGradebookItemModel();
+		ItemModel rootItemModel = new ItemModel();
+		rootItemModel.setItemType(Type.ROOT);
+		rootItemModel.setName("Root");
+		gradebookItemModel.setParent(rootItemModel);
+		rootItemModel.add(gradebookItemModel);
+		treePanel.onBeforeLoadItemTreeModel(gradebookModel, rootItemModel);
+		treePanel.onRefreshGradebookItems(gradebookModel, treeLoader, rootItemModel);
+		formPanel.onLoadItemTreeModel(rootItemModel);
+		
+		treePanel.expandTrees();
+		onUnmaskItemTree();
+	}
+	
+	protected void onRefreshGradebookSetup(GradebookModel gradebookModel) {
+		treePanel.onRefreshGradebookSetup(gradebookModel);
 	}
 	
 	protected void onSelectItem(String itemModelId) {
@@ -229,11 +266,13 @@ public class TreeView extends View {
 			treeStore = new TreeStore<ItemModel>(treeLoader);
 			treeStore.setModelComparer(new ItemModelComparer());
 
-			treePanel.onTreeStoreInitialized(treeStore);
+			treePanel.onTreeStoreInitialized(treeStore, selectedGradebook.isUserAbleToEditAssessments());
 			formPanel.onTreeStoreInitialized(treeStore);
 		}
 
-		onLoadItemTreeModel(selectedGradebook);
+		//onLoadItemTreeModel(selectedGradebook);
+		onRefreshGradebookItems(selectedGradebook);
+		onRefreshGradebookSetup(selectedGradebook);
 	}
 	
 	protected void onUnmaskItemTree() {
@@ -279,6 +318,22 @@ public class TreeView extends View {
 
 	public void setTreeStore(TreeStore<ItemModel> treeStore) {
 		this.treeStore = treeStore;
+	}
+	
+
+	// Helper methods
+	
+	private boolean isTreeRefreshUnnecessary(GradebookModel selectedGradebook) {
+		// First thing we need to do here is decide whether we can avoid making expensive ui changes
+		ItemModel oldGradebookItemModel = this.selectedGradebook == null ? null : this.selectedGradebook.getGradebookItemModel();
+		ItemModel newGradebookItemModel = selectedGradebook == null ? null : selectedGradebook.getGradebookItemModel();
+		CategoryType oldCategoryType = oldGradebookItemModel == null ? null : oldGradebookItemModel.getCategoryType();
+		CategoryType newCategoryType = newGradebookItemModel == null ? null : newGradebookItemModel.getCategoryType();
+			
+		this.selectedGradebook = selectedGradebook;
+		
+		return (isInitialized && oldCategoryType != null && newCategoryType != null
+				&& oldCategoryType == newCategoryType);
 	}
 
 }

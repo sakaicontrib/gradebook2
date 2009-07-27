@@ -22,7 +22,9 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.model;
 
-public class FixedColumnModel extends EntityModel {
+import com.extjs.gxt.ui.client.data.BaseTreeModel;
+
+public class FixedColumnModel extends BaseTreeModel<FixedColumnModel> {
 
 	public enum Key {ID, NAME, ASSIGNMENT_ID, CATEGORY_ID, CATEGORY_NAME, WIDTH, POINTS, UNWEIGHTED, 
 		HIDDEN, EDITABLE, STUDENT_MODEL_KEY, EXTRA_CREDIT };
@@ -57,7 +59,6 @@ public class FixedColumnModel extends EntityModel {
 		setEditable(Boolean.TRUE);
 	}
 	
-	@Override
 	public String getIdentifier() {
 		return get(Key.ID.name());
 	}
@@ -154,12 +155,9 @@ public class FixedColumnModel extends EntityModel {
 	public void setExtraCredit(Boolean isExtraCredit) {
 		set(Key.EXTRA_CREDIT.name(), isExtraCredit);
 	}
-	
-	@Override
+
 	public String getDisplayName() {
 		return getName();
 	}
-
-
 
 }

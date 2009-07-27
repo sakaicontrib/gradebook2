@@ -7,6 +7,8 @@ import com.extjs.gxt.ui.client.store.Store;
 
 public class ItemUpdate {
 
+	public enum UpdateType { FIELD, SETUP };
+	
 	public Store store;
 	public Record record;
 	public ItemModel item;
@@ -14,6 +16,7 @@ public class ItemUpdate {
 	public Object oldValue;
 	public Object value;
 	public boolean close;
+	public UpdateType updateType;
 	
 	public ItemUpdate(Store store, Record record, ItemModel item, boolean close) {
 		this.store = store;
@@ -50,6 +53,14 @@ public class ItemUpdate {
 		}
 		
 		return item;
+	}
+
+	public UpdateType getUpdateType() {
+		return updateType;
+	}
+
+	public void setUpdateType(UpdateType updateType) {
+		this.updateType = updateType;
 	}
 	
 }

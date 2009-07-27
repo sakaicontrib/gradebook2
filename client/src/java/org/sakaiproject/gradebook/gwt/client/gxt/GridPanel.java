@@ -118,27 +118,7 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		setMonitorResize(true);
 	
 		this.defaultNumberFormat = DataTypeConversionUtil.getDefaultNumberFormat();
-		
-		addListener(GradebookEvents.Refresh.getEventType(), new Listener<BaseEvent>() {
 
-			public void handleEvent(BaseEvent be) {
-				switch (refreshAction) {
-				case REFRESHDATA:
-					if (pagingToolBar != null)
-						pagingToolBar.refresh();
-					break;
-				case REFRESHCOLUMNS:
-				case REFRESHLOCALCOLUMNS:
-				case REFRESHCOLUMNSANDDATA:
-					refreshGrid(refreshAction);
-					break;
-				}
-				refreshAction = RefreshAction.NONE;
-			}
-		
-		});
-		
-		
 		initListeners();
 
 		pagingToolBar = newPagingToolBar(DEFAULT_PAGE_SIZE);
@@ -186,6 +166,21 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		add(grid);
 	}
 
+	public void doRefresh(boolean useExistingColumnModel) {
+		switch (refreshAction) {
+		case REFRESHDATA:
+			if (pagingToolBar != null)
+				pagingToolBar.refresh();
+			break;
+		case REFRESHCOLUMNS:
+		case REFRESHLOCALCOLUMNS:
+		case REFRESHCOLUMNSANDDATA:
+			refreshGrid(refreshAction, useExistingColumnModel);
+			break;
+		}
+		refreshAction = RefreshAction.NONE;
+	}
+	
 	
 	protected FormPanel createForm() {
 		return null;
@@ -392,9 +387,10 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		return store;
 	}
 	
-	protected void refreshGrid(RefreshAction action) {
+	protected void refreshGrid(RefreshAction action, boolean useExistingColumnModel) {
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-		cm = newColumnModel(selectedGradebook);
+		if (!useExistingColumnModel)
+			cm = newColumnModel(selectedGradebook);
 		grid.reconfigure(store, cm);
 		grid.el().unmask();
 	}

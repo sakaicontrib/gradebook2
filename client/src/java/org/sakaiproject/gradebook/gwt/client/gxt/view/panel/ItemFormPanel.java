@@ -848,48 +848,6 @@ public class ItemFormPanel extends ContentPanel {
 
 								}
 								
-								
-								/*@Override
-								protected void onFieldChange(FieldEvent e) {									
-									ItemModel itemModel = (ItemModel)this.model;
-									//e.field.setEnabled(false);
-									
-									setChanges();
-									
-									String property = e.field.getName();
-									
-									record = store.getRecord(itemModel); //selectedItemModel);
-									record.beginEdit();
-									
-									if (property.equals(ItemModel.Key.CATEGORY_ID.name())) {
-										
-										ItemModel oldModel = (ItemModel)e.oldValue;
-										ItemModel newModel = (ItemModel)e.value;
-										
-										record.set(property, newModel.getCategoryId());
-		
-									} else if (property.equals(ItemModel.Key.CATEGORYTYPE.name())) {
-										
-										CategoryType oldCategoryType = getCategoryType((ModelData)e.oldValue);
-										CategoryType newCategoryType = getCategoryType((ModelData)e.value);
-										
-										record.set(property, newCategoryType);
-
-									} else if (property.equals(ItemModel.Key.GRADETYPE.name())) {
-										
-										GradeType oldGradeType = getGradeType((ModelData)e.oldValue);
-										GradeType newGradeType = getGradeType((ModelData)e.value);
-										
-										record.set(property, newGradeType);
-
-									} else {
-										record.set(property, e.value);
-									}
-									
-									//Dispatcher.forwardEvent(GradebookEvents.UpdateItem, new ItemUpdate(store, itemModel, e.field.getName(), e.oldValue, e.value));
-									
-								}*/
-								
 							};
 
 							if (name.equals(ItemModel.Key.CATEGORY_ID.name())) {
@@ -1083,6 +1041,7 @@ public class ItemFormPanel extends ContentPanel {
 						case SAVECLOSE:
 							close = true;
 						case SAVE:
+							ItemModel model = selectedItemModel;
 							if (selectedItemModel != null) 
 								record = treeStore.getRecord(selectedItemModel);
 							if (nameField.validate() 

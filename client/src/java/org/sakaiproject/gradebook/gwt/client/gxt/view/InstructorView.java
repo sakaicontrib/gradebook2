@@ -311,8 +311,11 @@ public class InstructorView extends AppView {
 	
 	@Override
 	protected void onLoadItemTreeModel(GradebookModel selectedGradebook) {
-		if (addCategoryMenuItem != null)
+		/*if (addCategoryMenuItem != null)
 			addCategoryMenuItem.setVisible(selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
+	
+		if (gradeScalePanel != null) 
+			gradeScalePanel.onLoadItemTreeModel(selectedGradebook);*/
 	}
 	
 	@Override
@@ -330,6 +333,22 @@ public class InstructorView extends AppView {
 		
 	}
 
+	@Override
+	protected void onRefreshGradebookItems(GradebookModel gradebookModel) {
+		
+	}
+	
+	@Override
+	protected void onRefreshGradebookSetup(GradebookModel gradebookModel) {
+		if (addCategoryMenuItem != null)
+			addCategoryMenuItem.setVisible(gradebookModel.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
+	}
+	
+	@Override
+	protected void onRefreshGradeScale(GradebookModel gradebookModel) {
+		if (gradeScalePanel != null) 
+			gradeScalePanel.onRefreshGradeScale(gradebookModel);
+	}
 	
 	@Override
 	protected void onSelectLearner(StudentModel learner) {
@@ -357,7 +376,7 @@ public class InstructorView extends AppView {
 	@Override
 	protected void onShowGradeScale(Boolean show) {
 		if (gradeScalePanel == null) {
-			gradeScalePanel = new GradeScalePanel(i18n, isEditable);
+			gradeScalePanel = new GradeScalePanel(i18n, isEditable, treeView);
 			eastLayoutContainer.add(gradeScalePanel);
 		}
 		onExpandEastPanel(EastCard.GRADE_SCALE);

@@ -57,6 +57,9 @@ public class AppController extends Controller {
 		registerEventTypes(GradebookEvents.NewItem.getEventType());
 		registerEventTypes(GradebookEvents.Notification.getEventType());
 		registerEventTypes(GradebookEvents.RefreshCourseGrades.getEventType());
+		registerEventTypes(GradebookEvents.RefreshGradebookItems.getEventType());
+		registerEventTypes(GradebookEvents.RefreshGradebookSetup.getEventType());
+		registerEventTypes(GradebookEvents.RefreshGradeScale.getEventType());
 		registerEventTypes(GradebookEvents.RevertItem.getEventType());
 		registerEventTypes(GradebookEvents.SelectDeleteItem.getEventType());
 		registerEventTypes(GradebookEvents.SelectLearner.getEventType());
@@ -121,6 +124,16 @@ public class AppController extends Controller {
 		case NEW_ITEM:
 			forwardToView(appView, event);
 			forwardToView(treeView, event);
+			break;
+		case REFRESH_GRADEBOOK_ITEMS:
+		case REFRESH_GRADEBOOK_SETUP:
+			forwardToView(multigradeView, event);
+			forwardToView(treeView, event);
+			forwardToView(appView, event);
+			break;
+		case REFRESH_GRADE_SCALE:
+			forwardToView(multigradeView, event);
+			forwardToView(appView, event);
 			break;
 		case REFRESH_COURSE_GRADES:
 			forwardToView(multigradeView, event);

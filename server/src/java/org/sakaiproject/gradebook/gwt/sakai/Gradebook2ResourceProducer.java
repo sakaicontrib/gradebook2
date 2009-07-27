@@ -120,6 +120,8 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 				return (Y)service.getStudentRows(uid, id, config, Boolean.FALSE);
 			case GRADE_EVENT:
 				return (Y)service.getGradeEvents(uid, id);
+			case GRADE_FORMAT:
+				return (Y)service.getGradeFormats(uid, id);
 			case GRADE_SCALE:
 				return (Y)service.getSelectedGradeMapping(uid);
 			case USER:

@@ -135,8 +135,7 @@ public class UserDirectoryServiceMock implements UserDirectoryService {
 	}
 
 	public User getCurrentUser() {
-		// TODO Auto-generated method stub
-		return null;
+		return createUserRecord(0);
 	}
 
 	public User getUser(String arg0) throws UserNotDefinedException {

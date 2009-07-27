@@ -176,7 +176,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		return (Long)getHibernateTemplate().execute(hc);
 			}
 
-	public Long createCategory(final Long gradebookId, final String name, final Double weight, final Integer dropLowest, final Boolean equalWeightAssignments, final Boolean isUnweighted, final Boolean isExtraCredit) 
+	public Long createCategory(final Long gradebookId, final String name, final Double weight, final Integer dropLowest, final Boolean equalWeightAssignments, final Boolean isUnweighted, final Boolean isExtraCredit, final Integer categoryOrder) 
 	throws ConflictingCategoryNameException, StaleObjectModificationException {
 		HibernateCallback hc = new HibernateCallback() {
 			public Object doInHibernate(Session session) throws HibernateException {
@@ -207,6 +207,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				ca.setUnweighted(isUnweighted);
 				ca.setRemoved(false);
 				ca.setExtraCredit(isExtraCredit);
+				ca.setCategoryOrder(categoryOrder);
 
 				Long id = (Long)session.save(ca);
 
@@ -2336,6 +2337,41 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 	public String getGradebookUid(Long id) {
 		return ((Gradebook)getHibernateTemplate().load(Gradebook.class, id)).getUid();
+	}
+	
+	public GradeMapping getGradeMapping(final Long id) {
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException, SQLException {
+				GradeMapping mapping = (GradeMapping)session.load(GradeMapping.class, id);
+
+				return mapping;
+			}
+		};
+
+		return (GradeMapping)getHibernateTemplate().execute(hc);
+	}
+	
+	public Set<GradeMapping> getGradeMappings(final Long id) {
+		
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException, SQLException {
+				Gradebook gradebook = (Gradebook)session.load(Gradebook.class, id);
+
+				if (gradebook == null)
+					return null;
+				
+				Set<GradeMapping> mappings = gradebook.getGradeMappings();
+				
+				// Loop through each one in order to ensure that these are fetched in session
+				for (GradeMapping mapping : mappings) {
+					
+				}
+				
+				return mappings;
+			}
+		};
+
+		return (Set<GradeMapping>)getHibernateTemplate().execute(hc);
 	}
 
 	protected LetterGradePercentMapping getLetterGradePercentMapping(

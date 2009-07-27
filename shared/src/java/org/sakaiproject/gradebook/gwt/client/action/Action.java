@@ -63,7 +63,7 @@ public abstract class Action extends EntityModel {
 		GRADE_EVENT("grade event"), USER("user"), PERMISSION_ENTRY("permission entry"),
 		SECTION("section"), PERMISSION_SECTIONS("permission sections"), LEARNER("learner"), LEARNER_ID("learner id"), ACTION("action"), ITEM("item"),
 		SPREADSHEET("spreadsheet"), SUBMISSION_VERIFICATION("submission verification"), 
-		STATISTICS("statistics");
+		STATISTICS("statistics"), GRADE_FORMAT("grade format");
 	
 		private String name;
 	

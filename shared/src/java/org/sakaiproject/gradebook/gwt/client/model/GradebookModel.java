@@ -193,6 +193,7 @@ public class GradebookModel extends EntityModel implements IsSerializable {
 		this.isUserAbleToEditAssessments = isUserAbleToEditAssessments;
 	}
 
+
 	public StudentModel getUserAsStudent() {
 		return userAsStudent;
 	}

@@ -109,6 +109,7 @@ public class ItemTreeTableBinder extends TreeTableBinder<ItemModel> {
 			break;
 		}
 		
+		//item.setChecked(true);
 		
 		return item;
 	}

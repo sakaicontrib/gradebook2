@@ -104,6 +104,9 @@ public interface Gradebook2Service {
 	
 	public <X extends BaseModel> ListLoadResult<X> getGradeEvents(String studentId, Long assignmentId);
 	
+	public <X extends BaseModel> ListLoadResult<X> getGradeFormats(String gradebookUid, 
+			Long gradebookId);
+	
 	public <X extends BaseModel> ListLoadResult<X> getCategories(String gradebookUid,
 			Long gradebookId, PagingLoadConfig config);
 	

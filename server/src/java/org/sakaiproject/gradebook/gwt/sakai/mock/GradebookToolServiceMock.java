@@ -319,7 +319,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		return assignment.getId();
 	}
 
-	public Long createCategory(Long gradebookId, String name, Double weight, Integer dropLowest, Boolean equalWeightAssignments, Boolean isUnweighted, Boolean isExtraCredit) throws RuntimeException {
+	public Long createCategory(Long gradebookId, String name, Double weight, Integer dropLowest, Boolean equalWeightAssignments, Boolean isUnweighted, Boolean isExtraCredit, Integer categoryOrder) throws RuntimeException {
 		Long id = Long.valueOf(categoryCount++);
 		int dl = dropLowest == null ? 0 : dropLowest.intValue();
 		Category category = new Category();
@@ -1765,6 +1765,14 @@ public class GradebookToolServiceMock implements GradebookToolService {
 	}
 	
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(final Long[] assignmentIds) {
+		return null;
+	}
+	
+	public Set<GradeMapping> getGradeMappings(Long id) {
+		return null;
+	}
+
+	public GradeMapping getGradeMapping(final Long id) {
 		return null;
 	}
 	

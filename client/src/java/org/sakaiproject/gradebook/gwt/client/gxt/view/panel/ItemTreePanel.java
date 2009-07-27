@@ -1,12 +1,7 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
@@ -49,7 +44,8 @@ import com.extjs.gxt.ui.client.binder.TreeBinder;
 import com.extjs.gxt.ui.client.binder.TreeTableBinder;
 import com.extjs.gxt.ui.client.core.El;
 import com.extjs.gxt.ui.client.data.BaseTreeLoader;
-import com.extjs.gxt.ui.client.data.BaseTreeModel;
+import com.extjs.gxt.ui.client.data.LoadEvent;
+import com.extjs.gxt.ui.client.data.Loader;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.TreeLoader;
 import com.extjs.gxt.ui.client.data.TreeModel;
@@ -57,10 +53,7 @@ import com.extjs.gxt.ui.client.data.TreeModelReader;
 import com.extjs.gxt.ui.client.dnd.TreeDragSource;
 import com.extjs.gxt.ui.client.dnd.TreeDropTarget;
 import com.extjs.gxt.ui.client.dnd.DND.Feedback;
-import com.extjs.gxt.ui.client.dnd.DND.Operation;
 import com.extjs.gxt.ui.client.dnd.DND.TreeSource;
-import com.extjs.gxt.ui.client.event.CheckChangedEvent;
-import com.extjs.gxt.ui.client.event.CheckChangedListener;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.DNDEvent;
 import com.extjs.gxt.ui.client.event.DNDListener;
@@ -108,7 +101,9 @@ public class ItemTreePanel extends ContentPanel {
 	private static int CHARACTER_WIDTH = 7;
 		
 	// Listeners
-	private CheckChangedListener checkChangedListener;
+	//private CheckChangedListener checkChangedListener;
+	private Listener<TreeEvent> checkChangeEventListener;
+	private Listener<LoadEvent> loadEventListener;
 	private SelectionListener<MenuEvent> menuSelectionListener;
 	private SelectionChangedListener<ItemModel> selectionChangedListener;
 	//private Listener<TreeEvent> treeEventListener;
@@ -118,7 +113,7 @@ public class ItemTreePanel extends ContentPanel {
 	private Menu treeContextMenu;
 	private MenuItem addCategoryMenuItem, updateCategoryMenuItem, updateItemMenuItem, deleteCategoryMenuItem, deleteItemMenuItem;
 	private Tree learnerAttributeTree;
-	private Tree itemTree;
+	//private Tree itemTree;
 	private TreeTable treeTable;
 	private TreeTableView treeTableView;
 	private TreeTableBinder<ItemModel> treeTableBinder;
@@ -126,17 +121,13 @@ public class ItemTreePanel extends ContentPanel {
 	private TreeTableColumn percentCategoryColumn;
 	private TreeTableColumn pointsColumn;
 	private TreeTableColumnModel treeTableColumnModel;
-	private TreeBinder<BaseTreeModel<TreeModel>> treeBinder;
-	private TreeStore<BaseTreeModel<TreeModel>> staticColumnStore;
-
-	// We have to track which static columns are visible somewhere
-	private Set<String> fullStaticIdSet;
-	private Set<String> visibleStaticIdSet;
+	private TreeBinder<FixedColumnModel> treeBinder;
+	private TreeStore<FixedColumnModel> staticColumnStore;
 	
 	private boolean isLearnerAttributeTreeLoaded;
 	
 	private List<ItemModel> selectedItemModels;
-	private List<BaseTreeModel<TreeModel>> checkedSelection;
+	private List<FixedColumnModel> checkedSelection;
 	
 	private GradebookModel selectedGradebook;
 	
@@ -147,9 +138,9 @@ public class ItemTreePanel extends ContentPanel {
 		this.enableLayout = false;
 		this.i18n = i18n;
 		this.isEditable = isEditable;
-		this.fullStaticIdSet = new HashSet<String>();
+		//this.fullStaticIdSet = new HashSet<String>();
 		this.isLearnerAttributeTreeLoaded = false;
-		this.visibleStaticIdSet = new HashSet<String>();
+		//this.visibleStaticIdSet = new HashSet<String>();
 		setBorders(true);
 		setHeading(i18n.navigationPanelHeader());
 		setLayout(new FillLayout());
@@ -197,10 +188,11 @@ public class ItemTreePanel extends ContentPanel {
 	public void expandTrees() {
 		if (learnerAttributeTree != null)
 			learnerAttributeTree.expandAll();
-		if (itemTree != null)
-			itemTree.expandAll();
 		if (treeTable != null)
 			treeTable.expandAll();
+		
+		treeTable.addListener(Events.CheckChange, checkChangeEventListener);
+		learnerAttributeTree.addListener(Events.CheckChange, checkChangeEventListener);
 	}
 	
 	public void onBeforeLoadItemTreeModel(GradebookModel selectedGradebook, ItemModel rootItem) {
@@ -208,7 +200,7 @@ public class ItemTreePanel extends ContentPanel {
 	}
 	
 	public void onShowStaticColumn(String id) {
-		BaseTreeModel<TreeModel> model = staticColumnStore.findModel("id", id);
+		FixedColumnModel model = staticColumnStore.findModel("id", id);
 		TreeItem treeItem = (TreeItem)treeBinder.findItem(model);
 		treeItem.setChecked(true);
 	}
@@ -230,9 +222,8 @@ public class ItemTreePanel extends ContentPanel {
 	}
 	
 	public void onLoadItemTreeModel(GradebookModel selectedGradebook, TreeLoader<ItemModel> treeLoader, ItemModel rootItem) {
-		//System.out.println("ItemTreePanel: Load Item Tree Model");
-		this.selectedGradebook = selectedGradebook;
-		if (addCategoryMenuItem != null)
+		
+		/*if (addCategoryMenuItem != null)
 			addCategoryMenuItem.setVisible(selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
 		
 		ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
@@ -308,13 +299,98 @@ public class ItemTreePanel extends ContentPanel {
 			treeBinder.setCheckedSelection(checkedSelection);
 			
 			layout();
-		}
-	
-		//treeTable.addListener(Events.Add, treeTableEventListener);
+		}*/
 	}
 	
 	public void onMaskItemTree() {
 		treeTable.mask("Saving changes");
+	}
+	
+	public void onRefreshGradebookItems(GradebookModel gradebookModel, TreeLoader<ItemModel> treeLoader, ItemModel rootItem) {
+		ConfigurationModel configModel = gradebookModel.getConfigurationModel();
+
+		checkedSelection = new ArrayList<FixedColumnModel>();
+			
+		selectedItemModels = new ArrayList<ItemModel>();
+
+		// Deal with static visible columns
+		for (FixedColumnModel column : selectedGradebook.getColumns()) {
+			if (!configModel.isColumnHidden(AppConstants.ITEMTREE, column.getIdentifier(), false)) {
+				checkedSelection.add(column);
+			}
+		}
+			
+		// Deal with the dynamic columns now
+		ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
+		if (gradebookItemModel != null) {
+			boolean isEntireGradebookChecked = true;
+			for (ItemModel c1 : gradebookItemModel.getChildren()) {
+				switch (c1.getItemType()) {
+				case CATEGORY:
+					boolean isEntireCategoryChecked = true;
+					for (ItemModel c2 : c1.getChildren()) {
+						if (!configModel.isColumnHidden(AppConstants.ITEMTREE, c2.getIdentifier(), false))
+							selectedItemModels.add(c2);
+						else {
+							isEntireCategoryChecked = false;
+							isEntireGradebookChecked = false;
+						}
+					}
+					if (isEntireCategoryChecked)
+						selectedItemModels.add(c1);
+					break;
+				case ITEM:
+					if (!configModel.isColumnHidden(AppConstants.ITEMTREE, c1.getIdentifier(), false))
+						selectedItemModels.add(c1);
+					else {
+						isEntireCategoryChecked = false;
+						isEntireGradebookChecked = false;
+					}
+					break;
+				}
+			}
+			if (isEntireGradebookChecked)
+				selectedItemModels.add(gradebookItemModel);
+		}
+
+		treeTable.removeListener(Events.CheckChange, checkChangeEventListener);
+		
+		if (treeTable.isRendered()) {
+			treeLoader.addListener(Loader.Load, new Listener<LoadEvent>() {
+	
+				public void handleEvent(LoadEvent be) {
+					treeTableBinder.setCheckedSelection(selectedItemModels);
+				}
+			
+			});
+		}
+		treeLoader.load(rootItem);
+		loadLearnerAttributeTree(selectedGradebook);
+	}
+	
+	public void onRefreshGradebookSetup(GradebookModel gradebookModel) {
+		
+		if (addCategoryMenuItem != null)
+			addCategoryMenuItem.setVisible(gradebookModel.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
+		
+		ConfigurationModel configModel = gradebookModel.getConfigurationModel();
+		
+		switch (selectedGradebook.getGradebookItemModel().getCategoryType()) {
+		case NO_CATEGORIES:
+		case SIMPLE_CATEGORIES:
+			percentCourseGradeColumn.setHidden(true);
+			percentCategoryColumn.setHidden(true);
+			//percentCourseGradeColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE, String.valueOf(1), true));
+			//percentCategoryColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE, String.valueOf(2), true));
+			pointsColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE, String.valueOf(3), false));
+			break;
+		case WEIGHTED_CATEGORIES:
+			percentCourseGradeColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE, String.valueOf(1), false));
+			percentCategoryColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE, String.valueOf(2), false));
+			pointsColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE, String.valueOf(3), true));
+			break;
+		}
+		
 	}
 	
 	public void onSingleGrade() {
@@ -326,237 +402,217 @@ public class ItemTreePanel extends ContentPanel {
 		if (addCategoryMenuItem != null)
 			addCategoryMenuItem.setVisible(selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
 
-		//loadLearnerAttributeTree(selectedGradebook);
 		this.enableLayout = true;
 	}
 	
-	
-	private boolean isValidMove(ModelData activeItem, ModelData parentItem, ModelData targetItem) {
-		
-		if (activeItem != null) {
-			ItemModel a = (ItemModel)activeItem;
-		
-			if (targetItem != null) {
-				ItemModel t = (ItemModel)targetItem;
-				
-				return !(t.getItemType() == Type.ITEM && a.getItemType() == Type.CATEGORY);
-				
-			} else if (parentItem != null) {
-				ItemModel p = (ItemModel)parentItem;
-				
-				return !(p.getItemType() == Type.CATEGORY && a.getItemType() == Type.CATEGORY);
-			}
-		
-		}
-		
-		return false;
-	}
-	
-	
-	
-	public void onTreeStoreInitialized(TreeStore<ItemModel> treeStore) {
+	public void onTreeStoreInitialized(TreeStore<ItemModel> treeStore, Boolean isAbleToEdit) {
 		
 		treeTableBinder = new ItemTreeTableBinder(treeTable, treeStore);
 		treeTableBinder.addSelectionChangedListener(selectionChangedListener);
-		treeTableBinder.addCheckListener(checkChangedListener);
+		//treeTableBinder.addCheckListener(checkChangedListener);
 
-		TreeDragSource source = new TreeDragSource(treeTableBinder) {
-			
-			@Override
-			protected void onDragDrop(DNDEvent event) {
-
-			}
-			
-			@Override
-			protected void onDragStart(DNDEvent e) {
-				TreeItem item = tree.findItem(e.getTarget());
-				if (item == null || e.getTarget(".my-tree-joint", 3) != null) {
-					e.doit = false;
-					return;
+		// Only allow the user to reorder if s/he has the permission
+		if (DataTypeConversionUtil.checkBoolean(isAbleToEdit)) {
+		
+			TreeDragSource source = new TreeDragSource(treeTableBinder) {
+				
+				@Override
+				protected void onDragDrop(DNDEvent event) {
+	
 				}
-
-				boolean leaf = treeSource == TreeSource.LEAF
-						|| treeSource == TreeSource.BOTH;
-				boolean node = treeSource == TreeSource.NODE
-						|| treeSource == TreeSource.BOTH;
-
-				List<TreeItem> sel = tree.getSelectionModel()
-						.getSelectedItems();
-
-				if (sel.size() > 0) {
-					boolean ok = true;
-					for (TreeItem ti : sel) {
-						ItemModel m = (ItemModel)ti.getModel();
-						Type t = m.getItemType();
-						
-						if ((t != Type.GRADEBOOK)) {
-							continue;
-						}
-
-						ok = false;
-						break;
+				
+				@Override
+				protected void onDragStart(DNDEvent e) {
+					TreeItem item = tree.findItem(e.getTarget());
+					if (item == null || e.getTarget(".my-tree-joint", 3) != null) {
+						e.doit = false;
+						return;
 					}
-
-					if (ok) {
-						if (sel.get(0).getModel() != null) {
-							List models = new ArrayList();
-							for (TreeItem ti : sel) {
-								models.add(binder.getTreeStore().getModelState(
-										ti.getModel()));
+	
+					boolean leaf = treeSource == TreeSource.LEAF
+							|| treeSource == TreeSource.BOTH;
+					boolean node = treeSource == TreeSource.NODE
+							|| treeSource == TreeSource.BOTH;
+	
+					List<TreeItem> sel = tree.getSelectionModel()
+							.getSelectedItems();
+	
+					if (sel.size() > 0) {
+						boolean ok = true;
+						for (TreeItem ti : sel) {
+							ItemModel m = (ItemModel)ti.getModel();
+							Type t = m.getItemType();
+							
+							if ((t != Type.GRADEBOOK)) {
+								continue;
 							}
-							e.data = models;
-						} else {
-							e.data = sel;
+	
+							ok = false;
+							break;
 						}
-
-						e.doit = true;
-						e.status.update(Format.substitute(getStatusText(), sel
-								.size()));
-
+	
+						if (ok) {
+							if (sel.get(0).getModel() != null) {
+								List models = new ArrayList();
+								for (TreeItem ti : sel) {
+									models.add(binder.getTreeStore().getModelState(
+											ti.getModel()));
+								}
+								e.data = models;
+							} else {
+								e.data = sel;
+							}
+	
+							e.doit = true;
+							e.status.update(Format.substitute(getStatusText(), sel
+									.size()));
+	
+						} else {
+							e.doit = false;
+						}
+	
 					} else {
 						e.doit = false;
 					}
-
-				} else {
-					e.doit = false;
 				}
-			}
-		};
-		source.addDNDListener(new DNDListener() {
-			@Override
-			public void dragStart(DNDEvent e) {
-				TreeItem item = treeTable.findItem(e.getTarget());
-				if (item != null && item == treeTable.getRootItem().getItem(0)
-						&& treeTable.getRootItem().getItemCount() == 1) {
-					e.doit = false;
-					e.status.setStatus(false);
-					return;
+			};
+			source.addDNDListener(new DNDListener() {
+				@Override
+				public void dragStart(DNDEvent e) {
+					TreeItem item = treeTable.findItem(e.getTarget());
+					if (item != null && item == treeTable.getRootItem().getItem(0)
+							&& treeTable.getRootItem().getItemCount() == 1) {
+						e.doit = false;
+						e.status.setStatus(false);
+						return;
+					}
+					super.dragStart(e);
 				}
-				super.dragStart(e);
-			}
-			
-			
-		});
-
-		TreeDropTarget target = new TreeDropTarget(treeTableBinder) {
-
-			@Override
-			protected void appendModel(final ModelData p, final TreeModel model, final int index) {
 				
-				final ItemModel child = model.get("model");
-				child.setItemOrder(Integer.valueOf(index));
 				
-				Type childType = child.getItemType();
-				
-				if (childType == Type.GRADEBOOK)
-					return;
-				
-				if (p == null) {
-					return;
-				} else {
-					ItemModel destParent = (ItemModel)p;
-					ItemModel orgParent = child.getParent();
-					
-					Long destParentId = destParent == null ? null : destParent.getCategoryId();
-					Long orgParentId = orgParent == null ? null : orgParent.getCategoryId();
-					
-					Type parentType = destParent.getItemType();
-					
-					if (childType == Type.ITEM && parentType == Type.CATEGORY && destParentId != null && orgParentId != null
-							&& destParentId.compareTo(orgParentId) != 0)
-						child.setCategoryId(destParentId);
+			});
 	
-					Type allowedParentType = Type.CATEGORY;
+			TreeDropTarget target = new TreeDropTarget(treeTableBinder) {
+	
+				@Override
+				protected void appendModel(final ModelData p, final TreeModel model, final int index) {
 					
-					GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-					if (selectedGradebook.getGradebookItemModel().getCategoryType() == CategoryType.NO_CATEGORIES)
-						allowedParentType = Type.GRADEBOOK;
+					final ItemModel child = model.get("model");
+					child.setItemOrder(Integer.valueOf(index));
 					
-					if (childType == Type.ITEM && parentType != allowedParentType)
+					Type childType = child.getItemType();
+					
+					if (childType == Type.GRADEBOOK)
 						return;
-					if (childType == Type.CATEGORY && parentType != Type.GRADEBOOK)
-						return;
-					if (parentType == Type.ROOT)
-						return;
 					
-				}
-				
-				Dispatcher.forwardEvent(GradebookEvents.MaskItemTree.getEventType());
-				
-				Gradebook2RPCServiceAsync service = Registry.get("service");
-				AsyncCallback<ItemModel> callback = new AsyncCallback<ItemModel>() {
-
-					public void onFailure(Throwable caught) {
-						//onUpdateItemFailure(event, caught);
-						Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
-					}
-					
-					public void onSuccess(ItemModel result) {
-						Dispatcher.forwardEvent(GradebookEvents.BeginItemUpdates.getEventType());
+					if (p == null) {
+						return;
+					} else {
+						ItemModel destParent = (ItemModel)p;
+						ItemModel orgParent = child.getParent();
 						
-						ItemModel activeItem = ItemModelProcessor.getActiveItem(result);
+						Long destParentId = destParent == null ? null : destParent.getCategoryId();
+						Long orgParentId = orgParent == null ? null : orgParent.getCategoryId();
 						
-						int realIndex = activeItem.getItemOrder().intValue();
+						Type parentType = destParent.getItemType();
 						
-						if (binder != null) {
-							ModelData m = (ModelData) model.get("model");
-							ModelData px = binder.getTreeStore().getParent(m);
-							if (px != null) {
-								ItemModel pxi = (ItemModel)px;
-								
-								//if (pxi.equals((ItemModel)p))
-								//	realIndex--;
-								
-								binder.getTreeStore().remove(px, m);
-							} else {
-								binder.getTreeStore().remove(m);
-							}
-						} 
-						
-						if (p == null) {
-							binder.getTreeStore().insert(activeItem, realIndex, false);
-						} else {
-							binder.getTreeStore().insert(p, activeItem, realIndex, false);
-						}
-						List<TreeModel> children = model.getChildren();
-						for (int i = 0; i < children.size(); i++) {
-							appendModel(activeItem, children.get(i), i);
-						}
-						
-						ItemModelProcessor processor = new ItemModelProcessor(result) {
-							
-							public void doGradebook(ItemModel itemModel) {
-								if (!itemModel.isActive())
-									binder.getTreeStore().update(itemModel);
-							}
-							
-							public void doCategory(ItemModel itemModel) {
-								if (!itemModel.isActive())
-									binder.getTreeStore().update(itemModel);
-							}
-							
-							public void doItem(ItemModel itemModel) {
-								if (!itemModel.isActive())
-									binder.getTreeStore().update(itemModel);
-							}
-							
-						};
-						
-						processor.process();
-						
-						Dispatcher.forwardEvent(GradebookEvents.EndItemUpdates.getEventType());
-						Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
-					}
-				};
-				
-				service.update((ItemModel)child, EntityType.ITEM, null, SecureToken.get(), callback);
-
-			}
-		};
+						if (childType == Type.ITEM && parentType == Type.CATEGORY && destParentId != null && orgParentId != null
+								&& destParentId.compareTo(orgParentId) != 0)
+							child.setCategoryId(destParentId);
 		
-		target.setAllowSelfAsSource(true);
-		target.setFeedback(Feedback.BOTH); 
-		source.setTreeSource(TreeSource.LEAF);
+						Type allowedParentType = Type.CATEGORY;
+						
+						GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+						if (selectedGradebook.getGradebookItemModel().getCategoryType() == CategoryType.NO_CATEGORIES)
+							allowedParentType = Type.GRADEBOOK;
+						
+						if (childType == Type.ITEM && parentType != allowedParentType)
+							return;
+						if (childType == Type.CATEGORY && parentType != Type.GRADEBOOK)
+							return;
+						if (parentType == Type.ROOT)
+							return;
+						
+					}
+					
+					Dispatcher.forwardEvent(GradebookEvents.MaskItemTree.getEventType());
+					
+					Gradebook2RPCServiceAsync service = Registry.get("service");
+					AsyncCallback<ItemModel> callback = new AsyncCallback<ItemModel>() {
+	
+						public void onFailure(Throwable caught) {
+							//onUpdateItemFailure(event, caught);
+							Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
+						}
+						
+						public void onSuccess(ItemModel result) {
+							Dispatcher.forwardEvent(GradebookEvents.BeginItemUpdates.getEventType());
+							
+							ItemModel activeItem = ItemModelProcessor.getActiveItem(result);
+							
+							int realIndex = activeItem.getItemOrder().intValue();
+							
+							if (binder != null) {
+								ModelData m = (ModelData) model.get("model");
+								ModelData px = binder.getTreeStore().getParent(m);
+								if (px != null) {
+									ItemModel pxi = (ItemModel)px;
+									
+									//if (pxi.equals((ItemModel)p))
+									//	realIndex--;
+									
+									binder.getTreeStore().remove(px, m);
+								} else {
+									binder.getTreeStore().remove(m);
+								}
+							} 
+							
+							if (p == null) {
+								binder.getTreeStore().insert(activeItem, realIndex, false);
+							} else {
+								binder.getTreeStore().insert(p, activeItem, realIndex, false);
+							}
+							List<TreeModel> children = model.getChildren();
+							for (int i = 0; i < children.size(); i++) {
+								appendModel(activeItem, children.get(i), i);
+							}
+							
+							ItemModelProcessor processor = new ItemModelProcessor(result) {
+								
+								public void doGradebook(ItemModel itemModel) {
+									if (!itemModel.isActive())
+										binder.getTreeStore().update(itemModel);
+								}
+								
+								public void doCategory(ItemModel itemModel) {
+									if (!itemModel.isActive())
+										binder.getTreeStore().update(itemModel);
+								}
+								
+								public void doItem(ItemModel itemModel) {
+									if (!itemModel.isActive())
+										binder.getTreeStore().update(itemModel);
+								}
+								
+							};
+							
+							processor.process();
+							
+							Dispatcher.forwardEvent(GradebookEvents.EndItemUpdates.getEventType());
+							Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
+						}
+					};
+					
+					service.update((ItemModel)child, EntityType.ITEM, null, SecureToken.get(), callback);
+	
+				}
+			};
+			
+			target.setAllowSelfAsSource(true);
+			target.setFeedback(Feedback.BOTH); 
+			source.setTreeSource(TreeSource.LEAF);
+		
+		}
 	}
 
 	public void onUnmaskItemTree() {
@@ -639,8 +695,10 @@ public class ItemTreePanel extends ContentPanel {
 			protected void onRender(Element target, int index) {
 				super.onRender(target, index);
 				Accessibility.setState(el().dom, "aria-labelledby", "itemtreelabel");
-				treeTableBinder.setCheckedSelection(selectedItemModels);
+				if (selectedItemModels != null)
+					treeTableBinder.setCheckedSelection(selectedItemModels);
 				expandAll();
+				treeTable.addListener(Events.CheckChange, checkChangeEventListener);
 			}
 		};
 
@@ -714,7 +772,7 @@ public class ItemTreePanel extends ContentPanel {
 		
 		//treeTable.addListener(Events.Add, treeTableEventListener);
 		treeTable.addListener(Events.RowDoubleClick, treeTableEventListener);
-
+		
 		treeTable.setSelectionModel(new TreeSelectionModel(SelectionMode.SINGLE));
 		if (isEditable)
 			treeTable.setContextMenu(newTreeContextMenu(i18n)); 
@@ -735,6 +793,8 @@ public class ItemTreePanel extends ContentPanel {
 			    learnerAttributeTree.setHeight(ItemTreePanel.this.getHeight(true));
 			    
 			    expandAll();
+			    
+			    learnerAttributeTree.addListener(Events.CheckChange, checkChangeEventListener);
 			}
 		};
 		learnerAttributeTree.getStyle().setNodeOpenIconStyle("gbAttrIcon");
@@ -743,25 +803,6 @@ public class ItemTreePanel extends ContentPanel {
 		learnerAttributeTree.setCheckable(true);
 		learnerAttributeTree.setCheckStyle(CheckCascade.CHILDREN);
 		learnerAttributeTree.setSelectionModel(new TreeSelectionModel(SelectionMode.SINGLE));
-		learnerAttributeTree.addListener(Events.CheckChange, new Listener<TreeEvent>() {
-
-			public void handleEvent(TreeEvent te) {
-				TreeItem item = te.item;
-				ModelData model = te.item.getModel();
-				String id = model.get("id");
-				
-				if (id != null) {
-					if (item.isChecked())
-						visibleStaticIdSet.add(id);
-					else
-						visibleStaticIdSet.remove(id);
-				
-					Dispatcher.forwardEvent(GradebookEvents.ShowColumns.getEventType(), 
-							new ShowColumnsEvent(false, fullStaticIdSet, visibleStaticIdSet, null));
-				}
-			}
-			
-		});
 		
 		//itemTree.addListener(Events.SelectionChange, treeEventListener);
 		//itemTree.addListener(Events.RowDoubleClick, treeEventListener);
@@ -801,55 +842,44 @@ public class ItemTreePanel extends ContentPanel {
 		
 		TreeLoader loader = new BaseTreeLoader(new TreeModelReader());
 		
-		BaseTreeModel<TreeModel> root = new BaseTreeModel<TreeModel>();
-		Map<String, Object> properties = new HashMap<String, Object>();
-		properties.put("name", "Learner Attributes");
-		properties.put("id", "learnerAttributes");
-		BaseTreeModel<TreeModel> learnerAttributes = new BaseTreeModel<TreeModel>(properties);
+		FixedColumnModel root = new FixedColumnModel();
+
+		FixedColumnModel learnerAttributes = new FixedColumnModel();
+		learnerAttributes.setName("Learner Attributes");
+		learnerAttributes.setIdentifier("learnerAttributes");
 		learnerAttributes.setParent(root);
 		root.add(learnerAttributes);
-		
-		properties = new HashMap<String, Object>();
-		properties.put("name", "Grades");
-		properties.put("id", "gradingColumns");
-		BaseTreeModel<TreeModel> gradingColumns = new BaseTreeModel<TreeModel>(properties);
+
+		FixedColumnModel gradingColumns = new FixedColumnModel();
+		gradingColumns.setName("Grades");
+		gradingColumns.setIdentifier("gradingColumns");
 		gradingColumns.setParent(root);
 		root.add(gradingColumns);
 		
-		checkedSelection = new ArrayList<BaseTreeModel<TreeModel>>();
 		
 		//fullStaticIdSet.clear();
-		for (org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel column : selectedGradebook.getColumns()) {
-			properties = new HashMap<String, Object>();
-			properties.put("name", column.getName());
-			properties.put("id", column.getIdentifier());
-			properties.put("hidden", column.isHidden());
-			
-			//if (column.isHidden() == null || !column.isHidden().booleanValue()) 
-			//	visibleStaticIdSet.add(column.getIdentifier());
-			//fullStaticIdSet.add(column.getIdentifier());
-			BaseTreeModel<TreeModel> model = new BaseTreeModel<TreeModel>(properties);
+		for (FixedColumnModel column : selectedGradebook.getColumns()) {
 			
 			if (column.getIdentifier().equals(StudentModel.Key.GRADE_OVERRIDE.name()) ||
 					column.getIdentifier().equals(StudentModel.Key.COURSE_GRADE.name())) {
-				model.setParent(gradingColumns);
-				gradingColumns.add(model);
+				column.setParent(gradingColumns);
+				gradingColumns.add(column);
 			} else {
-				model.setParent(learnerAttributes);
-				learnerAttributes.add(model);
+				column.setParent(learnerAttributes);
+				learnerAttributes.add(column);
 			}
 			
-			if (visibleStaticIdSet.contains(column.getIdentifier()))
-				checkedSelection.add(model);
+			//if (visibleStaticIdSet.contains(column.getIdentifier()))
+			//	checkedSelection.add(model);
 		}
 		
-		staticColumnStore = new TreeStore<BaseTreeModel<TreeModel>>(loader);
+		staticColumnStore = new TreeStore<FixedColumnModel>(loader);
 	
 		treeBinder = 
-			new TreeBinder<BaseTreeModel<TreeModel>>(learnerAttributeTree, staticColumnStore) {
+			new TreeBinder<FixedColumnModel>(learnerAttributeTree, staticColumnStore) {
 			
 			@Override
-			protected TreeItem createItem(BaseTreeModel<TreeModel> model) {
+			protected TreeItem createItem(FixedColumnModel model) {
 				TreeItem item = new AriaTreeItem();
 				
 				
@@ -866,10 +896,6 @@ public class ItemTreePanel extends ContentPanel {
 					}
 				});
 				
-				Boolean hidden = model.get("hidden");
-				boolean isHidden = hidden != null && hidden.booleanValue();
-				item.setChecked(!isHidden);
-
 				update(item, model);
 
 			    if (loader != null) {
@@ -883,11 +909,13 @@ public class ItemTreePanel extends ContentPanel {
 			}
 		};
 		
-		treeBinder.setDisplayProperty("name");
+		treeBinder.setDisplayProperty(FixedColumnModel.Key.NAME.name());
 		treeBinder.setAutoLoad(true);
-		
-		treeBinder.addCheckListener(checkChangedListener);
-		
+
+		if (learnerAttributeTree.isRendered()) {
+			learnerAttributeTree.removeListener(Events.CheckChange, checkChangeEventListener);
+			loader.addListener(Loader.Load, loadEventListener);
+		}
 		loader.load(root);
 	}
 	
@@ -950,7 +978,7 @@ public class ItemTreePanel extends ContentPanel {
 		return treeContextMenu;
 	}
 		
-	protected void showColumns(List<ItemModel> selectedItemModels) {
+	/*protected void showColumns(List<ItemModel> selectedItemModels) {
 		Set<String> selectedItemModelIdSet = new HashSet<String>();
 		boolean selectAll = false;
 		
@@ -968,19 +996,45 @@ public class ItemTreePanel extends ContentPanel {
 		}
 		
 		// Ensure that either the ID or DISPLAY NAME or SORT NAME is visible
-		/*if (!visibleStaticIdSet.contains(StudentModel.Key.DISPLAY_ID.name()) && !visibleStaticIdSet.contains(StudentModel.Key.DISPLAY_NAME.name())
+		if (!visibleStaticIdSet.contains(StudentModel.Key.DISPLAY_ID.name()) && !visibleStaticIdSet.contains(StudentModel.Key.DISPLAY_NAME.name())
 				&& !visibleStaticIdSet.contains(StudentModel.Key.SORT_NAME.name()))
 			visibleStaticIdSet.add(StudentModel.Key.SORT_NAME.name());
-		*/
+		
 		
 		Dispatcher.forwardEvent(GradebookEvents.ShowColumns.getEventType(), 
 				new ShowColumnsEvent(selectAll, fullStaticIdSet, visibleStaticIdSet, selectedItemModelIdSet));
 	
-	}
+	}*/
 	
 	private void initListeners() {
 		
-		checkChangedListener = new CheckChangedListener() {
+		checkChangeEventListener = new Listener<TreeEvent>() {
+
+			public void handleEvent(TreeEvent te) {
+				TreeItem item = te.item;
+				ModelData model = te.item.getModel();
+				String id = model.get("id");
+				
+				if (id == null)
+					id = model.get(ItemModel.Key.ID.name());
+				
+				if (id != null) {
+					Dispatcher.forwardEvent(GradebookEvents.ShowColumns.getEventType(), 
+							new ShowColumnsEvent(id, !item.isChecked()));
+				}
+			}	
+		};
+		
+		loadEventListener = new Listener<LoadEvent>() {
+
+			public void handleEvent(LoadEvent be) {
+				treeBinder.setCheckedSelection(checkedSelection);
+				//learnerAttributeTree.addListener(Events.CheckChange, checkChangeEventListener);
+			}
+		
+		};
+		
+		/*checkChangedListener = new CheckChangedListener() {
 			
 			public void checkChanged(CheckChangedEvent event) {
 				if (event.getCheckProvider() instanceof TreeTableBinder)
@@ -991,33 +1045,22 @@ public class ItemTreePanel extends ContentPanel {
 					onShowStaticColumn(StudentModel.Key.LAST_NAME_FIRST.name());
 				} 
 				
-				showColumns(selectedItemModels);
+				// FIXME: JUl 23, 2009: Need to call this only once, rather than once for every check box
+				if (isRendered())
+					showColumns(selectedItemModels);
 				
 				if (selectedGradebook != null) {
-					//GradebookState.setSelectedMultigradeColumns(selectedGradebook.getGradebookUid(), visibleStaticIdSet, selectedItemModels);				
-				
+					
 					GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 					
 					ConfigurationModel oldConfigModel = selectedGradebook.getConfigurationModel();
 					
 					List<String> selectedModels = oldConfigModel.getSelectedMultigradeColumns();
 					
-					boolean isUpdateRequired = false;
-					
 					Set<String> selectedItemModelSet = new HashSet<String>();
 					for (int i=0;i<selectedItemModels.size();i++) {
 						selectedItemModelSet.add(selectedItemModels.get(i).getIdentifier());
 					}
-					
-					for (int i=0;i<selectedModels.size();i++) {
-						String selected = selectedModels.get(i);
-					
-						if (!visibleStaticIdSet.contains(selected) && !selectedItemModelSet.contains(selected)) {
-							isUpdateRequired = true;
-							break;
-						}
-					}
-					
 					
 					if (true) {
 						ConfigurationModel configModel = new ConfigurationModel(selectedGradebook.getGradebookId());
@@ -1054,7 +1097,7 @@ public class ItemTreePanel extends ContentPanel {
 					}
 				}
 			}
-		};
+		};*/
 		
 		menuSelectionListener = new SelectionListener<MenuEvent>() {
 			

@@ -1,5 +1,8 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.controller;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
@@ -13,6 +16,8 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemCreate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
+import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
@@ -35,6 +40,7 @@ public class ServiceController extends Controller {
 		registerEventTypes(GradebookEvents.CreateItem.getEventType());
 		registerEventTypes(GradebookEvents.DeleteItem.getEventType());
 		registerEventTypes(GradebookEvents.RevertItem.getEventType());
+		registerEventTypes(GradebookEvents.ShowColumns.getEventType());
 		registerEventTypes(GradebookEvents.UpdateLearnerGradeRecord.getEventType());
 		registerEventTypes(GradebookEvents.UpdateItem.getEventType());
 	}
@@ -50,6 +56,9 @@ public class ServiceController extends Controller {
 			break;
 		case REVERT_ITEM:
 			onRevertItem((ItemUpdate)event.data);
+			break;
+		case SHOW_COLUMNS:
+			onShowColumns((ShowColumnsEvent)event.data);
 			break;
 		case UPDATE_LEARNER_GRADE_RECORD:
 			onUpdateGradeRecord((GradeRecordUpdate)event.data);
@@ -298,6 +307,50 @@ public class ServiceController extends Controller {
 		record.setValid(property, false);
 	}
 	
+	private void onShowColumns(ShowColumnsEvent event) {
+		if (event.isSingle) {
+			String columnId = event.itemModelId;
+			boolean hidden = event.isHidden;
+			
+			GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+			
+			ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
+			
+			if (configModel.isColumnHidden(AppConstants.ITEMTREE, columnId, !hidden) != hidden) {
+				ConfigurationModel model = new ConfigurationModel(selectedGradebook.getGradebookId());
+				model.setColumnHidden(AppConstants.ITEMTREE, columnId, Boolean.valueOf(hidden));
+				
+				Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
+				
+				AsyncCallback<ConfigurationModel> callback = new AsyncCallback<ConfigurationModel>() {
+		
+					public void onFailure(Throwable caught) {
+						// FIXME: Should we notify the user when this fails?
+					}
+		
+					public void onSuccess(ConfigurationModel result) {
+						GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+						ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
+						
+						Collection<String> propertyNames = result.getPropertyNames();
+						if (propertyNames != null) {
+							List<String> names = new ArrayList<String>(propertyNames);
+							
+							for (int i=0;i<names.size();i++) {
+								String name = names.get(i);
+								String value = result.get(name);
+								configModel.set(name, value);
+							}
+						}
+					}
+					
+				};
+				
+				service.update(model, EntityType.CONFIGURATION, null, SecureToken.get(), callback);
+			}
+		}
+	}
+	
 	private void onUpdateItemFailure(ItemUpdate event, Throwable caught) {
 		
 		if (event.record != null)
@@ -314,38 +367,77 @@ public class ServiceController extends Controller {
 		if (event.close)
 			Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
 		
+		boolean isCategoryTypeUpdated = false;
+		boolean isGradeTypeUpdated = false;
+		boolean isGradeScaleUpdated = false;
+		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		
 		if (event.record != null && event.record.isEditing()) {
+			Map<String, Object> changes = event.record.getChanges();
+			
+			isGradeScaleUpdated = changes != null && changes.get(ItemModel.Key.GRADESCALEID.name()) != null;
+			isGradeTypeUpdated = changes != null && changes.get(ItemModel.Key.GRADETYPE.name()) != null;
+			isCategoryTypeUpdated = changes != null && changes.get(ItemModel.Key.CATEGORYTYPE.name()) != null;
+		
 			event.record.commit(false);
 		}
 		
 		switch (result.getItemType()) {
 		case GRADEBOOK:
-			GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-			selectedGradebook.setGradebookItemModel(result);
+			
 			Dispatcher.forwardEvent(GradebookEvents.ItemUpdated.getEventType(), result);
 
-			boolean isGradebookUpdated = false;
-			if (result.getCategoryType() != selectedGradebook.getGradebookItemModel().getCategoryType()) {
-				selectedGradebook.getGradebookItemModel().setCategoryType(result.getCategoryType());
-				isGradebookUpdated = true;
+			selectedGradebook.setGradebookItemModel(result);
+			
+			if (isCategoryTypeUpdated) {
+				Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookSetup.getEventType(),
+						selectedGradebook);
+			} 
+			
+			if (isGradeScaleUpdated) {
+				Dispatcher.forwardEvent(GradebookEvents.RefreshGradeScale.getEventType(),
+						selectedGradebook);
 			}
-			if (result.getGradeType() != selectedGradebook.getGradebookItemModel().getGradeType()) {
-				selectedGradebook.getGradebookItemModel().setGradeType(result.getGradeType());
-				isGradebookUpdated = true;
+			
+			if (event.item.getItemType() != Type.GRADEBOOK || isGradeTypeUpdated) {
+				Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookItems.getEventType(),
+						selectedGradebook);
 			}
 
-			if (isGradebookUpdated) {
-				Dispatcher.forwardEvent(GradebookEvents.SwitchGradebook.getEventType(),
-						selectedGradebook);
-			} else {
-				Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel.getEventType(),
-						selectedGradebook);
-			}
 			break;
 		case CATEGORY:
+			
+			/*ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
+			ItemModel categoryModel = null;
+			if (gradebookItemModel != null) {
+				
+				for (int i=0;i<gradebookItemModel.getChildCount();i++) {
+					ItemModel child = gradebookItemModel.getChild(i);
+					if (child.getIdentifier().equals(result.getIdentifier())) {
+						categoryModel = child;
+						gradebookItemModel.remove(i);
+						gradebookItemModel.insert(result, i);
+						break;
+					}
+				}
+			}*/
+			
 			doUpdateItem(event, result);
 
 			for (ItemModel item : result.getChildren()) {
+				
+				/*if (categoryModel != null) {
+					for (int i=0;i<categoryModel.getChildCount();i++) {
+						ItemModel child = categoryModel.getChild(i);
+						
+						if (child.getIdentifier().equals(item.getIdentifier())) {
+							categoryModel.remove(i);
+							categoryModel.insert(item, i);
+							break;
+						}
+					}
+				}*/
+				
 				doUpdateItem(event, item);
 			}
 			
@@ -417,21 +509,6 @@ public class ServiceController extends Controller {
 		} else {
 			treeStore.update(updatedItem);
 		}
-		
-		//Dispatcher.forwardEvent(GradebookEvents.ItemUpdated.getEventType(), updatedItem);
-		
-		/*
-		//if (property == null || record == null 
-		//		|| !doUpdateViaRecord(property, record, updatedItem)) {
-			if (updatedItem != null) {
-				InfoConfig config = new InfoConfig("percent grade: " + updatedItem.getName(), String.valueOf(updatedItem.getPercentCourseGrade()));
-				config.display = 10000;
-				Info.display(config);
-				
-				treeStore.update(updatedItem);
-				Dispatcher.forwardEvent(GradebookEvents.ItemUpdated.getEventType(), updatedItem);
-			}
-		//}*/
 	}
 	
 	private boolean doUpdateViaRecord(Record record, ItemModel item) {
@@ -445,17 +522,6 @@ public class ServiceController extends Controller {
 			// Do it for the property being explicitly changed
 			replaceProperty(property, record, item);
 		}
-		
-		// Do it for properties that may be implicitly changed
-		/*ItemModel.Key key = ItemModel.Key.valueOf(property);
-		switch (key) {
-		case EXTRA_CREDIT:
-		case EQUAL_WEIGHT:
-		case INCLUDED:
-			replaceProperty(ItemModel.Key.PERCENT_CATEGORY.name(), record, item);
-			replaceProperty(ItemModel.Key.PERCENT_COURSE_GRADE.name(), record, item);
-			break;
-		}*/
 		
 		record.endEdit();
 		

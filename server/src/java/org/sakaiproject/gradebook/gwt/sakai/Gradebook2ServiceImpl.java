@@ -41,6 +41,7 @@ import org.sakaiproject.gradebook.gwt.client.model.CommentModel;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeEventModel;
+import org.sakaiproject.gradebook.gwt.client.model.GradeFormatModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
@@ -218,7 +219,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			Boolean isIncluded = item.getIncluded();
 			Integer dropLowest = item.getDropLowest();
 			Boolean isExtraCredit = item.getExtraCredit();
-
+			Integer categoryOrder = item.getItemOrder();
+			
 			boolean isUnweighted = !DataTypeConversionUtil.checkBoolean(isIncluded);
 
 			gradebook = gbService.getGradebook(gradebookUid);
@@ -226,20 +228,14 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
 			boolean hasWeights = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY;
 
-			if (hasCategories)
+			if (hasCategories) {
 				categories = gbService.getCategories(gradebook.getId()); // getCategoriesWithAssignments(gradebook.getId());
-			// Business rule #1
-			// FIXME: Does not take into account removed categories
-			// if (!isUnweighted && (categories == null || categories.isEmpty())
-			// && weight == null)
-			// weight = Double.valueOf(100d);
-
-			double w = weight == null ? 0d : ((Double) weight).doubleValue() * 0.01;
-
-			// businessLogic.applyRulesBeforeAddingCategory(hasCategories,
-			// gradebook.getId(), item.getName(), categories, dropLowest,
-			// isEqualWeighting);
-
+				if (categoryOrder == null)
+					categoryOrder = categories.isEmpty() ? Integer.valueOf(0) : Integer.valueOf(categories.size());
+			}
+			
+			double w = weight == null ? 0d : ((Double)weight).doubleValue() * 0.01;
+			
 			if (hasCategories) {
 				int dropLowestInt = dropLowest == null ? 0 : dropLowest.intValue();
 				boolean equalWeighting = isEqualWeighting == null ? false : isEqualWeighting.booleanValue();
@@ -249,14 +245,14 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					businessLogic.applyOnlyEqualWeightDropLowestRule(dropLowestInt, equalWeighting);
 			}
 
-			categoryId = gbService.createCategory(gradebookId, name, Double.valueOf(w), dropLowest, isEqualWeighting, Boolean.valueOf(isUnweighted), isExtraCredit);
-			// category = gbService.getCategory(categoryId);
+			categoryId = gbService.createCategory(gradebookId, name, Double.valueOf(w), dropLowest, isEqualWeighting, Boolean.valueOf(isUnweighted), isExtraCredit, categoryOrder);
 
 			assignments = gbService.getAssignments(gradebook.getId());
 			categories = null;
-			if (hasCategories)
+			if (hasCategories) {
 				categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
-
+			}
+			
 		} catch (RuntimeException e) {
 			actionRecord.setStatus(ActionRecord.STATUS_FAILURE);
 			throw e;
@@ -266,38 +262,17 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 		return getItemModel(gradebook, assignments, categories, categoryId, null);
 
-		// ItemModel categoryItemModel = getItemModelsForCategory(category,
-		// createItemModel(category.getGradebook()), null);
-		// categoryItemModel.setActive(true);
-		// return categoryItemModel;
 	}
 
 	public CommentModel createOrUpdateComment(Long assignmentId, String studentUid, String text) {
 
-		// Assignment assignment = gbService.getAssignment(assignmentId);
-		// Gradebook gradebook = assignment.getGradebook();
-
-		// List<Comment> comments =
-		// gbService.getStudentAssignmentComments(studentUid,
-		// gradebook.getId());
 		Comment comment = gbService.getCommentForItemForStudent(assignmentId, studentUid);
-
-		// TODO: Make sure that there is only one comment per assignment
-		/*
-		 * if (comments != null && !comments.isEmpty()) { for (Comment c :
-		 * comments) { if
-		 * (c.getGradableObject().getId().equals(assignment.getId())) { comment
-		 * = c; break; } } }
-		 */
 
 		if (comment == null) {
 			Assignment assignment = gbService.getAssignment(assignmentId);
 			comment = new Comment(studentUid, text, assignment);
 		} else
 			comment.setCommentText(text);
-
-		// List<Comment> updatedComments = new ArrayList<Comment>();
-		// updatedComments.add(comment);
 
 		gbService.updateComment(comment);
 
@@ -1171,7 +1146,22 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				if (frameworkService != null) {
 					frameworkService.addGradebook(gradebookUids[i], "My Default Gradebook");
 					gradebook = gbService.getGradebook(gradebookUids[i]);
-				}
+
+					// Add the default configuration settings
+					gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebook.getId(), 
+							ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, 
+									StudentModel.Key.DISPLAY_ID.name()), String.valueOf(Boolean.TRUE));
+					gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebook.getId(), 
+							ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, 
+									StudentModel.Key.DISPLAY_NAME.name()), String.valueOf(Boolean.TRUE));
+					gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebook.getId(), 
+							ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, 
+									StudentModel.Key.EMAIL.name()), String.valueOf(Boolean.TRUE));
+					gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebook.getId(), 
+							ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, 
+									StudentModel.Key.SECTION.name()), String.valueOf(Boolean.TRUE));
+				
+				} 
 			}
 			AuthModel authModel = new AuthModel();
 			boolean isUserAbleToGrade = authz.isUserAbleToGrade(gradebookUids[i]);
@@ -1251,6 +1241,23 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		ListLoadResult<X> result = new BaseListLoadResult<X>(models);
 
 		return result;
+	}
+
+	public <X extends BaseModel> ListLoadResult<X> getGradeFormats(String gradebookUid, 
+			Long gradebookId) {
+		
+		List<X> models = new ArrayList<X>();
+		
+		Set<GradeMapping> gradeMappings = gbService.getGradeMappings(gradebookId);
+		
+		for (GradeMapping mapping : gradeMappings) {
+			GradeFormatModel model = new GradeFormatModel();
+			model.setIdentifier(String.valueOf(mapping.getId()));
+			model.setName(mapping.getName());
+			models.add((X)model);
+		}
+		
+		return new BaseListLoadResult<X>(models);
 	}
 
 	public <X extends BaseModel> ListLoadResult<X> getCategories(String gradebookUid, Long gradebookId, PagingLoadConfig config) {
@@ -2559,6 +2566,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 
 		itemModel.setReleaseGrades(Boolean.valueOf(gradebook.isCourseGradeDisplayed()));
+		itemModel.setGradeScaleId(gradebook.getSelectedGradeMapping().getId());
 
 		return itemModel;
 	}
@@ -3809,6 +3817,13 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 		gradebook.setCourseGradeDisplayed(isReleaseGrades);
 
+		GradeMapping mapping = gradebook.getSelectedGradeMapping();
+		Long gradeScaleId = item.getGradeScaleId();
+		if (mapping != null && gradeScaleId != null && !mapping.getId().equals(gradeScaleId)) {
+			GradeMapping newMapping = gbService.getGradeMapping(gradeScaleId);
+			gradebook.setSelectedGradeMapping(newMapping);
+		}
+		
 		gbService.updateGradebook(gradebook);
 
 		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
@@ -3917,12 +3932,17 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 						for (Category c : categories) {
 							if (c.getId().equals(category.getId()))
 								oldCategoryOrder = Integer.valueOf(count);
+							else if (c.getCategoryOrder() == null) {
+								c.setCategoryOrder(Integer.valueOf(count));
+								gbService.updateCategory(c);
+							}
+							count++;
 						}
 					}
 				}
 			}
 
-			if (oldCategoryOrder != null && oldCategoryOrder.compareTo(newCategoryOrder) < 0)
+			if (oldCategoryOrder != null && newCategoryOrder != null && oldCategoryOrder.compareTo(newCategoryOrder) < 0)
 				newCategoryOrder = Integer.valueOf(newCategoryOrder.intValue() - 1);
 
 			category.setName(convertString(item.getName()));
@@ -3935,7 +3955,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			category.setDrop_lowest(newDropLowest);
 			category.setRemoved(isRemoved);
 			category.setUnweighted(Boolean.valueOf(isUnweighted || isRemoved));
-			category.setCategoryOrder(newCategoryOrder);
+
+			if (newCategoryOrder != null)
+				category.setCategoryOrder(newCategoryOrder);
+			else if (oldCategoryOrder != null)
+				category.setCategoryOrder(oldCategoryOrder);
 
 			gbService.updateCategory(category);
 
@@ -3974,14 +3998,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 	public String getCurrentUser() {
 
-		/*
-		 * if(null == userService) { return null; }
-		 * 
-		 * return userService.getCurrentUser().getId();*
-		 */
-
-		if (null == sessionManager) {
-			return null;
+		if(null == sessionManager) {
+			return "0";
 		}
 
 		return sessionManager.getCurrentSessionUserId();
@@ -4063,251 +4081,6 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	 * INNER CLASSES
 	 */
 
-	/*
-	 * private class OnlyEqualWeightDropLowestRule implements BusinessRule {
-	 * 
-	 * private int dropLowest; private boolean isEqualWeight;
-	 * 
-	 * public OnlyEqualWeightDropLowestRule(int dropLowest, boolean
-	 * isEqualWeight) { this.dropLowest = dropLowest; this.isEqualWeight =
-	 * isEqualWeight; }
-	 * 
-	 * public void isSatisfied() throws BusinessRuleException {
-	 * 
-	 * if (!isEqualWeight) { if (dropLowest > 0) { StringBuilder builder = new
-	 * StringBuilder();builder.append(
-	 * "Drop lowest is only valid for categories with equally weighted items. ")
-	 * .
-	 * append("Please select equally weighted before setting a drop lowest value."
-	 * );
-	 * 
-	 * throw new BusinessRuleException(builder.toString()); }
-	 * 
-	 * }
-	 * 
-	 * }
-	 * 
-	 * }
-	 * 
-	 * private class NoDuplicateCategoryNamesRule implements BusinessRule {
-	 * 
-	 * private Long categoryId; private Long gradebookId; private String name;
-	 * private List<Category> categories;
-	 * 
-	 * public NoDuplicateCategoryNamesRule(Long gradebookId, String name) {
-	 * this.gradebookId = gradebookId; this.name = name; }
-	 * 
-	 * public NoDuplicateCategoryNamesRule(Long gradebookId, String name, Long
-	 * categoryId) { this(gradebookId, name); this.categoryId = categoryId; }
-	 * 
-	 * public NoDuplicateCategoryNamesRule(Long gradebookId, String name, Long
-	 * categoryId, List<Category> categories) { this(gradebookId, name,
-	 * categoryId); this.categories = categories; }
-	 * 
-	 * public void isSatisfied() throws BusinessRuleException { if (categories
-	 * == null) categories = gbService.getCategories(gradebookId);
-	 * 
-	 * if (categories != null) { for (Category c : categories) { if
-	 * (!c.isRemoved() && c.getName() != null && name != null &&
-	 * c.getName().trim().equalsIgnoreCase(name.trim())) { if (categoryId !=
-	 * null && categoryId.equals(c.getId())) continue;
-	 * 
-	 * StringBuilder builder = new StringBuilder();
-	 * builder.append("There is already an existing category called \""
-	 * ).append(name).append("\" ").append("in this gradebook. ")
-	 * .append("Please enter a different name for this category.");
-	 * 
-	 * throw new BusinessRuleException(builder.toString()); } } } } }
-	 * 
-	 * private class NoDuplicateItemNamesRule implements BusinessRule {
-	 * 
-	 * private Long assignmentId; private Long gradebookId; private String name;
-	 * 
-	 * public NoDuplicateItemNamesRule(Long gradebookId, String name) {
-	 * this.gradebookId = gradebookId; this.name = name; }
-	 * 
-	 * public NoDuplicateItemNamesRule(Long gradebookId, String name, Long
-	 * assignmentId) { this(gradebookId, name); this.assignmentId =
-	 * assignmentId; }
-	 * 
-	 * public void isSatisfied() throws BusinessRuleException { List<Assignment>
-	 * assignments = gbService.getAssignments(gradebookId);
-	 * 
-	 * if (assignments != null) { for (Assignment a : assignments) { if
-	 * (!a.isRemoved() && a.getName() != null && name != null &&
-	 * a.getName().trim().equalsIgnoreCase(name.trim())) { if (assignmentId !=
-	 * null && assignmentId.equals(a.getId())) continue;
-	 * 
-	 * StringBuilder builder = new StringBuilder();
-	 * builder.append("There is already an existing item called \""
-	 * ).append(name).append("\" ").append("in this gradebook. ")
-	 * .append("Please enter a different name for the grade item.");
-	 * 
-	 * throw new BusinessRuleException(builder.toString()); } } } } }
-	 * 
-	 * private class NoDuplicateItemNamesWithinCategoryRule implements
-	 * BusinessRule {
-	 * 
-	 * private Long assignmentId; private Long categoryId; private String name;
-	 * 
-	 * public NoDuplicateItemNamesWithinCategoryRule(Long categoryId, String
-	 * name) { this.categoryId = categoryId; this.name = name; }
-	 * 
-	 * public NoDuplicateItemNamesWithinCategoryRule(Long categoryId, String
-	 * name, Long assignmentId) { this(categoryId, name); this.assignmentId =
-	 * assignmentId; }
-	 * 
-	 * public void isSatisfied() throws BusinessRuleException { List<Assignment>
-	 * assignments = gbService.getAssignmentsForCategory(categoryId);
-	 * 
-	 * if (assignments != null) { for (Assignment a : assignments) { if
-	 * (!a.isRemoved() && a.getName().trim().equalsIgnoreCase(name.trim())) { if
-	 * (assignmentId != null && assignmentId.equals(a.getId())) continue;
-	 * 
-	 * StringBuilder builder = new StringBuilder();
-	 * builder.append("There is already an existing item called \""
-	 * ).append(name).append("\" ").append("in this category. ")
-	 * .append("Please enter a different name for the grade item.");
-	 * 
-	 * throw new BusinessRuleException(builder.toString()); } } } } }
-	 * 
-	 * private class RecalculateEqualWeightingRule implements BusinessRule {
-	 * 
-	 * private Category category; private boolean includeInGrade;
-	 * 
-	 * public RecalculateEqualWeightingRule(Category category, boolean
-	 * includeInGrade) { this.category = category; this.includeInGrade =
-	 * includeInGrade; }
-	 * 
-	 * public void isSatisfied() throws BusinessRuleException { boolean
-	 * hasEqualWeighting =
-	 * DataTypeConversionUtil.checkBoolean(category.isEqualWeightAssignments());
-	 * if (hasEqualWeighting) recalculateAssignmentWeights(category.getId(),
-	 * null);
-	 * 
-	 * 
-	 * } }
-	 * 
-	 * private class RecalculatePointsRule implements BusinessRule {
-	 * 
-	 * private Long assignmentId; private Double newPoints; private Double
-	 * oldPoints;
-	 * 
-	 * public RecalculatePointsRule(Long assignmentId, Double newPoints, Double
-	 * oldPoints) { this.assignmentId = assignmentId; this.newPoints =
-	 * newPoints; this.oldPoints = oldPoints; }
-	 * 
-	 * public void isSatisfied() throws BusinessRuleException {
-	 * 
-	 * if (newPoints != null && oldPoints != null &&
-	 * newPoints.compareTo(oldPoints) != 0) {
-	 * recalculateAssignmentGradeRecords(assignmentId, newPoints, oldPoints); }
-	 * 
-	 * }
-	 * 
-	 * 
-	 * }
-	 * 
-	 * 
-	 * private class MustIncludeCategoryRule implements BusinessRule {
-	 * 
-	 * private Long categoryId;
-	 * 
-	 * public MustIncludeCategoryRule(Long categoryId) { this.categoryId =
-	 * categoryId; }
-	 * 
-	 * public void isSatisfied() throws BusinessRuleException { if (categoryId
-	 * == null) throw new
-	 * BusinessRuleException("You must select a category to group this item under."
-	 * ); }
-	 * 
-	 * }
-	 * 
-	 * private class RemoveChildItemsWhenCategoryRemoved implements BusinessRule
-	 * {
-	 * 
-	 * private Category category;
-	 * 
-	 * public RemoveChildItemsWhenCategoryRemoved(Category category) {
-	 * this.category = category; }
-	 * 
-	 * public void isSatisfied() throws BusinessRuleException { List<Assignment>
-	 * assignments = gbService.getAssignmentsForCategory(category.getId());
-	 * 
-	 * if (assignments != null) { for (Assignment assignment : assignments) {
-	 * assignment.setRemoved(true); gbService.updateAssignment(assignment); } }
-	 * 
-	 * }
-	 * 
-	 * 
-	 * }
-	 * 
-	 * private class RemoveEqualWeightingWhenItemWeightChangesRules implements
-	 * BusinessRule {
-	 * 
-	 * private Category category; private Double oldAssignmentWeight; private
-	 * Double newAssignmentWeight; private boolean isExtraCredit; private
-	 * boolean isUnweighted; private boolean wasUnweighted;
-	 * 
-	 * public RemoveEqualWeightingWhenItemWeightChangesRules(Category category,
-	 * Double oldAssignmentWeight, Double newAssignmentWeight, boolean
-	 * isExtraCredit, boolean isUnweighted, boolean wasUnweighted) {
-	 * this.category = category; this.oldAssignmentWeight = oldAssignmentWeight;
-	 * this.newAssignmentWeight = newAssignmentWeight; this.isExtraCredit =
-	 * isExtraCredit; this.isUnweighted = isUnweighted; this.wasUnweighted =
-	 * wasUnweighted; }
-	 * 
-	 * public void isSatisfied() throws BusinessRuleException { if
-	 * (!isUnweighted && !wasUnweighted) { if (oldAssignmentWeight == null ||
-	 * !oldAssignmentWeight.equals(newAssignmentWeight)) {
-	 * 
-	 * if (!isExtraCredit && category.isEqualWeightAssignments() != null &&
-	 * category.isEqualWeightAssignments().booleanValue()) { Category
-	 * editCategory = gbService.getCategory(category.getId());
-	 * editCategory.setEqualWeightAssignments(Boolean.FALSE);
-	 * gbService.updateCategory(editCategory); } } } } }
-	 * 
-	 * private class CannotIncludeDeletedItemRule implements BusinessRule {
-	 * 
-	 * private boolean isUnweighted; private boolean isAssignmentRemoved;
-	 * private boolean isCategoryRemoved;
-	 * 
-	 * public CannotIncludeDeletedItemRule(boolean isAssignmentRemoved, boolean
-	 * isCategoryRemoved, boolean isUnweighted) { this.isAssignmentRemoved =
-	 * isAssignmentRemoved; this.isCategoryRemoved = isCategoryRemoved;
-	 * this.isUnweighted = isUnweighted; }
-	 * 
-	 * public void isSatisfied() throws BusinessRuleException { if
-	 * (!isUnweighted) { if (isCategoryRemoved) throw newBusinessRuleException(
-	 * "You cannot include a grade item whose category has been deleted in grading. Please undelete the category first."
-	 * );
-	 * 
-	 * if (isAssignmentRemoved) throw newBusinessRuleException(
-	 * "You cannot include a deleted grade item in grading. Please undelete the grade item first."
-	 * ); } }
-	 * 
-	 * }
-	 * 
-	 * 
-	 * private class CannotIncludeItemFromUnincludedCategoryRule implements
-	 * BusinessRule {
-	 * 
-	 * private boolean isCategoryIncluded, isItemIncluded, wasItemIncluded;
-	 * 
-	 * public CannotIncludeItemFromUnincludedCategoryRule(boolean
-	 * isCategoryIncluded, boolean isItemIncluded, boolean wasItemIncluded) {
-	 * this.isCategoryIncluded = isCategoryIncluded; this.isItemIncluded =
-	 * isItemIncluded; this.wasItemIncluded = wasItemIncluded; }
-	 * 
-	 * public void isSatisfied() throws BusinessRuleException { if
-	 * (!isCategoryIncluded) { if (isItemIncluded && !wasItemIncluded) throw new
-	 * BusinessRuleException(
-	 * "You cannot include a grade item whose category is not included in grading. Please include the category first."
-	 * ); } }
-	 * 
-	 * }
-	 */
-
 	/**
 	 * COMPARATORS
 	 */
@@ -4317,6 +4090,14 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 		public int compare(String o1, String o2) {
 
+			char c1 = o1.toLowerCase().charAt(0);
+			char c2 = o2.toLowerCase().charAt(0);
+			
+			if (c1 == 'P' && c2 == 'N')
+				return -1;
+			else if (c2 == 'N' && c1 == 'P')
+				return 1;
+			
 			if (o1.toLowerCase().charAt(0) == o2.toLowerCase().charAt(0)) {
 
 				if (o1.length() == 2 && o2.length() == 2) {

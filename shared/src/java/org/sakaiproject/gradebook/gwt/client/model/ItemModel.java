@@ -39,7 +39,7 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 		STUDENT_MODEL_KEY("Student Model Key"),
 		ASSIGNMENT_ID("Item Id"), DATA_TYPE("Data Type"), CATEGORYTYPE("Organization"),
 		GRADETYPE("Grade Type"), RELEASEGRADES("Display course grades"), 
-		ITEM_ORDER("Order");
+		ITEM_ORDER("Order"), GRADESCALEID("grade scale id");
 		
 		private String propertyName;
 		
@@ -352,6 +352,14 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 	
 	public void setItemOrder(Integer itemOrder) {
 		set(Key.ITEM_ORDER.name(), itemOrder);
+	}
+	
+	public Long getGradeScaleId() {
+		return get(Key.GRADESCALEID.name());
+	}
+	
+	public void setGradeScaleId(Long id) {
+		set(Key.GRADESCALEID.name(), id);
 	}
 	
 	@Override

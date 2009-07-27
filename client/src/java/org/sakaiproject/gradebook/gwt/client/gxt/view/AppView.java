@@ -83,6 +83,15 @@ public abstract class AppView extends View {
 		case NEW_ITEM:
 			onNewItem((ItemModel)event.data);
 			break;
+		case REFRESH_GRADEBOOK_ITEMS:
+			onRefreshGradebookItems((GradebookModel)event.data);
+			break;
+		case REFRESH_GRADEBOOK_SETUP:
+			onRefreshGradebookSetup((GradebookModel)event.data);
+			break;
+		case REFRESH_GRADE_SCALE:
+			onRefreshGradeScale((GradebookModel)event.data);
+			break;
 		case SELECT_LEARNER:
 			onSelectLearner((StudentModel)event.data);
 			break;
@@ -197,6 +206,18 @@ public abstract class AppView extends View {
 	}
 	
 	protected void onNewItem(ItemModel itemModel) {
+		
+	}
+	
+	protected void onRefreshGradebookItems(GradebookModel gradebookModel) {
+		
+	}
+	
+	protected void onRefreshGradebookSetup(GradebookModel gradebookModel) {
+		
+	}
+	
+	protected void onRefreshGradeScale(GradebookModel gradebookModel) {
 		
 	}
 	

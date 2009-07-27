@@ -39,6 +39,7 @@ import org.sakaiproject.tool.gradebook.Comment;
 import org.sakaiproject.tool.gradebook.CourseGrade;
 import org.sakaiproject.tool.gradebook.CourseGradeRecord;
 import org.sakaiproject.tool.gradebook.GradableObject;
+import org.sakaiproject.tool.gradebook.GradeMapping;
 import org.sakaiproject.tool.gradebook.Gradebook;
 import org.sakaiproject.tool.gradebook.GradingEvent;
 import org.sakaiproject.tool.gradebook.Permission;
@@ -48,7 +49,7 @@ public interface GradebookToolService {
 	
 	public Long createAssignmentForCategory(Long gradebookId, Long categoryId, String name, Double points, Double weight, Date dueDate, Boolean isUnweighted, Boolean isExtraCredit, Boolean isNotCounted, Boolean isReleased, Integer itemOrder);
 	
-	public Long createCategory(Long gradebookId, String name, Double weight, Integer dropLowest, Boolean equalWeightAssignments, Boolean isUnweighted, Boolean isExtraCredit);
+	public Long createCategory(Long gradebookId, String name, Double weight, Integer dropLowest, Boolean equalWeightAssignments, Boolean isUnweighted, Boolean isExtraCredit, Integer categoryOrder);
 	
 	public void createOrUpdateUserConfiguration(String userUid, Long gradebookId, String configField, String configValue);
 	
@@ -101,6 +102,10 @@ public interface GradebookToolService {
 	public Gradebook getGradebook(Long id);
 	
 	public Gradebook getGradebook(String uid);
+	
+	public GradeMapping getGradeMapping(Long id);
+	
+	public Set<GradeMapping> getGradeMappings(Long gradebookId);
 	
 	public Map<GradableObject, List<GradingEvent>> getGradingEventsForStudent(String studentId, Collection<GradableObject> gradableObjects);
 

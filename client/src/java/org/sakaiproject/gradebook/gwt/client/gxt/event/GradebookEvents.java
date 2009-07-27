@@ -81,8 +81,11 @@ public class GradebookEvents {
 	public static final GradebookEvent NewItem						= registerEvent(EventKey.NEW_ITEM);
 	public static final GradebookEvent None							= registerEvent(EventKey.NONE);
 	public static final GradebookEvent Notification					= registerEvent(EventKey.NOTIFICATION);
-	public static final GradebookEvent Refresh 						= registerEvent(EventKey.REFESH);
+	public static final GradebookEvent Refresh 						= registerEvent(EventKey.REFRESH);
 	public static final GradebookEvent RefreshCourseGrades 			= registerEvent(EventKey.REFRESH_COURSE_GRADES);
+	public static final GradebookEvent RefreshGradebookItems 		= registerEvent(EventKey.REFRESH_GRADEBOOK_ITEMS);
+	public static final GradebookEvent RefreshGradebookSetup 		= registerEvent(EventKey.REFRESH_GRADEBOOK_SETUP);
+	public static final GradebookEvent RefreshGradeScale	 		= registerEvent(EventKey.REFRESH_GRADE_SCALE);
 	public static final GradebookEvent RevertItem					= registerEvent(EventKey.REVERT_ITEM);
 	public static final GradebookEvent SelectDeleteItem				= registerEvent(EventKey.SELECT_DELETE_ITEM);
 	public static final GradebookEvent SelectItem					= registerEvent(EventKey.SELECT_ITEM);

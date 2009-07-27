@@ -35,13 +35,18 @@ import org.sakaiproject.gradebook.gwt.client.action.Action.ActionType;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.TreeView;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
+import org.sakaiproject.gradebook.gwt.client.model.GradeFormatModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordMapModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Key;
 
 import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
@@ -50,33 +55,122 @@ import com.extjs.gxt.ui.client.data.BaseListLoader;
 import com.extjs.gxt.ui.client.data.ListLoadConfig;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
 import com.extjs.gxt.ui.client.data.ListLoader;
+import com.extjs.gxt.ui.client.data.LoadEvent;
+import com.extjs.gxt.ui.client.data.Loader;
 import com.extjs.gxt.ui.client.data.RpcProxy;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.GridEvent;
 import com.extjs.gxt.ui.client.event.Listener;
+import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
+import com.extjs.gxt.ui.client.event.SelectionChangedListener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.button.Button;
+import com.extjs.gxt.ui.client.widget.form.ComboBox;
+import com.extjs.gxt.ui.client.widget.form.LabelField;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.grid.CellEditor;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.EditorGrid;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
+import com.extjs.gxt.ui.client.widget.toolbar.AdapterToolItem;
+import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class GradeScalePanel extends ContentPanel {
-
-	private boolean isEditable;
+	
+	private ListLoader<ListLoadConfig> loader;
+	private ListLoader<ListLoadConfig> gradeFormatLoader;
+	private ListStore<GradeFormatModel> gradeFormatStore;
+	
+	private ComboBox<GradeFormatModel> gradeFormatListBox;
+	private EditorGrid<GradeScaleRecordModel> grid;
+	private ToolBar toolbar;
+	
+	private Long currentGradeScaleId;
+	private boolean isLoaded;
 	
 	@SuppressWarnings("unchecked")
-	public GradeScalePanel(I18nConstants i18n, boolean isEditable) {
+	public GradeScalePanel(I18nConstants i18n, boolean isEditable, final TreeView treeView) {
 		super();
-		this.isEditable = isEditable;
+		this.isLoaded = false;
+		
+		toolbar = new ToolBar();
+		
+		LabelField gradeScale = new LabelField("Grade format: ");
+		toolbar.add(new AdapterToolItem(gradeScale));
+		
+		RpcProxy<ListLoadConfig, ListLoadResult<GradeFormatModel>> gradeFormatProxy = new RpcProxy<ListLoadConfig, ListLoadResult<GradeFormatModel>>() {
+			@Override
+			protected void load(ListLoadConfig loadConfig, AsyncCallback<ListLoadResult<GradeFormatModel>> callback) {
+				Gradebook2RPCServiceAsync service = Registry.get("service");
+				GradebookModel model = Registry.get(AppConstants.CURRENT);
+				service.getPage(model.getGradebookUid(), model.getGradebookId(), EntityType.GRADE_FORMAT, null, SecureToken.get(), callback);
+			}
+		};
+		
+		gradeFormatLoader = 
+			new BaseListLoader<ListLoadConfig, ListLoadResult<GradeFormatModel>>(gradeFormatProxy);
+		
+		gradeFormatLoader.setRemoteSort(true);
+
+		gradeFormatStore = new ListStore<GradeFormatModel>(gradeFormatLoader);
+		gradeFormatStore.setModelComparer(new EntityModelComparer<GradeFormatModel>());
+		
+		gradeFormatListBox = new ComboBox<GradeFormatModel>(); 
+		gradeFormatListBox.setAllQuery(null);
+		gradeFormatListBox.setEditable(false);
+		gradeFormatListBox.setFieldLabel("Grade Format");
+		gradeFormatListBox.setDisplayField(GradeFormatModel.Key.NAME.name());  
+		gradeFormatListBox.setStore(gradeFormatStore);
+		gradeFormatListBox.setForceSelection(true);
+
+		gradeFormatListBox.addSelectionChangedListener(new SelectionChangedListener<GradeFormatModel>() {
+
+			@Override
+			public void selectionChanged(SelectionChangedEvent<GradeFormatModel> se) {
+				GradebookModel selectedGradebookModel = Registry.get(AppConstants.CURRENT);
+				ItemModel selectedItemModel = selectedGradebookModel.getGradebookItemModel();
+				GradeFormatModel gradeFormatModel = se.getSelectedItem();
+				
+				currentGradeScaleId = Long.valueOf(gradeFormatModel.getIdentifier());
+				
+				if (currentGradeScaleId != null && !currentGradeScaleId.equals(selectedItemModel.getGradeScaleId())) {
+					Record record = treeView.getTreeStore().getRecord(selectedItemModel);
+					record.beginEdit();
+					record.set(Key.GRADESCALEID.name(), currentGradeScaleId);
+					grid.mask();
+					Dispatcher.forwardEvent(GradebookEvents.UpdateItem.getEventType(), new ItemUpdate(treeView.getTreeStore(), record, selectedItemModel, false));
+				} else {
+					loader.load();
+				}
+			
+				//loadGradeScaleData(selectedGradebookModel);
+				//loader.load();
+			}
+			
+			
+		});
+		
+		toolbar.add(new AdapterToolItem(gradeFormatListBox));
+		
+		setTopComponent(toolbar);
+		
+		gradeFormatLoader.addListener(Loader.Load, new Listener<LoadEvent>() {
+
+			public void handleEvent(LoadEvent be) {
+				loadIfPossible();
+			}
+			
+		});
+		
+		gradeFormatLoader.load();
 		
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 		
@@ -132,12 +226,20 @@ public class GradeScalePanel extends ContentPanel {
 			
 		};
 		
-		ListLoader loader = new BaseListLoader(proxy);  
+		loader = new BaseListLoader(proxy);  
 
 		final ListStore<GradeScaleRecordModel> store = new ListStore<GradeScaleRecordModel>(loader);
 		store.setModelComparer(new EntityModelComparer<GradeScaleRecordModel>());
 
-		loader.load();  
+		loader.addListener(Loader.Load, new Listener<LoadEvent>() {
+
+			public void handleEvent(LoadEvent be) {
+				grid.unmask();
+			}
+			
+		});
+		
+		loader.load();
 		
 		final ColumnModel cm = new ColumnModel(configs);
 
@@ -149,7 +251,7 @@ public class GradeScalePanel extends ContentPanel {
 		setLayout(new FitLayout());
 		setSize(600, 300);
 		
-		final EditorGrid<GradeScaleRecordModel> grid = new EditorGrid<GradeScaleRecordModel>(store, cm);  
+		grid = new EditorGrid<GradeScaleRecordModel>(store, cm);  
 		grid.setStyleAttribute("borderTop", "none");   
 		grid.setBorders(true);
 		grid.addListener(Events.ValidateEdit, new Listener<GridEvent>() {
@@ -214,4 +316,40 @@ public class GradeScalePanel extends ContentPanel {
 		});
 		addButton(button);
 	}
+	
+	
+	public void onRefreshGradeScale(GradebookModel selectedGradebook) {
+		//loadGradeScaleData(selectedGradebook);
+		loader.load();
+	}
+	
+	@Override
+	protected void onRender(Element parent, int pos) {
+		super.onRender(parent, pos);
+		//loadIfPossible();
+	}
+	
+	
+	private void loadGradeScaleData(GradebookModel selectedGradebook) {
+		Long selectedGradeScaleId = selectedGradebook.getGradebookItemModel().getGradeScaleId();
+		for (int i=0;i<gradeFormatStore.getCount();i++) {
+			GradeFormatModel m = gradeFormatStore.getAt(i);
+			if (m.getIdentifier().equals(String.valueOf(selectedGradeScaleId))) {
+				gradeFormatListBox.setValue(m);
+				currentGradeScaleId = selectedGradeScaleId;
+				break;
+			}
+		}
+		this.isLoaded = true;
+	}
+
+	private void loadIfPossible() {
+		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		
+		if (selectedGradebook != null) {
+			loadGradeScaleData(selectedGradebook);
+		}
+	}
+	
 }
+
