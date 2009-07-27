@@ -191,9 +191,11 @@ public class InstructorView extends AppView {
 	protected void initUI(ApplicationModel model) {
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);		
 
-		tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADESCALE, i18n.tabGradeScaleHeader(), "gbGradeScaleButton", true, MenuSelector.GRADE_SCALE));
-		//tabConfigurations.add(new TabConfig(AppConstants.TAB_HISTORY, i18n.tabHistoryHeader(), "gbHistoryButton", true, MenuSelector.HISTORY));
-		tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADER_PER_SET, i18n.tabGraderPermissionSettingsHeader(), "gbGraderPermissionSettings", true, MenuSelector.GRADER_PERMISSION_SETTINGS));
+		if (isEditable) {
+			tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADESCALE, i18n.tabGradeScaleHeader(), "gbGradeScaleButton", true, MenuSelector.GRADE_SCALE));
+			//tabConfigurations.add(new TabConfig(AppConstants.TAB_HISTORY, i18n.tabHistoryHeader(), "gbHistoryButton", true, MenuSelector.HISTORY));
+			tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADER_PER_SET, i18n.tabGraderPermissionSettingsHeader(), "gbGraderPermissionSettings", true, MenuSelector.GRADER_PERMISSION_SETTINGS));
+		}
 		tabConfigurations.add(new TabConfig(AppConstants.TAB_STATISTICS, i18n.tabStatisticsHeader(), "gbStatisticsButton", true, MenuSelector.STATISTICS));
 		
 		populateToolBar(i18n, selectedGradebook);
@@ -659,13 +661,11 @@ public class InstructorView extends AppView {
 		
 		menuItem = new AriaMenuItem(i18n.headerExportData(), menuSelectionListener);
 		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_DATA);
-		//menuItem.setIconStyle("gbExportItemIcon");
 		menuItem.setTitle(i18n.headerExportDataTitle());
 		subMenu.add(menuItem);
 		
 		menuItem = new AriaMenuItem(i18n.headerExportStructure(), menuSelectionListener);
 		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_STRUCTURE);
-		//menuItem.setIconStyle("gbExportItemIcon");
 		menuItem.setTitle(i18n.headerExportStructureTitle());
 		subMenu.add(menuItem);
 		
@@ -676,16 +676,17 @@ public class InstructorView extends AppView {
 			menuItem.setIconStyle("gbImportItemIcon");
 			menuItem.setTitle(i18n.headerImportTitle());
 			moreActionsMenu.add(menuItem);
+		
+		
+			moreActionsMenu.add(new SeparatorMenuItem());
+			
+			// GRBK-37 : TPA
+			menuItem = new AriaMenuItem(i18n.headerFinalGrade(), menuSelectionListener);
+			menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.FINAL_GRADE);
+			menuItem.setIconStyle("gbExportItemIcon");
+			menuItem.setTitle(i18n.headerFinalGradeTitle());
+			moreActionsMenu.add(menuItem);
 		}
-		
-		moreActionsMenu.add(new SeparatorMenuItem());
-		
-		// GRBK-37 : TPA
-		menuItem = new AriaMenuItem(i18n.headerFinalGrade(), menuSelectionListener);
-		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.FINAL_GRADE);
-		menuItem.setIconStyle("gbExportItemIcon");
-		menuItem.setTitle(i18n.headerFinalGradeTitle());
-		moreActionsMenu.add(menuItem);
 		
 		return moreActionsMenu;
 	}
