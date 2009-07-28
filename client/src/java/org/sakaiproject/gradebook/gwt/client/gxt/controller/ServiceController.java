@@ -370,6 +370,8 @@ public class ServiceController extends Controller {
 		boolean isCategoryTypeUpdated = false;
 		boolean isGradeTypeUpdated = false;
 		boolean isGradeScaleUpdated = false;
+		boolean isReleaseGradesUpdated = false;
+		boolean isReleaseItemsUpdated = false;
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 		
 		if (event.record != null && event.record.isEditing()) {
@@ -378,7 +380,9 @@ public class ServiceController extends Controller {
 			isGradeScaleUpdated = changes != null && changes.get(ItemModel.Key.GRADESCALEID.name()) != null;
 			isGradeTypeUpdated = changes != null && changes.get(ItemModel.Key.GRADETYPE.name()) != null;
 			isCategoryTypeUpdated = changes != null && changes.get(ItemModel.Key.CATEGORYTYPE.name()) != null;
-		
+			isReleaseGradesUpdated = changes != null && changes.get(ItemModel.Key.RELEASEGRADES.name()) != null;
+			isReleaseItemsUpdated = changes != null && changes.get(ItemModel.Key.RELEASEITEMS.name()) != null;
+			
 			event.record.commit(false);
 		}
 		
@@ -389,7 +393,7 @@ public class ServiceController extends Controller {
 
 			selectedGradebook.setGradebookItemModel(result);
 			
-			if (isCategoryTypeUpdated) {
+			if (isCategoryTypeUpdated || isReleaseGradesUpdated || isReleaseItemsUpdated) {
 				Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookSetup.getEventType(),
 						selectedGradebook);
 			} 

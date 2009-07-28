@@ -37,6 +37,9 @@ public class SingleGradeView extends View {
 		case ITEM_UPDATED:
 			onItemUpdated((ItemModel)event.data);
 			break;
+		case REFRESH_GRADEBOOK_SETUP:
+			onRefreshGradebookSetup((GradebookModel)event.data);
+			break;
 		case SINGLE_GRADE:
 		case SINGLE_VIEW:
 			learnerGradeRecordCollection = (StudentModel)event.data;
@@ -56,6 +59,10 @@ public class SingleGradeView extends View {
 	protected void initialize() {
 		dialog = new StudentViewDialog(!isEditable);
 		dialog.setSize(400, 350);
+	}
+	
+	private void onRefreshGradebookSetup(GradebookModel selectedGradebook) {
+		dialog.onRefreshGradebookSetup(selectedGradebook);
 	}
 	
 	private void onChangeModel(StudentModel learnerGradeRecordCollection) {

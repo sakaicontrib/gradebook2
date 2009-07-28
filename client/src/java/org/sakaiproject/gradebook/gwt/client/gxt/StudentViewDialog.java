@@ -56,15 +56,8 @@ public class StudentViewDialog extends ContentPanel {
 	public StudentViewDialog(boolean isStudentView) {
 		this.isStudentView = isStudentView;
 		setBodyBorder(true);
-		//setButtons(Dialog.OK);
-		//setCloseAction(CloseAction.CLOSE);
-		//setDraggable(true);
 		setHeaderVisible(true);
-		//setHideOnButtonClick(false);
 		setLayout(new FitLayout());
-		//setModal(true);
-		//setPlain(false);
-		//setResizable(true);
 
 		I18nConstants i18n = Registry.get(AppConstants.I18N);
 		if (isStudentView)
@@ -76,28 +69,6 @@ public class StudentViewDialog extends ContentPanel {
 		add(container);
 		
 		setupNavigation(i18n);
-		
-		/*container.addListener(GradebookEvents.UserChange, new Listener<UserChangeEvent>() {
-
-			public void handleEvent(UserChangeEvent uce) {
-				StudentViewDialog.this.fireEvent(GradebookEvents.UserChange, uce);
-			}
-			
-		});
-		
-		addListener(GradebookEvents.SingleView, new Listener<IndividualStudentEvent>() 
-		{
-
-			public void handleEvent(IndividualStudentEvent be) {
-				if (container.fireEvent(GradebookEvents.SingleView, be)) {
-					//Point pos = getParent().getPosition(false);
-					//StudentViewDialog.this.setPosition(pos.x, pos.y);
-					//StudentViewDialog.this.setSize(XDOM.getViewportSize().width, XDOM.getViewportSize().height - 35);
-					//StudentViewDialog.this.show();
-					be.doit = true;
-				}
-			}
-		});*/
 		
 		addListener(Events.BeforeShow, new Listener() {
 
@@ -117,6 +88,10 @@ public class StudentViewDialog extends ContentPanel {
 
 	}
 	
+	public void onRefreshGradebookSetup(GradebookModel selectedGradebook) {
+		container.onRefreshGradebookSetup(selectedGradebook);
+	}
+	
 	public void onChangeModel(GradebookModel selectedGradebook, StudentModel learnerGradeRecordCollection) {
 		container.onChangeModel(selectedGradebook, learnerGradeRecordCollection);
 	}
@@ -126,7 +101,6 @@ public class StudentViewDialog extends ContentPanel {
 	}
 	
 	public void onUserChange(UserEntityAction<?> action) {
-		// FIXME: Ideally we want to ensure that these methods are only called once at the end of a series of operations
 		switch (action.getEntityType()) {
 		case GRADEBOOK:
 			switch (action.getActionType()) {

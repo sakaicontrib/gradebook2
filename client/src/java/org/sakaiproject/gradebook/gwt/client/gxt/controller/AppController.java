@@ -130,6 +130,8 @@ public class AppController extends Controller {
 			forwardToView(multigradeView, event);
 			forwardToView(treeView, event);
 			forwardToView(appView, event);
+			if (singleView != null && singleView.isDialogVisible())
+				forwardToView(singleView, event);
 			break;
 		case REFRESH_GRADE_SCALE:
 			forwardToView(multigradeView, event);

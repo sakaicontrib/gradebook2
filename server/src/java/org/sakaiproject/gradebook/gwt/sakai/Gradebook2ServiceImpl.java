@@ -2608,6 +2608,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 
 		itemModel.setReleaseGrades(Boolean.valueOf(gradebook.isCourseGradeDisplayed()));
+		itemModel.setReleaseItems(Boolean.valueOf(gradebook.isAssignmentsDisplayed()));
 		itemModel.setGradeScaleId(gradebook.getSelectedGradeMapping().getId());
 
 		return itemModel;
@@ -3859,6 +3860,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 		gradebook.setCourseGradeDisplayed(isReleaseGrades);
 
+		boolean wasReleaseItems = gradebook.isAssignmentsDisplayed();
+		boolean isReleaseItems = DataTypeConversionUtil.checkBoolean(item.getReleaseItems());
+		
+		gradebook.setAssignmentsDisplayed(isReleaseItems);
+		
 		GradeMapping mapping = gradebook.getSelectedGradeMapping();
 		Long gradeScaleId = item.getGradeScaleId();
 		if (mapping != null && gradeScaleId != null && !mapping.getId().equals(gradeScaleId)) {

@@ -75,6 +75,7 @@ public class ItemFormPanel extends ContentPanel {
 	private CheckBox equallyWeightChildrenField;
 	private CheckBox releasedField;
 	private CheckBox releaseGradesField;
+	private CheckBox releaseItemsField;
 	private NumberField percentCourseGradeField;
 	private NumberField percentCategoryField;
 	private NumberField pointsField;
@@ -178,7 +179,15 @@ public class ItemFormPanel extends ContentPanel {
 		releaseGradesField.setName(ItemModel.Key.RELEASEGRADES.name());
 		releaseGradesField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.RELEASEGRADES));
 		releaseGradesField.setVisible(false);
+		releaseGradesField.addListener(Events.Change, checkboxChangeListener);
 		formPanel.add(releaseGradesField);
+		
+		releaseItemsField = new NullSensitiveCheckBox();
+		releaseItemsField.setName(ItemModel.Key.RELEASEITEMS.name());
+		releaseItemsField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.RELEASEITEMS));
+		releaseItemsField.setVisible(false);
+		releaseItemsField.addListener(Events.Change, checkboxChangeListener);
+		formPanel.add(releaseItemsField);
 		
 		percentCourseGradeField = new InlineEditNumberField();
 		percentCourseGradeField.setName(ItemModel.Key.PERCENT_COURSE_GRADE.name());
@@ -782,6 +791,13 @@ public class ItemFormPanel extends ContentPanel {
 			isPercentCategoryVisible = hasWeights && isItem;
 		}
 		
+	
+		extraCreditField.removeListener(Events.Change, checkboxChangeListener);
+		includedField.removeListener(Events.Change, checkboxChangeListener);
+		releasedField.removeListener(Events.Change, checkboxChangeListener);
+		releaseGradesField.removeListener(Events.Change, checkboxChangeListener);
+		releaseItemsField.removeListener(Events.Change, checkboxChangeListener);
+		
 		initField(nameField, isAllowedToEdit && isEditable && !isDelete && !isExternal, true);
 		initField(pointsField, isAllowedToEdit && !isDelete && !isExternal, isEditable && isItem);
 		initField(percentCategoryField, isAllowedToEdit && !isDelete && (isItem || isCreateNewItem), isEditable && isPercentCategoryVisible);
@@ -793,10 +809,18 @@ public class ItemFormPanel extends ContentPanel {
 		initField(includedField, isAllowedToEdit && !isDelete, isEditable && isNotGradebook);
 		initField(releasedField, isAllowedToEdit && !isDelete, isEditable && isItem);
 		initField(releaseGradesField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
+		initField(releaseItemsField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
 		initField(categoryPicker, isAllowedToEdit && !isDelete, isEditable && hasCategories && isItem);
 		initField(categoryTypePicker, isAllowedToEdit, isEditable && !isNotGradebook);
 		initField(gradeTypePicker, isAllowedToEdit, isEditable && !isNotGradebook);
 		initField(sourceField, false, isEditable && isItem);
+		
+		
+		extraCreditField.addListener(Events.Change, checkboxChangeListener);
+		includedField.addListener(Events.Change, checkboxChangeListener);
+		releasedField.addListener(Events.Change, checkboxChangeListener);
+		releaseGradesField.addListener(Events.Change, checkboxChangeListener);
+		releaseItemsField.addListener(Events.Change, checkboxChangeListener);
 	}
 	
 	private void initField(Field field, boolean isEnabled, boolean isVisible) {
