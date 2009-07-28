@@ -1451,6 +1451,28 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		}
 	}
 
+	public List<Permission> getPermissionsForUserForGategoryForGroup(final Long gradebookId, final String userId, final Long categoryId, final String groupId) throws IllegalArgumentException {
+
+		if (gradebookId == null || userId == null || categoryId == null || groupId == null)
+			throw new IllegalArgumentException("Null parameter(s) in BaseHibernateManager.getPermissionsForUserForGroup");
+
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session)
+			throws HibernateException {
+				Query q = session
+				.createQuery("from Permission as perm where perm.gradebookId=:gradebookId and perm.userId=:userId and perm.groupId=:groupId and perm.categoryId=:categoryId");
+				q.setLong("gradebookId", gradebookId);
+				q.setString("userId", userId);
+				q.setString("groupId", groupId);
+				q.setLong("categoryId", categoryId);
+
+				return q.list();
+			}
+		};
+		return (List<Permission>) getHibernateTemplate().execute(hc);
+
+	}
+
 	public List<Comment> getComments(final Long gradebookId) {
 		return (List<Comment>)getHibernateTemplate().execute(new HibernateCallback() {
 			public Object doInHibernate(Session session) throws HibernateException {
@@ -2136,6 +2158,23 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		HibernateCallback hc = new HibernateCallback() {
 			public Object doInHibernate(Session session) throws HibernateException {
 				Query q = session.createQuery("from Permission as perm where perm.gradebookId=:gradebookId and perm.userId=:userId and perm.categoryId is null and perm.groupId is null");
+				q.setLong("gradebookId", gradebookId);
+				q.setString("userId", userId);
+
+				return q.list();
+			}
+		};
+		return (List)getHibernateTemplate().execute(hc);
+	}
+	
+	public List<Permission> getPermissionForUserAnyCategory(final Long gradebookId, final String userId) throws IllegalArgumentException {
+		
+		if(gradebookId == null || userId == null)
+			throw new IllegalArgumentException("Null parameter(s) in BaseHibernateManager.getPermissionsForUserAnyGroupForCategory");
+
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException {
+				Query q = session.createQuery("from Permission as perm where perm.gradebookId=:gradebookId and perm.userId=:userId and perm.categoryId is null");
 				q.setLong("gradebookId", gradebookId);
 				q.setString("userId", userId);
 

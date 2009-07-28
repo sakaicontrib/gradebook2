@@ -183,4 +183,7 @@ public interface GradebookToolService {
 	
 	public List<Permission> getPermissionsForUserForCategory(final Long gradebookId, final String userId, final List<Long> cateIds) throws IllegalArgumentException;
 	
+	public List<Permission> getPermissionsForUserForGategoryForGroup(final Long gradebookId, final String userId, final Long categoryId, final String groupId) throws IllegalArgumentException;
+	
+	public List<Permission> getPermissionForUserAnyCategory(final Long gradebookId, final String userId) throws IllegalArgumentException;
 }

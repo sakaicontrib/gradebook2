@@ -688,6 +688,14 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	public List<Permission> getPermissionsForUserForGategoryForGroup(final Long gradebookId, final String userId, final Long categoryId, final String groupId) throws IllegalArgumentException {
+		return new ArrayList<Permission>();
+	}
+
+	public List<Permission> getPermissionForUserAnyCategory(final Long gradebookId, final String userId) throws IllegalArgumentException {
+		return new ArrayList<Permission>();
+	}
 
 	public List<CourseGradeRecord> getPointsEarnedCourseGradeRecords(final CourseGrade courseGrade, final Collection studentUids, final Collection assignments, final Map gradeRecordMap) {
 		

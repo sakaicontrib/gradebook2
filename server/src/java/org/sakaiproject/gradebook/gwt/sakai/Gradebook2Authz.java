@@ -24,7 +24,7 @@ public interface Gradebook2Authz {
 	 * 
 	 * @return the map< string, enrollment record>
 	 */
-	public Map<String, EnrollmentRecord> findEnrollmentRecords(String gradebookUid, Long gradebookId, String optionalSearchString, String optionalSectionUid);
+	public Map<String, EnrollmentRecord> findEnrollmentRecords(String gradebookUid, String optionalSearchString, String optionalSectionUid);
 
 	/**
 	 * Gets the all sections.
@@ -44,7 +44,7 @@ public interface Gradebook2Authz {
 	 * 
 	 * @return the viewable groups for user
 	 */
-	public List<String> getViewableGroupsForUser(Long gradebookId, String userId, List<String> groupIds);
+	public List<String> getViewableGroupsForUser(String gradebookUid, String userId, List<String> groupIds);
 
 	/**
 	 * Gets the viewable sections.
@@ -54,7 +54,7 @@ public interface Gradebook2Authz {
 	 * 
 	 * @return the viewable sections
 	 */
-	public List<CourseSection> getViewableSections(String gradebookUid, Long gradebookId);
+	public List<CourseSection> getViewableSections(String gradebookUid);
 
 	/**
 	 * Checks if is user able to grade.
@@ -106,23 +106,23 @@ public interface Gradebook2Authz {
 	/**
 	 * Checks if is user has grader permissions.
 	 * 
-	 * @param gradebookId the gradebook id
+	 * @param gradebookUid the gradebook id
 	 * 
 	 * @return true, if is user has grader permissions
 	 */
-	public boolean hasUserGraderPermissions(Long gradebookId);
+	public boolean hasUserGraderPermissions(String gradebookUid);
 	
-	public boolean hasUserGraderPermission(Long gradebookId, String groupId);
+	public boolean hasUserGraderPermission(String gradebookUid, String groupId);
 	
 	/**
 	 * Checks if is user has grader permissions.
 	 * 
-	 * @param gradebookId the gradebook id
+	 * @param gradebookUid the gradebook id
 	 * @param userUid the user uid
 	 * 
 	 * @return true, if is user has grader permissions
 	 */
-	public boolean hasUserGraderPermissions(Long gradebookId, String userUid);
+	public boolean hasUserGraderPermissions(String gradebookUid, String userUid);
 
 	/**
 	 * Checks if is user t ain section.
@@ -151,11 +151,17 @@ public interface Gradebook2Authz {
 	/**
 	 * Gets the grader permissions for user.
 	 * 
-	 * @param gradebookId the gradebook id
+	 * @param gradebookUid the gradebook id
 	 * @param userId the user id
 	 * 
 	 * @return the grader permissions for user
 	 */
-	public List<Permission> getGraderPermissionsForUser(Long gradebookId, String userId);
+	public List<Permission> getGraderPermissionsForUser(String gradebookUid, String userId);
+	
+	// GRBK-233
+	public boolean canUserViewCategory(String gradebookUid, Long categoryId);
+	
+	// GRBK-233
+	public boolean canUserGradeCategory(String gradebookUid, Long categoryId);
 
 }
