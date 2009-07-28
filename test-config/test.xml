@@ -90,7 +90,8 @@
 		<property name="authn" ref="org_sakaiproject_tool_gradebook_facades_Authn"/>
 		<property name="sectionAwareness" ref="org.sakaiproject.section.api.SectionAwareness"/>
 		<property name="gbToolService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/>
-		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service"/> 
+		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service"/>
+		<!--property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/-->
 	</bean>
 	
 	<bean id="org_sakaiproject_tool_gradebook_facades_Authz" class="org.sakaiproject.gradebook.gwt.sakai.mock.AuthzMock">

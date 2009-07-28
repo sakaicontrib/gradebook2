@@ -2445,39 +2445,48 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		model.setName(gradebook.getName());
 
 		// GRBK-233 create new assignment and category list
-		List<Category> filteredCategories = new ArrayList<Category>();
-		List<Assignment> filteredAssignments = assignments;
+		ItemModel gradebookItemModel = null;
 		
-		for(Category category : categories) {
-			
-			// First we check if the user has view permission for the category
-			boolean canView = authz.canUserViewCategory(gradebook.getUid(), category.getId());
-			if(canView) {
-				filteredCategories.add(category);
-			}
-			else {
-				// User has no view permission, so let's check if user has grader permission for the category
-				boolean canGrade = authz.canUserGradeCategory(gradebook.getUid(), category.getId());
-				if(canGrade) {
+		if(null != categories) {
+			List<Category> filteredCategories = new ArrayList<Category>();
+			List<Assignment> filteredAssignments = assignments;
+
+			for(Category category : categories) {
+
+				// First we check if the user has view permission for the category
+				boolean canView = authz.canUserViewCategory(gradebook.getUid(), category.getId());
+				if(canView) {
 					filteredCategories.add(category);
 				}
-			}
-			
-			// Since the user doesn't have permission to either view or grade the category, we 
-			// need to remove any associated assignments
-			List<Assignment> tempAssignments = new ArrayList<Assignment>();
-			for(Assignment assignment : filteredAssignments) {
-				
-				if(!assignment.getCategory().getId().equals(category.getId())) {
-					tempAssignments.add(assignment);
+				else {
+					// User has no view permission, so let's check if user has grader permission for the category
+					boolean canGrade = authz.canUserGradeCategory(gradebook.getUid(), category.getId());
+					if(canGrade) {
+						filteredCategories.add(category);
+					}
 				}
+
+				// Since the user doesn't have permission to either view or grade the category, we 
+				// need to remove any associated assignments
+				List<Assignment> tempAssignments = new ArrayList<Assignment>();
+				for(Assignment assignment : filteredAssignments) {
+
+					if(!assignment.getCategory().getId().equals(category.getId())) {
+						tempAssignments.add(assignment);
+					}
+				}
+
+				filteredAssignments = tempAssignments;
+
 			}
 			
-			filteredAssignments = tempAssignments;
-			
+			gradebookItemModel = getItemModel(gradebook, filteredAssignments, filteredCategories, null, null);
 		}
+		else {
+			gradebookItemModel = getItemModel(gradebook, assignments, categories, null, null);
+		}
+
 		
-		ItemModel gradebookItemModel = getItemModel(gradebook, filteredAssignments, filteredCategories, null, null);
 		model.setGradebookItemModel(gradebookItemModel);
 		List<FixedColumnModel> columns = getColumns();
 
