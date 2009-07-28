@@ -63,6 +63,15 @@ public class StatisticsPanel extends ContentPanel {
 		configs.add(column);
 		
 		column = new ColumnConfig();  
+		column.setId(StatisticsModel.Key.STANDARD_DEVIATION.name());  
+		column.setHeader(StatisticsModel.Key.STANDARD_DEVIATION.getPropertyName());
+		column.setWidth(80);
+		column.setGroupable(false);
+		column.setMenuDisabled(true);
+		column.setSortable(false);
+		configs.add(column);
+		
+		column = new ColumnConfig();  
 		column.setId(StatisticsModel.Key.MEDIAN.name());  
 		column.setHeader(StatisticsModel.Key.MEDIAN.getPropertyName());
 		column.setWidth(80);
@@ -80,14 +89,6 @@ public class StatisticsPanel extends ContentPanel {
 		column.setSortable(false);
 		configs.add(column);
 		
-		column = new ColumnConfig();  
-		column.setId(StatisticsModel.Key.STANDARD_DEVIATION.name());  
-		column.setHeader(StatisticsModel.Key.STANDARD_DEVIATION.getPropertyName());
-		column.setWidth(80);
-		column.setGroupable(false);
-		column.setMenuDisabled(true);
-		column.setSortable(false);
-		configs.add(column);
 		
 		RpcProxy<ListLoadConfig, ListLoadResult<GradeScaleRecordModel>> proxy = new RpcProxy<ListLoadConfig, ListLoadResult<GradeScaleRecordModel>>() {
 			
