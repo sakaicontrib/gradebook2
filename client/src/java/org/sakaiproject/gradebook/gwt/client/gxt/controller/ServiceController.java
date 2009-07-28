@@ -102,7 +102,7 @@ public class ServiceController extends Controller {
 					selectedGradebook.setGradebookItemModel(result);
 					Dispatcher
 							.forwardEvent(GradebookEvents.ItemUpdated.getEventType(), result);
-					Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel.getEventType(),
+					Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookItems.getEventType(),
 							selectedGradebook);
 					break;
 				case CATEGORY:
