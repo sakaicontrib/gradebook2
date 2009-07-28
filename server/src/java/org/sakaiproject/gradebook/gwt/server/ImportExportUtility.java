@@ -445,7 +445,7 @@ public class ImportExportUtility {
 		return parseImportGeneric(service, gradebookUid, raw);
 	}
 	private final static int RAWFIELD_FIRST_POSITION = 0; 
-	private final static int RAWFIELD_SECOND_POSITION = 0; 
+	private final static int RAWFIELD_SECOND_POSITION = 1; 
 
 	private static ImportFile handleScantronSheetForJExcelApi(Sheet s,
 			Gradebook2Service service, String gradebookUid) throws InvalidInputException, FatalException 
@@ -799,12 +799,16 @@ public class ImportExportUtility {
 				log.debug("Processed non header line"); 
 				// Since it's not processed yet, check to see if the current row has any useful info
 				for (int i=0;i<columns.length;i++) {
-					String columnLowerCase = columns[i].trim().toLowerCase();
-					log.debug("SI: columnLowerCase=" + columnLowerCase);
-					StructureRow structureRow = structureLineIndicatorMap.get(columnLowerCase);
+					if (columns[i] != null && columns[i].equals("")) 
+					{
+
+						String columnLowerCase = columns[i].trim().toLowerCase();
+						log.debug("SI: columnLowerCase=" + columnLowerCase);
+						StructureRow structureRow = structureLineIndicatorMap.get(columnLowerCase);
 						
-					if (structureRow != null) {
-						structureColumnsMap.put(structureRow, columns);
+						if (structureRow != null) {
+							structureColumnsMap.put(structureRow, columns);
+						}
 					}
 				}
 				
