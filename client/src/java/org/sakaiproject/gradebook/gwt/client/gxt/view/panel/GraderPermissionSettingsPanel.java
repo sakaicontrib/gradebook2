@@ -58,6 +58,9 @@ import com.google.gwt.user.client.ui.HTML;
 public class GraderPermissionSettingsPanel extends ContentPanel {
 	
 	private final static int DELETE_ACTION_GRID_CELL = 4;
+	
+	private final static String CAN_VIEW_PERMISSION = "view";
+	private final static String CAN_GRADE_PERMISSION = "grade";
 
 	private VerticalPanel mainVerticalPanel = null;
 	private HorizontalPanel inputHorizontalPanel = null;
@@ -110,8 +113,10 @@ public class GraderPermissionSettingsPanel extends ContentPanel {
 		
 		// PERMISSIONS
 		List<Permission> permissionList = new ArrayList<Permission>();
-		permissionList.add(new Permission("grade"));
-		permissionList.add(new Permission("view"));
+		permissionList.add(new Permission(CAN_GRADE_PERMISSION));
+		// GRBK-233 : For now, we only enable the can grade permission. The can view permission will 
+		// be tracked int GRBK-245
+		//	permissionList.add(new Permission(CAN_VIEW_PERMISSION));
 		ListStore<Permission> permissionListStore = new ListStore<Permission>();
 		permissionListStore.add(permissionList);
 		

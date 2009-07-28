@@ -20,7 +20,8 @@ import org.sakaiproject.tool.gradebook.Permission;
 public class Gradebook2AuthzImpl implements Gradebook2Authz {
 	
 	private static final int FIRST_ITEM = 0;
-	private static final int HAS_ONE_ITEM = 1;
+	private static final int ONE_ITEM = 1;
+	private static final int ZERO_ITEMS = 0;
 
 	private Gradebook2Authn authn;
 	private Gradebook2Service gbService;
@@ -731,23 +732,14 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 		
 		boolean canUserViewCagegory = false;
 		
-		// Check if the user is an instructor : can grade and view
+		// Check if the user is an instructor : An instructor can grade and view all
 		canUserViewCagegory = isUserAbleToGradeAll(gradebookUid);
 		if(canUserViewCagegory) {
 			return true;
 		}
 		
-		
-		// Check if the user is a TA and was added to a section via the section info tool : can grade and view
-		
-		// Getting all the section and check if TA is assigned to at least one of them
-		List<CourseSection> courseSections = getAllSections(getSiteContext());
-		for(CourseSection courseSection : courseSections) {
-			canUserViewCagegory = isUserTAinSection(courseSection.getUuid());
-			if(canUserViewCagegory) {
-				return true;
-			}
-		}
+		// Per the "old" gradebook, Grader Permissions overwrite TA section assignment via the section info tool,
+		// thus, we check the Grader Permission first
 		
 		// Checking Grader Permissions
 		String userUid = authn.getUserUid();
@@ -757,7 +749,7 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 		List<Long> categoryIds = new ArrayList<Long>();
 		categoryIds.add(categoryId);
 		permissions = gbToolService.getPermissionsForUserForCategory(getGradebookId(gradebookUid), userUid, categoryIds);
-		if(null != permissions && permissions.size() == HAS_ONE_ITEM) {
+		if(null != permissions && permissions.size() == ONE_ITEM) {
 			if(permissions.get(FIRST_ITEM).getFunction().equals(action)) {
 				return true;
 			}
@@ -766,8 +758,26 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 		// Case 2: All Categories
 		permissions = null;
 		permissions = gbToolService.getPermissionForUserAnyCategory(getGradebookId(gradebookUid), userUid);
-		if(null != permissions && permissions.size() == HAS_ONE_ITEM) {
+		if(null != permissions && permissions.size() == ONE_ITEM) {
 			if(permissions.get(FIRST_ITEM).getFunction().equals(action)) {
+				return true;
+			}
+		}
+		
+		// We only check the section level permission if there are not Grader Permissions for the current user
+		permissions = null;
+		permissions = gbToolService.getPermissionsForUser(getGradebookId(gradebookUid), userUid);
+		if(null != permissions && permissions.size() > ZERO_ITEMS) {
+			return false;
+		}
+		
+		// Check if the user is a TA and was added to a section via the section info tool : The TA can grade and view all for a given section
+		
+		// Getting all the section and check if TA is assigned to at least one of them
+		List<CourseSection> courseSections = getAllSections(getSiteContext());
+		for(CourseSection courseSection : courseSections) {
+			canUserViewCagegory = isUserTAinSection(courseSection.getUuid());
+			if(canUserViewCagegory) {
 				return true;
 			}
 		}
