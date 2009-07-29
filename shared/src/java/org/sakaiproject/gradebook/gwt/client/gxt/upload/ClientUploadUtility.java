@@ -35,7 +35,6 @@ public class ClientUploadUtility {
 		if (headers != null) {
 			for (ImportHeader header : headers) {
 				
-				if (header.getField().equals(ImportHeader.Field.ITEM.name())) {
 					ItemModel itemModel = new ItemModel();
 					
 					if (header == null)
@@ -60,9 +59,7 @@ public class ClientUploadUtility {
 					itemModel.setPercentCategory(header.getPercentCategory());
 				
 					items.add(itemModel);
-				} else if (header.getField().equals(ImportHeader.Field.COMMENT.name())) {
-					
-				}
+				
 			}
 		}
 
