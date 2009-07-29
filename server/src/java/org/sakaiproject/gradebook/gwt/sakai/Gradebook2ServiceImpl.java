@@ -2466,17 +2466,19 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					}
 				}
 
-				// Since the user doesn't have permission to either view or grade the category, we 
-				// need to remove any associated assignments
-				List<Assignment> tempAssignments = new ArrayList<Assignment>();
-				for(Assignment assignment : filteredAssignments) {
+				if(null != assignments) {
+					// Since the user doesn't have permission to either view or grade the category, we 
+					// need to remove any associated assignments
+					List<Assignment> tempAssignments = new ArrayList<Assignment>();
+					for(Assignment assignment : filteredAssignments) {
 
-					if(!assignment.getCategory().getId().equals(category.getId())) {
-						tempAssignments.add(assignment);
+						if(!assignment.getCategory().getId().equals(category.getId())) {
+							tempAssignments.add(assignment);
+						}
 					}
-				}
 
-				filteredAssignments = tempAssignments;
+					filteredAssignments = tempAssignments;
+				}
 
 			}
 			
