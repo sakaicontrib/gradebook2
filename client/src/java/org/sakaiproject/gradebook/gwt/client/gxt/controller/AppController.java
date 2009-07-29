@@ -51,7 +51,7 @@ public class AppController extends Controller {
 		registerEventTypes(GradebookEvents.ItemUpdated.getEventType());
 		registerEventTypes(GradebookEvents.LearnerGradeRecordUpdated.getEventType());
 		registerEventTypes(GradebookEvents.Load.getEventType());
-		registerEventTypes(GradebookEvents.LoadItemTreeModel.getEventType());
+		//registerEventTypes(GradebookEvents.LoadItemTreeModel.getEventType());
 		registerEventTypes(GradebookEvents.MaskItemTree.getEventType());
 		registerEventTypes(GradebookEvents.NewCategory.getEventType());
 		registerEventTypes(GradebookEvents.NewItem.getEventType());

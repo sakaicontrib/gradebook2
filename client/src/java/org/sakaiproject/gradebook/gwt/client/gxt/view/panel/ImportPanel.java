@@ -400,7 +400,8 @@ public class ImportPanel extends ContentPanel {
 						
 						GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 						selectedGradebook.setGradebookItemModel(result.getGradebookItemModel());
-						Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel.getEventType(), selectedGradebook);
+						Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookSetup.getEventType(), selectedGradebook);
+						Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookItems.getEventType(), selectedGradebook);
 					} catch (Exception e) {
 						Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(e));
 					} finally {
@@ -562,7 +563,8 @@ public class ImportPanel extends ContentPanel {
 									refreshCategoryPickerStore(result.getGradebookItemModel());
 									
 									selectedGradebook.setGradebookItemModel(result.getGradebookItemModel());
-									Dispatcher.forwardEvent(GradebookEvents.LoadItemTreeModel.getEventType(), selectedGradebook);
+									Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookSetup.getEventType(), selectedGradebook);
+									Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookItems.getEventType(), selectedGradebook);
 								}
 							}
 						};
