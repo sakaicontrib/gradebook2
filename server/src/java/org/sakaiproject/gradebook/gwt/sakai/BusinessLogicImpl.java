@@ -251,6 +251,9 @@ public class BusinessLogicImpl implements BusinessLogic {
 		if (categories != null) {
 			int count = 0;
 			for (Category category : categories) {
+				if (category.isRemoved())
+					continue;
+				
 				Integer categoryOrder = Integer.valueOf(count);
 			
 				if (categoryOrder.equals(newCategoryOrder)) {
@@ -296,7 +299,9 @@ public class BusinessLogicImpl implements BusinessLogic {
 			if (oldAssignments != null) {
 				int count = 0;
 				for (Assignment assignment : oldAssignments) {
-				
+					if (assignment.isRemoved())
+						continue;
+					
 					Integer itemOrder = Integer.valueOf(count);
 					Integer existingItemOrder = assignment.getItemOrder();
 					
