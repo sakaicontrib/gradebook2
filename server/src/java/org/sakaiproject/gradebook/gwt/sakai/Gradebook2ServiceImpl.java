@@ -1950,6 +1950,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				propertyMap.put(propertyName, String.valueOf(value));
 		}
 
+		boolean isRemoved = false;
+		
 		List<Assignment> assignments = null;
 		try {
 
@@ -1984,7 +1986,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			boolean isUnweighted = !convertBoolean(item.getIncluded()).booleanValue();
 			boolean wasUnweighted = DataTypeConversionUtil.checkBoolean(assignment.isUnweighted());
 
-			boolean isRemoved = convertBoolean(item.getRemoved()).booleanValue();
+			isRemoved = convertBoolean(item.getRemoved()).booleanValue();
 			boolean wasRemoved = assignment.isRemoved();
 
 			// We only want to update the weights when we're dealing with an
@@ -2110,7 +2112,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 		// The first case is that we're in categories mode and the category has
 		// changed
-		if (hasCategories && oldCategory != null) {
+		if (hasCategories && (oldCategory != null || isRemoved)) {
 			assignments = gbService.getAssignments(gradebook.getId());
 			List<Category> categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
 			return getItemModel(gradebook, assignments, categories, null, assignment.getId());
@@ -2474,13 +2476,14 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					// Since the user doesn't have permission to either view or grade the category, we 
 					// need to remove any associated assignments
 					List<Assignment> tempAssignments = new ArrayList<Assignment>();
-					for(Assignment assignment : filteredAssignments) {
-
-						if(!assignment.getCategory().getId().equals(category.getId())) {
-							tempAssignments.add(assignment);
+					if (filteredAssignments != null) {
+						for(Assignment assignment : filteredAssignments) {
+	
+							if(!assignment.getCategory().getId().equals(category.getId())) {
+								tempAssignments.add(assignment);
+							}
 						}
 					}
-
 					filteredAssignments = tempAssignments;
 				}
 

@@ -81,6 +81,7 @@ public interface AppConstants {
 	
 	public static final String EXTRA_CREDIT_INDICATOR = " (+)";
 	public static final String UNINCLUDED_INDICATOR = " (-)";
+	public static final String COMMENTS_INDICATOR = "Comment : ";
 	
 	public static final String gradePermission = "grade";
 	public static final String viewPermission = "view";

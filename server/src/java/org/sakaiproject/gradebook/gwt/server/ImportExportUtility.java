@@ -80,7 +80,7 @@ public class ImportExportUtility {
 	};
 
 	public static void exportGradebook(Gradebook2Service service, String gradebookUid, 
-			final boolean includeStructure, PrintWriter writer, HttpServletResponse response) 
+			final boolean includeStructure, final boolean includeComments, PrintWriter writer, HttpServletResponse response) 
 		throws FatalException {
 
 		GradebookModel gradebook = service.getGradebook(gradebookUid);
@@ -195,6 +195,13 @@ public class ImportExportUtility {
 						percentageGradeRow.add("");
 						dropLowestRow.add("");
 						equalWeightRow.add("");
+					} 
+					
+					if (includeComments) {
+						categoriesRow.add("");
+						percentageGradeRow.add("");
+						dropLowestRow.add("");
+						equalWeightRow.add("");
 					}
 					
 					StringBuilder text = new StringBuilder();
@@ -220,6 +227,14 @@ public class ImportExportUtility {
 					percentCategoryRow.add(new StringBuilder()
 						.append(String.valueOf(itemModel.getPercentCategory()))
 						.append("%").toString());
+					
+					if (includeComments) {
+						StringBuilder commentsText = new StringBuilder();
+						commentsText.append("Comments : ").append(itemModel.getName());
+						headerColumns.add(commentsText.toString());
+						pointsRow.add("");
+						percentCategoryRow.add("");
+					}
 				}
 				
 			};
@@ -271,6 +286,12 @@ public class ImportExportUtility {
 					
 					headerIds.add(itemModel.getIdentifier());
 					headerColumns.add(text.toString());
+					
+					if (includeComments) {
+						StringBuilder commentsText = new StringBuilder();
+						commentsText.append("Comments : ").append(itemModel.getName());
+						headerColumns.add(commentsText.toString());
+					}
 				}
 				
 			};
@@ -309,6 +330,18 @@ public class ImportExportUtility {
 							
 						} else {
 							dataColumns.add("");
+						}
+						
+						if (includeComments) {
+							String commentId = new StringBuilder()
+								.append(headerIds.get(column)).append(StudentModel.COMMENT_TEXT_FLAG).toString();
+							
+							Object comment = row.get(commentId);
+							
+							if (comment == null)
+								comment = "";
+							
+							dataColumns.add(String.valueOf(comment));
 						}
 					}
 					
@@ -887,6 +920,13 @@ public class ImportExportUtility {
 
 				name = text;
 
+				boolean isComment = text
+				.startsWith(AppConstants.COMMENTS_INDICATOR);
+				
+				if (isComment) {
+					name = text.substring(AppConstants.COMMENTS_INDICATOR.length());
+				}
+				
 				int startParenthesis = text.indexOf("[");
 				int endParenthesis = text.indexOf("pts]");
 
@@ -909,45 +949,50 @@ public class ImportExportUtility {
 					ItemModel model = findModelByName(name, gradebook
 							.getGradebookItemModel());
 					
-
-					StringBuffer value = new StringBuffer(name);
-
-					if (model != null)
-						points = decimalFormat.format(model.getPoints());
-
-					if (points == null)
-						points = "100";
-
-					if (points != null && points.length() > 0)
-						value.append(" [").append(points).append("]");
-
-					header = new ImportHeader(Field.ITEM, value.toString());
-
-					if (model != null) {
-						header.setId(model.getIdentifier());
-						header.setCategoryName(model.getCategoryName());
-						header.setCategoryId(String.valueOf(model
-								.getCategoryId()));
-
-						importInfo.getCategoryIdNameMap().put(
-								model.getCategoryId(), model.getCategoryName());
+					if (isComment) {
+						header = new ImportHeader(Field.COMMENT, text);
+						header.setAssignmentId(model.getIdentifier());
 					} else {
-						header.setId(new StringBuilder().append("NEW:").append(
-								i).toString());
-						header.setCategoryName("Unassigned");
-					}
-					header.setHeaderName(name);
-					header.setExtraCredit(Boolean.valueOf(isExtraCredit));
-					header.setUnincluded(Boolean.valueOf(isUnincluded));
-					if (points != null && points.equals("%"))
-						header.setPercentage(true);
-					else {
-						try {
-							header.setPoints(Double.valueOf(Double
-									.parseDouble(points)));
-						} catch (NumberFormatException nfe) {
-							log.error("Could not parse points "
-									+ points);
+
+						StringBuffer value = new StringBuffer(name);
+	
+						if (model != null)
+							points = decimalFormat.format(model.getPoints());
+	
+						if (points == null)
+							points = "100";
+	
+						if (points != null && points.length() > 0)
+							value.append(" [").append(points).append("]");
+	
+						header = new ImportHeader(Field.ITEM, value.toString());
+	
+						if (model != null) {
+							header.setId(model.getIdentifier());
+							header.setCategoryName(model.getCategoryName());
+							header.setCategoryId(String.valueOf(model
+									.getCategoryId()));
+	
+							importInfo.getCategoryIdNameMap().put(
+									model.getCategoryId(), model.getCategoryName());
+						} else {
+							header.setId(new StringBuilder().append("NEW:").append(
+									i).toString());
+							header.setCategoryName("Unassigned");
+						}
+						header.setHeaderName(name);
+						header.setExtraCredit(Boolean.valueOf(isExtraCredit));
+						header.setUnincluded(Boolean.valueOf(isUnincluded));
+						if (points != null && points.equals("%"))
+							header.setPercentage(true);
+						else {
+							try {
+								header.setPoints(Double.valueOf(Double
+										.parseDouble(points)));
+							} catch (NumberFormatException nfe) {
+								log.error("Could not parse points "
+										+ points);
+							}
 						}
 					}
 				}

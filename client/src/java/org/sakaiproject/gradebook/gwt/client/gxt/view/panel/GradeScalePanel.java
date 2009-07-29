@@ -150,9 +150,6 @@ public class GradeScalePanel extends ContentPanel {
 				} else {
 					loader.load();
 				}
-			
-				//loadGradeScaleData(selectedGradebookModel);
-				//loader.load();
 			}
 			
 			

@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class ImportHeader implements Serializable {
 
-	public enum Field { ID, NAME, ITEM }
+	public enum Field { ID, NAME, ITEM, COMMENT }
 	public enum Mode { POINTS, PERCENTAGES, LETTERGRADES };
 	
 	private static final long serialVersionUID = 1L;

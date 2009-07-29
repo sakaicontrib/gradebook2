@@ -46,7 +46,6 @@ import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
-import com.extjs.gxt.ui.client.widget.Info;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.TabItem;
@@ -132,16 +131,6 @@ public class ImportPanel extends ContentPanel {
 		
 		headerMap = new HashMap<String, ImportHeader>();
 		
-		/*fieldListener = new Listener<FieldEvent>() {
-
-			public void handleEvent(FieldEvent be) {
-				readFile();
-			}
-			
-		};
-		
-		currentStep = Step.ONE;*/
-		
 		// Set up store
 		resultStore = new ListStore<BaseModel>();
 		
@@ -184,12 +173,7 @@ public class ImportPanel extends ContentPanel {
 		mainCardLayout = new CardLayout();
 		mainCardLayoutContainer = new LayoutContainer();
 		mainCardLayoutContainer.setLayout(mainCardLayout);
-		
-		//subCardLayout = new CardLayout();
-		//subCardLayoutContainer = new LayoutContainer();
-		//subCardLayoutContainer.setLayout(subCardLayout);
-		//subCardLayoutContainer.setHeight(400);
-		
+
 		tabPanel = new TabPanel();
 		
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
@@ -272,12 +256,6 @@ public class ImportPanel extends ContentPanel {
 			}
 		});
 		
-		/*previewFieldSet = new FieldSet(); 
-		previewFieldSet.setLayout(new FlowLayout());
-		previewFieldSet.setHeading("Preview"); 
-		previewFieldSet.setHeight(330);
-		previewFieldSet.add(grid, new MarginData(5));*/
-		
 		boolean hasCategories = selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES;
 		
 		previewTab = new TabItem("Data");
@@ -293,24 +271,10 @@ public class ImportPanel extends ContentPanel {
 		tabPanel.add(columnsTab);
 		
 		tabPanel.setHeight(380);
-		
-		//subCardLayoutContainer.add(tabPanel);
-		
-		if (hasCategories) {
-			
-		} else {
+
+		if (!hasCategories) 
 			columnsTab.setVisible(false);
-			/*previewFieldSet = new FieldSet(); 
-			previewFieldSet.setLayout(new FlowLayout());
-			previewFieldSet.setHeading("Data"); 
-			previewFieldSet.setHeight(400);
-			previewFieldSet.add(grid, new MarginData(5));
 			
-			subCardLayoutContainer.add(previewFieldSet);*/
-		}
-		
-		//subCardLayoutContainer.setHeight(subHeight);
-				
 		step1Container = new ContentPanel();
 		step1Container.setHeaderVisible(false);
 		step1Container.setLayout(new FitLayout());
@@ -330,10 +294,7 @@ public class ImportPanel extends ContentPanel {
 			}
 		});
 		step1Container.addButton(submitButton);
-		//submitButton.setEnabled(false);
-		
-		
-		
+
 		cancelButton = new Button("Cancel");
 		cancelButton.setMinWidth(120);
 		cancelButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
@@ -638,6 +599,7 @@ public class ImportPanel extends ContentPanel {
 					Double percentCategory = getDouble(jsonHeaderObject, "percentCategory");
 					Boolean isExtraCredit = getBoolean(jsonHeaderObject, "extraCredit");
 					Boolean isUnincluded = getBoolean(jsonHeaderObject, "unincluded");
+					String assignmentId = getString(jsonHeaderObject, "assignmentId");
 					
 					int width = 200;
 								
@@ -673,6 +635,7 @@ public class ImportPanel extends ContentPanel {
 					header.setPercentCategory(percentCategory);
 					header.setExtraCredit(isExtraCredit);
 					header.setUnincluded(isUnincluded);
+					header.setAssignmentId(assignmentId);
 					
 					if (header.getField() != null && header.getField().equals("ITEM"))
 						headerMap.put(id, header);
@@ -870,76 +833,14 @@ public class ImportPanel extends ContentPanel {
 		itemGrid.setHeight(300);
 		itemGrid.setBorders(true);
 		itemGrid.setView(new BaseCustomGridView());
-        
-		//panel.add(itemGrid);
-		
-		
+
 		LayoutContainer container = new LayoutContainer();
 		container.setLayout(new FitLayout());
-		
-		/*ContentPanel directionsPanel = new ContentPanel();
-		directionsPanel.setFrame(true);
-		directionsPanel.setWidth(1);
-		directionsPanel.setHeaderVisible(false);
-		
-		String text = "Listed below are the items that will be imported, according to the column headers "
-			+ "you provided in your file. Note that items that do not yet exist in the current gradebook, "
-			+ "or that exist in a different category from the one selected, will be created on import. ";
-		
-		directionsPanel.add(new LabelField(text));
-		
-		container.add(directionsPanel, new RowData(1, -1));
-		*/
-		/*
-		FitLayout fitLayout = new FitLayout();
-		FieldSet itemFieldSet = new FieldSet(); 
-		itemFieldSet.setLayout(fitLayout);
-		itemFieldSet.setHeading("Items"); 
-		itemFieldSet.setHeight(300);  
-		itemFieldSet.add(panel, new MarginData(5));*/
-		
-		//container.add(itemGrid);
-		
+	
 		return itemGrid;
 	}
-	
-	/*private FieldSet buildPreviewFieldSet() {
-		ContentPanel dataPanel = new ContentPanel();
-		dataPanel.setLayout(new FlowLayout());
-		dataPanel.setHeaderVisible(false);
-		//dataPanel.setScrollMode(Scroll.AUTO);
-		
-		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 
-		rowStore = new ListStore<BaseModel>();
-		rowStore.setMonitorChanges(true);
-		ColumnModel cm = new ColumnModel(configs);
-		grid = new Grid<BaseModel>(rowStore, cm);
-		grid.setLoadMask(false);
-		grid.setBorders(true);
-		grid.setHeight(300);
-		dataPanel.add(grid);
-		
-		//rowStore.add((BaseModel)null);
-		
-		//formPanel.add(dataPanel);
-		
-		//add(dataPanel, new RowData(1, 1));
-		
-		FitLayout fitLayout = new FitLayout();
-		previewFieldSet = new FieldSet(); 
-		previewFieldSet.setLayout(fitLayout);
-		previewFieldSet.setHeading("Preview"); 
-		previewFieldSet.setHeight(330);
-		previewFieldSet.add(dataPanel, new MarginData(5));
-		
-		//previewFieldSet.setVisible(false);
-		
-		return previewFieldSet;
-	}*/
-	
-	
-	private LayoutContainer buildResultsContainer() {
+	/*private LayoutContainer buildResultsContainer() {
 		
 		final ContentPanel container = new ContentPanel();
 		container.setHeaderVisible(false);
@@ -955,13 +856,8 @@ public class ImportPanel extends ContentPanel {
 		proxy = new MemoryProxy<ListLoadResult<BaseModel>>(null);
 		loader = new BaseListLoader(proxy);
 		
-		//loader.load(0, 50);  
-		
+
 		resultStore = new ListStore<BaseModel>(loader);  
-		/*toolBar = new PagingToolBar(50);  
-		toolBar.bind(loader); 
-		container.setBottomComponent(toolBar);
-		*/
 		
 		EditorGrid<BaseModel> resultGrid = new EditorGrid<BaseModel>(resultStore, resultColumnModel);
 		//itemGrid.setSelectionModel(sm);
@@ -970,17 +866,12 @@ public class ImportPanel extends ContentPanel {
 		resultGrid.setWidth(2000);
 		//resultGrid.setAutoExpandColumn("desc");
 		resultGrid.setAutoExpandMax(2000);
-		
-		/*BasePagingLoader loader;
-		ListView<BaseModel> view = new ListView<BaseModel>(resultStore);
-		view.setDisplayProperty("desc");
-		view.setHeight(300);
-		container.add(view);*/
+
 		container.add(resultGrid);
 		container.setHeight(380);
 		
 		return container;
-	}
+	}*/
 	
 	
 	private JSONArray getArray(JSONObject object, String property) {
@@ -1071,9 +962,5 @@ public class ImportPanel extends ContentPanel {
 			
 		});
 	}
-	
-	/*private ImportFile parseImport(String content) {
-		return JSONParser.parse(content);
-	}*/
 	
 }

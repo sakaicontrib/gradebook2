@@ -55,7 +55,7 @@ public class ImportExportTest extends AbstractServiceTest {
 		// Export to a temp file
 		File tempFile = File.createTempFile("imp", ".csv");
 		PrintWriter writer = new PrintWriter(new FileOutputStream(tempFile));
-		ImportExportUtility.exportGradebook(service, getName(), true, writer, null);
+		ImportExportUtility.exportGradebook(service, getName(), true, false, writer, null);
 		writer.close();
 		
 		// Update the category weightings
