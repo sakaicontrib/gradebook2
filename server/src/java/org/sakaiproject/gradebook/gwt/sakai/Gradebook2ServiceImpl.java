@@ -2039,8 +2039,12 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				if (assignments != null) {
 					int count = 0;
 					for (Assignment a : assignments) {
+						if (a.isRemoved())
+							continue;
+						
 						if (a.getId().equals(assignmentId))
 							oldItemOrder = Integer.valueOf(count);
+						count++;
 					}
 				}
 			}
@@ -3980,6 +3984,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					if (categories != null) {
 						int count = 0;
 						for (Category c : categories) {
+							if (c.isRemoved())
+								continue;
+							
 							if (c.getId().equals(category.getId()))
 								oldCategoryOrder = Integer.valueOf(count);
 							else if (c.getCategoryOrder() == null) {
