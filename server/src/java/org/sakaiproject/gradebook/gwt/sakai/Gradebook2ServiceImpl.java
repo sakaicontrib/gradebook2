@@ -2479,8 +2479,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					if (filteredAssignments != null) {
 						for(Assignment assignment : filteredAssignments) {
 	
-							if(!assignment.getCategory().getId().equals(category.getId())) {
-								tempAssignments.add(assignment);
+							if (assignment.getCategory() != null) {
+								if(!assignment.getCategory().getId().equals(category.getId())) {
+									tempAssignments.add(assignment);
+								}
 							}
 						}
 					}
