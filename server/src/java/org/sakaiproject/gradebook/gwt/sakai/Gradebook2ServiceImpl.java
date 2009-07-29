@@ -231,7 +231,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			if (hasCategories) {
 				categories = gbService.getCategories(gradebook.getId()); // getCategoriesWithAssignments(gradebook.getId());
 				if (categoryOrder == null)
-					categoryOrder = categories.isEmpty() ? Integer.valueOf(0) : Integer.valueOf(categories.size());
+					categoryOrder = categories == null || categories.isEmpty() ? Integer.valueOf(0) : Integer.valueOf(categories.size());
 			}
 			
 			double w = weight == null ? 0d : ((Double)weight).doubleValue() * 0.01;
@@ -801,7 +801,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			}
 
 			if (itemOrder == null)
-				itemOrder = assignments.isEmpty() ? Integer.valueOf(0) : Integer.valueOf(assignments.size());
+				itemOrder = assignments == null || assignments.isEmpty() ? Integer.valueOf(0) : Integer.valueOf(assignments.size());
 
 			// if (assignments == null || assignments.isEmpty())
 			// weight = new Double(100d);
