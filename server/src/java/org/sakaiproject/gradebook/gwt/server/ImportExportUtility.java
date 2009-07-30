@@ -832,7 +832,7 @@ public class ImportExportUtility {
 				log.debug("Processed non header line"); 
 				// Since it's not processed yet, check to see if the current row has any useful info
 				for (int i=0;i<columns.length;i++) {
-					if (columns[i] != null && columns[i].equals("")) 
+					if (columns[i] != null && !columns[i].equals("")) 
 					{
 
 						String columnLowerCase = columns[i].trim().toLowerCase();

@@ -85,7 +85,7 @@ public class ImportExportTest extends AbstractServiceTest {
 		
 		// Import the temp file back into the gradebook
 		FileReader reader = new FileReader(modifiedTempFile);
-		ImportFile importFile = ImportExportUtility.parseImportCSV(service, getName(), reader);
+		ImportFile importFile = ImportExportUtility.parseImportCSV(service, newGradebookUid, reader);
 	
 		
 		List<ColumnConfig> previewColumns = new ArrayList<ColumnConfig>();
