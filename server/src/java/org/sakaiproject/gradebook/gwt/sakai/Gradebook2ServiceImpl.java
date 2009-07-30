@@ -1147,6 +1147,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					frameworkService.addGradebook(gradebookUids[i], "My Default Gradebook");
 					gradebook = gbService.getGradebook(gradebookUids[i]);
 
+					gradebook.setAssignmentsDisplayed(false);
+					gbService.updateGradebook(gradebook);
+					
 					// Add the default configuration settings
 					gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebook.getId(), 
 							ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, 

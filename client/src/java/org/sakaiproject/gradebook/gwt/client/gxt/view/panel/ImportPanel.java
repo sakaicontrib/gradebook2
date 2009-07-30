@@ -396,12 +396,13 @@ public class ImportPanel extends ContentPanel {
 						
 						//advancedContainer.layout();
 						
-						Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades.getEventType());
+						//Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades.getEventType());
 						
 						GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 						selectedGradebook.setGradebookItemModel(result.getGradebookItemModel());
 						Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookSetup.getEventType(), selectedGradebook);
 						Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookItems.getEventType(), selectedGradebook);
+						//Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades.getEventType());
 					} catch (Exception e) {
 						Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(e));
 					} finally {

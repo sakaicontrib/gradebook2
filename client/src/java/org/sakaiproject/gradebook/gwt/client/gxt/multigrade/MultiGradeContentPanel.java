@@ -1304,13 +1304,28 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	}
 	
 	public void onRefreshCourseGrades() {
-		refreshGrid(RefreshAction.REFRESHDATA, true);
+		RefreshAction actualAction = RefreshAction.REFRESHDATA;
+		switch (this.refreshAction) {
+		case REFRESHLOCALCOLUMNS:
+			actualAction = RefreshAction.REFRESHLOCALCOLUMNSANDDATA;
+			break;
+		case REFRESHCOLUMNS:
+			actualAction = RefreshAction.REFRESHCOLUMNSANDDATA;	
+			break;
+		}
+		refreshGrid(actualAction, true);
 	}
 	
 	public void onRefreshGradebookItems(GradebookModel gradebookModel) {
-		//reconfigureGrid(newColumnModel(gradebookModel));
+		switch (this.refreshAction) {
+		case REFRESHDATA:
+			this.refreshAction = RefreshAction.REFRESHCOLUMNSANDDATA;	
+			break;
+		default:
+			this.refreshAction = RefreshAction.REFRESHCOLUMNS;
+			break;
+		}
 		doRefresh(false);
-		//showColumns(lastShowColumnsEvent, cm);
 		if (modeLabel != null) {
 			StringBuilder modeLabelText = new StringBuilder();
 			
