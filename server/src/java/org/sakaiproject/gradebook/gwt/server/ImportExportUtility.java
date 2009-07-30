@@ -1002,6 +1002,7 @@ public class ImportExportUtility {
 			importInfo.getHeaders().add(header);
 			importInfo.getHeaderMap().put(text, header);
 		}
+		importInfo.setHeaderColumns(headerColumns);
 		log.debug("XXX: readInHeaderInfo() finished");
 	}
 	
