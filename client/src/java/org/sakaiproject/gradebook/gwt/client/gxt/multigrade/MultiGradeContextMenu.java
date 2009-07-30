@@ -105,10 +105,11 @@ public class MultiGradeContextMenu extends Menu {
 			
 		};
 		addCommentTextArea.setSize(200, 150);
-		
+		// GBRK-199 MJW - IE needs the container size to be set as well. 
+		addCommentContainer.setSize(200, 150); 
 		addCommentContainer.add(addCommentTextArea);
 		addCommentContainer.addButton(new Button("Submit", new SelectionListener<ButtonEvent>() {
-
+			
 			@Override
 			public void componentSelected(ButtonEvent be) {
 				addComment(owner, addCommentTextArea.getValue());
@@ -140,7 +141,8 @@ public class MultiGradeContextMenu extends Menu {
 			
 		};
 		editCommentTextArea.setSize(200, 150);
-		
+		// GBRK-199 MJW - IE needs the container size to be set as well. 
+		editCommentContainer.setSize(200, 150);
 		editCommentContainer.add(editCommentTextArea);
 		editCommentContainer.addButton(new Button("Submit", new SelectionListener<ButtonEvent>() {
 
