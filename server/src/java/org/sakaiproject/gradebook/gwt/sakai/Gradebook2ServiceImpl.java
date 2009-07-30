@@ -2051,9 +2051,13 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				}
 			}
 
-			if ((!hasCategories || oldCategory == null) && oldItemOrder != null && oldItemOrder.compareTo(newItemOrder) < 0)
+			if ((!hasCategories || oldCategory == null) && oldItemOrder != null 
+					&& newItemOrder != null && oldItemOrder.compareTo(newItemOrder) < 0)
 				newItemOrder = Integer.valueOf(newItemOrder.intValue() - 1);
 
+			if (newItemOrder == null)
+				newItemOrder = oldItemOrder;
+			
 			// Modify the assignment name
 			assignment.setName(convertString(item.getName()));
 
