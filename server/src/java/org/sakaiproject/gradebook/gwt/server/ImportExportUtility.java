@@ -184,6 +184,8 @@ public class ImportExportUtility {
 					if (itemModel.getChildCount() == 0) {
 						headerIds.add("");
 						headerColumns.add("");
+						pointsRow.add("");
+						percentCategoryRow.add("");
 					}
 					
 				}
