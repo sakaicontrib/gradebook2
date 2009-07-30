@@ -138,9 +138,9 @@ public class MultigradeView extends View {
 		case ITEM_UPDATED:
 			onItemUpdated((ItemModel)event.data);
 			break;
-		case LOAD_ITEM_TREE_MODEL:
-			onLoadItemTreeModel((GradebookModel)event.data);
-			break;
+		//case LOAD_ITEM_TREE_MODEL:
+		//	onLoadItemTreeModel((GradebookModel)event.data);
+		//	break;
 		case REFRESH_COURSE_GRADES:
 			onRefreshCourseGrades();
 			break;
@@ -251,9 +251,9 @@ public class MultigradeView extends View {
 		multigrade.onLearnerGradeRecordUpdated(action);
 	}
 	
-	protected void onLoadItemTreeModel(GradebookModel selectedGradebook) {
+	/*protected void onLoadItemTreeModel(GradebookModel selectedGradebook) {
 		multigrade.onLoadItemTreeModel(selectedGradebook);
-	}
+	}*/
 	
 	protected void onRefreshCourseGrades() {
 		multigrade.onRefreshCourseGrades();

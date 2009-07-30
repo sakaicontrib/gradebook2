@@ -294,7 +294,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			}
 		}
 		
-		onLoadItemTreeModel(selectedGradebook);
+		onRefreshGradebookItems(selectedGradebook);
 	}
 	
 	public void onItemDeleted(ItemModel itemModel) {
@@ -311,7 +311,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			}
 		}
 		
-		onLoadItemTreeModel(selectedGradebook);
+		onRefreshGradebookItems(selectedGradebook);
 	}
 	
 	public void onItemUpdated(ItemModel itemModel) {
@@ -615,7 +615,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		};*/
 	}
 	
-	public void onLoadItemTreeModel(GradebookModel selectedGradebook) {
+	/*public void onLoadItemTreeModel(GradebookModel selectedGradebook) {
 		reconfigureGrid(newColumnModel(selectedGradebook));
 		if (modeLabel != null) {
 			StringBuilder modeLabelText = new StringBuilder();
@@ -628,7 +628,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			
 			modeLabel.setText(modeLabelText.toString());	
 		}
-	}
+	}*/
 	
 	public void onShowColumns(ShowColumnsEvent event) {
 		this.lastShowColumnsEvent = event;
@@ -636,7 +636,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	}
 	
 	public void onSwitchGradebook(GradebookModel selectedGradebook) {
-		String gradebookUid = selectedGradebook.getGradebookUid();
+		//String gradebookUid = selectedGradebook.getGradebookUid();
 		if (store != null) {
 			ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
 			
@@ -650,14 +650,17 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 				store.setDefaultSort(storedSortField, sortDir);
 		}
 
-		onLoadItemTreeModel(selectedGradebook);
+		//refreshAction = RefreshAction.REFRESHCOLUMNS;
+		//onRefreshGradebookItems(selectedGradebook);
+		onRefreshGradebookSetup(selectedGradebook);
+		reconfigureGrid(newColumnModel(selectedGradebook));
 		
 		int pageSize = getPageSize();
 		if (loader != null) 
 			loader.load(0, pageSize);
 		
 		if (sectionsLoader != null)
-			sectionsLoader.load(0, 50);
+			sectionsLoader.load();
 	}
 	
 	public void onUserChange(UserEntityAction<?> action) {
@@ -1508,13 +1511,15 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		case REFRESHDATA:
 			includeData = true;
 			break;
-		case REFRESHCOLUMNS:
+		case REFRESHLOCALCOLUMNSANDDATA:
+			includeData = true;
 		case REFRESHLOCALCOLUMNS:
-			super.refreshGrid(refreshAction, false);
+			super.refreshGrid(refreshAction, true);
 			return;
 		case REFRESHCOLUMNSANDDATA:
-			super.refreshGrid(refreshAction, true);
 			includeData = true;
+		case REFRESHCOLUMNS:
+			super.refreshGrid(refreshAction, false);
 			break;
 		case NONE:
 			// Do nothing

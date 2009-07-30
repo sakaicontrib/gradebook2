@@ -78,7 +78,7 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 
 	protected static final int DEFAULT_PAGE_SIZE = 19;
 	
-	public enum RefreshAction { NONE, REFRESHDATA, REFRESHCOLUMNS, REFRESHLOCALCOLUMNS, REFRESHCOLUMNSANDDATA };
+	public enum RefreshAction { NONE, REFRESHDATA, REFRESHCOLUMNS, REFRESHLOCALCOLUMNS, REFRESHCOLUMNSANDDATA, REFRESHLOCALCOLUMNSANDDATA };
 	
 	public static final String FAILED_FLAG = ":F";
 	
@@ -389,10 +389,12 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 	
 	protected void refreshGrid(RefreshAction action, boolean useExistingColumnModel) {
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-		if (!useExistingColumnModel)
+		if (!useExistingColumnModel || cm == null)
 			cm = newColumnModel(selectedGradebook);
 		grid.reconfigure(store, cm);
-		grid.el().unmask();
+		
+		if (grid.isRendered())
+			grid.el().unmask();
 	}
 	
 	protected void queueDeferredRefresh(RefreshAction newRefreshAction) {
