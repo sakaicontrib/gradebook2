@@ -23,6 +23,7 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
 
+import com.extjs.gxt.ui.client.data.PagingLoadResult;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 
 public class ImportExportTest extends AbstractServiceTest {
@@ -124,7 +125,7 @@ public class ImportExportTest extends AbstractServiceTest {
 	
 	public void testImportExportEmptyCategories() throws Exception {
 		
-		onSetupEmptyCategories(GradeType.PERCENTAGES, CategoryType.WEIGHTED_CATEGORIES);
+		onSetupEmptyCategories(GradeType.POINTS, CategoryType.WEIGHTED_CATEGORIES);
 		
 		ApplicationModel applicationModel = service.getApplicationModel(getName());
 		
@@ -133,11 +134,33 @@ public class ImportExportTest extends AbstractServiceTest {
 		GradebookModel model = gbModels.get(0);
 		verifyCategoryAttributesForItemsEmptyCategories(model, Double.valueOf(25d), Double.valueOf(25d), Double.valueOf(25d), Double.valueOf(25d), Double.valueOf(20d));
 		
+		ItemModel gradebookItemModel = model.getGradebookItemModel();
+		
+		ItemModel firstItem = null;
+		for (ItemModel categoryModel : gradebookItemModel.getChildren()) {
+			
+			if (categoryModel.getChildCount() > 0) {
+				for (ItemModel itemModel : categoryModel.getChildren()) {
+					firstItem = itemModel;
+					break;
+				}
+				
+			}
+		}
+		
+		PagingLoadResult<StudentModel> result = service.getStudentRows(model.getGradebookUid(), model.getGradebookId(), null, Boolean.FALSE);
+		
+		StudentModel firstStudent = result.getData().get(0);
+		service.scoreNumericItem(model.getGradebookUid(), firstStudent, firstItem.getIdentifier(), Double.valueOf(200), null);
+		
+		
 		// Export to a temp file
 		File tempFile = File.createTempFile("imp", ".csv");
 		PrintWriter writer = new PrintWriter(new FileOutputStream(tempFile));
 		ImportExportUtility.exportGradebook(service, getName(), true, false, writer, null);
 		writer.close();
+		
+		System.out.println("Writing to temp file " + tempFile.getName());
 		
 		// Update the category weightings
 		File modifiedTempFile = File.createTempFile("mod", ".csv");
@@ -146,6 +169,10 @@ public class ImportExportTest extends AbstractServiceTest {
 		PrintWriter modifiedWriter = new PrintWriter(new FileOutputStream(modifiedTempFile));
 		while (originalReader.ready()) {
 			String line = originalReader.readLine();
+			
+			if (line.startsWith("\"\",\"Gradebook:\"")) {
+				line = "\"\",\"Gradebook:\",\"My Test Gradebook\",\"Weighted Categories\",\"Percentages\"";
+			}
 			
 			if (line.startsWith("\"\",\"Equal Weight Items:\"")) {
 				line = "\"\",\"Equal Weight Items:\",\"false\",\"false\",\"false\",\"false\",\"false\",\"\",\"\",\"\"";
@@ -266,7 +293,7 @@ public class ImportExportTest extends AbstractServiceTest {
 
 		ItemModel essay1 = new ItemModel();
 		essay1.setName("Essay 1");
-		essay1.setPoints(Double.valueOf(20d));
+		essay1.setPoints(Double.valueOf(200d));
 		essay1.setDueDate(new Date());
 		essay1.setCategoryId(essaysCategory.getCategoryId());
 		essay1.setReleased(Boolean.TRUE);
@@ -379,7 +406,7 @@ public class ImportExportTest extends AbstractServiceTest {
 		assertEquals(values[3], essay4.getPercentCategory());
 		assertEquals(values[4], ec.getPercentCategory());
 		
-		assertEquals(Double.valueOf(20d), essay1.getPoints());
+		assertEquals(Double.valueOf(200d), essay1.getPoints());
 		assertEquals(Double.valueOf(20d), essay2.getPoints());
 		assertEquals(Double.valueOf(20d), essay3.getPoints());
 		assertEquals(Double.valueOf(20d), essay4.getPoints());
