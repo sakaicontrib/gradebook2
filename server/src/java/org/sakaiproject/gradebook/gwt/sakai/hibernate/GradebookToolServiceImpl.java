@@ -223,6 +223,8 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		HibernateCallback hc = new HibernateCallback() {
 			public Object doInHibernate(Session session) throws HibernateException {
 
+				session.beginTransaction();
+				
 				Long id = null;
 
 				Query q = session.createQuery("from UserConfiguration as config where config.userUid = :userUid and config.gradebookId = :gradebookId and config.configField = :configField ");
@@ -248,6 +250,8 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 				session.saveOrUpdate(config);
 
+				session.getTransaction().commit();
+				
 				return null;
 			}
 		};
