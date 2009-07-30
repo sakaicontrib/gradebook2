@@ -9,6 +9,7 @@ import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ItemFormPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ItemTreePanel;
+import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModelComparer;
@@ -141,6 +142,11 @@ public class TreeView extends View {
 		
 		if (itemModel != null)
 			treePanel.onHideColumn(itemModel);
+		else {
+			// It's probably a fixed column
+			FixedColumnModel fixedModel = findFixedByColumnId(columnId);
+			treePanel.onHideColumn(fixedModel);
+		}
 	}
 	
 	protected void onItemCreated(ItemModel itemModel) {
@@ -236,6 +242,8 @@ public class TreeView extends View {
 	
 	@SuppressWarnings("unchecked")
 	protected void onSwitchGradebook(final GradebookModel selectedGradebook) {
+		this.selectedGradebook = selectedGradebook;
+		
 		formPanel.onSwitchGradebook(selectedGradebook);
 		treePanel.onSwitchGradebook(selectedGradebook);
 		
@@ -284,6 +292,24 @@ public class TreeView extends View {
 		treePanel.onUserChange(action);
 	}
 	
+	private FixedColumnModel findFixedByColumnId(String fixedId) {
+		FixedColumnModel fixedModel = null;
+		
+		if (selectedGradebook != null) {
+			List<FixedColumnModel> fixedColumns = selectedGradebook.getColumns();
+			
+			for (FixedColumnModel current : fixedColumns) {
+				
+				if (current.getIdentifier().equals(fixedId)) {
+					fixedModel = current;
+					break;
+				}
+				
+			}
+		}
+		
+		return fixedModel;
+	}
 	
 	private ItemModel findItemByColumnId(String itemModelId) {
 		ItemModel itemModel = null;

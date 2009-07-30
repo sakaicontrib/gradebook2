@@ -134,13 +134,17 @@ public class ItemTreePanel extends ContentPanel {
 	private boolean isEditable;
 	private I18nConstants i18n;
 	
+	private boolean isItemTreeCheckListenerAttached;
+	private boolean isAttributeTreeCheckListenerAttached;
+	
 	public ItemTreePanel(I18nConstants i18n, boolean isEditable) {
 		this.enableLayout = false;
 		this.i18n = i18n;
 		this.isEditable = isEditable;
 		//this.fullStaticIdSet = new HashSet<String>();
 		this.isLearnerAttributeTreeLoaded = false;
-		//this.visibleStaticIdSet = new HashSet<String>();
+		this.isItemTreeCheckListenerAttached = false;
+		this.isAttributeTreeCheckListenerAttached = false;
 		setBorders(true);
 		setHeading(i18n.navigationPanelHeader());
 		setLayout(new FillLayout());
@@ -186,13 +190,25 @@ public class ItemTreePanel extends ContentPanel {
 	}
 
 	public void expandTrees() {
-		if (learnerAttributeTree != null)
-			learnerAttributeTree.expandAll();
-		if (treeTable != null)
-			treeTable.expandAll();
 		
-		treeTable.addListener(Events.CheckChange, checkChangeEventListener);
-		learnerAttributeTree.addListener(Events.CheckChange, checkChangeEventListener);
+		if (learnerAttributeTree != null && learnerAttributeTree.isRendered()) {
+			learnerAttributeTree.removeListener(Events.CheckChange, checkChangeEventListener);
+			this.isAttributeTreeCheckListenerAttached = false;
+			
+			learnerAttributeTree.expandAll();
+			
+			learnerAttributeTree.addListener(Events.CheckChange, checkChangeEventListener);
+			this.isAttributeTreeCheckListenerAttached = true;
+		}
+		
+		if (treeTable != null && treeTable.isRendered()) {
+			treeTable.removeListener(Events.CheckChange, checkChangeEventListener);
+			this.isItemTreeCheckListenerAttached = false;
+			treeTable.expandAll();
+			
+			treeTable.addListener(Events.CheckChange, checkChangeEventListener);
+			this.isItemTreeCheckListenerAttached = true;
+		}
 	}
 	
 	public void onBeforeLoadItemTreeModel(GradebookModel selectedGradebook, ItemModel rootItem) {
@@ -205,10 +221,44 @@ public class ItemTreePanel extends ContentPanel {
 		treeItem.setChecked(true);
 	}
 	
+	public void onHideColumn(FixedColumnModel fixedModel) {
+		if (fixedModel == null)
+			return;
+		
+		TreeItem treeItem = (TreeItem)treeBinder.findItem(fixedModel);
+		
+		if (treeItem != null) {
+			if (treeItem.isRendered() && isAttributeTreeCheckListenerAttached)
+				treeItem.setChecked(false);	
+			else {
+				checkedSelection.remove(fixedModel);
+				learnerAttributeTree.fireEvent(Events.CheckChange, new TreeEvent(learnerAttributeTree, treeItem));
+				Dispatcher.forwardEvent(GradebookEvents.ShowColumns.getEventType(), 
+						new ShowColumnsEvent(fixedModel.getIdentifier(), true));
+			}
+		}
+	}
+	
 	public void onHideColumn(ItemModel itemModel) {
+		if (itemModel == null)
+			return;
+		
 		TreeItem treeItem = (TreeItem)treeTableBinder.findItem(itemModel);
 		
-		treeItem.setChecked(false);
+		if (treeItem != null) {
+			if (treeItem.isRendered() && isItemTreeCheckListenerAttached) 
+				treeItem.setChecked(false);
+			else {
+				// In case the whole gradebook is checked, remove it
+				selectedItemModels.remove(selectedGradebook.getGradebookItemModel());
+				// Remove parent in case it's checked
+				selectedItemModels.remove(itemModel.getParent());
+				selectedItemModels.remove(itemModel);
+				treeTable.fireEvent(Events.CheckChange, new TreeTableEvent(treeTable, treeItem));
+				Dispatcher.forwardEvent(GradebookEvents.ShowColumns.getEventType(), 
+						new ShowColumnsEvent(itemModel.getIdentifier(), true));
+			}
+		}
 	}
 	
 	public void onItemCreated(ItemModel itemModel) {
@@ -354,6 +404,7 @@ public class ItemTreePanel extends ContentPanel {
 		}
 
 		treeTable.removeListener(Events.CheckChange, checkChangeEventListener);
+		this.isItemTreeCheckListenerAttached = false;
 		
 		if (treeTable.isRendered()) {
 			treeLoader.addListener(Loader.Load, new Listener<LoadEvent>() {
@@ -699,6 +750,7 @@ public class ItemTreePanel extends ContentPanel {
 					treeTableBinder.setCheckedSelection(selectedItemModels);
 				expandAll();
 				treeTable.addListener(Events.CheckChange, checkChangeEventListener);
+				isItemTreeCheckListenerAttached = true;
 			}
 		};
 
@@ -795,6 +847,7 @@ public class ItemTreePanel extends ContentPanel {
 			    expandAll();
 			    
 			    learnerAttributeTree.addListener(Events.CheckChange, checkChangeEventListener);
+				isAttributeTreeCheckListenerAttached = true;
 			}
 		};
 		learnerAttributeTree.getStyle().setNodeOpenIconStyle("gbAttrIcon");
@@ -914,6 +967,7 @@ public class ItemTreePanel extends ContentPanel {
 
 		if (learnerAttributeTree.isRendered()) {
 			learnerAttributeTree.removeListener(Events.CheckChange, checkChangeEventListener);
+			this.isAttributeTreeCheckListenerAttached = false;
 			loader.addListener(Loader.Load, loadEventListener);
 		}
 		loader.load(root);
@@ -1029,7 +1083,6 @@ public class ItemTreePanel extends ContentPanel {
 
 			public void handleEvent(LoadEvent be) {
 				treeBinder.setCheckedSelection(checkedSelection);
-				//learnerAttributeTree.addListener(Events.CheckChange, checkChangeEventListener);
 			}
 		
 		};
