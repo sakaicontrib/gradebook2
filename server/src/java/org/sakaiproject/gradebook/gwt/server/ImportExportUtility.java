@@ -52,8 +52,6 @@ import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 
-import com.extjs.gxt.ui.client.data.BaseModelData;
-import com.extjs.gxt.ui.client.data.BaseTreeModel;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 
 public class ImportExportUtility {
@@ -859,7 +857,8 @@ public class ImportExportUtility {
 
 	
 	public static void readInHeaderInfo(RawFile rawData,
-			ImportExportInformation importInfo, GradebookModel gradebook, NumberFormat decimalFormat, int startRow) {
+			ImportExportInformation importInfo, GradebookModel gradebook, NumberFormat decimalFormat, int startRow,
+			String[] pointsColumns) {
 		log.debug("XXX: readInHeaderInfo() called");
 		int rows = 0; 
 		String[] headerColumns = null;
@@ -958,12 +957,12 @@ public class ImportExportUtility {
 
 						StringBuffer value = new StringBuffer(name);
 	
-						if (model != null)
+						if (points == null && pointsColumns != null && pointsColumns.length > i)
+							points = pointsColumns[i];
+						
+						if (points == null && model != null)
 							points = decimalFormat.format(model.getPoints());
-	
-						if (points == null)
-							points = "100";
-	
+		
 						if (points != null && points.length() > 0)
 							value.append(" [").append(points).append("]");
 	
@@ -985,15 +984,17 @@ public class ImportExportUtility {
 						header.setHeaderName(name);
 						header.setExtraCredit(Boolean.valueOf(isExtraCredit));
 						header.setUnincluded(Boolean.valueOf(isUnincluded));
-						if (points != null && points.equals("%"))
-							header.setPercentage(true);
-						else {
-							try {
-								header.setPoints(Double.valueOf(Double
-										.parseDouble(points)));
-							} catch (NumberFormatException nfe) {
-								log.error("Could not parse points "
-										+ points);
+						if (points != null) {
+							if (points.equals("%"))
+								header.setPercentage(true);
+							else {
+								try {
+									header.setPoints(Double.valueOf(Double
+											.parseDouble(points)));
+								} catch (NumberFormatException nfe) {
+									log.error("Could not parse points "
+											+ points);
+								}
 							}
 						}
 					}
@@ -1385,7 +1386,8 @@ public class ImportExportUtility {
 		structureStop = readDataForStructureInformation(rawData, structureLineIndicatorMap, structureColumnsMap, headerLineIndicatorSet);
 		if (structureStop != -1)
 		{
-			readInHeaderInfo(rawData, ieInfo, gradebook, decimalFormat, structureStop);
+			String[] pointsColumns = structureColumnsMap.get(StructureRow.POINTS);
+			readInHeaderInfo(rawData, ieInfo, gradebook, decimalFormat, structureStop, pointsColumns);
 
 			readInGradeDataFromImportFile(rawData, ieInfo, userDereferenceMap, importRows, structureStop);
 			importFile.setItems(ieInfo.getHeaders());

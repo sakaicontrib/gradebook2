@@ -30,15 +30,11 @@ import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.SelectionMode;
-import com.extjs.gxt.ui.client.data.BaseListLoader;
-import com.extjs.gxt.ui.client.data.BaseModel;
-import com.extjs.gxt.ui.client.data.ListLoadResult;
-import com.extjs.gxt.ui.client.data.ListLoader;
-import com.extjs.gxt.ui.client.data.MemoryProxy;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.FormEvent;
+import com.extjs.gxt.ui.client.event.GridEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.event.WindowEvent;
@@ -85,13 +81,14 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public class ImportPanel extends ContentPanel {
 
 	private FileUploadField file;
-	private boolean hasErrors; 
+	//private boolean hasErrors; 
 	private String msgsFromServer; 
 	private ListStore<StudentModel> rowStore;
 	private ListStore<ItemModel> itemStore;
-	private ListStore<BaseModel> resultStore;
+	//private ListStore<BaseModel> resultStore;
 	private ListStore<ItemModel> categoriesStore;
 	private Grid<StudentModel> grid;
+	private EditorGrid<ItemModel> itemGrid;
 	private FormPanel fileUploadPanel;
 	private Map<String, ImportHeader> headerMap;
 	
@@ -112,8 +109,8 @@ public class ImportPanel extends ContentPanel {
 	
 	private ArrayList<ColumnConfig> previewColumns;
 	
-	private MemoryProxy<ListLoadResult<BaseModel>> proxy;
-	private ListLoader<?> loader;
+	//private MemoryProxy<ListLoadResult<BaseModel>> proxy;
+	//private ListLoader<?> loader;
 	private MessageBox uploadBox;
 	
 
@@ -132,7 +129,7 @@ public class ImportPanel extends ContentPanel {
 		headerMap = new HashMap<String, ImportHeader>();
 		
 		// Set up store
-		resultStore = new ListStore<BaseModel>();
+		//resultStore = new ListStore<BaseModel>();
 		
 		categoriesStore = new ListStore<ItemModel>();
 	}
@@ -185,7 +182,7 @@ public class ImportPanel extends ContentPanel {
 		ColumnModel cm = new ColumnModel(configs);
 		grid = new Grid<StudentModel>(rowStore, cm);
 		grid.setLoadMask(false);
-		grid.setHeight(300);
+		//grid.setHeight(300);
 		
 		CellSelectionModel<StudentModel> cellSelectionModel = new CellSelectionModel<StudentModel>();
 		cellSelectionModel.setSelectionMode(SelectionMode.SINGLE);
@@ -270,7 +267,7 @@ public class ImportPanel extends ContentPanel {
 		
 		tabPanel.add(columnsTab);
 		
-		tabPanel.setHeight(380);
+		//tabPanel.setHeight(380);
 
 		if (!hasCategories) 
 			columnsTab.setVisible(false);
@@ -334,6 +331,23 @@ public class ImportPanel extends ContentPanel {
 		add(mainCardLayoutContainer); 
 	}
 
+	
+	@Override
+	protected void onResize(final int width, final int height) {
+		super.onResize(width, height);
+		
+		if (tabPanel != null)
+			tabPanel.setHeight(height);
+		
+		if (grid != null)
+			grid.setHeight(height - 100);
+		
+		if (itemGrid != null)
+			itemGrid.setHeight(height - 100);
+		
+	}
+	
+	
 	private void uploadSpreadsheet(SpreadsheetModel spreadsheetModel) {
 		GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
 		
@@ -707,9 +721,10 @@ public class ImportPanel extends ContentPanel {
 				}
 			}
 				
-			if (models != null)
+			if (models != null && !models.isEmpty())
 				rowStore.add(models);
-				
+			else
+				tabPanel.setSelection(columnsTab);
 				
 			ColumnModel cm = grid.getColumnModel();
 			ArrayList<ImportHeader> headers = new ArrayList<ImportHeader>();
@@ -832,11 +847,11 @@ public class ImportPanel extends ContentPanel {
 		ColumnModel itemColumnModel = new ColumnModel(itemColumns);
 		itemStore = new ListStore<ItemModel>();
 		
-		EditorGrid<ItemModel> itemGrid = new EditorGrid<ItemModel>(itemStore, itemColumnModel);
-		itemGrid.setHeight(300);
+		itemGrid = new EditorGrid<ItemModel>(itemStore, itemColumnModel);
+		//itemGrid.setHeight(300);
 		itemGrid.setBorders(true);
 		itemGrid.setView(new BaseCustomGridView());
-
+		
 		LayoutContainer container = new LayoutContainer();
 		container.setLayout(new FitLayout());
 	

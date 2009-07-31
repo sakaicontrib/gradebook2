@@ -107,7 +107,6 @@ public class ClientUploadUtility {
 		SpreadsheetModel spreadsheetModel = new SpreadsheetModel();
 		
 		spreadsheetModel.setHeaders(items);
-
 		
 		List<StudentModel> rows = new ArrayList<StudentModel>();
 		for (BaseModel importRow : importRows) {
