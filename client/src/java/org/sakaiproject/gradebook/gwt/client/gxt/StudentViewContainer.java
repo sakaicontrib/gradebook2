@@ -22,13 +22,16 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.gxt;
 
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
+import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.model.GradeRecordModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 
+import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.util.Margins;
@@ -213,7 +216,9 @@ public class StudentViewContainer extends ContentPanel {
 		String commentFlag = new StringBuilder().append(itemId).append(StudentModel.COMMENT_TEXT_FLAG).toString();
 		String comment = learner.get(commentFlag);
 		String excusedFlag = new StringBuilder().append(itemId).append(StudentModel.DROP_FLAG).toString();
+		
 		boolean isExcused = DataTypeConversionUtil.checkBoolean((Boolean)learner.get(excusedFlag));
+		boolean isIncluded = DataTypeConversionUtil.checkBoolean((Boolean)item.getIncluded());
 		
 		gradeInformation.setText(row, 0, item.getName());
         formatter.setStyleName(row, 0, "gbRecordLabel");
@@ -244,9 +249,13 @@ public class StudentViewContainer extends ContentPanel {
         	
         	
         }
-        	
+        
+        if (!isIncluded) 
+        	resultBuilder.append(" (not included in grade)");
+        
         if (isExcused)
-        	resultBuilder.append(" (excluded from grade)");
+        	resultBuilder.append(" (excused)");
+        
         gradeInformation.setText(row, 1, resultBuilder.toString());
         formatter.setStyleName(row, 1, "gbRecordField");
         gradeInformation.setText(row, 2, comment);
@@ -261,49 +270,66 @@ public class StudentViewContainer extends ContentPanel {
 		// Now, let's update the student information table
 		FlexCellFormatter formatter = gradeInformation.getFlexCellFormatter();
 		
-		//gradeInformation.clear();
-		
 		// Start by removing all existing rows, since we may be reducing the visibility
-		for (int i=0;i<gradeInformation.getRowCount();i++) {
+		for (int i=gradeInformation.getRowCount() - 1;i>=0;i--) {
+			for (int j=0;i<gradeInformation.getCellCount(i);j++) {
+				gradeInformation.removeCell(i, j);
+			}
 			gradeInformation.removeRow(i);
 		}
 		
 		ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
 		
-		boolean isEntireGradebookReleased = DataTypeConversionUtil.checkBoolean(gradebookItemModel.getReleaseItems());
+		boolean isDisplayReleasedItems = DataTypeConversionUtil.checkBoolean(gradebookItemModel.getReleaseItems());
 		
-		int row=0;
-		for (ItemModel child : gradebookItemModel.getChildren()) {
-			
-			switch (child.getItemType()) {
-			case CATEGORY:
-				boolean isCategoryHeaderDisplayed = false;
-				
-				for (ItemModel item : child.getChildren()) {
-					if (isEntireGradebookReleased || DataTypeConversionUtil.checkBoolean(item.getReleased())) {
+		if (isDisplayReleasedItems) {
+			boolean isNothingToDisplay = true;
+			int row=0;
+			if (gradebookItemModel.getChildCount() > 0) {
+				for (ItemModel child : gradebookItemModel.getChildren()) {
+					
+					switch (child.getItemType()) {
+					case CATEGORY:
+						boolean isCategoryHeaderDisplayed = false;
 						
-						if (!isCategoryHeaderDisplayed) {
-							if (selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES) {
-								gradeInformation.setText(row, 0, child.getName());
-						        formatter.setStyleName(row, 0, "gbHeader");
-						        formatter.setColSpan(row, 0, 3);
-						        row++;
-							}
-							isCategoryHeaderDisplayed = true;
+						for (ItemModel item : child.getChildren()) {
+							if (DataTypeConversionUtil.checkBoolean(item.getReleased())) {
+								
+								if (!isCategoryHeaderDisplayed) {
+									if (selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES) {
+										gradeInformation.setText(row, 0, child.getName());
+								        formatter.setStyleName(row, 0, "gbHeader");
+								        formatter.setColSpan(row, 0, 3);
+								        row++;
+									}
+									isCategoryHeaderDisplayed = true;
+								}
+								
+								populateGradeInfoRow(row, item, learner, formatter);
+								isNothingToDisplay = false;
+								row++;
+							} 
 						}
-						
-						populateGradeInfoRow(row, item, learner, formatter);
-						row++;
-					} 
+						break;
+					case ITEM:
+						if (DataTypeConversionUtil.checkBoolean(child.getReleased())) {
+							populateGradeInfoRow(row, child, learner, formatter);
+							isNothingToDisplay = false;
+							row++;
+						}
+						break;
+					}
 				}
-				break;
-			case ITEM:
-				if (isEntireGradebookReleased || DataTypeConversionUtil.checkBoolean(child.getReleased())) {
-					populateGradeInfoRow(row, child, learner, formatter);
-					row++;
-				}
-				break;
 			}
+			
+			if (isNothingToDisplay) {
+				I18nConstants i18n = Registry.get(AppConstants.I18N);
+				gradeInformation.setText(0, 0, i18n.notifyNoReleasedItems());
+			}
+			
+		} else {
+			I18nConstants i18n = Registry.get(AppConstants.I18N);
+			gradeInformation.setText(0, 0, i18n.notifyNotDisplayingReleasedItems());
 		}
 
         gradeInformationPanel.show();

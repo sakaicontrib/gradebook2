@@ -184,4 +184,7 @@ public interface I18nConstants extends Constants {
 	String finalGradeSubmissionMessageText5a();
 	String finalGradeSubmissionMessageText6a();
 	String finalGradeSubmissionMessageText7a();
+	
+	String notifyNotDisplayingReleasedItems();
+	String notifyNoReleasedItems();
 }
