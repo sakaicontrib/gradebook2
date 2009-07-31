@@ -1146,10 +1146,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				if (frameworkService != null) {
 					frameworkService.addGradebook(gradebookUids[i], "My Default Gradebook");
 					gradebook = gbService.getGradebook(gradebookUids[i]);
-
-					gradebook.setAssignmentsDisplayed(false);
-					gbService.updateGradebook(gradebook);
-					
+				
 					// Add the default configuration settings
 					gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebook.getId(), 
 							ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, 
@@ -2451,6 +2448,12 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				categoryType = CategoryType.WEIGHTED_CATEGORIES;
 		}
 
+		boolean isUserAbleToGrade = authz.isUserAbleToGrade(gradebookUid);
+		boolean isUserAbleToViewOwnGrades = authz.isUserAbleToViewOwnGrades(gradebookUid);
+
+		boolean isSingleUserView = isUserAbleToViewOwnGrades && !isUserAbleToGrade;
+
+		
 		model.setCategoryType(categoryType);
 
 		model.setGradebookUid(gradebookUid);
@@ -2467,7 +2470,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			for(Category category : categories) {
 
 				// First we check if the user has view permission for the category
-				boolean canView = authz.canUserViewCategory(gradebook.getUid(), category.getId());
+				boolean canView = isSingleUserView || authz.canUserViewCategory(gradebook.getUid(), category.getId());
 				if(canView) {
 					filteredCategories.add(category);
 				}
@@ -2488,7 +2491,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	
 							if (assignment.getCategory() != null) {
 								if(!assignment.getCategory().getId().equals(category.getId())) {
-									tempAssignments.add(assignment);
+									
+									if (!isSingleUserView || assignment.isReleased())
+										tempAssignments.add(assignment);
+									
 								}
 							}
 						}
@@ -2507,11 +2513,6 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		
 		model.setGradebookItemModel(gradebookItemModel);
 		List<FixedColumnModel> columns = getColumns();
-
-		boolean isUserAbleToGrade = authz.isUserAbleToGrade(gradebookUid);
-		boolean isUserAbleToViewOwnGrades = authz.isUserAbleToViewOwnGrades(gradebookUid);
-
-		boolean isSingleUserView = isUserAbleToViewOwnGrades && !isUserAbleToGrade;
 
 		model.setUserAbleToGrade(isUserAbleToGrade);
 		model.setUserAbleToEditAssessments(authz.isUserAbleToEditAssessments(gradebookUid));
@@ -2538,19 +2539,21 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				if (isSingleUserView) {
 
 					UserRecord userRecord = new UserRecord(user);
-					try {
-						Site site = siteService.getSite(getSiteContext());
-						Collection<Group> groups = site.getGroupsWithMember(user.getId());
-						if (!groups.isEmpty()) {
-							for (Group group : groups) {
-								// FIXME: We probably don't just want to grab
-								// the first group the user is in
-								userRecord.setSectionTitle(group.getTitle());
-								break;
+					if (siteService != null) {
+						try {
+							Site site = siteService.getSite(getSiteContext());
+							Collection<Group> groups = site.getGroupsWithMember(user.getId());
+							if (!groups.isEmpty()) {
+								for (Group group : groups) {
+									// FIXME: We probably don't just want to grab
+									// the first group the user is in
+									userRecord.setSectionTitle(group.getTitle());
+									break;
+								}
 							}
+						} catch (IdUnusedException e) {
+							log.error("Unable to find the current user", e);
 						}
-					} catch (IdUnusedException e) {
-						log.error("Unable to find the current user", e);
 					}
 
 					List<AssignmentGradeRecord> records = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), userRecord.getUserUid());
