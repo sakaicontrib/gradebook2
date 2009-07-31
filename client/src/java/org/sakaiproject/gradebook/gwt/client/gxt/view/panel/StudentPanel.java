@@ -20,7 +20,7 @@
 * permissions and limitations under the License.
 *
 **********************************************************************************/
-package org.sakaiproject.gradebook.gwt.client.gxt;
+package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
@@ -51,7 +51,7 @@ import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
 
-public class StudentViewContainer extends ContentPanel {
+public class StudentPanel extends ContentPanel {
 	
 	private TextField<String> defaultTextField= new TextField<String>();
 	private TextArea defaultTextArea = new TextArea();
@@ -66,7 +66,7 @@ public class StudentViewContainer extends ContentPanel {
 	
 	private GradebookModel selectedGradebook;
 	
-	public StudentViewContainer(boolean isStudentView) {
+	public StudentPanel(boolean isStudentView) {
 		this.isStudentView = isStudentView;
 		this.defaultNumberField.setFormat(defaultNumberFormat);
 		this.defaultNumberField.setSelectOnFocus(true);

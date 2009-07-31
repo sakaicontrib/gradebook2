@@ -2,8 +2,8 @@ package org.sakaiproject.gradebook.gwt.client.gxt.view;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
-import org.sakaiproject.gradebook.gwt.client.gxt.StudentViewDialog;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ViewAsStudentPanel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
@@ -15,7 +15,7 @@ import com.extjs.gxt.ui.client.mvc.View;
 
 public class SingleGradeView extends View {
 
-	private StudentViewDialog dialog;
+	private ViewAsStudentPanel dialog;
 	private boolean isEditable;
 	
 	public SingleGradeView(Controller controller, boolean isEditable) {
@@ -57,7 +57,7 @@ public class SingleGradeView extends View {
 	
 	@Override
 	protected void initialize() {
-		dialog = new StudentViewDialog(!isEditable);
+		dialog = new ViewAsStudentPanel(!isEditable);
 		dialog.setSize(400, 350);
 	}
 	
@@ -79,7 +79,7 @@ public class SingleGradeView extends View {
 		dialog.onUserChange(action);
 	}
 
-	public StudentViewDialog getDialog() {
+	public ViewAsStudentPanel getDialog() {
 		return dialog;
 	}
 	

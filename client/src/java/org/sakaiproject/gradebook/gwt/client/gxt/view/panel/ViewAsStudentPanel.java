@@ -20,7 +20,7 @@
 * permissions and limitations under the License.
 *
 **********************************************************************************/
-package org.sakaiproject.gradebook.gwt.client.gxt;
+package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
@@ -44,16 +44,16 @@ import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 
-public class StudentViewDialog extends ContentPanel {
+public class ViewAsStudentPanel extends ContentPanel {
 
 	public enum RefreshAction { NONE, REFRESHDATA, REFRESHCOLUMNS };
 	
-	private StudentViewContainer container;
+	private StudentPanel container;
 	private RefreshAction refreshAction = RefreshAction.NONE;
 
 	private boolean isStudentView;
 	
-	public StudentViewDialog(boolean isStudentView) {
+	public ViewAsStudentPanel(boolean isStudentView) {
 		this.isStudentView = isStudentView;
 		setBodyBorder(true);
 		setHeaderVisible(true);
@@ -65,7 +65,7 @@ public class StudentViewDialog extends ContentPanel {
 		else 
 			setHeading(i18n.singleGradeHeader());
 		
-	    container = new StudentViewContainer(isStudentView);
+	    container = new StudentPanel(isStudentView);
 		add(container);
 		
 		setupNavigation(i18n);
