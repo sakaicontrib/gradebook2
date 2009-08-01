@@ -2002,6 +2002,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			isWeightChanged = isWeightChanged || isRemoved != wasRemoved;
 
 			if (hasCategories && category != null) {
+				if (hasCategoryChanged) {
+					category = gbService.getCategory(item.getCategoryId());
+					assignment.setCategory(category);
+				}
+				
 				boolean isCategoryIncluded = !DataTypeConversionUtil.checkBoolean(category.isUnweighted());
 				assignments = gbService.getAssignmentsForCategory(category.getId());
 
@@ -2015,15 +2020,16 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				businessLogic.applyCannotIncludeDeletedItemRule(wasRemoved && isRemoved, category.isRemoved(), isUnweighted);
 
 				// Business rule #11
-				businessLogic.applyCannotIncludeItemFromUnincludedCategoryRule(isCategoryIncluded, !isUnweighted, !wasUnweighted);
+				if (!hasCategoryChanged)
+					businessLogic.applyCannotIncludeItemFromUnincludedCategoryRule(isCategoryIncluded, !isUnweighted, !wasUnweighted);
 
 				// Business rule #8
 				businessLogic.applyMustIncludeCategoryRule(item.getCategoryId());
 
-				if (hasCategoryChanged) {
+				/*if (hasCategoryChanged) {
 					category = gbService.getCategory(item.getCategoryId());
 					assignment.setCategory(category);
-				}
+				}*/
 
 			} else {
 				assignments = gbService.getAssignments(gradebook.getId());

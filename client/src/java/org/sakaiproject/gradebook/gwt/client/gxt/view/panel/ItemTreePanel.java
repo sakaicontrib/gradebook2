@@ -20,6 +20,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTree;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTreeItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTreeTable;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.ItemCellRenderer;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.ItemNumberCellRenderer;
@@ -592,7 +593,7 @@ public class ItemTreePanel extends ContentPanel {
 					AsyncCallback<ItemModel> callback = new AsyncCallback<ItemModel>() {
 	
 						public void onFailure(Throwable caught) {
-							//onUpdateItemFailure(event, caught);
+							Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught, "Failed to update item: "));
 							Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
 						}
 						

@@ -98,7 +98,7 @@ public class SecurityRequestWrapper extends HttpServletRequestWrapper {
 
 	public String getBody() throws ServletException {
 		
-		if(body.length() != contentLength) {
+		if (body.length() != contentLength) {
 			throw new ServletException("The request's and actual body content length do not match");
 		}
 		
