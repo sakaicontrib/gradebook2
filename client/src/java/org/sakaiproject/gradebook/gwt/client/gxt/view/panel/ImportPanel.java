@@ -34,7 +34,6 @@ import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.FormEvent;
-import com.extjs.gxt.ui.client.event.GridEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.event.WindowEvent;
@@ -746,8 +745,34 @@ public class ImportPanel extends ContentPanel {
 			}
 				
 			ArrayList<ItemModel> itemModels = ClientUploadUtility.convertHeadersToItemModels(headers);
-	        itemStore.add(itemModels);
-		        
+	        HashMap<Long, String> categoryIdNameMap = new HashMap<Long, String>();
+			
+			for (int i=0;i<itemModels.size();i++) {
+				ItemModel itemModel = itemModels.get(i);
+			
+				String itemName = itemModel.getName();
+				Long categoryId = itemModel.getCategoryId();
+				String categoryName = categoryIdNameMap.get(categoryId);
+				if (categoryName == null) {
+					
+					ItemModel categoryModel = categoriesStore.findModel(ItemModel.Key.ID.name(), String.valueOf(categoryId));
+				
+					if (categoryModel == null && itemModel.getCategoryName() != null) {
+						categoryModel = new ItemModel();
+						categoryModel.setName(itemModel.getCategoryName());
+						categoryModel.setIdentifier(String.valueOf(categoryId));
+						categoryModel.setCategoryId(categoryId);
+						categoriesStore.add(categoryModel);
+					}
+					
+					if (categoryModel != null)
+						categoryIdNameMap.put(categoryId, categoryModel.getName());
+				}
+			}
+			
+			itemStore.add(itemModels);
+	        
+	        
 		} catch (Exception e) {
 			Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(e));
 		} finally {
