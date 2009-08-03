@@ -311,7 +311,11 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 
 		BigDecimal max = new BigDecimal(maxPointValue.toString());
 		BigDecimal maxStart = new BigDecimal(maxPointStartValue.toString());
-		BigDecimal ratio = max.divide(maxStart, MATH_CONTEXT);
+		BigDecimal ratio = BigDecimal.ZERO; 
+		if (maxStart.compareTo(BigDecimal.ZERO) != 0)
+		{
+			 ratio = max.divide(maxStart, MATH_CONTEXT);
+		}
 		BigDecimal points = new BigDecimal(pointValue.toString());
 		
 		return points.multiply(ratio, MATH_CONTEXT);
