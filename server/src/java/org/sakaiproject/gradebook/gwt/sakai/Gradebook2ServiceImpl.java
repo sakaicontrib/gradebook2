@@ -1146,7 +1146,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				if (frameworkService != null) {
 					frameworkService.addGradebook(gradebookUids[i], "My Default Gradebook");
 					gradebook = gbService.getGradebook(gradebookUids[i]);
-				
+
 					// Add the default configuration settings
 					gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebook.getId(), 
 							ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, 
@@ -2437,6 +2437,22 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 	private GradebookModel createGradebookModel(Gradebook gradebook, List<Assignment> assignments, List<Category> categories, boolean isNewGradebook) {
 
+		Site site = null;
+		
+		if (siteService != null) {
+			try {
+				site = siteService.getSite(getSiteContext());
+			
+				if (site.getId().equals(gradebook.getName())) {
+					gradebook.setName("My Default Gradebook");
+				}
+			
+			} catch (IdUnusedException e) {
+				log.error("Unable to find the current site", e);
+			}
+		}
+		
+		
 		GradebookModel model = new GradebookModel();
 		model.setNewGradebook(Boolean.valueOf(isNewGradebook));
 		String gradebookUid = gradebook.getUid();
@@ -2545,21 +2561,18 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				if (isSingleUserView) {
 
 					UserRecord userRecord = new UserRecord(user);
-					if (siteService != null) {
-						try {
-							Site site = siteService.getSite(getSiteContext());
-							Collection<Group> groups = site.getGroupsWithMember(user.getId());
-							if (!groups.isEmpty()) {
-								for (Group group : groups) {
-									// FIXME: We probably don't just want to grab
-									// the first group the user is in
-									userRecord.setSectionTitle(group.getTitle());
-									break;
-								}
+					if (site != null) {
+						
+						Collection<Group> groups = site.getGroupsWithMember(user.getId());
+						if (!groups.isEmpty()) {
+							for (Group group : groups) {
+								// FIXME: We probably don't just want to grab
+								// the first group the user is in
+								userRecord.setSectionTitle(group.getTitle());
+								break;
 							}
-						} catch (IdUnusedException e) {
-							log.error("Unable to find the current user", e);
 						}
+						
 					}
 
 					List<AssignmentGradeRecord> records = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), userRecord.getUserUid());
