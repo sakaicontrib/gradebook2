@@ -92,7 +92,6 @@ public class GradebookEvents {
 	public static final GradebookEvent SelectLearner				= registerEvent(EventKey.SELECT_LEARNER);
 	public static final GradebookEvent ShowColumns					= registerEvent(EventKey.SHOW_COLUMNS);
 	public static final GradebookEvent ShowGradeScale				= registerEvent(EventKey.SHOW_GRADE_SCALE);
-	public static final GradebookEvent ShowGraderPermissionSettings = registerEvent(EventKey.SHOW_GRADER_PERMISSION_SETTINGS);
 	public static final GradebookEvent ShowHistory					= registerEvent(EventKey.SHOW_HISTORY);
 	public static final GradebookEvent ShowStatistics				= registerEvent(EventKey.SHOW_STATISTICS);
 	public static final GradebookEvent SingleGrade					= registerEvent(EventKey.SINGLE_GRADE);
@@ -102,6 +101,8 @@ public class GradebookEvents {
 	public static final GradebookEvent StartImport					= registerEvent(EventKey.START_IMPORT);
 	public static final GradebookEvent Startup 						= registerEvent(EventKey.STARTUP);
 	public static final GradebookEvent StopImport					= registerEvent(EventKey.STOP_IMPORT);
+	public static final GradebookEvent StartGraderPermissionSettings = registerEvent(EventKey.START_GRADER_PERMISSION_SETTINGS);
+	public static final GradebookEvent StopGraderPermissionSettings = registerEvent(EventKey.STOP_GRADER_PERMISSION_SETTINGS);
 	public static final GradebookEvent StartFinalgrade				= registerEvent(EventKey.START_FINAL_GRADE);
 	public static final GradebookEvent SwitchEditItem				= registerEvent(EventKey.SWITCH_EDIT_ITEM);
 	public static final GradebookEvent SwitchGradebook 				= registerEvent(EventKey.SWITCH_GRADEBOOK);

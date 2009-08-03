@@ -384,7 +384,8 @@ public class GraderPermissionSettingsPanel extends ContentPanel {
 
 			@Override
 			public void componentSelected(ButtonEvent be) {
-				Dispatcher.forwardEvent(GradebookEvents.HideEastPanel.getEventType(), Boolean.FALSE);
+				//Dispatcher.forwardEvent(GradebookEvents.HideEastPanel.getEventType(), Boolean.FALSE);
+				Dispatcher.forwardEvent(GradebookEvents.StopGraderPermissionSettings.getEventType());
 			}
 			
 		});

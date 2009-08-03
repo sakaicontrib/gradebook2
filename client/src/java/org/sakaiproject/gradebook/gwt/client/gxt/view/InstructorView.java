@@ -221,7 +221,6 @@ public class InstructorView extends AppView {
 		case HELP:
 		case HISTORY:
 		case LEARNER_SUMMARY:
-		case GRADER_PERMISSION_SETTINGS:
 		case STATISTICS:
 			borderLayout.show(LayoutRegion.EAST);
 			borderLayout.expand(LayoutRegion.EAST);
@@ -249,10 +248,6 @@ public class InstructorView extends AppView {
 		case STATISTICS:
 			eastLayoutContainer.setHeading(i18n.statisticsHeading());
 			eastCardLayout.setActiveItem(statisticsPanel);
-			break;
-		case GRADER_PERMISSION_SETTINGS:
-			eastLayoutContainer.setHeading(i18n.graderPermissionSettingsHeading());
-			eastCardLayout.setActiveItem(graderPermissionSettingsPanel);
 			break;
 		case HELP:
 			eastLayoutContainer.setHeading(i18n.helpHeading());
@@ -385,15 +380,6 @@ public class InstructorView extends AppView {
 	}
 	
 	@Override
-	protected void onShowGraderPermissionSettings(Boolean show) {
-		if(graderPermissionSettingsPanel == null) {
-			graderPermissionSettingsPanel = new GraderPermissionSettingsPanel(i18n, isEditable);
-			eastLayoutContainer.add(graderPermissionSettingsPanel);
-		}
-		onExpandEastPanel(EastCard.GRADER_PERMISSION_SETTINGS);
-	}
-	
-	@Override
 	protected void onShowHistory(String identifier) {
 		if (historyPanel == null) {
 			historyPanel = new HistoryPanel(i18n);
@@ -438,6 +424,22 @@ public class InstructorView extends AppView {
 	protected void onStopImport() {
 		viewportLayout.setActiveItem(borderLayoutContainer);
 	}
+	
+	@Override
+	protected void onStartGraderePermissions() {
+		
+		if(graderPermissionSettingsPanel == null) {
+			graderPermissionSettingsPanel = new GraderPermissionSettingsPanel(i18n, isEditable);
+		}
+		viewport.add(graderPermissionSettingsPanel);
+		viewportLayout.setActiveItem(graderPermissionSettingsPanel);
+	}
+	
+	@Override
+	protected void onStopGraderPermissions() {
+		viewportLayout.setActiveItem(borderLayoutContainer);
+	}
+	
 	
 	@Override
 	protected void onHideEastPanel(Boolean doCommit) {
@@ -502,7 +504,7 @@ public class InstructorView extends AppView {
 						onShowHistory(null);
 						break;
 					case GRADER_PERMISSION_SETTINGS:
-						onShowGraderPermissionSettings(Boolean.TRUE);
+						onStartGraderePermissions();
 						break;
 					case STATISTICS:
 						onShowStatistics();
