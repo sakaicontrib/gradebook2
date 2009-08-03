@@ -217,7 +217,7 @@ public class ItemFormPanel extends ContentPanel {
 		pointsField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.POINTS));
 		pointsField.setFormat(DataTypeConversionUtil.getDefaultNumberFormat());
 		pointsField.setAllowDecimals(true);
-		pointsField.setMinValue(Double.valueOf(0.000000d));
+		pointsField.setMinValue(Double.valueOf(0.0001d));
 		pointsField.setVisible(false);
 		pointsField.addKeyListener(keyListener);
 		formPanel.add(pointsField);
