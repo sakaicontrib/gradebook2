@@ -36,12 +36,16 @@ public class SecurityRequestWrapper extends HttpServletRequestWrapper {
 				
 				contentLength = request.getContentLength();
 				
-				// In case someone tampered with the contentLength
-				if(contentLength < 1 && contentLength > MAX_INPUT_BUFFER_SIZE) {
-					contentLength = MAX_INPUT_BUFFER_SIZE;
-				}
 				
-				char[] charBuffer = new char[contentLength];
+				char[] charBuffer;
+				
+				// In case someone tampered with the contentLength
+				if(contentLength < 1 || contentLength > MAX_INPUT_BUFFER_SIZE) {
+					charBuffer = new char[MAX_INPUT_BUFFER_SIZE];
+				}
+				else {
+					charBuffer = new char[contentLength];
+				}
 				
 				int bytesRead = -1;
 				
@@ -98,7 +102,9 @@ public class SecurityRequestWrapper extends HttpServletRequestWrapper {
 
 	public String getBody() throws ServletException {
 		
-		if (body.length() != contentLength) {
+		int bodySize = body.getBytes().length;
+	
+		if (bodySize != contentLength) {
 			throw new ServletException("The request's and actual body content length do not match");
 		}
 		
