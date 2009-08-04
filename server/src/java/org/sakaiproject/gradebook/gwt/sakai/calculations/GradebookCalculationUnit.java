@@ -80,7 +80,7 @@ public class GradebookCalculationUnit {
 			BigDecimal categoryPointsPossible = categoryResult[1];
 			BigDecimal categoryExtraCreditPoints = categoryResult[2];
 			
-			if (categoryPointsPossible != null && categoryPointsReceived != null) {
+			if (categoryPointsReceived != null) {
 				
 				// For extra credit categories, we simply add up all the points for that category without adding the points possible to that sum			
 				if (categoryUnit.isExtraCredit()) {
@@ -98,7 +98,9 @@ public class GradebookCalculationUnit {
 						sumPointsPossible = BigDecimal.ZERO.setScale(AppConstants.SCALE);
 					
 					sumPoints = sumPoints.add(categoryPointsReceived);
-					sumPointsPossible = sumPointsPossible.add(categoryPointsPossible);
+					
+					if (categoryPointsPossible != null)
+						sumPointsPossible = sumPointsPossible.add(categoryPointsPossible);
 					
 					if (categoryExtraCreditPoints != null) {
 						if (sumExtraCreditPoints == null)
@@ -140,7 +142,7 @@ public class GradebookCalculationUnit {
 	public BigDecimal calculateWeightedCourseGrade(Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap) {
 		
 		BigDecimal categoryWeightDesiredSum = BigDecimal.ZERO.setScale(AppConstants.SCALE);
-		BigDecimal categoryWeightSum = BigDecimal.ZERO.setScale(AppConstants.SCALE);
+		BigDecimal categoryWeightSum = null; 
 		BigDecimal courseGrade = null;
 		BigDecimal extraCreditSum = BigDecimal.ZERO.setScale(AppConstants.SCALE);
 
@@ -159,12 +161,17 @@ public class GradebookCalculationUnit {
 				if (categoryUnit.isExtraCredit()) {
 					extraCreditSum = extraCreditSum.add(categoryWeight);
 				} else {
+					if (categoryWeightSum == null)
+						categoryWeightSum = BigDecimal.ZERO.setScale(AppConstants.SCALE);
 					categoryWeightSum = categoryWeightSum.add(categoryWeight);
 				}
 
 			} // if
 			
 		} // for
+		
+		if (categoryWeightSum == null)
+			return null;
 		
 		BigDecimal ratio = BigDecimal.ONE;
 			
@@ -203,10 +210,6 @@ public class GradebookCalculationUnit {
 			} // if
 			
 		} // for
-		
-		
-		if (categoryWeightSum == null)
-			return null;
 
 
 		if (courseGrade != null)
