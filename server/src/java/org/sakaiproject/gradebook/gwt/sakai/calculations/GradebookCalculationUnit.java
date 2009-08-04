@@ -316,9 +316,19 @@ public class GradebookCalculationUnit {
 				BigDecimal pointsReceived = entry.getPointsReceived();
 				BigDecimal pointsPossible = entry.getPointsPossible();
 				
+				entry.setDropped(true);
+				
 				if (pointsReceived != null && pointsPossible != null) {
 					sumPoints = sumPoints.subtract(pointsReceived);
 					sumPointsPossible = sumPointsPossible.subtract(pointsPossible);
+					
+					// This is a special case where the sumPoints is non-null because the drop
+					// lowest was not taken into account earlier, but it should be null
+					if (sumPoints.compareTo(BigDecimal.ZERO) == 0 && 
+							sumPointsPossible.compareTo(BigDecimal.ZERO) == 0) {
+						sumPoints = null;
+						sumPointsPossible = null;
+					}
 				}
 			}
 		
