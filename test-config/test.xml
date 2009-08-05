@@ -116,6 +116,7 @@
 	
 	<bean id="GradebookImportService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookImportController">
 		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service"/>
+		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/> 
 		<property name="commandClass" value="org.sakaiproject.gradebook.gwt.sakai.FileUploadBean"/>
 	</bean>
 	
