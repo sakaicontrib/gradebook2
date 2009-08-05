@@ -749,7 +749,6 @@ public class ImportPanel extends ContentPanel {
 				}
 			}
 
-			Window.alert("We're here1"); 
 			/*
 			 * If there are unassigned assignments in a categories gradebook, problems with the assignment 
 			 * name, or a points issue(the latter two being scantron problem) then we'll put a window up. 
@@ -760,14 +759,12 @@ public class ImportPanel extends ContentPanel {
 			StringBuilder sb = null; 
 			if (hasUnassignedItem && hasCategories) 
 			{
-				Window.alert("We're here2"); 
 				showPanel = true; 
 				hasDefaultMsg = true; 
 			} 
 
 			if (hasAssignmentNameIssueForScantron)
 			{
-				Window.alert("We're here3"); 
 
 				if (sb == null)
 				{
@@ -802,7 +799,6 @@ public class ImportPanel extends ContentPanel {
 			
 			if (showPanel)
 			{
-				Window.alert("We're here5"); 
 
 				String sendText = ""; 
 				if (sb != null )
