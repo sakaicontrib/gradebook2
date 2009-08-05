@@ -10,7 +10,8 @@ add (
 
 alter table GB_GRADEBOOK_T
 add (
-	IS_EQUAL_WEIGHT_CATS number(1,0)
+	IS_EQUAL_WEIGHT_CATS number(1,0),
+	IS_SCALED_EXTRA_CREDIT number(1,0)
 );
 
 alter table GB_GRADE_RECORD_T
