@@ -75,6 +75,7 @@ import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class ImportPanel extends ContentPanel {
@@ -409,13 +410,13 @@ public class ImportPanel extends ContentPanel {
 						
 						//advancedContainer.layout();
 						
-						//Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades.getEventType());
 						
 						GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 						selectedGradebook.setGradebookItemModel(result.getGradebookItemModel());
 						Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookSetup.getEventType(), selectedGradebook);
 						Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookItems.getEventType(), selectedGradebook);
-						//Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades.getEventType());
+						// Have to do this one, otherwise the multigrid is not fully refreshed. 
+						Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades.getEventType());
 					} catch (Exception e) {
 						Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(e));
 					} finally {
@@ -535,10 +536,10 @@ public class ImportPanel extends ContentPanel {
 			
 			JSONArray headersArray = getArray(jsonObject, "items");
 			previewColumns = new ArrayList<ColumnConfig>();
+			boolean hasErrors = DataTypeConversionUtil.checkBoolean(getBoolean(jsonObject, "hasErrors")); 
+			boolean hasAssignmentNameIssueForScantron = DataTypeConversionUtil.checkBoolean(getBoolean(jsonObject, "notifyAssignmentName")); 
 
-			Boolean hasErrors = getBoolean(jsonObject, "hasErrors");
-			hasErrors = DataTypeConversionUtil.checkBoolean(hasErrors); 
-
+			
 			msgsFromServer = getString(jsonObject, "notes");
 
 			// If we have errors we want to do something different
@@ -663,12 +664,10 @@ public class ImportPanel extends ContentPanel {
 			
 			mainCardLayout.setActiveItem(step1Container);
 			
-			if (hasUnassignedItem && hasCategories) {
-				showSetupPanel();
-			}
 			
 			
-	
+			boolean pointsIssue = false; 
+			StringBuilder pointsAssignments = null;
 			JSONArray rowsArray = getArray(jsonObject, "rows");
 			ArrayList<StudentModel> models = new ArrayList<StudentModel>();
 			if (rowsArray != null) {
@@ -702,13 +701,43 @@ public class ImportPanel extends ContentPanel {
 						for (int j=0;j<columnsArray.size();j++) {
 							if (previewColumns != null && previewColumns.size() > j) {
 								ColumnConfig config = previewColumns.get(j);
-								if (config != null) {
+								if (config != null) {									
 									JSONValue itemValue = columnsArray.get(j);
 									if (itemValue == null)
 										continue;
 									JSONString itemString = itemValue.isString();
 									if (itemString == null)
 										continue;
+									String configId = config.getId(); 
+									ImportHeader h = headerMap.get(configId);
+									if (null != h  && null != itemString && !"".equals(itemString.stringValue()))
+									{
+										Double maxPoints = h.getPoints(); 
+										if (maxPoints == null)
+										{
+											maxPoints = new Double(100.0); 
+										}
+										double itemPoints = Double.parseDouble(itemString.stringValue());
+										if (itemPoints > maxPoints.doubleValue())
+										{
+											pointsIssue = true; 
+											if (pointsAssignments == null)
+											{
+												pointsAssignments = new StringBuilder();
+												pointsAssignments.append(h.getHeaderName()); 
+											}
+											else
+											{
+												if (pointsAssignments.indexOf( h.getHeaderName() ) == -1)
+												{
+													pointsAssignments.append(", "); 
+													pointsAssignments.append(h.getHeaderName()); 
+												}
+											}
+										
+											
+										}
+									}
 									model.set(config.getId(), itemString.stringValue());
 								}
 							}
@@ -719,7 +748,70 @@ public class ImportPanel extends ContentPanel {
 					models.add(model);
 				}
 			}
-				
+
+			Window.alert("We're here1"); 
+			/*
+			 * If there are unassigned assignments in a categories gradebook, problems with the assignment 
+			 * name, or a points issue(the latter two being scantron problem) then we'll put a window up. 
+			 * 
+			 */
+			boolean showPanel =  false; 
+			boolean hasDefaultMsg = false;
+			StringBuilder sb = null; 
+			if (hasUnassignedItem && hasCategories) 
+			{
+				Window.alert("We're here2"); 
+				showPanel = true; 
+				hasDefaultMsg = true; 
+			} 
+
+			if (hasAssignmentNameIssueForScantron)
+			{
+				Window.alert("We're here3"); 
+
+				if (sb == null)
+				{
+					sb = new StringBuilder(); 
+				}
+				else
+				{
+					sb.append("<BR>"); 
+				}
+				showPanel = true; 
+				sb.append("<BR>The scantron assignment entered has previously been imported.  You are given this opportunity to change the assignment name, as if you do not then the grade data imported will overwrite the previous import."); 				
+			}
+			
+			if (pointsIssue)
+			{
+				if (sb == null)
+				{
+					sb = new StringBuilder(); 
+				}
+				else
+				{
+					sb.append("<BR>"); 
+				}
+				showPanel = true; 
+				sb.append("<BR>A student's entered points value is greater than the max points value for an assignment.");
+				sb.append("<br>The assignments are: ");
+				sb.append(pointsAssignments.toString()); 
+				sb.append("<br><br>If you do not increase the max points of the particular assignment(s), then any student grade data that is greater than the points value will not be imported.");
+				pointsAssignments = null; 
+			}
+			
+			if (showPanel)
+			{
+				Window.alert("We're here5"); 
+
+				String sendText = ""; 
+				if (sb != null )
+				{
+					sendText = sb.toString(); 
+					sb = null;
+				}
+				showSetupPanel(sendText, !hasDefaultMsg);
+			}
+
 			if (models != null && !models.isEmpty())
 				rowStore.add(models);
 			else
@@ -996,8 +1088,36 @@ public class ImportPanel extends ContentPanel {
 	}
 	
 	
-	private void showSetupPanel() {
-		MessageBox.alert("Setup Required", "You have items that are not assigned to a category", new Listener<WindowEvent>() {
+	private void showSetupPanel(String alertText, boolean overrideText) {
+		String defaultMessageText =  "You have items that are not assigned to a category";
+		String messageText;
+		StringBuilder sb; 
+		if (overrideText)
+		{
+			if (alertText == null || "".equals(alertText))
+			{
+				// If they give us nothing and want to override, then we'll still put the default
+				sb = new StringBuilder(defaultMessageText); 
+			}
+			else
+			{
+				sb = new StringBuilder(); 
+			}
+		}
+		else
+		{
+			sb = new StringBuilder(defaultMessageText); 
+			if (alertText != null && !"".equals(alertText))
+			{
+				sb.append("<br>");
+			}
+		}
+		
+		sb.append(alertText);
+		messageText = sb.toString(); 
+		sb = null; 
+		
+		MessageBox.alert("Setup Required", messageText, new Listener<WindowEvent>() {
 
 			public void handleEvent(WindowEvent be) {
 				tabPanel.setSelection(columnsTab);
