@@ -31,7 +31,7 @@ public class GradebookImportController extends SimpleFormController {
 	private static final Log log = LogFactory.getLog(GradebookImportController.class);
 	
 	private Gradebook2Service service;
-	
+	private GradebookToolService gbToolService;
 	
 	protected ModelAndView onSubmit(HttpServletRequest request,
 	        HttpServletResponse response,
@@ -67,7 +67,7 @@ public class GradebookImportController extends SimpleFormController {
 				if (origName.toLowerCase().endsWith("xls"))
 				{
 					log.debug("Excel file detected"); 
-					importFile = ImportExportUtility.parseImportXLS(service, gradebookUid, file.getInputStream());
+					importFile = ImportExportUtility.parseImportXLS(service, gradebookUid, file.getInputStream(), origName.toLowerCase(), gbToolService);
 
 				}
 				else
@@ -79,8 +79,8 @@ public class GradebookImportController extends SimpleFormController {
 			        
 		        PrintWriter writer = response.getWriter();
 		        response.setContentType("text/html");
-		    	
 		        XStream xstream = new XStream(new JsonHierarchicalStreamDriver());
+		    	log.debug("json: " + xstream.toXML(importFile) ); 
 		        writer.write(xstream.toXML(importFile)); 
 		        writer.flush();
 		        writer.close();
@@ -102,6 +102,14 @@ public class GradebookImportController extends SimpleFormController {
 
 	public void setService(Gradebook2Service service) {
 		this.service = service;
+	}
+
+	public GradebookToolService getGbToolService() {
+		return gbToolService;
+	}
+
+	public void setGbToolService(GradebookToolService gbToolService) {
+		this.gbToolService = gbToolService;
 	}
 
 }

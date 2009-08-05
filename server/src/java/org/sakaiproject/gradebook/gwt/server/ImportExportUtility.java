@@ -47,7 +47,11 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service;
+import org.sakaiproject.gradebook.gwt.sakai.GradebookImportException;
+import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
+import org.sakaiproject.tool.gradebook.Assignment;
+import org.sakaiproject.tool.gradebook.Category;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
@@ -392,14 +396,77 @@ public class ImportExportUtility {
 	}
 	
 	
+	private static boolean checkForCurrentAssignmentInGradebook(String fileName, Gradebook2Service service, GradebookToolService gbToolService, String gradebookUid)
+	{
+		GradebookModel gm = service.getGradebook(gradebookUid); 
+		List<Assignment> assignments = gbToolService.getAssignments(gm.getGradebookId()); 
+		for (Assignment curAssignment : assignments)
+		{
+			String curAssignmentName = curAssignment.getName(); 
+			log.debug("curAssignmentName=" + curAssignmentName);
+			if (curAssignment.getName().equals(fileName))
+			{
+				return true; 
+			}
+		}
+		
+		return false; 
+		
+	}
+	private static String getUniqueFileNameForFileName(String fileName,
+			Gradebook2Service service, GradebookToolService gbToolService, String gradebookUid) throws GradebookImportException 
+	{
+		log.debug("fileName=" + fileName);
+		if (fileName == null || fileName.equals(""))
+		{
+			log.debug("null filename, returning default"); 
+			return "Scantron Import"; 
+		}
+		int i = 1;
+		String curFileName = fileName; 
+		while (true)
+		{
+			log.debug("curFileName: " + curFileName); 
+			if (!checkForCurrentAssignmentInGradebook(curFileName, service, gbToolService, gradebookUid))
+			{
+				log.debug("returning curFileName"); 
+				return curFileName; 
+			}
+			else
+			{
+				curFileName = fileName + "-" +i; 
+			}
+			i++; 
+			
+			if (i > 1000)
+			{
+				throw new GradebookImportException("Couldn't find a unique filename within 1000 tries, please rename filename manually and import again"); 
+			}
+		}
+	}
+
 	/*
 	 * so basically, we'll do: 
 	 * 1) Scan the sheet for scantron artifacts, and if so convert to a simple CSV file which is 
 	 */
 	public static ImportFile parseImportXLS(Gradebook2Service service, 
-			String gradebookUid, InputStream is) throws InvalidInputException, FatalException, IOException {
+			String gradebookUid, InputStream is, String fileName, GradebookToolService gbToolService) throws InvalidInputException, FatalException, IOException {
 		log.debug("parseImportXLS() called"); 
 		
+		String realFileName; 
+		boolean isOriginalName; 
+		try {
+			realFileName = getUniqueFileNameForFileName(fileName, service, gbToolService, gradebookUid);
+		} catch (GradebookImportException e) {
+			ImportFile importFile = new ImportFile(); 
+			importFile.setHasErrors(true); 
+			importFile.setNotes(e.getMessage()); 
+			return importFile; 
+		} 
+		isOriginalName = realFileName.equals(fileName);
+		log.debug("realFileName=" + realFileName);
+		log.debug("isOriginalName=" + isOriginalName);
+
 		HSSFWorkbook inspread = null;
 		
 		BufferedInputStream bufStream = new BufferedInputStream(is); 
@@ -410,19 +477,21 @@ public class ImportExportUtility {
 		{
 			log.debug("Found a POI readable spreadsheet");
 			bufStream.close(); 
-			return handlePoiSpreadSheet(inspread, service, gradebookUid);
+			return handlePoiSpreadSheet(inspread, service, gradebookUid, realFileName, isOriginalName);
 		}
 		else
 		{
 			log.debug("POI couldn't handle the spreadsheet, using jexcelapi");
-			return handleJExcelAPISpreadSheet(bufStream, service, gradebookUid); 
+			return handleJExcelAPISpreadSheet(bufStream, service, gradebookUid, realFileName, isOriginalName); 
 		}
 		
 		
 	}
 	
+
+
 	private static ImportFile handleJExcelAPISpreadSheet(BufferedInputStream is,
-			Gradebook2Service service, String gradebookUid) throws InvalidInputException, FatalException, IOException {
+			Gradebook2Service service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName) throws InvalidInputException, FatalException, IOException {
 		Workbook wb = null; 
 		try {
 			 wb = Workbook.getWorkbook(is);
@@ -440,7 +509,7 @@ public class ImportExportUtility {
 		{
 			if (isScantronSheetForJExcelApi(s))
 			{
-				return handleScantronSheetForJExcelApi(s, service, gradebookUid);
+				return handleScantronSheetForJExcelApi(s, service, gradebookUid, fileName, isNewAssignmentByFileName);
 			}
 			else
 			{
@@ -475,13 +544,15 @@ public class ImportExportUtility {
 			raw.addRow(data); 
 		}
 		raw.setFileType("Excel 5.0/7.0 Non Scantron"); 
+		raw.setScantronFile(false); 
+ 
 		return parseImportGeneric(service, gradebookUid, raw);
 	}
 	private final static int RAWFIELD_FIRST_POSITION = 0; 
 	private final static int RAWFIELD_SECOND_POSITION = 1; 
 
 	private static ImportFile handleScantronSheetForJExcelApi(Sheet s,
-			Gradebook2Service service, String gradebookUid) throws InvalidInputException, FatalException 
+			Gradebook2Service service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName) throws InvalidInputException, FatalException 
 	{
 		StringBuilder err = new StringBuilder("Scantron File with errors"); 
 		RawFile raw = new RawFile(); 
@@ -505,7 +576,7 @@ public class ImportExportUtility {
 
 		if (! stop) 
 		{
-			raw.addRow(getScantronHeaderLine()); 
+			raw.addRow(getScantronHeaderLine(fileName)); 
 			for (int i = 0 ; i < s.getRows() ; i++)
 			{
 				Cell idCell; 
@@ -524,6 +595,8 @@ public class ImportExportUtility {
 				}
 			}
 			raw.setFileType("Scantron File"); 
+			raw.setScantronFile(true);
+			raw.setNewAssignment(isNewAssignmentByFileName);
 			return parseImportGeneric(service, gradebookUid, raw);
 		}
 		else
@@ -531,17 +604,24 @@ public class ImportExportUtility {
 			raw.setMessages(err.toString());
 			err = null; 
 			raw.setErrorsFound(true); 
+		
 			return parseImportGeneric(service, gradebookUid, raw);
 		}
 
 	}
 
-	private static String[] getScantronHeaderLine()
+	private static String[] getScantronHeaderLine(String fileName)
 	{
 		String[] header = new String[2]; 
 		header[RAWFIELD_FIRST_POSITION] = "Student Id"; 
-		header[RAWFIELD_SECOND_POSITION] = "Scantron Item"; 
-
+		if (null != fileName && !"".equals(fileName))
+		{
+			header[RAWFIELD_SECOND_POSITION] = fileName; 
+		}
+		else
+		{
+			header[RAWFIELD_SECOND_POSITION] = "Scantron Item"; 
+		}
 		return header; 
 	}
 	private static boolean isScantronSheetForJExcelApi(Sheet s) {
@@ -551,7 +631,7 @@ public class ImportExportUtility {
 		return (studentIdHeader != null && scoreHeader != null); 
 	}
 
-	private static ImportFile handlePoiSpreadSheet(HSSFWorkbook inspread, Gradebook2Service service, String gradebookUid ) throws InvalidInputException, FatalException
+	private static ImportFile handlePoiSpreadSheet(HSSFWorkbook inspread, Gradebook2Service service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName) throws InvalidInputException, FatalException
 	{
 		log.debug("handlePoiSpreadSheet() called"); 
 		// FIXME - need to do multiple sheets, and structure
@@ -564,7 +644,9 @@ public class ImportExportUtility {
 			if (isScantronSheetFromPoi(cur))
 			{
 				log.debug("POI: Scantron");
-				ret = processScantronXls(cur); 
+				ret = processScantronXls(cur, fileName); 
+				ret.setScantronFile(true); 
+				ret.setNewAssignment(isNewAssignmentByFileName);
 			}
 			else
 			{
@@ -662,7 +744,7 @@ public class ImportExportUtility {
 		return ret; 
 	}
 
-	private static RawFile processScantronXls(HSSFSheet s) {
+	private static RawFile processScantronXls(HSSFSheet s, String fileName) {
 		RawFile data = new RawFile(); 
 		Iterator<HSSFRow> rowIter = s.rowIterator(); 
 		StringBuilder err = new StringBuilder("Scantron File with errors"); 
@@ -685,7 +767,7 @@ public class ImportExportUtility {
 
 		if (! stop) 
 		{
-			data.addRow(getScantronHeaderLine());
+			data.addRow(getScantronHeaderLine(fileName));
 			while (rowIter.hasNext())
 			{
 				boolean problemFound = false; 
@@ -1392,6 +1474,13 @@ public class ImportExportUtility {
 		}
 		
 		ImportFile importFile = new ImportFile();
+		
+		if (rawData.isScantronFile())
+		{
+			importFile.setNotifyAssignmentName(!rawData.isNewAssignment()); 
+		}
+		
+		
 		ImportExportInformation ieInfo = new ImportExportInformation();
 		ieInfo.setHasCategories(hasCategories);
 		ArrayList<ImportRow> importRows = new ArrayList<ImportRow>();
@@ -1641,8 +1730,26 @@ class RawFile
 {
 	private String fileType; 
 	private String messages; 
-	private boolean errorsFound;  
+	private boolean errorsFound; 
+	private boolean newAssignment; 
+	private boolean scantronFile;
 	
+
+	public boolean isNewAssignment() {
+		return newAssignment;
+	}
+
+	public void setNewAssignment(boolean newAssignment) {
+		this.newAssignment = newAssignment;
+	}
+
+	public boolean isScantronFile() {
+		return scantronFile;
+	}
+
+	public void setScantronFile(boolean scantronFile) {
+		this.scantronFile = scantronFile;
+	}
 
 	private static final Log log = LogFactory.getLog(RawFile.class);
 
@@ -1660,6 +1767,8 @@ class RawFile
 	public RawFile()
 	{
 		this.errorsFound = false; 
+		this.newAssignment = false; 
+		this.scantronFile = false; 
 		allRows = new ArrayList<String[]>(); 
 	}
 	public void goToRow(int row)

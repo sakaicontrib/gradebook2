@@ -18,6 +18,8 @@ public class ImportFile implements Serializable {
 	
 	private boolean hasErrors; 
 	
+	private boolean notifyAssignmentName; 
+	
 	public ImportFile() {
 		hasErrors = false; 
 	}
@@ -61,6 +63,14 @@ public class ImportFile implements Serializable {
 
 	public void setHasCategories(Boolean hasCategories) {
 		this.hasCategories = hasCategories;
+	}
+
+	public boolean isNotifyAssignmentName() {
+		return notifyAssignmentName;
+	}
+
+	public void setNotifyAssignmentName(boolean notifyAssignmentName) {
+		this.notifyAssignmentName = notifyAssignmentName;
 	}
 
 	
