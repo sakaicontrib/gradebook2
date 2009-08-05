@@ -19,6 +19,7 @@ import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportFile;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service;
+import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
 import org.sakaiproject.gradebook.gwt.sakai.mock.IocMock;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility.Delimiter;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -35,10 +36,13 @@ public class ImportHandler extends HttpServlet {
 	
 	private Gradebook2Service service;
 	
+	private GradebookToolService gbToolService; 
+	
 	public void init() {
 		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"test.xml", "db.xml"});
 
 		service = (Gradebook2Service)context.getBean("org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service");
+		gbToolService = (GradebookToolService)context.getBean("org.sakaiproject.gradebook.gwt.sakai.GradebookToolService");
 		
 	}
 	
@@ -101,11 +105,20 @@ public class ImportHandler extends HttpServlet {
                                 	uploadedFile = current;
                                 
                        }
-                       
-                       InputStreamReader reader = new InputStreamReader(uploadedFile.getInputStream());
-                       
-                       ImportFile importFile = ImportExportUtility.parseImportCSV(service, gradebookUid, reader);
-                        
+        				String origName = uploadedFile.getName(); 
+        				ImportFile importFile;
+        				
+        				if (origName.toLowerCase().endsWith("xls"))
+        				{
+        					importFile = ImportExportUtility.parseImportXLS(service, gradebookUid, uploadedFile.getInputStream(), origName.toLowerCase(), gbToolService);
+
+        				}
+        				else
+        				{
+        					InputStreamReader reader = new InputStreamReader(uploadedFile.getInputStream());
+        					importFile = ImportExportUtility.parseImportCSV(service, gradebookUid, reader);
+        				}
+        			        
                        out.write(xstream.toXML(importFile)); 
                        
 
