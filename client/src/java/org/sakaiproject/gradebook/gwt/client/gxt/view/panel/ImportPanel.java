@@ -778,7 +778,8 @@ public class ImportPanel extends ContentPanel {
 					sb.append("<BR>"); 
 				}
 				showPanel = true; 
-				sb.append("<BR>The scantron assignment entered has previously been imported.  You are given this opportunity to change the assignment name, as if you do not then the grade data imported will overwrite the previous import."); 				
+				sb.append("<BR>The scantron assignment entered has previously been imported.  We have changed the assignment name so that it will be imported uniquely. If you wanted to replace the old data, then please change it back."
+						); 				
 			}
 			
 			if (pointsIssue)
