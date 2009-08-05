@@ -1038,6 +1038,8 @@ public class ItemFormPanel extends ContentPanel {
 								item.setCategoryName(categoryName);
 							}
 							
+							Integer dropLowest = dropLowestField.getValue() == null ? null : Integer.valueOf(dropLowestField.getValue().intValue());
+							
 							item.setName(nameField.getValue());
 							item.setExtraCredit(extraCreditField.getValue());
 							item.setEqualWeightAssignments(equallyWeightChildrenField.getValue());
@@ -1047,6 +1049,7 @@ public class ItemFormPanel extends ContentPanel {
 							item.setPercentCategory((Double)percentCategoryField.getValue());
 							item.setPoints((Double)pointsField.getValue());
 							item.setDueDate(dueDateField.getValue());
+							item.setDropLowest(dropLowest);
 							item.setItemType(createItemType);
 							
 							clearChanges();
