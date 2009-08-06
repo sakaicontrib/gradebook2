@@ -1309,13 +1309,16 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 		List<String> letterGradesList = new ArrayList<String>(gradeMapping.getGradeMap().keySet());
 
-		Collections.sort(letterGradesList, LETTER_GRADE_COMPARATOR);
+		if (gradeMapping.getName().equalsIgnoreCase("Pass / Not Pass")) 
+			Collections.sort(letterGradesList, PASS_NOPASS_COMPARATOR);
+		else
+			Collections.sort(letterGradesList, LETTER_GRADE_COMPARATOR);
 
 		Double upperScale = null;
 
 		for (String letterGrade : letterGradesList) {
 
-			upperScale = (null == upperScale) ? new Double(100d) : upperScale.equals(Double.valueOf(0d)) ? Double.valueOf(0d) : Double.valueOf(upperScale.doubleValue() - 0.00001d);
+			upperScale = (null == upperScale) ? new Double(100d) : upperScale.equals(Double.valueOf(0d)) ? Double.valueOf(0d) : Double.valueOf(upperScale.doubleValue() - 0.01d);
 
 			GradeScaleRecordModel gradeScaleModel = new GradeScaleRecordModel(letterGrade, gradeMapping.getGradeMap().get(letterGrade), upperScale);
 			gradeScaleMappings.add((X) gradeScaleModel);
@@ -4217,6 +4220,28 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	 * INNER CLASSES
 	 */
 
+	static final String[] orderedPassNoPassGrades = { "P", "NP", "S", "U", "IP", "I", "Y", "NS", "NG" };
+	
+	static final Comparator<String> PASS_NOPASS_COMPARATOR = new Comparator<String>() {
+		
+		public int compare(String o1, String o2) {
+			
+			if (o1 == null || o2 == null)
+				return 0;
+			
+			for (int i=0;i<orderedPassNoPassGrades.length;i++) {
+				if (o1.equals(orderedPassNoPassGrades[i]))
+					return -1;
+				if (o2.equals(orderedPassNoPassGrades[i]))
+					return 1;
+			}
+			
+			
+			return 0;
+		}
+		
+	};
+	
 	/**
 	 * COMPARATORS
 	 */
@@ -4228,11 +4253,6 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 			char c1 = o1.toLowerCase().charAt(0);
 			char c2 = o2.toLowerCase().charAt(0);
-			
-			if (c1 == 'P' && c2 == 'N')
-				return -1;
-			else if (c2 == 'N' && c1 == 'P')
-				return 1;
 			
 			if (o1.toLowerCase().charAt(0) == o2.toLowerCase().charAt(0)) {
 

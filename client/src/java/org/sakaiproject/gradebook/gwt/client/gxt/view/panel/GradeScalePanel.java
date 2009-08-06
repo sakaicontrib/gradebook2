@@ -197,6 +197,7 @@ public class GradeScalePanel extends ContentPanel {
 			NumberField numberField = new NumberField();
 			numberField.addInputStyleName("gbNumericFieldInput");
 			numberField.setMaxValue(Double.valueOf(100d));
+			numberField.setFormat(defaultNumberFormat);
 			column.setEditor(new CellEditor(numberField));
 		}
 		configs.add(column);
