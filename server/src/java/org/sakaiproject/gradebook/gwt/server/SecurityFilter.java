@@ -11,12 +11,14 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public class SecurityFilter implements Filter {
 	
 	private static final String SCRIPT_REGEX = "((<[\\s\\/]*script\\b[^>]*>)([^>]*)(<\\/script>))";
 	private static final String GWT_RPC_CONTENT_TYPE = "text/x-gwt-rpc";
 	private static final Pattern pattern = Pattern.compile(SCRIPT_REGEX);
+	private static final int HTTP_500 = 500;
 
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 				
@@ -30,7 +32,10 @@ public class SecurityFilter implements Filter {
 
 			Matcher matcher = pattern.matcher(body);
 			if(matcher.find()) {
-				throw new ServletException("JavaScript Injection Detected!");
+				// Instead of throwing an exception here, we just set the
+				// response status and return
+				((HttpServletResponse) response).setStatus(HTTP_500);
+				return;
 			}
 
 			chain.doFilter(securityRequestWrapper, response);
