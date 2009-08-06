@@ -53,6 +53,8 @@ public interface GradebookToolService {
 	
 	public void createOrUpdateUserConfiguration(String userUid, Long gradebookId, String configField, String configValue);
 	
+	public void deleteUserConfiguration(String userUid, Long gradebookId, String configField);
+	
 	public List<ActionRecord> getActionRecords(final String gradebookUid, final int offset, final int limit);
 	
 	public Integer getActionRecordSize(final String gradebookUid);

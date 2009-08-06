@@ -1789,4 +1789,8 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		permissions.add(permission);
 		return permissionId++;
 	}
+	
+	public void deleteUserConfiguration(String userUid, Long gradebookId, String configField) {
+		
+	}
 }

@@ -2554,6 +2554,30 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 						configModel.set(config.getConfigField(), config.getConfigValue());
 					}
 				}
+				
+				List<String> legacySelectedMultiGradeColumns = configModel.getSelectedMultigradeColumns();
+				
+				if (legacySelectedMultiGradeColumns != null) {
+					
+					if (assignments != null) {
+						
+						for (Assignment a : assignments) {
+							
+							String identifier = String.valueOf(a.getId());
+							
+							if (!legacySelectedMultiGradeColumns.contains(identifier)) {
+								createOrUpdateConfigurationModel(gradebook.getId(), ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, identifier), "true");								
+								configModel.setColumnHidden(AppConstants.ITEMTREE, identifier, Boolean.TRUE);
+							} 
+							
+						}
+						
+						
+					}
+					
+					gbService.deleteUserConfiguration(getCurrentUser(), gradebook.getId(), AppConstants.SELECTED_COLUMNS);
+				}
+				
 
 				// Don't take the hit of looking this stuff up unless we're in
 				// single user view

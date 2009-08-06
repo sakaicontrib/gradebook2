@@ -2113,6 +2113,32 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		getHibernateTemplate().delete(permission);
 	}
 
+	public void deleteUserConfiguration(final String userUid, final Long gradebookId, final String configField) {
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException {
+
+				session.beginTransaction();
+				
+				Query q = session.createQuery("from UserConfiguration as config where config.userUid = :userUid and config.gradebookId = :gradebookId and config.configField = :configField ");
+				q.setString("userUid", userUid);
+				q.setLong("gradebookId", gradebookId.longValue());
+				q.setString("configField", configField);
+
+				UserConfiguration config = (UserConfiguration)q.uniqueResult();
+
+				if (config != null) {
+					session.delete(config);
+				} 
+
+				session.getTransaction().commit();
+				
+				return null;
+			}
+		};
+
+		getHibernateTemplate().execute(hc);
+	}
+	
 	public List<Permission> getPermissionsForUser(final Long gradebookId, final String userId) throws IllegalArgumentException {
 		if(gradebookId == null || userId == null)
 			throw new IllegalArgumentException("Null parameter(s) in BaseHibernateManager.getPermissionsForUserAnyGroup");
