@@ -1609,11 +1609,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				groupReferences.add(reference);
 				groupReferenceMap.put(reference, group);
 
-				String sectionProviderId = group.getProviderGroupId();
-
 				if (!isLimitedToSelectedSection) {
 
-					if (!isInstructor && (sectionProviderId != null) && (authz.isUserTAinSection(reference) || authz.hasUserGraderPermission(gradebook.getUid(), reference))) {
+					// GRBK-233 : In case the site has adhoc groups, we cannot check for providerId
+					if (!isInstructor && (authz.isUserTAinSection(reference) || authz.hasUserGraderPermission(gradebook.getUid(), reference))) {
 
 						authorizedGroups.add(reference);
 					}
@@ -2491,15 +2490,15 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 			for(Category category : categories) {
 
-				// First we check if the user has view permission for the category
-				boolean canView = isSingleUserView || authz.canUserViewCategory(gradebook.getUid(), category.getId());
-				if(canView) {
+				// First we check if the user has "can grade" permission
+				boolean canGrade = authz.canUserGradeCategory(gradebook.getUid(), category.getId());
+				if(canGrade) {
 					filteredCategories.add(category);
 				}
 				else {
-					// User has no view permission, so let's check if user has grader permission for the category
-					boolean canGrade = authz.canUserGradeCategory(gradebook.getUid(), category.getId());
-					if(canGrade) {
+					// User has no "can grade" permission, so let's check if user has "can view" permission for this category
+					boolean canView = isSingleUserView || authz.canUserViewCategory(gradebook.getUid(), category.getId());
+					if(canView) {
 						filteredCategories.add(category);
 					}
 				}

@@ -19,8 +19,6 @@ import org.sakaiproject.tool.gradebook.Permission;
 
 public class Gradebook2AuthzImpl implements Gradebook2Authz {
 	
-	private static final int FIRST_ITEM = 0;
-	private static final int ONE_ITEM = 1;
 	private static final int ZERO_ITEMS = 0;
 
 	private Gradebook2Authn authn;
@@ -749,18 +747,22 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 		List<Long> categoryIds = new ArrayList<Long>();
 		categoryIds.add(categoryId);
 		permissions = gbToolService.getPermissionsForUserForCategory(getGradebookId(gradebookUid), userUid, categoryIds);
-		if(null != permissions && permissions.size() == ONE_ITEM) {
-			if(permissions.get(FIRST_ITEM).getFunction().equals(action)) {
-				return true;
+		if(null != permissions) {
+			for(Permission permission : permissions) {
+				if(permission.getFunction().equals(action)) {
+					return true;
+				}
 			}
 		}
 		
 		// Case 2: All Categories
 		permissions = null;
 		permissions = gbToolService.getPermissionForUserAnyCategory(getGradebookId(gradebookUid), userUid);
-		if(null != permissions && permissions.size() == ONE_ITEM) {
-			if(permissions.get(FIRST_ITEM).getFunction().equals(action)) {
-				return true;
+		if(null != permissions) {
+			for(Permission permission : permissions) {
+				if(permission.getFunction().equals(action)) {
+					return true;
+				}
 			}
 		}
 		
