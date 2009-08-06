@@ -83,6 +83,7 @@
 		<property name="transactionAttributes">
 			<props>
 				<prop key="createOrUpdateUserConfiguration">PROPAGATION_NOT_SUPPORTED</prop>
+				<prop key="deleteUserConfiguration">PROPAGATION_NOT_SUPPORTED</prop>
 	            <prop key="is*">PROPAGATION_REQUIRED,readOnly,+org.sakaiproject.service.gradebook.shared.GradebookException</prop>
 	            <prop key="get*">PROPAGATION_REQUIRED,readOnly,+org.sakaiproject.service.gradebook.shared.GradebookException</prop>
 	            <prop key="*">PROPAGATION_REQUIRED,+org.sakaiproject.service.gradebook.shared.GradebookException</prop>
