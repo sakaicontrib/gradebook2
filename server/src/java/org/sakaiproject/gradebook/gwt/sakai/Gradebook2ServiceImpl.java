@@ -2121,7 +2121,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 		// The first case is that we're in categories mode and the category has
 		// changed
-		if (hasCategories && (oldCategory != null || isRemoved)) {
+		if (hasCategories && (oldCategory != null || isRemoved || havePointsChanged)) {
 			assignments = gbService.getAssignments(gradebook.getId());
 			List<Category> categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
 			return getItemModel(gradebook, assignments, categories, null, assignment.getId());
