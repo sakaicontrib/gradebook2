@@ -2565,11 +2565,14 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 						
 							String identifier = c.getIdentifier();
 							
-							if (!legacySelectedMultiGradeColumns.contains(identifier)) {
-								createOrUpdateConfigurationModel(gradebook.getId(), ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, identifier), "true");								
-								configModel.setColumnHidden(AppConstants.ITEMTREE, identifier, Boolean.TRUE);
-							} 
-								
+							if (!identifier.equals(StudentModel.Key.LAST_NAME_FIRST.name())
+									&& !identifier.equals(StudentModel.Key.COURSE_GRADE.name())
+									&& !identifier.equals(StudentModel.Key.GRADE_OVERRIDE.name())) {
+								if (!legacySelectedMultiGradeColumns.contains(identifier)) {
+									createOrUpdateConfigurationModel(gradebook.getId(), ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, identifier), "true");								
+									configModel.setColumnHidden(AppConstants.ITEMTREE, identifier, Boolean.TRUE);
+								} 
+							}
 						}
 						
 						
