@@ -89,4 +89,10 @@ public interface AppConstants {
 	public static final int CATEGORY_TYPE_NO_CATEGORY = 1;
 	public static final int CATEGORY_TYPE_ONLY_CATEGORY = 2;
 	public static final int CATEGORY_TYPE_WEIGHTED_CATEGORY = 3;
+	
+	public static final String ITEMTREE_HEADER = "itemTreeHeader";
+	public static final String ITEMTREE_POINTS_WEIGHTS = "**ptsW";
+	public static final String ITEMTREE_POINTS_NOWEIGHTS = "**ptsNoW";
+	public static final String ITEMTREE_PERCENT_GRADE = "**pctG";
+	public static final String ITEMTREE_PERCENT_CATEGORY = "**pctC";
 }

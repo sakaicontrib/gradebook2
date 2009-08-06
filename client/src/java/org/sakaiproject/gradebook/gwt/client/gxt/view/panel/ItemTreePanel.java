@@ -427,6 +427,8 @@ public class ItemTreePanel extends ContentPanel {
 		
 		ConfigurationModel configModel = gradebookModel.getConfigurationModel();
 		
+		((ItemTreeTableHeader) treeTable
+				.getTableHeader()).setPropagatingChanges(false);
 		switch (selectedGradebook.getGradebookItemModel().getCategoryType()) {
 		case NO_CATEGORIES:
 		case SIMPLE_CATEGORIES:
@@ -434,15 +436,16 @@ public class ItemTreePanel extends ContentPanel {
 			percentCategoryColumn.setHidden(true);
 			//percentCourseGradeColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE, String.valueOf(1), true));
 			//percentCategoryColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE, String.valueOf(2), true));
-			pointsColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE, String.valueOf(3), false));
+			pointsColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_POINTS_NOWEIGHTS, false));
 			break;
 		case WEIGHTED_CATEGORIES:
-			percentCourseGradeColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE, String.valueOf(1), false));
-			percentCategoryColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE, String.valueOf(2), false));
-			pointsColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE, String.valueOf(3), true));
+			percentCourseGradeColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_PERCENT_GRADE, false));
+			percentCategoryColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_PERCENT_CATEGORY, false));
+			pointsColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_POINTS_WEIGHTS, true));
 			break;
 		}
-		
+		((ItemTreeTableHeader) treeTable
+				.getTableHeader()).setPropagatingChanges(true);
 	}
 	
 	public void onSingleGrade() {
