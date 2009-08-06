@@ -77,10 +77,13 @@ public class GraderPermissionSettingsPanel extends ContentPanel {
 	public GraderPermissionSettingsPanel(I18nConstants i18n, boolean isEditable) {
 		super();
 
+		setFrame(true);
+		setHeading("Permissions");
+		
 		mainVerticalPanel = new VerticalPanel();
 		mainVerticalPanel.setSpacing(5);
 		mainVerticalPanel.setSize("100%", "100%");
-
+		
 		inputHorizontalPanel = new HorizontalPanel();
 		
 		userSelectionHorizontalPanel = new HorizontalPanel();
