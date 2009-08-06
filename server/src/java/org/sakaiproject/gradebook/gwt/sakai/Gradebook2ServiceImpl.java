@@ -2574,6 +2574,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 						
 					}
 
+					CourseGradeRecord courseGradeRecord = gbService.getStudentCourseGradeRecord(gradebook, user.getId());
+					userRecord.setCourseGradeRecord(courseGradeRecord);
+					
 					List<AssignmentGradeRecord> records = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), userRecord.getUserUid());
 
 					if (records != null) {
