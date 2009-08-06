@@ -2559,6 +2559,22 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				
 				if (legacySelectedMultiGradeColumns != null) {
 					
+					if (columns != null) {
+						
+						for (FixedColumnModel c : columns) {
+						
+							String identifier = c.getIdentifier();
+							
+							if (!legacySelectedMultiGradeColumns.contains(identifier)) {
+								createOrUpdateConfigurationModel(gradebook.getId(), ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, identifier), "true");								
+								configModel.setColumnHidden(AppConstants.ITEMTREE, identifier, Boolean.TRUE);
+							} 
+								
+						}
+						
+						
+					}
+					
 					if (assignments != null) {
 						
 						for (Assignment a : assignments) {
