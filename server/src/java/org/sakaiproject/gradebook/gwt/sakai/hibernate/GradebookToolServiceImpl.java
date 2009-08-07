@@ -645,8 +645,10 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 				Query query = null;
 
+				// GRBK-233 : in case a site has sections as well as adhoc groups, we need to make sure 
+				// that we don't get double entries. Thus I added the "distinct" clause
 				StringBuilder builder = new StringBuilder()
-				.append("select count(user) from Realm as r, RealmGroup rg, RealmRole rr, UserDereference user ")
+				.append("select count(distinct user) from Realm as r, RealmGroup rg, RealmRole rr, UserDereference user ")
 				.append("where rg.realmKey=r.realmKey ")
 				.append("and r.realmId in (:realmIds) ")
 				.append("and user.userUid=rg.userId ")
@@ -713,8 +715,10 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 				Query query = null;
 
+				// GRBK-233 : in case a site has sections as well as adhoc groups, we need to make sure 
+				// that we don't get double entries. Thus I added the "distinct" clause
 				StringBuilder builder = new StringBuilder()
-				.append("select user from Realm as r, RealmGroup rg, RealmRole rr, UserDereference user ")
+				.append("select distinct user from Realm as r, RealmGroup rg, RealmRole rr, UserDereference user ")
 				.append("where rg.realmKey = r.realmKey ")
 				.append("and r.realmId in (:realmIds) ")
 				.append("and user.userUid = rg.userId ")
@@ -741,6 +745,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 				query.setParameterList("realmIds", realmIds);	
 				query.setParameterList("roleKeys", roleNames);
+				
 
 				if (offset != -1)
 					query.setFirstResult(offset);

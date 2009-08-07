@@ -1663,6 +1663,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 							break;
 					}
 
+					// FIXME : GRBK-233 : If a site has sections as well as adhoc groups users that are 
+					// in both sections and adhoc groups show up twice
 					userRecords = findLearnerRecordPage(gradebook, site, realmIds, groupReferences, groupReferenceMap, sortField, searchField, searchCriteria, offset, limit, !isDescending, includeCMId);
 					totalUsers = gbService.getUserCountForSite(realmIds, sortField, searchField, searchCriteria, learnerRoleNames);
 

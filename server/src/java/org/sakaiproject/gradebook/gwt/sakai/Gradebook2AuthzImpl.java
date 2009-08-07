@@ -267,6 +267,7 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 
 		String userUid = authn.getUserUid();
 		
+		// First, we test if the user has grader permission(s) for a specific group
 		List<String> groupIds = new ArrayList<String>();
 		groupIds.add(groupId);
 		
@@ -275,11 +276,17 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 		if(null != permissions && permissions.size() > 0) {
 			return true;
 		}
-		else {
-			return false;
+		
+		// Second, we test if the user can grade all groups/sections
+		permissions = null;
+		permissions = gbToolService.getPermissionsForUserAnyGroup(getGradebookId(gradebookUid), userUid);
+		if(null != permissions && permissions.size() > 0) {
+			return true;
 		}
+
+		return false;
 	}
-	
+
 	public List<CourseSection> getViewableSections(String gradebookUid) {
 
 		List<CourseSection> viewableSections = new ArrayList<CourseSection>();
