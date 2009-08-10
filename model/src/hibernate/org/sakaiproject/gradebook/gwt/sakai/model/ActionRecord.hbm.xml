@@ -46,5 +46,25 @@
   
   	</class>
   
+  	<database-object>
+		<create>create index GB_ACTION_RECORD_ID_IDX on GB_ACTION_RECORD_T(ID)</create>
+		<drop></drop>
+		<dialect-scope name="org.hibernate.dialect.Oracle9Dialect"/>
+		<dialect-scope name="org.hibernate.dialect.OracleDialect"/>
+	</database-object>
+	
+	<database-object>
+		<create>create index GB_ACTION_RECORD_GRADEBOOK_IDX on GB_ACTION_RECORD_T(GRADEBOOK_UID)</create>
+		<drop></drop>
+		<dialect-scope name="org.hibernate.dialect.Oracle9Dialect"/>
+		<dialect-scope name="org.hibernate.dialect.OracleDialect"/>
+	</database-object>
+	
+	<database-object>
+		<create>create index GB_ACTION_RECORD_PROP_ID_IDX on GB_ACTION_RECORD_PROPERTY_T(ACTION_RECORD_ID)</create>
+		<drop></drop>
+		<dialect-scope name="org.hibernate.dialect.Oracle9Dialect"/>
+		<dialect-scope name="org.hibernate.dialect.OracleDialect"/>
+	</database-object>
  	
 </hibernate-mapping>

@@ -30,5 +30,26 @@
   
   	</class>
   
+  
+  	<database-object>
+		<create>create unique index GB_USER_DEREF_USER_IDX on GB_USER_DEREFERENCE_T(USER_UID)</create>
+		<drop></drop>
+		<dialect-scope name="org.hibernate.dialect.Oracle9Dialect"/>
+		<dialect-scope name="org.hibernate.dialect.OracleDialect"/>
+	</database-object>
+	
+	<database-object>
+		<create>create index GB_USER_DEREF_SORT_NM_IDX on GB_USER_DEREFERENCE_T(SORT_NAME)</create>
+		<drop></drop>
+		<dialect-scope name="org.hibernate.dialect.Oracle9Dialect"/>
+		<dialect-scope name="org.hibernate.dialect.OracleDialect"/>
+	</database-object>
+	
+	<database-object>
+		<create>create index GB_USER_DEREF_EMAIL_IDX on GB_USER_DEREFERENCE_T(EMAIL)</create>
+		<drop></drop>
+		<dialect-scope name="org.hibernate.dialect.Oracle9Dialect"/>
+		<dialect-scope name="org.hibernate.dialect.OracleDialect"/>
+	</database-object>
  	
 </hibernate-mapping>

@@ -17,5 +17,12 @@
        	<property name="configField" column="CONFIG_FIELD"/>
        	<property name="configValue" column="CONFIG_VALUE"/>
     </class>
+    
+    <database-object>
+		<create>create unique index GB_USER_CONFIG_T on GB_USER_DEREFERENCE_T(USER_UID, GRADEBOOK_ID, CONFIG_FIELD)</create>
+		<drop></drop>
+		<dialect-scope name="org.hibernate.dialect.Oracle9Dialect"/>
+		<dialect-scope name="org.hibernate.dialect.OracleDialect"/>
+	</database-object>
     	
 </hibernate-mapping>
