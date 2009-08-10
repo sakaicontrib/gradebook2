@@ -223,36 +223,36 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		HibernateCallback hc = new HibernateCallback() {
 			public Object doInHibernate(Session session) throws HibernateException {
 
-				session.beginTransaction();
-				
-				Long id = null;
-
 				Query q = session.createQuery("from UserConfiguration as config where config.userUid = :userUid and config.gradebookId = :gradebookId and config.configField = :configField ");
 				q.setString("userUid", userUid);
 				q.setLong("gradebookId", gradebookId);
 				q.setString("configField", configField);
 
-				UserConfiguration config = (UserConfiguration)q.uniqueResult();
+				UserConfiguration config = null;
+				
+				synchronized(this) {
+					
+					config = (UserConfiguration)q.uniqueResult();
+					
+					if (config == null) {
 
-				if (config != null) {
-
-					config.setConfigValue(configValue);
-
-				} else {
-
-					config = new UserConfiguration();
-					config.setUserUid(userUid);
-					config.setGradebookId(gradebookId);
-					config.setConfigField(configField);
-					config.setConfigValue(configValue);
-
+						config = new UserConfiguration();
+						config.setUserUid(userUid);
+						config.setGradebookId(gradebookId);
+						config.setConfigField(configField);
+						config.setConfigValue(configValue);
+						session.save(config);
+						// After persisting the object we can return so that don't do the update bellow
+						return null;
+					}
 				}
-
-				session.saveOrUpdate(config);
-
-				session.getTransaction().commit();
+				
+				// At this point we retrieved the existing config object and just update the configValue
+				config.setConfigValue(configValue);
+				session.update(config);
 				
 				return null;
+
 			}
 		};
 
