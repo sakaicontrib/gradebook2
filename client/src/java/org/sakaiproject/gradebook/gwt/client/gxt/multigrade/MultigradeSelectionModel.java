@@ -1,3 +1,26 @@
+/**********************************************************************************
+ *
+ * $Id:$
+ *
+ ***********************************************************************************
+ *
+ * Copyright (c) 2008, 2009 The Regents of the University of California
+ *
+ * Licensed under the
+ * Educational Community License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may
+ * obtain a copy of the License at
+ * 
+ * http://www.osedu.org/licenses/ECL-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS"
+ * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ *
+ **********************************************************************************/
+
 package org.sakaiproject.gradebook.gwt.client.gxt.multigrade;
 
 import java.util.List;
@@ -19,8 +42,8 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.KeyboardListener;
 
 public class MultigradeSelectionModel<M extends ModelData> extends
-		GridSelectionModel<M> {
-	
+GridSelectionModel<M> {
+
 	private GbGridCallback callback = new GbGridCallback(this);
 	private EditorGrid editGrid;
 
@@ -64,19 +87,19 @@ public class MultigradeSelectionModel<M extends ModelData> extends
 	@Override
 	public void handleEvent(BaseEvent e) {
 		switch (e.type) {
-		case Events.CellMouseDown:
-			handleMouseDown((GridEvent) e);
-			break;
-		case Events.Refresh:
-			refresh();
-			break;
+			case Events.CellMouseDown:
+				handleMouseDown((GridEvent) e);
+				break;
+			case Events.Refresh:
+				refresh();
+				break;
 		}
 	}
-	
+
 	public boolean isCellSelectable(int row, int cell, boolean acceptsNav) {
 		if (acceptsNav) {
 			return !grid.getColumnModel().isHidden(cell)
-					&& grid.getColumnModel().isCellEditable(cell);
+			&& grid.getColumnModel().isCellEditable(cell);
 		} else {
 			return !grid.getColumnModel().isHidden(cell);
 		}
@@ -143,36 +166,36 @@ public class MultigradeSelectionModel<M extends ModelData> extends
 		GbCell newCell = null;
 
 		switch (e.getKeyCode()) {
-		case KeyboardListener.KEY_TAB:
-			if (e.isShiftKey()) {
-				newCell = ((GbEditorGrid)grid).doWalkCells(r, c - 1, -1, callback, false);
-			} else {
-				newCell = ((GbEditorGrid)grid).doWalkCells(r, c + 1, 1, callback, false);
-			}
-			break;
-		case KeyboardListener.KEY_DOWN: {
-			newCell = ((GbEditorGrid)grid).doWalkCells(r + 1, c, 1, callback, false);
-			break;
-		}
-		case KeyboardListener.KEY_UP: {
-			newCell = ((GbEditorGrid)grid).doWalkCells(r - 1, c, -1, callback, false);
-			break;
-		}
-		case KeyboardListener.KEY_LEFT:
-			newCell = ((GbEditorGrid)grid).doWalkCells(r, c - 1, -1, callback, false);
-			break;
-		case KeyboardListener.KEY_RIGHT:
-			newCell = ((GbEditorGrid)grid).doWalkCells(r, c + 1, 1, callback, false);
-			break;
-		case KeyboardListener.KEY_ENTER:
-			if (editGrid != null) {
-				if (!editGrid.isEditing()) {
-					editGrid.startEditing(r, c);
-					e.stopEvent();
-					return;
+			case KeyboardListener.KEY_TAB:
+				if (e.isShiftKey()) {
+					newCell = ((GbEditorGrid)grid).doWalkCells(r, c - 1, -1, callback, false);
+				} else {
+					newCell = ((GbEditorGrid)grid).doWalkCells(r, c + 1, 1, callback, false);
 				}
+				break;
+			case KeyboardListener.KEY_DOWN: {
+				newCell = ((GbEditorGrid)grid).doWalkCells(r + 1, c, 1, callback, false);
+				break;
 			}
-			break;
+			case KeyboardListener.KEY_UP: {
+				newCell = ((GbEditorGrid)grid).doWalkCells(r - 1, c, -1, callback, false);
+				break;
+			}
+			case KeyboardListener.KEY_LEFT:
+				newCell = ((GbEditorGrid)grid).doWalkCells(r, c - 1, -1, callback, false);
+				break;
+			case KeyboardListener.KEY_RIGHT:
+				newCell = ((GbEditorGrid)grid).doWalkCells(r, c + 1, 1, callback, false);
+				break;
+			case KeyboardListener.KEY_ENTER:
+				if (editGrid != null) {
+					if (!editGrid.isEditing()) {
+						editGrid.startEditing(r, c);
+						e.stopEvent();
+						return;
+					}
+				}
+				break;
 
 		}
 		if (newCell != null) {

@@ -22,10 +22,6 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.gxt;
 
-import org.sakaiproject.gradebook.gwt.client.I18nConstants;
-import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
-
-import com.extjs.gxt.ui.client.Registry;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public abstract class NotifyingAsyncCallback<M> implements AsyncCallback<M> {

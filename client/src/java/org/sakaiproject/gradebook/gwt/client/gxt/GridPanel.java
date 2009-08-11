@@ -222,16 +222,8 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 			loader.load(0, ps);
 	}
 	
-	/*protected void onRender(Element parent, int pos) {
-		super.onRender(parent, pos);
-		//add(newGrid());
-		loader.load(0, pageSize);
-	}*/
-	
 	public void editCell(GradebookModel selectedGradebook, Record record, String property, Object value, Object startValue, GridEvent ge) {
 		UserEntityUpdateAction<M> action = newEntityUpdateAction(selectedGradebook, record, property, value, startValue, ge);
-		
-		//RemoteCommand<M> remoteCommand = newRemoteCommand(record, property, value, startValue, ge);
 		
 		if (validateEdit(property, value, startValue, record, ge)) {
 			doEdit(record, action, ge);
@@ -285,14 +277,6 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		return null;
 	}
 	
-	// GRBK-31
-	/*protected LayoutContainer newPanel(ContentPanel childPanel) {
-		LayoutContainer container = new LayoutContainer();
-		container.setLayout(new FitLayout());
-		container.add(newGrid());
-		return container;
-	}*/
-	
 	protected void reconfigureGrid(CustomColumnModel cm) {
 		this.cm = cm;
 		
@@ -306,16 +290,11 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		loader.useLoadConfig(loadConfig);
 
 		pagingToolBar.bind(loader);
-		
-		//addComponents();
 
 		grid.reconfigure(store, cm);
 		
 		if (grid.isRendered())
 			grid.el().unmask();
-		
-		//addGridListenersAndPlugins(grid);
-
 	}
 	
 	protected GridView newGridView() {
@@ -370,10 +349,6 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		};
 		return new BasePagingLoader<PagingLoadConfig, PagingLoadResult<M>>(proxy, new ModelReader<PagingLoadConfig>());
 	}
-	
-	/*protected PageRequestAction newPageRequestAction(GradebookModel selectedGradebook) {
-		return new PageRequestAction(entityType, selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId());
-	}*/
 	
 	protected PagingToolBar newPagingToolBar(int pageSize) {
 		return new PagingToolBar(pageSize);
@@ -488,49 +463,6 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		return action;
 	}
 	
-	/*protected RemoteCommand<M> newRemoteCommand(final Record record, final String property, 
-			final Object value, final Object startValue, final GridEvent gridEvent) {
-		return new RemoteCommand<M>() {
-			
-			private static final long serialVersionUID = 1L;
-
-			public void onCommandFailure(UserEntityAction<M> action, Throwable caught) {
-				String property = action.getKey();
-						
-				// Save the exception message on the record
-				String failedProperty = property + FAILED_FLAG;
-				record.set(failedProperty, caught.getMessage());
-						
-				// We have to fool the system into thinking that the value has changed, since
-				// we snuck in that "Saving grade..." under the radar.
-				record.set(property, null);
-				record.set(property, action.getStartValue());
-						
-				if (gridEvent != null)
-					grid.fireEvent(Events.AfterEdit, gridEvent);
-			}
-			
-			public void onCommandSuccess(UserEntityAction<M> action, M result) {
-
-				// Ensure that we clear out any older failure messages
-				// Save the exception message on the record
-				String failedProperty = action.getKey() + FAILED_FLAG;
-				record.set(failedProperty, null);
-						
-				beforeUpdateView(action, record, result);
-				
-				updateView(action, record, result);
-						
-				afterUpdateView(action, record, result);
-				
-				if (gridEvent != null) {
-					grid.fireEvent(Events.AfterEdit, gridEvent);
-				}
-						
-			}		
-		};
-	}*/
-	
 	protected void doEdit(final Record record, final UserEntityUpdateAction<M> action, final GridEvent gridEvent) {
 		Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
 		
@@ -575,9 +507,6 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		
 		service.update(action.getModel(), action.getEntityType(), null, SecureToken.get(), callback);
 		
-		
-		//remoteCommand.execute(action);
-
 	}
 	
 	protected boolean validateEdit(String property, Object value, Object startValue, Record record, GridEvent gridEvent) {
@@ -604,6 +533,4 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		
 		return pageSize;
 	}
-	
-	
 }

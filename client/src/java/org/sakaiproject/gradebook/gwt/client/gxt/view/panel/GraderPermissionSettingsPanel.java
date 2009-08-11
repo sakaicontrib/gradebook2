@@ -1,3 +1,26 @@
+/**********************************************************************************
+*
+* $Id:$
+*
+***********************************************************************************
+*
+* Copyright (c) 2008, 2009 The Regents of the University of California
+*
+* Licensed under the
+* Educational Community License, Version 2.0 (the "License"); you may
+* not use this file except in compliance with the License. You may
+* obtain a copy of the License at
+* 
+* http://www.osedu.org/licenses/ECL-2.0
+* 
+* Unless required by applicable law or agreed to in writing,
+* software distributed under the License is distributed on an "AS IS"
+* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+* or implied. See the License for the specific language governing
+* permissions and limitations under the License.
+*
+**********************************************************************************/
+
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import java.util.ArrayList;
@@ -119,7 +142,6 @@ public class GraderPermissionSettingsPanel extends ContentPanel {
 		permissionList.add(new Permission(CAN_GRADE_PERMISSION));
 		// GRBK-233 : For now, we only enable the can grade permission. The can view permission will 
 		// be tracked int GRBK-245
-		//	permissionList.add(new Permission(CAN_VIEW_PERMISSION));
 		ListStore<Permission> permissionListStore = new ListStore<Permission>();
 		permissionListStore.add(permissionList);
 		
@@ -179,9 +201,6 @@ public class GraderPermissionSettingsPanel extends ContentPanel {
 				sectionComboBox.reset();
 				categoryComboBox.reset();
 				permissionEntryListStore.removeAll();
-				
-				// Get selected user model
-				//UserModel userModel = se.getSelectedItem();
 				
 				loadGrid();
 				createPermissionHorizontalPanel.show();	

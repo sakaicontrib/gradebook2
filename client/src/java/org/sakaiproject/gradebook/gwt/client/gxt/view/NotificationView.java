@@ -1,123 +1,61 @@
+/**********************************************************************************
+ *
+ * $Id:$
+ *
+ ***********************************************************************************
+ *
+ * Copyright (c) 2008, 2009 The Regents of the University of California
+ *
+ * Licensed under the
+ * Educational Community License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may
+ * obtain a copy of the License at
+ * 
+ * http://www.osedu.org/licenses/ECL-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS"
+ * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ *
+ **********************************************************************************/
+
 package org.sakaiproject.gradebook.gwt.client.gxt.view;
 
 import org.sakaiproject.gradebook.gwt.client.gxt.Notifier;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
-import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.NotificationPanel;
 
-import com.extjs.gxt.ui.client.event.ButtonEvent;
-import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
-import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.mvc.View;
 
 public class NotificationView extends View {
 
 	private static Notifier notifier;
-	
+
 	private static final String decisionFlag = "DecisionType";
 	private enum Decision { OK, CANCEL };
-	
-	/*private NotificationPanel notificationPanel;
-	private Html text;
-	private Button okButton;
-	private Button cancelButton;
-	private ConfirmationEvent confirmationEvent;
-	private SelectionListener<ButtonEvent> selectionListener ;*/
-	
+
 	public NotificationView(Controller controller) {
 		super(controller);
 		this.notifier = new Notifier();
-		
-		//initListeners();
-		/*this.notificationPanel = new NotificationPanel();
-		this.text = this.notificationPanel.addText("");
-		this.okButton = new Button("Ok");
-		this.okButton.setData(decisionFlag, Decision.OK);
-		this.okButton.setItemId(AppConstants.ID_CONFIRM_OK_BUTTON);
-		this.cancelButton = new Button("Cancel");
-		this.cancelButton.setData(decisionFlag, Decision.CANCEL);
-		this.cancelButton.setItemId(AppConstants.ID_CONFIRM_CANCEL_BUTTON);
-		this.okButton.addSelectionListener(selectionListener);
-		this.cancelButton.addSelectionListener(selectionListener);
-		this.notificationPanel.addButton(okButton);
-		this.notificationPanel.addButton(cancelButton);
-		
-		okButton.setVisible(false);
-		cancelButton.setVisible(false);*/
 	}
 
 	@Override
 	protected void handleEvent(AppEvent<?> event) {
 		NotificationEvent notification = (NotificationEvent)event.data;
-		
+
 		switch (GradebookEvents.getEvent(event.type).getEventKey()) {
-		case EXCEPTION:
-			notifier.notifyError(notification.getError());
-			break;
-		default:
-			if (notification.isFailure())
-				notifier.notifyUserError("Request Failed", notification.getText());
-			else
-				notifier.notify(notification.getTitle(), notification.getText());
-			
-		
-		/*case CLOSE_NOTIFICATION:
-			text.setHtml("");
-			okButton.setVisible(false);
-			cancelButton.setVisible(false);
-			break;
-		case CONFIRMATION:
-			confirmationEvent = (ConfirmationEvent)event.data;
-			text.setHtml(confirmationEvent.text);
-			okButton.setVisible(true);
-			cancelButton.setVisible(true);
-			notificationPanel.layout();
-			break;
-		case NOTIFICATION:
-			NotificationEvent notificationEvent = (NotificationEvent)event.data;
-			text.setHtml(notificationEvent.getText());
-			confirmationEvent = null;
-			okButton.setVisible(false);
-			cancelButton.setVisible(false);
-			break;*/
+			case EXCEPTION:
+				notifier.notifyError(notification.getError());
+				break;
+			default:
+				if (notification.isFailure())
+					notifier.notifyUserError("Request Failed", notification.getText());
+				else
+					notifier.notify(notification.getTitle(), notification.getText());
 		}
 	}
-
-	/*
-	private void initListeners() {
-		selectionListener = new SelectionListener<ButtonEvent>() {
-
-			@Override
-			public void componentSelected(ButtonEvent be) {
-				
-				Decision decision = be.button.getData(decisionFlag);
-				
-				switch (decision) {
-				case OK:
-					if (confirmationEvent != null && confirmationEvent.okEventType != -1) {
-						Dispatcher.forwardEvent(confirmationEvent.okEventType, confirmationEvent.okEventData);
-					}
-					Dispatcher.forwardEvent(GradebookEvents.CloseNotification.getEventType());
-					break;
-				case CANCEL:
-					if (confirmationEvent != null && confirmationEvent.cancelEventType != -1) {
-						Dispatcher.forwardEvent(confirmationEvent.cancelEventType, confirmationEvent.cancelEventData);
-					}
-					Dispatcher.forwardEvent(GradebookEvents.CloseNotification.getEventType());
-					break;
-				}
-				
-				
-			}
-
-		};
-	}
-	
-	public NotificationPanel getNotificationPanel() {
-		return notificationPanel;
-	}
-	*/
-
 }

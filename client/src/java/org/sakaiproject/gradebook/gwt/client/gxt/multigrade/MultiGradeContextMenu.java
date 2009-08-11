@@ -213,7 +213,6 @@ public class MultiGradeContextMenu extends Menu {
 		ListStore<GradeEventModel> store = new ListStore<GradeEventModel>(loader);
 		store.setModelComparer(new EntityModelComparer<GradeEventModel>());
 		viewGradeHistoryGrid = new Grid<GradeEventModel>(store, cm);
-		//viewGradeHistoryGrid.setSize(300, 250);
 		viewGradeHistoryGrid.setBorders(true);
 		
 		LayoutContainer layoutContainer = new LayoutContainer();
@@ -251,30 +250,6 @@ public class MultiGradeContextMenu extends Menu {
 						String commentText = learner.get(property);
 						editCommentTextArea.setValue(commentText);
 					}
-					/*GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-					UserEntityGetAction<CommentModel> action = 
-			    		new UserEntityGetAction<CommentModel>(selectedGradebook, EntityType.COMMENT, 
-			    				String.valueOf(owner.getSelectedAssignment()), Boolean.TRUE);
-					action.setStudentUid(owner.getSelectedModel().getIdentifier());
-					
-					
-					
-					
-					RemoteCommand<CommentModel> remoteCommand = 
-						new RemoteCommand<CommentModel>() {
-
-							@Override
-							public void onCommandSuccess(UserEntityAction<CommentModel> action, CommentModel result) {
-								commentModel = result;
-								
-								if (commentModel != null) {
-									editCommentTextArea.setValue(commentModel.getText());
-								}
-							}
-						
-					};
-					
-					remoteCommand.execute(action);*/
 				}
 				
 				if (contextMenuViewGradeLogItem.isEnabled()) {
@@ -323,7 +298,5 @@ public class MultiGradeContextMenu extends Menu {
     	String oldCommentText = learner.get(property);
     	
     	Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord.getEventType(), new GradeRecordUpdate(learnerStore, learner, property, "Comment", oldCommentText, newCommentText));
-
-	}
-	
+	}	
 }

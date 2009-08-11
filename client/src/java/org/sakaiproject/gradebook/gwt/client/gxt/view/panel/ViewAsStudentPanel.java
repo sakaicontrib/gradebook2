@@ -1,25 +1,25 @@
 /**********************************************************************************
-*
-* $Id:$
-*
-***********************************************************************************
-*
-* Copyright (c) 2008, 2009 The Regents of the University of California
-*
-* Licensed under the
-* Educational Community License, Version 2.0 (the "License"); you may
-* not use this file except in compliance with the License. You may
-* obtain a copy of the License at
-* 
-* http://www.osedu.org/licenses/ECL-2.0
-* 
-* Unless required by applicable law or agreed to in writing,
-* software distributed under the License is distributed on an "AS IS"
-* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-* or implied. See the License for the specific language governing
-* permissions and limitations under the License.
-*
-**********************************************************************************/
+ *
+ * $Id:$
+ *
+ ***********************************************************************************
+ *
+ * Copyright (c) 2008, 2009 The Regents of the University of California
+ *
+ * Licensed under the
+ * Educational Community License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may
+ * obtain a copy of the License at
+ * 
+ * http://www.osedu.org/licenses/ECL-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS"
+ * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ *
+ **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
@@ -47,12 +47,12 @@ import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 public class ViewAsStudentPanel extends ContentPanel {
 
 	public enum RefreshAction { NONE, REFRESHDATA, REFRESHCOLUMNS };
-	
+
 	private StudentPanel container;
 	private RefreshAction refreshAction = RefreshAction.NONE;
 
 	private boolean isStudentView;
-	
+
 	public ViewAsStudentPanel(boolean isStudentView) {
 		this.isStudentView = isStudentView;
 		setBodyBorder(true);
@@ -64,72 +64,72 @@ public class ViewAsStudentPanel extends ContentPanel {
 			setHeading(i18n.singleViewHeader());
 		else 
 			setHeading(i18n.singleGradeHeader());
-		
-	    container = new StudentPanel(isStudentView);
+
+		container = new StudentPanel(isStudentView);
 		add(container);
-		
+
 		setupNavigation(i18n);
-		
+
 		addListener(Events.BeforeShow, new Listener() {
 
 			public void handleEvent(BaseEvent be) {
 				switch (refreshAction) {
-				case REFRESHDATA:
-					container.refreshData();
-					break;
-				case REFRESHCOLUMNS:
-					container.refreshColumns();
-					break;
+					case REFRESHDATA:
+						container.refreshData();
+						break;
+					case REFRESHCOLUMNS:
+						container.refreshColumns();
+						break;
 				}
 				refreshAction = RefreshAction.NONE;
 			}
-		
+
 		});
 
 	}
-	
+
 	public void onRefreshGradebookSetup(GradebookModel selectedGradebook) {
 		container.onRefreshGradebookSetup(selectedGradebook);
 	}
-	
+
 	public void onChangeModel(GradebookModel selectedGradebook, StudentModel learnerGradeRecordCollection) {
 		container.onChangeModel(selectedGradebook, learnerGradeRecordCollection);
 	}
-	
+
 	public void onItemUpdated(ItemModel itemModel) {
 		container.onItemUpdated(itemModel);
 	}
-	
+
 	public void onUserChange(UserEntityAction<?> action) {
 		switch (action.getEntityType()) {
-		case GRADEBOOK:
-			switch (action.getActionType()) {
-			case UPDATE:
-				// Update actions will (always?) result from user changes on the setup 
-				// screens, so they should be deferred to the "onShow" method
-				GradebookModel.Key gradebookModelKey = GradebookModel.Key.valueOf(((UserEntityUpdateAction)action).getKey());
-				switch (gradebookModelKey) {
-				case GRADETYPE:
-					queueDeferredRefresh(RefreshAction.REFRESHCOLUMNS);
-					break;
+			case GRADEBOOK:
+				switch (action.getActionType()) {
+					case UPDATE:
+						// Update actions will (always?) result from user changes on the setup 
+						// screens, so they should be deferred to the "onShow" method
+						GradebookModel.Key gradebookModelKey = GradebookModel.Key.valueOf(((UserEntityUpdateAction)action).getKey());
+						switch (gradebookModelKey) {
+							case GRADETYPE:
+								queueDeferredRefresh(RefreshAction.REFRESHCOLUMNS);
+								break;
+						}
+						break;
 				}
-				break;
-			}
 		}
 	}
-	
+
 	protected void queueDeferredRefresh(RefreshAction refreshAction) {
 		switch (this.refreshAction) {
-		// We don't want to 'demote' a refresh columns action to a refresh data action
-		case NONE:
-		case REFRESHDATA:
-			this.refreshAction = refreshAction;
-			break;
+			// We don't want to 'demote' a refresh columns action to a refresh data action
+			case NONE:
+			case REFRESHDATA:
+				this.refreshAction = refreshAction;
+				break;
 		}
 	}
-	
+
 	private void setupNavigation(I18nConstants i18n) {
-		
+
 		getButtonBar().removeAll();
 		Button next = new Button(i18n.nextLearner(), new SelectionListener<ComponentEvent>() {
 			@Override
@@ -145,17 +145,16 @@ public class ViewAsStudentPanel extends ContentPanel {
 				Dispatcher.forwardEvent(GradebookEvents.BrowseLearner.getEventType(), event);
 			}
 		}); 
-		
+
 		Button close = new Button(i18n.close(), new SelectionListener<ComponentEvent>() {
 
 			@Override
 			public void componentSelected(ComponentEvent ce) {
 				Dispatcher.forwardEvent(GradebookEvents.StopImport.getEventType());
-				//close();
 			}
-			
+
 		});
-		
+
 		// FIXME: This needs to be integrated into MVC
 		Button studentView = new Button(i18n.viewAsLearner(), new SelectionListener<ComponentEvent>() { 
 			@Override
@@ -163,13 +162,13 @@ public class ViewAsStudentPanel extends ContentPanel {
 				Dispatcher.forwardEvent(GradebookEvents.SingleView.getEventType(), container.getStudentModel());
 			}
 		});
-		
+
 		if (!isStudentView)
 			addButton(studentView);
 		addButton(prev);
 		addButton(next);
 		addButton(close);
-		
+
 	}
-	
+
 }

@@ -1,25 +1,25 @@
 /**********************************************************************************
-*
-* $Id:$
-*
-***********************************************************************************
-*
-* Copyright (c) 2008, 2009 The Regents of the University of California
-*
-* Licensed under the
-* Educational Community License, Version 2.0 (the "License"); you may
-* not use this file except in compliance with the License. You may
-* obtain a copy of the License at
-* 
-* http://www.osedu.org/licenses/ECL-2.0
-* 
-* Unless required by applicable law or agreed to in writing,
-* software distributed under the License is distributed on an "AS IS"
-* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-* or implied. See the License for the specific language governing
-* permissions and limitations under the License.
-*
-**********************************************************************************/
+ *
+ * $Id:$
+ *
+ ***********************************************************************************
+ *
+ * Copyright (c) 2008, 2009 The Regents of the University of California
+ *
+ * Licensed under the
+ * Educational Community License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may
+ * obtain a copy of the License at
+ * 
+ * http://www.osedu.org/licenses/ECL-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS"
+ * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ *
+ **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.gxt.multigrade;
 
 import java.util.ArrayList;
@@ -105,79 +105,79 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.KeyboardListener;
 
 public class MultiGradeContentPanel extends GridPanel<StudentModel> implements StudentModelOwner {
-	
+
 	private enum PageOverflow { TOP, BOTTOM, NONE };
-	
+
 	private ToolBar searchToolBar;
 	private LayoutContainer toolBarContainer;
 	private Long commentingAssignmentId; 
 	private StudentModel commentingStudentModel;
-	
+
 	private GridCellRenderer<StudentModel> unweightedNumericCellRenderer;
 	private GridCellRenderer<StudentModel> extraCreditNumericCellRenderer;
-	
+
 	private int currentIndex = -1;
-	
+
 	private MultiGradeContextMenu contextMenu;
 
 	private LabelField modeLabel;
 	private TextField<String> searchField;
 	private NumberField pageSizeField;
-	
+
 	private Listener<ComponentEvent> componentEventListener;
 	private Listener<GridEvent> gridEventListener;
 	private Listener<RefreshCourseGradesEvent> refreshCourseGradesListener;
 	//private Listener<StoreEvent> storeListener;
 	private Listener<UserChangeEvent> userChangeEventListener;
-	
+
 	private ShowColumnsEvent lastShowColumnsEvent;
-	
+
 	private MultigradeSelectionModel<StudentModel> cellSelectionModel;
 	private BasePagingLoader<PagingLoadConfig, PagingLoadResult<SectionModel>> sectionsLoader;
-	
-	
+
+
 	public MultiGradeContentPanel(ContentPanel childPanel, I18nConstants i18n) {
 		super(AppConstants.MULTIGRADE, EntityType.LEARNER, childPanel, i18n);
 		setHeaderVisible(false);
-		
+
 		// This UserChangeEvent listener
 		addListener(GradebookEvents.UserChange.getEventType(), userChangeEventListener);
 		addListener(GradebookEvents.RefreshCourseGrades.getEventType(), refreshCourseGradesListener);
-		
+
 	}
-	
+
 	public void deselectAll() {
 		cellSelectionModel.deselectAll();
 	}
-	
+
 	@Override
 	public void editCell(GradebookModel selectedGradebook, Record record, String property, Object value, Object startValue, GridEvent gridEvent) {
-		
+
 		String columnHeader = "";
 		if (gridEvent != null) {
 			String className = grid.getView().getCell(gridEvent.rowIndex, gridEvent.colIndex).getClassName();
 			className = className.replace(" gbCellDropped", "");
 			grid.getView().getCell(gridEvent.rowIndex, gridEvent.colIndex).setClassName(className);
 			grid.getView().getCell(gridEvent.rowIndex, gridEvent.colIndex).setInnerText("Saving...");
-			
+
 			columnHeader = grid.getColumnModel().getColumnHeader(gridEvent.colIndex);
 		}
-		
+
 		Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord.getEventType(), new GradeRecordUpdate(record, property, columnHeader, startValue, value));
 	}
-	
+
 	public StudentModel getSelectedModel() {
 		return commentingStudentModel;
 	}
-	
+
 	public Long getSelectedAssignment() {
 		return commentingAssignmentId;
 	}
-	
+
 	public void onBeginItemUpdates() {
 		refreshAction = RefreshAction.NONE;
 	}
-	
+
 	/*
 	 * When the user clicks on the next or previous buttons in the student view dialog, an event is thrown to the dispatcher and this 
 	 * method is eventually called. It must decide whether the next learner in the grid is on the current page or not, and choose whether 
@@ -186,53 +186,53 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	public void onBrowseLearner(BrowseLearner be) {
 		StudentModel current = be.learner;
 		currentIndex = grid.getStore().indexOf(current);
-		
+
 		int pageSize = getPageSize();
-		
+
 		PageOverflow pageOverflow = PageOverflow.NONE;
 		// Do processing for paging -- if we reach the end or beginning of a page
 		switch (be.type) {
-		case PREV:
-			currentIndex--;
-			if (currentIndex < 0)
-				pageOverflow = PageOverflow.TOP;
-			break;
-		case NEXT:
-			currentIndex++;
-			if (currentIndex >= pageSize || grid.getStore().getAt(currentIndex) == null) 
-				pageOverflow = PageOverflow.BOTTOM;
-			break;
-		case CURRENT:
-			break;
+			case PREV:
+				currentIndex--;
+				if (currentIndex < 0)
+					pageOverflow = PageOverflow.TOP;
+				break;
+			case NEXT:
+				currentIndex++;
+				if (currentIndex >= pageSize || grid.getStore().getAt(currentIndex) == null) 
+					pageOverflow = PageOverflow.BOTTOM;
+				break;
+			case CURRENT:
+				break;
 		}
-		
+
 		boolean requiresPageChange = pageOverflow != PageOverflow.NONE;
-		
+
 		int activePage = pagingToolBar.getActivePage();
 		int numberOfPages = pagingToolBar.getTotalPages();
-		
+
 		switch (pageOverflow) {
-		case TOP:
-			// Go to the last record on the page
-			currentIndex = pageSize - 1;
-			// And we are on the first page, then go to the last page
-			if (activePage == 1)
-				pagingToolBar.last();
-			// Otherwise, go to the one before
-			else
-				pagingToolBar.previous();
-			break;
-		case BOTTOM:
-			currentIndex = 0;
-			// And if we are on the last page
-			if (activePage == numberOfPages) {
-				pagingToolBar.first();
-			} else {
-				pagingToolBar.next();
-			}
-			break;
+			case TOP:
+				// Go to the last record on the page
+				currentIndex = pageSize - 1;
+				// And we are on the first page, then go to the last page
+				if (activePage == 1)
+					pagingToolBar.last();
+				// Otherwise, go to the one before
+				else
+					pagingToolBar.previous();
+				break;
+			case BOTTOM:
+				currentIndex = 0;
+				// And if we are on the last page
+				if (activePage == numberOfPages) {
+					pagingToolBar.first();
+				} else {
+					pagingToolBar.next();
+				}
+				break;
 		}
-		
+
 		// Any of these cases indicate that we may have gone off the page
 		// (1) a negative index
 		// (2) an index greater than the page size
@@ -245,19 +245,18 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 					while (selectedLearner == null && currentIndex >= 0) {
 						selectedLearner = ((ListStore<StudentModel>)se.store).getAt(currentIndex);
 						if (selectedLearner != null) {
-							//--Dispatcher.forwardEvent(GradebookEvents.SingleGrade, selectedLearner);
-							//Dispatcher.forwardEvent(GradebookEvents.SingleView, selectedLearner);
+
 						} else {
 							currentIndex--;
 						}
 					}
 					grid.getStore().removeListener(Store.DataChanged, this);
-					
+
 					if (selectedLearner != null)
 						cellSelectionModel.select(currentIndex);
-					
+
 				}
-				
+
 			});
 		} else {
 			StudentModel selectedLearner = grid.getStore().getAt(currentIndex);
@@ -270,21 +269,21 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	public void onEditMode(Boolean enable) {
 
 	}
-	
+
 	public void onEndItemUpdates() {
 		doRefresh(true);
 	}
-	
+
 	public void onLearnerGradeRecordUpdated(UserEntityAction<?> action) { 
-		
-		
+
+
 	}
-	
+
 	public void onItemCreated(ItemModel itemModel) {
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 
 		ItemModel gradebookModel = selectedGradebook.getGradebookItemModel();
-		
+
 		if (gradebookModel.equals(itemModel.getParent())) {
 			gradebookModel.getChildren().add(itemModel);
 		} else {
@@ -293,15 +292,15 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 					category.getChildren().add(itemModel);
 			}
 		}
-		
+
 		onRefreshGradebookItems(selectedGradebook);
 	}
-	
+
 	public void onItemDeleted(ItemModel itemModel) {
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 
 		ItemModel gradebookModel = selectedGradebook.getGradebookItemModel();
-		
+
 		if (gradebookModel.getChildren().contains(itemModel)) {
 			gradebookModel.getChildren().remove(itemModel);
 		} else {
@@ -310,46 +309,46 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 					category.getChildren().remove(itemModel);
 			}
 		}
-		
+
 		onRefreshGradebookItems(selectedGradebook);
 	}
-	
+
 	public void onItemUpdated(ItemModel itemModel) {
 
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 		final GradeType gradeType = selectedGradebook.getGradebookItemModel().getGradeType();
-		
+
 		ItemModelProcessor processor = new ItemModelProcessor(itemModel) {
-			
+
 			public void doCategory(ItemModel categoryModel) {
 				if (categoryModel.isActive()) 
 					queueDeferredRefresh(RefreshAction.REFRESHDATA);
 			}
-			
+
 			public void doItem(ItemModel itemModel) {
 				if (itemModel.isActive()) 
 					queueDeferredRefresh(RefreshAction.REFRESHDATA);
-				
+
 				ColumnConfig column = cm.getColumnById(itemModel.getIdentifier());
-				
+
 				if (column != null) {
 					if (itemModel.getName() != null) {
 						StringBuilder name = new StringBuilder();
 						name.append(itemModel.getName());
 						switch (gradeType) {
-						case POINTS:
-							name.append(" [").append(itemModel.getPoints()).append("]");
-							break;
-						case PERCENTAGES:
-							name.append(" [%]");
+							case POINTS:
+								name.append(" [").append(itemModel.getPoints()).append("]");
+								break;
+							case PERCENTAGES:
+								name.append(" [%]");
 						}
 						column.setHeader(name.toString());
 						queueDeferredRefresh(RefreshAction.REFRESHLOCALCOLUMNS);
 					}
-					
+
 					boolean isIncluded = itemModel.getIncluded() != null && itemModel.getIncluded().booleanValue();
 					boolean isExtraCredit = itemModel.getExtraCredit() != null && itemModel.getExtraCredit().booleanValue();
-							
+
 					if (!isIncluded)
 						column.setRenderer(unweightedNumericCellRenderer);
 					else if (isExtraCredit)
@@ -358,20 +357,20 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 						column.setRenderer(null);
 				}	
 			}
-			
+
 		};
-		
+
 		processor.process();
 	}
-	
-	
+
+
 	protected void initListeners() {
-		
+
 		componentEventListener = new Listener<ComponentEvent>() {
 
 			public void handleEvent(ComponentEvent ce) {
-				
-				
+
+
 				// FIXME: This could be condensed significantly
 				if (ce.type == GradebookEvents.DoSearch.getEventType()) {
 					int pageSize = getPageSize();
@@ -400,464 +399,161 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 					loader.load(0, pageSize);
 				}
 			}
-			
+
 		};
-		
+
 		gridEventListener = new Listener<GridEvent>() {
 
 			public void handleEvent(GridEvent ge) {
-				
-				switch (ge.type) {
-				case Events.CellClick:
-					if (ge.colIndex == 0 || ge.colIndex == 1 || ge.colIndex == 2) {
-						StudentModel selectedLearner = store.getAt(ge.rowIndex);
-						Dispatcher.forwardEvent(GradebookEvents.SingleGrade.getEventType(), selectedLearner);
-						ge.grid.getSelectionModel().select(ge.rowIndex);
-					}
-					break;
-				case Events.ContextMenu:
-					if (ge.rowIndex >= 0 && ge.colIndex >= 0) {
-						ColumnConfig c = grid.getColumnModel().getColumn(ge.colIndex);
-						String assignIdStr = c.getId();
-						long assignId;
 
-						try {
-							assignId = Long.parseLong(assignIdStr);
-						} catch (NumberFormatException e) {
-							ge.doit = false;
-							return;
+				switch (ge.type) {
+					case Events.CellClick:
+						if (ge.colIndex == 0 || ge.colIndex == 1 || ge.colIndex == 2) {
+							StudentModel selectedLearner = store.getAt(ge.rowIndex);
+							Dispatcher.forwardEvent(GradebookEvents.SingleGrade.getEventType(), selectedLearner);
+							ge.grid.getSelectionModel().select(ge.rowIndex);
 						}
-						commentingStudentModel = store.getAt(ge.rowIndex);
-						commentingAssignmentId = new Long(assignId);
-						
-						Boolean commentFlag = (Boolean)commentingStudentModel.get(assignId + StudentModel.COMMENTED_FLAG);
-						
-						boolean isCommented = commentFlag != null && commentFlag.booleanValue();
-						
-						if (isCommented) {
-							contextMenu.enableAddComment(false);
-							contextMenu.enableEditComment(true);
-						} else {
-							contextMenu.enableAddComment(true);
-							contextMenu.enableEditComment(false);
-						}
-						
-						//Boolean gradedFlag = (Boolean)commentingStudentModel.get(assignId + StudentModel.GRADED_FLAG);
-						
-						boolean isGraded = true; //gradedFlag != null && gradedFlag.booleanValue();
-						
-						contextMenu.enableViewGradeHistory(isGraded);
-					} else
-						ge.doit = false; 
-					break;
+						break;
+					case Events.ContextMenu:
+						if (ge.rowIndex >= 0 && ge.colIndex >= 0) {
+							ColumnConfig c = grid.getColumnModel().getColumn(ge.colIndex);
+							String assignIdStr = c.getId();
+							long assignId;
+
+							try {
+								assignId = Long.parseLong(assignIdStr);
+							} catch (NumberFormatException e) {
+								ge.doit = false;
+								return;
+							}
+							commentingStudentModel = store.getAt(ge.rowIndex);
+							commentingAssignmentId = new Long(assignId);
+
+							Boolean commentFlag = (Boolean)commentingStudentModel.get(assignId + StudentModel.COMMENTED_FLAG);
+
+							boolean isCommented = commentFlag != null && commentFlag.booleanValue();
+
+							if (isCommented) {
+								contextMenu.enableAddComment(false);
+								contextMenu.enableEditComment(true);
+							} else {
+								contextMenu.enableAddComment(true);
+								contextMenu.enableEditComment(false);
+							}
+
+							boolean isGraded = true; //gradedFlag != null && gradedFlag.booleanValue();
+
+							contextMenu.enableViewGradeHistory(isGraded);
+						} else
+							ge.doit = false; 
+						break;
 				}
 			}
 		};
-		
+
 		refreshCourseGradesListener = new Listener<RefreshCourseGradesEvent>() {
 
 			public void handleEvent(RefreshCourseGradesEvent rcge) {
 				// These events are fired from the setup screens or the student view dialog/container
 				// so they can be triggered by onShow rather than via an immediate refresh.
-				
+
 				queueDeferredRefresh(RefreshAction.REFRESHDATA);
 			}
-			
+
 		};
-		
-		
-		/*storeListener = new Listener<StoreEvent>() {
-
-			public void handleEvent(StoreEvent se) {
-				String sortField = ((ListStore)se.store).getSortField();
-				SortDir sortDir = ((ListStore)se.store).getSortDir();
-				boolean isAscending = sortDir == SortDir.ASC;
-				//String sortDirection = sortDir == null || sortDir == SortDir.DESC ? "Descending" : "Ascending";
-				
-				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-				String gradebookUid = selectedGradebook.getGradebookUid();
-				GradebookState.setSortInfo(gradebookUid, AppConstants.MULTIGRADE, sortField, isAscending);
-			}
-			
-		};*/
-		
-		
-		/*userChangeEventListener = new Listener<UserChangeEvent>() {
-
-			public void handleEvent(UserChangeEvent uce) {
-				
-				// Pass these events on to the single view component
-				if (singleView != null)
-					singleView.fireEvent(GradebookEvents.UserChange, uce);
-				
-				// Respond to the events 
-				if (uce.getAction() instanceof UserEntityAction) {
-					UserEntityAction action = uce.getAction();
-					
-					/--*
-					if (instructorViewContainer.getHistoryDialog() != null) {
-						instructorViewContainer.getHistoryDialog().fireEvent(GradebookEvents.UserChange, uce);
-					}
-					*--/
-					
-					// FIXME: Ideally we want to ensure that these methods are only called once at the end of a series of operations
-					switch (action.getEntityType()) {
-					case GRADE_ITEM:
-						switch (action.getActionType()) {
-						case CREATE:
-							// We want to do this immediately, since a "Create" action probably comes
-							// from the "Add Assignment" dialog box that may be shown while the multigrade
-							// screen is still visible
-							refreshGrid(RefreshAction.REFRESHCOLUMNS);
-							break;
-						case UPDATE:
-							AssignmentModel.Key assignmentModelKey = AssignmentModel.Key.valueOf(((UserEntityUpdateAction)action).getKey());
-							GradebookModel gbModel = Registry.get(gradebookUid);
-							switch (assignmentModelKey) {
-							// Update actions will (always?) result from user changes on the setup 
-							// screens, so they should be deferred to the "onShow" method
-							
-							// Name changes mean header needs to update, similarly for delete or include
-							case NAME:
-							case EXTRA_CREDIT:
-							case INCLUDED:
-							case REMOVED: 
-								updateColumns(assignmentModelKey, (AssignmentModel)action.getModel());
-								queueDeferredRefresh(RefreshAction.REFRESHLOCALCOLUMNS);
-								break;
-							// Weight changes just mean we need to refresh the screen
-							case WEIGHT:  
-								queueDeferredRefresh(RefreshAction.REFRESHDATA);
-								break;
-							case POINTS:
-								Boolean isRecalculated = ((UserEntityUpdateAction)action).getDoRecalculateChildren();
-								if (isRecalculated != null && isRecalculated.booleanValue())
-									queueDeferredRefresh(RefreshAction.REFRESHDATA);
-								break;
-
-							}
-							break;
-						}
-						
-						break;
-					case CATEGORY:
-						switch (action.getActionType()) {
-						case CREATE:
-							
-							break;
-						case UPDATE:
-							// Update actions will (always?) result from user changes on the setup 
-							// screens, so they should be deferred to the "onShow" method
-							CategoryModel.Key categoryModelKey = CategoryModel.Key.valueOf(((UserEntityUpdateAction)action).getKey());
-							switch (categoryModelKey) {
-							// Don't need to worry about Category name changes
-							case REMOVED: case INCLUDED: case EXTRA_CREDIT:
-								queueDeferredRefresh(RefreshAction.REFRESHCOLUMNS);
-								break;
-							// Weight changes just mean we need to refresh the screen
-							case WEIGHT: case DROP_LOWEST:
-								queueDeferredRefresh(RefreshAction.REFRESHDATA);
-								break;
-							}
-							break;
-						}
-						
-						break;
-					case GRADEBOOK:
-						switch (action.getActionType()) {
-						case UPDATE:
-							// We want to do this immediately, since these actions are now being
-							// fired from the top level menu and multigrade may well be visible.
-							GradebookModel.Key gradebookModelKey = GradebookModel.Key.valueOf(((UserEntityUpdateAction)action).getKey());
-							switch (gradebookModelKey) {
-							case GRADETYPE:
-								refreshGrid(RefreshAction.REFRESHCOLUMNSANDDATA);
-								break;
-							case CATEGORYTYPE: 
-								refreshGrid(RefreshAction.REFRESHCOLUMNS);
-								break;
-							}
-							
-							break;
-						}
-					case GRADE_SCALE:
-						switch (action.getActionType()) {
-						case UPDATE:
-							queueDeferredRefresh(RefreshAction.REFRESHDATA);
-							break;
-						}
-						
-						break;
-					}
-					
-					
-				}
-				
-				
-				
-			}
-			
-		};*/
-		
-		/*windowEventListener = new Listener<WindowEvent>() {
-
-			public void handleEvent(WindowEvent be) {
-				switch (be.type) {
-				case Events.BeforeShow:	
-					MultiGradeContentPanel.this.hide();
-					break;
-				case Events.Close:
-					MultiGradeContentPanel.this.show();
-					break;
-				}
-			}
-			
-		};*/
 	}
-	
-	/*public void onLoadItemTreeModel(GradebookModel selectedGradebook) {
-		reconfigureGrid(newColumnModel(selectedGradebook));
-		if (modeLabel != null) {
-			StringBuilder modeLabelText = new StringBuilder();
-			
-			modeLabelText
-				.append(selectedGradebook.getGradebookItemModel().getCategoryType().getDisplayName())
-				.append("/")
-				.append(selectedGradebook.getGradebookItemModel().getGradeType().getDisplayName())
-				.append(" Mode");
-			
-			modeLabel.setText(modeLabelText.toString());	
-		}
-	}*/
-	
+
 	public void onShowColumns(ShowColumnsEvent event) {
 		this.lastShowColumnsEvent = event;
 		showColumns(event, cm);
 	}
-	
+
 	public void onSwitchGradebook(GradebookModel selectedGradebook) {
-		//String gradebookUid = selectedGradebook.getGradebookUid();
+
 		if (store != null) {
 			ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
-			
+
 			// Set the default sort field and direction on the store based on Cookies
 			String storedSortField = configModel.getSortField(gridId);
 			boolean isAscending = configModel.isAscending(gridId);
-			
+
 			SortDir sortDir = isAscending ? SortDir.ASC : SortDir.DESC;
 
 			if (storedSortField != null) 
 				store.setDefaultSort(storedSortField, sortDir);
 		}
 
-		//refreshAction = RefreshAction.REFRESHCOLUMNS;
-		//onRefreshGradebookItems(selectedGradebook);
 		onRefreshGradebookSetup(selectedGradebook);
 		reconfigureGrid(newColumnModel(selectedGradebook));
-		
+
 		int pageSize = getPageSize();
 		if (loader != null) 
 			loader.load(0, pageSize);
-		
+
 		if (sectionsLoader != null)
 			sectionsLoader.load();
 	}
-	
+
 	public void onUserChange(UserEntityAction<?> action) {
-		/*switch (action.getEntityType()) {
-		case GRADE_ITEM:
-			switch (action.getActionType()) {
-			case CREATE:
-				// We want to do this immediately, since a "Create" action probably comes
-				// from the "Add Assignment" dialog box that may be shown while the multigrade
-				// screen is still visible
-				refreshGrid(RefreshAction.REFRESHCOLUMNS);
-				break;
-			case UPDATE:
-				AssignmentModel.Key assignmentModelKey = AssignmentModel.Key.valueOf(((UserEntityUpdateAction)action).getKey());
-				switch (assignmentModelKey) {
-				// Update actions will (always?) result from user changes on the setup 
-				// screens, so they should be deferred to the "onShow" method
-				
-				// Name changes mean header needs to update, similarly for delete or include
-				case NAME:
-				case EXTRA_CREDIT:
-				case INCLUDED:
-				case REMOVED: 
-					updateColumns(assignmentModelKey, (AssignmentModel)action.getModel());
-					refreshGrid(RefreshAction.REFRESHLOCALCOLUMNS);
-					break;
-				// Weight changes just mean we need to refresh the screen
-				case WEIGHT:  
-					refreshGrid(RefreshAction.REFRESHDATA);
-					break;
-				case POINTS:
-					Boolean isRecalculated = ((UserEntityUpdateAction)action).getDoRecalculateChildren();
-					if (isRecalculated != null && isRecalculated.booleanValue())
-						refreshGrid(RefreshAction.REFRESHDATA);
-					break;
 
-				}
-				break;
-			}
-			
-			break;
-		case CATEGORY:
-			switch (action.getActionType()) {
-			case CREATE:
-				
-				break;
-			case UPDATE:
-				// Update actions will (always?) result from user changes on the setup 
-				// screens, so they should be deferred to the "onShow" method
-				CategoryModel.Key categoryModelKey = CategoryModel.Key.valueOf(((UserEntityUpdateAction)action).getKey());
-				switch (categoryModelKey) {
-				// Don't need to worry about Category name changes
-				case REMOVED: case INCLUDED: case EXTRA_CREDIT:
-					refreshGrid(RefreshAction.REFRESHCOLUMNS);
-					break;
-				// Weight changes just mean we need to refresh the screen
-				case WEIGHT: case DROP_LOWEST:
-					refreshGrid(RefreshAction.REFRESHDATA);
-					break;
-				}
-				break;
-			}
-			
-			break;
-		case GRADEBOOK:
-			switch (action.getActionType()) {
-			case UPDATE:
-				// We want to do this immediately, since these actions are now being
-				// fired from the top level menu and multigrade may well be visible.
-				GradebookModel.Key gradebookModelKey = GradebookModel.Key.valueOf(((UserEntityUpdateAction)action).getKey());
-				switch (gradebookModelKey) {
-				case GRADETYPE:
-					refreshGrid(RefreshAction.REFRESHCOLUMNSANDDATA);
-					break;
-				case CATEGORYTYPE: 
-					//addCategoryMenuItem.setVisible(((GradebookModel)action.getModel()).getCategoryType() != CategoryType.NO_CATEGORIES);
-					refreshGrid(RefreshAction.REFRESHCOLUMNS);
-					break;
-				}
-				
-				break;
-			}
-			break;
-		case GRADE_RECORD:
-			switch (action.getActionType()) {
-			case UPDATE:
-				UserEntityUpdateAction<GradeRecordModel> recordUpdateAction = 
-					(UserEntityUpdateAction<GradeRecordModel>)action;
-				GradeRecordModel recordModel = recordUpdateAction.getModel();
-				GradeRecordModel.Key recordModelKey = GradeRecordModel.Key.valueOf(recordUpdateAction.getKey());
-				
-				StudentModel studentModel = recordUpdateAction.getStudentModel();
-				
-				Record r = store.getRecord(studentModel);
-				
-				// First, clear out any currently dropped
-				for (String property : studentModel.getPropertyNames()) {
-					if (property.endsWith(StudentModel.DROP_FLAG)) {
-						int dropFlagIndex = property.indexOf(StudentModel.DROP_FLAG);
-							
-						String assignmentId = property.substring(0, dropFlagIndex);
-						Object value = studentModel.get(assignmentId);
-						Boolean recordDropped = (Boolean)r.get(property);
-						Boolean modelDropped = studentModel.get(property);
-					
-						boolean isDropped = modelDropped != null && modelDropped.booleanValue();
-						boolean wasDropped = recordDropped != null && recordDropped.booleanValue();
-						
-						r.set(property, modelDropped);
-						
-						if (isDropped || wasDropped) {
-							r.set(assignmentId, null);
-							r.set(assignmentId, value);
-							//r.setDirty(true);
-						}
-					}
-				}
-				
-				String courseGrade = studentModel.get(StudentModel.Key.COURSE_GRADE.name());
-				
-				if (courseGrade != null) {
-					r.set(StudentModel.Key.COURSE_GRADE.name(), null);
-					r.set(StudentModel.Key.COURSE_GRADE.name(), courseGrade);
-				}
-				
-				r.endEdit();
-
-				break;
-			}
-			break;
-		case GRADE_SCALE:
-			switch (action.getActionType()) {
-			case UPDATE:
-				queueDeferredRefresh(RefreshAction.REFRESHDATA);
-				break;
-			}
-			
-			break;
-		}*/
 	}
-	
+
 	protected CustomColumnModel newColumnModel(GradebookModel selectedGradebook) {
 		CustomColumnModel columnModel = assembleColumnModel(selectedGradebook);
 		return columnModel;
 	}
-		
+
 	@Override
 	protected GridView newGridView() {
 		// SAK-2378
 		CustomGridView view = new CustomGridView(gridId) {
-			
+
 			private Timer showTimer;
 			private com.google.gwt.dom.client.Element overCell;
 			private ToolTip toolTip;
 			private boolean isShowingToolTip;
-			
+
 			protected void init(Grid grid) { 
 				super.init(grid);
 				isShowingToolTip = false;
 			}
-			
+
 			protected boolean isClickable(ModelData model, String property) {
 				return property.equals(StudentModel.Key.DISPLAY_NAME.name()) ||
-					property.equals(StudentModel.Key.LAST_NAME_FIRST.name()) ||
-					property.equals(StudentModel.Key.DISPLAY_ID.name());
+				property.equals(StudentModel.Key.LAST_NAME_FIRST.name()) ||
+				property.equals(StudentModel.Key.DISPLAY_ID.name());
 			}
-			
+
 			protected boolean isCommented(ModelData model, String property) {
 				String commentedProperty = property + StudentModel.COMMENTED_FLAG;
 				Boolean isCommented = model.get(commentedProperty);
-				
+
 				return isCommented != null && isCommented.booleanValue();
 			}
-			
+
 			protected boolean isDropped(ModelData model, String property) {
 				String droppedProperty = property + StudentModel.DROP_FLAG;
 				Boolean isDropped = model.get(droppedProperty);
-				
+
 				return isDropped != null && isDropped.booleanValue();
 			}
-			
+
 			protected boolean isReleased(ModelData model, String property) {
 				return false;
 			}
-			
+
 			@Override
 			protected String markupCss(Record r, ModelData model, String property, boolean isShowDirtyCells, boolean isPropertyChanged) {
 				StringBuilder css = new StringBuilder();
-				
+
 				if (isShowDirtyCells && isPropertyChanged) {
-					
+
 					Object startValue = r.getChanges().get(property);
 					Object currentValue = r.get(property);
-					
+
 					String failedProperty = new StringBuilder().append(property).append(GridPanel.FAILED_FLAG).toString();
 					String failedMessage = (String)r.get(failedProperty);
-					
+
 					if (failedMessage != null) {
 						css.append(" gbCellFailed");
 					} else if (startValue == null || !startValue.equals(currentValue)) {
@@ -868,198 +564,47 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 				if (isDropped(model, property)) {
 					css.append(" gbCellDropped");
 				}
-				
+
 				if (isReleased(model, property)) {
 					css.append(" gbReleased");
 				}
-				
+
 				if (css.length() > 0)
 					return css.toString();
-				
+
 				return null;
 			}
-			
+
 			@Override
 			protected String markupInnerCss(ModelData model, String property, boolean isShowDirtyCells, boolean isPropertyChanged) {
-				
+
 				StringBuilder innerCssClass = new StringBuilder();
-				
+
 				if (isCommented(model, property)) {
 					innerCssClass.append(" gbCellCommented");
 				} 
-				
+
 				if (isClickable(model, property)) {
 					innerCssClass.append(" gbCellClickable");
 				}
-				
+
 				if (innerCssClass.length() > 0)
 					return innerCssClass.toString();
-				
+
 				return null;
 			}
-			
-			/*
-			protected void onCellOver(com.google.gwt.dom.client.Element cell, ComponentEvent ce) {
-				if (grid.isTrackMouseOver()) {
-					if (overCell != cell) {
-				        overCell = cell;
-				        
-				        if (ce.event == null)
-				        	return;
-				        
-				        int x = ce.event.getClientX();
-				        int y = ce.event.getClientY();
-				        
-				        int t = overCell.getAbsoluteTop();
-				        int l = overCell.getAbsoluteLeft();
-				        
-				        int ox = x - l;
-				        int oy = y - t;
-				        
-				        int width = overCell.getOffsetWidth();
-				        
-				        int bx = (l + width) - x; 
-				       
-				        boolean isLeftCorner = oy <= 15 && ox <= 15;
-				        boolean isRightCorner = oy <= 15 && bx <= 15;
-				        
-				        if (isLeftCorner || isRightCorner) {
-				        	if (!isShowingToolTip) {
-					        	int row = findRowIndex(cell);
-						        int column = findCellIndex(cell, null);
-					        	
-						        if (row >= 0 && column >= 0) {
-							        com.extjs.gxt.ui.client.widget.grid.ColumnModel columnModel = grid.getColumnModel();
-							        StudentModel model = (StudentModel)grid.getStore().getAt(row);
-							        
-							        if (columnModel != null && model != null) {
-							        	ColumnConfig columnConfig = columnModel.getColumn(column);
-							        	String property = columnConfig.getDataIndex();
-							        	
-							        	Record record = grid.getStore().getRecord(model);
-							        	
-							        	
-							        	if (isLeftCorner) {
-								        	Object startValue = record.getChanges().get(property);
-								        	
-								        	String failedProperty = property+ GridPanel.FAILED_FLAG;
-											String failedMessage = (String)record.get(failedProperty);
-								        	
-											String text = null;
-											
-											if (failedMessage != null) {
-												text = new StringBuilder()
-													.append("Failed: ").append(failedMessage).toString();
-													
-											} else if (startValue != null) {
-								        		Object currentValue = record.get(property);
-								        		text = new StringBuilder()
-								        			.append("Successfully modified from " + startValue + " to " + currentValue).toString();
-											}
-											
-											if (text != null) {
-									        	ToolTipConfig config = new ToolTipConfig(text);
-									        	config.setDismissDelay(2000);
-									        	config.setTrackMouse(false);
-									        	
-									        	if (toolTip == null) {
-									        		toolTip = new ToolTip(grid);
-									        	}
-									        	
-									        	final int mx = ce.event.getClientX();
-										        final int my = ce.event.getClientY();
-									        	
-									        	toolTip.update(config);
-									        	
-									        	isShowingToolTip = true;
-									        	showTimer = new Timer() {
-									                public void run() {
-									                	toolTip.showAt(mx, my);
-									                	isShowingToolTip = false;
-									                }
-									            };
-									            showTimer.schedule(500);
-								        	}
-							        	} else {
-							        		String commentProperty = property + StudentModel.COMMENTED_FLAG;
-								        	
-								        	Boolean commentFlag = (Boolean)record.get(commentProperty);
-								        	boolean isCommented = commentFlag != null && commentFlag.booleanValue();
-								        	
-								        	if (isCommented) {
-								        		String text = "Has a comment attached";
-							        		
-									        	ToolTipConfig config = new ToolTipConfig(text);
-									        	config.setDismissDelay(2000);
-									        	config.setTrackMouse(false);
-									        	
-									        	if (toolTip == null) {
-									        		toolTip = new ToolTip(grid);
-									        	}
-									        	
-									        	final int mx = ce.event.getClientX();
-										        final int my = ce.event.getClientY();
-									        	
-									        	toolTip.update(config);
-									        	
-									        	isShowingToolTip = true;
-									        	showTimer = new Timer() {
-									                public void run() {
-									                	toolTip.showAt(mx, my);
-									                	isShowingToolTip = false;
-									                }
-									            };
-									            showTimer.schedule(500);
-								        	}
-							        	}
-							        }
-						        }
-				        	}
-				        } else {
-				        
-				        	if (showTimer != null)
-								showTimer.cancel();
-							isShowingToolTip = false;
-				        }
-				    }
-				}
-			}
-			
-			
-			protected void onCellOut(com.google.gwt.dom.client.Element cell) {
-				if (grid.isTrackMouseOver() && overCell != null) {
-					overCell = null;
-					if (showTimer != null)
-						showTimer.cancel();
-					isShowingToolTip = false;
-				}
-			}
-			
-			protected void handleComponentEvent(GridEvent ge) {
-			    super.handleComponentEvent(ge);
-			    
-			    com.google.gwt.dom.client.Element cell = findCell(ge.getTarget());
-			    switch (ge.type) {
-			      case Event.ONMOUSEOVER:
-			        if (cell != null) onCellOver(cell, ge);
-			        break;
-			      case Event.ONMOUSEOUT:
-			        if (overCell != null) onCellOut(overCell);
-			        break;
-			    }
-			}*/
 		};
 		view.setEmptyText("-");
-		
+
 		return view;
 	}
-	
+
 	@Override
 	protected Menu newContextMenu() {
 		contextMenu = new MultiGradeContextMenu(this);
 		return contextMenu;
 	}
-	
+
 	@Override
 	protected PagingLoadConfig newLoadConfig(ListStore<StudentModel> store, int pageSize) {
 		SortInfo sortInfo = store.getSortState();
@@ -1068,22 +613,22 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		loadConfig.setOffset(pageSize);	
 		if (sortInfo == null)
 			sortInfo = new SortInfo(StudentModel.Key.LAST_NAME_FIRST.name(), SortDir.ASC);
-			
+
 		loadConfig.setSortInfo(sortInfo);
-		
+
 		return loadConfig;
 	}
-	
+
 	@Override
 	protected void addComponents() {
-		
+
 		// We only need to do this once
 		if (rendered)
 			return;
-		
+
 		unweightedNumericCellRenderer = new UnweightedNumericCellRenderer();
 		extraCreditNumericCellRenderer = new ExtraCreditNumericCellRenderer();
-				
+
 		RpcProxy<PagingLoadConfig, PagingLoadResult<SectionModel>> sectionsProxy = new RpcProxy<PagingLoadConfig, PagingLoadResult<SectionModel>>() {
 			@Override
 			protected void load(PagingLoadConfig loadConfig, AsyncCallback<PagingLoadResult<SectionModel>> callback) {
@@ -1092,21 +637,19 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 				service.getPage(model.getGradebookUid(), model.getGradebookId(), EntityType.SECTION, loadConfig, SecureToken.get(), callback);
 			}
 		};
-		
+
 		sectionsLoader = 
 			new BasePagingLoader<PagingLoadConfig, PagingLoadResult<SectionModel>>(sectionsProxy, new ModelReader<PagingLoadConfig>());
-		
+
 		sectionsLoader.setRemoteSort(true);
-		//sectionsLoader.load(0, 50);
-		
+
 		SectionModel allSections = new SectionModel();
 		allSections.setSectionId("all");
 		allSections.setSectionName("All Sections");
-		
+
 		ListStore<SectionModel> sectionStore = new ListStore<SectionModel>(sectionsLoader);
-		//sectionStore.add(allSections);
 		sectionStore.setModelComparer(new EntityModelComparer<SectionModel>());
-		
+
 		ComboBox<SectionModel> sectionListBox = new ComboBox<SectionModel>(); 
 		sectionListBox.setAllQuery(null);
 		sectionListBox.setEditable(false);
@@ -1114,23 +657,22 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		sectionListBox.setDisplayField(SectionModel.Key.SECTION_NAME.name());  
 		sectionListBox.setStore(sectionStore);
 		sectionListBox.setForceSelection(true);
-		//sectionListBox.select(0);
 		sectionListBox.setEmptyText("Section");
-		
+
 		sectionListBox.addSelectionChangedListener(new SelectionChangedListener<SectionModel>() {
 
 			@Override
 			public void selectionChanged(SelectionChangedEvent<SectionModel> se) {
 				SectionModel model = se.getSelectedItem();
-				
+
 				String searchString = null;
 				String sectionUuid = null;
-				
+
 				if (loadConfig != null)
 					searchString = ((MultiGradeLoadConfig) loadConfig).getSearchString();
 				if (model != null) 
 					sectionUuid = model.getSectionId();
-				
+
 				int pageSize = getPageSize();
 				loadConfig = new MultiGradeLoadConfig();
 				loadConfig.setLimit(0);
@@ -1140,30 +682,28 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 				loader.useLoadConfig(loadConfig);
 				loader.load(0, pageSize);
 			}
-			
+
 		});
 
 		AdapterToolItem sectionChooserItem = new AdapterToolItem(sectionListBox);
-		
+
 		searchField = new TextField<String>();
 		searchField.setEmptyText(i18n.searchLearnerEmptyText());
 		searchField.setWidth(180);
 		searchField.addKeyListener(new KeyListener() {
 			public void componentKeyPress(ComponentEvent event) {
-			    switch (event.getKeyCode()) {
-			    case KeyboardListener.KEY_ENTER:
-			    	fireEvent(GradebookEvents.DoSearch.getEventType(), event);
-			    	break;
-			    }
+				switch (event.getKeyCode()) {
+					case KeyboardListener.KEY_ENTER:
+						fireEvent(GradebookEvents.DoSearch.getEventType(), event);
+						break;
+				}
 			}
 		});
-		
-		//store.addListener(Store.Sort, storeListener);
-		
+
 		addListener(GradebookEvents.DoSearch.getEventType(), componentEventListener);
-		
+
 		addListener(GradebookEvents.ClearSearch.getEventType(), componentEventListener);
-		
+
 		AdapterToolItem searchFieldItem = new AdapterToolItem(searchField);
 
 		TextToolItem doSearchItem = new TextToolItem("Find", new SelectionListener<ToolBarEvent>() {
@@ -1172,85 +712,80 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			public void componentSelected(ToolBarEvent ce) {
 				fireEvent(GradebookEvents.DoSearch.getEventType(), ce);
 			}
-			
+
 		});
-		
+
 		doSearchItem.setToolTip("Search for all students with name matching the entered text");
-		
-		
+
+
 		TextToolItem clearSearchItem = new TextToolItem("Clear", new SelectionListener<ToolBarEvent>() {
 
 			@Override
 			public void componentSelected(ToolBarEvent ce) {
 				fireEvent(GradebookEvents.ClearSearch.getEventType(), ce);
 			}
-			
+
 		});
-		
+
 		modeLabel = new LabelField();
 		AdapterToolItem modeLabelItem = new AdapterToolItem(modeLabel);
-		
+
 		int pageSize = getPageSize();
 		pageSizeField = new NumberField();
 		pageSizeField.setValue(Integer.valueOf(pageSize));
 		pageSizeField.setWidth(35);
 		pageSizeField.addKeyListener(new KeyListener() {
 			public void componentKeyPress(ComponentEvent event) {
-			    switch (event.getKeyCode()) {
-			    case KeyboardListener.KEY_ENTER:
-			    	Number pageSize = pageSizeField.getValue();
-			    	
-			    	if (pageSize != null && pageSize.intValue() > 0 && pageSize.intValue() <= Integer.MAX_VALUE) {
-			    		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-			    		ConfigurationModel model = new ConfigurationModel(selectedGradebook.getGradebookId());
-			    		model.setPageSize(gridId, Integer.valueOf(pageSize.intValue()));
-			    		
-			    		//pageSizeField.setValue(Integer.valueOf(pageSize.intValue()));
-			    		
-			    		Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
-			    		
-			    		AsyncCallback<ConfigurationModel> callback = new AsyncCallback<ConfigurationModel>() {
+				switch (event.getKeyCode()) {
+					case KeyboardListener.KEY_ENTER:
+						Number pageSize = pageSizeField.getValue();
 
-			    			public void onFailure(Throwable caught) {
-			    				// FIXME: Should we notify the user when this fails?
-			    			}
+						if (pageSize != null && pageSize.intValue() > 0 && pageSize.intValue() <= Integer.MAX_VALUE) {
+							GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+							ConfigurationModel model = new ConfigurationModel(selectedGradebook.getGradebookId());
+							model.setPageSize(gridId, Integer.valueOf(pageSize.intValue()));
 
-			    			public void onSuccess(ConfigurationModel result) {
-			    				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-			    				ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
-			    				
-			    				Collection<String> propertyNames = result.getPropertyNames();
-			    				if (propertyNames != null) {
-			    					List<String> names = new ArrayList<String>(propertyNames);
-			    					
-			    					for (int i=0;i<names.size();i++) {
-			    						String name = names.get(i);
-			    						String value = result.get(name);
-			    						configModel.set(name, value);
-			    					}
-			    				}
-			    			}
-			    			
-			    		};
-			    		
-			    		service.update(model, EntityType.CONFIGURATION, null, SecureToken.get(), callback);
-			    		
-			    		//GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+							Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
 
-			    		//GradebookState.setPageSize(selectedGradebook.getGradebookUid(), gridId, pageSize.intValue());
-			    		newLoader().setLimit(pageSize.intValue());
-			    		pagingToolBar.setPageSize(pageSize.intValue());
-			    		pagingToolBar.refresh();
-			    	}
-			    	break;
-			    }
+							AsyncCallback<ConfigurationModel> callback = new AsyncCallback<ConfigurationModel>() {
+
+								public void onFailure(Throwable caught) {
+									// FIXME: Should we notify the user when this fails?
+								}
+
+								public void onSuccess(ConfigurationModel result) {
+									GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+									ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
+
+									Collection<String> propertyNames = result.getPropertyNames();
+									if (propertyNames != null) {
+										List<String> names = new ArrayList<String>(propertyNames);
+
+										for (int i=0;i<names.size();i++) {
+											String name = names.get(i);
+											String value = result.get(name);
+											configModel.set(name, value);
+										}
+									}
+								}
+
+							};
+
+							service.update(model, EntityType.CONFIGURATION, null, SecureToken.get(), callback);
+
+							newLoader().setLimit(pageSize.intValue());
+							pagingToolBar.setPageSize(pageSize.intValue());
+							pagingToolBar.refresh();
+						}
+						break;
+				}
 			}
 		});
-		
+
 		AdapterToolItem pageSizeFieldItem = new AdapterToolItem(pageSizeField);
 		AdapterToolItem pageSizeLabelItem = new AdapterToolItem(new LabelField("Page size: "));
-		
-		
+
+
 		searchToolBar = new ToolBar();
 		searchToolBar.add(searchFieldItem);
 		searchToolBar.add(doSearchItem);
@@ -1259,34 +794,31 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		searchToolBar.add(sectionChooserItem);
 		searchToolBar.add(new FillToolItem());
 		searchToolBar.add(modeLabelItem);
-		
-		
+
+
 		pagingToolBar.add(new SeparatorToolItem());
 		pagingToolBar.add(pageSizeLabelItem);
 		pagingToolBar.add(pageSizeFieldItem);
-		
+
 		toolBarContainer = new LayoutContainer();
 		toolBarContainer.setLayout(new RowLayout());
 		toolBarContainer.add(pagingToolBar, new RowData(1, 1));
 		toolBarContainer.add(searchToolBar, new RowData(1, -1));
-		
-		//setTopComponent(toolBarContainer);
-		//toolBarContainer.layout();
 
 		setTopComponent(searchToolBar);
 		setBottomComponent(pagingToolBar);
 	}
-	
+
 	@Override
 	protected void addGridListenersAndPlugins(final EditorGrid<StudentModel> grid) {
-		
+
 		// We only need to do this once
 		if (rendered)
 			return;
-		
+
 		grid.addListener(Events.CellClick, gridEventListener);
 		grid.addListener(Events.ContextMenu, gridEventListener);
-		
+
 		cellSelectionModel = new MultigradeSelectionModel<StudentModel>();
 		cellSelectionModel.setSelectionMode(SelectionMode.SINGLE);
 		cellSelectionModel.addSelectionChangedListener(new SelectionChangedListener<StudentModel>() {
@@ -1294,65 +826,65 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			@Override
 			public void selectionChanged(SelectionChangedEvent<StudentModel> sce) {
 				StudentModel learner = sce.getSelectedItem();
-				
+
 				if (learner != null && learner instanceof StudentModel) 
 					Dispatcher.forwardEvent(GradebookEvents.SelectLearner.getEventType(), learner);
 			}
-		
+
 		});
 		grid.setSelectionModel(cellSelectionModel);
 	}
-	
+
 	public void onRefreshCourseGrades() {
 		RefreshAction actualAction = RefreshAction.REFRESHDATA;
 		switch (this.refreshAction) {
-		case REFRESHLOCALCOLUMNS:
-			actualAction = RefreshAction.REFRESHLOCALCOLUMNSANDDATA;
-			break;
-		case REFRESHCOLUMNS:
-			actualAction = RefreshAction.REFRESHCOLUMNSANDDATA;	
-			break;
+			case REFRESHLOCALCOLUMNS:
+				actualAction = RefreshAction.REFRESHLOCALCOLUMNSANDDATA;
+				break;
+			case REFRESHCOLUMNS:
+				actualAction = RefreshAction.REFRESHCOLUMNSANDDATA;	
+				break;
 		}
 		refreshGrid(actualAction, true);
 	}
-	
+
 	public void onRefreshGradebookItems(GradebookModel gradebookModel) {
 		switch (this.refreshAction) {
-		case REFRESHDATA:
-			this.refreshAction = RefreshAction.REFRESHCOLUMNSANDDATA;	
-			break;
-		default:
-			this.refreshAction = RefreshAction.REFRESHCOLUMNS;
-			break;
+			case REFRESHDATA:
+				this.refreshAction = RefreshAction.REFRESHCOLUMNSANDDATA;	
+				break;
+			default:
+				this.refreshAction = RefreshAction.REFRESHCOLUMNS;
+				break;
 		}
 		doRefresh(false);
 		if (modeLabel != null) {
 			StringBuilder modeLabelText = new StringBuilder();
-			
+
 			modeLabelText
-				.append(gradebookModel.getGradebookItemModel().getCategoryType().getDisplayName())
-				.append("/")
-				.append(gradebookModel.getGradebookItemModel().getGradeType().getDisplayName())
-				.append(" Mode");
-			
+			.append(gradebookModel.getGradebookItemModel().getCategoryType().getDisplayName())
+			.append("/")
+			.append(gradebookModel.getGradebookItemModel().getGradeType().getDisplayName())
+			.append(" Mode");
+
 			modeLabel.setText(modeLabelText.toString());	
 		}
 	}
-	
+
 	public void onRefreshGradebookSetup(GradebookModel gradebookModel) {
 		if (modeLabel != null) {
 			StringBuilder modeLabelText = new StringBuilder();
-			
+
 			modeLabelText
-				.append(gradebookModel.getGradebookItemModel().getCategoryType().getDisplayName())
-				.append("/")
-				.append(gradebookModel.getGradebookItemModel().getGradeType().getDisplayName())
-				.append(" Mode");
-			
+			.append(gradebookModel.getGradebookItemModel().getCategoryType().getDisplayName())
+			.append("/")
+			.append(gradebookModel.getGradebookItemModel().getGradeType().getDisplayName())
+			.append(" Mode");
+
 			modeLabel.setText(modeLabelText.toString());	
 		}
 	}
-	
+
 	@Override
 	public void onResize(int x, int y) {
 		super.onResize(x, y);
@@ -1361,114 +893,110 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			toolBarContainer.setWidth(getWidth());
 	}
 
-	
+
 	@Override
 	protected void onRender(Element parent, int pos) {	    
-	    super.onRender(parent, pos);
+		super.onRender(parent, pos);
 	}
 
-	
+
 	private boolean convertBoolean(Boolean b) {
 		return b != null && b.booleanValue();
 	}
-	
+
 	private ColumnConfig buildColumn(GradebookModel selectedGradebook, FixedColumnModel column, ConfigurationModel configModel) {
 		boolean isHidden = configModel.isColumnHidden(AppConstants.ITEMTREE, column.getIdentifier(), false);
 		return buildColumn(selectedGradebook, column.getKey(), column.getIdentifier(), column.getName(),
 				true, false, convertBoolean(column.isEditable()), isHidden);
 	}
-	
+
 	private ColumnConfig buildColumn(GradebookModel selectedGradebook, ItemModel item, ConfigurationModel configModel) {
 		boolean isHidden = configModel.isColumnHidden(AppConstants.ITEMTREE, item.getIdentifier(), false);
 		StringBuilder columnNameBuilder = new StringBuilder().append(item.getName());
-		
+
 		switch (selectedGradebook.getGradebookItemModel().getGradeType()) {
-		case POINTS:
-			columnNameBuilder.append(" [").append(item.getPoints()).append("pts]");
-			break;
-		case PERCENTAGES:
-			columnNameBuilder.append(" [%]");
-			break;
-		case LETTERS:
-			columnNameBuilder.append(" [A-F]");
-			break;
+			case POINTS:
+				columnNameBuilder.append(" [").append(item.getPoints()).append("pts]");
+				break;
+			case PERCENTAGES:
+				columnNameBuilder.append(" [%]");
+				break;
+			case LETTERS:
+				columnNameBuilder.append(" [A-F]");
+				break;
 		}
-		
+
 		if (item.getStudentModelKey() != null && item.getStudentModelKey().equals(StudentModel.Key.GRADE_OVERRIDE.name()))
 			columnNameBuilder.append(" [A-F]");
-		
+
 		return buildColumn(selectedGradebook, item.getStudentModelKey(), item.getIdentifier(), 
 				columnNameBuilder.toString(), convertBoolean(item.getIncluded()), 
 				convertBoolean(item.getExtraCredit()), item.getSource() == null, isHidden);
 	}
-	
+
 	private ColumnConfig buildColumn(GradebookModel selectedGradebook, String property, String id, String name, 
 			boolean isIncluded, boolean isExtraCredit, boolean isEditable, boolean defaultHidden) {
 
 		ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
 		int columnWidth = configModel.getColumnWidth(gridId, id, name);
 		boolean isHidden = configModel.isColumnHidden(gridId, id);
-		
-			//!id.equals(StudentModel.Key.LAST_NAME_FIRST); //GradebookState.isColumnHidden(gradebookUid, gridId, id, defaultHidden);
-		
+
 		ColumnConfig config = new ColumnConfig(id, name, columnWidth);
 		config.setHidden(defaultHidden);
-		//config.setHidden(isHidden);
-		
+
 		Field<?> field = null;
 		StudentModel.Key key = StudentModel.Key.valueOf(property);
 		switch (key) {
-		case ASSIGNMENT:
-			switch (selectedGradebook.getGradebookItemModel().getGradeType()) {
-				case POINTS:
-				case PERCENTAGES:
-					config.setAlignment(HorizontalAlignment.RIGHT);
-					config.setNumberFormat(defaultNumberFormat);
-					
-					NumberField numberField = new NumberField();
-					numberField.setFormat(defaultNumberFormat);
-					numberField.setPropertyEditorType(Double.class);
-					//numberField.setMaxValue(column.getMaxPoints());
-					numberField.setSelectOnFocus(true);
-					numberField.addInputStyleName("gbNumericFieldInput");
-					field = numberField;
-					
-					if (!isIncluded)
-						config.setRenderer(unweightedNumericCellRenderer);
-					else if (isExtraCredit)
-						config.setRenderer(extraCreditNumericCellRenderer);
-					
-					break;
-				case LETTERS:
-					TextField<String> textField = new TextField<String>();
-					textField.setSelectOnFocus(true);
-					textField.addInputStyleName("gbTextFieldInput");
-					field = textField;
-					
-					if (!isIncluded)
-						config.setRenderer(unweightedTextCellRenderer);
-					else if (isExtraCredit)
-						config.setRenderer(extraCreditTextCellRenderer);
-					
-					break;
-			}
-			
-			break;
-		case COURSE_GRADE:
+			case ASSIGNMENT:
+				switch (selectedGradebook.getGradebookItemModel().getGradeType()) {
+					case POINTS:
+					case PERCENTAGES:
+						config.setAlignment(HorizontalAlignment.RIGHT);
+						config.setNumberFormat(defaultNumberFormat);
 
-			break;
-		case GRADE_OVERRIDE:
-			TextField<String> textField = new TextField<String>();
-			textField.addInputStyleName("gbTextFieldInput");
-			textField.setSelectOnFocus(true);
-			field = textField;
-			
-			if (!isIncluded)
-				config.setRenderer(unweightedTextCellRenderer);
-			
-			break;
+						NumberField numberField = new NumberField();
+						numberField.setFormat(defaultNumberFormat);
+						numberField.setPropertyEditorType(Double.class);
+						numberField.setSelectOnFocus(true);
+						numberField.addInputStyleName("gbNumericFieldInput");
+						field = numberField;
+
+						if (!isIncluded)
+							config.setRenderer(unweightedNumericCellRenderer);
+						else if (isExtraCredit)
+							config.setRenderer(extraCreditNumericCellRenderer);
+
+						break;
+					case LETTERS:
+						TextField<String> textField = new TextField<String>();
+						textField.setSelectOnFocus(true);
+						textField.addInputStyleName("gbTextFieldInput");
+						field = textField;
+
+						if (!isIncluded)
+							config.setRenderer(unweightedTextCellRenderer);
+						else if (isExtraCredit)
+							config.setRenderer(extraCreditTextCellRenderer);
+
+						break;
+				}
+
+				break;
+			case COURSE_GRADE:
+
+				break;
+			case GRADE_OVERRIDE:
+				TextField<String> textField = new TextField<String>();
+				textField.addInputStyleName("gbTextFieldInput");
+				textField.setSelectOnFocus(true);
+				field = textField;
+
+				if (!isIncluded)
+					config.setRenderer(unweightedTextCellRenderer);
+
+				break;
 		}
-		
+
 		if (field != null && isEditable) {
 			final CellEditor editor = new CellEditor(field);
 			editor.setCompleteOnEnter(true);
@@ -1478,152 +1006,149 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 
 		return config;
 	}
-	
+
 	// FIXME: When changing gradebooks we will need to re-assemble the column model
 	private CustomColumnModel assembleColumnModel(GradebookModel selectedGradebook) {
 
 		List<FixedColumnModel> staticColumns = selectedGradebook.getColumns();
-		
+
 		ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
 		ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
-		
+
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
-		
+
 		for (FixedColumnModel column : staticColumns) {
 			ColumnConfig config = buildColumn(selectedGradebook, column, configModel);
 			configs.add(config);
 		}
-		
+
 		for (ItemModel child : gradebookItemModel.getChildren()) {
-			
+
 			switch (child.getItemType()) {
-			case CATEGORY:
-				for (ItemModel item : child.getChildren()) {
-					configs.add(buildColumn(selectedGradebook, item, configModel));
-				}
-				break;
-			case ITEM:
-				configs.add(buildColumn(selectedGradebook, child, configModel));
-				break;
+				case CATEGORY:
+					for (ItemModel item : child.getChildren()) {
+						configs.add(buildColumn(selectedGradebook, item, configModel));
+					}
+					break;
+				case ITEM:
+					configs.add(buildColumn(selectedGradebook, child, configModel));
+					break;
 			}
 		}
-		
+
 		CustomColumnModel cm = new CustomColumnModel(selectedGradebook.getGradebookUid(), gridId, configs);
-		
-		//if (lastShowColumnsEvent != null)
-		//	showColumns(lastShowColumnsEvent, cm);
-		
+
 		return cm;
 	}
-	
+
 
 	@Override
 	protected void refreshGrid(RefreshAction refreshAction, boolean useExistingColumnModel) {
-		
+
 		boolean includeData = false;
-		
+
 		switch (refreshAction) {
-		case REFRESHDATA:
-			includeData = true;
-			break;
-		case REFRESHLOCALCOLUMNSANDDATA:
-			includeData = true;
-		case REFRESHLOCALCOLUMNS:
-			super.refreshGrid(refreshAction, true);
-			return;
-		case REFRESHCOLUMNSANDDATA:
-			includeData = true;
-		case REFRESHCOLUMNS:
-			super.refreshGrid(refreshAction, false);
-			break;
-		case NONE:
-			// Do nothing
-			break;
-		default:
-			includeData = true;
-			break;
+			case REFRESHDATA:
+				includeData = true;
+				break;
+			case REFRESHLOCALCOLUMNSANDDATA:
+				includeData = true;
+			case REFRESHLOCALCOLUMNS:
+				super.refreshGrid(refreshAction, true);
+				return;
+			case REFRESHCOLUMNSANDDATA:
+				includeData = true;
+			case REFRESHCOLUMNS:
+				super.refreshGrid(refreshAction, false);
+				break;
+			case NONE:
+				// Do nothing
+				break;
+			default:
+				includeData = true;
+				break;
 		}
-		
+
 		if (includeData)
 			pagingToolBar.refresh();
 	}
-	
+
 	private void doRefresh(String property, Record record, StudentModel model, StudentModel startModel) {
 		String dropProperty = new StringBuilder(property).append(StudentModel.DROP_FLAG).toString();
-		
+
 		Boolean isDropped = model.get(dropProperty);
 		boolean doDrop = isDropped != null && isDropped.booleanValue();
-		
+
 		Boolean wasDropped = startModel.get(dropProperty);
-		
+
 		boolean unDrop = wasDropped != null && wasDropped.booleanValue();
-		
+
 		if (doDrop || unDrop) {
 			record.set(dropProperty, model.get(dropProperty));
 			if (model.get(property) != null)
 				record.set(property, model.get(property));
 		}
-		
+
 	}
 
-		
+
 	private GridCellRenderer<StudentModel> unweightedTextCellRenderer = new GridCellRenderer<StudentModel>() {
 
 		public String render(StudentModel model, String property,
 				ColumnData config, int rowIndex, int colIndex,
 				ListStore<StudentModel> store) {
-			
+
 			Object value = model.get(property);
-			
+
 			if (value == null)
 				return "&nbsp;";
-			
+
 			return "<div style=\"color:darkgray; font-style: italic;\">" + value.toString() + "</div>";
 		}
 	};
-	
+
 	private GridCellRenderer<StudentModel> extraCreditTextCellRenderer = new GridCellRenderer<StudentModel>() {
 
 		public String render(StudentModel model, String property,
 				ColumnData config, int rowIndex, int colIndex,
 				ListStore<StudentModel> store) {
-			
+
 			Object value = model.get(property);
-			
+
 			if (value == null)
 				return "&nbsp;";
-			
+
 			return "<div style=\"color:darkgreen;\">" + value.toString() + "</div>";
 		}
 	};
 
 	private void showColumns(ShowColumnsEvent event, CustomColumnModel cm) {
 		if (cm != null) {
-			
+
 			if (event.isSingle) {
 				int columnIndex = cm.findColumnIndex(event.itemModelId);
-				
+
 				if (columnIndex != -1) {
 					cm.setHidden(columnIndex, event.isHidden);
 				}
 			} else {
-			
+
 				if (!event.visibleStaticIdSet.contains(StudentModel.Key.DISPLAY_ID.name()) 
 						&& !event.visibleStaticIdSet.contains(StudentModel.Key.DISPLAY_NAME.name())
 						&& !event.visibleStaticIdSet.contains(StudentModel.Key.LAST_NAME_FIRST.name())) 
 					event.visibleStaticIdSet.add(StudentModel.Key.LAST_NAME_FIRST.name());
-				
+
 				// Loop through every column and show/hide it
 				for (int i=0;i<cm.getColumnCount();i++) {
 					ColumnConfig column = cm.getColumn(i);
-					
+
 					// The first step is to check if this is a static column
 					boolean isStatic = event.fullStaticIdSet.contains(column.getId());
 					// If it is static, then is it even visible? 
 					boolean isStaticVisible = isStatic && event.visibleStaticIdSet.contains(column.getId());
-					
+
 					String cmId = column.getId();
-					
+
 					if (isStatic)
 						cm.setHidden(i, !isStaticVisible);
 					else if (event.selectedItemModelIdSet != null){
@@ -1635,5 +1160,5 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			}
 		}
 	}
-	
+
 }

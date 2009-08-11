@@ -396,29 +396,6 @@ public class StudentPanel extends ContentPanel {
 		}
 	};
 	
-	/*private void syncStudentModel(GradeRecordModel model) {
-		if (learnerGradeRecordCollection != null) {
-			String columnId = String.valueOf(model.getAssignmentId());
-			String droppedId = columnId + StudentModel.DROP_FLAG;
-							
-			switch (selectedGradebook.getGradebookItemModel().getGradeType()) {
-			case POINTS:
-				learnerGradeRecordCollection.set(columnId, model.getPointsEarned());
-				break;
-			case PERCENTAGES:
-				learnerGradeRecordCollection.set(columnId, model.getPercentEarned());
-				break;
-			case LETTERS:
-				learnerGradeRecordCollection.set(columnId, model.getLetterEarned());
-				break;
-			};
-			
-			boolean isExcluded = model.getExcluded() != null && model.getExcluded().booleanValue();
-			boolean isDropped = model.getDropped() != null && model.getDropped().booleanValue();
-			learnerGradeRecordCollection.set(droppedId, Boolean.valueOf(isDropped || isExcluded));
-		}
-	}*/
-	
 	public boolean isStudentView() {
 		return isStudentView;
 	}
@@ -430,6 +407,4 @@ public class StudentPanel extends ContentPanel {
 	public StudentModel getStudentModel() {
 		return learnerGradeRecordCollection;
 	}
-	
-	
 }

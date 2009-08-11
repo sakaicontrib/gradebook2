@@ -317,14 +317,12 @@ public class GradeScalePanel extends ContentPanel {
 	
 	
 	public void onRefreshGradeScale(GradebookModel selectedGradebook) {
-		//loadGradeScaleData(selectedGradebook);
 		loader.load();
 	}
 	
 	@Override
 	protected void onRender(Element parent, int pos) {
 		super.onRender(parent, pos);
-		//loadIfPossible();
 	}
 	
 	

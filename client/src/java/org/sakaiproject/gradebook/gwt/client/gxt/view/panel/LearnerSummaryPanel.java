@@ -1,3 +1,26 @@
+/**********************************************************************************
+ *
+ * $Id:$
+ *
+ ***********************************************************************************
+ *
+ * Copyright (c) 2008, 2009 The Regents of the University of California
+ *
+ * Licensed under the
+ * Educational Community License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may
+ * obtain a copy of the License at
+ * 
+ * http://www.osedu.org/licenses/ECL-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS"
+ * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ *
+ **********************************************************************************/
+
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import java.util.HashSet;
@@ -61,9 +84,9 @@ public class LearnerSummaryPanel extends ContentPanel {
 	private static final String ITEM_IDENTIFIER_FLAG = "itemIdentifier";
 	private static final String BUTTON_SELECTOR_FLAG = "buttonSelector";
 	private enum ButtonSelector { CLOSE, COMMENT, NEXT, PREVIOUS, VIEW_AS_LEARNER };
-	
+
 	private I18nConstants i18n;
-	
+
 	private ContentPanel learnerInfoPanel;
 	private FormBinding formBinding;
 	private FormPanel formPanel;
@@ -73,68 +96,67 @@ public class LearnerSummaryPanel extends ContentPanel {
 	private KeyListener keyListener;
 	private SelectionListener<ComponentEvent> selectionListener;
 	private StudentModel learner;
-	
+
 	private FormLayout commentFormLayout;
 	private FormLayout excuseFormLayout;
 	private FormLayout scoreFormLayout;
-	
+
 	private FlexTableContainer learnerInfoTable;
-	
-	
+
+
 	public LearnerSummaryPanel(I18nConstants i18n) {
 		this.i18n = i18n;
-		
+
 		setHeaderVisible(false);
 		setId("learnerSummaryPanel");
 		setLayout(new RowLayout());
 		setWidth(400);
-		//setScrollMode(Scroll.AUTO);
-				
+
 		initListeners();
-		
+
 		add(newLearnerInfoPanel(), new RowData(1, -1));
-		
+
 		formPanel = new FormPanel();
 		formPanel.setHeaderVisible(false);
 		formPanel.setLayout(new FitLayout());
-		
+
 		TabPanel tabPanel = new AriaTabPanel();
 		tabPanel.setPlain(true);
 		tabPanel.setBorderStyle(true);
-		
+
 		TabItem tab = new TabItem(i18n.learnerTabGradeHeader());
 		tab.add(newGradeFormPanel());
 		tab.setScrollMode(Scroll.AUTOY);
 		tabPanel.add(tab);
-		
+
 		tab = new TabItem(i18n.learnerTabCommentHeader());
 		tab.setLayout(new FitLayout());
 		tab.add(newCommentFormPanel());
 		tab.setScrollMode(Scroll.AUTOY);
 		tabPanel.add(tab);
-		
+
 		tab = new TabItem(i18n.learnerTabExcuseHeader());
 		tab.setLayout(new FitLayout());
 		tab.add(newExcuseFormPanel());
 		tab.setScrollMode(Scroll.AUTOY);
 		tabPanel.add(tab);
-		
+
 		formPanel.add(tabPanel);
-		
+
 		add(formPanel, new RowData(1, 1));
-		
+
 		Button button = new AriaButton(i18n.prevLearner(), selectionListener);
 		button.setData(BUTTON_SELECTOR_FLAG, ButtonSelector.PREVIOUS);
 		addButton(button);
-		
+
 		button = new AriaButton(i18n.nextLearner(), selectionListener);
 		button.setData(BUTTON_SELECTOR_FLAG, ButtonSelector.NEXT);
 		addButton(button);
-		
+
 		button = new AriaButton(i18n.viewAsLearner(), selectionListener);
 		button.setData(BUTTON_SELECTOR_FLAG, ButtonSelector.VIEW_AS_LEARNER);
 		addButton(button);
-		
+
 		button = new AriaButton(i18n.close(), selectionListener);
 		button.setData(BUTTON_SELECTOR_FLAG, ButtonSelector.CLOSE);
 		addButton(button);
@@ -146,11 +168,11 @@ public class LearnerSummaryPanel extends ContentPanel {
 
 		if (learner != null) {
 			verifyFormPanelComponents(treeStore, learnerStore);
-			
+
 			formBinding.setStore(learnerStore);
 			formBinding.bind(learner);
 		}
-		
+
 		for (Component item : scoreFormPanel.getItems()) {
 			if (item instanceof Field) {
 				Field<?> field = (Field<?>)item;
@@ -158,63 +180,50 @@ public class LearnerSummaryPanel extends ContentPanel {
 				verifyFieldState(field, learner);
 			}
 		}
-		
+
 		for (Component item : commentFormPanel.getItems()) {
 			if (item instanceof Field)
 				((Field<?>)item).setEnabled(true);
 		}
-		
+
 		for (Component item : excuseFormPanel.getItems()) {
 			if (item instanceof Field)
 				((Field<?>)item).setEnabled(true);
 		}
 	}
-	
+
 	public void onLearnerGradeRecordUpdated(StudentModel learner) {
 		if (this.learner != null && learner != null 
 				&& this.learner.getIdentifier().equals(learner.getIdentifier())) 
 			updateLearnerInfo(learner);
 	}
-	
+
 	@Override
 	protected void onResize(final int width, final int height) {
-		/*System.out.println("Width: " + width);
-		
-		learnerInfoPanel.setWidth(width);
-		*/
 		commentFormLayout.setDefaultWidth(width - 40);
-		//commentFormPanel.setWidth(width - 10);
-		
+
 		super.onResize(width, height);
 	}
-	
+
 	private void addField(Set<String> itemIdSet, ItemModel item, int row, boolean isPercentages) {
 		String itemId = new StringBuilder().append(AppConstants.LEARNER_SUMMARY_FIELD_PREFIX).append(item.getIdentifier()).toString();
 		String source = item.getSource();
 		boolean isStatic = source != null && source.equals(AppConstants.STATIC);
-		
+
 		if (!itemIdSet.contains(itemId) && !isStatic) {
-			
+
 			String dataType = item.getDataType();
-			
+
 			if (dataType != null && dataType.equals(AppConstants.NUMERIC_DATA_TYPE)) {
 				NumberField field = new InlineEditNumberField();
-				
-				//String amountIndicator = "%";
-				
-				//if (!isPercentages) 
-				//	amountIndicator = DataTypeConversionUtil.formatDoubleAsPointsString(item.getPoints());
-				
-				//String itemName = new StringBuilder().append(item.getName())
-				//	.append("  [").append(amountIndicator).append("]").toString();
-				
+
 				StringBuilder emptyText = new StringBuilder();
-				
+
 				if (isPercentages) 
 					emptyText.append("Enter a value between 0 and 100");
 				else
 					emptyText.append("Enter a value between 0 and ").append(DataTypeConversionUtil.formatDoubleAsPointsString(item.getPoints()));
-				
+
 				field.setItemId(itemId);
 				field.addInputStyleName("gbNumericFieldInput");
 				field.addKeyListener(keyListener);
@@ -223,123 +232,114 @@ public class LearnerSummaryPanel extends ContentPanel {
 				field.setName(item.getIdentifier());
 				field.setToolTip(emptyText.toString());
 				field.setWidth(50);
-					
+
 				verifyFieldState(field, item);
-				
+
 				scoreFormPanel.add(field);
-				
+
 				String checkBoxName = new StringBuilder().append(item.getIdentifier()).append(StudentModel.EXCUSE_FLAG).toString();
 				CheckBox checkbox = new CheckBox();
 				checkbox.setFieldLabel(item.getName());
 				checkbox.setName(checkBoxName);
 				excuseFormPanel.add(checkbox);
-				
+
 				String commentId = new StringBuilder(item.getIdentifier()).append(StudentModel.COMMENT_TEXT_FLAG).toString();
 				TextArea textArea = new TextArea();
 				textArea.addInputStyleName("gbTextAreaInput");
 				textArea.setFieldLabel(item.getName());
 				textArea.setItemId(itemId);
 				textArea.setName(commentId);
-				
+
 				commentFormPanel.add(textArea);
 
 			}
 		}
-		
+
 	}
-	
+
 	private void initListeners() {
-		
+
 		keyListener = new KeyListener() {
-			
+
 			@Override
 			public void componentKeyPress(ComponentEvent event) {
 				switch (event.event.getKeyCode()) {
-				case KeyboardListener.KEY_ENTER:
-					//((BlurringNumberField)event.component).blurIt();
-					break;
+					case KeyboardListener.KEY_ENTER:
+						break;
 				}
 			}
-			
+
 		};
-		
+
 		selectionListener = new SelectionListener<ComponentEvent>() {
 
 			@Override
 			public void componentSelected(ComponentEvent be) {
 				ButtonSelector selector = be.component.getData(BUTTON_SELECTOR_FLAG);
-				
+
 				BrowseLearner bse = null;
-				
+
 				switch (selector) {
-				case CLOSE:
-					Dispatcher.forwardEvent(GradebookEvents.HideEastPanel.getEventType(), Boolean.FALSE);
-					break;
-				case COMMENT:
-					String id = be.component.getData(ITEM_IDENTIFIER_FLAG);
-					
-					Info.display("Id", id);
-					break;
-				case NEXT:
-					bse = new BrowseLearner(learner, BrowseType.NEXT);
-					Dispatcher.forwardEvent(GradebookEvents.BrowseLearner.getEventType(), bse);
-					break;
-				case PREVIOUS:
-					bse = new BrowseLearner(learner, BrowseType.PREV);
-					Dispatcher.forwardEvent(GradebookEvents.BrowseLearner.getEventType(), bse);
-					break;
-				case VIEW_AS_LEARNER:
-					Dispatcher.forwardEvent(GradebookEvents.SingleView.getEventType(), learner);
-					break;
+					case CLOSE:
+						Dispatcher.forwardEvent(GradebookEvents.HideEastPanel.getEventType(), Boolean.FALSE);
+						break;
+					case COMMENT:
+						String id = be.component.getData(ITEM_IDENTIFIER_FLAG);
+
+						Info.display("Id", id);
+						break;
+					case NEXT:
+						bse = new BrowseLearner(learner, BrowseType.NEXT);
+						Dispatcher.forwardEvent(GradebookEvents.BrowseLearner.getEventType(), bse);
+						break;
+					case PREVIOUS:
+						bse = new BrowseLearner(learner, BrowseType.PREV);
+						Dispatcher.forwardEvent(GradebookEvents.BrowseLearner.getEventType(), bse);
+						break;
+					case VIEW_AS_LEARNER:
+						Dispatcher.forwardEvent(GradebookEvents.SingleView.getEventType(), learner);
+						break;
 				}
-				
+
 			}
-			
-			
+
+
 		};	
-		
+
 	}
-	
+
 	private LayoutContainer newCommentFormPanel() {
 		commentFormPanel = new LayoutContainer();
-		//commentFormPanel.setHeaderVisible(false);
 		commentFormLayout = new FormLayout();
 		commentFormLayout.setLabelAlign(LabelAlign.TOP);
-		//commentFormLayout.setDefaultWidth(370);
 		commentFormPanel.setLayout(commentFormLayout);
 		commentFormPanel.setScrollMode(Scroll.AUTOY);
-		
+
 		return commentFormPanel;
 	}
-	
+
 	private LayoutContainer newExcuseFormPanel() {
 		excuseFormPanel = new LayoutContainer();
 		excuseFormLayout = new FormLayout();
 		excuseFormLayout.setLabelAlign(LabelAlign.LEFT);
 		excuseFormPanel.setLayout(excuseFormLayout);
 		excuseFormPanel.setScrollMode(Scroll.AUTOY);
-		
+
 		return excuseFormPanel;
 	}
-	
+
 	private LayoutContainer newGradeFormPanel() {
 		scoreFormPanel = new LayoutContainer();
-
-		//scoreFormTable = new FlexTableContainer(new FlexTable());
-		//scoreFormTable.setStylePrimaryName("gbScoreFormTable");
 		scoreFormLayout = new FormLayout();
 		scoreFormLayout.setDefaultWidth(50);
 		scoreFormLayout.setLabelSeparator("");
 		scoreFormLayout.setLabelWidth(180);
 		scoreFormPanel.setLayout(scoreFormLayout);
 		scoreFormPanel.setScrollMode(Scroll.AUTOY);
-		
-		//scoreFormPanel.add(scoreFormTable);
-		//scoreFormPanel.setLayoutData(scoreFormTable, new MarginData(10));
-		
+
 		return scoreFormPanel;
 	}
-	
+
 	private ContentPanel newLearnerInfoPanel() {
 		learnerInfoTable = new FlexTableContainer(new FlexTable()); 
 		learnerInfoTable.setStyleName("gbStudentInformation");
@@ -349,50 +349,48 @@ public class LearnerSummaryPanel extends ContentPanel {
 		learnerInfoPanel.setLayout(new FitLayout());
 		learnerInfoPanel.setScrollMode(Scroll.AUTO);
 		learnerInfoPanel.add(learnerInfoTable);
-		
+
 		return learnerInfoPanel;
 	}
-	
+
 	private void updateLearnerInfo(StudentModel learnerGradeRecordCollection) {		
 		// To force a refresh, let's first hide the owning panel
 		learnerInfoPanel.hide();
-	
+
 		// Now, let's update the student information table
 		FlexCellFormatter formatter = learnerInfoTable.getFlexCellFormatter();
 
 		learnerInfoTable.setText(1, 0, i18n.columnTitleDisplayName());
-        formatter.setStyleName(1, 0, "gbImpact");
-        learnerInfoTable.setText(1, 1, learnerGradeRecordCollection.getStudentName());
+		formatter.setStyleName(1, 0, "gbImpact");
+		learnerInfoTable.setText(1, 1, learnerGradeRecordCollection.getStudentName());
 
-        learnerInfoTable.setText(2, 0, i18n.columnTitleEmail());
-        formatter.setStyleName(2, 0, "gbImpact");
-        learnerInfoTable.setText(2, 1, learnerGradeRecordCollection.getStudentEmail());
+		learnerInfoTable.setText(2, 0, i18n.columnTitleEmail());
+		formatter.setStyleName(2, 0, "gbImpact");
+		learnerInfoTable.setText(2, 1, learnerGradeRecordCollection.getStudentEmail());
 
-        learnerInfoTable.setText(3, 0, i18n.columnTitleDisplayId());
-        formatter.setStyleName(3, 0, "gbImpact");
-        learnerInfoTable.setText(3, 1, learnerGradeRecordCollection.getStudentDisplayId());
+		learnerInfoTable.setText(3, 0, i18n.columnTitleDisplayId());
+		formatter.setStyleName(3, 0, "gbImpact");
+		learnerInfoTable.setText(3, 1, learnerGradeRecordCollection.getStudentDisplayId());
 
-        learnerInfoTable.setText(4, 0, i18n.columnTitleSection());
-        formatter.setStyleName(4, 0, "gbImpact");
-        learnerInfoTable.setText(4, 1, learnerGradeRecordCollection.getStudentSections());
-    
-        learnerInfoTable.setText(5, 0, "");
-        formatter.setColSpan(5, 0, 2);
-        
-        GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-        
-        //if (selectedGradebook.isReleaseGrades() != null && selectedGradebook.isReleaseGrades().booleanValue()) {
-        	learnerInfoTable.setText(6, 0, "Course Grade");
-	        formatter.setStyleName(6, 0, "gbImpact");
-	        learnerInfoTable.setText(6, 1, learnerGradeRecordCollection.getStudentGrade());
-        //}
-        learnerInfoPanel.show();
+		learnerInfoTable.setText(4, 0, i18n.columnTitleSection());
+		formatter.setStyleName(4, 0, "gbImpact");
+		learnerInfoTable.setText(4, 1, learnerGradeRecordCollection.getStudentSections());
+
+		learnerInfoTable.setText(5, 0, "");
+		formatter.setColSpan(5, 0, 2);
+
+		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+
+		learnerInfoTable.setText(6, 0, "Course Grade");
+		formatter.setStyleName(6, 0, "gbImpact");
+		learnerInfoTable.setText(6, 1, learnerGradeRecordCollection.getStudentGrade());
+		learnerInfoPanel.show();
 	}
-	
+
 	private void verifyFormPanelComponents(TreeStore<ItemModel> treeStore, final ListStore<StudentModel> learnerStore) {
-		
+
 		List<ItemModel> rootItems = treeStore.getRootItems();
-		
+
 		List<Component> allItems = scoreFormPanel.getItems();
 		Set<String> itemIdSet = new HashSet<String>();
 		if (allItems != null) {
@@ -400,35 +398,35 @@ public class LearnerSummaryPanel extends ContentPanel {
 				itemIdSet.add(c.getItemId());
 			}
 		}
-		
+
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 		boolean isPercentages = selectedGradebook.getGradebookItemModel().getGradeType() == GradeType.PERCENTAGES;
-		
+
 		int row = 0;
 		if (rootItems != null) {
 			for (ItemModel root : rootItems) {
-				
+
 				if (root.getChildCount() > 0) {
 					for (ItemModel child : root.getChildren()) {
-					
+
 						if (child.getChildCount() > 0) {
-							
+
 							for (ItemModel subchild : child.getChildren()) {
 								addField(itemIdSet, subchild, row, isPercentages);
 								row++;
 							}
-							
+
 						} else {
 							addField(itemIdSet, child, row, isPercentages);
 							row++;
 						}
-						
+
 					}
 				} 
-				
+
 			}
 		}
-		
+
 		if (formBinding == null) {
 			formBinding = new FormBinding(formPanel, true) {
 				public void autoBind() {
@@ -437,22 +435,22 @@ public class LearnerSummaryPanel extends ContentPanel {
 							String name = f.getName();
 							if (name != null && name.length() > 0) {
 								FieldBinding b = new FieldBinding(f, f.getName()) {
-									
+
 									@Override
 									protected void onFieldChange(FieldEvent e) {									
 										StudentModel learner = (StudentModel)this.model;
 										e.field.setEnabled(false);
-										
+
 										Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord.getEventType(), new GradeRecordUpdate(learnerStore, learner, e.field.getName(), e.field.getFieldLabel(), e.oldValue, e.value));
 									}
-									
+
 									@Override
 									protected void onModelChange(PropertyChangeEvent event) {
 										super.onModelChange(event);
-										
+
 										if (field != null) {
 											verifyFieldState(field, event.source);
-											
+
 											boolean isEnabled = true;
 											if (!field.isEnabled())
 												field.setEnabled(isEnabled);
@@ -467,21 +465,17 @@ public class LearnerSummaryPanel extends ContentPanel {
 			};
 		}
 	}
-	
-	
+
+
 	private void verifyFieldState(Field field, Model model) {
 		String dropFlag = new StringBuilder().append(field.getName()).append(StudentModel.DROP_FLAG).toString();
-		
+
 		Boolean dropFlagValue = model.get(dropFlag);
 		boolean isDropped = dropFlagValue != null && dropFlagValue.booleanValue();
-		
+
 		if (isDropped) {
-			//dropFlagValue = field.getData(FIELD_STATE_FIELD);
-			//isDropped = dropFlagValue != null && dropFlagValue.booleanValue();
-			//if (!isDropped) {
-				field.setData(FIELD_STATE_FIELD, Boolean.TRUE);
-				field.addInputStyleName("gbCellDropped");
-			//}
+			field.setData(FIELD_STATE_FIELD, Boolean.TRUE);
+			field.addInputStyleName("gbCellDropped");
 		} else {
 			dropFlagValue = field.getData(FIELD_STATE_FIELD);
 			isDropped = dropFlagValue != null && dropFlagValue.booleanValue();
@@ -489,34 +483,29 @@ public class LearnerSummaryPanel extends ContentPanel {
 				field.removeInputStyleName("gbCellDropped");
 		}
 	}
-	
-	
+
+
 	public class FlexTableContainer extends WidgetComponent {
-		
+
 		private FlexTable table;
-		
+
 		public FlexTableContainer(FlexTable table) {
 			super(table);
 			this.table = table;
-			//table = new FlexTable();
-			//wrapWidget(table);
 		}
-		
+
 		public FlexCellFormatter getFlexCellFormatter() {
 			return table.getFlexCellFormatter();
 		}
-		
+
 		public void setText(int row, int column, String text) {
 			table.setText(row, column, text);
 		}
-		
+
 		public void setWidget(int row, int column, Widget widget) {
 			table.setWidget(row, column, widget);
 		}
-		
+
 	}
-	
-	
-	
-	
+
 }

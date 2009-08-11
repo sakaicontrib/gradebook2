@@ -1,25 +1,26 @@
 /**********************************************************************************
-*
-* $Id: CustomGridView.java 6638 2009-01-22 01:27:23Z jrenfro $
-*
-***********************************************************************************
-*
-* Copyright (c) 2008, 2009 The Regents of the University of California
-*
-* Licensed under the
-* Educational Community License, Version 2.0 (the "License"); you may
-* not use this file except in compliance with the License. You may
-* obtain a copy of the License at
-* 
-* http://www.osedu.org/licenses/ECL-2.0
-* 
-* Unless required by applicable law or agreed to in writing,
-* software distributed under the License is distributed on an "AS IS"
-* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-* or implied. See the License for the specific language governing
-* permissions and limitations under the License.
-*
-**********************************************************************************/
+ *
+ * $Id: CustomGridView.java 6638 2009-01-22 01:27:23Z jrenfro $
+ *
+ ***********************************************************************************
+ *
+ * Copyright (c) 2008, 2009 The Regents of the University of California
+ *
+ * Licensed under the
+ * Educational Community License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may
+ * obtain a copy of the License at
+ * 
+ * http://www.osedu.org/licenses/ECL-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS"
+ * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ *
+ **********************************************************************************/
+
 package org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid;
 
 import java.util.ArrayList;
@@ -66,32 +67,31 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 // SAK-2394 
 
 public abstract class CustomGridView extends BaseCustomGridView {
-	
+
 	private enum SelectionType { SORT_ASC, SORT_DESC, ADD_CATEGORY, ADD_ITEM, DELETE_ITEM, EDIT_ITEM, GRADE_SCALE, HIDE_ITEM, HISTORY, START_GRADER_PERMISSION_SETTINGS, STATISTICS };
-	
+
 	private static final String selectionTypeField = "selectionType";
-	
-	
+
+
 	// Member variables
 	private final boolean SHOW = true;
-	//private String gradebookUid = null;
 	private GradebookModel gradebookModel = null;
 	private boolean isDisplayLoadMaskOnRender = true;
 	private String gridId;
-	
+
 	private SelectionListener<MenuEvent> selectionListener; 
-	
+
 	public CustomGridView(String gridId) {
 		this.gridId = gridId;
-		
+
 		addListener(Events.Refresh, new Listener() {
 
 			public void handleEvent(BaseEvent be) {
 				grid.el().unmask();
 			}
-			
+
 		});
-		
+
 		selectionListener = new SelectionListener<MenuEvent>() {
 
 			@Override
@@ -103,48 +103,46 @@ public abstract class CustomGridView extends BaseCustomGridView {
 						Integer colIndexInteger = item.getData("colIndex");
 						int colIndex = colIndexInteger == null ? -1 : colIndexInteger.intValue();
 						switch (selectionType) {
-						case ADD_CATEGORY:
-							Dispatcher.forwardEvent(GradebookEvents.NewCategory.getEventType());
-							break;
-						case ADD_ITEM:
-							Dispatcher.forwardEvent(GradebookEvents.NewItem.getEventType());
-							break;
-						case DELETE_ITEM:
-							Dispatcher.forwardEvent(GradebookEvents.SelectDeleteItem.getEventType(), cm.getDataIndex(colIndex));
-							break;
-						case EDIT_ITEM:
-							Dispatcher.forwardEvent(GradebookEvents.SelectItem.getEventType(), cm.getDataIndex(colIndex));
-							break;
-						case GRADE_SCALE:
-							Dispatcher.forwardEvent(GradebookEvents.ShowGradeScale.getEventType(), Boolean.TRUE);
-							break;
-						case START_GRADER_PERMISSION_SETTINGS:
-							Dispatcher.forwardEvent(GradebookEvents.StartGraderPermissionSettings.getEventType(), Boolean.TRUE);
-							break;
-						case HIDE_ITEM:
-							Dispatcher.forwardEvent(GradebookEvents.HideColumn.getEventType(), cm.getDataIndex(colIndex));
-							break;
-						case HISTORY:
-							Dispatcher.forwardEvent(GradebookEvents.ShowHistory.getEventType(), cm.getDataIndex(colIndex));
-							break;
-						case STATISTICS:
-							Dispatcher.forwardEvent(GradebookEvents.ShowStatistics.getEventType(), cm.getDataIndex(colIndex));
-							break;
-						case SORT_ASC:
-							ds.sort(cm.getDataIndex(colIndex), SortDir.ASC);
-							break;
-						case SORT_DESC:
-							ds.sort(cm.getDataIndex(colIndex), SortDir.DESC);
-							break;
+							case ADD_CATEGORY:
+								Dispatcher.forwardEvent(GradebookEvents.NewCategory.getEventType());
+								break;
+							case ADD_ITEM:
+								Dispatcher.forwardEvent(GradebookEvents.NewItem.getEventType());
+								break;
+							case DELETE_ITEM:
+								Dispatcher.forwardEvent(GradebookEvents.SelectDeleteItem.getEventType(), cm.getDataIndex(colIndex));
+								break;
+							case EDIT_ITEM:
+								Dispatcher.forwardEvent(GradebookEvents.SelectItem.getEventType(), cm.getDataIndex(colIndex));
+								break;
+							case GRADE_SCALE:
+								Dispatcher.forwardEvent(GradebookEvents.ShowGradeScale.getEventType(), Boolean.TRUE);
+								break;
+							case START_GRADER_PERMISSION_SETTINGS:
+								Dispatcher.forwardEvent(GradebookEvents.StartGraderPermissionSettings.getEventType(), Boolean.TRUE);
+								break;
+							case HIDE_ITEM:
+								Dispatcher.forwardEvent(GradebookEvents.HideColumn.getEventType(), cm.getDataIndex(colIndex));
+								break;
+							case HISTORY:
+								Dispatcher.forwardEvent(GradebookEvents.ShowHistory.getEventType(), cm.getDataIndex(colIndex));
+								break;
+							case STATISTICS:
+								Dispatcher.forwardEvent(GradebookEvents.ShowStatistics.getEventType(), cm.getDataIndex(colIndex));
+								break;
+							case SORT_ASC:
+								ds.sort(cm.getDataIndex(colIndex), SortDir.ASC);
+								break;
+							case SORT_DESC:
+								ds.sort(cm.getDataIndex(colIndex), SortDir.DESC);
+								break;
 						}
 					}
 				}
 
 			}
-			
+
 		};
-		
-		
 	}
 
 	public void doRowRefresh(int row) {
@@ -158,10 +156,10 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	protected Menu createContextMenu(int colIndex) {
 		I18nConstants i18n = Registry.get(AppConstants.I18N);
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-		
+
 		ColumnConfig config = cm.getColumn(colIndex);
 		boolean isStatic = isStaticColumn(config.getId()); 
-		
+
 		Menu menu = new Menu();
 
 		MenuItem item = null;
@@ -183,10 +181,10 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			item.setIconStyle("my-icon-desc");
 			item.addSelectionListener(selectionListener);
 			menu.add(item);
-		
+
 			menu.add(new SeparatorMenuItem());
 		}
-		
+
 		if (config.getId().equals(StudentModel.Key.COURSE_GRADE.name())) {
 			item = new AriaMenuItem();
 			item.setData(selectionTypeField, SelectionType.GRADE_SCALE);
@@ -196,23 +194,10 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			item.setTitle(i18n.headerGradeScaleTitle());
 			item.setIconStyle("gbGradeScaleButton");
 			item.addSelectionListener(selectionListener);
-			
+
 			menu.add(item);
 		}
-		
-		/*item = new AriaMenuItem();
-		item.setData(selectionTypeField, SelectionType.HISTORY);
-		item.setItemId(AppConstants.ID_HD_HISTORY_MENUITEM);
-		item.setData("colIndex", Integer.valueOf(colIndex));
-		item.setText(i18n.headerHistory());
-		item.setTitle(i18n.headerHistoryTitle());
-		item.setIconStyle("gbHistoryButton");
-		item.addSelectionListener(selectionListener);
-			
-		menu.add(item);
-		
-		menu.add(new SeparatorMenuItem());*/
-		
+
 		if (selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES) {
 			item = new AriaMenuItem();
 			item.setData(selectionTypeField, SelectionType.ADD_CATEGORY);
@@ -222,10 +207,10 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			item.setTitle(i18n.headerAddCategoryTitle());
 			item.setIconStyle("gbAddCategoryIcon");
 			item.addSelectionListener(selectionListener);
-			
+
 			menu.add(item);
 		}
-		
+
 		item = new AriaMenuItem();
 		item.setData(selectionTypeField, SelectionType.ADD_ITEM);
 		item.setItemId(AppConstants.ID_HD_ADD_ITEM_MENUITEM);
@@ -234,9 +219,9 @@ public abstract class CustomGridView extends BaseCustomGridView {
 		item.setTitle(i18n.headerAddItemTitle());
 		item.setIconStyle("gbAddItemIcon");
 		item.addSelectionListener(selectionListener);
-			
+
 		menu.add(item);
-		
+
 		if (! isStatic) {
 			item = new AriaMenuItem();
 			item.setData(selectionTypeField, SelectionType.EDIT_ITEM);
@@ -246,9 +231,9 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			item.setTitle(i18n.headerEditItemTitle());
 			item.setIconStyle("gbEditItemIcon");
 			item.addSelectionListener(selectionListener);
-			
+
 			menu.add(item);
-			
+
 			item = new AriaMenuItem();
 			item.setData(selectionTypeField, SelectionType.DELETE_ITEM);
 			item.setItemId(AppConstants.ID_HD_DELETE_ITEM_MENUITEM);
@@ -257,13 +242,13 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			item.setTitle(i18n.headerDeleteItemTitle());
 			item.setIconStyle("gbDeleteItemIcon");
 			item.addSelectionListener(selectionListener);
-			
+
 			menu.add(item);
-			
+
 		}
 
 		menu.add(new SeparatorMenuItem());
-		
+
 		item = new AriaMenuItem();
 		item.setData(selectionTypeField, SelectionType.HIDE_ITEM);
 		item.setItemId(AppConstants.ID_HD_HIDE_ITEM_MENUITEM);
@@ -272,185 +257,49 @@ public abstract class CustomGridView extends BaseCustomGridView {
 		item.setTitle(i18n.headerHideItemTitle());
 		item.setIconStyle("x-cols-icon");
 		item.addSelectionListener(selectionListener);
-		
+
 		menu.add(item);
-			
+
 
 		return menu;
 	}
 	
-	/*protected Menu xcreateContextMenu(final int colIndex) {
-		
-		// Getting the GradebookModel
-		gradebookModel = Registry.get(AppConstants.CURRENT);
-		
-		final Menu rootMenu = new Menu();
-
-		if (cm.isSortable(colIndex)) {
-			MenuItem rootMenuItemSortAscDesc = new AriaMenuItem();
-			rootMenuItemSortAscDesc.setText(GXT.MESSAGES.gridView_sortAscText());
-			rootMenuItemSortAscDesc.setIconStyle("my-icon-asc");
-			rootMenuItemSortAscDesc.addSelectionListener(new SelectionListener<ComponentEvent>() {
-				public void componentSelected(ComponentEvent ce) {
-					ds.sort(cm.getDataIndex(colIndex), SortDir.ASC);
-				}
-
-			});
-			rootMenu.add(rootMenuItemSortAscDesc);
-
-			rootMenuItemSortAscDesc = new AriaMenuItem();
-			rootMenuItemSortAscDesc.setText(GXT.MESSAGES.gridView_sortDescText());
-			rootMenuItemSortAscDesc.setIconStyle("my-icon-desc");
-			rootMenuItemSortAscDesc.addSelectionListener(new SelectionListener<ComponentEvent>() {
-				public void componentSelected(ComponentEvent ce) {
-					ds.sort(cm.getDataIndex(colIndex), SortDir.DESC);
-				}
-			});
-			rootMenu.add(rootMenuItemSortAscDesc);
-		}
-		
-		// Adding top level menu items for Student Information, Grades, ...
-		List<ColumnGroup> columnGroups = getColumnGroups();
-				
-		for(final ColumnGroup columnGroup : columnGroups) {
-			
-			switch(columnGroup.getGroup()) {
-			
-				case STUDENT_INFORMATION:
-				case GRADES:	
-					MenuItem noneCategoryMenuItem = new MenuItem(columnGroup.getGroup().getDisplayName());
-					noneCategoryMenuItem.setIconStyle("x-cols-icon");
-					rootMenu.add(noneCategoryMenuItem);
-					Collection<Key> keys = getGroupColumnKeys(columnGroup);
-					final Menu groupMenu = new Menu();
-					noneCategoryMenuItem.setSubMenu(groupMenu);
-					for(Key key : keys) {
-						final int columnIndex = getColumnIndex(key);
-						CheckMenuItem checkGroupMenuItem = new CheckMenuItem(key.getDisplayName());
-						checkGroupMenuItem.setHideOnClick(false);
-						checkGroupMenuItem.setChecked(!cm.isHidden(columnIndex));
-						checkGroupMenuItem.addSelectionListener(new SelectionListener<ComponentEvent>() {
-							public void componentSelected(ComponentEvent ce) {
-								cm.setHidden(columnIndex, !cm.isHidden(columnIndex));
-								restrictMenu(rootMenu);
-							}
-						});
-						groupMenu.add(checkGroupMenuItem);
-					}
-					break;
-				case ASSIGNMENTS:
-					// With assignments, we need to break things down further into categories
-					
-					Map<Long, List<ColumnModel>> categoryColumnMap = columnGroup.getCategoryColumnMap();
-					
-					// Shouldn't happen
-					if (categoryColumnMap != null) {
-
-						for (final List<ColumnModel> columns : categoryColumnMap.values()) {
-
-							String categoryName = columns.get(0).getCategoryName();
-							
-							MenuItem categoryMenuItem = new MenuItem(categoryName);
-							categoryMenuItem.setIconStyle("x-cols-icon");
-							rootMenu.add(categoryMenuItem);
-							
-							final Menu categoryMenu = new Menu();
-							
-							// Adding show/hide all columns for category
-							MenuItem showAllCategoryColumnsMenuItem = new MenuItem("Show All");
-							MenuItem hideAllCategoryColumnsMenuItem = new MenuItem("Hide All");
-							showAllCategoryColumnsMenuItem.setIconStyle("grid-show-columns");
-							hideAllCategoryColumnsMenuItem.setIconStyle("grid-hide-columns");
-							showAllCategoryColumnsMenuItem.setHideOnClick(false);
-							hideAllCategoryColumnsMenuItem.setHideOnClick(false);
-							
-							categoryMenu.add(showAllCategoryColumnsMenuItem);
-							categoryMenu.add(hideAllCategoryColumnsMenuItem);
-							hideAllCategoryColumnsMenuItem.addSelectionListener(new SelectionListener<ComponentEvent>() {
-								public void componentSelected(ComponentEvent ce) {
-									showAllColumns(categoryMenu, columns, SHOW);
-									restrictMenu(rootMenu);
-								}
-							});
-							showAllCategoryColumnsMenuItem.addSelectionListener(new SelectionListener<ComponentEvent> () {
-								public void componentSelected(ComponentEvent ce) {
-									showAllColumns(categoryMenu, columns, !SHOW);
-									restrictMenu(rootMenu);
-								}
-							});
-							
-							
-							categoryMenuItem.setSubMenu(categoryMenu);
-							
-							for(ColumnModel column : columns) {
-								final int columnIndex = cm.getIndexById(column.getIdentifier());
-								CheckMenuItem checkColumnMenuItem = new CheckMenuItem(cm.getColumnHeader(columnIndex));
-								checkColumnMenuItem.setHideOnClick(false);
-								categoryMenu.add(checkColumnMenuItem);
-									
-								checkColumnMenuItem.setChecked(!cm.isHidden(columnIndex));
-								checkColumnMenuItem.addSelectionListener(new SelectionListener<ComponentEvent>() {
-									public void componentSelected(ComponentEvent ce) {									
-										cm.setHidden(columnIndex, !cm.isHidden(columnIndex));	
-										restrictMenu(rootMenu);
-									}
-								});
-							}
-						}
-					}
-					break;
-				default:
-				// FIXME: Log or handle this error
-			}
-		}
-		
-		restrictMenu(rootMenu);
-		return rootMenu;
-	}*/
-	
 	@Override
 	protected void onBeforeDataChanged(StoreEvent se) {
-	    if (grid.isLoadMask()) {
-	    	isDisplayLoadMaskOnRender = false;
-	    	grid.el().mask("Loading learner data...");
-	    }
+		if (grid.isLoadMask()) {
+			isDisplayLoadMaskOnRender = false;
+			grid.el().mask("Loading learner data...");
+		}
 	}
-	
+
 	@Override
 	protected void onDataChanged(StoreEvent se) {
 		super.onDataChanged(se);
 		// Ensure that we set this to false in case the data changes before the grid view is rendered
 		isDisplayLoadMaskOnRender = false;
 	}
-	
-	/*@Override
-	protected void onHeaderClick(Grid grid, int column) {
-		ColumnConfig columnConfig = grid.getColumnModel().getColumn(column);
-		
-		Dispatcher.forwardEvent(GradebookEvents.SelectItem, columnConfig.getId());
-	}*/
-	
+
 	@Override
 	protected void renderUI() {
 		super.renderUI();
-		
+
 		if (isDisplayLoadMaskOnRender) {
 			grid.el().mask("Loading learner data...");
 			isDisplayLoadMaskOnRender = false;
 		}
 	}
-	
+
 	// Helper method
 	protected void showAllColumns(Menu categoryMenu, List<FixedColumnModel> columns, boolean show) {
-		
+
 		List<Item> menuItems = categoryMenu.getItems();
 		// Determine the number of check menu items, accounting for any regular menu item such as show/hide all, etc.
 		int menuIndex = categoryMenu.getItemCount() - columns.size();
-		
+
 		for (FixedColumnModel column : columns) {
-			
+
 			int columnIndex = cm.getIndexById(column.getIdentifier());
-			
+
 			// Logic to NOT hide the last column
 			if(show && 1 == cm.getColumnCount(true)) {
 				continue;
@@ -459,32 +308,30 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			Item item = menuItems.get(menuIndex);
 
 			if(item instanceof CheckMenuItem) {
-				
+
 				CheckMenuItem checkMenuItem = (CheckMenuItem) item;
 				checkMenuItem.setChecked(!show);
 
 			}
-			
+
 			cm.setHidden(columnIndex, show);
 
 			menuIndex++;
 		}
 	}
-	
+
 	protected void updateColumnWidth(int col, int width) {
 		super.updateColumnWidth(col, width);
-		
+
 		ColumnConfig column = cm.getColumn(col);
 		String columnId = column == null ? null : column.getId();
-		//GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-		//GradebookState.setColumnWidth(selectedGradebook.getGradebookUid(), gridId, column.getId(), width);
-		
+
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 		ConfigurationModel model = new ConfigurationModel(selectedGradebook.getGradebookId());
 		model.setColumnWidth(gridId, columnId, Integer.valueOf(width));
-		
+
 		Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
-		
+
 		AsyncCallback<ConfigurationModel> callback = new AsyncCallback<ConfigurationModel>() {
 
 			public void onFailure(Throwable caught) {
@@ -494,11 +341,11 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			public void onSuccess(ConfigurationModel result) {
 				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 				ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
-				
+
 				Collection<String> propertyNames = result.getPropertyNames();
 				if (propertyNames != null) {
 					List<String> names = new ArrayList<String>(propertyNames);
-					
+
 					for (int i=0;i<names.size();i++) {
 						String name = names.get(i);
 						String value = result.get(name);
@@ -506,38 +353,38 @@ public abstract class CustomGridView extends BaseCustomGridView {
 					}
 				}
 			}
-			
+
 		};
-		
+
 		service.update(model, EntityType.CONFIGURATION, null, SecureToken.get(), callback);
 	}
-	
+
 	public class ColumnGroup {
-		
+
 		private Group group;
 		private List<FixedColumnModel> columns;
 		Map<Long, List<FixedColumnModel>> categoryColumnMap;
-		
+
 		public ColumnGroup(Group group) {
 			this.group = group;
 			this.columns = new LinkedList<FixedColumnModel>();
 		}
-		
+
 		public List<FixedColumnModel> getColumns() {
 			return columns;
 		}
-		
+
 		public Map<Long, List<FixedColumnModel>> getCategoryColumnMap() {
 			return categoryColumnMap;
 		}
-		
+
 		public void addColumn(FixedColumnModel column) {
 			// If there is a category, then use it
 			if (column.getCategoryId() != null) {
 				// We only need to instantiate this object for the ASSIGNMENTS ColumnGroup
 				if (categoryColumnMap == null) 
 					categoryColumnMap = new HashMap<Long, List<FixedColumnModel>>();
-				
+
 				List<FixedColumnModel> categoryColumns = categoryColumnMap.get(column.getCategoryId());
 				if (categoryColumns == null) {
 					categoryColumns = new LinkedList<FixedColumnModel>();
@@ -547,134 +394,86 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			}
 			this.columns.add(column);
 		}
-		
+
 		public Group getGroup() {
 			return group;
 		}
-		
+
 	}
-	
+
 	// Helper method
 	protected List<ColumnGroup> getColumnGroups() {
-		
+
 		Map<Group, ColumnGroup> columnGroupMap = new LinkedHashMap<Group, ColumnGroup>();
-		//ArrayList<ColumnGroup> columnGroups = new ArrayList<ColumnGroup>();
 		List<FixedColumnModel> gradebookColumunConfigs = gradebookModel.getColumns();
-		
+
 		for(FixedColumnModel gradebookColumnConfig : gradebookColumunConfigs) {
 			StudentModel.Key key = StudentModel.Key.valueOf(gradebookColumnConfig.getKey());
 			Group group = key.getGroup();
 			ColumnGroup columnGroup = columnGroupMap.get(group);
-			
+
 			if (columnGroup == null) {
 				columnGroup = new ColumnGroup(group);
 				columnGroupMap.put(group, columnGroup);
 			}
 			columnGroup.addColumn(gradebookColumnConfig);
 		}
-	
+
 		return new ArrayList<ColumnGroup>(columnGroupMap.values());
 	}
-	
+
 	// Helper method
 	protected Collection<Key> getGroupColumnKeys(Group group) {
-		
+
 		ArrayList<Key> groupColumnKeys = new ArrayList<Key>();
 		List<FixedColumnModel> gradebookColumunConfigs = gradebookModel.getColumns();
-		
+
 		for(FixedColumnModel gradebookColumnConfig : gradebookColumunConfigs) {
-			
+
 			StudentModel.Key key = StudentModel.Key.valueOf(gradebookColumnConfig.getKey());
-			
+
 			if(group.equals(key.getGroup())) {
 				groupColumnKeys.add(key);
 			}
 		}
-		
+
 		return groupColumnKeys;
 	}
-	
+
 	// Helper method
 	protected Collection<Key> getGroupColumnKeys(ColumnGroup columnGroup) {
-		
+
 		ArrayList<Key> groupColumnKeys = new ArrayList<Key>();
 		List<FixedColumnModel> gradebookColumunConfigs = columnGroup.getColumns();
-		
+
 		for(FixedColumnModel gradebookColumnConfig : gradebookColumunConfigs) {
-			
+
 			StudentModel.Key key = StudentModel.Key.valueOf(gradebookColumnConfig.getKey());
-		
+
 			groupColumnKeys.add(key);
 		}
-		
+
 		return groupColumnKeys;
 	}
-	
+
 	// Helper method
 	protected int getColumnIndex(Key key) {
-		
+
 		return cm.getIndexById(key.name());
 	}
-	
-	
+
+
 	private boolean isStaticColumn(String id) {
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 		List<FixedColumnModel> columns = selectedGradebook.getColumns();
-		
+
 		for (FixedColumnModel column : columns) {
 			if (column.getIdentifier().equals(id))
 				return true;
 		}
-		
+
 		return false;
 	}
-	
-	
-	/**
-	 * Restrict menu. This is a private method in GridView.
-	 * TPA: I modified the original method to allow for subMenus
-	 * 
-	 * @param menu a menu
-	 */
-	/*private void restrictMenu(Menu menu) {
-	
-		if(null == menu) {
-			return;
-		}
-
-		for(Item item : menu.getItems()) {
-
-			if(item instanceof CheckMenuItem) {
-
-				if(1 == cm.getColumnCount(true)) {
-
-					CheckMenuItem checkMenuItem = (CheckMenuItem) item;
-
-					if(checkMenuItem.isChecked()) {
-
-						checkMenuItem.disable();
-					}
-				}
-				else if(item instanceof CheckMenuItem) {
-
-					item.enable();
-				}
-			}
-			else {
-
-				if(item instanceof MenuItem) {
-
-					MenuItem menuItem = (MenuItem) item;
-					Menu subMenu = menuItem.getSubMenu();
-
-					if(null != subMenu) {
-
-						restrictMenu(menuItem.getSubMenu());
-					}
-				}
-			}
-		}
-	}*/
 
 	public void setDisplayLoadMaskOnRender(boolean isDisplayLoadMaskOnRender) {
 		this.isDisplayLoadMaskOnRender = isDisplayLoadMaskOnRender;

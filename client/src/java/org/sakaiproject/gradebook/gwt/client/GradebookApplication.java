@@ -60,7 +60,6 @@ public class GradebookApplication implements EntryPoint {
 	private int screenHeight = 600;
 	
     public GradebookApplication() {
-    	//GXT.setDefaultTheme(Theme.GRAY, true);
     	
     	Date expiryDate = new Date(new Date().getTime() + ONE_YEAR);
     	CookieProvider provider = new CookieProvider("/", expiryDate, "subdomain", true);
@@ -91,9 +90,6 @@ public class GradebookApplication implements EntryPoint {
 		
 		Registry.register(AppConstants.SERVICE, dataService);
 		Registry.register(AppConstants.I18N, i18n);
-
-		//if (GWT.isScript())
-		//	resizeMainFrame(screenHeight + 20);
 		
 		getAuthorization(0);		
 	}
@@ -156,44 +152,17 @@ public class GradebookApplication implements EntryPoint {
 
 	}
 	
-	
-	private native Document getWindowParentDocument() /*-{
-	    return $wnd.parent.document
-	}-*/;
-
-	private void resizeMainFrame(int setHeight) {
-		Document doc = getWindowParentDocument();
-		NodeList<Element> nodeList = doc.getElementsByTagName("iframe");
-		for (int i = 0; i < nodeList.getLength(); i++) {
-			IFrameElement iframe = (IFrameElement) nodeList.getItem(i);
-			if (iframe.getId().startsWith("Main")) {
-				
-				iframe.setAttribute("height", setHeight + "px");
-				iframe.setAttribute("style", "height: " + setHeight + "px;");
-				
-				break;
-			}
-		}
-	}
-	
-	public native void resizeMainFrame(String placementId, int setHeight) /*-{
-		
-		//	$wnd.alert("Is " + placementId + " equal to Mainff1e8b82x01e4x4d00x9a17x3982e11d5bd1 ? ");
-	
+	public native void resizeMainFrame(String placementId, int setHeight) /*-{	
 		
 			var frame = $wnd.parent.document.getElementById(placementId);
 
 			if (frame)
 		   	{
-		       // reset the scroll
-		 //      $wnd.parent.window.scrollTo(0,0);
 	
 		       var objToResize = (frame.style) ? frame.style : frame;
 		       var height;                
 		       var offsetH = $wnd.parent.document.body.offsetHeight;
-		       
-		       //$wnd.alert($doc.body.offsetHeight + " and " + offsetH);
-		       
+		     
 		       var innerDocScrollH = null;
 
 		       if (typeof(frame.contentDocument) != 'undefined' || typeof(frame.contentWindow) != 'undefined')
@@ -218,26 +187,13 @@ public class GradebookApplication implements EntryPoint {
 	
 		       // here we fudge to get a little bigger
 		       var newHeight = setHeight;
-
-	
+		     
 		       // but not too big!
 		       if (newHeight > 32760) newHeight = 32760;
-	
-		       // capture my current scroll position
-	//	       var scroll = findScroll();
 	
 		       // resize parent frame (this resets the scroll as well)
 		       objToResize.height=newHeight + "px";
 	
-		       // reset the scroll, unless it was y=0)
-	//	       if (scroll[1] > 0)
-	//	       {
-	//	           var position = findPosition(frame);
-	//	           $wnd.parent.window.scrollTo(position[0]+scroll[0], position[1]+scroll[1]);
-	//	       }
-		       
-		       //objToResize.height=offsetH + "px";
-		       
 		    } 
 		    
 	 }-*/;

@@ -65,9 +65,6 @@ public class HistoryPanel extends GridPanel<UserEntityAction> {
 		setFrame(false);
 		setHeaderVisible(false);
 		setLayout(new FitLayout());
-		
-		//GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-		//add(newGrid(newColumnModel(selectedGradebook)));
 	
 		createExpander();
 	
@@ -154,7 +151,6 @@ public class HistoryPanel extends GridPanel<UserEntityAction> {
 		String html = new StringBuilder()
 			.append("<p><b>Desc:</b> {").append(Action.Key.DESCRIPTION.name()).append("}</p>")
 			.append("<p><b>Name:</b> {").append(ItemModel.Key.NAME.name()).append("}</p>")
-			//.append("<tpl for=\"itemModel\" if=\"{ITEM_TYPE}==\'ITEM\'\"><p>{NAME}</p></tpl>'")
 			.toString();
 		
 		XTemplate tpl = XTemplate.create(html);
@@ -180,16 +176,6 @@ public class HistoryPanel extends GridPanel<UserEntityAction> {
 				"Type", 120);
 		configs.add(entityType);
 		
-		/*
-		ColumnConfig entityName = new ColumnConfig(Action.Key.ENTITY_NAME.name(),
-				"Item", 200);
-		configs.add(entityName);
-		
-		ColumnConfig description = new ColumnConfig(Action.Key.DESCRIPTION.name(),
-				"Description", 230);
-		
-		configs.add(description);
-		*/
 		ColumnConfig graderName = new ColumnConfig(Action.Key.GRADER_NAME.name(),
 				"Grader", 120);
 		

@@ -106,6 +106,5 @@ public class GradebookStatistics implements IsSerializable {
 	public void setMeanStandardDeviation(String meanStandardDeviation) {
 		this.meanStandardDeviation = meanStandardDeviation;
 	}
-	
-	
+
 }

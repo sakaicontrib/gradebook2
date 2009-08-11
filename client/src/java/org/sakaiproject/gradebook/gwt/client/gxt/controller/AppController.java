@@ -1,3 +1,26 @@
+/**********************************************************************************
+*
+* $Id:$
+*
+***********************************************************************************
+*
+* Copyright (c) 2008, 2009 The Regents of the University of California
+*
+* Licensed under the
+* Educational Community License, Version 2.0 (the "License"); you may
+* not use this file except in compliance with the License. You may
+* obtain a copy of the License at
+* 
+* http://www.osedu.org/licenses/ECL-2.0
+* 
+* Unless required by applicable law or agreed to in writing,
+* software distributed under the License is distributed on an "AS IS"
+* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+* or implied. See the License for the specific language governing
+* permissions and limitations under the License.
+*
+**********************************************************************************/
+
 package org.sakaiproject.gradebook.gwt.client.gxt.controller;
 
 import java.util.List;
@@ -24,7 +47,7 @@ import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
 
 public class AppController extends Controller {
-	
+
 	private AppView appView;
 	private SingleGradeView singleGrade;
 	private SingleGradeView singleView;
@@ -33,7 +56,7 @@ public class AppController extends Controller {
 	private ImportExportView importExportView;
 	private MultigradeView multigradeView;
 	private FinalGradeSubmissionView finalGradeSubmissionView;
-	
+
 	public AppController() {
 		registerEventTypes(GradebookEvents.BeginItemUpdates.getEventType());
 		registerEventTypes(GradebookEvents.BrowseLearner.getEventType());
@@ -85,183 +108,180 @@ public class AppController extends Controller {
 		this.notificationView = new NotificationView(this);
 
 	}
-	
+
 	@Override
 	public void handleEvent(AppEvent<?> event) {
 		// Note: the 'missing' break statements in this switch are intentional, they
 		// allow certain events to drop through to multiple views
 		switch (GradebookEvents.getEvent(event.type).getEventKey()) {
-		case BEGIN_ITEM_UPDATES:
-		case END_ITEM_UPDATES:
-			forwardToView(multigradeView, event);
-			break;
-		case EXCEPTION:
-		case CONFIRMATION:
-		case CLOSE_NOTIFICATION:
-		case NOTIFICATION:
-			//if (appView != null)
-			//	forwardToView(appView, event);
-			if (notificationView != null)
-				forwardToView(notificationView, event);
-			break;
-		case HIDE_COLUMN:
-			forwardToView(treeView, event);
-			break;
-		case BROWSE_LEARNER:
-			forwardToView(multigradeView, event);
-			break;
-		case CONFIRM_DELETE_ITEM:
-		case SELECT_DELETE_ITEM:
-			forwardToView(treeView, event);
-			break;
-		case LEARNER_GRADE_RECORD_UPDATED:
-			forwardToView(multigradeView, event);
-			forwardToView(appView, event);
-			if (singleView != null && singleView.isDialogVisible())
-				forwardToView(singleView, event);
-			break;
-		case NEW_CATEGORY:
-		case NEW_ITEM:
-			forwardToView(appView, event);
-			forwardToView(treeView, event);
-			break;
-		case REFRESH_GRADEBOOK_ITEMS:
-		case REFRESH_GRADEBOOK_SETUP:
-			forwardToView(multigradeView, event);
-			forwardToView(treeView, event);
-			forwardToView(appView, event);
-			if (singleView != null && singleView.isDialogVisible())
-				forwardToView(singleView, event);
-			break;
-		case REFRESH_GRADE_SCALE:
-			forwardToView(multigradeView, event);
-			forwardToView(appView, event);
-			break;
-		case REFRESH_COURSE_GRADES:
-			forwardToView(multigradeView, event);
-			break;
-		case SELECT_LEARNER:
-			forwardToView(appView, event);
-			if (singleView != null && singleView.isDialogVisible())
-				forwardToView(singleView, event);
-			break;
-		case START_IMPORT:
-		case START_EXPORT:
-			if (importExportView == null) {
-				I18nConstants i18n = Registry.get(AppConstants.I18N);
-				importExportView = new ImportExportView(this, i18n);
-			}
-			forwardToView(importExportView, event);
-			forwardToView(appView, event);
-			break;
-		case STOP_IMPORT:
-			forwardToView(appView, event);
-			break;
-		case LOAD:
-			onLoad(event);
-			break;
-		case STARTUP:
-			onStartup(event);
-			break;
-		case SINGLE_GRADE:
-			forwardToView(appView, event);
-			
-			if (treeView != null)
+			case BEGIN_ITEM_UPDATES:
+			case END_ITEM_UPDATES:
+				forwardToView(multigradeView, event);
+				break;
+			case EXCEPTION:
+			case CONFIRMATION:
+			case CLOSE_NOTIFICATION:
+			case NOTIFICATION:
+				if (notificationView != null)
+					forwardToView(notificationView, event);
+				break;
+			case HIDE_COLUMN:
 				forwardToView(treeView, event);
-			
-			if (singleView != null && singleView.isDialogVisible())
+				break;
+			case BROWSE_LEARNER:
+				forwardToView(multigradeView, event);
+				break;
+			case CONFIRM_DELETE_ITEM:
+			case SELECT_DELETE_ITEM:
+				forwardToView(treeView, event);
+				break;
+			case LEARNER_GRADE_RECORD_UPDATED:
+				forwardToView(multigradeView, event);
+				forwardToView(appView, event);
+				if (singleView != null && singleView.isDialogVisible())
+					forwardToView(singleView, event);
+				break;
+			case NEW_CATEGORY:
+			case NEW_ITEM:
+				forwardToView(appView, event);
+				forwardToView(treeView, event);
+				break;
+			case REFRESH_GRADEBOOK_ITEMS:
+			case REFRESH_GRADEBOOK_SETUP:
+				forwardToView(multigradeView, event);
+				forwardToView(treeView, event);
+				forwardToView(appView, event);
+				if (singleView != null && singleView.isDialogVisible())
+					forwardToView(singleView, event);
+				break;
+			case REFRESH_GRADE_SCALE:
+				forwardToView(multigradeView, event);
+				forwardToView(appView, event);
+				break;
+			case REFRESH_COURSE_GRADES:
+				forwardToView(multigradeView, event);
+				break;
+			case SELECT_LEARNER:
+				forwardToView(appView, event);
+				if (singleView != null && singleView.isDialogVisible())
+					forwardToView(singleView, event);
+				break;
+			case START_IMPORT:
+			case START_EXPORT:
+				if (importExportView == null) {
+					I18nConstants i18n = Registry.get(AppConstants.I18N);
+					importExportView = new ImportExportView(this, i18n);
+				}
+				forwardToView(importExportView, event);
+				forwardToView(appView, event);
+				break;
+			case STOP_IMPORT:
+				forwardToView(appView, event);
+				break;
+			case LOAD:
+				onLoad(event);
+				break;
+			case STARTUP:
+				onStartup(event);
+				break;
+			case SINGLE_GRADE:
+				forwardToView(appView, event);
+
+				if (treeView != null)
+					forwardToView(treeView, event);
+
+				if (singleView != null && singleView.isDialogVisible())
+					forwardToView(singleView, event);
+				break;
+			case SINGLE_VIEW:
+				if (singleView == null)
+					singleView = new SingleGradeView(this, false);
+
 				forwardToView(singleView, event);
-			break;
-		case SINGLE_VIEW:
-			if (singleView == null)
-				singleView = new SingleGradeView(this, false);
-			
-			forwardToView(singleView, event);
-			forwardToView(appView, event);
-			break;
-		case SWITCH_GRADEBOOK:
-			forwardToView(appView, event);
-			forwardToView(multigradeView, event);
-			forwardToView(treeView, event);
-			break;
-		case USER_CHANGE:
-			if (singleGrade != null)
-				forwardToView(singleGrade, event);
-			forwardToView(multigradeView, event);
-			break;
-		case LOAD_ITEM_TREE_MODEL:
-			forwardToView(multigradeView, event);
-			forwardToView(treeView, event);
-			forwardToView(appView, event);
-			break;
-		case SHOW_COLUMNS:
-			forwardToView(multigradeView, event);
-			break;
-		case SHOW_GRADE_SCALE:
-		case SHOW_HISTORY:	
-		case SHOW_STATISTICS:
-			forwardToView(appView, event);
-			break;
-		case HIDE_FORM_PANEL:
-			forwardToView(appView, event);
-			break;
-		case START_EDIT_ITEM:
-		case HIDE_EAST_PANEL:
-		case SELECT_ITEM:
-		case SWITCH_EDIT_ITEM:
-			forwardToView(treeView, event);
-			forwardToView(appView, event);
-			break;
-		case EXPAND_EAST_PANEL:
-			forwardToView(appView, event);
-			break;
-		case ITEM_UPDATED:
-			forwardToView(multigradeView, event);
-			forwardToView(treeView, event);
-			if (singleView != null)
-				forwardToView(singleView, event);
-			break;
-		case ITEM_CREATED:
-			forwardToView(appView, event);
-			forwardToView(multigradeView, event);
-			forwardToView(treeView, event);
-			break;
-		case ITEM_DELETED:
-			forwardToView(multigradeView, event);
-			forwardToView(treeView, event);
-			break;
-		case MASK_ITEM_TREE:
-		case UNMASK_ITEM_TREE:
-			forwardToView(treeView, event);
-			break;
-		case START_FINAL_GRADE:
-			I18nConstants i18n = Registry.get(AppConstants.I18N);
-			finalGradeSubmissionView = new FinalGradeSubmissionView(this, i18n);
-			forwardToView(finalGradeSubmissionView, event);
-			//forwardToView(appView, event);
-			break;
-		case START_GRADER_PERMISSION_SETTINGS:
-		case STOP_GRADER_PERMISSION_SETTINGS:
-			forwardToView(appView, event);
-			break;
+				forwardToView(appView, event);
+				break;
+			case SWITCH_GRADEBOOK:
+				forwardToView(appView, event);
+				forwardToView(multigradeView, event);
+				forwardToView(treeView, event);
+				break;
+			case USER_CHANGE:
+				if (singleGrade != null)
+					forwardToView(singleGrade, event);
+				forwardToView(multigradeView, event);
+				break;
+			case LOAD_ITEM_TREE_MODEL:
+				forwardToView(multigradeView, event);
+				forwardToView(treeView, event);
+				forwardToView(appView, event);
+				break;
+			case SHOW_COLUMNS:
+				forwardToView(multigradeView, event);
+				break;
+			case SHOW_GRADE_SCALE:
+			case SHOW_HISTORY:	
+			case SHOW_STATISTICS:
+				forwardToView(appView, event);
+				break;
+			case HIDE_FORM_PANEL:
+				forwardToView(appView, event);
+				break;
+			case START_EDIT_ITEM:
+			case HIDE_EAST_PANEL:
+			case SELECT_ITEM:
+			case SWITCH_EDIT_ITEM:
+				forwardToView(treeView, event);
+				forwardToView(appView, event);
+				break;
+			case EXPAND_EAST_PANEL:
+				forwardToView(appView, event);
+				break;
+			case ITEM_UPDATED:
+				forwardToView(multigradeView, event);
+				forwardToView(treeView, event);
+				if (singleView != null)
+					forwardToView(singleView, event);
+				break;
+			case ITEM_CREATED:
+				forwardToView(appView, event);
+				forwardToView(multigradeView, event);
+				forwardToView(treeView, event);
+				break;
+			case ITEM_DELETED:
+				forwardToView(multigradeView, event);
+				forwardToView(treeView, event);
+				break;
+			case MASK_ITEM_TREE:
+			case UNMASK_ITEM_TREE:
+				forwardToView(treeView, event);
+				break;
+			case START_FINAL_GRADE:
+				I18nConstants i18n = Registry.get(AppConstants.I18N);
+				finalGradeSubmissionView = new FinalGradeSubmissionView(this, i18n);
+				forwardToView(finalGradeSubmissionView, event);
+				break;
+			case START_GRADER_PERMISSION_SETTINGS:
+			case STOP_GRADER_PERMISSION_SETTINGS:
+				forwardToView(appView, event);
+				break;
 		}
 	}
 
 	@Override
 	public void initialize() {
-		
+
 	}
-	
+
 	private void onLoad(AppEvent<?> event) {
 		AuthModel authModel = (AuthModel)event.data;
-		
+
 		boolean isUserAbleToGrade = authModel.isUserAbleToGrade() == null ? false : authModel.isUserAbleToGrade().booleanValue();
 		boolean isUserAbleToViewOwnGrades = authModel.isUserAbleToViewOwnGrades() == null ? false : authModel.isUserAbleToViewOwnGrades().booleanValue();
 		boolean isUserAbleToEditItems = DataTypeConversionUtil.checkBoolean(authModel.isUserAbleToEditAssessments());
 		boolean isNewGradebook = DataTypeConversionUtil.checkBoolean(authModel.isNewGradebook());
-		
+
 		I18nConstants i18n = Registry.get(AppConstants.I18N);
-		
+
 		if (isUserAbleToGrade) {
 			this.singleView = new SingleGradeView(this, false);
 			this.treeView = new TreeView(this, i18n, isUserAbleToEditItems);
@@ -272,15 +292,14 @@ public class AppController extends Controller {
 			this.appView = new StudentView(this, notificationView);
 		}
 	}
-	
+
 	private void onStartup(AppEvent<?> event) {
 		ApplicationModel model = (ApplicationModel)event.data;
-		
+
 		List<GradebookModel> gradebookModels = model.getGradebookModels();
-		//I18nConstants i18n = Registry.get(AppConstants.I18N);
-		
+
 		Registry.register(AppConstants.HELP_URL, model.getHelpUrl());
-		
+
 		// FIXME: Currently we only evaluate the first gradebook model to determine if we have
 		// FIXME: an instructor or a student. This needs to be refined.
 		for (GradebookModel gbModel : gradebookModels) {
@@ -288,25 +307,18 @@ public class AppController extends Controller {
 			Registry.register(AppConstants.CURRENT, gbModel);
 			boolean isUserAbleToGrade = gbModel.isUserAbleToGrade() == null ? false : gbModel.isUserAbleToGrade().booleanValue();
 			boolean isUserAbleToViewOwnGrades = gbModel.isUserAbleToViewOwnGrades() == null ? false : gbModel.isUserAbleToViewOwnGrades().booleanValue();
-			//boolean isUserAbleToEditItems = DataTypeConversionUtil.checkBoolean(gbModel.isUserAbleToEditAssessments());
-			//boolean isNewGradebook = DataTypeConversionUtil.checkBoolean(gbModel.isNewGradebook());
-			
+
 			if (isUserAbleToGrade) {
-				//this.singleView = new SingleGradeView(this, false);
-				//this.treeView = new TreeView(this, i18n, isUserAbleToEditItems);
-				//this.multigradeView = new MultigradeView(this, i18n);
-				//this.importExportView = new ImportExportView(this, i18n);
-				//this.appView = new InstructorView(this, treeView, multigradeView, notificationView, importExportView, singleView, isUserAbleToEditItems, isNewGradebook);
 				forwardToView(treeView, event);
 				forwardToView(multigradeView, event);
 			} else if (isUserAbleToViewOwnGrades) {
-				//this.appView = new StudentView(this, notificationView);
+
 			}
-			
+
 			forwardToView(appView, event);
 
 			return;
 		}
 	}
-	
+
 }
