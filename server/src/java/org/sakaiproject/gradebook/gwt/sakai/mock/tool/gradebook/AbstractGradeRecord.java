@@ -1,24 +1,24 @@
 /**********************************************************************************
-*
-* $Id: AbstractGradeRecord.java 20001 2006-12-22 19:41:33Z ray@media.berkeley.edu $
-*
-***********************************************************************************
-*
-* Copyright (c) 2005 The Regents of the University of California, The MIT Corporation
-*
-* Licensed under the Educational Community License, Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.opensource.org/licenses/ecl1.php
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*
-**********************************************************************************/
+ *
+ * $Id: AbstractGradeRecord.java 20001 2006-12-22 19:41:33Z ray@media.berkeley.edu $
+ *
+ ***********************************************************************************
+ *
+ * Copyright (c) 2005 The Regents of the University of California, The MIT Corporation
+ *
+ * Licensed under the Educational Community License, Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.opensource.org/licenses/ecl1.php
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ **********************************************************************************/
 
 package org.sakaiproject.gradebook.gwt.sakai.mock.tool.gradebook;
 
@@ -35,24 +35,24 @@ import java.util.Date;
  * @author <a href="mailto:jholtzman@berkeley.edu">Josh Holtzman</a>
  */
 public abstract class AbstractGradeRecord implements Serializable {
-    protected Long id;
-    protected int version;
-    protected String studentId;
-    protected String graderId;
-    protected GradableObject gradableObject;
-    protected Date dateRecorded;
+	protected Long id;
+	protected int version;
+	protected String studentId;
+	protected String graderId;
+	protected GradableObject gradableObject;
+	protected Date dateRecorded;
 
-    public abstract Double getGradeAsPercentage();
+	public abstract Double getGradeAsPercentage();
 
-    /**
-     * @return Whether this is a course grade record
-     */
-    public abstract boolean isCourseGradeRecord();
+	/**
+	 * @return Whether this is a course grade record
+	 */
+	public abstract boolean isCourseGradeRecord();
 
-    /**
-     * @return Returns the pointsEarned
-     */
-    public abstract Double getPointsEarned();
+	/**
+	 * @return Returns the pointsEarned
+	 */
+	public abstract Double getPointsEarned();
 
 	/**
 	 * @return Returns the dateRecorded.
@@ -127,14 +127,10 @@ public abstract class AbstractGradeRecord implements Serializable {
 		this.studentId = studentId;
 	}
 
-    public String toString() {
-       /* return new ToStringBuilder(this).
-		append("id", id).
-		append("studentId", studentId).
-        append("graderId", graderId).toString();
-    	*/
-    	return "";
-    }
+	public String toString() {
+
+		return "";
+	}
 
 }
 

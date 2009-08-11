@@ -43,8 +43,8 @@ public class GradebookServlet extends DefaultServlet {
 		String relativePath = getRelativePath(request);	  
 		
 		if (relativePath.equals("/")) {
-			String relativePrefix = RELATIVE_PREFIX; // getServletConfig().getInitParameter("relativePrefix");
-			String defaultPage = DEFAULT_PAGE; // getServletConfig().getInitParameter("defaultPage");
+			String relativePrefix = RELATIVE_PREFIX;
+			String defaultPage = DEFAULT_PAGE;
 					
 			response.sendRedirect(request.getRequestURI() + relativePrefix + defaultPage);
 			

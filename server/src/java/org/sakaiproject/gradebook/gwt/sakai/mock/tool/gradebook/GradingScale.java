@@ -1,24 +1,24 @@
 /**********************************************************************************
-*
-* $Id: GradingScale.java 21205 2007-02-09 20:00:15Z ray@media.berkeley.edu $
-*
-***********************************************************************************
-*
-* Copyright (c) 2006 The Regents of the University of California
-*
-* Licensed under the Educational Community License, Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.opensource.org/licenses/ecl1.php
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*
-**********************************************************************************/
+ *
+ * $Id: GradingScale.java 21205 2007-02-09 20:00:15Z ray@media.berkeley.edu $
+ *
+ ***********************************************************************************
+ *
+ * Copyright (c) 2006 The Regents of the University of California
+ *
+ * Licensed under the Educational Community License, Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.opensource.org/licenses/ecl1.php
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ **********************************************************************************/
 
 package org.sakaiproject.gradebook.gwt.sakai.mock.tool.gradebook;
 
@@ -56,7 +56,7 @@ public class GradingScale implements Serializable, Comparable {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
 	/**
 	 * Because the Gradebook now supports non-calculated manual-only grades with
 	 * no percentage equivalent, it is possible for the list of grades to include
@@ -90,11 +90,11 @@ public class GradingScale implements Serializable, Comparable {
 		this.version = version;
 	}
 
-    public int compareTo(Object o) {
-        return getName().compareTo(((GradingScale)o).getName());
-    }
-    public String toString() {
-        return new ToStringBuilder(this).
-            append(getUid()).toString();
-    }
+	public int compareTo(Object o) {
+		return getName().compareTo(((GradingScale)o).getName());
+	}
+	public String toString() {
+		return new ToStringBuilder(this).
+		append(getUid()).toString();
+	}
 }

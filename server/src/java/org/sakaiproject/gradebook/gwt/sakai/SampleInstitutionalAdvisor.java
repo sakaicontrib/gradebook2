@@ -1,3 +1,26 @@
+/**********************************************************************************
+ *
+ * $Id:$
+ *
+ ***********************************************************************************
+ *
+ * Copyright (c) 2008, 2009 The Regents of the University of California
+ *
+ * Licensed under the
+ * Educational Community License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may
+ * obtain a copy of the License at
+ * 
+ * http://www.osedu.org/licenses/ECL-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS"
+ * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ *
+ **********************************************************************************/
+
 package org.sakaiproject.gradebook.gwt.sakai;
 
 import java.io.BufferedWriter;
@@ -23,46 +46,45 @@ import org.sakaiproject.site.api.Group;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SiteService;
 import org.sakaiproject.tool.api.ToolManager;
-import org.sakaiproject.tool.gradebook.GradeMapping;
 import org.sakaiproject.tool.gradebook.Gradebook;
 
 
 public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
-	
+
 	private static final Log log = LogFactory.getLog(SampleInstitutionalAdvisor.class);
-	
+
 	private final String CONTENT_TYPE_TEXT_HTML_UTF8 = "text/html; charset=UTF-8";
 	private final char PLUS = '+';
 	private final char MINUS = '-';
 	private final String FILE_EXTENSION = ".csv";
 	private final String FILE_HEADER = "User Eid,Name,Site Title : Group Title,Grade";
-	
+
 	String finalGradeSubmissionPath = null;
-	
+
 	private SiteService siteService = null;
 	private ToolManager toolManager = null;
-	
+
 	public List<String> getExportCourseManagementSetEids(Group group) {
 		if(null == group) {
 			log.error("ERROR : Group is null");
 			return null;
 		}
-		
+
 		return null;
 	}
-	
+
 	public String getExportCourseManagementId(String userEid, Group group, List<String> enrollmentSetEids) {
 
 		if(null == group) {
 			log.error("ERROR : Group is null");
 			return null;
 		}
-		
+
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append(group.getContainingSite().getTitle());
 		stringBuilder.append(" : ");
 		stringBuilder.append(group.getTitle());
-		
+
 		return stringBuilder.toString();
 	}
 
@@ -70,27 +92,27 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 
 		return dereference.getDisplayId();
 	}
-	
+
 	public String getFinalGradeUserId(UserDereference dereference) {
-		
+
 		return dereference.getEid();
 	}
-	
+
 	public String[] getLearnerRoleNames() {
 		String[] roleKeys = { "Student", "Open Campus", "access" };
 		return roleKeys;
 	}
-	
-	
+
+
 	public boolean isLearner(Member member) {
 		String role = member.getRole() == null ? "" : member.getRole().getId();
-		
+
 		return (role.equalsIgnoreCase("Student") 
 				|| role.equalsIgnoreCase("Open Campus")
 				|| role.equalsIgnoreCase("Access"))
 				&& member.isActive();
 	}
-	
+
 	public boolean isExportCourseManagementIdByGroup() {
 		return false;
 	}
@@ -99,10 +121,10 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 
 		if (scaledGrades.contains(grade))
 			return true;
-		
+
 		return false;
 	}
-	
+
 	public void submitFinalGrade(List<Map<Column, String>> studentDataList, String gradebookUid, HttpServletRequest request, HttpServletResponse response) {
 
 		if (null == finalGradeSubmissionPath || "".equals(finalGradeSubmissionPath)) {
@@ -160,15 +182,11 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 			return;
 		}
 
-		// Putting the redirect url in the response so that the client can get it
-		// FIXME : Check on the client side so that this is handled 
-		//responsePrintWriter.println(finalGradeSubmissionUrl + siteId);
-
 		// Test if path to final grade submission file exits
 		File finalGradesPath = new File(finalGradeSubmissionPath);
 		if(!finalGradesPath.exists()) {
 			try {
-				
+
 				if(!finalGradesPath.mkdirs()) {
 					log.error("Wasn't able to create final grade submission folder(s)");
 					// 500 Internal Server Error
@@ -184,16 +202,16 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 				return;
 			}
 		}
-		
+
 		// Using string buffer for thread safety
 		StringBuffer finalGradeSubmissionFile = new StringBuffer();
 		finalGradeSubmissionFile.append(finalGradeSubmissionPath);
 		finalGradeSubmissionFile.append(siteId);
 		finalGradeSubmissionFile.append(FILE_EXTENSION);
 		File finalGradesFile = new File(finalGradeSubmissionFile.toString());
-		
+
 		log.info("Writing final grades to " + finalGradesFile.getPath());
-		
+
 		PrintWriter filePrintWriter = null;
 
 		try {
@@ -202,7 +220,7 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 				filePrintWriter = new PrintWriter(new BufferedWriter(new FileWriter(finalGradesFile)));
 
 				filePrintWriter.println(FILE_HEADER);
-				
+
 				// Using string buffer for thread safety
 				StringBuffer exportData = null;
 
@@ -238,9 +256,9 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 			e.printStackTrace();
 			return;
 		}
-		
+
 	}
-	
+
 	/*
 	 * Helper Methods
 	 */
@@ -267,20 +285,20 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 
 		return null;
 	}
-	
+
 	/*
 	 * IOC setters:
 	 */
-	
+
 	public void setFinalGradeSubmissionPath(String finalGradeSubmissionPath) {
-		
+
 		this.finalGradeSubmissionPath = finalGradeSubmissionPath;
 	}
-	
+
 	public void setSiteService(SiteService siteService) {
 		this.siteService = siteService;
 	}
-	
+
 	public void setToolManager(ToolManager toolManager) {
 		this.toolManager = toolManager;
 	}

@@ -1,3 +1,26 @@
+/**********************************************************************************
+ *
+ * $Id:$
+ *
+ ***********************************************************************************
+ *
+ * Copyright (c) 2008, 2009 The Regents of the University of California
+ *
+ * Licensed under the
+ * Educational Community License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may
+ * obtain a copy of the License at
+ * 
+ * http://www.osedu.org/licenses/ECL-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS"
+ * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ *
+ **********************************************************************************/
+
 package org.sakaiproject.gradebook.gwt.sakai.mock.tool.gradebook;
 
 import java.io.Serializable;
@@ -24,7 +47,7 @@ public class LetterGradePercentMapping implements Serializable
 		}
 		return null;
 	}
-	
+
 	public String getGrade(Double value) 
 	{
 		if(gradeMap != null)
@@ -41,13 +64,12 @@ public class LetterGradePercentMapping implements Serializable
 				if(mappingDouble.compareTo(value) <= 0)
 					return getGradeMapping(mappingDouble);
 			}
-			
-			//return the last grade if double value is less than the minimum value in gradeMapping - "F"
+
 			return getGradeMapping(((Double)percentList.get(percentList.size() - 1)));
 		}
 		return null;
 	}	
-	
+
 	/*
 	 * this method returns the mapping letter grade value for Double value
 	 * according to the exact pair of key-value in gradeMap.
@@ -121,24 +143,24 @@ public class LetterGradePercentMapping implements Serializable
 	{
 		this.gradebookId = gradebookId;
 	}
-	
+
 	/**
-     * Enable any-case input of grades (typically lowercase input
-     * for uppercase grades). Look for a case-insensitive match
-     * to the input text and if it's found, return the official
-     * version.
-     *
-     * @return The normalized version of the grade, or null if not found.
-     */
-    public String standardizeInputGrade(String inputGrade) {
-    	String standardizedGrade = null;
-    	for (Iterator iter = gradeMap.keySet().iterator(); iter.hasNext(); ) {
-    		String grade = (String)iter.next();
-    		if (grade.equalsIgnoreCase(inputGrade)) {
-    			standardizedGrade = grade;
-    			break;
-    		}
-    	}
-    	return standardizedGrade;
-    }
+	 * Enable any-case input of grades (typically lowercase input
+	 * for uppercase grades). Look for a case-insensitive match
+	 * to the input text and if it's found, return the official
+	 * version.
+	 *
+	 * @return The normalized version of the grade, or null if not found.
+	 */
+	public String standardizeInputGrade(String inputGrade) {
+		String standardizedGrade = null;
+		for (Iterator iter = gradeMap.keySet().iterator(); iter.hasNext(); ) {
+			String grade = (String)iter.next();
+			if (grade.equalsIgnoreCase(inputGrade)) {
+				standardizedGrade = grade;
+				break;
+			}
+		}
+		return standardizedGrade;
+	}
 }

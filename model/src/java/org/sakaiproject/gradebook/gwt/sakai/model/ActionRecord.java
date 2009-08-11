@@ -167,8 +167,4 @@ public class ActionRecord {
 	public void setEntityName(String entityName) {
 		this.entityName = entityName;
 	}
-
-	
-	
-	
 }

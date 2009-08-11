@@ -1,3 +1,26 @@
+/**********************************************************************************
+ *
+ * $Id:$
+ *
+ ***********************************************************************************
+ *
+ * Copyright (c) 2008, 2009 The Regents of the University of California
+ *
+ * Licensed under the
+ * Educational Community License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may
+ * obtain a copy of the License at
+ * 
+ * http://www.osedu.org/licenses/ECL-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS"
+ * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ *
+ **********************************************************************************/
+
 package org.sakaiproject.gradebook2.test.service;
 
 import java.io.BufferedReader;
@@ -28,91 +51,80 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 
 public class ImportExportTest extends AbstractServiceTest {
 
-	
+
 	public ImportExportTest(String name) {
 		super(name);
 	}
 
-/*	public void testXls() throws Exception
-	{
-		onSetup(GradeType.PERCENTAGES, CategoryType.WEIGHTED_CATEGORIES);
-		ApplicationModel applicationModel = service.getApplicationModel(getName());
-		
-		List<GradebookModel> gbModels = applicationModel.getGradebookModels();
-		
-		GradebookModel model = gbModels.get(0);
-		verifyCategoryPercentsForItems(model, Double.valueOf(25d), Double.valueOf(25d), Double.valueOf(25d), Double.valueOf(25d));
 
-		
-	}*/
 	public void testImportExport() throws Exception {
-		
+
 		onSetup(GradeType.PERCENTAGES, CategoryType.WEIGHTED_CATEGORIES);
-		
+
 		ApplicationModel applicationModel = service.getApplicationModel(getName());
-		
+
 		List<GradebookModel> gbModels = applicationModel.getGradebookModels();
-		
+
 		GradebookModel model = gbModels.get(0);
 		verifyCategoryPercentsForItems(model, Double.valueOf(25d), Double.valueOf(25d), Double.valueOf(25d), Double.valueOf(25d), Double.valueOf(20d));
-		
+
 		// Export to a temp file
 		File tempFile = File.createTempFile("imp", ".csv");
 		PrintWriter writer = new PrintWriter(new FileOutputStream(tempFile));
 		ImportExportUtility.exportGradebook(service, getName(), true, false, writer, null);
 		writer.close();
-		
+
 		// Update the category weightings
 		File modifiedTempFile = File.createTempFile("mod", ".csv");
-		
+
 		BufferedReader originalReader = new BufferedReader(new FileReader(tempFile));
 		PrintWriter modifiedWriter = new PrintWriter(new FileOutputStream(modifiedTempFile));
 		while (originalReader.ready()) {
 			String line = originalReader.readLine();
-			
+
 			if (line.startsWith("\"\",\"Equal Weight Items:\"")) {
 				line = "\"\",\"Equal Weight Items:\",\"false\",\"\",\"\",\"\"";
 			}
-			
+
 			if (line.startsWith("\"\",\"% Category:\"")) {
 				line = "\"\",\"% Category:\",\"50.0%\",\"10.0%\",\"10.0%\",\"30.0%\",\"20.0%\"";
 			}
-			
+
 			modifiedWriter.println(line);
 		}
 		modifiedWriter.close();
 		originalReader.close();
-		
+
 		String newGradebookUid = "TEST-IMPORT";
-		
+
 		GradebookModel newGradebookModel = getGradebookModel(newGradebookUid);
-		
+
 		// Import the temp file back into the gradebook
 		FileReader reader = new FileReader(modifiedTempFile);
 		ImportFile importFile = ImportExportUtility.parseImportCSV(service, newGradebookUid, reader);
-	
-		
+
+
 		List<ColumnConfig> previewColumns = new ArrayList<ColumnConfig>();
 		List<StudentModel> students = new ArrayList<StudentModel>();
-		
+
 		for (ImportHeader header : importFile.getItems()) {
 			if (header != null)
 				previewColumns.add(new ColumnConfig(header.getId(), header.getValue(), 100));
 		}
-		
+
 		ArrayList<ItemModel> items = ClientUploadUtility.convertHeadersToItemModels(importFile.getItems());
-		
+
 		SpreadsheetModel spreadsheetModel = ClientUploadUtility.composeSpreadsheetModel(items, students, previewColumns);
 		service.createOrUpdateSpreadsheet(newGradebookUid, spreadsheetModel);
-		
+
 		applicationModel = service.getApplicationModel(newGradebookUid);
-		
+
 		gbModels = applicationModel.getGradebookModels();
-		
+
 		model = gbModels.get(0);
-		
+
 		ItemModel newGradebookItemModel = model.getGradebookItemModel();
-		
+
 		assertNotNull(newGradebookItemModel);
 		assertEquals("My Test Gradebook", newGradebookItemModel.getName());
 		assertEquals(GradeType.PERCENTAGES, newGradebookItemModel.getGradeType());
@@ -120,103 +132,103 @@ public class ImportExportTest extends AbstractServiceTest {
 		assertEquals(1, newGradebookItemModel.getChildCount());
 		assertEquals(Double.valueOf(60d), newGradebookItemModel.getPercentCourseGrade());
 		verifyCategoryPercentsForItems(model, Double.valueOf(50d), Double.valueOf(10d), Double.valueOf(10d), Double.valueOf(30d), Double.valueOf(20d));
-		
+
 	}
-	
+
 	public void testImportExportEmptyCategories() throws Exception {
-		
+
 		onSetupEmptyCategories(GradeType.POINTS, CategoryType.WEIGHTED_CATEGORIES);
-		
+
 		ApplicationModel applicationModel = service.getApplicationModel(getName());
-		
+
 		List<GradebookModel> gbModels = applicationModel.getGradebookModels();
-		
+
 		GradebookModel model = gbModels.get(0);
 		verifyCategoryAttributesForItemsEmptyCategories(model, Double.valueOf(25d), Double.valueOf(25d), Double.valueOf(25d), Double.valueOf(25d), Double.valueOf(20d));
-		
+
 		ItemModel gradebookItemModel = model.getGradebookItemModel();
-		
+
 		ItemModel firstItem = null;
 		for (ItemModel categoryModel : gradebookItemModel.getChildren()) {
-			
+
 			if (categoryModel.getChildCount() > 0) {
 				for (ItemModel itemModel : categoryModel.getChildren()) {
 					firstItem = itemModel;
 					break;
 				}
-				
+
 			}
 		}
-		
+
 		PagingLoadResult<StudentModel> result = service.getStudentRows(model.getGradebookUid(), model.getGradebookId(), null, Boolean.FALSE);
-		
+
 		StudentModel firstStudent = result.getData().get(0);
 		service.scoreNumericItem(model.getGradebookUid(), firstStudent, firstItem.getIdentifier(), Double.valueOf(200), null);
-		
-		
+
+
 		// Export to a temp file
 		File tempFile = File.createTempFile("imp", ".csv");
 		PrintWriter writer = new PrintWriter(new FileOutputStream(tempFile));
 		ImportExportUtility.exportGradebook(service, getName(), true, false, writer, null);
 		writer.close();
-		
+
 		System.out.println("Writing to temp file " + tempFile.getName());
-		
+
 		// Update the category weightings
 		File modifiedTempFile = File.createTempFile("mod", ".csv");
-		
+
 		BufferedReader originalReader = new BufferedReader(new FileReader(tempFile));
 		PrintWriter modifiedWriter = new PrintWriter(new FileOutputStream(modifiedTempFile));
 		while (originalReader.ready()) {
 			String line = originalReader.readLine();
-			
+
 			if (line.startsWith("\"\",\"Gradebook:\"")) {
 				line = "\"\",\"Gradebook:\",\"My Test Gradebook\",\"Weighted Categories\",\"Percentages\"";
 			}
-			
+
 			if (line.startsWith("\"\",\"Equal Weight Items:\"")) {
 				line = "\"\",\"Equal Weight Items:\",\"false\",\"false\",\"false\",\"false\",\"false\",\"\",\"\",\"\"";
 			}
-			
+
 			if (line.startsWith("\"\",\"% Category:\"")) {
 				line = "\"\",\"% Category:\",\"0.0%\",\"0.0%\",\"0.0%\",\"0.0%\",\"50.0%\",\"10.0%\",\"10.0%\",\"30.0%\",\"20.0%\"";
 			}
-			
+
 			modifiedWriter.println(line);
 		}
 		modifiedWriter.close();
 		originalReader.close();
-		
+
 		String newGradebookUid = "TEST-IMPORT";
-		
+
 		GradebookModel newGradebookModel = getGradebookModel(newGradebookUid);
-		
+
 		// Import the temp file back into the gradebook
 		FileReader reader = new FileReader(modifiedTempFile);
 		ImportFile importFile = ImportExportUtility.parseImportCSV(service, newGradebookUid, reader);
-	
-		
+
+
 		List<ColumnConfig> previewColumns = new ArrayList<ColumnConfig>();
 		List<StudentModel> students = new ArrayList<StudentModel>();
-		
+
 		for (ImportHeader header : importFile.getItems()) {
 			if (header != null)
 				previewColumns.add(new ColumnConfig(header.getId(), header.getValue(), 100));
 		}
-		
+
 		ArrayList<ItemModel> items = ClientUploadUtility.convertHeadersToItemModels(importFile.getItems());
-		
+
 		SpreadsheetModel spreadsheetModel = ClientUploadUtility.composeSpreadsheetModel(items, students, previewColumns);
 		service.createOrUpdateSpreadsheet(newGradebookUid, spreadsheetModel);
-		
+
 		applicationModel = service.getApplicationModel(newGradebookUid);
-		
+
 		gbModels = applicationModel.getGradebookModels();
-		
+
 		model = gbModels.get(0);
-		
+
 		ItemModel newGradebookItemModel = model.getGradebookItemModel();
-		
+
 		assertNotNull(newGradebookItemModel);
 		assertEquals("My Test Gradebook", newGradebookItemModel.getName());
 		assertEquals(GradeType.PERCENTAGES, newGradebookItemModel.getGradeType());
@@ -224,10 +236,10 @@ public class ImportExportTest extends AbstractServiceTest {
 		assertEquals(5, newGradebookItemModel.getChildCount());
 		assertEquals(Double.valueOf(60d), newGradebookItemModel.getPercentCourseGrade());
 		verifyCategoryAttributesForItemsEmptyCategories(model, Double.valueOf(50d), Double.valueOf(10d), Double.valueOf(10d), Double.valueOf(30d), Double.valueOf(20d));
-		
+
 	}
-	
-	
+
+
 	protected void onSetupEmptyCategories(GradeType gradeType, CategoryType categoryType) throws Exception {
 
 		gbModel = getGradebookModel(getName());
@@ -250,7 +262,7 @@ public class ImportExportTest extends AbstractServiceTest {
 		emptyCategory1.setIncluded(Boolean.FALSE);
 		emptyCategory1 = getActiveItem(service.addItemCategory(gradebookUid, gradebookId,
 				emptyCategory1));
-		
+
 		ItemModel emptyCategory2 = new ItemModel();
 		emptyCategory2.setName("Empty 2");
 		emptyCategory2.setPercentCourseGrade(Double.valueOf(0d));
@@ -260,7 +272,7 @@ public class ImportExportTest extends AbstractServiceTest {
 		emptyCategory2.setIncluded(Boolean.FALSE);
 		emptyCategory2 = getActiveItem(service.addItemCategory(gradebookUid, gradebookId,
 				emptyCategory2));
-		
+
 		ItemModel emptyCategory3 = new ItemModel();
 		emptyCategory3.setName("Empty 3");
 		emptyCategory3.setPercentCourseGrade(Double.valueOf(0d));
@@ -270,7 +282,7 @@ public class ImportExportTest extends AbstractServiceTest {
 		emptyCategory3.setIncluded(Boolean.FALSE);
 		emptyCategory3 = getActiveItem(service.addItemCategory(gradebookUid, gradebookId,
 				emptyCategory3));
-		
+
 		ItemModel emptyCategory4 = new ItemModel();
 		emptyCategory4.setName("Empty 4");
 		emptyCategory4.setPercentCourseGrade(Double.valueOf(0d));
@@ -280,7 +292,7 @@ public class ImportExportTest extends AbstractServiceTest {
 		emptyCategory4.setIncluded(Boolean.FALSE);
 		emptyCategory4 = getActiveItem(service.addItemCategory(gradebookUid, gradebookId,
 				emptyCategory4));
-		
+
 		ItemModel essaysCategory = new ItemModel();
 		essaysCategory.setName("My Essays");
 		essaysCategory.setPercentCourseGrade(Double.valueOf(60d));
@@ -330,7 +342,7 @@ public class ImportExportTest extends AbstractServiceTest {
 		essay4.setItemType(Type.ITEM);
 		essay4.setIncluded(Boolean.TRUE);
 		service.createItem(gradebookUid, gradebookId, essay4, true);
-		
+
 		ItemModel ec1 = new ItemModel();
 		ec1.setName("Extra Credit");
 		ec1.setPoints(Double.valueOf(20d));
@@ -346,77 +358,75 @@ public class ImportExportTest extends AbstractServiceTest {
 			Double percentCategory = child.getPercentCategory();
 			BigDecimal pC = BigDecimal.valueOf(percentCategory.doubleValue());
 
-			//if (!child.getExtraCredit())
-			//	assertTrue(pC.setScale(2).compareTo(BigDecimal.valueOf(25.0)) == 0);
 		}
 
 	}
-	
+
 	private void verifyCategoryPercentsForItems(GradebookModel model, Double... values) {
 		ItemModel gradebookItemModel = model.getGradebookItemModel();
-		
+
 		assertEquals(1, gradebookItemModel.getChildCount());
-		
+
 		ItemModel essaysItemModel = gradebookItemModel.getChildren().get(0);
-		
+
 		assertEquals(5, essaysItemModel.getChildCount());
-		
+
 		List<ItemModel> children = essaysItemModel.getChildren();
 		ItemModel essay1 = children.get(0);
 		ItemModel essay2 = children.get(1);
 		ItemModel essay3 = children.get(2);
 		ItemModel essay4 = children.get(3);
 		ItemModel ec = children.get(4);
-		
+
 		assertEquals(values[0], essay1.getPercentCategory());
 		assertEquals(values[1], essay2.getPercentCategory());
 		assertEquals(values[2], essay3.getPercentCategory());
 		assertEquals(values[3], essay4.getPercentCategory());
 		assertEquals(values[4], ec.getPercentCategory());
-		
+
 		assertTrue(essay1.getIncluded());
 		assertTrue(essay2.getIncluded());
 		assertTrue(essay3.getIncluded());
 		assertTrue(essay4.getIncluded());
 		assertFalse(ec.getIncluded());
 	}
-	
+
 	private void verifyCategoryAttributesForItemsEmptyCategories(GradebookModel model, Double... values) {
 		ItemModel gradebookItemModel = model.getGradebookItemModel();
-		
+
 		assertEquals(5, gradebookItemModel.getChildCount());
-		
+
 		ItemModel emptyItemModel = gradebookItemModel.getChildren().get(0);
 		assertEquals(0, emptyItemModel.getChildCount());
-		
+
 		ItemModel essaysItemModel = gradebookItemModel.getChildren().get(4);
-		
+
 		assertEquals(5, essaysItemModel.getChildCount());
-		
+
 		List<ItemModel> children = essaysItemModel.getChildren();
 		ItemModel essay1 = children.get(0);
 		ItemModel essay2 = children.get(1);
 		ItemModel essay3 = children.get(2);
 		ItemModel essay4 = children.get(3);
 		ItemModel ec = children.get(4);
-		
+
 		assertEquals(values[0], essay1.getPercentCategory());
 		assertEquals(values[1], essay2.getPercentCategory());
 		assertEquals(values[2], essay3.getPercentCategory());
 		assertEquals(values[3], essay4.getPercentCategory());
 		assertEquals(values[4], ec.getPercentCategory());
-		
+
 		assertEquals(Double.valueOf(200d), essay1.getPoints());
 		assertEquals(Double.valueOf(20d), essay2.getPoints());
 		assertEquals(Double.valueOf(20d), essay3.getPoints());
 		assertEquals(Double.valueOf(20d), essay4.getPoints());
 		assertEquals(Double.valueOf(20d), ec.getPoints());
-		
+
 		assertTrue(essay1.getIncluded());
 		assertTrue(essay2.getIncluded());
 		assertTrue(essay3.getIncluded());
 		assertTrue(essay4.getIncluded());
 		assertFalse(ec.getIncluded());
 	}
-	
+
 }

@@ -1,24 +1,24 @@
 /**********************************************************************************
-*
-* $Id: Gradebook.java 27891 2007-03-27 19:28:16Z cwen@iupui.edu $
-*
-***********************************************************************************
-*
-* Copyright (c) 2005 The Regents of the University of California, The MIT Corporation
-*
-* Licensed under the Educational Community License, Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.opensource.org/licenses/ecl1.php
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*
-**********************************************************************************/
+ *
+ * $Id: Gradebook.java 27891 2007-03-27 19:28:16Z cwen@iupui.edu $
+ *
+ ***********************************************************************************
+ *
+ * Copyright (c) 2005 The Regents of the University of California, The MIT Corporation
+ *
+ * Licensed under the Educational Community License, Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.opensource.org/licenses/ecl1.php
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ **********************************************************************************/
 
 package org.sakaiproject.gradebook.gwt.sakai.mock.tool.gradebook;
 
@@ -37,61 +37,46 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @author <a href="mailto:jholtzman@berkeley.edu">Josh Holtzman</a>
  */
 public class Gradebook implements Serializable {
-	
-    private Long id;
-    private String uid;
-    private int version;
-    private String name;
-    private GradeMapping selectedGradeMapping;
-    private Set<GradeMapping> gradeMappings;
-    private boolean assignmentsDisplayed;
-    private boolean courseGradeDisplayed;
-    private boolean allAssignmentsEntered;
-    private boolean locked;
-    private int grade_type;
-    private int category_type;
-    private Boolean equalWeightCategories;
 
-    /**
-     * Default no-arg constructor needed for persistence
-     */
-    public Gradebook() {
-    }
+	private Long id;
+	private String uid;
+	private int version;
+	private String name;
+	private GradeMapping selectedGradeMapping;
+	private Set<GradeMapping> gradeMappings;
+	private boolean assignmentsDisplayed;
+	private boolean courseGradeDisplayed;
+	private boolean allAssignmentsEntered;
+	private boolean locked;
+	private int grade_type;
+	private int category_type;
+	private Boolean equalWeightCategories;
 
-    /**
-     * Creates a new gradebook with the given siteId and name
+	/**
+	 * Default no-arg constructor needed for persistence
+	 */
+	public Gradebook() {
+	}
+
+	/**
+	 * Creates a new gradebook with the given siteId and name
 	 * @param name
 	 */
 	public Gradebook(String name) {
-        this.name = name;
+		this.name = name;
 	}
 
-    /**
-     * Lists the grade mappings available to a gradebook.  If an institution
-     * wishes to add or remove grade mappings, they will need to create a new
-     * java class, add the class to the GradeMapping hibernate configuration,
-     * and add the class here.
-     *
-     * This method will generally not be used, but can helpful when creating new
-     * gradebooks.
-     *
-     * @return A Set of available grade mappings
-     */
-/*
-    public Set getAvailableGradeMappings() {
-        Set set = new HashSet();
-        set.add(new LetterGradeMapping());
-        set.add(new LetterGradePlusMinusMapping());
-        set.add(new PassNotPassMapping());
-        return set;
-    }
-*/
-
-/*
-    public Class getDefaultGradeMapping() {
-        return LetterGradePlusMinusMapping.class;
-    }
-*/
+	/**
+	 * Lists the grade mappings available to a gradebook.  If an institution
+	 * wishes to add or remove grade mappings, they will need to create a new
+	 * java class, add the class to the GradeMapping hibernate configuration,
+	 * and add the class here.
+	 *
+	 * This method will generally not be used, but can helpful when creating new
+	 * gradebooks.
+	 *
+	 * @return A Set of available grade mappings
+	 */
 
 	/**
 	 * @return Returns the allAssignmentsEntered.
@@ -201,67 +186,67 @@ public class Gradebook implements Serializable {
 	public void setVersion(int version) {
 		this.version = version;
 	}
-    /**
-     * @return Returns the courseGradeDisplayed.
-     */
-    public boolean isCourseGradeDisplayed() {
-        return courseGradeDisplayed;
-    }
-    /**
-     * @param courseGradeDisplayed The courseGradeDisplayed to set.
-     */
-    public void setCourseGradeDisplayed(boolean courseGradeDisplayed) {
-        this.courseGradeDisplayed = courseGradeDisplayed;
-    }
+	/**
+	 * @return Returns the courseGradeDisplayed.
+	 */
+	public boolean isCourseGradeDisplayed() {
+		return courseGradeDisplayed;
+	}
+	/**
+	 * @param courseGradeDisplayed The courseGradeDisplayed to set.
+	 */
+	public void setCourseGradeDisplayed(boolean courseGradeDisplayed) {
+		this.courseGradeDisplayed = courseGradeDisplayed;
+	}
 
-    public String toString() {
-        return new ToStringBuilder(this).
-        append("id", id).
-        append("uid", uid).
-        append("name", name).toString();
-    }
+	public String toString() {
+		return new ToStringBuilder(this).
+		append("id", id).
+		append("uid", uid).
+		append("name", name).toString();
+	}
 
-    public boolean equals(Object other) {
-        if (!(other instanceof Gradebook)) {
-            return false;
-        }
-        Gradebook gb = (Gradebook)other;
-        return new EqualsBuilder().
-		    append(uid, gb.getUid()).isEquals();
-    }
-
-    public int hashCode() {
-        return new HashCodeBuilder().
-            append(uid).toHashCode();
-    }
-
-		public int getCategory_type()
-		{
-			return category_type;
+	public boolean equals(Object other) {
+		if (!(other instanceof Gradebook)) {
+			return false;
 		}
+		Gradebook gb = (Gradebook)other;
+		return new EqualsBuilder().
+		append(uid, gb.getUid()).isEquals();
+	}
 
-		public void setCategory_type(int category_type)
-		{
-			this.category_type = category_type;
-		}
+	public int hashCode() {
+		return new HashCodeBuilder().
+		append(uid).toHashCode();
+	}
 
-		public int getGrade_type()
-		{
-			return grade_type;
-		}
+	public int getCategory_type()
+	{
+		return category_type;
+	}
 
-		public void setGrade_type(int grade_type)
-		{
-			this.grade_type = grade_type;
-		}
+	public void setCategory_type(int category_type)
+	{
+		this.category_type = category_type;
+	}
 
-		public Boolean isEqualWeightCategories() {
-			return equalWeightCategories;
-		}
+	public int getGrade_type()
+	{
+		return grade_type;
+	}
 
-		public void setEqualWeightCategories(Boolean equalWeightCategories) {
-			this.equalWeightCategories = equalWeightCategories;
-		}
+	public void setGrade_type(int grade_type)
+	{
+		this.grade_type = grade_type;
+	}
+
+	public Boolean isEqualWeightCategories() {
+		return equalWeightCategories;
+	}
+
+	public void setEqualWeightCategories(Boolean equalWeightCategories) {
+		this.equalWeightCategories = equalWeightCategories;
+	}
 }
 
 

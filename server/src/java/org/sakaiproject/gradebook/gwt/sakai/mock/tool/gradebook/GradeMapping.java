@@ -1,24 +1,24 @@
 /**********************************************************************************
-*
-* $Id: GradeMapping.java 27834 2007-03-26 23:40:59Z ray@media.berkeley.edu $
-*
-***********************************************************************************
-*
-* Copyright (c) 2005, 2006 The Regents of the University of California, The MIT Corporation
-*
-* Licensed under the Educational Community License, Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.opensource.org/licenses/ecl1.php
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*
-**********************************************************************************/
+ *
+ * $Id: GradeMapping.java 27834 2007-03-26 23:40:59Z ray@media.berkeley.edu $
+ *
+ ***********************************************************************************
+ *
+ * Copyright (c) 2005, 2006 The Regents of the University of California, The MIT Corporation
+ *
+ * Licensed under the Educational Community License, Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.opensource.org/licenses/ecl1.php
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ **********************************************************************************/
 
 package org.sakaiproject.gradebook.gwt.sakai.mock.tool.gradebook;
 
@@ -62,7 +62,7 @@ public class GradeMapping implements Serializable, Comparable {
 	public void setDefaultValues() {
 		gradeMap = new HashMap<String, Double>(getDefaultBottomPercents());
 	}
-	
+
 	/**
 	 * Backwards-compatible wrapper to get to grading scale. 
 	 */
@@ -98,7 +98,7 @@ public class GradeMapping implements Serializable, Comparable {
 	 */
 	public List<Double> getDefaultValues() {
 		throw new UnsupportedOperationException("getDefaultValues called for GradeMapping " + getName() + " in Gradebook " + getGradebook());
-    }
+	}
 
 	/**
 	 * Gets the percentage mapped to a particular grade.
@@ -117,9 +117,9 @@ public class GradeMapping implements Serializable, Comparable {
 	 */
 	public String getGrade(Double value) {
 		if(value == null) {
-            return null;
-        }
-        for (Iterator iter = getGrades().iterator(); iter.hasNext();) {
+			return null;
+		}
+		for (Iterator iter = getGrades().iterator(); iter.hasNext();) {
 			String grade = (String) iter.next();
 			Double mapVal = (Double) gradeMap.get(grade);
 			// If the value in the map is less than the value passed, then the
@@ -192,41 +192,41 @@ public class GradeMapping implements Serializable, Comparable {
 		this.gradebook = gradebook;
 	}
 
- 	public int compareTo(Object o) {
-        return getName().compareTo(((GradeMapping)o).getName());
-    }
+	public int compareTo(Object o) {
+		return getName().compareTo(((GradeMapping)o).getName());
+	}
 
-    public String toString() {
-        return new ToStringBuilder(this).
-            append(getName()).
-            append(id).toString();
-    }
+	public String toString() {
+		return new ToStringBuilder(this).
+		append(getName()).
+		append(id).toString();
+	}
 
-    /**
-     * Enable any-case input of grades (typically lowercase input
-     * for uppercase grades). Look for a case-insensitive match
-     * to the input text and if it's found, return the official
-     * version.
-     *
-     * @return The normalized version of the grade, or null if not found.
-     */
-    public String standardizeInputGrade(String inputGrade) {
-    	String standardizedGrade = null;
-    	for (Iterator iter = getGrades().iterator(); iter.hasNext(); ) {
-    		String grade = (String)iter.next();
-    		if (grade.equalsIgnoreCase(inputGrade)) {
-    			standardizedGrade = grade;
-    			break;
-    		}
-    	}
-    	return standardizedGrade;
-    }
+	/**
+	 * Enable any-case input of grades (typically lowercase input
+	 * for uppercase grades). Look for a case-insensitive match
+	 * to the input text and if it's found, return the official
+	 * version.
+	 *
+	 * @return The normalized version of the grade, or null if not found.
+	 */
+	public String standardizeInputGrade(String inputGrade) {
+		String standardizedGrade = null;
+		for (Iterator iter = getGrades().iterator(); iter.hasNext(); ) {
+			String grade = (String)iter.next();
+			if (grade.equalsIgnoreCase(inputGrade)) {
+				standardizedGrade = grade;
+				break;
+			}
+		}
+		return standardizedGrade;
+	}
 
 	/**
 	 * @return the GradingScale used to define this mapping, or null if
 	 * this is an old Gradebook which uses hard-coded scales
 	 */
-    public GradingScale getGradingScale() {
+	public GradingScale getGradingScale() {
 		return gradingScale;
 	}
 

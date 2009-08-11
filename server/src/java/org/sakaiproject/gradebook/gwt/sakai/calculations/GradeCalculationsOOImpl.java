@@ -1,3 +1,26 @@
+/**********************************************************************************
+ *
+ * $Id:$
+ *
+ ***********************************************************************************
+ *
+ * Copyright (c) 2008, 2009 The Regents of the University of California
+ *
+ * Licensed under the
+ * Educational Community License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may
+ * obtain a copy of the License at
+ * 
+ * http://www.osedu.org/licenses/ECL-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS"
+ * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ *
+ **********************************************************************************/
+
 package org.sakaiproject.gradebook.gwt.sakai.calculations;
 
 import java.math.BigDecimal;
@@ -22,31 +45,31 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 
 	final static BigDecimal BIG_DECIMAL_100 = new BigDecimal("100.00000");
 	public static final MathContext MATH_CONTEXT = new MathContext(10, RoundingMode.HALF_EVEN);
-	
-	
+
+
 	public Double calculateEqualWeight(int numberOfItems) {
 		if (numberOfItems <= 1)
 			return Double.valueOf(1d);
-	
+
 		BigDecimal result = BigDecimal.ONE.divide(BigDecimal.valueOf(numberOfItems), MATH_CONTEXT);
-		
+
 		return Double.valueOf(result.doubleValue());
 	}
-	
+
 	public Double calculateItemWeightAsPercentage(Double requestedItemWeight, Double requestedItemPoints) {
 		BigDecimal weight = null;
-		
+
 		// Obviously, if the user asks for a non-null value, give it to them
 		if (requestedItemWeight != null)
 			weight = BigDecimal.valueOf(requestedItemWeight.doubleValue());
 		else
 			weight = BigDecimal.valueOf(requestedItemPoints.doubleValue());
-		
+
 		BigDecimal result = weight.divide(BIG_DECIMAL_100, MATH_CONTEXT);
-		
+
 		return Double.valueOf(result.doubleValue());
 	}
-	
+
 	/*
 	 *  For example: 
 	 *  
@@ -60,30 +83,30 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 	 * 
 	 */
 	public BigDecimal calculateItemGradePercent(BigDecimal percentGrade, BigDecimal sumCategoryPercents, BigDecimal assignmentWeight) {
-		
+
 		if (percentGrade.compareTo(BigDecimal.ZERO) == 0 
 				|| sumCategoryPercents.compareTo(BigDecimal.ZERO) == 0 
 				|| assignmentWeight.compareTo(BigDecimal.ZERO) == 0)
 			return BigDecimal.ZERO;
-		
+
 		BigDecimal categoryPercentRatio = sumCategoryPercents.divide(BigDecimal.valueOf(100d), MATH_CONTEXT);
-		
+
 		return assignmentWeight.multiply(percentGrade).divide(categoryPercentRatio, MATH_CONTEXT);
 	}
-	
-	
+
+
 	public GradeStatistics calculateStatistics(List<BigDecimal> gradeList, BigDecimal sum) {
 		GradeStatistics statistics = new GradeStatistics();
-		
+
 		if (gradeList == null || gradeList.isEmpty())
 			return statistics;
-		
+
 		BigDecimal count = BigDecimal.valueOf(gradeList.size());
 		BigDecimal mean = null;
-		
+
 		if (count.compareTo(BigDecimal.ZERO) != 0)
 			mean = sum.divide(count, RoundingMode.HALF_EVEN);
-		
+
 		BigDecimal mode = null;
 		Integer highestFrequency = Integer.valueOf(0);
 		Map<BigDecimal, Integer> frequencyMap = new HashMap<BigDecimal, Integer>();
@@ -97,28 +120,28 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 				BigDecimal difference = courseGrade.subtract(mean);
 				BigDecimal square = difference.multiply(difference);
 				sumOfSquareOfDifferences = sumOfSquareOfDifferences.add(square);
-			
+
 				Integer frequency = frequencyMap.get(courseGrade);
 				if (frequency == null)
 					frequency = Integer.valueOf(1);
 				else
 					frequency = Integer.valueOf(1 + frequency.intValue());
-				
+
 				frequencyMap.put(courseGrade, frequency);
-				
+
 				if (frequency.compareTo(highestFrequency) > 0) {
 					highestFrequency = frequency;
 					mode = courseGrade;
 				}
 			}
-			
+
 			if (count.compareTo(BigDecimal.ZERO) != 0 && sumOfSquareOfDifferences.compareTo(BigDecimal.ZERO) != 0) {
 				BigDecimal fraction = sumOfSquareOfDifferences.divide(count, RoundingMode.HALF_EVEN);
 				BigSquareRoot squareRoot = new BigSquareRoot();
 				standardDeviation = squareRoot.get(fraction);
 			}
 		}
-		
+
 		BigDecimal median = null;
 		if (gradeList != null && gradeList.size() > 0) {
 			if (gradeList.size() == 1) {
@@ -130,9 +153,9 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 					// If we have an even number of elements then grab the middle two
 					BigDecimal first = gradeList.get(middle - 1);
 					BigDecimal second = gradeList.get(middle);
-					
+
 					BigDecimal s = first.add(second);
-					
+
 					if (s.compareTo(BigDecimal.ZERO) == 0)
 						median = BigDecimal.ZERO;
 					else
@@ -143,46 +166,46 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 				}
 			}
 		}
-		
+
 		statistics.setMean(mean);
 		statistics.setMedian(median);
 		statistics.setMode(mode);
 		statistics.setStandardDeviation(standardDeviation);
-		
+
 		return statistics;
 	}
-	
-	
+
+
 	public BigDecimal getCategoryWeight(Category category) {
 		BigDecimal categoryWeight = null;
-		
+
 		if (null == category || isDeleted(category)) {
 			return null;
 		}
-		
+
 		Gradebook gradebook = category.getGradebook();
-		
+
 		switch (gradebook.getCategory_type()) {
-		case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
-			if (null == category.getWeight() || isUnweighted(category))
-				return null;
-			categoryWeight = new BigDecimal(category.getWeight().toString());
-			break;
-		default:
-			categoryWeight = BigDecimal.ZERO;
-			
-			List<Assignment> assignments = (List<Assignment>)category.getAssignmentList();
-			if (assignments != null) {
-				for (Assignment assignment : assignments) {
-					BigDecimal assignmentWeight = getAssignmentWeight(assignment);
-					
-					if (assignmentWeight != null)
-						categoryWeight = categoryWeight.add(assignmentWeight);
+			case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
+				if (null == category.getWeight() || isUnweighted(category))
+					return null;
+				categoryWeight = new BigDecimal(category.getWeight().toString());
+				break;
+			default:
+				categoryWeight = BigDecimal.ZERO;
+
+				List<Assignment> assignments = (List<Assignment>)category.getAssignmentList();
+				if (assignments != null) {
+					for (Assignment assignment : assignments) {
+						BigDecimal assignmentWeight = getAssignmentWeight(assignment);
+
+						if (assignmentWeight != null)
+							categoryWeight = categoryWeight.add(assignmentWeight);
+					}
 				}
-			}
-			break;
+				break;
 		}
-		
+
 		return categoryWeight;
 	}
 
@@ -190,122 +213,122 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 	public BigDecimal getCourseGrade(Gradebook gradebook, Collection<?> items, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap) {
 		boolean isWeighted = true;
 		switch (gradebook.getCategory_type()) {
-		case GradebookService.CATEGORY_TYPE_NO_CATEGORY:
-			return getNoCategoriesCourseGrade((Collection<Assignment>)items, assignmentGradeRecordMap);
-		case GradebookService.CATEGORY_TYPE_ONLY_CATEGORY:
-			isWeighted = false;
-		case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
-			return getCategoriesCourseGrade((Collection<Category>)items, assignmentGradeRecordMap, isWeighted);
+			case GradebookService.CATEGORY_TYPE_NO_CATEGORY:
+				return getNoCategoriesCourseGrade((Collection<Assignment>)items, assignmentGradeRecordMap);
+			case GradebookService.CATEGORY_TYPE_ONLY_CATEGORY:
+				isWeighted = false;
+			case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
+				return getCategoriesCourseGrade((Collection<Category>)items, assignmentGradeRecordMap, isWeighted);
 		}
-		
+
 		return null;
 	}
-	
+
 	private BigDecimal getNoCategoriesCourseGrade(Collection<Assignment> assignments, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap) {
 		List<GradeRecordCalculationUnit> gradeRecordUnits = new ArrayList<GradeRecordCalculationUnit>();
-		
+
 		populateGradeRecordUnits(assignments, gradeRecordUnits, assignmentGradeRecordMap);
-				
+
 		GradebookCalculationUnit gradebookUnit = new GradebookCalculationUnit();
-		
+
 		return gradebookUnit.calculatePointsBasedCourseGrade(gradeRecordUnits);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	private BigDecimal getCategoriesCourseGrade(Collection<Category> categoriesWithAssignments, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap,
 			boolean isWeighted) {
-		
+
 		if (categoriesWithAssignments == null && assignmentGradeRecordMap != null) 
 			categoriesWithAssignments = generateCategoriesWithAssignments(assignmentGradeRecordMap);
-		
+
 		if (categoriesWithAssignments == null || assignmentGradeRecordMap == null)
 			return null;
-		
+
 		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
 
 		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
-		
+
 		if (categoriesWithAssignments != null) {
 			for (Category category : categoriesWithAssignments) {
-			
+
 				if (category == null || category.isRemoved() || isUnweighted(category))
 					continue;
-				
+
 				String categoryKey = String.valueOf(category.getId());
-				
+
 				BigDecimal categoryWeight = getCategoryWeight(category);
 				CategoryCalculationUnit categoryCalculationUnit = new CategoryCalculationUnit(categoryWeight, Integer.valueOf(category.getDrop_lowest()), category.isExtraCredit());
 				categoryUnitMap.put(categoryKey, categoryCalculationUnit);
-				
+
 				List<GradeRecordCalculationUnit> gradeRecordUnits = new ArrayList<GradeRecordCalculationUnit>();
-			
+
 				List<Assignment> assignments = category.getAssignmentList();
 				if (assignments == null)
 					continue;
-				
+
 				populateGradeRecordUnits(assignments, gradeRecordUnits, assignmentGradeRecordMap);
-				
+
 				categoryGradeUnitListMap.put(categoryKey, gradeRecordUnits);
-	
+
 			} // for
 		}
-		
+
 		GradebookCalculationUnit gradebookUnit = new GradebookCalculationUnit(categoryUnitMap);
 
 		if (isWeighted)
 			return gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap);
-		
+
 		return gradebookUnit.calculatePointsBasedCourseGrade(categoryGradeUnitListMap);
 	}
-	
-	
+
+
 	private void populateGradeRecordUnits(Collection<Assignment> assignments, List<GradeRecordCalculationUnit> gradeRecordUnits, 
 			Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap) {
-		
+
 		if (assignmentGradeRecordMap == null) 
 			return;
-		
+
 		for (Assignment assignment : assignments) {
-			
+
 			if (assignment.isRemoved())
 				continue;
-			
+
 			if (isUnweighted(assignment))
 				continue;
-			
-			
+
+
 			AssignmentGradeRecord assignmentGradeRecord = assignmentGradeRecordMap.get(assignment.getId());
-				
+
 			if (isGraded(assignmentGradeRecord)) {
 				// Make sure it's not excused
 				if (!isExcused(assignmentGradeRecord)) {
-			
+
 					BigDecimal pointsEarned = new BigDecimal(assignmentGradeRecord.getPointsEarned().toString());
 					BigDecimal pointsPossible = new BigDecimal(assignment.getPointsPossible().toString());
 					BigDecimal assignmentWeight = getAssignmentWeight(assignment);
-					
+
 					GradeRecordCalculationUnit gradeRecordUnit = new GradeRecordCalculationUnit(pointsEarned, 
 							pointsPossible, assignmentWeight, assignment.isExtraCredit()) {
-						
+
 						@Override
 						public void setDropped(boolean isDropped) {
 							super.setDropped(isDropped);
-							
+
 							AssignmentGradeRecord gradeRecord = (AssignmentGradeRecord)getActualRecord();
-							
+
 							gradeRecord.setDropped(Boolean.valueOf(isDropped));
 						}
-						
+
 					};
-			
+
 					gradeRecordUnit.setActualRecord(assignmentGradeRecord);
-					
+
 					gradeRecordUnits.add(gradeRecordUnit);
 				}
 			}
 		}
 	}
-	
+
 
 	public BigDecimal getNewPointsGrade(Double pointValue, Double maxPointValue, Double maxPointStartValue) {
 
@@ -314,22 +337,22 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		BigDecimal ratio = BigDecimal.ZERO; 
 		if (maxStart.compareTo(BigDecimal.ZERO) != 0)
 		{
-			 ratio = max.divide(maxStart, MATH_CONTEXT);
+			ratio = max.divide(maxStart, MATH_CONTEXT);
 		}
 		BigDecimal points = new BigDecimal(pointValue.toString());
-		
+
 		return points.multiply(ratio, MATH_CONTEXT);
 	}
 
 	public BigDecimal getPercentAsPointsEarned(Assignment assignment, Double percentage) {
 		BigDecimal pointsEarned = null;
-		
+
 		if (percentage != null) {
 			BigDecimal percent = new BigDecimal(percentage.toString());
 			BigDecimal maxPoints = new BigDecimal(assignment.getPointsPossible().toString());
 			pointsEarned = percent.divide(BIG_DECIMAL_100, MATH_CONTEXT).multiply(maxPoints);
 		}
-		
+
 		return pointsEarned;	
 	}
 
@@ -341,7 +364,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		if (isBlank(assignment, assignmentGradeRecord)) {
 			return percentageEarned;
 		}
-		
+
 		pointsEarned = new BigDecimal(assignmentGradeRecord.getPointsEarned().toString());
 		if (assignment.getPointsPossible() != null) {
 			pointsPossible = new BigDecimal(assignment.getPointsPossible().toString());
@@ -349,10 +372,10 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		}
 		return percentageEarned;
 	}
-	
+
 	private Collection<Category> generateCategoriesWithAssignments(Map<Long, AssignmentGradeRecord>  assignmentGradeRecordMap) {
 		Collection<Category> categoriesWithAssignments = new ArrayList<Category>();
-		
+
 		Map<Long, Category> categoryMap = new HashMap<Long, Category>();
 		for (AssignmentGradeRecord gradeRecord : assignmentGradeRecordMap.values()) {
 			if (gradeRecord != null) {
@@ -361,92 +384,92 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 					Category category = assignment.getCategory();
 					if (category != null) {
 						Long categoryId = category.getId();
-				
+
 						Category storedCategory = categoryMap.get(categoryId);
-						
+
 						if (storedCategory != null)
 							category = storedCategory;
 						else {
 							categoryMap.put(categoryId, category);
 							category.setAssignmentList(new ArrayList<Assignment>());
 						}
-						
+
 						category.getAssignmentList().add(assignment);
 					}
 				}
 			}
-			
+
 			categoriesWithAssignments = categoryMap.values();
 		}
-		
+
 		return categoriesWithAssignments;
 	}
-	
+
 	private BigDecimal getAssignmentWeight(Assignment assignment) {
-		
+
 		BigDecimal assignmentWeight = null;
-		
+
 		// If the assignment doesn't exist or has no weight then we return null
 		if (null == assignment || isDeleted(assignment)) 
 			return null;
-		
+
 		Gradebook gradebook = assignment.getGradebook();
-		
+
 		switch (gradebook.getCategory_type()) {
-		case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
-			if (null == assignment.getAssignmentWeighting() || isUnweighted(assignment)) 
-				return null;
-			assignmentWeight = new BigDecimal(assignment.getAssignmentWeighting().toString());
-			break;
-		default:
-			if (null == assignment.getPointsPossible())
-				return null;
-			
-			assignmentWeight = new BigDecimal(assignment.getPointsPossible().toString());
-			break;
+			case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
+				if (null == assignment.getAssignmentWeighting() || isUnweighted(assignment)) 
+					return null;
+				assignmentWeight = new BigDecimal(assignment.getAssignmentWeighting().toString());
+				break;
+			default:
+				if (null == assignment.getPointsPossible())
+					return null;
+
+				assignmentWeight = new BigDecimal(assignment.getPointsPossible().toString());
+				break;
 		}
-		
+
 		return assignmentWeight;
 	}
-	
+
 	private boolean isBlank(Assignment assignment, AssignmentGradeRecord assignmentGradeRecord) {
 		return null == assignment || null == assignmentGradeRecord || null == assignmentGradeRecord.getPointsEarned();
 	}
-	
+
 	private boolean isDeleted(Assignment assignment) {
 		return assignment.isRemoved();
 	}
-	
+
 	private boolean isDeleted(Category category) {
 		return category.isRemoved();
 	}
-	
+
 	private boolean isExtraCredit(Assignment assignment) {
 		return assignment.isExtraCredit() == null ? false : assignment.isExtraCredit().booleanValue();
 	}
-	
+
 	private boolean isGraded(AssignmentGradeRecord assignmentGradeRecord) {
 		return assignmentGradeRecord != null && assignmentGradeRecord.getPointsEarned() != null;
 	}
-	
+
 	private boolean isDropped(AssignmentGradeRecord assignmentGradeRecord) {
 		return assignmentGradeRecord != null && assignmentGradeRecord.isDropped() != null && assignmentGradeRecord.isDropped().booleanValue();
 	}
-	
+
 	private boolean isExcused(AssignmentGradeRecord assignmentGradeRecord) {
 		return assignmentGradeRecord.isExcluded() == null ? false : assignmentGradeRecord.isExcluded().booleanValue();
 	}
-	
-	
+
+
 	private boolean isNormalCredit(Assignment assignment) {
 		boolean isExtraCredit = isExtraCredit(assignment);
 		return assignment.isCounted() && !assignment.isRemoved() && !isExtraCredit;
 	}
-	
+
 	private boolean isUnweighted(Assignment assignment) {
 		return assignment.isUnweighted() == null ? false : assignment.isUnweighted().booleanValue();
 	}
-	
+
 	private boolean isUnweighted(Category category) {
 		return category.isUnweighted() == null ? false : category.isUnweighted().booleanValue();
 	}

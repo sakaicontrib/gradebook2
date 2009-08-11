@@ -1,25 +1,25 @@
 /**********************************************************************************
-*
-* $Id:$
-*
-***********************************************************************************
-*
-* Copyright (c) 2008, 2009 The Regents of the University of California
-*
-* Licensed under the
-* Educational Community License, Version 2.0 (the "License"); you may
-* not use this file except in compliance with the License. You may
-* obtain a copy of the License at
-* 
-* http://www.osedu.org/licenses/ECL-2.0
-* 
-* Unless required by applicable law or agreed to in writing,
-* software distributed under the License is distributed on an "AS IS"
-* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-* or implied. See the License for the specific language governing
-* permissions and limitations under the License.
-*
-**********************************************************************************/
+ *
+ * $Id:$
+ *
+ ***********************************************************************************
+ *
+ * Copyright (c) 2008, 2009 The Regents of the University of California
+ *
+ * Licensed under the
+ * Educational Community License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may
+ * obtain a copy of the License at
+ * 
+ * http://www.osedu.org/licenses/ECL-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS"
+ * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ *
+ **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.action;
 
 import java.util.Date;
@@ -36,24 +36,24 @@ public abstract class Action extends EntityModel {
 		GRADED("Grade", "Set grade to"),
 		UPDATE("Update", "Changed to"), 
 		DELETE("Delete", "deleted");
-		
-		private String desc;
-		private String verb;
-		
-		private ActionType(String desc, String verb) {
-			this.desc = desc;
-			this.verb = verb;
-		}
-		
-		public String getVerb() {
-			return verb;
-		}
-	
-		@Override
-		public String toString() {
-			return desc;
-		}
-		
+
+	private String desc;
+	private String verb;
+
+	private ActionType(String desc, String verb) {
+		this.desc = desc;
+		this.verb = verb;
+	}
+
+	public String getVerb() {
+		return verb;
+	}
+
+	@Override
+	public String toString() {
+		return desc;
+	}
+
 	};
 
 
@@ -64,21 +64,21 @@ public abstract class Action extends EntityModel {
 		SECTION("section"), PERMISSION_SECTIONS("permission sections"), LEARNER("learner"), LEARNER_ID("learner id"), ACTION("action"), ITEM("item"),
 		SPREADSHEET("spreadsheet"), SUBMISSION_VERIFICATION("submission verification"), 
 		STATISTICS("statistics"), GRADE_FORMAT("grade format");
-	
-		private String name;
-	
-		private EntityType(String name) {
-			this.name = name;
-		}
-	
-		@Override
-		
-		public String toString() {
-			return name;
-		}
-		
+
+	private String name;
+
+	private EntityType(String name) {
+		this.name = name;
+	}
+
+	@Override
+
+	public String toString() {
+		return name;
+	}
+
 	};
-	
+
 	public enum Key { ID, GRADEBOOK_UID, GRADEBOOK_ID, DATE_PERFORMED, DATE_RECORDED,
 		ENTITY_TYPE, ENTITY_NAME, 
 		STUDENT_UID, ENTITY_ID, INCLUDE_ALL, PROPERTY, PARENT_ID, ACTION_TYPE, MODEL, 
@@ -87,172 +87,165 @@ public abstract class Action extends EntityModel {
 		STATUS, GRADER_NAME, DESCRIPTION, TEXT,
 		PROPERTY_NAME };
 
-		
-	/*protected Date timeStamp;
-	protected String gradebookUid;
-	protected Long gradebookId;
-	protected EntityType entityType;
-	protected String studentUid;*/
-	
-	public Action() {
-		super();
-		setDatePerformed(new Date());
-	}
-	
-	public Action(GradebookModel gbModel) {
-		this();
-		setGradebookUid(gbModel.getGradebookUid());
-		setGradebookId(gbModel.getGradebookId());
-		setGraderName(gbModel.getUserName());
-	}
-	
-	public Action(GradebookModel gbModel, ActionType actionType) {
-		this(gbModel);
-		setActionType(actionType);
-	}
-	
-	public Action(ActionType actionType) {
-		this();
-		setActionType(actionType);
-	}
-	
-	public Action(EntityType entityType) {
-		this();
-		setEntityType(entityType);
-	}
-	
-	public Action(ActionType actionType, EntityType entityType) {
-		this();
-		setActionType(actionType);
-		setEntityType(entityType);
-	}
-	
-	public Action(String gradebookUid, Long gradebookId) {
-		this();
-		setGradebookUid(gradebookUid);
-		setGradebookId(gradebookId);
-	}
-	
-	public Action(EntityType entityType, String gradebookUid, Long gradebookId) {
-		this(entityType);
-		setGradebookUid(gradebookUid);
-		setGradebookId(gradebookId);
-	}
-	
-	@Override
-	public String getDisplayName() {
-		return getEntityName();
-	}
-	
-	@Override
-	public String getIdentifier() {
-		return get(Key.ID.name());
-	}
-	
-	public void setIdentifier(String id) {
-		set(Key.ID.name(), id);
-	}
+		public Action() {
+			super();
+			setDatePerformed(new Date());
+		}
 
-	public String getGradebookUid() {
-		return get(Key.GRADEBOOK_UID.name());
-	}
-	
-	public void setGradebookUid(String gradebookUid) {
-		set(Key.GRADEBOOK_UID.name(), gradebookUid);
-	}
+		public Action(GradebookModel gbModel) {
+			this();
+			setGradebookUid(gbModel.getGradebookUid());
+			setGradebookId(gbModel.getGradebookId());
+			setGraderName(gbModel.getUserName());
+		}
 
-	public Long getGradebookId() {
-		return get(Key.GRADEBOOK_ID.name());
-	}
-	
-	public void setGradebookId(Long gradebookId) {
-		set(Key.GRADEBOOK_ID.name(), gradebookId);
-	}
+		public Action(GradebookModel gbModel, ActionType actionType) {
+			this(gbModel);
+			setActionType(actionType);
+		}
 
-	public ActionType getActionType() {
-		String actionType = get(Key.ACTION_TYPE.name());
-		if (actionType == null)
-			return null;
-		return ActionType.valueOf(actionType);
-	}
+		public Action(ActionType actionType) {
+			this();
+			setActionType(actionType);
+		}
 
-	public void setActionType(ActionType actionType) {
-		set(Key.ACTION_TYPE.name(), actionType.name());
-	}
-	
-	public EntityType getEntityType() {
-		String entityType = get(Key.ENTITY_TYPE.name());
-		if (entityType == null)
-			return null;
-		return EntityType.valueOf(entityType);
-	}
-	
-	public void setEntityType(EntityType entityType) {
-		set(Key.ENTITY_TYPE.name(), entityType.name());
-	}
+		public Action(EntityType entityType) {
+			this();
+			setEntityType(entityType);
+		}
 
-	public String getEntityName() {
-		return get(Key.ENTITY_NAME.name());
-	}
-	
-	public void setEntityName(String entityName) {
-		set(Key.ENTITY_NAME.name(), entityName);
-	}
-	
-	public String getStudentUid() {
-		return get(Key.STUDENT_UID.name());
-	}
+		public Action(ActionType actionType, EntityType entityType) {
+			this();
+			setActionType(actionType);
+			setEntityType(entityType);
+		}
 
-	public void setStudentUid(String studentUid) {
-		set(Key.STUDENT_UID.name(), studentUid);
-	}
+		public Action(String gradebookUid, Long gradebookId) {
+			this();
+			setGradebookUid(gradebookUid);
+			setGradebookId(gradebookId);
+		}
 
-	public Date getDatePerformed() {
-		return get(Key.DATE_PERFORMED.name());
-	}
-	
-	public void setDatePerformed(Date date) {
-		set(Key.DATE_PERFORMED.name(), date);
-	}
-	
-	public Date getDateRecorded() {
-		return get(Key.DATE_RECORDED.name());
-	}
-	
-	public void setDateRecorded(Date date) {
-		set(Key.DATE_RECORDED.name(), date);
-	}
-	
-	public String getEntityId() {
-		return get(Key.ENTITY_ID.name());
-	}
+		public Action(EntityType entityType, String gradebookUid, Long gradebookId) {
+			this(entityType);
+			setGradebookUid(gradebookUid);
+			setGradebookId(gradebookId);
+		}
 
-	public void setEntityId(String entityId) {
-		set(Key.ENTITY_ID.name(), entityId);
-	}
+		@Override
+		public String getDisplayName() {
+			return getEntityName();
+		}
 
-	public Boolean getIncludeAll() {
-		return get(Key.INCLUDE_ALL.name());
-	}
+		@Override
+		public String getIdentifier() {
+			return get(Key.ID.name());
+		}
 
-	public void setIncludeAll(Boolean includeAll) {
-		set(Key.INCLUDE_ALL.name(), includeAll);
-	}
-	
-	public String getGraderName() {
-		return get(Key.GRADER_NAME.name());
-	}
-	
-	public void setGraderName(String graderName) {
-		set(Key.GRADER_NAME.name(), graderName);
-	}
-	
-	public String getDescription() {
-		return get(Key.DESCRIPTION.name());
-	}
-	
-	public void setDescription(String description) {
-		set(Key.DESCRIPTION.name(), description);
-	}
-	
+		public void setIdentifier(String id) {
+			set(Key.ID.name(), id);
+		}
+
+		public String getGradebookUid() {
+			return get(Key.GRADEBOOK_UID.name());
+		}
+
+		public void setGradebookUid(String gradebookUid) {
+			set(Key.GRADEBOOK_UID.name(), gradebookUid);
+		}
+
+		public Long getGradebookId() {
+			return get(Key.GRADEBOOK_ID.name());
+		}
+
+		public void setGradebookId(Long gradebookId) {
+			set(Key.GRADEBOOK_ID.name(), gradebookId);
+		}
+
+		public ActionType getActionType() {
+			String actionType = get(Key.ACTION_TYPE.name());
+			if (actionType == null)
+				return null;
+			return ActionType.valueOf(actionType);
+		}
+
+		public void setActionType(ActionType actionType) {
+			set(Key.ACTION_TYPE.name(), actionType.name());
+		}
+
+		public EntityType getEntityType() {
+			String entityType = get(Key.ENTITY_TYPE.name());
+			if (entityType == null)
+				return null;
+			return EntityType.valueOf(entityType);
+		}
+
+		public void setEntityType(EntityType entityType) {
+			set(Key.ENTITY_TYPE.name(), entityType.name());
+		}
+
+		public String getEntityName() {
+			return get(Key.ENTITY_NAME.name());
+		}
+
+		public void setEntityName(String entityName) {
+			set(Key.ENTITY_NAME.name(), entityName);
+		}
+
+		public String getStudentUid() {
+			return get(Key.STUDENT_UID.name());
+		}
+
+		public void setStudentUid(String studentUid) {
+			set(Key.STUDENT_UID.name(), studentUid);
+		}
+
+		public Date getDatePerformed() {
+			return get(Key.DATE_PERFORMED.name());
+		}
+
+		public void setDatePerformed(Date date) {
+			set(Key.DATE_PERFORMED.name(), date);
+		}
+
+		public Date getDateRecorded() {
+			return get(Key.DATE_RECORDED.name());
+		}
+
+		public void setDateRecorded(Date date) {
+			set(Key.DATE_RECORDED.name(), date);
+		}
+
+		public String getEntityId() {
+			return get(Key.ENTITY_ID.name());
+		}
+
+		public void setEntityId(String entityId) {
+			set(Key.ENTITY_ID.name(), entityId);
+		}
+
+		public Boolean getIncludeAll() {
+			return get(Key.INCLUDE_ALL.name());
+		}
+
+		public void setIncludeAll(Boolean includeAll) {
+			set(Key.INCLUDE_ALL.name(), includeAll);
+		}
+
+		public String getGraderName() {
+			return get(Key.GRADER_NAME.name());
+		}
+
+		public void setGraderName(String graderName) {
+			set(Key.GRADER_NAME.name(), graderName);
+		}
+
+		public String getDescription() {
+			return get(Key.DESCRIPTION.name());
+		}
+
+		public void setDescription(String description) {
+			set(Key.DESCRIPTION.name(), description);
+		}
+
 }

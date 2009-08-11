@@ -1,13 +1,33 @@
+/**********************************************************************************
+ *
+ * $Id:$
+ *
+ ***********************************************************************************
+ *
+ * Copyright (c) 2008, 2009 The Regents of the University of California
+ *
+ * Licensed under the
+ * Educational Community License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may
+ * obtain a copy of the License at
+ * 
+ * http://www.osedu.org/licenses/ECL-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS"
+ * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ *
+ **********************************************************************************/
+
 package org.sakaiproject.gradebook.gwt.client.model;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
 
@@ -121,23 +141,6 @@ public class ConfigurationModel extends BaseModel {
 		set(getColumnWidthId(gridId, columnId), String.valueOf(width));
 	}
 	
-	/*public void setSelectedMultigradeColumns(Set<String> visibleStaticIdSet, List<ItemModel> selectedColumns) {
-		
-		StringBuilder builder = new StringBuilder();
-		if (selectedColumns != null) {
-			for (ItemModel item : selectedColumns) {
-				if (item.getItemType() == Type.ITEM)
-					builder.append(item.getIdentifier()).append(":");
-			}
-		}
-		
-		for (Iterator<String> it = visibleStaticIdSet.iterator();it.hasNext();) {
-			builder.append(it.next()).append(":");
-		}
-		
-		set(AppConstants.SELECTED_COLUMNS, builder.toString());
-	}*/
-	
 	public void setSortDirection(String gridId, Boolean isAscending) {
 		set(getAscendingId(gridId), String.valueOf(isAscending));
 	}
@@ -145,8 +148,6 @@ public class ConfigurationModel extends BaseModel {
 	public void setSortField(String gridId, String sortField) {
 		set(getSortFieldId(gridId), sortField);
 	}
-	
-	
 	
 	private String getAscendingId(String gridId) {
 		return new StringBuilder().append(gridId).append(AppConstants.SORT_DIRECTION).toString();

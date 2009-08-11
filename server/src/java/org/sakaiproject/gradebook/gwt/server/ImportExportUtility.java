@@ -1,3 +1,26 @@
+/**********************************************************************************
+ *
+ * $Id:$
+ *
+ ***********************************************************************************
+ *
+ * Copyright (c) 2008, 2009 The Regents of the University of California
+ *
+ * Licensed under the
+ * Educational Community License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may
+ * obtain a copy of the License at
+ * 
+ * http://www.osedu.org/licenses/ECL-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS"
+ * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ *
+ **********************************************************************************/
+
 package org.sakaiproject.gradebook.gwt.server;
 
 import java.io.BufferedInputStream;
@@ -51,7 +74,6 @@ import org.sakaiproject.gradebook.gwt.sakai.GradebookImportException;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.tool.gradebook.Assignment;
-import org.sakaiproject.tool.gradebook.Category;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
@@ -69,13 +91,13 @@ public class ImportExportUtility {
 	private static enum StructureRow {
 		GRADEBOOK("Gradebook:"), CATEGORY("Category:"), PERCENT_GRADE("% Grade:"), POINTS("Points:"), 
 		PERCENT_CATEGORY("% Category:"), DROP_LOWEST("Drop Lowest:"), EQUAL_WEIGHT("Equal Weight Items:");
-		
+
 		private String displayName;
-		
+
 		StructureRow(String displayName) {
 			this.displayName = displayName;
 		}
-	
+
 		public String getDisplayName() {
 			return displayName;
 		}
@@ -83,57 +105,56 @@ public class ImportExportUtility {
 
 	public static void exportGradebook(Gradebook2Service service, String gradebookUid, 
 			final boolean includeStructure, final boolean includeComments, PrintWriter writer, HttpServletResponse response) 
-		throws FatalException {
+	throws FatalException {
 
 		GradebookModel gradebook = service.getGradebook(gradebookUid);
 		ItemModel gradebookItemModel = gradebook.getGradebookItemModel();
-		
+
 		StringBuilder filename = new StringBuilder();
-		
+
 		if (gradebook.getName() == null)
 			filename.append("gradebook");
 		else {
 			String name = gradebook.getName();
 			name = name.replaceAll("\\s", "");
-			
+
 			filename.append(name);
 		}
-		
+
 		filename.append(".csv");
-			
+
 		if (response != null) {
 			response.setContentType("application/ms-excel");
 			response.setHeader("Content-Disposition", "attachment; filename=" + filename.toString());
-			//response.setHeader("Pragma", "no-cache");
 		}
-		
+
 		CSVWriter csvWriter = new CSVWriter(writer);
-		
+
 		Long gradebookId = gradebook.getGradebookId();
 		final List<String> headerIds = new ArrayList<String>();
 		List<Long> itemCategoryIdList = new LinkedList<Long>(); 
-		
+
 		final List<String> headerColumns = new LinkedList<String>();
-		
+
 		headerColumns.add("Student Id");
 		headerColumns.add("Student Name");
-		
+
 		if (includeStructure) {
 			CategoryType categoryType = gradebookItemModel.getCategoryType();
 			String categoryTypeText = categoryType.getDisplayName();
 			String gradeTypeText = gradebookItemModel.getGradeType().getDisplayName();
-			
+
 			// First, we need to add a row for basic gradebook info
 			String[] gradebookInfoRow = { "", StructureRow.GRADEBOOK.getDisplayName(), gradebook.getName(), categoryTypeText, gradeTypeText};
 			csvWriter.writeNext(gradebookInfoRow);
-			
+
 			final List<String> categoriesRow = new LinkedList<String>();
 			final List<String> percentageGradeRow = new LinkedList<String>();
 			final List<String> pointsRow = new LinkedList<String>();
 			final List<String> percentCategoryRow = new LinkedList<String>();
 			final List<String> dropLowestRow = new LinkedList<String>();
 			final List<String> equalWeightRow = new LinkedList<String>();
-			
+
 
 			categoriesRow.add("");
 			categoriesRow.add(StructureRow.CATEGORY.getDisplayName());
@@ -152,25 +173,25 @@ public class ImportExportUtility {
 
 			equalWeightRow.add("");
 			equalWeightRow.add(StructureRow.EQUAL_WEIGHT.getDisplayName());
-			
+
 			ItemModelProcessor processor = new ItemModelProcessor(gradebookItemModel) {
-				
+
 				@Override
 				public void doCategory(ItemModel itemModel, int childIndex) {
 					StringBuilder categoryName = new StringBuilder().append(itemModel.getName());
-					
+
 					if (DataTypeConversionUtil.checkBoolean(itemModel.getExtraCredit())) {
 						categoryName.append(AppConstants.EXTRA_CREDIT_INDICATOR);
 					}
-					
+
 					if (!DataTypeConversionUtil.checkBoolean(itemModel.getIncluded())) {
 						categoryName.append(AppConstants.UNINCLUDED_INDICATOR);
 					}
-					
+
 					categoriesRow.add(categoryName.toString());
 					percentageGradeRow.add(new StringBuilder()
-						.append(String.valueOf(itemModel.getPercentCourseGrade()))
-						.append("%").toString());
+					.append(String.valueOf(itemModel.getPercentCourseGrade()))
+					.append("%").toString());
 					Integer dropLowest = itemModel.getDropLowest();
 					if (dropLowest == null)
 						dropLowestRow.add("");
@@ -181,17 +202,17 @@ public class ImportExportUtility {
 						equalWeightRow.add("");
 					else
 						equalWeightRow.add(String.valueOf(isEqualWeight));
-					
-					
+
+
 					if (itemModel.getChildCount() == 0) {
 						headerIds.add("");
 						headerColumns.add("");
 						pointsRow.add("");
 						percentCategoryRow.add("");
 					}
-					
+
 				}
-				
+
 				@Override
 				public void doItem(ItemModel itemModel, int childIndex) {
 					if (childIndex > 0) {
@@ -200,38 +221,38 @@ public class ImportExportUtility {
 						dropLowestRow.add("");
 						equalWeightRow.add("");
 					} 
-					
+
 					if (includeComments) {
 						categoriesRow.add("");
 						percentageGradeRow.add("");
 						dropLowestRow.add("");
 						equalWeightRow.add("");
 					}
-					
+
 					StringBuilder text = new StringBuilder();
 					text.append(itemModel.getName());
-					
+
 					if (DataTypeConversionUtil.checkBoolean(itemModel.getExtraCredit())) {
 						text.append(AppConstants.EXTRA_CREDIT_INDICATOR);
 					}
-					
+
 					if (!DataTypeConversionUtil.checkBoolean(itemModel.getIncluded())) {
 						text.append(AppConstants.UNINCLUDED_INDICATOR);
 					}
-					
+
 					if (!includeStructure) {
 						String points = DecimalFormat.getInstance().format(itemModel.getPoints());
 						text.append(" [").append(points).append("]");
 					}
-					
+
 					headerIds.add(itemModel.getIdentifier());
 					headerColumns.add(text.toString());
-					
+
 					pointsRow.add(String.valueOf(itemModel.getPoints()));
 					percentCategoryRow.add(new StringBuilder()
-						.append(String.valueOf(itemModel.getPercentCategory()))
-						.append("%").toString());
-					
+					.append(String.valueOf(itemModel.getPercentCategory()))
+					.append("%").toString());
+
 					if (includeComments) {
 						StringBuilder commentsText = new StringBuilder();
 						commentsText.append("Comments : ").append(itemModel.getName());
@@ -240,137 +261,137 @@ public class ImportExportUtility {
 						percentCategoryRow.add("");
 					}
 				}
-				
+
 			};
-			
+
 			processor.process();
-			
+
 			switch (categoryType) {
-			case NO_CATEGORIES:
-				csvWriter.writeNext(pointsRow.toArray(new String[pointsRow.size()]));
-				break;
-			case SIMPLE_CATEGORIES:
-				csvWriter.writeNext(categoriesRow.toArray(new String[categoriesRow.size()]));
-				csvWriter.writeNext(dropLowestRow.toArray(new String[dropLowestRow.size()]));
-				csvWriter.writeNext(pointsRow.toArray(new String[pointsRow.size()]));
-				break;
-			case WEIGHTED_CATEGORIES:
-				csvWriter.writeNext(categoriesRow.toArray(new String[categoriesRow.size()]));
-				csvWriter.writeNext(percentageGradeRow.toArray(new String[percentageGradeRow.size()]));
-				csvWriter.writeNext(dropLowestRow.toArray(new String[dropLowestRow.size()]));
-				csvWriter.writeNext(equalWeightRow.toArray(new String[equalWeightRow.size()]));
-				csvWriter.writeNext(pointsRow.toArray(new String[pointsRow.size()]));
-				csvWriter.writeNext(percentCategoryRow.toArray(new String[percentCategoryRow.size()]));
-				break;
+				case NO_CATEGORIES:
+					csvWriter.writeNext(pointsRow.toArray(new String[pointsRow.size()]));
+					break;
+				case SIMPLE_CATEGORIES:
+					csvWriter.writeNext(categoriesRow.toArray(new String[categoriesRow.size()]));
+					csvWriter.writeNext(dropLowestRow.toArray(new String[dropLowestRow.size()]));
+					csvWriter.writeNext(pointsRow.toArray(new String[pointsRow.size()]));
+					break;
+				case WEIGHTED_CATEGORIES:
+					csvWriter.writeNext(categoriesRow.toArray(new String[categoriesRow.size()]));
+					csvWriter.writeNext(percentageGradeRow.toArray(new String[percentageGradeRow.size()]));
+					csvWriter.writeNext(dropLowestRow.toArray(new String[dropLowestRow.size()]));
+					csvWriter.writeNext(equalWeightRow.toArray(new String[equalWeightRow.size()]));
+					csvWriter.writeNext(pointsRow.toArray(new String[pointsRow.size()]));
+					csvWriter.writeNext(percentCategoryRow.toArray(new String[percentCategoryRow.size()]));
+					break;
 			}
-			
+
 			String[] blankLine = { "" };
 			csvWriter.writeNext(blankLine);
 		} else {
-		
+
 			ItemModelProcessor processor = new ItemModelProcessor(gradebookItemModel) {
-				
+
 				@Override
 				public void doItem(ItemModel itemModel) {
 					StringBuilder text = new StringBuilder();
 					text.append(itemModel.getName());
-					
+
 					if (DataTypeConversionUtil.checkBoolean(itemModel.getExtraCredit())) {
 						text.append(AppConstants.EXTRA_CREDIT_INDICATOR);
 					}
-					
+
 					if (!DataTypeConversionUtil.checkBoolean(itemModel.getIncluded())) {
 						text.append(AppConstants.UNINCLUDED_INDICATOR);
 					}
-					
+
 					if (!includeStructure) {
 						String points = DecimalFormat.getInstance().format(itemModel.getPoints());
 						text.append(" [").append(points).append("]");
 					}
-					
+
 					headerIds.add(itemModel.getIdentifier());
 					headerColumns.add(text.toString());
-					
+
 					if (includeComments) {
 						StringBuilder commentsText = new StringBuilder();
 						commentsText.append("Comments : ").append(itemModel.getName());
 						headerColumns.add(commentsText.toString());
 					}
 				}
-				
+
 			};
-			
+
 			processor.process();
-		
+
 		}
-		
+
 		headerColumns.add("Course Grade");
-		
+
 		csvWriter.writeNext(headerColumns.toArray(new String[headerColumns.size()]));
-		
+
 		PagingLoadResult<StudentModel> result = service.getStudentRows(gradebookUid, gradebookId, null, Boolean.TRUE);
-		
+
 		List<StudentModel> rows = result.getData();
-		
+
 		boolean isPercentages = gradebook.getGradebookItemModel().getGradeType() == GradeType.PERCENTAGES;
-		
+
 		if (headerIds != null) {
-			
+
 			if (rows != null) {
 				for (StudentModel row : rows) {
 					List<String> dataColumns = new LinkedList<String>();
-					
+
 					dataColumns.add(row.getExportUserId());
 					dataColumns.add(row.getLastNameFirst());
-					
+
 					for (int column = 0; column < headerIds.size(); column++) {
 						if (headerIds.get(column) != null) {
 							Object value = row.get(headerIds.get(column));
-							
+
 							if (value != null)
 								dataColumns.add(String.valueOf(value));
 							else
 								dataColumns.add("");
-							
+
 						} else {
 							dataColumns.add("");
 						}
-						
+
 						if (includeComments) {
 							String commentId = new StringBuilder()
-								.append(headerIds.get(column)).append(StudentModel.COMMENT_TEXT_FLAG).toString();
-							
+							.append(headerIds.get(column)).append(StudentModel.COMMENT_TEXT_FLAG).toString();
+
 							Object comment = row.get(commentId);
-							
+
 							if (comment == null)
 								comment = "";
-							
+
 							dataColumns.add(String.valueOf(comment));
 						}
 					}
-					
+
 					dataColumns.add(row.getStudentGrade());
-					
+
 					csvWriter.writeNext(dataColumns.toArray(new String[dataColumns.size()]));
 				}
 			} 
-			
+
 		}
-		
+
 		try {
 			csvWriter.close();
 		} catch (IOException ioe) {
 			log.error("Caught ioexception: ", ioe);
 		}
 	}
-	
-	
+
+
 	private static HSSFWorkbook readPoiSpreadsheet(BufferedInputStream is) throws IOException 
 	{
 		HSSFWorkbook ret = null; 
 		HSSFWorkbook inspread = null;
-		
-		
+
+
 		is.mark(1024*1024*512); 
 		try {
 			inspread = new HSSFWorkbook(POIFSFileSystem.createNonClosingInputStream(is));
@@ -390,12 +411,12 @@ public class ImportExportUtility {
 		{
 			is.reset(); 
 		}
-		
+
 		return inspread; 
-		
+
 	}
-	
-	
+
+
 	private static boolean checkForCurrentAssignmentInGradebook(String fileName, Gradebook2Service service, GradebookToolService gbToolService, String gradebookUid)
 	{
 		GradebookModel gm = service.getGradebook(gradebookUid); 
@@ -409,13 +430,13 @@ public class ImportExportUtility {
 				return true; 
 			}
 		}
-		
+
 		return false; 
-		
+
 	}
 	private static String getUniqueFileNameForFileName(String fileName,
 			Gradebook2Service service, GradebookToolService gbToolService, String gradebookUid) throws GradebookImportException 
-	{
+			{
 		log.debug("fileName=" + fileName);
 		if (fileName == null || fileName.equals(""))
 		{
@@ -437,13 +458,13 @@ public class ImportExportUtility {
 				curFileName = fileName + "-" +i; 
 			}
 			i++; 
-			
+
 			if (i > 1000)
 			{
 				throw new GradebookImportException("Couldn't find a unique filename within 1000 tries, please rename filename manually and import again"); 
 			}
 		}
-	}
+			}
 
 	/*
 	 * so basically, we'll do: 
@@ -452,7 +473,7 @@ public class ImportExportUtility {
 	public static ImportFile parseImportXLS(Gradebook2Service service, 
 			String gradebookUid, InputStream is, String fileName, GradebookToolService gbToolService) throws InvalidInputException, FatalException, IOException {
 		log.debug("parseImportXLS() called"); 
-		
+
 		String realFileName; 
 		boolean isOriginalName; 
 		try {
@@ -468,11 +489,11 @@ public class ImportExportUtility {
 		log.debug("isOriginalName=" + isOriginalName);
 
 		HSSFWorkbook inspread = null;
-		
+
 		BufferedInputStream bufStream = new BufferedInputStream(is); 
-		
+
 		inspread = readPoiSpreadsheet(bufStream);
-		
+
 		if (inspread != null)
 		{
 			log.debug("Found a POI readable spreadsheet");
@@ -484,17 +505,17 @@ public class ImportExportUtility {
 			log.debug("POI couldn't handle the spreadsheet, using jexcelapi");
 			return handleJExcelAPISpreadSheet(bufStream, service, gradebookUid, realFileName, isOriginalName); 
 		}
-		
-		
+
+
 	}
-	
+
 
 
 	private static ImportFile handleJExcelAPISpreadSheet(BufferedInputStream is,
 			Gradebook2Service service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName) throws InvalidInputException, FatalException, IOException {
 		Workbook wb = null; 
 		try {
-			 wb = Workbook.getWorkbook(is);
+			wb = Workbook.getWorkbook(is);
 		} catch (BiffException e) {
 			log.error("Caught a biff exception from JExcelAPI: " + e.getLocalizedMessage(), e); 
 			return null; 
@@ -502,7 +523,7 @@ public class ImportExportUtility {
 			log.error("Caught an IO exception from JExcelAPI: " + e.getLocalizedMessage(), e); 
 			return null; 
 		} 
-		
+
 		is.close();
 		Sheet s = wb.getSheet(0); 
 		if (s != null)
@@ -526,16 +547,16 @@ public class ImportExportUtility {
 			Gradebook2Service service, String gradebookUid) throws InvalidInputException, FatalException {
 		RawFile raw = new RawFile(); 
 		int numRows; 
-		
+
 		numRows = s.getRows(); 
-		
+
 		for (int i = 0; i < numRows; i++)
 		{
 			Cell[] row = null; 
 			String[] data = null; 
-			
+
 			row = s.getRow(i);
-			
+
 			data = new String[row.length]; 
 			for (int j = 0; j < row.length ; j++)
 			{
@@ -545,7 +566,7 @@ public class ImportExportUtility {
 		}
 		raw.setFileType("Excel 5.0/7.0 Non Scantron"); 
 		raw.setScantronFile(false); 
- 
+
 		return parseImportGeneric(service, gradebookUid, raw);
 	}
 	private final static int RAWFIELD_FIRST_POSITION = 0; 
@@ -553,20 +574,20 @@ public class ImportExportUtility {
 
 	private static ImportFile handleScantronSheetForJExcelApi(Sheet s,
 			Gradebook2Service service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName) throws InvalidInputException, FatalException 
-	{
+			{
 		StringBuilder err = new StringBuilder("Scantron File with errors"); 
 		RawFile raw = new RawFile(); 
 		boolean stop = false; 
 
 		Cell studentIdHeader = s.findCell("student_id");
 		Cell scoreHeader = s.findCell("score");
-		
+
 		if (studentIdHeader == null)
 		{
 			err.append("There is no column with the header student_id");
 			stop = true; 
 		}
-		
+
 		if (scoreHeader == null)
 		{
 			err.append("There is no column with the header score");
@@ -604,11 +625,11 @@ public class ImportExportUtility {
 			raw.setMessages(err.toString());
 			err = null; 
 			raw.setErrorsFound(true); 
-		
+
 			return parseImportGeneric(service, gradebookUid, raw);
 		}
 
-	}
+			}
 
 	private static String[] getScantronHeaderLine(String fileName)
 	{
@@ -627,7 +648,7 @@ public class ImportExportUtility {
 	private static boolean isScantronSheetForJExcelApi(Sheet s) {
 		Cell studentIdHeader = s.findCell("student_id");
 		Cell scoreHeader = s.findCell("score");
-		
+
 		return (studentIdHeader != null && scoreHeader != null); 
 	}
 
@@ -662,10 +683,10 @@ public class ImportExportUtility {
 			d.setMessages("The XLS spreadsheet entered does not contain any valid sheets.  Please correct and try again.");
 			d.setErrorsFound(true); 
 			return parseImportGeneric(service, gradebookUid, d);
-			
+
 		}
 	}
-	
+
 	private static RawFile processNormalXls(HSSFSheet s) {
 		log.debug("processNormalXls() called");
 		RawFile data = new RawFile(); 
@@ -676,7 +697,7 @@ public class ImportExportUtility {
 
 		while (rowIter.hasNext())
 		{
-			
+
 			HSSFRow curRow = rowIter.next();  
 			if (!headerFound)
 			{
@@ -687,9 +708,9 @@ public class ImportExportUtility {
 			}
 
 			String[] dataEntity = new String[numCols]; 
-			
+
 			log.debug("numCols = " + numCols); 
-			
+
 			for (int i = 0; i < numCols; i++) {
 				HSSFCell cl = curRow.getCell(i);
 				String cellData;
@@ -721,7 +742,7 @@ public class ImportExportUtility {
 			}
 			data.addRow(dataEntity);
 		}
-			
+
 		return data; 
 	}
 
@@ -729,17 +750,17 @@ public class ImportExportUtility {
 		int ret = -1; 
 		Iterator<HSSFCell> cellIterator = curRow.cellIterator(); 
 		// FIXME - need to decide to take this out into the institutional adviser 
-		
+
 		while (cellIterator.hasNext())
 		{
 			HSSFCell cl = cellIterator.next();
 			String cellData =  new HSSFDataFormatter().formatCellValue(cl).toLowerCase();
-			
+
 			if ("student id".equals(cellData))
 			{
 				return cl.getColumnIndex(); 
 			}
-			
+
 		}
 		return ret; 
 	}
@@ -757,7 +778,7 @@ public class ImportExportUtility {
 			err.append("There is no column with the header student_id");
 			stop = true; 
 		}
-		
+
 		if (scoreHeader == null)
 		{
 			err.append("There is no column with the header score");
@@ -773,7 +794,7 @@ public class ImportExportUtility {
 				boolean problemFound = false; 
 				HSSFRow curRow = rowIter.next();  
 				HSSFCell score = null, id = null; 
-				
+
 				id = curRow.getCell(studentIdHeader.getColumnIndex());
 				score = curRow.getCell(scoreHeader.getColumnIndex()); 
 				if (id == null )
@@ -784,42 +805,42 @@ public class ImportExportUtility {
 					continue; 
 				}
 				String idStr, scoreStr; 
-				
+
 				idStr = String.format("%.0f", id.getRichStringCellValue().getString()); 
 				scoreStr = score == null ? "" : score.getRichStringCellValue().getString(); 
 				String[] ent = new String[2];
 				ent[0] = idStr; 
 				ent[1] = scoreStr;
-				
+
 				data.addRow(ent); 
 			}
 		}
 		return data; 
-		
+
 	}
 
 	// POI doesn't provide the findCell method that jexcelapi does, so we'll simulate it..  We return the first cell we find with the text in searchText
 	// if we can't find it, we return null. 
 	// 
-	
+
 	public static HSSFCell findCellWithTextonSheetForPoi(HSSFSheet s, String searchText)
 	{
 		if (searchText == null || s == null) 
 		{
 			return null; 			
 		}
-		
+
 		Iterator<HSSFRow> rIter = s.rowIterator(); 
-		
+
 		while (rIter.hasNext())
 		{
 			HSSFRow curRow = rIter.next(); 
 			Iterator<HSSFCell> cIter = curRow.cellIterator(); 
-			
+
 			while (cIter.hasNext())
 			{
 				HSSFCell curCell = cIter.next(); 
-				
+
 				if (curCell.getCellType() == HSSFCell.CELL_TYPE_STRING)
 				{
 					if ( searchText.equals( curCell.getRichStringCellValue().getString() ) )
@@ -831,12 +852,12 @@ public class ImportExportUtility {
 		}
 		return null; 
 	}
-	
+
 	private static String getStringValueFromCell(HSSFCell c)
 	{
 		String ret = ""; 
 		StringBuilder sb = new StringBuilder(); 
-		
+
 		switch (c.getCellType())
 		{
 			case HSSFCell.CELL_TYPE_NUMERIC:
@@ -845,11 +866,11 @@ public class ImportExportUtility {
 			case HSSFCell.CELL_TYPE_STRING: 
 				sb.append(c.getRichStringCellValue().getString());
 				break;
-				
+
 			default:
 				sb.append(""); 
 		}
-		
+
 		ret = sb.toString();
 		sb = null; 
 		return ret; 
@@ -860,7 +881,7 @@ public class ImportExportUtility {
 		{
 			HSSFRow curRow = rowIter.next();  
 			HSSFCell possibleHeader = curRow.getCell(0); 
-			
+
 			if (possibleHeader != null && possibleHeader.getCellType() == HSSFCell.CELL_TYPE_STRING &&  "student_row".equals(possibleHeader.getRichStringCellValue().getString()) )
 			{
 				return true; 
@@ -873,7 +894,7 @@ public class ImportExportUtility {
 	public static ImportFile parseImportCSV(Gradebook2Service service, 
 			String gradebookUid, Reader reader) throws InvalidInputException, FatalException 
 			{
-		
+
 		RawFile rawData = new RawFile(); 
 		CSVReader csvReader = new CSVReader(reader);
 		String[] ent;
@@ -886,10 +907,10 @@ public class ImportExportUtility {
 		} catch (IOException e) {
 			// FIXME - error handling
 		}
-	
+
 		rawData.setFileType("CSV file"); 
 		return parseImportGeneric(service, gradebookUid, rawData);
-	}	
+			}	
 
 	private static int readDataForStructureInformation(RawFile rawData, Map<String, StructureRow> structureLineIndicatorMap, Map<StructureRow, String[]> structureColumnsMap, Set<String> headerLineIndicatorSet) 
 	{
@@ -920,24 +941,24 @@ public class ImportExportUtility {
 						String columnLowerCase = columns[i].trim().toLowerCase();
 						log.debug("SI: columnLowerCase=" + columnLowerCase);
 						StructureRow structureRow = structureLineIndicatorMap.get(columnLowerCase);
-						
+
 						if (structureRow != null) {
 							structureColumnsMap.put(structureRow, columns);
 						}
 					}
 				}
-				
+
 			} else {
 				retRows = rows; 
 			}
 			rows++; 
 		}
-	
+
 		return retRows; 
 	}
-	
 
-	
+
+
 	public static void readInHeaderInfo(RawFile rawData,
 			ImportExportInformation importInfo, GradebookModel gradebook, NumberFormat decimalFormat, 
 			int startRow,String[] pointsColumns, String[] categoryColumns) {
@@ -945,12 +966,12 @@ public class ImportExportUtility {
 		int rows = 0; 
 		String[] headerColumns = null;
 		boolean headerFound = false; 
-		
-		
+
+
 		headerColumns = rawData.getRow(startRow);
 
 		String categoryName = null;
-		
+
 		for (int i = 0; i < headerColumns.length; i++) {
 			String text = headerColumns[i];
 
@@ -1007,11 +1028,11 @@ public class ImportExportUtility {
 
 				boolean isComment = text
 				.startsWith(AppConstants.COMMENTS_INDICATOR);
-				
+
 				if (isComment) {
 					name = text.substring(AppConstants.COMMENTS_INDICATOR.length());
 				}
-				
+
 				int startParenthesis = text.indexOf("[");
 				int endParenthesis = text.indexOf("pts]");
 
@@ -1031,7 +1052,7 @@ public class ImportExportUtility {
 				}
 
 				if (name != null) {
-					
+
 					if (categoryColumns != null && categoryColumns.length > i) {
 						if (categoryColumns[i] != null && categoryColumns[i].trim().length() > 0) {
 							categoryName = categoryColumns[i];
@@ -1039,35 +1060,35 @@ public class ImportExportUtility {
 								categoryName = categoryName.trim();
 						}
 					}
-					
-					
+
+
 					ItemModel model = findModelByName(name, categoryName, gradebook
 							.getGradebookItemModel());
-					
+
 					if (isComment) {
 						header = new ImportHeader(Field.COMMENT, text);
 						header.setAssignmentId(model.getIdentifier());
 					} else {
 
 						StringBuffer value = new StringBuffer(name);
-	
+
 						if (points == null && pointsColumns != null && pointsColumns.length > i)
 							points = pointsColumns[i];
-						
+
 						if (points == null && model != null)
 							points = decimalFormat.format(model.getPoints());
-		
+
 						if (points != null && points.length() > 0)
 							value.append(" [").append(points).append("]");
-	
+
 						header = new ImportHeader(Field.ITEM, value.toString());
-	
+
 						if (model != null) {
 							header.setId(model.getIdentifier());
 							header.setCategoryName(model.getCategoryName());
 							header.setCategoryId(String.valueOf(model
 									.getCategoryId()));
-	
+
 							importInfo.getCategoryIdNameMap().put(
 									model.getCategoryId(), model.getCategoryName());
 						} else {
@@ -1098,9 +1119,9 @@ public class ImportExportUtility {
 				}
 
 			}
-			
+
 			StringBuilder key = new StringBuilder();
-			
+
 			if (categoryName != null) 
 				key.append(categoryName).append("::");
 			key.append(text);
@@ -1111,7 +1132,7 @@ public class ImportExportUtility {
 		importInfo.setHeaderColumns(headerColumns);
 		log.debug("XXX: readInHeaderInfo() finished");
 	}
-	
+
 	public static void readInGradeDataFromImportFile(RawFile rawData, ImportExportInformation ieInfo, Map<String, UserDereference> userDereferenceMap, List<ImportRow> importRows, int startRow) 
 	{
 		String[] columns; 
@@ -1134,7 +1155,7 @@ public class ImportExportUtility {
 					row.setUserDisplayName(userDereference.getLastNameFirst());
 				}
 			}
-				
+
 			if (ieInfo.getCourseGradeFieldIndex() == -1)
 				row.setColumns(columns);
 			else {
@@ -1157,104 +1178,104 @@ public class ImportExportUtility {
 			importRows.add(row);
 		}	
 	}
-	
+
 	public static void processStructureInformation(ImportExportInformation ieInfo, Map<StructureRow, String[]> structureColumnsMap, GradebookModel gradebook, Gradebook2Service service) throws InvalidInputException
 	{
 		// Now, modify gradebook structure according to the data stored
 		String[] gradebookColumns = structureColumnsMap.get(StructureRow.GRADEBOOK);
 		ItemModel gradebookItemModel = gradebook.getGradebookItemModel();
-		
+
 		if (gradebookColumns != null && gradebookItemModel != null) {
 			String gradebookName = null;
 			String categoryType = null;
 			String gradeType = null;
-			
+
 			if (gradebookColumns.length >= 3)
 				gradebookName = gradebookColumns[2];
 			if (gradebookColumns.length >= 4)
 				categoryType = gradebookColumns[3];
 			if (gradebookColumns.length >= 5)
 				gradeType = gradebookColumns[4];
-			
+
 			if (gradebookName != null)
 				gradebookItemModel.setName(gradebookName);
 			if (categoryType != null) {
 				CategoryType cType = gradebookItemModel.getCategoryType();
-				
+
 				if (CategoryType.NO_CATEGORIES.getDisplayName().equals(categoryType))
 					cType = CategoryType.NO_CATEGORIES;
 				else if (CategoryType.SIMPLE_CATEGORIES.getDisplayName().equals(categoryType))
 					cType = CategoryType.SIMPLE_CATEGORIES;
 				else if (CategoryType.WEIGHTED_CATEGORIES.getDisplayName().equals(categoryType))
 					cType = CategoryType.WEIGHTED_CATEGORIES;
-			
+
 				// If the upload changes the status of having categories, then update this local var
 				ieInfo.setHasCategories( cType != CategoryType.NO_CATEGORIES);
-				
+
 				gradebookItemModel.setCategoryType(cType);
 			}
 			if (gradeType != null) {
 				GradeType gType = gradebookItemModel.getGradeType();
-				
+
 				if (GradeType.PERCENTAGES.getDisplayName().equals(gradeType))
 					gType = GradeType.PERCENTAGES;
 				else if (GradeType.POINTS.getDisplayName().equals(gradeType))
 					gType = GradeType.POINTS;
-				
+
 				gradebookItemModel.setGradeType(gType);
 			}
-			
+
 			gradebookItemModel = service.updateItemModel(gradebookItemModel);
 		}
-		
+
 		String[] categoryColumns = structureColumnsMap.get(StructureRow.CATEGORY);
 		String[] percentGradeColumns = structureColumnsMap.get(StructureRow.PERCENT_GRADE);
 		String[] dropLowestColumns = structureColumnsMap.get(StructureRow.DROP_LOWEST);
 		String[] equalWeightColumns = structureColumnsMap.get(StructureRow.EQUAL_WEIGHT);
 		String[] pointsColumns = structureColumnsMap.get(StructureRow.POINTS);
 		String[] percentCategoryColumns = structureColumnsMap.get(StructureRow.PERCENT_CATEGORY);
-		
+
 		String[] categoryRangeColumns = new String[(ieInfo.getHeaderColumns() != null ? ieInfo.getHeaderColumns().length : 0)];
 		Map<String, ItemModel> categoryMap = new HashMap<String, ItemModel>();
-		
+
 		if (categoryColumns != null) {
-			
+
 			for (ItemModel child : gradebookItemModel.getChildren()) {
 				if (child.getItemType() != null && child.getItemType() == Type.CATEGORY)
 					categoryMap.put(child.getName(), child);
 			}
-			
+
 			String currentCategoryId = null;
-			
+
 			for (int i=0;i<categoryColumns.length;i++) {
 				if (categoryColumns[i].trim().equals("")) {
 					if (currentCategoryId != null && i < categoryRangeColumns.length)
 						categoryRangeColumns[i] = currentCategoryId;
-					
+
 					continue;
 				}
-					
+
 				if (categoryColumns[i].equals(StructureRow.CATEGORY.getDisplayName()))
 					continue;
-			
+
 				boolean isModelNew = false;
 				ItemModel categoryModel = null;
 				// In this case, we have a new category that needs to be added to the gradebook
 				String categoryName = categoryColumns[i];
 				boolean isExtraCredit = categoryName.contains(AppConstants.EXTRA_CREDIT_INDICATOR);
-				
+
 				if (isExtraCredit)
 					categoryName = categoryName.replace(AppConstants.EXTRA_CREDIT_INDICATOR, "");
 
 				boolean isUnincluded = categoryName.contains(AppConstants.UNINCLUDED_INDICATOR);
-				
+
 				if (isUnincluded)
 					categoryName = categoryName.replace(AppConstants.UNINCLUDED_INDICATOR, "");
-				
+
 				boolean isDefaultCategory = categoryName.equalsIgnoreCase(AppConstants.DEFAULT_CATEGORY_NAME);
-				
+
 				if (!categoryMap.containsKey(categoryName)) {
-										
+
 					categoryModel = new ItemModel();
 					categoryModel.setItemType(Type.CATEGORY);
 					categoryModel.setName(categoryName);
@@ -1265,12 +1286,12 @@ public class ImportExportUtility {
 					// Otherwise, we may still want to update scores
 					categoryModel = categoryMap.get(categoryName);
 				}
-				
+
 				boolean isModelUpdated = false;
 				if (categoryModel != null) {
 					if (percentGradeColumns != null && percentGradeColumns.length > i) {
 						String percentGrade = percentGradeColumns[i];
-						
+
 						if (percentGrade != null) {
 							try {
 								percentGrade = percentGrade.replace("%", "");
@@ -1282,15 +1303,15 @@ public class ImportExportUtility {
 							}
 						}
 					}
-					
+
 					if (dropLowestColumns != null && dropLowestColumns.length > i) {
 						String dropLowest = dropLowestColumns[i];
-						
+
 						if (dropLowest != null) {
 							try {
 								if (dropLowest.trim().equals(""))
 									dropLowest = "0";
-								
+
 								int dL = Integer.parseInt(dropLowest);
 								categoryModel.setDropLowest(Integer.valueOf(dL));
 								isModelUpdated = true;
@@ -1298,12 +1319,12 @@ public class ImportExportUtility {
 								log.info("Failed to parse " + dropLowest + " as an Integer");
 							}
 						}
-						
+
 					}
-					
+
 					if (equalWeightColumns != null && equalWeightColumns.length > i) {
 						String equalWeight = equalWeightColumns[i];
-						
+
 						if (equalWeight != null) {
 							try {
 								boolean isEqualWeight = Boolean.parseBoolean(equalWeight);
@@ -1314,7 +1335,7 @@ public class ImportExportUtility {
 							}
 						}
 					}
-					
+
 					ItemModel result = null;
 					if (!isDefaultCategory) {
 						if (isModelNew) {
@@ -1326,20 +1347,20 @@ public class ImportExportUtility {
 						if (categoryRangeColumns.length > i)
 							categoryRangeColumns[i] = "-1";
 					}
-					
+
 					if (result != null) {
 						ItemModel activeModel = getActiveModel(result);
-						
+
 						if (activeModel != null) {
 							currentCategoryId = activeModel.getIdentifier();
 							if (categoryRangeColumns.length > i)
 								categoryRangeColumns[i] = currentCategoryId;
-							
+
 							ieInfo.getCategoryIdNameMap().put(
 									activeModel.getCategoryId(), activeModel.getName());
 						}
 					}
-					
+
 				}
 			}
 		}
@@ -1359,59 +1380,59 @@ public class ImportExportUtility {
 				} else if (text.equalsIgnoreCase("course grade")) {
 					continue;
 				}
-				
+
 				boolean isExtraCredit = text.contains(AppConstants.EXTRA_CREDIT_INDICATOR);
-				
+
 				if (isExtraCredit) {
 					text = text.replace(AppConstants.EXTRA_CREDIT_INDICATOR, "");
 				}
-				
+
 				boolean isUnincluded = text.contains(AppConstants.UNINCLUDED_INDICATOR);
-				
+
 				if (isUnincluded) {
 					text = text.replace(AppConstants.UNINCLUDED_INDICATOR, "");
 				}
-				
+
 				String name = text;
-				
+
 				int startParenthesis = text.indexOf("[");
 				int endParenthesis = text.indexOf("pts]");
-				
+
 				if (endParenthesis == -1)
 					endParenthesis = text.indexOf("]");
-				
+
 				if (startParenthesis != -1 && endParenthesis != -1 && endParenthesis > startParenthesis+1) {
 					name = text.substring(0, startParenthesis);
-					
+
 					if (name != null)
 						name = name.trim();
 				}
-				
+
 				StringBuilder key = new StringBuilder();
-				
+
 				String categoryId = null;
 				String categoryName = null;
 				if (categoryRangeColumns != null && categoryRangeColumns.length > i) {
 					categoryId = categoryRangeColumns[i];
-					
+
 					if (categoryId != null) {
 						categoryName = ieInfo.getCategoryIdNameMap().get(Long.valueOf(categoryId));
 						if (categoryName != null) 
 							key.append(categoryName).append("::");
 					}
 				}
-				
+
 				key.append(name);
-				
+
 				ImportHeader header = ieInfo.getHeaderMap().get(key.toString());
-				
+
 				if (header != null) {
 					if (isExtraCredit)
 						header.setExtraCredit(Boolean.valueOf(isExtraCredit));
-					
+
 					if (pointsColumns != null && pointsColumns.length > i) {
 						String points = pointsColumns[i];
-						
+
 						if (points != null) {
 							try {
 								double p = Double.parseDouble(points);
@@ -1420,12 +1441,12 @@ public class ImportExportUtility {
 								log.info("Failed to parse " + points + " as a Double");
 							}
 						}
-						
+
 					}
-					
+
 					if (percentCategoryColumns != null && percentCategoryColumns.length > i) {
 						String percentCategory = percentCategoryColumns[i];
-						
+
 						if (percentCategory != null) {
 							try {
 								percentCategory = percentCategory.replace("%", "");
@@ -1436,13 +1457,13 @@ public class ImportExportUtility {
 							}
 						}
 					}
-					
+
 					if (categoryId != null) {
 						if (categoryName != null)
 							header.setCategoryName(categoryName);
 						header.setCategoryId(categoryId);
 					}
-					
+
 				}
 			}
 		}
@@ -1453,7 +1474,7 @@ public class ImportExportUtility {
 		String fileType = rawData.getFileType(); 
 		String msgs = rawData.getMessages();
 		boolean errorsFound = rawData.isErrorsFound(); 
-		
+
 		if (errorsFound) 
 		{
 			ImportFile importFile = new ImportFile();
@@ -1461,50 +1482,50 @@ public class ImportExportUtility {
 			importFile.setNotes(msgs);
 			return importFile; 
 		}
-		
+
 		GradebookModel gradebook = service.getGradebook(gradebookUid);
 		boolean hasCategories = gradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES;
-		
+
 		List<UserDereference> userDereferences = service.findAllUserDereferences();
 		Map<String, UserDereference> userDereferenceMap = new HashMap<String, UserDereference>();
-		
+
 		for (UserDereference dereference : userDereferences) {
 			String exportUserId = service.getExportUserId(dereference); 
 			userDereferenceMap.put(exportUserId, dereference);
 		}
-		
+
 		ImportFile importFile = new ImportFile();
-		
+
 		if (rawData.isScantronFile())
 		{
 			importFile.setNotifyAssignmentName(!rawData.isNewAssignment()); 
 		}
-		
-		
+
+
 		ImportExportInformation ieInfo = new ImportExportInformation();
 		ieInfo.setHasCategories(hasCategories);
 		ArrayList<ImportRow> importRows = new ArrayList<ImportRow>();
 
 		DecimalFormat decimalFormat = new DecimalFormat();
-		
+
 		Map<String, StructureRow> structureLineIndicatorMap = new HashMap<String, StructureRow>();
 		Map<StructureRow, String[]> structureColumnsMap = new HashMap<StructureRow, String[]>();
-		
+
 		// FIXME - Need to decide whether this should be institutional based.  
 		// FIXME - does this need i18n ? 
 		String[] headerLineIndicators = { "student id", "student name", "learner", "id", "identifier", "userid", "learnerid" };
 		Set<String> headerLineIndicatorSet = new HashSet<String>();
-		
+
 		for (int i=0;i<headerLineIndicators.length;i++) {
 			headerLineIndicatorSet.add(headerLineIndicators[i]);
 		}
-		
+
 		for (StructureRow structureRow : EnumSet.allOf(StructureRow.class)) {
 			String lowercase = structureRow.getDisplayName().toLowerCase();
 			structureLineIndicatorMap.put(lowercase, structureRow);
 		}
 		int structureStop = 0; 
-		
+
 		structureStop = readDataForStructureInformation(rawData, structureLineIndicatorMap, structureColumnsMap, headerLineIndicatorSet);
 		if (structureStop != -1)
 		{
@@ -1526,62 +1547,62 @@ public class ImportExportUtility {
 
 		return importFile;
 	}
-	
+
 	private static ItemModel getActiveModel(ItemModel itemModel) {
-		
+
 		if (itemModel.isActive())
 			return itemModel;
-		
+
 		for (ItemModel child : itemModel.getChildren()) {
 			if (child.isActive())
 				return child;
-			
+
 			ItemModel c2 = getActiveModel(child);
-			
+
 			if (c2 != null)
 				return c2;
 		}
-		
-		
+
+
 		return null;
 	}
 
 	private static ItemModel findModelByName(final String name, final String categoryName, ItemModel root) {
-		
+
 		ItemModelProcessor processor = new ItemModelProcessor(root) {
-			
+
 			@Override
 			public void doItem(ItemModel itemModel) {
-			
+
 				String itemName = itemModel.getName();
-				
+
 				if (itemName != null) {
 					String trimmed = itemName.trim();
-					
+
 					if (trimmed.equals(name) &&
 							(categoryName == null || (itemModel.getParent() != null &&
 									itemModel.getParent().getName().trim().equals(categoryName)))) {
 						this.result = itemModel;
 					}
 				}
-				
+
 			}
 
 		};
-		
-		
+
+
 		processor.process();
-		
+
 		return processor.getResult();
 	}
-	
+
 
 	private class CategoryRange {
-		
+
 		private ItemModel categoryModel;
 		private int startColumn;
 		private int endColumn;
-		
+
 		public CategoryRange(ItemModel categoryModel) {
 			this.categoryModel = categoryModel;
 			this.startColumn = -1;
@@ -1603,10 +1624,10 @@ public class ImportExportUtility {
 		public void setEndColumn(int endColumn) {
 			this.endColumn = endColumn;
 		}
-		
+
 	}
-	
-	
+
+
 }
 
 class ImportExportInformation 
@@ -1733,7 +1754,7 @@ class RawFile
 	private boolean errorsFound; 
 	private boolean newAssignment; 
 	private boolean scantronFile;
-	
+
 
 	public boolean isNewAssignment() {
 		return newAssignment;
@@ -1755,7 +1776,7 @@ class RawFile
 
 	private List<String[]> allRows; 
 	private int curRow; 
-	
+
 	public List<String[]> getAllRows() {
 		return allRows;
 	}
@@ -1782,38 +1803,12 @@ class RawFile
 			curRow = 0; 
 		}
 	}
-	
+
 	public int getCurrentLineNumber()
 	{
 		return curRow; 
 	}
-	
-/*	public void dumpFileToLog()
-	{
-		int row = 1; 
-		log.debug("---> Starting to dump to log");
-		for (String[] cur : allRows) 
-		{
-			StringBuilder msg = new StringBuilder("Row #"); 
-			msg.append(row); 
-			msg.append(" = "); 
-			for (int j = 0; j < cur.length ; j++)
-			{
-				msg.append("C"); 
-				msg.append(j); 
-				msg.append(": "); 
-				msg.append(cur[j]); 
-				msg.append(" "); 
-			}
-			log.debug(msg.toString()); 
-			row++; 
-		}
-		log.debug("---> Finished dump to log");
 
-		
-		
-	}*/
-	
 	public void close() 
 	{
 		this.allRows = null; 
@@ -1823,14 +1818,14 @@ class RawFile
 	{
 		this.curRow = -1; 
 	}
-	
+
 	public String[] readNext() 
 	{
 		if (curRow == -2)
 		{
 			return null; 
 		}
-		
+
 		this.curRow++; 
 		if (curRow >= allRows.size())
 		{
@@ -1840,9 +1835,9 @@ class RawFile
 		{
 			return allRows.get(curRow); 
 		}
-		
+
 	}
-	
+
 	public void addRow(String[] rowData)
 	{
 		if (allRows != null)
@@ -1850,7 +1845,7 @@ class RawFile
 			allRows.add(rowData);
 		}
 	}
-	
+
 	public String[] getRow(int idx)
 	{
 		if (allRows != null)

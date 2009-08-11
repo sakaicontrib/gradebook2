@@ -137,22 +137,6 @@ public class GradebookModel extends EntityModel implements IsSerializable {
 		this.columns = columns;
 	}
 
-	/*public GradeType getGradeType() {
-		return gradeType;
-	}
-
-	public void setGradeType(GradeType gradeType) {
-		this.gradeType = gradeType;
-	}
-	
-	public Boolean isReleaseGrades() {
-		return isReleaseGrades;
-	}
-
-	public void setReleaseGrades(Boolean isReleaseGrades) {
-		this.isReleaseGrades = isReleaseGrades;
-	}
-*/
 	public CategoryType getCategoryType() {
 		return categoryType;
 	}

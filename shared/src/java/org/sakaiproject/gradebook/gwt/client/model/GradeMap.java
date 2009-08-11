@@ -94,14 +94,6 @@ public class GradeMap implements IsSerializable {
 		return "N/A";
 	}
 	
-	/*public String calculate(double points, double maxPoints) {
-		double scaledScore = 0.0;
-		if (maxPoints > 0.0) 
-			scaledScore = (points / maxPoints) * 100.0;
-		
-		return calculate(scaledScore);
-	}*/
-
 	public Double getUpperBound() {
 		return upperBound;
 	}

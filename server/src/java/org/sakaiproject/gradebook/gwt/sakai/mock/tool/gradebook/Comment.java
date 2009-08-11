@@ -33,109 +33,109 @@ import java.io.Serializable;
  */
 public class Comment implements Serializable {
 
-    private Long id;
-    private String studentId;
-    private String graderId;
-    private int version;
-    private Date dateRecorded;
-    private String commentText;
-    private GradableObject gradableObject;
+	private Long id;
+	private String studentId;
+	private String graderId;
+	private int version;
+	private Date dateRecorded;
+	private String commentText;
+	private GradableObject gradableObject;
 
 
-    public Comment(String studentId, String comment, GradableObject gradableObject) {
-        this.gradableObject = gradableObject;
-        this.studentId = studentId;
-        this.commentText = comment;
-    }
+	public Comment(String studentId, String comment, GradableObject gradableObject) {
+		this.gradableObject = gradableObject;
+		this.studentId = studentId;
+		this.commentText = comment;
+	}
 
 
-    public Comment() {
-    }
+	public Comment() {
+	}
 
 
-    public Long getId() {
-        return id;
-    }
+	public Long getId() {
+		return id;
+	}
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    public String getStudentId() {
-        return studentId;
-    }
+	public String getStudentId() {
+		return studentId;
+	}
 
-    public void setStudentId(String studentId) {
-        this.studentId = studentId;
-    }
+	public void setStudentId(String studentId) {
+		this.studentId = studentId;
+	}
 
-    public String getGraderId() {
-        return graderId;
-    }
+	public String getGraderId() {
+		return graderId;
+	}
 
-    public void setGraderId(String graderId) {
-        this.graderId = graderId;
-    }
+	public void setGraderId(String graderId) {
+		this.graderId = graderId;
+	}
 
-    public int getVersion() {
-        return version;
-    }
+	public int getVersion() {
+		return version;
+	}
 
-    public void setVersion(int version) {
-        this.version = version;
-    }
+	public void setVersion(int version) {
+		this.version = version;
+	}
 
-    public Date getDateRecorded() {
-        return dateRecorded;
-    }
+	public Date getDateRecorded() {
+		return dateRecorded;
+	}
 
-    public void setDateRecorded(Date dateRecorded) {
-        this.dateRecorded = dateRecorded;
-    }
+	public void setDateRecorded(Date dateRecorded) {
+		this.dateRecorded = dateRecorded;
+	}
 
-    public String getCommentText() {
-        return commentText;
-    }
+	public String getCommentText() {
+		return commentText;
+	}
 
-    public void setCommentText(String commentText) {
-        this.commentText = commentText;
-    }
+	public void setCommentText(String commentText) {
+		this.commentText = commentText;
+	}
 
-    public GradableObject getGradableObject() {
-        return gradableObject;
-    }
+	public GradableObject getGradableObject() {
+		return gradableObject;
+	}
 
-    public void setGradableObject(GradableObject gradableObject) {
-        this.gradableObject = gradableObject;
-    }
+	public void setGradableObject(GradableObject gradableObject) {
+		this.gradableObject = gradableObject;
+	}
 
 
-    public String toString() {
-        return new ToStringBuilder(this).
-                append("id", id).
-                append("grader", graderId).
-                append("comment",commentText).
-                append("studentid",studentId).toString();
+	public String toString() {
+		return new ToStringBuilder(this).
+		append("id", id).
+		append("grader", graderId).
+		append("comment",commentText).
+		append("studentid",studentId).toString();
 
-    }
+	}
 
-    public boolean equals(Object other) {
-        if (!(other instanceof Comment)) {
-            return false;
-        }
-        Comment comment = (Comment)other;
-        return new EqualsBuilder()
-            .append(gradableObject, comment.getGradableObject())
-            .append(id, comment.getId())
-            .append(commentText, comment.getCommentText()).isEquals();
-    }
+	public boolean equals(Object other) {
+		if (!(other instanceof Comment)) {
+			return false;
+		}
+		Comment comment = (Comment)other;
+		return new EqualsBuilder()
+		.append(gradableObject, comment.getGradableObject())
+		.append(id, comment.getId())
+		.append(commentText, comment.getCommentText()).isEquals();
+	}
 
-    public int hashCode() {
-        return new HashCodeBuilder().
-          append(gradableObject).
-          append(id).
-          append(commentText).
-          toHashCode();
+	public int hashCode() {
+		return new HashCodeBuilder().
+		append(gradableObject).
+		append(id).
+		append(commentText).
+		toHashCode();
 	}
 
 }

@@ -1,24 +1,24 @@
 /**********************************************************************************
-*
-* $Id: GradingEvents.java 9271 2006-05-10 21:52:49Z ray@media.berkeley.edu $
-*
-***********************************************************************************
-*
-* Copyright (c) 2005 The Regents of the University of California, The MIT Corporation
-*
-* Licensed under the Educational Community License, Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.opensource.org/licenses/ecl1.php
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*
-**********************************************************************************/
+ *
+ * $Id: GradingEvents.java 9271 2006-05-10 21:52:49Z ray@media.berkeley.edu $
+ *
+ ***********************************************************************************
+ *
+ * Copyright (c) 2005 The Regents of the University of California, The MIT Corporation
+ *
+ * Licensed under the Educational Community License, Version 1.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.opensource.org/licenses/ecl1.php
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.sakai.mock.tool.gradebook;
 
 import java.io.Serializable;
@@ -33,36 +33,36 @@ import java.util.Map;
  * @author <a href="mailto:jholtzman@berkeley.edu">Josh Holtzman</a>
  */
 public class GradingEvents implements Serializable {
-    protected Map studentsToEventsMap;
+	protected Map studentsToEventsMap;
 
-    public GradingEvents() {
-        studentsToEventsMap = new HashMap();
-    }
+	public GradingEvents() {
+		studentsToEventsMap = new HashMap();
+	}
 
-    /**
-     * Returns a list of grading events, which may be empty if none exist.
-     *
-     * @param studentId
-     * @return
-     */
-    public List getEvents(String studentId) {
-        List gradingEvents = (List)studentsToEventsMap.get(studentId);
-        if(gradingEvents == null) {
-            return new ArrayList();
-        } else {
-            return gradingEvents;
-        }
-    }
+	/**
+	 * Returns a list of grading events, which may be empty if none exist.
+	 *
+	 * @param studentId
+	 * @return
+	 */
+	public List getEvents(String studentId) {
+		List gradingEvents = (List)studentsToEventsMap.get(studentId);
+		if(gradingEvents == null) {
+			return new ArrayList();
+		} else {
+			return gradingEvents;
+		}
+	}
 
-    public void addEvent(GradingEvent event) {
-        String studentId = event.getStudentId();
-        List list = (List)studentsToEventsMap.get(studentId);
-        if(list == null) {
-            list = new ArrayList();
-            studentsToEventsMap.put(studentId, list);
-        }
-        list.add(event);
-    }
+	public void addEvent(GradingEvent event) {
+		String studentId = event.getStudentId();
+		List list = (List)studentsToEventsMap.get(studentId);
+		if(list == null) {
+			list = new ArrayList();
+			studentsToEventsMap.put(studentId, list);
+		}
+		list.add(event);
+	}
 
 }
 

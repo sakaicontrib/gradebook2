@@ -1,25 +1,25 @@
 /**********************************************************************************
-*
-* $Id:$
-*
-***********************************************************************************
-*
-* Copyright (c) 2008, 2009 The Regents of the University of California
-*
-* Licensed under the
-* Educational Community License, Version 2.0 (the "License"); you may
-* not use this file except in compliance with the License. You may
-* obtain a copy of the License at
-* 
-* http://www.osedu.org/licenses/ECL-2.0
-* 
-* Unless required by applicable law or agreed to in writing,
-* software distributed under the License is distributed on an "AS IS"
-* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-* or implied. See the License for the specific language governing
-* permissions and limitations under the License.
-*
-**********************************************************************************/
+ *
+ * $Id:$
+ *
+ ***********************************************************************************
+ *
+ * Copyright (c) 2008, 2009 The Regents of the University of California
+ *
+ * Licensed under the
+ * Educational Community License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may
+ * obtain a copy of the License at
+ * 
+ * http://www.osedu.org/licenses/ECL-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS"
+ * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ *
+ **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.sakai;
 
 import java.util.Map;
@@ -53,11 +53,11 @@ public class UserRecord {
 		this.userUid = userUid;
 		this.isPopulated = false;
 	}
-	
+
 	public UserRecord(User user) {
 		populate(user);
 	}
-	
+
 	public UserRecord(String userUid, String userEid, String displayId, String displayName, String lastNameFirst, String sortName,
 			String email) {
 		this.userUid = userUid;
@@ -69,14 +69,14 @@ public class UserRecord {
 		this.email = email;
 		this.isPopulated = true;
 	}
-	
+
 	public void populate(User user) {
 		String lastName = user.getLastName() == null ? "" : user.getLastName();
 		String firstName = user.getFirstName() == null ? "" : user.getFirstName();
-		
+
 		String sortName = new StringBuilder().append(lastName.toUpperCase()).append(firstName.toUpperCase()).toString();
 		String lastNameFirst = new StringBuilder().append(lastName).append(", ").append(firstName).toString();
-	
+
 		this.userUid = user.getId();
 		this.userEid = user.getEid();
 		this.displayId = user.getDisplayId();
@@ -86,7 +86,7 @@ public class UserRecord {
 		this.email = user.getEmail();
 		this.isPopulated = true;
 	}
-	
+
 	public String getUserUid() {
 		return userUid;
 	}
@@ -104,9 +104,7 @@ public class UserRecord {
 	}
 
 	public String getDisplayName() {
-		//if (!isPopulated())
-		//	return "[Unknown user]";
-		
+
 		return displayName;
 	}
 
@@ -115,9 +113,7 @@ public class UserRecord {
 	}
 
 	public String getSortName() {
-		//if (!isPopulated())
-		//	return "[User unknown]";
-		
+
 		return sortName;
 	}
 
@@ -192,19 +188,19 @@ public class UserRecord {
 	public void setUserEid(String userEid) {
 		this.userEid = userEid;
 	}
-	
+
 	public String getExportCourseManagemntId() {
 		return exportCourseManagemntId;
 	}
-	
+
 	public void setExportCourseManagemntId(String exportCourseManagemntId) {
 		this.exportCourseManagemntId = exportCourseManagemntId;
 	}
-	
+
 	public String getExportUserId() {
 		return exportUserId;
 	}
-	
+
 	public void setExportUserId(String exportUserId) {
 		this.exportUserId = exportUserId;
 	}
