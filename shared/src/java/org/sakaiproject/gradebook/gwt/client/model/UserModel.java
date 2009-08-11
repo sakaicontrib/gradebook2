@@ -1,6 +1,6 @@
 /**********************************************************************************
  *
- * $Id:$
+ * $Id$
  *
  ***********************************************************************************
  *
@@ -62,7 +62,7 @@ public class UserModel extends EntityModel {
 	
 	@Override
 	public String getDisplayName() {
-		return getDisplayName();
+		return getUserDisplayName();
 	}
 	
 }
