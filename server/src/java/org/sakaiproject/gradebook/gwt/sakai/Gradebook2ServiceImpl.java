@@ -2144,7 +2144,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		GradeScaleRecordModel gradeScaleModel = null;
 
 		for (String letterGrade : letterGradesList) {
-			Double oldUpperScale = upperScale;
+			BigDecimal bigOldUpperScale = upperScale == null ? BigDecimal.valueOf(200d) : BigDecimal.valueOf(upperScale.doubleValue());
 			
 			upperScale = (null == upperScale) ? new Double(100d) : upperScale.equals(Double.valueOf(0d)) ? Double.valueOf(0d) : Double.valueOf(upperScale.doubleValue() - 0.00001d);
 
@@ -2165,11 +2165,14 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				upperScale = (Double) value;
 			} else {
 				gradeScaleModel = new GradeScaleRecordModel(letterGrade, gradeMapping.getGradeMap().get(letterGrade), upperScale);
+
 				upperScale = gradeMapping.getGradeMap().get(letterGrade);
 				
-				if (oldUpperScale != null &&
-						upperScale != null && oldUpperScale.doubleValue() <= upperScale.doubleValue()) {
-					throw new InvalidInputException("Value cannot be equal or less than the value below.");
+				if (upperScale != null) {
+					//&& oldUpperScale.doubleValue() <= upperScale.doubleValue()) {
+					BigDecimal bigUpperScale = BigDecimal.valueOf(upperScale.doubleValue());
+					if (bigOldUpperScale.compareTo(bigUpperScale) <= 0)
+						throw new InvalidInputException("Value cannot be equal or less than the value below.");
 				}
 			}
 
