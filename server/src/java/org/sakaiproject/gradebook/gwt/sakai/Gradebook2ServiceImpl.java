@@ -2116,37 +2116,61 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		return categoryItemModel;
 	}
 
-	public <X extends BaseModel> List<X> updateGradeScaleField(String gradebookUid, Object value, String affectedLetterGrade) {
+	public <X extends BaseModel> List<X> updateGradeScaleField(String gradebookUid, Object value, String affectedLetterGrade) throws InvalidInputException {
 
 		// FIXME: Need to store action record for this change.
+		
+		if (value == null) {
+			throw new InvalidInputException("Value cannot be blank. Please enter a number.");
+		}
 
 		List<X> gradeScaleMappings = new ArrayList<X>();
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
 		GradeMapping gradeMapping = gradebook.getSelectedGradeMapping();
-		GradingScale gradingScale = gradeMapping.getGradingScale();
+		//GradingScale gradingScale = gradeMapping.getGradingScale();
 		// Map<String, Double> gradingScaleMap =
 		// gradingScale.getDefaultBottomPercents();
 		// Map<String, Double> newGradingScaleMap = new HashMap<String,
 		// Double>();
 		List<String> letterGradesList = new ArrayList<String>(gradeMapping.getGradeMap().keySet());
 
-		Collections.sort(letterGradesList, LETTER_GRADE_COMPARATOR);
+		if (gradeMapping.getName().equalsIgnoreCase("Pass / Not Pass")) 
+			Collections.sort(letterGradesList, PASS_NOPASS_COMPARATOR);
+		else
+			Collections.sort(letterGradesList, LETTER_GRADE_COMPARATOR);
 
 		Double upperScale = null;
 
 		GradeScaleRecordModel gradeScaleModel = null;
 
 		for (String letterGrade : letterGradesList) {
-
+			Double oldUpperScale = upperScale;
+			
 			upperScale = (null == upperScale) ? new Double(100d) : upperScale.equals(Double.valueOf(0d)) ? Double.valueOf(0d) : Double.valueOf(upperScale.doubleValue() - 0.00001d);
 
 			if (affectedLetterGrade.equals(letterGrade)) {
 				gradeScaleModel = new GradeScaleRecordModel(letterGrade, (Double) value, upperScale);
+				
+				Double oldValue = gradeMapping.getGradeMap().get(letterGrade);
+				
+				if (oldValue != null) {
+					BigDecimal bgOldValue = BigDecimal.valueOf(oldValue.doubleValue()).setScale(2, RoundingMode.HALF_EVEN);
+					
+					if (bgOldValue.compareTo(BigDecimal.ZERO) == 0) {
+						throw new InvalidInputException("Cannot modify an absolute base, \"0\", of the grading scale.");
+					}
+				}
+				
 				gradeMapping.getGradeMap().put(letterGrade, (Double) value);
 				upperScale = (Double) value;
 			} else {
 				gradeScaleModel = new GradeScaleRecordModel(letterGrade, gradeMapping.getGradeMap().get(letterGrade), upperScale);
 				upperScale = gradeMapping.getGradeMap().get(letterGrade);
+				
+				if (oldUpperScale != null &&
+						upperScale != null && oldUpperScale.doubleValue() <= upperScale.doubleValue()) {
+					throw new InvalidInputException("Value cannot be equal or less than the value below.");
+				}
 			}
 
 			gradeScaleMappings.add((X) gradeScaleModel);

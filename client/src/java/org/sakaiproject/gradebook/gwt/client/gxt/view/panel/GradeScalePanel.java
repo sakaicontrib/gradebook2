@@ -70,8 +70,10 @@ import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
+import com.extjs.gxt.ui.client.widget.form.Field;
 import com.extjs.gxt.ui.client.widget.form.LabelField;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
+import com.extjs.gxt.ui.client.widget.form.Validator;
 import com.extjs.gxt.ui.client.widget.grid.CellEditor;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
@@ -265,6 +267,7 @@ public class GradeScalePanel extends ContentPanel {
 				Object originalValue = ge.startValue;
 				final GridEvent gridEvent = ge;
 				
+				
 				if (gridEvent != null) 
 					grid.getView().getCell(gridEvent.rowIndex, gridEvent.colIndex).setInnerText("Saving edit...");
 
@@ -277,6 +280,9 @@ public class GradeScalePanel extends ContentPanel {
 					new AsyncCallback<GradeScaleRecordMapModel>() {
 
 						public void onFailure(Throwable caught) {
+							
+							record.reject(false);
+							
 							Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught));
 						}
 
