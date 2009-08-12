@@ -28,33 +28,20 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
 
 import junit.framework.TestCase;
 
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
+import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
+import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
-import org.sakaiproject.gradebook.gwt.sakai.BusinessLogicImpl;
-import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ServiceImpl;
-import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
-import org.sakaiproject.gradebook.gwt.sakai.SampleInstitutionalAdvisor;
-import org.sakaiproject.gradebook.gwt.sakai.UserRecord;
-import org.sakaiproject.gradebook.gwt.sakai.calculations.GradeCalculationsOOImpl;
-import org.sakaiproject.gradebook.gwt.sakai.mock.GradebookToolServiceMock;
-import org.sakaiproject.gradebook.gwt.sakai.mock.IocMock;
-import org.sakaiproject.gradebook.gwt.sakai.mock.SectionAwarenessMock;
-import org.sakaiproject.gradebook.gwt.sakai.mock.SiteMock;
-import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
-import org.sakaiproject.section.api.SectionAwareness;
-import org.sakaiproject.site.api.Group;
-import org.sakaiproject.site.api.Site;
-import org.sakaiproject.tool.gradebook.Gradebook;
+import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.extjs.gxt.ui.client.data.BasePagingLoadConfig;
 import com.extjs.gxt.ui.client.data.PagingLoadConfig;
@@ -62,142 +49,15 @@ import com.extjs.gxt.ui.client.data.PagingLoadResult;
 
 public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 
-	private static final String GRADEBOOK_UID = "12312409345";
-	private Gradebook2ServiceImpl service;
+	private Gradebook2Service service;
 	private ItemModel category;
 	private GradebookModel gbModel;
 
 	public Gradebook2ServiceWeightedCategoriesTest(String name) {
 		super(name);
-		service = new Gradebook2ServiceImpl() {
-			@Override
-			protected String lookupDefaultGradebookUid() {
-				return GRADEBOOK_UID;
-			}
+		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"test.xml", "db.xml"});
 
-			@Override
-			protected String getSiteContext() {
-				return "blah";
-			}
-
-			@Override
-			protected Site getSite() {
-				return new SiteMock("mock");
-			}
-
-			private List<UserDereference> dereferences;
-			private final int DEFAULT_NUMBER_TEST_LEARNERS = 200;
-
-			protected List<UserRecord> findLearnerRecordPage(Gradebook gradebook, Site site, String[] realmIds, List<String> groupReferences, 
-					Map<String, Group> groupReferenceMap, String sortField, String searchField, String searchCriteria,
-					int offset, int limit, 
-					boolean isAscending) {
-
-				List<UserRecord> userRecords = null;
-				if (userRecords == null) {
-					if (dereferences == null)
-						findAllUserDereferences();
-
-					userRecords = new ArrayList<UserRecord>(DEFAULT_NUMBER_TEST_LEARNERS);
-					for (int i=offset;i<offset+limit;i++) {
-						UserDereference dereference = dereferences.get(i);
-						UserRecord userRecord = new UserRecord(dereference.getUserUid(), dereference.getEid(), dereference.getDisplayId(), dereference.getDisplayName(),
-								dereference.getLastNameFirst(), dereference.getSortName(), dereference.getEmail());
-						userRecord.setExportUserId(getExportUserId(dereference));
-						userRecord.setFinalGradeUserId(getFinalGradeUserId(dereference));
-						userRecords.add(userRecord);
-					}
-				}
-
-				return userRecords;
-			}
-
-
-			public List<UserDereference> findAllUserDereferences() {
-
-				if (dereferences == null) {
-					dereferences = new ArrayList<UserDereference>(DEFAULT_NUMBER_TEST_LEARNERS);
-					for (int i=0;i<DEFAULT_NUMBER_TEST_LEARNERS;i++) {
-						dereferences.add(createUserRecord());
-					}
-				}
-
-				return dereferences;
-			}
-
-
-			/*
-			 * TEST DATA
-			 */
-			 private final String[] FIRST_NAMES = { "Joel", "John", "Kelly",
-					 "Freeland", "Bruce", "Rajeev", "Thomas", "Jon", "Mary", "Jane",
-					 "Susan", "Cindy", "Veronica", "Shana", "Shania", "Olin", "Brenda",
-					 "Lowell", "Doug", "Yiyun", "Xi-Ming", "Grady", "Martha", "Stewart", 
-					 "Kennedy", "Joseph", "Iosef", "Sean", "Timothy", "Paula", "Keith",
-					 "Ignatius", "Iona", "Owen", "Ian", "Ewan", "Rachel", "Wendy", 
-					 "Quentin", "Nancy", "Mckenna", "Kaylee", "Aaron", "Erin", "Maris", 
-					 "D.", "Quin", "Tara", "Moira", "Bristol" };
-
-			 private  final String[] LAST_NAMES = { "Smith", "Paterson",
-					 "Haterson", "Raterson", "Johnson", "Sonson", "Paulson", "Li",
-					 "Yang", "Redford", "Shaner", "Bradley", "Herzog", "O'Neil", "Williams",
-					 "Simone", "Oppenheimer", "Brown", "Colgan", "Frank", "Grant", "Klein",
-					 "Miller", "Taylor", "Schwimmer", "Rourer", "Depuis", "Vaugh", "Auerbach", 
-					 "Shannon", "Stepford", "Banks", "Ashby", "Lynne", "Barclay", "Barton",
-					 "Cromwell", "Dering", "Dunlevy", "Ethelstan", "Fry", "Gilly",
-					 "Goodrich", "Granger", "Griffith", "Herbert", "Hurst", "Keigwin", 
-					 "Paddock", "Pillings", "Landon", "Lawley", "Osborne", "Scarborough",
-					 "Whiting", "Wibert", "Worth", "Tremaine", "Barnum", "Beal", "Beers", 
-					 "Bellamy", "Barnwell", "Beckett", "Breck", "Cotesworth", 
-					 "Coventry", "Elphinstone", "Farnham", "Ely", "Dutton", "Durham",
-					 "Eberlee", "Eton", "Edgecomb", "Eastcote", "Gloucester", "Lewes", 
-					 "Leland", "Mansfield", "Lancaster", "Oakham", "Nottingham", "Norfolk",
-					 "Poole", "Ramsey", "Rawdon", "Rhodes", "Riddell", "Vesey", "Van Wyck",
-					 "Van Ness", "Twickenham", "Trowbridge", "Ames", "Agnew", "Adlam", 
-					 "Aston", "Askew", "Alford", "Bedeau", "Beauchamp" };
-
-			 private final String[] SECTIONS = { "001", "002", "003", "004" };
-
-			 private Random random = new Random();
-
-			 private int getRandomInt(int max) {
-				 return random.nextInt(max);
-			 }
-
-			 private String getRandomSection() {
-				 return SECTIONS[getRandomInt(SECTIONS.length)];
-			 }
-
-			 private UserDereference createUserRecord() {
-				 String studentId = String.valueOf(100000 + getRandomInt(899999));
-				 String firstName = FIRST_NAMES[getRandomInt(FIRST_NAMES.length)];
-				 String lastName = LAST_NAMES[getRandomInt(LAST_NAMES.length)];
-				 String eid = lastName.toLowerCase();
-				 String lastNameFirst = lastName + ", " + firstName;
-				 String sortName = lastName.toUpperCase() + "  " + firstName.toUpperCase();
-				 String displayName = firstName + " " + lastName;
-				 String section = getRandomSection();
-				 String email = firstName.toLowerCase() + "." + lastName.toLowerCase() + "@nowhere.edu";
-
-				 UserDereference userRecord = new UserDereference(studentId, eid, studentId, displayName,
-						 lastNameFirst, sortName, email);
-
-				 return userRecord;
-			 }
-		};
-
-		IocMock.getInstance().registerClassInstance(Gradebook2ServiceImpl.class.getName(), service);
-
-		GradebookToolService gbService = new GradebookToolServiceMock();		
-		SectionAwareness sectionAwareness = new SectionAwarenessMock();
-
-		BusinessLogicImpl businessLogic = new BusinessLogicImpl();
-		businessLogic.setGbService(gbService);
-
-		service.setAdvisor(new SampleInstitutionalAdvisor());
-		service.setBusinessLogic(businessLogic);
-		service.setGbService(gbService);
-		service.setGradeCalculations(new GradeCalculationsOOImpl());
+		service = (Gradebook2Service)context.getBean("org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service");
 	}
 
 	/*
@@ -356,7 +216,8 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 		item.setItemType(Type.ITEM);
 		item.setIncluded(Boolean.TRUE);
 
-		ItemModel parent = service.createItem(gbModel.getGradebookUid(), gbModel.getGradebookId(), item, false);
+		ItemModel activeItem = getActiveItem(service.createItem(gbModel.getGradebookUid(), gbModel.getGradebookId(), item, false));
+		ItemModel parent = activeItem.getParent();
 
 		int numberOfItems = 0;
 		for (ItemModel c : parent.getChildren()) {		
@@ -666,8 +527,14 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
-		gbModel = service.getGradebook(GRADEBOOK_UID);
+		//gbModel = service.getGradebook(GRADEBOOK_UID);
 
+		AuthModel authModel = service.getAuthorization(getName());
+		
+		ApplicationModel applicationModel = service.getApplicationModel(getName());
+
+		gbModel = applicationModel.getGradebookModels().get(0);
+		
 		ItemModel gradebookItemModel = gbModel.getGradebookItemModel();
 		gradebookItemModel.setGradeType(GradeType.PERCENTAGES);
 		gradebookItemModel.setCategoryType(CategoryType.WEIGHTED_CATEGORIES);
@@ -728,8 +595,10 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 		essay4.setItemType(Type.ITEM);
 		essay4.setIncluded(Boolean.TRUE);
 
-		category = service.createItem(gradebookUid, gradebookId, essay4, true);
+		essay4 = getActiveItem(service.createItem(gradebookUid, gradebookId, essay4, true));
 
+		category = essay4.getParent();
+		
 		for (ItemModel child : category.getChildren()) {
 			Double percentCategory = child.getPercentCategory();
 			BigDecimal pC = BigDecimal.valueOf(percentCategory.doubleValue());

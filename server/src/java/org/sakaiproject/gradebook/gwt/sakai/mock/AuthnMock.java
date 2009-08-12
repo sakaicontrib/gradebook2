@@ -23,9 +23,10 @@
 package org.sakaiproject.gradebook.gwt.sakai.mock;
 
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authn;
+import org.sakaiproject.tool.gradebook.facades.Authn;
 
 
-public class AuthnMock implements Gradebook2Authn {
+public class AuthnMock implements Gradebook2Authn, Authn {
 
 	public AuthnMock() {
 		
