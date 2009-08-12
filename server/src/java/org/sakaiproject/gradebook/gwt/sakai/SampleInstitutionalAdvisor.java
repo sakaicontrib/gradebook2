@@ -268,19 +268,10 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 			return null;
 		}
 
-		final char[] studentGradeChars = studentGrade.toCharArray();
-
-		if (Character.isLetter(studentGradeChars[0])) {
-
-			if (PLUS == studentGradeChars[1] || MINUS == studentGradeChars[1]) {
-
-				char[] letterGrade = { studentGradeChars[0], studentGradeChars[1] };
-				return new String(letterGrade);
-			} else {
-
-				char[] letterGrade = { studentGradeChars[0] };
-				return new String(letterGrade);
-			}
+		int indexOf = studentGrade.indexOf(" (");
+		
+		if (indexOf != -1) {
+			return studentGrade.substring(0, indexOf);
 		}
 
 		return null;
