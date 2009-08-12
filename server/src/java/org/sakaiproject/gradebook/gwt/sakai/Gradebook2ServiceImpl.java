@@ -2123,7 +2123,12 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		if (value == null) {
 			throw new InvalidInputException("Value cannot be blank. Please enter a number.");
 		}
+		
+		BigDecimal bigValue = BigDecimal.valueOf(((Double)value).doubleValue()).setScale(2, RoundingMode.HALF_EVEN);
 
+		if (bigValue.compareTo(BigDecimal.ZERO) == 0)
+			throw new InvalidInputException("Value cannot be zero. Please enter a number larger than zero.");
+		
 		List<X> gradeScaleMappings = new ArrayList<X>();
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
 		GradeMapping gradeMapping = gradebook.getSelectedGradeMapping();
