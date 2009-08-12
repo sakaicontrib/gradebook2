@@ -2169,9 +2169,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				upperScale = gradeMapping.getGradeMap().get(letterGrade);
 				
 				if (upperScale != null) {
-					//&& oldUpperScale.doubleValue() <= upperScale.doubleValue()) {
 					BigDecimal bigUpperScale = BigDecimal.valueOf(upperScale.doubleValue());
-					if (bigOldUpperScale.compareTo(bigUpperScale) <= 0) 
+					if (bigOldUpperScale.compareTo(BigDecimal.ZERO) != 0 
+							&& bigOldUpperScale.compareTo(bigUpperScale) <= 0) 
 						throw new InvalidInputException("Value (" + bigOldUpperScale.setScale(2, RoundingMode.HALF_EVEN).toString() + ") cannot be equal or less than the value (" + bigUpperScale.setScale(2, RoundingMode.HALF_EVEN).toString() + ") below ");
 					
 				}
