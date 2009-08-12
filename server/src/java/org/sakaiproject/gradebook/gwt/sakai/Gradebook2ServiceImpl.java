@@ -2128,6 +2128,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 		if (bigValue.compareTo(BigDecimal.ZERO) == 0)
 			throw new InvalidInputException("Value cannot be zero. Please enter a number larger than zero.");
+		if (bigValue.compareTo(BigDecimal.valueOf(100.00d)) >= 0)
+			throw new InvalidInputException("Value (" + bigValue.setScale(2, RoundingMode.HALF_EVEN).toString() + ") cannot be equal or larger than 100.00.");
 		
 		List<X> gradeScaleMappings = new ArrayList<X>();
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
@@ -2162,8 +2164,13 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					BigDecimal bgOldValue = BigDecimal.valueOf(oldValue.doubleValue()).setScale(2, RoundingMode.HALF_EVEN);
 					
 					if (bgOldValue.compareTo(BigDecimal.ZERO) == 0) {
-						throw new InvalidInputException("Cannot modify an absolute base, \"0\", of the grading scale.");
-					}
+						throw new InvalidInputException("Cannot modify the absolute base of a grading scale or manual override grades.");
+					} 
+				}
+				
+				// If the one above is not bigger than the one below then throw an exception
+				if (bigOldUpperScale.compareTo(bigValue) <= 0) {
+					throw new InvalidInputException("Value (" + bigValue.setScale(2, RoundingMode.HALF_EVEN).toString() +") must be smaller than the value above (" + bigOldUpperScale.setScale(2, RoundingMode.HALF_EVEN).toString() + ")");
 				}
 				
 				gradeMapping.getGradeMap().put(letterGrade, (Double) value);
