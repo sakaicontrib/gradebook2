@@ -2146,7 +2146,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		for (String letterGrade : letterGradesList) {
 			BigDecimal bigOldUpperScale = upperScale == null ? BigDecimal.valueOf(200d) : BigDecimal.valueOf(upperScale.doubleValue());
 			
-			upperScale = (null == upperScale) ? new Double(100d) : upperScale.equals(Double.valueOf(0d)) ? Double.valueOf(0d) : Double.valueOf(upperScale.doubleValue() - 0.00001d);
+			upperScale = (null == upperScale) ? new Double(100d) : upperScale.equals(Double.valueOf(0d)) ? Double.valueOf(0d) : Double.valueOf(upperScale.doubleValue() - 0.01d);
 
 			if (affectedLetterGrade.equals(letterGrade)) {
 				gradeScaleModel = new GradeScaleRecordModel(letterGrade, (Double) value, upperScale);
@@ -2171,8 +2171,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				if (upperScale != null) {
 					//&& oldUpperScale.doubleValue() <= upperScale.doubleValue()) {
 					BigDecimal bigUpperScale = BigDecimal.valueOf(upperScale.doubleValue());
-					if (bigOldUpperScale.compareTo(bigUpperScale) <= 0)
-						throw new InvalidInputException("Value cannot be equal or less than the value below.");
+					if (bigOldUpperScale.compareTo(bigUpperScale) <= 0) 
+						throw new InvalidInputException("Value (" + bigOldUpperScale.setScale(2, RoundingMode.HALF_EVEN).toString() + ") cannot be equal or less than the value (" + bigUpperScale.setScale(2, RoundingMode.HALF_EVEN).toString() + ") below ");
+					
 				}
 			}
 
