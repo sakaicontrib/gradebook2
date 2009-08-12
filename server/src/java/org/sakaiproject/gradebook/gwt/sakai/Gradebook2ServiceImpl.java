@@ -2603,6 +2603,19 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 					}
 
+					Map<Long, Comment> commentMap = new HashMap<Long, Comment>();
+					List<Comment> comments = gbService.getStudentAssignmentComments(user.getId(), gradebook.getId());
+					
+					for (Comment comment : comments) {
+						GradableObject a = comment.getGradableObject();
+						
+						if (a != null) {
+							commentMap.put(a.getId(), comment);
+						}
+					}
+					
+					userRecord.setCommentMap(commentMap);
+					
 					CourseGradeRecord courseGradeRecord = gbService.getStudentCourseGradeRecord(gradebook, user.getId());
 					userRecord.setCourseGradeRecord(courseGradeRecord);
 
