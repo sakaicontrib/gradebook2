@@ -63,7 +63,8 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 		ASSIGNMENT_ID("Item Id"), DATA_TYPE("Data Type"), CATEGORYTYPE("Organization"),
 		GRADETYPE("Grade Type"), RELEASEGRADES("Display Course Grades"), 
 		RELEASEITEMS("Display Released Items"),
-		ITEM_ORDER("Order"), GRADESCALEID("grade scale id");
+		ITEM_ORDER("Order"), GRADESCALEID("grade scale id"), 
+		EXTRA_CREDIT_SCALED("Scale Extra Credit");
 		
 		private String propertyName;
 		
@@ -392,6 +393,14 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 	
 	public void setGradeScaleId(Long id) {
 		set(Key.GRADESCALEID.name(), id);
+	}
+	
+	public Boolean getExtraCreditScaled() {
+		return get(Key.EXTRA_CREDIT_SCALED.name());
+	}
+	
+	public void setExtraCreditScaled(Boolean scaled) {
+		set(Key.EXTRA_CREDIT_SCALED.name(), scaled);
 	}
 	
 	@Override

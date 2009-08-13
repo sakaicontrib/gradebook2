@@ -49,8 +49,8 @@
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-db-ext/M2/sakai-db-ext-M2.jar"/>
 	<classpathentry kind="var" path="M2_REPO/cglib/cglib-nodep/2.1_3/cglib-nodep-2.1_3.jar"/>
 	<classpathentry kind="var" path="M2_REPO/antlr/antlr/2.7.6/antlr-2.7.6.jar"/>
-	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
 	<classpathentry kind="var" path="M2_REPO/org/apache/poi/poi/3.2-FINAL/poi-3.2-FINAL.jar"/>
 	<classpathentry kind="var" path="M2_REPO/jexcelapi/jxl/2.4.2/jxl-2.4.2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-gradebook-service-impl/M2/sakai-gradebook-service-impl-M2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

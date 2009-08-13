@@ -99,6 +99,7 @@ public class ItemFormPanel extends ContentPanel {
 	private CheckBox releasedField;
 	private CheckBox releaseGradesField;
 	private CheckBox releaseItemsField;
+	private CheckBox scaledExtraCreditField;
 	private NumberField percentCourseGradeField;
 	private NumberField percentCategoryField;
 	private NumberField pointsField;
@@ -281,6 +282,12 @@ public class ItemFormPanel extends ContentPanel {
 		releasedField.setVisible(false);
 		formPanel.add(releasedField);
 
+		scaledExtraCreditField = new NullSensitiveCheckBox();
+		scaledExtraCreditField.setName(ItemModel.Key.EXTRA_CREDIT_SCALED.name());
+		scaledExtraCreditField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.EXTRA_CREDIT_SCALED));
+		scaledExtraCreditField.setVisible(false);
+		formPanel.add(scaledExtraCreditField);
+		
 		okButton = new AriaButton("", selectionListener, 's');
 		addButton(okButton);
 
@@ -436,8 +443,6 @@ public class ItemFormPanel extends ContentPanel {
 
 	public void onLoadItemTreeModel(ItemModel rootItemModel) {
 
-
-
 		if (categoryStore != null) {
 			categoryStore.removeAll();
 		}
@@ -470,6 +475,19 @@ public class ItemFormPanel extends ContentPanel {
 		gradeTypeStore.add(getGradeTypeModel(GradebookModel.GradeType.PERCENTAGES));
 
 		gradeTypePicker.setStore(gradeTypeStore);
+		
+	
+		if (selectedItemModel != null) {
+			removeListeners();
+			CategoryType categoryType = selectedGradebook.getGradebookItemModel().getCategoryType();
+			Type itemType = selectedItemModel.getItemType();
+			boolean isAllowedToEdit = DataTypeConversionUtil.checkBoolean(selectedGradebook.isUserAbleToEditAssessments());
+			boolean hasWeights = categoryType == CategoryType.WEIGHTED_CATEGORIES;
+			boolean isNotGradebook = itemType != Type.GRADEBOOK;
+			
+			initField(scaledExtraCreditField, !isDelete && isAllowedToEdit, !isNotGradebook && !hasWeights);
+			addListeners();
+		}
 
 	}
 
@@ -689,6 +707,7 @@ public class ItemFormPanel extends ContentPanel {
 		initField(categoryTypePicker, isAllowedToEdit, isEditable && !isNotGradebook);
 		initField(gradeTypePicker, isAllowedToEdit, isEditable && !isNotGradebook);
 		initField(sourceField, false, isEditable && isItem);
+		initField(scaledExtraCreditField, !isDelete && isAllowedToEdit, !isNotGradebook && !hasWeights);
 	}
 
 	private void initField(Field field, boolean isEnabled, boolean isVisible) {
@@ -804,6 +823,7 @@ public class ItemFormPanel extends ContentPanel {
 		extraCreditField.addListener(Events.Change, extraCreditChangeListener);
 		equallyWeightChildrenField.addListener(Events.Change, checkboxChangeListener);
 		releasedField.addListener(Events.Change, checkboxChangeListener);
+		scaledExtraCreditField.addListener(Events.Change, checkboxChangeListener);
 	}
 
 	private void removeListeners() {
@@ -821,6 +841,7 @@ public class ItemFormPanel extends ContentPanel {
 		extraCreditField.removeListener(Events.Change, extraCreditChangeListener);
 		equallyWeightChildrenField.removeListener(Events.Change, checkboxChangeListener);
 		releasedField.removeListener(Events.Change, checkboxChangeListener);
+		scaledExtraCreditField.removeListener(Events.Change, checkboxChangeListener);
 	}
 
 	private void initListeners() {

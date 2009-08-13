@@ -66,7 +66,7 @@ public interface GradeCalculations {
 	public BigDecimal getCategoryWeight(Category category);
 	
 	
-	public BigDecimal getCourseGrade(Gradebook gradebook, Collection<?> items, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap);
+	public BigDecimal getCourseGrade(Gradebook gradebook, Collection<?> items, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap, boolean isExtraCreditScaled);
 	
 	public GradeStatistics calculateStatistics(List<BigDecimal> gradeList, BigDecimal sum);
 	

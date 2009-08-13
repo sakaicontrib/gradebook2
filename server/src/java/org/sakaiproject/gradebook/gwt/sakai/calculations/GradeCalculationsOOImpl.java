@@ -210,33 +210,33 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 	}
 
 	@SuppressWarnings("unchecked")
-	public BigDecimal getCourseGrade(Gradebook gradebook, Collection<?> items, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap) {
+	public BigDecimal getCourseGrade(Gradebook gradebook, Collection<?> items, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap, boolean isExtraCreditScaled) {
 		boolean isWeighted = true;
 		switch (gradebook.getCategory_type()) {
 			case GradebookService.CATEGORY_TYPE_NO_CATEGORY:
-				return getNoCategoriesCourseGrade((Collection<Assignment>)items, assignmentGradeRecordMap);
+				return getNoCategoriesCourseGrade((Collection<Assignment>)items, assignmentGradeRecordMap, isExtraCreditScaled);
 			case GradebookService.CATEGORY_TYPE_ONLY_CATEGORY:
 				isWeighted = false;
 			case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
-				return getCategoriesCourseGrade((Collection<Category>)items, assignmentGradeRecordMap, isWeighted);
+				return getCategoriesCourseGrade((Collection<Category>)items, assignmentGradeRecordMap, isWeighted, isExtraCreditScaled);
 		}
 
 		return null;
 	}
 
-	private BigDecimal getNoCategoriesCourseGrade(Collection<Assignment> assignments, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap) {
+	private BigDecimal getNoCategoriesCourseGrade(Collection<Assignment> assignments, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap, boolean isExtraCreditScaled) {
 		List<GradeRecordCalculationUnit> gradeRecordUnits = new ArrayList<GradeRecordCalculationUnit>();
 
 		populateGradeRecordUnits(assignments, gradeRecordUnits, assignmentGradeRecordMap);
 
 		GradebookCalculationUnit gradebookUnit = new GradebookCalculationUnit();
 
-		return gradebookUnit.calculatePointsBasedCourseGrade(gradeRecordUnits);
+		return gradebookUnit.calculatePointsBasedCourseGrade(gradeRecordUnits, isExtraCreditScaled);
 	}
 
 	@SuppressWarnings("unchecked")
 	private BigDecimal getCategoriesCourseGrade(Collection<Category> categoriesWithAssignments, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap,
-			boolean isWeighted) {
+			boolean isWeighted, boolean isExtraCreditScaled) {
 
 		if (categoriesWithAssignments == null && assignmentGradeRecordMap != null) 
 			categoriesWithAssignments = generateCategoriesWithAssignments(assignmentGradeRecordMap);
@@ -278,7 +278,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		if (isWeighted)
 			return gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap);
 
-		return gradebookUnit.calculatePointsBasedCourseGrade(categoryGradeUnitListMap);
+		return gradebookUnit.calculatePointsBasedCourseGrade(categoryGradeUnitListMap, isExtraCreditScaled);
 	}
 
 

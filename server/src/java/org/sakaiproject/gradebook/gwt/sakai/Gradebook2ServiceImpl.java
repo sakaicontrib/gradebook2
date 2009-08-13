@@ -1386,13 +1386,14 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		for (String studentUid : gradedStudentUids) {
 			Map<Long, AssignmentGradeRecord> studentMap = studentGradeRecordMap.get(studentUid);
 			BigDecimal courseGrade = null;
-
+			
+			boolean isScaledExtraCredit = DataTypeConversionUtil.checkBoolean(gradebook.isScaledExtraCredit());
 			switch (gradebook.getCategory_type()) {
 				case GradebookService.CATEGORY_TYPE_NO_CATEGORY:
-					courseGrade = gradeCalculations.getCourseGrade(gradebook, assignments, studentMap);
+					courseGrade = gradeCalculations.getCourseGrade(gradebook, assignments, studentMap, isScaledExtraCredit);
 					break;
 				default:
-					courseGrade = gradeCalculations.getCourseGrade(gradebook, categories, studentMap);
+					courseGrade = gradeCalculations.getCourseGrade(gradebook, categories, studentMap, isScaledExtraCredit);
 			}
 
 			if (courseGrade != null) {
@@ -2697,7 +2698,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		itemModel.setReleaseGrades(Boolean.valueOf(gradebook.isCourseGradeDisplayed()));
 		itemModel.setReleaseItems(Boolean.valueOf(gradebook.isAssignmentsDisplayed()));
 		itemModel.setGradeScaleId(gradebook.getSelectedGradeMapping().getId());
-
+		itemModel.setExtraCreditScaled(gradebook.isScaledExtraCredit());
+		
 		return itemModel;
 	}
 
@@ -3164,13 +3166,14 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		BigDecimal autoCalculatedGrade = null;
 
 		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
-
+		boolean isScaledExtraCredit = DataTypeConversionUtil.checkBoolean(gradebook.isScaledExtraCredit());
+		
 		switch (gradebook.getCategory_type()) {
 			case GradebookService.CATEGORY_TYPE_NO_CATEGORY:
-				autoCalculatedGrade = gradeCalculations.getCourseGrade(gradebook, assignments, studentGradeMap);
+				autoCalculatedGrade = gradeCalculations.getCourseGrade(gradebook, assignments, studentGradeMap, isScaledExtraCredit);
 				break;
 			default:
-				autoCalculatedGrade = gradeCalculations.getCourseGrade(gradebook, categories, studentGradeMap);
+				autoCalculatedGrade = gradeCalculations.getCourseGrade(gradebook, categories, studentGradeMap, isScaledExtraCredit);
 		}
 
 		if (autoCalculatedGrade != null)
@@ -3680,6 +3683,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 		gradebook.setAssignmentsDisplayed(isReleaseItems);
 
+		boolean isExtraCreditScaled = DataTypeConversionUtil.checkBoolean(item.getExtraCreditScaled());
+		
+		gradebook.setScaledExtraCredit(Boolean.valueOf(isExtraCreditScaled));
+		
 		GradeMapping mapping = gradebook.getSelectedGradeMapping();
 		Long gradeScaleId = item.getGradeScaleId();
 		if (mapping != null && gradeScaleId != null && !mapping.getId().equals(gradeScaleId)) {

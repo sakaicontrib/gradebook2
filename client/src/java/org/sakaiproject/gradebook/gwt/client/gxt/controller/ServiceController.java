@@ -44,6 +44,7 @@ import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
+import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -379,6 +380,8 @@ public class ServiceController extends Controller {
 		boolean isGradeScaleUpdated = false;
 		boolean isReleaseGradesUpdated = false;
 		boolean isReleaseItemsUpdated = false;
+		boolean isExtraCreditScaled = false;
+		
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 
 		if (event.record != null && event.record.isEditing()) {
@@ -389,7 +392,8 @@ public class ServiceController extends Controller {
 			isCategoryTypeUpdated = changes != null && changes.get(ItemModel.Key.CATEGORYTYPE.name()) != null;
 			isReleaseGradesUpdated = changes != null && changes.get(ItemModel.Key.RELEASEGRADES.name()) != null;
 			isReleaseItemsUpdated = changes != null && changes.get(ItemModel.Key.RELEASEITEMS.name()) != null;
-
+			isExtraCreditScaled = changes != null && changes.get(ItemModel.Key.EXTRA_CREDIT_SCALED.name()) != null;
+			
 			event.record.commit(false);
 		}
 
@@ -399,7 +403,7 @@ public class ServiceController extends Controller {
 				Dispatcher.forwardEvent(GradebookEvents.ItemUpdated.getEventType(), result);
 
 				selectedGradebook.setGradebookItemModel(result);
-
+				
 				if (isCategoryTypeUpdated || isReleaseGradesUpdated || isReleaseItemsUpdated) {
 					Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookSetup.getEventType(),
 							selectedGradebook);
@@ -410,7 +414,8 @@ public class ServiceController extends Controller {
 							selectedGradebook);
 				}
 
-				if (event.item.getItemType() != Type.GRADEBOOK || isGradeTypeUpdated || isCategoryTypeUpdated) {
+				if (event.item.getItemType() != Type.GRADEBOOK || isGradeTypeUpdated || isCategoryTypeUpdated ||
+						(isExtraCreditScaled && result.getCategoryType() == CategoryType.SIMPLE_CATEGORIES)) {
 					Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookItems.getEventType(),
 							selectedGradebook);
 

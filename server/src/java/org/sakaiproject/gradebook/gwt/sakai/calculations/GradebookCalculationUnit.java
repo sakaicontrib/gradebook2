@@ -48,10 +48,10 @@ public class GradebookCalculationUnit {
 	}
 
 
-	public BigDecimal calculatePointsBasedCourseGrade(List<GradeRecordCalculationUnit> units) {
+	public BigDecimal calculatePointsBasedCourseGrade(List<GradeRecordCalculationUnit> units, boolean isExtraCreditScaled) {
 		BigDecimal courseGrade = null;
 
-		BigDecimal[] result = sumPoints(units, 0);
+		BigDecimal[] result = sumPoints(units, 0, isExtraCreditScaled);
 
 		if (result != null) {
 			BigDecimal sumPoints = result[0];
@@ -66,7 +66,7 @@ public class GradebookCalculationUnit {
 
 
 				if (sumExtraCreditPoints != null)
-					sumPoints = sumPoints.add(sumExtraCreditPoints);
+					sumPoints = sumPoints.add(scaleExtraCreditPoints(sumExtraCreditPoints, sumPointsPossible, isExtraCreditScaled));
 
 				if (sumPoints.compareTo(BigDecimal.ZERO) == 0) 
 					return BigDecimal.ZERO.setScale(AppConstants.SCALE);
@@ -85,7 +85,7 @@ public class GradebookCalculationUnit {
 		return courseGrade;
 	}
 
-	public BigDecimal calculatePointsBasedCourseGrade(Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap) {
+	public BigDecimal calculatePointsBasedCourseGrade(Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap, boolean isExtraCreditScaled) {
 		BigDecimal courseGrade = null;
 
 		BigDecimal sumPoints = null;
@@ -97,43 +97,46 @@ public class GradebookCalculationUnit {
 			CategoryCalculationUnit categoryUnit = categoryUnitMap.get(categoryKey);
 			List<GradeRecordCalculationUnit> units = categoryGradeUnitListMap.get(categoryKey);
 
-			BigDecimal[] categoryResult = sumPoints(units, categoryUnit.getDropLowest());
+			BigDecimal[] categoryResult = sumPoints(units, categoryUnit.getDropLowest(), isExtraCreditScaled);
 
 			BigDecimal categoryPointsReceived = categoryResult[0];
 			BigDecimal categoryPointsPossible = categoryResult[1];
 			BigDecimal categoryExtraCreditPoints = categoryResult[2];
 
-			if (categoryPointsReceived != null) {
 
-				// For extra credit categories, we simply add up all the points for that category without adding the points possible to that sum			
-				if (categoryUnit.isExtraCredit()) {
+			// For extra credit categories, we simply add up all the points for that category without adding the points possible to that sum			
+			if (categoryUnit.isExtraCredit()) {
+				if (sumExtraCreditPoints == null)
+					sumExtraCreditPoints = BigDecimal.ZERO.setScale(AppConstants.SCALE);
+
+				if (categoryPointsReceived != null)
+					sumExtraCreditPoints = sumExtraCreditPoints.add(categoryPointsReceived);
+					
+				if (categoryExtraCreditPoints != null)
+					sumExtraCreditPoints = sumExtraCreditPoints.add(categoryExtraCreditPoints);
+					
+			} else {
+				if (sumPoints == null)
+					sumPoints = BigDecimal.ZERO.setScale(AppConstants.SCALE);
+
+				if (sumPointsPossible == null)
+					sumPointsPossible = BigDecimal.ZERO.setScale(AppConstants.SCALE);
+
+				if (categoryPointsReceived != null)
+					sumPoints = sumPoints.add(categoryPointsReceived);
+
+				if (categoryPointsPossible != null)
+					sumPointsPossible = sumPointsPossible.add(categoryPointsPossible);
+					
+				if (categoryExtraCreditPoints != null) {
 					if (sumExtraCreditPoints == null)
 						sumExtraCreditPoints = BigDecimal.ZERO.setScale(AppConstants.SCALE);
 
-					sumExtraCreditPoints = sumExtraCreditPoints.add(categoryPointsReceived);
 					if (categoryExtraCreditPoints != null)
 						sumExtraCreditPoints = sumExtraCreditPoints.add(categoryExtraCreditPoints);
-				} else {
-					if (sumPoints == null)
-						sumPoints = BigDecimal.ZERO.setScale(AppConstants.SCALE);
-
-					if (sumPointsPossible == null)
-						sumPointsPossible = BigDecimal.ZERO.setScale(AppConstants.SCALE);
-
-					sumPoints = sumPoints.add(categoryPointsReceived);
-
-					if (categoryPointsPossible != null)
-						sumPointsPossible = sumPointsPossible.add(categoryPointsPossible);
-
-					if (categoryExtraCreditPoints != null) {
-						if (sumExtraCreditPoints == null)
-							sumExtraCreditPoints = BigDecimal.ZERO.setScale(AppConstants.SCALE);
-
-						if (categoryExtraCreditPoints != null)
-							sumExtraCreditPoints = sumExtraCreditPoints.add(categoryExtraCreditPoints);
-					}
 				}
 			}
+
 
 		}
 
@@ -145,7 +148,7 @@ public class GradebookCalculationUnit {
 
 
 			if (sumExtraCreditPoints != null)
-				sumPoints = sumPoints.add(sumExtraCreditPoints);
+				sumPoints = sumPoints.add(scaleExtraCreditPoints(sumExtraCreditPoints, sumPointsPossible, isExtraCreditScaled));
 
 			if (sumPoints.compareTo(BigDecimal.ZERO) == 0) 
 				return BigDecimal.ZERO.setScale(AppConstants.SCALE);
@@ -243,7 +246,7 @@ public class GradebookCalculationUnit {
 
 
 
-	private BigDecimal[] sumPoints(List<GradeRecordCalculationUnit> units, int dropLowest) {
+	private BigDecimal[] sumPoints(List<GradeRecordCalculationUnit> units, int dropLowest, boolean isExtraCreditScaled) {
 
 		BigDecimal[] result = new BigDecimal[3];
 
@@ -268,26 +271,26 @@ public class GradebookCalculationUnit {
 				BigDecimal pointsPossible = unit.getPointsPossible();
 
 				if (pointsReceived != null) {
-					if (sumPoints == null)
-						sumPoints = BigDecimal.ZERO.setScale(AppConstants.SCALE);
-
-					sumPoints = sumPoints.add(pointsReceived);
-				}
-
-				if (pointsPossible != null && !unit.isExtraCredit()) {
-
 					if (unit.isExtraCredit()) {
 						if (sumExtraCreditPoints == null)
 							sumExtraCreditPoints = BigDecimal.ZERO.setScale(AppConstants.SCALE);
 
-						sumExtraCreditPoints = sumExtraCreditPoints.add(pointsPossible);
+						sumExtraCreditPoints = sumExtraCreditPoints.add(pointsReceived);
 					} else {
-						if (sumPointsPossible == null)
-							sumPointsPossible = BigDecimal.ZERO.setScale(AppConstants.SCALE);
-
-						sumPointsPossible = sumPointsPossible.add(pointsPossible);
+						if (sumPoints == null)
+							sumPoints = BigDecimal.ZERO.setScale(AppConstants.SCALE);
+	
+						sumPoints = sumPoints.add(pointsReceived);
 					}
 				}
+
+				if (pointsPossible != null && !unit.isExtraCredit()) {
+					if (sumPointsPossible == null)
+						sumPointsPossible = BigDecimal.ZERO.setScale(AppConstants.SCALE);
+
+					sumPointsPossible = sumPointsPossible.add(pointsPossible);
+				}
+				
 
 				if (doCalculateDropLowest && !unit.isExtraCredit()) {	
 					unit.calculateRawDifference();
@@ -362,5 +365,14 @@ public class GradebookCalculationUnit {
 		} // if
 
 		return result;
+	}
+	
+	private BigDecimal scaleExtraCreditPoints(BigDecimal extraCreditPoints, BigDecimal pointsPossible, boolean isExtraCreditScaled) {
+		if (extraCreditPoints == null || pointsPossible == null)
+			return null;
+		
+		if (isExtraCreditScaled)
+ 			return extraCreditPoints.divide(pointsPossible, RoundingMode.HALF_EVEN);
+ 		return extraCreditPoints;
 	}
 }

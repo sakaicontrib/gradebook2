@@ -74,7 +74,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			ItemModel gradebook = gbModel.getGradebookItemModel();
 			
 			gradebook.setName("Test Gradebook");
-			gradebook.setCategoryType(CategoryType.WEIGHTED_CATEGORIES);
+			gradebook.setCategoryType(CategoryType.SIMPLE_CATEGORIES);
 			gradebook.setGradeType(GradeType.POINTS);
 			gradebook.setItemType(Type.GRADEBOOK);
 			
@@ -144,7 +144,6 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			essay3.setItemType(Type.ITEM);
 			essay3.setIncluded(Boolean.TRUE);
 			service.createItem(gradebookUid, gradebookId, essay3, true);
-			
 
 			ItemModel hw1 = new ItemModel();
 			hw1.setName("HW 1");

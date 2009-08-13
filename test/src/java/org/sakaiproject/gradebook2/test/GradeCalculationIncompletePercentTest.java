@@ -70,7 +70,7 @@ public class GradeCalculationIncompletePercentTest extends TestCase {
 		
 		List<GradeRecordCalculationUnit> units = getRecordUnits(values);
 		
-		BigDecimal courseGrade = gradebookUnit.calculatePointsBasedCourseGrade(units);
+		BigDecimal courseGrade = gradebookUnit.calculatePointsBasedCourseGrade(units, false);
 
 		assertEqualsAtScale2(BigDecimal.valueOf(100.00d), courseGrade);
 	}
@@ -91,7 +91,7 @@ public class GradeCalculationIncompletePercentTest extends TestCase {
 		
 		List<GradeRecordCalculationUnit> units = getRecordUnits(values);
 		
-		BigDecimal courseGrade = gradebookUnit.calculatePointsBasedCourseGrade(units);
+		BigDecimal courseGrade = gradebookUnit.calculatePointsBasedCourseGrade(units, false);
 
 		assertEqualsAtScale2(BigDecimal.valueOf(0.00d), courseGrade);
 	}
@@ -112,7 +112,7 @@ public class GradeCalculationIncompletePercentTest extends TestCase {
 		
 		List<GradeRecordCalculationUnit> units = getRecordUnits(values);
 		
-		BigDecimal courseGrade = gradebookUnit.calculatePointsBasedCourseGrade(units);
+		BigDecimal courseGrade = gradebookUnit.calculatePointsBasedCourseGrade(units, false);
 
 		assertEqualsAtScale2(BigDecimal.valueOf(80.00d), courseGrade);
 	}
@@ -139,7 +139,7 @@ public class GradeCalculationIncompletePercentTest extends TestCase {
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 		categoryGradeUnitListMap.put(HW_ID, hwUnits);
 		
-		BigDecimal courseGrade = gradebookUnit.calculatePointsBasedCourseGrade(categoryGradeUnitListMap);
+		BigDecimal courseGrade = gradebookUnit.calculatePointsBasedCourseGrade(categoryGradeUnitListMap, false);
 	
 		assertEqualsAtScale2(BigDecimal.valueOf(0.00d), courseGrade);
 	}
@@ -166,7 +166,7 @@ public class GradeCalculationIncompletePercentTest extends TestCase {
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 		categoryGradeUnitListMap.put(HW_ID, hwUnits);
 		
-		BigDecimal courseGrade = gradebookUnit.calculatePointsBasedCourseGrade(categoryGradeUnitListMap);
+		BigDecimal courseGrade = gradebookUnit.calculatePointsBasedCourseGrade(categoryGradeUnitListMap, false);
 	
 		assertEqualsAtScale2(BigDecimal.valueOf(40.00d), courseGrade);
 	}

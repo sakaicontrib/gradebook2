@@ -22,11 +22,13 @@ Index: service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Gradebook
 ===================================================================
 --- service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Gradebook.hbm.xml	(revision 7234)
 +++ service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Gradebook.hbm.xml	(working copy)
-@@ -36,5 +36,7 @@
+@@ -36,5 +36,9 @@
  		
  		<property name="category_type" column="CATEGORY_TYPE" type="integer" not-null="true"/>
  
 +		<property name="equalWeightCategories" column="IS_EQUAL_WEIGHT_CATS" type="boolean" not-null="false"/>
++
++		<property name="scaledExtraCredit" column="IS_SCALED_EXTRA_CREDIT" type="boolean" not-null="false"/>
 +
  	</class>
  </hibernate-mapping>
@@ -255,15 +257,16 @@ Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/Gradebook.java
 ===================================================================
 --- service/hibernate/src/java/org/sakaiproject/tool/gradebook/Gradebook.java	(revision 7234)
 +++ service/hibernate/src/java/org/sakaiproject/tool/gradebook/Gradebook.java	(working copy)
-@@ -49,6 +49,7 @@
+@@ -49,6 +49,8 @@
      private boolean locked;
      private int grade_type;
      private int category_type;
 +    private Boolean equalWeightCategories;
++    private Boolean scaledExtraCredit;
  
      /**
       * Default no-arg constructor needed for persistence
-@@ -252,6 +253,14 @@
+@@ -252,6 +254,22 @@
  		{
  			this.grade_type = grade_type;
  		}
@@ -274,6 +277,14 @@ Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/Gradebook.java
 +
 +		public void setEqualWeightCategories(Boolean equalWeightCategories) {
 +			this.equalWeightCategories = equalWeightCategories;
++		}
++
++		public Boolean isScaledExtraCredit() {
++			return scaledExtraCredit;
++		}
++
++		public void setScaledExtraCredit(Boolean scaledExtraCredit) {
++			this.scaledExtraCredit = scaledExtraCredit;
 +		}
  }
  
