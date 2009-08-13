@@ -51,7 +51,7 @@ public class GradebookCalculationUnit {
 	public BigDecimal calculatePointsBasedCourseGrade(List<GradeRecordCalculationUnit> units, boolean isExtraCreditScaled) {
 		BigDecimal courseGrade = null;
 
-		BigDecimal[] result = sumPoints(units, 0, isExtraCreditScaled);
+		BigDecimal[] result = sumPoints(units, 0);
 
 		if (result != null) {
 			BigDecimal sumPoints = result[0];
@@ -97,7 +97,7 @@ public class GradebookCalculationUnit {
 			CategoryCalculationUnit categoryUnit = categoryUnitMap.get(categoryKey);
 			List<GradeRecordCalculationUnit> units = categoryGradeUnitListMap.get(categoryKey);
 
-			BigDecimal[] categoryResult = sumPoints(units, categoryUnit.getDropLowest(), isExtraCreditScaled);
+			BigDecimal[] categoryResult = sumPoints(units, categoryUnit.getDropLowest());
 
 			BigDecimal categoryPointsReceived = categoryResult[0];
 			BigDecimal categoryPointsPossible = categoryResult[1];
@@ -246,7 +246,7 @@ public class GradebookCalculationUnit {
 
 
 
-	private BigDecimal[] sumPoints(List<GradeRecordCalculationUnit> units, int dropLowest, boolean isExtraCreditScaled) {
+	private BigDecimal[] sumPoints(List<GradeRecordCalculationUnit> units, int dropLowest) {
 
 		BigDecimal[] result = new BigDecimal[3];
 
@@ -262,6 +262,8 @@ public class GradebookCalculationUnit {
 			if (doCalculateDropLowest)
 				orderingList = new ArrayList<GradeRecordCalculationUnit>();
 
+			BigDecimal lastPointsPossible = null;
+			
 			for (GradeRecordCalculationUnit unit : units) {
 
 				if (unit.isExcused())
@@ -289,6 +291,10 @@ public class GradebookCalculationUnit {
 						sumPointsPossible = BigDecimal.ZERO.setScale(AppConstants.SCALE);
 
 					sumPointsPossible = sumPointsPossible.add(pointsPossible);
+					
+					// This ensures that we do not apply drop lowest in the case where we have unequal items
+					doCalculateDropLowest = doCalculateDropLowest && (lastPointsPossible == null || lastPointsPossible.compareTo(pointsPossible) == 0);
+					lastPointsPossible = pointsPossible;
 				}
 				
 
@@ -298,7 +304,6 @@ public class GradebookCalculationUnit {
 					if (unit.getPointsDifference() != null)
 						orderingList.add(unit);
 				}
-
 
 			} // for 
 
