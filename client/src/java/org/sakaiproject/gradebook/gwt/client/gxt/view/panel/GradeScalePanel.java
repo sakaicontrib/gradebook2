@@ -70,10 +70,8 @@ import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
-import com.extjs.gxt.ui.client.widget.form.Field;
 import com.extjs.gxt.ui.client.widget.form.LabelField;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
-import com.extjs.gxt.ui.client.widget.form.Validator;
 import com.extjs.gxt.ui.client.widget.grid.CellEditor;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
@@ -96,12 +94,10 @@ public class GradeScalePanel extends ContentPanel {
 	private ToolBar toolbar;
 	
 	private Long currentGradeScaleId;
-	private boolean isLoaded;
 	
 	@SuppressWarnings("unchecked")
 	public GradeScalePanel(I18nConstants i18n, boolean isEditable, final TreeView treeView) {
 		super();
-		this.isLoaded = false;
 		
 		toolbar = new ToolBar();
 		
@@ -259,6 +255,7 @@ public class GradeScalePanel extends ContentPanel {
 			public void handleEvent(GridEvent ge) {
 				
 				// By setting ge.doit to false, we ensure that the AfterEdit event is not thrown. Which means we have to throw it ourselves onSuccess
+				// FIXME: should we check if ge is null because we do it alter on via girdEvent
 				ge.doit = false;
 				
 				final Record record = ge.record;
@@ -267,7 +264,7 @@ public class GradeScalePanel extends ContentPanel {
 				Object originalValue = ge.startValue;
 				final GridEvent gridEvent = ge;
 				
-				
+
 				if (gridEvent != null) 
 					grid.getView().getCell(gridEvent.rowIndex, gridEvent.colIndex).setInnerText("Saving edit...");
 
@@ -342,7 +339,6 @@ public class GradeScalePanel extends ContentPanel {
 				break;
 			}
 		}
-		this.isLoaded = true;
 	}
 
 	private void loadIfPossible() {

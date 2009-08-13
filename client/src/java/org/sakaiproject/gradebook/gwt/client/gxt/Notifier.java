@@ -58,6 +58,7 @@ public class Notifier {
 	}
 	
 	public void notifyError(Throwable e) {
+		// FIXME: we should test e for null because we do it later on
 		String message = e.getMessage();
 		String cause = "";
 		if (e == null || e.getMessage() == null) {

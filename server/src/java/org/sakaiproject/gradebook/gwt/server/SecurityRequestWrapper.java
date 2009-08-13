@@ -131,6 +131,6 @@ public class SecurityRequestWrapper extends HttpServletRequestWrapper {
 			throw new ServletException("The request's and actual body content length do not match");
 		}
 
-		return (null == body ? "" : body);
+		return body;
 	}
 }

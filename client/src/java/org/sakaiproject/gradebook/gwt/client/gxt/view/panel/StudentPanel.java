@@ -335,67 +335,6 @@ public class StudentPanel extends ContentPanel {
         gradeInformationPanel.show();
 	}
 	
-	private GridCellRenderer<GradeRecordModel> numericCellRenderer = new GridCellRenderer<GradeRecordModel>() {
-
-		public String render(GradeRecordModel model, String property,
-				ColumnData config, int rowIndex, int colIndex,
-				ListStore<GradeRecordModel> store) {
-			
-			Double value = model.get(property);
-			
-			if (value == null)
-				return "&nbsp;";
-			
-			return defaultNumberFormat.format(value.doubleValue());
-		}
-	};
-	
-	private GridCellRenderer<GradeRecordModel> textCellRenderer = new GridCellRenderer<GradeRecordModel>() {
-
-		public String render(GradeRecordModel model, String property,
-				ColumnData config, int rowIndex, int colIndex,
-				ListStore<GradeRecordModel> store) {
-			
-			Object value = model.get(property);
-			
-			if (value == null)
-				return "&nbsp;";
-			
-			return value.toString();
-		}
-	};
-	
-	private GridCellRenderer<GradeRecordModel> disabledNumericCellRenderer = new GridCellRenderer<GradeRecordModel>() {
-
-		public String render(GradeRecordModel model, String property,
-				ColumnData config, int rowIndex, int colIndex,
-				ListStore<GradeRecordModel> store) {
-			
-			Double value = model.get(property);
-			
-			if (value == null)
-				return "&nbsp;";
-			
-			return "<span class=\"gbUneditable\">" + defaultNumberFormat.format(value) + "</span>";
-		}
-		
-	};
-	
-	private GridCellRenderer<GradeRecordModel> disabledTextCellRenderer = new GridCellRenderer<GradeRecordModel>() {
-
-		public String render(GradeRecordModel model, String property,
-				ColumnData config, int rowIndex, int colIndex,
-				ListStore<GradeRecordModel> store) {
-			
-			Object value = model.get(property);
-			
-			if (value == null)
-				return "&nbsp;";
-			
-			return "<span class=\"gbUneditable\">" +  value.toString() + "</span>";
-		}
-	};
-	
 	public boolean isStudentView() {
 		return isStudentView;
 	}

@@ -549,7 +549,6 @@ public class ItemTreePanel extends ContentPanel {
 								ModelData m = (ModelData) model.get("model");
 								ModelData px = binder.getTreeStore().getParent(m);
 								if (px != null) {
-									ItemModel pxi = (ItemModel)px;
 
 									binder.getTreeStore().remove(px, m);
 								} else {
@@ -644,7 +643,6 @@ public class ItemTreePanel extends ContentPanel {
 		ItemNumberCellRenderer numericCellRenderer = new ItemNumberCellRenderer(DataTypeConversionUtil.getShortNumberFormat());	
 		ItemNumberCellRenderer pointsCellRenderer = new ItemNumberCellRenderer(DataTypeConversionUtil.getDefaultNumberFormat());		
 
-		GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
 
 		percentCourseGradeColumn =  new TreeTableColumn(ItemModel.Key.PERCENT_COURSE_GRADE.name(), 
 				ItemModel.getPropertyName(ItemModel.Key.PERCENT_COURSE_GRADE), ItemModel.getPropertyName(ItemModel.Key.PERCENT_COURSE_GRADE).length() * CHARACTER_WIDTH + 30);

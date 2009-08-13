@@ -140,19 +140,6 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 		}
 
 		response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF8);
-		PrintWriter responsePrintWriter = null;
-
-		try {
-			responsePrintWriter = response.getWriter();
-
-		} catch (IOException e1) {
-
-			log.error("EXCEPTION: Wasn't able to get the servlet's response wirter");
-			// 500 Internal Server Error
-			response.setStatus(500);
-			e1.printStackTrace();
-			return;
-		}
 
 		// Getting the siteId
 		String siteId = null;

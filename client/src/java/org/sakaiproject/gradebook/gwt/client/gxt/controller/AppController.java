@@ -306,14 +306,11 @@ public class AppController extends Controller {
 			Registry.register(gbModel.getGradebookUid(), gbModel);
 			Registry.register(AppConstants.CURRENT, gbModel);
 			boolean isUserAbleToGrade = gbModel.isUserAbleToGrade() == null ? false : gbModel.isUserAbleToGrade().booleanValue();
-			boolean isUserAbleToViewOwnGrades = gbModel.isUserAbleToViewOwnGrades() == null ? false : gbModel.isUserAbleToViewOwnGrades().booleanValue();
 
 			if (isUserAbleToGrade) {
 				forwardToView(treeView, event);
 				forwardToView(multigradeView, event);
-			} else if (isUserAbleToViewOwnGrades) {
-
-			}
+			} 
 
 			forwardToView(appView, event);
 

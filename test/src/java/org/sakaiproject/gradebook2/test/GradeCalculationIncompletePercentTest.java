@@ -47,8 +47,6 @@ public class GradeCalculationIncompletePercentTest extends TestCase {
 	
 	private GradebookCalculationUnit gradebookUnit;
 	
-	private PrintWriter writer = null; 
-	private Mode mode = Mode.DO;
 	
 	public GradeCalculationIncompletePercentTest(String name) {
 		super(name);

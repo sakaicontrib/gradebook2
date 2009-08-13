@@ -162,10 +162,6 @@ public class AuthzMock extends Gradebook2AuthzImpl {
 		// TODO Auto-generated method stub
 		return false;
 	}
-
-	public SectionAwareness getSectionAwareness() {
-		return getSectionAwareness();
-	}
 	
 	private List getSectionEnrollmentsTrusted(String sectionUid) {
 		return getSectionAwareness().getSectionMembersInRole(sectionUid, Role.STUDENT);

@@ -46,9 +46,6 @@ public class GradeCalculationTest extends TestCase {
 
 	private GradebookCalculationUnit gradebookUnit;
 
-	private PrintWriter writer = null; 
-	private Mode mode = Mode.DO;
-
 	public GradeCalculationTest(String name) {
 		super(name);
 	}

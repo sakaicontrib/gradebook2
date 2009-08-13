@@ -95,6 +95,7 @@ public class FinalGradeSubmissionHandler extends HttpServlet {
 
 		List<Map<Column,String>> studentDataList = new ArrayList<Map<Column,String>>();
 
+		// FIXME: Potential null pointer dereference : rows
 		for (StudentModel studentModel : rows) {
 
 			Map<Column, String> studentData = new HashMap<Column, String>();

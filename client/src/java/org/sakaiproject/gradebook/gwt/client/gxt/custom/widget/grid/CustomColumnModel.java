@@ -29,20 +29,14 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 
 public class CustomColumnModel extends ColumnModel {
 
-	private String gradebookUid;
-	private String gridId;
-	
+
 	public CustomColumnModel(String gradebookUid, String gridId, List<ColumnConfig> columns) {
 		super(columns);
-		this.gradebookUid = gradebookUid;
-		this.gridId = gridId;
 	}
 
 	@Override
 	public void setHidden(int colIndex, boolean hidden) {
 		super.setHidden(colIndex, hidden);
-		ColumnConfig column = getColumn(colIndex);
-		String columnId = column == null ? null : column.getId();
 	}
 	
 }

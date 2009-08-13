@@ -265,7 +265,7 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 			try {
 				ret= Long.decode((String) o);
 			} catch (NumberFormatException e) {
-				ret = new Long(-1); 
+				ret = Long.valueOf(-1); 
 			}
 			return ret; 
 		}

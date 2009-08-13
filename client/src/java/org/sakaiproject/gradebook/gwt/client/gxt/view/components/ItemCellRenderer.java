@@ -37,8 +37,6 @@ public class ItemCellRenderer implements CellRenderer<TreeItem> {
 		String result = null;
 		ItemModel itemModel = (ItemModel)item.getModel();
 		
-		ItemModel parent = itemModel.getParent();
-		
 		boolean isItem = itemModel.getItemType() == Type.ITEM;
 		boolean isName = property.equals(ItemModel.Key.NAME.name());
 		boolean isIncluded = itemModel.getIncluded() == null || itemModel.getIncluded().booleanValue();		

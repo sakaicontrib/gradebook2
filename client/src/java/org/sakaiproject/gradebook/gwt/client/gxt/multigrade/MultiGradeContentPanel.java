@@ -130,8 +130,6 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	//private Listener<StoreEvent> storeListener;
 	private Listener<UserChangeEvent> userChangeEventListener;
 
-	private ShowColumnsEvent lastShowColumnsEvent;
-
 	private MultigradeSelectionModel<StudentModel> cellSelectionModel;
 	private BasePagingLoader<PagingLoadConfig, PagingLoadResult<SectionModel>> sectionsLoader;
 
@@ -427,7 +425,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 								return;
 							}
 							commentingStudentModel = store.getAt(ge.rowIndex);
-							commentingAssignmentId = new Long(assignId);
+							commentingAssignmentId = Long.valueOf(assignId);
 
 							Boolean commentFlag = (Boolean)commentingStudentModel.get(assignId + StudentModel.COMMENTED_FLAG);
 
@@ -464,7 +462,6 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	}
 
 	public void onShowColumns(ShowColumnsEvent event) {
-		this.lastShowColumnsEvent = event;
 		showColumns(event, cm);
 	}
 
@@ -511,11 +508,9 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			private Timer showTimer;
 			private com.google.gwt.dom.client.Element overCell;
 			private ToolTip toolTip;
-			private boolean isShowingToolTip;
 
 			protected void init(Grid grid) { 
 				super.init(grid);
-				isShowingToolTip = false;
 			}
 
 			protected boolean isClickable(ModelData model, String property) {
@@ -827,7 +822,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			public void selectionChanged(SelectionChangedEvent<StudentModel> sce) {
 				StudentModel learner = sce.getSelectedItem();
 
-				if (learner != null && learner instanceof StudentModel) 
+				if (learner != null) 
 					Dispatcher.forwardEvent(GradebookEvents.SelectLearner.getEventType(), learner);
 			}
 
@@ -939,7 +934,6 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 
 		ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
 		int columnWidth = configModel.getColumnWidth(gridId, id, name);
-		boolean isHidden = configModel.isColumnHidden(gridId, id);
 
 		ColumnConfig config = new ColumnConfig(id, name, columnWidth);
 		config.setHidden(defaultHidden);
@@ -1072,25 +1066,6 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		if (includeData)
 			pagingToolBar.refresh();
 	}
-
-	private void doRefresh(String property, Record record, StudentModel model, StudentModel startModel) {
-		String dropProperty = new StringBuilder(property).append(StudentModel.DROP_FLAG).toString();
-
-		Boolean isDropped = model.get(dropProperty);
-		boolean doDrop = isDropped != null && isDropped.booleanValue();
-
-		Boolean wasDropped = startModel.get(dropProperty);
-
-		boolean unDrop = wasDropped != null && wasDropped.booleanValue();
-
-		if (doDrop || unDrop) {
-			record.set(dropProperty, model.get(dropProperty));
-			if (model.get(property) != null)
-				record.set(property, model.get(property));
-		}
-
-	}
-
 
 	private GridCellRenderer<StudentModel> unweightedTextCellRenderer = new GridCellRenderer<StudentModel>() {
 

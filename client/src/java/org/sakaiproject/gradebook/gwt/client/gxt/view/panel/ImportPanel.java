@@ -179,9 +179,6 @@ public class ImportPanel extends ContentPanel {
 			refreshCategoryPickerStore(selectedGradebook.getGradebookItemModel());
 
 
-		int fileUploadHeight = 100;
-		int subHeight = getHeight() - fileUploadHeight;
-
 		mainCardLayout = new CardLayout();
 		mainCardLayoutContainer = new LayoutContainer();
 		mainCardLayoutContainer.setLayout(mainCardLayout);
@@ -203,12 +200,14 @@ public class ImportPanel extends ContentPanel {
 		grid.setSelectionModel(cellSelectionModel);
 		grid.setView(new BaseCustomGridView() {
 
+			// FIXME: per FindBugs, this method is uncallable
 			protected boolean isClickable(ModelData model, String property) {
 				return property.equals(StudentModel.Key.DISPLAY_NAME.name()) ||
 				property.equals(StudentModel.Key.LAST_NAME_FIRST.name()) ||
 				property.equals(StudentModel.Key.DISPLAY_ID.name());
 			}
 
+			// FIXME: per FindBugs, this method is uncallable
 			protected boolean isCommented(ModelData model, String property) {
 				String commentedProperty = property + StudentModel.COMMENTED_FLAG;
 				Boolean isCommented = model.get(commentedProperty);
@@ -238,9 +237,6 @@ public class ImportPanel extends ContentPanel {
 				StringBuilder css = new StringBuilder();
 
 				if (isShowDirtyCells && isPropertyChanged) {
-
-					Object startValue = r.getChanges().get(property);
-					Object currentValue = r.get(property);
 
 					String failedProperty = new StringBuilder().append(property).append(GridPanel.FAILED_FLAG).toString();
 					String failedMessage = (String)r.get(failedProperty);
@@ -918,8 +914,6 @@ public class ImportPanel extends ContentPanel {
 			@Override
 			public Object preProcessValue(Object value) {
 				Long id = (Long)value;
-
-				ComboBox<ItemModel> combo = (ComboBox<ItemModel>)getField();
 
 				return categoriesStore.findModel(ItemModel.Key.ID.name(), String.valueOf(id));
 			}

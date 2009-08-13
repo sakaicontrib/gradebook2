@@ -65,6 +65,10 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 	public void setSectionAwareness(SectionAwareness sectionAwareness) {
 		this.sectionAwareness = sectionAwareness;
 	}
+	
+	protected SectionAwareness getSectionAwareness() {
+		return sectionAwareness;
+	}
 
 	// SPRING DI
 	public void setGbService(Gradebook2Service gbService) {

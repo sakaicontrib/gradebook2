@@ -127,6 +127,7 @@ public abstract class BaseItemsAndCategoriesTest extends AbstractServiceTest {
 			break;
 		}
 
+		// FIXME: Potential null pointer dereference
 		item.setPoints(null);
 
 		ItemModel parent = service.updateItemModel(item);
@@ -156,6 +157,7 @@ public abstract class BaseItemsAndCategoriesTest extends AbstractServiceTest {
 			break;
 		}
 
+		// FIXME: Potential null pointer dereference
 		item.setPercentCategory(null);
 
 		ItemModel parent = service.updateItemModel(item);
@@ -213,6 +215,7 @@ public abstract class BaseItemsAndCategoriesTest extends AbstractServiceTest {
 			break;
 		}
 
+		// FIXME: Potential null pointer dereference
 		item.setRemoved(Boolean.TRUE);
 
 		ItemModel parent = service.updateItemModel(item);
@@ -255,6 +258,7 @@ public abstract class BaseItemsAndCategoriesTest extends AbstractServiceTest {
 			break;
 		}
 
+		// FIXME: Potential null pointer dereference
 		item.setIncluded(Boolean.FALSE);
 
 		ItemModel parent = service.updateItemModel(item);

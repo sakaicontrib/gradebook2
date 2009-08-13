@@ -289,7 +289,6 @@ public class GradebookToolServiceMock implements GradebookToolService {
 
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(Long gradebookId, String[] sectionEid, String[] roleNames) {
 		List<AssignmentGradeRecord> grades = new ArrayList<AssignmentGradeRecord>();
-		List<AssignmentGradeRecord> assignmentGradeRecord = new ArrayList<AssignmentGradeRecord>();
 
 		for (Long gradableObjectId : assignmentMap.keySet()) {
 			Assignment assignment = assignmentMap.get(gradableObjectId);
@@ -317,7 +316,6 @@ public class GradebookToolServiceMock implements GradebookToolService {
 
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(Long gradebookId, Collection<String> studentUids) {
 		List<AssignmentGradeRecord> grades = new ArrayList<AssignmentGradeRecord>(studentUids.size());
-		List<AssignmentGradeRecord> assignmentGradeRecord = new ArrayList<AssignmentGradeRecord>(studentUids.size());
 
 		for (Long gradableObjectId : assignmentMap.keySet()) {
 			Assignment assignment = assignmentMap.get(gradableObjectId);
@@ -364,8 +362,6 @@ public class GradebookToolServiceMock implements GradebookToolService {
 			Map<Assignment, AssignmentGradeRecord> assignmentGradeMap = studentGradeMap.get(studentId);
 
 			AssignmentGradeRecord gradeRecord = null;
-
-			Double points = assignment.getPointsPossible();
 
 			if (assignmentGradeMap == null) {
 
@@ -893,6 +889,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 			c.setAssignmentList(newList);
 		}
 
+		// FIXME: potential null pointer dereference for "c"
 		// Look through all the other categories and make sure that this assignment does not belong to them
 		for (Category oc : getCategories(c.getGradebook().getId())) {
 			// Skip the curent category
@@ -1501,10 +1498,7 @@ public class GradebookToolServiceMock implements GradebookToolService {
 		 String lastNameFirst = lastName + ", " + firstName;
 		 String sortName = lastName.toUpperCase() + firstName.toUpperCase();
 		 String displayName = firstName + " " + lastName;
-		 String section = getRandomSection();
 		 String email = lastName + "@qau.edu";
-
-		 User user = new SakaiUserMock(studentId, studentId, displayName, sortName);
 
 		 UserDereference userRecord = new UserDereference(studentId, studentId, studentId, displayName, lastNameFirst, sortName, email);
 

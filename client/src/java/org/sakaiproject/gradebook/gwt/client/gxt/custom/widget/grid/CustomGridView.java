@@ -74,7 +74,6 @@ public abstract class CustomGridView extends BaseCustomGridView {
 
 
 	// Member variables
-	private final boolean SHOW = true;
 	private GradebookModel gradebookModel = null;
 	private boolean isDisplayLoadMaskOnRender = true;
 	private String gridId;

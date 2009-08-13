@@ -72,6 +72,7 @@ public class GradebookFinalGradeSubmissionController implements Controller {
 
 		List<Map<Column,String>> studentDataList = new ArrayList<Map<Column,String>>();
 
+		// FIXME: Potential null pointer dereference : rows
 		for (StudentModel studentModel : rows) {
 
 			Map<Column, String> studentData = new HashMap<Column, String>();

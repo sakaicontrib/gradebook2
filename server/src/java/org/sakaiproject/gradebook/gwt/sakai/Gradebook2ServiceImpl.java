@@ -1016,6 +1016,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 						break;
 				}
 
+				// FIXME: add null check for actionModel because above swith doesn't have a default case
+				
 				actionModel.setIdentifier(String.valueOf(actionRecord.getId()));
 				actionModel.setGradebookUid(actionRecord.getGradebookUid());
 				actionModel.setGradebookId(actionRecord.getGradebookId());
@@ -1269,7 +1271,6 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		List<X> gradeScaleMappings = new ArrayList<X>();
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
 		GradeMapping gradeMapping = gradebook.getSelectedGradeMapping();
-		GradingScale gradingScale = gradeMapping.getGradingScale();
 
 		List<String> letterGradesList = new ArrayList<String>(gradeMapping.getGradeMap().keySet());
 
@@ -2798,6 +2799,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 
 		model.setPercentCategory(Double.valueOf(assignmentWeight));
+		// FIXME: Potential null pointer dereference
 		model.setPercentCourseGrade(Double.valueOf(percentCourseGrade.doubleValue()));
 		model.setItemType(Type.ITEM);
 
@@ -3614,8 +3616,6 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 		UserDereferenceRealmUpdate lastUpdate = gbService.getLastUserDereferenceSync(siteId, null);
 
-		int realmCount = lastUpdate == null || lastUpdate.getRealmCount() == null ? -1 : lastUpdate.getRealmCount().intValue();
-
 		// Obviously if the realm count has changed, then we need to update, but
 		// let's also do it if more than an hour has passe
 		long ONEHOUR = 1000l * 60l * 60l;
@@ -3637,7 +3637,6 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 		gradebook.setName(item.getName());
 
-		int oldCategoryType = gradebook.getCategory_type();
 		int newCategoryType = -1;
 
 		boolean hasCategories = item.getCategoryType() != CategoryType.NO_CATEGORIES;
@@ -3656,7 +3655,6 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 		gradebook.setCategory_type(newCategoryType);
 
-		int oldGradeType = gradebook.getGrade_type();
 		int newGradeType = -1;
 
 		switch (item.getGradeType()) {
@@ -3673,12 +3671,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 		gradebook.setGrade_type(newGradeType);
 
-		boolean wasReleaseGrades = gradebook.isCourseGradeDisplayed();
 		boolean isReleaseGrades = DataTypeConversionUtil.checkBoolean(item.getReleaseGrades());
 
 		gradebook.setCourseGradeDisplayed(isReleaseGrades);
 
-		boolean wasReleaseItems = gradebook.isAssignmentsDisplayed();
 		boolean isReleaseItems = DataTypeConversionUtil.checkBoolean(item.getReleaseItems());
 
 		gradebook.setAssignmentsDisplayed(isReleaseItems);
@@ -3760,7 +3756,6 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			if (wasUnweighted && !isUnweighted && category.isRemoved())
 				throw new InvalidInputException("You cannot include a deleted category in grade. Please undelete the category first.");
 
-			int oldDropLowest = category.getDrop_lowest();
 			int newDropLowest = convertInteger(item.getDropLowest()).intValue();
 
 			boolean isRemoved = DataTypeConversionUtil.checkBoolean(item.getRemoved());
@@ -3769,8 +3764,6 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			Integer newCategoryOrder = item.getItemOrder();
 			Integer oldCategoryOrder = category.getCategoryOrder();
 
-			List<BusinessLogicImpl> beforeCreateRules = new ArrayList<BusinessLogicImpl>();
-			List<BusinessLogicImpl> afterCreateRules = new ArrayList<BusinessLogicImpl>();
 			boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
 			boolean hasWeights = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY;
 
@@ -3966,9 +3959,6 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	static final Comparator<String> LETTER_GRADE_COMPARATOR = new Comparator<String>() {
 
 		public int compare(String o1, String o2) {
-
-			char c1 = o1.toLowerCase().charAt(0);
-			char c2 = o2.toLowerCase().charAt(0);
 
 			if (o1.toLowerCase().charAt(0) == o2.toLowerCase().charAt(0)) {
 

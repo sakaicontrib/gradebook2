@@ -1470,7 +1470,6 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 		if(lgpm == null)
 		{
-			Set<String> keySet = gradeMap.keySet();
 
 			HibernateCallback hcb = new HibernateCallback()
 			{
@@ -2014,7 +2013,6 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	protected Double calculateDoublePointForRecord(AssignmentGradeRecord gradeRecordFromCall)
 	{
 		Assignment assign = getAssignment(gradeRecordFromCall.getAssignment().getId()); 
-		Gradebook gradebook = getGradebook(assign.getGradebook().getId());
 		if(gradeRecordFromCall.getPercentEarned() != null)
 		{
 			if(gradeRecordFromCall.getPercentEarned().doubleValue() / 100.0 < 0)
@@ -2259,7 +2257,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 					for (Iterator iter = q.list().iterator(); iter.hasNext(); ) {
 						String studentId = (String)iter.next();
 						if (studentUids.contains(studentId)) {
-							total = new Integer(1);
+							total = Integer.valueOf(1);
 							break;
 						}
 					}
@@ -2313,8 +2311,6 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 				if (gradeMap == null)
 					throw new IllegalArgumentException("gradeMap is null in BaseHibernateManager.updateLetterGradePercentMapping");
-
-				Set<String> keySet = gradeMap.keySet();
 
 				Map<String, Double> saveMap = new HashMap<String, Double>();
 				for (Iterator<String> iter = gradeMap.keySet().iterator(); iter.hasNext();) {

@@ -256,6 +256,7 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 			break;
 		}
 
+		// FIXME: Potential null pointer dereference
 		item.setPercentCategory(null);
 
 		ItemModel parent = service.updateItemModel(item);
@@ -329,9 +330,6 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 		category.setRemoved(Boolean.TRUE);
 		ItemModel item = getFirstItemInCategory(category);
 
-		ItemModel deletedCategory = getActiveItem(service.updateItemModel(category));
-
-		//assertFalse(item.getIncluded());
 		item.setIncluded(Boolean.TRUE);
 
 		boolean isExceptionThrown = false;
@@ -527,10 +525,7 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
-		//gbModel = service.getGradebook(GRADEBOOK_UID);
 
-		AuthModel authModel = service.getAuthorization(getName());
-		
 		ApplicationModel applicationModel = service.getApplicationModel(getName());
 
 		gbModel = applicationModel.getGradebookModels().get(0);

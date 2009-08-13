@@ -132,7 +132,6 @@ public class ImportExportUtility {
 
 		Long gradebookId = gradebook.getGradebookId();
 		final List<String> headerIds = new ArrayList<String>();
-		List<Long> itemCategoryIdList = new LinkedList<Long>(); 
 
 		final List<String> headerColumns = new LinkedList<String>();
 
@@ -1471,7 +1470,6 @@ public class ImportExportUtility {
 
 	public static ImportFile parseImportGeneric(Gradebook2Service service, 
 			String gradebookUid, RawFile rawData) throws InvalidInputException, FatalException {
-		String fileType = rawData.getFileType(); 
 		String msgs = rawData.getMessages();
 		boolean errorsFound = rawData.isErrorsFound(); 
 

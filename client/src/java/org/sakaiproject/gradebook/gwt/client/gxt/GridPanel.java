@@ -253,15 +253,7 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 	}
 	
 	protected void afterUpdateView(UserEntityAction<M> action, Record record, M model) {
-		String property = action.getKey();
-		String propertyName = property;
 		
-		ColumnConfig config = cm.getColumnById(property);
-		propertyName = config.getHeader();
-		
-		// FIXME: Send notification here
-		//action.announce(model.getDisplayName(), propertyName, model.get(property));				
-	
 		fireEvent(GradebookEvents.UserChange.getEventType(), new UserChangeEvent(action));
 	}
 	

@@ -97,8 +97,6 @@ public class ImportExportTest extends AbstractServiceTest {
 
 		String newGradebookUid = "TEST-IMPORT";
 
-		GradebookModel newGradebookModel = getGradebookModel(newGradebookUid);
-
 		// Import the temp file back into the gradebook
 		FileReader reader = new FileReader(modifiedTempFile);
 		ImportFile importFile = ImportExportUtility.parseImportCSV(service, newGradebookUid, reader);
@@ -200,8 +198,6 @@ public class ImportExportTest extends AbstractServiceTest {
 		originalReader.close();
 
 		String newGradebookUid = "TEST-IMPORT";
-
-		GradebookModel newGradebookModel = getGradebookModel(newGradebookUid);
 
 		// Import the temp file back into the gradebook
 		FileReader reader = new FileReader(modifiedTempFile);

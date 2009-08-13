@@ -28,7 +28,6 @@ import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.PersistentStore;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaCheckMenuItem;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 
 import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
@@ -68,31 +67,6 @@ public class PreferencesMenu extends Menu {
 				Registry.register(AppConstants.ENABLE_POPUPS, isChecked);
 				enablePopupsMenuItem.setChecked(isChecked.booleanValue());
 			}
-		}
-	}
-	
-	private void selectGradeType(GradebookModel selectedGradebook, GradeType gradeType, boolean isChecked) {
-		if (! isChecked)
-			return;
-		
-		GradeType actionValue = gradeType;
-		GradeType actionStartValue = selectedGradebook.getGradebookItemModel().getGradeType();;
-
-	}
-	
-	private void selectReleaseGrades(GradebookModel selectedGradebook, boolean isYes, boolean isChecked) {
-		if (! isChecked)
-			return;
-
-		Boolean actionValue = null;
-		Boolean actionStartValue = null;
-		
-		if (isYes) {
-			actionValue = Boolean.TRUE;
-			actionStartValue = Boolean.FALSE;
-		} else {
-			actionValue = Boolean.FALSE;
-			actionStartValue = Boolean.TRUE;
 		}
 	}
 }

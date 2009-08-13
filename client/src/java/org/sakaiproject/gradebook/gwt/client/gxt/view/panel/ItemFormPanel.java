@@ -122,7 +122,6 @@ public class ItemFormPanel extends ContentPanel {
 	private RowLayout layout;
 	private RowData topRowData, bottomRowData;
 	private Button okButton, okCloseButton, cancelButton;
-	private boolean isFull;
 
 	private GradebookModel selectedGradebook;
 	private ItemModel selectedItemModel;
@@ -136,7 +135,6 @@ public class ItemFormPanel extends ContentPanel {
 	@SuppressWarnings("unchecked")
 	public ItemFormPanel(I18nConstants i18n) {
 		this.i18n = i18n;
-		this.isFull = false;
 		setHeaderVisible(true);
 		setFrame(true);
 
@@ -341,6 +339,8 @@ public class ItemFormPanel extends ContentPanel {
 			return;
 
 		AppView.EastCard activeCard = AppView.EastCard.EDIT_ITEM;
+		
+		// FIXME: Per FindBugs, we should check if itemModel is null because we do it later on
 		switch (itemModel.getItemType()) {
 			case CATEGORY:
 				activeCard = AppView.EastCard.EDIT_CATEGORY;
@@ -517,13 +517,6 @@ public class ItemFormPanel extends ContentPanel {
 
 		initState(Type.CATEGORY, itemModel, false);
 		establishSelectedCategoryState(itemModel);
-
-		ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
-
-		if (gradebookItemModel != null) {
-
-
-		}
 
 		includedField.setValue(Boolean.TRUE);
 		nameField.focus();
@@ -977,7 +970,6 @@ public class ItemFormPanel extends ContentPanel {
 							case SAVECLOSE:
 								close = true;
 							case SAVE:
-								ItemModel model = selectedItemModel;
 								if (selectedItemModel != null) 
 									record = treeStore.getRecord(selectedItemModel);
 								if (nameField.validate() 

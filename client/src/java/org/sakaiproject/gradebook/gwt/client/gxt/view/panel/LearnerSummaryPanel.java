@@ -379,8 +379,6 @@ public class LearnerSummaryPanel extends ContentPanel {
 		learnerInfoTable.setText(5, 0, "");
 		formatter.setColSpan(5, 0, 2);
 
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-
 		learnerInfoTable.setText(6, 0, "Course Grade");
 		formatter.setStyleName(6, 0, "gbImpact");
 		learnerInfoTable.setText(6, 1, learnerGradeRecordCollection.getStudentGrade());

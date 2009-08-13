@@ -56,8 +56,6 @@ public class ItemNumberCellRenderer extends NumberCellRenderer<TreeItem> {
 			if (value == null)
 				return null;
 			
-			boolean isName = property.equals(ItemModel.Key.NAME.name());
-			
 			boolean isIncluded = itemModel.getIncluded() != null && itemModel.getIncluded().booleanValue();				
 			boolean isTooBig = (isPercentCategory || isPercentGrade) 
 				&& ((Double)value).doubleValue() > 100.00001d;
