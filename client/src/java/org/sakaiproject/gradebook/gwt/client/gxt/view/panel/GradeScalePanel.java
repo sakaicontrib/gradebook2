@@ -255,7 +255,6 @@ public class GradeScalePanel extends ContentPanel {
 			public void handleEvent(GridEvent ge) {
 				
 				// By setting ge.doit to false, we ensure that the AfterEdit event is not thrown. Which means we have to throw it ourselves onSuccess
-				// FIXME: should we check if ge is null because we do it alter on via girdEvent
 				ge.doit = false;
 				
 				final Record record = ge.record;
@@ -265,8 +264,7 @@ public class GradeScalePanel extends ContentPanel {
 				final GridEvent gridEvent = ge;
 				
 
-				if (gridEvent != null) 
-					grid.getView().getCell(gridEvent.rowIndex, gridEvent.colIndex).setInnerText("Saving edit...");
+				grid.getView().getCell(gridEvent.rowIndex, gridEvent.colIndex).setInnerText("Saving edit...");
 
 				GradeScaleRecordModel model = (GradeScaleRecordModel)record.getModel();
 				GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
@@ -289,8 +287,7 @@ public class GradeScalePanel extends ContentPanel {
 								store.update(baseModel);
 							}
 							
-							if (gridEvent != null)
-								grid.fireEvent(Events.AfterEdit, gridEvent);
+							grid.fireEvent(Events.AfterEdit, gridEvent);
 					
 							GradeScalePanel.this.fireEvent(GradebookEvents.UserChange.getEventType(), new UserChangeEvent(EntityType.GRADE_SCALE, ActionType.UPDATE));
 

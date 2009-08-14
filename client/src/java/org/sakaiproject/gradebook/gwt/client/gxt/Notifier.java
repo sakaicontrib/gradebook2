@@ -58,12 +58,13 @@ public class Notifier {
 	}
 	
 	public void notifyError(Throwable e) {
-		// FIXME: we should test e for null because we do it later on
-		String message = e.getMessage();
+		String message = null;
 		String cause = "";
 		if (e == null || e.getMessage() == null) {
 			I18nConstants i18n = Registry.get("i18n");
 			message = i18n.unknownException();
+		} else {
+			message = e.getMessage();
 		}
 		
 		if (e.getCause() != null && e.getCause().getMessage() != null) {

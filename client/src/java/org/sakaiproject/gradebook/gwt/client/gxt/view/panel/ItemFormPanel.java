@@ -340,13 +340,16 @@ public class ItemFormPanel extends ContentPanel {
 
 		AppView.EastCard activeCard = AppView.EastCard.EDIT_ITEM;
 		
-		// FIXME: Per FindBugs, we should check if itemModel is null because we do it later on
-		switch (itemModel.getItemType()) {
+		if (itemModel != null) {
+			
+			switch (itemModel.getItemType()) {
 			case CATEGORY:
 				activeCard = AppView.EastCard.EDIT_CATEGORY;
 				break;
 			case GRADEBOOK:
 				activeCard = AppView.EastCard.EDIT_GRADEBOOK;
+			}
+			
 		}
 		Dispatcher.forwardEvent(GradebookEvents.ExpandEastPanel.getEventType(), activeCard);
 
@@ -446,8 +449,6 @@ public class ItemFormPanel extends ContentPanel {
 		if (categoryStore != null) {
 			categoryStore.removeAll();
 		}
-
-		// FIXME: Do we need to eliminate old category stores?  
 
 		for (ItemModel gradebook : rootItemModel.getChildren()) {
 			for (ItemModel category : gradebook.getChildren()) {

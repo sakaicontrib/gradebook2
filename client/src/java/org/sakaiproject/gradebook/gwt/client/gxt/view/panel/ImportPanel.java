@@ -200,21 +200,6 @@ public class ImportPanel extends ContentPanel {
 		grid.setSelectionModel(cellSelectionModel);
 		grid.setView(new BaseCustomGridView() {
 
-			// FIXME: per FindBugs, this method is uncallable
-			protected boolean isClickable(ModelData model, String property) {
-				return property.equals(StudentModel.Key.DISPLAY_NAME.name()) ||
-				property.equals(StudentModel.Key.LAST_NAME_FIRST.name()) ||
-				property.equals(StudentModel.Key.DISPLAY_ID.name());
-			}
-
-			// FIXME: per FindBugs, this method is uncallable
-			protected boolean isCommented(ModelData model, String property) {
-				String commentedProperty = property + StudentModel.COMMENTED_FLAG;
-				Boolean isCommented = model.get(commentedProperty);
-
-				return isCommented != null && isCommented.booleanValue();
-			}
-
 			protected boolean isDropped(ModelData model, String property) {
 				String droppedProperty = property + StudentModel.DROP_FLAG;
 				Boolean isDropped = model.get(droppedProperty);

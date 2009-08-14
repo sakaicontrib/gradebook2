@@ -1016,7 +1016,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 						break;
 				}
 
-				// FIXME: add null check for actionModel because above swith doesn't have a default case
+				if (actionModel == null)
+					continue;
 				
 				actionModel.setIdentifier(String.valueOf(actionRecord.getId()));
 				actionModel.setGradebookUid(actionRecord.getGradebookUid());
@@ -2799,8 +2800,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 
 		model.setPercentCategory(Double.valueOf(assignmentWeight));
-		// FIXME: Potential null pointer dereference
-		model.setPercentCourseGrade(Double.valueOf(percentCourseGrade.doubleValue()));
+		if (percentCourseGrade != null)
+			model.setPercentCourseGrade(Double.valueOf(percentCourseGrade.doubleValue()));
 		model.setItemType(Type.ITEM);
 
 		return model;
