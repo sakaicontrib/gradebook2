@@ -656,9 +656,11 @@ public class ItemFormPanel extends ContentPanel {
 
 		boolean isEditable = true;
 		boolean isEqualWeight = false;
-
+		boolean isExtraCredit = false;
+		boolean isDropLowestVisible = isEditable && isCategory;
+		
 		if (itemModel != null) {
-			boolean isExtraCredit = DataTypeConversionUtil.checkBoolean(itemModel.getExtraCredit());
+			isExtraCredit = DataTypeConversionUtil.checkBoolean(itemModel.getExtraCredit());
 			isEditable = itemModel.isEditable();
 			String source = itemModel.get(ItemModel.Key.SOURCE.name());
 			isExternal = source != null && source.trim().length() > 0;
@@ -679,10 +681,29 @@ public class ItemFormPanel extends ContentPanel {
 
 			isEqualWeight = category == null ? false : DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments());
 			isPercentCategoryVisible = hasWeights && (!isEqualWeight || isExtraCredit) && isItem;
-
+			isDropLowestVisible = isDropLowestVisible && !isExtraCredit; 
+			
+			if (isDropLowestVisible && category != null && !hasWeights && hasCategories) {
+				if (category.getChildCount() > 0) {
+					Double points = null;
+					for (int i=0;i<category.getChildCount();i++) {
+						ItemModel item = category.getChild(i);
+						if (!DataTypeConversionUtil.checkBoolean(item.getExtraCredit())) {
+							if (points == null)
+								points = item.getPoints();
+							else if (!points.equals(item.getPoints())) {
+								isDropLowestVisible = false;
+								break;
+							}
+						}
+					}
+				}
+			}
 		} else {
 			isPercentCategoryVisible = hasWeights && isItem;
 		}
+		
+		
 
 		initField(nameField, isAllowedToEdit && isEditable && !isDelete && !isExternal, true);
 		initField(pointsField, isAllowedToEdit && !isDelete && !isExternal, isEditable && isItem);
@@ -690,7 +711,7 @@ public class ItemFormPanel extends ContentPanel {
 		initField(percentCourseGradeField, isAllowedToEdit && !isDelete, isEditable && isCategory && hasWeights);
 		initField(equallyWeightChildrenField, isAllowedToEdit && !isDelete, isEditable && isCategory && hasWeights);
 		initField(extraCreditField, isAllowedToEdit && !isDelete, isEditable && isNotGradebook);
-		initField(dropLowestField, isAllowedToEdit && !isDelete, isEditable && isCategory);
+		initField(dropLowestField, isAllowedToEdit && !isDelete, isDropLowestVisible);
 		initField(dueDateField, isAllowedToEdit && !isDelete && !isExternal, isEditable && isItem);
 		initField(includedField, isAllowedToEdit && !isDelete, isEditable && isNotGradebook);
 		initField(releasedField, isAllowedToEdit && !isDelete, isEditable && isItem);
@@ -891,17 +912,21 @@ public class ItemFormPanel extends ContentPanel {
 
 				if (selectedItemModel != null) {
 					switch (selectedItemModel.getItemType()) {
+						case CATEGORY:
+							initField(dropLowestField, !isDelete, !DataTypeConversionUtil.checkBoolean(isChecked));
+						break;
 						case ITEM:
 							initField(percentCategoryField, !isDelete, hasWeights 
 									&& (!DataTypeConversionUtil.checkBoolean(isEqualWeight) 
 											|| (isChecked != null && isChecked.booleanValue())));
-							break;
+						break;
 					}
 				} else if (createItemType == Type.ITEM) {
 					initField(percentCategoryField, !isDelete, hasWeights 
 							&& (!DataTypeConversionUtil.checkBoolean(isEqualWeight) || (isChecked != null && isChecked.booleanValue())));
+				} else if (createItemType == Type.CATEGORY) {
+					initField(dropLowestField, !isDelete, !DataTypeConversionUtil.checkBoolean(isChecked));
 				}
-
 			}
 
 		};
@@ -1021,7 +1046,7 @@ public class ItemFormPanel extends ContentPanel {
 
 		boolean hasWeights = categoryType == CategoryType.WEIGHTED_CATEGORIES;
 		boolean isPercentCategoryVisible = false;
-		boolean isItem = selectedItemModel != null && selectedItemModel.getItemType() == ItemModel.Type.ITEM;
+		boolean isItem = selectedItemModel != null && selectedItemModel.getItemType() == Type.ITEM;
 		boolean isCreateNewItem = createItemType == Type.ITEM && mode == Mode.NEW;
 
 		if (itemModel != null) {
@@ -1039,7 +1064,7 @@ public class ItemFormPanel extends ContentPanel {
 			if (category != null && category.getItemType() == Type.CATEGORY)
 				isPercentCategoryVisible = hasWeights && 
 				(!DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments()) || 
-						DataTypeConversionUtil.checkBoolean(extraCreditField.getValue()));
+						(isItem && DataTypeConversionUtil.checkBoolean(extraCreditField.getValue())));
 		}
 
 
