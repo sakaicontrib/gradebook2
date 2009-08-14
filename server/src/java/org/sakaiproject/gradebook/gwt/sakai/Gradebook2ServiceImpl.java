@@ -113,7 +113,6 @@ import org.sakaiproject.tool.gradebook.GradableObject;
 import org.sakaiproject.tool.gradebook.GradeMapping;
 import org.sakaiproject.tool.gradebook.Gradebook;
 import org.sakaiproject.tool.gradebook.GradingEvent;
-import org.sakaiproject.tool.gradebook.GradingScale;
 import org.sakaiproject.tool.gradebook.Permission;
 import org.sakaiproject.user.api.User;
 import org.sakaiproject.user.api.UserDirectoryService;
@@ -1305,7 +1304,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 
 		List<Assignment> assignments = gbService.getAssignments(gradebookId);
-
+		
 		// Don't bother going out to the db for the Gradebook if we've already
 		// retrieved it
 		if (gradebook == null && assignments != null && assignments.size() > 0)
@@ -1315,7 +1314,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			gradebook = gbService.getGradebook(gradebookId);
 
 		List<Category> categories = null;
-		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
+		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
+		if (hasCategories)
 			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
 
 		int gradeType = gradebook.getGrade_type();
@@ -1413,16 +1413,44 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		id++;
 
 		if (assignments != null) {
-			for (Assignment assignment : assignments) {
-				Long assignmentId = assignment.getId();
-				String name = assignment.getName();
-
-				List<BigDecimal> gradeList = assignmentGradeListMap.get(assignmentId);
-				BigDecimal sum = assignmentSumMap.get(assignmentId);
-
-				if (gradeList != null && sum != null) {
-					GradeStatistics assignmentStatistics = gradeCalculations.calculateStatistics(gradeList, sum);
-
+			
+			if (hasCategories) {
+				if (categories != null) {
+					for (Category category : categories) {
+						List<Assignment> asns = category.getAssignmentList();
+						if (asns != null) {
+							for (Assignment a : asns) {
+								Long assignmentId = a.getId();
+								String name = a.getName();
+				
+								List<BigDecimal> gradeList = assignmentGradeListMap.get(assignmentId);
+								BigDecimal sum = assignmentSumMap.get(assignmentId);
+				
+								GradeStatistics assignmentStatistics = null;
+								if (gradeList != null && sum != null) {
+									assignmentStatistics = gradeCalculations.calculateStatistics(gradeList, sum);
+								}
+								
+								statsList.add((X) createStatisticsModel(name, assignmentStatistics, Long.valueOf(id)));
+								id++;
+							}
+						}
+					}
+				}
+			} else {
+			
+				for (Assignment assignment : assignments) {
+					Long assignmentId = assignment.getId();
+					String name = assignment.getName();
+	
+					List<BigDecimal> gradeList = assignmentGradeListMap.get(assignmentId);
+					BigDecimal sum = assignmentSumMap.get(assignmentId);
+	
+					GradeStatistics assignmentStatistics = null;
+					if (gradeList != null && sum != null) {
+						assignmentStatistics = gradeCalculations.calculateStatistics(gradeList, sum);
+					}
+					
 					statsList.add((X) createStatisticsModel(name, assignmentStatistics, Long.valueOf(id)));
 					id++;
 				}
@@ -1434,21 +1462,25 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		return result;
 	}
 
+	private static final String NA = "-";
+	
 	private StatisticsModel createStatisticsModel(String name, GradeStatistics statistics, Long id) {
 
-		StatisticsModel courseGradeStats = new StatisticsModel();
-		courseGradeStats.setId(String.valueOf(id));
-		courseGradeStats.setName(name);
-		if (statistics.getMean() != null)
-			courseGradeStats.setMean(statistics.getMean().setScale(2, RoundingMode.HALF_EVEN).toString());
-		if (statistics.getMedian() != null)
-			courseGradeStats.setMedian(statistics.getMedian().setScale(2, RoundingMode.HALF_EVEN).toString());
-		if (statistics.getMode() != null)
-			courseGradeStats.setMode(statistics.getMode().setScale(2, RoundingMode.HALF_EVEN).toString());
-		if (statistics.getStandardDeviation() != null)
-			courseGradeStats.setStandardDeviation(statistics.getStandardDeviation().setScale(2, RoundingMode.HALF_EVEN).toString());
-
-		return courseGradeStats;
+		StatisticsModel model = new StatisticsModel();
+		model.setId(String.valueOf(id));
+		model.setName(name);
+		
+		String mean = statistics != null && statistics.getMean() != null ? statistics.getMean().setScale(2, RoundingMode.HALF_EVEN).toString() : NA;
+		String median = statistics != null && statistics.getMedian() != null ? statistics.getMedian().setScale(2, RoundingMode.HALF_EVEN).toString() : NA;
+		String mode = statistics != null && statistics.getMode() != null ? statistics.getMode().setScale(2, RoundingMode.HALF_EVEN).toString() : NA;
+		String standardDev = statistics != null && statistics.getStandardDeviation() != null ? statistics.getStandardDeviation().setScale(2, RoundingMode.HALF_EVEN).toString() : NA;
+		
+		model.setMean(mean);
+		model.setMedian(median);
+		model.setMode(mode);
+		model.setStandardDeviation(standardDev);
+		
+		return model;
 	}
 
 	public <X extends BaseModel> PagingLoadResult<X> getStudentRows(String gradebookUid, Long gradebookId, PagingLoadConfig config, Boolean includeExportCourseManagementId) {
