@@ -232,6 +232,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 				field.setName(item.getIdentifier());
 				field.setToolTip(emptyText.toString());
 				field.setWidth(50);
+				field.setLabelStyle("overflow: hidden");
 
 				verifyFieldState(field, item);
 
@@ -241,6 +242,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 				CheckBox checkbox = new CheckBox();
 				checkbox.setFieldLabel(item.getName());
 				checkbox.setName(checkBoxName);
+				checkbox.setLabelStyle("overflow: hidden;");
 				excuseFormPanel.add(checkbox);
 
 				String commentId = new StringBuilder(item.getIdentifier()).append(StudentModel.COMMENT_TEXT_FLAG).toString();
@@ -322,6 +324,8 @@ public class LearnerSummaryPanel extends ContentPanel {
 		excuseFormPanel = new LayoutContainer();
 		excuseFormLayout = new FormLayout();
 		excuseFormLayout.setLabelAlign(LabelAlign.LEFT);
+		excuseFormLayout.setLabelSeparator("");
+		excuseFormLayout.setLabelWidth(180);
 		excuseFormPanel.setLayout(excuseFormLayout);
 		excuseFormPanel.setScrollMode(Scroll.AUTOY);
 
