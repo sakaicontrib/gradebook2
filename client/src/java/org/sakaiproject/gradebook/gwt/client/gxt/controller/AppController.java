@@ -66,6 +66,7 @@ public class AppController extends Controller {
 		registerEventTypes(GradebookEvents.EndItemUpdates.getEventType());
 		registerEventTypes(GradebookEvents.ExpandEastPanel.getEventType());
 		registerEventTypes(GradebookEvents.Exception.getEventType());
+		registerEventTypes(GradebookEvents.FailedToUpdateItem.getEventType());
 		registerEventTypes(GradebookEvents.HideColumn.getEventType());
 		registerEventTypes(GradebookEvents.HideFormPanel.getEventType());
 		registerEventTypes(GradebookEvents.HideEastPanel.getEventType());
@@ -74,7 +75,6 @@ public class AppController extends Controller {
 		registerEventTypes(GradebookEvents.ItemUpdated.getEventType());
 		registerEventTypes(GradebookEvents.LearnerGradeRecordUpdated.getEventType());
 		registerEventTypes(GradebookEvents.Load.getEventType());
-		//registerEventTypes(GradebookEvents.LoadItemTreeModel.getEventType());
 		registerEventTypes(GradebookEvents.MaskItemTree.getEventType());
 		registerEventTypes(GradebookEvents.NewCategory.getEventType());
 		registerEventTypes(GradebookEvents.NewItem.getEventType());
@@ -250,6 +250,9 @@ public class AppController extends Controller {
 			case ITEM_DELETED:
 				forwardToView(multigradeView, event);
 				forwardToView(treeView, event);
+				break;
+			case FAILED_TO_UPDATE_ITEM:
+				forwardToView(appView, event);
 				break;
 			case MASK_ITEM_TREE:
 			case UNMASK_ITEM_TREE:

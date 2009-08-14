@@ -144,7 +144,9 @@ public class GradeScalePanel extends ContentPanel {
 					record.beginEdit();
 					record.set(Key.GRADESCALEID.name(), currentGradeScaleId);
 					grid.mask();
-					Dispatcher.forwardEvent(GradebookEvents.UpdateItem.getEventType(), new ItemUpdate(treeView.getTreeStore(), record, selectedItemModel, false));
+					ItemUpdate itemUpdate = new ItemUpdate(treeView.getTreeStore(), record, selectedItemModel, false);
+					itemUpdate.property = Key.GRADESCALEID.name();
+					Dispatcher.forwardEvent(GradebookEvents.UpdateItem.getEventType(), itemUpdate);
 				} else {
 					loader.load();
 				}
@@ -315,6 +317,21 @@ public class GradeScalePanel extends ContentPanel {
 		addButton(button);
 	}
 	
+	public void onFailedToUpdateItem(ItemUpdate itemUpdate) {
+		
+		// Ensure that the failure is on an attempt to update the GRADESCALEID
+		if (itemUpdate.property != null && itemUpdate.property.equals(Key.GRADESCALEID.name())) {
+			
+			Long gradeScaleId = itemUpdate.item.get(Key.GRADESCALEID.name());
+		
+			if (gradeScaleId != null && currentGradeScaleId != null &&
+					!currentGradeScaleId.equals(gradeScaleId)) {
+				
+				loadGradeScaleData(gradeScaleId);
+			}
+		}
+		
+	}
 	
 	public void onRefreshGradeScale(GradebookModel selectedGradebook) {
 		loader.load();
@@ -326,8 +343,7 @@ public class GradeScalePanel extends ContentPanel {
 	}
 	
 	
-	private void loadGradeScaleData(GradebookModel selectedGradebook) {
-		Long selectedGradeScaleId = selectedGradebook.getGradebookItemModel().getGradeScaleId();
+	private void loadGradeScaleData(Long selectedGradeScaleId) {
 		for (int i=0;i<gradeFormatStore.getCount();i++) {
 			GradeFormatModel m = gradeFormatStore.getAt(i);
 			if (m.getIdentifier().equals(String.valueOf(selectedGradeScaleId))) {
@@ -336,6 +352,11 @@ public class GradeScalePanel extends ContentPanel {
 				break;
 			}
 		}
+	}
+	
+	private void loadGradeScaleData(GradebookModel selectedGradebook) {
+		Long selectedGradeScaleId = selectedGradebook.getGradebookItemModel().getGradeScaleId();
+		loadGradeScaleData(selectedGradeScaleId);
 	}
 
 	private void loadIfPossible() {

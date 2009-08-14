@@ -29,6 +29,7 @@ import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.FullScreen;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
@@ -93,6 +94,9 @@ public abstract class AppView extends View {
 			break;
 		case CLOSE_NOTIFICATION:
 			onCloseNotification();
+			break;
+		case FAILED_TO_UPDATE_ITEM:
+			onFailedToUpdateItem((ItemUpdate)event.data);
 			break;
 		case LOAD_ITEM_TREE_MODEL:
 			onLoadItemTreeModel((GradebookModel)event.data);
@@ -195,6 +199,10 @@ public abstract class AppView extends View {
 		
 	}
 
+	protected void onFailedToUpdateItem(ItemUpdate itemUpdate) {
+		
+	}
+	
 	protected void onFullScreen(FullScreen fullscreen) {
 		
 	}

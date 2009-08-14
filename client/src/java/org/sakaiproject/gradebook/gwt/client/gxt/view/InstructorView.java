@@ -34,6 +34,7 @@ import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenu;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.BorderLayoutPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.GradeScalePanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.GraderPermissionSettingsPanel;
@@ -304,6 +305,13 @@ public class InstructorView extends AppView {
 
 	}
 
+	@Override
+	protected void onFailedToUpdateItem(ItemUpdate itemUpdate) {
+		if (gradeScalePanel != null) {
+			gradeScalePanel.onFailedToUpdateItem(itemUpdate);
+		}
+	}
+	
 	@Override
 	protected void onItemCreated(ItemModel itemModel) {
 		onHideEastPanel(Boolean.FALSE);

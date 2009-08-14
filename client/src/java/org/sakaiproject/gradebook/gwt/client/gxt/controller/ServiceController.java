@@ -367,7 +367,8 @@ public class ServiceController extends Controller {
 
 		if (event.record != null)
 			event.record.reject(false);
-
+		
+		Dispatcher.forwardEvent(GradebookEvents.FailedToUpdateItem.getEventType(), event);
 		Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught, "Failed to update item: "));
 	}
 
