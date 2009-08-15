@@ -136,7 +136,8 @@
 	
 	
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"
-		class="org.sakaiproject.gradebook.gwt.sakai.calculations.GradeCalculationsOOImpl">
+		class="org.sakaiproject.gradebook.gwt.sakai.calculations.GradeCalculationsOOImpl"
+		init-method="init">
 		
 	</bean>
 

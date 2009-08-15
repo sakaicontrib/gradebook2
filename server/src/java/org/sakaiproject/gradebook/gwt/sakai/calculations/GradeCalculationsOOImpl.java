@@ -45,7 +45,24 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 
 	final static BigDecimal BIG_DECIMAL_100 = new BigDecimal("100.00000");
 	public static final MathContext MATH_CONTEXT = new MathContext(10, RoundingMode.HALF_EVEN);
-
+	public static Map<String, Double> letterGradePercentMap;
+	
+	public void init() {
+		letterGradePercentMap = new HashMap<String, Double>();
+		letterGradePercentMap.put("A+", Double.valueOf(98.3333333333d));
+		letterGradePercentMap.put("A", Double.valueOf(95d));
+		letterGradePercentMap.put("A-", Double.valueOf(91.6666666666d));
+		letterGradePercentMap.put("B+", Double.valueOf(88.3333333333d));
+		letterGradePercentMap.put("B", Double.valueOf(85d));
+		letterGradePercentMap.put("B-", Double.valueOf(81.6666666666d));
+		letterGradePercentMap.put("C+", Double.valueOf(78.3333333333d));
+		letterGradePercentMap.put("C", Double.valueOf(75d));
+		letterGradePercentMap.put("C-", Double.valueOf(71.6666666666d));
+		letterGradePercentMap.put("D+", Double.valueOf(68.3333333333d));
+		letterGradePercentMap.put("D", Double.valueOf(65d));
+		letterGradePercentMap.put("D-", Double.valueOf(61.6666666666d));
+		letterGradePercentMap.put("F", Double.valueOf(58.3333333333d));
+	}
 
 	public Double calculateEqualWeight(int numberOfItems) {
 		if (numberOfItems <= 1)
@@ -174,7 +191,57 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 
 		return statistics;
 	}
-
+	
+	public String convertPercentageToLetterGrade(BigDecimal percentage) {
+		String letterGrade = null;
+		
+		if (percentage != null) {
+			
+			BigDecimal minus60 = percentage.subtract(BigDecimal.valueOf(60d));
+			
+			if (minus60.compareTo(BigDecimal.ZERO) < 0)
+				return "F";
+			
+			BigDecimal decimal = minus60.divide(BigDecimal.valueOf(10d), MATH_CONTEXT);
+			
+			if (decimal.compareTo(BigDecimal.valueOf(3.7d)) >= 0)
+				return "A+";
+			if (decimal.compareTo(BigDecimal.valueOf(3.3d)) >= 0)
+				return "A";
+			if (decimal.compareTo(BigDecimal.valueOf(3d)) >= 0)
+				return "A-";
+			if (decimal.compareTo(BigDecimal.valueOf(2.7d)) >= 0)
+				return "B+";
+			if (decimal.compareTo(BigDecimal.valueOf(2.3d)) >= 0)
+				return "B";
+			if (decimal.compareTo(BigDecimal.valueOf(2d)) >= 0)
+				return "B-"; 
+			if (decimal.compareTo(BigDecimal.valueOf(1.7d)) >= 0)
+				return "C+";
+			if (decimal.compareTo(BigDecimal.valueOf(1.3d)) >= 0)
+				return "C";
+			if (decimal.compareTo(BigDecimal.valueOf(1d)) >= 0)
+				return "C-"; 
+			if (decimal.compareTo(BigDecimal.valueOf(0.7d)) >= 0)
+				return "D+";
+			if (decimal.compareTo(BigDecimal.valueOf(0.3d)) >= 0)
+				return "D";
+			
+			return "D-"; 
+		}
+		
+		return letterGrade;
+	}
+	
+	public Double convertLetterGradeToPercentage(String letterGrade) {
+		Double percentage = null;
+		
+		if (letterGrade != null) {
+			return letterGradePercentMap.get(letterGrade);
+		}
+		
+		return percentage;
+	}
 
 	public BigDecimal getCategoryWeight(Category category) {
 		BigDecimal categoryWeight = null;

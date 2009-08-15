@@ -31,6 +31,7 @@ public interface I18nConstants extends Constants {
 	String categoryName();
 	String itemName();
 	
+	String gradeTypeLetters();
 	String gradeTypePoints();
 	String gradeTypePercentages();
 	

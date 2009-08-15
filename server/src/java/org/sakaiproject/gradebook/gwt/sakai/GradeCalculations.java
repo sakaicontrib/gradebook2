@@ -41,6 +41,10 @@ public interface GradeCalculations {
 	
 	public BigDecimal calculateItemGradePercent(BigDecimal percentGrade, BigDecimal sumCategoryPercents, BigDecimal assignmentWeight);
 	
+	public String convertPercentageToLetterGrade(BigDecimal percentage);
+	
+	public Double convertLetterGradeToPercentage(String letterGrade);
+	
 	public BigDecimal getNewPointsGrade(Double pointValue, Double maxPointValue, Double maxPointStartValue);
 	
 	public BigDecimal getPercentAsPointsEarned(Assignment assignment, Double percentage);

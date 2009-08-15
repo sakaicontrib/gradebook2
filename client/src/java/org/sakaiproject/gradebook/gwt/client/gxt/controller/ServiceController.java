@@ -264,7 +264,7 @@ public class ServiceController extends Controller {
 	private void onUpdateGradeRecord(final GradeRecordUpdate event) {
 
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-		ClassType classType = StudentModel.lookupClassType(event.property);
+		ClassType classType = StudentModel.lookupClassType(event.property, selectedGradebook.getGradebookItemModel().getGradeType());
 
 		final Record record = event.record;
 		final UserEntityUpdateAction<StudentModel> action = new UserEntityUpdateAction<StudentModel>(selectedGradebook, (StudentModel)record.getModel(), event.property, classType, event.value, event.oldValue);		

@@ -1808,7 +1808,17 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		gradeRecords = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), student.getIdentifier());
 
 		refreshLearnerData(gradebook, student, assignment, gradeRecords);
-		student.set(assignmentId, value);
+		
+		switch (gradebook.getGrade_type()) {
+		case GradebookService.GRADE_TYPE_LETTER:
+			BigDecimal percentage = value == null ? null : BigDecimal.valueOf(value.doubleValue());
+			String letterGrade = gradeCalculations.convertPercentageToLetterGrade(percentage);
+			student.set(assignmentId, letterGrade);
+			break;
+		default:
+			student.set(assignmentId, value);
+		}
+		
 
 		gbService.storeActionRecord(actionRecord);
 
@@ -1823,43 +1833,55 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		if (value != null)
 			value = value.toUpperCase();
 
-		// FIXME: Currently only handles grade override edits -- this should
-		// handle non-numeric grades too
+		if (property == null)
+			return null;
+		
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
-		CourseGradeRecord courseGradeRecord = gbService.getStudentCourseGradeRecord(gradebook, student.getIdentifier());
-		courseGradeRecord.setEnteredGrade(value);
-		Collection<CourseGradeRecord> gradeRecords = new LinkedList<CourseGradeRecord>();
-		gradeRecords.add(courseGradeRecord);
-		// FIXME: We shouldn't be looking up the CourseGrade if we don't use it
-		// anywhere.
-		CourseGrade courseGrade = gbService.getCourseGrade(gradebook.getId());
-
-		GradeMapping gradeMapping = gradebook.getSelectedGradeMapping();
-		Set<String> scaledGrades = gradeMapping.getGradeMap().keySet();
-
-		if (value != null && !advisor.isValidOverrideGrade(value, student.getEid(), student.getStudentDisplayId(), gradebook, scaledGrades))
-			throw new InvalidInputException("This is not a valid override grade for this individual in this course.");
-
-		gbService.updateCourseGradeRecords(courseGrade, gradeRecords);
-
-		List<Category> categories = null;
-		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
-		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
-			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
-
-		Map<Long, AssignmentGradeRecord> studentGradeMap = new HashMap<Long, AssignmentGradeRecord>();
-		List<AssignmentGradeRecord> records = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), student.getIdentifier());
-
-		if (records != null) {
-			for (AssignmentGradeRecord record : records) {
-				studentGradeMap.put(record.getAssignment().getId(), record);
+		
+		if (property.equals(StudentModel.Key.GRADE_OVERRIDE.name())) {
+			// Then we are overriding a course grade
+			CourseGradeRecord courseGradeRecord = gbService.getStudentCourseGradeRecord(gradebook, student.getIdentifier());
+			courseGradeRecord.setEnteredGrade(value);
+			Collection<CourseGradeRecord> gradeRecords = new LinkedList<CourseGradeRecord>();
+			gradeRecords.add(courseGradeRecord);
+			// FIXME: We shouldn't be looking up the CourseGrade if we don't use it
+			// anywhere.
+			CourseGrade courseGrade = gbService.getCourseGrade(gradebook.getId());
+	
+			GradeMapping gradeMapping = gradebook.getSelectedGradeMapping();
+			Set<String> scaledGrades = gradeMapping.getGradeMap().keySet();
+	
+			if (value != null && !advisor.isValidOverrideGrade(value, student.getEid(), student.getStudentDisplayId(), gradebook, scaledGrades))
+				throw new InvalidInputException("This is not a valid override grade for this individual in this course.");
+	
+			gbService.updateCourseGradeRecords(courseGrade, gradeRecords);
+	
+			List<Category> categories = null;
+			List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
+			if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
+				categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+	
+			Map<Long, AssignmentGradeRecord> studentGradeMap = new HashMap<Long, AssignmentGradeRecord>();
+			List<AssignmentGradeRecord> records = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), student.getIdentifier());
+	
+			if (records != null) {
+				for (AssignmentGradeRecord record : records) {
+					studentGradeMap.put(record.getAssignment().getId(), record);
+				}
 			}
+	
+			String freshCourseGrade = getDisplayGrade(gradebook, student.getIdentifier(), courseGradeRecord, assignments, categories, studentGradeMap);// requestCourseGrade(gradebookUid,
+			student.set(StudentModel.Key.GRADE_OVERRIDE.name(), courseGradeRecord.getEnteredGrade());
+			student.set(StudentModel.Key.COURSE_GRADE.name(), freshCourseGrade);
+		} else if (gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER) {
+			// We must be modifying a letter grade
+			
+			Double numericValue = gradeCalculations.convertLetterGradeToPercentage(value);
+			Double previousNumericValue = gradeCalculations.convertLetterGradeToPercentage(previousValue);
+			
+			student = scoreNumericItem(gradebookUid, student, property, numericValue, previousNumericValue);
 		}
-
-		String freshCourseGrade = getDisplayGrade(gradebook, student.getIdentifier(), courseGradeRecord, assignments, categories, studentGradeMap);// requestCourseGrade(gradebookUid,
-		student.set(StudentModel.Key.GRADE_OVERRIDE.name(), courseGradeRecord.getEnteredGrade());
-		student.set(StudentModel.Key.COURSE_GRADE.name(), freshCourseGrade);
-
+		
 		return student;
 	}
 
@@ -2298,17 +2320,20 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				if (isExcused)
 					cellMap.put(concat(id, StudentModel.EXCUSE_FLAG), Boolean.TRUE);
 
+				BigDecimal percentage = null;
 				switch (gradebook.getGrade_type()) {
 					case GradebookService.GRADE_TYPE_POINTS:
 						cellMap.put(id, gradeRecord.getPointsEarned());
 						break;
 					case GradebookService.GRADE_TYPE_PERCENTAGE:
-						BigDecimal percentage = gradeCalculations.getPointsEarnedAsPercent((Assignment) gradeRecord.getGradableObject(), gradeRecord);
+						percentage = gradeCalculations.getPointsEarnedAsPercent((Assignment) gradeRecord.getGradableObject(), gradeRecord);
 						Double percentageDouble = percentage == null ? null : Double.valueOf(percentage.doubleValue());
 						cellMap.put(id, percentageDouble);
 						break;
 					case GradebookService.GRADE_TYPE_LETTER:
-						cellMap.put(id, "No letter grades");
+						percentage = gradeCalculations.getPointsEarnedAsPercent((Assignment) gradeRecord.getGradableObject(), gradeRecord);
+						String letterGrade = gradeCalculations.convertPercentageToLetterGrade(percentage);
+						cellMap.put(id, letterGrade);
 						break;
 					default:
 						cellMap.put(id, "Not implemented");
@@ -3618,6 +3643,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				assignmentGradeRecord.setPointsEarned(value);
 				break;
 			case GradebookService.GRADE_TYPE_PERCENTAGE:
+			case GradebookService.GRADE_TYPE_LETTER:
 				BigDecimal pointsEarned = gradeCalculations.getPercentAsPointsEarned(assignment, value);
 				Double pointsEarnedDouble = pointsEarned == null ? null : Double.valueOf(pointsEarned.doubleValue());
 				assignmentGradeRecord.setPointsEarned(pointsEarnedDouble);
@@ -3632,7 +3658,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		if (!deferUpdate) {
 			Collection<AssignmentGradeRecord> gradeRecords = new LinkedList<AssignmentGradeRecord>();
 			gradeRecords.add(assignmentGradeRecord);
-			gbService.updateAssignmentGradeRecords(assignment, gradeRecords, gradebook.getGrade_type());
+			gbService.updateAssignmentGradeRecords(assignment, gradeRecords);
 		}
 
 		return assignmentGradeRecord;

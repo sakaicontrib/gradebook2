@@ -25,6 +25,7 @@ package org.sakaiproject.gradebook.gwt.client.model;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType;
+import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 
 public class StudentModel extends EntityModel implements Comparable<StudentModel> {
 	
@@ -96,7 +97,7 @@ public class StudentModel extends EntityModel implements Comparable<StudentModel
 		super(properties);
 	}
 	
-	public static ClassType lookupClassType(String property) {
+	public static ClassType lookupClassType(String property, GradeType gradeType) {
 		
 		if (property.equals(Key.GRADE_OVERRIDE.name()))
 			return ClassType.STRING;
@@ -106,6 +107,9 @@ public class StudentModel extends EntityModel implements Comparable<StudentModel
 		
 		if (property.endsWith(EXCUSE_FLAG))
 			return ClassType.BOOLEAN;
+		
+		if (gradeType == GradeType.LETTERS)
+			return ClassType.STRING;
 		
 		return ClassType.DOUBLE;
 	}

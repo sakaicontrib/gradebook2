@@ -474,7 +474,8 @@ public class ItemFormPanel extends ContentPanel {
 
 		gradeTypeStore.add(getGradeTypeModel(GradebookModel.GradeType.POINTS));
 		gradeTypeStore.add(getGradeTypeModel(GradebookModel.GradeType.PERCENTAGES));
-
+		gradeTypeStore.add(getGradeTypeModel(GradebookModel.GradeType.LETTERS));
+		
 		gradeTypePicker.setStore(gradeTypeStore);
 		
 	
@@ -620,6 +621,10 @@ public class ItemFormPanel extends ContentPanel {
 		ModelData model = new BaseModelData();
 
 		switch (gradeType) {
+			case LETTERS:
+				model.set("name", i18n.gradeTypeLetters());
+				model.set("value", GradebookModel.GradeType.LETTERS);
+				break;
 			case POINTS:
 				model.set("name", i18n.gradeTypePoints());
 				model.set("value", GradebookModel.GradeType.POINTS);
