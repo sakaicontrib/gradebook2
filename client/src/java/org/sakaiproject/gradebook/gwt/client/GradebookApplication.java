@@ -40,10 +40,7 @@ import com.extjs.gxt.ui.client.state.StateManager;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.IFrameElement;
-import com.google.gwt.dom.client.NodeList;
+import com.google.gwt.i18n.client.Dictionary;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
 
@@ -90,9 +87,26 @@ public class GradebookApplication implements EntryPoint {
 		
 		Registry.register(AppConstants.SERVICE, dataService);
 		Registry.register(AppConstants.I18N, i18n);
+
+		String paramString = getParamString();
 		
-		getAuthorization(0);		
+		AuthModel authModel = null;
+		
+		if (paramString != null) {
+			authModel = new AuthModel();
+			authModel.parse(paramString);
+		}
+		
+		if (authModel != null && authModel.getPlacementId() != null) {
+			readAuthorization(authModel);
+		} else {
+			getAuthorization(0);
+		}
 	}
+	
+	private native String getParamString() /*-{
+    	return $wnd.location.search;
+	}-*/;
 	
 	private void getAuthorization(final int i) {
 		AsyncCallback<AuthModel> callback = 
@@ -109,24 +123,27 @@ public class GradebookApplication implements EntryPoint {
 				}
 
 				public void onSuccess(AuthModel result) {
-					
-					if (GWT.isScript()) {
-						String placementId = result.getPlacementId();
-						if (placementId != null) {
-							String modifiedId = placementId.replace('-', 'x');
-							resizeMainFrame("Main" + modifiedId, screenHeight + 20);
-						}
-					}
-					
-					dispatcher.dispatch(GradebookEvents.Load.getEventType(), result);
-					getApplicationModel(0, result);
-					GXT.hideLoadingPanel("loading");
+					readAuthorization(result);
 				}
 			
 		};
 		
 		dataService.get(null, null, EntityType.AUTH, null, null, SecureToken.get(), callback);
 
+	}
+	
+	private void readAuthorization(AuthModel authModel) {
+		if (GWT.isScript()) {
+			String placementId = authModel.getPlacementId();
+			if (placementId != null) {
+				String modifiedId = placementId.replace('-', 'x');
+				resizeMainFrame("Main" + modifiedId, screenHeight + 20);
+			}
+		}
+		
+		dispatcher.dispatch(GradebookEvents.Load.getEventType(), authModel);
+		getApplicationModel(0, authModel);
+		GXT.hideLoadingPanel("loading");
 	}
 	
 	private void getApplicationModel(final int i, final AuthModel authModel) {

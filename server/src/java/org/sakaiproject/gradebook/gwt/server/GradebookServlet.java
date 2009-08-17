@@ -29,6 +29,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.servlets.DefaultServlet;
+import org.sakaiproject.component.cover.ComponentManager;
+import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
+import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service;
 
 public class GradebookServlet extends DefaultServlet {
 
@@ -45,8 +48,22 @@ public class GradebookServlet extends DefaultServlet {
 		if (relativePath.equals("/")) {
 			String relativePrefix = RELATIVE_PREFIX;
 			String defaultPage = DEFAULT_PAGE;
-					
-			response.sendRedirect(request.getRequestURI() + relativePrefix + defaultPage);
+			
+			Gradebook2Service service = (Gradebook2Service)ComponentManager.getInstance().get("org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service");
+			
+			StringBuilder url = new StringBuilder();
+			url.append(request.getRequestURI()).append(relativePrefix).append(defaultPage);
+			
+			if (service != null) {
+				AuthModel authModel = service.getAuthorization();
+			
+				if (authModel != null) {
+					url.append(authModel.toString());
+				}
+				
+			}
+			
+			response.sendRedirect(url.toString());
 			
 			return;
 		}	
