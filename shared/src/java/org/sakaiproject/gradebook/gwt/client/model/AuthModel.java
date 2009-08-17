@@ -94,25 +94,47 @@ public class AuthModel extends BaseModel {
 	public String toString() {
 		StringBuilder buffer = new StringBuilder().append("?");
 		
-		if (isUserAbleToViewOwnGrades != null)
+		boolean hasEntry = false;
+		if (isUserAbleToViewOwnGrades != null) {
 			buffer.append("isUserAbleToViewOwnGrades=").append(String.valueOf(isUserAbleToViewOwnGrades));
-		if (isUserHasGraderPermissions != null)
+			hasEntry = true;
+		}
+		if (isUserHasGraderPermissions != null) {
+			if (hasEntry)
+				buffer.append("&");
 			buffer.append("isUserHasGraderPermissions=").append(String.valueOf(isUserHasGraderPermissions));
-		if (isUserAbleToGrade != null)
+			hasEntry = true;
+		}
+		if (isUserAbleToGrade != null) {
+			if (hasEntry)
+				buffer.append("&");
 			buffer.append("isUserAbleToGrade=").append(String.valueOf(isUserAbleToGrade));
-		if (isUserAbleToEditAssessments != null)
+			hasEntry = true;
+		}
+		if (isUserAbleToEditAssessments != null) {
+			if (hasEntry)
+				buffer.append("&");
 			buffer.append("isUserAbleToEditAssessments=").append(String.valueOf(isUserAbleToEditAssessments));
-		if (isNewGradebook != null)
+			hasEntry = true;
+		}
+		if (isNewGradebook != null) {
+			if (hasEntry)
+				buffer.append("&");
 			buffer.append("isNewGradebook=").append(String.valueOf(isNewGradebook));
-		if (placementId != null)
+			hasEntry = true;
+		}
+		if (placementId != null) {
+			if (hasEntry)
+				buffer.append("&");
 			buffer.append("placementId=").append(placementId);
-
+		}
+		
 		return buffer.toString();
 	}
 	
 	public void parse(String authString) {
 
-		if (authString.startsWith("?")) {
+		if (authString != null) {
 			HashMap<String, Object> nameValueMap = new HashMap<String, Object>();
 			
 			authString = authString.substring(1);
