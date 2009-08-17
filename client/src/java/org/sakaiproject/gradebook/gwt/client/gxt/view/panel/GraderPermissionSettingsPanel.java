@@ -80,7 +80,8 @@ import com.google.gwt.user.client.ui.HTML;
 
 public class GraderPermissionSettingsPanel extends ContentPanel {
 	
-	private final static int DELETE_ACTION_GRID_CELL = 4;
+	private final static int DELETE_ACTION_GRID_CELL_WITHOUT_CATEGORIES = 3;
+	private final static int DELETE_ACTION_GRID_CELL_WITH_CATEGORIES = 4;
 	
 	private final static String CAN_VIEW_PERMISSION = "view";
 	private final static String CAN_GRADE_PERMISSION = "grade";
@@ -371,11 +372,23 @@ public class GraderPermissionSettingsPanel extends ContentPanel {
 
 			public void handleEvent(GridEvent gridEvent) {
 
-				if(DELETE_ACTION_GRID_CELL == cellSelectionModel.getSelectCell().cell) {
-					PermissionEntryModel permissionEntryModel = cellSelectionModel.getSelectCell().model;
-					Gradebook2RPCServiceAsync service = Registry.get("service");
-					GradebookModel model = Registry.get(AppConstants.CURRENT);
-					service.delete(model.getGradebookUid(), model.getGradebookId(), permissionEntryModel, EntityType.PERMISSION_ENTRY, SecureToken.get(), getDeletePermissionEntryAsyncCallback());
+				if(hasCategories()) {
+					
+					if(DELETE_ACTION_GRID_CELL_WITH_CATEGORIES == cellSelectionModel.getSelectCell().cell) {
+						PermissionEntryModel permissionEntryModel = cellSelectionModel.getSelectCell().model;
+						Gradebook2RPCServiceAsync service = Registry.get("service");
+						GradebookModel model = Registry.get(AppConstants.CURRENT);
+						service.delete(model.getGradebookUid(), model.getGradebookId(), permissionEntryModel, EntityType.PERMISSION_ENTRY, SecureToken.get(), getDeletePermissionEntryAsyncCallback());
+					}
+				}
+				else {
+					
+					if(DELETE_ACTION_GRID_CELL_WITHOUT_CATEGORIES == cellSelectionModel.getSelectCell().cell) {
+						PermissionEntryModel permissionEntryModel = cellSelectionModel.getSelectCell().model;
+						Gradebook2RPCServiceAsync service = Registry.get("service");
+						GradebookModel model = Registry.get(AppConstants.CURRENT);
+						service.delete(model.getGradebookUid(), model.getGradebookId(), permissionEntryModel, EntityType.PERMISSION_ENTRY, SecureToken.get(), getDeletePermissionEntryAsyncCallback());
+					}
 				}
 			}
 		});
