@@ -1087,6 +1087,43 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 					"Could not find gradebook uid=" + uid);
 		}
 	}
+	
+	public boolean isAnyScoreEntered(final Long gradebookId, final boolean hasCategories) {
+		if (log.isDebugEnabled()) log.debug("isAnyScoreEntered called for gradebookId:" + gradebookId);
+
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException, SQLException {
+
+				StringBuilder query = new StringBuilder();
+
+				query.append("select count(*) from Assignment a");
+
+				if (hasCategories) 
+					query.append(", Category cat where a.category.id = cat.id ")
+					.append(" and cat.removed = false and ");
+				else
+					query.append(" where ");
+
+				query.append(" a.gradebook.id = :gradebookId ")
+				.append("and a.removed = false ")
+				.append("and a.name != 'Course Grade' ")
+				.append("and a.id in ( ")
+				.append("select r.gradableObject.id ")
+				.append("from AssignmentGradeRecord r ")
+				.append("where (r.pointsEarned is not null or r.excluded = true) ")
+				.append("and r.gradableObject.id = a.id ")
+				.append(") ");
+
+				Query q = session.createQuery(query.toString());
+				q.setParameter("gradebookId", gradebookId);
+				return Boolean.valueOf(((Integer) q.iterate().next() ).intValue() > 0);
+			}
+		};
+
+		Boolean isGraded = (Boolean)getHibernateTemplate().execute(hc);
+
+		return isGraded != null && isGraded.booleanValue();
+	}
 
 	public boolean isStudentCommented(final String studentId, final Long assignmentId) {
 		Boolean isCommented = (Boolean)getHibernateTemplate().execute(new HibernateCallback() {
@@ -1209,7 +1246,6 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				q.setParameter("gradebookId", gradebookId);
 				q.setParameter("studentId", studentId);
 				return Boolean.valueOf(((Integer) q.iterate().next() ).intValue() > 0);
-
 			}
 		};
 

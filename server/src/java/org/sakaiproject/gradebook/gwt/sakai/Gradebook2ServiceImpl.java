@@ -3741,7 +3741,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 	}
 
-	private ItemModel updateGradebookModel(ItemModel item) {
+	private ItemModel updateGradebookModel(ItemModel item) throws InvalidInputException {
 
 		Gradebook gradebook = gbService.getGradebook(item.getIdentifier());
 
@@ -3771,6 +3771,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 		gradebook.setCategory_type(newCategoryType);
 
+		int oldGradeType = gradebook.getGrade_type();
 		int newGradeType = -1;
 
 		switch (item.getGradeType()) {
@@ -3783,6 +3784,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			case LETTERS:
 				newGradeType = GradebookService.GRADE_TYPE_LETTER;
 				break;
+		}
+		
+		if (oldGradeType != newGradeType) {
+			if (gbService.isAnyScoreEntered(gradebook.getId(), hasCategories))
+				throw new InvalidInputException("There are one or more scores already entered for this gradebook. To switch grade types at this time you will have to remove those scores.");
 		}
 
 		gradebook.setGrade_type(newGradeType);

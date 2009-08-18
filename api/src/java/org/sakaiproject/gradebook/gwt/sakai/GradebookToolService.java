@@ -139,6 +139,8 @@ public interface GradebookToolService {
 	public List<UserDereference> getUserDereferences(String[] realmIds, String sortField, String searchField, 
 			String searchCriteria, int offset, int limit, boolean isAsc, String[] roleNames);
 	
+	public boolean isAnyScoreEntered(final Long gradebookId, final boolean hasCategories);
+	
 	public boolean isStudentMissingScores(Long gradebookId, String studentId, boolean hasCategories);
 	
 	public boolean isStudentGraded(String studentId);
