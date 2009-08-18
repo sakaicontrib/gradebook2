@@ -45,23 +45,10 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 
 	final static BigDecimal BIG_DECIMAL_100 = new BigDecimal("100.00000");
 	public static final MathContext MATH_CONTEXT = new MathContext(10, RoundingMode.HALF_EVEN);
-	public static Map<String, Double> letterGradePercentMap;
+	public Map<String, Double> letterGradeMap;
 	
 	public void init() {
-		letterGradePercentMap = new HashMap<String, Double>();
-		letterGradePercentMap.put("A+", Double.valueOf(98.3333333333d));
-		letterGradePercentMap.put("A", Double.valueOf(95d));
-		letterGradePercentMap.put("A-", Double.valueOf(91.6666666666d));
-		letterGradePercentMap.put("B+", Double.valueOf(88.3333333333d));
-		letterGradePercentMap.put("B", Double.valueOf(85d));
-		letterGradePercentMap.put("B-", Double.valueOf(81.6666666666d));
-		letterGradePercentMap.put("C+", Double.valueOf(78.3333333333d));
-		letterGradePercentMap.put("C", Double.valueOf(75d));
-		letterGradePercentMap.put("C-", Double.valueOf(71.6666666666d));
-		letterGradePercentMap.put("D+", Double.valueOf(68.3333333333d));
-		letterGradePercentMap.put("D", Double.valueOf(65d));
-		letterGradePercentMap.put("D-", Double.valueOf(61.6666666666d));
-		letterGradePercentMap.put("F", Double.valueOf(58.3333333333d));
+
 	}
 
 	public Double calculateEqualWeight(int numberOfItems) {
@@ -197,6 +184,9 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		
 		if (percentage != null) {
 			
+			if (percentage.compareTo(BigDecimal.ZERO) == 0)
+				return "0";
+			
 			BigDecimal minus60 = percentage.subtract(BigDecimal.valueOf(60d));
 			
 			if (minus60.compareTo(BigDecimal.ZERO) < 0)
@@ -237,7 +227,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		Double percentage = null;
 		
 		if (letterGrade != null) {
-			return letterGradePercentMap.get(letterGrade);
+			return letterGradeMap.get(letterGrade);
 		}
 		
 		return percentage;
@@ -539,6 +529,14 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 
 	private boolean isUnweighted(Category category) {
 		return category.isUnweighted() == null ? false : category.isUnweighted().booleanValue();
+	}
+
+	public Map<String, Double> getLetterGradeMap() {
+		return letterGradeMap;
+	}
+
+	public void setLetterGradeMap(Map<String, Double> letterGradeMap) {
+		this.letterGradeMap = letterGradeMap;
 	}
 
 }

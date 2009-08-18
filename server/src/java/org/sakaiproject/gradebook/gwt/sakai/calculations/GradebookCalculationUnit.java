@@ -116,18 +116,21 @@ public class GradebookCalculationUnit {
 					sumExtraCreditPoints = sumExtraCreditPoints.add(categoryExtraCreditPoints);
 					
 			} else {
-				if (sumPoints == null)
-					sumPoints = BigDecimal.ZERO.setScale(AppConstants.SCALE);
-
-				if (sumPointsPossible == null)
-					sumPointsPossible = BigDecimal.ZERO.setScale(AppConstants.SCALE);
-
-				if (categoryPointsReceived != null)
-					sumPoints = sumPoints.add(categoryPointsReceived);
-
-				if (categoryPointsPossible != null)
-					sumPointsPossible = sumPointsPossible.add(categoryPointsPossible);
+		
+				if (categoryPointsReceived != null) {
+					if (sumPoints == null)
+						sumPoints = BigDecimal.ZERO.setScale(AppConstants.SCALE);
 					
+					sumPoints = sumPoints.add(categoryPointsReceived);
+				}
+				
+				if (categoryPointsPossible != null) {
+					if (sumPointsPossible == null)
+						sumPointsPossible = BigDecimal.ZERO.setScale(AppConstants.SCALE);
+					
+					sumPointsPossible = sumPointsPossible.add(categoryPointsPossible);
+				}
+				
 				if (categoryExtraCreditPoints != null) {
 					if (sumExtraCreditPoints == null)
 						sumExtraCreditPoints = BigDecimal.ZERO.setScale(AppConstants.SCALE);

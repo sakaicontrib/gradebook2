@@ -73,6 +73,25 @@
 		class="org.sakaiproject.gradebook.gwt.sakai.calculations.GradeCalculationsOOImpl"
 		init-method="init">
 		
+		<property name="letterGradeMap">
+			<map>
+			  	<entry><key><value>A+</value></key><value>98.3333333333</value></entry>
+			  	<entry><key><value>A</value></key><value>95</value></entry>
+			  	<entry><key><value>A-</value></key><value>91.6666666666</value></entry>
+			  	<entry><key><value>B+</value></key><value>88.3333333333</value></entry>
+			  	<entry><key><value>B</value></key><value>85</value></entry>
+			  	<entry><key><value>B-</value></key><value>81.6666666666</value></entry>
+			  	<entry><key><value>C+</value></key><value>78.3333333333</value></entry>
+			  	<entry><key><value>C</value></key><value>75</value></entry>
+			  	<entry><key><value>C-</value></key><value>71.6666666666</value></entry>
+			  	<entry><key><value>D+</value></key><value>68.3333333333</value></entry>
+			  	<entry><key><value>D</value></key><value>65</value></entry>
+			  	<entry><key><value>D-</value></key><value>61.6666666666</value></entry>
+			  	<entry><key><value>F</value></key><value>58.3333333333</value></entry>
+				<entry><key><value>0</value></key><value>0</value></entry>
+			</map>
+		</property>
+		
 	</bean>
 
 	
