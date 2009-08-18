@@ -62,6 +62,7 @@ public class StudentModel extends EntityModel implements Comparable<StudentModel
 		EMAIL(Group.STUDENT_INFORMATION, "Email"), 
 		SECTION(Group.STUDENT_INFORMATION, "Section"), 
 		COURSE_GRADE(Group.GRADES, "Course Grade"), 
+		CALCULATED_GRADE(Group.GRADES, "Calculated Grade"),
 		GRADE_OVERRIDE(Group.GRADES, "Grade Override"), 
 		ASSIGNMENT(Group.ASSIGNMENTS, ""),
 		EXPORT_CM_ID(Group.STUDENT_INFORMATION, "Export CM Id"),

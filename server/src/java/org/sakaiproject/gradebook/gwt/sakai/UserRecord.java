@@ -22,6 +22,7 @@
  **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.sakai;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 import org.sakaiproject.tool.gradebook.AssignmentGradeRecord;
@@ -45,6 +46,7 @@ public class UserRecord {
 	private Map<Long, AssignmentGradeRecord> gradeRecordMap;
 	private Map<Long, Comment> commentMap;
 	private String displayGrade;
+	private BigDecimal calculatedGrade;
 	private String exportCourseManagemntId;
 	private String exportUserId;
 	private String finalGradeUserId;
@@ -219,5 +221,13 @@ public class UserRecord {
 
 	public void setFinalGradeUserId(String finalGradeUserId) {
 		this.finalGradeUserId = finalGradeUserId;
+	}
+
+	public BigDecimal getCalculatedGrade() {
+		return calculatedGrade;
+	}
+
+	public void setCalculatedGrade(BigDecimal calculatedGrade) {
+		this.calculatedGrade = calculatedGrade;
 	}
 }
