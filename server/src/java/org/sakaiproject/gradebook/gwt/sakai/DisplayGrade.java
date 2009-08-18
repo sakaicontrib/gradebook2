@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 
 public class DisplayGrade {
 
-	private static final String missingGradesMarker = "***";
+	private static final String missingGradesMarker = " ***";
 	
 	private String letterGrade;
 	private BigDecimal calculatedGrade;
@@ -81,7 +81,7 @@ public class DisplayGrade {
 			if (isOverridden) {
 				builder.append(" (override)");
 			} else if (calculatedGrade != null && !isLetterGradeMode) {	
-				builder.append(" (").append(calculatedGrade.toString()).append("%) ");
+				builder.append(" (").append(calculatedGrade.toString()).append("%)");
 			}
 			
 			if (isMissingGrades)
