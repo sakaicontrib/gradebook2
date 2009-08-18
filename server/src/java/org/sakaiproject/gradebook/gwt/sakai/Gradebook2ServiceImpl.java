@@ -24,6 +24,7 @@
 package org.sakaiproject.gradebook.gwt.sakai;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -1422,7 +1423,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		List<X> statsList = new ArrayList<X>();
 
 		long id = 0;
-		statsList.add((X) createStatisticsModel("Course Grade", courseGradeStatistics, Long.valueOf(id)));
+		statsList.add((X) createStatisticsModel(gradebook, "Course Grade", courseGradeStatistics, Long.valueOf(id)));
 		id++;
 
 		if (assignments != null) {
@@ -1444,7 +1445,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 									assignmentStatistics = gradeCalculations.calculateStatistics(gradeList, sum);
 								}
 								
-								statsList.add((X) createStatisticsModel(name, assignmentStatistics, Long.valueOf(id)));
+								statsList.add((X) createStatisticsModel(gradebook, name, assignmentStatistics, Long.valueOf(id)));
 								id++;
 							}
 						}
@@ -1464,7 +1465,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 						assignmentStatistics = gradeCalculations.calculateStatistics(gradeList, sum);
 					}
 					
-					statsList.add((X) createStatisticsModel(name, assignmentStatistics, Long.valueOf(id)));
+					statsList.add((X) createStatisticsModel(gradebook, name, assignmentStatistics, Long.valueOf(id)));
 					id++;
 				}
 			}
@@ -1477,16 +1478,16 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 	private static final String NA = "-";
 	
-	private StatisticsModel createStatisticsModel(String name, GradeStatistics statistics, Long id) {
+	private StatisticsModel createStatisticsModel(Gradebook gradebook, String name, GradeStatistics statistics, Long id) {
 
 		StatisticsModel model = new StatisticsModel();
 		model.setId(String.valueOf(id));
 		model.setName(name);
 		
-		String mean = statistics != null && statistics.getMean() != null ? statistics.getMean().setScale(2, RoundingMode.HALF_EVEN).toString() : NA;
-		String median = statistics != null && statistics.getMedian() != null ? statistics.getMedian().setScale(2, RoundingMode.HALF_EVEN).toString() : NA;
-		String mode = statistics != null && statistics.getMode() != null ? statistics.getMode().setScale(2, RoundingMode.HALF_EVEN).toString() : NA;
-		String standardDev = statistics != null && statistics.getStandardDeviation() != null ? statistics.getStandardDeviation().setScale(2, RoundingMode.HALF_EVEN).toString() : NA;
+		String mean = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getMean(), false) : NA;
+		String median = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getMedian(), false) : NA;
+		String mode = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getMode(), false) : NA;
+		String standardDev = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getStandardDeviation(), true) : NA;
 		
 		model.setMean(mean);
 		model.setMedian(median);
@@ -1496,6 +1497,24 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		return model;
 	}
 
+	private String convertBigDecimalStatToString(Gradebook gradebook, BigDecimal stat, boolean isStandardDev) {
+		String statAsString = null;
+		
+		switch (gradebook.getGrade_type()) {
+		case GradebookService.GRADE_TYPE_LETTER:
+			if (isStandardDev)
+				statAsString = stat != null && stat.compareTo(BigDecimal.ZERO) != 0 ? stat.divide(BigDecimal.valueOf(10), new MathContext(2, RoundingMode.HALF_EVEN)).toString() : NA;
+			else
+				statAsString = stat != null ? gradeCalculations.convertPercentageToLetterGrade(stat) : NA;
+			break;
+		default:
+			statAsString = stat != null ? stat.setScale(2, RoundingMode.HALF_EVEN).toString() : NA;
+		}
+		
+		return statAsString;
+	}
+	
+	
 	public <X extends BaseModel> PagingLoadResult<X> getStudentRows(String gradebookUid, Long gradebookId, PagingLoadConfig config, Boolean includeExportCourseManagementId) {
 
 		boolean includeCMId = DataTypeConversionUtil.checkBoolean(includeExportCourseManagementId);
