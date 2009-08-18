@@ -92,7 +92,7 @@ public class GradebookApplication implements EntryPoint {
 		
 		AuthModel authModel = null;
 		
-		if (paramString != null) {
+		if (paramString != null && paramString.length() > 0) {
 			MessageBox box = new MessageBox();
 			box.setButtons(MessageBox.OK);
 			box.setIcon(MessageBox.INFO);

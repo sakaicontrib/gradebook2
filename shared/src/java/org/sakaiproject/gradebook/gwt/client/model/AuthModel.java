@@ -134,7 +134,7 @@ public class AuthModel extends BaseModel {
 	
 	public void parse(String authString) {
 
-		if (authString != null) {
+		if (authString != null && authString.length() > 1) {
 			HashMap<String, Object> nameValueMap = new HashMap<String, Object>();
 			
 			authString = authString.substring(1);

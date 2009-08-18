@@ -29,12 +29,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.servlets.DefaultServlet;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.component.cover.ComponentManager;
 import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service;
 
 public class GradebookServlet extends DefaultServlet {
 
+	private static final Log log = LogFactory.getLog(GradebookServlet.class);
+	
 	private static final long serialVersionUID = 1L;
 	private static final String DEFAULT_PAGE = "GradebookApplication.html";
 	private static final String RELATIVE_PREFIX = "/org.sakaiproject.gradebook.gwt.GradebookApplication/";
@@ -58,9 +62,12 @@ public class GradebookServlet extends DefaultServlet {
 				AuthModel authModel = service.getAuthorization();
 			
 				if (authModel != null) {
+					log.info("AuthModel" + authModel.toString());
 					url.append(authModel.toString());
 				}
 				
+			} else {
+				log.info("Unable to grab Gradebook2Service");
 			}
 			
 			response.sendRedirect(url.toString());
