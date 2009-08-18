@@ -219,7 +219,7 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 					exportData.append(",");
 					exportData.append(studentData.get(Column.EXPORT_CM_ID));
 					exportData.append(",");
-					exportData.append(extractLetterGrade(studentData.get(Column.STUDENT_GRADE)));
+					exportData.append(studentData.get(Column.LETTER_GRADE));
 					filePrintWriter.println(exportData.toString());
 				}
 

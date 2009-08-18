@@ -194,6 +194,14 @@ public class StudentModel extends EntityModel implements Comparable<StudentModel
 		set(Key.COURSE_GRADE.name(), studentGrade);
 	}
 	
+	public String getLetterGrade() {
+		return get(Key.LETTER_GRADE.name());
+	}
+	
+	public void setLetterGrade(String letterGrade) {
+		set(Key.LETTER_GRADE.name(), letterGrade);
+	}
+	
 	public String getExportCmId()
 	{
 		return get(Key.EXPORT_CM_ID.name());
