@@ -22,6 +22,8 @@
  **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.sakai;
 
+import java.math.BigDecimal;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -40,45 +42,30 @@ public class CourseGradeComparator extends EnteredGradeComparator {
 		if (result != 0)
 			return result;
 
-		String d1 = getStringField(o1);
-		String d2 = getStringField(o2);
-
-		Double g1 = getNumericGrade(d1);
-		Double g2 = getNumericGrade(d2);
-
-		if (g2 == null) 
+		BigDecimal b1 = getCalculatedGrade(o1);
+		BigDecimal b2 = getCalculatedGrade(o2);
+		
+		if (b2 == null) 
 			return isDesc ? 1 : -1;
-		if (g1 == null)
+		if (b1 == null)
 			return isDesc ? -1 : 1;
 
-		return g2.compareTo(g1);
+		return b2.compareTo(b1);
 	}
 
-	protected String getStringField(UserRecord record) {
+	protected String getLetterGrade(UserRecord record) {
 
-		if (null == record)
+		if (null == record || null == record.getDisplayGrade())
 			return null;
 
-		return record.getDisplayGrade();
+		return record.getDisplayGrade().getLetterGrade();
 	}
-
-	private Double getNumericGrade(String s) {
-		int open = s.indexOf('(');
-		int close = s.indexOf("%)");
-
-		if (open == -1 || close == -1)
+	
+	protected BigDecimal getCalculatedGrade(UserRecord record) {
+		if (null == record || null == record.getDisplayGrade())
 			return null;
 
-		String num = s.substring(open+1, close);
-
-		Double d = null;
-		try {
-			d = Double.valueOf(num);
-		} catch (NumberFormatException nfe) {
-			log.error("Caught a nfe on interpreting " + num + " as a double ");
-		}
-		return d;
+		return record.getDisplayGrade().getCalculatedGrade();
 	}
-
-
+	
 }

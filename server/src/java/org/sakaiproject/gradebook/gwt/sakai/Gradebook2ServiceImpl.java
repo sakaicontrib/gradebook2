@@ -879,17 +879,23 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					comparator = SECTION_TITLE_COMPARATOR;
 					break;
 				case CALCULATED_GRADE:
+					// In this case we need to ensure that we've calculated
+					// everybody's course grade
 					for (UserRecord record : userRecords) {
-						record.setCalculatedGrade(getCalculatedGrade(gradebook, assignments, categories, record.getGradeRecordMap()));
+						BigDecimal calculatedGrade = getCalculatedGrade(gradebook, assignments, categories, record.getGradeRecordMap());
+						DisplayGrade displayGrade = getDisplayGrade(gradebook, record.getUserUid(), record.getCourseGradeRecord(), calculatedGrade);
+						record.setDisplayGrade(displayGrade);
 						record.setCalculated(true);
 					}
+					comparator = new CalculatedGradeComparator(isDescending);
 					break;
 				case COURSE_GRADE:
 					// In this case we need to ensure that we've calculated
 					// everybody's course grade
 					for (UserRecord record : userRecords) {
 						BigDecimal calculatedGrade = getCalculatedGrade(gradebook, assignments, categories, record.getGradeRecordMap());
-						record.setDisplayGrade(getDisplayGrade(gradebook, record.getUserUid(), record.getCourseGradeRecord(), calculatedGrade));
+						DisplayGrade displayGrade = getDisplayGrade(gradebook, record.getUserUid(), record.getCourseGradeRecord(), calculatedGrade);
+						record.setDisplayGrade(displayGrade);
 						record.setCalculated(true);
 					}
 					comparator = new CourseGradeComparator(isDescending);
@@ -1878,9 +1884,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			}
 	
 			BigDecimal calculatedGrade = getCalculatedGrade(gradebook, assignments, categories, studentGradeMap);
-			String freshCourseGrade = getDisplayGrade(gradebook, student.getIdentifier(), courseGradeRecord, calculatedGrade);// requestCourseGrade(gradebookUid,
+			DisplayGrade displayGrade = getDisplayGrade(gradebook, student.getIdentifier(), courseGradeRecord, calculatedGrade);// requestCourseGrade(gradebookUid,
 			student.set(StudentModel.Key.GRADE_OVERRIDE.name(), courseGradeRecord.getEnteredGrade());
-			student.set(StudentModel.Key.COURSE_GRADE.name(), freshCourseGrade);
+			student.set(StudentModel.Key.COURSE_GRADE.name(), displayGrade.toString());
 		} else if (gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER) {
 			// We must be modifying a letter grade
 			
@@ -2370,7 +2376,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		CourseGradeRecord courseGradeRecord = userRecord.getCourseGradeRecord(); 
 
 		String enteredGrade = null;
-		String displayGrade = null;
+		DisplayGrade displayGrade = null;
 		BigDecimal calculatedGrade = getCalculatedGrade(gradebook, assignments, categories, studentGradeMap);
 		
 		if (courseGradeRecord != null)
@@ -2405,18 +2411,16 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 						break;
 					case COURSE_GRADE:
 						if (displayGrade != null)
-							cellMap.put(StudentModel.Key.COURSE_GRADE.name(), displayGrade);
+							cellMap.put(StudentModel.Key.COURSE_GRADE.name(), displayGrade.toString());
 						break;
 					case GRADE_OVERRIDE:
 						cellMap.put(StudentModel.Key.GRADE_OVERRIDE.name(), enteredGrade);
 						break;
 					case CALCULATED_GRADE:
-						String calculatedGradeString = null;
-						
-						if (calculatedGrade != null)
-							calculatedGradeString = calculatedGrade.toString();
-						
-						cellMap.put(StudentModel.Key.CALCULATED_GRADE.name(), calculatedGradeString);
+						cellMap.put(StudentModel.Key.CALCULATED_GRADE.name(), displayGrade.getCalculatedGradeAsString());
+						break;
+					case LETTER_GRADE:
+						cellMap.put(StudentModel.Key.LETTER_GRADE.name(), displayGrade.getLetterGrade());
 						break;
 				};
 			}
@@ -3233,8 +3237,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		FixedColumnModel gradeOverrideColumn = new FixedColumnModel(StudentModel.Key.GRADE_OVERRIDE, 120, true);
 		gradeOverrideColumn.setEditable(true);
 		columns.add((X) gradeOverrideColumn);
+		columns.add((X) new FixedColumnModel(StudentModel.Key.LETTER_GRADE, 80, false));
 		columns.add((X) new FixedColumnModel(StudentModel.Key.CALCULATED_GRADE, 80, false));
-
+		
 		return columns;
 	}
 	
@@ -3257,30 +3262,16 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 		return autoCalculatedGrade;
 	}
-	
 
-	private String getDisplayGrade(Gradebook gradebook, String studentUid, CourseGradeRecord courseGradeRecord, BigDecimal autoCalculatedGrade) {
 
+	private DisplayGrade getDisplayGrade(Gradebook gradebook, String studentUid, CourseGradeRecord courseGradeRecord, BigDecimal autoCalculatedGrade) {
+
+		DisplayGrade displayGrade = new DisplayGrade();
+		
 		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
-		//boolean isScaledExtraCredit = DataTypeConversionUtil.checkBoolean(gradebook.isScaledExtraCredit());
 		boolean isLetterGradeMode = gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER;
-		
-		/*switch (gradebook.getCategory_type()) {
-			case GradebookService.CATEGORY_TYPE_NO_CATEGORY:
-				autoCalculatedGrade = gradeCalculations.getCourseGrade(gradebook, assignments, studentGradeMap, isScaledExtraCredit);
-				break;
-			default:
-				autoCalculatedGrade = gradeCalculations.getCourseGrade(gradebook, categories, studentGradeMap, isScaledExtraCredit);
-		}
-
-		if (autoCalculatedGrade != null)
-			autoCalculatedGrade = autoCalculatedGrade.setScale(2, RoundingMode.HALF_EVEN);
-
-		Double calculatedGrade = autoCalculatedGrade == null ? null : Double.valueOf(autoCalculatedGrade.doubleValue());
-		*/
-		
+	
 		String enteredGrade = null;
-		String displayGrade = null;
 		String letterGrade = null;
 
 		boolean isOverridden = false;
@@ -3288,20 +3279,22 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		if (courseGradeRecord != null)
 			enteredGrade = courseGradeRecord.getEnteredGrade();
 
-		if (enteredGrade == null && autoCalculatedGrade != null)
+		if (enteredGrade == null)
 			letterGrade = getLetterGrade(autoCalculatedGrade, gradebook.getSelectedGradeMapping());
 		else {
 			letterGrade = enteredGrade;
 			isOverridden = true;
 		}
 
-		String missingGradesMarker = "";
+		boolean isMissingScores = gbService.isStudentMissingScores(gradebook.getId(), studentUid, hasCategories);
 
-		if (gbService.isStudentMissingScores(gradebook.getId(), studentUid, hasCategories))
-			missingGradesMarker = "***";
-
-
-		if (letterGrade != null) {
+		displayGrade.setLetterGrade(letterGrade);
+		displayGrade.setCalculatedGrade(autoCalculatedGrade);
+		displayGrade.setMissingGrades(isMissingScores);
+		displayGrade.setLetterGradeMode(isLetterGradeMode);
+		displayGrade.setOverridden(isOverridden);
+		
+		/*if (letterGrade != null) {
 			StringBuilder buffer = new StringBuilder(letterGrade);
 
 			if (isOverridden) {
@@ -3315,7 +3308,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			}
 
 			displayGrade = buffer.toString();
-		}
+		}*/
 
 		return displayGrade;
 	}
@@ -3614,7 +3607,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
 		CourseGradeRecord courseGradeRecord = gbService.getStudentCourseGradeRecord(gradebook, student.getIdentifier());
 		BigDecimal calculatedGrade = getCalculatedGrade(gradebook, assignments, categories, studentGradeMap);
-		String displayGrade = getDisplayGrade(gradebook, student.getIdentifier(), courseGradeRecord, calculatedGrade);
+		DisplayGrade displayGrade = getDisplayGrade(gradebook, student.getIdentifier(), courseGradeRecord, calculatedGrade);
 
 		for (AssignmentGradeRecord record : assignmentGradeRecords) {
 			Long aId = record.getGradableObject().getId();
@@ -3644,12 +3637,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		else
 			student.set(commentedProperty, null);
 
-		student.set(StudentModel.Key.COURSE_GRADE.name(), displayGrade);
-
-		String calculatedGradeString = null;
-		if (calculatedGrade != null)
-			calculatedGradeString = calculatedGrade.toString();
-		student.set(StudentModel.Key.CALCULATED_GRADE.name(), calculatedGradeString);
+		student.set(StudentModel.Key.CALCULATED_GRADE.name(), displayGrade.getCalculatedGradeAsString());
+		student.set(StudentModel.Key.COURSE_GRADE.name(), displayGrade.toString());
+		student.set(StudentModel.Key.LETTER_GRADE.name(), displayGrade.getLetterGrade());
 		
 		return student;
 	}

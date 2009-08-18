@@ -34,8 +34,8 @@ public class EnteredGradeComparator implements Comparator<UserRecord> {
 
 	public int compare(UserRecord o1, UserRecord o2) {
 
-		String d1 = getStringField(o1);
-		String d2 = getStringField(o2);
+		String d1 = getLetterGrade(o1);
+		String d2 = getLetterGrade(o2);
 
 		if (d2 == null) 
 			return isDesc ? 1 : -1;
@@ -73,7 +73,7 @@ public class EnteredGradeComparator implements Comparator<UserRecord> {
 		return s1<s2 ? -1 : (s1==s2 ? 0 : 1);
 	}
 
-	protected String getStringField(UserRecord record) {
+	protected String getLetterGrade(UserRecord record) {
 
 		if (null == record || null == record.getCourseGradeRecord())
 			return null;

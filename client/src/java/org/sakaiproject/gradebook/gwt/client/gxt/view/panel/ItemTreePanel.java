@@ -819,14 +819,18 @@ public class ItemTreePanel extends ContentPanel {
 
 		for (FixedColumnModel column : selectedGradebook.getColumns()) {
 
-			if (column.getIdentifier().equals(StudentModel.Key.GRADE_OVERRIDE.name()) ||
-					column.getIdentifier().equals(StudentModel.Key.COURSE_GRADE.name())) {
+			StudentModel.Key key = StudentModel.Key.valueOf(column.getIdentifier());
+			
+			switch (key.getGroup()) {
+			case GRADES:
 				column.setParent(gradingColumns);
 				gradingColumns.add(column);
-			} else {
+				break;
+			default:
 				column.setParent(learnerAttributes);
-				learnerAttributes.add(column);
+				learnerAttributes.add(column);	
 			}
+
 		}
 
 		staticColumnStore = new TreeStore<FixedColumnModel>(loader);

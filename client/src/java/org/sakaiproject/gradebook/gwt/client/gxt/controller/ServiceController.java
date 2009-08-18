@@ -228,6 +228,10 @@ public class ServiceController extends Controller {
 		if (calculatedGrade != null)
 			record.set(StudentModel.Key.CALCULATED_GRADE.name(), calculatedGrade);
 		
+		String letterGrade = result.get(StudentModel.Key.LETTER_GRADE.name());
+		record.set(StudentModel.Key.LETTER_GRADE.name(), null);
+		if (letterGrade != null)
+			record.set(StudentModel.Key.LETTER_GRADE.name(), letterGrade);
 
 		// Ensure that we clear out any older failure messages
 		// Save the exception message on the record

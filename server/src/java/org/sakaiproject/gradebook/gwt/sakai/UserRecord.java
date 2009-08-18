@@ -45,7 +45,7 @@ public class UserRecord {
 	private CourseGradeRecord courseGradeRecord;
 	private Map<Long, AssignmentGradeRecord> gradeRecordMap;
 	private Map<Long, Comment> commentMap;
-	private String displayGrade;
+	private DisplayGrade displayGrade;
 	private BigDecimal calculatedGrade;
 	private String exportCourseManagemntId;
 	private String exportUserId;
@@ -159,11 +159,11 @@ public class UserRecord {
 		this.gradeRecordMap = gradeRecordMap;
 	}
 
-	public String getDisplayGrade() {
+	public DisplayGrade getDisplayGrade() {
 		return displayGrade;
 	}
 
-	public void setDisplayGrade(String displayGrade) {
+	public void setDisplayGrade(DisplayGrade displayGrade) {
 		this.displayGrade = displayGrade;
 	}
 
