@@ -323,6 +323,18 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 				if (assignments == null)
 					continue;
 
+				// Check to ensure that we don't apply drop lowest with unweighted, unequal point value items
+				if (! isWeighted && category.getDrop_lowest() > 0) {
+					Double lastPointValue = null;
+					for (Assignment assignment : assignments) {
+						if (lastPointValue != null && !lastPointValue.equals(assignment.getPointsPossible())) {
+							categoryCalculationUnit.setDropLowest(0);
+							break;
+						}
+						lastPointValue = assignment.getPointsPossible();
+					}
+				}
+				
 				populateGradeRecordUnits(assignments, gradeRecordUnits, assignmentGradeRecordMap);
 
 				categoryGradeUnitListMap.put(categoryKey, gradeRecordUnits);

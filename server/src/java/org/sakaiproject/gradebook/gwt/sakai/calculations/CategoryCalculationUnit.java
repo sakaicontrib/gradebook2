@@ -189,4 +189,9 @@ public class CategoryCalculationUnit {
 	public int getDropLowest() {
 		return dropLowest;
 	}
+
+
+	public void setDropLowest(int dropLowest) {
+		this.dropLowest = dropLowest;
+	}
 }

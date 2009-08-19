@@ -265,8 +265,6 @@ public class GradebookCalculationUnit {
 			if (doCalculateDropLowest)
 				orderingList = new ArrayList<GradeRecordCalculationUnit>();
 
-			BigDecimal lastPointsPossible = null;
-			
 			for (GradeRecordCalculationUnit unit : units) {
 
 				if (unit.isExcused())
@@ -294,10 +292,6 @@ public class GradebookCalculationUnit {
 						sumPointsPossible = BigDecimal.ZERO.setScale(AppConstants.SCALE);
 
 					sumPointsPossible = sumPointsPossible.add(pointsPossible);
-					
-					// This ensures that we do not apply drop lowest in the case where we have unequal items
-					doCalculateDropLowest = doCalculateDropLowest && (lastPointsPossible == null || lastPointsPossible.compareTo(pointsPossible) == 0);
-					lastPointsPossible = pointsPossible;
 				}
 				
 
