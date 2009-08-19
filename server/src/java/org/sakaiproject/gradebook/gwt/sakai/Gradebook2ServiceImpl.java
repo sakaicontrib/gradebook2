@@ -2161,9 +2161,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 			}
 
-			if (businessLogic.checkRecalculatePointsRule(assignmentId, points, oldPoints))
-				recalculateAssignmentGradeRecords(assignment, points, oldPoints);
-
+			if (DataTypeConversionUtil.checkBoolean(item.getDoRecalculatePoints())) {
+				if (businessLogic.checkRecalculatePointsRule(assignmentId, points, oldPoints))
+					recalculateAssignmentGradeRecords(assignment, points, oldPoints);
+			}
 		} catch (RuntimeException e) {
 			actionRecord.setStatus(ActionRecord.STATUS_FAILURE);
 			throw e;

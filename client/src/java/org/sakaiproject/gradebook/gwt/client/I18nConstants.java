@@ -153,6 +153,8 @@ public interface I18nConstants extends Constants {
 	
 	String confirmChangingWeightEquallyWeighted();
 	String changingPointsRecalculatesGrades();
+	String doRecalculatePointsTitle();
+	String doRecalculatePointsMessage();
 	
 	String helpHtml();
 

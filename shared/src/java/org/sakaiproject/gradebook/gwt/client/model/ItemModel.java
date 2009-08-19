@@ -64,7 +64,8 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 		GRADETYPE("Grade Type"), RELEASEGRADES("Display Course Grades"), 
 		RELEASEITEMS("Display Released Items"),
 		ITEM_ORDER("Order"), GRADESCALEID("grade scale id"), 
-		EXTRA_CREDIT_SCALED("Scale Extra Credit");
+		EXTRA_CREDIT_SCALED("Scale Extra Credit"),
+		DO_RECALCULATE_POINTS("Scale scores to same percentage");
 		
 		private String propertyName;
 		
@@ -401,6 +402,14 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 	
 	public void setExtraCreditScaled(Boolean scaled) {
 		set(Key.EXTRA_CREDIT_SCALED.name(), scaled);
+	}
+	
+	public Boolean getDoRecalculatePoints() {
+		return get(Key.DO_RECALCULATE_POINTS.name());
+	}
+	
+	public void setDoRecalculatePoints(Boolean doRecalculate) {
+		set(Key.DO_RECALCULATE_POINTS.name(), doRecalculate);
 	}
 	
 	@Override

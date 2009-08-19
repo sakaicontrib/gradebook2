@@ -24,6 +24,7 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import java.util.List;
+import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
@@ -59,12 +60,14 @@ import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
 import com.extjs.gxt.ui.client.event.SelectionChangedListener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
+import com.extjs.gxt.ui.client.event.WindowEvent;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.store.TreeStore;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
+import com.extjs.gxt.ui.client.widget.Dialog;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.CheckBox;
@@ -232,7 +235,7 @@ public class ItemFormPanel extends ContentPanel {
 		pointsField.setMinValue(Double.valueOf(0.0001d));
 		pointsField.setVisible(false);
 		formPanel.add(pointsField);
-
+		
 		dropLowestField = new InlineEditNumberField();
 		dropLowestField.setEmptyText("0");
 		dropLowestField.setName(ItemModel.Key.DROP_LOWEST.name());
@@ -441,7 +444,7 @@ public class ItemFormPanel extends ContentPanel {
 		categoryPicker.setEnabled(true);
 		categoryTypePicker.setEnabled(true);
 		gradeTypePicker.setEnabled(true);
-
+		clearChanges();
 	}
 
 	public void onLoadItemTreeModel(ItemModel rootItemModel) {
@@ -748,21 +751,22 @@ public class ItemFormPanel extends ContentPanel {
 
 								@Override
 								public void updateModel() {
-									Object val = onConvertFieldValue(field
-											.getValue());
+									final Object val = onConvertFieldValue(field.getValue());
 									if (store != null) {
-										Record r = store.getRecord(model);
-										if (r != null) {
-											if (!r.isEditing())
-												r.beginEdit();
-
-											r.setValid(property, field
-													.isValid());
-											r.set(property, val);
-										}
-									} else {
-										model.set(property, val);
-									}
+										
+											Record r = store.getRecord(model);
+											if (r != null) {
+												if (!r.isEditing())
+													r.beginEdit();
+	
+												r.setValid(property, field
+														.isValid());
+												r.set(property, val);
+											}
+										
+									} //else {
+									//	model.set(property, val);
+									//}
 
 								}
 
@@ -1007,7 +1011,54 @@ public class ItemFormPanel extends ContentPanel {
 										&& (!percentCategoryField.isVisible() || percentCategoryField.validate()) 
 										&& (!percentCourseGradeField.isVisible() || percentCourseGradeField.validate())
 										&& (!pointsField.isVisible() || pointsField.validate())) {
-									clearChanges();
+
+									if (record != null) {
+									
+										Map<String, Object> changes = record.getChanges();
+										
+										
+										if (changes != null 
+												&& changes.get(ItemModel.Key.POINTS.name()) != null
+												&& !changes.get(ItemModel.Key.POINTS.name())
+												.equals(selectedItemModel.get(ItemModel.Key.POINTS.name()))) {
+											
+											Listener<WindowEvent> listener = new Listener<WindowEvent>() {
+	
+												public void handleEvent(WindowEvent be) {
+													Dialog dialog = (Dialog) be.component;  
+													Button btn = dialog.getButtonPressed();
+													
+													Record r = treeStore.getRecord(selectedItemModel);
+													if (r != null) {
+														if (!r.isEditing())
+															r.beginEdit();
+													
+														if (btn.getItemId().equals(Dialog.CANCEL)) {
+															return;
+														} else if (btn.getItemId().equals(Dialog.YES)) {
+															r.set(ItemModel.Key.DO_RECALCULATE_POINTS.name(), Boolean.TRUE);
+														} else {
+															r.set(ItemModel.Key.DO_RECALCULATE_POINTS.name(), Boolean.FALSE);
+														}
+														
+														Dispatcher.forwardEvent(GradebookEvents.UpdateItem.getEventType(), new ItemUpdate(treeStore, r, selectedItemModel, true));
+													}
+													
+												}
+											};
+											
+											MessageBox box = new MessageBox();
+										    box.setTitle(i18n.doRecalculatePointsTitle());
+										    box.setMessage(i18n.doRecalculatePointsMessage());
+										    box.addCallback(listener);
+										    box.setIcon(MessageBox.QUESTION);
+										    box.setButtons(MessageBox.YESNOCANCEL);
+										    box.show();
+										    
+										    return;
+										}
+									}
+									
 									Dispatcher.forwardEvent(GradebookEvents.UpdateItem.getEventType(), new ItemUpdate(treeStore, record, selectedItemModel, close));
 								}
 								break;
