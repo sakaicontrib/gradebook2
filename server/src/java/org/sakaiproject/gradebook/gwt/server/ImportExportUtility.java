@@ -254,7 +254,7 @@ public class ImportExportUtility {
 
 					if (includeComments) {
 						StringBuilder commentsText = new StringBuilder();
-						commentsText.append("Comments : ").append(itemModel.getName());
+						commentsText.append(AppConstants.COMMENTS_INDICATOR).append(itemModel.getName());
 						headerColumns.add(commentsText.toString());
 						pointsRow.add("");
 						percentCategoryRow.add("");
@@ -313,7 +313,7 @@ public class ImportExportUtility {
 
 					if (includeComments) {
 						StringBuilder commentsText = new StringBuilder();
-						commentsText.append("Comments : ").append(itemModel.getName());
+						commentsText.append(AppConstants.COMMENTS_INDICATOR).append(itemModel.getName());
 						headerColumns.add(commentsText.toString());
 					}
 				}
@@ -1026,7 +1026,7 @@ public class ImportExportUtility {
 				name = text;
 
 				boolean isComment = text
-				.startsWith(AppConstants.COMMENTS_INDICATOR);
+					.startsWith(AppConstants.COMMENTS_INDICATOR);
 
 				if (isComment) {
 					name = text.substring(AppConstants.COMMENTS_INDICATOR.length());
@@ -1055,8 +1055,20 @@ public class ImportExportUtility {
 					if (categoryColumns != null && categoryColumns.length > i) {
 						if (categoryColumns[i] != null && categoryColumns[i].trim().length() > 0) {
 							categoryName = categoryColumns[i];
-							if (categoryName != null)
+							if (categoryName != null) {
 								categoryName = categoryName.trim();
+							
+								int indexOfExtraCreditIndicator = categoryName.indexOf(AppConstants.EXTRA_CREDIT_INDICATOR);
+								
+								if (indexOfExtraCreditIndicator != -1) 
+									categoryName = categoryName.substring(0, indexOfExtraCreditIndicator); 
+		
+								int indexOfUnincludedIndicator = categoryName.indexOf(AppConstants.UNINCLUDED_INDICATOR);
+								
+								if (indexOfUnincludedIndicator != -1) 
+									categoryName = categoryName.substring(0, indexOfUnincludedIndicator); 
+	
+							}
 						}
 					}
 
@@ -1067,6 +1079,7 @@ public class ImportExportUtility {
 					if (isComment) {
 						header = new ImportHeader(Field.COMMENT, text);
 						header.setAssignmentId(model.getIdentifier());
+						header.setId(new StringBuilder().append(model.getIdentifier()).append(StudentModel.COMMENT_TEXT_FLAG).toString());
 					} else {
 
 						StringBuffer value = new StringBuffer(name);
@@ -1426,6 +1439,10 @@ public class ImportExportUtility {
 				ImportHeader header = ieInfo.getHeaderMap().get(key.toString());
 
 				if (header != null) {
+					
+					if (header.getField() == null || header.getField().equals(Field.COMMENT.name()))
+						continue;
+					
 					if (isExtraCredit)
 						header.setExtraCredit(Boolean.valueOf(isExtraCredit));
 

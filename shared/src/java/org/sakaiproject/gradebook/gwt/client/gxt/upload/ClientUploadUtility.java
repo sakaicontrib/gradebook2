@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
+import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader.Field;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.SpreadsheetModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
@@ -68,9 +69,14 @@ public class ClientUploadUtility {
 
 				if (header.getId().equals("NAME"))
 					continue;
+				
+				Type type = Type.ITEM;
+				
+				if (header.getField().equals(Field.COMMENT.name()))
+					type = Type.COMMENT;
 
 				itemModel.setIdentifier(header.getId());
-				itemModel.setItemType(Type.ITEM);
+				itemModel.setItemType(type);
 				itemModel.setName(header.getHeaderName());
 				itemModel.setPoints(header.getPoints());
 				itemModel.setExtraCredit(header.getExtraCredit());

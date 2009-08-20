@@ -58,6 +58,7 @@ import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig;
+import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader.Field;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
 import org.sakaiproject.gradebook.gwt.client.model.CategoryModel;
@@ -291,14 +292,38 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 		Comment comment = gbService.getCommentForItemForStudent(assignmentId, studentUid);
 
+		String actionType = null;
+		Assignment assignment = null;
 		if (comment == null) {
-			Assignment assignment = gbService.getAssignment(assignmentId);
+			// We don't need to create a comment object if the user is just passing up a blank
+			// comment
+			if (text == null || text.equals(""))
+				return null;
+			
+			assignment = gbService.getAssignment(assignmentId);
 			comment = new Comment(studentUid, text, assignment);
-		} else
+			actionType = ActionType.CREATE.name();
+		} else {
+			assignment = (Assignment)comment.getGradableObject();
 			comment.setCommentText(text);
-
-		gbService.updateComment(comment);
-
+			actionType = ActionType.UPDATE.name();
+		}
+		
+		Gradebook gradebook = assignment.getGradebook();
+		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.COMMENT.name(), actionType);
+		actionRecord.setEntityName(assignment.getName());
+		Map<String, String> propertyMap = actionRecord.getPropertyMap();
+		propertyMap.put("comment", text);
+		
+		try {
+			gbService.updateComment(comment);
+		} catch (RuntimeException e) {
+			actionRecord.setStatus(ActionRecord.STATUS_FAILURE);
+			throw e;
+		} finally {
+			gbService.storeActionRecord(actionRecord);
+		}
+		
 		return createOrUpdateCommentModel(null, comment);
 	}
 
@@ -423,6 +448,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
 		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
 		Map<String, Assignment> idToAssignmentMap = new HashMap<String, Assignment>();
+		Map<String, Assignment> commentIdToAssignmentMap = new HashMap<String, Assignment>();
 		List<ItemModel> headers = spreadsheetModel.getHeaders();
 
 		if (headers != null) {
@@ -438,7 +464,16 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					boolean isExtraCredit = DataTypeConversionUtil.checkBoolean(item.getExtraCredit());
 					boolean isIncluded = DataTypeConversionUtil.checkBoolean(item.getIncluded());
 
-					if (id.startsWith("NEW:")) {
+					int indexOfCommentTextFlag = id.indexOf(StudentModel.COMMENT_TEXT_FLAG);
+					
+					if (indexOfCommentTextFlag != -1) {
+						String realId = id.substring(0, indexOfCommentTextFlag);
+						
+						Assignment assignment = gbService.getAssignment(Long.valueOf(realId));
+						
+						commentIdToAssignmentMap.put(realId, assignment);
+						
+					} else if (id.startsWith("NEW:")) {
 
 						ItemModel itemModel = new ItemModel();
 						itemModel.setCategoryId(categoryId);
@@ -455,6 +490,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 						idToAssignmentMap.put(id, assignment);
 
 					} else {
+						
 						Assignment assignment = gbService.getAssignment(Long.valueOf(id));
 
 						boolean isModified = false;
@@ -569,7 +605,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		// Since we index the new items by a phony id e.g. "NEW:123", we need to
 		// use this set to iterate
 		Set<String> idKeySet = idToAssignmentMap.keySet();
-		if (idKeySet != null) {
+		Set<String> commentIdKeySet = commentIdToAssignmentMap.keySet();
+		
+		if (true) {
 			for (StudentModel student : spreadsheetModel.getRows()) {
 				UserRecord userRecord = userRecordMap.get(student.getIdentifier());
 
@@ -588,78 +626,98 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 				Map<Long, AssignmentGradeRecord> gradeRecordMap = userRecord == null ? null : userRecord.getGradeRecordMap();
 
-				for (String id : idKeySet) {
-					Assignment assignment = idToAssignmentMap.get(id);
-					// This is the value stored on the client
-					Object v = student.get(id);
-
-					Double value = null;
-					if (v != null && v instanceof String) {
-						String strValue = (String) v;
-						if (strValue.trim().length() > 0)
-							value = Double.valueOf(Double.parseDouble((String) v));
-
-					} else
-						value = (Double) v;
-
-					AssignmentGradeRecord assignmentGradeRecord = null;
-
-					if (gradeRecordMap != null)
-						assignmentGradeRecord = gradeRecordMap.get(assignment.getId()); 
-
-					Double oldValue = null;
-
-					if (assignmentGradeRecord == null)
-						assignmentGradeRecord = new AssignmentGradeRecord();
-
-					switch (gradebook.getGrade_type()) {
-						case GradebookService.GRADE_TYPE_POINTS:
-							oldValue = assignmentGradeRecord.getPointsEarned();
-							break;
-						case GradebookService.GRADE_TYPE_PERCENTAGE:
-							oldValue = assignmentGradeRecord.getPercentEarned();
-							break;
+				if (commentIdKeySet != null) {
+					for (String id : commentIdKeySet) {
+						String fullId = new StringBuilder().append(id).append(StudentModel.COMMENT_TEXT_FLAG).toString();
+						Object v = student.get(fullId);
+						
+						Assignment assignment = commentIdToAssignmentMap.get(id);
+						
+						CommentModel comment = createOrUpdateComment(Long.valueOf(id), student.getIdentifier(), (String)v);
+						
+						if (comment != null) {
+							student.set(fullId, comment.getText());
+							student.set(new StringBuilder(id).append(StudentModel.COMMENTED_FLAG).toString(), Boolean.TRUE);
+						
+							builder.append("Comment for ").append(assignment.getName()).append(" (")
+								.append((String)v).append(") ");;
+						}
 					}
-
-					if (oldValue == null && value == null)
-						continue;
-
-					student.set(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
-
-					try {
-						scoreItem(gradebook, assignment, assignmentGradeRecord, student.getIdentifier(), value, true, false);
-
-						builder.append(assignment.getName()).append(" (");
-
-						if (oldValue != null)
-							builder.append(oldValue).append("->");
-
-						builder.append(value).append(") ");
-
-					} catch (InvalidInputException e) {
-						String failedProperty = new StringBuilder().append(assignment.getId()).append(StudentModel.FAILED_FLAG).toString();
-						student.set(failedProperty, e.getMessage());
-						log.warn("Failed to score numeric item for " + student.getIdentifier() + " and item " + assignment.getId() + " to " + value);
-
-						if (oldValue != null)
-							builder.append(oldValue);
-
-						builder.append("Invalid) ");
-					} catch (Exception e) {
-
-						String failedProperty = new StringBuilder().append(assignment.getId()).append(StudentModel.FAILED_FLAG).toString();
-						student.set(failedProperty, e.getMessage());
-
-						log.warn("Failed to score numeric item for " + student.getIdentifier() + " and item " + assignment.getId() + " to " + value, e);
-
-						if (oldValue != null)
-							builder.append(oldValue);
-
-						builder.append("Failed) ");
-					}
-
 				}
+				
+				if (idKeySet != null) {
+					for (String id : idKeySet) {
+						Assignment assignment = idToAssignmentMap.get(id);
+						
+						// This is the value stored on the client
+						Object v = student.get(id);
 
+						Double value = null;
+						if (v != null && v instanceof String) {
+							String strValue = (String) v;
+							if (strValue.trim().length() > 0)
+								value = Double.valueOf(Double.parseDouble((String) v));
+		
+						} else
+							value = (Double) v;
+	
+						AssignmentGradeRecord assignmentGradeRecord = null;
+	
+						if (gradeRecordMap != null)
+							assignmentGradeRecord = gradeRecordMap.get(assignment.getId()); 
+	
+						Double oldValue = null;
+	
+						if (assignmentGradeRecord == null)
+							assignmentGradeRecord = new AssignmentGradeRecord();
+	
+						switch (gradebook.getGrade_type()) {
+							case GradebookService.GRADE_TYPE_POINTS:
+								oldValue = assignmentGradeRecord.getPointsEarned();
+								break;
+							case GradebookService.GRADE_TYPE_PERCENTAGE:
+								oldValue = assignmentGradeRecord.getPercentEarned();
+								break;
+						}
+
+						if (oldValue == null && value == null)
+							continue;
+	
+						student.set(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
+	
+						try {
+							scoreItem(gradebook, assignment, assignmentGradeRecord, student.getIdentifier(), value, true, false);
+							builder.append(assignment.getName()).append(" (");
+							
+							if (oldValue != null)
+								builder.append(oldValue).append("->");
+	
+							builder.append(value).append(") ");
+	
+						} catch (InvalidInputException e) {
+							String failedProperty = new StringBuilder().append(assignment.getId()).append(StudentModel.FAILED_FLAG).toString();
+							student.set(failedProperty, e.getMessage());
+							log.warn("Failed to score numeric item for " + student.getIdentifier() + " and item " + assignment.getId() + " to " + value);
+	
+							if (oldValue != null)
+								builder.append(oldValue);
+	
+							builder.append("Invalid) ");
+						} catch (Exception e) {
+	
+							String failedProperty = new StringBuilder().append(assignment.getId()).append(StudentModel.FAILED_FLAG).toString();
+							student.set(failedProperty, e.getMessage());
+	
+							log.warn("Failed to score numeric item for " + student.getIdentifier() + " and item " + assignment.getId() + " to " + value, e);
+	
+							if (oldValue != null)
+								builder.append(oldValue);
+	
+							builder.append("Failed) ");
+						}
+					}
+				}
+				
 				results.add(builder.toString());
 			}
 		}

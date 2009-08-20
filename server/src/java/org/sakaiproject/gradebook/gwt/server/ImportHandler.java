@@ -77,7 +77,7 @@ public class ImportHandler extends HttpServlet {
 		String include = req.getParameter("include");
 		try {
 			boolean doIncludeStructure = include != null;
-			ImportExportUtility.exportGradebook(service, gradebookUid, doIncludeStructure, false, writer, response);
+			ImportExportUtility.exportGradebook(service, gradebookUid, doIncludeStructure, true, writer, response);
 		} catch (FatalException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

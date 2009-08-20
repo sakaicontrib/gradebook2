@@ -48,6 +48,7 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.SpreadsheetModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
 import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
@@ -128,6 +129,7 @@ public class ImportPanel extends ContentPanel {
 	private LayoutContainer fileUploadContainer;
 
 	private ArrayList<ColumnConfig> previewColumns;
+	private ArrayList<ItemModel> invisibleItemModels;
 
 	private MessageBox uploadBox;
 
@@ -276,7 +278,10 @@ public class ImportPanel extends ContentPanel {
 
 			@Override
 			public void componentSelected(ButtonEvent ce) {		
-				SpreadsheetModel spreadsheetModel = ClientUploadUtility.composeSpreadsheetModel(itemStore.getModels(), rowStore.getModels(), previewColumns);
+				ArrayList<ItemModel> allItemModels = new ArrayList<ItemModel>();
+				allItemModels.addAll(itemStore.getModels());
+				allItemModels.addAll(invisibleItemModels);
+				SpreadsheetModel spreadsheetModel = ClientUploadUtility.composeSpreadsheetModel(allItemModels, rowStore.getModels(), previewColumns);
 
 				uploadSpreadsheet(spreadsheetModel);
 
@@ -633,7 +638,7 @@ public class ImportPanel extends ContentPanel {
 					header.setUnincluded(isUnincluded);
 					header.setAssignmentId(assignmentId);
 
-					if (header.getField() != null && header.getField().equals("ITEM"))
+					if (header.getField() != null)
 						headerMap.put(id, header);
 				}
 				ColumnModel cm = new ColumnModel(previewColumns);
@@ -689,8 +694,8 @@ public class ImportPanel extends ContentPanel {
 										continue;
 									String configId = config.getId(); 
 									ImportHeader h = headerMap.get(configId);
-									if (null != h  && null != itemString && !"".equals(itemString.stringValue()))
-									{
+									if (null != h && h.getField().equals(Field.ITEM.name()) &&
+											null != itemString && !"".equals(itemString.stringValue())) {
 										Double maxPoints = h.getPoints(); 
 										if (maxPoints == null)
 										{
@@ -713,8 +718,6 @@ public class ImportPanel extends ContentPanel {
 													pointsAssignments.append(h.getHeaderName()); 
 												}
 											}
-
-
 										}
 									}
 									model.set(config.getId(), itemString.stringValue());
@@ -815,9 +818,17 @@ public class ImportPanel extends ContentPanel {
 			ArrayList<ItemModel> itemModels = ClientUploadUtility.convertHeadersToItemModels(headers);
 			HashMap<Long, String> categoryIdNameMap = new HashMap<Long, String>();
 
+			ArrayList<ItemModel> visibleItemModels = new ArrayList<ItemModel>();
+			invisibleItemModels = new ArrayList<ItemModel>();
+			
 			for (int i=0;i<itemModels.size();i++) {
 				ItemModel itemModel = itemModels.get(i);
 
+				if (itemModel.getItemType() != Type.COMMENT)
+					visibleItemModels.add(itemModel);
+				else 
+					invisibleItemModels.add(itemModel);
+					
 				String itemName = itemModel.getName();
 				Long categoryId = itemModel.getCategoryId();
 				String categoryName = categoryIdNameMap.get(categoryId);
@@ -838,7 +849,7 @@ public class ImportPanel extends ContentPanel {
 				}
 			}
 
-			itemStore.add(itemModels);
+			itemStore.add(visibleItemModels);
 
 
 		} catch (Exception e) {

@@ -36,7 +36,7 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 
 	private static final long serialVersionUID = 1L;
 
-	public enum Type { ROOT("Root"), GRADEBOOK("Gradebook") , CATEGORY("Category"), ITEM("Item");
+	public enum Type { ROOT("Root"), GRADEBOOK("Gradebook") , CATEGORY("Category"), ITEM("Item"), COMMENT("Comment");
 	
 		private String name;
 		
