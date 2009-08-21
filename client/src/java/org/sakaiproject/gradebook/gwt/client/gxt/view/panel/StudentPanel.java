@@ -55,14 +55,14 @@ import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
 
 public class StudentPanel extends ContentPanel {
 
-	private static final int COL_ANAM = 0; 
-	private static final int COL_GRADE = 1; 
-	private static final int COL_MEAN = 2; 
-	private static final int COL_STDV = 3; 
-	private static final int COL_MEDI = 4; 
-	private static final int COL_MODE = 5; 
-	private static final int COL_RANK = 6; 
-	private static final int COL_COMM = 7; 
+	private static final int GT_COL_ANAM = 0; 
+	private static final int GT_COL_GRADE = 1; 
+	private static final int GT_COL_MEAN = 2; 
+	private static final int GT_COL_STDV = 3; 
+	private static final int GT_COL_MEDI = 4; 
+	private static final int GT_COL_MODE = 5; 
+	private static final int GT_COL_RANK = 6; 
+	private static final int GT_COL_COMM = 7; 
 
 	
 	private TextField<String> defaultTextField= new TextField<String>();
@@ -125,8 +125,9 @@ public class StudentPanel extends ContentPanel {
 		this.selectedGradebook = selectedGradebook;
 		
 		updateCourseGrade(learnerGradeRecordCollection.getStudentGrade());
+		StatisticsModel m = getStatsModelForItem(String.valueOf(Long.valueOf(-1)), selectedGradebook.getStatsModel());
 		
-		setStudentInfoTable();
+		setStudentInfoTable(m);
 		
 		setGradeInfoTable(selectedGradebook, learnerGradeRecordCollection);
 	}
@@ -138,7 +139,8 @@ public class StudentPanel extends ContentPanel {
 			
 			updateCourseGrade(learnerGradeRecordCollection.getStudentGrade());
 			
-			setStudentInfoTable();
+			StatisticsModel m = getStatsModelForItem(String.valueOf(Long.valueOf(-1)), selectedGradebook.getStatsModel());
+			setStudentInfoTable(m);
 			
 			setGradeInfoTable(selectedGradebook, learnerGradeRecordCollection);
 		}
@@ -190,36 +192,84 @@ public class StudentPanel extends ContentPanel {
 	// FIXME - i18n 
 	// FIXME - need to assess impact of doing it this way... 
 	
-	private void setStudentInfoTable() {		
+	
+	private static final int PI_ROW_NAME = 1; 
+	private static final int PI_ROW_EMAIL = 2; 
+	private static final int PI_ROW_ID = 3; 
+	private static final int PI_ROW_SECTION = 4; 
+	private static final int PI_ROW_BLANK = 5; 
+	private static final int PI_ROW_COURSE_GRADE = 6; 
+	private static final int PI_ROW_MEAN = 7; 
+	private static final int PI_ROW_STDV = 8; 
+	private static final int PI_ROW_MEDI = 9; 
+	private static final int PI_ROW_MODE = 10; 
+	private static final int PI_ROW_RANK = 11; 
+	
+	
+	private static final int PI_COL_HEADING = 0; 
+	private static final int PI_COL_VALUE = 1; 
+	
+	
+	private void setStudentInfoTable(StatisticsModel courseGradeStats) {		
 		// To force a refresh, let's first hide the owning panel
 		studentInformationPanel.hide();
 	
 		// Now, let's update the student information table
 		FlexCellFormatter formatter = studentInformation.getFlexCellFormatter();
 		
-        studentInformation.setText(1, 0, "Name");
-        formatter.setStyleName(1, 0, "gbImpact");
-        studentInformation.setText(1, 1, learnerGradeRecordCollection.getStudentName());
+        studentInformation.setText(PI_ROW_NAME, PI_COL_HEADING, "Name");
+        formatter.setStyleName(PI_ROW_NAME, PI_COL_HEADING, "gbImpact");
+        studentInformation.setText(PI_ROW_NAME, PI_COL_VALUE, learnerGradeRecordCollection.getStudentName());
 
-        studentInformation.setText(2, 0, "Email");
-        formatter.setStyleName(2, 0, "gbImpact");
-        studentInformation.setText(2, 1, learnerGradeRecordCollection.getStudentEmail());
+        studentInformation.setText(PI_ROW_EMAIL, PI_COL_HEADING, "Email");
+        formatter.setStyleName(PI_ROW_EMAIL, PI_COL_HEADING, "gbImpact");
+        studentInformation.setText(PI_ROW_EMAIL, PI_COL_VALUE, learnerGradeRecordCollection.getStudentEmail());
 
-        studentInformation.setText(3, 0, "ID");
-        formatter.setStyleName(3, 0, "gbImpact");
-        studentInformation.setText(3, 1, learnerGradeRecordCollection.getStudentDisplayId());
+        studentInformation.setText(PI_ROW_ID, PI_COL_HEADING, "ID");
+        formatter.setStyleName(PI_ROW_ID, PI_COL_HEADING, "gbImpact");
+        studentInformation.setText(PI_ROW_ID, PI_COL_VALUE, learnerGradeRecordCollection.getStudentDisplayId());
 
-        studentInformation.setText(4, 0, "Section");
-        formatter.setStyleName(4, 0, "gbImpact");
-        studentInformation.setText(4, 1, learnerGradeRecordCollection.getStudentSections());
+        studentInformation.setText(PI_ROW_SECTION, PI_COL_HEADING, "Section");
+        formatter.setStyleName(PI_ROW_SECTION, PI_COL_HEADING, "gbImpact");
+        studentInformation.setText(PI_ROW_SECTION, PI_COL_VALUE, learnerGradeRecordCollection.getStudentSections());
     
-        studentInformation.setText(5, 0, "");
-        formatter.setColSpan(5, 0, 2);
+        studentInformation.setText(PI_ROW_BLANK, PI_COL_HEADING, "");
+        formatter.setColSpan(PI_ROW_BLANK, PI_COL_HEADING, 2);
         
         if (!isStudentView || (DataTypeConversionUtil.checkBoolean(selectedGradebook.getGradebookItemModel().getReleaseGrades()))) {
-	        studentInformation.setText(6, 0, "Course Grade");
-	        formatter.setStyleName(6, 0, "gbImpact");
-	        studentInformation.setText(6, 1, learnerGradeRecordCollection.getStudentGrade());
+	        studentInformation.setText(PI_ROW_COURSE_GRADE, PI_COL_HEADING, "Course Grade");
+	        formatter.setStyleName(PI_ROW_COURSE_GRADE, PI_COL_HEADING, "gbImpact");
+	        studentInformation.setText(PI_ROW_COURSE_GRADE, PI_COL_VALUE, learnerGradeRecordCollection.getStudentGrade());
+	        if (courseGradeStats != null)
+	        {
+	        	GWT.log("Course stats is not null", null);
+		        studentInformation.setText(PI_ROW_MEAN, PI_COL_HEADING, "Mean");
+		        formatter.setStyleName(PI_ROW_MEAN, PI_COL_HEADING, "gbImpact");
+		        studentInformation.setText(PI_ROW_MEAN, PI_COL_VALUE, courseGradeStats.getMean());
+
+		        studentInformation.setText(PI_ROW_STDV, PI_COL_HEADING, "Standard Deviation");
+		        formatter.setStyleName(PI_ROW_STDV, PI_COL_HEADING, "gbImpact");
+		        studentInformation.setText(PI_ROW_STDV, PI_COL_VALUE, courseGradeStats.getStandardDeviation());
+
+		        studentInformation.setText(PI_ROW_MEDI, PI_COL_HEADING, "Median");
+		        formatter.setStyleName(PI_ROW_MEDI, PI_COL_HEADING, "gbImpact");
+		        studentInformation.setText(PI_ROW_MEDI, PI_COL_VALUE, courseGradeStats.getMedian());
+
+		        studentInformation.setText(PI_ROW_MODE, PI_COL_HEADING, "Mode");
+		        formatter.setStyleName(PI_ROW_MODE, PI_COL_HEADING, "gbImpact");
+		        studentInformation.setText(PI_ROW_MODE, PI_COL_VALUE, courseGradeStats.getMode());
+		        if (displayRank)
+		        {
+		        	studentInformation.setText(PI_ROW_RANK, PI_COL_HEADING, "Rank");
+		        	formatter.setStyleName(PI_ROW_RANK, PI_COL_HEADING, "gbImpact");
+		        	studentInformation.setText(PI_ROW_RANK, PI_COL_VALUE, courseGradeStats.getRank());
+		        }
+	        }
+	        else
+	        {
+	        	GWT.log("Course stats is null", null);
+	        }
+	        
         }
         studentInformationPanel.show();
 	}
@@ -278,31 +328,31 @@ public class StudentPanel extends ContentPanel {
         if (isExcused)
         	resultBuilder.append(" (excused)");
         
-        gradeInformation.setText(row, COL_GRADE, resultBuilder.toString());
-        formatter.setStyleName(row, COL_GRADE, "gbRecordFieldStudentGrades");
+        gradeInformation.setText(row, GT_COL_GRADE, resultBuilder.toString());
+        formatter.setStyleName(row, GT_COL_GRADE, "gbRecordFieldStudentGrades");
         // Mean
-        gradeInformation.setText(row, COL_MEAN, mean);
-        formatter.setStyleName(row, COL_MEAN, "gbRecordFieldStudentGrades");
+        gradeInformation.setText(row, GT_COL_MEAN, mean);
+        formatter.setStyleName(row, GT_COL_MEAN, "gbRecordFieldStudentGrades");
         // Std Dev
-        gradeInformation.setText(row, COL_STDV, stdDev);
-        formatter.setStyleName(row, COL_STDV, "gbRecordFieldStudentGrades");
+        gradeInformation.setText(row, GT_COL_STDV, stdDev);
+        formatter.setStyleName(row, GT_COL_STDV, "gbRecordFieldStudentGrades");
         // Median 
-        gradeInformation.setText(row, COL_MEDI, median);
-        formatter.setStyleName(row, COL_MEDI, "gbRecordFieldStudentGrades");
+        gradeInformation.setText(row, GT_COL_MEDI, median);
+        formatter.setStyleName(row, GT_COL_MEDI, "gbRecordFieldStudentGrades");
 
         // Mode
-        gradeInformation.setText(row, COL_MODE, mode);
-        formatter.setStyleName(row, COL_MODE, "gbRecordFieldStudentGrades");
+        gradeInformation.setText(row, GT_COL_MODE, mode);
+        formatter.setStyleName(row, GT_COL_MODE, "gbRecordFieldStudentGrades");
 
         if (displayRank)
         {
         	// Rank 
-        	gradeInformation.setText(row, COL_RANK, rank);
-        	formatter.setStyleName(row, COL_RANK, "gbRecordFieldStudentGrades");
+        	gradeInformation.setText(row, GT_COL_RANK, rank);
+        	formatter.setStyleName(row, GT_COL_RANK, "gbRecordFieldStudentGrades");
         }
         // Comment
-        gradeInformation.setText(row, COL_COMM, comment);
-        formatter.setStyleName(row, COL_COMM, "gbRecordFieldStudentGrades");
+        gradeInformation.setText(row, GT_COL_COMM, comment);
+        formatter.setStyleName(row, GT_COL_COMM, "gbRecordFieldStudentGrades");
         
 	}
 	
@@ -427,28 +477,28 @@ public class StudentPanel extends ContentPanel {
 	private void displayColumnHeaders(int row, FlexCellFormatter formatter) {
 		int col = 1; 
 	
-		gradeInformation.setText(row, COL_GRADE, ""); 
-		formatter.setStyleName(row, COL_GRADE, "gbHeaderStudentGrades");
+		gradeInformation.setText(row, GT_COL_GRADE, ""); 
+		formatter.setStyleName(row, GT_COL_GRADE, "gbHeaderStudentGrades");
 		
-		gradeInformation.setText(row, COL_MEAN, "Mean"); 
-		formatter.setStyleName(row, COL_MEAN, "gbHeaderStudentGrades");
+		gradeInformation.setText(row, GT_COL_MEAN, "Mean"); 
+		formatter.setStyleName(row, GT_COL_MEAN, "gbHeaderStudentGrades");
 
-		gradeInformation.setHTML(row, COL_STDV, "Standard<BR>Deviation"); 
-		formatter.setStyleName(row, COL_STDV, "gbHeaderStudentGrades");
+		gradeInformation.setHTML(row, GT_COL_STDV, "Standard<BR>Deviation"); 
+		formatter.setStyleName(row, GT_COL_STDV, "gbHeaderStudentGrades");
 
-		gradeInformation.setText(row, COL_MEDI, "Median"); 
-		formatter.setStyleName(row, COL_MEDI, "gbHeaderStudentGrades");
+		gradeInformation.setText(row, GT_COL_MEDI, "Median"); 
+		formatter.setStyleName(row, GT_COL_MEDI, "gbHeaderStudentGrades");
 
-		gradeInformation.setText(row, COL_MODE, "Mode"); 
-		formatter.setStyleName(row, COL_MODE, "gbHeaderStudentGrades");
+		gradeInformation.setText(row, GT_COL_MODE, "Mode"); 
+		formatter.setStyleName(row, GT_COL_MODE, "gbHeaderStudentGrades");
 
 		if (displayRank)
 		{
-			gradeInformation.setText(row, COL_RANK, "Rank"); 
-			formatter.setStyleName(row, COL_RANK, "gbHeaderStudentGrades");
+			gradeInformation.setText(row, GT_COL_RANK, "Rank"); 
+			formatter.setStyleName(row, GT_COL_RANK, "gbHeaderStudentGrades");
 		}
-		gradeInformation.setText(row, COL_COMM, "Comment"); 
-		formatter.setStyleName(row, COL_COMM, "gbHeaderStudentGrades");
+		gradeInformation.setText(row, GT_COL_COMM, "Comment"); 
+		formatter.setStyleName(row, GT_COL_COMM, "gbHeaderStudentGrades");
 
 		
 		
