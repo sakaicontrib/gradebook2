@@ -470,10 +470,15 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					if (indexOfCommentTextFlag != -1) {
 						String realId = id.substring(0, indexOfCommentTextFlag);
 						
-						Assignment assignment = gbService.getAssignment(Long.valueOf(realId));
+						Assignment assignment = null;
+						if (realId.startsWith("NEW:")) {
+							assignment = idToAssignmentMap.get(realId);
+							
+						} else {
+							assignment = gbService.getAssignment(Long.valueOf(realId));	
+						}
 						
 						commentIdToAssignmentMap.put(realId, assignment);
-						
 					} else if (id.startsWith("NEW:")) {
 
 						ItemModel itemModel = new ItemModel();
@@ -634,7 +639,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 						
 						Assignment assignment = commentIdToAssignmentMap.get(id);
 						
-						CommentModel comment = createOrUpdateComment(Long.valueOf(id), student.getIdentifier(), (String)v);
+						CommentModel comment = createOrUpdateComment(assignment.getId(), student.getIdentifier(), (String)v);
 						
 						if (comment != null) {
 							student.set(fullId, comment.getText());

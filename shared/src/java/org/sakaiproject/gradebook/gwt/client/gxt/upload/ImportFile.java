@@ -37,7 +37,11 @@ public class ImportFile implements Serializable {
 
 	private Boolean hasCategories;
 	
+	private Boolean hasWeights;
+	
 	private Boolean isLetterGrading;
+	
+	private Boolean isPointsMode;
 
 	private String notes; 
 
@@ -104,6 +108,22 @@ public class ImportFile implements Serializable {
 
 	public void setLetterGrading(Boolean isLetterGrading) {
 		this.isLetterGrading = isLetterGrading;
+	}
+
+	public Boolean getHasWeights() {
+		return hasWeights;
+	}
+
+	public void setHasWeights(Boolean hasWeights) {
+		this.hasWeights = hasWeights;
+	}
+
+	public Boolean isPointsMode() {
+		return isPointsMode;
+	}
+
+	public void setPointsMode(Boolean isPointsMode) {
+		this.isPointsMode = isPointsMode;
 	}
 
 }

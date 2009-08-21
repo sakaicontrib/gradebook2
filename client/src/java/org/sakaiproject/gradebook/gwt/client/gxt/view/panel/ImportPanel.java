@@ -125,6 +125,7 @@ public class ImportPanel extends ContentPanel {
 	private ContentPanel step1Container;
 	private ContentPanel errorContainer; 
 
+	private ColumnConfig percentCategory;
 
 	private LayoutContainer fileUploadContainer;
 
@@ -251,7 +252,7 @@ public class ImportPanel extends ContentPanel {
 		});
 
 		boolean hasCategories = selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES;
-
+		
 		previewTab = new TabItem("Data");
 		previewTab.setLayout(new FlowLayout());
 		previewTab.add(grid);
@@ -535,11 +536,17 @@ public class ImportPanel extends ContentPanel {
 				tabPanel.hide();
 				return; 
 			}
+			Boolean hasWeightsBoolean = getBoolean(jsonObject, "hasWeights");
 			Boolean hasCategoriesBoolean = getBoolean(jsonObject, "hasCategories");
 			Boolean isLetterGradingBoolean = getBoolean(jsonObject, "isLetterGrading");
+			Boolean isPointsModeBoolean = getBoolean(jsonObject, "isPointsMode");
 
+			boolean hasWeights = DataTypeConversionUtil.checkBoolean(hasWeightsBoolean);
 			boolean hasCategories = DataTypeConversionUtil.checkBoolean(hasCategoriesBoolean);
 			boolean isLetterGrading = DataTypeConversionUtil.checkBoolean(isLetterGradingBoolean);
+			boolean isPointsMode = DataTypeConversionUtil.checkBoolean(isPointsModeBoolean);
+			
+			percentCategory.setHidden(!hasWeights);
 			
 			if (hasCategories) {
 				columnsTab.setVisible(true);
@@ -696,7 +703,7 @@ public class ImportPanel extends ContentPanel {
 										continue;
 									String configId = config.getId(); 
 									ImportHeader h = headerMap.get(configId);
-									if (!isLetterGrading && null != h && h.getField().equals(Field.ITEM.name()) &&
+									if (isPointsMode && null != h && h.getField().equals(Field.ITEM.name()) &&
 											null != itemString && !"".equals(itemString.stringValue())) {
 										Double maxPoints = h.getPoints(); 
 										if (maxPoints == null)
@@ -877,7 +884,7 @@ public class ImportPanel extends ContentPanel {
 		name.setEditor(textCellEditor);
 		itemColumns.add(name);
 
-		ColumnConfig percentCategory = new ColumnConfig(ItemModel.Key.PERCENT_CATEGORY.name(), "% Category", 100);
+		percentCategory = new ColumnConfig(ItemModel.Key.PERCENT_CATEGORY.name(), "% Category", 100);
 		percentCategory.setEditor(new CellEditor(new NumberField()));
 		itemColumns.add(percentCategory);
 
@@ -934,7 +941,7 @@ public class ImportPanel extends ContentPanel {
 				ItemModel itemModel = categoriesStore.findModel(ItemModel.Key.ID.name(), lookupId);
 
 				if (itemModel == null)
-					return "Unassigned";
+					return AppConstants.DEFAULT_CATEGORY_NAME;
 
 				return itemModel.getName();
 			}
@@ -1028,14 +1035,14 @@ public class ImportPanel extends ContentPanel {
 	private void readFile() {
 
 		if (file.getValue() != null && file.getValue().trim().length() > 0) {
-			uploadBox = MessageBox.wait("Progress", "Reading file, please wait...", "Parsing...");
+			uploadBox = MessageBox.wait(i18n.importProgressTitle(), i18n.importReadingFileMessage(), i18n.importParsingMessage());
 			fileUploadPanel.submit();
 		}
 	}
 
 
 	private void showSetupPanel(String alertText, boolean overrideText) {
-		String defaultMessageText =  "You have items that are not assigned to a category";
+		String defaultMessageText =  i18n.importDefaultShowPanelMessage();
 		String messageText;
 		StringBuilder sb; 
 		if (overrideText)
@@ -1063,7 +1070,7 @@ public class ImportPanel extends ContentPanel {
 		messageText = sb.toString(); 
 		sb = null; 
 
-		MessageBox.alert("Setup Required", messageText, new Listener<WindowEvent>() {
+		MessageBox.alert(i18n.importSetupRequiredTitle(), messageText, new Listener<WindowEvent>() {
 
 			public void handleEvent(WindowEvent be) {
 				tabPanel.setSelection(columnsTab);

@@ -190,4 +190,10 @@ public interface I18nConstants extends Constants {
 	
 	String notifyNotDisplayingReleasedItems();
 	String notifyNoReleasedItems();
+	
+	String importSetupRequiredTitle();
+	String importDefaultShowPanelMessage();
+	String importProgressTitle();
+	String importReadingFileMessage();
+	String importParsingMessage();
 }

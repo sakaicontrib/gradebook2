@@ -1078,8 +1078,17 @@ public class ImportExportUtility {
 
 					if (isComment) {
 						header = new ImportHeader(Field.COMMENT, text);
-						header.setAssignmentId(model.getIdentifier());
-						header.setId(new StringBuilder().append(model.getIdentifier()).append(StudentModel.COMMENT_TEXT_FLAG).toString());
+						if (model != null) {
+							header.setAssignmentId(model.getIdentifier());
+							header.setId(new StringBuilder().append(model.getIdentifier()).append(StudentModel.COMMENT_TEXT_FLAG).toString());
+							header.setCategoryName(model.getCategoryName());
+							header.setCategoryId(String.valueOf(model.getCategoryId()));
+						} else {
+							String newId = new StringBuilder().append("NEW:").append(i - 1).toString();
+							header.setAssignmentId(newId);
+							header.setId(new StringBuilder().append(newId).append(StudentModel.COMMENT_TEXT_FLAG).toString());
+						}
+						
 					} else {
 
 						StringBuffer value = new StringBuffer(name);
@@ -1499,8 +1508,11 @@ public class ImportExportUtility {
 		}
 
 		GradebookModel gradebook = service.getGradebook(gradebookUid);
-		boolean hasCategories = gradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES;
-		boolean isLetterGrading = gradebook.getGradebookItemModel().getGradeType() == GradeType.LETTERS;
+		ItemModel gradebookItemModel = gradebook.getGradebookItemModel();
+		CategoryType categoryType = gradebookItemModel.getCategoryType();
+		boolean hasWeights = categoryType == CategoryType.WEIGHTED_CATEGORIES;
+		boolean hasCategories = categoryType != CategoryType.NO_CATEGORIES;
+		boolean isLetterGrading = gradebookItemModel.getGradeType() == GradeType.LETTERS;
 		
 		List<UserDereference> userDereferences = service.findAllUserDereferences();
 		Map<String, UserDereference> userDereferenceMap = new HashMap<String, UserDereference>();
@@ -1519,6 +1531,7 @@ public class ImportExportUtility {
 
 
 		ImportExportInformation ieInfo = new ImportExportInformation();
+		ieInfo.setHasWeights(hasWeights);
 		ieInfo.setHasCategories(hasCategories);
 		ieInfo.setLetterGrading(isLetterGrading);
 		ArrayList<ImportRow> importRows = new ArrayList<ImportRow>();
@@ -1555,7 +1568,9 @@ public class ImportExportUtility {
 			importFile.setRows(importRows);
 			processStructureInformation(ieInfo, structureColumnsMap, gradebook, service);
 			importFile.setHasCategories(Boolean.valueOf(ieInfo.hasCategories()));
+			importFile.setHasWeights(Boolean.valueOf(ieInfo.hasWeights));
 			importFile.setLetterGrading(Boolean.valueOf(ieInfo.isLetterGrading()));
+			importFile.setPointsMode(Boolean.valueOf(ieInfo.isPointsMode()));
 		}
 		else
 		{
@@ -1661,7 +1676,9 @@ class ImportExportInformation
 	Map<Long, String> categoryIdNameMap;
 	String[] headerColumns;
 	boolean hasCategories;
+	boolean hasWeights;
 	boolean isLetterGrading;
+	boolean isPointsMode;
 
 	public ImportExportInformation() 
 	{
@@ -1771,6 +1788,22 @@ class ImportExportInformation
 
 	public void setLetterGrading(boolean isLetterGrading) {
 		this.isLetterGrading = isLetterGrading;
+	}
+
+	public boolean isHasWeights() {
+		return hasWeights;
+	}
+
+	public void setHasWeights(boolean hasWeights) {
+		this.hasWeights = hasWeights;
+	}
+
+	public boolean isPointsMode() {
+		return isPointsMode;
+	}
+
+	public void setPointsMode(boolean isPointsMode) {
+		this.isPointsMode = isPointsMode;
 	}
 }
 
