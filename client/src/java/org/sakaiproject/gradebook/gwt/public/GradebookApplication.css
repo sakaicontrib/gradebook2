@@ -260,6 +260,16 @@
 	padding-top:20px;
 }
 
+.gbHeaderStudentGrades {
+	color: black;
+	font-size: 12pt;
+	font-weight: bold;
+	padding-bottom: 10px;
+	padding-top:20px;
+	padding-left: 15px; 
+	padding-right: 15px; 
+}
+
 .gbImpact {
 	color: darkblue;
 	font-weight: bold;
@@ -281,6 +291,15 @@
 .gbRecordField {
 	padding: 10;
 	vertical-align: top;	
+}
+
+.gbRecordFieldStudentGrades {
+	padding-bottom: 10px;
+	padding-top:20px;
+	padding-left: 30px; 
+	padding-right: 30px;
+	vertical-align: top;	
+	text-align: center;
 }
 
 .gbUneditable {

@@ -22,36 +22,48 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
-import org.sakaiproject.gradebook.gwt.client.model.GradeRecordModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.StatisticsModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.Scroll;
-import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.form.TextArea;
 import com.extjs.gxt.ui.client.widget.form.TextField;
-import com.extjs.gxt.ui.client.widget.grid.ColumnData;
-import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
 
 public class StudentPanel extends ContentPanel {
+
+	private static final int COL_ANAM = 0; 
+	private static final int COL_GRADE = 1; 
+	private static final int COL_MEAN = 2; 
+	private static final int COL_STDV = 3; 
+	private static final int COL_MEDI = 4; 
+	private static final int COL_MODE = 5; 
+	private static final int COL_RANK = 6; 
+	private static final int COL_COMM = 7; 
+
 	
 	private TextField<String> defaultTextField= new TextField<String>();
 	private TextArea defaultTextArea = new TextArea();
@@ -64,16 +76,18 @@ public class StudentPanel extends ContentPanel {
 	
 	private boolean isStudentView;
 	
+	private boolean displayRank; 
+	
 	private GradebookModel selectedGradebook;
 	
-	public StudentPanel(boolean isStudentView) {
+	public StudentPanel(boolean isStudentView, boolean displayRank) {
 		this.isStudentView = isStudentView;
 		this.defaultNumberField.setFormat(defaultNumberFormat);
 		this.defaultNumberField.setSelectOnFocus(true);
 		this.defaultNumberField.addInputStyleName("gbNumericFieldInput");
 		this.defaultTextArea.addInputStyleName("gbTextAreaInput");
 		this.defaultTextField.addInputStyleName("gbTextFieldInput");
-		
+		this.displayRank = displayRank;
 		setFrame(true);
 		setHeaderVisible(false);
 		setLayout(new RowLayout());
@@ -210,12 +224,20 @@ public class StudentPanel extends ContentPanel {
         studentInformationPanel.show();
 	}
 
-	private void populateGradeInfoRow(int row, ItemModel item, StudentModel learner, FlexCellFormatter formatter) {
+	
+	private void populateGradeInfoRow(int row, ItemModel item, StudentModel learner, FlexCellFormatter formatter, StatisticsModel stats) {
 		String itemId = item.getIdentifier();
 		Object value = learner.get(itemId);
 		String commentFlag = new StringBuilder().append(itemId).append(StudentModel.COMMENT_TEXT_FLAG).toString();
 		String comment = learner.get(commentFlag);
 		String excusedFlag = new StringBuilder().append(itemId).append(StudentModel.DROP_FLAG).toString();
+		
+		String mean = (stats == null ? "" : stats.getMean());
+		String stdDev = (stats == null ? "" : stats.getStandardDeviation()); 
+		String median = (stats == null ? "" : stats.getMedian());
+		String mode = (stats == null ? "" : stats.getMode()); 
+		String rank = (stats == null ? "" : stats.getRank());
+		
 		
 		boolean isExcused = DataTypeConversionUtil.checkBoolean((Boolean)learner.get(excusedFlag));
 		boolean isIncluded = DataTypeConversionUtil.checkBoolean((Boolean)item.getIncluded());
@@ -256,13 +278,37 @@ public class StudentPanel extends ContentPanel {
         if (isExcused)
         	resultBuilder.append(" (excused)");
         
-        gradeInformation.setText(row, 1, resultBuilder.toString());
-        formatter.setStyleName(row, 1, "gbRecordField");
-        gradeInformation.setText(row, 2, comment);
-        formatter.setStyleName(row, 2, "gbRecordField");
+        gradeInformation.setText(row, COL_GRADE, resultBuilder.toString());
+        formatter.setStyleName(row, COL_GRADE, "gbRecordFieldStudentGrades");
+        // Mean
+        gradeInformation.setText(row, COL_MEAN, mean);
+        formatter.setStyleName(row, COL_MEAN, "gbRecordFieldStudentGrades");
+        // Std Dev
+        gradeInformation.setText(row, COL_STDV, stdDev);
+        formatter.setStyleName(row, COL_STDV, "gbRecordFieldStudentGrades");
+        // Median 
+        gradeInformation.setText(row, COL_MEDI, median);
+        formatter.setStyleName(row, COL_MEDI, "gbRecordFieldStudentGrades");
+
+        // Mode
+        gradeInformation.setText(row, COL_MODE, mode);
+        formatter.setStyleName(row, COL_MODE, "gbRecordFieldStudentGrades");
+
+        if (displayRank)
+        {
+        	// Rank 
+        	gradeInformation.setText(row, COL_RANK, rank);
+        	formatter.setStyleName(row, COL_RANK, "gbRecordFieldStudentGrades");
+        }
+        // Comment
+        gradeInformation.setText(row, COL_COMM, comment);
+        formatter.setStyleName(row, COL_COMM, "gbRecordFieldStudentGrades");
         
 	}
 	
+	// So for stats, we'll have the following columns: 
+	// grade | Mean | Std Deviation | Median | Mode | Comment 
+
 	private void setGradeInfoTable(GradebookModel selectedGradebook, StudentModel learner) {		
 		// To force a refresh, let's first hide the owning panel
 		gradeInformationPanel.hide();
@@ -272,22 +318,24 @@ public class StudentPanel extends ContentPanel {
 		
 		// Start by removing all existing rows, since we may be reducing the visibility
 		for (int i=gradeInformation.getRowCount() - 1;i>=0;i--) {
-			for (int j=0;i<gradeInformation.getCellCount(i);j++) {
+			for (int j=0;j<gradeInformation.getCellCount(i);j++) {
 				gradeInformation.removeCell(i, j);
 			}
 			gradeInformation.removeRow(i);
 		}
 		
 		ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
+		List<StatisticsModel> statsList = selectedGradebook.getStatsModel(); 
+		
+		
 		
 		boolean isDisplayReleasedItems = DataTypeConversionUtil.checkBoolean(gradebookItemModel.getReleaseItems());
-		
+		boolean columnsDisplayed = false; 
 		if (isDisplayReleasedItems) {
 			boolean isNothingToDisplay = true;
 			int row=0;
 			if (gradebookItemModel.getChildCount() > 0) {
 				for (ItemModel child : gradebookItemModel.getChildren()) {
-					
 					switch (child.getItemType()) {
 					case CATEGORY:
 						boolean isCategoryHeaderDisplayed = false;
@@ -297,6 +345,12 @@ public class StudentPanel extends ContentPanel {
 								
 								if (!isCategoryHeaderDisplayed) {
 									if (selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES) {
+										if (!columnsDisplayed)
+										{
+											displayColumnHeaders(row, formatter);
+											row++; 
+											columnsDisplayed = true; 
+										}
 										gradeInformation.setText(row, 0, child.getName());
 								        formatter.setStyleName(row, 0, "gbHeader");
 								        formatter.setColSpan(row, 0, 3);
@@ -304,16 +358,33 @@ public class StudentPanel extends ContentPanel {
 									}
 									isCategoryHeaderDisplayed = true;
 								}
-								
-								populateGradeInfoRow(row, item, learner, formatter);
+								if (!columnsDisplayed)
+								{
+									displayColumnHeaders(row, formatter);
+									row++; 
+									columnsDisplayed = true; 
+								}
+								StatisticsModel stats = null; 
+								stats = getStatsModelForItem(item.getIdentifier(), statsList); 
+
+								populateGradeInfoRow(row, item, learner, formatter, stats);
 								isNothingToDisplay = false;
 								row++;
 							} 
 						}
 						break;
 					case ITEM:
+						StatisticsModel stats = null; 
+						stats = getStatsModelForItem(child.getIdentifier(), statsList); 
+
 						if (DataTypeConversionUtil.checkBoolean(child.getReleased())) {
-							populateGradeInfoRow(row, child, learner, formatter);
+							if (!columnsDisplayed)
+							{
+								displayColumnHeaders(row, formatter);
+								row++; 
+								columnsDisplayed = true; 
+							}
+							populateGradeInfoRow(row, child, learner, formatter, stats);
 							isNothingToDisplay = false;
 							row++;
 						}
@@ -335,6 +406,54 @@ public class StudentPanel extends ContentPanel {
         gradeInformationPanel.show();
 	}
 	
+	private StatisticsModel getStatsModelForItem(String id,
+			List<StatisticsModel> statsList) {
+		int idx = -1; 
+		
+		StatisticsModel key = new StatisticsModel();
+		key.setAssignmentId(id); 
+		//Window.alert("id: " + (id == null ? "null" : "not null") + " \nitemId: " + id + "\n idx: " + idx); 
+		idx = Collections.binarySearch(statsList, key);
+		
+		if (idx >= 0)
+		{
+			return statsList.get(idx); 
+		}
+		
+		return null;
+	}
+
+
+	private void displayColumnHeaders(int row, FlexCellFormatter formatter) {
+		int col = 1; 
+	
+		gradeInformation.setText(row, COL_GRADE, ""); 
+		formatter.setStyleName(row, COL_GRADE, "gbHeaderStudentGrades");
+		
+		gradeInformation.setText(row, COL_MEAN, "Mean"); 
+		formatter.setStyleName(row, COL_MEAN, "gbHeaderStudentGrades");
+
+		gradeInformation.setHTML(row, COL_STDV, "Standard<BR>Deviation"); 
+		formatter.setStyleName(row, COL_STDV, "gbHeaderStudentGrades");
+
+		gradeInformation.setText(row, COL_MEDI, "Median"); 
+		formatter.setStyleName(row, COL_MEDI, "gbHeaderStudentGrades");
+
+		gradeInformation.setText(row, COL_MODE, "Mode"); 
+		formatter.setStyleName(row, COL_MODE, "gbHeaderStudentGrades");
+
+		if (displayRank)
+		{
+			gradeInformation.setText(row, COL_RANK, "Rank"); 
+			formatter.setStyleName(row, COL_RANK, "gbHeaderStudentGrades");
+		}
+		gradeInformation.setText(row, COL_COMM, "Comment"); 
+		formatter.setStyleName(row, COL_COMM, "gbHeaderStudentGrades");
+
+		
+		
+	}
+
 	public boolean isStudentView() {
 		return isStudentView;
 	}
