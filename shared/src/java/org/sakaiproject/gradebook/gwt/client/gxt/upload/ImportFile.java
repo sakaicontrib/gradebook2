@@ -36,6 +36,8 @@ public class ImportFile implements Serializable {
 	private ArrayList<ImportRow> rows;
 
 	private Boolean hasCategories;
+	
+	private Boolean isLetterGrading;
 
 	private String notes; 
 
@@ -94,6 +96,14 @@ public class ImportFile implements Serializable {
 
 	public void setNotifyAssignmentName(boolean notifyAssignmentName) {
 		this.notifyAssignmentName = notifyAssignmentName;
+	}
+
+	public Boolean isLetterGrading() {
+		return isLetterGrading;
+	}
+
+	public void setLetterGrading(Boolean isLetterGrading) {
+		this.isLetterGrading = isLetterGrading;
 	}
 
 }

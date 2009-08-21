@@ -536,9 +536,11 @@ public class ImportPanel extends ContentPanel {
 				return; 
 			}
 			Boolean hasCategoriesBoolean = getBoolean(jsonObject, "hasCategories");
+			Boolean isLetterGradingBoolean = getBoolean(jsonObject, "isLetterGrading");
 
 			boolean hasCategories = DataTypeConversionUtil.checkBoolean(hasCategoriesBoolean);
-
+			boolean isLetterGrading = DataTypeConversionUtil.checkBoolean(isLetterGradingBoolean);
+			
 			if (hasCategories) {
 				columnsTab.setVisible(true);
 
@@ -694,7 +696,7 @@ public class ImportPanel extends ContentPanel {
 										continue;
 									String configId = config.getId(); 
 									ImportHeader h = headerMap.get(configId);
-									if (null != h && h.getField().equals(Field.ITEM.name()) &&
+									if (!isLetterGrading && null != h && h.getField().equals(Field.ITEM.name()) &&
 											null != itemString && !"".equals(itemString.stringValue())) {
 										Double maxPoints = h.getPoints(); 
 										if (maxPoints == null)

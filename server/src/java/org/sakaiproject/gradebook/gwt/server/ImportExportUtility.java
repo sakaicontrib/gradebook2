@@ -1500,7 +1500,8 @@ public class ImportExportUtility {
 
 		GradebookModel gradebook = service.getGradebook(gradebookUid);
 		boolean hasCategories = gradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES;
-
+		boolean isLetterGrading = gradebook.getGradebookItemModel().getGradeType() == GradeType.LETTERS;
+		
 		List<UserDereference> userDereferences = service.findAllUserDereferences();
 		Map<String, UserDereference> userDereferenceMap = new HashMap<String, UserDereference>();
 
@@ -1519,6 +1520,7 @@ public class ImportExportUtility {
 
 		ImportExportInformation ieInfo = new ImportExportInformation();
 		ieInfo.setHasCategories(hasCategories);
+		ieInfo.setLetterGrading(isLetterGrading);
 		ArrayList<ImportRow> importRows = new ArrayList<ImportRow>();
 
 		DecimalFormat decimalFormat = new DecimalFormat();
@@ -1553,6 +1555,7 @@ public class ImportExportUtility {
 			importFile.setRows(importRows);
 			processStructureInformation(ieInfo, structureColumnsMap, gradebook, service);
 			importFile.setHasCategories(Boolean.valueOf(ieInfo.hasCategories()));
+			importFile.setLetterGrading(Boolean.valueOf(ieInfo.isLetterGrading()));
 		}
 		else
 		{
@@ -1657,7 +1660,8 @@ class ImportExportInformation
 	Map<String, ImportHeader> headerMap;
 	Map<Long, String> categoryIdNameMap;
 	String[] headerColumns;
-	boolean hasCategories; 
+	boolean hasCategories;
+	boolean isLetterGrading;
 
 	public ImportExportInformation() 
 	{
@@ -1670,6 +1674,7 @@ class ImportExportInformation
 		categoryIdNameMap = new HashMap<Long, String>();
 		headerColumns = null;
 		hasCategories = false; 
+		isLetterGrading = false;
 	}
 
 	public Set<Integer> getIgnoreColumns() {
@@ -1758,6 +1763,14 @@ class ImportExportInformation
 
 	public void setHasCategories(boolean hasCategories) {
 		this.hasCategories = hasCategories;
+	}
+
+	public boolean isLetterGrading() {
+		return isLetterGrading;
+	}
+
+	public void setLetterGrading(boolean isLetterGrading) {
+		this.isLetterGrading = isLetterGrading;
 	}
 }
 

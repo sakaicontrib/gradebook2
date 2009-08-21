@@ -58,7 +58,6 @@ import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig;
-import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader.Field;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
 import org.sakaiproject.gradebook.gwt.client.model.CategoryModel;
@@ -448,6 +447,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
 		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
+		boolean isLetterGrading = gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER;
 		Map<String, Assignment> idToAssignmentMap = new HashMap<String, Assignment>();
 		Map<String, Assignment> commentIdToAssignmentMap = new HashMap<String, Assignment>();
 		List<ItemModel> headers = spreadsheetModel.getHeaders();
@@ -654,11 +654,13 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 						Object v = student.get(id);
 
 						Double value = null;
-						if (v != null && v instanceof String) {
+						
+						if (isLetterGrading) {
+							value = gradeCalculations.convertLetterGradeToPercentage((String)v);
+						} else if (v != null && v instanceof String) {
 							String strValue = (String) v;
 							if (strValue.trim().length() > 0)
 								value = Double.valueOf(Double.parseDouble((String) v));
-		
 						} else
 							value = (Double) v;
 	
@@ -677,6 +679,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 								oldValue = assignmentGradeRecord.getPointsEarned();
 								break;
 							case GradebookService.GRADE_TYPE_PERCENTAGE:
+							case GradebookService.GRADE_TYPE_LETTER:
 								oldValue = assignmentGradeRecord.getPercentEarned();
 								break;
 						}

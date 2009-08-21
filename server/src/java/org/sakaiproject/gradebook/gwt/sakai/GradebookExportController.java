@@ -57,7 +57,7 @@ public class GradebookExportController implements Controller {
 			gradebookUid = queryString.substring(n, m);
 
 		try {
-			ImportExportUtility.exportGradebook(service, gradebookUid, doIncludeStructure, false, writer, response);
+			ImportExportUtility.exportGradebook(service, gradebookUid, doIncludeStructure, true, writer, response);
 		} catch (FatalException e) {
 			log.error("EXCEPTION: Wasn't able to export gradebook: " + gradebookUid, e);
 			// 500 Internal Server Error
