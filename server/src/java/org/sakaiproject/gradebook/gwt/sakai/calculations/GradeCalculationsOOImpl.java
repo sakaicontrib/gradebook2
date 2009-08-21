@@ -30,11 +30,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.gradebook.gwt.sakai.GradeCalculations;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeStatistics;
+import org.sakaiproject.gradebook.gwt.sakai.model.StudentScore;
 import org.sakaiproject.service.gradebook.shared.GradebookService;
 import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.AssignmentGradeRecord;
@@ -42,7 +46,9 @@ import org.sakaiproject.tool.gradebook.Category;
 import org.sakaiproject.tool.gradebook.Gradebook;
 
 public class GradeCalculationsOOImpl implements GradeCalculations {
-
+	
+	private static final Log log = LogFactory.getLog(GradeCalculationsOOImpl.class);
+	
 	final static BigDecimal BIG_DECIMAL_100 = new BigDecimal("100.00000");
 	public static final MathContext MATH_CONTEXT = new MathContext(10, RoundingMode.HALF_EVEN);
 	public Map<String, Double> letterGradeMap;
@@ -99,7 +105,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 	}
 
 
-	public GradeStatistics calculateStatistics(List<BigDecimal> gradeList, BigDecimal sum) {
+	public GradeStatistics calculateStatistics(List<StudentScore> gradeList, BigDecimal sum, String rankStudentId) {
 		GradeStatistics statistics = new GradeStatistics();
 
 		if (gradeList == null || gradeList.isEmpty())
@@ -119,7 +125,8 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		// That is, for the equation S = sqrt(A/c)
 		if (gradeList != null && mean != null) {
 			BigDecimal sumOfSquareOfDifferences = BigDecimal.ZERO;
-			for (BigDecimal courseGrade : gradeList) {
+			for (StudentScore rec : gradeList) {
+				BigDecimal courseGrade = rec.getScore(); 
 				// Take the square of the difference and add it to the sum, A 
 				BigDecimal difference = courseGrade.subtract(mean);
 				BigDecimal square = difference.multiply(difference);
@@ -149,14 +156,14 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		BigDecimal median = null;
 		if (gradeList != null && gradeList.size() > 0) {
 			if (gradeList.size() == 1) {
-				median = gradeList.get(0);
+				median = gradeList.get(0).getScore();
 			} else {
 				Collections.sort(gradeList);
 				int middle = gradeList.size() / 2;
 				if (gradeList.size() % 2 == 0) {
 					// If we have an even number of elements then grab the middle two
-					BigDecimal first = gradeList.get(middle - 1);
-					BigDecimal second = gradeList.get(middle);
+					BigDecimal first = gradeList.get(middle - 1).getScore();
+					BigDecimal second = gradeList.get(middle).getScore();
 
 					BigDecimal s = first.add(second);
 
@@ -166,11 +173,54 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 						median = s.divide(new BigDecimal("2"), RoundingMode.HALF_EVEN);
 				} else {
 					// If we have an odd number of elements, simply choose the middle one
-					median = gradeList.get(middle);
+					median = gradeList.get(middle).getScore();
+				}
+			}
+			
+			if (rankStudentId != null && gradeList != null && gradeList.size() > 0)
+			{
+				
+
+				Iterator<StudentScore> it = gradeList.iterator();
+				StudentScore targ = null; 
+				while (it.hasNext())
+				{
+					StudentScore s = it.next(); 
+					log.debug("rankStudentId: " + rankStudentId);
+					log.debug("sgetUserUid(): " + s.getUserUid());
+					if (s.getUserUid().equals(rankStudentId))
+					{
+						targ = s; 
+					}
+				}
+				
+				if (targ != null)
+				{
+					Collections.reverse(gradeList); 
+
+					for (int i = 0; i < gradeList.size() ; i++)
+					{
+						StudentScore cur = gradeList.get(i); 
+
+						if (targ.getScore().equals(cur.getScore()))
+						{
+							statistics.setRank(i);
+							statistics.setStudentTotal(gradeList.size()); 
+
+						}
+					}
+				}
+				else
+				{
+					statistics.setRank(-1);
+					statistics.setStudentTotal(gradeList.size());
 				}
 			}
 		}
 
+		
+
+		statistics.setStudentTotal(gradeList.size()); 
 		statistics.setMean(mean);
 		statistics.setMedian(median);
 		statistics.setMode(mode);

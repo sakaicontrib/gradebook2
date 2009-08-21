@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeStatistics;
+import org.sakaiproject.gradebook.gwt.sakai.model.StudentScore;
 import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.AssignmentGradeRecord;
 import org.sakaiproject.tool.gradebook.Category;
@@ -72,6 +73,6 @@ public interface GradeCalculations {
 	
 	public BigDecimal getCourseGrade(Gradebook gradebook, Collection<?> items, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap, boolean isExtraCreditScaled);
 	
-	public GradeStatistics calculateStatistics(List<BigDecimal> gradeList, BigDecimal sum);
+	public GradeStatistics calculateStatistics(List<StudentScore> gradeList, BigDecimal sum, String rankStudentId);
 	
 }

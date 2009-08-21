@@ -86,6 +86,7 @@ import org.sakaiproject.gradebook.gwt.sakai.InstitutionalAdvisor.Column;
 import org.sakaiproject.gradebook.gwt.sakai.mock.SiteMock;
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeStatistics;
+import org.sakaiproject.gradebook.gwt.sakai.model.StudentScore;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserConfiguration;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereferenceRealmUpdate;
@@ -1366,9 +1367,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 		return result;
 	}
-
-	public <X extends BaseModel> ListLoadResult<X> getStatistics(String gradebookUid, Long gradebookId) {
-
+	
+	private <X extends Object> List<X> generateStatsList(String gradebookUid, Long gradebookId, String studentId)
+	{
+		
 		Gradebook gradebook = null;
 		if (gradebookId == null) {
 			gradebook = gbService.getGradebook(gradebookUid);
@@ -1405,7 +1407,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		List<String> gradedStudentUids = new ArrayList<String>();
 
 		Map<Long, BigDecimal> assignmentSumMap = new HashMap<Long, BigDecimal>();
-		Map<Long, List<BigDecimal>> assignmentGradeListMap = new HashMap<Long, List<BigDecimal>>();
+		Map<Long, List<StudentScore>> assignmentGradeListMap = new HashMap<Long, List<StudentScore>>();
 
 		if (allGradeRecords != null) {
 			for (AssignmentGradeRecord gradeRecord : allGradeRecords) {
@@ -1432,12 +1434,13 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 					if (value != null && assignment != null) {
 						Long assignmentId = assignment.getId();
-						List<BigDecimal> gradeList = assignmentGradeListMap.get(assignmentId);
+						List<StudentScore> gradeList = assignmentGradeListMap.get(assignmentId);
 						if (gradeList == null) {
-							gradeList = new ArrayList<BigDecimal>();
+							gradeList = new ArrayList<StudentScore>();
 							assignmentGradeListMap.put(assignmentId, gradeList);
 						}
-						gradeList.add(value);
+						
+						gradeList.add(new StudentScore(gradeRecord.getStudentId(), value));
 
 						BigDecimal itemSum = assignmentSumMap.get(assignmentId);
 						if (itemSum == null)
@@ -1455,7 +1458,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 
 		// Now we can calculate the mean course grade
-		List<BigDecimal> courseGradeList = new ArrayList<BigDecimal>();
+		List<StudentScore> courseGradeList = new ArrayList<StudentScore>();
 		BigDecimal sumCourseGrades = BigDecimal.ZERO;
 		for (String studentUid : gradedStudentUids) {
 			Map<Long, AssignmentGradeRecord> studentMap = studentGradeRecordMap.get(studentUid);
@@ -1472,16 +1475,16 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 			if (courseGrade != null) {
 				sumCourseGrades = sumCourseGrades.add(courseGrade);
-				courseGradeList.add(courseGrade);
+				courseGradeList.add(new StudentScore(studentUid, courseGrade));
 			}
-		}
+		} 
 
-		GradeStatistics courseGradeStatistics = gradeCalculations.calculateStatistics(courseGradeList, sumCourseGrades);
+		GradeStatistics courseGradeStatistics = gradeCalculations.calculateStatistics(courseGradeList, sumCourseGrades, studentId);
 
 		List<X> statsList = new ArrayList<X>();
 
 		long id = 0;
-		statsList.add((X) createStatisticsModel(gradebook, "Course Grade", courseGradeStatistics, Long.valueOf(id)));
+		statsList.add((X) createStatisticsModel(gradebook, "Course Grade", courseGradeStatistics, Long.valueOf(id), Long.valueOf(-1), studentId ));
 		id++;
 
 		if (assignments != null) {
@@ -1495,15 +1498,15 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 								Long assignmentId = a.getId();
 								String name = a.getName();
 				
-								List<BigDecimal> gradeList = assignmentGradeListMap.get(assignmentId);
+								List<StudentScore> gradeList = assignmentGradeListMap.get(assignmentId);
 								BigDecimal sum = assignmentSumMap.get(assignmentId);
 				
 								GradeStatistics assignmentStatistics = null;
 								if (gradeList != null && sum != null) {
-									assignmentStatistics = gradeCalculations.calculateStatistics(gradeList, sum);
+									assignmentStatistics = gradeCalculations.calculateStatistics(gradeList, sum, studentId);
 								}
 								
-								statsList.add((X) createStatisticsModel(gradebook, name, assignmentStatistics, Long.valueOf(id)));
+								statsList.add((X) createStatisticsModel(gradebook, name, assignmentStatistics, Long.valueOf(id), assignmentId, studentId));
 								id++;
 							}
 						}
@@ -1515,20 +1518,26 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					Long assignmentId = assignment.getId();
 					String name = assignment.getName();
 	
-					List<BigDecimal> gradeList = assignmentGradeListMap.get(assignmentId);
+					List<StudentScore> gradeList = assignmentGradeListMap.get(assignmentId);
 					BigDecimal sum = assignmentSumMap.get(assignmentId);
 	
 					GradeStatistics assignmentStatistics = null;
 					if (gradeList != null && sum != null) {
-						assignmentStatistics = gradeCalculations.calculateStatistics(gradeList, sum);
+						assignmentStatistics = gradeCalculations.calculateStatistics(gradeList, sum, studentId);
 					}
 					
-					statsList.add((X) createStatisticsModel(gradebook, name, assignmentStatistics, Long.valueOf(id)));
+					statsList.add((X) createStatisticsModel(gradebook, name, assignmentStatistics, Long.valueOf(id), assignmentId, studentId));
 					id++;
 				}
 			}
 		}
 
+		return statsList; 
+	}
+
+	public <X extends BaseModel> ListLoadResult<X> getStatistics(String gradebookUid, Long gradebookId) {
+
+		List<X> statsList = generateStatsList(gradebookUid, gradebookId, null);
 		ListLoadResult<X> result = new BaseListLoadResult<X>(statsList);
 
 		return result;
@@ -1536,22 +1545,42 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 	private static final String NA = "-";
 	
-	private StatisticsModel createStatisticsModel(Gradebook gradebook, String name, GradeStatistics statistics, Long id) {
+	private StatisticsModel createStatisticsModel(Gradebook gradebook, String name, GradeStatistics statistics, Long id, Long assignmentId, String studentId) {
 
 		StatisticsModel model = new StatisticsModel();
 		model.setId(String.valueOf(id));
+		model.setAssignmentId(String.valueOf(assignmentId));
 		model.setName(name);
 		
 		String mean = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getMean(), false) : NA;
 		String median = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getMedian(), false) : NA;
 		String mode = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getMode(), false) : NA;
 		String standardDev = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getStandardDeviation(), true) : NA;
+		String rank = NA;  
+
+		if (studentId != null && statistics != null)
+		{
+			StringBuilder sb = new StringBuilder();
+			if (statistics.getRank() > 0)
+			{
+				sb.append(statistics.getRank());
+			}
+			else
+			{
+				sb.append("N/A");
+			}
+			sb.append(" out of "); 
+			sb.append(statistics.getStudentTotal());
+			rank = sb.toString();
+			sb = null; 
+		}
+		
 		
 		model.setMean(mean);
 		model.setMedian(median);
 		model.setMode(mode);
 		model.setStandardDeviation(standardDev);
-		
+		model.setRank(rank); 
 		return model;
 	}
 
@@ -2587,6 +2616,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 	private GradebookModel createGradebookModel(Gradebook gradebook, List<Assignment> assignments, List<Category> categories, boolean isNewGradebook) {
 
+		
+		log.debug("createGradebookModel() called"); 
 		Site site = null;
 
 		if (siteService != null) {
@@ -2802,6 +2833,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 					model.setUserAsStudent(buildStudentRow(gradebook, userRecord, columns, assignments, categories));
 				}
+				List<StatisticsModel> statsList = generateStatsList(model.getGradebookUid(), model.getGradebookId(), user.getId());		
+				Collections.sort(statsList); 
+				
+				model.setStatsModel(statsList);
 
 				model.setUserName(user.getDisplayName());
 			}
