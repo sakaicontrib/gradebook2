@@ -41,7 +41,7 @@ public class StudentView extends AppView {
 	@Override
 	protected void initUI(ApplicationModel model) {
 		GradebookModel gbModel = model.getGradebookModels().get(0);
-		studentViewContainer = new StudentPanel(true);
+		studentViewContainer = new StudentPanel(true, true);
 		studentViewContainer.onChangeModel(gbModel, gbModel.getUserAsStudent());
 		viewport.setLayout(new FitLayout());
 		viewport.add(studentViewContainer);
