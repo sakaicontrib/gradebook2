@@ -30,12 +30,17 @@ public class NotificationEvent {
 	private String message;
 	private Throwable t;
 	private boolean isFailure;
-	
+	private boolean isPermanent;
 	
 	public NotificationEvent(String title, String message) {
+		this(title, message, false, false);
+	}
+	
+	public NotificationEvent(String title, String message, boolean isFailure, boolean isPermanent) {
 		this.title = title;
 		this.message = message;
-		this.isFailure = false;
+		this.isFailure = isFailure;
+		this.isPermanent = isPermanent;
 	}
 	
 	public NotificationEvent(Throwable t) {
@@ -86,6 +91,14 @@ public class NotificationEvent {
 
 	public void setTitle(String title) {
 		this.title = title;
+	}
+
+	public boolean isPermanent() {
+		return isPermanent;
+	}
+
+	public void setPermanent(boolean isPermanent) {
+		this.isPermanent = isPermanent;
 	}
 	
 }

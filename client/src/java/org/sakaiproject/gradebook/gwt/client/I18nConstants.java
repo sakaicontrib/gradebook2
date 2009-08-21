@@ -196,4 +196,6 @@ public interface I18nConstants extends Constants {
 	String importProgressTitle();
 	String importReadingFileMessage();
 	String importParsingMessage();
+	String importGradesFailedTitle();
+	String importGradesFailedMessage();
 }

@@ -212,6 +212,12 @@
 	background:transparent url(images/default/grid/failed.gif) no-repeat 0 0;
 }
 
+.gbCellFailedImport {
+	background:transparent url(images/default/grid/failed.gif) no-repeat 0 0;
+	text-decoration: line-through;
+	font-weight: bold;
+}
+
 .gbLog-col {
 	width:100%;
 	/*height:12px;

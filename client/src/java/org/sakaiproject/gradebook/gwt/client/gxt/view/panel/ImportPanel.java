@@ -134,6 +134,7 @@ public class ImportPanel extends ContentPanel {
 
 	private MessageBox uploadBox;
 
+	private boolean isGradingFailure;
 
 	private I18nConstants i18n;
 
@@ -175,7 +176,8 @@ public class ImportPanel extends ContentPanel {
 
 	protected void onRender(Element parent, int pos) {
 		super.onRender(parent, pos);
-
+		this.isGradingFailure = false;
+		
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 
 		if (selectedGradebook != null) 
@@ -230,7 +232,8 @@ public class ImportPanel extends ContentPanel {
 					String failedMessage = (String)r.get(failedProperty);
 
 					if (failedMessage != null) {
-						css.append(" gbCellFailed");
+						css.append(" gbCellFailedImport");
+						isGradingFailure = true;
 					} else {
 						css.append(" gbCellSucceeded");
 					}
@@ -372,7 +375,13 @@ public class ImportPanel extends ContentPanel {
 			public void onSuccess(SpreadsheetModel result) {
 
 				try {
-					for (StudentModel student : result.getRows()) {
+					List<StudentModel> rows = result.getRows();
+					int size = rows == null ? 0 : rows.size();
+					
+					StringBuilder heading = new StringBuilder().append("Result Data (").append(size).append(" records uploaded)");
+					previewTab.setText(heading.toString());
+					
+					for (StudentModel student : rows) {
 
 						boolean hasChanges = DataTypeConversionUtil.checkBoolean((Boolean)student.get(AppConstants.IMPORT_CHANGES));
 
@@ -417,7 +426,11 @@ public class ImportPanel extends ContentPanel {
 					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(e));
 				} finally {
 					box.close();
-				}					
+				}
+				
+				if (isGradingFailure) {
+					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.importGradesFailedTitle(), i18n.importGradesFailedMessage(), true, true));
+				}
 			}
 		};
 
@@ -664,7 +677,7 @@ public class ImportPanel extends ContentPanel {
 			JSONArray rowsArray = getArray(jsonObject, "rows");
 			ArrayList<StudentModel> models = new ArrayList<StudentModel>();
 			if (rowsArray != null) {
-				StringBuilder heading = new StringBuilder().append("Data (").append(rowsArray.size()).append(" records)");
+				StringBuilder heading = new StringBuilder().append("Preview Data (").append(rowsArray.size()).append(" records)");
 				previewTab.setText(heading.toString());
 
 				for (int i=0;i<rowsArray.size();i++) {

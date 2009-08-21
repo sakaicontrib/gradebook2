@@ -72,16 +72,16 @@ public class Notifier {
 		}
 		
 		if (e instanceof StatusCodeException) {
-			notifyUserError("Server Error", "The server returned an error code {0} on a recent request. This may be due to some network problem or a delay on the server. Please refresh your window if you are seeing strange behavior.", ((StatusCodeException)e).getStatusCode());
+			notifyUserError("Server Error", "The server returned an error code {0} on a recent request. This may be due to some network problem or a delay on the server. Please refresh your window if you are seeing strange behavior.", false, ((StatusCodeException)e).getStatusCode());
 		}
 		
 		if (e instanceof BusinessRuleException) {
-			notifyUserError("Request Denied", " {0} ", message);
+			notifyUserError("Request Denied", " {0} ", false, message);
 			return;
 		}
 		
 		if (e instanceof InvalidInputException) {
-			notifyUserError("Invalid Input", " {0} ", message);
+			notifyUserError("Invalid Input", " {0} ", false, message);
 			return;
 		}
 		
@@ -104,16 +104,18 @@ public class Notifier {
 		}
 	}
 	
-	public void notifyUserError(String title, String text, Object...values) {
+	public void notifyUserError(String title, String text, boolean isPermanent, Object...values) {
 		Params infoParams = new Params(values);
 
 		int panelWidth = XDOM.getViewportSize().width / 2;
 		int x = XDOM.getViewportSize().width / 2 - panelWidth / 2;
 		
 		LogConfig infoConfig = new LogConfig(title, text, infoParams);
-		infoConfig.display = 20000;
+		if (!isPermanent)
+			infoConfig.display = 30000;
 		infoConfig.width = panelWidth;
 		infoConfig.height = 60;
+		infoConfig.isPermanent = isPermanent;
 		
 		LogDisplay.display(x, 0, infoConfig);
 	}
