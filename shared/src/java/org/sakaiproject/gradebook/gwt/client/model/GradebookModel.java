@@ -24,6 +24,7 @@ package org.sakaiproject.gradebook.gwt.client.model;
 
 import java.util.List;
 
+
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 public class GradebookModel extends EntityModel implements IsSerializable {
@@ -87,6 +88,8 @@ public class GradebookModel extends EntityModel implements IsSerializable {
 	private ItemModel gradebookItemModel;
 	private Boolean isNewGradebook;
 	private ConfigurationModel configurationModel;
+	
+	private List<StatisticsModel> statsModel; 
 	
 
 	public GradebookModel() {
@@ -218,5 +221,13 @@ public class GradebookModel extends EntityModel implements IsSerializable {
 
 	public void setNewGradebook(Boolean isNewGradebook) {
 		this.isNewGradebook = isNewGradebook;
+	}
+
+	public List<StatisticsModel> getStatsModel() {
+		return statsModel;
+	}
+
+	public void setStatsModel(List<StatisticsModel> statsModel) {
+		this.statsModel = statsModel;
 	}
 }

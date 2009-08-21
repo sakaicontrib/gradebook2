@@ -23,13 +23,15 @@
 
 package org.sakaiproject.gradebook.gwt.client.model;
 
+import com.google.gwt.core.client.GWT;
 
-public class StatisticsModel extends EntityModel {
+
+public class StatisticsModel extends EntityModel implements Comparable<StatisticsModel> {
 
 	private static final long serialVersionUID = 1L;
 
 	public enum Key {
-		ID("Id"), NAME("Name"), MEAN("Mean"), MEDIAN("Median"), MODE("Mode"), STANDARD_DEVIATION("Standard Deviation");
+		ID("Id"), NAME("Name"), MEAN("Mean"), MEDIAN("Median"), MODE("Mode"), STANDARD_DEVIATION("Standard Deviation"), ASSIGN_ID("Assignment Id"), RANK("Rank");
 		
 		private String propertyName;
 		
@@ -88,6 +90,14 @@ public class StatisticsModel extends EntityModel {
 		set(Key.MODE.name(), mode);
 	}
 	
+	public String getRank() {
+		return get(Key.RANK.name());
+	}
+	
+	public void setRank(String rank) {
+		set(Key.RANK.name(), rank);
+	}
+	
 	public String getStandardDeviation() {
 		return get(Key.STANDARD_DEVIATION.name());
 	}
@@ -101,10 +111,26 @@ public class StatisticsModel extends EntityModel {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 	@Override
 	public String getIdentifier() {
 		return get(Key.ID.name());
+	}
+
+	public String getAssignmentId() {
+		return get(Key.ASSIGN_ID.name());
+	}
+	
+	public void setAssignmentId(String id) {
+		set(Key.ASSIGN_ID.name(), id);
+	}
+
+	public int compareTo(StatisticsModel o) {
+		
+		if (o != null && o.getAssignmentId() != null && getAssignmentId() != null)
+		{
+			return getAssignmentId().compareTo(o.getAssignmentId()); 
+		}
+		return -1; 
 	}
 	
 }

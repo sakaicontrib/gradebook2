@@ -31,6 +31,9 @@ public class GradeStatistics {
 	private BigDecimal median;
 	private BigDecimal mode;
 	private BigDecimal standardDeviation;
+	private int rank; 
+	private int studentTotal; 
+	
 	
 	public GradeStatistics() {
 		
@@ -66,5 +69,21 @@ public class GradeStatistics {
 
 	public void setStandardDeviation(BigDecimal standardDeviation) {
 		this.standardDeviation = standardDeviation;
+	}
+
+	public int getRank() {
+		return rank;
+	}
+
+	public void setRank(int rank) {
+		this.rank = rank;
+	}
+
+	public int getStudentTotal() {
+		return studentTotal;
+	}
+
+	public void setStudentTotal(int studentTotal) {
+		this.studentTotal = studentTotal;
 	}
 }
