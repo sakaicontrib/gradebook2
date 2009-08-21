@@ -1562,7 +1562,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		
 		String mean = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getMean(), false) : NA;
 		String median = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getMedian(), false) : NA;
-		String mode = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getMode(), false) : NA;
+		String mode = 	statistics != null ? composeModeString(statistics, gradebook) : NA;
 		String standardDev = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getStandardDeviation(), true) : NA;
 		String rank = NA;  
 
@@ -1590,6 +1590,35 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		model.setStandardDeviation(standardDev);
 		model.setRank(rank); 
 		return model;
+	}
+
+	private String composeModeString(GradeStatistics statistics, Gradebook gradebook) {
+		List<BigDecimal> modeList = statistics.getModeList(); 
+		StringBuilder sb = new StringBuilder();
+		String modeString; 
+		boolean first  = true; 
+		if (modeList == null) 
+		{
+			return NA; 
+		}
+		for (BigDecimal mode : modeList)
+		{
+			if (!first)
+			{
+				sb.append(", "); 
+			}
+			else
+			{
+				first = false; 
+			}
+			String currentMode = convertBigDecimalStatToString(gradebook, mode, false);
+			sb.append(currentMode);
+		}
+		
+		modeString = sb.toString(); 
+		sb = null;
+		return modeString;
+
 	}
 
 	private String convertBigDecimalStatToString(Gradebook gradebook, BigDecimal stat, boolean isStandardDev) {

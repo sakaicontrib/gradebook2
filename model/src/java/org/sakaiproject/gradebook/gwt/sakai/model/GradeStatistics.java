@@ -24,12 +24,13 @@
 package org.sakaiproject.gradebook.gwt.sakai.model;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public class GradeStatistics {
 
 	private BigDecimal mean;
 	private BigDecimal median;
-	private BigDecimal mode;
+	private List<BigDecimal> modeList;
 	private BigDecimal standardDeviation;
 	private int rank; 
 	private int studentTotal; 
@@ -55,14 +56,6 @@ public class GradeStatistics {
 		this.median = median;
 	}
 
-	public BigDecimal getMode() {
-		return mode;
-	}
-
-	public void setMode(BigDecimal mode) {
-		this.mode = mode;
-	}
-
 	public BigDecimal getStandardDeviation() {
 		return standardDeviation;
 	}
@@ -85,5 +78,13 @@ public class GradeStatistics {
 
 	public void setStudentTotal(int studentTotal) {
 		this.studentTotal = studentTotal;
+	}
+
+	public List<BigDecimal> getModeList() {
+		return modeList;
+	}
+
+	public void setModeList(List<BigDecimal> modeList) {
+		this.modeList = modeList;
 	}
 }

@@ -106,10 +106,11 @@ public class StatisticsPanel extends ContentPanel {
 		column = new ColumnConfig();  
 		column.setId(StatisticsModel.Key.MODE.name());  
 		column.setHeader(StatisticsModel.Key.MODE.getPropertyName());
-		column.setWidth(80);
+		column.setWidth(160);
 		column.setGroupable(false);
 		column.setMenuDisabled(true);
 		column.setSortable(false);
+		column.setResizable(true); 
 		configs.add(column);
 
 

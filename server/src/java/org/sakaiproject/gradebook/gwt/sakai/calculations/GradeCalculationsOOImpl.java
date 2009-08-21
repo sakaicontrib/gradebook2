@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -107,7 +108,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 
 	public GradeStatistics calculateStatistics(List<StudentScore> gradeList, BigDecimal sum, String rankStudentId) {
 		GradeStatistics statistics = new GradeStatistics();
-
+		List<BigDecimal> modeList = null; 
 		if (gradeList == null || gradeList.isEmpty())
 			return statistics;
 
@@ -118,7 +119,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 			mean = sum.divide(count, RoundingMode.HALF_EVEN);
 
 		BigDecimal mode = null;
-		Integer highestFrequency = Integer.valueOf(0);
+		List<FrequencyScore> frequencies = new ArrayList<FrequencyScore>();
 		Map<BigDecimal, Integer> frequencyMap = new HashMap<BigDecimal, Integer>();
 		BigDecimal standardDeviation = null;
 		// Once we have the mean course grade, we can calculate the standard deviation from that mean
@@ -140,11 +141,50 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 
 				frequencyMap.put(courseGrade, frequency);
 
-				if (frequency.compareTo(highestFrequency) > 0) {
-					highestFrequency = frequency;
-					mode = courseGrade;
-				}
 			}
+			
+			if (frequencyMap.size() > 0)
+			{
+				modeList = new ArrayList<BigDecimal>(); 
+				
+				Set<BigDecimal> keys = frequencyMap.keySet(); 
+				
+				for (BigDecimal k : keys)
+				{
+					FrequencyScore sc = new FrequencyScore();
+					Integer frequency = frequencyMap.get(k);
+					
+					sc.setFrequency(frequency);
+					sc.setScore(k); 
+					frequencies.add(sc);
+				}
+				
+				Collections.sort(frequencies); 
+				Collections.reverse(frequencies);
+				
+				boolean first = true; 
+				Iterator<FrequencyScore> it = frequencies.iterator();
+				FrequencyScore largest = null; 
+				while (it.hasNext())
+				{
+					FrequencyScore s = it.next(); 
+					if (first)
+					{
+						largest = s; 
+						modeList.add(s.getScore()); 
+						first = false; 
+					}
+					else
+					{
+						if (s.getFrequency().equals(largest.getFrequency()))
+						{
+							modeList.add(s.getScore()); 
+						}
+					}
+				}
+				
+			}
+			
 
 			if (count.compareTo(BigDecimal.ZERO) != 0 && sumOfSquareOfDifferences.compareTo(BigDecimal.ZERO) != 0) {
 				BigDecimal fraction = sumOfSquareOfDifferences.divide(count, RoundingMode.HALF_EVEN);
@@ -223,7 +263,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		statistics.setStudentTotal(gradeList.size()); 
 		statistics.setMean(mean);
 		statistics.setMedian(median);
-		statistics.setMode(mode);
+		statistics.setModeList(modeList);
 		statistics.setStandardDeviation(standardDeviation);
 
 		return statistics;
@@ -599,6 +639,49 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 
 	public void setLetterGradeMap(Map<String, Double> letterGradeMap) {
 		this.letterGradeMap = letterGradeMap;
+	}
+	
+	class FrequencyScore implements Comparable<FrequencyScore>
+	{
+		private BigDecimal score; 
+		private Integer frequency;
+		
+		public BigDecimal getScore() {
+			return score;
+		}
+		public void setScore(BigDecimal score) {
+			this.score = score;
+		}
+		public Integer getFrequency() {
+			return frequency;
+		}
+		public void setFrequency(Integer frequency) {
+			this.frequency = frequency;
+		}
+		
+		public int compareTo(FrequencyScore o) {
+			if (o != null && o.getFrequency() != null)
+			{
+				return getFrequency().compareTo(o.getFrequency());
+			}
+			return -1;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			
+			if (obj instanceof FrequencyScore && obj != null)
+			{
+				FrequencyScore ext = (FrequencyScore) obj; 
+				if (ext.getScore() != null)
+				{
+					return ext.getScore().equals(getScore());
+				}
+			}
+			return false; 
+		} 
+	
+		
+		
 	}
 
 }
