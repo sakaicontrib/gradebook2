@@ -659,42 +659,45 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 						Object v = student.get(id);
 
 						Double value = null;
-						
-						if (isLetterGrading) {
-							value = gradeCalculations.convertLetterGradeToPercentage((String)v);
-						} else if (v != null && v instanceof String) {
-							String strValue = (String) v;
-							if (strValue.trim().length() > 0)
-								value = Double.valueOf(Double.parseDouble((String) v));
-						} else
-							value = (Double) v;
-	
-						AssignmentGradeRecord assignmentGradeRecord = null;
-	
-						if (gradeRecordMap != null)
-							assignmentGradeRecord = gradeRecordMap.get(assignment.getId()); 
-	
 						Double oldValue = null;
-	
-						if (assignmentGradeRecord == null)
-							assignmentGradeRecord = new AssignmentGradeRecord();
-	
-						switch (gradebook.getGrade_type()) {
-							case GradebookService.GRADE_TYPE_POINTS:
-								oldValue = assignmentGradeRecord.getPointsEarned();
-								break;
-							case GradebookService.GRADE_TYPE_PERCENTAGE:
-							case GradebookService.GRADE_TYPE_LETTER:
-								oldValue = assignmentGradeRecord.getPercentEarned();
-								break;
-						}
-
-						if (oldValue == null && value == null)
-							continue;
-	
-						student.set(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
-	
+						
 						try {
+							
+							if (isLetterGrading) {
+								value = gradeCalculations.convertLetterGradeToPercentage((String)v);
+							} else if (v != null && v instanceof String) {
+								String strValue = (String) v;
+								if (strValue.trim().length() > 0)
+									value = Double.valueOf(Double.parseDouble((String) v));
+							} else
+								value = (Double) v;
+		
+							AssignmentGradeRecord assignmentGradeRecord = null;
+		
+							if (gradeRecordMap != null)
+								assignmentGradeRecord = gradeRecordMap.get(assignment.getId()); 
+		
+							
+		
+							if (assignmentGradeRecord == null)
+								assignmentGradeRecord = new AssignmentGradeRecord();
+		
+							switch (gradebook.getGrade_type()) {
+								case GradebookService.GRADE_TYPE_POINTS:
+									oldValue = assignmentGradeRecord.getPointsEarned();
+									break;
+								case GradebookService.GRADE_TYPE_PERCENTAGE:
+								case GradebookService.GRADE_TYPE_LETTER:
+									oldValue = assignmentGradeRecord.getPercentEarned();
+									break;
+							}
+	
+							if (oldValue == null && value == null)
+								continue;
+		
+							student.set(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
+		
+							
 							scoreItem(gradebook, assignment, assignmentGradeRecord, student.getIdentifier(), value, true, false);
 							builder.append(assignment.getName()).append(" (");
 							
@@ -702,7 +705,17 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 								builder.append(oldValue).append("->");
 	
 							builder.append(value).append(") ");
+						} catch (NumberFormatException nfe) {
+							String failedProperty = new StringBuilder().append(assignment.getId()).append(StudentModel.FAILED_FLAG).toString();
+							student.set(failedProperty, "Invalid input");
+							log.warn("Failed to score item for " + student.getIdentifier() + " and item " + assignment.getId() + " to " + v);
 	
+							if (oldValue != null)
+								builder.append(oldValue);
+	
+							builder.append(" Invalid) ");
+							
+							student.set(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
 						} catch (InvalidInputException e) {
 							String failedProperty = new StringBuilder().append(assignment.getId()).append(StudentModel.FAILED_FLAG).toString();
 							student.set(failedProperty, e.getMessage());
@@ -711,7 +724,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 							if (oldValue != null)
 								builder.append(oldValue);
 	
-							builder.append("Invalid) ");
+							builder.append(" Invalid) ");
+							
+							student.set(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
 						} catch (Exception e) {
 	
 							String failedProperty = new StringBuilder().append(assignment.getId()).append(StudentModel.FAILED_FLAG).toString();
@@ -722,7 +737,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 							if (oldValue != null)
 								builder.append(oldValue);
 	
-							builder.append("Failed) ");
+							builder.append(" Failed) ");
+							
+							student.set(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
 						}
 					}
 				}

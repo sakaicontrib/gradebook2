@@ -1559,18 +1559,25 @@ public class ImportExportUtility {
 		structureStop = readDataForStructureInformation(rawData, structureLineIndicatorMap, structureColumnsMap, headerLineIndicatorSet);
 		if (structureStop != -1)
 		{
-			String[] pointsColumns = structureColumnsMap.get(StructureRow.POINTS);
-			String[] categoryColumns = structureColumnsMap.get(StructureRow.CATEGORY);
-			readInHeaderInfo(rawData, ieInfo, gradebook, decimalFormat, structureStop, pointsColumns, categoryColumns);
-
-			readInGradeDataFromImportFile(rawData, ieInfo, userDereferenceMap, importRows, structureStop);
-			importFile.setItems(ieInfo.getHeaders());
-			importFile.setRows(importRows);
-			processStructureInformation(ieInfo, structureColumnsMap, gradebook, service);
-			importFile.setHasCategories(Boolean.valueOf(ieInfo.hasCategories()));
-			importFile.setHasWeights(Boolean.valueOf(ieInfo.hasWeights));
-			importFile.setLetterGrading(Boolean.valueOf(ieInfo.isLetterGrading()));
-			importFile.setPointsMode(Boolean.valueOf(ieInfo.isPointsMode()));
+			try {
+				String[] pointsColumns = structureColumnsMap.get(StructureRow.POINTS);
+				String[] categoryColumns = structureColumnsMap.get(StructureRow.CATEGORY);
+				readInHeaderInfo(rawData, ieInfo, gradebook, decimalFormat, structureStop, pointsColumns, categoryColumns);
+	
+				readInGradeDataFromImportFile(rawData, ieInfo, userDereferenceMap, importRows, structureStop);
+				importFile.setItems(ieInfo.getHeaders());
+				importFile.setRows(importRows);
+				processStructureInformation(ieInfo, structureColumnsMap, gradebook, service);
+				importFile.setHasCategories(Boolean.valueOf(ieInfo.hasCategories()));
+				importFile.setHasWeights(Boolean.valueOf(ieInfo.hasWeights));
+				importFile.setLetterGrading(Boolean.valueOf(ieInfo.isLetterGrading()));
+				importFile.setPointsMode(Boolean.valueOf(ieInfo.isPointsMode()));
+			} catch (Exception e) {
+				importFile.setHasErrors(true);
+				importFile.setNotes(e.getMessage());
+				importFile.setItems(null);
+				importFile.setRows(null);
+			}
 		}
 		else
 		{

@@ -90,8 +90,8 @@ public class ImportHandler extends HttpServlet {
 		XStream xstream = new XStream(new JsonHierarchicalStreamDriver());
 
 		response.setContentType(CONTENT_TYPE);
-		PrintWriter out = response.getWriter();
-
+		PrintWriter out = new PrintWriter(response.getOutputStream(), false); // response.getWriter();
+		
 		String feedback = "nothing";
 		boolean isMultipart = ServletFileUpload.isMultipartContent(req);
 		if (isMultipart) {
@@ -140,15 +140,18 @@ public class ImportHandler extends HttpServlet {
 					importFile = ImportExportUtility.parseImportCSV(service, gradebookUid, reader);
 				}
 
-				out.write(xstream.toXML(importFile)); 
-
-
+				String xml = xstream.toXML(importFile);
+				out.print(xml); 
+				
 			} catch (FileUploadException e) {
 				System.out.println(e.getMessage());
 			} catch (InvalidInputException iee) {
 				System.out.println(iee.getMessage());
 			} catch (FatalException fe) {
 				System.out.println(fe.getMessage());
+			} finally {
+				out.flush();
+				out.close();
 			}
 
 		} else {

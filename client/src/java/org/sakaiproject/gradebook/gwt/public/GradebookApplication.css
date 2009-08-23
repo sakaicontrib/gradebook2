@@ -213,8 +213,11 @@
 }
 
 .gbCellFailedImport {
-	background:transparent url(images/default/grid/failed.gif) no-repeat 0 0;
+	/*background:transparent url(images/default/grid/failed.gif) no-repeat 0 0;
 	text-decoration: line-through;
+	font-weight: bold;*/
+	background-color: red;
+	color: white;
 	font-weight: bold;
 }
 

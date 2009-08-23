@@ -520,6 +520,8 @@ public class ImportPanel extends ContentPanel {
 
 			rowStore.removeAll();
 
+			result = result.replaceAll("\\u000a", " ");
+			result = result.replaceAll("\\n", "\\\\n");
 			JSONValue jsonValue = JSONParser.parse(result);
 
 			if (jsonValue == null)
@@ -543,7 +545,6 @@ public class ImportPanel extends ContentPanel {
 			// If we have errors we want to do something different
 			if (hasErrors) 
 			{
-
 				errorContainer.addText(msgsFromServer); 
 				mainCardLayout.setActiveItem(errorContainer); 
 				tabPanel.hide();
