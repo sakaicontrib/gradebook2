@@ -48,7 +48,7 @@ public class GradebookCalculationUnit {
 	}
 
 
-	public BigDecimal calculatePointsBasedCourseGrade(List<GradeRecordCalculationUnit> units, boolean isExtraCreditScaled) {
+	public BigDecimal calculatePointsBasedCourseGrade(List<GradeRecordCalculationUnit> units, BigDecimal totalGradebookPoints, boolean isExtraCreditScaled) {
 		BigDecimal courseGrade = null;
 
 		BigDecimal[] result = sumPoints(units, 0);
@@ -64,16 +64,15 @@ public class GradebookCalculationUnit {
 				if (sumPointsPossible.compareTo(BigDecimal.ZERO) == 0)
 					return BigDecimal.ZERO.setScale(AppConstants.SCALE);
 
-
-				if (sumExtraCreditPoints != null)
-					sumPoints = sumPoints.add(scaleExtraCreditPoints(sumExtraCreditPoints, sumPointsPossible, isExtraCreditScaled));
-
 				if (sumPoints.compareTo(BigDecimal.ZERO) == 0) 
 					return BigDecimal.ZERO.setScale(AppConstants.SCALE);
 
 
 				BigDecimal percentageScore = sumPoints.divide(sumPointsPossible, RoundingMode.HALF_EVEN);
 
+				if (sumExtraCreditPoints != null)
+					percentageScore = percentageScore.add(scaleExtraCreditPoints(sumExtraCreditPoints, sumPointsPossible, totalGradebookPoints, isExtraCreditScaled));
+				
 				courseGrade = percentageScore;
 			}
 
@@ -85,7 +84,7 @@ public class GradebookCalculationUnit {
 		return courseGrade;
 	}
 
-	public BigDecimal calculatePointsBasedCourseGrade(Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap, boolean isExtraCreditScaled) {
+	public BigDecimal calculatePointsBasedCourseGrade(Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap, BigDecimal totalGradebookPoints, boolean isExtraCreditScaled) {
 		BigDecimal courseGrade = null;
 
 		BigDecimal sumPoints = null;
@@ -149,16 +148,15 @@ public class GradebookCalculationUnit {
 			if (sumPointsPossible.compareTo(BigDecimal.ZERO) == 0)
 				return BigDecimal.ZERO.setScale(AppConstants.SCALE);
 
-
-			if (sumExtraCreditPoints != null)
-				sumPoints = sumPoints.add(scaleExtraCreditPoints(sumExtraCreditPoints, sumPointsPossible, isExtraCreditScaled));
-
 			if (sumPoints.compareTo(BigDecimal.ZERO) == 0) 
 				return BigDecimal.ZERO.setScale(AppConstants.SCALE);
 
 
 			BigDecimal percentageScore = sumPoints.divide(sumPointsPossible, RoundingMode.HALF_EVEN);
 
+			if (sumExtraCreditPoints != null)
+				percentageScore = percentageScore.add(scaleExtraCreditPoints(sumExtraCreditPoints, sumPointsPossible, totalGradebookPoints, isExtraCreditScaled));
+			
 			courseGrade = percentageScore;
 		}
 
@@ -369,12 +367,13 @@ public class GradebookCalculationUnit {
 		return result;
 	}
 	
-	private BigDecimal scaleExtraCreditPoints(BigDecimal extraCreditPoints, BigDecimal pointsPossible, boolean isExtraCreditScaled) {
-		if (extraCreditPoints == null || pointsPossible == null)
-			return null;
+	private BigDecimal scaleExtraCreditPoints(BigDecimal extraCreditPoints, BigDecimal pointsPossible, BigDecimal totalGradebookPoints, boolean isExtraCreditScaled) {
+		if (extraCreditPoints == null || pointsPossible == null || extraCreditPoints.compareTo(BigDecimal.ZERO) == 0)
+			return BigDecimal.ZERO;
 		
 		if (isExtraCreditScaled)
- 			return extraCreditPoints.divide(pointsPossible, RoundingMode.HALF_EVEN);
- 		return extraCreditPoints;
+ 			return extraCreditPoints.divide(totalGradebookPoints, RoundingMode.HALF_EVEN);
+		
+ 		return extraCreditPoints.divide(pointsPossible, RoundingMode.HALF_EVEN);
 	}
 }

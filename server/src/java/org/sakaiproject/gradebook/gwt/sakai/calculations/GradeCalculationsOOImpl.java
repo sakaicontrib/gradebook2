@@ -40,6 +40,7 @@ import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.gradebook.gwt.sakai.GradeCalculations;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeStatistics;
 import org.sakaiproject.gradebook.gwt.sakai.model.StudentScore;
+import org.sakaiproject.gradebook.gwt.server.DataTypeConversionUtil;
 import org.sakaiproject.service.gradebook.shared.GradebookService;
 import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.AssignmentGradeRecord;
@@ -374,11 +375,11 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 	private BigDecimal getNoCategoriesCourseGrade(Collection<Assignment> assignments, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap, boolean isExtraCreditScaled) {
 		List<GradeRecordCalculationUnit> gradeRecordUnits = new ArrayList<GradeRecordCalculationUnit>();
 
-		populateGradeRecordUnits(assignments, gradeRecordUnits, assignmentGradeRecordMap);
+		BigDecimal totalGradebookPoints = populateGradeRecordUnits(assignments, gradeRecordUnits, assignmentGradeRecordMap, false);
 
 		GradebookCalculationUnit gradebookUnit = new GradebookCalculationUnit();
 
-		return gradebookUnit.calculatePointsBasedCourseGrade(gradeRecordUnits, isExtraCreditScaled);
+		return gradebookUnit.calculatePointsBasedCourseGrade(gradeRecordUnits, totalGradebookPoints, isExtraCreditScaled);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -395,10 +396,17 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 
 		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
 
+		BigDecimal totalGradebookPoints = BigDecimal.ZERO;
 		if (categoriesWithAssignments != null) {
 			for (Category category : categoriesWithAssignments) {
 
-				if (category == null || category.isRemoved() || isUnweighted(category))
+				if (category == null)
+					continue;
+				
+				if (category.isRemoved())
+					continue;
+				
+				if (isWeighted && isUnweighted(category))
 					continue;
 
 				String categoryKey = String.valueOf(category.getId());
@@ -425,7 +433,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 					}
 				}
 				
-				populateGradeRecordUnits(assignments, gradeRecordUnits, assignmentGradeRecordMap);
+				totalGradebookPoints = totalGradebookPoints.add(populateGradeRecordUnits(assignments, gradeRecordUnits, assignmentGradeRecordMap, isWeighted));
 
 				categoryGradeUnitListMap.put(categoryKey, gradeRecordUnits);
 
@@ -437,25 +445,29 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		if (isWeighted)
 			return gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap);
 
-		return gradebookUnit.calculatePointsBasedCourseGrade(categoryGradeUnitListMap, isExtraCreditScaled);
+		return gradebookUnit.calculatePointsBasedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, isExtraCreditScaled);
 	}
 
 
-	private void populateGradeRecordUnits(Collection<Assignment> assignments, List<GradeRecordCalculationUnit> gradeRecordUnits, 
-			Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap) {
+	private BigDecimal populateGradeRecordUnits(Collection<Assignment> assignments, List<GradeRecordCalculationUnit> gradeRecordUnits, 
+			Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap, boolean isWeighted) {
 
+		BigDecimal totalUnitsPoints = BigDecimal.ZERO;
+		
 		if (assignmentGradeRecordMap == null) 
-			return;
+			return totalUnitsPoints;
 
 		for (Assignment assignment : assignments) {
 
 			if (assignment.isRemoved())
 				continue;
 
-			if (isUnweighted(assignment))
+			if (isWeighted && isUnweighted(assignment))
 				continue;
 
-
+			if (!DataTypeConversionUtil.checkBoolean(assignment.isExtraCredit()) && assignment.getPointsPossible() != null)
+				totalUnitsPoints = totalUnitsPoints.add(BigDecimal.valueOf(assignment.getPointsPossible().doubleValue()));
+			
 			AssignmentGradeRecord assignmentGradeRecord = assignmentGradeRecordMap.get(assignment.getId());
 
 			if (isGraded(assignmentGradeRecord)) {
@@ -486,6 +498,8 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 				}
 			}
 		}
+		
+		return totalUnitsPoints;
 	}
 
 

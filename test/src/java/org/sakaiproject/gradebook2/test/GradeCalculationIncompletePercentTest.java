@@ -67,8 +67,8 @@ public class GradeCalculationIncompletePercentTest extends TestCase {
 
 		
 		List<GradeRecordCalculationUnit> units = getRecordUnits(values);
-		
-		BigDecimal courseGrade = gradebookUnit.calculatePointsBasedCourseGrade(units, false);
+		BigDecimal totalGradebookPoints = BigDecimal.ZERO;
+		BigDecimal courseGrade = gradebookUnit.calculatePointsBasedCourseGrade(units, totalGradebookPoints, false);
 
 		assertEqualsAtScale2(BigDecimal.valueOf(100.00d), courseGrade);
 	}
@@ -88,8 +88,8 @@ public class GradeCalculationIncompletePercentTest extends TestCase {
 
 		
 		List<GradeRecordCalculationUnit> units = getRecordUnits(values);
-		
-		BigDecimal courseGrade = gradebookUnit.calculatePointsBasedCourseGrade(units, false);
+		BigDecimal totalGradebookPoints = BigDecimal.ZERO;
+		BigDecimal courseGrade = gradebookUnit.calculatePointsBasedCourseGrade(units, totalGradebookPoints, false);
 
 		assertEqualsAtScale2(BigDecimal.valueOf(0.00d), courseGrade);
 	}
@@ -109,8 +109,8 @@ public class GradeCalculationIncompletePercentTest extends TestCase {
 
 		
 		List<GradeRecordCalculationUnit> units = getRecordUnits(values);
-		
-		BigDecimal courseGrade = gradebookUnit.calculatePointsBasedCourseGrade(units, false);
+		BigDecimal totalGradebookPoints = BigDecimal.ZERO;
+		BigDecimal courseGrade = gradebookUnit.calculatePointsBasedCourseGrade(units, totalGradebookPoints, false);
 
 		assertEqualsAtScale2(BigDecimal.valueOf(80.00d), courseGrade);
 	}
@@ -137,7 +137,8 @@ public class GradeCalculationIncompletePercentTest extends TestCase {
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 		categoryGradeUnitListMap.put(HW_ID, hwUnits);
 		
-		BigDecimal courseGrade = gradebookUnit.calculatePointsBasedCourseGrade(categoryGradeUnitListMap, false);
+		BigDecimal totalGradebookPoints = BigDecimal.ZERO;
+		BigDecimal courseGrade = gradebookUnit.calculatePointsBasedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, false);
 	
 		assertEqualsAtScale2(BigDecimal.valueOf(0.00d), courseGrade);
 	}
@@ -164,7 +165,8 @@ public class GradeCalculationIncompletePercentTest extends TestCase {
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 		categoryGradeUnitListMap.put(HW_ID, hwUnits);
 		
-		BigDecimal courseGrade = gradebookUnit.calculatePointsBasedCourseGrade(categoryGradeUnitListMap, false);
+		BigDecimal totalGradebookPoints = BigDecimal.ZERO;
+		BigDecimal courseGrade = gradebookUnit.calculatePointsBasedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, false);
 	
 		assertEqualsAtScale2(BigDecimal.valueOf(40.00d), courseGrade);
 	}
