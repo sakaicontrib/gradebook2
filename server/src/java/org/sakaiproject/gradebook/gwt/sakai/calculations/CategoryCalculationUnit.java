@@ -53,9 +53,9 @@ public class CategoryCalculationUnit {
 	}
 
 
-	public BigDecimal calculate(List<GradeRecordCalculationUnit> units) {	
+	public BigDecimal calculate(List<GradeRecordCalculationUnit> units, boolean isExtraCreditScaled) {	
 
-		BigDecimal sumScores = sumScaledScores(units);
+		BigDecimal sumScores = sumScaledScores(units, isExtraCreditScaled);
 
 		// When drop lowest is not set, the calculation is very straightforward
 		if (dropLowest <= 0) {
@@ -94,12 +94,12 @@ public class CategoryCalculationUnit {
 			}
 		}
 
-		categoryGrade = sumScaledScores(unitsToCount);
+		categoryGrade = sumScaledScores(unitsToCount, isExtraCreditScaled);
 		return categoryGrade;
 	}
 
 
-	private BigDecimal sumScaledScores(List<GradeRecordCalculationUnit> units) {
+	private BigDecimal sumScaledScores(List<GradeRecordCalculationUnit> units, boolean isExtraCreditScaled) {
 		BigDecimal sum = sumUnitWeights(units, false);
 
 		if (sum == null)
@@ -119,9 +119,13 @@ public class CategoryCalculationUnit {
 
 			BigDecimal multiplicand = ratio;
 
-			if (unit.isExtraCredit())
-				multiplicand = BigDecimal.ONE;
-
+			if (unit.isExtraCredit()) {
+				if (isExtraCreditScaled && isExtraCredit)
+					multiplicand = BigDecimal.valueOf(100d).multiply(categoryWeightTotal);
+				else
+					multiplicand = BigDecimal.ONE;
+			}
+			
 			BigDecimal scaledItemWeight = findScaledItemWeight(multiplicand, unit.getPercentOfCategory());
 			BigDecimal scaledScore = unit.calculate(scaledItemWeight);
 
@@ -140,7 +144,7 @@ public class CategoryCalculationUnit {
 	private BigDecimal findScaledItemWeight(BigDecimal ratio, BigDecimal itemWeight) {
 		if (ratio == null || itemWeight == null)
 			return null;
-
+		
 		return ratio.multiply(itemWeight);
 	}
 

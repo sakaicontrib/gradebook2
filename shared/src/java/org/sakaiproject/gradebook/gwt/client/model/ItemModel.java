@@ -64,7 +64,7 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 		GRADETYPE("Grade Type"), RELEASEGRADES("Display Course Grades"), 
 		RELEASEITEMS("Display Released Items"),
 		ITEM_ORDER("Order"), GRADESCALEID("grade scale id"), 
-		EXTRA_CREDIT_SCALED("Scale Extra Credit"),
+		EXTRA_CREDIT_SCALED("Project Extra Credit"),
 		DO_RECALCULATE_POINTS("Scale scores to same percentage");
 		
 		private String propertyName;

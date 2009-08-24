@@ -166,7 +166,7 @@ public class GradebookCalculationUnit {
 		return courseGrade;
 	}
 
-	public BigDecimal calculateWeightedCourseGrade(Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap) {
+	public BigDecimal calculateWeightedCourseGrade(Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap, boolean isExtraCreditScaled) {
 
 		BigDecimal categoryWeightDesiredSum = BigDecimal.ZERO.setScale(AppConstants.SCALE);
 		BigDecimal categoryWeightSum = null; 
@@ -178,7 +178,7 @@ public class GradebookCalculationUnit {
 			CategoryCalculationUnit categoryUnit = categoryUnitMap.get(categoryKey);
 			List<GradeRecordCalculationUnit> units = categoryGradeUnitListMap.get(categoryKey);
 
-			BigDecimal categoryGrade = categoryUnit.calculate(units);	
+			BigDecimal categoryGrade = categoryUnit.calculate(units, isExtraCreditScaled);	
 			BigDecimal categoryWeight = categoryUnit.getCategoryWeightTotal();
 
 			if (categoryWeight != null && !categoryUnit.isExtraCredit())

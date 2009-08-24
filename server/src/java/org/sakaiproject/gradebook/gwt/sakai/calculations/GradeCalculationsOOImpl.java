@@ -443,7 +443,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		GradebookCalculationUnit gradebookUnit = new GradebookCalculationUnit(categoryUnitMap);
 
 		if (isWeighted)
-			return gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap);
+			return gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isExtraCreditScaled);
 
 		return gradebookUnit.calculatePointsBasedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, isExtraCreditScaled);
 	}

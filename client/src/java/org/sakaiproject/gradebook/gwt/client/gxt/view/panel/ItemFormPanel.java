@@ -484,13 +484,13 @@ public class ItemFormPanel extends ContentPanel {
 	
 		if (selectedItemModel != null) {
 			removeListeners();
-			CategoryType categoryType = selectedGradebook.getGradebookItemModel().getCategoryType();
+			/*CategoryType categoryType = selectedGradebook.getGradebookItemModel().getCategoryType();
 			Type itemType = selectedItemModel.getItemType();
 			boolean isAllowedToEdit = DataTypeConversionUtil.checkBoolean(selectedGradebook.isUserAbleToEditAssessments());
 			boolean hasWeights = categoryType == CategoryType.WEIGHTED_CATEGORIES;
 			boolean isNotGradebook = itemType != Type.GRADEBOOK;
 			
-			initField(scaledExtraCreditField, !isDelete && isAllowedToEdit, !isNotGradebook && !hasWeights);
+			initField(scaledExtraCreditField, !isDelete && isAllowedToEdit, !isNotGradebook);*/
 			addListeners();
 		}
 
@@ -730,7 +730,7 @@ public class ItemFormPanel extends ContentPanel {
 		initField(categoryTypePicker, isAllowedToEdit, isEditable && !isNotGradebook);
 		initField(gradeTypePicker, isAllowedToEdit, isEditable && !isNotGradebook);
 		initField(sourceField, false, isEditable && isItem);
-		initField(scaledExtraCreditField, !isDelete && isAllowedToEdit, !isNotGradebook && !hasWeights);
+		initField(scaledExtraCreditField, !isDelete && isAllowedToEdit, !isNotGradebook);
 	}
 
 	private void initField(Field field, boolean isEnabled, boolean isVisible) {

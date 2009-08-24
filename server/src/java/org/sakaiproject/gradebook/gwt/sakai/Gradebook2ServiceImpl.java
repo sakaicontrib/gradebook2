@@ -3709,13 +3709,14 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 		List<Assignment> updatedAssignments = new ArrayList<Assignment>();
 
+		boolean isExtraCreditCategory = category.isExtraCredit() == null ? false : category.isExtraCredit().booleanValue();
 		int weightedCount = 0;
 		if (assignments != null) {
 			for (Assignment assignment : assignments) {
 				boolean isRemoved = assignment.isRemoved();
 				boolean isWeighted = assignment.isUnweighted() == null ? true : !assignment.isUnweighted().booleanValue();
 				boolean isExtraCredit = assignment.isExtraCredit() == null ? false : assignment.isExtraCredit().booleanValue();
-				if (isWeighted && !isExtraCredit && !isRemoved) {
+				if (isWeighted && (isExtraCreditCategory || !isExtraCredit) && !isRemoved) {
 					weightedCount++;
 				}
 			}
@@ -3738,7 +3739,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					boolean isWeighted = assignment.isUnweighted() == null ? true : !assignment.isUnweighted().booleanValue();
 					boolean isExtraCredit = assignment.isExtraCredit() == null ? false : assignment.isExtraCredit().booleanValue();
 					if (!isRemoved && isWeighted) {
-						if (isExtraCredit)
+						if (isExtraCredit && !isExtraCreditCategory)
 							updatedAssignments.add(assignment);
 						else {
 							Assignment persistAssignment = gbService.getAssignment(assignment.getId());

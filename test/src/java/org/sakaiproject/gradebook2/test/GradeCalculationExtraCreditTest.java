@@ -45,6 +45,7 @@ public class GradeCalculationExtraCreditTest extends TestCase {
 	private static final String EMPTY_ID = "4";
 
 	private GradebookCalculationUnit gradebookUnit;
+	private boolean isExtraCreditScaled = false;
 
 
 	public void testEightyWithExtraCreditItemCategoryWeighting() {
@@ -63,7 +64,7 @@ public class GradeCalculationExtraCreditTest extends TestCase {
 		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap);
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isExtraCreditScaled);
 
 		assertEqualsAtScale2(BigDecimal.valueOf(90.00d), courseGrade);
 	}	

@@ -74,8 +74,8 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			ItemModel gradebook = gbModel.getGradebookItemModel();
 			
 			gradebook.setName("Test Gradebook");
-			gradebook.setCategoryType(CategoryType.SIMPLE_CATEGORIES);
-			gradebook.setGradeType(GradeType.PERCENTAGES);
+			gradebook.setCategoryType(CategoryType.WEIGHTED_CATEGORIES);
+			gradebook.setGradeType(GradeType.POINTS);
 			gradebook.setItemType(Type.GRADEBOOK);
 			gradebook.setExtraCreditScaled(Boolean.TRUE);
 			
@@ -196,6 +196,18 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			ec1.setExtraCredit(Boolean.TRUE);
 			ec1.setReleased(Boolean.FALSE);
 			service.createItem(gradebookUid, gradebookId, ec1, true);
+			
+			ItemModel ec2 = new ItemModel();
+			ec2.setName("EC 2");
+			ec2.setPercentCategory(Double.valueOf(100d));
+			ec2.setPoints(Double.valueOf(10d));
+			ec2.setDueDate(new Date());
+			ec2.setCategoryId(ecCategory.getCategoryId());
+			ec2.setIncluded(Boolean.TRUE);
+			ec2.setExtraCredit(Boolean.TRUE);
+			ec2.setReleased(Boolean.FALSE);
+			service.createItem(gradebookUid, gradebookId, ec2, true);
+			
 			
 			
 		} catch (Exception fe) {

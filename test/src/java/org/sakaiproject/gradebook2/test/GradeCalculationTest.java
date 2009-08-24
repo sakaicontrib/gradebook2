@@ -46,6 +46,8 @@ public class GradeCalculationTest extends TestCase {
 
 	private GradebookCalculationUnit gradebookUnit;
 
+	private boolean isExtraCreditScaled = false;
+	
 	public GradeCalculationTest(String name) {
 		super(name);
 	}
@@ -192,7 +194,7 @@ public class GradeCalculationTest extends TestCase {
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 		categoryGradeUnitListMap.put(HW_ID, hwUnits);
 
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap);
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isExtraCreditScaled);
 
 		assertEqualsAtScale2(BigDecimal.valueOf(100.00d), courseGrade);
 	}
@@ -220,7 +222,7 @@ public class GradeCalculationTest extends TestCase {
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 		categoryGradeUnitListMap.put(HW_ID, hwUnits);
 
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap);
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isExtraCreditScaled);
 
 		assertEqualsAtScale2(BigDecimal.valueOf(0.00d), courseGrade);
 	}
@@ -249,7 +251,7 @@ public class GradeCalculationTest extends TestCase {
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 		categoryGradeUnitListMap.put(HW_ID, hwUnits);
 
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap);
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isExtraCreditScaled);
 
 		assertEqualsAtScale2(BigDecimal.valueOf(40.00d), courseGrade);
 	}
@@ -280,7 +282,7 @@ public class GradeCalculationTest extends TestCase {
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 		categoryGradeUnitListMap.put(HW_ID, hwUnits);
 
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap);
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isExtraCreditScaled);
 
 		assertEqualsAtScale2(BigDecimal.valueOf(60.00d), courseGrade);
 	}
@@ -310,7 +312,7 @@ public class GradeCalculationTest extends TestCase {
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 		categoryGradeUnitListMap.put(HW_ID, hwUnits);
 
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap);
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isExtraCreditScaled);
 
 		assertEqualsAtScale2(BigDecimal.valueOf(80.00d), courseGrade);
 	}
@@ -339,7 +341,7 @@ public class GradeCalculationTest extends TestCase {
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 		categoryGradeUnitListMap.put(HW_ID, hwUnits);
 
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap);
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isExtraCreditScaled);
 
 		assertEqualsAtScale2(BigDecimal.valueOf(90.00d), courseGrade);
 	}
@@ -369,7 +371,7 @@ public class GradeCalculationTest extends TestCase {
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 		categoryGradeUnitListMap.put(HW_ID, hwUnits);
 
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap);
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isExtraCreditScaled);
 
 		assertEqualsAtScale2(BigDecimal.valueOf(100.00d), courseGrade);
 	}
@@ -403,7 +405,7 @@ public class GradeCalculationTest extends TestCase {
 
 		long start = System.currentTimeMillis();
 
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap);
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isExtraCreditScaled);
 
 		long end = System.currentTimeMillis();
 
@@ -439,7 +441,7 @@ public class GradeCalculationTest extends TestCase {
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 		categoryGradeUnitListMap.put(HW_ID, hwUnits);
 
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap);
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isExtraCreditScaled);
 
 		assertEqualsAtScale2(BigDecimal.valueOf(100.00d), courseGrade);
 	}
@@ -473,7 +475,7 @@ public class GradeCalculationTest extends TestCase {
 		categoryGradeUnitListMap.put(HW_ID, hwUnits);
 		categoryGradeUnitListMap.put(EC_ID, ecUnits);
 
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap);
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isExtraCreditScaled);
 
 		assertEqualsAtScale2(BigDecimal.valueOf(110.00d), courseGrade);
 	}
