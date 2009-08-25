@@ -155,7 +155,9 @@ public interface Gradebook2Service {
 	public void submitFinalGrade(List<Map<Column, String>> studentDataList, String gradebookUid, HttpServletRequest request, HttpServletResponse response);
 	
 	public <X extends BaseModel> List<X> updateGradeScaleField(String gradebookUid, Object value, String affectedLetterGrade) throws InvalidInputException;
-	
+
+	public <X extends BaseModel> List<X> resetGradeScale(String gradebookUid) throws InvalidInputException;
+
 	/**
 	 * Method to update an item model
 	 * 

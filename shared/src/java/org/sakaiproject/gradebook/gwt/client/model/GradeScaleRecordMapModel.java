@@ -35,9 +35,11 @@ public class GradeScaleRecordMapModel extends BaseModel {
 	private Long gradebookId;
 	private List<GradeScaleRecordModel> records;
 	private GradeScaleRecordModel updatedRecord;
+	private boolean hardReset; 
 	
 	public GradeScaleRecordMapModel() {
 		
+		hardReset = false; 
 	}
 	
 	public GradeScaleRecordMapModel(String gradebookUid, Long gradebookId, GradeScaleRecordModel updatedRecord) {
@@ -80,6 +82,14 @@ public class GradeScaleRecordMapModel extends BaseModel {
 
 	public void setGradebookId(Long gradebookId) {
 		this.gradebookId = gradebookId;
+	}
+
+	public boolean isHardReset() {
+		return hardReset;
+	}
+
+	public void setHardReset(boolean hardReset) {
+		this.hardReset = hardReset;
 	}
 	
 }

@@ -81,6 +81,7 @@ import com.extjs.gxt.ui.client.widget.toolbar.AdapterToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class GradeScalePanel extends ContentPanel {
@@ -292,15 +293,16 @@ public class GradeScalePanel extends ContentPanel {
 							grid.fireEvent(Events.AfterEdit, gridEvent);
 					
 							GradeScalePanel.this.fireEvent(GradebookEvents.UserChange.getEventType(), new UserChangeEvent(EntityType.GRADE_SCALE, ActionType.UPDATE));
-
+							Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades.getEventType());
 						}
 					
 					
 				};
 				
 				Gradebook2RPCServiceAsync service = Registry.get("service");
-				
-				service.update(new GradeScaleRecordMapModel(gbModel.getGradebookUid(), gbModel.getGradebookId(), model), EntityType.GRADE_SCALE, action, SecureToken.get(), callback);
+				GradeScaleRecordMapModel m = new GradeScaleRecordMapModel(gbModel.getGradebookUid(), gbModel.getGradebookId(), model);
+				m.setHardReset(false); 
+				service.update(m, EntityType.GRADE_SCALE, action, SecureToken.get(), callback);
 			}
 		});
 		
@@ -314,6 +316,46 @@ public class GradeScalePanel extends ContentPanel {
 			}
 			
 		});
+		
+		Button resetButton = new AriaButton(i18n.resetGradingScale(), new SelectionListener<ButtonEvent>() {
+
+			@Override
+			public void componentSelected(ButtonEvent ce) {
+				AsyncCallback<GradeScaleRecordMapModel> callback = 
+					new AsyncCallback<GradeScaleRecordMapModel>() {
+
+						public void onFailure(Throwable caught) {
+							
+							Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught));
+						}
+
+						public void onSuccess(GradeScaleRecordMapModel result) {
+							boolean updated = false; 
+							
+							for(GradeScaleRecordModel baseModel : result.getRecords()) {
+								updated = true; 
+								store.update(baseModel);
+							}
+							GradeScalePanel.this.fireEvent(GradebookEvents.UserChange.getEventType(), new UserChangeEvent(EntityType.GRADE_SCALE, ActionType.UPDATE));
+							if (updated)
+							{
+								Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades.getEventType());
+							}
+
+						}
+					
+						
+				};
+				GradeScaleRecordModel model = new GradeScaleRecordModel();
+				GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
+				Gradebook2RPCServiceAsync service = Registry.get("service");
+				GradeScaleRecordMapModel m = new GradeScaleRecordMapModel(gbModel.getGradebookUid(), gbModel.getGradebookId(), model);
+				m.setHardReset(true); 
+				service.update(m, EntityType.GRADE_SCALE, null, SecureToken.get(), callback);
+			}
+			
+		}); 
+		addButton(resetButton); 
 		addButton(button);
 	}
 	

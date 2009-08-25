@@ -1366,6 +1366,13 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 	public <X extends BaseModel> ListLoadResult<X> getSelectedGradeMapping(String gradebookUid) {
 
+		List<X> gradeScaleMappings = getSelectedGradeMappingList(gradebookUid);
+		ListLoadResult<X> result = new BaseListLoadResult<X>(gradeScaleMappings);
+		return result;
+	}
+
+	private <X extends BaseModel> List<X> getSelectedGradeMappingList(String gradebookUid) {
+
 		List<X> gradeScaleMappings = new ArrayList<X>();
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
 		GradeMapping gradeMapping = gradebook.getSelectedGradeMapping();
@@ -1387,12 +1394,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			gradeScaleMappings.add((X) gradeScaleModel);
 			upperScale = gradeMapping.getGradeMap().get(letterGrade);
 		}
-
-		ListLoadResult<X> result = new BaseListLoadResult<X>(gradeScaleMappings);
-
-		return result;
+		return gradeScaleMappings;
 	}
-	
+
 	private <X extends Object> List<X> generateStatsList(String gradebookUid, Long gradebookId, String studentId)
 	{
 		
@@ -2429,6 +2433,18 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		return gradeScaleMappings;
 	}
 
+	public <X extends BaseModel> List<X> resetGradeScale(String gradebookUid)
+	throws InvalidInputException {
+		
+		
+		Gradebook gradebook = gbService.getGradebook(gradebookUid);
+		GradeMapping gradeMapping = gradebook.getSelectedGradeMapping();
+		gradeMapping.setDefaultValues();
+		gbService.updateGradebook(gradebook);
+		
+		return getSelectedGradeMappingList(gradebookUid);
+	}
+	
 	public <X extends BaseModel> ListLoadResult<X> getUsers() {
 
 		List<X> userList = new ArrayList<X>();
@@ -4443,5 +4459,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 		this.configService = configService;
 	}
+
+
 
 }

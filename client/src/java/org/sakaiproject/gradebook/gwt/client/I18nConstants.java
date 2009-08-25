@@ -75,6 +75,8 @@ public interface I18nConstants extends Constants {
 	String viewAsLearner();
 	String close();
 	
+	String resetGradingScale(); 
+	
 	String addCategoryHeading();
 	
 	String addItemHeading();

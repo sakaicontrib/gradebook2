@@ -182,9 +182,17 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 				break;
 			case GRADE_SCALE:
 				GradeScaleRecordMapModel map = (GradeScaleRecordMapModel)model;
-				GradeScaleRecordModel gradeScaleModel = map.getUpdatedRecord();
-				List<GradeScaleRecordModel> records = service.updateGradeScaleField(map.getGradebookUid(), action.getValue(), gradeScaleModel.getLetterGrade());
-				
+				List<GradeScaleRecordModel> records = null; 
+				if (map.isHardReset())
+				{	
+					records = service.resetGradeScale(map.getGradebookUid()); 
+				}
+				else
+				{
+					GradeScaleRecordModel gradeScaleModel = map.getUpdatedRecord();
+					records = service.updateGradeScaleField(map.getGradebookUid(), action.getValue(), gradeScaleModel.getLetterGrade());
+					
+				}
 				entity = (X)new GradeScaleRecordMapModel(records);
 				break;
 			case LEARNER:
