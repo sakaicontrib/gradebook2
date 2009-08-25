@@ -128,6 +128,7 @@ import com.extjs.gxt.ui.client.data.ListLoadResult;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.PagingLoadConfig;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
+import com.google.gwt.core.client.GWT;
 
 public class Gradebook2ServiceImpl implements Gradebook2Service {
 
@@ -2588,7 +2589,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 						break;
 					case COURSE_GRADE:
 						if (displayGrade != null)
+						{
 							cellMap.put(StudentModel.Key.COURSE_GRADE.name(), displayGrade.toString());
+							GWT.log("setting override to " + displayGrade.isOverridden(),null);
+							cellMap.put(StudentModel.Key.IS_GRADE_OVERRIDDEN.name(), Boolean.toString(displayGrade.isOverridden()));
+						}
 						break;
 					case GRADE_OVERRIDE:
 						cellMap.put(StudentModel.Key.GRADE_OVERRIDE.name(), enteredGrade);

@@ -68,7 +68,8 @@ public class StudentModel extends EntityModel implements Comparable<StudentModel
 		ASSIGNMENT(Group.ASSIGNMENTS, ""),
 		EXPORT_CM_ID(Group.STUDENT_INFORMATION, "Export CM Id"),
 		EXPORT_USER_ID(Group.STUDENT_INFORMATION, "Export User Id"),
-		FINAL_GRADE_USER_ID(Group.STUDENT_INFORMATION, "Final Grade User Id");
+		FINAL_GRADE_USER_ID(Group.STUDENT_INFORMATION, "Final Grade User Id"),
+		IS_GRADE_OVERRIDDEN(Group.GRADES, "Grade Overridden");
 
 	
 		private Group group;
@@ -192,6 +193,16 @@ public class StudentModel extends EntityModel implements Comparable<StudentModel
 	public void setStudentGrade(String studentGrade)
 	{
 		set(Key.COURSE_GRADE.name(), studentGrade);
+	}
+	
+	public String getCalculatedGrade()
+	{
+		return get(Key.CALCULATED_GRADE.name());
+	}
+	
+	public void setCalculatedGrade(String calculatedGrade)
+	{
+		set(Key.CALCULATED_GRADE.name(), calculatedGrade);
 	}
 	
 	public String getLetterGrade() {

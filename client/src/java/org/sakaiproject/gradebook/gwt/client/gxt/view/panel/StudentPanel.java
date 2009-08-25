@@ -123,8 +123,10 @@ public class StudentPanel extends ContentPanel {
 	
 	public void onRefreshGradebookSetup(GradebookModel selectedGradebook) {
 		this.selectedGradebook = selectedGradebook;
+        String overrideString = learnerGradeRecordCollection.get(StudentModel.Key.IS_GRADE_OVERRIDDEN.name()); 
+        
+		updateCourseGrade(learnerGradeRecordCollection.getStudentGrade(), overrideString, learnerGradeRecordCollection.getCalculatedGrade());
 		
-		updateCourseGrade(learnerGradeRecordCollection.getStudentGrade());
 		StatisticsModel m = getStatsModelForItem(String.valueOf(Long.valueOf(-1)), selectedGradebook.getStatsModel());
 		
 		setStudentInfoTable(m);
@@ -136,8 +138,9 @@ public class StudentPanel extends ContentPanel {
 		if (learnerGradeRecordCollection != null) {
 			this.selectedGradebook = selectedGradebook;
 			this.learnerGradeRecordCollection = learnerGradeRecordCollection;
+			String overrideString = learnerGradeRecordCollection.get(StudentModel.Key.IS_GRADE_OVERRIDDEN.name()); 
 			
-			updateCourseGrade(learnerGradeRecordCollection.getStudentGrade());
+			updateCourseGrade(learnerGradeRecordCollection.getStudentGrade(), overrideString, learnerGradeRecordCollection.getCalculatedGrade());
 			
 			StatisticsModel m = getStatsModelForItem(String.valueOf(Long.valueOf(-1)), selectedGradebook.getStatsModel());
 			setStudentInfoTable(m);
@@ -170,18 +173,22 @@ public class StudentPanel extends ContentPanel {
 	}
 
 	
-	private void updateCourseGrade(String newGrade)
+	private void updateCourseGrade(String newGrade, String overrideString, String calcGrade)
 	{
 		if (!isStudentView || (selectedGradebook != null && selectedGradebook.getGradebookItemModel() != null 
 				&& DataTypeConversionUtil.checkBoolean(selectedGradebook.getGradebookItemModel().getReleaseGrades()))) {
 			// To force a refresh, let's first hide the owning panel
 			studentInformationPanel.hide();
-			studentInformation.setText(6, 1, newGrade);
+			studentInformation.setText(PI_ROW_COURSE_GRADE, PI_COL_VALUE, newGrade);
+			if (overrideString != null && overrideString.equals(Boolean.toString(true)))
+			{
+				studentInformation.setText(PI_ROW_CALCULATED_GRADE, PI_COL_VALUE, calcGrade);
+			}
 			studentInformationPanel.show();
 		} else {
 			studentInformationPanel.hide();
-			studentInformation.setText(6, 0, "");
-			studentInformation.setText(6, 1, "");
+			studentInformation.setText(PI_ROW_COURSE_GRADE, PI_COL_HEADING, "");
+			studentInformation.setText(PI_ROW_COURSE_GRADE, PI_COL_VALUE, "");
 			studentInformationPanel.show();
 		}
 		
@@ -199,11 +206,12 @@ public class StudentPanel extends ContentPanel {
 	private static final int PI_ROW_SECTION = 4; 
 	private static final int PI_ROW_BLANK = 5; 
 	private static final int PI_ROW_COURSE_GRADE = 6; 
-	private static final int PI_ROW_MEAN = 7; 
-	private static final int PI_ROW_STDV = 8; 
-	private static final int PI_ROW_MEDI = 9; 
-	private static final int PI_ROW_MODE = 10; 
-	private static final int PI_ROW_RANK = 11; 
+	private static final int PI_ROW_CALCULATED_GRADE = 7; 
+	private static final int PI_ROW_MEAN = 8; 
+	private static final int PI_ROW_STDV = 9; 
+	private static final int PI_ROW_MEDI = 10; 
+	private static final int PI_ROW_MODE = 11; 
+	private static final int PI_ROW_RANK = 12; 
 	
 	
 	private static final int PI_COL_HEADING = 0; 
@@ -240,6 +248,15 @@ public class StudentPanel extends ContentPanel {
 	        studentInformation.setText(PI_ROW_COURSE_GRADE, PI_COL_HEADING, "Course Grade");
 	        formatter.setStyleName(PI_ROW_COURSE_GRADE, PI_COL_HEADING, "gbImpact");
 	        studentInformation.setText(PI_ROW_COURSE_GRADE, PI_COL_VALUE, learnerGradeRecordCollection.getStudentGrade());
+	        
+	        String overrideString = learnerGradeRecordCollection.get(StudentModel.Key.IS_GRADE_OVERRIDDEN.name()); 
+	        if (overrideString != null && overrideString.equals(Boolean.toString(true)))
+	        {
+	        	String calculatedGrade = learnerGradeRecordCollection.getCalculatedGrade();
+		        studentInformation.setHTML(PI_ROW_CALCULATED_GRADE, PI_COL_HEADING, "Calculated<BR>Grade");
+		        formatter.setStyleName(PI_ROW_CALCULATED_GRADE, PI_COL_HEADING, "gbImpact");
+		        studentInformation.setText(PI_ROW_CALCULATED_GRADE, PI_COL_VALUE, calculatedGrade);
+	        }
 	        if (courseGradeStats != null)
 	        {
 	        	GWT.log("Course stats is not null", null);
