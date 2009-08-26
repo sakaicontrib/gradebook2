@@ -24,6 +24,7 @@
 package org.sakaiproject.gradebook.gwt.sakai.calculations;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -133,18 +134,19 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 			BigDecimal sumOfSquareOfDifferences = BigDecimal.ZERO;
 			for (StudentScore rec : gradeList) {
 				BigDecimal courseGrade = rec.getScore(); 
+				BigDecimal roundedCourseGrade = courseGrade.setScale(2, GradeCalculations.MATH_CONTEXT.getRoundingMode());
 				// Take the square of the difference and add it to the sum, A 
 				BigDecimal difference = courseGrade.subtract(mean);
 				BigDecimal square = difference.multiply(difference);
 				sumOfSquareOfDifferences = sumOfSquareOfDifferences.add(square);
 
-				Integer frequency = frequencyMap.get(courseGrade);
+				Integer frequency = frequencyMap.get(roundedCourseGrade);
 				if (frequency == null)
 					frequency = Integer.valueOf(1);
 				else
 					frequency = Integer.valueOf(1 + frequency.intValue());
 
-				frequencyMap.put(courseGrade, frequency);
+				frequencyMap.put(roundedCourseGrade, frequency);
 
 			}
 			
@@ -186,6 +188,11 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 							modeList.add(s.getScore()); 
 						}
 					}
+				}
+				// GBRK-325 so if the largest frequency in the set is 1, we really have no mode... 
+				if (largest.getFrequency().intValue() == 1)
+				{
+					modeList.clear();
 				}
 				
 			}

@@ -30,6 +30,14 @@ public class GradeStatistics {
 
 	private BigDecimal mean;
 	private BigDecimal median;
+	/**
+	 * The list of modes in the score set
+	 * See http://en.wikipedia.org/wiki/Mode_%28statistics%29 for a def of mode
+	 * 
+	 * In the case of mode, if modeList is: 
+	 * - null This means there's not enough data to have a mode
+	 * - has zero entries - The set is unique, and the mode is every score in the set.  For this we might want to display something rather than potentially hundreds of scores....
+	 */
 	private List<BigDecimal> modeList;
 	private BigDecimal standardDeviation;
 	private int rank; 

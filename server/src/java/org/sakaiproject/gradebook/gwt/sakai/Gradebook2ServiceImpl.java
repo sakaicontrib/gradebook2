@@ -1575,6 +1575,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	}
 
 	private static final String NA = "-";
+	private static final String UNIQUESET = "N/A";
 	
 	private StatisticsModel createStatisticsModel(Gradebook gradebook, String name, GradeStatistics statistics, Long id, Long assignmentId, String studentId) {
 
@@ -1623,6 +1624,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		if (modeList == null) 
 		{
 			return NA; 
+		}
+		if (modeList.size() == 0)
+		{
+			return UNIQUESET; 
 		}
 		for (BigDecimal mode : modeList)
 		{
