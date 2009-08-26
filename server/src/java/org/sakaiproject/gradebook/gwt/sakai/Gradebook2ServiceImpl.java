@@ -245,6 +245,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			Integer dropLowest = item.getDropLowest();
 			Boolean isExtraCredit = item.getExtraCredit();
 			Integer categoryOrder = item.getItemOrder();
+			Boolean doEnforcePointWeighting = item.getEnforcePointWeighting();
 
 			boolean isUnweighted = !DataTypeConversionUtil.checkBoolean(isIncluded);
 
@@ -270,7 +271,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					businessLogic.applyOnlyEqualWeightDropLowestRule(dropLowestInt, equalWeighting);
 			}
 
-			categoryId = gbService.createCategory(gradebookId, name, Double.valueOf(w), dropLowest, isEqualWeighting, Boolean.valueOf(isUnweighted), isExtraCredit, categoryOrder);
+			categoryId = gbService.createCategory(gradebookId, name, Double.valueOf(w), dropLowest, isEqualWeighting, Boolean.valueOf(isUnweighted), isExtraCredit, categoryOrder, doEnforcePointWeighting);
 
 			assignments = gbService.getAssignments(gradebook.getId());
 			categories = null;
@@ -2329,11 +2330,26 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		// If neither the weight nor the points have changed, then we can just
 		// return
 		// the item model itself
-		if (!isWeightChanged && !havePointsChanged) {
+		/*if (!isWeightChanged && !havePointsChanged) {
+			for (Assignment a : assignments) {
+				double assignmentCategoryPercent = a.getAssignmentWeighting() == null ? 0.0 : a.getAssignmentWeighting().doubleValue() * 100.0;
+				BigDecimal points = BigDecimal.valueOf(a.getPointsPossible().doubleValue());
+
+				boolean isRemoved = a.isRemoved();
+				boolean isExtraCredit = a.isExtraCredit() != null && a.isExtraCredit().booleanValue();
+				boolean isUnweighted = a.isUnweighted() != null && a.isUnweighted().booleanValue();
+
+				if ((isCategoryExtraCredit || !isExtraCredit) && !isUnweighted && !isRemoved) {
+					percentCategorySum = percentCategorySum.add(BigDecimal.valueOf(assignmentCategoryPercent));
+					pointsSum = pointsSum.add(points);
+				}
+
+			}
+			
 			ItemModel itemModel = createItemModel(category, assignment, null);
 			itemModel.setActive(true);
 			return itemModel;
-		} else if (!hasCategories) {
+		} else*/ if (!hasCategories) {
 			assignments = gbService.getAssignments(gradebook.getId());
 			// Otherwise if we're in no categories mode then we want to return
 			// the gradebook
@@ -2632,6 +2648,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		double pG = categoryItemModel == null || categoryItemModel.getPercentCourseGrade() == null ? 0d : categoryItemModel.getPercentCourseGrade().doubleValue();
 
 		boolean isCategoryExtraCredit = category != null && DataTypeConversionUtil.checkBoolean(category.isExtraCredit());
+		boolean isEnforcePointWeighting = category != null && DataTypeConversionUtil.checkBoolean(category.isEnforcePointWeighting());
 		BigDecimal percentGrade = BigDecimal.valueOf(pG);
 		BigDecimal percentCategorySum = BigDecimal.ZERO;
 		BigDecimal pointsSum = BigDecimal.ZERO;
@@ -2656,13 +2673,26 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				boolean isUnweighted = a.isUnweighted() != null && a.isUnweighted().booleanValue();
 
 				BigDecimal courseGradePercent = BigDecimal.ZERO;
+				BigDecimal percentCategory = BigDecimal.ZERO;
 				if (!isUnweighted) {
-					double w = a == null || a.getAssignmentWeighting() == null ? 0d : a.getAssignmentWeighting().doubleValue();
-					BigDecimal assignmentWeight = BigDecimal.valueOf(w);
-					courseGradePercent = gradeCalculations.calculateItemGradePercent(percentGrade, percentCategorySum, assignmentWeight);
+					if (isEnforcePointWeighting) {
+						double p = a == null | a.getPointsPossible() == null ? 0d : a.getPointsPossible().doubleValue();
+						
+						BigDecimal assignmentPoints = BigDecimal.valueOf(p);
+						courseGradePercent = gradeCalculations.calculateItemGradePercent(percentGrade, pointsSum, assignmentPoints, true);
+						percentCategory = BigDecimal.valueOf(100d).multiply(assignmentPoints.divide(pointsSum, GradeCalculations.MATH_CONTEXT));
+						
+					} else {
+						double w = a == null || a.getAssignmentWeighting() == null ? 0d : a.getAssignmentWeighting().doubleValue();
+						
+						BigDecimal assignmentWeight = BigDecimal.valueOf(w);
+						courseGradePercent = gradeCalculations.calculateItemGradePercent(percentGrade, percentCategorySum, assignmentWeight, false);
+						percentCategory = BigDecimal.valueOf(100d).multiply(assignmentWeight);
+					
+					}
 				}
 
-				ItemModel assignmentItemModel = createItemModel(category, a, courseGradePercent);
+				ItemModel assignmentItemModel = createItemModel(category, a, courseGradePercent, percentCategory);
 
 				if (assignmentId != null && a.getId().equals(assignmentId))
 					assignmentItemModel.setActive(true);
@@ -2994,11 +3024,12 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		model.setItemType(Type.CATEGORY);
 		model.setEditable(!isDefaultCategory);
 		model.setItemOrder(category.getCategoryOrder());
+		model.setEnforcePointWeighting(category.isEnforcePointWeighting());
 
 		return model;
 	}
 
-	private ItemModel createItemModel(Category category, Assignment assignment, BigDecimal percentCourseGrade) {
+	private ItemModel createItemModel(Category category, Assignment assignment, BigDecimal percentCourseGrade, BigDecimal percentCategory) {
 
 		ItemModel model = new ItemModel();
 
@@ -3007,10 +3038,14 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		Boolean isAssignmentExtraCredit = assignment.isExtraCredit() == null ? Boolean.FALSE : assignment.isExtraCredit();
 		Boolean isAssignmentReleased = Boolean.valueOf(assignment.isReleased());
 		Boolean isAssignmentRemoved = Boolean.valueOf(assignment.isRemoved());
-
+		double points = assignment.getPointsPossible() == null ? 0d : assignment.getPointsPossible().doubleValue();
+		
+		
 		Gradebook gradebook = assignment.getGradebook();
 		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
-
+		boolean hasWeights = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY;
+		boolean isLetterGrading = gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER;
+		
 		// We don't want to delete assignments based on category when we don't
 		// have categories
 		if (hasCategories && category != null) {
@@ -3042,31 +3077,50 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		model.setExtraCredit(isAssignmentExtraCredit);
 		model.setRemoved(isAssignmentRemoved);
 		model.setSource(assignment.getExternalAppName());
-		model.setDataType(AppConstants.NUMERIC_DATA_TYPE);
+		if (isLetterGrading)
+			model.setDataType(AppConstants.STRING_DATA_TYPE);
+		else
+			model.setDataType(AppConstants.NUMERIC_DATA_TYPE);
 		model.setStudentModelKey(Key.ASSIGNMENT.name());
 		model.setItemOrder(assignment.getItemOrder());
 
+		boolean isEnforcePointWeighting = DataTypeConversionUtil.checkBoolean(category.isEnforcePointWeighting()) && hasWeights;
+		
+		/*BigDecimal ratio = null;
 		if (percentCourseGrade == null && hasCategories && category != null) {
 			List<Assignment> assignments = category.getAssignmentList();
 
 			boolean isIncluded = category.isUnweighted() == null ? true : !category.isUnweighted().booleanValue();
 
-			double sum = 0d;
+			BigDecimal sum = BigDecimal.ZERO;
 			if (assignments != null && isIncluded) {
 				for (Assignment a : assignments) {
-					double assignWeight = a.getAssignmentWeighting() == null ? 0.0 : a.getAssignmentWeighting().doubleValue() * 100.0;
+					double assignWeight = a.getAssignmentWeighting() == null ? 0d : a.getAssignmentWeighting().doubleValue() * 100.0;
+					
+					if (isEnforcePointWeighting)
+						assignWeight = a.getPointsPossible() == null ? 0d : a.getPointsPossible().doubleValue();
+					
 					boolean isExtraCredit = a.isExtraCredit() != null && a.isExtraCredit().booleanValue();
 					boolean isUnweighted = a.isUnweighted() != null && a.isUnweighted().booleanValue();
 					if (!isExtraCredit && !isUnweighted)
-						sum += assignWeight;
+						sum = sum.add(BigDecimal.valueOf(assignWeight));
 				}
 			}
-			percentCourseGrade = new BigDecimal(String.valueOf(Double.valueOf(sum)));
+			if (isEnforcePointWeighting) {
+				percentCourseGrade = BigDecimal.valueOf(category.getWeight() == null ? 0d : category.getWeight().doubleValue());
+				ratio = percentCourseGrade.divide(sum, GradeCalculations.MATH_CONTEXT);
+			} else
+				percentCourseGrade = sum;
 		}
-
-		model.setPercentCategory(Double.valueOf(assignmentWeight));
+		*/
+		
+		
+		if (percentCategory != null)
+			model.setPercentCategory(Double.valueOf(percentCategory.doubleValue()));
+		
 		if (percentCourseGrade != null)
 			model.setPercentCourseGrade(Double.valueOf(percentCourseGrade.doubleValue()));
+		
 		model.setItemType(Type.ITEM);
 
 		return model;
@@ -4059,6 +4113,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
 			boolean hasWeights = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY;
 
+			boolean isEnforcePointWeighting = DataTypeConversionUtil.checkBoolean(item.getEnforcePointWeighting());
+			
+			
 			if (hasCategories) {
 				List<Category> categories = gbService.getCategories(gradebook.getId());
 				// Business rule #2
@@ -4099,7 +4156,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			category.setDrop_lowest(newDropLowest);
 			category.setRemoved(isRemoved);
 			category.setUnweighted(Boolean.valueOf(isUnweighted || isRemoved));
-
+			category.setEnforcePointWeighting(Boolean.valueOf(isEnforcePointWeighting));
+			
 			if (newCategoryOrder != null)
 				category.setCategoryOrder(newCategoryOrder);
 			else if (oldCategoryOrder != null)

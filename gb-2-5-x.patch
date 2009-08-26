@@ -2,7 +2,7 @@ Index: service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Category.
 ===================================================================
 --- service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Category.hbm.xml	(revision 7234)
 +++ service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Category.hbm.xml	(working copy)
-@@ -24,6 +24,15 @@
+@@ -24,6 +24,17 @@
  		<property name="drop_lowest" column="DROP_LOWEST" type="integer" not-null="false" />
  		
  		<property name="removed" column="REMOVED" type="boolean" />
@@ -14,6 +14,8 @@ Index: service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Category.
 +  		<property name="unweighted" column="IS_UNWEIGHTED" type="boolean" not-null="false" />
 +  
 +  		<property name="categoryOrder" column="CATEGORY_ORDER" type="integer" not-null="false" />
++  
++  		<property name="enforcePointWeighting" column="ENFORCE_POINT_WEIGHTING" type="boolean" not-null="false" />
 +  
    </class>
    
@@ -203,7 +205,7 @@ Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/Category.java
 ===================================================================
 --- service/hibernate/src/java/org/sakaiproject/tool/gradebook/Category.java	(revision 7234)
 +++ service/hibernate/src/java/org/sakaiproject/tool/gradebook/Category.java	(working copy)
-@@ -21,6 +21,11 @@
+@@ -21,6 +21,12 @@
  	private Double mean; //mean value of percentage for this category
  	private List assignmentList;
  	private int assignmentCount;
@@ -212,10 +214,11 @@ Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/Category.java
 +	private Boolean unweighted;
 +	private Boolean equalWeightAssignments;
 +	private Integer categoryOrder;
++	private Boolean enforcePointWeighting;
  	
  	public static Comparator nameComparator;
  	public static Comparator averageScoreComparator;
-@@ -342,4 +347,37 @@
+@@ -342,4 +348,45 @@
  	public void setAssignmentCount(int assignmentCount){
  		this.assignmentCount = assignmentCount;
  	}
@@ -251,6 +254,14 @@ Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/Category.java
 +
 +	public void setCategoryOrder(Integer categoryOrder) {
 +		this.categoryOrder = categoryOrder;
++	}
++
++	public Boolean isEnforcePointWeighting() {
++		return enforcePointWeighting;
++	}
++
++	public void setEnforcePointWeighting(Boolean enforcePointWeighting) {
++		this.enforcePointWeighting = enforcePointWeighting;
 +	}
  }
 Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/Gradebook.java

@@ -47,6 +47,7 @@ public class GradeCalculationIncompletePercentTest extends TestCase {
 	
 	private GradebookCalculationUnit gradebookUnit;
 	private boolean isExtraCreditScaled = false;
+	private BigDecimal totalGradebookPoints = null;
 	
 	public GradeCalculationIncompletePercentTest(String name) {
 		super(name);
@@ -195,7 +196,7 @@ public class GradeCalculationIncompletePercentTest extends TestCase {
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 		categoryGradeUnitListMap.put(HW_ID, hwUnits);
 		
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isExtraCreditScaled);
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, isExtraCreditScaled);
 	
 		assertEqualsAtScale2(BigDecimal.valueOf(80.00d), courseGrade);
 	}
@@ -223,7 +224,7 @@ public class GradeCalculationIncompletePercentTest extends TestCase {
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 		categoryGradeUnitListMap.put(HW_ID, hwUnits);
 		
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isExtraCreditScaled);
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, isExtraCreditScaled);
 	
 		assertEqualsAtScale2(BigDecimal.valueOf(0.00d), courseGrade);
 	}
@@ -252,7 +253,7 @@ public class GradeCalculationIncompletePercentTest extends TestCase {
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 		categoryGradeUnitListMap.put(HW_ID, hwUnits);
 		
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isExtraCreditScaled);
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, isExtraCreditScaled);
 	
 		assertEqualsAtScale2(BigDecimal.valueOf(20.00d), courseGrade);
 	}
@@ -283,7 +284,7 @@ public class GradeCalculationIncompletePercentTest extends TestCase {
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 		categoryGradeUnitListMap.put(HW_ID, hwUnits);
 		
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isExtraCreditScaled);
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, isExtraCreditScaled);
 	
 		assertEqualsAtScale2(BigDecimal.valueOf(60.00d), courseGrade);
 	}
@@ -313,7 +314,7 @@ public class GradeCalculationIncompletePercentTest extends TestCase {
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 		categoryGradeUnitListMap.put(HW_ID, hwUnits);
 		
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isExtraCreditScaled);
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, isExtraCreditScaled);
 	
 		assertEqualsAtScale2(BigDecimal.valueOf(64.00d), courseGrade);
 	}
@@ -342,7 +343,7 @@ public class GradeCalculationIncompletePercentTest extends TestCase {
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 		categoryGradeUnitListMap.put(HW_ID, hwUnits);
 		
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isExtraCreditScaled);
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, isExtraCreditScaled);
 	
 		assertEqualsAtScale2(BigDecimal.valueOf(72.00d), courseGrade);
 	}
@@ -372,7 +373,7 @@ public class GradeCalculationIncompletePercentTest extends TestCase {
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 		categoryGradeUnitListMap.put(HW_ID, hwUnits);
 
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isExtraCreditScaled);
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, isExtraCreditScaled);
 
 		assertEqualsAtScale2(BigDecimal.valueOf(80.00d), courseGrade);
 	}
@@ -406,7 +407,7 @@ public class GradeCalculationIncompletePercentTest extends TestCase {
 		
 		long start = System.currentTimeMillis();
 		
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isExtraCreditScaled);
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, isExtraCreditScaled);
 	
 		long end = System.currentTimeMillis();
 		
@@ -442,7 +443,7 @@ public class GradeCalculationIncompletePercentTest extends TestCase {
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 		categoryGradeUnitListMap.put(HW_ID, hwUnits);
 		
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isExtraCreditScaled);
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, isExtraCreditScaled);
 
 		assertEqualsAtScale2(BigDecimal.valueOf(80.00d), courseGrade);
 	}
@@ -477,7 +478,7 @@ public class GradeCalculationIncompletePercentTest extends TestCase {
 		categoryGradeUnitListMap.put(HW_ID, hwUnits);
 		categoryGradeUnitListMap.put(EC_ID, ecUnits);
 		
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isExtraCreditScaled);
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, isExtraCreditScaled);
 
 		assertEqualsAtScale2(BigDecimal.valueOf(90.00d), courseGrade);
 	}
@@ -487,11 +488,11 @@ public class GradeCalculationIncompletePercentTest extends TestCase {
 	
 		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
 		
-		CategoryCalculationUnit essayUnit = new CategoryCalculationUnit(new BigDecimal(".6"), Integer.valueOf(0), Boolean.FALSE);
-		CategoryCalculationUnit hwUnit = new CategoryCalculationUnit(new BigDecimal(".2"), Integer.valueOf(0), null);
-		CategoryCalculationUnit ecUnit = new CategoryCalculationUnit(new BigDecimal(".1"), Integer.valueOf(0), Boolean.TRUE);
+		CategoryCalculationUnit essayUnit = new CategoryCalculationUnit(new BigDecimal(".6"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE);
+		CategoryCalculationUnit hwUnit = new CategoryCalculationUnit(new BigDecimal(".2"), Integer.valueOf(0), null, Boolean.FALSE);
+		CategoryCalculationUnit ecUnit = new CategoryCalculationUnit(new BigDecimal(".1"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE);
 		
-		CategoryCalculationUnit emptyUnit = new CategoryCalculationUnit(new BigDecimal("0"), Integer.valueOf(0), Boolean.FALSE);
+		CategoryCalculationUnit emptyUnit = new CategoryCalculationUnit(new BigDecimal("0"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE);
 		
 		categoryUnitMap.put(ESSAYS_ID, essayUnit);
 		categoryUnitMap.put(HW_ID, hwUnit);

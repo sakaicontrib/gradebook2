@@ -357,6 +357,9 @@ public class InstructorView extends AppView {
 	protected void onRefreshGradebookSetup(GradebookModel gradebookModel) {
 		if (addCategoryMenuItem != null)
 			addCategoryMenuItem.setVisible(gradebookModel.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
+	
+		if (singleGradeContainer != null)
+			singleGradeContainer.onRefreshGradebookSetup(gradebookModel);
 	}
 
 	@Override

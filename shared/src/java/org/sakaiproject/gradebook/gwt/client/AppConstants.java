@@ -89,6 +89,7 @@ public interface AppConstants {
 	
 	// Data type constants
 	public static final String NUMERIC_DATA_TYPE		= "Number";
+	public static final String STRING_DATA_TYPE			= "String";
 	
 	// Form panel id constants
 	public static final String LEARNER_SUMMARY_FIELD_PREFIX		= "learnerField:";

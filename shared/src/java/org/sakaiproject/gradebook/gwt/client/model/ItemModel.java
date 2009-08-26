@@ -65,7 +65,8 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 		RELEASEITEMS("Display Released Items"),
 		ITEM_ORDER("Order"), GRADESCALEID("grade scale id"), 
 		EXTRA_CREDIT_SCALED("Project Extra Credit"),
-		DO_RECALCULATE_POINTS("Scale scores to same percentage");
+		DO_RECALCULATE_POINTS("Scale scores to same percentage"),
+		ENFORCE_POINT_WEIGHTING("Weight By Points");
 		
 		private String propertyName;
 		
@@ -410,6 +411,14 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 	
 	public void setDoRecalculatePoints(Boolean doRecalculate) {
 		set(Key.DO_RECALCULATE_POINTS.name(), doRecalculate);
+	}
+	
+	public Boolean getEnforcePointWeighting() {
+		return get(Key.ENFORCE_POINT_WEIGHTING.name());
+	}
+	
+	public void setEnforcePointWeighting(Boolean doEnforce) {
+		set(Key.ENFORCE_POINT_WEIGHTING.name(), doEnforce);
 	}
 	
 	@Override

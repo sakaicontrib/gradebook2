@@ -643,7 +643,6 @@ public class ItemTreePanel extends ContentPanel {
 		ItemNumberCellRenderer numericCellRenderer = new ItemNumberCellRenderer(DataTypeConversionUtil.getShortNumberFormat());	
 		ItemNumberCellRenderer pointsCellRenderer = new ItemNumberCellRenderer(DataTypeConversionUtil.getDefaultNumberFormat());		
 
-
 		percentCourseGradeColumn =  new TreeTableColumn(ItemModel.Key.PERCENT_COURSE_GRADE.name(), 
 				ItemModel.getPropertyName(ItemModel.Key.PERCENT_COURSE_GRADE), ItemModel.getPropertyName(ItemModel.Key.PERCENT_COURSE_GRADE).length() * CHARACTER_WIDTH + 30);
 		percentCourseGradeColumn.setAlignment(HorizontalAlignment.RIGHT);

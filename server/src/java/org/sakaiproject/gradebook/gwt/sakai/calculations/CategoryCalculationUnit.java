@@ -42,14 +42,16 @@ public class CategoryCalculationUnit {
 
 	private int dropLowest;
 	private boolean isExtraCredit;
+	private boolean isPointsWeighted;
 
 	private List<GradeRecordCalculationUnit> unitsToDrop;
 
-	public CategoryCalculationUnit(BigDecimal categoryWeightTotal, Integer dropLowest, Boolean extraCredit) {
+	public CategoryCalculationUnit(BigDecimal categoryWeightTotal, Integer dropLowest, Boolean extraCredit, Boolean usePoints) {
 		this.categoryWeightTotal = categoryWeightTotal;
 		this.dropLowest = dropLowest == null ? 0 : dropLowest.intValue();
 		this.isExtraCredit = extraCredit == null ? false : extraCredit.booleanValue();
 		this.unitsToDrop = new LinkedList<GradeRecordCalculationUnit>();
+		this.isPointsWeighted = usePoints == null ? false : usePoints.booleanValue();
 	}
 
 
@@ -197,5 +199,20 @@ public class CategoryCalculationUnit {
 
 	public void setDropLowest(int dropLowest) {
 		this.dropLowest = dropLowest;
+	}
+
+
+	public boolean isPointsWeighted() {
+		return isPointsWeighted;
+	}
+
+
+	public void setPointsWeighted(boolean isPointsWeighted) {
+		this.isPointsWeighted = isPointsWeighted;
+	}
+
+
+	public void setCategoryGrade(BigDecimal categoryGrade) {
+		this.categoryGrade = categoryGrade;
 	}
 }

@@ -24,7 +24,6 @@
 package org.sakaiproject.gradebook.gwt.sakai.calculations;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,7 +51,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 	private static final Log log = LogFactory.getLog(GradeCalculationsOOImpl.class);
 	
 	final static BigDecimal BIG_DECIMAL_100 = new BigDecimal("100.00000");
-	public static final MathContext MATH_CONTEXT = new MathContext(10, RoundingMode.HALF_EVEN);
+	
 	public Map<String, Double> letterGradeMap;
 	
 	public void init() {
@@ -94,14 +93,19 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 	 * 		x  = ( 60 * .25 ) / .8
 	 * 
 	 */
-	public BigDecimal calculateItemGradePercent(BigDecimal percentGrade, BigDecimal sumCategoryPercents, BigDecimal assignmentWeight) {
+	public BigDecimal calculateItemGradePercent(BigDecimal percentGrade, BigDecimal sumCategoryPercents, BigDecimal assignmentWeight, boolean doNormalizeTo100) {
 
 		if (percentGrade.compareTo(BigDecimal.ZERO) == 0 
 				|| sumCategoryPercents.compareTo(BigDecimal.ZERO) == 0 
 				|| assignmentWeight.compareTo(BigDecimal.ZERO) == 0)
 			return BigDecimal.ZERO;
 
-		BigDecimal categoryPercentRatio = sumCategoryPercents.divide(BigDecimal.valueOf(100d), MATH_CONTEXT);
+		BigDecimal categoryPercentRatio = null;
+		
+		if (doNormalizeTo100)
+			categoryPercentRatio = sumCategoryPercents;
+		else
+			categoryPercentRatio = sumCategoryPercents.divide(BigDecimal.valueOf(100d), MATH_CONTEXT);
 
 		return assignmentWeight.multiply(percentGrade).divide(categoryPercentRatio, MATH_CONTEXT);
 	}
@@ -412,7 +416,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 				String categoryKey = String.valueOf(category.getId());
 
 				BigDecimal categoryWeight = getCategoryWeight(category);
-				CategoryCalculationUnit categoryCalculationUnit = new CategoryCalculationUnit(categoryWeight, Integer.valueOf(category.getDrop_lowest()), category.isExtraCredit());
+				CategoryCalculationUnit categoryCalculationUnit = new CategoryCalculationUnit(categoryWeight, Integer.valueOf(category.getDrop_lowest()), category.isExtraCredit(), category.isEnforcePointWeighting());
 				categoryUnitMap.put(categoryKey, categoryCalculationUnit);
 
 				List<GradeRecordCalculationUnit> gradeRecordUnits = new ArrayList<GradeRecordCalculationUnit>();
@@ -443,7 +447,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		GradebookCalculationUnit gradebookUnit = new GradebookCalculationUnit(categoryUnitMap);
 
 		if (isWeighted)
-			return gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isExtraCreditScaled);
+			return gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, isExtraCreditScaled);
 
 		return gradebookUnit.calculatePointsBasedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, isExtraCreditScaled);
 	}

@@ -30,6 +30,7 @@ import java.util.Set;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
+import org.sakaiproject.gradebook.gwt.client.gxt.InlineEditField;
 import org.sakaiproject.gradebook.gwt.client.gxt.InlineEditNumberField;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTabPanel;
@@ -68,6 +69,7 @@ import com.extjs.gxt.ui.client.widget.form.Field;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.form.TextArea;
+import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.form.FormPanel.LabelAlign;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
@@ -102,7 +104,6 @@ public class LearnerSummaryPanel extends ContentPanel {
 	private FormLayout scoreFormLayout;
 
 	private FlexTableContainer learnerInfoTable;
-
 
 	public LearnerSummaryPanel(I18nConstants i18n) {
 		this.i18n = i18n;
@@ -198,6 +199,10 @@ public class LearnerSummaryPanel extends ContentPanel {
 			updateLearnerInfo(learner);
 	}
 
+	public void onRefreshGradebookSetup(GradebookModel gradebookModel) {
+		scoreFormPanel.removeAll();
+	}
+	
 	@Override
 	protected void onResize(final int width, final int height) {
 		commentFormLayout.setDefaultWidth(width - 40);
@@ -205,7 +210,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 		super.onResize(width, height);
 	}
 
-	private void addField(Set<String> itemIdSet, ItemModel item, int row, boolean isPercentages) {
+	private void addField(Set<String> itemIdSet, ItemModel item, int row, GradeType gradeType) {
 		String itemId = new StringBuilder().append(AppConstants.LEARNER_SUMMARY_FIELD_PREFIX).append(item.getIdentifier()).toString();
 		String source = item.getSource();
 		boolean isStatic = source != null && source.equals(AppConstants.STATIC);
@@ -214,29 +219,51 @@ public class LearnerSummaryPanel extends ContentPanel {
 
 			String dataType = item.getDataType();
 
-			if (dataType != null && dataType.equals(AppConstants.NUMERIC_DATA_TYPE)) {
-				NumberField field = new InlineEditNumberField();
-
+			if (dataType != null) {
 				StringBuilder emptyText = new StringBuilder();
-
-				if (isPercentages) 
+				boolean isEmptyTextFilled = false;
+				switch (gradeType) {
+				case PERCENTAGES:
 					emptyText.append("Enter a value between 0 and 100");
-				else
-					emptyText.append("Enter a value between 0 and ").append(DataTypeConversionUtil.formatDoubleAsPointsString(item.getPoints()));
+					isEmptyTextFilled = true;
+				case POINTS:
+					NumberField field = new InlineEditNumberField();
+	
+					if (!isEmptyTextFilled)
+						emptyText.append("Enter a value between 0 and ").append(DataTypeConversionUtil.formatDoubleAsPointsString(item.getPoints()));
+	
+					field.setItemId(itemId);
+					field.addInputStyleName("gbNumericFieldInput");
+					field.addKeyListener(keyListener);
+					field.setFieldLabel(item.getName());
+					field.setFormat(DataTypeConversionUtil.getDefaultNumberFormat());
+					field.setName(item.getIdentifier());
+					field.setToolTip(emptyText.toString());
+					field.setWidth(50);
+					field.setLabelStyle("overflow: hidden");
+	
+					verifyFieldState(field, item);
+	
+					scoreFormPanel.add(field);
+					break;
+				case LETTERS:
+					TextField<String> textField = new InlineEditField<String>();
 
-				field.setItemId(itemId);
-				field.addInputStyleName("gbNumericFieldInput");
-				field.addKeyListener(keyListener);
-				field.setFieldLabel(item.getName());
-				field.setFormat(DataTypeConversionUtil.getDefaultNumberFormat());
-				field.setName(item.getIdentifier());
-				field.setToolTip(emptyText.toString());
-				field.setWidth(50);
-				field.setLabelStyle("overflow: hidden");
-
-				verifyFieldState(field, item);
-
-				scoreFormPanel.add(field);
+					emptyText.append("Enter a letter grade");
+					
+					textField.setItemId(itemId);
+					textField.addInputStyleName("gbTextFieldInput");
+					textField.addKeyListener(keyListener);
+					textField.setFieldLabel(item.getName());
+					textField.setName(item.getIdentifier());
+					textField.setToolTip(emptyText.toString());
+					textField.setWidth(50);
+					textField.setLabelStyle("overflow: hidden");
+	
+					verifyFieldState(textField, item);
+	
+					scoreFormPanel.add(textField);
+				}
 
 				String checkBoxName = new StringBuilder().append(item.getIdentifier()).append(StudentModel.EXCUSE_FLAG).toString();
 				CheckBox checkbox = new CheckBox();
@@ -402,7 +429,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 		}
 
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-		boolean isPercentages = selectedGradebook.getGradebookItemModel().getGradeType() == GradeType.PERCENTAGES;
+		GradeType gradeType = selectedGradebook.getGradebookItemModel().getGradeType();
 
 		int row = 0;
 		if (rootItems != null) {
@@ -414,12 +441,12 @@ public class LearnerSummaryPanel extends ContentPanel {
 						if (child.getChildCount() > 0) {
 
 							for (ItemModel subchild : child.getChildren()) {
-								addField(itemIdSet, subchild, row, isPercentages);
+								addField(itemIdSet, subchild, row, gradeType);
 								row++;
 							}
 
 						} else {
-							addField(itemIdSet, child, row, isPercentages);
+							addField(itemIdSet, child, row, gradeType);
 							row++;
 						}
 

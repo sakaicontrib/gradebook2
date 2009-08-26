@@ -91,6 +91,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			essaysCategory.setEqualWeightAssignments(Boolean.TRUE);
 			essaysCategory.setItemType(Type.CATEGORY);
 			essaysCategory.setIncluded(Boolean.TRUE);
+			essaysCategory.setEnforcePointWeighting(Boolean.TRUE);
 			essaysCategory = getActiveItem(service.addItemCategory(gradebookUid, gradebookId, essaysCategory));
 
 			
@@ -117,7 +118,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			
 			ItemModel essay1 = new ItemModel();
 			essay1.setName("Essay 1");
-			essay1.setPoints(Double.valueOf(20d));
+			essay1.setPoints(Double.valueOf(10d));
 			essay1.setDueDate(new Date());
 			essay1.setCategoryId(essaysCategory.getCategoryId());
 			essay1.setReleased(Boolean.TRUE);
@@ -137,7 +138,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			
 			ItemModel essay3 = new ItemModel();
 			essay3.setName("Essay 3");
-			essay3.setPoints(Double.valueOf(20d));
+			essay3.setPoints(Double.valueOf(10d));
 			essay3.setDueDate(new Date());
 			essay3.setCategoryId(essaysCategory.getCategoryId());
 			essay3.setReleased(Boolean.TRUE);
@@ -145,6 +146,18 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			essay3.setIncluded(Boolean.TRUE);
 			service.createItem(gradebookUid, gradebookId, essay3, true);
 
+			ItemModel ecEssay = new ItemModel();
+			ecEssay.setName("EC Essay");
+			ecEssay.setPercentCategory(Double.valueOf(100d));
+			ecEssay.setPoints(Double.valueOf(5d));
+			ecEssay.setDueDate(new Date());
+			ecEssay.setCategoryId(essaysCategory.getCategoryId());
+			ecEssay.setIncluded(Boolean.TRUE);
+			ecEssay.setExtraCredit(Boolean.TRUE);
+			ecEssay.setReleased(Boolean.FALSE);
+			service.createItem(gradebookUid, gradebookId, ecEssay, true);
+			
+			
 			ItemModel hw1 = new ItemModel();
 			hw1.setName("HW 1");
 			hw1.setPoints(Double.valueOf(10d));

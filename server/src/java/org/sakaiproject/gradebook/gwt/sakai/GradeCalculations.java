@@ -23,6 +23,8 @@
 package org.sakaiproject.gradebook.gwt.sakai;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -36,11 +38,13 @@ import org.sakaiproject.tool.gradebook.Gradebook;
 
 public interface GradeCalculations {
 
+	public static final MathContext MATH_CONTEXT = new MathContext(10, RoundingMode.HALF_EVEN);
+	
 	public Double calculateEqualWeight(int numberOfItems);
 	
 	public Double calculateItemWeightAsPercentage(Double requestedItemWeight, Double requestedItemPoints);
 	
-	public BigDecimal calculateItemGradePercent(BigDecimal percentGrade, BigDecimal sumCategoryPercents, BigDecimal assignmentWeight);
+	public BigDecimal calculateItemGradePercent(BigDecimal percentGrade, BigDecimal sumCategoryPercents, BigDecimal assignmentWeight, boolean doNormalizeTo100);
 	
 	public String convertPercentageToLetterGrade(BigDecimal percentage);
 	

@@ -49,7 +49,7 @@ public interface GradebookToolService {
 	
 	public Long createAssignmentForCategory(Long gradebookId, Long categoryId, String name, Double points, Double weight, Date dueDate, Boolean isUnweighted, Boolean isExtraCredit, Boolean isNotCounted, Boolean isReleased, Integer itemOrder);
 	
-	public Long createCategory(Long gradebookId, String name, Double weight, Integer dropLowest, Boolean equalWeightAssignments, Boolean isUnweighted, Boolean isExtraCredit, Integer categoryOrder);
+	public Long createCategory(Long gradebookId, String name, Double weight, Integer dropLowest, Boolean equalWeightAssignments, Boolean isUnweighted, Boolean isExtraCredit, Integer categoryOrder, Boolean isEnforcePointWeighting);
 	
 	public void createOrUpdateUserConfiguration(String userUid, Long gradebookId, String configField, String configValue);
 	

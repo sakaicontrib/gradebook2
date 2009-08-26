@@ -152,7 +152,7 @@ public class GradebookCalculationUnit {
 				return BigDecimal.ZERO.setScale(AppConstants.SCALE);
 
 
-			BigDecimal percentageScore = sumPoints.divide(sumPointsPossible, RoundingMode.HALF_EVEN);
+			BigDecimal percentageScore = sumPoints.divide(sumPointsPossible, GradeCalculationsOOImpl.MATH_CONTEXT);
 
 			if (sumExtraCreditPoints != null)
 				percentageScore = percentageScore.add(scaleExtraCreditPoints(sumExtraCreditPoints, sumPointsPossible, totalGradebookPoints, isExtraCreditScaled));
@@ -166,7 +166,7 @@ public class GradebookCalculationUnit {
 		return courseGrade;
 	}
 
-	public BigDecimal calculateWeightedCourseGrade(Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap, boolean isExtraCreditScaled) {
+	public BigDecimal calculateWeightedCourseGrade(Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap, BigDecimal totalGradebookPoints, boolean isExtraCreditScaled) {
 
 		BigDecimal categoryWeightDesiredSum = BigDecimal.ZERO.setScale(AppConstants.SCALE);
 		BigDecimal categoryWeightSum = null; 
@@ -178,12 +178,41 @@ public class GradebookCalculationUnit {
 			CategoryCalculationUnit categoryUnit = categoryUnitMap.get(categoryKey);
 			List<GradeRecordCalculationUnit> units = categoryGradeUnitListMap.get(categoryKey);
 
-			BigDecimal categoryGrade = categoryUnit.calculate(units, isExtraCreditScaled);	
+			BigDecimal categoryGrade = null;
 			BigDecimal categoryWeight = categoryUnit.getCategoryWeightTotal();
+			
+			if (categoryUnit.isPointsWeighted()) {
+				BigDecimal[] categoryResult = sumPoints(units, categoryUnit.getDropLowest());
 
+				BigDecimal categoryPointsReceived = categoryResult[0];
+				BigDecimal categoryPointsPossible = categoryResult[1];
+				BigDecimal categoryExtraCreditPoints = categoryResult[2];
+				
+				if (categoryUnit.isExtraCredit()) {
+					if (categoryExtraCreditPoints != null && totalGradebookPoints != null)
+						categoryGrade = categoryExtraCreditPoints.divide(totalGradebookPoints, GradeCalculationsOOImpl.MATH_CONTEXT);
+				} else {
+					if (categoryPointsReceived != null && categoryPointsPossible != null) {
+						
+						categoryGrade = categoryPointsReceived.divide(categoryPointsPossible, GradeCalculationsOOImpl.MATH_CONTEXT);
+						
+						if (categoryExtraCreditPoints != null) {
+							categoryGrade = categoryGrade.add(scaleExtraCreditPoints(categoryExtraCreditPoints, categoryPointsPossible, totalGradebookPoints, isExtraCreditScaled));
+						}
+						
+					}
+				}
+				
+				if (categoryGrade != null)
+					categoryUnit.setCategoryGrade(categoryGrade);
+				
+			} else {
+				categoryGrade = categoryUnit.calculate(units, isExtraCreditScaled);	
+			} // else
+			
 			if (categoryWeight != null && !categoryUnit.isExtraCredit())
 				categoryWeightDesiredSum = categoryWeightDesiredSum.add(categoryWeight);
-
+	
 			if (categoryGrade != null && categoryWeight != null) {
 				if (categoryUnit.isExtraCredit()) {
 					extraCreditSum = extraCreditSum.add(categoryWeight);
@@ -191,10 +220,8 @@ public class GradebookCalculationUnit {
 					if (categoryWeightSum == null)
 						categoryWeightSum = BigDecimal.ZERO.setScale(AppConstants.SCALE);
 					categoryWeightSum = categoryWeightSum.add(categoryWeight);
-				}
-
+				} // else
 			} // if
-
 		} // for
 
 		if (categoryWeightSum == null)
