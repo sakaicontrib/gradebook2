@@ -5,7 +5,8 @@ add (
 	IS_EXTRA_CREDIT number(1,0),
 	IS_EQUAL_WEIGHT_ASSNS number(1,0),
 	IS_UNWEIGHTED number(1,0),
-	CATEGORY_ORDER number(10,0)
+	CATEGORY_ORDER number(10,0),
+	ENFORCE_POINT_WEIGHTING number(1,0)
 );
 
 alter table GB_GRADEBOOK_T
