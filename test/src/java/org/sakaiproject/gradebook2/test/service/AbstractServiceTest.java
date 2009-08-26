@@ -138,8 +138,10 @@ public abstract class AbstractServiceTest extends AbstractDependencyInjectionSpr
 		ec1.setItemType(Type.ITEM);
 		ec1.setIncluded(Boolean.FALSE);
 		ec1.setExtraCredit(Boolean.TRUE);
-		category = service.createItem(gradebookUid, gradebookId, ec1, true);
+		ec1 = getActiveItem(service.createItem(gradebookUid, gradebookId, ec1, true));
 
+		category = ec1.getParent();
+		
 		for (ItemModel child : category.getChildren()) {
 			Double percentCategory = child.getPercentCategory();
 			BigDecimal pC = BigDecimal.valueOf(percentCategory.doubleValue());

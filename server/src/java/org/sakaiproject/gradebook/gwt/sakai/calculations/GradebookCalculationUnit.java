@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.sakai.GradeCalculations;
 
 public class GradebookCalculationUnit {
 
@@ -67,8 +68,7 @@ public class GradebookCalculationUnit {
 				if (sumPoints.compareTo(BigDecimal.ZERO) == 0) 
 					return BigDecimal.ZERO.setScale(AppConstants.SCALE);
 
-
-				BigDecimal percentageScore = sumPoints.divide(sumPointsPossible, RoundingMode.HALF_EVEN);
+				BigDecimal percentageScore = sumPoints.divide(sumPointsPossible, GradeCalculations.MATH_CONTEXT);
 
 				if (sumExtraCreditPoints != null)
 					percentageScore = percentageScore.add(scaleExtraCreditPoints(sumExtraCreditPoints, sumPointsPossible, totalGradebookPoints, isExtraCreditScaled));

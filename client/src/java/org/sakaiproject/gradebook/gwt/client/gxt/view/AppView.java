@@ -131,6 +131,9 @@ public abstract class AppView extends View {
 		case SHOW_STATISTICS:
 			onShowStatistics();
 			break;
+		case STOP_STATISTICS:
+			onStopStatistics();
+			break;
 		case SINGLE_VIEW:
 			onSingleView((StudentModel)event.data);
 			break;
@@ -272,6 +275,10 @@ public abstract class AppView extends View {
 	}
 	
 	protected void onShowStatistics() {
+		
+	}
+	
+	protected void onStopStatistics() {
 		
 	}
 	

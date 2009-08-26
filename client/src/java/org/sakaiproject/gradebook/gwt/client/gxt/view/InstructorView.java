@@ -261,8 +261,9 @@ public class InstructorView extends AppView {
 				eastCardLayout.setActiveItem(gradeScalePanel);
 				break;
 			case STATISTICS:
-				eastLayoutContainer.setHeading(i18n.statisticsHeading());
-				eastCardLayout.setActiveItem(statisticsPanel);
+				//eastLayoutContainer.setHeading(i18n.statisticsHeading());
+				//eastCardLayout.setActiveItem(statisticsPanel);
+				viewportLayout.setActiveItem(statisticsPanel);
 				break;
 			case HELP:
 				eastLayoutContainer.setHeading(i18n.helpHeading());
@@ -413,12 +414,18 @@ public class InstructorView extends AppView {
 	protected void onShowStatistics() {
 		if (statisticsPanel == null) {
 			statisticsPanel = new StatisticsPanel(i18n);
-			eastLayoutContainer.add(statisticsPanel);
+			viewport.add(statisticsPanel);
 		}
 		statisticsPanel.onLearnerGradeRecordUpdated(null);
-		onExpandEastPanel(EastCard.STATISTICS);
+		viewportLayout.setActiveItem(statisticsPanel);
+		//onExpandEastPanel(EastCard.STATISTICS);
 	}
 
+	@Override
+	protected void onStopStatistics() {
+		viewportLayout.setActiveItem(borderLayoutContainer);
+	}
+	
 	@Override
 	protected void onStartEditItem(ItemModel itemModel) {
 		AppView.EastCard activeCard = AppView.EastCard.EDIT_ITEM;
@@ -443,6 +450,7 @@ public class InstructorView extends AppView {
 
 	@Override
 	protected void onStopImport() {
+		viewport.remove(importExportView.getImportDialog());
 		viewportLayout.setActiveItem(borderLayoutContainer);
 	}
 

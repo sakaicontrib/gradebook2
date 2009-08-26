@@ -94,6 +94,7 @@ public class GradebookEvents {
 	public static final GradebookEvent ShowGradeScale				= registerEvent(EventKey.SHOW_GRADE_SCALE);
 	public static final GradebookEvent ShowHistory					= registerEvent(EventKey.SHOW_HISTORY);
 	public static final GradebookEvent ShowStatistics				= registerEvent(EventKey.SHOW_STATISTICS);
+	public static final GradebookEvent StopStatistics				= registerEvent(EventKey.STOP_STATISTICS);
 	public static final GradebookEvent SingleGrade					= registerEvent(EventKey.SINGLE_GRADE);
 	public static final GradebookEvent SingleView 					= registerEvent(EventKey.SINGLE_VIEW);
 	public static final GradebookEvent StartEditItem				= registerEvent(EventKey.START_EDIT_ITEM);

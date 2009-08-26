@@ -65,6 +65,8 @@ public class StatisticsPanel extends ContentPanel {
 	public StatisticsPanel(I18nConstants i18n) {
 		super();
 
+		setHeading("Statistics");
+		setFrame(true);
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 
 		ColumnConfig column = new ColumnConfig();  
@@ -136,11 +138,10 @@ public class StatisticsPanel extends ContentPanel {
 		final ColumnModel cm = new ColumnModel(configs);
 
 
-		setBodyBorder(false);
-		setHeaderVisible(false);
+		setBodyBorder(true);
 		setButtonAlign(HorizontalAlignment.RIGHT);
 		setLayout(new FitLayout());
-		setSize(600, 300);
+		//setSize(600, 300);
 
 		final Grid<StatisticsModel> grid = new Grid<StatisticsModel>(store, cm);  
 		grid.setStyleAttribute("borderTop", "none");   
@@ -152,7 +153,7 @@ public class StatisticsPanel extends ContentPanel {
 
 			@Override
 			public void componentSelected(ButtonEvent be) {
-				Dispatcher.forwardEvent(GradebookEvents.HideEastPanel.getEventType(), Boolean.FALSE);
+				Dispatcher.forwardEvent(GradebookEvents.StopStatistics.getEventType(), Boolean.FALSE);
 			}
 
 		});

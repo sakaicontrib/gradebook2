@@ -1655,12 +1655,12 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		switch (gradebook.getGrade_type()) {
 		case GradebookService.GRADE_TYPE_LETTER:
 			if (isStandardDev)
-				statAsString = stat != null && stat.compareTo(BigDecimal.ZERO) != 0 ? stat.divide(BigDecimal.valueOf(10), new MathContext(2, RoundingMode.HALF_EVEN)).toString() : NA;
+				statAsString = stat != null && stat.compareTo(BigDecimal.ZERO) != 0 ? stat.divide(BigDecimal.valueOf(10), new MathContext(AppConstants.DISPLAY_SCALE, RoundingMode.HALF_EVEN)).toString() : NA;
 			else
 				statAsString = stat != null ? gradeCalculations.convertPercentageToLetterGrade(stat) : NA;
 			break;
 		default:
-			statAsString = stat != null ? stat.setScale(2, RoundingMode.HALF_EVEN).toString() : NA;
+			statAsString = stat != null ? stat.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode()).toString() : NA;
 		}
 		
 		return statAsString;
@@ -2382,12 +2382,12 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			throw new InvalidInputException("Value cannot be blank. Please enter a number.");
 		}
 		
-		BigDecimal bigValue = BigDecimal.valueOf(((Double)value).doubleValue()).setScale(2, RoundingMode.HALF_EVEN);
+		BigDecimal bigValue = BigDecimal.valueOf(((Double)value).doubleValue()).setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
 
 		if (bigValue.compareTo(BigDecimal.ZERO) == 0)
 			throw new InvalidInputException("Value cannot be zero. Please enter a number larger than zero.");
 		if (bigValue.compareTo(BigDecimal.valueOf(100.00d)) >= 0)
-			throw new InvalidInputException("Value (" + bigValue.setScale(2, RoundingMode.HALF_EVEN).toString() + ") cannot be equal or larger than 100.00.");
+			throw new InvalidInputException("Value (" + bigValue.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode()).toString() + ") cannot be equal or larger than 100.00.");
 		
 		List<X> gradeScaleMappings = new ArrayList<X>();
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
@@ -2419,7 +2419,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				Double oldValue = gradeMapping.getGradeMap().get(letterGrade);
 				
 				if (oldValue != null) {
-					BigDecimal bgOldValue = BigDecimal.valueOf(oldValue.doubleValue()).setScale(2, RoundingMode.HALF_EVEN);
+					BigDecimal bgOldValue = BigDecimal.valueOf(oldValue.doubleValue()).setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
 					
 					if (bgOldValue.compareTo(BigDecimal.ZERO) == 0) {
 						throw new InvalidInputException("Cannot modify the absolute base of a grading scale or manual override grades.");
@@ -2428,7 +2428,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				
 				// If the one above is not bigger than the one below then throw an exception
 				if (bigOldUpperScale.compareTo(bigValue) <= 0) {
-					throw new InvalidInputException("Value (" + bigValue.setScale(2, RoundingMode.HALF_EVEN).toString() +") must be smaller than the value above (" + bigOldUpperScale.setScale(2, RoundingMode.HALF_EVEN).toString() + ")");
+					throw new InvalidInputException("Value (" + bigValue.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode()).toString() +") must be smaller than the value above (" + bigOldUpperScale.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode()).toString() + ")");
 				}
 				
 				gradeMapping.getGradeMap().put(letterGrade, (Double) value);
@@ -2442,7 +2442,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					BigDecimal bigUpperScale = BigDecimal.valueOf(upperScale.doubleValue());
 					if (bigOldUpperScale.compareTo(BigDecimal.ZERO) != 0 
 							&& bigOldUpperScale.compareTo(bigUpperScale) <= 0) 
-						throw new InvalidInputException("Value (" + bigOldUpperScale.setScale(2, RoundingMode.HALF_EVEN).toString() + ") cannot be equal or less than the value (" + bigUpperScale.setScale(2, RoundingMode.HALF_EVEN).toString() + ") below ");
+						throw new InvalidInputException("Value (" + bigOldUpperScale.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode()).toString() + ") cannot be equal or less than the value (" + bigUpperScale.setScale(2, RoundingMode.HALF_EVEN).toString() + ") below ");
 					
 				}
 			}
@@ -3505,7 +3505,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 
 		if (autoCalculatedGrade != null)
-			autoCalculatedGrade = autoCalculatedGrade.setScale(2, RoundingMode.HALF_EVEN);
+			autoCalculatedGrade = autoCalculatedGrade.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
 
 		return autoCalculatedGrade;
 	}
@@ -3692,7 +3692,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			String grade = iter.next();
 			Double mapVal = (Double) gradeMap.get(grade);
 			double m = mapVal == null ? 0d : mapVal.doubleValue();
-			BigDecimal bigMapVal = BigDecimal.valueOf(m).setScale(2, RoundingMode.HALF_EVEN);
+			BigDecimal bigMapVal = BigDecimal.valueOf(m).setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
 
 			// If the value in the map is less than the value passed, then the
 			// map value is the letter grade for this value

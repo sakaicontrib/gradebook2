@@ -82,13 +82,15 @@ public class DisplayGrade {
 				builder.append(" (override)");
 			} else if (calculatedGrade != null && !isLetterGradeMode) {	
 				builder.append(" (").append(calculatedGrade.toString()).append("%)");
-			}
+			} 
 			
 			if (isMissingGrades)
 				builder.append(missingGradesMarker);
+		
+			return builder.toString();
 		}
 		
-		return builder.toString();
+		return null;
 	}
 	
 }

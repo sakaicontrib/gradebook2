@@ -28,11 +28,9 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.sakai.GradeCalculations;
 
 public class GradeRecordCalculationUnit {
-
-	public static final MathContext MATH_CONTEXT = new MathContext(10, RoundingMode.HALF_EVEN);
-	private static final int SCALE = 10;
 
 	private BigDecimal pointsReceived;
 	private BigDecimal pointsPossible;
@@ -50,17 +48,17 @@ public class GradeRecordCalculationUnit {
 	protected Object actualRecord;
 
 	public GradeRecordCalculationUnit(BigDecimal pointsReceived, BigDecimal pointsPossible, BigDecimal percentOfCategory, Boolean extraCredit) {
-		this.pointsReceived = pointsReceived == null ? null : pointsReceived.setScale(SCALE, RoundingMode.HALF_EVEN);
-		this.pointsPossible = pointsPossible == null ? null : pointsPossible.setScale(SCALE, RoundingMode.HALF_EVEN);
-		this.percentOfCategory = percentOfCategory == null ? null : percentOfCategory.setScale(SCALE, RoundingMode.HALF_EVEN);
+		this.pointsReceived = pointsReceived == null ? null : pointsReceived.setScale(AppConstants.SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
+		this.pointsPossible = pointsPossible == null ? null : pointsPossible.setScale(AppConstants.SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
+		this.percentOfCategory = percentOfCategory == null ? null : percentOfCategory.setScale(AppConstants.SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
 		calculatePercentageScore();
 		isExcused = pointsReceived == null;
 		this.isExtraCredit = extraCredit == null ? false : extraCredit.booleanValue();
 	}
 
 	public GradeRecordCalculationUnit(BigDecimal percentageScore, BigDecimal percentOfCategory, Boolean extraCredit) {
-		this.percentageScore = percentageScore == null ? null : percentageScore.setScale(SCALE, RoundingMode.HALF_EVEN);
-		this.percentOfCategory = percentOfCategory == null ? null : percentOfCategory.setScale(SCALE, RoundingMode.HALF_EVEN);
+		this.percentageScore = percentageScore == null ? null : percentageScore.setScale(AppConstants.SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
+		this.percentOfCategory = percentOfCategory == null ? null : percentOfCategory.setScale(AppConstants.SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
 
 		isExcused = pointsReceived == null;
 		this.isExtraCredit = extraCredit == null ? false : extraCredit.booleanValue();
@@ -82,11 +80,11 @@ public class GradeRecordCalculationUnit {
 			return;
 
 		if (pointsReceived.compareTo(BigDecimal.ZERO) == 0 || pointsPossible.compareTo(BigDecimal.ZERO) == 0)
-			percentageScore = BigDecimal.ZERO.setScale(AppConstants.SCALE, RoundingMode.HALF_EVEN);
+			percentageScore = BigDecimal.ZERO.setScale(AppConstants.SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
 
 		if (pointsPossible.compareTo(BigDecimal.ZERO) != 0)
 		{
-			percentageScore = pointsReceived.divide(pointsPossible, RoundingMode.HALF_EVEN);
+			percentageScore = pointsReceived.divide(pointsPossible, GradeCalculations.MATH_CONTEXT);
 		}
 		else
 		{

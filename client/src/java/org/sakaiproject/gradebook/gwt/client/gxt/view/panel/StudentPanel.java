@@ -48,7 +48,6 @@ import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Element;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
@@ -69,8 +68,8 @@ public class StudentPanel extends ContentPanel {
 	private TextArea defaultTextArea = new TextArea();
 	private NumberFormat defaultNumberFormat = NumberFormat.getFormat("#.###");
 	private NumberField defaultNumberField = new NumberField();
-    private FlexTable studentInformation, gradeInformation;
-    private ContentPanel studentInformationPanel, gradeInformationPanel;
+    private FlexTable studentInformation, courseGradeInfo, gradeInformation;
+    private ContentPanel studentInformationPanel, courseGradeInfoPanel, gradeInformationPanel;
 
 	private StudentModel learnerGradeRecordCollection;
 	
@@ -104,6 +103,8 @@ public class StudentPanel extends ContentPanel {
 		studentInformationPanel.add(studentInformation);
 		add(studentInformationPanel, new RowData(-1, -1, new Margins(5, 0, 0, 0)));
 
+		courseGradeInfo = new FlexTable();
+		
 		gradeInformation = new FlexTable();
 		gradeInformation.setStyleName("gbStudentInformation");
 		gradeInformationPanel = new ContentPanel();
@@ -114,7 +115,6 @@ public class StudentPanel extends ContentPanel {
 		gradeInformationPanel.setScrollMode(Scroll.AUTO);
 		gradeInformationPanel.add(gradeInformation);
 		add(gradeInformationPanel, new RowData(1, 1, new Margins(5, 0, 0, 0)));
-		
 	}
 	
 	public StudentModel getStudentRow() {
@@ -259,7 +259,7 @@ public class StudentPanel extends ContentPanel {
 	        }
 	        if (courseGradeStats != null)
 	        {
-	        	GWT.log("Course stats is not null", null);
+	        	//GWT.log("Course stats is not null", null);
 		        studentInformation.setText(PI_ROW_MEAN, PI_COL_HEADING, "Mean");
 		        formatter.setStyleName(PI_ROW_MEAN, PI_COL_HEADING, "gbImpact");
 		        studentInformation.setText(PI_ROW_MEAN, PI_COL_VALUE, courseGradeStats.getMean());
@@ -473,8 +473,7 @@ public class StudentPanel extends ContentPanel {
         gradeInformationPanel.show();
 	}
 	
-	private StatisticsModel getStatsModelForItem(String id,
-			List<StatisticsModel> statsList) {
+	private StatisticsModel getStatsModelForItem(String id, List<StatisticsModel> statsList) {
 		int idx = -1; 
 		
 		StatisticsModel key = new StatisticsModel();

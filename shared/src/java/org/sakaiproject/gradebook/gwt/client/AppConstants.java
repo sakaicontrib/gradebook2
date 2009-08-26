@@ -94,7 +94,8 @@ public interface AppConstants {
 	// Form panel id constants
 	public static final String LEARNER_SUMMARY_FIELD_PREFIX		= "learnerField:";
 	
-	public static final int SCALE = 10;	
+	public static final int SCALE = 10;
+	public static final int DISPLAY_SCALE = 2;
 	
 	public static final String IMPORT_CHANGES		= "importChangesMade";
 

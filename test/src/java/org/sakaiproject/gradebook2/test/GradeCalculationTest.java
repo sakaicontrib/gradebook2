@@ -23,7 +23,6 @@
 
 package org.sakaiproject.gradebook2.test;
 
-import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -36,7 +35,6 @@ import junit.framework.TestCase;
 import org.sakaiproject.gradebook.gwt.sakai.calculations.CategoryCalculationUnit;
 import org.sakaiproject.gradebook.gwt.sakai.calculations.GradeRecordCalculationUnit;
 import org.sakaiproject.gradebook.gwt.sakai.calculations.GradebookCalculationUnit;
-import org.sakaiproject.gradebook.gwt.sakai.calculations.Calculation.Mode;
 
 public class GradeCalculationTest extends TestCase {
 
@@ -46,13 +44,12 @@ public class GradeCalculationTest extends TestCase {
 
 	private GradebookCalculationUnit gradebookUnit;
 
-	private boolean isExtraCreditScaled = false;
+	protected boolean isExtraCreditScaled = false;
 	private BigDecimal totalGradebookPoints = null;
 	
 	public GradeCalculationTest(String name) {
 		super(name);
 	}
-
 
 	public void testPerfectPoints() {
 
@@ -481,6 +478,11 @@ public class GradeCalculationTest extends TestCase {
 		assertEqualsAtScale2(BigDecimal.valueOf(110.00d), courseGrade);
 	}
 
+	
+	
+	
+	
+	
 	protected void setUp() throws Exception {
 		super.setUp();
 

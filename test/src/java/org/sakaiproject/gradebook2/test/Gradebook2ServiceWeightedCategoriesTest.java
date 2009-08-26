@@ -33,7 +33,6 @@ import junit.framework.TestCase;
 
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
-import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
@@ -93,7 +92,7 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 			count++;
 
 			if (count == 4) 
-				assertEquals("A+ (100.00%) ", updatedRecord.getStudentGrade());
+				assertEquals("A+ (100.00%)", updatedRecord.getStudentGrade());
 			else
 				assertEquals("A+ (100.00%) ***", updatedRecord.getStudentGrade());
 		}
@@ -108,7 +107,7 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 
 		updatedRecord = service.scoreTextItem(gbModel.getGradebookUid(), firstLearner, StudentModel.Key.GRADE_OVERRIDE.name(), null, previousValue);
 
-		assertEquals("A+ (100.00%) ", updatedRecord.getStudentGrade());
+		assertEquals("A+ (100.00%)", updatedRecord.getStudentGrade());
 	}
 
 
@@ -304,9 +303,9 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 		item.setRemoved(Boolean.TRUE);
 
 		ItemModel activeItem = getActiveItem(service.updateItemModel(item));
-		assertTrue(activeItem.getRemoved());
+		assertNull(activeItem);
 
-		activeItem.setIncluded(Boolean.TRUE);
+		item.setIncluded(Boolean.TRUE);
 
 		boolean isExceptionThrown = false;
 
@@ -325,7 +324,7 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 	 * (6b) must not include an item in grading that has a category that has been deleted (removed = true)
 	 */
 	// FIXME: This is really an anomolous case that may not need testing, since the item itself will not appear after it's category has been deleted
-	public void testIncludeItemFromDeletedCategory() throws Exception {
+	/*public void testIncludeItemFromDeletedCategory() throws Exception {
 		// First, ensure that category is deleted
 		category.setRemoved(Boolean.TRUE);
 		ItemModel item = getFirstItemInCategory(category);
@@ -341,7 +340,7 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 		}
 
 		assertTrue(isExceptionThrown);
-	}
+	}*/
 
 
 	/*
@@ -363,7 +362,7 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 				assertEquals(BigDecimal.valueOf(33.3333d).setScale(4, RoundingMode.HALF_EVEN), BigDecimal.valueOf(c.getPercentCategory().doubleValue()).setScale(4, RoundingMode.HALF_EVEN));
 				assertTrue(c.getIncluded());
 			} else {
-				assertEquals(BigDecimal.valueOf(25.0000d).setScale(4, RoundingMode.HALF_EVEN), BigDecimal.valueOf(c.getPercentCategory().doubleValue()).setScale(4, RoundingMode.HALF_EVEN));
+				assertEquals(BigDecimal.valueOf(0.0000d).setScale(4, RoundingMode.HALF_EVEN), BigDecimal.valueOf(c.getPercentCategory().doubleValue()).setScale(4, RoundingMode.HALF_EVEN));
 				assertFalse(c.getIncluded());
 			}
 		}
@@ -374,7 +373,8 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 	 * 
 	 * (8) item must include a valid category id
 	 */
-	public void testItemMustIncludeCategoryId() throws Exception {
+	// This one is no longer true, as such, since we allow unassigned items in certain cases
+	/*public void testItemMustIncludeCategoryId() throws Exception {
 		// Grab first item from category
 		ItemModel item = getFirstItemInCategory(category);
 		assertNotNull(item.getCategoryId());
@@ -389,7 +389,7 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 		}
 
 		assertTrue(isExceptionThrown);
-	}
+	}*/
 
 
 	/*
@@ -452,9 +452,11 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 	 * Test item update business rule #10
 	 * 
 	 * (10) if item weight changes then remove the equal weighting flag (set to false) for the owning category
-	 * 	   	 
+	 * 
+	 * !!!This business rule has been removed!!!
+	 * 
 	 */
-	public void testRemoveCategoryEqualWeightWhenItemWeightChanges() throws Exception {
+	/*public void testRemoveCategoryEqualWeightWhenItemWeightChanges() throws Exception {
 		// Make sure that the test category has equal weight items
 		assertTrue(category.getEqualWeightAssignments());
 		ItemModel item = getFirstItemInCategory(category);
@@ -468,7 +470,7 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 		assertEquals(Double.valueOf(100d), updatedItem.getPercentCategory());
 		assertFalse(categoryItemModel.getEqualWeightAssignments());
 		assertEquals(Double.valueOf(175d), categoryItemModel.getPercentCategory());
-	}
+	}*/
 
 
 	/*

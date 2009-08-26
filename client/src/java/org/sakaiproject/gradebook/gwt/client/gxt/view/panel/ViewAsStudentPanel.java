@@ -56,6 +56,7 @@ public class ViewAsStudentPanel extends ContentPanel {
 	public ViewAsStudentPanel(boolean isStudentView) {
 		this.isStudentView = isStudentView;
 		setBodyBorder(true);
+		setFrame(true);
 		setHeaderVisible(true);
 		setLayout(new FitLayout());
 
