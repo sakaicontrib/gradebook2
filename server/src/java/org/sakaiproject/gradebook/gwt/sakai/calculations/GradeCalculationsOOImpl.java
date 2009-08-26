@@ -249,7 +249,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 
 						if (targ.getScore().equals(cur.getScore()))
 						{
-							statistics.setRank(i);
+							statistics.setRank(i+1);
 							statistics.setStudentTotal(gradeList.size()); 
 
 						}
