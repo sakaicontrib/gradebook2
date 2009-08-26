@@ -702,7 +702,7 @@ public class ItemFormPanel extends ContentPanel {
 			isPercentCategoryVisible = hasWeights && (!isEqualWeight || isExtraCredit) && isItem && !isWeightByPoints;
 			isDropLowestVisible = isDropLowestVisible && !isExtraCredit; 
 			
-			if (isDropLowestVisible && category != null && (isWeightByPoints && hasWeights) || (!hasWeights && hasCategories)) {
+			if (isDropLowestVisible && category != null && ((isWeightByPoints && hasWeights) || (!hasWeights && hasCategories))) {
 				if (category.getChildCount() > 0) {
 					Double points = null;
 					for (int i=0;i<category.getChildCount();i++) {
