@@ -1,0 +1,13 @@
+Index: samigo-services/src/java/org/sakaiproject/tool/assessment/integration/helper/integrated/GradebookServiceHelperImpl.java
+===================================================================
+--- samigo-services/src/java/org/sakaiproject/tool/assessment/integration/helper/integrated/GradebookServiceHelperImpl.java	(revision 6493)
++++ samigo-services/src/java/org/sakaiproject/tool/assessment/integration/helper/integrated/GradebookServiceHelperImpl.java	(working copy)
+@@ -110,6 +110,8 @@
+ 				toolId = ((ToolConfiguration) pageToolList.get(0)).getTool().getId();
+ 				if (toolId.equalsIgnoreCase("sakai.gradebook.tool")) {
+ 					return true;
++				} else if (toolId.equalsIgnoreCase("sakai.gradebook.gwt.rpc")) {
++					return true;
+ 				}
+ 			}
+ 		} catch (Exception e) {

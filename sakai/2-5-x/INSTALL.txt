@@ -1,22 +1,23 @@
 INSTALLATION
 
-Currently, it should build against a vanilla 2.5.x branch sakai. You will need to take the following actions:
+You will need to take the following actions:
 
 (1) Run the sql script under client/src/sql/oracle/gb-datamodel-changes.sql against your sakai database (or set auto.ddl to true).
-(2) Apply the patch labeled gb-2-5-x.patch under the original gradebook module.
-(3) Apply the patch labeled sam-2-5-x.patch under the sam module.
+(2) Apply the patch sakai/2-5-x/gradebook.patch under the original gradebook module.
+(3) Apply the patch sakai/2-5-x/sam.patch under the sam module.
 (4) Check out this project as "gradebook2" and add it as a module under your sakai pom.xml for the active profile.
 (5) Under your sakai profile in .m2/settings.xml set the <gwt.platform> tag to linux, mac, or windows (only tested on linux and mac so far).
 (6) Optional: Configure Export Advisor by specifying which bean to inject. This is in the applicationContext.xml file via the placeholderConfig spring bean.
 
 
 In other words, at your sakai base directory:
-> svn co https://source.sakaiproject.org/contrib/gradebook2/tags/Test-Tag-2-5-x-QA-10 gradebook2
+> svn co https://source.sakaiproject.org/contrib/gradebook2/tags/1.0.0 gradebook2
 > cd gradebook
-> patch -p0 < ../gradebook2/gb-2-5-x.patch
+> patch -p0 < ../gradebook2/sakai/2-5-x/gradebook.patch
 > cd ../sam
-> patch -p0 < ../gradebook2/sam-2-5-x.patch
+> patch -p0 < ../gradebook2/sakai/2-5-x/sam.patch
 > cd ../
 > vi pom.xml (and edit to include "gradebook2" as a module)
 > cd gradebook2
 > mvn install sakai:deploy 
+
