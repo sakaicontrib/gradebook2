@@ -116,10 +116,10 @@ public class StatisticsPanel extends ContentPanel {
 		configs.add(column);
 
 
-		RpcProxy<ListLoadConfig, ListLoadResult<GradeScaleRecordModel>> proxy = new RpcProxy<ListLoadConfig, ListLoadResult<GradeScaleRecordModel>>() {
+		RpcProxy<ListLoadConfig, ListLoadResult<StatisticsModel>> proxy = new RpcProxy<ListLoadConfig, ListLoadResult<StatisticsModel>>() {
 
 			@Override
-			protected void load(ListLoadConfig listLoadConfig, AsyncCallback<ListLoadResult<GradeScaleRecordModel>> callback) {
+			protected void load(ListLoadConfig listLoadConfig, AsyncCallback<ListLoadResult<StatisticsModel>> callback) {
 				GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
 				Gradebook2RPCServiceAsync service = Registry.get("service");
 				service.getPage(gbModel.getGradebookUid(), gbModel.getGradebookId(), EntityType.STATISTICS, null, SecureToken.get(), callback);

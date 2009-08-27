@@ -27,7 +27,10 @@ import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
+import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
+import org.sakaiproject.gradebook.gwt.client.SecureToken;
+import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StatisticsModel;
@@ -36,6 +39,7 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.Scroll;
+import com.extjs.gxt.ui.client.data.ListLoadResult;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
@@ -48,6 +52,7 @@ import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
@@ -79,6 +84,10 @@ public class StudentPanel extends ContentPanel {
 	
 	private GradebookModel selectedGradebook;
 	
+	private boolean isPossibleStatsChanged = false;
+	
+	private List<StatisticsModel> statsList;
+	
 	public StudentPanel(boolean isStudentView, boolean displayRank) {
 		this.isStudentView = isStudentView;
 		this.defaultNumberField.setFormat(defaultNumberFormat);
@@ -87,6 +96,7 @@ public class StudentPanel extends ContentPanel {
 		this.defaultTextArea.addInputStyleName("gbTextAreaInput");
 		this.defaultTextField.addInputStyleName("gbTextFieldInput");
 		this.displayRank = displayRank;
+		this.statsList = null;
 		setFrame(true);
 		setHeaderVisible(false);
 		setLayout(new RowLayout());
@@ -127,14 +137,11 @@ public class StudentPanel extends ContentPanel {
         
 		updateCourseGrade(learnerGradeRecordCollection.getStudentGrade(), overrideString, learnerGradeRecordCollection.getCalculatedGrade());
 		
-		StatisticsModel m = getStatsModelForItem(String.valueOf(Long.valueOf(-1)), selectedGradebook.getStatsModel());
-		
-		setStudentInfoTable(m);
-		
-		setGradeInfoTable(selectedGradebook, learnerGradeRecordCollection);
+		List<StatisticsModel> statsList = selectedGradebook.getStatsModel();
+		refreshGradeData(learnerGradeRecordCollection, statsList);
 	}
 	
-	public void onChangeModel(GradebookModel selectedGradebook, StudentModel learnerGradeRecordCollection) {
+	public void onChangeModel(GradebookModel selectedGradebook, final StudentModel learnerGradeRecordCollection) {
 		if (learnerGradeRecordCollection != null) {
 			this.selectedGradebook = selectedGradebook;
 			this.learnerGradeRecordCollection = learnerGradeRecordCollection;
@@ -142,15 +149,39 @@ public class StudentPanel extends ContentPanel {
 			
 			updateCourseGrade(learnerGradeRecordCollection.getStudentGrade(), overrideString, learnerGradeRecordCollection.getCalculatedGrade());
 			
-			StatisticsModel m = getStatsModelForItem(String.valueOf(Long.valueOf(-1)), selectedGradebook.getStatsModel());
-			setStudentInfoTable(m);
-			
-			setGradeInfoTable(selectedGradebook, learnerGradeRecordCollection);
+			if (isPossibleStatsChanged) {
+				AsyncCallback<ListLoadResult<StatisticsModel>> callback = new AsyncCallback<ListLoadResult<StatisticsModel>>() {
+
+					public void onFailure(Throwable caught) {
+						// TODO Auto-generated method stub
+						
+					}
+
+					public void onSuccess(ListLoadResult<StatisticsModel> result) {
+						statsList = result.getData();
+						refreshGradeData(learnerGradeRecordCollection, statsList);
+						isPossibleStatsChanged = false;
+					}
+					
+				};
+				
+				Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
+				service.getPage(selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId(), EntityType.STATISTICS, null, SecureToken.get(), callback);
+			} else {
+				if (statsList == null)
+					statsList = selectedGradebook.getStatsModel();
+				
+				refreshGradeData(learnerGradeRecordCollection, statsList);
+			}
 		}
 	}
 	
 	public void onItemUpdated(ItemModel itemModel) {
 
+	}
+	
+	public void onLearnerGradeRecordUpdated(StudentModel learnerGradeRecordModel) {
+		this.isPossibleStatsChanged = true;
 	}
 	
 	protected void onRender(Element parent, int pos) {
@@ -195,6 +226,13 @@ public class StudentPanel extends ContentPanel {
 		if (learnerGradeRecordCollection != null)
 			learnerGradeRecordCollection.set(StudentModel.Key.COURSE_GRADE.name(), newGrade);
 	}
+	
+	private void refreshGradeData(StudentModel learnerGradeRecordCollection, List<StatisticsModel> statsList) {
+		StatisticsModel m = getStatsModelForItem(String.valueOf(Long.valueOf(-1)), statsList);
+		setStudentInfoTable(m);
+		setGradeInfoTable(selectedGradebook, learnerGradeRecordCollection, statsList);
+	}
+	
 	
 	// FIXME - i18n 
 	// FIXME - need to assess impact of doing it this way... 
@@ -376,7 +414,7 @@ public class StudentPanel extends ContentPanel {
 	// So for stats, we'll have the following columns: 
 	// grade | Mean | Std Deviation | Median | Mode | Comment 
 
-	private void setGradeInfoTable(GradebookModel selectedGradebook, StudentModel learner) {		
+	private void setGradeInfoTable(GradebookModel selectedGradebook, StudentModel learner, List<StatisticsModel> statsList) {		
 		// To force a refresh, let's first hide the owning panel
 		gradeInformationPanel.hide();
 	
@@ -392,10 +430,7 @@ public class StudentPanel extends ContentPanel {
 		}
 		
 		ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
-		List<StatisticsModel> statsList = selectedGradebook.getStatsModel(); 
-		
-		
-		
+
 		boolean isDisplayReleasedItems = DataTypeConversionUtil.checkBoolean(gradebookItemModel.getReleaseItems());
 		boolean columnsDisplayed = false; 
 		if (isDisplayReleasedItems) {

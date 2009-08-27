@@ -139,7 +139,7 @@ public class AppController extends Controller {
 			case LEARNER_GRADE_RECORD_UPDATED:
 				forwardToView(multigradeView, event);
 				forwardToView(appView, event);
-				if (singleView != null && singleView.isDialogVisible())
+				if (singleView != null)
 					forwardToView(singleView, event);
 				break;
 			case NEW_CATEGORY:

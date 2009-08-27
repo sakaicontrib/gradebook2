@@ -100,6 +100,10 @@ public class ViewAsStudentPanel extends ContentPanel {
 	public void onItemUpdated(ItemModel itemModel) {
 		container.onItemUpdated(itemModel);
 	}
+	
+	public void onLearnerGradeRecordUpdated(StudentModel learnerGradeRecordModel) {
+		container.onLearnerGradeRecordUpdated(learnerGradeRecordModel);
+	}
 
 	public void onUserChange(UserEntityAction<?> action) {
 		switch (action.getEntityType()) {

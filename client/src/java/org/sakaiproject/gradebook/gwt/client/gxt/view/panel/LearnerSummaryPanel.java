@@ -105,6 +105,8 @@ public class LearnerSummaryPanel extends ContentPanel {
 
 	private FlexTableContainer learnerInfoTable;
 
+	private boolean isPossibleStatsChanged = false;
+	
 	public LearnerSummaryPanel(I18nConstants i18n) {
 		this.i18n = i18n;
 
@@ -165,7 +167,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 
 	public void onChangeModel(ListStore<StudentModel> learnerStore, TreeStore<ItemModel> treeStore, StudentModel learner) {
 		this.learner = learner;
-		updateLearnerInfo(learner);
+		updateLearnerInfo(learner, false);
 
 		if (learner != null) {
 			verifyFormPanelComponents(treeStore, learnerStore);
@@ -196,7 +198,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 	public void onLearnerGradeRecordUpdated(StudentModel learner) {
 		if (this.learner != null && learner != null 
 				&& this.learner.getIdentifier().equals(learner.getIdentifier())) 
-			updateLearnerInfo(learner);
+			updateLearnerInfo(learner, true);
 	}
 
 	public void onRefreshGradebookSetup(GradebookModel gradebookModel) {
@@ -384,7 +386,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 		return learnerInfoPanel;
 	}
 
-	private void updateLearnerInfo(StudentModel learnerGradeRecordCollection) {		
+	private void updateLearnerInfo(StudentModel learnerGradeRecordCollection, boolean isByEvent) {		
 		// To force a refresh, let's first hide the owning panel
 		learnerInfoPanel.hide();
 
@@ -414,6 +416,9 @@ public class LearnerSummaryPanel extends ContentPanel {
 		formatter.setStyleName(6, 0, "gbImpact");
 		learnerInfoTable.setText(6, 1, learnerGradeRecordCollection.getStudentGrade());
 		learnerInfoPanel.show();
+		
+		if (isByEvent)
+			isPossibleStatsChanged = true;
 	}
 
 	private void verifyFormPanelComponents(TreeStore<ItemModel> treeStore, final ListStore<StudentModel> learnerStore) {
