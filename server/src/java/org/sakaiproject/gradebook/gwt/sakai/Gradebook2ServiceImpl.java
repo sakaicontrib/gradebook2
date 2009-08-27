@@ -3089,7 +3089,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		model.setStudentModelKey(Key.ASSIGNMENT.name());
 		model.setItemOrder(assignment.getItemOrder());
 
-		boolean isEnforcePointWeighting = DataTypeConversionUtil.checkBoolean(category.isEnforcePointWeighting()) && hasWeights;
+		//boolean isEnforcePointWeighting = DataTypeConversionUtil.checkBoolean(category.isEnforcePointWeighting()) && hasWeights;
 		
 		/*BigDecimal ratio = null;
 		if (percentCourseGrade == null && hasCategories && category != null) {
