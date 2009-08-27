@@ -361,7 +361,7 @@ public class StudentPanel extends ContentPanel {
         		resultBuilder.append(NumberFormat.getDecimalFormat().format(((Double)value).doubleValue()));
         		
         		if (item.getPoints() != null)
-        			resultBuilder.append(" out of ").append(item.getPoints()).append(" points");
+        			resultBuilder.append(" out of ").append(NumberFormat.getDecimalFormat().format(item.getPoints().doubleValue())).append(" points");
         		
         		break;
         	case PERCENTAGES:

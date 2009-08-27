@@ -79,6 +79,9 @@ public class SingleGradeView extends View {
 		case LEARNER_GRADE_RECORD_UPDATED:
 			onLearnerGradeRecordUpdated((UserEntityUpdateAction)event.data);
 			break;
+		case GRADE_TYPE_UPDATED:
+			onGradeTypeUpdated((GradebookModel)event.data);
+			break;
 		}
 	}
 	
@@ -96,6 +99,10 @@ public class SingleGradeView extends View {
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 		dialog.onChangeModel(selectedGradebook, learnerGradeRecordCollection);
 		dialog.show();
+	}
+	
+	private void onGradeTypeUpdated(GradebookModel selectedGradebook) {
+		
 	}
 	
 	private void onItemUpdated(ItemModel itemModel) {

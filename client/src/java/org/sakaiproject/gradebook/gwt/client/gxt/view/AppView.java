@@ -104,6 +104,9 @@ public abstract class AppView extends View {
 		case LEARNER_GRADE_RECORD_UPDATED:
 			onLearnerGradeRecordUpdated((UserEntityUpdateAction)event.data);
 			break;
+		case GRADE_TYPE_UPDATED:
+			onGradeTypeUpdated((GradebookModel)event.data);
+			break;
 		case NEW_CATEGORY:
 			onNewCategory((ItemModel)event.data);
 			break;
@@ -211,6 +214,10 @@ public abstract class AppView extends View {
 	}
 	
 	protected void onGradeStudent(GradeRecordUpdate event) {
+		
+	}
+	
+	protected void onGradeTypeUpdated(GradebookModel selectedGradebook) {
 		
 	}
 	

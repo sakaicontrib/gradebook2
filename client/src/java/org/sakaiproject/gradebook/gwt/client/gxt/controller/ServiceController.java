@@ -423,6 +423,10 @@ public class ServiceController extends Controller {
 					Dispatcher.forwardEvent(GradebookEvents.RefreshGradeScale.getEventType(),
 							selectedGradebook);
 				}
+				
+				if (isGradeTypeUpdated) {
+					Dispatcher.forwardEvent(GradebookEvents.GradeTypeUpdated.getEventType(), selectedGradebook);
+				}
 
 				if (event.item.getItemType() != Type.GRADEBOOK || isGradeTypeUpdated || isCategoryTypeUpdated ||
 						isExtraCreditScaled) {

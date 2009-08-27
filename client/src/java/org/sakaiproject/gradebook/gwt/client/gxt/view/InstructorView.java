@@ -314,6 +314,13 @@ public class InstructorView extends AppView {
 	}
 	
 	@Override
+	protected void onGradeTypeUpdated(GradebookModel selectedGradebook) {
+		if (singleGradeContainer != null) {
+			singleGradeContainer.onGradeTypeUpdated(selectedGradebook);
+		}
+	}
+	
+	@Override
 	protected void onItemCreated(ItemModel itemModel) {
 		onHideEastPanel(Boolean.FALSE);
 	}

@@ -105,7 +105,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 
 	private FlexTableContainer learnerInfoTable;
 
-	private boolean isPossibleStatsChanged = false;
+	private boolean isPossibleGradeTypeChanged = false;
 	
 	public LearnerSummaryPanel(I18nConstants i18n) {
 		this.i18n = i18n;
@@ -195,6 +195,10 @@ public class LearnerSummaryPanel extends ContentPanel {
 		}
 	}
 
+	public void onGradeTypeUpdated(GradebookModel selectedGradebook) {
+		this.isPossibleGradeTypeChanged = true;
+	}
+	
 	public void onLearnerGradeRecordUpdated(StudentModel learner) {
 		if (this.learner != null && learner != null 
 				&& this.learner.getIdentifier().equals(learner.getIdentifier())) 
@@ -202,7 +206,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 	}
 
 	public void onRefreshGradebookSetup(GradebookModel gradebookModel) {
-		scoreFormPanel.removeAll();
+		
 	}
 	
 	@Override
@@ -416,13 +420,21 @@ public class LearnerSummaryPanel extends ContentPanel {
 		formatter.setStyleName(6, 0, "gbImpact");
 		learnerInfoTable.setText(6, 1, learnerGradeRecordCollection.getStudentGrade());
 		learnerInfoPanel.show();
-		
-		if (isByEvent)
-			isPossibleStatsChanged = true;
 	}
 
 	private void verifyFormPanelComponents(TreeStore<ItemModel> treeStore, final ListStore<StudentModel> learnerStore) {
 
+		boolean isLayoutNecessary = false;
+		if (isPossibleGradeTypeChanged) {
+			scoreFormPanel.removeAll();
+			excuseFormPanel.removeAll();
+			commentFormPanel.removeAll();
+			formBinding.unbind();
+			formBinding = null;
+			this.isPossibleGradeTypeChanged = false;
+			isLayoutNecessary = true;
+		}
+		
 		List<ItemModel> rootItems = treeStore.getRootItems();
 
 		List<Component> allItems = scoreFormPanel.getItems();
@@ -459,6 +471,10 @@ public class LearnerSummaryPanel extends ContentPanel {
 				} 
 
 			}
+		}
+		
+		if (isLayoutNecessary) {
+			scoreFormPanel.layout();
 		}
 
 		if (formBinding == null) {

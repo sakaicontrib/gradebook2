@@ -67,6 +67,7 @@ public class AppController extends Controller {
 		registerEventTypes(GradebookEvents.ExpandEastPanel.getEventType());
 		registerEventTypes(GradebookEvents.Exception.getEventType());
 		registerEventTypes(GradebookEvents.FailedToUpdateItem.getEventType());
+		registerEventTypes(GradebookEvents.GradeTypeUpdated.getEventType());
 		registerEventTypes(GradebookEvents.HideColumn.getEventType());
 		registerEventTypes(GradebookEvents.HideFormPanel.getEventType());
 		registerEventTypes(GradebookEvents.HideEastPanel.getEventType());
@@ -193,6 +194,9 @@ public class AppController extends Controller {
 
 				if (singleView != null && singleView.isDialogVisible())
 					forwardToView(singleView, event);
+				break;
+			case GRADE_TYPE_UPDATED:
+				forwardToView(appView, event);
 				break;
 			case SINGLE_VIEW:
 				if (singleView == null)
