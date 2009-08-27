@@ -283,7 +283,9 @@ public class UserDirectoryServiceMock implements UserDirectoryService {
 		return false;
 	}
 	
-	
+	public List<User> getUsersByEids(Collection<String> eids){
+        return null;
+	}
 	//
 	// TEST DATA
 	//
