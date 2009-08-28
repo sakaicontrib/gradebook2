@@ -1459,6 +1459,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 							value = BigDecimal.valueOf(gradeRecord.getPointsEarned().doubleValue());
 							break;
 						case GradebookService.GRADE_TYPE_PERCENTAGE:
+						case GradebookService.GRADE_TYPE_LETTER:
 							value = gradeCalculations.getPointsEarnedAsPercent(assignment, gradeRecord);
 							break;
 					}
