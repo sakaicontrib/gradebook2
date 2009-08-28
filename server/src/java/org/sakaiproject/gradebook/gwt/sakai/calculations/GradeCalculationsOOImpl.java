@@ -386,7 +386,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 	private BigDecimal getNoCategoriesCourseGrade(Collection<Assignment> assignments, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap, boolean isExtraCreditScaled) {
 		List<GradeRecordCalculationUnit> gradeRecordUnits = new ArrayList<GradeRecordCalculationUnit>();
 
-		BigDecimal totalGradebookPoints = populateGradeRecordUnits(assignments, gradeRecordUnits, assignmentGradeRecordMap, false);
+		BigDecimal totalGradebookPoints = populateGradeRecordUnits(assignments, gradeRecordUnits, assignmentGradeRecordMap, false, false);
 
 		GradebookCalculationUnit gradebookUnit = new GradebookCalculationUnit();
 
@@ -444,7 +444,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 					}
 				}
 				
-				totalGradebookPoints = totalGradebookPoints.add(populateGradeRecordUnits(assignments, gradeRecordUnits, assignmentGradeRecordMap, isWeighted));
+				totalGradebookPoints = totalGradebookPoints.add(populateGradeRecordUnits(assignments, gradeRecordUnits, assignmentGradeRecordMap, isWeighted, isExtraCredit(category)));
 
 				categoryGradeUnitListMap.put(categoryKey, gradeRecordUnits);
 
@@ -461,7 +461,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 
 
 	private BigDecimal populateGradeRecordUnits(Collection<Assignment> assignments, List<GradeRecordCalculationUnit> gradeRecordUnits, 
-			Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap, boolean isWeighted) {
+			Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap, boolean isWeighted, boolean isExtraCreditCategory) {
 
 		BigDecimal totalUnitsPoints = BigDecimal.ZERO;
 		
@@ -490,7 +490,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 					BigDecimal assignmentWeight = getAssignmentWeight(assignment);
 
 					GradeRecordCalculationUnit gradeRecordUnit = new GradeRecordCalculationUnit(pointsEarned, 
-							pointsPossible, assignmentWeight, assignment.isExtraCredit()) {
+							pointsPossible, assignmentWeight, isExtraCreditCategory || assignment.isExtraCredit()) {
 
 						@Override
 						public void setDropped(boolean isDropped) {
@@ -630,6 +630,10 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 
 	private boolean isExtraCredit(Assignment assignment) {
 		return assignment.isExtraCredit() == null ? false : assignment.isExtraCredit().booleanValue();
+	}
+	
+	private boolean isExtraCredit(Category category) {
+		return category.isExtraCredit() == null ? false : category.isExtraCredit().booleanValue();
 	}
 
 	private boolean isGraded(AssignmentGradeRecord assignmentGradeRecord) {
