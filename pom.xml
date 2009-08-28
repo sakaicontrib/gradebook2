@@ -1,50 +1,55 @@
-<?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <artifactId>base</artifactId>
-    <groupId>org.sakaiproject</groupId>
-    <version>2.6.0</version>
-    <relativePath>../pom.xml</relativePath>
-  </parent>
-  <name>Sakai Gradebook2 Project</name>
-  <groupId>org.sakaiproject</groupId>
-  <artifactId>gradebook2-base</artifactId>
-  <packaging>pom</packaging>
-  <pluginRepositories>
-    <pluginRepository>
-      <id>gwt-maven-plugins</id>
-      <url>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+    	<artifactId>base</artifactId>
+    	<groupId>org.sakaiproject</groupId>
+    	<version>M2</version>
+    	<relativePath>../pom.xml</relativePath>
+  	</parent>
+  	<name>Sakai Gradebook2 Project</name>
+	<groupId>org.sakaiproject</groupId>
+	<artifactId>gradebook2-base</artifactId>
+	<packaging>pom</packaging>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>gwt-maven-plugins</id>
+			<url>
 				http://gwt-maven.googlecode.com/svn/trunk/mavenrepo
 			</url>
-    </pluginRepository>
-  </pluginRepositories>
-  <repositories>
-    <repository>
-      <id>gwt-maven</id>
-      <url>
+		</pluginRepository>
+	</pluginRepositories>
+		
+	<repositories>
+		<repository>
+			<id>gwt-maven</id>
+			<url>
 				http://gwt-maven.googlecode.com/svn/trunk/mavenrepo
 			</url>
-    </repository>
-    <repository>
-      <id>ucd-maven</id>
-      <url>
+		</repository>
+		<repository>
+			<id>ucd-maven</id>
+			<url>
 				http://maven2.ucdavis.edu/maven2	
 			</url>
-    </repository>
-  </repositories>
-  <properties>
-    <gwt.version>1.5.3</gwt.version>
-    <!-- gwt.home SHOULD BE SET IN YOUR SETTINGS.XML -->
-    <!--gwt.home></gwt.home-->
-    <!--<gwt.platform>linux</gwt.platform>-->
-    <google.webtoolkit.home>${gwt.home}</google.webtoolkit.home>
-  </properties>
-  <modules>
-    <module>model</module>
-    <module>api</module>
-    <module>shared</module>
-    <module>client</module>
-    <module>server</module>
-  </modules>
+		</repository>
+	</repositories>
+
+	<properties>
+		<gwt.version>1.5.3</gwt.version>  
+		<!-- gwt.home SHOULD BE SET IN YOUR SETTINGS.XML -->
+		<!--gwt.home></gwt.home-->  
+		<!--<gwt.platform>linux</gwt.platform>--> 
+		<google.webtoolkit.home>${gwt.home}</google.webtoolkit.home>
+	</properties>
+
+	<modules>
+		<module>model</module>
+		<module>api</module>
+		<module>shared</module>
+		<module>client</module>
+		<module>server</module>
+	</modules>
 </project>

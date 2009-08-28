@@ -2,14 +2,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <artifactId>gradebook2-base</artifactId>
-    <groupId>org.sakaiproject</groupId>
-    <version>2.6.0</version>
-    <relativePath>../pom.xml</relativePath>
+    	<artifactId>gradebook2-base</artifactId>
+    	<groupId>org.sakaiproject</groupId>
+    	<version>M2</version>
+   		<relativePath>../pom.xml</relativePath>
   </parent>
   <name>Sakai Gradebook2 Shared Data Model</name>
   <groupId>org.sakaiproject</groupId>
   <artifactId>gradebook2-model</artifactId>
+  
   <packaging>jar</packaging>
   <properties>
     <deploy.target>shared</deploy.target>
