@@ -53,7 +53,7 @@ public class GradebookServlet extends DefaultServlet {
 		if (relativePath.equals("/")) {
 			String relativePrefix = RELATIVE_PREFIX;
 			String defaultPage = DEFAULT_PAGE;
-			
+
 			WebApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(request.getSession().getServletContext());
 			
 			Gradebook2Service service = (Gradebook2Service)context.getBean("org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service");
