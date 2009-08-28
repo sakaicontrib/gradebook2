@@ -31,9 +31,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.catalina.servlets.DefaultServlet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.sakaiproject.component.cover.ComponentManager;
 import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.XmlWebApplicationContext;
 
 public class GradebookServlet extends DefaultServlet {
 
@@ -53,7 +54,9 @@ public class GradebookServlet extends DefaultServlet {
 			String relativePrefix = RELATIVE_PREFIX;
 			String defaultPage = DEFAULT_PAGE;
 			
-			Gradebook2Service service = (Gradebook2Service)ComponentManager.getInstance().get("org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service");
+			WebApplicationContext context = new XmlWebApplicationContext();
+			
+			Gradebook2Service service = (Gradebook2Service)context.getBean("org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service");
 			
 			StringBuilder url = new StringBuilder();
 			url.append(request.getRequestURI()).append(relativePrefix).append(defaultPage);
