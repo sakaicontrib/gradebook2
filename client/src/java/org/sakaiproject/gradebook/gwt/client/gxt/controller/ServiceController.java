@@ -374,8 +374,11 @@ public class ServiceController extends Controller {
 
 	private void onUpdateItemFailure(ItemUpdate event, Throwable caught) {
 
-		if (event.record != null)
+		if (event.record != null) {
+			Map<String, Object> changes = event.record.getChanges();
+			
 			event.record.reject(false);
+		}
 		
 		Dispatcher.forwardEvent(GradebookEvents.FailedToUpdateItem.getEventType(), event);
 		Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught, "Failed to update item: "));
