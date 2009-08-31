@@ -1152,9 +1152,9 @@ public class ItemFormPanel extends ContentPanel {
 			}
 
 			if (category != null && category.getItemType() == Type.CATEGORY)
-				isPercentCategoryVisible = hasWeights && 
+				isPercentCategoryVisible = hasWeights && isItem &&
 				(!DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments()) || 
-						(isItem && DataTypeConversionUtil.checkBoolean(extraCreditField.getValue())));
+						(DataTypeConversionUtil.checkBoolean(extraCreditField.getValue())));
 		}
 
 
