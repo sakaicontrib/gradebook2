@@ -417,7 +417,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 				if (category.isRemoved())
 					continue;
 				
-				if (isWeighted && isUnweighted(category))
+				if (isUnweighted(category))
 					continue;
 
 				String categoryKey = String.valueOf(category.getId());
