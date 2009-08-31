@@ -436,6 +436,10 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 				if (! isWeighted && category.getDrop_lowest() > 0) {
 					Double lastPointValue = null;
 					for (Assignment assignment : assignments) {
+						// Exclude extra credit items from determining whether drop lowest should be allowed
+						if (DataTypeConversionUtil.checkBoolean(assignment.isExtraCredit()))
+							continue;
+						
 						if (lastPointValue != null && !lastPointValue.equals(assignment.getPointsPossible())) {
 							categoryCalculationUnit.setDropLowest(0);
 							break;
