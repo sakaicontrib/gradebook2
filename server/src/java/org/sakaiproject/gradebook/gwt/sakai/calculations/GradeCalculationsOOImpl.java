@@ -477,7 +477,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 			if (assignment.isRemoved())
 				continue;
 
-			if (isWeighted && isUnweighted(assignment))
+			if (isUnweighted(assignment))
 				continue;
 
 			if (!DataTypeConversionUtil.checkBoolean(assignment.isExtraCredit()) && assignment.getPointsPossible() != null)
