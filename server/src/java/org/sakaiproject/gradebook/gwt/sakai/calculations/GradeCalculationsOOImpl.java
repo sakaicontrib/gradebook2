@@ -495,9 +495,10 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 					BigDecimal pointsEarned = new BigDecimal(assignmentGradeRecord.getPointsEarned().toString());
 					BigDecimal pointsPossible = new BigDecimal(assignment.getPointsPossible().toString());
 					BigDecimal assignmentWeight = getAssignmentWeight(assignment);
-
+					Boolean isExtraCredit = Boolean.valueOf(isExtraCreditCategory || DataTypeConversionUtil.checkBoolean(assignment.isExtraCredit()));
+					
 					GradeRecordCalculationUnit gradeRecordUnit = new GradeRecordCalculationUnit(pointsEarned, 
-							pointsPossible, assignmentWeight, isExtraCreditCategory || assignment.isExtraCredit()) {
+							pointsPossible, assignmentWeight, isExtraCredit) {
 
 						@Override
 						public void setDropped(boolean isDropped) {
