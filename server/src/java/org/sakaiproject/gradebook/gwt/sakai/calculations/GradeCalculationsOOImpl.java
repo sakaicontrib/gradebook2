@@ -24,7 +24,6 @@
 package org.sakaiproject.gradebook.gwt.sakai.calculations;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -323,6 +322,10 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		}
 		
 		return letterGrade;
+	}
+	
+	public boolean isValidLetterGrade(String letterGrade) {
+		return letterGradeMap.containsKey(letterGrade);
 	}
 	
 	public Double convertLetterGradeToPercentage(String letterGrade) {

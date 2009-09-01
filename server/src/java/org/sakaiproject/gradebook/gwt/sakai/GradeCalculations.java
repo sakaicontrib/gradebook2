@@ -50,6 +50,8 @@ public interface GradeCalculations {
 	
 	public Double convertLetterGradeToPercentage(String letterGrade);
 	
+	public boolean isValidLetterGrade(String letterGrade);
+	
 	public BigDecimal getNewPointsGrade(Double pointValue, Double maxPointValue, Double maxPointStartValue);
 	
 	public BigDecimal getPercentAsPointsEarned(Assignment assignment, Double percentage);

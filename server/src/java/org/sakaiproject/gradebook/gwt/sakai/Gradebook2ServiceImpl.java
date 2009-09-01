@@ -2061,6 +2061,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			student.set(StudentModel.Key.COURSE_GRADE.name(), displayGrade.toString());
 		} else if (gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER) {
 			// We must be modifying a letter grade
+			if (value != null && !gradeCalculations.isValidLetterGrade(value))
+				throw new InvalidInputException("This is not a valid grade.");
 			
 			Double numericValue = gradeCalculations.convertLetterGradeToPercentage(value);
 			Double previousNumericValue = gradeCalculations.convertLetterGradeToPercentage(previousValue);
