@@ -2722,7 +2722,13 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 
 		if (categoryItemModel != null) {
-			categoryItemModel.setPercentCategory(Double.valueOf(percentCategorySum.doubleValue()));
+			if (isEnforcePointWeighting) {
+				if (pointsSum.compareTo(BigDecimal.ZERO) > 0)
+					categoryItemModel.setPercentCategory(Double.valueOf(100d));
+				else
+					categoryItemModel.setPercentCategory(Double.valueOf(0d));
+			} else
+				categoryItemModel.setPercentCategory(Double.valueOf(percentCategorySum.doubleValue()));
 			categoryItemModel.setPoints(Double.valueOf(pointsSum.doubleValue()));
 		}
 	}
