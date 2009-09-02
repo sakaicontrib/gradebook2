@@ -1151,10 +1151,14 @@ public class ItemFormPanel extends ContentPanel {
 					break;
 			}
 
-			if (category != null && category.getItemType() == Type.CATEGORY)
-				isPercentCategoryVisible = hasWeights && isItem &&
-				(!DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments()) || 
-						(DataTypeConversionUtil.checkBoolean(extraCreditField.getValue())));
+			if (category != null && category.getItemType() == Type.CATEGORY) {
+				boolean isNotEquallyWeighted = !DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments());
+				boolean isExtraCreditItem = DataTypeConversionUtil.checkBoolean(extraCreditField.getValue());
+				boolean isWeightedByPoints = DataTypeConversionUtil.checkBoolean(category.getEnforcePointWeighting());
+				
+				isPercentCategoryVisible = (hasWeights && isItem) && !isWeightedByPoints &&
+					(isNotEquallyWeighted || isExtraCreditItem);
+			}
 		}
 
 
