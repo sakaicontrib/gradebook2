@@ -200,7 +200,8 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 			if (count.compareTo(BigDecimal.ZERO) != 0 && sumOfSquareOfDifferences.compareTo(BigDecimal.ZERO) != 0) {
 				BigDecimal fraction = sumOfSquareOfDifferences.divide(count, RoundingMode.HALF_EVEN);
 				BigSquareRoot squareRoot = new BigSquareRoot();
-				standardDeviation = squareRoot.get(fraction);
+				if (fraction != null && fraction.compareTo(BigDecimal.ZERO) != 0)
+					standardDeviation = squareRoot.get(fraction);
 			}
 		}
 
