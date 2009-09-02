@@ -43,6 +43,7 @@ public class CategoryCalculationUnit {
 	private int dropLowest;
 	private boolean isExtraCredit;
 	private boolean isPointsWeighted;
+	private BigDecimal totalCategoryPoints;
 
 	private List<GradeRecordCalculationUnit> unitsToDrop;
 
@@ -214,5 +215,15 @@ public class CategoryCalculationUnit {
 
 	public void setCategoryGrade(BigDecimal categoryGrade) {
 		this.categoryGrade = categoryGrade;
+	}
+
+
+	public BigDecimal getTotalCategoryPoints() {
+		return totalCategoryPoints;
+	}
+
+
+	public void setTotalCategoryPoints(BigDecimal totalCategoryPoints) {
+		this.totalCategoryPoints = totalCategoryPoints;
 	}
 }

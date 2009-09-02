@@ -452,7 +452,10 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 					}
 				}
 				
-				totalGradebookPoints = totalGradebookPoints.add(populateGradeRecordUnits(assignments, gradeRecordUnits, assignmentGradeRecordMap, isWeighted, isExtraCredit(category)));
+				BigDecimal totalCategoryPoints = populateGradeRecordUnits(assignments, gradeRecordUnits, assignmentGradeRecordMap, isWeighted, isExtraCredit(category));
+				categoryCalculationUnit.setTotalCategoryPoints(totalCategoryPoints);
+				
+				totalGradebookPoints = totalGradebookPoints.add(totalCategoryPoints);
 
 				categoryGradeUnitListMap.put(categoryKey, gradeRecordUnits);
 

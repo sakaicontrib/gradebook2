@@ -190,17 +190,18 @@ public class GradebookCalculationUnit {
 				BigDecimal categoryPointsReceived = categoryResult[0];
 				BigDecimal categoryPointsPossible = categoryResult[1];
 				BigDecimal categoryExtraCreditPoints = categoryResult[2];
+				BigDecimal totalCategoryPoints = categoryUnit.getTotalCategoryPoints();
 				
 				if (categoryUnit.isExtraCredit()) {
-					if (categoryExtraCreditPoints != null && totalGradebookPoints != null)
-						categoryGrade = categoryExtraCreditPoints.divide(totalGradebookPoints, GradeCalculationsOOImpl.MATH_CONTEXT);
+					if (categoryExtraCreditPoints != null && totalCategoryPoints != null)
+						categoryGrade = categoryExtraCreditPoints.divide(totalCategoryPoints, GradeCalculationsOOImpl.MATH_CONTEXT);
 				} else {
 					if (categoryPointsReceived != null && categoryPointsPossible != null) {
 						
 						categoryGrade = categoryPointsReceived.divide(categoryPointsPossible, GradeCalculationsOOImpl.MATH_CONTEXT);
 						
 						if (categoryExtraCreditPoints != null) {
-							categoryGrade = categoryGrade.add(scaleExtraCreditPoints(categoryExtraCreditPoints, categoryPointsPossible, totalGradebookPoints, isExtraCreditScaled));
+							categoryGrade = categoryGrade.add(scaleExtraCreditPoints(categoryExtraCreditPoints, categoryPointsPossible, totalCategoryPoints, isExtraCreditScaled));
 						}
 						
 					}
