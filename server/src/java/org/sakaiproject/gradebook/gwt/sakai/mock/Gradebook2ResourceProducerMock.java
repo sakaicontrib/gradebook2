@@ -121,7 +121,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			essay1.setPoints(Double.valueOf(10d));
 			essay1.setDueDate(new Date());
 			essay1.setCategoryId(essaysCategory.getCategoryId());
-			essay1.setReleased(Boolean.TRUE);
+			essay1.setReleased(Boolean.FALSE);
 			essay1.setItemType(Type.ITEM);
 			essay1.setIncluded(Boolean.TRUE);
 			service.createItem(gradebookUid, gradebookId, essay1, true);
@@ -131,7 +131,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			essay2.setPoints(Double.valueOf(20d));
 			essay2.setDueDate(new Date());
 			essay2.setCategoryId(essaysCategory.getCategoryId());
-			essay2.setReleased(Boolean.TRUE);
+			essay2.setReleased(Boolean.FALSE);
 			essay2.setItemType(Type.ITEM);
 			essay2.setIncluded(Boolean.TRUE);
 			service.createItem(gradebookUid, gradebookId, essay2, true);
@@ -141,7 +141,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			essay3.setPoints(Double.valueOf(10d));
 			essay3.setDueDate(new Date());
 			essay3.setCategoryId(essaysCategory.getCategoryId());
-			essay3.setReleased(Boolean.TRUE);
+			essay3.setReleased(Boolean.FALSE);
 			essay3.setItemType(Type.ITEM);
 			essay3.setIncluded(Boolean.TRUE);
 			service.createItem(gradebookUid, gradebookId, essay3, true);
@@ -152,7 +152,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			ecEssay.setPoints(Double.valueOf(5d));
 			ecEssay.setDueDate(new Date());
 			ecEssay.setCategoryId(essaysCategory.getCategoryId());
-			ecEssay.setIncluded(Boolean.TRUE);
+			ecEssay.setIncluded(Boolean.FALSE);
 			ecEssay.setExtraCredit(Boolean.TRUE);
 			ecEssay.setReleased(Boolean.FALSE);
 			service.createItem(gradebookUid, gradebookId, ecEssay, true);

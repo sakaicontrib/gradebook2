@@ -279,10 +279,15 @@
 	padding-right: 15px; 
 }
 
+.gbHeading {
+	color: black;
+	text-decoration: underline;
+}
+
 .gbImpact {
 	color: darkblue;
-	font-weight: bold;
 	width: 120px;
+	padding-right: 10px;
 }
 
 .gbWarning {

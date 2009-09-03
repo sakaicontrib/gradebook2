@@ -66,7 +66,7 @@ public class ViewAsStudentPanel extends ContentPanel {
 		else 
 			setHeading(i18n.singleGradeHeader());
 
-		container = new StudentPanel(isStudentView, false);
+		container = new StudentPanel(i18n, isStudentView, false);
 		add(container);
 
 		setupNavigation(i18n);
