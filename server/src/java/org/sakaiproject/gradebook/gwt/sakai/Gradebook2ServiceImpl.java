@@ -2660,6 +2660,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		BigDecimal percentGrade = BigDecimal.valueOf(pG);
 		BigDecimal percentCategorySum = BigDecimal.ZERO;
 		BigDecimal pointsSum = BigDecimal.ZERO;
+		
 		if (assignments != null) {
 			for (Assignment a : assignments) {
 				double assignmentCategoryPercent = a.getAssignmentWeighting() == null ? 0.0 : a.getAssignmentWeighting().doubleValue() * 100.0;
@@ -2687,9 +2688,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 						double p = a == null | a.getPointsPossible() == null ? 0d : a.getPointsPossible().doubleValue();
 						
 						BigDecimal assignmentPoints = BigDecimal.valueOf(p);
+						
 						courseGradePercent = gradeCalculations.calculateItemGradePercent(percentGrade, pointsSum, assignmentPoints, true);
 						percentCategory = BigDecimal.valueOf(100d).multiply(assignmentPoints.divide(pointsSum, GradeCalculations.MATH_CONTEXT));
-						
+
 					} else {
 						double w = a == null || a.getAssignmentWeighting() == null ? 0d : a.getAssignmentWeighting().doubleValue();
 						
@@ -2836,10 +2838,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		model.setGradebookItemModel(gradebookItemModel);
 		List<FixedColumnModel> columns = getColumns();
 
-		model.setUserAbleToGrade(isUserAbleToGrade);
-		model.setUserAbleToEditAssessments(authz.isUserAbleToEditAssessments(gradebookUid));
-		model.setUserAbleToViewOwnGrades(isUserAbleToViewOwnGrades);
-		model.setUserHasGraderPermissions(authz.hasUserGraderPermissions(gradebookUid));
+		model.setUserAbleToGrade(Boolean.valueOf(isUserAbleToGrade));
+		model.setUserAbleToEditAssessments(Boolean.valueOf(authz.isUserAbleToEditAssessments(gradebookUid)));
+		model.setUserAbleToViewOwnGrades(Boolean.valueOf(isUserAbleToViewOwnGrades));
+		model.setUserHasGraderPermissions(Boolean.valueOf(authz.hasUserGraderPermissions(gradebookUid)));
 
 		ConfigurationModel configModel = new ConfigurationModel();
 
@@ -4127,7 +4129,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
 			boolean hasWeights = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY;
 
-			boolean isEnforcePointWeighting = DataTypeConversionUtil.checkBoolean(item.getEnforcePointWeighting());
+			boolean isEnforcePointWeighting = !currentExtraCredit && DataTypeConversionUtil.checkBoolean(item.getEnforcePointWeighting());
 			
 			
 			if (hasCategories) {

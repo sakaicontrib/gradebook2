@@ -193,8 +193,8 @@ public class GradebookCalculationUnit {
 				BigDecimal totalCategoryPoints = categoryUnit.getTotalCategoryPoints();
 				
 				if (categoryUnit.isExtraCredit()) {
-					if (categoryExtraCreditPoints != null && totalCategoryPoints != null)
-						categoryGrade = categoryExtraCreditPoints.divide(totalCategoryPoints, GradeCalculationsOOImpl.MATH_CONTEXT);
+					if (categoryExtraCreditPoints != null && totalGradebookPoints != null)
+						categoryGrade = categoryExtraCreditPoints.divide(totalGradebookPoints, GradeCalculationsOOImpl.MATH_CONTEXT);
 				} else {
 					if (categoryPointsReceived != null && categoryPointsPossible != null) {
 						

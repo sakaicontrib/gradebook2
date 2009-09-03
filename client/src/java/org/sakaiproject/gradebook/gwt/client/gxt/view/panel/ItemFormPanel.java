@@ -668,7 +668,8 @@ public class ItemFormPanel extends ContentPanel {
 		boolean isCreateNewItem = createItemType == Type.ITEM && mode == Mode.NEW;
 
 		boolean isPercentCategoryVisible = false;
-
+		boolean isWeightByPointsVisible = isCategory && hasWeights;
+		
 		formPanel.clear();
 
 		boolean isEditable = true;
@@ -701,6 +702,7 @@ public class ItemFormPanel extends ContentPanel {
 			isEqualWeight = category == null ? false : DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments());
 			isPercentCategoryVisible = hasWeights && (!isEqualWeight || isExtraCredit) && isItem && !isWeightByPoints;
 			isDropLowestVisible = isDropLowestVisible && !isExtraCredit; 
+			isWeightByPointsVisible = category == null ? isWeightByPointsVisible : isWeightByPointsVisible && !DataTypeConversionUtil.checkBoolean(category.getExtraCredit());
 			
 			if (isDropLowestVisible && category != null && ((isWeightByPoints && hasWeights) || (!hasWeights && hasCategories))) {
 				if (category.getChildCount() > 0) {
@@ -739,7 +741,7 @@ public class ItemFormPanel extends ContentPanel {
 		initField(gradeTypePicker, isAllowedToEdit, isEditable && !isNotGradebook);
 		initField(sourceField, false, isEditable && isItem);
 		initField(scaledExtraCreditField, !isDelete && isAllowedToEdit, !isNotGradebook);
-		initField(enforcePointWeightingField, !isDelete && isAllowedToEdit, isCategory && hasWeights);
+		initField(enforcePointWeightingField, !isDelete && isAllowedToEdit, isWeightByPointsVisible);
 	}
 
 	private void initField(Field field, boolean isEnabled, boolean isVisible) {
@@ -945,7 +947,7 @@ public class ItemFormPanel extends ContentPanel {
 		extraCreditChangeListener = new Listener<FieldEvent>() {
 
 			public void handleEvent(FieldEvent fe) {
-				Boolean isChecked = ((CheckBox)fe.field).getValue();
+				boolean isChecked = DataTypeConversionUtil.checkBoolean(((CheckBox)fe.field).getValue());
 				CategoryType categoryType = selectedGradebook.getGradebookItemModel().getCategoryType();
 				ItemModel category = categoryPicker.getValue();
 				boolean isWeightByPoints = category == null ? false : DataTypeConversionUtil.checkBoolean(category.getEnforcePointWeighting());
@@ -956,19 +958,21 @@ public class ItemFormPanel extends ContentPanel {
 				if (selectedItemModel != null) {
 					switch (selectedItemModel.getItemType()) {
 						case CATEGORY:
-							initField(dropLowestField, !isDelete, !DataTypeConversionUtil.checkBoolean(isChecked));
+							initField(dropLowestField, !isDelete, !isChecked);
+							initField(enforcePointWeightingField, !isDelete, hasWeights && !isChecked);
+							initField(equallyWeightChildrenField, !isDelete, hasWeights && isChecked);
 						break;
 						case ITEM:
 							initField(percentCategoryField, !isDelete, hasWeights && !isWeightByPoints
-									&& (!isEqualWeight
-											|| (isChecked != null && isChecked.booleanValue())));
+									&& (!isEqualWeight || isChecked));
 						break;
 					}
 				} else if (createItemType == Type.ITEM) {
 					initField(percentCategoryField, !isDelete, hasWeights && !isWeightByPoints
-							&& (!isEqualWeight || (isChecked != null && isChecked.booleanValue())));
+							&& (!isEqualWeight || isChecked));
 				} else if (createItemType == Type.CATEGORY) {
-					initField(dropLowestField, !isDelete, !DataTypeConversionUtil.checkBoolean(isChecked));
+					initField(dropLowestField, !isDelete, !isChecked);
+					initField(equallyWeightChildrenField, !isDelete, hasWeights && isChecked);
 				}
 			}
 
