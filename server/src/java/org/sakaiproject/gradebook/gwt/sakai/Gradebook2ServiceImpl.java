@@ -2692,7 +2692,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 						BigDecimal assignmentPoints = BigDecimal.valueOf(p);
 						
 						courseGradePercent = gradeCalculations.calculateItemGradePercent(percentGrade, pointsSum, assignmentPoints, true);
-						percentCategory = BigDecimal.valueOf(100d).multiply(assignmentPoints.divide(pointsSum, GradeCalculations.MATH_CONTEXT));
+						
+						if (assignmentPoints.compareTo(BigDecimal.ZERO) == 0 || pointsSum.compareTo(BigDecimal.ZERO) == 0)
+							percentCategory = BigDecimal.ZERO;
+						else
+							percentCategory = BigDecimal.valueOf(100d).multiply(assignmentPoints.divide(pointsSum, GradeCalculations.MATH_CONTEXT));
 
 					} else {
 						double w = a == null || a.getAssignmentWeighting() == null ? 0d : a.getAssignmentWeighting().doubleValue();
