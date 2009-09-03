@@ -31,6 +31,7 @@ public interface I18nConstants extends Constants {
 	String categoryName();
 	String itemName();
 	String scoreName();
+	String outOfName();
 	String meanName();
 	String stdvName();
 	String medianName();

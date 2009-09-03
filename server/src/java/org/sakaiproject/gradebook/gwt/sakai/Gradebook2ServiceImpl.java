@@ -2057,8 +2057,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	
 			BigDecimal calculatedGrade = getCalculatedGrade(gradebook, assignments, categories, studentGradeMap);
 			DisplayGrade displayGrade = getDisplayGrade(gradebook, student.getIdentifier(), courseGradeRecord, calculatedGrade);// requestCourseGrade(gradebookUid,
+			displayGrade.setOverridden(true);
 			student.set(StudentModel.Key.GRADE_OVERRIDE.name(), courseGradeRecord.getEnteredGrade());
 			student.set(StudentModel.Key.COURSE_GRADE.name(), displayGrade.toString());
+			student.set(StudentModel.Key.LETTER_GRADE.name(), displayGrade.getLetterGrade());
 		} else if (gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER) {
 			// We must be modifying a letter grade
 			if (value != null && !gradeCalculations.isValidLetterGrade(value))

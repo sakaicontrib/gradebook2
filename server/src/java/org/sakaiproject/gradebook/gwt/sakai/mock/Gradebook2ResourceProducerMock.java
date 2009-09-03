@@ -75,9 +75,10 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			
 			gradebook.setName("Test Gradebook");
 			gradebook.setCategoryType(CategoryType.WEIGHTED_CATEGORIES);
-			gradebook.setGradeType(GradeType.POINTS);
+			gradebook.setGradeType(GradeType.LETTERS);
 			gradebook.setItemType(Type.GRADEBOOK);
 			gradebook.setExtraCreditScaled(Boolean.TRUE);
+			gradebook.setReleaseGrades(Boolean.TRUE);
 			
 			service.updateItemModel(gradebook);
 			

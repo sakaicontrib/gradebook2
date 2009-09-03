@@ -82,16 +82,7 @@ import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
 
 public class StudentPanel extends ContentPanel {
 
-	private static final int GT_COL_ANAM = 0; 
-	private static final int GT_COL_GRADE = 1; 
-	private static final int GT_COL_MEAN = 2; 
-	private static final int GT_COL_STDV = 3; 
-	private static final int GT_COL_MEDI = 4; 
-	private static final int GT_COL_MODE = 5; 
-	private static final int GT_COL_RANK = 6; 
-	private static final int GT_COL_COMM = 7; 
-
-	private enum Key { CATEGORY_NAME, ITEM_NAME, GRADE, MEAN, STDV, MEDI, MODE, RANK, COMMENT, ORDER, ID };
+	private enum Key { CATEGORY_NAME, ITEM_NAME, GRADE, MEAN, STDV, MEDI, MODE, RANK, COMMENT, ORDER, ID, OUTOF };
 	
 	private TextField<String> defaultTextField= new TextField<String>();
 	private TextArea defaultTextArea = new TextArea();
@@ -110,10 +101,11 @@ public class StudentPanel extends ContentPanel {
     private GridSelectionModel<BaseModel> selectionModel;
     private TextArea commentArea;
 	private StudentModel learnerGradeRecordCollection;
+	private ColumnConfig outOfColumn;
 	
 	private boolean isStudentView;
-	
 	private boolean displayRank; 
+	private boolean isAnyCommentPopulated;
 	
 	private GradebookModel selectedGradebook;
 	
@@ -195,27 +187,31 @@ public class StudentPanel extends ContentPanel {
 		column.setHidden(true);
 		columns.add(column);
 		
-		column = new ColumnConfig(Key.ITEM_NAME.name(), i18n.itemName(), 200);
+		column = new ColumnConfig(Key.ITEM_NAME.name(), i18n.itemName(), 160);
 		column.setGroupable(false);
 		columns.add(column);
 		
-		column = new ColumnConfig(Key.GRADE.name(), i18n.scoreName(), 180);
+		column = new ColumnConfig(Key.GRADE.name(), i18n.scoreName(), 60);
 		column.setGroupable(false);
 		columns.add(column);
 		
-		column = new ColumnConfig(Key.MEAN.name(), i18n.meanName(), 80);
+		outOfColumn = new ColumnConfig(Key.OUTOF.name(), i18n.outOfName(), 60);
+		outOfColumn.setGroupable(false);
+		columns.add(outOfColumn);
+		
+		column = new ColumnConfig(Key.MEAN.name(), i18n.meanName(), 60);
 		column.setGroupable(false);
 		columns.add(column);
 		
-		column = new ColumnConfig(Key.STDV.name(), i18n.stdvName(), 80);
+		column = new ColumnConfig(Key.STDV.name(), i18n.stdvName(), 60);
 		column.setGroupable(false);
 		columns.add(column);
 		
-		column = new ColumnConfig(Key.MEDI.name(), i18n.medianName(), 80);
+		column = new ColumnConfig(Key.MEDI.name(), i18n.medianName(), 60);
 		column.setGroupable(false);
 		columns.add(column);
 		
-		column = new ColumnConfig(Key.MODE.name(), i18n.modeName(), 80);
+		column = new ColumnConfig(Key.MODE.name(), i18n.modeName(), 60);
 		column.setGroupable(false);
 		columns.add(column);
 		
@@ -258,36 +254,37 @@ public class StudentPanel extends ContentPanel {
 			protected void onResize(final int width, final int height) {
 				super.onResize(width, height);
 				
-				grid.setSize(width - 400, height - 50);
+				grid.setSize(width - 300, height - 42);
 				
-				commentArea.setHeight(height - 84);
+				commentArea.setHeight(height - 76);
 			}
 			
 		};
 		gradeInformationPanel.setBorders(true);
 		gradeInformationPanel.setFrame(true);
-		gradeInformationPanel.setHeaderVisible(false);
+		gradeInformationPanel.setHeading("Individual Scores (click on a row to see comments)");
 		gradeInformationPanel.setLayout(new ColumnLayout());
 		gradeInformationPanel.add(grid, new ColumnData(1));
 		
 		FormLayout commentLayout = new FormLayout();
 		commentLayout.setLabelAlign(LabelAlign.TOP);
-		commentLayout.setDefaultWidth(320);
+		commentLayout.setDefaultWidth(280);
 		
 		commentsPanel = new FormPanel();
 		commentsPanel.setHeaderVisible(false);
 		commentsPanel.setLayout(commentLayout);
 		commentsPanel.setVisible(false);
-		commentsPanel.setWidth(400);
+		commentsPanel.setWidth(300);
 		
 		commentArea = new TextArea();
 		commentArea.setName(Key.COMMENT.name());
 		commentArea.setFieldLabel(i18n.commentName());
+		commentArea.setWidth(270);
 		commentArea.setHeight(300);
 		commentArea.setReadOnly(true);
 		commentsPanel.add(commentArea);
 		
-		gradeInformationPanel.add(commentsPanel, new ColumnData(400));
+		gradeInformationPanel.add(commentsPanel, new ColumnData(300));
 		
 		formBinding = new FormBinding(commentsPanel, true);
 
@@ -384,13 +381,19 @@ public class StudentPanel extends ContentPanel {
 	
 	private void updateCourseGrade(String newGrade, String overrideString, String calcGrade)
 	{
+		
 		if (!isStudentView || (selectedGradebook != null && selectedGradebook.getGradebookItemModel() != null 
 				&& DataTypeConversionUtil.checkBoolean(selectedGradebook.getGradebookItemModel().getReleaseGrades()))) {
 			// To force a refresh, let's first hide the owning panel
 			studentInformationPanel.hide();
 			studentInformation.setText(PI_ROW_COURSE_GRADE, PI_COL_VALUE, newGrade);
-			studentInformation.setText(PI_ROW_CALCULATED_GRADE, PI_COL_VALUE, calcGrade);
-			studentInformationPanel.show();
+			
+			boolean isLetterGrading = selectedGradebook.getGradebookItemModel().getGradeType() == GradeType.LETTERS;
+	        
+	        if (!isLetterGrading)
+	        	studentInformation.setText(PI_ROW_CALCULATED_GRADE, PI_COL_VALUE, calcGrade);
+			
+	        studentInformationPanel.show();
 		} else {
 			studentInformationPanel.hide();
 			studentInformation.setText(PI_ROW_COURSE_GRADE, PI_COL_HEADING, "");
@@ -400,8 +403,8 @@ public class StudentPanel extends ContentPanel {
 			studentInformationPanel.show();
 		}
 		
-		if (learnerGradeRecordCollection != null)
-			learnerGradeRecordCollection.set(StudentModel.Key.COURSE_GRADE.name(), newGrade);
+		//if (learnerGradeRecordCollection != null)
+		//	learnerGradeRecordCollection.set(StudentModel.Key.COURSE_GRADE.name(), newGrade);
 	}
 	
 	private void refreshGradeData(StudentModel learnerGradeRecordCollection, List<StatisticsModel> statsList) {
@@ -521,7 +524,7 @@ public class StudentPanel extends ContentPanel {
 	}
 
 	
-	private BaseModel populateGradeInfoRow(int row, ItemModel item, StudentModel learner, StatisticsModel stats, CategoryType categoryType) {
+	private BaseModel populateGradeInfoRow(int row, ItemModel item, StudentModel learner, StatisticsModel stats, CategoryType categoryType, GradeType gradeType) {
 		String itemId = item.getIdentifier();
 		Object value = learner.get(itemId);
 		String commentFlag = new StringBuilder().append(itemId).append(StudentModel.COMMENT_TEXT_FLAG).toString();
@@ -534,8 +537,8 @@ public class StudentPanel extends ContentPanel {
 		String mode = (stats == null ? "" : stats.getMode()); 
 		String rank = (stats == null ? "" : stats.getRank());
 		
-		if (comment == null)
-			comment = "N/A";
+		//if (comment == null)
+		//	comment = "N/A";
 		
 		boolean isExcused = DataTypeConversionUtil.checkBoolean((Boolean)learner.get(excusedFlag));
 		boolean isIncluded = DataTypeConversionUtil.checkBoolean((Boolean)item.getIncluded());
@@ -557,18 +560,22 @@ public class StudentPanel extends ContentPanel {
 		
 		model.set(Key.ID.name(), id.toString());
 		
+		switch (gradeType) {
+    	case POINTS:
+    		if (item.getPoints() != null)
+    			model.set(Key.OUTOF.name(), NumberFormat.getDecimalFormat().format((item.getPoints().doubleValue())));
+    		break;
+		};
+		
         StringBuilder resultBuilder = new StringBuilder();
         if (value == null)
         	resultBuilder.append("-");
         else {
         	
-        	switch (selectedGradebook.getGradebookItemModel().getGradeType()) {
+        	switch (gradeType) {
         	case POINTS:
         		resultBuilder.append(NumberFormat.getDecimalFormat().format(((Double)value).doubleValue()));
-        		
-        		if (item.getPoints() != null)
-        			resultBuilder.append(" out of ").append(NumberFormat.getDecimalFormat().format(item.getPoints().doubleValue())).append(" points");
-        		
+
         		break;
         	case PERCENTAGES:
         		resultBuilder.append(NumberFormat.getDecimalFormat().format(((Double)value).doubleValue()))
@@ -579,8 +586,6 @@ public class StudentPanel extends ContentPanel {
         		resultBuilder.append(value);
         		break;
         	}
-        	
-        	
         }
         
         if (!isIncluded) 
@@ -614,12 +619,22 @@ public class StudentPanel extends ContentPanel {
 		
 		ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
 		CategoryType categoryType = gradebookItemModel.getCategoryType();
+		GradeType gradeType = gradebookItemModel.getGradeType();
+		
+		switch (gradeType) {
+		case POINTS:
+			outOfColumn.setHidden(false);
+			break;
+		default:
+			outOfColumn.setHidden(true);
+		}
 		
 		store.removeAll();
 		
 		boolean isDisplayReleasedItems = DataTypeConversionUtil.checkBoolean(gradebookItemModel.getReleaseItems());
 		if (isDisplayReleasedItems) {
 			boolean isNothingToDisplay = true;
+			isAnyCommentPopulated = false;
 			int row=0;
 			
 			ArrayList<BaseModel> models = new ArrayList<BaseModel>();
@@ -637,7 +652,10 @@ public class StudentPanel extends ContentPanel {
 									StatisticsModel stats = null; 
 									stats = getStatsModelForItem(item.getIdentifier(), statsList); 
 				
-									models.add(populateGradeInfoRow(i*1000 + j + 10000, item, learner, stats, categoryType));
+									BaseModel model = populateGradeInfoRow(i*1000 + j + 10000, item, learner, stats, categoryType, gradeType);
+									if (!isAnyCommentPopulated && model.get(Key.COMMENT.name()) != null)
+										isAnyCommentPopulated = true;
+									models.add(model);
 									isNothingToDisplay = false;
 									row++;
 								} 
@@ -649,7 +667,10 @@ public class StudentPanel extends ContentPanel {
 						stats = getStatsModelForItem(child.getIdentifier(), statsList); 
 
 						if (DataTypeConversionUtil.checkBoolean(child.getReleased())) {
-							models.add(populateGradeInfoRow(row, child, learner, stats, categoryType));
+							BaseModel model = populateGradeInfoRow(row, child, learner, stats, categoryType, gradeType);
+							if (!isAnyCommentPopulated && model.get(Key.COMMENT.name()) != null)
+								isAnyCommentPopulated = true;
+							models.add(model);
 							isNothingToDisplay = false;
 							row++;
 						}
