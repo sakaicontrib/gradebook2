@@ -50,6 +50,7 @@ import com.extjs.gxt.ui.client.data.ModelComparer;
 import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
 import com.extjs.gxt.ui.client.event.SelectionChangedListener;
 import com.extjs.gxt.ui.client.store.GroupingStore;
+import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Store;
 import com.extjs.gxt.ui.client.store.StoreSorter;
 import com.extjs.gxt.ui.client.util.Margins;
@@ -101,7 +102,7 @@ public class StudentPanel extends ContentPanel {
     private GridSelectionModel<BaseModel> selectionModel;
     private TextArea commentArea;
 	private StudentModel learnerGradeRecordCollection;
-	private ColumnConfig outOfColumn;
+	private ColumnConfig categoryColumn, outOfColumn;
 	
 	private boolean isStudentView;
 	private boolean displayRank; 
@@ -182,12 +183,12 @@ public class StudentPanel extends ContentPanel {
 		
 		ArrayList<ColumnConfig> columns = new ArrayList<ColumnConfig>();
 		
-		ColumnConfig column = new ColumnConfig(Key.CATEGORY_NAME.name(), i18n.categoryName(), 200);
-		column.setGroupable(true);
-		column.setHidden(true);
-		columns.add(column);
+		categoryColumn = new ColumnConfig(Key.CATEGORY_NAME.name(), i18n.categoryName(), 200);
+		categoryColumn.setGroupable(true);
+		categoryColumn.setHidden(true);
+		columns.add(categoryColumn);
 		
-		column = new ColumnConfig(Key.ITEM_NAME.name(), i18n.itemName(), 160);
+		ColumnConfig column = new ColumnConfig(Key.ITEM_NAME.name(), i18n.itemName(), 160);
 		column.setGroupable(false);
 		columns.add(column);
 		
@@ -679,7 +680,11 @@ public class StudentPanel extends ContentPanel {
 				}
 				
 				store.add(models);
-				store.groupBy(Key.CATEGORY_NAME.name());
+				if (categoryType == CategoryType.NO_CATEGORIES) {
+					categoryColumn.setHidden(true);
+					store.clearGrouping();
+				} else
+					store.groupBy(Key.CATEGORY_NAME.name());
 			}
 			
 			if (isNothingToDisplay) {
