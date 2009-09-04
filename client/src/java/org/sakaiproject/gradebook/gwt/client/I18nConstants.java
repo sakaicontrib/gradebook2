@@ -39,6 +39,40 @@ public interface I18nConstants extends Constants {
 	String rankName();
 	String commentName();
 	
+	String itemNameToolTip();
+	String releaseGradesToolTip();
+	String releaseItemsToolTip();
+	String scaledExtraCreditToolTip();
+	String percentCourseGradeToolTip();
+	String percentCategoryToolTip();
+	String dropLowestToolTip();
+	String includedToolTip();
+	String extraCreditToolTip();
+	String equallyWeightChildrenToolTip();
+	String releasedToolTip();
+	String enforcePointWeightingToolTip();
+	
+	String nameFieldLabel();
+	String categoryTypeFieldLabel();
+	String gradeTypeFieldLabel();
+	String releaseGradesFieldLabel();
+	String releaseItemsFieldLabel();
+	String scaledExtraCreditFieldLabel();
+	String percentCourseGradeFieldLabel();
+	String percentCategoryFieldLabel();
+	String pointsFieldLabel();
+	String dropLowestFieldLabel();
+	String dueDateFieldLabel();
+	String sourceFieldLabel();
+	String includedFieldLabel();
+	String extraCreditFieldLabel();
+	String equallyWeightChildrenFieldLabel();
+	String releasedFieldLabel();
+	String enforcePointWeightingFieldLabel();
+	
+	String pointsFieldEmptyText();
+	String dueDateEmptyText();
+	
 	String gradeTypeLetters();
 	String gradeTypePoints();
 	String gradeTypePercentages();

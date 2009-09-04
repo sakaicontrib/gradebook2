@@ -159,7 +159,7 @@ public class ItemFormPanel extends ContentPanel {
 		nameField = new InlineEditField<String>();
 		nameField.setAllowBlank(false);
 		nameField.setName(ItemModel.Key.NAME.name());
-		nameField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.NAME));
+		nameField.setFieldLabel(i18n.nameFieldLabel());
 		nameField.addKeyListener(keyListener);
 
 		formPanel.add(nameField);
@@ -171,7 +171,7 @@ public class ItemFormPanel extends ContentPanel {
 		categoryPicker.addKeyListener(keyListener);
 		categoryPicker.setDisplayField(ItemModel.Key.NAME.name());
 		categoryPicker.setName(ItemModel.Key.CATEGORY_ID.name());
-		categoryPicker.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.CATEGORY_NAME));
+		categoryPicker.setFieldLabel(i18n.categoryName());
 		categoryPicker.setVisible(false);
 		categoryPicker.setStore(categoryStore);
 		formPanel.add(categoryPicker);
@@ -181,7 +181,7 @@ public class ItemFormPanel extends ContentPanel {
 		categoryTypePicker.setDisplayField("name");
 		categoryTypePicker.setName(ItemModel.Key.CATEGORYTYPE.name());
 		categoryTypePicker.setEditable(false);
-		categoryTypePicker.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.CATEGORYTYPE));
+		categoryTypePicker.setFieldLabel(i18n.categoryTypeFieldLabel());
 		categoryTypePicker.setForceSelection(true);
 		categoryTypePicker.setVisible(false);
 		formPanel.add(categoryTypePicker);
@@ -190,48 +190,58 @@ public class ItemFormPanel extends ContentPanel {
 		gradeTypePicker.setDisplayField("name");
 		gradeTypePicker.setEditable(false);
 		gradeTypePicker.setName(ItemModel.Key.GRADETYPE.name());
-		gradeTypePicker.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.GRADETYPE));
+		gradeTypePicker.setFieldLabel(i18n.gradeTypeFieldLabel());
 		gradeTypePicker.setForceSelection(true);
 		gradeTypePicker.setVisible(false);
-
 		formPanel.add(gradeTypePicker);
 
 		releaseGradesField = new NullSensitiveCheckBox();
 		releaseGradesField.setName(ItemModel.Key.RELEASEGRADES.name());
-		releaseGradesField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.RELEASEGRADES));
+		releaseGradesField.setFieldLabel(i18n.releaseGradesFieldLabel());
 		releaseGradesField.setVisible(false);
+		releaseGradesField.setToolTip(i18n.releaseGradesToolTip());
 		formPanel.add(releaseGradesField);
 
 		releaseItemsField = new NullSensitiveCheckBox();
 		releaseItemsField.setName(ItemModel.Key.RELEASEITEMS.name());
-		releaseItemsField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.RELEASEITEMS));
+		releaseItemsField.setFieldLabel(i18n.releaseItemsFieldLabel());
 		releaseItemsField.setVisible(false);
+		releaseItemsField.setToolTip(i18n.releaseItemsToolTip());
 		formPanel.add(releaseItemsField);
+		
+		scaledExtraCreditField = new NullSensitiveCheckBox();
+		scaledExtraCreditField.setName(ItemModel.Key.EXTRA_CREDIT_SCALED.name());
+		scaledExtraCreditField.setFieldLabel(i18n.scaledExtraCreditFieldLabel());
+		scaledExtraCreditField.setVisible(false);
+		scaledExtraCreditField.setToolTip(i18n.scaledExtraCreditToolTip());
+		formPanel.add(scaledExtraCreditField);
 
 		percentCourseGradeField = new InlineEditNumberField();
 		percentCourseGradeField.setName(ItemModel.Key.PERCENT_COURSE_GRADE.name());
-		percentCourseGradeField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.PERCENT_COURSE_GRADE));
+		percentCourseGradeField.setFieldLabel(i18n.percentCourseGradeFieldLabel());
 		percentCourseGradeField.setFormat(DataTypeConversionUtil.getLongNumberFormat());
 		percentCourseGradeField.setAllowDecimals(true);
 		percentCourseGradeField.setMinValue(Double.valueOf(0.000000d));
 		percentCourseGradeField.setMaxValue(Double.valueOf(100.000000d));
 		percentCourseGradeField.setVisible(false);
+		percentCourseGradeField.setToolTip(i18n.percentCourseGradeToolTip());
 		formPanel.add(percentCourseGradeField);
 
 		percentCategoryField = new InlineEditNumberField();
 		percentCategoryField.setName(ItemModel.Key.PERCENT_CATEGORY.name());
-		percentCategoryField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.PERCENT_CATEGORY));
+		percentCategoryField.setFieldLabel(i18n.percentCategoryFieldLabel());
 		percentCategoryField.setFormat(DataTypeConversionUtil.getLongNumberFormat());
 		percentCategoryField.setAllowDecimals(true);
 		percentCategoryField.setMinValue(Double.valueOf(0.000000d));
 		percentCategoryField.setMaxValue(Double.valueOf(100.000000d));
 		percentCategoryField.setVisible(false);
+		percentCategoryField.setToolTip(i18n.percentCategoryToolTip());
 		formPanel.add(percentCategoryField);
 
 		pointsField = new InlineEditNumberField();
 		pointsField.setName(ItemModel.Key.POINTS.name());
-		pointsField.setEmptyText("Default is 100 points");
-		pointsField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.POINTS));
+		pointsField.setEmptyText(i18n.pointsFieldEmptyText());
+		pointsField.setFieldLabel(i18n.pointsFieldLabel());
 		pointsField.setFormat(DataTypeConversionUtil.getDefaultNumberFormat());
 		pointsField.setAllowDecimals(true);
 		pointsField.setMinValue(Double.valueOf(0.0001d));
@@ -241,21 +251,24 @@ public class ItemFormPanel extends ContentPanel {
 		dropLowestField = new InlineEditNumberField();
 		dropLowestField.setEmptyText("0");
 		dropLowestField.setName(ItemModel.Key.DROP_LOWEST.name());
-		dropLowestField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.DROP_LOWEST));
+		dropLowestField.setFieldLabel(i18n.dropLowestFieldLabel());
 		dropLowestField.setAllowDecimals(false);
 		dropLowestField.setPropertyEditorType(Integer.class);
 		dropLowestField.setVisible(false);
+		dropLowestField.setToolTip(i18n.dropLowestToolTip());
 		formPanel.add(dropLowestField);
 
 		dueDateField = new DateField();
 		dueDateField.setName(ItemModel.Key.DUE_DATE.name());
-		dueDateField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.DUE_DATE));
+		dueDateField.setFieldLabel(i18n.dueDateFieldLabel());
 		dueDateField.setVisible(false);
+		dueDateField.setEmptyText(i18n.dueDateEmptyText());
+		//dueDateField.setToolTip(i18n.dueDateEmptyText());
 		formPanel.add(dueDateField);
 
 		sourceField = new TextField<String>();
 		sourceField.setName(ItemModel.Key.SOURCE.name());
-		sourceField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.SOURCE));
+		sourceField.setFieldLabel(i18n.sourceFieldLabel());
 		sourceField.setEnabled(false);
 		sourceField.setEmptyText("Gradebook");
 		sourceField.setVisible(false);
@@ -263,38 +276,37 @@ public class ItemFormPanel extends ContentPanel {
 
 		includedField = new NullSensitiveCheckBox();
 		includedField.setName(ItemModel.Key.INCLUDED.name());
-		includedField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.INCLUDED));
+		includedField.setFieldLabel(i18n.includedFieldLabel());
 		includedField.setVisible(false);
+		includedField.setToolTip(i18n.includedToolTip());
 		formPanel.add(includedField);
 
 		extraCreditField = new NullSensitiveCheckBox();
 		extraCreditField.setName(ItemModel.Key.EXTRA_CREDIT.name());
-		extraCreditField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.EXTRA_CREDIT));
+		extraCreditField.setFieldLabel(i18n.extraCreditFieldLabel());
 		extraCreditField.setVisible(false);
+		extraCreditField.setToolTip(i18n.extraCreditToolTip());
 		formPanel.add(extraCreditField);
 
 		equallyWeightChildrenField = new NullSensitiveCheckBox();
 		equallyWeightChildrenField.setName(ItemModel.Key.EQUAL_WEIGHT.name());
-		equallyWeightChildrenField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.EQUAL_WEIGHT));
+		equallyWeightChildrenField.setFieldLabel(i18n.equallyWeightChildrenFieldLabel());
 		equallyWeightChildrenField.setVisible(false);
+		equallyWeightChildrenField.setToolTip(i18n.equallyWeightChildrenToolTip());
 		formPanel.add(equallyWeightChildrenField);
 
 		releasedField = new NullSensitiveCheckBox();
 		releasedField.setName(ItemModel.Key.RELEASED.name());
-		releasedField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.RELEASED));
+		releasedField.setFieldLabel(i18n.releasedFieldLabel());
 		releasedField.setVisible(false);
+		releasedField.setToolTip(i18n.releasedToolTip());
 		formPanel.add(releasedField);
-
-		scaledExtraCreditField = new NullSensitiveCheckBox();
-		scaledExtraCreditField.setName(ItemModel.Key.EXTRA_CREDIT_SCALED.name());
-		scaledExtraCreditField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.EXTRA_CREDIT_SCALED));
-		scaledExtraCreditField.setVisible(false);
-		formPanel.add(scaledExtraCreditField);
 		
 		enforcePointWeightingField = new NullSensitiveCheckBox();
 		enforcePointWeightingField.setName(ItemModel.Key.ENFORCE_POINT_WEIGHTING.name());
-		enforcePointWeightingField.setFieldLabel(ItemModel.getPropertyName(ItemModel.Key.ENFORCE_POINT_WEIGHTING));
+		enforcePointWeightingField.setFieldLabel(i18n.enforcePointWeightingFieldLabel());
 		enforcePointWeightingField.setVisible(false);
+		enforcePointWeightingField.setToolTip(i18n.enforcePointWeightingToolTip());
 		formPanel.add(enforcePointWeightingField);
 		
 		okButton = new AriaButton("", selectionListener, 's');
@@ -668,7 +680,7 @@ public class ItemFormPanel extends ContentPanel {
 		boolean isCreateNewItem = createItemType == Type.ITEM && mode == Mode.NEW;
 
 		boolean isPercentCategoryVisible = false;
-		boolean isWeightByPointsVisible = isCategory && hasWeights;
+		boolean isWeightByPointsVisible = false;
 		
 		formPanel.clear();
 
@@ -701,6 +713,7 @@ public class ItemFormPanel extends ContentPanel {
 			isWeightByPoints = category == null ? false : DataTypeConversionUtil.checkBoolean(category.getEnforcePointWeighting());
 			isEqualWeight = category == null ? false : DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments());
 			isPercentCategoryVisible = hasWeights && (!isEqualWeight || isExtraCredit) && isItem && !isWeightByPoints;
+			isWeightByPointsVisible = isEditable && isCategory && hasWeights;
 			isWeightByPointsVisible = category == null ? isWeightByPointsVisible : isWeightByPointsVisible && !DataTypeConversionUtil.checkBoolean(category.getExtraCredit());
 			
 			isDropLowestVisible = checkIfDropLowestVisible(category, categoryType, isEditable, isCategory, isWeightByPoints, isExtraCredit);
@@ -1054,6 +1067,7 @@ public class ItemFormPanel extends ContentPanel {
 								item.setEqualWeightAssignments(equallyWeightChildrenField.getValue());
 								item.setIncluded(includedField.getValue());
 								item.setReleased(releasedField.getValue());
+								item.setEnforcePointWeighting(enforcePointWeightingField.getValue());
 								item.setPercentCourseGrade((Double)percentCourseGradeField.getValue());
 								item.setPercentCategory((Double)percentCategoryField.getValue());
 								item.setPoints((Double)pointsField.getValue());
