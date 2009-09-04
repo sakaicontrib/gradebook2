@@ -83,6 +83,9 @@ import com.extjs.gxt.ui.client.data.PagingLoadResult;
 public class ImportExportUtility {
 
 	private static final Log log = LogFactory.getLog(ImportExportUtility.class);
+	private static final String SCANTRON_HEADER_STUDENT_ID = "student_id"; 
+	private static final String SCANTRON_HEADER_SCORE = "score"; 
+
 
 	public static enum Delimiter {
 		TAB, COMMA, SPACE, COLON
@@ -578,8 +581,8 @@ public class ImportExportUtility {
 		RawFile raw = new RawFile(); 
 		boolean stop = false; 
 
-		Cell studentIdHeader = s.findCell("student_id");
-		Cell scoreHeader = s.findCell("score");
+		Cell studentIdHeader = s.findCell(SCANTRON_HEADER_STUDENT_ID);
+		Cell scoreHeader = s.findCell(SCANTRON_HEADER_SCORE);
 
 		if (studentIdHeader == null)
 		{
@@ -645,7 +648,7 @@ public class ImportExportUtility {
 		return header; 
 	}
 	private static boolean isScantronSheetForJExcelApi(Sheet s) {
-		Cell studentIdHeader = s.findCell("student_id");
+		Cell studentIdHeader = s.findCell(SCANTRON_HEADER_STUDENT_ID);
 		Cell scoreHeader = s.findCell("score");
 
 		return (studentIdHeader != null && scoreHeader != null); 
@@ -770,8 +773,8 @@ public class ImportExportUtility {
 		StringBuilder err = new StringBuilder("Scantron File with errors"); 
 		boolean stop = false; 
 
-		HSSFCell studentIdHeader = findCellWithTextonSheetForPoi(s, "student_id");
-		HSSFCell scoreHeader = findCellWithTextonSheetForPoi(s, "score");
+		HSSFCell studentIdHeader = findCellWithTextonSheetForPoi(s, SCANTRON_HEADER_STUDENT_ID);
+		HSSFCell scoreHeader = findCellWithTextonSheetForPoi(s, SCANTRON_HEADER_SCORE);
 		if (studentIdHeader == null)
 		{
 			err.append("There is no column with the header student_id");
@@ -804,14 +807,39 @@ public class ImportExportUtility {
 					continue; 
 				}
 				String idStr, scoreStr; 
+				
+				// IF the row contains the header, meaning it is the header row, we want to skip it. 
+				if (!id.equals(studentIdHeader))
+				{
 
-				idStr = String.format("%.0f", id.getRichStringCellValue().getString()); 
-				scoreStr = score == null ? "" : score.getRichStringCellValue().getString(); 
-				String[] ent = new String[2];
-				ent[0] = idStr; 
-				ent[1] = scoreStr;
+					//idStr = String.format("%.0f", id.getRichStringCellValue().getString());
+					// FIXME - need to decide if this is OK for everyone, not everyone will have an ID as a 
+					idStr = new Integer(id.getRichStringCellValue().getString()).toString();
+					if (score != null)
+					{
+						if (score.getCellType() == HSSFCell.CELL_TYPE_STRING)
+						{
+							scoreStr = score.getRichStringCellValue().getString();
+						}
+						else if (score.getCellType() == HSSFCell.CELL_TYPE_NUMERIC)
+						{
+							scoreStr = Double.toString(score.getNumericCellValue());
+						}
+						else
+						{
+							scoreStr = ""; 
+						}
+					}
+					else
+					{
+						scoreStr = ""; 
+					}
+					String[] ent = new String[2];
+					ent[0] = idStr; 
+					ent[1] = scoreStr;
 
-				data.addRow(ent); 
+					data.addRow(ent); 
+				}
 			}
 		}
 		return data; 
@@ -874,6 +902,8 @@ public class ImportExportUtility {
 		sb = null; 
 		return ret; 
 	}
+	
+	
 	private static boolean isScantronSheetFromPoi(HSSFSheet s) {
 		Iterator<HSSFRow> rowIter = s.rowIterator(); 
 		while (rowIter.hasNext())
@@ -881,7 +911,7 @@ public class ImportExportUtility {
 			HSSFRow curRow = rowIter.next();  
 			HSSFCell possibleHeader = curRow.getCell(0); 
 
-			if (possibleHeader != null && possibleHeader.getCellType() == HSSFCell.CELL_TYPE_STRING &&  "student_row".equals(possibleHeader.getRichStringCellValue().getString()) )
+			if (possibleHeader != null && possibleHeader.getCellType() == HSSFCell.CELL_TYPE_STRING &&  SCANTRON_HEADER_STUDENT_ID.equals(possibleHeader.getRichStringCellValue().getString()) )
 			{
 				return true; 
 			}
