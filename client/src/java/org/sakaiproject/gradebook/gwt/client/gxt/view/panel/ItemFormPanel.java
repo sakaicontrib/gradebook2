@@ -969,10 +969,8 @@ public class ItemFormPanel extends ContentPanel {
 				boolean isChecked = DataTypeConversionUtil.checkBoolean(((CheckBox)fe.field).getValue());
 				CategoryType categoryType = selectedGradebook.getGradebookItemModel().getCategoryType();
 				ItemModel category = categoryPicker.getValue();
-				boolean isWeightByPoints = DataTypeConversionUtil.checkBoolean(enforcePointWeightingField.getValue());
-					//category == null ? false : DataTypeConversionUtil.checkBoolean(category.getEnforcePointWeighting());
-				boolean isEqualWeight = DataTypeConversionUtil.checkBoolean(equallyWeightChildrenField.getValue());
-					//category == null ? false : DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments());
+				boolean isWeightByPoints = false;
+				boolean isEqualWeight = false;
 				boolean hasWeights = categoryType == CategoryType.WEIGHTED_CATEGORIES;
 				setChanges();
 				boolean isDropLowestVisible = false;
@@ -980,20 +978,32 @@ public class ItemFormPanel extends ContentPanel {
 				if (selectedItemModel != null) {
 					switch (selectedItemModel.getItemType()) {
 						case CATEGORY:
+							isWeightByPoints = DataTypeConversionUtil.checkBoolean(enforcePointWeightingField.getValue());
+							isEqualWeight = DataTypeConversionUtil.checkBoolean(equallyWeightChildrenField.getValue());
+							
 							isDropLowestVisible = checkIfDropLowestVisible(selectedItemModel, categoryType, true, true, isWeightByPoints, isChecked);
 							initField(dropLowestField, !isDelete, isDropLowestVisible);
 							initField(enforcePointWeightingField, !isDelete, hasWeights && !isChecked);
 							initField(equallyWeightChildrenField, !isDelete, hasWeights && !isWeightByPoints);
 						break;
 						case ITEM:
+							isWeightByPoints = category == null ? false : DataTypeConversionUtil.checkBoolean(category.getEnforcePointWeighting());
+							isEqualWeight = category == null ? false : DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments());
+							
 							initField(percentCategoryField, !isDelete, hasWeights && !isWeightByPoints
 									&& (!isEqualWeight || isChecked));
 						break;
 					}
 				} else if (createItemType == Type.ITEM) {
+					isWeightByPoints = category == null ? false : DataTypeConversionUtil.checkBoolean(category.getEnforcePointWeighting());
+					isEqualWeight = category == null ? false : DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments());
+					
 					initField(percentCategoryField, !isDelete, hasWeights && !isWeightByPoints
 							&& (!isEqualWeight || isChecked));
 				} else if (createItemType == Type.CATEGORY) {
+					isWeightByPoints = DataTypeConversionUtil.checkBoolean(enforcePointWeightingField.getValue());
+					isEqualWeight = DataTypeConversionUtil.checkBoolean(equallyWeightChildrenField.getValue());
+					
 					isDropLowestVisible = checkIfDropLowestVisible(selectedItemModel, categoryType, true, true, isWeightByPoints, isChecked);
 					initField(dropLowestField, !isDelete, isDropLowestVisible);
 					initField(equallyWeightChildrenField, !isDelete, hasWeights && !isWeightByPoints);
