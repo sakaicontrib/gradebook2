@@ -426,6 +426,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 
 				String categoryKey = String.valueOf(category.getId());
 
+				boolean isWeightByPointsCategory = DataTypeConversionUtil.checkBoolean(category.isEnforcePointWeighting());
 				BigDecimal categoryWeight = getCategoryWeight(category);
 				CategoryCalculationUnit categoryCalculationUnit = new CategoryCalculationUnit(categoryWeight, Integer.valueOf(category.getDrop_lowest()), category.isExtraCredit(), category.isEnforcePointWeighting());
 				categoryUnitMap.put(categoryKey, categoryCalculationUnit);
@@ -437,7 +438,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 					continue;
 
 				// Check to ensure that we don't apply drop lowest with unweighted, unequal point value items
-				if (! isWeighted && category.getDrop_lowest() > 0) {
+				if (((isWeighted && isWeightByPointsCategory) || !isWeighted) && category.getDrop_lowest() > 0) {
 					Double lastPointValue = null;
 					for (Assignment assignment : assignments) {
 						// Exclude extra credit items from determining whether drop lowest should be allowed
