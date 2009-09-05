@@ -116,6 +116,7 @@ public class InstructorView extends AppView {
 
 	private I18nConstants i18n;
 	private boolean isEditable;
+	private boolean isNewGradebook;
 
 	public InstructorView(Controller controller, TreeView treeView, MultigradeView multigradeView, 
 			NotificationView notificationView, ImportExportView importExportView, 
@@ -128,6 +129,7 @@ public class InstructorView extends AppView {
 		this.multigradeView = multigradeView;
 		this.importExportView = importExportView;
 		this.singleGradeView = singleGradeView;
+		this.isNewGradebook = isNewGradebook;
 
 		toolBar = new ToolBar();
 		borderLayoutContainer = new BorderLayoutPanel(); 
@@ -218,7 +220,7 @@ public class InstructorView extends AppView {
 
 		populateToolBar(i18n, selectedGradebook);
 
-		if (DataTypeConversionUtil.checkBoolean(selectedGradebook.isNewGradebook()))
+		if (isNewGradebook)
 			Dispatcher.forwardEvent(GradebookEvents.StartEditItem.getEventType(), selectedGradebook.getGradebookItemModel());
 	}
 
