@@ -1189,13 +1189,41 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		ApplicationModel model = new ApplicationModel();
 		model.setGradebookModels(getGradebookModels(gradebookUids));
 
+		List<GradeType> enabledGradeTypes = new ArrayList<GradeType>();
+		
 		if (configService != null) {
 			String url = configService.getString(AppConstants.HELP_URL_CONFIG_ID);
 
 			if (url != null)
 				model.setHelpUrl(url);
+			
+			boolean isPointsEnabled = true;
+			boolean isPercentagesEnabled = true;
+			boolean isLettersEnabled = true;
+			
+			String gradeTypes = configService.getString(AppConstants.ENABLED_GRADE_TYPES_ID);
+			if (gradeTypes != null) {
+				gradeTypes = gradeTypes.toUpperCase();
+				isPointsEnabled = gradeTypes.contains("POINT");
+				isPercentagesEnabled = gradeTypes.contains("PERCENT");
+				isLettersEnabled = gradeTypes.contains("LETTER");
+			}
+			
+			if (isPointsEnabled)
+				enabledGradeTypes.add(GradebookModel.GradeType.POINTS);
+			if (isPercentagesEnabled)
+				enabledGradeTypes.add(GradebookModel.GradeType.PERCENTAGES);
+			if (isLettersEnabled)
+				enabledGradeTypes.add(GradebookModel.GradeType.LETTERS);
+			
+		} else {
+			enabledGradeTypes.add(GradebookModel.GradeType.POINTS);
+			enabledGradeTypes.add(GradebookModel.GradeType.PERCENTAGES);
+			enabledGradeTypes.add(GradebookModel.GradeType.LETTERS);
 		}
-
+		
+		model.setEnabledGradeTypes(enabledGradeTypes);
+		
 		return model;
 	}
 

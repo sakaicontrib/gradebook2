@@ -102,6 +102,9 @@ public interface AppConstants {
 	public static final String HELP_URL				= "helpUrl";
 	public static final String HELP_URL_CONFIG_ID	= "gb2.help.url";
 	
+	public static final String ENABLED_GRADE_TYPES 	= "enabledGradeTypes";
+	public static final String ENABLED_GRADE_TYPES_ID	= "gb2.enabled.grade.types";
+	
 	public static final String DEFAULT_CATEGORY_NAME = "Unassigned";
 	
 	public static final String EXTRA_CREDIT_INDICATOR = " (+)";

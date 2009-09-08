@@ -26,6 +26,7 @@ package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 import java.util.List;
 import java.util.Map;
 
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.InlineEditField;
@@ -45,6 +46,7 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
 import com.extjs.gxt.ui.client.Events;
+import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.binding.Converter;
 import com.extjs.gxt.ui.client.binding.FieldBinding;
@@ -495,9 +497,13 @@ public class ItemFormPanel extends ContentPanel {
 
 		ListStore<ModelData> gradeTypeStore = new ListStore<ModelData>();
 
-		gradeTypeStore.add(getGradeTypeModel(GradebookModel.GradeType.POINTS));
-		gradeTypeStore.add(getGradeTypeModel(GradebookModel.GradeType.PERCENTAGES));
-		gradeTypeStore.add(getGradeTypeModel(GradebookModel.GradeType.LETTERS));
+		List<GradeType> enabledGradeTypes = Registry.get(AppConstants.ENABLED_GRADE_TYPES);
+		
+		if (enabledGradeTypes != null) {
+			for (int i=0;i<enabledGradeTypes.size();i++) {
+				gradeTypeStore.add(getGradeTypeModel(enabledGradeTypes.get(i)));
+			}
+		}
 		
 		gradeTypePicker.setStore(gradeTypeStore);
 		

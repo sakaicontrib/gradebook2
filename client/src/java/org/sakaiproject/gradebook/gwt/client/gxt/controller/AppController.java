@@ -308,6 +308,7 @@ public class AppController extends Controller {
 		List<GradebookModel> gradebookModels = model.getGradebookModels();
 
 		Registry.register(AppConstants.HELP_URL, model.getHelpUrl());
+		Registry.register(AppConstants.ENABLED_GRADE_TYPES, model.getEnabledGradeTypes());
 
 		// FIXME: Currently we only evaluate the first gradebook model to determine if we have
 		// FIXME: an instructor or a student. This needs to be refined.

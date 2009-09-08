@@ -24,6 +24,8 @@ package org.sakaiproject.gradebook.gwt.client.model;
 
 import java.util.List;
 
+import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
+
 public class ApplicationModel extends EntityModel {
 
 	private static final long serialVersionUID = 1L;
@@ -32,6 +34,7 @@ public class ApplicationModel extends EntityModel {
 	private String placementId;
 	private String userName;
 	private String helpUrl;
+	private List<GradeType> enabledGradeTypes;
 		
 	public ApplicationModel() {
 		
@@ -71,6 +74,14 @@ public class ApplicationModel extends EntityModel {
 
 	public void setHelpUrl(String helpUrl) {
 		this.helpUrl = helpUrl;
+	}
+
+	public List<GradeType> getEnabledGradeTypes() {
+		return enabledGradeTypes;
+	}
+
+	public void setEnabledGradeTypes(List<GradeType> enabledGradeTypes) {
+		this.enabledGradeTypes = enabledGradeTypes;
 	}
 	
 }
