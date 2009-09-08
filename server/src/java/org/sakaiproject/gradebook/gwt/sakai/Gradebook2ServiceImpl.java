@@ -2057,7 +2057,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	
 			BigDecimal calculatedGrade = getCalculatedGrade(gradebook, assignments, categories, studentGradeMap);
 			DisplayGrade displayGrade = getDisplayGrade(gradebook, student.getIdentifier(), courseGradeRecord, calculatedGrade);// requestCourseGrade(gradebookUid,
-			displayGrade.setOverridden(true);
+			displayGrade.setOverridden(value != null);
 			student.set(StudentModel.Key.GRADE_OVERRIDE.name(), courseGradeRecord.getEnteredGrade());
 			student.set(StudentModel.Key.COURSE_GRADE.name(), displayGrade.toString());
 			student.set(StudentModel.Key.LETTER_GRADE.name(), displayGrade.getLetterGrade());
