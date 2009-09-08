@@ -2762,7 +2762,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 
 		GradebookModel model = new GradebookModel();
-		model.setNewGradebook(Boolean.valueOf(isNewGradebook));
+		//model.setNewGradebook(Boolean.valueOf(isNewGradebook));
 		String gradebookUid = gradebook.getUid();
 
 		CategoryType categoryType = null;
@@ -2833,13 +2833,14 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				}
 
 			}
-
+			
 			gradebookItemModel = getItemModel(gradebook, filteredAssignments, filteredCategories, null, null);
 		}
 		else {
 			gradebookItemModel = getItemModel(gradebook, assignments, categories, null, null);
 		}
-
+		
+		model.setNewGradebook(Boolean.valueOf(assignments == null || assignments.isEmpty()));
 
 		model.setGradebookItemModel(gradebookItemModel);
 		List<FixedColumnModel> columns = getColumns();
