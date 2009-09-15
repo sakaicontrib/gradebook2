@@ -286,7 +286,7 @@ public class ImportPanel extends ContentPanel {
 			@Override
 			public void componentSelected(ButtonEvent ce) {	
 				itemGrid.stopEditing(); 
-				//categoryEditor.completeEdit();
+
 				ArrayList<ItemModel> allItemModels = new ArrayList<ItemModel>();
 				allItemModels.addAll(itemStore.getModels());
 				allItemModels.addAll(invisibleItemModels);

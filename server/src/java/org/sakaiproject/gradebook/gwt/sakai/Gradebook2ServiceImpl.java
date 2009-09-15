@@ -1619,6 +1619,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		String standardDev = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getStandardDeviation(), true) : NA;
 		String rank = NA;  
 
+		boolean isStudentView = studentId != null;
+		
 		if (studentId != null && statistics != null)
 		{
 			StringBuilder sb = new StringBuilder();
@@ -1636,12 +1638,25 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			sb = null; 
 		}
 		
+		boolean isShowMean = DataTypeConversionUtil.checkBoolean(gradebook.getShowMean());
+    	boolean isShowMedian = DataTypeConversionUtil.checkBoolean(gradebook.getShowMedian());
+    	boolean isShowMode = DataTypeConversionUtil.checkBoolean(gradebook.getShowMode());
+    	boolean isShowRank = DataTypeConversionUtil.checkBoolean(gradebook.getShowRank());
 		
-		model.setMean(mean);
-		model.setMedian(median);
-		model.setMode(mode);
-		model.setStandardDeviation(standardDev);
-		model.setRank(rank); 
+		if (!isStudentView || isShowMean) {
+			model.setMean(mean);
+			model.setStandardDeviation(standardDev);	
+		}
+		
+		if (!isStudentView || isShowMedian)
+			model.setMedian(median);
+		
+		if (!isStudentView || isShowMode)
+			model.setMode(mode);
+		
+		if (!isStudentView || isShowRank)
+			model.setRank(rank); 
+		
 		return model;
 	}
 
@@ -3052,6 +3067,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		itemModel.setReleaseItems(Boolean.valueOf(gradebook.isAssignmentsDisplayed()));
 		itemModel.setGradeScaleId(gradebook.getSelectedGradeMapping().getId());
 		itemModel.setExtraCreditScaled(gradebook.isScaledExtraCredit());
+		itemModel.setShowMean(gradebook.getShowMean());
+		itemModel.setShowMedian(gradebook.getShowMedian());
+		itemModel.setShowMode(gradebook.getShowMode());
+		itemModel.setShowRank(gradebook.getShowRank());
+		itemModel.setShowItemStatistics(gradebook.getShowItemStatistics());
 		
 		return itemModel;
 	}
@@ -4084,6 +4104,26 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		boolean isExtraCreditScaled = DataTypeConversionUtil.checkBoolean(item.getExtraCreditScaled());
 		
 		gradebook.setScaledExtraCredit(Boolean.valueOf(isExtraCreditScaled));
+		
+		boolean isShowMean = DataTypeConversionUtil.checkBoolean(item.getShowMean());
+		
+		gradebook.setShowMean(Boolean.valueOf(isShowMean));
+		
+		boolean isShowMedian = DataTypeConversionUtil.checkBoolean(item.getShowMedian());
+		
+		gradebook.setShowMedian(Boolean.valueOf(isShowMedian));
+		
+		boolean isShowMode = DataTypeConversionUtil.checkBoolean(item.getShowMode());
+		
+		gradebook.setShowMode(Boolean.valueOf(isShowMode));
+
+		boolean isShowRank = DataTypeConversionUtil.checkBoolean(item.getShowRank());
+		
+		gradebook.setShowRank(Boolean.valueOf(isShowRank));
+		
+		boolean isShowItemStatistics = DataTypeConversionUtil.checkBoolean(item.getShowItemStatistics());
+		
+		gradebook.setShowItemStatistics(Boolean.valueOf(isShowItemStatistics));
 		
 		GradeMapping mapping = gradebook.getSelectedGradeMapping();
 		Long gradeScaleId = item.getGradeScaleId();

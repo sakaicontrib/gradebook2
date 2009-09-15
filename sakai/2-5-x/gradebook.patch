@@ -24,13 +24,24 @@ Index: service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Gradebook
 ===================================================================
 --- service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Gradebook.hbm.xml	(revision 7234)
 +++ service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Gradebook.hbm.xml	(working copy)
-@@ -36,5 +36,9 @@
+@@ -36,5 +36,20 @@
  		
  		<property name="category_type" column="CATEGORY_TYPE" type="integer" not-null="true"/>
  
 +		<property name="equalWeightCategories" column="IS_EQUAL_WEIGHT_CATS" type="boolean" not-null="false"/>
 +
 +		<property name="scaledExtraCredit" column="IS_SCALED_EXTRA_CREDIT" type="boolean" not-null="false"/>
++
++		<property name="showMean" column="DO_SHOW_MEAN" type="boolean" not-null="false"/>
++		
++		<property name="showMedian" column="DO_SHOW_MEDIAN" type="boolean" not-null="false"/>
++		
++		<property name="showMode" column="DO_SHOW_MODE" type="boolean" not-null="false"/>
++		
++		<property name="showRank" column="DO_SHOW_RANK" type="boolean" not-null="false"/>
++		
++		<property name="showItemStatistics" column="DO_SHOW_ITEM_STATS" type="boolean" not-null="false"/>
++		
 +
  	</class>
  </hibernate-mapping>
@@ -268,16 +279,21 @@ Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/Gradebook.java
 ===================================================================
 --- service/hibernate/src/java/org/sakaiproject/tool/gradebook/Gradebook.java	(revision 7234)
 +++ service/hibernate/src/java/org/sakaiproject/tool/gradebook/Gradebook.java	(working copy)
-@@ -49,6 +49,8 @@
+@@ -49,6 +49,13 @@
      private boolean locked;
      private int grade_type;
      private int category_type;
 +    private Boolean equalWeightCategories;
 +    private Boolean scaledExtraCredit;
++    private Boolean showMean;
++    private Boolean showMedian;
++    private Boolean showMode;
++    private Boolean showRank;
++    private Boolean showItemStatistics;
  
      /**
       * Default no-arg constructor needed for persistence
-@@ -252,6 +254,22 @@
+@@ -252,6 +259,66 @@
  		{
  			this.grade_type = grade_type;
  		}
@@ -296,6 +312,50 @@ Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/Gradebook.java
 +
 +		public void setScaledExtraCredit(Boolean scaledExtraCredit) {
 +			this.scaledExtraCredit = scaledExtraCredit;
++		}
++
++		public Boolean getShowMean() {
++			return showMean;
++		}
++
++		public void setShowMean(Boolean showMean) {
++			this.showMean = showMean;
++		}
++
++		public Boolean getShowMedian() {
++			return showMedian;
++		}
++
++		public void setShowMedian(Boolean showMedian) {
++			this.showMedian = showMedian;
++		}
++
++		public Boolean getShowMode() {
++			return showMode;
++		}
++
++		public void setShowMode(Boolean showMode) {
++			this.showMode = showMode;
++		}
++
++		public Boolean getShowRank() {
++			return showRank;
++		}
++
++		public void setShowRank(Boolean showRank) {
++			this.showRank = showRank;
++		}
++
++		public Boolean getShowItemStatistics() {
++			return showItemStatistics;
++		}
++
++		public void setShowItemStatistics(Boolean showItemStatistics) {
++			this.showItemStatistics = showItemStatistics;
++		}
++
++		public Boolean getScaledExtraCredit() {
++			return scaledExtraCredit;
 +		}
  }
  

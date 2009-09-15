@@ -66,7 +66,9 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 		ITEM_ORDER("Order"), GRADESCALEID("grade scale id"), 
 		EXTRA_CREDIT_SCALED("Project Extra Credit"),
 		DO_RECALCULATE_POINTS("Scale scores to same percentage"),
-		ENFORCE_POINT_WEIGHTING("Weight By Points");
+		ENFORCE_POINT_WEIGHTING("Weight By Points"), SHOWMEAN("Show mean"),
+		SHOWMEDIAN("Show median"), SHOWMODE("Show mode"), SHOWRANK("Show rank"),
+		SHOWITEMSTATS("Show item stats");
 		
 		private String propertyName;
 		
@@ -419,6 +421,46 @@ public class ItemModel extends BaseTreeModel<ItemModel> {
 	
 	public void setEnforcePointWeighting(Boolean doEnforce) {
 		set(Key.ENFORCE_POINT_WEIGHTING.name(), doEnforce);
+	}
+	
+	public Boolean getShowMean() {
+		return get(Key.SHOWMEAN.name());
+	}
+	
+	public void setShowMean(Boolean showMean) {
+		set(Key.SHOWMEAN.name(), showMean);
+	}
+	
+	public Boolean getShowMedian() {
+		return get(Key.SHOWMEDIAN.name());
+	}
+	
+	public void setShowMedian(Boolean showMedian) {
+		set(Key.SHOWMEDIAN.name(), showMedian);
+	}
+	
+	public Boolean getShowMode() {
+		return get(Key.SHOWMODE.name());
+	}
+	
+	public void setShowMode(Boolean showMode) {
+		set(Key.SHOWMODE.name(), showMode);
+	}
+	
+	public Boolean getShowRank() {
+		return get(Key.SHOWRANK.name());
+	}
+	
+	public void setShowRank(Boolean showRank) {
+		set(Key.SHOWRANK.name(), showRank);
+	}
+	
+	public Boolean getShowItemStatistics() {
+		return get(Key.SHOWITEMSTATS.name());
+	}
+	
+	public void setShowItemStatistics(Boolean showItemStatistics) {
+		set(Key.SHOWITEMSTATS.name(), showItemStatistics);
 	}
 	
 	@Override

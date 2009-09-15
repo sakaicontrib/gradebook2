@@ -106,6 +106,11 @@ public class ItemFormPanel extends ContentPanel {
 	private CheckBox releaseItemsField;
 	private CheckBox scaledExtraCreditField;
 	private CheckBox enforcePointWeightingField;
+	private CheckBox showMeanField;
+	private CheckBox showMedianField;
+	private CheckBox showModeField;
+	private CheckBox showRankField;
+	private CheckBox showItemStatsField;
 	private NumberField percentCourseGradeField;
 	private NumberField percentCategoryField;
 	private NumberField pointsField;
@@ -210,6 +215,41 @@ public class ItemFormPanel extends ContentPanel {
 		releaseItemsField.setVisible(false);
 		releaseItemsField.setToolTip(i18n.releaseItemsToolTip());
 		formPanel.add(releaseItemsField);
+		
+		showMeanField = new NullSensitiveCheckBox();
+		showMeanField.setName(ItemModel.Key.SHOWMEAN.name());
+		showMeanField.setFieldLabel(i18n.showMeanFieldLabel());
+		showMeanField.setVisible(false);
+		showMeanField.setToolTip(i18n.showMeanToolTip());
+		formPanel.add(showMeanField);
+		
+		showMedianField = new NullSensitiveCheckBox();
+		showMedianField.setName(ItemModel.Key.SHOWMEDIAN.name());
+		showMedianField.setFieldLabel(i18n.showMedianFieldLabel());
+		showMedianField.setVisible(false);
+		showMedianField.setToolTip(i18n.showMedianToolTip());
+		formPanel.add(showMedianField);
+		
+		showModeField = new NullSensitiveCheckBox();
+		showModeField.setName(ItemModel.Key.SHOWMODE.name());
+		showModeField.setFieldLabel(i18n.showModeFieldLabel());
+		showModeField.setVisible(false);
+		showModeField.setToolTip(i18n.showModeToolTip());
+		formPanel.add(showModeField);
+		
+		showRankField = new NullSensitiveCheckBox();
+		showRankField.setName(ItemModel.Key.SHOWRANK.name());
+		showRankField.setFieldLabel(i18n.showRankFieldLabel());
+		showRankField.setVisible(false);
+		showRankField.setToolTip(i18n.showRankToolTip());
+		formPanel.add(showRankField);
+		
+		showItemStatsField = new NullSensitiveCheckBox();
+		showItemStatsField.setName(ItemModel.Key.SHOWITEMSTATS.name());
+		showItemStatsField.setFieldLabel(i18n.showItemStatsFieldLabel());
+		showItemStatsField.setVisible(false);
+		showItemStatsField.setToolTip(i18n.showItemStatsToolTip());
+		formPanel.add(showItemStatsField);
 		
 		scaledExtraCreditField = new NullSensitiveCheckBox();
 		scaledExtraCreditField.setName(ItemModel.Key.EXTRA_CREDIT_SCALED.name());
@@ -745,6 +785,12 @@ public class ItemFormPanel extends ContentPanel {
 		initField(sourceField, false, isEditable && isItem);
 		initField(scaledExtraCreditField, !isDelete && isAllowedToEdit, !isNotGradebook);
 		initField(enforcePointWeightingField, !isDelete && isAllowedToEdit, isWeightByPointsVisible);
+		initField(showMeanField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
+		initField(showMedianField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
+		initField(showModeField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
+		initField(showRankField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
+		initField(showItemStatsField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
+
 	}
 	
 	
@@ -892,6 +938,11 @@ public class ItemFormPanel extends ContentPanel {
 		releasedField.addListener(Events.Change, checkboxChangeListener);
 		scaledExtraCreditField.addListener(Events.Change, checkboxChangeListener);
 		enforcePointWeightingField.addListener(Events.Change, enforcePointWeightingListener);
+		showMeanField.addListener(Events.Change, checkboxChangeListener);
+		showMedianField.addListener(Events.Change, checkboxChangeListener);
+		showModeField.addListener(Events.Change, checkboxChangeListener);
+		showRankField.addListener(Events.Change, checkboxChangeListener);
+		showItemStatsField.addListener(Events.Change, checkboxChangeListener);		
 	}
 
 	private void removeListeners() {
@@ -911,6 +962,11 @@ public class ItemFormPanel extends ContentPanel {
 		releasedField.removeListener(Events.Change, checkboxChangeListener);
 		scaledExtraCreditField.removeListener(Events.Change, checkboxChangeListener);
 		enforcePointWeightingField.removeListener(Events.Change, enforcePointWeightingListener);
+		showMeanField.removeListener(Events.Change, checkboxChangeListener);
+		showMedianField.removeListener(Events.Change, checkboxChangeListener);
+		showModeField.removeListener(Events.Change, checkboxChangeListener);
+		showRankField.removeListener(Events.Change, checkboxChangeListener);
+		showItemStatsField.removeListener(Events.Change, checkboxChangeListener);		
 	}
 
 	private void initListeners() {

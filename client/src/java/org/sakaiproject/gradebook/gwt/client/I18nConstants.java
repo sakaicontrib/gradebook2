@@ -42,6 +42,11 @@ public interface I18nConstants extends Constants {
 	String itemNameToolTip();
 	String releaseGradesToolTip();
 	String releaseItemsToolTip();
+	String showMeanToolTip();
+	String showMedianToolTip();
+	String showModeToolTip();
+	String showRankToolTip();
+	String showItemStatsToolTip();
 	String scaledExtraCreditToolTip();
 	String percentCourseGradeToolTip();
 	String percentCategoryToolTip();
@@ -57,6 +62,11 @@ public interface I18nConstants extends Constants {
 	String gradeTypeFieldLabel();
 	String releaseGradesFieldLabel();
 	String releaseItemsFieldLabel();
+	String showItemStatsFieldLabel();
+	String showRankFieldLabel();
+	String showModeFieldLabel();
+	String showMedianFieldLabel();
+	String showMeanFieldLabel();
 	String scaledExtraCreditFieldLabel();
 	String percentCourseGradeFieldLabel();
 	String percentCategoryFieldLabel();
@@ -242,4 +252,5 @@ public interface I18nConstants extends Constants {
 	String importParsingMessage();
 	String importGradesFailedTitle();
 	String importGradesFailedMessage();
+
 }

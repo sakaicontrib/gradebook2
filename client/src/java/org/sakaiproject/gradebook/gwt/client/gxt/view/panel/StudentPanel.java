@@ -50,7 +50,6 @@ import com.extjs.gxt.ui.client.data.ModelComparer;
 import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
 import com.extjs.gxt.ui.client.event.SelectionChangedListener;
 import com.extjs.gxt.ui.client.store.GroupingStore;
-import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Store;
 import com.extjs.gxt.ui.client.store.StoreSorter;
 import com.extjs.gxt.ui.client.util.Margins;
@@ -102,7 +101,7 @@ public class StudentPanel extends ContentPanel {
     private GridSelectionModel<BaseModel> selectionModel;
     private TextArea commentArea;
 	private StudentModel learnerGradeRecordCollection;
-	private ColumnConfig categoryColumn, outOfColumn;
+	private ColumnConfig categoryColumn, outOfColumn, meanColumn, medianColumn, modeColumn, stdvColumn;
 	
 	private boolean isStudentView;
 	private boolean displayRank; 
@@ -200,21 +199,21 @@ public class StudentPanel extends ContentPanel {
 		outOfColumn.setGroupable(false);
 		columns.add(outOfColumn);
 		
-		column = new ColumnConfig(Key.MEAN.name(), i18n.meanName(), 60);
-		column.setGroupable(false);
-		columns.add(column);
+		meanColumn = new ColumnConfig(Key.MEAN.name(), i18n.meanName(), 60);
+		meanColumn.setGroupable(false);
+		columns.add(meanColumn);
 		
-		column = new ColumnConfig(Key.STDV.name(), i18n.stdvName(), 60);
-		column.setGroupable(false);
-		columns.add(column);
+		stdvColumn = new ColumnConfig(Key.STDV.name(), i18n.stdvName(), 60);
+		stdvColumn.setGroupable(false);
+		columns.add(stdvColumn);
 		
-		column = new ColumnConfig(Key.MEDI.name(), i18n.medianName(), 60);
-		column.setGroupable(false);
-		columns.add(column);
+		medianColumn = new ColumnConfig(Key.MEDI.name(), i18n.medianName(), 60);
+		medianColumn.setGroupable(false);
+		columns.add(medianColumn);
 		
-		column = new ColumnConfig(Key.MODE.name(), i18n.modeName(), 60);
-		column.setGroupable(false);
-		columns.add(column);
+		modeColumn = new ColumnConfig(Key.MODE.name(), i18n.modeName(), 60);
+		modeColumn.setGroupable(false);
+		columns.add(modeColumn);
 		
 		cm = new ColumnModel(columns);
 		
@@ -476,7 +475,8 @@ public class StudentPanel extends ContentPanel {
 	        formatter.setStyleName(PI_ROW_COURSE_GRADE, PI_COL_HEADING, "gbImpact");
 	        studentInformation.setText(PI_ROW_COURSE_GRADE, PI_COL_VALUE, learnerGradeRecordCollection.getLetterGrade());
 	        
-	        boolean isLetterGrading = selectedGradebook.getGradebookItemModel().getGradeType() == GradeType.LETTERS;
+	        ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
+	        boolean isLetterGrading = gradebookItemModel.getGradeType() == GradeType.LETTERS;
 	        
 	        if (!isLetterGrading)
 	        {
@@ -486,34 +486,84 @@ public class StudentPanel extends ContentPanel {
 		        formatter.setWordWrap(PI_ROW_CALCULATED_GRADE, PI_COL_HEADING, false);
 		        studentInformation.setText(PI_ROW_CALCULATED_GRADE, PI_COL_VALUE, calculatedGrade);
 	        }
+	        
 	        if (courseGradeStats != null)
 	        {
-	        	studentInformation.setText(PI_ROW_STATS, PI_COL2_HEADING, "Course Statistics");
-	        	formatter.setStyleName(PI_ROW_STATS, PI_COL2_HEADING, "gbHeading");
+	        	boolean isShowMean = DataTypeConversionUtil.checkBoolean(gradebookItemModel.getShowMean());
+	        	boolean isShowMedian = DataTypeConversionUtil.checkBoolean(gradebookItemModel.getShowMedian());
+	        	boolean isShowMode = DataTypeConversionUtil.checkBoolean(gradebookItemModel.getShowMode());
+	        	boolean isShowRank = DataTypeConversionUtil.checkBoolean(gradebookItemModel.getShowRank());
+	        	boolean isShowItemStatistics = DataTypeConversionUtil.checkBoolean(gradebookItemModel.getShowItemStatistics());
+	        	boolean isShowAny = isShowMean || isShowMedian || isShowMode || isShowRank;
 	        	
-		        studentInformation.setText(PI_ROW_MEAN, PI_COL2_HEADING, "Mean");
-		        formatter.setStyleName(PI_ROW_MEAN, PI_COL2_HEADING, "gbImpact");
-		        formatter.setWordWrap(PI_ROW_MEAN, PI_COL2_HEADING, false);
-		        studentInformation.setText(PI_ROW_MEAN, PI_COL2_VALUE, courseGradeStats.getMean());
-
-		        studentInformation.setText(PI_ROW_STDV, PI_COL2_HEADING, "Standard Deviation");
-		        formatter.setStyleName(PI_ROW_STDV, PI_COL2_HEADING, "gbImpact");
-		        formatter.setWordWrap(PI_ROW_STDV, PI_COL2_HEADING, false);
-		        studentInformation.setText(PI_ROW_STDV, PI_COL2_VALUE, courseGradeStats.getStandardDeviation());
-
-		        studentInformation.setText(PI_ROW_MEDI, PI_COL2_HEADING, "Median");
-		        formatter.setStyleName(PI_ROW_MEDI, PI_COL2_HEADING, "gbImpact");
-		        studentInformation.setText(PI_ROW_MEDI, PI_COL2_VALUE, courseGradeStats.getMedian());
-
-		        studentInformation.setText(PI_ROW_MODE, PI_COL2_HEADING, "Mode");
-		        formatter.setStyleName(PI_ROW_MODE, PI_COL2_HEADING, "gbImpact");
-		        studentInformation.setText(PI_ROW_MODE, PI_COL2_VALUE, courseGradeStats.getMode());
-		        if (displayRank)
+	        	if (isShowAny) {
+	        		studentInformation.setText(PI_ROW_STATS, PI_COL2_HEADING, "Course Statistics");
+	        		formatter.setStyleName(PI_ROW_STATS, PI_COL2_HEADING, "gbHeading");
+	        	}
+	        	
+	        	int row = PI_ROW_MEAN;
+	        	if (isShowMean) {
+	        		studentInformation.setText(PI_ROW_MEAN, PI_COL2_HEADING, "Mean");
+		        	formatter.setStyleName(PI_ROW_MEAN, PI_COL2_HEADING, "gbImpact");
+		        	formatter.setWordWrap(PI_ROW_MEAN, PI_COL2_HEADING, false);
+		        	studentInformation.setText(PI_ROW_MEAN, PI_COL2_VALUE, courseGradeStats.getMean());
+		 
+		        	row++;
+		        	
+		        	studentInformation.setText(PI_ROW_STDV, PI_COL2_HEADING, "Standard Deviation");
+		        	formatter.setStyleName(PI_ROW_STDV, PI_COL2_HEADING, "gbImpact");
+		        	formatter.setWordWrap(PI_ROW_STDV, PI_COL2_HEADING, false);
+		        	studentInformation.setText(PI_ROW_STDV, PI_COL2_VALUE, courseGradeStats.getStandardDeviation());
+		
+		        	row++;
+	        	} else {
+	        		studentInformation.setText(PI_ROW_MEAN, PI_COL2_HEADING, "");
+		        	studentInformation.setText(PI_ROW_MEAN, PI_COL2_VALUE, "");
+		        	studentInformation.setText(PI_ROW_STDV, PI_COL2_HEADING, "");
+		        	studentInformation.setText(PI_ROW_STDV, PI_COL2_VALUE, "");
+	        	}
+	        	
+	        	meanColumn.setHidden(!isShowItemStatistics || !isShowMean);
+	        	stdvColumn.setHidden(!isShowItemStatistics || !isShowMean);
+	        	
+	        	if (isShowMedian) {
+	        		studentInformation.setText(row, PI_COL2_HEADING, "Median");
+		        	formatter.setStyleName(row, PI_COL2_HEADING, "gbImpact");
+		        	studentInformation.setText(row, PI_COL2_VALUE, courseGradeStats.getMedian());
+		        	
+		        	row++;
+	        	} else {
+	        		studentInformation.setText(PI_ROW_MEDI, PI_COL2_HEADING, "");
+		        	studentInformation.setText(PI_ROW_MEDI, PI_COL2_VALUE, "");
+	        	}
+	        	
+	        	medianColumn.setHidden(!isShowItemStatistics || !isShowMedian);
+	        	
+	        	if (isShowMode) {
+	        		studentInformation.setText(row, PI_COL2_HEADING, "Mode");
+		        	formatter.setStyleName(row, PI_COL2_HEADING, "gbImpact");
+		        	studentInformation.setText(row, PI_COL2_VALUE, courseGradeStats.getMode());
+	        	
+		        	row++;
+	        	} else {
+	        		studentInformation.setText(PI_ROW_MODE, PI_COL2_HEADING, "");
+		        	studentInformation.setText(PI_ROW_MODE, PI_COL2_VALUE, "");
+	        	}
+		        
+	        	modeColumn.setHidden(!isShowItemStatistics || !isShowMode);
+	        	
+		        if (isShowRank && displayRank)
 		        {
-		        	studentInformation.setText(PI_ROW_RANK, PI_COL2_HEADING, "Rank");
-		        	formatter.setStyleName(PI_ROW_RANK, PI_COL2_HEADING, "gbImpact");
-		        	studentInformation.setText(PI_ROW_RANK, PI_COL2_VALUE, courseGradeStats.getRank());
-		        }
+		        	studentInformation.setText(row, PI_COL2_HEADING, "Rank");
+		        	formatter.setStyleName(row, PI_COL2_HEADING, "gbImpact");
+		        	studentInformation.setText(row, PI_COL2_VALUE, courseGradeStats.getRank());
+		        } else {
+	        		studentInformation.setText(PI_ROW_RANK, PI_COL2_HEADING, "");
+		        	studentInformation.setText(PI_ROW_RANK, PI_COL2_VALUE, "");
+	        	}
+		        
+		        if (grid != null && grid.getView() != null && grid.isRendered())
+		        	grid.getView().refresh(true);
 	        }
 	        else
 	        {
