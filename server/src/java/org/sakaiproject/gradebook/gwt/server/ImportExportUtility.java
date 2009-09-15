@@ -814,26 +814,9 @@ public class ImportExportUtility {
 
 					//idStr = String.format("%.0f", id.getRichStringCellValue().getString());
 					// FIXME - need to decide if this is OK for everyone, not everyone will have an ID as a 
-					idStr = new Integer(id.getRichStringCellValue().getString()).toString();
-					if (score != null)
-					{
-						if (score.getCellType() == HSSFCell.CELL_TYPE_STRING)
-						{
-							scoreStr = score.getRichStringCellValue().getString();
-						}
-						else if (score.getCellType() == HSSFCell.CELL_TYPE_NUMERIC)
-						{
-							scoreStr = Double.toString(score.getNumericCellValue());
-						}
-						else
-						{
-							scoreStr = ""; 
-						}
-					}
-					else
-					{
-						scoreStr = ""; 
-					}
+					
+					idStr = getDataFromHSSFCellAsStringRegardlessOfCellType(id, false); 
+					scoreStr = getDataFromHSSFCellAsStringRegardlessOfCellType(score, true); 
 					String[] ent = new String[2];
 					ent[0] = idStr; 
 					ent[1] = scoreStr;
@@ -846,6 +829,28 @@ public class ImportExportUtility {
 
 	}
 
+	private static String getDataFromHSSFCellAsStringRegardlessOfCellType(HSSFCell c, boolean decimal)
+	{
+		String ret = "";
+		String fmt = "%.0f"; 
+		if (decimal)
+		{
+			fmt = "%.2f"; 
+		}
+		if (c != null)
+		{
+			if (c.getCellType() == HSSFCell.CELL_TYPE_STRING)
+			{
+				ret = c.getRichStringCellValue().getString();
+			}
+			else if (c.getCellType() == HSSFCell.CELL_TYPE_NUMERIC)
+			{
+				ret = String.format(fmt, c.getNumericCellValue());
+			} // else we want to return "" 
+		} // else we want to return "" 
+		return ret; 
+	}
+	
 	// POI doesn't provide the findCell method that jexcelapi does, so we'll simulate it..  We return the first cell we find with the text in searchText
 	// if we can't find it, we return null. 
 	// 
