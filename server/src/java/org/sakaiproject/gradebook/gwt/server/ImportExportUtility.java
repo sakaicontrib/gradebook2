@@ -1601,7 +1601,7 @@ public class ImportExportUtility {
 				importFile.setHasCategories(Boolean.valueOf(ieInfo.hasCategories()));
 				importFile.setHasWeights(Boolean.valueOf(ieInfo.hasWeights));
 				importFile.setLetterGrading(Boolean.valueOf(ieInfo.isLetterGrading()));
-				importFile.setPointsMode(Boolean.valueOf(ieInfo.isPointsMode()));
+				importFile.setPointsMode(Boolean.valueOf(!isLetterGrading));
 			} catch (Exception e) {
 				importFile.setHasErrors(true);
 				importFile.setNotes(e.getMessage());
