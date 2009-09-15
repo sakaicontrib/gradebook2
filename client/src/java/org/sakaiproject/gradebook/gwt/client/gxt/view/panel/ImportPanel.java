@@ -99,6 +99,7 @@ import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class ImportPanel extends ContentPanel {
@@ -112,6 +113,8 @@ public class ImportPanel extends ContentPanel {
 	private EditorGrid<ItemModel> itemGrid;
 	private FormPanel fileUploadPanel;
 	private Map<String, ImportHeader> headerMap;
+	private ComboBox<ItemModel> categoryPicker;
+	private CellEditor categoryEditor; 
 
 	private LayoutContainer mainCardLayoutContainer; //, subCardLayoutContainer;
 	private CardLayout mainCardLayout; //, subCardLayout;
@@ -281,7 +284,8 @@ public class ImportPanel extends ContentPanel {
 		submitButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
 
 			@Override
-			public void componentSelected(ButtonEvent ce) {		
+			public void componentSelected(ButtonEvent ce) {	
+				categoryEditor.completeEdit();
 				ArrayList<ItemModel> allItemModels = new ArrayList<ItemModel>();
 				allItemModels.addAll(itemStore.getModels());
 				allItemModels.addAll(invisibleItemModels);
@@ -719,6 +723,7 @@ public class ImportPanel extends ContentPanel {
 									ImportHeader h = headerMap.get(configId);
 									if (isPointsMode && null != h && h.getField().equals(Field.ITEM.name()) &&
 											null != itemString && !"".equals(itemString.stringValue())) {
+										
 										Double maxPoints = h.getPoints(); 
 										if (maxPoints == null)
 										{
@@ -906,7 +911,7 @@ public class ImportPanel extends ContentPanel {
 		points.setEditor(new CellEditor(new NumberField()));
 		itemColumns.add(points);
 
-		ComboBox<ItemModel> categoryPicker = new ComboBox<ItemModel>(); 
+		categoryPicker = new ComboBox<ItemModel>(); 
 		categoryPicker.setAllowBlank(false); 
 		categoryPicker.setAllQuery(null);
 		categoryPicker.setDisplayField(ItemModel.Key.NAME.name());  
@@ -919,7 +924,8 @@ public class ImportPanel extends ContentPanel {
 		categoryPicker.addInputStyleName("gbTextFieldInput");
 
 		ColumnConfig category = new ColumnConfig(ItemModel.Key.CATEGORY_ID.name(), "Category", 140);
-		category.setEditor(new CellEditor(categoryPicker) {
+				
+		categoryEditor =	new CellEditor(categoryPicker) {
 
 			@Override
 			public Object postProcessValue(Object value) {
@@ -937,7 +943,8 @@ public class ImportPanel extends ContentPanel {
 				return categoriesStore.findModel(ItemModel.Key.ID.name(), String.valueOf(id));
 			}
 
-		});
+		};
+		category.setEditor(categoryEditor);
 
 		category.setRenderer(new GridCellRenderer() {
 
