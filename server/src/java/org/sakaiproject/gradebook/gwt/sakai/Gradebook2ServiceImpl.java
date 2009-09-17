@@ -666,7 +666,21 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 						try {
 							
 							if (isLetterGrading) {
-								value = gradeCalculations.convertLetterGradeToPercentage((String)v);
+								
+								if (!gradeCalculations.isValidLetterGrade((String)v)) {
+									String failedProperty = new StringBuilder().append(assignment.getId()).append(StudentModel.FAILED_FLAG).toString();
+									student.set(failedProperty, "Invalid input");
+									log.warn("Failed to score item for " + student.getIdentifier() + " and item " + assignment.getId() + " to " + v);
+			
+									if (oldValue != null)
+										builder.append(oldValue);
+			
+									builder.append(" Invalid) ");
+									student.set(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
+									continue;
+								} else 
+									value = gradeCalculations.convertLetterGradeToPercentage((String)v);
+								
 							} else if (v != null && v instanceof String) {
 								String strValue = (String) v;
 								if (strValue.trim().length() > 0)

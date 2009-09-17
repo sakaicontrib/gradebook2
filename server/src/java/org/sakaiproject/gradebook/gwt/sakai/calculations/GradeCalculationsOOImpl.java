@@ -326,14 +326,17 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 	}
 	
 	public boolean isValidLetterGrade(String letterGrade) {
-		return letterGradeMap.containsKey(letterGrade);
+		if (letterGrade == null || letterGrade.trim().length() == 0)
+			return true;
+		
+		return letterGradeMap.containsKey(letterGrade.toUpperCase());
 	}
 	
 	public Double convertLetterGradeToPercentage(String letterGrade) {
 		Double percentage = null;
 		
 		if (letterGrade != null) {
-			return letterGradeMap.get(letterGrade);
+			return letterGradeMap.get(letterGrade.toUpperCase());
 		}
 		
 		return percentage;
