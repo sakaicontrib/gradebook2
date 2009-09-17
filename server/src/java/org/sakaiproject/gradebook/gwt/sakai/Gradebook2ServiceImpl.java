@@ -704,7 +704,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 									break;
 								case GradebookService.GRADE_TYPE_PERCENTAGE:
 								case GradebookService.GRADE_TYPE_LETTER:
-									oldValue = assignmentGradeRecord.getPercentEarned();
+									BigDecimal d = gradeCalculations.getPointsEarnedAsPercent(assignment, assignmentGradeRecord);
+									oldValue = d == null ? null : Double.valueOf(d.doubleValue());
 									break;
 							}
 	
@@ -720,7 +721,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 							if (oldValue != null)
 								builder.append(oldValue).append("->");
 	
-							builder.append(value).append(") ");
+							if (value != null)
+								builder.append(value);
+							
+							builder.append(") ");
 						} catch (NumberFormatException nfe) {
 							String failedProperty = new StringBuilder().append(assignment.getId()).append(StudentModel.FAILED_FLAG).toString();
 							student.set(failedProperty, "Invalid input");
