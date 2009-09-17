@@ -3333,7 +3333,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			}
 		}
 
-		List<CourseGradeRecord> courseGradeRecords = gbService.getAllCourseGradeRecords(gradebook.getId(), realmIds, sortField, searchField, searchCriteria, offset, limit, isAscending, learnerRoleKeys);
+		List<CourseGradeRecord> courseGradeRecords = gbService.getAllCourseGradeRecords(gradebook); //, realmIds, sortField, searchField, searchCriteria, offset, limit, isAscending, learnerRoleKeys);
 		Map<String, CourseGradeRecord> studentCourseGradeRecordMap = new HashMap<String, CourseGradeRecord>();
 
 		if (courseGradeRecords != null) {
@@ -3343,7 +3343,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			}
 		}
 
-		List<Comment> comments = gbService.getComments(gradebook.getId(), realmIds, learnerRoleKeys, sortField, searchField, searchCriteria, offset, limit, isAscending);
+		List<Comment> comments = gbService.getComments(gradebook.getId()); //, realmIds, learnerRoleKeys, sortField, searchField, searchCriteria, offset, limit, isAscending);
 		Map<String, Map<Long, Comment>> studentItemCommentMap = new HashMap<String, Map<Long, Comment>>();
 
 		if (comments != null) {
