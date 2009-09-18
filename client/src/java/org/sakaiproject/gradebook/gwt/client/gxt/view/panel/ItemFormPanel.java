@@ -82,6 +82,7 @@ import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
+import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 
 public class ItemFormPanel extends ContentPanel {
 
@@ -206,56 +207,56 @@ public class ItemFormPanel extends ContentPanel {
 		releaseGradesField.setName(ItemModel.Key.RELEASEGRADES.name());
 		releaseGradesField.setFieldLabel(i18n.releaseGradesFieldLabel());
 		releaseGradesField.setVisible(false);
-		releaseGradesField.setToolTip(i18n.releaseGradesToolTip());
+		releaseGradesField.setToolTip(newToolTipConfig(i18n.releaseGradesToolTip()));
 		formPanel.add(releaseGradesField);
 
 		releaseItemsField = new NullSensitiveCheckBox();
 		releaseItemsField.setName(ItemModel.Key.RELEASEITEMS.name());
 		releaseItemsField.setFieldLabel(i18n.releaseItemsFieldLabel());
 		releaseItemsField.setVisible(false);
-		releaseItemsField.setToolTip(i18n.releaseItemsToolTip());
+		releaseItemsField.setToolTip(newToolTipConfig(i18n.releaseItemsToolTip()));
 		formPanel.add(releaseItemsField);
 		
 		showMeanField = new NullSensitiveCheckBox();
 		showMeanField.setName(ItemModel.Key.SHOWMEAN.name());
 		showMeanField.setFieldLabel(i18n.showMeanFieldLabel());
 		showMeanField.setVisible(false);
-		showMeanField.setToolTip(i18n.showMeanToolTip());
+		showMeanField.setToolTip(newToolTipConfig(i18n.showMeanToolTip()));
 		formPanel.add(showMeanField);
 		
 		showMedianField = new NullSensitiveCheckBox();
 		showMedianField.setName(ItemModel.Key.SHOWMEDIAN.name());
 		showMedianField.setFieldLabel(i18n.showMedianFieldLabel());
 		showMedianField.setVisible(false);
-		showMedianField.setToolTip(i18n.showMedianToolTip());
+		showMedianField.setToolTip(newToolTipConfig(i18n.showMedianToolTip()));
 		formPanel.add(showMedianField);
 		
 		showModeField = new NullSensitiveCheckBox();
 		showModeField.setName(ItemModel.Key.SHOWMODE.name());
 		showModeField.setFieldLabel(i18n.showModeFieldLabel());
 		showModeField.setVisible(false);
-		showModeField.setToolTip(i18n.showModeToolTip());
+		showModeField.setToolTip(newToolTipConfig(i18n.showModeToolTip()));
 		formPanel.add(showModeField);
 		
 		showRankField = new NullSensitiveCheckBox();
 		showRankField.setName(ItemModel.Key.SHOWRANK.name());
 		showRankField.setFieldLabel(i18n.showRankFieldLabel());
 		showRankField.setVisible(false);
-		showRankField.setToolTip(i18n.showRankToolTip());
+		showRankField.setToolTip(newToolTipConfig(i18n.showRankToolTip()));
 		formPanel.add(showRankField);
 		
 		showItemStatsField = new NullSensitiveCheckBox();
 		showItemStatsField.setName(ItemModel.Key.SHOWITEMSTATS.name());
 		showItemStatsField.setFieldLabel(i18n.showItemStatsFieldLabel());
 		showItemStatsField.setVisible(false);
-		showItemStatsField.setToolTip(i18n.showItemStatsToolTip());
+		showItemStatsField.setToolTip(newToolTipConfig(i18n.showItemStatsToolTip()));
 		formPanel.add(showItemStatsField);
 		
 		scaledExtraCreditField = new NullSensitiveCheckBox();
 		scaledExtraCreditField.setName(ItemModel.Key.EXTRA_CREDIT_SCALED.name());
 		scaledExtraCreditField.setFieldLabel(i18n.scaledExtraCreditFieldLabel());
 		scaledExtraCreditField.setVisible(false);
-		scaledExtraCreditField.setToolTip(i18n.scaledExtraCreditToolTip());
+		scaledExtraCreditField.setToolTip(newToolTipConfig(i18n.scaledExtraCreditToolTip()));
 		formPanel.add(scaledExtraCreditField);
 
 		percentCourseGradeField = new InlineEditNumberField();
@@ -266,7 +267,7 @@ public class ItemFormPanel extends ContentPanel {
 		percentCourseGradeField.setMinValue(Double.valueOf(0.000000d));
 		percentCourseGradeField.setMaxValue(Double.valueOf(100.000000d));
 		percentCourseGradeField.setVisible(false);
-		percentCourseGradeField.setToolTip(i18n.percentCourseGradeToolTip());
+		percentCourseGradeField.setToolTip(newToolTipConfig(i18n.percentCourseGradeToolTip()));
 		formPanel.add(percentCourseGradeField);
 
 		percentCategoryField = new InlineEditNumberField();
@@ -277,7 +278,7 @@ public class ItemFormPanel extends ContentPanel {
 		percentCategoryField.setMinValue(Double.valueOf(0.000000d));
 		percentCategoryField.setMaxValue(Double.valueOf(100.000000d));
 		percentCategoryField.setVisible(false);
-		percentCategoryField.setToolTip(i18n.percentCategoryToolTip());
+		percentCategoryField.setToolTip(newToolTipConfig(i18n.percentCategoryToolTip()));
 		formPanel.add(percentCategoryField);
 
 		pointsField = new InlineEditNumberField();
@@ -320,35 +321,35 @@ public class ItemFormPanel extends ContentPanel {
 		includedField.setName(ItemModel.Key.INCLUDED.name());
 		includedField.setFieldLabel(i18n.includedFieldLabel());
 		includedField.setVisible(false);
-		includedField.setToolTip(i18n.includedToolTip());
+		includedField.setToolTip(newToolTipConfig(i18n.includedToolTip()));
 		formPanel.add(includedField);
 
 		extraCreditField = new NullSensitiveCheckBox();
 		extraCreditField.setName(ItemModel.Key.EXTRA_CREDIT.name());
 		extraCreditField.setFieldLabel(i18n.extraCreditFieldLabel());
 		extraCreditField.setVisible(false);
-		extraCreditField.setToolTip(i18n.extraCreditToolTip());
+		extraCreditField.setToolTip(newToolTipConfig(i18n.extraCreditToolTip()));
 		formPanel.add(extraCreditField);
 
 		equallyWeightChildrenField = new NullSensitiveCheckBox();
 		equallyWeightChildrenField.setName(ItemModel.Key.EQUAL_WEIGHT.name());
 		equallyWeightChildrenField.setFieldLabel(i18n.equallyWeightChildrenFieldLabel());
 		equallyWeightChildrenField.setVisible(false);
-		equallyWeightChildrenField.setToolTip(i18n.equallyWeightChildrenToolTip());
+		equallyWeightChildrenField.setToolTip(newToolTipConfig(i18n.equallyWeightChildrenToolTip()));
 		formPanel.add(equallyWeightChildrenField);
 
 		releasedField = new NullSensitiveCheckBox();
 		releasedField.setName(ItemModel.Key.RELEASED.name());
 		releasedField.setFieldLabel(i18n.releasedFieldLabel());
 		releasedField.setVisible(false);
-		releasedField.setToolTip(i18n.releasedToolTip());
+		releasedField.setToolTip(newToolTipConfig(i18n.releasedToolTip()));
 		formPanel.add(releasedField);
 		
 		enforcePointWeightingField = new NullSensitiveCheckBox();
 		enforcePointWeightingField.setName(ItemModel.Key.ENFORCE_POINT_WEIGHTING.name());
 		enforcePointWeightingField.setFieldLabel(i18n.enforcePointWeightingFieldLabel());
 		enforcePointWeightingField.setVisible(false);
-		enforcePointWeightingField.setToolTip(i18n.enforcePointWeightingToolTip());
+		enforcePointWeightingField.setToolTip(newToolTipConfig(i18n.enforcePointWeightingToolTip()));
 		formPanel.add(enforcePointWeightingField);
 		
 		okButton = new AriaButton("", selectionListener, 's');
@@ -1318,6 +1319,12 @@ public class ItemFormPanel extends ContentPanel {
 
 	private void clearFields() {
 
+	}
+	
+	private ToolTipConfig newToolTipConfig(String text) {
+		ToolTipConfig ttc = new ToolTipConfig(text);
+		ttc.setDismissDelay(10000);
+		return ttc;
 	}
 
 }
