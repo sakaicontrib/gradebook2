@@ -440,15 +440,18 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 				if (assignments == null)
 					continue;
 
+				boolean doPreventUnequalDropLowest = ((isWeighted && isWeightByPointsCategory) || !isWeighted);
+				
+				Double lastPointValue = null;
+				
 				// Check to ensure that we don't apply drop lowest with unweighted, unequal point value items
-				if (((isWeighted && isWeightByPointsCategory) || !isWeighted) && category.getDrop_lowest() > 0) {
-					Double lastPointValue = null;
+				if (category.getDrop_lowest() > 0) {
 					for (Assignment assignment : assignments) {
 						// Exclude extra credit items from determining whether drop lowest should be allowed
 						if (DataTypeConversionUtil.checkBoolean(assignment.isExtraCredit()))
 							continue;
 						
-						if (lastPointValue != null && !lastPointValue.equals(assignment.getPointsPossible())) {
+						if (doPreventUnequalDropLowest && lastPointValue != null && !lastPointValue.equals(assignment.getPointsPossible())) {
 							categoryCalculationUnit.setDropLowest(0);
 							break;
 						}
@@ -457,6 +460,15 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 				}
 				
 				BigDecimal totalCategoryPoints = populateGradeRecordUnits(assignments, gradeRecordUnits, assignmentGradeRecordMap, isWeighted, isExtraCredit(category));
+				
+				// When we get here we can assume that if drop lowest is greater than 0, it means the points are equal for
+				// all items
+				int dropLowest = categoryCalculationUnit.getDropLowest();
+				if (dropLowest > 0 && totalCategoryPoints != null) {
+					BigDecimal representativePointsPossible = lastPointValue == null ? BigDecimal.ZERO : BigDecimal.valueOf(lastPointValue.doubleValue());
+					totalCategoryPoints = totalCategoryPoints.subtract(BigDecimal.valueOf(dropLowest).multiply(representativePointsPossible));
+				}
+				
 				categoryCalculationUnit.setTotalCategoryPoints(totalCategoryPoints);
 				
 				totalGradebookPoints = totalGradebookPoints.add(totalCategoryPoints);
