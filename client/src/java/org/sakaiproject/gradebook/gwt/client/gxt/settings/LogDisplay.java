@@ -242,7 +242,7 @@ public class LogDisplay extends ContentPanel {
 			if (config.params != null) {
 				config.text = Format.substitute(config.text, config.params);
 				if (config.text != null) {
-					config.height = (config.text.length() / 100) * 30 + 50;
+					config.height = (config.text.length() / 75 + 1) * 30 + 20;
 					
 					if (config.height < 50)
 						config.height = 50;

@@ -161,6 +161,25 @@
 	line-height:normal;
 }
 
+.x-window-mc {
+	font-family:tahoma,arial,helvetica,sans-serif;
+	font-size:12pt;
+	font-size-adjust:none;
+	font-style:normal;
+	font-variant:normal;
+	font-weight:normal;
+	line-height:normal;
+}
+
+.x-info-body {
+	color: #555555;
+	font-family:tahoma,arial,sans-serif;
+	font-size:12pt;
+	font-size-adjust:none;
+	font-style:normal;
+	font-variant:normal;
+	font-weight:normal;
+}
 
 .gbCellClickable {
 	color: blue;	
