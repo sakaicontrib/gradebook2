@@ -58,6 +58,9 @@ public class CategoryCalculationUnit {
 
 	public BigDecimal calculate(List<GradeRecordCalculationUnit> units, boolean isExtraCreditScaled) {	
 
+		if (units == null)
+			return null;
+		
 		BigDecimal sumScores = sumScaledScores(units, isExtraCreditScaled);
 
 		// When drop lowest is not set, the calculation is very straightforward

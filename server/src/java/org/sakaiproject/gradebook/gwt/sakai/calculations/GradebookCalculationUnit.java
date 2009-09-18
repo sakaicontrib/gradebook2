@@ -178,8 +178,8 @@ public class GradebookCalculationUnit {
 			CategoryCalculationUnit categoryUnit = categoryUnitMap.get(categoryKey);
 			List<GradeRecordCalculationUnit> units = categoryGradeUnitListMap.get(categoryKey);
 
-			if (units == null)
-				continue;
+			//if (units == null)
+			//	continue;
 			
 			BigDecimal categoryGrade = null;
 			BigDecimal categoryWeight = categoryUnit.getCategoryWeightTotal();

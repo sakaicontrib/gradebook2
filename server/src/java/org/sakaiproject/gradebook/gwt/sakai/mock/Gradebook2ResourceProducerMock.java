@@ -87,7 +87,7 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			
 			ItemModel essaysCategory = new ItemModel();
 			essaysCategory.setName("My Essays");
-			essaysCategory.setPercentCourseGrade(Double.valueOf(60d));
+			essaysCategory.setPercentCourseGrade(Double.valueOf(50d));
 			essaysCategory.setDropLowest(Integer.valueOf(0));
 			essaysCategory.setEqualWeightAssignments(Boolean.TRUE);
 			essaysCategory.setItemType(Type.CATEGORY);
@@ -104,6 +104,15 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 			hwCategory.setItemType(Type.CATEGORY);
 			hwCategory.setIncluded(Boolean.TRUE);
 			hwCategory = getActiveItem(service.addItemCategory(gradebookUid, gradebookId, hwCategory));
+			
+			ItemModel emptyCategory = new ItemModel();
+			emptyCategory.setName("Empty");
+			emptyCategory.setPercentCourseGrade(Double.valueOf(10d));
+			emptyCategory.setDropLowest(Integer.valueOf(0));
+			emptyCategory.setEqualWeightAssignments(Boolean.TRUE);
+			emptyCategory.setItemType(Type.CATEGORY);
+			emptyCategory.setIncluded(Boolean.TRUE);
+			emptyCategory = getActiveItem(service.addItemCategory(gradebookUid, gradebookId, emptyCategory));
 			
 			
 			ItemModel ecCategory = new ItemModel();
