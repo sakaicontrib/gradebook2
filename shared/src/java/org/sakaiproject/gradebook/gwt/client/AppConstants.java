@@ -105,6 +105,8 @@ public interface AppConstants {
 	public static final String ENABLED_GRADE_TYPES 	= "enabledGradeTypes";
 	public static final String ENABLED_GRADE_TYPES_ID	= "gb2.enabled.grade.types";
 	
+	public static final String LEARNER_ROLE_NAMES	= "gb2.gradable.role.names";
+	
 	public static final String DEFAULT_CATEGORY_NAME = "Unassigned";
 	
 	public static final String EXTRA_CREDIT_INDICATOR = " (+)";

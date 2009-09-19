@@ -146,6 +146,55 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	private UserDirectoryService userService;
 	private SessionManager sessionManager;
 	private ServerConfigurationService configService;
+	
+	private String helpUrl;
+	private List<GradeType> enabledGradeTypes;
+	private String[] learnerRoleNames;
+	
+	
+	public void init() {
+		enabledGradeTypes = new ArrayList<GradeType>();
+		
+		if (configService != null) {
+			helpUrl = configService.getString(AppConstants.HELP_URL_CONFIG_ID);
+
+			boolean isPointsEnabled = true;
+			boolean isPercentagesEnabled = true;
+			boolean isLettersEnabled = true;
+			
+			String gradeTypes = configService.getString(AppConstants.ENABLED_GRADE_TYPES_ID);
+			if (gradeTypes != null) {
+				gradeTypes = gradeTypes.toUpperCase();
+				isPointsEnabled = gradeTypes.contains("POINT");
+				isPercentagesEnabled = gradeTypes.contains("PERCENT");
+				isLettersEnabled = gradeTypes.contains("LETTER");
+			}
+			
+			if (isPointsEnabled)
+				enabledGradeTypes.add(GradebookModel.GradeType.POINTS);
+			if (isPercentagesEnabled)
+				enabledGradeTypes.add(GradebookModel.GradeType.PERCENTAGES);
+			if (isLettersEnabled)
+				enabledGradeTypes.add(GradebookModel.GradeType.LETTERS);
+			
+			String learnerRoleNameString = configService.getString(AppConstants.LEARNER_ROLE_NAMES);
+			
+			if (learnerRoleNameString != null)
+				learnerRoleNames = learnerRoleNameString.split("\\s*,\\s*");
+			
+		} else {
+			enabledGradeTypes.add(GradebookModel.GradeType.POINTS);
+			enabledGradeTypes.add(GradebookModel.GradeType.PERCENTAGES);
+			enabledGradeTypes.add(GradebookModel.GradeType.LETTERS);
+		}
+		
+		if (learnerRoleNames == null)
+			learnerRoleNames = advisor.getLearnerRoleNames();
+		
+		if (learnerRoleNames == null)
+			learnerRoleNames = new String[] { "Student", "access" };
+		
+	}
 
 	/**
 	 * Method to add a new grade item to the gradebook.
@@ -570,7 +619,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		Site site = getSite();
 		Map<String, UserRecord> userRecordMap = new HashMap<String, UserRecord>();
 
-		String[] learnerRoleNames = advisor.getLearnerRoleNames();
+		String[] learnerRoleNames = getLearnerRoleNames();
 		String siteId = site == null ? null : site.getId();
 
 		String[] realmIds = null;
@@ -1091,7 +1140,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		Site site = getSite();
 		String siteId = site == null ? null : site.getId();
 
-		String[] learnerRoleNames = advisor.getLearnerRoleNames();
+		String[] learnerRoleNames = getLearnerRoleNames();
 		verifyUserDataIsUpToDate(site, learnerRoleNames);
 
 		String[] realmIds = null;
@@ -1206,40 +1255,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 		ApplicationModel model = new ApplicationModel();
 		model.setGradebookModels(getGradebookModels(gradebookUids));
-
-		List<GradeType> enabledGradeTypes = new ArrayList<GradeType>();
-		
-		if (configService != null) {
-			String url = configService.getString(AppConstants.HELP_URL_CONFIG_ID);
-
-			if (url != null)
-				model.setHelpUrl(url);
-			
-			boolean isPointsEnabled = true;
-			boolean isPercentagesEnabled = true;
-			boolean isLettersEnabled = true;
-			
-			String gradeTypes = configService.getString(AppConstants.ENABLED_GRADE_TYPES_ID);
-			if (gradeTypes != null) {
-				gradeTypes = gradeTypes.toUpperCase();
-				isPointsEnabled = gradeTypes.contains("POINT");
-				isPercentagesEnabled = gradeTypes.contains("PERCENT");
-				isLettersEnabled = gradeTypes.contains("LETTER");
-			}
-			
-			if (isPointsEnabled)
-				enabledGradeTypes.add(GradebookModel.GradeType.POINTS);
-			if (isPercentagesEnabled)
-				enabledGradeTypes.add(GradebookModel.GradeType.PERCENTAGES);
-			if (isLettersEnabled)
-				enabledGradeTypes.add(GradebookModel.GradeType.LETTERS);
-			
-		} else {
-			enabledGradeTypes.add(GradebookModel.GradeType.POINTS);
-			enabledGradeTypes.add(GradebookModel.GradeType.PERCENTAGES);
-			enabledGradeTypes.add(GradebookModel.GradeType.LETTERS);
-		}
-		
+		model.setHelpUrl(helpUrl);
 		model.setEnabledGradeTypes(enabledGradeTypes);
 		
 		return model;
@@ -1476,7 +1492,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		String[] realmIds = new String[1];
 		realmIds[0] = new StringBuffer().append("/site/").append(siteId).toString();
 
-		String[] learnerRoleNames = advisor.getLearnerRoleNames();
+		String[] learnerRoleNames = getLearnerRoleNames();
 
 		List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebook.getId(), realmIds, learnerRoleNames);
 		Map<String, Map<Long, AssignmentGradeRecord>> studentGradeRecordMap = new HashMap<String, Map<Long, AssignmentGradeRecord>>();
@@ -1735,7 +1751,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 		List<X> rows = new ArrayList<X>();
 
-		String[] learnerRoleNames = advisor.getLearnerRoleNames();
+		String[] learnerRoleNames = getLearnerRoleNames();
 
 		List<UserRecord> userRecords = null;
 
@@ -1993,7 +2009,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 	public SubmissionVerificationModel getSubmissionVerification(String gradebookUid, Long gradebookId) {
 
-		String[] roleNames = advisor.getLearnerRoleNames();
+		String[] roleNames = getLearnerRoleNames();
 		Site site = getSite();
 		String siteId = site == null ? null : site.getId();
 		String[] realmIds = new String[1];
@@ -3329,7 +3345,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	protected List<UserRecord> findLearnerRecordPage(Gradebook gradebook, Site site, String[] realmIds, List<String> groupReferences, Map<String, Group> groupReferenceMap, String sortField, String searchField, String searchCriteria,
 			int offset, int limit, boolean isAscending, boolean includeCMId) {
 
-		String[] learnerRoleKeys = advisor.getLearnerRoleNames();
+		String[] learnerRoleKeys = getLearnerRoleNames();
 		verifyUserDataIsUpToDate(site, learnerRoleKeys);
 
 		List<UserDereference> dereferences = gbService.getUserDereferences(realmIds, sortField, searchField, searchCriteria, offset, limit, isAscending, learnerRoleKeys);
@@ -4350,6 +4366,14 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		return categoriesWithAssignments;
 	}
 
+	/*
+	 * GENERAL HELPER METHODS
+	 */
+	private String[] getLearnerRoleNames() {
+		return learnerRoleNames;
+	}
+	
+	
 	/*
 	 * UTILITY HELPER METHODS
 	 */
