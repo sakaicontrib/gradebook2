@@ -1290,8 +1290,13 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 									StudentModel.Key.EMAIL.name()), String.valueOf(Boolean.TRUE));
 					gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebook.getId(), 
 							ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, 
-									StudentModel.Key.SECTION.name()), String.valueOf(Boolean.TRUE));
-
+									StudentModel.Key.SECTION.name()), String.valueOf(Boolean.TRUE));	
+					gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebook.getId(), 
+							ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, 
+									StudentModel.Key.CALCULATED_GRADE.name()), String.valueOf(Boolean.TRUE));
+					gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebook.getId(), 
+							ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, 
+									StudentModel.Key.LETTER_GRADE.name()), String.valueOf(Boolean.TRUE));
 				} 
 			}
 			AuthModel authModel = new AuthModel();
@@ -2945,11 +2950,23 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					for (UserConfiguration config : configs) {
 						configModel.set(config.getConfigField(), config.getConfigValue());
 					}
+					
+					// FIXME: These two entries below are temporary fixes since due to the bug GRBK-293 there
+					// may be some sites that were created without hidden calculated and letter grade entries
+					// once we've moved far enough into the future past Fall 2010, we can remove these,
+					// and clean installations can remove them immediately
+					String calcGradeHiddenId = ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, StudentModel.Key.CALCULATED_GRADE.name());
+					if (configModel.get(calcGradeHiddenId) == null)
+						configModel.set(calcGradeHiddenId, "true");
+					
+					String letterGradeHiddenId = ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, StudentModel.Key.LETTER_GRADE.name());
+					if (configModel.get(letterGradeHiddenId) == null)
+						configModel.set(letterGradeHiddenId, "true");
 				}
 
 				List<String> legacySelectedMultiGradeColumns = configModel.getSelectedMultigradeColumns();
 
-				if (legacySelectedMultiGradeColumns != null) {
+				if (legacySelectedMultiGradeColumns != null && !legacySelectedMultiGradeColumns.isEmpty()) {
 
 					if (columns != null) {
 

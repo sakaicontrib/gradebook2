@@ -319,9 +319,9 @@ public class ItemTreePanel extends ContentPanel {
 			for (ItemModel c1 : gradebookItemModel.getChildren()) {
 				switch (c1.getItemType()) {
 					case CATEGORY:
-						boolean isEntireCategoryChecked = true;
+						boolean isEntireCategoryChecked = c1.getChildCount() > 0;
 						for (ItemModel c2 : c1.getChildren()) {
-							if (!configModel.isColumnHidden(AppConstants.ITEMTREE, c2.getIdentifier(), false))
+							if (!configModel.isColumnHidden(AppConstants.ITEMTREE, c2.getIdentifier(), true))
 								selectedItemModels.add(c2);
 							else {
 								isEntireCategoryChecked = false;
@@ -332,7 +332,7 @@ public class ItemTreePanel extends ContentPanel {
 							selectedItemModels.add(c1);
 						break;
 					case ITEM:
-						if (!configModel.isColumnHidden(AppConstants.ITEMTREE, c1.getIdentifier(), false))
+						if (!configModel.isColumnHidden(AppConstants.ITEMTREE, c1.getIdentifier(), true))
 							selectedItemModels.add(c1);
 						else {
 							isEntireCategoryChecked = false;

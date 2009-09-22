@@ -906,7 +906,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	}
 
 	private ColumnConfig buildColumn(GradebookModel selectedGradebook, ItemModel item, ConfigurationModel configModel) {
-		boolean isHidden = configModel.isColumnHidden(AppConstants.ITEMTREE, item.getIdentifier(), false);
+		boolean isHidden = configModel.isColumnHidden(AppConstants.ITEMTREE, item.getIdentifier(), true);
 		StringBuilder columnNameBuilder = new StringBuilder().append(item.getName());
 
 		switch (selectedGradebook.getGradebookItemModel().getGradeType()) {
