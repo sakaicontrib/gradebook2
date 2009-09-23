@@ -173,6 +173,10 @@ public interface I18nConstants extends Constants {
 	String headerExportDataTitle();
 	String headerExportStructure();
 	String headerExportStructureTitle();
+	String headerExportCSV(); 
+	String headerExportCSVTitle(); 
+	String headerExportXLS();
+	String headerExportXLSTitle();
 	String headerDeleteCategory();
 	String headerDeleteCategoryTitle();
 	String headerDeleteItem();

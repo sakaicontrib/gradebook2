@@ -71,13 +71,16 @@ public class ImportHandler extends HttpServlet {
 
 	public void doGet(HttpServletRequest req, HttpServletResponse response) throws ServletException, IOException {
 
-		PrintWriter writer = response.getWriter();
-
 		String gradebookUid = req.getParameter("gradebookUid");
 		String include = req.getParameter("include");
+		String fileType = req.getParameter("filetype"); 
+		if (fileType == null || fileType == "")
+		{
+			fileType = "csv"; 
+		}
 		try {
 			boolean doIncludeStructure = include != null;
-			ImportExportUtility.exportGradebook(service, gradebookUid, doIncludeStructure, true, writer, response);
+			ImportExportUtility.exportGradebook(service, gradebookUid, doIncludeStructure, true, null, response, fileType);
 		} catch (FatalException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

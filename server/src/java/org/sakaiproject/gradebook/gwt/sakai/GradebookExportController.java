@@ -43,29 +43,33 @@ public class GradebookExportController implements Controller {
 
 	public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-		PrintWriter writer = response.getWriter();
-
 		String queryString = request.getQueryString();
 		int n = queryString.indexOf("gradebookUid=") + 13;
 		int m = queryString.indexOf("&include=");
 
+		
 		boolean doIncludeStructure = m != -1;
 
-		String gradebookUid = queryString.substring(n);
+		String gradebookUid = request.getParameter("gradebookUid"); 
+		/*String gradebookUid = queryString.substring(n);
 
 		if (doIncludeStructure)
-			gradebookUid = queryString.substring(n, m);
+			gradebookUid = queryString.substring(n, m);*/
+
+		String fileType = request.getParameter("filetype");
+		
+		if (fileType == null || fileType == "")
+		{
+			fileType = "csv"; 
+		}
 
 		try {
-			ImportExportUtility.exportGradebook(service, gradebookUid, doIncludeStructure, true, writer, response);
+			ImportExportUtility.exportGradebook(service, gradebookUid, doIncludeStructure, true, null, response, fileType);
 		} catch (FatalException e) {
 			log.error("EXCEPTION: Wasn't able to export gradebook: " + gradebookUid, e);
 			// 500 Internal Server Error
 			response.setStatus(500);
 		}
-		writer.flush();
-		writer.close();
-
 		return null;
 	}
 

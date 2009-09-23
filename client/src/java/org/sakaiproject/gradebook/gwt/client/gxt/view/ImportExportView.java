@@ -1,7 +1,7 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
-import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
+import org.sakaiproject.gradebook.gwt.client.ExportDetails;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ImportPanel;
@@ -34,14 +34,33 @@ public class ImportExportView extends View {
 			importDialog = new ImportPanel(i18n);
 			break;
 		case START_EXPORT:
-			boolean includeStructure = DataTypeConversionUtil.checkBoolean((Boolean)event.data);
+			ExportDetails ed = (ExportDetails) event.data; 
+			boolean includeStructure = ed.isIncludeStructure(); 
+			String fileType = "";
 			
+			switch (ed.getFileType())
+			{
+			case XLS97:
+				fileType = "xls97";
+				break; 
+			case CSV:
+			default:
+				fileType = "csv"; 
+				break;
+
+				
+			}
+		
 			GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 			String uri = GWT.getModuleBaseURL() + "exportGradebook.csv?gradebookUid=" + selectedGradebook.getGradebookUid();
 			
 			if (includeStructure)
 				uri += "&include=true";
-			
+			if (fileType != "")
+			{
+				uri += "&filetype=";
+				uri += fileType;
+			}
 			if (downloadFileFrame == null) {
 				downloadFileFrame = new Frame(uri);
 				downloadFileFrame.setVisible(false);

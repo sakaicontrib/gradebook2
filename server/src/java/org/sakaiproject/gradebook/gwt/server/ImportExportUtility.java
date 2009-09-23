@@ -51,10 +51,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFDataFormatter;
+import org.apache.poi.hssf.usermodel.HSSFRichTextString;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.poifs.storage.RawDataBlock;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
@@ -107,31 +109,13 @@ public class ImportExportUtility {
 	};
 
 	public static void exportGradebook(Gradebook2Service service, String gradebookUid, 
-			final boolean includeStructure, final boolean includeComments, PrintWriter writer, HttpServletResponse response) 
+			final boolean includeStructure, final boolean includeComments, PrintWriter writer, HttpServletResponse response, String fileType) 
 	throws FatalException {
 
 		GradebookModel gradebook = service.getGradebook(gradebookUid);
 		ItemModel gradebookItemModel = gradebook.getGradebookItemModel();
+		RawFile out = new RawFile(); 
 
-		StringBuilder filename = new StringBuilder();
-
-		if (gradebook.getName() == null)
-			filename.append("gradebook");
-		else {
-			String name = gradebook.getName();
-			name = name.replaceAll("\\s", "");
-
-			filename.append(name);
-		}
-
-		filename.append(".csv");
-
-		if (response != null) {
-			response.setContentType("application/ms-excel");
-			response.setHeader("Content-Disposition", "attachment; filename=" + filename.toString());
-		}
-
-		CSVWriter csvWriter = new CSVWriter(writer);
 
 		Long gradebookId = gradebook.getGradebookId();
 		final List<String> headerIds = new ArrayList<String>();
@@ -148,7 +132,8 @@ public class ImportExportUtility {
 
 			// First, we need to add a row for basic gradebook info
 			String[] gradebookInfoRow = { "", StructureRow.GRADEBOOK.getDisplayName(), gradebook.getName(), categoryTypeText, gradeTypeText};
-			csvWriter.writeNext(gradebookInfoRow);
+			out.addRow(gradebookInfoRow);
+//			csvWriter.writeNext(gradebookInfoRow);
 
 			final List<String> categoriesRow = new LinkedList<String>();
 			final List<String> percentageGradeRow = new LinkedList<String>();
@@ -270,25 +255,36 @@ public class ImportExportUtility {
 
 			switch (categoryType) {
 				case NO_CATEGORIES:
-					csvWriter.writeNext(pointsRow.toArray(new String[pointsRow.size()]));
+					out.addRow(pointsRow.toArray(new String[pointsRow.size()]));
 					break;
 				case SIMPLE_CATEGORIES:
-					csvWriter.writeNext(categoriesRow.toArray(new String[categoriesRow.size()]));
-					csvWriter.writeNext(dropLowestRow.toArray(new String[dropLowestRow.size()]));
-					csvWriter.writeNext(pointsRow.toArray(new String[pointsRow.size()]));
+					//csvWriter.writeNext(categoriesRow.toArray(new String[categoriesRow.size()]));
+					//csvWriter.writeNext(dropLowestRow.toArray(new String[dropLowestRow.size()]));
+					//csvWriter.writeNext(pointsRow.toArray(new String[pointsRow.size()]));
+					out.addRow(categoriesRow.toArray(new String[categoriesRow.size()]));
+					out.addRow(dropLowestRow.toArray(new String[dropLowestRow.size()]));
+					out.addRow(pointsRow.toArray(new String[pointsRow.size()]));
+
 					break;
 				case WEIGHTED_CATEGORIES:
-					csvWriter.writeNext(categoriesRow.toArray(new String[categoriesRow.size()]));
+					/*csvWriter.writeNext(categoriesRow.toArray(new String[categoriesRow.size()]));
 					csvWriter.writeNext(percentageGradeRow.toArray(new String[percentageGradeRow.size()]));
 					csvWriter.writeNext(dropLowestRow.toArray(new String[dropLowestRow.size()]));
 					csvWriter.writeNext(equalWeightRow.toArray(new String[equalWeightRow.size()]));
 					csvWriter.writeNext(pointsRow.toArray(new String[pointsRow.size()]));
-					csvWriter.writeNext(percentCategoryRow.toArray(new String[percentCategoryRow.size()]));
+					csvWriter.writeNext(percentCategoryRow.toArray(new String[percentCategoryRow.size()]));*/					
+					out.addRow(categoriesRow.toArray(new String[categoriesRow.size()]));
+					out.addRow(percentageGradeRow.toArray(new String[percentageGradeRow.size()]));
+					out.addRow(dropLowestRow.toArray(new String[dropLowestRow.size()]));
+					out.addRow(equalWeightRow.toArray(new String[equalWeightRow.size()]));
+					out.addRow(pointsRow.toArray(new String[pointsRow.size()]));
+					out.addRow(percentCategoryRow.toArray(new String[percentCategoryRow.size()]));
+
 					break;
 			}
 
 			String[] blankLine = { "" };
-			csvWriter.writeNext(blankLine);
+			out.addRow(blankLine);
 		} else {
 
 			ItemModelProcessor processor = new ItemModelProcessor(gradebookItemModel) {
@@ -329,7 +325,7 @@ public class ImportExportUtility {
 
 		headerColumns.add("Course Grade");
 
-		csvWriter.writeNext(headerColumns.toArray(new String[headerColumns.size()]));
+		out.addRow(headerColumns.toArray(new String[headerColumns.size()]));
 
 		PagingLoadResult<StudentModel> result = service.getStudentRows(gradebookUid, gradebookId, null, Boolean.TRUE);
 
@@ -374,17 +370,112 @@ public class ImportExportUtility {
 
 					dataColumns.add(row.getStudentGrade());
 
-					csvWriter.writeNext(dataColumns.toArray(new String[dataColumns.size()]));
+					out.addRow(dataColumns.toArray(new String[dataColumns.size()]));
 				}
 			} 
 
 		}
 
+		StringBuilder filename = new StringBuilder();
+
+		if (gradebook.getName() == null)
+			filename.append("gradebook");
+		else {
+			String name = gradebook.getName();
+			name = name.replaceAll("\\s", "");
+
+			filename.append(name);
+		}
+
+
+
+		
+		if (fileType.equals("xls97"))
+		{
+			filename.append(".xls");
+
+			if (response != null) {
+				response.setContentType("application/ms-excel");
+				response.setHeader("Content-Disposition", "attachment; filename=" + filename.toString());
+			}
+			createXLS97File(filename.toString(), response, out); 
+
+		}
+		else if (fileType.equals("csv"))
+		{
+			filename.append(".csv");
+
+			if (response != null) {
+				response.setContentType("application/ms-excel");
+				response.setHeader("Content-Disposition", "attachment; filename=" + filename.toString());
+			}
+			try {
+				createCSVFile(response, out);
+			} catch (IOException e) {
+				log.error("Caught I/O exception ", e); 
+				throw new FatalException(e); 
+			}
+			
+		}
+
+
+	}
+	
+
+	private static void createXLS97File(String title, HttpServletResponse response, RawFile out) throws FatalException 
+	{
+		HSSFWorkbook wb = new HSSFWorkbook();
+		HSSFSheet s = wb.createSheet(title);
+		
+		out.startReading(); 
+		String[] curLine = null; 
+		int row = 0; 
+		while ( (curLine = out.readNext()) != null)
+		{
+			HSSFRow r = s.createRow(row); 
+
+			for (int i = 0; i < curLine.length ; i++)
+			{
+				HSSFCell cl = r.createCell(i);
+				cl.setCellType(HSSFCell.CELL_TYPE_STRING); 
+				cl.setCellValue(new HSSFRichTextString(curLine[i])); 
+				s.autoSizeColumn((short) i);
+			}
+			
+			row++; 
+		}
+		
+		try {
+			wb.write(response.getOutputStream());
+			response.getOutputStream().flush();
+			response.getOutputStream().close(); 
+		} catch (IOException e) {
+			log.error("Caught exception " + e, e); 
+			throw new FatalException(e); 
+
+		}
+		
+	}
+
+
+	private static void createCSVFile(HttpServletResponse response,
+			 RawFile out) throws IOException {
+		
+		
+		CSVWriter csvWriter = new CSVWriter(response.getWriter());
+		out.startReading(); 
+		String[] curLine; 
+		while ((curLine = out.readNext()) != null)
+		{
+			csvWriter.writeNext(curLine); 
+		}
 		try {
 			csvWriter.close();
-		} catch (IOException ioe) {
-			log.error("Caught ioexception: ", ioe);
-		}
+			response.getWriter().flush();
+			response.getWriter().close(); 
+		} catch (IOException e) {
+			log.error("Caught ioexception: ", e);
+		} 
 	}
 
 
@@ -691,12 +782,11 @@ public class ImportExportUtility {
 
 	private static RawFile processNormalXls(HSSFSheet s) {
 		log.debug("processNormalXls() called");
-		RawFile data = new RawFile(); 
+		RawFile data = new RawFile();
+		int numCols = getNumberOfColumnsFromSheet(s); 
 		Iterator<HSSFRow> rowIter = s.rowIterator(); 
 		boolean headerFound = false;
 		int id_col = -1; 
-		int numCols = -1;
-
 		while (rowIter.hasNext())
 		{
 
@@ -706,9 +796,7 @@ public class ImportExportUtility {
 				id_col = readHeaderRow(curRow); 
 				headerFound = true; 
 				log.debug("Header Row # is " + id_col);
-				numCols = curRow.getPhysicalNumberOfCells();
 			}
-
 			String[] dataEntity = new String[numCols]; 
 
 			log.debug("numCols = " + numCols); 
@@ -747,6 +835,22 @@ public class ImportExportUtility {
 
 		return data; 
 	}
+
+	private static int getNumberOfColumnsFromSheet(HSSFSheet s) {
+		int numCols = 0; 
+		Iterator<HSSFRow> rowIter = s.rowIterator(); 
+		while (rowIter.hasNext())
+		{
+			HSSFRow curRow = rowIter.next(); 
+			
+			if (curRow.getLastCellNum() > numCols)
+			{
+				numCols = curRow.getLastCellNum(); 
+			}
+		}
+		return numCols;
+	}
+
 
 	private static int readHeaderRow(HSSFRow curRow) {
 		int ret = -1; 

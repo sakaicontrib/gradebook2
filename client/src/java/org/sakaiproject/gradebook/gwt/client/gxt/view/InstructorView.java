@@ -28,7 +28,9 @@ import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
+import org.sakaiproject.gradebook.gwt.client.ExportDetails;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
+import org.sakaiproject.gradebook.gwt.client.ExportDetails.ExportType;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenu;
@@ -75,8 +77,8 @@ import com.google.gwt.user.client.Window;
 public class InstructorView extends AppView {
 
 	private static final String MENU_SELECTOR_FLAG = "menuSelector";
-	public enum MenuSelector { ADD_CATEGORY, ADD_ITEM, IMPORT, EXPORT, EXPORT_DATA, EXPORT_STRUCTURE, FINAL_GRADE, GRADE_SCALE, HISTORY, GRADER_PERMISSION_SETTINGS, STATISTICS };
-
+	public enum MenuSelector { ADD_CATEGORY, ADD_ITEM, IMPORT, EXPORT, EXPORT_DATA, EXPORT_DATA_CSV, EXPORT_STRUCTURE, EXPORT_STRUCTURE_CSV, EXPORT_DATA_XLS, EXPORT_STRUCTURE_XLS, FINAL_GRADE, GRADE_SCALE, HISTORY, GRADER_PERMISSION_SETTINGS, STATISTICS };
+	
 	// The instructor view maintains a link to tree view, since it is required to instantiate multigrade
 	private TreeView treeView;
 	private MultigradeView multigradeView;
@@ -113,7 +115,7 @@ public class InstructorView extends AppView {
 	private BorderLayoutData eastData;
 	private BorderLayoutData northData;
 	private BorderLayoutData westData;
-
+	
 	private I18nConstants i18n;
 	private boolean isEditable;
 
@@ -128,7 +130,8 @@ public class InstructorView extends AppView {
 		this.multigradeView = multigradeView;
 		this.importExportView = importExportView;
 		this.singleGradeView = singleGradeView;
-
+		
+		
 		toolBar = new ToolBar();
 		borderLayoutContainer = new BorderLayoutPanel(); 
 		borderLayoutContainer.setId("borderLayoutContainer");
@@ -553,7 +556,7 @@ public class InstructorView extends AppView {
 			@Override
 			public void componentSelected(MenuEvent me) {
 				MenuSelector selector = me.item.getData(MENU_SELECTOR_FLAG);
-
+				ExportDetails ex;
 				switch (selector) {
 					case ADD_CATEGORY:
 						Dispatcher.forwardEvent(GradebookEvents.NewCategory.getEventType());
@@ -561,11 +564,21 @@ public class InstructorView extends AppView {
 					case ADD_ITEM:
 						Dispatcher.forwardEvent(GradebookEvents.NewItem.getEventType());
 						break;
-					case EXPORT_DATA:
-						Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType(), Boolean.FALSE);
+					case EXPORT_DATA_XLS:
+						ex = new ExportDetails(ExportType.XLS97, false);
+						Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType(), ex);
 						break;
-					case EXPORT_STRUCTURE:
-						Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType(), Boolean.TRUE);
+					case EXPORT_STRUCTURE_XLS:
+						ex = new ExportDetails(ExportType.XLS97, true);
+						Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType(), ex);
+						break;
+					case EXPORT_DATA_CSV:
+						ex = new ExportDetails(ExportType.CSV, false);
+						Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType(), ex);
+						break;
+					case EXPORT_STRUCTURE_CSV:
+						ex = new ExportDetails(ExportType.CSV, true);
+						Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType(), ex);
 						break;
 					case IMPORT:
 						Dispatcher.forwardEvent(GradebookEvents.StartImport.getEventType());
@@ -682,16 +695,45 @@ public class InstructorView extends AppView {
 		Menu subMenu = new AriaMenu();
 		menuItem.setSubMenu(subMenu);
 
-		menuItem = new AriaMenuItem(i18n.headerExportData(), menuSelectionListener);
+
+		menuItem = new AriaMenuItem(i18n.headerExportData());
 		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_DATA);
 		menuItem.setTitle(i18n.headerExportDataTitle());
 		subMenu.add(menuItem);
 
-		menuItem = new AriaMenuItem(i18n.headerExportStructure(), menuSelectionListener);
+		Menu typeMenu = new AriaMenu();
+		menuItem.setSubMenu(typeMenu);
+		
+		menuItem = new AriaMenuItem(i18n.headerExportCSV(), menuSelectionListener);
+		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_DATA_CSV);
+		menuItem.setTitle(i18n.headerExportCSVTitle());
+		typeMenu.add(menuItem);
+
+		menuItem = new AriaMenuItem(i18n.headerExportXLS(), menuSelectionListener);
+		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_DATA_XLS);
+		menuItem.setTitle(i18n.headerExportCSVTitle());
+		typeMenu.add(menuItem);
+
+		
+		menuItem = new AriaMenuItem(i18n.headerExportStructure());
 		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_STRUCTURE);
 		menuItem.setTitle(i18n.headerExportStructureTitle());
 		subMenu.add(menuItem);
 
+		
+		typeMenu = new AriaMenu();
+		menuItem.setSubMenu(typeMenu);
+		
+		menuItem = new AriaMenuItem(i18n.headerExportCSV(), menuSelectionListener);
+		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_STRUCTURE_CSV);
+		menuItem.setTitle(i18n.headerExportCSVTitle());
+		typeMenu.add(menuItem);
+
+		menuItem = new AriaMenuItem(i18n.headerExportXLS(), menuSelectionListener);
+		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_STRUCTURE_XLS);
+		menuItem.setTitle(i18n.headerExportCSVTitle());
+		typeMenu.add(menuItem);
+		
 
 		if (isEditable) {
 			menuItem = new AriaMenuItem(i18n.headerImport(), menuSelectionListener);
