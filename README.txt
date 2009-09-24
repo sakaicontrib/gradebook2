@@ -12,4 +12,4 @@ e.g. sakai/2-5-x/INSTALL.txt
 - Alternatively, you can run the script sakai/[version]/install.sh but you
   will still need to add a property to your maven 2 settings.xml to build
 
-
+.
