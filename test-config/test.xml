@@ -3,7 +3,7 @@
 
 <beans>
 
-	<!--import resource="db.xml"/-->
+	<import resource="db.xml"/>
 
 	<!-- Performance Target -->
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service" 

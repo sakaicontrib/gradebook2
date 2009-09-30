@@ -178,13 +178,13 @@ public class SectionAwarenessMock implements SectionAwareness {
 	}
 
 	public boolean isSectionMemberInRole(String sectionId, String personId, Role role) {
-		// TODO Auto-generated method stub
-		return false;
+
+		return role.getName().equalsIgnoreCase("instructor");
 	}
 
 	public boolean isSiteMemberInRole(String siteContext, String userUid, Role role) {
-		// TODO Auto-generated method stub
-		return false;
+		
+		return role.getName().equalsIgnoreCase("instructor");
 	}
 
 

@@ -25,6 +25,7 @@ package org.sakaiproject.gradebook.gwt.sakai.mock;
 
 import java.util.Date;
 
+import org.gwtwidgets.server.spring.GWTSpringController;
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCService;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
@@ -42,25 +43,34 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ResourceProducer;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.PagingLoadConfig;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
-public class Gradebook2ResourceProducerMock extends RemoteServiceServlet implements Gradebook2RPCService {
+public class Gradebook2ResourceProducerMock extends GWTSpringController implements Gradebook2RPCService {
 
 	private static final long serialVersionUID = 1L;
 	
 	private Gradebook2ResourceProducer producer;
+	private Gradebook2Service service;
 	
-	public void init() {
-		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"test.xml", "db.xml"});
+	public Gradebook2Service getService() {
+		return service;
+	}
 
-		Gradebook2Service service = (Gradebook2Service)context.getBean("org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service");
+	public void setService(Gradebook2Service service) {
+		this.service = service;
+	}
+
+	public void init() {
+		System.out.println("Calling INIT!");
+		
+		//ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"test.xml", "db.xml"});
+
+		//Gradebook2Service service = (Gradebook2Service)context.getBean("org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service");
 
 		producer = new Gradebook2ResourceProducer();
 		producer.setService(service);

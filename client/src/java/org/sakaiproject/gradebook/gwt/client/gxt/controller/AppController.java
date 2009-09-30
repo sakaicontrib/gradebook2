@@ -322,7 +322,8 @@ public class AppController extends Controller {
 				forwardToView(multigradeView, event);
 			} 
 
-			forwardToView(appView, event);
+			if (appView != null)
+				forwardToView(appView, event);
 
 			return;
 		}
