@@ -7,14 +7,14 @@
  
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
-		<param-value>WEB-INF/testContext.xml</param-value>
+		<param-value>WEB-INF/applicationContext.xml</param-value>
 	</context-param>
 
 	<listener>
         <listener-class>org.sakaiproject.util.ContextLoaderListener</listener-class>
     </listener>
     
-    <!--listener>
+    <listener>
         <listener-class>org.sakaiproject.util.ToolListener</listener-class>
     </listener>
 
@@ -43,7 +43,7 @@
         <dispatcher>REQUEST</dispatcher>
         <dispatcher>FORWARD</dispatcher>
         <dispatcher>INCLUDE</dispatcher>
-    </filter-mapping-->
+    </filter-mapping>
 
 	<servlet>
 		<servlet-name>sakai.gradebook.gwt.rpc</servlet-name>
@@ -51,7 +51,7 @@
         <load-on-startup>1</load-on-startup>
 	</servlet>
 	
-	<servlet-mapping>
+	<!-- servlet-mapping>
 		<servlet-name>sakai.gradebook.gwt.rpc</servlet-name>
 		<url-pattern>/*</url-pattern>
 	</servlet-mapping>
@@ -62,7 +62,7 @@
 			org.sakaiproject.gradebook.gwt.server.GradebookServlet
 		</servlet-class>
 		<load-on-startup>2</load-on-startup>
-	</servlet>
+	</servlet-->
 
 
 <!-- 

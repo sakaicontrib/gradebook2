@@ -8,19 +8,27 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.web.HttpRequestHandler;
 
 public class DefaultFilenameHandler implements HttpRequestHandler {
 
+	private static final Log log = LogFactory.getLog(DefaultFilenameHandler.class);
 	protected int input = 2048;
 	
 	public void handleRequest(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		
-		String path = request.getRequestURI();
+		String path = request.getPathInfo();
+		
 		InputStream resourceStream = request.getSession().getServletContext().getResourceAsStream(path);
 		
 		if (resourceStream == null) {
+			log.error("Until to retrieve resource for request uri " + request.getRequestURI());
+			log.error("Path info is " + path);
+			log.error("Context path is " + request.getContextPath());
+			log.error("Servlet path is " + request.getServletPath());
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
 			return;
 		}
