@@ -137,7 +137,7 @@ public class GradebookApplication implements EntryPoint {
 			String placementId = authModel.getPlacementId();
 			if (placementId != null) {
 				String modifiedId = placementId.replace('-', 'x');
-				resizeMainFrame("Main" + modifiedId, screenHeight + 20);
+				resizeMainFrame("Main" + modifiedId, screenHeight + 50);
 			}
 		}
 		

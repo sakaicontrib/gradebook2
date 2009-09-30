@@ -10,10 +10,19 @@
 		<param-value>WEB-INF/applicationContext.xml</param-value>
 	</context-param>
 
+	<!-- TO RUN IN HOSTED MODE uncomment the following: -->
+	<!-- 
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>WEB-INF/testContext.xml</param-value>
+	</context-param>
+	-->
+	
 	<listener>
         <listener-class>org.sakaiproject.util.ContextLoaderListener</listener-class>
     </listener>
     
+    <!-- TO RUN IN HOSTED MODE comment out the following -->
     <listener>
         <listener-class>org.sakaiproject.util.ToolListener</listener-class>
     </listener>
@@ -44,6 +53,7 @@
         <dispatcher>FORWARD</dispatcher>
         <dispatcher>INCLUDE</dispatcher>
     </filter-mapping>
+    <!-- TO RUN IN HOSTED MODE comment out the above -->
 
 	<servlet>
 		<servlet-name>sakai.gradebook.gwt.rpc</servlet-name>
@@ -51,64 +61,13 @@
         <load-on-startup>1</load-on-startup>
 	</servlet>
 	
-	<!-- servlet-mapping>
+	<servlet-mapping>
 		<servlet-name>sakai.gradebook.gwt.rpc</servlet-name>
 		<url-pattern>/*</url-pattern>
 	</servlet-mapping>
 
-	<servlet>
-		<servlet-name>sakai.gradebook.gwt</servlet-name>
-		<servlet-class>
-			org.sakaiproject.gradebook.gwt.server.GradebookServlet
-		</servlet-class>
-		<load-on-startup>2</load-on-startup>
-	</servlet-->
-
-
-<!-- 
   	<welcome-file-list>
     	<welcome-file>GradebookApplication.html</welcome-file>
   	</welcome-file-list>
-
-	<servlet>
-		<servlet-name>facade</servlet-name>
-		<servlet-class>org.sakaiproject.gradebook.gwt.sakai.mock.Gradebook2ResourceProducerMock</servlet-class>
-	</servlet>
-	
-	<servlet-mapping>
-		<servlet-name>facade</servlet-name>
-		<url-pattern>/gradebook/rpc/grades.rpc</url-pattern>
-	</servlet-mapping>
-	
-	<servlet>
-		<servlet-name>importHandler</servlet-name>
-		<servlet-class>org.sakaiproject.gradebook.gwt.server.ImportHandler</servlet-class>
-	</servlet>
-	
-	<servlet-mapping>
-		<servlet-name>importHandler</servlet-name>
-		<url-pattern>/gradebook/importHandler</url-pattern>
-	</servlet-mapping>
-	
-	<servlet>
-		<servlet-name>exportHandler</servlet-name>
-		<servlet-class>org.sakaiproject.gradebook.gwt.server.ImportHandler</servlet-class>
-	</servlet>
-	
-	<servlet-mapping>
-		<servlet-name>exportHandler</servlet-name>
-		<url-pattern>/gradebook/exportGradebook.csv</url-pattern>
-	</servlet-mapping>
-	
-	<servlet>
-		<servlet-name>finalGradeHandler</servlet-name>
-		<servlet-class>org.sakaiproject.gradebook.gwt.server.FinalGradeSubmissionHandler</servlet-class>
-	</servlet>
-	
-	<servlet-mapping>
-		<servlet-name>finalGradeHandler</servlet-name>
-		<url-pattern>/gradebook/final-grade-submission</url-pattern>
-	</servlet-mapping>
--->
 
 </web-app>

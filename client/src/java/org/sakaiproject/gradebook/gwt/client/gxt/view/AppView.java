@@ -30,6 +30,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.FullScreen;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.components.Viewport;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
@@ -40,9 +41,8 @@ import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.View;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.extjs.gxt.ui.client.widget.Viewport;
 import com.extjs.gxt.ui.client.widget.layout.CardLayout;
-import com.extjs.gxt.ui.client.widget.layout.FillLayout;
+import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Accessibility;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -72,7 +72,7 @@ public abstract class AppView extends View {
 			    Accessibility.setRole(el().dom, "application");
 			}
 		};
-		realViewport.setLayout(new FillLayout());
+		realViewport.setLayout(new FitLayout());
 		realViewport.setLoadingPanelId("loading");
 		
 		viewport = new LayoutContainer();
@@ -82,7 +82,6 @@ public abstract class AppView extends View {
 		viewport.setHeight(screenHeight);
 		viewport.setLayout(viewportLayout);
 		realViewport.setHeight(screenHeight);
-		//realViewport.setDelay(400);
 		
 		RootPanel.get().add(realViewport);
 	}

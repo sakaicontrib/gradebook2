@@ -22,6 +22,9 @@ public class DefaultFilenameHandler implements HttpRequestHandler {
 		
 		String path = request.getPathInfo();
 		
+		if (path.startsWith("//")) 
+			path = path.replaceAll("//", "/");
+		
 		InputStream resourceStream = request.getSession().getServletContext().getResourceAsStream(path);
 		
 		if (resourceStream == null) {
