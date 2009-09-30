@@ -6,7 +6,7 @@
 	<bean id="urlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
     	<property name="mappings">
                         <map>
-                                <entry key="/**/rpc/grades.rpc" value-ref="GradebookService" />
+                                <entry key="/gradebook/rpc/grades.rpc" value-ref="RPCService" />
 
                                 <entry key="/**/importHandler" value-ref="GradebookImportService" />
 
@@ -14,9 +14,9 @@
 
                                 <entry key="/**/final-grade-submission" value-ref="GradebookFinalGradeSubmissionService" />
 
-                                <entry key="/" value-ref="myServletForwardingController" />
+                                <entry key="/" value-ref="ResourceController" />
 
-                                <entry key="/**/*.html" value-ref="myServletForwardingController" />
+                                <!-- entry key="/**/*.html" value-ref="myServletForwardingController" />
                                 
                                 <entry key="/**/*.png" value-ref="myServletForwardingController" />
                                 
@@ -30,9 +30,13 @@
                                 
                                 <entry key="/**/images/**" value-ref="myServletForwardingController" />
                                 
-                                <entry key="/**/*.gwt.rpc" value-ref="myServletForwardingController" />
+                                <entry key="/**/*.gwt.rpc" value-ref="myServletForwardingController" /-->
                         </map>
         </property>
+        <property name="defaultHandler">
+            <bean class="org.sakaiproject.gradebook.gwt.server.DefaultFilenameHandler" />
+        </property>
+        
    	</bean>
 
 

@@ -7,9 +7,9 @@
 	<!--import resource="performanceAnalysis.xml"/-->
 	
 	<!-- Normal injection of services w/o performance analysis -->
-	<import resource="gbServices.xml" />
+	<import resource="gbServices-test.xml" />
 	
-	<import resource="db.xml" />
+	<import resource="db-test.xml" />
 		
 	<!-- Hibernate Mappings -->
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.model.hibernateMappings"
@@ -39,7 +39,7 @@
 		<property name="sectionAwareness" ref="org.sakaiproject.section.api.SectionAwareness"/>
 		<property name="gbToolService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/>
 		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service"/>
-		<property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/>
+		<!-- property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/-->
 	</bean>
 	
 	<bean id="GradebookExportService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookExportController">
@@ -65,8 +65,8 @@
 	which then is injected via Sakai's bean configuration mechanism
 	-->
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.api.SampleInstitutionalAdvisor" class="org.sakaiproject.gradebook.gwt.sakai.SampleInstitutionalAdvisor">
-		<property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/>
-		<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>
+		<!-- property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/>
+		<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/-->
 		<property name="finalGradeSubmissionPath" value="/tmp"/>
 	</bean>
 	

@@ -4,22 +4,20 @@
 	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
 	<display-name>sakai-gradebook-gwt-rpc</display-name>
 	<description>Sakai Gradebook GWT Tool</description>
-
+ 
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
-		<param-value>WEB-INF/applicationContext.xml</param-value>
+		<param-value>WEB-INF/testContext.xml</param-value>
 	</context-param>
 
-	<!-- Use the Sakai Spring application context wrapper to reach components. -->
-    <listener>
+	<listener>
         <listener-class>org.sakaiproject.util.ContextLoaderListener</listener-class>
     </listener>
     
-    <listener>
+    <!--listener>
         <listener-class>org.sakaiproject.util.ToolListener</listener-class>
     </listener>
 
-	<!-- GRBK-202 -->
 	<filter>
 		<filter-name>gwt.security</filter-name>
 		<filter-class>org.sakaiproject.gradebook.gwt.server.SecurityFilter</filter-class>
@@ -31,7 +29,6 @@
 		<dispatcher>FORWARD</dispatcher>
 	</filter-mapping>
 	
-	<!--  Sakai filter -->
     <filter>
         <filter-name>sakai.request</filter-name>
         <filter-class>org.sakaiproject.util.RequestFilter</filter-class>
@@ -46,7 +43,7 @@
         <dispatcher>REQUEST</dispatcher>
         <dispatcher>FORWARD</dispatcher>
         <dispatcher>INCLUDE</dispatcher>
-    </filter-mapping>
+    </filter-mapping-->
 
 	<servlet>
 		<servlet-name>sakai.gradebook.gwt.rpc</servlet-name>
@@ -67,12 +64,13 @@
 		<load-on-startup>2</load-on-startup>
 	</servlet>
 
-	<!-- Default page to serve -->
+
+<!-- 
   	<welcome-file-list>
     	<welcome-file>GradebookApplication.html</welcome-file>
   	</welcome-file-list>
 
-	<!-- servlet>
+	<servlet>
 		<servlet-name>facade</servlet-name>
 		<servlet-class>org.sakaiproject.gradebook.gwt.sakai.mock.Gradebook2ResourceProducerMock</servlet-class>
 	</servlet>
@@ -110,6 +108,7 @@
 	<servlet-mapping>
 		<servlet-name>finalGradeHandler</servlet-name>
 		<url-pattern>/gradebook/final-grade-submission</url-pattern>
-	</servlet-mapping-->
+	</servlet-mapping>
+-->
 
 </web-app>

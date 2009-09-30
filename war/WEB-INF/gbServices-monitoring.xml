@@ -4,7 +4,7 @@
 <beans>
 	
 	<!-- Declare service -->
-    <bean id="GradebookService" class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ResourceProducer">
+    <bean id="RPCService" class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ResourceProducer">
     	<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ServicePerformanceAnalysis"/>
     </bean>
 	
