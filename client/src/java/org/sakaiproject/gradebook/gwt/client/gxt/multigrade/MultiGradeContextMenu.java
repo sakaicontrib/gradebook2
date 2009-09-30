@@ -35,7 +35,6 @@ import org.sakaiproject.gradebook.gwt.client.model.GradeEventModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
-import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Scroll;
@@ -45,6 +44,7 @@ import com.extjs.gxt.ui.client.data.ListLoadResult;
 import com.extjs.gxt.ui.client.data.ListLoader;
 import com.extjs.gxt.ui.client.data.RpcProxy;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
+import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FieldEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.MenuEvent;
@@ -59,9 +59,9 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
-import com.extjs.gxt.ui.client.widget.menu.AdapterMenuItem;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.KeyboardListener;
 
@@ -117,11 +117,8 @@ public class MultiGradeContextMenu extends Menu {
 			
 		}));
 		
-		AdapterMenuItem addTextBox = new AdapterMenuItem(addCommentContainer);
-		addTextBox.setHideOnClick(false);
-		
 		contextMenuAddSubMenu = new Menu();
-		contextMenuAddSubMenu.add(addTextBox);
+		contextMenuAddSubMenu.add(addCommentContainer);
 		
 		ContentPanel editCommentContainer = new ContentPanel();
 		editCommentContainer.setHeaderVisible(false);
@@ -132,7 +129,7 @@ public class MultiGradeContextMenu extends Menu {
 			    super.onKeyPress(fe);
 
 			    switch (fe.getKeyCode()) {
-			    case KeyboardListener.KEY_ENTER:		    
+			    case KeyCodes.KEY_ENTER:		    
 			    	editComment(owner, getValue());
 			    	break;
 			    }
@@ -153,18 +150,16 @@ public class MultiGradeContextMenu extends Menu {
 			
 		}));
 		
-		AdapterMenuItem editTextBox = new AdapterMenuItem(editCommentContainer);
-		editTextBox.setHideOnClick(false);
 		
 		contextMenuEditSubMenu = new Menu();
-		contextMenuEditSubMenu.add(editTextBox);
+		contextMenuEditSubMenu.add(editCommentContainer);
 		
 		contextMenuViewSubMenu = new Menu();
 		
-		RpcProxy<ListLoadConfig, ListLoadResult<GradeScaleRecordModel>> proxy = new RpcProxy<ListLoadConfig, ListLoadResult<GradeScaleRecordModel>>() {
+		RpcProxy<ListLoadResult<GradeScaleRecordModel>> proxy = new RpcProxy<ListLoadResult<GradeScaleRecordModel>>() {
 			
 			@Override
-			protected void load(ListLoadConfig listLoadConfig, AsyncCallback<ListLoadResult<GradeScaleRecordModel>> callback) {
+			protected void load(Object listLoadConfig, AsyncCallback<ListLoadResult<GradeScaleRecordModel>> callback) {
 				Gradebook2RPCServiceAsync service = Registry.get("service");
 				service.getPage(owner.getSelectedModel().getIdentifier(), owner.getSelectedAssignment(), EntityType.GRADE_EVENT, null, SecureToken.get(), callback);
 			}
@@ -172,7 +167,7 @@ public class MultiGradeContextMenu extends Menu {
 		};
 		
 		
-		final ListLoader<ListLoadConfig> loader = new BaseListLoader<ListLoadConfig, ListLoadResult<GradeScaleRecordModel>>(proxy);  
+		final ListLoader<ListLoadResult<GradeScaleRecordModel>> loader = new BaseListLoader<ListLoadResult<GradeScaleRecordModel>>(proxy);  
 		
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 		
@@ -221,9 +216,7 @@ public class MultiGradeContextMenu extends Menu {
 		layoutContainer.add(viewGradeHistoryGrid);
 		layoutContainer.setScrollMode(Scroll.AUTO);
 		
-		AdapterMenuItem gradeHistoryGrid = new AdapterMenuItem(layoutContainer);
-		gradeHistoryGrid.setHideOnClick(false);
-		contextMenuViewSubMenu.add(gradeHistoryGrid);
+		contextMenuViewSubMenu.add(layoutContainer);
 		
 		contextMenuAddCommentItem.setSubMenu(contextMenuAddSubMenu);
 		contextMenuEditCommentItem.setSubMenu(contextMenuEditSubMenu);

@@ -57,10 +57,10 @@ import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
-import com.extjs.gxt.ui.client.Events;
+import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Registry;
-import com.extjs.gxt.ui.client.XDOM;
+import com.extjs.gxt.ui.client.core.XDOM;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.Style.SelectionMode;
@@ -316,11 +316,13 @@ public class ItemTreePanel extends ContentPanel {
 		ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
 		if (gradebookItemModel != null) {
 			boolean isEntireGradebookChecked = true;
-			for (ItemModel c1 : gradebookItemModel.getChildren()) {
+			for (ModelData m1 : gradebookItemModel.getChildren()) {
+				ItemModel c1 = (ItemModel)m1;
 				switch (c1.getItemType()) {
 					case CATEGORY:
 						boolean isEntireCategoryChecked = c1.getChildCount() > 0;
-						for (ItemModel c2 : c1.getChildren()) {
+						for (ModelData m2 : c1.getChildren()) {
+							ItemModel c2 = (ItemModel)m2;
 							if (!configModel.isColumnHidden(AppConstants.ITEMTREE, c2.getIdentifier(), true))
 								selectedItemModels.add(c2);
 							else {
@@ -407,7 +409,7 @@ public class ItemTreePanel extends ContentPanel {
 		// Only allow the user to reorder if s/he has the permission
 		if (DataTypeConversionUtil.checkBoolean(isAbleToEdit)) {
 
-			TreeDragSource source = new TreeDragSource(treeTableBinder) {
+			TreeDragSource source = new TreeDragSource(treeTable) {
 
 				@Override
 				protected void onDragDrop(DNDEvent event) {
@@ -418,7 +420,7 @@ public class ItemTreePanel extends ContentPanel {
 				protected void onDragStart(DNDEvent e) {
 					TreeItem item = tree.findItem(e.getTarget());
 					if (item == null || e.getTarget(".my-tree-joint", 3) != null) {
-						e.doit = false;
+						e.stopEvent();
 						return;
 					}
 
@@ -449,23 +451,22 @@ public class ItemTreePanel extends ContentPanel {
 								List models = new ArrayList();
 								for (TreeItem ti : sel) {
 									models.add(binder.getTreeStore().getModelState(
-											ti.getModel()));
+											(ModelData) ti.getModel()));
 								}
-								e.data = models;
+								e.setData(models);
 							} else {
-								e.data = sel;
+								e.setData(sel);
 							}
 
-							e.doit = true;
-							e.status.update(Format.substitute(getStatusText(), sel
+							e.getStatus().update(Format.substitute(getStatusText(), sel
 									.size()));
 
 						} else {
-							e.doit = false;
+							e.stopEvent();
 						}
 
 					} else {
-						e.doit = false;
+						e.stopEvent();
 					}
 				}
 			};
@@ -475,8 +476,8 @@ public class ItemTreePanel extends ContentPanel {
 					TreeItem item = treeTable.findItem(e.getTarget());
 					if (item != null && item == treeTable.getRootItem().getItem(0)
 							&& treeTable.getRootItem().getItemCount() == 1) {
-						e.doit = false;
-						e.status.setStatus(false);
+						e.stopEvent();
+						e.getStatus().setStatus(false);
 						return;
 					}
 					super.dragStart(e);
@@ -485,7 +486,7 @@ public class ItemTreePanel extends ContentPanel {
 
 			});
 
-			TreeDropTarget target = new TreeDropTarget(treeTableBinder) {
+			TreeDropTarget target = new TreeDropTarget(treeTable) {
 
 				@Override
 				protected void appendModel(final ModelData p, final TreeModel model, final int index) {
@@ -502,7 +503,7 @@ public class ItemTreePanel extends ContentPanel {
 						return;
 					} else {
 						ItemModel destParent = (ItemModel)p;
-						ItemModel orgParent = child.getParent();
+						ItemModel orgParent = (ItemModel) child.getParent();
 
 						Long destParentId = destParent == null ? null : destParent.getCategoryId();
 						Long orgParentId = orgParent == null ? null : orgParent.getCategoryId();
@@ -561,9 +562,9 @@ public class ItemTreePanel extends ContentPanel {
 							} else {
 								binder.getTreeStore().insert(p, activeItem, realIndex, false);
 							}
-							List<TreeModel> children = model.getChildren();
+							List<ModelData> children = model.getChildren();
 							for (int i = 0; i < children.size(); i++) {
-								appendModel(activeItem, children.get(i), i);
+								appendModel(activeItem, (TreeModel) children.get(i), i);
 							}
 
 							ItemModelProcessor processor = new ItemModelProcessor(result) {
@@ -697,19 +698,16 @@ public class ItemTreePanel extends ContentPanel {
 				Listener l = new Listener<TreeTableEvent>() {
 
 					public void handleEvent(TreeTableEvent be) {
-						switch (be.type) {
-							case Events.HiddenChange: {
-								TableColumn c = cm.getColumn(be.columnIndex);
+						if (be.getType().equals(Events.HiddenChange)) {
+								TableColumn c = cm.getColumn(be.getColumnIndex());
 								if (c.isHidden())
 									((ItemTreeTableHeader) treeTable
 											.getTableHeader())
-											.hideColumn(be.columnIndex);
+											.hideColumn(be.getColumnIndex());
 								else
 									((ItemTreeTableHeader) treeTable
 											.getTableHeader())
-											.showColumn(be.columnIndex);
-								break;
-							}
+											.showColumn(be.getColumnIndex());
 						}
 					}
 				};
@@ -943,8 +941,8 @@ public class ItemTreePanel extends ContentPanel {
 		checkChangeEventListener = new Listener<TreeEvent>() {
 
 			public void handleEvent(TreeEvent te) {
-				TreeItem item = te.item;
-				ModelData model = te.item.getModel();
+				TreeItem item = te.getItem();
+				ModelData model = te.getItem().getModel();
 				String id = model.get("id");
 
 				if (id == null)
@@ -968,7 +966,7 @@ public class ItemTreePanel extends ContentPanel {
 		menuSelectionListener = new SelectionListener<MenuEvent>() {
 
 			public void componentSelected(MenuEvent me) {
-				SelectionType selectionType = me.item.getData(selectionTypeField);
+				SelectionType selectionType = me.getItem().getData(selectionTypeField);
 				TreeItem item = (TreeItem) treeTable.getSelectionModel().getSelectedItem();
 				switch (selectionType) {
 					case CREATE_CATEGORY:
@@ -1029,12 +1027,8 @@ public class ItemTreePanel extends ContentPanel {
 		treeTableEventListener = new Listener<TreeTableEvent>() {
 
 			public void handleEvent(TreeTableEvent tte) {
-				switch (tte.type) {
-
-					case Events.RowDoubleClick:
-						doSelectItem(tte);
-						break;
-				}
+				if (tte.getType().equals(Events.RowDoubleClick)) 
+					doSelectItem(tte);
 			}
 
 		};
@@ -1046,7 +1040,7 @@ public class ItemTreePanel extends ContentPanel {
 	}
 
 	private void doSelectItem(TreeTableEvent tte) {
-		ItemModel itemModel = (ItemModel)tte.item.getModel();
+		ItemModel itemModel = (ItemModel)tte.getItem().getModel();
 		Dispatcher.forwardEvent(GradebookEvents.StartEditItem.getEventType(), itemModel);
 
 		tte.stopEvent();

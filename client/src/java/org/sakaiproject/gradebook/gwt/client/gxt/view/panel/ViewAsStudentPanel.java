@@ -33,10 +33,11 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
-import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.event.BaseEvent;
+import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
+import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
@@ -136,34 +137,34 @@ public class ViewAsStudentPanel extends ContentPanel {
 	private void setupNavigation(I18nConstants i18n) {
 
 		getButtonBar().removeAll();
-		Button next = new Button(i18n.nextLearner(), new SelectionListener<ComponentEvent>() {
+		Button next = new Button(i18n.nextLearner(), new SelectionListener<ButtonEvent>() {
 			@Override
-			public void componentSelected(ComponentEvent ce) {
+			public void componentSelected(ButtonEvent ce) {
 				BrowseLearner event = new BrowseLearner(container.getStudentRow(), BrowseType.NEXT);
 				Dispatcher.forwardEvent(GradebookEvents.BrowseLearner.getEventType(), event);
 			}
 		}); 
-		Button prev = new Button(i18n.prevLearner(), new SelectionListener<ComponentEvent>() {
+		Button prev = new Button(i18n.prevLearner(), new SelectionListener<ButtonEvent>() {
 			@Override
-			public void componentSelected(ComponentEvent ce) {
+			public void componentSelected(ButtonEvent ce) {
 				BrowseLearner event = new BrowseLearner(container.getStudentRow(), BrowseType.PREV);
 				Dispatcher.forwardEvent(GradebookEvents.BrowseLearner.getEventType(), event);
 			}
 		}); 
 
-		Button close = new Button(i18n.close(), new SelectionListener<ComponentEvent>() {
+		Button close = new Button(i18n.close(), new SelectionListener<ButtonEvent>() {
 
 			@Override
-			public void componentSelected(ComponentEvent ce) {
+			public void componentSelected(ButtonEvent ce) {
 				Dispatcher.forwardEvent(GradebookEvents.StopStatistics.getEventType());
 			}
 
 		});
 
 		// FIXME: This needs to be integrated into MVC
-		Button studentView = new Button(i18n.viewAsLearner(), new SelectionListener<ComponentEvent>() { 
+		Button studentView = new Button(i18n.viewAsLearner(), new SelectionListener<ButtonEvent>() { 
 			@Override
-			public void componentSelected(ComponentEvent ce) {
+			public void componentSelected(ButtonEvent ce) {
 				Dispatcher.forwardEvent(GradebookEvents.SingleView.getEventType(), container.getStudentModel());
 			}
 		});

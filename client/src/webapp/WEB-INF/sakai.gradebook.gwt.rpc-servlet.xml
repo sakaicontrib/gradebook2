@@ -16,21 +16,21 @@
 
                                 <entry key="/" value-ref="myServletForwardingController" />
 
-                                <entry key="/**/org.sakaiproject.gradebook.gwt.GradebookApplication/*.html" value-ref="myServletForwardingController" />
+                                <entry key="/**/gradebook/*.html" value-ref="myServletForwardingController" />
                                 
-                                <entry key="/**/org.sakaiproject.gradebook.gwt.GradebookApplication/*.png" value-ref="myServletForwardingController" />
+                                <entry key="/**/gradebook/*.png" value-ref="myServletForwardingController" />
                                 
-                                <entry key="/**/org.sakaiproject.gradebook.gwt.GradebookApplication/*.css" value-ref="myServletForwardingController" />
+                                <entry key="/**/gradebook/*.css" value-ref="myServletForwardingController" />
                                 
-                                <entry key="/**/org.sakaiproject.gradebook.gwt.GradebookApplication/*.gif" value-ref="myServletForwardingController" />
+                                <entry key="/**/gradebook/*.gif" value-ref="myServletForwardingController" />
                                 
-                                <entry key="/**/org.sakaiproject.gradebook.gwt.GradebookApplication/*.js" value-ref="myServletForwardingController" />
+                                <entry key="/**/gradebook/*.js" value-ref="myServletForwardingController" />
                                 
-                                <entry key="/**/org.sakaiproject.gradebook.gwt.GradebookApplication/css/**" value-ref="myServletForwardingController" />
+                                <entry key="/**/gradebook/css/**" value-ref="myServletForwardingController" />
                                 
-                                <entry key="/**/org.sakaiproject.gradebook.gwt.GradebookApplication/images/**" value-ref="myServletForwardingController" />
+                                <entry key="/**/gradebook/images/**" value-ref="myServletForwardingController" />
                                 
-                                <entry key="/**/org.sakaiproject.gradebook.gwt.GradebookApplication/*.gwt.rpc" value-ref="myServletForwardingController" />
+                                <entry key="/**/gradebook/*.gwt.rpc" value-ref="myServletForwardingController" />
                         </map>
         </property>
    	</bean>

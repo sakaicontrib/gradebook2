@@ -39,8 +39,9 @@ import java.util.Stack;
 
 import org.sakaiproject.gradebook.gwt.client.model.GradeEventModel;
 
-import com.extjs.gxt.ui.client.XDOM;
+import com.extjs.gxt.ui.client.core.XDOM;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
+import com.extjs.gxt.ui.client.event.IconButtonEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.util.Format;
 import com.extjs.gxt.ui.client.util.Params;
@@ -140,7 +141,7 @@ public class LogDisplay extends ContentPanel {
 
 	private LogConfig config;
 	private int level;
-	private SelectionListener<ComponentEvent> selectionListener;
+	private SelectionListener<IconButtonEvent> selectionListener;
 	
 	/**
 	 * Creates a new info instance.
@@ -188,10 +189,10 @@ public class LogDisplay extends ContentPanel {
 	}
 
 	private void initListeners() {
-		selectionListener = new SelectionListener<ComponentEvent>() {
+		selectionListener = new SelectionListener<IconButtonEvent>() {
 
 			@Override
-			public void componentSelected(ComponentEvent ce) {
+			public void componentSelected(IconButtonEvent ce) {
 				afterHide();
 			}
 			

@@ -34,6 +34,7 @@ import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.GridPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
+import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.CustomColumnModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.CustomGridView;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
@@ -51,26 +52,27 @@ import org.sakaiproject.gradebook.gwt.client.model.SectionModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 
-import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.Style.SortDir;
 import com.extjs.gxt.ui.client.data.BasePagingLoader;
+import com.extjs.gxt.ui.client.data.BaseTreeModel;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.ModelReader;
 import com.extjs.gxt.ui.client.data.PagingLoadConfig;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 import com.extjs.gxt.ui.client.data.RpcProxy;
 import com.extjs.gxt.ui.client.data.SortInfo;
+import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
+import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.GridEvent;
 import com.extjs.gxt.ui.client.event.KeyListener;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
 import com.extjs.gxt.ui.client.event.SelectionChangedListener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
-import com.extjs.gxt.ui.client.event.ToolBarEvent;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
@@ -94,15 +96,13 @@ import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.tips.ToolTip;
-import com.extjs.gxt.ui.client.widget.toolbar.AdapterToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.SeparatorToolItem;
-import com.extjs.gxt.ui.client.widget.toolbar.TextToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.KeyboardListener;
 
 public class MultiGradeContentPanel extends GridPanel<StudentModel> implements StudentModelOwner {
 
@@ -131,7 +131,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	private Listener<UserChangeEvent> userChangeEventListener;
 
 	private MultigradeSelectionModel<StudentModel> cellSelectionModel;
-	private BasePagingLoader<PagingLoadConfig, PagingLoadResult<SectionModel>> sectionsLoader;
+	private BasePagingLoader<PagingLoadResult<SectionModel>> sectionsLoader;
 
 
 	public MultiGradeContentPanel(ContentPanel childPanel, I18nConstants i18n) {
@@ -153,12 +153,12 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 
 		String columnHeader = "";
 		if (gridEvent != null) {
-			String className = grid.getView().getCell(gridEvent.rowIndex, gridEvent.colIndex).getClassName();
+			String className = grid.getView().getCell(gridEvent.getRowIndex(), gridEvent.getColIndex()).getClassName();
 			className = className.replace(" gbCellDropped", "");
-			grid.getView().getCell(gridEvent.rowIndex, gridEvent.colIndex).setClassName(className);
-			grid.getView().getCell(gridEvent.rowIndex, gridEvent.colIndex).setInnerText("Saving...");
+			grid.getView().getCell(gridEvent.getRowIndex(), gridEvent.getColIndex()).setClassName(className);
+			grid.getView().getCell(gridEvent.getRowIndex(), gridEvent.getColIndex()).setInnerText("Saving...");
 
-			columnHeader = grid.getColumnModel().getColumnHeader(gridEvent.colIndex);
+			columnHeader = grid.getColumnModel().getColumnHeader(gridEvent.getColIndex());
 		}
 
 		Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord.getEventType(), new GradeRecordUpdate(record, property, columnHeader, startValue, value));
@@ -241,7 +241,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 				public void handleEvent(StoreEvent<StudentModel> se) {
 					StudentModel selectedLearner = null;
 					while (selectedLearner == null && currentIndex >= 0) {
-						selectedLearner = ((ListStore<StudentModel>)se.store).getAt(currentIndex);
+						selectedLearner = ((ListStore<StudentModel>)se.getStore()).getAt(currentIndex);
 						if (selectedLearner != null) {
 
 						} else {
@@ -251,7 +251,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 					grid.getStore().removeListener(Store.DataChanged, this);
 
 					if (selectedLearner != null)
-						cellSelectionModel.select(currentIndex);
+						cellSelectionModel.select(currentIndex, false);
 
 				}
 
@@ -260,7 +260,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			StudentModel selectedLearner = grid.getStore().getAt(currentIndex);
 
 			if (selectedLearner != null)
-				cellSelectionModel.select(currentIndex);
+				cellSelectionModel.select(currentIndex, false);
 		}
 	}
 
@@ -285,9 +285,9 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		if (gradebookModel.equals(itemModel.getParent())) {
 			gradebookModel.getChildren().add(itemModel);
 		} else {
-			for (ItemModel category : gradebookModel.getChildren()) {
+			for (ModelData category : gradebookModel.getChildren()) {
 				if (category.equals(itemModel.getParent()))
-					category.getChildren().add(itemModel);
+					((BaseTreeModel) category).getChildren().add(itemModel);
 			}
 		}
 
@@ -302,9 +302,9 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		if (gradebookModel.getChildren().contains(itemModel)) {
 			gradebookModel.getChildren().remove(itemModel);
 		} else {
-			for (ItemModel category : gradebookModel.getChildren()) {
-				if (category.getChildren().contains(itemModel))
-					category.getChildren().remove(itemModel);
+			for (ModelData category : gradebookModel.getChildren()) {
+				if (((BaseTreeModel) category).getChildren().contains(itemModel))
+					((BaseTreeModel) category).getChildren().remove(itemModel);
 			}
 		}
 
@@ -370,7 +370,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 
 
 				// FIXME: This could be condensed significantly
-				if (ce.type == GradebookEvents.DoSearch.getEventType()) {
+				if (ce.getType() == GradebookEvents.DoSearch.getEventType()) {
 					int pageSize = getPageSize();
 					String searchString = searchField.getValue();
 					String sectionUuid = null;	
@@ -383,7 +383,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 					((MultiGradeLoadConfig) loadConfig).setSectionUuid(sectionUuid);
 					loader.useLoadConfig(loadConfig);
 					loader.load(0, pageSize);
-				} else if (ce.type == GradebookEvents.ClearSearch.getEventType()) {
+				} else if (ce.getType() == GradebookEvents.ClearSearch.getEventType()) {
 					int pageSize = getPageSize();
 					searchField.setValue(null);
 					String sectionUuid = null;
@@ -404,47 +404,49 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 
 			public void handleEvent(GridEvent ge) {
 
-				switch (ge.type) {
-					case Events.CellClick:
-						if (ge.colIndex == 0 || ge.colIndex == 1 || ge.colIndex == 2) {
-							StudentModel selectedLearner = store.getAt(ge.rowIndex);
-							Dispatcher.forwardEvent(GradebookEvents.SingleGrade.getEventType(), selectedLearner);
-							ge.grid.getSelectionModel().select(ge.rowIndex);
+				if (ge.getType().equals(Events.CellClick)) {
+					if (ge.getColIndex() == 0 || ge.getColIndex() == 1 || ge.getColIndex() == 2) {
+						StudentModel selectedLearner = store.getAt(ge.getRowIndex());
+						Dispatcher.forwardEvent(GradebookEvents.SingleGrade.getEventType(), selectedLearner);
+						ge.getGrid().getSelectionModel().select(ge.getRowIndex(), false);
+					}
+				} else if (ge.getType().equals(
+						Events.ContextMenu.getEventCode())) {
+					if (ge.getRowIndex() >= 0 && ge.getColIndex() >= 0) {
+						ColumnConfig c = grid.getColumnModel().getColumn(
+								ge.getColIndex());
+						String assignIdStr = c.getId();
+						long assignId;
+
+						try {
+							assignId = Long.parseLong(assignIdStr);
+						} catch (NumberFormatException e) {
+							ge.stopEvent();
+							return;
 						}
-						break;
-					case Events.ContextMenu:
-						if (ge.rowIndex >= 0 && ge.colIndex >= 0) {
-							ColumnConfig c = grid.getColumnModel().getColumn(ge.colIndex);
-							String assignIdStr = c.getId();
-							long assignId;
+						commentingStudentModel = store.getAt(ge.getRowIndex());
+						commentingAssignmentId = Long.valueOf(assignId);
 
-							try {
-								assignId = Long.parseLong(assignIdStr);
-							} catch (NumberFormatException e) {
-								ge.doit = false;
-								return;
-							}
-							commentingStudentModel = store.getAt(ge.rowIndex);
-							commentingAssignmentId = Long.valueOf(assignId);
+						Boolean commentFlag = (Boolean) commentingStudentModel
+								.get(assignId + StudentModel.COMMENTED_FLAG);
 
-							Boolean commentFlag = (Boolean)commentingStudentModel.get(assignId + StudentModel.COMMENTED_FLAG);
+						boolean isCommented = commentFlag != null
+								&& commentFlag.booleanValue();
 
-							boolean isCommented = commentFlag != null && commentFlag.booleanValue();
+						if (isCommented) {
+							contextMenu.enableAddComment(false);
+							contextMenu.enableEditComment(true);
+						} else {
+							contextMenu.enableAddComment(true);
+							contextMenu.enableEditComment(false);
+						}
 
-							if (isCommented) {
-								contextMenu.enableAddComment(false);
-								contextMenu.enableEditComment(true);
-							} else {
-								contextMenu.enableAddComment(true);
-								contextMenu.enableEditComment(false);
-							}
+						boolean isGraded = true; // gradedFlag != null &&
+													// gradedFlag.booleanValue();
 
-							boolean isGraded = true; //gradedFlag != null && gradedFlag.booleanValue();
-
-							contextMenu.enableViewGradeHistory(isGraded);
-						} else
-							ge.doit = false; 
-						break;
+						contextMenu.enableViewGradeHistory(isGraded);
+					} else
+						ge.stopEvent();
 				}
 			}
 		};
@@ -624,17 +626,17 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		unweightedNumericCellRenderer = new UnweightedNumericCellRenderer();
 		extraCreditNumericCellRenderer = new ExtraCreditNumericCellRenderer();
 
-		RpcProxy<PagingLoadConfig, PagingLoadResult<SectionModel>> sectionsProxy = new RpcProxy<PagingLoadConfig, PagingLoadResult<SectionModel>>() {
+		RpcProxy<PagingLoadResult<SectionModel>> sectionsProxy = new RpcProxy<PagingLoadResult<SectionModel>>() {
 			@Override
-			protected void load(PagingLoadConfig loadConfig, AsyncCallback<PagingLoadResult<SectionModel>> callback) {
+			protected void load(Object loadConfig, AsyncCallback<PagingLoadResult<SectionModel>> callback) {
 				Gradebook2RPCServiceAsync service = Registry.get("service");
 				GradebookModel model = Registry.get(AppConstants.CURRENT);
-				service.getPage(model.getGradebookUid(), model.getGradebookId(), EntityType.SECTION, loadConfig, SecureToken.get(), callback);
+				service.getPage(model.getGradebookUid(), model.getGradebookId(), EntityType.SECTION, (PagingLoadConfig)loadConfig, SecureToken.get(), callback);
 			}
 		};
 
 		sectionsLoader = 
-			new BasePagingLoader<PagingLoadConfig, PagingLoadResult<SectionModel>>(sectionsProxy, new ModelReader<PagingLoadConfig>());
+			new BasePagingLoader<PagingLoadResult<SectionModel>>(sectionsProxy, new ModelReader());
 
 		sectionsLoader.setRemoteSort(true);
 
@@ -680,15 +682,14 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 
 		});
 
-		AdapterToolItem sectionChooserItem = new AdapterToolItem(sectionListBox);
-
+		
 		searchField = new TextField<String>();
 		searchField.setEmptyText(i18n.searchLearnerEmptyText());
 		searchField.setWidth(180);
 		searchField.addKeyListener(new KeyListener() {
 			public void componentKeyPress(ComponentEvent event) {
 				switch (event.getKeyCode()) {
-					case KeyboardListener.KEY_ENTER:
+					case KeyCodes.KEY_ENTER:
 						fireEvent(GradebookEvents.DoSearch.getEventType(), event);
 						break;
 				}
@@ -699,12 +700,11 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 
 		addListener(GradebookEvents.ClearSearch.getEventType(), componentEventListener);
 
-		AdapterToolItem searchFieldItem = new AdapterToolItem(searchField);
-
-		TextToolItem doSearchItem = new TextToolItem("Find", new SelectionListener<ToolBarEvent>() {
+		
+		AriaButton doSearchItem = new AriaButton("Find", new SelectionListener<ButtonEvent>() {
 
 			@Override
-			public void componentSelected(ToolBarEvent ce) {
+			public void componentSelected(ButtonEvent ce) {
 				fireEvent(GradebookEvents.DoSearch.getEventType(), ce);
 			}
 
@@ -713,18 +713,17 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		doSearchItem.setToolTip("Search for all students with name matching the entered text");
 
 
-		TextToolItem clearSearchItem = new TextToolItem("Clear", new SelectionListener<ToolBarEvent>() {
+		AriaButton clearSearchItem = new AriaButton("Clear", new SelectionListener<ButtonEvent>() {
 
 			@Override
-			public void componentSelected(ToolBarEvent ce) {
+			public void componentSelected(ButtonEvent ce) {
 				fireEvent(GradebookEvents.ClearSearch.getEventType(), ce);
 			}
 
 		});
 
 		modeLabel = new LabelField();
-		AdapterToolItem modeLabelItem = new AdapterToolItem(modeLabel);
-
+		
 		int pageSize = getPageSize();
 		pageSizeField = new NumberField();
 		pageSizeField.setValue(Integer.valueOf(pageSize));
@@ -732,7 +731,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		pageSizeField.addKeyListener(new KeyListener() {
 			public void componentKeyPress(ComponentEvent event) {
 				switch (event.getKeyCode()) {
-					case KeyboardListener.KEY_ENTER:
+					case KeyCodes.KEY_ENTER:
 						Number pageSize = pageSizeField.getValue();
 
 						if (pageSize != null && pageSize.intValue() > 0 && pageSize.intValue() <= Integer.MAX_VALUE) {
@@ -777,23 +776,23 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			}
 		});
 
-		AdapterToolItem pageSizeFieldItem = new AdapterToolItem(pageSizeField);
-		AdapterToolItem pageSizeLabelItem = new AdapterToolItem(new LabelField("Page size: "));
+		//AdapterToolItem pageSizeFieldItem = new AdapterToolItem(pageSizeField);
+		//AdapterToolItem pageSizeLabelItem = new AdapterToolItem(new LabelField("Page size: "));
 
 
 		searchToolBar = new ToolBar();
-		searchToolBar.add(searchFieldItem);
+		searchToolBar.add(searchField);
 		searchToolBar.add(doSearchItem);
 		searchToolBar.add(clearSearchItem);
 		searchToolBar.add(new SeparatorToolItem());
-		searchToolBar.add(sectionChooserItem);
+		searchToolBar.add(sectionListBox);
 		searchToolBar.add(new FillToolItem());
-		searchToolBar.add(modeLabelItem);
+		searchToolBar.add(modeLabel);
 
 
 		pagingToolBar.add(new SeparatorToolItem());
-		pagingToolBar.add(pageSizeLabelItem);
-		pagingToolBar.add(pageSizeFieldItem);
+		pagingToolBar.add(new LabelField("Page size: "));
+		pagingToolBar.add(pageSizeField);
 
 		toolBarContainer = new LayoutContainer();
 		toolBarContainer.setLayout(new RowLayout());
@@ -1016,12 +1015,12 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			configs.add(config);
 		}
 
-		for (ItemModel child : gradebookItemModel.getChildren()) {
-
+		for (ModelData m : gradebookItemModel.getChildren()) {
+			ItemModel child = (ItemModel)m;
 			switch (child.getItemType()) {
 				case CATEGORY:
-					for (ItemModel item : child.getChildren()) {
-						configs.add(buildColumn(selectedGradebook, item, configModel));
+					for (ModelData item : child.getChildren()) {
+						configs.add(buildColumn(selectedGradebook, (ItemModel) item, configModel));
 					}
 					break;
 				case ITEM:
@@ -1069,9 +1068,9 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 
 	private GridCellRenderer<StudentModel> unweightedTextCellRenderer = new GridCellRenderer<StudentModel>() {
 
-		public String render(StudentModel model, String property,
+		public Object render(StudentModel model, String property,
 				ColumnData config, int rowIndex, int colIndex,
-				ListStore<StudentModel> store) {
+				ListStore<StudentModel> store, Grid<StudentModel> grid) {
 
 			Object value = model.get(property);
 
@@ -1080,13 +1079,14 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 
 			return "<div style=\"color:darkgray; font-style: italic;\">" + value.toString() + "</div>";
 		}
+
 	};
 
 	private GridCellRenderer<StudentModel> extraCreditTextCellRenderer = new GridCellRenderer<StudentModel>() {
 
 		public String render(StudentModel model, String property,
 				ColumnData config, int rowIndex, int colIndex,
-				ListStore<StudentModel> store) {
+				ListStore<StudentModel> store, Grid<StudentModel> grid) {
 
 			Object value = model.get(property);
 

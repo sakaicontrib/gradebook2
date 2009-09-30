@@ -50,17 +50,17 @@ import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
-import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
+import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FormEvent;
 import com.extjs.gxt.ui.client.event.Listener;
+import com.extjs.gxt.ui.client.event.MessageBoxEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
-import com.extjs.gxt.ui.client.event.WindowEvent;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
@@ -99,7 +99,6 @@ import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Element;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class ImportPanel extends ContentPanel {
@@ -511,7 +510,7 @@ public class ImportPanel extends ContentPanel {
 		fileUploadPanel.addListener(Events.Submit, new Listener<FormEvent>() {
 
 			public void handleEvent(FormEvent fe) {
-				readSubmitResponse(fe.resultHtml);
+				readSubmitResponse(fe.getResultHtml());
 			}
 
 		});
@@ -949,7 +948,8 @@ public class ImportPanel extends ContentPanel {
 
 		category.setRenderer(new GridCellRenderer() {
 
-			public String render(ModelData model, String property, ColumnData config, int rowIndex, int colIndex, ListStore store) {
+			public String render(ModelData model, String property, ColumnData config, 
+					int rowIndex, int colIndex, ListStore store, Grid grid) {
 
 				Object identifier = model.get(property);
 
@@ -1092,9 +1092,10 @@ public class ImportPanel extends ContentPanel {
 		messageText = sb.toString(); 
 		sb = null; 
 
-		MessageBox.alert(i18n.importSetupRequiredTitle(), messageText, new Listener<WindowEvent>() {
+		MessageBox.alert(i18n.importSetupRequiredTitle(), messageText, 
+				new Listener<MessageBoxEvent>() {
 
-			public void handleEvent(WindowEvent be) {
+			public void handleEvent(MessageBoxEvent be) {
 				tabPanel.setSelection(columnsTab);
 			}
 

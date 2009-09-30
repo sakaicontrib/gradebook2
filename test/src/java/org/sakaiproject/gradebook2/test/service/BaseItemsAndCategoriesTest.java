@@ -31,6 +31,8 @@ import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
+import com.extjs.gxt.ui.client.data.ModelData;
+
 public abstract class BaseItemsAndCategoriesTest extends AbstractServiceTest {
 
 	public BaseItemsAndCategoriesTest(String name) {
@@ -63,7 +65,7 @@ public abstract class BaseItemsAndCategoriesTest extends AbstractServiceTest {
 		assertEquals(Boolean.FALSE, hwCategory.getEqualWeightAssignments());
 		assertEquals(Double.valueOf(0d), hwCategory.getPercentCategory());
 
-		ItemModel gradebookItemModel = hwCategory.getParent();
+		ItemModel gradebookItemModel = (ItemModel) hwCategory.getParent();
 		assertNotNull(gradebookItemModel);
 		assertEquals(Type.GRADEBOOK, gradebookItemModel.getItemType());
 		assertEquals(Double.valueOf(100d), gradebookItemModel.getPercentCourseGrade());
@@ -93,8 +95,9 @@ public abstract class BaseItemsAndCategoriesTest extends AbstractServiceTest {
 		gradebookItemModel = service.updateItemModel(hw1);
 
 
-		for (ItemModel child : gradebookItemModel.getChildren()) {
-
+		for (ModelData m : gradebookItemModel.getChildren()) {
+			ItemModel child = (ItemModel)m;
+			
 			if (child.getName().equals("My Essays")) {
 
 				assertEquals(Double.valueOf(100d), child.getPercentCategory());
@@ -122,8 +125,8 @@ public abstract class BaseItemsAndCategoriesTest extends AbstractServiceTest {
 
 		// Grab first item from category
 		ItemModel item = null;
-		for (ItemModel child : category.getChildren()) {
-			item = child;
+		for (ModelData child : category.getChildren()) {
+			item = (ItemModel) child;
 			break;
 		}
 
@@ -132,7 +135,8 @@ public abstract class BaseItemsAndCategoriesTest extends AbstractServiceTest {
 
 		ItemModel parent = service.updateItemModel(item);
 
-		for (ItemModel c : parent.getChildren()) {
+		for (ModelData m : parent.getChildren()) {
+			ItemModel c = (ItemModel)m;
 			if (c.isActive()) {
 				assertEquals(Double.valueOf(100d), c.getPoints());
 			}
@@ -152,8 +156,8 @@ public abstract class BaseItemsAndCategoriesTest extends AbstractServiceTest {
 
 		// Grab first item from category
 		ItemModel item = null;
-		for (ItemModel child : category.getChildren()) {
-			item = child;
+		for (ModelData child : category.getChildren()) {
+			item = (ItemModel) child;
 			break;
 		}
 
@@ -162,7 +166,8 @@ public abstract class BaseItemsAndCategoriesTest extends AbstractServiceTest {
 
 		ItemModel parent = service.updateItemModel(item);
 
-		for (ItemModel c : parent.getChildren()) {
+		for (ModelData m : parent.getChildren()) {
+			ItemModel c = (ItemModel)m;
 			if (c.isActive()) {
 				assertEquals(Double.valueOf(20d), c.getPercentCategory());
 			}
@@ -210,8 +215,8 @@ public abstract class BaseItemsAndCategoriesTest extends AbstractServiceTest {
 
 		// Grab first item from category
 		ItemModel item = null;
-		for (ItemModel child : category.getChildren()) {
-			item = child;
+		for (ModelData child : category.getChildren()) {
+			item = (ItemModel) child;
 			break;
 		}
 
@@ -220,7 +225,8 @@ public abstract class BaseItemsAndCategoriesTest extends AbstractServiceTest {
 
 		ItemModel parent = service.updateItemModel(item);
 
-		for (ItemModel c : parent.getChildren()) {
+		for (ModelData m : parent.getChildren()) {
+			ItemModel c = (ItemModel)m;
 			if (c.isActive()) {
 				assertTrue(c.getRemoved());
 				item = c;
@@ -253,8 +259,8 @@ public abstract class BaseItemsAndCategoriesTest extends AbstractServiceTest {
 
 		// Grab first item from category
 		ItemModel item = null;
-		for (ItemModel child : category.getChildren()) {
-			item = child;
+		for (ModelData child : category.getChildren()) {
+			item = (ItemModel) child;
 			break;
 		}
 
@@ -263,7 +269,8 @@ public abstract class BaseItemsAndCategoriesTest extends AbstractServiceTest {
 
 		ItemModel parent = service.updateItemModel(item);
 
-		for (ItemModel c : parent.getChildren()) {
+		for (ModelData m : parent.getChildren()) {
+			ItemModel c = (ItemModel)m;
 			if (!c.isActive() && !c.getExtraCredit()) {
 				assertEquals(BigDecimal.valueOf(33.3333d).setScale(4, RoundingMode.HALF_EVEN), BigDecimal.valueOf(c.getPercentCategory().doubleValue()).setScale(4, RoundingMode.HALF_EVEN));
 			}

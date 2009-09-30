@@ -1,6 +1,6 @@
 /**********************************************************************************
 *
-* $Id:$
+* $Id$
 *
 ***********************************************************************************
 *
@@ -45,7 +45,7 @@ public class FinalGradeSubmissionView extends View {
 	}
 	
 	@Override
-	protected void handleEvent(AppEvent<?> event) {
+	protected void handleEvent(AppEvent event) {
 
 		dialog.verify();
 	}

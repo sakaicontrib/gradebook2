@@ -24,7 +24,7 @@ package org.sakaiproject.gradebook.gwt.client.model;
 
 import com.extjs.gxt.ui.client.data.BaseTreeModel;
 
-public class FixedColumnModel extends BaseTreeModel<FixedColumnModel> {
+public class FixedColumnModel extends BaseTreeModel {
 
 	public enum Key {ID, NAME, ASSIGNMENT_ID, CATEGORY_ID, CATEGORY_NAME, WIDTH, POINTS, UNWEIGHTED, 
 		HIDDEN, EDITABLE, STUDENT_MODEL_KEY, EXTRA_CREDIT };

@@ -46,15 +46,16 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel.Group;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel.Key;
 
-import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.SortDir;
 import com.extjs.gxt.ui.client.event.BaseEvent;
+import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.MenuEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.StoreEvent;
+import com.extjs.gxt.ui.client.widget.Component;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.menu.CheckMenuItem;
 import com.extjs.gxt.ui.client.widget.menu.Item;
@@ -95,7 +96,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 
 			@Override
 			public void componentSelected(MenuEvent me) {
-				MenuItem item = (MenuItem)me.item;
+				MenuItem item = (MenuItem)me.getItem();
 				if (item != null) {
 					SelectionType selectionType = item.getData(selectionTypeField);
 					if (selectionType != null) {
@@ -291,7 +292,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	// Helper method
 	protected void showAllColumns(Menu categoryMenu, List<FixedColumnModel> columns, boolean show) {
 
-		List<Item> menuItems = categoryMenu.getItems();
+		List<Component> menuItems = categoryMenu.getItems();
 		// Determine the number of check menu items, accounting for any regular menu item such as show/hide all, etc.
 		int menuIndex = categoryMenu.getItemCount() - columns.size();
 
@@ -304,7 +305,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 				continue;
 			}
 
-			Item item = menuItems.get(menuIndex);
+			Component item = menuItems.get(menuIndex);
 
 			if(item instanceof CheckMenuItem) {
 

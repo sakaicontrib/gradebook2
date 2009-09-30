@@ -1,6 +1,6 @@
 /**********************************************************************************
 *
-* $Id:$
+* $Id$
 *
 ***********************************************************************************
 *
@@ -27,11 +27,14 @@ import org.sakaiproject.gradebook.gwt.client.model.PermissionEntryModel;
 
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
+import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 
 public class PermissionDeleteCellRenderer implements GridCellRenderer<PermissionEntryModel> {
 
-	public String render(PermissionEntryModel model, String property, ColumnData config, int rowIndex, int colIndex, ListStore<PermissionEntryModel> store) {
+	public String render(PermissionEntryModel model, String property, 
+			ColumnData config, int rowIndex, int colIndex, 
+			ListStore<PermissionEntryModel> store, Grid<PermissionEntryModel> grid) {
 		
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append("<span class=\"gbCellClickable\">");

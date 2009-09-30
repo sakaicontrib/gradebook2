@@ -29,7 +29,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.settings.LogConfig;
 import org.sakaiproject.gradebook.gwt.client.gxt.settings.LogDisplay;
 
 import com.extjs.gxt.ui.client.Registry;
-import com.extjs.gxt.ui.client.XDOM;
+import com.extjs.gxt.ui.client.core.XDOM;
 import com.extjs.gxt.ui.client.util.Params;
 import com.google.gwt.user.client.rpc.StatusCodeException;
 

@@ -35,7 +35,7 @@ public class AddItemView extends View {
 	}
 
 	@Override
-	protected void handleEvent(AppEvent<?> event) {
+	protected void handleEvent(AppEvent event) {
 		// TODO Auto-generated method stub
 
 	}

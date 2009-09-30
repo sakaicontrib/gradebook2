@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+
+	<bean id="urlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+    	<property name="mappings">
+                        <map>
+                                <entry key="/**/rpc/grades.rpc" value-ref="GradebookService" />
+
+                                <entry key="/**/importHandler" value-ref="GradebookImportService" />
+
+                                <entry key="/**/exportGradebook.csv" value-ref="GradebookExportService" />
+
+                                <entry key="/**/final-grade-submission" value-ref="GradebookFinalGradeSubmissionService" />
+
+                                <entry key="/" value-ref="myServletForwardingController" />
+
+                                <entry key="/**/*.html" value-ref="myServletForwardingController" />
+                                
+                                <entry key="/**/*.png" value-ref="myServletForwardingController" />
+                                
+                                <entry key="/**/*.css" value-ref="myServletForwardingController" />
+                                
+                                <entry key="/**/*.gif" value-ref="myServletForwardingController" />
+                                
+                                <entry key="/**/*.js" value-ref="myServletForwardingController" />
+                                
+                                <entry key="/**/css/**" value-ref="myServletForwardingController" />
+                                
+                                <entry key="/**/images/**" value-ref="myServletForwardingController" />
+                                
+                                <entry key="/**/*.gwt.rpc" value-ref="myServletForwardingController" />
+                        </map>
+        </property>
+   	</bean>
+
+
+	<bean id="myServletForwardingController" class="org.springframework.web.servlet.mvc.ServletForwardingController">
+ 		<property name="servletName"><value>sakai.gradebook.gwt</value></property>
+ 	</bean>
+ 	
+
+</beans>

@@ -34,11 +34,10 @@ import com.google.gwt.i18n.client.NumberFormat;
 public class NumericCellRenderer implements GridCellRenderer<StudentModel> {
 
 	protected NumberFormat defaultNumberFormat = DataTypeConversionUtil.getDefaultNumberFormat();
-	protected Grid<StudentModel> grid;
-	
+
 	public String render(StudentModel model, String property,
 			ColumnData config, int rowIndex, int colIndex,
-			ListStore<StudentModel> store) {
+			ListStore<StudentModel> store, Grid<StudentModel> grid) {
 		
 		Double value = model.get(property);
 

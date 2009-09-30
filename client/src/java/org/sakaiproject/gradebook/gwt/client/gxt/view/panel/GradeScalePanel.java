@@ -48,7 +48,7 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Key;
 
-import com.extjs.gxt.ui.client.Events;
+import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.data.BaseListLoader;
@@ -77,7 +77,6 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.EditorGrid;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
-import com.extjs.gxt.ui.client.widget.toolbar.AdapterToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Element;
@@ -87,7 +86,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public class GradeScalePanel extends ContentPanel {
 	
 	private ListLoader<ListLoadConfig> loader;
-	private ListLoader<ListLoadConfig> gradeFormatLoader;
+	private ListLoader<ListLoadResult<GradeFormatModel>> gradeFormatLoader;
 	private ListStore<GradeFormatModel> gradeFormatStore;
 	
 	private ComboBox<GradeFormatModel> gradeFormatListBox;
@@ -103,11 +102,11 @@ public class GradeScalePanel extends ContentPanel {
 		toolbar = new ToolBar();
 		
 		LabelField gradeScale = new LabelField("Grade format: ");
-		toolbar.add(new AdapterToolItem(gradeScale));
+		toolbar.add(gradeScale);
 		
-		RpcProxy<ListLoadConfig, ListLoadResult<GradeFormatModel>> gradeFormatProxy = new RpcProxy<ListLoadConfig, ListLoadResult<GradeFormatModel>>() {
+		RpcProxy<ListLoadResult<GradeFormatModel>> gradeFormatProxy = new RpcProxy<ListLoadResult<GradeFormatModel>>() {
 			@Override
-			protected void load(ListLoadConfig loadConfig, AsyncCallback<ListLoadResult<GradeFormatModel>> callback) {
+			protected void load(Object loadConfig, AsyncCallback<ListLoadResult<GradeFormatModel>> callback) {
 				Gradebook2RPCServiceAsync service = Registry.get("service");
 				GradebookModel model = Registry.get(AppConstants.CURRENT);
 				service.getPage(model.getGradebookUid(), model.getGradebookId(), EntityType.GRADE_FORMAT, null, SecureToken.get(), callback);
@@ -115,7 +114,7 @@ public class GradeScalePanel extends ContentPanel {
 		};
 		
 		gradeFormatLoader = 
-			new BaseListLoader<ListLoadConfig, ListLoadResult<GradeFormatModel>>(gradeFormatProxy);
+			new BaseListLoader<ListLoadResult<GradeFormatModel>>(gradeFormatProxy);
 		
 		gradeFormatLoader.setRemoteSort(true);
 
@@ -156,7 +155,7 @@ public class GradeScalePanel extends ContentPanel {
 			
 		});
 		
-		toolbar.add(new AdapterToolItem(gradeFormatListBox));
+		toolbar.add(gradeFormatListBox);
 		
 		setTopComponent(toolbar);
 		
@@ -214,10 +213,10 @@ public class GradeScalePanel extends ContentPanel {
 		column.setNumberFormat(defaultNumberFormat);
 		configs.add(column);
 		
-		RpcProxy<ListLoadConfig, ListLoadResult<GradeScaleRecordModel>> proxy = new RpcProxy<ListLoadConfig, ListLoadResult<GradeScaleRecordModel>>() {
+		RpcProxy<ListLoadResult<GradeScaleRecordModel>> proxy = new RpcProxy<ListLoadResult<GradeScaleRecordModel>>() {
 			
 			@Override
-			protected void load(ListLoadConfig listLoadConfig, AsyncCallback<ListLoadResult<GradeScaleRecordModel>> callback) {
+			protected void load(Object listLoadConfig, AsyncCallback<ListLoadResult<GradeScaleRecordModel>> callback) {
 				GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
 				Gradebook2RPCServiceAsync service = Registry.get("service");
 				service.getPage(gbModel.getGradebookUid(), gbModel.getGradebookId(), EntityType.GRADE_SCALE, null, SecureToken.get(), callback);
@@ -258,16 +257,16 @@ public class GradeScalePanel extends ContentPanel {
 			public void handleEvent(GridEvent ge) {
 				
 				// By setting ge.doit to false, we ensure that the AfterEdit event is not thrown. Which means we have to throw it ourselves onSuccess
-				ge.doit = false;
+				ge.stopEvent();
 				
-				final Record record = ge.record;
-				String property = ge.property;
-				Object newValue = ge.value;
-				Object originalValue = ge.startValue;
+				final Record record = ge.getRecord();
+				String property = ge.getProperty();
+				Object newValue = ge.getValue();
+				Object originalValue = ge.getStartValue();
 				final GridEvent gridEvent = ge;
 				
 
-				grid.getView().getCell(gridEvent.rowIndex, gridEvent.colIndex).setInnerText("Saving edit...");
+				grid.getView().getCell(gridEvent.getRowIndex(), gridEvent.getColIndex()).setInnerText("Saving edit...");
 
 				GradeScaleRecordModel model = (GradeScaleRecordModel)record.getModel();
 				GradebookModel gbModel = Registry.get(AppConstants.CURRENT);

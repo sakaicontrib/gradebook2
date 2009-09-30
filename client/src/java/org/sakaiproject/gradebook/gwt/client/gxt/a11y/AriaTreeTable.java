@@ -1,13 +1,14 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.a11y;
 
 import com.extjs.gxt.ui.client.event.ComponentEvent;
+import com.extjs.gxt.ui.client.event.EventType;
 import com.extjs.gxt.ui.client.event.TreeTableEvent;
 import com.extjs.gxt.ui.client.widget.treetable.TreeTable;
 import com.extjs.gxt.ui.client.widget.treetable.TreeTableColumnModel;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Accessibility;
-import com.google.gwt.user.client.ui.KeyboardListener;
 
 public class AriaTreeTable extends TreeTable {
 
@@ -26,17 +27,17 @@ public class AriaTreeTable extends TreeTable {
 	}
 	
 	@Override
-	public boolean fireEvent(int type, ComponentEvent ce) {
-		switch (type) {
+	public boolean fireEvent(EventType type, ComponentEvent ce) {
+		switch (type.getEventCode()) {
 		case Event.ONKEYPRESS:
-			switch (ce.event.getKeyCode()) {
-			case KeyboardListener.KEY_ENTER:
+			switch (ce.getEvent().getKeyCode()) {
+			case KeyCodes.KEY_ENTER:
 				
 				if (ce instanceof TreeTableEvent) {
 					doSelectNode((TreeTableEvent)ce);
 				}
 				break;
-			case KeyboardListener.KEY_ESCAPE:
+			case KeyCodes.KEY_ESCAPE:
 				
 				if (ce instanceof TreeTableEvent) {
 					doUnselectNode((TreeTableEvent)ce);

@@ -65,10 +65,10 @@ public class ItemTreeTableBinder extends TreeTableBinder<ItemModel> {
 	    	protected TreeItemUI getTreeItemUI() {
 	    	    TreeTableItemUI itemUI = new TreeTableItemUI(this) {
 	    	    	protected void handleClickEvent(TreeEvent te) {
-					    TreeItem item = te.item;
-					    if (te.type == Event.ONCLICK) {
+					    TreeItem item = te.getItem();
+					    if (te.getType().equals(Event.ONCLICK)) {
 					      Element target = te.getTarget();
-					      if (target != null && te.within(item.getUI().getJointEl())) {
+					      if (target != null && te.within(item.getUI().getJointElement())) {
 					        item.toggle();
 					      }
 					      te.cancelBubble();

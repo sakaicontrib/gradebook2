@@ -26,15 +26,17 @@ import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
+import com.extjs.gxt.ui.client.widget.grid.Grid;
 
 public class UnweightedNumericCellRenderer extends NumericCellRenderer {
 
+	@Override
 	public String render(StudentModel model, String property,
 			ColumnData config, int rowIndex, int colIndex,
-			ListStore<StudentModel> store) {
+			ListStore<StudentModel> store, Grid<StudentModel> grid) {
 		
 		return new StringBuilder("<div style=\"color:darkgray; font-style: italic;\">")
-			.append(super.render(model, property, config, rowIndex, colIndex, store))
+			.append(super.render(model, property, config, rowIndex, colIndex, store, grid))
 			.append("</div>").toString();
 	}
 	

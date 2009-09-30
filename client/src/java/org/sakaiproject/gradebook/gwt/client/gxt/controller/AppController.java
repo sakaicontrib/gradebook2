@@ -112,10 +112,10 @@ public class AppController extends Controller {
 	}
 
 	@Override
-	public void handleEvent(AppEvent<?> event) {
+	public void handleEvent(AppEvent event) {
 		// Note: the 'missing' break statements in this switch are intentional, they
 		// allow certain events to drop through to multiple views
-		switch (GradebookEvents.getEvent(event.type).getEventKey()) {
+		switch (GradebookEvents.getEvent(event.getType()).getEventKey()) {
 			case BEGIN_ITEM_UPDATES:
 			case END_ITEM_UPDATES:
 				forwardToView(multigradeView, event);
@@ -281,8 +281,8 @@ public class AppController extends Controller {
 
 	}
 
-	private void onLoad(AppEvent<?> event) {
-		AuthModel authModel = (AuthModel)event.data;
+	private void onLoad(AppEvent event) {
+		AuthModel authModel = (AuthModel)event.getData();
 
 		boolean isUserAbleToGrade = authModel.isUserAbleToGrade() == null ? false : authModel.isUserAbleToGrade().booleanValue();
 		boolean isUserAbleToViewOwnGrades = authModel.isUserAbleToViewOwnGrades() == null ? false : authModel.isUserAbleToViewOwnGrades().booleanValue();
@@ -302,8 +302,8 @@ public class AppController extends Controller {
 		}
 	}
 
-	private void onStartup(AppEvent<?> event) {
-		ApplicationModel model = (ApplicationModel)event.data;
+	private void onStartup(AppEvent event) {
+		ApplicationModel model = (ApplicationModel)event.getData();
 
 		List<GradebookModel> gradebookModels = model.getGradebookModels();
 

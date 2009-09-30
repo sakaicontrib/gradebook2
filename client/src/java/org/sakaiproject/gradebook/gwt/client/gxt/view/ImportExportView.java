@@ -27,14 +27,14 @@ public class ImportExportView extends View {
 	}
 
 	@Override
-	protected void handleEvent(AppEvent<?> event) {
+	protected void handleEvent(AppEvent event) {
 		
-		switch (GradebookEvents.getEvent(event.type).getEventKey()) {
+		switch (GradebookEvents.getEvent(event.getType()).getEventKey()) {
 		case START_IMPORT:
 			importDialog = new ImportPanel(i18n);
 			break;
 		case START_EXPORT:
-			ExportDetails ed = (ExportDetails) event.data; 
+			ExportDetails ed = (ExportDetails) event.getData(); 
 			boolean includeStructure = ed.isIncludeStructure(); 
 			String fileType = "";
 			

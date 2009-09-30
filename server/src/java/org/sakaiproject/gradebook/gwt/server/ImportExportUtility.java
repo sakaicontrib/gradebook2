@@ -80,6 +80,7 @@ import org.sakaiproject.tool.gradebook.Assignment;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 
 public class ImportExportUtility {
@@ -1400,7 +1401,8 @@ public class ImportExportUtility {
 
 		if (categoryColumns != null) {
 
-			for (ItemModel child : gradebookItemModel.getChildren()) {
+			for (ModelData m : gradebookItemModel.getChildren()) {
+				ItemModel child = (ItemModel)m;
 				if (child.getItemType() != null && child.getItemType() == Type.CATEGORY)
 					categoryMap.put(child.getName(), child);
 			}
@@ -1732,7 +1734,8 @@ public class ImportExportUtility {
 		if (itemModel.isActive())
 			return itemModel;
 
-		for (ItemModel child : itemModel.getChildren()) {
+		for (ModelData m : itemModel.getChildren()) {
+			ItemModel child = (ItemModel)m;
 			if (child.isActive())
 				return child;
 
@@ -1760,7 +1763,7 @@ public class ImportExportUtility {
 
 					if (trimmed.equals(name) &&
 							(categoryName == null || (itemModel.getParent() != null &&
-									itemModel.getParent().getName().trim().equals(categoryName)))) {
+									((ItemModel)itemModel.getParent()).getName().trim().equals(categoryName)))) {
 						this.result = itemModel;
 					}
 				}

@@ -37,6 +37,8 @@ import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ServiceImpl;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
+import com.extjs.gxt.ui.client.data.ModelData;
+
 public abstract class AbstractServiceTest extends AbstractDependencyInjectionSpringContextTests {
 
 	protected Gradebook2Service service;
@@ -140,9 +142,10 @@ public abstract class AbstractServiceTest extends AbstractDependencyInjectionSpr
 		ec1.setExtraCredit(Boolean.TRUE);
 		ec1 = getActiveItem(service.createItem(gradebookUid, gradebookId, ec1, true));
 
-		category = ec1.getParent();
+		category = (ItemModel) ec1.getParent();
 		
-		for (ItemModel child : category.getChildren()) {
+		for (ModelData m : category.getChildren()) {
+			ItemModel child = (ItemModel)m;
 			Double percentCategory = child.getPercentCategory();
 			BigDecimal pC = BigDecimal.valueOf(percentCategory.doubleValue());
 
@@ -155,7 +158,8 @@ public abstract class AbstractServiceTest extends AbstractDependencyInjectionSpr
 		if (parent.isActive())
 			return parent;
 		
-		for (ItemModel c : parent.getChildren()) {
+		for (ModelData m : parent.getChildren()) {
+			ItemModel c = (ItemModel)m;
 			if (c.isActive()) {
 				return c;
 			}

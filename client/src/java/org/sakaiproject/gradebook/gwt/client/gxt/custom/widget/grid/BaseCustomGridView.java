@@ -59,8 +59,8 @@ public class BaseCustomGridView extends GridView {
 
 
 	@Override
-	protected String doRender(List<ColumnData> cs, List rows, int startRow, int colCount,
-			boolean stripe) {
+	protected String doRender(List<ColumnData> cs, List<ModelData> rows, int startRow, int colCount, boolean stripe) {
+
 		int last = colCount - 1;
 
 		String tstyle = new StringBuilder("width:").append(getTotalWidth()).append(";").toString();
@@ -163,8 +163,8 @@ public class BaseCustomGridView extends GridView {
 			int colIndex, ModelData m, String property) {
 		GridCellRenderer r = cm.getRenderer(colIndex);
 		if (r != null) {
-			return r.render(ds.getAt(rowIndex), property, data, rowIndex,
-					colIndex, ds);
+			return (String) r.render(ds.getAt(rowIndex), property, data, rowIndex,
+					colIndex, ds, grid);
 		}
 		Object val = m.get(property);
 

@@ -29,6 +29,8 @@ import java.util.List;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
+import com.extjs.gxt.ui.client.data.ModelData;
+
 public abstract class ItemModelProcessor {
 
 	protected ItemModel result;
@@ -105,7 +107,8 @@ public abstract class ItemModelProcessor {
 		if (parent.isActive())
 			return parent;
 
-		for (ItemModel c : parent.getChildren()) {
+		for (ModelData m : parent.getChildren()) {
+			ItemModel c = (ItemModel)m;
 			if (c.isActive()) {
 				return c;
 			}

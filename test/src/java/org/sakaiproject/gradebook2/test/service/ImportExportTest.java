@@ -46,6 +46,7 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
 
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 
@@ -147,11 +148,11 @@ public class ImportExportTest extends AbstractServiceTest {
 		ItemModel gradebookItemModel = model.getGradebookItemModel();
 
 		ItemModel firstItem = null;
-		for (ItemModel categoryModel : gradebookItemModel.getChildren()) {
-
+		for (ModelData m : gradebookItemModel.getChildren()) {
+			ItemModel categoryModel = (ItemModel)m;
 			if (categoryModel.getChildCount() > 0) {
-				for (ItemModel itemModel : categoryModel.getChildren()) {
-					firstItem = itemModel;
+				for (ModelData itemModel : categoryModel.getChildren()) {
+					firstItem = (ItemModel) itemModel;
 					break;
 				}
 
@@ -350,7 +351,8 @@ public class ImportExportTest extends AbstractServiceTest {
 		ec1.setExtraCredit(Boolean.TRUE);
 		category = service.createItem(gradebookUid, gradebookId, ec1, true);
 
-		for (ItemModel child : category.getChildren()) {
+		for (ModelData m : category.getChildren()) {
+			ItemModel child = (ItemModel)m;
 			Double percentCategory = child.getPercentCategory();
 			BigDecimal pC = BigDecimal.valueOf(percentCategory.doubleValue());
 
@@ -363,16 +365,16 @@ public class ImportExportTest extends AbstractServiceTest {
 
 		assertEquals(1, gradebookItemModel.getChildCount());
 
-		ItemModel essaysItemModel = gradebookItemModel.getChildren().get(0);
+		ItemModel essaysItemModel = (ItemModel) gradebookItemModel.getChildren().get(0);
 
 		assertEquals(5, essaysItemModel.getChildCount());
 
-		List<ItemModel> children = essaysItemModel.getChildren();
-		ItemModel essay1 = children.get(0);
-		ItemModel essay2 = children.get(1);
-		ItemModel essay3 = children.get(2);
-		ItemModel essay4 = children.get(3);
-		ItemModel ec = children.get(4);
+		List<ModelData> children = essaysItemModel.getChildren();
+		ItemModel essay1 = (ItemModel) children.get(0);
+		ItemModel essay2 = (ItemModel) children.get(1);
+		ItemModel essay3 = (ItemModel) children.get(2);
+		ItemModel essay4 = (ItemModel) children.get(3);
+		ItemModel ec = (ItemModel) children.get(4);
 
 		assertEquals(values[0], essay1.getPercentCategory());
 		assertEquals(values[1], essay2.getPercentCategory());
@@ -392,19 +394,19 @@ public class ImportExportTest extends AbstractServiceTest {
 
 		assertEquals(5, gradebookItemModel.getChildCount());
 
-		ItemModel emptyItemModel = gradebookItemModel.getChildren().get(0);
+		ItemModel emptyItemModel = (ItemModel) gradebookItemModel.getChildren().get(0);
 		assertEquals(0, emptyItemModel.getChildCount());
 
-		ItemModel essaysItemModel = gradebookItemModel.getChildren().get(4);
+		ItemModel essaysItemModel = (ItemModel) gradebookItemModel.getChildren().get(4);
 
 		assertEquals(5, essaysItemModel.getChildCount());
 
-		List<ItemModel> children = essaysItemModel.getChildren();
-		ItemModel essay1 = children.get(0);
-		ItemModel essay2 = children.get(1);
-		ItemModel essay3 = children.get(2);
-		ItemModel essay4 = children.get(3);
-		ItemModel ec = children.get(4);
+		List<ModelData> children = essaysItemModel.getChildren();
+		ItemModel essay1 = (ItemModel) children.get(0);
+		ItemModel essay2 = (ItemModel) children.get(1);
+		ItemModel essay3 = (ItemModel) children.get(2);
+		ItemModel essay4 = (ItemModel) children.get(3);
+		ItemModel ec = (ItemModel) children.get(4);
 
 		assertEquals(values[0], essay1.getPercentCategory());
 		assertEquals(values[1], essay2.getPercentCategory());

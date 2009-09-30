@@ -27,10 +27,12 @@ import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvent.EventKey;
 
+import com.extjs.gxt.ui.client.event.EventType;
+
 
 public class GradebookEvents {
 
-	private static Map<Integer, GradebookEvent> eventMap = new HashMap<Integer, GradebookEvent>();
+	private static Map<EventType, GradebookEvent> eventMap = new HashMap<EventType, GradebookEvent>();
 	
 	protected GradebookEvents() {
 
@@ -39,12 +41,12 @@ public class GradebookEvents {
 	public static GradebookEvent registerEvent(EventKey eventKey) {
 		GradebookEvent gradebookEvent = new GradebookEvent(eventKey);
 
-		eventMap.put(Integer.valueOf(eventKey.getEventType()), gradebookEvent);
+		eventMap.put(eventKey.getEventType(), gradebookEvent);
 		return gradebookEvent;
 	}
 	
-	public static GradebookEvent getEvent(int eventType) {
-		GradebookEvent gradebookEvent = eventMap.get(Integer.valueOf(eventType));
+	public static GradebookEvent getEvent(EventType eventType) {
+		GradebookEvent gradebookEvent = eventMap.get(eventType);
 	
 		if (gradebookEvent == null)
 			return None;

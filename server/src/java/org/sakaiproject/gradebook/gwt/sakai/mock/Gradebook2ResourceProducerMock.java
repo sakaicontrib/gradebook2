@@ -46,6 +46,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.PagingLoadConfig;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -263,7 +264,8 @@ public class Gradebook2ResourceProducerMock extends RemoteServiceServlet impleme
 		if (parent.isActive())
 			return parent;
 		
-		for (ItemModel c : parent.getChildren()) {
+		for (ModelData m : parent.getChildren()) {
+			ItemModel c = (ItemModel)m;
 			if (c.isActive()) {
 				return c;
 			}

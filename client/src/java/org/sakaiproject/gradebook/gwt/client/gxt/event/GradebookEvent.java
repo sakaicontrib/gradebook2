@@ -23,6 +23,8 @@
 
 package org.sakaiproject.gradebook.gwt.client.gxt.event;
 
+import com.extjs.gxt.ui.client.event.EventType;
+
 public class GradebookEvent {
 
 	public enum EventKey { NONE(-1), BEGIN_ITEM_UPDATES(14000), BROWSE_LEARNER(14001), 
@@ -47,13 +49,13 @@ public class GradebookEvent {
 		UPDATE_LEARNER_GRADE_RECORD(14070), UPDATE_ITEM(14075), USER_CHANGE(14090), 
 		REFRESH_GRADE_SCALE(14091);
 	
-		private int eventType;
+		private EventType eventType;
 	
-		private EventKey(int eventType) {
-			this.eventType = eventType;
+		private EventKey(int number) {
+			this.eventType = new EventType();
 		}
 		
-		public int getEventType() {
+		public EventType getEventType() {
 			return eventType;
 		}
 		
@@ -65,7 +67,7 @@ public class GradebookEvent {
 		this.eventKey = eventKey;
 	}
 	
-	public int getEventType() {
+	public EventType getEventType() {
 		return eventKey.getEventType();
 	}
 	

@@ -32,7 +32,7 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 
 import com.extjs.gxt.ui.client.data.BaseTreeModel;
 
-public class ItemModel extends BaseTreeModel<ItemModel> {
+public class ItemModel extends BaseTreeModel {
 
 	private static final long serialVersionUID = 1L;
 

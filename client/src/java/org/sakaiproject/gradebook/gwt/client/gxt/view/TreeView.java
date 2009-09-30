@@ -69,65 +69,65 @@ public class TreeView extends View {
 	}
 
 	@Override
-	protected void handleEvent(AppEvent<?> event) {
-		switch(GradebookEvents.getEvent(event.type).getEventKey()) {
+	protected void handleEvent(AppEvent event) {
+		switch(GradebookEvents.getEvent(event.getType()).getEventKey()) {
 			case CONFIRM_DELETE_ITEM:
-				onConfirmDeleteItem((ItemModel)event.data);
+				onConfirmDeleteItem((ItemModel)event.getData());
 				break;
 			case SELECT_DELETE_ITEM:
-				onConfirmDeleteItem((String)event.data);
+				onConfirmDeleteItem((String)event.getData());
 				break;
 			case ITEM_CREATED:
-				onItemCreated((ItemModel)event.data);
+				onItemCreated((ItemModel)event.getData());
 				break;
 			case ITEM_DELETED:
-				onItemDeleted((ItemModel)event.data);
+				onItemDeleted((ItemModel)event.getData());
 				break;
 			case ITEM_UPDATED:
-				onItemUpdated((ItemModel)event.data);
+				onItemUpdated((ItemModel)event.getData());
 				break;
 			case HIDE_COLUMN:
-				onHideColumn((String)event.data);
+				onHideColumn((String)event.getData());
 				break;
 			case SINGLE_GRADE:
 				onSingleGrade();
 				break;
 			case START_EDIT_ITEM:
-				onEditItem((ItemModel)event.data);
+				onEditItem((ItemModel)event.getData());
 				break;
 			case HIDE_EAST_PANEL:
-				onEditItemComplete((Boolean)event.data);
+				onEditItemComplete((Boolean)event.getData());
 				break;
 			case LOAD_ITEM_TREE_MODEL:
-				onLoadItemTreeModel((GradebookModel)event.data);
+				onLoadItemTreeModel((GradebookModel)event.getData());
 				break;
 			case NEW_CATEGORY:
-				onNewCategory((ItemModel)event.data);
+				onNewCategory((ItemModel)event.getData());
 				break;
 			case NEW_ITEM:
-				onNewItem((ItemModel)event.data);
+				onNewItem((ItemModel)event.getData());
 				break;
 			case REFRESH_GRADEBOOK_ITEMS:
-				onRefreshGradebookItems((GradebookModel)event.data);
+				onRefreshGradebookItems((GradebookModel)event.getData());
 				break;
 			case REFRESH_GRADEBOOK_SETUP:
-				onRefreshGradebookSetup((GradebookModel)event.data);
+				onRefreshGradebookSetup((GradebookModel)event.getData());
 				break;
 			case SELECT_ITEM:
-				onSelectItem((String)event.data);
+				onSelectItem((String)event.getData());
 				break;
 			case STARTUP:
 				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 				onSwitchGradebook(selectedGradebook);
 				break;
 			case SWITCH_EDIT_ITEM:
-				onSwitchEditItem((ItemModel)event.data);
+				onSwitchEditItem((ItemModel)event.getData());
 				break;
 			case SWITCH_GRADEBOOK:
-				onSwitchGradebook((GradebookModel)event.data);
+				onSwitchGradebook((GradebookModel)event.getData());
 				break;
 			case USER_CHANGE:
-				onUserChange((UserEntityAction<?>)event.data);
+				onUserChange((UserEntityAction<?>)event.getData());
 				break;
 		}
 	}
@@ -208,6 +208,7 @@ public class TreeView extends View {
 		formPanel.onLoadItemTreeModel(rootItemModel);
 
 		treePanel.expandTrees();
+		treePanel.layout();
 		onUnmaskItemTree();
 	}
 

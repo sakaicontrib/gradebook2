@@ -43,6 +43,7 @@ import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.extjs.gxt.ui.client.data.BasePagingLoadConfig;
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.PagingLoadConfig;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 
@@ -83,7 +84,8 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 
 		int count = 0;
 		// Assign all grades to 100
-		for (ItemModel child : category.getChildren()) {
+		for (ModelData m : category.getChildren()) {
+			ItemModel child = (ItemModel)m;
 			itemIds.add(child.getIdentifier());
 
 			Double previousValue = firstLearner.get(child.getIdentifier());
@@ -216,10 +218,11 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 		item.setIncluded(Boolean.TRUE);
 
 		ItemModel activeItem = getActiveItem(service.createItem(gbModel.getGradebookUid(), gbModel.getGradebookId(), item, false));
-		ItemModel parent = activeItem.getParent();
+		ItemModel parent = (ItemModel) activeItem.getParent();
 
 		int numberOfItems = 0;
-		for (ItemModel c : parent.getChildren()) {		
+		for (ModelData m : parent.getChildren()) {	
+			ItemModel c = (ItemModel)m;
 			assertEquals(BigDecimal.valueOf(20.0000d).setScale(4, RoundingMode.HALF_EVEN), BigDecimal.valueOf(c.getPercentCategory().doubleValue()).setScale(4, RoundingMode.HALF_EVEN));
 			assertTrue(c.getIncluded());
 			numberOfItems++;
@@ -250,7 +253,8 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 	public void testSetItemWeightNull() throws Exception {
 		// Grab first item from category
 		ItemModel item = null;
-		for (ItemModel child : category.getChildren()) {
+		for (ModelData m : category.getChildren()) {
+			ItemModel child = (ItemModel)m;
 			item = child;
 			break;
 		}
@@ -260,7 +264,8 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 
 		ItemModel parent = service.updateItemModel(item);
 
-		for (ItemModel c : parent.getChildren()) {
+		for (ModelData m : parent.getChildren()) {
+			ItemModel c = (ItemModel)m;
 			if (c.isActive()) {
 				assertEquals(Double.valueOf(20d), c.getPercentCategory());
 			}
@@ -357,7 +362,8 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 
 		ItemModel parent = service.updateItemModel(item);
 
-		for (ItemModel c : parent.getChildren()) {
+		for (ModelData m : parent.getChildren()) {
+			ItemModel c = (ItemModel)m;
 			if (!c.isActive()) {
 				assertEquals(BigDecimal.valueOf(33.3333d).setScale(4, RoundingMode.HALF_EVEN), BigDecimal.valueOf(c.getPercentCategory().doubleValue()).setScale(4, RoundingMode.HALF_EVEN));
 				assertTrue(c.getIncluded());
@@ -432,9 +438,11 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 
 		boolean foundCategory = false;
 		// Search for the old category in the fresh gradebook model instance
-		for (ItemModel child : freshInstanceOfGradebookModel.getGradebookItemModel().getChildren()) {
+		for (ModelData m : freshInstanceOfGradebookModel.getGradebookItemModel().getChildren()) {
+			ItemModel child = (ItemModel)m;
 			if (child.getCategoryId().equals(category.getCategoryId())) {
-				for (ItemModel c : child.getChildren()) {
+				for (ModelData m2 : child.getChildren()) {
+					ItemModel c = (ItemModel)m2;
 					assertEquals(BigDecimal.valueOf(33.3333d).setScale(4, RoundingMode.HALF_EVEN), BigDecimal.valueOf(c.getPercentCategory().doubleValue()).setScale(4, RoundingMode.HALF_EVEN));
 					assertTrue(c.getIncluded());
 				}
@@ -594,9 +602,10 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 
 		essay4 = getActiveItem(service.createItem(gradebookUid, gradebookId, essay4, true));
 
-		category = essay4.getParent();
+		category = (ItemModel) essay4.getParent();
 		
-		for (ItemModel child : category.getChildren()) {
+		for (ModelData m : category.getChildren()) {
+			ItemModel child = (ItemModel)m;
 			Double percentCategory = child.getPercentCategory();
 			BigDecimal pC = BigDecimal.valueOf(percentCategory.doubleValue());
 
@@ -625,7 +634,8 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 		if (parent.isActive())
 			return parent;
 
-		for (ItemModel c : parent.getChildren()) {
+		for (ModelData m : parent.getChildren()) {
+			ItemModel c = (ItemModel)m;
 			if (c.isActive()) {
 				return c;
 			}
@@ -642,8 +652,8 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 	}
 
 	private ItemModel getFirstItemInCategory(ItemModel category) {
-		for (ItemModel child : category.getChildren()) {
-			return child;
+		for (ModelData child : category.getChildren()) {
+			return (ItemModel) child;
 		}
 
 		return null;

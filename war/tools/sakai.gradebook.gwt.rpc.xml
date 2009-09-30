@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<registration>
+	<tool id="sakai.gradebook.gwt.rpc" title="Gradebook 2"
+		description="For storing and computing assessment grades from Tests &amp; Quizzes or that are manually entered.">
+
+		<category name="course" />
+		<category name="project" />
+		
+		<configuration name="displayid.value" value="student" />
+		<configuration name="height" value="620px" />
+		
+	</tool>
+</registration>

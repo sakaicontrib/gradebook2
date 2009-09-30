@@ -1,4 +1,4 @@
-<module>
+<module rename-to='gradebook'>
 
 	<!-- Inherit the core Web Toolkit stuff.                  -->
 	<inherits name='com.google.gwt.user.User'/>
@@ -23,18 +23,18 @@
   	<!--servlet path="/rpc/grades.rpc" class="org.sakaiproject.gradebook.gwt.sakai.mock.GradebookToolFacadeMockImpl"/-->
   	
   	
-  	<servlet path="/rpc/grades.rpc" class="org.sakaiproject.gradebook.gwt.sakai.mock.Gradebook2ResourceProducerMock"/>
+  	<!-- servlet path="/rpc/grades.rpc" class="org.sakaiproject.gradebook.gwt.sakai.mock.Gradebook2ResourceProducerMock"/-->
   
   	<!-- This is the real sakai servlet. It requires all the sakai dependencies, and needs to be deployed in Tomcat with the rest of sakai -->
   	<!--servlet path="/rpc/grades.rpc" class="org.sakaiproject.gradebook.gwt.sakai.GradebookToolFacadeImpl"/-->
   
-  	<servlet path="/importHandler" class="org.sakaiproject.gradebook.gwt.server.ImportHandler"/>
+  	<!-- servlet path="/importHandler" class="org.sakaiproject.gradebook.gwt.server.ImportHandler"/>
   
   	<servlet path="/exportGradebook.csv" class="org.sakaiproject.gradebook.gwt.server.ImportHandler"/>
   	
   	<servlet path="/final-grade-submission" class="org.sakaiproject.gradebook.gwt.server.FinalGradeSubmissionHandler"/>
   
-  	<set-property name="gwt.suppressNonStaticFinalFieldWarnings" value="true" /> 
+  	<set-property name="gwt.suppressNonStaticFinalFieldWarnings" value="true" /--> 
 
 	<!-- Rebind the entry point if Gears is not installed -->
   	<!--replace-with class="org.sakaiproject.gradebook.gwt.client.action.RemoteCommandGears">

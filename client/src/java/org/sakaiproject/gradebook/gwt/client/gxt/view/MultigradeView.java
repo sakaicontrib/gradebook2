@@ -67,7 +67,7 @@ public class MultigradeView extends View {
 
 	private MultiGradeContentPanel multigrade;
 
-	private BasePagingLoader<PagingLoadConfig, PagingLoadResult<StudentModel>> multigradeLoader;
+	private BasePagingLoader<PagingLoadResult<StudentModel>> multigradeLoader;
 	private ListStore<StudentModel> multigradeStore;
 	private Listener<StoreEvent> storeListener;
 
@@ -77,8 +77,8 @@ public class MultigradeView extends View {
 		storeListener = new Listener<StoreEvent>() {
 
 			public void handleEvent(StoreEvent se) {
-				String sortField = ((ListStore)se.store).getSortField();
-				SortDir sortDir = ((ListStore)se.store).getSortDir();
+				String sortField = ((ListStore)se.getStore()).getSortField();
+				SortDir sortDir = ((ListStore)se.getStore()).getSortDir();
 				boolean isAscending = sortDir == SortDir.ASC;
 
 				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
@@ -118,11 +118,11 @@ public class MultigradeView extends View {
 		};
 		this.multigrade = new MultiGradeContentPanel(null, i18n) {
 
-			protected BasePagingLoader<PagingLoadConfig, PagingLoadResult<StudentModel>> newLoader() {
+			protected BasePagingLoader<PagingLoadResult<StudentModel>> newLoader() {
 				return multigradeLoader;
 			}
 
-			protected ListStore<StudentModel> newStore(BasePagingLoader<PagingLoadConfig, PagingLoadResult<StudentModel>> loader) {
+			protected ListStore<StudentModel> newStore(BasePagingLoader<PagingLoadResult<StudentModel>> loader) {
 				return multigradeStore;
 			}
 		};
@@ -137,70 +137,70 @@ public class MultigradeView extends View {
 	}
 
 	@Override
-	protected void handleEvent(AppEvent<?> event) {
-		switch(GradebookEvents.getEvent(event.type).getEventKey()) {
+	protected void handleEvent(AppEvent event) {
+		switch(GradebookEvents.getEvent(event.getType()).getEventKey()) {
 			case BEGIN_ITEM_UPDATES:
 				onBeginItemUpdates();
 				break;
 			case BROWSE_LEARNER:
-				onBrowseLearner((BrowseLearner)event.data);
+				onBrowseLearner((BrowseLearner)event.getData());
 				break;
 			case END_ITEM_UPDATES:
 				onEndItemUpdates();
 				break;
 			case LEARNER_GRADE_RECORD_UPDATED:
-				onLearnerGradeRecordUpdated((UserEntityAction<?>)event.data);
+				onLearnerGradeRecordUpdated((UserEntityAction<?>)event.getData());
 				break;
 			case ITEM_CREATED:
-				onItemCreated((ItemModel)event.data);
+				onItemCreated((ItemModel)event.getData());
 				break;
 			case ITEM_DELETED:
-				onItemDeleted((ItemModel)event.data);
+				onItemDeleted((ItemModel)event.getData());
 				break;
 			case ITEM_UPDATED:
-				onItemUpdated((ItemModel)event.data);
+				onItemUpdated((ItemModel)event.getData());
 				break;
 			case REFRESH_COURSE_GRADES:
 				onRefreshCourseGrades();
 				break;
 			case REFRESH_GRADEBOOK_ITEMS:
-				onRefreshGradebookItems((GradebookModel)event.data);
+				onRefreshGradebookItems((GradebookModel)event.getData());
 				break;
 			case REFRESH_GRADEBOOK_SETUP:
-				onRefreshGradebookSetup((GradebookModel)event.data);
+				onRefreshGradebookSetup((GradebookModel)event.getData());
 				break;
 			case SHOW_COLUMNS:
-				onShowColumns((ShowColumnsEvent)event.data);
+				onShowColumns((ShowColumnsEvent)event.getData());
 				break;
 			case STARTUP:
-				ApplicationModel applicationModel = (ApplicationModel)event.data;
+				ApplicationModel applicationModel = (ApplicationModel)event.getData();
 				initUI(applicationModel);
 				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 				onSwitchGradebook(selectedGradebook);
 				break;
 			case SWITCH_GRADEBOOK:
-				onSwitchGradebook((GradebookModel)event.data);
+				onSwitchGradebook((GradebookModel)event.getData());
 				break;
 			case USER_CHANGE:
-				onUserChange((UserEntityAction<?>)event.data);
+				onUserChange((UserEntityAction<?>)event.getData());
 				break;
 		}
 	}
 
 	protected void initUI(ApplicationModel model) {
 
-		RpcProxy<PagingLoadConfig, PagingLoadResult<StudentModel>> proxy = 
-			new RpcProxy<PagingLoadConfig, PagingLoadResult<StudentModel>>() {
+		RpcProxy<PagingLoadResult<StudentModel>> proxy = 
+			new RpcProxy<PagingLoadResult<StudentModel>>() {
 			@Override
-			protected void load(PagingLoadConfig loadConfig, AsyncCallback<PagingLoadResult<StudentModel>> callback) {
+			protected void load(Object loadConfig, AsyncCallback<PagingLoadResult<StudentModel>> callback) {
 				Gradebook2RPCServiceAsync service = Registry.get("service");
 				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-				service.getPage(selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId(), EntityType.LEARNER, loadConfig, SecureToken.get(), callback);
+				service.getPage(selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId(), EntityType.LEARNER, (PagingLoadConfig)loadConfig, SecureToken.get(), callback);
 			}
 
 			@Override
-			public void load(final DataReader<PagingLoadConfig, PagingLoadResult<StudentModel>> reader, 
-					final PagingLoadConfig loadConfig, final AsyncCallback<PagingLoadResult<StudentModel>> callback) {
+			public void load(final DataReader<PagingLoadResult<StudentModel>> reader, 
+					final Object loadConfig, final AsyncCallback<PagingLoadResult<StudentModel>> callback) {
 				load(loadConfig, new NotifyingAsyncCallback<PagingLoadResult<StudentModel>>() {
 
 					public void onFailure(Throwable caught) {
@@ -226,7 +226,7 @@ public class MultigradeView extends View {
 			}
 		};
 
-		multigradeLoader = new BasePagingLoader<PagingLoadConfig, PagingLoadResult<StudentModel>>(proxy, new ModelReader<PagingLoadConfig>()) {
+		multigradeLoader = new BasePagingLoader<PagingLoadResult<StudentModel>>(proxy, new ModelReader()) {
 			protected PagingLoadConfig newLoadConfig() {
 				PagingLoadConfig config = new MultiGradeLoadConfig();
 				return config;

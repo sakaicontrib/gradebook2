@@ -48,6 +48,7 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
 import com.extjs.gxt.ui.client.Registry;
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
@@ -70,25 +71,25 @@ public class ServiceController extends Controller {
 	}
 
 	@Override
-	public void handleEvent(AppEvent<?> event) {
-		switch (GradebookEvents.getEvent(event.type).getEventKey()) {
+	public void handleEvent(AppEvent event) {
+		switch (GradebookEvents.getEvent(event.getType()).getEventKey()) {
 			case CREATE_ITEM:
-				onCreateItem((ItemCreate)event.data);
+				onCreateItem((ItemCreate)event.getData());
 				break;
 			case DELETE_ITEM:
-				onDeleteItem((ItemUpdate)event.data);
+				onDeleteItem((ItemUpdate)event.getData());
 				break;
 			case REVERT_ITEM:
-				onRevertItem((ItemUpdate)event.data);
+				onRevertItem((ItemUpdate)event.getData());
 				break;
 			case SHOW_COLUMNS:
-				onShowColumns((ShowColumnsEvent)event.data);
+				onShowColumns((ShowColumnsEvent)event.getData());
 				break;
 			case UPDATE_LEARNER_GRADE_RECORD:
-				onUpdateGradeRecord((GradeRecordUpdate)event.data);
+				onUpdateGradeRecord((GradeRecordUpdate)event.getData());
 				break;
 			case UPDATE_ITEM:
-				onUpdateItem((ItemUpdate)event.data);
+				onUpdateItem((ItemUpdate)event.getData());
 				break;
 		}
 	}
@@ -131,7 +132,8 @@ public class ServiceController extends Controller {
 						else
 							doUpdateItem(event.store, null, null, result);
 
-						for (ItemModel item : result.getChildren()) {
+						for (ModelData m : result.getChildren()) {
+							ItemModel item = (ItemModel)m;
 							if (item.isActive())
 								doCreateItem(event, item);
 							else
@@ -156,7 +158,7 @@ public class ServiceController extends Controller {
 	private void onDeleteItemSuccess(ItemUpdate event) {
 		Dispatcher.forwardEvent(GradebookEvents.ItemDeleted.getEventType(), event.item);
 		TreeStore<ItemModel> treeStore = (TreeStore<ItemModel>)event.store;
-		treeStore.remove(event.item.getParent(), event.item);
+		treeStore.remove((ItemModel) event.item.getParent(), event.item);
 	}
 
 	private void onDeleteItem(final ItemUpdate event) {
@@ -445,9 +447,9 @@ public class ServiceController extends Controller {
 
 				doUpdateItem(event, result);
 
-				for (ItemModel item : result.getChildren()) {
+				for (ModelData item : result.getChildren()) {
 
-					doUpdateItem(event, item);
+					doUpdateItem(event, (ItemModel) item);
 				}
 
 				if (event.getModifiedItem() != null && event.getModifiedItem().getItemType() != Type.CATEGORY)
@@ -485,7 +487,7 @@ public class ServiceController extends Controller {
 
 	private void doCreateItem(ItemCreate itemCreate, ItemModel createdItem) {
 		TreeStore<ItemModel> treeStore = (TreeStore<ItemModel>)itemCreate.store;
-		treeStore.add(createdItem.getParent(), createdItem, true);
+		treeStore.add((ItemModel) createdItem.getParent(), createdItem, true);
 		Dispatcher.forwardEvent(GradebookEvents.ItemCreated.getEventType(), createdItem);
 		doUpdatePercentCourseGradeTotal(itemCreate.store, itemCreate.item, createdItem);
 	}
@@ -493,7 +495,7 @@ public class ServiceController extends Controller {
 	private void doUpdatePercentCourseGradeTotal(Store store, ItemModel oldItem, ItemModel updatedItem) {
 		switch (updatedItem.getItemType()) {
 			case CATEGORY:
-				ItemModel gradebookItemModel = updatedItem.getParent();
+				ItemModel gradebookItemModel = (ItemModel) updatedItem.getParent();
 				if (gradebookItemModel != null && gradebookItemModel.getItemType() == Type.GRADEBOOK)
 					doUpdateItem(store, null, null, gradebookItemModel);
 				break;
@@ -550,7 +552,8 @@ public class ServiceController extends Controller {
 		if (parent.isActive())
 			return parent;
 
-		for (ItemModel c : parent.getChildren()) {
+		for (ModelData m : parent.getChildren()) {
+			ItemModel c = (ItemModel)m;
 			if (c.isActive()) {
 				return c;
 			}

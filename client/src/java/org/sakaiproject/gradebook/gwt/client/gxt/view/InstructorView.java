@@ -33,6 +33,7 @@ import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.ExportDetails.ExportType;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
+import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenu;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
@@ -51,9 +52,10 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 
-import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.LayoutRegion;
+import com.extjs.gxt.ui.client.event.ButtonEvent;
+import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.MenuEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
@@ -69,10 +71,10 @@ import com.extjs.gxt.ui.client.widget.layout.CardLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.extjs.gxt.ui.client.widget.menu.SeparatorMenuItem;
-import com.extjs.gxt.ui.client.widget.toolbar.TextToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.RootPanel;
 
 public class InstructorView extends AppView {
 
@@ -102,7 +104,7 @@ public class InstructorView extends AppView {
 
 	private Listener<MenuEvent> menuEventListener;
 	private SelectionListener<MenuEvent> menuSelectionListener;
-	private SelectionListener<ToolBarEvent> toolBarSelectionListener;
+	private SelectionListener<ButtonEvent> toolBarSelectionListener;
 
 	private ToolBar toolBar;
 
@@ -151,6 +153,7 @@ public class InstructorView extends AppView {
 		eastData.setFloatable(false);
 		eastData.setMargins(new Margins(5));
 		eastData.setMaxSize(800);
+		eastData.setHidden(true);
 
 		northData = new BorderLayoutData(LayoutRegion.NORTH, 50);
 		northData.setCollapsible(false);
@@ -177,7 +180,8 @@ public class InstructorView extends AppView {
 		helpPanel = new HelpPanel() {
 			protected void onRender(Element parent, int index) {
 				super.onRender(parent, index);
-				borderLayout.collapse(LayoutRegion.EAST);
+				//if (borderLayoutContainer.isRendered())
+				//	borderLayout.collapse(LayoutRegion.EAST);
 			}
 		};
 
@@ -528,8 +532,8 @@ public class InstructorView extends AppView {
 
 			public void handleEvent(MenuEvent me) {
 
-				if (me.type == Events.Select) {
-					MenuItem menuItem = (MenuItem)me.item;
+				if (me.getType().equals(Events.Select)) {
+					MenuItem menuItem = (MenuItem)me.getItem();
 					MenuSelector menuSelector = menuItem.getData(MENU_SELECTOR_FLAG);
 
 					switch (menuSelector) {
@@ -555,7 +559,7 @@ public class InstructorView extends AppView {
 
 			@Override
 			public void componentSelected(MenuEvent me) {
-				MenuSelector selector = me.item.getData(MENU_SELECTOR_FLAG);
+				MenuSelector selector = me.getItem().getData(MENU_SELECTOR_FLAG);
 				ExportDetails ex;
 				switch (selector) {
 					case ADD_CATEGORY:
@@ -591,10 +595,10 @@ public class InstructorView extends AppView {
 
 		};
 
-		toolBarSelectionListener = new SelectionListener<ToolBarEvent>() {
+		toolBarSelectionListener = new SelectionListener<ButtonEvent>() {
 
 			@Override
-			public void componentSelected(ToolBarEvent tbe) {
+			public void componentSelected(ButtonEvent tbe) {
 
 				String helpUrl = Registry.get(AppConstants.HELP_URL);
 				Window.open(helpUrl, "_blank", "resizable=yes,scrollbars=yes,outerHeight=600,outerWidth=350");
@@ -609,19 +613,19 @@ public class InstructorView extends AppView {
 	private ToolBar populateToolBar(I18nConstants i18n, GradebookModel selectedGradebook) {
 
 		if (isEditable) {
-			TextToolItem fileItem = new TextToolItem(i18n.newMenuHeader());
+			AriaButton fileItem = new AriaButton(i18n.newMenuHeader());
 			fileItem.setMenu(newFileMenu(i18n, selectedGradebook));
 			toolBar.add(fileItem);
 		}
 
-		TextToolItem windowItem = new TextToolItem(i18n.viewMenuHeader());
+		AriaButton windowItem = new AriaButton(i18n.viewMenuHeader());
 		windowMenu = newWindowMenu(i18n, selectedGradebook);
 		windowItem.setMenu(windowMenu);
 
-		TextToolItem moreItem = new TextToolItem(i18n.moreMenuHeader());
+		AriaButton moreItem = new AriaButton(i18n.moreMenuHeader());
 		moreItem.setMenu(newMoreActionsMenu());
 
-		TextToolItem helpItem = new TextToolItem(i18n.helpMenuHeader());
+		AriaButton helpItem = new AriaButton(i18n.helpMenuHeader());
 		helpItem.addSelectionListener(toolBarSelectionListener);
 
 		toolBar.add(windowItem);

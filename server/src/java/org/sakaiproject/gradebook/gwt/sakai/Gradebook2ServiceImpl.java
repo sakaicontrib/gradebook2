@@ -2454,7 +2454,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 
 		// Otherwise we can return the category parent
-		ItemModel categoryItemModel = getItemModelsForCategory(category, item.getParent(), assignment.getId());
+		ItemModel categoryItemModel = getItemModelsForCategory(category, (ItemModel) item.getParent(), assignment.getId());
 
 		String assignmentIdAsString = String.valueOf(assignment.getId());
 		for (ModelData model : categoryItemModel.getChildren()) {
@@ -3701,7 +3701,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		if (parent.isActive())
 			return parent;
 
-		for (ItemModel c : parent.getChildren()) {
+		for (ModelData m : parent.getChildren()) {
+			ItemModel c = (ItemModel)m;
 			if (c.isActive()) {
 				return c;
 			}

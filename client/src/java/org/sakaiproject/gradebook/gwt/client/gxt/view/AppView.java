@@ -82,12 +82,14 @@ public abstract class AppView extends View {
 		viewport.setHeight(screenHeight);
 		viewport.setLayout(viewportLayout);
 		realViewport.setHeight(screenHeight);
-		realViewport.setDelay(400);
+		//realViewport.setDelay(400);
+		
+		RootPanel.get().add(realViewport);
 	}
 
 	@Override
-	protected void handleEvent(AppEvent<?> event) {
-		switch(GradebookEvents.getEvent(event.type).getEventKey()) {
+	protected void handleEvent(AppEvent event) {
+		switch(GradebookEvents.getEvent(event.getType()).getEventKey()) {
 		case CONFIRMATION:
 		case NOTIFICATION:
 			onOpenNotification();
@@ -96,40 +98,40 @@ public abstract class AppView extends View {
 			onCloseNotification();
 			break;
 		case FAILED_TO_UPDATE_ITEM:
-			onFailedToUpdateItem((ItemUpdate)event.data);
+			onFailedToUpdateItem((ItemUpdate)event.getData());
 			break;
 		case LOAD_ITEM_TREE_MODEL:
-			onLoadItemTreeModel((GradebookModel)event.data);
+			onLoadItemTreeModel((GradebookModel)event.getData());
 			break;
 		case LEARNER_GRADE_RECORD_UPDATED:
-			onLearnerGradeRecordUpdated((UserEntityUpdateAction)event.data);
+			onLearnerGradeRecordUpdated((UserEntityUpdateAction)event.getData());
 			break;
 		case GRADE_TYPE_UPDATED:
-			onGradeTypeUpdated((GradebookModel)event.data);
+			onGradeTypeUpdated((GradebookModel)event.getData());
 			break;
 		case NEW_CATEGORY:
-			onNewCategory((ItemModel)event.data);
+			onNewCategory((ItemModel)event.getData());
 			break;
 		case NEW_ITEM:
-			onNewItem((ItemModel)event.data);
+			onNewItem((ItemModel)event.getData());
 			break;
 		case REFRESH_GRADEBOOK_ITEMS:
-			onRefreshGradebookItems((GradebookModel)event.data);
+			onRefreshGradebookItems((GradebookModel)event.getData());
 			break;
 		case REFRESH_GRADEBOOK_SETUP:
-			onRefreshGradebookSetup((GradebookModel)event.data);
+			onRefreshGradebookSetup((GradebookModel)event.getData());
 			break;
 		case REFRESH_GRADE_SCALE:
-			onRefreshGradeScale((GradebookModel)event.data);
+			onRefreshGradeScale((GradebookModel)event.getData());
 			break;
 		case SELECT_LEARNER:
-			onSelectLearner((StudentModel)event.data);
+			onSelectLearner((StudentModel)event.getData());
 			break;
 		case SHOW_GRADE_SCALE:
-			onShowGradeScale((Boolean)event.data);
+			onShowGradeScale((Boolean)event.getData());
 			break;
 		case SHOW_HISTORY:
-			onShowHistory((String)event.data);
+			onShowHistory((String)event.getData());
 			break;
 		case SHOW_STATISTICS:
 			onShowStatistics();
@@ -138,7 +140,7 @@ public abstract class AppView extends View {
 			onStopStatistics();
 			break;
 		case SINGLE_VIEW:
-			onSingleView((StudentModel)event.data);
+			onSingleView((StudentModel)event.getData());
 			break;
 		case START_IMPORT:
 			onStartImport();
@@ -150,41 +152,41 @@ public abstract class AppView extends View {
 			onStopGraderPermissions();
 			break;
 		case START_EDIT_ITEM:
-			onStartEditItem((ItemModel)event.data);
+			onStartEditItem((ItemModel)event.getData());
 			break;
 		case STOP_IMPORT:
 			onStopImport();
 			break;
 		case HIDE_EAST_PANEL:
-			onHideEastPanel((Boolean)event.data);
+			onHideEastPanel((Boolean)event.getData());
 			break;
 		case HIDE_FORM_PANEL:
 			onHideFormPanel();
 			break;
 		case EXPAND_EAST_PANEL:
-			onExpandEastPanel((EastCard)event.data);
+			onExpandEastPanel((EastCard)event.getData());
 			break;
 		case ITEM_CREATED:
-			onItemCreated((ItemModel)event.data);
+			onItemCreated((ItemModel)event.getData());
 			break;
 		case SINGLE_GRADE:
-			onSingleGrade((StudentModel)event.data);
+			onSingleGrade((StudentModel)event.getData());
 			break;
 		case STARTUP:
-			RootPanel.get().add(realViewport);
-			ApplicationModel applicationModel = (ApplicationModel)event.data;
+			//RootPanel.get().add(realViewport);
+			ApplicationModel applicationModel = (ApplicationModel)event.getData();
 			initUI(applicationModel);
 			GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 			onSwitchGradebook(selectedGradebook);
 			break;
 		case SWITCH_GRADEBOOK:
-			onSwitchGradebook((GradebookModel)event.data);
+			onSwitchGradebook((GradebookModel)event.getData());
 			break;
 		case UPDATE_LEARNER_GRADE_RECORD:
-			onGradeStudent((GradeRecordUpdate)event.data);
+			onGradeStudent((GradeRecordUpdate)event.getData());
 			break;
 		case USER_CHANGE:
-			onUserChange((UserEntityAction<?>)event.data);
+			onUserChange((UserEntityAction<?>)event.getData());
 			break;
 		}
 	}

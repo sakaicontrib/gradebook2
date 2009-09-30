@@ -42,7 +42,7 @@ public class GradebookServlet extends DefaultServlet {
 	
 	private static final long serialVersionUID = 1L;
 	private static final String DEFAULT_PAGE = "GradebookApplication.html";
-	private static final String RELATIVE_PREFIX = "/org.sakaiproject.gradebook.gwt.GradebookApplication/";
+	private static final String RELATIVE_PREFIX = "/";
 	
 	protected void doGet(HttpServletRequest request,
 			 			 HttpServletResponse response)

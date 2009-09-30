@@ -47,6 +47,7 @@ import com.extjs.gxt.ui.client.binding.FormBinding;
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
 import com.extjs.gxt.ui.client.data.ModelComparer;
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
 import com.extjs.gxt.ui.client.event.SelectionChangedListener;
 import com.extjs.gxt.ui.client.store.GroupingStore;
@@ -692,13 +693,14 @@ public class StudentPanel extends ContentPanel {
 			int childCount = gradebookItemModel.getChildCount();
 			if (childCount > 0) {
 				for (int i=0;i<childCount;i++) {
-					ItemModel child = gradebookItemModel.getChild(i);
+					ModelData m = gradebookItemModel.getChild(i);
+					ItemModel child = (ItemModel)m;
 					switch (child.getItemType()) {
 					case CATEGORY:
 						int itemCount = child.getChildCount();
 						if (itemCount > 0) {
 							for (int j=0;j<itemCount;j++) {
-								ItemModel item = child.getChild(j);
+								ItemModel item = (ItemModel)child.getChild(j);
 								if (DataTypeConversionUtil.checkBoolean(item.getReleased())) {
 									StatisticsModel stats = null; 
 									stats = getStatsModelForItem(item.getIdentifier(), statsList); 

@@ -48,6 +48,7 @@ import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.binding.FieldBinding;
 import com.extjs.gxt.ui.client.binding.FormBinding;
 import com.extjs.gxt.ui.client.data.Model;
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.PropertyChangeEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.FieldEvent;
@@ -75,8 +76,8 @@ import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.KeyboardListener;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
 
@@ -298,8 +299,8 @@ public class LearnerSummaryPanel extends ContentPanel {
 
 			@Override
 			public void componentKeyPress(ComponentEvent event) {
-				switch (event.event.getKeyCode()) {
-					case KeyboardListener.KEY_ENTER:
+				switch (event.getEvent().getKeyCode()) {
+					case KeyCodes.KEY_ENTER:
 						break;
 				}
 			}
@@ -310,7 +311,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 
 			@Override
 			public void componentSelected(ComponentEvent be) {
-				ButtonSelector selector = be.component.getData(BUTTON_SELECTOR_FLAG);
+				ButtonSelector selector = be.getComponent().getData(BUTTON_SELECTOR_FLAG);
 
 				BrowseLearner bse = null;
 
@@ -319,7 +320,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 						Dispatcher.forwardEvent(GradebookEvents.HideEastPanel.getEventType(), Boolean.FALSE);
 						break;
 					case COMMENT:
-						String id = be.component.getData(ITEM_IDENTIFIER_FLAG);
+						String id = be.getComponent().getData(ITEM_IDENTIFIER_FLAG);
 
 						Info.display("Id", id);
 						break;
@@ -453,11 +454,12 @@ public class LearnerSummaryPanel extends ContentPanel {
 			for (ItemModel root : rootItems) {
 
 				if (root.getChildCount() > 0) {
-					for (ItemModel child : root.getChildren()) {
-
+					for (ModelData m : root.getChildren()) {
+						ItemModel child = (ItemModel)m;
 						if (child.getChildCount() > 0) {
 
-							for (ItemModel subchild : child.getChildren()) {
+							for (ModelData m2 : child.getChildren()) {
+								ItemModel subchild = (ItemModel)m2;
 								addField(itemIdSet, subchild, row, gradeType);
 								row++;
 							}
@@ -489,9 +491,9 @@ public class LearnerSummaryPanel extends ContentPanel {
 									@Override
 									protected void onFieldChange(FieldEvent e) {									
 										StudentModel learner = (StudentModel)this.model;
-										e.field.setEnabled(false);
+										e.getField().setEnabled(false);
 
-										Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord.getEventType(), new GradeRecordUpdate(learnerStore, learner, e.field.getName(), e.field.getFieldLabel(), e.oldValue, e.value));
+										Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord.getEventType(), new GradeRecordUpdate(learnerStore, learner, e.getField().getName(), e.getField().getFieldLabel(), e.getOldValue(), e.getValue()));
 									}
 
 									@Override
@@ -499,7 +501,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 										super.onModelChange(event);
 
 										if (field != null) {
-											verifyFieldState(field, event.source);
+											verifyFieldState(field, event.getSource());
 
 											boolean isEnabled = true;
 											if (!field.isEnabled())
@@ -507,7 +509,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 										}
 									}
 								};
-								bindings.put(f, b);
+								bindings.put(f.getId(), b);
 							}
 						}
 					}

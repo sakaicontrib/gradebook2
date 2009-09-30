@@ -45,7 +45,6 @@ import org.sakaiproject.gradebook.gwt.client.model.EntityModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 
-import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.SortDir;
 import com.extjs.gxt.ui.client.data.BasePagingLoader;
@@ -55,13 +54,13 @@ import com.extjs.gxt.ui.client.data.PagingLoadConfig;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 import com.extjs.gxt.ui.client.data.RpcProxy;
 import com.extjs.gxt.ui.client.data.SortInfo;
+import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.GridEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
-import com.extjs.gxt.ui.client.widget.PagingToolBar;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.form.TextField;
@@ -70,6 +69,7 @@ import com.extjs.gxt.ui.client.widget.grid.EditorGrid;
 import com.extjs.gxt.ui.client.widget.grid.GridView;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
+import com.extjs.gxt.ui.client.widget.toolbar.PagingToolBar;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -82,7 +82,7 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 	public static final String FAILED_FLAG = ":F";
 	
 	protected EditorGrid<M> grid;
-	protected BasePagingLoader<PagingLoadConfig, PagingLoadResult<M>> loader;
+	protected BasePagingLoader<PagingLoadResult<M>> loader;
 	protected ListStore<M> store;
 	
 	//protected String gradebookUid;
@@ -114,7 +114,7 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		setHeaderVisible(false);
 		setLayout( new FitLayout());
 		setIconStyle("icon-table");
-		setMonitorResize(true);
+		setMonitorWindowResize(true);
 	
 		this.defaultNumberFormat = DataTypeConversionUtil.getDefaultNumberFormat();
 
@@ -141,12 +141,12 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 
 			public void handleEvent(final GridEvent ge) {
 				// By setting ge.doit to false, we ensure that the AfterEdit event is not thrown. Which means we have to throw it ourselves onSuccess
-				ge.doit = false;
+				ge.stopEvent();
 				
 				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 				
 				if (selectedGradebook != null)
-					editCell(selectedGradebook, ge.record, ge.property, ge.value, ge.startValue, ge);
+					editCell(selectedGradebook, ge.getRecord(), ge.getProperty(), ge.getValue(), ge.getStartValue(), ge);
 			}
 
 		});
@@ -154,7 +154,7 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		addGridListenersAndPlugins(grid);
 		
 		grid.setStripeRows(true);
-		grid.setDeferHeight(true);
+		//grid.setDeferHeight(true);
 		
 		Menu gridContextMenu = newContextMenu();
 		
@@ -304,17 +304,17 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		return loadConfig;
 	}
 	
-	protected BasePagingLoader<PagingLoadConfig, PagingLoadResult<M>> newLoader() {
-		RpcProxy<PagingLoadConfig, PagingLoadResult<M>> proxy = new RpcProxy<PagingLoadConfig, PagingLoadResult<M>>() {
+	protected BasePagingLoader<PagingLoadResult<M>> newLoader() {
+		RpcProxy<PagingLoadResult<M>> proxy = new RpcProxy<PagingLoadResult<M>>() {
 			@Override
-			protected void load(PagingLoadConfig loadConfig, AsyncCallback<PagingLoadResult<M>> callback) {
+			protected void load(Object loadConfig, AsyncCallback<PagingLoadResult<M>> callback) {
 				Gradebook2RPCServiceAsync service = Registry.get("service");
 				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-				service.getPage(selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId(), entityType, loadConfig, SecureToken.get(), callback);
+				service.getPage(selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId(), entityType, (PagingLoadConfig)loadConfig, SecureToken.get(), callback);
 			}
 			
 			@Override
-			public void load(final DataReader<PagingLoadConfig, PagingLoadResult<M>> reader, final PagingLoadConfig loadConfig, final AsyncCallback<PagingLoadResult<M>> callback) {
+			public void load(final DataReader<PagingLoadResult<M>> reader, final Object loadConfig, final AsyncCallback<PagingLoadResult<M>> callback) {
 				load(loadConfig, new NotifyingAsyncCallback<PagingLoadResult<M>>() {
 
 					public void onFailure(Throwable caught) {
@@ -339,14 +339,14 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 				});
 			}
 		};
-		return new BasePagingLoader<PagingLoadConfig, PagingLoadResult<M>>(proxy, new ModelReader<PagingLoadConfig>());
+		return new BasePagingLoader<PagingLoadResult<M>>(proxy, new ModelReader());
 	}
 	
 	protected PagingToolBar newPagingToolBar(int pageSize) {
 		return new PagingToolBar(pageSize);
 	}
 	
-	protected ListStore<M> newStore(BasePagingLoader<PagingLoadConfig, PagingLoadResult<M>> loader) {
+	protected ListStore<M> newStore(BasePagingLoader<PagingLoadResult<M>> loader) {
 		ListStore<M> store = new ListStore<M>(loader);
 		store.setModelComparer(new EntityModelComparer<M>());
 		store.setMonitorChanges(true);
@@ -418,12 +418,12 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		ColumnConfig config = null;
 		
 		if (gridEvent != null) {
-			String className = grid.getView().getCell(gridEvent.rowIndex, gridEvent.colIndex).getClassName();
+			String className = grid.getView().getCell(gridEvent.getRowIndex(), gridEvent.getColIndex()).getClassName();
 			className = className.replace(" gbCellDropped", "");
-			grid.getView().getCell(gridEvent.rowIndex, gridEvent.colIndex).setClassName(className);
-			grid.getView().getCell(gridEvent.rowIndex, gridEvent.colIndex).setInnerText("Saving...");
+			grid.getView().getCell(gridEvent.getRowIndex(), gridEvent.getColIndex()).setClassName(className);
+			grid.getView().getCell(gridEvent.getRowIndex(), gridEvent.getColIndex()).setInnerText("Saving...");
 		
-			config = cm.getColumn(gridEvent.colIndex);
+			config = cm.getColumn(gridEvent.getColIndex());
 		}
 		
 		ClassType classType = ClassType.BOOLEAN;
@@ -509,7 +509,7 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		return grid;
 	}
 
-	public BasePagingLoader<PagingLoadConfig, PagingLoadResult<M>> getLoader() {
+	public BasePagingLoader<PagingLoadResult<M>> getLoader() {
 		return loader;
 	}
 

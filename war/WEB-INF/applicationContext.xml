@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+
+	<!-- Performance analysis using AOP -->
+	<!--import resource="performanceAnalysis.xml"/-->
+	
+	<!-- Normal injection of services w/o performance analysis -->
+	<import resource="gbServices.xml" />
+		
+	<!-- Hibernate Mappings -->
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.model.hibernateMappings"
+		class="org.sakaiproject.springframework.orm.hibernate.impl.AdditionalHibernateMappingsImpl">
+		<property name="mappingResources">
+			<list>
+				<value>org/sakaiproject/gradebook/gwt/sakai/model/ActionRecord.hbm.xml</value>
+				<value>org/sakaiproject/gradebook/gwt/sakai/model/Realm.hbm.xml</value>
+				<value>org/sakaiproject/gradebook/gwt/sakai/model/RealmGroup.hbm.xml</value>
+				<value>org/sakaiproject/gradebook/gwt/sakai/model/RealmRole.hbm.xml</value>
+				<value>org/sakaiproject/gradebook/gwt/sakai/model/UserConfiguration.hbm.xml</value>
+				<value>org/sakaiproject/gradebook/gwt/sakai/model/UserDereference.hbm.xml</value>
+				<value>org/sakaiproject/gradebook/gwt/sakai/model/UserDereferenceRealmUpdate.hbm.xml</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.BusinessLogic" class="org.sakaiproject.gradebook.gwt.sakai.BusinessLogicImpl">
+		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/> 
+	</bean>
+		
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authn" class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2AuthnImpl">
+	</bean>
+
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authz" class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2AuthzImpl">
+		<property name="authn" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authn"/>
+		<property name="sectionAwareness" ref="org.sakaiproject.section.api.SectionAwareness"/>
+		<property name="gbToolService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/>
+		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service"/>
+		<property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/>
+	</bean>
+	
+	<bean id="GradebookExportService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookExportController">
+		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service"/>
+	</bean>
+	
+	<bean id="GradebookFinalGradeSubmissionService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookFinalGradeSubmissionController">
+		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service"/>
+	</bean>
+	
+	<bean id="GradebookImportService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookImportController">
+		<property name="gbToolService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/>
+		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service"/>
+		<property name="commandClass" value="org.sakaiproject.gradebook.gwt.sakai.FileUploadBean"/>
+	</bean>
+	
+	
+	<!--
+	
+	GRBK-37 : Sample Institutional Advisor 
+	The Institutional Advisor is configured via the sakai.properties file.
+	The sakai.properties file sets the "advisor@org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service" property
+	which then is injected via Sakai's bean configuration mechanism
+	-->
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.api.SampleInstitutionalAdvisor" class="org.sakaiproject.gradebook.gwt.sakai.SampleInstitutionalAdvisor">
+		<property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/>
+		<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>
+		<property name="finalGradeSubmissionPath" value="/tmp"/>
+	</bean>
+	
+	
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"
+		class="org.sakaiproject.gradebook.gwt.sakai.calculations.GradeCalculationsOOImpl"
+		init-method="init">
+		
+		<property name="letterGradeMap">
+			<map>
+			  	<entry><key><value>A+</value></key><value>98.3333333333</value></entry>
+			  	<entry><key><value>A</value></key><value>95</value></entry>
+			  	<entry><key><value>A-</value></key><value>91.6666666666</value></entry>
+			  	<entry><key><value>B+</value></key><value>88.3333333333</value></entry>
+			  	<entry><key><value>B</value></key><value>85</value></entry>
+			  	<entry><key><value>B-</value></key><value>81.6666666666</value></entry>
+			  	<entry><key><value>C+</value></key><value>78.3333333333</value></entry>
+			  	<entry><key><value>C</value></key><value>75</value></entry>
+			  	<entry><key><value>C-</value></key><value>71.6666666666</value></entry>
+			  	<entry><key><value>D+</value></key><value>68.3333333333</value></entry>
+			  	<entry><key><value>D</value></key><value>65</value></entry>
+			  	<entry><key><value>D-</value></key><value>61.6666666666</value></entry>
+			  	<entry><key><value>F</value></key><value>58.3333333333</value></entry>
+				<entry><key><value>0</value></key><value>0</value></entry>
+			</map>
+		</property>
+		
+	</bean>
+
+	
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/>
+	
+
+	<bean id="alt.gradebookTxTemplate" lazy-init="true" abstract="true" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+		<property name="transactionManager"><ref bean="alt.gradebookTransactionManager"/></property>
+		<property name="transactionAttributes">
+			<props>
+				<prop key="deleteUserConfiguration">PROPAGATION_NOT_SUPPORTED</prop>
+	            <prop key="is*">PROPAGATION_REQUIRED,readOnly,+org.sakaiproject.service.gradebook.shared.GradebookException</prop>
+	            <prop key="get*">PROPAGATION_REQUIRED,readOnly,+org.sakaiproject.service.gradebook.shared.GradebookException</prop>
+	            <prop key="*">PROPAGATION_REQUIRED,+org.sakaiproject.service.gradebook.shared.GradebookException</prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean id="alt.gradebookTransactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		<property name="sessionFactory"><ref bean="alt.gradebookSessionFactory"/></property>
+	</bean>
+	
+	<!-- An application consumer without a component. -->
+	<bean id="alt.gradebookSessionFactory" parent="org.sakaiproject.springframework.orm.hibernate.SessionFactoryBase"
+		class="org.sakaiproject.springframework.orm.hibernate.AddableSessionFactoryBean">
+		<property name="mappingResources">
+		    <list>
+  				<value>org/sakaiproject/tool/gradebook/Gradebook.hbm.xml</value>
+	  			<value>org/sakaiproject/tool/gradebook/GradableObject.hbm.xml</value>
+		  		<value>org/sakaiproject/tool/gradebook/GradeRecord.hbm.xml</value>
+			  	<value>org/sakaiproject/tool/gradebook/GradingEvent.hbm.xml</value>
+				  <value>org/sakaiproject/tool/gradebook/GradingScale.hbm.xml</value>
+  				<value>org/sakaiproject/tool/gradebook/GradebookProperty.hbm.xml</value>
+	  			<value>org/sakaiproject/tool/gradebook/GradeMapping.hbm.xml</value>
+          <value>org/sakaiproject/tool/gradebook/Spreadsheet.hbm.xml</value>                
+          <value>org/sakaiproject/tool/gradebook/Comment.hbm.xml</value>   
+          <value>org/sakaiproject/tool/gradebook/Category.hbm.xml</value>
+          <value>org/sakaiproject/tool/gradebook/LetterGradePercenteMapping.hbm.xml</value>
+          <value>org/sakaiproject/tool/gradebook/Permission.hbm.xml</value>
+        </list>
+		</property>
+	</bean>
+
+
+</beans>

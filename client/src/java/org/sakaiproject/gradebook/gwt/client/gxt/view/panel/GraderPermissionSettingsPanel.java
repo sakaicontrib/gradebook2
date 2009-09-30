@@ -1,6 +1,6 @@
 /**********************************************************************************
 *
-* $Id:$
+* $Id$
 *
 ***********************************************************************************
 *
@@ -42,7 +42,7 @@ import org.sakaiproject.gradebook.gwt.client.model.PermissionEntryModel;
 import org.sakaiproject.gradebook.gwt.client.model.SectionModel;
 import org.sakaiproject.gradebook.gwt.client.model.UserModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
-import com.extjs.gxt.ui.client.Events;
+import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.data.BaseListLoader;
@@ -122,10 +122,10 @@ public class GraderPermissionSettingsPanel extends ContentPanel {
 		// LOADING DATA
 		
 		// USERS
-		RpcProxy<ListLoadConfig, ListLoadResult<UserModel>> userProxy = new RpcProxy<ListLoadConfig, ListLoadResult<UserModel>>() {
+		RpcProxy<ListLoadResult<UserModel>> userProxy = new RpcProxy<ListLoadResult<UserModel>>() {
 			
 			@Override
-			protected void load(ListLoadConfig listLoadConfig, AsyncCallback<ListLoadResult<UserModel>> callback) {
+			protected void load(Object listLoadConfig, AsyncCallback<ListLoadResult<UserModel>> callback) {
 				GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
 				Gradebook2RPCServiceAsync service = Registry.get("service");
 				service.getPage(gbModel.getGradebookUid(), gbModel.getGradebookId(), EntityType.USER, null, SecureToken.get(), callback);
@@ -148,10 +148,10 @@ public class GraderPermissionSettingsPanel extends ContentPanel {
 		
 		
 		// CATEGORIES
-		RpcProxy<ListLoadConfig, ListLoadResult<CategoryModel>> categoryProxy = new RpcProxy<ListLoadConfig, ListLoadResult<CategoryModel>>() {
+		RpcProxy<ListLoadResult<CategoryModel>> categoryProxy = new RpcProxy<ListLoadResult<CategoryModel>>() {
 
 			@Override
-			protected void load(ListLoadConfig listLoadConfig, AsyncCallback<ListLoadResult<CategoryModel>> callback) {
+			protected void load(Object listLoadConfig, AsyncCallback<ListLoadResult<CategoryModel>> callback) {
 				GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
 				Gradebook2RPCServiceAsync service = Registry.get("service");
 				service.getPage(gbModel.getGradebookUid(), gbModel.getGradebookId(), EntityType.CATEGORY_NOT_REMOVED, null, SecureToken.get(), callback);
@@ -164,17 +164,17 @@ public class GraderPermissionSettingsPanel extends ContentPanel {
 		
 		
 		// SECTIONS
-		RpcProxy<PagingLoadConfig, PagingLoadResult<SectionModel>> sectionsProxy = new RpcProxy<PagingLoadConfig, PagingLoadResult<SectionModel>>() {
+		RpcProxy<PagingLoadResult<SectionModel>> sectionsProxy = new RpcProxy<PagingLoadResult<SectionModel>>() {
 			@Override
-			protected void load(PagingLoadConfig loadConfig, AsyncCallback<PagingLoadResult<SectionModel>> callback) {
+			protected void load(Object loadConfig, AsyncCallback<PagingLoadResult<SectionModel>> callback) {
 				Gradebook2RPCServiceAsync service = Registry.get("service");
 				GradebookModel model = Registry.get(AppConstants.CURRENT);
-				service.getPage(model.getGradebookUid(), model.getGradebookId(), EntityType.PERMISSION_SECTIONS, loadConfig, SecureToken.get(), callback);
+				service.getPage(model.getGradebookUid(), model.getGradebookId(), EntityType.PERMISSION_SECTIONS, (PagingLoadConfig)loadConfig, SecureToken.get(), callback);
 			}
 		};
 
-		BasePagingLoader<PagingLoadConfig, PagingLoadResult<SectionModel>> sectionsLoader = 
-			new BasePagingLoader<PagingLoadConfig, PagingLoadResult<SectionModel>>(sectionsProxy, new ModelReader<PagingLoadConfig>());
+		BasePagingLoader<PagingLoadResult<SectionModel>> sectionsLoader = 
+			new BasePagingLoader<PagingLoadResult<SectionModel>>(sectionsProxy, new ModelReader());
 		sectionsLoader.setRemoteSort(true);
 		sectionsLoader.load(0, 50);
 		ListStore<SectionModel> sectionStore = new ListStore<SectionModel>(sectionsLoader);

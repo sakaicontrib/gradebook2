@@ -55,32 +55,32 @@ public class SingleGradeView extends View {
 	}
 
 	@Override
-	protected void handleEvent(AppEvent<?> event) {
+	protected void handleEvent(AppEvent event) {
 		StudentModel learnerGradeRecordCollection = null;
-		switch (GradebookEvents.getEvent(event.type).getEventKey()) {
+		switch (GradebookEvents.getEvent(event.getType()).getEventKey()) {
 		case ITEM_UPDATED:
-			onItemUpdated((ItemModel)event.data);
+			onItemUpdated((ItemModel)event.getData());
 			break;
 		case REFRESH_GRADEBOOK_SETUP:
-			onRefreshGradebookSetup((GradebookModel)event.data);
+			onRefreshGradebookSetup((GradebookModel)event.getData());
 			break;
 		case SINGLE_GRADE:
 		case SINGLE_VIEW:
-			learnerGradeRecordCollection = (StudentModel)event.data;
+			learnerGradeRecordCollection = (StudentModel)event.getData();
 			onChangeModel(learnerGradeRecordCollection);
 			break;
 		case SELECT_LEARNER:
-			learnerGradeRecordCollection = (StudentModel)event.data;
+			learnerGradeRecordCollection = (StudentModel)event.getData();
 			onChangeModel(learnerGradeRecordCollection);
 			break;
 		case USER_CHANGE:
-			onUserChange((UserEntityAction<?>)event.data);
+			onUserChange((UserEntityAction<?>)event.getData());
 			break;
 		case LEARNER_GRADE_RECORD_UPDATED:
-			onLearnerGradeRecordUpdated((UserEntityUpdateAction)event.data);
+			onLearnerGradeRecordUpdated((UserEntityUpdateAction)event.getData());
 			break;
 		case GRADE_TYPE_UPDATED:
-			onGradeTypeUpdated((GradebookModel)event.data);
+			onGradeTypeUpdated((GradebookModel)event.getData());
 			break;
 		}
 	}

@@ -45,24 +45,25 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
-import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.binding.Converter;
 import com.extjs.gxt.ui.client.binding.FieldBinding;
 import com.extjs.gxt.ui.client.binding.FormBinding;
 import com.extjs.gxt.ui.client.data.BaseModelData;
+import com.extjs.gxt.ui.client.data.BaseTreeModel;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
+import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FieldEvent;
 import com.extjs.gxt.ui.client.event.KeyListener;
 import com.extjs.gxt.ui.client.event.Listener;
+import com.extjs.gxt.ui.client.event.MessageBoxEvent;
 import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
 import com.extjs.gxt.ui.client.event.SelectionChangedListener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
-import com.extjs.gxt.ui.client.event.WindowEvent;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
@@ -516,9 +517,9 @@ public class ItemFormPanel extends ContentPanel {
 			categoryStore.removeAll();
 		}
 
-		for (ItemModel gradebook : rootItemModel.getChildren()) {
-			for (ItemModel category : gradebook.getChildren()) {
-
+		for (ModelData gradebook : rootItemModel.getChildren()) {
+			for (ModelData m : ((BaseTreeModel) gradebook).getChildren()) {
+				ItemModel category = (ItemModel)m;
 				// Ensure that we're dealing with a category
 				if (category.getItemType() == Type.CATEGORY) {
 					categoryStore.add(category);
@@ -751,7 +752,7 @@ public class ItemFormPanel extends ContentPanel {
 					category = itemModel;
 					break;
 				case ITEM:
-					category = itemModel.getParent();
+					category = (ItemModel) itemModel.getParent();
 					break;
 				default:
 					isPercentCategoryVisible = (hasWeights && isExtraCredit) && isItem;
@@ -806,7 +807,7 @@ public class ItemFormPanel extends ContentPanel {
 			if (category.getChildCount() > 0) {
 				Double points = null;
 				for (int i=0;i<category.getChildCount();i++) {
-					ItemModel item = category.getChild(i);
+					ItemModel item = (ItemModel) category.getChild(i);
 					if (!DataTypeConversionUtil.checkBoolean(item.getExtraCredit())) {
 						if (points == null)
 							points = item.getPoints();
@@ -913,7 +914,7 @@ public class ItemFormPanel extends ContentPanel {
 								});
 
 							} 
-							bindings.put(f, b);
+							bindings.put(f.getId(), b);
 						}
 					}
 				}
@@ -1015,7 +1016,7 @@ public class ItemFormPanel extends ContentPanel {
 		enforcePointWeightingListener = new Listener<FieldEvent>() {
 			
 			public void handleEvent(FieldEvent fe) {
-				boolean isChecked = DataTypeConversionUtil.checkBoolean(((CheckBox)fe.field).getValue());
+				boolean isChecked = DataTypeConversionUtil.checkBoolean(((CheckBox)fe.getField()).getValue());
 				CategoryType categoryType = selectedGradebook.getGradebookItemModel().getCategoryType();
 				boolean hasWeights = categoryType == CategoryType.WEIGHTED_CATEGORIES;
 				setChanges();
@@ -1042,7 +1043,7 @@ public class ItemFormPanel extends ContentPanel {
 		extraCreditChangeListener = new Listener<FieldEvent>() {
 
 			public void handleEvent(FieldEvent fe) {
-				boolean isChecked = DataTypeConversionUtil.checkBoolean(((CheckBox)fe.field).getValue());
+				boolean isChecked = DataTypeConversionUtil.checkBoolean(((CheckBox)fe.getField()).getValue());
 				CategoryType categoryType = selectedGradebook.getGradebookItemModel().getCategoryType();
 				ItemModel category = categoryPicker.getValue();
 				boolean isWeightByPoints = false;
@@ -1092,7 +1093,7 @@ public class ItemFormPanel extends ContentPanel {
 
 			@Override
 			public void componentSelected(ButtonEvent be) {
-				Button button = be.button;
+				Button button = be.getButton();
 				if (button != null) {
 					SelectionType selectionType = button.getData(selectionTypeField);
 					if (selectionType != null) {
@@ -1170,11 +1171,10 @@ public class ItemFormPanel extends ContentPanel {
 												&& !changes.get(ItemModel.Key.POINTS.name())
 												.equals(selectedItemModel.get(ItemModel.Key.POINTS.name()))) {
 											
-											Listener<WindowEvent> listener = new Listener<WindowEvent>() {
+											Listener<MessageBoxEvent> listener = new Listener<MessageBoxEvent>() {
 	
-												public void handleEvent(WindowEvent be) {
-													Dialog dialog = (Dialog) be.component;  
-													Button btn = dialog.getButtonPressed();
+												public void handleEvent(MessageBoxEvent be) {
+													Button btn = be.getButtonClicked();
 													
 													Record r = treeStore.getRecord(selectedItemModel);
 													if (r != null) {
@@ -1238,7 +1238,7 @@ public class ItemFormPanel extends ContentPanel {
 					categoryPicker.select(itemModel);
 					break;
 				case ITEM:
-					category = itemModel.getParent();
+					category = (ItemModel) itemModel.getParent();
 					if (category != null && category.getItemType() == Type.CATEGORY)
 						categoryPicker.select(category);
 					break;
@@ -1262,7 +1262,7 @@ public class ItemFormPanel extends ContentPanel {
 					category = itemModel;
 					break;
 				case ITEM:
-					category = itemModel.getParent();
+					category = (ItemModel) itemModel.getParent();
 					break;
 			}
 

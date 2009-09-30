@@ -32,6 +32,10 @@ public class AriaButton extends Button {
 
 	private char accessKey;
 	
+	public AriaButton(String text) {
+		super(text);
+	}
+	
 	public AriaButton(String text, SelectionListener listener) {
 		super(text, listener);
 	}

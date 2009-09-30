@@ -33,21 +33,17 @@ import com.extjs.gxt.ui.client.mvc.View;
 
 public class NotificationView extends View {
 
-	private static Notifier notifier;
-
-	private static final String decisionFlag = "DecisionType";
-	private enum Decision { OK, CANCEL };
+	private static Notifier notifier = new Notifier();
 
 	public NotificationView(Controller controller) {
 		super(controller);
-		this.notifier = new Notifier();
 	}
 
 	@Override
-	protected void handleEvent(AppEvent<?> event) {
-		NotificationEvent notification = (NotificationEvent)event.data;
+	protected void handleEvent(AppEvent event) {
+		NotificationEvent notification = (NotificationEvent)event.getData();
 
-		switch (GradebookEvents.getEvent(event.type).getEventKey()) {
+		switch (GradebookEvents.getEvent(event.getType()).getEventKey()) {
 			case EXCEPTION:
 				notifier.notifyError(notification.getError());
 				break;

@@ -23,31 +23,28 @@
 
 package org.sakaiproject.gradebook.gwt.client.gxt.multigrade;
 
-import java.util.List;
-
-import org.sakaiproject.gradebook.gwt.client.gxt.GbEditorGrid;
 import org.sakaiproject.gradebook.gwt.client.gxt.GbGridCallback;
-import org.sakaiproject.gradebook.gwt.client.gxt.GbEditorGrid.GbCell;
-import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.BaseCustomGridView;
 
-import com.extjs.gxt.ui.client.Events;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.BaseEvent;
+import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.GridEvent;
-import com.extjs.gxt.ui.client.store.StoreEvent;
+import com.extjs.gxt.ui.client.widget.grid.CellSelectionModel;
 import com.extjs.gxt.ui.client.widget.grid.EditorGrid;
-import com.extjs.gxt.ui.client.widget.grid.Grid;
-import com.extjs.gxt.ui.client.widget.grid.GridSelectionModel;
-import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.KeyboardListener;
 
 public class MultigradeSelectionModel<M extends ModelData> extends
-GridSelectionModel<M> {
+CellSelectionModel<M> {
 
 	private GbGridCallback callback = new GbGridCallback(this);
 	private EditorGrid editGrid;
 
-	@Override
+	
+	public boolean isCellSelectable(int row, int cell, boolean acceptsNav) {
+		return isSelectable(row, cell, acceptsNav);
+	}
+	
+	
+	/*@Override
 	public void bindGrid(Grid grid) {
 		if (this.grid != null) {
 			this.grid.removeListener(Events.CellMouseDown, this);
@@ -65,35 +62,32 @@ GridSelectionModel<M> {
 			bind(grid.getStore());
 		}
 		bind(grid != null ? grid.getStore() : null);
-	}
+	}*/
 
-	@Override
+	/*@Override
 	public void deselectAll() {
-		if (selection != null) {
+		if (getSelection() != null) {
 			((BaseCustomGridView)grid.getView()).doCellDeselect(selection.row, selection.cell);
 			selection = null;
 		}
-	}
+	}*/
 
 	/**
 	 * Returns the selected cell.
 	 * 
 	 * @return the selection cell
 	 */
-	public CellSelection getSelectCell() {
+	/*public CellSelection getSelectCell() {
 		return selection;
-	}
+	}*/
 
-	@Override
+	/*@Override
 	public void handleEvent(BaseEvent e) {
-		switch (e.type) {
-			case Events.CellMouseDown:
-				handleMouseDown((GridEvent) e);
-				break;
-			case Events.Refresh:
-				refresh();
-				break;
-		}
+		if (e.getType().equals(Events.CellMouseDown)) 
+			handleMouseDown((GridEvent) e);
+		else if (e.getType().equals(Events.Refresh))
+			refresh();
+		
 	}
 
 	public boolean isCellSelectable(int row, int cell, boolean acceptsNav) {
@@ -103,7 +97,7 @@ GridSelectionModel<M> {
 		} else {
 			return !grid.getColumnModel().isHidden(cell);
 		}
-	}
+	}*/
 
 	/**
 	 * Selects the cell.
@@ -113,35 +107,25 @@ GridSelectionModel<M> {
 	 * @param cell
 	 *            the cell index
 	 */
-	@Override
-	public void selectCell(int row, int cell) {
+	/*@Override
+	public void select(int row, int cell, boolean keepSelected) {
 		deselectAll();
-		M m = store.getAt(row);
+		M m = (M) ((ListStore) store).getAt(row);
 		selection = new CellSelection(m, row, cell);
 		((BaseCustomGridView)grid.getView()).doCellSelect(row, cell);
 		grid.getView().focusCell(row, cell, true);
-	}
+	}*/
 
-	@Override
+	/*@Override
 	protected void handleMouseDown(GridEvent e) {
 		if (e.event.getButton() != Event.BUTTON_LEFT || isLocked()) {
 			return;
 		}
 		selectCell(e.rowIndex, e.colIndex);
-	}
+	}*/
 
-	@Override
-	protected void onAdd(List<M> models) {
-		deselectAll();
-	}
 
-	@Override
-	protected void onClear(StoreEvent<M> se) {
-		super.onClear(se);
-		selection = null;
-	}
-
-	@Override
+	/*@Override
 	protected void onKeyPress(GridEvent e) {
 		if (editGrid != null) {
 			// ignore events whose source is an input element
@@ -202,14 +186,14 @@ GridSelectionModel<M> {
 			selectCell(newCell.row, newCell.cell);
 			e.stopEvent();
 		}
-	}
+	}*/
 
-	@Override
+	/*@Override
 	protected void onRemove(M model) {
 		super.onRemove(model);
 		if (selection != null && selection.model == model) {
 			selection = null;
 		}
-	}
+	}*/
 
 }
