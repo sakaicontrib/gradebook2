@@ -7,22 +7,13 @@
  
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
-		<param-value>WEB-INF/applicationContext.xml</param-value>
+		<param-value>WEB-INF/applicationContext*.xml</param-value>
 	</context-param>
 
-	<!-- TO RUN IN HOSTED MODE uncomment the following: -->
-	<!-- 
-	<context-param>
-		<param-name>contextConfigLocation</param-name>
-		<param-value>WEB-INF/testContext.xml</param-value>
-	</context-param>
-	-->
-	
 	<listener>
         <listener-class>org.sakaiproject.util.ContextLoaderListener</listener-class>
     </listener>
     
-    <!-- TO RUN IN HOSTED MODE comment out the following -->
     <listener>
         <listener-class>org.sakaiproject.util.ToolListener</listener-class>
     </listener>
@@ -38,9 +29,10 @@
 		<dispatcher>FORWARD</dispatcher>
 	</filter-mapping>
 	
+	
     <filter>
         <filter-name>sakai.request</filter-name>
-        <filter-class>org.sakaiproject.util.RequestFilter</filter-class>
+        <filter-class>org.sakaiproject.gradebook.gwt.server.RequestFilter</filter-class>
          <init-param>
         	<param-name>upload.enabled</param-name>
         	<param-value>false</param-value>
@@ -53,8 +45,8 @@
         <dispatcher>FORWARD</dispatcher>
         <dispatcher>INCLUDE</dispatcher>
     </filter-mapping>
-    <!-- TO RUN IN HOSTED MODE comment out the above -->
-
+  
+    
 	<servlet>
 		<servlet-name>sakai.gradebook.gwt.rpc</servlet-name>
 		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>

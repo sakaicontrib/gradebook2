@@ -7,9 +7,9 @@
 	<!--import resource="performanceAnalysis.xml"/-->
 	
 	<!-- Normal injection of services w/o performance analysis -->
-	<import resource="gbServices-test.xml" />
+	<import resource="gbServices-hosted.xml" />
 	
-	<import resource="db-test.xml" />
+	<import resource="db-hosted.xml" />
 		
 	<!-- Hibernate Mappings -->
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.model.hibernateMappings"

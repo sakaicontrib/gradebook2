@@ -15,22 +15,7 @@
                                 <entry key="/**/final-grade-submission" value-ref="GradebookFinalGradeSubmissionService" />
 
                                 <entry key="/" value-ref="ResourceController" />
-
-                                <!-- entry key="/**/*.html" value-ref="myServletForwardingController" />
                                 
-                                <entry key="/**/*.png" value-ref="myServletForwardingController" />
-                                
-                                <entry key="/**/*.css" value-ref="myServletForwardingController" />
-                                
-                                <entry key="/**/*.gif" value-ref="myServletForwardingController" />
-                                
-                                <entry key="/**/*.js" value-ref="myServletForwardingController" />
-                                
-                                <entry key="/**/css/**" value-ref="myServletForwardingController" />
-                                
-                                <entry key="/**/images/**" value-ref="myServletForwardingController" />
-                                
-                                <entry key="/**/*.gwt.rpc" value-ref="myServletForwardingController" /-->
                         </map>
         </property>
         <property name="defaultHandler">
@@ -38,11 +23,5 @@
         </property>
         
    	</bean>
-
-
-	<bean id="myServletForwardingController" class="org.springframework.web.servlet.mvc.ServletForwardingController">
- 		<property name="servletName"><value>sakai.gradebook.gwt</value></property>
- 	</bean>
- 	
 
 </beans>
