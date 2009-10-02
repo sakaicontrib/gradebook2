@@ -12,45 +12,45 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
 	<classpathentry kind="var" path="M2_REPO/org/springframework/spring/2.0.6/spring-2.0.6.jar" sourcepath="/M2_REPO/org/springframework/spring/2.0.6/spring-2.0.6-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/commons-lang/commons-lang/2.1/commons-lang-2.1.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-gradebook-service-api/2.5.5/sakai-gradebook-service-api-2.5.5.jar" sourcepath="/M2_REPO/org/sakaiproject/sakai-gradebook-service-api/2.5.5/sakai-gradebook-service-api-2.5.5-sources.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-gradebook-service-hibernate/2.5.5/sakai-gradebook-service-hibernate-2.5.5.jar" sourcepath="/M2_REPO/org/sakaiproject/sakai-gradebook-service-hibernate/2.5.5/sakai-gradebook-service-hibernate-2.5.5.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-gradebook-service-api/M2/sakai-gradebook-service-api-M2.jar" sourcepath="/M2_REPO/org/sakaiproject/sakai-gradebook-service-api/M2/sakai-gradebook-service-api-M2-sources.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-gradebook-service-hibernate/M2/sakai-gradebook-service-hibernate-M2.jar" sourcepath="/M2_REPO/org/sakaiproject/sakai-gradebook-service-hibernate/M2/sakai-gradebook-service-hibernate-M2.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/hibernate/hibernate/3.2.5.ga/hibernate-3.2.5.ga.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-sections-api/2.5.5/sakai-sections-api-2.5.5.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-authz-api/2.5.5/sakai-authz-api-2.5.5.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-site-api/2.5.5/sakai-site-api-2.5.5.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-tool-api/2.5.5/sakai-tool-api-2.5.5.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-user-api/2.5.5/sakai-user-api-2.5.5.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-entity-api/2.5.5/sakai-entity-api-2.5.5.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-util-api/2.5.5/sakai-util-api-2.5.5.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-sections-api/M2/sakai-sections-api-M2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-authz-api/M2/sakai-authz-api-M2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-site-api/M2/sakai-site-api-M2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-tool-api/M2/sakai-tool-api-M2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-user-api/M2/sakai-user-api-M2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-entity-api/M2/sakai-entity-api-M2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-util-api/M2/sakai-util-api-M2.jar"/>
 	<classpathentry kind="var" path="M2_REPO/commons-logging/commons-logging/1.0.4/commons-logging-1.0.4.jar"/>
 	<classpathentry kind="var" path="M2_REPO/commons-fileupload/commons-fileupload/1.1.1/commons-fileupload-1.1.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/thoughtworks/xstream/xstream/1.3/xstream-1.3.jar"/>
 	<classpathentry kind="var" path="M2_REPO/commons-io/commons-io/1.4/commons-io-1.4.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/extjs/gxt/2.0.1/gxt-2.0.1.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-coursemanagement-api/2.5.5/sakai-coursemanagement-api-2.5.5.jar" sourcepath="/SAKAI_SRC/course-management"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-component/2.5.5/sakai-component-2.5.5.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-component-api/2.5.5/sakai-component-api-2.5.5.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-coursemanagement-api/M2/sakai-coursemanagement-api-M2.jar" sourcepath="/SAKAI_SRC/course-management"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-component/M2/sakai-component-M2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-component-api/M2/sakai-component-api-M2.jar"/>
 	<classpathentry kind="var" path="M2_REPO/javax/servlet/servlet-api/2.4/servlet-api-2.4.jar" sourcepath="M2_REPO/javax/servlet/servlet-api/2.4/servlet-api-2.4-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/commons-collections/commons-collections/3.2.1/commons-collections-3.2.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/net/sf/opencsv/opencsv/1.8/opencsv-1.8.jar"/>
 	<classpathentry kind="var" path="M2_REPO/net/sf/gwt-widget/gwt-sl/0.1.5b/gwt-sl-0.1.5b.jar"/>
 	<classpathentry kind="var" path="M2_REPO/commons-dbcp/commons-dbcp/1.2.1/commons-dbcp-1.2.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/commons-pool/commons-pool/1.2/commons-pool-1.2.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-db-api/2.5.5/sakai-db-api-2.5.5.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-db-api/M2/sakai-db-api-M2.jar"/>
 	<classpathentry kind="var" path="M2_REPO/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/hsqldb/hsqldb/1.8.0.5/hsqldb-1.8.0.5.jar"/>
 	<classpathentry kind="var" path="M2_REPO/javax/transaction/jta/1.0.1B/jta-1.0.1B.jar"/>
 	<classpathentry kind="var" path="M2_REPO/net/sf/ehcache/ehcache/1.3.0/ehcache-1.3.0.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-util/2.5.5/sakai-util-2.5.5.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-memory-api/2.5.5/sakai-memory-api-2.5.5.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-util/M2/sakai-util-M2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-memory-api/M2/sakai-memory-api-M2.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-mock/2.0.6/spring-mock-2.0.6.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-db-ext/2.5.5/sakai-db-ext-2.5.5.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-db-ext/M2/sakai-db-ext-M2.jar"/>
 	<classpathentry kind="var" path="M2_REPO/cglib/cglib-nodep/2.1_3/cglib-nodep-2.1_3.jar"/>
 	<classpathentry kind="var" path="M2_REPO/antlr/antlr/2.7.6/antlr-2.7.6.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/apache/poi/poi/3.2-FINAL/poi-3.2-FINAL.jar"/>
 	<classpathentry kind="var" path="M2_REPO/jexcelapi/jxl/2.4.2/jxl-2.4.2.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-gradebook-service-impl/2.5.5/sakai-gradebook-service-impl-2.5.5.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-tool-servlet/2.5.5/sakai-tool-servlet-2.5.5.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-gradebook-service-impl/M2/sakai-gradebook-service-impl-M2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-tool-servlet/M2/sakai-tool-servlet-M2.jar"/>
 	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>
