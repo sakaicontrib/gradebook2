@@ -72,10 +72,10 @@ import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.form.TextArea;
 import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.form.FormPanel.LabelAlign;
+import com.extjs.gxt.ui.client.widget.layout.FillLayout;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
+import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
-import com.extjs.gxt.ui.client.widget.layout.RowData;
-import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Widget;
@@ -113,41 +113,48 @@ public class LearnerSummaryPanel extends ContentPanel {
 
 		setHeaderVisible(false);
 		setId("learnerSummaryPanel");
-		setLayout(new RowLayout());
+		setLayout(new FlowLayout());
 		setWidth(400);
 
 		initListeners();
 
-		add(newLearnerInfoPanel(), new RowData(1, -1));
+		add(newLearnerInfoPanel()); //, new RowData(1, -1));
 
+		FormLayout formLayout = new FormLayout();
+		
 		formPanel = new FormPanel();
 		formPanel.setHeaderVisible(false);
-		formPanel.setLayout(new FitLayout());
+		formPanel.setLayout(formLayout);
 
 		TabPanel tabPanel = new AriaTabPanel();
 		tabPanel.setPlain(true);
 		tabPanel.setBorderStyle(true);
 
 		TabItem tab = new TabItem(i18n.learnerTabGradeHeader());
+		tab.addStyleName("gbTabMargins");
+		tab.setLayout(new FitLayout());
 		tab.add(newGradeFormPanel());
 		tab.setScrollMode(Scroll.AUTOY);
 		tabPanel.add(tab);
 
 		tab = new TabItem(i18n.learnerTabCommentHeader());
+		tab.addStyleName("gbTabMargins");
 		tab.setLayout(new FitLayout());
 		tab.add(newCommentFormPanel());
 		tab.setScrollMode(Scroll.AUTOY);
 		tabPanel.add(tab);
 
 		tab = new TabItem(i18n.learnerTabExcuseHeader());
+		tab.addStyleName("gbTabMargins");
 		tab.setLayout(new FitLayout());
 		tab.add(newExcuseFormPanel());
 		tab.setScrollMode(Scroll.AUTOY);
 		tabPanel.add(tab);
 
 		formPanel.add(tabPanel);
+		//setLayoutData(formPanel, new MarginData(10));
 
-		add(formPanel, new RowData(1, 1));
+		add(formPanel); //, new RowData(1, 1));
 
 		Button button = new AriaButton(i18n.prevLearner(), selectionListener);
 		button.setData(BUTTON_SELECTOR_FLAG, ButtonSelector.PREVIOUS);
@@ -212,7 +219,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 	
 	@Override
 	protected void onResize(final int width, final int height) {
-		commentFormLayout.setDefaultWidth(width - 40);
+		commentFormLayout.setDefaultWidth(width - 60);
 
 		super.onResize(width, height);
 	}
@@ -384,13 +391,15 @@ public class LearnerSummaryPanel extends ContentPanel {
 		learnerInfoPanel = new ContentPanel();
 		learnerInfoPanel.setHeaderVisible(false);
 		learnerInfoPanel.setHeading("Individual Grade Summary");
-		learnerInfoPanel.setLayout(new FitLayout());
+		//learnerInfoPanel.setLayout(new FillLayout());
 		learnerInfoPanel.setScrollMode(Scroll.AUTO);
 		learnerInfoPanel.add(learnerInfoTable);
 
 		return learnerInfoPanel;
 	}
 
+	private static final String rowHeight = "22px";
+	
 	private void updateLearnerInfo(StudentModel learnerGradeRecordCollection, boolean isByEvent) {		
 		// To force a refresh, let's first hide the owning panel
 		learnerInfoPanel.hide();
@@ -400,26 +409,38 @@ public class LearnerSummaryPanel extends ContentPanel {
 
 		learnerInfoTable.setText(1, 0, i18n.columnTitleDisplayName());
 		formatter.setStyleName(1, 0, "gbImpact");
+		formatter.setHeight(1, 0, rowHeight);
 		learnerInfoTable.setText(1, 1, learnerGradeRecordCollection.getStudentName());
-
+		formatter.setHeight(1, 1, rowHeight);
+		learnerInfoTable.setAutoHeight(true);
+		
 		learnerInfoTable.setText(2, 0, i18n.columnTitleEmail());
 		formatter.setStyleName(2, 0, "gbImpact");
+		formatter.setHeight(2, 0, rowHeight);
 		learnerInfoTable.setText(2, 1, learnerGradeRecordCollection.getStudentEmail());
-
+		formatter.setHeight(2, 1, rowHeight);
+		
 		learnerInfoTable.setText(3, 0, i18n.columnTitleDisplayId());
 		formatter.setStyleName(3, 0, "gbImpact");
+		formatter.setHeight(3, 0, rowHeight);
 		learnerInfoTable.setText(3, 1, learnerGradeRecordCollection.getStudentDisplayId());
-
+		formatter.setHeight(3, 1, rowHeight);
+		
 		learnerInfoTable.setText(4, 0, i18n.columnTitleSection());
 		formatter.setStyleName(4, 0, "gbImpact");
+		formatter.setHeight(4, 0, rowHeight);
 		learnerInfoTable.setText(4, 1, learnerGradeRecordCollection.getStudentSections());
+		formatter.setHeight(4, 1, rowHeight);
+		
+		//learnerInfoTable.setText(5, 0, "");
+		//formatter.setColSpan(5, 0, 2);
+		//formatter.setHeight(25, 0, "20px");
 
-		learnerInfoTable.setText(5, 0, "");
-		formatter.setColSpan(5, 0, 2);
-
-		learnerInfoTable.setText(6, 0, "Course Grade");
-		formatter.setStyleName(6, 0, "gbImpact");
-		learnerInfoTable.setText(6, 1, learnerGradeRecordCollection.getStudentGrade());
+		learnerInfoTable.setText(5, 0, "Course Grade");
+		formatter.setStyleName(5, 0, "gbImpact");
+		formatter.setHeight(5, 0, rowHeight);
+		learnerInfoTable.setText(5, 1, learnerGradeRecordCollection.getStudentGrade());
+		formatter.setHeight(5, 1, rowHeight);
 		learnerInfoPanel.show();
 	}
 

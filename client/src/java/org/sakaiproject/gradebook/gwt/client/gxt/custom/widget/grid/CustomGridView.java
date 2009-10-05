@@ -264,13 +264,13 @@ public abstract class CustomGridView extends BaseCustomGridView {
 		return menu;
 	}
 	
-	@Override
+	/*@Override
 	protected void onBeforeDataChanged(StoreEvent se) {
 		if (grid.isLoadMask()) {
 			isDisplayLoadMaskOnRender = false;
 			grid.el().mask("Loading learner data...");
 		}
-	}
+	}*/
 
 	@Override
 	protected void onDataChanged(StoreEvent se) {
@@ -279,7 +279,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 		isDisplayLoadMaskOnRender = false;
 	}
 
-	@Override
+	/*@Override
 	protected void renderUI() {
 		super.renderUI();
 
@@ -287,7 +287,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			grid.el().mask("Loading learner data...");
 			isDisplayLoadMaskOnRender = false;
 		}
-	}
+	}*/
 
 	// Helper method
 	protected void showAllColumns(Menu categoryMenu, List<FixedColumnModel> columns, boolean show) {

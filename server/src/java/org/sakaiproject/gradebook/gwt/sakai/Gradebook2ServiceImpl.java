@@ -179,7 +179,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			
 			String learnerRoleNameString = configService.getString(AppConstants.LEARNER_ROLE_NAMES);
 			
-			if (learnerRoleNameString != null)
+			if (learnerRoleNameString != null && !learnerRoleNameString.equals(""))
 				learnerRoleNames = learnerRoleNameString.split("\\s*,\\s*");
 			
 		} else {

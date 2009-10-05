@@ -120,6 +120,18 @@
 	line-height:normal;
 }
 
+.x-form-item label {
+	-x-system-font:none;
+	font-family:tahoma,arial,helvetica,sans-serif;
+	font-size:12pt;
+	font-size-adjust:none;
+	font-stretch:normal;
+	font-style:normal;
+	font-variant:normal;
+	font-weight:normal;
+	line-height:normal;
+}
+
 .x-grid3-hd-inner {
 	cursor:inherit;
 	font-size: 9pt !important;
@@ -161,6 +173,10 @@
 	line-height:normal;
 }
 
+.gbTabMargins {
+	height:325px;
+	margin: 10px;
+}
 
 .gbCellClickable {
 	color: blue;	
@@ -286,7 +302,6 @@
 
 .gbImpact {
 	color: darkblue;
-	width: 120px;
 	padding-right: 10px;
 }
 
