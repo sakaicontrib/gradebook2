@@ -77,6 +77,12 @@
 	
 		<dependency>
       		<groupId>org.sakaiproject</groupId>
+      		<artifactId>sakai-event-api</artifactId>
+      		<version>${sakai.version}</version>
+    	</dependency>
+	
+		<dependency>
+      		<groupId>org.sakaiproject</groupId>
       		<artifactId>sakai-coursemanagement-api</artifactId>
       		<version>${sakai.version}</version>
     	</dependency>

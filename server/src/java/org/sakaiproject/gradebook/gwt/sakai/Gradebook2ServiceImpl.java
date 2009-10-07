@@ -47,6 +47,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.component.api.ServerConfigurationService;
+import org.sakaiproject.event.api.Event;
+import org.sakaiproject.event.api.EventTrackingService;
 import org.sakaiproject.exception.IdUnusedException;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
@@ -146,6 +148,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	private UserDirectoryService userService;
 	private SessionManager sessionManager;
 	private ServerConfigurationService configService;
+	private EventTrackingService eventTrackingService;
 	
 	private String helpUrl;
 	private List<GradeType> enabledGradeTypes;
@@ -234,6 +237,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 		Long assignmentId = doCreateItem(gradebook, item, hasCategories, enforceNoNewCategories);
 
+		postEvent("gradebook2.newItem", String.valueOf(gradebook.getId()), String.valueOf(assignmentId));
+		
 		if (!hasCategories) {
 			List<Assignment> assignments = gbService.getAssignments(gradebookId);
 			return getItemModel(gradebook, assignments, null, null, assignmentId);
@@ -322,6 +327,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 			categoryId = gbService.createCategory(gradebookId, name, Double.valueOf(w), dropLowest, isEqualWeighting, Boolean.valueOf(isUnweighted), isExtraCredit, categoryOrder, doEnforcePointWeighting);
 
+			postEvent("gradebook2.newCategory", String.valueOf(gradebook.getId()), String.valueOf(categoryId));
+			
 			assignments = gbService.getAssignments(gradebook.getId());
 			categories = null;
 			if (hasCategories) {
@@ -368,6 +375,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		
 		try {
 			gbService.updateComment(comment);
+			postEvent("gradebook2.comment", String.valueOf(gradebook.getId()), String.valueOf(assignment.getId()), studentUid);
 		} catch (RuntimeException e) {
 			actionRecord.setStatus(ActionRecord.STATUS_FAILURE);
 			throw e;
@@ -543,6 +551,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 						Long assignmentId = doCreateItem(gradebook, itemModel, hasCategories, false);
 						item.setIdentifier(String.valueOf(assignmentId));
 
+						postEvent("gradebook2.importNewItem", String.valueOf(gradebook.getId()), String.valueOf(assignmentId));
+						
 						Assignment assignment = gbService.getAssignment(assignmentId);
 						idToAssignmentMap.put(id, assignment);
 
@@ -579,9 +589,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 							isModified = true;
 						}
 
-						if (isModified)
+						if (isModified) {
 							gbService.updateAssignment(assignment);
-
+							postEvent("gradebook2.importUpdateItem", String.valueOf(gradebook.getId()), String.valueOf(assignment.getId()));
+						}
+						
 						idToAssignmentMap.put(id, assignment);
 					}
 				}
@@ -2371,6 +2383,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			assignment.setItemOrder(newItemOrder);
 			gbService.updateAssignment(assignment);
 
+			if (isRemoved)
+				postEvent("gradebook2.deleteItem", String.valueOf(gradebook.getId()), String.valueOf(assignmentId));
+			else
+				postEvent("gradebook2.updateItem", String.valueOf(gradebook.getId()), String.valueOf(assignmentId));
+			
 			if (hasCategories) {
 
 				List<Assignment> oldAssignments = null;
@@ -3887,6 +3904,20 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 		gbService.storeActionRecord(actionRecord);
 	}
+	
+	private void postEvent(String message, String gradebookId, String... args) {
+		if (eventTrackingService == null)
+			return;
+		
+		StringBuilder objectReference = new StringBuilder("/gradebook/").append(gradebookId);
+		
+		for (String arg : args) {
+			objectReference.append("/").append(arg);
+		}
+		
+		Event event = eventTrackingService.newEvent(message, objectReference.toString(), true);
+        eventTrackingService.post(event);
+	}
 
 	private void recalculateAssignmentGradeRecords(Assignment assignment, Double value, Double startValue) {
 
@@ -4068,6 +4099,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			Collection<AssignmentGradeRecord> gradeRecords = new LinkedList<AssignmentGradeRecord>();
 			gradeRecords.add(assignmentGradeRecord);
 			gbService.updateAssignmentGradeRecords(assignment, gradeRecords);
+			postEvent("gradebook2.assignGrade", String.valueOf(gradebook.getId()), String.valueOf(assignment.getId()), studentUid);
 		}
 
 		return assignmentGradeRecord;
@@ -4313,6 +4345,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 			gbService.updateCategory(category);
 
+			if (isRemoved)
+				postEvent("gradebook2.deleteCategory", String.valueOf(gradebook.getId()), String.valueOf(category.getId()));
+			else
+				postEvent("gradebook2.updateCategory", String.valueOf(gradebook.getId()), String.valueOf(category.getId()));
+			
 			if (hasCategories) {
 				List<Assignment> assignmentsForCategory = gbService.getAssignmentsForCategory(category.getId());
 
@@ -4677,6 +4714,14 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	public void setConfigService(ServerConfigurationService configService) {
 
 		this.configService = configService;
+	}
+
+	public EventTrackingService getEventTrackingService() {
+		return eventTrackingService;
+	}
+
+	public void setEventTrackingService(EventTrackingService eventTrackingService) {
+		this.eventTrackingService = eventTrackingService;
 	}
 
 

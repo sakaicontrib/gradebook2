@@ -52,5 +52,6 @@
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-gradebook-service-impl/M2/sakai-gradebook-service-impl-M2.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-tool-servlet/M2/sakai-tool-servlet-M2.jar"/>
 	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-event-api/M2/sakai-event-api-M2.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>
