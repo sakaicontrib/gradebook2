@@ -503,7 +503,9 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 			if (isUnweighted(assignment))
 				continue;
 
-			if (!DataTypeConversionUtil.checkBoolean(assignment.isExtraCredit()) && assignment.getPointsPossible() != null)
+			boolean isExtraCreditItemOrCategory = isExtraCreditCategory || DataTypeConversionUtil.checkBoolean(assignment.isExtraCredit());
+			
+			if (!isExtraCreditItemOrCategory && assignment.getPointsPossible() != null)
 				totalUnitsPoints = totalUnitsPoints.add(BigDecimal.valueOf(assignment.getPointsPossible().doubleValue()));
 			
 			AssignmentGradeRecord assignmentGradeRecord = assignmentGradeRecordMap.get(assignment.getId());
@@ -515,7 +517,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 					BigDecimal pointsEarned = new BigDecimal(assignmentGradeRecord.getPointsEarned().toString());
 					BigDecimal pointsPossible = new BigDecimal(assignment.getPointsPossible().toString());
 					BigDecimal assignmentWeight = getAssignmentWeight(assignment);
-					Boolean isExtraCredit = Boolean.valueOf(isExtraCreditCategory || DataTypeConversionUtil.checkBoolean(assignment.isExtraCredit()));
+					Boolean isExtraCredit = Boolean.valueOf(isExtraCreditItemOrCategory);
 					
 					GradeRecordCalculationUnit gradeRecordUnit = new GradeRecordCalculationUnit(pointsEarned, 
 							pointsPossible, assignmentWeight, isExtraCredit) {
