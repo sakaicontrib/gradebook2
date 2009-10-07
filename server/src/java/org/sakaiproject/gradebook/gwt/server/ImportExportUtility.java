@@ -388,8 +388,7 @@ public class ImportExportUtility {
 			filename.append(name);
 		}
 
-
-
+		service.postEvent("gradebook2.export", String.valueOf(gradebookId));
 		
 		if (fileType.equals("xls97"))
 		{
@@ -1725,6 +1724,8 @@ public class ImportExportUtility {
 			importFile.setHasErrors(true); 
 			importFile.setNotes("The file loaded does not contain the required header information to load."); 
 		}
+		
+		service.postEvent("gradebook2.import", String.valueOf(gradebook.getGradebookId()));
 
 		return importFile;
 	}

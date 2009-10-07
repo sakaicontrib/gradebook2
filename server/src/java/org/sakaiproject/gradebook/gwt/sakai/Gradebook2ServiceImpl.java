@@ -3905,7 +3905,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		gbService.storeActionRecord(actionRecord);
 	}
 	
-	private void postEvent(String message, String gradebookId, String... args) {
+	public void postEvent(String message, String gradebookId, String... args) {
 		if (eventTrackingService == null)
 			return;
 		

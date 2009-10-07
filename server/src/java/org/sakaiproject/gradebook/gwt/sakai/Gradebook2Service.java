@@ -200,4 +200,5 @@ public interface Gradebook2Service {
 
 	public List<Category> getCategoriesWithAssignments(Long gradebookId);
 	
+	public void postEvent(String message, String gradebookId, String... args);
 }
