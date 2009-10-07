@@ -880,7 +880,7 @@ public class ItemTreePanel extends ContentPanel {
 	private Menu newTreeContextMenu(I18nConstants i18n) {
 
 		treeContextMenu = new AriaMenu();
-		treeContextMenu.setWidth(130);
+		treeContextMenu.setWidth(180);
 
 		addCategoryMenuItem = new AriaMenuItem();
 		addCategoryMenuItem.setData(selectionTypeField, SelectionType.CREATE_CATEGORY);
