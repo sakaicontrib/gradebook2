@@ -715,8 +715,12 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				}
 				
 				if (idKeySet != null) {
+					
+					
 					for (String id : idKeySet) {
 						Assignment assignment = idToAssignmentMap.get(id);
+					
+						List<AssignmentGradeRecord> gradedRecords = new ArrayList<AssignmentGradeRecord>();
 						
 						// This is the value stored on the client
 						Object v = student.get(id);
@@ -753,9 +757,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		
 							if (gradeRecordMap != null)
 								assignmentGradeRecord = gradeRecordMap.get(assignment.getId()); 
-		
-							
-		
+
 							if (assignmentGradeRecord == null)
 								assignmentGradeRecord = new AssignmentGradeRecord();
 		
@@ -776,7 +778,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 							student.set(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
 		
 							
-							scoreItem(gradebook, assignment, assignmentGradeRecord, student.getIdentifier(), value, true, false);
+							gradedRecords.add(scoreItem(gradebook, assignment, assignmentGradeRecord, student.getIdentifier(), value, true, true));
 							builder.append(assignment.getName()).append(" (");
 							
 							if (oldValue != null)
@@ -821,6 +823,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 							builder.append(" Failed) ");
 							
 							student.set(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
+						} finally {
+							gbService.updateAssignmentGradeRecords(assignment, gradedRecords);
+							postEvent("gradebook2.assignGradesBulk", String.valueOf(gradebook.getId()), String.valueOf(assignment.getId()));
 						}
 					}
 				}
