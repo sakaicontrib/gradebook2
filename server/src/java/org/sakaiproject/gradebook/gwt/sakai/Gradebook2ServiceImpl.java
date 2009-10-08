@@ -2180,7 +2180,27 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	}
 
 	public void submitFinalGrade(List<Map<Column, String>> studentDataList, String gradebookUid, HttpServletRequest request, HttpServletResponse response) {
+		for (Map<Column, String> studentData : studentDataList) {
+			String studentUid = studentData.get(Column.STUDENT_UID);
+			String finalGradeUserId = studentData.get(Column.FINAL_GRADE_USER_ID);
+			String exportUserId = studentData.get(Column.EXPORT_USER_ID);
+			String studentName = studentData.get(Column.STUDENT_NAME);
+			String exportCmId = studentData.get(Column.EXPORT_CM_ID);
+			String letterGrade = studentData.get(Column.LETTER_GRADE);
+			
+			ActionRecord actionRecord = new ActionRecord(gradebookUid, null, EntityType.GRADE_SUBMISSION.name(), ActionType.GRADED.name());
+			actionRecord.setEntityName(studentName);
+			actionRecord.setEntityId(finalGradeUserId);
+			actionRecord.setStudentUid(studentUid);
 
+			Map<String, String> propertyMap = actionRecord.getPropertyMap();
+			propertyMap.put(Column.EXPORT_USER_ID.name(), exportUserId);
+			propertyMap.put(Column.EXPORT_CM_ID.name(), exportCmId);
+			propertyMap.put(Column.LETTER_GRADE.name(), letterGrade);	
+			
+			gbService.storeActionRecord(actionRecord);
+		}
+		
 		advisor.submitFinalGrade(studentDataList, gradebookUid, request, response);
 	}
 

@@ -172,6 +172,10 @@
 	line-height:normal;
 }
 
+.x-window-mc {
+	font-size:12pt;
+}
+
 .gbTabMargins {
 	height:325px;
 	margin: 10px;
