@@ -22,8 +22,6 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client;
 
-import java.util.Date;
-
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.controller.AppController;
 import org.sakaiproject.gradebook.gwt.client.gxt.controller.ServiceController;
@@ -35,12 +33,10 @@ import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
 import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
-import com.extjs.gxt.ui.client.state.CookieProvider;
-import com.extjs.gxt.ui.client.state.StateManager;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.i18n.client.Dictionary;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
 
@@ -48,19 +44,13 @@ import com.google.gwt.user.client.rpc.ServiceDefTarget;
  * Entry point classes define <code>onModuleLoad()</code>.
  */
 public class GradebookApplication implements EntryPoint {
-	
-	// One year in millisecond is 365 days x 24 hours x 60 minutes x 60 seconds x 1000 milliseconds
-	private static long ONE_YEAR = 31536000000l;
-	
+
 	private Dispatcher dispatcher;
 	private Gradebook2RPCServiceAsync dataService;
 	private int screenHeight = 620;
 	
     public GradebookApplication() {
-    	
-    	Date expiryDate = new Date(new Date().getTime() + ONE_YEAR);
-    	CookieProvider provider = new CookieProvider("/", expiryDate, "subdomain", true);
-        StateManager.get().setProvider(provider);
+
     }
 	
 	public void onModuleLoad() {
@@ -134,10 +124,14 @@ public class GradebookApplication implements EntryPoint {
 	
 	private void readAuthorization(AuthModel authModel) {
 		if (GWT.isScript()) {
+			
+			int clientHeight = Window.getClientHeight();
+			//Window.alert("Client Height is " + clientHeight);
+			screenHeight = clientHeight - 180;
 			String placementId = authModel.getPlacementId();
 			if (placementId != null) {
 				String modifiedId = placementId.replace('-', 'x');
-				resizeMainFrame("Main" + modifiedId, screenHeight + 50);
+				resizeMainFrame("Main" + modifiedId, screenHeight);
 			}
 		}
 		

@@ -71,9 +71,9 @@ import com.extjs.gxt.ui.client.widget.layout.CardLayout;
 import com.extjs.gxt.ui.client.widget.layout.ColumnData;
 import com.extjs.gxt.ui.client.widget.layout.ColumnLayout;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
+import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
-import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Element;
@@ -125,7 +125,7 @@ public class StudentPanel extends ContentPanel {
 		this.statsList = null;
 		setFrame(true);
 		setHeaderVisible(false);
-		setLayout(new RowLayout());
+		setLayout(new FlowLayout());
 
 		studentInformation = new FlexTable(); 
 		studentInformation.setStyleName("gbStudentInformation");
@@ -133,10 +133,11 @@ public class StudentPanel extends ContentPanel {
 		studentInformationPanel.setBorders(true);
 		studentInformationPanel.setFrame(true);
 		studentInformationPanel.setHeaderVisible(false);
+		studentInformationPanel.setHeight(200);
 		studentInformationPanel.setLayout(new FitLayout());
 		studentInformationPanel.setScrollMode(Scroll.AUTO);
 		studentInformationPanel.add(studentInformation);
-		add(studentInformationPanel, new RowData(-1, -1, new Margins(5, 0, 0, 0)));
+		add(studentInformationPanel); //, new RowData(-1, -1, new Margins(5, 0, 0, 0)));
 
 		store = new GroupingStore<BaseModel>();
 		store.setGroupOnSort(false);
@@ -300,7 +301,7 @@ public class StudentPanel extends ContentPanel {
 		cardLayoutContainer.add(textPanel);
 		cardLayout.setActiveItem(gradeInformationPanel);
 		
-		add(cardLayoutContainer, new RowData(1, 1, new Margins(5, 0, 0, 0)));
+		add(cardLayoutContainer); //, new RowData(1, 1, new Margins(5, 0, 0, 0)));
 	}
 	
 	public StudentModel getStudentRow() {
@@ -365,10 +366,10 @@ public class StudentPanel extends ContentPanel {
 
 	}
 	
-	public void onResize(int x, int y) {
-		super.onResize(x, y);
+	public void onResize(int width, int height) {
+		super.onResize(width, height);
 		
-
+		gradeInformationPanel.setHeight(height - 225);
 	}
 	
 	public void refreshColumns() {

@@ -72,7 +72,8 @@ public class DefaultFilenameHandler implements HttpRequestHandler {
 		response.setContentLength(contentLength);
 		response.setContentType(contentType);
 
-		log.info("Path: " + path + " Content type: " + contentType);
+		if (log.isDebugEnabled())
+			log.debug("Path: " + path + " Content type: " + contentType);
 		
 		long lastModified = connection.getLastModified();
 		String lastModifiedString = new Date(lastModified).toString();

@@ -79,9 +79,9 @@ public abstract class AppView extends View {
 		realViewport.add(viewport);
 		
 		viewport.setPosition(0, 0);
-		viewport.setHeight(screenHeight);
+		//viewport.setHeight(screenHeight);
 		viewport.setLayout(viewportLayout);
-		realViewport.setHeight(screenHeight);
+		//realViewport.setHeight(screenHeight);
 		
 		RootPanel.get().add(realViewport);
 	}
