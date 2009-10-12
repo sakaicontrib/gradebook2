@@ -1,6 +1,6 @@
 Index: .classpath
 ===================================================================
---- .classpath	(revision 63887)
+--- .classpath	(revision 63920)
 +++ .classpath	(working copy)
 @@ -16,42 +16,32 @@
  	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-gradebook-service-hibernate/M2/sakai-gradebook-service-hibernate-M2.jar" sourcepath="/M2_REPO/org/sakaiproject/sakai-gradebook-service-hibernate/M2/sakai-gradebook-service-hibernate-M2.jar"/>
@@ -49,31 +49,9 @@ Index: .classpath
 +	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-kernel-util/1.0.11/sakai-kernel-util-1.0.11.jar"/>
  	<classpathentry kind="output" path="war/WEB-INF/classes"/>
  </classpath>
-Index: shared/pom.xml
-===================================================================
---- shared/pom.xml	(revision 63887)
-+++ shared/pom.xml	(working copy)
-@@ -27,7 +27,7 @@
-             <version>${gwt.version}</version>
-             <scope>provided</scope>
-         </dependency>
--        <dependency>
-+        <!--dependency>
-             <groupId>com.google.gwt</groupId>
-             <artifactId>gwt-dev</artifactId>
-             <version>${gwt.version}</version>
-@@ -41,7 +41,7 @@
-             <version>${gwt.version}</version>
-             <classifier>${gwt.platform}</classifier>
-             <scope>provided</scope>
--        </dependency>
-+        </dependency-->
-   	<dependency>
- 		<groupId>com.extjs</groupId>
- 		<artifactId>gxt</artifactId>
 Index: server/src/java/org/sakaiproject/gradebook/gwt/sakai/hibernate/GradebookToolServiceImpl.java
 ===================================================================
---- server/src/java/org/sakaiproject/gradebook/gwt/sakai/hibernate/GradebookToolServiceImpl.java	(revision 63887)
+--- server/src/java/org/sakaiproject/gradebook/gwt/sakai/hibernate/GradebookToolServiceImpl.java	(revision 63920)
 +++ server/src/java/org/sakaiproject/gradebook/gwt/sakai/hibernate/GradebookToolServiceImpl.java	(working copy)
 @@ -1610,7 +1610,7 @@
  					}
@@ -86,154 +64,135 @@ Index: server/src/java/org/sakaiproject/gradebook/gwt/sakai/hibernate/GradebookT
  					}
 Index: server/pom.xml
 ===================================================================
---- server/pom.xml	(revision 63887)
+--- server/pom.xml	(revision 63920)
 +++ server/pom.xml	(working copy)
-@@ -62,27 +62,24 @@
-       		<version>${sakai.version}</version>
-       		<scope>provided</scope>
-     	</dependency>
--	
-+
+@@ -31,6 +31,18 @@
+ 			<scope>provided</scope>
+ 		</dependency>
  		<dependency>
--      		<groupId>org.sakaiproject</groupId>
--      		<artifactId>sakai-authz-api</artifactId>
--      		<version>${sakai.version}</version>
--    	</dependency>
-+      		<groupId>org.sakaiproject.kernel</groupId>
-+      		<artifactId>sakai-kernel-api</artifactId>
-+   	 	</dependency>
-+   	 	
-+   	 	<dependency>
-+	        <groupId>org.sakaiproject.kernel</groupId>
-+	        <artifactId>sakai-component-manager</artifactId>
-+   	 	</dependency>
-+   	 	
-+   	 	<dependency>
-+        	<groupId>org.sakaiproject.kernel</groupId>
-+        	<artifactId>sakai-kernel-util</artifactId>
-+   	 	</dependency>
- 	
++			<groupId>org.sakaiproject.kernel</groupId>
++			<artifactId>sakai-kernel-api</artifactId>
++		</dependency>
++		<dependency>
++			<groupId>org.sakaiproject.kernel</groupId>
++			<artifactId>sakai-component-manager</artifactId>
++		</dependency>
++		<dependency>
++			<groupId>org.sakaiproject.kernel</groupId>
++			<artifactId>sakai-kernel-util</artifactId>
++		</dependency>
++		<dependency>
+ 			<groupId>commons-logging</groupId>
+ 			<artifactId>commons-logging</artifactId>
+ 			<version>1.0.4</version>
+@@ -60,21 +72,6 @@
+ 		</dependency>
  		<dependency>
-       		<groupId>org.sakaiproject</groupId>
--      		<artifactId>sakai-entity-api</artifactId>
--      		<version>${sakai.version}</version>
--    	</dependency>
--	
+ 			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-authz-api</artifactId>
+-			<version>${sakai.version}</version>
+-		</dependency>
 -		<dependency>
--      		<groupId>org.sakaiproject</groupId>
--      		<artifactId>sakai-event-api</artifactId>
--      		<version>${sakai.version}</version>
--    	</dependency>
--	
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-entity-api</artifactId>
+-			<version>${sakai.version}</version>
+-		</dependency>
 -		<dependency>
--      		<groupId>org.sakaiproject</groupId>
-       		<artifactId>sakai-coursemanagement-api</artifactId>
-       		<version>${sakai.version}</version>
-     	</dependency>
-@@ -91,49 +88,7 @@
-       		<groupId>org.sakaiproject</groupId>
-       		<artifactId>sakai-sections-api</artifactId>
-     	</dependency>
--    	
--    	<dependency>
--      		<groupId>org.sakaiproject</groupId>
--      		<artifactId>sakai-site-api</artifactId>
--      		<version>${sakai.version}</version>
--    	</dependency>
--    	
--    	<dependency>
--      		<groupId>org.sakaiproject</groupId>
--      		<artifactId>sakai-tool-api</artifactId>
--      		<version>${sakai.version}</version>
--    	</dependency>
--    	
--    	<dependency>
--      		<groupId>org.sakaiproject</groupId>
--      		<artifactId>sakai-user-api</artifactId>
--      		<version>${sakai.version}</version>
--    	</dependency>
--    	
--    	<dependency>
--      		<groupId>org.sakaiproject</groupId>
--      		<artifactId>sakai-tool-servlet</artifactId>
--      		<version>${sakai.version}</version>
--      		<scope>provided</scope>
--    	</dependency>
--    	
--    	<dependency>
--      		<groupId>org.sakaiproject</groupId>
--      		<artifactId>sakai-util-api</artifactId>
--      		<version>${sakai.version}</version>
--    	</dependency>
--		
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-event-api</artifactId>
+-			<version>${sakai.version}</version>
+-		</dependency>
+-		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+ 			<artifactId>sakai-coursemanagement-api</artifactId>
+ 			<version>${sakai.version}</version>
+ 		</dependency>
+@@ -82,42 +79,6 @@
+ 			<groupId>org.sakaiproject</groupId>
+ 			<artifactId>sakai-sections-api</artifactId>
+ 		</dependency>
+-		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-site-api</artifactId>
+-			<version>${sakai.version}</version>
+-		</dependency>
+-		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-tool-api</artifactId>
+-			<version>${sakai.version}</version>
+-		</dependency>
+-		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-user-api</artifactId>
+-			<version>${sakai.version}</version>
+-		</dependency>
+-		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-tool-servlet</artifactId>
+-			<version>${sakai.version}</version>
+-			<scope>provided</scope>
+-		</dependency>
+-		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-util-api</artifactId>
+-			<version>${sakai.version}</version>
+-		</dependency>
 -		<dependency>
 -			<groupId>org.sakaiproject</groupId>
 -			<artifactId>sakai-component</artifactId>
 -			<version>${sakai.version}</version>
 -		</dependency>
--		
 -		<dependency>
 -			<groupId>org.sakaiproject</groupId>
 -			<artifactId>sakai-component-api</artifactId>
 -			<version>${sakai.version}</version>
 -		</dependency>
-+
-    
  		<!--  GWT deps (from central repo) -->
-         <dependency>
-@@ -148,7 +103,7 @@
-             <version>${gwt.version}</version>
-             <scope>provided</scope>
-         </dependency>
--        <dependency>
-+        <!-- dependency>
-             <groupId>com.google.gwt</groupId>
-             <artifactId>gwt-dev</artifactId>
-             <version>${gwt.version}</version>
-@@ -162,7 +117,7 @@
-             <version>${gwt.version}</version>
-             <classifier>${gwt.platform}</classifier>
-             <scope>provided</scope>
--        </dependency>
-+        </dependency-->
- 		
- 		
-     	<!-- Other dependencies -->
+ 		<dependency>
+ 			<groupId>com.google.gwt</groupId>
 Index: api/pom.xml
 ===================================================================
---- api/pom.xml	(revision 63887)
+--- api/pom.xml	(revision 63920)
 +++ api/pom.xml	(working copy)
-@@ -39,30 +39,10 @@
-       <scope>provided</scope>
-     </dependency>
-     <dependency>
--      <groupId>org.sakaiproject</groupId>
--      <artifactId>sakai-entity-api</artifactId>
--      <version>${sakai.version}</version>
--      <scope>provided</scope>
--    </dependency>
-+      <groupId>org.sakaiproject.kernel</groupId>
-+      <artifactId>sakai-kernel-api</artifactId>
-+   	</dependency>
-     <dependency>
--      <groupId>org.sakaiproject</groupId>
--      <artifactId>sakai-authz-api</artifactId>
--      <version>${sakai.version}</version>
--      <scope>provided</scope>
--    </dependency>
--    <dependency>
--      <groupId>org.sakaiproject</groupId>
--      <artifactId>sakai-user-api</artifactId>
--      <version>${sakai.version}</version>
--      <scope>provided</scope>
--    </dependency>
--    <dependency>
--      <groupId>org.sakaiproject</groupId>
--      <artifactId>sakai-site-api</artifactId>
--      <version>${sakai.version}</version>
--      <scope>provided</scope>
--    </dependency>
--    <dependency>
-       <groupId>tomcat</groupId>
-       <artifactId>servlets-default</artifactId>
-       <version>5.5.23</version>
+@@ -39,35 +39,15 @@
+ 			<scope>provided</scope>
+ 		</dependency>
+ 		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-entity-api</artifactId>
+-			<version>${sakai.version}</version>
+-			<scope>provided</scope>
++			<groupId>org.sakaiproject.kernel</groupId>
++			<artifactId>sakai-kernel-api</artifactId>
+ 		</dependency>
+ 		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-authz-api</artifactId>
+-			<version>${sakai.version}</version>
+-			<scope>provided</scope>
++			<groupId>javax.servlet</groupId>
++			<artifactId>servlet-api</artifactId>
++			<version>2.4</version>
++			<scope>compile</scope>
+ 		</dependency>
+-		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-user-api</artifactId>
+-			<version>${sakai.version}</version>
+-			<scope>provided</scope>
+-		</dependency>
+-		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-site-api</artifactId>
+-			<version>${sakai.version}</version>
+-			<scope>provided</scope>
+-		</dependency>
+-		<dependency>
+-        	<groupId>javax.servlet</groupId>
+-            <artifactId>servlet-api</artifactId>
+-            <version>2.4</version>
+-            <scope>compile</scope>
+-        </dependency>
+ 	</dependencies>
+ 	<build>
+ 		<resources />
