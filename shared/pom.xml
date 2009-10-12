@@ -1,78 +1,58 @@
 <?xml version="1.0"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    	<artifactId>gradebook2-base</artifactId>
-    	<groupId>org.sakaiproject</groupId>
-    	<version>M2</version>
-   		<relativePath>../pom.xml</relativePath>
-  </parent>
-  <name>Sakai Gradebook2 Shared Classes</name>
-  <groupId>org.sakaiproject</groupId>
-  <artifactId>gradebook2-shared</artifactId>
-  
-  <packaging>jar</packaging>
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>gradebook2-base</artifactId>
+		<groupId>org.sakaiproject</groupId>
+		<version>M2</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+	<name>Sakai Gradebook2 Shared Classes</name>
+	<groupId>org.sakaiproject</groupId>
+	<artifactId>gradebook2-shared</artifactId>
 
-  <dependencies>
-	<!--  GWT deps (from central repo) -->
-        <dependency>
-            <groupId>com.google.gwt</groupId>
-            <artifactId>gwt-servlet</artifactId>
-            <version>${gwt.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.gwt</groupId>
-            <artifactId>gwt-user</artifactId>
-            <version>${gwt.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.gwt</groupId>
-            <artifactId>gwt-dev</artifactId>
-            <version>${gwt.version}</version>
-            <classifier>${gwt.platform}-libs</classifier>
-            <type>zip</type>
-            <scope>provided</scope>
-        </dependency>       
-        <dependency>
-            <groupId>com.google.gwt</groupId>
-            <artifactId>gwt-dev</artifactId>
-            <version>${gwt.version}</version>
-            <classifier>${gwt.platform}</classifier>
-            <scope>provided</scope>
-        </dependency>
-  	<dependency>
-		<groupId>com.extjs</groupId>
-		<artifactId>gxt</artifactId>
-		<version>2.0.1</version>
-	</dependency>
-    <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
-      <version>1.0.4</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
-      <version>${sakai.commons.lang.version}</version>
-    </dependency>
-  </dependencies>
-  
-  <build>
-    <resources>
-      <resource>
-        <directory>${basedir}/src/java</directory>
-        <includes>
-            <include>**/*.java</include>
-        </includes>
-      </resource>
-    </resources>
-  </build>
-  
-  
-  
-  
-  
-  
+	<packaging>jar</packaging>
+
+	<dependencies>
+		<!--  GWT deps (from central repo) -->
+		<dependency>
+			<groupId>com.google.gwt</groupId>
+			<artifactId>gwt-servlet</artifactId>
+			<version>${gwt.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.google.gwt</groupId>
+			<artifactId>gwt-user</artifactId>
+			<version>${gwt.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.extjs</groupId>
+			<artifactId>gxt</artifactId>
+			<version>2.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>1.0.4</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>${sakai.commons.lang.version}</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>${basedir}/src/java</directory>
+				<includes>
+					<include>**/*.java</include>
+				</includes>
+			</resource>
+		</resources>
+	</build>
+
 </project>
