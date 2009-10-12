@@ -20,12 +20,14 @@
 		<deploy.target>shared</deploy.target>
 	</properties>
 	<dependencies>
+		<!-- Project Dependencies -->
 		<dependency>
 			<groupId>org.sakaiproject</groupId>
 			<artifactId>gradebook2-model</artifactId>
 			<version>${sakai.version}</version>
 			<scope>provided</scope>
 		</dependency>
+		<!-- Gradebook1 Dependencies -->
 		<dependency>
 			<groupId>org.sakaiproject</groupId>
 			<artifactId>sakai-gradebook-service-api</artifactId>
@@ -38,12 +40,7 @@
 			<version>${sakai.version}</version>
 			<scope>provided</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.sakaiproject</groupId>
-			<artifactId>sakai-entity-api</artifactId>
-			<version>${sakai.version}</version>
-			<scope>provided</scope>
-		</dependency>
+		<!-- Misc Sakai Dependencies -->
 		<dependency>
 			<groupId>org.sakaiproject</groupId>
 			<artifactId>sakai-authz-api</artifactId>
@@ -52,7 +49,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.sakaiproject</groupId>
-			<artifactId>sakai-user-api</artifactId>
+			<artifactId>sakai-entity-api</artifactId>
 			<version>${sakai.version}</version>
 			<scope>provided</scope>
 		</dependency>
@@ -62,6 +59,13 @@
 			<version>${sakai.version}</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.sakaiproject</groupId>
+			<artifactId>sakai-user-api</artifactId>
+			<version>${sakai.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<!-- External Dependencies -->
 		<dependency>
         	<groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>

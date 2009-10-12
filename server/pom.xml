@@ -13,10 +13,12 @@
 	<packaging>jar</packaging>
 
 	<dependencies>
+		<!-- Project Dependencies -->
 		<dependency>
 			<groupId>org.sakaiproject</groupId>
-			<artifactId>gradebook2-shared</artifactId>
+			<artifactId>gradebook2-api</artifactId>
 			<version>${sakai.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.sakaiproject</groupId>
@@ -26,29 +28,13 @@
 		</dependency>
 		<dependency>
 			<groupId>org.sakaiproject</groupId>
-			<artifactId>gradebook2-api</artifactId>
+			<artifactId>gradebook2-shared</artifactId>
 			<version>${sakai.version}</version>
-			<scope>provided</scope>
 		</dependency>
-		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-			<version>1.0.4</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
-			<version>${sakai.commons.lang.version}</version>
-		</dependency>
+		<!-- Gradebook1 Dependencies -->
 		<dependency>
 			<groupId>org.sakaiproject</groupId>
 			<artifactId>sakai-gradebook-service-api</artifactId>
-			<version>${sakai.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.sakaiproject</groupId>
-			<artifactId>sakai-gradebook-service-impl</artifactId>
 			<version>${sakai.version}</version>
 			<scope>provided</scope>
 		</dependency>
@@ -60,7 +46,35 @@
 		</dependency>
 		<dependency>
 			<groupId>org.sakaiproject</groupId>
+			<artifactId>sakai-gradebook-service-impl</artifactId>
+			<version>${sakai.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<!-- Sakai Course Management Dependency -->
+		<dependency>
+			<groupId>org.sakaiproject</groupId>
+			<artifactId>sakai-coursemanagement-api</artifactId>
+			<version>${sakai.version}</version>
+		</dependency>
+		<!-- Sakai Sections Dependency -->
+		<dependency>
+			<groupId>org.sakaiproject</groupId>
+			<artifactId>sakai-sections-api</artifactId>
+		</dependency>
+		<!-- Misc Sakai Dependencies -->
+		<dependency>
+			<groupId>org.sakaiproject</groupId>
 			<artifactId>sakai-authz-api</artifactId>
+			<version>${sakai.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.sakaiproject</groupId>
+			<artifactId>sakai-component</artifactId>
+			<version>${sakai.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.sakaiproject</groupId>
+			<artifactId>sakai-component-api</artifactId>
 			<version>${sakai.version}</version>
 		</dependency>
 		<dependency>
@@ -75,15 +89,6 @@
 		</dependency>
 		<dependency>
 			<groupId>org.sakaiproject</groupId>
-			<artifactId>sakai-coursemanagement-api</artifactId>
-			<version>${sakai.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.sakaiproject</groupId>
-			<artifactId>sakai-sections-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.sakaiproject</groupId>
 			<artifactId>sakai-site-api</artifactId>
 			<version>${sakai.version}</version>
 		</dependency>
@@ -94,31 +99,21 @@
 		</dependency>
 		<dependency>
 			<groupId>org.sakaiproject</groupId>
-			<artifactId>sakai-user-api</artifactId>
-			<version>${sakai.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.sakaiproject</groupId>
 			<artifactId>sakai-tool-servlet</artifactId>
 			<version>${sakai.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.sakaiproject</groupId>
+			<artifactId>sakai-user-api</artifactId>
+			<version>${sakai.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.sakaiproject</groupId>
 			<artifactId>sakai-util-api</artifactId>
 			<version>${sakai.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.sakaiproject</groupId>
-			<artifactId>sakai-component</artifactId>
-			<version>${sakai.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.sakaiproject</groupId>
-			<artifactId>sakai-component-api</artifactId>
-			<version>${sakai.version}</version>
-		</dependency>
-		<!--  GWT deps (from central repo) -->
+		<!--  Google Web Toolkit Dependencies -->
 		<dependency>
 			<groupId>com.google.gwt</groupId>
 			<artifactId>gwt-servlet</artifactId>
@@ -131,54 +126,28 @@
 			<version>${gwt.version}</version>
 			<scope>provided</scope>
 		</dependency>
-		<!-- Other dependencies -->
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>jexcelapi</groupId>
-			<artifactId>jxl</artifactId>
-			<version>2.4.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.poi</groupId>
-			<artifactId>poi</artifactId>
-			<version>3.2-FINAL</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring</artifactId>
-			<version>2.0.6</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-mock</artifactId>
-			<version>2.0.6</version>
-			<scope>provided</scope>
-		</dependency>
+		<!-- GWT Server Library Dependency -->
 		<dependency>
 			<groupId>net.sf.gwt-widget</groupId>
 			<artifactId>gwt-sl</artifactId>
-			<version>0.1.5b</version>
+			<version>${gwtsl.version}</version>
 		</dependency>
+		<!-- Other External Dependencies -->
 		<dependency>
 			<groupId>aopalliance</groupId>
 			<artifactId>aopalliance</artifactId>
 			<version>1.0</version>
 			<scope>provided</scope>
 		</dependency>
-		<!-- XStream dependency -->
 		<dependency>
 			<groupId>com.thoughtworks.xstream</groupId>
 			<artifactId>xstream</artifactId>
 			<version>1.3</version>
 		</dependency>
 		<dependency>
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
-			<version>2.3</version>
+			<groupId>commons-collections</groupId>
+			<artifactId>commons-collections</artifactId>
+			<version>3.2.1</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-digester</groupId>
@@ -188,17 +157,51 @@
 		<dependency>
 			<groupId>commons-fileupload</groupId>
 			<artifactId>commons-fileupload</artifactId>
-			<version>1.1.1</version>
+			<version>${sakai.commons.fileupload.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>commons-collections</groupId>
-			<artifactId>commons-collections</artifactId>
-			<version>3.2.1</version>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>${sakai.commons.lang.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>${gb2.commons.logging.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>jexcelapi</groupId>
+			<artifactId>jxl</artifactId>
+			<version>2.4.2</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.opencsv</groupId>
 			<artifactId>opencsv</artifactId>
 			<version>1.8</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>3.2-FINAL</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring</artifactId>
+			<version>${sakai.spring.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-mock</artifactId>
+			<version>${sakai.spring.mock.version}</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 	<build>
