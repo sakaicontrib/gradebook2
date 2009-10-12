@@ -36,6 +36,19 @@
 			<artifactId>gradebook2-shared</artifactId>
 			<version>${sakai.version}</version>
 		</dependency>
+		<!-- Gradebook1 Dependencies -->
+		<dependency>
+			<groupId>org.sakaiproject</groupId>
+			<artifactId>sakai-gradebook-service-api</artifactId>
+			<version>${sakai.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.sakaiproject</groupId>
+			<artifactId>sakai-gradebook-service-hibernate</artifactId>
+			<version>${sakai.version}</version>
+			<scope>provided</scope>
+		</dependency>
 		<!-- Other External Dependencies -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -47,7 +60,7 @@
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
 			<version>2.4</version>
-			<scope>compile</scope>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 	<build>
