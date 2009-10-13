@@ -124,7 +124,8 @@ public class InstructorView extends AppView {
 	public InstructorView(Controller controller, TreeView treeView, MultigradeView multigradeView, 
 			NotificationView notificationView, ImportExportView importExportView, 
 			SingleGradeView singleGradeView, 
-			boolean isEditable, final boolean isNewGradebook) {
+			boolean isEditable, final boolean isNewGradebook,
+			I18nConstants i18n) {
 		super(controller, notificationView);
 		this.isEditable = isEditable;
 		this.tabConfigurations = new ArrayList<TabConfig>();
@@ -132,6 +133,7 @@ public class InstructorView extends AppView {
 		this.multigradeView = multigradeView;
 		this.importExportView = importExportView;
 		this.singleGradeView = singleGradeView;
+		this.i18n = i18n;
 		
 		
 		toolBar = new ToolBar();
@@ -199,6 +201,13 @@ public class InstructorView extends AppView {
 		borderLayoutContainer.add(centerLayoutContainer, centerData);
 		borderLayoutContainer.add(eastLayoutContainer, eastData);
 
+		if (isEditable) {
+			tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADESCALE, i18n.tabGradeScaleHeader(), "gbGradeScaleButton", true, MenuSelector.GRADE_SCALE));
+			tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADER_PER_SET, i18n.tabGraderPermissionSettingsHeader(), "gbGraderPermissionSettings", true, MenuSelector.GRADER_PERMISSION_SETTINGS));
+		}
+		tabConfigurations.add(new TabConfig(AppConstants.TAB_STATISTICS, i18n.tabStatisticsHeader(), "gbStatisticsButton", true, MenuSelector.STATISTICS));
+
+		populateToolBar(i18n);
 
 		viewport.add(borderLayoutContainer);
 		viewportLayout.setActiveItem(borderLayoutContainer);
@@ -208,8 +217,6 @@ public class InstructorView extends AppView {
 	protected void initialize() {
 		super.initialize();
 
-		i18n = Registry.get(AppConstants.I18N);
-
 		initListeners();
 	}
 
@@ -217,14 +224,8 @@ public class InstructorView extends AppView {
 	protected void initUI(ApplicationModel model) {
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);		
 
-		if (isEditable) {
-			tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADESCALE, i18n.tabGradeScaleHeader(), "gbGradeScaleButton", true, MenuSelector.GRADE_SCALE));
-			tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADER_PER_SET, i18n.tabGraderPermissionSettingsHeader(), "gbGraderPermissionSettings", true, MenuSelector.GRADER_PERMISSION_SETTINGS));
-		}
-		tabConfigurations.add(new TabConfig(AppConstants.TAB_STATISTICS, i18n.tabStatisticsHeader(), "gbStatisticsButton", true, MenuSelector.STATISTICS));
-
-		populateToolBar(i18n, selectedGradebook);
-
+		addCategoryMenuItem.setVisible(selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
+		
 		if (DataTypeConversionUtil.checkBoolean(selectedGradebook.isNewGradebook()))
 			Dispatcher.forwardEvent(GradebookEvents.StartEditItem.getEventType(), selectedGradebook.getGradebookItemModel());
 	}
@@ -610,16 +611,16 @@ public class InstructorView extends AppView {
 	/*
 	 * Create a top-level toolbar with menu drop downs
 	 */
-	private ToolBar populateToolBar(I18nConstants i18n, GradebookModel selectedGradebook) {
+	private ToolBar populateToolBar(I18nConstants i18n) {
 
 		if (isEditable) {
 			AriaButton fileItem = new AriaButton(i18n.newMenuHeader());
-			fileItem.setMenu(newFileMenu(i18n, selectedGradebook));
+			fileItem.setMenu(newFileMenu(i18n));
 			toolBar.add(fileItem);
 		}
 
 		AriaButton windowItem = new AriaButton(i18n.viewMenuHeader());
-		windowMenu = newWindowMenu(i18n, selectedGradebook);
+		windowMenu = newWindowMenu(i18n);
 		windowItem.setMenu(windowMenu);
 
 		AriaButton moreItem = new AriaButton(i18n.moreMenuHeader());
@@ -638,7 +639,7 @@ public class InstructorView extends AppView {
 	/*
 	 * Create a new file menu 
 	 */
-	private Menu newFileMenu(I18nConstants i18n, GradebookModel selectedGradebook) {
+	private Menu newFileMenu(I18nConstants i18n) {
 
 		// This should be obvious. Just create the required menu object and its menu items
 		fileMenu = new AriaMenu();
@@ -655,12 +656,11 @@ public class InstructorView extends AppView {
 		fileMenu.add(addCategoryMenuItem);
 		fileMenu.add(addItem);
 
-		addCategoryMenuItem.setVisible(selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
 
 		return fileMenu;
 	}
 
-	private Menu newWindowMenu(I18nConstants i18n, GradebookModel selectedGradebook) {
+	private Menu newWindowMenu(I18nConstants i18n) {
 		Menu windowMenu = new AriaMenu();
 
 		for (TabConfig tabConfig : tabConfigurations) {

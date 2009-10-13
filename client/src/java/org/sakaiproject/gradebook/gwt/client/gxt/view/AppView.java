@@ -42,7 +42,7 @@ import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.View;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.layout.CardLayout;
-import com.extjs.gxt.ui.client.widget.layout.FitLayout;
+import com.extjs.gxt.ui.client.widget.layout.FillLayout;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Accessibility;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -71,8 +71,14 @@ public abstract class AppView extends View {
 			    super.onRender(parent, pos);
 			    Accessibility.setRole(el().dom, "application");
 			}
+			
+			/*protected void onResize(int width, int height) {
+				super.onResize(width, height);
+				viewport.setSize(width, height - 20);
+			}*/
 		};
-		realViewport.setLayout(new FitLayout());
+		realViewport.setEnableScroll(false);
+		realViewport.setLayout(new FillLayout());
 		realViewport.setLoadingPanelId("loading");
 		
 		viewport = new LayoutContainer();

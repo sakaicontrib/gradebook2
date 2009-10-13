@@ -47,7 +47,7 @@ public class GradebookApplication implements EntryPoint {
 
 	private Dispatcher dispatcher;
 	private Gradebook2RPCServiceAsync dataService;
-	private int screenHeight = 620;
+	private int screenHeight = 420;
 	
     public GradebookApplication() {
 
@@ -127,7 +127,7 @@ public class GradebookApplication implements EntryPoint {
 			
 			int clientHeight = Window.getClientHeight();
 			//Window.alert("Client Height is " + clientHeight);
-			screenHeight = clientHeight - 180;
+			//screenHeight = clientHeight - 180;
 			String placementId = authModel.getPlacementId();
 			if (placementId != null) {
 				String modifiedId = placementId.replace('-', 'x');

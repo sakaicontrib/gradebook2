@@ -30,7 +30,7 @@ public class ResourceController implements Controller {
 	public ModelAndView handleRequest(HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 
-		log.info("Received request for main gb2 page");
+		log.debug("Received request for main gb2 page");
 		
 		StringBuilder url = new StringBuilder();
 		url.append(request.getRequestURI()).append(RELATIVE_PREFIX).append(DEFAULT_PAGE);

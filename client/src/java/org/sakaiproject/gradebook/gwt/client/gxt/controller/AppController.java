@@ -296,7 +296,7 @@ public class AppController extends Controller {
 			this.treeView = new TreeView(this, i18n, isUserAbleToEditItems);
 			this.multigradeView = new MultigradeView(this, i18n);
 			this.importExportView = new ImportExportView(this, i18n);
-			this.appView = new InstructorView(this, treeView, multigradeView, notificationView, importExportView, singleView, isUserAbleToEditItems, isNewGradebook);
+			this.appView = new InstructorView(this, treeView, multigradeView, notificationView, importExportView, singleView, isUserAbleToEditItems, isNewGradebook, i18n);
 		} else if (isUserAbleToViewOwnGrades) {
 			this.appView = new StudentView(this, notificationView);
 		}

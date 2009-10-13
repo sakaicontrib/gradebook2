@@ -37,7 +37,7 @@ public class Viewport extends LayoutContainer {
 	    super.onAttach();
 	    GXT.hideLoadingPanel(loadingPanelId);
 	    setEnableScroll(enableScroll);
-	    setSize(Window.getClientWidth(), Window.getClientHeight() - 20);
+	    setSize(Window.getClientWidth(), Window.getClientHeight());
 	  }
 
 	  /**
