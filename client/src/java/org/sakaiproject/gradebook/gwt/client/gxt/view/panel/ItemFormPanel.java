@@ -54,6 +54,7 @@ import com.extjs.gxt.ui.client.data.BaseModelData;
 import com.extjs.gxt.ui.client.data.BaseTreeModel;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.BaseEvent;
+import com.extjs.gxt.ui.client.event.BindingEvent;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.Events;
@@ -124,6 +125,7 @@ public class ItemFormPanel extends ContentPanel {
 	private TreeStore<ItemModel> treeStore;
 
 	private KeyListener keyListener;
+	private Listener<BindingEvent> bindListener;
 	private Listener<FieldEvent> extraCreditChangeListener;
 	private Listener<FieldEvent> checkboxChangeListener;
 	private Listener<FieldEvent> enforcePointWeightingListener;
@@ -141,6 +143,7 @@ public class ItemFormPanel extends ContentPanel {
 	private ItemModel selectedItemModel;
 	private Type createItemType;
 
+	private boolean isListeningEnabled;
 	private boolean isDelete;
 	private boolean hasChanges;
 
@@ -149,6 +152,7 @@ public class ItemFormPanel extends ContentPanel {
 	@SuppressWarnings("unchecked")
 	public ItemFormPanel(I18nConstants i18n) {
 		this.i18n = i18n;
+		this.isListeningEnabled = true;
 		setHeaderVisible(true);
 		setFrame(true);
 
@@ -359,7 +363,7 @@ public class ItemFormPanel extends ContentPanel {
 		okCloseButton = new AriaButton(i18n.saveAndCloseButton(), selectionListener, 'm');
 		addButton(okCloseButton);
 
-		cancelButton = new AriaButton(i18n.cancelButton(), selectionListener, 'x');
+		cancelButton = new AriaButton(i18n.closeButton(), selectionListener, 'x');
 		cancelButton.setData(selectionTypeField, SelectionType.CANCEL);
 
 		addButton(cancelButton);
@@ -373,7 +377,24 @@ public class ItemFormPanel extends ContentPanel {
 	public void onActionCompleted() {
 	}
 
-	public void onConfirmDeleteItem(ItemModel itemModel) {
+	public void onConfirmDeleteItem(final ItemModel itemModel) {
+		if (hasChanges) {
+			MessageBox.confirm(i18n.hasChangesTitle(), i18n.hasChangesMessage(), new Listener<MessageBoxEvent>() {
+
+				public void handleEvent(MessageBoxEvent be) {
+					Button button = be.getButtonClicked();
+				
+					if (button.getText().equals("Yes"))
+						doConfirmDeleteItem(itemModel);
+				}
+				
+			});
+		} else {
+			doConfirmDeleteItem(itemModel);
+		}
+	}
+	
+	private void doConfirmDeleteItem(ItemModel itemModel) {
 		removeListeners();
 		this.mode = Mode.DELETE;
 		this.createItemType = null;
@@ -387,20 +408,23 @@ public class ItemFormPanel extends ContentPanel {
 		okCloseButton.setVisible(false);
 
 		if (itemModel != null) {
+			clearChanges();
+			
 			Type itemType = itemModel.getItemType();
 			initState(itemType, itemModel, true);
+			directionsField.setHeight(80);
 			directionsField.setText(i18n.directionsConfirmDeleteItem());
 			directionsField.setStyleName("gbWarning");
 			directionsField.setVisible(true);
 
+			//formBindings.addListener(Events.Bind, bindListener);
 			formBindings.bind(itemModel);
 
 			Dispatcher.forwardEvent(GradebookEvents.ExpandEastPanel.getEventType(), AppView.EastCard.DELETE_ITEM);
 		}
-		addListeners();
 	}
 
-	public void onEditItem(ItemModel itemModel, boolean expand) {
+	public void onEditItem(final ItemModel itemModel, final boolean expand) {
 
 		if (!expand && !isVisible())
 			return;
@@ -424,7 +448,25 @@ public class ItemFormPanel extends ContentPanel {
 
 		if (mode == Mode.EDIT && selectedItemModel != null && itemModel != null && itemModel.equals(selectedItemModel))
 			return;
+		
+		if (hasChanges) {
+			MessageBox.confirm(i18n.hasChangesTitle(), i18n.hasChangesMessage(), new Listener<MessageBoxEvent>() {
 
+				public void handleEvent(MessageBoxEvent be) {
+					Button button = be.getButtonClicked();
+				
+					if (button.getText().equals("Yes"))
+						doEditItem(itemModel, expand);
+				}
+				
+			});
+		} else {
+			doEditItem(itemModel, expand);
+		}
+
+	}
+	
+	private void doEditItem(ItemModel itemModel, boolean expand) {
 		removeListeners();
 		formPanel.hide();
 
@@ -434,10 +476,8 @@ public class ItemFormPanel extends ContentPanel {
 		this.directionsField.setText("");
 		this.directionsField.setVisible(false);
 
-		boolean isInitialized = false;
 		if (formBindings == null) {
 			initFormBindings();
-			isInitialized = true;
 		} else {
 			formBindings.unbind();
 		}
@@ -454,17 +494,17 @@ public class ItemFormPanel extends ContentPanel {
 
 		if (itemModel != null) {
 			Type itemType = itemModel.getItemType();
-
 			clearChanges();
+			formBindings.addListener(Events.Bind, bindListener);
 			formBindings.bind(itemModel);
 			initState(itemType, itemModel, false);
 		} else {
+			formBindings.addListener(Events.UnBind, bindListener);
 			formBindings.unbind();
 		}
 
 		formPanel.show();
 		nameField.focus();
-		addListeners();
 	}
 
 	public void onItemCreated(ItemModel itemModel) {
@@ -564,7 +604,24 @@ public class ItemFormPanel extends ContentPanel {
 
 	}
 
-	public void onNewCategory(ItemModel itemModel) {
+	public void onNewCategory(final ItemModel itemModel) {
+		if (hasChanges) {
+			MessageBox.confirm(i18n.hasChangesTitle(), i18n.hasChangesMessage(), new Listener<MessageBoxEvent>() {
+
+				public void handleEvent(MessageBoxEvent be) {
+					Button button = be.getButtonClicked();
+				
+					if (button.getText().equals("Yes"))
+						doNewCategory(itemModel);
+				}
+				
+			});
+		} else {
+			doNewCategory(itemModel);
+		}
+	}
+	
+	private void doNewCategory(ItemModel itemModel) {
 		removeListeners();
 		this.mode = Mode.NEW;
 
@@ -587,6 +644,7 @@ public class ItemFormPanel extends ContentPanel {
 		okCloseButton.setText(i18n.createAndCloseButton());
 
 		clearFields();
+		clearChanges();
 
 		initState(Type.CATEGORY, itemModel, false);
 		establishSelectedCategoryState(itemModel);
@@ -596,7 +654,26 @@ public class ItemFormPanel extends ContentPanel {
 		addListeners();
 	}
 
-	public void onNewItem(ItemModel itemModel) {
+	public void onNewItem(final ItemModel itemModel) {
+		
+		if (hasChanges) {
+			MessageBox.confirm(i18n.hasChangesTitle(), i18n.hasChangesMessage(), new Listener<MessageBoxEvent>() {
+
+				public void handleEvent(MessageBoxEvent be) {
+					Button button = be.getButtonClicked();
+				
+					if (button.getText().equals("Yes"))
+						doNewItem(itemModel);
+				}
+				
+			});
+		} else {
+			doNewItem(itemModel);
+		}
+		
+	}
+	
+	private void doNewItem(ItemModel itemModel) {
 		removeListeners();
 		this.mode = Mode.NEW;
 
@@ -619,6 +696,7 @@ public class ItemFormPanel extends ContentPanel {
 		includedField.setValue(Boolean.TRUE);
 
 		clearFields();
+		clearChanges();
 
 		initState(Type.ITEM, itemModel, false);
 
@@ -855,10 +933,7 @@ public class ItemFormPanel extends ContentPanel {
 												r.set(property, val);
 											}
 										
-									} //else {
-									//	model.set(property, val);
-									//}
-
+									} 
 								}
 
 							};
@@ -924,6 +999,9 @@ public class ItemFormPanel extends ContentPanel {
 	}
 
 	private void addListeners() {
+		if (isListeningEnabled)
+			return;
+		
 		categoryPicker.addSelectionChangedListener(categorySelectionChangedListener);
 		categoryTypePicker.addSelectionChangedListener(otherSelectionChangedListener);
 		gradeTypePicker.addSelectionChangedListener(otherSelectionChangedListener);
@@ -944,10 +1022,20 @@ public class ItemFormPanel extends ContentPanel {
 		showMedianField.addListener(Events.Change, checkboxChangeListener);
 		showModeField.addListener(Events.Change, checkboxChangeListener);
 		showRankField.addListener(Events.Change, checkboxChangeListener);
-		showItemStatsField.addListener(Events.Change, checkboxChangeListener);		
+		showItemStatsField.addListener(Events.Change, checkboxChangeListener);	
+		
+		isListeningEnabled = true;
 	}
 
 	private void removeListeners() {
+		if (!isListeningEnabled) 
+			return;
+
+		if (formBindings != null) {
+			formBindings.removeListener(Events.Bind, bindListener);
+			formBindings.removeListener(Events.UnBind, bindListener);
+		}
+		
 		categoryPicker.removeListener(Events.SelectionChange, categorySelectionChangedListener);
 		categoryTypePicker.removeListener(Events.SelectionChange, otherSelectionChangedListener);
 		gradeTypePicker.removeListener(Events.SelectionChange, otherSelectionChangedListener);
@@ -968,11 +1056,21 @@ public class ItemFormPanel extends ContentPanel {
 		showMedianField.removeListener(Events.Change, checkboxChangeListener);
 		showModeField.removeListener(Events.Change, checkboxChangeListener);
 		showRankField.removeListener(Events.Change, checkboxChangeListener);
-		showItemStatsField.removeListener(Events.Change, checkboxChangeListener);		
+		showItemStatsField.removeListener(Events.Change, checkboxChangeListener);
+		
+		isListeningEnabled = false;
 	}
 
 	private void initListeners() {
 
+		bindListener = new Listener<BindingEvent>() {
+
+			public void handleEvent(BindingEvent be) {
+				addListeners();
+			}
+			
+		};
+		
 		categorySelectionChangedListener = new SelectionChangedListener<ItemModel>() {
 
 			@Override
@@ -1296,6 +1394,7 @@ public class ItemFormPanel extends ContentPanel {
 			hasChanges = true;
 			okButton.setEnabled(true);
 			okCloseButton.setEnabled(true);
+			cancelButton.setText(i18n.cancelButton());
 		}
 	}
 
@@ -1303,6 +1402,7 @@ public class ItemFormPanel extends ContentPanel {
 		hasChanges = false;
 		okButton.setEnabled(false);
 		okCloseButton.setEnabled(false);
+		cancelButton.setText(i18n.closeButton());
 	}
 
 	private void clearActiveRecord() {

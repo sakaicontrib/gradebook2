@@ -203,6 +203,8 @@ public interface I18nConstants extends Constants {
 	String saveButton();
 	String saveAndCloseButton();
 
+	String hasChangesTitle();
+	String hasChangesMessage();
 	
 	String itemNameRequiredTitle();
 	String itemNameRequiredText();
