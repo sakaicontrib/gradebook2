@@ -173,7 +173,8 @@
 }
 
 .x-window-mc {
-	font-size:12pt;
+	font-size: 12pt;
+	padding: 10px;
 }
 
 .gbTabMargins {

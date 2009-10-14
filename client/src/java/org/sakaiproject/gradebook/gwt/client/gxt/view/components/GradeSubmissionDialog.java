@@ -79,12 +79,12 @@ public class GradeSubmissionDialog extends Dialog {
 					
 					StringBuilder text = new StringBuilder();
 					
-					text.append(i18n.finalGradeSubmissionWarningPrefix1());
+					text.append(i18n.finalGradeSubmissionWarningPrefix1()).append(" ");
 					text.append(result.getNumberOfLearners()).append(" ");
 					text.append(i18n.finalGradeSubmissionWarningSuffix1());
 					
 					if (result.isMissingScores())
-						text.append(i18n.finalGradeSubmissionWarningPrefix2());
+						text.append("<p>").append(i18n.finalGradeSubmissionWarningPrefix2()).append(" ");
 								
 					text.append(i18n.finalGradeSubmissionConfirmText());
 					

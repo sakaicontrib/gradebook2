@@ -135,6 +135,7 @@ public class InstructorView extends AppView {
 		this.singleGradeView = singleGradeView;
 		this.i18n = i18n;
 		
+		initListeners();
 		
 		toolBar = new ToolBar();
 		borderLayoutContainer = new BorderLayoutPanel(); 
@@ -217,7 +218,6 @@ public class InstructorView extends AppView {
 	protected void initialize() {
 		super.initialize();
 
-		initListeners();
 	}
 
 	@Override
