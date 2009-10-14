@@ -2121,13 +2121,13 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			return null;
 		
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
-		
-		// GRBK-233 : Only IOR can overwrite course grades
-		boolean isInstructor = authz.isUserAbleToGradeAll(gradebook.getUid());
-		if (!isInstructor)
-			throw new InvalidInputException("You are not authorized to overwrite the course grade for this student.");
-		
+				
 		if (property.equals(StudentModel.Key.GRADE_OVERRIDE.name())) {
+			// GRBK-233 : Only IOR can overwrite course grades
+			boolean isInstructor = authz.isUserAbleToGradeAll(gradebook.getUid());
+			if (!isInstructor)
+				throw new InvalidInputException("You are not authorized to overwrite the course grade for this student.");
+			
 			// Then we are overriding a course grade
 			CourseGradeRecord courseGradeRecord = gbService.getStudentCourseGradeRecord(gradebook, student.getIdentifier());
 			courseGradeRecord.setEnteredGrade(value);
