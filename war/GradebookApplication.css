@@ -106,6 +106,10 @@
 	width:auto;
 }
 
+.x-fieldset {
+	margin-top:20px;
+}
+
 .x-form-focus,textarea.x-form-focus {
 	border:2px solid #7eadd9;
 }

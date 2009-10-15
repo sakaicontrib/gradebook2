@@ -115,7 +115,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	public Long createAssignmentForCategory(final Long gradebookId, final Long categoryId,
 			final String name, final Double points, final Double weight, final Date dueDate,
 			final Boolean isUnweighted, final Boolean isExtraCredit, final Boolean isNotCounted, 
-			final Boolean isReleased, final Integer itemOrder) throws ConflictingAssignmentNameException, StaleObjectModificationException, IllegalArgumentException
+			final Boolean isReleased, final Integer itemOrder, final Boolean isNullsAsZeros) throws ConflictingAssignmentNameException, StaleObjectModificationException, IllegalArgumentException
 			{
 		if(gradebookId == null)
 		{
@@ -145,7 +145,8 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 					asn.setNotCounted(isNotCounted.booleanValue());
 				}
 				asn.setItemOrder(itemOrder);
-
+				asn.setCountNullsAsZeros(isNullsAsZeros);
+				
 				if(isReleased!=null){
 					asn.setReleased(isReleased.booleanValue());
 				}

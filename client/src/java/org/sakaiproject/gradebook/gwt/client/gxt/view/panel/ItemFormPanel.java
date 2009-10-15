@@ -72,16 +72,22 @@ import com.extjs.gxt.ui.client.store.TreeStore;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.Dialog;
+import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.CheckBox;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
 import com.extjs.gxt.ui.client.widget.form.DateField;
 import com.extjs.gxt.ui.client.widget.form.Field;
+import com.extjs.gxt.ui.client.widget.form.FieldSet;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.LabelField;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.form.TextField;
+import com.extjs.gxt.ui.client.widget.layout.ColumnData;
+import com.extjs.gxt.ui.client.widget.layout.ColumnLayout;
+import com.extjs.gxt.ui.client.widget.layout.FitLayout;
+import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
@@ -105,6 +111,7 @@ public class ItemFormPanel extends ContentPanel {
 	private CheckBox extraCreditField;
 	private CheckBox equallyWeightChildrenField;
 	private CheckBox releasedField;
+	private CheckBox nullsAsZerosField;
 	private CheckBox releaseGradesField;
 	private CheckBox releaseItemsField;
 	private CheckBox scaledExtraCreditField;
@@ -121,6 +128,8 @@ public class ItemFormPanel extends ContentPanel {
 	private DateField dueDateField;
 	private TextField<String> sourceField;
 
+	private FieldSet displayToStudentFieldSet;
+	
 	private ListStore<ItemModel> categoryStore;
 	private TreeStore<ItemModel> treeStore;
 
@@ -208,61 +217,91 @@ public class ItemFormPanel extends ContentPanel {
 		gradeTypePicker.setVisible(false);
 		formPanel.add(gradeTypePicker);
 
-		releaseGradesField = new NullSensitiveCheckBox();
-		releaseGradesField.setName(ItemModel.Key.RELEASEGRADES.name());
-		releaseGradesField.setFieldLabel(i18n.releaseGradesFieldLabel());
-		releaseGradesField.setVisible(false);
-		releaseGradesField.setToolTip(newToolTipConfig(i18n.releaseGradesToolTip()));
-		formPanel.add(releaseGradesField);
-
-		releaseItemsField = new NullSensitiveCheckBox();
-		releaseItemsField.setName(ItemModel.Key.RELEASEITEMS.name());
-		releaseItemsField.setFieldLabel(i18n.releaseItemsFieldLabel());
-		releaseItemsField.setVisible(false);
-		releaseItemsField.setToolTip(newToolTipConfig(i18n.releaseItemsToolTip()));
-		formPanel.add(releaseItemsField);
-		
-		showMeanField = new NullSensitiveCheckBox();
-		showMeanField.setName(ItemModel.Key.SHOWMEAN.name());
-		showMeanField.setFieldLabel(i18n.showMeanFieldLabel());
-		showMeanField.setVisible(false);
-		showMeanField.setToolTip(newToolTipConfig(i18n.showMeanToolTip()));
-		formPanel.add(showMeanField);
-		
-		showMedianField = new NullSensitiveCheckBox();
-		showMedianField.setName(ItemModel.Key.SHOWMEDIAN.name());
-		showMedianField.setFieldLabel(i18n.showMedianFieldLabel());
-		showMedianField.setVisible(false);
-		showMedianField.setToolTip(newToolTipConfig(i18n.showMedianToolTip()));
-		formPanel.add(showMedianField);
-		
-		showModeField = new NullSensitiveCheckBox();
-		showModeField.setName(ItemModel.Key.SHOWMODE.name());
-		showModeField.setFieldLabel(i18n.showModeFieldLabel());
-		showModeField.setVisible(false);
-		showModeField.setToolTip(newToolTipConfig(i18n.showModeToolTip()));
-		formPanel.add(showModeField);
-		
-		showRankField = new NullSensitiveCheckBox();
-		showRankField.setName(ItemModel.Key.SHOWRANK.name());
-		showRankField.setFieldLabel(i18n.showRankFieldLabel());
-		showRankField.setVisible(false);
-		showRankField.setToolTip(newToolTipConfig(i18n.showRankToolTip()));
-		formPanel.add(showRankField);
-		
-		showItemStatsField = new NullSensitiveCheckBox();
-		showItemStatsField.setName(ItemModel.Key.SHOWITEMSTATS.name());
-		showItemStatsField.setFieldLabel(i18n.showItemStatsFieldLabel());
-		showItemStatsField.setVisible(false);
-		showItemStatsField.setToolTip(newToolTipConfig(i18n.showItemStatsToolTip()));
-		formPanel.add(showItemStatsField);
-		
 		scaledExtraCreditField = new NullSensitiveCheckBox();
 		scaledExtraCreditField.setName(ItemModel.Key.EXTRA_CREDIT_SCALED.name());
 		scaledExtraCreditField.setFieldLabel(i18n.scaledExtraCreditFieldLabel());
 		scaledExtraCreditField.setVisible(false);
 		scaledExtraCreditField.setToolTip(newToolTipConfig(i18n.scaledExtraCreditToolTip()));
 		formPanel.add(scaledExtraCreditField);
+		
+		displayToStudentFieldSet = new FieldSet();  
+		displayToStudentFieldSet.setHeading("Display To Students");  
+		displayToStudentFieldSet.setCheckboxToggle(false);  
+		displayToStudentFieldSet.setLayout(new FitLayout());
+		displayToStudentFieldSet.setVisible(false);
+		
+		LayoutContainer main = new LayoutContainer();
+		main.setLayout(new ColumnLayout());
+		
+		FormLayout leftLayout = new FormLayout(); 
+		leftLayout.setLabelWidth(140);
+		leftLayout.setDefaultWidth(100);
+		
+		LayoutContainer left = new LayoutContainer();
+		left.setLayout(leftLayout);
+		
+		FormLayout rightLayout = new FormLayout(); 
+		rightLayout.setLabelWidth(140);
+		rightLayout.setDefaultWidth(50);
+		
+		LayoutContainer right = new LayoutContainer();
+		right.setLayout(rightLayout);
+		
+		releaseGradesField = new NullSensitiveCheckBox();
+		releaseGradesField.setName(ItemModel.Key.RELEASEGRADES.name());
+		releaseGradesField.setFieldLabel(i18n.releaseGradesFieldLabel());
+		releaseGradesField.setVisible(false);
+		releaseGradesField.setToolTip(newToolTipConfig(i18n.releaseGradesToolTip()));
+		left.add(releaseGradesField);
+
+		releaseItemsField = new NullSensitiveCheckBox();
+		releaseItemsField.setName(ItemModel.Key.RELEASEITEMS.name());
+		releaseItemsField.setFieldLabel(i18n.releaseItemsFieldLabel());
+		releaseItemsField.setVisible(false);
+		releaseItemsField.setToolTip(newToolTipConfig(i18n.releaseItemsToolTip()));
+		left.add(releaseItemsField);
+		
+		showMeanField = new NullSensitiveCheckBox();
+		showMeanField.setName(ItemModel.Key.SHOWMEAN.name());
+		showMeanField.setFieldLabel(i18n.showMeanFieldLabel());
+		showMeanField.setVisible(false);
+		showMeanField.setToolTip(newToolTipConfig(i18n.showMeanToolTip()));
+		left.add(showMeanField);
+		
+		showMedianField = new NullSensitiveCheckBox();
+		showMedianField.setName(ItemModel.Key.SHOWMEDIAN.name());
+		showMedianField.setFieldLabel(i18n.showMedianFieldLabel());
+		showMedianField.setVisible(false);
+		showMedianField.setToolTip(newToolTipConfig(i18n.showMedianToolTip()));
+		left.add(showMedianField);
+		
+		showModeField = new NullSensitiveCheckBox();
+		showModeField.setName(ItemModel.Key.SHOWMODE.name());
+		showModeField.setFieldLabel(i18n.showModeFieldLabel());
+		showModeField.setVisible(false);
+		showModeField.setToolTip(newToolTipConfig(i18n.showModeToolTip()));
+		right.add(showModeField);
+		
+		showRankField = new NullSensitiveCheckBox();
+		showRankField.setName(ItemModel.Key.SHOWRANK.name());
+		showRankField.setFieldLabel(i18n.showRankFieldLabel());
+		showRankField.setVisible(false);
+		showRankField.setToolTip(newToolTipConfig(i18n.showRankToolTip()));
+		right.add(showRankField);
+		
+		showItemStatsField = new NullSensitiveCheckBox();
+		showItemStatsField.setName(ItemModel.Key.SHOWITEMSTATS.name());
+		showItemStatsField.setFieldLabel(i18n.showItemStatsFieldLabel());
+		showItemStatsField.setVisible(false);
+		showItemStatsField.setToolTip(newToolTipConfig(i18n.showItemStatsToolTip()));
+		right.add(showItemStatsField);
+		
+		main.add(left, new ColumnData(.5));
+		main.add(right, new ColumnData(.5));
+		
+		displayToStudentFieldSet.add(main);
+		
+		formPanel.add(displayToStudentFieldSet);
 
 		percentCourseGradeField = new InlineEditNumberField();
 		percentCourseGradeField.setName(ItemModel.Key.PERCENT_COURSE_GRADE.name());
@@ -349,6 +388,13 @@ public class ItemFormPanel extends ContentPanel {
 		releasedField.setVisible(false);
 		releasedField.setToolTip(newToolTipConfig(i18n.releasedToolTip()));
 		formPanel.add(releasedField);
+		
+		nullsAsZerosField = new NullSensitiveCheckBox();
+		nullsAsZerosField.setName(ItemModel.Key.NULLSASZEROS.name());
+		nullsAsZerosField.setFieldLabel(i18n.nullsAsZerosFieldLabel());
+		nullsAsZerosField.setVisible(false);
+		nullsAsZerosField.setToolTip(newToolTipConfig(i18n.nullsAsZerosToolTip()));
+		formPanel.add(nullsAsZerosField);
 		
 		enforcePointWeightingField = new NullSensitiveCheckBox();
 		enforcePointWeightingField.setName(ItemModel.Key.ENFORCE_POINT_WEIGHTING.name());
@@ -857,20 +903,24 @@ public class ItemFormPanel extends ContentPanel {
 		initField(dueDateField, isAllowedToEdit && !isDelete && !isExternal, isEditable && isItem);
 		initField(includedField, isAllowedToEdit && !isDelete, isEditable && isNotGradebook);
 		initField(releasedField, isAllowedToEdit && !isDelete, isEditable && isItem);
-		initField(releaseGradesField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
-		initField(releaseItemsField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
+		initField(nullsAsZerosField, isAllowedToEdit && !isDelete, isEditable && isItem);
 		initField(categoryPicker, isAllowedToEdit && !isDelete, isEditable && hasCategories && isItem);
 		initField(categoryTypePicker, isAllowedToEdit, isEditable && !isNotGradebook);
 		initField(gradeTypePicker, isAllowedToEdit, isEditable && !isNotGradebook);
 		initField(sourceField, false, isEditable && isItem);
 		initField(scaledExtraCreditField, !isDelete && isAllowedToEdit, !isNotGradebook);
 		initField(enforcePointWeightingField, !isDelete && isAllowedToEdit, isWeightByPointsVisible);
+		
+		displayToStudentFieldSet.setEnabled(isAllowedToEdit && !isDelete);
+		displayToStudentFieldSet.setVisible(isEditable && !isNotGradebook);
+	
+		initField(releaseGradesField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
+		initField(releaseItemsField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
 		initField(showMeanField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
 		initField(showMedianField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
 		initField(showModeField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
 		initField(showRankField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
 		initField(showItemStatsField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
-
 	}
 	
 	
@@ -1016,6 +1066,7 @@ public class ItemFormPanel extends ContentPanel {
 		extraCreditField.addListener(Events.Change, extraCreditChangeListener);
 		equallyWeightChildrenField.addListener(Events.Change, checkboxChangeListener);
 		releasedField.addListener(Events.Change, checkboxChangeListener);
+		nullsAsZerosField.addListener(Events.Change, checkboxChangeListener);
 		scaledExtraCreditField.addListener(Events.Change, checkboxChangeListener);
 		enforcePointWeightingField.addListener(Events.Change, enforcePointWeightingListener);
 		showMeanField.addListener(Events.Change, checkboxChangeListener);
@@ -1050,6 +1101,7 @@ public class ItemFormPanel extends ContentPanel {
 		extraCreditField.removeListener(Events.Change, extraCreditChangeListener);
 		equallyWeightChildrenField.removeListener(Events.Change, checkboxChangeListener);
 		releasedField.removeListener(Events.Change, checkboxChangeListener);
+		nullsAsZerosField.removeListener(Events.Change, checkboxChangeListener);
 		scaledExtraCreditField.removeListener(Events.Change, checkboxChangeListener);
 		enforcePointWeightingField.removeListener(Events.Change, enforcePointWeightingListener);
 		showMeanField.removeListener(Events.Change, checkboxChangeListener);
@@ -1229,6 +1281,7 @@ public class ItemFormPanel extends ContentPanel {
 								item.setEqualWeightAssignments(equallyWeightChildrenField.getValue());
 								item.setIncluded(includedField.getValue());
 								item.setReleased(releasedField.getValue());
+								item.setNullsAsZeros(nullsAsZerosField.getValue());
 								item.setEnforcePointWeighting(enforcePointWeightingField.getValue());
 								item.setPercentCourseGrade((Double)percentCourseGradeField.getValue());
 								item.setPercentCategory((Double)percentCategoryField.getValue());

@@ -150,5 +150,5 @@ public class GradeRecordCalculationUnit {
 	public BigDecimal getPointsDifference() {
 		return pointsDifference;
 	}
-
+	
 }

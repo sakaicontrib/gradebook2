@@ -908,6 +908,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			Boolean isReleased = Boolean.valueOf(DataTypeConversionUtil.checkBoolean(item.getReleased()));
 			Boolean isIncluded = Boolean.valueOf(includeInGrade);
 			Boolean isExtraCredit = Boolean.valueOf(DataTypeConversionUtil.checkBoolean(item.getExtraCredit()));
+			Boolean isNullsAsZeros = Boolean.valueOf(DataTypeConversionUtil.checkBoolean(item.getNullsAsZeros()));
 			Date dueDate = item.getDueDate();
 			Integer itemOrder = item.getItemOrder();
 
@@ -958,7 +959,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				double w = weight == null ? 0d : ((Double) weight).doubleValue() * 0.01;
 
 				assignmentId = gbService.createAssignmentForCategory(gradebook.getId(), categoryId, name, points, Double.valueOf(w), dueDate, Boolean.valueOf(!DataTypeConversionUtil.checkBoolean(isIncluded)), isExtraCredit, Boolean.FALSE,
-						isReleased, itemOrder);
+						isReleased, itemOrder, isNullsAsZeros);
 
 				// Apply business rules after item creation
 				if (hasCategories) {
@@ -2333,6 +2334,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			isWeightChanged = isWeightChanged || isUnweighted != wasUnweighted;
 			isWeightChanged = isWeightChanged || isRemoved != wasRemoved;
 
+			boolean isNullsAsZeros = convertBoolean(item.getNullsAsZeros()).booleanValue();
+			
 			if (hasCategories && category != null) {
 				if (hasCategoryChanged) {
 					category = gbService.getCategory(item.getCategoryId());
@@ -2406,6 +2409,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			assignment.setRemoved(isRemoved);
 			assignment.setUnweighted(Boolean.valueOf(isUnweighted || isRemoved));
 			assignment.setItemOrder(newItemOrder);
+			assignment.setCountNullsAsZeros(Boolean.valueOf(isNullsAsZeros));
 			gbService.updateAssignment(assignment);
 
 			if (isRemoved)

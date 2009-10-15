@@ -1,6 +1,6 @@
 Index: service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Category.hbm.xml
 ===================================================================
---- service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Category.hbm.xml	(revision 7234)
+--- service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Category.hbm.xml	(revision 64836)
 +++ service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Category.hbm.xml	(working copy)
 @@ -24,6 +24,17 @@
  		<property name="drop_lowest" column="DROP_LOWEST" type="integer" not-null="false" />
@@ -22,7 +22,7 @@ Index: service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Category.
   	<database-object>
 Index: service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Gradebook.hbm.xml
 ===================================================================
---- service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Gradebook.hbm.xml	(revision 7234)
+--- service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Gradebook.hbm.xml	(revision 64836)
 +++ service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Gradebook.hbm.xml	(working copy)
 @@ -36,5 +36,20 @@
  		
@@ -47,7 +47,7 @@ Index: service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Gradebook
  </hibernate-mapping>
 Index: service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/GradeRecord.hbm.xml
 ===================================================================
---- service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/GradeRecord.hbm.xml	(revision 7234)
+--- service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/GradeRecord.hbm.xml	(revision 64836)
 +++ service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/GradeRecord.hbm.xml	(working copy)
 @@ -30,6 +30,7 @@
  
@@ -59,9 +59,9 @@ Index: service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/GradeReco
  		<subclass name="org.sakaiproject.tool.gradebook.CourseGradeRecord" discriminator-value="2">
 Index: service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/GradableObject.hbm.xml
 ===================================================================
---- service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/GradableObject.hbm.xml	(revision 7234)
+--- service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/GradableObject.hbm.xml	(revision 64836)
 +++ service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/GradableObject.hbm.xml	(working copy)
-@@ -33,6 +33,10 @@
+@@ -33,6 +33,11 @@
        <property name="released" column="RELEASED" type="boolean"/>
        <many-to-one name="category" column="CATEGORY_ID" class="org.sakaiproject.tool.gradebook.Category" not-null="false"/>
        <property name="ungraded" column="UNGRADED" type="boolean"/>
@@ -69,12 +69,13 @@ Index: service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/GradableO
 +      <property name="assignmentWeighting" column="ASSIGNMENT_WEIGHTING" type="double" not-null="false"/>
 +      <property name="unweighted" column="IS_UNWEIGHTED" type="boolean" not-null="false"/>
 +      <property name="itemOrder" column="ITEM_ORDER" type="integer" not-null="false"/>
++      <property name="countNullsAsZeros" column="IS_NULL_ZERO" type="boolean" not-null="false"/>
      </subclass>
  
  		<subclass name="org.sakaiproject.tool.gradebook.CourseGrade" extends="org.sakaiproject.tool.gradebook.GradableObject" discriminator-value="2">
 Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/CourseGradeRecord.java
 ===================================================================
---- service/hibernate/src/java/org/sakaiproject/tool/gradebook/CourseGradeRecord.java	(revision 7234)
+--- service/hibernate/src/java/org/sakaiproject/tool/gradebook/CourseGradeRecord.java	(revision 64836)
 +++ service/hibernate/src/java/org/sakaiproject/tool/gradebook/CourseGradeRecord.java	(working copy)
 @@ -38,7 +38,7 @@
  public class CourseGradeRecord extends AbstractGradeRecord {
@@ -98,9 +99,9 @@ Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/CourseGradeRec
  }
 Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/Assignment.java
 ===================================================================
---- service/hibernate/src/java/org/sakaiproject/tool/gradebook/Assignment.java	(revision 7234)
+--- service/hibernate/src/java/org/sakaiproject/tool/gradebook/Assignment.java	(revision 64836)
 +++ service/hibernate/src/java/org/sakaiproject/tool/gradebook/Assignment.java	(working copy)
-@@ -67,6 +67,11 @@
+@@ -67,6 +67,12 @@
      private Category category;
      private Double averageTotal;
      private boolean ungraded;
@@ -108,11 +109,12 @@ Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/Assignment.jav
 +    private Double assignmentWeighting;
 +    private Boolean unweighted;
 +    private Integer itemOrder;
++    private Boolean countNullsAsZeros;
 +    
  
      static {
          dateComparator = new Comparator() {
-@@ -444,4 +449,44 @@
+@@ -444,4 +450,54 @@
  		{
  			this.ungraded = ungraded;
  		}
@@ -156,11 +158,21 @@ Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/Assignment.jav
 +		public void setItemOrder(Integer itemOrder) {
 +			this.itemOrder = itemOrder;
 +		}
++
++
++		public Boolean getCountNullsAsZeros() {
++			return countNullsAsZeros;
++		}
++
++
++		public void setCountNullsAsZeros(Boolean countNullsAsZeros) {
++			this.countNullsAsZeros = countNullsAsZeros;
++		}
  }
 \ No newline at end of file
 Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/AssignmentGradeRecord.java
 ===================================================================
---- service/hibernate/src/java/org/sakaiproject/tool/gradebook/AssignmentGradeRecord.java	(revision 7234)
+--- service/hibernate/src/java/org/sakaiproject/tool/gradebook/AssignmentGradeRecord.java	(revision 64836)
 +++ service/hibernate/src/java/org/sakaiproject/tool/gradebook/AssignmentGradeRecord.java	(working copy)
 @@ -38,6 +38,10 @@
      private String letterEarned;
@@ -214,7 +226,7 @@ Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/AssignmentGrad
  
 Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/Category.java
 ===================================================================
---- service/hibernate/src/java/org/sakaiproject/tool/gradebook/Category.java	(revision 7234)
+--- service/hibernate/src/java/org/sakaiproject/tool/gradebook/Category.java	(revision 64836)
 +++ service/hibernate/src/java/org/sakaiproject/tool/gradebook/Category.java	(working copy)
 @@ -21,6 +21,12 @@
  	private Double mean; //mean value of percentage for this category
@@ -277,7 +289,7 @@ Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/Category.java
  }
 Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/Gradebook.java
 ===================================================================
---- service/hibernate/src/java/org/sakaiproject/tool/gradebook/Gradebook.java	(revision 7234)
+--- service/hibernate/src/java/org/sakaiproject/tool/gradebook/Gradebook.java	(revision 64836)
 +++ service/hibernate/src/java/org/sakaiproject/tool/gradebook/Gradebook.java	(working copy)
 @@ -49,6 +49,13 @@
      private boolean locked;

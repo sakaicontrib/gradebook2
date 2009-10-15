@@ -407,7 +407,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		if (categoriesWithAssignments == null && assignmentGradeRecordMap != null) 
 			categoriesWithAssignments = generateCategoriesWithAssignments(assignmentGradeRecordMap);
 
-		if (categoriesWithAssignments == null || assignmentGradeRecordMap == null)
+		if (categoriesWithAssignments == null) // || assignmentGradeRecordMap == null)
 			return null;
 
 		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
@@ -492,8 +492,8 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 
 		BigDecimal totalUnitsPoints = BigDecimal.ZERO;
 		
-		if (assignmentGradeRecordMap == null) 
-			return totalUnitsPoints;
+		//if (assignmentGradeRecordMap == null) 
+		//	return totalUnitsPoints;
 
 		for (Assignment assignment : assignments) {
 
@@ -504,17 +504,20 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 				continue;
 
 			boolean isExtraCreditItemOrCategory = isExtraCreditCategory || DataTypeConversionUtil.checkBoolean(assignment.isExtraCredit());
+			boolean isNullsAsZeros = assignment.getCountNullsAsZeros();
 			
 			if (!isExtraCreditItemOrCategory && assignment.getPointsPossible() != null)
 				totalUnitsPoints = totalUnitsPoints.add(BigDecimal.valueOf(assignment.getPointsPossible().doubleValue()));
 			
-			AssignmentGradeRecord assignmentGradeRecord = assignmentGradeRecordMap.get(assignment.getId());
+			AssignmentGradeRecord assignmentGradeRecord = assignmentGradeRecordMap == null ? null : assignmentGradeRecordMap.get(assignment.getId());
 
-			if (isGraded(assignmentGradeRecord)) {
+			boolean isGraded = isGraded(assignmentGradeRecord);
+			
+			if (isNullsAsZeros || isGraded) {
 				// Make sure it's not excused
 				if (!isExcused(assignmentGradeRecord)) {
 
-					BigDecimal pointsEarned = new BigDecimal(assignmentGradeRecord.getPointsEarned().toString());
+					BigDecimal pointsEarned = !isGraded ? BigDecimal.ZERO : new BigDecimal(assignmentGradeRecord.getPointsEarned().toString());
 					BigDecimal pointsPossible = new BigDecimal(assignment.getPointsPossible().toString());
 					BigDecimal assignmentWeight = getAssignmentWeight(assignment);
 					Boolean isExtraCredit = Boolean.valueOf(isExtraCreditItemOrCategory);
@@ -527,8 +530,9 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 							super.setDropped(isDropped);
 
 							AssignmentGradeRecord gradeRecord = (AssignmentGradeRecord)getActualRecord();
-
-							gradeRecord.setDropped(Boolean.valueOf(isDropped));
+							
+							if (gradeRecord != null && gradeRecord.getPointsEarned() != null)
+								gradeRecord.setDropped(Boolean.valueOf(isDropped));
 						}
 
 					};
@@ -675,6 +679,9 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 	}
 
 	private boolean isExcused(AssignmentGradeRecord assignmentGradeRecord) {
+		if (assignmentGradeRecord == null)
+			return false;
+		
 		return assignmentGradeRecord.isExcluded() == null ? false : assignmentGradeRecord.isExcluded().booleanValue();
 	}
 

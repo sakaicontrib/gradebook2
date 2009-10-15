@@ -56,7 +56,7 @@ public class ItemModel extends BaseTreeModel {
 		DROP_LOWEST("Drop Lowest"), 
 		CATEGORY_NAME("Category"), CATEGORY_ID("Category Id"), DUE_DATE("Due Date"), 
 		POINTS("Points"), 
-		RELEASED("Release scores"), SOURCE("Source"), ITEM_TYPE("Type"), 
+		RELEASED("Release scores"), NULLSASZEROS("Nulls as zeros"), SOURCE("Source"), ITEM_TYPE("Type"), 
 		PERCENT_COURSE_GRADE("% Grade"),
 		PERCENT_CATEGORY("% Category"), IS_PERCENTAGE("Is Percentage"), 
 		STUDENT_MODEL_KEY("Student Model Key"),
@@ -301,6 +301,14 @@ public class ItemModel extends BaseTreeModel {
 	
 	public void setReleased(Boolean released) {
 		set(Key.RELEASED.name(), released);
+	}
+	
+	public Boolean getNullsAsZeros() {
+		return get(Key.NULLSASZEROS.name());
+	}
+	
+	public void setNullsAsZeros(Boolean nullsAsZeros) {
+		set(Key.NULLSASZEROS.name(), nullsAsZeros);
 	}
 	
 	public String getSource() {

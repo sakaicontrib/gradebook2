@@ -55,6 +55,7 @@ public interface I18nConstants extends Constants {
 	String extraCreditToolTip();
 	String equallyWeightChildrenToolTip();
 	String releasedToolTip();
+	String nullsAsZerosToolTip();
 	String enforcePointWeightingToolTip();
 	
 	String nameFieldLabel();
@@ -78,6 +79,7 @@ public interface I18nConstants extends Constants {
 	String extraCreditFieldLabel();
 	String equallyWeightChildrenFieldLabel();
 	String releasedFieldLabel();
+	String nullsAsZerosFieldLabel();
 	String enforcePointWeightingFieldLabel();
 	
 	String pointsFieldEmptyText();
