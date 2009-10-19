@@ -2257,6 +2257,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		if (category == null)
 			category = findDefaultCategory(gradebook.getId());
 
+		boolean hasWeightedCategories = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY;
 		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
 		boolean hasCategoryChanged = false;
 
@@ -2455,6 +2456,15 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				if (businessLogic.checkRecalculatePointsRule(assignmentId, points, oldPoints))
 					recalculateAssignmentGradeRecords(assignment, points, oldPoints);
 			}
+			
+			if (havePointsChanged && category.getDrop_lowest() > 0 
+					&& (!hasWeightedCategories 
+						|| (hasWeightedCategories 
+								&& DataTypeConversionUtil.checkBoolean(category.isEnforcePointWeighting())))) {
+				category.setDrop_lowest(0);
+				gbService.updateCategory(category);
+			}
+			
 		} catch (RuntimeException e) {
 			actionRecord.setStatus(ActionRecord.STATUS_FAILURE);
 			throw e;
@@ -2785,11 +2795,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		return new StudentModel(cellMap);
 	}
 
-	// FIXME: This should be moved into GradeCalculations
 	private void calculateItemCategoryPercent(Gradebook gradebook, Category category, ItemModel gradebookItemModel, ItemModel categoryItemModel, List<Assignment> assignments, Long assignmentId) {
 
 		double pG = categoryItemModel == null || categoryItemModel.getPercentCourseGrade() == null ? 0d : categoryItemModel.getPercentCourseGrade().doubleValue();
 
+		boolean isWeighted = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY;
 		boolean isCategoryExtraCredit = category != null && DataTypeConversionUtil.checkBoolean(category.isExtraCredit());
 		boolean isEnforcePointWeighting = category != null && DataTypeConversionUtil.checkBoolean(category.isEnforcePointWeighting());
 		BigDecimal percentGrade = BigDecimal.valueOf(pG);
@@ -2797,50 +2807,16 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		BigDecimal pointsSum = BigDecimal.ZERO;
 		
 		if (assignments != null) {
+			BigDecimal[] sums = gradeCalculations.calculatePointsCategoryPercentSum(category, assignments, isWeighted, isCategoryExtraCredit);
+			percentCategorySum = sums[0];
+			pointsSum = sums[1];
+			
 			for (Assignment a : assignments) {
-				double assignmentCategoryPercent = a.getAssignmentWeighting() == null ? 0.0 : a.getAssignmentWeighting().doubleValue() * 100.0;
-				BigDecimal points = BigDecimal.valueOf(a.getPointsPossible().doubleValue());
-
-				boolean isRemoved = a.isRemoved();
-				boolean isExtraCredit = a.isExtraCredit() != null && a.isExtraCredit().booleanValue();
-				boolean isUnweighted = a.isUnweighted() != null && a.isUnweighted().booleanValue();
-
-				if ((isCategoryExtraCredit || !isExtraCredit) && !isUnweighted && !isRemoved) {
-					percentCategorySum = percentCategorySum.add(BigDecimal.valueOf(assignmentCategoryPercent));
-					pointsSum = pointsSum.add(points);
-				}
-
-			}
-
-			for (Assignment a : assignments) {
-
-				boolean isUnweighted = a.isUnweighted() != null && a.isUnweighted().booleanValue();
-
-				BigDecimal courseGradePercent = BigDecimal.ZERO;
-				BigDecimal percentCategory = BigDecimal.ZERO;
-				if (!isUnweighted) {
-					if (isEnforcePointWeighting) {
-						double p = a == null | a.getPointsPossible() == null ? 0d : a.getPointsPossible().doubleValue();
-						
-						BigDecimal assignmentPoints = BigDecimal.valueOf(p);
-						
-						courseGradePercent = gradeCalculations.calculateItemGradePercent(percentGrade, pointsSum, assignmentPoints, true);
-						
-						if (assignmentPoints.compareTo(BigDecimal.ZERO) == 0 || pointsSum.compareTo(BigDecimal.ZERO) == 0)
-							percentCategory = BigDecimal.ZERO;
-						else
-							percentCategory = BigDecimal.valueOf(100d).multiply(assignmentPoints.divide(pointsSum, GradeCalculations.MATH_CONTEXT));
-
-					} else {
-						double w = a == null || a.getAssignmentWeighting() == null ? 0d : a.getAssignmentWeighting().doubleValue();
-						
-						BigDecimal assignmentWeight = BigDecimal.valueOf(w);
-						courseGradePercent = gradeCalculations.calculateItemGradePercent(percentGrade, percentCategorySum, assignmentWeight, false);
-						percentCategory = BigDecimal.valueOf(100d).multiply(assignmentWeight);
-					
-					}
-				}
-
+				BigDecimal[] result = gradeCalculations.calculateCourseGradeCategoryPercents(a, percentGrade, percentCategorySum, pointsSum, isEnforcePointWeighting);
+				
+				BigDecimal courseGradePercent = result[0];
+				BigDecimal percentCategory = result[1];
+				
 				ItemModel assignmentItemModel = createItemModel(category, a, courseGradePercent, percentCategory);
 
 				if (assignmentId != null && a.getId().equals(assignmentId))
@@ -2853,7 +2829,6 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					assignmentItemModel.setParent(categoryItemModel);
 					categoryItemModel.add(assignmentItemModel);
 				}
-
 			}
 
 		}
@@ -3984,7 +3959,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				}
 			}
 		}
-
+		
+		int dropLowest = category.getDrop_lowest();
+		if (weightedCount >= dropLowest) 
+			weightedCount -= dropLowest;
+		
 		boolean doRecalculate = false;
 
 		if (enforceEqualWeighting != null && enforceEqualWeighting.booleanValue() && !category.isEqualWeightAssignments().equals(Boolean.TRUE)) {
@@ -4312,7 +4291,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 				throw new InvalidInputException("You cannot include a deleted category in grade. Please undelete the category first.");
 
 			int newDropLowest = convertInteger(item.getDropLowest()).intValue();
-
+			int oldDropLowest = category.getDrop_lowest();
+			
 			boolean isRemoved = DataTypeConversionUtil.checkBoolean(item.getRemoved());
 			boolean wasRemoved = category.isRemoved();
 
@@ -4386,7 +4366,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					businessLogic.applyRemoveChildItemsWhenCategoryRemoved(category, assignmentsForCategory);
 
 				// Business rule #3
-				if (isEqualWeighting && !wasEqualWeighting && businessLogic.checkRecalculateEqualWeightingRule(category))
+				if ((newDropLowest != oldDropLowest) || (isEqualWeighting && !wasEqualWeighting && businessLogic.checkRecalculateEqualWeightingRule(category)))
 					recalculateAssignmentWeights(category, Boolean.FALSE, assignmentsForCategory);
 
 				if (oldCategoryOrder == null || (newCategoryOrder != null && newCategoryOrder.compareTo(oldCategoryOrder) != 0))

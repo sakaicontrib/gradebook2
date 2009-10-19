@@ -34,9 +34,11 @@ public class ItemCellRenderer implements CellRenderer<TreeItem> {
 	
 	public String render(TreeItem item, String property, Object value) {
 		String prefix = "";
+		String suffix = "";
 		String result = null;
 		ItemModel itemModel = (ItemModel)item.getModel();
 		
+		boolean isCategory = itemModel.getItemType() == Type.CATEGORY;
 		boolean isItem = itemModel.getItemType() == Type.ITEM;
 		boolean isName = property.equals(ItemModel.Key.NAME.name());
 		boolean isIncluded = itemModel.getIncluded() == null || itemModel.getIncluded().booleanValue();		
@@ -65,8 +67,15 @@ public class ItemCellRenderer implements CellRenderer<TreeItem> {
 		if (isReleased)
 			cssClasses.append(" gbReleased");
 		
+		if (isCategory) {
+			int dropLowest = itemModel.getDropLowest() == null ? 0 : itemModel.getDropLowest().intValue();
+			
+			if (dropLowest > 0)
+				suffix = new StringBuilder(" <font style=\"font-size:8pt\">(-").append(dropLowest).append(")</font>").toString();
+		}
+		
 		return new StringBuilder().append("<span class=\"").append(cssClasses.toString())
-			.append("\">").append(prefix).append(result).append("</span>").toString();
+			.append("\">").append(prefix).append(result).append(suffix).append("</span>").toString();
 	}
 	
 }

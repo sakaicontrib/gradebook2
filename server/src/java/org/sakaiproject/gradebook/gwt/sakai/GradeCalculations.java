@@ -56,6 +56,10 @@ public interface GradeCalculations {
 	
 	public BigDecimal getPercentAsPointsEarned(Assignment assignment, Double percentage);
 	
+	public BigDecimal[] calculatePointsCategoryPercentSum(Category category, List<Assignment> assignments, boolean isWeighted, boolean isCategoryExtraCredit); 
+	
+	public BigDecimal[] calculateCourseGradeCategoryPercents(Assignment assignment, BigDecimal percentGrade, BigDecimal percentCategorySum, BigDecimal pointSum, boolean isEnforcePointWeighting);
+	
 	/**
 	 * Result = PointsEarned * 100 / PointsPossible
 	 * 
