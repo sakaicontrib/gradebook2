@@ -112,10 +112,9 @@
 					</execution>
 				</executions>
 				<configuration>
-					<executable>tar</executable>
+					<executable>sh</executable>
 					<arguments>
-						<argument>-xzf</argument>
-						<argument>gradebook.tar.gz</argument>
+						<argument>../deployGWTCode.sh</argument>
 					</arguments>
 				</configuration>
 			</plugin>
