@@ -59,7 +59,6 @@ import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.MenuEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
-import com.extjs.gxt.ui.client.event.ToolBarEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.util.Margins;
@@ -74,12 +73,11 @@ import com.extjs.gxt.ui.client.widget.menu.SeparatorMenuItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.RootPanel;
 
 public class InstructorView extends AppView {
 
 	private static final String MENU_SELECTOR_FLAG = "menuSelector";
-	public enum MenuSelector { ADD_CATEGORY, ADD_ITEM, IMPORT, EXPORT, EXPORT_DATA, EXPORT_DATA_CSV, EXPORT_STRUCTURE, EXPORT_STRUCTURE_CSV, EXPORT_DATA_XLS, EXPORT_STRUCTURE_XLS, FINAL_GRADE, GRADE_SCALE, HISTORY, GRADER_PERMISSION_SETTINGS, STATISTICS };
+	public enum MenuSelector { ADD_CATEGORY, ADD_ITEM, IMPORT, EXPORT, EXPORT_DATA, EXPORT_DATA_CSV, EXPORT_STRUCTURE, EXPORT_STRUCTURE_CSV, EXPORT_DATA_XLS, EXPORT_STRUCTURE_XLS, FINAL_GRADE, GRADE_SCALE, SETUP, HISTORY, GRADER_PERMISSION_SETTINGS, STATISTICS };
 	
 	// The instructor view maintains a link to tree view, since it is required to instantiate multigrade
 	private TreeView treeView;
@@ -203,6 +201,7 @@ public class InstructorView extends AppView {
 		borderLayoutContainer.add(eastLayoutContainer, eastData);
 
 		if (isEditable) {
+			tabConfigurations.add(new TabConfig(AppConstants.TAB_SETUP, i18n.tabSetupHeader(), "gbSetupButton", true, MenuSelector.SETUP));
 			tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADESCALE, i18n.tabGradeScaleHeader(), "gbGradeScaleButton", true, MenuSelector.GRADE_SCALE));
 			tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADER_PER_SET, i18n.tabGraderPermissionSettingsHeader(), "gbGraderPermissionSettings", true, MenuSelector.GRADER_PERMISSION_SETTINGS));
 		}
@@ -425,6 +424,15 @@ public class InstructorView extends AppView {
 		onExpandEastPanel(EastCard.HISTORY);
 	}
 
+	protected void onShowSetup() {
+		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		
+		if (selectedGradebook != null) {
+			ItemModel itemModel = selectedGradebook.getGradebookItemModel();
+			Dispatcher.forwardEvent(GradebookEvents.StartEditItem.getEventType(), itemModel);
+		}
+	}
+	
 	@Override
 	protected void onShowStatistics() {
 		if (statisticsPanel == null) {
@@ -549,6 +557,9 @@ public class InstructorView extends AppView {
 							break;
 						case STATISTICS:
 							onShowStatistics();
+							break;
+						case SETUP:
+							onShowSetup();
 							break;
 					}
 				}

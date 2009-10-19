@@ -117,6 +117,7 @@ public interface I18nConstants extends Constants {
 	
 	String tabGradesHeader();
 	String tabGradeScaleHeader();
+	String tabSetupHeader();
 	String tabHistoryHeader();
 	String tabGraderPermissionSettingsHeader();
 	String tabStatisticsHeader();

@@ -462,6 +462,10 @@
 	background-image:url(images/gb2/button/calculator_edit.png);	
 }
 
+.gbSetupButton {
+	background-image:url(images/gb2/button/application_edit.png);
+}
+
 .gbGraderPermissionSettings {
 	background-image:url(images/gb2/button/table_add.png);	
 }

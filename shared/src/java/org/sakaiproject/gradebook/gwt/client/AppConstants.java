@@ -71,6 +71,7 @@ public interface AppConstants {
 	// Tab id constants
 	public static final String TAB_GRADES 			= "tabMultiGrade";
 	public static final String TAB_GRADESCALE 		= "tabGradeScale";
+	public static final String TAB_SETUP			= "tabSetup";
 	public static final String TAB_HISTORY			= "tabHistory";
 	public static final String TAB_GRADER_PER_SET 	= "tabGraderPermissionSettings";
 	public static final String TAB_STATISTICS 		= "tabStatistics";
