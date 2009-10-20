@@ -30,6 +30,7 @@ public interface AppConstants {
 	public static final String ENABLE_POPUPS 	= "enableNotifications";
 	public static final String I18N    			= "i18n";
 	public static final String SERVICE 			= "service";
+	public static final String VERSION			= "version";
 	
 	// Item type constants
 	public static final String GRADEBOOK 	= "Gradebook";

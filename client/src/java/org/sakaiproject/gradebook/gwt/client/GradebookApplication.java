@@ -75,6 +75,7 @@ public class GradebookApplication implements EntryPoint {
 			return;
 		}
 		
+		Registry.register(AppConstants.VERSION, getVersion());
 		Registry.register(AppConstants.SERVICE, dataService);
 		Registry.register(AppConstants.I18N, i18n);
 
@@ -93,6 +94,10 @@ public class GradebookApplication implements EntryPoint {
 			getAuthorization(0);
 		}
 	}
+	
+	private native String getVersion() /*-{
+		return $wnd.gb2_version;
+	}-*/;
 	
 	private native String getParamString() /*-{
     	return $wnd.location.search;

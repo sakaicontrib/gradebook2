@@ -64,12 +64,14 @@ import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
+import com.extjs.gxt.ui.client.widget.form.LabelField;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayout;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayoutData;
 import com.extjs.gxt.ui.client.widget.layout.CardLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.extjs.gxt.ui.client.widget.menu.SeparatorMenuItem;
+import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
@@ -643,6 +645,12 @@ public class InstructorView extends AppView {
 		toolBar.add(windowItem);
 		toolBar.add(moreItem);
 		toolBar.add(helpItem);
+		
+		toolBar.add(new FillToolItem());
+		
+		String version = Registry.get(AppConstants.VERSION);
+		LabelField versionLabel = new LabelField(version);
+		toolBar.add(versionLabel);
 
 		return toolBar;
 	}
