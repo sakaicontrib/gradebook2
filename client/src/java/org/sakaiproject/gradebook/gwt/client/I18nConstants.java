@@ -82,6 +82,13 @@ public interface I18nConstants extends Constants {
 	String nullsAsZerosFieldLabel();
 	String enforcePointWeightingFieldLabel();
 	
+	String actionDateFieldLabel();
+	String actionDescriptionFieldLabel();
+	String actionEntityFieldLabel();
+	String actionStudentNameFieldLabel();
+	String actionDetails();
+	String actionActor();
+	
 	String pointsFieldEmptyText();
 	String dueDateEmptyText();
 	
@@ -101,6 +108,8 @@ public interface I18nConstants extends Constants {
 	String columnTitleDisplayName();
 	String columnTitleEmail();
 	String columnTitleSection();
+	
+	String displayToStudentsHeading();
 	
 	String newMenuHeader();
 	String prefMenuHeader();

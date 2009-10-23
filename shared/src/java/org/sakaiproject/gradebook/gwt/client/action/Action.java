@@ -34,8 +34,8 @@ public abstract class Action extends EntityModel {
 	public enum ActionType { CREATE("Create", "Added "), 
 		GET("Get", "retrieved"), 
 		GRADED("Grade", "Set grade to"),
-		UPDATE("Update", "Changed to"), 
-		DELETE("Delete", "deleted");
+		UPDATE("Update", "Updated "), 
+		DELETE("Delete", "Deleted ");
 
 	private String desc;
 	private String verb;
@@ -59,7 +59,7 @@ public abstract class Action extends EntityModel {
 
 	public enum EntityType { AUTH("authorization"), APPLICATION("application"), GRADE_ITEM("grade item"),
 		CATEGORY("category"), COLUMN("column"), COMMENT("comment"), CONFIGURATION("configuration"), CATEGORY_NOT_REMOVED("category not removed"),
-		GRADEBOOK("gradebook"), GRADE_SCALE("grade scale"), GRADE_RECORD("grade record"), 
+		GRADEBOOK("gradebook"), GRADE_SCALE("grade scale"), COURSE_GRADE_RECORD("course grade record"), GRADE_RECORD("grade record"), 
 		GRADE_EVENT("grade event"), USER("user"), PERMISSION_ENTRY("permission entry"),
 		SECTION("section"), PERMISSION_SECTIONS("permission sections"), LEARNER("learner"), LEARNER_ID("learner id"), ACTION("action"), ITEM("item"),
 		SPREADSHEET("spreadsheet"), SUBMISSION_VERIFICATION("submission verification"), 
@@ -81,7 +81,7 @@ public abstract class Action extends EntityModel {
 
 	public enum Key { ID, GRADEBOOK_UID, GRADEBOOK_ID, DATE_PERFORMED, DATE_RECORDED,
 		ENTITY_TYPE, ENTITY_NAME, 
-		STUDENT_UID, ENTITY_ID, INCLUDE_ALL, PROPERTY, PARENT_ID, ACTION_TYPE, MODEL, 
+		STUDENT_UID, STUDENT_NAME, ENTITY_ID, INCLUDE_ALL, PROPERTY, PARENT_ID, ACTION_TYPE, MODEL, 
 		STUDENT_MODEL,
 		VALUE, START_VALUE, NAME, WEIGHT, EQUAL_WEIGHT, DROP_LOWEST, POINTS, DUE_DATE, 
 		STATUS, GRADER_NAME, DESCRIPTION, TEXT,
@@ -198,6 +198,14 @@ public abstract class Action extends EntityModel {
 
 		public void setStudentUid(String studentUid) {
 			set(Key.STUDENT_UID.name(), studentUid);
+		}
+		
+		public String getStudentName() {
+			return get(Key.STUDENT_NAME.name());
+		}
+		
+		public void setStudentName(String studentName) {
+			set(Key.STUDENT_NAME.name(), studentName);
 		}
 
 		public Date getDatePerformed() {

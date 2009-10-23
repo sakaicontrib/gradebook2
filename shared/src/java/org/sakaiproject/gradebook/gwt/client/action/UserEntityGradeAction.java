@@ -39,5 +39,20 @@ public class UserEntityGradeAction extends UserEntityUpdateAction<StudentModel> 
 		setEntityType(EntityType.LEARNER);
 		setActionType(ActionType.GRADED);
 	}
+	
+	public String toString() {
+		StringBuilder text = new StringBuilder();
+
+		Object value = getValue();
+		Object startValue = getStartValue();
+
+		text.append(getActionType().getVerb()).append(" '").append(value)
+		.append("'");
+
+		if (startValue != null)
+			text.append(" from '").append(startValue).append("' ");
+
+		return text.toString();
+	}
 
 }

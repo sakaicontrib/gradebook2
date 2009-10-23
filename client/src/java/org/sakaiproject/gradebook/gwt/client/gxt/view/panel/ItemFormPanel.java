@@ -225,7 +225,7 @@ public class ItemFormPanel extends ContentPanel {
 		formPanel.add(scaledExtraCreditField);
 		
 		displayToStudentFieldSet = new FieldSet();  
-		displayToStudentFieldSet.setHeading("Display To Students");  
+		displayToStudentFieldSet.setHeading(i18n.displayToStudentsHeading());  
 		displayToStudentFieldSet.setCheckboxToggle(false);  
 		displayToStudentFieldSet.setLayout(new FitLayout());
 		displayToStudentFieldSet.setVisible(false);

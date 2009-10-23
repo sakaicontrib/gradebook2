@@ -1194,9 +1194,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 						break;
 					case GRADED:
 						actionModel = new UserEntityGradeAction();
+						actionModel.setValue(actionRecord.getPropertyMap().get("score"));
 						break;
 					case UPDATE:
 						actionModel = new UserEntityUpdateAction();
+						actionModel.setValue(actionRecord.getEntityName());
 						break;
 				}
 
@@ -1213,7 +1215,16 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					actionModel.setEntityName(actionRecord.getEntityName());
 				if (actionRecord.getParentId() != null)
 					actionModel.setParentId(Long.valueOf(actionRecord.getParentId()));
-				actionModel.setStudentUid(actionRecord.getStudentUid());
+				
+				String studentUid = actionRecord.getStudentUid();
+				actionModel.setStudentUid(studentUid);
+				
+				if (actionRecord.getEntityName() != null && actionRecord.getEntityName().contains(" : ")) {
+					String[] parts = actionRecord.getEntityName().split(" : ");
+					
+					actionModel.setStudentName(parts[0]);
+					actionModel.setEntityName(parts[1]);
+				}
 
 				actionModel.setGraderName(actionRecord.getGraderId());
 
@@ -2070,6 +2081,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.GRADE_RECORD.name(), ActionType.GRADED.name());
 		actionRecord.setEntityName(new StringBuilder().append(student.getDisplayName()).append(" : ").append(assignment.getName()).toString());
 		actionRecord.setEntityId(String.valueOf(assignment.getId()));
+		actionRecord.setStudentUid(student.getIdentifier());
 		Map<String, String> propertyMap = actionRecord.getPropertyMap();
 
 		propertyMap.put("score", String.valueOf(value));
@@ -2146,6 +2158,16 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	
 			gbService.updateCourseGradeRecords(courseGrade, gradeRecords);
 	
+			ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.COURSE_GRADE_RECORD.name(), ActionType.GRADED.name());
+			actionRecord.setEntityName(new StringBuilder().append(student.getDisplayName()).append(" : ").append(gradebook.getName()).toString());
+			actionRecord.setEntityId(String.valueOf(gradebook.getId()));
+			actionRecord.setStudentUid(student.getIdentifier());
+			Map<String, String> propertyMap = actionRecord.getPropertyMap();
+
+			propertyMap.put("score", value);
+			
+			gbService.storeActionRecord(actionRecord);
+			
 			List<Category> categories = null;
 			List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
 			if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)

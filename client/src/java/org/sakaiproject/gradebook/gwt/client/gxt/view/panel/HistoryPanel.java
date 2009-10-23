@@ -23,62 +23,319 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 
+import com.extjs.gxt.ui.client.binding.Converter;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
-import org.sakaiproject.gradebook.gwt.client.action.Action;
+import org.sakaiproject.gradebook.gwt.client.SecureToken;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
-import org.sakaiproject.gradebook.gwt.client.gxt.GridPanel;
+import org.sakaiproject.gradebook.gwt.client.action.Action.Key;
+import org.sakaiproject.gradebook.gwt.client.gxt.NotifyingAsyncCallback;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
-import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.CustomColumnModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 
-import com.extjs.gxt.ui.client.core.XTemplate;
-import com.extjs.gxt.ui.client.data.BaseModel;
+import com.extjs.gxt.ui.client.Registry;
+import com.extjs.gxt.ui.client.binding.FieldBinding;
+import com.extjs.gxt.ui.client.binding.FormBinding;
+import com.extjs.gxt.ui.client.data.BasePagingLoader;
+import com.extjs.gxt.ui.client.data.DataReader;
+import com.extjs.gxt.ui.client.data.ModelReader;
+import com.extjs.gxt.ui.client.data.PagingLoadConfig;
+import com.extjs.gxt.ui.client.data.PagingLoadResult;
+import com.extjs.gxt.ui.client.data.PagingLoader;
+import com.extjs.gxt.ui.client.data.RpcProxy;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
+import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
+import com.extjs.gxt.ui.client.event.SelectionChangedListener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
-import com.extjs.gxt.ui.client.widget.ComponentPlugin;
+import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.button.Button;
+import com.extjs.gxt.ui.client.widget.form.Field;
+import com.extjs.gxt.ui.client.widget.form.FieldSet;
+import com.extjs.gxt.ui.client.widget.form.FormPanel;
+import com.extjs.gxt.ui.client.widget.form.LabelField;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
-import com.extjs.gxt.ui.client.widget.grid.EditorGrid;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
-import com.extjs.gxt.ui.client.widget.grid.RowExpander;
+import com.extjs.gxt.ui.client.widget.grid.GridSelectionModel;
+import com.extjs.gxt.ui.client.widget.layout.ColumnData;
+import com.extjs.gxt.ui.client.widget.layout.ColumnLayout;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
-import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.user.client.Element;
+import com.extjs.gxt.ui.client.widget.layout.FormLayout;
+import com.extjs.gxt.ui.client.widget.toolbar.PagingToolBar;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 
-@SuppressWarnings("unchecked")
-public class HistoryPanel extends GridPanel<UserEntityAction> {
+public class HistoryPanel extends EntityPanel {
 
-	private static final String BUTTON_SELECTOR_FLAG = "buttonSelector";
-	private enum ButtonSelector { CLOSE };
+	private ColumnModel columnModel;
+	private FormBinding formBinding;
+	private FormPanel formPanel;
+	private PagingLoader<PagingLoadResult<UserEntityAction<?>>> loader;
+	private Grid<UserEntityAction<?>> grid;
+	private GridSelectionModel<UserEntityAction<?>> selectionModel;
+	private PagingToolBar pagingToolBar;
+	private ListStore<UserEntityAction<?>> store;
+	private SelectionChangedListener<UserEntityAction<?>> selectionListener;
+	
+	private LabelField studentNameField;
+	
+	private FieldSet fieldSet;
+	private Converter converter;
 	
 	public HistoryPanel(I18nConstants i18n) {
-		super(AppConstants.HISTORY, EntityType.ACTION, i18n);
-		setFrame(false);
-		setHeaderVisible(false);
+		super(i18n, true);
+	}
+	
+	protected LayoutContainer getFormPanel() {
+		return fieldSet;
+	}
+	
+	protected void initialize() {
+		setFrame(true);
+		setHeading(i18n.historyHeading());
 		setLayout(new FitLayout());
 	
-		createExpander();
+		
+		converter = new Converter() {
+			
+			public Object convertModelValue(Object value) {
+				
+				if (value instanceof String && (((String)value).equalsIgnoreCase("true") || ((String)value).equalsIgnoreCase("false")))
+					return Boolean.valueOf((String)value);
+				
+			    return value;
+			}
+			
+			public Object convertFieldValue(Object value) {
+			    return value;
+			}
+			
+		};
+		
+		RpcProxy<PagingLoadResult<UserEntityAction<?>>> proxy = new RpcProxy<PagingLoadResult<UserEntityAction<?>>>() {
+			@Override
+			protected void load(Object loadConfig, AsyncCallback<PagingLoadResult<UserEntityAction<?>>> callback) {
+				Gradebook2RPCServiceAsync service = Registry.get("service");
+				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+				service.getPage(selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId(), EntityType.ACTION, (PagingLoadConfig)loadConfig, SecureToken.get(), callback);
+			}
+			
+			@Override
+			public void load(final DataReader<PagingLoadResult<UserEntityAction<?>>> reader, final Object loadConfig, final AsyncCallback<PagingLoadResult<UserEntityAction<?>>> callback) {
+				load(loadConfig, new NotifyingAsyncCallback<PagingLoadResult<UserEntityAction<?>>>() {
+
+					public void onFailure(Throwable caught) {
+						super.onFailure(caught);
+						callback.onFailure(caught);
+					}
+
+					public void onSuccess(PagingLoadResult<UserEntityAction<?>> result) {
+						try {
+							PagingLoadResult<UserEntityAction<?>> data = null;
+							if (reader != null) {
+								data = reader.read(loadConfig, result);
+							} else {
+								data = result;
+							}
+							callback.onSuccess(data);
+						} catch (Exception e) {
+							callback.onFailure(e);
+						}
+					}
+
+				});
+			}
+		};
+			
+		formPanel = new FormPanel();
+		formPanel.setHeaderVisible(false);
 	
+		LabelField dateField = new LabelField();
+		dateField.setName(Key.DATE_RECORDED.name());
+		dateField.setFieldLabel(i18n.actionDateFieldLabel());
+		formPanel.add(dateField);
+		
+		LabelField descriptionField = new LabelField();
+		descriptionField.setName(Key.DESCRIPTION.name());
+		descriptionField.setFieldLabel(i18n.actionDescriptionFieldLabel());
+		formPanel.add(descriptionField);
+		
+		LabelField entityField = new LabelField();
+		entityField.setName(Key.ENTITY_NAME.name());
+		entityField.setFieldLabel(i18n.actionEntityFieldLabel());
+		formPanel.add(entityField);
+		
+		studentNameField = new LabelField();
+		studentNameField.setName(Key.STUDENT_NAME.name());
+		studentNameField.setFieldLabel(i18n.actionStudentNameFieldLabel());
+		formPanel.add(studentNameField);
+		
+		LabelField actorNameField = new LabelField();
+		actorNameField.setName(Key.GRADER_NAME.name());
+		actorNameField.setFieldLabel(i18n.actionActor());
+		formPanel.add(actorNameField);
+		
+		fieldSet = new FieldSet();
+		fieldSet.setHeading(i18n.actionDetails());
+		fieldSet.setCheckboxToggle(false);
+		fieldSet.setLayout(new FormLayout());
+		
+		/*nameField = new LabelField();
+		nameField.setName(ItemModel.Key.NAME.name());
+		nameField.setFieldLabel(i18n.nameFieldLabel());
+		fieldSet.add(nameField);*/
+		
+		formPanel.add(fieldSet);
+		
+		
+		loader = new BasePagingLoader<PagingLoadResult<UserEntityAction<?>>>(proxy, new ModelReader());
+		
+		pagingToolBar = new PagingToolBar(20);
+		pagingToolBar.bind(loader);
+		
+		setBottomComponent(pagingToolBar);
+		
+		ArrayList<ColumnConfig> configs = new ArrayList<ColumnConfig>();
+		
+		ColumnConfig column = new ColumnConfig(Key.DATE_RECORDED.name(), "Date", 200);
+		configs.add(column);
+		
+		column = new ColumnConfig(Key.DESCRIPTION.name(), "Action", 150);
+		configs.add(column);
+		
+		column = new ColumnConfig(Key.ENTITY_NAME.name(), "Entity", 180);
+		configs.add(column);
+		
+		column = new ColumnConfig(Key.STUDENT_NAME.name(), "Student Name", 140);
+		configs.add(column);
+		
+		columnModel = new ColumnModel(configs);
+		store = new ListStore<UserEntityAction<?>>(loader);
+		selectionListener = new SelectionChangedListener<UserEntityAction<?>>() {
+
+			@Override
+			public void selectionChanged(SelectionChangedEvent<UserEntityAction<?>> se) {
+				UserEntityAction<?> action = se.getSelectedItem();
+				
+				if (action == null) 
+					formBinding.unbind();
+				else 
+					formBinding.bind(action);
+				
+				initState(action);
+				formPanel.layout();
+			}
+			
+		};
+		
+		selectionModel = new GridSelectionModel<UserEntityAction<?>>();
+		selectionModel.addSelectionChangedListener(selectionListener);
+		grid = new Grid<UserEntityAction<?>>(store, columnModel);
+		grid.setBorders(true);
+		grid.setSelectionModel(selectionModel);
+
+		LayoutContainer container = new LayoutContainer() {
+			@Override
+			protected void onResize(int width, int height) {
+				super.onResize(width, height);
+				
+				grid.setHeight(height - 5);
+			}
+		};
+		container.setLayout(new ColumnLayout());
+		
+		container.add(grid, new ColumnData(.60));
+		container.add(formPanel, new ColumnData(.40));
+		
+		add(container);
+		
 		Button button = new AriaButton(i18n.close(), new SelectionListener<ButtonEvent>() {
 
 			@Override
 			public void componentSelected(ButtonEvent be) {
-				Dispatcher.forwardEvent(GradebookEvents.HideEastPanel.getEventType(), Boolean.FALSE);
+				Dispatcher.forwardEvent(GradebookEvents.StopStatistics.getEventType(), Boolean.FALSE);
 			}
 			
 		});
 		addButton(button);
 	}
 	
+	@Override
+	protected void bindFormPanel() {
+		formBinding = new FormBinding(formPanel, true) {
+			public void autoBind() {
+			    for (Field<?> f : panel.getFields()) {
+			      if (!bindings.containsKey(f.getId())) {
+			        String name = f.getName();
+			        if (name != null && name.length() > 0) {
+			          FieldBinding b = new FieldBinding(f, f.getName());
+			          b.setConvertor(converter);
+			          bindings.put(f.getId(), b);
+			        }
+			      }
+			    }
+			  }
+		};
+	}
+	
+	@Override
+	protected void onRender(com.google.gwt.user.client.Element parent, int pos) {
+		super.onRender(parent, pos);
+		loader.load(0, 20);
+	}
+	
+	private void initState(UserEntityAction<?> action) {
+		boolean isGradebook = action.getEntityType() == EntityType.GRADEBOOK;
+		boolean isCategory = action.getEntityType() == EntityType.CATEGORY;
+		boolean isItem = action.getEntityType() == EntityType.ITEM;
+		
+		directionsField.setVisible(false);
+		nameField.setVisible(isGradebook || isCategory || isItem);
+		categoryTypePicker.setVisible(isGradebook);
+		gradeTypePicker.setVisible(isGradebook);
+		categoryPicker.setVisible(isItem);
+		includedField.setVisible(isCategory || isItem);
+		extraCreditField.setVisible(isCategory || isItem);
+		equallyWeightChildrenField.setVisible(isCategory);
+		releasedField.setVisible(isItem);
+		nullsAsZerosField.setVisible(isItem);
+		releaseGradesField.setVisible(isGradebook);
+		releaseItemsField.setVisible(isGradebook);
+		scaledExtraCreditField.setVisible(isGradebook);
+		enforcePointWeightingField.setVisible(isCategory);
+		showMeanField.setVisible(isGradebook);
+		showMedianField.setVisible(isGradebook);
+		showModeField.setVisible(isGradebook);
+		showRankField.setVisible(isGradebook);
+		showItemStatsField.setVisible(isGradebook);
+		percentCourseGradeField.setVisible(isCategory);
+		percentCategoryField.setVisible(isItem);
+		pointsField.setVisible(isItem);
+		dropLowestField.setVisible(isCategory);
+		dueDateField.setVisible(isItem);
+		sourceField.setVisible(isItem);
+	}
+
+	@Override
+	protected void attachListeners() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void initializeStores() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	
+/*
 	 private void createExpander() {
 
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
@@ -111,14 +368,14 @@ public class HistoryPanel extends GridPanel<UserEntityAction> {
 
 	} 
 	 
-	private native String getTemplate() /*-{
+	private native String getTemplate() /--*-{
 		var html = [ 
 		'<p><b>Type:</b> {ENTITY_TYPE}</p>', 
 		'<p><b>Action:</b> {ACTION_TYPE}</p>',  
 		'<tpl if="ACTION_TYPE ==\'GRADED\'"><p><b>Score:</b> {score}</p></tpl>' 
 		]; 
 		return html.join("");
-	}-*/;  
+	}-*--/;  
 	
 	@Override
 	protected void addComponents() {
@@ -190,6 +447,6 @@ public class HistoryPanel extends GridPanel<UserEntityAction> {
 	protected void onRender(Element parent, int pos) {
 		super.onRender(parent, pos);
 		loader.load(0, getPageSize());
-	}
+	}*/
 
 }

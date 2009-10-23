@@ -206,6 +206,7 @@ public class InstructorView extends AppView {
 			tabConfigurations.add(new TabConfig(AppConstants.TAB_SETUP, i18n.tabSetupHeader(), "gbSetupButton", true, MenuSelector.SETUP));
 			tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADESCALE, i18n.tabGradeScaleHeader(), "gbGradeScaleButton", true, MenuSelector.GRADE_SCALE));
 			tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADER_PER_SET, i18n.tabGraderPermissionSettingsHeader(), "gbGraderPermissionSettings", true, MenuSelector.GRADER_PERMISSION_SETTINGS));
+			tabConfigurations.add(new TabConfig(AppConstants.TAB_HISTORY, i18n.tabHistoryHeader(), "gbHistoryButton", true, MenuSelector.HISTORY));
 		}
 		tabConfigurations.add(new TabConfig(AppConstants.TAB_STATISTICS, i18n.tabStatisticsHeader(), "gbStatisticsButton", true, MenuSelector.STATISTICS));
 
@@ -279,8 +280,9 @@ public class InstructorView extends AppView {
 				eastCardLayout.setActiveItem(helpPanel);
 				break;
 			case HISTORY:
-				eastLayoutContainer.setHeading(i18n.historyHeading());
-				eastCardLayout.setActiveItem(historyPanel);
+				//eastLayoutContainer.setHeading(i18n.historyHeading());
+				//eastCardLayout.setActiveItem(historyPanel);
+				viewportLayout.setActiveItem(historyPanel);
 				break;
 			case NEW_CATEGORY:
 				formPanel.setHeading(i18n.newCategoryHeading());
@@ -421,9 +423,11 @@ public class InstructorView extends AppView {
 	protected void onShowHistory(String identifier) {
 		if (historyPanel == null) {
 			historyPanel = new HistoryPanel(i18n);
-			eastLayoutContainer.add(historyPanel);
+			//eastLayoutContainer.add(historyPanel);
+			viewport.add(historyPanel);
 		}
-		onExpandEastPanel(EastCard.HISTORY);
+		viewportLayout.setActiveItem(historyPanel);
+		//onExpandEastPanel(EastCard.HISTORY);
 	}
 
 	protected void onShowSetup() {

@@ -123,14 +123,16 @@ public class UserEntityUpdateAction<M extends BaseModel> extends UserEntityActio
 	public String toString() {
 		StringBuilder text = new StringBuilder();
 
-		Object value = getValue();
-		Object startValue = getStartValue();
+		//Object value = getValue();
+		//Object startValue = getStartValue();
 
-		text.append(getActionType().getVerb()).append(" '").append(value)
-		.append("'");
+		text.append(getActionType().getVerb());
+		
+		//.append(" '").append(value)
+		//.append("'");
 
-		if (startValue != null)
-			text.append(" from '").append(startValue).append("' ");
+		//if (startValue != null)
+		//	text.append(" from '").append(startValue).append("' ");
 
 		return text.toString();
 	}
