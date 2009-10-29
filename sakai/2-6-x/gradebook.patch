@@ -59,12 +59,13 @@ Index: service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/GradableO
 ===================================================================
 --- service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/GradableObject.hbm.xml	(revision 67544)
 +++ service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/GradableObject.hbm.xml	(working copy)
-@@ -35,6 +35,8 @@
+@@ -35,6 +35,9 @@
        <property name="released" column="RELEASED" type="boolean"/>
        <many-to-one name="category" column="CATEGORY_ID" class="org.sakaiproject.tool.gradebook.Category" not-null="false"/>
        <property name="ungraded" column="UNGRADED" type="boolean"/>
 +      <property name="unweighted" column="IS_UNWEIGHTED" type="boolean" not-null="false"/>
 +      <property name="itemOrder" column="ITEM_ORDER" type="integer" not-null="false"/>
++      <property name="countNullsAsZeros" column="IS_NULL_ZERO" type="boolean" not-null="false"/>
      </subclass>
  
  		<subclass name="org.sakaiproject.tool.gradebook.CourseGrade" extends="org.sakaiproject.tool.gradebook.GradableObject" discriminator-value="2">
@@ -96,18 +97,19 @@ Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/Assignment.jav
 ===================================================================
 --- service/hibernate/src/java/org/sakaiproject/tool/gradebook/Assignment.java	(revision 67544)
 +++ service/hibernate/src/java/org/sakaiproject/tool/gradebook/Assignment.java	(working copy)
-@@ -69,8 +69,9 @@
+@@ -69,8 +69,10 @@
      private boolean ungraded;
      private Boolean extraCredit;
  	private Double assignmentWeighting;
 +	private Boolean unweighted;
 +	private Integer itemOrder;
++	private Boolean countNullsAsZeros;
  
 -
  	static {
          dateComparator = new Comparator() {
              public int compare(Object o1, Object o2) {
-@@ -468,4 +469,24 @@
+@@ -468,4 +470,34 @@
  		public void setAssignmentWeighting(Double assignmentWeighting) {
  			this.assignmentWeighting = assignmentWeighting;
  		}
@@ -130,6 +132,16 @@ Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/Assignment.jav
 +
 +		public void setItemOrder(Integer itemOrder) {
 +			this.itemOrder = itemOrder;
++		}
++
++
++		public Boolean getCountNullsAsZeros() {
++			return countNullsAsZeros;
++		}
++
++
++		public void setCountNullsAsZeros(Boolean countNullsAsZeros) {
++			this.countNullsAsZeros = countNullsAsZeros;
 +		}
  }
 \ No newline at end of file
