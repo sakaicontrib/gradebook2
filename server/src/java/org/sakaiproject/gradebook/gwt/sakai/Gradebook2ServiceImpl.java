@@ -1308,7 +1308,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 					gradebook = gbService.getGradebook(gradebookUids[i]);
 
 					// Add the default configuration settings
-					gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebook.getId(), 
+					/*gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebook.getId(), 
 							ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, 
 									StudentModel.Key.DISPLAY_ID.name()), String.valueOf(Boolean.TRUE));
 					gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebook.getId(), 
@@ -1325,7 +1325,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 									StudentModel.Key.CALCULATED_GRADE.name()), String.valueOf(Boolean.TRUE));
 					gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebook.getId(), 
 							ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, 
-									StudentModel.Key.LETTER_GRADE.name()), String.valueOf(Boolean.TRUE));
+									StudentModel.Key.LETTER_GRADE.name()), String.valueOf(Boolean.TRUE));*/
 				} 
 			}
 			AuthModel authModel = new AuthModel();
@@ -2361,8 +2361,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			
 			if (hasCategories && category != null) {
 				if (hasCategoryChanged) {
-					category = gbService.getCategory(item.getCategoryId());
-					assignment.setCategory(category);
+					Category newCategory = gbService.getCategory(item.getCategoryId());
+					if (newCategory != null) {
+						category = newCategory;
+						assignment.setCategory(category);
+					}
 				}
 
 				boolean isCategoryIncluded = !DataTypeConversionUtil.checkBoolean(category.isUnweighted());
@@ -3641,16 +3644,16 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		List<X> columns = new LinkedList<X>();
 
 		columns.add((X) new FixedColumnModel(StudentModel.Key.DISPLAY_ID, 80, true));
-		columns.add((X) new FixedColumnModel(StudentModel.Key.DISPLAY_NAME, 180, false));
-		columns.add((X) new FixedColumnModel(StudentModel.Key.LAST_NAME_FIRST, 180, true));
+		columns.add((X) new FixedColumnModel(StudentModel.Key.DISPLAY_NAME, 180, true));
+		columns.add((X) new FixedColumnModel(StudentModel.Key.LAST_NAME_FIRST, 180, false));
 		columns.add((X) new FixedColumnModel(StudentModel.Key.EMAIL, 230, true));
 		columns.add((X) new FixedColumnModel(StudentModel.Key.SECTION, 120, true));
 		columns.add((X) new FixedColumnModel(StudentModel.Key.COURSE_GRADE, 120, false));
-		FixedColumnModel gradeOverrideColumn = new FixedColumnModel(StudentModel.Key.GRADE_OVERRIDE, 120, true);
+		FixedColumnModel gradeOverrideColumn = new FixedColumnModel(StudentModel.Key.GRADE_OVERRIDE, 120, false);
 		gradeOverrideColumn.setEditable(true);
 		columns.add((X) gradeOverrideColumn);
-		columns.add((X) new FixedColumnModel(StudentModel.Key.LETTER_GRADE, 80, false));
-		columns.add((X) new FixedColumnModel(StudentModel.Key.CALCULATED_GRADE, 80, false));
+		columns.add((X) new FixedColumnModel(StudentModel.Key.LETTER_GRADE, 80, true));
+		columns.add((X) new FixedColumnModel(StudentModel.Key.CALCULATED_GRADE, 80, true));
 		
 		return columns;
 	}

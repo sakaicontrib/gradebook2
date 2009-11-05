@@ -124,7 +124,6 @@ public abstract class ItemModelProcessor {
 		return null;
 	}
 
-
 	public ItemModel getResult() {
 		return result;
 	}

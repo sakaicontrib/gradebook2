@@ -48,6 +48,7 @@ import org.sakaiproject.gradebook.gwt.client.model.StudentModel.Key;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.SortDir;
+import com.extjs.gxt.ui.client.core.El;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
@@ -62,6 +63,9 @@ import com.extjs.gxt.ui.client.widget.menu.Item;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.extjs.gxt.ui.client.widget.menu.SeparatorMenuItem;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NodeList;
+import com.google.gwt.dom.client.TableSectionElement;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 
@@ -80,7 +84,8 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	private String gridId;
 
 	private SelectionListener<MenuEvent> selectionListener; 
-
+	
+	
 	public CustomGridView(String gridId) {
 		this.gridId = gridId;
 
@@ -478,4 +483,5 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	public void setDisplayLoadMaskOnRender(boolean isDisplayLoadMaskOnRender) {
 		this.isDisplayLoadMaskOnRender = isDisplayLoadMaskOnRender;
 	}
+	
 }

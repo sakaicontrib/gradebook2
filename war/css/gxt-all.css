@@ -2004,7 +2004,7 @@ div.x-toolbar-no-items {
 
 .x-grid3-row td.x-grid3-cell,.x-grid3-summary-row td.x-grid3-cell {
   line-height: 13px;
-  vertical-align: top;
+  /*vertical-align: top;*/
   padding-left: 1px;
   padding-right: 1px;
   -moz-outline: none;
@@ -2391,8 +2391,11 @@ a.x-grid3-hd-btn:hover {
   background-position: 2px 2px;
 }
 
-.x-grid3-row-selected .x-grid3-row-checker,.x-grid3-hd-checker-on .x-grid3-hd-checker,.x-grid3-row-checked .x-grid3-row-checker
-  {
+.x-grid3-row-selected .x-grid3-row-checker {
+  background-position: 2px 2px;
+}
+
+.x-grid3-hd-checker-on .x-grid3-hd-checker,.x-grid3-row-checked .x-grid3-row-checker {
   background-position: -23px 2px;
 }
 
@@ -6143,7 +6146,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
     background-image:url(../images/default/grid/row-expand-sprite.gif);
 }
 .x-grid3-body .x-grid3-td-checker {
-    background-image: url(../images/default/grid/grid3-special-col-bg.gif);
+    /*background-image: url(../images/default/grid/grid3-special-col-bg.gif);*/
 }
 .x-grid3-row-checker, .x-grid3-hd-checker {
     background-image:url(../images/default/grid/row-check-sprite.gif);

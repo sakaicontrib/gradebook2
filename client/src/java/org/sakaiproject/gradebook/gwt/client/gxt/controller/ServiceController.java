@@ -41,6 +41,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
+import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
@@ -331,45 +332,65 @@ public class ServiceController extends Controller {
 
 	private void onShowColumns(ShowColumnsEvent event) {
 		if (event.isSingle) {
-			String columnId = event.itemModelId;
 			boolean hidden = event.isHidden;
 
 			GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 
-			ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
+			ConfigurationModel model = new ConfigurationModel(selectedGradebook.getGradebookId());
+			if (event.isFixed)
+				buildColumnConfigModel(model, event.fixedModel, hidden);
+			else
+				buildColumnConfigModel(model, event.model, hidden);
 
-			if (configModel.isColumnHidden(AppConstants.ITEMTREE, columnId, !hidden) != hidden) {
-				ConfigurationModel model = new ConfigurationModel(selectedGradebook.getGradebookId());
-				model.setColumnHidden(AppConstants.ITEMTREE, columnId, Boolean.valueOf(hidden));
+			Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
 
-				Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
+			AsyncCallback<ConfigurationModel> callback = new AsyncCallback<ConfigurationModel>() {
 
-				AsyncCallback<ConfigurationModel> callback = new AsyncCallback<ConfigurationModel>() {
+				public void onFailure(Throwable caught) {
+					// FIXME: Should we notify the user when this fails?
+				}
 
-					public void onFailure(Throwable caught) {
-						// FIXME: Should we notify the user when this fails?
-					}
+				public void onSuccess(ConfigurationModel result) {
+					GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+					ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
 
-					public void onSuccess(ConfigurationModel result) {
-						GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-						ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
+					Collection<String> propertyNames = result.getPropertyNames();
+					if (propertyNames != null) {
+						List<String> names = new ArrayList<String>(propertyNames);
 
-						Collection<String> propertyNames = result.getPropertyNames();
-						if (propertyNames != null) {
-							List<String> names = new ArrayList<String>(propertyNames);
-
-							for (int i=0;i<names.size();i++) {
-								String name = names.get(i);
-								String value = result.get(name);
-								configModel.set(name, value);
-							}
+						for (int i=0;i<names.size();i++) {
+							String name = names.get(i);
+							String value = result.get(name);
+							configModel.set(name, value);
 						}
 					}
+				}
 
-				};
+			};
 
-				service.update(model, EntityType.CONFIGURATION, null, SecureToken.get(), callback);
+			service.update(model, EntityType.CONFIGURATION, null, SecureToken.get(), callback);
+		} else {
+			
+			
+		}
+	}
+	
+	private void buildColumnConfigModel(ConfigurationModel model, FixedColumnModel fixedModel, boolean isHidden) {
+		model.setColumnHidden(AppConstants.ITEMTREE, fixedModel.getIdentifier(), Boolean.valueOf(isHidden));
+	}
+	
+	private void buildColumnConfigModel(ConfigurationModel model, ItemModel itemModel, boolean isHidden) {
+		switch (itemModel.getItemType()) {
+		case GRADEBOOK:
+		case CATEGORY:
+			for (int i=0;i<itemModel.getChildCount();i++) {
+				ItemModel child = (ItemModel)itemModel.getChild(i);
+				buildColumnConfigModel(model, child, isHidden);
 			}
+			break;
+		case ITEM:
+			model.setColumnHidden(AppConstants.ITEMTREE, itemModel.getIdentifier(), Boolean.valueOf(isHidden));
+			break;
 		}
 	}
 

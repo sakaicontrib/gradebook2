@@ -55,10 +55,11 @@ public class ItemModel extends BaseTreeModel {
 		INCLUDED("Include in Grade"), REMOVED("Delete"), GRADEBOOK("Gradebook"), 
 		DROP_LOWEST("Drop Lowest"), 
 		CATEGORY_NAME("Category"), CATEGORY_ID("Category Id"), DUE_DATE("Due Date"), 
-		POINTS("Points"), 
+		POINTS("Points"), POINTS_STRING("Points"), 
 		RELEASED("Release scores"), NULLSASZEROS("Nulls as zeros"), SOURCE("Source"), ITEM_TYPE("Type"), 
-		PERCENT_COURSE_GRADE("% Grade"),
-		PERCENT_CATEGORY("% Category"), IS_PERCENTAGE("Is Percentage"), 
+		PERCENT_COURSE_GRADE("% Grade"), PERCENT_COURSE_GRADE_STRING("% Grade"),
+		PERCENT_CATEGORY("% Category"), PERCENT_CATEGORY_STRING("% Category"), 
+		IS_PERCENTAGE("Is Percentage"), 
 		STUDENT_MODEL_KEY("Student Model Key"),
 		ASSIGNMENT_ID("Item Id"), DATA_TYPE("Data Type"), CATEGORYTYPE("Organization"),
 		GRADETYPE("Grade Type"), RELEASEGRADES("Display Course Grades"), 
@@ -83,6 +84,7 @@ public class ItemModel extends BaseTreeModel {
 
 	private boolean isActive;
 	private boolean isEditable;
+	private boolean isChecked;
 	
 	public ItemModel() {
 		super();
@@ -285,6 +287,7 @@ public class ItemModel extends BaseTreeModel {
 	
 	public void setPoints(Double points) {
 		set(Key.POINTS.name(), points);
+		set(Key.POINTS_STRING.name(), String.valueOf(points));
 	}
 	
 	public Date getDueDate() {
@@ -325,6 +328,7 @@ public class ItemModel extends BaseTreeModel {
 	
 	public void setPercentCourseGrade(Double percent) {
 		set(Key.PERCENT_COURSE_GRADE.name(), percent);
+		set(Key.PERCENT_COURSE_GRADE_STRING.name(), String.valueOf(percent));
 	}
 	
 	public Double getPercentCategory() {
@@ -333,6 +337,7 @@ public class ItemModel extends BaseTreeModel {
 	
 	public void setPercentCategory(Double percent) {
 		set(Key.PERCENT_CATEGORY.name(), percent);
+		set(Key.PERCENT_CATEGORY_STRING.name(), String.valueOf(percent));
 	}
 	
 	public Boolean getIsPercentage() {
@@ -510,6 +515,14 @@ public class ItemModel extends BaseTreeModel {
 
 	public void setEditable(boolean isEditable) {
 		this.isEditable = isEditable;
+	}
+
+	public boolean isChecked() {
+		return isChecked;
+	}
+
+	public void setChecked(boolean isChecked) {
+		this.isChecked = isChecked;
 	}
 	
 }

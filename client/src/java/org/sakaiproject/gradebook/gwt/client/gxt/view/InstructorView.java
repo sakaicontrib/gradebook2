@@ -160,6 +160,7 @@ public class InstructorView extends AppView {
 
 		northData = new BorderLayoutData(LayoutRegion.NORTH, 50);
 		northData.setCollapsible(false);
+		northData.setHidden(true);
 
 		westData = new BorderLayoutData(LayoutRegion.WEST, 400, 100, 800);  
 		westData.setSplit(true);  
@@ -198,6 +199,7 @@ public class InstructorView extends AppView {
 		eastLayoutContainer.add(helpPanel);
 		eastCardLayout.setActiveItem(helpPanel);
 
+		borderLayoutContainer.add(new LayoutContainer(), northData);
 		borderLayoutContainer.add(treeView.getTreePanel(), westData);
 		borderLayoutContainer.add(centerLayoutContainer, centerData);
 		borderLayoutContainer.add(eastLayoutContainer, eastData);

@@ -33,6 +33,9 @@
 	z-index: 1;	
 }
 
+
+
+
 .my-treetbl {
 	border:0 solid #C6C5C5;
 }
@@ -148,6 +151,11 @@
 	line-height: 1.5em; /*23px;*/
 }
 
+.x-grid3-row-checker {
+	background-color:white;
+	border:0px solid white;
+	width:30px;	
+}
  
 .x-grid3-cell-inner, .x-grid3-hd-inner {
 	border-right: 2px solid #EEEEEE;
@@ -175,6 +183,32 @@
 	font-weight:normal;
 	line-height:normal;
 }
+
+.x-treegrid .x-grid3-row {
+	border-color:#FFFFFF;
+}
+
+.x-treegrid .x-grid3-cell-inner, .x-grid3-hd-inner {
+	border-right:0px solid #FFFFFF;
+	font-size:12pt;
+	overflow:hidden;
+	padding:3px 5px;
+	white-space:nowrap;
+}
+
+.x-tree3-node-text {
+	-x-system-font:none;
+	color:black;
+	font-family:arial,tahoma,helvetica,sans-serif;
+	font-size:12pt;
+	font-size-adjust:none;
+	font-stretch:normal;
+	font-style:normal;
+	font-variant:normal;
+	font-weight:normal;
+	line-height:normal;
+}
+
 
 .x-window-mc {
 	font-size: 12pt;

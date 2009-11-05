@@ -31,6 +31,8 @@ public class FixedColumnModel extends BaseTreeModel {
 	
 	private static final long serialVersionUID = 1L;
 	
+	private boolean isChecked;
+	
 	public FixedColumnModel() {
 		super();
 		setUnweighted(Boolean.FALSE);
@@ -158,6 +160,14 @@ public class FixedColumnModel extends BaseTreeModel {
 
 	public String getDisplayName() {
 		return getName();
+	}
+
+	public boolean isChecked() {
+		return isChecked;
+	}
+
+	public void setChecked(boolean isChecked) {
+		this.isChecked = isChecked;
 	}
 
 }

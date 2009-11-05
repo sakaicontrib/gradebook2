@@ -174,6 +174,7 @@ public class ItemFormPanel extends ContentPanel {
 		formPanel = new FormPanel();
 		formPanel.setHeaderVisible(false);
 		formPanel.setLabelWidth(180);
+		//formPanel.setScrollMode(Scroll.AUTO);
 
 		directionsField = new LabelField();
 		directionsField.setName("directions");
@@ -224,14 +225,22 @@ public class ItemFormPanel extends ContentPanel {
 		scaledExtraCreditField.setToolTip(newToolTipConfig(i18n.scaledExtraCreditToolTip()));
 		formPanel.add(scaledExtraCreditField);
 		
+		final LayoutContainer main = new LayoutContainer();
+		main.setLayout(new ColumnLayout());
+		
 		displayToStudentFieldSet = new FieldSet();  
 		displayToStudentFieldSet.setHeading(i18n.displayToStudentsHeading());  
 		displayToStudentFieldSet.setCheckboxToggle(false);  
-		displayToStudentFieldSet.setLayout(new FitLayout());
+		displayToStudentFieldSet.setLayout(new FlowLayout());
+		displayToStudentFieldSet.setAutoHeight(true);
+		displayToStudentFieldSet.setScrollMode(Scroll.AUTO);
 		displayToStudentFieldSet.setVisible(false);
+		//displayToStudentFieldSet.setWidth(600);
 		
-		LayoutContainer main = new LayoutContainer();
-		main.setLayout(new ColumnLayout());
+		//main.setHeight(400);
+		main.setWidth(400);
+		//main.setAutoWidth(true);
+		//main.setAutoHeight(true);
 		
 		FormLayout leftLayout = new FormLayout(); 
 		leftLayout.setLabelWidth(140);
@@ -239,6 +248,8 @@ public class ItemFormPanel extends ContentPanel {
 		
 		LayoutContainer left = new LayoutContainer();
 		left.setLayout(leftLayout);
+		//left.setHeight(400);
+		//left.setWidth(300);
 		
 		FormLayout rightLayout = new FormLayout(); 
 		rightLayout.setLabelWidth(140);
@@ -246,6 +257,8 @@ public class ItemFormPanel extends ContentPanel {
 		
 		LayoutContainer right = new LayoutContainer();
 		right.setLayout(rightLayout);
+		//right.setHeight(400);
+		//right.setWidth(300);
 		
 		releaseGradesField = new NullSensitiveCheckBox();
 		releaseGradesField.setName(ItemModel.Key.RELEASEGRADES.name());
@@ -720,6 +733,7 @@ public class ItemFormPanel extends ContentPanel {
 	}
 	
 	private void doNewItem(ItemModel itemModel) {
+		//formPanel.hide();
 		removeListeners();
 		this.mode = Mode.NEW;
 
@@ -760,6 +774,7 @@ public class ItemFormPanel extends ContentPanel {
 		includedField.setValue(Boolean.TRUE);
 		nameField.focus();
 		addListeners();
+		//formPanel.show();
 	}
 
 	public void onTreeStoreInitialized(TreeStore<ItemModel> treeStore) {
@@ -911,9 +926,6 @@ public class ItemFormPanel extends ContentPanel {
 		initField(scaledExtraCreditField, !isDelete && isAllowedToEdit, !isNotGradebook);
 		initField(enforcePointWeightingField, !isDelete && isAllowedToEdit, isWeightByPointsVisible);
 		
-		displayToStudentFieldSet.setEnabled(isAllowedToEdit && !isDelete);
-		displayToStudentFieldSet.setVisible(isEditable && !isNotGradebook);
-	
 		initField(releaseGradesField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
 		initField(releaseItemsField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
 		initField(showMeanField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
@@ -921,6 +933,9 @@ public class ItemFormPanel extends ContentPanel {
 		initField(showModeField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
 		initField(showRankField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
 		initField(showItemStatsField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
+		
+		displayToStudentFieldSet.setEnabled(isAllowedToEdit && !isDelete);
+		displayToStudentFieldSet.setVisible(isEditable && !isNotGradebook);
 	}
 	
 	
@@ -989,7 +1004,7 @@ public class ItemFormPanel extends ContentPanel {
 							};
 
 							if (name.equals(ItemModel.Key.CATEGORY_ID.name())) {
-								b.setConvertor(new Converter() {
+								b.setConverter(new Converter() {
 									public Object convertFieldValue(Object value) {
 
 										if (value instanceof ItemModel)
@@ -1013,7 +1028,7 @@ public class ItemFormPanel extends ContentPanel {
 								});
 							} else if (name.equals(ItemModel.Key.CATEGORYTYPE.name()) ||
 									name.equals(ItemModel.Key.GRADETYPE.name())) {
-								b.setConvertor(new Converter() {
+								b.setConverter(new Converter() {
 									public Object convertFieldValue(Object value) {
 										if (value instanceof ModelData && ((ModelData)value).get("value") != null) {
 											return ((ModelData)value).get("value");

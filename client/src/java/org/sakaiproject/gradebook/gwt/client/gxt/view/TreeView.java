@@ -30,6 +30,7 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.AltItemTreePanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ItemFormPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ItemTreePanel;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
@@ -43,6 +44,7 @@ import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.data.BaseTreeLoader;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.TreeLoader;
+import com.extjs.gxt.ui.client.data.TreeModel;
 import com.extjs.gxt.ui.client.data.TreeModelReader;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
@@ -51,7 +53,7 @@ import com.extjs.gxt.ui.client.store.TreeStore;
 
 public class TreeView extends View {
 
-	private ItemTreePanel treePanel;
+	private AltItemTreePanel treePanel;
 	private ItemFormPanel formPanel;
 
 	private TreeLoader<ItemModel> treeLoader;
@@ -63,9 +65,49 @@ public class TreeView extends View {
 
 	public TreeView(Controller controller, I18nConstants i18n, boolean isEditable) {
 		super(controller);
-		this.treePanel = new ItemTreePanel(i18n, isEditable);
 		this.formPanel = new ItemFormPanel(i18n);
 		this.isInitialized = false;
+		
+		
+		if (treeLoader == null) {
+			treeLoader = new BaseTreeLoader<ItemModel>(new TreeModelReader() {
+
+				@Override
+				protected List<? extends ModelData> getChildren(ModelData parent) {
+					List visibleChildren = new ArrayList();
+					List<? extends ModelData> children = super.getChildren(parent);
+
+					for (ModelData model : children) {
+						visibleChildren.add(model);
+					}
+
+					return visibleChildren;
+				}
+			}) {
+
+				@Override
+				public boolean hasChildren(ItemModel parent) {
+					
+					if (parent.getItemType() == Type.CATEGORY)
+						return true;
+					
+					if (parent instanceof TreeModel) {
+						return !((TreeModel) parent).isLeaf();
+					}
+					return false;
+				}
+			};
+		}
+
+		if (treeStore == null) {
+			treeStore = new TreeStore<ItemModel>(treeLoader);
+			treeStore.setModelComparer(new ItemModelComparer<ItemModel>());
+
+			//treePanel.onTreeStoreInitialized(treeStore, selectedGradebook.isUserAbleToEditAssessments());
+			formPanel.onTreeStoreInitialized(treeStore);
+		}
+		
+		this.treePanel = new AltItemTreePanel(treeStore, i18n, isEditable);
 	}
 
 	@Override
@@ -207,8 +249,8 @@ public class TreeView extends View {
 		treePanel.onRefreshGradebookItems(gradebookModel, treeLoader, rootItemModel);
 		formPanel.onLoadItemTreeModel(rootItemModel);
 
-		treePanel.expandTrees();
-		treePanel.layout();
+		//treePanel.expandTrees();
+		//treePanel.layout();
 		onUnmaskItemTree();
 	}
 
@@ -325,7 +367,7 @@ public class TreeView extends View {
 
 	// Public accessors
 
-	public ItemTreePanel getTreePanel() {
+	public AltItemTreePanel getTreePanel() {
 		return treePanel;
 	}
 

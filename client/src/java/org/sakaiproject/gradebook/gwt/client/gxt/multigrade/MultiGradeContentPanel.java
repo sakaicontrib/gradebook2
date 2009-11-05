@@ -899,7 +899,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	}
 
 	private ColumnConfig buildColumn(GradebookModel selectedGradebook, FixedColumnModel column, ConfigurationModel configModel) {
-		boolean isHidden = configModel.isColumnHidden(AppConstants.ITEMTREE, column.getIdentifier(), false);
+		boolean isHidden = configModel.isColumnHidden(AppConstants.ITEMTREE, column.getIdentifier(), column.isHidden());
 		return buildColumn(selectedGradebook, column.getKey(), column.getIdentifier(), column.getName(),
 				true, false, convertBoolean(column.isEditable()), isHidden);
 	}
@@ -1101,18 +1101,21 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		if (cm != null) {
 
 			if (event.isSingle) {
-				int columnIndex = cm.findColumnIndex(event.itemModelId);
+				toggle(event.model, event.isHidden);
+				/*int columnIndex = cm.findColumnIndex(event.itemModelId);
 
 				if (columnIndex != -1) {
 					cm.setHidden(columnIndex, event.isHidden);
-				}
+				}*/
 			} else {
 
-				if (!event.visibleStaticIdSet.contains(StudentModel.Key.DISPLAY_ID.name()) 
+				/*if (!event.visibleStaticIdSet.contains(StudentModel.Key.DISPLAY_ID.name()) 
 						&& !event.visibleStaticIdSet.contains(StudentModel.Key.DISPLAY_NAME.name())
 						&& !event.visibleStaticIdSet.contains(StudentModel.Key.LAST_NAME_FIRST.name())) 
 					event.visibleStaticIdSet.add(StudentModel.Key.LAST_NAME_FIRST.name());
-
+				*/
+				
+				grid.setVisible(false);
 				// Loop through every column and show/hide it
 				for (int i=0;i<cm.getColumnCount();i++) {
 					ColumnConfig column = cm.getColumn(i);
@@ -1122,8 +1125,6 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 					// If it is static, then is it even visible? 
 					boolean isStaticVisible = isStatic && event.visibleStaticIdSet.contains(column.getId());
 
-					String cmId = column.getId();
-
 					if (isStatic)
 						cm.setHidden(i, !isStaticVisible);
 					else if (event.selectedItemModelIdSet != null){
@@ -1132,7 +1133,48 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 							cm.setHidden(i, !showColumn);
 					}
 				}
+				grid.setVisible(true);
 			}
+		}
+	}
+	
+	private void toggle(ItemModel m, boolean isHidden) {
+		grid.setVisible(false);
+		switch (m.getItemType()) {
+		case GRADEBOOK:
+			toggleCategory(m, isHidden);
+			break;
+		case CATEGORY:
+			toggleCategory(m, isHidden);
+			break;
+		case ITEM:
+			toggleItem(m, isHidden);
+			break;
+		}
+		grid.setVisible(true);
+	}
+	
+	private void toggleCategory(ItemModel m, boolean isHidden) {
+		if (m.getChildCount() > 0) {
+			for (int i=0;i<m.getChildCount();i++) {
+				ItemModel child = (ItemModel)m.getChild(i);
+				switch (child.getItemType()) {
+				case CATEGORY:
+					toggleCategory(child, isHidden);
+					break;
+				case ITEM:
+					toggleItem(child, isHidden);
+					break;
+				}
+			}
+		}
+	}
+	
+	private void toggleItem(ItemModel m, boolean isHidden) {
+		int columnIndex = cm.findColumnIndex(m.getIdentifier());
+
+		if (columnIndex != -1) {
+			cm.setHidden(columnIndex, isHidden);
 		}
 	}
 

@@ -22,6 +22,7 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid;
 
+import java.util.HashMap;
 import java.util.List;
 
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
@@ -29,11 +30,34 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 
 public class CustomColumnModel extends ColumnModel {
 
-
+	private HashMap<String, Integer> dataIndexMap;
+	
 	public CustomColumnModel(String gradebookUid, String gridId, List<ColumnConfig> columns) {
 		super(columns);
+		this.dataIndexMap = new HashMap<String, Integer>();
+		
+		if (columns != null) {
+			for (int i=0;i<columns.size();i++) {
+				dataIndexMap.put(columns.get(i).getDataIndex(), Integer.valueOf(i));
+			}
+		}
 	}
 
+	@Override
+	public int findColumnIndex(String dataIndex) {
+		if (dataIndexMap != null) {
+			Integer val = dataIndexMap.get(dataIndex);
+			if (val != null)
+				return val.intValue();
+		}
+		/*for (int i = 0, len = configs.size(); i < len; i++) {
+			if (configs.get(i).getDataIndex().equals(dataIndex)) {
+				return i;
+			}
+		}*/
+		return -1;
+	}
+	
 	@Override
 	public void setHidden(int colIndex, boolean hidden) {
 		super.setHidden(colIndex, hidden);
