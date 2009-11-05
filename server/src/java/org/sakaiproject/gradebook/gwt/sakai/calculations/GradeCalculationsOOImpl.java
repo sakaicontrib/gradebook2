@@ -546,7 +546,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 				
 				boolean isExtraCreditItem = DataTypeConversionUtil.checkBoolean(assignment.isExtraCredit());
 				boolean isExtraCreditItemOrCategory = isExtraCreditCategory || isExtraCreditItem;
-				boolean isNullsAsZeros = assignment.getCountNullsAsZeros();
+				boolean isNullsAsZeros = DataTypeConversionUtil.checkBoolean(assignment.getCountNullsAsZeros());
 				boolean isUnweighted = assignment.isUnweighted() != null && assignment.isUnweighted().booleanValue();
 				
 				if //(!isExtraCreditItemOrCategory 
