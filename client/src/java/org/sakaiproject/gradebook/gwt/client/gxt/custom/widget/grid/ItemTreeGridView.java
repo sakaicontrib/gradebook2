@@ -126,7 +126,7 @@ public class ItemTreeGridView extends TreeGridView {
 	
 	// FIXME: There seems to be a substantial bug in GXT 2.0.4 that requires the following
 	// commented out override version to be included. 
-	@Override
+	/*@Override
 	protected String getRenderedValue(ColumnData data, int rowIndex,
 			int colIndex, ModelData m, String property) {
 		GridCellRenderer<ModelData> r = cm.getRenderer(colIndex);
@@ -136,7 +136,7 @@ public class ItemTreeGridView extends TreeGridView {
 			Object o = r.render(ds.getAt(rowIndex), property, data, rowIndex,
 					colIndex, ds, grid);
 			if (o instanceof Widget || r instanceof WidgetTreeGridCellRenderer) {
-				/*Widget w = null;
+				/--*Widget w = null;
 				if (o instanceof Widget) {
 					w = (Widget) o;
 				} else {
@@ -148,7 +148,7 @@ public class ItemTreeGridView extends TreeGridView {
 				rowMap.set(colIndex, w);
 				if (colIndex == treeColumn) {
 					return o.toString();
-				}*/
+				}*--/
 				return "";
 			} else {
 				return o.toString();
@@ -172,6 +172,6 @@ public class ItemTreeGridView extends TreeGridView {
 			text = val.toString();
 		}
 		return Util.isEmptyString(text) ? "&#160;" : text;
-	}
+	}*/
 	
 }

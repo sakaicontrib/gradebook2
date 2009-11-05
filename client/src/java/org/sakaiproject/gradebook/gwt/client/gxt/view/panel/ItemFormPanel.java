@@ -1004,7 +1004,7 @@ public class ItemFormPanel extends ContentPanel {
 							};
 
 							if (name.equals(ItemModel.Key.CATEGORY_ID.name())) {
-								b.setConverter(new Converter() {
+								b.setConvertor(new Converter() {
 									public Object convertFieldValue(Object value) {
 
 										if (value instanceof ItemModel)
@@ -1028,7 +1028,7 @@ public class ItemFormPanel extends ContentPanel {
 								});
 							} else if (name.equals(ItemModel.Key.CATEGORYTYPE.name()) ||
 									name.equals(ItemModel.Key.GRADETYPE.name())) {
-								b.setConverter(new Converter() {
+								b.setConvertor(new Converter() {
 									public Object convertFieldValue(Object value) {
 										if (value instanceof ModelData && ((ModelData)value).get("value") != null) {
 											return ((ModelData)value).get("value");
