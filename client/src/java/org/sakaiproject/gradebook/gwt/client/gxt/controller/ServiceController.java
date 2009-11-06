@@ -331,48 +331,58 @@ public class ServiceController extends Controller {
 	}
 
 	private void onShowColumns(ShowColumnsEvent event) {
+		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		ConfigurationModel model = new ConfigurationModel(selectedGradebook.getGradebookId());
+		
 		if (event.isSingle) {
 			boolean hidden = event.isHidden;
 
-			GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-
-			ConfigurationModel model = new ConfigurationModel(selectedGradebook.getGradebookId());
 			if (event.isFixed)
 				buildColumnConfigModel(model, event.fixedModel, hidden);
 			else
 				buildColumnConfigModel(model, event.model, hidden);
 
-			Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
-
-			AsyncCallback<ConfigurationModel> callback = new AsyncCallback<ConfigurationModel>() {
-
-				public void onFailure(Throwable caught) {
-					// FIXME: Should we notify the user when this fails?
-				}
-
-				public void onSuccess(ConfigurationModel result) {
-					GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-					ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
-
-					Collection<String> propertyNames = result.getPropertyNames();
-					if (propertyNames != null) {
-						List<String> names = new ArrayList<String>(propertyNames);
-
-						for (int i=0;i<names.size();i++) {
-							String name = names.get(i);
-							String value = result.get(name);
-							configModel.set(name, value);
-						}
-					}
-				}
-
-			};
-
-			service.update(model, EntityType.CONFIGURATION, null, SecureToken.get(), callback);
+			
 		} else {
 			
-			
+			for (String id : event.fullStaticIdSet) {
+				boolean isHidden = !event.visibleStaticIdSet.contains(id);
+				buildColumnConfigModel(model, id, isHidden);
+			}
+
 		}
+		
+		Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
+
+		AsyncCallback<ConfigurationModel> callback = new AsyncCallback<ConfigurationModel>() {
+
+			public void onFailure(Throwable caught) {
+				// FIXME: Should we notify the user when this fails?
+			}
+
+			public void onSuccess(ConfigurationModel result) {
+				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+				ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
+
+				Collection<String> propertyNames = result.getPropertyNames();
+				if (propertyNames != null) {
+					List<String> names = new ArrayList<String>(propertyNames);
+
+					for (int i=0;i<names.size();i++) {
+						String name = names.get(i);
+						String value = result.get(name);
+						configModel.set(name, value);
+					}
+				}
+			}
+
+		};
+
+		service.update(model, EntityType.CONFIGURATION, null, SecureToken.get(), callback);
+	}
+	
+	private void buildColumnConfigModel(ConfigurationModel model, String identifier, boolean isHidden) {
+		model.setColumnHidden(AppConstants.ITEMTREE, identifier, Boolean.valueOf(isHidden));
 	}
 	
 	private void buildColumnConfigModel(ConfigurationModel model, FixedColumnModel fixedModel, boolean isHidden) {
