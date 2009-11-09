@@ -47,7 +47,7 @@ public class GradebookApplication implements EntryPoint {
 
 	private Dispatcher dispatcher;
 	private Gradebook2RPCServiceAsync dataService;
-	private int screenHeight = 420;
+	private int screenHeight = 580;
 	
     public GradebookApplication() {
 

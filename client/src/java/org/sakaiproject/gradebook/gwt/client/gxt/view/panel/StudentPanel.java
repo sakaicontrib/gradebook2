@@ -126,6 +126,7 @@ public class StudentPanel extends ContentPanel {
 		setFrame(true);
 		setHeaderVisible(false);
 		setLayout(new FlowLayout());
+		setScrollMode(Scroll.AUTO);
 
 		studentInformation = new FlexTable(); 
 		studentInformation.setStyleName("gbStudentInformation");
@@ -135,7 +136,7 @@ public class StudentPanel extends ContentPanel {
 		studentInformationPanel.setHeaderVisible(false);
 		studentInformationPanel.setHeight(200);
 		studentInformationPanel.setLayout(new FitLayout());
-		studentInformationPanel.setScrollMode(Scroll.AUTO);
+		//studentInformationPanel.setScrollMode(Scroll.AUTO);
 		studentInformationPanel.add(studentInformation);
 		add(studentInformationPanel); //, new RowData(-1, -1, new Margins(5, 0, 0, 0)));
 
@@ -246,10 +247,16 @@ public class StudentPanel extends ContentPanel {
 		grid.setView(view);
 
 		
-		cardLayoutContainer = new LayoutContainer();
+		cardLayoutContainer = new LayoutContainer() {
+			protected void onResize(final int width, final int height) {
+				super.onResize(width, height);
+				
+				gradeInformationPanel.setSize(width, 400);
+			}
+		};
 		cardLayout = new CardLayout();
 		cardLayoutContainer.setLayout(cardLayout);
-		
+		cardLayoutContainer.setHeight(600);
 		
 		gradeInformationPanel = new ContentPanel() {
 			

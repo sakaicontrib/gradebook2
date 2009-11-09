@@ -114,17 +114,19 @@ public class LearnerSummaryPanel extends ContentPanel {
 		setHeaderVisible(false);
 		setId("learnerSummaryPanel");
 		setLayout(new FlowLayout());
+		setScrollMode(Scroll.AUTO);
 		setWidth(400);
 
 		initListeners();
 
 		add(newLearnerInfoPanel()); //, new RowData(1, -1));
 
-		FormLayout formLayout = new FormLayout();
+		FlowLayout formLayout = new FlowLayout();
 		
 		formPanel = new FormPanel();
 		formPanel.setHeaderVisible(false);
 		formPanel.setLayout(formLayout);
+		formPanel.setScrollMode(Scroll.AUTO);
 
 		TabPanel tabPanel = new AriaTabPanel();
 		tabPanel.setPlain(true);
@@ -132,7 +134,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 
 		TabItem tab = new TabItem(i18n.learnerTabGradeHeader());
 		tab.addStyleName("gbTabMargins");
-		tab.setLayout(new FitLayout());
+		tab.setLayout(new FlowLayout());
 		tab.add(newGradeFormPanel());
 		tab.setScrollMode(Scroll.AUTOY);
 		tabPanel.add(tab);
