@@ -316,8 +316,8 @@ public class TreeView extends View {
 			formPanel.onTreeStoreInitialized(treeStore);
 		}
 
-		onRefreshGradebookItems(selectedGradebook);
 		onRefreshGradebookSetup(selectedGradebook);
+		onRefreshGradebookItems(selectedGradebook);
 	}
 
 	protected void onUnmaskItemTree() {

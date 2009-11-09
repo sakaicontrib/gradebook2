@@ -2863,13 +2863,17 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 
 		if (categoryItemModel != null) {
-			if (isEnforcePointWeighting) {
-				if (pointsSum.compareTo(BigDecimal.ZERO) > 0)
-					categoryItemModel.setPercentCategory(Double.valueOf(100d));
-				else
-					categoryItemModel.setPercentCategory(Double.valueOf(0d));
-			} else
-				categoryItemModel.setPercentCategory(Double.valueOf(percentCategorySum.doubleValue()));
+			if (isWeighted) {
+				if (isEnforcePointWeighting) {
+					if (pointsSum.compareTo(BigDecimal.ZERO) > 0)
+						categoryItemModel.setPercentCategory(Double.valueOf(100d));
+					else
+						categoryItemModel.setPercentCategory(Double.valueOf(0d));
+				} else
+					categoryItemModel.setPercentCategory(Double.valueOf(percentCategorySum.doubleValue()));
+			} else {
+				categoryItemModel.setPercentCategory(null);
+			}
 			categoryItemModel.setPoints(Double.valueOf(pointsSum.doubleValue()));
 		}
 	}
@@ -3182,8 +3186,12 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		double categoryWeight = category.getWeight() == null ? 0d : category.getWeight().doubleValue() * 100d;
 		boolean isIncluded = category.isUnweighted() == null ? !isDefaultCategory : !isDefaultCategory && !category.isUnweighted().booleanValue();
 
-		if (gradebook != null)
+		boolean hasWeights = true;
+		
+		if (gradebook != null) {
 			model.setGradebook(gradebook.getName());
+			hasWeights = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY;
+		}
 		model.setIdentifier(String.valueOf(category.getId()));
 		model.setName(category.getName());
 		model.setCategoryId(category.getId());
@@ -3193,7 +3201,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		model.setIncluded(Boolean.valueOf(isIncluded));
 		model.setDropLowest(category.getDrop_lowest() == 0 ? null : Integer.valueOf(category.getDrop_lowest()));
 		model.setRemoved(Boolean.valueOf(category.isRemoved()));
-		model.setPercentCourseGrade(Double.valueOf(categoryWeight));
+		if (hasWeights)
+			model.setPercentCourseGrade(Double.valueOf(categoryWeight));
 		model.setItemType(Type.CATEGORY);
 		model.setEditable(!isDefaultCategory);
 		model.setItemOrder(category.getCategoryOrder());
@@ -3216,7 +3225,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		
 		Gradebook gradebook = assignment.getGradebook();
 		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
-		boolean hasWeights = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY;
+		boolean hasWeights = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY;
 		boolean isLetterGrading = gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER;
 		
 		// We don't want to delete assignments based on category when we don't
@@ -3287,12 +3296,16 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		}
 		*/
 		
-		
-		if (percentCategory != null)
-			model.setPercentCategory(Double.valueOf(percentCategory.doubleValue()));
-		
-		if (percentCourseGrade != null)
-			model.setPercentCourseGrade(Double.valueOf(percentCourseGrade.doubleValue()));
+		if (hasWeights) {
+			if (percentCategory != null)
+				model.setPercentCategory(Double.valueOf(percentCategory.doubleValue()));
+			
+			if (percentCourseGrade != null)
+				model.setPercentCourseGrade(Double.valueOf(percentCourseGrade.doubleValue()));
+		} else {
+			model.setPercentCategory(null);
+			model.setPercentCourseGrade(null);
+		}
 		
 		model.setItemType(Type.ITEM);
 

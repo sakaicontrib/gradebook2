@@ -151,6 +151,8 @@ public class ItemTreeGridView extends TreeGridView {
 				}*/
 				return "";
 			} else {
+				if (o == null)
+					return "";
 				return o.toString();
 			}
 		}

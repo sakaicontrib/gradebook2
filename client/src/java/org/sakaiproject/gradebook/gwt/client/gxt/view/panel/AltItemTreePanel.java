@@ -70,7 +70,6 @@ import com.extjs.gxt.ui.client.widget.layout.FillLayout;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
-import com.extjs.gxt.ui.client.widget.tree.TreeItem;
 import com.extjs.gxt.ui.client.widget.treegrid.TreeGrid;
 import com.extjs.gxt.ui.client.widget.treegrid.TreeGridCellRenderer;
 import com.extjs.gxt.ui.client.widget.treegrid.TreeGridView;
@@ -142,6 +141,7 @@ public class AltItemTreePanel extends ContentPanel {
 		
 		ColumnConfig nameColumn = new ColumnConfig(ItemModel.Key.NAME.name(), 
 				ItemModel.getPropertyName(ItemModel.Key.NAME), 200);
+		nameColumn.setMenuDisabled(true);
 		nameColumn.setRenderer(renderer);
 		nameColumn.setSortable(false);
 		columns.add(nameColumn);
@@ -164,12 +164,12 @@ public class AltItemTreePanel extends ContentPanel {
 					boolean isPercentGrade = property.equals(ItemModel.Key.PERCENT_COURSE_GRADE.name());
 					boolean isPoints = property.equals(ItemModel.Key.POINTS.name());
 					
-					if (isGradebook && isPercentCategory)
-						return "-";
-						
 					if (value == null)
 						return null;
 					
+					if (isGradebook && isPercentCategory)
+						return "-";
+											
 					boolean isIncluded = itemModel.getIncluded() != null && itemModel.getIncluded().booleanValue();				
 					boolean isTooBig = (isPercentCategory || isPercentGrade) 
 						&& ((Double)value).doubleValue() > 100.00001d;
@@ -247,6 +247,13 @@ public class AltItemTreePanel extends ContentPanel {
 					AbstractImagePrototype icon, boolean checkable,
 					Joint joint, int level) {
 
+				ItemModel itemModel = (ItemModel)m;
+
+				boolean isIncluded = itemModel.getIncluded() != null && itemModel.getIncluded().booleanValue();
+				boolean isItem = itemModel.getItemType() == Type.ITEM;
+				boolean isCategory = itemModel.getItemType() == Type.CATEGORY;
+				
+								
 				StringBuffer sb = new StringBuffer();
 				sb.append("<div id=\"");
 				sb.append(id);
@@ -283,7 +290,15 @@ public class AltItemTreePanel extends ContentPanel {
 				} else {
 					sb.append("<span></span>");
 				}
-				sb.append("<span class=\"x-tree3-node-text\">&nbsp;");
+				sb.append("<span class=\"x-tree3-node-text");
+				if (!isIncluded && (isItem || isCategory))
+					sb.append("gbNotIncluded");
+				if (!isItem) 
+					sb.append(" gbCellStrong");
+				boolean isExtraCredit = itemModel.getExtraCredit() != null && itemModel.getExtraCredit().booleanValue();
+				if (isExtraCredit) 
+					sb.append(" gbCellExtraCredit");
+				sb.append("\">&nbsp;");
 				sb.append(text);
 				sb.append("</span>");
 
@@ -468,14 +483,23 @@ public class AltItemTreePanel extends ContentPanel {
 		switch (gradebookModel.getGradebookItemModel().getCategoryType()) {
 			case NO_CATEGORIES:
 			case SIMPLE_CATEGORIES:
-				percentCourseGradeColumn.setHidden(true);
-				percentCategoryColumn.setHidden(true);
-				pointsColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_POINTS_NOWEIGHTS, false));
+				cm.setHidden(2, true);
+				cm.setHidden(3, true);
+				cm.setHidden(4, configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_POINTS_NOWEIGHTS, false));
+				//percentCourseGradeColumn.setHidden(true);
+				//percentCourseGradeColumn.setMenuDisabled(true);
+				//percentCategoryColumn.setHidden(true);
+				//percentCategoryColumn.setMenuDisabled(true);
+				//pointsColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_POINTS_NOWEIGHTS, false));
 				break;
 			case WEIGHTED_CATEGORIES:
-				percentCourseGradeColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_PERCENT_GRADE, false));
-				percentCategoryColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_PERCENT_CATEGORY, false));
-				pointsColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_POINTS_WEIGHTS, true));
+				cm.setHidden(2, configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_PERCENT_GRADE, false));
+				cm.setHidden(3, configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_PERCENT_CATEGORY, false));
+				cm.setHidden(4, configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_POINTS_WEIGHTS, false));
+				
+				//percentCourseGradeColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_PERCENT_GRADE, false));
+				//percentCategoryColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_PERCENT_CATEGORY, false));
+				//pointsColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_POINTS_WEIGHTS, true));
 				break;
 		}
 	}

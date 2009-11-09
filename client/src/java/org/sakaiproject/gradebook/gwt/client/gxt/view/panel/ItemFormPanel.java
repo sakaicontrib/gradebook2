@@ -141,7 +141,7 @@ public class ItemFormPanel extends ContentPanel {
 	private Listener<FieldEvent> enforcePointWeightingListener;
 	private SelectionListener<ButtonEvent> selectionListener;
 	private SelectionChangedListener<ItemModel> categorySelectionChangedListener;
-	private SelectionChangedListener otherSelectionChangedListener;
+	private SelectionChangedListener<ModelData> otherSelectionChangedListener;
 
 	private I18nConstants i18n;
 
@@ -206,7 +206,7 @@ public class ItemFormPanel extends ContentPanel {
 		categoryTypePicker.setEditable(false);
 		categoryTypePicker.setFieldLabel(i18n.categoryTypeFieldLabel());
 		categoryTypePicker.setForceSelection(true);
-		categoryTypePicker.setVisible(false);
+		//categoryTypePicker.setVisible(false);
 		formPanel.add(categoryTypePicker);
 
 		gradeTypePicker = new ComboBox<ModelData>();
@@ -215,7 +215,7 @@ public class ItemFormPanel extends ContentPanel {
 		gradeTypePicker.setName(ItemModel.Key.GRADETYPE.name());
 		gradeTypePicker.setFieldLabel(i18n.gradeTypeFieldLabel());
 		gradeTypePicker.setForceSelection(true);
-		gradeTypePicker.setVisible(false);
+		//gradeTypePicker.setVisible(false);
 		formPanel.add(gradeTypePicker);
 
 		scaledExtraCreditField = new NullSensitiveCheckBox();
@@ -431,6 +431,28 @@ public class ItemFormPanel extends ContentPanel {
 		bottomRowData = new RowData(1, 1, new Margins(0, 0, 5, 0));
 		add(directionsField, topRowData);
 		add(formPanel, bottomRowData);
+
+		ListStore<ModelData> categoryTypeStore = new ListStore<ModelData>();
+
+		categoryTypeStore.add(getCategoryTypeModel(GradebookModel.CategoryType.NO_CATEGORIES));
+		categoryTypeStore.add(getCategoryTypeModel(GradebookModel.CategoryType.SIMPLE_CATEGORIES));
+		categoryTypeStore.add(getCategoryTypeModel(GradebookModel.CategoryType.WEIGHTED_CATEGORIES));
+
+		categoryTypePicker.setStore(categoryTypeStore);
+
+		ListStore<ModelData> gradeTypeStore = new ListStore<ModelData>();
+
+		List<GradeType> enabledGradeTypes = Registry.get(AppConstants.ENABLED_GRADE_TYPES);
+		
+		if (enabledGradeTypes != null) {
+			for (int i=0;i<enabledGradeTypes.size();i++) {
+				gradeTypeStore.add(getGradeTypeModel(enabledGradeTypes.get(i)));
+			}
+		}
+		
+		gradeTypePicker.setStore(gradeTypeStore);
+		
+		formPanel.setVisible(false);
 	}
 
 	public void onActionCompleted() {
@@ -627,14 +649,13 @@ public class ItemFormPanel extends ContentPanel {
 			}
 		}
 
-		ListStore<ModelData> categoryTypeStore = new ListStore<ModelData>();
+		/*ListStore<ModelData> categoryTypeStore = new ListStore<ModelData>();
 
 		categoryTypeStore.add(getCategoryTypeModel(GradebookModel.CategoryType.NO_CATEGORIES));
 		categoryTypeStore.add(getCategoryTypeModel(GradebookModel.CategoryType.SIMPLE_CATEGORIES));
 		categoryTypeStore.add(getCategoryTypeModel(GradebookModel.CategoryType.WEIGHTED_CATEGORIES));
 
 		categoryTypePicker.setStore(categoryTypeStore);
-
 
 		ListStore<ModelData> gradeTypeStore = new ListStore<ModelData>();
 
@@ -650,15 +671,8 @@ public class ItemFormPanel extends ContentPanel {
 	
 		if (selectedItemModel != null) {
 			removeListeners();
-			/*CategoryType categoryType = selectedGradebook.getGradebookItemModel().getCategoryType();
-			Type itemType = selectedItemModel.getItemType();
-			boolean isAllowedToEdit = DataTypeConversionUtil.checkBoolean(selectedGradebook.isUserAbleToEditAssessments());
-			boolean hasWeights = categoryType == CategoryType.WEIGHTED_CATEGORIES;
-			boolean isNotGradebook = itemType != Type.GRADEBOOK;
-			
-			initField(scaledExtraCreditField, !isDelete && isAllowedToEdit, !isNotGradebook);*/
 			addListeners();
-		}
+		}*/
 
 	}
 
@@ -1148,14 +1162,10 @@ public class ItemFormPanel extends ContentPanel {
 
 		};
 
-		otherSelectionChangedListener = new SelectionChangedListener() {
+		otherSelectionChangedListener = new SelectionChangedListener<ModelData>() {
 
 			@Override
-			public void selectionChanged(SelectionChangedEvent se) {
-
-			}
-
-			public void handleEvent(BaseEvent be) {
+			public void selectionChanged(SelectionChangedEvent<ModelData> se) {
 				setChanges();
 			}
 
