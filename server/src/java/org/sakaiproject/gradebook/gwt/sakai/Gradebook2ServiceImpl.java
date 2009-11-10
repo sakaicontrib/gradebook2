@@ -2678,14 +2678,15 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	 * PRIVATE METHODS
 	 */
 
-	private Map<String, Object> appendItemData(Long assignmentId, Map<String, Object> cellMap, UserRecord userRecord, Gradebook gradebook) {
+	private Map<String, Object> appendItemData(Long assignmentId, Map<String, Object> cellMap, UserRecord userRecord, Gradebook gradebook, Boolean countNullsAsZeros) {
 
 		AssignmentGradeRecord gradeRecord = null;
 
 		String id = String.valueOf(assignmentId);
 
 		boolean isCommented = userRecord.getCommentMap() != null && userRecord.getCommentMap().get(assignmentId) != null;
-
+		boolean isCountNullsAsZeros = DataTypeConversionUtil.checkBoolean(countNullsAsZeros);
+		
 		if (isCommented) {
 			cellMap.put(concat(id, StudentModel.COMMENTED_FLAG), Boolean.TRUE);
 			cellMap.put(concat(id, StudentModel.COMMENT_TEXT_FLAG), userRecord.getCommentMap().get(assignmentId).getCommentText());
@@ -2693,40 +2694,40 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 
 		Map<Long, AssignmentGradeRecord> studentGradeMap = userRecord.getGradeRecordMap();
 
-		if (studentGradeMap != null) {
-			gradeRecord = studentGradeMap.get(assignmentId);
+		gradeRecord = studentGradeMap == null ? null : studentGradeMap.get(assignmentId);
 
-			if (gradeRecord != null) {
-				boolean isExcused = gradeRecord.isExcluded() != null && gradeRecord.isExcluded().booleanValue();
-				boolean isDropped = gradeRecord.isDropped() != null && gradeRecord.isDropped().booleanValue();
+		
+		boolean isExcused = gradeRecord == null ? false : gradeRecord.isExcluded() != null && gradeRecord.isExcluded().booleanValue();
+		boolean isDropped = gradeRecord == null ? false : gradeRecord.isDropped() != null && gradeRecord.isDropped().booleanValue();
 
-				if (isDropped || isExcused)
-					cellMap.put(concat(id, StudentModel.DROP_FLAG), Boolean.TRUE);
+		if (isDropped || isExcused)
+			cellMap.put(concat(id, StudentModel.DROP_FLAG), Boolean.TRUE);
 
-				if (isExcused)
-					cellMap.put(concat(id, StudentModel.EXCUSE_FLAG), Boolean.TRUE);
+		if (isExcused)
+			cellMap.put(concat(id, StudentModel.EXCUSE_FLAG), Boolean.TRUE);
 
-				BigDecimal percentage = null;
-				switch (gradebook.getGrade_type()) {
-					case GradebookService.GRADE_TYPE_POINTS:
-						cellMap.put(id, gradeRecord.getPointsEarned());
-						break;
-					case GradebookService.GRADE_TYPE_PERCENTAGE:
-						percentage = gradeCalculations.getPointsEarnedAsPercent((Assignment) gradeRecord.getGradableObject(), gradeRecord);
-						Double percentageDouble = percentage == null ? null : Double.valueOf(percentage.doubleValue());
-						cellMap.put(id, percentageDouble);
-						break;
-					case GradebookService.GRADE_TYPE_LETTER:
-						percentage = gradeCalculations.getPointsEarnedAsPercent((Assignment) gradeRecord.getGradableObject(), gradeRecord);
-						String letterGrade = gradeCalculations.convertPercentageToLetterGrade(percentage);
-						cellMap.put(id, letterGrade);
-						break;
-					default:
-						cellMap.put(id, "Not implemented");
-						break;
-				}
-			}
+		BigDecimal percentage = null;
+		switch (gradebook.getGrade_type()) {
+		case GradebookService.GRADE_TYPE_POINTS:
+			Double value = gradeRecord != null && gradeRecord.getPointsEarned() != null ? gradeRecord.getPointsEarned() : (isCountNullsAsZeros ? Double.valueOf(0) : null);
+			cellMap.put(id, value);
+			break;
+		case GradebookService.GRADE_TYPE_PERCENTAGE:
+			percentage = gradeCalculations.getPointsEarnedAsPercent((Assignment) gradeRecord.getGradableObject(), gradeRecord);
+			Double percentageDouble = percentage != null ? Double.valueOf(percentage.doubleValue()) : (isCountNullsAsZeros ? Double.valueOf(0) : null);
+			cellMap.put(id, percentageDouble);
+			break;
+		case GradebookService.GRADE_TYPE_LETTER:
+			percentage = gradeCalculations.getPointsEarnedAsPercent((Assignment) gradeRecord.getGradableObject(), gradeRecord);
+			String letterGrade = percentage != null ? gradeCalculations.convertPercentageToLetterGrade(percentage) : (isCountNullsAsZeros ? "0" : "");
+			cellMap.put(id, letterGrade);
+			break;
+		default:
+			cellMap.put(id, "Not implemented");
+			break;
 		}
+			
+		
 
 		return cellMap;
 	}
@@ -2805,14 +2806,14 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		if (assignments != null) {
 
 			for (Assignment assignment : assignments) {
-				cellMap = appendItemData(assignment.getId(), cellMap, userRecord, gradebook);
+				cellMap = appendItemData(assignment.getId(), cellMap, userRecord, gradebook, assignment.getCountNullsAsZeros());
 			}
 
 		} else {
 
 			for (AssignmentGradeRecord gradeRecord : studentGradeMap.values()) {
 				Assignment assignment = gradeRecord.getAssignment();
-				cellMap = appendItemData(assignment.getId(), cellMap, userRecord, gradebook);
+				cellMap = appendItemData(assignment.getId(), cellMap, userRecord, gradebook, assignment.getCountNullsAsZeros());
 			}
 
 		}
