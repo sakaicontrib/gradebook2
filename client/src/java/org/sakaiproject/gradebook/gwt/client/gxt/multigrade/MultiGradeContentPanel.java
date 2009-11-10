@@ -489,8 +489,8 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		if (loader != null) 
 			loader.load(0, pageSize);
 
-		if (sectionsLoader != null)
-			sectionsLoader.load();
+		//if (sectionsLoader != null)
+		//	sectionsLoader.load();
 	}
 
 	public void onUserChange(UserEntityAction<?> action) {
