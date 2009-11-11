@@ -286,19 +286,19 @@ public class AppController extends Controller {
 
 		boolean isUserAbleToGrade = authModel.isUserAbleToGrade() == null ? false : authModel.isUserAbleToGrade().booleanValue();
 		boolean isUserAbleToViewOwnGrades = authModel.isUserAbleToViewOwnGrades() == null ? false : authModel.isUserAbleToViewOwnGrades().booleanValue();
-		boolean isUserAbleToEditItems = DataTypeConversionUtil.checkBoolean(authModel.isUserAbleToEditAssessments());
-		boolean isNewGradebook = DataTypeConversionUtil.checkBoolean(authModel.isNewGradebook());
+		final boolean isUserAbleToEditItems = DataTypeConversionUtil.checkBoolean(authModel.isUserAbleToEditAssessments());
+		final boolean isNewGradebook = DataTypeConversionUtil.checkBoolean(authModel.isNewGradebook());
 
-		I18nConstants i18n = Registry.get(AppConstants.I18N);
+		final I18nConstants i18n = Registry.get(AppConstants.I18N);
 
 		if (isUserAbleToGrade) {
-			this.singleView = new SingleGradeView(this, false);
-			this.treeView = new TreeView(this, i18n, isUserAbleToEditItems);
-			this.multigradeView = new MultigradeView(this, i18n);
-			this.importExportView = new ImportExportView(this, i18n);
-			this.appView = new InstructorView(this, treeView, multigradeView, notificationView, importExportView, singleView, isUserAbleToEditItems, isNewGradebook, i18n);
+			AppController.this.singleView = new SingleGradeView(AppController.this, false);
+			AppController.this.treeView = new TreeView(AppController.this, i18n, isUserAbleToEditItems);
+			AppController.this.multigradeView = new MultigradeView(AppController.this, i18n);
+			AppController.this.importExportView = new ImportExportView(AppController.this, i18n);
+			AppController.this.appView = new InstructorView(AppController.this, treeView, multigradeView, notificationView, importExportView, singleView, isUserAbleToEditItems, isNewGradebook, i18n);
 		} else if (isUserAbleToViewOwnGrades) {
-			this.appView = new StudentView(this, notificationView);
+			AppController.this.appView = new StudentView(AppController.this, notificationView);
 		}
 	}
 

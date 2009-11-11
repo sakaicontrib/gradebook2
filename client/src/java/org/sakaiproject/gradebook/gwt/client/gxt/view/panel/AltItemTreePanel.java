@@ -252,7 +252,7 @@ public class AltItemTreePanel extends ContentPanel {
 				boolean isIncluded = itemModel.getIncluded() != null && itemModel.getIncluded().booleanValue();
 				boolean isItem = itemModel.getItemType() == Type.ITEM;
 				boolean isCategory = itemModel.getItemType() == Type.CATEGORY;
-				
+				boolean isReleased = itemModel.getReleased() != null && itemModel.getReleased().booleanValue();
 								
 				StringBuffer sb = new StringBuffer();
 				sb.append("<div id=\"");
@@ -292,9 +292,11 @@ public class AltItemTreePanel extends ContentPanel {
 				}
 				sb.append("<span class=\"x-tree3-node-text");
 				if (!isIncluded && (isItem || isCategory))
-					sb.append("gbNotIncluded");
+					sb.append(" gbNotIncluded");
 				if (!isItem) 
 					sb.append(" gbCellStrong");
+				if (isReleased) 
+					sb.append(" gbReleased");
 				boolean isExtraCredit = itemModel.getExtraCredit() != null && itemModel.getExtraCredit().booleanValue();
 				if (isExtraCredit) 
 					sb.append(" gbCellExtraCredit");
