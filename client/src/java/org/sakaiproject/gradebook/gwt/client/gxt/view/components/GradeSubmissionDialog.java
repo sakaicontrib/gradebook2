@@ -28,7 +28,7 @@ import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.SecureToken;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
-import org.sakaiproject.gradebook.gwt.client.advisor.SampleClientExportAdvisor;
+import org.sakaiproject.gradebook.gwt.client.advisor.ClientExportAdvisorImpl;
 import org.sakaiproject.gradebook.gwt.client.api.ClientExportAdvisor;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
@@ -130,7 +130,8 @@ public class GradeSubmissionDialog extends Dialog {
 							String responseText = response.getText().trim();
 							
 							// FIXME : Find a GWT IOC solution, so that we can inject the desired implementation
-							ClientExportAdvisor clientExportAdvisor = new SampleClientExportAdvisor();
+							// GRBK-417
+							ClientExportAdvisor clientExportAdvisor = new ClientExportAdvisorImpl();
 							
 							clientExportAdvisor.handleServerResponse(responseText);
 						}
