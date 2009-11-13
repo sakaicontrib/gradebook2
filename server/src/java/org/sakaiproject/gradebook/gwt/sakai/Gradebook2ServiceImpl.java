@@ -121,6 +121,9 @@ import org.sakaiproject.tool.gradebook.Permission;
 import org.sakaiproject.user.api.User;
 import org.sakaiproject.user.api.UserDirectoryService;
 import org.sakaiproject.user.api.UserNotDefinedException;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 import com.extjs.gxt.ui.client.Style.SortDir;
 import com.extjs.gxt.ui.client.data.BaseListLoadResult;
@@ -132,7 +135,7 @@ import com.extjs.gxt.ui.client.data.PagingLoadConfig;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 import com.google.gwt.core.client.GWT;
 
-public class Gradebook2ServiceImpl implements Gradebook2Service {
+public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationContextAware {
 
 	private static final Log log = LogFactory.getLog(Gradebook2ServiceImpl.class);
 
@@ -154,9 +157,28 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 	private List<GradeType> enabledGradeTypes;
 	private String[] learnerRoleNames;
 	
+	private ApplicationContext applicationContext;
+	
 	
 	public void init() {
 		enabledGradeTypes = new ArrayList<GradeType>();
+		
+		// Since the ApplicationContext only contains the tool specific beans, we need to get the
+		// parent ApplicationContext so that we can access all the beans that have been registered
+		// with the component manager
+		ApplicationContext parentApplicationContext = applicationContext.getParent();
+		
+		// Checking in the parent ApplicationContext for InstitutionalAdvisor implementation(s)
+		String[] beans = parentApplicationContext.getBeanNamesForType(InstitutionalAdvisor.class);
+		
+		// Make sure that there is just one implementation in the parent context
+		if(beans != null && beans.length == 1) {
+			advisor = (InstitutionalAdvisor) parentApplicationContext.getBean(beans[0]);
+		}
+		else {
+			// If the parent context didn't have an implementation, we use the sample
+			advisor = (InstitutionalAdvisor) applicationContext.getBean("org.sakaiproject.gradebook.gwt.sakai.api.SampleInstitutionalAdvisor");
+		}
 		
 		if (configService != null) {
 			helpUrl = configService.getString(AppConstants.HELP_URL_CONFIG_ID);
@@ -4772,6 +4794,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 		this.eventTrackingService = eventTrackingService;
 	}
 
-
+	public void setApplicationContext(ApplicationContext applicationContext)
+			throws BeansException {
+		this.applicationContext = applicationContext;
+	}
 
 }
