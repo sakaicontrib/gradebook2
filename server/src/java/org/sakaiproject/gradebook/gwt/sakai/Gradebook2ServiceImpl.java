@@ -2713,12 +2713,12 @@ public class Gradebook2ServiceImpl implements Gradebook2Service {
 			cellMap.put(id, value);
 			break;
 		case GradebookService.GRADE_TYPE_PERCENTAGE:
-			percentage = gradeCalculations.getPointsEarnedAsPercent((Assignment) gradeRecord.getGradableObject(), gradeRecord);
+			percentage = gradeRecord == null ? null : gradeCalculations.getPointsEarnedAsPercent((Assignment) gradeRecord.getGradableObject(), gradeRecord);
 			Double percentageDouble = percentage != null ? Double.valueOf(percentage.doubleValue()) : (isCountNullsAsZeros ? Double.valueOf(0) : null);
 			cellMap.put(id, percentageDouble);
 			break;
 		case GradebookService.GRADE_TYPE_LETTER:
-			percentage = gradeCalculations.getPointsEarnedAsPercent((Assignment) gradeRecord.getGradableObject(), gradeRecord);
+			percentage = gradeRecord == null ? null : gradeCalculations.getPointsEarnedAsPercent((Assignment) gradeRecord.getGradableObject(), gradeRecord);
 			String letterGrade = percentage != null ? gradeCalculations.convertPercentageToLetterGrade(percentage) : (isCountNullsAsZeros ? "0" : "");
 			cellMap.put(id, letterGrade);
 			break;
