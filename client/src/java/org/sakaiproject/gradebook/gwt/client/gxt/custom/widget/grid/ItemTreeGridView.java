@@ -2,9 +2,11 @@ package org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 
+import com.extjs.gxt.ui.client.core.FastMap;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.util.Util;
@@ -136,19 +138,19 @@ public class ItemTreeGridView extends TreeGridView {
 			Object o = r.render(ds.getAt(rowIndex), property, data, rowIndex,
 					colIndex, ds, grid);
 			if (o instanceof Widget || r instanceof WidgetTreeGridCellRenderer) {
-				/*Widget w = null;
-				if (o instanceof Widget) {
-					w = (Widget) o;
-				} else {
-					w = ((WidgetTreeGridCellRenderer) r).getWidget(ds
-							.getAt(rowIndex), property, data, rowIndex,
-							colIndex, ds, grid);
-				}
+				//Widget w = null;
+				//if (o instanceof Widget) {
+				//	w = (Widget) o;
+				//} else {
+				//	w = ((WidgetTreeGridCellRenderer) r).getWidget(ds
+				//			.getAt(rowIndex), property, data, rowIndex,
+				//			colIndex, ds, grid);
+				//}
 
-				rowMap.set(colIndex, w);
-				if (colIndex == treeColumn) {
-					return o.toString();
-				}*/
+				//rowMap.set(colIndex, w);
+				//if (colIndex == treeColumn) {
+				//	return o.toString();
+				//}
 				return "";
 			} else {
 				if (o == null)
@@ -173,7 +175,7 @@ public class ItemTreeGridView extends TreeGridView {
 		if (val != null) {
 			text = val.toString();
 		}
-		return Util.isEmptyString(text) ? "&#160;" : text;
+		return text == null || text.equals("") ? "&#160;" : text;
 	}
 	
 }

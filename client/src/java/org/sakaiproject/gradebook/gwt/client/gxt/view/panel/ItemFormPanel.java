@@ -53,7 +53,6 @@ import com.extjs.gxt.ui.client.binding.FormBinding;
 import com.extjs.gxt.ui.client.data.BaseModelData;
 import com.extjs.gxt.ui.client.data.BaseTreeModel;
 import com.extjs.gxt.ui.client.data.ModelData;
-import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.BindingEvent;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
@@ -84,14 +83,15 @@ import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.LabelField;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.form.TextField;
+import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
 import com.extjs.gxt.ui.client.widget.layout.ColumnData;
 import com.extjs.gxt.ui.client.widget.layout.ColumnLayout;
-import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
+import com.google.gwt.user.client.Element;
 
 public class ItemFormPanel extends ContentPanel {
 
@@ -170,10 +170,37 @@ public class ItemFormPanel extends ContentPanel {
 		setLayout(new FlowLayout());
 
 		initListeners();
+		
+		categoryStore = new ListStore<ItemModel>();
+		categoryStore.setModelComparer(new ItemModelComparer<ItemModel>());
+		
+		
+	}
+	
+	@Override
+	protected void onRender(Element parent, int pos) {
+	    super.onRender(parent, pos);
+	    
+	    ListStore<ModelData> categoryTypeStore = new ListStore<ModelData>();
 
+		categoryTypeStore.add(getCategoryTypeModel(GradebookModel.CategoryType.NO_CATEGORIES));
+		categoryTypeStore.add(getCategoryTypeModel(GradebookModel.CategoryType.SIMPLE_CATEGORIES));
+		categoryTypeStore.add(getCategoryTypeModel(GradebookModel.CategoryType.WEIGHTED_CATEGORIES));
+
+		ListStore<ModelData> gradeTypeStore = new ListStore<ModelData>();
+
+		List<GradeType> enabledGradeTypes = Registry.get(AppConstants.ENABLED_GRADE_TYPES);
+		
+		if (enabledGradeTypes != null) {
+			for (int i=0;i<enabledGradeTypes.size();i++) {
+				gradeTypeStore.add(getGradeTypeModel(enabledGradeTypes.get(i)));
+			}
+		}
+	    
 		formPanel = new FormPanel();
 		formPanel.setHeaderVisible(false);
 		formPanel.setLabelWidth(180);
+		formPanel.setVisible(false);
 		//formPanel.setScrollMode(Scroll.AUTO);
 
 		directionsField = new LabelField();
@@ -187,9 +214,6 @@ public class ItemFormPanel extends ContentPanel {
 
 		formPanel.add(nameField);
 
-		categoryStore = new ListStore<ItemModel>();
-		categoryStore.setModelComparer(new ItemModelComparer<ItemModel>());
-
 		categoryPicker = new ComboBox<ItemModel>();
 		categoryPicker.addKeyListener(keyListener);
 		categoryPicker.setDisplayField(ItemModel.Key.NAME.name());
@@ -197,8 +221,9 @@ public class ItemFormPanel extends ContentPanel {
 		categoryPicker.setFieldLabel(i18n.categoryName());
 		categoryPicker.setVisible(false);
 		categoryPicker.setStore(categoryStore);
+		categoryPicker.setTriggerAction(TriggerAction.ALL);
+		categoryPicker.setLazyRender(false);
 		formPanel.add(categoryPicker);
-
 
 		categoryTypePicker = new ComboBox<ModelData>();
 		categoryTypePicker.setDisplayField("name");
@@ -206,7 +231,10 @@ public class ItemFormPanel extends ContentPanel {
 		categoryTypePicker.setEditable(false);
 		categoryTypePicker.setFieldLabel(i18n.categoryTypeFieldLabel());
 		categoryTypePicker.setForceSelection(true);
-		//categoryTypePicker.setVisible(false);
+		categoryTypePicker.setLazyRender(false);
+		categoryTypePicker.setStore(categoryTypeStore);
+		categoryTypePicker.setTriggerAction(TriggerAction.ALL);
+		categoryTypePicker.setVisible(true);
 		formPanel.add(categoryTypePicker);
 
 		gradeTypePicker = new ComboBox<ModelData>();
@@ -215,7 +243,10 @@ public class ItemFormPanel extends ContentPanel {
 		gradeTypePicker.setName(ItemModel.Key.GRADETYPE.name());
 		gradeTypePicker.setFieldLabel(i18n.gradeTypeFieldLabel());
 		gradeTypePicker.setForceSelection(true);
-		//gradeTypePicker.setVisible(false);
+		gradeTypePicker.setLazyRender(false);
+		gradeTypePicker.setStore(gradeTypeStore);
+		gradeTypePicker.setTriggerAction(TriggerAction.ALL);
+		gradeTypePicker.setVisible(true);
 		formPanel.add(gradeTypePicker);
 
 		scaledExtraCreditField = new NullSensitiveCheckBox();
@@ -431,26 +462,6 @@ public class ItemFormPanel extends ContentPanel {
 		bottomRowData = new RowData(1, 1, new Margins(0, 0, 5, 0));
 		add(directionsField, topRowData);
 		add(formPanel, bottomRowData);
-
-		ListStore<ModelData> categoryTypeStore = new ListStore<ModelData>();
-
-		categoryTypeStore.add(getCategoryTypeModel(GradebookModel.CategoryType.NO_CATEGORIES));
-		categoryTypeStore.add(getCategoryTypeModel(GradebookModel.CategoryType.SIMPLE_CATEGORIES));
-		categoryTypeStore.add(getCategoryTypeModel(GradebookModel.CategoryType.WEIGHTED_CATEGORIES));
-
-		categoryTypePicker.setStore(categoryTypeStore);
-
-		ListStore<ModelData> gradeTypeStore = new ListStore<ModelData>();
-
-		List<GradeType> enabledGradeTypes = Registry.get(AppConstants.ENABLED_GRADE_TYPES);
-		
-		if (enabledGradeTypes != null) {
-			for (int i=0;i<enabledGradeTypes.size();i++) {
-				gradeTypeStore.add(getGradeTypeModel(enabledGradeTypes.get(i)));
-			}
-		}
-		
-		gradeTypePicker.setStore(gradeTypeStore);
 		
 		formPanel.setVisible(false);
 	}
@@ -649,6 +660,11 @@ public class ItemFormPanel extends ContentPanel {
 			}
 		}
 
+		//ListView<ItemModel> listView = new ListView<ItemModel>();
+		//listView.setStore(categoryStore);
+		
+		//categoryPicker.setView(listView);
+		
 		/*ListStore<ModelData> categoryTypeStore = new ListStore<ModelData>();
 
 		categoryTypeStore.add(getCategoryTypeModel(GradebookModel.CategoryType.NO_CATEGORIES));
@@ -1017,7 +1033,7 @@ public class ItemFormPanel extends ContentPanel {
 							};
 
 							if (name.equals(ItemModel.Key.CATEGORY_ID.name())) {
-								b.setConverter(new Converter() {
+								b.setConvertor(new Converter() {
 									public Object convertFieldValue(Object value) {
 
 										if (value instanceof ItemModel)
@@ -1041,7 +1057,7 @@ public class ItemFormPanel extends ContentPanel {
 								});
 							} else if (name.equals(ItemModel.Key.CATEGORYTYPE.name()) ||
 									name.equals(ItemModel.Key.GRADETYPE.name())) {
-								b.setConverter(new Converter() {
+								b.setConvertor(new Converter() {
 									public Object convertFieldValue(Object value) {
 										if (value instanceof ModelData && ((ModelData)value).get("value") != null) {
 											return ((ModelData)value).get("value");

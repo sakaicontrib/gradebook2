@@ -65,13 +65,7 @@ public class Gradebook2ResourceProducerMock extends GWTSpringController implemen
 		this.service = service;
 	}
 
-	public void init() {
-		System.out.println("Calling INIT!");
-		
-		//ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"test.xml", "db.xml"});
-
-		//Gradebook2Service service = (Gradebook2Service)context.getBean("org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service");
-
+	public void init() {	
 		producer = new Gradebook2ResourceProducer();
 		producer.setService(service);
 		

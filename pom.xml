@@ -23,9 +23,9 @@
 	</repositories>
 
 	<properties>
-		<gxt.version>2.0.4</gxt.version>
+		<gxt.version>2.1.0</gxt.version>
 		<gwt.version>1.7.1</gwt.version> 
-		<gwtsl.version>0.1.5b</gwtsl.version>
+		<gwtsl.version>1.0</gwtsl.version>
 		<gb2.commons.logging.version>1.0.4</gb2.commons.logging.version>
 		<!-- gwt.platform SHOULD BE SET IN YOUR SETTINGS.XML -->
 		<!--<gwt.platform>linux</gwt.platform>-->
