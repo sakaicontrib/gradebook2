@@ -56,6 +56,7 @@ import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.BindingEvent;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
+import com.extjs.gxt.ui.client.event.DatePickerEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FieldEvent;
 import com.extjs.gxt.ui.client.event.KeyListener;
@@ -91,7 +92,6 @@ import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
-import com.google.gwt.user.client.Element;
 
 public class ItemFormPanel extends ContentPanel {
 
@@ -136,6 +136,7 @@ public class ItemFormPanel extends ContentPanel {
 
 	private KeyListener keyListener;
 	private Listener<BindingEvent> bindListener;
+	private Listener<DatePickerEvent> datePickerListener;
 	private Listener<FieldEvent> extraCreditChangeListener;
 	private Listener<FieldEvent> checkboxChangeListener;
 	private Listener<FieldEvent> enforcePointWeightingListener;
@@ -174,12 +175,16 @@ public class ItemFormPanel extends ContentPanel {
 		categoryStore = new ListStore<ItemModel>();
 		categoryStore.setModelComparer(new ItemModelComparer<ItemModel>());
 		
-		
-	}
-	
-	@Override
-	protected void onRender(Element parent, int pos) {
-	    super.onRender(parent, pos);
+		okButton = new AriaButton("", selectionListener, 's');
+		addButton(okButton);
+
+		okCloseButton = new AriaButton(i18n.saveAndCloseButton(), selectionListener, 'm');
+		addButton(okCloseButton);
+
+		cancelButton = new AriaButton(i18n.closeButton(), selectionListener, 'x');
+		cancelButton.setData(selectionTypeField, SelectionType.CANCEL);
+
+		addButton(cancelButton);
 	    
 	    ListStore<ModelData> categoryTypeStore = new ListStore<ModelData>();
 
@@ -394,7 +399,6 @@ public class ItemFormPanel extends ContentPanel {
 		dueDateField.setFieldLabel(i18n.dueDateFieldLabel());
 		dueDateField.setVisible(false);
 		dueDateField.setEmptyText(i18n.dueDateEmptyText());
-		//dueDateField.setToolTip(i18n.dueDateEmptyText());
 		formPanel.add(dueDateField);
 
 		sourceField = new TextField<String>();
@@ -446,24 +450,12 @@ public class ItemFormPanel extends ContentPanel {
 		enforcePointWeightingField.setVisible(false);
 		enforcePointWeightingField.setToolTip(newToolTipConfig(i18n.enforcePointWeightingToolTip()));
 		formPanel.add(enforcePointWeightingField);
-		
-		okButton = new AriaButton("", selectionListener, 's');
-		addButton(okButton);
-
-		okCloseButton = new AriaButton(i18n.saveAndCloseButton(), selectionListener, 'm');
-		addButton(okCloseButton);
-
-		cancelButton = new AriaButton(i18n.closeButton(), selectionListener, 'x');
-		cancelButton.setData(selectionTypeField, SelectionType.CANCEL);
-
-		addButton(cancelButton);
 
 		topRowData = new RowData(1, 70, new Margins(10));
 		bottomRowData = new RowData(1, 1, new Margins(0, 0, 5, 0));
 		add(directionsField, topRowData);
 		add(formPanel, bottomRowData);
 		
-		formPanel.setVisible(false);
 	}
 
 	public void onActionCompleted() {
@@ -537,7 +529,7 @@ public class ItemFormPanel extends ContentPanel {
 		Dispatcher.forwardEvent(GradebookEvents.ExpandEastPanel.getEventType(), activeCard);
 
 		clearActiveRecord();
-
+		
 		if (mode == Mode.EDIT && selectedItemModel != null && itemModel != null && itemModel.equals(selectedItemModel))
 			return;
 		
@@ -555,7 +547,17 @@ public class ItemFormPanel extends ContentPanel {
 		} else {
 			doEditItem(itemModel, expand);
 		}
+	}
+	
+	private void doEditItemButtons(ItemModel itemModel) {
+		boolean isAllowedToEdit = DataTypeConversionUtil.checkBoolean(selectedGradebook.isUserAbleToEditAssessments());
 
+		okButton.setText(i18n.saveButton());
+		okButton.setData(selectionTypeField, SelectionType.SAVE);
+		okButton.setVisible(isAllowedToEdit && itemModel != null && itemModel.isEditable());
+		okCloseButton.setVisible(isAllowedToEdit && itemModel != null && itemModel.isEditable());
+		okCloseButton.setData(selectionTypeField, SelectionType.SAVECLOSE);
+		okCloseButton.setText(i18n.saveAndCloseButton());
 	}
 	
 	private void doEditItem(ItemModel itemModel, boolean expand) {
@@ -574,16 +576,6 @@ public class ItemFormPanel extends ContentPanel {
 			formBindings.unbind();
 		}
 
-		boolean isAllowedToEdit = DataTypeConversionUtil.checkBoolean(selectedGradebook.isUserAbleToEditAssessments());
-
-
-		okButton.setText(i18n.saveButton());
-		okButton.setData(selectionTypeField, SelectionType.SAVE);
-		okButton.setVisible(isAllowedToEdit && itemModel != null && itemModel.isEditable());
-		okCloseButton.setVisible(isAllowedToEdit && itemModel != null && itemModel.isEditable());
-		okCloseButton.setData(selectionTypeField, SelectionType.SAVECLOSE);
-		okCloseButton.setText(i18n.saveAndCloseButton());
-
 		if (itemModel != null) {
 			Type itemType = itemModel.getItemType();
 			clearChanges();
@@ -595,6 +587,8 @@ public class ItemFormPanel extends ContentPanel {
 			formBindings.unbind();
 		}
 
+		doEditItemButtons(selectedItemModel);
+		
 		formPanel.show();
 		nameField.focus();
 	}
@@ -762,7 +756,7 @@ public class ItemFormPanel extends ContentPanel {
 	}
 	
 	private void doNewItem(ItemModel itemModel) {
-		//formPanel.hide();
+		formPanel.hide();
 		removeListeners();
 		this.mode = Mode.NEW;
 
@@ -803,7 +797,7 @@ public class ItemFormPanel extends ContentPanel {
 		includedField.setValue(Boolean.TRUE);
 		nameField.focus();
 		addListeners();
-		//formPanel.show();
+		formPanel.show();
 	}
 
 	public void onTreeStoreInitialized(TreeStore<ItemModel> treeStore) {
@@ -1105,7 +1099,7 @@ public class ItemFormPanel extends ContentPanel {
 		percentCategoryField.addKeyListener(keyListener);
 		pointsField.addKeyListener(keyListener);
 		dropLowestField.addKeyListener(keyListener);
-		dueDateField.addKeyListener(keyListener);
+		dueDateField.getDatePicker().addListener(Events.Select, datePickerListener);
 		includedField.addListener(Events.Change, checkboxChangeListener);
 		extraCreditField.addListener(Events.Change, extraCreditChangeListener);
 		equallyWeightChildrenField.addListener(Events.Change, checkboxChangeListener);
@@ -1140,7 +1134,7 @@ public class ItemFormPanel extends ContentPanel {
 		percentCategoryField.removeKeyListener(keyListener);
 		pointsField.removeKeyListener(keyListener);
 		dropLowestField.removeKeyListener(keyListener);
-		dueDateField.removeKeyListener(keyListener);
+		dueDateField.getDatePicker().removeListener(Events.Select, datePickerListener);
 		includedField.removeListener(Events.Change, checkboxChangeListener);
 		extraCreditField.removeListener(Events.Change, extraCreditChangeListener);
 		equallyWeightChildrenField.removeListener(Events.Change, checkboxChangeListener);
@@ -1178,6 +1172,14 @@ public class ItemFormPanel extends ContentPanel {
 
 		};
 
+		datePickerListener = new Listener<DatePickerEvent>() {
+
+			public void handleEvent(DatePickerEvent be) {
+				setChanges();
+			}
+			
+		};
+		
 		otherSelectionChangedListener = new SelectionChangedListener<ModelData>() {
 
 			@Override
