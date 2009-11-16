@@ -1052,7 +1052,7 @@ public class AltItemTreePanel extends ContentPanel {
 				if (itemModel != null && isEditable) {
 					boolean isNotGradebook = itemModel.getItemType() != Type.GRADEBOOK;
 
-					/*switch (itemModel.getItemType()) {
+					switch (itemModel.getItemType()) {
 						case CATEGORY:
 							updateCategoryMenuItem.setVisible(true);
 							updateItemMenuItem.setVisible(false);
@@ -1072,8 +1072,6 @@ public class AltItemTreePanel extends ContentPanel {
 							deleteItemMenuItem.setVisible(true);
 							break;
 					}
-					*/
-
 
 					Dispatcher.forwardEvent(GradebookEvents.SwitchEditItem.getEventType(), itemModel);
 				}
