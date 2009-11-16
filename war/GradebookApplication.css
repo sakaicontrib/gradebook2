@@ -342,6 +342,10 @@
 	text-decoration: underline;
 }
 
+.gbBigLabel {
+	font-size: 12pt;
+}
+
 .gbImpact {
 	color: darkblue;
 	padding-right: 10px;

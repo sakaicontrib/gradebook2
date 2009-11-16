@@ -23,9 +23,7 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import java.util.ArrayList;
-import java.util.Map;
 
-import com.extjs.gxt.ui.client.binding.Converter;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
@@ -39,6 +37,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 
 import com.extjs.gxt.ui.client.Registry;
+import com.extjs.gxt.ui.client.binding.Converter;
 import com.extjs.gxt.ui.client.binding.FieldBinding;
 import com.extjs.gxt.ui.client.binding.FormBinding;
 import com.extjs.gxt.ui.client.data.BasePagingLoader;
@@ -153,43 +152,53 @@ public class HistoryPanel extends EntityPanel {
 			}
 		};
 			
+		FormLayout formPanelLayout = new FormLayout();
+		formPanelLayout.setLabelSeparator(":");
+		formPanelLayout.setLabelWidth(180);
+		
 		formPanel = new FormPanel();
 		formPanel.setHeaderVisible(false);
+		formPanel.setLayout(formPanelLayout);
+		formPanel.setVisible(false);
 	
 		LabelField dateField = new LabelField();
 		dateField.setName(Key.DATE_RECORDED.name());
 		dateField.setFieldLabel(i18n.actionDateFieldLabel());
+		dateField.setStyleAttribute("font-size", "12pt");
 		formPanel.add(dateField);
 		
 		LabelField descriptionField = new LabelField();
 		descriptionField.setName(Key.DESCRIPTION.name());
 		descriptionField.setFieldLabel(i18n.actionDescriptionFieldLabel());
+		descriptionField.setStyleAttribute("font-size", "12pt");
 		formPanel.add(descriptionField);
 		
 		LabelField entityField = new LabelField();
 		entityField.setName(Key.ENTITY_NAME.name());
 		entityField.setFieldLabel(i18n.actionEntityFieldLabel());
+		entityField.setStyleAttribute("font-size", "12pt");
 		formPanel.add(entityField);
 		
 		studentNameField = new LabelField();
 		studentNameField.setName(Key.STUDENT_NAME.name());
 		studentNameField.setFieldLabel(i18n.actionStudentNameFieldLabel());
+		studentNameField.setStyleAttribute("font-size", "12pt");
 		formPanel.add(studentNameField);
 		
 		LabelField actorNameField = new LabelField();
 		actorNameField.setName(Key.GRADER_NAME.name());
 		actorNameField.setFieldLabel(i18n.actionActor());
+		actorNameField.setStyleAttribute("font-size", "12pt");
 		formPanel.add(actorNameField);
+		
+		FormLayout formLayout = new FormLayout();
+		formLayout.setLabelSeparator(":");
+		formLayout.setLabelWidth(180);
 		
 		fieldSet = new FieldSet();
 		fieldSet.setHeading(i18n.actionDetails());
 		fieldSet.setCheckboxToggle(false);
-		fieldSet.setLayout(new FormLayout());
-		
-		/*nameField = new LabelField();
-		nameField.setName(ItemModel.Key.NAME.name());
-		nameField.setFieldLabel(i18n.nameFieldLabel());
-		fieldSet.add(nameField);*/
+		fieldSet.setLayout(formLayout);
 		
 		formPanel.add(fieldSet);
 		
@@ -223,13 +232,15 @@ public class HistoryPanel extends EntityPanel {
 			public void selectionChanged(SelectionChangedEvent<UserEntityAction<?>> se) {
 				UserEntityAction<?> action = se.getSelectedItem();
 				
+				formPanel.hide();
+				
 				if (action == null) 
 					formBinding.unbind();
 				else 
 					formBinding.bind(action);
 				
 				initState(action);
-				formPanel.layout();
+				formPanel.show();
 			}
 			
 		};
@@ -294,12 +305,17 @@ public class HistoryPanel extends EntityPanel {
 		boolean isGradebook = action.getEntityType() == EntityType.GRADEBOOK;
 		boolean isCategory = action.getEntityType() == EntityType.CATEGORY;
 		boolean isItem = action.getEntityType() == EntityType.ITEM;
+		boolean isGradeOrCourseGrade = (action.getEntityType() == EntityType.GRADE_RECORD ||
+				action.getEntityType() == EntityType.COURSE_GRADE_RECORD);
+		
+		studentNameField.setVisible(isGradeOrCourseGrade);
+		fieldSet.setVisible(!isGradeOrCourseGrade);
 		
 		directionsField.setVisible(false);
 		nameField.setVisible(isGradebook || isCategory || isItem);
 		categoryTypePicker.setVisible(isGradebook);
 		gradeTypePicker.setVisible(isGradebook);
-		categoryPicker.setVisible(isItem);
+		categoryPicker.setVisible(false);
 		includedField.setVisible(isCategory || isItem);
 		extraCreditField.setVisible(isCategory || isItem);
 		equallyWeightChildrenField.setVisible(isCategory);

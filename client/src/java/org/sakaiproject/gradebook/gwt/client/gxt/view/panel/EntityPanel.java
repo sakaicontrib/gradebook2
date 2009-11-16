@@ -213,29 +213,34 @@ public abstract class EntityPanel extends ContentPanel {
 		LabelField nameField = new LabelField();
 		nameField.setName(ItemModel.Key.NAME.name());
 		nameField.setFieldLabel(i18n.nameFieldLabel());
+		nameField.setStyleAttribute("font-size", "12pt");
 		this.nameField = nameField;
 
 		LabelField categoryPicker = new LabelField();
 		categoryPicker.setName(ItemModel.Key.CATEGORY_NAME.name());
 		categoryPicker.setFieldLabel(i18n.categoryName());
+		categoryPicker.setStyleAttribute("font-size", "12pt");
 		categoryPicker.setVisible(false);
 		this.categoryPicker = categoryPicker;
 
 		LabelField categoryTypePicker = new LabelField();
 		categoryTypePicker.setName(ItemModel.Key.CATEGORYTYPE.name());
 		categoryTypePicker.setFieldLabel(i18n.categoryTypeFieldLabel());
+		categoryTypePicker.setStyleAttribute("font-size", "12pt");
 		categoryTypePicker.setVisible(false);
 		this.categoryTypePicker = categoryTypePicker;
 
 		LabelField gradeTypePicker = new LabelField();
 		gradeTypePicker.setName(ItemModel.Key.GRADETYPE.name());
 		gradeTypePicker.setFieldLabel(i18n.gradeTypeFieldLabel());
+		gradeTypePicker.setStyleAttribute("font-size", "12pt");
 		gradeTypePicker.setVisible(false);
 		this.gradeTypePicker = gradeTypePicker;
 				
 		LabelField percentCourseGradeField = new LabelField();
 		percentCourseGradeField.setName(ItemModel.Key.PERCENT_COURSE_GRADE.name());
 		percentCourseGradeField.setFieldLabel(i18n.percentCourseGradeFieldLabel());
+		percentCourseGradeField.setStyleAttribute("font-size", "12pt");
 		percentCourseGradeField.setVisible(false);
 		percentCourseGradeField.setToolTip(newToolTipConfig(i18n.percentCourseGradeToolTip()));
 		this.percentCourseGradeField = percentCourseGradeField;
@@ -243,6 +248,7 @@ public abstract class EntityPanel extends ContentPanel {
 		LabelField percentCategoryField = new LabelField();
 		percentCategoryField.setName(ItemModel.Key.PERCENT_CATEGORY.name());
 		percentCategoryField.setFieldLabel(i18n.percentCategoryFieldLabel());
+		percentCategoryField.setStyleAttribute("font-size", "12pt");
 		percentCategoryField.setVisible(false);
 		percentCategoryField.setToolTip(newToolTipConfig(i18n.percentCategoryToolTip()));
 		this.percentCategoryField = percentCategoryField;
@@ -251,6 +257,7 @@ public abstract class EntityPanel extends ContentPanel {
 		pointsField.setName(ItemModel.Key.POINTS.name());
 		pointsField.setEmptyText(i18n.pointsFieldEmptyText());
 		pointsField.setFieldLabel(i18n.pointsFieldLabel());
+		pointsField.setStyleAttribute("font-size", "12pt");
 		pointsField.setVisible(false);
 		this.pointsField = pointsField;
 
@@ -258,6 +265,7 @@ public abstract class EntityPanel extends ContentPanel {
 		dropLowestField.setEmptyText("0");
 		dropLowestField.setName(ItemModel.Key.DROP_LOWEST.name());
 		dropLowestField.setFieldLabel(i18n.dropLowestFieldLabel());
+		dropLowestField.setStyleAttribute("font-size", "12pt");
 		dropLowestField.setVisible(false);
 		dropLowestField.setToolTip(i18n.dropLowestToolTip());
 		this.dropLowestField = dropLowestField;
@@ -265,6 +273,7 @@ public abstract class EntityPanel extends ContentPanel {
 		LabelField dueDateField = new LabelField();
 		dueDateField.setName(ItemModel.Key.DUE_DATE.name());
 		dueDateField.setFieldLabel(i18n.dueDateFieldLabel());
+		dueDateField.setStyleAttribute("font-size", "12pt");
 		dueDateField.setVisible(false);
 		dueDateField.setEmptyText(i18n.dueDateEmptyText());
 		this.dueDateField = dueDateField;
@@ -274,6 +283,7 @@ public abstract class EntityPanel extends ContentPanel {
 		sourceField.setFieldLabel(i18n.sourceFieldLabel());
 		sourceField.setEnabled(false);
 		sourceField.setEmptyText("Gradebook");
+		sourceField.setStyleAttribute("font-size", "12pt");
 		sourceField.setVisible(false);
 		this.sourceField = sourceField;
 		
