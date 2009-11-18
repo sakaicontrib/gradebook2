@@ -1,8 +1,8 @@
 Index: pom.xml
 ===================================================================
---- pom.xml	(revision 66117)
+--- pom.xml	(revision 69065)
 +++ pom.xml	(working copy)
-@@ -157,6 +157,7 @@
+@@ -99,6 +99,7 @@
          <module>emailtemplateservice</module>
          <module>entitybroker</module>
          <module>gradebook</module>
