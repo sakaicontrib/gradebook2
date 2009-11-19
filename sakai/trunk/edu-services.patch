@@ -1,0 +1,339 @@
+Index: hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Category.hbm.xml
+===================================================================
+--- hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Category.hbm.xml	(revision 69088)
++++ hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Category.hbm.xml	(working copy)
+@@ -26,6 +26,15 @@
+ 		<property name="removed" column="REMOVED" type="boolean" />
+ 		
+ 		<property name="extraCredit" column="IS_EXTRA_CREDIT" type="boolean" not-null="false" />
++		
++		<property name="equalWeightAssignments" column="IS_EQUAL_WEIGHT_ASSNS" type="boolean" not-null="false" />
++   
++   		<property name="unweighted" column="IS_UNWEIGHTED" type="boolean" not-null="false" />
++   
++   		<property name="categoryOrder" column="CATEGORY_ORDER" type="integer" not-null="false" />
++   
++   		<property name="enforcePointWeighting" column="ENFORCE_POINT_WEIGHTING" type="boolean" not-null="false" />
++   		
+   </class>
+   
+  	<database-object>
+Index: hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Gradebook.hbm.xml
+===================================================================
+--- hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Gradebook.hbm.xml	(revision 69088)
++++ hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Gradebook.hbm.xml	(working copy)
+@@ -36,5 +36,20 @@
+ 		
+ 		<property name="category_type" column="CATEGORY_TYPE" type="integer" not-null="true"/>
+ 
++		<property name="equalWeightCategories" column="IS_EQUAL_WEIGHT_CATS" type="boolean" not-null="false"/>
++
++		<property name="scaledExtraCredit" column="IS_SCALED_EXTRA_CREDIT" type="boolean" not-null="false"/>
++
++		<property name="showMean" column="DO_SHOW_MEAN" type="boolean" not-null="false"/>
++		
++		<property name="showMedian" column="DO_SHOW_MEDIAN" type="boolean" not-null="false"/>
++		
++		<property name="showMode" column="DO_SHOW_MODE" type="boolean" not-null="false"/>
++		
++		<property name="showRank" column="DO_SHOW_RANK" type="boolean" not-null="false"/>
++		
++		<property name="showItemStatistics" column="DO_SHOW_ITEM_STATS" type="boolean" not-null="false"/>
++		
++
+ 	</class>
+ </hibernate-mapping>
+Index: hibernate/src/hibernate/org/sakaiproject/tool/gradebook/GradeRecord.hbm.xml
+===================================================================
+--- hibernate/src/hibernate/org/sakaiproject/tool/gradebook/GradeRecord.hbm.xml	(revision 69088)
++++ hibernate/src/hibernate/org/sakaiproject/tool/gradebook/GradeRecord.hbm.xml	(working copy)
+@@ -31,6 +31,7 @@
+ 		<subclass name="org.sakaiproject.tool.gradebook.AssignmentGradeRecord"  discriminator-value="1">
+ 			<property name="pointsEarned" column="POINTS_EARNED" type="double" not-null="false" />
+ 			<property name="excludedFromGrade" column="IS_EXCLUDED_FROM_GRADE" type="boolean" not-null="false"/>
++			<property name="excluded" column="EXCLUDED" type="boolean" not-null="false" />
+ 		</subclass>
+ 
+ 		<subclass name="org.sakaiproject.tool.gradebook.CourseGradeRecord" discriminator-value="2">
+Index: hibernate/src/hibernate/org/sakaiproject/tool/gradebook/GradableObject.hbm.xml
+===================================================================
+--- hibernate/src/hibernate/org/sakaiproject/tool/gradebook/GradableObject.hbm.xml	(revision 69088)
++++ hibernate/src/hibernate/org/sakaiproject/tool/gradebook/GradableObject.hbm.xml	(working copy)
+@@ -37,6 +37,9 @@
+       <property name="released" column="RELEASED" type="boolean"/>
+       <many-to-one name="category" column="CATEGORY_ID" class="org.sakaiproject.tool.gradebook.Category" not-null="false"/>
+       <property name="ungraded" column="UNGRADED" type="boolean"/>
++      <property name="unweighted" column="IS_UNWEIGHTED" type="boolean" not-null="false"/>
++      <property name="itemOrder" column="ITEM_ORDER" type="integer" not-null="false"/>
++      <property name="countNullsAsZeros" column="IS_NULL_ZERO" type="boolean" not-null="false"/>
+     </subclass>
+ 
+ 		<subclass name="org.sakaiproject.tool.gradebook.CourseGrade" extends="org.sakaiproject.tool.gradebook.GradableObject" discriminator-value="2">
+Index: hibernate/src/java/org/sakaiproject/tool/gradebook/CourseGradeRecord.java
+===================================================================
+--- hibernate/src/java/org/sakaiproject/tool/gradebook/CourseGradeRecord.java	(revision 69088)
++++ hibernate/src/java/org/sakaiproject/tool/gradebook/CourseGradeRecord.java	(working copy)
+@@ -38,7 +38,7 @@
+ public class CourseGradeRecord extends AbstractGradeRecord {
+     private String enteredGrade;
+     private Double autoCalculatedGrade;  // Not persisted
+-    private Double calculatedPointsEarned;	// Not persisted
++	private Double calculatedPointsEarned;	// Not persisted
+ 
+     public static Comparator<CourseGradeRecord> calcComparator;
+ 
+@@ -215,4 +215,10 @@
+ 		}
+ 		autoCalculatedGrade = percentageEarned;
+ 	}
++	public Double getCalculatedPointsEarned() {
++		return calculatedPointsEarned;
++	}
++	public void setAutoCalculatedGrade(Double autoCalculatedGrade) {
++		this.autoCalculatedGrade = autoCalculatedGrade;
++	}
+ }
+Index: hibernate/src/java/org/sakaiproject/tool/gradebook/Assignment.java
+===================================================================
+--- hibernate/src/java/org/sakaiproject/tool/gradebook/Assignment.java	(revision 69088)
++++ hibernate/src/java/org/sakaiproject/tool/gradebook/Assignment.java	(working copy)
+@@ -70,8 +70,10 @@
+     private boolean ungraded;
+     private Boolean extraCredit;
+ 	private Double assignmentWeighting;
++	private Boolean unweighted;
++	private Integer itemOrder;
++	private Boolean countNullsAsZeros;
+ 
+-
+ 	static {
+         dateComparator = new Comparator() {
+             public int compare(Object o1, Object o2) {
+@@ -493,4 +495,34 @@
+ 		public void setAssignmentWeighting(Double assignmentWeighting) {
+ 			this.assignmentWeighting = assignmentWeighting;
+ 		}
++
++
++		public Boolean isUnweighted() {
++			return unweighted;
++		}
++
++
++		public void setUnweighted(Boolean unweighted) {
++			this.unweighted = unweighted;
++		}
++
++
++		public Integer getItemOrder() {
++			return itemOrder;
++		}
++
++
++		public void setItemOrder(Integer itemOrder) {
++			this.itemOrder = itemOrder;
++		}
++
++
++		public Boolean getCountNullsAsZeros() {
++			return countNullsAsZeros;
++		}
++
++
++		public void setCountNullsAsZeros(Boolean countNullsAsZeros) {
++			this.countNullsAsZeros = countNullsAsZeros;
++		}
+ }
+\ No newline at end of file
+Index: hibernate/src/java/org/sakaiproject/tool/gradebook/AssignmentGradeRecord.java
+===================================================================
+--- hibernate/src/java/org/sakaiproject/tool/gradebook/AssignmentGradeRecord.java	(revision 69088)
++++ hibernate/src/java/org/sakaiproject/tool/gradebook/AssignmentGradeRecord.java	(working copy)
+@@ -39,6 +39,10 @@
+     private Double percentEarned;
+     private boolean userAbleToView;
+     private Boolean excludedFromGrade;
++    private Boolean excluded;
++    private transient BigDecimal earnedWeightedPercentage;
++    private transient BigDecimal overallWeight;
++    private transient Boolean isDropped;
+ 
+     public AssignmentGradeRecord() {
+         super();
+@@ -174,6 +178,38 @@
+ 	public void setExcludedFromGrade(Boolean isExcludedFromGrade) {
+ 		this.excludedFromGrade = isExcludedFromGrade;
+ 	}
++	
++	public Boolean isExcluded() {
++		return excluded;
++	}
++	
++	public void setExcluded(Boolean excluded) {
++		this.excluded = excluded;
++	}
++	
++	public BigDecimal getEarnedWeightedPercentage() {
++		return earnedWeightedPercentage;
++	}
++	
++	public void setEarnedWeightedPercentage(BigDecimal earnedWeightedPercentage) {
++		this.earnedWeightedPercentage = earnedWeightedPercentage;
++	}
++	
++	public Boolean isDropped() {
++		return isDropped;
++	}
++	
++	public void setDropped(Boolean isDropped) {
++		this.isDropped = isDropped;
++	}
++	
++	public BigDecimal getOverallWeight() {
++		return overallWeight;
++	}
++	
++	public void setOverallWeight(BigDecimal overallWeight) {
++		this.overallWeight = overallWeight;
++	}
+ }
+ 
+ 
+Index: hibernate/src/java/org/sakaiproject/tool/gradebook/Category.java
+===================================================================
+--- hibernate/src/java/org/sakaiproject/tool/gradebook/Category.java	(revision 69088)
++++ hibernate/src/java/org/sakaiproject/tool/gradebook/Category.java	(working copy)
+@@ -22,6 +22,11 @@
+ 	private List assignmentList;
+ 	private int assignmentCount;
+ 	private Boolean extraCredit;
++	private Boolean ensureEqualWeighting;
++	private Boolean unweighted;
++	private Boolean equalWeightAssignments;
++	private Integer categoryOrder;
++	private Boolean enforcePointWeighting;
+ 	
+ 	public static Comparator nameComparator;
+ 	public static Comparator averageScoreComparator;
+@@ -351,4 +356,36 @@
+ 	public void setExtraCredit(Boolean isExtraCredit) {
+ 		this.extraCredit = isExtraCredit;
+ 	}
++	
++	public Boolean isUnweighted() {
++		return unweighted;
++	}
++
++	public void setUnweighted(Boolean unweighted) {
++		this.unweighted = unweighted;
++	}
++
++	public Boolean isEqualWeightAssignments() {
++		return equalWeightAssignments;
++	}
++
++	public void setEqualWeightAssignments(Boolean equalWeightAssignments) {
++		this.equalWeightAssignments = equalWeightAssignments;
++	}
++
++	public Integer getCategoryOrder() {
++		return categoryOrder;
++	}
++
++	public void setCategoryOrder(Integer categoryOrder) {
++		this.categoryOrder = categoryOrder;
++	}
++
++	public Boolean isEnforcePointWeighting() {
++		return enforcePointWeighting;
++	}
++
++	public void setEnforcePointWeighting(Boolean enforcePointWeighting) {
++		this.enforcePointWeighting = enforcePointWeighting;
++	}
+ }
+Index: hibernate/src/java/org/sakaiproject/tool/gradebook/Gradebook.java
+===================================================================
+--- hibernate/src/java/org/sakaiproject/tool/gradebook/Gradebook.java	(revision 69088)
++++ hibernate/src/java/org/sakaiproject/tool/gradebook/Gradebook.java	(working copy)
+@@ -49,6 +49,13 @@
+     private boolean locked;
+     private int grade_type;
+     private int category_type;
++    private Boolean equalWeightCategories;
++    private Boolean scaledExtraCredit;
++    private Boolean showMean;
++    private Boolean showMedian;
++    private Boolean showMode;
++    private Boolean showRank;
++    private Boolean showItemStatistics;
+ 
+     /**
+      * Default no-arg constructor needed for persistence
+@@ -252,6 +259,66 @@
+ 		{
+ 			this.grade_type = grade_type;
+ 		}
++
++		public Boolean isEqualWeightCategories() {
++			return equalWeightCategories;
++		}
++
++		public void setEqualWeightCategories(Boolean equalWeightCategories) {
++			this.equalWeightCategories = equalWeightCategories;
++		}
++
++		public Boolean isScaledExtraCredit() {
++			return scaledExtraCredit;
++		}
++
++		public void setScaledExtraCredit(Boolean scaledExtraCredit) {
++			this.scaledExtraCredit = scaledExtraCredit;
++		}
++
++		public Boolean getShowMean() {
++			return showMean;
++		}
++
++		public void setShowMean(Boolean showMean) {
++			this.showMean = showMean;
++		}
++
++		public Boolean getShowMedian() {
++			return showMedian;
++		}
++
++		public void setShowMedian(Boolean showMedian) {
++			this.showMedian = showMedian;
++		}
++
++		public Boolean getShowMode() {
++			return showMode;
++		}
++
++		public void setShowMode(Boolean showMode) {
++			this.showMode = showMode;
++		}
++
++		public Boolean getShowRank() {
++			return showRank;
++		}
++
++		public void setShowRank(Boolean showRank) {
++			this.showRank = showRank;
++		}
++
++		public Boolean getShowItemStatistics() {
++			return showItemStatistics;
++		}
++
++		public void setShowItemStatistics(Boolean showItemStatistics) {
++			this.showItemStatistics = showItemStatistics;
++		}
++
++		public Boolean getScaledExtraCredit() {
++			return scaledExtraCredit;
++		}
+ }
+ 
+ 
