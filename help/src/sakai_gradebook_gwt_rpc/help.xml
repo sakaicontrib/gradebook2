@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+    <bean id="gradebook2Overview" class="org.sakaiproject.component.app.help.model.ResourceBean">
+        <property name="docId">
+            <value>arap</value>
+        </property>
+        <property name="name">
+            <value>Gradebook2 Overview</value>
+        </property>
+        <property name="location">
+            <value>/sakai_gradebook_gwt_rpc/XYZ.html</value>
+        </property>
+		<property name="defaultForTool"><value>sakai.gradebook.gwt.rpc</value></property>
+    </bean>
+    <bean id="org.sakaiproject.api.app.help.TableOfContents" class="org.sakaiproject.component.app.help.model.TableOfContentsBean">
+        <property name="name">
+            <value>root</value>
+        </property>
+        <property name="categories">
+            <list>
+                <bean id="gradebook2Category" class="org.sakaiproject.component.app.help.model.CategoryBean">
+                    <property name="name">
+                        <value>Gradebook 2</value>
+                    </property>
+                    <property name="resources">
+                        <list>
+                            <ref bean="gradebook2Overview"/>
+                        </list>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+</beans>
