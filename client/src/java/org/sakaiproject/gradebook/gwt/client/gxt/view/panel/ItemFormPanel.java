@@ -1442,6 +1442,7 @@ public class ItemFormPanel extends ContentPanel {
 	private void refreshSelectedCategoryState(ItemModel itemModel) {
 		CategoryType categoryType = selectedGradebook.getGradebookItemModel().getCategoryType();
 
+		boolean isAllowedToEdit = DataTypeConversionUtil.checkBoolean(selectedGradebook.isUserAbleToEditAssessments());
 		boolean hasWeights = categoryType == CategoryType.WEIGHTED_CATEGORIES;
 		boolean isPercentCategoryVisible = false;
 		boolean isItem = selectedItemModel != null && selectedItemModel.getItemType() == Type.ITEM;
@@ -1470,7 +1471,7 @@ public class ItemFormPanel extends ContentPanel {
 		}
 
 
-		initField(percentCategoryField, !isDelete && (isItem || isCreateNewItem), isPercentCategoryVisible);
+		initField(percentCategoryField, isAllowedToEdit && !isDelete && (isItem || isCreateNewItem), isPercentCategoryVisible);
 	}
 
 
