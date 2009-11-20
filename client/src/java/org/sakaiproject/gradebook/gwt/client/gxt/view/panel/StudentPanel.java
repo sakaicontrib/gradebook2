@@ -53,7 +53,6 @@ import com.extjs.gxt.ui.client.event.SelectionChangedListener;
 import com.extjs.gxt.ui.client.store.GroupingStore;
 import com.extjs.gxt.ui.client.store.Store;
 import com.extjs.gxt.ui.client.store.StoreSorter;
-import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.Html;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
@@ -73,8 +72,8 @@ import com.extjs.gxt.ui.client.widget.layout.ColumnLayout;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
-import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -83,7 +82,7 @@ import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
 
 public class StudentPanel extends ContentPanel {
 
-	private enum Key { CATEGORY_NAME, ITEM_NAME, GRADE, MEAN, STDV, MEDI, MODE, RANK, COMMENT, ORDER, ID, OUTOF };
+	private enum Key { CATEGORY_NAME, ITEM_NAME, GRADE, MEAN, STDV, MEDI, MODE, RANK, COMMENT, ORDER, ID, OUTOF, DATEDUE };
 	
 	private TextField<String> defaultTextField= new TextField<String>();
 	private TextArea defaultTextArea = new TextArea();
@@ -102,7 +101,7 @@ public class StudentPanel extends ContentPanel {
     private GridSelectionModel<BaseModel> selectionModel;
     private TextArea commentArea;
 	private StudentModel learnerGradeRecordCollection;
-	private ColumnConfig categoryColumn, outOfColumn, meanColumn, medianColumn, modeColumn, stdvColumn;
+	private ColumnConfig categoryColumn, outOfColumn, dateDueColumn, meanColumn, medianColumn, modeColumn, stdvColumn;
 	
 	private boolean isStudentView;
 	private boolean displayRank; 
@@ -201,6 +200,11 @@ public class StudentPanel extends ContentPanel {
 		outOfColumn = new ColumnConfig(Key.OUTOF.name(), i18n.outOfName(), 60);
 		outOfColumn.setGroupable(false);
 		columns.add(outOfColumn);
+		
+		dateDueColumn = new ColumnConfig(Key.DATEDUE.name(), i18n.dateDueName(), 160);
+		dateDueColumn.setGroupable(false);
+		dateDueColumn.setDateTimeFormat(DateTimeFormat.getShortDateTimeFormat());
+		columns.add(dateDueColumn);
 		
 		meanColumn = new ColumnConfig(Key.MEAN.name(), i18n.meanName(), 60);
 		meanColumn.setGroupable(false);
@@ -619,6 +623,7 @@ public class StudentPanel extends ContentPanel {
 		}
 		
 		model.set(Key.ID.name(), id.toString());
+		model.set(Key.DATEDUE.name(), item.getDueDate());
 		
 		switch (gradeType) {
     	case POINTS:
