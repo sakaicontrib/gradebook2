@@ -1049,6 +1049,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 					}
 					break;
 				case COURSE_GRADE:
+				case LETTER_GRADE:
+				case CALCULATED_GRADE:
 				case GRADE_OVERRIDE:
 				case ASSIGNMENT:
 					if (userRecords == null) {
@@ -1075,22 +1077,27 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 				case CALCULATED_GRADE:
 					// In this case we need to ensure that we've calculated
 					// everybody's course grade
-					for (UserRecord record : userRecords) {
-						BigDecimal calculatedGrade = getCalculatedGrade(gradebook, assignments, categories, record.getGradeRecordMap());
-						DisplayGrade displayGrade = getDisplayGrade(gradebook, record.getUserUid(), record.getCourseGradeRecord(), calculatedGrade);
-						record.setDisplayGrade(displayGrade);
-						record.setCalculated(true);
+					if (userRecords != null) {
+						for (UserRecord record : userRecords) {
+							BigDecimal calculatedGrade = getCalculatedGrade(gradebook, assignments, categories, record.getGradeRecordMap());
+							DisplayGrade displayGrade = getDisplayGrade(gradebook, record.getUserUid(), record.getCourseGradeRecord(), calculatedGrade);
+							record.setDisplayGrade(displayGrade);
+							record.setCalculated(true);
+						}
 					}
 					comparator = new CalculatedGradeComparator(isDescending);
 					break;
+				case LETTER_GRADE:
 				case COURSE_GRADE:
 					// In this case we need to ensure that we've calculated
 					// everybody's course grade
-					for (UserRecord record : userRecords) {
-						BigDecimal calculatedGrade = getCalculatedGrade(gradebook, assignments, categories, record.getGradeRecordMap());
-						DisplayGrade displayGrade = getDisplayGrade(gradebook, record.getUserUid(), record.getCourseGradeRecord(), calculatedGrade);
-						record.setDisplayGrade(displayGrade);
-						record.setCalculated(true);
+					if (userRecords != null) {
+						for (UserRecord record : userRecords) {
+							BigDecimal calculatedGrade = getCalculatedGrade(gradebook, assignments, categories, record.getGradeRecordMap());
+							DisplayGrade displayGrade = getDisplayGrade(gradebook, record.getUserUid(), record.getCourseGradeRecord(), calculatedGrade);
+							record.setDisplayGrade(displayGrade);
+							record.setCalculated(true);
+						}
 					}
 					comparator = new CourseGradeComparator(isDescending);
 					break;
@@ -2006,6 +2013,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 				case SECTION:
 				case COURSE_GRADE:
 				case GRADE_OVERRIDE:
+				case LETTER_GRADE:
+				case CALCULATED_GRADE:
 				case ASSIGNMENT:
 
 					userRecords = findLearnerRecordPage(gradebook, site, realmIds, groupReferences, groupReferenceMap, null, searchField, searchCriteria, -1, -1, !isDescending, includeCMId);
