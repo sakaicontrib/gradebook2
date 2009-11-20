@@ -1873,6 +1873,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 
 				if (searchCriteria != null) {
 					searchCriteria = searchCriteria.toUpperCase();
+					sortColumnKey = StudentModel.Key.DISPLAY_NAME;
 				}
 			}
 		}
