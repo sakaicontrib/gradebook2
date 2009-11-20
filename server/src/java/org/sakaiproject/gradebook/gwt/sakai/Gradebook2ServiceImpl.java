@@ -1098,8 +1098,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 					comparator = new EnteredGradeComparator(isDescending);
 					break;
 				case ASSIGNMENT:
-					Long assignmentId = Long.valueOf(columnId);
-					comparator = new AssignmentComparator(assignmentId, isDescending);
+					if (columnId != null && !columnId.equals("")) {
+						Long assignmentId = Long.valueOf(columnId);
+						comparator = new AssignmentComparator(assignmentId, isDescending);
+					}
 					break;
 			}
 
@@ -1869,8 +1871,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 				searchField = "sortName";
 				searchCriteria = ((MultiGradeLoadConfig) config).getSearchString();
 
-				if (searchCriteria != null)
+				if (searchCriteria != null) {
 					searchCriteria = searchCriteria.toUpperCase();
+				}
 			}
 		}
 

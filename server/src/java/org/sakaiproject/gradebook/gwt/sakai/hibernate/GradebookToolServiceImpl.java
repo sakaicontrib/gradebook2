@@ -639,13 +639,18 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				.append("and rg.active=true ");
 
 				if (searchField != null && searchCriteria != null) {
-					builder.append("and user.").append(searchField).append(" like '").append("%").append(searchCriteria).append("%' ");
+					builder.append("and user.").append(searchField).append(" like :searchCriteria ");
 				}
 
 				query = session.createQuery(builder.toString());
 				query.setParameterList("realmIds", realmIds);
 				query.setParameterList("roleKeys", roleNames);
 
+				if (searchField != null && searchCriteria != null) {
+					String criteria = new StringBuilder().append("%").append(searchCriteria).append("%").toString();
+					query.setParameter("searchCriteria", criteria);
+				}
+				
 				Number realmCount = (Number)query.uniqueResult();
 
 				return realmCount;
@@ -708,10 +713,9 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				.append("and rr.roleName in (:roleKeys) ")
 				.append("and rg.active = true ");
 
-				if (searchField != null && searchCriteria != null) {
-					builder.append("and user.").append(searchField).append(" like '").append("%").append(searchCriteria).append("%' ");
-				}
-
+				if (searchField != null && searchCriteria != null) 
+					builder.append("and user.").append(searchField).append(" like :searchCriteria ");
+				
 				if (sortField != null) {
 
 					builder.append("order by user.").append(sortField);
@@ -728,7 +732,11 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				query.setParameterList("realmIds", realmIds);	
 				query.setParameterList("roleKeys", roleNames);
 
-
+				if (searchField != null && searchCriteria != null) {
+					String criteria = new StringBuilder().append("%").append(searchCriteria).append("%").toString();
+					query.setParameter("searchCriteria", criteria);
+				}
+				
 				if (offset != -1)
 					query.setFirstResult(offset);
 				if (limit != -1)
