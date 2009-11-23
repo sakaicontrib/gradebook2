@@ -1,0 +1,14 @@
+UPDATES FOR GRADEBOOK2 INSTALLERS
+
+Mon, Nov 23, 2009
+-----------------
+
+We have established a plan for updating the edu-services data model in Sakai 2.7+ to remove 
+the need for Gradebook2 installers to apply additional patches to Sakai. Unfortunately, this
+means that institutions that have been running GB2 in versions prior to 1.2.x will need to 
+run a database conversion script to update their DDLs as part of the move to 1.2.x, and 
+backwards comptability patches for running against Sakai 2.5.x and 2.6.x will change as of
+the 1.2.0 release of GB2 to be in keeping with the Sakai 2.7 data model.
+
+
+

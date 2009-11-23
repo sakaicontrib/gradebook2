@@ -597,10 +597,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 							isModified = true;
 						}
 
-						boolean wasIncluded = !DataTypeConversionUtil.checkBoolean(assignment.isUnweighted());
+						boolean wasIncluded = DataTypeConversionUtil.checkBoolean(assignment.isCounted());
 
 						if (wasIncluded != isIncluded) {
-							assignment.setUnweighted(Boolean.valueOf(!isIncluded));
+							assignment.setCounted(Boolean.valueOf(isIncluded));
 							isModified = true;
 						}
 
@@ -1169,7 +1169,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 			assignmentGradeRecord = new AssignmentGradeRecord();
 		}
 
-		assignmentGradeRecord.setExcluded(value);
+		assignmentGradeRecord.setExcludedFromGrade(value);
 
 		// Prepare record for update
 		assignmentGradeRecord.setGradableObject(assignment);
@@ -2370,12 +2370,12 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 			Double oldAssignmentWeight = assignment.getAssignmentWeighting();
 
 			Integer newItemOrder = item.getItemOrder();
-			Integer oldItemOrder = assignment.getItemOrder();
+			Integer oldItemOrder = assignment.getSortOrder();
 
 			isWeightChanged = isWeightChanged || DataTypeConversionUtil.notEquals(newAssignmentWeight, oldAssignmentWeight);
 
 			boolean isUnweighted = !convertBoolean(item.getIncluded()).booleanValue();
-			boolean wasUnweighted = DataTypeConversionUtil.checkBoolean(assignment.isUnweighted());
+			boolean wasUnweighted = assignment.isNotCounted();
 
 			isRemoved = convertBoolean(item.getRemoved()).booleanValue();
 			boolean wasRemoved = assignment.isRemoved();
@@ -2468,8 +2468,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 			assignment.setPointsPossible(points);
 			assignment.setDueDate(convertDate(item.getDueDate()));
 			assignment.setRemoved(isRemoved);
-			assignment.setUnweighted(Boolean.valueOf(isUnweighted || isRemoved));
-			assignment.setItemOrder(newItemOrder);
+			assignment.setNotCounted(isUnweighted || isRemoved);
+			assignment.setSortOrder(newItemOrder);
 			assignment.setCountNullsAsZeros(Boolean.valueOf(isNullsAsZeros));
 			gbService.updateAssignment(assignment);
 
@@ -2732,7 +2732,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		gradeRecord = studentGradeMap == null ? null : studentGradeMap.get(assignmentId);
 
 		
-		boolean isExcused = gradeRecord == null ? false : gradeRecord.isExcluded() != null && gradeRecord.isExcluded().booleanValue();
+		boolean isExcused = gradeRecord == null ? false : gradeRecord.isExcludedFromGrade() != null && gradeRecord.isExcludedFromGrade().booleanValue();
 		boolean isDropped = gradeRecord == null ? false : gradeRecord.isDropped() != null && gradeRecord.isDropped().booleanValue();
 
 		if (isDropped || isExcused)
@@ -3252,7 +3252,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		ItemModel model = new ItemModel();
 
 		double assignmentWeight = assignment.getAssignmentWeighting() == null ? 0d : assignment.getAssignmentWeighting().doubleValue() * 100.0;
-		Boolean isAssignmentIncluded = assignment.isUnweighted() == null ? Boolean.TRUE : Boolean.valueOf(!assignment.isUnweighted().booleanValue());
+		Boolean isAssignmentIncluded = Boolean.valueOf(assignment.isCounted());
 		Boolean isAssignmentExtraCredit = assignment.isExtraCredit() == null ? Boolean.FALSE : assignment.isExtraCredit();
 		Boolean isAssignmentReleased = Boolean.valueOf(assignment.isReleased());
 		Boolean isAssignmentRemoved = Boolean.valueOf(assignment.isRemoved());
@@ -3300,37 +3300,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		else
 			model.setDataType(AppConstants.NUMERIC_DATA_TYPE);
 		model.setStudentModelKey(Key.ASSIGNMENT.name());
-		model.setItemOrder(assignment.getItemOrder());
-
-		//boolean isEnforcePointWeighting = DataTypeConversionUtil.checkBoolean(category.isEnforcePointWeighting()) && hasWeights;
-		
-		/*BigDecimal ratio = null;
-		if (percentCourseGrade == null && hasCategories && category != null) {
-			List<Assignment> assignments = category.getAssignmentList();
-
-			boolean isIncluded = category.isUnweighted() == null ? true : !category.isUnweighted().booleanValue();
-
-			BigDecimal sum = BigDecimal.ZERO;
-			if (assignments != null && isIncluded) {
-				for (Assignment a : assignments) {
-					double assignWeight = a.getAssignmentWeighting() == null ? 0d : a.getAssignmentWeighting().doubleValue() * 100.0;
-					
-					if (isEnforcePointWeighting)
-						assignWeight = a.getPointsPossible() == null ? 0d : a.getPointsPossible().doubleValue();
-					
-					boolean isExtraCredit = a.isExtraCredit() != null && a.isExtraCredit().booleanValue();
-					boolean isUnweighted = a.isUnweighted() != null && a.isUnweighted().booleanValue();
-					if (!isExtraCredit && !isUnweighted)
-						sum = sum.add(BigDecimal.valueOf(assignWeight));
-				}
-			}
-			if (isEnforcePointWeighting) {
-				percentCourseGrade = BigDecimal.valueOf(category.getWeight() == null ? 0d : category.getWeight().doubleValue());
-				ratio = percentCourseGrade.divide(sum, GradeCalculations.MATH_CONTEXT);
-			} else
-				percentCourseGrade = sum;
-		}
-		*/
+		model.setItemOrder(assignment.getSortOrder());
 		
 		if (hasWeights) {
 			if (percentCategory != null)
@@ -3673,7 +3643,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 					}
 
 					if (!assignmentList.contains(assignment)) {
-						Integer itemOrder = assignment.getItemOrder();
+						Integer itemOrder = assignment.getSortOrder();
 						if (itemOrder == null)
 							itemOrder = Integer.valueOf(assignmentList.size());
 						assignmentList.add(assignment);
@@ -4026,7 +3996,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		if (assignments != null) {
 			for (Assignment assignment : assignments) {
 				boolean isRemoved = assignment.isRemoved();
-				boolean isWeighted = assignment.isUnweighted() == null ? true : !assignment.isUnweighted().booleanValue();
+				boolean isWeighted = assignment.isCounted();
 				boolean isExtraCredit = assignment.isExtraCredit() == null ? false : assignment.isExtraCredit().booleanValue();
 				if (isWeighted && (isExtraCreditCategory || !isExtraCredit) && !isRemoved) {
 					weightedCount++;
@@ -4052,7 +4022,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 			if (assignments != null) {
 				for (Assignment assignment : assignments) {
 					boolean isRemoved = assignment.isRemoved();
-					boolean isWeighted = assignment.isUnweighted() == null ? true : !assignment.isUnweighted().booleanValue();
+					boolean isWeighted = assignment.isCounted();
 					boolean isExtraCredit = assignment.isExtraCredit() == null ? false : assignment.isExtraCredit().booleanValue();
 					if (!isRemoved && isWeighted) {
 						if (isExtraCredit && !isExtraCreditCategory)
@@ -4098,7 +4068,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 			String dropProperty = concat(String.valueOf(aId), StudentModel.DROP_FLAG);
 			String excuseProperty = concat(String.valueOf(aId), StudentModel.EXCUSE_FLAG);
 			boolean isDropped = record.isDropped() != null && record.isDropped().booleanValue();
-			boolean isExcluded = record.isExcluded() != null && record.isExcluded().booleanValue();
+			boolean isExcluded = record.isExcludedFromGrade() != null && record.isExcludedFromGrade().booleanValue();
 
 			if (isDropped)
 				student.set(dropProperty, Boolean.TRUE);
@@ -4157,7 +4127,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 				throw new InvalidInputException("This grade cannot be less than " + DataTypeConversionUtil.formatDoubleAsPointsString(0d) + "%");
 		}
 
-		if (!includeExcluded && assignmentGradeRecord.isExcluded() != null && assignmentGradeRecord.isExcluded().booleanValue())
+		if (!includeExcluded && assignmentGradeRecord.isExcludedFromGrade() != null && assignmentGradeRecord.isExcludedFromGrade().booleanValue())
 			throw new InvalidInputException("The student has been excused from this assignment. It is no longer possible to assign him or her a grade.");
 
 		switch (gradebook.getGrade_type()) {

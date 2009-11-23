@@ -5,11 +5,11 @@
 	<parent>
     	<artifactId>base</artifactId>
     	<groupId>org.sakaiproject</groupId>
-    	<version>M2</version>
+    	<version>2.7.0-SNAPSHOT</version>
     	<relativePath>../pom.xml</relativePath>
   	</parent>
   	<name>Sakai Gradebook2 Project</name>
-	<groupId>org.sakaiproject</groupId>
+	<groupId>org.sakaiproject.gradebook2</groupId>
 	<artifactId>gradebook2-base</artifactId>
 	<packaging>pom</packaging>
 
@@ -23,12 +23,12 @@
 	</repositories>
 
 	<properties>
-		<gxt.version>2.1.0</gxt.version>
+		<gxt.version>2.0.1</gxt.version>
 		<gwt.version>1.7.1</gwt.version> 
 		<gwtsl.version>1.0</gwtsl.version>
 		<gb2.commons.logging.version>1.0.4</gb2.commons.logging.version>
-		<!-- gwt.platform SHOULD BE SET IN YOUR SETTINGS.XML -->
-		<!--<gwt.platform>linux</gwt.platform>-->
+		<sakai.edu.services.version>1.0.0-beta02-SNAPSHOT</sakai.edu.services.version>
+ 		<spring.webmvc.version>2.5.6</spring.webmvc.version>
 	</properties>
 
 	<modules>
@@ -46,7 +46,7 @@
                 <platform>windows</platform>
             </properties>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <activeByDefault>false</activeByDefault>
                 <os>
                     <family>windows</family>
                 </os>
@@ -70,7 +70,7 @@
                 <platform>linux</platform>
             </properties>
             <activation>
-                <activeByDefault>false</activeByDefault>
+                <activeByDefault>true</activeByDefault>
                 <os>
                     <name>linux</name>
                 </os>

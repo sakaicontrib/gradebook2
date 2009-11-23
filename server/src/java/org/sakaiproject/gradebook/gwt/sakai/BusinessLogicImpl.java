@@ -235,12 +235,12 @@ public class BusinessLogicImpl implements BusinessLogic {
 					itemOrder = Integer.valueOf(count);
 				}
 
-				Integer existingItemOrder = assignment.getItemOrder();
+				Integer existingItemOrder = assignment.getSortOrder();
 
 				if (!assignment.getId().equals(assignmentId)) {
 
 					if (existingItemOrder == null || !existingItemOrder.equals(itemOrder)) {
-						assignment.setItemOrder(itemOrder);
+						assignment.setSortOrder(itemOrder);
 						gbService.updateAssignment(assignment);
 					}
 
@@ -309,12 +309,12 @@ public class BusinessLogicImpl implements BusinessLogic {
 						continue;
 
 					Integer itemOrder = Integer.valueOf(count);
-					Integer existingItemOrder = assignment.getItemOrder();
+					Integer existingItemOrder = assignment.getSortOrder();
 
 					// We need to update if the existing item order has changed or if it's null 
 					// (as it would be with an older gradebook)
 					if (existingItemOrder == null || !existingItemOrder.equals(itemOrder)) {
-						assignment.setItemOrder(itemOrder);
+						assignment.setSortOrder(itemOrder);
 						gbService.updateAssignment(assignment);
 					}
 					count++;
@@ -340,7 +340,7 @@ public class BusinessLogicImpl implements BusinessLogic {
 				}
 
 
-				Integer existingItemOrder = assignment.getItemOrder();
+				Integer existingItemOrder = assignment.getSortOrder();
 
 				// We need to update if the existing item order has changed or if it's null 
 				// (as it would be with an older gradebook)
@@ -349,7 +349,7 @@ public class BusinessLogicImpl implements BusinessLogic {
 				if (!assignment.getId().equals(assignmentId)) {
 
 					if (existingItemOrder == null || !existingItemOrder.equals(itemOrder)) {
-						assignment.setItemOrder(itemOrder);
+						assignment.setSortOrder(itemOrder);
 						gbService.updateAssignment(assignment);
 					}
 
@@ -372,7 +372,7 @@ public class BusinessLogicImpl implements BusinessLogic {
 				int count = 0;
 				for (Assignment assignment : oldAssignments) {
 
-					Integer itemOrder = assignment.getItemOrder();
+					Integer itemOrder = assignment.getSortOrder();
 
 					if (itemOrder == null)
 						itemOrder = Integer.valueOf(count);
@@ -382,7 +382,7 @@ public class BusinessLogicImpl implements BusinessLogic {
 					// Anything below (greater than) the old item needs to be advanced
 					if (oldItemOrder.compareTo(itemOrder) < 0) {
 						int idx = itemOrder.intValue() - 1;
-						assignment.setItemOrder(Integer.valueOf(idx));
+						assignment.setSortOrder(Integer.valueOf(idx));
 						gbService.updateAssignment(assignment);
 					}
 				}
@@ -400,7 +400,7 @@ public class BusinessLogicImpl implements BusinessLogic {
 				int count = 0;
 				for (Assignment assignment : assignments) {
 
-					Integer itemOrder = assignment.getItemOrder();
+					Integer itemOrder = assignment.getSortOrder();
 					if (itemOrder == null)
 						itemOrder = Integer.valueOf(count);
 
@@ -419,7 +419,7 @@ public class BusinessLogicImpl implements BusinessLogic {
 
 					if (isModifying) {
 						int idx = itemOrder.intValue() + 1;
-						assignment.setItemOrder(Integer.valueOf(idx));
+						assignment.setSortOrder(Integer.valueOf(idx));
 						gbService.updateAssignment(assignment);
 					}
 				}
@@ -433,7 +433,7 @@ public class BusinessLogicImpl implements BusinessLogic {
 				int count = 0;
 				for (Assignment assignment : assignments) {
 
-					Integer itemOrder = assignment.getItemOrder();
+					Integer itemOrder = assignment.getSortOrder();
 					if (itemOrder == null)
 						itemOrder = Integer.valueOf(count);
 
@@ -441,7 +441,7 @@ public class BusinessLogicImpl implements BusinessLogic {
 
 					if (isModifying) {
 						int idx = itemOrder.intValue() - 1;
-						assignment.setItemOrder(Integer.valueOf(idx));
+						assignment.setSortOrder(Integer.valueOf(idx));
 						gbService.updateAssignment(assignment);
 					}
 

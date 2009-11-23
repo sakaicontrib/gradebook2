@@ -87,7 +87,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 	
 	public BigDecimal[] calculateCourseGradeCategoryPercents(Assignment a, BigDecimal percentGrade, BigDecimal percentCategorySum, BigDecimal pointsSum, boolean isEnforcePointWeighting) {
 		
-		boolean isUnweighted = a.isUnweighted() != null && a.isUnweighted().booleanValue();
+		boolean isUnweighted = a.isNotCounted();
 
 		BigDecimal courseGradePercent = BigDecimal.ZERO;
 		BigDecimal percentCategory = BigDecimal.ZERO;
@@ -547,7 +547,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 				boolean isExtraCreditItem = DataTypeConversionUtil.checkBoolean(assignment.isExtraCredit());
 				boolean isExtraCreditItemOrCategory = isExtraCreditCategory || isExtraCreditItem;
 				boolean isNullsAsZeros = DataTypeConversionUtil.checkBoolean(assignment.getCountNullsAsZeros());
-				boolean isUnweighted = assignment.isUnweighted() != null && assignment.isUnweighted().booleanValue();
+				boolean isUnweighted = assignment.isNotCounted();
 				
 				if //(!isExtraCreditItemOrCategory 
 					((!isExtraCreditItem || isExtraCreditCategory)
@@ -757,7 +757,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		if (assignmentGradeRecord == null)
 			return false;
 		
-		return assignmentGradeRecord.isExcluded() == null ? false : assignmentGradeRecord.isExcluded().booleanValue();
+		return assignmentGradeRecord.isExcludedFromGrade() == null ? false : assignmentGradeRecord.isExcludedFromGrade().booleanValue();
 	}
 
 
@@ -767,7 +767,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 	}
 
 	private boolean isUnweighted(Assignment assignment) {
-		return assignment.isUnweighted() == null ? false : assignment.isUnweighted().booleanValue();
+		return assignment.isNotCounted();
 	}
 
 	private boolean isUnweighted(Category category) {

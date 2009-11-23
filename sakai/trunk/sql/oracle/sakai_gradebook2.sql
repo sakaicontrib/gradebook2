@@ -30,7 +30,8 @@ add (
 	IS_EXTRA_CREDIT number(1,0),
 	ASSIGNMENT_WEIGHTING double precision,
 	IS_UNWEIGHTED number(1,0),
-	ITEM_ORDER number(10,0)
+	ITEM_ORDER number(10,0), 
+	IS_NULL_ZERO number(1,0)
 );
 
 create sequence GB_ACTION_RECORD_S

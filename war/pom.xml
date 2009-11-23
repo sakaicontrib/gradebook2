@@ -2,54 +2,61 @@
 <project>
 	<parent>
 		<artifactId>gradebook2-base</artifactId>
-		<groupId>org.sakaiproject</groupId>
-		<version>M2</version>
+		<groupId>org.sakaiproject.gradebook2</groupId>
+		<version>2.7.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
 	<name>Sakai Gradebook2 War</name>
-	<artifactId>gradebook2-war</artifactId>
+	<artifactId>sakai-gradebook2</artifactId>
+	<groupId>org.sakaiproject.gradebook2</groupId>
 	<packaging>war</packaging>
 
 	<dependencies>
 		<!-- Project Dependencies -->
 		<dependency>
-			<groupId>org.sakaiproject</groupId>
+			<groupId>org.sakaiproject.gradebook2</groupId>
 			<artifactId>gradebook2-api</artifactId>
 			<version>${sakai.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.sakaiproject</groupId>
+			<groupId>org.sakaiproject.gradebook2</groupId>
 			<artifactId>gradebook2-model</artifactId>
 			<version>${sakai.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.sakaiproject</groupId>
+			<groupId>org.sakaiproject.gradebook2</groupId>
 			<artifactId>gradebook2-server</artifactId>
 			<version>${sakai.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.sakaiproject</groupId>
+			<groupId>org.sakaiproject.gradebook2</groupId>
 			<artifactId>gradebook2-shared</artifactId>
 			<version>${sakai.version}</version>
 		</dependency>
 		<!-- Gradebook1 Dependencies -->
 		<dependency>
-			<groupId>org.sakaiproject</groupId>
-			<artifactId>sakai-gradebook-service-api</artifactId>
-			<version>${sakai.version}</version>
+			<groupId>org.sakaiproject.edu-services.gradebook</groupId>
+			<artifactId>gradebook-service-api</artifactId>
+			<version>${sakai.edu.services.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.sakaiproject</groupId>
-			<artifactId>sakai-gradebook-service-hibernate</artifactId>
-			<version>${sakai.version}</version>
+			<groupId>org.sakaiproject.edu-services.gradebook</groupId>
+			<artifactId>gradebook-service-hibernate</artifactId>
+			<version>${sakai.edu.services.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<!-- Other External Dependencies -->
+		<dependency>
+			<groupId>aopalliance</groupId>
+			<artifactId>aopalliance</artifactId>
+			<version>1.0</version>
+			<scope>provided</scope>
+		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -59,7 +66,7 @@
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
-			<version>2.4</version>
+			<version>${sakai.servletapi.version}</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
