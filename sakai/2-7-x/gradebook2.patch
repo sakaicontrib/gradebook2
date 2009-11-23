@@ -1,0 +1,346 @@
+Index: war/pom.xml
+===================================================================
+--- war/pom.xml	(revision 64821)
++++ war/pom.xml	(working copy)
+@@ -38,19 +38,25 @@
+ 		</dependency>
+ 		<!-- Gradebook1 Dependencies -->
+ 		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-gradebook-service-api</artifactId>
+-			<version>${sakai.version}</version>
++			<groupId>org.sakaiproject.edu-services.gradebook</groupId>
++			<artifactId>gradebook-service-api</artifactId>
++			<version>${sakai.edu.services.version}</version>
+ 			<scope>provided</scope>
+ 		</dependency>
+ 		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-gradebook-service-hibernate</artifactId>
+-			<version>${sakai.version}</version>
++			<groupId>org.sakaiproject.edu-services.gradebook</groupId>
++			<artifactId>gradebook-service-hibernate</artifactId>
++			<version>${sakai.edu.services.version}</version>
+ 			<scope>provided</scope>
+ 		</dependency>
+ 		<!-- Other External Dependencies -->
+ 		<dependency>
++			<groupId>aopalliance</groupId>
++			<artifactId>aopalliance</artifactId>
++			<version>1.0</version>
++			<scope>provided</scope>
++		</dependency>
++		<dependency>
+ 			<groupId>junit</groupId>
+ 			<artifactId>junit</artifactId>
+ 			<version>4.1</version>
+@@ -59,7 +65,7 @@
+ 		<dependency>
+ 			<groupId>javax.servlet</groupId>
+ 			<artifactId>servlet-api</artifactId>
+-			<version>2.4</version>
++			<version>${sakai.servletapi.version}</version>
+ 			<scope>provided</scope>
+ 		</dependency>
+ 	</dependencies>
+Index: pom.xml
+===================================================================
+--- pom.xml	(revision 64821)
++++ pom.xml	(working copy)
+@@ -23,12 +23,12 @@
+ 	</repositories>
+ 
+ 	<properties>
+-		<gxt.version>2.1.0</gxt.version>
++		<gxt.version>2.0.1</gxt.version>
+ 		<gwt.version>1.7.1</gwt.version> 
+ 		<gwtsl.version>1.0</gwtsl.version>
+ 		<gb2.commons.logging.version>1.0.4</gb2.commons.logging.version>
+-		<!-- gwt.platform SHOULD BE SET IN YOUR SETTINGS.XML -->
+-		<!--<gwt.platform>linux</gwt.platform>-->
++		<sakai.edu.services.version>1.0.0-beta02-SNAPSHOT</sakai.edu.services.version>
++		<spring.webmvc.version>2.5.6</spring.webmvc.version>
+ 	</properties>
+ 
+ 	<modules>
+Index: .classpath
+===================================================================
+--- .classpath	(revision 64821)
++++ .classpath	(working copy)
+@@ -12,46 +12,39 @@
+ 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
+ 	<classpathentry kind="var" path="M2_REPO/org/springframework/spring/2.0.6/spring-2.0.6.jar" sourcepath="/M2_REPO/org/springframework/spring/2.0.6/spring-2.0.6-sources.jar"/>
+ 	<classpathentry kind="var" path="M2_REPO/commons-lang/commons-lang/2.1/commons-lang-2.1.jar"/>
+-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-gradebook-service-api/M2/sakai-gradebook-service-api-M2.jar" sourcepath="/M2_REPO/org/sakaiproject/sakai-gradebook-service-api/M2/sakai-gradebook-service-api-M2-sources.jar"/>
+-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-gradebook-service-hibernate/M2/sakai-gradebook-service-hibernate-M2.jar" sourcepath="/M2_REPO/org/sakaiproject/sakai-gradebook-service-hibernate/M2/sakai-gradebook-service-hibernate-M2.jar"/>
+ 	<classpathentry kind="var" path="M2_REPO/org/hibernate/hibernate/3.2.5.ga/hibernate-3.2.5.ga.jar"/>
+-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-sections-api/M2/sakai-sections-api-M2.jar"/>
+-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-authz-api/M2/sakai-authz-api-M2.jar"/>
+-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-site-api/M2/sakai-site-api-M2.jar"/>
+-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-tool-api/M2/sakai-tool-api-M2.jar"/>
+-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-user-api/M2/sakai-user-api-M2.jar"/>
+-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-entity-api/M2/sakai-entity-api-M2.jar"/>
+-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-util-api/M2/sakai-util-api-M2.jar"/>
+ 	<classpathentry kind="var" path="M2_REPO/commons-logging/commons-logging/1.0.4/commons-logging-1.0.4.jar"/>
+ 	<classpathentry kind="var" path="M2_REPO/commons-fileupload/commons-fileupload/1.1.1/commons-fileupload-1.1.1.jar"/>
+ 	<classpathentry kind="var" path="M2_REPO/com/thoughtworks/xstream/xstream/1.3/xstream-1.3.jar"/>
+ 	<classpathentry kind="var" path="M2_REPO/commons-io/commons-io/1.4/commons-io-1.4.jar"/>
+ 	<classpathentry kind="var" path="M2_REPO/com/extjs/gxt/2.0.1/gxt-2.0.1.jar"/>
+-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-coursemanagement-api/M2/sakai-coursemanagement-api-M2.jar" sourcepath="/SAKAI_SRC/course-management"/>
+-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-component/M2/sakai-component-M2.jar"/>
+-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-component-api/M2/sakai-component-api-M2.jar"/>
+ 	<classpathentry kind="var" path="M2_REPO/javax/servlet/servlet-api/2.4/servlet-api-2.4.jar" sourcepath="M2_REPO/javax/servlet/servlet-api/2.4/servlet-api-2.4-sources.jar"/>
+ 	<classpathentry kind="var" path="M2_REPO/commons-collections/commons-collections/3.2.1/commons-collections-3.2.1.jar"/>
+ 	<classpathentry kind="var" path="M2_REPO/net/sf/opencsv/opencsv/1.8/opencsv-1.8.jar"/>
+ 	<classpathentry kind="var" path="M2_REPO/net/sf/gwt-widget/gwt-sl/1.0/gwt-sl-1.0.jar"/>
+ 	<classpathentry kind="var" path="M2_REPO/commons-dbcp/commons-dbcp/1.2.1/commons-dbcp-1.2.1.jar"/>
+ 	<classpathentry kind="var" path="M2_REPO/commons-pool/commons-pool/1.2/commons-pool-1.2.jar"/>
+-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-db-api/M2/sakai-db-api-M2.jar"/>
+ 	<classpathentry kind="var" path="M2_REPO/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar"/>
+ 	<classpathentry kind="var" path="M2_REPO/hsqldb/hsqldb/1.8.0.5/hsqldb-1.8.0.5.jar"/>
+ 	<classpathentry kind="var" path="M2_REPO/javax/transaction/jta/1.0.1B/jta-1.0.1B.jar"/>
+ 	<classpathentry kind="var" path="M2_REPO/net/sf/ehcache/ehcache/1.3.0/ehcache-1.3.0.jar"/>
+-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-util/M2/sakai-util-M2.jar"/>
+-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-memory-api/M2/sakai-memory-api-M2.jar"/>
+ 	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-mock/2.0.6/spring-mock-2.0.6.jar"/>
+-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-db-ext/M2/sakai-db-ext-M2.jar"/>
+ 	<classpathentry kind="var" path="M2_REPO/cglib/cglib-nodep/2.1_3/cglib-nodep-2.1_3.jar"/>
+ 	<classpathentry kind="var" path="M2_REPO/antlr/antlr/2.7.6/antlr-2.7.6.jar"/>
+ 	<classpathentry kind="var" path="M2_REPO/org/apache/poi/poi/3.2-FINAL/poi-3.2-FINAL.jar"/>
+ 	<classpathentry kind="var" path="M2_REPO/jexcelapi/jxl/2.4.2/jxl-2.4.2.jar"/>
+-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-gradebook-service-impl/M2/sakai-gradebook-service-impl-M2.jar"/>
+-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-tool-servlet/M2/sakai-tool-servlet-M2.jar"/>
+-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-event-api/M2/sakai-event-api-M2.jar"/>
+-	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER/GWT (1)"/>
++	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
++	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/1.1.0-beta03-SNAPSHOT/kernel-1.1.0-beta03-SNAPSHOT.pom"/>
++	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/course-management/coursemanagement-api/1.0.0-beta02-SNAPSHOT/coursemanagement-api-1.0.0-beta02-SNAPSHOT.jar"/>
++	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/course-management/coursemanagement-hibernate-impl/1.0.0-beta02-SNAPSHOT/coursemanagement-hibernate-impl-1.0.0-beta02-SNAPSHOT.jar"/>
++	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/course-management/coursemanagement-hibernate-model/1.0.0-beta02-SNAPSHOT/coursemanagement-hibernate-model-1.0.0-beta02-SNAPSHOT.jar"/>
++	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/gradebook/gradebook-service/1.0.0-beta02-SNAPSHOT/gradebook-service-1.0.0-beta02-SNAPSHOT.pom"/>
++	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/gradebook/gradebook-service-api/1.0.0-beta02-SNAPSHOT/gradebook-service-api-1.0.0-beta02-SNAPSHOT.jar"/>
++	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/gradebook/gradebook-service-hibernate/1.0.0-beta02-SNAPSHOT/gradebook-service-hibernate-1.0.0-beta02-SNAPSHOT.jar"/>
++	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/gradebook/gradebook-service-impl/1.0.0-beta02-SNAPSHOT/gradebook-service-impl-1.0.0-beta02-SNAPSHOT.jar"/>
++	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-component-manager/1.1.0-beta03-SNAPSHOT/sakai-component-manager-1.1.0-beta03-SNAPSHOT.jar"/>
++	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-kernel-api/1.1.0-beta03-SNAPSHOT/sakai-kernel-api-1.1.0-beta03-SNAPSHOT.jar"/>
++	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services"/>
++	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/sections/sections-api/1.0.0-beta02-SNAPSHOT/sections-api-1.0.0-beta02-SNAPSHOT.jar"/>
+ 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
+ </classpath>
+Index: server/src/java/org/sakaiproject/gradebook/gwt/sakai/hibernate/GradebookToolServiceImpl.java
+===================================================================
+--- server/src/java/org/sakaiproject/gradebook/gwt/sakai/hibernate/GradebookToolServiceImpl.java	(revision 64821)
++++ server/src/java/org/sakaiproject/gradebook/gwt/sakai/hibernate/GradebookToolServiceImpl.java	(working copy)
+@@ -1611,7 +1611,7 @@
+ 					}
+ 
+ 					// Check for excessive (AKA extra credit) scoring.
+-					if (gradeRecordFromCall.getPointsEarned() != null && !assignment.isUngraded()
++					if (gradeRecordFromCall.getPointsEarned() != null && !assignment.getUngraded()
+ 							&& gradeRecordFromCall.getPointsEarned().compareTo(assignment.getPointsPossible()) > 0) {
+ 						studentsWithExcessiveScores.add(gradeRecordFromCall.getStudentId());
+ 					}
+Index: server/pom.xml
+===================================================================
+--- server/pom.xml	(revision 64821)
++++ server/pom.xml	(working copy)
+@@ -33,86 +33,50 @@
+ 		</dependency>
+ 		<!-- Gradebook1 Dependencies -->
+ 		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-gradebook-service-api</artifactId>
+-			<version>${sakai.version}</version>
++			<groupId>org.sakaiproject.edu-services.gradebook</groupId>
++			<artifactId>gradebook-service-api</artifactId>
++			<version>${sakai.edu.services.version}</version>
+ 			<scope>provided</scope>
+ 		</dependency>
+ 		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-gradebook-service-hibernate</artifactId>
+-			<version>${sakai.version}</version>
++			<groupId>org.sakaiproject.edu-services.gradebook</groupId>
++			<artifactId>gradebook-service-hibernate</artifactId>
++			<version>${sakai.edu.services.version}</version>
+ 			<scope>provided</scope>
+ 		</dependency>
+ 		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-gradebook-service-impl</artifactId>
+-			<version>${sakai.version}</version>
+-			<scope>provided</scope>
+-		</dependency>
++        	<groupId>org.sakaiproject.edu-services.gradebook</groupId>
++       	 	<artifactId>gradebook-service-impl</artifactId>
++        	<version>${sakai.edu.services.version}</version>
++        	<scope>provided</scope>
++      	</dependency>
+ 		<!-- Sakai Course Management Dependency -->
+ 		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-coursemanagement-api</artifactId>
+-			<version>${sakai.version}</version>
++			<groupId>org.sakaiproject.edu-services.course-management</groupId>
++			<artifactId>coursemanagement-api</artifactId>
++			<version>${sakai.edu.services.version}</version>
++			<scope>provided</scope>
+ 		</dependency>
+ 		<!-- Sakai Sections Dependency -->
+ 		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-sections-api</artifactId>
++			<groupId>org.sakaiproject.edu-services.sections</groupId>
++			<artifactId>sections-api</artifactId>
++			<version>${sakai.edu.services.version}</version>
++			<scope>provided</scope>
+ 		</dependency>
+ 		<!-- Misc Sakai Dependencies -->
+ 		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-authz-api</artifactId>
+-			<version>${sakai.version}</version>
++			<groupId>org.sakaiproject.kernel</groupId>
++			<artifactId>sakai-kernel-api</artifactId>
+ 		</dependency>
+ 		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-component</artifactId>
+-			<version>${sakai.version}</version>
++			<groupId>org.sakaiproject.kernel</groupId>
++			<artifactId>sakai-component-manager</artifactId>
+ 		</dependency>
+ 		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-component-api</artifactId>
+-			<version>${sakai.version}</version>
++			<groupId>org.sakaiproject.kernel</groupId>
++			<artifactId>sakai-kernel-util</artifactId>
+ 		</dependency>
+-		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-entity-api</artifactId>
+-			<version>${sakai.version}</version>
+-		</dependency>
+-		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-event-api</artifactId>
+-			<version>${sakai.version}</version>
+-		</dependency>
+-		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-site-api</artifactId>
+-			<version>${sakai.version}</version>
+-		</dependency>
+-		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-tool-api</artifactId>
+-			<version>${sakai.version}</version>
+-		</dependency>
+-		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-tool-servlet</artifactId>
+-			<version>${sakai.version}</version>
+-			<scope>provided</scope>
+-		</dependency>
+-		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-user-api</artifactId>
+-			<version>${sakai.version}</version>
+-		</dependency>
+-		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-util-api</artifactId>
+-			<version>${sakai.version}</version>
+-		</dependency>
+ 		<!--  Google Web Toolkit Dependencies -->
+ 		<dependency>
+ 			<groupId>com.google.gwt</groupId>
+@@ -133,12 +97,12 @@
+ 			<version>${gwtsl.version}</version>
+ 		</dependency>
+ 		<!-- Other External Dependencies -->
+-		<dependency>
++		<!-- dependency>
+ 			<groupId>aopalliance</groupId>
+ 			<artifactId>aopalliance</artifactId>
+ 			<version>1.0</version>
+ 			<scope>provided</scope>
+-		</dependency>
++		</dependency-->
+ 		<dependency>
+ 			<groupId>com.thoughtworks.xstream</groupId>
+ 			<artifactId>xstream</artifactId>
+@@ -199,10 +163,15 @@
+ 		</dependency>
+ 		<dependency>
+ 			<groupId>org.springframework</groupId>
++			<artifactId>spring-webmvc</artifactId>
++			<version>${sakai.spring.version}</version>
++		</dependency>
++		<!-- dependency>
++			<groupId>org.springframework</groupId>
+ 			<artifactId>spring-mock</artifactId>
+ 			<version>${sakai.spring.mock.version}</version>
+ 			<scope>provided</scope>
+-		</dependency>
++		</dependency-->
+ 	</dependencies>
+ 	<build>
+ 		<resources>
+Index: api/pom.xml
+===================================================================
+--- api/pom.xml	(revision 64821)
++++ api/pom.xml	(working copy)
+@@ -29,42 +29,22 @@
+ 		</dependency>
+ 		<!-- Gradebook1 Dependencies -->
+ 		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-gradebook-service-api</artifactId>
+-			<version>${sakai.version}</version>
++			<groupId>org.sakaiproject.edu-services.gradebook</groupId>
++			<artifactId>gradebook-service-api</artifactId>
++			<version>${sakai.edu.services.version}</version>
+ 			<scope>provided</scope>
+ 		</dependency>
+ 		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-gradebook-service-hibernate</artifactId>
+-			<version>${sakai.version}</version>
++			<groupId>org.sakaiproject.edu-services.gradebook</groupId>
++			<artifactId>gradebook-service-hibernate</artifactId>
++			<version>${sakai.edu.services.version}</version>
+ 			<scope>provided</scope>
+ 		</dependency>
+ 		<!-- Misc Sakai Dependencies -->
+ 		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-authz-api</artifactId>
+-			<version>${sakai.version}</version>
+-			<scope>provided</scope>
+-		</dependency>
+-		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-entity-api</artifactId>
+-			<version>${sakai.version}</version>
+-			<scope>provided</scope>
+-		</dependency>
+-		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-site-api</artifactId>
+-			<version>${sakai.version}</version>
+-			<scope>provided</scope>
+-		</dependency>
+-		<dependency>
+-			<groupId>org.sakaiproject</groupId>
+-			<artifactId>sakai-user-api</artifactId>
+-			<version>${sakai.version}</version>
+-			<scope>provided</scope>
+-		</dependency>
++ 			<groupId>org.sakaiproject.kernel</groupId>
++ 			<artifactId>sakai-kernel-api</artifactId>
++  		</dependency>
+ 		<!-- External Dependencies -->
+ 		<dependency>
+         	<groupId>javax.servlet</groupId>
