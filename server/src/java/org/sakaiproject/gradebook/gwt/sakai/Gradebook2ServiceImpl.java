@@ -174,10 +174,16 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		// Make sure that there is just one implementation in the parent context
 		if(beans != null && beans.length == 1) {
 			advisor = (InstitutionalAdvisor) parentApplicationContext.getBean(beans[0]);
+			log.info("Using institutional adviser " + beans[0]);
 		}
 		else {
 			// If the parent context didn't have an implementation, we use the sample
 			advisor = (InstitutionalAdvisor) applicationContext.getBean("org.sakaiproject.gradebook.gwt.sakai.api.SampleInstitutionalAdvisor");
+			
+			if (advisor != null)
+				log.info("Using default institutional adviser");
+			else
+				log.info("Unable to find any instutional advisers");
 		}
 		
 		if (configService != null) {
