@@ -20,17 +20,10 @@ add (
 	DO_SHOW_ITEM_STATS number(1,0)
 );
 
-alter table GB_GRADE_RECORD_T
-add (
-	EXCLUDED number(1,0)
-);
-
 alter table GB_GRADABLE_OBJECT_T
 add (
 	IS_EXTRA_CREDIT number(1,0),
 	ASSIGNMENT_WEIGHTING double precision,
-	IS_UNWEIGHTED number(1,0),
-	ITEM_ORDER number(10,0), 
 	IS_NULL_ZERO number(1,0)
 );
 
