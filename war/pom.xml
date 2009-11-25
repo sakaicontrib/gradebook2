@@ -18,24 +18,24 @@
 		<dependency>
 			<groupId>org.sakaiproject.gradebook2</groupId>
 			<artifactId>gradebook2-api</artifactId>
-			<version>${sakai.version}</version>
+			<version>${gb2.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.sakaiproject.gradebook2</groupId>
 			<artifactId>gradebook2-model</artifactId>
-			<version>${sakai.version}</version>
+			<version>${gb2.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.sakaiproject.gradebook2</groupId>
 			<artifactId>gradebook2-server</artifactId>
-			<version>${sakai.version}</version>
+			<version>${gb2.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.sakaiproject.gradebook2</groupId>
 			<artifactId>gradebook2-shared</artifactId>
-			<version>${sakai.version}</version>
+			<version>${gb2.version}</version>
 		</dependency>
 		<!-- Gradebook1 Dependencies -->
 		<dependency>

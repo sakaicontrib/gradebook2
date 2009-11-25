@@ -24,6 +24,7 @@
 	</repositories>
 
 	<properties>
+		<gb2.version>1.2.0-SNAPSHOT</gb2.version>
 		<gxt.version>2.0.1</gxt.version>
 		<gwt.version>1.7.1</gwt.version> 
 		<gwtsl.version>1.0</gwtsl.version>
