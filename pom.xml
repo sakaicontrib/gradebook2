@@ -30,7 +30,6 @@
 		<gwtsl.version>1.0</gwtsl.version>
 		<gb2.commons.logging.version>1.0.4</gb2.commons.logging.version>
 		<sakai.edu.services.version>1.0.0-beta02-SNAPSHOT</sakai.edu.services.version>
- 		<spring.webmvc.version>2.5.6</spring.webmvc.version>
 	</properties>
 
 	<modules>
