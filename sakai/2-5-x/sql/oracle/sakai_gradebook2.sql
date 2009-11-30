@@ -22,15 +22,14 @@ add (
 
 alter table GB_GRADE_RECORD_T
 add (
-	EXCLUDED number(1,0)
+	IS_EXCLUDED_FROM_GRADE number(1,0)
 );
 
 alter table GB_GRADABLE_OBJECT_T
 add (
 	IS_EXTRA_CREDIT number(1,0),
 	ASSIGNMENT_WEIGHTING double precision,
-	IS_UNWEIGHTED number(1,0),
-	ITEM_ORDER number(10,0)
+	SORT_ORDER number(10,0)
 );
 
 create sequence GB_ACTION_RECORD_S

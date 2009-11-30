@@ -46,12 +46,17 @@ add (
 
 alter table GB_GRADABLE_OBJECT_T
 add (
+	IS_EXTRA_CREDIT tinyint(1),
 	ASSIGNMENT_WEIGHTING double precision,
+	IS_UNWEIGHTED tinyint(1),
 	SORT_ORDER INT
 );
 
 
-
+alter table GB_GRADE_RECORD_T
+add (
+	IS_EXCLUDED_FROM_GRADE tinyint(1)
+);
 
 create index GB_ACTION_RECORD_ID_IDX on GB_ACTION_RECORD_T(ID);
 

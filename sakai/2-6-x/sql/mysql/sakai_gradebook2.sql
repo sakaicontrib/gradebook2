@@ -23,7 +23,6 @@ create table GB_ACTION_RECORD_T
 
 alter table GB_CATEGORY_T
 add (
-	IS_EXTRA_CREDIT tinyint(1),
 	IS_EQUAL_WEIGHT_ASSNS tinyint(1),
 	IS_UNWEIGHTED tinyint(1),
 	CATEGORY_ORDER INT,
@@ -114,11 +113,6 @@ create table GB_USER_DEREF_RM_UPDATE_T
 
 create index GB_USER_DEREF_RM_UP_IDX on GB_USER_DEREF_RM_UPDATE_T(REALM_ID);
 
-
-alter table GB_GRADE_RECORD_T
-add (
-	EXCLUDED tinyint(1)
-);
 
 create table GB_USER_CONFIG_T 
 (
