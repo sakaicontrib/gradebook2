@@ -8,15 +8,15 @@ Index: service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Category.
  		<property name="removed" column="REMOVED" type="boolean" />
 +		
 +		<property name="extraCredit" column="IS_EXTRA_CREDIT" type="boolean" not-null="false" />
-+		
-+		<property name="equalWeightAssignments" column="IS_EQUAL_WEIGHT_ASSNS" type="boolean" not-null="false" />
-+  
-+  		<property name="unweighted" column="IS_UNWEIGHTED" type="boolean" not-null="false" />
-+  
-+  		<property name="categoryOrder" column="CATEGORY_ORDER" type="integer" not-null="false" />
-+  
-+  		<property name="enforcePointWeighting" column="ENFORCE_POINT_WEIGHTING" type="boolean" not-null="false" />
-+  
++ 		
++	 	<property name="equalWeightAssignments" column="IS_EQUAL_WEIGHT_ASSNS" type="boolean" not-null="false" />
++	
++		<property name="unweighted" column="IS_UNWEIGHTED" type="boolean" not-null="false" />
++	
++		<property name="categoryOrder" column="CATEGORY_ORDER" type="integer" not-null="false" />
++	
++		<property name="enforcePointWeighting" column="ENFORCE_POINT_WEIGHTING" type="boolean" not-null="false" />
++			
    </class>
    
   	<database-object>
@@ -45,30 +45,23 @@ Index: service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Gradebook
 +
  	</class>
  </hibernate-mapping>
-Index: service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/GradeRecord.hbm.xml
-===================================================================
---- service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/GradeRecord.hbm.xml	(revision 64836)
-+++ service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/GradeRecord.hbm.xml	(working copy)
-@@ -30,6 +30,7 @@
- 
- 		<subclass name="org.sakaiproject.tool.gradebook.AssignmentGradeRecord"  discriminator-value="1">
- 			<property name="pointsEarned" column="POINTS_EARNED" type="double" not-null="false" />
-+			<property name="excluded" column="EXCLUDED" type="boolean" not-null="false" />
- 		</subclass>
- 
- 		<subclass name="org.sakaiproject.tool.gradebook.CourseGradeRecord" discriminator-value="2">
 Index: service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/GradableObject.hbm.xml
 ===================================================================
 --- service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/GradableObject.hbm.xml	(revision 64836)
 +++ service/hibernate/src/hibernate/org/sakaiproject/tool/gradebook/GradableObject.hbm.xml	(working copy)
-@@ -33,6 +33,11 @@
+@@ -21,6 +21,8 @@
+ 
+ 		<property name="removed" column="REMOVED" type="boolean" />
+ 
++		<property name="sortOrder" column="SORT_ORDER" type="java.lang.Integer" />
++
+ 		<subclass name="org.sakaiproject.tool.gradebook.Assignment" extends="org.sakaiproject.tool.gradebook.GradableObject"  discriminator-value="1">
+ 			<property name="pointsPossible" column="POINTS_POSSIBLE" type="double" />
+ 			<property name="dueDate" column="DUE_DATE" type="date" />
+@@ -33,6 +35,7 @@
        <property name="released" column="RELEASED" type="boolean"/>
        <many-to-one name="category" column="CATEGORY_ID" class="org.sakaiproject.tool.gradebook.Category" not-null="false"/>
        <property name="ungraded" column="UNGRADED" type="boolean"/>
-+      <property name="extraCredit" column="IS_EXTRA_CREDIT" type="boolean" not-null="false"/>
-+      <property name="assignmentWeighting" column="ASSIGNMENT_WEIGHTING" type="double" not-null="false"/>
-+      <property name="unweighted" column="IS_UNWEIGHTED" type="boolean" not-null="false"/>
-+      <property name="itemOrder" column="ITEM_ORDER" type="integer" not-null="false"/>
 +      <property name="countNullsAsZeros" column="IS_NULL_ZERO" type="boolean" not-null="false"/>
      </subclass>
  
@@ -101,23 +94,42 @@ Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/Assignment.jav
 ===================================================================
 --- service/hibernate/src/java/org/sakaiproject/tool/gradebook/Assignment.java	(revision 64836)
 +++ service/hibernate/src/java/org/sakaiproject/tool/gradebook/Assignment.java	(working copy)
-@@ -67,6 +67,12 @@
+@@ -67,6 +67,9 @@
      private Category category;
      private Double averageTotal;
      private boolean ungraded;
 +    private Boolean extraCredit;
-+    private Double assignmentWeighting;
-+    private Boolean unweighted;
-+    private Integer itemOrder;
++  	private Double assignmentWeighting;
 +    private Boolean countNullsAsZeros;
-+    
  
      static {
          dateComparator = new Comparator() {
-@@ -444,4 +450,54 @@
+@@ -434,7 +437,11 @@
+ 			this.averageTotal = averageTotal;
+ 		}
+ 
+-
++		public boolean getUngraded()
++		{
++			return ungraded;
++		}
++		
+ 		public boolean isUngraded()
+ 		{
+ 			return ungraded;
+@@ -444,4 +451,33 @@
  		{
  			this.ungraded = ungraded;
  		}
++
++		public Boolean getCountNullsAsZeros() {
++			return countNullsAsZeros;
++		}
++
++
++		public void setCountNullsAsZeros(Boolean countNullsAsZeros) {
++			this.countNullsAsZeros = countNullsAsZeros;
++		}
 +
 +
 +		public Boolean isExtraCredit() {
@@ -138,36 +150,6 @@ Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/Assignment.jav
 +		public void setAssignmentWeighting(Double assignmentWeighting) {
 +			this.assignmentWeighting = assignmentWeighting;
 +		}
-+
-+
-+		public Boolean isUnweighted() {
-+			return unweighted;
-+		}
-+
-+
-+		public void setUnweighted(Boolean unweighted) {
-+			this.unweighted = unweighted;
-+		}
-+
-+
-+		public Integer getItemOrder() {
-+			return itemOrder;
-+		}
-+
-+
-+		public void setItemOrder(Integer itemOrder) {
-+			this.itemOrder = itemOrder;
-+		}
-+
-+
-+		public Boolean getCountNullsAsZeros() {
-+			return countNullsAsZeros;
-+		}
-+
-+
-+		public void setCountNullsAsZeros(Boolean countNullsAsZeros) {
-+			this.countNullsAsZeros = countNullsAsZeros;
-+		}
  }
 \ No newline at end of file
 Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/AssignmentGradeRecord.java
@@ -178,7 +160,7 @@ Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/AssignmentGrad
      private String letterEarned;
      private Double percentEarned;
      private boolean userAbleToView;
-+    private Boolean excluded;
++    private Boolean excludedFromGrade;
 +    private transient BigDecimal earnedWeightedPercentage;
 +    private transient BigDecimal overallWeight;
 +    private transient Boolean isDropped;
@@ -190,12 +172,12 @@ Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/AssignmentGrad
      	return agr;
      }
 +
-+	public Boolean isExcluded() {
-+		return excluded;
++	public Boolean isExcludedFromGrade() {
++		return excludedFromGrade;
 +	}
 +
-+	public void setExcluded(Boolean excluded) {
-+		this.excluded = excluded;
++	public void setExcludedFromGrade(Boolean excludedFromGrade) {
++		this.excludedFromGrade = excludedFromGrade;
 +	}
 +
 +	public BigDecimal getEarnedWeightedPercentage() {
@@ -206,20 +188,20 @@ Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/AssignmentGrad
 +		this.earnedWeightedPercentage = earnedWeightedPercentage;
 +	}
 +
-+	public Boolean isDropped() {
-+		return isDropped;
-+	}
-+
-+	public void setDropped(Boolean isDropped) {
-+		this.isDropped = isDropped;
-+	}
-+
 +	public BigDecimal getOverallWeight() {
 +		return overallWeight;
 +	}
 +
 +	public void setOverallWeight(BigDecimal overallWeight) {
 +		this.overallWeight = overallWeight;
++	}
++
++	public Boolean isDropped() {
++		return isDropped;
++	}
++
++	public void setDropped(Boolean isDropped) {
++		this.isDropped = isDropped;
 +	}
  }
  
@@ -228,12 +210,11 @@ Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/Category.java
 ===================================================================
 --- service/hibernate/src/java/org/sakaiproject/tool/gradebook/Category.java	(revision 64836)
 +++ service/hibernate/src/java/org/sakaiproject/tool/gradebook/Category.java	(working copy)
-@@ -21,6 +21,12 @@
+@@ -21,6 +21,11 @@
  	private Double mean; //mean value of percentage for this category
  	private List assignmentList;
  	private int assignmentCount;
 +	private Boolean extraCredit;
-+	private Boolean ensureEqualWeighting;
 +	private Boolean unweighted;
 +	private Boolean equalWeightAssignments;
 +	private Integer categoryOrder;
@@ -241,20 +222,11 @@ Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/Category.java
  	
  	public static Comparator nameComparator;
  	public static Comparator averageScoreComparator;
-@@ -342,4 +348,45 @@
+@@ -342,4 +347,44 @@
  	public void setAssignmentCount(int assignmentCount){
  		this.assignmentCount = assignmentCount;
  	}
 +	
-+	public Boolean isExtraCredit() {
-+		return extraCredit;
-+	}
-+
-+
-+	public void setExtraCredit(Boolean extraCredit) {
-+		this.extraCredit = extraCredit;
-+	}
-+
 +	public Boolean isUnweighted() {
 +		return unweighted;
 +	}
@@ -286,7 +258,51 @@ Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/Category.java
 +	public void setEnforcePointWeighting(Boolean enforcePointWeighting) {
 +		this.enforcePointWeighting = enforcePointWeighting;
 +	}
++
++	public Boolean isExtraCredit() {
++		return extraCredit;
++	}
++
++	public void setExtraCredit(Boolean extraCredit) {
++		this.extraCredit = extraCredit;
++	}
  }
+Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/GradableObject.java
+===================================================================
+--- service/hibernate/src/java/org/sakaiproject/tool/gradebook/GradableObject.java	(revision 64836)
++++ service/hibernate/src/java/org/sakaiproject/tool/gradebook/GradableObject.java	(working copy)
+@@ -43,6 +43,7 @@
+     protected int version;
+     protected Gradebook gradebook;
+     protected String name;
++    protected Integer sortOrder;
+     protected Double mean;	// not persisted; not used in all contexts (in Overview & Assignment Grading,
+     	                    // not in Roster or Student View)
+ 
+@@ -51,7 +52,7 @@
+                                 // delete the assignment.  Instead, we should hide the "removed" assignments
+                                 // from the app by filtering the removed assignments in the hibernate queries
+ 
+-
++    
+     /**
+      * @return Whether this gradable object is a course grade
+      */
+@@ -186,6 +187,14 @@
+           append(name).
+           toHashCode();
+ 	}
++
++	public Integer getSortOrder() {
++		return sortOrder;
++	}
++
++	public void setSortOrder(Integer sortOrder) {
++		this.sortOrder = sortOrder;
++	}
+ }
+ 
+ 
 Index: service/hibernate/src/java/org/sakaiproject/tool/gradebook/Gradebook.java
 ===================================================================
 --- service/hibernate/src/java/org/sakaiproject/tool/gradebook/Gradebook.java	(revision 64836)
