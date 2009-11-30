@@ -29,11 +29,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.sakaiproject.authz.cover.SecurityService;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.section.api.SectionAwareness;
 import org.sakaiproject.section.api.coursemanagement.CourseSection;
 import org.sakaiproject.section.api.coursemanagement.EnrollmentRecord;
 import org.sakaiproject.section.api.facade.Role;
+import org.sakaiproject.site.cover.SiteService;
 import org.sakaiproject.tool.api.ToolManager;
 import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.Category;
@@ -44,6 +46,12 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 	
 	private static final int ZERO_ITEMS = 0;
 
+	public static final String
+	PERMISSION_GRADE_ALL = "gradebook.gradeAll",
+	PERMISSION_GRADE_SECTION = "gradebook.gradeSection",
+	PERMISSION_EDIT_ASSIGNMENTS = "gradebook.editAssignments",
+	PERMISSION_VIEW_OWN_GRADES = "gradebook.viewOwnGrades";
+	
 	private Gradebook2Authn authn;
 	private Gradebook2Service gbService;
 	private GradebookToolService gbToolService;
@@ -227,15 +235,10 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 	}
 
 	public boolean isUserAbleToGrade(String gradebookUid) {
-
-		String userUid = authn.getUserUid();
-		return (sectionAwareness.isSiteMemberInRole(gradebookUid, userUid, Role.INSTRUCTOR) || sectionAwareness.isSiteMemberInRole(gradebookUid, userUid, Role.TA));
-	}
+		return (hasPermission(gradebookUid, PERMISSION_GRADE_ALL) || hasPermission(gradebookUid, PERMISSION_GRADE_SECTION));	}
 
 	public boolean isUserAbleToGradeAll(String gradebookUid) {
-
-		String userUid = authn.getUserUid();
-		return sectionAwareness.isSiteMemberInRole(gradebookUid, userUid, Role.INSTRUCTOR);
+		return hasPermission(gradebookUid, PERMISSION_GRADE_ALL);	
 	}
 
 	public boolean isUserAbleToGradeItemForStudent(String gradebookUid, Long assignmentId, String studentUid) {
@@ -244,15 +247,11 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 	}
 
 	public boolean isUserAbleToViewOwnGrades(String gradebookUid) {
-
-		String userUid = authn.getUserUid();
-		return sectionAwareness.isSiteMemberInRole(gradebookUid, userUid, Role.STUDENT);
+		return hasPermission(gradebookUid, PERMISSION_VIEW_OWN_GRADES);
 	}
 
 	public boolean isUserAbleToEditAssessments(String gradebookUid) {
-
-		String userUid = authn.getUserUid();
-		return sectionAwareness.isSiteMemberInRole(gradebookUid, userUid, Role.INSTRUCTOR);
+		return hasPermission(gradebookUid, PERMISSION_EDIT_ASSIGNMENTS);
 	}
 
 	public boolean hasUserGraderPermissions(String gradebookUid) {
@@ -828,5 +827,9 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 			return "TESTSITECONTEXT";
 
 		return toolManager.getCurrentPlacement().getContext();
+	}
+	
+	private boolean hasPermission(String gradebookUid, String permission) {
+		return SecurityService.unlock(permission, SiteService.siteReference(gradebookUid));
 	}
 }
