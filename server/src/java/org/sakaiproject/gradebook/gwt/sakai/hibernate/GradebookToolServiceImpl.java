@@ -1015,7 +1015,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 			public Object doInHibernate(Session session) throws HibernateException {
 				// Removed logic to ignore removed items, since we want to control this in UI
 				List assignments = session.createQuery(
-				"from Assignment as assign where assign.category=? order by assign.itemOrder, assign.id asc " /*and assign.removed=false*/).
+				"from Assignment as assign where assign.category=? order by assign.sortOrder, assign.id asc " /*and assign.removed=false*/).
 				setLong(0, categoryId.longValue()).
 				list();
 				return assignments;
@@ -1121,7 +1121,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				.append("and a.id in ( ")
 				.append("select r.gradableObject.id ")
 				.append("from AssignmentGradeRecord r ")
-				.append("where (r.pointsEarned is not null or r.excluded = true) ")
+				.append("where (r.pointsEarned is not null or r.excludedFromGrade = true) ")
 				.append("and r.gradableObject.id = a.id ")
 				.append(") ");
 
@@ -1249,7 +1249,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				.append("select r.gradableObject.id ")
 				.append("from AssignmentGradeRecord r ")
 				.append("where r.studentId = :studentId ")
-				.append("and (r.pointsEarned is not null or r.excluded = true) ")
+				.append("and (r.pointsEarned is not null or r.excludedFromGrade = true) ")
 				.append("and r.gradableObject.id = a.id ")
 				.append(") ");
 
@@ -2138,7 +2138,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 	protected List<Assignment> getAssignments(Long gradebookId, Session session) throws HibernateException {
 		List<Assignment> assignments = session.createQuery(
-		"from Assignment as asn where asn.gradebook.id=? and asn.removed=false order by asn.itemOrder, asn.id asc").
+		"from Assignment as asn where asn.gradebook.id=? and asn.removed=false order by asn.sortOrder, asn.id asc").
 		setLong(0, gradebookId.longValue()).
 		list();
 		return assignments;
