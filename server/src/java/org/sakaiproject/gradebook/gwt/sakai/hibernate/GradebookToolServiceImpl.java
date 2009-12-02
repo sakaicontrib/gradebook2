@@ -260,15 +260,15 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	}
 
 	public Integer getActionRecordSize(final String gradebookUid) {
-		Integer size = (Integer)getHibernateTemplate().execute(new HibernateCallback() {
+		Number size = (Number)getHibernateTemplate().execute(new HibernateCallback() {
 			public Object doInHibernate(Session session) throws HibernateException {
 				Query q = session.createQuery("select count(*) from ActionRecord as ar where ar.gradebookUid=:gradebookUid ");
 				q.setString("gradebookUid", gradebookUid);
-				return (Integer) q.iterate().next();
+				return (Number) q.iterate().next();
 			}
 		});
 
-		return size;
+		return size == null ? 0 : Integer.valueOf(size.intValue());
 	}
 
 	public List<ActionRecord> getActionRecords(final String gradebookUid, final String learnerUid, final int offset, final int limit) {
@@ -286,16 +286,16 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	}
 
 	public Integer getActionRecordSize(final String gradebookUid, final String learnerUid) {
-		Integer size = (Integer)getHibernateTemplate().execute(new HibernateCallback() {
+		Number size = (Number)getHibernateTemplate().execute(new HibernateCallback() {
 			public Object doInHibernate(Session session) throws HibernateException {
 				Query q = session.createQuery("select count(*) from ActionRecord as ar where ar.gradebookUid=:gradebookUid and ar.studentUid=:learnerUid ");
 				q.setString("gradebookUid", gradebookUid);
 				q.setString("learnerUid", learnerUid);
-				return (Integer) q.iterate().next();
+				return (Number) q.iterate().next();
 			}
 		});
 
-		return size;
+		return size == null ? 0 : Integer.valueOf(size.intValue());
 	}
 
 	public UserDereferenceRealmUpdate getLastUserDereferenceSync(final String siteId, final String realmGroupId) {
