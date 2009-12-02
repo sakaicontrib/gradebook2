@@ -54,6 +54,7 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityCreateAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityGradeAction;
+import org.sakaiproject.gradebook.gwt.client.action.UserEntitySubmitAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.ActionType;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
@@ -1225,13 +1226,24 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 			try {
 				UserEntityAction.ActionType actionType = UserEntityAction.ActionType.valueOf(actionRecord.getActionType());
 				UserEntityAction.EntityType entityType = UserEntityAction.EntityType.valueOf(actionRecord.getEntityType());
+				String score = null;
 				switch (actionType) {
 					case CREATE:
 						actionModel = new UserEntityCreateAction();
 						break;
 					case GRADED:
+						score = actionRecord.getPropertyMap().get("score");
+						if (score == null)
+							score = "";
 						actionModel = new UserEntityGradeAction();
 						actionModel.setValue(actionRecord.getPropertyMap().get("score"));
+						break;
+					case SUBMITTED:
+						score = actionRecord.getPropertyMap().get(Column.LETTER_GRADE.name());
+						if (score == null)
+							score = "";
+						actionModel = new UserEntitySubmitAction();
+						actionModel.setValue(score);
 						break;
 					case UPDATE:
 						actionModel = new UserEntityUpdateAction();
@@ -2252,7 +2264,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 			String exportCmId = studentData.get(Column.EXPORT_CM_ID);
 			String letterGrade = studentData.get(Column.LETTER_GRADE);
 			
-			ActionRecord actionRecord = new ActionRecord(gradebookUid, null, EntityType.GRADE_SUBMISSION.name(), ActionType.GRADED.name());
+			ActionRecord actionRecord = new ActionRecord(gradebookUid, null, EntityType.GRADE_SUBMISSION.name(), ActionType.SUBMITTED.name());
 			actionRecord.setEntityName(studentName);
 			actionRecord.setEntityId(finalGradeUserId);
 			actionRecord.setStudentUid(studentUid);

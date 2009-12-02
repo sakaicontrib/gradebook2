@@ -35,7 +35,8 @@ public abstract class Action extends EntityModel {
 		GET("Get", "retrieved"), 
 		GRADED("Grade", "Set grade to"),
 		UPDATE("Update", "Updated "), 
-		DELETE("Delete", "Deleted ");
+		DELETE("Delete", "Deleted "),
+		SUBMITTED("Submit", "Submitted ");
 
 	private String desc;
 	private String verb;
