@@ -286,7 +286,7 @@ public class HistoryPanel extends EntityPanel {
 			        String name = f.getName();
 			        if (name != null && name.length() > 0) {
 			          FieldBinding b = new FieldBinding(f, f.getName());
-			          b.setConvertor(converter);
+			          b.setConverter(converter);
 			          bindings.put(f.getId(), b);
 			        }
 			      }

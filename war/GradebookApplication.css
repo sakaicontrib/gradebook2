@@ -140,6 +140,10 @@
 	line-height:normal;
 }
 
+.x-grid3-body .x-grid3-td-checker {
+    background-image: none;
+}
+
 .x-grid3-hd-inner {
 	cursor:inherit;
 	font-size: 9pt !important;
@@ -300,22 +304,22 @@
 
 .gbTextFieldInput {
 	font-size: 12pt !important;
-	height: 1.8em !important;
-	padding-top: 4px !important;
+	/*height: 1.8em !important;*/
+	padding-top: 0px !important;
 	text-align: left;
 }
 
 .gbTextAreaInput {
 	font-size: 12pt !important;
-	padding-top: 4px !important;
+	padding-top: 2px !important;
 	text-align: left;
 }
 
 .gbNumericFieldInput {
 	font-size: 12pt !important;
-	height: 1.8em !important;
-	padding-left: 3px !important;
-	padding-top: 4px !important;
+	/*height: 1.8em !important;*/
+	padding-right: 5px !important;
+	padding-top: 1px !important;
 	text-align: right;
 }
 

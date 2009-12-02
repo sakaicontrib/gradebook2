@@ -4,33 +4,41 @@
 <beans>
 
 	<!-- An application consumer without a component. -->
-	<bean id="alt.gradebookSessionFactory" parent="org.sakaiproject.springframework.orm.hibernate.SessionFactoryBase"
-		class="org.sakaiproject.springframework.orm.hibernate.AddableSessionFactoryBean">
+	<bean id="alt.gradebookSessionFactory" 
+		parent="org.sakaiproject.springframework.orm.hibernate.SessionFactoryBase"
+		class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
 		<property name="mappingResources">
-		    <list>
-  				<value>org/sakaiproject/tool/gradebook/Gradebook.hbm.xml</value>
-	  			<value>org/sakaiproject/tool/gradebook/GradableObject.hbm.xml</value>
-		  		<value>org/sakaiproject/tool/gradebook/GradeRecord.hbm.xml</value>
-			  	<value>org/sakaiproject/tool/gradebook/GradingEvent.hbm.xml</value>
-				  <value>org/sakaiproject/tool/gradebook/GradingScale.hbm.xml</value>
-  				<value>org/sakaiproject/tool/gradebook/GradebookProperty.hbm.xml</value>
-	  			<value>org/sakaiproject/tool/gradebook/GradeMapping.hbm.xml</value>
-          <value>org/sakaiproject/tool/gradebook/Spreadsheet.hbm.xml</value>                
-          <value>org/sakaiproject/tool/gradebook/Comment.hbm.xml</value>   
-          <value>org/sakaiproject/tool/gradebook/Category.hbm.xml</value>
-          <value>org/sakaiproject/tool/gradebook/LetterGradePercenteMapping.hbm.xml</value>
-          <value>org/sakaiproject/tool/gradebook/Permission.hbm.xml</value>
+		<list>
+  			<value>org/sakaiproject/tool/gradebook/Gradebook.hbm.xml</value>
+	  		<value>org/sakaiproject/tool/gradebook/GradableObject.hbm.xml</value>
+		  	<value>org/sakaiproject/tool/gradebook/GradeRecord.hbm.xml</value>
+			<value>org/sakaiproject/tool/gradebook/GradingEvent.hbm.xml</value>
+			<value>org/sakaiproject/tool/gradebook/GradingScale.hbm.xml</value>
+  			<value>org/sakaiproject/tool/gradebook/GradebookProperty.hbm.xml</value>
+	  		<value>org/sakaiproject/tool/gradebook/GradeMapping.hbm.xml</value>
+          	<value>org/sakaiproject/tool/gradebook/Spreadsheet.hbm.xml</value>                
+          	<value>org/sakaiproject/tool/gradebook/Comment.hbm.xml</value>   
+          	<value>org/sakaiproject/tool/gradebook/Category.hbm.xml</value>
+          	<value>org/sakaiproject/tool/gradebook/LetterGradePercenteMapping.hbm.xml</value>
+        	<value>org/sakaiproject/tool/gradebook/Permission.hbm.xml</value>
+        	<value>org/sakaiproject/gradebook/gwt/sakai/model/ActionRecord.hbm.xml</value>
+			<value>org/sakaiproject/gradebook/gwt/sakai/model/Realm.hbm.xml</value>
+			<value>org/sakaiproject/gradebook/gwt/sakai/model/RealmGroup.hbm.xml</value>
+			<value>org/sakaiproject/gradebook/gwt/sakai/model/RealmRole.hbm.xml</value>
+			<value>org/sakaiproject/gradebook/gwt/sakai/model/UserConfiguration.hbm.xml</value>
+			<value>org/sakaiproject/gradebook/gwt/sakai/model/UserDereference.hbm.xml</value>
+			<value>org/sakaiproject/gradebook/gwt/sakai/model/UserDereferenceRealmUpdate.hbm.xml</value>
         </list>
 		</property>
 	</bean>
 	
 
-	<bean id="org.sakaiproject.log.api.LogConfigurationManager"
+	<!-- bean id="org.sakaiproject.log.api.LogConfigurationManager"
 			class="org.sakaiproject.gradebook2.test.sakai.Log4jConfigurationManager"
 			init-method="init"
 			destroy-method="destroy"
 			singleton="true">
-	</bean>
+	</bean-->
 
 
     <!-- database beans -->
@@ -232,11 +240,11 @@
 	</bean>
 
 	<!--  The "Global" Hibernate Session Factory -->
-	<bean
+	<!-- bean
 			id="org.sakaiproject.springframework.orm.hibernate.GlobalSessionFactory"
 			parent="org.sakaiproject.springframework.orm.hibernate.SessionFactoryBase"
 			class="org.sakaiproject.springframework.orm.hibernate.AddableSessionFactoryBean">
-	</bean>
+	</bean-->
 
 	<!--  The "Global" Transaction Manager -->
 	<!--bean

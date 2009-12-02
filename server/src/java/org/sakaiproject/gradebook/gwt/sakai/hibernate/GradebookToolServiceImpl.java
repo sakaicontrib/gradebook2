@@ -1127,7 +1127,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 				Query q = session.createQuery(query.toString());
 				q.setParameter("gradebookId", gradebookId);
-				return Boolean.valueOf(((Integer) q.iterate().next() ).intValue() > 0);
+				return Boolean.valueOf(((Number) q.iterate().next() ).intValue() > 0);
 			}
 		};
 
@@ -1142,7 +1142,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				Query q = session.createQuery("select count(*) from Comment as c where c.studentId=:studentId and c.gradableObject.id=:assignmentId");
 				q.setParameter("studentId", studentId);
 				q.setParameter("assignmentId",assignmentId);
-				return Boolean.valueOf(((Integer) q.iterate().next() ).intValue() > 0);
+				return Boolean.valueOf(((Number) q.iterate().next() ).intValue() > 0);
 			}
 		});
 
@@ -1162,7 +1162,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 				Query q = session.createQuery("select count(*) from GradingEvent as ge where ge.studentId=:studentId and ge.gradableObject.removed=false");
 				q.setParameter("studentId", studentId);
-				return Boolean.valueOf(((Integer) q.iterate().next() ).intValue() > 0);
+				return Boolean.valueOf(((Number) q.iterate().next() ).intValue() > 0);
 
 			}
 		};
@@ -1256,7 +1256,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				Query q = session.createQuery(query.toString());
 				q.setParameter("gradebookId", gradebookId);
 				q.setParameter("studentId", studentId);
-				return Boolean.valueOf(((Integer) q.iterate().next() ).intValue() > 0);
+				return Boolean.valueOf(((Number) q.iterate().next() ).intValue() > 0);
 			}
 		};
 
@@ -2312,7 +2312,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				return total;
 			}
 		};
-		return ((Integer)getHibernateTemplate().execute(hc)).intValue() > 0;
+		return ((Number)getHibernateTemplate().execute(hc)).intValue() > 0;
 	}
 
 	protected void logAssignmentGradingEvent(AssignmentGradeRecord gradeRecord, String graderId, Assignment assignment, Session session) {

@@ -29,13 +29,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.sakaiproject.authz.cover.SecurityService;
+import org.sakaiproject.authz.api.SecurityService;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.section.api.SectionAwareness;
 import org.sakaiproject.section.api.coursemanagement.CourseSection;
 import org.sakaiproject.section.api.coursemanagement.EnrollmentRecord;
 import org.sakaiproject.section.api.facade.Role;
-import org.sakaiproject.site.cover.SiteService;
+import org.sakaiproject.site.api.SiteService;
 import org.sakaiproject.tool.api.ToolManager;
 import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.Category;
@@ -57,6 +57,8 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 	private GradebookToolService gbToolService;
 	private SectionAwareness sectionAwareness;
 	private ToolManager toolManager;
+	private SecurityService securityService;
+	private SiteService siteService;
 
 	
 	// SPRING DI
@@ -235,7 +237,8 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 	}
 
 	public boolean isUserAbleToGrade(String gradebookUid) {
-		return (hasPermission(gradebookUid, PERMISSION_GRADE_ALL) || hasPermission(gradebookUid, PERMISSION_GRADE_SECTION));	}
+		return (hasPermission(gradebookUid, PERMISSION_GRADE_ALL) || hasPermission(gradebookUid, PERMISSION_GRADE_SECTION));	
+	}
 
 	public boolean isUserAbleToGradeAll(String gradebookUid) {
 		return hasPermission(gradebookUid, PERMISSION_GRADE_ALL);	
@@ -830,6 +833,26 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 	}
 	
 	private boolean hasPermission(String gradebookUid, String permission) {
-		return SecurityService.unlock(permission, SiteService.siteReference(gradebookUid));
+		if (securityService == null)
+			return true;
+		
+		return securityService.unlock(permission, siteService.siteReference(gradebookUid));
 	}
+
+	public SecurityService getSecurityService() {
+		return securityService;
+	}
+
+	public void setSecurityService(SecurityService securityService) {
+		this.securityService = securityService;
+	}
+
+	public SiteService getSiteService() {
+		return siteService;
+	}
+
+	public void setSiteService(SiteService siteService) {
+		this.siteService = siteService;
+	}
+	
 }
