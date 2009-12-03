@@ -133,6 +133,7 @@ public class ItemFormPanel extends ContentPanel {
 	
 	private ListStore<ItemModel> categoryStore;
 	private TreeStore<ItemModel> treeStore;
+	private ListStore<ModelData> gradeTypeStore;
 
 	private KeyListener keyListener;
 	private Listener<BindingEvent> bindListener;
@@ -191,16 +192,6 @@ public class ItemFormPanel extends ContentPanel {
 		categoryTypeStore.add(getCategoryTypeModel(GradebookModel.CategoryType.NO_CATEGORIES));
 		categoryTypeStore.add(getCategoryTypeModel(GradebookModel.CategoryType.SIMPLE_CATEGORIES));
 		categoryTypeStore.add(getCategoryTypeModel(GradebookModel.CategoryType.WEIGHTED_CATEGORIES));
-
-		ListStore<ModelData> gradeTypeStore = new ListStore<ModelData>();
-
-		List<GradeType> enabledGradeTypes = Registry.get(AppConstants.ENABLED_GRADE_TYPES);
-		
-		if (enabledGradeTypes != null) {
-			for (int i=0;i<enabledGradeTypes.size();i++) {
-				gradeTypeStore.add(getGradeTypeModel(enabledGradeTypes.get(i)));
-			}
-		}
 	    
 		formPanel = new FormPanel();
 		formPanel.setHeaderVisible(false);
@@ -248,8 +239,8 @@ public class ItemFormPanel extends ContentPanel {
 		gradeTypePicker.setName(ItemModel.Key.GRADETYPE.name());
 		gradeTypePicker.setFieldLabel(i18n.gradeTypeFieldLabel());
 		gradeTypePicker.setForceSelection(true);
-		gradeTypePicker.setLazyRender(false);
-		gradeTypePicker.setStore(gradeTypeStore);
+		gradeTypePicker.setLazyRender(true);
+		//gradeTypePicker.setStore(gradeTypeStore);
 		gradeTypePicker.setTriggerAction(TriggerAction.ALL);
 		gradeTypePicker.setVisible(false);
 		formPanel.add(gradeTypePicker);
@@ -818,6 +809,20 @@ public class ItemFormPanel extends ContentPanel {
 
 	public void onSwitchGradebook(GradebookModel selectedGradebook) {
 		this.selectedGradebook = selectedGradebook;
+		
+		if (gradeTypeStore == null) {
+			gradeTypeStore = new ListStore<ModelData>();
+	
+			List<GradeType> enabledGradeTypes = Registry.get(AppConstants.ENABLED_GRADE_TYPES);
+			
+			if (enabledGradeTypes != null) {
+				for (int i=0;i<enabledGradeTypes.size();i++) {
+					gradeTypeStore.add(getGradeTypeModel(enabledGradeTypes.get(i)));
+				}
+			}
+			
+			gradeTypePicker.setStore(gradeTypeStore);
+		}
 	}
 
 	private CategoryType getCategoryType(ModelData categoryTypeModel) {
