@@ -2016,7 +2016,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 
 					int startRow = config == null ? 0 : config.getOffset();
 
-					List<FixedColumnModel> columns = getColumns();
+					List<FixedColumnModel> columns = getColumns(true);
 
 					rows = new ArrayList<X>(userRecords == null ? 0 : userRecords.size());
 
@@ -2063,7 +2063,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 			lastRow = totalUsers;
 		}
 
-		List<FixedColumnModel> columns = getColumns();
+		List<FixedColumnModel> columns = getColumns(true);
 
 		// We only want to populate the rowData and rowValues for the requested
 		// rows
@@ -2969,6 +2969,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 				categoryType = CategoryType.WEIGHTED_CATEGORIES;
 		}
 
+		boolean isUserAbleToGradeAll = authz.isUserAbleToGradeAll(gradebookUid);
 		boolean isUserAbleToGrade = authz.isUserAbleToGrade(gradebookUid);
 		boolean isUserAbleToViewOwnGrades = authz.isUserAbleToViewOwnGrades(gradebookUid);
 
@@ -3034,7 +3035,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		model.setNewGradebook(Boolean.valueOf(assignments == null || assignments.isEmpty()));
 
 		model.setGradebookItemModel(gradebookItemModel);
-		List<FixedColumnModel> columns = getColumns();
+		List<FixedColumnModel> columns = getColumns(isUserAbleToGradeAll);
 
 		model.setUserAbleToGrade(Boolean.valueOf(isUserAbleToGrade));
 		model.setUserAbleToEditAssessments(Boolean.valueOf(authz.isUserAbleToEditAssessments(gradebookUid)));
@@ -3255,6 +3256,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		model.setIncluded(Boolean.valueOf(isIncluded));
 		model.setDropLowest(category.getDrop_lowest() == 0 ? null : Integer.valueOf(category.getDrop_lowest()));
 		model.setRemoved(Boolean.valueOf(category.isRemoved()));
+		model.setReleased(Boolean.valueOf(businessLogic.checkReleased(assignments)));
 		if (hasWeights)
 			model.setPercentCourseGrade(Double.valueOf(categoryWeight));
 		model.setItemType(Type.CATEGORY);
@@ -3676,7 +3678,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		return categories;
 	}
 
-	private <X extends BaseModel> List<X> getColumns() {
+	private <X extends BaseModel> List<X> getColumns(boolean isUserAbleToGradeAll) {
 
 		List<X> columns = new LinkedList<X>();
 
@@ -3686,9 +3688,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		columns.add((X) new FixedColumnModel(StudentModel.Key.EMAIL, 230, true));
 		columns.add((X) new FixedColumnModel(StudentModel.Key.SECTION, 120, true));
 		columns.add((X) new FixedColumnModel(StudentModel.Key.COURSE_GRADE, 120, false));
-		FixedColumnModel gradeOverrideColumn = new FixedColumnModel(StudentModel.Key.GRADE_OVERRIDE, 120, false);
-		gradeOverrideColumn.setEditable(true);
-		columns.add((X) gradeOverrideColumn);
+		if (isUserAbleToGradeAll) {
+			FixedColumnModel gradeOverrideColumn = new FixedColumnModel(StudentModel.Key.GRADE_OVERRIDE, 120, false);
+			gradeOverrideColumn.setEditable(true);
+			columns.add((X) gradeOverrideColumn);
+		}
 		columns.add((X) new FixedColumnModel(StudentModel.Key.LETTER_GRADE, 80, true));
 		columns.add((X) new FixedColumnModel(StudentModel.Key.CALCULATED_GRADE, 80, true));
 		
@@ -4355,6 +4359,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 			int newDropLowest = convertInteger(item.getDropLowest()).intValue();
 			int oldDropLowest = category.getDrop_lowest();
 			
+			if (newDropLowest < 0)
+				throw new InvalidInputException("You cannot set the drop lowest to a negative number.");
+			
 			boolean isRemoved = DataTypeConversionUtil.checkBoolean(item.getRemoved());
 			boolean wasRemoved = category.isRemoved();
 
@@ -4366,6 +4373,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 
 			boolean isEnforcePointWeighting = !currentExtraCredit && DataTypeConversionUtil.checkBoolean(item.getEnforcePointWeighting());
 			
+			boolean isReleased = DataTypeConversionUtil.checkBoolean(item.getReleased());
 			
 			if (hasCategories) {
 				List<Category> categories = gbService.getCategories(gradebook.getId());
@@ -4424,6 +4432,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 			if (hasCategories) {
 				List<Assignment> assignmentsForCategory = gbService.getAssignmentsForCategory(category.getId());
 
+				boolean wasReleased = businessLogic.checkReleased(assignmentsForCategory);
+				
 				if (isRemoved && !wasRemoved)
 					businessLogic.applyRemoveChildItemsWhenCategoryRemoved(category, assignmentsForCategory);
 
@@ -4433,6 +4443,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 
 				if (oldCategoryOrder == null || (newCategoryOrder != null && newCategoryOrder.compareTo(oldCategoryOrder) != 0))
 					businessLogic.reorderAllCategories(gradebook.getId(), category.getId(), newCategoryOrder, oldCategoryOrder);
+			
+				businessLogic.applyReleaseChildItemsWhenCategoryReleased(category, assignmentsForCategory, isReleased);
 			}
 
 		} catch (RuntimeException e) {

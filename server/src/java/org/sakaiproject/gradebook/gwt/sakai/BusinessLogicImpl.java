@@ -138,6 +138,19 @@ public class BusinessLogicImpl implements BusinessLogic {
 			throw new BusinessRuleException("You must select a category to group this item under.");
 	}
 
+	public void applyReleaseChildItemsWhenCategoryReleased(Category category, List<Assignment> assignments, boolean isReleased) throws BusinessRuleException {
+
+		if (assignments != null) {
+			for (Assignment assignment : assignments) {
+				if (assignment.isReleased() != isReleased) {
+					assignment.setReleased(isReleased);
+					gbService.updateAssignment(assignment);
+				}
+			}
+		}
+
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.sakai.BusinessLogic#applyRemoveChildItemsWhenCategoryRemoved(org.sakaiproject.tool.gradebook.Category, java.util.List)
 	 */
@@ -207,6 +220,21 @@ public class BusinessLogicImpl implements BusinessLogic {
 	 */
 	public boolean checkRecalculatePointsRule(Long assignmentId, Double newPoints, Double oldPoints) {
 		return (newPoints != null && oldPoints != null && newPoints.compareTo(oldPoints) != 0); 
+	}
+	
+	public boolean checkReleased(List<Assignment> assignments) {
+		boolean isReleased = false;
+		if (assignments != null) {
+			isReleased = assignments.size() > 0;
+			for (Assignment a : assignments) {
+				if (!a.isReleased()) {
+					isReleased = false;
+					break;
+				}
+			}
+		}
+		
+		return isReleased;
 	}
 
 	public void makeItemsNonExtraCredit(List<Assignment> assignments) {

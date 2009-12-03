@@ -940,7 +940,7 @@ public class ItemFormPanel extends ContentPanel {
 		initField(dropLowestField, isAllowedToEdit && !isDelete, isDropLowestVisible);
 		initField(dueDateField, isAllowedToEdit && !isDelete && !isExternal, isEditable && isItem);
 		initField(includedField, isAllowedToEdit && !isDelete, isEditable && isNotGradebook);
-		initField(releasedField, isAllowedToEdit && !isDelete, isEditable && isItem);
+		initField(releasedField, isAllowedToEdit && !isDelete, isEditable && isNotGradebook);
 		initField(nullsAsZerosField, isAllowedToEdit && !isDelete, isEditable && isItem);
 		initField(categoryPicker, isAllowedToEdit && !isDelete, isEditable && hasCategories && isItem);
 		initField(categoryTypePicker, isAllowedToEdit, isEditable && !isNotGradebook);

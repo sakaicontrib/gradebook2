@@ -121,9 +121,6 @@ public class AltItemTreePanel extends ContentPanel {
 		this.enableLayout = false;
 		this.i18n = i18n;
 		this.isEditable = isEditable;
-		//this.isLearnerAttributeTreeLoaded = false;
-		//this.isItemTreeCheckListenerAttached = false;
-		//this.isAttributeTreeCheckListenerAttached = false;
 		setBorders(true);
 		setHeading(i18n.navigationPanelHeader());
 		setLayout(new FillLayout());
@@ -253,7 +250,8 @@ public class AltItemTreePanel extends ContentPanel {
 				boolean isItem = itemModel.getItemType() == Type.ITEM;
 				boolean isCategory = itemModel.getItemType() == Type.CATEGORY;
 				boolean isReleased = itemModel.getReleased() != null && itemModel.getReleased().booleanValue();
-								
+				int dropLowest = itemModel.getDropLowest() == null ? 0 : itemModel.getDropLowest().intValue();			
+				
 				StringBuffer sb = new StringBuffer();
 				sb.append("<div id=\"");
 				sb.append(id);
@@ -295,14 +293,18 @@ public class AltItemTreePanel extends ContentPanel {
 					sb.append(" gbNotIncluded");
 				if (!isItem) 
 					sb.append(" gbCellStrong");
-				if (isReleased) 
+				else if (isReleased) 
 					sb.append(" gbReleased");
+				
 				boolean isExtraCredit = itemModel.getExtraCredit() != null && itemModel.getExtraCredit().booleanValue();
 				if (isExtraCredit) 
 					sb.append(" gbCellExtraCredit");
 				sb.append("\">&nbsp;");
 				sb.append(text);
-				sb.append("</span>");
+				if (dropLowest > 0) {
+					sb.append("<font style=\"font-style: regular;font-size:9pt\"> -").append(dropLowest).append("</font>");
+				}
+				sb.append("</span>");		
 
 				sb.append("</div>");
 				sb.append("</div>");
@@ -310,8 +312,7 @@ public class AltItemTreePanel extends ContentPanel {
 				return sb.toString();
 			}
 		};
-		//itemGridView.setRowHeight(20);
-		
+
 		itemGrid = new TreeGrid<ItemModel>(treeStore, cm) {
 			protected void onDoubleClick(GridEvent<ItemModel> e) {
 				if (e.getRowIndex() != -1) {
@@ -384,7 +385,6 @@ public class AltItemTreePanel extends ContentPanel {
 		item.setLayout(new FitLayout());
 		learnerAttributeTree.setWidth(500);
 		item.add(learnerAttributeTree);
-		//item.setScrollMode(Scroll.AUTO);
 		tabPanel.add(item);
 
 		add(tabPanel);
