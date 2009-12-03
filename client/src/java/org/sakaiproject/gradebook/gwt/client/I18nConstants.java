@@ -30,6 +30,7 @@ public interface I18nConstants extends Constants {
 	
 	String categoryName();
 	String itemName();
+	String weightName();
 	String scoreName();
 	String outOfName();
 	String dateDueName();

@@ -144,6 +144,10 @@
     background-image: none;
 }
 
+.x-grid3-row-selected .x-grid3-row-checker {
+   background-position: 2px 2px;
+}
+
 .x-grid3-hd-inner {
 	cursor:inherit;
 	font-size: 9pt !important;

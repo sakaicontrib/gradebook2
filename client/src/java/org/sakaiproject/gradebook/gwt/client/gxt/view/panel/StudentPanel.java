@@ -51,6 +51,7 @@ import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
 import com.extjs.gxt.ui.client.event.SelectionChangedListener;
 import com.extjs.gxt.ui.client.store.GroupingStore;
+import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Store;
 import com.extjs.gxt.ui.client.store.StoreSorter;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
@@ -64,6 +65,7 @@ import com.extjs.gxt.ui.client.widget.form.FormPanel.LabelAlign;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
+import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.grid.GridSelectionModel;
 import com.extjs.gxt.ui.client.widget.grid.GroupingView;
 import com.extjs.gxt.ui.client.widget.layout.CardLayout;
@@ -82,7 +84,7 @@ import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
 
 public class StudentPanel extends ContentPanel {
 
-	private enum Key { CATEGORY_NAME, ITEM_NAME, GRADE, MEAN, STDV, MEDI, MODE, RANK, COMMENT, ORDER, ID, OUTOF, DATEDUE };
+	private enum Key { CATEGORY_NAME, ITEM_NAME, ITEM_WEIGHT, GRADE, MEAN, STDV, MEDI, MODE, RANK, COMMENT, ORDER, ID, OUTOF, DATEDUE, DROPPED };
 	
 	private TextField<String> defaultTextField= new TextField<String>();
 	private TextArea defaultTextArea = new TextArea();
@@ -101,7 +103,7 @@ public class StudentPanel extends ContentPanel {
     private GridSelectionModel<BaseModel> selectionModel;
     private TextArea commentArea;
 	private StudentModel learnerGradeRecordCollection;
-	private ColumnConfig categoryColumn, outOfColumn, dateDueColumn, meanColumn, medianColumn, modeColumn, stdvColumn;
+	private ColumnConfig categoryColumn, weightColumn, outOfColumn, dateDueColumn, meanColumn, medianColumn, modeColumn, stdvColumn;
 	
 	private boolean isStudentView;
 	private boolean displayRank; 
@@ -187,39 +189,69 @@ public class StudentPanel extends ContentPanel {
 		categoryColumn = new ColumnConfig(Key.CATEGORY_NAME.name(), i18n.categoryName(), 200);
 		categoryColumn.setGroupable(true);
 		categoryColumn.setHidden(true);
+		categoryColumn.setMenuDisabled(true);
 		columns.add(categoryColumn);
 		
 		ColumnConfig column = new ColumnConfig(Key.ITEM_NAME.name(), i18n.itemName(), 160);
 		column.setGroupable(false);
+		column.setMenuDisabled(true);
 		columns.add(column);
+		
+		weightColumn = new ColumnConfig(Key.ITEM_WEIGHT.name(), i18n.weightName(), 90);
+		weightColumn.setGroupable(false);
+		weightColumn.setMenuDisabled(true);
+		columns.add(weightColumn);
 		
 		column = new ColumnConfig(Key.GRADE.name(), i18n.scoreName(), 60);
 		column.setGroupable(false);
+		column.setAlignment(Style.HorizontalAlignment.RIGHT);
+		column.setMenuDisabled(true);
+		column.setRenderer(new GridCellRenderer() {
+
+			public Object render(ModelData model, String property,
+					com.extjs.gxt.ui.client.widget.grid.ColumnData config,
+					int rowIndex, int colIndex, ListStore store, Grid grid) {
+				
+				if (DataTypeConversionUtil.checkBoolean((Boolean)model.get(Key.DROPPED.name()))) {
+					return new StringBuilder().append("<span class=\"gbCellDropped\">").append(model.get(property)).append("</span>");
+				}
+				
+				return model.get(property);
+			}
+			
+		});
 		columns.add(column);
 		
 		outOfColumn = new ColumnConfig(Key.OUTOF.name(), i18n.outOfName(), 60);
 		outOfColumn.setGroupable(false);
+		outOfColumn.setAlignment(Style.HorizontalAlignment.RIGHT);
+		outOfColumn.setMenuDisabled(true);
 		columns.add(outOfColumn);
 		
 		dateDueColumn = new ColumnConfig(Key.DATEDUE.name(), i18n.dateDueName(), 160);
 		dateDueColumn.setGroupable(false);
 		dateDueColumn.setDateTimeFormat(DateTimeFormat.getShortDateTimeFormat());
+		dateDueColumn.setMenuDisabled(true);
 		columns.add(dateDueColumn);
 		
 		meanColumn = new ColumnConfig(Key.MEAN.name(), i18n.meanName(), 60);
 		meanColumn.setGroupable(false);
+		meanColumn.setMenuDisabled(true);
 		columns.add(meanColumn);
 		
 		stdvColumn = new ColumnConfig(Key.STDV.name(), i18n.stdvName(), 60);
 		stdvColumn.setGroupable(false);
+		stdvColumn.setMenuDisabled(true);
 		columns.add(stdvColumn);
 		
 		medianColumn = new ColumnConfig(Key.MEDI.name(), i18n.medianName(), 60);
 		medianColumn.setGroupable(false);
+		medianColumn.setMenuDisabled(true);
 		columns.add(medianColumn);
 		
 		modeColumn = new ColumnConfig(Key.MODE.name(), i18n.modeName(), 60);
 		modeColumn.setGroupable(false);
+		modeColumn.setMenuDisabled(true);
 		columns.add(modeColumn);
 		
 		cm = new ColumnModel(columns);
@@ -610,11 +642,28 @@ public class StudentPanel extends ContentPanel {
 		BaseModel model = new BaseModel();
 		
 		StringBuilder id = new StringBuilder();
+		StringBuilder categoryName = new StringBuilder();
+		categoryName.append(item.getCategoryName());
+		
+		ItemModel category = (ItemModel)item.getParent();;
 		
 		switch (categoryType) {
 		case WEIGHTED_CATEGORIES:
+			categoryName.append(" (").append(category.getPercentCourseGrade()).append("% of course grade)");
+			if (!isIncluded)
+				model.set(Key.ITEM_WEIGHT.name(), "Excluded");
+			else if (isExcused) 
+				model.set(Key.ITEM_WEIGHT.name(), "Dropped");
+			else
+				model.set(Key.ITEM_WEIGHT.name(), NumberFormat.getDecimalFormat().format(((Double)item.getPercentCourseGrade())));
+		
 		case SIMPLE_CATEGORIES:
-			model.set(Key.CATEGORY_NAME.name(), item.getCategoryName());
+			if (category != null) {
+				int dropLowest = category.getDropLowest() == null ? 0 : category.getDropLowest().intValue();
+				if (dropLowest > 0)
+					categoryName.append(" (drop lowest ").append(dropLowest).append(")");
+			}
+			model.set(Key.CATEGORY_NAME.name(), categoryName.toString());
 			id.append(item.getCategoryId()).append(":");
 		default:
 			model.set(Key.ITEM_NAME.name(), item.getName());
@@ -634,7 +683,7 @@ public class StudentPanel extends ContentPanel {
 		
         StringBuilder resultBuilder = new StringBuilder();
         if (value == null)
-        	resultBuilder.append("-");
+        	resultBuilder.append("- ");
         else {
         	
         	switch (gradeType) {
@@ -651,13 +700,11 @@ public class StudentPanel extends ContentPanel {
         		resultBuilder.append(value);
         		break;
         	}
+        	
         }
         
-        if (!isIncluded) 
-        	resultBuilder.append(" (not included in grade)");
-        
-        if (isExcused)
-        	resultBuilder.append(" (excused)");
+        if (!isIncluded || isExcused) 
+			model.set(Key.DROPPED.name(), Boolean.TRUE);
         
         model.set(Key.GRADE.name(), resultBuilder.toString());
         
@@ -686,12 +733,27 @@ public class StudentPanel extends ContentPanel {
 		CategoryType categoryType = gradebookItemModel.getCategoryType();
 		GradeType gradeType = gradebookItemModel.getGradeType();
 		
-		switch (gradeType) {
-		case POINTS:
-			outOfColumn.setHidden(false);
+		int weightColumnIndex = cm.findColumnIndex(weightColumn.getDataIndex());
+		int outOfColumnIndex = cm.findColumnIndex(outOfColumn.getDataIndex());
+		
+		switch (categoryType) {
+		case WEIGHTED_CATEGORIES:
+			cm.setHidden(weightColumnIndex, false);
+			//weightColumn.setHidden(false);
 			break;
 		default:
-			outOfColumn.setHidden(true);
+			cm.setHidden(weightColumnIndex, true);
+			//weightColumn.setHidden(true);
+		}
+		
+		switch (gradeType) {
+		case POINTS:
+			cm.setHidden(outOfColumnIndex, false);
+			//outOfColumn.setHidden(false);
+			break;
+		default:
+			cm.setHidden(outOfColumnIndex, true);
+			//outOfColumn.setHidden(true);
 		}
 		
 		store.removeAll();

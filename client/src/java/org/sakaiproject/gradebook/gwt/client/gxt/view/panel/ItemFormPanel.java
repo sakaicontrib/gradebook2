@@ -239,7 +239,7 @@ public class ItemFormPanel extends ContentPanel {
 		categoryTypePicker.setLazyRender(false);
 		categoryTypePicker.setStore(categoryTypeStore);
 		categoryTypePicker.setTriggerAction(TriggerAction.ALL);
-		categoryTypePicker.setVisible(true);
+		categoryTypePicker.setVisible(false);
 		formPanel.add(categoryTypePicker);
 
 		gradeTypePicker = new ComboBox<ModelData>();
@@ -251,7 +251,7 @@ public class ItemFormPanel extends ContentPanel {
 		gradeTypePicker.setLazyRender(false);
 		gradeTypePicker.setStore(gradeTypeStore);
 		gradeTypePicker.setTriggerAction(TriggerAction.ALL);
-		gradeTypePicker.setVisible(true);
+		gradeTypePicker.setVisible(false);
 		formPanel.add(gradeTypePicker);
 
 		scaledExtraCreditField = new NullSensitiveCheckBox();

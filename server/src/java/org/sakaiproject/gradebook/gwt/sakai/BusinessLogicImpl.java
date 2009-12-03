@@ -143,8 +143,9 @@ public class BusinessLogicImpl implements BusinessLogic {
 		if (assignments != null) {
 			for (Assignment assignment : assignments) {
 				if (assignment.isReleased() != isReleased) {
-					assignment.setReleased(isReleased);
-					gbService.updateAssignment(assignment);
+					Assignment persistAssignment = gbService.getAssignment(assignment.getId());
+					persistAssignment.setReleased(isReleased);
+					gbService.updateAssignment(persistAssignment);
 				}
 			}
 		}
