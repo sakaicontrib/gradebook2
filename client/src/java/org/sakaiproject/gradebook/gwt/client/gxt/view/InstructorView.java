@@ -740,7 +740,7 @@ public class InstructorView extends AppView {
 
 		menuItem = new AriaMenuItem(i18n.headerExportXLS(), menuSelectionListener);
 		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_DATA_XLS);
-		menuItem.setTitle(i18n.headerExportCSVTitle());
+		menuItem.setTitle(i18n.headerExportXLSTitle());
 		typeMenu.add(menuItem);
 
 		
@@ -760,7 +760,7 @@ public class InstructorView extends AppView {
 
 		menuItem = new AriaMenuItem(i18n.headerExportXLS(), menuSelectionListener);
 		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_STRUCTURE_XLS);
-		menuItem.setTitle(i18n.headerExportCSVTitle());
+		menuItem.setTitle(i18n.headerExportXLSTitle());
 		typeMenu.add(menuItem);
 		
 
