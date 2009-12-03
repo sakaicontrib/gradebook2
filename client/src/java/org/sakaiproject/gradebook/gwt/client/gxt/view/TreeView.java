@@ -178,11 +178,11 @@ public class TreeView extends View {
 		ItemModel itemModel = findItemByColumnId(itemModelId);
 
 		if (itemModel != null)
-			formPanel.onConfirmDeleteItem(itemModel);
+			formPanel.onRequestDeleteItem(itemModel);
 	}
 
 	protected void onConfirmDeleteItem(ItemModel itemModel) {
-		formPanel.onConfirmDeleteItem(itemModel);
+		formPanel.onRequestDeleteItem(itemModel);
 	}
 
 	protected void onEditItem(ItemModel itemModel) {

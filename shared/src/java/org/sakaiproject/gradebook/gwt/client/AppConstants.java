@@ -53,6 +53,8 @@ public interface AppConstants {
 	public static final String ID_CT_DELETE_ITEM_MENUITEM  	= "contextDeleteItemMenuItem";
 	public static final String ID_CT_EDIT_CATEGORY_MENUITEM = "contextEditCategoryMenuItem";
 	public static final String ID_CT_EDIT_ITEM_MENUITEM  	= "contextEditItemMenuItem";
+	public static final String ID_CT_MOVE_DOWN_MENUITEM 	= "contextMoveDownMenuItem";
+	public static final String ID_CT_MOVE_UP_MENUITEM 		= "contextMoveUpMenuItem";
 	public static final String ID_HD_ADD_CATEGORY_MENUITEM	= "headerAddCategoryMenuItem";
 	public static final String ID_HD_ADD_ITEM_MENUITEM		= "headerAddItemMenuItem";
 	public static final String ID_HD_EDIT_ITEM_MENUITEM		= "headerEditItemMenuItem";

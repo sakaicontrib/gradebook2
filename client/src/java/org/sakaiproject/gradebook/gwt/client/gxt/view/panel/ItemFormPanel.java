@@ -46,6 +46,7 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
 import com.extjs.gxt.ui.client.Registry;
+import com.extjs.gxt.ui.client.Style;
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.binding.Converter;
 import com.extjs.gxt.ui.client.binding.FieldBinding;
@@ -92,11 +93,12 @@ import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
+import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
 
 public class ItemFormPanel extends ContentPanel {
 
 	private enum Mode { DELETE, EDIT, NEW };
-	private enum SelectionType { CLOSE, CREATE, CREATECLOSE, CANCEL, DELETE, SAVE, SAVECLOSE };
+	private enum SelectionType { CLOSE, CREATE, CREATECLOSE, CANCEL, REQUEST_DELETE, DELETE, SAVE, SAVECLOSE };
 
 	private static final String selectionTypeField = "selectionType";
 
@@ -149,7 +151,7 @@ public class ItemFormPanel extends ContentPanel {
 
 	private RowLayout layout;
 	private RowData topRowData, bottomRowData;
-	private Button okButton, okCloseButton, cancelButton;
+	private Button deleteButton, okButton, okCloseButton, cancelButton;
 
 	private GradebookModel selectedGradebook;
 	private ItemModel selectedItemModel;
@@ -168,13 +170,19 @@ public class ItemFormPanel extends ContentPanel {
 		setHeaderVisible(true);
 		setFrame(true);
 		setScrollMode(Scroll.AUTO);
-
+		setButtonAlign(Style.HorizontalAlignment.LEFT);
 		setLayout(new FlowLayout());
 
 		initListeners();
 		
 		categoryStore = new ListStore<ItemModel>();
 		categoryStore.setModelComparer(new ItemModelComparer<ItemModel>());
+		
+		deleteButton = new AriaButton(i18n.deleteButton(), selectionListener, 'd');
+		deleteButton.setData(selectionTypeField, SelectionType.REQUEST_DELETE);
+		addButton(deleteButton);
+		
+		getButtonBar().add(new FillToolItem());
 		
 		okButton = new AriaButton("", selectionListener, 's');
 		addButton(okButton);
@@ -452,7 +460,7 @@ public class ItemFormPanel extends ContentPanel {
 	public void onActionCompleted() {
 	}
 
-	public void onConfirmDeleteItem(final ItemModel itemModel) {
+	public void onRequestDeleteItem(final ItemModel itemModel) {
 		if (hasChanges) {
 			MessageBox.confirm(i18n.hasChangesTitle(), i18n.hasChangesMessage(), new Listener<MessageBoxEvent>() {
 
@@ -478,6 +486,7 @@ public class ItemFormPanel extends ContentPanel {
 		if (formBindings == null)
 			initFormBindings();
 
+		deleteButton.setVisible(false);
 		okButton.setText(i18n.deleteButton());
 		okButton.setData(selectionTypeField, SelectionType.DELETE);
 		okCloseButton.setVisible(false);
@@ -543,6 +552,7 @@ public class ItemFormPanel extends ContentPanel {
 	private void doEditItemButtons(ItemModel itemModel) {
 		boolean isAllowedToEdit = DataTypeConversionUtil.checkBoolean(selectedGradebook.isUserAbleToEditAssessments());
 
+		deleteButton.setVisible(itemModel.getItemType() != Type.GRADEBOOK);
 		okButton.setText(i18n.saveButton());
 		okButton.setData(selectionTypeField, SelectionType.SAVE);
 		okButton.setVisible(isAllowedToEdit && itemModel != null && itemModel.isEditable());
@@ -710,6 +720,7 @@ public class ItemFormPanel extends ContentPanel {
 
 		includedField.setValue(Boolean.TRUE);
 
+		deleteButton.setVisible(false);
 		okButton.setText(i18n.createButton());
 		okButton.setData(selectionTypeField, SelectionType.CREATE);
 		okCloseButton.setVisible(true);
@@ -761,6 +772,7 @@ public class ItemFormPanel extends ContentPanel {
 		if (formBindings != null) 
 			formBindings.unbind();
 
+		deleteButton.setVisible(false);
 		okButton.setText(i18n.createButton());
 		okButton.setData(selectionTypeField, SelectionType.CREATE);
 		okCloseButton.setVisible(true);
@@ -1348,6 +1360,9 @@ public class ItemFormPanel extends ContentPanel {
 							case CANCEL:
 								clearActiveRecord();
 								Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
+								break;
+							case REQUEST_DELETE:
+								onRequestDeleteItem(selectedItemModel);
 								break;
 							case SAVECLOSE:
 								close = true;

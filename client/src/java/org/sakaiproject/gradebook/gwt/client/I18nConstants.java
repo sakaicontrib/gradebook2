@@ -195,6 +195,8 @@ public interface I18nConstants extends Constants {
 	String headerDeleteCategoryTitle();
 	String headerDeleteItem();
 	String headerDeleteItemTitle();
+	String headerMoveDown();
+	String headerMoveUp();
 	String headerGradeScale();
 	String headerGradeScaleTitle();
 	String headerHideItem();

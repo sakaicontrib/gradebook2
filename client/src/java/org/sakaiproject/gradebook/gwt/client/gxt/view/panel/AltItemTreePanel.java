@@ -19,6 +19,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTabPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.custom.ItemTreeSelectionModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.ItemTreeGridView;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
@@ -84,11 +85,12 @@ import com.google.gwt.user.client.ui.AbstractImagePrototype;
 public class AltItemTreePanel extends ContentPanel {
 
 	private static int CHARACTER_WIDTH = 7;
-	private enum SelectionType { CREATE_CATEGORY, CREATE_ITEM, UPDATE_ITEM, DELETE_ITEM };
+	private enum SelectionType { CREATE_CATEGORY, CREATE_ITEM, UPDATE_ITEM, DELETE_ITEM, MOVE_DOWN, MOVE_UP };
 	private static final String selectionTypeField = "selectionType";
 	
 	private Menu treeContextMenu;
 	private MenuItem addCategoryMenuItem, updateCategoryMenuItem, updateItemMenuItem, deleteCategoryMenuItem, deleteItemMenuItem;
+	private MenuItem moveDownMenuItem, moveUpMenuItem;
 	
 	private TreeLoader<FixedColumnModel> learnerAttributeLoader;
 	private TreeGrid<ItemModel> itemGrid;
@@ -108,6 +110,7 @@ public class AltItemTreePanel extends ContentPanel {
 	private ColumnModel cm;
 	private ItemTreeSelectionModel sm;
 	private TreeStore<FixedColumnModel> learnerAttributeStore;
+	private TreeStore<ItemModel> treeStore;
 	
 	private FixedColumnModel learnerAttributeRoot, learnerAttributes, gradingColumns; 
 	
@@ -118,6 +121,7 @@ public class AltItemTreePanel extends ContentPanel {
 	private boolean isLearnerAttributeTreeLoaded = false;
 	
 	public AltItemTreePanel(TreeStore<ItemModel> treeStore, I18nConstants i18n, boolean isEditable) {
+		this.treeStore = treeStore;
 		this.enableLayout = false;
 		this.i18n = i18n;
 		this.isEditable = isEditable;
@@ -1025,6 +1029,7 @@ public class AltItemTreePanel extends ContentPanel {
 			public void componentSelected(MenuEvent me) {
 				SelectionType selectionType = me.getItem().getData(selectionTypeField);
 				ItemModel item = sm.getSelectedItem();
+				int itemOrder = item.getItemOrder() == null ? 0 : item.getItemOrder().intValue();
 				switch (selectionType) {
 					case CREATE_CATEGORY:
 						Dispatcher.forwardEvent(GradebookEvents.NewCategory.getEventType(), item);
@@ -1037,6 +1042,14 @@ public class AltItemTreePanel extends ContentPanel {
 						break;
 					case DELETE_ITEM:
 						Dispatcher.forwardEvent(GradebookEvents.ConfirmDeleteItem.getEventType(), item);
+						break;
+					case MOVE_DOWN:
+						item.setItemOrder(Integer.valueOf(itemOrder + 1));
+						Dispatcher.forwardEvent(GradebookEvents.UpdateItem.getEventType(), new ItemUpdate(treeStore, null, item, false));
+						break;
+					case MOVE_UP:
+						item.setItemOrder(Integer.valueOf(itemOrder - 1));
+						Dispatcher.forwardEvent(GradebookEvents.UpdateItem.getEventType(), new ItemUpdate(treeStore, null, item, false));
 						break;
 				}
 			}
@@ -1151,7 +1164,23 @@ public class AltItemTreePanel extends ContentPanel {
 		deleteItemMenuItem.setText(i18n.headerDeleteItem());
 		deleteItemMenuItem.addSelectionListener(menuSelectionListener);
 		treeContextMenu.add(deleteItemMenuItem);
-
+		
+		/*moveDownMenuItem = new AriaMenuItem();
+		moveDownMenuItem.setData(selectionTypeField, SelectionType.MOVE_DOWN);
+		moveDownMenuItem.setIconStyle("gbMoveDownIcon");
+		moveDownMenuItem.setItemId(AppConstants.ID_CT_MOVE_DOWN_MENUITEM);
+		moveDownMenuItem.setText(i18n.headerMoveDown());
+		moveDownMenuItem.addSelectionListener(menuSelectionListener);
+		treeContextMenu.add(moveDownMenuItem);
+		
+		moveUpMenuItem = new AriaMenuItem();
+		moveUpMenuItem.setData(selectionTypeField, SelectionType.MOVE_UP);
+		moveUpMenuItem.setIconStyle("gbMoveUpIcon");
+		moveUpMenuItem.setItemId(AppConstants.ID_CT_MOVE_UP_MENUITEM);
+		moveUpMenuItem.setText(i18n.headerMoveUp());
+		moveUpMenuItem.addSelectionListener(menuSelectionListener);
+		treeContextMenu.add(moveUpMenuItem);*/
+		
 		return treeContextMenu;
 	}
 	
