@@ -211,6 +211,7 @@ public interface I18nConstants extends Constants {
 	String headerSortDescendingTitle();
 	String requiredLabel();
 	
+	String addButton();
 	String cancelButton();
 	String closeButton();
 	String createButton();
@@ -218,6 +219,9 @@ public interface I18nConstants extends Constants {
 	String deleteButton();
 	String saveButton();
 	String saveAndCloseButton();
+	String findButton();
+	String clearButton();
+	String nextButton();
 
 	String hasChangesTitle();
 	String hasChangesMessage();
@@ -276,4 +280,35 @@ public interface I18nConstants extends Constants {
 	String importGradesFailedTitle();
 	String importGradesFailedMessage();
 
+	String sectionEmptyText();
+	String pageSizeLabel();
+	String pagingAfterPageText();
+	String pagingPageText();
+	String pagingDisplayMsgText();
+	
+	String modeText();
+	String fileLabel();
+	String gradeFormatLabel();
+	String letterGradeHeader();
+	String fromHeader();
+	String toHeader();
+	String usersEmptyText();
+	
+	String userHeader();
+	String permissionHeader();
+	String categoryHeader();
+	String sectionHeader();
+	String deleteHeader();
+	
+	String permissionsHeading();
+	
+	String permissionsEmptyText();
+	String categoriesEmptyText();
+	String sectionsEmptyText();
+	
+	String statsNameHeader();
+	String statsMeanHeader();
+	String statsStdDvHeader();
+	String statsModeHeader();
+	String statsMedianHeader();
 }

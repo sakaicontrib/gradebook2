@@ -38,6 +38,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
@@ -56,7 +57,6 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
-import org.apache.poi.poifs.storage.RawDataBlock;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
@@ -88,8 +88,8 @@ public class ImportExportUtility {
 	private static final Log log = LogFactory.getLog(ImportExportUtility.class);
 	private static final String SCANTRON_HEADER_STUDENT_ID = "student_id"; 
 	private static final String SCANTRON_HEADER_SCORE = "score"; 
-
-
+	private static ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	
 	public static enum Delimiter {
 		TAB, COMMA, SPACE, COLON
 	};
@@ -128,8 +128,8 @@ public class ImportExportUtility {
 
 		if (includeStructure) {
 			CategoryType categoryType = gradebookItemModel.getCategoryType();
-			String categoryTypeText = categoryType.getDisplayName();
-			String gradeTypeText = gradebookItemModel.getGradeType().getDisplayName();
+			String categoryTypeText = getDisplayName(categoryType);
+			String gradeTypeText = getDisplayName(gradebookItemModel.getGradeType());
 
 			// First, we need to add a row for basic gradebook info
 			String[] gradebookInfoRow = { "", StructureRow.GRADEBOOK.getDisplayName(), gradebook.getName(), categoryTypeText, gradeTypeText};
@@ -1377,9 +1377,9 @@ public class ImportExportUtility {
 			if (gradeType != null) {
 				GradeType gType = gradebookItemModel.getGradeType();
 
-				if (GradeType.PERCENTAGES.getDisplayName().equals(gradeType))
+				if (getDisplayName(GradeType.PERCENTAGES).equals(gradeType))
 					gType = GradeType.PERCENTAGES;
-				else if (GradeType.POINTS.getDisplayName().equals(gradeType))
+				else if (getDisplayName(GradeType.POINTS).equals(gradeType))
 					gType = GradeType.POINTS;
 
 				gradebookItemModel.setGradeType(gType);
@@ -1749,6 +1749,31 @@ public class ImportExportUtility {
 
 		return null;
 	}
+	
+	private static String getDisplayName(CategoryType categoryType) {
+		switch (categoryType) {
+		case NO_CATEGORIES:
+			return i18n.getString("orgTypeNoCategories");
+		case SIMPLE_CATEGORIES:
+			return i18n.getString("orgTypeCategories");
+		case WEIGHTED_CATEGORIES:
+			return i18n.getString("orgTypeWeightedCategories");
+		}
+		return "N/A";
+	}
+
+	private static String getDisplayName(GradeType gradeType) {
+		switch (gradeType) {
+		case POINTS:
+			return i18n.getString("gradeTypePoints");
+		case PERCENTAGES:
+			return i18n.getString("gradeTypePercentages");
+		case LETTERS:
+			return i18n.getString("gradeTypeLetters");
+		}
+		
+		return "N/A";
+	}
 
 	private static ItemModel findModelByName(final String name, final String categoryName, ItemModel root) {
 
@@ -1809,7 +1834,6 @@ public class ImportExportUtility {
 		}
 
 	}
-
 
 }
 

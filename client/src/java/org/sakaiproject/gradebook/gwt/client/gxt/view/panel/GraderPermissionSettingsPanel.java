@@ -102,7 +102,7 @@ public class GraderPermissionSettingsPanel extends ContentPanel {
 		super();
 
 		setFrame(true);
-		setHeading("Permissions");
+		setHeading(i18n.permissionsHeading());
 		
 		mainVerticalPanel = new VerticalPanel();
 		mainVerticalPanel.setSpacing(5);
@@ -185,7 +185,7 @@ public class GraderPermissionSettingsPanel extends ContentPanel {
 		
 		// Users
 		userComboBox = new ComboBox<UserModel>();
-		userComboBox.setEmptyText("Users");
+		userComboBox.setEmptyText(i18n.usersEmptyText());
 		userComboBox.setDisplayField(UserModel.Key.USER_DISPLAY_NAME.name());
 		userComboBox.setWidth(150); 
 		userComboBox.setStore(userListStore);
@@ -210,7 +210,7 @@ public class GraderPermissionSettingsPanel extends ContentPanel {
 		
 		// Permissions
 		permissionComboBox = new ComboBox<Permission>();
-		permissionComboBox.setEmptyText("Permissions");
+		permissionComboBox.setEmptyText(i18n.permissionsEmptyText());
 		permissionComboBox.setDisplayField("name");
 		permissionComboBox.setWidth(100); 
 		permissionComboBox.setStore(permissionListStore);
@@ -220,7 +220,7 @@ public class GraderPermissionSettingsPanel extends ContentPanel {
 
 		// Categories
 		categoryComboBox = new ComboBox<CategoryModel>();
-		categoryComboBox.setEmptyText("Categories");
+		categoryComboBox.setEmptyText(i18n.categoriesEmptyText());
 		categoryComboBox.setDisplayField(CategoryModel.Key.CATEGORY_DISPLAY_NAME.name());
 		categoryComboBox.setWidth(150); 
 		categoryComboBox.setStore(categoryListStore);
@@ -231,7 +231,7 @@ public class GraderPermissionSettingsPanel extends ContentPanel {
 
 		// Sections
 		sectionComboBox = new ComboBox<SectionModel>();
-		sectionComboBox.setEmptyText("Sections");
+		sectionComboBox.setEmptyText(i18n.sectionsEmptyText());
 		sectionComboBox.setDisplayField(SectionModel.Key.SECTION_NAME.name());
 		sectionComboBox.setWidth(150); 
 		sectionComboBox.setStore(sectionStore);
@@ -241,7 +241,7 @@ public class GraderPermissionSettingsPanel extends ContentPanel {
 		
 		
 		// Add Button
-		Button addButton = new Button("Add");
+		Button addButton = new Button(i18n.addButton());
 		addButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
 
 			@Override
@@ -317,7 +317,7 @@ public class GraderPermissionSettingsPanel extends ContentPanel {
 
 		ColumnConfig column = new ColumnConfig();  
 		column.setId(PermissionEntryModel.Key.USER_DISPLAY_NAME.name());  
-		column.setHeader("User");  
+		column.setHeader(i18n.userHeader());  
 		column.setWidth(150);
 		column.setMenuDisabled(true);
 		column.setSortable(false);
@@ -325,7 +325,7 @@ public class GraderPermissionSettingsPanel extends ContentPanel {
 		
 		column = new ColumnConfig();  
 		column.setId(PermissionEntryModel.Key.PERMISSION_ID.name());  
-		column.setHeader("Permission");  
+		column.setHeader(i18n.permissionHeader());  
 		column.setWidth(100);
 		column.setMenuDisabled(true);
 		column.setSortable(false);
@@ -336,7 +336,7 @@ public class GraderPermissionSettingsPanel extends ContentPanel {
 			
 			column = new ColumnConfig();
 			column.setId(PermissionEntryModel.Key.CATEGORY_DISPLAY_NAME.name());
-			column.setHeader("Category");
+			column.setHeader(i18n.categoryHeader());
 			column.setWidth(150);
 			column.setMenuDisabled(true);
 			column.setSortable(false);
@@ -345,7 +345,7 @@ public class GraderPermissionSettingsPanel extends ContentPanel {
 		
 		column = new ColumnConfig();  
 		column.setId(PermissionEntryModel.Key.SECTION_DISPLAY_NAME.name());  
-		column.setHeader("Section");  
+		column.setHeader(i18n.sectionHeader());  
 		column.setWidth(150);
 		column.setMenuDisabled(true);
 		column.setSortable(false);
@@ -353,7 +353,7 @@ public class GraderPermissionSettingsPanel extends ContentPanel {
 		
 		column = new ColumnConfig();  
 		column.setId(PermissionEntryModel.Key.DELETE_ACTION.name());  
-		column.setHeader("Delete");  
+		column.setHeader(i18n.deleteHeader());  
 		column.setWidth(100);
 		column.setMenuDisabled(true);
 		column.setSortable(false);

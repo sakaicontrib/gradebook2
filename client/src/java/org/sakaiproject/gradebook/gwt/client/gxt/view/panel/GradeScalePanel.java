@@ -101,7 +101,7 @@ public class GradeScalePanel extends ContentPanel {
 		
 		toolbar = new ToolBar();
 		
-		LabelField gradeScale = new LabelField("Grade format: ");
+		LabelField gradeScale = new LabelField(i18n.gradeFormatLabel());
 		toolbar.add(gradeScale);
 		
 		RpcProxy<ListLoadResult<GradeFormatModel>> gradeFormatProxy = new RpcProxy<ListLoadResult<GradeFormatModel>>() {
@@ -176,7 +176,7 @@ public class GradeScalePanel extends ContentPanel {
 
 		ColumnConfig column = new ColumnConfig();  
 		column.setId(GradeScaleRecordModel.Key.LETTER_GRADE.name());  
-		column.setHeader("Letter Grade");
+		column.setHeader(i18n.letterGradeHeader());
 		column.setAlignment(HorizontalAlignment.CENTER);
 		column.setWidth(100);
 		column.setGroupable(false);
@@ -186,7 +186,7 @@ public class GradeScalePanel extends ContentPanel {
 		
 		column = new ColumnConfig();  
 		column.setId(GradeScaleRecordModel.Key.FROM_RANGE.name());  
-		column.setHeader("From");
+		column.setHeader(i18n.fromHeader());
 		column.setAlignment(HorizontalAlignment.CENTER);
 		column.setWidth(70);
 		column.setGroupable(false);
@@ -204,7 +204,7 @@ public class GradeScalePanel extends ContentPanel {
 		
 		column = new ColumnConfig();  
 		column.setId(GradeScaleRecordModel.Key.TO_RANGE.name());
-		column.setHeader("To");
+		column.setHeader(i18n.toHeader());
 		column.setAlignment(HorizontalAlignment.CENTER);
 		column.setWidth(100);
 		column.setGroupable(false);

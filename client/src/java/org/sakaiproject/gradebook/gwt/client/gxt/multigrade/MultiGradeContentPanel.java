@@ -50,6 +50,7 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.SectionModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
+import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -654,7 +655,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		sectionListBox.setDisplayField(SectionModel.Key.SECTION_NAME.name());  
 		sectionListBox.setStore(sectionStore);
 		sectionListBox.setForceSelection(true);
-		sectionListBox.setEmptyText("Section");
+		sectionListBox.setEmptyText(i18n.sectionEmptyText());
 
 		sectionListBox.addSelectionChangedListener(new SelectionChangedListener<SectionModel>() {
 
@@ -701,7 +702,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		addListener(GradebookEvents.ClearSearch.getEventType(), componentEventListener);
 
 		
-		AriaButton doSearchItem = new AriaButton("Find", new SelectionListener<ButtonEvent>() {
+		AriaButton doSearchItem = new AriaButton(i18n.findButton(), new SelectionListener<ButtonEvent>() {
 
 			@Override
 			public void componentSelected(ButtonEvent ce) {
@@ -713,7 +714,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		doSearchItem.setToolTip("Search for all students with name matching the entered text");
 
 
-		AriaButton clearSearchItem = new AriaButton("Clear", new SelectionListener<ButtonEvent>() {
+		AriaButton clearSearchItem = new AriaButton(i18n.clearButton(), new SelectionListener<ButtonEvent>() {
 
 			@Override
 			public void componentSelected(ButtonEvent ce) {
@@ -776,10 +777,6 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			}
 		});
 
-		//AdapterToolItem pageSizeFieldItem = new AdapterToolItem(pageSizeField);
-		//AdapterToolItem pageSizeLabelItem = new AdapterToolItem(new LabelField("Page size: "));
-
-
 		searchToolBar = new ToolBar();
 		searchToolBar.add(searchField);
 		searchToolBar.add(doSearchItem);
@@ -791,7 +788,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 
 
 		pagingToolBar.add(new SeparatorToolItem());
-		pagingToolBar.add(new LabelField("Page size: "));
+		pagingToolBar.add(new LabelField(new StringBuilder().append(i18n.pageSizeLabel()).append(" ").toString()));
 		pagingToolBar.add(pageSizeField);
 
 		toolBarContainer = new LayoutContainer();
@@ -856,10 +853,10 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			StringBuilder modeLabelText = new StringBuilder();
 
 			modeLabelText
-			.append(gradebookModel.getGradebookItemModel().getCategoryType().getDisplayName())
+			.append(getDisplayName(gradebookModel.getGradebookItemModel().getCategoryType()))
 			.append("/")
-			.append(gradebookModel.getGradebookItemModel().getGradeType().getDisplayName())
-			.append(" Mode");
+			.append(getDisplayName(gradebookModel.getGradebookItemModel().getGradeType()))
+			.append(" ").append(i18n.modeText());
 
 			modeLabel.setText(modeLabelText.toString());	
 		}
@@ -870,9 +867,9 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			StringBuilder modeLabelText = new StringBuilder();
 
 			modeLabelText
-			.append(gradebookModel.getGradebookItemModel().getCategoryType().getDisplayName())
+			.append(getDisplayName(gradebookModel.getGradebookItemModel().getCategoryType()))
 			.append("/")
-			.append(gradebookModel.getGradebookItemModel().getGradeType().getDisplayName())
+			.append(getDisplayName(gradebookModel.getGradebookItemModel().getGradeType()))
 			.append(" Mode");
 
 			modeLabel.setText(modeLabelText.toString());	
@@ -1034,7 +1031,31 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		return cm;
 	}
 
+	private String getDisplayName(CategoryType categoryType) {
+		switch (categoryType) {
+		case NO_CATEGORIES:
+			return i18n.orgTypeNoCategories();
+		case SIMPLE_CATEGORIES:
+			return i18n.orgTypeCategories();
+		case WEIGHTED_CATEGORIES:
+			return i18n.orgTypeWeightedCategories();
+		}
+		return "N/A";
+	}
 
+	private String getDisplayName(GradeType gradeType) {
+		switch (gradeType) {
+		case POINTS:
+			return i18n.gradeTypePoints();
+		case PERCENTAGES:
+			return i18n.gradeTypePercentages();
+		case LETTERS:
+			return i18n.gradeTypeLetters();
+		}
+		
+		return "N/A";
+	}
+	
 	@Override
 	protected void refreshGrid(RefreshAction refreshAction, boolean useExistingColumnModel) {
 

@@ -472,7 +472,7 @@ public class ImportPanel extends ContentPanel {
 			}
 		};
 		file.setAllowBlank(false);
-		file.setFieldLabel("File");
+		file.setFieldLabel(i18n.fileLabel());
 		file.setName("Test");
 
 		fileUploadPanel.add(file);
@@ -482,7 +482,7 @@ public class ImportPanel extends ContentPanel {
 		gradebookUidField.setValue(gbModel.getGradebookUid());
 		fileUploadPanel.add(gradebookUidField);
 
-		Button submitButton = new Button("Next");
+		Button submitButton = new Button(i18n.nextButton());
 		submitButton.setMinWidth(120);
 		submitButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
 
@@ -494,7 +494,7 @@ public class ImportPanel extends ContentPanel {
 		});
 		fileUploadPanel.addButton(submitButton);
 
-		Button cancelButton = new Button("Cancel");
+		Button cancelButton = new Button(i18n.cancelButton());
 		cancelButton.setMinWidth(120);
 		cancelButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
 

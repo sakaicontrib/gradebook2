@@ -212,16 +212,16 @@ public class HistoryPanel extends EntityPanel {
 		
 		ArrayList<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 		
-		ColumnConfig column = new ColumnConfig(Key.DATE_RECORDED.name(), "Date", 200);
+		ColumnConfig column = new ColumnConfig(Key.DATE_RECORDED.name(), i18n.actionDateFieldLabel(), 200);
 		configs.add(column);
 		
-		column = new ColumnConfig(Key.DESCRIPTION.name(), "Action", 150);
+		column = new ColumnConfig(Key.DESCRIPTION.name(), i18n.actionDescriptionFieldLabel(), 150);
 		configs.add(column);
 		
-		column = new ColumnConfig(Key.ENTITY_NAME.name(), "Entity", 180);
+		column = new ColumnConfig(Key.ENTITY_NAME.name(), i18n.actionEntityFieldLabel(), 180);
 		configs.add(column);
 		
-		column = new ColumnConfig(Key.STUDENT_NAME.name(), "Student Name", 140);
+		column = new ColumnConfig(Key.STUDENT_NAME.name(), i18n.actionStudentNameFieldLabel(), 140);
 		configs.add(column);
 		
 		columnModel = new ColumnModel(configs);

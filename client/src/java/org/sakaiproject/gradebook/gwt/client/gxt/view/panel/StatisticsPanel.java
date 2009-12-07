@@ -64,13 +64,13 @@ public class StatisticsPanel extends ContentPanel {
 	public StatisticsPanel(I18nConstants i18n) {
 		super();
 
-		setHeading("Statistics");
+		setHeading(i18n.statisticsHeading());
 		setFrame(true);
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 
 		ColumnConfig column = new ColumnConfig();  
 		column.setId(StatisticsModel.Key.NAME.name());  
-		column.setHeader(StatisticsModel.Key.NAME.getPropertyName());
+		column.setHeader(i18n.statsNameHeader());
 		column.setWidth(200);
 		column.setGroupable(false);
 		column.setMenuDisabled(true);
@@ -79,7 +79,7 @@ public class StatisticsPanel extends ContentPanel {
 
 		column = new ColumnConfig();  
 		column.setId(StatisticsModel.Key.MEAN.name());  
-		column.setHeader(StatisticsModel.Key.MEAN.getPropertyName());
+		column.setHeader(i18n.statsMeanHeader());
 		column.setWidth(80);
 		column.setGroupable(false);
 		column.setMenuDisabled(true);
@@ -88,7 +88,7 @@ public class StatisticsPanel extends ContentPanel {
 
 		column = new ColumnConfig();  
 		column.setId(StatisticsModel.Key.STANDARD_DEVIATION.name());  
-		column.setHeader(StatisticsModel.Key.STANDARD_DEVIATION.getPropertyName());
+		column.setHeader(i18n.statsStdDvHeader());
 		column.setWidth(80);
 		column.setGroupable(false);
 		column.setMenuDisabled(true);
@@ -97,7 +97,7 @@ public class StatisticsPanel extends ContentPanel {
 
 		column = new ColumnConfig();  
 		column.setId(StatisticsModel.Key.MEDIAN.name());  
-		column.setHeader(StatisticsModel.Key.MEDIAN.getPropertyName());
+		column.setHeader(i18n.statsMedianHeader());
 		column.setWidth(80);
 		column.setGroupable(false);
 		column.setMenuDisabled(true);
@@ -106,7 +106,7 @@ public class StatisticsPanel extends ContentPanel {
 
 		column = new ColumnConfig();  
 		column.setId(StatisticsModel.Key.MODE.name());  
-		column.setHeader(StatisticsModel.Key.MODE.getPropertyName());
+		column.setHeader(i18n.statsModeHeader());
 		column.setWidth(160);
 		column.setGroupable(false);
 		column.setMenuDisabled(true);

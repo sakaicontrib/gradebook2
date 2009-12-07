@@ -39,6 +39,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -139,7 +140,9 @@ import com.google.gwt.core.client.GWT;
 public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationContextAware {
 
 	private static final Log log = LogFactory.getLog(Gradebook2ServiceImpl.class);
-
+	private static ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	
+	
 	private BusinessLogic businessLogic;
 	private GradebookFrameworkService frameworkService;
 	private GradebookToolService gbService;
@@ -3682,19 +3685,19 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 
 		List<X> columns = new LinkedList<X>();
 
-		columns.add((X) new FixedColumnModel(StudentModel.Key.DISPLAY_ID, 80, true));
-		columns.add((X) new FixedColumnModel(StudentModel.Key.DISPLAY_NAME, 180, true));
-		columns.add((X) new FixedColumnModel(StudentModel.Key.LAST_NAME_FIRST, 180, false));
-		columns.add((X) new FixedColumnModel(StudentModel.Key.EMAIL, 230, true));
-		columns.add((X) new FixedColumnModel(StudentModel.Key.SECTION, 120, true));
-		columns.add((X) new FixedColumnModel(StudentModel.Key.COURSE_GRADE, 120, false));
+		columns.add((X) new FixedColumnModel(StudentModel.Key.DISPLAY_ID, i18n.getString("displayId"), 80, true));
+		columns.add((X) new FixedColumnModel(StudentModel.Key.DISPLAY_NAME, i18n.getString("displayName"), 180, true));
+		columns.add((X) new FixedColumnModel(StudentModel.Key.LAST_NAME_FIRST, i18n.getString("lastNameFirst"), 180, false));
+		columns.add((X) new FixedColumnModel(StudentModel.Key.EMAIL, i18n.getString("email"), 230, true));
+		columns.add((X) new FixedColumnModel(StudentModel.Key.SECTION, i18n.getString("section"), 120, true));
+		columns.add((X) new FixedColumnModel(StudentModel.Key.COURSE_GRADE, i18n.getString("courseGrade"), 120, false));
 		if (isUserAbleToGradeAll) {
-			FixedColumnModel gradeOverrideColumn = new FixedColumnModel(StudentModel.Key.GRADE_OVERRIDE, 120, false);
+			FixedColumnModel gradeOverrideColumn = new FixedColumnModel(StudentModel.Key.GRADE_OVERRIDE, i18n.getString("gradeOverride"), 120, false);
 			gradeOverrideColumn.setEditable(true);
 			columns.add((X) gradeOverrideColumn);
 		}
-		columns.add((X) new FixedColumnModel(StudentModel.Key.LETTER_GRADE, 80, true));
-		columns.add((X) new FixedColumnModel(StudentModel.Key.CALCULATED_GRADE, 80, true));
+		columns.add((X) new FixedColumnModel(StudentModel.Key.LETTER_GRADE, i18n.getString("letterGrade"), 80, true));
+		columns.add((X) new FixedColumnModel(StudentModel.Key.CALCULATED_GRADE, i18n.getString("calculatedGrade"), 80, true));
 		
 		return columns;
 	}

@@ -120,8 +120,8 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 
 		initListeners();
 
-		pagingToolBar = newPagingToolBar(DEFAULT_PAGE_SIZE);
-
+		pagingToolBar = newPagingToolBar(DEFAULT_PAGE_SIZE);	
+		
 		addComponents();
 
 		store = new ListStore<M>();
@@ -343,7 +343,13 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 	}
 	
 	protected PagingToolBar newPagingToolBar(int pageSize) {
-		return new PagingToolBar(pageSize);
+		PagingToolBar pagingToolBar = new PagingToolBar(pageSize);
+		PagingToolBar.PagingToolBarMessages messages = pagingToolBar.getMessages();
+		messages.setAfterPageText(i18n.pagingAfterPageText());
+		messages.setBeforePageText(i18n.pagingPageText());
+		messages.setDisplayMsg(i18n.pagingDisplayMsgText());
+		
+		return pagingToolBar;
 	}
 	
 	protected ListStore<M> newStore(BasePagingLoader<PagingLoadResult<M>> loader) {

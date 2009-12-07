@@ -49,18 +49,23 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.data.ModelData;
+import com.extjs.gxt.ui.client.event.BaseEvent;
+import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.store.Store;
 import com.extjs.gxt.ui.client.store.TreeStore;
+import com.extjs.gxt.ui.client.util.DelayedTask;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class ServiceController extends Controller {
 
 	public static final String FAILED_FLAG = ":F";
 
+	private DelayedTask showColumnsTask;
+	
 	public ServiceController() {
 		registerEventTypes(GradebookEvents.CreateItem.getEventType());
 		registerEventTypes(GradebookEvents.DeleteItem.getEventType());
@@ -330,7 +335,21 @@ public class ServiceController extends Controller {
 		record.setValid(property, false);
 	}
 
-	private void onShowColumns(ShowColumnsEvent event) {
+	private void onShowColumns(final ShowColumnsEvent event) {
+		if (showColumnsTask != null)
+			showColumnsTask.cancel();
+		
+		showColumnsTask = new DelayedTask(new Listener<BaseEvent>() {
+		
+			public void handleEvent(BaseEvent be) {
+				doShowColumns(event);
+			}
+		});
+		
+		showColumnsTask.delay(1000);
+	}
+	
+	private void doShowColumns(ShowColumnsEvent event) {
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 		ConfigurationModel model = new ConfigurationModel(selectedGradebook.getGradebookId());
 		

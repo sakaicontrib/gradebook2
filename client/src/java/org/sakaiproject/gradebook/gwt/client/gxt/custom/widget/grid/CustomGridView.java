@@ -48,7 +48,6 @@ import org.sakaiproject.gradebook.gwt.client.model.StudentModel.Key;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.SortDir;
-import com.extjs.gxt.ui.client.core.El;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
@@ -56,16 +55,13 @@ import com.extjs.gxt.ui.client.event.MenuEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.StoreEvent;
+import com.extjs.gxt.ui.client.util.DelayedTask;
 import com.extjs.gxt.ui.client.widget.Component;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.menu.CheckMenuItem;
-import com.extjs.gxt.ui.client.widget.menu.Item;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.extjs.gxt.ui.client.widget.menu.SeparatorMenuItem;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NodeList;
-import com.google.gwt.dom.client.TableSectionElement;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 
@@ -82,6 +78,8 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	private GradebookModel gradebookModel = null;
 	private boolean isDisplayLoadMaskOnRender = true;
 	private String gridId;
+	
+	private DelayedTask syncTask;
 
 	private SelectionListener<MenuEvent> selectionListener; 
 	
@@ -325,43 +323,56 @@ public abstract class CustomGridView extends BaseCustomGridView {
 		}
 	}
 
-	protected void updateColumnWidth(int col, int width) {
+	protected void updateColumnWidth(int col, final int width) {
 		super.updateColumnWidth(col, width);
 
 		ColumnConfig column = cm.getColumn(col);
-		String columnId = column == null ? null : column.getId();
+		final String columnId = column == null ? null : column.getId();
 
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-		ConfigurationModel model = new ConfigurationModel(selectedGradebook.getGradebookId());
-		model.setColumnWidth(gridId, columnId, Integer.valueOf(width));
-
-		Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
-
-		AsyncCallback<ConfigurationModel> callback = new AsyncCallback<ConfigurationModel>() {
-
-			public void onFailure(Throwable caught) {
-				// FIXME: Should we notify the user when this fails?
-			}
-
-			public void onSuccess(ConfigurationModel result) {
+		if (syncTask != null)
+			syncTask.cancel();
+	
+		syncTask = new DelayedTask(new Listener<BaseEvent>() {
+		
+			public void handleEvent(BaseEvent be) {
 				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-				ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
+				ConfigurationModel model = new ConfigurationModel(selectedGradebook.getGradebookId());
+				model.setColumnWidth(gridId, columnId, Integer.valueOf(width));
 
-				Collection<String> propertyNames = result.getPropertyNames();
-				if (propertyNames != null) {
-					List<String> names = new ArrayList<String>(propertyNames);
 
-					for (int i=0;i<names.size();i++) {
-						String name = names.get(i);
-						String value = result.get(name);
-						configModel.set(name, value);
+				Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
+
+				AsyncCallback<ConfigurationModel> callback = new AsyncCallback<ConfigurationModel>() {
+
+					public void onFailure(Throwable caught) {
+						// FIXME: Should we notify the user when this fails?
 					}
-				}
+
+					public void onSuccess(ConfigurationModel result) {
+						GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+						ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
+
+						Collection<String> propertyNames = result.getPropertyNames();
+						if (propertyNames != null) {
+							List<String> names = new ArrayList<String>(propertyNames);
+
+							for (int i=0;i<names.size();i++) {
+								String name = names.get(i);
+								String value = result.get(name);
+								configModel.set(name, value);
+							}
+						}
+					}
+
+				};
+
+				service.update(model, EntityType.CONFIGURATION, null, SecureToken.get(), callback);
+
 			}
+		});
 
-		};
-
-		service.update(model, EntityType.CONFIGURATION, null, SecureToken.get(), callback);
+		syncTask.delay(1000);
+		
 	}
 
 	public class ColumnGroup {
