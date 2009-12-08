@@ -253,6 +253,7 @@ public interface I18nConstants extends Constants {
 	
 	String finalGradeSubmissionTitle();
 	String finalGradeSubmissionConfirmTitle();
+	String finalGradeSubmissionConfirmAltTitle();
 	String finalGradeSubmissionConfirmText();
 	String finalGradeSubmissionVerificationTitle();
 	String finalGradeSubmissionWarningPrefix1(); 
@@ -268,6 +269,7 @@ public interface I18nConstants extends Constants {
 	String finalGradeSubmissionMessageText6a();
 	String finalGradeSubmissionMessageText7a();
 	String finalGradeSubmissionMessageText8a();
+	String finalGradeSubmissionMessageText9a();
 	
 	String notifyNotDisplayingReleasedItems();
 	String notifyNoReleasedItems();

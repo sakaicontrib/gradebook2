@@ -30,14 +30,16 @@ public class SubmissionVerificationModel extends EntityModel {
 
 	private int numberOfLearners;
 	private boolean isMissingScores;
+	private boolean isFullyWeighted;
 	
 	public SubmissionVerificationModel() {
 		
 	}
 	
-	public SubmissionVerificationModel(int numberOfLearners, boolean isMissingScores) {
+	public SubmissionVerificationModel(int numberOfLearners, boolean isMissingScores, boolean isFullyWeighted) {
 		this.numberOfLearners = numberOfLearners;
 		this.isMissingScores = isMissingScores;
+		this.isFullyWeighted = isFullyWeighted;
 	}
 
 
@@ -70,6 +72,14 @@ public class SubmissionVerificationModel extends EntityModel {
 	@Override
 	public String getIdentifier() {
 		return "SUBMISSIONVERIFICATION";
+	}
+
+	public boolean isFullyWeighted() {
+		return isFullyWeighted;
+	}
+
+	public void setFullyWeighted(boolean isFullyWeighted) {
+		this.isFullyWeighted = isFullyWeighted;
 	}
 	
 	

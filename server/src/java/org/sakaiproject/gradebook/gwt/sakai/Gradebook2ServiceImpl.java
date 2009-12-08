@@ -2113,7 +2113,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 
 		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
 		boolean isMissingScores = false;
-
+		boolean isFullyWeighted = isFullyWeighted(gradebook);
+		
 		if (dereferences != null) {
 			for (UserDereference dereference : dereferences) {
 
@@ -2126,7 +2127,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 
 		int numberOfLearners = dereferences == null ? 0 : dereferences.size();
 
-		return new SubmissionVerificationModel(numberOfLearners, isMissingScores);
+		return new SubmissionVerificationModel(numberOfLearners, isMissingScores, isFullyWeighted);
 	}
 
 	public StudentModel scoreNumericItem(String gradebookUid, StudentModel student, String assignmentId, Double value, Double previousValue) throws InvalidInputException {
@@ -3821,6 +3822,40 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		return models;
 	}
 
+	private boolean isFullyWeighted(Gradebook gradebook) {
+		
+		switch (gradebook.getCategory_type()) {
+		case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
+			List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
+			List<Category> categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+			
+			boolean isFullyWeighted = false;
+			
+			if (categories != null) {
+				BigDecimal gradebookWeightSum = BigDecimal.ZERO;
+				BigDecimal gradebookPointsSum = BigDecimal.ZERO;
+				for (Category category : categories) {
+					boolean isExtraCredit = category.isExtraCredit() != null && category.isExtraCredit().booleanValue();
+					boolean isUnweighted = category.isUnweighted() != null && category.isUnweighted().booleanValue();
+
+					if (!category.isRemoved()) {
+						double categoryWeight = category.getWeight() == null ? 0d : category.getWeight().doubleValue() * 100d;
+
+						if (!isExtraCredit && !isUnweighted) {
+							gradebookWeightSum = gradebookWeightSum.add(BigDecimal.valueOf(categoryWeight));
+						}
+					}
+				}
+				
+				isFullyWeighted = gradebookWeightSum.compareTo(BigDecimal.valueOf(100d)) == 0;
+			}
+			
+			return isFullyWeighted;
+		}
+		
+		return true;
+	}
+	
 	private ItemModel getItemModel(Gradebook gradebook, List<Assignment> assignments, List<Category> categories, Long categoryId, Long assignmentId) {
 
 		ItemModel gradebookItemModel = createItemModel(gradebook);
@@ -3858,6 +3893,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 						double categoryPoints = categoryItemModel.getPoints() == null ? 0d : categoryItemModel.getPoints().doubleValue();
 
 						if (!isExtraCredit && !isUnweighted) {
+							categoryWeight = categoryItemModel.getPercentCourseGrade() == null ? 0d : categoryItemModel.getPercentCourseGrade().doubleValue();
 							gradebookWeightSum = gradebookWeightSum.add(BigDecimal.valueOf(categoryWeight));
 							gradebookPointsSum = gradebookPointsSum.add(BigDecimal.valueOf(categoryPoints));
 						}

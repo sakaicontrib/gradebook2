@@ -79,14 +79,22 @@ public class GradeSubmissionDialog extends Dialog {
 					
 					StringBuilder text = new StringBuilder();
 					
-					text.append(i18n.finalGradeSubmissionWarningPrefix1()).append(" ");
-					text.append(result.getNumberOfLearners()).append(" ");
-					text.append(i18n.finalGradeSubmissionWarningSuffix1());
-					
-					if (result.isMissingScores())
-						text.append("<p>").append(i18n.finalGradeSubmissionWarningPrefix2()).append(" ");
-								
-					text.append(i18n.finalGradeSubmissionConfirmText());
+					if (result.isFullyWeighted()) {
+						setButtons(Dialog.YESNO);
+						setHeading(i18n.finalGradeSubmissionConfirmTitle());
+						text.append(i18n.finalGradeSubmissionWarningPrefix1()).append(" ");
+						text.append(result.getNumberOfLearners()).append(" ");
+						text.append(i18n.finalGradeSubmissionWarningSuffix1());
+						
+						if (result.isMissingScores())
+							text.append("<p>").append(i18n.finalGradeSubmissionWarningPrefix2()).append(" ");
+									
+						text.append(i18n.finalGradeSubmissionConfirmText());
+					} else {
+						setHeading(i18n.finalGradeSubmissionConfirmAltTitle());
+						text.append(i18n.finalGradeSubmissionMessageText9a());
+						setButtons(Dialog.OK);
+					}
 					
 					addText(text.toString());
 					
