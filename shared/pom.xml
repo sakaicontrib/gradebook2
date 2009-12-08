@@ -53,6 +53,7 @@
 			<resource>
 				<directory>${basedir}/src/java</directory>
 				<includes>
+					<include>**/*.properties</include>
 					<include>**/*.java</include>
 				</includes>
 			</resource>
