@@ -62,6 +62,7 @@ import com.extjs.gxt.ui.client.store.TreeStore;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.TabItem;
 import com.extjs.gxt.ui.client.widget.TabPanel;
+import com.extjs.gxt.ui.client.widget.Text;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
@@ -129,6 +130,12 @@ public class AltItemTreePanel extends ContentPanel {
 		setHeading(i18n.navigationPanelHeader());
 		setLayout(new FillLayout());
 		initListeners();
+		
+		Text text = new Text(i18n.treeDirections());
+		text.addStyleName("gbAdvice");
+		//text.setStylePrimaryName("gbAdvice");
+		//text.setHeight(200);
+		//setBottomComponent(text);
 
 		sm = new ItemTreeSelectionModel();
 		sm.addSelectionChangedListener(selectionChangedListener);

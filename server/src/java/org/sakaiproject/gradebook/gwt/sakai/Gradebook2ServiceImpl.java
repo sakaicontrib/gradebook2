@@ -2763,28 +2763,30 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		if (isExcused)
 			cellMap.put(concat(id, StudentModel.EXCUSE_FLAG), Boolean.TRUE);
 
-		BigDecimal percentage = null;
-		switch (gradebook.getGrade_type()) {
-		case GradebookService.GRADE_TYPE_POINTS:
-			Double value = gradeRecord != null && gradeRecord.getPointsEarned() != null ? gradeRecord.getPointsEarned() : (isCountNullsAsZeros ? Double.valueOf(0) : null);
-			cellMap.put(id, value);
-			break;
-		case GradebookService.GRADE_TYPE_PERCENTAGE:
-			percentage = gradeRecord == null ? null : gradeCalculations.getPointsEarnedAsPercent((Assignment) gradeRecord.getGradableObject(), gradeRecord);
-			Double percentageDouble = percentage != null ? Double.valueOf(percentage.doubleValue()) : (isCountNullsAsZeros ? Double.valueOf(0) : null);
-			cellMap.put(id, percentageDouble);
-			break;
-		case GradebookService.GRADE_TYPE_LETTER:
-			percentage = gradeRecord == null ? null : gradeCalculations.getPointsEarnedAsPercent((Assignment) gradeRecord.getGradableObject(), gradeRecord);
-			String letterGrade = percentage != null ? gradeCalculations.convertPercentageToLetterGrade(percentage) : (isCountNullsAsZeros ? "0" : "");
-			cellMap.put(id, letterGrade);
-			break;
-		default:
-			cellMap.put(id, "Not implemented");
-			break;
+		try {
+			BigDecimal percentage = null;
+			switch (gradebook.getGrade_type()) {
+			case GradebookService.GRADE_TYPE_POINTS:
+				Double value = gradeRecord != null && gradeRecord.getPointsEarned() != null ? gradeRecord.getPointsEarned() : (isCountNullsAsZeros ? Double.valueOf(0) : null);
+				cellMap.put(id, value);
+				break;
+			case GradebookService.GRADE_TYPE_PERCENTAGE:
+				percentage = gradeRecord == null ? null : gradeCalculations.getPointsEarnedAsPercent((Assignment) gradeRecord.getGradableObject(), gradeRecord);
+				Double percentageDouble = percentage != null ? Double.valueOf(percentage.doubleValue()) : (isCountNullsAsZeros ? Double.valueOf(0) : null);
+				cellMap.put(id, percentageDouble);
+				break;
+			case GradebookService.GRADE_TYPE_LETTER:
+				percentage = gradeRecord == null ? null : gradeCalculations.getPointsEarnedAsPercent((Assignment) gradeRecord.getGradableObject(), gradeRecord);
+				String letterGrade = percentage != null ? gradeCalculations.convertPercentageToLetterGrade(percentage) : (isCountNullsAsZeros ? "0" : "");
+				cellMap.put(id, letterGrade);
+				break;
+			default:
+				cellMap.put(id, "Not implemented");
+				break;
+			}
+		} catch (ClassCastException cce) {
+			log.warn("ClassCastException for user " + userRecord.getDisplayId() + " item " + assignmentId);
 		}
-			
-		
 
 		return cellMap;
 	}

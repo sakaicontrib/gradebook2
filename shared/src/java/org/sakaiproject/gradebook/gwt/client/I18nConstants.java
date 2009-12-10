@@ -313,4 +313,7 @@ public interface I18nConstants extends Constants {
 	String statsStdDvHeader();
 	String statsModeHeader();
 	String statsMedianHeader();
+	
+	String treeDirections();
+	
 }

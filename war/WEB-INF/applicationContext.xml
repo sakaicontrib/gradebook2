@@ -12,7 +12,7 @@
 	<import resource="db.xml" />
 		
 	<!-- Hibernate Mappings -->
-	<bean id="org.sakaiproject.gradebook.gwt.sakai.model.hibernateMappings"
+	<!-- bean id="org.sakaiproject.gradebook.gwt.sakai.model.hibernateMappings"
 		class="org.sakaiproject.springframework.orm.hibernate.impl.AdditionalHibernateMappingsImpl">
 		<property name="mappingResources">
 			<list>
@@ -25,7 +25,7 @@
 				<value>org/sakaiproject/gradebook/gwt/sakai/model/UserDereferenceRealmUpdate.hbm.xml</value>
 			</list>
 		</property>
-	</bean>
+	</bean-->
 	
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.BusinessLogic" class="org.sakaiproject.gradebook.gwt.sakai.BusinessLogicImpl">
 		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/> 

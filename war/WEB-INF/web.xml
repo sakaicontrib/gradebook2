@@ -5,10 +5,15 @@
 	<display-name>sakai-gradebook-gwt-rpc</display-name>
 	<description>Sakai Gradebook GWT Tool</description>
  
-	<context-param>
+ 	<context-param>
+ 		<param-name>contextClass</param-name>
+ 		<param-value>org.sakaiproject.gradebook.gwt.server.WebApplicationContext</param-value>
+ 	</context-param>
+ 
+	<!-- context-param>
 		<param-name>contextConfigLocation</param-name>
 		<param-value>WEB-INF/applicationContext*.xml</param-value>
-	</context-param>
+	</context-param-->
 
 	<listener>
         <listener-class>org.sakaiproject.util.ContextLoaderListener</listener-class>
