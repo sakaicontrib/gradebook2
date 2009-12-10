@@ -27,7 +27,7 @@
 		<gb2.version>1.2.0-SNAPSHOT</gb2.version>
 		<gxt.version>2.1.0</gxt.version>
 		<gwt.version>2.0.0</gwt.version> 
-		<gwtsl.version>1.0</gwtsl.version>
+		<gwtsl.version>1.0-r434</gwtsl.version>
 		<gb2.commons.logging.version>1.0.4</gb2.commons.logging.version>
 		<sakai.edu.services.version>1.0.0-beta02-SNAPSHOT</sakai.edu.services.version>
 	</properties>
