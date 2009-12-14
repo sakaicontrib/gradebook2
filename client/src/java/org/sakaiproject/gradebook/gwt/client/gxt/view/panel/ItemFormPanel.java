@@ -37,6 +37,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemCreate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.AppView;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.components.ItemFormComboBox;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.NullSensitiveCheckBox;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
@@ -85,49 +86,36 @@ import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.LabelField;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.form.TextField;
-import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
 import com.extjs.gxt.ui.client.widget.layout.ColumnData;
 import com.extjs.gxt.ui.client.widget.layout.ColumnLayout;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
-import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
 
 public class ItemFormPanel extends ContentPanel {
 
+	
 	private enum Mode { DELETE, EDIT, NEW };
 	private enum SelectionType { CLOSE, CREATE, CREATECLOSE, CANCEL, REQUEST_DELETE, DELETE, SAVE, SAVECLOSE };
 
 	private static final String selectionTypeField = "selectionType";
-
+	private static final String NAME_DISPLAY_FIELD = "name", VALUE_DISPLAY_FIELD = "value";
+	
+	
 	private FormPanel formPanel;
 	private FormBinding formBindings;
 
 	private LabelField directionsField;
 	private TextField<String> nameField;
-	private ComboBox<ModelData> categoryTypePicker;
-	private ComboBox<ModelData> gradeTypePicker;
+	private ComboBox<ModelData> categoryTypePicker, gradeTypePicker;
 	private ComboBox<ItemModel> categoryPicker;
-	private CheckBox includedField;
-	private CheckBox extraCreditField;
-	private CheckBox equallyWeightChildrenField;
-	private CheckBox releasedField;
-	private CheckBox nullsAsZerosField;
-	private CheckBox releaseGradesField;
-	private CheckBox releaseItemsField;
-	private CheckBox scaledExtraCreditField;
-	private CheckBox enforcePointWeightingField;
-	private CheckBox showMeanField;
-	private CheckBox showMedianField;
-	private CheckBox showModeField;
-	private CheckBox showRankField;
-	private CheckBox showItemStatsField;
-	private NumberField percentCourseGradeField;
-	private NumberField percentCategoryField;
-	private NumberField pointsField;
-	private NumberField dropLowestField;
+	private CheckBox includedField, extraCreditField, equallyWeightChildrenField, releasedField;
+	private CheckBox nullsAsZerosField, releaseGradesField, releaseItemsField, scaledExtraCreditField;
+	private CheckBox enforcePointWeightingField, showMeanField, showMedianField, showModeField;
+	private CheckBox showRankField, showItemStatsField;
+	private NumberField percentCourseGradeField, percentCategoryField, pointsField, dropLowestField;
 	private DateField dueDateField;
 	private TextField<String> sourceField;
 
@@ -140,16 +128,13 @@ public class ItemFormPanel extends ContentPanel {
 	private KeyListener keyListener;
 	private Listener<BindingEvent> bindListener;
 	private Listener<DatePickerEvent> datePickerListener;
-	private Listener<FieldEvent> extraCreditChangeListener;
-	private Listener<FieldEvent> checkboxChangeListener;
-	private Listener<FieldEvent> enforcePointWeightingListener;
+	private Listener<FieldEvent> extraCreditChangeListener, checkboxChangeListener, enforcePointWeightingListener;
 	private SelectionListener<ButtonEvent> selectionListener;
 	private SelectionChangedListener<ItemModel> categorySelectionChangedListener;
 	private SelectionChangedListener<ModelData> otherSelectionChangedListener;
 
 	private I18nConstants i18n;
 
-	private RowLayout layout;
 	private RowData topRowData, bottomRowData;
 	private Button deleteButton, okButton, okCloseButton, cancelButton;
 
@@ -163,7 +148,6 @@ public class ItemFormPanel extends ContentPanel {
 
 	private Mode mode;
 
-	@SuppressWarnings("unchecked")
 	public ItemFormPanel(I18nConstants i18n) {
 		this.i18n = i18n;
 		this.isListeningEnabled = true;
@@ -196,7 +180,6 @@ public class ItemFormPanel extends ContentPanel {
 		addButton(cancelButton);
 	    
 	    ListStore<ModelData> categoryTypeStore = new ListStore<ModelData>();
-
 		categoryTypeStore.add(getCategoryTypeModel(GradebookModel.CategoryType.NO_CATEGORIES));
 		categoryTypeStore.add(getCategoryTypeModel(GradebookModel.CategoryType.SIMPLE_CATEGORIES));
 		categoryTypeStore.add(getCategoryTypeModel(GradebookModel.CategoryType.WEIGHTED_CATEGORIES));
@@ -205,7 +188,6 @@ public class ItemFormPanel extends ContentPanel {
 		formPanel.setHeaderVisible(false);
 		formPanel.setLabelWidth(180);
 		formPanel.setVisible(false);
-		//formPanel.setScrollMode(Scroll.AUTO);
 
 		directionsField = new LabelField();
 		directionsField.setName("directions");
@@ -218,39 +200,16 @@ public class ItemFormPanel extends ContentPanel {
 
 		formPanel.add(nameField);
 
-		categoryPicker = new ComboBox<ItemModel>();
+		categoryPicker = new ItemFormComboBox<ItemModel>(ItemModel.Key.NAME.name(), ItemModel.Key.CATEGORY_ID.name(), i18n.categoryName());
 		categoryPicker.addKeyListener(keyListener);
-		categoryPicker.setDisplayField(ItemModel.Key.NAME.name());
-		categoryPicker.setName(ItemModel.Key.CATEGORY_ID.name());
-		categoryPicker.setFieldLabel(i18n.categoryName());
-		categoryPicker.setVisible(false);
 		categoryPicker.setStore(categoryStore);
-		categoryPicker.setTriggerAction(TriggerAction.ALL);
-		categoryPicker.setLazyRender(false);
 		formPanel.add(categoryPicker);
 
-		categoryTypePicker = new ComboBox<ModelData>();
-		categoryTypePicker.setDisplayField("name");
-		categoryTypePicker.setName(ItemModel.Key.CATEGORYTYPE.name());
-		categoryTypePicker.setEditable(false);
-		categoryTypePicker.setFieldLabel(i18n.categoryTypeFieldLabel());
-		categoryTypePicker.setForceSelection(true);
-		categoryTypePicker.setLazyRender(false);
+		categoryTypePicker = new ItemFormComboBox<ModelData>(NAME_DISPLAY_FIELD, ItemModel.Key.CATEGORYTYPE.name(), i18n.categoryTypeFieldLabel());
 		categoryTypePicker.setStore(categoryTypeStore);
-		categoryTypePicker.setTriggerAction(TriggerAction.ALL);
-		categoryTypePicker.setVisible(false);
 		formPanel.add(categoryTypePicker);
 
-		gradeTypePicker = new ComboBox<ModelData>();
-		gradeTypePicker.setDisplayField("name");
-		gradeTypePicker.setEditable(false);
-		gradeTypePicker.setName(ItemModel.Key.GRADETYPE.name());
-		gradeTypePicker.setFieldLabel(i18n.gradeTypeFieldLabel());
-		gradeTypePicker.setForceSelection(true);
-		gradeTypePicker.setLazyRender(true);
-		//gradeTypePicker.setStore(gradeTypeStore);
-		gradeTypePicker.setTriggerAction(TriggerAction.ALL);
-		gradeTypePicker.setVisible(false);
+		gradeTypePicker = new ItemFormComboBox<ModelData>(NAME_DISPLAY_FIELD, ItemModel.Key.GRADETYPE.name(), i18n.gradeTypeFieldLabel());
 		formPanel.add(gradeTypePicker);
 
 		scaledExtraCreditField = new NullSensitiveCheckBox();
@@ -270,12 +229,8 @@ public class ItemFormPanel extends ContentPanel {
 		displayToStudentFieldSet.setAutoHeight(true);
 		displayToStudentFieldSet.setScrollMode(Scroll.AUTO);
 		displayToStudentFieldSet.setVisible(false);
-		//displayToStudentFieldSet.setWidth(600);
-		
-		//main.setHeight(400);
+
 		main.setWidth(400);
-		//main.setAutoWidth(true);
-		//main.setAutoHeight(true);
 		
 		FormLayout leftLayout = new FormLayout(); 
 		leftLayout.setLabelWidth(140);
@@ -283,8 +238,6 @@ public class ItemFormPanel extends ContentPanel {
 		
 		LayoutContainer left = new LayoutContainer();
 		left.setLayout(leftLayout);
-		//left.setHeight(400);
-		//left.setWidth(300);
 		
 		FormLayout rightLayout = new FormLayout(); 
 		rightLayout.setLabelWidth(140);
@@ -292,8 +245,6 @@ public class ItemFormPanel extends ContentPanel {
 		
 		LayoutContainer right = new LayoutContainer();
 		right.setLayout(rightLayout);
-		//right.setHeight(400);
-		//right.setWidth(300);
 		
 		releaseGradesField = new NullSensitiveCheckBox();
 		releaseGradesField.setName(ItemModel.Key.RELEASEGRADES.name());
@@ -457,9 +408,6 @@ public class ItemFormPanel extends ContentPanel {
 		
 	}
 
-	public void onActionCompleted() {
-	}
-
 	public void onRequestDeleteItem(final ItemModel itemModel) {
 		if (hasChanges) {
 			MessageBox.confirm(i18n.hasChangesTitle(), i18n.hasChangesMessage(), new Listener<MessageBoxEvent>() {
@@ -501,7 +449,6 @@ public class ItemFormPanel extends ContentPanel {
 			directionsField.setStyleName("gbWarning");
 			directionsField.setVisible(true);
 
-			//formBindings.addListener(Events.Bind, bindListener);
 			formBindings.bind(itemModel);
 
 			Dispatcher.forwardEvent(GradebookEvents.ExpandEastPanel.getEventType(), AppView.EastCard.DELETE_ITEM);
@@ -603,23 +550,7 @@ public class ItemFormPanel extends ContentPanel {
 			}
 
 			public void doItem(ItemModel itemModel) {
-			}
-
-			private void clearForm(ItemModel itemModel) {
-				if (itemModel != null && itemModel.isActive()) {
-					switch (mode) {
-						case NEW:
-							formPanel.clear();
-							Type itemType = Type.ITEM;
-
-							if (itemModel.getItemType() != null)
-								itemType = itemModel.getItemType();
-
-							initState(itemType, itemModel, false);
-							establishSelectedCategoryState(itemModel);
-							break;
-					}
-				}
+			
 			}
 
 		};
@@ -654,36 +585,6 @@ public class ItemFormPanel extends ContentPanel {
 
 			}
 		}
-
-		//ListView<ItemModel> listView = new ListView<ItemModel>();
-		//listView.setStore(categoryStore);
-		
-		//categoryPicker.setView(listView);
-		
-		/*ListStore<ModelData> categoryTypeStore = new ListStore<ModelData>();
-
-		categoryTypeStore.add(getCategoryTypeModel(GradebookModel.CategoryType.NO_CATEGORIES));
-		categoryTypeStore.add(getCategoryTypeModel(GradebookModel.CategoryType.SIMPLE_CATEGORIES));
-		categoryTypeStore.add(getCategoryTypeModel(GradebookModel.CategoryType.WEIGHTED_CATEGORIES));
-
-		categoryTypePicker.setStore(categoryTypeStore);
-
-		ListStore<ModelData> gradeTypeStore = new ListStore<ModelData>();
-
-		List<GradeType> enabledGradeTypes = Registry.get(AppConstants.ENABLED_GRADE_TYPES);
-		
-		if (enabledGradeTypes != null) {
-			for (int i=0;i<enabledGradeTypes.size();i++) {
-				gradeTypeStore.add(getGradeTypeModel(enabledGradeTypes.get(i)));
-			}
-		}
-		
-		gradeTypePicker.setStore(gradeTypeStore);
-	
-		if (selectedItemModel != null) {
-			removeListeners();
-			addListeners();
-		}*/
 
 	}
 
@@ -837,34 +738,26 @@ public class ItemFormPanel extends ContentPanel {
 		}
 	}
 
-	private CategoryType getCategoryType(ModelData categoryTypeModel) {
-		return categoryTypeModel.get("value");
-	}
-
 	private ModelData getCategoryTypeModel(CategoryType categoryType) {
 		ModelData model = new BaseModelData();
 
 		// Initialize type picker
 		switch (categoryType) {
 			case NO_CATEGORIES:
-				model.set("name", i18n.orgTypeNoCategories());
-				model.set("value", GradebookModel.CategoryType.NO_CATEGORIES);
+				model.set(NAME_DISPLAY_FIELD, i18n.orgTypeNoCategories());
+				model.set(VALUE_DISPLAY_FIELD, GradebookModel.CategoryType.NO_CATEGORIES);
 				break;
 			case SIMPLE_CATEGORIES:
-				model.set("name", i18n.orgTypeCategories());
-				model.set("value", GradebookModel.CategoryType.SIMPLE_CATEGORIES);
+				model.set(NAME_DISPLAY_FIELD, i18n.orgTypeCategories());
+				model.set(VALUE_DISPLAY_FIELD, GradebookModel.CategoryType.SIMPLE_CATEGORIES);
 				break;	
 			case WEIGHTED_CATEGORIES:
-				model.set("name", i18n.orgTypeWeightedCategories());
-				model.set("value", GradebookModel.CategoryType.WEIGHTED_CATEGORIES);
+				model.set(NAME_DISPLAY_FIELD, i18n.orgTypeWeightedCategories());
+				model.set(VALUE_DISPLAY_FIELD, GradebookModel.CategoryType.WEIGHTED_CATEGORIES);
 				break;	
 		}
 
 		return model;
-	}
-
-	private GradeType getGradeType(ModelData gradeTypeModel) {
-		return gradeTypeModel.get("value");
 	}
 
 	private ModelData getGradeTypeModel(GradeType gradeType) {
@@ -872,16 +765,16 @@ public class ItemFormPanel extends ContentPanel {
 
 		switch (gradeType) {
 			case LETTERS:
-				model.set("name", i18n.gradeTypeLetters());
-				model.set("value", GradebookModel.GradeType.LETTERS);
+				model.set(NAME_DISPLAY_FIELD, i18n.gradeTypeLetters());
+				model.set(VALUE_DISPLAY_FIELD, GradebookModel.GradeType.LETTERS);
 				break;
 			case POINTS:
-				model.set("name", i18n.gradeTypePoints());
-				model.set("value", GradebookModel.GradeType.POINTS);
+				model.set(NAME_DISPLAY_FIELD, i18n.gradeTypePoints());
+				model.set(VALUE_DISPLAY_FIELD, GradebookModel.GradeType.POINTS);
 				break;
 			case PERCENTAGES:
-				model.set("name", i18n.gradeTypePercentages());
-				model.set("value", GradebookModel.GradeType.PERCENTAGES);
+				model.set(NAME_DISPLAY_FIELD, i18n.gradeTypePercentages());
+				model.set(VALUE_DISPLAY_FIELD, GradebookModel.GradeType.PERCENTAGES);
 				break;
 		}
 
@@ -1070,8 +963,8 @@ public class ItemFormPanel extends ContentPanel {
 									name.equals(ItemModel.Key.GRADETYPE.name())) {
 								b.setConverter(new Converter() {
 									public Object convertFieldValue(Object value) {
-										if (value instanceof ModelData && ((ModelData)value).get("value") != null) {
-											return ((ModelData)value).get("value");
+										if (value instanceof ModelData && ((ModelData)value).get(VALUE_DISPLAY_FIELD) != null) {
+											return ((ModelData)value).get(VALUE_DISPLAY_FIELD);
 										}
 
 										return value;

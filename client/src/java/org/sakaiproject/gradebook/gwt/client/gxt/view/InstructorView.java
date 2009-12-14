@@ -73,6 +73,8 @@ import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.extjs.gxt.ui.client.widget.menu.SeparatorMenuItem;
 import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
 
@@ -84,7 +86,6 @@ public class InstructorView extends AppView {
 	// The instructor view maintains a link to tree view, since it is required to instantiate multigrade
 	private TreeView treeView;
 	private MultigradeView multigradeView;
-	private ImportExportView importExportView;
 	private SingleGradeView singleGradeView;
 
 	private ContentPanel borderLayoutContainer;
@@ -122,16 +123,14 @@ public class InstructorView extends AppView {
 	private boolean isEditable;
 
 	public InstructorView(Controller controller, TreeView treeView, MultigradeView multigradeView, 
-			NotificationView notificationView, ImportExportView importExportView, 
 			SingleGradeView singleGradeView, 
 			boolean isEditable, final boolean isNewGradebook,
 			I18nConstants i18n) {
-		super(controller, notificationView);
+		super(controller);
 		this.isEditable = isEditable;
 		this.tabConfigurations = new ArrayList<TabConfig>();
 		this.treeView = treeView;
 		this.multigradeView = multigradeView;
-		this.importExportView = importExportView;
 		this.singleGradeView = singleGradeView;
 		this.i18n = i18n;
 		
@@ -397,13 +396,21 @@ public class InstructorView extends AppView {
 	}
 
 	@Override
-	protected void onSingleGrade(StudentModel learnerGradeRecordCollection) {
-		if (singleGradeContainer == null) {
-			singleGradeContainer = new LearnerSummaryPanel(i18n);
-			eastLayoutContainer.add(singleGradeContainer);
-		}
-		singleGradeContainer.onChangeModel(multigradeView.getStore(), treeView.getTreeStore(), learnerGradeRecordCollection);
-		onExpandEastPanel(EastCard.LEARNER_SUMMARY);
+	protected void onSingleGrade(final StudentModel learnerGradeRecordCollection) {
+		/*GWT.runAsync(new RunAsyncCallback() {
+			public void onFailure(Throwable caught) {
+
+			}
+
+			public void onSuccess() {*/
+				if (singleGradeContainer == null) {
+					singleGradeContainer = new LearnerSummaryPanel(i18n);
+					eastLayoutContainer.add(singleGradeContainer);
+				}
+				singleGradeContainer.onChangeModel(multigradeView.getStore(), treeView.getTreeStore(), learnerGradeRecordCollection);
+				onExpandEastPanel(EastCard.LEARNER_SUMMARY);
+			/*}
+		});*/
 	}
 
 	@Override
@@ -414,22 +421,36 @@ public class InstructorView extends AppView {
 
 	@Override
 	protected void onShowGradeScale(Boolean show) {
-		if (gradeScalePanel == null) {
-			gradeScalePanel = new GradeScalePanel(i18n, isEditable, treeView);
-			eastLayoutContainer.add(gradeScalePanel);
-		}
-		onExpandEastPanel(EastCard.GRADE_SCALE);
+		/*GWT.runAsync(new RunAsyncCallback() {
+			public void onFailure(Throwable caught) {
+
+			}
+
+			public void onSuccess() {*/
+				if (gradeScalePanel == null) {
+					gradeScalePanel = new GradeScalePanel(i18n, isEditable, treeView);
+					eastLayoutContainer.add(gradeScalePanel);
+				}
+				onExpandEastPanel(EastCard.GRADE_SCALE);
+			/*}
+		});*/
 	}
 
 	@Override
 	protected void onShowHistory(String identifier) {
-		if (historyPanel == null) {
-			historyPanel = new HistoryPanel(i18n);
-			//eastLayoutContainer.add(historyPanel);
-			viewport.add(historyPanel);
-		}
-		viewportLayout.setActiveItem(historyPanel);
-		//onExpandEastPanel(EastCard.HISTORY);
+		/*GWT.runAsync(new RunAsyncCallback() {
+			public void onFailure(Throwable caught) {
+
+			}
+
+			public void onSuccess() {*/
+				if (historyPanel == null) {
+					historyPanel = new HistoryPanel(i18n);
+					viewport.add(historyPanel);
+				}
+				viewportLayout.setActiveItem(historyPanel);
+			/*}
+		});*/
 	}
 
 	protected void onShowSetup() {
@@ -475,13 +496,11 @@ public class InstructorView extends AppView {
 
 	@Override
 	protected void onStartImport() {
-		viewport.add(importExportView.getImportDialog());
-		viewportLayout.setActiveItem(importExportView.getImportDialog());
+		
 	}
 
 	@Override
 	protected void onStopImport() {
-		viewport.remove(importExportView.getImportDialog());
 		viewportLayout.setActiveItem(borderLayoutContainer);
 	}
 

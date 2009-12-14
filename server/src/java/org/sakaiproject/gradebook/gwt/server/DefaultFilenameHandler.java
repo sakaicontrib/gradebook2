@@ -58,7 +58,7 @@ public class DefaultFilenameHandler implements HttpRequestHandler {
 			} else if (path.endsWith(".css")) {
 				contentType = "text/css";
 			} else if (path.endsWith(".js")) {
-				contentType = "text/javascript";
+				contentType = "application/javascript";
 			} else if (path.endsWith(".gif")) {
 				contentType = "image/gif";
 			} else if (path.endsWith(".png")) {

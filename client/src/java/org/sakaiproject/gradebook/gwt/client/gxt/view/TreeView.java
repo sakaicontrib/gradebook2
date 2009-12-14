@@ -32,7 +32,6 @@ import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.AltItemTreePanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ItemFormPanel;
-import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ItemTreePanel;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
@@ -322,7 +321,6 @@ public class TreeView extends View {
 
 	protected void onUnmaskItemTree() {
 		treePanel.onUnmaskItemTree();
-		formPanel.onActionCompleted();
 	}
 
 	protected void onUserChange(UserEntityAction<?> action) {

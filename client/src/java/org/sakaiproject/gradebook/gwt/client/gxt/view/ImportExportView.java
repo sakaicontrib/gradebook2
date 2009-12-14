@@ -24,6 +24,7 @@ public class ImportExportView extends View {
 	public ImportExportView(Controller controller, I18nConstants i18n) {
 		super(controller);
 		this.i18n = i18n;
+		this.importDialog = new ImportPanel(i18n);
 	}
 
 	@Override
@@ -31,7 +32,7 @@ public class ImportExportView extends View {
 		
 		switch (GradebookEvents.getEvent(event.getType()).getEventKey()) {
 		case START_IMPORT:
-			importDialog = new ImportPanel(i18n);
+			
 			break;
 		case START_EXPORT:
 			ExportDetails ed = (ExportDetails) event.getData(); 
@@ -47,8 +48,6 @@ public class ImportExportView extends View {
 			default:
 				fileType = "csv"; 
 				break;
-
-				
 			}
 		
 			GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);

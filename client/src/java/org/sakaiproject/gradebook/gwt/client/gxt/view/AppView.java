@@ -52,30 +52,22 @@ public abstract class AppView extends View {
 	public enum EastCard { DELETE_CATEGORY, DELETE_ITEM, EDIT_CATEGORY, EDIT_GRADEBOOK, EDIT_ITEM, 
 		GRADE_SCALE, HELP, HISTORY, LEARNER_SUMMARY, NEW_CATEGORY, NEW_ITEM,
 		STATISTICS };
-	
-	private static final int screenHeight = 600;
-	
-	protected NotificationView notificationView;
+
+
 	protected Viewport realViewport;
 	protected CardLayout viewportLayout;
 	
 	protected LayoutContainer viewport;
 
 	
-	public AppView(Controller controller, NotificationView notificationView) {
+	public AppView(Controller controller) {
 		super(controller);
-		this.notificationView = notificationView;
 		this.viewportLayout = new CardLayout();
 		this.realViewport = new Viewport() {
 			protected void onRender(Element parent, int pos) {
 			    super.onRender(parent, pos);
 			    Accessibility.setRole(el().dom, "application");
 			}
-			
-			/*protected void onResize(int width, int height) {
-				super.onResize(width, height);
-				viewport.setSize(width, height - 20);
-			}*/
 		};
 		realViewport.setEnableScroll(false);
 		realViewport.setLayout(new FillLayout());
@@ -85,9 +77,7 @@ public abstract class AppView extends View {
 		realViewport.add(viewport);
 		
 		viewport.setPosition(0, 0);
-		//viewport.setHeight(screenHeight);
 		viewport.setLayout(viewportLayout);
-		//realViewport.setHeight(screenHeight);
 		
 		RootPanel.get().add(realViewport);
 	}
@@ -326,5 +316,13 @@ public abstract class AppView extends View {
 	
 	protected void onUserChange(UserEntityAction<?> action) {
 		
+	}
+
+	public CardLayout getViewportLayout() {
+		return viewportLayout;
+	}
+
+	public LayoutContainer getViewport() {
+		return viewport;
 	}
 }

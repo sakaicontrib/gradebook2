@@ -41,5 +41,6 @@
     	<when-type-is class="org.sakaiproject.gradebook.gwt.client.action.RemoteCommand"/>
     	<when-property-is name="gears.installed" value="true"/>
   	</replace-with-->
+	
 
 </module>

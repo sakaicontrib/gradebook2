@@ -23,8 +23,7 @@
 package org.sakaiproject.gradebook.gwt.client;
 
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
-import org.sakaiproject.gradebook.gwt.client.gxt.controller.AppController;
-import org.sakaiproject.gradebook.gwt.client.gxt.controller.ServiceController;
+import org.sakaiproject.gradebook.gwt.client.gxt.controller.StartupController;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
@@ -33,10 +32,8 @@ import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
 import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
-import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
 
@@ -55,8 +52,8 @@ public class GradebookApplication implements EntryPoint {
 	
 	public void onModuleLoad() {
 		dispatcher = Dispatcher.get();
-		dispatcher.addController(new AppController());
-		dispatcher.addController(new ServiceController());
+		
+		dispatcher.addController(new StartupController());
 		
 		I18nConstants i18n = (I18nConstants) GWT.create(I18nConstants.class);
 		
@@ -66,12 +63,12 @@ public class GradebookApplication implements EntryPoint {
 		}
 		
 		if (dataService == null) {
-			MessageBox box = new MessageBox();
+			/*MessageBox box = new MessageBox();
 			box.setButtons(MessageBox.OK);
 			box.setIcon(MessageBox.INFO);
 			box.setTitle("Information");
 			box.setMessage("No service detected");
-			box.show();
+			box.show();*/
 			return;
 		}
 		
@@ -129,10 +126,6 @@ public class GradebookApplication implements EntryPoint {
 	
 	private void readAuthorization(AuthModel authModel) {
 		if (GWT.isScript()) {
-			
-			int clientHeight = Window.getClientHeight();
-			//Window.alert("Client Height is " + clientHeight);
-			//screenHeight = clientHeight - 180;
 			String placementId = authModel.getPlacementId();
 			if (placementId != null) {
 				String modifiedId = placementId.replace('-', 'x');
@@ -141,32 +134,10 @@ public class GradebookApplication implements EntryPoint {
 		}
 		
 		dispatcher.dispatch(GradebookEvents.Load.getEventType(), authModel);
-		getApplicationModel(0, authModel);
 		GXT.hideLoadingPanel("loading");
 	}
 	
-	private void getApplicationModel(final int i, final AuthModel authModel) {
-		AsyncCallback<ApplicationModel> callback = 
-			new AsyncCallback<ApplicationModel>() {
-
-				public void onFailure(Throwable caught) {
-					// If this is the first try, then give it another shot
-					if (i == 0)
-						getApplicationModel(i+1, authModel);
-					else
-						dispatcher.dispatch(GradebookEvents.Exception.getEventType(), new NotificationEvent(caught));
-				}
-
-				public void onSuccess(ApplicationModel result) {
-					
-					dispatcher.dispatch(GradebookEvents.Startup.getEventType(), result);
-				}
-			
-		};
-		
-		dataService.get(null, null, EntityType.APPLICATION, null, null, SecureToken.get(), callback);
-
-	}
+	
 	
 	public native void resizeMainFrame(String placementId, int setHeight) /*-{	
 		

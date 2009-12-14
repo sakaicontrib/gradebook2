@@ -37,8 +37,8 @@ public class StudentView extends AppView {
 
 	private StudentPanel studentViewContainer;
 	
-	public StudentView(Controller controller, NotificationView notificationView) {
-		super(controller, notificationView);
+	public StudentView(Controller controller) {
+		super(controller);
 	}
 	
 	@Override

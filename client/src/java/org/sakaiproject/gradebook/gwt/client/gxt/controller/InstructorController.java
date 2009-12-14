@@ -1,63 +1,44 @@
-/**********************************************************************************
-*
-* $Id:$
-*
-***********************************************************************************
-*
-* Copyright (c) 2008, 2009 The Regents of the University of California
-*
-* Licensed under the
-* Educational Community License, Version 2.0 (the "License"); you may
-* not use this file except in compliance with the License. You may
-* obtain a copy of the License at
-* 
-* http://www.osedu.org/licenses/ECL-2.0
-* 
-* Unless required by applicable law or agreed to in writing,
-* software distributed under the License is distributed on an "AS IS"
-* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-* or implied. See the License for the specific language governing
-* permissions and limitations under the License.
-*
-**********************************************************************************/
-
 package org.sakaiproject.gradebook.gwt.client.gxt.controller;
 
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
-import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
-import org.sakaiproject.gradebook.gwt.client.gxt.view.AppView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.FinalGradeSubmissionView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.ImportExportView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.InstructorView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.MultigradeView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.NotificationView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.SingleGradeView;
-import org.sakaiproject.gradebook.gwt.client.gxt.view.StudentView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.TreeView;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
-import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.RunAsyncCallback;
 
-public class AppController extends Controller {
+public class InstructorController extends Controller {
 
-	private AppView appView;
 	private SingleGradeView singleGrade;
 	private SingleGradeView singleView;
 	private TreeView treeView;
-	private NotificationView notificationView;
 	private ImportExportView importExportView;
 	private MultigradeView multigradeView;
 	private FinalGradeSubmissionView finalGradeSubmissionView;
-
-	public AppController() {
+	private InstructorView appView;
+	private NotificationView notificationView;
+	
+	public InstructorController(I18nConstants i18n, boolean isUserAbleToEditItems, boolean isNewGradebook) {
+		super();
+		singleView = new SingleGradeView(this, false);
+		treeView = new TreeView(this, i18n, isUserAbleToEditItems);
+		multigradeView = new MultigradeView(this, i18n);
+		appView = new InstructorView(this, treeView, multigradeView, singleView, isUserAbleToEditItems, isNewGradebook, i18n);
+	
 		registerEventTypes(GradebookEvents.BeginItemUpdates.getEventType());
 		registerEventTypes(GradebookEvents.BrowseLearner.getEventType());
 		registerEventTypes(GradebookEvents.CloseNotification.getEventType());
@@ -75,7 +56,6 @@ public class AppController extends Controller {
 		registerEventTypes(GradebookEvents.ItemDeleted.getEventType());
 		registerEventTypes(GradebookEvents.ItemUpdated.getEventType());
 		registerEventTypes(GradebookEvents.LearnerGradeRecordUpdated.getEventType());
-		registerEventTypes(GradebookEvents.Load.getEventType());
 		registerEventTypes(GradebookEvents.MaskItemTree.getEventType());
 		registerEventTypes(GradebookEvents.NewCategory.getEventType());
 		registerEventTypes(GradebookEvents.NewItem.getEventType());
@@ -107,10 +87,8 @@ public class AppController extends Controller {
 		registerEventTypes(GradebookEvents.UserChange.getEventType());
 		registerEventTypes(GradebookEvents.StartFinalgrade.getEventType());
 		registerEventTypes(GradebookEvents.StopGraderPermissionSettings.getEventType());
-		this.notificationView = new NotificationView(this);
-
 	}
-
+	
 	@Override
 	public void handleEvent(AppEvent event) {
 		// Note: the 'missing' break statements in this switch are intentional, they
@@ -170,21 +148,10 @@ public class AppController extends Controller {
 				break;
 			case START_IMPORT:
 			case START_EXPORT:
-				if (importExportView == null) {
-					I18nConstants i18n = Registry.get(AppConstants.I18N);
-					importExportView = new ImportExportView(this, i18n);
-				}
-				forwardToView(importExportView, event);
-				forwardToView(appView, event);
+				onStartImportExport(event);
 				break;
 			case STOP_IMPORT:
-				forwardToView(appView, event);
-				break;
-			case LOAD:
-				onLoad(event);
-				break;
-			case STARTUP:
-				onStartup(event);
+				onStopImport(event);
 				break;
 			case SINGLE_GRADE:
 				forwardToView(appView, event);
@@ -273,35 +240,38 @@ public class AppController extends Controller {
 			case STOP_GRADER_PERMISSION_SETTINGS:
 				forwardToView(appView, event);
 				break;
+			case STARTUP:
+				onStartup(event);
+				break;
 		}
 	}
+	
+	private void onStartImportExport(final AppEvent event) {
+		
+		/*GWT.runAsync(new RunAsyncCallback() {
+			public void onFailure(Throwable caught) {
 
-	@Override
-	public void initialize() {
+			}
 
+			public void onSuccess() {*/
+				if (importExportView == null) {
+					I18nConstants i18n = Registry.get(AppConstants.I18N);
+					importExportView = new ImportExportView(InstructorController.this, i18n);
+				}
+				appView.getViewport().add(importExportView.getImportDialog());
+				appView.getViewportLayout().setActiveItem(importExportView.getImportDialog());
+				forwardToView(importExportView, event);
+				forwardToView(appView, event);
+		/*	}
+		});
+		*/
 	}
-
-	private void onLoad(AppEvent event) {
-		AuthModel authModel = (AuthModel)event.getData();
-
-		boolean isUserAbleToGrade = authModel.isUserAbleToGrade() == null ? false : authModel.isUserAbleToGrade().booleanValue();
-		boolean isUserAbleToViewOwnGrades = authModel.isUserAbleToViewOwnGrades() == null ? false : authModel.isUserAbleToViewOwnGrades().booleanValue();
-		final boolean isUserAbleToEditItems = DataTypeConversionUtil.checkBoolean(authModel.isUserAbleToEditAssessments());
-		final boolean isNewGradebook = DataTypeConversionUtil.checkBoolean(authModel.isNewGradebook());
-
-		final I18nConstants i18n = Registry.get(AppConstants.I18N);
-
-		if (isUserAbleToGrade) {
-			AppController.this.singleView = new SingleGradeView(AppController.this, false);
-			AppController.this.treeView = new TreeView(AppController.this, i18n, isUserAbleToEditItems);
-			AppController.this.multigradeView = new MultigradeView(AppController.this, i18n);
-			AppController.this.importExportView = new ImportExportView(AppController.this, i18n);
-			AppController.this.appView = new InstructorView(AppController.this, treeView, multigradeView, notificationView, importExportView, singleView, isUserAbleToEditItems, isNewGradebook, i18n);
-		} else if (isUserAbleToViewOwnGrades) {
-			AppController.this.appView = new StudentView(AppController.this, notificationView);
-		}
+	
+	private void onStopImport(AppEvent event) {
+		appView.getViewport().remove(importExportView.getImportDialog());
+		forwardToView(appView, event);
 	}
-
+	
 	private void onStartup(AppEvent event) {
 		ApplicationModel model = (ApplicationModel)event.getData();
 
@@ -328,5 +298,4 @@ public class AppController extends Controller {
 			return;
 		}
 	}
-
 }
