@@ -26,16 +26,18 @@ import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.controller.StartupController;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
-import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
+import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
 import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
+import com.extjs.gxt.ui.client.widget.Html;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
+import com.google.gwt.user.client.ui.RootPanel;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -44,6 +46,8 @@ public class GradebookApplication implements EntryPoint {
 
 	private Dispatcher dispatcher;
 	private Gradebook2RPCServiceAsync dataService;
+	private GradebookResources resources;
+	private I18nConstants i18n;
 	private int screenHeight = 580;
 	
     public GradebookApplication() {
@@ -51,11 +55,15 @@ public class GradebookApplication implements EntryPoint {
     }
 	
 	public void onModuleLoad() {
+		i18n = (I18nConstants) GWT.create(I18nConstants.class);
+		resources = GWT.create(GradebookResources.class);
+		resources.css().ensureInjected();
+
 		dispatcher = Dispatcher.get();
 		
 		dispatcher.addController(new StartupController());
 		
-		I18nConstants i18n = (I18nConstants) GWT.create(I18nConstants.class);
+		
 		
 		if (dataService == null) {
 			dataService = GWT.create(Gradebook2RPCService.class);
@@ -63,15 +71,12 @@ public class GradebookApplication implements EntryPoint {
 		}
 		
 		if (dataService == null) {
-			/*MessageBox box = new MessageBox();
-			box.setButtons(MessageBox.OK);
-			box.setIcon(MessageBox.INFO);
-			box.setTitle("Information");
-			box.setMessage("No service detected");
-			box.show();*/
+			GXT.hideLoadingPanel("loading");
+			RootPanel.get("alert").add(new Html(i18n.serviceException()));
 			return;
 		}
 		
+		Registry.register(AppConstants.RESOURCES, resources);
 		Registry.register(AppConstants.VERSION, getVersion());
 		Registry.register(AppConstants.SERVICE, dataService);
 		Registry.register(AppConstants.I18N, i18n);
@@ -109,8 +114,9 @@ public class GradebookApplication implements EntryPoint {
 					if (i == 0)
 						getAuthorization(i+1);
 					else {
-						dispatcher.dispatch(GradebookEvents.Exception.getEventType(), new NotificationEvent(caught));
 						GXT.hideLoadingPanel("loading");
+						RootPanel.get("alert").add(new Html(new StringBuilder().append(i18n.serviceException()).append(": ").append(caught.getMessage()).toString()));
+						//dispatcher.dispatch(GradebookEvents.Exception.getEventType(), new NotificationEvent(caught));
 					}
 				}
 

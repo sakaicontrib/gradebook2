@@ -40,6 +40,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.GradebookPanel;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
@@ -73,7 +74,7 @@ import com.extjs.gxt.ui.client.widget.toolbar.PagingToolBar;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
+public abstract class GridPanel<M extends EntityModel> extends GradebookPanel {
 
 	protected static final int DEFAULT_PAGE_SIZE = 19;
 	
@@ -94,22 +95,19 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 	
 	protected CustomColumnModel cm;
 	protected PagingLoadConfig loadConfig;
-	//protected int pageSize = 19;
 	
 	protected ContentPanel gridOwner;
 	
 	protected RefreshAction refreshAction = RefreshAction.NONE;
-	protected I18nConstants i18n;
 	
-	public GridPanel(String gridId, EntityType entityType, I18nConstants i18n) {
-		this(gridId, entityType, null, i18n);
+	public GridPanel(String gridId, EntityType entityType) {
+		this(gridId, entityType, null);
 	}
 	
-	public GridPanel(String gridId, EntityType entityType, ContentPanel childPanel, I18nConstants i18n) {
+	public GridPanel(String gridId, EntityType entityType, ContentPanel childPanel) {
 		super();
 		this.gridId = gridId;
 		this.entityType = entityType;
-		this.i18n = i18n;
 		
 		setHeaderVisible(false);
 		setLayout( new FitLayout());
@@ -425,7 +423,8 @@ public abstract class GridPanel<M extends EntityModel> extends ContentPanel {
 		
 		if (gridEvent != null) {
 			String className = grid.getView().getCell(gridEvent.getRowIndex(), gridEvent.getColIndex()).getClassName();
-			className = className.replace(" gbCellDropped", "");
+			String gbDroppedText = new StringBuilder(" ").append(resources.css().gbCellDropped()).toString();
+			className = className.replace(gbDroppedText, "");
 			grid.getView().getCell(gridEvent.getRowIndex(), gridEvent.getColIndex()).setClassName(className);
 			grid.getView().getCell(gridEvent.getRowIndex(), gridEvent.getColIndex()).setInnerText("Saving...");
 		

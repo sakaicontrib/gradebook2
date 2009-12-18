@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +44,7 @@ import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel.Group;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel.Key;
+import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.SortDir;
@@ -78,6 +78,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	private GradebookModel gradebookModel = null;
 	private boolean isDisplayLoadMaskOnRender = true;
 	private String gridId;
+	private GradebookResources resources;
 	
 	private DelayedTask syncTask;
 
@@ -86,7 +87,8 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	
 	public CustomGridView(String gridId) {
 		this.gridId = gridId;
-
+		this.resources = Registry.get(AppConstants.RESOURCES);
+		
 		addListener(Events.Refresh, new Listener() {
 
 			public void handleEvent(BaseEvent be) {
@@ -195,7 +197,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			item.setData("colIndex", Integer.valueOf(colIndex));
 			item.setText(i18n.headerGradeScale());
 			item.setTitle(i18n.headerGradeScaleTitle());
-			item.setIconStyle("gbGradeScaleButton");
+			item.setIconStyle(resources.css().gbGradeScaleButton());
 			item.addSelectionListener(selectionListener);
 
 			menu.add(item);
@@ -208,7 +210,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			item.setData("colIndex", Integer.valueOf(colIndex));
 			item.setText(i18n.headerAddCategory());
 			item.setTitle(i18n.headerAddCategoryTitle());
-			item.setIconStyle("gbAddCategoryIcon");
+			item.setIconStyle(resources.css().gbAddCategoryIcon());
 			item.addSelectionListener(selectionListener);
 
 			menu.add(item);
@@ -220,7 +222,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 		item.setData("colIndex", Integer.valueOf(colIndex));
 		item.setText(i18n.headerAddItem());
 		item.setTitle(i18n.headerAddItemTitle());
-		item.setIconStyle("gbAddItemIcon");
+		item.setIconStyle(resources.css().gbAddItemIcon());
 		item.addSelectionListener(selectionListener);
 
 		menu.add(item);
@@ -232,7 +234,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			item.setData("colIndex", Integer.valueOf(colIndex));
 			item.setText(i18n.headerEditItem());
 			item.setTitle(i18n.headerEditItemTitle());
-			item.setIconStyle("gbEditItemIcon");
+			item.setIconStyle(resources.css().gbEditItemIcon());
 			item.addSelectionListener(selectionListener);
 
 			menu.add(item);
@@ -243,7 +245,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			item.setData("colIndex", Integer.valueOf(colIndex));
 			item.setText(i18n.headerDeleteItem());
 			item.setTitle(i18n.headerDeleteItemTitle());
-			item.setIconStyle("gbDeleteItemIcon");
+			item.setIconStyle(resources.css().gbDeleteItemIcon());
 			item.addSelectionListener(selectionListener);
 
 			menu.add(item);
@@ -378,19 +380,19 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	public class ColumnGroup {
 
 		private Group group;
-		private List<FixedColumnModel> columns;
-		Map<Long, List<FixedColumnModel>> categoryColumnMap;
+		private ArrayList<FixedColumnModel> columns;
+		Map<Long, ArrayList<FixedColumnModel>> categoryColumnMap;
 
 		public ColumnGroup(Group group) {
 			this.group = group;
-			this.columns = new LinkedList<FixedColumnModel>();
+			this.columns = new ArrayList<FixedColumnModel>();
 		}
 
 		public List<FixedColumnModel> getColumns() {
 			return columns;
 		}
 
-		public Map<Long, List<FixedColumnModel>> getCategoryColumnMap() {
+		public Map<Long, ArrayList<FixedColumnModel>> getCategoryColumnMap() {
 			return categoryColumnMap;
 		}
 
@@ -399,11 +401,11 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			if (column.getCategoryId() != null) {
 				// We only need to instantiate this object for the ASSIGNMENTS ColumnGroup
 				if (categoryColumnMap == null) 
-					categoryColumnMap = new HashMap<Long, List<FixedColumnModel>>();
+					categoryColumnMap = new HashMap<Long, ArrayList<FixedColumnModel>>();
 
-				List<FixedColumnModel> categoryColumns = categoryColumnMap.get(column.getCategoryId());
+				ArrayList<FixedColumnModel> categoryColumns = categoryColumnMap.get(column.getCategoryId());
 				if (categoryColumns == null) {
-					categoryColumns = new LinkedList<FixedColumnModel>();
+					categoryColumns = new ArrayList<FixedColumnModel>();
 					categoryColumnMap.put(column.getCategoryId(), categoryColumns);
 				}
 				categoryColumns.add(column);
@@ -418,9 +420,9 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	}
 
 	// Helper method
-	protected List<ColumnGroup> getColumnGroups() {
+	protected ArrayList<ColumnGroup> getColumnGroups() {
 
-		Map<Group, ColumnGroup> columnGroupMap = new LinkedHashMap<Group, ColumnGroup>();
+		LinkedHashMap<Group, ColumnGroup> columnGroupMap = new LinkedHashMap<Group, ColumnGroup>();
 		List<FixedColumnModel> gradebookColumunConfigs = gradebookModel.getColumns();
 
 		for(FixedColumnModel gradebookColumnConfig : gradebookColumunConfigs) {

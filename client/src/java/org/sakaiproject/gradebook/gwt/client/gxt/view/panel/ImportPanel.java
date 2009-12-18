@@ -101,7 +101,7 @@ import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-public class ImportPanel extends ContentPanel {
+public class ImportPanel extends GradebookPanel {
 
 	private FileUploadField file;
 	private String msgsFromServer; 
@@ -138,11 +138,8 @@ public class ImportPanel extends ContentPanel {
 
 	private boolean isGradingFailure;
 
-	private I18nConstants i18n;
-
-	public ImportPanel(I18nConstants i18n) {
+	public ImportPanel() {
 		super();
-		this.i18n = i18n;
 		setCollapsible(false);
 		setFrame(true);
 		setHeaderVisible(true);
@@ -224,7 +221,7 @@ public class ImportPanel extends ContentPanel {
 				boolean isUserNotFound = DataTypeConversionUtil.checkBoolean((Boolean)model.get("userNotFound"));
 
 				if (isUserNotFound)
-					return "gbCellDropped";
+					return resources.css().gbCellDropped();
 
 				StringBuilder css = new StringBuilder();
 
@@ -234,19 +231,19 @@ public class ImportPanel extends ContentPanel {
 					String failedMessage = (String)r.get(failedProperty);
 
 					if (failedMessage != null) {
-						css.append(" gbCellFailedImport");
+						css.append(" ").append(resources.css().gbCellFailedImport());
 						isGradingFailure = true;
-					} else {
-						css.append(" gbCellSucceeded");
+					} else  {
+						css.append(" ").append(resources.css().gbCellSucceeded());
 					}
 				}
 
 				if (isDropped(model, property)) {
-					css.append(" gbCellDropped");
+					css.append(" ").append(resources.css().gbCellDropped());
 				}
 
 				if (isReleased(model, property)) {
-					css.append(" gbReleased");
+					css.append(" ").append(resources.css().gbReleased());
 				}
 
 				if (css.length() > 0)
@@ -896,7 +893,7 @@ public class ImportPanel extends ContentPanel {
 		ArrayList<ColumnConfig> itemColumns = new ArrayList<ColumnConfig>();
 
 		TextField<String> textField = new TextField<String>();
-		textField.addInputStyleName("gbTextFieldInput");
+		textField.addInputStyleName(resources.css().gbTextFieldInput());
 		CellEditor textCellEditor = new CellEditor(textField);
 
 		ColumnConfig name = new ColumnConfig(ItemModel.Key.NAME.name(), "Item", 200);
@@ -921,7 +918,7 @@ public class ImportPanel extends ContentPanel {
 		categoryPicker.setForceSelection(true);
 		categoryPicker.setStore(categoriesStore);
 		categoryPicker.setValueField(ItemModel.Key.ID.name());
-		categoryPicker.addInputStyleName("gbTextFieldInput");
+		categoryPicker.addInputStyleName(resources.css().gbTextFieldInput());
 
 		ColumnConfig category = new ColumnConfig(ItemModel.Key.CATEGORY_ID.name(), "Category", 140);
 				

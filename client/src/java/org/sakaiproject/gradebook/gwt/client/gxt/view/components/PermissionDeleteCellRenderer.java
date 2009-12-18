@@ -23,8 +23,11 @@
 
 package org.sakaiproject.gradebook.gwt.client.gxt.view.components;
 
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.model.PermissionEntryModel;
+import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
+import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
@@ -32,12 +35,18 @@ import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 
 public class PermissionDeleteCellRenderer implements GridCellRenderer<PermissionEntryModel> {
 
+	private GradebookResources resources;
+	
+	public PermissionDeleteCellRenderer() {
+		this.resources = Registry.get(AppConstants.RESOURCES);
+	}
+	
 	public String render(PermissionEntryModel model, String property, 
 			ColumnData config, int rowIndex, int colIndex, 
 			ListStore<PermissionEntryModel> store, Grid<PermissionEntryModel> grid) {
 		
 		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append("<span class=\"gbCellClickable\">");
+		stringBuilder.append("<span class=\"").append(resources.css().gbCellClickable()).append("\">");
 		stringBuilder.append(model.get(property));
 		stringBuilder.append("</span>");
 		return stringBuilder.toString();

@@ -41,7 +41,6 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.BorderLayoutPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.GradeScalePanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.GraderPermissionSettingsPanel;
-import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.HelpPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.HistoryPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ItemFormPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.LearnerSummaryPanel;
@@ -51,6 +50,7 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.LayoutRegion;
@@ -73,8 +73,6 @@ import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.extjs.gxt.ui.client.widget.menu.SeparatorMenuItem;
 import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
 
@@ -95,7 +93,7 @@ public class InstructorView extends AppView {
 	private CardLayout centerCardLayout;
 	private CardLayout eastCardLayout;
 	private LearnerSummaryPanel singleGradeContainer;
-	private HelpPanel helpPanel;
+	//private HelpPanel helpPanel;
 	private GradeScalePanel gradeScalePanel;
 	private HistoryPanel historyPanel;
 	private GraderPermissionSettingsPanel graderPermissionSettingsPanel;
@@ -119,20 +117,21 @@ public class InstructorView extends AppView {
 	private BorderLayoutData northData;
 	private BorderLayoutData westData;
 	
+	private GradebookResources resources;
 	private I18nConstants i18n;
 	private boolean isEditable;
 
 	public InstructorView(Controller controller, TreeView treeView, MultigradeView multigradeView, 
 			SingleGradeView singleGradeView, 
-			boolean isEditable, final boolean isNewGradebook,
-			I18nConstants i18n) {
+			boolean isEditable, final boolean isNewGradebook) {
 		super(controller);
 		this.isEditable = isEditable;
 		this.tabConfigurations = new ArrayList<TabConfig>();
 		this.treeView = treeView;
 		this.multigradeView = multigradeView;
 		this.singleGradeView = singleGradeView;
-		this.i18n = i18n;
+		this.i18n = Registry.get(AppConstants.I18N);
+		this.resources = Registry.get(AppConstants.RESOURCES);
 		
 		initListeners();
 		
@@ -180,13 +179,13 @@ public class InstructorView extends AppView {
 			}
 		};
 
-		helpPanel = new HelpPanel() {
+		/*helpPanel = new HelpPanel() {
 			protected void onRender(Element parent, int index) {
 				super.onRender(parent, index);
 				//if (borderLayoutContainer.isRendered())
 				//	borderLayout.collapse(LayoutRegion.EAST);
 			}
-		};
+		};*/
 
 		eastLayoutContainer.setId("cardLayoutContainer");
 		eastLayoutContainer.setWidth(400);
@@ -195,8 +194,8 @@ public class InstructorView extends AppView {
 		eastLayoutContainer.setFrame(true);
 		eastCardLayout = new CardLayout();
 		eastLayoutContainer.setLayout(eastCardLayout);
-		eastLayoutContainer.add(helpPanel);
-		eastCardLayout.setActiveItem(helpPanel);
+		//eastLayoutContainer.add(helpPanel);
+		//eastCardLayout.setActiveItem(helpPanel);
 
 		borderLayoutContainer.add(new LayoutContainer(), northData);
 		borderLayoutContainer.add(treeView.getTreePanel(), westData);
@@ -204,12 +203,12 @@ public class InstructorView extends AppView {
 		borderLayoutContainer.add(eastLayoutContainer, eastData);
 
 		if (isEditable) {
-			tabConfigurations.add(new TabConfig(AppConstants.TAB_SETUP, i18n.tabSetupHeader(), "gbSetupButton", true, MenuSelector.SETUP));
-			tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADESCALE, i18n.tabGradeScaleHeader(), "gbGradeScaleButton", true, MenuSelector.GRADE_SCALE));
-			tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADER_PER_SET, i18n.tabGraderPermissionSettingsHeader(), "gbGraderPermissionSettings", true, MenuSelector.GRADER_PERMISSION_SETTINGS));
-			tabConfigurations.add(new TabConfig(AppConstants.TAB_HISTORY, i18n.tabHistoryHeader(), "gbHistoryButton", true, MenuSelector.HISTORY));
+			tabConfigurations.add(new TabConfig(AppConstants.TAB_SETUP, i18n.tabSetupHeader(), resources.css().gbSetupButton(), true, MenuSelector.SETUP));
+			tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADESCALE, i18n.tabGradeScaleHeader(), resources.css().gbGradeScaleButton(), true, MenuSelector.GRADE_SCALE));
+			tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADER_PER_SET, i18n.tabGraderPermissionSettingsHeader(), resources.css().gbGraderPermissionSettings(), true, MenuSelector.GRADER_PERMISSION_SETTINGS));
+			tabConfigurations.add(new TabConfig(AppConstants.TAB_HISTORY, i18n.tabHistoryHeader(), resources.css().gbHistoryButton(), true, MenuSelector.HISTORY));
 		}
-		tabConfigurations.add(new TabConfig(AppConstants.TAB_STATISTICS, i18n.tabStatisticsHeader(), "gbStatisticsButton", true, MenuSelector.STATISTICS));
+		tabConfigurations.add(new TabConfig(AppConstants.TAB_STATISTICS, i18n.tabStatisticsHeader(), resources.css().gbStatisticsButton(), true, MenuSelector.STATISTICS));
 
 		populateToolBar(i18n);
 
@@ -276,10 +275,10 @@ public class InstructorView extends AppView {
 				//eastCardLayout.setActiveItem(statisticsPanel);
 				viewportLayout.setActiveItem(statisticsPanel);
 				break;
-			case HELP:
-				eastLayoutContainer.setHeading(i18n.helpHeading());
-				eastCardLayout.setActiveItem(helpPanel);
-				break;
+			//case HELP:
+			//	eastLayoutContainer.setHeading(i18n.helpHeading());
+			//	eastCardLayout.setActiveItem(helpPanel);
+			//	break;
 			case HISTORY:
 				//eastLayoutContainer.setHeading(i18n.historyHeading());
 				//eastCardLayout.setActiveItem(historyPanel);
@@ -404,7 +403,7 @@ public class InstructorView extends AppView {
 
 			public void onSuccess() {*/
 				if (singleGradeContainer == null) {
-					singleGradeContainer = new LearnerSummaryPanel(i18n);
+					singleGradeContainer = new LearnerSummaryPanel();
 					eastLayoutContainer.add(singleGradeContainer);
 				}
 				singleGradeContainer.onChangeModel(multigradeView.getStore(), treeView.getTreeStore(), learnerGradeRecordCollection);
@@ -428,7 +427,7 @@ public class InstructorView extends AppView {
 
 			public void onSuccess() {*/
 				if (gradeScalePanel == null) {
-					gradeScalePanel = new GradeScalePanel(i18n, isEditable, treeView);
+					gradeScalePanel = new GradeScalePanel(isEditable, treeView);
 					eastLayoutContainer.add(gradeScalePanel);
 				}
 				onExpandEastPanel(EastCard.GRADE_SCALE);
@@ -689,11 +688,11 @@ public class InstructorView extends AppView {
 		fileMenu = new AriaMenu();
 		addCategoryMenuItem = new AriaMenuItem(i18n.categoryName(), menuSelectionListener);
 		addCategoryMenuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.ADD_CATEGORY);
-		addCategoryMenuItem.setIconStyle("gbAddCategoryIcon");
+		addCategoryMenuItem.setIconStyle(resources.css().gbAddCategoryIcon());
 		addCategoryMenuItem.setId(AppConstants.ID_ADD_CATEGORY_MENUITEM);
 		MenuItem addItem = new AriaMenuItem(i18n.itemName(), menuSelectionListener);
 		addItem.setData(MENU_SELECTOR_FLAG, MenuSelector.ADD_ITEM);
-		addItem.setIconStyle("gbAddItemIcon");
+		addItem.setIconStyle(resources.css().gbAddItemIcon());
 		addItem.setId(AppConstants.ID_ADD_ITEM_MENUITEM);
 
 		// Attach the items to the menu
@@ -736,7 +735,7 @@ public class InstructorView extends AppView {
 
 		MenuItem menuItem = new AriaMenuItem(i18n.headerExport());
 		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT);
-		menuItem.setIconStyle("gbExportItemIcon");
+		menuItem.setIconStyle(resources.css().gbExportItemIcon());
 		menuItem.setTitle(i18n.headerExportTitle());
 		moreActionsMenu.add(menuItem);
 
@@ -786,7 +785,7 @@ public class InstructorView extends AppView {
 		if (isEditable) {
 			menuItem = new AriaMenuItem(i18n.headerImport(), menuSelectionListener);
 			menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.IMPORT);
-			menuItem.setIconStyle("gbImportItemIcon");
+			menuItem.setIconStyle(resources.css().gbImportItemIcon());
 			menuItem.setTitle(i18n.headerImportTitle());
 			moreActionsMenu.add(menuItem);
 
@@ -796,7 +795,7 @@ public class InstructorView extends AppView {
 			// GRBK-37 : TPA
 			menuItem = new AriaMenuItem(i18n.headerFinalGrade(), menuSelectionListener);
 			menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.FINAL_GRADE);
-			menuItem.setIconStyle("gbExportItemIcon");
+			menuItem.setIconStyle(resources.css().gbExportItemIcon());
 			menuItem.setTitle(i18n.headerFinalGradeTitle());
 			moreActionsMenu.add(menuItem);
 		}

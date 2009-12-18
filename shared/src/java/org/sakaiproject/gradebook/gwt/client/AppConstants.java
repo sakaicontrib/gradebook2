@@ -29,6 +29,7 @@ public interface AppConstants {
 	public static final String CURRENT 			= "current";
 	public static final String ENABLE_POPUPS 	= "enableNotifications";
 	public static final String I18N    			= "i18n";
+	public static final String RESOURCES		= "resources";
 	public static final String SERVICE 			= "service";
 	public static final String VERSION			= "version";
 	

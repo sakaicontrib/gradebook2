@@ -24,7 +24,7 @@ public class ImportExportView extends View {
 	public ImportExportView(Controller controller, I18nConstants i18n) {
 		super(controller);
 		this.i18n = i18n;
-		this.importDialog = new ImportPanel(i18n);
+		this.importDialog = new ImportPanel();
 	}
 
 	@Override

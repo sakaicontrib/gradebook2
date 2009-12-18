@@ -82,7 +82,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
 
-public class StudentPanel extends ContentPanel {
+public class StudentPanel extends GradebookPanel {
 
 	private enum Key { CATEGORY_NAME, ITEM_NAME, ITEM_WEIGHT, GRADE, MEAN, STDV, MEDI, MODE, RANK, COMMENT, ORDER, ID, OUTOF, DATEDUE, DROPPED };
 	
@@ -116,12 +116,13 @@ public class StudentPanel extends ContentPanel {
 	private List<StatisticsModel> statsList;
 	
 	public StudentPanel(I18nConstants i18n, boolean isStudentView, boolean displayRank) {
+		super();
 		this.isStudentView = isStudentView;
 		this.defaultNumberField.setFormat(defaultNumberFormat);
 		this.defaultNumberField.setSelectOnFocus(true);
-		this.defaultNumberField.addInputStyleName("gbNumericFieldInput");
-		this.defaultTextArea.addInputStyleName("gbTextAreaInput");
-		this.defaultTextField.addInputStyleName("gbTextFieldInput");
+		this.defaultNumberField.addInputStyleName(resources.css().gbNumericFieldInput());
+		this.defaultTextArea.addInputStyleName(resources.css().gbTextAreaInput());
+		this.defaultTextField.addInputStyleName(resources.css().gbTextFieldInput());
 		this.displayRank = displayRank;
 		this.statsList = null;
 		setFrame(true);
@@ -130,7 +131,7 @@ public class StudentPanel extends ContentPanel {
 		setScrollMode(Scroll.AUTO);
 
 		studentInformation = new FlexTable(); 
-		studentInformation.setStyleName("gbStudentInformation");
+		studentInformation.setStyleName(resources.css().gbStudentInformation());
 		studentInformationPanel = new ContentPanel();
 		studentInformationPanel.setBorders(true);
 		studentInformationPanel.setFrame(true);
@@ -213,7 +214,8 @@ public class StudentPanel extends ContentPanel {
 					int rowIndex, int colIndex, ListStore store, Grid grid) {
 				
 				if (DataTypeConversionUtil.checkBoolean((Boolean)model.get(Key.DROPPED.name()))) {
-					return new StringBuilder().append("<span class=\"gbCellDropped\">").append(model.get(property)).append("</span>");
+					return new StringBuilder().append("<span class=\"").append(resources.css().gbCellDropped()).append("\">")
+						.append(model.get(property)).append("</span>");
 				}
 				
 				return model.get(property);
@@ -492,22 +494,22 @@ public class StudentPanel extends ContentPanel {
 		FlexCellFormatter formatter = studentInformation.getFlexCellFormatter();
 		
         studentInformation.setText(PI_ROW_NAME, PI_COL_HEADING, "Name");
-        formatter.setStyleName(PI_ROW_NAME, PI_COL_HEADING, "gbImpact");
+        formatter.setStyleName(PI_ROW_NAME, PI_COL_HEADING, resources.css().gbImpact());
         formatter.setWordWrap(PI_ROW_NAME, PI_COL_HEADING, false);
         studentInformation.setText(PI_ROW_NAME, PI_COL_VALUE, learnerGradeRecordCollection.getStudentName());
 
         studentInformation.setText(PI_ROW_EMAIL, PI_COL_HEADING, "Email");
-        formatter.setStyleName(PI_ROW_EMAIL, PI_COL_HEADING, "gbImpact");
+        formatter.setStyleName(PI_ROW_EMAIL, PI_COL_HEADING, resources.css().gbImpact());
         formatter.setWordWrap(PI_ROW_EMAIL, PI_COL_HEADING, false);
         studentInformation.setText(PI_ROW_EMAIL, PI_COL_VALUE, learnerGradeRecordCollection.getStudentEmail());
 
         studentInformation.setText(PI_ROW_ID, PI_COL_HEADING, "Id");
-        formatter.setStyleName(PI_ROW_ID, PI_COL_HEADING, "gbImpact");
+        formatter.setStyleName(PI_ROW_ID, PI_COL_HEADING, resources.css().gbImpact());
         formatter.setWordWrap(PI_ROW_ID, PI_COL_HEADING, false);
         studentInformation.setText(PI_ROW_ID, PI_COL_VALUE, learnerGradeRecordCollection.getStudentDisplayId());
 
         studentInformation.setText(PI_ROW_SECTION, PI_COL_HEADING, "Section");
-        formatter.setStyleName(PI_ROW_SECTION, PI_COL_HEADING, "gbImpact");
+        formatter.setStyleName(PI_ROW_SECTION, PI_COL_HEADING, resources.css().gbImpact());
         formatter.setWordWrap(PI_ROW_SECTION, PI_COL_HEADING, false);
         studentInformation.setText(PI_ROW_SECTION, PI_COL_VALUE, learnerGradeRecordCollection.getStudentSections());
     
@@ -517,7 +519,7 @@ public class StudentPanel extends ContentPanel {
         
         if (!isStudentView || (DataTypeConversionUtil.checkBoolean(selectedGradebook.getGradebookItemModel().getReleaseGrades()))) {
 	        studentInformation.setText(PI_ROW_COURSE_GRADE, PI_COL_HEADING, "Course Grade");
-	        formatter.setStyleName(PI_ROW_COURSE_GRADE, PI_COL_HEADING, "gbImpact");
+	        formatter.setStyleName(PI_ROW_COURSE_GRADE, PI_COL_HEADING, resources.css().gbImpact());
 	        studentInformation.setText(PI_ROW_COURSE_GRADE, PI_COL_VALUE, learnerGradeRecordCollection.getLetterGrade());
 	        
 	        ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
@@ -527,7 +529,7 @@ public class StudentPanel extends ContentPanel {
 	        {
 	        	String calculatedGrade = learnerGradeRecordCollection.getCalculatedGrade();
 		        studentInformation.setHTML(PI_ROW_CALCULATED_GRADE, PI_COL_HEADING, "Calculated Grade");
-		        formatter.setStyleName(PI_ROW_CALCULATED_GRADE, PI_COL_HEADING, "gbImpact");
+		        formatter.setStyleName(PI_ROW_CALCULATED_GRADE, PI_COL_HEADING, resources.css().gbImpact());
 		        formatter.setWordWrap(PI_ROW_CALCULATED_GRADE, PI_COL_HEADING, false);
 		        studentInformation.setText(PI_ROW_CALCULATED_GRADE, PI_COL_VALUE, calculatedGrade);
 	        }
@@ -543,20 +545,20 @@ public class StudentPanel extends ContentPanel {
 	        	
 	        	if (isShowAny) {
 	        		studentInformation.setText(PI_ROW_STATS, PI_COL2_HEADING, "Course Statistics");
-	        		formatter.setStyleName(PI_ROW_STATS, PI_COL2_HEADING, "gbHeading");
+	        		formatter.setStyleName(PI_ROW_STATS, PI_COL2_HEADING, resources.css().gbHeading());
 	        	}
 	        	
 	        	int row = PI_ROW_MEAN;
 	        	if (isShowMean) {
 	        		studentInformation.setText(PI_ROW_MEAN, PI_COL2_HEADING, "Mean");
-		        	formatter.setStyleName(PI_ROW_MEAN, PI_COL2_HEADING, "gbImpact");
+		        	formatter.setStyleName(PI_ROW_MEAN, PI_COL2_HEADING, resources.css().gbImpact());
 		        	formatter.setWordWrap(PI_ROW_MEAN, PI_COL2_HEADING, false);
 		        	studentInformation.setText(PI_ROW_MEAN, PI_COL2_VALUE, courseGradeStats.getMean());
 		 
 		        	row++;
 		        	
 		        	studentInformation.setText(PI_ROW_STDV, PI_COL2_HEADING, "Standard Deviation");
-		        	formatter.setStyleName(PI_ROW_STDV, PI_COL2_HEADING, "gbImpact");
+		        	formatter.setStyleName(PI_ROW_STDV, PI_COL2_HEADING, resources.css().gbImpact());
 		        	formatter.setWordWrap(PI_ROW_STDV, PI_COL2_HEADING, false);
 		        	studentInformation.setText(PI_ROW_STDV, PI_COL2_VALUE, courseGradeStats.getStandardDeviation());
 		
@@ -573,7 +575,7 @@ public class StudentPanel extends ContentPanel {
 	        	
 	        	if (isShowMedian) {
 	        		studentInformation.setText(row, PI_COL2_HEADING, "Median");
-		        	formatter.setStyleName(row, PI_COL2_HEADING, "gbImpact");
+		        	formatter.setStyleName(row, PI_COL2_HEADING, resources.css().gbImpact());
 		        	studentInformation.setText(row, PI_COL2_VALUE, courseGradeStats.getMedian());
 		        	
 		        	row++;
@@ -586,7 +588,7 @@ public class StudentPanel extends ContentPanel {
 	        	
 	        	if (isShowMode) {
 	        		studentInformation.setText(row, PI_COL2_HEADING, "Mode");
-		        	formatter.setStyleName(row, PI_COL2_HEADING, "gbImpact");
+		        	formatter.setStyleName(row, PI_COL2_HEADING, resources.css().gbImpact());
 		        	studentInformation.setText(row, PI_COL2_VALUE, courseGradeStats.getMode());
 	        	
 		        	row++;
@@ -600,7 +602,7 @@ public class StudentPanel extends ContentPanel {
 		        if (isShowRank && displayRank)
 		        {
 		        	studentInformation.setText(row, PI_COL2_HEADING, "Rank");
-		        	formatter.setStyleName(row, PI_COL2_HEADING, "gbImpact");
+		        	formatter.setStyleName(row, PI_COL2_HEADING, resources.css().gbImpact());
 		        	studentInformation.setText(row, PI_COL2_VALUE, courseGradeStats.getRank());
 		        } else {
 	        		studentInformation.setText(PI_ROW_RANK, PI_COL2_HEADING, "");

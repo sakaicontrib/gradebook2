@@ -316,4 +316,5 @@ public interface I18nConstants extends Constants {
 	
 	String treeDirections();
 	
+	String serviceException();
 }

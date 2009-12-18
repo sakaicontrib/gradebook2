@@ -94,7 +94,7 @@ import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
 
-public class ItemFormPanel extends ContentPanel {
+public class ItemFormPanel extends GradebookPanel {
 
 	
 	private enum Mode { DELETE, EDIT, NEW };
@@ -133,8 +133,6 @@ public class ItemFormPanel extends ContentPanel {
 	private SelectionChangedListener<ItemModel> categorySelectionChangedListener;
 	private SelectionChangedListener<ModelData> otherSelectionChangedListener;
 
-	private I18nConstants i18n;
-
 	private RowData topRowData, bottomRowData;
 	private Button deleteButton, okButton, okCloseButton, cancelButton;
 
@@ -148,8 +146,8 @@ public class ItemFormPanel extends ContentPanel {
 
 	private Mode mode;
 
-	public ItemFormPanel(I18nConstants i18n) {
-		this.i18n = i18n;
+	public ItemFormPanel() {
+		super();
 		this.isListeningEnabled = true;
 		setHeaderVisible(true);
 		setFrame(true);
@@ -446,7 +444,7 @@ public class ItemFormPanel extends ContentPanel {
 			initState(itemType, itemModel, true);
 			directionsField.setHeight(80);
 			directionsField.setText(i18n.directionsConfirmDeleteItem());
-			directionsField.setStyleName("gbWarning");
+			directionsField.setStyleName(resources.css().gbWarning());
 			directionsField.setVisible(true);
 
 			formBindings.bind(itemModel);

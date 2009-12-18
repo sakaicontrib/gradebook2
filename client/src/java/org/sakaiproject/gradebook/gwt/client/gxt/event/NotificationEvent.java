@@ -36,6 +36,10 @@ public class NotificationEvent {
 		this(title, message, false, false);
 	}
 	
+	public NotificationEvent(String title, String message, boolean isFailure) {
+		this(title, message, isFailure, false);
+	}
+	
 	public NotificationEvent(String title, String message, boolean isFailure, boolean isPermanent) {
 		this.title = title;
 		this.message = message;

@@ -18,8 +18,6 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.RunAsyncCallback;
 
 public class InstructorController extends Controller {
 
@@ -35,10 +33,11 @@ public class InstructorController extends Controller {
 	public InstructorController(I18nConstants i18n, boolean isUserAbleToEditItems, boolean isNewGradebook) {
 		super();
 		singleView = new SingleGradeView(this, false);
-		treeView = new TreeView(this, i18n, isUserAbleToEditItems);
+		treeView = new TreeView(this, isUserAbleToEditItems);
 		multigradeView = new MultigradeView(this, i18n);
-		appView = new InstructorView(this, treeView, multigradeView, singleView, isUserAbleToEditItems, isNewGradebook, i18n);
-	
+		appView = new InstructorView(this, treeView, multigradeView, singleView, isUserAbleToEditItems, isNewGradebook);
+		notificationView = new NotificationView(this);
+		
 		registerEventTypes(GradebookEvents.BeginItemUpdates.getEventType());
 		registerEventTypes(GradebookEvents.BrowseLearner.getEventType());
 		registerEventTypes(GradebookEvents.CloseNotification.getEventType());

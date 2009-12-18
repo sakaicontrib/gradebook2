@@ -1,0 +1,179 @@
+
+.gbAdvice { 	
+  	color: #555555;
+  	font-size: 10pt;
+  	overflow: hidden;
+  	padding: 10px;
+  	zoom: 1;
+}
+
+.gbCellClickable {
+	color: blue;
+	cursor: pointer !important;
+	text-decoration: underline;
+}
+
+@sprite .gbCellCommented {
+	gwt-image: "commented";
+	background-color:transparent;
+	background-position:top right;
+	background-repeat:no-repeat;
+	height: auto;
+	width: auto;
+}
+
+.gbCellDropped {
+	color: red;
+	text-decoration: line-through;
+}
+
+.gbCellError {
+	color: red;	
+}
+
+.gbCellExtraCredit {
+	color: green;	
+}
+
+@sprite .gbCellFailed {
+	gwt-image: "failed";
+	background-color:transparent;
+	background-position:top left;
+	background-repeat:no-repeat;
+}
+
+.gbCellFailedImport {
+	background-color: red;
+	color: white;
+	font-weight: bold;
+}
+
+.gbCellStrong {
+	font-weight: bold;	
+}
+
+@sprite .gbCellSucceeded {
+	gwt-image: "modified";
+	background-color:transparent;
+	background-position:top left;
+	background-repeat:no-repeat;
+}
+
+.gbNotIncluded {
+	color: darkgray;
+	font-style: italic;	
+}
+
+.gbReleased {
+	color: blue;
+	font-weight: bold;	
+}
+
+.gbTabMargins {
+	height:325px;
+	margin: 10px;
+}
+
+.gbTextFieldInput {
+	font-size: 12pt !important;
+	/*height: 1.8em !important;*/
+	padding-top: 0px !important;
+	text-align: left;
+}
+
+.gbTextAreaInput {
+	font-size: 12pt !important;
+	padding-top: 2px !important;
+	text-align: left;
+}
+
+.gbNumericFieldInput {
+	font-size: 12pt !important;
+	/*height: 1.8em !important;*/
+	padding-right: 5px !important;
+	padding-top: 1px !important;
+	text-align: right;
+}
+
+.gbHeading {
+	color: black;
+	text-decoration: underline;
+}
+
+.gbImpact {
+	color: darkblue;
+	padding-right: 10px;
+}
+
+.gbWarning {
+	color: red;
+	font-weight: bold;
+}
+
+.gbStudentInformation {
+	font-size: 12pt;
+	padding: 10 10 15 10;
+}
+
+@sprite .gbItemIcon {
+	gwt-image: "table";	
+}
+
+@sprite .gbAddCategoryIcon {
+	gwt-image: "folder_add";	
+}
+
+@sprite .gbAddItemIcon {
+	gwt-image: "table_add";
+}
+
+@sprite .gbDeleteCategoryIcon {
+	gwt-image: "folder_delete";	
+}
+
+@sprite .gbDeleteItemIcon {
+	gwt-image: "table_delete";	
+}
+
+@sprite .gbEditCategoryIcon {
+	gwt-image: "folder_edit";	
+}
+
+@sprite .gbEditItemIcon {
+	gwt-image: "table_edit";
+}
+
+@sprite .gbExportItemIcon {
+	gwt-image: "page_white_put";
+}
+
+@sprite .gbImportItemIcon {
+	gwt-image: "page_white_get";
+}
+
+@sprite .gbGradeScaleButton {
+	gwt-image: "calculator_edit";	
+}
+
+@sprite .gbSetupButton {
+	gwt-image: "application_edit";
+}
+
+@sprite .gbGraderPermissionSettings {
+	gwt-image: "table_add";
+}
+
+@sprite .gbHistoryButton {
+	gwt-image: "calendar";
+}
+
+@sprite .gbStatisticsButton {
+	gwt-image: "chart_curve";
+}
+
+@sprite .loadingIndicator {
+	gwt-image: "large_loading";
+	width: 32;
+	height: 32;
+}
+	

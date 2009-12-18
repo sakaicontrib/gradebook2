@@ -56,7 +56,7 @@ public class NotificationView extends View {
 				if (notification.isFailure())
 					notifier.notifyUserError(title, notification.getText(), notification.isPermanent());
 				else
-					notifier.notify(notification.getTitle(), notification.getText());
+					notifier.notify(title, notification.getText());
 		}
 	}
 }

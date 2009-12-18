@@ -28,7 +28,6 @@ import java.util.List;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
-import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.SecureToken;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.ActionType;
@@ -48,7 +47,6 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Key;
 
-import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.data.BaseListLoader;
@@ -59,6 +57,7 @@ import com.extjs.gxt.ui.client.data.LoadEvent;
 import com.extjs.gxt.ui.client.data.Loader;
 import com.extjs.gxt.ui.client.data.RpcProxy;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
+import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.GridEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
@@ -67,7 +66,6 @@ import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
-import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
 import com.extjs.gxt.ui.client.widget.form.LabelField;
@@ -80,10 +78,9 @@ import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Element;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-public class GradeScalePanel extends ContentPanel {
+public class GradeScalePanel extends GradebookPanel {
 	
 	private ListLoader<ListLoadConfig> loader;
 	private ListLoader<ListLoadResult<GradeFormatModel>> gradeFormatLoader;
@@ -96,7 +93,7 @@ public class GradeScalePanel extends ContentPanel {
 	private Long currentGradeScaleId;
 	
 	@SuppressWarnings("unchecked")
-	public GradeScalePanel(I18nConstants i18n, boolean isEditable, final TreeView treeView) {
+	public GradeScalePanel(boolean isEditable, final TreeView treeView) {
 		super();
 		
 		toolbar = new ToolBar();
@@ -195,7 +192,7 @@ public class GradeScalePanel extends ContentPanel {
 		column.setNumberFormat(defaultNumberFormat);
 		if (isEditable) {
 			NumberField numberField = new NumberField();
-			numberField.addInputStyleName("gbNumericFieldInput");
+			numberField.addInputStyleName(resources.css().gbNumericFieldInput());
 			//numberField.setMaxValue(Double.valueOf(100d));
 			numberField.setFormat(defaultNumberFormat);
 			column.setEditor(new CellEditor(numberField));

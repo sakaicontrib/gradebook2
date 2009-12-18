@@ -59,10 +59,8 @@ import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.TreeStore;
-import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.TabItem;
 import com.extjs.gxt.ui.client.widget.TabPanel;
-import com.extjs.gxt.ui.client.widget.Text;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
@@ -83,7 +81,7 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
 
-public class AltItemTreePanel extends ContentPanel {
+public class AltItemTreePanel extends GradebookPanel {
 
 	private static int CHARACTER_WIDTH = 7;
 	private enum SelectionType { CREATE_CATEGORY, CREATE_ITEM, UPDATE_ITEM, DELETE_ITEM, MOVE_DOWN, MOVE_UP };
@@ -98,7 +96,6 @@ public class AltItemTreePanel extends ContentPanel {
 	private TreePanel<FixedColumnModel> learnerAttributeTree;
 	
 	private final boolean isEditable;
-	private final I18nConstants i18n;
 	
 	// Listeners
 	private CheckChangedListener<FixedColumnModel> checkListener;
@@ -121,21 +118,15 @@ public class AltItemTreePanel extends ContentPanel {
 	private boolean isAllowedToDropToGradebook = false;
 	private boolean isLearnerAttributeTreeLoaded = false;
 	
-	public AltItemTreePanel(TreeStore<ItemModel> treeStore, I18nConstants i18n, boolean isEditable) {
+	public AltItemTreePanel(TreeStore<ItemModel> treeStore, boolean isEditable) {
+		super();
 		this.treeStore = treeStore;
 		this.enableLayout = false;
-		this.i18n = i18n;
 		this.isEditable = isEditable;
 		setBorders(true);
 		setHeading(i18n.navigationPanelHeader());
 		setLayout(new FillLayout());
 		initListeners();
-		
-		Text text = new Text(i18n.treeDirections());
-		text.addStyleName("gbAdvice");
-		//text.setStylePrimaryName("gbAdvice");
-		//text.setHeight(200);
-		//setBottomComponent(text);
 
 		sm = new ItemTreeSelectionModel();
 		sm.addSelectionChangedListener(selectionChangedListener);
@@ -188,19 +179,19 @@ public class AltItemTreePanel extends ContentPanel {
 					StringBuilder cssClasses = new StringBuilder();
 					
 					if (!isIncluded && (isItem || isCategory))
-						cssClasses.append("gbNotIncluded");
+						cssClasses.append(resources.css().gbNotIncluded());
 					
 					if (!isItem) 
-						cssClasses.append(" gbCellStrong");
+						cssClasses.append(" ").append(resources.css().gbCellStrong());
 					
 					if (isTooBig || isTooSmall)
-						cssClasses.append(" gbCellError");
+						cssClasses.append(" ").append(resources.css().gbCellError());
 						
 					boolean isExtraCredit = itemModel.getExtraCredit() != null && itemModel.getExtraCredit().booleanValue();
 					if (isExtraCredit) {
 						
 						if (isPercentGrade || (isPercentCategory && isItem) || isPoints) {
-							cssClasses.append(" gbCellExtraCredit");
+							cssClasses.append(" ").append(resources.css().gbCellExtraCredit());
 							prefix = "+ ";
 						}
 
@@ -301,15 +292,15 @@ public class AltItemTreePanel extends ContentPanel {
 				}
 				sb.append("<span class=\"x-tree3-node-text");
 				if (!isIncluded && (isItem || isCategory))
-					sb.append(" gbNotIncluded");
+					sb.append(" ").append(resources.css().gbNotIncluded());
 				if (!isItem) 
-					sb.append(" gbCellStrong");
+					sb.append(" ").append(resources.css().gbCellStrong());
 				else if (isReleased) 
-					sb.append(" gbReleased");
+					sb.append(" ").append(resources.css().gbReleased());
 				
 				boolean isExtraCredit = itemModel.getExtraCredit() != null && itemModel.getExtraCredit().booleanValue();
 				if (isExtraCredit) 
-					sb.append(" gbCellExtraCredit");
+					sb.append(" ").append(resources.css().gbCellExtraCredit());
 				sb.append("\">&nbsp;");
 				sb.append(text);
 				if (dropLowest > 0) {
@@ -1005,6 +996,10 @@ public class AltItemTreePanel extends ContentPanel {
 		}
 	}
 	
+	protected String getAdvice() {
+		return i18n.treeDirections();
+	}
+	
 	
 	private void initListeners() {
 
@@ -1123,7 +1118,7 @@ public class AltItemTreePanel extends ContentPanel {
 
 		addCategoryMenuItem = new AriaMenuItem();
 		addCategoryMenuItem.setData(selectionTypeField, SelectionType.CREATE_CATEGORY);
-		addCategoryMenuItem.setIconStyle("gbAddCategoryIcon");
+		addCategoryMenuItem.setIconStyle(resources.css().gbAddCategoryIcon());
 		addCategoryMenuItem.setItemId(AppConstants.ID_CT_ADD_CATEGORY_MENUITEM);
 		addCategoryMenuItem.setText(i18n.headerAddCategory());
 		addCategoryMenuItem.setTitle(i18n.headerAddCategoryTitle());
@@ -1132,7 +1127,7 @@ public class AltItemTreePanel extends ContentPanel {
 
 		updateCategoryMenuItem = new AriaMenuItem();
 		updateCategoryMenuItem.setData(selectionTypeField, SelectionType.UPDATE_ITEM);
-		updateCategoryMenuItem.setIconStyle("gbEditCategoryIcon");
+		updateCategoryMenuItem.setIconStyle(resources.css().gbEditCategoryIcon());
 		updateCategoryMenuItem.setItemId(AppConstants.ID_CT_EDIT_CATEGORY_MENUITEM);
 		updateCategoryMenuItem.setText(i18n.headerEditCategory());
 		updateCategoryMenuItem.addSelectionListener(menuSelectionListener);
@@ -1140,7 +1135,7 @@ public class AltItemTreePanel extends ContentPanel {
 
 		deleteCategoryMenuItem = new AriaMenuItem();
 		deleteCategoryMenuItem.setData(selectionTypeField, SelectionType.DELETE_ITEM);
-		deleteCategoryMenuItem.setIconStyle("gbDeleteCategoryIcon");
+		deleteCategoryMenuItem.setIconStyle(resources.css().gbDeleteCategoryIcon());
 		deleteCategoryMenuItem.setItemId(AppConstants.ID_CT_DELETE_ITEM_MENUITEM);
 		deleteCategoryMenuItem.setText(i18n.headerDeleteCategory());
 		deleteCategoryMenuItem.addSelectionListener(menuSelectionListener);
@@ -1149,7 +1144,7 @@ public class AltItemTreePanel extends ContentPanel {
 
 		MenuItem menuItem = new AriaMenuItem();
 		menuItem.setData(selectionTypeField, SelectionType.CREATE_ITEM);
-		menuItem.setIconStyle("gbAddItemIcon");
+		menuItem.setIconStyle(resources.css().gbAddItemIcon());
 		menuItem.setItemId(AppConstants.ID_CT_ADD_ITEM_MENUITEM);
 		menuItem.setText(i18n.headerAddItem());
 		menuItem.setTitle(i18n.headerAddItemTitle());
@@ -1158,7 +1153,7 @@ public class AltItemTreePanel extends ContentPanel {
 
 		updateItemMenuItem = new AriaMenuItem();
 		updateItemMenuItem.setData(selectionTypeField, SelectionType.UPDATE_ITEM);
-		updateItemMenuItem.setIconStyle("gbEditItemIcon");
+		updateItemMenuItem.setIconStyle(resources.css().gbEditItemIcon());
 		updateItemMenuItem.setItemId(AppConstants.ID_CT_EDIT_ITEM_MENUITEM);
 		updateItemMenuItem.setText(i18n.headerEditItem());
 		updateItemMenuItem.addSelectionListener(menuSelectionListener);
@@ -1166,7 +1161,7 @@ public class AltItemTreePanel extends ContentPanel {
 
 		deleteItemMenuItem = new AriaMenuItem();
 		deleteItemMenuItem.setData(selectionTypeField, SelectionType.DELETE_ITEM);
-		deleteItemMenuItem.setIconStyle("gbDeleteItemIcon");
+		deleteItemMenuItem.setIconStyle(resources.css().gbDeleteItemIcon());
 		deleteItemMenuItem.setItemId(AppConstants.ID_CT_DELETE_ITEM_MENUITEM);
 		deleteItemMenuItem.setText(i18n.headerDeleteItem());
 		deleteItemMenuItem.addSelectionListener(menuSelectionListener);

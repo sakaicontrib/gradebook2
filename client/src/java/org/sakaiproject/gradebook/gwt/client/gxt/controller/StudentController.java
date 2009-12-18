@@ -21,6 +21,7 @@ public class StudentController extends Controller {
 	public StudentController() {
 		super();
 		appView = new StudentView(this);
+		notificationView = new NotificationView(this);
 		
 		registerEventTypes(GradebookEvents.Exception.getEventType());
 		registerEventTypes(GradebookEvents.Confirmation.getEventType());

@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
-import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.AltItemTreePanel;
@@ -62,9 +61,9 @@ public class TreeView extends View {
 
 	private boolean isInitialized;
 
-	public TreeView(Controller controller, I18nConstants i18n, boolean isEditable) {
+	public TreeView(Controller controller, boolean isEditable) {
 		super(controller);
-		this.formPanel = new ItemFormPanel(i18n);
+		this.formPanel = new ItemFormPanel();
 		this.isInitialized = false;
 		
 		
@@ -106,7 +105,7 @@ public class TreeView extends View {
 			formPanel.onTreeStoreInitialized(treeStore);
 		}
 		
-		this.treePanel = new AltItemTreePanel(treeStore, i18n, isEditable);
+		this.treePanel = new AltItemTreePanel(treeStore, isEditable);
 	}
 
 	@Override

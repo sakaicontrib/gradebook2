@@ -29,7 +29,6 @@ import java.util.Set;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
-import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.InlineEditField;
 import org.sakaiproject.gradebook.gwt.client.gxt.InlineEditNumberField;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
@@ -59,7 +58,6 @@ import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.TreeStore;
 import com.extjs.gxt.ui.client.widget.Component;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
-import com.extjs.gxt.ui.client.widget.Info;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.TabItem;
 import com.extjs.gxt.ui.client.widget.TabPanel;
@@ -80,14 +78,12 @@ import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
 
-public class LearnerSummaryPanel extends ContentPanel {
+public class LearnerSummaryPanel extends GradebookPanel {
 
 	private static final String FIELD_STATE_FIELD = "fieldState";
 	private static final String ITEM_IDENTIFIER_FLAG = "itemIdentifier";
 	private static final String BUTTON_SELECTOR_FLAG = "buttonSelector";
 	private enum ButtonSelector { CLOSE, COMMENT, NEXT, PREVIOUS, VIEW_AS_LEARNER };
-
-	private I18nConstants i18n;
 
 	private ContentPanel learnerInfoPanel;
 	private FormBinding formBinding;
@@ -107,9 +103,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 
 	private boolean isPossibleGradeTypeChanged = false;
 	
-	public LearnerSummaryPanel(I18nConstants i18n) {
-		this.i18n = i18n;
-
+	public LearnerSummaryPanel() {
 		setHeaderVisible(false);
 		setId("learnerSummaryPanel");
 		setLayout(new FlowLayout());
@@ -132,21 +126,21 @@ public class LearnerSummaryPanel extends ContentPanel {
 		tabPanel.setBorderStyle(true);
 
 		TabItem tab = new TabItem(i18n.learnerTabGradeHeader());
-		tab.addStyleName("gbTabMargins");
+		tab.addStyleName(resources.css().gbTabMargins());
 		tab.setLayout(new FlowLayout());
 		tab.add(newGradeFormPanel());
 		tab.setScrollMode(Scroll.AUTOY);
 		tabPanel.add(tab);
 
 		tab = new TabItem(i18n.learnerTabCommentHeader());
-		tab.addStyleName("gbTabMargins");
+		tab.addStyleName(resources.css().gbTabMargins());
 		tab.setLayout(new FitLayout());
 		tab.add(newCommentFormPanel());
 		tab.setScrollMode(Scroll.AUTOY);
 		tabPanel.add(tab);
 
 		tab = new TabItem(i18n.learnerTabExcuseHeader());
-		tab.addStyleName("gbTabMargins");
+		tab.addStyleName(resources.css().gbTabMargins());
 		tab.setLayout(new FitLayout());
 		tab.add(newExcuseFormPanel());
 		tab.setScrollMode(Scroll.AUTOY);
@@ -248,7 +242,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 						emptyText.append("Enter a value between 0 and ").append(DataTypeConversionUtil.formatDoubleAsPointsString(item.getPoints()));
 	
 					field.setItemId(itemId);
-					field.addInputStyleName("gbNumericFieldInput");
+					field.addInputStyleName(resources.css().gbNumericFieldInput());
 					field.addKeyListener(keyListener);
 					field.setFieldLabel(item.getName());
 					field.setFormat(DataTypeConversionUtil.getDefaultNumberFormat());
@@ -267,7 +261,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 					emptyText.append("Enter a letter grade");
 					
 					textField.setItemId(itemId);
-					textField.addInputStyleName("gbTextFieldInput");
+					textField.addInputStyleName(resources.css().gbTextFieldInput());
 					textField.addKeyListener(keyListener);
 					textField.setFieldLabel(item.getName());
 					textField.setName(item.getIdentifier());
@@ -289,7 +283,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 
 				String commentId = new StringBuilder(item.getIdentifier()).append(StudentModel.COMMENT_TEXT_FLAG).toString();
 				TextArea textArea = new TextArea();
-				textArea.addInputStyleName("gbTextAreaInput");
+				textArea.addInputStyleName(resources.css().gbTextAreaInput());
 				textArea.setFieldLabel(item.getName());
 				textArea.setItemId(itemId);
 				textArea.setName(commentId);
@@ -329,8 +323,6 @@ public class LearnerSummaryPanel extends ContentPanel {
 						break;
 					case COMMENT:
 						String id = be.getComponent().getData(ITEM_IDENTIFIER_FLAG);
-
-						Info.display("Id", id);
 						break;
 					case NEXT:
 						bse = new BrowseLearner(learner, BrowseType.NEXT);
@@ -388,7 +380,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 
 	private ContentPanel newLearnerInfoPanel() {
 		learnerInfoTable = new FlexTableContainer(new FlexTable()); 
-		learnerInfoTable.setStyleName("gbStudentInformation");
+		learnerInfoTable.setStyleName(resources.css().gbStudentInformation());
 		learnerInfoPanel = new ContentPanel();
 		learnerInfoPanel.setHeaderVisible(false);
 		learnerInfoPanel.setHeading("Individual Grade Summary");
@@ -409,26 +401,26 @@ public class LearnerSummaryPanel extends ContentPanel {
 		FlexCellFormatter formatter = learnerInfoTable.getFlexCellFormatter();
 
 		learnerInfoTable.setText(1, 0, i18n.columnTitleDisplayName());
-		formatter.setStyleName(1, 0, "gbImpact");
+		formatter.setStyleName(1, 0, resources.css().gbImpact());
 		formatter.setHeight(1, 0, rowHeight);
 		learnerInfoTable.setText(1, 1, learnerGradeRecordCollection.getStudentName());
 		formatter.setHeight(1, 1, rowHeight);
 		learnerInfoTable.setAutoHeight(true);
 		
 		learnerInfoTable.setText(2, 0, i18n.columnTitleEmail());
-		formatter.setStyleName(2, 0, "gbImpact");
+		formatter.setStyleName(2, 0, resources.css().gbImpact());
 		formatter.setHeight(2, 0, rowHeight);
 		learnerInfoTable.setText(2, 1, learnerGradeRecordCollection.getStudentEmail());
 		formatter.setHeight(2, 1, rowHeight);
 		
 		learnerInfoTable.setText(3, 0, i18n.columnTitleDisplayId());
-		formatter.setStyleName(3, 0, "gbImpact");
+		formatter.setStyleName(3, 0, resources.css().gbImpact());
 		formatter.setHeight(3, 0, rowHeight);
 		learnerInfoTable.setText(3, 1, learnerGradeRecordCollection.getStudentDisplayId());
 		formatter.setHeight(3, 1, rowHeight);
 		
 		learnerInfoTable.setText(4, 0, i18n.columnTitleSection());
-		formatter.setStyleName(4, 0, "gbImpact");
+		formatter.setStyleName(4, 0, resources.css().gbImpact());
 		formatter.setHeight(4, 0, rowHeight);
 		learnerInfoTable.setText(4, 1, learnerGradeRecordCollection.getStudentSections());
 		formatter.setHeight(4, 1, rowHeight);
@@ -438,7 +430,7 @@ public class LearnerSummaryPanel extends ContentPanel {
 		//formatter.setHeight(25, 0, "20px");
 
 		learnerInfoTable.setText(5, 0, "Course Grade");
-		formatter.setStyleName(5, 0, "gbImpact");
+		formatter.setStyleName(5, 0, resources.css().gbImpact());
 		formatter.setHeight(5, 0, rowHeight);
 		learnerInfoTable.setText(5, 1, learnerGradeRecordCollection.getStudentGrade());
 		formatter.setHeight(5, 1, rowHeight);
@@ -549,12 +541,12 @@ public class LearnerSummaryPanel extends ContentPanel {
 
 		if (isDropped) {
 			field.setData(FIELD_STATE_FIELD, Boolean.TRUE);
-			field.addInputStyleName("gbCellDropped");
+			field.addInputStyleName(resources.css().gbCellDropped());
 		} else {
 			dropFlagValue = field.getData(FIELD_STATE_FIELD);
 			isDropped = dropFlagValue != null && dropFlagValue.booleanValue();
 			if (isDropped)
-				field.removeInputStyleName("gbCellDropped");
+				field.removeInputStyleName(resources.css().gbCellDropped());
 		}
 	}
 

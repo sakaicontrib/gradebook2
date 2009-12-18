@@ -116,7 +116,7 @@ public class MultigradeView extends View {
 			}
 
 		};
-		this.multigrade = new MultiGradeContentPanel(null, i18n) {
+		this.multigrade = new MultiGradeContentPanel(null) {
 
 			protected BasePagingLoader<PagingLoadResult<StudentModel>> newLoader() {
 				return multigradeLoader;

@@ -28,7 +28,6 @@ import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
-import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.SecureToken;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
@@ -52,6 +51,7 @@ import org.sakaiproject.gradebook.gwt.client.model.SectionModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
+import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
@@ -128,15 +128,14 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	private Listener<ComponentEvent> componentEventListener;
 	private Listener<GridEvent> gridEventListener;
 	private Listener<RefreshCourseGradesEvent> refreshCourseGradesListener;
-	//private Listener<StoreEvent> storeListener;
 	private Listener<UserChangeEvent> userChangeEventListener;
 
 	private MultigradeSelectionModel<StudentModel> cellSelectionModel;
 	private BasePagingLoader<PagingLoadResult<SectionModel>> sectionsLoader;
 
 
-	public MultiGradeContentPanel(ContentPanel childPanel, I18nConstants i18n) {
-		super(AppConstants.MULTIGRADE, EntityType.LEARNER, childPanel, i18n);
+	public MultiGradeContentPanel(ContentPanel childPanel) {
+		super(AppConstants.MULTIGRADE, EntityType.LEARNER, childPanel);
 		setHeaderVisible(false);
 
 		// This UserChangeEvent listener
@@ -155,7 +154,8 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		String columnHeader = "";
 		if (gridEvent != null) {
 			String className = grid.getView().getCell(gridEvent.getRowIndex(), gridEvent.getColIndex()).getClassName();
-			className = className.replace(" gbCellDropped", "");
+			String gbDroppedText = new StringBuilder(" ").append(resources.css().gbCellDropped()).toString();
+			className = className.replace(gbDroppedText, "");
 			grid.getView().getCell(gridEvent.getRowIndex(), gridEvent.getColIndex()).setClassName(className);
 			grid.getView().getCell(gridEvent.getRowIndex(), gridEvent.getColIndex()).setInnerText("Saving...");
 
@@ -411,8 +411,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 						Dispatcher.forwardEvent(GradebookEvents.SingleGrade.getEventType(), selectedLearner);
 						ge.getGrid().getSelectionModel().select(ge.getRowIndex(), false);
 					}
-				} else if (ge.getType().equals(
-						Events.ContextMenu.getEventCode())) {
+				} else if (ge.getType().equals(Events.ContextMenu)) {
 					if (ge.getRowIndex() >= 0 && ge.getColIndex() >= 0) {
 						ColumnConfig c = grid.getColumnModel().getColumn(
 								ge.getColIndex());
@@ -553,18 +552,18 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 					String failedMessage = (String)r.get(failedProperty);
 
 					if (failedMessage != null) {
-						css.append(" gbCellFailed");
+						css.append(" ").append(resources.css().gbCellFailed());
 					} else if (startValue == null || !startValue.equals(currentValue)) {
-						css.append(" gbCellSucceeded");
+						css.append(" ").append(resources.css().gbCellSucceeded());
 					}
 				}
 
 				if (isDropped(model, property)) {
-					css.append(" gbCellDropped");
+					css.append(" ").append(resources.css().gbCellDropped());
 				}
 
 				if (isReleased(model, property)) {
-					css.append(" gbReleased");
+					css.append(" ").append(resources.css().gbReleased());
 				}
 
 				if (css.length() > 0)
@@ -576,14 +575,15 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			@Override
 			protected String markupInnerCss(ModelData model, String property, boolean isShowDirtyCells, boolean isPropertyChanged) {
 
+				GradebookResources resources = Registry.get(AppConstants.RESOURCES);
 				StringBuilder innerCssClass = new StringBuilder();
 
 				if (isCommented(model, property)) {
-					innerCssClass.append(" gbCellCommented");
+					innerCssClass.append(" ").append(resources.css().gbCellCommented());
 				} 
 
 				if (isClickable(model, property)) {
-					innerCssClass.append(" gbCellClickable");
+					innerCssClass.append(" ").append(resources.css().gbCellClickable());
 				}
 
 				if (innerCssClass.length() > 0)
@@ -948,7 +948,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 						numberField.setFormat(defaultNumberFormat);
 						numberField.setPropertyEditorType(Double.class);
 						numberField.setSelectOnFocus(true);
-						numberField.addInputStyleName("gbNumericFieldInput");
+						numberField.addInputStyleName(resources.css().gbNumericFieldInput());
 						field = numberField;
 
 						if (!isIncluded)
@@ -960,7 +960,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 					case LETTERS:
 						TextField<String> textField = new TextField<String>();
 						textField.setSelectOnFocus(true);
-						textField.addInputStyleName("gbTextFieldInput");
+						textField.addInputStyleName(resources.css().gbTextFieldInput());
 						field = textField;
 
 						if (!isIncluded)
@@ -977,7 +977,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 				break;
 			case GRADE_OVERRIDE:
 				TextField<String> textField = new TextField<String>();
-				textField.addInputStyleName("gbTextFieldInput");
+				textField.addInputStyleName(resources.css().gbTextFieldInput());
 				textField.setSelectOnFocus(true);
 				field = textField;
 

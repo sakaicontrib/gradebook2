@@ -38,7 +38,6 @@ import org.sakaiproject.gradebook.gwt.client.model.SubmissionVerificationModel;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.widget.Dialog;
-import com.extjs.gxt.ui.client.widget.Info;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.google.gwt.core.client.GWT;
@@ -112,7 +111,7 @@ public class GradeSubmissionDialog extends Dialog {
 	protected void onButtonPressed(Button button) {
 		super.onButtonPressed(button);
 		
-		if(button.getItemId().equals(Dialog.YES)) {
+		if (button.getItemId().equals(Dialog.YES)) {
 			
 			GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 			final MessageBox box = MessageBox.wait(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText1a(),  i18n.finalGradeSubmissionMessageText1b()); 
@@ -126,7 +125,10 @@ public class GradeSubmissionDialog extends Dialog {
 					public void onError(Request request, Throwable exception) {
 
 						box.close();
-						Info.display(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText2a());  
+						
+						Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText2a(), true));
+
+						//Info.display(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText2a());  
 					}
 
 					public void onResponseReceived(Request request, Response response) {
@@ -145,14 +147,17 @@ public class GradeSubmissionDialog extends Dialog {
 						}
 						else if(500 == response.getStatusCode()) {
 							
-							Info.display(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText5a());
+							Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText5a(), true));
+
+							//Info.display(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText5a());
 						}
 					}
 					
 				});
 			} catch (RequestException e) {
-				
-				Info.display(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText6a());
+				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText6a(), true));
+
+				//Info.display(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText6a());
 				e.printStackTrace();
 			}
 		}
