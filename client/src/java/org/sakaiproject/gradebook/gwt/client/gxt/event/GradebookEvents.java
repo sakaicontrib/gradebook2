@@ -57,6 +57,7 @@ public class GradebookEvents {
 	
 	public static final GradebookEvent BeginItemUpdates				= registerEvent(EventKey.BEGIN_ITEM_UPDATES);
 	public static final GradebookEvent BrowseLearner 				= registerEvent(EventKey.BROWSE_LEARNER);
+	public static final GradebookEvent Configuration				= registerEvent(EventKey.CONFIGURATION);
 	public static final GradebookEvent Confirmation					= registerEvent(EventKey.CONFIRMATION);
 	public static final GradebookEvent ConfirmDeleteItem			= registerEvent(EventKey.CONFIRM_DELETE_ITEM);
 	public static final GradebookEvent ClearSearch 					= registerEvent(EventKey.CLEAR_SEARCH);

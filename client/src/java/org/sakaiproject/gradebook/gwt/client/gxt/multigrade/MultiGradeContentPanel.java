@@ -23,7 +23,6 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.multigrade;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
@@ -469,9 +468,9 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 
 	public void onSwitchGradebook(GradebookModel selectedGradebook) {
 
+		ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
+		
 		if (store != null) {
-			ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
-
 			// Set the default sort field and direction on the store based on Cookies
 			String storedSortField = configModel.getSortField(gridId);
 			boolean isAscending = configModel.isAscending(gridId);
@@ -481,14 +480,21 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			if (storedSortField != null) 
 				store.setDefaultSort(storedSortField, sortDir);
 		}
+		
+		int pageSize = configModel.getPageSize(gridId);
+		
+		if (pageSize == -1)
+			pageSize = DEFAULT_PAGE_SIZE;
+		
+		pagingToolBar.setPageSize(pageSize);
 
 		onRefreshGradebookSetup(selectedGradebook);
 		reconfigureGrid(newColumnModel(selectedGradebook));
 
-		int pageSize = getPageSize();
 		if (loader != null) 
 			loader.load(0, pageSize);
-
+		pageSizeField.setValue(Integer.valueOf(pageSize));
+		
 		//if (sectionsLoader != null)
 		//	sectionsLoader.load();
 	}
@@ -740,34 +746,8 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 							ConfigurationModel model = new ConfigurationModel(selectedGradebook.getGradebookId());
 							model.setPageSize(gridId, Integer.valueOf(pageSize.intValue()));
 
-							Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
-
-							AsyncCallback<ConfigurationModel> callback = new AsyncCallback<ConfigurationModel>() {
-
-								public void onFailure(Throwable caught) {
-									// FIXME: Should we notify the user when this fails?
-								}
-
-								public void onSuccess(ConfigurationModel result) {
-									GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-									ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
-
-									Collection<String> propertyNames = result.getPropertyNames();
-									if (propertyNames != null) {
-										List<String> names = new ArrayList<String>(propertyNames);
-
-										for (int i=0;i<names.size();i++) {
-											String name = names.get(i);
-											String value = result.get(name);
-											configModel.set(name, value);
-										}
-									}
-								}
-
-							};
-
-							service.update(model, EntityType.CONFIGURATION, null, SecureToken.get(), callback);
-
+							Dispatcher.forwardEvent(GradebookEvents.Configuration.getEventType(), model);
+							
 							newLoader().setLimit(pageSize.intValue());
 							pagingToolBar.setPageSize(pageSize.intValue());
 							pagingToolBar.refresh();

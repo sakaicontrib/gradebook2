@@ -67,6 +67,7 @@ public class ServiceController extends Controller {
 	private DelayedTask showColumnsTask;
 	
 	public ServiceController() {
+		registerEventTypes(GradebookEvents.Configuration.getEventType());
 		registerEventTypes(GradebookEvents.CreateItem.getEventType());
 		registerEventTypes(GradebookEvents.DeleteItem.getEventType());
 		registerEventTypes(GradebookEvents.RevertItem.getEventType());
@@ -78,6 +79,9 @@ public class ServiceController extends Controller {
 	@Override
 	public void handleEvent(AppEvent event) {
 		switch (GradebookEvents.getEvent(event.getType()).getEventKey()) {
+			case CONFIGURATION:
+				onConfigure((ConfigurationModel)event.getData());
+				break;
 			case CREATE_ITEM:
 				onCreateItem((ItemCreate)event.getData());
 				break;
@@ -99,6 +103,40 @@ public class ServiceController extends Controller {
 		}
 	}
 
+	private void onConfigure(final ConfigurationModel event) {
+		doConfigure(event);
+	}
+	
+	private void doConfigure(ConfigurationModel model) {
+		Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
+
+		AsyncCallback<ConfigurationModel> callback = new AsyncCallback<ConfigurationModel>() {
+
+			public void onFailure(Throwable caught) {
+				// FIXME: Should we notify the user when this fails?
+			}
+
+			public void onSuccess(ConfigurationModel result) {
+				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+				ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
+
+				Collection<String> propertyNames = result.getPropertyNames();
+				if (propertyNames != null) {
+					List<String> names = new ArrayList<String>(propertyNames);
+
+					for (int i=0;i<names.size();i++) {
+						String name = names.get(i);
+						String value = result.get(name);
+						configModel.set(name, value);
+					}
+				}
+			}
+
+		};
+
+		service.update(model, EntityType.CONFIGURATION, null, SecureToken.get(), callback);
+	}
+	
 	private void onCreateItem(final ItemCreate event) {
 		Dispatcher.forwardEvent(GradebookEvents.MaskItemTree.getEventType());
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
