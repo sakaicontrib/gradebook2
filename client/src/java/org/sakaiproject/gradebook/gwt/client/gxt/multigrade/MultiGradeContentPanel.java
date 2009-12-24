@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.SecureToken;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
@@ -41,15 +42,16 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.RefreshCourseGradesEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
+import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
+import org.sakaiproject.gradebook.gwt.client.model.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.SectionModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -104,17 +106,17 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-public class MultiGradeContentPanel extends GridPanel<StudentModel> implements StudentModelOwner {
+public class MultiGradeContentPanel extends GridPanel<ModelData> implements StudentModelOwner {
 
 	private enum PageOverflow { TOP, BOTTOM, NONE };
 
 	private ToolBar searchToolBar;
 	private LayoutContainer toolBarContainer;
 	private Long commentingAssignmentId; 
-	private StudentModel commentingStudentModel;
+	private ModelData commentingStudentModel;
 
-	private GridCellRenderer<StudentModel> unweightedNumericCellRenderer;
-	private GridCellRenderer<StudentModel> extraCreditNumericCellRenderer;
+	private GridCellRenderer<ModelData> unweightedNumericCellRenderer;
+	private GridCellRenderer<ModelData> extraCreditNumericCellRenderer;
 
 	private int currentIndex = -1;
 
@@ -129,7 +131,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	private Listener<RefreshCourseGradesEvent> refreshCourseGradesListener;
 	private Listener<UserChangeEvent> userChangeEventListener;
 
-	private MultigradeSelectionModel<StudentModel> cellSelectionModel;
+	private MultigradeSelectionModel<ModelData> cellSelectionModel;
 	private BasePagingLoader<PagingLoadResult<SectionModel>> sectionsLoader;
 
 
@@ -164,7 +166,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord.getEventType(), new GradeRecordUpdate(record, property, columnHeader, startValue, value));
 	}
 
-	public StudentModel getSelectedModel() {
+	public ModelData getSelectedModel() {
 		return commentingStudentModel;
 	}
 
@@ -182,7 +184,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	 * to change pages before throwing the event that notifies the dialog box to show a new learner
 	 */
 	public void onBrowseLearner(BrowseLearner be) {
-		StudentModel current = be.learner;
+		ModelData current = be.learner;
 		currentIndex = grid.getStore().indexOf(current);
 
 		int pageSize = getPageSize();
@@ -236,12 +238,12 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		// (2) an index greater than the page size
 		// (3) a null item in the store, in particular on the last page when there are fewer populated rows than the page size allows
 		if (requiresPageChange) {
-			grid.getStore().addListener(Store.DataChanged, new Listener<StoreEvent<StudentModel>>() {
+			grid.getStore().addListener(Store.DataChanged, new Listener<StoreEvent<ModelData>>() {
 
-				public void handleEvent(StoreEvent<StudentModel> se) {
-					StudentModel selectedLearner = null;
+				public void handleEvent(StoreEvent<ModelData> se) {
+					ModelData selectedLearner = null;
 					while (selectedLearner == null && currentIndex >= 0) {
-						selectedLearner = ((ListStore<StudentModel>)se.getStore()).getAt(currentIndex);
+						selectedLearner = ((ListStore<ModelData>)se.getStore()).getAt(currentIndex);
 						if (selectedLearner != null) {
 
 						} else {
@@ -257,7 +259,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 
 			});
 		} else {
-			StudentModel selectedLearner = grid.getStore().getAt(currentIndex);
+			ModelData selectedLearner = grid.getStore().getAt(currentIndex);
 
 			if (selectedLearner != null)
 				cellSelectionModel.select(currentIndex, false);
@@ -406,7 +408,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 
 				if (ge.getType().equals(Events.CellClick)) {
 					if (ge.getColIndex() == 0 || ge.getColIndex() == 1 || ge.getColIndex() == 2) {
-						StudentModel selectedLearner = store.getAt(ge.getRowIndex());
+						ModelData selectedLearner = store.getAt(ge.getRowIndex());
 						Dispatcher.forwardEvent(GradebookEvents.SingleGrade.getEventType(), selectedLearner);
 						ge.getGrid().getSelectionModel().select(ge.getRowIndex(), false);
 					}
@@ -426,8 +428,10 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 						commentingStudentModel = store.getAt(ge.getRowIndex());
 						commentingAssignmentId = Long.valueOf(assignId);
 
+						String commentedKey = DataTypeConversionUtil.buildCommentKey(commentingAssignmentId.toString());
+						
 						Boolean commentFlag = (Boolean) commentingStudentModel
-								.get(assignId + StudentModel.COMMENTED_FLAG);
+								.get(commentedKey);
 
 						boolean isCommented = commentFlag != null
 								&& commentFlag.booleanValue();
@@ -522,20 +526,20 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			}
 
 			protected boolean isClickable(ModelData model, String property) {
-				return property.equals(StudentModel.Key.DISPLAY_NAME.name()) ||
-				property.equals(StudentModel.Key.LAST_NAME_FIRST.name()) ||
-				property.equals(StudentModel.Key.DISPLAY_ID.name());
+				return property.equals(LearnerKey.DISPLAY_NAME.name()) ||
+				property.equals(LearnerKey.LAST_NAME_FIRST.name()) ||
+				property.equals(LearnerKey.DISPLAY_ID.name());
 			}
 
 			protected boolean isCommented(ModelData model, String property) {
-				String commentedProperty = property + StudentModel.COMMENTED_FLAG;
+				String commentedProperty = DataTypeConversionUtil.buildCommentKey(property);
 				Boolean isCommented = model.get(commentedProperty);
 
 				return isCommented != null && isCommented.booleanValue();
 			}
 
 			protected boolean isDropped(ModelData model, String property) {
-				String droppedProperty = property + StudentModel.DROP_FLAG;
+				String droppedProperty = DataTypeConversionUtil.buildDroppedKey(property);
 				Boolean isDropped = model.get(droppedProperty);
 
 				return isDropped != null && isDropped.booleanValue();
@@ -610,13 +614,13 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	}
 
 	@Override
-	protected PagingLoadConfig newLoadConfig(ListStore<StudentModel> store, int pageSize) {
+	protected PagingLoadConfig newLoadConfig(ListStore<ModelData> store, int pageSize) {
 		SortInfo sortInfo = store.getSortState();
 		MultiGradeLoadConfig loadConfig = new MultiGradeLoadConfig();
 		loadConfig.setLimit(0);
 		loadConfig.setOffset(pageSize);	
 		if (sortInfo == null)
-			sortInfo = new SortInfo(StudentModel.Key.LAST_NAME_FIRST.name(), SortDir.ASC);
+			sortInfo = new SortInfo(LearnerKey.LAST_NAME_FIRST.name(), SortDir.ASC);
 
 		loadConfig.setSortInfo(sortInfo);
 
@@ -781,7 +785,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 	}
 
 	@Override
-	protected void addGridListenersAndPlugins(final EditorGrid<StudentModel> grid) {
+	protected void addGridListenersAndPlugins(final EditorGrid<ModelData> grid) {
 
 		// We only need to do this once
 		if (rendered)
@@ -790,13 +794,13 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		grid.addListener(Events.CellClick, gridEventListener);
 		grid.addListener(Events.ContextMenu, gridEventListener);
 
-		cellSelectionModel = new MultigradeSelectionModel<StudentModel>();
+		cellSelectionModel = new MultigradeSelectionModel<ModelData>();
 		cellSelectionModel.setSelectionMode(SelectionMode.SINGLE);
-		cellSelectionModel.addSelectionChangedListener(new SelectionChangedListener<StudentModel>() {
+		cellSelectionModel.addSelectionChangedListener(new SelectionChangedListener<ModelData>() {
 
 			@Override
-			public void selectionChanged(SelectionChangedEvent<StudentModel> sce) {
-				StudentModel learner = sce.getSelectedItem();
+			public void selectionChanged(SelectionChangedEvent<ModelData> sce) {
+				ModelData learner = sce.getSelectedItem();
 
 				if (learner != null) 
 					Dispatcher.forwardEvent(GradebookEvents.SelectLearner.getEventType(), learner);
@@ -897,7 +901,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 				break;
 		}
 
-		if (item.getStudentModelKey() != null && item.getStudentModelKey().equals(StudentModel.Key.GRADE_OVERRIDE.name()))
+		if (item.getStudentModelKey() != null && item.getStudentModelKey().equals(LearnerKey.GRADE_OVERRIDE.name()))
 			columnNameBuilder.append(" [A-F]");
 
 		return buildColumn(selectedGradebook, item.getStudentModelKey(), item.getIdentifier(), 
@@ -915,7 +919,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 		config.setHidden(defaultHidden);
 
 		Field<?> field = null;
-		StudentModel.Key key = StudentModel.Key.valueOf(property);
+		LearnerKey key = LearnerKey.valueOf(property);
 		switch (key) {
 			case ASSIGNMENT:
 				switch (selectedGradebook.getGradebookItemModel().getGradeType()) {
@@ -1067,11 +1071,11 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 			pagingToolBar.refresh();
 	}
 
-	private GridCellRenderer<StudentModel> unweightedTextCellRenderer = new GridCellRenderer<StudentModel>() {
+	private GridCellRenderer<ModelData> unweightedTextCellRenderer = new GridCellRenderer<ModelData>() {
 
-		public Object render(StudentModel model, String property,
+		public Object render(ModelData model, String property,
 				ColumnData config, int rowIndex, int colIndex,
-				ListStore<StudentModel> store, Grid<StudentModel> grid) {
+				ListStore<ModelData> store, Grid<ModelData> grid) {
 
 			Object value = model.get(property);
 
@@ -1083,11 +1087,11 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 
 	};
 
-	private GridCellRenderer<StudentModel> extraCreditTextCellRenderer = new GridCellRenderer<StudentModel>() {
+	private GridCellRenderer<ModelData> extraCreditTextCellRenderer = new GridCellRenderer<ModelData>() {
 
-		public String render(StudentModel model, String property,
+		public String render(ModelData model, String property,
 				ColumnData config, int rowIndex, int colIndex,
-				ListStore<StudentModel> store, Grid<StudentModel> grid) {
+				ListStore<ModelData> store, Grid<ModelData> grid) {
 
 			Object value = model.get(property);
 
@@ -1103,19 +1107,7 @@ public class MultiGradeContentPanel extends GridPanel<StudentModel> implements S
 
 			if (event.isSingle) {
 				toggle(event.model, event.isHidden);
-				/*int columnIndex = cm.findColumnIndex(event.itemModelId);
-
-				if (columnIndex != -1) {
-					cm.setHidden(columnIndex, event.isHidden);
-				}*/
 			} else {
-
-				/*if (!event.visibleStaticIdSet.contains(StudentModel.Key.DISPLAY_ID.name()) 
-						&& !event.visibleStaticIdSet.contains(StudentModel.Key.DISPLAY_NAME.name())
-						&& !event.visibleStaticIdSet.contains(StudentModel.Key.LAST_NAME_FIRST.name())) 
-					event.visibleStaticIdSet.add(StudentModel.Key.LAST_NAME_FIRST.name());
-				*/
-				
 				grid.setVisible(false);
 				// Loop through every column and show/hide it
 				for (int i=0;i<cm.getColumnCount();i++) {

@@ -33,15 +33,17 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradeEventModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.data.BaseListLoader;
-import com.extjs.gxt.ui.client.data.ListLoadConfig;
+import com.extjs.gxt.ui.client.data.BaseModelData;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
 import com.extjs.gxt.ui.client.data.ListLoader;
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.RpcProxy;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.Events;
@@ -161,7 +163,7 @@ public class MultiGradeContextMenu extends Menu {
 			@Override
 			protected void load(Object listLoadConfig, AsyncCallback<ListLoadResult<GradeScaleRecordModel>> callback) {
 				Gradebook2RPCServiceAsync service = Registry.get("service");
-				service.getPage(owner.getSelectedModel().getIdentifier(), owner.getSelectedAssignment(), EntityType.GRADE_EVENT, null, SecureToken.get(), callback);
+				service.getPage((String)owner.getSelectedModel().get(ItemKey.ID.name()), owner.getSelectedAssignment(), EntityType.GRADE_EVENT, null, SecureToken.get(), callback);
 			}
 			
 		};
@@ -234,7 +236,7 @@ public class MultiGradeContextMenu extends Menu {
 				
 				if (contextMenuEditCommentItem.isEnabled()) {
 					
-					StudentModel learner = owner.getSelectedModel();
+					ModelData learner = owner.getSelectedModel();
 					Long itemId = owner.getSelectedAssignment();
 					
 					if (learner != null && itemId != null) {
@@ -268,8 +270,8 @@ public class MultiGradeContextMenu extends Menu {
 	
 	
 	private void addComment(StudentModelOwner owner, String value) {
-		ListStore<StudentModel> learnerStore = owner.getStore();
-    	StudentModel learner = owner.getSelectedModel();
+		ListStore<ModelData> learnerStore = owner.getStore();
+		ModelData learner = owner.getSelectedModel();
     	Long itemId = owner.getSelectedAssignment();
     	
     	String property = new StringBuilder().append(String.valueOf(itemId)).append(StudentModel.COMMENT_TEXT_FLAG).toString();
@@ -281,8 +283,8 @@ public class MultiGradeContextMenu extends Menu {
 	}
 	
 	private void editComment(StudentModelOwner owner, String value) {
-		ListStore<StudentModel> learnerStore = owner.getStore();
-    	StudentModel learner = owner.getSelectedModel();
+		ListStore<ModelData> learnerStore = owner.getStore();
+		ModelData learner = owner.getSelectedModel();
     	Long itemId = owner.getSelectedAssignment();
     	
     	String property = new StringBuilder().append(String.valueOf(itemId)).append(StudentModel.COMMENT_TEXT_FLAG).toString();

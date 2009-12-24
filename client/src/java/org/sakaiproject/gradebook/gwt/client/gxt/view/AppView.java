@@ -37,6 +37,7 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
 import com.extjs.gxt.ui.client.Registry;
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.View;
@@ -120,7 +121,7 @@ public abstract class AppView extends View {
 			onRefreshGradeScale((GradebookModel)event.getData());
 			break;
 		case SELECT_LEARNER:
-			onSelectLearner((StudentModel)event.getData());
+			onSelectLearner((ModelData)event.getData());
 			break;
 		case SHOW_GRADE_SCALE:
 			onShowGradeScale((Boolean)event.getData());
@@ -135,7 +136,7 @@ public abstract class AppView extends View {
 			onStopStatistics();
 			break;
 		case SINGLE_VIEW:
-			onSingleView((StudentModel)event.getData());
+			onSingleView((ModelData)event.getData());
 			break;
 		case START_IMPORT:
 			onStartImport();
@@ -165,7 +166,7 @@ public abstract class AppView extends View {
 			onItemCreated((ItemModel)event.getData());
 			break;
 		case SINGLE_GRADE:
-			onSingleGrade((StudentModel)event.getData());
+			onSingleGrade((ModelData)event.getData());
 			break;
 		case STARTUP:
 			//RootPanel.get().add(realViewport);
@@ -262,11 +263,11 @@ public abstract class AppView extends View {
 		
 	}
 	
-	protected void onSelectLearner(StudentModel learner) {
+	protected void onSelectLearner(ModelData learner) {
 		
 	}
 	
-	protected void onSingleView(StudentModel learner) {
+	protected void onSingleView(ModelData learner) {
 		
 	}
 	
@@ -286,7 +287,7 @@ public abstract class AppView extends View {
 		
 	}
 	
-	protected void onSingleGrade(StudentModel student) {
+	protected void onSingleGrade(ModelData student) {
 		
 	}
 	

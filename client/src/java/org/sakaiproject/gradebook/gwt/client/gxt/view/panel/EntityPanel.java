@@ -5,10 +5,11 @@ import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.InlineEditField;
 import org.sakaiproject.gradebook.gwt.client.gxt.InlineEditNumberField;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.NullSensitiveCheckBox;
+import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModelComparer;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
 import com.extjs.gxt.ui.client.data.ModelData;
@@ -182,7 +183,7 @@ public abstract class EntityPanel extends ContentPanel {
 	}
 	
 	private void initializeCheckBoxes() {
-		scaledExtraCreditField = newCheckBox(ItemModel.Key.EXTRA_CREDIT_SCALED.name(), i18n.scaledExtraCreditFieldLabel(), i18n.scaledExtraCreditToolTip());
+		scaledExtraCreditField = newCheckBox(ItemKey.EXTRA_CREDIT_SCALED.name(), i18n.scaledExtraCreditFieldLabel(), i18n.scaledExtraCreditToolTip());
 		
 		displayToStudentFieldSet = new FieldSet();  
 		displayToStudentFieldSet.setHeading(i18n.displayToStudentsHeading());  
@@ -190,19 +191,19 @@ public abstract class EntityPanel extends ContentPanel {
 		displayToStudentFieldSet.setLayout(new FitLayout());
 		displayToStudentFieldSet.setVisible(false);
 				
-		releaseGradesField = newCheckBox(ItemModel.Key.RELEASEGRADES.name(), i18n.releaseGradesFieldLabel(), i18n.releaseGradesToolTip());
-		releaseItemsField = newCheckBox(ItemModel.Key.RELEASEITEMS.name(), i18n.releaseItemsFieldLabel(), i18n.releaseItemsToolTip());
-		showMeanField = newCheckBox(ItemModel.Key.SHOWMEAN.name(), i18n.showMeanFieldLabel(), i18n.showMeanToolTip());		
-		showMedianField = newCheckBox(ItemModel.Key.SHOWMEDIAN.name(), i18n.showMedianFieldLabel(), i18n.showMedianToolTip());
-		showModeField = newCheckBox(ItemModel.Key.SHOWMODE.name(), i18n.showModeFieldLabel(), i18n.showModeToolTip());
-		showRankField = newCheckBox(ItemModel.Key.SHOWRANK.name(), i18n.showRankFieldLabel(), i18n.showRankToolTip());
-		showItemStatsField = newCheckBox(ItemModel.Key.SHOWITEMSTATS.name(), i18n.showItemStatsFieldLabel(), i18n.showItemStatsToolTip());
-		includedField = newCheckBox(ItemModel.Key.INCLUDED.name(), i18n.includedFieldLabel(), i18n.includedToolTip());
-		extraCreditField = newCheckBox(ItemModel.Key.EXTRA_CREDIT.name(), i18n.extraCreditFieldLabel(), i18n.extraCreditToolTip());
-		equallyWeightChildrenField = newCheckBox(ItemModel.Key.EQUAL_WEIGHT.name(), i18n.equallyWeightChildrenFieldLabel(), i18n.equallyWeightChildrenToolTip());
-		releasedField = newCheckBox(ItemModel.Key.RELEASED.name(), i18n.releasedFieldLabel(), i18n.releasedToolTip());
-		nullsAsZerosField = newCheckBox(ItemModel.Key.NULLSASZEROS.name(), i18n.nullsAsZerosFieldLabel(), i18n.nullsAsZerosToolTip());
-		enforcePointWeightingField = newCheckBox(ItemModel.Key.ENFORCE_POINT_WEIGHTING.name(), i18n.enforcePointWeightingFieldLabel(), i18n.enforcePointWeightingToolTip());
+		releaseGradesField = newCheckBox(ItemKey.RELEASEGRADES.name(), i18n.releaseGradesFieldLabel(), i18n.releaseGradesToolTip());
+		releaseItemsField = newCheckBox(ItemKey.RELEASEITEMS.name(), i18n.releaseItemsFieldLabel(), i18n.releaseItemsToolTip());
+		showMeanField = newCheckBox(ItemKey.SHOWMEAN.name(), i18n.showMeanFieldLabel(), i18n.showMeanToolTip());		
+		showMedianField = newCheckBox(ItemKey.SHOWMEDIAN.name(), i18n.showMedianFieldLabel(), i18n.showMedianToolTip());
+		showModeField = newCheckBox(ItemKey.SHOWMODE.name(), i18n.showModeFieldLabel(), i18n.showModeToolTip());
+		showRankField = newCheckBox(ItemKey.SHOWRANK.name(), i18n.showRankFieldLabel(), i18n.showRankToolTip());
+		showItemStatsField = newCheckBox(ItemKey.SHOWITEMSTATS.name(), i18n.showItemStatsFieldLabel(), i18n.showItemStatsToolTip());
+		includedField = newCheckBox(ItemKey.INCLUDED.name(), i18n.includedFieldLabel(), i18n.includedToolTip());
+		extraCreditField = newCheckBox(ItemKey.EXTRA_CREDIT.name(), i18n.extraCreditFieldLabel(), i18n.extraCreditToolTip());
+		equallyWeightChildrenField = newCheckBox(ItemKey.EQUAL_WEIGHT.name(), i18n.equallyWeightChildrenFieldLabel(), i18n.equallyWeightChildrenToolTip());
+		releasedField = newCheckBox(ItemKey.RELEASED.name(), i18n.releasedFieldLabel(), i18n.releasedToolTip());
+		nullsAsZerosField = newCheckBox(ItemKey.NULLSASZEROS.name(), i18n.nullsAsZerosFieldLabel(), i18n.nullsAsZerosToolTip());
+		enforcePointWeightingField = newCheckBox(ItemKey.ENFORCE_POINT_WEIGHTING.name(), i18n.enforcePointWeightingFieldLabel(), i18n.enforcePointWeightingToolTip());
 	}
 	
 	private void initializeReadOnly() {
@@ -211,34 +212,34 @@ public abstract class EntityPanel extends ContentPanel {
 		directionsField.setName("directions");
 
 		LabelField nameField = new LabelField();
-		nameField.setName(ItemModel.Key.NAME.name());
+		nameField.setName(ItemKey.NAME.name());
 		nameField.setFieldLabel(i18n.nameFieldLabel());
 		nameField.setStyleAttribute("font-size", "12pt");
 		this.nameField = nameField;
 
 		LabelField categoryPicker = new LabelField();
-		categoryPicker.setName(ItemModel.Key.CATEGORY_NAME.name());
+		categoryPicker.setName(ItemKey.CATEGORY_NAME.name());
 		categoryPicker.setFieldLabel(i18n.categoryName());
 		categoryPicker.setStyleAttribute("font-size", "12pt");
 		categoryPicker.setVisible(false);
 		this.categoryPicker = categoryPicker;
 
 		LabelField categoryTypePicker = new LabelField();
-		categoryTypePicker.setName(ItemModel.Key.CATEGORYTYPE.name());
+		categoryTypePicker.setName(ItemKey.CATEGORYTYPE.name());
 		categoryTypePicker.setFieldLabel(i18n.categoryTypeFieldLabel());
 		categoryTypePicker.setStyleAttribute("font-size", "12pt");
 		categoryTypePicker.setVisible(false);
 		this.categoryTypePicker = categoryTypePicker;
 
 		LabelField gradeTypePicker = new LabelField();
-		gradeTypePicker.setName(ItemModel.Key.GRADETYPE.name());
+		gradeTypePicker.setName(ItemKey.GRADETYPE.name());
 		gradeTypePicker.setFieldLabel(i18n.gradeTypeFieldLabel());
 		gradeTypePicker.setStyleAttribute("font-size", "12pt");
 		gradeTypePicker.setVisible(false);
 		this.gradeTypePicker = gradeTypePicker;
 				
 		LabelField percentCourseGradeField = new LabelField();
-		percentCourseGradeField.setName(ItemModel.Key.PERCENT_COURSE_GRADE.name());
+		percentCourseGradeField.setName(ItemKey.PERCENT_COURSE_GRADE.name());
 		percentCourseGradeField.setFieldLabel(i18n.percentCourseGradeFieldLabel());
 		percentCourseGradeField.setStyleAttribute("font-size", "12pt");
 		percentCourseGradeField.setVisible(false);
@@ -246,7 +247,7 @@ public abstract class EntityPanel extends ContentPanel {
 		this.percentCourseGradeField = percentCourseGradeField;
 		
 		LabelField percentCategoryField = new LabelField();
-		percentCategoryField.setName(ItemModel.Key.PERCENT_CATEGORY.name());
+		percentCategoryField.setName(ItemKey.PERCENT_CATEGORY.name());
 		percentCategoryField.setFieldLabel(i18n.percentCategoryFieldLabel());
 		percentCategoryField.setStyleAttribute("font-size", "12pt");
 		percentCategoryField.setVisible(false);
@@ -254,7 +255,7 @@ public abstract class EntityPanel extends ContentPanel {
 		this.percentCategoryField = percentCategoryField;
 		
 		LabelField pointsField = new LabelField();
-		pointsField.setName(ItemModel.Key.POINTS.name());
+		pointsField.setName(ItemKey.POINTS.name());
 		pointsField.setEmptyText(i18n.pointsFieldEmptyText());
 		pointsField.setFieldLabel(i18n.pointsFieldLabel());
 		pointsField.setStyleAttribute("font-size", "12pt");
@@ -263,7 +264,7 @@ public abstract class EntityPanel extends ContentPanel {
 
 		LabelField dropLowestField = new LabelField();
 		dropLowestField.setEmptyText("0");
-		dropLowestField.setName(ItemModel.Key.DROP_LOWEST.name());
+		dropLowestField.setName(ItemKey.DROP_LOWEST.name());
 		dropLowestField.setFieldLabel(i18n.dropLowestFieldLabel());
 		dropLowestField.setStyleAttribute("font-size", "12pt");
 		dropLowestField.setVisible(false);
@@ -271,7 +272,7 @@ public abstract class EntityPanel extends ContentPanel {
 		this.dropLowestField = dropLowestField;
 
 		LabelField dueDateField = new LabelField();
-		dueDateField.setName(ItemModel.Key.DUE_DATE.name());
+		dueDateField.setName(ItemKey.DUE_DATE.name());
 		dueDateField.setFieldLabel(i18n.dueDateFieldLabel());
 		dueDateField.setStyleAttribute("font-size", "12pt");
 		dueDateField.setVisible(false);
@@ -279,7 +280,7 @@ public abstract class EntityPanel extends ContentPanel {
 		this.dueDateField = dueDateField;
 
 		LabelField sourceField = new LabelField();
-		sourceField.setName(ItemModel.Key.SOURCE.name());
+		sourceField.setName(ItemKey.SOURCE.name());
 		sourceField.setFieldLabel(i18n.sourceFieldLabel());
 		sourceField.setEnabled(false);
 		sourceField.setEmptyText("Gradebook");
@@ -296,20 +297,20 @@ public abstract class EntityPanel extends ContentPanel {
 
 		InlineEditField<String> nameField = new InlineEditField<String>();
 		nameField.setAllowBlank(false);
-		nameField.setName(ItemModel.Key.NAME.name());
+		nameField.setName(ItemKey.NAME.name());
 		nameField.setFieldLabel(i18n.nameFieldLabel());
 		this.nameField = nameField;
 
 		ComboBox<ItemModel> categoryPicker = new ComboBox<ItemModel>();
-		categoryPicker.setDisplayField(ItemModel.Key.NAME.name());
-		categoryPicker.setName(ItemModel.Key.CATEGORY_ID.name());
+		categoryPicker.setDisplayField(ItemKey.NAME.name());
+		categoryPicker.setName(ItemKey.CATEGORY_ID.name());
 		categoryPicker.setFieldLabel(i18n.categoryName());
 		categoryPicker.setVisible(false);
 		this.categoryPicker = categoryPicker;
 
 		ComboBox<ModelData> categoryTypePicker = new ComboBox<ModelData>();
 		categoryTypePicker.setDisplayField("name");
-		categoryTypePicker.setName(ItemModel.Key.CATEGORYTYPE.name());
+		categoryTypePicker.setName(ItemKey.CATEGORYTYPE.name());
 		categoryTypePicker.setEditable(false);
 		categoryTypePicker.setFieldLabel(i18n.categoryTypeFieldLabel());
 		categoryTypePicker.setForceSelection(true);
@@ -319,14 +320,14 @@ public abstract class EntityPanel extends ContentPanel {
 		ComboBox<ModelData> gradeTypePicker = new ComboBox<ModelData>();
 		gradeTypePicker.setDisplayField("name");
 		gradeTypePicker.setEditable(false);
-		gradeTypePicker.setName(ItemModel.Key.GRADETYPE.name());
+		gradeTypePicker.setName(ItemKey.GRADETYPE.name());
 		gradeTypePicker.setFieldLabel(i18n.gradeTypeFieldLabel());
 		gradeTypePicker.setForceSelection(true);
 		gradeTypePicker.setVisible(false);
 		this.gradeTypePicker = gradeTypePicker;
 				
 		InlineEditNumberField percentCourseGradeField = new InlineEditNumberField();
-		percentCourseGradeField.setName(ItemModel.Key.PERCENT_COURSE_GRADE.name());
+		percentCourseGradeField.setName(ItemKey.PERCENT_COURSE_GRADE.name());
 		percentCourseGradeField.setFieldLabel(i18n.percentCourseGradeFieldLabel());
 		percentCourseGradeField.setFormat(DataTypeConversionUtil.getLongNumberFormat());
 		percentCourseGradeField.setAllowDecimals(true);
@@ -337,7 +338,7 @@ public abstract class EntityPanel extends ContentPanel {
 		this.percentCourseGradeField = percentCourseGradeField;
 		
 		InlineEditNumberField percentCategoryField = new InlineEditNumberField();
-		percentCategoryField.setName(ItemModel.Key.PERCENT_CATEGORY.name());
+		percentCategoryField.setName(ItemKey.PERCENT_CATEGORY.name());
 		percentCategoryField.setFieldLabel(i18n.percentCategoryFieldLabel());
 		percentCategoryField.setFormat(DataTypeConversionUtil.getLongNumberFormat());
 		percentCategoryField.setAllowDecimals(true);
@@ -348,7 +349,7 @@ public abstract class EntityPanel extends ContentPanel {
 		this.percentCategoryField = percentCategoryField;
 		
 		InlineEditNumberField pointsField = new InlineEditNumberField();
-		pointsField.setName(ItemModel.Key.POINTS.name());
+		pointsField.setName(ItemKey.POINTS.name());
 		pointsField.setEmptyText(i18n.pointsFieldEmptyText());
 		pointsField.setFieldLabel(i18n.pointsFieldLabel());
 		pointsField.setFormat(DataTypeConversionUtil.getDefaultNumberFormat());
@@ -359,7 +360,7 @@ public abstract class EntityPanel extends ContentPanel {
 
 		InlineEditNumberField dropLowestField = new InlineEditNumberField();
 		dropLowestField.setEmptyText("0");
-		dropLowestField.setName(ItemModel.Key.DROP_LOWEST.name());
+		dropLowestField.setName(ItemKey.DROP_LOWEST.name());
 		dropLowestField.setFieldLabel(i18n.dropLowestFieldLabel());
 		dropLowestField.setAllowDecimals(false);
 		dropLowestField.setPropertyEditorType(Integer.class);
@@ -368,14 +369,14 @@ public abstract class EntityPanel extends ContentPanel {
 		this.dropLowestField = dropLowestField;
 
 		DateField dueDateField = new DateField();
-		dueDateField.setName(ItemModel.Key.DUE_DATE.name());
+		dueDateField.setName(ItemKey.DUE_DATE.name());
 		dueDateField.setFieldLabel(i18n.dueDateFieldLabel());
 		dueDateField.setVisible(false);
 		dueDateField.setEmptyText(i18n.dueDateEmptyText());
 		this.dueDateField = dueDateField;
 
 		TextField<String> sourceField = new TextField<String>();
-		sourceField.setName(ItemModel.Key.SOURCE.name());
+		sourceField.setName(ItemKey.SOURCE.name());
 		sourceField.setFieldLabel(i18n.sourceFieldLabel());
 		sourceField.setEnabled(false);
 		sourceField.setEmptyText("Gradebook");

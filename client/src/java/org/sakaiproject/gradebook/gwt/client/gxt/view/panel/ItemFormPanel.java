@@ -39,11 +39,12 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.AppView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.ItemFormComboBox;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.NullSensitiveCheckBox;
+import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModelComparer;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
+import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -178,9 +179,9 @@ public class ItemFormPanel extends GradebookPanel {
 		addButton(cancelButton);
 	    
 	    ListStore<ModelData> categoryTypeStore = new ListStore<ModelData>();
-		categoryTypeStore.add(getCategoryTypeModel(GradebookModel.CategoryType.NO_CATEGORIES));
-		categoryTypeStore.add(getCategoryTypeModel(GradebookModel.CategoryType.SIMPLE_CATEGORIES));
-		categoryTypeStore.add(getCategoryTypeModel(GradebookModel.CategoryType.WEIGHTED_CATEGORIES));
+		categoryTypeStore.add(getCategoryTypeModel(CategoryType.NO_CATEGORIES));
+		categoryTypeStore.add(getCategoryTypeModel(CategoryType.SIMPLE_CATEGORIES));
+		categoryTypeStore.add(getCategoryTypeModel(CategoryType.WEIGHTED_CATEGORIES));
 	    
 		formPanel = new FormPanel();
 		formPanel.setHeaderVisible(false);
@@ -192,26 +193,26 @@ public class ItemFormPanel extends GradebookPanel {
 
 		nameField = new InlineEditField<String>();
 		nameField.setAllowBlank(false);
-		nameField.setName(ItemModel.Key.NAME.name());
+		nameField.setName(ItemKey.NAME.name());
 		nameField.setFieldLabel(i18n.nameFieldLabel());
 		nameField.addKeyListener(keyListener);
 
 		formPanel.add(nameField);
 
-		categoryPicker = new ItemFormComboBox<ItemModel>(ItemModel.Key.NAME.name(), ItemModel.Key.CATEGORY_ID.name(), i18n.categoryName());
+		categoryPicker = new ItemFormComboBox<ItemModel>(ItemKey.NAME.name(), ItemKey.CATEGORY_ID.name(), i18n.categoryName());
 		categoryPicker.addKeyListener(keyListener);
 		categoryPicker.setStore(categoryStore);
 		formPanel.add(categoryPicker);
 
-		categoryTypePicker = new ItemFormComboBox<ModelData>(NAME_DISPLAY_FIELD, ItemModel.Key.CATEGORYTYPE.name(), i18n.categoryTypeFieldLabel());
+		categoryTypePicker = new ItemFormComboBox<ModelData>(NAME_DISPLAY_FIELD, ItemKey.CATEGORYTYPE.name(), i18n.categoryTypeFieldLabel());
 		categoryTypePicker.setStore(categoryTypeStore);
 		formPanel.add(categoryTypePicker);
 
-		gradeTypePicker = new ItemFormComboBox<ModelData>(NAME_DISPLAY_FIELD, ItemModel.Key.GRADETYPE.name(), i18n.gradeTypeFieldLabel());
+		gradeTypePicker = new ItemFormComboBox<ModelData>(NAME_DISPLAY_FIELD, ItemKey.GRADETYPE.name(), i18n.gradeTypeFieldLabel());
 		formPanel.add(gradeTypePicker);
 
 		scaledExtraCreditField = new NullSensitiveCheckBox();
-		scaledExtraCreditField.setName(ItemModel.Key.EXTRA_CREDIT_SCALED.name());
+		scaledExtraCreditField.setName(ItemKey.EXTRA_CREDIT_SCALED.name());
 		scaledExtraCreditField.setFieldLabel(i18n.scaledExtraCreditFieldLabel());
 		scaledExtraCreditField.setVisible(false);
 		scaledExtraCreditField.setToolTip(newToolTipConfig(i18n.scaledExtraCreditToolTip()));
@@ -245,49 +246,49 @@ public class ItemFormPanel extends GradebookPanel {
 		right.setLayout(rightLayout);
 		
 		releaseGradesField = new NullSensitiveCheckBox();
-		releaseGradesField.setName(ItemModel.Key.RELEASEGRADES.name());
+		releaseGradesField.setName(ItemKey.RELEASEGRADES.name());
 		releaseGradesField.setFieldLabel(i18n.releaseGradesFieldLabel());
 		releaseGradesField.setVisible(false);
 		releaseGradesField.setToolTip(newToolTipConfig(i18n.releaseGradesToolTip()));
 		left.add(releaseGradesField);
 
 		releaseItemsField = new NullSensitiveCheckBox();
-		releaseItemsField.setName(ItemModel.Key.RELEASEITEMS.name());
+		releaseItemsField.setName(ItemKey.RELEASEITEMS.name());
 		releaseItemsField.setFieldLabel(i18n.releaseItemsFieldLabel());
 		releaseItemsField.setVisible(false);
 		releaseItemsField.setToolTip(newToolTipConfig(i18n.releaseItemsToolTip()));
 		left.add(releaseItemsField);
 		
 		showMeanField = new NullSensitiveCheckBox();
-		showMeanField.setName(ItemModel.Key.SHOWMEAN.name());
+		showMeanField.setName(ItemKey.SHOWMEAN.name());
 		showMeanField.setFieldLabel(i18n.showMeanFieldLabel());
 		showMeanField.setVisible(false);
 		showMeanField.setToolTip(newToolTipConfig(i18n.showMeanToolTip()));
 		left.add(showMeanField);
 		
 		showMedianField = new NullSensitiveCheckBox();
-		showMedianField.setName(ItemModel.Key.SHOWMEDIAN.name());
+		showMedianField.setName(ItemKey.SHOWMEDIAN.name());
 		showMedianField.setFieldLabel(i18n.showMedianFieldLabel());
 		showMedianField.setVisible(false);
 		showMedianField.setToolTip(newToolTipConfig(i18n.showMedianToolTip()));
 		left.add(showMedianField);
 		
 		showModeField = new NullSensitiveCheckBox();
-		showModeField.setName(ItemModel.Key.SHOWMODE.name());
+		showModeField.setName(ItemKey.SHOWMODE.name());
 		showModeField.setFieldLabel(i18n.showModeFieldLabel());
 		showModeField.setVisible(false);
 		showModeField.setToolTip(newToolTipConfig(i18n.showModeToolTip()));
 		right.add(showModeField);
 		
 		showRankField = new NullSensitiveCheckBox();
-		showRankField.setName(ItemModel.Key.SHOWRANK.name());
+		showRankField.setName(ItemKey.SHOWRANK.name());
 		showRankField.setFieldLabel(i18n.showRankFieldLabel());
 		showRankField.setVisible(false);
 		showRankField.setToolTip(newToolTipConfig(i18n.showRankToolTip()));
 		right.add(showRankField);
 		
 		showItemStatsField = new NullSensitiveCheckBox();
-		showItemStatsField.setName(ItemModel.Key.SHOWITEMSTATS.name());
+		showItemStatsField.setName(ItemKey.SHOWITEMSTATS.name());
 		showItemStatsField.setFieldLabel(i18n.showItemStatsFieldLabel());
 		showItemStatsField.setVisible(false);
 		showItemStatsField.setToolTip(newToolTipConfig(i18n.showItemStatsToolTip()));
@@ -301,7 +302,7 @@ public class ItemFormPanel extends GradebookPanel {
 		formPanel.add(displayToStudentFieldSet);
 
 		percentCourseGradeField = new InlineEditNumberField();
-		percentCourseGradeField.setName(ItemModel.Key.PERCENT_COURSE_GRADE.name());
+		percentCourseGradeField.setName(ItemKey.PERCENT_COURSE_GRADE.name());
 		percentCourseGradeField.setFieldLabel(i18n.percentCourseGradeFieldLabel());
 		percentCourseGradeField.setFormat(DataTypeConversionUtil.getLongNumberFormat());
 		percentCourseGradeField.setAllowDecimals(true);
@@ -312,7 +313,7 @@ public class ItemFormPanel extends GradebookPanel {
 		formPanel.add(percentCourseGradeField);
 
 		percentCategoryField = new InlineEditNumberField();
-		percentCategoryField.setName(ItemModel.Key.PERCENT_CATEGORY.name());
+		percentCategoryField.setName(ItemKey.PERCENT_CATEGORY.name());
 		percentCategoryField.setFieldLabel(i18n.percentCategoryFieldLabel());
 		percentCategoryField.setFormat(DataTypeConversionUtil.getLongNumberFormat());
 		percentCategoryField.setAllowDecimals(true);
@@ -323,7 +324,7 @@ public class ItemFormPanel extends GradebookPanel {
 		formPanel.add(percentCategoryField);
 
 		pointsField = new InlineEditNumberField();
-		pointsField.setName(ItemModel.Key.POINTS.name());
+		pointsField.setName(ItemKey.POINTS.name());
 		pointsField.setEmptyText(i18n.pointsFieldEmptyText());
 		pointsField.setFieldLabel(i18n.pointsFieldLabel());
 		pointsField.setFormat(DataTypeConversionUtil.getDefaultNumberFormat());
@@ -334,7 +335,7 @@ public class ItemFormPanel extends GradebookPanel {
 		
 		dropLowestField = new InlineEditNumberField();
 		dropLowestField.setEmptyText("0");
-		dropLowestField.setName(ItemModel.Key.DROP_LOWEST.name());
+		dropLowestField.setName(ItemKey.DROP_LOWEST.name());
 		dropLowestField.setFieldLabel(i18n.dropLowestFieldLabel());
 		dropLowestField.setAllowDecimals(false);
 		dropLowestField.setPropertyEditorType(Integer.class);
@@ -343,14 +344,14 @@ public class ItemFormPanel extends GradebookPanel {
 		formPanel.add(dropLowestField);
 
 		dueDateField = new DateField();
-		dueDateField.setName(ItemModel.Key.DUE_DATE.name());
+		dueDateField.setName(ItemKey.DUE_DATE.name());
 		dueDateField.setFieldLabel(i18n.dueDateFieldLabel());
 		dueDateField.setVisible(false);
 		dueDateField.setEmptyText(i18n.dueDateEmptyText());
 		formPanel.add(dueDateField);
 
 		sourceField = new TextField<String>();
-		sourceField.setName(ItemModel.Key.SOURCE.name());
+		sourceField.setName(ItemKey.SOURCE.name());
 		sourceField.setFieldLabel(i18n.sourceFieldLabel());
 		sourceField.setEnabled(false);
 		sourceField.setEmptyText("Gradebook");
@@ -358,42 +359,42 @@ public class ItemFormPanel extends GradebookPanel {
 		formPanel.add(sourceField);
 
 		includedField = new NullSensitiveCheckBox();
-		includedField.setName(ItemModel.Key.INCLUDED.name());
+		includedField.setName(ItemKey.INCLUDED.name());
 		includedField.setFieldLabel(i18n.includedFieldLabel());
 		includedField.setVisible(false);
 		includedField.setToolTip(newToolTipConfig(i18n.includedToolTip()));
 		formPanel.add(includedField);
 
 		extraCreditField = new NullSensitiveCheckBox();
-		extraCreditField.setName(ItemModel.Key.EXTRA_CREDIT.name());
+		extraCreditField.setName(ItemKey.EXTRA_CREDIT.name());
 		extraCreditField.setFieldLabel(i18n.extraCreditFieldLabel());
 		extraCreditField.setVisible(false);
 		extraCreditField.setToolTip(newToolTipConfig(i18n.extraCreditToolTip()));
 		formPanel.add(extraCreditField);
 
 		equallyWeightChildrenField = new NullSensitiveCheckBox();
-		equallyWeightChildrenField.setName(ItemModel.Key.EQUAL_WEIGHT.name());
+		equallyWeightChildrenField.setName(ItemKey.EQUAL_WEIGHT.name());
 		equallyWeightChildrenField.setFieldLabel(i18n.equallyWeightChildrenFieldLabel());
 		equallyWeightChildrenField.setVisible(false);
 		equallyWeightChildrenField.setToolTip(newToolTipConfig(i18n.equallyWeightChildrenToolTip()));
 		formPanel.add(equallyWeightChildrenField);
 
 		releasedField = new NullSensitiveCheckBox();
-		releasedField.setName(ItemModel.Key.RELEASED.name());
+		releasedField.setName(ItemKey.RELEASED.name());
 		releasedField.setFieldLabel(i18n.releasedFieldLabel());
 		releasedField.setVisible(false);
 		releasedField.setToolTip(newToolTipConfig(i18n.releasedToolTip()));
 		formPanel.add(releasedField);
 		
 		nullsAsZerosField = new NullSensitiveCheckBox();
-		nullsAsZerosField.setName(ItemModel.Key.NULLSASZEROS.name());
+		nullsAsZerosField.setName(ItemKey.NULLSASZEROS.name());
 		nullsAsZerosField.setFieldLabel(i18n.nullsAsZerosFieldLabel());
 		nullsAsZerosField.setVisible(false);
 		nullsAsZerosField.setToolTip(newToolTipConfig(i18n.nullsAsZerosToolTip()));
 		formPanel.add(nullsAsZerosField);
 		
 		enforcePointWeightingField = new NullSensitiveCheckBox();
-		enforcePointWeightingField.setName(ItemModel.Key.ENFORCE_POINT_WEIGHTING.name());
+		enforcePointWeightingField.setName(ItemKey.ENFORCE_POINT_WEIGHTING.name());
 		enforcePointWeightingField.setFieldLabel(i18n.enforcePointWeightingFieldLabel());
 		enforcePointWeightingField.setVisible(false);
 		enforcePointWeightingField.setToolTip(newToolTipConfig(i18n.enforcePointWeightingToolTip()));
@@ -687,7 +688,7 @@ public class ItemFormPanel extends GradebookPanel {
 
 		if (itemModel != null) {
 			if (itemModel.getCategoryId() != null) {
-				List<ItemModel> models = treeStore.findModels(ItemModel.Key.ID.name(), String.valueOf(itemModel.getCategoryId()));
+				List<ItemModel> models = treeStore.findModels(ItemKey.ID.name(), String.valueOf(itemModel.getCategoryId()));
 				for (ItemModel category : models) {
 					if (category.getItemType() == Type.CATEGORY)
 						categoryPicker.setValue(category);
@@ -743,15 +744,15 @@ public class ItemFormPanel extends GradebookPanel {
 		switch (categoryType) {
 			case NO_CATEGORIES:
 				model.set(NAME_DISPLAY_FIELD, i18n.orgTypeNoCategories());
-				model.set(VALUE_DISPLAY_FIELD, GradebookModel.CategoryType.NO_CATEGORIES);
+				model.set(VALUE_DISPLAY_FIELD, CategoryType.NO_CATEGORIES);
 				break;
 			case SIMPLE_CATEGORIES:
 				model.set(NAME_DISPLAY_FIELD, i18n.orgTypeCategories());
-				model.set(VALUE_DISPLAY_FIELD, GradebookModel.CategoryType.SIMPLE_CATEGORIES);
+				model.set(VALUE_DISPLAY_FIELD, CategoryType.SIMPLE_CATEGORIES);
 				break;	
 			case WEIGHTED_CATEGORIES:
 				model.set(NAME_DISPLAY_FIELD, i18n.orgTypeWeightedCategories());
-				model.set(VALUE_DISPLAY_FIELD, GradebookModel.CategoryType.WEIGHTED_CATEGORIES);
+				model.set(VALUE_DISPLAY_FIELD, CategoryType.WEIGHTED_CATEGORIES);
 				break;	
 		}
 
@@ -764,15 +765,15 @@ public class ItemFormPanel extends GradebookPanel {
 		switch (gradeType) {
 			case LETTERS:
 				model.set(NAME_DISPLAY_FIELD, i18n.gradeTypeLetters());
-				model.set(VALUE_DISPLAY_FIELD, GradebookModel.GradeType.LETTERS);
+				model.set(VALUE_DISPLAY_FIELD, GradeType.LETTERS);
 				break;
 			case POINTS:
 				model.set(NAME_DISPLAY_FIELD, i18n.gradeTypePoints());
-				model.set(VALUE_DISPLAY_FIELD, GradebookModel.GradeType.POINTS);
+				model.set(VALUE_DISPLAY_FIELD, GradeType.POINTS);
 				break;
 			case PERCENTAGES:
 				model.set(NAME_DISPLAY_FIELD, i18n.gradeTypePercentages());
-				model.set(VALUE_DISPLAY_FIELD, GradebookModel.GradeType.PERCENTAGES);
+				model.set(VALUE_DISPLAY_FIELD, GradeType.PERCENTAGES);
 				break;
 		}
 
@@ -811,7 +812,7 @@ public class ItemFormPanel extends GradebookPanel {
 		if (itemModel != null) {
 			isExtraCredit = DataTypeConversionUtil.checkBoolean(itemModel.getExtraCredit());
 			isEditable = itemModel.isEditable();
-			String source = itemModel.get(ItemModel.Key.SOURCE.name());
+			String source = itemModel.get(ItemKey.SOURCE.name());
 			isExternal = source != null && source.trim().length() > 0;
 			ItemModel category = null;
 			switch (itemModel.getItemType()) {
@@ -934,7 +935,7 @@ public class ItemFormPanel extends GradebookPanel {
 
 							};
 
-							if (name.equals(ItemModel.Key.CATEGORY_ID.name())) {
+							if (name.equals(ItemKey.CATEGORY_ID.name())) {
 								b.setConverter(new Converter() {
 									public Object convertFieldValue(Object value) {
 
@@ -951,14 +952,14 @@ public class ItemFormPanel extends GradebookPanel {
 										if (value instanceof Long) {
 											Long categoryId = (Long)value;
 
-											return (ItemModel)store.findModel(ItemModel.Key.ID.name(), String.valueOf(categoryId));
+											return (ItemModel)store.findModel(ItemKey.ID.name(), String.valueOf(categoryId));
 										}
 
 										return null;
 									}
 								});
-							} else if (name.equals(ItemModel.Key.CATEGORYTYPE.name()) ||
-									name.equals(ItemModel.Key.GRADETYPE.name())) {
+							} else if (name.equals(ItemKey.CATEGORYTYPE.name()) ||
+									name.equals(ItemKey.GRADETYPE.name())) {
 								b.setConverter(new Converter() {
 									public Object convertFieldValue(Object value) {
 										if (value instanceof ModelData && ((ModelData)value).get(VALUE_DISPLAY_FIELD) != null) {
@@ -1246,7 +1247,7 @@ public class ItemFormPanel extends GradebookPanel {
 								break;
 							case DELETE:
 								Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
-								Dispatcher.forwardEvent(GradebookEvents.DeleteItem.getEventType(), new ItemUpdate(treeStore, selectedItemModel, ItemModel.Key.REMOVED.name(), Boolean.FALSE, Boolean.TRUE));
+								Dispatcher.forwardEvent(GradebookEvents.DeleteItem.getEventType(), new ItemUpdate(treeStore, selectedItemModel, ItemKey.REMOVED.name(), Boolean.FALSE, Boolean.TRUE));
 								break;
 							case CANCEL:
 								clearActiveRecord();
@@ -1271,9 +1272,9 @@ public class ItemFormPanel extends GradebookPanel {
 										
 										
 										if (changes != null 
-												&& changes.get(ItemModel.Key.POINTS.name()) != null
-												&& !changes.get(ItemModel.Key.POINTS.name())
-												.equals(selectedItemModel.get(ItemModel.Key.POINTS.name()))) {
+												&& changes.get(ItemKey.POINTS.name()) != null
+												&& !changes.get(ItemKey.POINTS.name())
+												.equals(selectedItemModel.get(ItemKey.POINTS.name()))) {
 											
 											Listener<MessageBoxEvent> listener = new Listener<MessageBoxEvent>() {
 	
@@ -1288,9 +1289,9 @@ public class ItemFormPanel extends GradebookPanel {
 														if (btn.getItemId().equals(Dialog.CANCEL)) {
 															return;
 														} else if (btn.getItemId().equals(Dialog.YES)) {
-															r.set(ItemModel.Key.DO_RECALCULATE_POINTS.name(), Boolean.TRUE);
+															r.set(ItemKey.DO_RECALCULATE_POINTS.name(), Boolean.TRUE);
 														} else {
-															r.set(ItemModel.Key.DO_RECALCULATE_POINTS.name(), Boolean.FALSE);
+															r.set(ItemKey.DO_RECALCULATE_POINTS.name(), Boolean.FALSE);
 														}
 														
 														Dispatcher.forwardEvent(GradebookEvents.UpdateItem.getEventType(), new ItemUpdate(treeStore, r, selectedItemModel, true));

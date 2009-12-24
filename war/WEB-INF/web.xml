@@ -34,7 +34,6 @@
 		<dispatcher>FORWARD</dispatcher>
 	</filter-mapping>
 	
-	
     <filter>
         <filter-name>sakai.request</filter-name>
         <filter-class>org.sakaiproject.gradebook.gwt.server.RequestFilter</filter-class>
@@ -51,7 +50,34 @@
         <dispatcher>INCLUDE</dispatcher>
     </filter-mapping>
   
-    
+    <!-- filter>
+       <filter-name>sakai.gradebook.rest.filter</filter-name>
+       <filter-class>com.sun.jersey.spi.spring.container.servlet.SpringServlet</filter-class>
+       <init-param>
+			<param-name>com.sun.jersey.config.property.packages</param-name>
+			<param-value>managed</param-value>
+	   </init-param>
+    </filter>
+    <filter-mapping>
+       <filter-name>sakai.gradebook.rest.filter</filter-name>
+       <url-pattern>/rest/</url-pattern>
+    </filter-mapping-->
+
+	<!-- servlet>
+       <servlet-name>sakai.gradebook.rest.filter</servlet-name>
+       <servlet-class>com.sun.jersey.spi.spring.container.servlet.SpringServlet</servlet-class>
+       <init-param>
+           <param-name>com.sun.jersey.config.property.packages</param-name>
+           <param-value>managed</param-value>
+       </init-param>
+       <load-on-startup>1</load-on-startup>
+    </servlet>
+	
+	<servlet-mapping>
+		<servlet-name>sakai.gradebook.rest.filter</servlet-name>
+		<url-pattern>/rest/</url-pattern>
+	</servlet-mapping-->
+
 	<servlet>
 		<servlet-name>sakai.gradebook.gwt.rpc</servlet-name>
 		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>

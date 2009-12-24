@@ -32,12 +32,13 @@ import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.SecureToken;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
+import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.StatisticsModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style;
@@ -102,7 +103,7 @@ public class StudentPanel extends GradebookPanel {
     private FormBinding formBinding;
     private GridSelectionModel<BaseModel> selectionModel;
     private TextArea commentArea;
-	private StudentModel learnerGradeRecordCollection;
+	private ModelData learnerGradeRecordCollection;
 	private ColumnConfig categoryColumn, weightColumn, outOfColumn, dateDueColumn, meanColumn, medianColumn, modeColumn, stdvColumn;
 	
 	private boolean isStudentView;
@@ -349,27 +350,27 @@ public class StudentPanel extends GradebookPanel {
 		add(cardLayoutContainer); //, new RowData(1, 1, new Margins(5, 0, 0, 0)));
 	}
 	
-	public StudentModel getStudentRow() {
+	public ModelData getStudentRow() {
 		return learnerGradeRecordCollection;
 	}
 	
 	public void onRefreshGradebookSetup(GradebookModel selectedGradebook) {
 		this.selectedGradebook = selectedGradebook;
-        String overrideString = learnerGradeRecordCollection.get(StudentModel.Key.IS_GRADE_OVERRIDDEN.name()); 
+        String overrideString = learnerGradeRecordCollection.get(LearnerKey.IS_GRADE_OVERRIDDEN.name()); 
         
-		updateCourseGrade(learnerGradeRecordCollection.getLetterGrade(), overrideString, learnerGradeRecordCollection.getCalculatedGrade());
+        updateCourseGrade((String)learnerGradeRecordCollection.get(LearnerKey.LETTER_GRADE.name()), overrideString, (String)learnerGradeRecordCollection.get(LearnerKey.CALCULATED_GRADE.name()));
 		
 		List<StatisticsModel> statsList = selectedGradebook.getStatsModel();
 		refreshGradeData(learnerGradeRecordCollection, statsList);
 	}
 	
-	public void onChangeModel(GradebookModel selectedGradebook, final StudentModel learnerGradeRecordCollection) {
+	public void onChangeModel(GradebookModel selectedGradebook, final ModelData learnerGradeRecordCollection) {
 		if (learnerGradeRecordCollection != null) {
 			this.selectedGradebook = selectedGradebook;
 			this.learnerGradeRecordCollection = learnerGradeRecordCollection;
-			String overrideString = learnerGradeRecordCollection.get(StudentModel.Key.IS_GRADE_OVERRIDDEN.name()); 
+			String overrideString = learnerGradeRecordCollection.get(LearnerKey.IS_GRADE_OVERRIDDEN.name()); 
 			
-			updateCourseGrade(learnerGradeRecordCollection.getLetterGrade(), overrideString, learnerGradeRecordCollection.getCalculatedGrade());
+			updateCourseGrade((String)learnerGradeRecordCollection.get(LearnerKey.LETTER_GRADE.name()), overrideString, (String)learnerGradeRecordCollection.get(LearnerKey.CALCULATED_GRADE.name()));
 			
 			if (isPossibleStatsChanged) {
 				AsyncCallback<ListLoadResult<StatisticsModel>> callback = new AsyncCallback<ListLoadResult<StatisticsModel>>() {
@@ -402,7 +403,7 @@ public class StudentPanel extends GradebookPanel {
 
 	}
 	
-	public void onLearnerGradeRecordUpdated(StudentModel learnerGradeRecordModel) {
+	public void onLearnerGradeRecordUpdated(ModelData learnerGradeRecordModel) {
 		this.isPossibleStatsChanged = true;
 	}
 	
@@ -454,7 +455,7 @@ public class StudentPanel extends GradebookPanel {
 		//	learnerGradeRecordCollection.set(StudentModel.Key.COURSE_GRADE.name(), newGrade);
 	}
 	
-	private void refreshGradeData(StudentModel learnerGradeRecordCollection, List<StatisticsModel> statsList) {
+	private void refreshGradeData(ModelData learnerGradeRecordCollection, List<StatisticsModel> statsList) {
 		StatisticsModel m = getStatsModelForItem(String.valueOf(Long.valueOf(-1)), statsList);
 		setStudentInfoTable(m);
 		setGradeInfoTable(selectedGradebook, learnerGradeRecordCollection, statsList);
@@ -496,22 +497,22 @@ public class StudentPanel extends GradebookPanel {
         studentInformation.setText(PI_ROW_NAME, PI_COL_HEADING, "Name");
         formatter.setStyleName(PI_ROW_NAME, PI_COL_HEADING, resources.css().gbImpact());
         formatter.setWordWrap(PI_ROW_NAME, PI_COL_HEADING, false);
-        studentInformation.setText(PI_ROW_NAME, PI_COL_VALUE, learnerGradeRecordCollection.getStudentName());
+        studentInformation.setText(PI_ROW_NAME, PI_COL_VALUE, (String)learnerGradeRecordCollection.get(LearnerKey.DISPLAY_NAME.name()));
 
         studentInformation.setText(PI_ROW_EMAIL, PI_COL_HEADING, "Email");
         formatter.setStyleName(PI_ROW_EMAIL, PI_COL_HEADING, resources.css().gbImpact());
         formatter.setWordWrap(PI_ROW_EMAIL, PI_COL_HEADING, false);
-        studentInformation.setText(PI_ROW_EMAIL, PI_COL_VALUE, learnerGradeRecordCollection.getStudentEmail());
+        studentInformation.setText(PI_ROW_EMAIL, PI_COL_VALUE, (String)learnerGradeRecordCollection.get(LearnerKey.EMAIL.name()));
 
         studentInformation.setText(PI_ROW_ID, PI_COL_HEADING, "Id");
         formatter.setStyleName(PI_ROW_ID, PI_COL_HEADING, resources.css().gbImpact());
         formatter.setWordWrap(PI_ROW_ID, PI_COL_HEADING, false);
-        studentInformation.setText(PI_ROW_ID, PI_COL_VALUE, learnerGradeRecordCollection.getStudentDisplayId());
+        studentInformation.setText(PI_ROW_ID, PI_COL_VALUE, (String)learnerGradeRecordCollection.get(LearnerKey.DISPLAY_ID.name()));
 
         studentInformation.setText(PI_ROW_SECTION, PI_COL_HEADING, "Section");
         formatter.setStyleName(PI_ROW_SECTION, PI_COL_HEADING, resources.css().gbImpact());
         formatter.setWordWrap(PI_ROW_SECTION, PI_COL_HEADING, false);
-        studentInformation.setText(PI_ROW_SECTION, PI_COL_VALUE, learnerGradeRecordCollection.getStudentSections());
+        studentInformation.setText(PI_ROW_SECTION, PI_COL_VALUE, (String)learnerGradeRecordCollection.get(LearnerKey.SECTION.name()));
     
         studentInformation.setText(PI_ROW_BLANK, PI_COL_HEADING, "");
         studentInformation.setText(PI_ROW_BLANK, PI_COL_VALUE, "");
@@ -520,14 +521,14 @@ public class StudentPanel extends GradebookPanel {
         if (!isStudentView || (DataTypeConversionUtil.checkBoolean(selectedGradebook.getGradebookItemModel().getReleaseGrades()))) {
 	        studentInformation.setText(PI_ROW_COURSE_GRADE, PI_COL_HEADING, "Course Grade");
 	        formatter.setStyleName(PI_ROW_COURSE_GRADE, PI_COL_HEADING, resources.css().gbImpact());
-	        studentInformation.setText(PI_ROW_COURSE_GRADE, PI_COL_VALUE, learnerGradeRecordCollection.getLetterGrade());
+	        studentInformation.setText(PI_ROW_COURSE_GRADE, PI_COL_VALUE, (String)learnerGradeRecordCollection.get(LearnerKey.LETTER_GRADE.name()));
 	        
 	        ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
 	        boolean isLetterGrading = gradebookItemModel.getGradeType() == GradeType.LETTERS;
 	        
 	        if (!isLetterGrading)
 	        {
-	        	String calculatedGrade = learnerGradeRecordCollection.getCalculatedGrade();
+	        	String calculatedGrade = (String)learnerGradeRecordCollection.get(LearnerKey.CALCULATED_GRADE.name());
 		        studentInformation.setHTML(PI_ROW_CALCULATED_GRADE, PI_COL_HEADING, "Calculated Grade");
 		        formatter.setStyleName(PI_ROW_CALCULATED_GRADE, PI_COL_HEADING, resources.css().gbImpact());
 		        formatter.setWordWrap(PI_ROW_CALCULATED_GRADE, PI_COL_HEADING, false);
@@ -622,7 +623,7 @@ public class StudentPanel extends GradebookPanel {
 	}
 
 	
-	private BaseModel populateGradeInfoRow(int row, ItemModel item, StudentModel learner, StatisticsModel stats, CategoryType categoryType, GradeType gradeType) {
+	private BaseModel populateGradeInfoRow(int row, ItemModel item, ModelData learner, StatisticsModel stats, CategoryType categoryType, GradeType gradeType) {
 		String itemId = item.getIdentifier();
 		Object value = learner.get(itemId);
 		String commentFlag = new StringBuilder().append(itemId).append(StudentModel.COMMENT_TEXT_FLAG).toString();
@@ -727,7 +728,7 @@ public class StudentPanel extends GradebookPanel {
 	// So for stats, we'll have the following columns: 
 	// grade | Mean | Std Deviation | Median | Mode | Comment 
 
-	private void setGradeInfoTable(GradebookModel selectedGradebook, StudentModel learner, List<StatisticsModel> statsList) {		
+	private void setGradeInfoTable(GradebookModel selectedGradebook, ModelData learner, List<StatisticsModel> statsList) {		
 		// To force a refresh, let's first hide the owning panel
 		gradeInformationPanel.hide();
 		
@@ -856,7 +857,7 @@ public class StudentPanel extends GradebookPanel {
 		this.isStudentView = isStudentView;
 	}
 
-	public StudentModel getStudentModel() {
+	public ModelData getStudentModel() {
 		return learnerGradeRecordCollection;
 	}
 }

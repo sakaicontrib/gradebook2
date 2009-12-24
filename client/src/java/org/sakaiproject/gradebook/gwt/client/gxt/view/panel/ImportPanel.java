@@ -31,7 +31,6 @@ import java.util.Map;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
-import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.SecureToken;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.GridPanel;
@@ -42,17 +41,20 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ClientUploadUtility;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader.Field;
+import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.SpreadsheetModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.SelectionMode;
+import com.extjs.gxt.ui.client.data.BaseModelData;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
@@ -105,10 +107,10 @@ public class ImportPanel extends GradebookPanel {
 
 	private FileUploadField file;
 	private String msgsFromServer; 
-	private ListStore<StudentModel> rowStore;
+	private ListStore<ModelData> rowStore;
 	private ListStore<ItemModel> itemStore;
 	private ListStore<ItemModel> categoriesStore;
-	private Grid<StudentModel> grid;
+	private Grid<ModelData> grid;
 	private EditorGrid<ItemModel> itemGrid;
 	private FormPanel fileUploadPanel;
 	private Map<String, ImportHeader> headerMap;
@@ -191,21 +193,21 @@ public class ImportPanel extends GradebookPanel {
 
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 
-		rowStore = new ListStore<StudentModel>();
+		rowStore = new ListStore<ModelData>();
 		rowStore.setMonitorChanges(true);
-		rowStore.setModelComparer(new EntityModelComparer<StudentModel>());
+		rowStore.setModelComparer(new EntityModelComparer<ModelData>());
 
 		ColumnModel cm = new ColumnModel(configs);
-		grid = new Grid<StudentModel>(rowStore, cm);
+		grid = new Grid<ModelData>(rowStore, cm);
 		grid.setLoadMask(false);
 
-		CellSelectionModel<StudentModel> cellSelectionModel = new CellSelectionModel<StudentModel>();
+		CellSelectionModel<ModelData> cellSelectionModel = new CellSelectionModel<ModelData>();
 		cellSelectionModel.setSelectionMode(SelectionMode.SINGLE);
 		grid.setSelectionModel(cellSelectionModel);
 		grid.setView(new BaseCustomGridView() {
 
 			protected boolean isDropped(ModelData model, String property) {
-				String droppedProperty = property + StudentModel.DROP_FLAG;
+				String droppedProperty = DataTypeConversionUtil.buildDroppedKey(property);
 				Boolean isDropped = model.get(droppedProperty);
 
 				return isDropped != null && isDropped.booleanValue();
@@ -355,7 +357,7 @@ public class ImportPanel extends GradebookPanel {
 		GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
 
 		int numberOfLearners = 0;
-		List<StudentModel> learners = spreadsheetModel.getRows();
+		List<ModelData> learners = spreadsheetModel.getRows();
 		if (learners != null)
 			numberOfLearners = learners.size();
 
@@ -376,13 +378,13 @@ public class ImportPanel extends GradebookPanel {
 			public void onSuccess(SpreadsheetModel result) {
 
 				try {
-					List<StudentModel> rows = result.getRows();
+					List<ModelData> rows = result.getRows();
 					int size = rows == null ? 0 : rows.size();
 					
 					StringBuilder heading = new StringBuilder().append("Result Data (").append(size).append(" records uploaded)");
 					previewTab.setText(heading.toString());
 					
-					for (StudentModel student : rows) {
+					for (ModelData student : rows) {
 
 						boolean hasChanges = DataTypeConversionUtil.checkBoolean((Boolean)student.get(AppConstants.IMPORT_CHANGES));
 
@@ -677,7 +679,7 @@ public class ImportPanel extends GradebookPanel {
 			boolean pointsIssue = false; 
 			StringBuilder pointsAssignments = null;
 			JSONArray rowsArray = getArray(jsonObject, "rows");
-			ArrayList<StudentModel> models = new ArrayList<StudentModel>();
+			ArrayList<ModelData> models = new ArrayList<ModelData>();
 			if (rowsArray != null) {
 				StringBuilder heading = new StringBuilder().append("Preview Data (").append(rowsArray.size()).append(" records)");
 				previewTab.setText(heading.toString());
@@ -694,11 +696,11 @@ public class ImportPanel extends GradebookPanel {
 					Boolean userNotFound = getBoolean(rowObject.isObject(), "isUserNotFound");
 					JSONArray columnsArray = getArray(rowObject, "columns");
 
-					StudentModel model = new StudentModel();
+					ModelData model = new BaseModelData();
 					if (userUid != null)
-						model.setIdentifier(userUid);
+						model.set(LearnerKey.UID.name(), userUid);
 					else if (userImportId != null)
-						model.setIdentifier(userImportId);
+						model.set(LearnerKey.UID.name(), userImportId);
 
 					model.set("userUid", userUid);
 					model.set("userImportId", userImportId);
@@ -859,7 +861,7 @@ public class ImportPanel extends GradebookPanel {
 				String categoryName = categoryIdNameMap.get(categoryId);
 				if (categoryName == null) {
 
-					ItemModel categoryModel = categoriesStore.findModel(ItemModel.Key.ID.name(), String.valueOf(categoryId));
+					ItemModel categoryModel = categoriesStore.findModel(ItemKey.ID.name(), String.valueOf(categoryId));
 
 					if (categoryModel == null && itemModel.getCategoryName() != null) {
 						categoryModel = new ItemModel();
@@ -896,31 +898,31 @@ public class ImportPanel extends GradebookPanel {
 		textField.addInputStyleName(resources.css().gbTextFieldInput());
 		CellEditor textCellEditor = new CellEditor(textField);
 
-		ColumnConfig name = new ColumnConfig(ItemModel.Key.NAME.name(), "Item", 200);
+		ColumnConfig name = new ColumnConfig(ItemKey.NAME.name(), "Item", 200);
 		name.setEditor(textCellEditor);
 		itemColumns.add(name);
 
-		percentCategory = new ColumnConfig(ItemModel.Key.PERCENT_CATEGORY.name(), "% Category", 100);
+		percentCategory = new ColumnConfig(ItemKey.PERCENT_CATEGORY.name(), "% Category", 100);
 		percentCategory.setEditor(new CellEditor(new NumberField()));
 		itemColumns.add(percentCategory);
 
-		ColumnConfig points = new ColumnConfig(ItemModel.Key.POINTS.name(), "Points", 100);
+		ColumnConfig points = new ColumnConfig(ItemKey.POINTS.name(), "Points", 100);
 		points.setEditor(new CellEditor(new NumberField()));
 		itemColumns.add(points);
 
 		categoryPicker = new ComboBox<ItemModel>(); 
 		categoryPicker.setAllowBlank(false); 
 		categoryPicker.setAllQuery(null);
-		categoryPicker.setDisplayField(ItemModel.Key.NAME.name());  
+		categoryPicker.setDisplayField(ItemKey.NAME.name());  
 		categoryPicker.setEditable(true);
 		categoryPicker.setEmptyText("Required");
 		categoryPicker.setFieldLabel("Category");
 		categoryPicker.setForceSelection(true);
 		categoryPicker.setStore(categoriesStore);
-		categoryPicker.setValueField(ItemModel.Key.ID.name());
+		categoryPicker.setValueField(ItemKey.ID.name());
 		categoryPicker.addInputStyleName(resources.css().gbTextFieldInput());
 
-		ColumnConfig category = new ColumnConfig(ItemModel.Key.CATEGORY_ID.name(), "Category", 140);
+		ColumnConfig category = new ColumnConfig(ItemKey.CATEGORY_ID.name(), "Category", 140);
 				
 		categoryEditor =	new CellEditor(categoryPicker) {
 
@@ -937,7 +939,7 @@ public class ImportPanel extends GradebookPanel {
 			public Object preProcessValue(Object value) {
 				Long id = (Long)value;
 
-				return categoriesStore.findModel(ItemModel.Key.ID.name(), String.valueOf(id));
+				return categoriesStore.findModel(ItemKey.ID.name(), String.valueOf(id));
 			}
 
 		};
@@ -957,7 +959,7 @@ public class ImportPanel extends GradebookPanel {
 				else
 					lookupId = (String)identifier;
 
-				ItemModel itemModel = categoriesStore.findModel(ItemModel.Key.ID.name(), lookupId);
+				ItemModel itemModel = categoriesStore.findModel(ItemKey.ID.name(), lookupId);
 
 				if (itemModel == null)
 					return AppConstants.DEFAULT_CATEGORY_NAME;

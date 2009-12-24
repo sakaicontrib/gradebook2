@@ -37,16 +37,17 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner.BrowseType;
+import org.sakaiproject.gradebook.gwt.client.model.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.binding.FieldBinding;
 import com.extjs.gxt.ui.client.binding.FormBinding;
-import com.extjs.gxt.ui.client.data.Model;
+import com.extjs.gxt.ui.client.data.BaseModelData;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.PropertyChangeEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
@@ -93,7 +94,7 @@ public class LearnerSummaryPanel extends GradebookPanel {
 	private LayoutContainer scoreFormPanel;
 	private KeyListener keyListener;
 	private SelectionListener<ComponentEvent> selectionListener;
-	private StudentModel learner;
+	private ModelData learner;
 
 	private FormLayout commentFormLayout;
 	private FormLayout excuseFormLayout;
@@ -168,7 +169,7 @@ public class LearnerSummaryPanel extends GradebookPanel {
 		addButton(button);
 	}
 
-	public void onChangeModel(ListStore<StudentModel> learnerStore, TreeStore<ItemModel> treeStore, StudentModel learner) {
+	public void onChangeModel(ListStore<ModelData> learnerStore, TreeStore<ItemModel> treeStore, ModelData learner) {
 		this.learner = learner;
 		updateLearnerInfo(learner, false);
 
@@ -202,9 +203,9 @@ public class LearnerSummaryPanel extends GradebookPanel {
 		this.isPossibleGradeTypeChanged = true;
 	}
 	
-	public void onLearnerGradeRecordUpdated(StudentModel learner) {
+	public void onLearnerGradeRecordUpdated(ModelData learner) {
 		if (this.learner != null && learner != null 
-				&& this.learner.getIdentifier().equals(learner.getIdentifier())) 
+				&& this.learner.get(LearnerKey.UID.name()).equals(learner.get(LearnerKey.UID.name()))) 
 			updateLearnerInfo(learner, true);
 	}
 
@@ -274,14 +275,14 @@ public class LearnerSummaryPanel extends GradebookPanel {
 					scoreFormPanel.add(textField);
 				}
 
-				String checkBoxName = new StringBuilder().append(item.getIdentifier()).append(StudentModel.EXCUSE_FLAG).toString();
+				String checkBoxName = DataTypeConversionUtil.buildExcusedKey(item.getIdentifier());
 				CheckBox checkbox = new CheckBox();
 				checkbox.setFieldLabel(item.getName());
 				checkbox.setName(checkBoxName);
 				checkbox.setLabelStyle("overflow: hidden;");
 				excuseFormPanel.add(checkbox);
 
-				String commentId = new StringBuilder(item.getIdentifier()).append(StudentModel.COMMENT_TEXT_FLAG).toString();
+				String commentId = DataTypeConversionUtil.buildCommentTextKey(item.getIdentifier());
 				TextArea textArea = new TextArea();
 				textArea.addInputStyleName(resources.css().gbTextAreaInput());
 				textArea.setFieldLabel(item.getName());
@@ -393,7 +394,7 @@ public class LearnerSummaryPanel extends GradebookPanel {
 
 	private static final String rowHeight = "22px";
 	
-	private void updateLearnerInfo(StudentModel learnerGradeRecordCollection, boolean isByEvent) {		
+	private void updateLearnerInfo(ModelData learnerGradeRecordCollection, boolean isByEvent) {		
 		// To force a refresh, let's first hide the owning panel
 		learnerInfoPanel.hide();
 
@@ -403,26 +404,26 @@ public class LearnerSummaryPanel extends GradebookPanel {
 		learnerInfoTable.setText(1, 0, i18n.columnTitleDisplayName());
 		formatter.setStyleName(1, 0, resources.css().gbImpact());
 		formatter.setHeight(1, 0, rowHeight);
-		learnerInfoTable.setText(1, 1, learnerGradeRecordCollection.getStudentName());
+		learnerInfoTable.setText(1, 1, (String)learnerGradeRecordCollection.get(LearnerKey.DISPLAY_NAME.name()));
 		formatter.setHeight(1, 1, rowHeight);
 		learnerInfoTable.setAutoHeight(true);
 		
 		learnerInfoTable.setText(2, 0, i18n.columnTitleEmail());
 		formatter.setStyleName(2, 0, resources.css().gbImpact());
 		formatter.setHeight(2, 0, rowHeight);
-		learnerInfoTable.setText(2, 1, learnerGradeRecordCollection.getStudentEmail());
+		learnerInfoTable.setText(2, 1, (String)learnerGradeRecordCollection.get(LearnerKey.EMAIL.name()));
 		formatter.setHeight(2, 1, rowHeight);
 		
 		learnerInfoTable.setText(3, 0, i18n.columnTitleDisplayId());
 		formatter.setStyleName(3, 0, resources.css().gbImpact());
 		formatter.setHeight(3, 0, rowHeight);
-		learnerInfoTable.setText(3, 1, learnerGradeRecordCollection.getStudentDisplayId());
+		learnerInfoTable.setText(3, 1, (String)learnerGradeRecordCollection.get(LearnerKey.DISPLAY_ID.name()));
 		formatter.setHeight(3, 1, rowHeight);
 		
 		learnerInfoTable.setText(4, 0, i18n.columnTitleSection());
 		formatter.setStyleName(4, 0, resources.css().gbImpact());
 		formatter.setHeight(4, 0, rowHeight);
-		learnerInfoTable.setText(4, 1, learnerGradeRecordCollection.getStudentSections());
+		learnerInfoTable.setText(4, 1, (String)learnerGradeRecordCollection.get(LearnerKey.SECTION.name()));
 		formatter.setHeight(4, 1, rowHeight);
 		
 		//learnerInfoTable.setText(5, 0, "");
@@ -432,12 +433,12 @@ public class LearnerSummaryPanel extends GradebookPanel {
 		learnerInfoTable.setText(5, 0, "Course Grade");
 		formatter.setStyleName(5, 0, resources.css().gbImpact());
 		formatter.setHeight(5, 0, rowHeight);
-		learnerInfoTable.setText(5, 1, learnerGradeRecordCollection.getStudentGrade());
+		learnerInfoTable.setText(5, 1, (String)learnerGradeRecordCollection.get(LearnerKey.COURSE_GRADE.name()));
 		formatter.setHeight(5, 1, rowHeight);
 		learnerInfoPanel.show();
 	}
 
-	private void verifyFormPanelComponents(TreeStore<ItemModel> treeStore, final ListStore<StudentModel> learnerStore) {
+	private void verifyFormPanelComponents(TreeStore<ItemModel> treeStore, final ListStore<ModelData> learnerStore) {
 
 		boolean isLayoutNecessary = false;
 		if (isPossibleGradeTypeChanged) {
@@ -504,7 +505,7 @@ public class LearnerSummaryPanel extends GradebookPanel {
 
 									@Override
 									protected void onFieldChange(FieldEvent e) {									
-										StudentModel learner = (StudentModel)this.model;
+										ModelData learner = this.model;
 										e.getField().setEnabled(false);
 
 										Dispatcher.forwardEvent(GradebookEvents.UpdateLearnerGradeRecord.getEventType(), new GradeRecordUpdate(learnerStore, learner, e.getField().getName(), e.getField().getFieldLabel(), e.getOldValue(), e.getValue()));
@@ -515,7 +516,7 @@ public class LearnerSummaryPanel extends GradebookPanel {
 										super.onModelChange(event);
 
 										if (field != null) {
-											verifyFieldState(field, event.getSource());
+											verifyFieldState(field, (BaseModelData)event.getSource());
 
 											boolean isEnabled = true;
 											if (!field.isEnabled())
@@ -533,8 +534,8 @@ public class LearnerSummaryPanel extends GradebookPanel {
 	}
 
 
-	private void verifyFieldState(Field field, Model model) {
-		String dropFlag = new StringBuilder().append(field.getName()).append(StudentModel.DROP_FLAG).toString();
+	private void verifyFieldState(Field field, ModelData model) {
+		String dropFlag = DataTypeConversionUtil.buildDroppedKey(field.getName());
 
 		Boolean dropFlagValue = model.get(dropFlag);
 		boolean isDropped = dropFlagValue != null && dropFlagValue.booleanValue();

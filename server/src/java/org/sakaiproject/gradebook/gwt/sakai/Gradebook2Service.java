@@ -40,7 +40,6 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.PermissionEntryListModel;
 import org.sakaiproject.gradebook.gwt.client.model.PermissionEntryModel;
 import org.sakaiproject.gradebook.gwt.client.model.SpreadsheetModel;
-import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.SubmissionVerificationModel;
 import org.sakaiproject.gradebook.gwt.sakai.InstitutionalAdvisor.Column;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
@@ -49,6 +48,7 @@ import org.sakaiproject.tool.gradebook.Category;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.PagingLoadConfig;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 
@@ -96,7 +96,7 @@ public interface Gradebook2Service {
 	public SpreadsheetModel createOrUpdateSpreadsheet(String gradebookUid, SpreadsheetModel spreadsheetModel) 
 	throws InvalidInputException;
 	
-	public StudentModel excuseNumericItem(String gradebookUid, StudentModel student, String id, Boolean value, Boolean previousValue) 
+	public ModelData excuseNumericItem(String gradebookUid, ModelData student, String id, Boolean value, Boolean previousValue) 
 	throws InvalidInputException;
 	
 	public List<UserDereference> findAllUserDereferences();
@@ -146,10 +146,10 @@ public interface Gradebook2Service {
 	
 	public PermissionEntryListModel getPermissionEntryList(Long gradebookId, String learnerId);
 	
-	public StudentModel scoreNumericItem(String gradebookUid, StudentModel student, String assignmentId, Double value, Double previousValue) 
+	public ModelData scoreNumericItem(String gradebookUid, ModelData student, String assignmentId, Double value, Double previousValue) 
 	throws InvalidInputException;
 	
-	public StudentModel scoreTextItem(String gradebookUid, StudentModel student, String property, String value, String previousValue) 
+	public ModelData scoreTextItem(String gradebookUid, ModelData student, String property, String value, String previousValue) 
 	throws InvalidInputException;
 	
 	public void submitFinalGrade(List<Map<Column, String>> studentDataList, String gradebookUid, HttpServletRequest request, HttpServletResponse response);

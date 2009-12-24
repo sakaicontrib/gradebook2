@@ -22,8 +22,7 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.gxt.event;
 
-import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
-
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 
 public class BrowseLearner extends BaseEvent {
@@ -31,13 +30,13 @@ public class BrowseLearner extends BaseEvent {
 	public enum BrowseType { CURRENT, NEXT, PREV };
 	
 	public BrowseType type;
-	public StudentModel learner;
+	public ModelData learner;
 	
 	public BrowseLearner() {
 		super(null);
 	}
 	
-	public BrowseLearner(StudentModel learner, BrowseType type) {
+	public BrowseLearner(ModelData learner, BrowseType type) {
 		super(null);
 		this.learner = learner;
 		this.type = type;

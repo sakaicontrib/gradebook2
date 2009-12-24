@@ -31,11 +31,12 @@ import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.AltItemTreePanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ItemFormPanel;
+import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModelComparer;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -259,7 +260,7 @@ public class TreeView extends View {
 	protected void onSelectItem(String itemModelId) {
 
 		if (treeStore != null) {
-			List<ItemModel> itemModels = treeStore.findModels(ItemModel.Key.ID.name(), itemModelId);
+			List<ItemModel> itemModels = treeStore.findModels(ItemKey.ID.name(), itemModelId);
 			if (itemModels != null) {
 				for (ItemModel itemModel : itemModels) {
 					Type itemType = itemModel.getItemType();
@@ -348,7 +349,7 @@ public class TreeView extends View {
 	private ItemModel findItemByColumnId(String itemModelId) {
 		ItemModel itemModel = null;
 
-		List<ItemModel> itemModels = treeStore.findModels(ItemModel.Key.ID.name(), itemModelId);
+		List<ItemModel> itemModels = treeStore.findModels(ItemKey.ID.name(), itemModelId);
 		if (itemModels != null) {
 			for (ItemModel current : itemModels) {
 				Type itemType = current.getItemType();

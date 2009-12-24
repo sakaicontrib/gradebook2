@@ -29,14 +29,15 @@ import java.util.List;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader.Field;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.SpreadsheetModel;
-import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
-import com.extjs.gxt.ui.client.data.BaseModel;
+import com.extjs.gxt.ui.client.data.BaseModelData;
 import com.extjs.gxt.ui.client.data.BeanModel;
 import com.extjs.gxt.ui.client.data.BeanModelFactory;
 import com.extjs.gxt.ui.client.data.BeanModelLookup;
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 
 public class ClientUploadUtility {
@@ -97,7 +98,7 @@ public class ClientUploadUtility {
 
 
 	public static SpreadsheetModel composeSpreadsheetModelFromBeanModels(List<BeanModel> headers, 
-			List<StudentModel> importRows, List<ColumnConfig> previewColumns) {
+			List<ModelData> importRows, List<ColumnConfig> previewColumns) {
 
 		// Create new items
 		List<ItemModel> items = new ArrayList<ItemModel>();
@@ -130,14 +131,14 @@ public class ClientUploadUtility {
 	}
 
 	public static SpreadsheetModel composeSpreadsheetModel(List<ItemModel> items, 
-			List<StudentModel> importRows, List<ColumnConfig> previewColumns) {
+			List<ModelData> importRows, List<ColumnConfig> previewColumns) {
 
 		SpreadsheetModel spreadsheetModel = new SpreadsheetModel();
 
 		spreadsheetModel.setHeaders(items);
 
-		List<StudentModel> rows = new ArrayList<StudentModel>();
-		for (BaseModel importRow : importRows) {
+		List<ModelData> rows = new ArrayList<ModelData>();
+		for (ModelData importRow : importRows) {
 
 			boolean isUserNotFound = DataTypeConversionUtil.checkBoolean((Boolean)importRow.get("userNotFound"));
 
@@ -148,8 +149,8 @@ public class ClientUploadUtility {
 			if (uid == null)
 				uid = importRow.get("userImportId");
 
-			StudentModel student = new StudentModel();
-			student.setIdentifier(uid);
+			ModelData student = new BaseModelData();
+			student.set(LearnerKey.UID.name(), uid);
 
 			for (ColumnConfig column : previewColumns) {
 				String id = column.getId();

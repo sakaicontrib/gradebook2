@@ -37,13 +37,12 @@ import org.sakaiproject.gradebook.gwt.client.SecureToken;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
+import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
-import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
-import org.sakaiproject.gradebook.gwt.client.model.StudentModel.Group;
-import org.sakaiproject.gradebook.gwt.client.model.StudentModel.Key;
+import org.sakaiproject.gradebook.gwt.client.model.Group;
+import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -190,7 +189,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			menu.add(new SeparatorMenuItem());
 		}
 
-		if (config.getId().equals(StudentModel.Key.COURSE_GRADE.name())) {
+		if (config.getId().equals(LearnerKey.COURSE_GRADE.name())) {
 			item = new AriaMenuItem();
 			item.setData(selectionTypeField, SelectionType.GRADE_SCALE);
 			item.setItemId(AppConstants.ID_HD_GRADESCALE_MENUITEM);
@@ -426,7 +425,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 		List<FixedColumnModel> gradebookColumunConfigs = gradebookModel.getColumns();
 
 		for(FixedColumnModel gradebookColumnConfig : gradebookColumunConfigs) {
-			StudentModel.Key key = StudentModel.Key.valueOf(gradebookColumnConfig.getKey());
+			LearnerKey key = LearnerKey.valueOf(gradebookColumnConfig.getKey());
 			Group group = key.getGroup();
 			ColumnGroup columnGroup = columnGroupMap.get(group);
 
@@ -441,14 +440,14 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	}
 
 	// Helper method
-	protected Collection<Key> getGroupColumnKeys(Group group) {
+	protected Collection<LearnerKey> getGroupColumnKeys(Group group) {
 
-		ArrayList<Key> groupColumnKeys = new ArrayList<Key>();
+		ArrayList<LearnerKey> groupColumnKeys = new ArrayList<LearnerKey>();
 		List<FixedColumnModel> gradebookColumunConfigs = gradebookModel.getColumns();
 
 		for(FixedColumnModel gradebookColumnConfig : gradebookColumunConfigs) {
 
-			StudentModel.Key key = StudentModel.Key.valueOf(gradebookColumnConfig.getKey());
+			LearnerKey key = LearnerKey.valueOf(gradebookColumnConfig.getKey());
 
 			if(group.equals(key.getGroup())) {
 				groupColumnKeys.add(key);
@@ -459,14 +458,14 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	}
 
 	// Helper method
-	protected Collection<Key> getGroupColumnKeys(ColumnGroup columnGroup) {
+	protected Collection<LearnerKey> getGroupColumnKeys(ColumnGroup columnGroup) {
 
-		ArrayList<Key> groupColumnKeys = new ArrayList<Key>();
+		ArrayList<LearnerKey> groupColumnKeys = new ArrayList<LearnerKey>();
 		List<FixedColumnModel> gradebookColumunConfigs = columnGroup.getColumns();
 
 		for(FixedColumnModel gradebookColumnConfig : gradebookColumunConfigs) {
 
-			StudentModel.Key key = StudentModel.Key.valueOf(gradebookColumnConfig.getKey());
+			LearnerKey key = LearnerKey.valueOf(gradebookColumnConfig.getKey());
 
 			groupColumnKeys.add(key);
 		}
@@ -475,7 +474,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	}
 
 	// Helper method
-	protected int getColumnIndex(Key key) {
+	protected int getColumnIndex(LearnerKey key) {
 
 		return cm.getIndexById(key.name());
 	}

@@ -25,16 +25,21 @@ package org.sakaiproject.gradebook.gwt.client;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.controller.StartupController;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
 import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Registry;
+import com.extjs.gxt.ui.client.data.HttpProxy;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.widget.Html;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.http.client.Request;
+import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.http.client.RequestCallback;
+import com.google.gwt.http.client.RequestException;
+import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -63,7 +68,20 @@ public class GradebookApplication implements EntryPoint {
 		
 		dispatcher.addController(new StartupController());
 		
-		
+		/*RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, GWT.getHostPageBaseURL() + "rest/helloworld");  
+		try {
+			builder.sendRequest("", new RequestCallback() {
+			    public void onError(Request request, Throwable exception) {
+			    	RootPanel.get("alert").add(new Html(exception.getMessage()));
+			    }
+
+			    public void onResponseReceived(Request request, Response response) {
+			    	RootPanel.get("alert").add(new Html(response.getText()));
+			    }
+			});
+		} catch (RequestException e) {
+			RootPanel.get("alert").add(new Html(e.getMessage()));
+		}*/
 		
 		if (dataService == null) {
 			dataService = GWT.create(Gradebook2RPCService.class);

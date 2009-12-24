@@ -23,28 +23,13 @@
 
 package org.sakaiproject.gradebook.gwt.client.model;
 
-import com.google.gwt.core.client.GWT;
 
 
 public class StatisticsModel extends EntityModel implements Comparable<StatisticsModel> {
 
 	private static final long serialVersionUID = 1L;
 
-	public enum Key {
-		ID("Id"), NAME("Name"), MEAN("Mean"), MEDIAN("Median"), MODE("Mode"), STANDARD_DEVIATION("Standard Deviation"), ASSIGN_ID("Assignment Id"), RANK("Rank");
-		
-		private String propertyName;
-		
-		private Key(String propertyName) {
-			this.propertyName = propertyName;
-		}
-		
-		public String getPropertyName() {
-			return propertyName;
-		}
-		
-	}
-	
+	public enum Key { ID, NAME, MEAN, MEDIAN, MODE, STANDARD_DEVIATION, ASSIGN_ID, RANK }
 	
 	public StatisticsModel() {
 		

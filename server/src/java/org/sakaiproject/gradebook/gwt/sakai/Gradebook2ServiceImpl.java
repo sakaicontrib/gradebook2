@@ -65,14 +65,17 @@ import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
 import org.sakaiproject.gradebook.gwt.client.model.CategoryModel;
+import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.CommentModel;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeEventModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeFormatModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordModel;
+import org.sakaiproject.gradebook.gwt.client.model.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.PermissionEntryListModel;
 import org.sakaiproject.gradebook.gwt.client.model.PermissionEntryModel;
 import org.sakaiproject.gradebook.gwt.client.model.SectionModel;
@@ -81,10 +84,7 @@ import org.sakaiproject.gradebook.gwt.client.model.StatisticsModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.SubmissionVerificationModel;
 import org.sakaiproject.gradebook.gwt.client.model.UserModel;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
-import org.sakaiproject.gradebook.gwt.client.model.StudentModel.Key;
 import org.sakaiproject.gradebook.gwt.sakai.InstitutionalAdvisor.Column;
 import org.sakaiproject.gradebook.gwt.sakai.mock.SiteMock;
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
@@ -142,17 +142,16 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 	private static final Log log = LogFactory.getLog(Gradebook2ServiceImpl.class);
 	private static ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 	
-	
 	private BusinessLogic businessLogic;
 	private GradebookFrameworkService frameworkService;
-	private GradebookToolService gbService;
-	private GradeCalculations gradeCalculations;
-	private Gradebook2Authz authz;
+	protected GradebookToolService gbService;
+	protected GradeCalculations gradeCalculations;
+	protected Gradebook2Authz authz;
 	private SectionAwareness sectionAwareness;
-	private InstitutionalAdvisor advisor;
+	protected InstitutionalAdvisor advisor;
 	private SiteService siteService;
 	private ToolManager toolManager;
-	private UserDirectoryService userService;
+	protected UserDirectoryService userService;
 	private SessionManager sessionManager;
 	private ServerConfigurationService configService;
 	private EventTrackingService eventTrackingService;
@@ -206,11 +205,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 			}
 			
 			if (isPointsEnabled)
-				enabledGradeTypes.add(GradebookModel.GradeType.POINTS);
+				enabledGradeTypes.add(GradeType.POINTS);
 			if (isPercentagesEnabled)
-				enabledGradeTypes.add(GradebookModel.GradeType.PERCENTAGES);
+				enabledGradeTypes.add(GradeType.PERCENTAGES);
 			if (isLettersEnabled)
-				enabledGradeTypes.add(GradebookModel.GradeType.LETTERS);
+				enabledGradeTypes.add(GradeType.LETTERS);
 			
 			String learnerRoleNameString = configService.getString(AppConstants.LEARNER_ROLE_NAMES);
 			
@@ -218,9 +217,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 				learnerRoleNames = learnerRoleNameString.split("\\s*,\\s*");
 			
 		} else {
-			enabledGradeTypes.add(GradebookModel.GradeType.POINTS);
-			enabledGradeTypes.add(GradebookModel.GradeType.PERCENTAGES);
-			enabledGradeTypes.add(GradebookModel.GradeType.LETTERS);
+			enabledGradeTypes.add(GradeType.POINTS);
+			enabledGradeTypes.add(GradeType.PERCENTAGES);
+			enabledGradeTypes.add(GradeType.LETTERS);
 		}
 		
 		if (learnerRoleNames == null)
@@ -709,8 +708,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		Set<String> commentIdKeySet = commentIdToAssignmentMap.keySet();
 		
 		if (true) {
-			for (StudentModel student : spreadsheetModel.getRows()) {
-				UserRecord userRecord = userRecordMap.get(student.getIdentifier());
+			for (ModelData student : spreadsheetModel.getRows()) {
+				UserRecord userRecord = userRecordMap.get(student.get(LearnerKey.UID.name()));
 
 				StringBuilder builder = new StringBuilder();
 
@@ -734,7 +733,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 						
 						Assignment assignment = commentIdToAssignmentMap.get(id);
 						
-						CommentModel comment = createOrUpdateComment(assignment.getId(), student.getIdentifier(), (String)v);
+						CommentModel comment = createOrUpdateComment(assignment.getId(), (String)student.get(LearnerKey.UID.name()), (String)v);
 						
 						if (comment != null) {
 							student.set(fullId, comment.getText());
@@ -767,7 +766,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 								if (!gradeCalculations.isValidLetterGrade((String)v)) {
 									String failedProperty = new StringBuilder().append(assignment.getId()).append(StudentModel.FAILED_FLAG).toString();
 									student.set(failedProperty, "Invalid input");
-									log.warn("Failed to score item for " + student.getIdentifier() + " and item " + assignment.getId() + " to " + v);
+									log.warn("Failed to score item for " + student.get(LearnerKey.UID.name()) + " and item " + assignment.getId() + " to " + v);
 			
 									if (oldValue != null)
 										builder.append(oldValue);
@@ -810,7 +809,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 							student.set(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
 		
 							
-							gradedRecords.add(scoreItem(gradebook, assignment, assignmentGradeRecord, student.getIdentifier(), value, true, true));
+							gradedRecords.add(scoreItem(gradebook, assignment, assignmentGradeRecord, (String)student.get(LearnerKey.UID.name()), value, true, true));
 							builder.append(assignment.getName()).append(" (");
 							
 							if (oldValue != null)
@@ -823,7 +822,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 						} catch (NumberFormatException nfe) {
 							String failedProperty = new StringBuilder().append(assignment.getId()).append(StudentModel.FAILED_FLAG).toString();
 							student.set(failedProperty, "Invalid input");
-							log.warn("Failed to score item for " + student.getIdentifier() + " and item " + assignment.getId() + " to " + v);
+							log.warn("Failed to score item for " + (String)student.get(LearnerKey.UID.name()) + " and item " + assignment.getId() + " to " + v);
 	
 							if (oldValue != null)
 								builder.append(oldValue);
@@ -834,7 +833,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 						} catch (InvalidInputException e) {
 							String failedProperty = new StringBuilder().append(assignment.getId()).append(StudentModel.FAILED_FLAG).toString();
 							student.set(failedProperty, e.getMessage());
-							log.warn("Failed to score numeric item for " + student.getIdentifier() + " and item " + assignment.getId() + " to " + value);
+							log.warn("Failed to score numeric item for " + (String)student.get(LearnerKey.UID.name()) + " and item " + assignment.getId() + " to " + value);
 	
 							if (oldValue != null)
 								builder.append(oldValue);
@@ -847,7 +846,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 							String failedProperty = new StringBuilder().append(assignment.getId()).append(StudentModel.FAILED_FLAG).toString();
 							student.set(failedProperty, e.getMessage());
 	
-							log.warn("Failed to score numeric item for " + student.getIdentifier() + " and item " + assignment.getId() + " to " + value, e);
+							log.warn("Failed to score numeric item for " + (String)student.get(LearnerKey.UID.name()) + " and item " + assignment.getId() + " to " + value, e);
 	
 							if (oldValue != null)
 								builder.append(oldValue);
@@ -1020,7 +1019,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		}
 
 		List<UserRecord> userRecords = null;
-		StudentModel.Key sortColumnKey = null;
+		LearnerKey sortColumnKey = null;
 
 		String columnId = null;
 
@@ -1029,7 +1028,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		if (config != null && config.getSortInfo() != null && config.getSortInfo().getSortField() != null) {
 			columnId = config.getSortInfo().getSortField();
 
-			for (StudentModel.Key key : EnumSet.allOf(StudentModel.Key.class)) {
+			for (LearnerKey key : EnumSet.allOf(LearnerKey.class)) {
 				if (columnId.equals(key.name())) {
 					sortColumnKey = key;
 					break;
@@ -1037,12 +1036,12 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 			}
 
 			if (sortColumnKey == null)
-				sortColumnKey = StudentModel.Key.ASSIGNMENT;
+				sortColumnKey = LearnerKey.ASSIGNMENT;
 
 		}
 
 		if (sortColumnKey == null)
-			sortColumnKey = StudentModel.Key.DISPLAY_NAME;
+			sortColumnKey = LearnerKey.DISPLAY_NAME;
 
 		boolean isDescending = config != null && config.getSortInfo() != null && config.getSortInfo().getSortDir() == SortDir.DESC;
 
@@ -1153,7 +1152,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		return userRecords;
 	}
 
-	public StudentModel excuseNumericItem(String gradebookUid, StudentModel student, String id, Boolean value, Boolean previousValue) throws InvalidInputException {
+	public ModelData excuseNumericItem(String gradebookUid, ModelData student, String id, Boolean value, Boolean previousValue) throws InvalidInputException {
 
 		int indexOf = id.indexOf(StudentModel.EXCUSE_FLAG);
 
@@ -1165,7 +1164,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		Assignment assignment = gbService.getAssignment(Long.valueOf(assignmentId));
 		Gradebook gradebook = assignment.getGradebook();
 
-		List<AssignmentGradeRecord> gradeRecords = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), student.getIdentifier());
+		List<AssignmentGradeRecord> gradeRecords = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), (String)student.get(LearnerKey.UID.name()));
 
 		AssignmentGradeRecord assignmentGradeRecord = null;
 
@@ -1183,13 +1182,13 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 
 		// Prepare record for update
 		assignmentGradeRecord.setGradableObject(assignment);
-		assignmentGradeRecord.setStudentId(student.getIdentifier());
+		assignmentGradeRecord.setStudentId((String)student.get(LearnerKey.UID.name()));
 
 		Collection<AssignmentGradeRecord> updateGradeRecords = new LinkedList<AssignmentGradeRecord>();
 		updateGradeRecords.add(assignmentGradeRecord);
 		gbService.updateAssignmentGradeRecords(assignment, updateGradeRecords, gradebook.getGrade_type());
 
-		gradeRecords = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), student.getIdentifier());
+		gradeRecords = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), (String)student.get(LearnerKey.UID.name()));
 
 		return refreshLearnerData(gradebook, student, assignment, gradeRecords);
 	}
@@ -1868,7 +1867,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
 
 		String columnId = null;
-		StudentModel.Key sortColumnKey = null;
+		LearnerKey sortColumnKey = null;
 
 		int offset = -1;
 		int limit = -1;
@@ -1884,7 +1883,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 			if (config.getSortInfo() != null && config.getSortInfo().getSortField() != null) {
 				columnId = config.getSortInfo().getSortField();
 
-				for (StudentModel.Key key : EnumSet.allOf(StudentModel.Key.class)) {
+				for (LearnerKey key : EnumSet.allOf(LearnerKey.class)) {
 					if (columnId.equals(key.name())) {
 						sortColumnKey = key;
 						break;
@@ -1892,7 +1891,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 				}
 
 				if (sortColumnKey == null)
-					sortColumnKey = StudentModel.Key.ASSIGNMENT;
+					sortColumnKey = LearnerKey.ASSIGNMENT;
 			}
 
 			if (config instanceof MultiGradeLoadConfig) {
@@ -1901,13 +1900,13 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 
 				if (searchCriteria != null) {
 					searchCriteria = searchCriteria.toUpperCase();
-					sortColumnKey = StudentModel.Key.DISPLAY_NAME;
+					sortColumnKey = LearnerKey.DISPLAY_NAME;
 				}
 			}
 		}
 
 		if (sortColumnKey == null)
-			sortColumnKey = StudentModel.Key.DISPLAY_NAME;
+			sortColumnKey = LearnerKey.DISPLAY_NAME;
 
 		boolean isDescending = config != null && config.getSortInfo() != null && config.getSortInfo().getSortDir() == SortDir.DESC;
 
@@ -2130,20 +2129,22 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		return new SubmissionVerificationModel(numberOfLearners, isMissingScores, isFullyWeighted);
 	}
 
-	public StudentModel scoreNumericItem(String gradebookUid, StudentModel student, String assignmentId, Double value, Double previousValue) throws InvalidInputException {
+	
+	
+	public ModelData scoreNumericItem(String gradebookUid, ModelData student, String assignmentId, Double value, Double previousValue) throws InvalidInputException {
 
 		Assignment assignment = gbService.getAssignment(Long.valueOf(assignmentId));
 		Gradebook gradebook = assignment.getGradebook();
 
 		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.GRADE_RECORD.name(), ActionType.GRADED.name());
-		actionRecord.setEntityName(new StringBuilder().append(student.getDisplayName()).append(" : ").append(assignment.getName()).toString());
+		actionRecord.setEntityName(new StringBuilder().append((String)student.get(LearnerKey.DISPLAY_NAME.name())).append(" : ").append(assignment.getName()).toString());
 		actionRecord.setEntityId(String.valueOf(assignment.getId()));
-		actionRecord.setStudentUid(student.getIdentifier());
+		actionRecord.setStudentUid((String)student.get(LearnerKey.UID.name()));
 		Map<String, String> propertyMap = actionRecord.getPropertyMap();
 
 		propertyMap.put("score", String.valueOf(value));
 
-		List<AssignmentGradeRecord> gradeRecords = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), student.getIdentifier());
+		List<AssignmentGradeRecord> gradeRecords = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), (String)student.get(LearnerKey.UID.name()));
 
 		AssignmentGradeRecord assignmentGradeRecord = null;
 
@@ -2157,9 +2158,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 			assignmentGradeRecord = new AssignmentGradeRecord();
 		}
 
-		scoreItem(gradebook, assignment, assignmentGradeRecord, student.getIdentifier(), value, false, false);
+		scoreItem(gradebook, assignment, assignmentGradeRecord, (String)student.get(LearnerKey.UID.name()), value, false, false);
 
-		gradeRecords = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), student.getIdentifier());
+		gradeRecords = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), (String)student.get(LearnerKey.UID.name()));
 
 		refreshLearnerData(gradebook, student, assignment, gradeRecords);
 		
@@ -2179,7 +2180,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		return student;
 	}
 
-	public StudentModel scoreTextItem(String gradebookUid, StudentModel student, String property, String value, String previousValue) throws InvalidInputException {
+	public ModelData scoreTextItem(String gradebookUid, ModelData student, String property, String value, String previousValue) throws InvalidInputException {
 		
 		if (value != null && value.trim().equals(""))
 			value = null;
@@ -2192,14 +2193,14 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
 				
-		if (property.equals(StudentModel.Key.GRADE_OVERRIDE.name())) {
+		if (property.equals(LearnerKey.GRADE_OVERRIDE.name())) {
 			// GRBK-233 : Only IOR can overwrite course grades
 			boolean isInstructor = authz.isUserAbleToGradeAll(gradebook.getUid());
 			if (!isInstructor)
 				throw new InvalidInputException("You are not authorized to overwrite the course grade for this student.");
 			
 			// Then we are overriding a course grade
-			CourseGradeRecord courseGradeRecord = gbService.getStudentCourseGradeRecord(gradebook, student.getIdentifier());
+			CourseGradeRecord courseGradeRecord = gbService.getStudentCourseGradeRecord(gradebook, (String)student.get(LearnerKey.UID.name()));
 			courseGradeRecord.setEnteredGrade(value);
 			Collection<CourseGradeRecord> gradeRecords = new LinkedList<CourseGradeRecord>();
 			gradeRecords.add(courseGradeRecord);
@@ -2210,15 +2211,15 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 			GradeMapping gradeMapping = gradebook.getSelectedGradeMapping();
 			Set<String> scaledGrades = gradeMapping.getGradeMap().keySet();
 	
-			if (value != null && !advisor.isValidOverrideGrade(value, student.getEid(), student.getStudentDisplayId(), gradebook, scaledGrades))
+			if (value != null && !advisor.isValidOverrideGrade(value, (String)student.get(LearnerKey.EID.name()), (String)student.get(LearnerKey.DISPLAY_ID.name()), gradebook, scaledGrades))
 				throw new InvalidInputException("This is not a valid override grade for this individual in this course.");
 	
 			gbService.updateCourseGradeRecords(courseGrade, gradeRecords);
 	
 			ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.COURSE_GRADE_RECORD.name(), ActionType.GRADED.name());
-			actionRecord.setEntityName(new StringBuilder().append(student.getDisplayName()).append(" : ").append(gradebook.getName()).toString());
+			actionRecord.setEntityName(new StringBuilder().append((String)student.get(LearnerKey.DISPLAY_NAME.name())).append(" : ").append(gradebook.getName()).toString());
 			actionRecord.setEntityId(String.valueOf(gradebook.getId()));
-			actionRecord.setStudentUid(student.getIdentifier());
+			actionRecord.setStudentUid((String)student.get(LearnerKey.UID.name()));
 			Map<String, String> propertyMap = actionRecord.getPropertyMap();
 
 			propertyMap.put("score", value);
@@ -2231,7 +2232,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 				categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
 	
 			Map<Long, AssignmentGradeRecord> studentGradeMap = new HashMap<Long, AssignmentGradeRecord>();
-			List<AssignmentGradeRecord> records = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), student.getIdentifier());
+			List<AssignmentGradeRecord> records = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), (String)student.get(LearnerKey.UID.name()));
 	
 			if (records != null) {
 				for (AssignmentGradeRecord record : records) {
@@ -2240,11 +2241,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 			}
 	
 			BigDecimal calculatedGrade = getCalculatedGrade(gradebook, assignments, categories, studentGradeMap);
-			DisplayGrade displayGrade = getDisplayGrade(gradebook, student.getIdentifier(), courseGradeRecord, calculatedGrade);// requestCourseGrade(gradebookUid,
+			DisplayGrade displayGrade = getDisplayGrade(gradebook, (String)student.get(LearnerKey.UID.name()), courseGradeRecord, calculatedGrade);// requestCourseGrade(gradebookUid,
 			displayGrade.setOverridden(value != null);
-			student.set(StudentModel.Key.GRADE_OVERRIDE.name(), courseGradeRecord.getEnteredGrade());
-			student.set(StudentModel.Key.COURSE_GRADE.name(), displayGrade.toString());
-			student.set(StudentModel.Key.LETTER_GRADE.name(), displayGrade.getLetterGrade());
+			student.set(LearnerKey.GRADE_OVERRIDE.name(), courseGradeRecord.getEnteredGrade());
+			student.set(LearnerKey.COURSE_GRADE.name(), displayGrade.toString());
+			student.set(LearnerKey.LETTER_GRADE.name(), displayGrade.getLetterGrade());
 		} else if (gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER) {
 			// We must be modifying a letter grade
 			if (value != null && !gradeCalculations.isValidLetterGrade(value))
@@ -2791,7 +2792,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		return cellMap;
 	}
 
-	private StudentModel buildStudentRow(Gradebook gradebook, UserRecord userRecord, List<FixedColumnModel> columns, List<Assignment> assignments, List<Category> categories) {
+	protected Map<String, Object> buildLearnerGradeRecord(Gradebook gradebook, UserRecord userRecord, List<FixedColumnModel> columns, List<Assignment> assignments, List<Category> categories) {
 
 		Map<Long, AssignmentGradeRecord> studentGradeMap = userRecord.getGradeRecordMap();
 
@@ -2799,11 +2800,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		Map<String, Object> cellMap = new HashMap<String, Object>();
 
 		// This is how we track which column is which - by the user's uid
-		cellMap.put(StudentModel.Key.UID.name(), userRecord.getUserUid());
-		cellMap.put(StudentModel.Key.EID.name(), userRecord.getUserEid());
-		cellMap.put(StudentModel.Key.EXPORT_CM_ID.name(), userRecord.getExportCourseManagemntId());
-		cellMap.put(StudentModel.Key.EXPORT_USER_ID.name(), userRecord.getExportUserId());
-		cellMap.put(StudentModel.Key.FINAL_GRADE_USER_ID.name(), userRecord.getFinalGradeUserId());
+		cellMap.put(LearnerKey.UID.name(), userRecord.getUserUid());
+		cellMap.put(LearnerKey.EID.name(), userRecord.getUserEid());
+		cellMap.put(LearnerKey.EXPORT_CM_ID.name(), userRecord.getExportCourseManagemntId());
+		cellMap.put(LearnerKey.EXPORT_USER_ID.name(), userRecord.getExportUserId());
+		cellMap.put(LearnerKey.FINAL_GRADE_USER_ID.name(), userRecord.getFinalGradeUserId());
 		// Need this to show the grade override
 		CourseGradeRecord courseGradeRecord = userRecord.getCourseGradeRecord(); 
 
@@ -2821,10 +2822,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 
 		if (columns != null) {
 			for (FixedColumnModel column : columns) {
-				StudentModel.Key key = StudentModel.Key.valueOf(column.getKey());
+				LearnerKey key = LearnerKey.valueOf(column.getKey());
 				switch (key) {
 					case DISPLAY_ID:
-						cellMap.put(StudentModel.Key.DISPLAY_ID.name(), userRecord.getDisplayId());
+						cellMap.put(LearnerKey.DISPLAY_ID.name(), userRecord.getDisplayId());
 						break;
 					case DISPLAY_NAME:
 						// For the single view, maybe some redundancy, but not
@@ -2834,29 +2835,29 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 						if (displayName == null)
 							displayName = "[User name not found]";
 
-						cellMap.put(StudentModel.Key.DISPLAY_NAME.name(), displayName);
-						cellMap.put(StudentModel.Key.LAST_NAME_FIRST.name(), userRecord.getLastNameFirst());
-						cellMap.put(StudentModel.Key.EMAIL.name(), userRecord.getEmail());
+						cellMap.put(LearnerKey.DISPLAY_NAME.name(), displayName);
+						cellMap.put(LearnerKey.LAST_NAME_FIRST.name(), userRecord.getLastNameFirst());
+						cellMap.put(LearnerKey.EMAIL.name(), userRecord.getEmail());
 						break;
 					case SECTION:
-						cellMap.put(StudentModel.Key.SECTION.name(), userRecord.getSectionTitle());
+						cellMap.put(LearnerKey.SECTION.name(), userRecord.getSectionTitle());
 						break;
 					case COURSE_GRADE:
 						if (displayGrade != null)
 						{
-							cellMap.put(StudentModel.Key.COURSE_GRADE.name(), displayGrade.toString());
+							cellMap.put(LearnerKey.COURSE_GRADE.name(), displayGrade.toString());
 							GWT.log("setting override to " + displayGrade.isOverridden(),null);
-							cellMap.put(StudentModel.Key.IS_GRADE_OVERRIDDEN.name(), Boolean.toString(displayGrade.isOverridden()));
+							cellMap.put(LearnerKey.IS_GRADE_OVERRIDDEN.name(), Boolean.toString(displayGrade.isOverridden()));
 						}
 						break;
 					case GRADE_OVERRIDE:
-						cellMap.put(StudentModel.Key.GRADE_OVERRIDE.name(), enteredGrade);
+						cellMap.put(LearnerKey.GRADE_OVERRIDE.name(), enteredGrade);
 						break;
 					case CALCULATED_GRADE:
-						cellMap.put(StudentModel.Key.CALCULATED_GRADE.name(), displayGrade.getCalculatedGradeAsString());
+						cellMap.put(LearnerKey.CALCULATED_GRADE.name(), displayGrade.getCalculatedGradeAsString());
 						break;
 					case LETTER_GRADE:
-						cellMap.put(StudentModel.Key.LETTER_GRADE.name(), displayGrade.getLetterGrade());
+						cellMap.put(LearnerKey.LETTER_GRADE.name(), displayGrade.getLetterGrade());
 						break;
 				};
 			}
@@ -2877,7 +2878,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 
 		}
 
-		return new StudentModel(cellMap);
+		return cellMap;
+	}
+	
+	private StudentModel buildStudentRow(Gradebook gradebook, UserRecord userRecord, List<FixedColumnModel> columns, List<Assignment> assignments, List<Category> categories) {
+		return new StudentModel(buildLearnerGradeRecord(gradebook, userRecord, columns, assignments, categories));
 	}
 
 	private void calculateItemCategoryPercent(Gradebook gradebook, Category category, ItemModel gradebookItemModel, ItemModel categoryItemModel, List<Assignment> assignments, Long assignmentId) {
@@ -3066,11 +3071,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 					// may be some sites that were created without hidden calculated and letter grade entries
 					// once we've moved far enough into the future past Fall 2010, we can remove these,
 					// and clean installations can remove them immediately
-					String calcGradeHiddenId = ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, StudentModel.Key.CALCULATED_GRADE.name());
+					String calcGradeHiddenId = ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, LearnerKey.CALCULATED_GRADE.name());
 					if (configModel.get(calcGradeHiddenId) == null)
 						configModel.set(calcGradeHiddenId, "true");
 					
-					String letterGradeHiddenId = ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, StudentModel.Key.LETTER_GRADE.name());
+					String letterGradeHiddenId = ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, LearnerKey.LETTER_GRADE.name());
 					if (configModel.get(letterGradeHiddenId) == null)
 						configModel.set(letterGradeHiddenId, "true");
 				}
@@ -3085,9 +3090,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 
 							String identifier = c.getIdentifier();
 
-							if (!identifier.equals(StudentModel.Key.LAST_NAME_FIRST.name())
-									&& !identifier.equals(StudentModel.Key.COURSE_GRADE.name())
-									&& !identifier.equals(StudentModel.Key.GRADE_OVERRIDE.name())) {
+							if (!identifier.equals(LearnerKey.LAST_NAME_FIRST.name())
+									&& !identifier.equals(LearnerKey.COURSE_GRADE.name())
+									&& !identifier.equals(LearnerKey.GRADE_OVERRIDE.name())) {
 								if (!legacySelectedMultiGradeColumns.contains(identifier)) {
 									createOrUpdateConfigurationModel(gradebook.getId(), ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, identifier), "true");								
 									configModel.setColumnHidden(AppConstants.ITEMTREE, identifier, Boolean.TRUE);
@@ -3121,54 +3126,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 				// Don't take the hit of looking this stuff up unless we're in
 				// single user view
 				if (isSingleUserView) {
-
-					UserRecord userRecord = new UserRecord(user);
-					if (site != null) {
-
-						Collection<Group> groups = site.getGroupsWithMember(user.getId());
-						if (!groups.isEmpty()) {
-							for (Group group : groups) {
-								// FIXME: We probably don't just want to grab
-								// the first group the user is in
-								userRecord.setSectionTitle(group.getTitle());
-								break;
-							}
-						}
-
-					}
-
-					Map<Long, Comment> commentMap = new HashMap<Long, Comment>();
-					List<Comment> comments = gbService.getStudentAssignmentComments(user.getId(), gradebook.getId());
-					
-					for (Comment comment : comments) {
-						GradableObject a = comment.getGradableObject();
-						
-						if (a != null) {
-							commentMap.put(a.getId(), comment);
-						}
-					}
-					
-					userRecord.setCommentMap(commentMap);
-					
-					CourseGradeRecord courseGradeRecord = gbService.getStudentCourseGradeRecord(gradebook, user.getId());
-					userRecord.setCourseGradeRecord(courseGradeRecord);
-
-					List<AssignmentGradeRecord> records = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), userRecord.getUserUid());
-
-					if (records != null) {
-						for (AssignmentGradeRecord gradeRecord : records) {
-							gradeRecord.setUserAbleToView(true);
-							String studentUid = gradeRecord.getStudentId();
-							Map<Long, AssignmentGradeRecord> studentMap = userRecord.getGradeRecordMap();
-							if (studentMap == null) {
-								studentMap = new HashMap<Long, AssignmentGradeRecord>();
-								userRecord.setGradeRecordMap(studentMap);
-							}
-							GradableObject go = gradeRecord.getGradableObject();
-							studentMap.put(go.getId(), gradeRecord);
-						}
-					}
-
+					UserRecord userRecord = buildUserRecord(site, user, gradebook);
 					model.setUserAsStudent(buildStudentRow(gradebook, userRecord, columns, assignments, categories));
 				}
 				List<StatisticsModel> statsList = generateStatsList(model.getGradebookUid(), model.getGradebookId(), user.getId());		
@@ -3193,6 +3151,58 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		model.setColumns(columns);
 
 		return model;
+	}
+	
+	
+	protected UserRecord buildUserRecord(Site site, User user, Gradebook gradebook) {
+		UserRecord userRecord = new UserRecord(user);
+		if (site != null) {
+
+			Collection<Group> groups = site.getGroupsWithMember(user.getId());
+			if (groups != null && !groups.isEmpty()) {
+				for (Group group : groups) {
+					// FIXME: We probably don't just want to grab
+					// the first group the user is in
+					userRecord.setSectionTitle(group.getTitle());
+					break;
+				}
+			}
+
+		}
+
+		Map<Long, Comment> commentMap = new HashMap<Long, Comment>();
+		List<Comment> comments = gbService.getStudentAssignmentComments(user.getId(), gradebook.getId());
+		
+		for (Comment comment : comments) {
+			GradableObject a = comment.getGradableObject();
+			
+			if (a != null) {
+				commentMap.put(a.getId(), comment);
+			}
+		}
+		
+		userRecord.setCommentMap(commentMap);
+		
+		CourseGradeRecord courseGradeRecord = gbService.getStudentCourseGradeRecord(gradebook, user.getId());
+		userRecord.setCourseGradeRecord(courseGradeRecord);
+
+		List<AssignmentGradeRecord> records = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), userRecord.getUserUid());
+
+		if (records != null) {
+			for (AssignmentGradeRecord gradeRecord : records) {
+				gradeRecord.setUserAbleToView(true);
+				String studentUid = gradeRecord.getStudentId();
+				Map<Long, AssignmentGradeRecord> studentMap = userRecord.getGradeRecordMap();
+				if (studentMap == null) {
+					studentMap = new HashMap<Long, AssignmentGradeRecord>();
+					userRecord.setGradeRecordMap(studentMap);
+				}
+				GradableObject go = gradeRecord.getGradableObject();
+				studentMap.put(go.getId(), gradeRecord);
+			}
+		}
+		
+		return userRecord;
 	}
 
 	private ItemModel createItemModel(Gradebook gradebook) {
@@ -3325,7 +3335,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 			model.setDataType(AppConstants.STRING_DATA_TYPE);
 		else
 			model.setDataType(AppConstants.NUMERIC_DATA_TYPE);
-		model.setStudentModelKey(Key.ASSIGNMENT.name());
+		model.setStudentModelKey(LearnerKey.ASSIGNMENT.name());
 		model.setItemOrder(assignment.getSortOrder());
 		
 		if (hasWeights) {
@@ -3602,7 +3612,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		return users;
 	}
 
-	private List<Category> getCategoriesWithAssignments(Long gradebookId, List<Assignment> assignments, boolean includeEmpty) {
+	protected List<Category> getCategoriesWithAssignments(Long gradebookId, List<Assignment> assignments, boolean includeEmpty) {
 
 		Map<Long, Category> categoryMap = new HashMap<Long, Category>();
 		List<Category> categories = null;
@@ -3684,23 +3694,23 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		return categories;
 	}
 
-	private <X extends BaseModel> List<X> getColumns(boolean isUserAbleToGradeAll) {
+	protected <X extends BaseModel> List<X> getColumns(boolean isUserAbleToGradeAll) {
 
 		List<X> columns = new LinkedList<X>();
 
-		columns.add((X) new FixedColumnModel(StudentModel.Key.DISPLAY_ID, i18n.getString("displayId"), 80, true));
-		columns.add((X) new FixedColumnModel(StudentModel.Key.DISPLAY_NAME, i18n.getString("displayName"), 180, true));
-		columns.add((X) new FixedColumnModel(StudentModel.Key.LAST_NAME_FIRST, i18n.getString("lastNameFirst"), 180, false));
-		columns.add((X) new FixedColumnModel(StudentModel.Key.EMAIL, i18n.getString("email"), 230, true));
-		columns.add((X) new FixedColumnModel(StudentModel.Key.SECTION, i18n.getString("section"), 120, true));
-		columns.add((X) new FixedColumnModel(StudentModel.Key.COURSE_GRADE, i18n.getString("courseGrade"), 120, false));
+		columns.add((X) new FixedColumnModel(LearnerKey.DISPLAY_ID, i18n.getString("displayId"), 80, true));
+		columns.add((X) new FixedColumnModel(LearnerKey.DISPLAY_NAME, i18n.getString("displayName"), 180, true));
+		columns.add((X) new FixedColumnModel(LearnerKey.LAST_NAME_FIRST, i18n.getString("lastNameFirst"), 180, false));
+		columns.add((X) new FixedColumnModel(LearnerKey.EMAIL, i18n.getString("email"), 230, true));
+		columns.add((X) new FixedColumnModel(LearnerKey.SECTION, i18n.getString("section"), 120, true));
+		columns.add((X) new FixedColumnModel(LearnerKey.COURSE_GRADE, i18n.getString("courseGrade"), 120, false));
 		if (isUserAbleToGradeAll) {
-			FixedColumnModel gradeOverrideColumn = new FixedColumnModel(StudentModel.Key.GRADE_OVERRIDE, i18n.getString("gradeOverride"), 120, false);
+			FixedColumnModel gradeOverrideColumn = new FixedColumnModel(LearnerKey.GRADE_OVERRIDE, i18n.getString("gradeOverride"), 120, false);
 			gradeOverrideColumn.setEditable(true);
 			columns.add((X) gradeOverrideColumn);
 		}
-		columns.add((X) new FixedColumnModel(StudentModel.Key.LETTER_GRADE, i18n.getString("letterGrade"), 80, true));
-		columns.add((X) new FixedColumnModel(StudentModel.Key.CALCULATED_GRADE, i18n.getString("calculatedGrade"), 80, true));
+		columns.add((X) new FixedColumnModel(LearnerKey.LETTER_GRADE, i18n.getString("letterGrade"), 80, true));
+		columns.add((X) new FixedColumnModel(LearnerKey.CALCULATED_GRADE, i18n.getString("calculatedGrade"), 80, true));
 		
 		return columns;
 	}
@@ -4104,7 +4114,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 	}
 
 	
-	private StudentModel refreshLearnerData(Gradebook gradebook, StudentModel student, Assignment assignment, List<AssignmentGradeRecord> assignmentGradeRecords) {
+	private ModelData refreshLearnerData(Gradebook gradebook, ModelData student, Assignment assignment, List<AssignmentGradeRecord> assignmentGradeRecords) {
 
 		Map<Long, AssignmentGradeRecord> studentGradeMap = new HashMap<Long, AssignmentGradeRecord>();
 
@@ -4122,9 +4132,9 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		List<Category> categories = null;
 		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
 			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
-		CourseGradeRecord courseGradeRecord = gbService.getStudentCourseGradeRecord(gradebook, student.getIdentifier());
+		CourseGradeRecord courseGradeRecord = gbService.getStudentCourseGradeRecord(gradebook, (String)student.get(LearnerKey.UID.name()));
 		BigDecimal calculatedGrade = getCalculatedGrade(gradebook, assignments, categories, studentGradeMap);
-		DisplayGrade displayGrade = getDisplayGrade(gradebook, student.getIdentifier(), courseGradeRecord, calculatedGrade);
+		DisplayGrade displayGrade = getDisplayGrade(gradebook, (String)student.get(LearnerKey.UID.name()), courseGradeRecord, calculatedGrade);
 
 		for (AssignmentGradeRecord record : assignmentGradeRecords) {
 			Long aId = record.getGradableObject().getId();
@@ -4149,19 +4159,19 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		}
 
 		String commentedProperty = assignment.getId() + StudentModel.COMMENTED_FLAG;
-		if (gbService.isStudentCommented(student.getIdentifier(), assignment.getId()))
+		if (gbService.isStudentCommented((String)student.get(LearnerKey.UID.name()), assignment.getId()))
 			student.set(commentedProperty, Boolean.TRUE);
 		else
 			student.set(commentedProperty, null);
 
-		student.set(StudentModel.Key.CALCULATED_GRADE.name(), displayGrade.getCalculatedGradeAsString());
-		student.set(StudentModel.Key.COURSE_GRADE.name(), displayGrade.toString());
-		student.set(StudentModel.Key.LETTER_GRADE.name(), displayGrade.getLetterGrade());
+		student.set(LearnerKey.CALCULATED_GRADE.name(), displayGrade.getCalculatedGradeAsString());
+		student.set(LearnerKey.COURSE_GRADE.name(), displayGrade.toString());
+		student.set(LearnerKey.LETTER_GRADE.name(), displayGrade.getLetterGrade());
 		
 		return student;
 	}
 
-	private AssignmentGradeRecord scoreItem(Gradebook gradebook, Assignment assignment, AssignmentGradeRecord assignmentGradeRecord, String studentUid, Double value, boolean includeExcluded, boolean deferUpdate)
+	protected AssignmentGradeRecord scoreItem(Gradebook gradebook, Assignment assignment, AssignmentGradeRecord assignmentGradeRecord, String studentUid, Double value, boolean includeExcluded, boolean deferUpdate)
 	throws InvalidInputException {
 
 		boolean isUserAbleToGrade = authz.isUserAbleToGradeAll(gradebook.getUid()) || authz.isUserAbleToGradeItemForStudent(gradebook.getUid(), assignment.getId(), studentUid);

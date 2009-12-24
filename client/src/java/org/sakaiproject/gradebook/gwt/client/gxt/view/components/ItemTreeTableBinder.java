@@ -24,6 +24,7 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view.components;
 
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 
 import com.extjs.gxt.ui.client.binder.TreeTableBinder;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
@@ -43,7 +44,7 @@ public class ItemTreeTableBinder extends TreeTableBinder<ItemModel> {
 	public ItemTreeTableBinder(TreeTable treeTable, TreeStore<ItemModel> store) {
 		super(treeTable, store);
 		
-		setDisplayProperty(ItemModel.Key.NAME.name());
+		setDisplayProperty(ItemKey.NAME.name());
 		setAutoLoad(true);
 	}
 

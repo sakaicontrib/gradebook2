@@ -46,14 +46,15 @@ import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ItemFormPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.LearnerSummaryPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.StatisticsPanel;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
+import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.LayoutRegion;
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
@@ -339,11 +340,11 @@ public class InstructorView extends AppView {
 	@Override
 	protected void onLearnerGradeRecordUpdated(UserEntityUpdateAction action) {
 		if (singleGradeContainer != null && singleGradeContainer.isVisible()) {
-			singleGradeContainer.onLearnerGradeRecordUpdated((StudentModel)action.getModel());
+			singleGradeContainer.onLearnerGradeRecordUpdated(action.getModel());
 		}
 
 		if (statisticsPanel != null && statisticsPanel.isVisible()) {
-			statisticsPanel.onLearnerGradeRecordUpdated((StudentModel)action.getModel());
+			statisticsPanel.onLearnerGradeRecordUpdated(action.getModel());
 		}
 	}
 
@@ -388,14 +389,14 @@ public class InstructorView extends AppView {
 	}
 
 	@Override
-	protected void onSelectLearner(StudentModel learner) {
+	protected void onSelectLearner(ModelData learner) {
 		if (singleGradeContainer != null && singleGradeContainer.isVisible()) {
 			onSingleGrade(learner);
 		}
 	}
 
 	@Override
-	protected void onSingleGrade(final StudentModel learnerGradeRecordCollection) {
+	protected void onSingleGrade(final ModelData learnerGradeRecordCollection) {
 		/*GWT.runAsync(new RunAsyncCallback() {
 			public void onFailure(Throwable caught) {
 
@@ -413,7 +414,7 @@ public class InstructorView extends AppView {
 	}
 
 	@Override
-	protected void onSingleView(StudentModel learner) {
+	protected void onSingleView(ModelData learner) {
 		viewport.add(singleGradeView.getDialog());
 		viewportLayout.setActiveItem(singleGradeView.getDialog());
 	}

@@ -25,35 +25,38 @@ package org.sakaiproject.gradebook.gwt.client.gxt.view;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
+import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.SecureToken;
+import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
-import org.sakaiproject.gradebook.gwt.client.gxt.NotifyingAsyncCallback;
+import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeContentPanel;
-import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
-import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
+import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.SortDir;
 import com.extjs.gxt.ui.client.data.BasePagingLoader;
-import com.extjs.gxt.ui.client.data.DataReader;
-import com.extjs.gxt.ui.client.data.ModelReader;
-import com.extjs.gxt.ui.client.data.PagingLoadConfig;
+import com.extjs.gxt.ui.client.data.HttpProxy;
+import com.extjs.gxt.ui.client.data.JsonPagingLoadResultReader;
+import com.extjs.gxt.ui.client.data.ModelData;
+import com.extjs.gxt.ui.client.data.ModelType;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
-import com.extjs.gxt.ui.client.data.RpcProxy;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
@@ -61,14 +64,15 @@ import com.extjs.gxt.ui.client.mvc.View;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Store;
 import com.extjs.gxt.ui.client.store.StoreEvent;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class MultigradeView extends View {
 
 	private MultiGradeContentPanel multigrade;
 
-	private BasePagingLoader<PagingLoadResult<StudentModel>> multigradeLoader;
-	private ListStore<StudentModel> multigradeStore;
+	private BasePagingLoader<PagingLoadResult<ModelData>> multigradeLoader;
+	private ListStore<ModelData> multigradeStore;
 	private Listener<StoreEvent> storeListener;
 
 
@@ -118,17 +122,17 @@ public class MultigradeView extends View {
 		};
 		this.multigrade = new MultiGradeContentPanel(null) {
 
-			protected BasePagingLoader<PagingLoadResult<StudentModel>> newLoader() {
+			protected BasePagingLoader<PagingLoadResult<ModelData>> newLoader() {
 				return multigradeLoader;
 			}
 
-			protected ListStore<StudentModel> newStore(BasePagingLoader<PagingLoadResult<StudentModel>> loader) {
+			protected ListStore<ModelData> newStore(BasePagingLoader<PagingLoadResult<ModelData>> loader) {
 				return multigradeStore;
 			}
 		};
 	}
 
-	public ListStore<StudentModel> getStore() {
+	public ListStore<ModelData> getStore() {
 		return multigrade.getStore();
 	}
 
@@ -189,6 +193,52 @@ public class MultigradeView extends View {
 
 	protected void initUI(ApplicationModel model) {
 
+		GradebookModel gbModel = model.getGradebookModels().get(0);
+		//gbModel.getGradebookItemModel();
+		
+		final ModelType type = new ModelType();  
+		type.setRoot("learners");
+		type.setTotalName("total");
+		
+		for (LearnerKey key : EnumSet.allOf(LearnerKey.class)) {
+			type.addField(key.name(), key.name()); 
+		}
+		
+		ItemModelProcessor processor = new ItemModelProcessor(gbModel.getGradebookItemModel()) {
+			public void doItem(ItemModel itemModel) {
+				String id = itemModel.getIdentifier();
+				type.addField(id, id);
+				String droppedKey = DataTypeConversionUtil.buildDroppedKey(id);
+				type.addField(droppedKey, droppedKey);
+				
+				String commentedKey = DataTypeConversionUtil.buildCommentKey(id);
+				type.addField(commentedKey, commentedKey);
+				
+				String commentTextKey = DataTypeConversionUtil.buildCommentTextKey(id);
+				type.addField(commentTextKey, commentTextKey);
+				
+				String excusedKey = DataTypeConversionUtil.buildExcusedKey(id);
+				type.addField(excusedKey, excusedKey);
+			}
+		};
+		
+		processor.process();
+		
+		String initUrl = new StringBuilder()/*.append(GWT.getHostPageBaseURL())*/
+			.append(GWT.getModuleBaseURL())
+			.append("rest/roster/").append("?uid=").append(gbModel.getGradebookUid())
+			.append("&id=").append(gbModel.getGradebookId()).toString();
+		
+		RestBuilder builder = RestBuilder.getInstance(Method.GET, initUrl);
+		
+		HttpProxy<String> proxy = new HttpProxy<String>(builder);  
+
+		// need a loader, proxy, and reader  
+		JsonPagingLoadResultReader<PagingLoadResult<ModelData>> reader = new JsonPagingLoadResultReader<PagingLoadResult<ModelData>>(type);  
+
+		multigradeLoader = new BasePagingLoader<PagingLoadResult<ModelData>>(proxy, reader);  
+		
+		/*
 		RpcProxy<PagingLoadResult<StudentModel>> proxy = 
 			new RpcProxy<PagingLoadResult<StudentModel>>() {
 			@Override
@@ -232,12 +282,12 @@ public class MultigradeView extends View {
 				return config;
 			}
 		};
-		multigradeLoader.setReuseLoadConfig(false);
+		multigradeLoader.setReuseLoadConfig(false);*/
 
-		multigradeStore = new ListStore<StudentModel>(multigradeLoader);
-		multigradeStore.setModelComparer(new EntityModelComparer<StudentModel>());
+		multigradeStore = new ListStore<ModelData>(multigradeLoader);
+		multigradeStore.setModelComparer(new EntityModelComparer<ModelData>());
 		multigradeStore.setMonitorChanges(true);
-		multigradeStore.setDefaultSort(StudentModel.Key.LAST_NAME_FIRST.name(), SortDir.ASC);
+		multigradeStore.setDefaultSort(LearnerKey.LAST_NAME_FIRST.name(), SortDir.ASC);
 
 		multigradeStore.addListener(Store.Sort, storeListener);
 	}

@@ -23,8 +23,9 @@
 package org.sakaiproject.gradebook.gwt.client.model;
 
 import com.extjs.gxt.ui.client.data.ModelComparer;
+import com.extjs.gxt.ui.client.data.ModelData;
 
-public class EntityModelComparer<M extends EntityModel> implements ModelComparer<M> {
+public class EntityModelComparer<M extends ModelData> implements ModelComparer<M> {
 
 	public boolean equals(M m1, M m2) {
 		if (m1 == null && m2 == null)
@@ -34,8 +35,14 @@ public class EntityModelComparer<M extends EntityModel> implements ModelComparer
 		else if (m2 == null)
 			return false;
 			
-		String id1 = m1.getIdentifier();
-		String id2 = m2.getIdentifier();
+		String id1 = m1.get(LearnerKey.UID.name());
+		String id2 = m2.get(LearnerKey.UID.name());
+		
+		if (id1 != null && id2 != null)
+			return id1.equals(id2);
+		
+		id1 = m1.get(ItemKey.ID.name());
+		id2 = m2.get(ItemKey.ID.name());
 		
 		if (id1 != null && id2 != null)
 			return id1.equals(id2);

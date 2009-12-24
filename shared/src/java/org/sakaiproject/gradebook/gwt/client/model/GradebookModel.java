@@ -29,46 +29,7 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 
 public class GradebookModel extends EntityModel implements IsSerializable {
 
-	public enum GradeType { POINTS("Points"), PERCENTAGES("Percentages"), LETTERS("Letters"), TEXT("Text");
-		private String displayName;
-		
-		GradeType(String displayName) {
-			this.displayName = displayName;
-		}
-	
-		public String getDisplayName() {
-			return displayName;
-		}
-		
-	};
-	
-	public enum CategoryType { NO_CATEGORIES("No Categories"), SIMPLE_CATEGORIES("Categories"), 
-		WEIGHTED_CATEGORIES("Weighted Categories");
-	
-		private String displayName;
-		
-		CategoryType(String displayName) {
-			this.displayName = displayName;
-		}
-	
-		public String getDisplayName() {
-			return displayName;
-		}
-		
-	}
-	public enum Key { NAME("Name"), CATEGORYTYPE("Category Type"), GRADETYPE("Grade Type"), RELEASEGRADES("Release Grades");
-	
-		private String displayName;
-	
-		Key(String displayName) {
-			this.displayName = displayName;
-		}
-		
-		public String getDisplayName() {
-			return displayName;
-		}
-	
-	}
+	public enum Key { NAME, CATEGORYTYPE, GRADETYPE, RELEASEGRADES }
 	
 	private static final long serialVersionUID = 1L;
 	

@@ -31,10 +31,10 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.SecureToken;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
+import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
@@ -130,9 +130,9 @@ public class ItemTreeTableHeader extends TreeTableHeader {
 	}
 	
 	private String lookupFieldByColumnId(GradebookModel selectedGradebook, String columnId) {
-		if (columnId.equals(ItemModel.Key.PERCENT_COURSE_GRADE.name()))
+		if (columnId.equals(ItemKey.PERCENT_COURSE_GRADE.name()))
 			return AppConstants.ITEMTREE_PERCENT_GRADE;
-		else if (columnId.equals(ItemModel.Key.PERCENT_CATEGORY.name()))
+		else if (columnId.equals(ItemKey.PERCENT_CATEGORY.name()))
 			return AppConstants.ITEMTREE_PERCENT_CATEGORY;
 		
 		CategoryType categoryType = selectedGradebook.getGradebookItemModel().getCategoryType();

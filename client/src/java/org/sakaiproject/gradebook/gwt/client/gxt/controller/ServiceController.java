@@ -25,15 +25,21 @@ package org.sakaiproject.gradebook.gwt.client.gxt.controller;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
+import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.SecureToken;
+import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType;
+import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
+import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemCreate;
@@ -43,12 +49,15 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.data.ModelData;
+import com.extjs.gxt.ui.client.data.ModelType;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
@@ -58,6 +67,15 @@ import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.store.Store;
 import com.extjs.gxt.ui.client.store.TreeStore;
 import com.extjs.gxt.ui.client.util.DelayedTask;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.http.client.Request;
+import com.google.gwt.http.client.RequestCallback;
+import com.google.gwt.http.client.RequestException;
+import com.google.gwt.http.client.Response;
+import com.google.gwt.json.client.JSONBoolean;
+import com.google.gwt.json.client.JSONNumber;
+import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONString;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class ServiceController extends Controller {
@@ -226,7 +244,7 @@ public class ServiceController extends Controller {
 		service.update((ItemModel)event.item, EntityType.ITEM, null, SecureToken.get(), callback);
 	}
 
-	private void onUpdateGradeRecordSuccess(GradeRecordUpdate event, StudentModel result) {
+	private void onUpdateGradeRecordSuccess(GradeRecordUpdate event, ModelData result) {
 		Record record = event.record;
 		String property = event.property;
 
@@ -262,21 +280,21 @@ public class ServiceController extends Controller {
 			}
 		}
 
-		String courseGrade = result.get(StudentModel.Key.COURSE_GRADE.name());
+		String courseGrade = result.get(LearnerKey.COURSE_GRADE.name());
 
-		record.set(StudentModel.Key.COURSE_GRADE.name(), null);
+		record.set(LearnerKey.COURSE_GRADE.name(), null);
 		if (courseGrade != null) 
-			record.set(StudentModel.Key.COURSE_GRADE.name(), courseGrade);
+			record.set(LearnerKey.COURSE_GRADE.name(), courseGrade);
 		
-		String calculatedGrade = result.get(StudentModel.Key.CALCULATED_GRADE.name());
-		record.set(StudentModel.Key.CALCULATED_GRADE.name(), null);
+		String calculatedGrade = result.get(LearnerKey.CALCULATED_GRADE.name());
+		record.set(LearnerKey.CALCULATED_GRADE.name(), null);
 		if (calculatedGrade != null)
-			record.set(StudentModel.Key.CALCULATED_GRADE.name(), calculatedGrade);
+			record.set(LearnerKey.CALCULATED_GRADE.name(), calculatedGrade);
 		
-		String letterGrade = result.get(StudentModel.Key.LETTER_GRADE.name());
-		record.set(StudentModel.Key.LETTER_GRADE.name(), null);
+		String letterGrade = result.get(LearnerKey.LETTER_GRADE.name());
+		record.set(LearnerKey.LETTER_GRADE.name(), null);
 		if (letterGrade != null)
-			record.set(StudentModel.Key.LETTER_GRADE.name(), letterGrade);
+			record.set(LearnerKey.LETTER_GRADE.name(), letterGrade);
 
 		// Ensure that we clear out any older failure messages
 		// Save the exception message on the record
@@ -294,7 +312,7 @@ public class ServiceController extends Controller {
 
 		// FIXME: Move all this to a log event listener
 		StringBuilder buffer = new StringBuilder();
-		String displayName = (String)record.get(StudentModel.Key.DISPLAY_NAME.name());
+		String displayName = (String)record.get(LearnerKey.DISPLAY_NAME.name());
 		if (displayName != null)
 			buffer.append(displayName);
 		buffer.append(":").append(event.label);
@@ -308,7 +326,7 @@ public class ServiceController extends Controller {
 		} else {
 			message = buffer.append("- stored item grade as '")
 			.append(result.get(property))
-			.append("' and recalculated course grade to '").append(result.get(StudentModel.Key.COURSE_GRADE.name()))
+			.append("' and recalculated course grade to '").append(result.get(LearnerKey.COURSE_GRADE.name()))
 			.append("'").toString();
 		}
 
@@ -317,13 +335,134 @@ public class ServiceController extends Controller {
 
 	private void onUpdateGradeRecord(final GradeRecordUpdate event) {
 
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		final GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);	
+		
 		ClassType classType = StudentModel.lookupClassType(event.property, selectedGradebook.getGradebookItemModel().getGradeType());
 
 		final Record record = event.record;
-		final UserEntityUpdateAction<StudentModel> action = new UserEntityUpdateAction<StudentModel>(selectedGradebook, (StudentModel)record.getModel(), event.property, classType, event.value, event.oldValue);		
+		final UserEntityUpdateAction<ModelData> action = new UserEntityUpdateAction<ModelData>(selectedGradebook, record.getModel(), event.property, classType, event.value, event.oldValue);		
 
-		AsyncCallback<StudentModel> callback = new AsyncCallback<StudentModel>() {
+		String entity = null;
+	
+		JSONObject json = new JSONObject();
+		json.put("gradebookUid", new JSONString(selectedGradebook.getGradebookUid()));
+		json.put("gradebookId", new JSONNumber(selectedGradebook.getGradebookId()));
+		json.put("studentUid", new JSONString((String)record.getModel().get(LearnerKey.UID.name())));
+		json.put("itemId", new JSONString((String)event.property));
+		
+		switch (classType) {
+		case STRING:
+			if (event.value != null)
+				json.put("stringValue", new JSONString((String)event.value));
+			if (event.oldValue != null)
+				json.put("previousStringValue", new JSONString((String)event.oldValue));
+			json.put("numeric", JSONBoolean.getInstance(false));
+			entity = "rest/graderecord/string/";
+			break;
+		case DOUBLE:
+			if (event.value != null)
+				json.put("value", new JSONNumber((Double)event.value));
+			if (event.oldValue != null)
+				json.put("previousValue", new JSONNumber((Double)event.oldValue));
+			json.put("numeric", JSONBoolean.getInstance(true));
+			entity = "rest/graderecord/numeric/";
+			break;
+		}
+		
+		if (event.property.endsWith(StudentModel.COMMENT_TEXT_FLAG))
+			entity = "rest/graderecord/comment/";
+		
+		String initUrl = new StringBuilder()
+			.append(GWT.getModuleBaseURL())
+			.append(entity).toString();
+		/*
+			.append("?uid=").append(selectedGradebook.getGradebookUid())
+			.append("&id=").append(selectedGradebook.getGradebookId())
+			.append("&studentUid=").append(record.getModel().get(LearnerKey.UID.name()))
+			.append("&itemId=").append(event.property)
+			.append("&value=").append(event.value)
+			.append("&oldValue=").append(event.oldValue).toString();
+		*/
+		
+		RestBuilder builder = RestBuilder.getInstance(Method.PUT, initUrl);
+		
+		try {
+			builder.sendRequest(json.toString(), new RequestCallback() {
+
+				public void onError(Request request, Throwable caught) {
+					record.beginEdit();
+
+					String property = event.property;
+
+					// Save the exception message on the record
+					String failedProperty = property + FAILED_FLAG;
+					record.set(failedProperty, caught.getMessage());
+
+					// We have to fool the system into thinking that the value has changed, since
+					// we snuck in that "Saving grade..." under the radar.
+					if (event.oldValue == null && event.value != null)
+						record.set(property, event.value);
+					else 
+						record.set(property, null);
+					record.set(property, event.oldValue);
+
+					record.setValid(property, false);
+
+					record.endEdit();
+
+					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught, "Failed to update grade: "));			
+
+				}
+
+				public void onResponseReceived(Request request, Response response) {
+					
+					if (response.getStatusCode() != 200) {
+						Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent("Status", "Code: " + response.getStatusCode(), true));
+						return;
+					}
+					
+					final ModelType type = new ModelType();  
+					for (LearnerKey key : EnumSet.allOf(LearnerKey.class)) {
+						type.addField(key.name(), key.name()); 
+					}
+
+					ItemModelProcessor processor = new ItemModelProcessor(selectedGradebook.getGradebookItemModel()) {
+						public void doItem(ItemModel itemModel) {
+							String id = itemModel.getIdentifier();
+							type.addField(id, id);
+							String droppedKey = DataTypeConversionUtil.buildDroppedKey(id);
+							type.addField(droppedKey, droppedKey);
+							
+							String commentedKey = DataTypeConversionUtil.buildCommentKey(id);
+							type.addField(commentedKey, commentedKey);
+							
+							String commentTextKey = DataTypeConversionUtil.buildCommentTextKey(id);
+							type.addField(commentTextKey, commentTextKey);
+							
+							String excusedKey = DataTypeConversionUtil.buildExcusedKey(id);
+							type.addField(excusedKey, excusedKey);
+						}
+					};
+					
+					processor.process();
+					
+					JsonTranslater reader = new JsonTranslater(type);
+					ModelData result = reader.translate(response.getText());
+					
+					record.beginEdit();
+					onUpdateGradeRecordSuccess(event, result);
+					record.endEdit();
+					Dispatcher.forwardEvent(GradebookEvents.LearnerGradeRecordUpdated.getEventType(), action);
+				}
+				
+			});
+		} catch (RequestException e) {
+			
+			e.printStackTrace();
+		}	
+		
+		/*
+		AsyncCallback<ModelData> callback = new AsyncCallback<ModelData>() {
 
 			public void onFailure(Throwable caught) {
 
@@ -350,7 +489,7 @@ public class ServiceController extends Controller {
 				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught, "Failed to update grade: "));			
 			}
 
-			public void onSuccess(StudentModel result) {
+			public void onSuccess(ModelData result) {
 				record.beginEdit();
 				onUpdateGradeRecordSuccess(event, result);
 				record.endEdit();
@@ -360,7 +499,8 @@ public class ServiceController extends Controller {
 		};
 
 		Gradebook2RPCServiceAsync service = Registry.get("service");
-		service.update((StudentModel)record.getModel(), EntityType.LEARNER, action, SecureToken.get(), callback);
+		service.update((ModelData)record.getModel(), EntityType.LEARNER, action, SecureToken.get(), callback);
+		*/
 	}
 
 	private void onRevertItem(final ItemUpdate event) {
@@ -489,12 +629,12 @@ public class ServiceController extends Controller {
 		if (event.record != null && event.record.isEditing()) {
 			Map<String, Object> changes = event.record.getChanges();
 
-			isGradeScaleUpdated = changes != null && changes.get(ItemModel.Key.GRADESCALEID.name()) != null;
-			isGradeTypeUpdated = changes != null && changes.get(ItemModel.Key.GRADETYPE.name()) != null;
-			isCategoryTypeUpdated = changes != null && changes.get(ItemModel.Key.CATEGORYTYPE.name()) != null;
-			isReleaseGradesUpdated = changes != null && changes.get(ItemModel.Key.RELEASEGRADES.name()) != null;
-			isReleaseItemsUpdated = changes != null && changes.get(ItemModel.Key.RELEASEITEMS.name()) != null;
-			isExtraCreditScaled = changes != null && changes.get(ItemModel.Key.EXTRA_CREDIT_SCALED.name()) != null;
+			isGradeScaleUpdated = changes != null && changes.get(ItemKey.GRADESCALEID.name()) != null;
+			isGradeTypeUpdated = changes != null && changes.get(ItemKey.GRADETYPE.name()) != null;
+			isCategoryTypeUpdated = changes != null && changes.get(ItemKey.CATEGORYTYPE.name()) != null;
+			isReleaseGradesUpdated = changes != null && changes.get(ItemKey.RELEASEGRADES.name()) != null;
+			isReleaseItemsUpdated = changes != null && changes.get(ItemKey.RELEASEITEMS.name()) != null;
+			isExtraCreditScaled = changes != null && changes.get(ItemKey.EXTRA_CREDIT_SCALED.name()) != null;
 			
 			event.record.commit(false);
 		}

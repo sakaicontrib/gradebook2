@@ -22,15 +22,16 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.gxt.event;
 
-import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
+import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 
 public class RefreshCourseGradesEvent extends BaseEvent {
 
-	private StudentModel student;
+	private ModelData student;
 	private Long assignmentId;
-	private StudentModel.Key key;
+	private LearnerKey key;
 	private Object value;
 	private String courseGrade;
 	private boolean isSingleChange;
@@ -40,7 +41,7 @@ public class RefreshCourseGradesEvent extends BaseEvent {
 		this.isSingleChange = false;
 	}
 
-	public RefreshCourseGradesEvent(StudentModel student, String courseGrade, Long assignmentId, Object value) {
+	public RefreshCourseGradesEvent(ModelData student, String courseGrade, Long assignmentId, Object value) {
 		super(null);
 		this.student = student;
 		this.courseGrade = courseGrade;
@@ -49,11 +50,11 @@ public class RefreshCourseGradesEvent extends BaseEvent {
 		this.value = value;
 	}
 
-	public StudentModel getStudent() {
+	public ModelData getStudent() {
 		return student;
 	}
 
-	public void setStudent(StudentModel student) {
+	public void setStudent(ModelData student) {
 		this.student = student;
 	}
 
@@ -85,7 +86,7 @@ public class RefreshCourseGradesEvent extends BaseEvent {
 		return assignmentId;
 	}
 
-	public StudentModel.Key getKey() {
+	public LearnerKey getKey() {
 		return key;
 	}
 	

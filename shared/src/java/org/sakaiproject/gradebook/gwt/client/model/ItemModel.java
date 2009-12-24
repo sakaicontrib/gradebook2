@@ -27,8 +27,6 @@ import java.util.Date;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 
 import com.extjs.gxt.ui.client.data.BaseTreeModel;
 
@@ -49,39 +47,6 @@ public class ItemModel extends BaseTreeModel {
 		}
 	}
 	
-	public enum Key {
-		ID("Id"), NAME("Name"), WEIGHT("Weight"), EQUAL_WEIGHT("Equal Weight Items"), 
-		EXTRA_CREDIT("Extra Credit"), 
-		INCLUDED("Include in Grade"), REMOVED("Delete"), GRADEBOOK("Gradebook"), 
-		DROP_LOWEST("Drop Lowest"), 
-		CATEGORY_NAME("Category"), CATEGORY_ID("Category Id"), DUE_DATE("Due Date"), 
-		POINTS("Points"), POINTS_STRING("Points"), 
-		RELEASED("Release scores"), NULLSASZEROS("Nulls as zeros"), SOURCE("Source"), ITEM_TYPE("Type"), 
-		PERCENT_COURSE_GRADE("% Grade"), PERCENT_COURSE_GRADE_STRING("% Grade"),
-		PERCENT_CATEGORY("% Category"), PERCENT_CATEGORY_STRING("% Category"), 
-		IS_PERCENTAGE("Is Percentage"), 
-		STUDENT_MODEL_KEY("Student Model Key"),
-		ASSIGNMENT_ID("Item Id"), DATA_TYPE("Data Type"), CATEGORYTYPE("Organization"),
-		GRADETYPE("Grade Type"), RELEASEGRADES("Display Course Grades"), 
-		RELEASEITEMS("Display Released Items"),
-		ITEM_ORDER("Order"), GRADESCALEID("grade scale id"), 
-		EXTRA_CREDIT_SCALED("Project Extra Credit"),
-		DO_RECALCULATE_POINTS("Scale scores to same percentage"),
-		ENFORCE_POINT_WEIGHTING("Weight By Points"), SHOWMEAN("Show mean"),
-		SHOWMEDIAN("Show median"), SHOWMODE("Show mode"), SHOWRANK("Show rank"),
-		SHOWITEMSTATS("Show item stats");
-		
-		private String propertyName;
-		
-		private Key(String propertyName) {
-			this.propertyName = propertyName;
-		}
-		
-		public String getPropertyName() {
-			return propertyName;
-		}
-	};
-
 	private boolean isActive;
 	private boolean isEditable;
 	private boolean isChecked;
@@ -99,11 +64,11 @@ public class ItemModel extends BaseTreeModel {
 	}
 	
 	public String getDisplayName() {
-		return get(Key.NAME.name());
+		return get(ItemKey.NAME.name());
 	}
 	
 	public static ClassType lookupClassType(String property) {
-		Key key = Key.valueOf(property);
+		ItemKey key = ItemKey.valueOf(property);
 		
 		switch (key) {
 		case ID: case NAME: case GRADEBOOK: case CATEGORY_NAME: case SOURCE: case ITEM_TYPE:
@@ -128,23 +93,10 @@ public class ItemModel extends BaseTreeModel {
 		
 		return null;
 	}
-	
-	public static String getPropertyName(String property) {
-		Key key = getProperty(property);
-		
-		return getPropertyName(key);
-	}
-	
-	public static String getPropertyName(Key key) {
-		if (key == null)
-			return "";
-		
-		return key.getPropertyName();
-	}
 
-	public static Key getProperty(String key) {
+	public static ItemKey getProperty(String key) {
 		try {
-			return Key.valueOf(key);
+			return ItemKey.valueOf(key);
 		} catch (IllegalArgumentException iae) {
 			// Don't need to log this.
 		}
@@ -152,108 +104,108 @@ public class ItemModel extends BaseTreeModel {
 	}
 	
 	public String getIdentifier() {
-		return get(Key.ID.name());
+		return get(ItemKey.ID.name());
 	}
 
 	public void setIdentifier(String id) {
-		set(Key.ID.name(), id);
+		set(ItemKey.ID.name(), id);
 	}
 
 	public String getName() {
-		return get(Key.NAME.name());
+		return get(ItemKey.NAME.name());
 	}
 
 	public void setName(String name) {
-		set(Key.NAME.name(), name);
+		set(ItemKey.NAME.name(), name);
 	}
 
 	public Double getWeighting() {
-		return get(Key.WEIGHT.name());
+		return get(ItemKey.WEIGHT.name());
 	}
 
 	public void setWeighting(Double weighting) {
-		set(Key.WEIGHT.name(), weighting);
+		set(ItemKey.WEIGHT.name(), weighting);
 	}
 
 	public Boolean getExtraCredit() {
-		return get(Key.EXTRA_CREDIT.name());
+		return get(ItemKey.EXTRA_CREDIT.name());
 	}
 
 	public void setExtraCredit(Boolean extraCredit) {
-		set(Key.EXTRA_CREDIT.name(), extraCredit);
+		set(ItemKey.EXTRA_CREDIT.name(), extraCredit);
 	}
 
 	public Boolean getIncluded() {
-		return get(Key.INCLUDED.name());
+		return get(ItemKey.INCLUDED.name());
 	}
 
 	public void setIncluded(Boolean included) {
-		set(Key.INCLUDED.name(), included);
+		set(ItemKey.INCLUDED.name(), included);
 	}
 
 	public Boolean getRemoved() {
-		return get(Key.REMOVED.name());
+		return get(ItemKey.REMOVED.name());
 	}
 
 	public void setRemoved(Boolean removed) {
-		set(Key.REMOVED.name(), removed);
+		set(ItemKey.REMOVED.name(), removed);
 	}
 	
 	public Type getItemType() {
-		String typeName = get(Key.ITEM_TYPE.name());
+		String typeName = get(ItemKey.ITEM_TYPE.name());
 		if (typeName == null)
 			return null;
 		return Type.valueOf(typeName);
 	}
 
 	public void setItemType(Type type) {
-		set(Key.ITEM_TYPE.name(), type.name());
+		set(ItemKey.ITEM_TYPE.name(), type.name());
 	}
 	
 	// Category specific
 	public String getGradebook() {
-		return get(Key.GRADEBOOK.name());
+		return get(ItemKey.GRADEBOOK.name());
 	}
 	
 	public void setGradebook(String gradebook) {
-		set(Key.GRADEBOOK.name(), gradebook);
+		set(ItemKey.GRADEBOOK.name(), gradebook);
 	}
 	
 	public Boolean getEqualWeightAssignments() {
-		return get(Key.EQUAL_WEIGHT.name());
+		return get(ItemKey.EQUAL_WEIGHT.name());
 	}
 	
 	public void setEqualWeightAssignments(Boolean equalWeight) {
-		set(Key.EQUAL_WEIGHT.name(), equalWeight);
+		set(ItemKey.EQUAL_WEIGHT.name(), equalWeight);
 	}
 	
 	public Integer getDropLowest() {
-		return get(Key.DROP_LOWEST.name());
+		return get(ItemKey.DROP_LOWEST.name());
 	}
 	
 	public void setDropLowest(Integer dropLowest) {
-		set(Key.DROP_LOWEST.name(), dropLowest);
+		set(ItemKey.DROP_LOWEST.name(), dropLowest);
 	}
 	
 	// Assignment specific
 	public String getCategoryName() {
-		return get(Key.CATEGORY_NAME.name());
+		return get(ItemKey.CATEGORY_NAME.name());
 	}
 	
 	public void setCategoryName(String categoryName) {
-		set(Key.CATEGORY_NAME.name(), categoryName);
+		set(ItemKey.CATEGORY_NAME.name(), categoryName);
 	}
 	
 	public Long getItemId() {
-		return get(Key.ASSIGNMENT_ID.name());
+		return get(ItemKey.ASSIGNMENT_ID.name());
 	}
 	
 	public void setItemId(Long itemId) {
-		set(Key.ASSIGNMENT_ID.name(), itemId);
+		set(ItemKey.ASSIGNMENT_ID.name(), itemId);
 	}
 	
 	public Long getCategoryId() {
-		Object o = get(Key.CATEGORY_ID.name());
+		Object o = get(ItemKey.CATEGORY_ID.name());
 		/* 
 		 * This hack exists because for some odd reason, the category ID is sometimes a string.  Maybe bad serialization? 
 		 */
@@ -278,202 +230,202 @@ public class ItemModel extends BaseTreeModel {
 	}
 	
 	public void setCategoryId(Long categoryId) {
-		set(Key.CATEGORY_ID.name(), categoryId);
+		set(ItemKey.CATEGORY_ID.name(), categoryId);
 	}
 	
 	public Double getPoints() {
-		return get(Key.POINTS.name());
+		return get(ItemKey.POINTS.name());
 	}
 	
 	public void setPoints(Double points) {
-		set(Key.POINTS.name(), points);
-		set(Key.POINTS_STRING.name(), String.valueOf(points));
+		set(ItemKey.POINTS.name(), points);
+		set(ItemKey.POINTS_STRING.name(), String.valueOf(points));
 	}
 	
 	public Date getDueDate() {
-		return get(Key.DUE_DATE.name());
+		return get(ItemKey.DUE_DATE.name());
 	}
 	
 	public void setDueDate(Date dueDate) {
-		set(Key.DUE_DATE.name(), dueDate);
+		set(ItemKey.DUE_DATE.name(), dueDate);
 	}
 	
 	public Boolean getReleased() {
-		return get(Key.RELEASED.name());
+		return get(ItemKey.RELEASED.name());
 	}
 	
 	public void setReleased(Boolean released) {
-		set(Key.RELEASED.name(), released);
+		set(ItemKey.RELEASED.name(), released);
 	}
 	
 	public Boolean getNullsAsZeros() {
-		return get(Key.NULLSASZEROS.name());
+		return get(ItemKey.NULLSASZEROS.name());
 	}
 	
 	public void setNullsAsZeros(Boolean nullsAsZeros) {
-		set(Key.NULLSASZEROS.name(), nullsAsZeros);
+		set(ItemKey.NULLSASZEROS.name(), nullsAsZeros);
 	}
 	
 	public String getSource() {
-		return get(Key.SOURCE.name());
+		return get(ItemKey.SOURCE.name());
 	}
 	
 	public void setSource(String source) {
-		set(Key.SOURCE.name(), source);
+		set(ItemKey.SOURCE.name(), source);
 	}
 	
 	public Double getPercentCourseGrade() {
-		return get(Key.PERCENT_COURSE_GRADE.name());
+		return get(ItemKey.PERCENT_COURSE_GRADE.name());
 	}
 	
 	public void setPercentCourseGrade(Double percent) {
-		set(Key.PERCENT_COURSE_GRADE.name(), percent);
-		set(Key.PERCENT_COURSE_GRADE_STRING.name(), String.valueOf(percent));
+		set(ItemKey.PERCENT_COURSE_GRADE.name(), percent);
+		set(ItemKey.PERCENT_COURSE_GRADE_STRING.name(), String.valueOf(percent));
 	}
 	
 	public Double getPercentCategory() {
-		return get(Key.PERCENT_CATEGORY.name());
+		return get(ItemKey.PERCENT_CATEGORY.name());
 	}
 	
 	public void setPercentCategory(Double percent) {
-		set(Key.PERCENT_CATEGORY.name(), percent);
-		set(Key.PERCENT_CATEGORY_STRING.name(), String.valueOf(percent));
+		set(ItemKey.PERCENT_CATEGORY.name(), percent);
+		set(ItemKey.PERCENT_CATEGORY_STRING.name(), String.valueOf(percent));
 	}
 	
 	public Boolean getIsPercentage() {
-		return get(Key.IS_PERCENTAGE.name());
+		return get(ItemKey.IS_PERCENTAGE.name());
 	}
 	
 	public void setIsPercentage(Boolean isPercentage) {
-		set(Key.IS_PERCENTAGE.name(), isPercentage);
+		set(ItemKey.IS_PERCENTAGE.name(), isPercentage);
 	}
 	
 	public String getStudentModelKey() {
-		return get(Key.STUDENT_MODEL_KEY.name());
+		return get(ItemKey.STUDENT_MODEL_KEY.name());
 	}
 	
 	public void setStudentModelKey(String key) {
-		set(Key.STUDENT_MODEL_KEY.name(), key);
+		set(ItemKey.STUDENT_MODEL_KEY.name(), key);
 	}
 	
 	public String getDataType() {
-		return get(Key.DATA_TYPE.name());
+		return get(ItemKey.DATA_TYPE.name());
 	}
 	
 	public void setDataType(String dataType) {
-		set(Key.DATA_TYPE.name(), dataType);
+		set(ItemKey.DATA_TYPE.name(), dataType);
 	}
 	
 	public CategoryType getCategoryType() {
-		return get(Key.CATEGORYTYPE.name());
+		return get(ItemKey.CATEGORYTYPE.name());
 	}
 	
 	public void setCategoryType(CategoryType type) {
-		set(Key.CATEGORYTYPE.name(), type);
+		set(ItemKey.CATEGORYTYPE.name(), type);
 	}
 	
 	public GradeType getGradeType() {
-		return get(Key.GRADETYPE.name());
+		return get(ItemKey.GRADETYPE.name());
 	}
 	
 	public void setGradeType(GradeType type) {
-		set(Key.GRADETYPE.name(), type);
+		set(ItemKey.GRADETYPE.name(), type);
 	}
 	
 	public Boolean getReleaseGrades() {
-		return get(Key.RELEASEGRADES.name());
+		return get(ItemKey.RELEASEGRADES.name());
 	}
 	
 	public void setReleaseGrades(Boolean release) {
-		set(Key.RELEASEGRADES.name(), release);
+		set(ItemKey.RELEASEGRADES.name(), release);
 	}
 	
 	public Boolean getReleaseItems() {
-		return get(Key.RELEASEITEMS.name());
+		return get(ItemKey.RELEASEITEMS.name());
 	}
 	
 	public void setReleaseItems(Boolean release) {
-		set(Key.RELEASEITEMS.name(), release);
+		set(ItemKey.RELEASEITEMS.name(), release);
 	}
 	
 	public Integer getItemOrder() {
-		return get(Key.ITEM_ORDER.name());
+		return get(ItemKey.ITEM_ORDER.name());
 	}
 	
 	public void setItemOrder(Integer itemOrder) {
-		set(Key.ITEM_ORDER.name(), itemOrder);
+		set(ItemKey.ITEM_ORDER.name(), itemOrder);
 	}
 	
 	public Long getGradeScaleId() {
-		return get(Key.GRADESCALEID.name());
+		return get(ItemKey.GRADESCALEID.name());
 	}
 	
 	public void setGradeScaleId(Long id) {
-		set(Key.GRADESCALEID.name(), id);
+		set(ItemKey.GRADESCALEID.name(), id);
 	}
 	
 	public Boolean getExtraCreditScaled() {
-		return get(Key.EXTRA_CREDIT_SCALED.name());
+		return get(ItemKey.EXTRA_CREDIT_SCALED.name());
 	}
 	
 	public void setExtraCreditScaled(Boolean scaled) {
-		set(Key.EXTRA_CREDIT_SCALED.name(), scaled);
+		set(ItemKey.EXTRA_CREDIT_SCALED.name(), scaled);
 	}
 	
 	public Boolean getDoRecalculatePoints() {
-		return get(Key.DO_RECALCULATE_POINTS.name());
+		return get(ItemKey.DO_RECALCULATE_POINTS.name());
 	}
 	
 	public void setDoRecalculatePoints(Boolean doRecalculate) {
-		set(Key.DO_RECALCULATE_POINTS.name(), doRecalculate);
+		set(ItemKey.DO_RECALCULATE_POINTS.name(), doRecalculate);
 	}
 	
 	public Boolean getEnforcePointWeighting() {
-		return get(Key.ENFORCE_POINT_WEIGHTING.name());
+		return get(ItemKey.ENFORCE_POINT_WEIGHTING.name());
 	}
 	
 	public void setEnforcePointWeighting(Boolean doEnforce) {
-		set(Key.ENFORCE_POINT_WEIGHTING.name(), doEnforce);
+		set(ItemKey.ENFORCE_POINT_WEIGHTING.name(), doEnforce);
 	}
 	
 	public Boolean getShowMean() {
-		return get(Key.SHOWMEAN.name());
+		return get(ItemKey.SHOWMEAN.name());
 	}
 	
 	public void setShowMean(Boolean showMean) {
-		set(Key.SHOWMEAN.name(), showMean);
+		set(ItemKey.SHOWMEAN.name(), showMean);
 	}
 	
 	public Boolean getShowMedian() {
-		return get(Key.SHOWMEDIAN.name());
+		return get(ItemKey.SHOWMEDIAN.name());
 	}
 	
 	public void setShowMedian(Boolean showMedian) {
-		set(Key.SHOWMEDIAN.name(), showMedian);
+		set(ItemKey.SHOWMEDIAN.name(), showMedian);
 	}
 	
 	public Boolean getShowMode() {
-		return get(Key.SHOWMODE.name());
+		return get(ItemKey.SHOWMODE.name());
 	}
 	
 	public void setShowMode(Boolean showMode) {
-		set(Key.SHOWMODE.name(), showMode);
+		set(ItemKey.SHOWMODE.name(), showMode);
 	}
 	
 	public Boolean getShowRank() {
-		return get(Key.SHOWRANK.name());
+		return get(ItemKey.SHOWRANK.name());
 	}
 	
 	public void setShowRank(Boolean showRank) {
-		set(Key.SHOWRANK.name(), showRank);
+		set(ItemKey.SHOWRANK.name(), showRank);
 	}
 	
 	public Boolean getShowItemStatistics() {
-		return get(Key.SHOWITEMSTATS.name());
+		return get(ItemKey.SHOWITEMSTATS.name());
 	}
 	
 	public void setShowItemStatistics(Boolean showItemStatistics) {
-		set(Key.SHOWITEMSTATS.name(), showItemStatistics);
+		set(ItemKey.SHOWITEMSTATS.name(), showItemStatistics);
 	}
 	
 	@Override

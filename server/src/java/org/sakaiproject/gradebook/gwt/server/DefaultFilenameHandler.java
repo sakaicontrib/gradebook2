@@ -39,6 +39,11 @@ public class DefaultFilenameHandler implements HttpRequestHandler {
 		if (path.startsWith("//")) 
 			path = path.replaceAll("//", "/");
 
+		if (path.contains("/rest/")) {
+			log.info("Rest path: " + path);
+			return;
+		}
+				
 		ServletContext servletContext = request.getSession().getServletContext();
 		
 		URL url = servletContext.getResource(path);

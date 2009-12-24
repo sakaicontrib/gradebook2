@@ -22,12 +22,13 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
+import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
-import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
+import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
 import com.extjs.gxt.ui.client.GXT;
@@ -138,8 +139,8 @@ public class AltItemTreePanel extends GradebookPanel {
 		
 		TreeGridCellRenderer<ItemModel> renderer = new TreeGridCellRenderer<ItemModel>();
 		
-		ColumnConfig nameColumn = new ColumnConfig(ItemModel.Key.NAME.name(), 
-				ItemModel.getPropertyName(ItemModel.Key.NAME), 200);
+		ColumnConfig nameColumn = new ColumnConfig(ItemKey.NAME.name(), 
+				i18n.nameFieldLabel(), 200);
 		nameColumn.setMenuDisabled(true);
 		nameColumn.setRenderer(renderer);
 		nameColumn.setSortable(false);
@@ -159,9 +160,9 @@ public class AltItemTreePanel extends GradebookPanel {
 					boolean isItem = itemModel.getItemType() == Type.ITEM;
 					boolean isCategory = itemModel.getItemType() == Type.CATEGORY;
 					boolean isGradebook = !isItem && !isCategory;
-					boolean isPercentCategory = property.equals(ItemModel.Key.PERCENT_CATEGORY.name());
-					boolean isPercentGrade = property.equals(ItemModel.Key.PERCENT_COURSE_GRADE.name());
-					boolean isPoints = property.equals(ItemModel.Key.POINTS.name());
+					boolean isPercentCategory = property.equals(ItemKey.PERCENT_CATEGORY.name());
+					boolean isPercentGrade = property.equals(ItemKey.PERCENT_COURSE_GRADE.name());
+					boolean isPoints = property.equals(ItemKey.POINTS.name());
 					
 					if (value == null)
 						return null;
@@ -213,22 +214,22 @@ public class AltItemTreePanel extends GradebookPanel {
 			
 		};
 		
-		percentCourseGradeColumn =  new ColumnConfig(ItemModel.Key.PERCENT_COURSE_GRADE.name(), 
-				ItemModel.getPropertyName(ItemModel.Key.PERCENT_COURSE_GRADE), ItemModel.getPropertyName(ItemModel.Key.PERCENT_COURSE_GRADE).length() * CHARACTER_WIDTH + 30);
+		percentCourseGradeColumn =  new ColumnConfig(ItemKey.PERCENT_COURSE_GRADE.name(), 
+				i18n.percentCourseGradeFieldLabel(), i18n.percentCourseGradeFieldLabel().length() * CHARACTER_WIDTH + 30);
 		percentCourseGradeColumn.setAlignment(HorizontalAlignment.RIGHT);
 		percentCourseGradeColumn.setRenderer(numericRenderer);
 		percentCourseGradeColumn.setSortable(false);
 		columns.add(percentCourseGradeColumn);
 
-		percentCategoryColumn =  new ColumnConfig(ItemModel.Key.PERCENT_CATEGORY.name(), 
-				ItemModel.getPropertyName(ItemModel.Key.PERCENT_CATEGORY), ItemModel.getPropertyName(ItemModel.Key.PERCENT_CATEGORY).length() * CHARACTER_WIDTH + 20);
+		percentCategoryColumn =  new ColumnConfig(ItemKey.PERCENT_CATEGORY.name(), 
+				i18n.percentCategoryFieldLabel(), i18n.percentCategoryFieldLabel().length() * CHARACTER_WIDTH + 20);
 		percentCategoryColumn.setAlignment(HorizontalAlignment.RIGHT);
 		percentCategoryColumn.setRenderer(numericRenderer);
 		percentCategoryColumn.setSortable(false);
 		columns.add(percentCategoryColumn);
 
-		pointsColumn = new ColumnConfig(ItemModel.Key.POINTS.name(), 
-				ItemModel.getPropertyName(ItemModel.Key.POINTS), ItemModel.getPropertyName(ItemModel.Key.POINTS).length() * CHARACTER_WIDTH + 30);
+		pointsColumn = new ColumnConfig(ItemKey.POINTS.name(), 
+				i18n.pointsFieldLabel(), i18n.pointsFieldLabel().length() * CHARACTER_WIDTH + 30);
 		pointsColumn.setAlignment(HorizontalAlignment.RIGHT);
 		pointsColumn.setRenderer(numericRenderer);
 		pointsColumn.setSortable(false);
@@ -458,7 +459,7 @@ public class AltItemTreePanel extends GradebookPanel {
 					checkedSelection.add(column);
 				column.setChecked(isChecked);
 				
-				StudentModel.Key key = StudentModel.Key.valueOf(column.getIdentifier());
+				LearnerKey key = LearnerKey.valueOf(column.getIdentifier());
 				
 				switch (key.getGroup()) {
 				case GRADES:
@@ -1198,7 +1199,7 @@ public class AltItemTreePanel extends GradebookPanel {
 			String id = model.get("id");
 
 			if (id == null)
-				id = model.get(ItemModel.Key.ID.name());
+				id = model.get(ItemKey.ID.name());
 
 			if (id != null)
 				staticIds.add(id);

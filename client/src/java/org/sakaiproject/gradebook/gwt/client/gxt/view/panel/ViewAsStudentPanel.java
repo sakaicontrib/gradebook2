@@ -31,12 +31,11 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner.BrowseType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
-import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
 import com.extjs.gxt.ui.client.Registry;
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
-import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
@@ -94,7 +93,7 @@ public class ViewAsStudentPanel extends ContentPanel {
 		container.onRefreshGradebookSetup(selectedGradebook);
 	}
 
-	public void onChangeModel(GradebookModel selectedGradebook, StudentModel learnerGradeRecordCollection) {
+	public void onChangeModel(GradebookModel selectedGradebook, ModelData learnerGradeRecordCollection) {
 		container.onChangeModel(selectedGradebook, learnerGradeRecordCollection);
 	}
 
@@ -102,7 +101,7 @@ public class ViewAsStudentPanel extends ContentPanel {
 		container.onItemUpdated(itemModel);
 	}
 	
-	public void onLearnerGradeRecordUpdated(StudentModel learnerGradeRecordModel) {
+	public void onLearnerGradeRecordUpdated(ModelData learnerGradeRecordModel) {
 		container.onLearnerGradeRecordUpdated(learnerGradeRecordModel);
 	}
 

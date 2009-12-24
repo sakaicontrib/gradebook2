@@ -40,17 +40,7 @@ public class FixedColumnModel extends BaseTreeModel {
 		setEditable(Boolean.FALSE);
 	}
 	
-	public FixedColumnModel(StudentModel.Key key, Integer width, Boolean isHidden) {
-		setIdentifier(key.name());
-		setName(key.getDisplayName());
-		setKey(key.name());
-		setWidth(width);
-		setUnweighted(Boolean.FALSE);
-		setHidden(isHidden);
-		setEditable(Boolean.FALSE);
-	}
-	
-	public FixedColumnModel(StudentModel.Key key, String displayName, Integer width, Boolean isHidden) {
+	public FixedColumnModel(LearnerKey key, String displayName, Integer width, Boolean isHidden) {
 		setIdentifier(key.name());
 		setName(displayName);
 		setKey(key.name());
@@ -60,7 +50,7 @@ public class FixedColumnModel extends BaseTreeModel {
 		setEditable(Boolean.FALSE);
 	}
 	
-	public FixedColumnModel(Long assignmentId, String name, StudentModel.Key key, Integer width) {
+	public FixedColumnModel(Long assignmentId, String name, LearnerKey key, Integer width) {
 		setIdentifier(String.valueOf(assignmentId));
 		setName(name);
 		setAssignmentId(assignmentId);

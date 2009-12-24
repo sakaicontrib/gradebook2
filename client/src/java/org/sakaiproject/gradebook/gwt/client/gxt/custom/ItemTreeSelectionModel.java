@@ -6,6 +6,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.ItemTreeGrid
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 
 import com.extjs.gxt.ui.client.core.El;
 import com.extjs.gxt.ui.client.event.Events;
@@ -172,7 +173,7 @@ public class ItemTreeSelectionModel extends GridSelectionModel<ItemModel> implem
 	}
 	
 	private void toggleItem(ItemModel m, boolean isChecked, int rowIndex) {
-		String id = m.get(ItemModel.Key.ID.name());
+		String id = m.get(ItemKey.ID.name());
 
 		if (id != null) {
 			doToggle(m, isChecked, rowIndex);

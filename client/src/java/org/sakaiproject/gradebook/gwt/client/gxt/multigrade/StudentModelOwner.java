@@ -22,19 +22,18 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.gxt.multigrade;
 
-import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
-
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.grid.EditorGrid;
 
 public interface StudentModelOwner {
 
-	public StudentModel getSelectedModel();
+	public ModelData getSelectedModel();
 	
 	public Long getSelectedAssignment();
 	
-	public EditorGrid<StudentModel> getGrid();
+	public EditorGrid<ModelData> getGrid();
 	
-	public ListStore<StudentModel> getStore();
+	public ListStore<ModelData> getStore();
 	
 }

@@ -23,21 +23,21 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.multigrade;
 
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
-import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.google.gwt.i18n.client.NumberFormat;
 
-public class NumericCellRenderer implements GridCellRenderer<StudentModel> {
+public class NumericCellRenderer implements GridCellRenderer<ModelData> {
 
 	protected NumberFormat defaultNumberFormat = DataTypeConversionUtil.getDefaultNumberFormat();
 
-	public String render(StudentModel model, String property,
+	public String render(ModelData model, String property,
 			ColumnData config, int rowIndex, int colIndex,
-			ListStore<StudentModel> store, Grid<StudentModel> grid) {
+			ListStore<ModelData> store, Grid<ModelData> grid) {
 		
 		Double value = model.get(property);
 

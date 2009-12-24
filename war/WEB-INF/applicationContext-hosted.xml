@@ -27,6 +27,16 @@
 		</property>
 	</bean-->
 	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.JAXBContextResolver"/>
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.Roster">
+		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service"/>
+	</bean>
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.GradeRecord">
+		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
+	</bean>
+	
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.BusinessLogic" class="org.sakaiproject.gradebook.gwt.sakai.BusinessLogicImpl">
 		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/> 
 	</bean>

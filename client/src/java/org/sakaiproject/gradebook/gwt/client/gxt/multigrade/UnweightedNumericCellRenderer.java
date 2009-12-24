@@ -22,8 +22,7 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.gxt.multigrade;
 
-import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
-
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
@@ -31,9 +30,9 @@ import com.extjs.gxt.ui.client.widget.grid.Grid;
 public class UnweightedNumericCellRenderer extends NumericCellRenderer {
 
 	@Override
-	public String render(StudentModel model, String property,
+	public String render(ModelData model, String property,
 			ColumnData config, int rowIndex, int colIndex,
-			ListStore<StudentModel> store, Grid<StudentModel> grid) {
+			ListStore<ModelData> store, Grid<ModelData> grid) {
 		
 		return new StringBuilder("<div style=\"color:darkgray; font-style: italic;\">")
 			.append(super.render(model, property, config, rowIndex, colIndex, store, grid))

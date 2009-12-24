@@ -24,6 +24,8 @@ package org.sakaiproject.gradebook.gwt.client;
 
 import java.util.Date;
 
+import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
+
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 
@@ -89,5 +91,19 @@ public class DataTypeConversionUtil {
 		return formatDoubleAsPointsString(convertStringToDouble(s));
 	}
 	
+	public static String buildCommentKey(String itemId) {
+		return new StringBuilder(itemId).append(StudentModel.COMMENTED_FLAG).toString();
+	}
 	
+	public static String buildCommentTextKey(String itemId) {
+		return new StringBuilder(itemId).append(StudentModel.COMMENT_TEXT_FLAG).toString();
+	}
+	
+	public static String buildDroppedKey(String itemId) {
+		return new StringBuilder().append(itemId).append(StudentModel.DROP_FLAG).toString();
+	}
+	
+	public static String buildExcusedKey(String itemId) {
+		return new StringBuilder().append(itemId).append(StudentModel.EXCUSE_FLAG).toString();
+	}
 }

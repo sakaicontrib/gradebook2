@@ -24,7 +24,6 @@ package org.sakaiproject.gradebook.gwt.client.model;
 
 import java.util.List;
 
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 
 public class ApplicationModel extends EntityModel {
 

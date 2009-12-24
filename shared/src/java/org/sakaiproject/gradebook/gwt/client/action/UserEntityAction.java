@@ -25,10 +25,10 @@ package org.sakaiproject.gradebook.gwt.client.action;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
-import com.extjs.gxt.ui.client.data.BaseModel;
+import com.extjs.gxt.ui.client.data.ModelData;
 
 
-public abstract class UserEntityAction<M extends BaseModel> extends Action {
+public abstract class UserEntityAction<M extends ModelData> extends Action {
 
 	public enum ClassType { STRING, DOUBLE, LONG, DATE, BOOLEAN, INTEGER, CATEGORYTYPE, GRADETYPE };
 

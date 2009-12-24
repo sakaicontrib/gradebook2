@@ -33,6 +33,7 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
 import com.extjs.gxt.ui.client.Registry;
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.View;
@@ -56,7 +57,7 @@ public class SingleGradeView extends View {
 
 	@Override
 	protected void handleEvent(AppEvent event) {
-		StudentModel learnerGradeRecordCollection = null;
+		ModelData learnerGradeRecordCollection = null;
 		switch (GradebookEvents.getEvent(event.getType()).getEventKey()) {
 		case ITEM_UPDATED:
 			onItemUpdated((ItemModel)event.getData());
@@ -66,11 +67,11 @@ public class SingleGradeView extends View {
 			break;
 		case SINGLE_GRADE:
 		case SINGLE_VIEW:
-			learnerGradeRecordCollection = (StudentModel)event.getData();
+			learnerGradeRecordCollection = event.getData();
 			onChangeModel(learnerGradeRecordCollection);
 			break;
 		case SELECT_LEARNER:
-			learnerGradeRecordCollection = (StudentModel)event.getData();
+			learnerGradeRecordCollection = (ModelData)event.getData();
 			onChangeModel(learnerGradeRecordCollection);
 			break;
 		case USER_CHANGE:
@@ -95,7 +96,7 @@ public class SingleGradeView extends View {
 		dialog.onRefreshGradebookSetup(selectedGradebook);
 	}
 	
-	private void onChangeModel(StudentModel learnerGradeRecordCollection) {
+	private void onChangeModel(ModelData learnerGradeRecordCollection) {
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 		dialog.onChangeModel(selectedGradebook, learnerGradeRecordCollection);
 		dialog.show();
@@ -110,7 +111,7 @@ public class SingleGradeView extends View {
 	}
 	
 	private void onLearnerGradeRecordUpdated(UserEntityUpdateAction action) {
-		dialog.onLearnerGradeRecordUpdated((StudentModel)action.getModel());
+		dialog.onLearnerGradeRecordUpdated(action.getModel());
 	}
 	
 	private void onUserChange(UserEntityAction<?> action) {

@@ -43,9 +43,8 @@ import org.sakaiproject.gradebook.gwt.client.model.GradeFormatModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordMapModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
-import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Key;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
@@ -55,6 +54,7 @@ import com.extjs.gxt.ui.client.data.ListLoadResult;
 import com.extjs.gxt.ui.client.data.ListLoader;
 import com.extjs.gxt.ui.client.data.LoadEvent;
 import com.extjs.gxt.ui.client.data.Loader;
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.RpcProxy;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.Events;
@@ -139,10 +139,10 @@ public class GradeScalePanel extends GradebookPanel {
 				if (currentGradeScaleId != null && !currentGradeScaleId.equals(selectedItemModel.getGradeScaleId())) {
 					Record record = treeView.getTreeStore().getRecord(selectedItemModel);
 					record.beginEdit();
-					record.set(Key.GRADESCALEID.name(), currentGradeScaleId);
+					record.set(ItemKey.GRADESCALEID.name(), currentGradeScaleId);
 					grid.mask();
 					ItemUpdate itemUpdate = new ItemUpdate(treeView.getTreeStore(), record, selectedItemModel, false);
-					itemUpdate.property = Key.GRADESCALEID.name();
+					itemUpdate.property = ItemKey.GRADESCALEID.name();
 					Dispatcher.forwardEvent(GradebookEvents.UpdateItem.getEventType(), itemUpdate);
 				} else {
 					loader.load();
@@ -267,8 +267,8 @@ public class GradeScalePanel extends GradebookPanel {
 
 				GradeScaleRecordModel model = (GradeScaleRecordModel)record.getModel();
 				GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
-				UserEntityUpdateAction<StudentModel> action = 
-					new UserEntityUpdateAction<StudentModel>(gbModel, null, property, org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType.DOUBLE, newValue, originalValue);
+				UserEntityUpdateAction<ModelData> action = 
+					new UserEntityUpdateAction<ModelData>(gbModel, null, property, org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType.DOUBLE, newValue, originalValue);
 				
 				AsyncCallback<GradeScaleRecordMapModel> callback = 
 					new AsyncCallback<GradeScaleRecordMapModel>() {
@@ -358,9 +358,9 @@ public class GradeScalePanel extends GradebookPanel {
 	public void onFailedToUpdateItem(ItemUpdate itemUpdate) {
 		
 		// Ensure that the failure is on an attempt to update the GRADESCALEID
-		if (itemUpdate.property != null && itemUpdate.property.equals(Key.GRADESCALEID.name())) {
+		if (itemUpdate.property != null && itemUpdate.property.equals(ItemKey.GRADESCALEID.name())) {
 			
-			Long gradeScaleId = itemUpdate.item.get(Key.GRADESCALEID.name());
+			Long gradeScaleId = itemUpdate.item.get(ItemKey.GRADESCALEID.name());
 		
 			if (gradeScaleId != null && currentGradeScaleId != null &&
 					!currentGradeScaleId.equals(gradeScaleId)) {

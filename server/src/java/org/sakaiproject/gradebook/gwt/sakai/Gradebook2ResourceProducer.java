@@ -40,13 +40,14 @@ import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordMapModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.PermissionEntryModel;
 import org.sakaiproject.gradebook.gwt.client.model.SpreadsheetModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.server.DataTypeConversionUtil;
 
-import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.PagingLoadConfig;
 
 public class Gradebook2ResourceProducer extends GWTSpringController implements Gradebook2RPCService {
@@ -59,7 +60,7 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 	
 	
 	@SuppressWarnings("unchecked")
-	public <X extends BaseModel> X create(String entityUid, Long entityId, X model, EntityType type, String secureToken) 
+	public <X extends ModelData> X create(String entityUid, Long entityId, X model, EntityType type, String secureToken) 
 	throws BusinessRuleException, FatalException, SecurityException {
 
 		isSecure(secureToken);
@@ -94,7 +95,7 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 		return entity;
 	}
 	
-	public <X extends BaseModel> X get(String entityUid, Long entityId, EntityType type, String learnerUid, Boolean doShowAll, String secureToken) 
+	public <X extends ModelData> X get(String entityUid, Long entityId, EntityType type, String learnerUid, Boolean doShowAll, String secureToken) 
 	throws FatalException, SecurityException {
 
 		isSecure(secureToken);
@@ -123,7 +124,7 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 		return null;
 	}
 	
-	public <X extends BaseModel, Y extends ListLoadResult<X>> Y getPage(String uid, Long id, EntityType type, PagingLoadConfig config, String secureToken) 
+	public <X extends ModelData, Y extends ListLoadResult<X>> Y getPage(String uid, Long id, EntityType type, PagingLoadConfig config, String secureToken) 
 	throws FatalException, SecurityException {
 		
 		isSecure(secureToken);
@@ -163,7 +164,7 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 		return null;
 	}
 	
-	public <X extends BaseModel> X update(X model, EntityType type, UserEntityUpdateAction<StudentModel> action, String secureToken) 
+	public <X extends ModelData> X update(X model, EntityType type, UserEntityUpdateAction<ModelData> action, String secureToken) 
 	throws InvalidInputException, FatalException, SecurityException {
 		
 		isSecure(secureToken);
@@ -196,14 +197,14 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 				entity = (X)new GradeScaleRecordMapModel(records);
 				break;
 			case LEARNER:
-				StudentModel student = (StudentModel)model;
+				ModelData student = model;
 				
 				if (action.getKey().endsWith(StudentModel.COMMENT_TEXT_FLAG)) {
 					
 					int indexOf = action.getKey().indexOf(StudentModel.COMMENT_TEXT_FLAG);
 					String assignmentId = action.getKey().substring(0, indexOf);
 					
-					CommentModel comment = service.createOrUpdateComment(Long.valueOf(assignmentId), student.getIdentifier(), (String)action.getValue());
+					CommentModel comment = service.createOrUpdateComment(Long.valueOf(assignmentId), (String)student.get(LearnerKey.UID.name()), (String)action.getValue());
 					
 					if (comment != null) {
 						student.set(action.getKey(), comment.getText());
@@ -242,7 +243,7 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 		return entity;
 	}
 	
-	public <X extends BaseModel> X delete(String entityUid, Long entityId, X model, EntityType type, String secureToken) 
+	public <X extends ModelData> X delete(String entityUid, Long entityId, X model, EntityType type, String secureToken) 
 	throws FatalException, SecurityException {
 		
 		isSecure(secureToken);

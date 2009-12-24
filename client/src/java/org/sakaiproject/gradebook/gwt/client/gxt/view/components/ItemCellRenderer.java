@@ -24,6 +24,7 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view.components;
 
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
 import com.extjs.gxt.ui.client.widget.table.CellRenderer;
@@ -40,7 +41,7 @@ public class ItemCellRenderer implements CellRenderer<TreeItem> {
 		
 		boolean isCategory = itemModel.getItemType() == Type.CATEGORY;
 		boolean isItem = itemModel.getItemType() == Type.ITEM;
-		boolean isName = property.equals(ItemModel.Key.NAME.name());
+		boolean isName = property.equals(ItemKey.NAME.name());
 		boolean isIncluded = itemModel.getIncluded() == null || itemModel.getIncluded().booleanValue();		
 		boolean isExtraCredit = itemModel.getExtraCredit() != null && itemModel.getExtraCredit().booleanValue();
 		boolean isReleased = itemModel.getReleased() != null && itemModel.getReleased().booleanValue();

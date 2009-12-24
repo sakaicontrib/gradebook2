@@ -35,16 +35,15 @@ import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
+import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ResourceProducer;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service;
 
-import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.PagingLoadConfig;
@@ -243,23 +242,23 @@ public class Gradebook2ResourceProducerMock extends GWTSpringController implemen
 		}
 	}
 	
-	public <X extends BaseModel> X create(String entityUid, Long entityId, X model, EntityType type, String secureToken) throws BusinessRuleException, FatalException, SecurityException {
+	public <X extends ModelData> X create(String entityUid, Long entityId, X model, EntityType type, String secureToken) throws BusinessRuleException, FatalException, SecurityException {
 		return producer.create(entityUid, entityId, model, type, secureToken);
 	}
 
-	public <X extends BaseModel> X delete(String entityUid, Long entityId, X model, EntityType type, String secureToken) throws FatalException, SecurityException {
+	public <X extends ModelData> X delete(String entityUid, Long entityId, X model, EntityType type, String secureToken) throws FatalException, SecurityException {
 		return producer.delete(entityUid, entityId, model, type, secureToken);
 	}
 
-	public <X extends BaseModel> X get(String entityUid, Long entityId, EntityType type, String learnerUid, Boolean doShowAll, String secureToken) throws FatalException, SecurityException {
+	public <X extends ModelData> X get(String entityUid, Long entityId, EntityType type, String learnerUid, Boolean doShowAll, String secureToken) throws FatalException, SecurityException {
 		return producer.<X>get(entityUid, entityId, type, learnerUid, doShowAll, secureToken);
 	}
 
-	public <X extends BaseModel, Y extends ListLoadResult<X>> Y getPage(String uid, Long id, EntityType type, PagingLoadConfig config, String secureToken) throws FatalException, SecurityException {
+	public <X extends ModelData, Y extends ListLoadResult<X>> Y getPage(String uid, Long id, EntityType type, PagingLoadConfig config, String secureToken) throws FatalException, SecurityException {
 		return producer.<X,Y>getPage(uid, id, type, config, secureToken);
 	}
 
-	public <X extends BaseModel> X update(X model, EntityType type, UserEntityUpdateAction<StudentModel> action, String secureToken) throws InvalidInputException, FatalException, SecurityException {
+	public <X extends ModelData> X update(X model, EntityType type, UserEntityUpdateAction<ModelData> action, String secureToken) throws InvalidInputException, FatalException, SecurityException {
 		return producer.update(model, type, action, secureToken);
 	}
 

@@ -24,6 +24,7 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view.components;
 
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
 import com.extjs.gxt.ui.client.widget.table.NumberCellRenderer;
@@ -46,9 +47,9 @@ public class ItemNumberCellRenderer extends NumberCellRenderer<TreeItem> {
 			boolean isItem = itemModel.getItemType() == Type.ITEM;
 			boolean isCategory = itemModel.getItemType() == Type.CATEGORY;
 			boolean isGradebook = !isItem && !isCategory;
-			boolean isPercentCategory = property.equals(ItemModel.Key.PERCENT_CATEGORY.name());
-			boolean isPercentGrade = property.equals(ItemModel.Key.PERCENT_COURSE_GRADE.name());
-			boolean isPoints = property.equals(ItemModel.Key.POINTS.name());
+			boolean isPercentCategory = property.equals(ItemKey.PERCENT_CATEGORY.name());
+			boolean isPercentGrade = property.equals(ItemKey.PERCENT_COURSE_GRADE.name());
+			boolean isPoints = property.equals(ItemKey.POINTS.name());
 			
 			if (isGradebook && isPercentCategory)
 				return "-";

@@ -23,13 +23,12 @@
 package org.sakaiproject.gradebook.gwt.client.gxt;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
-import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.PersistentStore;
-import org.sakaiproject.gradebook.gwt.client.SecureToken;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
@@ -42,18 +41,18 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.GradebookPanel;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
-import org.sakaiproject.gradebook.gwt.client.model.EntityModel;
-import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.SortDir;
 import com.extjs.gxt.ui.client.data.BasePagingLoader;
-import com.extjs.gxt.ui.client.data.DataReader;
-import com.extjs.gxt.ui.client.data.ModelReader;
+import com.extjs.gxt.ui.client.data.HttpProxy;
+import com.extjs.gxt.ui.client.data.JsonLoadResultReader;
+import com.extjs.gxt.ui.client.data.ModelData;
+import com.extjs.gxt.ui.client.data.ModelType;
 import com.extjs.gxt.ui.client.data.PagingLoadConfig;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
-import com.extjs.gxt.ui.client.data.RpcProxy;
 import com.extjs.gxt.ui.client.data.SortInfo;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.GridEvent;
@@ -71,10 +70,12 @@ import com.extjs.gxt.ui.client.widget.grid.GridView;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.toolbar.PagingToolBar;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-public abstract class GridPanel<M extends EntityModel> extends GradebookPanel {
+public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 
 	protected static final int DEFAULT_PAGE_SIZE = 19;
 	
@@ -303,6 +304,26 @@ public abstract class GridPanel<M extends EntityModel> extends GradebookPanel {
 	}
 	
 	protected BasePagingLoader<PagingLoadResult<M>> newLoader() {
+		
+		List<ColumnConfig> columns = cm.getColumns();
+		ModelType type = new ModelType();  
+		//type.setRoot("records");  
+		
+		for (ColumnConfig config : columns) {
+			type.addField(config.getDataIndex(), config.getDataIndex());  
+		}
+		
+		// use a http proxy to get the data  
+		RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, GWT.getHostPageBaseURL() + "rest/learner.json");  
+		
+		HttpProxy<String> proxy = new HttpProxy<String>(builder);  
+
+		// need a loader, proxy, and reader  
+		JsonLoadResultReader<PagingLoadResult<M>> reader = new JsonLoadResultReader<PagingLoadResult<M>>(type);  
+
+		return new BasePagingLoader<PagingLoadResult<M>>(proxy, reader);  
+		
+		/*
 		RpcProxy<PagingLoadResult<M>> proxy = new RpcProxy<PagingLoadResult<M>>() {
 			@Override
 			protected void load(Object loadConfig, AsyncCallback<PagingLoadResult<M>> callback) {
@@ -337,7 +358,7 @@ public abstract class GridPanel<M extends EntityModel> extends GradebookPanel {
 				});
 			}
 		};
-		return new BasePagingLoader<PagingLoadResult<M>>(proxy, new ModelReader());
+		return new BasePagingLoader<PagingLoadResult<M>>(proxy, new ModelReader());*/
 	}
 	
 	protected PagingToolBar newPagingToolBar(int pageSize) {
@@ -352,7 +373,7 @@ public abstract class GridPanel<M extends EntityModel> extends GradebookPanel {
 	
 	protected ListStore<M> newStore(BasePagingLoader<PagingLoadResult<M>> loader) {
 		ListStore<M> store = new ListStore<M>(loader);
-		store.setModelComparer(new EntityModelComparer<M>());
+		//store.setModelComparer(new EntityModelComparer<M>());
 		store.setMonitorChanges(true);
 		return store;
 	}
@@ -453,7 +474,7 @@ public abstract class GridPanel<M extends EntityModel> extends GradebookPanel {
 		
 		if (config != null) {
 			String entityName = new StringBuilder().append(config.getHeader())
-				.append(" : ").append(model.getDisplayName()).toString();
+				.append(" : ").append((String)model.get(LearnerKey.DISPLAY_NAME.name())).toString();
 			action.setEntityName(entityName);
 		}
 		
@@ -502,7 +523,8 @@ public abstract class GridPanel<M extends EntityModel> extends GradebookPanel {
 			
 		};
 		
-		service.update(action.getModel(), action.getEntityType(), null, SecureToken.get(), callback);
+		// FIXME: Need to switch this to REST-based PUT
+		//service.update(action.getModel(), action.getEntityType(), null, SecureToken.get(), callback);
 		
 	}
 	
