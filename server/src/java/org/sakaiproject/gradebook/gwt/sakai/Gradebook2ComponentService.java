@@ -12,4 +12,6 @@ public interface Gradebook2ComponentService {
 	
 	public Map<String, Object> assignScore(String gradebookUid, String studentUid, String assignmentId, String value, String previousValue) throws InvalidInputException;
 	
+	public Boolean updateConfiguration(Long gradebookId, String field, String value);
+	
 }

@@ -31,12 +31,14 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.SecureToken;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 
 import com.extjs.gxt.ui.client.Registry;
+import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.table.TableColumn;
 import com.extjs.gxt.ui.client.widget.treetable.TreeTable;
@@ -91,6 +93,9 @@ public class ItemTreeTableHeader extends TreeTableHeader {
 			ConfigurationModel model = new ConfigurationModel(selectedGradebook.getGradebookId());
 			model.setColumnHidden(AppConstants.ITEMTREE_HEADER, field, Boolean.valueOf(hidden));
 			
+			Dispatcher.forwardEvent(GradebookEvents.Configuration.getEventType(), configModel);
+			
+			/*
 			Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
 			
 			AsyncCallback<ConfigurationModel> callback = new AsyncCallback<ConfigurationModel>() {
@@ -117,7 +122,7 @@ public class ItemTreeTableHeader extends TreeTableHeader {
 				
 			};
 			
-			service.update(model, EntityType.CONFIGURATION, null, SecureToken.get(), callback);
+			service.update(model, EntityType.CONFIGURATION, null, SecureToken.get(), callback);*/
 		}
 	}
 

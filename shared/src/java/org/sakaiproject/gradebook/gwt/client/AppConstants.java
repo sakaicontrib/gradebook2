@@ -132,4 +132,11 @@ public interface AppConstants {
 	public static final String ITEMTREE_POINTS_NOWEIGHTS = "**ptsNoW";
 	public static final String ITEMTREE_PERCENT_GRADE = "**pctG";
 	public static final String ITEMTREE_PERCENT_CATEGORY = "**pctC";
+	
+	
+	public static final String REST_FRAGMENT 		= "rest";
+	public static final String LEARNER_FRAGMENT 	= "learner";
+	public static final String CONFIG_FRAGMENT 		= "config";
+	
+	
 }

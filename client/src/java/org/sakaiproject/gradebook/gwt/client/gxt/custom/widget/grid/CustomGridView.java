@@ -57,6 +57,7 @@ import com.extjs.gxt.ui.client.store.StoreEvent;
 import com.extjs.gxt.ui.client.util.DelayedTask;
 import com.extjs.gxt.ui.client.widget.Component;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
+import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.menu.CheckMenuItem;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
@@ -79,7 +80,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	private String gridId;
 	private GradebookResources resources;
 	
-	private DelayedTask syncTask;
+	private DelayedTask[] syncTask;
 
 	private SelectionListener<MenuEvent> selectionListener; 
 	
@@ -148,7 +149,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 
 		};
 	}
-
+	
 	public void doRowRefresh(int row) {
 		refreshRow(row);
 	}
@@ -330,17 +331,31 @@ public abstract class CustomGridView extends BaseCustomGridView {
 		ColumnConfig column = cm.getColumn(col);
 		final String columnId = column == null ? null : column.getId();
 
-		if (syncTask != null)
-			syncTask.cancel();
+		if (syncTask == null) 
+			syncTask = new DelayedTask[cm.getColumnCount()];
+		else if (syncTask.length < cm.getColumnCount()) {
+			DelayedTask[] temp = syncTask;
+			syncTask = new DelayedTask[cm.getColumnCount()];
+			for (int i=0;i<temp.length;i++) {
+				if (temp[i] != null) {
+					syncTask[i] = temp[i];
+				}
+			}
+		}
+			
+		if (syncTask[col] != null)
+			syncTask[col].cancel();
 	
-		syncTask = new DelayedTask(new Listener<BaseEvent>() {
+		syncTask[col] = new DelayedTask(new Listener<BaseEvent>() {
 		
 			public void handleEvent(BaseEvent be) {
 				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 				ConfigurationModel model = new ConfigurationModel(selectedGradebook.getGradebookId());
 				model.setColumnWidth(gridId, columnId, Integer.valueOf(width));
 
+				Dispatcher.forwardEvent(GradebookEvents.Configuration.getEventType(), model);
 
+				/*
 				Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
 
 				AsyncCallback<ConfigurationModel> callback = new AsyncCallback<ConfigurationModel>() {
@@ -368,12 +383,11 @@ public abstract class CustomGridView extends BaseCustomGridView {
 				};
 
 				service.update(model, EntityType.CONFIGURATION, null, SecureToken.get(), callback);
-
+				*/
 			}
 		});
 
-		syncTask.delay(1000);
-		
+		syncTask[col].delay(1000);
 	}
 
 	public class ColumnGroup {

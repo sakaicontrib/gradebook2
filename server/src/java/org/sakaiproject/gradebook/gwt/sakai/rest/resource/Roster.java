@@ -1,4 +1,4 @@
-package org.sakaiproject.gradebook.gwt.sakai.rest;
+package org.sakaiproject.gradebook.gwt.sakai.rest.resource;
 
 import java.util.List;
 

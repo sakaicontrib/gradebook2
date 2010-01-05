@@ -125,8 +125,56 @@ public class ServiceController extends Controller {
 		doConfigure(event);
 	}
 	
-	private void doConfigure(ConfigurationModel model) {
-		Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
+	private void doConfigure(final ConfigurationModel model) {
+
+		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);	
+		
+		Long gradebookId = selectedGradebook.getGradebookId();
+
+		JSONObject json = RestBuilder.convertModel(model);
+
+		RestBuilder builder = RestBuilder.getInstance(Method.PUT, 
+				GWT.getModuleBaseURL(),
+				AppConstants.REST_FRAGMENT,
+				AppConstants.CONFIG_FRAGMENT, String.valueOf(gradebookId));
+		
+		try {
+			builder.sendRequest(json.toString(), new RequestCallback() {
+
+				public void onError(Request request, Throwable caught) {
+					
+				}
+
+				public void onResponseReceived(Request request, Response response) {
+					
+					if (response.getStatusCode() != 204) {
+						Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent("Status", "Code: " + response.getStatusCode(), true));
+						return;
+					}
+
+					GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+					ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
+
+					Collection<String> propertyNames = model.getPropertyNames();
+					if (propertyNames != null) {
+						List<String> names = new ArrayList<String>(propertyNames);
+
+						for (int i=0;i<names.size();i++) {
+							String name = names.get(i);
+							String value = model.get(name);
+							configModel.set(name, value);
+						}
+					}
+					
+				}
+				
+			});
+		} catch (RequestException e) {
+			Dispatcher.forwardEvent(GradebookEvents.Exception.getEventType(), new NotificationEvent(e));
+		}
+		
+		
+		/*Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
 
 		AsyncCallback<ConfigurationModel> callback = new AsyncCallback<ConfigurationModel>() {
 
@@ -152,7 +200,7 @@ public class ServiceController extends Controller {
 
 		};
 
-		service.update(model, EntityType.CONFIGURATION, null, SecureToken.get(), callback);
+		service.update(model, EntityType.CONFIGURATION, null, SecureToken.get(), callback);*/
 	}
 	
 	private void onCreateItem(final ItemCreate event) {
@@ -244,6 +292,36 @@ public class ServiceController extends Controller {
 		service.update((ItemModel)event.item, EntityType.ITEM, null, SecureToken.get(), callback);
 	}
 
+	private void onUpdateGradeRecordFailure(GradeRecordUpdate event, Throwable caught, int status) {
+		Record record = event.record;
+		record.beginEdit();
+
+		String property = event.property;
+
+		// Save the exception message on the record
+		String failedProperty = property + FAILED_FLAG;
+		if (caught != null) {
+			record.set(failedProperty, caught.getMessage());
+		} else {
+			record.set(failedProperty, "Received status code of " + status);
+		}
+		
+		// We have to fool the system into thinking that the value has changed, since
+		// we snuck in that "Saving grade..." under the radar.
+		if (event.oldValue == null && event.value != null)
+			record.set(property, event.value);
+		else 
+			record.set(property, null);
+		record.set(property, event.oldValue);
+
+		record.setValid(property, false);
+
+		record.endEdit();
+
+		Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught, "Failed to update grade: "));			
+
+	}
+	
 	private void onUpdateGradeRecordSuccess(GradeRecordUpdate event, ModelData result) {
 		Record record = event.record;
 		String property = event.property;
@@ -342,14 +420,13 @@ public class ServiceController extends Controller {
 		final Record record = event.record;
 		final UserEntityUpdateAction<ModelData> action = new UserEntityUpdateAction<ModelData>(selectedGradebook, record.getModel(), event.property, classType, event.value, event.oldValue);		
 
+		String gradebookUid = selectedGradebook.getGradebookUid();
 		String entity = null;
-	
-		JSONObject json = new JSONObject();
-		json.put("gradebookUid", new JSONString(selectedGradebook.getGradebookUid()));
-		json.put("gradebookId", new JSONNumber(selectedGradebook.getGradebookId()));
-		json.put("studentUid", new JSONString((String)record.getModel().get(LearnerKey.UID.name())));
-		json.put("itemId", new JSONString((String)event.property));
+		String studentUid = (String)record.getModel().get(LearnerKey.UID.name());
+		String itemId = (String)event.property;
 		
+		JSONObject json = new JSONObject();
+
 		switch (classType) {
 		case STRING:
 			if (event.value != null)
@@ -357,7 +434,7 @@ public class ServiceController extends Controller {
 			if (event.oldValue != null)
 				json.put("previousStringValue", new JSONString((String)event.oldValue));
 			json.put("numeric", JSONBoolean.getInstance(false));
-			entity = "rest/graderecord/string/";
+			entity = "string";
 			break;
 		case DOUBLE:
 			if (event.value != null)
@@ -365,59 +442,30 @@ public class ServiceController extends Controller {
 			if (event.oldValue != null)
 				json.put("previousValue", new JSONNumber((Double)event.oldValue));
 			json.put("numeric", JSONBoolean.getInstance(true));
-			entity = "rest/graderecord/numeric/";
+			entity = "numeric";
 			break;
 		}
 		
 		if (event.property.endsWith(StudentModel.COMMENT_TEXT_FLAG))
-			entity = "rest/graderecord/comment/";
-		
-		String initUrl = new StringBuilder()
-			.append(GWT.getModuleBaseURL())
-			.append(entity).toString();
-		/*
-			.append("?uid=").append(selectedGradebook.getGradebookUid())
-			.append("&id=").append(selectedGradebook.getGradebookId())
-			.append("&studentUid=").append(record.getModel().get(LearnerKey.UID.name()))
-			.append("&itemId=").append(event.property)
-			.append("&value=").append(event.value)
-			.append("&oldValue=").append(event.oldValue).toString();
-		*/
-		
-		RestBuilder builder = RestBuilder.getInstance(Method.PUT, initUrl);
+			entity = "comment";
+
+		RestBuilder builder = RestBuilder.getInstance(Method.PUT, 
+				GWT.getModuleBaseURL(),
+				AppConstants.REST_FRAGMENT,
+				AppConstants.LEARNER_FRAGMENT, entity, gradebookUid, itemId, studentUid);
 		
 		try {
 			builder.sendRequest(json.toString(), new RequestCallback() {
 
 				public void onError(Request request, Throwable caught) {
-					record.beginEdit();
-
-					String property = event.property;
-
-					// Save the exception message on the record
-					String failedProperty = property + FAILED_FLAG;
-					record.set(failedProperty, caught.getMessage());
-
-					// We have to fool the system into thinking that the value has changed, since
-					// we snuck in that "Saving grade..." under the radar.
-					if (event.oldValue == null && event.value != null)
-						record.set(property, event.value);
-					else 
-						record.set(property, null);
-					record.set(property, event.oldValue);
-
-					record.setValid(property, false);
-
-					record.endEdit();
-
-					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught, "Failed to update grade: "));			
-
+					onUpdateGradeRecordFailure(event, caught, -1);
 				}
 
 				public void onResponseReceived(Request request, Response response) {
 					
 					if (response.getStatusCode() != 200) {
 						Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent("Status", "Code: " + response.getStatusCode(), true));
+						onUpdateGradeRecordFailure(event, null, response.getStatusCode());
 						return;
 					}
 					
@@ -457,9 +505,8 @@ public class ServiceController extends Controller {
 				
 			});
 		} catch (RequestException e) {
-			
-			e.printStackTrace();
-		}	
+			Dispatcher.forwardEvent(GradebookEvents.Exception.getEventType(), new NotificationEvent(e));
+		}
 		
 		/*
 		AsyncCallback<ModelData> callback = new AsyncCallback<ModelData>() {
@@ -549,6 +596,10 @@ public class ServiceController extends Controller {
 
 		}
 		
+		doConfigure(model);
+		
+		/*
+		
 		Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
 
 		AsyncCallback<ConfigurationModel> callback = new AsyncCallback<ConfigurationModel>() {
@@ -575,7 +626,7 @@ public class ServiceController extends Controller {
 
 		};
 
-		service.update(model, EntityType.CONFIGURATION, null, SecureToken.get(), callback);
+		service.update(model, EntityType.CONFIGURATION, null, SecureToken.get(), callback);*/
 	}
 	
 	private void buildColumnConfigModel(ConfigurationModel model, String identifier, boolean isHidden) {

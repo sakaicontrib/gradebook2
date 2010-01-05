@@ -23,20 +23,14 @@
 
 package org.sakaiproject.gradebook.gwt.client.gxt.view;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.EnumSet;
-import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
-import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
-import org.sakaiproject.gradebook.gwt.client.SecureToken;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
-import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
@@ -57,15 +51,17 @@ import com.extjs.gxt.ui.client.data.JsonPagingLoadResultReader;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.ModelType;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
+import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
+import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.mvc.View;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Store;
 import com.extjs.gxt.ui.client.store.StoreEvent;
+import com.extjs.gxt.ui.client.util.DelayedTask;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class MultigradeView extends View {
 
@@ -75,21 +71,36 @@ public class MultigradeView extends View {
 	private ListStore<ModelData> multigradeStore;
 	private Listener<StoreEvent> storeListener;
 
+	private DelayedTask syncTask;
 
 	public MultigradeView(Controller controller, I18nConstants i18n) {
 		super(controller);
 		storeListener = new Listener<StoreEvent>() {
 
 			public void handleEvent(StoreEvent se) {
-				String sortField = ((ListStore)se.getStore()).getSortField();
-				SortDir sortDir = ((ListStore)se.getStore()).getSortDir();
-				boolean isAscending = sortDir == SortDir.ASC;
+				final String sortField = ((ListStore)se.getStore()).getSortField();
+				final SortDir sortDir = ((ListStore)se.getStore()).getSortDir();
+				final boolean isAscending = sortDir == SortDir.ASC;
 
-				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-				ConfigurationModel configModel = new ConfigurationModel(selectedGradebook.getGradebookId());
-				configModel.setSortField(AppConstants.MULTIGRADE, sortField);
-				configModel.setSortDirection(AppConstants.MULTIGRADE, Boolean.valueOf(isAscending));
-
+				if (syncTask != null)
+					syncTask.cancel();
+				
+				syncTask = new DelayedTask(new Listener<BaseEvent>() {
+					
+					public void handleEvent(BaseEvent be) {
+						GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+						ConfigurationModel configModel = new ConfigurationModel(selectedGradebook.getGradebookId());
+						configModel.setSortField(AppConstants.MULTIGRADE, sortField);
+						configModel.setSortDirection(AppConstants.MULTIGRADE, Boolean.valueOf(isAscending));
+						
+						Dispatcher.forwardEvent(GradebookEvents.Configuration.getEventType(), configModel);
+					}
+					
+				});
+				
+				
+				
+				/*
 				Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
 
 				AsyncCallback<ConfigurationModel> callback = new AsyncCallback<ConfigurationModel>() {
@@ -117,6 +128,7 @@ public class MultigradeView extends View {
 				};
 
 				service.update(configModel, EntityType.CONFIGURATION, null, SecureToken.get(), callback);
+				*/
 			}
 
 		};
