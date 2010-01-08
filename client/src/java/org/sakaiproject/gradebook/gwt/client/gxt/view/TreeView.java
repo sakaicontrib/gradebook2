@@ -311,7 +311,7 @@ public class TreeView extends View {
 			treeStore = new TreeStore<ItemModel>(treeLoader);
 			treeStore.setModelComparer(new ItemModelComparer());
 
-			treePanel.onTreeStoreInitialized(treeStore, selectedGradebook.isUserAbleToEditAssessments());
+			treePanel.onTreeStoreInitialized(treeStore, (Boolean)Registry.get(AppConstants.IS_ABLE_TO_EDIT));
 			formPanel.onTreeStoreInitialized(treeStore);
 		}
 

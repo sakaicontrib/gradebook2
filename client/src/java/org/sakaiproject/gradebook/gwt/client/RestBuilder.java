@@ -4,6 +4,7 @@ import java.util.Map;
 
 import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.data.BaseModel;
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;

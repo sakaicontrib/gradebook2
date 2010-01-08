@@ -127,6 +127,11 @@
 			<artifactId>jersey-json</artifactId>
 			<version>1.1.4.1</version>
 		</dependency>
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-jaxrs</artifactId>
+			<version>1.1.1</version>
+		</dependency>
 		<!-- Other External Dependencies -->
 		<!-- dependency>
 			<groupId>aopalliance</groupId>

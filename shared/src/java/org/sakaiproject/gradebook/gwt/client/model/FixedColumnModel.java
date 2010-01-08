@@ -26,9 +26,6 @@ import com.extjs.gxt.ui.client.data.BaseTreeModel;
 
 public class FixedColumnModel extends BaseTreeModel {
 
-	public enum Key {ID, NAME, ASSIGNMENT_ID, CATEGORY_ID, CATEGORY_NAME, WIDTH, POINTS, UNWEIGHTED, 
-		HIDDEN, EDITABLE, STUDENT_MODEL_KEY, EXTRA_CREDIT };
-	
 	private static final long serialVersionUID = 1L;
 	
 	private boolean isChecked;
@@ -62,100 +59,100 @@ public class FixedColumnModel extends BaseTreeModel {
 	}
 	
 	public String getIdentifier() {
-		return get(Key.ID.name());
+		return get(FixedColumnKey.ID.name());
 	}
 
 	public void setIdentifier(String id) {
-		set(Key.ID.name(), id);
+		set(FixedColumnKey.ID.name(), id);
 	}
 
 	public String getName() {
-		return get(Key.NAME.name());
+		return get(FixedColumnKey.NAME.name());
 	}
 
 	public void setName(String name) {
-		set(Key.NAME.name(), name);
+		set(FixedColumnKey.NAME.name(), name);
 	}
 
 	public Integer getWidth() {
-		return get(Key.WIDTH.name());
+		return get(FixedColumnKey.WIDTH.name());
 	}
 
 	public void setWidth(Integer width) {
-		set(Key.WIDTH.name(), width);
+		set(FixedColumnKey.WIDTH.name(), width);
 	}
 
 	public void setAssignmentId(Long assignmentId) {
-		set(Key.ASSIGNMENT_ID.name(), assignmentId);
+		set(FixedColumnKey.ASSIGNMENT_ID.name(), assignmentId);
 	}
 	
 
 	public Long getAssignmentId() {
-		return get(Key.ASSIGNMENT_ID.name());
+		return get(FixedColumnKey.ASSIGNMENT_ID.name());
 	}
 	
 	public Double getMaxPoints() {
-		return get(Key.POINTS.name());
+		return get(FixedColumnKey.POINTS.name());
 	}
 
 	public void setMaxPoints(Double maxPoints) {
-		set(Key.POINTS.name(), maxPoints);
+		set(FixedColumnKey.POINTS.name(), maxPoints);
 	}
 
 	public String getKey() {
-		return get(Key.STUDENT_MODEL_KEY.name());
+		return get(FixedColumnKey.STUDENT_MODEL_KEY.name());
 	}
 
 	public void setKey(String key) {
-		set(Key.STUDENT_MODEL_KEY.name(), key);
+		set(FixedColumnKey.STUDENT_MODEL_KEY.name(), key);
 	}
 
 	public Long getCategoryId() {
-		return get(Key.CATEGORY_ID.name());
+		return get(FixedColumnKey.CATEGORY_ID.name());
 	}
 
 	public void setCategoryId(Long categoryId) {
-		set(Key.CATEGORY_ID.name(), categoryId);
+		set(FixedColumnKey.CATEGORY_ID.name(), categoryId);
 	}
 
 	public String getCategoryName() {
-		return get(Key.CATEGORY_NAME.name());
+		return get(FixedColumnKey.CATEGORY_NAME.name());
 	}
 
 	public void setCategoryName(String categoryName) {
-		set(Key.CATEGORY_NAME.name(), categoryName);
+		set(FixedColumnKey.CATEGORY_NAME.name(), categoryName);
 	}
 
 	public Boolean isUnweighted() {
-		return get(Key.UNWEIGHTED.name());
+		return get(FixedColumnKey.UNWEIGHTED.name());
 	}
 
 	public void setUnweighted(Boolean isUnweighted) {
-		set(Key.UNWEIGHTED.name(), isUnweighted);
+		set(FixedColumnKey.UNWEIGHTED.name(), isUnweighted);
 	}
 
 	public Boolean isHidden() {
-		return get(Key.HIDDEN.name());
+		return get(FixedColumnKey.HIDDEN.name());
 	}
 
 	public void setHidden(Boolean isHidden) {
-		set(Key.HIDDEN.name(), isHidden);
+		set(FixedColumnKey.HIDDEN.name(), isHidden);
 	}
 
 	public Boolean isEditable() {
-		return get(Key.EDITABLE.name());
+		return get(FixedColumnKey.EDITABLE.name());
 	}
 
 	public void setEditable(Boolean isEditable) {
-		set(Key.EDITABLE.name(), isEditable);
+		set(FixedColumnKey.EDITABLE.name(), isEditable);
 	}
 
 	public Boolean isExtraCredit() {
-		return get(Key.EXTRA_CREDIT.name());
+		return get(FixedColumnKey.EXTRA_CREDIT.name());
 	}
 	
 	public void setExtraCredit(Boolean isExtraCredit) {
-		set(Key.EXTRA_CREDIT.name(), isExtraCredit);
+		set(FixedColumnKey.EXTRA_CREDIT.name(), isExtraCredit);
 	}
 
 	public String getDisplayName() {

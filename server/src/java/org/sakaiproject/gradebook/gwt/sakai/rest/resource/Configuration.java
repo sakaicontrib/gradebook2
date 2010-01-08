@@ -1,13 +1,11 @@
 package org.sakaiproject.gradebook.gwt.sakai.rest.resource;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.xml.bind.JAXBElement;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

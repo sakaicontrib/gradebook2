@@ -496,7 +496,7 @@ public class ItemFormPanel extends GradebookPanel {
 	}
 	
 	private void doEditItemButtons(ItemModel itemModel) {
-		boolean isAllowedToEdit = DataTypeConversionUtil.checkBoolean(selectedGradebook.isUserAbleToEditAssessments());
+		boolean isAllowedToEdit = DataTypeConversionUtil.checkBoolean((Boolean)Registry.get(AppConstants.IS_ABLE_TO_EDIT));
 
 		deleteButton.setVisible(itemModel.getItemType() != Type.GRADEBOOK);
 		okButton.setText(i18n.saveButton());
@@ -789,7 +789,7 @@ public class ItemFormPanel extends GradebookPanel {
 
 		CategoryType categoryType = selectedGradebook.getGradebookItemModel().getCategoryType();
 
-		boolean isAllowedToEdit = DataTypeConversionUtil.checkBoolean(selectedGradebook.isUserAbleToEditAssessments());
+		boolean isAllowedToEdit = DataTypeConversionUtil.checkBoolean((Boolean)Registry.get(AppConstants.IS_ABLE_TO_EDIT));
 		boolean hasCategories = categoryType != CategoryType.NO_CATEGORIES;
 		boolean hasWeights = categoryType == CategoryType.WEIGHTED_CATEGORIES;
 		boolean isNotGradebook = itemType != Type.GRADEBOOK;
@@ -1354,7 +1354,7 @@ public class ItemFormPanel extends GradebookPanel {
 	private void refreshSelectedCategoryState(ItemModel itemModel) {
 		CategoryType categoryType = selectedGradebook.getGradebookItemModel().getCategoryType();
 
-		boolean isAllowedToEdit = DataTypeConversionUtil.checkBoolean(selectedGradebook.isUserAbleToEditAssessments());
+		boolean isAllowedToEdit = DataTypeConversionUtil.checkBoolean((Boolean)Registry.get(AppConstants.IS_ABLE_TO_EDIT));
 		boolean hasWeights = categoryType == CategoryType.WEIGHTED_CATEGORIES;
 		boolean isPercentCategoryVisible = false;
 		boolean isItem = selectedItemModel != null && selectedItemModel.getItemType() == Type.ITEM;

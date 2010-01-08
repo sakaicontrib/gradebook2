@@ -1,6 +1,9 @@
 package org.sakaiproject.gradebook.gwt.sakai;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +14,14 @@ import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.gradebook.gwt.client.action.Action.ActionType;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
+import org.sakaiproject.gradebook.gwt.client.model.ApplicationKey;
+import org.sakaiproject.gradebook.gwt.client.model.FixedColumnKey;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
+import org.sakaiproject.gradebook.gwt.client.model.GradeType;
+import org.sakaiproject.gradebook.gwt.client.model.GradebookKey;
+import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
+import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
@@ -32,6 +42,12 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		implements Gradebook2ComponentService {
 
 	private static final Log log = LogFactory.getLog(Gradebook2ComponentServiceImpl.class);
+	
+	public Map<String, Object> addItem(String gradebookUid, Map<String, Object> attributes) {
+		
+		
+		return attributes;
+	}
 	
 	public Map<String, Object> assignComment(String itemId, String studentUid, String text) {
 
@@ -233,6 +249,67 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		return student;
 	}
 	
+	public Map<String, Object> getApplicationMap(String... gradebookUids) {
+
+		Map<String,Object> map = new HashMap<String,Object>();
+		//model.setGradebookModels(getGradebookModels(gradebookUids));
+		
+		List<GradebookModel> gbModels = getGradebookModels(gradebookUids);
+		
+		List<Map<String,Object>> gradebookMaps = new ArrayList<Map<String,Object>>();
+		
+		for (GradebookModel gbModel : gbModels) {
+			Map<String,Object> gbMap = new HashMap<String,Object>();
+			
+			for (Enum<GradebookKey> en : EnumSet.allOf(GradebookKey.class)) {
+				
+				if (en.equals(GradebookKey.GRADEBOOKITEMMODEL)) {
+					ItemModel gradebookItemModel = gbModel.get(en.name());
+					Map<String, Object> gradebookItemMap = new HashMap<String, Object>();
+					
+					for (Enum<ItemKey> it : EnumSet.allOf(ItemKey.class)) {
+						gradebookItemMap.put(it.name(), gradebookItemModel.get(it.name()));
+					}
+					
+					addChildren(gradebookItemModel, gradebookItemMap);
+					
+					gbMap.put(en.name(), gradebookItemMap);
+				} else if (en.equals(GradebookKey.COLUMNS)) { 
+					List<FixedColumnModel> fixedColumnModelList = gbModel.get(en.name());
+					List<Map<String,Object>> fixedColumnMapList = new ArrayList<Map<String,Object>>();
+					if (fixedColumnModelList != null) {
+						for (FixedColumnModel fixedColumnModel : fixedColumnModelList) {
+							Map<String,Object> fixedColumnMap = new HashMap<String, Object>();
+							
+							for (Enum<FixedColumnKey> it : EnumSet.allOf(FixedColumnKey.class)) {
+								fixedColumnMap.put(it.name(), fixedColumnModel.get(it.name()));
+							}
+							fixedColumnMapList.add(fixedColumnMap);
+						}
+						gbMap.put(en.name(), fixedColumnMapList);
+					}
+				} else {
+					gbMap.put(en.name(), gbModel.get(en.name()));
+				}
+				
+			}
+			gradebookMaps.add(gbMap);
+			
+			//gbMap.put(key, value);
+		}
+		
+		map.put(ApplicationKey.GRADEBOOKMODELS.name(), gradebookMaps);
+		map.put(ApplicationKey.HELPURL.name(), helpUrl);
+		
+		List<String> gradeTypes = new ArrayList<String>();
+		for (GradeType gradeType : enabledGradeTypes) {
+			gradeTypes.add(gradeType.name());	
+		}
+		map.put(ApplicationKey.ENABLEDGRADETYPES.name(), gradeTypes);
+		
+		return map;
+	}
+	
 	
 	public Boolean updateConfiguration(Long gradebookId, String field, String value) {
 		
@@ -247,6 +324,24 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		return Boolean.TRUE;
 	}
 	
+	private void addChildren(ItemModel itemModel, Map<String,Object> itemMap) {
+		
+		if (itemModel.getChildCount() > 0) {
+			List<Map<String,Object>> childrenList = new ArrayList<Map<String,Object>>();
+			for (int i=0;i<itemModel.getChildCount();i++) {
+				ItemModel child = (ItemModel)itemModel.getChild(i);
+				Map<String,Object> childMap = new HashMap<String,Object>();
+				
+				for (Enum<ItemKey> it : EnumSet.allOf(ItemKey.class)) {
+					childMap.put(it.name(), child.get(it.name()));
+				}
+				childrenList.add(childMap);
+				addChildren(child, childMap);
+			}
+			itemMap.put(ItemKey.CHILDREN.name(), childrenList);
+		}
+		
+	}
 	
 	private Map<String, Object> getStudent(Gradebook gradebook, Site site, User user) {
 		List<FixedColumnModel> columns = getColumns(true);

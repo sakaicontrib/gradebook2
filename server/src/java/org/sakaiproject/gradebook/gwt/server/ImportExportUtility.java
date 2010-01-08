@@ -132,7 +132,7 @@ public class ImportExportUtility {
 			String gradeTypeText = getDisplayName(gradebookItemModel.getGradeType());
 
 			// First, we need to add a row for basic gradebook info
-			String[] gradebookInfoRow = { "", StructureRow.GRADEBOOK.getDisplayName(), gradebook.getName(), categoryTypeText, gradeTypeText};
+			String[] gradebookInfoRow = { "", StructureRow.GRADEBOOK.getDisplayName(), gradebookItemModel.getName(), categoryTypeText, gradeTypeText};
 			out.addRow(gradebookInfoRow);
 //			csvWriter.writeNext(gradebookInfoRow);
 

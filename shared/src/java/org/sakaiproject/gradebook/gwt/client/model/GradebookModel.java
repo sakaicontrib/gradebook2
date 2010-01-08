@@ -36,13 +36,13 @@ public class GradebookModel extends EntityModel implements IsSerializable {
 	private String gradebookUid;
 	private Long gradebookId;
 	private String name;
-	private Boolean isReleaseGrades;
+	/*private Boolean isReleaseGrades;
 	private CategoryType categoryType;
 	private GradeType gradeType;
 	private Boolean isUserAbleToViewOwnGrades;
 	private Boolean isUserHasGraderPermissions;
 	private Boolean isUserAbleToGrade;
-	private Boolean isUserAbleToEditAssessments;
+	private Boolean isUserAbleToEditAssessments;*/
 	private StudentModel userAsStudent;
 	private List<FixedColumnModel> columns;
 	private String userName;
@@ -54,54 +54,54 @@ public class GradebookModel extends EntityModel implements IsSerializable {
 	
 
 	public GradebookModel() {
-		this.isNewGradebook = Boolean.FALSE;
+		setNewGradebook(Boolean.FALSE);
 	}
 
 	public String getGradebookUid() {
-		return gradebookUid;
+		return get(GradebookKey.GRADEBOOKUID.name());
 	}
 
 
 	public void setGradebookUid(String gradebookUid) {
-		this.gradebookUid = gradebookUid;
+		set(GradebookKey.GRADEBOOKUID.name(), gradebookUid);
 	}
 
 
 	public Long getGradebookId() {
-		return gradebookId;
+		return get(GradebookKey.GRADEBOOKID.name());
 	}
 
 
 	public void setGradebookId(Long gradebookId) {
-		this.gradebookId = gradebookId;
+		set(GradebookKey.GRADEBOOKID.name(), gradebookId);
 	}
 
 	public ConfigurationModel getConfigurationModel() {
-		return configurationModel;
+		return get(GradebookKey.CONFIGURATIONMODEL.name());
 	}
 
 	public void setConfigurationModel(ConfigurationModel configurationModel) {
-		this.configurationModel = configurationModel;
+		set(GradebookKey.CONFIGURATIONMODEL.name(), configurationModel);
 	}
 
 	public String getName() {
-		return name;
+		return get(GradebookKey.NAME.name());
 	}
 
 
 	public void setName(String name) {
-		this.name = name;
+		set(GradebookKey.NAME.name(), name);
 	}	
 	
 	public List<FixedColumnModel> getColumns() {
-		return columns;
+		return get(GradebookKey.COLUMNS.name());
 	}
 
 	public void setColumns(List<FixedColumnModel> columns) {
-		this.columns = columns;
+		set(GradebookKey.COLUMNS.name(), columns);
 	}
 
-	public CategoryType getCategoryType() {
+	/*public CategoryType getCategoryType() {
 		return categoryType;
 	}
 
@@ -139,15 +139,15 @@ public class GradebookModel extends EntityModel implements IsSerializable {
 
 	public void setUserAbleToEditAssessments(Boolean isUserAbleToEditAssessments) {
 		this.isUserAbleToEditAssessments = isUserAbleToEditAssessments;
-	}
+	}*/
 
 
 	public StudentModel getUserAsStudent() {
-		return userAsStudent;
+		return get(GradebookKey.USERASSTUDENT.name());
 	}
 
 	public void setUserAsStudent(StudentModel userAsStudent) {
-		this.userAsStudent = userAsStudent;
+		set(GradebookKey.USERASSTUDENT.name(), userAsStudent);
 	}
 
 	@Override
@@ -157,38 +157,38 @@ public class GradebookModel extends EntityModel implements IsSerializable {
 
 	@Override
 	public String getIdentifier() {
-		return gradebookUid;
+		return getGradebookUid();
 	}
 
 	public String getUserName() {
-		return userName;
+		return get(GradebookKey.USERNAME.name());
 	}
 	
 	public void setUserName(String userName) {
-		this.userName = userName;
+		set(GradebookKey.USERNAME.name(), userName);
 	}
 	
 	public ItemModel getGradebookItemModel() {	
-		return gradebookItemModel;
+		return get(GradebookKey.GRADEBOOKITEMMODEL.name());
 	}
 	
 	public void setGradebookItemModel(ItemModel gradebookItemModel) {
-		this.gradebookItemModel = gradebookItemModel;
+		set(GradebookKey.GRADEBOOKITEMMODEL.name(), gradebookItemModel);
 	}
 
 	public Boolean isNewGradebook() {
-		return isNewGradebook;
+		return get(GradebookKey.ISNEWGRADEBOOK.name());
 	}
 
 	public void setNewGradebook(Boolean isNewGradebook) {
-		this.isNewGradebook = isNewGradebook;
+		set(GradebookKey.ISNEWGRADEBOOK.name(), isNewGradebook);
 	}
 
 	public List<StatisticsModel> getStatsModel() {
-		return statsModel;
+		return get(GradebookKey.STATSMODELS.name());
 	}
 
 	public void setStatsModel(List<StatisticsModel> statsModel) {
-		this.statsModel = statsModel;
+		set(GradebookKey.STATSMODELS.name(), statsModel);
 	}
 }

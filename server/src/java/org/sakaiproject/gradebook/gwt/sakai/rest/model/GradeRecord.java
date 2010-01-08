@@ -1,9 +1,9 @@
-package org.sakaiproject.gradebook.gwt.sakai.rest;
+package org.sakaiproject.gradebook.gwt.sakai.rest.model;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
-public class GradeAction {
+public class GradeRecord {
 
 	private String gradebookUid;
 	private Long gradebookId;
@@ -15,9 +15,9 @@ public class GradeAction {
 	private String previousStringValue;
 	private Boolean numeric;
 	
-	public GradeAction() { }
+	public GradeRecord() { }
 	
-	public GradeAction(String gradebookUid, Long gradebookId,
+	public GradeRecord(String gradebookUid, Long gradebookId,
 			String studentUid, String itemId, Double value, Double previousValue) {
 		super();
 		this.gradebookUid = gradebookUid;
@@ -28,7 +28,7 @@ public class GradeAction {
 		this.previousValue = previousValue;
 	}
 	
-	public GradeAction(String gradebookUid, Long gradebookId,
+	public GradeRecord(String gradebookUid, Long gradebookId,
 			String studentUid, String itemId, String stringValue, String previousStringValue) {
 		super();
 		this.gradebookUid = gradebookUid;

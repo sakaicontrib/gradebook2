@@ -495,7 +495,7 @@ public class GraderPermissionSettingsPanel extends ContentPanel {
 			
 	private boolean hasCategories() {
 		GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
-		CategoryType categoryType = gbModel.getCategoryType();
+		CategoryType categoryType = gbModel.getGradebookItemModel().getCategoryType();
 		
 		switch(categoryType) {
 		case NO_CATEGORIES:

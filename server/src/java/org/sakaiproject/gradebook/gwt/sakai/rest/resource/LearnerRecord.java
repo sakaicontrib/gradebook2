@@ -14,7 +14,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
-import org.sakaiproject.gradebook.gwt.sakai.rest.GradeAction;
+import org.sakaiproject.gradebook.gwt.sakai.rest.model.GradeRecord;
 
 @Path("/gradebook/rest/learner")
 public class LearnerRecord {
@@ -28,12 +28,12 @@ public class LearnerRecord {
 	public String assignComment(@PathParam("gradebookUid") String gradebookUid,
 			@PathParam("itemId") String itemId,
 			@PathParam("studentUid") String studentUid,
-			JAXBElement<GradeAction> jaxbAction) throws InvalidInputException {
+			JAXBElement<GradeRecord> jaxbAction) throws InvalidInputException {
 		
 		if (log.isDebugEnabled()) 
 			log.debug("assignComment " + gradebookUid + " " + itemId + " " + studentUid);
 		
-		GradeAction action = jaxbAction.getValue();
+		GradeRecord action = jaxbAction.getValue();
 		Map<String,Object> map = null;
 		
 		map = service.assignComment(itemId, studentUid, action.getStringValue());
@@ -56,12 +56,12 @@ public class LearnerRecord {
 	public String assignNumericScore(@PathParam("gradebookUid") String gradebookUid,
 			@PathParam("itemId") String itemId,
 			@PathParam("studentUid") String studentUid,
-			JAXBElement<GradeAction> jaxbAction) throws InvalidInputException {
+			JAXBElement<GradeRecord> jaxbAction) throws InvalidInputException {
 		
 		if (log.isDebugEnabled()) 
 			log.debug("assignNumericScore " + gradebookUid + " " + itemId + " " + studentUid);
 		
-		GradeAction action = jaxbAction.getValue();
+		GradeRecord action = jaxbAction.getValue();
 
 		Map<String,Object> map = null;
 		
@@ -87,12 +87,12 @@ public class LearnerRecord {
 	public String assignStringScore(@PathParam("gradebookUid") String gradebookUid,
 			@PathParam("itemId") String itemId,
 			@PathParam("studentUid") String studentUid,
-			JAXBElement<GradeAction> jaxbAction) throws InvalidInputException {
+			JAXBElement<GradeRecord> jaxbAction) throws InvalidInputException {
 		
 		if (log.isDebugEnabled()) 
 			log.debug("assignStringScore " + gradebookUid + " " + itemId + " " + studentUid);
 		
-		GradeAction action = jaxbAction.getValue();
+		GradeRecord action = jaxbAction.getValue();
 
 		Map<String,Object> map = null;
 		

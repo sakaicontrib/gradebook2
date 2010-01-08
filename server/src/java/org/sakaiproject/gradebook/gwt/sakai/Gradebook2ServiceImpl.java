@@ -74,6 +74,7 @@ import org.sakaiproject.gradebook.gwt.client.model.GradeFormatModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.PermissionEntryListModel;
@@ -156,8 +157,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 	private ServerConfigurationService configService;
 	private EventTrackingService eventTrackingService;
 	
-	private String helpUrl;
-	private List<GradeType> enabledGradeTypes;
+	protected String helpUrl;
+	protected List<GradeType> enabledGradeTypes;
 	private String[] learnerRoleNames;
 	
 	private ApplicationContext applicationContext;
@@ -230,6 +231,10 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		
 	}
 
+	public ItemModel createItem(String gradebookUid, Long gradebookId, final ItemModel item, boolean enforceNoNewCategories) throws InvalidInputException {
+		return createItem(gradebookUid, gradebookId, item.getProperties(), enforceNoNewCategories);
+	}
+	
 	/**
 	 * Method to add a new grade item to the gradebook.
 	 * 
@@ -254,19 +259,24 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 	 *         category, or (c) the item
 	 * @throws InvalidInputException
 	 */
-	public ItemModel createItem(String gradebookUid, Long gradebookId, final ItemModel item, boolean enforceNoNewCategories) throws InvalidInputException {
+	public ItemModel createItem(String gradebookUid, Long gradebookId, final Map<String, Object> attributes, boolean enforceNoNewCategories) throws InvalidInputException {
 
-		if (item.getItemType() != null) {
-			switch (item.getItemType()) {
+		String typeName = (String)attributes.get(ItemKey.ITEM_TYPE.name());
+		Type itemType = null;
+		if (typeName != null)
+			itemType = Type.valueOf(typeName);
+
+		if (itemType != null) {
+			switch (itemType) {
 				case CATEGORY:
-					return addItemCategory(gradebookUid, gradebookId, item);
+					return addItemCategory(gradebookUid, gradebookId, attributes);
 			}
 		}
 
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
 		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
 
-		Long assignmentId = doCreateItem(gradebook, item, hasCategories, enforceNoNewCategories);
+		Long assignmentId = doCreateItem(gradebook, attributes, hasCategories, enforceNoNewCategories);
 
 		postEvent("gradebook2.newItem", String.valueOf(gradebook.getId()), String.valueOf(assignmentId));
 		
@@ -290,6 +300,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 
 		return model;
 	}
+	
+	public ItemModel addItemCategory(String gradebookUid, Long gradebookId, ItemModel item) throws BusinessRuleException {
+		return addItemCategory(gradebookUid, gradebookId, item.getProperties());
+	}
+	
 
 	/**
 	 * Method to add a new category to a gradebook
@@ -304,14 +319,16 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 	 * @return
 	 * @throws BusinessRuleException
 	 */
-	public ItemModel addItemCategory(String gradebookUid, Long gradebookId, ItemModel item) throws BusinessRuleException {
+	public ItemModel addItemCategory(String gradebookUid, Long gradebookId, Map<String, Object> attributes) throws BusinessRuleException {
 
+		String name = (String)attributes.get(ItemKey.NAME.name());
+		
 		ActionRecord actionRecord = new ActionRecord(gradebookUid, gradebookId, EntityType.CATEGORY.name(), ActionType.CREATE.name());
-		actionRecord.setEntityName(item.getName());
+		actionRecord.setEntityName(name);
 		Map<String, String> propertyMap = actionRecord.getPropertyMap();
 
-		for (String property : item.getPropertyNames()) {
-			String value = String.valueOf(item.get(property));
+		for (String property : attributes.keySet()) {
+			String value = String.valueOf(attributes.get(property));
 			if (value != null)
 				propertyMap.put(property, value);
 		}
@@ -323,14 +340,13 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		Long categoryId = null;
 
 		try {
-			String name = item.getName();
-			Double weight = item.getPercentCourseGrade();
-			Boolean isEqualWeighting = item.getEqualWeightAssignments();
-			Boolean isIncluded = item.getIncluded();
-			Integer dropLowest = item.getDropLowest();
-			Boolean isExtraCredit = item.getExtraCredit();
-			Integer categoryOrder = item.getItemOrder();
-			Boolean doEnforcePointWeighting = item.getEnforcePointWeighting();
+			Double weight = (Double)attributes.get(ItemKey.PERCENT_COURSE_GRADE.name());
+			Boolean isEqualWeighting = (Boolean)attributes.get(ItemKey.EQUAL_WEIGHT.name());
+			Boolean isIncluded = (Boolean)attributes.get(ItemKey.INCLUDED.name());
+			Integer dropLowest = (Integer)attributes.get(ItemKey.DROP_LOWEST.name());
+			Boolean isExtraCredit = (Boolean)attributes.get(ItemKey.EXTRA_CREDIT.name());
+			Integer categoryOrder = (Integer)attributes.get(ItemKey.ITEM_ORDER.name());
+			Boolean doEnforcePointWeighting = (Boolean)attributes.get(ItemKey.ENFORCE_POINT_WEIGHTING.name());
 
 			boolean isUnweighted = !DataTypeConversionUtil.checkBoolean(isIncluded);
 
@@ -351,7 +367,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 				int dropLowestInt = dropLowest == null ? 0 : dropLowest.intValue();
 				boolean equalWeighting = isEqualWeighting == null ? false : isEqualWeighting.booleanValue();
 
-				businessLogic.applyNoDuplicateCategoryNamesRule(gradebook.getId(), item.getName(), null, categories);
+				businessLogic.applyNoDuplicateCategoryNamesRule(gradebook.getId(), name, null, categories);
 				if (hasWeights)
 					businessLogic.applyOnlyEqualWeightDropLowestRule(dropLowestInt, equalWeighting);
 			}
@@ -373,8 +389,8 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 			gbService.storeActionRecord(actionRecord);
 		}
 
+	
 		return getItemModel(gradebook, assignments, categories, categoryId, null);
-
 	}
 
 	public CommentModel createOrUpdateComment(Long assignmentId, String studentUid, String text) {
@@ -909,14 +925,26 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		return userRecords;
 	}
 
+	
 	private Long doCreateItem(Gradebook gradebook, ItemModel item, boolean hasCategories, boolean enforceNoNewCategories) throws BusinessRuleException {
+		
+		boolean includeInGrade = DataTypeConversionUtil.checkBoolean(item.getIncluded());
+		
+		return doCreateItem(gradebook, item.getProperties(),
+				hasCategories, enforceNoNewCategories);
+	}
+	
+	private Long doCreateItem(Gradebook gradebook, Map<String, Object> attributes, 
+			boolean hasCategories, boolean enforceNoNewCategories) throws BusinessRuleException {
 
+		String name = (String)attributes.get(ItemKey.NAME.name());
+		
 		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.ITEM.name(), ActionType.CREATE.name());
-		actionRecord.setEntityName(item.getName());
+		actionRecord.setEntityName(name);
 		Map<String, String> propertyMap = actionRecord.getPropertyMap();
 
-		for (String property : item.getPropertyNames()) {
-			String value = String.valueOf(item.get(property));
+		for (String property : attributes.keySet()) {
+			String value = String.valueOf(attributes.get(property));
 			if (value != null)
 				propertyMap.put(property, value);
 		}
@@ -930,18 +958,18 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		Long categoryId = null;
 
 		try {
-			boolean includeInGrade = DataTypeConversionUtil.checkBoolean(item.getIncluded());
+			boolean includeInGrade = DataTypeConversionUtil.checkBoolean((Boolean)attributes.get(ItemKey.INCLUDED.name()));
 
-			categoryId = item.getCategoryId();
-			String name = item.getName();
-			Double weight = item.getPercentCategory();
-			Double points = item.getPoints();
-			Boolean isReleased = Boolean.valueOf(DataTypeConversionUtil.checkBoolean(item.getReleased()));
+			categoryId = (Long)attributes.get(ItemKey.CATEGORY_ID.name());
+			String categoryName = (String)attributes.get(ItemKey.CATEGORY_NAME.name());
+			Double weight = (Double)attributes.get(ItemKey.PERCENT_CATEGORY.name()); //item.getPercentCategory();
+			Double points = (Double)attributes.get(ItemKey.POINTS.name()); //item.getPoints();
+			Boolean isReleased = Boolean.valueOf(DataTypeConversionUtil.checkBoolean((Boolean)attributes.get(ItemKey.RELEASED.name())));
 			Boolean isIncluded = Boolean.valueOf(includeInGrade);
-			Boolean isExtraCredit = Boolean.valueOf(DataTypeConversionUtil.checkBoolean(item.getExtraCredit()));
-			Boolean isNullsAsZeros = Boolean.valueOf(DataTypeConversionUtil.checkBoolean(item.getNullsAsZeros()));
-			Date dueDate = item.getDueDate();
-			Integer itemOrder = item.getItemOrder();
+			Boolean isExtraCredit = Boolean.valueOf(DataTypeConversionUtil.checkBoolean((Boolean)attributes.get(ItemKey.EXTRA_CREDIT.name())));
+			Boolean isNullsAsZeros = Boolean.valueOf(DataTypeConversionUtil.checkBoolean((Boolean)attributes.get(ItemKey.NULLSASZEROS.name())));
+			Date dueDate = (Date)attributes.get(ItemKey.DUE_DATE.name());
+			Integer itemOrder = (Integer)attributes.get(ItemKey.ITEM_ORDER.name());
 
 			// Business rule #1
 			if (points == null)
@@ -950,13 +978,14 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 			if (weight == null)
 				weight = Double.valueOf(points.doubleValue());
 
-			if (hasCategories && item.getCategoryId() == null && item.getCategoryName() != null && item.getCategoryName().trim().length() > 0) {
+			if (hasCategories && categoryId == null && categoryName != null 
+					&& categoryName.trim().length() > 0) {
 				ItemModel newCategory = new ItemModel();
-				newCategory.setName(item.getCategoryName());
+				newCategory.setName(categoryName);
 				newCategory.setIncluded(Boolean.TRUE);
 				newCategory = getActiveItem(addItemCategory(gradebook.getUid(), gradebook.getId(), newCategory));
 				categoryId = newCategory.getCategoryId();
-				item.setCategoryId(categoryId);
+				//item.setCategoryId(categoryId);
 				hasNewCategory = true;
 			}
 
@@ -976,7 +1005,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 					businessLogic.applyNoDuplicateItemNamesWithinCategoryRule(categoryId, name, null, assignments);
 					// Business rule #6
 					if (enforceNoNewCategories)
-						businessLogic.applyMustIncludeCategoryRule(item.getCategoryId());
+						businessLogic.applyMustIncludeCategoryRule(categoryId);
 				}
 
 			} else {
@@ -2987,7 +3016,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		boolean isSingleUserView = isUserAbleToViewOwnGrades && !isUserAbleToGrade;
 
 
-		model.setCategoryType(categoryType);
+		//model.setCategoryType(categoryType);
 
 		model.setGradebookUid(gradebookUid);
 		model.setGradebookId(gradebook.getId());
@@ -3048,11 +3077,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		model.setGradebookItemModel(gradebookItemModel);
 		List<FixedColumnModel> columns = getColumns(isUserAbleToGradeAll);
 
-		model.setUserAbleToGrade(Boolean.valueOf(isUserAbleToGrade));
+		/*model.setUserAbleToGrade(Boolean.valueOf(isUserAbleToGrade));
 		model.setUserAbleToEditAssessments(Boolean.valueOf(authz.isUserAbleToEditAssessments(gradebookUid)));
 		model.setUserAbleToViewOwnGrades(Boolean.valueOf(isUserAbleToViewOwnGrades));
 		model.setUserHasGraderPermissions(Boolean.valueOf(authz.hasUserGraderPermissions(gradebookUid)));
-
+		*/
 		ConfigurationModel configModel = new ConfigurationModel();
 
 		if (userService != null) {
@@ -3821,7 +3850,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		return null;
 	}
 
-	private List<GradebookModel> getGradebookModels(String[] gradebookUids) {
+	protected List<GradebookModel> getGradebookModels(String[] gradebookUids) {
 
 		List<GradebookModel> models = new LinkedList<GradebookModel>();
 

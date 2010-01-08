@@ -317,7 +317,15 @@ public class ItemModel extends BaseTreeModel {
 	}
 	
 	public CategoryType getCategoryType() {
-		return get(ItemKey.CATEGORYTYPE.name());
+		Object obj = get(ItemKey.CATEGORYTYPE.name());
+		
+		if (obj == null)
+			return null;
+		
+		if (obj instanceof CategoryType)
+			return (CategoryType)obj;
+		
+		return CategoryType.valueOf((String)obj);
 	}
 	
 	public void setCategoryType(CategoryType type) {
@@ -325,7 +333,15 @@ public class ItemModel extends BaseTreeModel {
 	}
 	
 	public GradeType getGradeType() {
-		return get(ItemKey.GRADETYPE.name());
+		Object obj = get(ItemKey.GRADETYPE.name());
+		
+		if (obj == null)
+			return null;
+		
+		if (obj instanceof GradeType)
+			return (GradeType)obj;
+		
+		return GradeType.valueOf((String)obj);
 	}
 	
 	public void setGradeType(GradeType type) {

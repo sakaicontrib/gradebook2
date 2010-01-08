@@ -284,7 +284,8 @@ public class InstructorController extends Controller {
 		for (GradebookModel gbModel : gradebookModels) {
 			Registry.register(gbModel.getGradebookUid(), gbModel);
 			Registry.register(AppConstants.CURRENT, gbModel);
-			boolean isUserAbleToGrade = gbModel.isUserAbleToGrade() == null ? false : gbModel.isUserAbleToGrade().booleanValue();
+			Boolean isUserAbleToGradeBoolean = Registry.get(AppConstants.IS_ABLE_TO_GRADE);
+			boolean isUserAbleToGrade = isUserAbleToGradeBoolean == null ? false : isUserAbleToGradeBoolean.booleanValue();
 
 			if (isUserAbleToGrade) {
 				forwardToView(treeView, event);

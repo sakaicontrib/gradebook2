@@ -43,23 +43,23 @@ public class ConfigurationModel extends BaseModel {
 	}
 	
 	public ConfigurationModel(Long gradebookId) {
-		this.gradebookId = gradebookId;
+		setGradebookId(gradebookId);
 	}
 	
 	public Long getGradebookId() {
-		return gradebookId;
+		return get(ConfigurationKey.GRADEBOOKID.name());
 	}
 
 	public void setGradebookId(Long gradebookId) {
-		this.gradebookId = gradebookId;
+		set(ConfigurationKey.GRADEBOOKID.name(), gradebookId);
 	}
 
 	public String getUserUid() {
-		return userUid;
+		return get(ConfigurationKey.USERUID.name());
 	}
 
 	public void setUserUid(String userUid) {
-		this.userUid = userUid;
+		set(ConfigurationKey.USERUID.name(), userUid);
 	}
 
 	public boolean isAscending(String gridId) {

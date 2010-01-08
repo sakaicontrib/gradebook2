@@ -24,6 +24,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
 import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
+import org.sakaiproject.gradebook.gwt.client.model.FixedColumnKey;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
@@ -380,7 +381,7 @@ public class AltItemTreePanel extends GradebookPanel {
 		learnerAttributeTree.setCheckable(true);
 		learnerAttributeTree.setCheckStyle(CheckCascade.CHILDREN);
 		learnerAttributeTree.setCheckNodes(CheckNodes.LEAF);
-		learnerAttributeTree.setDisplayProperty(FixedColumnModel.Key.NAME.name());
+		learnerAttributeTree.setDisplayProperty(FixedColumnKey.NAME.name());
 		learnerAttributeTree.setStateful(true);
 		learnerAttributeTree.setStateId(AppConstants.LEARNER_ATTRIBUTE_TREE);
 		
@@ -485,27 +486,29 @@ public class AltItemTreePanel extends GradebookPanel {
 
 		ConfigurationModel configModel = gradebookModel.getConfigurationModel();
 
-		switch (gradebookModel.getGradebookItemModel().getCategoryType()) {
-			case NO_CATEGORIES:
-			case SIMPLE_CATEGORIES:
-				cm.setHidden(2, true);
-				cm.setHidden(3, true);
-				cm.setHidden(4, configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_POINTS_NOWEIGHTS, false));
-				//percentCourseGradeColumn.setHidden(true);
-				//percentCourseGradeColumn.setMenuDisabled(true);
-				//percentCategoryColumn.setHidden(true);
-				//percentCategoryColumn.setMenuDisabled(true);
-				//pointsColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_POINTS_NOWEIGHTS, false));
-				break;
-			case WEIGHTED_CATEGORIES:
-				cm.setHidden(2, configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_PERCENT_GRADE, false));
-				cm.setHidden(3, configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_PERCENT_CATEGORY, false));
-				cm.setHidden(4, configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_POINTS_WEIGHTS, false));
-				
-				//percentCourseGradeColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_PERCENT_GRADE, false));
-				//percentCategoryColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_PERCENT_CATEGORY, false));
-				//pointsColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_POINTS_WEIGHTS, true));
-				break;
+		if (configModel != null) {
+			switch (gradebookModel.getGradebookItemModel().getCategoryType()) {
+				case NO_CATEGORIES:
+				case SIMPLE_CATEGORIES:
+					cm.setHidden(2, true);
+					cm.setHidden(3, true);
+					cm.setHidden(4, configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_POINTS_NOWEIGHTS, false));
+					//percentCourseGradeColumn.setHidden(true);
+					//percentCourseGradeColumn.setMenuDisabled(true);
+					//percentCategoryColumn.setHidden(true);
+					//percentCategoryColumn.setMenuDisabled(true);
+					//pointsColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_POINTS_NOWEIGHTS, false));
+					break;
+				case WEIGHTED_CATEGORIES:
+					cm.setHidden(2, configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_PERCENT_GRADE, false));
+					cm.setHidden(3, configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_PERCENT_CATEGORY, false));
+					cm.setHidden(4, configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_POINTS_WEIGHTS, false));
+					
+					//percentCourseGradeColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_PERCENT_GRADE, false));
+					//percentCategoryColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_PERCENT_CATEGORY, false));
+					//pointsColumn.setHidden(configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_POINTS_WEIGHTS, true));
+					break;
+			}
 		}
 	}
 	

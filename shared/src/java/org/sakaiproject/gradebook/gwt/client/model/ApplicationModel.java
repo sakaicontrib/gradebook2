@@ -31,28 +31,28 @@ public class ApplicationModel extends EntityModel {
 	
 	private List<GradebookModel> gradebookModels;
 	private String placementId;
-	private String userName;
 	private String helpUrl;
 	private List<GradeType> enabledGradeTypes;
+	private CategoryType categoryType;
 		
 	public ApplicationModel() {
 		
 	}
 	
 	public List<GradebookModel> getGradebookModels() {
-		return gradebookModels;
+		return get(ApplicationKey.GRADEBOOKMODELS.name());
 	}
 
 	public void setGradebookModels(List<GradebookModel> gradebookModels) {
-		this.gradebookModels = gradebookModels;
+		set(ApplicationKey.GRADEBOOKMODELS.name(), gradebookModels);
 	}
 	
 	public String getPlacementId() {
-		return placementId;
+		return get(ApplicationKey.PLACEMENTID.name());
 	}
 
 	public void setPlacementId(String placementId) {
-		this.placementId = placementId;
+		set(ApplicationKey.PLACEMENTID.name(), placementId);
 	}
 
 	@Override
@@ -68,19 +68,19 @@ public class ApplicationModel extends EntityModel {
 	}
 
 	public String getHelpUrl() {
-		return helpUrl;
+		return get(ApplicationKey.HELPURL.name());
 	}
 
 	public void setHelpUrl(String helpUrl) {
-		this.helpUrl = helpUrl;
+		set(ApplicationKey.HELPURL.name(), helpUrl);
 	}
 
 	public List<GradeType> getEnabledGradeTypes() {
-		return enabledGradeTypes;
+		return get(ApplicationKey.ENABLEDGRADETYPES.name());
 	}
 
 	public void setEnabledGradeTypes(List<GradeType> enabledGradeTypes) {
-		this.enabledGradeTypes = enabledGradeTypes;
+		set(ApplicationKey.ENABLEDGRADETYPES.name(), enabledGradeTypes);
 	}
 	
 }

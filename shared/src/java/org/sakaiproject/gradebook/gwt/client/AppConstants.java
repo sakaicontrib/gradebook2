@@ -32,6 +32,8 @@ public interface AppConstants {
 	public static final String RESOURCES		= "resources";
 	public static final String SERVICE 			= "service";
 	public static final String VERSION			= "version";
+	public static final String IS_ABLE_TO_GRADE = "canGrade";
+	public static final String IS_ABLE_TO_EDIT 	= "canEdit";
 	
 	// Item type constants
 	public static final String GRADEBOOK 	= "Gradebook";
@@ -137,6 +139,7 @@ public interface AppConstants {
 	public static final String REST_FRAGMENT 		= "rest";
 	public static final String LEARNER_FRAGMENT 	= "learner";
 	public static final String CONFIG_FRAGMENT 		= "config";
+	public static final String APPLICATION_FRAGMENT = "application";
 	
 	
 }
