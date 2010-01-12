@@ -222,11 +222,11 @@ public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 	}
 	
 	public void editCell(GradebookModel selectedGradebook, Record record, String property, Object value, Object startValue, GridEvent ge) {
-		UserEntityUpdateAction<M> action = newEntityUpdateAction(selectedGradebook, record, property, value, startValue, ge);
+		/*UserEntityUpdateAction<M> action = newEntityUpdateAction(selectedGradebook, record, property, value, startValue, ge);
 		
 		if (validateEdit(property, value, startValue, record, ge)) {
 			doEdit(record, action, ge);
-		}
+		}*/
 	}
 	
 	public CustomColumnModel getColumnModel() {
@@ -482,7 +482,7 @@ public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 	}
 	
 	protected void doEdit(final Record record, final UserEntityUpdateAction<M> action, final GridEvent gridEvent) {
-		Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
+		/*Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
 		
 		AsyncCallback<M> callback = new AsyncCallback<M>() {
 
@@ -521,7 +521,7 @@ public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 				}
 			}
 			
-		};
+		};*/
 		
 		// FIXME: Need to switch this to REST-based PUT
 		//service.update(action.getModel(), action.getEntityType(), null, SecureToken.get(), callback);

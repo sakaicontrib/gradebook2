@@ -23,8 +23,11 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
+import org.sakaiproject.gradebook.gwt.client.model.SectionKey;
+import org.sakaiproject.gradebook.gwt.client.model.SectionModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
+import org.sakaiproject.section.api.coursemanagement.CourseSection;
 import org.sakaiproject.service.gradebook.shared.GradebookService;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.tool.gradebook.Assignment;
@@ -310,6 +313,29 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		return map;
 	}
 	
+	public List<Map<String,Object>> getVisibleSections(String gradebookUid, boolean enableAllSectionsEntry, String allSectionsEntryTitle) {
+		List<CourseSection> viewableSections = authz.getViewableSections(gradebookUid);
+
+		List<Map<String,Object>> sections = new LinkedList<Map<String,Object>>();
+
+		if (enableAllSectionsEntry) {
+			Map<String,Object> map = new HashMap<String,Object>();
+			map.put(SectionKey.ID.name(), "ALL");
+			map.put(SectionKey.SECTION_NAME.name(), allSectionsEntryTitle);
+			sections.add(map);
+		}
+
+		if (viewableSections != null) {
+			for (CourseSection courseSection : viewableSections) {
+				Map<String,Object> map = new HashMap<String,Object>();
+				map.put(SectionKey.ID.name(), courseSection.getUuid());
+				map.put(SectionKey.SECTION_NAME.name(), courseSection.getTitle());
+				sections.add(map);
+			}
+		}
+		
+		return sections;
+	}
 	
 	public Boolean updateConfiguration(Long gradebookId, String field, String value) {
 		
@@ -323,6 +349,44 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		
 		return Boolean.TRUE;
 	}
+	
+	public Map<String, Object> updateItem(Map<String, Object> attributes) throws InvalidInputException {
+		
+		ItemModel item = new ItemModel();
+		
+		for (ItemKey key : EnumSet.allOf(ItemKey.class)) {
+			if (key.getType() != null) {
+				try {
+					Object rawValue = attributes.get(key.name());
+					Object value = rawValue;
+					
+					if (key.getType().equals(Long.class)) 
+						value = Long.valueOf(rawValue.toString());
+					else if (key.getType().equals(Double.class))
+						value = Double.valueOf(rawValue.toString());
+					
+					item.set(key.name(), value);
+				} catch (ClassCastException cce) {
+					log.info("Unable to cast value for " + key.name() + " as " + key.getType().getCanonicalName());
+				}
+			} else 
+				item.set(key.name(), attributes.get(key.name()));
+		}
+		
+		
+		ItemModel result = updateItemModel(item);
+		
+		Map<String, Object> itemMap = new HashMap<String, Object>();
+		
+		for (Enum<ItemKey> it : EnumSet.allOf(ItemKey.class)) {
+			itemMap.put(it.name(), result.get(it.name()));
+		}
+		
+		addChildren(result, itemMap);
+	
+		return itemMap;
+	}
+	
 	
 	private void addChildren(ItemModel itemModel, Map<String,Object> itemMap) {
 		

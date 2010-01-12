@@ -46,6 +46,8 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemCreate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
+import org.sakaiproject.gradebook.gwt.client.model.ApplicationKey;
+import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
@@ -742,6 +744,55 @@ public class ServiceController extends Controller {
 	}
 
 	private void onUpdateItem(final ItemUpdate event) {
+		
+		Dispatcher.forwardEvent(GradebookEvents.MaskItemTree.getEventType());
+		
+		RestBuilder builder = RestBuilder.getInstance(Method.PUT, 
+				GWT.getModuleBaseURL(),
+				AppConstants.REST_FRAGMENT,
+				AppConstants.ITEM_FRAGMENT);
+		
+		try {
+			JSONObject jsonObject = RestBuilder.convertModel(event.item);
+			
+			builder.sendRequest(jsonObject.toString(), new RequestCallback() {
+
+				public void onError(Request request, Throwable caught) {
+					onUpdateItemFailure(event, caught);
+					Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
+
+				}
+
+				public void onResponseReceived(Request request, Response response) {
+					
+					if (response.getStatusCode() != 200) {
+						onUpdateItemFailure(event, null);
+						Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
+						return;
+					}
+					
+					String result = response.getText();
+
+					JsonTranslater translater = new JsonTranslater(EnumSet.allOf(ItemKey.class)) {
+						protected ModelData newModelInstance() {
+							return new ItemModel();
+						}
+					};
+					ItemModel itemModel = (ItemModel)translater.translate(result);
+					
+					Dispatcher.forwardEvent(GradebookEvents.BeginItemUpdates.getEventType());
+					onUpdateItemSuccess(event, itemModel);
+					Dispatcher.forwardEvent(GradebookEvents.EndItemUpdates.getEventType());
+					Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
+
+				}
+				
+			});
+		} catch (RequestException e) {
+			Dispatcher.forwardEvent(GradebookEvents.Exception.getEventType(), new NotificationEvent(e));
+		}
+		
+		/*
 		Dispatcher.forwardEvent(GradebookEvents.MaskItemTree.getEventType());
 
 		Gradebook2RPCServiceAsync service = Registry.get("service");
@@ -761,6 +812,7 @@ public class ServiceController extends Controller {
 		};
 
 		service.update((ItemModel)event.getModifiedItem(), EntityType.ITEM, null, SecureToken.get(), callback);
+		*/		
 	}
 
 	private void doCreateItem(ItemCreate itemCreate, ItemModel createdItem) {

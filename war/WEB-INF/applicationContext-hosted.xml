@@ -37,13 +37,22 @@
 		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
 	</bean>
 	
-	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Roster">
-		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service"/>
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Item">
+		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
 	</bean>
 	
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.LearnerRecord">
 		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
 	</bean>
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Roster">
+		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service"/>
+	</bean>
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Section">
+		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
+	</bean>
+	
 	
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.BusinessLogic" class="org.sakaiproject.gradebook.gwt.sakai.BusinessLogicImpl">
 		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/> 

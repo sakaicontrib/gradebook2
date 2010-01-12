@@ -217,6 +217,10 @@ public class ItemModel extends BaseTreeModel {
 		{
 			return (Long) o; 
 		}
+		else if (o instanceof Integer) 
+		{
+			return Long.valueOf(((Integer)o).intValue());
+		}
 		else
 		{
 			Long ret = null; 

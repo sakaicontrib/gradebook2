@@ -208,7 +208,7 @@ public class MultiGradeContextMenu extends Menu {
 		
 		
 		ListStore<GradeEventModel> store = new ListStore<GradeEventModel>(loader);
-		store.setModelComparer(new EntityModelComparer<GradeEventModel>());
+		store.setModelComparer(new EntityModelComparer<GradeEventModel>(GradeEventModel.Key.ID.name()));
 		viewGradeHistoryGrid = new Grid<GradeEventModel>(store, cm);
 		viewGradeHistoryGrid.setBorders(true);
 		

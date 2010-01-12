@@ -116,7 +116,7 @@ public class GradeScalePanel extends GradebookPanel {
 		gradeFormatLoader.setRemoteSort(true);
 
 		gradeFormatStore = new ListStore<GradeFormatModel>(gradeFormatLoader);
-		gradeFormatStore.setModelComparer(new EntityModelComparer<GradeFormatModel>());
+		gradeFormatStore.setModelComparer(new EntityModelComparer<GradeFormatModel>(GradeFormatModel.Key.ID.name()));
 		
 		gradeFormatListBox = new ComboBox<GradeFormatModel>(); 
 		gradeFormatListBox.setAllQuery(null);
@@ -224,7 +224,7 @@ public class GradeScalePanel extends GradebookPanel {
 		loader = new BaseListLoader(proxy);  
 
 		final ListStore<GradeScaleRecordModel> store = new ListStore<GradeScaleRecordModel>(loader);
-		store.setModelComparer(new EntityModelComparer<GradeScaleRecordModel>());
+		store.setModelComparer(new EntityModelComparer<GradeScaleRecordModel>(GradeScaleRecordModel.Key.ID.name()));
 
 		loader.addListener(Loader.Load, new Listener<LoadEvent>() {
 

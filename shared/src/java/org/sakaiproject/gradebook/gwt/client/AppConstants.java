@@ -140,6 +140,9 @@ public interface AppConstants {
 	public static final String LEARNER_FRAGMENT 	= "learner";
 	public static final String CONFIG_FRAGMENT 		= "config";
 	public static final String APPLICATION_FRAGMENT = "application";
+	public static final String ITEM_FRAGMENT		= "item";
+	public static final String ROSTER_FRAGMENT 		= "roster";
+	public static final String SECTION_FRAGMENT		= "section";
 	
 	
 }

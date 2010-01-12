@@ -124,11 +124,11 @@ public class AuthzMock extends Gradebook2AuthzImpl {
 	}
 
 	public boolean isUserAbleToGrade(String gradebookUid) {
-		return true;
+		return false;
 	}
 
 	public boolean isUserAbleToGradeAll(String gradebookUid) {
-		return true;
+		return false;
 	}
 
 	public boolean isUserAbleToGradeItemForStudent(String gradebookUid, Long itemId, String studentUid) throws IllegalArgumentException {

@@ -206,7 +206,6 @@ public class MultigradeView extends View {
 	protected void initUI(ApplicationModel model) {
 
 		GradebookModel gbModel = model.getGradebookModels().get(0);
-		//gbModel.getGradebookItemModel();
 		
 		final ModelType type = new ModelType();  
 		type.setRoot("learners");
@@ -236,12 +235,9 @@ public class MultigradeView extends View {
 		
 		processor.process();
 		
-		String initUrl = new StringBuilder()/*.append(GWT.getHostPageBaseURL())*/
-			.append(GWT.getModuleBaseURL())
-			.append("rest/roster/").append("?uid=").append(gbModel.getGradebookUid())
-			.append("&id=").append(gbModel.getGradebookId()).toString();
-		
-		RestBuilder builder = RestBuilder.getInstance(Method.GET, initUrl);
+		RestBuilder builder = RestBuilder.getInstance(Method.GET, GWT.getModuleBaseURL(),
+				AppConstants.REST_FRAGMENT, AppConstants.ROSTER_FRAGMENT,
+				gbModel.getGradebookUid(), String.valueOf(gbModel.getGradebookId()));
 		
 		HttpProxy<String> proxy = new HttpProxy<String>(builder);  
 
@@ -250,54 +246,8 @@ public class MultigradeView extends View {
 
 		multigradeLoader = new BasePagingLoader<PagingLoadResult<ModelData>>(proxy, reader);  
 		
-		/*
-		RpcProxy<PagingLoadResult<StudentModel>> proxy = 
-			new RpcProxy<PagingLoadResult<StudentModel>>() {
-			@Override
-			protected void load(Object loadConfig, AsyncCallback<PagingLoadResult<StudentModel>> callback) {
-				Gradebook2RPCServiceAsync service = Registry.get("service");
-				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-				service.getPage(selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId(), EntityType.LEARNER, (PagingLoadConfig)loadConfig, SecureToken.get(), callback);
-			}
-
-			@Override
-			public void load(final DataReader<PagingLoadResult<StudentModel>> reader, 
-					final Object loadConfig, final AsyncCallback<PagingLoadResult<StudentModel>> callback) {
-				load(loadConfig, new NotifyingAsyncCallback<PagingLoadResult<StudentModel>>() {
-
-					public void onFailure(Throwable caught) {
-						super.onFailure(caught);
-						callback.onFailure(caught);
-					}
-
-					public void onSuccess(PagingLoadResult<StudentModel> result) {
-						try {
-							PagingLoadResult<StudentModel> data = null;
-							if (reader != null) {
-								data = reader.read(loadConfig, result);
-							} else {
-								data = result;
-							}
-							callback.onSuccess(data);
-						} catch (Exception e) {
-							callback.onFailure(e);
-						}
-					}
-
-				});
-			}
-		};
-
-		multigradeLoader = new BasePagingLoader<PagingLoadResult<StudentModel>>(proxy, new ModelReader()) {
-			protected PagingLoadConfig newLoadConfig() {
-				PagingLoadConfig config = new MultiGradeLoadConfig();
-				return config;
-			}
-		};
-		multigradeLoader.setReuseLoadConfig(false);*/
-
 		multigradeStore = new ListStore<ModelData>(multigradeLoader);
-		multigradeStore.setModelComparer(new EntityModelComparer<ModelData>());
+		multigradeStore.setModelComparer(new EntityModelComparer<ModelData>(LearnerKey.UID.name()));
 		multigradeStore.setMonitorChanges(true);
 		multigradeStore.setDefaultSort(LearnerKey.LAST_NAME_FIRST.name(), SortDir.ASC);
 

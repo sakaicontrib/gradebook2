@@ -28,8 +28,6 @@ public class SectionModel extends EntityModel {
 
 	private static final long serialVersionUID = 1L;
 	
-	public enum Key { ID, SECTION_NAME }
-
 	public SectionModel() {
 		super();
 	}
@@ -39,19 +37,19 @@ public class SectionModel extends EntityModel {
 	}
 	
 	public String getSectionId() {
-		return get(Key.ID.name());
+		return get(SectionKey.ID.name());
 	}
 	
 	public void setSectionId(String sectionId) {
-		set(Key.ID.name(), sectionId);
+		set(SectionKey.ID.name(), sectionId);
 	}
 	
 	public String getSectionName() {
-		return get(Key.SECTION_NAME.name());
+		return get(SectionKey.SECTION_NAME.name());
 	}
 	
 	public void setSectionName(String sectionName) {
-		set(Key.SECTION_NAME.name(), sectionName);
+		set(SectionKey.SECTION_NAME.name(), sectionName);
 	}
 
 	@Override

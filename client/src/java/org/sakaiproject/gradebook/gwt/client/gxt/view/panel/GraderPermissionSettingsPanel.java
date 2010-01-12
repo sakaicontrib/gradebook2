@@ -40,6 +40,7 @@ import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.PermissionEntryListModel;
 import org.sakaiproject.gradebook.gwt.client.model.PermissionEntryModel;
+import org.sakaiproject.gradebook.gwt.client.model.SectionKey;
 import org.sakaiproject.gradebook.gwt.client.model.SectionModel;
 import org.sakaiproject.gradebook.gwt.client.model.UserModel;
 import com.extjs.gxt.ui.client.event.Events;
@@ -135,7 +136,7 @@ public class GraderPermissionSettingsPanel extends ContentPanel {
 		ListLoader userLoader = new BaseListLoader(userProxy);  
 		userLoader.load();
 		ListStore<UserModel> userListStore = new ListStore<UserModel>(userLoader);
-		userListStore.setModelComparer(new EntityModelComparer<UserModel>());
+		userListStore.setModelComparer(new EntityModelComparer<UserModel>(UserModel.Key.ID.name()));
 		
 		
 		// PERMISSIONS
@@ -160,7 +161,7 @@ public class GraderPermissionSettingsPanel extends ContentPanel {
 		ListLoader categoryLoader = new BaseListLoader(categoryProxy);
 		categoryLoader.load();
 		ListStore<CategoryModel> categoryListStore = new ListStore<CategoryModel>(categoryLoader);
-		categoryListStore.setModelComparer(new EntityModelComparer<CategoryModel>());
+		categoryListStore.setModelComparer(new EntityModelComparer<CategoryModel>(CategoryModel.Key.ID.name()));
 		
 		
 		// SECTIONS
@@ -178,7 +179,7 @@ public class GraderPermissionSettingsPanel extends ContentPanel {
 		sectionsLoader.setRemoteSort(true);
 		sectionsLoader.load(0, 50);
 		ListStore<SectionModel> sectionStore = new ListStore<SectionModel>(sectionsLoader);
-		sectionStore.setModelComparer(new EntityModelComparer<SectionModel>());
+		sectionStore.setModelComparer(new EntityModelComparer<SectionModel>(SectionKey.ID.name()));
 		
 		
 		// Combo Boxes
@@ -232,7 +233,7 @@ public class GraderPermissionSettingsPanel extends ContentPanel {
 		// Sections
 		sectionComboBox = new ComboBox<SectionModel>();
 		sectionComboBox.setEmptyText(i18n.sectionsEmptyText());
-		sectionComboBox.setDisplayField(SectionModel.Key.SECTION_NAME.name());
+		sectionComboBox.setDisplayField(SectionKey.SECTION_NAME.name());
 		sectionComboBox.setWidth(150); 
 		sectionComboBox.setStore(sectionStore);
 		sectionComboBox.setTypeAhead(true);

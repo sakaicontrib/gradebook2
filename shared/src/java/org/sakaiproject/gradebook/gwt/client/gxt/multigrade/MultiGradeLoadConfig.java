@@ -28,27 +28,24 @@ public class MultiGradeLoadConfig extends BasePagingLoadConfig {
 
 	private static final long serialVersionUID = 1L;
 
-	private String searchString = null;
-	private String sectionUuid = null;
-
 	public MultiGradeLoadConfig() {
 		super();
 	}
 
 	public String getSectionUuid() {
-		return sectionUuid;
+		return get("sectionUuid");
 	}
 
 	public void setSectionUuid(String sectionUuid) {
-		this.sectionUuid = sectionUuid;
+		set("sectionUuid", sectionUuid);
 	}
 
 	public String getSearchString() {
-		return searchString;
+		return get("searchString");
 	}
 
 	public void setSearchString(String searchString) {
-		this.searchString = searchString;
+		set("searchString", searchString);
 	}
 
 }

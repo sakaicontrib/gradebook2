@@ -27,6 +27,12 @@ import com.extjs.gxt.ui.client.data.ModelData;
 
 public class EntityModelComparer<M extends ModelData> implements ModelComparer<M> {
 
+	private String key;
+	
+	public EntityModelComparer(String key) {
+		this.key = key;
+	}
+	
 	public boolean equals(M m1, M m2) {
 		if (m1 == null && m2 == null)
 			return true;
@@ -35,14 +41,8 @@ public class EntityModelComparer<M extends ModelData> implements ModelComparer<M
 		else if (m2 == null)
 			return false;
 			
-		String id1 = m1.get(LearnerKey.UID.name());
-		String id2 = m2.get(LearnerKey.UID.name());
-		
-		if (id1 != null && id2 != null)
-			return id1.equals(id2);
-		
-		id1 = m1.get(ItemKey.ID.name());
-		id2 = m2.get(ItemKey.ID.name());
+		String id1 = m1.get(key);
+		String id2 = m2.get(key);
 		
 		if (id1 != null && id2 != null)
 			return id1.equals(id2);

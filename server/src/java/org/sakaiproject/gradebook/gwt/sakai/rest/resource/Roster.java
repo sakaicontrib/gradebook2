@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
@@ -27,15 +28,25 @@ public class Roster {
 	private Gradebook2Service service;
 	
     // The Java method will process HTTP GET requests
-    @GET
+    @GET @Path("{uid}/{id}")
     @Produces("application/json")
-    public String get(@QueryParam("uid") String gradebookUid, @QueryParam("id") Long gradebookId,
+    public String get(@PathParam("uid") String gradebookUid, @PathParam("id") Long gradebookId,
     		@QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset,
     		@QueryParam("sortField") String sortField, @QueryParam("sortDir") String sortDir, 
     		@QueryParam("sectionUuid") String sectionUuid, @QueryParam("searchString") String searchString) {
     	
     	log.info("GET!");
     	
+    	if (searchString != null && searchString.equalsIgnoreCase("null"))
+    		searchString = null;
+    	if (sectionUuid != null && (sectionUuid.equalsIgnoreCase("null") ||
+    			sectionUuid.equalsIgnoreCase("ALL")))
+    		sectionUuid = null;
+    	if (sortDir != null && sortDir.equalsIgnoreCase("null"))
+    		sortDir = null;
+    	if (sortField != null && sortField.equalsIgnoreCase("null"))
+    		sortField = null;
+    		
     	MultiGradeLoadConfig loadConfig = new MultiGradeLoadConfig();
     	loadConfig.setLimit(limit == null ? -1 : limit.intValue());
     	loadConfig.setOffset(offset == null ? -1 : offset.intValue());

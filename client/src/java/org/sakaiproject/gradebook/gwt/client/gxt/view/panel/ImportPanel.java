@@ -195,7 +195,7 @@ public class ImportPanel extends GradebookPanel {
 
 		rowStore = new ListStore<ModelData>();
 		rowStore.setMonitorChanges(true);
-		rowStore.setModelComparer(new EntityModelComparer<ModelData>());
+		rowStore.setModelComparer(new EntityModelComparer<ModelData>(LearnerKey.UID.name()));
 
 		ColumnModel cm = new ColumnModel(configs);
 		grid = new Grid<ModelData>(rowStore, cm);

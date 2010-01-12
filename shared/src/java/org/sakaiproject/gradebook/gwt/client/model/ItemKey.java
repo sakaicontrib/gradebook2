@@ -4,28 +4,29 @@
 package org.sakaiproject.gradebook.gwt.client.model;
 
 import java.util.Date;
+import java.util.List;
 
 public enum ItemKey {
-	ID, NAME, WEIGHT, EQUAL_WEIGHT, 
-	EXTRA_CREDIT, 
-	INCLUDED, REMOVED, GRADEBOOK, 
-	DROP_LOWEST, 
-	CATEGORY_NAME, CATEGORY_ID(Long.class), DUE_DATE(Date.class), 
-	POINTS, POINTS_STRING, 
-	RELEASED, NULLSASZEROS, SOURCE, ITEM_TYPE, 
-	PERCENT_COURSE_GRADE, PERCENT_COURSE_GRADE_STRING,
-	PERCENT_CATEGORY, PERCENT_CATEGORY_STRING, 
-	IS_PERCENTAGE, 
+	ID(String.class), NAME(String.class), WEIGHT(Double.class), EQUAL_WEIGHT(Boolean.class), 
+	EXTRA_CREDIT(Boolean.class), 
+	INCLUDED(Boolean.class), REMOVED(Boolean.class), GRADEBOOK(String.class), 
+	DROP_LOWEST(Integer.class), 
+	CATEGORY_NAME(String.class), CATEGORY_ID(Long.class), DUE_DATE(Date.class), 
+	POINTS(Double.class), POINTS_STRING(String.class), 
+	RELEASED(Boolean.class), NULLSASZEROS(Boolean.class), SOURCE(String.class), ITEM_TYPE(String.class), 
+	PERCENT_COURSE_GRADE(Double.class), PERCENT_COURSE_GRADE_STRING(String.class),
+	PERCENT_CATEGORY(Double.class), PERCENT_CATEGORY_STRING(String.class), 
+	IS_PERCENTAGE(Boolean.class), 
 	STUDENT_MODEL_KEY,
 	ASSIGNMENT_ID(Long.class), DATA_TYPE, CATEGORYTYPE(CategoryType.class),
-	GRADETYPE(GradeType.class), RELEASEGRADES, 
-	RELEASEITEMS,
-	ITEM_ORDER, GRADESCALEID, 
-	EXTRA_CREDIT_SCALED,
-	DO_RECALCULATE_POINTS,
-	ENFORCE_POINT_WEIGHTING, SHOWMEAN,
-	SHOWMEDIAN, SHOWMODE, SHOWRANK,
-	SHOWITEMSTATS,CHILDREN;
+	GRADETYPE(GradeType.class), RELEASEGRADES(Boolean.class), 
+	RELEASEITEMS(Boolean.class),
+	ITEM_ORDER(Integer.class), GRADESCALEID, 
+	EXTRA_CREDIT_SCALED(Boolean.class),
+	DO_RECALCULATE_POINTS(Boolean.class),
+	ENFORCE_POINT_WEIGHTING(Boolean.class), SHOWMEAN(Boolean.class),
+	SHOWMEDIAN(Boolean.class), SHOWMODE(Boolean.class), SHOWRANK(Boolean.class),
+	SHOWITEMSTATS(Boolean.class),CHILDREN(List.class);
 	
 	private Class<?> type;
 	

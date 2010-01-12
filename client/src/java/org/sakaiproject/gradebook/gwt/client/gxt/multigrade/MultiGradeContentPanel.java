@@ -23,12 +23,15 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.multigrade;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
+import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.SecureToken;
+import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.GridPanel;
@@ -50,18 +53,26 @@ import org.sakaiproject.gradebook.gwt.client.model.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
+import org.sakaiproject.gradebook.gwt.client.model.SectionKey;
 import org.sakaiproject.gradebook.gwt.client.model.SectionModel;
-import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.Style.SortDir;
+import com.extjs.gxt.ui.client.data.BaseListLoader;
+import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.BasePagingLoader;
 import com.extjs.gxt.ui.client.data.BaseTreeModel;
+import com.extjs.gxt.ui.client.data.DataReader;
+import com.extjs.gxt.ui.client.data.HttpProxy;
+import com.extjs.gxt.ui.client.data.JsonLoadResultReader;
+import com.extjs.gxt.ui.client.data.JsonPagingLoadResultReader;
+import com.extjs.gxt.ui.client.data.ListLoadResult;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.ModelReader;
+import com.extjs.gxt.ui.client.data.ModelType;
 import com.extjs.gxt.ui.client.data.PagingLoadConfig;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 import com.extjs.gxt.ui.client.data.RpcProxy;
@@ -101,6 +112,7 @@ import com.extjs.gxt.ui.client.widget.tips.ToolTip;
 import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.SeparatorToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Timer;
@@ -132,7 +144,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 	private Listener<UserChangeEvent> userChangeEventListener;
 
 	private MultigradeSelectionModel<ModelData> cellSelectionModel;
-	private BasePagingLoader<PagingLoadResult<SectionModel>> sectionsLoader;
+	private BaseListLoader<ListLoadResult<ModelData>> sectionsLoader;
 
 
 	public MultiGradeContentPanel(ContentPanel childPanel) {
@@ -637,6 +649,35 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 		unweightedNumericCellRenderer = new UnweightedNumericCellRenderer();
 		extraCreditNumericCellRenderer = new ExtraCreditNumericCellRenderer();
 
+		RestBuilder builder = RestBuilder.getInstance(Method.GET, GWT.getModuleBaseURL(),
+				AppConstants.REST_FRAGMENT, AppConstants.SECTION_FRAGMENT);
+		
+		HttpProxy<String> proxy = new HttpProxy<String>(builder) {
+			
+			public void load(final DataReader<String> reader, final Object loadConfig, final AsyncCallback<String> callback) {
+				GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
+				initUrl = RestBuilder.buildInitUrl(GWT.getModuleBaseURL(),
+						AppConstants.REST_FRAGMENT, AppConstants.SECTION_FRAGMENT,
+						gbModel.getGradebookUid(), String.valueOf(gbModel.getGradebookId()));
+				super.load(reader, loadConfig, callback);
+			}
+			
+		};  
+
+		ModelType type = new ModelType();
+		type.setRoot("sections");
+		type.setTotalName("total");
+		
+		for (SectionKey key : EnumSet.allOf(SectionKey.class)) {
+			type.addField(key.name(), key.name()); 
+		}
+		
+		// need a loader, proxy, and reader  
+		JsonLoadResultReader<ListLoadResult<ModelData>> reader = new JsonLoadResultReader<ListLoadResult<ModelData>>(type);  
+
+		sectionsLoader = new BaseListLoader<ListLoadResult<ModelData>>(proxy, reader);
+		
+		/*
 		RpcProxy<PagingLoadResult<SectionModel>> sectionsProxy = new RpcProxy<PagingLoadResult<SectionModel>>() {
 			@Override
 			protected void load(Object loadConfig, AsyncCallback<PagingLoadResult<SectionModel>> callback) {
@@ -648,30 +689,32 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 
 		sectionsLoader = 
 			new BasePagingLoader<PagingLoadResult<SectionModel>>(sectionsProxy, new ModelReader());
-
+		*/
+		
 		sectionsLoader.setRemoteSort(true);
 
-		SectionModel allSections = new SectionModel();
+		/*SectionModel allSections = new SectionModel();
 		allSections.setSectionId("all");
-		allSections.setSectionName("All Sections");
+		allSections.setSectionName("All Sections");*/
 
-		ListStore<SectionModel> sectionStore = new ListStore<SectionModel>(sectionsLoader);
-		sectionStore.setModelComparer(new EntityModelComparer<SectionModel>());
+		ListStore<ModelData> sectionStore = new ListStore<ModelData>(sectionsLoader);
+		sectionStore.setModelComparer(new EntityModelComparer<ModelData>(SectionKey.ID.name()));
 
-		ComboBox<SectionModel> sectionListBox = new ComboBox<SectionModel>(); 
-		sectionListBox.setAllQuery(null);
+		ComboBox<ModelData> sectionListBox = new ComboBox<ModelData>(); 
+		//sectionListBox.setAllQuery(null);
 		sectionListBox.setEditable(false);
 		sectionListBox.setFieldLabel("Sections");
-		sectionListBox.setDisplayField(SectionModel.Key.SECTION_NAME.name());  
+		sectionListBox.setDisplayField(SectionKey.SECTION_NAME.name());  
 		sectionListBox.setStore(sectionStore);
 		sectionListBox.setForceSelection(true);
 		sectionListBox.setEmptyText(i18n.sectionEmptyText());
+		sectionListBox.setTriggerAction(ComboBox.TriggerAction.ALL);
 
-		sectionListBox.addSelectionChangedListener(new SelectionChangedListener<SectionModel>() {
+		sectionListBox.addSelectionChangedListener(new SelectionChangedListener<ModelData>() {
 
 			@Override
-			public void selectionChanged(SelectionChangedEvent<SectionModel> se) {
-				SectionModel model = se.getSelectedItem();
+			public void selectionChanged(SelectionChangedEvent<ModelData> se) {
+				ModelData model = se.getSelectedItem();
 
 				String searchString = null;
 				String sectionUuid = null;
@@ -679,7 +722,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 				if (loadConfig != null)
 					searchString = ((MultiGradeLoadConfig) loadConfig).getSearchString();
 				if (model != null) 
-					sectionUuid = model.getSectionId();
+					sectionUuid = model.get(SectionKey.ID.name());
 
 				int pageSize = getPageSize();
 				loadConfig = new MultiGradeLoadConfig();

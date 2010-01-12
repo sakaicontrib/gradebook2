@@ -129,7 +129,7 @@ public class StatisticsPanel extends ContentPanel {
 
 
 		final ListStore<StatisticsModel> store = new ListStore<StatisticsModel>(loader);
-		store.setModelComparer(new EntityModelComparer<StatisticsModel>());
+		store.setModelComparer(new EntityModelComparer<StatisticsModel>(StatisticsModel.Key.ID.name()));
 
 		//loader.load();  
 

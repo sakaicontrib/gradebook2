@@ -190,6 +190,12 @@ public class JsonTranslater {
 						model.set(name, GradeType.valueOf(s));
 					} else if (type.equals(CategoryType.class)) {
 						model.set(name, CategoryType.valueOf(s));
+					} else if (type.equals(ItemModel.Type.class)) {
+						model.set(name, ItemModel.Type.valueOf(s));
+					} else if (type.equals(String.class)) {
+						model.set(name, s);
+					} else {
+						model.set(name, s);
 					}
 				} else {
 					model.set(name, s);

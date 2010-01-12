@@ -834,7 +834,7 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 	
 	private boolean hasPermission(String gradebookUid, String permission) {
 		if (securityService == null)
-			return true;
+			return "gradebook.viewOwnGrades".equals(permission);
 		
 		return securityService.unlock(permission, siteService.siteReference(gradebookUid));
 	}
