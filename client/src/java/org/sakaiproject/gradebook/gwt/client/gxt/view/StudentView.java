@@ -50,6 +50,7 @@ public class StudentView extends AppView {
 		viewport.setLayout(new FitLayout());
 		viewport.add(studentViewContainer);
 		viewportLayout.setActiveItem(studentViewContainer);
+		viewport.layout();
 	}
 	
 }

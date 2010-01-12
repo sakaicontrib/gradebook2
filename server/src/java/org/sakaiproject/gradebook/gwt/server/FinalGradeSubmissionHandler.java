@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ServiceImpl;
@@ -44,6 +45,7 @@ import org.sakaiproject.gradebook.gwt.sakai.SampleInstitutionalAdvisor;
 import org.sakaiproject.gradebook.gwt.sakai.InstitutionalAdvisor.Column;
 import org.sakaiproject.gradebook.gwt.sakai.mock.IocMock;
 
+import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 
 /*
@@ -75,11 +77,11 @@ public class FinalGradeSubmissionHandler extends HttpServlet {
 		int n = queryString.indexOf("gradebookUid=") + 13;
 		String gradebookUid = queryString.substring(n);
 
-		List<StudentModel> rows = null;
+		List<BaseModel> rows = null;
 
 		try {
 
-			PagingLoadResult<StudentModel> result = service.getStudentRows(gradebookUid, null, null, Boolean.TRUE);
+			PagingLoadResult<BaseModel> result = service.getStudentRows(gradebookUid, null, null, Boolean.TRUE);
 
 			if (result != null)
 				rows = result.getData();
@@ -96,13 +98,13 @@ public class FinalGradeSubmissionHandler extends HttpServlet {
 		List<Map<Column,String>> studentDataList = new ArrayList<Map<Column,String>>();
 
 		if (rows != null) {
-			for (StudentModel studentModel : rows) {
+			for (BaseModel studentModel : rows) {
 	
 				Map<Column, String> studentData = new HashMap<Column, String>();
-				studentData.put(Column.EXPORT_USER_ID, studentModel.getExportUserId());
-				studentData.put(Column.STUDENT_NAME, studentModel.getStudentName());
-				studentData.put(Column.EXPORT_CM_ID, studentModel.getExportCmId());
-				studentData.put(Column.STUDENT_GRADE, studentModel.getStudentGrade());
+				studentData.put(Column.EXPORT_USER_ID, (String)studentModel.get(LearnerKey.EXPORT_USER_ID.name()));
+				studentData.put(Column.STUDENT_NAME, (String)studentModel.get(LearnerKey.DISPLAY_NAME.name()));
+				studentData.put(Column.EXPORT_CM_ID, (String)studentModel.get(LearnerKey.EXPORT_CM_ID.name()));
+				studentData.put(Column.STUDENT_GRADE, (String)studentModel.get(LearnerKey.COURSE_GRADE.name())); // was getStudentGrade()
 				studentDataList.add(studentData);
 			}
 		}

@@ -291,6 +291,15 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 						}
 						gbMap.put(en.name(), fixedColumnMapList);
 					}
+				} else if (en.equals(GradebookKey.USERASSTUDENT)) {
+					StudentModel studentModel = gbModel.get(en.name());
+					Map<String, Object> studentMap = new HashMap<String, Object>();
+					
+					for (Enum<LearnerKey> it : EnumSet.allOf(LearnerKey.class)) {
+						studentMap.put(it.name(), studentModel.get(it.name()));
+					}
+					
+					gbMap.put(en.name(), studentMap);
 				} else {
 					gbMap.put(en.name(), gbModel.get(en.name()));
 				}

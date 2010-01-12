@@ -69,6 +69,7 @@ import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service;
@@ -80,6 +81,7 @@ import org.sakaiproject.tool.gradebook.Assignment;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 
+import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 
@@ -328,20 +330,20 @@ public class ImportExportUtility {
 
 		out.addRow(headerColumns.toArray(new String[headerColumns.size()]));
 
-		PagingLoadResult<StudentModel> result = service.getStudentRows(gradebookUid, gradebookId, null, Boolean.TRUE);
+		PagingLoadResult<BaseModel> result = service.getStudentRows(gradebookUid, gradebookId, null, Boolean.TRUE);
 
-		List<StudentModel> rows = result.getData();
+		List<BaseModel> rows = result.getData();
 
 		boolean isPercentages = gradebook.getGradebookItemModel().getGradeType() == GradeType.PERCENTAGES;
 
 		if (headerIds != null) {
 
 			if (rows != null) {
-				for (StudentModel row : rows) {
+				for (BaseModel row : rows) {
 					List<String> dataColumns = new LinkedList<String>();
 
-					dataColumns.add(row.getExportUserId());
-					dataColumns.add(row.getLastNameFirst());
+					dataColumns.add((String)row.get(LearnerKey.EXPORT_USER_ID.name()));
+					dataColumns.add((String)row.get(LearnerKey.LAST_NAME_FIRST.name()));
 
 					for (int column = 0; column < headerIds.size(); column++) {
 						if (headerIds.get(column) != null) {
@@ -369,7 +371,7 @@ public class ImportExportUtility {
 						}
 					}
 
-					dataColumns.add(row.getStudentGrade());
+					dataColumns.add((String)row.get(LearnerKey.COURSE_GRADE.name()));
 
 					out.addRow(dataColumns.toArray(new String[dataColumns.size()]));
 				}

@@ -23,8 +23,8 @@
 package org.sakaiproject.gradebook.gwt.client.action;
 
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
-import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
+import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.ModelData;
 
 
@@ -115,11 +115,11 @@ public abstract class UserEntityAction<M extends ModelData> extends Action {
 		set(Key.START_VALUE.name(), startValue);
 	}
 
-	public StudentModel getStudentModel() {
+	public BaseModel getStudentModel() {
 		return get(Key.STUDENT_MODEL.name());
 	}
 
-	public void setStudentModel(StudentModel studentModel) {
+	public void setStudentModel(BaseModel studentModel) {
 		set(Key.STUDENT_MODEL.name(), studentModel);
 	}
 

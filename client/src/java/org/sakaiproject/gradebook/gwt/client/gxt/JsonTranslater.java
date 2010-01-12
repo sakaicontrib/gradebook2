@@ -14,7 +14,9 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookKey;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 
+import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.BaseModelData;
 import com.extjs.gxt.ui.client.data.DataField;
 import com.extjs.gxt.ui.client.data.ModelData;
@@ -171,8 +173,16 @@ public class JsonTranslater {
 					}
 					
 					model.set(name, configModel);
-				} 
-				
+				} else if (name.equals(GradebookKey.USERASSTUDENT.name())) {
+					
+					JsonTranslater learnerTranslater = new JsonTranslater(EnumSet.allOf(LearnerKey.class)) {
+						protected ModelData newModelInstance() {
+							return new BaseModel();
+						}
+					};
+					
+					model.set(name, learnerTranslater.translate(value.toString()));
+				}
 				
 			} else if (value.isString() != null) {
 				String s = value.isString().stringValue();

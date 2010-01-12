@@ -24,7 +24,7 @@ package org.sakaiproject.gradebook.gwt.client.model;
 
 import java.util.List;
 
-
+import com.extjs.gxt.ui.client.data.BaseModel;
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 public class GradebookModel extends EntityModel implements IsSerializable {
@@ -142,11 +142,11 @@ public class GradebookModel extends EntityModel implements IsSerializable {
 	}*/
 
 
-	public StudentModel getUserAsStudent() {
+	public BaseModel getUserAsStudent() {
 		return get(GradebookKey.USERASSTUDENT.name());
 	}
 
-	public void setUserAsStudent(StudentModel userAsStudent) {
+	public void setUserAsStudent(BaseModel userAsStudent) {
 		set(GradebookKey.USERASSTUDENT.name(), userAsStudent);
 	}
 
