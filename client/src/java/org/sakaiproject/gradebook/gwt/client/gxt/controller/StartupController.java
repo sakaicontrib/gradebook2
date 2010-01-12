@@ -29,6 +29,8 @@ import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.RootPanel;
 
 public class StartupController extends Controller {
 
@@ -84,6 +86,8 @@ public class StartupController extends Controller {
 					getApplicationModel(0, authModel);
 				}
 			});
+		} else {
+			RootPanel.get().add(new HTML("This user is not authorized to view grade information."));
 		}
 	}
 	
