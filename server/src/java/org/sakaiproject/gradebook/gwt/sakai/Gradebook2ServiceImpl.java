@@ -3014,8 +3014,11 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		boolean isUserAbleToViewOwnGrades = authz.isUserAbleToViewOwnGrades(gradebookUid);
 
 		boolean isSingleUserView = isUserAbleToViewOwnGrades && !isUserAbleToGrade;
+		boolean isAnonymousView = !isUserAbleToViewOwnGrades && !isUserAbleToGrade;
 
-
+		if (isAnonymousView)
+			return model;
+		
 		//model.setCategoryType(categoryType);
 
 		model.setGradebookUid(gradebookUid);

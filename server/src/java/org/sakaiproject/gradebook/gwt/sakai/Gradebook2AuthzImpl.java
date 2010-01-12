@@ -833,8 +833,17 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 	}
 	
 	private boolean hasPermission(String gradebookUid, String permission) {
-		if (securityService == null)
-			return "gradebook.viewOwnGrades".equals(permission);
+		if (securityService == null) {
+			String roleProperty = System.getProperty("gb2.role");
+			
+			if (roleProperty == null || roleProperty.equals("anonymous")) 
+				return false;
+			
+			if (roleProperty.equals("student")) 
+				return "gradebook.viewOwnGrades".equals(permission);
+			
+			return true;
+		}
 		
 		return securityService.unlock(permission, siteService.siteReference(gradebookUid));
 	}
