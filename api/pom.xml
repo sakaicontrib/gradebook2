@@ -24,7 +24,7 @@
 		<dependency>
 			<groupId>org.sakaiproject</groupId>
 			<artifactId>gradebook2-model</artifactId>
-			<version>${sakai.version}</version>
+            <version>1.2.0-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<!-- Gradebook1 Dependencies -->

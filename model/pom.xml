@@ -8,7 +8,7 @@
    		<relativePath>../pom.xml</relativePath>
   </parent>
   <name>Sakai Gradebook2 Shared Data Model</name>
-  <groupId>org.sakaiproject.gradebook2</groupId>
+  <groupId>org.sakaiproject</groupId>
   <artifactId>gradebook2-model</artifactId>
   
   <packaging>jar</packaging>
