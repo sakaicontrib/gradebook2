@@ -13,6 +13,8 @@ public interface Gradebook2ComponentService {
 	
 	public Map<String, Object> assignScore(String gradebookUid, String studentUid, String assignmentId, String value, String previousValue) throws InvalidInputException;
 	
+	public Map<String, Object> createItem(String gradebookUid, Long gradebookId, Map<String, Object> attributes) throws InvalidInputException;
+	
 	public Map<String, Object> getApplicationMap(String... gradebookUids);
 	
 	public List<Map<String,Object>> getVisibleSections(String gradebookUid, boolean enableAllSectionsEntry, String allSectionsEntryTitle);

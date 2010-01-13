@@ -24,7 +24,6 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.SectionKey;
-import org.sakaiproject.gradebook.gwt.client.model.SectionModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
 import org.sakaiproject.section.api.coursemanagement.CourseSection;
@@ -46,11 +45,45 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 
 	private static final Log log = LogFactory.getLog(Gradebook2ComponentServiceImpl.class);
 	
-	public Map<String, Object> addItem(String gradebookUid, Map<String, Object> attributes) {
+	
+	public Map<String, Object> createItem(String gradebookUid, Long gradebookId, Map<String, Object> attributes) throws InvalidInputException {
 		
+		ItemModel item = new ItemModel();
 		
-		return attributes;
+		for (ItemKey key : EnumSet.allOf(ItemKey.class)) {
+			if (key.getType() != null) {
+				try {
+					Object rawValue = attributes.get(key.name());
+					Object value = rawValue;
+					
+					if (rawValue != null) {
+						if (key.getType().equals(Long.class)) 
+							value = Long.valueOf(rawValue.toString());
+						else if (key.getType().equals(Double.class))
+							value = Double.valueOf(rawValue.toString());
+					}
+					
+					item.set(key.name(), value);
+				} catch (ClassCastException cce) {
+					log.info("Unable to cast value for " + key.name() + " as " + key.getType().getCanonicalName());
+				}
+			} else 
+				item.set(key.name(), attributes.get(key.name()));
+		}
+		
+		ItemModel itemModel = createItem(gradebookUid, gradebookId, item, true);
+		
+		Map<String, Object> itemMap = new HashMap<String, Object>();
+		
+		for (Enum<ItemKey> it : EnumSet.allOf(ItemKey.class)) {
+			itemMap.put(it.name(), itemModel.get(it.name()));
+		}
+		
+		addChildren(itemModel, itemMap);
+		
+		return itemMap;
 	}
+	
 	
 	public Map<String, Object> assignComment(String itemId, String studentUid, String text) {
 
@@ -293,13 +326,15 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 					}
 				} else if (en.equals(GradebookKey.USERASSTUDENT)) {
 					StudentModel studentModel = gbModel.get(en.name());
-					Map<String, Object> studentMap = new HashMap<String, Object>();
-					
-					for (Enum<LearnerKey> it : EnumSet.allOf(LearnerKey.class)) {
-						studentMap.put(it.name(), studentModel.get(it.name()));
+					if (studentModel != null) {
+						Map<String, Object> studentMap = new HashMap<String, Object>();
+						
+						for (Enum<LearnerKey> it : EnumSet.allOf(LearnerKey.class)) {
+							studentMap.put(it.name(), studentModel.get(it.name()));
+						}
+						
+						gbMap.put(en.name(), studentMap);
 					}
-					
-					gbMap.put(en.name(), studentMap);
 				} else {
 					gbMap.put(en.name(), gbModel.get(en.name()));
 				}
@@ -369,10 +404,12 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 					Object rawValue = attributes.get(key.name());
 					Object value = rawValue;
 					
-					if (key.getType().equals(Long.class)) 
-						value = Long.valueOf(rawValue.toString());
-					else if (key.getType().equals(Double.class))
-						value = Double.valueOf(rawValue.toString());
+					if (rawValue != null) {
+						if (key.getType().equals(Long.class)) 
+							value = Long.valueOf(rawValue.toString());
+						else if (key.getType().equals(Double.class))
+							value = Double.valueOf(rawValue.toString());
+					}
 					
 					item.set(key.name(), value);
 				} catch (ClassCastException cce) {

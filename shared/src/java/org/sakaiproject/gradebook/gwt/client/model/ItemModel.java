@@ -474,27 +474,30 @@ public class ItemModel extends BaseTreeModel {
 	 }
 
 	public boolean isActive() {
-		return isActive;
+		Boolean active = get(ItemKey.IS_ACTIVE.name());
+		return active == null ? false : active.booleanValue();
 	}
 
 	public void setActive(boolean isActive) {
-		this.isActive = isActive;
+		set(ItemKey.IS_ACTIVE.name(), Boolean.valueOf(isActive));
 	}
 
 	public boolean isEditable() {
-		return isEditable;
+		Boolean active = get(ItemKey.IS_EDITABLE.name());
+		return active == null ? true : active.booleanValue();
 	}
 
 	public void setEditable(boolean isEditable) {
-		this.isEditable = isEditable;
+		set(ItemKey.IS_EDITABLE.name(), Boolean.valueOf(isEditable));
 	}
 
 	public boolean isChecked() {
-		return isChecked;
+		Boolean active = get(ItemKey.IS_CHECKED.name());
+		return active == null ? false : active.booleanValue();
 	}
 
 	public void setChecked(boolean isChecked) {
-		this.isChecked = isChecked;
+		set(ItemKey.IS_CHECKED.name(), Boolean.valueOf(isEditable));
 	}
 	
 }

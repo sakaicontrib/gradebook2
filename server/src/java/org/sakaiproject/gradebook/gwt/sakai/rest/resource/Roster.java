@@ -27,7 +27,6 @@ public class Roster {
 	
 	private Gradebook2Service service;
 	
-    // The Java method will process HTTP GET requests
     @GET @Path("{uid}/{id}")
     @Produces("application/json")
     public String get(@PathParam("uid") String gradebookUid, @PathParam("id") Long gradebookId,
