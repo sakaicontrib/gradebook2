@@ -4,9 +4,8 @@ You will need to take the following actions:
 
 (1) Run the sql script under client/src/sql/oracle/sakai.sql against your sakai database (or set auto.ddl to true).
 (2) Check out this project as "gradebook2" and add it as a module under your sakai pom.xml for the active profile.
-(3) Apply patch to change version of root pom.xml to 2.7-SNAPSHOT
-(4) Optional: Implement and deploy an InstitutionalAdvisor bean via Spring under Sakai components
-(5) Add the following properties to your sakai.properties:
+(3) Optional: Implement and deploy an InstitutionalAdvisor bean via Spring under Sakai components
+(4) Add the following properties to your sakai.properties:
 	gb2.gradable.role.names=Student,access
 	gb2.enabled.grade.types=points,percentages,letters
 
@@ -14,6 +13,5 @@ That is, from the sakai base directory:
 > svn co https://source.sakaiproject.org/contrib/gradebook2/trunk gradebook2
 > patch -p0 < gradebook2/sakai/2-7-x/sakai.patch
 > cd gradebook2
-> patch -p0 < sakai/2-7-x/gradebook2.patch
 > mvn install sakai:deploy 
 

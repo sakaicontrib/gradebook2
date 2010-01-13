@@ -13,8 +13,6 @@ do
 			echo "Found Sakai base directory at $cwd . . . patching. "
 			cd $cwd
 			patch -p0 < gradebook2/sakai/2-7-x/sakai.patch
-			cd gb2
-			patch -p0 < ../gradebook2/sakai/2-7-x/gradebook2.patch
 
 			exit 0
 		else
