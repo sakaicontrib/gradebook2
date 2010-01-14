@@ -29,9 +29,14 @@
 	
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.JAXBContextResolver"/>
 	
-	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Application">
-		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" 
+		  abstract="true"
+		  class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource">
+		 <property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/> 
 	</bean>
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Application" 
+		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
 	
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Configuration">
 		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>

@@ -17,6 +17,8 @@ public interface Gradebook2ComponentService {
 	
 	public Map<String, Object> getApplicationMap(String... gradebookUids);
 	
+	public List<Map<String,Object>> getGradeEvents(Long assignmentId, String studentUid);
+	
 	public List<Map<String,Object>> getVisibleSections(String gradebookUid, boolean enableAllSectionsEntry, String allSectionsEntryTitle);
 	
 	public Boolean updateConfiguration(Long gradebookId, String field, String value);

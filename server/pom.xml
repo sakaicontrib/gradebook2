@@ -115,22 +115,22 @@
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-server</artifactId>
-			<version>1.1.4.1</version>
+			<version>${gb2.jersey.version}</version>
 		</dependency>
 		<dependency>
 		    <groupId>com.sun.jersey.contribs</groupId>
 		    <artifactId>jersey-spring</artifactId>
-		    <version>1.1.4.1</version>
+		    <version>${gb2.jersey.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-json</artifactId>
-			<version>1.1.4.1</version>
+			<version>${gb2.jersey.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-jaxrs</artifactId>
-			<version>1.1.1</version>
+			<version>${gb2.jackson.version}</version>
 		</dependency>
 		<!-- Other External Dependencies -->
 		<!-- dependency>

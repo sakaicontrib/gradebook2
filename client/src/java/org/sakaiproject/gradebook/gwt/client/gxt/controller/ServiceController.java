@@ -163,7 +163,7 @@ public class ServiceController extends Controller {
 
 						for (int i=0;i<names.size();i++) {
 							String name = names.get(i);
-							String value = model.get(name);
+							Object value = model.get(name);
 							configModel.set(name, value);
 						}
 					}

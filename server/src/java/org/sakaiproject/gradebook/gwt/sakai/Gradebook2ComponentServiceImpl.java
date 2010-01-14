@@ -1,7 +1,10 @@
 package org.sakaiproject.gradebook.gwt.sakai;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -15,8 +18,10 @@ import org.sakaiproject.gradebook.gwt.client.action.Action.ActionType;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationKey;
+import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnKey;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
+import org.sakaiproject.gradebook.gwt.client.model.GradeEventKey;
 import org.sakaiproject.gradebook.gwt.client.model.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookKey;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
@@ -35,8 +40,10 @@ import org.sakaiproject.tool.gradebook.Category;
 import org.sakaiproject.tool.gradebook.Comment;
 import org.sakaiproject.tool.gradebook.CourseGrade;
 import org.sakaiproject.tool.gradebook.CourseGradeRecord;
+import org.sakaiproject.tool.gradebook.GradableObject;
 import org.sakaiproject.tool.gradebook.GradeMapping;
 import org.sakaiproject.tool.gradebook.Gradebook;
+import org.sakaiproject.tool.gradebook.GradingEvent;
 import org.sakaiproject.user.api.User;
 import org.sakaiproject.user.api.UserNotDefinedException;
 
@@ -335,6 +342,18 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 						
 						gbMap.put(en.name(), studentMap);
 					}
+				} else if (en.equals(GradebookKey.CONFIGURATIONMODEL)) {
+					ConfigurationModel configModel = gbModel.get(en.name());
+					if (configModel != null) {
+						Map<String, Object> configMap = new HashMap<String, Object>();
+										
+						for (String key : configModel.getPropertyNames()) {
+							configMap.put(key, configModel.get(key));
+						}
+						
+						gbMap.put(en.name(), configMap);
+					}
+					
 				} else {
 					gbMap.put(en.name(), gbModel.get(en.name()));
 				}
@@ -355,6 +374,37 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		map.put(ApplicationKey.ENABLEDGRADETYPES.name(), gradeTypes);
 		
 		return map;
+	}
+	
+	public List<Map<String,Object>> getGradeEvents(Long assignmentId, String studentUid) {
+		List<Map<String,Object>> gradeEvents = new ArrayList<Map<String,Object>>();
+		Assignment assignment = gbService.getAssignment(assignmentId);
+		Collection<GradableObject> gradableObjects = new LinkedList<GradableObject>();
+		gradableObjects.add(assignment);
+
+		Map<GradableObject, List<GradingEvent>> map = gbService.getGradingEventsForStudent(studentUid, gradableObjects);
+
+		List<GradingEvent> events = map.get(assignment);
+
+		if (events != null) {
+			Collections.sort(events, new Comparator<GradingEvent>() {
+
+				public int compare(GradingEvent o1, GradingEvent o2) {
+
+					if (o2.getDateGraded() == null || o1.getDateGraded() == null)
+						return 0;
+
+					return o2.getDateGraded().compareTo(o1.getDateGraded());
+				}
+
+			});
+
+			for (GradingEvent event : events) {
+				gradeEvents.add(buildGradeEvent(event));
+			}
+		}
+
+		return gradeEvents;
 	}
 	
 	public List<Map<String,Object>> getVisibleSections(String gradebookUid, boolean enableAllSectionsEntry, String allSectionsEntryTitle) {
@@ -450,7 +500,30 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 			}
 			itemMap.put(ItemKey.CHILDREN.name(), childrenList);
 		}
-		
+	}
+	
+	private Map<String, Object> buildGradeEvent(GradingEvent event) {
+		SimpleDateFormat dateFormat = new SimpleDateFormat();
+
+		String graderName = event.getGraderId();
+
+		try {
+			if (userService != null) {
+				User grader = userService.getUser(event.getGraderId());
+				if (grader != null)
+					graderName = grader.getDisplayName();
+			}
+		} catch (UserNotDefinedException e) {
+			log.info("Failed to find a user for the id " + event.getGraderId());
+		}
+
+		Map<String, Object> map = new HashMap<String, Object>();		
+		map.put(GradeEventKey.ID.name(), String.valueOf(event.getId()));
+		map.put(GradeEventKey.GRADER_NAME.name(), graderName);
+		map.put(GradeEventKey.GRADE.name(), event.getGrade());
+		map.put(GradeEventKey.DATE_GRADED.name(), dateFormat.format(event.getDateGraded()));
+	
+		return map;
 	}
 	
 	private Map<String, Object> getStudent(Gradebook gradebook, Site site, User user) {

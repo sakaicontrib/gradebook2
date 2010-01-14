@@ -143,6 +143,6 @@ public interface AppConstants {
 	public static final String ITEM_FRAGMENT		= "item";
 	public static final String ROSTER_FRAGMENT 		= "roster";
 	public static final String SECTION_FRAGMENT		= "section";
-	
+	public static final String GRADE_EVENT_FRAGMENT	= "gradeevent";
 	
 }

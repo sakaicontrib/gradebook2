@@ -497,7 +497,7 @@ public class ItemModel extends BaseTreeModel {
 	}
 
 	public void setChecked(boolean isChecked) {
-		set(ItemKey.IS_CHECKED.name(), Boolean.valueOf(isEditable));
+		set(ItemKey.IS_CHECKED.name(), Boolean.valueOf(isChecked));
 	}
 	
 }

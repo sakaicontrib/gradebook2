@@ -28,8 +28,6 @@ public class GradeEventModel extends EntityModel {
 
 	private static final long serialVersionUID = 1L;
 
-	public enum Key { ID, GRADER_NAME, GRADE, DATE_GRADED };
-	
 	public GradeEventModel() {
 		super();
 	}
@@ -39,35 +37,35 @@ public class GradeEventModel extends EntityModel {
 	}
 	
 	public String getIdentifier() {
-		return get(Key.ID.name());
+		return get(GradeEventKey.ID.name());
 	}
 	
 	public void setIdentifier(String id) {
-		set(Key.ID.name(), id);
+		set(GradeEventKey.ID.name(), id);
 	}
 	
 	public String getGraderName() {
-		return get(Key.GRADER_NAME.name());
+		return get(GradeEventKey.GRADER_NAME.name());
 	}
 	
 	public void setGraderName(String graderName) {
-		set(Key.GRADER_NAME.name(), graderName);
+		set(GradeEventKey.GRADER_NAME.name(), graderName);
 	}
 	
 	public String getGrade() {
-		return get(Key.GRADE.name());
+		return get(GradeEventKey.GRADE.name());
 	}
 	
 	public void setGrade(String grade) {
-		set(Key.GRADE.name(), grade);
+		set(GradeEventKey.GRADE.name(), grade);
 	}
 	
 	public String getDateGraded() {
-		return get(Key.DATE_GRADED.name());
+		return get(GradeEventKey.DATE_GRADED.name());
 	}
 	
 	public void setDateGraded(String dateGraded) {
-		set(Key.DATE_GRADED.name(), dateGraded);
+		set(GradeEventKey.DATE_GRADED.name(), dateGraded);
 	}
 
 	@Override

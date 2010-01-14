@@ -31,16 +31,16 @@ import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
+import org.sakaiproject.gradebook.gwt.client.model.GradeEventKey;
 import org.sakaiproject.gradebook.gwt.client.model.GradeEventModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordModel;
-import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
+import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.data.BaseListLoader;
-import com.extjs.gxt.ui.client.data.BaseModelData;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
 import com.extjs.gxt.ui.client.data.ListLoader;
 import com.extjs.gxt.ui.client.data.ModelData;
@@ -163,7 +163,7 @@ public class MultiGradeContextMenu extends Menu {
 			@Override
 			protected void load(Object listLoadConfig, AsyncCallback<ListLoadResult<GradeScaleRecordModel>> callback) {
 				Gradebook2RPCServiceAsync service = Registry.get("service");
-				service.getPage((String)owner.getSelectedModel().get(ItemKey.ID.name()), owner.getSelectedAssignment(), EntityType.GRADE_EVENT, null, SecureToken.get(), callback);
+				service.getPage((String)owner.getSelectedModel().get(LearnerKey.UID.name()), owner.getSelectedAssignment(), EntityType.GRADE_EVENT, null, SecureToken.get(), callback);
 			}
 			
 		};
@@ -175,7 +175,7 @@ public class MultiGradeContextMenu extends Menu {
 		
 		
 		ColumnConfig column = new ColumnConfig();  
-		column.setId(GradeEventModel.Key.DATE_GRADED.name());  
+		column.setId(GradeEventKey.DATE_GRADED.name());  
 		column.setHeader("Date");
 		column.setAlignment(HorizontalAlignment.CENTER);
 		column.setWidth(120);
@@ -185,7 +185,7 @@ public class MultiGradeContextMenu extends Menu {
 		configs.add(column); 
 		
 		column = new ColumnConfig();  
-		column.setId(GradeEventModel.Key.GRADE.name());  
+		column.setId(GradeEventKey.GRADE.name());  
 		column.setHeader("Grade");
 		column.setAlignment(HorizontalAlignment.CENTER);
 		column.setWidth(70);
@@ -195,7 +195,7 @@ public class MultiGradeContextMenu extends Menu {
 		configs.add(column);
 		
 		column = new ColumnConfig();  
-		column.setId(GradeEventModel.Key.GRADER_NAME.name());
+		column.setId(GradeEventKey.GRADER_NAME.name());
 		column.setHeader("Grader");
 		column.setAlignment(HorizontalAlignment.CENTER);
 		column.setWidth(120);
@@ -208,7 +208,7 @@ public class MultiGradeContextMenu extends Menu {
 		
 		
 		ListStore<GradeEventModel> store = new ListStore<GradeEventModel>(loader);
-		store.setModelComparer(new EntityModelComparer<GradeEventModel>(GradeEventModel.Key.ID.name()));
+		store.setModelComparer(new EntityModelComparer<GradeEventModel>(GradeEventKey.ID.name()));
 		viewGradeHistoryGrid = new Grid<GradeEventModel>(store, cm);
 		viewGradeHistoryGrid.setBorders(true);
 		
