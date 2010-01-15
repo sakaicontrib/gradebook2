@@ -224,7 +224,7 @@ public class GradeScalePanel extends GradebookPanel {
 		loader = new BaseListLoader(proxy);  
 
 		final ListStore<GradeScaleRecordModel> store = new ListStore<GradeScaleRecordModel>(loader);
-		store.setModelComparer(new EntityModelComparer<GradeScaleRecordModel>(GradeScaleRecordModel.Key.ID.name()));
+		store.setModelComparer(new EntityModelComparer<GradeScaleRecordModel>(GradeScaleRecordModel.Key.LETTER_GRADE.name()));
 
 		loader.addListener(Loader.Load, new Listener<LoadEvent>() {
 
@@ -262,8 +262,7 @@ public class GradeScalePanel extends GradebookPanel {
 				Object originalValue = ge.getStartValue();
 				final GridEvent gridEvent = ge;
 				
-
-				grid.getView().getCell(gridEvent.getRowIndex(), gridEvent.getColIndex()).setInnerText("Saving edit...");
+				//grid.getView().getCell(gridEvent.getRowIndex(), gridEvent.getColIndex()).setInnerText("Saving edit...");
 
 				GradeScaleRecordModel model = (GradeScaleRecordModel)record.getModel();
 				GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
@@ -281,6 +280,8 @@ public class GradeScalePanel extends GradebookPanel {
 						}
 
 						public void onSuccess(GradeScaleRecordMapModel result) {
+							
+							record.commit(false);
 							
 							for(GradeScaleRecordModel baseModel : result.getRecords()) {
 								store.update(baseModel);

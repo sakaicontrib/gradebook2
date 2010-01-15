@@ -41,8 +41,8 @@ public class EntityModelComparer<M extends ModelData> implements ModelComparer<M
 		else if (m2 == null)
 			return false;
 			
-		String id1 = m1.get(key);
-		String id2 = m2.get(key);
+		Object id1 = m1.get(key);
+		Object id2 = m2.get(key);
 		
 		if (id1 != null && id2 != null)
 			return id1.equals(id2);

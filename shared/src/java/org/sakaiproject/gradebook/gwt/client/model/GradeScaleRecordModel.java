@@ -42,7 +42,7 @@ public class GradeScaleRecordModel extends EntityModel {
 	
 	@Override
 	public String getIdentifier() {
-		return get(Key.LETTER_GRADE.name());
+		return get(Key.ID.name());
 	}
 	
 	public void setIdentifier(String letterGrade) {
