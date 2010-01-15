@@ -11,6 +11,8 @@
 	
 	<import resource="db.xml" />
 		
+	<import resource="rest.xml" />
+		
 	<!-- Hibernate Mappings -->
 	<!-- bean id="org.sakaiproject.gradebook.gwt.sakai.model.hibernateMappings"
 		class="org.sakaiproject.springframework.orm.hibernate.impl.AdditionalHibernateMappingsImpl">
@@ -26,33 +28,6 @@
 			</list>
 		</property>
 	</bean-->
-	
-	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.JAXBContextResolver"/>
-	
-	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Application">
-		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
-	</bean>
-	
-	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Configuration">
-		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
-	</bean>
-	
-	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Item">
-		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
-	</bean>
-	
-	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.LearnerRecord">
-		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
-	</bean>
-	
-	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Roster">
-		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service"/>
-	</bean>
-	
-	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Section">
-		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
-	</bean>
-	
 	
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.BusinessLogic" class="org.sakaiproject.gradebook.gwt.sakai.BusinessLogicImpl">
 		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/> 

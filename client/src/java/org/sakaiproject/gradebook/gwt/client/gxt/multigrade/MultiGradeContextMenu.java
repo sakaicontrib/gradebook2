@@ -23,10 +23,14 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.multigrade;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
+import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.SecureToken;
+import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
@@ -34,16 +38,22 @@ import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradeEventKey;
 import org.sakaiproject.gradebook.gwt.client.model.GradeEventModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordModel;
+import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
+import org.sakaiproject.gradebook.gwt.client.model.SectionKey;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.data.BaseListLoader;
+import com.extjs.gxt.ui.client.data.DataReader;
+import com.extjs.gxt.ui.client.data.HttpProxy;
+import com.extjs.gxt.ui.client.data.JsonLoadResultReader;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
 import com.extjs.gxt.ui.client.data.ListLoader;
 import com.extjs.gxt.ui.client.data.ModelData;
+import com.extjs.gxt.ui.client.data.ModelType;
 import com.extjs.gxt.ui.client.data.RpcProxy;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.Events;
@@ -63,6 +73,7 @@ import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.KeyboardListener;
@@ -158,6 +169,37 @@ public class MultiGradeContextMenu extends Menu {
 		
 		contextMenuViewSubMenu = new Menu();
 		
+		
+		RestBuilder builder = RestBuilder.getInstance(Method.GET, GWT.getModuleBaseURL(),
+				AppConstants.REST_FRAGMENT, AppConstants.GRADE_EVENT_FRAGMENT);
+		
+		HttpProxy<String> proxy = new HttpProxy<String>(builder) {
+			
+			public void load(final DataReader<String> reader, final Object loadConfig, final AsyncCallback<String> callback) {
+				GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
+				initUrl = RestBuilder.buildInitUrl(GWT.getModuleBaseURL(),
+						AppConstants.REST_FRAGMENT, AppConstants.GRADE_EVENT_FRAGMENT,
+						(String)owner.getSelectedModel().get(LearnerKey.UID.name()), String.valueOf(owner.getSelectedAssignment()));
+				super.load(reader, loadConfig, callback);
+			}
+			
+		};  
+
+		ModelType type = new ModelType();
+		type.setRoot("events");
+		type.setTotalName("total");
+		
+		for (GradeEventKey key : EnumSet.allOf(GradeEventKey.class)) {
+			type.addField(key.name(), key.name()); 
+		}
+		
+		// need a loader, proxy, and reader  
+		JsonLoadResultReader<ListLoadResult<ModelData>> reader = new JsonLoadResultReader<ListLoadResult<ModelData>>(type);  
+
+		final ListLoader<ListLoadResult<ModelData>> loader = new BaseListLoader<ListLoadResult<ModelData>>(proxy, reader);
+		
+
+		/*
 		RpcProxy<ListLoadResult<GradeScaleRecordModel>> proxy = new RpcProxy<ListLoadResult<GradeScaleRecordModel>>() {
 			
 			@Override
@@ -170,6 +212,7 @@ public class MultiGradeContextMenu extends Menu {
 		
 		
 		final ListLoader<ListLoadResult<GradeScaleRecordModel>> loader = new BaseListLoader<ListLoadResult<GradeScaleRecordModel>>(proxy);  
+		*/
 		
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 		

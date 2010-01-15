@@ -10,19 +10,14 @@ import javax.xml.bind.JAXBElement;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
-import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
 import org.sakaiproject.gradebook.gwt.sakai.rest.model.GradeRecord;
 
 @Path("/gradebook/rest/learner")
-public class LearnerRecord {
+public class LearnerRecord extends Resource {
 
 	private static final Log log = LogFactory.getLog(LearnerRecord.class);
-	
-	private Gradebook2ComponentService service;
-	
+		
 	@PUT @Path("comment/{gradebookUid}/{itemId}/{studentUid}")
 	@Consumes({"application/xml", "application/json"})
 	public String assignComment(@PathParam("gradebookUid") String gradebookUid,
@@ -38,7 +33,8 @@ public class LearnerRecord {
 		
 		map = service.assignComment(itemId, studentUid, action.getStringValue());
 		
-		JSONObject object = new JSONObject();
+		return toJson(map);
+		/*JSONObject object = new JSONObject();
 		for (String n : map.keySet()) {
 			Object v = map.get(n);
 			try {
@@ -48,7 +44,7 @@ public class LearnerRecord {
 			}
 		}
 		
-		return object.toString();
+		return object.toString();*/
 	}
 	
 	@PUT @Path("numeric/{gradebookUid}/{itemId}/{studentUid}")
@@ -69,6 +65,8 @@ public class LearnerRecord {
 				studentUid, itemId, action.getValue(), 
 				action.getPreviousValue());
 
+		return toJson(map);
+		/*
 		JSONObject object = new JSONObject();
 		for (String n : map.keySet()) {
 			Object v = map.get(n);
@@ -79,7 +77,7 @@ public class LearnerRecord {
 			}
 		}
 		
-		return object.toString();
+		return object.toString();*/
 	}
 	
 	@PUT @Path("string/{gradebookUid}/{itemId}/{studentUid}")
@@ -100,6 +98,8 @@ public class LearnerRecord {
 					studentUid, itemId, action.getStringValue(), 
 					action.getPreviousStringValue());
 		
+		return toJson(map);
+		/*
 		JSONObject object = new JSONObject();
 		for (String n : map.keySet()) {
 			Object v = map.get(n);
@@ -110,17 +110,7 @@ public class LearnerRecord {
 			}
 		}
 		
-		return object.toString();
+		return object.toString();*/
 	}
-	
-	public Gradebook2ComponentService getService() {
-		return service;
-	}
-
-	public void setService(Gradebook2ComponentService service) {
-		this.service = service;
-	}
-	
-	
 	
 }

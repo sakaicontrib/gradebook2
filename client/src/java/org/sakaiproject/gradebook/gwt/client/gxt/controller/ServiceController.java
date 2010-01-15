@@ -31,13 +31,12 @@ import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
-import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
-import org.sakaiproject.gradebook.gwt.client.SecureToken;
+import org.sakaiproject.gradebook.gwt.client.RestCallback;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
-import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType;
+import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
@@ -46,8 +45,6 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemCreate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
-import org.sakaiproject.gradebook.gwt.client.model.ApplicationKey;
-import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
@@ -78,7 +75,6 @@ import com.google.gwt.json.client.JSONBoolean;
 import com.google.gwt.json.client.JSONNumber;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class ServiceController extends Controller {
 
@@ -140,41 +136,25 @@ public class ServiceController extends Controller {
 				AppConstants.REST_FRAGMENT,
 				AppConstants.CONFIG_FRAGMENT, String.valueOf(gradebookId));
 		
-		try {
-			builder.sendRequest(json.toString(), new RequestCallback() {
+		builder.sendRequest(204, 400, json.toString(), new RestCallback() {
 
-				public void onError(Request request, Throwable caught) {
-					
-				}
+			public void onSuccess(Request request, Response response) {
+				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+				ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
 
-				public void onResponseReceived(Request request, Response response) {
-					
-					if (response.getStatusCode() != 204) {
-						Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent("Status", "Code: " + response.getStatusCode(), true));
-						return;
+				Collection<String> propertyNames = model.getPropertyNames();
+				if (propertyNames != null) {
+					List<String> names = new ArrayList<String>(propertyNames);
+
+					for (int i=0;i<names.size();i++) {
+						String name = names.get(i);
+						Object value = model.get(name);
+						configModel.set(name, value);
 					}
-
-					GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-					ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
-
-					Collection<String> propertyNames = model.getPropertyNames();
-					if (propertyNames != null) {
-						List<String> names = new ArrayList<String>(propertyNames);
-
-						for (int i=0;i<names.size();i++) {
-							String name = names.get(i);
-							Object value = model.get(name);
-							configModel.set(name, value);
-						}
-					}
-					
 				}
-				
-			});
-		} catch (RequestException e) {
-			Dispatcher.forwardEvent(GradebookEvents.Exception.getEventType(), new NotificationEvent(e));
-		}
-		
+			}
+			
+		});
 		
 		/*Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
 
@@ -216,75 +196,69 @@ public class ServiceController extends Controller {
 				AppConstants.ITEM_FRAGMENT, gbModel.getGradebookUid(),
 				String.valueOf(gbModel.getGradebookId()));
 		
-		try {
-			JSONObject jsonObject = RestBuilder.convertModel(event.item);
-			
-			builder.sendRequest(jsonObject.toString(), new RequestCallback() {
+		JSONObject jsonObject = RestBuilder.convertModel(event.item);
+		
+		builder.sendRequest(200, 400, jsonObject.toString(), new RestCallback() {
 
-				public void onError(Request request, Throwable caught) {
-					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught, "Failed to create item: "));
-					Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
-				}
+			public void onError(Request request, Throwable exception) {
+				super.onError(request, exception);
+				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
+			}
 
-				public void onResponseReceived(Request request, Response response) {
-					
-					if (response.getStatusCode() != 200) {
-						Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent("Failed to create item: ", response.getText(), true));
-						Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
-						return;
+			public void onFailure(Request request, Throwable exception) {
+				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(exception, "Failed to create item: "));
+				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
+			}
+
+			public void onSuccess(Request request, Response response) {
+				String result = response.getText();
+
+				JsonTranslater translater = new JsonTranslater(EnumSet.allOf(ItemKey.class)) {
+					protected ModelData newModelInstance() {
+						return new ItemModel();
 					}
-					
-					String result = response.getText();
-
-					JsonTranslater translater = new JsonTranslater(EnumSet.allOf(ItemKey.class)) {
-						protected ModelData newModelInstance() {
-							return new ItemModel();
-						}
-					};
-					ItemModel itemModel = (ItemModel)translater.translate(result);
-					
-					if (event.close)
-						Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
-
-					switch (itemModel.getItemType()) {
-						case GRADEBOOK:
-							GradebookModel selectedGradebook = Registry
-							.get(AppConstants.CURRENT);
-							selectedGradebook.setGradebookItemModel(itemModel);
-							Dispatcher
-							.forwardEvent(GradebookEvents.ItemUpdated.getEventType(), itemModel);
-							Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookItems.getEventType(),
-									selectedGradebook);
-							break;
-						case CATEGORY:
-							if (itemModel.isActive())
-								doCreateItem(event, itemModel);
-							else
-								doUpdateItem(event.store, null, null, itemModel);
-
-							for (ModelData m : itemModel.getChildren()) {
-								ItemModel item = (ItemModel)m;
-								if (item.isActive())
-									doCreateItem(event, item);
-								else
-									doUpdateItem(event.store, null, null, item);
-							}
-							break;
-						case ITEM:
-							if (itemModel.isActive())
-								doCreateItem(event, itemModel);
-							else
-								doUpdateItem(event.store, null, null, itemModel);
-							break;
-					}
-
-					Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
-				}
+				};
+				ItemModel itemModel = (ItemModel)translater.translate(result);
 				
-			});
-		} catch (RequestException e) {
-			Dispatcher.forwardEvent(GradebookEvents.Exception.getEventType(), new NotificationEvent(e));
-		}
+				if (event.close)
+					Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
+
+				switch (itemModel.getItemType()) {
+					case GRADEBOOK:
+						GradebookModel selectedGradebook = Registry
+						.get(AppConstants.CURRENT);
+						selectedGradebook.setGradebookItemModel(itemModel);
+						Dispatcher
+						.forwardEvent(GradebookEvents.ItemUpdated.getEventType(), itemModel);
+						Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookItems.getEventType(),
+								selectedGradebook);
+						break;
+					case CATEGORY:
+						if (itemModel.isActive())
+							doCreateItem(event, itemModel);
+						else
+							doUpdateItem(event.store, null, null, itemModel);
+
+						for (ModelData m : itemModel.getChildren()) {
+							ItemModel item = (ItemModel)m;
+							if (item.isActive())
+								doCreateItem(event, item);
+							else
+								doUpdateItem(event.store, null, null, item);
+						}
+						break;
+					case ITEM:
+						if (itemModel.isActive())
+							doCreateItem(event, itemModel);
+						else
+							doUpdateItem(event.store, null, null, itemModel);
+						break;
+				}
+
+				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
+			}
+			
+		});
 		
 		/*
 		Dispatcher.forwardEvent(GradebookEvents.MaskItemTree.getEventType());
@@ -363,45 +337,39 @@ public class ServiceController extends Controller {
 				AppConstants.REST_FRAGMENT,
 				AppConstants.ITEM_FRAGMENT);
 		
-		try {
-			JSONObject jsonObject = RestBuilder.convertModel(event.item);
-			
-			builder.sendRequest(jsonObject.toString(), new RequestCallback() {
+		JSONObject jsonObject = RestBuilder.convertModel(event.item);
+		
+		builder.sendRequest(200, 400, jsonObject.toString(), new RestCallback() {
 
-				public void onError(Request request, Throwable caught) {
-					onUpdateItemFailure(event, caught);
-					Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
-				}
+			public void onError(Request request, Throwable exception) {
+				super.onError(request, exception);
+				onUpdateItemFailure(event, exception);
+				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
+			}
 
-				public void onResponseReceived(Request request, Response response) {
-					
-					if (response.getStatusCode() != 200) {
-						onUpdateItemFailure(event, null);
-						Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
-						return;
+			public void onFailure(Request request, Throwable exception) {
+				onUpdateItemFailure(event, exception);
+				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
+			}
+
+			public void onSuccess(Request request, Response response) {
+				String result = response.getText();
+
+				JsonTranslater translater = new JsonTranslater(EnumSet.allOf(ItemKey.class)) {
+					protected ModelData newModelInstance() {
+						return new ItemModel();
 					}
-					
-					String result = response.getText();
-
-					JsonTranslater translater = new JsonTranslater(EnumSet.allOf(ItemKey.class)) {
-						protected ModelData newModelInstance() {
-							return new ItemModel();
-						}
-					};
-					ItemModel itemModel = (ItemModel)translater.translate(result);
-					
-					Dispatcher.forwardEvent(GradebookEvents.BeginItemUpdates.getEventType());
-					onUpdateItemSuccess(event, itemModel);
-					onDeleteItemSuccess(event);
-					Dispatcher.forwardEvent(GradebookEvents.EndItemUpdates.getEventType());
-					Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
-
-				}
+				};
+				ItemModel itemModel = (ItemModel)translater.translate(result);
 				
-			});
-		} catch (RequestException e) {
-			Dispatcher.forwardEvent(GradebookEvents.Exception.getEventType(), new NotificationEvent(e));
-		}
+				Dispatcher.forwardEvent(GradebookEvents.BeginItemUpdates.getEventType());
+				onUpdateItemSuccess(event, itemModel);
+				onDeleteItemSuccess(event);
+				Dispatcher.forwardEvent(GradebookEvents.EndItemUpdates.getEventType());
+				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
+			}
+			
+		});
 		
 		/*Gradebook2RPCServiceAsync service = Registry.get("service");
 		AsyncCallback<ItemModel> callback = new AsyncCallback<ItemModel>() {
@@ -421,7 +389,7 @@ public class ServiceController extends Controller {
 		service.update((ItemModel)event.item, EntityType.ITEM, null, SecureToken.get(), callback);*/
 	}
 
-	private void onUpdateGradeRecordFailure(GradeRecordUpdate event, Throwable caught, int status) {
+	private void onUpdateGradeRecordFailure(GradeRecordUpdate event, Throwable caught) {
 		Record record = event.record;
 		record.beginEdit();
 
@@ -432,7 +400,7 @@ public class ServiceController extends Controller {
 		if (caught != null) {
 			record.set(failedProperty, caught.getMessage());
 		} else {
-			record.set(failedProperty, "Received status code of " + status);
+			record.set(failedProperty, "Failed");
 		}
 		
 		// We have to fool the system into thinking that the value has changed, since
@@ -583,59 +551,54 @@ public class ServiceController extends Controller {
 				AppConstants.REST_FRAGMENT,
 				AppConstants.LEARNER_FRAGMENT, entity, gradebookUid, itemId, studentUid);
 		
-		try {
-			builder.sendRequest(json.toString(), new RequestCallback() {
+		
+		builder.sendRequest(200, 400, json.toString(), new RestCallback() {
 
-				public void onError(Request request, Throwable caught) {
-					onUpdateGradeRecordFailure(event, caught, -1);
+			public void onError(Request request, Throwable exception) {
+				super.onError(request, exception);
+				onUpdateGradeRecordFailure(event, exception);
+			}
+
+			public void onFailure(Request request, Throwable exception) {
+				onUpdateGradeRecordFailure(event, exception);
+			}
+
+			public void onSuccess(Request request, Response response) {
+				final ModelType type = new ModelType();  
+				for (LearnerKey key : EnumSet.allOf(LearnerKey.class)) {
+					type.addField(key.name(), key.name()); 
 				}
 
-				public void onResponseReceived(Request request, Response response) {
-					
-					if (response.getStatusCode() != 200) {
-						Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent("Status", "Code: " + response.getStatusCode(), true));
-						onUpdateGradeRecordFailure(event, null, response.getStatusCode());
-						return;
+				ItemModelProcessor processor = new ItemModelProcessor(selectedGradebook.getGradebookItemModel()) {
+					public void doItem(ItemModel itemModel) {
+						String id = itemModel.getIdentifier();
+						type.addField(id, id);
+						String droppedKey = DataTypeConversionUtil.buildDroppedKey(id);
+						type.addField(droppedKey, droppedKey);
+						
+						String commentedKey = DataTypeConversionUtil.buildCommentKey(id);
+						type.addField(commentedKey, commentedKey);
+						
+						String commentTextKey = DataTypeConversionUtil.buildCommentTextKey(id);
+						type.addField(commentTextKey, commentTextKey);
+						
+						String excusedKey = DataTypeConversionUtil.buildExcusedKey(id);
+						type.addField(excusedKey, excusedKey);
 					}
-					
-					final ModelType type = new ModelType();  
-					for (LearnerKey key : EnumSet.allOf(LearnerKey.class)) {
-						type.addField(key.name(), key.name()); 
-					}
-
-					ItemModelProcessor processor = new ItemModelProcessor(selectedGradebook.getGradebookItemModel()) {
-						public void doItem(ItemModel itemModel) {
-							String id = itemModel.getIdentifier();
-							type.addField(id, id);
-							String droppedKey = DataTypeConversionUtil.buildDroppedKey(id);
-							type.addField(droppedKey, droppedKey);
-							
-							String commentedKey = DataTypeConversionUtil.buildCommentKey(id);
-							type.addField(commentedKey, commentedKey);
-							
-							String commentTextKey = DataTypeConversionUtil.buildCommentTextKey(id);
-							type.addField(commentTextKey, commentTextKey);
-							
-							String excusedKey = DataTypeConversionUtil.buildExcusedKey(id);
-							type.addField(excusedKey, excusedKey);
-						}
-					};
-					
-					processor.process();
-					
-					JsonTranslater reader = new JsonTranslater(type);
-					ModelData result = reader.translate(response.getText());
-					
-					record.beginEdit();
-					onUpdateGradeRecordSuccess(event, result);
-					record.endEdit();
-					Dispatcher.forwardEvent(GradebookEvents.LearnerGradeRecordUpdated.getEventType(), action);
-				}
+				};
 				
-			});
-		} catch (RequestException e) {
-			Dispatcher.forwardEvent(GradebookEvents.Exception.getEventType(), new NotificationEvent(e));
-		}
+				processor.process();
+				
+				JsonTranslater reader = new JsonTranslater(type);
+				ModelData result = reader.translate(response.getText());
+				
+				record.beginEdit();
+				onUpdateGradeRecordSuccess(event, result);
+				record.endEdit();
+				Dispatcher.forwardEvent(GradebookEvents.LearnerGradeRecordUpdated.getEventType(), action);				
+			}
+			
+		});
 		
 		/*
 		AsyncCallback<ModelData> callback = new AsyncCallback<ModelData>() {
@@ -879,45 +842,38 @@ public class ServiceController extends Controller {
 				AppConstants.REST_FRAGMENT,
 				AppConstants.ITEM_FRAGMENT);
 		
-		try {
-			JSONObject jsonObject = RestBuilder.convertModel(event.item);
-			
-			builder.sendRequest(jsonObject.toString(), new RequestCallback() {
+		JSONObject jsonObject = RestBuilder.convertModel(event.item);
+		
+		builder.sendRequest(200, 400, jsonObject.toString(), new RestCallback() {
 
-				public void onError(Request request, Throwable caught) {
-					onUpdateItemFailure(event, caught);
-					Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
+			public void onError(Request request, Throwable exception) {
+				super.onError(request, exception);
+				onUpdateItemFailure(event, exception);
+				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
+			}
 
-				}
+			public void onFailure(Request request, Throwable exception) {
+				onUpdateItemFailure(event, exception);
+				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
+			}
 
-				public void onResponseReceived(Request request, Response response) {
-					
-					if (response.getStatusCode() != 200) {
-						onUpdateItemFailure(event, null);
-						Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
-						return;
+			public void onSuccess(Request request, Response response) {
+				String result = response.getText();
+
+				JsonTranslater translater = new JsonTranslater(EnumSet.allOf(ItemKey.class)) {
+					protected ModelData newModelInstance() {
+						return new ItemModel();
 					}
-					
-					String result = response.getText();
-
-					JsonTranslater translater = new JsonTranslater(EnumSet.allOf(ItemKey.class)) {
-						protected ModelData newModelInstance() {
-							return new ItemModel();
-						}
-					};
-					ItemModel itemModel = (ItemModel)translater.translate(result);
-					
-					Dispatcher.forwardEvent(GradebookEvents.BeginItemUpdates.getEventType());
-					onUpdateItemSuccess(event, itemModel);
-					Dispatcher.forwardEvent(GradebookEvents.EndItemUpdates.getEventType());
-					Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
-
-				}
+				};
+				ItemModel itemModel = (ItemModel)translater.translate(result);
 				
-			});
-		} catch (RequestException e) {
-			Dispatcher.forwardEvent(GradebookEvents.Exception.getEventType(), new NotificationEvent(e));
-		}
+				Dispatcher.forwardEvent(GradebookEvents.BeginItemUpdates.getEventType());
+				onUpdateItemSuccess(event, itemModel);
+				Dispatcher.forwardEvent(GradebookEvents.EndItemUpdates.getEventType());
+				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
+			}
+			
+		});
 		
 		/*
 		Dispatcher.forwardEvent(GradebookEvents.MaskItemTree.getEventType());

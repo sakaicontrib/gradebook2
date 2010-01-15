@@ -41,7 +41,6 @@ import org.sakaiproject.gradebook.gwt.client.model.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
-import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.Scroll;
@@ -244,7 +243,7 @@ public class LearnerSummaryPanel extends GradebookPanel {
 	
 					field.setItemId(itemId);
 					field.addInputStyleName(resources.css().gbNumericFieldInput());
-					field.addKeyListener(keyListener);
+					//field.addKeyListener(keyListener);
 					field.setFieldLabel(item.getName());
 					field.setFormat(DataTypeConversionUtil.getDefaultNumberFormat());
 					field.setName(item.getIdentifier());
@@ -263,7 +262,7 @@ public class LearnerSummaryPanel extends GradebookPanel {
 					
 					textField.setItemId(itemId);
 					textField.addInputStyleName(resources.css().gbTextFieldInput());
-					textField.addKeyListener(keyListener);
+					//textField.addKeyListener(keyListener);
 					textField.setFieldLabel(item.getName());
 					textField.setName(item.getIdentifier());
 					textField.setToolTip(emptyText.toString());
@@ -302,10 +301,10 @@ public class LearnerSummaryPanel extends GradebookPanel {
 
 			@Override
 			public void componentKeyPress(ComponentEvent event) {
-				switch (event.getEvent().getKeyCode()) {
+				/*switch (event.getEvent().getKeyCode()) {
 					case KeyCodes.KEY_ENTER:
 						break;
-				}
+				}*/
 			}
 
 		};

@@ -21,7 +21,7 @@ public enum ItemKey {
 	ASSIGNMENT_ID(Long.class), DATA_TYPE, CATEGORYTYPE(CategoryType.class),
 	GRADETYPE(GradeType.class), RELEASEGRADES(Boolean.class), 
 	RELEASEITEMS(Boolean.class),
-	ITEM_ORDER(Integer.class), GRADESCALEID, 
+	ITEM_ORDER(Integer.class), GRADESCALEID(Long.class), 
 	EXTRA_CREDIT_SCALED(Boolean.class),
 	DO_RECALCULATE_POINTS(Boolean.class),
 	ENFORCE_POINT_WEIGHTING(Boolean.class), SHOWMEAN(Boolean.class),

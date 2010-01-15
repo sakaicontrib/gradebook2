@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.JAXBContextResolver"/>
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.InvalidInputMapper"/>
+	
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" 
+		  abstract="true"
+		  class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource">
+		 <property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/> 
+	</bean>
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Application" 
+		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Configuration"
+		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.GradeEvent" 
+		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Item"
+		parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.LearnerRecord">
+		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
+	</bean>
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Roster">
+		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service"/>
+	</bean>
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Section">
+		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
+	</bean>
+
+</beans>

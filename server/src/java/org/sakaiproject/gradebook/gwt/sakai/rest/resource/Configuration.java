@@ -14,14 +14,11 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonToken;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
-import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
 
 @Path("/gradebook/rest/config")
-public class Configuration {
+public class Configuration extends Resource {
 
 	private static final Log log = LogFactory.getLog(Configuration.class);
-	
-	private Gradebook2ComponentService service;
 	
 	@PUT @Path("{gradebookId}")
 	@Consumes({"application/xml", "application/json"})
@@ -61,31 +58,8 @@ public class Configuration {
 			} catch (IOException ioe) {
 				log.error(ioe);
 			}
-
-			/*
-			for (JsonToken token = jsonParser.getCurrentToken();jsonParser.hasCurrentToken();jsonParser.nextToken()) {
-				String field;
-				try {
-					field = jsonParser.getCurrentName();
-					String value = token.asString();
-					service.updateConfiguration(gradebookId, field, value);
-				} catch (JsonParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}*/
 		}
 	}
-	
-	public Gradebook2ComponentService getService() {
-		return service;
-	}
 
-	public void setService(Gradebook2ComponentService service) {
-		this.service = service;
-	}
 	
 }

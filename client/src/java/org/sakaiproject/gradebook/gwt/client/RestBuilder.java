@@ -1,11 +1,19 @@
 package org.sakaiproject.gradebook.gwt.client;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.GradeType;
+
 import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.data.BaseModel;
+import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.http.client.RequestCallback;
+import com.google.gwt.http.client.RequestException;
+import com.google.gwt.http.client.Response;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONBoolean;
 import com.google.gwt.json.client.JSONNumber;
@@ -74,12 +82,47 @@ public class RestBuilder extends RequestBuilder {
 					}
 					
 					json.put(key, array);
-				} 
+				} else if (obj instanceof CategoryType) {
+					json.put(key, new JSONString(((CategoryType)obj).name()));
+				} else if (obj instanceof GradeType) {
+					json.put(key, new JSONString(((GradeType)obj).name()));
+				} else if (obj instanceof Date) {
+					json.put(key, new JSONNumber(((Date)obj).getTime()));
+				} else {
+					
+					Object o = obj;
+				}
 			}
 		}
 		
 		return json;
 	}
+	
+	public Request sendRequest(final int successCode, final int failureCode, String requestData, final RestCallback callback) {
+		Request request = null;
+		try {
+			super.sendRequest(requestData, new RequestCallback() {
+	
+				public void onError(Request request, Throwable exception) {
+					callback.onError(request, exception);
+				}
+	
+				public void onResponseReceived(Request request, Response response) {
+					if (response.getStatusCode() == failureCode)
+						callback.onFailure(request, new Exception(response.getText()));
+					else if (response.getStatusCode() == successCode)
+						callback.onSuccess(request, response);
+					else
+						callback.onError(request, new Exception("Unexpected response from server: " + response.getStatusCode()));
+				}
+				
+			});
+		} catch (RequestException re) {
+			callback.onError(request, re);
+		}
+		return request;
+	}
+	
 	
 	protected static String getMethod(Method method) {
 		switch (method) {
