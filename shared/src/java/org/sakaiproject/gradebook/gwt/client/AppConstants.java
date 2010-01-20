@@ -136,13 +136,25 @@ public interface AppConstants {
 	public static final String ITEMTREE_PERCENT_CATEGORY = "**pctC";
 	
 	
-	public static final String REST_FRAGMENT 		= "rest";
-	public static final String LEARNER_FRAGMENT 	= "learner";
-	public static final String CONFIG_FRAGMENT 		= "config";
-	public static final String APPLICATION_FRAGMENT = "application";
-	public static final String ITEM_FRAGMENT		= "item";
-	public static final String ROSTER_FRAGMENT 		= "roster";
-	public static final String SECTION_FRAGMENT		= "section";
-	public static final String GRADE_EVENT_FRAGMENT	= "gradeevent";
+	public static final String REST_FRAGMENT 			= "rest";
+	public static final String LEARNER_FRAGMENT 		= "learner";
+	public static final String CONFIG_FRAGMENT 			= "config";
+	public static final String APPLICATION_FRAGMENT 	= "application";
+	public static final String ITEM_FRAGMENT			= "item";
+	public static final String ROSTER_FRAGMENT 			= "roster";
+	public static final String SECTION_FRAGMENT			= "section";
+	public static final String GRADE_EVENT_FRAGMENT		= "gradeevent";
+	public static final String GRADE_FORMAT_FRAGMENT	= "gradeformat";
+	public static final String GRADE_MAP_FRAGMENT		= "grademap";
 	
+	public static final String GRADE_FORMAT_ROOT		= "formats";
+	public static final String GRADE_MAP_ROOT			= "maps";
+	public static final String SECTIONS_ROOT			= "sections";
+	public static final String TOTAL					= "total";
+	
+	public static final String VALUE_CONSTANT			= "value";
+	public static final String START_VALUE_CONSTANT		= "previousValue";
+	
+	public static final String STR_VALUE_CONSTANT		= "stringValue";
+	public static final String STR_START_VALUE_CONSTANT	= "previousStringValue";
 }

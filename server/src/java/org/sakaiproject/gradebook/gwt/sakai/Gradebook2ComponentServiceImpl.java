@@ -1,19 +1,24 @@
 package org.sakaiproject.gradebook.gwt.sakai;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.Formatter;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.action.Action.ActionType;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
@@ -22,6 +27,8 @@ import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnKey;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeEventKey;
+import org.sakaiproject.gradebook.gwt.client.model.GradeFormatKey;
+import org.sakaiproject.gradebook.gwt.client.model.GradeMapKey;
 import org.sakaiproject.gradebook.gwt.client.model.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookKey;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
@@ -51,7 +58,7 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		implements Gradebook2ComponentService {
 
 	private static final Log log = LogFactory.getLog(Gradebook2ComponentServiceImpl.class);
-	
+	private static ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 	
 	public Map<String, Object> createItem(String gradebookUid, Long gradebookId, Map<String, Object> attributes) throws InvalidInputException {
 		
@@ -217,7 +224,7 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 			// GRBK-233 : Only IOR can overwrite course grades
 			boolean isInstructor = authz.isUserAbleToGradeAll(gradebook.getUid());
 			if (!isInstructor)
-				throw new InvalidInputException("You are not authorized to overwrite the course grade for this student.");
+				throw new InvalidInputException(i18n.getString("notAuthToOverwriteCourseGrade"));
 			
 			// Then we are overriding a course grade
 			CourseGradeRecord courseGradeRecord = gbService.getStudentCourseGradeRecord(gradebook, studentUid);
@@ -232,7 +239,7 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 			Set<String> scaledGrades = gradeMapping.getGradeMap().keySet();
 	
 			if (value != null && !advisor.isValidOverrideGrade(value, user.getEid(), user.getDisplayId(), gradebook, scaledGrades))
-				throw new InvalidInputException("This is not a valid override grade for this individual in this course.");
+				throw new InvalidInputException(i18n.getString("invalidOverrideCourseGrade"));
 	
 			gbService.updateCourseGradeRecords(courseGrade, gradeRecords);
 	
@@ -281,7 +288,7 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		} else if (gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER) {
 			// We must be modifying a letter grade
 			if (value != null && !gradeCalculations.isValidLetterGrade(value))
-				throw new InvalidInputException("This is not a valid grade.");
+				throw new InvalidInputException(i18n.getString("invalidLetterGrade"));
 			
 			Double numericValue = gradeCalculations.convertLetterGradeToPercentage(value);
 			Double previousNumericValue = gradeCalculations.convertLetterGradeToPercentage(previousValue);
@@ -376,6 +383,22 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		return map;
 	}
 	
+	public List<Map<String,Object>> getAvailableGradeFormats(String gradebookUid, Long gradebookId) {
+
+		List<Map<String,Object>> models = new ArrayList<Map<String,Object>>();
+
+		Set<GradeMapping> gradeMappings = gbService.getGradeMappings(gradebookId);
+
+		for (GradeMapping mapping : gradeMappings) {
+			Map<String,Object> model = new HashMap<String,Object>();
+			model.put(GradeFormatKey.ID.name(), mapping.getId());
+			model.put(GradeFormatKey.NAME.name(), mapping.getName());
+			models.add(model);
+		}
+
+		return models;
+	}
+	
 	public List<Map<String,Object>> getGradeEvents(Long assignmentId, String studentUid) {
 		List<Map<String,Object>> gradeEvents = new ArrayList<Map<String,Object>>();
 		Assignment assignment = gbService.getAssignment(assignmentId);
@@ -407,6 +430,36 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		return gradeEvents;
 	}
 	
+	public List<Map<String,Object>> getGradeMaps(String gradebookUid) {
+		List<Map<String,Object>> gradeScaleMappings = new ArrayList<Map<String,Object>>();
+		Gradebook gradebook = gbService.getGradebook(gradebookUid);
+		GradeMapping gradeMapping = gradebook.getSelectedGradeMapping();
+
+		List<String> letterGradesList = new ArrayList<String>(gradeMapping.getGradeMap().keySet());
+
+		if (gradeMapping.getName().equalsIgnoreCase("Pass / Not Pass")) 
+			Collections.sort(letterGradesList, PASS_NOPASS_COMPARATOR);
+		else
+			Collections.sort(letterGradesList, LETTER_GRADE_COMPARATOR);
+
+		Double upperScale = null;
+
+		for (String letterGrade : letterGradesList) {
+
+			upperScale = (null == upperScale) ? new Double(100d) : upperScale.equals(Double.valueOf(0d)) ? Double.valueOf(0d) : Double.valueOf(upperScale.doubleValue() - 0.01d);
+
+			Map<String,Object> gradeScaleModel = new HashMap<String,Object>();
+			gradeScaleModel.put(GradeMapKey.ID.name(), letterGrade);
+			gradeScaleModel.put(GradeMapKey.LETTER_GRADE.name(), letterGrade);
+			gradeScaleModel.put(GradeMapKey.FROM_RANGE.name(), gradeMapping.getGradeMap().get(letterGrade));
+			gradeScaleModel.put(GradeMapKey.TO_RANGE.name(), upperScale);
+
+			gradeScaleMappings.add(gradeScaleModel);
+			upperScale = gradeMapping.getGradeMap().get(letterGrade);
+		}
+		return gradeScaleMappings;
+	}
+		
 	public List<Map<String,Object>> getVisibleSections(String gradebookUid, boolean enableAllSectionsEntry, String allSectionsEntryTitle) {
 		List<CourseSection> viewableSections = authz.getViewableSections(gradebookUid);
 
@@ -431,6 +484,13 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		return sections;
 	}
 	
+	public void resetGradeMap(String gradebookUid) {
+		Gradebook gradebook = gbService.getGradebook(gradebookUid);
+		GradeMapping gradeMapping = gradebook.getSelectedGradeMapping();
+		gradeMapping.setDefaultValues();
+		gbService.updateGradebook(gradebook);
+	}
+	
 	public Boolean updateConfiguration(Long gradebookId, String field, String value) {
 		
 		try {		
@@ -442,6 +502,96 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		}
 		
 		return Boolean.TRUE;
+	}
+	
+	public void updateGradeMap(String gradebookUid, String affectedLetterGrade, Object value) throws InvalidInputException {
+		
+		if (value == null) {
+			throw new InvalidInputException(i18n.getString("noBlankValue"));
+		}
+		
+		double v = -1d;
+		
+		if (value instanceof Integer)
+			v = ((Integer)value).doubleValue();
+		else if (value instanceof Double)
+			v = ((Double)value).doubleValue();
+		else
+			throw new InvalidInputException(i18n.getString("noNonNumericValue"));
+		
+		BigDecimal bigValue = BigDecimal.valueOf(v).setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
+
+		if (bigValue.compareTo(BigDecimal.ZERO) == 0)
+			throw new InvalidInputException(i18n.getString("noZeroValue"));
+		if (bigValue.compareTo(BigDecimal.valueOf(100.00d)) >= 0) {
+			StringBuilder sb = new StringBuilder();
+			Formatter formatter = new Formatter(sb);
+			formatter.format(i18n.getString("valueMustBeLessThan100"), 
+					bigValue.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode()).toString());
+
+			throw new InvalidInputException(sb.toString());
+		}
+		Gradebook gradebook = gbService.getGradebook(gradebookUid);
+		GradeMapping gradeMapping = gradebook.getSelectedGradeMapping();
+		
+		List<String> letterGradesList = new ArrayList<String>(gradeMapping.getGradeMap().keySet());
+
+		if (gradeMapping.getName().equalsIgnoreCase("Pass / Not Pass")) 
+			Collections.sort(letterGradesList, PASS_NOPASS_COMPARATOR);
+		else
+			Collections.sort(letterGradesList, LETTER_GRADE_COMPARATOR);
+
+		Double upperScale = null;
+
+		for (String letterGrade : letterGradesList) {
+			BigDecimal bigOldUpperScale = upperScale == null ? BigDecimal.valueOf(200d) : BigDecimal.valueOf(upperScale.doubleValue());
+			
+			upperScale = (null == upperScale) ? new Double(100d) : upperScale.equals(Double.valueOf(0d)) ? Double.valueOf(0d) : Double.valueOf(upperScale.doubleValue() - 0.01d);
+
+			if (affectedLetterGrade.equals(letterGrade)) {
+				Double oldValue = gradeMapping.getGradeMap().get(letterGrade);
+				
+				if (oldValue != null) {
+					BigDecimal bgOldValue = BigDecimal.valueOf(oldValue.doubleValue()).setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
+					
+					if (bgOldValue.compareTo(BigDecimal.ZERO) == 0) {
+						throw new InvalidInputException(i18n.getString("cannotModifyBase"));
+					} 
+				}
+				
+				// If the one above is not bigger than the one below then throw an exception
+				if (bigOldUpperScale.compareTo(bigValue) <= 0) {
+					StringBuilder sb = new StringBuilder();
+					Formatter formatter = new Formatter(sb);
+					formatter.format(i18n.getString("valueMustBeLessThanAbove"), 
+							   bigValue.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode()).toString(),
+							   bigOldUpperScale.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode()).toString());
+					
+					throw new InvalidInputException(sb.toString());
+				}
+				
+				gradeMapping.getGradeMap().put(letterGrade, Double.valueOf(v));
+				upperScale = Double.valueOf(v);
+			} else {
+				upperScale = gradeMapping.getGradeMap().get(letterGrade);
+				
+				if (upperScale != null) {
+									
+					BigDecimal bigUpperScale = BigDecimal.valueOf(upperScale.doubleValue());
+					if (bigOldUpperScale.compareTo(BigDecimal.ZERO) != 0 
+							&& bigOldUpperScale.compareTo(bigUpperScale) <= 0) {
+						StringBuilder sb = new StringBuilder();
+						Formatter formatter = new Formatter(sb);
+						formatter.format(i18n.getString("valueMustBeGreaterThanBelow"), 
+								bigOldUpperScale.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode()).toString(),
+								bigUpperScale.setScale(2, RoundingMode.HALF_EVEN).toString());
+						throw new InvalidInputException(sb.toString());
+					}					
+				}
+			}
+		}
+
+		gbService.updateGradebook(gradebook);
 	}
 	
 	public Map<String, Object> updateItem(Map<String, Object> attributes) throws InvalidInputException {

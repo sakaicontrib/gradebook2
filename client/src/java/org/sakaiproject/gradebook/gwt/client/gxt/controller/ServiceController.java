@@ -36,9 +36,9 @@ import org.sakaiproject.gradebook.gwt.client.RestCallback;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType;
-import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeMapUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemCreate;
@@ -47,6 +47,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
+import org.sakaiproject.gradebook.gwt.client.model.GradeMapKey;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
@@ -68,8 +69,6 @@ import com.extjs.gxt.ui.client.store.TreeStore;
 import com.extjs.gxt.ui.client.util.DelayedTask;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.Request;
-import com.google.gwt.http.client.RequestCallback;
-import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.json.client.JSONBoolean;
 import com.google.gwt.json.client.JSONNumber;
@@ -85,10 +84,12 @@ public class ServiceController extends Controller {
 	public ServiceController() {
 		registerEventTypes(GradebookEvents.Configuration.getEventType());
 		registerEventTypes(GradebookEvents.CreateItem.getEventType());
+		registerEventTypes(GradebookEvents.DeleteGradeMap.getEventType());
 		registerEventTypes(GradebookEvents.DeleteItem.getEventType());
 		registerEventTypes(GradebookEvents.RevertItem.getEventType());
 		registerEventTypes(GradebookEvents.ShowColumns.getEventType());
 		registerEventTypes(GradebookEvents.UpdateLearnerGradeRecord.getEventType());
+		registerEventTypes(GradebookEvents.UpdateGradeMap.getEventType());
 		registerEventTypes(GradebookEvents.UpdateItem.getEventType());
 	}
 
@@ -101,6 +102,9 @@ public class ServiceController extends Controller {
 			case CREATE_ITEM:
 				onCreateItem((ItemCreate)event.getData());
 				break;
+			case DELETE_GRADE_MAP:
+				onDeleteGradeMap();
+				break;
 			case DELETE_ITEM:
 				onDeleteItem((ItemUpdate)event.getData());
 				break;
@@ -112,6 +116,9 @@ public class ServiceController extends Controller {
 				break;
 			case UPDATE_LEARNER_GRADE_RECORD:
 				onUpdateGradeRecord((GradeRecordUpdate)event.getData());
+				break;
+			case UPDATE_GRADE_MAP:
+				onUpdateGradeMap((GradeMapUpdate)event.getData());
 				break;
 			case UPDATE_ITEM:
 				onUpdateItem((ItemUpdate)event.getData());
@@ -322,6 +329,30 @@ public class ServiceController extends Controller {
 		*/
 	}
 
+	private void onDeleteGradeMap() {
+		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+				
+		String gradebookUid = selectedGradebook.getGradebookUid();
+		String gradebookId = String.valueOf(selectedGradebook.getGradebookId());
+
+		RestBuilder builder = RestBuilder.getInstance(Method.DELETE, 
+				GWT.getModuleBaseURL(),
+				AppConstants.REST_FRAGMENT,
+				AppConstants.GRADE_MAP_FRAGMENT, gradebookUid, gradebookId);
+		
+
+		builder.sendRequest(204, 400, null, new RestCallback() {
+			
+			@Override
+			public void onSuccess(Request request, Response response) {
+				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+				Dispatcher.forwardEvent(GradebookEvents.RefreshGradeScale.getEventType(),
+						selectedGradebook);
+			}
+			
+		});
+	}
+	
 	private void onDeleteItemSuccess(ItemUpdate event) {
 		Dispatcher.forwardEvent(GradebookEvents.ItemDeleted.getEventType(), event.item);
 		TreeStore<ItemModel> treeStore = (TreeStore<ItemModel>)event.store;
@@ -508,6 +539,47 @@ public class ServiceController extends Controller {
 		Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent("Success", message));
 	}
 
+	private void onUpdateGradeMap(final GradeMapUpdate event) {
+		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		final Record record = event.record;
+		
+		String gradebookUid = selectedGradebook.getGradebookUid();
+		String gradebookId = String.valueOf(selectedGradebook.getGradebookId());
+		String letterGrade = (String)record.get(GradeMapKey.LETTER_GRADE.name());
+		
+		RestBuilder builder = RestBuilder.getInstance(Method.PUT, 
+				GWT.getModuleBaseURL(),
+				AppConstants.REST_FRAGMENT,
+				AppConstants.GRADE_MAP_FRAGMENT, gradebookUid, gradebookId, letterGrade);
+		
+		Double value = record == null ? null : (Double)event.value;
+		Double startValue = record == null ? null : (Double)event.startValue;
+		
+		JSONObject json = new JSONObject();
+		if (value != null)
+			json.put(AppConstants.VALUE_CONSTANT, new JSONNumber(value.doubleValue()));
+		if (startValue != null)
+			json.put(AppConstants.START_VALUE_CONSTANT, new JSONNumber(startValue.doubleValue()));
+		
+		builder.sendRequest(204, 400, json.toString(), new RestCallback() {
+
+			@Override
+			public void onFailure(Request request, Throwable exception) {
+				super.onFailure(request, exception);
+				record.reject(false);
+			}
+			
+			@Override
+			public void onSuccess(Request request, Response response) {
+				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+				Dispatcher.forwardEvent(GradebookEvents.RefreshGradeScale.getEventType(),
+						selectedGradebook);
+				record.commit(false);
+			}
+			
+		});
+	}
+	
 	private void onUpdateGradeRecord(final GradeRecordUpdate event) {
 
 		final GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);	
@@ -527,17 +599,17 @@ public class ServiceController extends Controller {
 		switch (classType) {
 		case STRING:
 			if (event.value != null)
-				json.put("stringValue", new JSONString((String)event.value));
+				json.put(AppConstants.STR_VALUE_CONSTANT, new JSONString((String)event.value));
 			if (event.oldValue != null)
-				json.put("previousStringValue", new JSONString((String)event.oldValue));
+				json.put(AppConstants.STR_START_VALUE_CONSTANT, new JSONString((String)event.oldValue));
 			json.put("numeric", JSONBoolean.getInstance(false));
 			entity = "string";
 			break;
 		case DOUBLE:
 			if (event.value != null)
-				json.put("value", new JSONNumber((Double)event.value));
+				json.put(AppConstants.VALUE_CONSTANT, new JSONNumber((Double)event.value));
 			if (event.oldValue != null)
-				json.put("previousValue", new JSONNumber((Double)event.oldValue));
+				json.put(AppConstants.START_VALUE_CONSTANT, new JSONNumber((Double)event.oldValue));
 			json.put("numeric", JSONBoolean.getInstance(true));
 			entity = "numeric";
 			break;
@@ -842,7 +914,7 @@ public class ServiceController extends Controller {
 				AppConstants.REST_FRAGMENT,
 				AppConstants.ITEM_FRAGMENT);
 		
-		JSONObject jsonObject = RestBuilder.convertModel(event.item);
+		JSONObject jsonObject = RestBuilder.convertModel(event.getModifiedItem());
 		
 		builder.sendRequest(200, 400, jsonObject.toString(), new RestCallback() {
 

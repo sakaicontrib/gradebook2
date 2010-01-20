@@ -37,8 +37,8 @@ import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 import org.sakaiproject.gradebook.gwt.client.model.CommentModel;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
+import org.sakaiproject.gradebook.gwt.client.model.GradeMapKey;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordMapModel;
-import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.PermissionEntryModel;
@@ -46,6 +46,7 @@ import org.sakaiproject.gradebook.gwt.client.model.SpreadsheetModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.server.DataTypeConversionUtil;
 
+import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.PagingLoadConfig;
@@ -183,18 +184,17 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 				break;
 			case GRADE_SCALE:
 				GradeScaleRecordMapModel map = (GradeScaleRecordMapModel)model;
-				List<GradeScaleRecordModel> records = null; 
+				List<BaseModel> records = null; 
 				if (map.isHardReset())
 				{	
 					records = service.resetGradeScale(map.getGradebookUid()); 
 				}
 				else
 				{
-					GradeScaleRecordModel gradeScaleModel = map.getUpdatedRecord();
-					records = service.updateGradeScaleField(map.getGradebookUid(), action.getValue(), gradeScaleModel.getLetterGrade());
-					
+					ModelData gradeScaleModel = map.getUpdatedRecord();
+					records = service.updateGradeScaleField(map.getGradebookUid(), action.getValue(), (String)gradeScaleModel.get(GradeMapKey.LETTER_GRADE.name()));	
 				}
-				entity = (X)new GradeScaleRecordMapModel(records);
+				//entity = (X)new GradeScaleRecordMapModel(records);
 				break;
 			case LEARNER:
 				ModelData student = model;

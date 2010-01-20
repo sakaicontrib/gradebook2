@@ -26,27 +26,23 @@ public class GradeScaleRecordModel extends EntityModel {
 
 	private static final long serialVersionUID = 1L;
 
-	// NOTE: the letterGrade is used for both ID and LETTER_GRADE properties
-	// so that we don't store the data twice
-	public enum Key { ID, LETTER_GRADE, FROM_RANGE, TO_RANGE }
-	
 	public GradeScaleRecordModel() { 
 		super();
 	}
 	
 	public GradeScaleRecordModel(String letterGrade, Double fromRange, Double toRange) {
-		set(Key.LETTER_GRADE.name(), letterGrade);
-		set(Key.FROM_RANGE.name(), fromRange);
-		set(Key.TO_RANGE.name(), toRange);		
+		set(GradeMapKey.LETTER_GRADE.name(), letterGrade);
+		set(GradeMapKey.FROM_RANGE.name(), fromRange);
+		set(GradeMapKey.TO_RANGE.name(), toRange);		
 	}
 	
 	@Override
 	public String getIdentifier() {
-		return get(Key.ID.name());
+		return get(GradeMapKey.ID.name());
 	}
 	
 	public void setIdentifier(String letterGrade) {
-		set(Key.ID.name(), letterGrade);
+		set(GradeMapKey.ID.name(), letterGrade);
 	}
 	
 	@Override
@@ -55,31 +51,31 @@ public class GradeScaleRecordModel extends EntityModel {
 	}
 	
 	public String getLetterGrade() {
-		return get(Key.LETTER_GRADE.name());
+		return get(GradeMapKey.LETTER_GRADE.name());
 	}
 	
 	public Double getFromRange() {
-		return get(Key.FROM_RANGE.name());
+		return get(GradeMapKey.FROM_RANGE.name());
 	}
 	
 	public Double getToRange() {
-		return get(Key.TO_RANGE.name());
+		return get(GradeMapKey.TO_RANGE.name());
 	}
 	
 	public void setLetterGrade(String letterGrade) {
-		set(Key.LETTER_GRADE.name(), letterGrade);
+		set(GradeMapKey.LETTER_GRADE.name(), letterGrade);
 	}
 	
 	public void setFromRange(Double fromRange) {
-		set(Key.FROM_RANGE.name(), fromRange);
+		set(GradeMapKey.FROM_RANGE.name(), fromRange);
 	}
 	
 	public void setToRange(Double toRange) {
-		set(Key.TO_RANGE.name(), toRange);
+		set(GradeMapKey.TO_RANGE.name(), toRange);
 	}
 	
-	public Key getKey(String keyName) {
+	public GradeMapKey getKey(String keyName) {
 		
-		return Key.valueOf(keyName);
+		return GradeMapKey.valueOf(keyName);
 	}
 }

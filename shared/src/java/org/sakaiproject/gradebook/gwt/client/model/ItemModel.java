@@ -247,7 +247,12 @@ public class ItemModel extends BaseTreeModel {
 	}
 	
 	public Date getDueDate() {
-		return get(ItemKey.DUE_DATE.name());
+		Object obj = get(ItemKey.DUE_DATE.name());
+		
+		if (obj instanceof Long)
+			return new Date((Long)obj);
+		
+		return (Date)obj;
 	}
 	
 	public void setDueDate(Date dueDate) {

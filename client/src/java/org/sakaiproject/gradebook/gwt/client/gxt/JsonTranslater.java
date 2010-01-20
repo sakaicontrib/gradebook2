@@ -9,6 +9,7 @@ import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnKey;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
+import org.sakaiproject.gradebook.gwt.client.model.GradeFormatKey;
 import org.sakaiproject.gradebook.gwt.client.model.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookKey;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
@@ -38,22 +39,29 @@ public class JsonTranslater {
 	
 	public JsonTranslater(EnumSet<?> keyEnumSet) {
 		this.modelType = new ModelType();
+		addModelTypeFields(modelType, keyEnumSet);
+	}
+	
+	public static void addModelTypeFields(ModelType modelType, EnumSet<?> keyEnumSet) {
 		for (Enum<?> e : keyEnumSet) {
-			DataField field = new DataField(e.name());
+			DataField field = new DataField(e.name(), e.name());
 			Class<?> type = null;
 			
-			if (e instanceof GradebookKey) {
-				field.setType(((GradebookKey)e).getType());
-			} else if (e instanceof ItemKey) {
+			if (e instanceof GradebookKey) 
+				type = ((GradebookKey)e).getType();
+			else if (e instanceof ItemKey) 
 				type = ((ItemKey)e).getType();
-				
-				field.setType(type);
-				if (type != null) {
-					if (type.equals(Date.class))
-						field.setFormat("yyyy-MM-dd");
-				}
+			else if (e instanceof GradeFormatKey) 
+				type = ((GradeFormatKey)e).getType();
+			
+			if (type != null) {
+				if (type.equals(String.class))
+					type = null;
+				else if (type.equals(Date.class))
+					field.setFormat("yyyy-MM-dd");
 			}
 			
+			field.setType(type);
 			modelType.addField(field);
 		}
 	}

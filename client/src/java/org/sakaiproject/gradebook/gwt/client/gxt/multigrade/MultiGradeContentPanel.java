@@ -28,9 +28,7 @@ import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
-import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
-import org.sakaiproject.gradebook.gwt.client.SecureToken;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
@@ -54,28 +52,21 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.SectionKey;
-import org.sakaiproject.gradebook.gwt.client.model.SectionModel;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.Style.SortDir;
-import com.extjs.gxt.ui.client.data.BaseListLoader;
-import com.extjs.gxt.ui.client.data.BaseModel;
-import com.extjs.gxt.ui.client.data.BasePagingLoader;
 import com.extjs.gxt.ui.client.data.BaseTreeModel;
 import com.extjs.gxt.ui.client.data.DataReader;
 import com.extjs.gxt.ui.client.data.HttpProxy;
 import com.extjs.gxt.ui.client.data.JsonLoadResultReader;
-import com.extjs.gxt.ui.client.data.JsonPagingLoadResultReader;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
+import com.extjs.gxt.ui.client.data.ListLoader;
 import com.extjs.gxt.ui.client.data.ModelData;
-import com.extjs.gxt.ui.client.data.ModelReader;
 import com.extjs.gxt.ui.client.data.ModelType;
 import com.extjs.gxt.ui.client.data.PagingLoadConfig;
-import com.extjs.gxt.ui.client.data.PagingLoadResult;
-import com.extjs.gxt.ui.client.data.RpcProxy;
 import com.extjs.gxt.ui.client.data.SortInfo;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
@@ -144,7 +135,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 	private Listener<UserChangeEvent> userChangeEventListener;
 
 	private MultigradeSelectionModel<ModelData> cellSelectionModel;
-	private BaseListLoader<ListLoadResult<ModelData>> sectionsLoader;
+	private ListLoader<ListLoadResult<ModelData>> sectionsLoader;
 
 
 	public MultiGradeContentPanel(ContentPanel childPanel) {
@@ -649,6 +640,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 		unweightedNumericCellRenderer = new UnweightedNumericCellRenderer();
 		extraCreditNumericCellRenderer = new ExtraCreditNumericCellRenderer();
 
+		/*
 		RestBuilder builder = RestBuilder.getInstance(Method.GET, GWT.getModuleBaseURL(),
 				AppConstants.REST_FRAGMENT, AppConstants.SECTION_FRAGMENT);
 		
@@ -674,28 +666,11 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 		
 		// need a loader, proxy, and reader  
 		JsonLoadResultReader<ListLoadResult<ModelData>> reader = new JsonLoadResultReader<ListLoadResult<ModelData>>(type);  
-
-		sectionsLoader = new BaseListLoader<ListLoadResult<ModelData>>(proxy, reader);
-		
-		/*
-		RpcProxy<PagingLoadResult<SectionModel>> sectionsProxy = new RpcProxy<PagingLoadResult<SectionModel>>() {
-			@Override
-			protected void load(Object loadConfig, AsyncCallback<PagingLoadResult<SectionModel>> callback) {
-				Gradebook2RPCServiceAsync service = Registry.get("service");
-				GradebookModel model = Registry.get(AppConstants.CURRENT);
-				service.getPage(model.getGradebookUid(), model.getGradebookId(), EntityType.SECTION, (PagingLoadConfig)loadConfig, SecureToken.get(), callback);
-			}
-		};
-
-		sectionsLoader = 
-			new BasePagingLoader<PagingLoadResult<SectionModel>>(sectionsProxy, new ModelReader());
-		*/
-		
+	*/
+		sectionsLoader = RestBuilder.getDelayLoader(AppConstants.SECTIONS_ROOT, EnumSet.allOf(SectionKey.class), Method.GET, 
+				GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.SECTION_FRAGMENT);
+			
 		sectionsLoader.setRemoteSort(true);
-
-		/*SectionModel allSections = new SectionModel();
-		allSections.setSectionId("all");
-		allSections.setSectionName("All Sections");*/
 
 		ListStore<ModelData> sectionStore = new ListStore<ModelData>(sectionsLoader);
 		sectionStore.setModelComparer(new EntityModelComparer<ModelData>(SectionKey.ID.name()));
@@ -932,7 +907,10 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 		boolean isHidden = configModel.isColumnHidden(AppConstants.ITEMTREE, item.getIdentifier(), true);
 		StringBuilder columnNameBuilder = new StringBuilder().append(item.getName());
 
-		switch (selectedGradebook.getGradebookItemModel().getGradeType()) {
+		ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
+		GradeType gradeType = gradebookItemModel.getGradeType();
+		
+		switch (gradeType) {
 			case POINTS:
 				columnNameBuilder.append(" [").append(item.getPoints()).append("pts]");
 				break;

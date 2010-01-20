@@ -22,6 +22,12 @@
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.GradeEvent" 
 		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
 	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.GradeFormat" 
+		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.GradeMap" 
+		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+	
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Item"
 		parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
 	

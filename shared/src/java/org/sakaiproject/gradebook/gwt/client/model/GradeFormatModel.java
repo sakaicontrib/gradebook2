@@ -27,15 +27,12 @@ public class GradeFormatModel extends EntityModel {
 
 	private static final long serialVersionUID = 1L;
 
-	public enum Key { ID, NAME };
-	
-	
 	public String getName() {
-		return get(Key.NAME.name());
+		return get(GradeFormatKey.NAME.name());
 	}
 	
 	public void setName(String name) {
-		set(Key.NAME.name(), name);
+		set(GradeFormatKey.NAME.name(), name);
 	}
 	
 	@Override
@@ -45,11 +42,11 @@ public class GradeFormatModel extends EntityModel {
 
 	@Override
 	public String getIdentifier() {
-		return get(Key.ID.name());
+		return get(GradeFormatKey.ID.name());
 	}
 	
 	public void setIdentifier(String id) {
-		set(Key.ID.name(), id);
+		set(GradeFormatKey.ID.name(), id);
 	}
 
 }

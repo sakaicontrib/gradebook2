@@ -59,7 +59,7 @@ public class Notifier {
 	
 	public void notifyError(Throwable e) {
 		String message = null;
-		String cause = "";
+		String cause = null;
 		if (e == null || e.getMessage() == null) {
 			I18nConstants i18n = Registry.get("i18n");
 			message = i18n.unknownException();
@@ -89,6 +89,10 @@ public class Notifier {
 			String title = "Request Failed"; 
 			String text = " {0} : {1} "; 
 			Object[] values = { message, cause };
+			
+			if (cause == null) {
+				text = " {0} ";
+			}
 			
 			Params infoParams = new Params(values);
 	

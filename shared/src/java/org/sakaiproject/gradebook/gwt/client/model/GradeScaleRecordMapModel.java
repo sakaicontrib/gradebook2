@@ -26,6 +26,7 @@ package org.sakaiproject.gradebook.gwt.client.model;
 import java.util.List;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
+import com.extjs.gxt.ui.client.data.ModelData;
 
 public class GradeScaleRecordMapModel extends BaseModel {
 
@@ -33,8 +34,8 @@ public class GradeScaleRecordMapModel extends BaseModel {
 	
 	private String gradebookUid;
 	private Long gradebookId;
-	private List<GradeScaleRecordModel> records;
-	private GradeScaleRecordModel updatedRecord;
+	private List<ModelData> records;
+	private ModelData updatedRecord;
 	private boolean hardReset; 
 	
 	public GradeScaleRecordMapModel() {
@@ -42,29 +43,29 @@ public class GradeScaleRecordMapModel extends BaseModel {
 		hardReset = false; 
 	}
 	
-	public GradeScaleRecordMapModel(String gradebookUid, Long gradebookId, GradeScaleRecordModel updatedRecord) {
+	public GradeScaleRecordMapModel(String gradebookUid, Long gradebookId, ModelData updatedRecord) {
 		this.gradebookUid = gradebookUid;
 		this.gradebookId = gradebookId;
 		this.updatedRecord = updatedRecord;
 	}
 	
-	public GradeScaleRecordMapModel(List<GradeScaleRecordModel> records) {
+	public GradeScaleRecordMapModel(List<ModelData> records) {
 		this.records = records;
 	}
 
-	public List<GradeScaleRecordModel> getRecords() {
+	public List<ModelData> getRecords() {
 		return records;
 	}
 
-	public void setRecords(List<GradeScaleRecordModel> records) {
+	public void setRecords(List<ModelData> records) {
 		this.records = records;
 	}
 
-	public GradeScaleRecordModel getUpdatedRecord() {
+	public ModelData getUpdatedRecord() {
 		return updatedRecord;
 	}
 
-	public void setUpdatedRecord(GradeScaleRecordModel updatedRecord) {
+	public void setUpdatedRecord(ModelData updatedRecord) {
 		this.updatedRecord = updatedRecord;
 	}
 

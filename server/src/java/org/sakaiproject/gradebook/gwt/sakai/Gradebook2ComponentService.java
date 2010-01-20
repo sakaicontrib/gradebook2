@@ -17,11 +17,19 @@ public interface Gradebook2ComponentService {
 	
 	public Map<String, Object> getApplicationMap(String... gradebookUids);
 	
+	public List<Map<String,Object>> getAvailableGradeFormats(String gradebookUid, Long gradebookId);
+	
 	public List<Map<String,Object>> getGradeEvents(Long assignmentId, String studentUid);
+	
+	public List<Map<String,Object>> getGradeMaps(String gradebookUid);
 	
 	public List<Map<String,Object>> getVisibleSections(String gradebookUid, boolean enableAllSectionsEntry, String allSectionsEntryTitle);
 	
+	public void resetGradeMap(String gradebookUid);
+	
 	public Boolean updateConfiguration(Long gradebookId, String field, String value);
+	
+	public void updateGradeMap(String gradebookUid, String affectedLetterGrade, Object value) throws InvalidInputException;
 	
 	public Map<String, Object> updateItem(Map<String, Object> attributes) throws InvalidInputException;
 	

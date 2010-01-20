@@ -63,6 +63,7 @@ public class GradebookEvents {
 	public static final GradebookEvent ClearSearch 					= registerEvent(EventKey.CLEAR_SEARCH);
 	public static final GradebookEvent CloseNotification			= registerEvent(EventKey.CLOSE_NOTIFICATION);
 	public static final GradebookEvent CreateItem					= registerEvent(EventKey.CREATE_ITEM);
+	public static final GradebookEvent DeleteGradeMap				= registerEvent(EventKey.DELETE_GRADE_MAP);
 	public static final GradebookEvent DeleteItem					= registerEvent(EventKey.DELETE_ITEM);
 	public static final GradebookEvent DoSearch 					= registerEvent(EventKey.DO_SEARCH);
 	public static final GradebookEvent EndItemUpdates				= registerEvent(EventKey.END_ITEM_UPDATES);
@@ -113,6 +114,7 @@ public class GradebookEvents {
 	public static final GradebookEvent SwitchGradebook 				= registerEvent(EventKey.SWITCH_GRADEBOOK);
 	public static final GradebookEvent UnmaskItemTree				= registerEvent(EventKey.UNMASK_ITEM_TREE);
 	public static final GradebookEvent UpdateLearnerGradeRecord		= registerEvent(EventKey.UPDATE_LEARNER_GRADE_RECORD);
+	public static final GradebookEvent UpdateGradeMap				= registerEvent(EventKey.UPDATE_GRADE_MAP);
 	public static final GradebookEvent UpdateItem					= registerEvent(EventKey.UPDATE_ITEM);
 	public static final GradebookEvent UserChange 					= registerEvent(EventKey.USER_CHANGE);
 	
