@@ -22,6 +22,7 @@
  **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.action;
 
+import org.sakaiproject.gradebook.gwt.client.model.ActionKey;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
@@ -76,55 +77,55 @@ public abstract class UserEntityAction<M extends ModelData> extends Action {
 	}
 
 	public Long getParentId() {
-		return get(Key.PARENT_ID.name());
+		return get(ActionKey.PARENT_ID.name());
 	}
 
 	public void setParentId(Long parentId) {
-		set(Key.PARENT_ID.name(), parentId);
+		set(ActionKey.PARENT_ID.name(), parentId);
 	}
 
 	public M getModel() {
-		return this.<M>get(Key.MODEL.name());
+		return this.<M>get(ActionKey.MODEL.name());
 	}
 
 	public void setModel(M model) {
-		set(Key.MODEL.name(), model);
+		set(ActionKey.MODEL.name(), model);
 	}
 
 	public String getKey() {
-		return get(Key.PROPERTY.name());
+		return get(ActionKey.PROPERTY.name());
 	}
 
 	public void setKey(String key) {
-		set(Key.PROPERTY.name(), key);
+		set(ActionKey.PROPERTY.name(), key);
 	}
 
 	public <X> X getValue() {
-		return this.<X>get(Key.VALUE.name());
+		return this.<X>get(ActionKey.VALUE.name());
 	}
 
 	public <X> void setValue(X value) {
-		set(Key.VALUE.name(), value);
+		set(ActionKey.VALUE.name(), value);
 	}
 
 	public <X> X getStartValue() {
-		return this.<X>get(Key.START_VALUE.name());
+		return this.<X>get(ActionKey.START_VALUE.name());
 	}
 
 	public <X> void setStartValue(X startValue) {
-		set(Key.START_VALUE.name(), startValue);
+		set(ActionKey.START_VALUE.name(), startValue);
 	}
 
 	public BaseModel getStudentModel() {
-		return get(Key.STUDENT_MODEL.name());
+		return get(ActionKey.STUDENT_MODEL.name());
 	}
 
 	public void setStudentModel(BaseModel studentModel) {
-		set(Key.STUDENT_MODEL.name(), studentModel);
+		set(ActionKey.STUDENT_MODEL.name(), studentModel);
 	}
 
 	public Status getStatus() {
-		String status = get(Key.STATUS.name());
+		String status = get(ActionKey.STATUS.name());
 
 		if (status == null)
 			return Status.UNSUBMITTED;
@@ -132,7 +133,7 @@ public abstract class UserEntityAction<M extends ModelData> extends Action {
 	}
 
 	public void setStatus(Status status) {
-		set(Key.STATUS.name(), status.name());
+		set(ActionKey.STATUS.name(), status.name());
 	}
 
 }

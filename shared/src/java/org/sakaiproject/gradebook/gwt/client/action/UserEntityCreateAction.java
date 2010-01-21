@@ -22,6 +22,7 @@
  **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.action;
 
+import org.sakaiproject.gradebook.gwt.client.model.ActionKey;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
@@ -49,19 +50,19 @@ public class UserEntityCreateAction<M extends BaseModel> extends UserEntityActio
 
 
 	public String getName() {
-		return get(Key.NAME.name());
+		return get(ActionKey.NAME.name());
 	}
 
 	public void setName(String name) {
-		set(Key.NAME.name(), name);
+		set(ActionKey.NAME.name(), name);
 	}
 
 	public Double getWeight() {
-		return get(Key.WEIGHT.name());
+		return get(ActionKey.WEIGHT.name());
 	}
 
 	public void setWeight(Double weight) {
-		set(Key.WEIGHT.name(), weight);
+		set(ActionKey.WEIGHT.name(), weight);
 	}
 
 	public String toString() {

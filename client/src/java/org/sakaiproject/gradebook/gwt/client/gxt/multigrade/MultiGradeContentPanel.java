@@ -145,7 +145,6 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 		// This UserChangeEvent listener
 		addListener(GradebookEvents.UserChange.getEventType(), userChangeEventListener);
 		addListener(GradebookEvents.RefreshCourseGrades.getEventType(), refreshCourseGradesListener);
-
 	}
 
 	public void deselectAll() {

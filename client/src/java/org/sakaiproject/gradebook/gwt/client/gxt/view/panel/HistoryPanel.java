@@ -23,30 +23,23 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
-import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
-import org.sakaiproject.gradebook.gwt.client.SecureToken;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
+import org.sakaiproject.gradebook.gwt.client.RestBuilder;
+import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
-import org.sakaiproject.gradebook.gwt.client.action.Action.Key;
-import org.sakaiproject.gradebook.gwt.client.gxt.NotifyingAsyncCallback;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.ActionKey;
 
-import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.binding.Converter;
 import com.extjs.gxt.ui.client.binding.FieldBinding;
 import com.extjs.gxt.ui.client.binding.FormBinding;
-import com.extjs.gxt.ui.client.data.BasePagingLoader;
-import com.extjs.gxt.ui.client.data.DataReader;
-import com.extjs.gxt.ui.client.data.ModelReader;
-import com.extjs.gxt.ui.client.data.PagingLoadConfig;
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 import com.extjs.gxt.ui.client.data.PagingLoader;
-import com.extjs.gxt.ui.client.data.RpcProxy;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
 import com.extjs.gxt.ui.client.event.SelectionChangedListener;
@@ -68,24 +61,26 @@ import com.extjs.gxt.ui.client.widget.layout.ColumnLayout;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.toolbar.PagingToolBar;
-import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.core.client.GWT;
 
 public class HistoryPanel extends EntityPanel {
 
 	private ColumnModel columnModel;
 	private FormBinding formBinding;
 	private FormPanel formPanel;
-	private PagingLoader<PagingLoadResult<UserEntityAction<?>>> loader;
-	private Grid<UserEntityAction<?>> grid;
-	private GridSelectionModel<UserEntityAction<?>> selectionModel;
+	private PagingLoader<PagingLoadResult<ModelData>> loader;
+	private Grid<ModelData> grid;
+	private GridSelectionModel<ModelData> selectionModel;
 	private PagingToolBar pagingToolBar;
-	private ListStore<UserEntityAction<?>> store;
-	private SelectionChangedListener<UserEntityAction<?>> selectionListener;
+	private ListStore<ModelData> store;
+	private SelectionChangedListener<ModelData> selectionListener;
 	
 	private LabelField studentNameField;
 	
 	private FieldSet fieldSet;
 	private Converter converter;
+	
+	
 	
 	public HistoryPanel(I18nConstants i18n) {
 		super(i18n, true);
@@ -117,40 +112,6 @@ public class HistoryPanel extends EntityPanel {
 			
 		};
 		
-		RpcProxy<PagingLoadResult<UserEntityAction<?>>> proxy = new RpcProxy<PagingLoadResult<UserEntityAction<?>>>() {
-			@Override
-			protected void load(Object loadConfig, AsyncCallback<PagingLoadResult<UserEntityAction<?>>> callback) {
-				Gradebook2RPCServiceAsync service = Registry.get("service");
-				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-				service.getPage(selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId(), EntityType.ACTION, (PagingLoadConfig)loadConfig, SecureToken.get(), callback);
-			}
-			
-			@Override
-			public void load(final DataReader<PagingLoadResult<UserEntityAction<?>>> reader, final Object loadConfig, final AsyncCallback<PagingLoadResult<UserEntityAction<?>>> callback) {
-				load(loadConfig, new NotifyingAsyncCallback<PagingLoadResult<UserEntityAction<?>>>() {
-
-					public void onFailure(Throwable caught) {
-						super.onFailure(caught);
-						callback.onFailure(caught);
-					}
-
-					public void onSuccess(PagingLoadResult<UserEntityAction<?>> result) {
-						try {
-							PagingLoadResult<UserEntityAction<?>> data = null;
-							if (reader != null) {
-								data = reader.read(loadConfig, result);
-							} else {
-								data = result;
-							}
-							callback.onSuccess(data);
-						} catch (Exception e) {
-							callback.onFailure(e);
-						}
-					}
-
-				});
-			}
-		};
 			
 		FormLayout formPanelLayout = new FormLayout();
 		formPanelLayout.setLabelSeparator(":");
@@ -162,31 +123,31 @@ public class HistoryPanel extends EntityPanel {
 		formPanel.setVisible(false);
 	
 		LabelField dateField = new LabelField();
-		dateField.setName(Key.DATE_RECORDED.name());
+		dateField.setName(ActionKey.DATE_RECORDED.name());
 		dateField.setFieldLabel(i18n.actionDateFieldLabel());
 		dateField.setStyleAttribute("font-size", "12pt");
 		formPanel.add(dateField);
 		
 		LabelField descriptionField = new LabelField();
-		descriptionField.setName(Key.DESCRIPTION.name());
+		descriptionField.setName(ActionKey.DESCRIPTION.name());
 		descriptionField.setFieldLabel(i18n.actionDescriptionFieldLabel());
 		descriptionField.setStyleAttribute("font-size", "12pt");
 		formPanel.add(descriptionField);
 		
 		LabelField entityField = new LabelField();
-		entityField.setName(Key.ENTITY_NAME.name());
+		entityField.setName(ActionKey.ENTITY_NAME.name());
 		entityField.setFieldLabel(i18n.actionEntityFieldLabel());
 		entityField.setStyleAttribute("font-size", "12pt");
 		formPanel.add(entityField);
 		
 		studentNameField = new LabelField();
-		studentNameField.setName(Key.STUDENT_NAME.name());
+		studentNameField.setName(ActionKey.STUDENT_NAME.name());
 		studentNameField.setFieldLabel(i18n.actionStudentNameFieldLabel());
 		studentNameField.setStyleAttribute("font-size", "12pt");
 		formPanel.add(studentNameField);
 		
 		LabelField actorNameField = new LabelField();
-		actorNameField.setName(Key.GRADER_NAME.name());
+		actorNameField.setName(ActionKey.GRADER_NAME.name());
 		actorNameField.setFieldLabel(i18n.actionActor());
 		actorNameField.setStyleAttribute("font-size", "12pt");
 		formPanel.add(actorNameField);
@@ -201,10 +162,10 @@ public class HistoryPanel extends EntityPanel {
 		fieldSet.setLayout(formLayout);
 		
 		formPanel.add(fieldSet);
-		
-		
-		loader = new BasePagingLoader<PagingLoadResult<UserEntityAction<?>>>(proxy, new ModelReader());
-		
+				
+		loader = RestBuilder.getPagingDelayLoader(AppConstants.HISTORY_ROOT, EnumSet.allOf(ActionKey.class), Method.GET, 
+				GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.HISTORY_FRAGMENT);
+
 		pagingToolBar = new PagingToolBar(20);
 		pagingToolBar.bind(loader);
 		
@@ -212,42 +173,42 @@ public class HistoryPanel extends EntityPanel {
 		
 		ArrayList<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 		
-		ColumnConfig column = new ColumnConfig(Key.DATE_RECORDED.name(), i18n.actionDateFieldLabel(), 200);
+		ColumnConfig column = new ColumnConfig(ActionKey.DATE_RECORDED.name(), i18n.actionDateFieldLabel(), 200);
 		configs.add(column);
 		
-		column = new ColumnConfig(Key.DESCRIPTION.name(), i18n.actionDescriptionFieldLabel(), 150);
+		column = new ColumnConfig(ActionKey.DESCRIPTION.name(), i18n.actionDescriptionFieldLabel(), 150);
 		configs.add(column);
 		
-		column = new ColumnConfig(Key.ENTITY_NAME.name(), i18n.actionEntityFieldLabel(), 180);
+		column = new ColumnConfig(ActionKey.ENTITY_NAME.name(), i18n.actionEntityFieldLabel(), 180);
 		configs.add(column);
 		
-		column = new ColumnConfig(Key.STUDENT_NAME.name(), i18n.actionStudentNameFieldLabel(), 140);
+		column = new ColumnConfig(ActionKey.STUDENT_NAME.name(), i18n.actionStudentNameFieldLabel(), 140);
 		configs.add(column);
 		
 		columnModel = new ColumnModel(configs);
-		store = new ListStore<UserEntityAction<?>>(loader);
-		selectionListener = new SelectionChangedListener<UserEntityAction<?>>() {
+		store = new ListStore<ModelData>(loader);
+		selectionListener = new SelectionChangedListener<ModelData>() {
 
 			@Override
-			public void selectionChanged(SelectionChangedEvent<UserEntityAction<?>> se) {
-				UserEntityAction<?> action = se.getSelectedItem();
+			public void selectionChanged(SelectionChangedEvent<ModelData> se) {
+				ModelData action = se.getSelectedItem();
 				
 				formPanel.hide();
 				
 				if (action == null) 
 					formBinding.unbind();
-				else 
+				else {
 					formBinding.bind(action);
-				
-				initState(action);
+					initState(action);
+				}
 				formPanel.show();
 			}
 			
 		};
 		
-		selectionModel = new GridSelectionModel<UserEntityAction<?>>();
+		selectionModel = new GridSelectionModel<ModelData>();
 		selectionModel.addSelectionChangedListener(selectionListener);
-		grid = new Grid<UserEntityAction<?>>(store, columnModel);
+		grid = new Grid<ModelData>(store, columnModel);
 		grid.setBorders(true);
 		grid.setSelectionModel(selectionModel);
 
@@ -301,12 +262,20 @@ public class HistoryPanel extends EntityPanel {
 		loader.load(0, 20);
 	}
 	
-	private void initState(UserEntityAction<?> action) {
-		boolean isGradebook = action.getEntityType() == EntityType.GRADEBOOK;
-		boolean isCategory = action.getEntityType() == EntityType.CATEGORY;
-		boolean isItem = action.getEntityType() == EntityType.ITEM;
-		boolean isGradeOrCourseGrade = (action.getEntityType() == EntityType.GRADE_RECORD ||
-				action.getEntityType() == EntityType.COURSE_GRADE_RECORD);
+	@Override
+	protected void onShow() {
+		super.onShow();
+		loader.load(0, 20);
+	}
+	
+	private void initState(ModelData action) {
+		String entityTypeString = action.get(ActionKey.ENTITY_TYPE.name());
+		EntityType entityType = entityTypeString == null ? null : EntityType.valueOf(entityTypeString);
+		boolean isGradebook = entityType != null && entityType == EntityType.GRADEBOOK;
+		boolean isCategory = entityType != null && entityType == EntityType.CATEGORY;
+		boolean isItem = entityType != null && entityType == EntityType.ITEM;
+		boolean isGradeOrCourseGrade = (entityType != null && entityType == EntityType.GRADE_RECORD ||
+				entityType != null && entityType == EntityType.COURSE_GRADE_RECORD);
 		
 		studentNameField.setVisible(isGradeOrCourseGrade);
 		fieldSet.setVisible(!isGradeOrCourseGrade);
@@ -349,120 +318,5 @@ public class HistoryPanel extends EntityPanel {
 		// TODO Auto-generated method stub
 		
 	}
-
-	
-/*
-	 private void createExpander() {
-
-		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
-
-		XTemplate tpl = XTemplate.create(getTemplate());
-
-		RowExpander expander = new RowExpander();
-		expander.setTemplate(tpl);
-
-		configs.add(expander);
-
-		ColumnConfig column = new ColumnConfig();
-		column.setId(Action.Key.ENTITY_NAME.name());
-		column.setHeader("Name");
-		column.setWidth(200);
-		configs.add(column);
-
-		
-		loader = newLoader();
-		ListStore<BaseModel> store = new ListStore<BaseModel>(loader);
-		//store.add(stocks);
-
-		ColumnModel cm = new ColumnModel(configs);
-
-		Grid<BaseModel> grid = new Grid<BaseModel>(store, cm);
-		grid.setBorders(true);
-		grid.addPlugin(expander);
-		grid.getView().setForceFit(true);
-		add(grid);
-
-	} 
-	 
-	private native String getTemplate() /--*-{
-		var html = [ 
-		'<p><b>Type:</b> {ENTITY_TYPE}</p>', 
-		'<p><b>Action:</b> {ACTION_TYPE}</p>',  
-		'<tpl if="ACTION_TYPE ==\'GRADED\'"><p><b>Score:</b> {score}</p></tpl>' 
-		]; 
-		return html.join("");
-	}-*--/;  
-	
-	@Override
-	protected void addComponents() {
-		setBottomComponent(pagingToolBar);
-	}
-	
-	@Override
-	protected void addGridListenersAndPlugins(final EditorGrid<UserEntityAction> grid) {
-		// We only need to do this once
-		if (rendered)
-			return;
-		
-		ComponentPlugin plugin = (ComponentPlugin)cm.getColumn(0);
-		grid.addPlugin(plugin);
-		grid.getView().setForceFit(true); 
-	}
-	
-	@Override
-	protected void reconfigureGrid(CustomColumnModel cm) {
-		super.reconfigureGrid(cm);
-	}
-	
-	@Override
-	protected CustomColumnModel newColumnModel(GradebookModel selectedGradebook) {
-		
-		String gradebookUid = selectedGradebook.getGradebookUid();
-		
-		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
-		
-		String html = new StringBuilder()
-			.append("<p><b>Desc:</b> {").append(Action.Key.DESCRIPTION.name()).append("}</p>")
-			.append("<p><b>Name:</b> {").append(ItemModel.Key.NAME.name()).append("}</p>")
-			.toString();
-		
-		XTemplate tpl = XTemplate.create(html);
-
-		RowExpander expander = new RowExpander();
-		expander.setTemplate(tpl);
-
-		configs.add(expander); 
-		
-		ColumnConfig datePerformed = new ColumnConfig(Action.Key.DATE_PERFORMED.name(),
-				"Timestamp", 200);
-		datePerformed.setDateTimeFormat(DateTimeFormat.getMediumDateTimeFormat());
-		datePerformed.setHidden(true);
-		configs.add(datePerformed);
-		
-		ColumnConfig dateRecorded = new ColumnConfig(Action.Key.DATE_RECORDED.name(),
-				"Time Recorded", 200);
-		dateRecorded.setDateTimeFormat(DateTimeFormat.getMediumDateTimeFormat());
-		dateRecorded.setHidden(false);
-		configs.add(dateRecorded);
-		
-		ColumnConfig entityType = new ColumnConfig(Action.Key.ENTITY_TYPE.name(),
-				"Type", 120);
-		configs.add(entityType);
-		
-		ColumnConfig graderName = new ColumnConfig(Action.Key.GRADER_NAME.name(),
-				"Grader", 120);
-		
-		configs.add(graderName);
-		
-		CustomColumnModel cm = new CustomColumnModel(gradebookUid, gridId, configs);
-		
-		return cm;
-	}
-	
-	
-	protected void onRender(Element parent, int pos) {
-		super.onRender(parent, pos);
-		loader.load(0, getPageSize());
-	}*/
 
 }

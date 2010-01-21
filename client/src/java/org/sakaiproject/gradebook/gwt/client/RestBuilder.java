@@ -9,25 +9,28 @@ import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
 import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
-import org.sakaiproject.gradebook.gwt.client.model.SectionKey;
 
 import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.data.BaseListLoader;
 import com.extjs.gxt.ui.client.data.BaseModel;
+import com.extjs.gxt.ui.client.data.BasePagingLoader;
 import com.extjs.gxt.ui.client.data.DataReader;
 import com.extjs.gxt.ui.client.data.HttpProxy;
 import com.extjs.gxt.ui.client.data.JsonLoadResultReader;
+import com.extjs.gxt.ui.client.data.JsonPagingLoadResultReader;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
 import com.extjs.gxt.ui.client.data.ListLoader;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.ModelType;
-import com.google.gwt.core.client.GWT;
+import com.extjs.gxt.ui.client.data.PagingLoadResult;
+import com.extjs.gxt.ui.client.data.PagingLoader;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONBoolean;
 import com.google.gwt.json.client.JSONNumber;
@@ -69,20 +72,8 @@ public class RestBuilder extends RequestBuilder {
 	}
 	
 	public static <M extends ModelData> ListLoader<ListLoadResult<M>> getDelayLoader(String root,
-			EnumSet<?> enumSet, Method method, String ... urlArgs) {
-		final String partialUrl = RestBuilder.buildInitUrl(urlArgs);
-		RestBuilder builder = RestBuilder.getInstance(Method.GET, partialUrl);
-		
-		HttpProxy<String> proxy = new HttpProxy<String>(builder) {
-			
-			public void load(final DataReader<String> reader, final Object loadConfig, final AsyncCallback<String> callback) {
-				GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
-				initUrl = RestBuilder.buildInitUrl(partialUrl,
-						gbModel.getGradebookUid(), String.valueOf(gbModel.getGradebookId()));
-				super.load(reader, loadConfig, callback);
-			}
-			
-		};  
+			EnumSet<?> enumSet, Method method, String ... urlArgs) {	
+		HttpProxy<String> proxy = getProxy(urlArgs);
 
 		ModelType type = new ModelType();
 		type.setRoot(root);
@@ -95,6 +86,19 @@ public class RestBuilder extends RequestBuilder {
 		return new BaseListLoader<ListLoadResult<M>>(proxy, reader);
 	}
 	
+	public static <M extends ModelData> PagingLoader<PagingLoadResult<M>> getPagingDelayLoader(String root,
+			EnumSet<?> enumSet, Method method, String ... urlArgs) {	
+		HttpProxy<String> proxy = getProxy(urlArgs);
+
+		ModelType type = new ModelType();
+		type.setRoot(root);
+		type.setTotalName(AppConstants.TOTAL);
+		
+		JsonTranslater.addModelTypeFields(type, enumSet);
+
+		JsonPagingLoadResultReader<PagingLoadResult<M>> reader = new JsonPagingLoadResultReader<PagingLoadResult<M>>(type); 
+		return new BasePagingLoader<PagingLoadResult<M>>(proxy, reader);
+	}
 	
 	public static JSONObject convertModel(BaseModel model) {
 		JSONObject json = new JSONObject();
@@ -132,7 +136,6 @@ public class RestBuilder extends RequestBuilder {
 				} else if (obj instanceof Date) {
 					json.put(key, new JSONNumber(((Date)obj).getTime()));
 				} else {
-					
 					Object o = obj;
 				}
 			}
@@ -194,6 +197,19 @@ public class RestBuilder extends RequestBuilder {
 		return builder.toString();
 	}
 	
-	
+	private static HttpProxy<String> getProxy(String[] urlArgs) {
+		final String partialUrl = RestBuilder.buildInitUrl(urlArgs);
+		RestBuilder builder = RestBuilder.getInstance(Method.GET, partialUrl);
+		return new HttpProxy<String>(builder) {
+			
+			public void load(final DataReader<String> reader, final Object loadConfig, final AsyncCallback<String> callback) {
+				GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
+				initUrl = RestBuilder.buildInitUrl(partialUrl,
+						gbModel.getGradebookUid(), String.valueOf(gbModel.getGradebookId()));
+				super.load(reader, loadConfig, callback);
+			}
+			
+		};  
+	}
 	
 }

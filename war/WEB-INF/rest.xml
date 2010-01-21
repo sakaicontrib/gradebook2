@@ -28,6 +28,9 @@
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.GradeMap" 
 		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
 	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.History" 
+		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+	
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Item"
 		parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
 	

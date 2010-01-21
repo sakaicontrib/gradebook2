@@ -322,43 +322,6 @@ public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 		JsonLoadResultReader<PagingLoadResult<M>> reader = new JsonLoadResultReader<PagingLoadResult<M>>(type);  
 
 		return new BasePagingLoader<PagingLoadResult<M>>(proxy, reader);  
-		
-		/*
-		RpcProxy<PagingLoadResult<M>> proxy = new RpcProxy<PagingLoadResult<M>>() {
-			@Override
-			protected void load(Object loadConfig, AsyncCallback<PagingLoadResult<M>> callback) {
-				Gradebook2RPCServiceAsync service = Registry.get("service");
-				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-				service.getPage(selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId(), entityType, (PagingLoadConfig)loadConfig, SecureToken.get(), callback);
-			}
-			
-			@Override
-			public void load(final DataReader<PagingLoadResult<M>> reader, final Object loadConfig, final AsyncCallback<PagingLoadResult<M>> callback) {
-				load(loadConfig, new NotifyingAsyncCallback<PagingLoadResult<M>>() {
-
-					public void onFailure(Throwable caught) {
-						super.onFailure(caught);
-						callback.onFailure(caught);
-					}
-
-					public void onSuccess(PagingLoadResult<M> result) {
-						try {
-							PagingLoadResult<M> data = null;
-							if (reader != null) {
-								data = reader.read(loadConfig, result);
-							} else {
-								data = result;
-							}
-							callback.onSuccess(data);
-						} catch (Exception e) {
-							callback.onFailure(e);
-						}
-					}
-
-				});
-			}
-		};
-		return new BasePagingLoader<PagingLoadResult<M>>(proxy, new ModelReader());*/
 	}
 	
 	protected PagingToolBar newPagingToolBar(int pageSize) {

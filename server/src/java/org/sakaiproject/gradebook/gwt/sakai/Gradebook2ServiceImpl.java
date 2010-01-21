@@ -968,7 +968,15 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 			Boolean isIncluded = Boolean.valueOf(includeInGrade);
 			Boolean isExtraCredit = Boolean.valueOf(DataTypeConversionUtil.checkBoolean((Boolean)attributes.get(ItemKey.EXTRA_CREDIT.name())));
 			Boolean isNullsAsZeros = Boolean.valueOf(DataTypeConversionUtil.checkBoolean((Boolean)attributes.get(ItemKey.NULLSASZEROS.name())));
-			Date dueDate = (Date)attributes.get(ItemKey.DUE_DATE.name());
+			Date dueDate = null;
+			Object dueDateObject = attributes.get(ItemKey.DUE_DATE.name());
+			if (dueDateObject instanceof Date) 
+				dueDate = (Date)dueDateObject;
+			else if (dueDateObject instanceof Long) {
+				Long dueDateMillis = (Long)attributes.get(ItemKey.DUE_DATE.name());
+				dueDate = dueDateMillis == null ? null : new Date(dueDateMillis.longValue());
+			}
+			
 			Integer itemOrder = (Integer)attributes.get(ItemKey.ITEM_ORDER.name());
 
 			// Business rule #1
@@ -4616,7 +4624,15 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 
 	private Date convertDate(Object value) {
 
-		return value == null ? null : (Date) value;
+		Date dueDate = null;
+		if (value instanceof Date) 
+			dueDate = (Date)value;
+		else if (value instanceof Long) {
+			Long dueDateMillis = (Long)value;
+			dueDate = dueDateMillis == null ? null : new Date(dueDateMillis.longValue());
+		}
+		
+		return dueDate;
 	}
 
 	private Double convertDouble(Object value) {

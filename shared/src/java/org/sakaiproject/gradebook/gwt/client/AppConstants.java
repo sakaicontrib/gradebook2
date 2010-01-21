@@ -146,9 +146,11 @@ public interface AppConstants {
 	public static final String GRADE_EVENT_FRAGMENT		= "gradeevent";
 	public static final String GRADE_FORMAT_FRAGMENT	= "gradeformat";
 	public static final String GRADE_MAP_FRAGMENT		= "grademap";
+	public static final String HISTORY_FRAGMENT			= "history";
 	
 	public static final String GRADE_FORMAT_ROOT		= "formats";
 	public static final String GRADE_MAP_ROOT			= "maps";
+	public static final String HISTORY_ROOT				= "history";
 	public static final String SECTIONS_ROOT			= "sections";
 	public static final String TOTAL					= "total";
 	

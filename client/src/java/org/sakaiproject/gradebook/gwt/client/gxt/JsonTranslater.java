@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.EnumSet;
 
+import org.sakaiproject.gradebook.gwt.client.model.ActionKey;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationKey;
 import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
@@ -47,18 +48,24 @@ public class JsonTranslater {
 			DataField field = new DataField(e.name(), e.name());
 			Class<?> type = null;
 			
+			String format = "yyyy-MM-dd";
+			
 			if (e instanceof GradebookKey) 
 				type = ((GradebookKey)e).getType();
 			else if (e instanceof ItemKey) 
 				type = ((ItemKey)e).getType();
 			else if (e instanceof GradeFormatKey) 
 				type = ((GradeFormatKey)e).getType();
+			else if (e instanceof ActionKey) {
+				type = ((ActionKey)e).getType();
+				format = DateTimeFormat.getMediumDateFormat().getPattern();
+			}
 			
 			if (type != null) {
 				if (type.equals(String.class))
 					type = null;
 				else if (type.equals(Date.class))
-					field.setFormat("yyyy-MM-dd");
+					field.setFormat(format);
 			}
 			
 			field.setType(type);

@@ -27,20 +27,15 @@ import java.util.EnumSet;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
-import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
-import org.sakaiproject.gradebook.gwt.client.SecureToken;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
-import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradeEventKey;
 import org.sakaiproject.gradebook.gwt.client.model.GradeEventModel;
-import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
-import org.sakaiproject.gradebook.gwt.client.model.SectionKey;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -54,7 +49,6 @@ import com.extjs.gxt.ui.client.data.ListLoadResult;
 import com.extjs.gxt.ui.client.data.ListLoader;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.ModelType;
-import com.extjs.gxt.ui.client.data.RpcProxy;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FieldEvent;
@@ -197,23 +191,7 @@ public class MultiGradeContextMenu extends Menu {
 		JsonLoadResultReader<ListLoadResult<ModelData>> reader = new JsonLoadResultReader<ListLoadResult<ModelData>>(type);  
 
 		final ListLoader<ListLoadResult<ModelData>> loader = new BaseListLoader<ListLoadResult<ModelData>>(proxy, reader);
-		
-
-		/*
-		RpcProxy<ListLoadResult<GradeScaleRecordModel>> proxy = new RpcProxy<ListLoadResult<GradeScaleRecordModel>>() {
-			
-			@Override
-			protected void load(Object listLoadConfig, AsyncCallback<ListLoadResult<GradeScaleRecordModel>> callback) {
-				Gradebook2RPCServiceAsync service = Registry.get("service");
-				service.getPage((String)owner.getSelectedModel().get(LearnerKey.UID.name()), owner.getSelectedAssignment(), EntityType.GRADE_EVENT, null, SecureToken.get(), callback);
-			}
-			
-		};
-		
-		
-		final ListLoader<ListLoadResult<GradeScaleRecordModel>> loader = new BaseListLoader<ListLoadResult<GradeScaleRecordModel>>(proxy);  
-		*/
-		
+				
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 		
 		

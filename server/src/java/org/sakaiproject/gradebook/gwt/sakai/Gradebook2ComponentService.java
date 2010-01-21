@@ -23,6 +23,9 @@ public interface Gradebook2ComponentService {
 	
 	public List<Map<String,Object>> getGradeMaps(String gradebookUid);
 	
+	public List<Map<String,Object>> getHistory(String gradebookUid, Long gradebookId,
+			Integer offset, Integer limit);
+	
 	public List<Map<String,Object>> getVisibleSections(String gradebookUid, boolean enableAllSectionsEntry, String allSectionsEntryTitle);
 	
 	public void resetGradeMap(String gradebookUid);

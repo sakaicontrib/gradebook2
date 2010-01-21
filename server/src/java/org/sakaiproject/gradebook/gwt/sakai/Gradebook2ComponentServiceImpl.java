@@ -2,11 +2,13 @@ package org.sakaiproject.gradebook.gwt.sakai;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.Formatter;
 import java.util.HashMap;
@@ -19,9 +21,11 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.ActionType;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
+import org.sakaiproject.gradebook.gwt.client.model.ActionKey;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationKey;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnKey;
@@ -37,6 +41,7 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.SectionKey;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
+import org.sakaiproject.gradebook.gwt.sakai.InstitutionalAdvisor.Column;
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
 import org.sakaiproject.section.api.coursemanagement.CourseSection;
 import org.sakaiproject.service.gradebook.shared.GradebookService;
@@ -61,31 +66,8 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 	private static ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 	
 	public Map<String, Object> createItem(String gradebookUid, Long gradebookId, Map<String, Object> attributes) throws InvalidInputException {
-		
-		ItemModel item = new ItemModel();
-		
-		for (ItemKey key : EnumSet.allOf(ItemKey.class)) {
-			if (key.getType() != null) {
-				try {
-					Object rawValue = attributes.get(key.name());
-					Object value = rawValue;
-					
-					if (rawValue != null) {
-						if (key.getType().equals(Long.class)) 
-							value = Long.valueOf(rawValue.toString());
-						else if (key.getType().equals(Double.class))
-							value = Double.valueOf(rawValue.toString());
-					}
-					
-					item.set(key.name(), value);
-				} catch (ClassCastException cce) {
-					log.info("Unable to cast value for " + key.name() + " as " + key.getType().getCanonicalName());
-				}
-			} else 
-				item.set(key.name(), attributes.get(key.name()));
-		}
-		
-		ItemModel itemModel = createItem(gradebookUid, gradebookId, item, true);
+	
+		ItemModel itemModel = createItem(gradebookUid, gradebookId, toItem(attributes), true);
 		
 		Map<String, Object> itemMap = new HashMap<String, Object>();
 		
@@ -97,7 +79,6 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		
 		return itemMap;
 	}
-	
 	
 	public Map<String, Object> assignComment(String itemId, String studentUid, String text) {
 
@@ -459,6 +440,123 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		}
 		return gradeScaleMappings;
 	}
+	
+	public List<Map<String,Object>> getHistory(String gradebookUid, Long gradebookId,
+			Integer offset, Integer limit) {
+		
+		int off = offset == null ? -1 : offset.intValue();
+		int lim = limit == null ? -1 : limit.intValue();
+		
+		Integer size = gbService.getActionRecordSize(gradebookUid);
+		List<ActionRecord> actionRecords = gbService.getActionRecords(gradebookUid, off, lim);
+		List<Map<String,Object>> models = new ArrayList<Map<String,Object>>();
+
+		String description = null;
+		DateFormat format = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG);
+		format.setLenient(true);
+		
+		for (ActionRecord actionRecord : actionRecords) {
+			Map<String,Object> actionModel = new HashMap<String,Object>();
+			try {
+				UserEntityAction.ActionType actionType = UserEntityAction.ActionType.valueOf(actionRecord.getActionType());
+				UserEntityAction.EntityType entityType = UserEntityAction.EntityType.valueOf(actionRecord.getEntityType());
+				String score = null;
+				StringBuilder text = new StringBuilder();
+				switch (actionType) {
+					case CREATE:
+						description = new StringBuilder().append(actionType.getVerb()).append(" ")
+							.append(entityType).toString();
+						break;
+					case GRADED:
+						score = actionRecord.getPropertyMap().get("score");
+						if (score == null)
+							score = "";
+						actionModel.put("score", score);
+						
+						text.append(actionType.getVerb()).append(" '").append(score)
+							.append("'");
+	
+						description = text.toString();
+						break;
+					case SUBMITTED:
+						score = actionRecord.getPropertyMap().get(Column.LETTER_GRADE.name());
+						if (score == null)
+							score = "";
+						actionModel.put(ActionKey.VALUE.name(), score);
+						
+						text.append(actionType.getVerb()).append(" '").append(score)
+							.append("'");
+
+						description = text.toString();
+						break;
+					case UPDATE:
+						actionModel.put(ActionKey.VALUE.name(), actionRecord.getEntityName());
+						description = actionType.getVerb();
+						break;
+				}
+
+				if (actionModel == null)
+					continue;
+				
+				actionModel.put(ActionKey.ID.name(), String.valueOf(actionRecord.getId()));
+				actionModel.put(ActionKey.GRADEBOOK_UID.name(),actionRecord.getGradebookUid());
+				actionModel.put(ActionKey.GRADEBOOK_ID.name(),actionRecord.getGradebookId());
+				actionModel.put(ActionKey.ENTITY_TYPE.name(), entityType.name());
+				if (actionRecord.getEntityId() != null)
+					actionModel.put(ActionKey.ENTITY_ID.name(),actionRecord.getEntityId());
+				if (actionRecord.getEntityName() != null)
+					actionModel.put(ActionKey.ENTITY_NAME.name(),actionRecord.getEntityName());
+				if (actionRecord.getParentId() != null)
+					actionModel.put(ActionKey.PARENT_ID.name(),Long.valueOf(actionRecord.getParentId()));
+				
+				String studentUid = actionRecord.getStudentUid();
+				actionModel.put(ActionKey.STUDENT_UID.name(), studentUid);
+				
+				if (actionRecord.getEntityName() != null && actionRecord.getEntityName().contains(" : ")) {
+					String[] parts = actionRecord.getEntityName().split(" : ");
+					
+					actionModel.put(ActionKey.STUDENT_NAME.name(),parts[0]);
+					actionModel.put(ActionKey.ENTITY_NAME.name(),parts[1]);
+				}
+
+				actionModel.put(ActionKey.GRADER_NAME.name(), actionRecord.getGraderId());
+
+				if (userService != null && actionRecord.getGraderId() != null) {
+
+					try {
+						User user = userService.getUser(actionRecord.getGraderId());
+						actionModel.put(ActionKey.GRADER_NAME.name(), user.getDisplayName());
+					} catch (UserNotDefinedException e) {
+						log.warn("Unable to find grader name for " + actionRecord.getGraderId(), e);
+					}
+
+				}
+
+				if (actionRecord.getDatePerformed() != null) 
+					actionModel.put(ActionKey.DATE_PERFORMED.name(), String.valueOf(actionRecord.getDatePerformed()));
+				if (actionRecord.getDateRecorded() != null)
+					actionModel.put(ActionKey.DATE_RECORDED.name(), String.valueOf(actionRecord.getDateRecorded()));
+
+				Map<String, String> propertyMap = actionRecord.getPropertyMap();
+
+				if (propertyMap != null) {
+					for (String key : propertyMap.keySet()) {
+						String value = propertyMap.get(key);
+
+						if (value != null && !value.equals("null"))
+							actionModel.put(key, value);
+					}
+				}
+				
+				actionModel.put(ActionKey.DESCRIPTION.name(), description);
+
+				models.add(actionModel);
+			} catch (Exception e) {
+				log.warn("Failed to retrieve history record for " + actionRecord.getId());
+			}
+		}
+		return models;
+	}
 		
 	public List<Map<String,Object>> getVisibleSections(String gradebookUid, boolean enableAllSectionsEntry, String allSectionsEntryTitle) {
 		List<CourseSection> viewableSections = authz.getViewableSections(gradebookUid);
@@ -596,31 +694,7 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 	
 	public Map<String, Object> updateItem(Map<String, Object> attributes) throws InvalidInputException {
 		
-		ItemModel item = new ItemModel();
-		
-		for (ItemKey key : EnumSet.allOf(ItemKey.class)) {
-			if (key.getType() != null) {
-				try {
-					Object rawValue = attributes.get(key.name());
-					Object value = rawValue;
-					
-					if (rawValue != null) {
-						if (key.getType().equals(Long.class)) 
-							value = Long.valueOf(rawValue.toString());
-						else if (key.getType().equals(Double.class))
-							value = Double.valueOf(rawValue.toString());
-					}
-					
-					item.set(key.name(), value);
-				} catch (ClassCastException cce) {
-					log.info("Unable to cast value for " + key.name() + " as " + key.getType().getCanonicalName());
-				}
-			} else 
-				item.set(key.name(), attributes.get(key.name()));
-		}
-		
-		
-		ItemModel result = updateItemModel(item);
+		ItemModel result = updateItemModel(toItem(attributes));
 		
 		Map<String, Object> itemMap = new HashMap<String, Object>();
 		
@@ -684,6 +758,33 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
 			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
 		return buildLearnerGradeRecord(gradebook, userRecord, columns, assignments, categories);
+	}
+	
+	private ItemModel toItem(Map<String,Object> attributes) {
+		ItemModel item = new ItemModel();
+		for (ItemKey key : EnumSet.allOf(ItemKey.class)) {
+			if (key.getType() != null) {
+				try {
+					Object rawValue = attributes.get(key.name());
+					Object value = rawValue;
+					
+					if (rawValue != null) {
+						if (key.getType().equals(Long.class)) 
+							value = Long.valueOf(rawValue.toString());
+						else if (key.getType().equals(Double.class))
+							value = Double.valueOf(rawValue.toString());
+						else if (key.getType().equals(Date.class))
+							value = new Date((Long)rawValue);
+					}
+					
+					item.set(key.name(), value);
+				} catch (ClassCastException cce) {
+					log.info("Unable to cast value for " + key.name() + " as " + key.getType().getCanonicalName());
+				}
+			} else 
+				item.set(key.name(), attributes.get(key.name()));
+		}
+		return item;
 	}
 	
 }
