@@ -45,6 +45,7 @@ import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.SortDir;
+import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.BasePagingLoader;
 import com.extjs.gxt.ui.client.data.HttpProxy;
 import com.extjs.gxt.ui.client.data.JsonPagingLoadResultReader;
@@ -242,7 +243,11 @@ public class MultigradeView extends View {
 		HttpProxy<String> proxy = new HttpProxy<String>(builder);  
 
 		// need a loader, proxy, and reader  
-		JsonPagingLoadResultReader<PagingLoadResult<ModelData>> reader = new JsonPagingLoadResultReader<PagingLoadResult<ModelData>>(type);  
+		JsonPagingLoadResultReader<PagingLoadResult<ModelData>> reader = new JsonPagingLoadResultReader<PagingLoadResult<ModelData>>(type) {
+			protected ModelData newModelInstance() {
+			    return new BaseModel();
+			}
+		};  
 
 		multigradeLoader = new BasePagingLoader<PagingLoadResult<ModelData>>(proxy, reader);  
 		

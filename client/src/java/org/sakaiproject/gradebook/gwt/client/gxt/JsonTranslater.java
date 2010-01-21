@@ -242,6 +242,6 @@ public class JsonTranslater {
 	}
 
 	protected ModelData newModelInstance() {
-		return new BaseModelData();
+		return new BaseModel();
 	}
 }

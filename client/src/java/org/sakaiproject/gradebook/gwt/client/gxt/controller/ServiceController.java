@@ -667,6 +667,7 @@ public class ServiceController extends Controller {
 				record.beginEdit();
 				onUpdateGradeRecordSuccess(event, result);
 				record.endEdit();
+				//record.commit(false);
 				Dispatcher.forwardEvent(GradebookEvents.LearnerGradeRecordUpdated.getEventType(), action);				
 			}
 			

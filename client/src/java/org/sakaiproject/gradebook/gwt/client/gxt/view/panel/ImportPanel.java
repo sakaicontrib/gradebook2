@@ -54,7 +54,7 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.SelectionMode;
-import com.extjs.gxt.ui.client.data.BaseModelData;
+import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
@@ -696,7 +696,7 @@ public class ImportPanel extends GradebookPanel {
 					Boolean userNotFound = getBoolean(rowObject.isObject(), "isUserNotFound");
 					JSONArray columnsArray = getArray(rowObject, "columns");
 
-					ModelData model = new BaseModelData();
+					ModelData model = new BaseModel();
 					if (userUid != null)
 						model.set(LearnerKey.UID.name(), userUid);
 					else if (userImportId != null)

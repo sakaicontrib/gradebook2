@@ -52,7 +52,7 @@ import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.binding.Converter;
 import com.extjs.gxt.ui.client.binding.FieldBinding;
 import com.extjs.gxt.ui.client.binding.FormBinding;
-import com.extjs.gxt.ui.client.data.BaseModelData;
+import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.BaseTreeModel;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.BindingEvent;
@@ -736,7 +736,7 @@ public class ItemFormPanel extends GradebookPanel {
 	}
 
 	private ModelData getCategoryTypeModel(CategoryType categoryType) {
-		ModelData model = new BaseModelData();
+		ModelData model = new BaseModel();
 
 		// Initialize type picker
 		switch (categoryType) {
@@ -758,7 +758,7 @@ public class ItemFormPanel extends GradebookPanel {
 	}
 
 	private ModelData getGradeTypeModel(GradeType gradeType) {
-		ModelData model = new BaseModelData();
+		ModelData model = new BaseModel();
 
 		switch (gradeType) {
 			case LETTERS:
@@ -898,7 +898,6 @@ public class ItemFormPanel extends GradebookPanel {
 	
 
 	private void initField(Field field, boolean isEnabled, boolean isVisible) {
-
 		field.setEnabled(isEnabled);
 		field.setVisible(isVisible);
 	}

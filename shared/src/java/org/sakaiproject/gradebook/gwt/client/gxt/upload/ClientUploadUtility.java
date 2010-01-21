@@ -33,7 +33,7 @@ import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.SpreadsheetModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
-import com.extjs.gxt.ui.client.data.BaseModelData;
+import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.BeanModel;
 import com.extjs.gxt.ui.client.data.BeanModelFactory;
 import com.extjs.gxt.ui.client.data.BeanModelLookup;
@@ -149,7 +149,7 @@ public class ClientUploadUtility {
 			if (uid == null)
 				uid = importRow.get("userImportId");
 
-			ModelData student = new BaseModelData();
+			ModelData student = new BaseModel();
 			student.set(LearnerKey.UID.name(), uid);
 
 			for (ColumnConfig column : previewColumns) {
