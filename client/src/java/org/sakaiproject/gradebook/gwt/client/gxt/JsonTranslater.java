@@ -19,7 +19,6 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
-import com.extjs.gxt.ui.client.data.BaseModelData;
 import com.extjs.gxt.ui.client.data.DataField;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.ModelType;
@@ -28,6 +27,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
+import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
 
 public class JsonTranslater {
@@ -108,6 +108,7 @@ public class JsonTranslater {
 			for (int i=0;i<jsonArray.size();i++) {
 				JSONValue elementValue = jsonArray.get(i);
 				JSONObject elementObject = elementValue.isObject();
+				JSONString elementString = elementValue.isString();
 				if (elementObject != null) {
 			
 					if (name.equals(ApplicationKey.GRADEBOOKMODELS.name())) {
@@ -127,10 +128,6 @@ public class JsonTranslater {
 						};
 						
 						array.add(colTranslater.translate(elementValue.toString()));
-					} else if (name.equals(ApplicationKey.ENABLEDGRADETYPES.name())) {
-						
-						array.add(GradeType.valueOf(elementObject.toString()));
-						
 					} else if (name.equals(ItemKey.CHILDREN.name())) {
 						JsonTranslater itemTranslater = new JsonTranslater(EnumSet.allOf(ItemKey.class)) {
 							protected ModelData newModelInstance() {
@@ -146,6 +143,10 @@ public class JsonTranslater {
 						array.add(childModel);
 					}
 					
+				} else if (elementString != null) {
+					if (name.equals(ApplicationKey.ENABLEDGRADETYPES.name())) {
+						array.add(GradeType.valueOf(elementString.stringValue()));
+					}
 				}
 			}
 
