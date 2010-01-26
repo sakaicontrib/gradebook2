@@ -1899,8 +1899,18 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		return (Long) getHibernateTemplate().save(permission);
 	}
 
-	public void deletePermission(Permission permission) {
-		getHibernateTemplate().delete(permission);
+	public void deletePermission(final Long permissionId) {
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException {
+				Permission p = (Permission)session.load(Permission.class, permissionId);
+				if (p != null)
+					session.delete(p);
+				
+				return null;
+			}
+		};
+		
+		getHibernateTemplate().execute(hc);
 	}
 
 	public void deleteUserConfiguration(final String userUid, final Long gradebookId, final String configField) {

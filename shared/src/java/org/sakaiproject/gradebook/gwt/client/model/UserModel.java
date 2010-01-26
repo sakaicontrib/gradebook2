@@ -27,8 +27,6 @@ public class UserModel extends EntityModel {
 
 	private static final long serialVersionUID = 1L;
 	
-	public enum Key { ID, USER_DISPLAY_NAME };
-
 	public UserModel() {
 		super();
 	}
@@ -40,19 +38,19 @@ public class UserModel extends EntityModel {
 	}
 	
 	public void setUserId(String userId) {
-		set(Key.ID.name(), userId);
+		set(GraderKey.ID.name(), userId);
 	}
 	
 	public String getUserId() {
-		return get(Key.ID.name());
+		return get(GraderKey.ID.name());
 	}
 	
 	public String getUserDisplayName() {
-		return get(Key.USER_DISPLAY_NAME.name());
+		return get(GraderKey.USER_DISPLAY_NAME.name());
 	}
 	
 	public void setUserDisplayName(String userDisplayName) {
-		set(Key.USER_DISPLAY_NAME.name(), userDisplayName);
+		set(GraderKey.USER_DISPLAY_NAME.name(), userDisplayName);
 	}
 	
 	@Override

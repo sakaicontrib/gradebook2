@@ -35,7 +35,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
-import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeContentPanel;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.MultiGradeContentPanel;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
@@ -45,13 +45,11 @@ import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.SortDir;
-import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.BasePagingLoader;
-import com.extjs.gxt.ui.client.data.HttpProxy;
-import com.extjs.gxt.ui.client.data.JsonPagingLoadResultReader;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.ModelType;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
+import com.extjs.gxt.ui.client.data.PagingLoader;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
@@ -68,7 +66,7 @@ public class MultigradeView extends View {
 
 	private MultiGradeContentPanel multigrade;
 
-	private BasePagingLoader<PagingLoadResult<ModelData>> multigradeLoader;
+	private PagingLoader<PagingLoadResult<ModelData>> multigradeLoader;
 	private ListStore<ModelData> multigradeStore;
 	private Listener<StoreEvent> storeListener;
 
@@ -98,48 +96,16 @@ public class MultigradeView extends View {
 					}
 					
 				});
-				
-				
-				
-				/*
-				Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
-
-				AsyncCallback<ConfigurationModel> callback = new AsyncCallback<ConfigurationModel>() {
-
-					public void onFailure(Throwable caught) {
-						// FIXME: Should we notify the user when this fails?
-					}
-
-					public void onSuccess(ConfigurationModel result) {
-						GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-						ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
-
-						Collection<String> propertyNames = result.getPropertyNames();
-						if (propertyNames != null) {
-							List<String> names = new ArrayList<String>(propertyNames);
-
-							for (int i=0;i<names.size();i++) {
-								String name = names.get(i);
-								String value = result.get(name);
-								configModel.set(name, value);
-							}
-						}
-					}
-
-				};
-
-				service.update(configModel, EntityType.CONFIGURATION, null, SecureToken.get(), callback);
-				*/
 			}
 
 		};
 		this.multigrade = new MultiGradeContentPanel(null) {
 
-			protected BasePagingLoader<PagingLoadResult<ModelData>> newLoader() {
+			protected PagingLoader<PagingLoadResult<ModelData>> newLoader() {
 				return multigradeLoader;
 			}
 
-			protected ListStore<ModelData> newStore(BasePagingLoader<PagingLoadResult<ModelData>> loader) {
+			protected ListStore<ModelData> newStore(PagingLoader<PagingLoadResult<ModelData>> loader) {
 				return multigradeStore;
 			}
 		};
@@ -209,7 +175,7 @@ public class MultigradeView extends View {
 		GradebookModel gbModel = model.getGradebookModels().get(0);
 		
 		final ModelType type = new ModelType();  
-		type.setRoot("learners");
+		type.setRoot(AppConstants.ROSTER_ROOT);
 		type.setTotalName("total");
 		
 		for (LearnerKey key : EnumSet.allOf(LearnerKey.class)) {
@@ -236,6 +202,7 @@ public class MultigradeView extends View {
 		
 		processor.process();
 		
+		/*
 		RestBuilder builder = RestBuilder.getInstance(Method.GET, GWT.getModuleBaseURL(),
 				AppConstants.REST_FRAGMENT, AppConstants.ROSTER_FRAGMENT,
 				gbModel.getGradebookUid(), String.valueOf(gbModel.getGradebookId()));
@@ -247,9 +214,12 @@ public class MultigradeView extends View {
 			protected ModelData newModelInstance() {
 			    return new BaseModel();
 			}
-		};  
+		};  */
 
-		multigradeLoader = new BasePagingLoader<PagingLoadResult<ModelData>>(proxy, reader);  
+		multigradeLoader = RestBuilder.getPagingDelayLoader(type, Method.GET, 
+				GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.ROSTER_FRAGMENT);
+			
+			//new BasePagingLoader<PagingLoadResult<ModelData>>(proxy, reader);  
 		
 		multigradeStore = new ListStore<ModelData>(multigradeLoader);
 		multigradeStore.setModelComparer(new EntityModelComparer<ModelData>(LearnerKey.UID.name()));

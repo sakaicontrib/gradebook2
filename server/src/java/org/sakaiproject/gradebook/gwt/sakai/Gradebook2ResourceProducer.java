@@ -41,7 +41,7 @@ import org.sakaiproject.gradebook.gwt.client.model.GradeMapKey;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordMapModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
-import org.sakaiproject.gradebook.gwt.client.model.PermissionEntryModel;
+import org.sakaiproject.gradebook.gwt.client.model.PermissionsModel;
 import org.sakaiproject.gradebook.gwt.client.model.SpreadsheetModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.server.DataTypeConversionUtil;
@@ -81,7 +81,7 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 				entity = (X)service.createOrUpdateSpreadsheet(entityUid, spreadsheetModel);
 				break;
 			case PERMISSION_ENTRY:
-				PermissionEntryModel permissionEntryModel = (PermissionEntryModel)model;
+				PermissionsModel permissionEntryModel = (PermissionsModel)model;
 				entity = (X)service.createPermissionEntry(entityId, permissionEntryModel);
 				break;
 			}
@@ -183,8 +183,9 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 				}
 				break;
 			case GRADE_SCALE:
+				/*
 				GradeScaleRecordMapModel map = (GradeScaleRecordMapModel)model;
-				List<BaseModel> records = null; 
+				List<ModelData> records = null; 
 				if (map.isHardReset())
 				{	
 					records = service.resetGradeScale(map.getGradebookUid()); 
@@ -193,10 +194,11 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 				{
 					ModelData gradeScaleModel = map.getUpdatedRecord();
 					records = service.updateGradeScaleField(map.getGradebookUid(), action.getValue(), (String)gradeScaleModel.get(GradeMapKey.LETTER_GRADE.name()));	
-				}
+				}*/
 				//entity = (X)new GradeScaleRecordMapModel(records);
 				break;
 			case LEARNER:
+				/*
 				ModelData student = model;
 				
 				if (action.getKey().endsWith(StudentModel.COMMENT_TEXT_FLAG)) {
@@ -224,7 +226,7 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 						break;
 					}
 					break;
-				}
+				}*/
 				break;
 			default:
 				entity = (X)service.updateItemModel((ItemModel)model);
@@ -252,7 +254,7 @@ public class Gradebook2ResourceProducer extends GWTSpringController implements G
 			switch(type) {
 
 				case PERMISSION_ENTRY:
-					PermissionEntryModel permissionEntryModel = (PermissionEntryModel) model;
+					PermissionsModel permissionEntryModel = (PermissionsModel) model;
 					return (X) service.deletePermissionEntry(entityId, permissionEntryModel);
 			}
 

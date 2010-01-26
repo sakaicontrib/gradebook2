@@ -40,16 +40,15 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.BorderLayoutPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.GradeScalePanel;
-import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.GraderPermissionSettingsPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.HistoryPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ItemFormPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.LearnerSummaryPanel;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.PermissionsPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.StatisticsPanel;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
-import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -86,6 +85,7 @@ public class InstructorView extends AppView {
 	private TreeView treeView;
 	private MultigradeView multigradeView;
 	private SingleGradeView singleGradeView;
+	private PermissionsView permissionsView;
 
 	private ContentPanel borderLayoutContainer;
 	private LayoutContainer centerLayoutContainer;
@@ -97,7 +97,6 @@ public class InstructorView extends AppView {
 	//private HelpPanel helpPanel;
 	private GradeScalePanel gradeScalePanel;
 	private HistoryPanel historyPanel;
-	private GraderPermissionSettingsPanel graderPermissionSettingsPanel;
 	private StatisticsPanel statisticsPanel;
 
 	private List<TabConfig> tabConfigurations;
@@ -122,9 +121,9 @@ public class InstructorView extends AppView {
 	private I18nConstants i18n;
 	private boolean isEditable;
 
-	public InstructorView(Controller controller, TreeView treeView, MultigradeView multigradeView, 
-			SingleGradeView singleGradeView, 
-			boolean isEditable, final boolean isNewGradebook) {
+	public InstructorView(Controller controller, TreeView treeView, 
+			MultigradeView multigradeView, SingleGradeView singleGradeView, 
+			PermissionsView permissionsView, boolean isEditable, final boolean isNewGradebook) {
 		super(controller);
 		this.isEditable = isEditable;
 		this.tabConfigurations = new ArrayList<TabConfig>();
@@ -132,6 +131,7 @@ public class InstructorView extends AppView {
 		this.multigradeView = multigradeView;
 		this.singleGradeView = singleGradeView;
 		this.i18n = Registry.get(AppConstants.I18N);
+		this.permissionsView = permissionsView;
 		this.resources = Registry.get(AppConstants.RESOURCES);
 		
 		initListeners();
@@ -180,14 +180,6 @@ public class InstructorView extends AppView {
 			}
 		};
 
-		/*helpPanel = new HelpPanel() {
-			protected void onRender(Element parent, int index) {
-				super.onRender(parent, index);
-				//if (borderLayoutContainer.isRendered())
-				//	borderLayout.collapse(LayoutRegion.EAST);
-			}
-		};*/
-
 		eastLayoutContainer.setId("cardLayoutContainer");
 		eastLayoutContainer.setWidth(400);
 		eastLayoutContainer.setBorders(true);
@@ -195,8 +187,6 @@ public class InstructorView extends AppView {
 		eastLayoutContainer.setFrame(true);
 		eastCardLayout = new CardLayout();
 		eastLayoutContainer.setLayout(eastCardLayout);
-		//eastLayoutContainer.add(helpPanel);
-		//eastCardLayout.setActiveItem(helpPanel);
 
 		borderLayoutContainer.add(new LayoutContainer(), northData);
 		borderLayoutContainer.add(treeView.getTreePanel(), westData);
@@ -505,20 +495,16 @@ public class InstructorView extends AppView {
 	}
 
 	@Override
-	protected void onStartGraderePermissions() {
-
-		if(graderPermissionSettingsPanel == null) {
-			graderPermissionSettingsPanel = new GraderPermissionSettingsPanel(i18n, isEditable);
-		}
-		viewport.add(graderPermissionSettingsPanel);
-		viewportLayout.setActiveItem(graderPermissionSettingsPanel);
+	protected void onStartGraderPermissions() {
+		PermissionsPanel permissionsPanel = permissionsView.getPermissionsPanelInstance();
+		viewport.add(permissionsPanel);
+		viewportLayout.setActiveItem(permissionsPanel);
 	}
 
 	@Override
 	protected void onStopGraderPermissions() {
 		viewportLayout.setActiveItem(borderLayoutContainer);
 	}
-
 
 	@Override
 	protected void onHideEastPanel(Boolean doCommit) {
@@ -580,7 +566,7 @@ public class InstructorView extends AppView {
 							onShowHistory(null);
 							break;
 						case GRADER_PERMISSION_SETTINGS:
-							onStartGraderePermissions();
+							onStartGraderPermissions();
 							break;
 						case STATISTICS:
 							onShowStatistics();

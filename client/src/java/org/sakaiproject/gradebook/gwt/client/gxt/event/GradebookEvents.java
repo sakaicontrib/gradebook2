@@ -63,11 +63,12 @@ public class GradebookEvents {
 	public static final GradebookEvent ClearSearch 					= registerEvent(EventKey.CLEAR_SEARCH);
 	public static final GradebookEvent CloseNotification			= registerEvent(EventKey.CLOSE_NOTIFICATION);
 	public static final GradebookEvent CreateItem					= registerEvent(EventKey.CREATE_ITEM);
+	public static final GradebookEvent CreatePermission				= registerEvent(EventKey.CREATE_PERMISSION);
 	public static final GradebookEvent DeleteGradeMap				= registerEvent(EventKey.DELETE_GRADE_MAP);
 	public static final GradebookEvent DeleteItem					= registerEvent(EventKey.DELETE_ITEM);
+	public static final GradebookEvent DeletePermission				= registerEvent(EventKey.DELETE_PERMISSION);
 	public static final GradebookEvent DoSearch 					= registerEvent(EventKey.DO_SEARCH);
 	public static final GradebookEvent EndItemUpdates				= registerEvent(EventKey.END_ITEM_UPDATES);
-	public static final GradebookEvent EqualWeight 					= registerEvent(EventKey.EQUL_WEIGHT);
 	public static final GradebookEvent Exception 					= registerEvent(EventKey.EXCEPTION);
 	public static final GradebookEvent ExpandEastPanel 				= registerEvent(EventKey.EXPAND_EAST_PANEL);
 	public static final GradebookEvent GradebookChange 				= registerEvent(EventKey.GRADEBOOK_CHANGE);
@@ -86,6 +87,8 @@ public class GradebookEvents {
 	public static final GradebookEvent NewItem						= registerEvent(EventKey.NEW_ITEM);
 	public static final GradebookEvent None							= registerEvent(EventKey.NONE);
 	public static final GradebookEvent Notification					= registerEvent(EventKey.NOTIFICATION);
+	public static final GradebookEvent PermissionCreated			= registerEvent(EventKey.PERMISSION_CREATED);
+	public static final GradebookEvent PermissionDeleted			= registerEvent(EventKey.PERMISSION_DELETED);
 	public static final GradebookEvent Refresh 						= registerEvent(EventKey.REFRESH);
 	public static final GradebookEvent RefreshCourseGrades 			= registerEvent(EventKey.REFRESH_COURSE_GRADES);
 	public static final GradebookEvent RefreshGradebookItems 		= registerEvent(EventKey.REFRESH_GRADEBOOK_ITEMS);

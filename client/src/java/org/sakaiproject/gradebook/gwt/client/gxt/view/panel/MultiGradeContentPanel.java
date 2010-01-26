@@ -20,7 +20,7 @@
  * permissions and limitations under the License.
  *
  **********************************************************************************/
-package org.sakaiproject.gradebook.gwt.client.gxt.multigrade;
+package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -43,6 +43,12 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.RefreshCourseGradesEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
+import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.ExtraCreditNumericCellRenderer;
+import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeContextMenu;
+import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig;
+import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultigradeSelectionModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.StudentModelOwner;
+import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.UnweightedNumericCellRenderer;
 import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
@@ -58,14 +64,11 @@ import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.Style.SortDir;
+import com.extjs.gxt.ui.client.data.BasePagingLoader;
 import com.extjs.gxt.ui.client.data.BaseTreeModel;
-import com.extjs.gxt.ui.client.data.DataReader;
-import com.extjs.gxt.ui.client.data.HttpProxy;
-import com.extjs.gxt.ui.client.data.JsonLoadResultReader;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
 import com.extjs.gxt.ui.client.data.ListLoader;
 import com.extjs.gxt.ui.client.data.ModelData;
-import com.extjs.gxt.ui.client.data.ModelType;
 import com.extjs.gxt.ui.client.data.PagingLoadConfig;
 import com.extjs.gxt.ui.client.data.SortInfo;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
@@ -107,7 +110,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class MultiGradeContentPanel extends GridPanel<ModelData> implements StudentModelOwner {
 
@@ -385,7 +387,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 					loadConfig.setOffset(pageSize);
 					((MultiGradeLoadConfig) loadConfig).setSearchString(searchString);
 					((MultiGradeLoadConfig) loadConfig).setSectionUuid(sectionUuid);
-					loader.useLoadConfig(loadConfig);
+					((BasePagingLoader)loader).useLoadConfig(loadConfig);
 					loader.load(0, pageSize);
 				} else if (ce.getType() == GradebookEvents.ClearSearch.getEventType()) {
 					int pageSize = getPageSize();
@@ -397,7 +399,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 					loadConfig.setLimit(0);
 					loadConfig.setOffset(pageSize);
 					((MultiGradeLoadConfig) loadConfig).setSectionUuid(sectionUuid);
-					loader.useLoadConfig(loadConfig);
+					((BasePagingLoader)loader).useLoadConfig(loadConfig);
 					loader.load(0, pageSize);
 				}
 			}
@@ -639,33 +641,6 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 		unweightedNumericCellRenderer = new UnweightedNumericCellRenderer();
 		extraCreditNumericCellRenderer = new ExtraCreditNumericCellRenderer();
 
-		/*
-		RestBuilder builder = RestBuilder.getInstance(Method.GET, GWT.getModuleBaseURL(),
-				AppConstants.REST_FRAGMENT, AppConstants.SECTION_FRAGMENT);
-		
-		HttpProxy<String> proxy = new HttpProxy<String>(builder) {
-			
-			public void load(final DataReader<String> reader, final Object loadConfig, final AsyncCallback<String> callback) {
-				GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
-				initUrl = RestBuilder.buildInitUrl(GWT.getModuleBaseURL(),
-						AppConstants.REST_FRAGMENT, AppConstants.SECTION_FRAGMENT,
-						gbModel.getGradebookUid(), String.valueOf(gbModel.getGradebookId()));
-				super.load(reader, loadConfig, callback);
-			}
-			
-		};  
-
-		ModelType type = new ModelType();
-		type.setRoot("sections");
-		type.setTotalName("total");
-		
-		for (SectionKey key : EnumSet.allOf(SectionKey.class)) {
-			type.addField(key.name(), key.name()); 
-		}
-		
-		// need a loader, proxy, and reader  
-		JsonLoadResultReader<ListLoadResult<ModelData>> reader = new JsonLoadResultReader<ListLoadResult<ModelData>>(type);  
-	*/
 		sectionsLoader = RestBuilder.getDelayLoader(AppConstants.SECTIONS_ROOT, EnumSet.allOf(SectionKey.class), Method.GET, 
 				GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.SECTION_FRAGMENT);
 			
@@ -704,7 +679,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 				loadConfig.setOffset(pageSize);				
 				((MultiGradeLoadConfig) loadConfig).setSearchString(searchString);
 				((MultiGradeLoadConfig) loadConfig).setSectionUuid(sectionUuid);
-				loader.useLoadConfig(loadConfig);
+				((BasePagingLoader)loader).useLoadConfig(loadConfig);
 				loader.load(0, pageSize);
 			}
 

@@ -142,7 +142,7 @@ public abstract class AppView extends View {
 			onStartImport();
 			break;
 		case START_GRADER_PERMISSION_SETTINGS:
-			onStartGraderePermissions();
+			onStartGraderPermissions();
 			break;
 		case STOP_GRADER_PERMISSION_SETTINGS:
 			onStopGraderPermissions();
@@ -303,7 +303,7 @@ public abstract class AppView extends View {
 		
 	}
 	
-	protected void onStartGraderePermissions() {
+	protected void onStartGraderPermissions() {
 	
 	}
 	

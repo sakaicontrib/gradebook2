@@ -10,6 +10,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.view.ImportExportView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.InstructorView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.MultigradeView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.NotificationView;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.PermissionsView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.SingleGradeView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.TreeView;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
@@ -29,14 +30,17 @@ public class InstructorController extends Controller {
 	private FinalGradeSubmissionView finalGradeSubmissionView;
 	private InstructorView appView;
 	private NotificationView notificationView;
+	private PermissionsView permissionsView;
 	
 	public InstructorController(I18nConstants i18n, boolean isUserAbleToEditItems, boolean isNewGradebook) {
 		super();
 		singleView = new SingleGradeView(this, false);
 		treeView = new TreeView(this, isUserAbleToEditItems);
 		multigradeView = new MultigradeView(this, i18n);
-		appView = new InstructorView(this, treeView, multigradeView, singleView, isUserAbleToEditItems, isNewGradebook);
+		permissionsView = new PermissionsView(this);
+		appView = new InstructorView(this, treeView, multigradeView, singleView, permissionsView, isUserAbleToEditItems, isNewGradebook);
 		notificationView = new NotificationView(this);
+		
 		
 		registerEventTypes(GradebookEvents.BeginItemUpdates.getEventType());
 		registerEventTypes(GradebookEvents.BrowseLearner.getEventType());
@@ -59,6 +63,8 @@ public class InstructorController extends Controller {
 		registerEventTypes(GradebookEvents.NewCategory.getEventType());
 		registerEventTypes(GradebookEvents.NewItem.getEventType());
 		registerEventTypes(GradebookEvents.Notification.getEventType());
+		registerEventTypes(GradebookEvents.PermissionCreated.getEventType());
+		registerEventTypes(GradebookEvents.PermissionDeleted.getEventType());
 		registerEventTypes(GradebookEvents.RefreshCourseGrades.getEventType());
 		registerEventTypes(GradebookEvents.RefreshGradebookItems.getEventType());
 		registerEventTypes(GradebookEvents.RefreshGradebookSetup.getEventType());
@@ -241,6 +247,10 @@ public class InstructorController extends Controller {
 				break;
 			case STARTUP:
 				onStartup(event);
+				break;
+			case PERMISSION_CREATED:
+			case PERMISSION_DELETED:
+				forwardToView(permissionsView, event);
 				break;
 		}
 	}

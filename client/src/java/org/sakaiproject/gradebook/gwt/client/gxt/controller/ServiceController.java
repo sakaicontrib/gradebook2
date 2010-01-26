@@ -52,10 +52,12 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
+import org.sakaiproject.gradebook.gwt.client.model.PermissionKey;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
 import com.extjs.gxt.ui.client.Registry;
+import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.ModelType;
 import com.extjs.gxt.ui.client.event.BaseEvent;
@@ -84,8 +86,10 @@ public class ServiceController extends Controller {
 	public ServiceController() {
 		registerEventTypes(GradebookEvents.Configuration.getEventType());
 		registerEventTypes(GradebookEvents.CreateItem.getEventType());
+		registerEventTypes(GradebookEvents.CreatePermission.getEventType());
 		registerEventTypes(GradebookEvents.DeleteGradeMap.getEventType());
 		registerEventTypes(GradebookEvents.DeleteItem.getEventType());
+		registerEventTypes(GradebookEvents.DeletePermission.getEventType());
 		registerEventTypes(GradebookEvents.RevertItem.getEventType());
 		registerEventTypes(GradebookEvents.ShowColumns.getEventType());
 		registerEventTypes(GradebookEvents.UpdateLearnerGradeRecord.getEventType());
@@ -102,11 +106,17 @@ public class ServiceController extends Controller {
 			case CREATE_ITEM:
 				onCreateItem((ItemCreate)event.getData());
 				break;
+			case CREATE_PERMISSION:
+				onCreatePermission((ModelData)event.getData());
+				break;
 			case DELETE_GRADE_MAP:
 				onDeleteGradeMap();
 				break;
 			case DELETE_ITEM:
 				onDeleteItem((ItemUpdate)event.getData());
+				break;
+			case DELETE_PERMISSION:
+				onDeletePermission((ModelData)event.getData());
 				break;
 			case REVERT_ITEM:
 				onRevertItem((ItemUpdate)event.getData());
@@ -266,69 +276,40 @@ public class ServiceController extends Controller {
 			}
 			
 		});
-		
-		/*
-		Dispatcher.forwardEvent(GradebookEvents.MaskItemTree.getEventType());
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-
-		EntityType entityType = EntityType.GRADE_ITEM;
-
-		if (event.item.getItemType() == Type.CATEGORY)
-			entityType = EntityType.CATEGORY;
-
-		Gradebook2RPCServiceAsync service = Registry.get("service");
-		AsyncCallback<ItemModel> callback = new AsyncCallback<ItemModel>() {
-
-			public void onFailure(Throwable caught) {
-
-				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught, "Failed to create item: "));
-				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
-			}
-
-			public void onSuccess(ItemModel result) {
-				if (event.close)
-					Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
-
-				switch (result.getItemType()) {
-					case GRADEBOOK:
-						GradebookModel selectedGradebook = Registry
-						.get(AppConstants.CURRENT);
-						selectedGradebook.setGradebookItemModel(result);
-						Dispatcher
-						.forwardEvent(GradebookEvents.ItemUpdated.getEventType(), result);
-						Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookItems.getEventType(),
-								selectedGradebook);
-						break;
-					case CATEGORY:
-						if (result.isActive())
-							doCreateItem(event, result);
-						else
-							doUpdateItem(event.store, null, null, result);
-
-						for (ModelData m : result.getChildren()) {
-							ItemModel item = (ItemModel)m;
-							if (item.isActive())
-								doCreateItem(event, item);
-							else
-								doUpdateItem(event.store, null, null, item);
-						}
-						break;
-					case ITEM:
-						if (result.isActive())
-							doCreateItem(event, result);
-						else
-							doUpdateItem(event.store, null, null, result);
-						break;
-				}
-
-				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
-			}
-		};		
-
-		service.create(selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId(), event.item, entityType, SecureToken.get(), callback);
-		*/
 	}
 
+	private void onCreatePermission(ModelData model) {
+		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		
+		String gradebookUid = selectedGradebook.getGradebookUid();
+		String gradebookId = String.valueOf(selectedGradebook.getGradebookId());
+
+		RestBuilder builder = RestBuilder.getInstance(Method.POST, 
+				GWT.getModuleBaseURL(),
+				AppConstants.REST_FRAGMENT,
+				AppConstants.PERMISSION_FRAGMENT, gradebookUid, gradebookId);
+		
+		JSONObject jsonObject = RestBuilder.convertModel(model);
+		
+		builder.sendRequest(200, 400, jsonObject.toString(), new RestCallback() {
+			
+			@Override
+			public void onSuccess(Request request, Response response) {
+				String result = response.getText();
+				JsonTranslater translater = new JsonTranslater(EnumSet.allOf(PermissionKey.class)) {
+					protected ModelData newModelInstance() {
+						return new BaseModel();
+					}
+				};
+				ModelData model = translater.translate(result);
+				Dispatcher.forwardEvent(
+						GradebookEvents.PermissionCreated.getEventType(),
+						model);
+			}
+			
+		});
+	}
+	
 	private void onDeleteGradeMap() {
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 				
@@ -401,25 +382,40 @@ public class ServiceController extends Controller {
 			}
 			
 		});
-		
-		/*Gradebook2RPCServiceAsync service = Registry.get("service");
-		AsyncCallback<ItemModel> callback = new AsyncCallback<ItemModel>() {
-
-			public void onFailure(Throwable caught) {
-				onUpdateItemFailure(event, caught);
-				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
-			}
-
-			public void onSuccess(ItemModel result) {
-				onUpdateItemSuccess(event, result);
-				onDeleteItemSuccess(event);
-				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
-			}
-		};
-
-		service.update((ItemModel)event.item, EntityType.ITEM, null, SecureToken.get(), callback);*/
 	}
 
+	private void onDeletePermission(ModelData model) {
+		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		
+		Long gradebookId = selectedGradebook.getGradebookId();
+		model.set(PermissionKey.GRADEBOOK_ID.name(), gradebookId);
+		
+		RestBuilder builder = RestBuilder.getInstance(Method.DELETE, 
+				GWT.getModuleBaseURL(),
+				AppConstants.REST_FRAGMENT,
+				AppConstants.PERMISSION_FRAGMENT);
+		
+		JSONObject jsonObject = RestBuilder.convertModel(model);
+		
+		builder.sendRequest(200, 400, jsonObject.toString(), new RestCallback() {
+			
+			@Override
+			public void onSuccess(Request request, Response response) {
+				String result = response.getText();
+				JsonTranslater translater = new JsonTranslater(EnumSet.allOf(PermissionKey.class)) {
+					protected ModelData newModelInstance() {
+						return new BaseModel();
+					}
+				};
+				ModelData model = translater.translate(result);
+				Dispatcher.forwardEvent(
+						GradebookEvents.PermissionDeleted.getEventType(),
+						model);
+			}
+			
+		});
+	}
+	
 	private void onUpdateGradeRecordFailure(GradeRecordUpdate event, Throwable caught) {
 		Record record = event.record;
 		record.beginEdit();

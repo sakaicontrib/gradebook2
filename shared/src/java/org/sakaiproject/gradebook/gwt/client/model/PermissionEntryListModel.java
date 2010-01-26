@@ -33,11 +33,11 @@ public class PermissionEntryListModel extends EntityModel {
 		super();
 	}
 	
-	public void setEntries(List<PermissionEntryModel> list) {
+	public void setEntries(List<PermissionsModel> list) {
 		set(Key.ENTRIES.name(), list);
 	}
 	
-	public List<PermissionEntryModel> getEntries() {
+	public List<PermissionsModel> getEntries() {
 		return get(Key.ENTRIES.name());
 	}
 	

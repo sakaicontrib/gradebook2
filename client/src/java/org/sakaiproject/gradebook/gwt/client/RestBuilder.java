@@ -30,7 +30,6 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
-import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONBoolean;
 import com.google.gwt.json.client.JSONNumber;
@@ -72,8 +71,13 @@ public class RestBuilder extends RequestBuilder {
 	}
 	
 	public static <M extends ModelData> ListLoader<ListLoadResult<M>> getDelayLoader(String root,
-			EnumSet<?> enumSet, Method method, String ... urlArgs) {	
-		HttpProxy<String> proxy = getProxy(urlArgs);
+			EnumSet<?> enumSet, Method method, String ... urlArgs) {
+		return getDelayLoader(root, enumSet, method, null, urlArgs);
+	}
+		
+	public static <M extends ModelData> ListLoader<ListLoadResult<M>> getDelayLoader(String root,
+			EnumSet<?> enumSet, Method method, UrlArgsCallback argsCallback, String ... urlArgs) {
+		HttpProxy<String> proxy = getProxy(urlArgs, argsCallback);
 
 		ModelType type = new ModelType();
 		type.setRoot(root);
@@ -81,26 +85,40 @@ public class RestBuilder extends RequestBuilder {
 		
 		JsonTranslater.addModelTypeFields(type, enumSet);
 
-		JsonLoadResultReader<ListLoadResult<M>> reader = new JsonLoadResultReader<ListLoadResult<M>>(type);  
+		JsonLoadResultReader<ListLoadResult<M>> reader = new JsonLoadResultReader<ListLoadResult<M>>(type) {
+			protected ModelData newModelInstance() {
+			    return new BaseModel();
+			}
+		};
 
 		return new BaseListLoader<ListLoadResult<M>>(proxy, reader);
 	}
 	
 	public static <M extends ModelData> PagingLoader<PagingLoadResult<M>> getPagingDelayLoader(String root,
 			EnumSet<?> enumSet, Method method, String ... urlArgs) {	
-		HttpProxy<String> proxy = getProxy(urlArgs);
-
+		
 		ModelType type = new ModelType();
 		type.setRoot(root);
 		type.setTotalName(AppConstants.TOTAL);
 		
 		JsonTranslater.addModelTypeFields(type, enumSet);
 
-		JsonPagingLoadResultReader<PagingLoadResult<M>> reader = new JsonPagingLoadResultReader<PagingLoadResult<M>>(type); 
+		return getPagingDelayLoader(type, method, urlArgs);
+	}
+	
+	public static <M extends ModelData> PagingLoader<PagingLoadResult<M>> getPagingDelayLoader(
+			ModelType type, Method method, String ... urlArgs) {	
+		HttpProxy<String> proxy = getProxy(urlArgs, null);
+		
+		JsonPagingLoadResultReader<PagingLoadResult<M>> reader = new JsonPagingLoadResultReader<PagingLoadResult<M>>(type) {
+			protected ModelData newModelInstance() {
+			    return new BaseModel();
+			}
+		}; 
 		return new BasePagingLoader<PagingLoadResult<M>>(proxy, reader);
 	}
 	
-	public static JSONObject convertModel(BaseModel model) {
+	public static JSONObject convertModel(ModelData model) {
 		JSONObject json = new JSONObject();
 		
 		Map<String, Object> map = model.getProperties();
@@ -197,15 +215,21 @@ public class RestBuilder extends RequestBuilder {
 		return builder.toString();
 	}
 	
-	private static HttpProxy<String> getProxy(String[] urlArgs) {
+	private static HttpProxy<String> getProxy(String[] urlArgs, final UrlArgsCallback argsCallback) {
 		final String partialUrl = RestBuilder.buildInitUrl(urlArgs);
 		RestBuilder builder = RestBuilder.getInstance(Method.GET, partialUrl);
 		return new HttpProxy<String>(builder) {
 			
 			public void load(final DataReader<String> reader, final Object loadConfig, final AsyncCallback<String> callback) {
 				GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
-				initUrl = RestBuilder.buildInitUrl(partialUrl,
-						gbModel.getGradebookUid(), String.valueOf(gbModel.getGradebookId()));
+				
+				if (argsCallback != null) 
+					initUrl = RestBuilder.buildInitUrl(partialUrl,
+							gbModel.getGradebookUid(), String.valueOf(gbModel.getGradebookId()), argsCallback.getUrlArg());
+				else 
+					initUrl = RestBuilder.buildInitUrl(partialUrl,
+							gbModel.getGradebookUid(), String.valueOf(gbModel.getGradebookId()));
+				
 				super.load(reader, loadConfig, callback);
 			}
 			

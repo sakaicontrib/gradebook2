@@ -173,7 +173,7 @@ public interface GradebookToolService {
 	
 	public Long createPermission(Permission permission);
 	
-	public void deletePermission(Permission permission);
+	public void deletePermission(Long permissionId);
 	
 	public List<Permission> getPermissionsForUser(final Long gradebookId, final String userId) throws IllegalArgumentException;
 	

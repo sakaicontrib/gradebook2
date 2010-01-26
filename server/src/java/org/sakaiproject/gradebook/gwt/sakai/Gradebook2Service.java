@@ -38,7 +38,7 @@ import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.PermissionEntryListModel;
-import org.sakaiproject.gradebook.gwt.client.model.PermissionEntryModel;
+import org.sakaiproject.gradebook.gwt.client.model.PermissionsModel;
 import org.sakaiproject.gradebook.gwt.client.model.SpreadsheetModel;
 import org.sakaiproject.gradebook.gwt.client.model.SubmissionVerificationModel;
 import org.sakaiproject.gradebook.gwt.sakai.InstitutionalAdvisor.Column;
@@ -193,10 +193,10 @@ public interface Gradebook2Service {
 	public String getCurrentSession();
 	
 	
-	public PermissionEntryModel createPermissionEntry(Long gradebookId, PermissionEntryModel permissionEntryModel);
+	public PermissionsModel createPermissionEntry(Long gradebookId, PermissionsModel permissionEntryModel);
 	public <X extends BaseModel> ListLoadResult<X> getUsers();
 	public <X extends BaseModel> ListLoadResult<X> getCategoriesNotRemoved(Long gradebookId);
-	public PermissionEntryModel deletePermissionEntry(Long gradebookId, PermissionEntryModel permissionEntryModel);
+	public PermissionsModel deletePermissionEntry(Long gradebookId, PermissionsModel permissionEntryModel);
 
 	public List<Category> getCategoriesWithAssignments(Long gradebookId);
 	

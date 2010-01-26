@@ -15,6 +15,10 @@ public interface Gradebook2ComponentService {
 	
 	public Map<String, Object> createItem(String gradebookUid, Long gradebookId, Map<String, Object> attributes) throws InvalidInputException;
 	
+	public Map<String, Object> createPermission(String gradebookUid, Long gradebookId, Map<String, Object> attributes) throws InvalidInputException;
+	
+	public Map<String, Object> deletePermission(Map<String, Object> attributes);
+	
 	public Map<String, Object> getApplicationMap(String... gradebookUids);
 	
 	public List<Map<String,Object>> getAvailableGradeFormats(String gradebookUid, Long gradebookId);
@@ -23,8 +27,15 @@ public interface Gradebook2ComponentService {
 	
 	public List<Map<String,Object>> getGradeMaps(String gradebookUid);
 	
+	public List<Map<String, Object>> getGraders(String gradebookUid,
+			Long gradebookId);
+	
 	public List<Map<String,Object>> getHistory(String gradebookUid, Long gradebookId,
 			Integer offset, Integer limit);
+	
+	public List<Map<String,Object>> getItems(String gradebookUid, Long gradebookId, String type);
+	
+	public List<Map<String,Object>> getPermissions(String gradebookUid, Long gradebookId, String graderId);
 	
 	public List<Map<String,Object>> getVisibleSections(String gradebookUid, boolean enableAllSectionsEntry, String allSectionsEntryTitle);
 	
@@ -35,5 +46,5 @@ public interface Gradebook2ComponentService {
 	public void updateGradeMap(String gradebookUid, String affectedLetterGrade, Object value) throws InvalidInputException;
 	
 	public Map<String, Object> updateItem(Map<String, Object> attributes) throws InvalidInputException;
-	
+
 }

@@ -78,7 +78,7 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.PermissionEntryListModel;
-import org.sakaiproject.gradebook.gwt.client.model.PermissionEntryModel;
+import org.sakaiproject.gradebook.gwt.client.model.PermissionsModel;
 import org.sakaiproject.gradebook.gwt.client.model.SectionModel;
 import org.sakaiproject.gradebook.gwt.client.model.SpreadsheetModel;
 import org.sakaiproject.gradebook.gwt.client.model.StatisticsModel;
@@ -148,7 +148,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 	protected GradebookToolService gbService;
 	protected GradeCalculations gradeCalculations;
 	protected Gradebook2Authz authz;
-	private SectionAwareness sectionAwareness;
+	protected SectionAwareness sectionAwareness;
 	protected InstitutionalAdvisor advisor;
 	private SiteService siteService;
 	private ToolManager toolManager;
@@ -436,13 +436,13 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 	public PermissionEntryListModel getPermissionEntryList(Long gradebookId, String learnerId) {
 
 		PermissionEntryListModel permissionEntryListModel = new PermissionEntryListModel();
-		List<PermissionEntryModel> permissionEntryModelList = new ArrayList<PermissionEntryModel>();
+		List<PermissionsModel> permissionEntryModelList = new ArrayList<PermissionsModel>();
 
 		List<Permission> permissions = gbService.getPermissionsForUser(gradebookId, learnerId);
 
 		for (Permission permission : permissions) {
 
-			PermissionEntryModel permissionEntryModel = new PermissionEntryModel();
+			PermissionsModel permissionEntryModel = new PermissionsModel();
 			permissionEntryModel.setId(permission.getId());
 			permissionEntryModel.setUserId(permission.getUserId());
 
@@ -523,7 +523,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		return result;
 	}
 
-	public PermissionEntryModel createPermissionEntry(Long gradebookId, PermissionEntryModel permissionEntryModel) {
+	public PermissionsModel createPermissionEntry(Long gradebookId, PermissionsModel permissionEntryModel) {
 
 		Permission permission = new Permission();
 		permission.setGradebookId(gradebookId);
@@ -536,7 +536,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		return permissionEntryModel;
 	}
 
-	public PermissionEntryModel deletePermissionEntry(Long gradebookId, PermissionEntryModel permissionEntryModel) {
+	public PermissionsModel deletePermissionEntry(Long gradebookId, PermissionsModel permissionEntryModel) {
 
 		Permission permission = new Permission();
 		permission.setGradebookId(gradebookId);
@@ -545,7 +545,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		permission.setFunction(permissionEntryModel.getPermissionId());
 		permission.setUserId(permissionEntryModel.getUserId());
 		permission.setGroupId(permissionEntryModel.getSectionId());
-		gbService.deletePermission(permission);
+		gbService.deletePermission(null);
 		return permissionEntryModel;
 	}
 

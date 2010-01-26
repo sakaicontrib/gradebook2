@@ -36,14 +36,20 @@ import org.sakaiproject.gradebook.gwt.client.model.GradeMapKey;
 import org.sakaiproject.gradebook.gwt.client.model.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookKey;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.GraderKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
+import org.sakaiproject.gradebook.gwt.client.model.PermissionEntryListModel;
+import org.sakaiproject.gradebook.gwt.client.model.PermissionsModel;
+import org.sakaiproject.gradebook.gwt.client.model.PermissionKey;
 import org.sakaiproject.gradebook.gwt.client.model.SectionKey;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.sakai.InstitutionalAdvisor.Column;
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
 import org.sakaiproject.section.api.coursemanagement.CourseSection;
+import org.sakaiproject.section.api.coursemanagement.ParticipationRecord;
+import org.sakaiproject.section.api.facade.Role;
 import org.sakaiproject.service.gradebook.shared.GradebookService;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.tool.gradebook.Assignment;
@@ -56,6 +62,7 @@ import org.sakaiproject.tool.gradebook.GradableObject;
 import org.sakaiproject.tool.gradebook.GradeMapping;
 import org.sakaiproject.tool.gradebook.Gradebook;
 import org.sakaiproject.tool.gradebook.GradingEvent;
+import org.sakaiproject.tool.gradebook.Permission;
 import org.sakaiproject.user.api.User;
 import org.sakaiproject.user.api.UserNotDefinedException;
 
@@ -78,6 +85,18 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		addChildren(itemModel, itemMap);
 		
 		return itemMap;
+	}
+	
+	public Map<String, Object> createPermission(String gradebookUid, Long gradebookId, Map<String, Object> attributes) throws InvalidInputException {
+		Long id = gbService.createPermission(toPermission(gradebookId, attributes));
+		attributes.put(PermissionKey.ID.name(), id);
+		return attributes;
+	}
+	
+	public Map<String, Object> deletePermission(Map<String, Object> attributes) {
+		Permission p = toPermission(null, attributes);
+		gbService.deletePermission(p.getId());
+		return attributes;
 	}
 	
 	public Map<String, Object> assignComment(String itemId, String studentUid, String text) {
@@ -441,6 +460,23 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		return gradeScaleMappings;
 	}
 	
+	public List<Map<String, Object>> getGraders(String gradebookUid, Long gradebookId) {
+		List<Map<String, Object>> userList = new ArrayList<Map<String, Object>>();
+
+		String placementId = lookupDefaultGradebookUid();
+		List<ParticipationRecord> participationList = sectionAwareness.getSiteMembersInRole(placementId, Role.TA);
+
+		for (ParticipationRecord participationRecord : participationList) {
+			org.sakaiproject.section.api.coursemanagement.User user = participationRecord.getUser();
+			Map<String, Object> map = new HashMap<String, Object>();
+			map.put(GraderKey.ID.name(), user.getUserUid());
+			map.put(GraderKey.USER_DISPLAY_NAME.name(), user.getDisplayName());
+			userList.add(map);
+		}
+		
+		return userList;
+	}
+	
 	public List<Map<String,Object>> getHistory(String gradebookUid, Long gradebookId,
 			Integer offset, Integer limit) {
 		
@@ -557,6 +593,97 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		}
 		return models;
 	}
+	
+	public List<Map<String,Object>> getItems(String gradebookUid, Long gradebookId, String type) {
+		List<Map<String, Object>> list = new ArrayList<Map<String,Object>>();
+		
+		if (type == null || type.equals(ItemKey.ITEM_TYPE.name())) {
+			List<Category> categoryList = gbService.getCategories(gradebookId);
+
+			Map<String,Object> map = new HashMap<String, Object>();
+			map.put(ItemKey.NAME.name(), "All Categories");
+			list.add(map);
+
+			for (Category category : categoryList) {
+				if (!category.isRemoved()) {
+					map = new HashMap<String, Object>();
+					map.put(ItemKey.ID.name(), String.valueOf(category.getId()));
+					map.put(ItemKey.NAME.name(), category.getName());
+					map.put(ItemKey.CATEGORY_ID.name(), category.getId());
+					map.put(ItemKey.CATEGORY_NAME.name(), category.getName());
+					list.add(map);
+				}
+			}
+		}
+		
+		return list;
+	}
+	
+	public List<Map<String,Object>> getPermissions(String gradebookUid, Long gradebookId, String graderId) {
+		List<Map<String,Object>> list = new ArrayList<Map<String,Object>>();
+
+		List<Permission> permissions = gbService.getPermissionsForUser(gradebookId, graderId);
+
+		for (Permission permission : permissions) {
+
+			Map<String,Object> map = new HashMap<String,Object>();
+			map.put(PermissionKey.ID.name(), permission.getId());
+			map.put(PermissionKey.USER_ID.name(), permission.getUserId());
+
+			try {
+				User user = userService.getUser(permission.getUserId());
+
+				if (null != user) {
+					map.put(PermissionKey.USER_DISPLAY_NAME.name(), user.getDisplayName());
+				} else {
+					log.error("Was not able go get an User object from userId = " + permission.getUserId());
+				}
+			} catch (UserNotDefinedException e) {
+				log.error("Was not able go get an User object from userId = " + permission.getUserId());
+				e.printStackTrace();
+			}
+
+			map.put(PermissionKey.PERMISSION_ID.name(), permission.getFunction());
+
+			// If category id is null, the all categories were selected
+			if (null != permission.getCategoryId()) {
+
+				map.put(PermissionKey.CATEGORY_ID.name(), permission.getCategoryId());
+				Category category = gbService.getCategory(permission.getCategoryId());
+				if (null != category) {
+					map.put(PermissionKey.CATEGORY_DISPLAY_NAME.name(), category.getName());
+				} else {
+					// TODO: handle error
+				}
+
+			} else {
+				map.put(PermissionKey.CATEGORY_ID.name(), null);
+				map.put(PermissionKey.CATEGORY_DISPLAY_NAME.name(),"All");
+			}
+
+			// If section id is null, then all sections were selected
+			if (null != permission.getGroupId()) {
+				map.put(PermissionKey.SECTION_ID.name(), permission.getGroupId());
+				CourseSection courseSection = sectionAwareness.getSection(permission.getGroupId());
+				if (null != courseSection) {
+					map.put(PermissionKey.SECTION_DISPLAY_NAME.name(), courseSection.getTitle());
+				} else {
+					// TODO: handle error
+				}
+
+			} else {
+
+				map.put(PermissionKey.SECTION_ID.name(), null);
+				map.put(PermissionKey.SECTION_DISPLAY_NAME.name(), "All");
+			}
+
+			map.put(PermissionKey.DELETE_ACTION.name(), "Delete");
+			list.add(map);
+		}
+
+		return list;
+	}
+	
 		
 	public List<Map<String,Object>> getVisibleSections(String gradebookUid, boolean enableAllSectionsEntry, String allSectionsEntryTitle) {
 		List<CourseSection> viewableSections = authz.getViewableSections(gradebookUid);
@@ -707,7 +834,6 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		return itemMap;
 	}
 	
-	
 	private void addChildren(ItemModel itemModel, Map<String,Object> itemMap) {
 		
 		if (itemModel.getChildCount() > 0) {
@@ -785,6 +911,39 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 				item.set(key.name(), attributes.get(key.name()));
 		}
 		return item;
+	}
+	
+	private Permission toPermission(Long gradebookId, Map<String, Object> attributes) {
+		
+		Object permissionIdObj = attributes.get(PermissionKey.ID.name());
+		Object categoryIdObj = attributes.get(PermissionKey.CATEGORY_ID.name());
+		Object gradebookIdObject = attributes.get(PermissionKey.GRADEBOOK_ID.name());
+		
+		if (permissionIdObj instanceof Integer)
+			permissionIdObj = permissionIdObj == null ? null : Long.valueOf(((Integer) permissionIdObj).longValue());
+		if (categoryIdObj instanceof Integer)
+			categoryIdObj = categoryIdObj == null ? null : Long.valueOf(((Integer) categoryIdObj).longValue());
+		if (gradebookIdObject instanceof Integer)
+			gradebookIdObject = categoryIdObj == null ? null : Long.valueOf(((Integer) gradebookIdObject).longValue());
+		
+		Long permissionId = (Long)permissionIdObj;
+		Long categoryId = (Long)categoryIdObj;
+		String function = (String)attributes.get(PermissionKey.PERMISSION_ID.name());
+		String userId = (String)attributes.get(PermissionKey.USER_ID.name());
+		String groupId = (String)attributes.get(PermissionKey.SECTION_ID.name());
+		
+		if (gradebookId == null)
+			gradebookId = (Long)gradebookIdObject;
+		
+		Permission permission = new Permission();
+		permission.setId(permissionId);
+		permission.setGradebookId(gradebookId);
+		permission.setCategoryId(categoryId);
+		permission.setFunction(function);
+		permission.setUserId(userId);
+		permission.setGroupId(groupId);
+	
+		return permission;
 	}
 	
 }
