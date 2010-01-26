@@ -88,7 +88,47 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 	}
 	
 	public Map<String, Object> createPermission(String gradebookUid, Long gradebookId, Map<String, Object> attributes) throws InvalidInputException {
-		Long id = gbService.createPermission(toPermission(gradebookId, attributes));
+		Permission newPermission = toPermission(gradebookId, attributes);
+		// First, we want to verify that the permission does not already exist
+		List<Permission> permissions = gbService.getPermissionsForUser(gradebookId, newPermission.getUserId());
+
+		// We can ignore this check is the grader has no permissions yet
+		if (permissions != null && !permissions.isEmpty()) {
+			
+			for (Permission permission : permissions) {
+				if (permission.getFunction().equals(newPermission.getFunction())) {
+					// The new permission has the same function as an existing permission
+					
+					Long categoryId = permission.getCategoryId();
+					Long newCategoryId = newPermission.getCategoryId();
+					
+					String groupId = permission.getGroupId();
+					String newGroupId = newPermission.getGroupId();
+	
+					if (groupId != null && groupId.equalsIgnoreCase("ALL"))
+						groupId = null;
+					if (newGroupId != null && newGroupId.equalsIgnoreCase("ALL"))
+						newGroupId = null;
+						
+					boolean isCategoryInclusive = categoryId == null || (newCategoryId != null && categoryId.equals(newCategoryId));
+					boolean isGroupInclusive = groupId == null || (newGroupId != null && groupId.equals(newGroupId));
+			
+					boolean isNewCategoryInclusive = newCategoryId == null || (categoryId != null && newCategoryId.equals(categoryId));
+					boolean isNewGroupInclusive = newGroupId == null || (groupId != null && groupId.equals(newGroupId));
+					
+					if (isCategoryInclusive && isGroupInclusive)
+						throw new InvalidInputException(i18n.getString("duplicatePermission"));
+					else if (isNewCategoryInclusive && isNewGroupInclusive)
+						gbService.deletePermission(permission.getId());
+					else if (isNewCategoryInclusive && isGroupInclusive)
+						throw new InvalidInputException(i18n.getString("duplicatePermission"));
+					else if (isCategoryInclusive && isNewGroupInclusive)
+						throw new InvalidInputException(i18n.getString("duplicatePermission"));
+				}
+			}
+		}
+		
+		Long id = gbService.createPermission(newPermission);
 		attributes.put(PermissionKey.ID.name(), id);
 		return attributes;
 	}
@@ -654,26 +694,26 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 					map.put(PermissionKey.CATEGORY_DISPLAY_NAME.name(), category.getName());
 				} else {
 					// TODO: handle error
+					log.error("Category is null");
 				}
 
 			} else {
-				map.put(PermissionKey.CATEGORY_ID.name(), null);
+				map.put(PermissionKey.CATEGORY_ID.name(), "ALL");
 				map.put(PermissionKey.CATEGORY_DISPLAY_NAME.name(),"All");
 			}
 
 			// If section id is null, then all sections were selected
-			if (null != permission.getGroupId()) {
+			if (null != permission.getGroupId() && !permission.getGroupId().equalsIgnoreCase("ALL")) {
 				map.put(PermissionKey.SECTION_ID.name(), permission.getGroupId());
 				CourseSection courseSection = sectionAwareness.getSection(permission.getGroupId());
 				if (null != courseSection) {
 					map.put(PermissionKey.SECTION_DISPLAY_NAME.name(), courseSection.getTitle());
 				} else {
 					// TODO: handle error
+					log.error("CourseSection is null");
 				}
-
 			} else {
-
-				map.put(PermissionKey.SECTION_ID.name(), null);
+				map.put(PermissionKey.SECTION_ID.name(), "ALL");
 				map.put(PermissionKey.SECTION_DISPLAY_NAME.name(), "All");
 			}
 
