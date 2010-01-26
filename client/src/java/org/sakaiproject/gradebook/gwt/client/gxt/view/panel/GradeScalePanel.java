@@ -94,7 +94,7 @@ public class GradeScalePanel extends GradebookPanel {
 		LabelField gradeScale = new LabelField(i18n.gradeFormatLabel());
 		toolbar.add(gradeScale);
 
-		gradeFormatLoader = RestBuilder.getDelayLoader(AppConstants.GRADE_FORMAT_ROOT, EnumSet.allOf(GradeFormatKey.class), Method.GET, 
+		gradeFormatLoader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, EnumSet.allOf(GradeFormatKey.class), Method.GET, 
 				GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.GRADE_FORMAT_FRAGMENT);
 
 		gradeFormatLoader.setRemoteSort(true);
@@ -192,7 +192,7 @@ public class GradeScalePanel extends GradebookPanel {
 		column.setNumberFormat(defaultNumberFormat);
 		configs.add(column);
 
-		loader = RestBuilder.getDelayLoader(AppConstants.GRADE_MAP_ROOT, EnumSet.allOf(GradeMapKey.class), Method.GET, 
+		loader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, EnumSet.allOf(GradeMapKey.class), Method.GET, 
 				GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.GRADE_MAP_FRAGMENT);
 
 		final ListStore<ModelData> store = new ListStore<ModelData>(loader);

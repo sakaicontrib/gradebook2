@@ -29,66 +29,64 @@ public class StatisticsModel extends EntityModel implements Comparable<Statistic
 
 	private static final long serialVersionUID = 1L;
 
-	public enum Key { ID, NAME, MEAN, MEDIAN, MODE, STANDARD_DEVIATION, ASSIGN_ID, RANK }
-	
 	public StatisticsModel() {
 		
 	}
 	
 	public String getId() {
-		return get(Key.ID.name());
+		return get(StatisticsKey.ID.name());
 	}
 	
 	public void setId(String id) {
-		set(Key.ID.name(), id);
+		set(StatisticsKey.ID.name(), id);
 	}
 	
 	public String getName() {
-		return get(Key.NAME.name());
+		return get(StatisticsKey.NAME.name());
 	}
 	
 	public void setName(String name) {
-		set(Key.NAME.name(), name);
+		set(StatisticsKey.NAME.name(), name);
 	}
 	
 	public String getMean() {
-		return get(Key.MEAN.name());
+		return get(StatisticsKey.MEAN.name());
 	}
 	
 	public void setMean(String mean) {
-		set(Key.MEAN.name(), mean);
+		set(StatisticsKey.MEAN.name(), mean);
 	}
 	
 	public String getMedian() {
-		return get(Key.MEDIAN.name());
+		return get(StatisticsKey.MEDIAN.name());
 	}
 	
 	public void setMedian(String median) {
-		set(Key.MEDIAN.name(), median);
+		set(StatisticsKey.MEDIAN.name(), median);
 	}
 	
 	public String getMode() {
-		return get(Key.MODE.name());
+		return get(StatisticsKey.MODE.name());
 	}
 	
 	public void setMode(String mode) {
-		set(Key.MODE.name(), mode);
+		set(StatisticsKey.MODE.name(), mode);
 	}
 	
 	public String getRank() {
-		return get(Key.RANK.name());
+		return get(StatisticsKey.RANK.name());
 	}
 	
 	public void setRank(String rank) {
-		set(Key.RANK.name(), rank);
+		set(StatisticsKey.RANK.name(), rank);
 	}
 	
 	public String getStandardDeviation() {
-		return get(Key.STANDARD_DEVIATION.name());
+		return get(StatisticsKey.STANDARD_DEVIATION.name());
 	}
 	
 	public void setStandardDeviation(String sd) {
-		set(Key.STANDARD_DEVIATION.name(), sd);
+		set(StatisticsKey.STANDARD_DEVIATION.name(), sd);
 	}
 
 	@Override
@@ -98,15 +96,15 @@ public class StatisticsModel extends EntityModel implements Comparable<Statistic
 	}
 	@Override
 	public String getIdentifier() {
-		return get(Key.ID.name());
+		return get(StatisticsKey.ID.name());
 	}
 
 	public String getAssignmentId() {
-		return get(Key.ASSIGN_ID.name());
+		return get(StatisticsKey.ASSIGN_ID.name());
 	}
 	
 	public void setAssignmentId(String id) {
-		set(Key.ASSIGN_ID.name(), id);
+		set(StatisticsKey.ASSIGN_ID.name(), id);
 	}
 
 	public int compareTo(StatisticsModel o) {

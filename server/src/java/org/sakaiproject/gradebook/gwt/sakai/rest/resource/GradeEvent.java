@@ -8,16 +8,15 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
+
 @Path("/gradebook/rest/gradeevent")
 public class GradeEvent extends Resource {
 
 	@GET @Path("{studentUid}/{itemId}")
     @Produces("application/json")
     public String get(@PathParam("studentUid") String studentUid, @PathParam("itemId") Long itemId) {
-		
 		List<Map<String,Object>> list = service.getGradeEvents(itemId, studentUid);
-		
-		return toJson("events", list, list.size());
+		return toJson(list, list.size());
 	}
     	
 }

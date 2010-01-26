@@ -175,8 +175,8 @@ public class MultigradeView extends View {
 		GradebookModel gbModel = model.getGradebookModels().get(0);
 		
 		final ModelType type = new ModelType();  
-		type.setRoot(AppConstants.ROSTER_ROOT);
-		type.setTotalName("total");
+		type.setRoot(AppConstants.LIST_ROOT);
+		type.setTotalName(AppConstants.TOTAL);
 		
 		for (LearnerKey key : EnumSet.allOf(LearnerKey.class)) {
 			type.addField(key.name(), key.name()); 

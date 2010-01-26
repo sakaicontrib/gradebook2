@@ -25,6 +25,7 @@ package org.sakaiproject.gradebook.gwt.client.model;
 import java.util.List;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 public class GradebookModel extends EntityModel implements IsSerializable {
@@ -184,11 +185,11 @@ public class GradebookModel extends EntityModel implements IsSerializable {
 		set(GradebookKey.ISNEWGRADEBOOK.name(), isNewGradebook);
 	}
 
-	public List<StatisticsModel> getStatsModel() {
+	public List<ModelData> getStatsModel() {
 		return get(GradebookKey.STATSMODELS.name());
 	}
 
-	public void setStatsModel(List<StatisticsModel> statsModel) {
+	public void setStatsModel(List<ModelData> statsModel) {
 		set(GradebookKey.STATSMODELS.name(), statsModel);
 	}
 }

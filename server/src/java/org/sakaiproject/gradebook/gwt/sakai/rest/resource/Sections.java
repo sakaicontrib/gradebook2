@@ -8,15 +8,14 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
+@Path("/gradebook/rest/sections/{uid}/{id}")
+public class Sections extends Resource {
 
-@Path("/gradebook/rest/grader")
-public class Grader extends Resource {
-
-	@GET @Path("{uid}/{id}")
+	@GET
     @Produces("application/json")
     public String get(@PathParam("uid") String gradebookUid, @PathParam("id") Long gradebookId) {
-		List<Map<String,Object>> list = service.getGraders(gradebookUid, gradebookId);
-		return toJson(list, list.size());
+		List<Map<String,Object>> sections = service.getVisibleSections(gradebookUid, true, "All Viewable Sections");
+		return toJson(sections, sections.size());
 	}
-	
+
 }

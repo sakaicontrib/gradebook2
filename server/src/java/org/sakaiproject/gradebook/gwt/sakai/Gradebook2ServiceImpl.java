@@ -81,6 +81,7 @@ import org.sakaiproject.gradebook.gwt.client.model.PermissionEntryListModel;
 import org.sakaiproject.gradebook.gwt.client.model.PermissionsModel;
 import org.sakaiproject.gradebook.gwt.client.model.SectionModel;
 import org.sakaiproject.gradebook.gwt.client.model.SpreadsheetModel;
+import org.sakaiproject.gradebook.gwt.client.model.StatisticsKey;
 import org.sakaiproject.gradebook.gwt.client.model.StatisticsModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.SubmissionVerificationModel;
@@ -1759,7 +1760,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		return result;
 	}
 
-	private static final String NA = "-";
+	protected static final String NA = "-";
 	private static final String UNIQUESET = "N/A";
 	
 	private StatisticsModel createStatisticsModel(Gradebook gradebook, String name, GradeStatistics statistics, Long id, Long assignmentId, String studentId) {
@@ -1816,7 +1817,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		return model;
 	}
 
-	private String composeModeString(GradeStatistics statistics, Gradebook gradebook) {
+	protected String composeModeString(GradeStatistics statistics, Gradebook gradebook) {
 		List<BigDecimal> modeList = statistics.getModeList(); 
 		StringBuilder sb = new StringBuilder();
 		String modeString; 
@@ -1849,7 +1850,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 
 	}
 
-	private String convertBigDecimalStatToString(Gradebook gradebook, BigDecimal stat, boolean isStandardDev) {
+	protected String convertBigDecimalStatToString(Gradebook gradebook, BigDecimal stat, boolean isStandardDev) {
 		String statAsString = null;
 		
 		switch (gradebook.getGrade_type()) {
@@ -3169,8 +3170,21 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 					UserRecord userRecord = buildUserRecord(site, user, gradebook);
 					model.setUserAsStudent(buildStudentRow(gradebook, userRecord, columns, assignments, categories));
 				}
-				List<StatisticsModel> statsList = generateStatsList(model.getGradebookUid(), model.getGradebookId(), user.getId());		
-				Collections.sort(statsList); 
+				List<ModelData> statsList = generateStatsList(model.getGradebookUid(), model.getGradebookId(), user.getId());		
+				Collections.sort(statsList, new Comparator<ModelData>() {
+
+					public int compare(ModelData o1, ModelData o2) {
+						if (o1 != null && o2 != null) {
+							String id1 = o1.get(StatisticsKey.ASSIGN_ID.name());
+							String id2 = o2.get(StatisticsKey.ASSIGN_ID.name());
+							if (id1 != null && id2 != null) {
+								return id1.compareTo(id2); 
+							}
+						}
+						return -1;
+					}
+					
+				}); 
 				
 				model.setStatsModel(statsList);
 
@@ -4033,7 +4047,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		return toolManager.getCurrentPlacement().getContext();
 	}
 
-	private String getSiteId() {
+	protected String getSiteId() {
 
 		String context = getSiteContext();
 		String siteId = null;
@@ -4598,7 +4612,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 	/*
 	 * GENERAL HELPER METHODS
 	 */
-	private String[] getLearnerRoleNames() {
+	protected String[] getLearnerRoleNames() {
 		return learnerRoleNames;
 	}
 	

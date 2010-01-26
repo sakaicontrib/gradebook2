@@ -10,6 +10,7 @@ import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
 
 public class Resource {
@@ -36,10 +37,10 @@ public class Resource {
 		return o;
 	}
 	
-	protected String toJson(String name, List<?> list, int size) {
+	protected String toJson(List<?> list, int size) {
 		Map<String,Object> wrapper = new HashMap<String, Object>();
-		wrapper.put(name, list);
-		wrapper.put("total", String.valueOf(size));
+		wrapper.put(AppConstants.LIST_ROOT, list);
+		wrapper.put(AppConstants.TOTAL, String.valueOf(size));
 		
 		return toJson(wrapper);
 	}

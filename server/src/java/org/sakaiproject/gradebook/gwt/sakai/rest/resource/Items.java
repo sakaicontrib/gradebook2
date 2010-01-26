@@ -9,7 +9,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
-import org.sakaiproject.gradebook.gwt.client.AppConstants;
 
 @Path("/gradebook/rest/items")
 public class Items extends Resource {
@@ -21,7 +20,7 @@ public class Items extends Resource {
 	
 		List<Map<String,Object>> list = service.getItems(gradebookUid, gradebookId, itemType);
 		
-		return toJson(AppConstants.ITEMS_ROOT, list, list.size());
+		return toJson(list, list.size());
 	}
 	
 }

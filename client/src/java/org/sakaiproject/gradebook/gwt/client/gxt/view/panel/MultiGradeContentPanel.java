@@ -641,7 +641,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 		unweightedNumericCellRenderer = new UnweightedNumericCellRenderer();
 		extraCreditNumericCellRenderer = new ExtraCreditNumericCellRenderer();
 
-		sectionsLoader = RestBuilder.getDelayLoader(AppConstants.SECTIONS_ROOT, EnumSet.allOf(SectionKey.class), Method.GET, 
+		sectionsLoader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, EnumSet.allOf(SectionKey.class), Method.GET, 
 				GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.SECTION_FRAGMENT);
 			
 		sectionsLoader.setRemoteSort(true);

@@ -37,6 +37,8 @@ public interface Gradebook2ComponentService {
 	
 	public List<Map<String,Object>> getPermissions(String gradebookUid, Long gradebookId, String graderId);
 	
+	public List<Map<String,Object>> getStatistics(String gradebookUid, Long gradebookId, String studentId);
+	
 	public List<Map<String,Object>> getVisibleSections(String gradebookUid, boolean enableAllSectionsEntry, String allSectionsEntryTitle);
 	
 	public void resetGradeMap(String gradebookUid);

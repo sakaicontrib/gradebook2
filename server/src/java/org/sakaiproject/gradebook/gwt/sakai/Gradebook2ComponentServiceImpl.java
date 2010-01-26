@@ -40,13 +40,16 @@ import org.sakaiproject.gradebook.gwt.client.model.GraderKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
-import org.sakaiproject.gradebook.gwt.client.model.PermissionEntryListModel;
-import org.sakaiproject.gradebook.gwt.client.model.PermissionsModel;
 import org.sakaiproject.gradebook.gwt.client.model.PermissionKey;
 import org.sakaiproject.gradebook.gwt.client.model.SectionKey;
+import org.sakaiproject.gradebook.gwt.client.model.StatisticsKey;
+import org.sakaiproject.gradebook.gwt.client.model.StatisticsModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.sakai.InstitutionalAdvisor.Column;
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
+import org.sakaiproject.gradebook.gwt.sakai.model.GradeStatistics;
+import org.sakaiproject.gradebook.gwt.sakai.model.StudentScore;
+import org.sakaiproject.gradebook.gwt.server.DataTypeConversionUtil;
 import org.sakaiproject.section.api.coursemanagement.CourseSection;
 import org.sakaiproject.section.api.coursemanagement.ParticipationRecord;
 import org.sakaiproject.section.api.facade.Role;
@@ -400,6 +403,20 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 						
 						gbMap.put(en.name(), configMap);
 					}
+				} else if (en.equals(GradebookKey.STATSMODELS)) {
+					List<StatisticsModel> statsModels = gbModel.get(en.name());
+					List<Map<String,Object>> list = new ArrayList<Map<String,Object>>();
+					if (statsModels != null) {
+						for (StatisticsModel statsModel : statsModels) {
+							Map<String,Object> statsMap = new HashMap<String,Object>();
+							
+							for (String key : statsModel.getPropertyNames()) {
+								statsMap.put(key, statsModel.get(key));
+							}
+							list.add(statsMap);
+						}
+						gbMap.put(en.name(), list);
+					}
 					
 				} else {
 					gbMap.put(en.name(), gbModel.get(en.name()));
@@ -724,6 +741,171 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		return list;
 	}
 	
+	public List<Map<String,Object>> getStatistics(String gradebookUid, Long gradebookId, String studentId) {
+		Gradebook gradebook = null;
+		if (gradebookId == null) {
+			gradebook = gbService.getGradebook(gradebookUid);
+			gradebookId = gradebook.getId();
+		}
+
+		List<Assignment> assignments = gbService.getAssignments(gradebookId);
+		
+		// Don't bother going out to the db for the Gradebook if we've already
+		// retrieved it
+		if (gradebook == null && assignments != null && assignments.size() > 0)
+			gradebook = assignments.get(0).getGradebook();
+
+		if (gradebook == null)
+			gradebook = gbService.getGradebook(gradebookId);
+
+		List<Category> categories = null;
+		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
+		if (hasCategories)
+			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+
+		int gradeType = gradebook.getGrade_type();
+
+		String siteId = getSiteId();
+
+		String[] realmIds = new String[1];
+		realmIds[0] = new StringBuffer().append("/site/").append(siteId).toString();
+
+		String[] learnerRoleNames = getLearnerRoleNames();
+
+		List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebook.getId(), realmIds, learnerRoleNames);
+		Map<String, Map<Long, AssignmentGradeRecord>> studentGradeRecordMap = new HashMap<String, Map<Long, AssignmentGradeRecord>>();
+
+		List<String> gradedStudentUids = new ArrayList<String>();
+
+		Map<Long, BigDecimal> assignmentSumMap = new HashMap<Long, BigDecimal>();
+		Map<Long, List<StudentScore>> assignmentGradeListMap = new HashMap<Long, List<StudentScore>>();
+
+		if (allGradeRecords != null) {
+			for (AssignmentGradeRecord gradeRecord : allGradeRecords) {
+				gradeRecord.setUserAbleToView(true);
+				String studentUid = gradeRecord.getStudentId();
+				Map<Long, AssignmentGradeRecord> studentMap = studentGradeRecordMap.get(studentUid);
+				if (studentMap == null) {
+					studentMap = new HashMap<Long, AssignmentGradeRecord>();
+				}
+				GradableObject go = gradeRecord.getGradableObject();
+				studentMap.put(go.getId(), gradeRecord);
+
+				BigDecimal value = null;
+				if (gradeRecord.getPointsEarned() != null) {
+					Assignment assignment = (Assignment) gradeRecord.getGradableObject();
+					switch (gradeType) {
+						case GradebookService.GRADE_TYPE_POINTS:
+							value = BigDecimal.valueOf(gradeRecord.getPointsEarned().doubleValue());
+							break;
+						case GradebookService.GRADE_TYPE_PERCENTAGE:
+						case GradebookService.GRADE_TYPE_LETTER:
+							value = gradeCalculations.getPointsEarnedAsPercent(assignment, gradeRecord);
+							break;
+					}
+
+					if (value != null && assignment != null) {
+						Long assignmentId = assignment.getId();
+						List<StudentScore> gradeList = assignmentGradeListMap.get(assignmentId);
+						if (gradeList == null) {
+							gradeList = new ArrayList<StudentScore>();
+							assignmentGradeListMap.put(assignmentId, gradeList);
+						}
+						
+						gradeList.add(new StudentScore(gradeRecord.getStudentId(), value));
+
+						BigDecimal itemSum = assignmentSumMap.get(assignmentId);
+						if (itemSum == null)
+							itemSum = BigDecimal.ZERO;
+						itemSum = itemSum.add(value);
+						assignmentSumMap.put(assignmentId, itemSum);
+					}
+
+				}
+				studentGradeRecordMap.put(studentUid, studentMap);
+
+				if (!gradedStudentUids.contains(studentUid))
+					gradedStudentUids.add(studentUid);
+			}
+		}
+
+		// Now we can calculate the mean course grade
+		List<StudentScore> courseGradeList = new ArrayList<StudentScore>();
+		BigDecimal sumCourseGrades = BigDecimal.ZERO;
+		for (String studentUid : gradedStudentUids) {
+			Map<Long, AssignmentGradeRecord> studentMap = studentGradeRecordMap.get(studentUid);
+			BigDecimal courseGrade = null;
+			
+			boolean isScaledExtraCredit = DataTypeConversionUtil.checkBoolean(gradebook.isScaledExtraCredit());
+			switch (gradebook.getCategory_type()) {
+				case GradebookService.CATEGORY_TYPE_NO_CATEGORY:
+					courseGrade = gradeCalculations.getCourseGrade(gradebook, assignments, studentMap, isScaledExtraCredit);
+					break;
+				default:
+					courseGrade = gradeCalculations.getCourseGrade(gradebook, categories, studentMap, isScaledExtraCredit);
+			}
+
+			if (courseGrade != null) {
+				sumCourseGrades = sumCourseGrades.add(courseGrade);
+				courseGradeList.add(new StudentScore(studentUid, courseGrade));
+			}
+		} 
+
+		GradeStatistics courseGradeStatistics = gradeCalculations.calculateStatistics(courseGradeList, sumCourseGrades, studentId);
+
+		List<Map<String,Object>> statsList = new ArrayList<Map<String,Object>>();
+
+		long id = 0;
+		statsList.add(getStatisticsMap(gradebook, "Course Grade", courseGradeStatistics, Long.valueOf(id), Long.valueOf(-1), studentId ));
+		id++;
+
+		if (assignments != null) {
+			
+			if (hasCategories) {
+				if (categories != null) {
+					for (Category category : categories) {
+						List<Assignment> asns = category.getAssignmentList();
+						if (asns != null) {
+							for (Assignment a : asns) {
+								Long assignmentId = a.getId();
+								String name = a.getName();
+				
+								List<StudentScore> gradeList = assignmentGradeListMap.get(assignmentId);
+								BigDecimal sum = assignmentSumMap.get(assignmentId);
+				
+								GradeStatistics assignmentStatistics = null;
+								if (gradeList != null && sum != null) {
+									assignmentStatistics = gradeCalculations.calculateStatistics(gradeList, sum, studentId);
+								}
+								
+								statsList.add(getStatisticsMap(gradebook, name, assignmentStatistics, Long.valueOf(id), assignmentId, studentId));
+								id++;
+							}
+						}
+					}
+				}
+			} else {
+			
+				for (Assignment assignment : assignments) {
+					Long assignmentId = assignment.getId();
+					String name = assignment.getName();
+	
+					List<StudentScore> gradeList = assignmentGradeListMap.get(assignmentId);
+					BigDecimal sum = assignmentSumMap.get(assignmentId);
+	
+					GradeStatistics assignmentStatistics = null;
+					if (gradeList != null && sum != null) {
+						assignmentStatistics = gradeCalculations.calculateStatistics(gradeList, sum, studentId);
+					}
+					
+					statsList.add(getStatisticsMap(gradebook, name, assignmentStatistics, Long.valueOf(id), assignmentId, studentId));
+					id++;
+				}
+			}
+		}
+
+		return statsList;
+	}
 		
 	public List<Map<String,Object>> getVisibleSections(String gradebookUid, boolean enableAllSectionsEntry, String allSectionsEntryTitle) {
 		List<CourseSection> viewableSections = authz.getViewableSections(gradebookUid);
@@ -924,6 +1106,60 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
 			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
 		return buildLearnerGradeRecord(gradebook, userRecord, columns, assignments, categories);
+	}
+	
+	private Map<String,Object> getStatisticsMap(Gradebook gradebook, String name, GradeStatistics statistics, Long id, Long assignmentId, String studentId) {
+
+		Map<String,Object> model = new HashMap<String,Object>();
+		model.put(StatisticsKey.ID.name(), String.valueOf(id));
+		model.put(StatisticsKey.ASSIGN_ID.name(), String.valueOf(assignmentId));
+		model.put(StatisticsKey.NAME.name(), name);
+		
+		String mean = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getMean(), false) : NA;
+		String median = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getMedian(), false) : NA;
+		String mode = 	statistics != null ? composeModeString(statistics, gradebook) : NA;
+		String standardDev = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getStandardDeviation(), true) : NA;
+		String rank = NA;  
+
+		boolean isStudentView = studentId != null;
+		
+		if (studentId != null && statistics != null)
+		{
+			StringBuilder sb = new StringBuilder();
+			if (statistics.getRank() > 0)
+			{
+				sb.append(statistics.getRank());
+			}
+			else
+			{
+				sb.append("N/A");
+			}
+			sb.append(" out of "); 
+			sb.append(statistics.getStudentTotal());
+			rank = sb.toString();
+			sb = null; 
+		}
+		
+		boolean isShowMean = DataTypeConversionUtil.checkBoolean(gradebook.getShowMean());
+    	boolean isShowMedian = DataTypeConversionUtil.checkBoolean(gradebook.getShowMedian());
+    	boolean isShowMode = DataTypeConversionUtil.checkBoolean(gradebook.getShowMode());
+    	boolean isShowRank = DataTypeConversionUtil.checkBoolean(gradebook.getShowRank());
+		
+		if (!isStudentView || isShowMean) {
+			model.put(StatisticsKey.MEAN.name(),mean);
+			model.put(StatisticsKey.STANDARD_DEVIATION.name(),standardDev);	
+		}
+		
+		if (!isStudentView || isShowMedian)
+			model.put(StatisticsKey.MEDIAN.name(),median);
+		
+		if (!isStudentView || isShowMode)
+			model.put(StatisticsKey.MODE.name(),mode);
+		
+		if (!isStudentView || isShowRank)
+			model.put(StatisticsKey.RANK.name(),rank); 
+		
+		return model;
 	}
 	
 	private ItemModel toItem(Map<String,Object> attributes) {

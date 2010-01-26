@@ -9,7 +9,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
-import org.sakaiproject.gradebook.gwt.client.AppConstants;
 
 @Path("/gradebook/rest/history/{uid}/{id}")
 public class History extends Resource {
@@ -22,7 +21,7 @@ public class History extends Resource {
     
 		List<Map<String,Object>> list = service.getHistory(gradebookUid, gradebookId, offset, limit);
 		
-		return toJson(AppConstants.HISTORY_ROOT, list, list.size());
+		return toJson(list, list.size());
 	}
 	
 }

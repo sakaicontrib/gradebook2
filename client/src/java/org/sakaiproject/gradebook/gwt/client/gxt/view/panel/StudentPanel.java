@@ -24,20 +24,22 @@ package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
-import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
-import org.sakaiproject.gradebook.gwt.client.SecureToken;
-import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
+import org.sakaiproject.gradebook.gwt.client.RestBuilder;
+import org.sakaiproject.gradebook.gwt.client.UrlArgsCallback;
+import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
-import org.sakaiproject.gradebook.gwt.client.model.StatisticsModel;
+import org.sakaiproject.gradebook.gwt.client.model.StatisticsKey;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -45,10 +47,15 @@ import com.extjs.gxt.ui.client.Style;
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.binding.FormBinding;
+import com.extjs.gxt.ui.client.data.BaseListLoadResult;
 import com.extjs.gxt.ui.client.data.BaseModel;
+import com.extjs.gxt.ui.client.data.BaseModelData;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
+import com.extjs.gxt.ui.client.data.ListLoader;
+import com.extjs.gxt.ui.client.data.LoadEvent;
 import com.extjs.gxt.ui.client.data.ModelComparer;
 import com.extjs.gxt.ui.client.data.ModelData;
+import com.extjs.gxt.ui.client.event.LoadListener;
 import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
 import com.extjs.gxt.ui.client.event.SelectionChangedListener;
 import com.extjs.gxt.ui.client.store.GroupingStore;
@@ -79,7 +86,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Element;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
 
@@ -99,6 +105,7 @@ public class StudentPanel extends GradebookPanel {
     private FormPanel commentsPanel;
     private Grid<BaseModel> grid;
     private GroupingStore<BaseModel> store;
+    private ListLoader<ListLoadResult<ModelData>> loader;
     private ColumnModel cm;
     private FormBinding formBinding;
     private GridSelectionModel<BaseModel> selectionModel;
@@ -112,9 +119,9 @@ public class StudentPanel extends GradebookPanel {
 	
 	private GradebookModel selectedGradebook;
 	
-	private boolean isPossibleStatsChanged = false;
+	private boolean isPossibleStatsChanged = true;
 	
-	private List<StatisticsModel> statsList;
+	private List<ModelData> statsList;
 	
 	public StudentPanel(I18nConstants i18n, boolean isStudentView, boolean displayRank) {
 		super();
@@ -181,6 +188,28 @@ public class StudentPanel extends GradebookPanel {
 			    	return comparator.compare(v1, v2);
 			    }
 			    return comparator.compare(m1, m2);
+			}
+			
+		});
+		
+		loader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, 
+				EnumSet.allOf(StatisticsKey.class), Method.GET, new UrlArgsCallback() {
+
+					public String getUrlArg() {
+						String uid = learnerGradeRecordCollection.get(LearnerKey.UID.name());
+						return uid;
+					}
+			
+				},	
+				GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.STATISTICS_FRAGMENT);
+		
+		loader.addLoadListener(new LoadListener() {
+			
+			public void loaderLoad(LoadEvent event) {
+				BaseListLoadResult<ModelData> result = event.getData();
+				statsList = result.getData();
+				refreshGradeData(learnerGradeRecordCollection, statsList);
+				isPossibleStatsChanged = false;
 			}
 			
 		});
@@ -360,7 +389,7 @@ public class StudentPanel extends GradebookPanel {
         
         updateCourseGrade((String)learnerGradeRecordCollection.get(LearnerKey.LETTER_GRADE.name()), overrideString, (String)learnerGradeRecordCollection.get(LearnerKey.CALCULATED_GRADE.name()));
 		
-		List<StatisticsModel> statsList = selectedGradebook.getStatsModel();
+		List<ModelData> statsList = selectedGradebook.getStatsModel();
 		refreshGradeData(learnerGradeRecordCollection, statsList);
 	}
 	
@@ -373,6 +402,8 @@ public class StudentPanel extends GradebookPanel {
 			updateCourseGrade((String)learnerGradeRecordCollection.get(LearnerKey.LETTER_GRADE.name()), overrideString, (String)learnerGradeRecordCollection.get(LearnerKey.CALCULATED_GRADE.name()));
 			
 			if (isPossibleStatsChanged) {
+				loader.load();
+				/*
 				AsyncCallback<ListLoadResult<StatisticsModel>> callback = new AsyncCallback<ListLoadResult<StatisticsModel>>() {
 
 					public void onFailure(Throwable caught) {
@@ -380,7 +411,7 @@ public class StudentPanel extends GradebookPanel {
 						
 					}
 
-					public void onSuccess(ListLoadResult<StatisticsModel> result) {
+					public void onSuccess(ListLoadResult<ModelData> result) {
 						statsList = result.getData();
 						refreshGradeData(learnerGradeRecordCollection, statsList);
 						isPossibleStatsChanged = false;
@@ -390,6 +421,7 @@ public class StudentPanel extends GradebookPanel {
 				
 				Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
 				service.getPage(selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId(), EntityType.STATISTICS, null, SecureToken.get(), callback);
+				*/
 			} else {
 				if (statsList == null)
 					statsList = selectedGradebook.getStatsModel();
@@ -455,8 +487,8 @@ public class StudentPanel extends GradebookPanel {
 		//	learnerGradeRecordCollection.set(StudentModel.Key.COURSE_GRADE.name(), newGrade);
 	}
 	
-	private void refreshGradeData(ModelData learnerGradeRecordCollection, List<StatisticsModel> statsList) {
-		StatisticsModel m = getStatsModelForItem(String.valueOf(Long.valueOf(-1)), statsList);
+	private void refreshGradeData(ModelData learnerGradeRecordCollection, List<ModelData> statsList) {
+		ModelData m = getStatsModelForItem(String.valueOf(Long.valueOf(-1)), statsList);
 		setStudentInfoTable(m);
 		setGradeInfoTable(selectedGradebook, learnerGradeRecordCollection, statsList);
 	}
@@ -487,7 +519,7 @@ public class StudentPanel extends GradebookPanel {
 	private static final int PI_COL2_VALUE = 3;
 	
 	
-	private void setStudentInfoTable(StatisticsModel courseGradeStats) {		
+	private void setStudentInfoTable(ModelData courseGradeStats) {		
 		// To force a refresh, let's first hide the owning panel
 		studentInformationPanel.hide();
 	
@@ -554,14 +586,14 @@ public class StudentPanel extends GradebookPanel {
 	        		studentInformation.setText(PI_ROW_MEAN, PI_COL2_HEADING, "Mean");
 		        	formatter.setStyleName(PI_ROW_MEAN, PI_COL2_HEADING, resources.css().gbImpact());
 		        	formatter.setWordWrap(PI_ROW_MEAN, PI_COL2_HEADING, false);
-		        	studentInformation.setText(PI_ROW_MEAN, PI_COL2_VALUE, courseGradeStats.getMean());
+		        	studentInformation.setText(PI_ROW_MEAN, PI_COL2_VALUE, (String)courseGradeStats.get(StatisticsKey.MEAN.name()));
 		 
 		        	row++;
 		        	
 		        	studentInformation.setText(PI_ROW_STDV, PI_COL2_HEADING, "Standard Deviation");
 		        	formatter.setStyleName(PI_ROW_STDV, PI_COL2_HEADING, resources.css().gbImpact());
 		        	formatter.setWordWrap(PI_ROW_STDV, PI_COL2_HEADING, false);
-		        	studentInformation.setText(PI_ROW_STDV, PI_COL2_VALUE, courseGradeStats.getStandardDeviation());
+		        	studentInformation.setText(PI_ROW_STDV, PI_COL2_VALUE, (String)courseGradeStats.get(StatisticsKey.STANDARD_DEVIATION.name()));
 		
 		        	row++;
 	        	} else {
@@ -577,7 +609,7 @@ public class StudentPanel extends GradebookPanel {
 	        	if (isShowMedian) {
 	        		studentInformation.setText(row, PI_COL2_HEADING, "Median");
 		        	formatter.setStyleName(row, PI_COL2_HEADING, resources.css().gbImpact());
-		        	studentInformation.setText(row, PI_COL2_VALUE, courseGradeStats.getMedian());
+		        	studentInformation.setText(row, PI_COL2_VALUE, (String)courseGradeStats.get(StatisticsKey.MEDIAN.name()));
 		        	
 		        	row++;
 	        	} else {
@@ -590,7 +622,7 @@ public class StudentPanel extends GradebookPanel {
 	        	if (isShowMode) {
 	        		studentInformation.setText(row, PI_COL2_HEADING, "Mode");
 		        	formatter.setStyleName(row, PI_COL2_HEADING, resources.css().gbImpact());
-		        	studentInformation.setText(row, PI_COL2_VALUE, courseGradeStats.getMode());
+		        	studentInformation.setText(row, PI_COL2_VALUE, (String)courseGradeStats.get(StatisticsKey.MODE.name()));
 	        	
 		        	row++;
 	        	} else {
@@ -604,7 +636,7 @@ public class StudentPanel extends GradebookPanel {
 		        {
 		        	studentInformation.setText(row, PI_COL2_HEADING, "Rank");
 		        	formatter.setStyleName(row, PI_COL2_HEADING, resources.css().gbImpact());
-		        	studentInformation.setText(row, PI_COL2_VALUE, courseGradeStats.getRank());
+		        	studentInformation.setText(row, PI_COL2_VALUE, (String)courseGradeStats.get(StatisticsKey.RANK.name()));
 		        } else {
 	        		studentInformation.setText(PI_ROW_RANK, PI_COL2_HEADING, "");
 		        	studentInformation.setText(PI_ROW_RANK, PI_COL2_VALUE, "");
@@ -623,18 +655,18 @@ public class StudentPanel extends GradebookPanel {
 	}
 
 	
-	private BaseModel populateGradeInfoRow(int row, ItemModel item, ModelData learner, StatisticsModel stats, CategoryType categoryType, GradeType gradeType) {
+	private BaseModel populateGradeInfoRow(int row, ItemModel item, ModelData learner, ModelData stats, CategoryType categoryType, GradeType gradeType) {
 		String itemId = item.getIdentifier();
 		Object value = learner.get(itemId);
 		String commentFlag = new StringBuilder().append(itemId).append(StudentModel.COMMENT_TEXT_FLAG).toString();
 		String comment = learner.get(commentFlag);
 		String excusedFlag = new StringBuilder().append(itemId).append(StudentModel.DROP_FLAG).toString();
 		
-		String mean = (stats == null ? "" : stats.getMean());
-		String stdDev = (stats == null ? "" : stats.getStandardDeviation()); 
-		String median = (stats == null ? "" : stats.getMedian());
-		String mode = (stats == null ? "" : stats.getMode()); 
-		String rank = (stats == null ? "" : stats.getRank());
+		String mean = (stats == null ? "" : (String)stats.get(StatisticsKey.MEAN.name()));
+		String stdDev = (stats == null ? "" : (String)stats.get(StatisticsKey.STANDARD_DEVIATION.name())); 
+		String median = (stats == null ? "" : (String)stats.get(StatisticsKey.MEDIAN.name()));
+		String mode = (stats == null ? "" : (String)stats.get(StatisticsKey.MODE.name())); 
+		String rank = (stats == null ? "" : (String)stats.get(StatisticsKey.RANK.name()));
 		
 		//if (comment == null)
 		//	comment = "N/A";
@@ -728,7 +760,7 @@ public class StudentPanel extends GradebookPanel {
 	// So for stats, we'll have the following columns: 
 	// grade | Mean | Std Deviation | Median | Mode | Comment 
 
-	private void setGradeInfoTable(GradebookModel selectedGradebook, ModelData learner, List<StatisticsModel> statsList) {		
+	private void setGradeInfoTable(GradebookModel selectedGradebook, ModelData learner, List<ModelData> statsList) {		
 		// To force a refresh, let's first hide the owning panel
 		gradeInformationPanel.hide();
 		
@@ -780,7 +812,7 @@ public class StudentPanel extends GradebookPanel {
 							for (int j=0;j<itemCount;j++) {
 								ItemModel item = (ItemModel)child.getChild(j);
 								if (DataTypeConversionUtil.checkBoolean(item.getReleased())) {
-									StatisticsModel stats = null; 
+									ModelData stats = null; 
 									stats = getStatsModelForItem(item.getIdentifier(), statsList); 
 				
 									BaseModel model = populateGradeInfoRow(i*1000 + j + 10000, item, learner, stats, categoryType, gradeType);
@@ -794,7 +826,7 @@ public class StudentPanel extends GradebookPanel {
 						}
 						break;
 					case ITEM:
-						StatisticsModel stats = null; 
+						ModelData stats = null; 
 						stats = getStatsModelForItem(child.getIdentifier(), statsList); 
 
 						if (DataTypeConversionUtil.checkBoolean(child.getReleased())) {
@@ -834,12 +866,25 @@ public class StudentPanel extends GradebookPanel {
         gradeInformationPanel.show();
 	}
 	
-	private StatisticsModel getStatsModelForItem(String id, List<StatisticsModel> statsList) {
+	private ModelData getStatsModelForItem(String id, List<ModelData> statsList) {
 		int idx = -1; 
 		
-		StatisticsModel key = new StatisticsModel();
-		key.setAssignmentId(id); 
-		idx = Collections.binarySearch(statsList, key);
+		ModelData key = new BaseModelData();
+		key.set(StatisticsKey.ASSIGN_ID.name(), id); 
+		idx = Collections.binarySearch(statsList, key, new Comparator<ModelData>() {
+
+			public int compare(ModelData o1, ModelData o2) {
+				if (o1 != null && o2 != null) {
+					String id1 = o1.get(StatisticsKey.ASSIGN_ID.name());
+					String id2 = o2.get(StatisticsKey.ASSIGN_ID.name());
+					if (id1 != null && id2 != null) {
+						return id1.compareTo(id2); 
+					}
+				}
+				return -1;
+			}
+			
+		});
 		
 		if (idx >= 0)
 		{

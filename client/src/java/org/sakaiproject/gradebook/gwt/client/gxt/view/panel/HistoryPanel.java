@@ -163,7 +163,7 @@ public class HistoryPanel extends EntityPanel {
 		
 		formPanel.add(fieldSet);
 				
-		loader = RestBuilder.getPagingDelayLoader(AppConstants.HISTORY_ROOT, EnumSet.allOf(ActionKey.class), Method.GET, 
+		loader = RestBuilder.getPagingDelayLoader(AppConstants.LIST_ROOT, EnumSet.allOf(ActionKey.class), Method.GET, 
 				GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.HISTORY_FRAGMENT);
 
 		pagingToolBar = new PagingToolBar(20);

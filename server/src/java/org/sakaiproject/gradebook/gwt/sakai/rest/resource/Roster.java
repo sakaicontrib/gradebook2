@@ -13,6 +13,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service;
 
@@ -74,8 +75,8 @@ public class Roster {
     	
     	JSONObject jsonObject = new JSONObject();
     	try {
-			jsonObject.put("learners", array);
-			jsonObject.put("total", result.getTotalLength());
+			jsonObject.put(AppConstants.LIST_ROOT, array);
+			jsonObject.put(AppConstants.TOTAL, result.getTotalLength());
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}

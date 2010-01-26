@@ -24,22 +24,26 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
+import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.SecureToken;
+import org.sakaiproject.gradebook.gwt.client.UrlArgsCallback;
+import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.StatisticsKey;
 import org.sakaiproject.gradebook.gwt.client.model.StatisticsModel;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
-import com.extjs.gxt.ui.client.data.BaseListLoader;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
 import com.extjs.gxt.ui.client.data.ListLoader;
 import com.extjs.gxt.ui.client.data.ModelData;
@@ -54,11 +58,12 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class StatisticsPanel extends ContentPanel {
 
-	private ListLoader loader;
+	private ListLoader<ListLoadResult<ModelData>> loader;
 
 	public StatisticsPanel(I18nConstants i18n) {
 		super();
@@ -68,7 +73,7 @@ public class StatisticsPanel extends ContentPanel {
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 
 		ColumnConfig column = new ColumnConfig();  
-		column.setId(StatisticsModel.Key.NAME.name());  
+		column.setId(StatisticsKey.NAME.name());  
 		column.setHeader(i18n.statsNameHeader());
 		column.setWidth(200);
 		column.setGroupable(false);
@@ -77,7 +82,7 @@ public class StatisticsPanel extends ContentPanel {
 		configs.add(column); 
 
 		column = new ColumnConfig();  
-		column.setId(StatisticsModel.Key.MEAN.name());  
+		column.setId(StatisticsKey.MEAN.name());  
 		column.setHeader(i18n.statsMeanHeader());
 		column.setWidth(80);
 		column.setGroupable(false);
@@ -86,7 +91,7 @@ public class StatisticsPanel extends ContentPanel {
 		configs.add(column);
 
 		column = new ColumnConfig();  
-		column.setId(StatisticsModel.Key.STANDARD_DEVIATION.name());  
+		column.setId(StatisticsKey.STANDARD_DEVIATION.name());  
 		column.setHeader(i18n.statsStdDvHeader());
 		column.setWidth(80);
 		column.setGroupable(false);
@@ -95,7 +100,7 @@ public class StatisticsPanel extends ContentPanel {
 		configs.add(column);
 
 		column = new ColumnConfig();  
-		column.setId(StatisticsModel.Key.MEDIAN.name());  
+		column.setId(StatisticsKey.MEDIAN.name());  
 		column.setHeader(i18n.statsMedianHeader());
 		column.setWidth(80);
 		column.setGroupable(false);
@@ -104,7 +109,7 @@ public class StatisticsPanel extends ContentPanel {
 		configs.add(column);
 
 		column = new ColumnConfig();  
-		column.setId(StatisticsModel.Key.MODE.name());  
+		column.setId(StatisticsKey.MODE.name());  
 		column.setHeader(i18n.statsModeHeader());
 		column.setWidth(160);
 		column.setGroupable(false);
@@ -113,7 +118,7 @@ public class StatisticsPanel extends ContentPanel {
 		column.setResizable(true); 
 		configs.add(column);
 
-
+		/*
 		RpcProxy<ListLoadResult<StatisticsModel>> proxy = new RpcProxy<ListLoadResult<StatisticsModel>>() {
 
 			@Override
@@ -123,13 +128,13 @@ public class StatisticsPanel extends ContentPanel {
 				service.getPage(gbModel.getGradebookUid(), gbModel.getGradebookId(), EntityType.STATISTICS, null, SecureToken.get(), callback);
 			}
 
-		};
+		};*/
 
-		loader = new BaseListLoader(proxy);  
-
+		loader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, EnumSet.allOf(StatisticsKey.class), Method.GET, 
+				GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.STATISTICS_FRAGMENT);
 
 		final ListStore<StatisticsModel> store = new ListStore<StatisticsModel>(loader);
-		store.setModelComparer(new EntityModelComparer<StatisticsModel>(StatisticsModel.Key.ID.name()));
+		store.setModelComparer(new EntityModelComparer<StatisticsModel>(StatisticsKey.ID.name()));
 
 		//loader.load();  
 

@@ -115,7 +115,7 @@ public class PermissionsPanel extends ContentPanel {
 		createPermissionHorizontalPanel.setSpacing(5);
 		
 		// PERMISSIONS
-		permissionLoader = RestBuilder.getDelayLoader(AppConstants.PERMISSIONS_ROOT, 
+		permissionLoader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, 
 				EnumSet.allOf(PermissionKey.class), Method.GET, new UrlArgsCallback() {
 
 					public String getUrlArg() {
@@ -136,7 +136,7 @@ public class PermissionsPanel extends ContentPanel {
 		// LOADING DATA
 		
 		// USERS
-		userLoader = RestBuilder.getDelayLoader(AppConstants.GRADER_ROOT, EnumSet.allOf(GraderKey.class), Method.GET, 
+		userLoader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, EnumSet.allOf(GraderKey.class), Method.GET, 
 				GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.GRADER_FRAGMENT);
 		//userLoader.load();
 		ListStore<ModelData> userListStore = new ListStore<ModelData>(userLoader);
@@ -151,7 +151,7 @@ public class PermissionsPanel extends ContentPanel {
 		permissionListStore.add(permissionList);		
 		
 		// CATEGORIES
-		categoryLoader = RestBuilder.getDelayLoader(AppConstants.ITEMS_ROOT, EnumSet.allOf(ItemKey.class), Method.GET, 
+		categoryLoader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, EnumSet.allOf(ItemKey.class), Method.GET, 
 				GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.ITEMS_FRAGMENT);
 		//categoryLoader.load();
 		ListStore<ModelData> categoryListStore = new ListStore<ModelData>(categoryLoader);
@@ -160,7 +160,7 @@ public class PermissionsPanel extends ContentPanel {
 		
 		// SECTIONS
 		sectionsLoader = 
-			RestBuilder.getDelayLoader(AppConstants.SECTIONS_ROOT, EnumSet.allOf(SectionKey.class), Method.GET, 
+			RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, EnumSet.allOf(SectionKey.class), Method.GET, 
 					GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.SECTION_FRAGMENT);
 		sectionsLoader.setRemoteSort(true);
 		ListStore<ModelData> sectionStore = new ListStore<ModelData>(sectionsLoader);

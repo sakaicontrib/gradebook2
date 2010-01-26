@@ -54,8 +54,11 @@
 		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service"/>
 	</bean>
 	
-	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Section">
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Sections">
 		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
 	</bean>
+
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Statistics"
+		parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
 
 </beans>

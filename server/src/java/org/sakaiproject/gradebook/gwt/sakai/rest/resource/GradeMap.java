@@ -10,7 +10,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
-import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 
 @Path("/gradebook/rest/grademap/{uid}/{id}")
@@ -20,7 +19,7 @@ public class GradeMap extends Resource {
     @Produces("application/json")
     public String get(@PathParam("uid") String gradebookUid, @PathParam("id") Long gradebookId) {
 		List<Map<String,Object>> list = service.getGradeMaps(gradebookUid);
-		return toJson(AppConstants.GRADE_MAP_ROOT, list, list.size());
+		return toJson(list, list.size());
 	}
 	
 	@PUT @Path("{letterGrade}")
@@ -34,7 +33,6 @@ public class GradeMap extends Resource {
 	
 	@DELETE
 	public void reset(@PathParam("uid") String gradebookUid, @PathParam("id") Long gradebookId) {
-		
 		service.resetGradeMap(gradebookUid);
 	}
 	

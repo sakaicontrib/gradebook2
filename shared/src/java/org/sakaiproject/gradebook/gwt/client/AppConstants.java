@@ -1,6 +1,6 @@
 /**********************************************************************************
  *
- * $Id:$
+s * $Id:$
  *
  ***********************************************************************************
  *
@@ -143,7 +143,7 @@ public interface AppConstants {
 	public static final String ITEM_FRAGMENT			= "item";
 	public static final String ITEMS_FRAGMENT			= "items";
 	public static final String ROSTER_FRAGMENT 			= "roster";
-	public static final String SECTION_FRAGMENT			= "section";
+	public static final String SECTION_FRAGMENT			= "sections";
 	public static final String GRADE_EVENT_FRAGMENT		= "gradeevent";
 	public static final String GRADE_FORMAT_FRAGMENT	= "gradeformat";
 	public static final String GRADE_MAP_FRAGMENT		= "grademap";
@@ -151,15 +151,9 @@ public interface AppConstants {
 	public static final String GRADER_FRAGMENT			= "grader";
 	public static final String PERMISSION_FRAGMENT		= "permission";
 	public static final String PERMISSIONS_FRAGMENT		= "permissions";
+	public static final String STATISTICS_FRAGMENT		= "statistics";
 	
-	public static final String GRADE_FORMAT_ROOT		= "formats";
-	public static final String GRADE_MAP_ROOT			= "maps";
-	public static final String GRADER_ROOT				= "graders";
-	public static final String HISTORY_ROOT				= "history";
-	public static final String ITEMS_ROOT				= "items";
-	public static final String PERMISSIONS_ROOT			= "permissions";
-	public static final String ROSTER_ROOT				= "learners";
-	public static final String SECTIONS_ROOT			= "sections";
+	public static final String LIST_ROOT				= "list";
 	public static final String TOTAL					= "total";
 	
 	public static final String VALUE_CONSTANT			= "value";

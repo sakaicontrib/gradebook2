@@ -8,7 +8,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
-import org.sakaiproject.gradebook.gwt.client.AppConstants;
 
 @Path("/gradebook/rest/permissions/{uid}/{id}/{graderId}")
 public class Permissions extends Resource {
@@ -18,7 +17,7 @@ public class Permissions extends Resource {
     public String get(@PathParam("uid") String gradebookUid, @PathParam("id") Long gradebookId,
     		@PathParam("graderId") String graderId) {
 		List<Map<String,Object>> list = service.getPermissions(gradebookUid, gradebookId, graderId);
-		return toJson(AppConstants.PERMISSIONS_ROOT, list, list.size());
+		return toJson(list, list.size());
 	}
 	
 }

@@ -17,6 +17,7 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
+import org.sakaiproject.gradebook.gwt.client.model.StatisticsKey;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.DataField;
@@ -141,6 +142,14 @@ public class JsonTranslater {
 						}
 						
 						array.add(childModel);
+					} else if (name.equals(GradebookKey.STATSMODELS.name())) {
+						
+						JsonTranslater statsTranslater = new JsonTranslater(EnumSet.allOf(StatisticsKey.class)) {
+							protected ModelData newModelInstance() {
+								return new BaseModel();
+							}
+						};
+						array.add(statsTranslater.translate(elementValue.toString()));
 					}
 					
 				} else if (elementString != null) {

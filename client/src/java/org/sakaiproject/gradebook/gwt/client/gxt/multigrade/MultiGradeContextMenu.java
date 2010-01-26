@@ -170,7 +170,6 @@ public class MultiGradeContextMenu extends Menu {
 		HttpProxy<String> proxy = new HttpProxy<String>(builder) {
 			
 			public void load(final DataReader<String> reader, final Object loadConfig, final AsyncCallback<String> callback) {
-				GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
 				initUrl = RestBuilder.buildInitUrl(GWT.getModuleBaseURL(),
 						AppConstants.REST_FRAGMENT, AppConstants.GRADE_EVENT_FRAGMENT,
 						(String)owner.getSelectedModel().get(LearnerKey.UID.name()), String.valueOf(owner.getSelectedAssignment()));
@@ -180,8 +179,8 @@ public class MultiGradeContextMenu extends Menu {
 		};  
 
 		ModelType type = new ModelType();
-		type.setRoot("events");
-		type.setTotalName("total");
+		type.setRoot(AppConstants.LIST_ROOT);
+		type.setTotalName(AppConstants.TOTAL);
 		
 		for (GradeEventKey key : EnumSet.allOf(GradeEventKey.class)) {
 			type.addField(key.name(), key.name()); 
