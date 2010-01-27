@@ -18,6 +18,7 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.StatisticsKey;
+import org.sakaiproject.gradebook.gwt.client.model.VerificationKey;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.DataField;
@@ -60,7 +61,8 @@ public class JsonTranslater {
 			else if (e instanceof ActionKey) {
 				type = ((ActionKey)e).getType();
 				format = DateTimeFormat.getMediumDateFormat().getPattern();
-			}
+			} else if (e instanceof VerificationKey) 
+				type = ((VerificationKey)e).getType();
 			
 			if (type != null) {
 				if (type.equals(String.class))

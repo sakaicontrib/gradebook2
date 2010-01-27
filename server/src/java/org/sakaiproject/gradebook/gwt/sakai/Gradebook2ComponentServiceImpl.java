@@ -45,10 +45,13 @@ import org.sakaiproject.gradebook.gwt.client.model.SectionKey;
 import org.sakaiproject.gradebook.gwt.client.model.StatisticsKey;
 import org.sakaiproject.gradebook.gwt.client.model.StatisticsModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
+import org.sakaiproject.gradebook.gwt.client.model.SubmissionVerificationModel;
+import org.sakaiproject.gradebook.gwt.client.model.VerificationKey;
 import org.sakaiproject.gradebook.gwt.sakai.InstitutionalAdvisor.Column;
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeStatistics;
 import org.sakaiproject.gradebook.gwt.sakai.model.StudentScore;
+import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.gradebook.gwt.server.DataTypeConversionUtil;
 import org.sakaiproject.section.api.coursemanagement.CourseSection;
 import org.sakaiproject.section.api.coursemanagement.ParticipationRecord;
@@ -532,6 +535,43 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		}
 		
 		return userList;
+	}
+	
+	public Map<String,Object> getGradesVerification(String gradebookUid, Long gradebookId) {
+		String[] roleNames = getLearnerRoleNames();
+		Site site = getSite();
+		String siteId = site == null ? null : site.getId();
+		String[] realmIds = new String[1];
+		realmIds[0] = new StringBuffer().append("/site/").append(siteId).toString();
+
+		verifyUserDataIsUpToDate(site, roleNames);
+
+		List<UserDereference> dereferences = gbService.getUserDereferences(realmIds, "sortName", null, null, -1, -1, true, roleNames);
+
+		Gradebook gradebook = gbService.getGradebook(gradebookId);
+
+		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
+		boolean isMissingScores = false;
+		boolean isFullyWeighted = isFullyWeighted(gradebook);
+		
+		if (dereferences != null) {
+			for (UserDereference dereference : dereferences) {
+
+				if (gbService.isStudentMissingScores(gradebookId, dereference.getUserUid(), hasCategories)) {
+					isMissingScores = true;
+					break;
+				}
+			}
+		}
+
+		int numberOfLearners = dereferences == null ? 0 : dereferences.size();
+
+		Map<String,Object> map = new HashMap<String,Object>();
+		map.put(VerificationKey.NUMBER_LEARNERS.name(), Integer.valueOf(numberOfLearners));
+		map.put(VerificationKey.IS_MISSING_SCORES.name(), Boolean.valueOf(isMissingScores));
+		map.put(VerificationKey.IS_FULLY_WEIGHTED.name(), Boolean.valueOf(isFullyWeighted));
+		
+		return map;
 	}
 	
 	public List<Map<String,Object>> getHistory(String gradebookUid, Long gradebookId,

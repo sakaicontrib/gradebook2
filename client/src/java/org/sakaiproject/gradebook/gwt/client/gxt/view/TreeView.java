@@ -29,7 +29,7 @@ import java.util.List;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
-import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.AltItemTreePanel;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ItemTreePanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ItemFormPanel;
 import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
@@ -52,7 +52,7 @@ import com.extjs.gxt.ui.client.store.TreeStore;
 
 public class TreeView extends View {
 
-	private AltItemTreePanel treePanel;
+	private ItemTreePanel treePanel;
 	private ItemFormPanel formPanel;
 
 	private TreeLoader<ItemModel> treeLoader;
@@ -106,7 +106,7 @@ public class TreeView extends View {
 			formPanel.onTreeStoreInitialized(treeStore);
 		}
 		
-		this.treePanel = new AltItemTreePanel(treeStore, isEditable);
+		this.treePanel = new ItemTreePanel(treeStore, isEditable);
 	}
 
 	@Override
@@ -365,7 +365,7 @@ public class TreeView extends View {
 
 	// Public accessors
 
-	public AltItemTreePanel getTreePanel() {
+	public ItemTreePanel getTreePanel() {
 		return treePanel;
 	}
 

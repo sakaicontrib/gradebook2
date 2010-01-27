@@ -83,7 +83,7 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
 
-public class AltItemTreePanel extends GradebookPanel {
+public class ItemTreePanel extends GradebookPanel {
 
 	private static int CHARACTER_WIDTH = 7;
 	private enum SelectionType { CREATE_CATEGORY, CREATE_ITEM, UPDATE_ITEM, DELETE_ITEM, MOVE_DOWN, MOVE_UP };
@@ -120,7 +120,7 @@ public class AltItemTreePanel extends GradebookPanel {
 	private boolean isAllowedToDropToGradebook = false;
 	private boolean isLearnerAttributeTreeLoaded = false;
 	
-	public AltItemTreePanel(TreeStore<ItemModel> treeStore, boolean isEditable) {
+	public ItemTreePanel(TreeStore<ItemModel> treeStore, boolean isEditable) {
 		super();
 		this.treeStore = treeStore;
 		this.enableLayout = false;

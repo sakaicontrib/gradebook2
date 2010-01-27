@@ -23,19 +23,23 @@
 
 package org.sakaiproject.gradebook.gwt.client.gxt.view.components;
 
+import java.util.EnumSet;
+
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
-import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
-import org.sakaiproject.gradebook.gwt.client.SecureToken;
-import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
+import org.sakaiproject.gradebook.gwt.client.RestBuilder;
+import org.sakaiproject.gradebook.gwt.client.RestCallback;
+import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.advisor.ClientExportAdvisorImpl;
 import org.sakaiproject.gradebook.gwt.client.api.ClientExportAdvisor;
+import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
-import org.sakaiproject.gradebook.gwt.client.model.SubmissionVerificationModel;
+import org.sakaiproject.gradebook.gwt.client.model.VerificationKey;
 
 import com.extjs.gxt.ui.client.Registry;
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.widget.Dialog;
 import com.extjs.gxt.ui.client.widget.MessageBox;
@@ -46,7 +50,6 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class GradeSubmissionDialog extends Dialog {
 
@@ -65,6 +68,61 @@ public class GradeSubmissionDialog extends Dialog {
 		
 		final MessageBox box = MessageBox.wait(i18n.finalGradeSubmissionVerificationTitle(), i18n.finalGradeSubmissionMessageText1c(),  i18n.finalGradeSubmissionMessageText1c());
 		
+		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		String gradebookUid = selectedGradebook.getGradebookUid();
+		String gradebookId = String.valueOf(selectedGradebook.getGradebookId());
+		
+		RestBuilder builder = RestBuilder.getInstance(Method.GET, 
+				GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, 
+				AppConstants.GRADES_VERIFICATION_FRAGMENT, gradebookUid, gradebookId);
+		
+		builder.sendRequest(200, 400, null, new RestCallback() {
+
+			@Override
+			public void onError(Request request, Throwable exception) {
+				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(exception, "Unable to submit final grades: "));
+				box.close();
+			}
+			
+			@Override
+			public void onSuccess(Request request, Response response) {
+				
+				JsonTranslater translater = new JsonTranslater(EnumSet.allOf(VerificationKey.class));
+				ModelData result = translater.translate(response.getText());
+				
+				box.close();
+				
+				StringBuilder text = new StringBuilder();
+				
+				boolean isFullyWeighted = result.get(VerificationKey.IS_FULLY_WEIGHTED.name()) != null && ((Boolean)result.get(VerificationKey.IS_FULLY_WEIGHTED.name())).booleanValue();
+				boolean isMissingScores = result.get(VerificationKey.IS_MISSING_SCORES.name()) != null && ((Boolean)result.get(VerificationKey.IS_MISSING_SCORES.name())).booleanValue();
+				int numberOfLearners = result.get(VerificationKey.NUMBER_LEARNERS.name()) == null ? 0 : ((Integer)result.get(VerificationKey.NUMBER_LEARNERS.name())).intValue();
+								
+				if (isFullyWeighted) {
+					setButtons(Dialog.YESNO);
+					setHeading(i18n.finalGradeSubmissionConfirmTitle());
+					text.append(i18n.finalGradeSubmissionWarningPrefix1()).append(" ");
+					text.append(numberOfLearners).append(" ");
+					text.append(i18n.finalGradeSubmissionWarningSuffix1());
+					
+					if (isMissingScores)
+						text.append("<p>").append(i18n.finalGradeSubmissionWarningPrefix2()).append(" ");
+								
+					text.append(i18n.finalGradeSubmissionConfirmText());
+				} else {
+					setHeading(i18n.finalGradeSubmissionConfirmAltTitle());
+					text.append(i18n.finalGradeSubmissionMessageText9a());
+					setButtons(Dialog.OK);
+				}
+				
+				addText(text.toString());
+				
+				show();
+			}
+			
+		});
+		
+		/*
 		AsyncCallback<SubmissionVerificationModel> callback = 
 			new AsyncCallback<SubmissionVerificationModel>() {
 
@@ -105,7 +163,7 @@ public class GradeSubmissionDialog extends Dialog {
 		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
 		Gradebook2RPCServiceAsync service = Registry.get("service");
 		service.get(selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId(), EntityType.SUBMISSION_VERIFICATION, null, null, SecureToken.get(), callback);
-
+		*/
 	}
 	
 	protected void onButtonPressed(Button button) {
@@ -127,8 +185,6 @@ public class GradeSubmissionDialog extends Dialog {
 						box.close();
 						
 						Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText2a(), true));
-
-						//Info.display(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText2a());  
 					}
 
 					public void onResponseReceived(Request request, Response response) {
@@ -148,16 +204,12 @@ public class GradeSubmissionDialog extends Dialog {
 						else if(500 == response.getStatusCode()) {
 							
 							Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText5a(), true));
-
-							//Info.display(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText5a());
 						}
 					}
 					
 				});
 			} catch (RequestException e) {
 				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText6a(), true));
-
-				//Info.display(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText6a());
 				e.printStackTrace();
 			}
 		}

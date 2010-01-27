@@ -27,11 +27,11 @@ public interface Gradebook2ComponentService {
 	
 	public List<Map<String,Object>> getGradeMaps(String gradebookUid);
 	
-	public List<Map<String, Object>> getGraders(String gradebookUid,
-			Long gradebookId);
+	public List<Map<String, Object>> getGraders(String gradebookUid, Long gradebookId);
 	
-	public List<Map<String,Object>> getHistory(String gradebookUid, Long gradebookId,
-			Integer offset, Integer limit);
+	public Map<String,Object> getGradesVerification(String gradebookUid, Long gradebookId);
+	
+	public List<Map<String,Object>> getHistory(String gradebookUid, Long gradebookId, Integer offset, Integer limit);
 	
 	public List<Map<String,Object>> getItems(String gradebookUid, Long gradebookId, String type);
 	

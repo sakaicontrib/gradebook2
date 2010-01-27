@@ -3888,7 +3888,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		return models;
 	}
 
-	private boolean isFullyWeighted(Gradebook gradebook) {
+	protected boolean isFullyWeighted(Gradebook gradebook) {
 		
 		switch (gradebook.getCategory_type()) {
 		case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
@@ -4284,7 +4284,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		return assignmentGradeRecord;
 	}
 
-	private void verifyUserDataIsUpToDate(Site site, String[] learnerRoleKeys) {
+	protected void verifyUserDataIsUpToDate(Site site, String[] learnerRoleKeys) {
 
 		String siteId = site == null ? null : site.getId();
 
