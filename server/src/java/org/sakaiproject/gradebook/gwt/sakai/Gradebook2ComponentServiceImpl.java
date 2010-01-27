@@ -700,6 +700,7 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 			List<Category> categoryList = gbService.getCategories(gradebookId);
 
 			Map<String,Object> map = new HashMap<String, Object>();
+			map.put(ItemKey.ID.name(), "ALL");
 			map.put(ItemKey.NAME.name(), "All Categories");
 			list.add(map);
 

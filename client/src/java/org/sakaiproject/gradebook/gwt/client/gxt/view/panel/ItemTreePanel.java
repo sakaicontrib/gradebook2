@@ -1,6 +1,7 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 
@@ -8,10 +9,14 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
+import org.sakaiproject.gradebook.gwt.client.RestBuilder;
+import org.sakaiproject.gradebook.gwt.client.RestCallback;
 import org.sakaiproject.gradebook.gwt.client.SecureToken;
+import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
+import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenu;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTabItem;
@@ -79,6 +84,10 @@ import com.extjs.gxt.ui.client.widget.treepanel.TreePanel;
 import com.extjs.gxt.ui.client.widget.treepanel.TreePanel.CheckCascade;
 import com.extjs.gxt.ui.client.widget.treepanel.TreePanel.CheckNodes;
 import com.extjs.gxt.ui.client.widget.treepanel.TreePanel.Joint;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.http.client.Request;
+import com.google.gwt.http.client.Response;
+import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
@@ -651,7 +660,45 @@ public class ItemTreePanel extends GradebookPanel {
 							item.setItemOrder(Integer.valueOf(index));
 							if (p != null && item.getItemType() == Type.ITEM)
 								item.setCategoryId(((ItemModel)p).getCategoryId());
-														
+							
+							
+							RestBuilder builder = RestBuilder.getInstance(Method.PUT, 
+									GWT.getModuleBaseURL(),
+									AppConstants.REST_FRAGMENT,
+									AppConstants.ITEM_FRAGMENT);
+							
+							JSONObject jsonObject = RestBuilder.convertModel(item);
+							
+							builder.sendRequest(200, 400, jsonObject.toString(), new RestCallback() {
+
+								public void onError(Request request, Throwable exception) {
+									Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(exception, "Failed to update item: "));
+									Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
+								}
+
+								public void onSuccess(Request request, Response response) {
+									String result = response.getText();
+
+									JsonTranslater translater = new JsonTranslater(EnumSet.allOf(ItemKey.class)) {
+										protected ModelData newModelInstance() {
+											return new ItemModel();
+										}
+									};
+									ItemModel itemModel = (ItemModel)translater.translate(result);
+									
+									Dispatcher.forwardEvent(GradebookEvents.BeginItemUpdates.getEventType());
+
+									GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+									selectedGradebook.setGradebookItemModel(itemModel);
+									Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookItems.getEventType(),
+												selectedGradebook);
+									Dispatcher.forwardEvent(GradebookEvents.EndItemUpdates.getEventType());
+									Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
+								}
+								
+							});
+							
+							/*
 							Gradebook2RPCServiceAsync service = Registry.get("service");
 							AsyncCallback<ItemModel> callback = new AsyncCallback<ItemModel>() {
 
@@ -673,7 +720,8 @@ public class ItemTreePanel extends GradebookPanel {
 							};
 
 							service.update(item, EntityType.ITEM, null, SecureToken.get(), callback);
-
+							*/
+							
 							/*for (ModelData tm : models) {
 								ModelData child = tm.get("model");
 								List sub = (List) ((TreeModel) tm)

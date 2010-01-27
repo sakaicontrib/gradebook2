@@ -9,7 +9,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
-
 @Path("/gradebook/rest/items")
 public class Items extends Resource {
 
@@ -17,9 +16,7 @@ public class Items extends Resource {
 	@Produces("application/json")
 	public String getList(@PathParam("uid") String gradebookUid, @PathParam("id") Long gradebookId, 
 			@QueryParam("type") String itemType) {
-	
 		List<Map<String,Object>> list = service.getItems(gradebookUid, gradebookId, itemType);
-		
 		return toJson(list, list.size());
 	}
 	

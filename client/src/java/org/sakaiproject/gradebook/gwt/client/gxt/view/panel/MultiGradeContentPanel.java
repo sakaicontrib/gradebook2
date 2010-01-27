@@ -884,16 +884,20 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 		ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
 		GradeType gradeType = gradebookItemModel.getGradeType();
 		
-		switch (gradeType) {
-			case POINTS:
-				columnNameBuilder.append(" [").append(item.getPoints()).append("pts]");
-				break;
-			case PERCENTAGES:
-				columnNameBuilder.append(" [%]");
-				break;
-			case LETTERS:
-				columnNameBuilder.append(" [A-F]");
-				break;
+		if (gradeType != null) {
+			switch (gradeType) {
+				case POINTS:
+					columnNameBuilder.append(" [").append(item.getPoints()).append("pts]");
+					break;
+				case PERCENTAGES:
+					columnNameBuilder.append(" [%]");
+					break;
+				case LETTERS:
+					columnNameBuilder.append(" [A-F]");
+					break;
+			}
+		} else {
+			GWT.log("Grade Type is null for some reason", null);
 		}
 
 		if (item.getStudentModelKey() != null && item.getStudentModelKey().equals(LearnerKey.GRADE_OVERRIDE.name()))
@@ -917,37 +921,44 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 		LearnerKey key = LearnerKey.valueOf(property);
 		switch (key) {
 			case ASSIGNMENT:
-				switch (selectedGradebook.getGradebookItemModel().getGradeType()) {
-					case POINTS:
-					case PERCENTAGES:
-						config.setAlignment(HorizontalAlignment.RIGHT);
-						config.setNumberFormat(defaultNumberFormat);
-
-						NumberField numberField = new NumberField();
-						numberField.setFormat(defaultNumberFormat);
-						numberField.setPropertyEditorType(Double.class);
-						numberField.setSelectOnFocus(true);
-						numberField.addInputStyleName(resources.css().gbNumericFieldInput());
-						field = numberField;
-
-						if (!isIncluded)
-							config.setRenderer(unweightedNumericCellRenderer);
-						else if (isExtraCredit)
-							config.setRenderer(extraCreditNumericCellRenderer);
-
-						break;
-					case LETTERS:
-						TextField<String> textField = new TextField<String>();
-						textField.setSelectOnFocus(true);
-						textField.addInputStyleName(resources.css().gbTextFieldInput());
-						field = textField;
-
-						if (!isIncluded)
-							config.setRenderer(unweightedTextCellRenderer);
-						else if (isExtraCredit)
-							config.setRenderer(extraCreditTextCellRenderer);
-
-						break;
+				ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
+				GradeType gradeType = gradebookItemModel.getGradeType();
+				
+				if (gradeType != null) {
+					switch (gradeType) {
+						case POINTS:
+						case PERCENTAGES:
+							config.setAlignment(HorizontalAlignment.RIGHT);
+							config.setNumberFormat(defaultNumberFormat);
+	
+							NumberField numberField = new NumberField();
+							numberField.setFormat(defaultNumberFormat);
+							numberField.setPropertyEditorType(Double.class);
+							numberField.setSelectOnFocus(true);
+							numberField.addInputStyleName(resources.css().gbNumericFieldInput());
+							field = numberField;
+	
+							if (!isIncluded)
+								config.setRenderer(unweightedNumericCellRenderer);
+							else if (isExtraCredit)
+								config.setRenderer(extraCreditNumericCellRenderer);
+	
+							break;
+						case LETTERS:
+							TextField<String> textField = new TextField<String>();
+							textField.setSelectOnFocus(true);
+							textField.addInputStyleName(resources.css().gbTextFieldInput());
+							field = textField;
+	
+							if (!isIncluded)
+								config.setRenderer(unweightedTextCellRenderer);
+							else if (isExtraCredit)
+								config.setRenderer(extraCreditTextCellRenderer);
+	
+							break;
+					}
+				} else {
+					GWT.log("Grade Type is null for some reason", null);
 				}
 
 				break;
