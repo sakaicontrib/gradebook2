@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.Formatter;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.ActionKey;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationKey;
+import org.sakaiproject.gradebook.gwt.client.model.CommentModel;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnKey;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
@@ -45,7 +47,7 @@ import org.sakaiproject.gradebook.gwt.client.model.SectionKey;
 import org.sakaiproject.gradebook.gwt.client.model.StatisticsKey;
 import org.sakaiproject.gradebook.gwt.client.model.StatisticsModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
-import org.sakaiproject.gradebook.gwt.client.model.SubmissionVerificationModel;
+import org.sakaiproject.gradebook.gwt.client.model.UploadKey;
 import org.sakaiproject.gradebook.gwt.client.model.VerificationKey;
 import org.sakaiproject.gradebook.gwt.sakai.InstitutionalAdvisor.Column;
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
@@ -1096,6 +1098,354 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		return itemMap;
 	}
 	
+	public Map<String, Object> upload(String gradebookUid, Long gradebookId, Map<String, Object> attributes) throws InvalidInputException {
+		Gradebook gradebook = gbService.getGradebook(gradebookUid);
+		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
+		boolean isLetterGrading = gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER;
+		Map<String, Assignment> idToAssignmentMap = new HashMap<String, Assignment>();
+		Map<String, Assignment> commentIdToAssignmentMap = new HashMap<String, Assignment>();
+		List<Map<String,Object>> headers = (List<Map<String,Object>>)attributes.get(UploadKey.HEADERS.name());
+
+		if (headers != null) {
+
+			Set<Long> newCategoryIdSet = new HashSet<Long>();
+			for (Map<String,Object> item : headers) {
+				String id = (String)item.get(ItemKey.ID.name());
+				if (id != null) {
+					Long categoryId = toLong(item.get(ItemKey.CATEGORY_ID.name()));					
+					String name = (String)item.get(ItemKey.NAME.name());
+					Double weight = toDouble(item.get(ItemKey.PERCENT_CATEGORY.name()));
+					Double points = toDouble(item.get(ItemKey.POINTS.name()));
+					boolean isExtraCredit = toBooleanPrimitive(item.get(ItemKey.EXTRA_CREDIT.name()));
+					boolean isIncluded = toBooleanPrimitive(item.get(ItemKey.INCLUDED.name()));
+
+					int indexOfCommentTextFlag = id.indexOf(StudentModel.COMMENT_TEXT_FLAG);
+					
+					if (indexOfCommentTextFlag != -1) {
+						String realId = id.substring(0, indexOfCommentTextFlag);
+						
+						Assignment assignment = null;
+						if (realId.startsWith("NEW:")) {
+							assignment = idToAssignmentMap.get(realId);
+							
+						} else {
+							assignment = gbService.getAssignment(Long.valueOf(realId));	
+						}
+						
+						commentIdToAssignmentMap.put(realId, assignment);
+					} else if (id.startsWith("NEW:")) {
+
+						ItemModel itemModel = new ItemModel();
+						itemModel.setCategoryId(categoryId);
+						itemModel.setName(name);
+						itemModel.setPercentCategory(weight);
+						itemModel.setPoints(points);
+						itemModel.setIncluded(Boolean.valueOf(isIncluded));
+						itemModel.setExtraCredit(Boolean.valueOf(isExtraCredit));
+
+						Long assignmentId = doCreateItem(gradebook, itemModel, hasCategories, false);
+						item.put(ItemKey.ID.name(), String.valueOf(assignmentId));
+
+						postEvent("gradebook2.importNewItem", String.valueOf(gradebook.getId()), String.valueOf(assignmentId));
+						
+						Assignment assignment = gbService.getAssignment(assignmentId);
+						idToAssignmentMap.put(id, assignment);
+
+					} else {
+						
+						Assignment assignment = gbService.getAssignment(Long.valueOf(id));
+
+						boolean isModified = false;
+
+						if (points != null && assignment.getPointsPossible() != null && !points.equals(assignment.getPointsPossible())) {
+							assignment.setPointsPossible(points);
+							isModified = true;
+						}
+
+						if (weight != null && assignment.getAssignmentWeighting() != null && !weight.equals(assignment.getAssignmentWeighting())) {
+
+							weight = weight.doubleValue() * 0.01d;
+
+							assignment.setAssignmentWeighting(weight);
+							isModified = true;
+						}
+
+						boolean wasIncluded = DataTypeConversionUtil.checkBoolean(assignment.isCounted());
+
+						if (wasIncluded != isIncluded) {
+							assignment.setCounted(Boolean.valueOf(isIncluded));
+							isModified = true;
+						}
+
+						boolean wasExtraCredit = DataTypeConversionUtil.checkBoolean(assignment.isExtraCredit());
+
+						if (wasExtraCredit != isExtraCredit) {
+							assignment.setExtraCredit(Boolean.valueOf(isExtraCredit));
+							isModified = true;
+						}
+
+						if (isModified) {
+							gbService.updateAssignment(assignment);
+							postEvent("gradebook2.importUpdateItem", String.valueOf(gradebook.getId()), String.valueOf(assignment.getId()));
+						}
+						
+						idToAssignmentMap.put(id, assignment);
+					}
+				}
+			}
+
+			// Apply business rules after item creation
+			if (hasCategories) {
+				List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
+				List<Category> categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+
+				Map<Long, Category> categoryMap = new HashMap<Long, Category>();
+
+				if (categories != null) {
+					for (Category category : categories) {
+						categoryMap.put(category.getId(), category);
+					}
+				}
+
+				if (newCategoryIdSet != null && !newCategoryIdSet.isEmpty()) {
+
+					for (Long categoryId : newCategoryIdSet) {
+						Category category = categoryMap.get(categoryId);
+						List<Assignment> assigns = category.getAssignmentList();
+						// Business rule #5
+						if (businessLogic.checkRecalculateEqualWeightingRule(category))
+							recalculateAssignmentWeights(category, Boolean.FALSE, assigns);
+					}
+
+				}
+			}
+		}
+
+		Site site = getSite();
+		Map<String, UserRecord> userRecordMap = new HashMap<String, UserRecord>();
+
+		String[] learnerRoleNames = getLearnerRoleNames();
+		String siteId = site == null ? null : site.getId();
+
+		String[] realmIds = null;
+
+		if (siteId == null) {
+			if (log.isInfoEnabled())
+				log.info("No siteId defined");
+			throw new InvalidInputException("No site defined!");
+		}
+
+		realmIds = new String[1];
+		realmIds[0] = new StringBuffer().append("/site/").append(siteId).toString();
+
+		List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebookId, realmIds, learnerRoleNames);
+
+		if (allGradeRecords != null) {
+			for (AssignmentGradeRecord gradeRecord : allGradeRecords) {
+				gradeRecord.setUserAbleToView(true);
+				String studentUid = gradeRecord.getStudentId();
+				UserRecord userRecord = userRecordMap.get(studentUid);
+
+				if (userRecord == null) {
+					userRecord = new UserRecord(studentUid);
+					userRecordMap.put(studentUid, userRecord);
+				}
+
+				Map<Long, AssignmentGradeRecord> studentMap = userRecord.getGradeRecordMap();
+				if (studentMap == null) {
+					studentMap = new HashMap<Long, AssignmentGradeRecord>();
+				}
+				GradableObject go = gradeRecord.getGradableObject();
+				studentMap.put(go.getId(), gradeRecord);
+
+				userRecord.setGradeRecordMap(studentMap);
+			}
+		}
+
+		List<String> results = new ArrayList<String>();
+
+		// Since we index the new items by a phony id e.g. "NEW:123", we need to
+		// use this set to iterate
+		Set<String> idKeySet = idToAssignmentMap.keySet();
+		Set<String> commentIdKeySet = commentIdToAssignmentMap.keySet();
+		
+		if (true) {
+			List<Map<String,Object>> rows = (List<Map<String,Object>>)attributes.get(UploadKey.ROWS.name());
+			for (Map<String,Object> student : rows) {
+				UserRecord userRecord = userRecordMap.get(student.get(LearnerKey.UID.name()));
+
+				StringBuilder builder = new StringBuilder();
+
+				builder.append("Grading ");
+
+				if (userRecord != null) {
+					if (userRecord.getDisplayName() == null)
+						builder.append(userRecord.getDisplayId()).append(": ");
+					else
+						builder.append(userRecord.getDisplayName()).append(": ");
+				} else {
+					builder.append(student.get("NAME")).append(": ");
+				}
+
+				Map<Long, AssignmentGradeRecord> gradeRecordMap = userRecord == null ? null : userRecord.getGradeRecordMap();
+
+				if (commentIdKeySet != null) {
+					for (String id : commentIdKeySet) {
+						String fullId = new StringBuilder().append(id).append(StudentModel.COMMENT_TEXT_FLAG).toString();
+						Object v = student.get(fullId);
+						
+						Assignment assignment = commentIdToAssignmentMap.get(id);
+						
+						CommentModel comment = createOrUpdateComment(assignment.getId(), (String)student.get(LearnerKey.UID.name()), (String)v);
+						
+						if (comment != null) {
+							student.put(fullId, comment.getText());
+							student.put(new StringBuilder(id).append(StudentModel.COMMENTED_FLAG).toString(), Boolean.TRUE);
+						
+							builder.append("Comment for ").append(assignment.getName()).append(" (")
+								.append((String)v).append(") ");;
+						}
+					}
+				}
+				
+				if (idKeySet != null) {
+					
+					
+					for (String id : idKeySet) {
+						Assignment assignment = idToAssignmentMap.get(id);
+					
+						List<AssignmentGradeRecord> gradedRecords = new ArrayList<AssignmentGradeRecord>();
+						
+						// This is the value stored on the client
+						Object v = student.get(id);
+
+						Double value = null;
+						Double oldValue = null;
+						
+						try {
+							
+							if (isLetterGrading) {
+								
+								if (!gradeCalculations.isValidLetterGrade((String)v)) {
+									String failedProperty = new StringBuilder().append(assignment.getId()).append(StudentModel.FAILED_FLAG).toString();
+									student.put(failedProperty, "Invalid input");
+									log.warn("Failed to score item for " + student.get(LearnerKey.UID.name()) + " and item " + assignment.getId() + " to " + v);
+			
+									if (oldValue != null)
+										builder.append(oldValue);
+			
+									builder.append(" Invalid) ");
+									student.put(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
+									continue;
+								} else 
+									value = gradeCalculations.convertLetterGradeToPercentage((String)v);
+								
+							} else if (v != null && v instanceof String) {
+								String strValue = (String) v;
+								if (strValue.trim().length() > 0)
+									value = Double.valueOf(Double.parseDouble((String) v));
+							} else
+								value = (Double) v;
+		
+							AssignmentGradeRecord assignmentGradeRecord = null;
+		
+							if (gradeRecordMap != null)
+								assignmentGradeRecord = gradeRecordMap.get(assignment.getId()); 
+
+							if (assignmentGradeRecord == null)
+								assignmentGradeRecord = new AssignmentGradeRecord();
+		
+							switch (gradebook.getGrade_type()) {
+								case GradebookService.GRADE_TYPE_POINTS:
+									oldValue = assignmentGradeRecord.getPointsEarned();
+									break;
+								case GradebookService.GRADE_TYPE_PERCENTAGE:
+								case GradebookService.GRADE_TYPE_LETTER:
+									BigDecimal d = gradeCalculations.getPointsEarnedAsPercent(assignment, assignmentGradeRecord);
+									oldValue = d == null ? null : Double.valueOf(d.doubleValue());
+									break;
+							}
+	
+							if (oldValue == null && value == null)
+								continue;
+		
+							student.put(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
+		
+							
+							gradedRecords.add(scoreItem(gradebook, assignment, assignmentGradeRecord, (String)student.get(LearnerKey.UID.name()), value, true, true));
+							builder.append(assignment.getName()).append(" (");
+							
+							if (oldValue != null)
+								builder.append(oldValue).append("->");
+	
+							if (value != null)
+								builder.append(value);
+							
+							builder.append(") ");
+						} catch (NumberFormatException nfe) {
+							String failedProperty = new StringBuilder().append(assignment.getId()).append(StudentModel.FAILED_FLAG).toString();
+							student.put(failedProperty, "Invalid input");
+							log.warn("Failed to score item for " + (String)student.get(LearnerKey.UID.name()) + " and item " + assignment.getId() + " to " + v);
+	
+							if (oldValue != null)
+								builder.append(oldValue);
+	
+							builder.append(" Invalid) ");
+							
+							student.put(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
+						} catch (InvalidInputException e) {
+							String failedProperty = new StringBuilder().append(assignment.getId()).append(StudentModel.FAILED_FLAG).toString();
+							student.put(failedProperty, e.getMessage());
+							log.warn("Failed to score numeric item for " + (String)student.get(LearnerKey.UID.name()) + " and item " + assignment.getId() + " to " + value);
+	
+							if (oldValue != null)
+								builder.append(oldValue);
+	
+							builder.append(" Invalid) ");
+							
+							student.put(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
+						} catch (Exception e) {
+	
+							String failedProperty = new StringBuilder().append(assignment.getId()).append(StudentModel.FAILED_FLAG).toString();
+							student.put(failedProperty, e.getMessage());
+	
+							log.warn("Failed to score numeric item for " + (String)student.get(LearnerKey.UID.name()) + " and item " + assignment.getId() + " to " + value, e);
+	
+							if (oldValue != null)
+								builder.append(oldValue);
+	
+							builder.append(" Failed) ");
+							
+							student.put(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
+						} finally {
+							gbService.updateAssignmentGradeRecords(assignment, gradedRecords);
+							postEvent("gradebook2.assignGradesBulk", String.valueOf(gradebook.getId()), String.valueOf(assignment.getId()));
+						}
+					}
+				}
+				
+				results.add(builder.toString());
+			}
+		}
+		attributes.put(UploadKey.RESULTS.name(), results);
+		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
+		List<Category> categories = null;
+		if (hasCategories)
+			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+		
+		ItemModel gradebookItemModel = getItemModel(gradebook, assignments, categories, null, null);
+		Map<String, Object> gradebookItemMap = new HashMap<String, Object>();
+		
+		for (Enum<ItemKey> it : EnumSet.allOf(ItemKey.class)) {
+			gradebookItemMap.put(it.name(), gradebookItemModel.get(it.name()));
+		}
+		
+		addChildren(gradebookItemModel, gradebookItemMap);
+		attributes.put(UploadKey.GRADEBOOK_ITEM_MODEL.name(), gradebookItemMap);
+
+		return attributes;	
+	}
+	
 	private void addChildren(ItemModel itemModel, Map<String,Object> itemMap) {
 		
 		if (itemModel.getChildCount() > 0) {
@@ -1200,6 +1550,39 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 			model.put(StatisticsKey.RANK.name(),rank); 
 		
 		return model;
+	}
+	
+	private boolean toBooleanPrimitive(Object object) {
+		assert(object instanceof Boolean);
+		
+		boolean b = DataTypeConversionUtil.checkBoolean((Boolean)object);
+		return b;
+	}
+	
+	private Double toDouble(Object object) {
+		assert(object instanceof Number);
+		
+		Double d = null;
+		if (object instanceof Integer)
+			d = object == null ? null : Double.valueOf(((Integer)object).doubleValue());
+		else if (object instanceof Long)
+			d = object == null ? null : Double.valueOf(((Long)object).doubleValue());
+		else if (object instanceof Double)
+			d = (Double)object;
+		
+		return d;
+	}
+	
+	private Long toLong(Object object) {
+		assert(object instanceof Number);
+		
+		Long l = null;
+		if (object instanceof Integer)
+			l = object == null ? null : Long.valueOf(((Integer)object).longValue());
+		else if (object instanceof Long)
+			l = (Long)object;
+		
+		return l;
 	}
 	
 	private ItemModel toItem(Map<String,Object> attributes) {

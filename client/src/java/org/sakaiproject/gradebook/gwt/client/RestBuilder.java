@@ -9,6 +9,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
 import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 
 import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Registry;
@@ -116,6 +117,20 @@ public class RestBuilder extends RequestBuilder {
 			}
 		}; 
 		return new BasePagingLoader<PagingLoadResult<M>>(proxy, reader);
+	}
+	
+	public static JSONArray convertList(List<ModelData> list) {
+		JSONArray itemArray = new JSONArray();
+		
+		if (list != null) {
+			int i = 0;
+			for (ModelData model : list) {
+				JSONObject itemObj = RestBuilder.convertModel(model);
+				itemArray.set(i++, itemObj);
+			}
+		}
+		
+		return itemArray;
 	}
 	
 	public static JSONObject convertModel(ModelData model) {

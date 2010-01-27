@@ -18,6 +18,7 @@ import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.StatisticsKey;
+import org.sakaiproject.gradebook.gwt.client.model.UploadKey;
 import org.sakaiproject.gradebook.gwt.client.model.VerificationKey;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
@@ -152,11 +153,18 @@ public class JsonTranslater {
 							}
 						};
 						array.add(statsTranslater.translate(elementValue.toString()));
+					} else if (name.equals(UploadKey.ROWS.name())) {
+						
+						JsonTranslater rowsTranslater = new JsonTranslater(EnumSet.allOf(LearnerKey.class));
+						
+						array.add(rowsTranslater.translate(elementValue.toString()));
 					}
 					
 				} else if (elementString != null) {
 					if (name.equals(ApplicationKey.ENABLEDGRADETYPES.name())) {
 						array.add(GradeType.valueOf(elementString.stringValue()));
+					} else if (name.equals(UploadKey.RESULTS.name())) {
+						array.add(elementString.stringValue());
 					}
 				}
 			}
@@ -195,12 +203,6 @@ public class JsonTranslater {
 				
 				JSONObject o = value.isObject();
 				
-				/*JsonTranslater itemTranslater = new JsonTranslater(EnumSet.allOf(ConfigurationKey.class)) {
-					protected ModelData newModelInstance() {
-						return new ConfigurationModel();
-					}
-				};*/
-				
 				ConfigurationModel configModel = new ConfigurationModel();// (ConfigurationModel)itemTranslater.translate(value.toString());
 				
 				for (String key : o.keySet()) {
@@ -220,6 +222,14 @@ public class JsonTranslater {
 				};
 				
 				model.set(name, learnerTranslater.translate(value.toString()));
+			} else if (name.equals(UploadKey.GRADEBOOK_ITEM_MODEL.name())) {
+				JsonTranslater itemTranslater = new JsonTranslater(EnumSet.allOf(ItemKey.class)) {
+					protected ModelData newModelInstance() {
+						return new ItemModel();
+					}
+				};
+				
+				model.set(name, itemTranslater.translate(value.toString()));
 			}
 			
 		} else if (value.isString() != null) {

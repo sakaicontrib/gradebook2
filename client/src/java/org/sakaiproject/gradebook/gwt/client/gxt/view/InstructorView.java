@@ -81,7 +81,6 @@ public class InstructorView extends AppView {
 	private static final String MENU_SELECTOR_FLAG = "menuSelector";
 	public enum MenuSelector { ADD_CATEGORY, ADD_ITEM, IMPORT, EXPORT, EXPORT_DATA, EXPORT_DATA_CSV, EXPORT_STRUCTURE, EXPORT_STRUCTURE_CSV, EXPORT_DATA_XLS, EXPORT_STRUCTURE_XLS, FINAL_GRADE, GRADE_SCALE, SETUP, HISTORY, GRADER_PERMISSION_SETTINGS, STATISTICS };
 	
-	// The instructor view maintains a link to tree view, since it is required to instantiate multigrade
 	private TreeView treeView;
 	private MultigradeView multigradeView;
 	private SingleGradeView singleGradeView;
@@ -94,7 +93,6 @@ public class InstructorView extends AppView {
 	private CardLayout centerCardLayout;
 	private CardLayout eastCardLayout;
 	private LearnerSummaryPanel singleGradeContainer;
-	//private HelpPanel helpPanel;
 	private GradeScalePanel gradeScalePanel;
 	private HistoryPanel historyPanel;
 	private StatisticsPanel statisticsPanel;

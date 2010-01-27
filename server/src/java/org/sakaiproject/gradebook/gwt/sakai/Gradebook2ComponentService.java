@@ -49,4 +49,6 @@ public interface Gradebook2ComponentService {
 	
 	public Map<String, Object> updateItem(Map<String, Object> attributes) throws InvalidInputException;
 
+	public Map<String, Object> upload(String gradebookUid, Long gradebookId, Map<String, Object> attributes) throws InvalidInputException;
+	
 }

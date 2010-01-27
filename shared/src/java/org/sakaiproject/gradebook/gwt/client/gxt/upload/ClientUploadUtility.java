@@ -27,18 +27,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
+import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader.Field;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
-import org.sakaiproject.gradebook.gwt.client.model.SpreadsheetModel;
+import org.sakaiproject.gradebook.gwt.client.model.UploadKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
-import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.BeanModel;
 import com.extjs.gxt.ui.client.data.BeanModelFactory;
 import com.extjs.gxt.ui.client.data.BeanModelLookup;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
+import com.google.gwt.json.client.JSONArray;
+import com.google.gwt.json.client.JSONNumber;
+import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONString;
 
 public class ClientUploadUtility {
 
@@ -96,7 +100,7 @@ public class ClientUploadUtility {
 		return items;
 	}
 
-
+	/*
 	public static SpreadsheetModel composeSpreadsheetModelFromBeanModels(List<BeanModel> headers, 
 			List<ModelData> importRows, List<ColumnConfig> previewColumns) {
 
@@ -128,18 +132,20 @@ public class ClientUploadUtility {
 		}
 
 		return composeSpreadsheetModel(items, importRows, previewColumns);
-	}
+	}*/
 
-	public static SpreadsheetModel composeSpreadsheetModel(List<ItemModel> items, 
+	public static JSONObject composeSpreadsheetModel(List<ModelData> items, 
 			List<ModelData> importRows, List<ColumnConfig> previewColumns) {
 
-		SpreadsheetModel spreadsheetModel = new SpreadsheetModel();
+		JSONObject spreadsheetModel = new JSONObject();
+		JSONArray itemArray = RestBuilder.convertList(items);
+		
+		spreadsheetModel.put(UploadKey.HEADERS.name(), itemArray);
 
-		spreadsheetModel.setHeaders(items);
-
-		List<ModelData> rows = new ArrayList<ModelData>();
+		JSONArray rows = new JSONArray();
+		int i=0;
 		for (ModelData importRow : importRows) {
-
+			
 			boolean isUserNotFound = DataTypeConversionUtil.checkBoolean((Boolean)importRow.get("userNotFound"));
 
 			if (isUserNotFound)
@@ -149,17 +155,21 @@ public class ClientUploadUtility {
 			if (uid == null)
 				uid = importRow.get("userImportId");
 
-			ModelData student = new BaseModel();
-			student.set(LearnerKey.UID.name(), uid);
+			JSONObject student = new JSONObject();
+			student.put(LearnerKey.UID.name(), new JSONString(uid));
 
 			for (ColumnConfig column : previewColumns) {
 				String id = column.getId();
-				student.set(id, importRow.get(id));
+				Object value = importRow.get(id);
+				if (value instanceof String)
+					student.put(id, new JSONString((String)value));
+				else if (value instanceof Double)
+					student.put(id, new JSONNumber((Double)value));
 			}
-			rows.add(student);
+			rows.set(i++, student);
 		}
-
-		spreadsheetModel.setRows(rows);
+		spreadsheetModel.put(UploadKey.ROWS.name(), rows);
+		spreadsheetModel.put(UploadKey.NUMBER_OF_ROWS.name(), new JSONNumber(Double.valueOf(i)));
 
 		return spreadsheetModel;
 	}

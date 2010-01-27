@@ -152,8 +152,10 @@ public class InstructorController extends Controller {
 					forwardToView(singleView, event);
 				break;
 			case START_IMPORT:
+				onStartImport(event);
+				break;
 			case START_EXPORT:
-				onStartImportExport(event);
+				onStartExport(event);
 				break;
 			case STOP_IMPORT:
 				onStopImport(event);
@@ -255,29 +257,27 @@ public class InstructorController extends Controller {
 		}
 	}
 	
-	private void onStartImportExport(final AppEvent event) {
-		
-		/*GWT.runAsync(new RunAsyncCallback() {
-			public void onFailure(Throwable caught) {
-
-			}
-
-			public void onSuccess() {*/
-				if (importExportView == null) {
-					I18nConstants i18n = Registry.get(AppConstants.I18N);
-					importExportView = new ImportExportView(InstructorController.this, i18n);
-				}
-				appView.getViewport().add(importExportView.getImportDialog());
-				appView.getViewportLayout().setActiveItem(importExportView.getImportDialog());
-				forwardToView(importExportView, event);
-				forwardToView(appView, event);
-		/*	}
-		});
-		*/
+	private void onStartExport(AppEvent event) {
+		if (importExportView == null) {
+			importExportView = new ImportExportView(InstructorController.this);
+		}
+		forwardToView(importExportView, event);
+		forwardToView(appView, event);
+	}
+	
+	private void onStartImport(final AppEvent event) {
+		if (importExportView == null) {
+			importExportView = new ImportExportView(InstructorController.this);
+		}
+		appView.getViewport().add(importExportView.getImportDialog());
+		appView.getViewportLayout().setActiveItem(importExportView.getImportDialog());
+		forwardToView(importExportView, event);
+		forwardToView(appView, event);
 	}
 	
 	private void onStopImport(AppEvent event) {
 		appView.getViewport().remove(importExportView.getImportDialog());
+		forwardToView(importExportView, event);
 		forwardToView(appView, event);
 	}
 	

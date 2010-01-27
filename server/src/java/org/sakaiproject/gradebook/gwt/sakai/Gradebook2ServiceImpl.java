@@ -144,7 +144,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 	private static final Log log = LogFactory.getLog(Gradebook2ServiceImpl.class);
 	private static ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 	
-	private BusinessLogic businessLogic;
+	protected BusinessLogic businessLogic;
 	private GradebookFrameworkService frameworkService;
 	protected GradebookToolService gbService;
 	protected GradeCalculations gradeCalculations;
@@ -927,7 +927,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 	}
 
 	
-	private Long doCreateItem(Gradebook gradebook, ItemModel item, boolean hasCategories, boolean enforceNoNewCategories) throws BusinessRuleException {
+	protected Long doCreateItem(Gradebook gradebook, ItemModel item, boolean hasCategories, boolean enforceNoNewCategories) throws BusinessRuleException {
 		
 		boolean includeInGrade = DataTypeConversionUtil.checkBoolean(item.getIncluded());
 		
@@ -3922,7 +3922,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		return true;
 	}
 	
-	private ItemModel getItemModel(Gradebook gradebook, List<Assignment> assignments, List<Category> categories, Long categoryId, Long assignmentId) {
+	protected ItemModel getItemModel(Gradebook gradebook, List<Assignment> assignments, List<Category> categories, Long categoryId, Long assignmentId) {
 
 		ItemModel gradebookItemModel = createItemModel(gradebook);
 
@@ -4114,7 +4114,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		}
 	}
 
-	private List<Assignment> recalculateAssignmentWeights(Category category, Boolean enforceEqualWeighting, List<Assignment> assignments) {
+	protected List<Assignment> recalculateAssignmentWeights(Category category, Boolean enforceEqualWeighting, List<Assignment> assignments) {
 
 		List<Assignment> updatedAssignments = new ArrayList<Assignment>();
 

@@ -63,4 +63,7 @@
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Statistics"
 		parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
 
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Upload" 
+		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+
 </beans>

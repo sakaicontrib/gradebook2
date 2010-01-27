@@ -24,6 +24,7 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,10 +32,13 @@ import java.util.Map;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
+import org.sakaiproject.gradebook.gwt.client.RestBuilder;
+import org.sakaiproject.gradebook.gwt.client.RestCallback;
 import org.sakaiproject.gradebook.gwt.client.SecureToken;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.GridPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
+import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
 import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.BaseCustomGridView;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
@@ -47,8 +51,8 @@ import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
-import org.sakaiproject.gradebook.gwt.client.model.SpreadsheetModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
+import org.sakaiproject.gradebook.gwt.client.model.UploadKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -93,6 +97,8 @@ import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.http.client.Request;
+import com.google.gwt.http.client.Response;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONBoolean;
 import com.google.gwt.json.client.JSONNumber;
@@ -139,6 +145,7 @@ public class ImportPanel extends GradebookPanel {
 	private MessageBox uploadBox;
 
 	private boolean isGradingFailure;
+	private MessageBox uploadingBox;
 
 	public ImportPanel() {
 		super();
@@ -285,12 +292,14 @@ public class ImportPanel extends GradebookPanel {
 			public void componentSelected(ButtonEvent ce) {	
 				itemGrid.stopEditing(); 
 
-				ArrayList<ItemModel> allItemModels = new ArrayList<ItemModel>();
+				List<ModelData> allItemModels = new ArrayList<ModelData>();
 				allItemModels.addAll(itemStore.getModels());
 				allItemModels.addAll(invisibleItemModels);
-				SpreadsheetModel spreadsheetModel = ClientUploadUtility.composeSpreadsheetModel(allItemModels, rowStore.getModels(), previewColumns);
+				List<ModelData> rowModels = rowStore.getModels();
+				int numberOfRows = rowModels == null ? 0 : rowModels.size();
+				JSONObject spreadsheetModel = ClientUploadUtility.composeSpreadsheetModel(allItemModels, rowModels, previewColumns);
 
-				uploadSpreadsheet(spreadsheetModel);
+				uploadSpreadsheet(spreadsheetModel, numberOfRows);
 
 				submitButton.setVisible(false);
 			}
@@ -353,26 +362,101 @@ public class ImportPanel extends GradebookPanel {
 	}
 
 
-	private void uploadSpreadsheet(SpreadsheetModel spreadsheetModel) {
+	private void uploadSpreadsheet(JSONObject spreadsheetModel, int numberOfLearners) {
 		GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
 
-		int numberOfLearners = 0;
-		List<ModelData> learners = spreadsheetModel.getRows();
-		if (learners != null)
-			numberOfLearners = learners.size();
-
 		String message = new StringBuilder().append(i18n.uploadingLearnerGradesPrefix()).append(" ")
-		.append(numberOfLearners).append(" ").append(i18n.uploadingLearnerGradesSuffix()).toString();
+		 .append(numberOfLearners).append(" ").append(i18n.uploadingLearnerGradesSuffix()).toString();
 
+		uploadingBox = MessageBox.wait(i18n.uploadingLearnerGradesTitle(), message, i18n.uploadingLearnerGradesStatus());
 
-		final MessageBox box = MessageBox.wait(i18n.uploadingLearnerGradesTitle(), message, i18n.uploadingLearnerGradesStatus());
+		RestBuilder builder = RestBuilder.getInstance(RestBuilder.Method.PUT, GWT.getModuleBaseURL(),
+				AppConstants.REST_FRAGMENT,
+				AppConstants.UPLOAD_FRAGMENT, gbModel.getGradebookUid(), String.valueOf(gbModel.getGradebookId()));
 
+		builder.sendRequest(200, 400, spreadsheetModel.toString(), new RestCallback() {
+
+			@Override
+			public void onError(Request request, Throwable caught) {
+				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught));
+				uploadingBox.close();
+			}
+			
+			@Override
+			public void onSuccess(Request request, Response response) {
+				try {
+					
+					JsonTranslater translater = new JsonTranslater(EnumSet.allOf(UploadKey.class));
+					
+					ModelData result = translater.translate(response.getText());
+					
+					List<ModelData> rows = result.get(UploadKey.ROWS.name());
+					int size = rows == null ? 0 : rows.size();
+					
+					StringBuilder heading = new StringBuilder().append("Result Data (").append(size).append(" records uploaded)");
+					previewTab.setText(heading.toString());
+					
+					for (ModelData student : rows) {
+
+						boolean hasChanges = DataTypeConversionUtil.checkBoolean((Boolean)student.get(AppConstants.IMPORT_CHANGES));
+
+						if (hasChanges) {
+							Record record = rowStore.getRecord(student);
+							record.beginEdit();
+
+							for (String p : student.getPropertyNames()) {
+								boolean needsRefreshing = false;
+
+								int index = -1;
+
+								if (p.endsWith(StudentModel.FAILED_FLAG)) {
+									index = p.indexOf(StudentModel.FAILED_FLAG);
+									needsRefreshing = true;
+								} 
+
+								if (needsRefreshing && index != -1) {
+									String assignmentId = p.substring(0, index);
+									Object value = result.get(assignmentId);
+
+									record.set(assignmentId, null);
+									record.set(assignmentId, value);
+
+								}
+							}
+							record.endEdit();
+						}
+					}
+
+					uploadingBox.setProgressText("Loading");
+
+					cancelButton.setText("Done");
+
+					GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+					selectedGradebook.setGradebookItemModel((ItemModel)result.get(UploadKey.GRADEBOOK_ITEM_MODEL.name()));
+					Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookSetup.getEventType(), selectedGradebook);
+					Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookItems.getEventType(), selectedGradebook);
+					// Have to do this one, otherwise the multigrid is not fully refreshed. 
+					Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades.getEventType());
+				} catch (Exception e) {
+					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(e));
+				} finally {
+					uploadingBox.close();
+				}
+				
+				if (isGradingFailure) {
+					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.importGradesFailedTitle(), i18n.importGradesFailedMessage(), true, true));
+				}
+			}
+			
+		});
+		
+		/*
 		AsyncCallback<SpreadsheetModel> callback =
 			new AsyncCallback<SpreadsheetModel>() {
 
 			public void onFailure(Throwable caught) {
 				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught));
-				box.close();
+				uploadingBox.close();
 			}
 
 			public void onSuccess(SpreadsheetModel result) {
@@ -415,7 +499,7 @@ public class ImportPanel extends GradebookPanel {
 						}
 					}
 
-					box.setProgressText("Loading");
+					uploadingBox.setProgressText("Loading");
 
 					cancelButton.setText("Done");
 
@@ -428,7 +512,7 @@ public class ImportPanel extends GradebookPanel {
 				} catch (Exception e) {
 					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(e));
 				} finally {
-					box.close();
+					uploadingBox.close();
 				}
 				
 				if (isGradingFailure) {
@@ -440,7 +524,7 @@ public class ImportPanel extends GradebookPanel {
 		Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
 
 		service.create(gbModel.getGradebookUid(), gbModel.getGradebookId(), spreadsheetModel, EntityType.SPREADSHEET, SecureToken.get(), callback);
-
+		*/
 	}
 
 	private FormPanel buildFileUploadPanel() {
@@ -455,7 +539,7 @@ public class ImportPanel extends GradebookPanel {
 		fileUploadPanel.setHeaderVisible(false);
 
 		fileUploadPanel.setFrame(true);
-		fileUploadPanel.setAction(GWT.getModuleBaseURL() + "/importHandler");
+		fileUploadPanel.setAction(GWT.getModuleBaseURL() + "importHandler");
 		fileUploadPanel.setEncoding(Encoding.MULTIPART);
 		fileUploadPanel.setMethod(Method.POST);
 		fileUploadPanel.setPadding(4);
