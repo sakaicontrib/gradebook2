@@ -54,7 +54,7 @@ public class DataTypeConversionUtil {
 	}
 	
 	public static NumberFormat getLongNumberFormat() {
-		return NumberFormat.getFormat("#.############");
+		return NumberFormat.getFormat("#.#####");
 	}
 	
 	public static String convertDateToString(Date d) {
