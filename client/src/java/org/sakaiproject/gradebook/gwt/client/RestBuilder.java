@@ -83,7 +83,7 @@ public class RestBuilder extends RequestBuilder {
 		type.setRoot(root);
 		type.setTotalName(AppConstants.TOTAL);
 		
-		JsonTranslater.addModelTypeFields(type, enumSet);
+		JsonTranslater.addModelTypeFields(type, enumSet, false);
 
 		JsonLoadResultReader<ListLoadResult<M>> reader = new JsonLoadResultReader<ListLoadResult<M>>(type) {
 			protected ModelData newModelInstance() {
@@ -101,8 +101,21 @@ public class RestBuilder extends RequestBuilder {
 		type.setRoot(root);
 		type.setTotalName(AppConstants.TOTAL);
 		
-		JsonTranslater.addModelTypeFields(type, enumSet);
+		JsonTranslater.addModelTypeFields(type, enumSet, false);
 
+		return getPagingDelayLoader(type, method, urlArgs);
+	}
+	
+	public static <M extends ModelData> PagingLoader<PagingLoadResult<M>> getPagingDelayLoader(EnumSet<?> enumSet1,
+			EnumSet<?> enumSet2, Method method, String ... urlArgs) {	
+		
+		ModelType type = new ModelType();
+		type.setRoot(AppConstants.LIST_ROOT);
+		type.setTotalName(AppConstants.TOTAL);
+		
+		JsonTranslater.addModelTypeFields(type, enumSet1, false);
+		JsonTranslater.addModelTypeFields(type, enumSet2, true);
+		
 		return getPagingDelayLoader(type, method, urlArgs);
 	}
 	

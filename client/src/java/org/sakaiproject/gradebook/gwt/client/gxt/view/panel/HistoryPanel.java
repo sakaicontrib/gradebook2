@@ -33,6 +33,7 @@ import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.model.ActionKey;
+import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 
 import com.extjs.gxt.ui.client.binding.Converter;
 import com.extjs.gxt.ui.client.binding.FieldBinding;
@@ -79,8 +80,6 @@ public class HistoryPanel extends EntityPanel {
 	
 	private FieldSet fieldSet;
 	private Converter converter;
-	
-	
 	
 	public HistoryPanel(I18nConstants i18n) {
 		super(i18n, true);
@@ -162,9 +161,10 @@ public class HistoryPanel extends EntityPanel {
 		fieldSet.setLayout(formLayout);
 		
 		formPanel.add(fieldSet);
-				
-		loader = RestBuilder.getPagingDelayLoader(AppConstants.LIST_ROOT, EnumSet.allOf(ActionKey.class), Method.GET, 
-				GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.HISTORY_FRAGMENT);
+
+		loader = RestBuilder.getPagingDelayLoader(EnumSet.allOf(ActionKey.class), EnumSet.allOf(ItemKey.class), 
+				Method.GET, GWT.getModuleBaseURL(), 
+				AppConstants.REST_FRAGMENT, AppConstants.HISTORY_FRAGMENT);
 
 		pagingToolBar = new PagingToolBar(20);
 		pagingToolBar.bind(loader);

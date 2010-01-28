@@ -293,7 +293,7 @@ public class ImportPanel extends GradebookPanel {
 				allItemModels.addAll(invisibleItemModels);
 				List<ModelData> rowModels = rowStore.getModels();
 				int numberOfRows = rowModels == null ? 0 : rowModels.size();
-				JSONObject spreadsheetModel = ClientUploadUtility.composeSpreadsheetModel(allItemModels, rowModels, previewColumns);
+				JSONObject spreadsheetModel = composeSpreadsheetModel(allItemModels, rowModels, previewColumns);
 
 				uploadSpreadsheet(spreadsheetModel, numberOfRows);
 
@@ -357,7 +357,46 @@ public class ImportPanel extends GradebookPanel {
 
 	}
 
+	private JSONObject composeSpreadsheetModel(List<ModelData> items, 
+			List<ModelData> importRows, List<ColumnConfig> previewColumns) {
 
+		JSONObject spreadsheetModel = new JSONObject();
+		JSONArray itemArray = RestBuilder.convertList(items);
+		
+		spreadsheetModel.put(UploadKey.HEADERS.name(), itemArray);
+
+		JSONArray rows = new JSONArray();
+		int i=0;
+		for (ModelData importRow : importRows) {
+			
+			boolean isUserNotFound = DataTypeConversionUtil.checkBoolean((Boolean)importRow.get("userNotFound"));
+
+			if (isUserNotFound)
+				continue;
+
+			String uid = importRow.get("userUid");
+			if (uid == null)
+				uid = importRow.get("userImportId");
+
+			JSONObject student = new JSONObject();
+			student.put(LearnerKey.UID.name(), new JSONString(uid));
+
+			for (ColumnConfig column : previewColumns) {
+				String id = column.getId();
+				Object value = importRow.get(id);
+				if (value instanceof String)
+					student.put(id, new JSONString((String)value));
+				else if (value instanceof Double)
+					student.put(id, new JSONNumber((Double)value));
+			}
+			rows.set(i++, student);
+		}
+		spreadsheetModel.put(UploadKey.ROWS.name(), rows);
+		spreadsheetModel.put(UploadKey.NUMBER_OF_ROWS.name(), new JSONNumber(Double.valueOf(i)));
+
+		return spreadsheetModel;
+	}
+	
 	private void uploadSpreadsheet(JSONObject spreadsheetModel, int numberOfLearners) {
 		GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
 

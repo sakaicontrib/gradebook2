@@ -43,35 +43,41 @@ public class JsonTranslater {
 	
 	public JsonTranslater(EnumSet<?> keyEnumSet) {
 		this.modelType = new ModelType();
-		addModelTypeFields(modelType, keyEnumSet);
+		addModelTypeFields(modelType, keyEnumSet, false);
 	}
 	
-	public static void addModelTypeFields(ModelType modelType, EnumSet<?> keyEnumSet) {
+	public static void addModelTypeFields(ModelType modelType, EnumSet<?> keyEnumSet, boolean ignoreType) {
 		for (Enum<?> e : keyEnumSet) {
 			DataField field = new DataField(e.name(), e.name());
 			Class<?> type = null;
 			
 			String format = "yyyy-MM-dd";
 			
-			if (e instanceof GradebookKey) 
-				type = ((GradebookKey)e).getType();
-			else if (e instanceof ItemKey) 
-				type = ((ItemKey)e).getType();
-			else if (e instanceof GradeFormatKey) 
-				type = ((GradeFormatKey)e).getType();
-			else if (e instanceof ActionKey) {
-				type = ((ActionKey)e).getType();
-				format = DateTimeFormat.getMediumDateFormat().getPattern();
-			} else if (e instanceof VerificationKey) 
-				type = ((VerificationKey)e).getType();
-			
-			if (type != null) {
-				if (type.equals(String.class))
-					type = null;
-				else if (type.equals(Date.class))
-					field.setFormat(format);
+			if (!ignoreType) {
+				if (e instanceof GradebookKey) 
+					type = ((GradebookKey)e).getType();
+				else if (e instanceof ItemKey) 
+					type = ((ItemKey)e).getType();
+				else if (e instanceof GradeFormatKey) 
+					type = ((GradeFormatKey)e).getType();
+				else if (e instanceof ActionKey) {
+					type = ((ActionKey)e).getType();
+					format = DateTimeFormat.getMediumDateFormat().getPattern();
+				} else if (e instanceof VerificationKey) 
+					type = ((VerificationKey)e).getType();
+				
+				if (type != null) {
+					if (type.equals(String.class))
+						type = null;
+					else if (type.equals(Date.class)) {
+						if (ignoreType)
+							type = null;
+						else
+							field.setFormat(format);
+					}
+				}
 			}
-			
+
 			field.setType(type);
 			modelType.addField(field);
 		}

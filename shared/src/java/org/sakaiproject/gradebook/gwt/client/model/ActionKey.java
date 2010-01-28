@@ -3,7 +3,6 @@
  */
 package org.sakaiproject.gradebook.gwt.client.model;
 
-import java.util.Date;
 
 public enum ActionKey { ID, GRADEBOOK_UID, GRADEBOOK_ID, DATE_PERFORMED, 
 	DATE_RECORDED,

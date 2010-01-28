@@ -423,6 +423,7 @@ public class ItemFormPanel extends GradebookPanel {
 	}
 	
 	private void doConfirmDeleteItem(ItemModel itemModel) {
+		formPanel.hide();
 		removeListeners();
 		this.mode = Mode.DELETE;
 		this.createItemType = null;
@@ -450,6 +451,7 @@ public class ItemFormPanel extends GradebookPanel {
 
 			Dispatcher.forwardEvent(GradebookEvents.ExpandEastPanel.getEventType(), AppView.EastCard.DELETE_ITEM);
 		}
+		formPanel.show();
 	}
 
 	public void onEditItem(final ItemModel itemModel, final boolean expand) {
@@ -603,6 +605,7 @@ public class ItemFormPanel extends GradebookPanel {
 	}
 	
 	private void doNewCategory(ItemModel itemModel) {
+		formPanel.hide();
 		removeListeners();
 		this.mode = Mode.NEW;
 
@@ -634,6 +637,7 @@ public class ItemFormPanel extends GradebookPanel {
 		includedField.setValue(Boolean.TRUE);
 		nameField.focus();
 		addListeners();
+		formPanel.show();
 	}
 
 	public void onNewItem(final ItemModel itemModel) {
