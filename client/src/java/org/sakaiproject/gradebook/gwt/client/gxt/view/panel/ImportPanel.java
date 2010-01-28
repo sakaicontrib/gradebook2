@@ -31,11 +31,8 @@ import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
-import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestCallback;
-import org.sakaiproject.gradebook.gwt.client.SecureToken;
-import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.GridPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
@@ -107,7 +104,6 @@ import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Element;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class ImportPanel extends GradebookPanel {
 
@@ -657,7 +653,37 @@ public class ImportPanel extends GradebookPanel {
 				if (selectedGradebook != null) {
 
 					if (selectedGradebook.getGradebookItemModel().getCategoryType() == CategoryType.NO_CATEGORIES) {
+						
+						RestBuilder builder = RestBuilder.getInstance(RestBuilder.Method.GET, 
+								GWT.getModuleBaseURL(),
+								AppConstants.REST_FRAGMENT,
+								AppConstants.ITEM_FRAGMENT);
+						
+					
+						builder.sendRequest(200, 400, null, new RestCallback() {
 
+							public void onSuccess(Request request, Response response) {
+								String result = response.getText();
+
+								JsonTranslater translater = new JsonTranslater(EnumSet.allOf(ItemKey.class)) {
+									protected ModelData newModelInstance() {
+										return new ItemModel();
+									}
+								};
+								ItemModel itemModel = (ItemModel)translater.translate(result);
+								
+								if (itemModel != null) {
+									refreshCategoryPickerStore(itemModel);
+
+									selectedGradebook.setGradebookItemModel(itemModel);
+									Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookSetup.getEventType(), selectedGradebook);
+									Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookItems.getEventType(), selectedGradebook);
+								}
+							}
+							
+						});
+						
+						/*
 						Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
 
 						AsyncCallback<GradebookModel> callback = new AsyncCallback<GradebookModel>() {
@@ -681,6 +707,7 @@ public class ImportPanel extends GradebookPanel {
 						service.get(selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId(), EntityType.GRADEBOOK, null, null, SecureToken.get(), callback);
 
 						refreshCategoryPickerStore(selectedGradebook.getGradebookItemModel());
+						*/
 					}
 
 				}

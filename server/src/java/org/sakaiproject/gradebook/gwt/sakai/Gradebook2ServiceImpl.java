@@ -3035,54 +3035,7 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		model.setName(gradebook.getName());
 
 		// GRBK-233 create new assignment and category list
-		ItemModel gradebookItemModel = null;
-
-		if(null != categories) {
-			List<Category> filteredCategories = new ArrayList<Category>();
-			List<Assignment> filteredAssignments = assignments;
-
-			for(Category category : categories) {
-
-				// First we check if the user has "can grade" permission
-				boolean canGrade = authz.canUserGradeCategory(gradebook.getUid(), category.getId());
-				if(canGrade) {
-					filteredCategories.add(category);
-				}
-				else {
-					// User has no "can grade" permission, so let's check if user has "can view" permission for this category
-					boolean canView = isSingleUserView || authz.canUserViewCategory(gradebook.getUid(), category.getId());
-					if(canView) {
-						filteredCategories.add(category);
-					}
-				}
-
-				if(null != assignments) {
-					// Since the user doesn't have permission to either view or grade the category, we 
-					// need to remove any associated assignments
-					List<Assignment> tempAssignments = new ArrayList<Assignment>();
-					if (filteredAssignments != null) {
-						for(Assignment assignment : filteredAssignments) {
-
-							if (assignment.getCategory() != null) {
-								if(!assignment.getCategory().getId().equals(category.getId())) {
-
-									if (!isSingleUserView || assignment.isReleased())
-										tempAssignments.add(assignment);
-
-								}
-							}
-						}
-					}
-					filteredAssignments = tempAssignments;
-				}
-
-			}
-			
-			gradebookItemModel = getItemModel(gradebook, filteredAssignments, filteredCategories, null, null);
-		}
-		else {
-			gradebookItemModel = getItemModel(gradebook, assignments, categories, null, null);
-		}
+		ItemModel gradebookItemModel = getGradebookItemModel(gradebook, assignments, categories, isSingleUserView);
 		
 		model.setNewGradebook(Boolean.valueOf(assignments == null || assignments.isEmpty()));
 
@@ -3207,6 +3160,58 @@ public class Gradebook2ServiceImpl implements Gradebook2Service, ApplicationCont
 		return model;
 	}
 	
+	protected ItemModel getGradebookItemModel(Gradebook gradebook, List<Assignment> assignments, 
+			List<Category> categories, boolean isSingleUserView) {
+		ItemModel gradebookItemModel = null;
+
+		if(null != categories) {
+			List<Category> filteredCategories = new ArrayList<Category>();
+			List<Assignment> filteredAssignments = assignments;
+
+			for(Category category : categories) {
+
+				// First we check if the user has "can grade" permission
+				boolean canGrade = authz.canUserGradeCategory(gradebook.getUid(), category.getId());
+				if(canGrade) {
+					filteredCategories.add(category);
+				}
+				else {
+					// User has no "can grade" permission, so let's check if user has "can view" permission for this category
+					boolean canView = isSingleUserView || authz.canUserViewCategory(gradebook.getUid(), category.getId());
+					if(canView) {
+						filteredCategories.add(category);
+					}
+				}
+
+				if(null != assignments) {
+					// Since the user doesn't have permission to either view or grade the category, we 
+					// need to remove any associated assignments
+					List<Assignment> tempAssignments = new ArrayList<Assignment>();
+					if (filteredAssignments != null) {
+						for(Assignment assignment : filteredAssignments) {
+
+							if (assignment.getCategory() != null) {
+								if(!assignment.getCategory().getId().equals(category.getId())) {
+
+									if (!isSingleUserView || assignment.isReleased())
+										tempAssignments.add(assignment);
+
+								}
+							}
+						}
+					}
+					filteredAssignments = tempAssignments;
+				}
+
+			}
+			
+			gradebookItemModel = getItemModel(gradebook, filteredAssignments, filteredCategories, null, null);
+		}
+		else {
+			gradebookItemModel = getItemModel(gradebook, assignments, categories, null, null);
+		}
+		return gradebookItemModel;
+	}
 	
 	protected UserRecord buildUserRecord(Site site, User user, Gradebook gradebook) {
 		UserRecord userRecord = new UserRecord(user);

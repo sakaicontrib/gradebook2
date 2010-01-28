@@ -693,6 +693,28 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		return models;
 	}
 	
+	public Map<String,Object> getItem(String gradebookUid, Long gradebookId, String type) {
+		Map<String,Object> map = new HashMap<String,Object>();
+		
+		if (type == null) {
+			Gradebook gradebook = gbService.getGradebook(gradebookUid);
+			List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
+			List<Category> categories = null;
+			if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
+				categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+			
+			ItemModel gradebookItemModel = getGradebookItemModel(gradebook, assignments, categories, false);
+			
+			for (Enum<ItemKey> it : EnumSet.allOf(ItemKey.class)) {
+				map.put(it.name(), gradebookItemModel.get(it.name()));
+			}
+			
+			addChildren(gradebookItemModel, map);
+		}
+		
+		return map;
+	}
+	
 	public List<Map<String,Object>> getItems(String gradebookUid, Long gradebookId, String type) {
 		List<Map<String, Object>> list = new ArrayList<Map<String,Object>>();
 		

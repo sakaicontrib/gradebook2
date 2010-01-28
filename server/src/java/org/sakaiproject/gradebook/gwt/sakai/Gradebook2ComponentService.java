@@ -33,6 +33,8 @@ public interface Gradebook2ComponentService {
 	
 	public List<Map<String,Object>> getHistory(String gradebookUid, Long gradebookId, Integer offset, Integer limit);
 	
+	public Map<String,Object> getItem(String gradebookUid, Long gradebookId, String type);
+	
 	public List<Map<String,Object>> getItems(String gradebookUid, Long gradebookId, String type);
 	
 	public List<Map<String,Object>> getPermissions(String gradebookUid, Long gradebookId, String graderId);
