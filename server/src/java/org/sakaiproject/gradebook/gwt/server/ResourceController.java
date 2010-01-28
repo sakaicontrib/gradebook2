@@ -40,10 +40,7 @@ public class ResourceController implements Controller {
 		
 			if (authModel != null) {
 				url.append(authModel.toString());
-			}
-			
-		} else {
-			
+			}	
 		}
 		
 		response.sendRedirect(url.toString());

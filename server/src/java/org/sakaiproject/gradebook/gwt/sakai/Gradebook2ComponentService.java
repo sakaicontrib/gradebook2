@@ -21,6 +21,8 @@ public interface Gradebook2ComponentService {
 	
 	public Map<String, Object> getApplicationMap(String... gradebookUids);
 	
+	public String getAuthorizationDetails(String... gradebookUids);
+	
 	public List<Map<String,Object>> getAvailableGradeFormats(String gradebookUid, Long gradebookId);
 	
 	public List<Map<String,Object>> getGradeEvents(Long assignmentId, String studentUid);

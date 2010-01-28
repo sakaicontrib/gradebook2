@@ -59,7 +59,7 @@ public class StartupController extends Controller {
 		if (isUserAbleToGrade) {
 			GWT.runAsync(new RunAsyncCallback() {
 				public void onFailure(Throwable caught) {
-					
+					RootPanel.get().add(new HTML("Server failed to respond with necessary data. Please ensure that your network connection is working and reload."));
 				}
 	
 				public void onSuccess() {
@@ -72,7 +72,7 @@ public class StartupController extends Controller {
 		} else if (isUserAbleToViewOwnGrades) {
 			GWT.runAsync(new RunAsyncCallback() {
 				public void onFailure(Throwable caught) {
-					
+					RootPanel.get().add(new HTML("Server failed to respond with necessary data. Please ensure that your network connection is working and reload."));					
 				}
 	
 				public void onSuccess() {
@@ -160,6 +160,5 @@ public class StartupController extends Controller {
 			dispatcher.dispatch(GradebookEvents.Exception.getEventType(), new NotificationEvent(caught));
 
 	}
-	
 
 }

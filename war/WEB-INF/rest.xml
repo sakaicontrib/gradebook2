@@ -16,6 +16,9 @@
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Application" 
 		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
 	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Authorization" 
+		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+	
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Configuration"
 		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
 	

@@ -154,6 +154,7 @@ public interface AppConstants {
 	public static final String STATISTICS_FRAGMENT			= "statistics";
 	public static final String GRADES_VERIFICATION_FRAGMENT	= "verification";
 	public static final String UPLOAD_FRAGMENT				= "upload";
+	public static final String AUTHORIZATION_FRAGMENT		= "authorization";
 	
 	public static final String LIST_ROOT				= "list";
 	public static final String TOTAL					= "total";

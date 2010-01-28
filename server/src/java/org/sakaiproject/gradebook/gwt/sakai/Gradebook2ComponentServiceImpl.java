@@ -28,6 +28,7 @@ import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.ActionKey;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationKey;
+import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
 import org.sakaiproject.gradebook.gwt.client.model.CommentModel;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnKey;
@@ -443,6 +444,11 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		map.put(ApplicationKey.ENABLEDGRADETYPES.name(), gradeTypes);
 		
 		return map;
+	}
+	
+	public String getAuthorizationDetails(String... gradebookUids) {
+		AuthModel authModel = getAuthorization(gradebookUids);
+		return authModel.toString();
 	}
 	
 	public List<Map<String,Object>> getAvailableGradeFormats(String gradebookUid, Long gradebookId) {

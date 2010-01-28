@@ -34,8 +34,11 @@ import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.widget.Html;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.http.client.Request;
+import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.RootPanel;
 
 /**
@@ -44,7 +47,6 @@ import com.google.gwt.user.client.ui.RootPanel;
 public class GradebookApplication implements EntryPoint {
 
 	private Dispatcher dispatcher;
-	private Gradebook2RPCServiceAsync dataService;
 	private GradebookResources resources;
 	private I18nConstants i18n;
 	private int screenHeight = 580;
@@ -62,20 +64,8 @@ public class GradebookApplication implements EntryPoint {
 		
 		dispatcher.addController(new StartupController());
 				
-		if (dataService == null) {
-			dataService = GWT.create(Gradebook2RPCService.class);
-			EndpointUtil.setEndpoint((ServiceDefTarget) dataService);
-		}
-		
-		if (dataService == null) {
-			GXT.hideLoadingPanel("loading");
-			RootPanel.get("alert").add(new Html(i18n.serviceException()));
-			return;
-		}
-		
 		Registry.register(AppConstants.RESOURCES, resources);
 		Registry.register(AppConstants.VERSION, getVersion());
-		Registry.register(AppConstants.SERVICE, dataService);
 		Registry.register(AppConstants.I18N, i18n);
 
 		String paramString = getParamString();
@@ -103,6 +93,24 @@ public class GradebookApplication implements EntryPoint {
 	}-*/;
 	
 	private void getAuthorization(final int i) {
+		
+
+		RestBuilder builder = RestBuilder.getInstance(RestBuilder.Method.GET, 
+				GWT.getModuleBaseURL(),
+				AppConstants.REST_FRAGMENT,
+				AppConstants.AUTHORIZATION_FRAGMENT);
+	
+		builder.sendRequest(200, 400, null, new RestCallback() {
+
+			public void onSuccess(Request request, Response response) {
+				AuthModel authModel = new AuthModel();
+				authModel.parse(response.getText());
+				readAuthorization(authModel);
+			}
+		
+		});
+		
+		/*
 		AsyncCallback<AuthModel> callback = 
 			new AsyncCallback<AuthModel>() {
 
@@ -124,7 +132,7 @@ public class GradebookApplication implements EntryPoint {
 		};
 		
 		dataService.get(null, null, EntityType.AUTH, null, null, SecureToken.get(), callback);
-
+		*/
 	}
 	
 	private void readAuthorization(AuthModel authModel) {
