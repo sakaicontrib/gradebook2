@@ -146,11 +146,10 @@ public class StudentPanel extends GradebookPanel {
 		studentInformationPanel.setBorders(true);
 		studentInformationPanel.setFrame(true);
 		studentInformationPanel.setHeaderVisible(false);
-		studentInformationPanel.setHeight(200);
+		studentInformationPanel.setHeight(190);
 		studentInformationPanel.setLayout(new FitLayout());
-		//studentInformationPanel.setScrollMode(Scroll.AUTO);
 		studentInformationPanel.add(studentInformation);
-		add(studentInformationPanel); //, new RowData(-1, -1, new Margins(5, 0, 0, 0)));
+		add(studentInformationPanel); 
 
 		store = new GroupingStore<BaseModel>();
 		store.setGroupOnSort(false);
@@ -412,25 +411,6 @@ public class StudentPanel extends GradebookPanel {
 			
 			if (isPossibleStatsChanged) {
 				loader.load();
-				/*
-				AsyncCallback<ListLoadResult<StatisticsModel>> callback = new AsyncCallback<ListLoadResult<StatisticsModel>>() {
-
-					public void onFailure(Throwable caught) {
-						// TODO Auto-generated method stub
-						
-					}
-
-					public void onSuccess(ListLoadResult<ModelData> result) {
-						statsList = result.getData();
-						refreshGradeData(learnerGradeRecordCollection, statsList);
-						isPossibleStatsChanged = false;
-					}
-					
-				};
-				
-				Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
-				service.getPage(selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId(), EntityType.STATISTICS, null, SecureToken.get(), callback);
-				*/
 			} else {
 				if (statsList == null)
 					statsList = selectedGradebook.getStatsModel();
@@ -510,10 +490,9 @@ public class StudentPanel extends GradebookPanel {
 	private static final int PI_ROW_NAME = 1; 
 	private static final int PI_ROW_EMAIL = 2; 
 	private static final int PI_ROW_ID = 3; 
-	private static final int PI_ROW_SECTION = 4; 
-	private static final int PI_ROW_BLANK = 5; 
-	private static final int PI_ROW_COURSE_GRADE = 6; 
-	private static final int PI_ROW_CALCULATED_GRADE = 7; 
+	private static final int PI_ROW_SECTION = 4;  
+	private static final int PI_ROW_COURSE_GRADE = 5; 
+	private static final int PI_ROW_CALCULATED_GRADE = 6;
 	private static final int PI_ROW_STATS = 1;
 	private static final int PI_ROW_MEAN = 2; 
 	private static final int PI_ROW_STDV = 3; 
@@ -527,6 +506,7 @@ public class StudentPanel extends GradebookPanel {
 	private static final int PI_COL2_HEADING = 2;
 	private static final int PI_COL2_VALUE = 3;
 	
+	private static final String FIRST_COLUMN_WIDTH = "200px";
 	
 	private void setStudentInfoTable(Statistics courseGradeStats) {		
 		// To force a refresh, let's first hide the owning panel
@@ -536,28 +516,32 @@ public class StudentPanel extends GradebookPanel {
 		FlexCellFormatter formatter = studentInformation.getFlexCellFormatter();
 		
         studentInformation.setText(PI_ROW_NAME, PI_COL_HEADING, "Name");
+        formatter.setWidth(PI_ROW_NAME, PI_COL_HEADING, FIRST_COLUMN_WIDTH);
         formatter.setStyleName(PI_ROW_NAME, PI_COL_HEADING, resources.css().gbImpact());
         formatter.setWordWrap(PI_ROW_NAME, PI_COL_HEADING, false);
         studentInformation.setText(PI_ROW_NAME, PI_COL_VALUE, (String)learnerGradeRecordCollection.get(LearnerKey.DISPLAY_NAME.name()));
 
         studentInformation.setText(PI_ROW_EMAIL, PI_COL_HEADING, "Email");
+        formatter.setWidth(PI_ROW_EMAIL, PI_COL_HEADING, FIRST_COLUMN_WIDTH);
         formatter.setStyleName(PI_ROW_EMAIL, PI_COL_HEADING, resources.css().gbImpact());
         formatter.setWordWrap(PI_ROW_EMAIL, PI_COL_HEADING, false);
         studentInformation.setText(PI_ROW_EMAIL, PI_COL_VALUE, (String)learnerGradeRecordCollection.get(LearnerKey.EMAIL.name()));
 
         studentInformation.setText(PI_ROW_ID, PI_COL_HEADING, "Id");
+        formatter.setWidth(PI_ROW_ID, PI_COL_HEADING, FIRST_COLUMN_WIDTH);
         formatter.setStyleName(PI_ROW_ID, PI_COL_HEADING, resources.css().gbImpact());
         formatter.setWordWrap(PI_ROW_ID, PI_COL_HEADING, false);
         studentInformation.setText(PI_ROW_ID, PI_COL_VALUE, (String)learnerGradeRecordCollection.get(LearnerKey.DISPLAY_ID.name()));
 
         studentInformation.setText(PI_ROW_SECTION, PI_COL_HEADING, "Section");
+        formatter.setWidth(PI_ROW_SECTION, PI_COL_HEADING, FIRST_COLUMN_WIDTH);
         formatter.setStyleName(PI_ROW_SECTION, PI_COL_HEADING, resources.css().gbImpact());
         formatter.setWordWrap(PI_ROW_SECTION, PI_COL_HEADING, false);
         studentInformation.setText(PI_ROW_SECTION, PI_COL_VALUE, (String)learnerGradeRecordCollection.get(LearnerKey.SECTION.name()));
     
+        /*formatter.setWidth(PI_ROW_BLANK, PI_COL_HEADING, FIRST_COLUMN_WIDTH);
         studentInformation.setText(PI_ROW_BLANK, PI_COL_HEADING, "");
-        studentInformation.setText(PI_ROW_BLANK, PI_COL_VALUE, "");
-        //formatter.setColSpan(PI_ROW_BLANK, PI_COL_HEADING, 2);
+        studentInformation.setText(PI_ROW_BLANK, PI_COL_VALUE, "");*/
         
         if (!isStudentView || (DataTypeConversionUtil.checkBoolean(selectedGradebook.getGradebookItemModel().getReleaseGrades()))) {
 	        studentInformation.setText(PI_ROW_COURSE_GRADE, PI_COL_HEADING, "Course Grade");
@@ -641,11 +625,14 @@ public class StudentPanel extends GradebookPanel {
 		        
 	        	modeColumn.setHidden(!isShowItemStatistics || !isShowMode);
 	        	
-		        if (isShowRank && displayRank)
+		        if (isShowRank)
 		        {
 		        	studentInformation.setText(row, PI_COL2_HEADING, "Rank");
 		        	formatter.setStyleName(row, PI_COL2_HEADING, resources.css().gbImpact());
-		        	studentInformation.setText(row, PI_COL2_VALUE, courseGradeStats.getRank());
+		        	if (displayRank)
+		        		studentInformation.setText(row, PI_COL2_VALUE, courseGradeStats.getRank());
+		        	else
+		        		studentInformation.setText(row, PI_COL2_VALUE, "Visible to Student");
 		        } else {
 	        		studentInformation.setText(PI_ROW_RANK, PI_COL2_HEADING, "");
 		        	studentInformation.setText(PI_ROW_RANK, PI_COL2_VALUE, "");
@@ -659,7 +646,7 @@ public class StudentPanel extends GradebookPanel {
 	        	GWT.log("Course stats is null", null);
 	        }
 	        
-        }
+        } 
         studentInformationPanel.show();
 	}
 
