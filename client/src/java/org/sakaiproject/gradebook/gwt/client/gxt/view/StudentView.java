@@ -25,8 +25,8 @@ package org.sakaiproject.gradebook.gwt.client.gxt.view;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
-import org.sakaiproject.gradebook.gwt.client.gxt.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.StudentPanel;
+import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -43,7 +43,7 @@ public class StudentView extends AppView {
 	}
 	
 	@Override
-	protected void initUI(ApplicationModel model) {
+	protected void initUI(ApplicationSetup model) {
 		I18nConstants i18n = Registry.get(AppConstants.I18N);
 		Gradebook gbModel = model.getGradebookModels().get(0);
 		studentViewContainer = new StudentPanel(i18n, true, true);

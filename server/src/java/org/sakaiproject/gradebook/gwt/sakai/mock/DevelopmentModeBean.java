@@ -27,15 +27,16 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
-import org.sakaiproject.gradebook.gwt.client.model.key.ApplicationKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.GradebookKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
-import org.sakaiproject.gradebook.gwt.sakai.rest.model.GradeItem;
-import org.sakaiproject.gradebook.gwt.sakai.rest.model.GradeItemImpl;
+import org.sakaiproject.gradebook.gwt.server.model.GradeItem;
+import org.sakaiproject.gradebook.gwt.server.model.GradeItemImpl;
 
 import com.google.gwt.core.client.GWT;
 
@@ -57,12 +58,12 @@ public class DevelopmentModeBean {
 		try {
 			String authDetails = service.getAuthorizationDetails();
 			
-			Map<String, Object> applicationMap = service.getApplicationMap();
-			List<Map<String,Object>> gbModels = (List<Map<String,Object>>)applicationMap.get(ApplicationKey.GRADEBOOKMODELS.name());
+			ApplicationSetup applicationSetup = service.getApplicationSetup();
+			List<Gradebook> gbModels = applicationSetup.getGradebookModels();
 			
-			Map<String, Object> gbModel = gbModels.get(0);
+			Gradebook gbModel = gbModels.get(0);
 
-			Item gradebook = new GradeItemImpl((Map<String, Object>)gbModel.get(GradebookKey.GRADEBOOKITEMMODEL.name()));
+			Item gradebook = gbModel.getGradebookItemModel();
 			
 			gradebook.setName("Test Gradebook");
 			gradebook.setCategoryType(CategoryType.WEIGHTED_CATEGORIES);
@@ -73,8 +74,8 @@ public class DevelopmentModeBean {
 			
 			service.updateItem(gradebook);
 			
-			String gradebookUid = (String)gbModel.get(GradebookKey.GRADEBOOKUID.name());
-			Long gradebookId = (Long)gbModel.get(GradebookKey.GRADEBOOKID.name());
+			String gradebookUid = gbModel.getGradebookUid();
+			Long gradebookId = gbModel.getGradebookId();
 			
 			GradeItem essaysCategory = new GradeItemImpl();
 			essaysCategory.setName("My Essays");

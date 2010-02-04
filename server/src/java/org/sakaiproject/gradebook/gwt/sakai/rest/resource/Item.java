@@ -13,7 +13,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
-import org.sakaiproject.gradebook.gwt.sakai.rest.model.GradeItemImpl;
+import org.sakaiproject.gradebook.gwt.server.model.GradeItemImpl;
 
 @Path("/gradebook/rest/item")
 public class Item extends Resource {

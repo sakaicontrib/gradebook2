@@ -7,10 +7,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
+import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
+import org.sakaiproject.gradebook.gwt.client.model.GradeEvent;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.History;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.Learner;
+import org.sakaiproject.gradebook.gwt.client.model.Permission;
 import org.sakaiproject.gradebook.gwt.client.model.Roster;
 import org.sakaiproject.gradebook.gwt.client.model.Statistics;
 import org.sakaiproject.gradebook.gwt.sakai.InstitutionalAdvisor.Column;
@@ -27,9 +30,9 @@ public interface Gradebook2ComponentService {
 	
 	public Item createItem(String gradebookUid, Long gradebookId, Item item, boolean enforceNoNewCategories) throws InvalidInputException;
 	
-	public Map<String, Object> createPermission(String gradebookUid, Long gradebookId, Map<String, Object> attributes) throws InvalidInputException;
+	public Permission createPermission(String gradebookUid, Long gradebookId, Permission permissionRequest) throws InvalidInputException;
 	
-	public Map<String, Object> deletePermission(Map<String, Object> attributes);
+	public Permission deletePermission(Permission permissionDeleteRequest);
 	
 	public List<UserDereference> findAllUserDereferences();
 	
@@ -41,7 +44,7 @@ public interface Gradebook2ComponentService {
 
 	public String getFinalGradeUserId(UserDereference dereference);
 	
-	public Map<String, Object> getApplicationMap(String... gradebookUids);
+	public ApplicationSetup getApplicationSetup(String... gradebookUids);
 	
 	public String getAuthorizationDetails(String... gradebookUids);
 	
@@ -49,7 +52,7 @@ public interface Gradebook2ComponentService {
 	
 	public Gradebook getGradebook(String uid);
 	
-	public List<Map<String,Object>> getGradeEvents(Long assignmentId, String studentUid);
+	public List<GradeEvent> getGradeEvents(Long assignmentId, String studentUid);
 	
 	public List<Map<String,Object>> getGradeMaps(String gradebookUid);
 	
@@ -65,7 +68,7 @@ public interface Gradebook2ComponentService {
 	
 	public Roster getRoster(String gradebookUid, Long gradebookId, Integer limit, Integer offset, String sectionUuid, String searchString, String sortField, boolean includeCMId, boolean isDescending);
 	
-	public List<Map<String,Object>> getPermissions(String gradebookUid, Long gradebookId, String graderId);
+	public List<Permission> getPermissions(String gradebookUid, Long gradebookId, String graderId);
 	
 	public List<Statistics> getStatistics(String gradebookUid, Long gradebookId, String studentId);
 	

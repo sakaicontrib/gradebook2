@@ -30,8 +30,8 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.FullScreen;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
-import org.sakaiproject.gradebook.gwt.client.gxt.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.Viewport;
+import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 
@@ -169,7 +169,7 @@ public abstract class AppView extends View {
 			break;
 		case STARTUP:
 			//RootPanel.get().add(realViewport);
-			ApplicationModel applicationModel = (ApplicationModel)event.getData();
+			ApplicationSetup applicationModel = (ApplicationSetup)event.getData();
 			initUI(applicationModel);
 			Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 			onSwitchGradebook(selectedGradebook);
@@ -191,7 +191,7 @@ public abstract class AppView extends View {
 		
 	}
 	
-	protected abstract void initUI(ApplicationModel model);
+	protected abstract void initUI(ApplicationSetup model);
 
 		
 	protected void onCloseNotification() {

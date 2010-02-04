@@ -38,7 +38,6 @@ import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenu;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
-import org.sakaiproject.gradebook.gwt.client.gxt.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.BorderLayoutPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.GradeScalePanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.HistoryPanel;
@@ -46,6 +45,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ItemFormPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.LearnerSummaryPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.PermissionsPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.StatisticsPanel;
+import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
@@ -212,7 +212,7 @@ public class InstructorView extends AppView {
 	}
 
 	@Override
-	protected void initUI(ApplicationModel model) {
+	protected void initUI(ApplicationSetup model) {
 		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);		
 
 		addCategoryMenuItem.setVisible(selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);

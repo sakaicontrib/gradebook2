@@ -1,4 +1,4 @@
-package org.sakaiproject.gradebook.gwt.sakai.rest.model;
+package org.sakaiproject.gradebook.gwt.server.model;
 
 import javax.xml.bind.annotation.XmlRootElement;
 

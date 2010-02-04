@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Stack;
 
 import org.sakaiproject.gradebook.gwt.client.gxt.model.GradeEventModel;
+import org.sakaiproject.gradebook.gwt.client.model.GradeEvent;
 
 import com.extjs.gxt.ui.client.core.XDOM;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
@@ -208,7 +209,7 @@ public class LogDisplay extends ContentPanel {
 		if (config.events != null) {
 			FlexTable flexTable = new FlexTable();
 			int i = 0;
-			for (GradeEventModel event : config.events) {
+			for (GradeEvent event : config.events) {
 				flexTable.setText(i, 0, event.getDateGraded());
 				flexTable.setText(i, 1, "Grade set to " + event.getGrade() + " by " + event.getGraderName());
 				i++;

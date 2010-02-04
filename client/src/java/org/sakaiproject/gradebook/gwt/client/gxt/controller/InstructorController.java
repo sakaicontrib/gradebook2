@@ -5,7 +5,6 @@ import java.util.List;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
-import org.sakaiproject.gradebook.gwt.client.gxt.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.FinalGradeSubmissionView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.ImportExportView;
@@ -15,6 +14,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.view.NotificationView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.PermissionsView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.SingleGradeView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.TreeView;
+import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -283,9 +283,9 @@ public class InstructorController extends Controller {
 	}
 	
 	private void onStartup(AppEvent event) {
-		ApplicationModel model = (ApplicationModel)event.getData();
+		ApplicationSetup model = (ApplicationSetup)event.getData();
 
-		List<GradebookModel> gradebookModels = model.getGradebookModels();
+		List<Gradebook> gradebookModels = model.getGradebookModels();
 
 		Registry.register(AppConstants.HELP_URL, model.getHelpUrl());
 		Registry.register(AppConstants.ENABLED_GRADE_TYPES, model.getEnabledGradeTypes());

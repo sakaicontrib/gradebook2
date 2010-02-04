@@ -1,6 +1,5 @@
-package org.sakaiproject.gradebook.gwt.sakai.rest.model;
+package org.sakaiproject.gradebook.gwt.server.model;
 
-import java.util.HashMap;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.model.Configuration;
@@ -12,17 +11,13 @@ import org.sakaiproject.gradebook.gwt.client.model.Statistics;
 import org.sakaiproject.gradebook.gwt.client.model.key.GradebookKey;
 import org.sakaiproject.gradebook.gwt.sakai.Util;
 
-public class GradebookImpl extends HashMap<String, Object> implements Gradebook {
+public class GradebookImpl extends BaseModel implements Gradebook {
 
 	private static final long serialVersionUID = 1L;
 
 	public GradebookImpl() {
 		super();
 		setNewGradebook(Boolean.FALSE);
-	}
-	
-	public <X> X get(String property) {
-		return (X)super.get(property);
 	}
 
 	/* (non-Javadoc)
@@ -87,10 +82,6 @@ public class GradebookImpl extends HashMap<String, Object> implements Gradebook 
 	 */
 	public List<FixedColumn> getColumns() {
 		return get(GradebookKey.COLUMNS.name());
-	}
-
-	public <X> X set(String property, X value) {
-		return (X)put(property, value);
 	}
 	
 	/* (non-Javadoc)

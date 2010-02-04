@@ -35,11 +35,11 @@ import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
-import org.sakaiproject.gradebook.gwt.client.gxt.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.MultiGradeContentPanel;
+import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.Configuration;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
@@ -157,7 +157,7 @@ public class MultigradeView extends View {
 				onShowColumns((ShowColumnsEvent)event.getData());
 				break;
 			case STARTUP:
-				ApplicationModel applicationModel = (ApplicationModel)event.getData();
+				ApplicationSetup applicationModel = (ApplicationSetup)event.getData();
 				initUI(applicationModel);
 				Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 				onSwitchGradebook(selectedGradebook);
@@ -171,7 +171,7 @@ public class MultigradeView extends View {
 		}
 	}
 
-	protected void initUI(ApplicationModel model) {
+	protected void initUI(ApplicationSetup model) {
 
 		Gradebook gbModel = model.getGradebookModels().get(0);
 		

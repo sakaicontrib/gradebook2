@@ -10,7 +10,7 @@ public class Application extends Resource {
 	@GET
     @Produces("application/json")
     public String get() {
-		return toJson(service.getApplicationMap());
+		return toJson(service.getApplicationSetup());
 	}
 
 }

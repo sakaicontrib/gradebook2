@@ -1,18 +1,12 @@
-package org.sakaiproject.gradebook.gwt.sakai.rest.model;
-
-import java.util.HashMap;
+package org.sakaiproject.gradebook.gwt.server.model;
 
 import org.sakaiproject.gradebook.gwt.client.model.Statistics;
 import org.sakaiproject.gradebook.gwt.client.model.key.StatisticsKey;
 
-public class StatisticsImpl extends HashMap<String, Object> implements Statistics {
+public class StatisticsImpl extends BaseModel implements Statistics {
 
 	private static final long serialVersionUID = 1L;
 
-	public <X> X get(String property) {
-		return (X)super.get(property);
-	}
-	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Statistics#getAssignmentId()
 	 */
@@ -67,10 +61,6 @@ public class StatisticsImpl extends HashMap<String, Object> implements Statistic
 	 */
 	public String getStandardDeviation() {
 		return get(StatisticsKey.STANDARD_DEVIATION.name());
-	}
-	
-	public <X> X set(String property, X value) {
-		return (X)put(property, value);
 	}
 	
 	/* (non-Javadoc)

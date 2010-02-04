@@ -10,7 +10,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.Learner;
-import org.sakaiproject.gradebook.gwt.sakai.rest.model.GradeRecord;
+import org.sakaiproject.gradebook.gwt.server.model.GradeRecord;
 
 @Path("/gradebook/rest/learner")
 public class LearnerRecord extends Resource {

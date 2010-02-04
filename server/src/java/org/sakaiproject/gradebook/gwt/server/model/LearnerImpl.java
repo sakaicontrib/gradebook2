@@ -1,22 +1,16 @@
-package org.sakaiproject.gradebook.gwt.sakai.rest.model;
+package org.sakaiproject.gradebook.gwt.server.model;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 
-public class LearnerImpl extends HashMap<String,Object> implements Learner, Comparable<Learner> {
+public class LearnerImpl extends BaseModel implements Learner, Comparable<Learner> {
 
 	private static final long serialVersionUID = 1L;
 
 	public LearnerImpl(Map<String,Object> map) {
-		super();
-		putAll(map);
-	}
-	
-	public <X> X get(String property) {
-		return (X)super.get(property);
+		super(map);
 	}
 	
 	public Map<String, Object> getProperties() {

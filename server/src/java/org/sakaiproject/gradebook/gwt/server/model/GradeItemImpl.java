@@ -1,9 +1,8 @@
-package org.sakaiproject.gradebook.gwt.sakai.rest.model;
+package org.sakaiproject.gradebook.gwt.server.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,17 +12,16 @@ import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 import org.sakaiproject.gradebook.gwt.sakai.Util;
 
-public class GradeItemImpl extends HashMap<String, Object> implements GradeItem {
+public class GradeItemImpl extends BaseModel implements GradeItem {
 
 	private static final long serialVersionUID = 1L;
 	
 	public GradeItemImpl() {
-		
+		super();
 	}
 	
 	public GradeItemImpl(Map<String,Object> map) {
-		super();
-		putAll(map);
+		super(map);
 	}
 	
 	public GradeItemImpl(String id, String name, CategoryType categoryType, GradeType gradeType, Long gradeScaleId,
@@ -113,10 +111,6 @@ public class GradeItemImpl extends HashMap<String, Object> implements GradeItem 
 	}
 	
 	// Getters
-	
-	public <X> X get(String property) {
-		return (X)super.get(property);
-	}
 
 	public Long getCategoryId() {
 		return Util.toLong(get(ItemKey.CATEGORY_ID.name()));

@@ -35,9 +35,11 @@ import org.sakaiproject.gradebook.gwt.client.ConfigUtil;
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig;
+import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
 import org.sakaiproject.gradebook.gwt.client.model.Configuration;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
+import org.sakaiproject.gradebook.gwt.client.model.GradeEvent;
 import org.sakaiproject.gradebook.gwt.client.model.History;
 import org.sakaiproject.gradebook.gwt.client.model.HistoryRecord;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
@@ -45,9 +47,7 @@ import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.Roster;
 import org.sakaiproject.gradebook.gwt.client.model.Statistics;
 import org.sakaiproject.gradebook.gwt.client.model.key.ActionKey;
-import org.sakaiproject.gradebook.gwt.client.model.key.ApplicationKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.CommentKey;
-import org.sakaiproject.gradebook.gwt.client.model.key.GradeEventKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.GradeFormatKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.GradeMapKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.GraderKey;
@@ -70,17 +70,20 @@ import org.sakaiproject.gradebook.gwt.sakai.model.StudentScore;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserConfiguration;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereferenceRealmUpdate;
-import org.sakaiproject.gradebook.gwt.sakai.rest.model.ConfigurationImpl;
-import org.sakaiproject.gradebook.gwt.sakai.rest.model.FixedColumnImpl;
-import org.sakaiproject.gradebook.gwt.sakai.rest.model.GradeItem;
-import org.sakaiproject.gradebook.gwt.sakai.rest.model.GradeItemImpl;
-import org.sakaiproject.gradebook.gwt.sakai.rest.model.GradebookImpl;
-import org.sakaiproject.gradebook.gwt.sakai.rest.model.HistoryImpl;
-import org.sakaiproject.gradebook.gwt.sakai.rest.model.HistoryRecordImpl;
-import org.sakaiproject.gradebook.gwt.sakai.rest.model.LearnerImpl;
-import org.sakaiproject.gradebook.gwt.sakai.rest.model.RosterImpl;
-import org.sakaiproject.gradebook.gwt.sakai.rest.model.StatisticsImpl;
 import org.sakaiproject.gradebook.gwt.server.DataTypeConversionUtil;
+import org.sakaiproject.gradebook.gwt.server.model.ApplicationSetupImpl;
+import org.sakaiproject.gradebook.gwt.server.model.ConfigurationImpl;
+import org.sakaiproject.gradebook.gwt.server.model.FixedColumnImpl;
+import org.sakaiproject.gradebook.gwt.server.model.GradeEventImpl;
+import org.sakaiproject.gradebook.gwt.server.model.GradeItem;
+import org.sakaiproject.gradebook.gwt.server.model.GradeItemImpl;
+import org.sakaiproject.gradebook.gwt.server.model.GradebookImpl;
+import org.sakaiproject.gradebook.gwt.server.model.HistoryImpl;
+import org.sakaiproject.gradebook.gwt.server.model.HistoryRecordImpl;
+import org.sakaiproject.gradebook.gwt.server.model.LearnerImpl;
+import org.sakaiproject.gradebook.gwt.server.model.PermissionImpl;
+import org.sakaiproject.gradebook.gwt.server.model.RosterImpl;
+import org.sakaiproject.gradebook.gwt.server.model.StatisticsImpl;
 import org.sakaiproject.section.api.SectionAwareness;
 import org.sakaiproject.section.api.coursemanagement.CourseSection;
 import org.sakaiproject.section.api.coursemanagement.EnrollmentRecord;
@@ -554,8 +557,8 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return new GradeItemImpl(getItemMap(gradebook, assignments, categories, categoryId, null));
 	}
 	
-	public Map<String, Object> createPermission(String gradebookUid, Long gradebookId, Map<String, Object> attributes) throws InvalidInputException {
-		Permission newPermission = toPermission(gradebookId, attributes);
+	public org.sakaiproject.gradebook.gwt.client.model.Permission createPermission(String gradebookUid, Long gradebookId, org.sakaiproject.gradebook.gwt.client.model.Permission permissionRequest) throws InvalidInputException {
+		Permission newPermission = toPermission(gradebookId, permissionRequest);
 		// First, we want to verify that the permission does not already exist
 		List<Permission> permissions = gbService.getPermissionsForUser(gradebookId, newPermission.getUserId());
 
@@ -596,14 +599,14 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		}
 		
 		Long id = gbService.createPermission(newPermission);
-		attributes.put(PermissionKey.ID.name(), id);
-		return attributes;
+		permissionRequest.setId(id);
+		return permissionRequest;
 	}
 	
-	public Map<String, Object> deletePermission(Map<String, Object> attributes) {
-		Permission p = toPermission(null, attributes);
+	public org.sakaiproject.gradebook.gwt.client.model.Permission deletePermission(org.sakaiproject.gradebook.gwt.client.model.Permission permissionDeleteRequest) {
+		Permission p = toPermission(null, permissionDeleteRequest);
 		gbService.deletePermission(p.getId());
-		return attributes;
+		return permissionDeleteRequest;
 	}
 	
 	public List<UserDereference> findAllUserDereferences() {
@@ -634,20 +637,15 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return advisor;
 	}
 	
-	public Map<String, Object> getApplicationMap(String... gradebookUids) {
+	public ApplicationSetup getApplicationSetup(String... gradebookUids) {
 
-		Map<String,Object> map = new HashMap<String,Object>();
+		ApplicationSetup setup = new ApplicationSetupImpl();
 
-		map.put(ApplicationKey.GRADEBOOKMODELS.name(), getGradebookModels(gradebookUids));
-		map.put(ApplicationKey.HELPURL.name(), helpUrl);
+		setup.setGradebookModels(getGradebookModels(gradebookUids));
+		setup.setHelpUrl(helpUrl);
+		setup.setEnabledGradeTypes(enabledGradeTypes);
 		
-		List<String> gradeTypes = new ArrayList<String>();
-		for (GradeType gradeType : enabledGradeTypes) {
-			gradeTypes.add(gradeType.name());	
-		}
-		map.put(ApplicationKey.ENABLEDGRADETYPES.name(), gradeTypes);
-		
-		return map;
+		return setup;
 	}
 	
 	public String getAuthorizationDetails(String... gradebookUids) {
@@ -772,8 +770,8 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return gradeCalculations;
 	}
 	
-	public List<Map<String,Object>> getGradeEvents(Long assignmentId, String studentUid) {
-		List<Map<String,Object>> gradeEvents = new ArrayList<Map<String,Object>>();
+	public List<GradeEvent> getGradeEvents(Long assignmentId, String studentUid) {
+		List<GradeEvent> gradeEvents = new ArrayList<GradeEvent>();
 		Assignment assignment = gbService.getAssignment(assignmentId);
 		Collection<GradableObject> gradableObjects = new LinkedList<GradableObject>();
 		gradableObjects.add(assignment);
@@ -1162,22 +1160,23 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return list;
 	}
 	
-	public List<Map<String,Object>> getPermissions(String gradebookUid, Long gradebookId, String graderId) {
-		List<Map<String,Object>> list = new ArrayList<Map<String,Object>>();
+	public List<org.sakaiproject.gradebook.gwt.client.model.Permission> getPermissions(String gradebookUid, Long gradebookId, String graderId) {
+		List<org.sakaiproject.gradebook.gwt.client.model.Permission> list = 
+			new ArrayList<org.sakaiproject.gradebook.gwt.client.model.Permission>();
 
 		List<Permission> permissions = gbService.getPermissionsForUser(gradebookId, graderId);
 
 		for (Permission permission : permissions) {
 
-			Map<String,Object> map = new HashMap<String,Object>();
-			map.put(PermissionKey.ID.name(), permission.getId());
-			map.put(PermissionKey.USER_ID.name(), permission.getUserId());
+			org.sakaiproject.gradebook.gwt.client.model.Permission p = new PermissionImpl();
+			p.setId(permission.getId());
+			p.setUserId(permission.getUserId());
 
 			try {
 				User user = userService.getUser(permission.getUserId());
 
 				if (null != user) {
-					map.put(PermissionKey.USER_DISPLAY_NAME.name(), user.getDisplayName());
+					p.setUserDisplayName(user.getDisplayName());
 				} else {
 					log.error("Was not able go get an User object from userId = " + permission.getUserId());
 				}
@@ -1186,42 +1185,42 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				e.printStackTrace();
 			}
 
-			map.put(PermissionKey.PERMISSION_ID.name(), permission.getFunction());
+			p.setPermissionId(permission.getFunction());
 
 			// If category id is null, the all categories were selected
 			if (null != permission.getCategoryId()) {
 
-				map.put(PermissionKey.CATEGORY_ID.name(), permission.getCategoryId());
+				p.setCategoryId(permission.getCategoryId());
 				Category category = gbService.getCategory(permission.getCategoryId());
 				if (null != category) {
-					map.put(PermissionKey.CATEGORY_DISPLAY_NAME.name(), category.getName());
+					p.setCategoryDisplayName(category.getName());
 				} else {
 					// TODO: handle error
 					log.error("Category is null");
 				}
 
 			} else {
-				map.put(PermissionKey.CATEGORY_ID.name(), "ALL");
-				map.put(PermissionKey.CATEGORY_DISPLAY_NAME.name(),"All");
+				p.setCategoryId(Long.valueOf(-1));
+				p.setCategoryDisplayName("All");
 			}
 
 			// If section id is null, then all sections were selected
 			if (null != permission.getGroupId() && !permission.getGroupId().equalsIgnoreCase("ALL")) {
-				map.put(PermissionKey.SECTION_ID.name(), permission.getGroupId());
+				p.setSectionId(permission.getGroupId());
 				CourseSection courseSection = sectionAwareness.getSection(permission.getGroupId());
 				if (null != courseSection) {
-					map.put(PermissionKey.SECTION_DISPLAY_NAME.name(), courseSection.getTitle());
+					p.setSectionDisplayName(courseSection.getTitle());
 				} else {
 					// TODO: handle error
 					log.error("CourseSection is null");
 				}
 			} else {
-				map.put(PermissionKey.SECTION_ID.name(), "ALL");
-				map.put(PermissionKey.SECTION_DISPLAY_NAME.name(), "All");
+				p.setSectionId("ALL");
+				p.setSectionDisplayName("All");
 			}
 
-			map.put(PermissionKey.DELETE_ACTION.name(), "Delete");
-			list.add(map);
+			p.setDeleteAction("Delete");
+			list.add(p);
 		}
 
 		return list;
@@ -1229,9 +1228,11 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 	
 	
 	/*
+
 	 * PRIVATE METHODS
 	 */
 
+	@SuppressWarnings("unchecked")
 	public Roster getRoster(String gradebookUid, Long gradebookId,
 			Integer numberLimit, Integer numberOffset, String sectionUuid,
 			String searchString, String sortField, boolean includeCMId, boolean isDescending) {
@@ -1484,6 +1485,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return siteService;
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<Statistics> getStatistics(String gradebookUid, Long gradebookId, String studentId) {
 		Gradebook gradebook = null;
 		if (gradebookId == null) {
@@ -2473,7 +2475,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return cellMap;
 	}
 
-	private Map<String, Object> buildGradeEvent(GradingEvent event) {
+	private GradeEvent buildGradeEvent(GradingEvent event) {
 		SimpleDateFormat dateFormat = new SimpleDateFormat();
 
 		String graderName = event.getGraderId();
@@ -2488,13 +2490,13 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			log.info("Failed to find a user for the id " + event.getGraderId());
 		}
 
-		Map<String, Object> map = new HashMap<String, Object>();		
-		map.put(GradeEventKey.ID.name(), String.valueOf(event.getId()));
-		map.put(GradeEventKey.GRADER_NAME.name(), graderName);
-		map.put(GradeEventKey.GRADE.name(), event.getGrade());
-		map.put(GradeEventKey.DATE_GRADED.name(), dateFormat.format(event.getDateGraded()));
+		GradeEvent gradeEvent = new GradeEventImpl();		
+		gradeEvent.setIdentifier(String.valueOf(event.getId()));
+		gradeEvent.setGraderName(graderName);
+		gradeEvent.setGrade(event.getGrade());
+		gradeEvent.setDateGraded(dateFormat.format(event.getDateGraded()));
 	
-		return map;
+		return gradeEvent;
 	}
 
 	private Learner buildLearnerGradeRecord(Gradebook gradebook, UserRecord userRecord, List<FixedColumn> columns, List<Assignment> assignments, List<Category> categories) {
@@ -3414,30 +3416,19 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 	}
 
 	private Long doCreateItem(Gradebook gradebook, Item item, boolean hasCategories, boolean enforceNoNewCategories) throws BusinessRuleException {
-		
-		boolean includeInGrade = DataTypeConversionUtil.checkBoolean(item.getIncluded());
-		
-		return doCreateItem(gradebook, item.getProperties(),
-				hasCategories, enforceNoNewCategories);
-	}
 
-	private Long doCreateItem(Gradebook gradebook, Map<String, Object> attributes, 
-			boolean hasCategories, boolean enforceNoNewCategories) throws BusinessRuleException {
-
-		String name = (String)attributes.get(ItemKey.NAME.name());
+		String name = item.getName();
 		
 		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.ITEM.name(), ActionType.CREATE.name());
 		actionRecord.setEntityName(name);
 		Map<String, String> propertyMap = actionRecord.getPropertyMap();
 
-		for (String property : attributes.keySet()) {
-			String value = String.valueOf(attributes.get(property));
+		for (String property : item.getPropertyNames()) {
+			String value = String.valueOf(item.get(property));
 			if (value != null)
 				propertyMap.put(property, value);
 		}
-
-		boolean hasNewCategory = false;
-
+		
 		Category category = null;
 		Long assignmentId = null;
 
@@ -3445,26 +3436,18 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		Long categoryId = null;
 
 		try {
-			boolean includeInGrade = DataTypeConversionUtil.checkBoolean((Boolean)attributes.get(ItemKey.INCLUDED.name()));
+			boolean includeInGrade = DataTypeConversionUtil.checkBoolean(item.getIncluded());
 
-			categoryId = (Long)attributes.get(ItemKey.CATEGORY_ID.name());
-			String categoryName = (String)attributes.get(ItemKey.CATEGORY_NAME.name());
-			Double weight = (Double)attributes.get(ItemKey.PERCENT_CATEGORY.name()); //item.getPercentCategory();
-			Double points = (Double)attributes.get(ItemKey.POINTS.name()); //item.getPoints();
-			Boolean isReleased = Boolean.valueOf(DataTypeConversionUtil.checkBoolean((Boolean)attributes.get(ItemKey.RELEASED.name())));
+			categoryId = item.getCategoryId();
+			String categoryName = item.getCategoryName();
+			Double weight = item.getPercentCategory();
+			Double points = item.getPoints();
+			Boolean isReleased = Boolean.valueOf(DataTypeConversionUtil.checkBoolean(item.getReleased()));
 			Boolean isIncluded = Boolean.valueOf(includeInGrade);
-			Boolean isExtraCredit = Boolean.valueOf(DataTypeConversionUtil.checkBoolean((Boolean)attributes.get(ItemKey.EXTRA_CREDIT.name())));
-			Boolean isNullsAsZeros = Boolean.valueOf(DataTypeConversionUtil.checkBoolean((Boolean)attributes.get(ItemKey.NULLSASZEROS.name())));
-			Date dueDate = null;
-			Object dueDateObject = attributes.get(ItemKey.DUE_DATE.name());
-			if (dueDateObject instanceof Date) 
-				dueDate = (Date)dueDateObject;
-			else if (dueDateObject instanceof Long) {
-				Long dueDateMillis = (Long)attributes.get(ItemKey.DUE_DATE.name());
-				dueDate = dueDateMillis == null ? null : new Date(dueDateMillis.longValue());
-			}
-			
-			Integer itemOrder = (Integer)attributes.get(ItemKey.ITEM_ORDER.name());
+			Boolean isExtraCredit = Boolean.valueOf(DataTypeConversionUtil.checkBoolean(item.getExtraCredit()));
+			Boolean isNullsAsZeros = Boolean.valueOf(DataTypeConversionUtil.checkBoolean(item.getNullsAsZeros()));
+			Date dueDate = item.getDueDate();
+			Integer itemOrder = item.getItemOrder();
 
 			// Business rule #1
 			if (points == null)
@@ -3481,7 +3464,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				newCategory = getActiveItem((GradeItem)addItemCategory(gradebook.getUid(), gradebook.getId(), newCategory));
 				categoryId = newCategory.getCategoryId();
 				//item.setCategoryId(categoryId);
-				hasNewCategory = true;
+				//hasNewCategory = true;
 			}
 
 			if (categoryId == null || categoryId.equals(Long.valueOf(-1l))) {
@@ -3507,6 +3490,8 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				assignments = gbService.getAssignments(gradebook.getId());
 				businessLogic.applyNoDuplicateItemNamesRule(gradebook.getId(), name, null, assignments);
 			}
+			
+			businessLogic.applyNoZeroPointItemsRule(points);
 
 			if (itemOrder == null)
 				itemOrder = assignments == null || assignments.isEmpty() ? Integer.valueOf(0) : Integer.valueOf(assignments.size());
@@ -4903,6 +4888,28 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return assignmentGradeRecord;
 	}
 
+	private Permission toPermission(Long gradebookId, org.sakaiproject.gradebook.gwt.client.model.Permission permission) {
+		
+		Long permissionId = permission.getId();
+		Long categoryId = permission.getCategoryId();
+		String function = permission.getPermissionId();
+		String userId = permission.getUserId();
+		String groupId = permission.getSectionId();
+		
+		if (gradebookId == null)
+			gradebookId = permission.getGradebookId();
+		
+		Permission perm = new Permission();
+		perm.setId(permissionId);
+		perm.setGradebookId(gradebookId);
+		perm.setCategoryId(categoryId);
+		perm.setFunction(function);
+		perm.setUserId(userId);
+		perm.setGroupId(groupId);
+	
+		return perm;
+	}
+	
 	private Permission toPermission(Long gradebookId, Map<String, Object> attributes) {
 		
 		Object permissionIdObj = attributes.get(PermissionKey.ID.name());
@@ -5345,6 +5352,8 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				businessLogic.applyCannotIncludeDeletedItemRule(wasRemoved && isRemoved, false, isUnweighted);
 
 			}
+			
+			businessLogic.applyNoZeroPointItemsRule(points);
 
 			// If we don't know the old item order then we need to determine it
 			if (oldItemOrder == null) {

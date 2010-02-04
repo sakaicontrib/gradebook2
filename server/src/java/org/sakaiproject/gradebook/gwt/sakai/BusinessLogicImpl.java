@@ -23,7 +23,9 @@
 
 package org.sakaiproject.gradebook.gwt.sakai;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.ResourceBundle;
 
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.server.DataTypeConversionUtil;
@@ -32,6 +34,8 @@ import org.sakaiproject.tool.gradebook.Category;
 
 public class BusinessLogicImpl implements BusinessLogic {
 
+	private static ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	
 	private GradebookToolService gbService;
 
 	public void applyRulesBeforeAddingCategory(boolean hasCategories, Long gradebookId, String name, 
@@ -128,7 +132,11 @@ public class BusinessLogicImpl implements BusinessLogic {
 		}
 	}
 
-
+	public void applyNoZeroPointItemsRule(Double itemPoints) throws BusinessRuleException {
+		BigDecimal points = BigDecimal.valueOf(itemPoints.doubleValue());
+		if (BigDecimal.ZERO.compareTo(points) >= 0)
+			throw new BusinessRuleException(i18n.getString("applyNoZeroPointItemsRuleException"));
+	}
 
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.sakai.BusinessLogic#applyMustIncludeCategoryRule(java.lang.Long)

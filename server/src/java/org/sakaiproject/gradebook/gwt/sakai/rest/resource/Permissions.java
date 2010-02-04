@@ -1,7 +1,6 @@
 package org.sakaiproject.gradebook.gwt.sakai.rest.resource;
 
 import java.util.List;
-import java.util.Map;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -16,7 +15,8 @@ public class Permissions extends Resource {
     @Produces("application/json")
     public String get(@PathParam("uid") String gradebookUid, @PathParam("id") Long gradebookId,
     		@PathParam("graderId") String graderId) {
-		List<Map<String,Object>> list = service.getPermissions(gradebookUid, gradebookId, graderId);
+		List<org.sakaiproject.gradebook.gwt.client.model.Permission> list = 
+			service.getPermissions(gradebookUid, gradebookId, graderId);
 		return toJson(list, list.size());
 	}
 	

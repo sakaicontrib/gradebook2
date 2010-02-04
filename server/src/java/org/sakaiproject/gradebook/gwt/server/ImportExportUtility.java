@@ -77,8 +77,8 @@ import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookImportException;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
-import org.sakaiproject.gradebook.gwt.sakai.rest.model.GradeItem;
-import org.sakaiproject.gradebook.gwt.sakai.rest.model.GradeItemImpl;
+import org.sakaiproject.gradebook.gwt.server.model.GradeItem;
+import org.sakaiproject.gradebook.gwt.server.model.GradeItemImpl;
 import org.sakaiproject.tool.gradebook.Assignment;
 
 import au.com.bytecode.opencsv.CSVReader;

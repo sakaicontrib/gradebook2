@@ -4,7 +4,7 @@ import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
 import javax.xml.bind.JAXBContext;
 
-import org.sakaiproject.gradebook.gwt.sakai.rest.model.GradeRecord;
+import org.sakaiproject.gradebook.gwt.server.model.GradeRecord;
 
 import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.api.json.JSONJAXBContext;

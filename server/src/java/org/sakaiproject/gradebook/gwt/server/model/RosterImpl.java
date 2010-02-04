@@ -1,4 +1,4 @@
-package org.sakaiproject.gradebook.gwt.sakai.rest.model;
+package org.sakaiproject.gradebook.gwt.server.model;
 
 import java.util.List;
 import java.util.HashMap;

@@ -328,7 +328,7 @@ public class ItemFormPanel extends GradebookPanel {
 		pointsField.setFieldLabel(i18n.pointsFieldLabel());
 		pointsField.setFormat(DataTypeConversionUtil.getDefaultNumberFormat());
 		pointsField.setAllowDecimals(true);
-		pointsField.setMinValue(Double.valueOf(0.0001d));
+		//pointsField.setMinValue(Double.valueOf(0.0001d));
 		pointsField.setVisible(false);
 		formPanel.add(pointsField);
 		

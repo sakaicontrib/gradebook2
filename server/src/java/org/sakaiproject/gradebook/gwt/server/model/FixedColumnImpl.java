@@ -1,13 +1,11 @@
-package org.sakaiproject.gradebook.gwt.sakai.rest.model;
-
-import java.util.HashMap;
+package org.sakaiproject.gradebook.gwt.server.model;
 
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
 import org.sakaiproject.gradebook.gwt.client.model.key.FixedColumnKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 import org.sakaiproject.gradebook.gwt.sakai.Util;
 
-public class FixedColumnImpl extends HashMap<String, Object> implements FixedColumn {
+public class FixedColumnImpl extends BaseModel implements FixedColumn {
 
 	private static final long serialVersionUID = 1L;
 
@@ -39,10 +37,6 @@ public class FixedColumnImpl extends HashMap<String, Object> implements FixedCol
 		setUnweighted(Boolean.FALSE);
 		setHidden(Boolean.FALSE);
 		setEditable(Boolean.TRUE);
-	}
-	
-	public <X> X get(String property) {
-		return (X)super.get(property);
 	}
 	
 	/* (non-Javadoc)
@@ -142,10 +136,6 @@ public class FixedColumnImpl extends HashMap<String, Object> implements FixedCol
 	 */
 	public Boolean isUnweighted() {
 		return Util.toBoolean(get(FixedColumnKey.UNWEIGHTED.name()));
-	}
-
-	public <X> X set(String property, X value) {
-		return (X)put(property, value);
 	}
 
 	/* (non-Javadoc)

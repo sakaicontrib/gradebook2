@@ -1,7 +1,6 @@
-package org.sakaiproject.gradebook.gwt.sakai.rest.model;
+package org.sakaiproject.gradebook.gwt.server.model;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
@@ -11,7 +10,7 @@ import org.sakaiproject.gradebook.gwt.client.model.Configuration;
 import org.sakaiproject.gradebook.gwt.client.model.key.ConfigurationKey;
 import org.sakaiproject.gradebook.gwt.sakai.Util;
 
-public class ConfigurationImpl extends HashMap<String, Object> implements Configuration {
+public class ConfigurationImpl extends BaseModel implements Configuration {
 
 	private static final long serialVersionUID = 1L;
 
@@ -23,11 +22,7 @@ public class ConfigurationImpl extends HashMap<String, Object> implements Config
 		this();
 		setGradebookId(gradebookId);
 	}
-	
-	public <X> X get(String property) {
-		return (X)super.get(property);
-	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Configuration#getColumnWidth(java.lang.String, java.lang.String, java.lang.String)
 	 */
@@ -127,10 +122,6 @@ public class ConfigurationImpl extends HashMap<String, Object> implements Config
 			return valueForNull;
 		
 		return Boolean.valueOf(hidden).booleanValue();
-	}
-	
-	public <X> X set(String property, X value) {
-		return (X)put(property, value);
 	}
 	
 	/* (non-Javadoc)

@@ -24,11 +24,13 @@ package org.sakaiproject.gradebook.gwt.client.gxt.model;
 
 import java.util.List;
 
+import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.key.ApplicationKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 
 
-public class ApplicationModel extends EntityModel {
+public class ApplicationModel extends EntityModel implements ApplicationSetup {
 
 	private static final long serialVersionUID = 1L;
 		
@@ -36,18 +38,30 @@ public class ApplicationModel extends EntityModel {
 		
 	}
 	
-	public List<GradebookModel> getGradebookModels() {
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Application#getGradebookModels()
+	 */
+	public List<Gradebook> getGradebookModels() {
 		return get(ApplicationKey.GRADEBOOKMODELS.name());
 	}
 
-	public void setGradebookModels(List<GradebookModel> gradebookModels) {
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Application#setGradebookModels(java.util.List)
+	 */
+	public void setGradebookModels(List<Gradebook> gradebookModels) {
 		set(ApplicationKey.GRADEBOOKMODELS.name(), gradebookModels);
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Application#getPlacementId()
+	 */
 	public String getPlacementId() {
 		return get(ApplicationKey.PLACEMENTID.name());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Application#setPlacementId(java.lang.String)
+	 */
 	public void setPlacementId(String placementId) {
 		set(ApplicationKey.PLACEMENTID.name(), placementId);
 	}
@@ -57,24 +71,39 @@ public class ApplicationModel extends EntityModel {
 		return "Gradebook Tool";
 	}
 
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Application#getIdentifier()
+	 */
 	@Override
 	public String getIdentifier() {
 		
 		return getPlacementId();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Application#getHelpUrl()
+	 */
 	public String getHelpUrl() {
 		return get(ApplicationKey.HELPURL.name());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Application#setHelpUrl(java.lang.String)
+	 */
 	public void setHelpUrl(String helpUrl) {
 		set(ApplicationKey.HELPURL.name(), helpUrl);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Application#getEnabledGradeTypes()
+	 */
 	public List<GradeType> getEnabledGradeTypes() {
 		return get(ApplicationKey.ENABLEDGRADETYPES.name());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Application#setEnabledGradeTypes(java.util.List)
+	 */
 	public void setEnabledGradeTypes(List<GradeType> enabledGradeTypes) {
 		set(ApplicationKey.ENABLEDGRADETYPES.name(), enabledGradeTypes);
 	}

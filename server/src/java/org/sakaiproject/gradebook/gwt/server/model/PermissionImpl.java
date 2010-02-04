@@ -1,38 +1,21 @@
-/**********************************************************************************
- *
- * $Id: PermissionEntryModel.java 63685 2009-09-30 01:33:01Z jlrenfro@ucdavis.edu $
- *
- ***********************************************************************************
- *
- * Copyright (c) 2008, 2009 The Regents of the University of California
- *
- * Licensed under the
- * Educational Community License, Version 2.0 (the "License"); you may
- * not use this file except in compliance with the License. You may
- * obtain a copy of the License at
- * 
- * http://www.osedu.org/licenses/ECL-2.0
- * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an "AS IS"
- * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing
- * permissions and limitations under the License.
- *
- **********************************************************************************/
+package org.sakaiproject.gradebook.gwt.server.model;
 
-package org.sakaiproject.gradebook.gwt.client.gxt.model;
+import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.model.Permission;
 import org.sakaiproject.gradebook.gwt.client.model.key.PermissionKey;
+import org.sakaiproject.gradebook.gwt.sakai.Util;
 
+public class PermissionImpl extends BaseModel implements Permission {
 
-public class PermissionsModel extends EntityModel implements Permission {
-	
 	private static final long serialVersionUID = 1L;
 
-	public PermissionsModel() {
+	public PermissionImpl() {
 		super();
+	}
+	
+	public PermissionImpl(Map<String, Object> map) {
+		super(map);
 	}
 
 	/* (non-Javadoc)
@@ -46,7 +29,7 @@ public class PermissionsModel extends EntityModel implements Permission {
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Permission#getCategoryId()
 	 */
 	public Long getCategoryId() {
-		return get(PermissionKey.CATEGORY_ID.name());
+		return Util.toLong(get(PermissionKey.CATEGORY_ID.name()));
 	}
 	
 	/* (non-Javadoc)
@@ -56,26 +39,23 @@ public class PermissionsModel extends EntityModel implements Permission {
 		return get(PermissionKey.DELETE_ACTION.name());
 	}
 	
-	@Override
-	public String getDisplayName() {
-		return getIdentifier();
-	}
-	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Permission#getGradebookId()
+	 */
 	public Long getGradebookId() {
-		return get(PermissionKey.GRADEBOOK_ID.name());
+		return Util.toLong(get(PermissionKey.GRADEBOOK_ID.name()));
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Permission#getId()
 	 */
 	public Long getId() {
-		return get(PermissionKey.ID.name());
+		return Util.toLong(get(PermissionKey.ID.name()));
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Permission#getIdentifier()
 	 */
-	@Override
 	public String getIdentifier() {
 		Long id = getId();
 		return (null == id) ? null : getId().toString();
@@ -137,6 +117,9 @@ public class PermissionsModel extends EntityModel implements Permission {
 		set(PermissionKey.DELETE_ACTION.name(), deleteAction);
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Permission#setGradebookId()
+	 */
 	public void setGradebookId(Long gradebookId) {
 		set(PermissionKey.GRADEBOOK_ID.name(), gradebookId);
 	}
@@ -182,4 +165,5 @@ public class PermissionsModel extends EntityModel implements Permission {
 	public void setUserId(String userId) {
 		set(PermissionKey.USER_ID.name(), userId);
 	}
+	
 }

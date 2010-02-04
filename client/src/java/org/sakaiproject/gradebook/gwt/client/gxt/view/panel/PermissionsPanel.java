@@ -38,6 +38,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.PermissionsModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.PermissionDeleteCellRenderer;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
+import org.sakaiproject.gradebook.gwt.client.model.Permission;
 import org.sakaiproject.gradebook.gwt.client.model.key.GraderKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.PermissionKey;
@@ -234,7 +235,7 @@ public class PermissionsPanel extends ContentPanel {
 			@Override
 			public void componentSelected(ButtonEvent ce) {
 				
-				PermissionsModel permissionEntryModel = new PermissionsModel();
+				Permission permissionEntryModel = new PermissionsModel();
 				
 				// Enforce selection
 				List<ModelData> users = userComboBox.getSelection();

@@ -42,6 +42,8 @@ public interface BusinessLogic {
 
 	public void applyNoDuplicateItemNamesWithinCategoryRule(Long categoryId, String name, Long assignmentId, List<Assignment> assignments) throws BusinessRuleException;
 
+	public void applyNoZeroPointItemsRule(Double itemPoints) throws BusinessRuleException;
+	
 	public void applyMustIncludeCategoryRule(Long categoryId) throws BusinessRuleException;
 
 	public void applyReleaseChildItemsWhenCategoryReleased(Category category, List<Assignment> assignments, boolean isReleased) throws BusinessRuleException;
