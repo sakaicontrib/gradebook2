@@ -554,7 +554,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 						&& assignment.getPointsPossible() != null) {
 					totalCategoryPoints = totalCategoryPoints.add(BigDecimal.valueOf(assignment.getPointsPossible().doubleValue()));
 				
-					if (!isUnweighted) {
+					if (!isUnweighted && null != assignmentWeight) {
 						//double assignmentCategoryPercent = assignment.getAssignmentWeighting() == null ? 0.0 : assignment.getAssignmentWeighting().doubleValue();	
 						totalCategoryPercent = totalCategoryPercent.add(assignmentWeight.multiply(BigDecimal.valueOf(100d), MATH_CONTEXT));
 					}
@@ -609,7 +609,8 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 			
 			BigDecimal representativePointsPossible = lastPointValue == null ? BigDecimal.ZERO : BigDecimal.valueOf(lastPointValue.doubleValue());
 			totalCategoryPoints = totalCategoryPoints.subtract(BigDecimal.valueOf(dropLowest).multiply(representativePointsPossible, MATH_CONTEXT));
-			totalCategoryPercent = totalCategoryPercent.subtract(BigDecimal.valueOf(dropLowest).multiply(lastPercentValue.multiply(BigDecimal.valueOf(100d), MATH_CONTEXT), MATH_CONTEXT));
+			if (totalCategoryPercent != null)
+				totalCategoryPercent = totalCategoryPercent.subtract(BigDecimal.valueOf(dropLowest).multiply(lastPercentValue.multiply(BigDecimal.valueOf(100d), MATH_CONTEXT), MATH_CONTEXT));
 		}
 		
 		if (categoryCalculationUnit != null)

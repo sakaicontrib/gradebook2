@@ -26,8 +26,6 @@ public class CommentModel extends EntityModel {
 
 	private static final long serialVersionUID = 1L;
 
-	public enum Key { ID, TEXT, STUDENT_UID, ASSIGNMENT_ID, GRADER_NAME };
-	
 	@Override
 	public String getDisplayName() {
 		return null;
@@ -35,43 +33,43 @@ public class CommentModel extends EntityModel {
 
 	@Override
 	public String getIdentifier() {
-		return get(Key.ID.name());
+		return get(CommentKey.ID.name());
 	}
 
 	public void setIdentifier(String id) {
-		set(Key.ID.name(), id);
+		set(CommentKey.ID.name(), id);
 	}
 
 	public String getText() {
-		return get(Key.TEXT.name());
+		return get(CommentKey.TEXT.name());
 	}
 	
 	public void setText(String text) {
-		set(Key.TEXT.name(), text);
+		set(CommentKey.TEXT.name(), text);
 	}
 	
 	public String getStudentUid() {
-		return get(Key.STUDENT_UID.name());
+		return get(CommentKey.STUDENT_UID.name());
 	}
 	
 	public void setStudentUid(String studentUid) {
-		set(Key.STUDENT_UID.name(), studentUid);
+		set(CommentKey.STUDENT_UID.name(), studentUid);
 	}
 	
 	public Long getAssignmentId() {
-		return get(Key.ASSIGNMENT_ID.name());
+		return get(CommentKey.ASSIGNMENT_ID.name());
 	}
 	
 	public void setAssignmentId(Long id) {
-		set(Key.ASSIGNMENT_ID.name(), id);
+		set(CommentKey.ASSIGNMENT_ID.name(), id);
 	}
 	
 	public String getGraderName() {
-		return get(Key.GRADER_NAME.name());
+		return get(CommentKey.GRADER_NAME.name());
 	}
 	
 	public void setGraderName(String graderName) {
-		set(Key.GRADER_NAME.name(), graderName);
+		set(CommentKey.GRADER_NAME.name(), graderName);
 	}
 	
 }

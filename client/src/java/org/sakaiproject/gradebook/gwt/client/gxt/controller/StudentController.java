@@ -7,6 +7,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.NotificationView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.StudentView;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -76,7 +77,7 @@ public class StudentController extends Controller {
 
 		// FIXME: Currently we only evaluate the first gradebook model to determine if we have
 		// FIXME: an instructor or a student. This needs to be refined.
-		for (GradebookModel gbModel : gradebookModels) {
+		for (Gradebook gbModel : gradebookModels) {
 			Registry.register(gbModel.getGradebookUid(), gbModel);
 			Registry.register(AppConstants.CURRENT, gbModel);
 

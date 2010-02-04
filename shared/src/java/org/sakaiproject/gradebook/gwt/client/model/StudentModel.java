@@ -24,17 +24,8 @@ package org.sakaiproject.gradebook.gwt.client.model;
 
 import java.util.Map;
 
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType;
 
-public class StudentModel extends EntityModel implements Comparable<StudentModel> {
-	
-	public static final String COMMENTED_FLAG = ":C";
-	public static final String COMMENT_TEXT_FLAG = ":T";
-	public static final String DROP_FLAG = ":D";
-	public static final String EXCUSE_FLAG = ":E";
-	public static final String FAILED_FLAG = ":F";
-	public static final String GRADED_FLAG = ":G";
-	
+public class StudentModel extends EntityModel implements Comparable<StudentModel>, Learner {
 	
 	private static final long serialVersionUID = 1L;
 
@@ -46,143 +37,207 @@ public class StudentModel extends EntityModel implements Comparable<StudentModel
 		super(properties);
 	}
 	
-	public static ClassType lookupClassType(String property, GradeType gradeType) {
-		
-		if (property.equals(LearnerKey.GRADE_OVERRIDE.name()))
-			return ClassType.STRING;
-		
-		if (property.endsWith(COMMENT_TEXT_FLAG))
-			return ClassType.STRING;
-		
-		if (property.endsWith(EXCUSE_FLAG))
-			return ClassType.BOOLEAN;
-		
-		if (gradeType == GradeType.LETTERS)
-			return ClassType.STRING;
-		
-		return ClassType.DOUBLE;
-	}
-	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#getIdentifier()
+	 */
 	public String getIdentifier() {
 		return get(LearnerKey.UID.name());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#setIdentifier(java.lang.String)
+	 */
 	public void setIdentifier(String id) {
 		set(LearnerKey.UID.name(), id);
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#getEid()
+	 */
 	public String getEid() {
 		return get(LearnerKey.EID.name());
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#setEid(java.lang.String)
+	 */
 	public void setEid(String eid) {
 		set(LearnerKey.EID.name(), eid);
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#getDisplayName()
+	 */
 	public String getDisplayName() {
 		return get(LearnerKey.DISPLAY_NAME.name());
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#getLastNameFirst()
+	 */
 	public String getLastNameFirst() {
 		return get(LearnerKey.LAST_NAME_FIRST.name());
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#setLastNameFirst(java.lang.String)
+	 */
 	public void setLastNameFirst(String name) {
 		set(LearnerKey.LAST_NAME_FIRST.name(), name);
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#getStudentName()
+	 */
 	public String getStudentName()
 	{
 		return get(LearnerKey.DISPLAY_NAME.name());
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#setStudentName(java.lang.String)
+	 */
 	public void setStudentName(String studentName)
 	{
 		set(LearnerKey.DISPLAY_NAME.name(), studentName);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#getStudentDisplayId()
+	 */
 	public String getStudentDisplayId()
 	{
 		return get(LearnerKey.DISPLAY_ID.name());
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#setStudentDisplayId(java.lang.String)
+	 */
 	public void setStudentDisplayId(String studentDisplayId)
 	{
 		set(LearnerKey.DISPLAY_ID.name(), studentDisplayId);
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#getStudentEmail()
+	 */
 	public String getStudentEmail()
 	{
 		return get(LearnerKey.EMAIL.name());
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#setStudentEmail(java.lang.String)
+	 */
 	public void setStudentEmail(String studentEmail)
 	{
 		set(LearnerKey.EMAIL.name(), studentEmail);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#getStudentSections()
+	 */
 	public String getStudentSections()
 	{
 		return get(LearnerKey.SECTION.name());
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#setStudentSections(java.lang.String)
+	 */
 	public void setStudentSections(String studentSections)
 	{
 		set(LearnerKey.SECTION.name(), studentSections);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#getStudentGrade()
+	 */
 	public String getStudentGrade()
 	{
 		return get(LearnerKey.COURSE_GRADE.name());
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#setStudentGrade(java.lang.String)
+	 */
 	public void setStudentGrade(String studentGrade)
 	{
 		set(LearnerKey.COURSE_GRADE.name(), studentGrade);
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#getCalculatedGrade()
+	 */
 	public String getCalculatedGrade()
 	{
 		return get(LearnerKey.CALCULATED_GRADE.name());
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#setCalculatedGrade(java.lang.String)
+	 */
 	public void setCalculatedGrade(String calculatedGrade)
 	{
 		set(LearnerKey.CALCULATED_GRADE.name(), calculatedGrade);
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#getLetterGrade()
+	 */
 	public String getLetterGrade() {
 		return get(LearnerKey.LETTER_GRADE.name());
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#setLetterGrade(java.lang.String)
+	 */
 	public void setLetterGrade(String letterGrade) {
 		set(LearnerKey.LETTER_GRADE.name(), letterGrade);
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#getExportCmId()
+	 */
 	public String getExportCmId()
 	{
 		return get(LearnerKey.EXPORT_CM_ID.name());
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#setExportCmId(java.lang.String)
+	 */
 	public void setExportCmId(String exportCmId)
 	{
 		set(LearnerKey.EXPORT_CM_ID.name(), exportCmId);
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#getExportUserId()
+	 */
 	public String getExportUserId()
 	{
 		return get(LearnerKey.EXPORT_USER_ID.name());
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#setExportUserId(java.lang.String)
+	 */
 	public void setExportUserId(String exportUserId)
 	{
 		set(LearnerKey.EXPORT_USER_ID.name(), exportUserId);
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#getFinalGradeUserId()
+	 */
 	public String getFinalGradeUserId() {
 		return get(LearnerKey.FINAL_GRADE_USER_ID.name());
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#setFinalGradeUserId(java.lang.String)
+	 */
 	public void setFinalGradeUserId(String finalGradeUserId) {
 		set(LearnerKey.FINAL_GRADE_USER_ID.name(), finalGradeUserId);
 	}
@@ -190,7 +245,7 @@ public class StudentModel extends EntityModel implements Comparable<StudentModel
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof StudentModel) {
-			StudentModel other = (StudentModel)obj;
+			Learner other = (Learner)obj;
 		
 			return getIdentifier().equals(other.getIdentifier());
 		}

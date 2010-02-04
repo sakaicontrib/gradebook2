@@ -32,8 +32,8 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.Viewport;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
+import org.sakaiproject.gradebook.gwt.client.model.Item;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.data.ModelData;
@@ -96,28 +96,28 @@ public abstract class AppView extends View {
 			onFailedToUpdateItem((ItemUpdate)event.getData());
 			break;
 		case LOAD_ITEM_TREE_MODEL:
-			onLoadItemTreeModel((GradebookModel)event.getData());
+			onLoadItemTreeModel((Gradebook)event.getData());
 			break;
 		case LEARNER_GRADE_RECORD_UPDATED:
 			onLearnerGradeRecordUpdated((UserEntityUpdateAction)event.getData());
 			break;
 		case GRADE_TYPE_UPDATED:
-			onGradeTypeUpdated((GradebookModel)event.getData());
+			onGradeTypeUpdated((Gradebook)event.getData());
 			break;
 		case NEW_CATEGORY:
-			onNewCategory((ItemModel)event.getData());
+			onNewCategory((Item)event.getData());
 			break;
 		case NEW_ITEM:
-			onNewItem((ItemModel)event.getData());
+			onNewItem((Item)event.getData());
 			break;
 		case REFRESH_GRADEBOOK_ITEMS:
-			onRefreshGradebookItems((GradebookModel)event.getData());
+			onRefreshGradebookItems((Gradebook)event.getData());
 			break;
 		case REFRESH_GRADEBOOK_SETUP:
-			onRefreshGradebookSetup((GradebookModel)event.getData());
+			onRefreshGradebookSetup((Gradebook)event.getData());
 			break;
 		case REFRESH_GRADE_SCALE:
-			onRefreshGradeScale((GradebookModel)event.getData());
+			onRefreshGradeScale((Gradebook)event.getData());
 			break;
 		case SELECT_LEARNER:
 			onSelectLearner((ModelData)event.getData());
@@ -147,7 +147,7 @@ public abstract class AppView extends View {
 			onStopGraderPermissions();
 			break;
 		case START_EDIT_ITEM:
-			onStartEditItem((ItemModel)event.getData());
+			onStartEditItem((Item)event.getData());
 			break;
 		case STOP_IMPORT:
 			onStopImport();
@@ -162,7 +162,7 @@ public abstract class AppView extends View {
 			onExpandEastPanel((EastCard)event.getData());
 			break;
 		case ITEM_CREATED:
-			onItemCreated((ItemModel)event.getData());
+			onItemCreated((Item)event.getData());
 			break;
 		case SINGLE_GRADE:
 			onSingleGrade((ModelData)event.getData());
@@ -171,11 +171,11 @@ public abstract class AppView extends View {
 			//RootPanel.get().add(realViewport);
 			ApplicationModel applicationModel = (ApplicationModel)event.getData();
 			initUI(applicationModel);
-			GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+			Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 			onSwitchGradebook(selectedGradebook);
 			break;
 		case SWITCH_GRADEBOOK:
-			onSwitchGradebook((GradebookModel)event.getData());
+			onSwitchGradebook((Gradebook)event.getData());
 			break;
 		case UPDATE_LEARNER_GRADE_RECORD:
 			onGradeStudent((GradeRecordUpdate)event.getData());
@@ -214,7 +214,7 @@ public abstract class AppView extends View {
 		
 	}
 	
-	protected void onGradeTypeUpdated(GradebookModel selectedGradebook) {
+	protected void onGradeTypeUpdated(Gradebook selectedGradebook) {
 		
 	}
 	
@@ -226,7 +226,7 @@ public abstract class AppView extends View {
 		
 	}
 	
-	protected void onItemCreated(ItemModel itemModel) {
+	protected void onItemCreated(Item itemModel) {
 		
 	}
 	
@@ -234,7 +234,7 @@ public abstract class AppView extends View {
 		
 	}
 	
-	protected void onLoadItemTreeModel(GradebookModel selectedGradebook) {
+	protected void onLoadItemTreeModel(Gradebook selectedGradebook) {
 		
 	}
 		
@@ -242,23 +242,23 @@ public abstract class AppView extends View {
 		
 	}
 	
-	protected void onNewCategory(ItemModel itemModel) {
+	protected void onNewCategory(Item itemModel) {
 		
 	}
 	
-	protected void onNewItem(ItemModel itemModel) {
+	protected void onNewItem(Item itemModel) {
 		
 	}
 	
-	protected void onRefreshGradebookItems(GradebookModel gradebookModel) {
+	protected void onRefreshGradebookItems(Gradebook gradebookModel) {
 		
 	}
 	
-	protected void onRefreshGradebookSetup(GradebookModel gradebookModel) {
+	protected void onRefreshGradebookSetup(Gradebook gradebookModel) {
 		
 	}
 	
-	protected void onRefreshGradeScale(GradebookModel gradebookModel) {
+	protected void onRefreshGradeScale(Gradebook gradebookModel) {
 		
 	}
 	
@@ -290,7 +290,7 @@ public abstract class AppView extends View {
 		
 	}
 	
-	protected void onStartEditItem(ItemModel itemModel) {
+	protected void onStartEditItem(Item itemModel) {
 		
 	}
 	
@@ -310,7 +310,7 @@ public abstract class AppView extends View {
 		
 	}
 		
-	protected void onSwitchGradebook(GradebookModel selectedGradebook) {
+	protected void onSwitchGradebook(Gradebook selectedGradebook) {
 		
 	}
 	

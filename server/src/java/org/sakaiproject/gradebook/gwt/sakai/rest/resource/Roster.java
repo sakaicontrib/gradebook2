@@ -1,33 +1,14 @@
 package org.sakaiproject.gradebook.gwt.sakai.rest.resource;
 
-import java.util.List;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-import org.sakaiproject.gradebook.gwt.client.AppConstants;
-import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig;
-import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service;
-
-import com.extjs.gxt.ui.client.Style.SortDir;
-import com.extjs.gxt.ui.client.data.BaseModel;
-import com.extjs.gxt.ui.client.data.PagingLoadResult;
-
 @Path("/gradebook/rest/roster")
-public class Roster {
+public class Roster extends Resource {
     
-	private static final Log log = LogFactory.getLog(Roster.class);
-	
-	private Gradebook2Service service;
-	
     @GET @Path("{uid}/{id}")
     @Produces("application/json")
     public String get(@PathParam("uid") String gradebookUid, @PathParam("id") Long gradebookId,
@@ -35,63 +16,12 @@ public class Roster {
     		@QueryParam("sortField") String sortField, @QueryParam("sortDir") String sortDir, 
     		@QueryParam("sectionUuid") String sectionUuid, @QueryParam("searchString") String searchString) {
     	
-    	log.info("GET!");
+    	boolean isDescending = sortDir == null || "DESC".equals(sortDir);
     	
-    	if (searchString != null && searchString.equalsIgnoreCase("null"))
-    		searchString = null;
-    	if (sectionUuid != null && (sectionUuid.equalsIgnoreCase("null") ||
-    			sectionUuid.equalsIgnoreCase("ALL")))
-    		sectionUuid = null;
-    	if (sortDir != null && sortDir.equalsIgnoreCase("null"))
-    		sortDir = null;
-    	if (sortField != null && sortField.equalsIgnoreCase("null"))
-    		sortField = null;
-    		
-    	MultiGradeLoadConfig loadConfig = new MultiGradeLoadConfig();
-    	loadConfig.setLimit(limit == null ? -1 : limit.intValue());
-    	loadConfig.setOffset(offset == null ? -1 : offset.intValue());
-    	loadConfig.setSearchString(searchString);
-    	loadConfig.setSectionUuid(sectionUuid);
-    	loadConfig.setSortDir(SortDir.findDir(sortDir));
-    	loadConfig.setSortField(sortField);
-    	
-    	PagingLoadResult<BaseModel> result = service.getStudentRows(gradebookUid, gradebookId, loadConfig, false);
-    	List<BaseModel> models = result.getData();
-    	
-    	JSONArray array = new JSONArray();
-    	int index = 0;
-    	for (BaseModel model : models) {
-    		JSONObject object = new JSONObject();
-    		for (String name : model.getPropertyNames()) {
-    			Object value = model.get(name);
-    			try {
-					object.put(name, value);
-				} catch (JSONException e) {
-					e.printStackTrace();
-				}
-    		}
-    		array.put(object);
-    	}
-    	
-    	JSONObject jsonObject = new JSONObject();
-    	try {
-			jsonObject.put(AppConstants.LIST_ROOT, array);
-			jsonObject.put(AppConstants.TOTAL, result.getTotalLength());
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		
-		String str = jsonObject.toString();
-    	
-        return str;
+    	org.sakaiproject.gradebook.gwt.client.model.Roster roster = 
+    		service.getRoster(gradebookUid, gradebookId, limit, offset, sectionUuid, searchString, sortField, false, isDescending);
+    
+    	return toJson(roster.getLearnerPage(), roster.getTotal());
     }
-
-	public Gradebook2Service getService() {
-		return service;
-	}
-
-	public void setService(Gradebook2Service service) {
-		this.service = service;
-	}
     
 }

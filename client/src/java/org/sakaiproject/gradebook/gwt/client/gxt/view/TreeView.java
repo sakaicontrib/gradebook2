@@ -27,17 +27,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
-import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ItemTreePanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ItemFormPanel;
-import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ItemTreePanel;
+import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
+import org.sakaiproject.gradebook.gwt.client.model.Item;
+import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModelComparer;
-import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
+import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.data.BaseTreeLoader;
@@ -58,7 +59,7 @@ public class TreeView extends View {
 	private TreeLoader<ItemModel> treeLoader;
 	private TreeStore<ItemModel> treeStore;
 
-	private GradebookModel selectedGradebook;
+	private Gradebook selectedGradebook;
 
 	private boolean isInitialized;
 
@@ -87,7 +88,7 @@ public class TreeView extends View {
 				@Override
 				public boolean hasChildren(ItemModel parent) {
 					
-					if (parent.getItemType() == Type.CATEGORY)
+					if (parent.getItemType() == ItemType.CATEGORY)
 						return true;
 					
 					if (parent instanceof TreeModel) {
@@ -122,10 +123,10 @@ public class TreeView extends View {
 				onItemCreated((ItemModel)event.getData());
 				break;
 			case ITEM_DELETED:
-				onItemDeleted((ItemModel)event.getData());
+				onItemDeleted((Item)event.getData());
 				break;
 			case ITEM_UPDATED:
-				onItemUpdated((ItemModel)event.getData());
+				onItemUpdated((Item)event.getData());
 				break;
 			case HIDE_COLUMN:
 				onHideColumn((String)event.getData());
@@ -140,7 +141,7 @@ public class TreeView extends View {
 				onEditItemComplete((Boolean)event.getData());
 				break;
 			case LOAD_ITEM_TREE_MODEL:
-				onLoadItemTreeModel((GradebookModel)event.getData());
+				onLoadItemTreeModel((Gradebook)event.getData());
 				break;
 			case NEW_CATEGORY:
 				onNewCategory((ItemModel)event.getData());
@@ -149,27 +150,27 @@ public class TreeView extends View {
 				onNewItem((ItemModel)event.getData());
 				break;
 			case REFRESH_GRADEBOOK_ITEMS:
-				onRefreshGradebookItems((GradebookModel)event.getData());
+				onRefreshGradebookItems((Gradebook)event.getData());
 				break;
 			case REFRESH_GRADEBOOK_SETUP:
-				onRefreshGradebookSetup((GradebookModel)event.getData());
+				onRefreshGradebookSetup((Gradebook)event.getData());
 				break;
 			case SELECT_ITEM:
 				onSelectItem((String)event.getData());
 				break;
 			case STARTUP:
-				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+				Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 				onSwitchGradebook(selectedGradebook);
 				break;
 			case SWITCH_EDIT_ITEM:
 				onSwitchEditItem((ItemModel)event.getData());
 				break;
 			case SWITCH_GRADEBOOK:
-				onSwitchGradebook((GradebookModel)event.getData());
+				onSwitchGradebook((Gradebook)event.getData());
 				break;
-			case USER_CHANGE:
+			/*case USER_CHANGE:
 				onUserChange((UserEntityAction<?>)event.getData());
-				break;
+				break;*/
 		}
 	}
 
@@ -212,15 +213,15 @@ public class TreeView extends View {
 		formPanel.onItemCreated(itemModel);
 	}
 
-	protected void onItemDeleted(ItemModel itemModel) {
+	protected void onItemDeleted(Item itemModel) {
 		formPanel.onItemDeleted(itemModel);
 	}
 
-	protected void onItemUpdated(ItemModel itemModel) {
+	protected void onItemUpdated(Item itemModel) {
 		formPanel.onItemUpdated(itemModel);
 	}
 
-	protected void onLoadItemTreeModel(GradebookModel selectedGradebook) {
+	protected void onLoadItemTreeModel(Gradebook selectedGradebook) {
 	}
 
 	protected void onMaskItemTree() {
@@ -235,12 +236,12 @@ public class TreeView extends View {
 		formPanel.onNewItem(itemModel);
 	}
 
-	protected void onRefreshGradebookItems(GradebookModel gradebookModel) {
+	protected void onRefreshGradebookItems(Gradebook gradebookModel) {
 		onMaskItemTree();
 		treeStore.removeAll();
-		ItemModel gradebookItemModel = gradebookModel.getGradebookItemModel();
+		ItemModel gradebookItemModel = (ItemModel)gradebookModel.getGradebookItemModel();
 		ItemModel rootItemModel = new ItemModel();
-		rootItemModel.setItemType(Type.ROOT);
+		rootItemModel.setItemType(ItemType.ROOT);
 		rootItemModel.setName("Root");
 		gradebookItemModel.setParent(rootItemModel);
 		rootItemModel.add(gradebookItemModel);
@@ -253,7 +254,7 @@ public class TreeView extends View {
 		onUnmaskItemTree();
 	}
 
-	protected void onRefreshGradebookSetup(GradebookModel gradebookModel) {
+	protected void onRefreshGradebookSetup(Gradebook gradebookModel) {
 		treePanel.onRefreshGradebookSetup(gradebookModel);
 	}
 
@@ -263,8 +264,8 @@ public class TreeView extends View {
 			List<ItemModel> itemModels = treeStore.findModels(ItemKey.ID.name(), itemModelId);
 			if (itemModels != null) {
 				for (ItemModel itemModel : itemModels) {
-					Type itemType = itemModel.getItemType();
-					if (itemType == Type.ITEM) {
+					ItemType itemType = itemModel.getItemType();
+					if (itemType == ItemType.ITEM) {
 						onEditItem(itemModel);
 						break;
 					}
@@ -282,7 +283,7 @@ public class TreeView extends View {
 	}
 
 	@SuppressWarnings("unchecked")
-	protected void onSwitchGradebook(final GradebookModel selectedGradebook) {
+	protected void onSwitchGradebook(final Gradebook selectedGradebook) {
 		this.selectedGradebook = selectedGradebook;
 
 		formPanel.onSwitchGradebook(selectedGradebook);
@@ -323,20 +324,20 @@ public class TreeView extends View {
 		treePanel.onUnmaskItemTree();
 	}
 
-	protected void onUserChange(UserEntityAction<?> action) {
+	/*protected void onUserChange(UserEntityAction<?> action) {
 		treePanel.onUserChange(action);
-	}
+	}*/
 
 	private FixedColumnModel findFixedByColumnId(String fixedId) {
 		FixedColumnModel fixedModel = null;
 
 		if (selectedGradebook != null) {
-			List<FixedColumnModel> fixedColumns = selectedGradebook.getColumns();
+			List<FixedColumn> fixedColumns = selectedGradebook.getColumns();
 
-			for (FixedColumnModel current : fixedColumns) {
+			for (FixedColumn current : fixedColumns) {
 
 				if (current.getIdentifier().equals(fixedId)) {
-					fixedModel = current;
+					fixedModel = (FixedColumnModel)current;
 					break;
 				}
 
@@ -352,8 +353,8 @@ public class TreeView extends View {
 		List<ItemModel> itemModels = treeStore.findModels(ItemKey.ID.name(), itemModelId);
 		if (itemModels != null) {
 			for (ItemModel current : itemModels) {
-				Type itemType = current.getItemType();
-				if (itemType == Type.ITEM) {
+				ItemType itemType = current.getItemType();
+				if (itemType == ItemType.ITEM) {
 					itemModel = current;
 					break;
 				}
@@ -384,10 +385,10 @@ public class TreeView extends View {
 
 	// Helper methods
 
-	private boolean isTreeRefreshUnnecessary(GradebookModel selectedGradebook) {
+	private boolean isTreeRefreshUnnecessary(Gradebook selectedGradebook) {
 		// First thing we need to do here is decide whether we can avoid making expensive ui changes
-		ItemModel oldGradebookItemModel = this.selectedGradebook == null ? null : this.selectedGradebook.getGradebookItemModel();
-		ItemModel newGradebookItemModel = selectedGradebook == null ? null : selectedGradebook.getGradebookItemModel();
+		Item oldGradebookItemModel = this.selectedGradebook == null ? null : this.selectedGradebook.getGradebookItemModel();
+		Item newGradebookItemModel = selectedGradebook == null ? null : selectedGradebook.getGradebookItemModel();
 		CategoryType oldCategoryType = oldGradebookItemModel == null ? null : oldGradebookItemModel.getCategoryType();
 		CategoryType newCategoryType = newGradebookItemModel == null ? null : newGradebookItemModel.getCategoryType();
 

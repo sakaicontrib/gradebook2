@@ -33,11 +33,11 @@ import junit.framework.TestCase;
 
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
+import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.CategoryType;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -75,9 +75,9 @@ public class Gradebook2ServiceWeightedCategoriesTest extends TestCase {
 		List<StudentModel> learners = learnerResult.getData();
 		assertEquals(numberOfRows, learners.size());
 
-		StudentModel firstLearner = learners.get(0);
+		ModelData firstLearner = learners.get(0);
 
-		assertNull(firstLearner.getStudentGrade());
+		assertNull((StudentModel)firstLearner).getStudentGrade());
 
 		List<String> itemIds = new ArrayList<String>(); 
 		StudentModel updatedRecord = null;

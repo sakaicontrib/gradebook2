@@ -1,6 +1,5 @@
 package org.sakaiproject.gradebook.gwt.sakai.rest.resource;
 
-import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.Consumes;
@@ -14,6 +13,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
+import org.sakaiproject.gradebook.gwt.sakai.rest.model.GradeItemImpl;
 
 @Path("/gradebook/rest/item")
 public class Item extends Resource {
@@ -24,9 +24,10 @@ public class Item extends Resource {
 			String model) throws InvalidInputException {
 		
 		Map<String,Object> map = fromJson(model, Map.class);
-		Map<String,Object> result = service.createItem(gradebookUid, gradebookId, map);
+		org.sakaiproject.gradebook.gwt.client.model.Item result = 
+			service.createItem(gradebookUid, gradebookId, new GradeItemImpl(map), true);
 		
-		return toJson(result);
+		return toJson(result.getProperties());
 	}
 	
 	@GET @Path("{uid}/{id}")
@@ -40,7 +41,8 @@ public class Item extends Resource {
 	@Consumes({"application/xml", "application/json"})
 	public String remove(String model) throws InvalidInputException {
 		Map<String,Object> map = fromJson(model, Map.class);
-		Map<String,Object> result = service.updateItem(map);
+		org.sakaiproject.gradebook.gwt.client.model.Item result = 
+			service.updateItem(new GradeItemImpl(map));
 		
 		return toJson(result);
 	}
@@ -49,7 +51,8 @@ public class Item extends Resource {
 	@Consumes({"application/xml", "application/json"})
 	public String update(String model) throws InvalidInputException {
 		Map<String,Object> map = fromJson(model, Map.class);
-		Map<String,Object> result = service.updateItem(map);
+		org.sakaiproject.gradebook.gwt.client.model.Item result = 
+			service.updateItem(new GradeItemImpl(map));
 		
 		return toJson(result);
 	}

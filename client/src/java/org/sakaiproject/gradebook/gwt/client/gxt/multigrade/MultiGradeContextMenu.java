@@ -36,7 +36,6 @@ import org.sakaiproject.gradebook.gwt.client.model.GradeEventKey;
 import org.sakaiproject.gradebook.gwt.client.model.GradeEventModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
-import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
@@ -260,7 +259,7 @@ public class MultiGradeContextMenu extends Menu {
 					Long itemId = owner.getSelectedAssignment();
 					
 					if (learner != null && itemId != null) {
-						String property = new StringBuilder().append(String.valueOf(itemId)).append(StudentModel.COMMENT_TEXT_FLAG).toString();
+						String property = new StringBuilder().append(String.valueOf(itemId)).append(AppConstants.COMMENT_TEXT_FLAG).toString();
 						
 						String commentText = learner.get(property);
 						editCommentTextArea.setValue(commentText);
@@ -294,7 +293,7 @@ public class MultiGradeContextMenu extends Menu {
 		ModelData learner = owner.getSelectedModel();
     	Long itemId = owner.getSelectedAssignment();
     	
-    	String property = new StringBuilder().append(String.valueOf(itemId)).append(StudentModel.COMMENT_TEXT_FLAG).toString();
+    	String property = new StringBuilder().append(String.valueOf(itemId)).append(AppConstants.COMMENT_TEXT_FLAG).toString();
     	
     	String newCommentText = value;
     	String oldCommentText = learner.get(property);
@@ -307,7 +306,7 @@ public class MultiGradeContextMenu extends Menu {
 		ModelData learner = owner.getSelectedModel();
     	Long itemId = owner.getSelectedAssignment();
     	
-    	String property = new StringBuilder().append(String.valueOf(itemId)).append(StudentModel.COMMENT_TEXT_FLAG).toString();
+    	String property = new StringBuilder().append(String.valueOf(itemId)).append(AppConstants.COMMENT_TEXT_FLAG).toString();
     	
     	String newCommentText = value;
     	String oldCommentText = learner.get(property);

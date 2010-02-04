@@ -25,7 +25,9 @@ package org.sakaiproject.gradebook.gwt.client.action;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeRecordModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeScaleRecordModel;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
@@ -52,7 +54,7 @@ public class UserEntityUpdateAction<M extends ModelData> extends UserEntityActio
 		super(actionType, entityType);
 	}
 
-	public UserEntityUpdateAction(GradebookModel gbModel, M model) {
+	public UserEntityUpdateAction(Gradebook gbModel, M model) {
 		super(gbModel, ActionType.UPDATE);
 		setModel(model);
 		this.isBulkUpdate = true;
@@ -61,7 +63,7 @@ public class UserEntityUpdateAction<M extends ModelData> extends UserEntityActio
 			setEntityType(EntityType.LEARNER);
 			setActionType(ActionType.GRADED);
 		} else if (model instanceof ItemModel) {
-			switch (((ItemModel)model).getItemType()) {
+			switch (((Item)model).getItemType()) {
 				case ITEM:
 					setEntityType(EntityType.ITEM);
 					break;
@@ -83,7 +85,7 @@ public class UserEntityUpdateAction<M extends ModelData> extends UserEntityActio
 		}
 	}
 
-	public UserEntityUpdateAction(GradebookModel gbModel, M model, String key, ClassType classType, Object value, Object startValue) {
+	public UserEntityUpdateAction(Gradebook gbModel, M model, String key, ClassType classType, Object value, Object startValue) {
 		super(gbModel, ActionType.UPDATE);
 		setModel(model);
 		if (model instanceof EntityModel)

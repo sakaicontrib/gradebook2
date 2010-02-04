@@ -53,7 +53,6 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 	PERMISSION_VIEW_OWN_GRADES = "gradebook.viewOwnGrades";
 	
 	private Gradebook2Authn authn;
-	private Gradebook2Service gbService;
 	private GradebookToolService gbToolService;
 	private SectionAwareness sectionAwareness;
 	private ToolManager toolManager;
@@ -78,11 +77,6 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 	
 	protected SectionAwareness getSectionAwareness() {
 		return sectionAwareness;
-	}
-
-	// SPRING DI
-	public void setGbService(Gradebook2Service gbService) {
-		this.gbService = gbService;
 	}
 	
 	// SPRING DI
@@ -466,7 +460,7 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 		if (gradebookId == null || userId == null || studentId == null)
 			throw new IllegalArgumentException("Null parameter(s) in GradebookPermissionServiceImpl.getAvailableItemsForStudent");
 
-		List<Category> categories = gbService.getCategoriesWithAssignments(gradebookId);
+		List<Category> categories = gbToolService.getCategoriesWithAssignments(gradebookId);
 		Map<Long, Category> catIdCategoryMap = new HashMap<Long, Category>();
 		if (!categories.isEmpty()) {
 			for (Category category : categories) {

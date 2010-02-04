@@ -23,7 +23,7 @@
 package org.sakaiproject.gradebook.gwt.client.action;
 
 import org.sakaiproject.gradebook.gwt.client.model.ActionKey;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
 
@@ -35,12 +35,12 @@ public class UserEntityCreateAction<M extends BaseModel> extends UserEntityActio
 		super(ActionType.CREATE);
 	}
 
-	public UserEntityCreateAction(GradebookModel gbModel, EntityType entityType, M model) {
+	public UserEntityCreateAction(Gradebook gbModel, EntityType entityType, M model) {
 		super(gbModel, ActionType.CREATE, entityType);
 		setModel(model);
 	}
 
-	public UserEntityCreateAction(GradebookModel gbModel, EntityType entityType, 
+	public UserEntityCreateAction(Gradebook gbModel, EntityType entityType, 
 			Long parentId, String name, Double weight) {
 		super(gbModel, ActionType.CREATE, entityType);
 		setParentId(parentId);

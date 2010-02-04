@@ -65,25 +65,26 @@ import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportFile;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportRow;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader.Field;
-import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
-import org.sakaiproject.gradebook.gwt.client.model.GradeType;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
+import org.sakaiproject.gradebook.gwt.client.model.Item;
+import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
-import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
-import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service;
+import org.sakaiproject.gradebook.gwt.client.model.Roster;
+import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
+import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
+import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookImportException;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
+import org.sakaiproject.gradebook.gwt.sakai.rest.model.GradeItem;
+import org.sakaiproject.gradebook.gwt.sakai.rest.model.GradeItemImpl;
 import org.sakaiproject.tool.gradebook.Assignment;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
-import com.extjs.gxt.ui.client.data.ModelData;
-import com.extjs.gxt.ui.client.data.PagingLoadResult;
 
 public class ImportExportUtility {
 
@@ -111,14 +112,13 @@ public class ImportExportUtility {
 		}
 	};
 
-	public static void exportGradebook(Gradebook2Service service, String gradebookUid, 
+	public static void exportGradebook(Gradebook2ComponentService service, String gradebookUid, 
 			final boolean includeStructure, final boolean includeComments, PrintWriter writer, HttpServletResponse response, String fileType) 
 	throws FatalException {
 
-		GradebookModel gradebook = service.getGradebook(gradebookUid);
-		ItemModel gradebookItemModel = gradebook.getGradebookItemModel();
+		Gradebook gradebook = service.getGradebook(gradebookUid);
+		Item gradebookItemModel = gradebook.getGradebookItemModel();
 		RawFile out = new RawFile(); 
-
 
 		Long gradebookId = gradebook.getGradebookId();
 		final List<String> headerIds = new ArrayList<String>();
@@ -167,7 +167,7 @@ public class ImportExportUtility {
 			ItemModelProcessor processor = new ItemModelProcessor(gradebookItemModel) {
 
 				@Override
-				public void doCategory(ItemModel itemModel, int childIndex) {
+				public void doCategory(Item itemModel, int childIndex) {
 					StringBuilder categoryName = new StringBuilder().append(itemModel.getName());
 
 					if (DataTypeConversionUtil.checkBoolean(itemModel.getExtraCredit())) {
@@ -194,7 +194,7 @@ public class ImportExportUtility {
 						equalWeightRow.add(String.valueOf(isEqualWeight));
 
 
-					if (itemModel.getChildCount() == 0) {
+					if (((GradeItem)itemModel).getChildCount() == 0) {
 						headerIds.add("");
 						headerColumns.add("");
 						pointsRow.add("");
@@ -204,7 +204,7 @@ public class ImportExportUtility {
 				}
 
 				@Override
-				public void doItem(ItemModel itemModel, int childIndex) {
+				public void doItem(Item itemModel, int childIndex) {
 					if (childIndex > 0) {
 						categoriesRow.add("");
 						percentageGradeRow.add("");
@@ -293,7 +293,7 @@ public class ImportExportUtility {
 			ItemModelProcessor processor = new ItemModelProcessor(gradebookItemModel) {
 
 				@Override
-				public void doItem(ItemModel itemModel) {
+				public void doItem(Item itemModel) {
 					StringBuilder text = new StringBuilder();
 					text.append(itemModel.getName());
 
@@ -330,16 +330,16 @@ public class ImportExportUtility {
 
 		out.addRow(headerColumns.toArray(new String[headerColumns.size()]));
 
-		PagingLoadResult<BaseModel> result = service.getStudentRows(gradebookUid, gradebookId, null, Boolean.TRUE);
+		Roster result = service.getRoster(gradebookUid, gradebookId, null, null, null, null, null, true, true);
 
-		List<BaseModel> rows = result.getData();
+		List<Learner> rows = result.getLearnerPage();
 
 		boolean isPercentages = gradebook.getGradebookItemModel().getGradeType() == GradeType.PERCENTAGES;
 
 		if (headerIds != null) {
 
 			if (rows != null) {
-				for (BaseModel row : rows) {
+				for (Learner row : rows) {
 					List<String> dataColumns = new LinkedList<String>();
 
 					dataColumns.add((String)row.get(LearnerKey.EXPORT_USER_ID.name()));
@@ -360,7 +360,7 @@ public class ImportExportUtility {
 
 						if (includeComments) {
 							String commentId = new StringBuilder()
-							.append(headerIds.get(column)).append(StudentModel.COMMENT_TEXT_FLAG).toString();
+							.append(headerIds.get(column)).append(AppConstants.COMMENT_TEXT_FLAG).toString();
 
 							Object comment = row.get(commentId);
 
@@ -512,9 +512,9 @@ public class ImportExportUtility {
 	}
 
 
-	private static boolean checkForCurrentAssignmentInGradebook(String fileName, Gradebook2Service service, GradebookToolService gbToolService, String gradebookUid)
+	private static boolean checkForCurrentAssignmentInGradebook(String fileName, Gradebook2ComponentService service, GradebookToolService gbToolService, String gradebookUid)
 	{
-		GradebookModel gm = service.getGradebook(gradebookUid); 
+		Gradebook gm = service.getGradebook(gradebookUid); 
 		List<Assignment> assignments = gbToolService.getAssignments(gm.getGradebookId()); 
 		for (Assignment curAssignment : assignments)
 		{
@@ -530,7 +530,7 @@ public class ImportExportUtility {
 
 	}
 	private static String getUniqueFileNameForFileName(String fileName,
-			Gradebook2Service service, GradebookToolService gbToolService, String gradebookUid) throws GradebookImportException 
+			Gradebook2ComponentService service, GradebookToolService gbToolService, String gradebookUid) throws GradebookImportException 
 			{
 		log.debug("fileName=" + fileName);
 		if (fileName == null || fileName.equals(""))
@@ -565,7 +565,7 @@ public class ImportExportUtility {
 	 * so basically, we'll do: 
 	 * 1) Scan the sheet for scantron artifacts, and if so convert to a simple CSV file which is 
 	 */
-	public static ImportFile parseImportXLS(Gradebook2Service service, 
+	public static ImportFile parseImportXLS(Gradebook2ComponentService service, 
 			String gradebookUid, InputStream is, String fileName, GradebookToolService gbToolService) throws InvalidInputException, FatalException, IOException {
 		log.debug("parseImportXLS() called"); 
 
@@ -607,7 +607,7 @@ public class ImportExportUtility {
 
 
 	private static ImportFile handleJExcelAPISpreadSheet(BufferedInputStream is,
-			Gradebook2Service service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName) throws InvalidInputException, FatalException, IOException {
+			Gradebook2ComponentService service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName) throws InvalidInputException, FatalException, IOException {
 		Workbook wb = null; 
 		try {
 			wb = Workbook.getWorkbook(is);
@@ -639,7 +639,7 @@ public class ImportExportUtility {
 	}
 
 	private static ImportFile handleNormalXLSSheetForJExcelApi(Sheet s,
-			Gradebook2Service service, String gradebookUid) throws InvalidInputException, FatalException {
+			Gradebook2ComponentService service, String gradebookUid) throws InvalidInputException, FatalException {
 		RawFile raw = new RawFile(); 
 		int numRows; 
 
@@ -668,7 +668,7 @@ public class ImportExportUtility {
 	private final static int RAWFIELD_SECOND_POSITION = 1; 
 
 	private static ImportFile handleScantronSheetForJExcelApi(Sheet s,
-			Gradebook2Service service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName) throws InvalidInputException, FatalException 
+			Gradebook2ComponentService service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName) throws InvalidInputException, FatalException 
 			{
 		StringBuilder err = new StringBuilder("Scantron File with errors"); 
 		RawFile raw = new RawFile(); 
@@ -747,7 +747,7 @@ public class ImportExportUtility {
 		return (studentIdHeader != null && scoreHeader != null); 
 	}
 
-	private static ImportFile handlePoiSpreadSheet(HSSFWorkbook inspread, Gradebook2Service service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName) throws InvalidInputException, FatalException
+	private static ImportFile handlePoiSpreadSheet(HSSFWorkbook inspread, Gradebook2ComponentService service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName) throws InvalidInputException, FatalException
 	{
 		log.debug("handlePoiSpreadSheet() called"); 
 		// FIXME - need to do multiple sheets, and structure
@@ -1031,7 +1031,7 @@ public class ImportExportUtility {
 		return false;
 	}
 
-	public static ImportFile parseImportCSV(Gradebook2Service service, 
+	public static ImportFile parseImportCSV(Gradebook2ComponentService service, 
 			String gradebookUid, Reader reader) throws InvalidInputException, FatalException 
 			{
 
@@ -1100,7 +1100,7 @@ public class ImportExportUtility {
 
 
 	public static void readInHeaderInfo(RawFile rawData,
-			ImportExportInformation importInfo, GradebookModel gradebook, NumberFormat decimalFormat, 
+			ImportExportInformation importInfo, Gradebook gradebook, NumberFormat decimalFormat, 
 			int startRow,String[] pointsColumns, String[] categoryColumns) {
 		log.debug("XXX: readInHeaderInfo() called");
 		int rows = 0; 
@@ -1214,20 +1214,20 @@ public class ImportExportUtility {
 					}
 
 
-					ItemModel model = findModelByName(name, categoryName, gradebook
+					Item model = findModelByName(name, categoryName, gradebook
 							.getGradebookItemModel());
 
 					if (isComment) {
 						header = new ImportHeader(Field.COMMENT, text);
 						if (model != null) {
 							header.setAssignmentId(model.getIdentifier());
-							header.setId(new StringBuilder().append(model.getIdentifier()).append(StudentModel.COMMENT_TEXT_FLAG).toString());
+							header.setId(new StringBuilder().append(model.getIdentifier()).append(AppConstants.COMMENT_TEXT_FLAG).toString());
 							header.setCategoryName(model.getCategoryName());
 							header.setCategoryId(String.valueOf(model.getCategoryId()));
 						} else {
 							String newId = new StringBuilder().append("NEW:").append(i - 1).toString();
 							header.setAssignmentId(newId);
-							header.setId(new StringBuilder().append(newId).append(StudentModel.COMMENT_TEXT_FLAG).toString());
+							header.setId(new StringBuilder().append(newId).append(AppConstants.COMMENT_TEXT_FLAG).toString());
 						}
 						
 					} else {
@@ -1341,11 +1341,11 @@ public class ImportExportUtility {
 		}	
 	}
 
-	public static void processStructureInformation(ImportExportInformation ieInfo, Map<StructureRow, String[]> structureColumnsMap, GradebookModel gradebook, Gradebook2Service service) throws InvalidInputException
+	public static void processStructureInformation(ImportExportInformation ieInfo, Map<StructureRow, String[]> structureColumnsMap, Gradebook gradebook, Gradebook2ComponentService service) throws InvalidInputException
 	{
 		// Now, modify gradebook structure according to the data stored
 		String[] gradebookColumns = structureColumnsMap.get(StructureRow.GRADEBOOK);
-		ItemModel gradebookItemModel = gradebook.getGradebookItemModel();
+		Item gradebookItemModel = gradebook.getGradebookItemModel();
 
 		if (gradebookColumns != null && gradebookItemModel != null) {
 			String gradebookName = null;
@@ -1387,7 +1387,7 @@ public class ImportExportUtility {
 				gradebookItemModel.setGradeType(gType);
 			}
 
-			gradebookItemModel = service.updateItemModel(gradebookItemModel);
+			gradebookItemModel = service.updateItem(gradebookItemModel);
 		}
 
 		String[] categoryColumns = structureColumnsMap.get(StructureRow.CATEGORY);
@@ -1398,13 +1398,12 @@ public class ImportExportUtility {
 		String[] percentCategoryColumns = structureColumnsMap.get(StructureRow.PERCENT_CATEGORY);
 
 		String[] categoryRangeColumns = new String[(ieInfo.getHeaderColumns() != null ? ieInfo.getHeaderColumns().length : 0)];
-		Map<String, ItemModel> categoryMap = new HashMap<String, ItemModel>();
+		Map<String, Item> categoryMap = new HashMap<String, Item>();
 
 		if (categoryColumns != null) {
 
-			for (ModelData m : gradebookItemModel.getChildren()) {
-				ItemModel child = (ItemModel)m;
-				if (child.getItemType() != null && child.getItemType() == Type.CATEGORY)
+			for (Item child : ((GradeItem)gradebookItemModel).getChildren()) {
+				if (child.getItemType() != null && child.getItemType() == ItemType.CATEGORY)
 					categoryMap.put(child.getName(), child);
 			}
 
@@ -1422,7 +1421,7 @@ public class ImportExportUtility {
 					continue;
 
 				boolean isModelNew = false;
-				ItemModel categoryModel = null;
+				Item categoryModel = null;
 				// In this case, we have a new category that needs to be added to the gradebook
 				String categoryName = categoryColumns[i];
 				boolean isExtraCredit = categoryName.contains(AppConstants.EXTRA_CREDIT_INDICATOR);
@@ -1439,8 +1438,8 @@ public class ImportExportUtility {
 
 				if (!categoryMap.containsKey(categoryName)) {
 
-					categoryModel = new ItemModel();
-					categoryModel.setItemType(Type.CATEGORY);
+					categoryModel = new GradeItemImpl();
+					categoryModel.setItemType(ItemType.CATEGORY);
 					categoryModel.setName(categoryName);
 					categoryModel.setIncluded(Boolean.valueOf(!isUnincluded));
 					categoryModel.setExtraCredit(Boolean.valueOf(isExtraCredit));
@@ -1499,12 +1498,12 @@ public class ImportExportUtility {
 						}
 					}
 
-					ItemModel result = null;
+					Item result = null;
 					if (!isDefaultCategory) {
 						if (isModelNew) {
 							result = service.createItem(gradebook.getGradebookUid(), gradebook.getGradebookId(), categoryModel, false);
 						} else if (isModelUpdated) 
-							result = service.updateItemModel(categoryModel);
+							result = service.updateItem(categoryModel);
 					} else {
 						currentCategoryId = "-1";
 						if (categoryRangeColumns.length > i)
@@ -1512,7 +1511,7 @@ public class ImportExportUtility {
 					}
 
 					if (result != null) {
-						ItemModel activeModel = getActiveModel(result);
+						Item activeModel = getActiveModel((GradeItem)result);
 
 						if (activeModel != null) {
 							currentCategoryId = activeModel.getIdentifier();
@@ -1636,7 +1635,7 @@ public class ImportExportUtility {
 		}
 	}
 
-	public static ImportFile parseImportGeneric(Gradebook2Service service, 
+	public static ImportFile parseImportGeneric(Gradebook2ComponentService service, 
 			String gradebookUid, RawFile rawData) throws InvalidInputException, FatalException {
 		String msgs = rawData.getMessages();
 		boolean errorsFound = rawData.isErrorsFound(); 
@@ -1649,8 +1648,8 @@ public class ImportExportUtility {
 			return importFile; 
 		}
 
-		GradebookModel gradebook = service.getGradebook(gradebookUid);
-		ItemModel gradebookItemModel = gradebook.getGradebookItemModel();
+		Gradebook gradebook = service.getGradebook(gradebookUid);
+		Item gradebookItemModel = gradebook.getGradebookItemModel();
 		CategoryType categoryType = gradebookItemModel.getCategoryType();
 		boolean hasWeights = categoryType == CategoryType.WEIGHTED_CATEGORIES;
 		boolean hasCategories = categoryType != CategoryType.NO_CATEGORIES;
@@ -1732,17 +1731,17 @@ public class ImportExportUtility {
 		return importFile;
 	}
 
-	private static ItemModel getActiveModel(ItemModel itemModel) {
+	private static Item getActiveModel(GradeItem itemModel) {
 
 		if (itemModel.isActive())
 			return itemModel;
 
-		for (ModelData m : itemModel.getChildren()) {
-			ItemModel child = (ItemModel)m;
+		for (Item m : itemModel.getChildren()) {
+			Item child = (Item)m;
 			if (child.isActive())
 				return child;
 
-			ItemModel c2 = getActiveModel(child);
+			Item c2 = getActiveModel((GradeItem)child);
 
 			if (c2 != null)
 				return c2;
@@ -1777,12 +1776,12 @@ public class ImportExportUtility {
 		return "N/A";
 	}
 
-	private static ItemModel findModelByName(final String name, final String categoryName, ItemModel root) {
+	private static Item findModelByName(final String name, final String categoryName, Item root) {
 
 		ItemModelProcessor processor = new ItemModelProcessor(root) {
 
 			@Override
-			public void doItem(ItemModel itemModel) {
+			public void doItem(Item itemModel) {
 
 				String itemName = itemModel.getName();
 
@@ -1790,8 +1789,8 @@ public class ImportExportUtility {
 					String trimmed = itemName.trim();
 
 					if (trimmed.equals(name) &&
-							(categoryName == null || (itemModel.getParent() != null &&
-									((ItemModel)itemModel.getParent()).getName().trim().equals(categoryName)))) {
+							(categoryName == null || (((GradeItem)itemModel).getParentName() != null &&
+									(((GradeItem)itemModel).getParentName()).trim().equals(categoryName)))) {
 						this.result = itemModel;
 					}
 				}
@@ -1809,11 +1808,11 @@ public class ImportExportUtility {
 
 	private class CategoryRange {
 
-		private ItemModel categoryModel;
+		private Item categoryModel;
 		private int startColumn;
 		private int endColumn;
 
-		public CategoryRange(ItemModel categoryModel) {
+		public CategoryRange(Item categoryModel) {
 			this.categoryModel = categoryModel;
 			this.startColumn = -1;
 			this.endColumn = -1;

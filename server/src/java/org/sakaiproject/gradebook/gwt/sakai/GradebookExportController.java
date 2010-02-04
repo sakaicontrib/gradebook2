@@ -23,8 +23,6 @@
 
 package org.sakaiproject.gradebook.gwt.sakai;
 
-import java.io.PrintWriter;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -39,7 +37,7 @@ public class GradebookExportController implements Controller {
 
 	private static final Log log = LogFactory.getLog(GradebookExportController.class);
 
-	private Gradebook2Service service;
+	private Gradebook2ComponentService service;
 
 	public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
@@ -51,11 +49,6 @@ public class GradebookExportController implements Controller {
 		boolean doIncludeStructure = m != -1;
 
 		String gradebookUid = request.getParameter("gradebookUid"); 
-		/*String gradebookUid = queryString.substring(n);
-
-		if (doIncludeStructure)
-			gradebookUid = queryString.substring(n, m);*/
-
 		String fileType = request.getParameter("filetype");
 		
 		if (fileType == null || fileType == "")
@@ -73,11 +66,12 @@ public class GradebookExportController implements Controller {
 		return null;
 	}
 
-	public Gradebook2Service getService() {
+	public Gradebook2ComponentService getService() {
 		return service;
 	}
 
-	public void setService(Gradebook2Service service) {
+	public void setService(Gradebook2ComponentService service) {
 		this.service = service;
 	}
+	
 }

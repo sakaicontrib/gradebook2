@@ -27,16 +27,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.ConfigUtil;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
 
-public class ConfigurationModel extends BaseModel {
+public class ConfigurationModel extends BaseModel implements Configuration {
 
 	private static final long serialVersionUID = 1L;
-
-	private Long gradebookId;
-	private String userUid;
 	
 	public ConfigurationModel() {
 		
@@ -46,34 +44,55 @@ public class ConfigurationModel extends BaseModel {
 		setGradebookId(gradebookId);
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Configuration#getGradebookId()
+	 */
 	public Long getGradebookId() {
 		return get(ConfigurationKey.GRADEBOOKID.name());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Configuration#setGradebookId(java.lang.Long)
+	 */
 	public void setGradebookId(Long gradebookId) {
 		set(ConfigurationKey.GRADEBOOKID.name(), gradebookId);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Configuration#getUserUid()
+	 */
 	public String getUserUid() {
 		return get(ConfigurationKey.USERUID.name());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Configuration#setUserUid(java.lang.String)
+	 */
 	public void setUserUid(String userUid) {
 		set(ConfigurationKey.USERUID.name(), userUid);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Configuration#isAscending(java.lang.String)
+	 */
 	public boolean isAscending(String gridId) {
-		String isAsc = get(getAscendingId(gridId));
+		String isAsc = get(ConfigUtil.getAscendingId(gridId));
 		
 		return DataTypeConversionUtil.checkBoolean(Boolean.valueOf(isAsc));
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Configuration#isColumnHidden(java.lang.String, java.lang.String)
+	 */
 	public boolean isColumnHidden(String gridId, String columnId) {
 		return isColumnHidden(gridId, columnId, true);
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Configuration#isColumnHidden(java.lang.String, java.lang.String, boolean)
+	 */
 	public boolean isColumnHidden(String gridId, String columnId, boolean valueForNull) {
-		String hidden = get(getColumnHiddenId(gridId, columnId));
+		String hidden = get(ConfigUtil.getColumnHiddenId(gridId, columnId));
 		
 		if (hidden == null)
 			return valueForNull;
@@ -81,8 +100,11 @@ public class ConfigurationModel extends BaseModel {
 		return Boolean.valueOf(hidden).booleanValue();
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Configuration#getColumnWidth(java.lang.String, java.lang.String, java.lang.String)
+	 */
 	public int getColumnWidth(String gridId, String columnId, String name) {
-		String columnWidth = get(getColumnWidthId(gridId, columnId));
+		String columnWidth = get(ConfigUtil.getColumnWidthId(gridId, columnId));
 		
 		int cw = 200;
 			
@@ -100,8 +122,11 @@ public class ConfigurationModel extends BaseModel {
 		return cw;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Configuration#getPageSize(java.lang.String)
+	 */
 	public int getPageSize(String gridId) {
-		String pageSize = get(getPageSizeId(gridId));
+		String pageSize = get(ConfigUtil.getPageSizeId(gridId));
 		
 		if (pageSize == null)
 			return -1;
@@ -109,10 +134,16 @@ public class ConfigurationModel extends BaseModel {
 		return Integer.parseInt(pageSize);
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Configuration#setPageSize(java.lang.String, java.lang.Integer)
+	 */
 	public void setPageSize(String gridId, Integer pageSize) {
-		set(getPageSizeId(gridId), String.valueOf(pageSize));
+		set(ConfigUtil.getPageSizeId(gridId), String.valueOf(pageSize));
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Configuration#getSelectedMultigradeColumns()
+	 */
 	public List<String> getSelectedMultigradeColumns() {
 		String value = get(AppConstants.SELECTED_COLUMNS);
 		
@@ -128,46 +159,40 @@ public class ConfigurationModel extends BaseModel {
 		return columnIds;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Configuration#getSortField(java.lang.String)
+	 */
 	public String getSortField(String gridId) {
-		return get(getSortFieldId(gridId));
+		return get(ConfigUtil.getSortFieldId(gridId));
 	}
 	
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Configuration#setColumnHidden(java.lang.String, java.lang.String, java.lang.Boolean)
+	 */
 	public void setColumnHidden(String gridId, String columnId, Boolean isHidden) {
-		set(getColumnHiddenId(gridId, columnId), String.valueOf(isHidden));
+		set(ConfigUtil.getColumnHiddenId(gridId, columnId), String.valueOf(isHidden));
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Configuration#setColumnWidth(java.lang.String, java.lang.String, java.lang.Integer)
+	 */
 	public void setColumnWidth(String gridId, String columnId, Integer width) {
-		set(getColumnWidthId(gridId, columnId), String.valueOf(width));
+		set(ConfigUtil.getColumnWidthId(gridId, columnId), String.valueOf(width));
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Configuration#setSortDirection(java.lang.String, java.lang.Boolean)
+	 */
 	public void setSortDirection(String gridId, Boolean isAscending) {
-		set(getAscendingId(gridId), String.valueOf(isAscending));
+		set(ConfigUtil.getAscendingId(gridId), String.valueOf(isAscending));
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Configuration#setSortField(java.lang.String, java.lang.String)
+	 */
 	public void setSortField(String gridId, String sortField) {
-		set(getSortFieldId(gridId), sortField);
+		set(ConfigUtil.getSortFieldId(gridId), sortField);
 	}
-	
-	private String getAscendingId(String gridId) {
-		return new StringBuilder().append(gridId).append(AppConstants.SORT_DIRECTION).toString();
-	}
-	
-	public static String getColumnHiddenId(String gridId, String columnId) {
-		return new StringBuilder().append(gridId).append(":").append(columnId).append(AppConstants.HIDDEN_SUFFIX).toString();
-	}
-	
-	private String getColumnWidthId(String gridId, String columnId) {
-		return new StringBuilder().append(gridId).append(":").append(columnId).append(AppConstants.WIDTH_SUFFIX).toString();
-	}
-	
-	private String getPageSizeId(String gridId) {
-		return new StringBuilder().append(gridId).append(AppConstants.PAGE_SIZE).toString();
-	}
-	
-	private String getSortFieldId(String gridId) {
-		return new StringBuilder().append(gridId).append(AppConstants.SORT_FIELD).toString();
-	}
-	
 	
 }

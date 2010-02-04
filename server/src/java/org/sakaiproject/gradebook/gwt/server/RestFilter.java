@@ -55,10 +55,12 @@ public class RestFilter extends SpringServlet {
 		log.info("initiate()");
 	}
 	*/
-		
+	
+	/*
 	public void service(HttpServletRequest request, HttpServletResponse response) 
 	throws IOException, ServletException {
-		log.info("service() " + request.getRequestURI());
+		if (log.isDebugEnabled())
+			log.debug("service() " + request.getRequestURI());
 		try {
 			super.service(request, response);
 		} catch (Exception e) {
@@ -68,8 +70,9 @@ public class RestFilter extends SpringServlet {
 	
 	public void service(URI baseUri, URI requestUri, final HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-		log.info("doService() " + baseUri + " " + requestUri);
+		if (log.isDebugEnabled())
+			log.debug("doService() " + baseUri + " " + requestUri);
 		super.service(baseUri, requestUri, request, response);
-	}
+	}*/
 	
 }

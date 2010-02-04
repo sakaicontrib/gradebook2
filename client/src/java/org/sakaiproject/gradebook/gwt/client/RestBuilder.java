@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
-import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
-import org.sakaiproject.gradebook.gwt.client.model.GradeType;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
+import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 
 import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Registry;
@@ -199,10 +199,12 @@ public class RestBuilder extends RequestBuilder {
 				}
 	
 				public void onResponseReceived(Request request, Response response) {
-					if (response.getStatusCode() == failureCode)
-						callback.onFailure(request, new Exception(response.getText()));
-					else if (response.getStatusCode() == successCode)
+					if (response.getStatusCode() == successCode ||
+							(GXT.isIE && response.getStatusCode() == 1223 &&
+							successCode == 204))
 						callback.onSuccess(request, response);
+					else if (response.getStatusCode() == failureCode)
+						callback.onFailure(request, new Exception(response.getText()));
 					else
 						callback.onError(request, new Exception("Unexpected response from server: " + response.getStatusCode()));
 				}
@@ -213,22 +215,7 @@ public class RestBuilder extends RequestBuilder {
 		}
 		return request;
 	}
-	
-	
-	protected static String getMethod(Method method) {
-		switch (method) {
-		case DELETE:
-		case PUT:
-			if (GXT.isSafari) {
-				method = Method.POST;
-				
-			}
-			break;
-		}
 		
-		return method.name();
-	}
-	
 	public static String buildInitUrl(String ... args) {
 		StringBuilder builder = new StringBuilder();
 		
@@ -248,7 +235,7 @@ public class RestBuilder extends RequestBuilder {
 		return new HttpProxy<String>(builder) {
 			
 			public void load(final DataReader<String> reader, final Object loadConfig, final AsyncCallback<String> callback) {
-				GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
+				Gradebook gbModel = Registry.get(AppConstants.CURRENT);
 				
 				if (argsCallback != null) 
 					initUrl = RestBuilder.buildInitUrl(partialUrl,

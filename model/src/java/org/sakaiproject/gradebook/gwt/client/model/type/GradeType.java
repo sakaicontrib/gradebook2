@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.sakaiproject.gradebook.gwt.client.model;
+package org.sakaiproject.gradebook.gwt.client.model.type;
 
 public enum GradeType { POINTS("Points"), PERCENTAGES("Percentages"), LETTERS("Letters"), TEXT("Text");
 	private String displayName;

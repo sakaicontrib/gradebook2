@@ -35,7 +35,7 @@ import org.sakaiproject.gradebook.gwt.client.api.ClientExportAdvisor;
 import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.VerificationKey;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -68,7 +68,7 @@ public class GradeSubmissionDialog extends Dialog {
 		
 		final MessageBox box = MessageBox.wait(i18n.finalGradeSubmissionVerificationTitle(), i18n.finalGradeSubmissionMessageText1c(),  i18n.finalGradeSubmissionMessageText1c());
 		
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 		String gradebookUid = selectedGradebook.getGradebookUid();
 		String gradebookId = String.valueOf(selectedGradebook.getGradebookId());
 		
@@ -171,7 +171,7 @@ public class GradeSubmissionDialog extends Dialog {
 		
 		if (button.getItemId().equals(Dialog.YES)) {
 			
-			GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+			Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 			final MessageBox box = MessageBox.wait(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText1a(),  i18n.finalGradeSubmissionMessageText1b()); 
 			
 			String uri = GWT.getModuleBaseURL() + "/final-grade-submission?gradebookUid=" + selectedGradebook.getGradebookUid();

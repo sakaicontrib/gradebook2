@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.sakaiproject.gradebook.gwt.client.model;
+package org.sakaiproject.gradebook.gwt.client.model.type;
 
 public enum CategoryType { NO_CATEGORIES("No Categories"), SIMPLE_CATEGORIES("Categories"), 
 	WEIGHTED_CATEGORIES("Weighted Categories");

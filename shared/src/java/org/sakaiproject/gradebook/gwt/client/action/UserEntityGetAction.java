@@ -22,7 +22,7 @@
  **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.action;
 
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
 
@@ -45,11 +45,11 @@ public class UserEntityGetAction<M extends BaseModel> extends UserEntityAction<M
 		setGradebookUid(gradebookUid);
 	}
 
-	public UserEntityGetAction(GradebookModel gbModel, EntityType entityType) {
+	public UserEntityGetAction(Gradebook gbModel, EntityType entityType) {
 		super(gbModel, ActionType.GET, entityType);
 	}
 
-	public UserEntityGetAction(GradebookModel gbModel, EntityType entityType, String entityId, Boolean showAll) {
+	public UserEntityGetAction(Gradebook gbModel, EntityType entityType, String entityId, Boolean showAll) {
 		this(gbModel, entityType);
 		setEntityId(entityId);
 		setIncludeAll(showAll);

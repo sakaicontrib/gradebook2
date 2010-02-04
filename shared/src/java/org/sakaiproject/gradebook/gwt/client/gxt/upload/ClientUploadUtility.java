@@ -26,11 +26,6 @@ package org.sakaiproject.gradebook.gwt.client.gxt.upload;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
-import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader.Field;
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
-
 import com.extjs.gxt.ui.client.data.BeanModel;
 import com.extjs.gxt.ui.client.data.BeanModelFactory;
 import com.extjs.gxt.ui.client.data.BeanModelLookup;
@@ -49,47 +44,6 @@ public class ClientUploadUtility {
 		return itemModels;
 	}
 
-	public static ArrayList<ItemModel> convertHeadersToItemModels(ArrayList<ImportHeader> headers) {
-		ArrayList<ItemModel> items = new ArrayList<ItemModel>();
-
-		if (headers != null) {
-			for (ImportHeader header : headers) {
-
-				ItemModel itemModel = new ItemModel();
-
-				if (header == null)
-					continue;
-
-				if (header.getId().equals("ID"))
-					continue;
-
-				if (header.getId().equals("NAME"))
-					continue;
-				
-				Type type = Type.ITEM;
-				
-				if (header.getField().equals(Field.COMMENT.name()))
-					type = Type.COMMENT;
-
-				itemModel.setIdentifier(header.getId());
-				itemModel.setItemType(type);
-				itemModel.setName(header.getHeaderName());
-				itemModel.setPoints(header.getPoints());
-				itemModel.setExtraCredit(header.getExtraCredit());
-				itemModel.setIncluded(Boolean.valueOf(!DataTypeConversionUtil.checkBoolean(header.getUnincluded())));
-				if (header.getCategoryId() != null) {
-					itemModel.setCategoryId(Long.valueOf(header.getCategoryId()));
-					itemModel.setCategoryName(header.getCategoryName());
-				}
-				itemModel.setPercentCategory(header.getPercentCategory());
-
-				items.add(itemModel);
-
-			}
-		}
-
-		return items;
-	}
 
 	/*
 	public static SpreadsheetModel composeSpreadsheetModelFromBeanModels(List<BeanModel> headers, 

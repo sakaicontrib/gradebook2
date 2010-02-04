@@ -24,7 +24,10 @@ package org.sakaiproject.gradebook.gwt.client;
 
 import java.util.Date;
 
-import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
+import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType;
+import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
+import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
+
 
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
@@ -92,18 +95,35 @@ public class DataTypeConversionUtil {
 	}
 	
 	public static String buildCommentKey(String itemId) {
-		return new StringBuilder(itemId).append(StudentModel.COMMENTED_FLAG).toString();
+		return new StringBuilder(itemId).append(AppConstants.COMMENTED_FLAG).toString();
 	}
 	
 	public static String buildCommentTextKey(String itemId) {
-		return new StringBuilder(itemId).append(StudentModel.COMMENT_TEXT_FLAG).toString();
+		return new StringBuilder(itemId).append(AppConstants.COMMENT_TEXT_FLAG).toString();
 	}
 	
 	public static String buildDroppedKey(String itemId) {
-		return new StringBuilder().append(itemId).append(StudentModel.DROP_FLAG).toString();
+		return new StringBuilder().append(itemId).append(AppConstants.DROP_FLAG).toString();
 	}
 	
 	public static String buildExcusedKey(String itemId) {
-		return new StringBuilder().append(itemId).append(StudentModel.EXCUSE_FLAG).toString();
+		return new StringBuilder().append(itemId).append(AppConstants.EXCUSE_FLAG).toString();
+	}
+
+	public static ClassType lookupClassType(String property, GradeType gradeType) {
+		
+		if (property.equals(LearnerKey.GRADE_OVERRIDE.name()))
+			return ClassType.STRING;
+		
+		if (property.endsWith(AppConstants.COMMENT_TEXT_FLAG))
+			return ClassType.STRING;
+		
+		if (property.endsWith(AppConstants.EXCUSE_FLAG))
+			return ClassType.BOOLEAN;
+		
+		if (gradeType == GradeType.LETTERS)
+			return ClassType.STRING;
+		
+		return ClassType.DOUBLE;
 	}
 }

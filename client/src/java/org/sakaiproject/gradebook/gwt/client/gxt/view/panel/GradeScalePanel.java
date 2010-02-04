@@ -38,7 +38,8 @@ import org.sakaiproject.gradebook.gwt.client.gxt.view.TreeView;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.GradeFormatKey;
 import org.sakaiproject.gradebook.gwt.client.model.GradeMapKey;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
+import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 
@@ -115,14 +116,14 @@ public class GradeScalePanel extends GradebookPanel {
 
 			@Override
 			public void selectionChanged(SelectionChangedEvent<ModelData> se) {
-				GradebookModel selectedGradebookModel = Registry.get(AppConstants.CURRENT);
-				ItemModel selectedItemModel = selectedGradebookModel.getGradebookItemModel();
+				Gradebook selectedGradebookModel = Registry.get(AppConstants.CURRENT);
+				Item selectedItemModel = selectedGradebookModel.getGradebookItemModel();
 				ModelData gradeFormatModel = se.getSelectedItem();
 				
 				currentGradeScaleId = gradeFormatModel == null ? null : (Long)gradeFormatModel.get(GradeFormatKey.ID.name());
 				
 				if (currentGradeScaleId != null && !currentGradeScaleId.equals(selectedItemModel.getGradeScaleId())) {
-					Record record = treeView.getTreeStore().getRecord(selectedItemModel);
+					Record record = treeView.getTreeStore().getRecord((ItemModel)selectedItemModel);
 					record.beginEdit();
 					record.set(ItemKey.GRADESCALEID.name(), currentGradeScaleId);
 					grid.mask();
@@ -272,7 +273,7 @@ public class GradeScalePanel extends GradebookPanel {
 		
 	}
 	
-	public void onRefreshGradeScale(GradebookModel selectedGradebook) {
+	public void onRefreshGradeScale(Gradebook selectedGradebook) {
 		loader.load();
 	}
 	
@@ -295,13 +296,13 @@ public class GradeScalePanel extends GradebookPanel {
 		}
 	}
 	
-	private void loadGradeScaleData(GradebookModel selectedGradebook) {
+	private void loadGradeScaleData(Gradebook selectedGradebook) {
 		Long selectedGradeScaleId = selectedGradebook.getGradebookItemModel().getGradeScaleId();
 		loadGradeScaleData(selectedGradeScaleId);
 	}
 
 	private void loadIfPossible() {
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 		
 		if (selectedGradebook != null) {
 			loadGradeScaleData(selectedGradebook);

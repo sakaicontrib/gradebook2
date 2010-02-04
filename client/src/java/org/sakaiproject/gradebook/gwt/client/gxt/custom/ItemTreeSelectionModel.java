@@ -5,8 +5,9 @@ import java.util.List;
 import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.ItemTreeGridView;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
+import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 
 import com.extjs.gxt.ui.client.core.El;
 import com.extjs.gxt.ui.client.event.Events;
@@ -180,7 +181,7 @@ public class ItemTreeSelectionModel extends GridSelectionModel<ItemModel> implem
 		}
 	}
 	
-	private void doToggle(ItemModel m, boolean isChecked, int rowIndex) {
+	private void doToggle(Item m, boolean isChecked, int rowIndex) {
 		ItemTreeGridView view = null;
 		
 		if (grid.getView() instanceof ItemTreeGridView)

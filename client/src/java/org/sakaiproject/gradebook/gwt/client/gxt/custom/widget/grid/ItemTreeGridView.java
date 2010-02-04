@@ -2,36 +2,23 @@ package org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
+import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 
-import com.extjs.gxt.ui.client.core.FastMap;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.store.Record;
-import com.extjs.gxt.ui.client.util.Util;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.treegrid.TreeGridView;
 import com.extjs.gxt.ui.client.widget.treegrid.WidgetTreeGridCellRenderer;
-import com.extjs.gxt.ui.client.widget.treegrid.TreeGrid.TreeNode;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.Widget;
 
 public class ItemTreeGridView extends TreeGridView {
-
-	public void collapse(TreeNode node) {
-		super.collapse(node);
-		
-	}
-	
-	public void expand(TreeNode node) {
-		super.expand(node);
-		
-	}
 	
 	public void onRowCheck(int rowIndex) {
 		Element row = getRow(rowIndex);
@@ -68,7 +55,7 @@ public class ItemTreeGridView extends TreeGridView {
 			if (isShowDirtyCells() && r != null && r.isDirty()) {
 				buf.append(" x-grid3-dirty-row");
 			}
-			if (model instanceof ItemModel && ((ItemModel)model).isChecked()) {
+			if (model instanceof ItemModel && ((Item)model).isChecked()) {
 				buf.append(" x-grid3-row-checked");
 			}
 			if (viewConfig != null) {

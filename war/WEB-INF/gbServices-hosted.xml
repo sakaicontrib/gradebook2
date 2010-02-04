@@ -6,14 +6,13 @@
 	<import resource="db.xml"/>
 
 	<bean id="ResourceController" class="org.sakaiproject.gradebook.gwt.server.ResourceController">
-		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service"/>
+		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
 	</bean>
-
-	<!-- Declare service -->
-    <bean id="RPCService" 
-    	class="org.sakaiproject.gradebook.gwt.sakai.mock.Gradebook2ResourceProducerMock"
+    
+    <bean id="DevelopmentModeBean"
+    	class="org.sakaiproject.gradebook.gwt.sakai.mock.DevelopmentModeBean"
     	init-method="init">
-    	<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service"/>
+    	<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
     </bean>
     
     <bean id="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService" 
@@ -32,25 +31,7 @@
     	<!--property name="sessionManager" ref="org.sakaiproject.tool.api.SessionManager" /-->
     	<!--property name="configService" ref="org.sakaiproject.component.api.ServerConfigurationService" /-->
 	</bean>
-	
-	<!-- Performance Target -->
-	<bean id="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service" 
-		class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ServiceImpl"
-		init-method="init">
-		<property name="businessLogic" ref="org.sakaiproject.gradebook.gwt.sakai.BusinessLogic"/>
-		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/> 
-		<!--property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/-->
-		<property name="userService" ref="org.sakaiproject.user.api.UserDirectoryService"/>
-		<property name="gradeCalculations" ref="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"/>
-		<property name="frameworkService" ref="org.sakaiproject.service.gradebook.GradebookFrameworkService" />
-		<!--property name="siteService" ref="org.sakaiproject.site.api.SiteService"/-->
-		<property name="authz" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authz"/>
-		<property name="sectionAwareness" ref="org.sakaiproject.section.api.SectionAwareness"/>
-		<property name="advisor" ref="org.sakaiproject.gradebook.gwt.sakai.api.SampleInstitutionalAdvisor"/>
-    	<!--property name="sessionManager" ref="org.sakaiproject.tool.api.SessionManager" /-->
-    	<!--property name="configService" ref="org.sakaiproject.component.api.ServerConfigurationService" /-->
-	</bean>
-	
+		
 	<!-- Tool Service -->
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService" parent="alt.gradebookTxTemplate">
 		<property name="target">

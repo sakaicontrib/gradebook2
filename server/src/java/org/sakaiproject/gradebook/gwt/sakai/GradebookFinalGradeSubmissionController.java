@@ -33,20 +33,18 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
-import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
+import org.sakaiproject.gradebook.gwt.client.model.Roster;
 import org.sakaiproject.gradebook.gwt.sakai.InstitutionalAdvisor.Column;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
-
-import com.extjs.gxt.ui.client.data.BaseModel;
-import com.extjs.gxt.ui.client.data.PagingLoadResult;
 
 public class GradebookFinalGradeSubmissionController implements Controller {
 
 	private static final Log log = LogFactory.getLog(GradebookFinalGradeSubmissionController.class);
 
-	private Gradebook2Service service;
+	private Gradebook2ComponentService service;
 
 	public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
@@ -55,14 +53,14 @@ public class GradebookFinalGradeSubmissionController implements Controller {
 		int n = queryString.indexOf("gradebookUid=") + 13;
 		String gradebookUid = queryString.substring(n);
 
-		List<BaseModel> rows = null;
+		List<Learner> rows = null;
 
 		try {
 
-			PagingLoadResult<BaseModel> result = service.getStudentRows(gradebookUid, null, null, Boolean.TRUE);
+			Roster result = service.getRoster(gradebookUid, null, null, null, null, null, null, Boolean.TRUE, true);
 
 			if (result != null)
-				rows = result.getData();
+				rows = result.getLearnerPage();
 
 		} catch (Exception e) {
 			log.error("EXCEPTION: Wasn't able to get the list of Student Models");
@@ -75,7 +73,7 @@ public class GradebookFinalGradeSubmissionController implements Controller {
 		List<Map<Column,String>> studentDataList = new ArrayList<Map<Column,String>>();
 
 		if (rows != null) {
-			for (BaseModel studentModel : rows) {
+			for (Learner studentModel : rows) {
 	
 				Map<Column, String> studentData = new HashMap<Column, String>();
 				studentData.put(Column.STUDENT_UID, (String)studentModel.get(LearnerKey.UID.name()));
@@ -93,11 +91,11 @@ public class GradebookFinalGradeSubmissionController implements Controller {
 		return null;
 	}
 
-	public Gradebook2Service getService() {
+	public Gradebook2ComponentService getService() {
 		return service;
 	}
 
-	public void setService(Gradebook2Service service) {
+	public void setService(Gradebook2ComponentService service) {
 		this.service = service;
 	}
 

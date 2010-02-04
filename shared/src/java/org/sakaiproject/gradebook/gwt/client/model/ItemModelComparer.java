@@ -24,8 +24,9 @@
 package org.sakaiproject.gradebook.gwt.client.model;
 
 import com.extjs.gxt.ui.client.data.ModelComparer;
+import com.extjs.gxt.ui.client.data.ModelData;
 
-public class ItemModelComparer<M extends ItemModel> implements ModelComparer<M> {
+public class ItemModelComparer<M extends ModelData> implements ModelComparer<M> {
 
 	public boolean equals(M m1, M m2) {
 		

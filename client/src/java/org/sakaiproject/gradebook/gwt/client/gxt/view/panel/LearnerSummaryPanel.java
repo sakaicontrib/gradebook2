@@ -37,10 +37,10 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner.BrowseType;
-import org.sakaiproject.gradebook.gwt.client.model.GradeType;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
+import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.Scroll;
@@ -197,7 +197,7 @@ public class LearnerSummaryPanel extends GradebookPanel {
 		}
 	}
 
-	public void onGradeTypeUpdated(GradebookModel selectedGradebook) {
+	public void onGradeTypeUpdated(Gradebook selectedGradebook) {
 		this.isPossibleGradeTypeChanged = true;
 	}
 	
@@ -207,7 +207,7 @@ public class LearnerSummaryPanel extends GradebookPanel {
 			updateLearnerInfo(learner, true);
 	}
 
-	public void onRefreshGradebookSetup(GradebookModel gradebookModel) {
+	public void onRefreshGradebookSetup(Gradebook gradebookModel) {
 		
 	}
 	
@@ -459,7 +459,7 @@ public class LearnerSummaryPanel extends GradebookPanel {
 			}
 		}
 
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 		GradeType gradeType = selectedGradebook.getGradebookItemModel().getGradeType();
 
 		int row = 0;

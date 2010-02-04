@@ -164,4 +164,10 @@ public interface AppConstants {
 	
 	public static final String STR_VALUE_CONSTANT		= "stringValue";
 	public static final String STR_START_VALUE_CONSTANT	= "previousStringValue";
+	public static final String COMMENTED_FLAG = ":C";
+	public static final String COMMENT_TEXT_FLAG = ":T";
+	public static final String DROP_FLAG = ":D";
+	public static final String EXCUSE_FLAG = ":E";
+	public static final String FAILED_FLAG = ":F";
+	public static final String GRADED_FLAG = ":G";
 }

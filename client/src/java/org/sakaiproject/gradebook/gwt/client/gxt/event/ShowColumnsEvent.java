@@ -25,7 +25,7 @@ package org.sakaiproject.gradebook.gwt.client.gxt.event;
 
 import java.util.Set;
 
-import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
+import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 
 public class ShowColumnsEvent {
@@ -39,7 +39,7 @@ public class ShowColumnsEvent {
 	public String itemModelId;
 	public boolean isHidden;
 	public ItemModel model;
-	public FixedColumnModel fixedModel;
+	public FixedColumn fixedModel;
 	
 	public ShowColumnsEvent(ItemModel model, boolean isHidden) {
 		this.model = model;
@@ -48,7 +48,7 @@ public class ShowColumnsEvent {
 		this.isFixed = false;
 	}
 	
-	public ShowColumnsEvent(FixedColumnModel fixedModel, boolean isHidden) {
+	public ShowColumnsEvent(FixedColumn fixedModel, boolean isHidden) {
 		this.fixedModel = fixedModel;
 		this.isSingle = true;
 		this.isHidden = isHidden;

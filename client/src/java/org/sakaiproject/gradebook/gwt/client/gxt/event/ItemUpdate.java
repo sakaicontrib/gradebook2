@@ -23,8 +23,10 @@
 
 package org.sakaiproject.gradebook.gwt.client.gxt.event;
 
+import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.store.Store;
 
@@ -34,32 +36,32 @@ public class ItemUpdate {
 	
 	public Store store;
 	public Record record;
-	public ItemModel item;
+	public Item item;
 	public String property;
 	public Object oldValue;
 	public Object value;
 	public boolean close;
 	public UpdateType updateType;
 	
-	public ItemUpdate(Store store, Record record, ItemModel item, boolean close) {
+	public ItemUpdate(Store store, Record record, Item item, boolean close) {
 		this.store = store;
 		this.record = record;
 		this.item = item;
 		this.close = close;
 	}
 	
-	public ItemUpdate(Store store, ItemModel item) {
+	public ItemUpdate(Store store, Item item) {
 		this.item = item;
 		this.store = store;
-		this.record = store.getRecord(item);
+		this.record = store.getRecord((ModelData)item);
 	}
 	
-	public ItemUpdate(Store store, ItemModel item, String property, Object oldValue, Object value) {
+	public ItemUpdate(Store store, Item item, String property, Object oldValue, Object value) {
 		this.item = item;
 		this.property = property;
 		this.oldValue = oldValue;
 		this.value = value;
-		this.record = store.getRecord(item);
+		this.record = store.getRecord((ModelData)item);
 		this.store = store;
 	}
 	
@@ -70,7 +72,7 @@ public class ItemUpdate {
 		this.value = value;
 	}
 	
-	public ItemModel getModifiedItem() {
+	public Item getModifiedItem() {
 		if (record != null) {
 			return (ItemModel)record.getModel();
 		}

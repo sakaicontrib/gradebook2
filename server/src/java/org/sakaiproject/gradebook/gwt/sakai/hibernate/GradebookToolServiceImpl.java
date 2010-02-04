@@ -1062,6 +1062,24 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		};
 		return (List<Category>) getHibernateTemplate().execute(hc);
 	}
+	
+	public List<Category> getCategoriesWithAssignments(Long gradebookId) {
+
+		List<Category> categories = getCategories(gradebookId);
+		List<Category> categoriesWithAssignments = new ArrayList<Category>();
+		if (categories != null) {
+			for (Category category : categories) {
+
+				if (category != null) {
+					List<Assignment> assignments = getAssignmentsForCategory(category.getId());
+					category.setAssignmentList(assignments);
+					categoriesWithAssignments.add(category);
+				}
+			}
+		}
+
+		return categoriesWithAssignments;
+	}
 
 	public Category getCategory(final Long categoryId) throws HibernateException{
 		if (categoryId == null)

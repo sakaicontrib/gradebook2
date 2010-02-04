@@ -6,20 +6,21 @@ import java.util.EnumSet;
 
 import org.sakaiproject.gradebook.gwt.client.model.ActionKey;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationKey;
-import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
-import org.sakaiproject.gradebook.gwt.client.model.FixedColumnKey;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeFormatKey;
-import org.sakaiproject.gradebook.gwt.client.model.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookKey;
 import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
-import org.sakaiproject.gradebook.gwt.client.model.StatisticsKey;
 import org.sakaiproject.gradebook.gwt.client.model.UploadKey;
 import org.sakaiproject.gradebook.gwt.client.model.VerificationKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.FixedColumnKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.StatisticsKey;
+import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
+import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.DataField;
@@ -254,8 +255,8 @@ public class JsonTranslater {
 					model.set(name, GradeType.valueOf(s));
 				} else if (type.equals(CategoryType.class)) {
 					model.set(name, CategoryType.valueOf(s));
-				} else if (type.equals(ItemModel.Type.class)) {
-					model.set(name, ItemModel.Type.valueOf(s));
+				} else if (type.equals(ItemType.class)) {
+					model.set(name, ItemType.valueOf(s));
 				} else if (type.equals(String.class)) {
 					model.set(name, s);
 				} else {

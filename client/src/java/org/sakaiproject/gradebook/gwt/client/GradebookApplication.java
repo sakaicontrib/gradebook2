@@ -103,30 +103,6 @@ public class GradebookApplication implements EntryPoint {
 			}
 		
 		});
-		
-		/*
-		AsyncCallback<AuthModel> callback = 
-			new AsyncCallback<AuthModel>() {
-
-				public void onFailure(Throwable caught) {
-					// If this is the first try, then give it another shot
-					if (i == 0)
-						getAuthorization(i+1);
-					else {
-						GXT.hideLoadingPanel("loading");
-						RootPanel.get("alert").add(new Html(new StringBuilder().append(i18n.serviceException()).append(": ").append(caught.getMessage()).toString()));
-						//dispatcher.dispatch(GradebookEvents.Exception.getEventType(), new NotificationEvent(caught));
-					}
-				}
-
-				public void onSuccess(AuthModel result) {
-					readAuthorization(result);
-				}
-			
-		};
-		
-		dataService.get(null, null, EntityType.AUTH, null, null, SecureToken.get(), callback);
-		*/
 	}
 	
 	private void readAuthorization(AuthModel authModel) {

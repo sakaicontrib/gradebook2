@@ -28,8 +28,8 @@ import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ViewAsStudentPanel;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
+import org.sakaiproject.gradebook.gwt.client.model.Item;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.data.ModelData;
@@ -59,10 +59,10 @@ public class SingleGradeView extends View {
 		ModelData learnerGradeRecordCollection = null;
 		switch (GradebookEvents.getEvent(event.getType()).getEventKey()) {
 		case ITEM_UPDATED:
-			onItemUpdated((ItemModel)event.getData());
+			onItemUpdated((Item)event.getData());
 			break;
 		case REFRESH_GRADEBOOK_SETUP:
-			onRefreshGradebookSetup((GradebookModel)event.getData());
+			onRefreshGradebookSetup((Gradebook)event.getData());
 			break;
 		case SINGLE_GRADE:
 		case SINGLE_VIEW:
@@ -73,14 +73,14 @@ public class SingleGradeView extends View {
 			learnerGradeRecordCollection = (ModelData)event.getData();
 			onChangeModel(learnerGradeRecordCollection);
 			break;
-		case USER_CHANGE:
+		/*case USER_CHANGE:
 			onUserChange((UserEntityAction<?>)event.getData());
-			break;
+			break;*/
 		case LEARNER_GRADE_RECORD_UPDATED:
 			onLearnerGradeRecordUpdated((UserEntityUpdateAction)event.getData());
 			break;
 		case GRADE_TYPE_UPDATED:
-			onGradeTypeUpdated((GradebookModel)event.getData());
+			onGradeTypeUpdated((Gradebook)event.getData());
 			break;
 		}
 	}
@@ -91,21 +91,21 @@ public class SingleGradeView extends View {
 		dialog.setSize(400, 350);
 	}
 	
-	private void onRefreshGradebookSetup(GradebookModel selectedGradebook) {
+	private void onRefreshGradebookSetup(Gradebook selectedGradebook) {
 		dialog.onRefreshGradebookSetup(selectedGradebook);
 	}
 	
 	private void onChangeModel(ModelData learnerGradeRecordCollection) {
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 		dialog.onChangeModel(selectedGradebook, learnerGradeRecordCollection);
 		dialog.show();
 	}
 	
-	private void onGradeTypeUpdated(GradebookModel selectedGradebook) {
+	private void onGradeTypeUpdated(Gradebook selectedGradebook) {
 		
 	}
 	
-	private void onItemUpdated(ItemModel itemModel) {
+	private void onItemUpdated(Item itemModel) {
 		dialog.onItemUpdated(itemModel);
 	}
 	
@@ -113,9 +113,9 @@ public class SingleGradeView extends View {
 		dialog.onLearnerGradeRecordUpdated(action.getModel());
 	}
 	
-	private void onUserChange(UserEntityAction<?> action) {
+	/*private void onUserChange(UserEntityAction<?> action) {
 		dialog.onUserChange(action);
-	}
+	}*/
 
 	public ViewAsStudentPanel getDialog() {
 		return dialog;

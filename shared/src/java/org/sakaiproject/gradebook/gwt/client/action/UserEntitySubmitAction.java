@@ -1,6 +1,6 @@
 package org.sakaiproject.gradebook.gwt.client.action;
 
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
 public class UserEntitySubmitAction extends UserEntityUpdateAction<StudentModel> {
@@ -11,7 +11,7 @@ public class UserEntitySubmitAction extends UserEntityUpdateAction<StudentModel>
 		super(ActionType.SUBMITTED);
 	}
 
-	public UserEntitySubmitAction(GradebookModel gbModel, StudentModel model, String key, 
+	public UserEntitySubmitAction(Gradebook gbModel, StudentModel model, String key, 
 			ClassType classType, Object value, Object startValue) {
 		super(gbModel, model, key, classType, value, startValue);
 		setEntityType(EntityType.LEARNER);

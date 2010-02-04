@@ -29,8 +29,8 @@ import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner.BrowseType;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
+import org.sakaiproject.gradebook.gwt.client.model.Item;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.data.ModelData;
@@ -89,15 +89,15 @@ public class ViewAsStudentPanel extends ContentPanel {
 
 	}
 
-	public void onRefreshGradebookSetup(GradebookModel selectedGradebook) {
+	public void onRefreshGradebookSetup(Gradebook selectedGradebook) {
 		container.onRefreshGradebookSetup(selectedGradebook);
 	}
 
-	public void onChangeModel(GradebookModel selectedGradebook, ModelData learnerGradeRecordCollection) {
+	public void onChangeModel(Gradebook selectedGradebook, ModelData learnerGradeRecordCollection) {
 		container.onChangeModel(selectedGradebook, learnerGradeRecordCollection);
 	}
 
-	public void onItemUpdated(ItemModel itemModel) {
+	public void onItemUpdated(Item itemModel) {
 		container.onItemUpdated(itemModel);
 	}
 	
@@ -105,6 +105,7 @@ public class ViewAsStudentPanel extends ContentPanel {
 		container.onLearnerGradeRecordUpdated(learnerGradeRecordModel);
 	}
 
+	/*
 	public void onUserChange(UserEntityAction<?> action) {
 		switch (action.getEntityType()) {
 			case GRADEBOOK:
@@ -121,7 +122,7 @@ public class ViewAsStudentPanel extends ContentPanel {
 						break;
 				}
 		}
-	}
+	}*/
 
 	protected void queueDeferredRefresh(RefreshAction refreshAction) {
 		switch (this.refreshAction) {

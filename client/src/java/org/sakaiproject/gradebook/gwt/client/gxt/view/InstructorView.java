@@ -46,9 +46,9 @@ import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.LearnerSummaryPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.PermissionsPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.StatisticsPanel;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
-import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
+import org.sakaiproject.gradebook.gwt.client.model.Item;
+import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -213,7 +213,7 @@ public class InstructorView extends AppView {
 
 	@Override
 	protected void initUI(ApplicationModel model) {
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);		
+		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);		
 
 		addCategoryMenuItem.setVisible(selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
 		
@@ -314,14 +314,14 @@ public class InstructorView extends AppView {
 	}
 	
 	@Override
-	protected void onGradeTypeUpdated(GradebookModel selectedGradebook) {
+	protected void onGradeTypeUpdated(Gradebook selectedGradebook) {
 		if (singleGradeContainer != null) {
 			singleGradeContainer.onGradeTypeUpdated(selectedGradebook);
 		}
 	}
 	
 	@Override
-	protected void onItemCreated(ItemModel itemModel) {
+	protected void onItemCreated(Item itemModel) {
 		onHideEastPanel(Boolean.FALSE);
 	}
 
@@ -337,17 +337,17 @@ public class InstructorView extends AppView {
 	}
 
 	@Override
-	protected void onLoadItemTreeModel(GradebookModel selectedGradebook) {
+	protected void onLoadItemTreeModel(Gradebook selectedGradebook) {
 
 	}
 
 	@Override
-	protected void onNewCategory(ItemModel itemModel) {
+	protected void onNewCategory(Item itemModel) {
 		onExpandEastPanel(EastCard.NEW_CATEGORY);
 	}
 
 	@Override
-	protected void onNewItem(ItemModel itemModel) {
+	protected void onNewItem(Item itemModel) {
 		onExpandEastPanel(EastCard.NEW_ITEM);
 	}
 
@@ -357,12 +357,12 @@ public class InstructorView extends AppView {
 	}
 
 	@Override
-	protected void onRefreshGradebookItems(GradebookModel gradebookModel) {
+	protected void onRefreshGradebookItems(Gradebook gradebookModel) {
 
 	}
 
 	@Override
-	protected void onRefreshGradebookSetup(GradebookModel gradebookModel) {
+	protected void onRefreshGradebookSetup(Gradebook gradebookModel) {
 		if (addCategoryMenuItem != null)
 			addCategoryMenuItem.setVisible(gradebookModel.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
 	
@@ -371,7 +371,7 @@ public class InstructorView extends AppView {
 	}
 
 	@Override
-	protected void onRefreshGradeScale(GradebookModel gradebookModel) {
+	protected void onRefreshGradeScale(Gradebook gradebookModel) {
 		if (gradeScalePanel != null) 
 			gradeScalePanel.onRefreshGradeScale(gradebookModel);
 	}
@@ -442,10 +442,10 @@ public class InstructorView extends AppView {
 	}
 
 	protected void onShowSetup() {
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 		
 		if (selectedGradebook != null) {
-			ItemModel itemModel = selectedGradebook.getGradebookItemModel();
+			Item itemModel = selectedGradebook.getGradebookItemModel();
 			Dispatcher.forwardEvent(GradebookEvents.StartEditItem.getEventType(), itemModel);
 		}
 	}
@@ -467,7 +467,7 @@ public class InstructorView extends AppView {
 	}
 	
 	@Override
-	protected void onStartEditItem(ItemModel itemModel) {
+	protected void onStartEditItem(Item itemModel) {
 		AppView.EastCard activeCard = AppView.EastCard.EDIT_ITEM;
 
 		if (itemModel != null) {
@@ -514,13 +514,14 @@ public class InstructorView extends AppView {
 	}
 
 	@Override
-	protected void onSwitchGradebook(GradebookModel selectedGradebook) {
+	protected void onSwitchGradebook(Gradebook selectedGradebook) {
 
 		if (addCategoryMenuItem != null)
 			addCategoryMenuItem.setVisible(selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
 
 	}
 
+	/*
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void onUserChange(UserEntityAction<?> action) {
@@ -541,7 +542,7 @@ public class InstructorView extends AppView {
 				}
 				break;
 		}
-	}
+	}*/
 
 	/*
 	 * The goal here is to reduce the number of overall listeners in the application to a minimum

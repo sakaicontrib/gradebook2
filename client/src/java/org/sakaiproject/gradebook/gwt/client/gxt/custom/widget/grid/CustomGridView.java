@@ -31,18 +31,17 @@ import java.util.List;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
-import org.sakaiproject.gradebook.gwt.client.Gradebook2RPCServiceAsync;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
-import org.sakaiproject.gradebook.gwt.client.SecureToken;
-import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
-import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.Configuration;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
+import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Group;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
+import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -57,12 +56,10 @@ import com.extjs.gxt.ui.client.store.StoreEvent;
 import com.extjs.gxt.ui.client.util.DelayedTask;
 import com.extjs.gxt.ui.client.widget.Component;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
-import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.menu.CheckMenuItem;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.extjs.gxt.ui.client.widget.menu.SeparatorMenuItem;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
 
 // SAK-2394 
@@ -75,7 +72,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 
 
 	// Member variables
-	private GradebookModel gradebookModel = null;
+	private Gradebook gradebookModel = null;
 	private boolean isDisplayLoadMaskOnRender = true;
 	private String gridId;
 	private GradebookResources resources;
@@ -160,7 +157,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	@Override
 	protected Menu createContextMenu(int colIndex) {
 		I18nConstants i18n = Registry.get(AppConstants.I18N);
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 
 		ColumnConfig config = cm.getColumn(colIndex);
 		boolean isStatic = isStaticColumn(config.getId()); 
@@ -301,7 +298,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 		// Determine the number of check menu items, accounting for any regular menu item such as show/hide all, etc.
 		int menuIndex = categoryMenu.getItemCount() - columns.size();
 
-		for (FixedColumnModel column : columns) {
+		for (FixedColumn column : columns) {
 
 			int columnIndex = cm.getIndexById(column.getIdentifier());
 
@@ -349,8 +346,8 @@ public abstract class CustomGridView extends BaseCustomGridView {
 		syncTask[col] = new DelayedTask(new Listener<BaseEvent>() {
 		
 			public void handleEvent(BaseEvent be) {
-				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-				ConfigurationModel model = new ConfigurationModel(selectedGradebook.getGradebookId());
+				Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
+				Configuration model = new ConfigurationModel(selectedGradebook.getGradebookId());
 				model.setColumnWidth(gridId, columnId, Integer.valueOf(width));
 
 				Dispatcher.forwardEvent(GradebookEvents.Configuration.getEventType(), model);
@@ -436,9 +433,9 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	protected ArrayList<ColumnGroup> getColumnGroups() {
 
 		LinkedHashMap<Group, ColumnGroup> columnGroupMap = new LinkedHashMap<Group, ColumnGroup>();
-		List<FixedColumnModel> gradebookColumunConfigs = gradebookModel.getColumns();
+		List<FixedColumn> gradebookColumunConfigs = gradebookModel.getColumns();
 
-		for(FixedColumnModel gradebookColumnConfig : gradebookColumunConfigs) {
+		for(FixedColumn gradebookColumnConfig : gradebookColumunConfigs) {
 			LearnerKey key = LearnerKey.valueOf(gradebookColumnConfig.getKey());
 			Group group = key.getGroup();
 			ColumnGroup columnGroup = columnGroupMap.get(group);
@@ -447,7 +444,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 				columnGroup = new ColumnGroup(group);
 				columnGroupMap.put(group, columnGroup);
 			}
-			columnGroup.addColumn(gradebookColumnConfig);
+			columnGroup.addColumn((FixedColumnModel)gradebookColumnConfig);
 		}
 
 		return new ArrayList<ColumnGroup>(columnGroupMap.values());
@@ -457,9 +454,9 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	protected Collection<LearnerKey> getGroupColumnKeys(Group group) {
 
 		ArrayList<LearnerKey> groupColumnKeys = new ArrayList<LearnerKey>();
-		List<FixedColumnModel> gradebookColumunConfigs = gradebookModel.getColumns();
+		List<FixedColumn> gradebookColumunConfigs = gradebookModel.getColumns();
 
-		for(FixedColumnModel gradebookColumnConfig : gradebookColumunConfigs) {
+		for(FixedColumn gradebookColumnConfig : gradebookColumunConfigs) {
 
 			LearnerKey key = LearnerKey.valueOf(gradebookColumnConfig.getKey());
 
@@ -477,7 +474,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 		ArrayList<LearnerKey> groupColumnKeys = new ArrayList<LearnerKey>();
 		List<FixedColumnModel> gradebookColumunConfigs = columnGroup.getColumns();
 
-		for(FixedColumnModel gradebookColumnConfig : gradebookColumunConfigs) {
+		for(FixedColumn gradebookColumnConfig : gradebookColumunConfigs) {
 
 			LearnerKey key = LearnerKey.valueOf(gradebookColumnConfig.getKey());
 
@@ -495,10 +492,10 @@ public abstract class CustomGridView extends BaseCustomGridView {
 
 
 	private boolean isStaticColumn(String id) {
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-		List<FixedColumnModel> columns = selectedGradebook.getColumns();
+		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
+		List<FixedColumn> columns = selectedGradebook.getColumns();
 
-		for (FixedColumnModel column : columns) {
+		for (FixedColumn column : columns) {
 			if (column.getIdentifier().equals(id))
 				return true;
 		}

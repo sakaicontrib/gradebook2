@@ -45,19 +45,21 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemCreate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
+import org.sakaiproject.gradebook.gwt.client.model.Configuration;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
-import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
+import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
 import org.sakaiproject.gradebook.gwt.client.model.GradeMapKey;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
+import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.PermissionKey;
-import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
+import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.data.BaseModel;
+import com.extjs.gxt.ui.client.data.BaseTreeModel;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.ModelType;
 import com.extjs.gxt.ui.client.event.BaseEvent;
@@ -142,7 +144,7 @@ public class ServiceController extends Controller {
 	
 	private void doConfigure(final ConfigurationModel model) {
 
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);	
+		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);	
 		
 		Long gradebookId = selectedGradebook.getGradebookId();
 
@@ -156,8 +158,8 @@ public class ServiceController extends Controller {
 		builder.sendRequest(204, 400, json.toString(), new RestCallback() {
 
 			public void onSuccess(Request request, Response response) {
-				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-				ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
+				Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
+				Configuration configModel = selectedGradebook.getConfigurationModel();
 
 				Collection<String> propertyNames = model.getPropertyNames();
 				if (propertyNames != null) {
@@ -166,7 +168,7 @@ public class ServiceController extends Controller {
 					for (int i=0;i<names.size();i++) {
 						String name = names.get(i);
 						Object value = model.get(name);
-						configModel.set(name, value);
+						((ModelData)configModel).set(name, value);
 					}
 				}
 			}
@@ -205,7 +207,7 @@ public class ServiceController extends Controller {
 	private void onCreateItem(final ItemCreate event) {
 		Dispatcher.forwardEvent(GradebookEvents.MaskItemTree.getEventType());
 		
-		GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
+		Gradebook gbModel = Registry.get(AppConstants.CURRENT);
 		
 		RestBuilder builder = RestBuilder.getInstance(Method.POST, 
 				GWT.getModuleBaseURL(),
@@ -242,9 +244,9 @@ public class ServiceController extends Controller {
 
 				switch (itemModel.getItemType()) {
 					case GRADEBOOK:
-						GradebookModel selectedGradebook = Registry
+						Gradebook selectedGradebook = Registry
 						.get(AppConstants.CURRENT);
-						selectedGradebook.setGradebookItemModel(itemModel);
+						selectedGradebook.setGradebookGradeItem(itemModel);
 						Dispatcher
 						.forwardEvent(GradebookEvents.ItemUpdated.getEventType(), itemModel);
 						Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookItems.getEventType(),
@@ -279,7 +281,7 @@ public class ServiceController extends Controller {
 	}
 
 	private void onCreatePermission(ModelData model) {
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 		
 		String gradebookUid = selectedGradebook.getGradebookUid();
 		String gradebookId = String.valueOf(selectedGradebook.getGradebookId());
@@ -311,7 +313,7 @@ public class ServiceController extends Controller {
 	}
 	
 	private void onDeleteGradeMap() {
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 				
 		String gradebookUid = selectedGradebook.getGradebookUid();
 		String gradebookId = String.valueOf(selectedGradebook.getGradebookId());
@@ -326,7 +328,7 @@ public class ServiceController extends Controller {
 			
 			@Override
 			public void onSuccess(Request request, Response response) {
-				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+				Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 				Dispatcher.forwardEvent(GradebookEvents.RefreshGradeScale.getEventType(),
 						selectedGradebook);
 			}
@@ -337,7 +339,7 @@ public class ServiceController extends Controller {
 	private void onDeleteItemSuccess(ItemUpdate event) {
 		Dispatcher.forwardEvent(GradebookEvents.ItemDeleted.getEventType(), event.item);
 		TreeStore<ItemModel> treeStore = (TreeStore<ItemModel>)event.store;
-		treeStore.remove((ItemModel) event.item.getParent(), event.item);
+		treeStore.remove((ItemModel) ((BaseTreeModel)event.item).getParent(), (ItemModel)event.item);
 	}
 
 	private void onDeleteItem(final ItemUpdate event) {
@@ -349,7 +351,7 @@ public class ServiceController extends Controller {
 				AppConstants.REST_FRAGMENT,
 				AppConstants.ITEM_FRAGMENT);
 		
-		JSONObject jsonObject = RestBuilder.convertModel(event.item);
+		JSONObject jsonObject = RestBuilder.convertModel((ModelData)event.item);
 		
 		builder.sendRequest(200, 400, jsonObject.toString(), new RestCallback() {
 
@@ -385,7 +387,7 @@ public class ServiceController extends Controller {
 	}
 
 	private void onDeletePermission(ModelData model) {
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 		
 		Long gradebookId = selectedGradebook.getGradebookId();
 		model.set(PermissionKey.GRADEBOOK_ID.name(), gradebookId);
@@ -456,11 +458,11 @@ public class ServiceController extends Controller {
 
 			int index = -1;
 
-			if (p.endsWith(StudentModel.DROP_FLAG)) {
-				index = p.indexOf(StudentModel.DROP_FLAG);
+			if (p.endsWith(AppConstants.DROP_FLAG)) {
+				index = p.indexOf(AppConstants.DROP_FLAG);
 				needsRefreshing = true;
-			} else if (p.endsWith(StudentModel.COMMENTED_FLAG)) {
-				index = p.indexOf(StudentModel.COMMENTED_FLAG);
+			} else if (p.endsWith(AppConstants.COMMENTED_FLAG)) {
+				index = p.indexOf(AppConstants.COMMENTED_FLAG);
 				needsRefreshing = true;
 			}
 
@@ -521,7 +523,7 @@ public class ServiceController extends Controller {
 		//		"Stored item grade as '{0}' and recalculated course grade to '{1}' ", result.get(property), result.get(StudentModel.Key.COURSE_GRADE.name()));
 
 		String message = null;
-		if (property.endsWith(StudentModel.COMMENT_TEXT_FLAG)) {
+		if (property.endsWith(AppConstants.COMMENT_TEXT_FLAG)) {
 			message = buffer.append("- stored comment as '")
 			.append(result.get(property))
 			.append("'").toString();
@@ -536,7 +538,7 @@ public class ServiceController extends Controller {
 	}
 
 	private void onUpdateGradeMap(final GradeMapUpdate event) {
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 		final Record record = event.record;
 		
 		String gradebookUid = selectedGradebook.getGradebookUid();
@@ -567,7 +569,7 @@ public class ServiceController extends Controller {
 			
 			@Override
 			public void onSuccess(Request request, Response response) {
-				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+				Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 				Dispatcher.forwardEvent(GradebookEvents.RefreshGradeScale.getEventType(),
 						selectedGradebook);
 				record.commit(false);
@@ -578,9 +580,9 @@ public class ServiceController extends Controller {
 	
 	private void onUpdateGradeRecord(final GradeRecordUpdate event) {
 
-		final GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);	
+		final Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);	
 		
-		ClassType classType = StudentModel.lookupClassType(event.property, selectedGradebook.getGradebookItemModel().getGradeType());
+		ClassType classType = DataTypeConversionUtil.lookupClassType(event.property, selectedGradebook.getGradebookItemModel().getGradeType());
 
 		final Record record = event.record;
 		final UserEntityUpdateAction<ModelData> action = new UserEntityUpdateAction<ModelData>(selectedGradebook, record.getModel(), event.property, classType, event.value, event.oldValue);		
@@ -611,7 +613,7 @@ public class ServiceController extends Controller {
 			break;
 		}
 		
-		if (event.property.endsWith(StudentModel.COMMENT_TEXT_FLAG))
+		if (event.property.endsWith(AppConstants.COMMENT_TEXT_FLAG))
 			entity = "comment";
 
 		RestBuilder builder = RestBuilder.getInstance(Method.PUT, 
@@ -638,7 +640,8 @@ public class ServiceController extends Controller {
 				}
 
 				ItemModelProcessor processor = new ItemModelProcessor(selectedGradebook.getGradebookItemModel()) {
-					public void doItem(ItemModel itemModel) {
+					@Override
+					public void doItem(Item itemModel) {
 						String id = itemModel.getIdentifier();
 						type.addField(id, id);
 						String droppedKey = DataTypeConversionUtil.buildDroppedKey(id);
@@ -736,7 +739,7 @@ public class ServiceController extends Controller {
 	}
 	
 	private void doShowColumns(ShowColumnsEvent event) {
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 		ConfigurationModel model = new ConfigurationModel(selectedGradebook.getGradebookId());
 		
 		if (event.isSingle) {
@@ -790,15 +793,15 @@ public class ServiceController extends Controller {
 		service.update(model, EntityType.CONFIGURATION, null, SecureToken.get(), callback);*/
 	}
 	
-	private void buildColumnConfigModel(ConfigurationModel model, String identifier, boolean isHidden) {
+	private void buildColumnConfigModel(Configuration model, String identifier, boolean isHidden) {
 		model.setColumnHidden(AppConstants.ITEMTREE, identifier, Boolean.valueOf(isHidden));
 	}
 	
-	private void buildColumnConfigModel(ConfigurationModel model, FixedColumnModel fixedModel, boolean isHidden) {
+	private void buildColumnConfigModel(Configuration model, FixedColumn fixedModel, boolean isHidden) {
 		model.setColumnHidden(AppConstants.ITEMTREE, fixedModel.getIdentifier(), Boolean.valueOf(isHidden));
 	}
 	
-	private void buildColumnConfigModel(ConfigurationModel model, ItemModel itemModel, boolean isHidden) {
+	private void buildColumnConfigModel(Configuration model, ItemModel itemModel, boolean isHidden) {
 		switch (itemModel.getItemType()) {
 		case GRADEBOOK:
 		case CATEGORY:
@@ -836,7 +839,7 @@ public class ServiceController extends Controller {
 		boolean isReleaseItemsUpdated = false;
 		boolean isExtraCreditScaled = false;
 		
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 
 		if (event.record != null && event.record.isEditing()) {
 			Map<String, Object> changes = event.record.getChanges();
@@ -856,7 +859,7 @@ public class ServiceController extends Controller {
 
 				Dispatcher.forwardEvent(GradebookEvents.ItemUpdated.getEventType(), result);
 
-				selectedGradebook.setGradebookItemModel(result);
+				selectedGradebook.setGradebookGradeItem(result);
 				
 				if (isCategoryTypeUpdated || isReleaseGradesUpdated || isReleaseItemsUpdated) {
 					Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookSetup.getEventType(),
@@ -872,7 +875,7 @@ public class ServiceController extends Controller {
 					Dispatcher.forwardEvent(GradebookEvents.GradeTypeUpdated.getEventType(), selectedGradebook);
 				}
 
-				if (event.item.getItemType() != Type.GRADEBOOK || isGradeTypeUpdated || isCategoryTypeUpdated ||
+				if (event.item.getItemType() != ItemType.GRADEBOOK || isGradeTypeUpdated || isCategoryTypeUpdated ||
 						isExtraCreditScaled) {
 					Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookItems.getEventType(),
 							selectedGradebook);
@@ -891,7 +894,7 @@ public class ServiceController extends Controller {
 					doUpdateItem(event, (ItemModel) item);
 				}
 
-				if (event.getModifiedItem() != null && event.getModifiedItem().getItemType() != Type.CATEGORY)
+				if (event.getModifiedItem() != null && event.getModifiedItem().getItemType() != ItemType.CATEGORY)
 					return;
 
 				break;
@@ -911,7 +914,7 @@ public class ServiceController extends Controller {
 				AppConstants.REST_FRAGMENT,
 				AppConstants.ITEM_FRAGMENT);
 		
-		JSONObject jsonObject = RestBuilder.convertModel(event.getModifiedItem());
+		JSONObject jsonObject = RestBuilder.convertModel((ModelData)event.getModifiedItem());
 		
 		builder.sendRequest(200, 400, jsonObject.toString(), new RestCallback() {
 
@@ -974,11 +977,11 @@ public class ServiceController extends Controller {
 		doUpdatePercentCourseGradeTotal(itemCreate.store, itemCreate.item, createdItem);
 	}
 
-	private void doUpdatePercentCourseGradeTotal(Store store, ItemModel oldItem, ItemModel updatedItem) {
+	private void doUpdatePercentCourseGradeTotal(Store store, Item oldItem, ItemModel updatedItem) {
 		switch (updatedItem.getItemType()) {
 			case CATEGORY:
 				ItemModel gradebookItemModel = (ItemModel) updatedItem.getParent();
-				if (gradebookItemModel != null && gradebookItemModel.getItemType() == Type.GRADEBOOK)
+				if (gradebookItemModel != null && gradebookItemModel.getItemType() == ItemType.GRADEBOOK)
 					doUpdateItem(store, null, null, gradebookItemModel);
 				break;
 		}
@@ -1030,7 +1033,7 @@ public class ServiceController extends Controller {
 			record.set(property, value);
 	}
 
-	private ItemModel getActiveItem(ItemModel parent) {
+	private Item getActiveItem(ItemModel parent) {
 		if (parent.isActive())
 			return parent;
 
@@ -1041,7 +1044,7 @@ public class ServiceController extends Controller {
 			}
 
 			if (c.getChildCount() > 0) {
-				ItemModel activeItem = getActiveItem(c);
+				Item activeItem = getActiveItem(c);
 
 				if (activeItem != null)
 					return activeItem;

@@ -5,8 +5,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
-import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service;
+import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
 
@@ -17,13 +16,13 @@ public class ResourceController implements Controller {
 	private static final String DEFAULT_PAGE = "GradebookApplication.html";
 	private static final String RELATIVE_PREFIX = "/";
 	
-	private Gradebook2Service service;
+	private Gradebook2ComponentService service;
 	
-	public Gradebook2Service getService() {
+	public Gradebook2ComponentService getService() {
 		return service;
 	}
 
-	public void setService(Gradebook2Service service) {
+	public void setService(Gradebook2ComponentService service) {
 		this.service = service;
 	}
 
@@ -36,11 +35,11 @@ public class ResourceController implements Controller {
 		url.append(request.getRequestURI()).append(RELATIVE_PREFIX).append(DEFAULT_PAGE);
 		
 		if (service != null) {
-			AuthModel authModel = service.getAuthorization();
+			String authDetails = service.getAuthorizationDetails();
 		
-			if (authModel != null) {
-				url.append(authModel.toString());
-			}	
+			if (authDetails != null) {
+				url.append(authDetails);
+			}
 		}
 		
 		response.sendRedirect(url.toString());

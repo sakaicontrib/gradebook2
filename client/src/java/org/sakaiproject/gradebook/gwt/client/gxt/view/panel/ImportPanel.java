@@ -39,18 +39,17 @@ import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
 import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.BaseCustomGridView;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
-import org.sakaiproject.gradebook.gwt.client.gxt.upload.ClientUploadUtility;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader.Field;
-import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
+import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
-import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 import org.sakaiproject.gradebook.gwt.client.model.UploadKey;
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
+import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
@@ -161,15 +160,15 @@ public class ImportPanel extends GradebookPanel {
 
 	}
 
-	private void refreshCategoryPickerStore(ItemModel gradebookItemModel) {
+	private void refreshCategoryPickerStore(Item gradebookItemModel) {
 		categoriesStore.removeAll();
 		if (gradebookItemModel != null) {
 
 			ItemModelProcessor processor = new ItemModelProcessor(gradebookItemModel) {
 
 				@Override
-				public void doCategory(ItemModel categoryModel) {
-					categoriesStore.add(categoryModel);
+				public void doCategory(Item categoryModel) {
+					categoriesStore.add((ItemModel)categoryModel);
 				}
 
 			};
@@ -182,7 +181,7 @@ public class ImportPanel extends GradebookPanel {
 		super.onRender(parent, pos);
 		this.isGradingFailure = false;
 		
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 
 		if (selectedGradebook != null) 
 			refreshCategoryPickerStore(selectedGradebook.getGradebookItemModel());
@@ -398,7 +397,7 @@ public class ImportPanel extends GradebookPanel {
 	}
 	
 	private void uploadSpreadsheet(JSONObject spreadsheetModel, int numberOfLearners) {
-		GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
+		Gradebook gbModel = Registry.get(AppConstants.CURRENT);
 
 		String message = new StringBuilder().append(i18n.uploadingLearnerGradesPrefix()).append(" ")
 		 .append(numberOfLearners).append(" ").append(i18n.uploadingLearnerGradesSuffix()).toString();
@@ -444,8 +443,8 @@ public class ImportPanel extends GradebookPanel {
 
 								int index = -1;
 
-								if (p.endsWith(StudentModel.FAILED_FLAG)) {
-									index = p.indexOf(StudentModel.FAILED_FLAG);
+								if (p.endsWith(AppConstants.FAILED_FLAG)) {
+									index = p.indexOf(AppConstants.FAILED_FLAG);
 									needsRefreshing = true;
 								} 
 
@@ -466,8 +465,8 @@ public class ImportPanel extends GradebookPanel {
 
 					cancelButton.setText("Done");
 
-					GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-					selectedGradebook.setGradebookItemModel((ItemModel)result.get(UploadKey.GRADEBOOK_ITEM_MODEL.name()));
+					Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
+					selectedGradebook.setGradebookGradeItem((ItemModel)result.get(UploadKey.GRADEBOOK_ITEM_MODEL.name()));
 					Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookSetup.getEventType(), selectedGradebook);
 					Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookItems.getEventType(), selectedGradebook);
 					// Have to do this one, otherwise the multigrid is not fully refreshed. 
@@ -563,7 +562,7 @@ public class ImportPanel extends GradebookPanel {
 	}
 
 	private FormPanel buildFileUploadPanel() {
-		final GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
+		final Gradebook gbModel = Registry.get(AppConstants.CURRENT);
 
 		FormLayout formLayout = new FormLayout();
 		formLayout.setDefaultWidth(350);
@@ -687,7 +686,7 @@ public class ImportPanel extends GradebookPanel {
 			if (hasCategories) {
 				columnsTab.setVisible(true);
 
-				final GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+				final Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 
 				if (selectedGradebook != null) {
 
@@ -714,7 +713,7 @@ public class ImportPanel extends GradebookPanel {
 								if (itemModel != null) {
 									refreshCategoryPickerStore(itemModel);
 
-									selectedGradebook.setGradebookItemModel(itemModel);
+									selectedGradebook.setGradebookGradeItem(itemModel);
 									Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookSetup.getEventType(), selectedGradebook);
 									Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookItems.getEventType(), selectedGradebook);
 								}
@@ -992,7 +991,7 @@ public class ImportPanel extends GradebookPanel {
 				}					
 			}
 
-			ArrayList<ItemModel> itemModels = ClientUploadUtility.convertHeadersToItemModels(headers);
+			ArrayList<ItemModel> itemModels = convertHeadersToItemModels(headers);
 			HashMap<Long, String> categoryIdNameMap = new HashMap<Long, String>();
 
 			ArrayList<ItemModel> visibleItemModels = new ArrayList<ItemModel>();
@@ -1001,7 +1000,7 @@ public class ImportPanel extends GradebookPanel {
 			for (int i=0;i<itemModels.size();i++) {
 				ItemModel itemModel = itemModels.get(i);
 
-				if (itemModel.getItemType() != Type.COMMENT)
+				if (itemModel.getItemType() != ItemType.COMMENT)
 					visibleItemModels.add(itemModel);
 				else 
 					invisibleItemModels.add(itemModel);
@@ -1079,7 +1078,7 @@ public class ImportPanel extends GradebookPanel {
 			@Override
 			public Object postProcessValue(Object value) {
 				if (value != null) {
-					ItemModel model = (ItemModel)value;
+					Item model = (Item)value;
 					return model.getIdentifier();
 				}
 				return "None/Default";
@@ -1109,7 +1108,7 @@ public class ImportPanel extends GradebookPanel {
 				else
 					lookupId = (String)identifier;
 
-				ItemModel itemModel = categoriesStore.findModel(ItemKey.ID.name(), lookupId);
+				Item itemModel = categoriesStore.findModel(ItemKey.ID.name(), lookupId);
 
 				if (itemModel == null)
 					return AppConstants.DEFAULT_CATEGORY_NAME;
@@ -1131,6 +1130,48 @@ public class ImportPanel extends GradebookPanel {
 		container.setLayout(new FitLayout());
 
 		return itemGrid;
+	}
+	
+	private ArrayList<ItemModel> convertHeadersToItemModels(ArrayList<ImportHeader> headers) {
+		ArrayList<ItemModel> items = new ArrayList<ItemModel>();
+
+		if (headers != null) {
+			for (ImportHeader header : headers) {
+
+				ItemModel itemModel = new ItemModel();
+
+				if (header == null)
+					continue;
+
+				if (header.getId().equals("ID"))
+					continue;
+
+				if (header.getId().equals("NAME"))
+					continue;
+				
+				ItemType type = ItemType.ITEM;
+				
+				if (header.getField().equals(Field.COMMENT.name()))
+					type = ItemType.COMMENT;
+
+				itemModel.setIdentifier(header.getId());
+				itemModel.setItemType(type);
+				itemModel.setName(header.getHeaderName());
+				itemModel.setPoints(header.getPoints());
+				itemModel.setExtraCredit(header.getExtraCredit());
+				itemModel.setIncluded(Boolean.valueOf(!DataTypeConversionUtil.checkBoolean(header.getUnincluded())));
+				if (header.getCategoryId() != null) {
+					itemModel.setCategoryId(Long.valueOf(header.getCategoryId()));
+					itemModel.setCategoryName(header.getCategoryName());
+				}
+				itemModel.setPercentCategory(header.getPercentCategory());
+
+				items.add(itemModel);
+
+			}
+		}
+
+		return items;
 	}
 
 	private JSONArray getArray(JSONObject object, String property) {

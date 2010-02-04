@@ -22,7 +22,7 @@
  **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.action;
 
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
 
 public class UserEntityGradeAction extends UserEntityUpdateAction<StudentModel> {
@@ -33,7 +33,7 @@ public class UserEntityGradeAction extends UserEntityUpdateAction<StudentModel> 
 		super(ActionType.GRADED);
 	}
 
-	public UserEntityGradeAction(GradebookModel gbModel, StudentModel model, String key, 
+	public UserEntityGradeAction(Gradebook gbModel, StudentModel model, String key, 
 			ClassType classType, Object value, Object startValue) {
 		super(gbModel, model, key, classType, value, startValue);
 		setEntityType(EntityType.LEARNER);

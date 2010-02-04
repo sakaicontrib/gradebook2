@@ -6,6 +6,9 @@ package org.sakaiproject.gradebook.gwt.client.model;
 import java.util.Date;
 import java.util.List;
 
+import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
+
 public enum ItemKey {
 	ID(String.class), NAME(String.class), WEIGHT(Double.class), EQUAL_WEIGHT(Boolean.class), 
 	EXTRA_CREDIT(Boolean.class), 
@@ -27,7 +30,7 @@ public enum ItemKey {
 	ENFORCE_POINT_WEIGHTING(Boolean.class), SHOWMEAN(Boolean.class),
 	SHOWMEDIAN(Boolean.class), SHOWMODE(Boolean.class), SHOWRANK(Boolean.class),
 	SHOWITEMSTATS(Boolean.class),CHILDREN(List.class), IS_ACTIVE(Boolean.class),
-	IS_EDITABLE(Boolean.class), IS_CHECKED(Boolean.class);
+	IS_EDITABLE(Boolean.class), IS_CHECKED(Boolean.class), PARENT_NAME(String.class);
 	
 	private Class<?> type;
 	

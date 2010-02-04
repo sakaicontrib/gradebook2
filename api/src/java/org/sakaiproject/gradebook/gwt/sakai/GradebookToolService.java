@@ -94,6 +94,8 @@ public interface GradebookToolService {
 	
 	public List<Category> getCategories(Long gradebookId);
 	
+	public List<Category> getCategoriesWithAssignments(Long gradebookId);
+	
 	public List<Comment> getComments(Long gradebookId);
 	
 	public List<Comment> getComments(Long gradebookId, String[] realmIds, String[] roleNames, String sortField, 

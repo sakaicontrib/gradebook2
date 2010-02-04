@@ -35,14 +35,14 @@ import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.PermissionDeleteCellRenderer;
-import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.GraderKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.PermissionKey;
 import org.sakaiproject.gradebook.gwt.client.model.PermissionsModel;
 import org.sakaiproject.gradebook.gwt.client.model.SectionKey;
+import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.SelectionMode;
@@ -505,7 +505,7 @@ public class PermissionsPanel extends ContentPanel {
 	}*/
 			
 	private boolean hasCategories() {
-		GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
+		Gradebook gbModel = Registry.get(AppConstants.CURRENT);
 		CategoryType categoryType = gbModel.getGradebookItemModel().getCategoryType();
 		
 		switch(categoryType) {

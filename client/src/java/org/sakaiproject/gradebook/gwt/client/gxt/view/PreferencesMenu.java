@@ -27,7 +27,7 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.PersistentStore;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaCheckMenuItem;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.Registry;
@@ -58,7 +58,7 @@ public class PreferencesMenu extends Menu {
 	}
 	
 
-	public void onSwitchGradebook(GradebookModel selectedGradebook) {
+	public void onSwitchGradebook(Gradebook selectedGradebook) {
 		// Initialize enable popups checkbox
 		String storedEnableNotifications = PersistentStore.getPersistentField(selectedGradebook.getGradebookUid(), "enableNotifications", "checked");
 		if (storedEnableNotifications != null) {

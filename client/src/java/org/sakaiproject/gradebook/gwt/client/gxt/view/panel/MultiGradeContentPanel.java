@@ -49,15 +49,18 @@ import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultigradeSelectionModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.StudentModelOwner;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.UnweightedNumericCellRenderer;
-import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.Configuration;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
+import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
-import org.sakaiproject.gradebook.gwt.client.model.GradeType;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
+import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.SectionKey;
+import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -154,7 +157,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 	}
 
 	@Override
-	public void editCell(GradebookModel selectedGradebook, Record record, String property, Object value, Object startValue, GridEvent gridEvent) {
+	public void editCell(Gradebook selectedGradebook, Record record, String property, Object value, Object startValue, GridEvent gridEvent) {
 
 		String columnHeader = "";
 		if (gridEvent != null) {
@@ -284,9 +287,9 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 	}
 
 	public void onItemCreated(ItemModel itemModel) {
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 
-		ItemModel gradebookModel = selectedGradebook.getGradebookItemModel();
+		ItemModel gradebookModel = (ItemModel)selectedGradebook.getGradebookItemModel();
 
 		if (gradebookModel.equals(itemModel.getParent())) {
 			gradebookModel.getChildren().add(itemModel);
@@ -300,10 +303,10 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 		onRefreshGradebookItems(selectedGradebook);
 	}
 
-	public void onItemDeleted(ItemModel itemModel) {
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+	public void onItemDeleted(Item itemModel) {
+		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 
-		ItemModel gradebookModel = selectedGradebook.getGradebookItemModel();
+		ItemModel gradebookModel = (ItemModel)selectedGradebook.getGradebookItemModel();
 
 		if (gradebookModel.getChildren().contains(itemModel)) {
 			gradebookModel.getChildren().remove(itemModel);
@@ -317,19 +320,21 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 		onRefreshGradebookItems(selectedGradebook);
 	}
 
-	public void onItemUpdated(ItemModel itemModel) {
+	public void onItemUpdated(Item itemModel) {
 
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 		final GradeType gradeType = selectedGradebook.getGradebookItemModel().getGradeType();
 
 		ItemModelProcessor processor = new ItemModelProcessor(itemModel) {
 
-			public void doCategory(ItemModel categoryModel) {
+			@Override
+			public void doCategory(Item categoryModel) {
 				if (categoryModel.isActive()) 
 					queueDeferredRefresh(RefreshAction.REFRESHDATA);
 			}
 
-			public void doItem(ItemModel itemModel) {
+			@Override
+			public void doItem(Item itemModel) {
 				if (itemModel.isActive()) 
 					queueDeferredRefresh(RefreshAction.REFRESHDATA);
 
@@ -474,9 +479,9 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 		showColumns(event, cm);
 	}
 
-	public void onSwitchGradebook(GradebookModel selectedGradebook) {
+	public void onSwitchGradebook(Gradebook selectedGradebook) {
 
-		ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
+		Configuration configModel = selectedGradebook.getConfigurationModel();
 		
 		if (store != null) {
 			// Set the default sort field and direction on the store based on Cookies
@@ -511,7 +516,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 
 	}
 
-	protected CustomColumnModel newColumnModel(GradebookModel selectedGradebook) {
+	protected CustomColumnModel newColumnModel(Gradebook selectedGradebook) {
 		CustomColumnModel columnModel = assembleColumnModel(selectedGradebook);
 		return columnModel;
 	}
@@ -738,8 +743,8 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 						Number pageSize = pageSizeField.getValue();
 
 						if (pageSize != null && pageSize.intValue() > 0 && pageSize.intValue() <= Integer.MAX_VALUE) {
-							GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-							ConfigurationModel model = new ConfigurationModel(selectedGradebook.getGradebookId());
+							Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
+							Configuration model = new ConfigurationModel(selectedGradebook.getGradebookId());
 							model.setPageSize(gridId, Integer.valueOf(pageSize.intValue()));
 
 							Dispatcher.forwardEvent(GradebookEvents.Configuration.getEventType(), model);
@@ -815,7 +820,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 		refreshGrid(actualAction, true);
 	}
 
-	public void onRefreshGradebookItems(GradebookModel gradebookModel) {
+	public void onRefreshGradebookItems(Gradebook gradebookModel) {
 		switch (this.refreshAction) {
 			case REFRESHDATA:
 				this.refreshAction = RefreshAction.REFRESHCOLUMNSANDDATA;	
@@ -838,7 +843,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 		}
 	}
 
-	public void onRefreshGradebookSetup(GradebookModel gradebookModel) {
+	public void onRefreshGradebookSetup(Gradebook gradebookModel) {
 		if (modeLabel != null) {
 			StringBuilder modeLabelText = new StringBuilder();
 
@@ -871,17 +876,17 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 		return b != null && b.booleanValue();
 	}
 
-	private ColumnConfig buildColumn(GradebookModel selectedGradebook, FixedColumnModel column, ConfigurationModel configModel) {
+	private ColumnConfig buildColumn(Gradebook selectedGradebook, FixedColumn column, Configuration configModel) {
 		boolean isHidden = configModel.isColumnHidden(AppConstants.ITEMTREE, column.getIdentifier(), column.isHidden());
 		return buildColumn(selectedGradebook, column.getKey(), column.getIdentifier(), column.getName(),
 				true, false, convertBoolean(column.isEditable()), isHidden);
 	}
 
-	private ColumnConfig buildColumn(GradebookModel selectedGradebook, ItemModel item, ConfigurationModel configModel) {
+	private ColumnConfig buildColumn(Gradebook selectedGradebook, Item item, Configuration configModel) {
 		boolean isHidden = configModel.isColumnHidden(AppConstants.ITEMTREE, item.getIdentifier(), true);
 		StringBuilder columnNameBuilder = new StringBuilder().append(item.getName());
 
-		ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
+		Item gradebookItemModel = selectedGradebook.getGradebookItemModel();
 		GradeType gradeType = gradebookItemModel.getGradeType();
 		
 		if (gradeType != null) {
@@ -908,10 +913,10 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 				convertBoolean(item.getExtraCredit()), item.getSource() == null, isHidden);
 	}
 
-	private ColumnConfig buildColumn(GradebookModel selectedGradebook, String property, String id, String name, 
+	private ColumnConfig buildColumn(Gradebook selectedGradebook, String property, String id, String name, 
 			boolean isIncluded, boolean isExtraCredit, boolean isEditable, boolean defaultHidden) {
 
-		ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
+		Configuration configModel = selectedGradebook.getConfigurationModel();
 		int columnWidth = configModel.getColumnWidth(gridId, id, name);
 
 		ColumnConfig config = new ColumnConfig(id, name, columnWidth);
@@ -921,7 +926,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 		LearnerKey key = LearnerKey.valueOf(property);
 		switch (key) {
 			case ASSIGNMENT:
-				ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
+				Item gradebookItemModel = selectedGradebook.getGradebookItemModel();
 				GradeType gradeType = gradebookItemModel.getGradeType();
 				
 				if (gradeType != null) {
@@ -988,16 +993,16 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 	}
 
 	// FIXME: When changing gradebooks we will need to re-assemble the column model
-	private CustomColumnModel assembleColumnModel(GradebookModel selectedGradebook) {
+	private CustomColumnModel assembleColumnModel(Gradebook selectedGradebook) {
 
-		List<FixedColumnModel> staticColumns = selectedGradebook.getColumns();
+		List<FixedColumn> staticColumns = selectedGradebook.getColumns();
 
-		ItemModel gradebookItemModel = selectedGradebook.getGradebookItemModel();
-		ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
+		ItemModel gradebookItemModel = (ItemModel)selectedGradebook.getGradebookItemModel();
+		Configuration configModel = selectedGradebook.getConfigurationModel();
 
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 
-		for (FixedColumnModel column : staticColumns) {
+		for (FixedColumn column : staticColumns) {
 			ColumnConfig config = buildColumn(selectedGradebook, column, configModel);
 			configs.add(config);
 		}
@@ -1007,7 +1012,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 			switch (child.getItemType()) {
 				case CATEGORY:
 					for (ModelData item : child.getChildren()) {
-						configs.add(buildColumn(selectedGradebook, (ItemModel) item, configModel));
+						configs.add(buildColumn(selectedGradebook, (Item) item, configModel));
 					}
 					break;
 				case ITEM:
@@ -1114,7 +1119,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 			if (event.isSingle) {
 				toggle(event.model, event.isHidden);
 			} else {
-				grid.setVisible(false);
+				grid.hide();
 				// Loop through every column and show/hide it
 				for (int i=0;i<cm.getColumnCount();i++) {
 					ColumnConfig column = cm.getColumn(i);
@@ -1124,21 +1129,21 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 					// If it is static, then is it even visible? 
 					boolean isStaticVisible = isStatic && event.visibleStaticIdSet.contains(column.getId());
 
-					if (isStatic)
+					if (isStatic) {
 						cm.setHidden(i, !isStaticVisible);
-					else if (event.selectedItemModelIdSet != null){
+					} else if (event.selectedItemModelIdSet != null){
 						boolean showColumn = (!isStatic && event.selectAll) || event.selectedItemModelIdSet.contains(column.getId());
 						if (cm.isHidden(i) == showColumn)
 							cm.setHidden(i, !showColumn);
 					}
 				}
-				grid.setVisible(true);
+				grid.show();
 			}
 		}
 	}
 	
 	private void toggle(ItemModel m, boolean isHidden) {
-		grid.setVisible(false);
+		grid.hide();
 		switch (m.getItemType()) {
 		case GRADEBOOK:
 			toggleCategory(m, isHidden);
@@ -1150,7 +1155,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 			toggleItem(m, isHidden);
 			break;
 		}
-		grid.setVisible(true);
+		grid.show();
 	}
 	
 	private void toggleCategory(ItemModel m, boolean isHidden) {
@@ -1169,7 +1174,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 		}
 	}
 	
-	private void toggleItem(ItemModel m, boolean isHidden) {
+	private void toggleItem(Item m, boolean isHidden) {
 		int columnIndex = cm.findColumnIndex(m.getIdentifier());
 
 		if (columnIndex != -1) {

@@ -26,7 +26,7 @@ import java.util.Date;
 
 import org.sakaiproject.gradebook.gwt.client.model.ActionKey;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModel;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 
 public abstract class Action extends EntityModel {
 
@@ -86,14 +86,14 @@ public abstract class Action extends EntityModel {
 		setDatePerformed(new Date());
 	}
 
-	public Action(GradebookModel gbModel) {
+	public Action(Gradebook gbModel) {
 		this();
 		setGradebookUid(gbModel.getGradebookUid());
 		setGradebookId(gbModel.getGradebookId());
 		setGraderName(gbModel.getUserName());
 	}
 
-	public Action(GradebookModel gbModel, ActionType actionType) {
+	public Action(Gradebook gbModel, ActionType actionType) {
 		this(gbModel);
 		setActionType(actionType);
 	}

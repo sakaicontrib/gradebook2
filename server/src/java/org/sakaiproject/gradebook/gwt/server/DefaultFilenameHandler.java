@@ -40,7 +40,8 @@ public class DefaultFilenameHandler implements HttpRequestHandler {
 			path = path.replaceAll("//", "/");
 
 		if (path.contains("/rest/")) {
-			log.info("Rest path: " + path);
+			if (log.isDebugEnabled())
+				log.debug("Rest path: " + path);
 			return;
 		}
 				

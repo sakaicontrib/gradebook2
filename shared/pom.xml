@@ -14,6 +14,12 @@
 	<packaging>jar</packaging>
 
 	<dependencies>
+		<dependency>
+			<groupId>org.sakaiproject.gradebook2</groupId>
+			<artifactId>gradebook2-model</artifactId>
+			<version>${gb2.version}</version>
+			<scope>provided</scope>
+		</dependency>
 		<!--  Google Web Toolkit Dependencies -->
 		<dependency>
 			<groupId>com.google.gwt</groupId>

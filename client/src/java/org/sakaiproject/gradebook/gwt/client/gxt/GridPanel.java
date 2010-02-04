@@ -37,8 +37,8 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.GradebookPanel;
-import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.Configuration;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -133,7 +133,7 @@ public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 				// By setting ge.doit to false, we ensure that the AfterEdit event is not thrown. Which means we have to throw it ourselves onSuccess
 				ge.stopEvent();
 				
-				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+				Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 				
 				if (selectedGradebook != null)
 					editCell(selectedGradebook, ge.getRecord(), ge.getProperty(), ge.getValue(), ge.getStartValue(), ge);
@@ -178,7 +178,7 @@ public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 	/*
 	 * This method will be run whenever the user switches gradebooks, and also on startup
 	 */
-	public void onSwitchGradebook(GradebookModel selectedGradebook) {
+	public void onSwitchGradebook(Gradebook selectedGradebook) {
 		String gradebookUid = selectedGradebook.getGradebookUid();
 		if (store != null) {
 			// Set the default sort field and direction on the store based on Cookies
@@ -197,7 +197,7 @@ public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 				store.setDefaultSort(storedSortField, sortDir);
 		}
 		
-		ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
+		Configuration configModel = selectedGradebook.getConfigurationModel();
 		
 		int ps = configModel.getPageSize(gridId);
 		
@@ -212,7 +212,7 @@ public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 			loader.load(0, ps);
 	}
 	
-	public void editCell(GradebookModel selectedGradebook, Record record, String property, Object value, Object startValue, GridEvent ge) {
+	public void editCell(Gradebook selectedGradebook, Record record, String property, Object value, Object startValue, GridEvent ge) {
 		/*UserEntityUpdateAction<M> action = newEntityUpdateAction(selectedGradebook, record, property, value, startValue, ge);
 		
 		if (validateEdit(property, value, startValue, record, ge)) {
@@ -232,7 +232,7 @@ public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 		return pagingToolBar;
 	}
 	
-	protected abstract CustomColumnModel newColumnModel(GradebookModel selectedGradebook);
+	protected abstract CustomColumnModel newColumnModel(Gradebook selectedGradebook);
 		
 	protected void addComponents()  {
 		// Empty
@@ -334,7 +334,7 @@ public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 	}
 	
 	protected void refreshGrid(RefreshAction action, boolean useExistingColumnModel) {
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 		if (!useExistingColumnModel || cm == null)
 			cm = newColumnModel(selectedGradebook);
 		grid.reconfigure(store, cm);
@@ -393,7 +393,7 @@ public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 			record.set(property, model.get(property));
 	}
 
-	protected UserEntityUpdateAction<M> newEntityUpdateAction(GradebookModel selectedGradebook, final Record record, final String property, 
+	protected UserEntityUpdateAction<M> newEntityUpdateAction(Gradebook selectedGradebook, final Record record, final String property, 
 			final Object value, final Object startValue, final GridEvent gridEvent) {
 		ColumnConfig config = null;
 		

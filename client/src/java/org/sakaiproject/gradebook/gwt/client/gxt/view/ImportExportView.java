@@ -4,7 +4,7 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.ExportDetails;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ImportPanel;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
@@ -49,7 +49,7 @@ public class ImportExportView extends View {
 				break;
 			}
 		
-			GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+			Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 			String uri = GWT.getModuleBaseURL() + "exportGradebook.csv?gradebookUid=" + selectedGradebook.getGradebookUid();
 			
 			if (includeStructure)

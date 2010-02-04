@@ -26,18 +26,19 @@ package org.sakaiproject.gradebook.gwt.client.gxt;
 
 import java.util.List;
 
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel.Type;
+import org.sakaiproject.gradebook.gwt.client.model.Item;
+import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 
+import com.extjs.gxt.ui.client.data.BaseTreeModel;
 import com.extjs.gxt.ui.client.data.ModelData;
 
 public abstract class ItemModelProcessor {
 
-	protected ItemModel result;
+	protected Item result;
 
-	private ItemModel gradebookItemModel;
+	private Item gradebookItemModel;
 
-	public ItemModelProcessor(ItemModel gradebookItemModel) {
+	public ItemModelProcessor(Item gradebookItemModel) {
 		this.gradebookItemModel = gradebookItemModel;
 	}
 
@@ -47,37 +48,37 @@ public abstract class ItemModelProcessor {
 
 	}
 
-	public void doGradebook(ItemModel gradebookModel, int childIndex) {
+	public void doGradebook(Item gradebookModel, int childIndex) {
 		doGradebook(gradebookModel);
 	}
 
-	public void doGradebook(ItemModel gradebookModel) {
+	public void doGradebook(Item gradebookModel) {
 
 	}
 
-	public void doCategory(ItemModel categoryModel) {
+	public void doCategory(Item categoryModel) {
 
 	}
 
-	public void doCategory(ItemModel categoryModel, int childIndex) {
+	public void doCategory(Item categoryModel, int childIndex) {
 		doCategory(categoryModel);
 	}
 
-	public void doItem(ItemModel itemModel) {
+	public void doItem(Item itemModel) {
 
 	}
 
-	public void doItem(ItemModel itemModel, int childIndex) {
+	public void doItem(Item itemModel, int childIndex) {
 		doItem(itemModel);
 	}
 
 
-	private void processItem(ItemModel itemModel, int childIndex) {
+	private void processItem(Item itemModel, int childIndex) {
 
 		if (itemModel == null)
 			return;
 
-		Type itemType = itemModel.getItemType();
+		ItemType itemType = itemModel.getItemType();
 
 		if (itemType != null) {
 			switch (itemType) {
@@ -93,28 +94,28 @@ public abstract class ItemModelProcessor {
 			}
 		}
 
-		List children = itemModel.getChildren();
+		List children = ((BaseTreeModel)itemModel).getChildren();
 
 		if (children != null) {
 			for (int i=0;i<children.size();i++) {
-				processItem((ItemModel)children.get(i), i);
+				processItem((Item)children.get(i), i);
 			}
 		}
 
 	}
 
-	public static ItemModel getActiveItem(ItemModel parent) {
+	public static Item getActiveItem(Item parent) {
 		if (parent.isActive())
 			return parent;
 
-		for (ModelData m : parent.getChildren()) {
-			ItemModel c = (ItemModel)m;
+		for (ModelData m : ((BaseTreeModel)parent).getChildren()) {
+			Item c = (Item)m;
 			if (c.isActive()) {
 				return c;
 			}
 
-			if (c.getChildCount() > 0) {
-				ItemModel activeItem = getActiveItem(c);
+			if (((BaseTreeModel)c).getChildCount() > 0) {
+				Item activeItem = getActiveItem(c);
 
 				if (activeItem != null)
 					return activeItem;
@@ -124,7 +125,7 @@ public abstract class ItemModelProcessor {
 		return null;
 	}
 
-	public ItemModel getResult() {
+	public Item getResult() {
 		return result;
 	}
 

@@ -1,20 +1,20 @@
 package org.sakaiproject.gradebook.gwt.sakai.rest.resource;
 
-import java.io.IOException;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
 
 public class Resource {
 
+	private static final Log log = LogFactory.getLog(Resource.class);
+	
 	protected Gradebook2ComponentService service;
 	
 	protected <X> X fromJson(String text, Class<?> type) {
@@ -23,15 +23,8 @@ public class Resource {
 		ObjectMapper mapper = new ObjectMapper();
 		try {
 			o = (X)mapper.readValue(text, type);
-		} catch (JsonParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JsonMappingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			log.error("Caught an exception deserializing from JSON: " + text, e);
 		}
 		
 		return o;
@@ -50,15 +43,8 @@ public class Resource {
 		StringWriter w = new StringWriter();
 		try {
 			mapper.writeValue(w, o);
-		} catch (JsonGenerationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JsonMappingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			log.error("Caught an exception serializing to JSON: ", e);
 		}
 		
 		return w.toString();

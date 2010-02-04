@@ -5,10 +5,11 @@ import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.InlineEditField;
 import org.sakaiproject.gradebook.gwt.client.gxt.InlineEditNumberField;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.NullSensitiveCheckBox;
-import org.sakaiproject.gradebook.gwt.client.model.CategoryType;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
+import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
@@ -59,7 +60,7 @@ public abstract class EntityPanel extends ContentPanel {
 	protected final I18nConstants i18n;
 	private final boolean isReadOnly;
 	
-	protected GradebookModel selectedGradebook;
+	protected Gradebook selectedGradebook;
 	
 	public EntityPanel(I18nConstants i18n, boolean isReadOnly) {
 		this.i18n = i18n;
@@ -399,7 +400,7 @@ public abstract class EntityPanel extends ContentPanel {
 			if (category.getChildCount() > 0) {
 				Double points = null;
 				for (int i=0;i<category.getChildCount();i++) {
-					ItemModel item = (ItemModel) category.getChild(i);
+					Item item = (Item) category.getChild(i);
 					if (!DataTypeConversionUtil.checkBoolean(item.getExtraCredit())) {
 						if (points == null)
 							points = item.getPoints();

@@ -53,7 +53,7 @@ public class GradebookImportController extends SimpleFormController {
 
 	private static final Log log = LogFactory.getLog(GradebookImportController.class);
 
-	private Gradebook2Service service;
+	private Gradebook2ComponentService service;
 	private GradebookToolService gbToolService;
 
 	protected ModelAndView onSubmit(HttpServletRequest request,
@@ -119,11 +119,11 @@ public class GradebookImportController extends SimpleFormController {
 		// now Spring knows how to handle multipart object and convert them
 	}
 
-	public Gradebook2Service getService() {
+	public Gradebook2ComponentService getService() {
 		return service;
 	}
 
-	public void setService(Gradebook2Service service) {
+	public void setService(Gradebook2ComponentService service) {
 		this.service = service;
 	}
 

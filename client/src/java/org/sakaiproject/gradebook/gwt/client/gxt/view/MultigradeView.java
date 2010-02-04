@@ -37,9 +37,11 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.MultiGradeContentPanel;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
+import org.sakaiproject.gradebook.gwt.client.model.Configuration;
 import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
+import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 
@@ -86,8 +88,8 @@ public class MultigradeView extends View {
 				syncTask = new DelayedTask(new Listener<BaseEvent>() {
 					
 					public void handleEvent(BaseEvent be) {
-						GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-						ConfigurationModel configModel = new ConfigurationModel(selectedGradebook.getGradebookId());
+						Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
+						Configuration configModel = new ConfigurationModel(selectedGradebook.getGradebookId());
 						configModel.setSortField(AppConstants.MULTIGRADE, sortField);
 						configModel.setSortDirection(AppConstants.MULTIGRADE, Boolean.valueOf(isAscending));
 						
@@ -137,19 +139,19 @@ public class MultigradeView extends View {
 				onItemCreated((ItemModel)event.getData());
 				break;
 			case ITEM_DELETED:
-				onItemDeleted((ItemModel)event.getData());
+				onItemDeleted((Item)event.getData());
 				break;
 			case ITEM_UPDATED:
-				onItemUpdated((ItemModel)event.getData());
+				onItemUpdated((Item)event.getData());
 				break;
 			case REFRESH_COURSE_GRADES:
 				onRefreshCourseGrades();
 				break;
 			case REFRESH_GRADEBOOK_ITEMS:
-				onRefreshGradebookItems((GradebookModel)event.getData());
+				onRefreshGradebookItems((Gradebook)event.getData());
 				break;
 			case REFRESH_GRADEBOOK_SETUP:
-				onRefreshGradebookSetup((GradebookModel)event.getData());
+				onRefreshGradebookSetup((Gradebook)event.getData());
 				break;
 			case SHOW_COLUMNS:
 				onShowColumns((ShowColumnsEvent)event.getData());
@@ -157,11 +159,11 @@ public class MultigradeView extends View {
 			case STARTUP:
 				ApplicationModel applicationModel = (ApplicationModel)event.getData();
 				initUI(applicationModel);
-				GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
+				Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 				onSwitchGradebook(selectedGradebook);
 				break;
 			case SWITCH_GRADEBOOK:
-				onSwitchGradebook((GradebookModel)event.getData());
+				onSwitchGradebook((Gradebook)event.getData());
 				break;
 			case USER_CHANGE:
 				onUserChange((UserEntityAction<?>)event.getData());
@@ -171,7 +173,7 @@ public class MultigradeView extends View {
 
 	protected void initUI(ApplicationModel model) {
 
-		GradebookModel gbModel = model.getGradebookModels().get(0);
+		Gradebook gbModel = model.getGradebookModels().get(0);
 		
 		final ModelType type = new ModelType();  
 		type.setRoot(AppConstants.LIST_ROOT);
@@ -182,7 +184,8 @@ public class MultigradeView extends View {
 		}
 		
 		ItemModelProcessor processor = new ItemModelProcessor(gbModel.getGradebookItemModel()) {
-			public void doItem(ItemModel itemModel) {
+			@Override
+			public void doItem(Item itemModel) {
 				String id = itemModel.getIdentifier();
 				type.addField(id, id);
 				String droppedKey = DataTypeConversionUtil.buildDroppedKey(id);
@@ -244,11 +247,11 @@ public class MultigradeView extends View {
 		multigrade.onItemCreated(itemModel);
 	}
 
-	protected void onItemDeleted(ItemModel itemModel) {
+	protected void onItemDeleted(Item itemModel) {
 		multigrade.onItemDeleted(itemModel);
 	}
 
-	protected void onItemUpdated(ItemModel itemModel) {	
+	protected void onItemUpdated(Item itemModel) {	
 		multigrade.onItemUpdated(itemModel);
 	}
 
@@ -260,11 +263,11 @@ public class MultigradeView extends View {
 		multigrade.onRefreshCourseGrades();
 	}
 
-	protected void onRefreshGradebookItems(GradebookModel gradebookModel) {
+	protected void onRefreshGradebookItems(Gradebook gradebookModel) {
 		multigrade.onRefreshGradebookItems(gradebookModel);
 	}
 
-	protected void onRefreshGradebookSetup(GradebookModel gradebookModel) {
+	protected void onRefreshGradebookSetup(Gradebook gradebookModel) {
 		multigrade.onRefreshGradebookSetup(gradebookModel);
 	}
 
@@ -272,7 +275,7 @@ public class MultigradeView extends View {
 		multigrade.onShowColumns(event);
 	}
 
-	protected void onSwitchGradebook(GradebookModel selectedGradebook) {
+	protected void onSwitchGradebook(Gradebook selectedGradebook) {
 		multigrade.onSwitchGradebook(selectedGradebook);
 	}
 

@@ -13,22 +13,6 @@
 	
 	<import resource="rest.xml" />
 		
-	<!-- Hibernate Mappings -->
-	<!-- bean id="org.sakaiproject.gradebook.gwt.sakai.model.hibernateMappings"
-		class="org.sakaiproject.springframework.orm.hibernate.impl.AdditionalHibernateMappingsImpl">
-		<property name="mappingResources">
-			<list>
-				<value>org/sakaiproject/gradebook/gwt/sakai/model/ActionRecord.hbm.xml</value>
-				<value>org/sakaiproject/gradebook/gwt/sakai/model/Realm.hbm.xml</value>
-				<value>org/sakaiproject/gradebook/gwt/sakai/model/RealmGroup.hbm.xml</value>
-				<value>org/sakaiproject/gradebook/gwt/sakai/model/RealmRole.hbm.xml</value>
-				<value>org/sakaiproject/gradebook/gwt/sakai/model/UserConfiguration.hbm.xml</value>
-				<value>org/sakaiproject/gradebook/gwt/sakai/model/UserDereference.hbm.xml</value>
-				<value>org/sakaiproject/gradebook/gwt/sakai/model/UserDereferenceRealmUpdate.hbm.xml</value>
-			</list>
-		</property>
-	</bean-->
-	
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.BusinessLogic" class="org.sakaiproject.gradebook.gwt.sakai.BusinessLogicImpl">
 		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/> 
 	</bean>
@@ -40,21 +24,20 @@
 		<property name="authn" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authn"/>
 		<property name="sectionAwareness" ref="org.sakaiproject.section.api.SectionAwareness"/>
 		<property name="gbToolService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/>
-		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service"/>
 		<!-- property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/-->
 	</bean>
 	
 	<bean id="GradebookExportService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookExportController">
-		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service"/>
+		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
 	</bean>
 	
 	<bean id="GradebookFinalGradeSubmissionService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookFinalGradeSubmissionController">
-		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service"/>
+		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
 	</bean>
 	
 	<bean id="GradebookImportService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookImportController">
 		<property name="gbToolService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/>
-		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service"/>
+		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
 		<property name="commandClass" value="org.sakaiproject.gradebook.gwt.sakai.FileUploadBean"/>
 	</bean>
 	

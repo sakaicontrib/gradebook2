@@ -6,8 +6,7 @@
 	<bean id="urlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
     	<property name="mappings">
                         <map>
-                                <entry key="/**/rpc/grades.rpc" value-ref="RPCService" />
-
+                        
                                 <entry key="/**/importHandler" value-ref="GradebookImportService" />
 
                                 <entry key="/**/exportGradebook.csv" value-ref="GradebookExportService" />

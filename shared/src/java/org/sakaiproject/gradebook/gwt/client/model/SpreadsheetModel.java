@@ -25,6 +25,7 @@ package org.sakaiproject.gradebook.gwt.client.model;
 
 import java.util.List;
 
+
 import com.extjs.gxt.ui.client.data.BeanModelTag;
 import com.extjs.gxt.ui.client.data.ModelData;
 
@@ -34,21 +35,21 @@ public class SpreadsheetModel extends EntityModel implements BeanModelTag {
 	private static final long serialVersionUID = 1L;
 	
 	private String displayName;
-	private List<ItemModel> headers;
+	private List<Item> headers;
 	private List<ModelData> rows;
 	private boolean isPercentage;
 	private List<String> results;
-	private ItemModel gradebookItemModel;
+	private Item gradebookItemModel;
 	
 	public SpreadsheetModel() {
 		
 	}
 
-	public List<ItemModel> getHeaders() {
+	public List<Item> getHeaders() {
 		return headers;
 	}
 
-	public void setHeaders(List<ItemModel> headers) {
+	public void setHeaders(List<Item> headers) {
 		this.headers = headers;
 	}
 
@@ -90,11 +91,11 @@ public class SpreadsheetModel extends EntityModel implements BeanModelTag {
 		this.results = results;
 	}
 
-	public ItemModel getGradebookItemModel() {
+	public Item getGradebookItemModel() {
 		return gradebookItemModel;
 	}
 
-	public void setGradebookItemModel(ItemModel gradebookItemModel) {
+	public void setGradebookItemModel(Item gradebookItemModel) {
 		this.gradebookItemModel = gradebookItemModel;
 	}
 	

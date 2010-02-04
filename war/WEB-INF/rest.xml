@@ -46,9 +46,8 @@
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Items"
 		parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
 	
-	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.LearnerRecord">
-		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
-	</bean>
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.LearnerRecord"
+		parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
 	
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Permission"
 		parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
@@ -56,9 +55,8 @@
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Permissions"
 		parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
 	
-	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Roster">
-		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service"/>
-	</bean>
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Roster"
+		parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
 	
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Sections" 
 		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />

@@ -1,6 +1,7 @@
 package org.sakaiproject.gradebook.gwt.sakai;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -13,54 +14,88 @@ import java.util.EnumSet;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.sakaiproject.component.api.ServerConfigurationService;
+import org.sakaiproject.event.api.Event;
+import org.sakaiproject.event.api.EventTrackingService;
+import org.sakaiproject.exception.IdUnusedException;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.ConfigUtil;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.Action.ActionType;
 import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
+import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
+import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig;
 import org.sakaiproject.gradebook.gwt.client.model.ActionKey;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationKey;
 import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
+import org.sakaiproject.gradebook.gwt.client.model.CommentKey;
 import org.sakaiproject.gradebook.gwt.client.model.CommentModel;
-import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
-import org.sakaiproject.gradebook.gwt.client.model.FixedColumnKey;
-import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
+import org.sakaiproject.gradebook.gwt.client.model.Configuration;
+import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
 import org.sakaiproject.gradebook.gwt.client.model.GradeEventKey;
+import org.sakaiproject.gradebook.gwt.client.model.GradeEventModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeFormatKey;
 import org.sakaiproject.gradebook.gwt.client.model.GradeMapKey;
-import org.sakaiproject.gradebook.gwt.client.model.GradeType;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookKey;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.GraderKey;
+import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.PermissionKey;
+import org.sakaiproject.gradebook.gwt.client.model.Roster;
 import org.sakaiproject.gradebook.gwt.client.model.SectionKey;
-import org.sakaiproject.gradebook.gwt.client.model.StatisticsKey;
-import org.sakaiproject.gradebook.gwt.client.model.StatisticsModel;
-import org.sakaiproject.gradebook.gwt.client.model.StudentModel;
+import org.sakaiproject.gradebook.gwt.client.model.Statistics;
 import org.sakaiproject.gradebook.gwt.client.model.UploadKey;
 import org.sakaiproject.gradebook.gwt.client.model.VerificationKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.StatisticsKey;
+import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
+import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 import org.sakaiproject.gradebook.gwt.sakai.InstitutionalAdvisor.Column;
+import org.sakaiproject.gradebook.gwt.sakai.mock.SiteMock;
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeStatistics;
 import org.sakaiproject.gradebook.gwt.sakai.model.StudentScore;
+import org.sakaiproject.gradebook.gwt.sakai.model.UserConfiguration;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
+import org.sakaiproject.gradebook.gwt.sakai.model.UserDereferenceRealmUpdate;
+import org.sakaiproject.gradebook.gwt.sakai.rest.model.ConfigurationImpl;
+import org.sakaiproject.gradebook.gwt.sakai.rest.model.FixedColumnImpl;
+import org.sakaiproject.gradebook.gwt.sakai.rest.model.GradeItem;
+import org.sakaiproject.gradebook.gwt.sakai.rest.model.GradeItemImpl;
+import org.sakaiproject.gradebook.gwt.sakai.rest.model.GradebookImpl;
+import org.sakaiproject.gradebook.gwt.sakai.rest.model.LearnerImpl;
+import org.sakaiproject.gradebook.gwt.sakai.rest.model.RosterImpl;
+import org.sakaiproject.gradebook.gwt.sakai.rest.model.StatisticsImpl;
 import org.sakaiproject.gradebook.gwt.server.DataTypeConversionUtil;
+import org.sakaiproject.section.api.SectionAwareness;
 import org.sakaiproject.section.api.coursemanagement.CourseSection;
+import org.sakaiproject.section.api.coursemanagement.EnrollmentRecord;
 import org.sakaiproject.section.api.coursemanagement.ParticipationRecord;
 import org.sakaiproject.section.api.facade.Role;
+import org.sakaiproject.service.gradebook.shared.GradebookFrameworkService;
+import org.sakaiproject.service.gradebook.shared.GradebookNotFoundException;
 import org.sakaiproject.service.gradebook.shared.GradebookService;
+import org.sakaiproject.site.api.Group;
 import org.sakaiproject.site.api.Site;
+import org.sakaiproject.site.api.SiteService;
+import org.sakaiproject.tool.api.Placement;
+import org.sakaiproject.tool.api.Session;
+import org.sakaiproject.tool.api.SessionManager;
+import org.sakaiproject.tool.api.ToolManager;
 import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.AssignmentGradeRecord;
 import org.sakaiproject.tool.gradebook.Category;
@@ -73,27 +108,450 @@ import org.sakaiproject.tool.gradebook.Gradebook;
 import org.sakaiproject.tool.gradebook.GradingEvent;
 import org.sakaiproject.tool.gradebook.Permission;
 import org.sakaiproject.user.api.User;
+import org.sakaiproject.user.api.UserDirectoryService;
 import org.sakaiproject.user.api.UserNotDefinedException;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
-public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
-		implements Gradebook2ComponentService {
+import com.extjs.gxt.ui.client.Style.SortDir;
+import com.extjs.gxt.ui.client.data.ModelData;
+import com.extjs.gxt.ui.client.data.PagingLoadConfig;
+import com.google.gwt.core.client.GWT;
 
-	private static final Log log = LogFactory.getLog(Gradebook2ComponentServiceImpl.class);
+public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentService, ApplicationContextAware {
+
 	private static ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	private static final Log log = LogFactory.getLog(Gradebook2ComponentServiceImpl.class);
 	
-	public Map<String, Object> createItem(String gradebookUid, Long gradebookId, Map<String, Object> attributes) throws InvalidInputException {
+	private static final String NA = "-";
+	private static final String UNIQUESET = "N/A";
 	
-		ItemModel itemModel = createItem(gradebookUid, gradebookId, toItem(attributes), true);
+	static final Comparator<UserRecord> DEFAULT_ID_COMPARATOR = new Comparator<UserRecord>() {
+
+		public int compare(UserRecord o1, UserRecord o2) {
+
+			if (o1.getUserUid() == null || o2.getUserUid() == null)
+				return 0;
+
+			return o1.getUserUid().compareToIgnoreCase(o2.getUserUid());
+		}
+	};
+	static final Comparator<UserRecord> DISPLAY_ID_COMPARATOR = new Comparator<UserRecord>() {
+
+		public int compare(UserRecord o1, UserRecord o2) {
+
+			if (o1.getDisplayId() == null || o2.getDisplayId() == null)
+				return 0;
+
+			return o1.getDisplayId().compareToIgnoreCase(o2.getDisplayId());
+		}
+	};
+	static final Comparator<UserRecord> EMAIL_COMPARATOR = new Comparator<UserRecord>() {
+
+		public int compare(UserRecord o1, UserRecord o2) {
+
+			if (o1.getEmail() == null || o2.getEmail() == null)
+				return 0;
+
+			return o1.getEmail().compareToIgnoreCase(o2.getEmail());
+		}
+	};
+	static final Comparator<EnrollmentRecord> ENROLLMENT_NAME_COMPARATOR = new Comparator<EnrollmentRecord>() {
+
+		public int compare(EnrollmentRecord o1, EnrollmentRecord o2) {
+
+			return o1.getUser().getSortName().compareToIgnoreCase(o2.getUser().getSortName());
+		}
+	};
+	
+	/**
+	 * COMPARATORS
+	 */
+	// Code taken from
+	// "org.sakaiproject.service.gradebook.shared.GradebookService.lettergradeComparator"
+	static final Comparator<String> LETTER_GRADE_COMPARATOR = new Comparator<String>() {
+
+		public int compare(String o1, String o2) {
+
+			if (o1.toLowerCase().charAt(0) == o2.toLowerCase().charAt(0)) {
+
+				if (o1.length() == 2 && o2.length() == 2) {
+
+					if (o1.charAt(1) == '+')
+						return 0;
+					else
+						return 1;
+
+				}
+
+				if (o1.length() == 1 && o2.length() == 2) {
+
+					if (o2.charAt(1) == '+')
+						return 1;
+					else
+						return 0;
+				}
+
+				if (o1.length() == 2 && o2.length() == 1) {
+
+					if (o1.charAt(1) == '+')
+						return 0;
+					else
+						return 1;
+				}
+
+				return 0;
+
+			} else {
+
+				return o1.toLowerCase().compareTo(o2.toLowerCase());
+			}
+		}
+	};
+	/**
+	 * INNER CLASSES
+	 */
+
+	static final String[] orderedPassNoPassGrades = { "P", "NP", "S", "U", "IP", "I", "Y", "NS", "NG" };
+	static final Comparator<String> PASS_NOPASS_COMPARATOR = new Comparator<String>() {
+
+		public int compare(String o1, String o2) {
+
+			if (o1 == null || o2 == null)
+				return 0;
+
+			for (int i=0;i<orderedPassNoPassGrades.length;i++) {
+				if (o1.equals(orderedPassNoPassGrades[i]))
+					return -1;
+				if (o2.equals(orderedPassNoPassGrades[i]))
+					return 1;
+			}
+
+
+			return 0;
+		}
+
+	};
+	static final Comparator<UserRecord> SECTION_TITLE_COMPARATOR = new Comparator<UserRecord>() {
+
+		public int compare(UserRecord o1, UserRecord o2) {
+
+			if (o1.getSectionTitle() == null || o2.getSectionTitle() == null)
+				return 0;
+
+			return o1.getSectionTitle().compareToIgnoreCase(o2.getSectionTitle());
+		}
+	};
+	static final Comparator<UserRecord> SORT_NAME_COMPARATOR = new Comparator<UserRecord>() {
+
+		public int compare(UserRecord o1, UserRecord o2) {
+
+			if (o1.getSortName() == null || o2.getSortName() == null)
+				return 0;
+
+			return o1.getSortName().compareToIgnoreCase(o2.getSortName());
+		}
+	};
+	private InstitutionalAdvisor advisor;
+	private ApplicationContext applicationContext;
+	
+	private Gradebook2Authz authz;
+	private BusinessLogic businessLogic;
+	
+	private ServerConfigurationService configService;
+	
+	private List<GradeType> enabledGradeTypes;
+	
+	private EventTrackingService eventTrackingService;
+	private GradebookFrameworkService frameworkService;
+	
+	
+	private GradebookToolService gbService;
+	
+	private GradeCalculations gradeCalculations;
+	
+	private String helpUrl;
+	
+	private String[] learnerRoleNames;
+	
+	private SectionAwareness sectionAwareness;
+	
+	private SessionManager sessionManager;
+	
+	private SiteService siteService;
+
+	private ToolManager toolManager;
+	
+	private UserDirectoryService userService;
+	
+	public Learner assignComment(String itemId, String studentUid, String text) {
+
+		int indexOf = itemId.indexOf(AppConstants.COMMENT_TEXT_FLAG);
+		Long assignmentId = Long.valueOf(itemId.substring(0, indexOf));
 		
-		Map<String, Object> itemMap = new HashMap<String, Object>();
-		
-		for (Enum<ItemKey> it : EnumSet.allOf(ItemKey.class)) {
-			itemMap.put(it.name(), itemModel.get(it.name()));
+		Comment comment = gbService.getCommentForItemForStudent(assignmentId, studentUid);
+
+		String actionType = null;
+		Assignment assignment = null;
+		if (comment == null) {
+			// We don't need to create a comment object if the user is just passing up a blank
+			// comment
+			if (text == null || text.equals(""))
+				return null;
+			
+			assignment = gbService.getAssignment(assignmentId);
+			comment = new Comment(studentUid, text, assignment);
+			actionType = ActionType.CREATE.name();
+		} else {
+			assignment = (Assignment)comment.getGradableObject();
+			comment.setCommentText(text);
+			actionType = ActionType.UPDATE.name();
 		}
 		
-		addChildren(itemModel, itemMap);
+		Gradebook gradebook = assignment.getGradebook();
+		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.COMMENT.name(), actionType);
+		actionRecord.setEntityName(assignment.getName());
+		Map<String, String> propertyMap = actionRecord.getPropertyMap();
+		propertyMap.put("comment", text);
 		
-		return itemMap;
+		try {
+			gbService.updateComment(comment);
+			postEvent("gradebook2.comment", String.valueOf(gradebook.getId()), String.valueOf(assignment.getId()), studentUid);
+		} catch (RuntimeException e) {
+			actionRecord.setStatus(ActionRecord.STATUS_FAILURE);
+			throw e;
+		} finally {
+			gbService.storeActionRecord(actionRecord);
+		}
+		
+		//student.set(action.getKey(), comment.getText());
+		//student.set(new StringBuilder(assignmentId).append(StudentModel.COMMENTED_FLAG).toString(), Boolean.TRUE);
+
+		Site site = getSite();
+		User user = null;
+		try {
+			user = userService.getUser(studentUid);
+		} catch (UserNotDefinedException unde) {
+			log.warn("User not defined: " + studentUid);
+		}
+		return getStudent(gradebook, site, user);
+	}
+	
+	public Learner assignScore(String gradebookUid, String studentUid, String assignmentId, Double value, Double previousValue) throws InvalidInputException {
+		Assignment assignment = gbService.getAssignment(Long.valueOf(assignmentId));
+		Gradebook gradebook = assignment.getGradebook();
+
+		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.GRADE_RECORD.name(), ActionType.GRADED.name());
+		actionRecord.setEntityId(String.valueOf(assignment.getId()));
+		actionRecord.setStudentUid(studentUid);
+		Map<String, String> propertyMap = actionRecord.getPropertyMap();
+
+		propertyMap.put("score", String.valueOf(value));
+
+		List<AssignmentGradeRecord> gradeRecords = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), studentUid);
+
+		AssignmentGradeRecord assignmentGradeRecord = null;
+
+		for (AssignmentGradeRecord currentGradeRecord : gradeRecords) {
+			Assignment a = currentGradeRecord.getAssignment();
+			if (a.getId().equals(assignment.getId()))
+				assignmentGradeRecord = currentGradeRecord;
+		}
+
+		if (assignmentGradeRecord == null) {
+			assignmentGradeRecord = new AssignmentGradeRecord();
+		}
+
+		scoreItem(gradebook, assignment, assignmentGradeRecord, studentUid, value, false, false);
+
+		gradeRecords = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), studentUid);
+
+		//refreshLearnerData(gradebook, student, assignment, gradeRecords);
+		
+		Site site = getSite();
+		User user = null;
+		try {
+			user = userService.getUser(studentUid);
+		} catch (UserNotDefinedException unde) {
+			log.warn("User not defined: " + studentUid);
+		}
+		Learner student = getStudent(gradebook, site, user);
+		
+		actionRecord.setEntityName(new StringBuilder().append((String)student.get(LearnerKey.DISPLAY_NAME.name())).append(" : ").append(assignment.getName()).toString());
+		gbService.storeActionRecord(actionRecord);
+
+		return student;
+	}
+	
+	public Learner assignScore(String gradebookUid, String studentUid, String property, String value, String previousValue) throws InvalidInputException {
+		if (value != null && value.trim().equals(""))
+			value = null;
+
+		if (value != null)
+			value = value.toUpperCase();
+
+		if (property == null)
+			return null;
+		
+		Gradebook gradebook = gbService.getGradebook(gradebookUid);
+				
+		User user = null;
+		try {
+			user = userService.getUser(studentUid);
+		} catch (UserNotDefinedException unde) {
+			log.warn("User not defined: " + studentUid);
+		}
+		
+		Learner student = null;
+		
+		if (property.equals(LearnerKey.GRADE_OVERRIDE.name())) {
+			// GRBK-233 : Only IOR can overwrite course grades
+			boolean isInstructor = authz.isUserAbleToGradeAll(gradebook.getUid());
+			if (!isInstructor)
+				throw new InvalidInputException(i18n.getString("notAuthToOverwriteCourseGrade"));
+			
+			// Then we are overriding a course grade
+			CourseGradeRecord courseGradeRecord = gbService.getStudentCourseGradeRecord(gradebook, studentUid);
+			courseGradeRecord.setEnteredGrade(value);
+			Collection<CourseGradeRecord> gradeRecords = new LinkedList<CourseGradeRecord>();
+			gradeRecords.add(courseGradeRecord);
+			// FIXME: We shouldn't be looking up the CourseGrade if we don't use it
+			// anywhere.
+			CourseGrade courseGrade = gbService.getCourseGrade(gradebook.getId());
+	
+			GradeMapping gradeMapping = gradebook.getSelectedGradeMapping();
+			Set<String> scaledGrades = gradeMapping.getGradeMap().keySet();
+	
+			if (value != null && !advisor.isValidOverrideGrade(value, user.getEid(), user.getDisplayId(), gradebook, scaledGrades))
+				throw new InvalidInputException(i18n.getString("invalidOverrideCourseGrade"));
+	
+			gbService.updateCourseGradeRecords(courseGrade, gradeRecords);
+	
+			ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.COURSE_GRADE_RECORD.name(), ActionType.GRADED.name());
+			actionRecord.setEntityId(String.valueOf(gradebook.getId()));
+			actionRecord.setStudentUid(studentUid);
+			Map<String, String> propertyMap = actionRecord.getPropertyMap();
+
+			propertyMap.put("score", value);
+			
+			Site site = getSite();
+
+			student = getStudent(gradebook, site, user);
+			actionRecord.setEntityName(new StringBuilder().append((String)student.get(LearnerKey.DISPLAY_NAME.name())).append(" : ").append(gradebook.getName()).toString());
+			gbService.storeActionRecord(actionRecord);
+
+		} else if (gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER) {
+			// We must be modifying a letter grade
+			if (value != null && !gradeCalculations.isValidLetterGrade(value))
+				throw new InvalidInputException(i18n.getString("invalidLetterGrade"));
+			
+			Double numericValue = gradeCalculations.convertLetterGradeToPercentage(value);
+			Double previousNumericValue = gradeCalculations.convertLetterGradeToPercentage(previousValue);
+			
+			student = assignScore(gradebookUid, studentUid, property, numericValue, previousNumericValue);
+		}
+		
+		return student;
+	}
+	
+	public Item createItem(String gradebookUid, Long gradebookId, Item item, boolean enforceNoNewCategories) throws InvalidInputException {
+
+		ItemType itemType = item.getItemType();
+
+		if (itemType != null) {
+			switch (itemType) {
+				case CATEGORY:
+					return createItemCategory(gradebookUid, gradebookId, item);
+			}
+		}
+
+		Gradebook gradebook = gbService.getGradebook(gradebookUid);
+		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
+
+		Long assignmentId = doCreateItem(gradebook, item, hasCategories, enforceNoNewCategories);
+
+		postEvent("gradebook2.newItem", String.valueOf(gradebook.getId()), String.valueOf(assignmentId));
+		
+		List<Assignment> assignments = gbService.getAssignments(gradebookId);
+		List<Category> categories = null;
+		
+		if (hasCategories)
+			categories = getCategoriesWithAssignments(gradebookId, assignments, true);
+		
+		return new GradeItemImpl(getItemMap(gradebook, assignments, categories, null, assignmentId));
+	}
+	
+	public Item createItemCategory(String gradebookUid, Long gradebookId, Item item) throws BusinessRuleException {
+		String name = item.getName();
+		
+		ActionRecord actionRecord = new ActionRecord(gradebookUid, gradebookId, EntityType.CATEGORY.name(), ActionType.CREATE.name());
+		actionRecord.setEntityName(name);
+		Map<String, String> propertyMap = actionRecord.getPropertyMap();
+
+		for (String property : item.getPropertyNames()) {
+			String value = String.valueOf(((GradeItem)item).get(property));
+			if (value != null)
+				propertyMap.put(property, value);
+		}
+
+		// Category category = null;
+		Gradebook gradebook = null;
+		List<Assignment> assignments = null;
+		List<Category> categories = null;
+		Long categoryId = null;
+
+		try {
+			Double weight = item.getPercentCourseGrade(); //(Double)attributes.get(ItemKey.PERCENT_COURSE_GRADE.name());
+			Boolean isEqualWeighting = item.getEqualWeightAssignments(); //(Boolean)attributes.get(ItemKey.EQUAL_WEIGHT.name());
+			Boolean isIncluded = item.getIncluded(); //(Boolean)attributes.get(ItemKey.INCLUDED.name());
+			Integer dropLowest = item.getDropLowest(); //(Integer)attributes.get(ItemKey.DROP_LOWEST.name());
+			Boolean isExtraCredit = item.getExtraCredit(); //(Boolean)attributes.get(ItemKey.EXTRA_CREDIT.name());
+			Integer categoryOrder = item.getItemOrder(); //(Integer)attributes.get(ItemKey.ITEM_ORDER.name());
+			Boolean doEnforcePointWeighting = item.getEnforcePointWeighting(); //(Boolean)attributes.get(ItemKey.ENFORCE_POINT_WEIGHTING.name());
+
+			boolean isUnweighted = !DataTypeConversionUtil.checkBoolean(isIncluded);
+
+			gradebook = gbService.getGradebook(gradebookUid);
+
+			boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
+			boolean hasWeights = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY;
+
+			if (hasCategories) {
+				categories = gbService.getCategories(gradebook.getId()); // getCategoriesWithAssignments(gradebook.getId());
+				if (categoryOrder == null)
+					categoryOrder = categories == null || categories.isEmpty() ? Integer.valueOf(0) : Integer.valueOf(categories.size());
+			}
+
+			double w = weight == null ? 0d : ((Double)weight).doubleValue() * 0.01;
+
+			if (hasCategories) {
+				int dropLowestInt = dropLowest == null ? 0 : dropLowest.intValue();
+				boolean equalWeighting = isEqualWeighting == null ? false : isEqualWeighting.booleanValue();
+
+				businessLogic.applyNoDuplicateCategoryNamesRule(gradebook.getId(), name, null, categories);
+				if (hasWeights)
+					businessLogic.applyOnlyEqualWeightDropLowestRule(dropLowestInt, equalWeighting);
+			}
+
+			categoryId = gbService.createCategory(gradebookId, name, Double.valueOf(w), dropLowest, isEqualWeighting, Boolean.valueOf(isUnweighted), isExtraCredit, categoryOrder, doEnforcePointWeighting);
+
+			postEvent("gradebook2.newCategory", String.valueOf(gradebook.getId()), String.valueOf(categoryId));
+			
+			assignments = gbService.getAssignments(gradebook.getId());
+			categories = null;
+			if (hasCategories) {
+				categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+			}
+
+		} catch (RuntimeException e) {
+			actionRecord.setStatus(ActionRecord.STATUS_FAILURE);
+			throw e;
+		} finally {
+			gbService.storeActionRecord(actionRecord);
+		}
+
+		return new GradeItemImpl(getItemMap(gradebook, assignments, categories, categoryId, null));
 	}
 	
 	public Map<String, Object> createPermission(String gradebookUid, Long gradebookId, Map<String, Object> attributes) throws InvalidInputException {
@@ -148,293 +606,39 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		return attributes;
 	}
 	
-	public Map<String, Object> assignComment(String itemId, String studentUid, String text) {
-
-		int indexOf = itemId.indexOf(StudentModel.COMMENT_TEXT_FLAG);
-		Long assignmentId = Long.valueOf(itemId.substring(0, indexOf));
-		
-		Comment comment = gbService.getCommentForItemForStudent(assignmentId, studentUid);
-
-		String actionType = null;
-		Assignment assignment = null;
-		if (comment == null) {
-			// We don't need to create a comment object if the user is just passing up a blank
-			// comment
-			if (text == null || text.equals(""))
-				return null;
-			
-			assignment = gbService.getAssignment(assignmentId);
-			comment = new Comment(studentUid, text, assignment);
-			actionType = ActionType.CREATE.name();
-		} else {
-			assignment = (Assignment)comment.getGradableObject();
-			comment.setCommentText(text);
-			actionType = ActionType.UPDATE.name();
-		}
-		
-		Gradebook gradebook = assignment.getGradebook();
-		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.COMMENT.name(), actionType);
-		actionRecord.setEntityName(assignment.getName());
-		Map<String, String> propertyMap = actionRecord.getPropertyMap();
-		propertyMap.put("comment", text);
-		
-		try {
-			gbService.updateComment(comment);
-			postEvent("gradebook2.comment", String.valueOf(gradebook.getId()), String.valueOf(assignment.getId()), studentUid);
-		} catch (RuntimeException e) {
-			actionRecord.setStatus(ActionRecord.STATUS_FAILURE);
-			throw e;
-		} finally {
-			gbService.storeActionRecord(actionRecord);
-		}
-		
-		//student.set(action.getKey(), comment.getText());
-		//student.set(new StringBuilder(assignmentId).append(StudentModel.COMMENTED_FLAG).toString(), Boolean.TRUE);
+	public List<UserDereference> findAllUserDereferences() {
 
 		Site site = getSite();
-		User user = null;
-		try {
-			user = userService.getUser(studentUid);
-		} catch (UserNotDefinedException unde) {
-			log.warn("User not defined: " + studentUid);
+		String siteId = site == null ? null : site.getId();
+
+		String[] learnerRoleNames = getLearnerRoleNames();
+		verifyUserDataIsUpToDate(site, learnerRoleNames);
+
+		String[] realmIds = null;
+		if (siteId == null) {
+			if (log.isInfoEnabled())
+				log.info("No siteId defined");
+			return new ArrayList<UserDereference>();
 		}
-		return getStudent(gradebook, site, user);
+
+		realmIds = new String[1];
+		realmIds[0] = new StringBuffer().append("/site/").append(siteId).toString();
+
+		List<UserDereference> dereferences = gbService.getUserDereferences(realmIds, "sortName", null, null, -1, -1, true, learnerRoleNames);
+
+		return dereferences;
 	}
 	
-	public Map<String, Object> assignScore(String gradebookUid, String studentUid, String assignmentId, Double value, Double previousValue) throws InvalidInputException {
-		Assignment assignment = gbService.getAssignment(Long.valueOf(assignmentId));
-		Gradebook gradebook = assignment.getGradebook();
+	public InstitutionalAdvisor getAdvisor() {
 
-		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.GRADE_RECORD.name(), ActionType.GRADED.name());
-		actionRecord.setEntityId(String.valueOf(assignment.getId()));
-		actionRecord.setStudentUid(studentUid);
-		Map<String, String> propertyMap = actionRecord.getPropertyMap();
-
-		propertyMap.put("score", String.valueOf(value));
-
-		List<AssignmentGradeRecord> gradeRecords = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), studentUid);
-
-		AssignmentGradeRecord assignmentGradeRecord = null;
-
-		for (AssignmentGradeRecord currentGradeRecord : gradeRecords) {
-			Assignment a = currentGradeRecord.getAssignment();
-			if (a.getId().equals(assignment.getId()))
-				assignmentGradeRecord = currentGradeRecord;
-		}
-
-		if (assignmentGradeRecord == null) {
-			assignmentGradeRecord = new AssignmentGradeRecord();
-		}
-
-		scoreItem(gradebook, assignment, assignmentGradeRecord, studentUid, value, false, false);
-
-		gradeRecords = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), studentUid);
-
-		//refreshLearnerData(gradebook, student, assignment, gradeRecords);
-		
-		Site site = getSite();
-		User user = null;
-		try {
-			user = userService.getUser(studentUid);
-		} catch (UserNotDefinedException unde) {
-			log.warn("User not defined: " + studentUid);
-		}
-		Map<String, Object> student = getStudent(gradebook, site, user);
-		
-		actionRecord.setEntityName(new StringBuilder().append((String)student.get(LearnerKey.DISPLAY_NAME.name())).append(" : ").append(assignment.getName()).toString());
-		gbService.storeActionRecord(actionRecord);
-
-		return student;
-	}
-
-	
-	public Map<String, Object> assignScore(String gradebookUid, String studentUid, String property, String value, String previousValue) throws InvalidInputException {
-		if (value != null && value.trim().equals(""))
-			value = null;
-
-		if (value != null)
-			value = value.toUpperCase();
-
-		if (property == null)
-			return null;
-		
-		Gradebook gradebook = gbService.getGradebook(gradebookUid);
-				
-		User user = null;
-		try {
-			user = userService.getUser(studentUid);
-		} catch (UserNotDefinedException unde) {
-			log.warn("User not defined: " + studentUid);
-		}
-		
-		Map<String, Object> student = null;
-		
-		if (property.equals(LearnerKey.GRADE_OVERRIDE.name())) {
-			// GRBK-233 : Only IOR can overwrite course grades
-			boolean isInstructor = authz.isUserAbleToGradeAll(gradebook.getUid());
-			if (!isInstructor)
-				throw new InvalidInputException(i18n.getString("notAuthToOverwriteCourseGrade"));
-			
-			// Then we are overriding a course grade
-			CourseGradeRecord courseGradeRecord = gbService.getStudentCourseGradeRecord(gradebook, studentUid);
-			courseGradeRecord.setEnteredGrade(value);
-			Collection<CourseGradeRecord> gradeRecords = new LinkedList<CourseGradeRecord>();
-			gradeRecords.add(courseGradeRecord);
-			// FIXME: We shouldn't be looking up the CourseGrade if we don't use it
-			// anywhere.
-			CourseGrade courseGrade = gbService.getCourseGrade(gradebook.getId());
-	
-			GradeMapping gradeMapping = gradebook.getSelectedGradeMapping();
-			Set<String> scaledGrades = gradeMapping.getGradeMap().keySet();
-	
-			if (value != null && !advisor.isValidOverrideGrade(value, user.getEid(), user.getDisplayId(), gradebook, scaledGrades))
-				throw new InvalidInputException(i18n.getString("invalidOverrideCourseGrade"));
-	
-			gbService.updateCourseGradeRecords(courseGrade, gradeRecords);
-	
-			ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.COURSE_GRADE_RECORD.name(), ActionType.GRADED.name());
-			actionRecord.setEntityId(String.valueOf(gradebook.getId()));
-			actionRecord.setStudentUid(studentUid);
-			Map<String, String> propertyMap = actionRecord.getPropertyMap();
-
-			propertyMap.put("score", value);
-			
-			Site site = getSite();
-			/*List<FixedColumnModel> columns = getColumns(true);
-			UserRecord userRecord = buildUserRecord(site, user, gradebook);
-			List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
-			List<Category> categories = null;
-			if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
-				categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
-			student = buildLearnerGradeRecord(gradebook, userRecord, columns, assignments, categories);
-			*/
-			
-			student = getStudent(gradebook, site, user);
-			actionRecord.setEntityName(new StringBuilder().append((String)student.get(LearnerKey.DISPLAY_NAME.name())).append(" : ").append(gradebook.getName()).toString());
-			gbService.storeActionRecord(actionRecord);
-			
-			/*
-			List<Category> categories = null;
-			List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
-			if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
-				categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
-	
-			Map<Long, AssignmentGradeRecord> studentGradeMap = new HashMap<Long, AssignmentGradeRecord>();
-			List<AssignmentGradeRecord> records = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), (String)student.get(LearnerKey.UID.name()));
-	
-			if (records != null) {
-				for (AssignmentGradeRecord record : records) {
-					studentGradeMap.put(record.getAssignment().getId(), record);
-				}
-			}
-	
-			BigDecimal calculatedGrade = getCalculatedGrade(gradebook, assignments, categories, studentGradeMap);
-			DisplayGrade displayGrade = getDisplayGrade(gradebook, (String)student.get(LearnerKey.UID.name()), courseGradeRecord, calculatedGrade);// requestCourseGrade(gradebookUid,
-			displayGrade.setOverridden(value != null);
-			student.set(LearnerKey.GRADE_OVERRIDE.name(), courseGradeRecord.getEnteredGrade());
-			student.set(LearnerKey.COURSE_GRADE.name(), displayGrade.toString());
-			student.set(LearnerKey.LETTER_GRADE.name(), displayGrade.getLetterGrade());*/
-		} else if (gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER) {
-			// We must be modifying a letter grade
-			if (value != null && !gradeCalculations.isValidLetterGrade(value))
-				throw new InvalidInputException(i18n.getString("invalidLetterGrade"));
-			
-			Double numericValue = gradeCalculations.convertLetterGradeToPercentage(value);
-			Double previousNumericValue = gradeCalculations.convertLetterGradeToPercentage(previousValue);
-			
-			student = assignScore(gradebookUid, studentUid, property, numericValue, previousNumericValue);
-		}
-		
-		return student;
+		return advisor;
 	}
 	
 	public Map<String, Object> getApplicationMap(String... gradebookUids) {
 
 		Map<String,Object> map = new HashMap<String,Object>();
-		//model.setGradebookModels(getGradebookModels(gradebookUids));
-		
-		List<GradebookModel> gbModels = getGradebookModels(gradebookUids);
-		
-		List<Map<String,Object>> gradebookMaps = new ArrayList<Map<String,Object>>();
-		
-		for (GradebookModel gbModel : gbModels) {
-			Map<String,Object> gbMap = new HashMap<String,Object>();
-			
-			for (Enum<GradebookKey> en : EnumSet.allOf(GradebookKey.class)) {
-				
-				if (en.equals(GradebookKey.GRADEBOOKITEMMODEL)) {
-					ItemModel gradebookItemModel = gbModel.get(en.name());
-					Map<String, Object> gradebookItemMap = new HashMap<String, Object>();
-					
-					for (Enum<ItemKey> it : EnumSet.allOf(ItemKey.class)) {
-						gradebookItemMap.put(it.name(), gradebookItemModel.get(it.name()));
-					}
-					
-					addChildren(gradebookItemModel, gradebookItemMap);
-					
-					gbMap.put(en.name(), gradebookItemMap);
-				} else if (en.equals(GradebookKey.COLUMNS)) { 
-					List<FixedColumnModel> fixedColumnModelList = gbModel.get(en.name());
-					List<Map<String,Object>> fixedColumnMapList = new ArrayList<Map<String,Object>>();
-					if (fixedColumnModelList != null) {
-						for (FixedColumnModel fixedColumnModel : fixedColumnModelList) {
-							Map<String,Object> fixedColumnMap = new HashMap<String, Object>();
-							
-							for (Enum<FixedColumnKey> it : EnumSet.allOf(FixedColumnKey.class)) {
-								fixedColumnMap.put(it.name(), fixedColumnModel.get(it.name()));
-							}
-							fixedColumnMapList.add(fixedColumnMap);
-						}
-						gbMap.put(en.name(), fixedColumnMapList);
-					}
-				} else if (en.equals(GradebookKey.USERASSTUDENT)) {
-					StudentModel studentModel = gbModel.get(en.name());
-					if (studentModel != null) {
-						Map<String, Object> studentMap = new HashMap<String, Object>();
-						
-						for (Enum<LearnerKey> it : EnumSet.allOf(LearnerKey.class)) {
-							studentMap.put(it.name(), studentModel.get(it.name()));
-						}
-						
-						gbMap.put(en.name(), studentMap);
-					}
-				} else if (en.equals(GradebookKey.CONFIGURATIONMODEL)) {
-					ConfigurationModel configModel = gbModel.get(en.name());
-					if (configModel != null) {
-						Map<String, Object> configMap = new HashMap<String, Object>();
-										
-						for (String key : configModel.getPropertyNames()) {
-							configMap.put(key, configModel.get(key));
-						}
-						
-						gbMap.put(en.name(), configMap);
-					}
-				} else if (en.equals(GradebookKey.STATSMODELS)) {
-					List<StatisticsModel> statsModels = gbModel.get(en.name());
-					List<Map<String,Object>> list = new ArrayList<Map<String,Object>>();
-					if (statsModels != null) {
-						for (StatisticsModel statsModel : statsModels) {
-							Map<String,Object> statsMap = new HashMap<String,Object>();
-							
-							for (String key : statsModel.getPropertyNames()) {
-								statsMap.put(key, statsModel.get(key));
-							}
-							list.add(statsMap);
-						}
-						gbMap.put(en.name(), list);
-					}
-					
-				} else {
-					gbMap.put(en.name(), gbModel.get(en.name()));
-				}
-				
-			}
-			gradebookMaps.add(gbMap);
-			
-			//gbMap.put(key, value);
-		}
-		
-		map.put(ApplicationKey.GRADEBOOKMODELS.name(), gradebookMaps);
+
+		map.put(ApplicationKey.GRADEBOOKMODELS.name(), getGradebookModels(gradebookUids));
 		map.put(ApplicationKey.HELPURL.name(), helpUrl);
 		
 		List<String> gradeTypes = new ArrayList<String>();
@@ -465,6 +669,107 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		}
 
 		return models;
+	}
+	
+	public BusinessLogic getBusinessLogic() {
+
+		return businessLogic;
+	}
+		
+	public List<Category> getCategoriesWithAssignments(Long gradebookId) {
+
+		List<Category> categories = gbService.getCategories(gradebookId);
+		List<Category> categoriesWithAssignments = new ArrayList<Category>();
+		if (categories != null) {
+			for (Category category : categories) {
+
+				if (category != null) {
+					List<Assignment> assignments = gbService.getAssignmentsForCategory(category.getId());
+					category.setAssignmentList(assignments);
+					categoriesWithAssignments.add(category);
+				}
+			}
+		}
+
+		return categoriesWithAssignments;
+	}
+	
+	public ServerConfigurationService getConfigService() {
+
+		return configService;
+	}
+	
+	public String getCurrentSession() {
+
+		if (null == sessionManager) {
+			return null;
+		}
+
+		Session session = sessionManager.getCurrentSession();
+
+		if (null == session) {
+			return null;
+		}
+
+		return session.getId();
+	}
+	
+	public String getCurrentUser() {
+
+		if(null == sessionManager) {
+			return "0";
+		}
+
+		return sessionManager.getCurrentSessionUserId();
+	}
+	
+	public EventTrackingService getEventTrackingService() {
+		return eventTrackingService;
+	}
+	
+	public List<String> getExportCourseManagementSetEids(Group group) {
+
+		return advisor.getExportCourseManagementSetEids(group);
+	}
+
+	public String getExportCourseManagementId(String userEid, Group group, List<String> enrollmentSetEids) {
+
+		return advisor.getExportCourseManagementId(userEid, group, enrollmentSetEids);
+	}
+
+	public String getExportUserId(UserDereference dereference) {
+
+		return advisor.getExportUserId(dereference);
+	}
+
+	public String getFinalGradeUserId(UserDereference dereference) {
+
+		return advisor.getFinalGradeUserId(dereference);
+	}
+	
+	public GradebookFrameworkService getFrameworkService() {
+
+		return frameworkService;
+	}
+	
+	public GradebookToolService getGbService() {
+
+		return gbService;
+	}
+	
+	public org.sakaiproject.gradebook.gwt.client.model.Gradebook getGradebook(String uid) {
+
+		Gradebook gradebook = gbService.getGradebook(uid);
+		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
+		List<Category> categories = null;
+		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
+			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+		return createGradebookModel(gradebook, assignments, categories, false);
+	}
+		
+	public GradeCalculations getGradeCalculations() {
+
+		return gradeCalculations;
 	}
 	
 	public List<Map<String,Object>> getGradeEvents(Long assignmentId, String studentUid) {
@@ -527,6 +832,121 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		}
 		return gradeScaleMappings;
 	}
+	
+	/*
+	protected Long doCreateItem(Gradebook gradebook, Map<String, Object> attributes, 
+			boolean hasCategories, boolean enforceNoNewCategories) throws BusinessRuleException {
+
+		String name = (String)attributes.get(ItemKey.NAME.name());
+		
+		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.ITEM.name(), ActionType.CREATE.name());
+		actionRecord.setEntityName(name);
+		Map<String, String> propertyMap = actionRecord.getPropertyMap();
+
+		for (String property : attributes.keySet()) {
+			String value = String.valueOf(attributes.get(property));
+			if (value != null)
+				propertyMap.put(property, value);
+		}
+
+		boolean hasNewCategory = false;
+
+		Category category = null;
+		Long assignmentId = null;
+
+		List<Assignment> assignments = null;
+		Long categoryId = null;
+
+		try {
+			boolean includeInGrade = DataTypeConversionUtil.checkBoolean((Boolean)attributes.get(ItemKey.INCLUDED.name()));
+
+			categoryId = (Long)attributes.get(ItemKey.CATEGORY_ID.name());
+			String categoryName = (String)attributes.get(ItemKey.CATEGORY_NAME.name());
+			Double weight = (Double)attributes.get(ItemKey.PERCENT_CATEGORY.name()); //item.getPercentCategory();
+			Double points = (Double)attributes.get(ItemKey.POINTS.name()); //item.getPoints();
+			Boolean isReleased = Boolean.valueOf(DataTypeConversionUtil.checkBoolean((Boolean)attributes.get(ItemKey.RELEASED.name())));
+			Boolean isIncluded = Boolean.valueOf(includeInGrade);
+			Boolean isExtraCredit = Boolean.valueOf(DataTypeConversionUtil.checkBoolean((Boolean)attributes.get(ItemKey.EXTRA_CREDIT.name())));
+			Boolean isNullsAsZeros = Boolean.valueOf(DataTypeConversionUtil.checkBoolean((Boolean)attributes.get(ItemKey.NULLSASZEROS.name())));
+			Date dueDate = null;
+			Object dueDateObject = attributes.get(ItemKey.DUE_DATE.name());
+			if (dueDateObject instanceof Date) 
+				dueDate = (Date)dueDateObject;
+			else if (dueDateObject instanceof Long) {
+				Long dueDateMillis = (Long)attributes.get(ItemKey.DUE_DATE.name());
+				dueDate = dueDateMillis == null ? null : new Date(dueDateMillis.longValue());
+			}
+			
+			Integer itemOrder = (Integer)attributes.get(ItemKey.ITEM_ORDER.name());
+
+			// Business rule #1
+			if (points == null)
+				points = new Double(100d);
+			// Business rule #2
+			if (weight == null)
+				weight = Double.valueOf(points.doubleValue());
+
+			if (hasCategories && categoryId == null && categoryName != null 
+					&& categoryName.trim().length() > 0) {
+				GradeItem newCategory = new GradeItemImpl();
+				newCategory.setName(categoryName);
+				newCategory.setIncluded(Boolean.TRUE);
+				newCategory = getActiveItem((GradeItem)addItemCategory(gradebook.getUid(), gradebook.getId(), newCategory));
+				categoryId = newCategory.getCategoryId();
+				//item.setCategoryId(categoryId);
+				hasNewCategory = true;
+			}
+
+			if (categoryId == null || categoryId.equals(Long.valueOf(-1l))) {
+				category = findDefaultCategory(gradebook.getId());
+				categoryId = null;
+			}
+
+			if (category == null && categoryId != null)
+				category = gbService.getCategory(categoryId);
+
+			// Apply business rules before item creation
+			if (hasCategories) {
+				if (categoryId != null) {
+					assignments = gbService.getAssignmentsForCategory(categoryId);
+					// Business rule #4
+					businessLogic.applyNoDuplicateItemNamesWithinCategoryRule(categoryId, name, null, assignments);
+					// Business rule #6
+					if (enforceNoNewCategories)
+						businessLogic.applyMustIncludeCategoryRule(categoryId);
+				}
+
+			} else {
+				assignments = gbService.getAssignments(gradebook.getId());
+				businessLogic.applyNoDuplicateItemNamesRule(gradebook.getId(), name, null, assignments);
+			}
+
+			if (itemOrder == null)
+				itemOrder = assignments == null || assignments.isEmpty() ? Integer.valueOf(0) : Integer.valueOf(assignments.size());
+
+				double w = weight == null ? 0d : ((Double) weight).doubleValue() * 0.01;
+
+				assignmentId = gbService.createAssignmentForCategory(gradebook.getId(), categoryId, name, points, Double.valueOf(w), dueDate, Boolean.valueOf(!DataTypeConversionUtil.checkBoolean(isIncluded)), isExtraCredit, Boolean.FALSE,
+						isReleased, itemOrder, isNullsAsZeros);
+
+				// Apply business rules after item creation
+				if (hasCategories) {
+					assignments = gbService.getAssignmentsForCategory(categoryId);
+					// Business rule #5
+					if (businessLogic.checkRecalculateEqualWeightingRule(category))
+						recalculateAssignmentWeights(category, Boolean.FALSE, assignments);
+				}
+
+				actionRecord.setStatus(ActionRecord.STATUS_SUCCESS);
+		} catch (RuntimeException e) {
+			actionRecord.setStatus(ActionRecord.STATUS_FAILURE);
+			throw e;
+		} finally {
+			gbService.storeActionRecord(actionRecord);
+		}
+
+		return assignmentId;
+	}*/
 	
 	public List<Map<String, Object>> getGraders(String gradebookUid, Long gradebookId) {
 		List<Map<String, Object>> userList = new ArrayList<Map<String, Object>>();
@@ -709,13 +1129,13 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 			if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
 				categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
 			
-			ItemModel gradebookItemModel = getGradebookItemModel(gradebook, assignments, categories, false);
-			
-			for (Enum<ItemKey> it : EnumSet.allOf(ItemKey.class)) {
-				map.put(it.name(), gradebookItemModel.get(it.name()));
+			GradeItem gradebookGradeItem = getGradebookGradeItem(gradebook, assignments, categories, false);
+			map = gradebookGradeItem.getProperties();
+			/*for (Enum<ItemKey> it : EnumSet.allOf(ItemKey.class)) {
+				map.put(it.name(), gradebookGradeItem.get(it.name()));
 			}
 			
-			addChildren(gradebookItemModel, map);
+			addChildren(gradebookGradeItem, map);*/
 		}
 		
 		return map;
@@ -812,7 +1232,267 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		return list;
 	}
 	
-	public List<Map<String,Object>> getStatistics(String gradebookUid, Long gradebookId, String studentId) {
+	
+	/*
+	 * PRIVATE METHODS
+	 */
+
+	public Roster getRoster(String gradebookUid, Long gradebookId,
+			Integer numberLimit, Integer numberOffset, String sectionUuid,
+			String searchString, String sortField, boolean includeCMId, boolean isDescending) {
+		
+		List<Learner> rows = new ArrayList<Learner>();
+
+		String[] learnerRoleNames = getLearnerRoleNames();
+
+		List<UserRecord> userRecords = null;
+
+		Gradebook gradebook = null;
+		if (gradebookId == null) {
+			gradebook = gbService.getGradebook(gradebookUid);
+			gradebookId = gradebook.getId();
+		}
+
+		List<Assignment> assignments = gbService.getAssignments(gradebookId);
+
+		// Don't bother going out to the db for the Gradebook if we've already
+		// retrieved it
+		if (gradebook == null && assignments != null && assignments.size() > 0)
+			gradebook = assignments.get(0).getGradebook();
+
+		if (gradebook == null)
+			gradebook = gbService.getGradebook(gradebookId);
+
+		List<Category> categories = null;
+		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
+			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+
+		String columnId = null;
+		LearnerKey sortColumnKey = null;
+
+		int offset = numberOffset == null ? -1 : numberOffset.intValue() ;
+		int limit = numberLimit == null ? -1 : numberLimit.intValue();
+
+		String searchField = null;
+		String searchCriteria = null;
+		
+		// This is slightly painful, but since it's a String that gets passed
+		// up, we have to iterate
+		if (sortField != null) {
+			columnId = sortField;
+
+			for (LearnerKey key : EnumSet.allOf(LearnerKey.class)) {
+				if (columnId.equals(key.name())) {
+					sortColumnKey = key;
+					break;
+				}
+			}
+
+			if (sortColumnKey == null)
+				sortColumnKey = LearnerKey.ASSIGNMENT;
+		}
+
+		if (searchCriteria != null) {
+			searchField = "sortName";
+			searchCriteria = searchCriteria.toUpperCase();
+			sortColumnKey = LearnerKey.DISPLAY_NAME;
+		}
+
+		if (sortColumnKey == null)
+			sortColumnKey = LearnerKey.DISPLAY_NAME;
+
+		int totalUsers = 0;
+		Site site = getSite();
+		String siteId = (site == null) ? null : site.getId();
+
+		// Check if the user is a TA and assigned to a section via the Section
+		// Info tool
+		List<CourseSection> courseSections = sectionAwareness.getSections(getSiteContext());
+		boolean isUserAssignedSectionTa = false;
+
+		for (CourseSection courseSection : courseSections) {
+			isUserAssignedSectionTa = authz.isUserTAinSection(courseSection.getUuid());
+			if (isUserAssignedSectionTa) {
+				break;
+			}
+		}
+		// Is the user an Instructor or is the user a TA?
+		boolean isInstructor = authz.isUserAbleToGradeAll(gradebook.getUid());
+
+		// Is the user a TA and was he/she granted view/grade access via the
+		// Grader Permission UI?
+		boolean hasUserGraderPermissions = authz.hasUserGraderPermissions(gradebook.getUid());
+
+		// If the user doesn't have any of the necessary credentials we return
+		// an empty data set
+		if (!isInstructor && !hasUserGraderPermissions && !isUserAssignedSectionTa) {
+			return new RosterImpl(rows, 0);
+		}
+
+		// Was a section selected
+		boolean isLimitedToSelectedSection = false;
+		Set<String> authorizedGroups = new HashSet<String>();
+
+		if (sectionUuid != null) {
+			authorizedGroups.add(sectionUuid);
+			isLimitedToSelectedSection = true;
+		}
+
+		// Get the site's groups
+		Collection<Group> groups = (site == null) ? new ArrayList<Group>() : site.getGroups();
+		Map<String, Group> groupReferenceMap = new HashMap<String, Group>();
+		List<String> groupReferences = new ArrayList<String>();
+
+		if (groups != null) {
+
+			for (Group group : groups) {
+
+				String reference = group.getReference();
+				groupReferences.add(reference);
+				groupReferenceMap.put(reference, group);
+
+				if (!isLimitedToSelectedSection) {
+
+					// GRBK-233 : In case the site has adhoc groups, we cannot check for providerId
+					if (!isInstructor && (authz.isUserTAinSection(reference) || authz.hasUserGraderPermission(gradebook.getUid(), reference))) {
+
+						authorizedGroups.add(reference);
+					}
+				}
+			}
+		}
+
+		// Turn the groupId set into a String array
+		String[] realmIds = null;
+		if (!authorizedGroups.isEmpty())
+			realmIds = authorizedGroups.toArray(new String[authorizedGroups.size()]);
+
+		if (realmIds == null) {
+
+			// If there are not groupIds we return an empty result set
+			if (siteId == null) {
+				if (log.isInfoEnabled())
+					log.info("No siteId defined");
+				return new RosterImpl(rows, 0);
+			}
+
+			realmIds = new String[1];
+			realmIds[0] = new StringBuffer().append("/site/").append(siteId).toString();
+		}
+
+		// Check to see if we're sorting or not
+		if (sortColumnKey != null) {
+			switch (sortColumnKey) {
+				case DISPLAY_NAME:
+				case LAST_NAME_FIRST:
+				case DISPLAY_ID:
+				case EMAIL:
+					sortField = "lastNameFirst";
+
+					switch (sortColumnKey) {
+						case DISPLAY_ID:
+							sortField = "displayId";
+							break;
+						case DISPLAY_NAME:
+						case LAST_NAME_FIRST:
+							sortField = "sortName";
+							break;
+						case EMAIL:
+							sortField = "email";
+							break;
+					}
+
+					// FIXME : GRBK-233 : If a site has sections as well as adhoc groups users that are 
+					// in both sections and adhoc groups show up twice
+					userRecords = findLearnerRecordPage(gradebook, site, realmIds, groupReferences, groupReferenceMap, sortField, searchString, searchCriteria, offset, limit, !isDescending, includeCMId);
+					totalUsers = gbService.getUserCountForSite(realmIds, sortField, searchString, searchCriteria, learnerRoleNames);
+
+					int startRow = offset == -1 ? 0 : offset;
+
+					List<FixedColumn> columns = getColumns(true);
+
+					rows = new ArrayList<Learner>(userRecords == null ? 0 : userRecords.size());
+
+					// We only want to populate the rowData and rowValues for
+					// the requested rows
+					for (UserRecord userRecord : userRecords) {
+						rows.add(buildStudentRow(gradebook, userRecord, columns, assignments, categories));
+					}
+
+					return new RosterImpl(rows, Integer.valueOf(totalUsers));
+
+				case SECTION:
+				case COURSE_GRADE:
+				case GRADE_OVERRIDE:
+				case LETTER_GRADE:
+				case CALCULATED_GRADE:
+				case ASSIGNMENT:
+
+					userRecords = findLearnerRecordPage(gradebook, site, realmIds, groupReferences, groupReferenceMap, null, searchString, searchCriteria, -1, -1, !isDescending, includeCMId);
+
+					Map<String, UserRecord> userRecordMap = new HashMap<String, UserRecord>();
+
+					for (UserRecord userRecord : userRecords) {
+						userRecordMap.put(userRecord.getUserUid(), userRecord);
+					}
+
+					List<String> studentUids = new ArrayList<String>(userRecordMap.keySet());
+
+					userRecords = doSearchAndSortUserRecords(gradebook, assignments, categories, studentUids, userRecordMap, null);
+					totalUsers = userRecords.size();
+					break;
+			}
+		}
+
+		int startRow = offset == -1 ? 0 : offset;
+		int lastRow = offset == -1 ? totalUsers : startRow + limit;
+
+		if (lastRow > totalUsers) {
+			lastRow = totalUsers;
+		}
+
+		List<FixedColumn> columns = getColumns(true);
+
+		// We only want to populate the rowData and rowValues for the requested
+		// rows
+		for (int row = startRow; row < lastRow; row++) {
+			// Everything is indexed by the user, since it's by user id that the
+			// rows are distinguished
+			UserRecord userRecord = userRecords.get(row);
+
+			// Populate the user record on the fly if necessary
+			if (!userRecord.isPopulated()) {
+				User user = null;
+				try {
+					user = userService.getUser(userRecord.getUserUid());
+					userRecord.setUserEid(user.getEid());
+					userRecord.setDisplayId(user.getDisplayId());
+					userRecord.setDisplayName(user.getDisplayName());
+					userRecord.setLastNameFirst(user.getSortName());
+					userRecord.setSortName(user.getSortName());
+					userRecord.setEmail(user.getEmail());
+				} catch (UserNotDefinedException e) {
+					log.error("No sakai user defined for this member '" + userRecord.getUserUid() + "'", e);
+				}
+			}
+
+			rows.add(buildStudentRow(gradebook, userRecord, columns, assignments, categories));
+		}
+
+		return new RosterImpl(rows, Integer.valueOf(totalUsers));
+	}
+
+	public SessionManager getSessionManager() {
+
+		return sessionManager;
+	}
+	
+	public SiteService getSiteService() {
+
+		return siteService;
+	}
+
+	public List<Statistics> getStatistics(String gradebookUid, Long gradebookId, String studentId) {
 		Gradebook gradebook = null;
 		if (gradebookId == null) {
 			gradebook = gbService.getGradebook(gradebookUid);
@@ -924,7 +1604,7 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 
 		GradeStatistics courseGradeStatistics = gradeCalculations.calculateStatistics(courseGradeList, sumCourseGrades, studentId);
 
-		List<Map<String,Object>> statsList = new ArrayList<Map<String,Object>>();
+		List<Statistics> statsList = new ArrayList<Statistics>();
 
 		long id = 0;
 		statsList.add(getStatisticsMap(gradebook, "Course Grade", courseGradeStatistics, Long.valueOf(id), Long.valueOf(-1), studentId ));
@@ -977,7 +1657,17 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 
 		return statsList;
 	}
-		
+
+	public ToolManager getToolManager() {
+
+		return toolManager;
+	}
+	
+	public UserDirectoryService getUserService() {
+
+		return userService;
+	}
+	
 	public List<Map<String,Object>> getVisibleSections(String gradebookUid, boolean enableAllSectionsEntry, String allSectionsEntryTitle) {
 		List<CourseSection> viewableSections = authz.getViewableSections(gradebookUid);
 
@@ -1002,13 +1692,190 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		return sections;
 	}
 	
+	public void init() {
+		enabledGradeTypes = new ArrayList<GradeType>();
+		
+		// Since the ApplicationContext only contains the tool specific beans, we need to get the
+		// parent ApplicationContext so that we can access all the beans that have been registered
+		// with the component manager
+		ApplicationContext parentApplicationContext = applicationContext.getParent();
+		
+		// Checking in the parent ApplicationContext for InstitutionalAdvisor implementation(s)
+		String[] beans = parentApplicationContext.getBeanNamesForType(InstitutionalAdvisor.class);
+		
+		// Make sure that there is just one implementation in the parent context
+		if(beans != null && beans.length == 1) {
+			advisor = (InstitutionalAdvisor) parentApplicationContext.getBean(beans[0]);
+			log.info("Using institutional adviser " + beans[0]);
+		}
+		else {
+			// If the parent context didn't have an implementation, we use the sample
+			advisor = (InstitutionalAdvisor) applicationContext.getBean("org.sakaiproject.gradebook.gwt.sakai.api.SampleInstitutionalAdvisor");
+			
+			if (advisor != null)
+				log.info("Using default institutional adviser");
+			else
+				log.info("Unable to find any instutional advisers");
+		}
+		
+		if (configService != null) {
+			helpUrl = configService.getString(AppConstants.HELP_URL_CONFIG_ID);
+
+			boolean isPointsEnabled = true;
+			boolean isPercentagesEnabled = true;
+			boolean isLettersEnabled = true;
+			
+			String gradeTypes = configService.getString(AppConstants.ENABLED_GRADE_TYPES_ID);
+			if (gradeTypes != null) {
+				gradeTypes = gradeTypes.toUpperCase();
+				isPointsEnabled = gradeTypes.contains("POINT");
+				isPercentagesEnabled = gradeTypes.contains("PERCENT");
+				isLettersEnabled = gradeTypes.contains("LETTER");
+			}
+			
+			if (isPointsEnabled)
+				enabledGradeTypes.add(GradeType.POINTS);
+			if (isPercentagesEnabled)
+				enabledGradeTypes.add(GradeType.PERCENTAGES);
+			if (isLettersEnabled)
+				enabledGradeTypes.add(GradeType.LETTERS);
+			
+			String learnerRoleNameString = configService.getString(AppConstants.LEARNER_ROLE_NAMES);
+			
+			if (learnerRoleNameString != null && !learnerRoleNameString.equals(""))
+				learnerRoleNames = learnerRoleNameString.split("\\s*,\\s*");
+			
+		} else {
+			enabledGradeTypes.add(GradeType.POINTS);
+			enabledGradeTypes.add(GradeType.PERCENTAGES);
+			enabledGradeTypes.add(GradeType.LETTERS);
+		}
+		
+		if (learnerRoleNames == null)
+			learnerRoleNames = advisor.getLearnerRoleNames();
+		
+		if (learnerRoleNames == null)
+			learnerRoleNames = new String[] { "Student", "access" };
+		
+	}
+	
+	public void postEvent(String message, String gradebookId, String... args) {
+		if (eventTrackingService == null)
+			return;
+		
+		StringBuilder objectReference = new StringBuilder("/gradebook/").append(gradebookId);
+		
+		for (String arg : args) {
+			objectReference.append("/").append(arg);
+		}
+		
+		Event event = eventTrackingService.newEvent(message, objectReference.toString(), true);
+        eventTrackingService.post(event);
+	}
+
 	public void resetGradeMap(String gradebookUid) {
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
 		GradeMapping gradeMapping = gradebook.getSelectedGradeMapping();
 		gradeMapping.setDefaultValues();
 		gbService.updateGradebook(gradebook);
 	}
+
+	public void setAdvisor(InstitutionalAdvisor advisor) {
+
+		this.advisor = advisor;
+	}
+
+	public void setApplicationContext(ApplicationContext applicationContext)
+			throws BeansException {
+		this.applicationContext = applicationContext;
+	}
+
+	public void setAuthz(Gradebook2Authz authz) {
+
+		this.authz = authz;
+	}
+
+	public void setBusinessLogic(BusinessLogic businessLogic) {
+
+		this.businessLogic = businessLogic;
+	}
+
+	public void setConfigService(ServerConfigurationService configService) {
+
+		this.configService = configService;
+	}
+
+	public void setEventTrackingService(EventTrackingService eventTrackingService) {
+		this.eventTrackingService = eventTrackingService;
+	}
+
+	public void setFrameworkService(GradebookFrameworkService frameworkService) {
+
+		this.frameworkService = frameworkService;
+	}
+
+	public void setGbService(GradebookToolService gbService) {
+
+		this.gbService = gbService;
+	}
+
+	public void setGradeCalculations(GradeCalculations gradeCalculations) {
+
+		this.gradeCalculations = gradeCalculations;
+	}
+
+	public void setSectionAwareness(SectionAwareness sectionAwareness) {
+
+		this.sectionAwareness = sectionAwareness;
+	}
 	
+	
+	public void setSessionManager(SessionManager sessionManager) {
+
+		this.sessionManager = sessionManager;
+	}
+
+
+	public void setSiteService(SiteService siteService) {
+
+		this.siteService = siteService;
+	}
+
+	public void setToolManager(ToolManager toolManager) {
+
+		this.toolManager = toolManager;
+	}
+
+	public void setUserService(UserDirectoryService userService) {
+
+		this.userService = userService;
+	}
+	
+	public void submitFinalGrade(List<Map<Column, String>> studentDataList, String gradebookUid, HttpServletRequest request, HttpServletResponse response) {
+		for (Map<Column, String> studentData : studentDataList) {
+			String studentUid = studentData.get(Column.STUDENT_UID);
+			String finalGradeUserId = studentData.get(Column.FINAL_GRADE_USER_ID);
+			String exportUserId = studentData.get(Column.EXPORT_USER_ID);
+			String studentName = studentData.get(Column.STUDENT_NAME);
+			String exportCmId = studentData.get(Column.EXPORT_CM_ID);
+			String letterGrade = studentData.get(Column.LETTER_GRADE);
+			
+			ActionRecord actionRecord = new ActionRecord(gradebookUid, null, EntityType.GRADE_SUBMISSION.name(), ActionType.SUBMITTED.name());
+			actionRecord.setEntityName(studentName);
+			actionRecord.setEntityId(finalGradeUserId);
+			actionRecord.setStudentUid(studentUid);
+
+			Map<String, String> propertyMap = actionRecord.getPropertyMap();
+			propertyMap.put(Column.EXPORT_USER_ID.name(), exportUserId);
+			propertyMap.put(Column.EXPORT_CM_ID.name(), exportCmId);
+			propertyMap.put(Column.LETTER_GRADE.name(), letterGrade);	
+			
+			gbService.storeActionRecord(actionRecord);
+		}
+		
+		advisor.submitFinalGrade(studentDataList, gradebookUid, request, response);
+	}
+
 	public Boolean updateConfiguration(Long gradebookId, String field, String value) {
 		
 		try {		
@@ -1021,7 +1888,7 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		
 		return Boolean.TRUE;
 	}
-	
+
 	public void updateGradeMap(String gradebookUid, String affectedLetterGrade, Object value) throws InvalidInputException {
 		
 		if (value == null) {
@@ -1112,21 +1979,13 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		gbService.updateGradebook(gradebook);
 	}
 	
-	public Map<String, Object> updateItem(Map<String, Object> attributes) throws InvalidInputException {
+	public Item updateItem(Item item) throws InvalidInputException {
 		
-		ItemModel result = updateItemModel(toItem(attributes));
+		Item result = updateGradeItem(item);
 		
-		Map<String, Object> itemMap = new HashMap<String, Object>();
-		
-		for (Enum<ItemKey> it : EnumSet.allOf(ItemKey.class)) {
-			itemMap.put(it.name(), result.get(it.name()));
-		}
-		
-		addChildren(result, itemMap);
-	
-		return itemMap;
+		return result;
 	}
-	
+
 	public Map<String, Object> upload(String gradebookUid, Long gradebookId, Map<String, Object> attributes) throws InvalidInputException {
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
 		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
@@ -1141,14 +2000,14 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 			for (Map<String,Object> item : headers) {
 				String id = (String)item.get(ItemKey.ID.name());
 				if (id != null) {
-					Long categoryId = toLong(item.get(ItemKey.CATEGORY_ID.name()));					
+					Long categoryId = Util.toLong(item.get(ItemKey.CATEGORY_ID.name()));					
 					String name = (String)item.get(ItemKey.NAME.name());
-					Double weight = toDouble(item.get(ItemKey.PERCENT_CATEGORY.name()));
-					Double points = toDouble(item.get(ItemKey.POINTS.name()));
-					boolean isExtraCredit = toBooleanPrimitive(item.get(ItemKey.EXTRA_CREDIT.name()));
-					boolean isIncluded = toBooleanPrimitive(item.get(ItemKey.INCLUDED.name()));
+					Double weight = Util.toDouble(item.get(ItemKey.PERCENT_CATEGORY.name()));
+					Double points = Util.toDouble(item.get(ItemKey.POINTS.name()));
+					boolean isExtraCredit = Util.toBooleanPrimitive(item.get(ItemKey.EXTRA_CREDIT.name()));
+					boolean isIncluded = Util.toBooleanPrimitive(item.get(ItemKey.INCLUDED.name()));
 
-					int indexOfCommentTextFlag = id.indexOf(StudentModel.COMMENT_TEXT_FLAG);
+					int indexOfCommentTextFlag = id.indexOf(AppConstants.COMMENT_TEXT_FLAG);
 					
 					if (indexOfCommentTextFlag != -1) {
 						String realId = id.substring(0, indexOfCommentTextFlag);
@@ -1164,7 +2023,7 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 						commentIdToAssignmentMap.put(realId, assignment);
 					} else if (id.startsWith("NEW:")) {
 
-						ItemModel itemModel = new ItemModel();
+						GradeItem itemModel = new GradeItemImpl();
 						itemModel.setCategoryId(categoryId);
 						itemModel.setName(name);
 						itemModel.setPercentCategory(weight);
@@ -1320,16 +2179,16 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 
 				if (commentIdKeySet != null) {
 					for (String id : commentIdKeySet) {
-						String fullId = new StringBuilder().append(id).append(StudentModel.COMMENT_TEXT_FLAG).toString();
+						String fullId = new StringBuilder().append(id).append(AppConstants.COMMENT_TEXT_FLAG).toString();
 						Object v = student.get(fullId);
 						
 						Assignment assignment = commentIdToAssignmentMap.get(id);
 						
-						CommentModel comment = createOrUpdateComment(assignment.getId(), (String)student.get(LearnerKey.UID.name()), (String)v);
+						Learner comment = assignComment(String.valueOf(assignment.getId()), (String)student.get(LearnerKey.UID.name()), (String)v);
 						
 						if (comment != null) {
-							student.put(fullId, comment.getText());
-							student.put(new StringBuilder(id).append(StudentModel.COMMENTED_FLAG).toString(), Boolean.TRUE);
+							student.put(fullId, comment.get(CommentKey.TEXT.name()));
+							student.put(new StringBuilder(id).append(AppConstants.COMMENTED_FLAG).toString(), Boolean.TRUE);
 						
 							builder.append("Comment for ").append(assignment.getName()).append(" (")
 								.append((String)v).append(") ");;
@@ -1356,7 +2215,7 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 							if (isLetterGrading) {
 								
 								if (!gradeCalculations.isValidLetterGrade((String)v)) {
-									String failedProperty = new StringBuilder().append(assignment.getId()).append(StudentModel.FAILED_FLAG).toString();
+									String failedProperty = new StringBuilder().append(assignment.getId()).append(AppConstants.FAILED_FLAG).toString();
 									student.put(failedProperty, "Invalid input");
 									log.warn("Failed to score item for " + student.get(LearnerKey.UID.name()) + " and item " + assignment.getId() + " to " + v);
 			
@@ -1412,7 +2271,7 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 							
 							builder.append(") ");
 						} catch (NumberFormatException nfe) {
-							String failedProperty = new StringBuilder().append(assignment.getId()).append(StudentModel.FAILED_FLAG).toString();
+							String failedProperty = new StringBuilder().append(assignment.getId()).append(AppConstants.FAILED_FLAG).toString();
 							student.put(failedProperty, "Invalid input");
 							log.warn("Failed to score item for " + (String)student.get(LearnerKey.UID.name()) + " and item " + assignment.getId() + " to " + v);
 	
@@ -1423,7 +2282,7 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 							
 							student.put(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
 						} catch (InvalidInputException e) {
-							String failedProperty = new StringBuilder().append(assignment.getId()).append(StudentModel.FAILED_FLAG).toString();
+							String failedProperty = new StringBuilder().append(assignment.getId()).append(AppConstants.FAILED_FLAG).toString();
 							student.put(failedProperty, e.getMessage());
 							log.warn("Failed to score numeric item for " + (String)student.get(LearnerKey.UID.name()) + " and item " + assignment.getId() + " to " + value);
 	
@@ -1435,7 +2294,7 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 							student.put(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
 						} catch (Exception e) {
 	
-							String failedProperty = new StringBuilder().append(assignment.getId()).append(StudentModel.FAILED_FLAG).toString();
+							String failedProperty = new StringBuilder().append(assignment.getId()).append(AppConstants.FAILED_FLAG).toString();
 							student.put(failedProperty, e.getMessage());
 	
 							log.warn("Failed to score numeric item for " + (String)student.get(LearnerKey.UID.name()) + " and item " + assignment.getId() + " to " + value, e);
@@ -1462,37 +2321,166 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 		if (hasCategories)
 			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
 		
-		ItemModel gradebookItemModel = getItemModel(gradebook, assignments, categories, null, null);
-		Map<String, Object> gradebookItemMap = new HashMap<String, Object>();
+		GradeItem gradebookGradeItem = getGradeItem(gradebook, assignments, categories, null, null);
+		/*Map<String, Object> gradebookItemMap = new HashMap<String, Object>();
 		
 		for (Enum<ItemKey> it : EnumSet.allOf(ItemKey.class)) {
-			gradebookItemMap.put(it.name(), gradebookItemModel.get(it.name()));
+			gradebookItemMap.put(it.name(), gradebookGradeItem.get(it.name()));
 		}
 		
-		addChildren(gradebookItemModel, gradebookItemMap);
-		attributes.put(UploadKey.GRADEBOOK_ITEM_MODEL.name(), gradebookItemMap);
+		addChildren(gradebookGradeItem, gradebookItemMap);*/
+		attributes.put(UploadKey.GRADEBOOK_ITEM_MODEL.name(), gradebookGradeItem.getProperties());
 
 		return attributes;	
 	}
-	
-	private void addChildren(ItemModel itemModel, Map<String,Object> itemMap) {
-		
-		if (itemModel.getChildCount() > 0) {
-			List<Map<String,Object>> childrenList = new ArrayList<Map<String,Object>>();
-			for (int i=0;i<itemModel.getChildCount();i++) {
-				ItemModel child = (ItemModel)itemModel.getChild(i);
-				Map<String,Object> childMap = new HashMap<String,Object>();
-				
-				for (Enum<ItemKey> it : EnumSet.allOf(ItemKey.class)) {
-					childMap.put(it.name(), child.get(it.name()));
-				}
-				childrenList.add(childMap);
-				addChildren(child, childMap);
-			}
-			itemMap.put(ItemKey.CHILDREN.name(), childrenList);
-		}
+
+	private Item addItemCategory(String gradebookUid, Long gradebookId, Item item) throws BusinessRuleException {
+		return addItemCategory(gradebookUid, gradebookId, item.getProperties());
 	}
+
+	/**
+	 * Method to add a new category to a gradebook
+	 * 
+	 * Business rules: (1) if no other categories exist, then make the category
+	 * weight 100% (2) new category name must not duplicate an existing category
+	 * name
+	 * 
+	 * @param gradebookUid
+	 * @param gradebookId
+	 * @param item
+	 * @return
+	 * @throws BusinessRuleException
+	 */
+	private Item addItemCategory(String gradebookUid, Long gradebookId, Map<String, Object> attributes) throws BusinessRuleException {
+
+		String name = (String)attributes.get(ItemKey.NAME.name());
+		
+		ActionRecord actionRecord = new ActionRecord(gradebookUid, gradebookId, EntityType.CATEGORY.name(), ActionType.CREATE.name());
+		actionRecord.setEntityName(name);
+		Map<String, String> propertyMap = actionRecord.getPropertyMap();
+
+		for (String property : attributes.keySet()) {
+			String value = String.valueOf(attributes.get(property));
+			if (value != null)
+				propertyMap.put(property, value);
+		}
+
+		// Category category = null;
+		Gradebook gradebook = null;
+		List<Assignment> assignments = null;
+		List<Category> categories = null;
+		Long categoryId = null;
+
+		try {
+			Double weight = (Double)attributes.get(ItemKey.PERCENT_COURSE_GRADE.name());
+			Boolean isEqualWeighting = (Boolean)attributes.get(ItemKey.EQUAL_WEIGHT.name());
+			Boolean isIncluded = (Boolean)attributes.get(ItemKey.INCLUDED.name());
+			Integer dropLowest = (Integer)attributes.get(ItemKey.DROP_LOWEST.name());
+			Boolean isExtraCredit = (Boolean)attributes.get(ItemKey.EXTRA_CREDIT.name());
+			Integer categoryOrder = (Integer)attributes.get(ItemKey.ITEM_ORDER.name());
+			Boolean doEnforcePointWeighting = (Boolean)attributes.get(ItemKey.ENFORCE_POINT_WEIGHTING.name());
+
+			boolean isUnweighted = !DataTypeConversionUtil.checkBoolean(isIncluded);
+
+			gradebook = gbService.getGradebook(gradebookUid);
+
+			boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
+			boolean hasWeights = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY;
+
+			if (hasCategories) {
+				categories = gbService.getCategories(gradebook.getId()); // getCategoriesWithAssignments(gradebook.getId());
+				if (categoryOrder == null)
+					categoryOrder = categories == null || categories.isEmpty() ? Integer.valueOf(0) : Integer.valueOf(categories.size());
+			}
+
+			double w = weight == null ? 0d : ((Double)weight).doubleValue() * 0.01;
+
+			if (hasCategories) {
+				int dropLowestInt = dropLowest == null ? 0 : dropLowest.intValue();
+				boolean equalWeighting = isEqualWeighting == null ? false : isEqualWeighting.booleanValue();
+
+				businessLogic.applyNoDuplicateCategoryNamesRule(gradebook.getId(), name, null, categories);
+				if (hasWeights)
+					businessLogic.applyOnlyEqualWeightDropLowestRule(dropLowestInt, equalWeighting);
+			}
+
+			categoryId = gbService.createCategory(gradebookId, name, Double.valueOf(w), dropLowest, isEqualWeighting, Boolean.valueOf(isUnweighted), isExtraCredit, categoryOrder, doEnforcePointWeighting);
+
+			postEvent("gradebook2.newCategory", String.valueOf(gradebook.getId()), String.valueOf(categoryId));
+			
+			assignments = gbService.getAssignments(gradebook.getId());
+			categories = null;
+			if (hasCategories) {
+				categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+			}
+
+		} catch (RuntimeException e) {
+			actionRecord.setStatus(ActionRecord.STATUS_FAILURE);
+			throw e;
+		} finally {
+			gbService.storeActionRecord(actionRecord);
+		}
+
 	
+		return getGradeItem(gradebook, assignments, categories, categoryId, null);
+	}
+
+	private Map<String, Object> appendItemData(Long assignmentId, Map<String, Object> cellMap, UserRecord userRecord, Gradebook gradebook, Boolean countNullsAsZeros) {
+
+		AssignmentGradeRecord gradeRecord = null;
+
+		String id = String.valueOf(assignmentId);
+
+		boolean isCommented = userRecord.getCommentMap() != null && userRecord.getCommentMap().get(assignmentId) != null;
+		boolean isCountNullsAsZeros = DataTypeConversionUtil.checkBoolean(countNullsAsZeros);
+		
+		if (isCommented) {
+			cellMap.put(concat(id, AppConstants.COMMENTED_FLAG), Boolean.TRUE);
+			cellMap.put(concat(id, AppConstants.COMMENT_TEXT_FLAG), userRecord.getCommentMap().get(assignmentId).getCommentText());
+		}
+
+		Map<Long, AssignmentGradeRecord> studentGradeMap = userRecord.getGradeRecordMap();
+
+		gradeRecord = studentGradeMap == null ? null : studentGradeMap.get(assignmentId);
+
+		
+		boolean isExcused = gradeRecord == null ? false : gradeRecord.isExcludedFromGrade() != null && gradeRecord.isExcludedFromGrade().booleanValue();
+		boolean isDropped = gradeRecord == null ? false : gradeRecord.isDropped() != null && gradeRecord.isDropped().booleanValue();
+
+		if (isDropped || isExcused)
+			cellMap.put(concat(id, AppConstants.DROP_FLAG), Boolean.TRUE);
+
+		if (isExcused)
+			cellMap.put(concat(id, AppConstants.EXCUSE_FLAG), Boolean.TRUE);
+
+		try {
+			BigDecimal percentage = null;
+			switch (gradebook.getGrade_type()) {
+			case GradebookService.GRADE_TYPE_POINTS:
+				Double value = gradeRecord != null && gradeRecord.getPointsEarned() != null ? gradeRecord.getPointsEarned() : (isCountNullsAsZeros ? Double.valueOf(0) : null);
+				cellMap.put(id, value);
+				break;
+			case GradebookService.GRADE_TYPE_PERCENTAGE:
+				percentage = gradeRecord == null ? null : gradeCalculations.getPointsEarnedAsPercent((Assignment) gradeRecord.getGradableObject(), gradeRecord);
+				Double percentageDouble = percentage != null ? Double.valueOf(percentage.doubleValue()) : (isCountNullsAsZeros ? Double.valueOf(0) : null);
+				cellMap.put(id, percentageDouble);
+				break;
+			case GradebookService.GRADE_TYPE_LETTER:
+				percentage = gradeRecord == null ? null : gradeCalculations.getPointsEarnedAsPercent((Assignment) gradeRecord.getGradableObject(), gradeRecord);
+				String letterGrade = percentage != null ? gradeCalculations.convertPercentageToLetterGrade(percentage) : (isCountNullsAsZeros ? "0" : "");
+				cellMap.put(id, letterGrade);
+				break;
+			default:
+				cellMap.put(id, "Not implemented");
+				break;
+			}
+		} catch (ClassCastException cce) {
+			log.warn("ClassCastException for user " + userRecord.getDisplayId() + " item " + assignmentId);
+		}
+
+		return cellMap;
+	}
+
 	private Map<String, Object> buildGradeEvent(GradingEvent event) {
 		SimpleDateFormat dateFormat = new SimpleDateFormat();
 
@@ -1516,23 +2504,935 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 	
 		return map;
 	}
-	
-	private Map<String, Object> getStudent(Gradebook gradebook, Site site, User user) {
-		List<FixedColumnModel> columns = getColumns(true);
-		UserRecord userRecord = buildUserRecord(site, user, gradebook);
-		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
-		List<Category> categories = null;
-		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
-			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
-		return buildLearnerGradeRecord(gradebook, userRecord, columns, assignments, categories);
+
+	private Learner buildLearnerGradeRecord(Gradebook gradebook, UserRecord userRecord, List<FixedColumn> columns, List<Assignment> assignments, List<Category> categories) {
+
+		Map<Long, AssignmentGradeRecord> studentGradeMap = userRecord.getGradeRecordMap();
+
+		// This is an intermediate map for data to be placed in the record
+		Map<String, Object> cellMap = new HashMap<String, Object>();
+
+		// This is how we track which column is which - by the user's uid
+		cellMap.put(LearnerKey.UID.name(), userRecord.getUserUid());
+		cellMap.put(LearnerKey.EID.name(), userRecord.getUserEid());
+		cellMap.put(LearnerKey.EXPORT_CM_ID.name(), userRecord.getExportCourseManagemntId());
+		cellMap.put(LearnerKey.EXPORT_USER_ID.name(), userRecord.getExportUserId());
+		cellMap.put(LearnerKey.FINAL_GRADE_USER_ID.name(), userRecord.getFinalGradeUserId());
+		// Need this to show the grade override
+		CourseGradeRecord courseGradeRecord = userRecord.getCourseGradeRecord(); 
+
+		String enteredGrade = null;
+		DisplayGrade displayGrade = null;
+		BigDecimal calculatedGrade = getCalculatedGrade(gradebook, assignments, categories, studentGradeMap);
+		
+		if (courseGradeRecord != null)
+			enteredGrade = courseGradeRecord.getEnteredGrade();
+
+		if (userRecord.isCalculated())
+			displayGrade = userRecord.getDisplayGrade();
+		else
+			displayGrade = getDisplayGrade(gradebook, userRecord.getUserUid(), courseGradeRecord, calculatedGrade);
+
+		if (columns != null) {
+			for (FixedColumn column : columns) {
+				LearnerKey key = LearnerKey.valueOf(column.getKey());
+				switch (key) {
+					case DISPLAY_ID:
+						cellMap.put(LearnerKey.DISPLAY_ID.name(), userRecord.getDisplayId());
+						break;
+					case DISPLAY_NAME:
+						// For the single view, maybe some redundancy, but not
+						// much
+						String displayName = userRecord.getDisplayName();
+
+						if (displayName == null)
+							displayName = "[User name not found]";
+
+						cellMap.put(LearnerKey.DISPLAY_NAME.name(), displayName);
+						cellMap.put(LearnerKey.LAST_NAME_FIRST.name(), userRecord.getLastNameFirst());
+						cellMap.put(LearnerKey.EMAIL.name(), userRecord.getEmail());
+						break;
+					case SECTION:
+						cellMap.put(LearnerKey.SECTION.name(), userRecord.getSectionTitle());
+						break;
+					case COURSE_GRADE:
+						if (displayGrade != null)
+						{
+							cellMap.put(LearnerKey.COURSE_GRADE.name(), displayGrade.toString());
+							GWT.log("setting override to " + displayGrade.isOverridden(),null);
+							cellMap.put(LearnerKey.IS_GRADE_OVERRIDDEN.name(), Boolean.toString(displayGrade.isOverridden()));
+						}
+						break;
+					case GRADE_OVERRIDE:
+						cellMap.put(LearnerKey.GRADE_OVERRIDE.name(), enteredGrade);
+						break;
+					case CALCULATED_GRADE:
+						cellMap.put(LearnerKey.CALCULATED_GRADE.name(), displayGrade.getCalculatedGradeAsString());
+						break;
+					case LETTER_GRADE:
+						cellMap.put(LearnerKey.LETTER_GRADE.name(), displayGrade.getLetterGrade());
+						break;
+				};
+			}
+		}
+
+		if (assignments != null) {
+
+			for (Assignment assignment : assignments) {
+				cellMap = appendItemData(assignment.getId(), cellMap, userRecord, gradebook, assignment.getCountNullsAsZeros());
+			}
+
+		} else {
+
+			for (AssignmentGradeRecord gradeRecord : studentGradeMap.values()) {
+				Assignment assignment = gradeRecord.getAssignment();
+				cellMap = appendItemData(assignment.getId(), cellMap, userRecord, gradebook, assignment.getCountNullsAsZeros());
+			}
+
+		}
+
+		return new LearnerImpl(cellMap);
 	}
 	
-	private Map<String,Object> getStatisticsMap(Gradebook gradebook, String name, GradeStatistics statistics, Long id, Long assignmentId, String studentId) {
+	private Learner buildStudentRow(Gradebook gradebook, UserRecord userRecord, List<FixedColumn> columns, List<Assignment> assignments, List<Category> categories) {
+		return buildLearnerGradeRecord(gradebook, userRecord, columns, assignments, categories);
+	}
 
-		Map<String,Object> model = new HashMap<String,Object>();
-		model.put(StatisticsKey.ID.name(), String.valueOf(id));
-		model.put(StatisticsKey.ASSIGN_ID.name(), String.valueOf(assignmentId));
-		model.put(StatisticsKey.NAME.name(), name);
+	private UserRecord buildUserRecord(Site site, User user, Gradebook gradebook) {
+		UserRecord userRecord = new UserRecord(user);
+		if (site != null) {
+
+			Collection<Group> groups = site.getGroupsWithMember(user.getId());
+			if (groups != null && !groups.isEmpty()) {
+				for (Group group : groups) {
+					// FIXME: We probably don't just want to grab
+					// the first group the user is in
+					userRecord.setSectionTitle(group.getTitle());
+					break;
+				}
+			}
+
+		}
+
+		Map<Long, Comment> commentMap = new HashMap<Long, Comment>();
+		List<Comment> comments = gbService.getStudentAssignmentComments(user.getId(), gradebook.getId());
+		
+		for (Comment comment : comments) {
+			GradableObject a = comment.getGradableObject();
+			
+			if (a != null) {
+				commentMap.put(a.getId(), comment);
+			}
+		}
+		
+		userRecord.setCommentMap(commentMap);
+		
+		CourseGradeRecord courseGradeRecord = gbService.getStudentCourseGradeRecord(gradebook, user.getId());
+		userRecord.setCourseGradeRecord(courseGradeRecord);
+
+		List<AssignmentGradeRecord> records = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), userRecord.getUserUid());
+
+		if (records != null) {
+			for (AssignmentGradeRecord gradeRecord : records) {
+				gradeRecord.setUserAbleToView(true);
+				String studentUid = gradeRecord.getStudentId();
+				Map<Long, AssignmentGradeRecord> studentMap = userRecord.getGradeRecordMap();
+				if (studentMap == null) {
+					studentMap = new HashMap<Long, AssignmentGradeRecord>();
+					userRecord.setGradeRecordMap(studentMap);
+				}
+				GradableObject go = gradeRecord.getGradableObject();
+				studentMap.put(go.getId(), gradeRecord);
+			}
+		}
+		
+		return userRecord;
+	}
+
+	private void calculateItemCategoryPercent(Gradebook gradebook, Category category, GradeItem gradebookGradeItem, GradeItem categoryGradeItem, List<Assignment> assignments, Long assignmentId) {
+
+		double pG = categoryGradeItem == null || categoryGradeItem.getPercentCourseGrade() == null ? 0d : categoryGradeItem.getPercentCourseGrade().doubleValue();
+
+		boolean isWeighted = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY;
+		boolean isCategoryExtraCredit = category != null && DataTypeConversionUtil.checkBoolean(category.isExtraCredit());
+		boolean isEnforcePointWeighting = category != null && DataTypeConversionUtil.checkBoolean(category.isEnforcePointWeighting());
+		BigDecimal percentGrade = BigDecimal.valueOf(pG);
+		BigDecimal percentCategorySum = BigDecimal.ZERO;
+		BigDecimal pointsSum = BigDecimal.ZERO;
+		
+		if (assignments != null) {
+			BigDecimal[] sums = gradeCalculations.calculatePointsCategoryPercentSum(category, assignments, isWeighted, isCategoryExtraCredit);
+			percentCategorySum = sums[0];
+			pointsSum = sums[1];
+			
+			for (Assignment a : assignments) {
+				BigDecimal[] result = gradeCalculations.calculateCourseGradeCategoryPercents(a, percentGrade, percentCategorySum, pointsSum, isEnforcePointWeighting);
+				
+				BigDecimal courseGradePercent = result[0];
+				BigDecimal percentCategory = result[1];
+				
+				GradeItem assignmentGradeItem = createGradeItem(category, a, courseGradePercent, percentCategory);
+
+				if (assignmentId != null && a.getId().equals(assignmentId))
+					assignmentGradeItem.setActive(true);
+
+				if (gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_NO_CATEGORY) {
+					gradebookGradeItem.addChild(assignmentGradeItem);
+					/*
+					assignmentGradeItem.setParent(gradebookGradeItem);
+					gradebookGradeItem.add(assignmentGradeItem);*/
+				} else {
+					categoryGradeItem.addChild(assignmentGradeItem);
+					/*
+					assignmentGradeItem.setParent(categoryGradeItem);
+					categoryGradeItem.add(assignmentGradeItem);*/
+				}
+			}
+
+		}
+
+		if (gradebookGradeItem != null) {
+			gradebookGradeItem.setPoints(Double.valueOf(pointsSum.doubleValue()));
+		}
+
+		if (categoryGradeItem != null) {
+			if (isWeighted) {
+				if (isEnforcePointWeighting) {
+					if (pointsSum.compareTo(BigDecimal.ZERO) > 0)
+						categoryGradeItem.setPercentCategory(Double.valueOf(100d));
+					else
+						categoryGradeItem.setPercentCategory(Double.valueOf(0d));
+				} else
+					categoryGradeItem.setPercentCategory(Double.valueOf(percentCategorySum.doubleValue()));
+			} else {
+				categoryGradeItem.setPercentCategory(null);
+			}
+			categoryGradeItem.setPoints(Double.valueOf(pointsSum.doubleValue()));
+		}
+	}
+
+	
+	private void calculateItemCategoryPercent(Gradebook gradebook, Category category, Map<String, Object> gradebookItemModel, Map<String, Object> categoryItemModel, List<Assignment> assignments, Long assignmentId) {
+
+		double pG = getPercentCourseGrade(categoryItemModel);
+
+		boolean isWeighted = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY;
+		boolean isCategoryExtraCredit = category != null && DataTypeConversionUtil.checkBoolean(category.isExtraCredit());
+		boolean isEnforcePointWeighting = category != null && DataTypeConversionUtil.checkBoolean(category.isEnforcePointWeighting());
+		BigDecimal percentGrade = BigDecimal.valueOf(pG);
+		BigDecimal percentCategorySum = BigDecimal.ZERO;
+		BigDecimal pointsSum = BigDecimal.ZERO;
+		
+		if (assignments != null) {
+			BigDecimal[] sums = gradeCalculations.calculatePointsCategoryPercentSum(category, assignments, isWeighted, isCategoryExtraCredit);
+			percentCategorySum = sums[0];
+			pointsSum = sums[1];
+			
+			for (Assignment a : assignments) {
+				BigDecimal[] result = gradeCalculations.calculateCourseGradeCategoryPercents(a, percentGrade, percentCategorySum, pointsSum, isEnforcePointWeighting);
+				
+				BigDecimal courseGradePercent = result[0];
+				BigDecimal percentCategory = result[1];
+				
+				Map<String, Object> assignmentItemModel = createItemMap(category, a, courseGradePercent, percentCategory);
+
+				if (assignmentId != null && a.getId().equals(assignmentId))
+					assignmentItemModel.put(ItemKey.IS_ACTIVE.name(), Boolean.TRUE);
+
+				if (gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_NO_CATEGORY) {
+					Util.makeChild(gradebookItemModel, assignmentItemModel);
+				} else {
+					Util.makeChild(categoryItemModel, assignmentItemModel);
+				}
+			}
+
+		}
+
+		if (gradebookItemModel != null) {
+			Util.setPoints(gradebookItemModel, Double.valueOf(pointsSum.doubleValue()));
+		}
+
+		if (categoryItemModel != null) {
+			if (isWeighted) {
+				if (isEnforcePointWeighting) {
+					if (pointsSum.compareTo(BigDecimal.ZERO) > 0)
+						Util.setPercentCategory(categoryItemModel, Double.valueOf(100d));
+					else
+						Util.setPercentCategory(categoryItemModel, Double.valueOf(0d));
+				} else
+					Util.setPercentCategory(categoryItemModel, Double.valueOf(percentCategorySum.doubleValue()));
+			} else {
+				Util.setPercentCategory(categoryItemModel, null);
+			}
+			Util.setPoints(categoryItemModel, Double.valueOf(pointsSum.doubleValue()));
+		}
+	}
+
+	private String composeModeString(GradeStatistics statistics, Gradebook gradebook) {
+		List<BigDecimal> modeList = statistics.getModeList(); 
+		StringBuilder sb = new StringBuilder();
+		String modeString; 
+		boolean first  = true; 
+		if (modeList == null) 
+		{
+			return NA; 
+		}
+		if (modeList.size() == 0)
+		{
+			return UNIQUESET; 
+		}
+		for (BigDecimal mode : modeList)
+		{
+			if (!first)
+			{
+				sb.append(", "); 
+			}
+			else
+			{
+				first = false; 
+			}
+			String currentMode = convertBigDecimalStatToString(gradebook, mode, false);
+			sb.append(currentMode);
+		}
+		
+		modeString = sb.toString(); 
+		sb = null;
+		return modeString;
+
+	}
+
+	/*
+	 * UTILITY HELPER METHODS
+	 */
+	private String concat(String... vars) {
+
+		StringBuilder builder = new StringBuilder();
+
+		for (int i = 0; i < vars.length; i++) {
+			builder.append(vars[i]);
+		}
+
+		return builder.toString();
+	}
+
+	private String convertBigDecimalStatToString(Gradebook gradebook, BigDecimal stat, boolean isStandardDev) {
+		String statAsString = null;
+		
+		switch (gradebook.getGrade_type()) {
+		case GradebookService.GRADE_TYPE_LETTER:
+			if (isStandardDev)
+				statAsString = stat != null && stat.compareTo(BigDecimal.ZERO) != 0 ? stat.divide(BigDecimal.valueOf(10), new MathContext(AppConstants.DISPLAY_SCALE, RoundingMode.HALF_EVEN)).toString() : NA;
+			else
+				statAsString = stat != null ? gradeCalculations.convertPercentageToLetterGrade(stat) : NA;
+			break;
+		default:
+			statAsString = stat != null ? stat.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode()).toString() : NA;
+		}
+		
+		return statAsString;
+	}
+
+	private Boolean convertBoolean(Object value) {
+
+		return value == null ? Boolean.FALSE : (Boolean) value;
+	}
+	
+
+	private Date convertDate(Object value) {
+
+		Date dueDate = null;
+		if (value instanceof Date) 
+			dueDate = (Date)value;
+		else if (value instanceof Long) {
+			Long dueDateMillis = (Long)value;
+			dueDate = dueDateMillis == null ? null : new Date(dueDateMillis.longValue());
+		}
+		
+		return dueDate;
+	}
+	
+	private Double convertDouble(Object value) {
+
+		return value == null ? Double.valueOf(0.0) : (Double) value;
+	}
+	
+	private Integer convertInteger(Object value) {
+
+		return value == null ? Integer.valueOf(0) : (Integer) value;
+	}
+
+	private String convertString(Object value) {
+
+		return value == null ? "" : (String) value;
+	}
+	
+	
+	private org.sakaiproject.gradebook.gwt.client.model.Gradebook createGradebookModel(Gradebook gradebook, List<Assignment> assignments, List<Category> categories, boolean isNewGradebook) {
+
+		log.debug("createGradebookModel() called"); 
+		Site site = null;
+
+		if (siteService != null) {
+			try {
+				site = siteService.getSite(getSiteContext());
+
+				if (site.getId().equals(gradebook.getName())) {
+					gradebook.setName("My Default Gradebook");
+				}
+
+			} catch (IdUnusedException e) {
+				log.error("Unable to find the current site", e);
+			}
+		}
+
+
+		org.sakaiproject.gradebook.gwt.client.model.Gradebook model = new GradebookImpl();
+		//model.setNewGradebook(Boolean.valueOf(isNewGradebook));
+		String gradebookUid = gradebook.getUid();
+
+		CategoryType categoryType = null;
+
+		switch (gradebook.getCategory_type()) {
+			case GradebookService.CATEGORY_TYPE_NO_CATEGORY:
+				categoryType = CategoryType.NO_CATEGORIES;
+				break;
+			case GradebookService.CATEGORY_TYPE_ONLY_CATEGORY:
+				categoryType = CategoryType.SIMPLE_CATEGORIES;
+				break;
+			case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
+				categoryType = CategoryType.WEIGHTED_CATEGORIES;
+		}
+
+		boolean isUserAbleToGradeAll = authz.isUserAbleToGradeAll(gradebookUid);
+		boolean isUserAbleToGrade = authz.isUserAbleToGrade(gradebookUid);
+		boolean isUserAbleToViewOwnGrades = authz.isUserAbleToViewOwnGrades(gradebookUid);
+
+		boolean isSingleUserView = isUserAbleToViewOwnGrades && !isUserAbleToGrade;
+		boolean isAnonymousView = !isUserAbleToViewOwnGrades && !isUserAbleToGrade;
+
+		if (isAnonymousView)
+			return model;
+		
+		//model.setCategoryType(categoryType);
+
+		model.setGradebookUid(gradebookUid);
+		model.setGradebookId(gradebook.getId());
+		model.setName(gradebook.getName());
+
+		// GRBK-233 create new assignment and category list
+		GradeItem gradebookGradeItem = getGradebookGradeItem(gradebook, assignments, categories, isSingleUserView);
+		
+		model.setNewGradebook(Boolean.valueOf(assignments == null || assignments.isEmpty()));
+		model.setGradebookGradeItem(gradebookGradeItem);
+
+		List<FixedColumn> columns = getColumns(isUserAbleToGradeAll);
+
+		Configuration configModel = new ConfigurationImpl();
+
+		if (userService != null) {
+			User user = userService.getCurrentUser();
+
+			if (user != null) {
+
+				List<UserConfiguration> configs = gbService.getUserConfigurations(user.getId(), gradebook.getId());
+
+				if (configs != null) {
+					for (UserConfiguration config : configs) {
+						configModel.set(config.getConfigField(), config.getConfigValue());
+					}
+					
+					// FIXME: These two entries below are temporary fixes since due to the bug GRBK-293 there
+					// may be some sites that were created without hidden calculated and letter grade entries
+					// once we've moved far enough into the future past Fall 2010, we can remove these,
+					// and clean installations can remove them immediately
+					String calcGradeHiddenId = ConfigUtil.getColumnHiddenId(AppConstants.ITEMTREE, LearnerKey.CALCULATED_GRADE.name());
+					if (configModel.get(calcGradeHiddenId) == null)
+						configModel.set(calcGradeHiddenId, "true");
+					
+					String letterGradeHiddenId = ConfigUtil.getColumnHiddenId(AppConstants.ITEMTREE, LearnerKey.LETTER_GRADE.name());
+					if (configModel.get(letterGradeHiddenId) == null)
+						configModel.set(letterGradeHiddenId, "true");
+				}
+
+				List<String> legacySelectedMultiGradeColumns = configModel.getSelectedMultigradeColumns();
+
+				if (legacySelectedMultiGradeColumns != null && !legacySelectedMultiGradeColumns.isEmpty()) {
+
+					if (columns != null) {
+
+						for (FixedColumn c : columns) {
+
+							String identifier = c.getIdentifier();
+
+							if (!identifier.equals(LearnerKey.LAST_NAME_FIRST.name())
+									&& !identifier.equals(LearnerKey.COURSE_GRADE.name())
+									&& !identifier.equals(LearnerKey.GRADE_OVERRIDE.name())) {
+								if (!legacySelectedMultiGradeColumns.contains(identifier)) {							
+									gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebook.getId(), ConfigUtil.getColumnHiddenId(AppConstants.ITEMTREE, identifier), "true");
+									configModel.setColumnHidden(AppConstants.ITEMTREE, identifier, Boolean.TRUE);
+								} 
+							}
+						}
+
+
+					}
+
+					if (assignments != null) {
+
+						for (Assignment a : assignments) {
+
+							String identifier = String.valueOf(a.getId());
+
+							if (!legacySelectedMultiGradeColumns.contains(identifier)) {								
+								gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebook.getId(), ConfigUtil.getColumnHiddenId(AppConstants.ITEMTREE, identifier), "true");
+
+								configModel.setColumnHidden(AppConstants.ITEMTREE, identifier, Boolean.TRUE);
+							} 
+
+						}
+
+					}
+
+					gbService.deleteUserConfiguration(getCurrentUser(), gradebook.getId(), AppConstants.SELECTED_COLUMNS);
+				}
+
+
+				// Don't take the hit of looking this stuff up unless we're in
+				// single user view
+				if (isSingleUserView) {
+					UserRecord userRecord = buildUserRecord(site, user, gradebook);
+					model.setUserAsStudent(buildStudentRow(gradebook, userRecord, columns, assignments, categories));
+				}
+				
+				List<Statistics> statsList = generateStatsList(model.getGradebookUid(), model.getGradebookId(), user.getId());		
+				Collections.sort(statsList, new Comparator<Statistics>() {
+
+					public int compare(Statistics o1, Statistics o2) {
+						if (o1 != null && o2 != null) {
+							String id1 = o1.getAssignmentId();
+							String id2 = o2.getAssignmentId();
+							if (id1 != null && id2 != null) {
+								return id1.compareTo(id2); 
+							}
+						}
+						return -1;
+					}
+					
+				}); 
+				
+				model.setStatsModel(statsList);
+				model.setUserName(user.getDisplayName());
+			}
+		} else {
+			String[] realmIds = { "/site/mock" };
+			List<UserRecord> userRecords = findLearnerRecordPage(gradebook, getSite(), realmIds, null, null, null, null, null, -1, -1, true, false);
+
+			if (userRecords != null && userRecords.size() > 0) {
+				UserRecord userRecord = userRecords.get(0);
+				model.setUserName(userRecord.getDisplayName());
+				model.setUserAsStudent(buildStudentRow(gradebook, userRecord, columns, assignments, categories));
+			}
+		}
+
+		model.setConfigurationModel(configModel);
+		model.setColumns(columns);
+
+		return model;
+	}
+
+	private GradeItem createGradeItem(Category category, Assignment assignment, BigDecimal percentCourseGrade, BigDecimal percentCategory) {
+
+		GradeItem model = new GradeItemImpl();
+
+		double assignmentWeight = assignment.getAssignmentWeighting() == null ? 0d : assignment.getAssignmentWeighting().doubleValue() * 100.0;
+		Boolean isAssignmentIncluded = Boolean.valueOf(assignment.isCounted());
+		Boolean isAssignmentExtraCredit = assignment.isExtraCredit() == null ? Boolean.FALSE : assignment.isExtraCredit();
+		Boolean isAssignmentReleased = Boolean.valueOf(assignment.isReleased());
+		Boolean isAssignmentRemoved = Boolean.valueOf(assignment.isRemoved());
+		double points = assignment.getPointsPossible() == null ? 0d : assignment.getPointsPossible().doubleValue();
+		
+		
+		Gradebook gradebook = assignment.getGradebook();
+		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
+		boolean hasWeights = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY;
+		boolean isLetterGrading = gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER;
+		
+		// We don't want to delete assignments based on category when we don't
+		// have categories
+		if (hasCategories && category != null) {
+
+			if (category.isRemoved())
+				isAssignmentRemoved = Boolean.TRUE;
+
+			if (category.isUnweighted() != null && category.isUnweighted().booleanValue())
+				isAssignmentIncluded = Boolean.FALSE;
+
+			isAssignmentExtraCredit = Boolean.valueOf(DataTypeConversionUtil.checkBoolean(isAssignmentExtraCredit) || DataTypeConversionUtil.checkBoolean(category.isExtraCredit()));
+		}
+
+		String categoryName = gradebook.getName();
+		if (hasCategories && category != null) {
+			categoryName = category.getName();
+			model.setCategoryName(categoryName);
+			model.setCategoryId(category.getId());
+		}
+
+		model.setIdentifier(String.valueOf(assignment.getId()));
+		model.setName(assignment.getName());
+		model.setItemId(assignment.getId());
+		model.setWeighting(Double.valueOf(assignmentWeight));
+		model.setReleased(isAssignmentReleased);
+		model.setIncluded(isAssignmentIncluded);
+		model.setDueDate(assignment.getDueDate());
+		model.setPoints(assignment.getPointsPossible());
+		model.setExtraCredit(isAssignmentExtraCredit);
+		model.setRemoved(isAssignmentRemoved);
+		model.setSource(assignment.getExternalAppName());
+		if (isLetterGrading)
+			model.setDataType(AppConstants.STRING_DATA_TYPE);
+		else
+			model.setDataType(AppConstants.NUMERIC_DATA_TYPE);
+		model.setStudentModelKey(LearnerKey.ASSIGNMENT.name());
+		model.setItemOrder(assignment.getSortOrder());
+		
+		if (hasWeights) {
+			if (percentCategory != null)
+				model.setPercentCategory(Double.valueOf(percentCategory.doubleValue()));
+			
+			if (percentCourseGrade != null)
+				model.setPercentCourseGrade(Double.valueOf(percentCourseGrade.doubleValue()));
+		} else {
+			model.setPercentCategory(null);
+			model.setPercentCourseGrade(null);
+		}
+		
+		model.setItemType(ItemType.ITEM);
+
+		return model;
+	}
+
+	private GradeItem createGradeItem(Gradebook gradebook) {
+
+		GradeItem itemModel = new GradeItemImpl();
+		itemModel.setName(gradebook.getName());
+		itemModel.setItemType(ItemType.GRADEBOOK);
+		itemModel.setIdentifier(gradebook.getUid());
+
+		switch (gradebook.getCategory_type()) {
+			case GradebookService.CATEGORY_TYPE_NO_CATEGORY:
+				itemModel.setCategoryType(CategoryType.NO_CATEGORIES);
+				break;
+			case GradebookService.CATEGORY_TYPE_ONLY_CATEGORY:
+				itemModel.setCategoryType(CategoryType.SIMPLE_CATEGORIES);
+				break;
+			case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
+				itemModel.setCategoryType(CategoryType.WEIGHTED_CATEGORIES);
+				break;
+		}
+		switch (gradebook.getGrade_type()) {
+			case GradebookService.GRADE_TYPE_POINTS:
+				itemModel.setGradeType(GradeType.POINTS);
+				break;
+			case GradebookService.GRADE_TYPE_PERCENTAGE:
+				itemModel.setGradeType(GradeType.PERCENTAGES);
+				break;
+			case GradebookService.GRADE_TYPE_LETTER:
+				itemModel.setGradeType(GradeType.LETTERS);
+				break;
+		}
+
+		itemModel.setReleaseGrades(Boolean.valueOf(gradebook.isCourseGradeDisplayed()));
+		itemModel.setReleaseItems(Boolean.valueOf(gradebook.isAssignmentsDisplayed()));
+		itemModel.setGradeScaleId(gradebook.getSelectedGradeMapping().getId());
+		itemModel.setExtraCreditScaled(gradebook.isScaledExtraCredit());
+		itemModel.setShowMean(gradebook.getShowMean());
+		itemModel.setShowMedian(gradebook.getShowMedian());
+		itemModel.setShowMode(gradebook.getShowMode());
+		itemModel.setShowRank(gradebook.getShowRank());
+		itemModel.setShowItemStatistics(gradebook.getShowItemStatistics());
+		
+		return itemModel;
+	}
+
+	private GradeItem createGradeItem(Gradebook gradebook, Category category, List<Assignment> assignments) {
+
+		GradeItem model = new GradeItemImpl();
+
+		boolean isDefaultCategory = category.getName().equalsIgnoreCase(AppConstants.DEFAULT_CATEGORY_NAME);
+
+		double categoryWeight = category.getWeight() == null ? 0d : category.getWeight().doubleValue() * 100d;
+		boolean isIncluded = category.isUnweighted() == null ? !isDefaultCategory : !isDefaultCategory && !category.isUnweighted().booleanValue();
+
+		boolean hasWeights = true;
+		
+		if (gradebook != null) {
+			model.setGradebook(gradebook.getName());
+			hasWeights = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY;
+		}
+		model.setIdentifier(String.valueOf(category.getId()));
+		model.setName(category.getName());
+		model.setCategoryId(category.getId());
+		model.setWeighting(Double.valueOf(categoryWeight));
+		model.setEqualWeightAssignments(category.isEqualWeightAssignments());
+		model.setExtraCredit(category.isExtraCredit() == null ? Boolean.FALSE : category.isExtraCredit());
+		model.setIncluded(Boolean.valueOf(isIncluded));
+		model.setDropLowest(category.getDrop_lowest() == 0 ? null : Integer.valueOf(category.getDrop_lowest()));
+		model.setRemoved(Boolean.valueOf(category.isRemoved()));
+		model.setReleased(Boolean.valueOf(businessLogic.checkReleased(assignments)));
+		if (hasWeights)
+			model.setPercentCourseGrade(Double.valueOf(categoryWeight));
+		model.setItemType(ItemType.CATEGORY);
+		model.setEditable(!isDefaultCategory);
+		model.setItemOrder(category.getCategoryOrder());
+		model.setEnforcePointWeighting(category.isEnforcePointWeighting());
+
+		return model;
+	}
+
+	private Map<String, Object> createItemMap(Category category, Assignment assignment, BigDecimal percentCourseGrade, BigDecimal percentCategory) {
+
+		double assignmentWeight = assignment.getAssignmentWeighting() == null ? 0d : assignment.getAssignmentWeighting().doubleValue() * 100.0;
+		Boolean isAssignmentIncluded = Boolean.valueOf(assignment.isCounted());
+		Boolean isAssignmentExtraCredit = assignment.isExtraCredit() == null ? Boolean.FALSE : assignment.isExtraCredit();
+		Boolean isAssignmentReleased = Boolean.valueOf(assignment.isReleased());
+		Boolean isAssignmentRemoved = Boolean.valueOf(assignment.isRemoved());
+		double p = assignment.getPointsPossible() == null ? 0d : assignment.getPointsPossible().doubleValue();
+		
+		Gradebook gradebook = assignment.getGradebook();
+		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
+		boolean hasWeights = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY;
+		boolean isLetterGrading = gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER;
+		
+		// We don't want to delete assignments based on category when we don't
+		// have categories
+		if (hasCategories && category != null) {
+
+			if (category.isRemoved())
+				isAssignmentRemoved = Boolean.TRUE;
+
+			if (category.isUnweighted() != null && category.isUnweighted().booleanValue())
+				isAssignmentIncluded = Boolean.FALSE;
+
+			isAssignmentExtraCredit = Boolean.valueOf(DataTypeConversionUtil.checkBoolean(isAssignmentExtraCredit) || DataTypeConversionUtil.checkBoolean(category.isExtraCredit()));
+		}
+
+		String categoryName = gradebook.getName();
+		Long categoryId = null;
+		if (hasCategories && category != null) {
+			categoryName = category.getName();
+			categoryId = category.getId();
+		}
+
+		String id = String.valueOf(assignment.getId());
+		String name = assignment.getName();
+		Long itemId = assignment.getId();
+		Double itemWeight = Double.valueOf(assignmentWeight);
+		Boolean doRelease = isAssignmentReleased;
+		Boolean doInclude = isAssignmentIncluded;
+		Date dueDate = assignment.getDueDate();
+		Double points = assignment.getPointsPossible();
+		Boolean doExtraCredit = isAssignmentExtraCredit;
+		Boolean doRemove = isAssignmentRemoved;
+		String source = assignment.getExternalAppName();
+		String dataType = isLetterGrading ? AppConstants.STRING_DATA_TYPE : AppConstants.NUMERIC_DATA_TYPE;
+		String learnerKey = LearnerKey.ASSIGNMENT.name();
+		Integer itemOrder = assignment.getSortOrder();
+		
+		Double percentCategoryDouble = null;
+		Double percentCourseGradeDouble = null;
+		if (hasWeights) {
+			if (percentCategory != null)
+				percentCategoryDouble = Double.valueOf(percentCategory.doubleValue());
+			
+			if (percentCourseGrade != null)
+				percentCourseGradeDouble = Double.valueOf(percentCourseGrade.doubleValue());
+		} 
+		
+		Boolean nullsAsZeros = assignment.getCountNullsAsZeros();
+
+		return Util.buildItemMap(id, name, categoryName, categoryId, itemId, points, percentCategoryDouble, percentCourseGradeDouble, itemWeight, doRelease, doInclude, dueDate, doExtraCredit, doRemove, source, dataType, learnerKey, itemOrder, nullsAsZeros);
+	}
+	
+	private Map<String,Object> createItemMap(Gradebook gradebook) {
+		
+		String id = gradebook.getUid();
+		String name = gradebook.getName();
+		CategoryType categoryType = null;
+		GradeType gradeType = null;
+
+		switch (gradebook.getCategory_type()) {
+			case GradebookService.CATEGORY_TYPE_NO_CATEGORY:
+				categoryType = CategoryType.NO_CATEGORIES;
+				break;
+			case GradebookService.CATEGORY_TYPE_ONLY_CATEGORY:
+				categoryType = CategoryType.SIMPLE_CATEGORIES;
+				break;
+			case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
+				categoryType = CategoryType.WEIGHTED_CATEGORIES;
+				break;
+		}
+		switch (gradebook.getGrade_type()) {
+			case GradebookService.GRADE_TYPE_POINTS:
+				gradeType = GradeType.POINTS;
+				break;
+			case GradebookService.GRADE_TYPE_PERCENTAGE:
+				gradeType = GradeType.PERCENTAGES;
+				break;
+			case GradebookService.GRADE_TYPE_LETTER:
+				gradeType = GradeType.LETTERS;
+				break;
+		}
+
+		Boolean doReleaseGrades = Boolean.valueOf(gradebook.isCourseGradeDisplayed());
+		Boolean doReleaseItems = Boolean.valueOf(gradebook.isAssignmentsDisplayed());
+		Long gradeScaleId = gradebook.getSelectedGradeMapping().getId();
+		Boolean doScaleExtraCredit = gradebook.isScaledExtraCredit();
+		Boolean doShowMean = gradebook.getShowMean();
+		Boolean doShowMedian = gradebook.getShowMedian();
+		Boolean doShowMode = gradebook.getShowMode();
+		Boolean doShowRank = gradebook.getShowRank();
+		Boolean doShowItemStatistics = gradebook.getShowItemStatistics();
+		
+		return Util.buildItemMap(id, name, categoryType, gradeType, gradeScaleId, doReleaseGrades, doReleaseItems, doScaleExtraCredit, doShowMean, doShowMedian, doShowMode, doShowRank, doShowItemStatistics);
+	}
+	
+	private Map<String, Object> createItemMap(Gradebook gradebook, Category category, List<Assignment> assignments) {
+
+		boolean isDefaultCategory = category.getName().equalsIgnoreCase(AppConstants.DEFAULT_CATEGORY_NAME);
+
+		double cw = category.getWeight() == null ? 0d : category.getWeight().doubleValue() * 100d;
+		boolean isIncluded = category.isUnweighted() == null ? !isDefaultCategory : !isDefaultCategory && !category.isUnweighted().booleanValue();
+
+		boolean hasWeights = true;
+		
+		String gradebookName = null;
+		if (gradebook != null) {
+			gradebookName = gradebook.getName();
+			hasWeights = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY;
+		}
+		
+		String id = String.valueOf(category.getId());
+		String name = category.getName();
+		Long categoryId = category.getId();
+		Double categoryWeight = Double.valueOf(cw);
+		Boolean doEqualWeight = category.isEqualWeightAssignments();
+		Boolean doExtraCredit = category.isExtraCredit() == null ? Boolean.FALSE : category.isExtraCredit();
+		Boolean doInclude = Boolean.valueOf(isIncluded);
+		Integer dropLowest = category.getDrop_lowest() == 0 ? null : Integer.valueOf(category.getDrop_lowest());
+		Boolean doRemove = Boolean.valueOf(category.isRemoved());
+		Boolean doRelease = Boolean.valueOf(businessLogic.checkReleased(assignments));
+		Double percentCourseGrade = null;
+		if (hasWeights)
+			percentCourseGrade = Double.valueOf(categoryWeight);
+
+		Boolean isEditable = !isDefaultCategory;
+		Integer categoryOrder = category.getCategoryOrder();
+		Boolean doPointWeighting = category.isEnforcePointWeighting();
+
+		return Util.buildItemMap(id, name, gradebookName, categoryId, percentCourseGrade, dropLowest, categoryOrder, doEqualWeight, doExtraCredit, doInclude, doRemove, doRelease, isEditable, doPointWeighting);
+	}
+	
+	private org.sakaiproject.gradebook.gwt.client.model.Gradebook createOrRetrieveGradebookModel(String gradebookUid) {
+
+		org.sakaiproject.gradebook.gwt.client.model.Gradebook model = null;
+		Gradebook gradebook = null;
+
+		boolean isNewGradebook = false;
+
+		try {
+			// First thing, grab the default gradebook if one exists
+			gradebook = gbService.getGradebook(gradebookUid);
+		} catch (GradebookNotFoundException gnfe) {
+			// If it doesn't exist, then create it
+			if (frameworkService != null) {
+				frameworkService.addGradebook(gradebookUid, "My Default Gradebook");
+				gradebook = gbService.getGradebook(gradebookUid);
+				isNewGradebook = true;
+			}
+		}
+
+		// If we have a gradebook already, then we have to ensure that it's set
+		// up correctly for the new tool
+		if (gradebook != null) {
+
+			List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
+
+			List<Category> categories = null;
+			if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
+				categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+
+			model = createGradebookModel(gradebook, assignments, categories, isNewGradebook);
+		}
+
+		return model;
+	}
+	
+	
+	private CommentModel createOrUpdateCommentModel(CommentModel model, Comment comment) {
+
+		if (comment == null)
+			return null;
+
+		if (model == null) {
+			model = new CommentModel();
+		}
+
+		String graderName = "";
+		if (userService != null) {
+			try {
+				User grader = userService.getUser(comment.getGraderId());
+				if (grader != null)
+					graderName = grader.getDisplayName();
+			} catch (UserNotDefinedException e) {
+				log.warn("Couldn't find the grader for " + comment.getGraderId());
+			}
+		}
+
+		if (comment.getId() != null)
+			model.setIdentifier(String.valueOf(comment.getId()));
+		model.setAssignmentId(comment.getGradableObject().getId());
+		model.setText(comment.getCommentText());
+		model.setGraderName(graderName);
+		model.setStudentUid(comment.getStudentId());
+
+		return model;
+	}
+	
+	
+	private GradeEventModel createOrUpdateGradeEventModel(GradeEventModel model, GradingEvent event) {
+
+		SimpleDateFormat dateFormat = new SimpleDateFormat();
+
+		if (model == null) {
+			model = new GradeEventModel();
+		}
+
+		String graderName = event.getGraderId();
+
+		try {
+			if (userService != null) {
+				User grader = userService.getUser(event.getGraderId());
+				if (grader != null)
+					graderName = grader.getDisplayName();
+			}
+		} catch (UserNotDefinedException e) {
+			log.info("Failed to find a user for the id " + event.getGraderId());
+		}
+
+		model.setIdentifier(String.valueOf(event.getId()));
+		model.setGraderName(graderName);
+		model.setGrade(event.getGrade());
+		model.setDateGraded(dateFormat.format(event.getDateGraded()));
+
+		return model;
+	}
+
+	private Statistics createStatisticsModel(Gradebook gradebook, String name, GradeStatistics statistics, Long id, Long assignmentId, String studentId) {
+
+		Statistics model = new StatisticsImpl();
+		model.setId(String.valueOf(id));
+		model.setAssignmentId(String.valueOf(assignmentId));
+		model.setName(name);
 		
 		String mean = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getMean(), false) : NA;
 		String median = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getMedian(), false) : NA;
@@ -1565,82 +3465,1512 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
     	boolean isShowRank = DataTypeConversionUtil.checkBoolean(gradebook.getShowRank());
 		
 		if (!isStudentView || isShowMean) {
-			model.put(StatisticsKey.MEAN.name(),mean);
-			model.put(StatisticsKey.STANDARD_DEVIATION.name(),standardDev);	
+			model.setMean(mean);
+			model.setStandardDeviation(standardDev);	
 		}
 		
 		if (!isStudentView || isShowMedian)
-			model.put(StatisticsKey.MEDIAN.name(),median);
+			model.setMedian(median);
 		
 		if (!isStudentView || isShowMode)
-			model.put(StatisticsKey.MODE.name(),mode);
+			model.setMode(mode);
 		
 		if (!isStudentView || isShowRank)
-			model.put(StatisticsKey.RANK.name(),rank); 
+			model.setRank(rank); 
 		
 		return model;
 	}
-	
-	private boolean toBooleanPrimitive(Object object) {
-		assert(object instanceof Boolean);
+
+	private Long doCreateItem(Gradebook gradebook, Item item, boolean hasCategories, boolean enforceNoNewCategories) throws BusinessRuleException {
 		
-		boolean b = DataTypeConversionUtil.checkBoolean((Boolean)object);
-		return b;
+		boolean includeInGrade = DataTypeConversionUtil.checkBoolean(item.getIncluded());
+		
+		return doCreateItem(gradebook, item.getProperties(),
+				hasCategories, enforceNoNewCategories);
 	}
-	
-	private Double toDouble(Object object) {
-		assert(object instanceof Number);
+
+	private Long doCreateItem(Gradebook gradebook, Map<String, Object> attributes, 
+			boolean hasCategories, boolean enforceNoNewCategories) throws BusinessRuleException {
+
+		String name = (String)attributes.get(ItemKey.NAME.name());
 		
-		Double d = null;
-		if (object instanceof Integer)
-			d = object == null ? null : Double.valueOf(((Integer)object).doubleValue());
-		else if (object instanceof Long)
-			d = object == null ? null : Double.valueOf(((Long)object).doubleValue());
-		else if (object instanceof Double)
-			d = (Double)object;
-		
-		return d;
+		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.ITEM.name(), ActionType.CREATE.name());
+		actionRecord.setEntityName(name);
+		Map<String, String> propertyMap = actionRecord.getPropertyMap();
+
+		for (String property : attributes.keySet()) {
+			String value = String.valueOf(attributes.get(property));
+			if (value != null)
+				propertyMap.put(property, value);
+		}
+
+		boolean hasNewCategory = false;
+
+		Category category = null;
+		Long assignmentId = null;
+
+		List<Assignment> assignments = null;
+		Long categoryId = null;
+
+		try {
+			boolean includeInGrade = DataTypeConversionUtil.checkBoolean((Boolean)attributes.get(ItemKey.INCLUDED.name()));
+
+			categoryId = (Long)attributes.get(ItemKey.CATEGORY_ID.name());
+			String categoryName = (String)attributes.get(ItemKey.CATEGORY_NAME.name());
+			Double weight = (Double)attributes.get(ItemKey.PERCENT_CATEGORY.name()); //item.getPercentCategory();
+			Double points = (Double)attributes.get(ItemKey.POINTS.name()); //item.getPoints();
+			Boolean isReleased = Boolean.valueOf(DataTypeConversionUtil.checkBoolean((Boolean)attributes.get(ItemKey.RELEASED.name())));
+			Boolean isIncluded = Boolean.valueOf(includeInGrade);
+			Boolean isExtraCredit = Boolean.valueOf(DataTypeConversionUtil.checkBoolean((Boolean)attributes.get(ItemKey.EXTRA_CREDIT.name())));
+			Boolean isNullsAsZeros = Boolean.valueOf(DataTypeConversionUtil.checkBoolean((Boolean)attributes.get(ItemKey.NULLSASZEROS.name())));
+			Date dueDate = null;
+			Object dueDateObject = attributes.get(ItemKey.DUE_DATE.name());
+			if (dueDateObject instanceof Date) 
+				dueDate = (Date)dueDateObject;
+			else if (dueDateObject instanceof Long) {
+				Long dueDateMillis = (Long)attributes.get(ItemKey.DUE_DATE.name());
+				dueDate = dueDateMillis == null ? null : new Date(dueDateMillis.longValue());
+			}
+			
+			Integer itemOrder = (Integer)attributes.get(ItemKey.ITEM_ORDER.name());
+
+			// Business rule #1
+			if (points == null)
+				points = new Double(100d);
+			// Business rule #2
+			if (weight == null)
+				weight = Double.valueOf(points.doubleValue());
+
+			if (hasCategories && categoryId == null && categoryName != null 
+					&& categoryName.trim().length() > 0) {
+				GradeItem newCategory = new GradeItemImpl();
+				newCategory.setName(categoryName);
+				newCategory.setIncluded(Boolean.TRUE);
+				newCategory = getActiveItem((GradeItem)addItemCategory(gradebook.getUid(), gradebook.getId(), newCategory));
+				categoryId = newCategory.getCategoryId();
+				//item.setCategoryId(categoryId);
+				hasNewCategory = true;
+			}
+
+			if (categoryId == null || categoryId.equals(Long.valueOf(-1l))) {
+				category = findDefaultCategory(gradebook.getId());
+				categoryId = null;
+			}
+
+			if (category == null && categoryId != null)
+				category = gbService.getCategory(categoryId);
+
+			// Apply business rules before item creation
+			if (hasCategories) {
+				if (categoryId != null) {
+					assignments = gbService.getAssignmentsForCategory(categoryId);
+					// Business rule #4
+					businessLogic.applyNoDuplicateItemNamesWithinCategoryRule(categoryId, name, null, assignments);
+					// Business rule #6
+					if (enforceNoNewCategories)
+						businessLogic.applyMustIncludeCategoryRule(categoryId);
+				}
+
+			} else {
+				assignments = gbService.getAssignments(gradebook.getId());
+				businessLogic.applyNoDuplicateItemNamesRule(gradebook.getId(), name, null, assignments);
+			}
+
+			if (itemOrder == null)
+				itemOrder = assignments == null || assignments.isEmpty() ? Integer.valueOf(0) : Integer.valueOf(assignments.size());
+
+				double w = weight == null ? 0d : ((Double) weight).doubleValue() * 0.01;
+
+				assignmentId = gbService.createAssignmentForCategory(gradebook.getId(), categoryId, name, points, Double.valueOf(w), dueDate, Boolean.valueOf(!DataTypeConversionUtil.checkBoolean(isIncluded)), isExtraCredit, Boolean.FALSE,
+						isReleased, itemOrder, isNullsAsZeros);
+
+				// Apply business rules after item creation
+				if (hasCategories) {
+					assignments = gbService.getAssignmentsForCategory(categoryId);
+					// Business rule #5
+					if (businessLogic.checkRecalculateEqualWeightingRule(category))
+						recalculateAssignmentWeights(category, Boolean.FALSE, assignments);
+				}
+
+				actionRecord.setStatus(ActionRecord.STATUS_SUCCESS);
+		} catch (RuntimeException e) {
+			actionRecord.setStatus(ActionRecord.STATUS_FAILURE);
+			throw e;
+		} finally {
+			gbService.storeActionRecord(actionRecord);
+		}
+
+		return assignmentId;
 	}
-	
-	private Long toLong(Object object) {
-		assert(object instanceof Number);
-		
-		Long l = null;
-		if (object instanceof Integer)
-			l = object == null ? null : Long.valueOf(((Integer)object).longValue());
-		else if (object instanceof Long)
-			l = (Long)object;
-		
-		return l;
+
+	private List<UserRecord> doSearchAndSortUserRecords(Gradebook gradebook, List<Assignment> assignments, List<Category> categories, List<String> studentUids, Map<String, UserRecord> userRecordMap, PagingLoadConfig config) {
+
+		String searchString = null;
+		if (config instanceof MultiGradeLoadConfig) {
+			searchString = ((MultiGradeLoadConfig) config).getSearchString();
+		}
+
+		List<UserRecord> userRecords = null;
+		LearnerKey sortColumnKey = null;
+
+		String columnId = null;
+
+		// This is slightly painful, but since it's a String that gets passed
+		// up, we have to iterate
+		if (config != null && config.getSortInfo() != null && config.getSortInfo().getSortField() != null) {
+			columnId = config.getSortInfo().getSortField();
+
+			for (LearnerKey key : EnumSet.allOf(LearnerKey.class)) {
+				if (columnId.equals(key.name())) {
+					sortColumnKey = key;
+					break;
+				}
+			}
+
+			if (sortColumnKey == null)
+				sortColumnKey = LearnerKey.ASSIGNMENT;
+
+		}
+
+		if (sortColumnKey == null)
+			sortColumnKey = LearnerKey.DISPLAY_NAME;
+
+		boolean isDescending = config != null && config.getSortInfo() != null && config.getSortInfo().getSortDir() == SortDir.DESC;
+
+		// Check to see if we're sorting or not
+		if (sortColumnKey != null) {
+			switch (sortColumnKey) {
+				case DISPLAY_NAME:
+				case LAST_NAME_FIRST:
+				case DISPLAY_ID:
+				case SECTION:
+				case EMAIL:
+					if (userRecords == null) {
+						userRecords = doSearchUsers(searchString, studentUids, userRecordMap);
+					}
+					break;
+				case COURSE_GRADE:
+				case LETTER_GRADE:
+				case CALCULATED_GRADE:
+				case GRADE_OVERRIDE:
+				case ASSIGNMENT:
+					if (userRecords == null) {
+						userRecords = new ArrayList<UserRecord>(userRecordMap.values());
+					}
+					break;
+			}
+
+			Comparator<UserRecord> comparator = null;
+			switch (sortColumnKey) {
+				case DISPLAY_NAME:
+				case LAST_NAME_FIRST:
+					comparator = SORT_NAME_COMPARATOR;
+					break;
+				case DISPLAY_ID:
+					comparator = DISPLAY_ID_COMPARATOR;
+					break;
+				case EMAIL:
+					comparator = EMAIL_COMPARATOR;
+					break;
+				case SECTION:
+					comparator = SECTION_TITLE_COMPARATOR;
+					break;
+				case CALCULATED_GRADE:
+					// In this case we need to ensure that we've calculated
+					// everybody's course grade
+					if (userRecords != null) {
+						for (UserRecord record : userRecords) {
+							BigDecimal calculatedGrade = getCalculatedGrade(gradebook, assignments, categories, record.getGradeRecordMap());
+							DisplayGrade displayGrade = getDisplayGrade(gradebook, record.getUserUid(), record.getCourseGradeRecord(), calculatedGrade);
+							record.setDisplayGrade(displayGrade);
+							record.setCalculated(true);
+						}
+					}
+					comparator = new CalculatedGradeComparator(isDescending);
+					break;
+				case LETTER_GRADE:
+				case COURSE_GRADE:
+					// In this case we need to ensure that we've calculated
+					// everybody's course grade
+					if (userRecords != null) {
+						for (UserRecord record : userRecords) {
+							BigDecimal calculatedGrade = getCalculatedGrade(gradebook, assignments, categories, record.getGradeRecordMap());
+							DisplayGrade displayGrade = getDisplayGrade(gradebook, record.getUserUid(), record.getCourseGradeRecord(), calculatedGrade);
+							record.setDisplayGrade(displayGrade);
+							record.setCalculated(true);
+						}
+					}
+					comparator = new CourseGradeComparator(isDescending);
+					break;
+				case GRADE_OVERRIDE:
+					comparator = new EnteredGradeComparator(isDescending);
+					break;
+				case ASSIGNMENT:
+					if (columnId != null && !columnId.equals("")) {
+						Long assignmentId = Long.valueOf(columnId);
+						comparator = new AssignmentComparator(assignmentId, isDescending);
+					}
+					break;
+			}
+
+			if (comparator != null) {
+				if (isDescending)
+					comparator = Collections.reverseOrder(comparator);
+
+				Collections.sort(userRecords, comparator);
+			}
+		}
+
+		if (userRecords == null) {
+			// Of course, we need to do this regardless or it will be null
+			// This is pretty silly on one level, since it means that we don't
+			// take advantage of the database to do this, but it's equivalent to
+			// what
+			// section awareness is doing behind the scenes and it gives us more
+			// control over the process
+			if (searchString != null)
+				userRecords = doSearchUsers(searchString, studentUids, userRecordMap);
+			else
+				userRecords = new ArrayList<UserRecord>(userRecordMap.values());
+
+			// This seems a little stupid, but the fact of the matter is that we
+			// get an unordered list
+			// back from the Map.keySet call, so we do want to ensure that we
+			// get the same order each time
+			// even when the user has not chosen to sort
+			Collections.sort(userRecords, DEFAULT_ID_COMPARATOR);
+		}
+
+		return userRecords;
 	}
+
+	private List<UserRecord> doSearchUsers(String searchString, List<String> studentUids, Map<String, UserRecord> userRecordMap) {
+
+		// Make sure that our search criterion is case insensitive
+		if (searchString != null)
+			searchString = searchString.toUpperCase();
+
+		List<UserRecord> userRecords = new ArrayList<UserRecord>();
+
+		// To do a search, we have to get all the users . . . this is also
+		// desirable even if we're not searching, if we want to sort on these
+		// properties
+		List<User> users = userService.getUsers(studentUids);
+
+		if (users != null) {
+			for (User user : users) {
+				String lastName = user.getLastName() == null ? "" : user.getLastName();
+				String firstName = user.getFirstName() == null ? "" : user.getFirstName();
+
+				String sortName = new StringBuilder().append(lastName.toUpperCase()).append("::").append(firstName.toUpperCase()).toString();
+				// Make sure that our search field is case insensitive
+				if (sortName != null)
+					sortName = sortName.toUpperCase();
+
+				// If we're not searching, then return everybody
+				if (searchString == null || sortName.contains(searchString)) {
+					UserRecord userRecord = userRecordMap.get(user.getId());
+					userRecord.populate(user);
+					userRecords.add(userRecord);
+				}
+			}
+		}
+
+		return userRecords;
+	}
+
+	private List<User> findAllMembers(Site site, String[] learnerRoleKeys) {
+
+		List<User> users = new ArrayList<User>();
+		if (site != null) {
+			List<String> userUids = gbService.getFullUserListForSite(site.getId(), learnerRoleKeys);
+
+			if (userService != null && userUids != null)
+				users = userService.getUsers(userUids);
+		}
+		return users;
+	}
+
+	private synchronized Category findDefaultCategory(Long gradebookId) {
+
+		Category category = new Category();
+		category.setName(AppConstants.DEFAULT_CATEGORY_NAME);
+		category.setWeight(Double.valueOf(0d));
+		category.setExtraCredit(Boolean.FALSE);
+		category.setUnweighted(Boolean.TRUE);
+		category.setId(Long.valueOf(-1l));
+
+		return category;
+
+	}
+
+	private List<UserRecord> findLearnerRecordPage(Gradebook gradebook, Site site, String[] realmIds, List<String> groupReferences, Map<String, Group> groupReferenceMap, String sortField, String searchField, String searchCriteria,
+			int offset, int limit, boolean isAscending, boolean includeCMId) {
+
+		String[] learnerRoleKeys = getLearnerRoleNames();
+		verifyUserDataIsUpToDate(site, learnerRoleKeys);
+
+		List<UserDereference> dereferences = gbService.getUserDereferences(realmIds, sortField, searchField, searchCriteria, offset, limit, isAscending, learnerRoleKeys);
+		List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebook.getId(), realmIds, learnerRoleKeys);
+		Map<String, Map<Long, AssignmentGradeRecord>> studentGradeRecordMap = new HashMap<String, Map<Long, AssignmentGradeRecord>>();
+
+		if (allGradeRecords != null) {
+			for (AssignmentGradeRecord gradeRecord : allGradeRecords) {
+				gradeRecord.setUserAbleToView(true);
+				String studentUid = gradeRecord.getStudentId();
+				Map<Long, AssignmentGradeRecord> studentMap = studentGradeRecordMap.get(studentUid);
+				if (studentMap == null) {
+					studentMap = new HashMap<Long, AssignmentGradeRecord>();
+				}
+				GradableObject go = gradeRecord.getGradableObject();
+				studentMap.put(go.getId(), gradeRecord);
+
+				studentGradeRecordMap.put(studentUid, studentMap);
+			}
+		}
+
+		List<CourseGradeRecord> courseGradeRecords = gbService.getAllCourseGradeRecords(gradebook); //, realmIds, sortField, searchField, searchCriteria, offset, limit, isAscending, learnerRoleKeys);
+		Map<String, CourseGradeRecord> studentCourseGradeRecordMap = new HashMap<String, CourseGradeRecord>();
+
+		if (courseGradeRecords != null) {
+			for (CourseGradeRecord courseGradeRecord : courseGradeRecords) {
+				String studentUid = courseGradeRecord.getStudentId();
+				studentCourseGradeRecordMap.put(studentUid, courseGradeRecord);
+			}
+		}
+
+		List<Comment> comments = gbService.getComments(gradebook.getId()); //, realmIds, learnerRoleKeys, sortField, searchField, searchCriteria, offset, limit, isAscending);
+		Map<String, Map<Long, Comment>> studentItemCommentMap = new HashMap<String, Map<Long, Comment>>();
+
+		if (comments != null) {
+			for (Comment comment : comments) {
+				String studentUid = comment.getStudentId();
+				Map<Long, Comment> commentMap = studentItemCommentMap.get(studentUid);
+				if (commentMap == null)
+					commentMap = new HashMap<Long, Comment>();
+
+				commentMap.put(comment.getGradableObject().getId(), comment);
+				studentItemCommentMap.put(studentUid, commentMap);
+			}
+		}
+
+		Map<String, Set<Group>> userGroupMap = new HashMap<String, Set<Group>>();
+		Map<String, List<String>> groupEnrollmentSetEidsMap = new HashMap<String, List<String>>();
+
+		List<Object[]> tuples = gbService.getUserGroupReferences(groupReferences, learnerRoleKeys);
+
+		if (tuples != null) {
+			for (Object[] tuple : tuples) {
+				String userUid = (String) tuple[0];
+				String realmId = (String) tuple[1];
+
+				Group group = groupReferenceMap.get(realmId);
+
+				if (includeCMId && advisor.isExportCourseManagementIdByGroup()) {
+					List<String> enrollmentSetEids = advisor.getExportCourseManagementSetEids(group);
+					if (enrollmentSetEids != null)
+						groupEnrollmentSetEidsMap.put(group.getId(), enrollmentSetEids);
+				}
+
+				Set<Group> userGroups = userGroupMap.get(userUid);
+
+				if (userGroups == null) {
+					userGroups = new HashSet<Group>();
+					userGroupMap.put(userUid, userGroups);
+				}
+
+				userGroups.add(group);
+			}
+		}
+
+		List<UserRecord> userRecords = new ArrayList<UserRecord>();
+		if (dereferences != null) {
+			for (UserDereference dereference : dereferences) {
+				UserRecord userRecord = new UserRecord(dereference.getUserUid(), dereference.getEid(), dereference.getDisplayId(), dereference.getDisplayName(), dereference.getLastNameFirst(), dereference.getSortName(), dereference
+						.getEmail());
+
+				Map<Long, AssignmentGradeRecord> gradeRecordMap = studentGradeRecordMap.get(dereference.getUserUid());
+				userRecord.setGradeRecordMap(gradeRecordMap);
+				CourseGradeRecord courseGradeRecord = studentCourseGradeRecordMap.get(dereference.getUserUid());
+				userRecord.setCourseGradeRecord(courseGradeRecord);
+				Map<Long, Comment> commentMap = studentItemCommentMap.get(dereference.getUserUid());
+				userRecord.setCommentMap(commentMap);
+
+				Set<Group> userGroupSet = userGroupMap.get(userRecord.getUserUid());
+				if (userGroupSet != null) {
+					List<Group> userGroups = new ArrayList<Group>(userGroupSet);
+					Collections.sort(userGroups, new Comparator<Group>() {
+
+						public int compare(Group o1, Group o2) {
+
+							if (o1 != null && o2 != null && o1.getTitle() != null && o2.getTitle() != null) {
+								return o1.getTitle().compareTo(o2.getTitle());
+							}
+
+							return 0;
+						}
+
+					});
+					StringBuilder groupTitles = new StringBuilder();
+					StringBuilder courseManagementIds = new StringBuilder();
+					for (Iterator<Group> groupIter = userGroups.iterator(); groupIter.hasNext();) {
+						Group group = groupIter.next();
+						groupTitles.append(group.getTitle());
+
+						if (includeCMId) {
+							List<String> enrollmentSetEids = groupEnrollmentSetEidsMap.get(group.getId());
+							courseManagementIds.append(advisor.getExportCourseManagementId(userRecord.getUserEid(), group, enrollmentSetEids));
+						}
+
+						if (groupIter.hasNext()) {
+							groupTitles.append(",");
+							courseManagementIds.append(",");
+						}
+					}
+					userRecord.setSectionTitle(groupTitles.toString());
+
+					if (includeCMId)
+						userRecord.setExportCourseManagemntId(courseManagementIds.toString());
+				}
+				if (includeCMId) {
+					userRecord.setExportUserId(advisor.getExportUserId(dereference));
+					userRecord.setFinalGradeUserId(advisor.getFinalGradeUserId(dereference));
+				}
+
+				userRecords.add(userRecord);
+			}
+		}
+
+		return userRecords;
+	}
+
+	private List<Statistics> generateStatsList(String gradebookUid, Long gradebookId, String studentId)
+	{
+		
+		Gradebook gradebook = null;
+		if (gradebookId == null) {
+			gradebook = gbService.getGradebook(gradebookUid);
+			gradebookId = gradebook.getId();
+		}
+
+		List<Assignment> assignments = gbService.getAssignments(gradebookId);
+		
+		// Don't bother going out to the db for the Gradebook if we've already
+		// retrieved it
+		if (gradebook == null && assignments != null && assignments.size() > 0)
+			gradebook = assignments.get(0).getGradebook();
+
+		if (gradebook == null)
+			gradebook = gbService.getGradebook(gradebookId);
+
+		List<Category> categories = null;
+		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
+		if (hasCategories)
+			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+
+		int gradeType = gradebook.getGrade_type();
+
+		String siteId = getSiteId();
+
+		String[] realmIds = new String[1];
+		realmIds[0] = new StringBuffer().append("/site/").append(siteId).toString();
+
+		String[] learnerRoleNames = getLearnerRoleNames();
+
+		List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebook.getId(), realmIds, learnerRoleNames);
+		Map<String, Map<Long, AssignmentGradeRecord>> studentGradeRecordMap = new HashMap<String, Map<Long, AssignmentGradeRecord>>();
+
+		List<String> gradedStudentUids = new ArrayList<String>();
+
+		Map<Long, BigDecimal> assignmentSumMap = new HashMap<Long, BigDecimal>();
+		Map<Long, List<StudentScore>> assignmentGradeListMap = new HashMap<Long, List<StudentScore>>();
+
+		if (allGradeRecords != null) {
+			for (AssignmentGradeRecord gradeRecord : allGradeRecords) {
+				gradeRecord.setUserAbleToView(true);
+				String studentUid = gradeRecord.getStudentId();
+				Map<Long, AssignmentGradeRecord> studentMap = studentGradeRecordMap.get(studentUid);
+				if (studentMap == null) {
+					studentMap = new HashMap<Long, AssignmentGradeRecord>();
+				}
+				GradableObject go = gradeRecord.getGradableObject();
+				studentMap.put(go.getId(), gradeRecord);
+
+				BigDecimal value = null;
+				if (gradeRecord.getPointsEarned() != null) {
+					Assignment assignment = (Assignment) gradeRecord.getGradableObject();
+					switch (gradeType) {
+						case GradebookService.GRADE_TYPE_POINTS:
+							value = BigDecimal.valueOf(gradeRecord.getPointsEarned().doubleValue());
+							break;
+						case GradebookService.GRADE_TYPE_PERCENTAGE:
+						case GradebookService.GRADE_TYPE_LETTER:
+							value = gradeCalculations.getPointsEarnedAsPercent(assignment, gradeRecord);
+							break;
+					}
+
+					if (value != null && assignment != null) {
+						Long assignmentId = assignment.getId();
+						List<StudentScore> gradeList = assignmentGradeListMap.get(assignmentId);
+						if (gradeList == null) {
+							gradeList = new ArrayList<StudentScore>();
+							assignmentGradeListMap.put(assignmentId, gradeList);
+						}
+						
+						gradeList.add(new StudentScore(gradeRecord.getStudentId(), value));
+
+						BigDecimal itemSum = assignmentSumMap.get(assignmentId);
+						if (itemSum == null)
+							itemSum = BigDecimal.ZERO;
+						itemSum = itemSum.add(value);
+						assignmentSumMap.put(assignmentId, itemSum);
+					}
+
+				}
+				studentGradeRecordMap.put(studentUid, studentMap);
+
+				if (!gradedStudentUids.contains(studentUid))
+					gradedStudentUids.add(studentUid);
+			}
+		}
+
+		// Now we can calculate the mean course grade
+		List<StudentScore> courseGradeList = new ArrayList<StudentScore>();
+		BigDecimal sumCourseGrades = BigDecimal.ZERO;
+		for (String studentUid : gradedStudentUids) {
+			Map<Long, AssignmentGradeRecord> studentMap = studentGradeRecordMap.get(studentUid);
+			BigDecimal courseGrade = null;
+			
+			boolean isScaledExtraCredit = DataTypeConversionUtil.checkBoolean(gradebook.isScaledExtraCredit());
+			switch (gradebook.getCategory_type()) {
+				case GradebookService.CATEGORY_TYPE_NO_CATEGORY:
+					courseGrade = gradeCalculations.getCourseGrade(gradebook, assignments, studentMap, isScaledExtraCredit);
+					break;
+				default:
+					courseGrade = gradeCalculations.getCourseGrade(gradebook, categories, studentMap, isScaledExtraCredit);
+			}
+
+			if (courseGrade != null) {
+				sumCourseGrades = sumCourseGrades.add(courseGrade);
+				courseGradeList.add(new StudentScore(studentUid, courseGrade));
+			}
+		} 
+
+		GradeStatistics courseGradeStatistics = gradeCalculations.calculateStatistics(courseGradeList, sumCourseGrades, studentId);
+
+		List<Statistics> statsList = new ArrayList<Statistics>();
+
+		long id = 0;
+		statsList.add(createStatisticsModel(gradebook, "Course Grade", courseGradeStatistics, Long.valueOf(id), Long.valueOf(-1), studentId));
+		id++;
+
+		if (assignments != null) {
+			
+			if (hasCategories) {
+				if (categories != null) {
+					for (Category category : categories) {
+						List<Assignment> asns = category.getAssignmentList();
+						if (asns != null) {
+							for (Assignment a : asns) {
+								Long assignmentId = a.getId();
+								String name = a.getName();
+				
+								List<StudentScore> gradeList = assignmentGradeListMap.get(assignmentId);
+								BigDecimal sum = assignmentSumMap.get(assignmentId);
+				
+								GradeStatistics assignmentStatistics = null;
+								if (gradeList != null && sum != null) {
+									assignmentStatistics = gradeCalculations.calculateStatistics(gradeList, sum, studentId);
+								}
+								
+								statsList.add(createStatisticsModel(gradebook, name, assignmentStatistics, Long.valueOf(id), assignmentId, studentId));
+								id++;
+							}
+						}
+					}
+				}
+			} else {
+			
+				for (Assignment assignment : assignments) {
+					Long assignmentId = assignment.getId();
+					String name = assignment.getName();
 	
-	private ItemModel toItem(Map<String,Object> attributes) {
-		ItemModel item = new ItemModel();
-		for (ItemKey key : EnumSet.allOf(ItemKey.class)) {
-			if (key.getType() != null) {
-				try {
-					Object rawValue = attributes.get(key.name());
-					Object value = rawValue;
-					
-					if (rawValue != null) {
-						if (key.getType().equals(Long.class)) 
-							value = Long.valueOf(rawValue.toString());
-						else if (key.getType().equals(Double.class))
-							value = Double.valueOf(rawValue.toString());
-						else if (key.getType().equals(Date.class))
-							value = new Date((Long)rawValue);
+					List<StudentScore> gradeList = assignmentGradeListMap.get(assignmentId);
+					BigDecimal sum = assignmentSumMap.get(assignmentId);
+	
+					GradeStatistics assignmentStatistics = null;
+					if (gradeList != null && sum != null) {
+						assignmentStatistics = gradeCalculations.calculateStatistics(gradeList, sum, studentId);
 					}
 					
-					item.set(key.name(), value);
-				} catch (ClassCastException cce) {
-					log.info("Unable to cast value for " + key.name() + " as " + key.getType().getCanonicalName());
+					statsList.add(createStatisticsModel(gradebook, name, assignmentStatistics, Long.valueOf(id), assignmentId, studentId));
+					id++;
 				}
-			} else 
-				item.set(key.name(), attributes.get(key.name()));
+			}
 		}
-		return item;
+
+		return statsList; 
+	}
+
+	private GradeItem getActiveItem(GradeItem parent) {
+
+		if (parent.isActive())
+			return parent;
+
+		for (GradeItem m : parent.getChildren()) {
+			GradeItem c = (GradeItem)m;
+			if (c.isActive()) {
+				return c;
+			}
+
+			if (c.getChildCount() > 0) {
+				GradeItem activeItem = getActiveItem(c);
+
+				if (activeItem != null)
+					return activeItem;
+			}
+		}
+
+		return null;
+	}
+
+	private AuthModel getAuthorization(String... gradebookUids) {
+
+		if (gradebookUids == null || gradebookUids.length == 0)
+			gradebookUids = new String[] { lookupDefaultGradebookUid() };
+
+		for (int i = 0; i < gradebookUids.length; i++) {
+			boolean isNewGradebook = false;
+			Gradebook gradebook = null;
+			try {
+				// First thing, grab the default gradebook if one exists
+				gradebook = gbService.getGradebook(gradebookUids[i]);
+			} catch (GradebookNotFoundException gnfe) {
+				// If it doesn't exist, then create it
+				if (frameworkService != null) {
+					frameworkService.addGradebook(gradebookUids[i], "My Default Gradebook");
+					gradebook = gbService.getGradebook(gradebookUids[i]);
+
+					// Add the default configuration settings
+					/*gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebook.getId(), 
+							ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, 
+									StudentModel.Key.DISPLAY_ID.name()), String.valueOf(Boolean.TRUE));
+					gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebook.getId(), 
+							ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, 
+									StudentModel.Key.DISPLAY_NAME.name()), String.valueOf(Boolean.TRUE));
+					gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebook.getId(), 
+							ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, 
+									StudentModel.Key.EMAIL.name()), String.valueOf(Boolean.TRUE));
+					gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebook.getId(), 
+							ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, 
+									StudentModel.Key.SECTION.name()), String.valueOf(Boolean.TRUE));	
+					gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebook.getId(), 
+							ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, 
+									StudentModel.Key.CALCULATED_GRADE.name()), String.valueOf(Boolean.TRUE));
+					gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebook.getId(), 
+							ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, 
+									StudentModel.Key.LETTER_GRADE.name()), String.valueOf(Boolean.TRUE));*/
+				} 
+			}
+			AuthModel authModel = new AuthModel();
+			boolean isUserAbleToGrade = authz.isUserAbleToGrade(gradebookUids[i]);
+			boolean isUserAbleToViewOwnGrades = authz.isUserAbleToViewOwnGrades(gradebookUids[i]);
+
+			authModel.setUserAbleToGrade(Boolean.valueOf(isUserAbleToGrade));
+			authModel.setUserAbleToEditAssessments(Boolean.valueOf(authz.isUserAbleToEditAssessments(gradebookUids[i])));
+			authModel.setUserAbleToViewOwnGrades(Boolean.valueOf(isUserAbleToViewOwnGrades));
+			authModel.setUserHasGraderPermissions(Boolean.valueOf(authz.hasUserGraderPermissions(gradebook.getUid())));
+			authModel.setNewGradebook(Boolean.valueOf(isNewGradebook));
+			authModel.setPlacementId(getPlacementId());
+
+			return authModel;
+		}
+		return null;
+	}
+
+	private BigDecimal getCalculatedGrade(Gradebook gradebook, List<Assignment> assignments, List<Category> categories, Map<Long, AssignmentGradeRecord> studentGradeMap) {
+		BigDecimal autoCalculatedGrade = null;
+
+		boolean isScaledExtraCredit = DataTypeConversionUtil.checkBoolean(gradebook.isScaledExtraCredit());
+		
+		switch (gradebook.getCategory_type()) {
+			case GradebookService.CATEGORY_TYPE_NO_CATEGORY:
+				autoCalculatedGrade = gradeCalculations.getCourseGrade(gradebook, assignments, studentGradeMap, isScaledExtraCredit);
+				break;
+			default:
+				autoCalculatedGrade = gradeCalculations.getCourseGrade(gradebook, categories, studentGradeMap, isScaledExtraCredit);
+		}
+
+		if (autoCalculatedGrade != null)
+			autoCalculatedGrade = autoCalculatedGrade.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
+
+		return autoCalculatedGrade;
+	}
+
+	private List<Category> getCategoriesWithAssignments(Long gradebookId, List<Assignment> assignments, boolean includeEmpty) {
+
+		Map<Long, Category> categoryMap = new HashMap<Long, Category>();
+		List<Category> categories = null;
+
+		Category defaultCategory = null;
+
+		int categoryOrder = 0;
+
+		// If we need to include categories that do not have any items under
+		// them (as we do for the item tree), then we have to do an additional
+		// query.
+		if (includeEmpty) {
+			categories = gbService.getCategories(gradebookId);
+
+			if (categories != null) {
+				for (Category category : categories) {
+					if (!category.isRemoved()) {
+						categoryMap.put(category.getId(), category);
+						Integer order = category.getCategoryOrder();
+						if (order == null)
+							category.setCategoryOrder(categoryOrder++);
+					}
+				}
+			}
+		}
+
+		List<Assignment> assignmentList = null;
+
+		if (assignments != null) {
+			for (Assignment assignment : assignments) {
+				Category category = null;
+
+				if (assignment.isRemoved())
+					continue;
+
+				if (assignment.getCategory() != null)
+					category = categoryMap.get(assignment.getCategory().getId());
+
+				if (null == category) {
+
+					category = assignment.getCategory();
+
+					if (null == category) {
+						if (defaultCategory == null) {
+							defaultCategory = findDefaultCategory(gradebookId);
+							if (categories != null) {
+								categories.add(defaultCategory);
+								defaultCategory.setCategoryOrder(categoryOrder++);
+							} else
+								categoryMap.put(defaultCategory.getId(), defaultCategory);
+						}
+
+						category = defaultCategory;
+					}
+				}
+
+				if (null != category) {
+
+					assignmentList = category.getAssignmentList();
+
+					if (null == assignmentList) {
+						assignmentList = new ArrayList<Assignment>();
+						category.setAssignmentList(assignmentList);
+					}
+
+					if (!assignmentList.contains(assignment)) {
+						Integer itemOrder = assignment.getSortOrder();
+						if (itemOrder == null)
+							itemOrder = Integer.valueOf(assignmentList.size());
+						assignmentList.add(assignment);
+					}
+				}
+			}
+		}
+
+		if (categories == null && categoryMap.size() > 0)
+			categories = new ArrayList<Category>(categoryMap.values());
+
+		return categories;
+	}
+
+	private List<FixedColumn> getColumns(boolean isUserAbleToGradeAll) {
+
+		List<FixedColumn> columns = new ArrayList<FixedColumn>(10);
+
+		columns.add(new FixedColumnImpl(LearnerKey.DISPLAY_ID, i18n.getString("displayId"), 80, true));
+		columns.add(new FixedColumnImpl(LearnerKey.DISPLAY_NAME, i18n.getString("displayName"), 180, true));
+		columns.add(new FixedColumnImpl(LearnerKey.LAST_NAME_FIRST, i18n.getString("lastNameFirst"), 180, false));
+		columns.add(new FixedColumnImpl(LearnerKey.EMAIL, i18n.getString("email"), 230, true));
+		columns.add(new FixedColumnImpl(LearnerKey.SECTION, i18n.getString("section"), 120, true));
+		columns.add(new FixedColumnImpl(LearnerKey.COURSE_GRADE, i18n.getString("courseGrade"), 120, false));
+		if (isUserAbleToGradeAll) {
+			FixedColumn gradeOverrideColumn = new FixedColumnImpl(LearnerKey.GRADE_OVERRIDE, i18n.getString("gradeOverride"), 120, false);
+			gradeOverrideColumn.setEditable(true);
+			columns.add(gradeOverrideColumn);
+		}
+		columns.add(new FixedColumnImpl(LearnerKey.LETTER_GRADE, i18n.getString("letterGrade"), 80, true));
+		columns.add(new FixedColumnImpl(LearnerKey.CALCULATED_GRADE, i18n.getString("calculatedGrade"), 80, true));
+		
+		return columns;
 	}
 	
+	
+	/*
+	 * DEPENDENCY INJECTION ACCESSORS
+	 */
+
+	private DisplayGrade getDisplayGrade(Gradebook gradebook, String studentUid, CourseGradeRecord courseGradeRecord, BigDecimal autoCalculatedGrade) {
+
+		DisplayGrade displayGrade = new DisplayGrade();
+		
+		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
+		boolean isLetterGradeMode = gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER;
+	
+		String enteredGrade = null;
+		String letterGrade = null;
+
+		boolean isOverridden = false;
+
+		if (courseGradeRecord != null)
+			enteredGrade = courseGradeRecord.getEnteredGrade();
+
+		if (enteredGrade == null)
+			letterGrade = getLetterGrade(autoCalculatedGrade, gradebook.getSelectedGradeMapping());
+		else {
+			letterGrade = enteredGrade;
+			isOverridden = true;
+		}
+
+		boolean isMissingScores = gbService.isStudentMissingScores(gradebook.getId(), studentUid, hasCategories);
+
+		displayGrade.setLetterGrade(letterGrade);
+		displayGrade.setCalculatedGrade(autoCalculatedGrade);
+		displayGrade.setMissingGrades(isMissingScores);
+		displayGrade.setLetterGradeMode(isLetterGradeMode);
+		displayGrade.setOverridden(isOverridden);
+		
+		/*if (letterGrade != null) {
+			StringBuilder buffer = new StringBuilder(letterGrade);
+
+			if (isOverridden) {
+				buffer.append(" (override)").append(missingGradesMarker);
+			} else if (autoCalculatedGrade != null) {
+				
+				if (isLetterGradeMode)
+					buffer.append(missingGradesMarker);
+				else
+					buffer.append(" (").append(autoCalculatedGrade.toString()).append("%) ").append(missingGradesMarker);
+			}
+
+			displayGrade = buffer.toString();
+		}*/
+
+		return displayGrade;
+	}
+
+	private GradeItem getGradebookGradeItem(Gradebook gradebook, List<Assignment> assignments, 
+			List<Category> categories, boolean isSingleUserView) {
+		GradeItem gradebookGradeItem = null;
+
+		if(null != categories) {
+			List<Category> filteredCategories = new ArrayList<Category>();
+			List<Assignment> filteredAssignments = assignments;
+
+			for(Category category : categories) {
+
+				// First we check if the user has "can grade" permission
+				boolean canGrade = authz.canUserGradeCategory(gradebook.getUid(), category.getId());
+				if(canGrade) {
+					filteredCategories.add(category);
+				}
+				else {
+					// User has no "can grade" permission, so let's check if user has "can view" permission for this category
+					boolean canView = isSingleUserView || authz.canUserViewCategory(gradebook.getUid(), category.getId());
+					if(canView) {
+						filteredCategories.add(category);
+					}
+				}
+
+				if(null != assignments) {
+					// Since the user doesn't have permission to either view or grade the category, we 
+					// need to remove any associated assignments
+					List<Assignment> tempAssignments = new ArrayList<Assignment>();
+					if (filteredAssignments != null) {
+						for(Assignment assignment : filteredAssignments) {
+
+							if (assignment.getCategory() != null) {
+								if(!assignment.getCategory().getId().equals(category.getId())) {
+
+									if (!isSingleUserView || assignment.isReleased())
+										tempAssignments.add(assignment);
+
+								}
+							}
+						}
+					}
+					filteredAssignments = tempAssignments;
+				}
+
+			}
+			
+			gradebookGradeItem = getGradeItem(gradebook, filteredAssignments, filteredCategories, null, null);
+		}
+		else {
+			gradebookGradeItem = getGradeItem(gradebook, assignments, categories, null, null);
+		}
+		return gradebookGradeItem;
+	}
+
+	private List<org.sakaiproject.gradebook.gwt.client.model.Gradebook> getGradebookModels(String[] gradebookUids) {
+
+		List<org.sakaiproject.gradebook.gwt.client.model.Gradebook> models = new LinkedList<org.sakaiproject.gradebook.gwt.client.model.Gradebook>();
+
+		if (gradebookUids == null || gradebookUids.length == 0)
+			gradebookUids = new String[] { lookupDefaultGradebookUid() };
+
+		for (int i = 0; i < gradebookUids.length; i++)
+			models.add(createOrRetrieveGradebookModel(gradebookUids[i]));
+
+		return models;
+	}
+
+	private GradeItem getGradeItem(Gradebook gradebook, List<Assignment> assignments, List<Category> categories, Long categoryId, Long assignmentId) {
+
+		GradeItem gradebookGradeItem = createGradeItem(gradebook);
+
+		boolean isNotInCategoryMode = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_NO_CATEGORY;
+
+		if (isNotInCategoryMode) {
+			calculateItemCategoryPercent(gradebook, null, gradebookGradeItem, null, assignments, assignmentId);
+
+		} else {
+
+			if (categories != null) {
+				BigDecimal gradebookWeightSum = BigDecimal.ZERO;
+				BigDecimal gradebookPointsSum = BigDecimal.ZERO;
+				for (Category category : categories) {
+					boolean isExtraCredit = category.isExtraCredit() != null && category.isExtraCredit().booleanValue();
+					boolean isUnweighted = category.isUnweighted() != null && category.isUnweighted().booleanValue();
+
+					if (!category.isRemoved() || isNotInCategoryMode) {
+						double categoryWeight = category.getWeight() == null ? 0d : category.getWeight().doubleValue() * 100d;
+
+						List<Assignment> items = category.getAssignmentList();
+						GradeItem categoryGradeItem = createGradeItem(gradebook, category, items);
+
+						if (!isNotInCategoryMode) {
+							gradebookGradeItem.addChild(categoryGradeItem);
+							
+							/*categoryGradeItem.setParent(gradebookGradeItem);
+							gradebookGradeItem.add(categoryGradeItem);*/
+						}
+
+						if (categoryId != null && category.getId().equals(categoryId))
+							categoryGradeItem.setActive(true);
+
+						calculateItemCategoryPercent(gradebook, category, gradebookGradeItem, categoryGradeItem, items, assignmentId);
+
+						double categoryPoints = categoryGradeItem.getPoints() == null ? 0d : categoryGradeItem.getPoints().doubleValue();
+
+						if (!isExtraCredit && !isUnweighted) {
+							categoryWeight = categoryGradeItem.getPercentCourseGrade() == null ? 0d : categoryGradeItem.getPercentCourseGrade().doubleValue();
+							gradebookWeightSum = gradebookWeightSum.add(BigDecimal.valueOf(categoryWeight));
+							gradebookPointsSum = gradebookPointsSum.add(BigDecimal.valueOf(categoryPoints));
+						}
+
+					}
+				}
+				gradebookGradeItem.setPoints(Double.valueOf(gradebookPointsSum.doubleValue()));
+				gradebookGradeItem.setPercentCourseGrade(Double.valueOf(gradebookWeightSum.doubleValue()));
+			}
+		}
+
+		return gradebookGradeItem;
+	}
+
+	private GradeItem getGradeItemsForCategory(Category category, GradeItem gradebookGradeItem, Long assignmentId) {
+
+		if (category == null)
+			return null;
+
+		Gradebook gradebook = category.getGradebook();
+
+		List<Assignment> assignments = gbService.getAssignmentsForCategory(category.getId());
+
+		GradeItem categoryGradeItem = createGradeItem(gradebook, category, null);
+		gradebookGradeItem.addChild(categoryGradeItem);
+		/*categoryGradeItem.setParent(gradebookGradeItem);
+		gradebookGradeItem.add(categoryGradeItem);*/
+
+		calculateItemCategoryPercent(gradebook, category, gradebookGradeItem, categoryGradeItem, assignments, assignmentId);
+
+		return categoryGradeItem;
+	}
+
+	private Map<String,Object> getItemMap(Gradebook gradebook, List<Assignment> assignments, List<Category> categories, Long categoryId, Long assignmentId) {
+
+		Map<String,Object> gradebookItemModel = createItemMap(gradebook);
+
+		boolean isNotInCategoryMode = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_NO_CATEGORY;
+
+		if (isNotInCategoryMode) {
+			calculateItemCategoryPercent(gradebook, null, gradebookItemModel, null, assignments, assignmentId);
+
+		} else {
+
+			if (categories != null) {
+				BigDecimal gradebookWeightSum = BigDecimal.ZERO;
+				BigDecimal gradebookPointsSum = BigDecimal.ZERO;
+				for (Category category : categories) {
+					boolean isExtraCredit = category.isExtraCredit() != null && category.isExtraCredit().booleanValue();
+					boolean isUnweighted = category.isUnweighted() != null && category.isUnweighted().booleanValue();
+
+					if (!category.isRemoved() || isNotInCategoryMode) {
+						double categoryWeight = category.getWeight() == null ? 0d : category.getWeight().doubleValue() * 100d;
+
+						List<Assignment> items = category.getAssignmentList();
+						Map<String, Object> categoryItemModel = createItemMap(gradebook, category, items);
+
+						if (!isNotInCategoryMode) {
+							Util.makeChild(gradebookItemModel, categoryItemModel);
+						}
+
+						if (categoryId != null && category.getId().equals(categoryId))
+							categoryItemModel.put(ItemKey.IS_ACTIVE.name(), true);
+
+						calculateItemCategoryPercent(gradebook, category, gradebookItemModel, categoryItemModel, items, assignmentId);
+
+						double categoryPoints = getPoints(categoryItemModel); //.getPoints() == null ? 0d : categoryItemModel.getPoints().doubleValue();
+
+						if (!isExtraCredit && !isUnweighted) {
+							categoryWeight = getPercentCourseGrade(categoryItemModel); //.getPercentCourseGrade() == null ? 0d : categoryItemModel.getPercentCourseGrade().doubleValue();
+							gradebookWeightSum = gradebookWeightSum.add(BigDecimal.valueOf(categoryWeight));
+							gradebookPointsSum = gradebookPointsSum.add(BigDecimal.valueOf(categoryPoints));
+						}
+
+					}
+				}
+				gradebookItemModel.put(ItemKey.POINTS.name(), Double.valueOf(gradebookPointsSum.doubleValue()));
+				gradebookItemModel.put(ItemKey.PERCENT_COURSE_GRADE.name(), Double.valueOf(gradebookWeightSum.doubleValue()));
+			}
+		}
+
+		return gradebookItemModel;
+	}
+
+	/*
+	 * GENERAL HELPER METHODS
+	 */
+	private String[] getLearnerRoleNames() {
+		return learnerRoleNames;
+	}
+
+	private String getLetterGrade(BigDecimal value, GradeMapping mapping) {
+
+		if (value == null || mapping == null)
+			return null;
+
+		Map<String, Double> gradeMap = mapping.getGradeMap();
+		Collection<String> grades = mapping.getGrades();
+
+		if (gradeMap == null || grades == null)
+			return null;
+
+		for (Iterator<String> iter = grades.iterator(); iter.hasNext();) {
+			String grade = iter.next();
+			Double mapVal = (Double) gradeMap.get(grade);
+			double m = mapVal == null ? 0d : mapVal.doubleValue();
+			BigDecimal bigMapVal = BigDecimal.valueOf(m).setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
+
+			// If the value in the map is less than the value passed, then the
+			// map value is the letter grade for this value
+			if (bigMapVal != null && bigMapVal.compareTo(value) <= 0) {
+				return grade;
+			}
+		}
+		// As long as 'F' is zero, this should never happen.
+		return null;
+	}
+
+	private double getPercentCourseGrade(Map<String, Object> map) {
+		return Util.toDouble(map, ItemKey.PERCENT_COURSE_GRADE.name());
+	}
+
+	private String getPlacementId() {
+
+		if (toolManager == null)
+			return null;
+
+		Placement placement = toolManager.getCurrentPlacement();
+
+		if (placement == null)
+			return null;
+
+		return placement.getId();
+	}
+
+	private double getPoints(Map<String, Object> map) {
+		return Util.toDouble(map, ItemKey.POINTS.name());
+	}
+
+	private Site getSite() {
+
+		String context = getSiteContext();
+		Site site = null;
+
+		try {
+
+			if (siteService != null)
+				site = siteService.getSite(context);
+			else
+				site = new SiteMock(getSiteId());
+
+		} catch (IdUnusedException iue) {
+			log.error("IDUnusedException : SiteContext = " + context);
+			iue.printStackTrace();
+		}
+
+		return site;
+	}
+
+	private String getSiteContext() {
+
+		if (toolManager == null)
+			return "TESTSITECONTEXT";
+
+		return toolManager.getCurrentPlacement().getContext();
+	}
+
+	private String getSiteId() {
+
+		String context = getSiteContext();
+		String siteId = null;
+
+		if (siteService == null)
+			return "TESTSITEID";
+
+		try {
+
+			Site site = siteService.getSite(context);
+			siteId = site.getId();
+
+		} catch (IdUnusedException iue) {
+			log.error("IDUnusedException : SiteContext = " + context);
+			iue.printStackTrace();
+		}
+
+		return siteId;
+	}
+
+	private Statistics getStatisticsMap(Gradebook gradebook, String name, GradeStatistics statistics, Long id, Long assignmentId, String studentId) {
+
+		Statistics model = new StatisticsImpl();
+		model.setId(String.valueOf(id));
+		model.setAssignmentId(String.valueOf(assignmentId));
+		model.setName(name);
+		
+		String mean = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getMean(), false) : NA;
+		String median = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getMedian(), false) : NA;
+		String mode = 	statistics != null ? composeModeString(statistics, gradebook) : NA;
+		String standardDev = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getStandardDeviation(), true) : NA;
+		String rank = NA;  
+
+		boolean isStudentView = studentId != null;
+		
+		if (studentId != null && statistics != null)
+		{
+			StringBuilder sb = new StringBuilder();
+			if (statistics.getRank() > 0)
+			{
+				sb.append(statistics.getRank());
+			}
+			else
+			{
+				sb.append("N/A");
+			}
+			sb.append(" out of "); 
+			sb.append(statistics.getStudentTotal());
+			rank = sb.toString();
+			sb = null; 
+		}
+		
+		boolean isShowMean = DataTypeConversionUtil.checkBoolean(gradebook.getShowMean());
+    	boolean isShowMedian = DataTypeConversionUtil.checkBoolean(gradebook.getShowMedian());
+    	boolean isShowMode = DataTypeConversionUtil.checkBoolean(gradebook.getShowMode());
+    	boolean isShowRank = DataTypeConversionUtil.checkBoolean(gradebook.getShowRank());
+		
+		if (!isStudentView || isShowMean) {
+			model.setMean(mean);
+			model.setStandardDeviation(standardDev);	
+		}
+		
+		if (!isStudentView || isShowMedian)
+			model.setMedian(median);
+		
+		if (!isStudentView || isShowMode)
+			model.setMode(mode);
+		
+		if (!isStudentView || isShowRank)
+			model.setRank(rank); 
+		
+		return model;
+	}
+
+	private Learner getStudent(Gradebook gradebook, Site site, User user) {
+		List<FixedColumn> columns = getColumns(true);
+		UserRecord userRecord = buildUserRecord(site, user, gradebook);
+		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
+		List<Category> categories = null;
+		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
+			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+		return buildLearnerGradeRecord(gradebook, userRecord, columns, assignments, categories);
+	}
+
+	private boolean isFullyWeighted(Gradebook gradebook) {
+		
+		switch (gradebook.getCategory_type()) {
+		case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
+			List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
+			List<Category> categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+			
+			boolean isFullyWeighted = false;
+			
+			if (categories != null) {
+				BigDecimal gradebookWeightSum = BigDecimal.ZERO;
+				BigDecimal gradebookPointsSum = BigDecimal.ZERO;
+				for (Category category : categories) {
+					boolean isExtraCredit = category.isExtraCredit() != null && category.isExtraCredit().booleanValue();
+					boolean isUnweighted = category.isUnweighted() != null && category.isUnweighted().booleanValue();
+
+					if (!category.isRemoved()) {
+						double categoryWeight = category.getWeight() == null ? 0d : category.getWeight().doubleValue() * 100d;
+
+						if (!isExtraCredit && !isUnweighted) {
+							gradebookWeightSum = gradebookWeightSum.add(BigDecimal.valueOf(categoryWeight));
+						}
+					}
+				}
+				
+				isFullyWeighted = gradebookWeightSum.compareTo(BigDecimal.valueOf(100d)) == 0;
+			}
+			
+			return isFullyWeighted;
+		}
+		
+		return true;
+	}
+
+	private void logActionRecord(ActionRecord actionRecord, Item item) {
+
+		Map<String, String> propertyMap = actionRecord.getPropertyMap();
+		for (String propertyName : item.getPropertyNames()) {
+			Object value = ((GradeItem)item).get(propertyName);
+			if (value != null)
+				propertyMap.put(propertyName, String.valueOf(value));
+		}
+
+		gbService.storeActionRecord(actionRecord);
+	}
+
+	private String lookupDefaultGradebookUid() {
+
+		if (toolManager == null)
+			return "TESTGRADEBOOK";
+
+		Placement placement = toolManager.getCurrentPlacement();
+		if (placement == null) {
+			log.error("Placement is null!");
+			return null;
+		}
+
+		return placement.getContext();
+	}
+
+	private void recalculateAssignmentGradeRecords(Assignment assignment, Double value, Double startValue) {
+
+		List<AssignmentGradeRecord> gradeRecords = gbService.getAssignmentGradeRecords(assignment);
+		List<AssignmentGradeRecord> updatedRecords = new ArrayList<AssignmentGradeRecord>();
+
+		if (gradeRecords != null) {
+			for (AssignmentGradeRecord gradeRecord : gradeRecords) {
+				if (gradeRecord.getPointsEarned() != null) {
+					BigDecimal newPoints = gradeCalculations.getNewPointsGrade(gradeRecord.getPointsEarned(), value, startValue);
+					gradeRecord.setPointsEarned(Double.valueOf(newPoints.doubleValue()));
+					updatedRecords.add(gradeRecord);
+				}
+			}
+
+			if (!updatedRecords.isEmpty()) {
+				gbService.updateAssignmentGradeRecords(assignment, updatedRecords);
+			}
+		}
+	}
+
+	private List<Assignment> recalculateAssignmentWeights(Category category, Boolean enforceEqualWeighting, List<Assignment> assignments) {
+
+		List<Assignment> updatedAssignments = new ArrayList<Assignment>();
+
+		boolean isExtraCreditCategory = category.isExtraCredit() == null ? false : category.isExtraCredit().booleanValue();
+		int weightedCount = 0;
+		if (assignments != null) {
+			for (Assignment assignment : assignments) {
+				boolean isRemoved = assignment.isRemoved();
+				boolean isWeighted = assignment.isCounted();
+				boolean isExtraCredit = assignment.isExtraCredit() == null ? false : assignment.isExtraCredit().booleanValue();
+				if (isWeighted && (isExtraCreditCategory || !isExtraCredit) && !isRemoved) {
+					weightedCount++;
+				}
+			}
+		}
+		
+		int dropLowest = category.getDrop_lowest();
+		if (weightedCount >= dropLowest) 
+			weightedCount -= dropLowest;
+		
+		boolean doRecalculate = false;
+
+		if (enforceEqualWeighting != null && enforceEqualWeighting.booleanValue() && !category.isEqualWeightAssignments().equals(Boolean.TRUE)) {
+			category.setEqualWeightAssignments(enforceEqualWeighting);
+			gbService.updateCategory(category);
+		}
+
+		doRecalculate = category.isEqualWeightAssignments() == null ? true : category.isEqualWeightAssignments().booleanValue();
+
+		if (doRecalculate) {
+			Double newWeight = gradeCalculations.calculateEqualWeight(weightedCount);
+			if (assignments != null) {
+				for (Assignment assignment : assignments) {
+					boolean isRemoved = assignment.isRemoved();
+					boolean isWeighted = assignment.isCounted();
+					boolean isExtraCredit = assignment.isExtraCredit() == null ? false : assignment.isExtraCredit().booleanValue();
+					if (!isRemoved && isWeighted) {
+						if (isExtraCredit && !isExtraCreditCategory)
+							updatedAssignments.add(assignment);
+						else {
+							Assignment persistAssignment = gbService.getAssignment(assignment.getId());
+							persistAssignment.setAssignmentWeighting(newWeight);
+							gbService.updateAssignment(persistAssignment);
+							updatedAssignments.add(persistAssignment);
+						}
+					}
+				}
+			}
+		}
+		return updatedAssignments;
+	}
+
+	private ModelData refreshLearnerData(Gradebook gradebook, ModelData student, Assignment assignment, List<AssignmentGradeRecord> assignmentGradeRecords) {
+
+		Map<Long, AssignmentGradeRecord> studentGradeMap = new HashMap<Long, AssignmentGradeRecord>();
+
+		for (AssignmentGradeRecord gradeRecord : assignmentGradeRecords) {
+			Assignment a = gradeRecord.getAssignment();
+			studentGradeMap.put(a.getId(), gradeRecord);
+		}
+
+		// FIXME: There has to be a more efficient way of doing this -- all we
+		// really need this for is to determine if the learner has been graded
+		// for all assignments
+		// FIXME: We should be able to replace that logic in getDisplayGrade
+		// with a clever db query.
+		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
+		List<Category> categories = null;
+		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
+			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+		CourseGradeRecord courseGradeRecord = gbService.getStudentCourseGradeRecord(gradebook, (String)student.get(LearnerKey.UID.name()));
+		BigDecimal calculatedGrade = getCalculatedGrade(gradebook, assignments, categories, studentGradeMap);
+		DisplayGrade displayGrade = getDisplayGrade(gradebook, (String)student.get(LearnerKey.UID.name()), courseGradeRecord, calculatedGrade);
+
+		for (AssignmentGradeRecord record : assignmentGradeRecords) {
+			Long aId = record.getGradableObject().getId();
+			String dropProperty = concat(String.valueOf(aId), AppConstants.DROP_FLAG);
+			String excuseProperty = concat(String.valueOf(aId), AppConstants.EXCUSE_FLAG);
+			boolean isDropped = record.isDropped() != null && record.isDropped().booleanValue();
+			boolean isExcluded = record.isExcludedFromGrade() != null && record.isExcludedFromGrade().booleanValue();
+
+			if (isDropped)
+				student.set(dropProperty, Boolean.TRUE);
+			else
+				student.set(dropProperty, null);
+
+			if (isExcluded) {
+				student.set(excuseProperty, Boolean.TRUE);
+				student.set(dropProperty, Boolean.TRUE);
+			} else {
+				student.set(excuseProperty, null);
+				if (!isDropped)
+					student.set(dropProperty, null);
+			}
+		}
+
+		String commentedProperty = assignment.getId() + AppConstants.COMMENTED_FLAG;
+		if (gbService.isStudentCommented((String)student.get(LearnerKey.UID.name()), assignment.getId()))
+			student.set(commentedProperty, Boolean.TRUE);
+		else
+			student.set(commentedProperty, null);
+
+		student.set(LearnerKey.CALCULATED_GRADE.name(), displayGrade.getCalculatedGradeAsString());
+		student.set(LearnerKey.COURSE_GRADE.name(), displayGrade.toString());
+		student.set(LearnerKey.LETTER_GRADE.name(), displayGrade.getLetterGrade());
+		
+		return student;
+	}
+
+	private AssignmentGradeRecord scoreItem(Gradebook gradebook, Assignment assignment, AssignmentGradeRecord assignmentGradeRecord, String studentUid, Double value, boolean includeExcluded, boolean deferUpdate)
+	throws InvalidInputException {
+
+		boolean isUserAbleToGrade = authz.isUserAbleToGradeAll(gradebook.getUid()) || authz.isUserAbleToGradeItemForStudent(gradebook.getUid(), assignment.getId(), studentUid);
+
+		if (!isUserAbleToGrade)
+			throw new InvalidInputException("You are not authorized to grade this student for this item.");
+
+		if (assignment.isExternallyMaintained())
+			throw new InvalidInputException("This grade item is maintained externally. Please input and edit grades through " + assignment.getExternalAppName());
+
+		if (gradebook.getGrade_type() == GradebookService.GRADE_TYPE_POINTS && value != null) {
+			if (value.compareTo(assignment.getPointsPossible()) > 0)
+				throw new InvalidInputException("This grade cannot be larger than " + DataTypeConversionUtil.formatDoubleAsPointsString(assignment.getPointsPossible()));
+			else if (value.compareTo(Double.valueOf(0d)) < 0) {
+				double v = value.doubleValue();
+
+				if (v < -1d * assignment.getPointsPossible().doubleValue())
+					throw new InvalidInputException("The absolute value of a negative point score assigned to a student cannot be greater than the total possible points allowed for an item");
+			}
+
+		} else if (gradebook.getGrade_type() == GradebookService.GRADE_TYPE_PERCENTAGE && value != null) {
+			if (value.compareTo(Double.valueOf(100d)) > 0)
+				throw new InvalidInputException("This grade cannot be larger than " + DataTypeConversionUtil.formatDoubleAsPointsString(100d) + "%");
+
+			else if (value.compareTo(Double.valueOf(0d)) < 0)
+				throw new InvalidInputException("This grade cannot be less than " + DataTypeConversionUtil.formatDoubleAsPointsString(0d) + "%");
+		}
+
+		if (!includeExcluded && assignmentGradeRecord.isExcludedFromGrade() != null && assignmentGradeRecord.isExcludedFromGrade().booleanValue())
+			throw new InvalidInputException("The student has been excused from this assignment. It is no longer possible to assign him or her a grade.");
+
+		switch (gradebook.getGrade_type()) {
+			case GradebookService.GRADE_TYPE_POINTS:
+				assignmentGradeRecord.setPointsEarned(value);
+				break;
+			case GradebookService.GRADE_TYPE_PERCENTAGE:
+			case GradebookService.GRADE_TYPE_LETTER:
+				BigDecimal pointsEarned = gradeCalculations.getPercentAsPointsEarned(assignment, value);
+				Double pointsEarnedDouble = pointsEarned == null ? null : Double.valueOf(pointsEarned.doubleValue());
+				assignmentGradeRecord.setPointsEarned(pointsEarnedDouble);
+				assignmentGradeRecord.setPercentEarned(value);
+				break;
+		}
+
+		// Prepare record for update
+		assignmentGradeRecord.setGradableObject(assignment);
+		assignmentGradeRecord.setStudentId(studentUid);
+
+		if (!deferUpdate) {
+			Collection<AssignmentGradeRecord> gradeRecords = new LinkedList<AssignmentGradeRecord>();
+			gradeRecords.add(assignmentGradeRecord);
+			gbService.updateAssignmentGradeRecords(assignment, gradeRecords);
+			postEvent("gradebook2.assignGrade", String.valueOf(gradebook.getId()), String.valueOf(assignment.getId()), studentUid);
+		}
+
+		return assignmentGradeRecord;
+	}
+
 	private Permission toPermission(Long gradebookId, Map<String, Object> attributes) {
 		
 		Object permissionIdObj = attributes.get(PermissionKey.ID.name());
@@ -1673,5 +5003,563 @@ public class Gradebook2ComponentServiceImpl extends Gradebook2ServiceImpl
 	
 		return permission;
 	}
+
+	/**
+	 * Method to update a category model
+	 * 
+	 * Business rules: (1) if weight is null or zero, uninclude it (2) new
+	 * category name must not duplicate an existing category name (3) if equal
+	 * weighting is set, then recalculate all item weights of child items, (4)
+	 * if category is extra credit, ensure that none of its items are extra
+	 * credit
+	 * 
+	 * @param item
+	 * @return
+	 * @throws InvalidInputException
+	 */
+	private Item updateCategoryModel(Item item) throws InvalidInputException {
+
+		boolean isWeightChanged = false;
+
+		Category category = gbService.getCategory(Long.valueOf(item.getIdentifier()));
+		Gradebook gradebook = category.getGradebook();
+
+		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.CATEGORY.name(), ActionType.UPDATE.name());
+		actionRecord.setEntityName(category.getName());
+		actionRecord.setEntityId(String.valueOf(category.getId()));
+
+		Map<String, String> propertyMap = actionRecord.getPropertyMap();
+
+		for (String property : item.getPropertyNames()) {
+			String value = String.valueOf(((GradeItem)item).get(property));
+			if (value != null)
+				propertyMap.put(property, value);
+		}
+
+		try {
+
+			boolean originalExtraCredit = DataTypeConversionUtil.checkBoolean(category.isExtraCredit());
+			boolean currentExtraCredit = DataTypeConversionUtil.checkBoolean(item.getExtraCredit());
+
+			isWeightChanged = originalExtraCredit != currentExtraCredit;
+
+			Double newCategoryWeight = item.getPercentCourseGrade();
+			Double oldCategoryWeight = category.getWeight();
+
+			isWeightChanged = isWeightChanged || DataTypeConversionUtil.notEquals(newCategoryWeight, oldCategoryWeight);
+
+			double w = newCategoryWeight == null ? 0d : ((Double) newCategoryWeight).doubleValue() * 0.01;
+
+			boolean isEqualWeighting = DataTypeConversionUtil.checkBoolean(item.getEqualWeightAssignments());
+			boolean wasEqualWeighting = DataTypeConversionUtil.checkBoolean(category.isEqualWeightAssignments());
+
+			isWeightChanged = isWeightChanged || isEqualWeighting != wasEqualWeighting;
+
+			boolean isUnweighted = !DataTypeConversionUtil.checkBoolean(item.getIncluded());
+			boolean wasUnweighted = DataTypeConversionUtil.checkBoolean(category.isUnweighted());
+
+			if (wasUnweighted && !isUnweighted && category.isRemoved())
+				throw new InvalidInputException("You cannot include a deleted category in grade. Please undelete the category first.");
+
+			int newDropLowest = convertInteger(item.getDropLowest()).intValue();
+			int oldDropLowest = category.getDrop_lowest();
+			
+			if (newDropLowest < 0)
+				throw new InvalidInputException("You cannot set the drop lowest to a negative number.");
+			
+			boolean isRemoved = DataTypeConversionUtil.checkBoolean(item.getRemoved());
+			boolean wasRemoved = category.isRemoved();
+
+			Integer newCategoryOrder = item.getItemOrder();
+			Integer oldCategoryOrder = category.getCategoryOrder();
+
+			boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
+			boolean hasWeights = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY;
+
+			boolean isEnforcePointWeighting = !currentExtraCredit && DataTypeConversionUtil.checkBoolean(item.getEnforcePointWeighting());
+			
+			boolean isReleased = DataTypeConversionUtil.checkBoolean(item.getReleased());
+			
+			if (hasCategories) {
+				List<Category> categories = gbService.getCategories(gradebook.getId());
+				// Business rule #2
+				businessLogic.applyNoDuplicateCategoryNamesRule(gradebook.getId(), item.getName(), category.getId(), categories);
+
+				if (hasWeights)
+					businessLogic.applyOnlyEqualWeightDropLowestRule(newDropLowest, isEqualWeighting);
+
+				if (oldCategoryOrder == null) {
+					if (categories != null) {
+						int count = 0;
+						for (Category c : categories) {
+							if (c.isRemoved())
+								continue;
+
+							if (c.getId().equals(category.getId()))
+								oldCategoryOrder = Integer.valueOf(count);
+							else if (c.getCategoryOrder() == null) {
+								c.setCategoryOrder(Integer.valueOf(count));
+								gbService.updateCategory(c);
+							}
+							count++;
+						}
+					}
+				}
+			}
+
+			if (oldCategoryOrder != null && newCategoryOrder != null && oldCategoryOrder.compareTo(newCategoryOrder) < 0)
+				newCategoryOrder = Integer.valueOf(newCategoryOrder.intValue() - 1);
+
+			category.setName(convertString(item.getName()));
+			category.setExtraCredit(Boolean.valueOf(currentExtraCredit));
+			category.setWeight(Double.valueOf(w));
+			// Business rule #1
+			if (w == 0d)
+				category.setUnweighted(Boolean.TRUE);
+			category.setEqualWeightAssignments(Boolean.valueOf(isEqualWeighting));
+			category.setDrop_lowest(newDropLowest);
+			category.setRemoved(isRemoved);
+			category.setUnweighted(Boolean.valueOf(isUnweighted || isRemoved));
+			category.setEnforcePointWeighting(Boolean.valueOf(isEnforcePointWeighting));
+			
+			if (newCategoryOrder != null)
+				category.setCategoryOrder(newCategoryOrder);
+			else if (oldCategoryOrder != null)
+				category.setCategoryOrder(oldCategoryOrder);
+
+			gbService.updateCategory(category);
+
+			if (isRemoved)
+				postEvent("gradebook2.deleteCategory", String.valueOf(gradebook.getId()), String.valueOf(category.getId()));
+			else
+				postEvent("gradebook2.updateCategory", String.valueOf(gradebook.getId()), String.valueOf(category.getId()));
+			
+			if (hasCategories) {
+				List<Assignment> assignmentsForCategory = gbService.getAssignmentsForCategory(category.getId());
+
+				boolean wasReleased = businessLogic.checkReleased(assignmentsForCategory);
+				
+				if (isRemoved && !wasRemoved)
+					businessLogic.applyRemoveChildItemsWhenCategoryRemoved(category, assignmentsForCategory);
+
+				// Business rule #3
+				if ((newDropLowest != oldDropLowest) || (isEqualWeighting && !wasEqualWeighting && businessLogic.checkRecalculateEqualWeightingRule(category)))
+					recalculateAssignmentWeights(category, Boolean.FALSE, assignmentsForCategory);
+
+				if (oldCategoryOrder == null || (newCategoryOrder != null && newCategoryOrder.compareTo(oldCategoryOrder) != 0))
+					businessLogic.reorderAllCategories(gradebook.getId(), category.getId(), newCategoryOrder, oldCategoryOrder);
+			
+				businessLogic.applyReleaseChildItemsWhenCategoryReleased(category, assignmentsForCategory, isReleased);
+			}
+
+		} catch (RuntimeException e) {
+			actionRecord.setStatus(ActionRecord.STATUS_FAILURE);
+			throw e;
+		} finally {
+			gbService.storeActionRecord(actionRecord);
+		}
+
+		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
+		List<Category> categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+
+		GradeItem gradebookGradeItem = getGradeItem(gradebook, assignments, categories, category.getId(), null);
+
+		return gradebookGradeItem;
+	}
+
+	private Item updateGradebookModel(Item item) throws InvalidInputException {
+
+		Gradebook gradebook = gbService.getGradebook(item.getIdentifier());
+
+		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.GRADEBOOK.name(), ActionType.UPDATE.name());
+		actionRecord.setEntityName(gradebook.getName());
+		actionRecord.setEntityId(gradebook.getUid());
+
+		logActionRecord(actionRecord, item);
+
+		gradebook.setName(item.getName());
+
+		int newCategoryType = -1;
+
+		boolean hasCategories = item.getCategoryType() != CategoryType.NO_CATEGORIES;
+
+		switch (item.getCategoryType()) {
+			case NO_CATEGORIES:
+				newCategoryType = GradebookService.CATEGORY_TYPE_NO_CATEGORY;
+				break;
+			case SIMPLE_CATEGORIES:
+				newCategoryType = GradebookService.CATEGORY_TYPE_ONLY_CATEGORY;
+				break;
+			case WEIGHTED_CATEGORIES:
+				newCategoryType = GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY;
+				break;
+		}
+
+		gradebook.setCategory_type(newCategoryType);
+
+		int oldGradeType = gradebook.getGrade_type();
+		int newGradeType = -1;
+
+		switch (item.getGradeType()) {
+			case POINTS:
+				newGradeType = GradebookService.GRADE_TYPE_POINTS;
+				break;
+			case PERCENTAGES:
+				newGradeType = GradebookService.GRADE_TYPE_PERCENTAGE;
+				break;
+			case LETTERS:
+				newGradeType = GradebookService.GRADE_TYPE_LETTER;
+				break;
+		}
+		
+		if (oldGradeType != newGradeType) {
+			if (gbService.isAnyScoreEntered(gradebook.getId(), hasCategories))
+				throw new InvalidInputException("There are one or more scores already entered for this gradebook. To switch grade types at this time you will have to remove those scores.");
+		}
+
+		gradebook.setGrade_type(newGradeType);
+
+		boolean isReleaseGrades = DataTypeConversionUtil.checkBoolean(item.getReleaseGrades());
+
+		gradebook.setCourseGradeDisplayed(isReleaseGrades);
+
+		boolean isReleaseItems = DataTypeConversionUtil.checkBoolean(item.getReleaseItems());
+
+		gradebook.setAssignmentsDisplayed(isReleaseItems);
+
+		boolean isExtraCreditScaled = DataTypeConversionUtil.checkBoolean(item.getExtraCreditScaled());
+		
+		gradebook.setScaledExtraCredit(Boolean.valueOf(isExtraCreditScaled));
+		
+		boolean isShowMean = DataTypeConversionUtil.checkBoolean(item.getShowMean());
+		
+		gradebook.setShowMean(Boolean.valueOf(isShowMean));
+		
+		boolean isShowMedian = DataTypeConversionUtil.checkBoolean(item.getShowMedian());
+		
+		gradebook.setShowMedian(Boolean.valueOf(isShowMedian));
+		
+		boolean isShowMode = DataTypeConversionUtil.checkBoolean(item.getShowMode());
+		
+		gradebook.setShowMode(Boolean.valueOf(isShowMode));
+
+		boolean isShowRank = DataTypeConversionUtil.checkBoolean(item.getShowRank());
+		
+		gradebook.setShowRank(Boolean.valueOf(isShowRank));
+		
+		boolean isShowItemStatistics = DataTypeConversionUtil.checkBoolean(item.getShowItemStatistics());
+		
+		gradebook.setShowItemStatistics(Boolean.valueOf(isShowItemStatistics));
+		
+		GradeMapping mapping = gradebook.getSelectedGradeMapping();
+		Long gradeScaleId = item.getGradeScaleId();
+		if (mapping != null && gradeScaleId != null && !mapping.getId().equals(gradeScaleId)) {
+			GradeMapping newMapping = gbService.getGradeMapping(gradeScaleId);
+			gradebook.setSelectedGradeMapping(newMapping);
+		}
+
+		gbService.updateGradebook(gradebook);
+
+		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
+		List<Category> categories = null;
+		if (hasCategories)
+			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+		return getGradeItem(gradebook, assignments, categories, null, null);
+	}
 	
+	private Item updateGradeItem(Item item) throws InvalidInputException {
+
+		switch (item.getItemType()) {
+			case CATEGORY:
+				return updateCategoryModel(item);
+			case GRADEBOOK:
+				return updateGradebookModel(item);
+		}
+
+		boolean isWeightChanged = false;
+		boolean havePointsChanged = false;
+
+		Long assignmentId = Long.valueOf(item.getIdentifier());
+		Assignment assignment = gbService.getAssignment(assignmentId);
+
+		Category oldCategory = null;
+		Category category = assignment.getCategory();
+
+		Gradebook gradebook = assignment.getGradebook();
+
+		if (category == null)
+			category = findDefaultCategory(gradebook.getId());
+
+		boolean hasWeightedCategories = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY;
+		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
+		boolean hasCategoryChanged = false;
+
+		if (hasCategories) {
+			if (item.getCategoryId() == null && item.getCategoryName() != null) {
+				GradeItem newCategory = new GradeItemImpl();
+				newCategory.setName(item.getCategoryName());
+				newCategory.setIncluded(Boolean.TRUE);
+				newCategory = (GradeItem)addItemCategory(gradebook.getUid(), gradebook.getId(), newCategory);
+				item.setCategoryId(newCategory.getCategoryId());
+				hasCategoryChanged = true;
+			} else
+				hasCategoryChanged = !category.getId().equals(item.getCategoryId());
+		}
+
+		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.ITEM.name(), ActionType.UPDATE.name());
+		actionRecord.setEntityName(assignment.getName());
+		actionRecord.setEntityId(String.valueOf(assignment.getId()));
+
+		Map<String, String> propertyMap = actionRecord.getPropertyMap();
+		for (String propertyName : item.getPropertyNames()) {
+			Object value = ((GradeItem)item).get(propertyName);
+			if (value != null)
+				propertyMap.put(propertyName, String.valueOf(value));
+		}
+
+		boolean isRemoved = false;
+
+		List<Assignment> assignments = null;
+		try {
+
+			// Check to see if the category id has changed -- this means the
+			// user switched the item's category
+			if (hasCategories && hasCategoryChanged)
+				oldCategory = category;
+
+			boolean wasExtraCredit = DataTypeConversionUtil.checkBoolean(assignment.isExtraCredit());
+			boolean isExtraCredit = DataTypeConversionUtil.checkBoolean(item.getExtraCredit());
+
+			isWeightChanged = wasExtraCredit != isExtraCredit;
+
+			// Business rule #1
+			Double points = null;
+			Double oldPoints = assignment.getPointsPossible();
+			if (item.getPoints() == null)
+				points = Double.valueOf(100.0d);
+			else
+				points = convertDouble(item.getPoints());
+
+			havePointsChanged = points != null && oldPoints != null && points.compareTo(oldPoints) != 0;
+
+			Double newAssignmentWeight = item.getPercentCategory();
+			Double oldAssignmentWeight = assignment.getAssignmentWeighting();
+
+			Integer newItemOrder = item.getItemOrder();
+			Integer oldItemOrder = assignment.getSortOrder();
+
+			isWeightChanged = isWeightChanged || DataTypeConversionUtil.notEquals(newAssignmentWeight, oldAssignmentWeight);
+
+			boolean isUnweighted = !convertBoolean(item.getIncluded()).booleanValue();
+			boolean wasUnweighted = assignment.isNotCounted();
+
+			isRemoved = convertBoolean(item.getRemoved()).booleanValue();
+			boolean wasRemoved = assignment.isRemoved();
+
+			// We only want to update the weights when we're dealing with an
+			// included item
+			if (!isUnweighted && !isRemoved) {
+				// Business rule #2
+				assignment.setAssignmentWeighting(gradeCalculations.calculateItemWeightAsPercentage(newAssignmentWeight, points));
+			} else {
+				newAssignmentWeight = oldAssignmentWeight;
+			}
+
+			isWeightChanged = isWeightChanged || isUnweighted != wasUnweighted;
+			isWeightChanged = isWeightChanged || isRemoved != wasRemoved;
+
+			boolean isNullsAsZeros = convertBoolean(item.getNullsAsZeros()).booleanValue();
+			
+			if (hasCategories && category != null) {
+				if (hasCategoryChanged) {
+					Category newCategory = gbService.getCategory(item.getCategoryId());
+					if (newCategory != null) {
+						category = newCategory;
+						assignment.setCategory(category);
+					}
+				}
+
+				boolean isCategoryIncluded = !DataTypeConversionUtil.checkBoolean(category.isUnweighted());
+				assignments = gbService.getAssignmentsForCategory(category.getId());
+
+				// Business rule #12
+				businessLogic.applyCannotUnremoveItemWithRemovedCategory(isRemoved, category);
+
+				// Business rule #5
+				businessLogic.applyNoDuplicateItemNamesWithinCategoryRule(item.getCategoryId(), item.getName(), assignment.getId(), assignments);
+
+				// Business rule #6
+				businessLogic.applyCannotIncludeDeletedItemRule(wasRemoved && isRemoved, category.isRemoved(), isUnweighted);
+
+				// Business rule #11
+				if (!hasCategoryChanged)
+					businessLogic.applyCannotIncludeItemFromUnincludedCategoryRule(isCategoryIncluded, !isUnweighted, !wasUnweighted);
+
+				// Business rule #8
+				businessLogic.applyMustIncludeCategoryRule(item.getCategoryId());
+
+				/*if (hasCategoryChanged) {
+					category = gbService.getCategory(item.getCategoryId());
+					assignment.setCategory(category);
+				}*/
+
+			} else {
+				assignments = gbService.getAssignments(gradebook.getId());
+
+				// Business rule #3
+				businessLogic.applyNoDuplicateItemNamesRule(gradebook.getId(), item.getName(), assignment.getId(), assignments);
+
+				// Business rule #4
+				businessLogic.applyCannotIncludeDeletedItemRule(wasRemoved && isRemoved, false, isUnweighted);
+
+			}
+
+			// If we don't know the old item order then we need to determine it
+			if (oldItemOrder == null) {
+				if (assignments != null) {
+					int count = 0;
+					for (Assignment a : assignments) {
+						if (a.isRemoved())
+							continue;
+
+						if (a.getId().equals(assignmentId))
+							oldItemOrder = Integer.valueOf(count);
+						count++;
+					}
+				}
+			}
+
+			if ((!hasCategories || oldCategory == null) && oldItemOrder != null 
+					&& newItemOrder != null && oldItemOrder.compareTo(newItemOrder) < 0)
+				newItemOrder = Integer.valueOf(newItemOrder.intValue() - 1);
+
+			if (newItemOrder == null)
+				newItemOrder = oldItemOrder;
+
+			// Modify the assignment name
+			assignment.setName(convertString(item.getName()));
+
+			assignment.setExtraCredit(Boolean.valueOf(isExtraCredit));
+			assignment.setReleased(convertBoolean(item.getReleased()).booleanValue());
+			assignment.setPointsPossible(points);
+			assignment.setDueDate(convertDate(item.getDueDate()));
+			assignment.setRemoved(isRemoved);
+			assignment.setNotCounted(isUnweighted || isRemoved);
+			assignment.setSortOrder(newItemOrder);
+			assignment.setCountNullsAsZeros(Boolean.valueOf(isNullsAsZeros));
+			gbService.updateAssignment(assignment);
+
+			if (isRemoved)
+				postEvent("gradebook2.deleteItem", String.valueOf(gradebook.getId()), String.valueOf(assignmentId));
+			else
+				postEvent("gradebook2.updateItem", String.valueOf(gradebook.getId()), String.valueOf(assignmentId));
+			
+			if (hasCategories) {
+
+				List<Assignment> oldAssignments = null;
+
+				boolean applyBusinessRule7 = isUnweighted != wasUnweighted || isRemoved != wasRemoved || isExtraCredit != wasExtraCredit || oldCategory != null;
+
+				// Business rule #9
+				if (oldCategory != null && businessLogic.checkRecalculateEqualWeightingRule(oldCategory)) {
+					oldAssignments = gbService.getAssignmentsForCategory(oldCategory.getId());
+					recalculateAssignmentWeights(oldCategory, Boolean.valueOf(!wasUnweighted), oldAssignments);
+				}
+
+				// Business rule #7 -- only apply this rule when
+				// included/unincluded, deleted/undeleted, made
+				// extra-credit/non-extra-credit, or changed category
+				if (applyBusinessRule7) {
+					isWeightChanged = true;
+					if (businessLogic.checkRecalculateEqualWeightingRule(category)) {
+						assignments = gbService.getAssignmentsForCategory(category.getId());
+						recalculateAssignmentWeights(category, !isUnweighted, assignments);
+					}
+				}
+
+				boolean applyBusinessRule10 = oldItemOrder == null || newItemOrder.compareTo(oldItemOrder) != 0 || oldCategory != null;
+
+				if (applyBusinessRule10)
+					businessLogic.reorderAllItemsInCategory(assignmentId, category, oldCategory, newItemOrder, oldItemOrder);
+			} else {
+
+				if (oldItemOrder == null || (newItemOrder != null && newItemOrder.compareTo(oldItemOrder) != 0))
+					businessLogic.reorderAllItems(gradebook.getId(), assignment.getId(), newItemOrder, oldItemOrder);
+
+			}
+
+			if (DataTypeConversionUtil.checkBoolean(item.getDoRecalculatePoints())) {
+				if (businessLogic.checkRecalculatePointsRule(assignmentId, points, oldPoints))
+					recalculateAssignmentGradeRecords(assignment, points, oldPoints);
+			}
+			
+			if (havePointsChanged && category.getDrop_lowest() > 0 
+					&& (!hasWeightedCategories 
+						|| (hasWeightedCategories 
+								&& DataTypeConversionUtil.checkBoolean(category.isEnforcePointWeighting())))) {
+				category.setDrop_lowest(0);
+				gbService.updateCategory(category);
+			}
+			
+		} catch (RuntimeException e) {
+			actionRecord.setStatus(ActionRecord.STATUS_FAILURE);
+			throw e;
+		} finally {
+			gbService.storeActionRecord(actionRecord);
+		}
+
+		assignments = gbService.getAssignments(gradebook.getId());
+		List<Category> categories = null;
+		if (hasCategories)
+			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+		
+		return getGradeItem(gradebook, assignments, categories, null, assignment.getId());
+		
+		/*
+		// The first case is that we're in categories mode and the category has
+		// changed
+		if (hasCategories && (oldCategory != null || isRemoved || havePointsChanged || item.getParent() == null)) {
+			assignments = gbService.getAssignments(gradebook.getId());
+			List<Category> categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+			return getGradeItem(gradebook, assignments, categories, null, assignment.getId());
+		}
+
+		if (!hasCategories) {
+			assignments = gbService.getAssignments(gradebook.getId());
+			// Otherwise if we're in no categories mode then we want to return
+			// the gradebook
+			return getGradeItem(gradebook, assignments, null, null, assignment.getId());
+		}
+
+		// Otherwise we can return the category parent
+		GradeItem categoryGradeItem = getGradeItemsForCategory(category, (GradeItem) item.getParent(), assignment.getId());
+
+		String assignmentIdAsString = String.valueOf(assignment.getId());
+		for (GradeItem itemModel : categoryGradeItem.getChildren()) {
+			if (itemModel.getIdentifier().equals(assignmentIdAsString))
+				itemModel.setActive(true);
+		}
+
+		return categoryGradeItem;*/
+	}
+	
+	private void verifyUserDataIsUpToDate(Site site, String[] learnerRoleKeys) {
+
+		String siteId = site == null ? null : site.getId();
+
+		int totalUsers = gbService.getFullUserCountForSite(siteId, null, learnerRoleKeys);
+		int dereferencedUsers = gbService.getDereferencedUserCountForSite(siteId, null, learnerRoleKeys);
+
+		int diff = totalUsers - dereferencedUsers;
+
+		UserDereferenceRealmUpdate lastUpdate = gbService.getLastUserDereferenceSync(siteId, null);
+
+		// Obviously if the realm count has changed, then we need to update, but
+		// let's also do it if more than an hour has passe
+		long ONEHOUR = 1000l * 60l * 60l;
+		if (lastUpdate == null || lastUpdate.getRealmCount() == null || !lastUpdate.getRealmCount().equals(Integer.valueOf(diff)) || lastUpdate.getLastUpdate() == null
+				|| lastUpdate.getLastUpdate().getTime() + ONEHOUR < new Date().getTime()) {
+			gbService.syncUserDereferenceBySite(siteId, null, findAllMembers(site, learnerRoleKeys), diff, learnerRoleKeys);
+		}
+	}
 }
