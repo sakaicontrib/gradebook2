@@ -1156,6 +1156,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 			break;
 		}
 		grid.show();
+		grid.getView().layout();
 	}
 	
 	private void toggleCategory(ItemModel m, boolean isHidden) {
