@@ -24,7 +24,7 @@ package org.sakaiproject.gradebook.gwt.client.gxt.settings;
 
 import java.util.List;
 
-import org.sakaiproject.gradebook.gwt.client.model.GradeEventModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.GradeEventModel;
 
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.util.Params;

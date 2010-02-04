@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.model.Learner;
-import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 
 public class LearnerImpl extends HashMap<String,Object> implements Learner, Comparable<Learner> {
 

@@ -33,8 +33,8 @@ import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
-import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
-import org.sakaiproject.gradebook.gwt.client.model.StatisticsModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.StatisticsModel;
 import org.sakaiproject.gradebook.gwt.client.model.key.StatisticsKey;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;

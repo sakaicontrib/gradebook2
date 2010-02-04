@@ -29,11 +29,11 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
-import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
-import org.sakaiproject.gradebook.gwt.client.model.ActionKey;
-import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.ActionKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
+import org.sakaiproject.gradebook.gwt.client.model.type.EntityType;
 
 import com.extjs.gxt.ui.client.binding.Converter;
 import com.extjs.gxt.ui.client.binding.FieldBinding;

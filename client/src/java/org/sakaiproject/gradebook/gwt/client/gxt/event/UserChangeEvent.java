@@ -24,8 +24,8 @@ package org.sakaiproject.gradebook.gwt.client.gxt.event;
 
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
-import org.sakaiproject.gradebook.gwt.client.action.Action.ActionType;
-import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
+import org.sakaiproject.gradebook.gwt.client.model.type.ActionType;
+import org.sakaiproject.gradebook.gwt.client.model.type.EntityType;
 
 import com.extjs.gxt.ui.client.event.BaseEvent;
 

@@ -31,11 +31,11 @@ import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
-import org.sakaiproject.gradebook.gwt.client.model.EntityModelComparer;
-import org.sakaiproject.gradebook.gwt.client.model.GradeEventKey;
-import org.sakaiproject.gradebook.gwt.client.model.GradeEventModel;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
-import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.GradeEventModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.model.key.GradeEventKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;

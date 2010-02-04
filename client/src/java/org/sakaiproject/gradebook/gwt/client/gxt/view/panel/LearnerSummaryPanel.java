@@ -37,9 +37,9 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner.BrowseType;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
-import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 
 import com.extjs.gxt.ui.client.Registry;

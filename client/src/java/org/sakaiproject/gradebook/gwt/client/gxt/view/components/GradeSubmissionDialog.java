@@ -36,7 +36,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
-import org.sakaiproject.gradebook.gwt.client.model.VerificationKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.VerificationKey;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.data.ModelData;

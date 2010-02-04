@@ -3,8 +3,8 @@ package org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid;
 import java.util.Date;
 import java.util.List;
 
+import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.store.Record;

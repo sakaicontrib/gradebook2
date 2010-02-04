@@ -28,15 +28,15 @@ import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.FixedColumnModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModelComparer;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ItemFormPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ItemTreePanel;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
-import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
-import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
-import org.sakaiproject.gradebook.gwt.client.model.ItemModelComparer;
+import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 

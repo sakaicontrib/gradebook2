@@ -1,7 +1,6 @@
 package org.sakaiproject.gradebook.gwt.sakai.rest.resource;
 
 import java.util.List;
-import java.util.Map;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -16,7 +15,8 @@ public class Items extends Resource {
 	@Produces("application/json")
 	public String getList(@PathParam("uid") String gradebookUid, @PathParam("id") Long gradebookId, 
 			@QueryParam("type") String itemType) {
-		List<Map<String,Object>> list = service.getItems(gradebookUid, gradebookId, itemType);
+		List<org.sakaiproject.gradebook.gwt.client.model.Item> list = 
+			service.getItems(gradebookUid, gradebookId, itemType);
 		return toJson(list, list.size());
 	}
 	

@@ -5,6 +5,8 @@ import java.util.List;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.ApplicationModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.FinalGradeSubmissionView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.ImportExportView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.InstructorView;
@@ -13,9 +15,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.view.NotificationView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.PermissionsView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.SingleGradeView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.TreeView;
-import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.mvc.AppEvent;

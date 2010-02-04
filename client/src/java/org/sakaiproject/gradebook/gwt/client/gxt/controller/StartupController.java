@@ -10,9 +10,9 @@ import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
-import org.sakaiproject.gradebook.gwt.client.model.ApplicationKey;
-import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
+import org.sakaiproject.gradebook.gwt.client.model.key.ApplicationKey;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.data.ModelData;

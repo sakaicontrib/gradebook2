@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;

@@ -23,7 +23,7 @@
 
 package org.sakaiproject.gradebook.gwt.client.gxt.event;
 
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 
 import com.extjs.gxt.ui.client.store.Store;
 

@@ -25,9 +25,7 @@ package org.sakaiproject.gradebook.gwt.client.model;
 
 import java.util.HashMap;
 
-import com.extjs.gxt.ui.client.data.BaseModel;
-
-public class AuthModel extends BaseModel {
+public class AuthModel {
 
 	private static final long serialVersionUID = 1L;
 	

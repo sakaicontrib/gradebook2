@@ -24,8 +24,8 @@ package org.sakaiproject.gradebook.gwt.client;
 
 import java.util.Date;
 
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType;
-import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
+import org.sakaiproject.gradebook.gwt.client.model.type.ClassType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 
 

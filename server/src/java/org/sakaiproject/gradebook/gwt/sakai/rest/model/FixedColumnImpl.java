@@ -3,8 +3,8 @@ package org.sakaiproject.gradebook.gwt.sakai.rest.model;
 import java.util.HashMap;
 
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
-import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.FixedColumnKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 import org.sakaiproject.gradebook.gwt.sakai.Util;
 
 public class FixedColumnImpl extends HashMap<String, Object> implements FixedColumn {

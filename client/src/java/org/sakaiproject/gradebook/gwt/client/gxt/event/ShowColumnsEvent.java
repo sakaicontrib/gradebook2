@@ -25,8 +25,8 @@ package org.sakaiproject.gradebook.gwt.client.gxt.event;
 
 import java.util.Set;
 
+import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
 
 public class ShowColumnsEvent {
 

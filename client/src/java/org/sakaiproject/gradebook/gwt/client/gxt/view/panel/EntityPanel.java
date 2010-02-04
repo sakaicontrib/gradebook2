@@ -4,11 +4,11 @@ import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.InlineEditField;
 import org.sakaiproject.gradebook.gwt.client.gxt.InlineEditNumberField;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.NullSensitiveCheckBox;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
-import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 
 import com.extjs.gxt.ui.client.data.ModelData;

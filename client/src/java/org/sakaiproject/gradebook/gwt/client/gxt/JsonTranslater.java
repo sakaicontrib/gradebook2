@@ -4,20 +4,21 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.EnumSet;
 
-import org.sakaiproject.gradebook.gwt.client.model.ActionKey;
-import org.sakaiproject.gradebook.gwt.client.model.ApplicationKey;
-import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
-import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
-import org.sakaiproject.gradebook.gwt.client.model.GradeFormatKey;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookKey;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookModel;
-import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
-import org.sakaiproject.gradebook.gwt.client.model.ItemModel;
-import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
-import org.sakaiproject.gradebook.gwt.client.model.UploadKey;
-import org.sakaiproject.gradebook.gwt.client.model.VerificationKey;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.ConfigurationModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.FixedColumnModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.GradebookModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.Item;
+import org.sakaiproject.gradebook.gwt.client.model.key.ActionKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.ApplicationKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.FixedColumnKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.GradeFormatKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.GradebookKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.StatisticsKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.UploadKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.VerificationKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
@@ -147,7 +148,7 @@ public class JsonTranslater {
 						};
 						
 						ItemModel childModel = (ItemModel)itemTranslater.translate(elementObject.toString());
-						if (model instanceof ItemModel) {
+						if (model instanceof Item) {
 							((ItemModel) model).add(childModel);
 						}
 						

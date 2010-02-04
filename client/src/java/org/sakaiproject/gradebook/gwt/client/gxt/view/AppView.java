@@ -30,8 +30,8 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.FullScreen;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.Viewport;
-import org.sakaiproject.gradebook.gwt.client.model.ApplicationModel;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 

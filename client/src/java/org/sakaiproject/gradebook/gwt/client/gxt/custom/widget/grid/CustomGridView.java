@@ -34,14 +34,14 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.ConfigurationModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.Configuration;
-import org.sakaiproject.gradebook.gwt.client.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
-import org.sakaiproject.gradebook.gwt.client.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
-import org.sakaiproject.gradebook.gwt.client.model.Group;
-import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.type.GroupType;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -389,11 +389,11 @@ public abstract class CustomGridView extends BaseCustomGridView {
 
 	public class ColumnGroup {
 
-		private Group group;
+		private GroupType group;
 		private ArrayList<FixedColumnModel> columns;
 		Map<Long, ArrayList<FixedColumnModel>> categoryColumnMap;
 
-		public ColumnGroup(Group group) {
+		public ColumnGroup(GroupType group) {
 			this.group = group;
 			this.columns = new ArrayList<FixedColumnModel>();
 		}
@@ -423,7 +423,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			this.columns.add(column);
 		}
 
-		public Group getGroup() {
+		public GroupType getGroup() {
 			return group;
 		}
 
@@ -432,12 +432,12 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	// Helper method
 	protected ArrayList<ColumnGroup> getColumnGroups() {
 
-		LinkedHashMap<Group, ColumnGroup> columnGroupMap = new LinkedHashMap<Group, ColumnGroup>();
+		LinkedHashMap<GroupType, ColumnGroup> columnGroupMap = new LinkedHashMap<GroupType, ColumnGroup>();
 		List<FixedColumn> gradebookColumunConfigs = gradebookModel.getColumns();
 
 		for(FixedColumn gradebookColumnConfig : gradebookColumunConfigs) {
 			LearnerKey key = LearnerKey.valueOf(gradebookColumnConfig.getKey());
-			Group group = key.getGroup();
+			GroupType group = key.getGroup();
 			ColumnGroup columnGroup = columnGroupMap.get(group);
 
 			if (columnGroup == null) {
@@ -451,7 +451,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	}
 
 	// Helper method
-	protected Collection<LearnerKey> getGroupColumnKeys(Group group) {
+	protected Collection<LearnerKey> getGroupColumnKeys(GroupType group) {
 
 		ArrayList<LearnerKey> groupColumnKeys = new ArrayList<LearnerKey>();
 		List<FixedColumn> gradebookColumunConfigs = gradebookModel.getColumns();

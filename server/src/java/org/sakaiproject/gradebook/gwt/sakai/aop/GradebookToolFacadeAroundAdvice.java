@@ -25,7 +25,6 @@ package org.sakaiproject.gradebook.gwt.sakai.aop;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.sakaiproject.gradebook.gwt.client.action.PageRequestAction;
 
 
 public class GradebookToolFacadeAroundAdvice implements MethodInterceptor {
@@ -40,9 +39,6 @@ public class GradebookToolFacadeAroundAdvice implements MethodInterceptor {
 		for(Object obj : arguments) {
 			if (obj != null && obj.getClass() != null) {
 				System.out.print(obj.getClass().getName() + " ");
-				if(obj instanceof PageRequestAction) {
-					entityName = ((PageRequestAction) obj).getEntityType().name();
-				}
 			}
 		}
 		if(null == entityName) {

@@ -6,10 +6,10 @@ import java.util.List;
 import org.sakaiproject.gradebook.gwt.client.model.Configuration;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookKey;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.Statistics;
+import org.sakaiproject.gradebook.gwt.client.model.key.GradebookKey;
 import org.sakaiproject.gradebook.gwt.sakai.Util;
 
 public class GradebookImpl extends HashMap<String, Object> implements Gradebook {

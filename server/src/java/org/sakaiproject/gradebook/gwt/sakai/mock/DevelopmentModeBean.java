@@ -27,9 +27,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.sakaiproject.gradebook.gwt.client.model.ApplicationKey;
-import org.sakaiproject.gradebook.gwt.client.model.GradebookKey;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
+import org.sakaiproject.gradebook.gwt.client.model.key.ApplicationKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.GradebookKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;

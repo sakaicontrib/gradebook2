@@ -1,8 +1,5 @@
 package org.sakaiproject.gradebook.gwt.sakai.rest.resource;
 
-import java.util.List;
-import java.util.Map;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -19,9 +16,10 @@ public class History extends Resource {
     		@QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset,
     		@QueryParam("sortField") String sortField, @QueryParam("sortDir") String sortDir) {
     
-		List<Map<String,Object>> list = service.getHistory(gradebookUid, gradebookId, offset, limit);
+		org.sakaiproject.gradebook.gwt.client.model.History history = 
+			service.getHistory(gradebookUid, gradebookId, offset, limit);
 		
-		return toJson(list, list.size());
+		return toJson(history.getHistoryPage(), history.getTotal());
 	}
 	
 }

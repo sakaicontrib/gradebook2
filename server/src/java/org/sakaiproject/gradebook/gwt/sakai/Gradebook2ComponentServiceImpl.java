@@ -32,36 +32,34 @@ import org.sakaiproject.event.api.EventTrackingService;
 import org.sakaiproject.exception.IdUnusedException;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.ConfigUtil;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
-import org.sakaiproject.gradebook.gwt.client.action.Action.ActionType;
-import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig;
-import org.sakaiproject.gradebook.gwt.client.model.ActionKey;
-import org.sakaiproject.gradebook.gwt.client.model.ApplicationKey;
 import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
-import org.sakaiproject.gradebook.gwt.client.model.CommentKey;
-import org.sakaiproject.gradebook.gwt.client.model.CommentModel;
 import org.sakaiproject.gradebook.gwt.client.model.Configuration;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
-import org.sakaiproject.gradebook.gwt.client.model.GradeEventKey;
-import org.sakaiproject.gradebook.gwt.client.model.GradeEventModel;
-import org.sakaiproject.gradebook.gwt.client.model.GradeFormatKey;
-import org.sakaiproject.gradebook.gwt.client.model.GradeMapKey;
-import org.sakaiproject.gradebook.gwt.client.model.GraderKey;
+import org.sakaiproject.gradebook.gwt.client.model.History;
+import org.sakaiproject.gradebook.gwt.client.model.HistoryRecord;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
-import org.sakaiproject.gradebook.gwt.client.model.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.Learner;
-import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
-import org.sakaiproject.gradebook.gwt.client.model.PermissionKey;
 import org.sakaiproject.gradebook.gwt.client.model.Roster;
-import org.sakaiproject.gradebook.gwt.client.model.SectionKey;
 import org.sakaiproject.gradebook.gwt.client.model.Statistics;
-import org.sakaiproject.gradebook.gwt.client.model.UploadKey;
-import org.sakaiproject.gradebook.gwt.client.model.VerificationKey;
-import org.sakaiproject.gradebook.gwt.client.model.key.StatisticsKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.ActionKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.ApplicationKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.CommentKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.GradeEventKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.GradeFormatKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.GradeMapKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.GraderKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.PermissionKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.SectionKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.UploadKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.VerificationKey;
+import org.sakaiproject.gradebook.gwt.client.model.type.ActionType;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.type.EntityType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 import org.sakaiproject.gradebook.gwt.sakai.InstitutionalAdvisor.Column;
@@ -77,6 +75,8 @@ import org.sakaiproject.gradebook.gwt.sakai.rest.model.FixedColumnImpl;
 import org.sakaiproject.gradebook.gwt.sakai.rest.model.GradeItem;
 import org.sakaiproject.gradebook.gwt.sakai.rest.model.GradeItemImpl;
 import org.sakaiproject.gradebook.gwt.sakai.rest.model.GradebookImpl;
+import org.sakaiproject.gradebook.gwt.sakai.rest.model.HistoryImpl;
+import org.sakaiproject.gradebook.gwt.sakai.rest.model.HistoryRecordImpl;
 import org.sakaiproject.gradebook.gwt.sakai.rest.model.LearnerImpl;
 import org.sakaiproject.gradebook.gwt.sakai.rest.model.RosterImpl;
 import org.sakaiproject.gradebook.gwt.sakai.rest.model.StatisticsImpl;
@@ -948,6 +948,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return assignmentId;
 	}*/
 	
+	@SuppressWarnings("unchecked")
 	public List<Map<String, Object>> getGraders(String gradebookUid, Long gradebookId) {
 		List<Map<String, Object>> userList = new ArrayList<Map<String, Object>>();
 
@@ -1002,7 +1003,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return map;
 	}
 	
-	public List<Map<String,Object>> getHistory(String gradebookUid, Long gradebookId,
+	public History getHistory(String gradebookUid, Long gradebookId,
 			Integer offset, Integer limit) {
 		
 		int off = offset == null ? -1 : offset.intValue();
@@ -1010,17 +1011,17 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		
 		Integer size = gbService.getActionRecordSize(gradebookUid);
 		List<ActionRecord> actionRecords = gbService.getActionRecords(gradebookUid, off, lim);
-		List<Map<String,Object>> models = new ArrayList<Map<String,Object>>();
+		List<HistoryRecord> models = new ArrayList<HistoryRecord>();
 
 		String description = null;
 		DateFormat format = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG);
 		format.setLenient(true);
 		
 		for (ActionRecord actionRecord : actionRecords) {
-			Map<String,Object> actionModel = new HashMap<String,Object>();
+			HistoryRecord actionModel = new HistoryRecordImpl();
 			try {
-				UserEntityAction.ActionType actionType = UserEntityAction.ActionType.valueOf(actionRecord.getActionType());
-				UserEntityAction.EntityType entityType = UserEntityAction.EntityType.valueOf(actionRecord.getEntityType());
+				ActionType actionType = ActionType.valueOf(actionRecord.getActionType());
+				EntityType entityType = EntityType.valueOf(actionRecord.getEntityType());
 				String score = null;
 				StringBuilder text = new StringBuilder();
 				switch (actionType) {
@@ -1032,7 +1033,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 						score = actionRecord.getPropertyMap().get("score");
 						if (score == null)
 							score = "";
-						actionModel.put("score", score);
+						actionModel.set("score", score);
 						
 						text.append(actionType.getVerb()).append(" '").append(score)
 							.append("'");
@@ -1043,7 +1044,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 						score = actionRecord.getPropertyMap().get(Column.LETTER_GRADE.name());
 						if (score == null)
 							score = "";
-						actionModel.put(ActionKey.VALUE.name(), score);
+						actionModel.set(ActionKey.VALUE.name(), score);
 						
 						text.append(actionType.getVerb()).append(" '").append(score)
 							.append("'");
@@ -1051,7 +1052,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 						description = text.toString();
 						break;
 					case UPDATE:
-						actionModel.put(ActionKey.VALUE.name(), actionRecord.getEntityName());
+						actionModel.set(ActionKey.VALUE.name(), actionRecord.getEntityName());
 						description = actionType.getVerb();
 						break;
 				}
@@ -1059,34 +1060,34 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				if (actionModel == null)
 					continue;
 				
-				actionModel.put(ActionKey.ID.name(), String.valueOf(actionRecord.getId()));
-				actionModel.put(ActionKey.GRADEBOOK_UID.name(),actionRecord.getGradebookUid());
-				actionModel.put(ActionKey.GRADEBOOK_ID.name(),actionRecord.getGradebookId());
-				actionModel.put(ActionKey.ENTITY_TYPE.name(), entityType.name());
+				actionModel.set(ActionKey.ID.name(), String.valueOf(actionRecord.getId()));
+				actionModel.set(ActionKey.GRADEBOOK_UID.name(),actionRecord.getGradebookUid());
+				actionModel.set(ActionKey.GRADEBOOK_ID.name(),actionRecord.getGradebookId());
+				actionModel.set(ActionKey.ENTITY_TYPE.name(), entityType.name());
 				if (actionRecord.getEntityId() != null)
-					actionModel.put(ActionKey.ENTITY_ID.name(),actionRecord.getEntityId());
+					actionModel.set(ActionKey.ENTITY_ID.name(),actionRecord.getEntityId());
 				if (actionRecord.getEntityName() != null)
-					actionModel.put(ActionKey.ENTITY_NAME.name(),actionRecord.getEntityName());
+					actionModel.set(ActionKey.ENTITY_NAME.name(),actionRecord.getEntityName());
 				if (actionRecord.getParentId() != null)
-					actionModel.put(ActionKey.PARENT_ID.name(),Long.valueOf(actionRecord.getParentId()));
+					actionModel.set(ActionKey.PARENT_ID.name(),Long.valueOf(actionRecord.getParentId()));
 				
 				String studentUid = actionRecord.getStudentUid();
-				actionModel.put(ActionKey.STUDENT_UID.name(), studentUid);
+				actionModel.set(ActionKey.STUDENT_UID.name(), studentUid);
 				
 				if (actionRecord.getEntityName() != null && actionRecord.getEntityName().contains(" : ")) {
 					String[] parts = actionRecord.getEntityName().split(" : ");
 					
-					actionModel.put(ActionKey.STUDENT_NAME.name(),parts[0]);
-					actionModel.put(ActionKey.ENTITY_NAME.name(),parts[1]);
+					actionModel.set(ActionKey.STUDENT_NAME.name(),parts[0]);
+					actionModel.set(ActionKey.ENTITY_NAME.name(),parts[1]);
 				}
 
-				actionModel.put(ActionKey.GRADER_NAME.name(), actionRecord.getGraderId());
+				actionModel.set(ActionKey.GRADER_NAME.name(), actionRecord.getGraderId());
 
 				if (userService != null && actionRecord.getGraderId() != null) {
 
 					try {
 						User user = userService.getUser(actionRecord.getGraderId());
-						actionModel.put(ActionKey.GRADER_NAME.name(), user.getDisplayName());
+						actionModel.set(ActionKey.GRADER_NAME.name(), user.getDisplayName());
 					} catch (UserNotDefinedException e) {
 						log.warn("Unable to find grader name for " + actionRecord.getGraderId(), e);
 					}
@@ -1094,9 +1095,9 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				}
 
 				if (actionRecord.getDatePerformed() != null) 
-					actionModel.put(ActionKey.DATE_PERFORMED.name(), String.valueOf(actionRecord.getDatePerformed()));
+					actionModel.set(ActionKey.DATE_PERFORMED.name(), String.valueOf(actionRecord.getDatePerformed()));
 				if (actionRecord.getDateRecorded() != null)
-					actionModel.put(ActionKey.DATE_RECORDED.name(), String.valueOf(actionRecord.getDateRecorded()));
+					actionModel.set(ActionKey.DATE_RECORDED.name(), String.valueOf(actionRecord.getDateRecorded()));
 
 				Map<String, String> propertyMap = actionRecord.getPropertyMap();
 
@@ -1105,22 +1106,22 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 						String value = propertyMap.get(key);
 
 						if (value != null && !value.equals("null"))
-							actionModel.put(key, value);
+							actionModel.set(key, value);
 					}
 				}
 				
-				actionModel.put(ActionKey.DESCRIPTION.name(), description);
+				actionModel.set(ActionKey.DESCRIPTION.name(), description);
 
 				models.add(actionModel);
 			} catch (Exception e) {
 				log.warn("Failed to retrieve history record for " + actionRecord.getId());
 			}
 		}
-		return models;
+		return new HistoryImpl(models, size);
 	}
 	
-	public Map<String,Object> getItem(String gradebookUid, Long gradebookId, String type) {
-		Map<String,Object> map = new HashMap<String,Object>();
+	public Item getItem(String gradebookUid, Long gradebookId, String type) {
+		GradeItem gradebookGradeItem = null;
 		
 		if (type == null) {
 			Gradebook gradebook = gbService.getGradebook(gradebookUid);
@@ -1129,37 +1130,31 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
 				categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
 			
-			GradeItem gradebookGradeItem = getGradebookGradeItem(gradebook, assignments, categories, false);
-			map = gradebookGradeItem.getProperties();
-			/*for (Enum<ItemKey> it : EnumSet.allOf(ItemKey.class)) {
-				map.put(it.name(), gradebookGradeItem.get(it.name()));
-			}
-			
-			addChildren(gradebookGradeItem, map);*/
+			gradebookGradeItem = getGradebookGradeItem(gradebook, assignments, categories, false);
 		}
 		
-		return map;
+		return gradebookGradeItem;
 	}
 	
-	public List<Map<String,Object>> getItems(String gradebookUid, Long gradebookId, String type) {
-		List<Map<String, Object>> list = new ArrayList<Map<String,Object>>();
+	public List<Item> getItems(String gradebookUid, Long gradebookId, String type) {
+		List<Item> list = new ArrayList<Item>();
 		
 		if (type == null || type.equals(ItemKey.ITEM_TYPE.name())) {
 			List<Category> categoryList = gbService.getCategories(gradebookId);
 
-			Map<String,Object> map = new HashMap<String, Object>();
-			map.put(ItemKey.ID.name(), "ALL");
-			map.put(ItemKey.NAME.name(), "All Categories");
-			list.add(map);
+			Item item = new GradeItemImpl();
+			item.setIdentifier("ALL");
+			item.setName("All Categories");
+			list.add(item);
 
 			for (Category category : categoryList) {
 				if (!category.isRemoved()) {
-					map = new HashMap<String, Object>();
-					map.put(ItemKey.ID.name(), String.valueOf(category.getId()));
-					map.put(ItemKey.NAME.name(), category.getName());
-					map.put(ItemKey.CATEGORY_ID.name(), category.getId());
-					map.put(ItemKey.CATEGORY_NAME.name(), category.getName());
-					list.add(map);
+					item = new GradeItemImpl();
+					item.setIdentifier(String.valueOf(category.getId()));
+					item.setName(category.getName());
+					item.setCategoryId(category.getId());
+					item.setCategoryName(category.getName());
+					list.add(item);
 				}
 			}
 		}
@@ -1273,7 +1268,6 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		int offset = numberOffset == null ? -1 : numberOffset.intValue() ;
 		int limit = numberLimit == null ? -1 : numberLimit.intValue();
 
-		String searchField = null;
 		String searchCriteria = null;
 		
 		// This is slightly painful, but since it's a String that gets passed
@@ -1293,7 +1287,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		}
 
 		if (searchCriteria != null) {
-			searchField = "sortName";
+			//searchField = "sortName";
 			searchCriteria = searchCriteria.toUpperCase();
 			sortColumnKey = LearnerKey.DISPLAY_NAME;
 		}
@@ -1406,8 +1400,6 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 					// in both sections and adhoc groups show up twice
 					userRecords = findLearnerRecordPage(gradebook, site, realmIds, groupReferences, groupReferenceMap, sortField, searchString, searchCriteria, offset, limit, !isDescending, includeCMId);
 					totalUsers = gbService.getUserCountForSite(realmIds, sortField, searchString, searchCriteria, learnerRoleNames);
-
-					int startRow = offset == -1 ? 0 : offset;
 
 					List<FixedColumn> columns = getColumns(true);
 
@@ -3367,66 +3359,6 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return model;
 	}
 	
-	
-	private CommentModel createOrUpdateCommentModel(CommentModel model, Comment comment) {
-
-		if (comment == null)
-			return null;
-
-		if (model == null) {
-			model = new CommentModel();
-		}
-
-		String graderName = "";
-		if (userService != null) {
-			try {
-				User grader = userService.getUser(comment.getGraderId());
-				if (grader != null)
-					graderName = grader.getDisplayName();
-			} catch (UserNotDefinedException e) {
-				log.warn("Couldn't find the grader for " + comment.getGraderId());
-			}
-		}
-
-		if (comment.getId() != null)
-			model.setIdentifier(String.valueOf(comment.getId()));
-		model.setAssignmentId(comment.getGradableObject().getId());
-		model.setText(comment.getCommentText());
-		model.setGraderName(graderName);
-		model.setStudentUid(comment.getStudentId());
-
-		return model;
-	}
-	
-	
-	private GradeEventModel createOrUpdateGradeEventModel(GradeEventModel model, GradingEvent event) {
-
-		SimpleDateFormat dateFormat = new SimpleDateFormat();
-
-		if (model == null) {
-			model = new GradeEventModel();
-		}
-
-		String graderName = event.getGraderId();
-
-		try {
-			if (userService != null) {
-				User grader = userService.getUser(event.getGraderId());
-				if (grader != null)
-					graderName = grader.getDisplayName();
-			}
-		} catch (UserNotDefinedException e) {
-			log.info("Failed to find a user for the id " + event.getGraderId());
-		}
-
-		model.setIdentifier(String.valueOf(event.getId()));
-		model.setGraderName(graderName);
-		model.setGrade(event.getGrade());
-		model.setDateGraded(dateFormat.format(event.getDateGraded()));
-
-		return model;
-	}
-
 	private Statistics createStatisticsModel(Gradebook gradebook, String name, GradeStatistics statistics, Long id, Long assignmentId, String studentId) {
 
 		Statistics model = new StatisticsImpl();

@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
+import org.sakaiproject.gradebook.gwt.client.model.History;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.Roster;
@@ -56,11 +57,11 @@ public interface Gradebook2ComponentService {
 	
 	public Map<String,Object> getGradesVerification(String gradebookUid, Long gradebookId);
 	
-	public List<Map<String,Object>> getHistory(String gradebookUid, Long gradebookId, Integer offset, Integer limit);
+	public History getHistory(String gradebookUid, Long gradebookId, Integer offset, Integer limit);
 	
-	public Map<String,Object> getItem(String gradebookUid, Long gradebookId, String type);
+	public Item getItem(String gradebookUid, Long gradebookId, String type);
 	
-	public List<Map<String,Object>> getItems(String gradebookUid, Long gradebookId, String type);
+	public List<Item> getItems(String gradebookUid, Long gradebookId, String type);
 	
 	public Roster getRoster(String gradebookUid, Long gradebookId, Integer limit, Integer offset, String sectionUuid, String searchString, String sortField, boolean includeCMId, boolean isDescending);
 	

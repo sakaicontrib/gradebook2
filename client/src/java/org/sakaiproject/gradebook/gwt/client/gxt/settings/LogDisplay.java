@@ -37,7 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-import org.sakaiproject.gradebook.gwt.client.model.GradeEventModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.GradeEventModel;
 
 import com.extjs.gxt.ui.client.core.XDOM;
 import com.extjs.gxt.ui.client.event.ComponentEvent;

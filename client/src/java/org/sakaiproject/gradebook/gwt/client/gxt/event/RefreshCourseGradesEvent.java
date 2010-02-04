@@ -22,7 +22,7 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.gxt.event;
 
-import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.BaseEvent;

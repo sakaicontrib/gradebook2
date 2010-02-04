@@ -29,8 +29,6 @@ import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.PersistentStore;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
-import org.sakaiproject.gradebook.gwt.client.action.Action.EntityType;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction.ClassType;
 import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.BaseCustomGridView;
 import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.CustomColumnModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
@@ -39,7 +37,9 @@ import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.GradebookPanel;
 import org.sakaiproject.gradebook.gwt.client.model.Configuration;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
-import org.sakaiproject.gradebook.gwt.client.model.LearnerKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
+import org.sakaiproject.gradebook.gwt.client.model.type.ClassType;
+import org.sakaiproject.gradebook.gwt.client.model.type.EntityType;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.SortDir;
