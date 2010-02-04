@@ -1,7 +1,5 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.controller;
 
-import java.util.EnumSet;
-
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
@@ -11,9 +9,9 @@ import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ApplicationModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.type.ApplicationModelType;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
-import org.sakaiproject.gradebook.gwt.client.model.key.ApplicationKey;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.data.ModelData;
@@ -111,7 +109,7 @@ public class StartupController extends Controller {
 					
 					String result = response.getText();
 
-					JsonTranslater translater = new JsonTranslater(EnumSet.allOf(ApplicationKey.class)) {
+					JsonTranslater translater = new JsonTranslater(new ApplicationModelType()) {
 						protected ModelData newModelInstance() {
 							return new ApplicationModel();
 						}

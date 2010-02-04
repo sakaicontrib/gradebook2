@@ -96,7 +96,6 @@ import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
 
 public class ItemFormPanel extends GradebookPanel {
 
-	
 	private enum Mode { DELETE, EDIT, NEW };
 	private enum SelectionType { CLOSE, CREATE, CREATECLOSE, CANCEL, REQUEST_DELETE, DELETE, SAVE, SAVECLOSE };
 

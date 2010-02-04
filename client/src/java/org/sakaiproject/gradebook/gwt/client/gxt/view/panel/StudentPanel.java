@@ -34,6 +34,7 @@ import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.UrlArgsCallback;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
+import org.sakaiproject.gradebook.gwt.client.gxt.NewModelCallback;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.StatisticsModel;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
@@ -202,6 +203,13 @@ public class StudentPanel extends GradebookPanel {
 					}
 			
 				},	
+				new NewModelCallback() {
+
+					public ModelData newModelInstance() {
+						return new StatisticsModel();
+					}
+					
+				},
 				GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.STATISTICS_FRAGMENT);
 		
 		loader.addLoadListener(new LoadListener() {

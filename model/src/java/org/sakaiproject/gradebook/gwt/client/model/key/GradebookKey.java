@@ -7,14 +7,23 @@ import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.Learner;
 
 public enum GradebookKey {
-	GRADEBOOKUID(String.class), GRADEBOOKID(Long.class), NAME(String.class), 
-	USERASSTUDENT(Learner.class),
-	COLUMNS(ArrayList.class), USERNAME(String.class), 
-	GRADEBOOKITEMMODEL(Item.class), ISNEWGRADEBOOK(Boolean.class),
-	CONFIGURATIONMODEL(Configuration.class), STATSMODELS(ArrayList.class);
+	GRADEBOOKUID,
+	GRADEBOOKID(Long.class), 
+	NAME,
+	GRADEBOOKITEMMODEL(Item.class),
+	COLUMNS(ArrayList.class), 
+	USERNAME,  
+	ISNEWGRADEBOOK(Boolean.class),
+	CONFIGURATIONMODEL(Configuration.class), 
+	STATSMODELS(ArrayList.class),
+	USERASSTUDENT(Learner.class);
 
 	Class<?> type;
 
+	private GradebookKey() {
+		this.type = null;
+	}
+	
 	private GradebookKey(Class<?> type) {
 		this.type = type;
 	}

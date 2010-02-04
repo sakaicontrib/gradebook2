@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
+import org.sakaiproject.gradebook.gwt.client.gxt.NewModelCallback;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
@@ -74,9 +75,21 @@ public class RestBuilder extends RequestBuilder {
 			EnumSet<?> enumSet, Method method, String ... urlArgs) {
 		return getDelayLoader(root, enumSet, method, null, urlArgs);
 	}
-		
+	
 	public static <M extends ModelData> ListLoader<ListLoadResult<M>> getDelayLoader(String root,
 			EnumSet<?> enumSet, Method method, UrlArgsCallback argsCallback, String ... urlArgs) {
+		return getDelayLoader(root, enumSet, method, argsCallback, new NewModelCallback() {
+
+			public ModelData newModelInstance() {
+				return new BaseModel();
+			}
+			
+		}, urlArgs);
+	}
+	
+	public static <M extends ModelData> ListLoader<ListLoadResult<M>> getDelayLoader(String root,
+			EnumSet<?> enumSet, Method method, UrlArgsCallback argsCallback, 
+			final NewModelCallback modelCallback, String ... urlArgs) {
 		HttpProxy<String> proxy = getProxy(urlArgs, argsCallback);
 
 		ModelType type = new ModelType();
@@ -87,7 +100,7 @@ public class RestBuilder extends RequestBuilder {
 
 		JsonLoadResultReader<ListLoadResult<M>> reader = new JsonLoadResultReader<ListLoadResult<M>>(type) {
 			protected ModelData newModelInstance() {
-			    return new BaseModel();
+			    return modelCallback.newModelInstance();
 			}
 		};
 
