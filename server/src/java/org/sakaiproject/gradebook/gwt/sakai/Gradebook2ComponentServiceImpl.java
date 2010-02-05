@@ -256,37 +256,25 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			return o1.getSortName().compareToIgnoreCase(o2.getSortName());
 		}
 	};
+	
 	private InstitutionalAdvisor advisor;
 	private ApplicationContext applicationContext;
-	
 	private Gradebook2Authz authz;
 	private BusinessLogic businessLogic;
-	
 	private ServerConfigurationService configService;
-	
 	private List<GradeType> enabledGradeTypes;
-	
 	private EventTrackingService eventTrackingService;
 	private GradebookFrameworkService frameworkService;
-	
-	
 	private GradebookToolService gbService;
-	
 	private GradeCalculations gradeCalculations;
-	
-	private String helpUrl;
-	
-	private String[] learnerRoleNames;
-	
-	private SectionAwareness sectionAwareness;
-	
-	private SessionManager sessionManager;
-	
+	private String helpUrl;	
+	private String[] learnerRoleNames;	
+	private SectionAwareness sectionAwareness;	
+	private SessionManager sessionManager;	
 	private SiteService siteService;
-
-	private ToolManager toolManager;
-	
+	private ToolManager toolManager;	
 	private UserDirectoryService userService;
+	
 	
 	public Learner assignComment(String itemId, String studentUid, String text) {
 
@@ -4588,7 +4576,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		String standardDev = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getStandardDeviation(), true) : NA;
 		String rank = NA;  
 
-		boolean isStudentView = studentId != null;
+		boolean isGrader = authz.isUserAbleToGradeAll(gradebook.getUid()) || authz.isUserAbleToGrade(gradebook.getUid());
 		
 		if (studentId != null && statistics != null)
 		{
@@ -4612,18 +4600,21 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
     	boolean isShowMode = DataTypeConversionUtil.checkBoolean(gradebook.getShowMode());
     	boolean isShowRank = DataTypeConversionUtil.checkBoolean(gradebook.getShowRank());
 		
-		if (!isStudentView || isShowMean) {
+    	// Only transmit the stats data to the client if the user is a grader or
+    	// if the grader has authorized students to view that stat
+    	
+		if (isGrader || isShowMean) {
 			model.setMean(mean);
 			model.setStandardDeviation(standardDev);	
 		}
 		
-		if (!isStudentView || isShowMedian)
+		if (isGrader || isShowMedian)
 			model.setMedian(median);
 		
-		if (!isStudentView || isShowMode)
+		if (isGrader || isShowMode)
 			model.setMode(mode);
 		
-		if (!isStudentView || isShowRank)
+		if (isGrader || isShowRank)
 			model.setRank(rank); 
 		
 		return model;
