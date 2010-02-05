@@ -273,6 +273,7 @@ public interface I18nConstants extends Constants {
 	String uploadingLearnerGradesStatus();	
 	String uploadingLearnerGradesSuffix();
 	String uploadingLearnerGradesTitle();
+	String useClassicNavigation();
 	String userHeader();
 	String usersEmptyText();
 	String viewAsLearner();	

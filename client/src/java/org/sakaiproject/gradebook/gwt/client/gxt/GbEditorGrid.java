@@ -27,14 +27,26 @@ import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.EditorGrid;
+import com.extjs.gxt.ui.client.widget.grid.EditorSupport;
+import com.extjs.gxt.ui.client.widget.grid.GridSelectionModel.Callback;
+import com.extjs.gxt.ui.client.widget.grid.GridSelectionModel.Cell;
 
 public class GbEditorGrid<M extends ModelData> extends EditorGrid<M> {
 
 	public GbEditorGrid(ListStore<M> store, ColumnModel cm) {
 		super(store, cm);
-
 	}
-		
+	
+	public Cell doWalkCells(int row, int col, int step, Callback callback, 
+			boolean acceptNavs) {
+		return this.walkCells(row, col, step, callback, acceptNavs);
+	}
+	
+	public EditorSupport<M> getEditorSupport() {
+	    return editSupport;
+	}
+	
+	/*
 	public GbCell doWalkCells(int row, int col, int step, GbGridCallback callback,
 		      boolean acceptNavs) {
 		    boolean first = true;
@@ -88,6 +100,6 @@ public class GbEditorGrid<M extends ModelData> extends EditorGrid<M> {
 			this.row = row;
 			this.cell = cell;
 		}
-	}
+	}*/
 
 }

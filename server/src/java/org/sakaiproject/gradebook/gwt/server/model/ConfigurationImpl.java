@@ -174,4 +174,12 @@ public class ConfigurationImpl extends BaseModel implements Configuration {
 		put(ConfigurationKey.USERUID.name(), userUid);
 	}
 	
+	public boolean isClassicNavigation() {
+		return Util.toBooleanPrimitive(get(ConfigurationKey.USE_CLASSIC_NAV.name()));
+	}
+
+	public void setClassicNavigation(Boolean useClassicNavigation) {
+		put(ConfigurationKey.USE_CLASSIC_NAV.name(), useClassicNavigation);
+	}
+	
 }

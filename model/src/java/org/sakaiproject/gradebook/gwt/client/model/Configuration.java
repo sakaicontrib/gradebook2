@@ -44,4 +44,8 @@ public interface Configuration {
 
 	public abstract void setSortField(String gridId, String sortField);
 
+	public abstract boolean isClassicNavigation();
+	
+	public abstract void setClassicNavigation(Boolean useClassicNavigation);
+	
 }

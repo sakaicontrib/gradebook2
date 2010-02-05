@@ -31,6 +31,7 @@ import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
+import org.sakaiproject.gradebook.gwt.client.gxt.GbCellEditor;
 import org.sakaiproject.gradebook.gwt.client.gxt.GridPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
@@ -44,7 +45,6 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
-import org.sakaiproject.gradebook.gwt.client.gxt.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.ExtraCreditNumericCellRenderer;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeContextMenu;
@@ -77,6 +77,7 @@ import com.extjs.gxt.ui.client.data.SortInfo;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.Events;
+import com.extjs.gxt.ui.client.event.FieldEvent;
 import com.extjs.gxt.ui.client.event.GridEvent;
 import com.extjs.gxt.ui.client.event.KeyListener;
 import com.extjs.gxt.ui.client.event.Listener;
@@ -90,6 +91,7 @@ import com.extjs.gxt.ui.client.store.Store;
 import com.extjs.gxt.ui.client.store.StoreEvent;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
+import com.extjs.gxt.ui.client.widget.form.CheckBox;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
 import com.extjs.gxt.ui.client.widget.form.Field;
 import com.extjs.gxt.ui.client.widget.form.LabelField;
@@ -130,12 +132,13 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 
 	private MultiGradeContextMenu contextMenu;
 
+	private CheckBox useClassicNavigationCheckBox;
 	private LabelField modeLabel;
 	private TextField<String> searchField;
 	private NumberField pageSizeField;
 
 	private Listener<ComponentEvent> componentEventListener;
-	private Listener<GridEvent> gridEventListener;
+	private Listener<GridEvent<ModelData>> gridEventListener;
 	private Listener<RefreshCourseGradesEvent> refreshCourseGradesListener;
 	private Listener<UserChangeEvent> userChangeEventListener;
 
@@ -411,9 +414,9 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 
 		};
 
-		gridEventListener = new Listener<GridEvent>() {
+		gridEventListener = new Listener<GridEvent<ModelData>>() {
 
-			public void handleEvent(GridEvent ge) {
+			public void handleEvent(GridEvent<ModelData> ge) {
 
 				if (ge.getType().equals(Events.CellClick)) {
 					if (ge.getColIndex() == 0 || ge.getColIndex() == 1 || ge.getColIndex() == 2) {
@@ -494,6 +497,9 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 				store.setDefaultSort(storedSortField, sortDir);
 		}
 		
+		Boolean useClassicNavigation = Boolean.valueOf(configModel.isClassicNavigation());
+		useClassicNavigationCheckBox.setValue(useClassicNavigation);
+		
 		int pageSize = configModel.getPageSize(gridId);
 		
 		if (pageSize == -1)
@@ -507,9 +513,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 		if (loader != null) 
 			loader.load(0, pageSize);
 		pageSizeField.setValue(Integer.valueOf(pageSize));
-		
-		//if (sectionsLoader != null)
-		//	sectionsLoader.load();
+
 	}
 
 	public void onUserChange(UserEntityAction<?> action) {
@@ -730,6 +734,22 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 
 		});
 
+		useClassicNavigationCheckBox = new CheckBox();
+		useClassicNavigationCheckBox.setBoxLabel(i18n.useClassicNavigation());
+		useClassicNavigationCheckBox.addListener(Events.Change, new Listener<FieldEvent>() {
+
+			public void handleEvent(FieldEvent be) {
+				Boolean isChecked = (Boolean)be.getValue();	
+				cellSelectionModel.setUseClassic(isChecked != null && isChecked.booleanValue());
+				
+				Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
+				Configuration model = new ConfigurationModel(selectedGradebook.getGradebookId());
+				model.setClassicNavigation(isChecked);
+				Dispatcher.forwardEvent(GradebookEvents.Configuration.getEventType(), model);
+			}
+			
+		});
+		
 		modeLabel = new LabelField();
 		
 		int pageSize = getPageSize();
@@ -764,6 +784,8 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 		searchToolBar.add(clearSearchItem);
 		searchToolBar.add(new SeparatorToolItem());
 		searchToolBar.add(sectionListBox);
+		searchToolBar.add(new SeparatorToolItem());
+		searchToolBar.add(useClassicNavigationCheckBox);
 		searchToolBar.add(new FillToolItem());
 		searchToolBar.add(modeLabel);
 
@@ -983,8 +1005,8 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 		}
 
 		if (field != null && isEditable) {
-			final CellEditor editor = new CellEditor(field);
-			editor.setCompleteOnEnter(true);
+			CellEditor editor = new GbCellEditor(field);
+			editor.setCompleteOnEnter(false);
 			editor.setCancelOnEsc(true);
 			config.setEditor(editor);
 		}

@@ -23,121 +23,84 @@
 
 package org.sakaiproject.gradebook.gwt.client.gxt.multigrade;
 
-import org.sakaiproject.gradebook.gwt.client.gxt.GbGridCallback;
+import org.sakaiproject.gradebook.gwt.client.gxt.GbEditorGrid;
 
 import com.extjs.gxt.ui.client.data.ModelData;
-import com.extjs.gxt.ui.client.event.BaseEvent;
-import com.extjs.gxt.ui.client.event.Events;
+import com.extjs.gxt.ui.client.event.DomEvent;
 import com.extjs.gxt.ui.client.event.GridEvent;
+import com.extjs.gxt.ui.client.widget.grid.CellEditor;
 import com.extjs.gxt.ui.client.widget.grid.CellSelectionModel;
-import com.extjs.gxt.ui.client.widget.grid.EditorGrid;
+import com.google.gwt.event.dom.client.KeyCodes;
 
-public class MultigradeSelectionModel<M extends ModelData> extends
-CellSelectionModel<M> {
+public class MultigradeSelectionModel<M extends ModelData> extends CellSelectionModel<M> {
 
-	private GbGridCallback callback = new GbGridCallback(this);
-	private EditorGrid editGrid;
-
+	private Callback callback = new Callback(this);
+	private boolean useClassic = false;
 	
-	public boolean isCellSelectable(int row, int cell, boolean acceptsNav) {
-		return isSelectable(row, cell, acceptsNav);
-	}
-	
-	
-	/*@Override
-	public void bindGrid(Grid grid) {
-		if (this.grid != null) {
-			this.grid.removeListener(Events.CellMouseDown, this);
-			this.grid.getView().removeListener(Events.Refresh, this);
-			keyNav.bind(null);
-			bind(null);
-		}
-		this.grid = grid;
-		if (grid != null) {
-			grid.setTrackMouseOver(false);
-			grid.addListener(Events.CellMouseDown, this);
-			grid.getView().addListener(Events.Refresh, this);
-			editGrid = grid instanceof EditorGrid ? ((EditorGrid) grid) : null;
-			keyNav.bind(grid);
-			bind(grid.getStore());
-		}
-		bind(grid != null ? grid.getStore() : null);
-	}*/
-
-	/*@Override
-	public void deselectAll() {
-		if (getSelection() != null) {
-			((BaseCustomGridView)grid.getView()).doCellDeselect(selection.row, selection.cell);
-			selection = null;
-		}
-	}*/
-
-	/**
-	 * Returns the selected cell.
-	 * 
-	 * @return the selection cell
-	 */
-	/*public CellSelection getSelectCell() {
-		return selection;
-	}*/
-
-	/*@Override
-	public void handleEvent(BaseEvent e) {
-		if (e.getType().equals(Events.CellMouseDown)) 
-			handleMouseDown((GridEvent) e);
-		else if (e.getType().equals(Events.Refresh))
-			refresh();
-		
+	public MultigradeSelectionModel() {
+		super();
+		setMoveEditorOnEnter(true);
 	}
 
-	public boolean isCellSelectable(int row, int cell, boolean acceptsNav) {
+	@Override
+	public void onEditorKey(DomEvent e) {
+		if (useClassic) {
+			super.onEditorKey(e);
+			return;
+		}
+		int k = e.getKeyCode();
+		Cell newCell = null;
+		CellEditor editor = ((GbEditorGrid<M>)grid).getEditorSupport().getActiveEditor();
+		switch (k) {
+		case KeyCodes.KEY_ENTER:
+		case KeyCodes.KEY_TAB:
+			e.stopEvent();
+			if (editor != null) {
+				editor.completeEdit();
+			}
+			if ((k == KeyCodes.KEY_ENTER && isMoveEditorOnEnter()) || k == KeyCodes.KEY_TAB) {
+				if (e.isShiftKey()) {
+					newCell = ((GbEditorGrid<M>)grid).doWalkCells(editor.row - 1, editor.col, -1, callback, true);
+				} else {
+					newCell = ((GbEditorGrid<M>)grid).doWalkCells(editor.row + 1, editor.col, 1, callback, true);
+				}
+			}
+			break;
+		case KeyCodes.KEY_ESCAPE:
+			if (editor != null) {
+				editor.cancelEdit();
+			}
+			break;
+		}
+		if (newCell != null) {
+			((GbEditorGrid<M>)grid).getEditorSupport().startEditing(newCell.row, newCell.cell);
+		} else {
+			if (k == KeyCodes.KEY_ENTER || k == KeyCodes.KEY_TAB || k == KeyCodes.KEY_ESCAPE) {
+				grid.getView().focusCell(editor.row, editor.col, false);
+			}
+		}
+	}
+	
+	protected boolean isSelectable(int row, int cell, boolean acceptsNav) {
 		if (acceptsNav) {
-			return !grid.getColumnModel().isHidden(cell)
-			&& grid.getColumnModel().isCellEditable(cell);
+			return !grid.getColumnModel().isHidden(cell) && grid.getColumnModel().isCellEditable(cell);
 		} else {
 			return !grid.getColumnModel().isHidden(cell);
 		}
-	}*/
-
-	/**
-	 * Selects the cell.
-	 * 
-	 * @param row
-	 *            the row index
-	 * @param cell
-	 *            the cell index
-	 */
-	/*@Override
-	public void select(int row, int cell, boolean keepSelected) {
-		deselectAll();
-		M m = (M) ((ListStore) store).getAt(row);
-		selection = new CellSelection(m, row, cell);
-		((BaseCustomGridView)grid.getView()).doCellSelect(row, cell);
-		grid.getView().focusCell(row, cell, true);
-	}*/
-
-	/*@Override
-	protected void handleMouseDown(GridEvent e) {
-		if (e.event.getButton() != Event.BUTTON_LEFT || isLocked()) {
-			return;
-		}
-		selectCell(e.rowIndex, e.colIndex);
-	}*/
-
-
-	/*@Override
-	protected void onKeyPress(GridEvent e) {
-		if (editGrid != null) {
+	}
+	
+	@Override
+	protected void onKeyPress(GridEvent<M> e) {
+		if (((GbEditorGrid<M>)grid).getEditorSupport() != null) {
 			// ignore events whose source is an input element
 			String tag = e.getTarget().getTagName();
-			if (tag.equals("INPUT")
-					&& !e.getTarget().getClassName().equals("_focus")) {
+			if (tag.equals("INPUT") && !e.getTarget().getClassName().equals("_focus")) {
 				return;
 			}
 		}
 		if (selection == null) {
 			e.stopEvent();
-			GbCell cell = ((GbEditorGrid)grid).doWalkCells(0, 0, 1, callback, false);
+			Cell cell = ((GbEditorGrid<M>)grid).doWalkCells(0, 0, 1, callback, false);
 			if (cell != null) {
 				selectCell(cell.row, cell.cell);
 			}
@@ -147,53 +110,60 @@ CellSelectionModel<M> {
 		int r = selection.row;
 		int c = selection.cell;
 
-		GbCell newCell = null;
+		Cell newCell = null;
 
 		switch (e.getKeyCode()) {
-			case KeyboardListener.KEY_TAB:
-				if (e.isShiftKey()) {
-					newCell = ((GbEditorGrid)grid).doWalkCells(r, c - 1, -1, callback, false);
-				} else {
-					newCell = ((GbEditorGrid)grid).doWalkCells(r, c + 1, 1, callback, false);
-				}
-				break;
-			case KeyboardListener.KEY_DOWN: {
-				newCell = ((GbEditorGrid)grid).doWalkCells(r + 1, c, 1, callback, false);
-				break;
+		case KeyCodes.KEY_TAB:
+			if (useClassic) {
+				if (e.isShiftKey()) 
+					newCell = ((GbEditorGrid<M>)grid).doWalkCells(r, c - 1, -1, callback, false);
+				else 
+					newCell = ((GbEditorGrid<M>)grid).doWalkCells(r, c + 1, 1, callback, false);
+			} else {
+				if (e.isShiftKey()) 
+					newCell = ((GbEditorGrid<M>)grid).doWalkCells(r - 1, c, -1, callback, false);
+				else
+					newCell = ((GbEditorGrid<M>)grid).doWalkCells(r + 1, c, 1, callback, false);
 			}
-			case KeyboardListener.KEY_UP: {
-				newCell = ((GbEditorGrid)grid).doWalkCells(r - 1, c, -1, callback, false);
-				break;
-			}
-			case KeyboardListener.KEY_LEFT:
-				newCell = ((GbEditorGrid)grid).doWalkCells(r, c - 1, -1, callback, false);
-				break;
-			case KeyboardListener.KEY_RIGHT:
-				newCell = ((GbEditorGrid)grid).doWalkCells(r, c + 1, 1, callback, false);
-				break;
-			case KeyboardListener.KEY_ENTER:
-				if (editGrid != null) {
-					if (!editGrid.isEditing()) {
-						editGrid.startEditing(r, c);
-						e.stopEvent();
-						return;
-					}
+			break;
+		case KeyCodes.KEY_DOWN: {
+			newCell = ((GbEditorGrid<M>)grid).doWalkCells(r + 1, c, 1, callback, false);
+			break;
+		}
+		case KeyCodes.KEY_UP: {
+			newCell = ((GbEditorGrid<M>)grid).doWalkCells(r - 1, c, -1, callback, false);
+			break;
+		}
+		case KeyCodes.KEY_LEFT:
+			newCell = ((GbEditorGrid<M>)grid).doWalkCells(r, c - 1, -1, callback, false);
+			break;
+		case KeyCodes.KEY_RIGHT:
+			newCell = ((GbEditorGrid<M>)grid).doWalkCells(r, c + 1, 1, callback, false);
+			break;
+		case KeyCodes.KEY_ENTER:
+			if (((GbEditorGrid<M>)grid).getEditorSupport() != null) {
+				if (!((GbEditorGrid<M>)grid).getEditorSupport().isEditing()) {
+					((GbEditorGrid<M>)grid).getEditorSupport().startEditing(r, c);
+					e.stopEvent();
+					return;
 				}
-				break;
+			}
+			break;
 
 		}
 		if (newCell != null) {
 			selectCell(newCell.row, newCell.cell);
 			e.stopEvent();
 		}
-	}*/
+	}
 
-	/*@Override
-	protected void onRemove(M model) {
-		super.onRemove(model);
-		if (selection != null && selection.model == model) {
-			selection = null;
-		}
-	}*/
+	public boolean isUseClassic() {
+		return useClassic;
+	}
 
+	public void setUseClassic(boolean useClassic) {
+		setMoveEditorOnEnter(!useClassic);
+		this.useClassic = useClassic;
+	}
+	
 }

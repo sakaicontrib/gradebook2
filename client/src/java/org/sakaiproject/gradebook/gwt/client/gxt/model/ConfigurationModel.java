@@ -196,5 +196,18 @@ public class ConfigurationModel extends BaseModel implements Configuration {
 	public void setSortField(String gridId, String sortField) {
 		set(ConfigUtil.getSortFieldId(gridId), sortField);
 	}
+
+	public boolean isClassicNavigation() {
+		Object useClassicNav = get(ConfigurationKey.USE_CLASSIC_NAV.name());
+		
+		if (useClassicNav instanceof String)
+			return useClassicNav != null && "true".equalsIgnoreCase((String)useClassicNav);
+		
+		return DataTypeConversionUtil.checkBoolean((Boolean)useClassicNav);
+	}
+
+	public void setClassicNavigation(Boolean useClassicNavigation) {
+		set(ConfigurationKey.USE_CLASSIC_NAV.name(), useClassicNavigation);
+	}
 	
 }
