@@ -84,8 +84,6 @@ import org.sakaiproject.tool.gradebook.Assignment;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 
-import com.extjs.gxt.ui.client.data.BaseModel;
-
 public class ImportExportUtility {
 
 	private static final Log log = LogFactory.getLog(ImportExportUtility.class);

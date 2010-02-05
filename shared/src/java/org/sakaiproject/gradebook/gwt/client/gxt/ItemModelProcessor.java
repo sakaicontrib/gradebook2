@@ -29,9 +29,6 @@ import java.util.List;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 
-import com.extjs.gxt.ui.client.data.BaseTreeModel;
-import com.extjs.gxt.ui.client.data.ModelData;
-
 public abstract class ItemModelProcessor {
 
 	protected Item result;
@@ -94,11 +91,11 @@ public abstract class ItemModelProcessor {
 			}
 		}
 
-		List children = ((BaseTreeModel)itemModel).getChildren();
+		List<Item> children = itemModel.getSubItems();
 
 		if (children != null) {
 			for (int i=0;i<children.size();i++) {
-				processItem((Item)children.get(i), i);
+				processItem(children.get(i), i);
 			}
 		}
 
@@ -108,13 +105,12 @@ public abstract class ItemModelProcessor {
 		if (parent.isActive())
 			return parent;
 
-		for (ModelData m : ((BaseTreeModel)parent).getChildren()) {
-			Item c = (Item)m;
+		for (Item c : parent.getSubItems()) {
 			if (c.isActive()) {
 				return c;
 			}
 
-			if (((BaseTreeModel)c).getChildCount() > 0) {
+			if (c.getSubItemCount() > 0) {
 				Item activeItem = getActiveItem(c);
 
 				if (activeItem != null)

@@ -23,7 +23,9 @@
 
 package org.sakaiproject.gradebook.gwt.client.gxt.model;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
@@ -748,6 +750,22 @@ public class ItemModel extends BaseTreeModel implements Item {
 
 	public boolean isRemoved() {
 		return DataTypeConversionUtil.checkBoolean(getRemoved());
+	}
+
+	public List<Item> getSubItems() {
+		List<ModelData> children = getChildren();
+		List<Item> subItems = new ArrayList<Item>();
+		if (children != null) {
+			for (int i=0;i<children.size();i++) {
+				subItems.add((ItemModel)children.get(i));
+			}
+		}
+		return subItems;
+	}
+
+	public Integer getSubItemCount() {
+		List<?> children = getChildren();
+		return children == null ? Integer.valueOf(0) : children.size();
 	}
 	
 }

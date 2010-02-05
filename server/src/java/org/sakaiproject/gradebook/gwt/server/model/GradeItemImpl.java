@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
@@ -99,13 +100,13 @@ public class GradeItemImpl extends BaseModel implements GradeItem {
 
 		child.setParentName(getName());
 		
-		List<Map<String,Object>> childrenList = (List<Map<String,Object>>)get(ItemKey.CHILDREN.name());
+		List<Item> childrenList = (List<Item>)get(ItemKey.CHILDREN.name());
 
 		if (childrenList == null)
-			childrenList = new ArrayList<Map<String,Object>>();
+			childrenList = new ArrayList<Item>();
 
 		if (!childrenList.contains(child))
-			childrenList.add(child.getProperties());
+			childrenList.add(child);
 
 		put(ItemKey.CHILDREN.name(), childrenList);
 	}
@@ -299,6 +300,16 @@ public class GradeItemImpl extends BaseModel implements GradeItem {
 		return Util.toString(get(ItemKey.STUDENT_MODEL_KEY.name()));
 	}
 	
+	@SuppressWarnings("unchecked")
+	public List<Item> getSubItems() {
+		return (List<Item>)get(ItemKey.CHILDREN.name());
+	}
+	
+	public Integer getSubItemCount() {
+		List<?> list = get(ItemKey.CHILDREN.name());
+		return list == null ? Integer.valueOf(0) : Integer.valueOf(list.size());
+	}
+	
 	// Setters
 	
 	public Double getWeighting() {
@@ -316,14 +327,6 @@ public class GradeItemImpl extends BaseModel implements GradeItem {
 	public boolean isEditable() {
 		return Util.toBooleanPrimitive(get(ItemKey.IS_EDITABLE.name()));
 	}
-
-	/*public boolean isIncluded() {
-		return Util.toBooleanPrimitive(get(ItemKey.INCLUDED.name()));
-	}
-
-	public boolean isRemoved() {
-		return Util.toBooleanPrimitive(get(ItemKey.REMOVED.name()));
-	}*/
 
 	public void setActive(boolean isActive) {
 		put(ItemKey.IS_ACTIVE.name(), isActive);

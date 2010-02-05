@@ -2,6 +2,7 @@ package org.sakaiproject.gradebook.gwt.client.model;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
@@ -87,7 +88,11 @@ public interface Item {
 	public abstract String getSource();
 
 	public abstract String getStudentModelKey();
+	
+	public abstract List<Item> getSubItems();
 
+	public abstract Integer getSubItemCount();
+	
 	public abstract Double getWeighting();
 
 	public abstract boolean isActive();
@@ -95,10 +100,6 @@ public interface Item {
 	public abstract boolean isChecked();
 
 	public abstract boolean isEditable();
-
-	/*public abstract boolean isIncluded();
-
-	public abstract boolean isRemoved()*/
 
 	public abstract void setActive(boolean isActive);
 
