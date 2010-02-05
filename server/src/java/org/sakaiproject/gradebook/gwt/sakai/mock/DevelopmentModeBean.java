@@ -25,18 +25,17 @@ package org.sakaiproject.gradebook.gwt.sakai.mock;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
-import org.sakaiproject.gradebook.gwt.client.model.key.GradebookKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
 import org.sakaiproject.gradebook.gwt.server.model.GradeItem;
 import org.sakaiproject.gradebook.gwt.server.model.GradeItemImpl;
+import org.sakaiproject.service.gradebook.shared.GradebookExternalAssessmentService;
 
 import com.google.gwt.core.client.GWT;
 
@@ -44,15 +43,9 @@ public class DevelopmentModeBean {
 
 	private static final long serialVersionUID = 1L;
 	private Gradebook2ComponentService service;
+	private GradebookExternalAssessmentService externalService;
 	
-	public Gradebook2ComponentService getService() {
-		return service;
-	}
-
-	public void setService(Gradebook2ComponentService service) {
-		this.service = service;
-	}
-
+	
 	public void init() {	
 		
 		try {
@@ -159,6 +152,21 @@ public class DevelopmentModeBean {
 			ecEssay.setReleased(Boolean.FALSE);
 			service.createItem(gradebookUid, gradebookId, ecEssay, false);
 			
+			/*
+			GradeItem assign1 = new GradeItemImpl();
+			assign1.setName("External Assignment");
+			//assign1.setPercentCategory(Double.valueOf(100d));
+			assign1.setPoints(Double.valueOf(10d));
+			assign1.setDueDate(new Date());
+			assign1.setCategoryId(essaysCategory.getCategoryId());
+			//assign1.setIncluded(Boolean.FALSE);
+			assign1.setExtraCredit(Boolean.FALSE);
+			assign1.setReleased(Boolean.FALSE);
+			service.createItem(gradebookUid, gradebookId, assign1, false);
+			*/
+			externalService.addExternalAssessment(gradebookUid, "sakai.assignment.tool", "http://assignments.ucdavis.edu", "Assignment 1", 
+					Double.valueOf(10d), 
+					null, "Assignments", Boolean.FALSE);
 			
 			GradeItem hw1 = new GradeItemImpl();
 			hw1.setName("HW 1");
@@ -249,5 +257,22 @@ public class DevelopmentModeBean {
 		}
 		
 		return null;
+	}
+	
+	public Gradebook2ComponentService getService() {
+		return service;
+	}
+
+	public void setService(Gradebook2ComponentService service) {
+		this.service = service;
+	}
+
+	public GradebookExternalAssessmentService getExternalService() {
+		return externalService;
+	}
+
+	public void setExternalService(
+			GradebookExternalAssessmentService externalService) {
+		this.externalService = externalService;
 	}
 }

@@ -40,9 +40,7 @@ public abstract class ItemModelProcessor {
 	}
 
 	public void process() {
-
 		processItem(gradebookItemModel, -1);
-
 	}
 
 	public void doGradebook(Item gradebookModel, int childIndex) {
