@@ -1195,6 +1195,8 @@ public class ItemFormPanel extends GradebookPanel {
 
 		selectionListener = new SelectionListener<ButtonEvent>() {
 
+			private boolean close;
+			
 			@Override
 			public void componentSelected(ButtonEvent be) {
 				Button button = be.getButton();
@@ -1202,7 +1204,7 @@ public class ItemFormPanel extends GradebookPanel {
 					SelectionType selectionType = button.getData(selectionTypeField);
 					if (selectionType != null) {
 
-						boolean close = false;
+						close = false;
 						Record record = null;
 
 						switch (selectionType) {
@@ -1297,7 +1299,7 @@ public class ItemFormPanel extends GradebookPanel {
 															r.set(ItemKey.DO_RECALCULATE_POINTS.name(), Boolean.FALSE);
 														}
 														
-														Dispatcher.forwardEvent(GradebookEvents.UpdateItem.getEventType(), new ItemUpdate(treeStore, r, selectedItemModel, true));
+														Dispatcher.forwardEvent(GradebookEvents.UpdateItem.getEventType(), new ItemUpdate(treeStore, r, selectedItemModel, close));
 													}
 													
 												}
