@@ -62,6 +62,7 @@ import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.HorizontalPanel;
+import com.extjs.gxt.ui.client.widget.Html;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.VerticalPanel;
 import com.extjs.gxt.ui.client.widget.button.Button;
@@ -404,6 +405,7 @@ public class PermissionsPanel extends ContentPanel {
 		// Initially we hide the create permission panel
 		createPermissionHorizontalPanel.hide();
 
+		mainVerticalPanel.add(new Html(i18n.permissionPanelCaption()));
 		mainVerticalPanel.add(inputHorizontalPanel);
 		mainVerticalPanel.add(grid);
 		
