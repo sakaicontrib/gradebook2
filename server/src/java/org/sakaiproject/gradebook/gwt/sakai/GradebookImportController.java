@@ -76,8 +76,8 @@ public class GradebookImportController extends SimpleFormController {
 			else if (name.equals("delimiter:colon"))
 				delimiterSet.add(Delimiter.COLON);
 		}
-
-
+		
+		ImportExportUtility utility = new ImportExportUtility();
 
 		for (Iterator<String> fileNameIterator = multipartRequest.getFileNames();fileNameIterator.hasNext();) {
 			String fileName = fileNameIterator.next();
@@ -90,14 +90,14 @@ public class GradebookImportController extends SimpleFormController {
 			if (origName.toLowerCase().endsWith("xls"))
 			{
 				log.debug("Excel file detected"); 
-				importFile = ImportExportUtility.parseImportXLS(service, gradebookUid, file.getInputStream(), origName.toLowerCase(), gbToolService);
+				importFile = utility.parseImportXLS(service, gradebookUid, file.getInputStream(), origName.toLowerCase(), gbToolService);
 
 			}
 			else
 			{
 				log.debug("Assuming CSV file"); 
 				InputStreamReader reader = new InputStreamReader(file.getInputStream());
-				importFile = ImportExportUtility.parseImportCSV(service, gradebookUid, reader);
+				importFile = utility.parseImportCSV(service, gradebookUid, reader);
 			}
 
 			PrintWriter writer = response.getWriter();

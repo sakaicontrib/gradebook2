@@ -56,8 +56,10 @@ public class GradebookExportController implements Controller {
 			fileType = "csv"; 
 		}
 
+		ImportExportUtility utility = new ImportExportUtility();
+		
 		try {
-			ImportExportUtility.exportGradebook(service, gradebookUid, doIncludeStructure, true, null, response, fileType);
+			utility.exportGradebook(service, gradebookUid, doIncludeStructure, true, null, response, fileType);
 		} catch (FatalException e) {
 			log.error("EXCEPTION: Wasn't able to export gradebook: " + gradebookUid, e);
 			// 500 Internal Server Error

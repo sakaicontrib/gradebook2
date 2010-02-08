@@ -122,6 +122,8 @@ public interface AppConstants {
 	public static final String COMMENTS_INDICATOR = "Comment : ";
 	public static final String COMMENT_SUFFIX = "::C";
 	
+	public static final String EXPORT_SKIPCOLUMN_INDICATOR = "++SKIPCOLUMN++";
+	
 	public static final String gradePermission = "grade";
 	public static final String viewPermission = "view";
 	

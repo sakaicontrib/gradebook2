@@ -90,6 +90,13 @@ public class ImportExportUtility {
 	private static final String SCANTRON_HEADER_STUDENT_ID = "student_id"; 
 	private static final String SCANTRON_HEADER_SCORE = "score"; 
 	private static ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+
+	public static String[] scantronIgnoreColumns = 
+		{ "last name", "first name", "initial" };
+	public static String[] idColumns = 
+		{ "student id", "identifier", "userId", "learnerid", "id" };
+	public static String[] nameColumns =
+		{ "student name", "name", "learner" };
 	
 	public static enum Delimiter {
 		TAB, COMMA, SPACE, COLON
@@ -109,8 +116,30 @@ public class ImportExportUtility {
 			return displayName;
 		}
 	};
+	
+	private Set<String> headerLineIndicatorSet, idSet, nameSet, scantronIgnoreSet;
+	
+	public ImportExportUtility() {		
+		// FIXME - Need to decide whether this should be institutional based.  
+		// FIXME - does this need i18n ? 
+		this.headerLineIndicatorSet = new HashSet<String>();
+		this.nameSet = new HashSet<String>();
+		for (int i=0;i<nameColumns.length;i++) {
+			nameSet.add(nameColumns[i]);
+			headerLineIndicatorSet.add(nameColumns[i]);
+		}
+		this.idSet = new HashSet<String>();
+		for (int i=0;i<idColumns.length;i++) {
+			idSet.add(idColumns[i]);
+			headerLineIndicatorSet.add(idColumns[i]);
+		}
+		this.scantronIgnoreSet = new HashSet<String>();
+		for (int i=0;i<scantronIgnoreColumns.length;i++) {
+			scantronIgnoreSet.add(scantronIgnoreColumns[i]);
+		}
+	}
 
-	public static void exportGradebook(Gradebook2ComponentService service, String gradebookUid, 
+	public void exportGradebook(Gradebook2ComponentService service, String gradebookUid, 
 			final boolean includeStructure, final boolean includeComments, PrintWriter writer, HttpServletResponse response, String fileType) 
 	throws FatalException {
 
@@ -134,7 +163,6 @@ public class ImportExportUtility {
 			// First, we need to add a row for basic gradebook info
 			String[] gradebookInfoRow = { "", StructureRow.GRADEBOOK.getDisplayName(), gradebookItemModel.getName(), categoryTypeText, gradeTypeText};
 			out.addRow(gradebookInfoRow);
-//			csvWriter.writeNext(gradebookInfoRow);
 
 			final List<String> categoriesRow = new LinkedList<String>();
 			final List<String> percentageGradeRow = new LinkedList<String>();
@@ -193,7 +221,7 @@ public class ImportExportUtility {
 
 
 					if (((GradeItem)itemModel).getChildCount() == 0) {
-						headerIds.add("");
+						headerIds.add(AppConstants.EXPORT_SKIPCOLUMN_INDICATOR);
 						headerColumns.add("");
 						pointsRow.add("");
 						percentCategoryRow.add("");
@@ -259,21 +287,12 @@ public class ImportExportUtility {
 					out.addRow(pointsRow.toArray(new String[pointsRow.size()]));
 					break;
 				case SIMPLE_CATEGORIES:
-					//csvWriter.writeNext(categoriesRow.toArray(new String[categoriesRow.size()]));
-					//csvWriter.writeNext(dropLowestRow.toArray(new String[dropLowestRow.size()]));
-					//csvWriter.writeNext(pointsRow.toArray(new String[pointsRow.size()]));
 					out.addRow(categoriesRow.toArray(new String[categoriesRow.size()]));
 					out.addRow(dropLowestRow.toArray(new String[dropLowestRow.size()]));
 					out.addRow(pointsRow.toArray(new String[pointsRow.size()]));
 
 					break;
-				case WEIGHTED_CATEGORIES:
-					/*csvWriter.writeNext(categoriesRow.toArray(new String[categoriesRow.size()]));
-					csvWriter.writeNext(percentageGradeRow.toArray(new String[percentageGradeRow.size()]));
-					csvWriter.writeNext(dropLowestRow.toArray(new String[dropLowestRow.size()]));
-					csvWriter.writeNext(equalWeightRow.toArray(new String[equalWeightRow.size()]));
-					csvWriter.writeNext(pointsRow.toArray(new String[pointsRow.size()]));
-					csvWriter.writeNext(percentCategoryRow.toArray(new String[percentCategoryRow.size()]));*/					
+				case WEIGHTED_CATEGORIES:					
 					out.addRow(categoriesRow.toArray(new String[categoriesRow.size()]));
 					out.addRow(percentageGradeRow.toArray(new String[percentageGradeRow.size()]));
 					out.addRow(dropLowestRow.toArray(new String[dropLowestRow.size()]));
@@ -328,11 +347,9 @@ public class ImportExportUtility {
 
 		out.addRow(headerColumns.toArray(new String[headerColumns.size()]));
 
-		Roster result = service.getRoster(gradebookUid, gradebookId, null, null, null, null, null, true, true);
+		Roster result = service.getRoster(gradebookUid, gradebookId, null, null, null, null, null, true, false);
 
 		List<Learner> rows = result.getLearnerPage();
-
-		boolean isPercentages = gradebook.getGradebookItemModel().getGradeType() == GradeType.PERCENTAGES;
 
 		if (headerIds != null) {
 
@@ -344,8 +361,15 @@ public class ImportExportUtility {
 					dataColumns.add((String)row.get(LearnerKey.LAST_NAME_FIRST.name()));
 
 					for (int column = 0; column < headerIds.size(); column++) {
-						if (headerIds.get(column) != null) {
-							Object value = row.get(headerIds.get(column));
+						String columnIndex = headerIds.get(column);
+						
+						if (columnIndex != null) {
+							if (columnIndex.equals(AppConstants.EXPORT_SKIPCOLUMN_INDICATOR)) {
+								dataColumns.add("");
+								continue;
+							}
+							
+							Object value = row.get(columnIndex);
 
 							if (value != null)
 								dataColumns.add(String.valueOf(value));
@@ -414,15 +438,13 @@ public class ImportExportUtility {
 			} catch (IOException e) {
 				log.error("Caught I/O exception ", e); 
 				throw new FatalException(e); 
-			}
-			
+			}			
 		}
-
 
 	}
 	
 
-	private static void createXLS97File(String title, HttpServletResponse response, RawFile out) throws FatalException 
+	private void createXLS97File(String title, HttpServletResponse response, RawFile out) throws FatalException 
 	{
 		HSSFWorkbook wb = new HSSFWorkbook();
 		HSSFSheet s = wb.createSheet(title);
@@ -458,7 +480,7 @@ public class ImportExportUtility {
 	}
 
 
-	private static void createCSVFile(HttpServletResponse response,
+	private void createCSVFile(HttpServletResponse response,
 			 RawFile out) throws IOException {
 		
 		
@@ -479,7 +501,7 @@ public class ImportExportUtility {
 	}
 
 
-	private static HSSFWorkbook readPoiSpreadsheet(BufferedInputStream is) throws IOException 
+	private HSSFWorkbook readPoiSpreadsheet(BufferedInputStream is) throws IOException 
 	{
 		HSSFWorkbook ret = null; 
 		HSSFWorkbook inspread = null;
@@ -510,7 +532,7 @@ public class ImportExportUtility {
 	}
 
 
-	private static boolean checkForCurrentAssignmentInGradebook(String fileName, Gradebook2ComponentService service, GradebookToolService gbToolService, String gradebookUid)
+	private boolean checkForCurrentAssignmentInGradebook(String fileName, Gradebook2ComponentService service, GradebookToolService gbToolService, String gradebookUid)
 	{
 		Gradebook gm = service.getGradebook(gradebookUid); 
 		List<Assignment> assignments = gbToolService.getAssignments(gm.getGradebookId()); 
@@ -527,7 +549,7 @@ public class ImportExportUtility {
 		return false; 
 
 	}
-	private static String getUniqueFileNameForFileName(String fileName,
+	private String getUniqueFileNameForFileName(String fileName,
 			Gradebook2ComponentService service, GradebookToolService gbToolService, String gradebookUid) throws GradebookImportException 
 			{
 		log.debug("fileName=" + fileName);
@@ -563,7 +585,7 @@ public class ImportExportUtility {
 	 * so basically, we'll do: 
 	 * 1) Scan the sheet for scantron artifacts, and if so convert to a simple CSV file which is 
 	 */
-	public static ImportFile parseImportXLS(Gradebook2ComponentService service, 
+	public ImportFile parseImportXLS(Gradebook2ComponentService service, 
 			String gradebookUid, InputStream is, String fileName, GradebookToolService gbToolService) throws InvalidInputException, FatalException, IOException {
 		log.debug("parseImportXLS() called"); 
 
@@ -599,12 +621,9 @@ public class ImportExportUtility {
 			return handleJExcelAPISpreadSheet(bufStream, service, gradebookUid, realFileName, isOriginalName); 
 		}
 
-
 	}
 
-
-
-	private static ImportFile handleJExcelAPISpreadSheet(BufferedInputStream is,
+	private ImportFile handleJExcelAPISpreadSheet(BufferedInputStream is,
 			Gradebook2ComponentService service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName) throws InvalidInputException, FatalException, IOException {
 		Workbook wb = null; 
 		try {
@@ -636,7 +655,7 @@ public class ImportExportUtility {
 		}
 	}
 
-	private static ImportFile handleNormalXLSSheetForJExcelApi(Sheet s,
+	private ImportFile handleNormalXLSSheetForJExcelApi(Sheet s,
 			Gradebook2ComponentService service, String gradebookUid) throws InvalidInputException, FatalException {
 		RawFile raw = new RawFile(); 
 		int numRows; 
@@ -665,7 +684,7 @@ public class ImportExportUtility {
 	private final static int RAWFIELD_FIRST_POSITION = 0; 
 	private final static int RAWFIELD_SECOND_POSITION = 1; 
 
-	private static ImportFile handleScantronSheetForJExcelApi(Sheet s,
+	private ImportFile handleScantronSheetForJExcelApi(Sheet s,
 			Gradebook2ComponentService service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName) throws InvalidInputException, FatalException 
 			{
 		StringBuilder err = new StringBuilder("Scantron File with errors"); 
@@ -724,7 +743,7 @@ public class ImportExportUtility {
 
 			}
 
-	private static String[] getScantronHeaderLine(String fileName)
+	private String[] getScantronHeaderLine(String fileName)
 	{
 		String[] header = new String[2]; 
 		header[RAWFIELD_FIRST_POSITION] = "Student Id"; 
@@ -738,14 +757,14 @@ public class ImportExportUtility {
 		}
 		return header; 
 	}
-	private static boolean isScantronSheetForJExcelApi(Sheet s) {
+	private boolean isScantronSheetForJExcelApi(Sheet s) {
 		Cell studentIdHeader = s.findCell(SCANTRON_HEADER_STUDENT_ID);
 		Cell scoreHeader = s.findCell("score");
 
 		return (studentIdHeader != null && scoreHeader != null); 
 	}
 
-	private static ImportFile handlePoiSpreadSheet(HSSFWorkbook inspread, Gradebook2ComponentService service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName) throws InvalidInputException, FatalException
+	private ImportFile handlePoiSpreadSheet(HSSFWorkbook inspread, Gradebook2ComponentService service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName) throws InvalidInputException, FatalException
 	{
 		log.debug("handlePoiSpreadSheet() called"); 
 		// FIXME - need to do multiple sheets, and structure
@@ -780,7 +799,7 @@ public class ImportExportUtility {
 		}
 	}
 
-	private static RawFile processNormalXls(HSSFSheet s) {
+	private RawFile processNormalXls(HSSFSheet s) {
 		log.debug("processNormalXls() called");
 		RawFile data = new RawFile();
 		int numCols = getNumberOfColumnsFromSheet(s); 
@@ -836,7 +855,7 @@ public class ImportExportUtility {
 		return data; 
 	}
 
-	private static int getNumberOfColumnsFromSheet(HSSFSheet s) {
+	private int getNumberOfColumnsFromSheet(HSSFSheet s) {
 		int numCols = 0; 
 		Iterator<HSSFRow> rowIter = s.rowIterator(); 
 		while (rowIter.hasNext())
@@ -852,7 +871,7 @@ public class ImportExportUtility {
 	}
 
 
-	private static int readHeaderRow(HSSFRow curRow) {
+	private int readHeaderRow(HSSFRow curRow) {
 		int ret = -1; 
 		Iterator<HSSFCell> cellIterator = curRow.cellIterator(); 
 		// FIXME - need to decide to take this out into the institutional adviser 
@@ -871,7 +890,7 @@ public class ImportExportUtility {
 		return ret; 
 	}
 
-	private static RawFile processScantronXls(HSSFSheet s, String fileName) {
+	private RawFile processScantronXls(HSSFSheet s, String fileName) {
 		RawFile data = new RawFile(); 
 		Iterator<HSSFRow> rowIter = s.rowIterator(); 
 		StringBuilder err = new StringBuilder("Scantron File with errors"); 
@@ -896,8 +915,7 @@ public class ImportExportUtility {
 		{
 			data.addRow(getScantronHeaderLine(fileName));
 			while (rowIter.hasNext())
-			{
-				boolean problemFound = false; 
+			{ 
 				HSSFRow curRow = rowIter.next();  
 				HSSFCell score = null, id = null; 
 
@@ -915,10 +933,7 @@ public class ImportExportUtility {
 				// IF the row contains the header, meaning it is the header row, we want to skip it. 
 				if (!id.equals(studentIdHeader))
 				{
-
-					//idStr = String.format("%.0f", id.getRichStringCellValue().getString());
 					// FIXME - need to decide if this is OK for everyone, not everyone will have an ID as a 
-					
 					idStr = getDataFromHSSFCellAsStringRegardlessOfCellType(id, false); 
 					scoreStr = getDataFromHSSFCellAsStringRegardlessOfCellType(score, true); 
 					String[] ent = new String[2];
@@ -933,7 +948,7 @@ public class ImportExportUtility {
 
 	}
 
-	private static String getDataFromHSSFCellAsStringRegardlessOfCellType(HSSFCell c, boolean decimal)
+	private String getDataFromHSSFCellAsStringRegardlessOfCellType(HSSFCell c, boolean decimal)
 	{
 		String ret = "";
 		String fmt = "%.0f"; 
@@ -959,7 +974,7 @@ public class ImportExportUtility {
 	// if we can't find it, we return null. 
 	// 
 
-	public static HSSFCell findCellWithTextonSheetForPoi(HSSFSheet s, String searchText)
+	public HSSFCell findCellWithTextonSheetForPoi(HSSFSheet s, String searchText)
 	{
 		if (searchText == null || s == null) 
 		{
@@ -989,7 +1004,7 @@ public class ImportExportUtility {
 		return null; 
 	}
 
-	private static String getStringValueFromCell(HSSFCell c)
+	private String getStringValueFromCell(HSSFCell c)
 	{
 		String ret = ""; 
 		StringBuilder sb = new StringBuilder(); 
@@ -1013,7 +1028,7 @@ public class ImportExportUtility {
 	}
 	
 	
-	private static boolean isScantronSheetFromPoi(HSSFSheet s) {
+	private boolean isScantronSheetFromPoi(HSSFSheet s) {
 		Iterator<HSSFRow> rowIter = s.rowIterator(); 
 		while (rowIter.hasNext())
 		{
@@ -1029,7 +1044,7 @@ public class ImportExportUtility {
 		return false;
 	}
 
-	public static ImportFile parseImportCSV(Gradebook2ComponentService service, 
+	public ImportFile parseImportCSV(Gradebook2ComponentService service, 
 			String gradebookUid, Reader reader) throws InvalidInputException, FatalException 
 			{
 
@@ -1048,9 +1063,9 @@ public class ImportExportUtility {
 
 		rawData.setFileType("CSV file"); 
 		return parseImportGeneric(service, gradebookUid, rawData);
-			}	
+	}	
 
-	private static int readDataForStructureInformation(RawFile rawData, Map<String, StructureRow> structureLineIndicatorMap, Map<StructureRow, String[]> structureColumnsMap, Set<String> headerLineIndicatorSet) 
+	private int readDataForStructureInformation(RawFile rawData, Map<String, StructureRow> structureLineIndicatorMap, Map<StructureRow, String[]> structureColumnsMap) 
 	{
 		log.debug("readDataForStructureInformation() called");
 		int rows = 0;
@@ -1097,14 +1112,11 @@ public class ImportExportUtility {
 
 
 
-	public static void readInHeaderInfo(RawFile rawData,
+	public void readInHeaderInfo(RawFile rawData,
 			ImportExportInformation importInfo, Gradebook gradebook, NumberFormat decimalFormat, 
 			int startRow,String[] pointsColumns, String[] categoryColumns) {
 		log.debug("XXX: readInHeaderInfo() called");
-		int rows = 0; 
 		String[] headerColumns = null;
-		boolean headerFound = false; 
-
 
 		headerColumns = rawData.getRow(startRow);
 
@@ -1116,22 +1128,17 @@ public class ImportExportUtility {
 			ImportHeader header = null;
 			log.debug("Column[" + i + "] = " + text); 
 			// Check for name field
-			if (text == null || text.trim().equals("")) {
+			if (text == null || text.trim().equals("") || scantronIgnoreSet.contains(text)) {
 				importInfo.getIgnoreColumns().add(Integer.valueOf(i));
 				log.debug("HI: Ignoring column " + i);
 				continue;
-			} else if (text.equalsIgnoreCase("student name")
-					|| text.equalsIgnoreCase("name")
-					|| text.equalsIgnoreCase("learner")) {
+			} else if (nameSet.contains(text)) {
 				log.debug("HI: Column " + i + " is student name");
 				header = new ImportHeader(Field.NAME, text);
 				header.setId("NAME");
 				importInfo.setNameFieldIndex(i);
 				// FIXME - Should this be like this? 
-			} else if (text.equalsIgnoreCase("student id")
-					|| text.equalsIgnoreCase("identifier")
-					|| text.equalsIgnoreCase("userId")
-					|| text.equalsIgnoreCase("learnerid")) {
+			} else if (idSet.contains(text)) {
 				log.debug("HI: Column " + i + " is student id");
 				header = new ImportHeader(Field.ID, text);
 				header.setId("ID");
@@ -1154,8 +1161,7 @@ public class ImportExportUtility {
 					.replace(AppConstants.EXTRA_CREDIT_INDICATOR, "");
 				}
 
-				boolean isUnincluded = text
-				.contains(AppConstants.UNINCLUDED_INDICATOR);
+				boolean isUnincluded = text.contains(AppConstants.UNINCLUDED_INDICATOR);
 
 				if (isUnincluded) {
 					log.debug("X: Column " + i + " is unincluded");
@@ -1293,7 +1299,7 @@ public class ImportExportUtility {
 		log.debug("XXX: readInHeaderInfo() finished");
 	}
 
-	public static void readInGradeDataFromImportFile(RawFile rawData, ImportExportInformation ieInfo, Map<String, UserDereference> userDereferenceMap, List<ImportRow> importRows, int startRow) 
+	public void readInGradeDataFromImportFile(RawFile rawData, ImportExportInformation ieInfo, Map<String, UserDereference> userDereferenceMap, List<ImportRow> importRows, int startRow) 
 	{
 		String[] columns; 
 		rawData.goToRow(startRow); 
@@ -1339,7 +1345,7 @@ public class ImportExportUtility {
 		}	
 	}
 
-	public static void processStructureInformation(ImportExportInformation ieInfo, Map<StructureRow, String[]> structureColumnsMap, Gradebook gradebook, Gradebook2ComponentService service) throws InvalidInputException
+	public void processStructureInformation(ImportExportInformation ieInfo, Map<StructureRow, String[]> structureColumnsMap, Gradebook gradebook, Gradebook2ComponentService service) throws InvalidInputException
 	{
 		// Now, modify gradebook structure according to the data stored
 		String[] gradebookColumns = structureColumnsMap.get(StructureRow.GRADEBOOK);
@@ -1520,7 +1526,6 @@ public class ImportExportUtility {
 									activeModel.getCategoryId(), activeModel.getName());
 						}
 					}
-
 				}
 			}
 		}
@@ -1633,7 +1638,7 @@ public class ImportExportUtility {
 		}
 	}
 
-	public static ImportFile parseImportGeneric(Gradebook2ComponentService service, 
+	public ImportFile parseImportGeneric(Gradebook2ComponentService service, 
 			String gradebookUid, RawFile rawData) throws InvalidInputException, FatalException {
 		String msgs = rawData.getMessages();
 		boolean errorsFound = rawData.isErrorsFound(); 
@@ -1680,22 +1685,14 @@ public class ImportExportUtility {
 		Map<String, StructureRow> structureLineIndicatorMap = new HashMap<String, StructureRow>();
 		Map<StructureRow, String[]> structureColumnsMap = new HashMap<StructureRow, String[]>();
 
-		// FIXME - Need to decide whether this should be institutional based.  
-		// FIXME - does this need i18n ? 
-		String[] headerLineIndicators = { "student id", "student name", "learner", "id", "identifier", "userid", "learnerid" };
-		Set<String> headerLineIndicatorSet = new HashSet<String>();
-
-		for (int i=0;i<headerLineIndicators.length;i++) {
-			headerLineIndicatorSet.add(headerLineIndicators[i]);
-		}
-
+		
 		for (StructureRow structureRow : EnumSet.allOf(StructureRow.class)) {
 			String lowercase = structureRow.getDisplayName().toLowerCase();
 			structureLineIndicatorMap.put(lowercase, structureRow);
 		}
 		int structureStop = 0; 
 
-		structureStop = readDataForStructureInformation(rawData, structureLineIndicatorMap, structureColumnsMap, headerLineIndicatorSet);
+		structureStop = readDataForStructureInformation(rawData, structureLineIndicatorMap, structureColumnsMap);
 		if (structureStop != -1)
 		{
 			try {
@@ -1729,7 +1726,7 @@ public class ImportExportUtility {
 		return importFile;
 	}
 
-	private static Item getActiveModel(GradeItem itemModel) {
+	private Item getActiveModel(GradeItem itemModel) {
 
 		if (itemModel.isActive())
 			return itemModel;
@@ -1745,11 +1742,10 @@ public class ImportExportUtility {
 				return c2;
 		}
 
-
 		return null;
 	}
 	
-	private static String getDisplayName(CategoryType categoryType) {
+	private String getDisplayName(CategoryType categoryType) {
 		switch (categoryType) {
 		case NO_CATEGORIES:
 			return i18n.getString("orgTypeNoCategories");
@@ -1761,7 +1757,7 @@ public class ImportExportUtility {
 		return "N/A";
 	}
 
-	private static String getDisplayName(GradeType gradeType) {
+	private String getDisplayName(GradeType gradeType) {
 		switch (gradeType) {
 		case POINTS:
 			return i18n.getString("gradeTypePoints");
@@ -1774,7 +1770,7 @@ public class ImportExportUtility {
 		return "N/A";
 	}
 
-	private static Item findModelByName(final String name, final String categoryName, Item root) {
+	private Item findModelByName(final String name, final String categoryName, Item root) {
 
 		ItemModelProcessor processor = new ItemModelProcessor(root) {
 
@@ -1803,8 +1799,7 @@ public class ImportExportUtility {
 		return processor.getResult();
 	}
 
-
-	private class CategoryRange {
+	/*private class CategoryRange {
 
 		private Item categoryModel;
 		private int startColumn;
@@ -1832,7 +1827,7 @@ public class ImportExportUtility {
 			this.endColumn = endColumn;
 		}
 
-	}
+	}*/
 
 }
 
