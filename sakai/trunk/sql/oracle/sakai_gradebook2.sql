@@ -2,7 +2,6 @@
 
 alter table GB_CATEGORY_T
 add (
-	IS_EXTRA_CREDIT number(1,0),
 	IS_EQUAL_WEIGHT_ASSNS number(1,0),
 	IS_UNWEIGHTED number(1,0),
 	CATEGORY_ORDER number(10,0),
@@ -22,8 +21,6 @@ add (
 
 alter table GB_GRADABLE_OBJECT_T
 add (
-	IS_EXTRA_CREDIT number(1,0),
-	ASSIGNMENT_WEIGHTING double precision,
 	IS_NULL_ZERO number(1,0)
 );
 

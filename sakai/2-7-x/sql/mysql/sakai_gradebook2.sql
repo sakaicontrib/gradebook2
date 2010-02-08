@@ -23,7 +23,6 @@ create table GB_ACTION_RECORD_T
 
 alter table GB_CATEGORY_T
 add (
-	IS_EXTRA_CREDIT tinyint(1),
 	IS_EQUAL_WEIGHT_ASSNS tinyint(1),
 	IS_UNWEIGHTED tinyint(1),
 	CATEGORY_ORDER INT,
@@ -46,10 +45,7 @@ add (
 
 alter table GB_GRADABLE_OBJECT_T
 add (
-	IS_EXTRA_CREDIT tinyint(1),
-	ASSIGNMENT_WEIGHTING double precision,
-	IS_UNWEIGHTED tinyint(1),
-	ITEM_ORDER INT
+	IS_NULL_ZERO tinyint(1)
 );
 
 
