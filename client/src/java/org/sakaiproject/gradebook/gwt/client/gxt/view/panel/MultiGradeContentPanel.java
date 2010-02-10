@@ -530,10 +530,6 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 		// SAK-2378
 		CustomGridView view = new CustomGridView(gridId) {
 
-			private Timer showTimer;
-			private com.google.gwt.dom.client.Element overCell;
-			private ToolTip toolTip;
-
 			protected void init(Grid grid) { 
 				super.init(grid);
 			}
@@ -566,17 +562,25 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 			protected String markupCss(Record r, ModelData model, String property, boolean isShowDirtyCells, boolean isPropertyChanged) {
 				StringBuilder css = new StringBuilder();
 
-				if (isShowDirtyCells && isPropertyChanged) {
-
-					Object startValue = r.getChanges().get(property);
-					Object currentValue = r.get(property);
-
-					String failedProperty = new StringBuilder().append(property).append(GridPanel.FAILED_FLAG).toString();
+				if (isShowDirtyCells && r != null) {
+					String failedProperty = new StringBuilder().append(property).append(AppConstants.FAILED_FLAG).toString();
 					String failedMessage = (String)r.get(failedProperty);
-
-					if (failedMessage != null) {
+					
+					if (failedMessage != null) 
 						css.append(" ").append(resources.css().gbCellFailed());
-					} else if (startValue == null || !startValue.equals(currentValue)) {
+				}
+				
+				if (isShowDirtyCells && isPropertyChanged) {
+					//String failedProperty = new StringBuilder().append(property).append(AppConstants.FAILED_FLAG).toString();
+					//String failedMessage = (String)r.get(failedProperty);
+
+					String successProperty = new StringBuilder().append(property).append(AppConstants.SUCCESS_FLAG).toString();
+					String successMessage = (String)r.get(successProperty);
+					
+					//if (failedMessage != null) {
+					//	css.append(" ").append(resources.css().gbCellFailed());
+					//} else 
+					if (successMessage != null) {
 						css.append(" ").append(resources.css().gbCellSucceeded());
 					}
 				}
@@ -614,6 +618,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 
 				return null;
 			}
+			
 		};
 		view.setEmptyText("-");
 

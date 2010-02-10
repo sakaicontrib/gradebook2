@@ -72,8 +72,6 @@ public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 	
 	public enum RefreshAction { NONE, REFRESHDATA, REFRESHCOLUMNS, REFRESHLOCALCOLUMNS, REFRESHCOLUMNSANDDATA, REFRESHLOCALCOLUMNSANDDATA };
 	
-	public static final String FAILED_FLAG = ":F";
-	
 	protected EditorGrid<M> grid;
 	protected PagingLoader<PagingLoadResult<M>> loader;
 	protected ListStore<M> store;

@@ -172,4 +172,5 @@ public interface AppConstants {
 	public static final String EXCUSE_FLAG = ":E";
 	public static final String FAILED_FLAG = ":F";
 	public static final String GRADED_FLAG = ":G";
+	public static final String SUCCESS_FLAG = ":S";
 }

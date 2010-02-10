@@ -64,7 +64,7 @@ public class GradeSubmissionDialog extends Dialog {
 	}
 	
 	public void verify() {
-		this.removeAll();
+		this.removeAll();	
 		
 		final MessageBox box = MessageBox.wait(i18n.finalGradeSubmissionVerificationTitle(), i18n.finalGradeSubmissionMessageText1c(),  i18n.finalGradeSubmissionMessageText1c());
 		
@@ -122,48 +122,6 @@ public class GradeSubmissionDialog extends Dialog {
 			
 		});
 		
-		/*
-		AsyncCallback<SubmissionVerificationModel> callback = 
-			new AsyncCallback<SubmissionVerificationModel>() {
-
-				public void onFailure(Throwable caught) {
-					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught, "Unable to submit final grades: "));
-					box.close();
-				}
-
-				public void onSuccess(SubmissionVerificationModel result) {
-					box.close();
-					
-					StringBuilder text = new StringBuilder();
-					
-					if (result.isFullyWeighted()) {
-						setButtons(Dialog.YESNO);
-						setHeading(i18n.finalGradeSubmissionConfirmTitle());
-						text.append(i18n.finalGradeSubmissionWarningPrefix1()).append(" ");
-						text.append(result.getNumberOfLearners()).append(" ");
-						text.append(i18n.finalGradeSubmissionWarningSuffix1());
-						
-						if (result.isMissingScores())
-							text.append("<p>").append(i18n.finalGradeSubmissionWarningPrefix2()).append(" ");
-									
-						text.append(i18n.finalGradeSubmissionConfirmText());
-					} else {
-						setHeading(i18n.finalGradeSubmissionConfirmAltTitle());
-						text.append(i18n.finalGradeSubmissionMessageText9a());
-						setButtons(Dialog.OK);
-					}
-					
-					addText(text.toString());
-					
-					show();
-				}
-			
-		};
-		
-		GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-		Gradebook2RPCServiceAsync service = Registry.get("service");
-		service.get(selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId(), EntityType.SUBMISSION_VERIFICATION, null, null, SecureToken.get(), callback);
-		*/
 	}
 	
 	protected void onButtonPressed(Button button) {

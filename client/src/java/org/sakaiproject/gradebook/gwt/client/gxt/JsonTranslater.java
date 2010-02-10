@@ -5,14 +5,13 @@ import java.util.Date;
 import java.util.EnumSet;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
-import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
-import org.sakaiproject.gradebook.gwt.client.gxt.model.LearnerModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.StatisticsModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.type.GradebookModelType;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.key.ActionKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.ApplicationKey;
@@ -20,7 +19,6 @@ import org.sakaiproject.gradebook.gwt.client.model.key.FixedColumnKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.GradeFormatKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.GradebookKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
-import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.StatisticsKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.UploadKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.VerificationKey;
@@ -28,6 +26,7 @@ import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 
+import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.DataField;
 import com.extjs.gxt.ui.client.data.ModelData;
@@ -112,6 +111,8 @@ public class JsonTranslater {
 		return model;
 	}
 	
+	private JsonTranslater colTranslater, gbTranslater, itemTranslater, rowsTranslater, statsTranslater;
+	
 	private void setValue(ModelData model, JSONValue value, DataField field) {
 
 		String name = field.getName();
@@ -129,30 +130,28 @@ public class JsonTranslater {
 				if (elementObject != null) {
 			
 					if (name.equals(ApplicationKey.GRADEBOOKMODELS.name())) {
-						JsonTranslater gbTranslater = new JsonTranslater(new GradebookModelType()) {
-							protected ModelData newModelInstance() {
-								return new GradebookModel();
-							}
-						};
+						if (gbTranslater == null) {
+							gbTranslater = new JsonTranslater(new GradebookModelType()) {
+								protected ModelData newModelInstance() {
+									return new GradebookModel();
+								}
+							};
+						}
 						
 						array.add(gbTranslater.translate(elementValue.toString()));
 					} else if (name.equals(GradebookKey.COLUMNS.name())) {
 						
-						JsonTranslater colTranslater = new JsonTranslater(EnumSet.allOf(FixedColumnKey.class)) {
-							protected ModelData newModelInstance() {
-								return new FixedColumnModel();
-							}
-						};
+						if (colTranslater == null) {
+							colTranslater = new JsonTranslater(EnumSet.allOf(FixedColumnKey.class)) {
+								protected ModelData newModelInstance() {
+									return new FixedColumnModel();
+								}
+							};
+						}
 						
 						array.add(colTranslater.translate(elementValue.toString()));
 					} else if (name.equals(ItemKey.CHILDREN.name())) {
-						JsonTranslater itemTranslater = new JsonTranslater(EnumSet.allOf(ItemKey.class)) {
-							protected ModelData newModelInstance() {
-								return new ItemModel();
-							}
-						};
-						
-						ItemModel childModel = (ItemModel)itemTranslater.translate(elementObject.toString());
+						ItemModel childModel = (ItemModel)getItemTranslater().translate(elementObject.toString());
 						if (model instanceof Item) {
 							((ItemModel) model).add(childModel);
 						}
@@ -160,19 +159,21 @@ public class JsonTranslater {
 						array.add(childModel);
 					} else if (name.equals(GradebookKey.STATSMODELS.name())) {
 						
-						JsonTranslater statsTranslater = new JsonTranslater(EnumSet.allOf(StatisticsKey.class)) {
-							protected ModelData newModelInstance() {
-								return new StatisticsModel();
-							}
-						};
+						if (statsTranslater == null) {
+							statsTranslater = new JsonTranslater(EnumSet.allOf(StatisticsKey.class)) {
+								protected ModelData newModelInstance() {
+									return new StatisticsModel();
+								}
+							};
+						}
 						array.add(statsTranslater.translate(elementValue.toString()));
 					} else if (name.equals(UploadKey.ROWS.name())) {
 						
-						JsonTranslater rowsTranslater = new JsonTranslater(EnumSet.allOf(LearnerKey.class)) {
-							protected ModelData newModelInstance() {
-								return new LearnerModel();
-							}
-						};
+						if (rowsTranslater == null) {
+							Gradebook gbModel = Registry.get(AppConstants.CURRENT);
+							Item gbItem = gbModel.getGradebookItemModel();
+							rowsTranslater = new LearnerTranslater(gbItem);	
+						}
 						
 						array.add(rowsTranslater.translate(elementValue.toString()));
 					}
@@ -208,14 +209,7 @@ public class JsonTranslater {
 		} else if (value.isObject() != null) {
 			
 			if (name.equals(GradebookKey.GRADEBOOKITEMMODEL.name())) {
-				
-				JsonTranslater itemTranslater = new JsonTranslater(EnumSet.allOf(ItemKey.class)) {
-					protected ModelData newModelInstance() {
-						return new ItemModel();
-					}
-				};
-				
-				model.set(name, itemTranslater.translate(value.toString()));
+				model.set(name, getItemTranslater().translate(value.toString()));
 			} else if (name.equals(GradebookKey.CONFIGURATIONMODEL.name())) {
 				
 				JSONObject o = value.isObject();
@@ -233,46 +227,10 @@ public class JsonTranslater {
 			} else if (name.equals(GradebookKey.USERASSTUDENT.name())) {
 				
 				Item gbItem = model.get(GradebookKey.GRADEBOOKITEMMODEL.name());
-				
-				final ModelType t = new ModelType();  
-				t.setRoot(AppConstants.LIST_ROOT);
-				t.setTotalName(AppConstants.TOTAL);
-				
-				for (LearnerKey key : EnumSet.allOf(LearnerKey.class)) {
-					t.addField(key.name(), key.name()); 
-				}
-				
-				ItemModelProcessor processor = new ItemModelProcessor(gbItem) {
-					@Override
-					public void doItem(Item itemModel) {
-						String id = itemModel.getIdentifier();
-						t.addField(id, id);
-						String droppedKey = DataTypeConversionUtil.buildDroppedKey(id);
-						t.addField(droppedKey, droppedKey);
-						
-						String commentedKey = DataTypeConversionUtil.buildCommentKey(id);
-						t.addField(commentedKey, commentedKey);
-						
-						String commentTextKey = DataTypeConversionUtil.buildCommentTextKey(id);
-						t.addField(commentTextKey, commentTextKey);
-						
-						String excusedKey = DataTypeConversionUtil.buildExcusedKey(id);
-						t.addField(excusedKey, excusedKey);
-					}
-				};
-				
-				processor.process();
-				
-				JsonTranslater learnerTranslater = new JsonTranslater(t);				
+				JsonTranslater learnerTranslater = new LearnerTranslater(gbItem);			
 				model.set(name, learnerTranslater.translate(value.toString()));
 			} else if (name.equals(UploadKey.GRADEBOOK_ITEM_MODEL.name())) {
-				JsonTranslater itemTranslater = new JsonTranslater(EnumSet.allOf(ItemKey.class)) {
-					protected ModelData newModelInstance() {
-						return new ItemModel();
-					}
-				};
-				
-				model.set(name, itemTranslater.translate(value.toString()));
+				model.set(name, getItemTranslater().translate(value.toString()));
 			}
 			
 		} else if (value.isString() != null) {
@@ -306,6 +264,18 @@ public class JsonTranslater {
 		}
 	}
 
+	
+	private JsonTranslater getItemTranslater() {
+		if (itemTranslater == null) {
+			itemTranslater = new JsonTranslater(EnumSet.allOf(ItemKey.class)) {
+				protected ModelData newModelInstance() {
+					return new ItemModel();
+				}
+			};
+		}
+		return itemTranslater;
+	}
+	
 	protected ModelData newModelInstance() {
 		return new BaseModel();
 	}

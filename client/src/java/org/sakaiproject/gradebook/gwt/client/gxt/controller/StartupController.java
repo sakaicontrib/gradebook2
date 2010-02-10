@@ -64,7 +64,7 @@ public class StartupController extends Controller {
 				public void onSuccess() {
 					Dispatcher dispatcher = Dispatcher.get();
 					dispatcher.addController(new InstructorController(i18n, isUserAbleToEditItems, isNewGradebook));					
-					dispatcher.addController(new ServiceController());
+					dispatcher.addController(new ServiceController(i18n));
 					getApplicationModel(0, authModel);
 				}
 			});
@@ -77,7 +77,7 @@ public class StartupController extends Controller {
 				public void onSuccess() {
 					Dispatcher dispatcher = Dispatcher.get();
 					dispatcher.addController(new StudentController());
-					dispatcher.addController(new ServiceController());
+					dispatcher.addController(new ServiceController(i18n));
 					getApplicationModel(0, authModel);
 				}
 			});

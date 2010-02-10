@@ -31,12 +31,13 @@ import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
+import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestCallback;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
-import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
+import org.sakaiproject.gradebook.gwt.client.gxt.LearnerTranslater;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeMapUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
@@ -61,7 +62,6 @@ import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.BaseTreeModel;
 import com.extjs.gxt.ui.client.data.ModelData;
-import com.extjs.gxt.ui.client.data.ModelType;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
@@ -81,11 +81,11 @@ import com.google.gwt.json.client.JSONString;
 
 public class ServiceController extends Controller {
 
-	public static final String FAILED_FLAG = ":F";
-
 	private DelayedTask showColumnsTask;
+	private I18nConstants i18n;
 	
-	public ServiceController() {
+	public ServiceController(I18nConstants i18n) {
+		this.i18n = i18n;
 		registerEventTypes(GradebookEvents.Configuration.getEventType());
 		registerEventTypes(GradebookEvents.CreateItem.getEventType());
 		registerEventTypes(GradebookEvents.CreatePermission.getEventType());
@@ -392,17 +392,11 @@ public class ServiceController extends Controller {
 	
 	private void onUpdateGradeRecordFailure(GradeRecordUpdate event, Throwable caught) {
 		Record record = event.record;
-		record.beginEdit();
-
 		String property = event.property;
 
 		// Save the exception message on the record
-		String failedProperty = property + FAILED_FLAG;
-		if (caught != null) {
-			record.set(failedProperty, caught.getMessage());
-		} else {
-			record.set(failedProperty, "Failed");
-		}
+		String failedMessage = caught != null && caught.getMessage() != null ? caught.getMessage() : "Failed";
+		setFailedFlag(record, property, failedMessage);
 		
 		// We have to fool the system into thinking that the value has changed, since
 		// we snuck in that "Saving grade..." under the radar.
@@ -410,14 +404,31 @@ public class ServiceController extends Controller {
 			record.set(property, event.value);
 		else 
 			record.set(property, null);
+		
 		record.set(property, event.oldValue);
 
 		record.setValid(property, false);
 
-		record.endEdit();
-
-		Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught, "Failed to update grade: "));			
-
+		String message = new StringBuilder().append(i18n.gradeUpdateFailedException()).append(" ").append(record.get(LearnerKey.DISPLAY_NAME.name())).append(". ").toString();
+		
+		Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught, message));
+	}
+	
+	private void setFailedFlag(Record record, String property, String message) {
+		String failedProperty = 
+			new StringBuilder(property).append(AppConstants.FAILED_FLAG).toString();
+		if (record.isModified(failedProperty))
+			record.set(failedProperty, null);
+		if (message != null) 
+			record.set(failedProperty, message);
+	}
+	
+	private void setSuccessFlag(Record record, String property) {
+		String successProperty = 
+			new StringBuilder(property).append(AppConstants.SUCCESS_FLAG).toString();
+		if (record.isModified(successProperty))
+			record.set(successProperty, null);
+		record.set(successProperty, "Success");
 	}
 	
 	private void onUpdateGradeRecordSuccess(GradeRecordUpdate event, ModelData result) {
@@ -458,24 +469,27 @@ public class ServiceController extends Controller {
 
 		String courseGrade = result.get(LearnerKey.COURSE_GRADE.name());
 
-		record.set(LearnerKey.COURSE_GRADE.name(), null);
+		if (record.isModified(LearnerKey.COURSE_GRADE.name()))
+			record.set(LearnerKey.COURSE_GRADE.name(), null);
 		if (courseGrade != null) 
 			record.set(LearnerKey.COURSE_GRADE.name(), courseGrade);
 		
 		String calculatedGrade = result.get(LearnerKey.CALCULATED_GRADE.name());
-		record.set(LearnerKey.CALCULATED_GRADE.name(), null);
+		if (record.isModified(LearnerKey.CALCULATED_GRADE.name()))
+			record.set(LearnerKey.CALCULATED_GRADE.name(), null);
 		if (calculatedGrade != null)
 			record.set(LearnerKey.CALCULATED_GRADE.name(), calculatedGrade);
 		
 		String letterGrade = result.get(LearnerKey.LETTER_GRADE.name());
-		record.set(LearnerKey.LETTER_GRADE.name(), null);
+		if (record.isModified(LearnerKey.LETTER_GRADE.name()))
+			record.set(LearnerKey.LETTER_GRADE.name(), null);
 		if (letterGrade != null)
 			record.set(LearnerKey.LETTER_GRADE.name(), letterGrade);
 
 		// Ensure that we clear out any older failure messages
 		// Save the exception message on the record
-		String failedProperty = property + FAILED_FLAG;
-		record.set(failedProperty, null);
+		setFailedFlag(record, property, null);
+		setSuccessFlag(record, property);
 
 		record.setValid(property, true);
 
@@ -492,8 +506,7 @@ public class ServiceController extends Controller {
 		if (displayName != null)
 			buffer.append(displayName);
 		buffer.append(":").append(event.label);
-		//		"Stored item grade as '{0}' and recalculated course grade to '{1}' ", result.get(property), result.get(StudentModel.Key.COURSE_GRADE.name()));
-
+		
 		String message = null;
 		if (property.endsWith(AppConstants.COMMENT_TEXT_FLAG)) {
 			message = buffer.append("- stored comment as '")
@@ -557,6 +570,10 @@ public class ServiceController extends Controller {
 		ClassType classType = DataTypeConversionUtil.lookupClassType(event.property, selectedGradebook.getGradebookItemModel().getGradeType());
 
 		final Record record = event.record;
+		if ((event.oldValue == null || event.oldValue.equals("")) 
+				&& (event.value == null || event.value.equals("")))
+			return;
+		
 		final UserEntityUpdateAction<ModelData> action = new UserEntityUpdateAction<ModelData>(selectedGradebook, record.getModel(), event.property, classType, event.value, event.oldValue);		
 
 		String gradebookUid = selectedGradebook.getGradebookUid();
@@ -598,41 +615,19 @@ public class ServiceController extends Controller {
 
 			public void onError(Request request, Throwable exception) {
 				super.onError(request, exception);
+				record.beginEdit();
 				onUpdateGradeRecordFailure(event, exception);
+				record.endEdit();
 			}
 
 			public void onFailure(Request request, Throwable exception) {
+				record.beginEdit();
 				onUpdateGradeRecordFailure(event, exception);
+				record.endEdit();
 			}
 
 			public void onSuccess(Request request, Response response) {
-				final ModelType type = new ModelType();  
-				for (LearnerKey key : EnumSet.allOf(LearnerKey.class)) {
-					type.addField(key.name(), key.name()); 
-				}
-
-				ItemModelProcessor processor = new ItemModelProcessor(selectedGradebook.getGradebookItemModel()) {
-					@Override
-					public void doItem(Item itemModel) {
-						String id = itemModel.getIdentifier();
-						type.addField(id, id);
-						String droppedKey = DataTypeConversionUtil.buildDroppedKey(id);
-						type.addField(droppedKey, droppedKey);
-						
-						String commentedKey = DataTypeConversionUtil.buildCommentKey(id);
-						type.addField(commentedKey, commentedKey);
-						
-						String commentTextKey = DataTypeConversionUtil.buildCommentTextKey(id);
-						type.addField(commentTextKey, commentTextKey);
-						
-						String excusedKey = DataTypeConversionUtil.buildExcusedKey(id);
-						type.addField(excusedKey, excusedKey);
-					}
-				};
-				
-				processor.process();
-				
-				JsonTranslater reader = new JsonTranslater(type);
+				JsonTranslater reader = new LearnerTranslater(selectedGradebook.getGradebookItemModel());
 				ModelData result = reader.translate(response.getText());
 				
 				record.beginEdit();

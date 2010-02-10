@@ -114,6 +114,7 @@ public interface I18nConstants extends Constants {
 	String gradeTypeLetters();
 	String gradeTypePercentages();
 	String gradeTypePoints();
+	String gradeUpdateFailedException();
 	String hasChangesMessage();
 	String hasChangesTitle();
 	String headerAddCategory();

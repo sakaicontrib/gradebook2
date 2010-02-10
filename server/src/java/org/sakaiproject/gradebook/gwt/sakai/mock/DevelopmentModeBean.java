@@ -60,7 +60,7 @@ public class DevelopmentModeBean {
 			
 			gradebook.setName("Test Gradebook");
 			gradebook.setCategoryType(CategoryType.WEIGHTED_CATEGORIES);
-			gradebook.setGradeType(GradeType.POINTS);
+			gradebook.setGradeType(GradeType.LETTERS);
 			gradebook.setItemType(ItemType.GRADEBOOK);
 			gradebook.setExtraCreditScaled(Boolean.TRUE);
 			gradebook.setReleaseGrades(Boolean.TRUE);

@@ -2132,7 +2132,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			}
 		}
 
-		List<String> results = new ArrayList<String>();
+		//List<String> results = new ArrayList<String>();
 
 		// Since we index the new items by a phony id e.g. "NEW:123", we need to
 		// use this set to iterate
@@ -2166,7 +2166,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 						
 						Assignment assignment = commentIdToAssignmentMap.get(id);
 						
-						Learner comment = assignComment(String.valueOf(assignment.getId()), (String)student.get(LearnerKey.UID.name()), (String)v);
+						Learner comment = assignComment(fullId, (String)student.get(LearnerKey.UID.name()), (String)v);
 						
 						if (comment != null) {
 							student.put(fullId, comment.get(CommentKey.TEXT.name()));
@@ -2179,7 +2179,6 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				}
 				
 				if (idKeySet != null) {
-					
 					
 					for (String id : idKeySet) {
 						Assignment assignment = idToAssignmentMap.get(id);
@@ -2194,26 +2193,40 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 						
 						try {
 							
-							if (isLetterGrading) {
-								
-								if (!gradeCalculations.isValidLetterGrade((String)v)) {
-									String failedProperty = new StringBuilder().append(assignment.getId()).append(AppConstants.FAILED_FLAG).toString();
-									student.put(failedProperty, "Invalid input");
-									log.warn("Failed to score item for " + student.get(LearnerKey.UID.name()) + " and item " + assignment.getId() + " to " + v);
-			
-									if (oldValue != null)
-										builder.append(oldValue);
-			
-									builder.append(" Invalid) ");
-									student.put(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
-									continue;
-								} else 
-									value = gradeCalculations.convertLetterGradeToPercentage((String)v);
-								
-							} else if (v != null && v instanceof String) {
+							 
+							if (v != null && v instanceof String) {
 								String strValue = (String) v;
-								if (strValue.trim().length() > 0)
-									value = Double.valueOf(Double.parseDouble((String) v));
+								
+								if (strValue.trim().length() > 0) {
+									if (isLetterGrading) {	
+										if (gradeCalculations.isValidLetterGrade(strValue)) {
+											value = gradeCalculations.convertLetterGradeToPercentage((String)v);
+										} else {
+											boolean isParseable = false;
+											try {
+												value = Double.valueOf(Double.parseDouble((String) v));
+												isParseable = true;
+											} catch (NumberFormatException nfe) {
+												log.info("This string does not seem to be a double: " + strValue);
+											}
+											
+											if (!isParseable) {
+												String failedProperty = new StringBuilder().append(assignment.getId()).append(AppConstants.FAILED_FLAG).toString();
+												student.put(failedProperty, "Invalid input");
+												log.warn("Failed to score item for " + student.get(LearnerKey.UID.name()) + " and item " + assignment.getId() + " to " + v);
+						
+												if (oldValue != null)
+													builder.append(oldValue);
+						
+												builder.append(" Invalid) ");
+												student.put(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
+												continue;
+											}
+										}
+									} else {
+										value = Double.valueOf(Double.parseDouble((String) v));
+									}
+								}
 							} else
 								value = (Double) v;
 		
@@ -2240,7 +2253,6 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 								continue;
 		
 							student.put(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
-		
 							
 							gradedRecords.add(scoreItem(gradebook, assignment, assignmentGradeRecord, (String)student.get(LearnerKey.UID.name()), value, true, true));
 							builder.append(assignment.getName()).append(" (");
@@ -2294,23 +2306,17 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 					}
 				}
 				
-				results.add(builder.toString());
+				//results.add(builder.toString());
 			}
 		}
-		attributes.put(UploadKey.RESULTS.name(), results);
+		//attributes.put(UploadKey.RESULTS.name(), results);
 		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
 		List<Category> categories = null;
 		if (hasCategories)
 			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
 		
 		GradeItem gradebookGradeItem = getGradeItem(gradebook, assignments, categories, null, null);
-		/*Map<String, Object> gradebookItemMap = new HashMap<String, Object>();
-		
-		for (Enum<ItemKey> it : EnumSet.allOf(ItemKey.class)) {
-			gradebookItemMap.put(it.name(), gradebookGradeItem.get(it.name()));
-		}
-		
-		addChildren(gradebookGradeItem, gradebookItemMap);*/
+
 		attributes.put(UploadKey.GRADEBOOK_ITEM_MODEL.name(), gradebookGradeItem.getProperties());
 
 		return attributes;	

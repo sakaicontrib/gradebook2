@@ -32,6 +32,7 @@ import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
+import org.sakaiproject.gradebook.gwt.client.gxt.LearnerTranslater;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
@@ -175,54 +176,11 @@ public class MultigradeView extends View {
 
 		Gradebook gbModel = model.getGradebookModels().get(0);
 		
-		final ModelType type = new ModelType();  
-		type.setRoot(AppConstants.LIST_ROOT);
-		type.setTotalName(AppConstants.TOTAL);
+		ModelType type = LearnerTranslater.generateLearnerModelType(gbModel.getGradebookItemModel());
 		
-		for (LearnerKey key : EnumSet.allOf(LearnerKey.class)) {
-			type.addField(key.name(), key.name()); 
-		}
-		
-		ItemModelProcessor processor = new ItemModelProcessor(gbModel.getGradebookItemModel()) {
-			@Override
-			public void doItem(Item itemModel) {
-				String id = itemModel.getIdentifier();
-				type.addField(id, id);
-				String droppedKey = DataTypeConversionUtil.buildDroppedKey(id);
-				type.addField(droppedKey, droppedKey);
-				
-				String commentedKey = DataTypeConversionUtil.buildCommentKey(id);
-				type.addField(commentedKey, commentedKey);
-				
-				String commentTextKey = DataTypeConversionUtil.buildCommentTextKey(id);
-				type.addField(commentTextKey, commentTextKey);
-				
-				String excusedKey = DataTypeConversionUtil.buildExcusedKey(id);
-				type.addField(excusedKey, excusedKey);
-			}
-		};
-		
-		processor.process();
-		
-		/*
-		RestBuilder builder = RestBuilder.getInstance(Method.GET, GWT.getModuleBaseURL(),
-				AppConstants.REST_FRAGMENT, AppConstants.ROSTER_FRAGMENT,
-				gbModel.getGradebookUid(), String.valueOf(gbModel.getGradebookId()));
-		
-		HttpProxy<String> proxy = new HttpProxy<String>(builder);  
-
-		// need a loader, proxy, and reader  
-		JsonPagingLoadResultReader<PagingLoadResult<ModelData>> reader = new JsonPagingLoadResultReader<PagingLoadResult<ModelData>>(type) {
-			protected ModelData newModelInstance() {
-			    return new BaseModel();
-			}
-		};  */
-
 		multigradeLoader = RestBuilder.getPagingDelayLoader(type, Method.GET, 
 				GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.ROSTER_FRAGMENT);
-			
-			//new BasePagingLoader<PagingLoadResult<ModelData>>(proxy, reader);  
-		
+
 		multigradeStore = new ListStore<ModelData>(multigradeLoader);
 		multigradeStore.setModelComparer(new EntityModelComparer<ModelData>(LearnerKey.UID.name()));
 		multigradeStore.setMonitorChanges(true);

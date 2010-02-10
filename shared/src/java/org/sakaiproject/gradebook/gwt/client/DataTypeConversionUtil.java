@@ -109,6 +109,10 @@ public class DataTypeConversionUtil {
 	public static String buildExcusedKey(String itemId) {
 		return new StringBuilder().append(itemId).append(AppConstants.EXCUSE_FLAG).toString();
 	}
+	
+	public static String buildFailedKey(String itemId) {
+		return new StringBuilder().append(itemId).append(AppConstants.FAILED_FLAG).toString();
+	}
 
 	public static ClassType lookupClassType(String property, GradeType gradeType) {
 		

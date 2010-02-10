@@ -125,17 +125,17 @@ public class ImportExportUtility {
 		this.headerLineIndicatorSet = new HashSet<String>();
 		this.nameSet = new HashSet<String>();
 		for (int i=0;i<nameColumns.length;i++) {
-			nameSet.add(nameColumns[i]);
-			headerLineIndicatorSet.add(nameColumns[i]);
+			nameSet.add(nameColumns[i].toLowerCase());
+			headerLineIndicatorSet.add(nameColumns[i].toLowerCase());
 		}
 		this.idSet = new HashSet<String>();
 		for (int i=0;i<idColumns.length;i++) {
-			idSet.add(idColumns[i]);
-			headerLineIndicatorSet.add(idColumns[i]);
+			idSet.add(idColumns[i].toLowerCase());
+			headerLineIndicatorSet.add(idColumns[i].toLowerCase());
 		}
 		this.scantronIgnoreSet = new HashSet<String>();
 		for (int i=0;i<scantronIgnoreColumns.length;i++) {
-			scantronIgnoreSet.add(scantronIgnoreColumns[i]);
+			scantronIgnoreSet.add(scantronIgnoreColumns[i].toLowerCase());
 		}
 	}
 
@@ -1124,31 +1124,31 @@ public class ImportExportUtility {
 
 		for (int i = 0; i < headerColumns.length; i++) {
 			String text = headerColumns[i];
+			String lowerText = text == null ? null : text.trim().toLowerCase();
 
 			ImportHeader header = null;
 			log.debug("Column[" + i + "] = " + text); 
 			// Check for name field
-			if (text == null || text.trim().equals("") || scantronIgnoreSet.contains(text)) {
+			if (lowerText == null || lowerText.equals("") || scantronIgnoreSet.contains(lowerText)) {
 				importInfo.getIgnoreColumns().add(Integer.valueOf(i));
 				log.debug("HI: Ignoring column " + i);
 				continue;
-			} else if (nameSet.contains(text)) {
+			} else if (nameSet.contains(lowerText)) {
 				log.debug("HI: Column " + i + " is student name");
 				header = new ImportHeader(Field.NAME, text);
 				header.setId("NAME");
 				importInfo.setNameFieldIndex(i);
 				// FIXME - Should this be like this? 
-			} else if (idSet.contains(text)) {
+			} else if (idSet.contains(lowerText)) {
 				log.debug("HI: Column " + i + " is student id");
 				header = new ImportHeader(Field.ID, text);
 				header.setId("ID");
 				importInfo.setIdFieldIndex(i);
-			} else if (text.equalsIgnoreCase("course grade")) {
+			} else if (lowerText.equalsIgnoreCase("course grade")) {
 				// Do nothing
 				log.debug("HI: Column " + i + " is course grade");
 				importInfo.setCourseGradeFieldIndex(i);
 			} else {
-
 				log.debug("HI: Column " + i + " is not known, probably points");
 				String name = null;
 				String points = null;
@@ -1218,8 +1218,7 @@ public class ImportExportUtility {
 					}
 
 
-					Item model = findModelByName(name, categoryName, gradebook
-							.getGradebookItemModel());
+					Item model = findModelByName(name, categoryName, gradebook.getGradebookItemModel());
 
 					if (isComment) {
 						header = new ImportHeader(Field.COMMENT, text);
@@ -1673,7 +1672,6 @@ public class ImportExportUtility {
 			importFile.setNotifyAssignmentName(!rawData.isNewAssignment()); 
 		}
 
-
 		ImportExportInformation ieInfo = new ImportExportInformation();
 		ieInfo.setHasWeights(hasWeights);
 		ieInfo.setHasCategories(hasCategories);
@@ -1685,7 +1683,6 @@ public class ImportExportUtility {
 		Map<String, StructureRow> structureLineIndicatorMap = new HashMap<String, StructureRow>();
 		Map<StructureRow, String[]> structureColumnsMap = new HashMap<StructureRow, String[]>();
 
-		
 		for (StructureRow structureRow : EnumSet.allOf(StructureRow.class)) {
 			String lowercase = structureRow.getDisplayName().toLowerCase();
 			structureLineIndicatorMap.put(lowercase, structureRow);
@@ -1783,16 +1780,15 @@ public class ImportExportUtility {
 					String trimmed = itemName.trim();
 
 					if (trimmed.equals(name) &&
-							(categoryName == null || (((GradeItem)itemModel).getParentName() != null &&
-									(((GradeItem)itemModel).getParentName()).trim().equals(categoryName)))) {
+						(categoryName == null || 
+								(((GradeItem)itemModel).getParentName() != null &&
+								 (((GradeItem)itemModel).getParentName()).trim().equals(categoryName)))) {
 						this.result = itemModel;
 					}
 				}
-
 			}
-
+			
 		};
-
 
 		processor.process();
 

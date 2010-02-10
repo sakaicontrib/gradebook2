@@ -231,7 +231,7 @@ public class ImportPanel extends GradebookPanel {
 
 				if (isShowDirtyCells && isPropertyChanged) {
 
-					String failedProperty = new StringBuilder().append(property).append(GridPanel.FAILED_FLAG).toString();
+					String failedProperty = new StringBuilder().append(property).append(AppConstants.FAILED_FLAG).toString();
 					String failedMessage = (String)r.get(failedProperty);
 
 					if (failedMessage != null) {
