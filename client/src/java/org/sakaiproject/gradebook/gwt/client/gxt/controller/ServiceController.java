@@ -627,7 +627,7 @@ public class ServiceController extends Controller {
 			}
 
 			public void onSuccess(Request request, Response response) {
-				JsonTranslater reader = new LearnerTranslater(selectedGradebook.getGradebookItemModel());
+				JsonTranslater reader = new LearnerTranslater(selectedGradebook.getGradebookItemModel(), false);
 				ModelData result = reader.translate(response.getText());
 				
 				record.beginEdit();

@@ -280,10 +280,29 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 		int indexOf = itemId.indexOf(AppConstants.COMMENT_TEXT_FLAG);
 		Long assignmentId = Long.valueOf(itemId.substring(0, indexOf));
+		Comment comment = doAssignComment(assignmentId, studentUid, text);
+		Gradebook gradebook = null;
 		
+		if (comment != null)
+			gradebook = doCommitComment(comment, studentUid, text);
+		else {
+			Assignment assignment = gbService.getAssignment(assignmentId);
+			gradebook = assignment.getGradebook();
+		}
+			
+		Site site = getSite();
+		User user = null;
+		try {
+			user = userService.getUser(studentUid);
+		} catch (UserNotDefinedException unde) {
+			log.warn("User not defined: " + studentUid);
+		}
+		return getStudent(gradebook, site, user);
+	}
+	
+	private Comment doAssignComment(Long assignmentId, String studentUid, String text) {
 		Comment comment = gbService.getCommentForItemForStudent(assignmentId, studentUid);
 
-		String actionType = null;
 		Assignment assignment = null;
 		if (comment == null) {
 			// We don't need to create a comment object if the user is just passing up a blank
@@ -293,13 +312,28 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			
 			assignment = gbService.getAssignment(assignmentId);
 			comment = new Comment(studentUid, text, assignment);
-			actionType = ActionType.CREATE.name();
 		} else {
+			if ((comment.getCommentText() == null && text == null) 
+					|| (comment.getCommentText() != null && text != null && text.equals(comment.getCommentText()))) 
+				return null;
+			
 			assignment = (Assignment)comment.getGradableObject();
 			comment.setCommentText(text);
-			actionType = ActionType.UPDATE.name();
 		}
 		
+		return comment;
+	}
+	
+	private Gradebook doCommitComment(Comment comment, String studentUid, String text) {
+		
+		if (comment == null)
+			return null;
+		
+		String actionType = ActionType.CREATE.name();
+		if (comment.getDateRecorded() != null)
+			actionType = ActionType.UPDATE.name();
+		
+		Assignment assignment = (Assignment)comment.getGradableObject();
 		Gradebook gradebook = assignment.getGradebook();
 		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.COMMENT.name(), actionType);
 		actionRecord.setEntityName(assignment.getName());
@@ -316,17 +350,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			gbService.storeActionRecord(actionRecord);
 		}
 		
-		//student.set(action.getKey(), comment.getText());
-		//student.set(new StringBuilder(assignmentId).append(StudentModel.COMMENTED_FLAG).toString(), Boolean.TRUE);
-
-		Site site = getSite();
-		User user = null;
-		try {
-			user = userService.getUser(studentUid);
-		} catch (UserNotDefinedException unde) {
-			log.warn("User not defined: " + studentUid);
-		}
-		return getStudent(gradebook, site, user);
+		return gradebook;
 	}
 	
 	public Learner assignScore(String gradebookUid, String studentUid, String assignmentId, Double value, Double previousValue) throws InvalidInputException {
@@ -2138,178 +2162,144 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		// use this set to iterate
 		Set<String> idKeySet = idToAssignmentMap.keySet();
 		Set<String> commentIdKeySet = commentIdToAssignmentMap.keySet();
-		
-		if (true) {
-			List<Map<String,Object>> rows = (List<Map<String,Object>>)attributes.get(UploadKey.ROWS.name());
-			for (Map<String,Object> student : rows) {
-				UserRecord userRecord = userRecordMap.get(student.get(LearnerKey.UID.name()));
 
-				StringBuilder builder = new StringBuilder();
+		if (commentIdKeySet != null) {
+			
+			for (String commentId : commentIdKeySet) {
+				String fullId = new StringBuilder().append(commentId).append(AppConstants.COMMENT_TEXT_FLAG).toString();
+				
+				List<Map<String,Object>> rows = (List<Map<String,Object>>)attributes.get(UploadKey.ROWS.name());
+				for (Map<String,Object> student : rows) {
+					Object v = student.get(fullId);
+	
+					String studentUid = (String)student.get(LearnerKey.UID.name());
+					Assignment assignment = commentIdToAssignmentMap.get(commentId);
+					Comment comment = doAssignComment(assignment.getId(), studentUid, (String)v);
 
-				builder.append("Grading ");
+					if (comment != null)
+						gradebook = doCommitComment(comment, studentUid, (String)v);
 
-				if (userRecord != null) {
-					if (userRecord.getDisplayName() == null)
-						builder.append(userRecord.getDisplayId()).append(": ");
-					else
-						builder.append(userRecord.getDisplayName()).append(": ");
-				} else {
-					builder.append(student.get("NAME")).append(": ");
-				}
-
-				Map<Long, AssignmentGradeRecord> gradeRecordMap = userRecord == null ? null : userRecord.getGradeRecordMap();
-
-				if (commentIdKeySet != null) {
-					for (String id : commentIdKeySet) {
-						String fullId = new StringBuilder().append(id).append(AppConstants.COMMENT_TEXT_FLAG).toString();
-						Object v = student.get(fullId);
-						
-						Assignment assignment = commentIdToAssignmentMap.get(id);
-						
-						Learner comment = assignComment(fullId, (String)student.get(LearnerKey.UID.name()), (String)v);
-						
-						if (comment != null) {
-							student.put(fullId, comment.get(CommentKey.TEXT.name()));
-							student.put(new StringBuilder(id).append(AppConstants.COMMENTED_FLAG).toString(), Boolean.TRUE);
-						
-							builder.append("Comment for ").append(assignment.getName()).append(" (")
-								.append((String)v).append(") ");;
-						}
+					if (comment != null) {
+						student.put(fullId, comment.getCommentText());
+						student.put(new StringBuilder(commentId).append(AppConstants.COMMENTED_FLAG).toString(), Boolean.TRUE);
+						student.put(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
 					}
 				}
-				
-				if (idKeySet != null) {
-					
-					for (String id : idKeySet) {
-						Assignment assignment = idToAssignmentMap.get(id);
-					
-						List<AssignmentGradeRecord> gradedRecords = new ArrayList<AssignmentGradeRecord>();
-						
-						// This is the value stored on the client
-						Object v = student.get(id);
-
-						Double value = null;
-						Double oldValue = null;
-						
-						try {
-							
-							 
-							if (v != null && v instanceof String) {
-								String strValue = (String) v;
-								
-								if (strValue.trim().length() > 0) {
-									if (isLetterGrading) {	
-										if (gradeCalculations.isValidLetterGrade(strValue)) {
-											value = gradeCalculations.convertLetterGradeToPercentage((String)v);
-										} else {
-											boolean isParseable = false;
-											try {
-												value = Double.valueOf(Double.parseDouble((String) v));
-												isParseable = true;
-											} catch (NumberFormatException nfe) {
-												log.info("This string does not seem to be a double: " + strValue);
-											}
-											
-											if (!isParseable) {
-												String failedProperty = new StringBuilder().append(assignment.getId()).append(AppConstants.FAILED_FLAG).toString();
-												student.put(failedProperty, "Invalid input");
-												log.warn("Failed to score item for " + student.get(LearnerKey.UID.name()) + " and item " + assignment.getId() + " to " + v);
-						
-												if (oldValue != null)
-													builder.append(oldValue);
-						
-												builder.append(" Invalid) ");
-												student.put(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
-												continue;
-											}
-										}
-									} else {
-										value = Double.valueOf(Double.parseDouble((String) v));
-									}
-								}
-							} else
-								value = (Double) v;
-		
-							AssignmentGradeRecord assignmentGradeRecord = null;
-		
-							if (gradeRecordMap != null)
-								assignmentGradeRecord = gradeRecordMap.get(assignment.getId()); 
-
-							if (assignmentGradeRecord == null)
-								assignmentGradeRecord = new AssignmentGradeRecord();
-		
-							switch (gradebook.getGrade_type()) {
-								case GradebookService.GRADE_TYPE_POINTS:
-									oldValue = assignmentGradeRecord.getPointsEarned();
-									break;
-								case GradebookService.GRADE_TYPE_PERCENTAGE:
-								case GradebookService.GRADE_TYPE_LETTER:
-									BigDecimal d = gradeCalculations.getPointsEarnedAsPercent(assignment, assignmentGradeRecord);
-									oldValue = d == null ? null : Double.valueOf(d.doubleValue());
-									break;
-							}
-	
-							if (oldValue == null && value == null)
-								continue;
-		
-							student.put(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
-							
-							gradedRecords.add(scoreItem(gradebook, assignment, assignmentGradeRecord, (String)student.get(LearnerKey.UID.name()), value, true, true));
-							builder.append(assignment.getName()).append(" (");
-							
-							if (oldValue != null)
-								builder.append(oldValue).append("->");
-	
-							if (value != null)
-								builder.append(value);
-							
-							builder.append(") ");
-						} catch (NumberFormatException nfe) {
-							String failedProperty = new StringBuilder().append(assignment.getId()).append(AppConstants.FAILED_FLAG).toString();
-							student.put(failedProperty, "Invalid input");
-							log.warn("Failed to score item for " + (String)student.get(LearnerKey.UID.name()) + " and item " + assignment.getId() + " to " + v);
-	
-							if (oldValue != null)
-								builder.append(oldValue);
-	
-							builder.append(" Invalid) ");
-							
-							student.put(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
-						} catch (InvalidInputException e) {
-							String failedProperty = new StringBuilder().append(assignment.getId()).append(AppConstants.FAILED_FLAG).toString();
-							student.put(failedProperty, e.getMessage());
-							log.warn("Failed to score numeric item for " + (String)student.get(LearnerKey.UID.name()) + " and item " + assignment.getId() + " to " + value);
-	
-							if (oldValue != null)
-								builder.append(oldValue);
-	
-							builder.append(" Invalid) ");
-							
-							student.put(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
-						} catch (Exception e) {
-	
-							String failedProperty = new StringBuilder().append(assignment.getId()).append(AppConstants.FAILED_FLAG).toString();
-							student.put(failedProperty, e.getMessage());
-	
-							log.warn("Failed to score numeric item for " + (String)student.get(LearnerKey.UID.name()) + " and item " + assignment.getId() + " to " + value, e);
-	
-							if (oldValue != null)
-								builder.append(oldValue);
-	
-							builder.append(" Failed) ");
-							
-							student.put(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
-						} finally {
-							gbService.updateAssignmentGradeRecords(assignment, gradedRecords);
-							postEvent("gradebook2.assignGradesBulk", String.valueOf(gradebook.getId()), String.valueOf(assignment.getId()));
-						}
-					}
-				}
-				
-				//results.add(builder.toString());
 			}
 		}
-		//attributes.put(UploadKey.RESULTS.name(), results);
+		
+							
+		if (idKeySet != null) {
+
+			for (String id : idKeySet) {
+				Assignment assignment = idToAssignmentMap.get(id);
+
+				List<AssignmentGradeRecord> gradedRecords = new ArrayList<AssignmentGradeRecord>();
+
+				List<Map<String,Object>> rows = (List<Map<String,Object>>)attributes.get(UploadKey.ROWS.name());
+				for (Map<String,Object> student : rows) {
+					UserRecord userRecord = userRecordMap.get(student.get(LearnerKey.UID.name()));
+
+					Map<Long, AssignmentGradeRecord> gradeRecordMap = userRecord == null ? null : userRecord.getGradeRecordMap();
+
+					// This is the value stored on the client
+					Object v = student.get(id);
+
+					Double value = null;
+					Double oldValue = null;
+
+					try {
+
+						if (v != null && v instanceof String) {
+							String strValue = (String) v;
+
+							if (strValue.trim().length() > 0) {
+								if (isLetterGrading) {	
+									if (gradeCalculations.isValidLetterGrade(strValue)) {
+										value = gradeCalculations.convertLetterGradeToPercentage((String)v);
+									} else {
+										boolean isParseable = false;
+										try {
+											value = Double.valueOf(Double.parseDouble((String) v));
+											isParseable = true;
+										} catch (NumberFormatException nfe) {
+											log.debug("This string does not seem to be a double: " + strValue);
+										}
+
+										if (!isParseable) {
+											String failedProperty = new StringBuilder().append(assignment.getId()).append(AppConstants.FAILED_FLAG).toString();
+											student.put(failedProperty, "Invalid input");
+											log.warn("Failed to score item for " + student.get(LearnerKey.UID.name()) + " and item " + assignment.getId() + " to " + v);
+
+											student.put(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
+											continue;
+										}
+									}
+								} else {
+									value = Double.valueOf(Double.parseDouble((String) v));
+								}
+							}
+						} else
+							value = (Double) v;
+
+						AssignmentGradeRecord assignmentGradeRecord = null;
+
+						if (gradeRecordMap != null)
+							assignmentGradeRecord = gradeRecordMap.get(assignment.getId()); 
+
+						if (assignmentGradeRecord == null)
+							assignmentGradeRecord = new AssignmentGradeRecord();
+						else {
+							switch (gradebook.getGrade_type()) {
+							case GradebookService.GRADE_TYPE_POINTS:
+								oldValue = assignmentGradeRecord.getPointsEarned();
+								break;
+							case GradebookService.GRADE_TYPE_PERCENTAGE:
+							case GradebookService.GRADE_TYPE_LETTER:
+								BigDecimal d = gradeCalculations.getPointsEarnedAsPercent(assignment, assignmentGradeRecord);
+								oldValue = d == null ? null : Double.valueOf(d.doubleValue());
+								break;
+							}
+						}
+						
+						if (oldValue == null && value == null)
+							continue;
+
+						String successProperty = new StringBuilder().append(assignment.getId()).append(AppConstants.SUCCESS_FLAG).toString();
+						student.put(successProperty, "S");
+
+						student.put(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
+
+						gradedRecords.add(scoreItem(gradebook, assignment, assignmentGradeRecord, (String)student.get(LearnerKey.UID.name()), value, true, true));
+
+					} catch (NumberFormatException nfe) {
+						String failedProperty = new StringBuilder().append(assignment.getId()).append(AppConstants.FAILED_FLAG).toString();
+						student.put(failedProperty, "Invalid input");
+						log.warn("Failed to score item for " + (String)student.get(LearnerKey.UID.name()) + " and item " + assignment.getId() + " to " + v);
+
+						student.put(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
+					} catch (InvalidInputException e) {
+						String failedProperty = new StringBuilder().append(assignment.getId()).append(AppConstants.FAILED_FLAG).toString();
+						String failedMessage = e != null && e.getMessage() != null ? e.getMessage() : "Failed";
+						student.put(failedProperty, failedMessage);
+						log.warn("Failed to score numeric item for " + (String)student.get(LearnerKey.UID.name()) + " and item " + assignment.getId() + " to " + value);
+
+						student.put(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
+					} catch (Exception e) {
+
+						String failedProperty = new StringBuilder().append(assignment.getId()).append(AppConstants.FAILED_FLAG).toString();
+						student.put(failedProperty, e.getMessage());
+
+						log.warn("Failed to score numeric item for " + (String)student.get(LearnerKey.UID.name()) + " and item " + assignment.getId() + " to " + value, e);
+
+						student.put(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
+					} 
+				}
+				gbService.updateAssignmentGradeRecords(assignment, gradedRecords);
+				postEvent("gradebook2.assignGradesBulk", String.valueOf(gradebook.getId()), String.valueOf(assignment.getId()));
+			}
+		}
+
 		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
 		List<Category> categories = null;
 		if (hasCategories)
@@ -4847,7 +4837,8 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 					throw new InvalidInputException("The absolute value of a negative point score assigned to a student cannot be greater than the total possible points allowed for an item");
 			}
 
-		} else if (gradebook.getGrade_type() == GradebookService.GRADE_TYPE_PERCENTAGE && value != null) {
+		} else if ((gradebook.getGrade_type() == GradebookService.GRADE_TYPE_PERCENTAGE 
+				|| gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER) && value != null) {
 			if (value.compareTo(Double.valueOf(100d)) > 0)
 				throw new InvalidInputException("This grade cannot be larger than " + DataTypeConversionUtil.formatDoubleAsPointsString(100d) + "%");
 

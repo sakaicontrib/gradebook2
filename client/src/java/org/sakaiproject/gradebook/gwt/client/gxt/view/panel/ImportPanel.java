@@ -33,7 +33,6 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestCallback;
-import org.sakaiproject.gradebook.gwt.client.gxt.GridPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
 import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.BaseCustomGridView;
@@ -229,15 +228,17 @@ public class ImportPanel extends GradebookPanel {
 
 				StringBuilder css = new StringBuilder();
 
-				if (isShowDirtyCells && isPropertyChanged) {
-
+				if (r != null) {
 					String failedProperty = new StringBuilder().append(property).append(AppConstants.FAILED_FLAG).toString();
 					String failedMessage = (String)r.get(failedProperty);
 
+					String successProperty = new StringBuilder().append(property).append(AppConstants.SUCCESS_FLAG).toString();
+					String successMessage = (String)r.get(successProperty);
+					
 					if (failedMessage != null) {
 						css.append(" ").append(resources.css().gbCellFailedImport());
 						isGradingFailure = true;
-					} else  {
+					} else if (successMessage != null) {
 						css.append(" ").append(resources.css().gbCellSucceeded());
 					}
 				}
@@ -294,9 +295,8 @@ public class ImportPanel extends GradebookPanel {
 				int numberOfRows = rowModels == null ? 0 : rowModels.size();
 				JSONObject spreadsheetModel = composeSpreadsheetModel(allItemModels, rowModels, previewColumns);
 
-				uploadSpreadsheet(spreadsheetModel, numberOfRows);
-
 				submitButton.setVisible(false);
+				uploadSpreadsheet(spreadsheetModel, numberOfRows);
 			}
 		});
 		step1Container.addButton(submitButton);
@@ -418,6 +418,7 @@ public class ImportPanel extends GradebookPanel {
 			
 			@Override
 			public void onSuccess(Request request, Response response) {
+				
 				try {
 					
 					JsonTranslater translater = new JsonTranslater(EnumSet.allOf(UploadKey.class));
@@ -427,40 +428,57 @@ public class ImportPanel extends GradebookPanel {
 					List<ModelData> rows = result.get(UploadKey.ROWS.name());
 					int size = rows == null ? 0 : rows.size();
 					
-					StringBuilder heading = new StringBuilder().append("Result Data (").append(size).append(" records uploaded)");
-					previewTab.setText(heading.toString());
+					//StringBuilder heading = new StringBuilder().append("Result Data (").append(size).append(" records uploaded)");
+					//previewTab.setText(heading.toString());
 					
-					for (ModelData student : rows) {
-
-						boolean hasChanges = DataTypeConversionUtil.checkBoolean((Boolean)student.get(AppConstants.IMPORT_CHANGES));
-
-						if (hasChanges) {
-							Record record = rowStore.getRecord(student);
-							record.beginEdit();
-
-							for (String p : student.getPropertyNames()) {
-								boolean needsRefreshing = false;
-
-								int index = -1;
-
-								if (p.endsWith(AppConstants.FAILED_FLAG)) {
-									index = p.indexOf(AppConstants.FAILED_FLAG);
-									needsRefreshing = true;
-								} 
-
-								if (needsRefreshing && index != -1) {
-									String assignmentId = p.substring(0, index);
-									Object value = result.get(assignmentId);
-
-									record.set(assignmentId, null);
-									record.set(assignmentId, value);
-
+					int numberOfStudentsChanged = 0;
+					if (rows != null) {
+						int rowNumber = 0;
+						for (ModelData student : rows) {
+	
+							boolean hasChanges = DataTypeConversionUtil.checkBoolean((Boolean)student.get(AppConstants.IMPORT_CHANGES));
+	
+							if (hasChanges) {
+								ModelData model = rowStore.getAt(rowNumber);
+								if (model.get(LearnerKey.UID.name()) == null || !model.get(LearnerKey.UID.name()).equals(student.get(LearnerKey.UID.name())))
+									model = rowStore.findModel(LearnerKey.UID.name(), student.get(LearnerKey.UID.name()));
+								Record record = rowStore.getRecord(model);
+								record.beginEdit();
+	
+								for (String p : student.getPropertyNames()) {
+									boolean needsRefreshing = false;
+	
+									int index = -1;
+	
+									if (p.endsWith(AppConstants.FAILED_FLAG)) {
+										index = p.indexOf(AppConstants.FAILED_FLAG);
+										needsRefreshing = true;
+									} else if (p.endsWith(AppConstants.SUCCESS_FLAG)) {
+										index = p.indexOf(AppConstants.SUCCESS_FLAG);
+										needsRefreshing = true;
+									}
+	
+									if (needsRefreshing && index != -1) {
+										String assignmentId = p.substring(0, index);
+										Object value = student.get(assignmentId);
+	
+										record.set(p, student.get(p));
+										
+										record.set(assignmentId, null);
+										record.set(assignmentId, value);
+									}
 								}
+								record.endEdit();
+								numberOfStudentsChanged++;
 							}
-							record.endEdit();
+							
+							rowNumber++;
 						}
 					}
-
+					
+					StringBuilder heading = new StringBuilder().append("Result Data (").append(numberOfStudentsChanged).append(" rows modified)");
+					previewTab.setText(heading.toString());
+					
 					uploadingBox.setProgressText("Loading");
 
 					cancelButton.setText("Done");
@@ -720,32 +738,7 @@ public class ImportPanel extends GradebookPanel {
 							}
 							
 						});
-						
-						/*
-						Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
 
-						AsyncCallback<GradebookModel> callback = new AsyncCallback<GradebookModel>() {
-
-							public void onFailure(Throwable caught) {
-								Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught));
-							}
-
-							public void onSuccess(GradebookModel result) {
-
-								if (result.getGradebookItemModel() != null) {
-									refreshCategoryPickerStore(result.getGradebookItemModel());
-
-									selectedGradebook.setGradebookItemModel(result.getGradebookItemModel());
-									Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookSetup.getEventType(), selectedGradebook);
-									Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookItems.getEventType(), selectedGradebook);
-								}
-							}
-						};
-
-						service.get(selectedGradebook.getGradebookUid(), selectedGradebook.getGradebookId(), EntityType.GRADEBOOK, null, null, SecureToken.get(), callback);
-
-						refreshCategoryPickerStore(selectedGradebook.getGradebookItemModel());
-						*/
 					}
 
 				}

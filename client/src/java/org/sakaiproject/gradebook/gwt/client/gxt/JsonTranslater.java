@@ -172,7 +172,7 @@ public class JsonTranslater {
 						if (rowsTranslater == null) {
 							Gradebook gbModel = Registry.get(AppConstants.CURRENT);
 							Item gbItem = gbModel.getGradebookItemModel();
-							rowsTranslater = new LearnerTranslater(gbItem);	
+							rowsTranslater = new LearnerTranslater(gbItem, true);	
 						}
 						
 						array.add(rowsTranslater.translate(elementValue.toString()));
@@ -227,7 +227,7 @@ public class JsonTranslater {
 			} else if (name.equals(GradebookKey.USERASSTUDENT.name())) {
 				
 				Item gbItem = model.get(GradebookKey.GRADEBOOKITEMMODEL.name());
-				JsonTranslater learnerTranslater = new LearnerTranslater(gbItem);			
+				JsonTranslater learnerTranslater = new LearnerTranslater(gbItem, false);			
 				model.set(name, learnerTranslater.translate(value.toString()));
 			} else if (name.equals(UploadKey.GRADEBOOK_ITEM_MODEL.name())) {
 				model.set(name, getItemTranslater().translate(value.toString()));

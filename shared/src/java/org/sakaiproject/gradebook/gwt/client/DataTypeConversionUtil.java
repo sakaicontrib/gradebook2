@@ -113,6 +113,10 @@ public class DataTypeConversionUtil {
 	public static String buildFailedKey(String itemId) {
 		return new StringBuilder().append(itemId).append(AppConstants.FAILED_FLAG).toString();
 	}
+	
+	public static String buildSuccessKey(String itemId) {
+		return new StringBuilder().append(itemId).append(AppConstants.SUCCESS_FLAG).toString();
+	}
 
 	public static ClassType lookupClassType(String property, GradeType gradeType) {
 		
