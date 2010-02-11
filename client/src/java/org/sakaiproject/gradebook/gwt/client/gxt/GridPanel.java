@@ -73,7 +73,6 @@ public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 	public enum RefreshAction { NONE, REFRESHDATA, REFRESHCOLUMNS, REFRESHLOCALCOLUMNS, REFRESHCOLUMNSANDDATA, REFRESHLOCALCOLUMNSANDDATA };
 	
 	protected EditorGrid<M> grid;
-	protected PagingLoader<PagingLoadResult<M>> loader;
 	protected ListStore<M> store;
 	
 	//protected String gradebookUid;
@@ -206,8 +205,8 @@ public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 				pagingToolBar.setPageSize(ps);
 		}
 		
-		if (loader != null) 
-			loader.load(0, ps);
+		if (newLoader() != null) 
+			newLoader().load(0, ps);
 	}
 	
 	public void editCell(Gradebook selectedGradebook, Record record, String property, Object value, Object startValue, GridEvent ge) {
@@ -260,16 +259,15 @@ public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 	protected void reconfigureGrid(CustomColumnModel cm) {
 		this.cm = cm;
 		
-		loader = newLoader();
-		loader.setRemoteSort(true);
+		newLoader().setRemoteSort(true);
 		
-		store = newStore(loader);
+		store = newStore(newLoader());
 		
 		loadConfig = newLoadConfig(store, getPageSize());
 
-		((BasePagingLoader)loader).useLoadConfig(loadConfig);
+		((BasePagingLoader)newLoader()).useLoadConfig(loadConfig);
 
-		pagingToolBar.bind(loader);
+		pagingToolBar.bind(newLoader());
 
 		grid.reconfigure(store, cm);
 		
@@ -335,7 +333,7 @@ public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 		if (!useExistingColumnModel || cm == null)
 			cm = newColumnModel(selectedGradebook);
-		grid.reconfigure(store, cm);
+		grid.reconfigure(newStore(newLoader()), cm);
 		
 		if (grid.isRendered())
 			grid.el().unmask();
@@ -490,7 +488,7 @@ public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 	}
 
 	public PagingLoader<PagingLoadResult<M>> getLoader() {
-		return loader;
+		return newLoader();
 	}
 
 	public PagingToolBar getPagingToolBar() {

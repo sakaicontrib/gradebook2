@@ -7,7 +7,9 @@ import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 
+import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.DataField;
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.ModelType;
 
 public class LearnerTranslater extends JsonTranslater {
@@ -15,7 +17,7 @@ public class LearnerTranslater extends JsonTranslater {
 	public LearnerTranslater(Item gbItem, boolean isImportLearner) {
 		super(generateLearnerModelType(gbItem, isImportLearner));
 	}
-
+	
 	public static ModelType generateLearnerModelType(Item gbItem, final boolean isImportLearner) {
 		final ModelType t = new ModelType();  
 		t.setRoot(AppConstants.LIST_ROOT);
@@ -61,6 +63,10 @@ public class LearnerTranslater extends JsonTranslater {
 		processor.process();
 		
 		return t;
+	}
+	
+	protected ModelData newModelInstance() {
+		return new BaseModel();
 	}
 	
 }

@@ -1,13 +1,16 @@
 package org.sakaiproject.gradebook.gwt.client;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
+import org.sakaiproject.gradebook.gwt.client.gxt.LearnerTranslater;
 import org.sakaiproject.gradebook.gwt.client.gxt.NewModelCallback;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
+import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 
@@ -16,6 +19,7 @@ import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.data.BaseListLoader;
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.BasePagingLoader;
+import com.extjs.gxt.ui.client.data.DataField;
 import com.extjs.gxt.ui.client.data.DataReader;
 import com.extjs.gxt.ui.client.data.HttpProxy;
 import com.extjs.gxt.ui.client.data.JsonLoadResultReader;
@@ -26,16 +30,20 @@ import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.ModelType;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 import com.extjs.gxt.ui.client.data.PagingLoader;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONBoolean;
 import com.google.gwt.json.client.JSONNumber;
 import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONString;
+import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class RestBuilder extends RequestBuilder {
@@ -140,6 +148,94 @@ public class RestBuilder extends RequestBuilder {
 			protected ModelData newModelInstance() {
 			    return new BaseModel();
 			}
+		}; 
+		return new BasePagingLoader<PagingLoadResult<M>>(proxy, reader);
+	}
+	
+	public static <M extends ModelData> PagingLoader<PagingLoadResult<M>> getLearnerLoader(
+			ModelType type, Method method, String ... urlArgs) {	
+		HttpProxy<String> proxy = getProxy(urlArgs, null);
+		
+		JsonPagingLoadResultReader<PagingLoadResult<M>> reader = new JsonPagingLoadResultReader<PagingLoadResult<M>>(type) {
+			protected ModelData newModelInstance() {
+			    return new BaseModel();
+			}
+			
+			@SuppressWarnings("unchecked")
+			@Override
+			public PagingLoadResult<M> read(Object loadConfig, Object data) {
+				Gradebook gbModel = Registry.get(AppConstants.CURRENT);
+			    Item gbItem = gbModel.getGradebookItemModel();
+				ModelType modelType = LearnerTranslater.generateLearnerModelType(gbItem, false);
+				JSONObject jsonRoot = null;
+			    if (data instanceof JavaScriptObject) {
+			      jsonRoot = new JSONObject((JavaScriptObject) data);
+			    } else {
+			      jsonRoot = (JSONObject) JSONParser.parse((String) data);
+			    }
+			    JSONArray root = (JSONArray) jsonRoot.get(modelType.getRoot());
+			    int size = root.size();
+			    ArrayList<ModelData> models = new ArrayList<ModelData>();
+			    for (int i = 0; i < size; i++) {
+			      JSONObject obj = (JSONObject) root.get(i);
+			      ModelData model = newModelInstance();
+			      for (int j = 0; j < modelType.getFieldCount(); j++) {
+			        DataField field = modelType.getField(j);
+			        String name = field.getName();
+			        Class type = field.getType();
+			        String map = field.getMap() != null ? field.getMap() : field.getName();
+			        JSONValue value = obj.get(map);
+
+			        if (value == null) continue;
+			        if (value.isArray() != null) {
+			          // nothing
+			        } else if (value.isBoolean() != null) {
+			          model.set(name, value.isBoolean().booleanValue());
+			        } else if (value.isNumber() != null) {
+			          if (type != null) {
+			            Double d = value.isNumber().doubleValue();
+			            if (type.equals(Integer.class)) {
+			              model.set(name, d.intValue());
+			            } else if (type.equals(Long.class)) {
+			              model.set(name, d.longValue());
+			            } else if (type.equals(Float.class)) {
+			              model.set(name, d.floatValue());
+			            } else {
+			              model.set(name, d);
+			            }
+			          } else {
+			            model.set(name, value.isNumber().doubleValue());
+			          }
+			        } else if (value.isObject() != null) {
+			          // nothing
+			        } else if (value.isString() != null) {
+			          String s = value.isString().stringValue();
+			          if (type != null) {
+			            if (type.equals(Date.class)) {
+			              if ("timestamp".equals(field.getFormat())) {
+			                Date d = new Date(Long.parseLong(s) * 1000);
+			                model.set(name, d);
+			              } else {
+			                DateTimeFormat format = DateTimeFormat.getFormat(field.getFormat());
+			                Date d = format.parse(s);
+			                model.set(name, d);
+			              }
+			            }
+			          } else {
+			            model.set(name, s);
+			          }
+			        } else if (value.isNull() != null) {
+			          model.set(name, null);
+			        }
+			      }
+			      models.add(model);
+			    }
+			    int totalCount = models.size();
+			    if (modelType.getTotalName() != null) {
+			      totalCount = getTotalCount(jsonRoot);
+			    }
+			    return (PagingLoadResult<M>) createReturnData(loadConfig, models, totalCount);
+			  }
 		}; 
 		return new BasePagingLoader<PagingLoadResult<M>>(proxy, reader);
 	}

@@ -107,14 +107,12 @@ import com.extjs.gxt.ui.client.widget.grid.GridView;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
-import com.extjs.gxt.ui.client.widget.tips.ToolTip;
 import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.SeparatorToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Element;
-import com.google.gwt.user.client.Timer;
 
 public class MultiGradeContentPanel extends GridPanel<ModelData> implements StudentModelOwner {
 
@@ -395,8 +393,8 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 					loadConfig.setOffset(pageSize);
 					((MultiGradeLoadConfig) loadConfig).setSearchString(searchString);
 					((MultiGradeLoadConfig) loadConfig).setSectionUuid(sectionUuid);
-					((BasePagingLoader)loader).useLoadConfig(loadConfig);
-					loader.load(0, pageSize);
+					((BasePagingLoader)newLoader()).useLoadConfig(loadConfig);
+					newLoader().load(0, pageSize);
 				} else if (ce.getType() == GradebookEvents.ClearSearch.getEventType()) {
 					int pageSize = getPageSize();
 					searchField.setValue(null);
@@ -407,8 +405,8 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 					loadConfig.setLimit(0);
 					loadConfig.setOffset(pageSize);
 					((MultiGradeLoadConfig) loadConfig).setSectionUuid(sectionUuid);
-					((BasePagingLoader)loader).useLoadConfig(loadConfig);
-					loader.load(0, pageSize);
+					((BasePagingLoader)newLoader()).useLoadConfig(loadConfig);
+					newLoader().load(0, pageSize);
 				}
 			}
 
@@ -510,8 +508,8 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 		onRefreshGradebookSetup(selectedGradebook);
 		reconfigureGrid(newColumnModel(selectedGradebook));
 
-		if (loader != null) 
-			loader.load(0, pageSize);
+		if (newLoader() != null) 
+			newLoader().load(0, pageSize);
 		pageSizeField.setValue(Integer.valueOf(pageSize));
 
 	}
@@ -693,8 +691,8 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 				loadConfig.setOffset(pageSize);				
 				((MultiGradeLoadConfig) loadConfig).setSearchString(searchString);
 				((MultiGradeLoadConfig) loadConfig).setSectionUuid(sectionUuid);
-				((BasePagingLoader)loader).useLoadConfig(loadConfig);
-				loader.load(0, pageSize);
+				((BasePagingLoader)newLoader()).useLoadConfig(loadConfig);
+				newLoader().load(0, pageSize);
 			}
 
 		});

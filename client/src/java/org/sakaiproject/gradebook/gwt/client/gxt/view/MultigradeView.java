@@ -173,12 +173,14 @@ public class MultigradeView extends View {
 	}
 
 	protected void initUI(ApplicationSetup model) {
-
 		Gradebook gbModel = model.getGradebookModels().get(0);
-		
+		buildLoaderAndStore(gbModel);
+	}
+	
+	private void buildLoaderAndStore(Gradebook gbModel) {
 		ModelType type = LearnerTranslater.generateLearnerModelType(gbModel.getGradebookItemModel(), false);
 		
-		multigradeLoader = RestBuilder.getPagingDelayLoader(type, Method.GET, 
+		multigradeLoader = RestBuilder.getLearnerLoader(type, Method.GET, 
 				GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.ROSTER_FRAGMENT);
 
 		multigradeStore = new ListStore<ModelData>(multigradeLoader);
@@ -222,6 +224,7 @@ public class MultigradeView extends View {
 	}
 
 	protected void onRefreshGradebookItems(Gradebook gradebookModel) {
+		//buildLoaderAndStore(gradebookModel);
 		multigrade.onRefreshGradebookItems(gradebookModel);
 	}
 
