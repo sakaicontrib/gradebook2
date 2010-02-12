@@ -155,20 +155,29 @@ public class ServiceController extends Controller {
 				AppConstants.REST_FRAGMENT,
 				AppConstants.CONFIG_FRAGMENT, String.valueOf(gradebookId));
 		
-		builder.sendRequest(204, 400, json.toString(), new RestCallback() {
+		builder.sendRequest(200, 400, json.toString(), new RestCallback() {
 
 			public void onSuccess(Request request, Response response) {
+				
+				JsonTranslater configTranslater = new JsonTranslater() {
+					protected ModelData newModelInstance() {
+						return new ConfigurationModel();
+					}
+				};
+				
+				ModelData m = configTranslater.translate(response.getText());
+				
 				Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 				Configuration configModel = selectedGradebook.getConfigurationModel();
 
-				Collection<String> propertyNames = model.getPropertyNames();
+				Collection<String> propertyNames = m.getPropertyNames();
 				if (propertyNames != null) {
 					List<String> names = new ArrayList<String>(propertyNames);
 
 					for (int i=0;i<names.size();i++) {
 						String name = names.get(i);
-						Object value = model.get(name);
-						((ModelData)configModel).set(name, value);
+						Object value = m.get(name);
+						configModel.set(name, value);
 					}
 				}
 			}
@@ -914,27 +923,6 @@ public class ServiceController extends Controller {
 			
 		});
 		
-		/*
-		Dispatcher.forwardEvent(GradebookEvents.MaskItemTree.getEventType());
-
-		Gradebook2RPCServiceAsync service = Registry.get("service");
-		AsyncCallback<ItemModel> callback = new AsyncCallback<ItemModel>() {
-
-			public void onFailure(Throwable caught) {
-				onUpdateItemFailure(event, caught);
-				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
-			}
-
-			public void onSuccess(ItemModel result) {
-				Dispatcher.forwardEvent(GradebookEvents.BeginItemUpdates.getEventType());
-				onUpdateItemSuccess(event, result);
-				Dispatcher.forwardEvent(GradebookEvents.EndItemUpdates.getEventType());
-				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
-			}
-		};
-
-		service.update((ItemModel)event.getModifiedItem(), EntityType.ITEM, null, SecureToken.get(), callback);
-		*/		
 	}
 
 	private void doCreateItem(ItemCreate itemCreate, ItemModel createdItem) {

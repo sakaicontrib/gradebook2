@@ -431,10 +431,10 @@ public class ItemTreePanel extends GradebookPanel {
 	}
 	
 	public void onMaskItemTree() {
-		itemGrid.mask();
+		mask();
 	}
 	
-	public void onRefreshGradebookItems(Gradebook gradebookModel, TreeLoader<ItemModel> treeLoader, final ItemModel rootItem) {
+	public void onRefreshGradebookItems(final Gradebook gradebookModel, TreeLoader<ItemModel> treeLoader, final ItemModel rootItem) {
 		if (itemLoadListener != null)
 			treeLoader.removeLoadListener(itemLoadListener);
 		
@@ -443,6 +443,8 @@ public class ItemTreePanel extends GradebookPanel {
 				ItemModel gradebookItemModel = (ItemModel)rootItem.getChild(0);
 				if (gradebookItemModel != null)
 					itemGrid.setExpanded(gradebookItemModel, true, true);
+				
+				verifyCheckedState(gradebookModel);
 			}
 		};
 		treeLoader.addLoadListener(itemLoadListener);
@@ -515,7 +517,7 @@ public class ItemTreePanel extends GradebookPanel {
 		sm.deselectAll();
 	}
 	
-	public void onSwitchGradebook(Gradebook selectedGradebook) {
+	private void verifyCheckedState(Gradebook selectedGradebook) {
 		Configuration configModel = selectedGradebook.getConfigurationModel();
 		
 		Item gradebookItemModel = selectedGradebook.getGradebookItemModel();
@@ -525,7 +527,7 @@ public class ItemTreePanel extends GradebookPanel {
 				ItemModel c1 = (ItemModel)m1;
 				switch (c1.getItemType()) {
 					case CATEGORY:
-						boolean isEntireCategoryChecked = c1.getChildCount() > 0;
+						boolean isEntireCategoryChecked = c1.getChildCount() >= 0;
 						for (ModelData m2 : c1.getChildren()) {
 							Item c2 = (Item)m2;
 							boolean isChecked = !configModel.isColumnHidden(AppConstants.ITEMTREE, c2.getIdentifier(), true);
@@ -549,6 +551,12 @@ public class ItemTreePanel extends GradebookPanel {
 			}
 			gradebookItemModel.setChecked(isEntireGradebookChecked);
 		}
+	}
+	
+	public void onSwitchGradebook(Gradebook selectedGradebook) {
+		verifyCheckedState(selectedGradebook);
+		
+		Item gradebookItemModel = selectedGradebook.getGradebookItemModel();
 		
 		isAllowedToDropToGradebook = gradebookItemModel.getCategoryType() == CategoryType.NO_CATEGORIES;
 		
@@ -563,60 +571,6 @@ public class ItemTreePanel extends GradebookPanel {
 
 				}
 
-				/*
-				@Override
-				protected void onDragStart(DNDEvent e) {
-					TreeItem item = tree.findItem(e.getTarget());
-					if (item == null || e.getTarget(".my-tree-joint", 3) != null) {
-						e.stopEvent();
-						return;
-					}
-
-					boolean leaf = treeSource == TreeSource.LEAF
-					|| treeSource == TreeSource.BOTH;
-					boolean node = treeSource == TreeSource.NODE
-					|| treeSource == TreeSource.BOTH;
-
-					List<TreeItem> sel = tree.getSelectionModel()
-					.getSelectedItems();
-
-					if (sel.size() > 0) {
-						boolean ok = true;
-						for (TreeItem ti : sel) {
-							ItemModel m = (ItemModel)ti.getModel();
-							Type t = m.getItemType();
-
-							if ((t != Type.GRADEBOOK)) {
-								continue;
-							}
-
-							ok = false;
-							break;
-						}
-
-						if (ok) {
-							if (sel.get(0).getModel() != null) {
-								List models = new ArrayList();
-								for (TreeItem ti : sel) {
-									models.add(binder.getTreeStore().getModelState(
-											(ModelData) ti.getModel()));
-								}
-								e.setData(models);
-							} else {
-								e.setData(sel);
-							}
-
-							e.getStatus().update(Format.substitute(getStatusText(), sel
-									.size()));
-
-						} else {
-							e.stopEvent();
-						}
-
-					} else {
-						e.stopEvent();
-					}
-				}*/
 			};
 			source.addDNDListener(new DNDListener() {
 				@Override
@@ -688,318 +642,12 @@ public class ItemTreePanel extends GradebookPanel {
 								
 							});
 							
-							/*
-							Gradebook2RPCServiceAsync service = Registry.get("service");
-							AsyncCallback<ItemModel> callback = new AsyncCallback<ItemModel>() {
-
-								public void onFailure(Throwable caught) {
-									Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught, "Failed to update item: "));
-									Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
-								}
-
-								public void onSuccess(ItemModel result) {
-									Dispatcher.forwardEvent(GradebookEvents.BeginItemUpdates.getEventType());
-
-									GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-									selectedGradebook.setGradebookItemModel(result);
-									Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookItems.getEventType(),
-												selectedGradebook);
-									Dispatcher.forwardEvent(GradebookEvents.EndItemUpdates.getEventType());
-									Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
-								}
-							};
-
-							service.update(item, EntityType.ITEM, null, SecureToken.get(), callback);
-							*/
-							
-							/*for (ModelData tm : models) {
-								ModelData child = tm.get("model");
-								List sub = (List) ((TreeModel) tm)
-										.getChildren();
-								appendModel(child, sub, 0);
-
-							}*/
 							return;
 						}
 						
 					}
 				}
-				/*
-				protected void showFeedback(DNDEvent event) {
-					final TreeNode item = treeGrid.findNode(event.getTarget());
-					if (item == null) {
-						if (activeItem != null) {
-							clearStyle(activeItem);
-						}
-					}
 
-					if (event.getDropTarget().getComponent() == event
-							.getDragSource().getComponent()) {
-						TreeGrid source = (TreeGrid) event.getDragSource().getComponent();
-						ModelData sel = source.getSelectionModel()
-								.getSelectedItem();
-						ModelData overModel = item.getModel();
-						if (overModel == sel) {
-							Insert.get().hide();
-							event.getStatus().setStatus(false);
-							return;
-						}
-						List<ModelData> children = treeGrid.getTreeStore()
-								.getChildren(sel, true);
-						if (children.contains(item.getModel())) {
-							Insert.get().hide();
-							event.getStatus().setStatus(false);
-							return;
-						}
-					}
-
-					boolean append = feedback == Feedback.APPEND
-							|| feedback == Feedback.BOTH;
-					boolean insert = feedback == Feedback.INSERT
-							|| feedback == Feedback.BOTH;
-
-					if (item == null) {
-						handleAppend(event, item);
-					} else if (insert) {
-						boolean isValidDrop = true;
-						if (activeItem.getParent() != null) {
-														
-							if (!isAllowedToDropToGradebook) {
-								ItemModel itemModel = (ItemModel)activeItem.getModel();
-								ItemModel parentItem = (ItemModel)activeItem.getParent().getModel();
-								isValidDrop = parentItem.getItemType() == Type.GRADEBOOK && itemModel.getItemType() == Type.CATEGORY;
-							}
-						}
-						if (! isValidDrop) {
-							//event.getStatus().setStatus(false);
-							//return;
-						}
-						handleInsert(event, item);
-					} else if ((!item.isLeaf() || isAllowDropOnLeaf()) && append) {
-						handleAppend(event, item);
-					} else {
-						if (activeItem != null) {
-							clearStyle(activeItem);
-						}
-						status = -1;
-						activeItem = null;
-						appendItem = null;
-						Insert.get().hide();
-						event.getStatus().setStatus(false);
-					}
-				}*/
-				
-				/*
-				protected void handleInsert(DNDEvent event, final TreeNode item) {
-					// clear any active append item
-					if (activeItem != null && activeItem != item) {
-						clearStyle(activeItem);
-					}
-
-					int height = treeGrid.getView().getRow(item.getModel())
-							.getOffsetHeight();
-					int mid = height / 2;
-					int top = treeGrid.getView().getRow(item.getModel())
-							.getAbsoluteTop();
-					mid += top;
-					int y = event.getClientY();
-					boolean before = y < mid;
-
-					if (!item.isLeaf() || isAllowDropOnLeaf()) {
-						if ((before && y > top + 4)
-								|| (!before && y < top + height - 4)) {
-							handleAppend(event, item);
-							return;
-						}
-					}
-
-					if (event.getDropTarget().getComponent() == event
-							.getDragSource().getComponent()) {
-						TreeGrid source = (TreeGrid) event.getDragSource().getComponent();
-						ModelData sel = source.getSelectionModel()
-								.getSelectedItem();
-						ModelData overModel = item.getModel();
-						if (before
-								&& overModel == treeGrid.getTreeStore()
-										.getNextSibling(sel)) {
-							Insert.get().hide();
-							event.getStatus().setStatus(false);
-							return;
-						}
-					}
-
-					appendItem = null;
-
-					status = before ? 0 : 1;
-
-					if (activeItem != null) {
-						clearStyle(activeItem);
-					}
-
-					activeItem = item;
-
-					if (activeItem != null) {
-						int idx = 0;
-						boolean isValidDrop = true;
-						String parent = "no parent";
-						if (activeItem.getParent() != null) {
-							parent = ((ItemModel)activeItem.getParent().getModel()).getName();
-														
-							if (!isAllowedToDropToGradebook) {
-								ItemModel itemModel = (ItemModel)activeItem.getModel();
-								ItemModel parentItem = (ItemModel)activeItem.getParent().getModel();
-								isValidDrop = parentItem.getItemType() == Type.GRADEBOOK && itemModel.getItemType() == Type.CATEGORY;
-							}
-							
-							idx = activeItem.getParent().indexOf(item);
-						} else {
-							idx = treeGrid.getTreeStore().indexOf(
-									activeItem.getModel());
-						}
-
-						String status = "x-tree-drop-ok-between";
-						if (before && idx == 0) {
-							status = "x-tree-drop-ok-above";
-						} else if (idx > 1 && !before
-								&& idx == item.getParent().getItemCount() - 1) {
-							status = "x-tree-drop-ok-below";
-						}
-						//Info.display("Status", status + " " + idx + " " + parent);
-						
-						//if (isValidDrop)
-						//	event.getStatus().setStatus(true, status);
-						//else {
-						//	event.getStatus().setStatus(false);
-						//	return;
-						//}
-						
-						if (before) {
-							showInsert(event, (Element) treeGrid.getView()
-									.getRow(item.getModel()), true);
-						} else {
-							showInsert(event, (Element) treeGrid.getView()
-									.getRow(item.getModel()), false);
-						}
-					}
-				}
-
-				private void showInsert(DNDEvent event, Element elem, boolean before) {
-				    Insert insert = Insert.get();
-				    insert.show();
-				    Rectangle rect = El.fly(elem).getBounds();
-				    int y = before ? rect.y - 2 : (rect.y + rect.height - 4);
-				    insert.setBounds(rect.x, y, rect.width, 6);
-				}*/
-				
-				/*
-				@Override
-				protected void appendModel(final ModelData p, final TreeModel model, final int index) {
-
-					final ItemModel child = model.get("model");
-					child.setItemOrder(Integer.valueOf(index));
-
-					Type childType = child.getItemType();
-
-					if (childType == Type.GRADEBOOK)
-						return;
-
-					if (p == null) {
-						return;
-					} else {
-						ItemModel destParent = (ItemModel)p;
-						ItemModel orgParent = (ItemModel) child.getParent();
-
-						Long destParentId = destParent == null ? null : destParent.getCategoryId();
-						Long orgParentId = orgParent == null ? null : orgParent.getCategoryId();
-
-						Type parentType = destParent.getItemType();
-
-						if (childType == Type.ITEM && parentType == Type.CATEGORY && destParentId != null && orgParentId != null
-								&& destParentId.compareTo(orgParentId) != 0)
-							child.setCategoryId(destParentId);
-
-						Type allowedParentType = Type.CATEGORY;
-
-						GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-						if (selectedGradebook.getGradebookItemModel().getCategoryType() == CategoryType.NO_CATEGORIES)
-							allowedParentType = Type.GRADEBOOK;
-
-						if (childType == Type.ITEM && parentType != allowedParentType)
-							return;
-						if (childType == Type.CATEGORY && parentType != Type.GRADEBOOK)
-							return;
-						if (parentType == Type.ROOT)
-							return;
-
-					}
-
-					Dispatcher.forwardEvent(GradebookEvents.MaskItemTree.getEventType());
-
-					Gradebook2RPCServiceAsync service = Registry.get("service");
-					AsyncCallback<ItemModel> callback = new AsyncCallback<ItemModel>() {
-
-						public void onFailure(Throwable caught) {
-							Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught, "Failed to update item: "));
-							Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
-						}
-
-						public void onSuccess(ItemModel result) {
-							Dispatcher.forwardEvent(GradebookEvents.BeginItemUpdates.getEventType());
-
-							ItemModel activeItem = ItemModelProcessor.getActiveItem(result);
-
-							int realIndex = activeItem.getItemOrder().intValue();
-
-							if (binder != null) {
-								ModelData m = (ModelData) model.get("model");
-								ModelData px = binder.getTreeStore().getParent(m);
-								if (px != null) {
-
-									binder.getTreeStore().remove(px, m);
-								} else {
-									binder.getTreeStore().remove(m);
-								}
-							} 
-
-							if (p == null) {
-								binder.getTreeStore().insert(activeItem, realIndex, false);
-							} else {
-								binder.getTreeStore().insert(p, activeItem, realIndex, false);
-							}
-							List<ModelData> children = model.getChildren();
-							for (int i = 0; i < children.size(); i++) {
-								appendModel(activeItem, (TreeModel) children.get(i), i);
-							}
-
-							ItemModelProcessor processor = new ItemModelProcessor(result) {
-
-								public void doGradebook(ItemModel itemModel) {
-									if (!itemModel.isActive())
-										binder.getTreeStore().update(itemModel);
-								}
-
-								public void doCategory(ItemModel itemModel) {
-									if (!itemModel.isActive())
-										binder.getTreeStore().update(itemModel);
-								}
-
-								public void doItem(ItemModel itemModel) {
-									if (!itemModel.isActive())
-										binder.getTreeStore().update(itemModel);
-								}
-
-							};
-
-							processor.process();
-
-							Dispatcher.forwardEvent(GradebookEvents.EndItemUpdates.getEventType());
-							Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
-						}
-					};
-
-					service.update((ItemModel)child, EntityType.ITEM, null, SecureToken.get(), callback);
-
-				}*/
 			};
 
 			target.setAllowSelfAsSource(true);
@@ -1014,7 +662,7 @@ public class ItemTreePanel extends GradebookPanel {
 	}
 	
 	public void onUnmaskItemTree() {
-		itemGrid.unmask();
+		unmask();
 	}
 	
 	/*

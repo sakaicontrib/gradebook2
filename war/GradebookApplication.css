@@ -148,6 +148,15 @@
    background-position: 2px 2px;
 }
 
+.x-grid3-row-checked .x-grid3-row-checker {
+	background-position:-23px 2px;
+}
+
+.x-grid3-hd-checker-on .x-grid3-hd-checker {
+	background-position:-23px 2px;
+}
+
+
 .x-grid3-hd-inner {
 	cursor:inherit;
 	font-size: 9pt !important;

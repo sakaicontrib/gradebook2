@@ -43,6 +43,10 @@ public class JsonTranslater {
 
 	private ModelType modelType;
 	
+	public JsonTranslater() {
+		
+	}
+	
 	public JsonTranslater(ModelType modelType) {
 		this.modelType = modelType;
 	}
@@ -100,20 +104,38 @@ public class JsonTranslater {
 	    }
 	    
 		ModelData model = newModelInstance();
-		for (int j = 0; j < modelType.getFieldCount(); j++) {
-			DataField field = modelType.getField(j);
-			String map = field.getMap() != null ? field.getMap() : field.getName();
-			JSONValue value = obj.get(map);
+		
+		if (obj != null) {
+			if (modelType == null) {
+				modelType = getModelTypeOnTheFly(obj);
+			} 
+			
+			for (int j = 0; j < modelType.getFieldCount(); j++) {
+				DataField field = modelType.getField(j);
+				String map = field.getMap() != null ? field.getMap() : field.getName();
+				JSONValue value = obj.get(map);
 
-			if (value == null) continue;
-			setValue(model, value, field);
+				if (value == null) continue;
+				setValue(model, value, field);
+			}
 		}
 		return model;
 	}
 	
-	private JsonTranslater colTranslater, gbTranslater, itemTranslater, rowsTranslater, statsTranslater;
+	private JsonTranslater colTranslater, configTranslater, gbTranslater, itemTranslater, rowsTranslater, statsTranslater;
 	
-	private void setValue(ModelData model, JSONValue value, DataField field) {
+	private ModelType getModelTypeOnTheFly(JSONObject o) {
+		ModelType modelType = new ModelType();
+		
+		for (String key : o.keySet()) {
+			DataField f = new DataField(key);
+			modelType.addField(f);
+		}
+		
+		return modelType;
+	}
+	
+	private boolean setValue(ModelData model, JSONValue value, DataField field) {
 
 		String name = field.getName();
 		Class type = field.getType();
@@ -231,6 +253,8 @@ public class JsonTranslater {
 				model.set(name, learnerTranslater.translate(value.toString()));
 			} else if (name.equals(UploadKey.GRADEBOOK_ITEM_MODEL.name())) {
 				model.set(name, getItemTranslater().translate(value.toString()));
+			} else {
+				return false;
 			}
 			
 		} else if (value.isString() != null) {
@@ -262,8 +286,22 @@ public class JsonTranslater {
 		} else if (value.isNull() != null) {
 			model.set(name, null);
 		}
+		
+		return true;
 	}
 
+	private JsonTranslater getConfigTranslater() {
+		if (configTranslater == null) {
+			configTranslater = new JsonTranslater() {
+				protected ModelData newModelInstance() {
+					return new ConfigurationModel();
+				}
+			};
+		}
+		
+		return configTranslater;
+	}
+	
 	
 	private JsonTranslater getItemTranslater() {
 		if (itemTranslater == null) {
