@@ -414,6 +414,7 @@ public class ImportPanel extends GradebookPanel {
 			public void onError(Request request, Throwable caught) {
 				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught));
 				uploadingBox.close();
+				submitButton.setVisible(true);
 			}
 			
 			@Override
@@ -426,10 +427,6 @@ public class ImportPanel extends GradebookPanel {
 					ModelData result = translater.translate(response.getText());
 					
 					List<ModelData> rows = result.get(UploadKey.ROWS.name());
-					int size = rows == null ? 0 : rows.size();
-					
-					//StringBuilder heading = new StringBuilder().append("Result Data (").append(size).append(" records uploaded)");
-					//previewTab.setText(heading.toString());
 					
 					int numberOfStudentsChanged = 0;
 					if (rows != null) {

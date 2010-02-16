@@ -4,10 +4,10 @@ import java.util.EnumSet;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.LearnerModel;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 
-import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.DataField;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.ModelType;
@@ -66,7 +66,7 @@ public class LearnerTranslater extends JsonTranslater {
 	}
 	
 	protected ModelData newModelInstance() {
-		return new BaseModel();
+		return new LearnerModel();
 	}
 	
 }

@@ -126,6 +126,8 @@ public class JsonTranslater {
 	
 	private ModelType getModelTypeOnTheFly(JSONObject o) {
 		ModelType modelType = new ModelType();
+		modelType.setRoot(AppConstants.LIST_ROOT);
+		modelType.setTotalName(AppConstants.TOTAL);
 		
 		for (String key : o.keySet()) {
 			DataField f = new DataField(key);

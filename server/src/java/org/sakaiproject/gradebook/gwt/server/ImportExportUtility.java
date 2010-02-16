@@ -1127,36 +1127,43 @@ public class ImportExportUtility {
 			String lowerText = text == null ? null : text.trim().toLowerCase();
 
 			ImportHeader header = null;
-			log.debug("Column[" + i + "] = " + text); 
+			if (log.isDebugEnabled())
+					log.debug("Column[" + i + "] = " + text); 
 			// Check for name field
 			if (lowerText == null || lowerText.equals("") || scantronIgnoreSet.contains(lowerText)) {
 				importInfo.getIgnoreColumns().add(Integer.valueOf(i));
-				log.debug("HI: Ignoring column " + i);
+				if (log.isDebugEnabled())
+					log.debug("HI: Ignoring column " + i);
 				continue;
 			} else if (nameSet.contains(lowerText)) {
-				log.debug("HI: Column " + i + " is student name");
+				if (log.isDebugEnabled())
+					log.debug("HI: Column " + i + " is student name");
 				header = new ImportHeader(Field.NAME, text);
 				header.setId("NAME");
 				importInfo.setNameFieldIndex(i);
 				// FIXME - Should this be like this? 
 			} else if (idSet.contains(lowerText)) {
-				log.debug("HI: Column " + i + " is student id");
+				if (log.isDebugEnabled())
+					log.debug("HI: Column " + i + " is student id");
 				header = new ImportHeader(Field.ID, text);
 				header.setId("ID");
 				importInfo.setIdFieldIndex(i);
 			} else if (lowerText.equalsIgnoreCase("course grade")) {
 				// Do nothing
-				log.debug("HI: Column " + i + " is course grade");
+				if (log.isDebugEnabled())
+					log.debug("HI: Column " + i + " is course grade");
 				importInfo.setCourseGradeFieldIndex(i);
 			} else {
-				log.debug("HI: Column " + i + " is not known, probably points");
+				if (log.isDebugEnabled())
+					log.debug("HI: Column " + i + " is not known, probably points");
 				String name = null;
 				String points = null;
 				boolean isExtraCredit = text
 				.contains(AppConstants.EXTRA_CREDIT_INDICATOR);
 
 				if (isExtraCredit) {
-					log.debug("X: Column " + i + " has extra credit");
+					if (log.isDebugEnabled())
+						log.debug("X: Column " + i + " has extra credit");
 					text = text
 					.replace(AppConstants.EXTRA_CREDIT_INDICATOR, "");
 				}
@@ -1164,7 +1171,8 @@ public class ImportExportUtility {
 				boolean isUnincluded = text.contains(AppConstants.UNINCLUDED_INDICATOR);
 
 				if (isUnincluded) {
-					log.debug("X: Column " + i + " is unincluded");
+					if (log.isDebugEnabled())
+						log.debug("X: Column " + i + " is unincluded");
 					text = text.replace(AppConstants.UNINCLUDED_INDICATOR, "");
 				}
 
@@ -1185,11 +1193,14 @@ public class ImportExportUtility {
 
 				if (startParenthesis != -1 && endParenthesis != -1
 						&& endParenthesis > startParenthesis + 1) {
-					log.debug("X: Column " + i + " has pts indicated");
+					if (log.isDebugEnabled())
+						log.debug("X: Column " + i + " has pts indicated");
 					points = text.substring(startParenthesis + 1, endParenthesis);
-					log.debug("X: Column " + i + " points are " + points);
+					if (log.isDebugEnabled())
+						log.debug("X: Column " + i + " points are " + points);
 					name = text.substring(0, startParenthesis);
-					log.debug("X: Column " + i + " name is " + points);
+					if (log.isDebugEnabled())
+						log.debug("X: Column " + i + " name is " + points);
 
 					if (name != null)
 						name = name.trim();
