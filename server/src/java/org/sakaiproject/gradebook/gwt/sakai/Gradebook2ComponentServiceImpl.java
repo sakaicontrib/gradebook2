@@ -119,7 +119,6 @@ import org.springframework.context.ApplicationContextAware;
 
 import com.extjs.gxt.ui.client.Style.SortDir;
 import com.extjs.gxt.ui.client.data.ModelData;
-import com.extjs.gxt.ui.client.data.PagingLoadConfig;
 import com.google.gwt.core.client.GWT;
 
 public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentService, ApplicationContextAware {
@@ -1287,13 +1286,19 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		// up, we have to iterate
 		if (sortField != null) {
 			columnId = sortField;
-
+			// TODO: replace this with a enum.valueOf?
+			try {
+				sortColumnKey = LearnerKey.valueOf(columnId);
+			} catch (IllegalArgumentException iae) {
+				log.debug("This sort field is not a fixed column: " + sortField);
+			}
+			/*
 			for (LearnerKey key : EnumSet.allOf(LearnerKey.class)) {
 				if (columnId.equals(key.name())) {
 					sortColumnKey = key;
 					break;
 				}
-			}
+			}*/
 
 			if (sortColumnKey == null)
 				sortColumnKey = LearnerKey.ASSIGNMENT;
@@ -1443,7 +1448,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 					List<String> studentUids = new ArrayList<String>(userRecordMap.keySet());
 
-					userRecords = doSearchAndSortUserRecords(gradebook, assignments, categories, studentUids, userRecordMap, null);
+					userRecords = doSearchAndSortUserRecords(gradebook, assignments, categories, studentUids, userRecordMap, searchString, columnId, isDescending, sortColumnKey);
 					totalUsers = userRecords.size();
 					break;
 			}
@@ -3504,39 +3509,9 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return assignmentId;
 	}
 
-	private List<UserRecord> doSearchAndSortUserRecords(Gradebook gradebook, List<Assignment> assignments, List<Category> categories, List<String> studentUids, Map<String, UserRecord> userRecordMap, PagingLoadConfig config) {
-
-		String searchString = null;
-		if (config instanceof MultiGradeLoadConfig) {
-			searchString = ((MultiGradeLoadConfig) config).getSearchString();
-		}
+	private List<UserRecord> doSearchAndSortUserRecords(Gradebook gradebook, List<Assignment> assignments, List<Category> categories, List<String> studentUids, Map<String, UserRecord> userRecordMap, String searchString, String columnId, boolean isDescending, LearnerKey sortColumnKey) {
 
 		List<UserRecord> userRecords = null;
-		LearnerKey sortColumnKey = null;
-
-		String columnId = null;
-
-		// This is slightly painful, but since it's a String that gets passed
-		// up, we have to iterate
-		if (config != null && config.getSortInfo() != null && config.getSortInfo().getSortField() != null) {
-			columnId = config.getSortInfo().getSortField();
-
-			for (LearnerKey key : EnumSet.allOf(LearnerKey.class)) {
-				if (columnId.equals(key.name())) {
-					sortColumnKey = key;
-					break;
-				}
-			}
-
-			if (sortColumnKey == null)
-				sortColumnKey = LearnerKey.ASSIGNMENT;
-
-		}
-
-		if (sortColumnKey == null)
-			sortColumnKey = LearnerKey.DISPLAY_NAME;
-
-		boolean isDescending = config != null && config.getSortInfo() != null && config.getSortInfo().getSortDir() == SortDir.DESC;
 
 		// Check to see if we're sorting or not
 		if (sortColumnKey != null) {
@@ -3671,8 +3646,10 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				// If we're not searching, then return everybody
 				if (searchString == null || sortName.contains(searchString)) {
 					UserRecord userRecord = userRecordMap.get(user.getId());
-					userRecord.populate(user);
-					userRecords.add(userRecord);
+					if (userRecord != null) {
+						userRecord.populate(user);
+						userRecords.add(userRecord);
+					}
 				}
 			}
 		}

@@ -18,6 +18,15 @@ public class Roster extends Resource {
     	
     	boolean isDescending = sortDir == null || "DESC".equals(sortDir);
     	
+    	if (sortField != null && sortField.equalsIgnoreCase("null"))
+    		sortField = null;
+    	if (sortDir != null && sortDir.equalsIgnoreCase("null"))
+    		sortDir = null;
+    	if (sectionUuid != null && (sectionUuid.equalsIgnoreCase("null") || sectionUuid.equalsIgnoreCase("ALL")))
+    		sectionUuid = null;
+    	if (searchString != null && searchString.equalsIgnoreCase("null")) 
+    		searchString = null;
+    	
     	org.sakaiproject.gradebook.gwt.client.model.Roster roster = 
     		service.getRoster(gradebookUid, gradebookId, limit, offset, sectionUuid, searchString, sortField, false, isDescending);
     
