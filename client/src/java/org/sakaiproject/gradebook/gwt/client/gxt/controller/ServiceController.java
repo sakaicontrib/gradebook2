@@ -225,12 +225,12 @@ public class ServiceController extends Controller {
 
 				switch (itemModel.getItemType()) {
 					case GRADEBOOK:
-						Gradebook selectedGradebook = Registry
-						.get(AppConstants.CURRENT);
+						Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 						selectedGradebook.setGradebookGradeItem(itemModel);
-						Dispatcher
-						.forwardEvent(GradebookEvents.ItemUpdated.getEventType(), itemModel);
+						Dispatcher.forwardEvent(GradebookEvents.ItemUpdated.getEventType(), itemModel);
 						Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookItems.getEventType(),
+								selectedGradebook);
+						Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades.getEventType(),
 								selectedGradebook);
 						break;
 					case CATEGORY:

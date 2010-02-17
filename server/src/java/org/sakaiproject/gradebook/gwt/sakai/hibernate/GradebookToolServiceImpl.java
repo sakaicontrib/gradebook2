@@ -159,7 +159,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		};
 
 		return (Long)getHibernateTemplate().execute(hc);
-			}
+	}
 
 	public Long createCategory(final Long gradebookId, final String name, final Double weight, final Integer dropLowest, final Boolean equalWeightAssignments, final Boolean isUnweighted, final Boolean isExtraCredit, final Integer categoryOrder, final Boolean isEnforcePointWeighting) 
 	throws ConflictingCategoryNameException, StaleObjectModificationException {
