@@ -182,7 +182,7 @@ public class ItemTreePanel extends GradebookPanel {
 						&& ((Double)value).doubleValue() > 100.00001d;
 					boolean isTooSmall = ((isPercentCategory && isCategory) || (isPercentGrade && isGradebook)) && ((Double)value).doubleValue() < 99.9994d;
 					
-					result = DataTypeConversionUtil.getDefaultNumberFormat().format(((Double)value).doubleValue());
+					result = DataTypeConversionUtil.getShortNumberFormat().format(((Double)value).doubleValue());
 					
 					StringBuilder cssClasses = new StringBuilder();
 					
@@ -431,7 +431,8 @@ public class ItemTreePanel extends GradebookPanel {
 	}
 	
 	public void onMaskItemTree() {
-		mask();
+		itemGrid.hide();
+		itemGrid.mask();
 	}
 	
 	public void onRefreshGradebookItems(final Gradebook gradebookModel, TreeLoader<ItemModel> treeLoader, final ItemModel rootItem) {
@@ -662,7 +663,8 @@ public class ItemTreePanel extends GradebookPanel {
 	}
 	
 	public void onUnmaskItemTree() {
-		unmask();
+		itemGrid.show();
+		itemGrid.unmask();
 	}
 	
 	/*

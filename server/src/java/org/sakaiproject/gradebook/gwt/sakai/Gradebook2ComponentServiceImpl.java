@@ -4824,6 +4824,11 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		boolean isWeightChanged = false;
 
 		Category category = gbService.getCategory(Long.valueOf(item.getIdentifier()));
+		
+		if (category == null) {
+			throw new InvalidInputException(i18n.getString("cannotModifyDefaultCategory"));
+		}
+		
 		Gradebook gradebook = category.getGradebook();
 
 		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.CATEGORY.name(), ActionType.UPDATE.name());
