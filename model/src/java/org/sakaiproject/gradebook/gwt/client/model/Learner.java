@@ -6,6 +6,8 @@ public interface Learner {
 
 	public abstract <X> X get(String property);
 	
+	public abstract <X> X set(String property, X value);
+	
 	public abstract Map<String, Object> getProperties();
 	
 	public abstract String getIdentifier();

@@ -837,7 +837,7 @@ public class ServiceController extends Controller {
 
 				selectedGradebook.setGradebookGradeItem(result);
 				
-				if (isCategoryTypeUpdated || isReleaseGradesUpdated || isReleaseItemsUpdated) {
+				if (isCategoryTypeUpdated || isGradeTypeUpdated || isReleaseGradesUpdated || isReleaseItemsUpdated) {
 					Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookSetup.getEventType(),
 							selectedGradebook);
 				} 

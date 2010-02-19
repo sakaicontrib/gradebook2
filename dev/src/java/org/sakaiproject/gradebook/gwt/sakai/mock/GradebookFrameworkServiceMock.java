@@ -56,7 +56,7 @@ public class GradebookFrameworkServiceMock extends GradebookFrameworkServiceImpl
 					// to Hibernate's screwy behavior with ids
 					Realm realm = new Realm();
 					realm.setRealmKey(Long.valueOf(i));
-					realm.setRealmId("/site/TESTSITEID");
+					realm.setRealmId("/site/TESTSITECONTEXT");
 					session.save(realm);
 					
 					RealmGroup group = new RealmGroup();

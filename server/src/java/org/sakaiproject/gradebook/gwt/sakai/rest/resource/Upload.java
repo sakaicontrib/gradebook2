@@ -8,6 +8,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
+import org.sakaiproject.gradebook.gwt.server.model.UploadImpl;
 
 @Path("/gradebook/rest/upload")
 public class Upload extends Resource {
@@ -18,7 +19,8 @@ public class Upload extends Resource {
 			String model) throws InvalidInputException {
 		
 		Map<String,Object> map = fromJson(model, Map.class);
-		Map<String,Object> result = service.upload(gradebookUid, gradebookId, map);
+		org.sakaiproject.gradebook.gwt.client.model.Upload result = 
+			service.upload(gradebookUid, gradebookId, new UploadImpl(map), false);
 		
 		return toJson(result);
 	}

@@ -22,9 +22,9 @@
  **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.exceptions;
 
-import com.google.gwt.user.client.rpc.IsSerializable;
+import java.io.Serializable;
 
-public class InvalidInputException extends Exception implements IsSerializable {
+public class InvalidInputException extends Exception implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 

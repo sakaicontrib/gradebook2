@@ -330,7 +330,7 @@ public class UserDirectoryServiceMock implements UserDirectoryService {
 	
 	private User createUserRecord(int i) {
 		String id = String.valueOf(i);
-		String displayId = String.valueOf(100000 + getRandomInt(899999));
+		String displayId = id; //String.valueOf(100000 + getRandomInt(899999));
 		String firstName = FIRST_NAMES[getRandomInt(FIRST_NAMES.length)];
 		String lastName = LAST_NAMES[getRandomInt(LAST_NAMES.length)];
 		String eid = lastName.toLowerCase();

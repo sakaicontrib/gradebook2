@@ -39,10 +39,15 @@ public class NumericCellRenderer implements GridCellRenderer<ModelData> {
 			ColumnData config, int rowIndex, int colIndex,
 			ListStore<ModelData> store, Grid<ModelData> grid) {
 		
-		Double value = model.get(property);
-
-		if (value == null)
+		Object obj = model.get(property);
+		
+		if (obj == null)
 			return "&nbsp;";
+		
+		if (obj instanceof String)
+			return (String)obj;
+		
+		Double value = (Double)obj;
 		
 		return defaultNumberFormat.format(value.doubleValue());
 	}

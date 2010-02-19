@@ -178,7 +178,7 @@ public class MultigradeView extends View {
 	}
 	
 	private void buildLoaderAndStore(Gradebook gbModel) {
-		ModelType type = LearnerTranslater.generateLearnerModelType(gbModel.getGradebookItemModel(), false);
+		ModelType type = LearnerTranslater.generateLearnerModelType();
 		
 		multigradeLoader = RestBuilder.getLearnerLoader(type, Method.GET, 
 				GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.ROSTER_FRAGMENT);

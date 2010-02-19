@@ -16,6 +16,7 @@ import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.Permission;
 import org.sakaiproject.gradebook.gwt.client.model.Roster;
 import org.sakaiproject.gradebook.gwt.client.model.Statistics;
+import org.sakaiproject.gradebook.gwt.client.model.Upload;
 import org.sakaiproject.gradebook.gwt.sakai.InstitutionalAdvisor.Column;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.site.api.Group;
@@ -86,6 +87,6 @@ public interface Gradebook2ComponentService {
 	
 	public Item updateItem(Item item) throws InvalidInputException;
 
-	public Map<String, Object> upload(String gradebookUid, Long gradebookId, Map<String, Object> attributes) throws InvalidInputException;
+	public Upload upload(String gradebookUid, Long gradebookId, Upload upload, boolean isDryRun) throws InvalidInputException;
 	
 }

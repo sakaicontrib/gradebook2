@@ -3,6 +3,8 @@ package org.sakaiproject.gradebook.gwt.client.gxt;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ConfigurationModel;
@@ -41,7 +43,9 @@ import com.google.gwt.json.client.JSONValue;
 
 public class JsonTranslater {
 
-	private ModelType modelType;
+	protected ModelType modelType;
+	protected Set<String> fieldSet;
+	protected boolean doRefresh = false;
 	
 	public JsonTranslater() {
 		
@@ -53,43 +57,58 @@ public class JsonTranslater {
 	
 	public JsonTranslater(EnumSet<?> keyEnumSet) {
 		this.modelType = new ModelType();
-		addModelTypeFields(modelType, keyEnumSet, false);
+		this.fieldSet = addModelTypeFields(modelType, keyEnumSet, false);
 	}
 	
-	public static void addModelTypeFields(ModelType modelType, EnumSet<?> keyEnumSet, boolean ignoreType) {
-		for (Enum<?> e : keyEnumSet) {
-			DataField field = new DataField(e.name(), e.name());
-			Class<?> type = null;
-			
-			String format = "yyyy-MM-dd";
-			
-			if (!ignoreType) {
-				if (e instanceof GradebookKey) 
-					type = ((GradebookKey)e).getType();
-				else if (e instanceof ItemKey) 
-					type = ((ItemKey)e).getType();
-				else if (e instanceof GradeFormatKey) 
-					type = ((GradeFormatKey)e).getType();
-				else if (e instanceof ActionKey) {
-					type = ((ActionKey)e).getType();
-					format = DateTimeFormat.getMediumDateFormat().getPattern();
-				} else if (e instanceof VerificationKey) 
-					type = ((VerificationKey)e).getType();
+	public static Set<String> addModelTypeFields(ModelType modelType, EnumSet<?> keyEnumSet, boolean ignoreType) {
+		Set<String> fieldSet = new HashSet<String>();
+		if (keyEnumSet != null && !keyEnumSet.isEmpty()) {
+			for (Enum<?> e : keyEnumSet) {
+				DataField field = new DataField(e.name(), e.name());
+				Class<?> type = null;
 				
-				if (type != null) {
-					if (type.equals(String.class))
-						type = null;
-					else if (type.equals(Date.class)) {
-						if (ignoreType)
+				String format = "yyyy-MM-dd";
+				
+				if (!ignoreType) {
+					if (e instanceof GradebookKey) 
+						type = ((GradebookKey)e).getType();
+					else if (e instanceof ItemKey) 
+						type = ((ItemKey)e).getType();
+					else if (e instanceof GradeFormatKey) 
+						type = ((GradeFormatKey)e).getType();
+					else if (e instanceof ActionKey) {
+						type = ((ActionKey)e).getType();
+						format = DateTimeFormat.getMediumDateFormat().getPattern();
+					} else if (e instanceof VerificationKey) 
+						type = ((VerificationKey)e).getType();
+					
+					if (type != null) {
+						if (type.equals(String.class))
 							type = null;
-						else
-							field.setFormat(format);
+						else if (type.equals(Date.class)) {
+							if (ignoreType)
+								type = null;
+							else
+								field.setFormat(format);
+						}
 					}
 				}
+	
+				field.setType(type);
+				modelType.addField(field);
+				fieldSet.add(e.name());
 			}
-
-			field.setType(type);
-			modelType.addField(field);
+		}
+		return fieldSet;
+	}
+	
+	public static void decorateModelType(ModelType modelType, Set<String> fieldSet, JSONObject obj) {
+		for (String key : obj.keySet()) {
+			if (!fieldSet.contains(key)) {
+				DataField f = new DataField(key, key);
+				modelType.addField(f);
+				fieldSet.add(key);
+			}
 		}
 	}
 	
@@ -108,16 +127,21 @@ public class JsonTranslater {
 		if (obj != null) {
 			if (modelType == null) {
 				modelType = getModelTypeOnTheFly(obj);
-			} 
+			} else if (fieldSet != null) {
+				// Initialize the field map with all of the object keys 
+				decorateModelType(modelType, fieldSet, obj);
+			}
 			
 			for (int j = 0; j < modelType.getFieldCount(); j++) {
 				DataField field = modelType.getField(j);
 				String map = field.getMap() != null ? field.getMap() : field.getName();
+					
 				JSONValue value = obj.get(map);
 
 				if (value == null) continue;
 				setValue(model, value, field);
 			}
+			
 		}
 		return model;
 	}

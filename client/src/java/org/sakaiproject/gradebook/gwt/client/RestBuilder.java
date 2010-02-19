@@ -1,16 +1,14 @@
 package org.sakaiproject.gradebook.gwt.client;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
-import org.sakaiproject.gradebook.gwt.client.gxt.LearnerTranslater;
+import org.sakaiproject.gradebook.gwt.client.gxt.LearnerResultReader;
 import org.sakaiproject.gradebook.gwt.client.gxt.NewModelCallback;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
-import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 
@@ -19,7 +17,6 @@ import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.data.BaseListLoader;
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.BasePagingLoader;
-import com.extjs.gxt.ui.client.data.DataField;
 import com.extjs.gxt.ui.client.data.DataReader;
 import com.extjs.gxt.ui.client.data.HttpProxy;
 import com.extjs.gxt.ui.client.data.JsonLoadResultReader;
@@ -30,20 +27,16 @@ import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.ModelType;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 import com.extjs.gxt.ui.client.data.PagingLoader;
-import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
-import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONBoolean;
 import com.google.gwt.json.client.JSONNumber;
 import com.google.gwt.json.client.JSONObject;
-import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONString;
-import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class RestBuilder extends RequestBuilder {
@@ -156,6 +149,9 @@ public class RestBuilder extends RequestBuilder {
 			ModelType type, Method method, String ... urlArgs) {	
 		HttpProxy<String> proxy = getProxy(urlArgs, null);
 		
+		JsonPagingLoadResultReader<PagingLoadResult<M>> reader = new LearnerResultReader<PagingLoadResult<M>>(type);
+		
+		/*
 		JsonPagingLoadResultReader<PagingLoadResult<M>> reader = new JsonPagingLoadResultReader<PagingLoadResult<M>>(type) {
 			protected ModelData newModelInstance() {
 			    return new BaseModel();
@@ -236,7 +232,7 @@ public class RestBuilder extends RequestBuilder {
 			    }
 			    return (PagingLoadResult<M>) createReturnData(loadConfig, models, totalCount);
 			  }
-		}; 
+		};*/
 		return new BasePagingLoader<PagingLoadResult<M>>(proxy, reader);
 	}
 	

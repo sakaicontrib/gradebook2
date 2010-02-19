@@ -30,7 +30,7 @@
 		<property name="userService" ref="org.sakaiproject.user.api.UserDirectoryService"/>
 		<property name="gradeCalculations" ref="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"/>
 		<property name="frameworkService" ref="org.sakaiproject.service.gradebook.GradebookFrameworkService" />
-		<!--property name="siteService" ref="org.sakaiproject.site.api.SiteService"/-->
+		<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>
 		<property name="authz" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authz"/>
 		<property name="sectionAwareness" ref="org.sakaiproject.section.api.SectionAwareness"/>
 		<property name="advisor" ref="org.sakaiproject.gradebook.gwt.sakai.api.SampleInstitutionalAdvisor"/>
@@ -54,6 +54,10 @@
                 </property-->
             </bean>
 		</property>
+	</bean>
+	
+	<bean id="org.sakaiproject.site.api.SiteService" 
+		class="org.sakaiproject.gradebook.gwt.sakai.mock.SiteServiceMock">
 	</bean>
 	
 	<bean id="org_sakaiproject_tool_gradebook_facades_Authz" class="org.sakaiproject.gradebook.gwt.sakai.mock.AuthzMock">

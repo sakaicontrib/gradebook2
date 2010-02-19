@@ -1,6 +1,6 @@
 /**********************************************************************************
  *
- * $Id$
+ * $Id: SecurityException.java 63685 2009-09-30 01:33:01Z jlrenfro@ucdavis.edu $
  *
  ***********************************************************************************
  *
@@ -21,42 +21,27 @@
  *
  **********************************************************************************/
 
-package org.sakaiproject.gradebook.gwt.sakai.mock;
+package org.sakaiproject.gradebook.gwt.client.exceptions;
 
-import org.sakaiproject.section.api.coursemanagement.User;
+import java.io.Serializable;
 
-public class UserSectionMock implements User {
-	
-	String uid;
-	String displayId;
-	String displayName;
-	String sortName;
-	
-	public UserSectionMock(String uid, String displayId, String displayName, String sortName) {
-		this.uid = uid;
-		this.displayId = displayId;
-		this.displayName = displayName;
-		this.sortName = sortName;
+
+public class SecurityException extends Exception implements Serializable {
+
+	private static final long serialVersionUID = 1L;
+
+	public SecurityException() {
 	}
 
-	public String getDisplayId() {
-		// TODO Auto-generated method stub
-		return displayId;
+	public SecurityException(String message) {
+		super(message);
 	}
 
-	public String getDisplayName() {
-		// TODO Auto-generated method stub
-		return displayName;
+	public SecurityException(Throwable cause) {
+		super(cause);
 	}
 
-	public String getSortName() {
-		// TODO Auto-generated method stub
-		return sortName;
+	public SecurityException(String message, Throwable cause) {
+		super(message, cause);
 	}
-
-	public String getUserUid() {
-		// TODO Auto-generated method stub
-		return uid;
-	}
-
 }

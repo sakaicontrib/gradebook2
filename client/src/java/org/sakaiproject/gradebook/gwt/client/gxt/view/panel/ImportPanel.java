@@ -87,6 +87,7 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.EditorGrid;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
+import com.extjs.gxt.ui.client.widget.grid.RowNumberer;
 import com.extjs.gxt.ui.client.widget.layout.CardLayout;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
@@ -140,6 +141,7 @@ public class ImportPanel extends GradebookPanel {
 
 	private boolean isGradingFailure;
 	private MessageBox uploadingBox;
+	private RowNumberer r;
 
 	public ImportPanel() {
 		super();
@@ -192,8 +194,10 @@ public class ImportPanel extends GradebookPanel {
 
 		tabPanel = new TabPanel();
 
+		r = new RowNumberer();
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
-
+		//configs.add(r);
+		
 		rowStore = new ListStore<ModelData>();
 		rowStore.setMonitorChanges(true);
 		rowStore.setModelComparer(new EntityModelComparer<ModelData>(LearnerKey.UID.name()));
@@ -201,6 +205,7 @@ public class ImportPanel extends GradebookPanel {
 		ColumnModel cm = new ColumnModel(configs);
 		grid = new Grid<ModelData>(rowStore, cm);
 		grid.setLoadMask(false);
+		grid.addPlugin(r);
 
 		CellSelectionModel<ModelData> cellSelectionModel = new CellSelectionModel<ModelData>();
 		cellSelectionModel.setSelectionMode(SelectionMode.SINGLE);
@@ -221,6 +226,9 @@ public class ImportPanel extends GradebookPanel {
 			@Override
 			protected String markupCss(Record r, ModelData model, String property, boolean isShowDirtyCells, boolean isPropertyChanged) {
 
+				if (property == null || property.equalsIgnoreCase("numberer"))
+					return null;
+				
 				boolean isUserNotFound = DataTypeConversionUtil.checkBoolean((Boolean)model.get("userNotFound"));
 
 				if (isUserNotFound)
@@ -428,7 +436,7 @@ public class ImportPanel extends GradebookPanel {
 					
 					List<ModelData> rows = result.get(UploadKey.ROWS.name());
 					
-					int numberOfStudentsChanged = 0;
+					int numberOfScoresChanged = 0;
 					if (rows != null) {
 						int rowNumber = 0;
 						for (ModelData student : rows) {
@@ -453,6 +461,7 @@ public class ImportPanel extends GradebookPanel {
 									} else if (p.endsWith(AppConstants.SUCCESS_FLAG)) {
 										index = p.indexOf(AppConstants.SUCCESS_FLAG);
 										needsRefreshing = true;
+										numberOfScoresChanged++;
 									}
 	
 									if (needsRefreshing && index != -1) {
@@ -466,14 +475,14 @@ public class ImportPanel extends GradebookPanel {
 									}
 								}
 								record.endEdit();
-								numberOfStudentsChanged++;
+								
 							}
 							
 							rowNumber++;
 						}
 					}
 					
-					StringBuilder heading = new StringBuilder().append("Result Data (").append(numberOfStudentsChanged).append(" rows modified)");
+					StringBuilder heading = new StringBuilder().append("Result Data (").append(numberOfScoresChanged).append(" scores modified)");
 					previewTab.setText(heading.toString());
 					
 					uploadingBox.setProgressText("Loading");
@@ -672,6 +681,7 @@ public class ImportPanel extends GradebookPanel {
 
 			JSONArray headersArray = getArray(jsonObject, "items");
 			previewColumns = new ArrayList<ColumnConfig>();
+			previewColumns.add(r);
 			boolean hasErrors = DataTypeConversionUtil.checkBoolean(getBoolean(jsonObject, "hasErrors")); 
 			boolean hasAssignmentNameIssueForScantron = DataTypeConversionUtil.checkBoolean(getBoolean(jsonObject, "notifyAssignmentName")); 
 
@@ -688,12 +698,10 @@ public class ImportPanel extends GradebookPanel {
 			}
 			Boolean hasWeightsBoolean = getBoolean(jsonObject, "hasWeights");
 			Boolean hasCategoriesBoolean = getBoolean(jsonObject, "hasCategories");
-			Boolean isLetterGradingBoolean = getBoolean(jsonObject, "isLetterGrading");
 			Boolean isPointsModeBoolean = getBoolean(jsonObject, "isPointsMode");
 
 			boolean hasWeights = DataTypeConversionUtil.checkBoolean(hasWeightsBoolean);
 			boolean hasCategories = DataTypeConversionUtil.checkBoolean(hasCategoriesBoolean);
-			boolean isLetterGrading = DataTypeConversionUtil.checkBoolean(isLetterGradingBoolean);
 			boolean isPointsMode = DataTypeConversionUtil.checkBoolean(isPointsModeBoolean);
 			
 			percentCategory.setHidden(!hasWeights);
@@ -819,6 +827,8 @@ public class ImportPanel extends GradebookPanel {
 			StringBuilder pointsAssignments = null;
 			JSONArray rowsArray = getArray(jsonObject, "rows");
 			ArrayList<ModelData> models = new ArrayList<ModelData>();
+			
+			boolean hasUserNotFound = false;
 			if (rowsArray != null) {
 				StringBuilder heading = new StringBuilder().append("Preview Data (").append(rowsArray.size()).append(" records)");
 				previewTab.setText(heading.toString());
@@ -835,6 +845,9 @@ public class ImportPanel extends GradebookPanel {
 					Boolean userNotFound = getBoolean(rowObject.isObject(), "isUserNotFound");
 					JSONArray columnsArray = getArray(rowObject, "columns");
 
+					if (!hasUserNotFound && DataTypeConversionUtil.checkBoolean(userNotFound))
+						hasUserNotFound = userNotFound;
+					
 					ModelData model = new BaseModel();
 					if (userUid != null)
 						model.set(LearnerKey.UID.name(), userUid);
@@ -848,8 +861,8 @@ public class ImportPanel extends GradebookPanel {
 
 					if (columnsArray != null) {
 						for (int j=0;j<columnsArray.size();j++) {
-							if (previewColumns != null && previewColumns.size() > j) {
-								ColumnConfig config = previewColumns.get(j);
+							if (previewColumns != null && previewColumns.size() -1 > j) {
+								ColumnConfig config = previewColumns.get(j+1);
 								if (config != null) {									
 									JSONValue itemValue = columnsArray.get(j);
 									if (itemValue == null)
@@ -911,6 +924,21 @@ public class ImportPanel extends GradebookPanel {
 				hasDefaultMsg = true; 
 			} 
 
+			if (hasUserNotFound) 
+			{
+				if (sb == null)
+				{
+					sb = new StringBuilder(); 
+				}
+				else
+				{
+					sb.append("<BR>"); 
+				}
+				showPanel = true; 
+				sb.append("<BR>One or more users were not found based on the import identifier provided. This could indicate that the wrong import id is being used, or that the file is incorrectly formatted for import."
+				);
+			}
+			
 			if (hasAssignmentNameIssueForScantron)
 			{
 

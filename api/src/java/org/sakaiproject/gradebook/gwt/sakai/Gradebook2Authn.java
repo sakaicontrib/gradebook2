@@ -1,6 +1,6 @@
 /**********************************************************************************
  *
- * $Id$
+ * $Id: Gradebook2Authn.java 63703 2009-09-30 21:52:39Z jlrenfro@ucdavis.edu $
  *
  ***********************************************************************************
  *
@@ -21,27 +21,12 @@
  *
  **********************************************************************************/
 
-package org.sakaiproject.gradebook.gwt.client.exceptions;
+package org.sakaiproject.gradebook.gwt.sakai;
 
-import java.io.Serializable;
+public interface Gradebook2Authn {
 
+	public String getUserUid();
+	
+	public void setAuthnContext(Object whatToAuthn);
 
-public class SecurityException extends Exception implements Serializable {
-
-	private static final long serialVersionUID = 1L;
-
-	public SecurityException() {
-	}
-
-	public SecurityException(String message) {
-		super(message);
-	}
-
-	public SecurityException(Throwable cause) {
-		super(cause);
-	}
-
-	public SecurityException(String message, Throwable cause) {
-		super(message, cause);
-	}
 }

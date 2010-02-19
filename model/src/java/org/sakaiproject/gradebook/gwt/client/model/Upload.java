@@ -12,10 +12,6 @@ public interface Upload {
 
 	public abstract void setRows(List<Learner> rows);
 
-	public abstract void setDisplayName(String displayName);
-
-	public abstract String getIdentifier();
-
 	public abstract boolean isPercentage();
 
 	public abstract void setPercentage(boolean isPercentage);

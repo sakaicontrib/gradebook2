@@ -44,6 +44,7 @@ import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.Roster;
 import org.sakaiproject.gradebook.gwt.client.model.Statistics;
+import org.sakaiproject.gradebook.gwt.client.model.Upload;
 import org.sakaiproject.gradebook.gwt.client.model.key.ActionKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.GradeFormatKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.GradeMapKey;
@@ -52,7 +53,6 @@ import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.PermissionKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.SectionKey;
-import org.sakaiproject.gradebook.gwt.client.model.key.UploadKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.VerificationKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.ActionType;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
@@ -60,7 +60,6 @@ import org.sakaiproject.gradebook.gwt.client.model.type.EntityType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 import org.sakaiproject.gradebook.gwt.sakai.InstitutionalAdvisor.Column;
-import org.sakaiproject.gradebook.gwt.sakai.mock.SiteMock;
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeStatistics;
 import org.sakaiproject.gradebook.gwt.sakai.model.StudentScore;
@@ -370,7 +369,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			assignmentGradeRecord = new AssignmentGradeRecord();
 		}
 
-		scoreItem(gradebook, assignment, assignmentGradeRecord, studentUid, value, false, false);
+		scoreItem(gradebook, gradebook.getGrade_type(), assignment, assignmentGradeRecord, studentUid, value, false, false);
 
 		gradeRecords = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), studentUid);
 
@@ -1979,18 +1978,18 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return result;
 	}
 
-	public Map<String, Object> upload(String gradebookUid, Long gradebookId, Map<String, Object> attributes) throws InvalidInputException {
+	public Upload upload(String gradebookUid, Long gradebookId, Upload upload, boolean isDryRun) throws InvalidInputException {
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
 		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
 		boolean isLetterGrading = gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER;
 		Map<String, Assignment> idToAssignmentMap = new HashMap<String, Assignment>();
 		Map<String, Assignment> commentIdToAssignmentMap = new HashMap<String, Assignment>();
-		List<Map<String,Object>> headers = (List<Map<String,Object>>)attributes.get(UploadKey.HEADERS.name());
+		List<Item> headers = upload.getHeaders();
 
 		if (headers != null) {
 
 			Set<Long> newCategoryIdSet = new HashSet<Long>();
-			for (Map<String,Object> item : headers) {
+			for (Item item : headers) {
 				String id = (String)item.get(ItemKey.ID.name());
 				if (id != null) {
 					Long categoryId = Util.toLong(item.get(ItemKey.CATEGORY_ID.name()));					
@@ -2025,7 +2024,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 						itemModel.setExtraCredit(Boolean.valueOf(isExtraCredit));
 
 						Long assignmentId = doCreateItem(gradebook, itemModel, hasCategories, false);
-						item.put(ItemKey.ID.name(), String.valueOf(assignmentId));
+						item.setIdentifier(String.valueOf(assignmentId));
 
 						postEvent("gradebook2.importNewItem", String.valueOf(gradebook.getId()), String.valueOf(assignmentId));
 						
@@ -2155,21 +2154,23 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			for (String commentId : commentIdKeySet) {
 				String fullId = new StringBuilder().append(commentId).append(AppConstants.COMMENT_TEXT_FLAG).toString();
 				
-				List<Map<String,Object>> rows = (List<Map<String,Object>>)attributes.get(UploadKey.ROWS.name());
-				for (Map<String,Object> student : rows) {
-					Object v = student.get(fullId);
+				List<Learner> rows = upload.getRows();
+				if (rows != null) {
+					for (Learner student : rows) {
+						Object v = student.get(fullId);
+		
+						String studentUid = (String)student.get(LearnerKey.UID.name());
+						Assignment assignment = commentIdToAssignmentMap.get(commentId);
+						Comment comment = doAssignComment(assignment.getId(), studentUid, (String)v);
 	
-					String studentUid = (String)student.get(LearnerKey.UID.name());
-					Assignment assignment = commentIdToAssignmentMap.get(commentId);
-					Comment comment = doAssignComment(assignment.getId(), studentUid, (String)v);
-
-					if (comment != null)
-						gradebook = doCommitComment(comment, studentUid, (String)v);
-
-					if (comment != null) {
-						student.put(fullId, comment.getCommentText());
-						student.put(new StringBuilder(commentId).append(AppConstants.COMMENTED_FLAG).toString(), Boolean.TRUE);
-						student.put(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
+						if (comment != null)
+							gradebook = doCommitComment(comment, studentUid, (String)v);
+	
+						if (comment != null) {
+							student.set(fullId, comment.getCommentText());
+							student.set(new StringBuilder(commentId).append(AppConstants.COMMENTED_FLAG).toString(), Boolean.TRUE);
+							student.set(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
+						}
 					}
 				}
 			}
@@ -2183,8 +2184,11 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 				List<AssignmentGradeRecord> gradedRecords = new ArrayList<AssignmentGradeRecord>();
 
-				List<Map<String,Object>> rows = (List<Map<String,Object>>)attributes.get(UploadKey.ROWS.name());
-				for (Map<String,Object> student : rows) {
+				List<Learner> rows = upload.getRows();
+				if (rows == null)
+					continue;
+				
+				for (Learner student : rows) {
 					UserRecord userRecord = userRecordMap.get(student.get(LearnerKey.UID.name()));
 
 					Map<Long, AssignmentGradeRecord> gradeRecordMap = userRecord == null ? null : userRecord.getGradeRecordMap();
@@ -2196,7 +2200,8 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 					Double oldValue = null;
 
 					try {
-
+						int gradeType = gradebook.getGrade_type();
+						
 						if (v != null && v instanceof String) {
 							String strValue = (String) v;
 
@@ -2209,16 +2214,18 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 										try {
 											value = Double.valueOf(Double.parseDouble((String) v));
 											isParseable = true;
+											// If it's a numeric upload into a letter grade gradebook then use points
+											gradeType = GradebookService.GRADE_TYPE_POINTS;
 										} catch (NumberFormatException nfe) {
 											log.debug("This string does not seem to be a double: " + strValue);
 										}
 
 										if (!isParseable) {
 											String failedProperty = new StringBuilder().append(assignment.getId()).append(AppConstants.FAILED_FLAG).toString();
-											student.put(failedProperty, "Invalid input");
+											student.set(failedProperty, "Invalid input");
 											log.warn("Failed to score item for " + student.get(LearnerKey.UID.name()) + " and item " + assignment.getId() + " to " + v);
 
-											student.put(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
+											student.set(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
 											continue;
 										}
 									}
@@ -2237,7 +2244,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 						if (assignmentGradeRecord == null)
 							assignmentGradeRecord = new AssignmentGradeRecord();
 						else {
-							switch (gradebook.getGrade_type()) {
+							switch (gradeType) {
 							case GradebookService.GRADE_TYPE_POINTS:
 								oldValue = assignmentGradeRecord.getPointsEarned();
 								break;
@@ -2252,34 +2259,32 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 						if (oldValue == null && value == null)
 							continue;
 
+						gradedRecords.add(scoreItem(gradebook, gradeType, assignment, assignmentGradeRecord, (String)student.get(LearnerKey.UID.name()), value, true, true));
+
 						String successProperty = new StringBuilder().append(assignment.getId()).append(AppConstants.SUCCESS_FLAG).toString();
-						student.put(successProperty, "S");
-
-						student.put(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
-
-						gradedRecords.add(scoreItem(gradebook, assignment, assignmentGradeRecord, (String)student.get(LearnerKey.UID.name()), value, true, true));
-
+						student.set(successProperty, "S");
+						student.set(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
+						
 					} catch (NumberFormatException nfe) {
-						String failedProperty = new StringBuilder().append(assignment.getId()).append(AppConstants.FAILED_FLAG).toString();
-						student.put(failedProperty, "Invalid input");
+						String failedProperty = new StringBuilder().append(id).append(AppConstants.FAILED_FLAG).toString();
+						student.set(failedProperty, "Invalid input");
 						log.warn("Failed to score item for " + (String)student.get(LearnerKey.UID.name()) + " and item " + assignment.getId() + " to " + v);
 
-						student.put(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
+						student.set(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
 					} catch (InvalidInputException e) {
-						String failedProperty = new StringBuilder().append(assignment.getId()).append(AppConstants.FAILED_FLAG).toString();
+						String failedProperty = new StringBuilder().append(id).append(AppConstants.FAILED_FLAG).toString();
 						String failedMessage = e != null && e.getMessage() != null ? e.getMessage() : "Failed";
-						student.put(failedProperty, failedMessage);
-						log.warn("Failed to score numeric item for " + (String)student.get(LearnerKey.UID.name()) + " and item " + assignment.getId() + " to " + value);
+						student.set(failedProperty, failedMessage);
+						log.warn("Failed to score numeric item for " + (String)student.get(LearnerKey.UID.name()) + " and item " + assignment.getId() + " to " + value + " : " + failedMessage);
 
-						student.put(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
+						student.set(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
 					} catch (Exception e) {
-
-						String failedProperty = new StringBuilder().append(assignment.getId()).append(AppConstants.FAILED_FLAG).toString();
-						student.put(failedProperty, e.getMessage());
+						String failedProperty = new StringBuilder().append(id).append(AppConstants.FAILED_FLAG).toString();
+						student.set(failedProperty, e.getMessage());
 
 						log.warn("Failed to score numeric item for " + (String)student.get(LearnerKey.UID.name()) + " and item " + assignment.getId() + " to " + value, e);
 
-						student.put(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
+						student.set(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
 					} 
 				}
 				gbService.updateAssignmentGradeRecords(assignment, gradedRecords);
@@ -2294,9 +2299,9 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		
 		GradeItem gradebookGradeItem = getGradeItem(gradebook, assignments, categories, null, null);
 
-		attributes.put(UploadKey.GRADEBOOK_ITEM_MODEL.name(), gradebookGradeItem.getProperties());
+		upload.setGradebookItemModel(gradebookGradeItem);
 
-		return attributes;	
+		return upload;	
 	}
 
 	private Item addItemCategory(String gradebookUid, Long gradebookId, Item item) throws BusinessRuleException {
@@ -4443,8 +4448,8 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 			if (siteService != null)
 				site = siteService.getSite(context);
-			else
-				site = new SiteMock(getSiteId());
+//			else
+//				site = new SiteMock(getSiteId());
 
 		} catch (IdUnusedException iue) {
 			log.error("IDUnusedException : SiteContext = " + context);
@@ -4691,7 +4696,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return updatedAssignments;
 	}
 
-	private AssignmentGradeRecord scoreItem(Gradebook gradebook, Assignment assignment, AssignmentGradeRecord assignmentGradeRecord, String studentUid, Double value, boolean includeExcluded, boolean deferUpdate)
+	private AssignmentGradeRecord scoreItem(Gradebook gradebook, int gradeType, Assignment assignment, AssignmentGradeRecord assignmentGradeRecord, String studentUid, Double value, boolean includeExcluded, boolean deferUpdate)
 	throws InvalidInputException {
 
 		boolean isUserAbleToGrade = authz.isUserAbleToGradeAll(gradebook.getUid()) || authz.isUserAbleToGradeItemForStudent(gradebook.getUid(), assignment.getId(), studentUid);
@@ -4702,7 +4707,45 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		if (assignment.isExternallyMaintained())
 			throw new InvalidInputException("This grade item is maintained externally. Please input and edit grades through " + assignment.getExternalAppName());
 
-		if (gradebook.getGrade_type() == GradebookService.GRADE_TYPE_POINTS && value != null) {
+		if (!includeExcluded && assignmentGradeRecord.isExcludedFromGrade() != null && assignmentGradeRecord.isExcludedFromGrade().booleanValue())
+			throw new InvalidInputException("The student has been excused from this assignment. It is no longer possible to assign him or her a grade.");
+		
+		
+		switch (gradeType) {
+		case GradebookService.GRADE_TYPE_POINTS:
+			if (value != null) {
+				if (value.compareTo(assignment.getPointsPossible()) > 0)
+					throw new InvalidInputException("This grade cannot be larger than " + DataTypeConversionUtil.formatDoubleAsPointsString(assignment.getPointsPossible()));
+				else if (value.compareTo(Double.valueOf(0d)) < 0) {
+					double v = value.doubleValue();
+
+					if (v < -1d * assignment.getPointsPossible().doubleValue())
+						throw new InvalidInputException("The absolute value of a negative point score assigned to a student cannot be greater than the total possible points allowed for an item");
+				}
+			}
+			assignmentGradeRecord.setPointsEarned(value);
+			break;
+		case GradebookService.GRADE_TYPE_PERCENTAGE:
+		case GradebookService.GRADE_TYPE_LETTER:
+			BigDecimal pointsEarned = null;
+			if (value != null) {
+				if (value.compareTo(100d) > 0)
+					throw new InvalidInputException("This grade cannot be larger than " + DataTypeConversionUtil.formatDoubleAsPointsString(100d) + "%");
+				else if (value.compareTo(0d) < 0)
+					throw new InvalidInputException("This grade cannot be less than " + DataTypeConversionUtil.formatDoubleAsPointsString(0d) + "%");
+
+
+				pointsEarned = gradeCalculations.getPercentAsPointsEarned(assignment, value);					
+			}
+
+			Double pointsEarnedDouble = pointsEarned == null ? null : Double.valueOf(pointsEarned.doubleValue());
+			assignmentGradeRecord.setPointsEarned(pointsEarnedDouble);
+			assignmentGradeRecord.setPercentEarned(value);
+			break;
+		}
+
+		
+		/*if (gradeType == GradebookService.GRADE_TYPE_POINTS && value != null) {
 			if (value.compareTo(assignment.getPointsPossible()) > 0)
 				throw new InvalidInputException("This grade cannot be larger than " + DataTypeConversionUtil.formatDoubleAsPointsString(assignment.getPointsPossible()));
 			else if (value.compareTo(Double.valueOf(0d)) < 0) {
@@ -4721,9 +4764,6 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				throw new InvalidInputException("This grade cannot be less than " + DataTypeConversionUtil.formatDoubleAsPointsString(0d) + "%");
 		}
 
-		if (!includeExcluded && assignmentGradeRecord.isExcludedFromGrade() != null && assignmentGradeRecord.isExcludedFromGrade().booleanValue())
-			throw new InvalidInputException("The student has been excused from this assignment. It is no longer possible to assign him or her a grade.");
-
 		switch (gradebook.getGrade_type()) {
 			case GradebookService.GRADE_TYPE_POINTS:
 				assignmentGradeRecord.setPointsEarned(value);
@@ -4735,7 +4775,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				assignmentGradeRecord.setPointsEarned(pointsEarnedDouble);
 				assignmentGradeRecord.setPercentEarned(value);
 				break;
-		}
+		}*/
 
 		// Prepare record for update
 		assignmentGradeRecord.setGradableObject(assignment);
