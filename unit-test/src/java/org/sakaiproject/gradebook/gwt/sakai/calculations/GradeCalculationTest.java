@@ -1303,6 +1303,24 @@ public class GradeCalculationTest extends TestCase {
 		return new GradebookCalculationUnit(categoryUnitMap);
 	}
 	
+	protected GradebookCalculationUnit getEssaysHomeworkExtraCreditEmptyCompleteGradebookPointsWeightedEssays() {
+		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
+		
+		CategoryCalculationUnit essayUnit = new CategoryCalculationUnit(new BigDecimal(".6"), Integer.valueOf(0), Boolean.FALSE, Boolean.TRUE);
+		CategoryCalculationUnit hwUnit = new CategoryCalculationUnit(new BigDecimal(".4"), Integer.valueOf(0), null, Boolean.FALSE);
+		CategoryCalculationUnit ecUnit = new CategoryCalculationUnit(new BigDecimal(".1"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE);
+		
+		CategoryCalculationUnit emptyUnit = new CategoryCalculationUnit(new BigDecimal("0"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE);
+		
+		categoryUnitMap.put(ESSAYS_ID, essayUnit);
+		categoryUnitMap.put(HW_ID, hwUnit);
+		categoryUnitMap.put(EC_ID, ecUnit);
+		categoryUnitMap.put(EMPTY_ID, emptyUnit);
+		
+		
+		return new GradebookCalculationUnit(categoryUnitMap);
+	}
+	
 	private List<GradeRecordCalculationUnit> getRecordUnits(Double[][] matrix) {
 		List<GradeRecordCalculationUnit> units = new ArrayList<GradeRecordCalculationUnit>();
 
