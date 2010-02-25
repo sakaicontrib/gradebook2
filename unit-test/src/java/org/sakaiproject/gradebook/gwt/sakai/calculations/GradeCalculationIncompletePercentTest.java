@@ -21,9 +21,8 @@
  *
  **********************************************************************************/
 
-package org.sakaiproject.gradebook2.test;
+package org.sakaiproject.gradebook.gwt.sakai.calculations;
 
-import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -32,11 +31,6 @@ import java.util.List;
 import java.util.Map;
 
 import junit.framework.TestCase;
-
-import org.sakaiproject.gradebook.gwt.sakai.calculations.CategoryCalculationUnit;
-import org.sakaiproject.gradebook.gwt.sakai.calculations.GradeRecordCalculationUnit;
-import org.sakaiproject.gradebook.gwt.sakai.calculations.GradebookCalculationUnit;
-import org.sakaiproject.gradebook.gwt.sakai.calculations.Calculation.Mode;
 
 public class GradeCalculationIncompletePercentTest extends TestCase {
 

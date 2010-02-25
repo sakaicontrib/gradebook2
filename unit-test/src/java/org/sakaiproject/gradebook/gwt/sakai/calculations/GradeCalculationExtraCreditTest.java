@@ -21,7 +21,7 @@
  *
  **********************************************************************************/
 
-package org.sakaiproject.gradebook2.test;
+package org.sakaiproject.gradebook.gwt.sakai.calculations;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -40,13 +40,8 @@ public class GradeCalculationExtraCreditTest extends TestCase {
 
 
 	private static final String ESSAYS_ID = "1";
-	private static final String HW_ID = "2";
-	private static final String EC_ID = "3";
-	private static final String EMPTY_ID = "4";
 
 	private GradebookCalculationUnit gradebookUnit;
-	private boolean isExtraCreditScaled = false;
-
 
 	public void testEightyWithExtraCreditItemCategoryWeighting() {
 
@@ -65,7 +60,7 @@ public class GradeCalculationExtraCreditTest extends TestCase {
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 
 		BigDecimal totalGradebookPoints = null;
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, isExtraCreditScaled);
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, false);
 
 		assertEqualsAtScale2(BigDecimal.valueOf(90.00d), courseGrade);
 	}	

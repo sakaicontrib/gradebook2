@@ -32,7 +32,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
-import org.sakaiproject.gradebook.gwt.sakai.GradeCalculations;
 
 public class CategoryCalculationUnit {
 
@@ -127,8 +126,8 @@ public class CategoryCalculationUnit {
 			BigDecimal multiplicand = ratio;
 
 			if (unit.isExtraCredit()) {
-				if (isExtraCreditScaled && isExtraCredit) // && sum.compareTo(BigDecimal.ONE) < 0)
-					multiplicand = ratio; // was BigDecimal.valueOf(100d).multiply(categoryWeightTotal);
+				if (isExtraCreditScaled && isExtraCredit) 
+					multiplicand = ratio; // GRBK-476 : was BigDecimal.valueOf(100d).multiply(categoryWeightTotal);
 				else
 					multiplicand = BigDecimal.ONE;
 			}

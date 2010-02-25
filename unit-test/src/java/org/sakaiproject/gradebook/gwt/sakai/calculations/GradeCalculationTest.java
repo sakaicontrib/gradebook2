@@ -21,7 +21,7 @@
  *
  **********************************************************************************/
 
-package org.sakaiproject.gradebook2.test;
+package org.sakaiproject.gradebook.gwt.sakai.calculations;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
