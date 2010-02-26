@@ -181,4 +181,8 @@ public interface Item {
 
 	public abstract void setWeighting(Double weighting);
 	
+	public abstract boolean isScaledExtraCreditEnabled();
+	
+	public abstract void setScaledExtraCreditEnabled(Boolean allowScaledExtraCredit);
+	
 }

@@ -30,7 +30,8 @@ public enum ItemKey {
 	ENFORCE_POINT_WEIGHTING(Boolean.class), SHOWMEAN(Boolean.class),
 	SHOWMEDIAN(Boolean.class), SHOWMODE(Boolean.class), SHOWRANK(Boolean.class),
 	SHOWITEMSTATS(Boolean.class),CHILDREN(List.class), IS_ACTIVE(Boolean.class),
-	IS_EDITABLE(Boolean.class), IS_CHECKED(Boolean.class), PARENT_NAME(String.class);
+	IS_EDITABLE(Boolean.class), IS_CHECKED(Boolean.class), PARENT_NAME(String.class), 
+	ALLOW_SCALED_EXTRA_CREDIT(Boolean.class);
 	
 	private Class<?> type;
 	

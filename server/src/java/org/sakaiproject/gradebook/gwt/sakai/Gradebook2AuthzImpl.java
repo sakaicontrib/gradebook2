@@ -378,6 +378,19 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 		return canUserActOnCategory(gradebookUid, categoryId, AppConstants.gradePermission);
 	}
 	
+	// GRBK-487
+	public boolean isAdminUser() {
+		if (securityService == null) {
+			String roleProperty = System.getProperty("gb2.role");
+			
+			if (roleProperty != null && roleProperty.equals("admin")) 
+				return true;
+			
+			return false;
+		}
+		return securityService.isSuperUser();
+	}
+	
 
 	/*
 	 * 
@@ -858,4 +871,5 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 		this.siteService = siteService;
 	}
 	
+		
 }

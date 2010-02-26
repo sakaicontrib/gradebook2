@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.model.Item;
+import org.sakaiproject.gradebook.gwt.client.model.key.ConfigurationKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
@@ -489,6 +490,14 @@ public class GradeItemImpl extends BaseModel implements GradeItem {
 	
 	public void setWeighting(Double weighting) {
 		put(ItemKey.WEIGHT.name(), weighting);
+	}
+	
+	public boolean isScaledExtraCreditEnabled() {
+		return Util.toBooleanPrimitive(get(ItemKey.ALLOW_SCALED_EXTRA_CREDIT.name()));
+	}
+
+	public void setScaledExtraCreditEnabled(Boolean allowScaledExtraCredit) {
+		put(ItemKey.ALLOW_SCALED_EXTRA_CREDIT.name(), allowScaledExtraCredit);
 	}
 	
 }

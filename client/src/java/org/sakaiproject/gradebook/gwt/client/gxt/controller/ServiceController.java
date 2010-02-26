@@ -148,14 +148,15 @@ public class ServiceController extends Controller {
 		
 		Long gradebookId = selectedGradebook.getGradebookId();
 
-		JSONObject json = RestBuilder.convertModel(model);
-
+		JSONObject json = model == null ? null : RestBuilder.convertModel(model);
+		String jsonText = json == null ? null : json.toString();
+		
 		RestBuilder builder = RestBuilder.getInstance(Method.PUT, 
 				GWT.getModuleBaseURL(),
 				AppConstants.REST_FRAGMENT,
 				AppConstants.CONFIG_FRAGMENT, String.valueOf(gradebookId));
 		
-		builder.sendRequest(200, 400, json.toString(), new RestCallback() {
+		builder.sendRequest(200, 400, jsonText, new RestCallback() {
 
 			public void onSuccess(Request request, Response response) {
 				

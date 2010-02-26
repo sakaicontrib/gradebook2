@@ -40,6 +40,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModelComparer;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.AppView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.ItemFormComboBox;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.NullSensitiveCheckBox;
+import org.sakaiproject.gradebook.gwt.client.model.Configuration;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
@@ -441,7 +442,7 @@ public class ItemFormPanel extends GradebookPanel {
 			clearChanges();
 			
 			ItemType itemType = itemModel.getItemType();
-			initState(itemType, itemModel, true);
+			initState(itemType, itemModel, true, true);
 			directionsField.setHeight(80);
 			directionsField.setText(i18n.directionsConfirmDeleteItem());
 			directionsField.setStyleName(resources.css().gbWarning());
@@ -486,12 +487,12 @@ public class ItemFormPanel extends GradebookPanel {
 					Button button = be.getButtonClicked();
 				
 					if (button.getText().equals("Yes"))
-						doEditItem(itemModel, expand);
+						doEditItem(itemModel, expand, true);
 				}
 				
 			});
 		} else {
-			doEditItem(itemModel, expand);
+			doEditItem(itemModel, expand, true);
 		}
 	}
 	
@@ -499,6 +500,7 @@ public class ItemFormPanel extends GradebookPanel {
 		boolean isAllowedToEdit = DataTypeConversionUtil.checkBoolean((Boolean)Registry.get(AppConstants.IS_ABLE_TO_EDIT));
 
 		deleteButton.setVisible(itemModel.getItemType() != ItemType.GRADEBOOK);
+		deleteButton.setEnabled(itemModel.getItemType() != ItemType.GRADEBOOK);
 		okButton.setText(i18n.saveButton());
 		okButton.setData(selectionTypeField, SelectionType.SAVE);
 		okButton.setVisible(isAllowedToEdit && itemModel != null && itemModel.isEditable());
@@ -507,7 +509,7 @@ public class ItemFormPanel extends GradebookPanel {
 		okCloseButton.setText(i18n.saveAndCloseButton());
 	}
 	
-	private void doEditItem(ItemModel itemModel, boolean expand) {
+	private void doEditItem(ItemModel itemModel, boolean expand, boolean doEnableButtons) {
 		removeListeners();
 		formPanel.hide();
 
@@ -528,13 +530,14 @@ public class ItemFormPanel extends GradebookPanel {
 			clearChanges();
 			formBindings.addListener(Events.Bind, bindListener);
 			formBindings.bind(itemModel);
-			initState(itemType, itemModel, false);
+			initState(itemType, itemModel, false, doEnableButtons);
 		} else {
 			formBindings.addListener(Events.UnBind, bindListener);
 			formBindings.unbind();
 		}
 
-		doEditItemButtons(selectedItemModel);
+		if (doEnableButtons)
+			doEditItemButtons(selectedItemModel);
 		
 		formPanel.show();
 		nameField.focus();
@@ -633,7 +636,7 @@ public class ItemFormPanel extends GradebookPanel {
 		clearFields();
 		clearChanges();
 
-		initState(ItemType.CATEGORY, itemModel, false);
+		initState(ItemType.CATEGORY, itemModel, false, true);
 		establishSelectedCategoryState(itemModel);
 
 		includedField.setValue(Boolean.TRUE);
@@ -688,7 +691,7 @@ public class ItemFormPanel extends GradebookPanel {
 		clearFields();
 		clearChanges();
 
-		initState(ItemType.ITEM, itemModel, false);
+		initState(ItemType.ITEM, itemModel, false, true);
 
 		if (itemModel != null) {
 			if (itemModel.getCategoryId() != null) {
@@ -707,6 +710,15 @@ public class ItemFormPanel extends GradebookPanel {
 		formPanel.show();
 	}
 
+	public void onRefreshGradebookSetup(Gradebook selectedGradebook) {
+		if (formBindings != null) {
+			if (mode == Mode.EDIT && selectedItemModel != null && selectedItemModel.getItemType() == ItemType.GRADEBOOK) {
+				doEditItem(selectedItemModel, true, false);
+				clearChanges();
+			}
+		}
+	}
+	
 	public void onTreeStoreInitialized(TreeStore<ItemModel> treeStore) {
 		this.treeStore = treeStore;
 
@@ -739,6 +751,7 @@ public class ItemFormPanel extends GradebookPanel {
 			
 			gradeTypePicker.setStore(gradeTypeStore);
 		}
+		
 	}
 
 	private ModelData getCategoryTypeModel(CategoryType categoryType) {
@@ -784,14 +797,17 @@ public class ItemFormPanel extends GradebookPanel {
 		return model;
 	}	
 
-	private void initState(ItemType itemType, ItemModel itemModel, boolean isDelete) {
+	private void initState(ItemType itemType, ItemModel itemModel, boolean isDelete, boolean doEnableButtons) {
 		this.isDelete = isDelete;
 		clearChanges();
 
-		okButton.setEnabled(true);
-		okCloseButton.setEnabled(true);
-
-		CategoryType categoryType = selectedGradebook.getGradebookItemModel().getCategoryType();
+		if (doEnableButtons) {
+			okButton.setEnabled(true);
+			okCloseButton.setEnabled(true);
+		}
+		
+		Item gradebookItem = selectedGradebook.getGradebookItemModel();
+		CategoryType categoryType = gradebookItem.getCategoryType();
 
 		boolean isAllowedToEdit = DataTypeConversionUtil.checkBoolean((Boolean)Registry.get(AppConstants.IS_ABLE_TO_EDIT));
 		boolean hasCategories = categoryType != CategoryType.NO_CATEGORIES;
@@ -859,7 +875,7 @@ public class ItemFormPanel extends GradebookPanel {
 		initField(categoryTypePicker, isAllowedToEdit, isEditable && !isNotGradebook);
 		initField(gradeTypePicker, isAllowedToEdit, isEditable && !isNotGradebook);
 		initField(sourceField, false, isEditable && isItem);
-		initField(scaledExtraCreditField, !isDelete && isAllowedToEdit, !isNotGradebook);
+		initField(scaledExtraCreditField, !isDelete && isAllowedToEdit, !isNotGradebook && gradebookItem.isScaledExtraCreditEnabled());
 		initField(enforcePointWeightingField, !isDelete && isAllowedToEdit, isWeightByPointsVisible);
 		
 		initField(releaseGradesField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
@@ -1264,6 +1280,7 @@ public class ItemFormPanel extends GradebookPanel {
 							case SAVECLOSE:
 								close = true;
 							case SAVE:
+								clearChanges();
 								if (selectedItemModel != null) 
 									record = treeStore.getRecord(selectedItemModel);
 								if (nameField.validate() 

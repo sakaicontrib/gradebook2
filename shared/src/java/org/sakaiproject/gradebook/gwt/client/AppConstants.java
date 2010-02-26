@@ -115,6 +115,9 @@ public interface AppConstants {
 	
 	public static final String LEARNER_ROLE_NAMES	= "gb2.gradable.role.names";
 	
+	public static final String ENABLE_SCALED_EC	= "gb2.enable.scaled.extra.credit";
+	public static final String LIMIT_SCALED_EC	= "gb2.limit.scaled.extra.credit";
+	
 	public static final String DEFAULT_CATEGORY_NAME = "Unassigned";
 	
 	public static final String EXTRA_CREDIT_INDICATOR = " (+)";

@@ -187,4 +187,7 @@ public interface Gradebook2Authz {
 	// GRBK-233
 	public boolean canUserGradeCategory(String gradebookUid, Long categoryId);
 
+	// GRBK-487
+	public boolean isAdminUser();
+	
 }

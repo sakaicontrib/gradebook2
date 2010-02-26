@@ -256,6 +256,7 @@ public class TreeView extends View {
 
 	protected void onRefreshGradebookSetup(Gradebook gradebookModel) {
 		treePanel.onRefreshGradebookSetup(gradebookModel);
+		formPanel.onRefreshGradebookSetup(gradebookModel);
 	}
 
 	protected void onSelectItem(String itemModelId) {

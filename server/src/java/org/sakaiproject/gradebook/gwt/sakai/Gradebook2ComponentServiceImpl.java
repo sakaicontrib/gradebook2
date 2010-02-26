@@ -120,6 +120,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 	
 	private static final String NA = "-";
 	private static final String UNIQUESET = "N/A";
+	private static enum FunctionalityStatus { OFF, ADMIN_ONLY, INSTRUCTOR_ONLY, GRADER_ONLY, STUDENT_ONLY };
 	
 	static final Comparator<UserRecord> DEFAULT_ID_COMPARATOR = new Comparator<UserRecord>() {
 
@@ -203,9 +204,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			}
 		}
 	};
-	/**
-	 * INNER CLASSES
-	 */
+
 
 	static final String[] orderedPassNoPassGrades = { "P", "NP", "S", "U", "IP", "I", "Y", "NS", "NG" };
 	static final Comparator<String> PASS_NOPASS_COMPARATOR = new Comparator<String>() {
@@ -259,7 +258,9 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 	private GradebookToolService gbService;
 	private GradeCalculations gradeCalculations;
 	private String helpUrl;	
-	private String[] learnerRoleNames;	
+	private String[] learnerRoleNames;
+	private FunctionalityStatus stateOfScaledExtraCredit;
+	private CategoryType limitScaledExtraCreditToCategoryType;
 	private SectionAwareness sectionAwareness;	
 	private SessionManager sessionManager;	
 	private SiteService siteService;
@@ -1710,6 +1711,9 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				log.info("Unable to find any instutional advisers");
 		}
 		
+		stateOfScaledExtraCredit = FunctionalityStatus.OFF;
+		limitScaledExtraCreditToCategoryType = null;
+		
 		if (configService != null) {
 			helpUrl = configService.getString(AppConstants.HELP_URL_CONFIG_ID);
 
@@ -1736,6 +1740,29 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			
 			if (learnerRoleNameString != null && !learnerRoleNameString.equals(""))
 				learnerRoleNames = learnerRoleNameString.split("\\s*,\\s*");
+			
+			String enableScaledExtraCredit = configService.getString(AppConstants.ENABLE_SCALED_EC);
+			
+			if (enableScaledExtraCredit != null) {
+				enableScaledExtraCredit = enableScaledExtraCredit.trim();
+				if (enableScaledExtraCredit.equalsIgnoreCase("instructor")) {
+					stateOfScaledExtraCredit = FunctionalityStatus.INSTRUCTOR_ONLY;
+				} else if (enableScaledExtraCredit.equalsIgnoreCase("true") ||
+						enableScaledExtraCredit.equalsIgnoreCase("admin")) {
+					stateOfScaledExtraCredit = FunctionalityStatus.ADMIN_ONLY;
+				}
+			}
+			
+			String limitScaledExtraCredit = configService.getString(AppConstants.LIMIT_SCALED_EC);
+
+			if (limitScaledExtraCredit != null) {
+				limitScaledExtraCredit = limitScaledExtraCredit.trim().toUpperCase();
+				
+				if (limitScaledExtraCredit.contains("WEIGHTED"))
+					limitScaledExtraCreditToCategoryType = CategoryType.WEIGHTED_CATEGORIES;
+				else if (limitScaledExtraCredit.contains("CATEGORIES"))
+					limitScaledExtraCreditToCategoryType = CategoryType.SIMPLE_CATEGORIES;
+			}
 			
 		} else {
 			enabledGradeTypes.add(GradeType.POINTS);
@@ -2859,20 +2886,6 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		org.sakaiproject.gradebook.gwt.client.model.Gradebook model = new GradebookImpl();
 		String gradebookUid = gradebook.getUid();
 
-		/*
-		CategoryType categoryType = null;
-
-		switch (gradebook.getCategory_type()) {
-			case GradebookService.CATEGORY_TYPE_NO_CATEGORY:
-				categoryType = CategoryType.NO_CATEGORIES;
-				break;
-			case GradebookService.CATEGORY_TYPE_ONLY_CATEGORY:
-				categoryType = CategoryType.SIMPLE_CATEGORIES;
-				break;
-			case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
-				categoryType = CategoryType.WEIGHTED_CATEGORIES;
-		}*/
-
 		boolean isUserAbleToGradeAll = authz.isUserAbleToGradeAll(gradebookUid);
 		boolean isUserAbleToGrade = authz.isUserAbleToGrade(gradebookUid);
 		boolean isUserAbleToViewOwnGrades = authz.isUserAbleToViewOwnGrades(gradebookUid);
@@ -2896,7 +2909,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		List<FixedColumn> columns = getColumns(isUserAbleToGradeAll);
 
 		Configuration configModel = new ConfigurationImpl();
-
+		
 		if (userService != null) {
 			User user = userService.getCurrentUser();
 
@@ -3119,6 +3132,37 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		itemModel.setShowMode(gradebook.getShowMode());
 		itemModel.setShowRank(gradebook.getShowRank());
 		itemModel.setShowItemStatistics(gradebook.getShowItemStatistics());
+		
+		Boolean isScaledExtraCreditEnabled = Boolean.FALSE;
+		if (stateOfScaledExtraCredit != null) {
+			switch (stateOfScaledExtraCredit) {
+			case ADMIN_ONLY:
+				isScaledExtraCreditEnabled = Boolean.valueOf(authz.isAdminUser());
+				break;
+			case INSTRUCTOR_ONLY:
+				isScaledExtraCreditEnabled = Boolean.valueOf(authz.isUserAbleToGradeAll(gradebook.getUid()));
+				break;
+			}
+		}
+		
+		if (isScaledExtraCreditEnabled && limitScaledExtraCreditToCategoryType != null) {
+			CategoryType categoryType = null;
+			
+			switch (gradebook.getCategory_type()) {
+				case GradebookService.CATEGORY_TYPE_NO_CATEGORY:
+					categoryType = CategoryType.NO_CATEGORIES;
+					break;
+				case GradebookService.CATEGORY_TYPE_ONLY_CATEGORY:
+					categoryType = CategoryType.SIMPLE_CATEGORIES;
+					break;
+				case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
+					categoryType = CategoryType.WEIGHTED_CATEGORIES;
+			}
+			
+			isScaledExtraCreditEnabled = categoryType == limitScaledExtraCreditToCategoryType;
+		}
+		
+		itemModel.setScaledExtraCreditEnabled(isScaledExtraCreditEnabled);
 		
 		return itemModel;
 	}
@@ -5075,6 +5119,13 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		gradebook.setAssignmentsDisplayed(isReleaseItems);
 
 		boolean isExtraCreditScaled = DataTypeConversionUtil.checkBoolean(item.getExtraCreditScaled());
+		
+		// GRBK-487 : Prevent extra credit scaled setting from being preserved if we're limiting
+		// the effectiveness between categories
+		if (isExtraCreditScaled && limitScaledExtraCreditToCategoryType != null) {
+			// That is, only keep it enabled if we have limited for this particular category type
+			isExtraCreditScaled = item.getCategoryType() == limitScaledExtraCreditToCategoryType;
+		}
 		
 		gradebook.setScaledExtraCredit(Boolean.valueOf(isExtraCreditScaled));
 		

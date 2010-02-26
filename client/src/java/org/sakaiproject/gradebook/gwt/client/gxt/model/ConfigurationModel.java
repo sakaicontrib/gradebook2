@@ -209,5 +209,5 @@ public class ConfigurationModel extends BaseModel implements Configuration {
 	public void setClassicNavigation(Boolean useClassicNavigation) {
 		set(ConfigurationKey.USE_CLASSIC_NAV.name(), useClassicNavigation);
 	}
-	
+		
 }

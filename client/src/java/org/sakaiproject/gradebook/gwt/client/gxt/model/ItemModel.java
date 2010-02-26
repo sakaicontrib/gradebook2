@@ -30,6 +30,7 @@ import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
+import org.sakaiproject.gradebook.gwt.client.model.key.ConfigurationKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ClassType;
@@ -750,6 +751,14 @@ public class ItemModel extends BaseTreeModel implements Item {
 
 	public boolean isRemoved() {
 		return DataTypeConversionUtil.checkBoolean(getRemoved());
+	}
+	
+	public boolean isScaledExtraCreditEnabled() {
+		return DataTypeConversionUtil.checkBoolean((Boolean)get(ItemKey.ALLOW_SCALED_EXTRA_CREDIT.name()));
+	}
+
+	public void setScaledExtraCreditEnabled(Boolean allowScaledExtraCredit) {
+		set(ItemKey.ALLOW_SCALED_EXTRA_CREDIT.name(), allowScaledExtraCredit);
 	}
 
 	public List<Item> getSubItems() {
