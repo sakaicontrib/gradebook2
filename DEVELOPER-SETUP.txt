@@ -13,9 +13,27 @@ RUNNING DEVELOPMENT MODE
 If you're in a 64 bit OS, you'll need to use a 32 bit Java for the Run
 command. 
 
-Our suggestion is that you use the Google Plugin with Eclipse with GWT 2+. You will
-need to include the following VM args in the Run Configuration:
+Our suggestion is that you use the Google Plugin with Eclipse with GWT 2+. This is a 
+standard Eclipse plugin, with update sites at the following locations:
+
+Eclipse 3.5 (Galileo)
+http://dl.google.com/eclipse/plugin/3.5
+
+Eclipse 3.4 (Ganymede)
+http://dl.google.com/eclipse/plugin/3.4
+
+Eclipse 3.3 (Europa)
+http://dl.google.com/eclipse/plugin/3.3
+
+
+You will also need to include the following VM args in the Run Configuration:
 
 -Xmx1028m -XX:PermSize=256m -XX:MaxPermSize=400m -Dgb2.security=false -Dgb2.mode=hosted -Dgb2.role=admin -Dgb2.config.gb2.enable.scaled.extra.credit=admin -Dgb2.config.gb2.limit.scaled.extra.credit=categories -Dgb2.config.gb2.gradable.role.names=Student,access -Dgb2.config.enabled.grade.types=POINT,PERCENT,LETTER
+
+
+Finally, you will need to configure your browser to support GWT development mode. In Firefox, simply install the GWT Developer Plugin for Firefox:
+https://dl-ssl.google.com/gwt/plugins/firefox/gwt-dev-plugin.xpi
+
+
 
 
