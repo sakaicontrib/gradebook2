@@ -26,12 +26,12 @@
 	<properties>
 		<gb2.version>1.2.0-SNAPSHOT</gb2.version>
 		<gxt.version>2.1.1</gxt.version>
-		<gwt.version>2.0.0</gwt.version> 
+		<gwt.version>2.0.3</gwt.version> 
 		<gwtsl.version>1.0-r434</gwtsl.version>
 		<gb2.commons.logging.version>1.0.4</gb2.commons.logging.version>
 		<gb2.jackson.version>1.1.1</gb2.jackson.version>
 		<gb2.jersey.version>1.1.4.1</gb2.jersey.version>
-		<sakai.edu.services.version>1.0.0-beta02-SNAPSHOT</sakai.edu.services.version>
+		<sakai.edu.services.version>1.1-SNAPSHOT</sakai.edu.services.version>
 	</properties>
 
 	<modules>

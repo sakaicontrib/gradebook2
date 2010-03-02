@@ -40,6 +40,12 @@
 			<version>${sakai.edu.services.version}</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.sakaiproject.edu-services.sections</groupId>
+			<artifactId>sections-api</artifactId>
+			<version>${sakai.edu.services.version}</version>
+			<scope>provided</scope>
+		</dependency>
 		<!-- Misc Sakai Dependencies -->
 		<dependency>
  			<groupId>org.sakaiproject.kernel</groupId>
