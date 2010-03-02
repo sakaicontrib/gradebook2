@@ -1,0 +1,38 @@
+DEVELOPER BEST PRACTICES
+---------------------------------------------------------------------------------------------
+
+This is a quick reference document for developer best practices when working on the 
+Gradebook2 project.
+
+
+1. Versioning
+
+We made a decision fairly early on in the development of Gradebook2 that it should be 
+versioned independently of Sakai releases. The basic thinking is that functionality within 
+the GB2 codebase is going to change at a different rate than the Sakai APIs themselves, and 
+that institutions that deploy GB2 will need to track their GB2 version independently, so for 
+example if an institution upgrades from Sakai 2.5.5 to 2.6.2, they can (in theory) 
+stick with version 1.2.0 of GB2. Perhaps more importantly, if an institution is committed
+to staying at a particular Sakai release for some period, it will not be forced
+to upgrade the overall release simply to get new functionality included in a later
+version of the GB2 code. 
+
+One major advantage of this is also that GB2 does not have to maintain maintenance branches.
+Our recommendation is that in cases where a blocker bug exists in a particular version
+of GB2, all institutions should upgrade to a version where that bug has been fixed.
+
+The major disadvantage of this strategy is that we have to somehow deploy each release
+for some reasonable set of supported versions of Sakai. The way we do that currently is
+by maintaining patches in the sakai/ subdirectory of the project. So for example the 
+current patch to make the trunk version compile against Sakai 2.6 can be found in
+gradebook2/sakai/2-6-x/gradebook2.patch -- applying this patch and tweaking the minor
+version number should produce a compatible release of GB2. 
+
+Of course, any time we change the maven dependencies of the project, we also have to
+update those existing gradebook2.patch files for each supported version.
+
+
+
+
+
+
