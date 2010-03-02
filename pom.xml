@@ -31,7 +31,6 @@
 		<gb2.commons.logging.version>1.0.4</gb2.commons.logging.version>
 		<gb2.jackson.version>1.1.1</gb2.jackson.version>
 		<gb2.jersey.version>1.1.4.1</gb2.jersey.version>
-		<sakai.edu.services.version>1.1-SNAPSHOT</sakai.edu.services.version>
 	</properties>
 
 	<modules>

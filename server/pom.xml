@@ -50,33 +50,33 @@
 		<dependency>
 			<groupId>org.sakaiproject.edu-services.gradebook</groupId>
 			<artifactId>gradebook-service-api</artifactId>
-			<version>${sakai.edu.services.version}</version>
+			<version>${sakai.edu-services.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.sakaiproject.edu-services.gradebook</groupId>
 			<artifactId>gradebook-service-hibernate</artifactId>
-			<version>${sakai.edu.services.version}</version>
+			<version>${sakai.edu-services.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
         	<groupId>org.sakaiproject.edu-services.gradebook</groupId>
        	 	<artifactId>gradebook-service-impl</artifactId>
-        	<version>${sakai.edu.services.version}</version>
+        	<version>${sakai.edu-services.version}</version>
         	<scope>provided</scope>
       	</dependency>
 		<!-- Sakai Course Management Dependency -->
 		<dependency>
 			<groupId>org.sakaiproject.edu-services.course-management</groupId>
 			<artifactId>coursemanagement-api</artifactId>
-			<version>${sakai.edu.services.version}</version>
+			<version>${sakai.edu-services.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<!-- Sakai Sections Dependency -->
 		<dependency>
 			<groupId>org.sakaiproject.edu-services.sections</groupId>
 			<artifactId>sections-api</artifactId>
-			<version>${sakai.edu.services.version}</version>
+			<version>${sakai.edu-services.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<!-- Misc Sakai Dependencies -->
