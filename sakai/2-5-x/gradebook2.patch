@@ -1,6 +1,6 @@
 Index: pom.xml
 ===================================================================
---- pom.xml	(revision 66166)
+--- pom.xml	(revision 66370)
 +++ pom.xml	(working copy)
 @@ -5,7 +5,7 @@
  	<parent>
@@ -13,7 +13,7 @@ Index: pom.xml
    	<name>Sakai Gradebook2 Project</name>
 Index: server/pom.xml
 ===================================================================
---- server/pom.xml	(revision 66142)
+--- server/pom.xml	(revision 66370)
 +++ server/pom.xml	(working copy)
 @@ -48,50 +48,89 @@
  		</dependency>
@@ -21,108 +21,114 @@ Index: server/pom.xml
  		<dependency>
 -			<groupId>org.sakaiproject.edu-services.gradebook</groupId>
 -			<artifactId>gradebook-service-api</artifactId>
--			<version>${sakai.edu.services.version}</version>
-+			<groupId>org.sakaiproject</groupId>
-+			<artifactId>sakai-gradebook-service-api</artifactId>
-+			<version>${sakai.version}</version>
+-			<version>${sakai.edu-services.version}</version>
++ 			<groupId>org.sakaiproject</groupId>
++ 			<artifactId>sakai-gradebook-service-api</artifactId>
++ 			<version>${sakai.version}</version>
  			<scope>provided</scope>
  		</dependency>
  		<dependency>
 -			<groupId>org.sakaiproject.edu-services.gradebook</groupId>
 -			<artifactId>gradebook-service-hibernate</artifactId>
--			<version>${sakai.edu.services.version}</version>
-+			<groupId>org.sakaiproject</groupId>
-+			<artifactId>sakai-gradebook-service-hibernate</artifactId>
-+			<version>${sakai.version}</version>
+-			<version>${sakai.edu-services.version}</version>
++ 			<groupId>org.sakaiproject</groupId>
++ 			<artifactId>sakai-gradebook-service-hibernate</artifactId>
++ 			<version>${sakai.version}</version>
  			<scope>provided</scope>
  		</dependency>
  		<dependency>
 -        	<groupId>org.sakaiproject.edu-services.gradebook</groupId>
 -       	 	<artifactId>gradebook-service-impl</artifactId>
--        	<version>${sakai.edu.services.version}</version>
-+        	<groupId>org.sakaiproject</groupId>
+-        	<version>${sakai.edu-services.version}</version>
++         	<groupId>org.sakaiproject</groupId>
 +       	 	<artifactId>sakai-gradebook-service-impl</artifactId>
-+        	<version>${sakai.version}</version>
++         	<version>${sakai.version}</version>
          	<scope>provided</scope>
        	</dependency>
  		<!-- Sakai Course Management Dependency -->
  		<dependency>
 -			<groupId>org.sakaiproject.edu-services.course-management</groupId>
 -			<artifactId>coursemanagement-api</artifactId>
--			<version>${sakai.edu.services.version}</version>
-+			<groupId>org.sakaiproject</groupId>
-+			<artifactId>sakai-coursemanagement-api</artifactId>
-+			<version>${sakai.version}</version>
+-			<version>${sakai.edu-services.version}</version>
++ 			<groupId>org.sakaiproject</groupId>
++ 			<artifactId>sakai-coursemanagement-api</artifactId>
++ 			<version>${sakai.version}</version>
  			<scope>provided</scope>
  		</dependency>
  		<!-- Sakai Sections Dependency -->
  		<dependency>
 -			<groupId>org.sakaiproject.edu-services.sections</groupId>
 -			<artifactId>sections-api</artifactId>
--			<version>${sakai.edu.services.version}</version>
-+			<groupId>org.sakaiproject</groupId>
-+			<artifactId>sakai-sections-api</artifactId>
-+			<version>${sakai.version}</version>
+-			<version>${sakai.edu-services.version}</version>
++ 			<groupId>org.sakaiproject</groupId>
++ 			<artifactId>sakai-sections-api</artifactId>
++ 			<version>${sakai.version}</version>
  			<scope>provided</scope>
  		</dependency>
  		<!-- Misc Sakai Dependencies -->
- 		<dependency>
+-		<dependency>
 -			<groupId>org.sakaiproject.kernel</groupId>
 -			<artifactId>sakai-kernel-api</artifactId>
-+			<groupId>org.sakaiproject</groupId>
-+			<artifactId>sakai-authz-api</artifactId>
-+			<version>${sakai.version}</version>
- 		</dependency>
- 		<dependency>
+-		</dependency>
+-		<dependency>
 -			<groupId>org.sakaiproject.kernel</groupId>
 -			<artifactId>sakai-component-manager</artifactId>
-+			<groupId>org.sakaiproject</groupId>
-+			<artifactId>sakai-component</artifactId>
-+			<version>${sakai.version}</version>
- 		</dependency>
- 		<dependency>
+-		</dependency>
+-		<dependency>
 -			<groupId>org.sakaiproject.kernel</groupId>
 -			<artifactId>sakai-kernel-util</artifactId>
-+			<groupId>org.sakaiproject</groupId>
-+			<artifactId>sakai-component-api</artifactId>
-+			<version>${sakai.version}</version>
- 		</dependency>
-+		<dependency>
-+			<groupId>org.sakaiproject</groupId>
-+			<artifactId>sakai-entity-api</artifactId>
-+			<version>${sakai.version}</version>
-+		</dependency>
-+		<dependency>
-+			<groupId>org.sakaiproject</groupId>
-+			<artifactId>sakai-event-api</artifactId>
-+			<version>${sakai.version}</version>
-+		</dependency>
-+		<dependency>
-+			<groupId>org.sakaiproject</groupId>
-+			<artifactId>sakai-site-api</artifactId>
-+			<version>${sakai.version}</version>
-+		</dependency>
-+		<dependency>
-+			<groupId>org.sakaiproject</groupId>
-+			<artifactId>sakai-tool-api</artifactId>
-+			<version>${sakai.version}</version>
-+		</dependency>
-+		<dependency>
-+			<groupId>org.sakaiproject</groupId>
-+			<artifactId>sakai-tool-servlet</artifactId>
-+			<version>${sakai.version}</version>
-+			<scope>provided</scope>
-+		</dependency>
-+		<dependency>
-+			<groupId>org.sakaiproject</groupId>
-+			<artifactId>sakai-user-api</artifactId>
-+			<version>${sakai.version}</version>
-+		</dependency>
-+		<dependency>
-+			<groupId>org.sakaiproject</groupId>
-+			<artifactId>sakai-util-api</artifactId>
-+			<version>${sakai.version}</version>
-+		</dependency>
+-		</dependency>
++  		<dependency>
++ 			<groupId>org.sakaiproject</groupId>
++ 			<artifactId>sakai-authz-api</artifactId>
++ 			<version>${sakai.version}</version>
++  		</dependency>
++  		<dependency>
++ 			<groupId>org.sakaiproject</groupId>
++ 			<artifactId>sakai-component</artifactId>
++ 			<version>${sakai.version}</version>
++  		</dependency>
++  		<dependency>
++ 			<groupId>org.sakaiproject</groupId>
++ 			<artifactId>sakai-component-api</artifactId>
++ 			<version>${sakai.version}</version>
++  		</dependency>
++ 		<dependency>
++ 			<groupId>org.sakaiproject</groupId>
++ 			<artifactId>sakai-entity-api</artifactId>
++ 			<version>${sakai.version}</version>
++ 		</dependency>
++ 		<dependency>
++ 			<groupId>org.sakaiproject</groupId>
++ 			<artifactId>sakai-event-api</artifactId>
++ 			<version>${sakai.version}</version>
++ 		</dependency>
++ 		<dependency>
++ 			<groupId>org.sakaiproject</groupId>
++ 			<artifactId>sakai-site-api</artifactId>
++ 			<version>${sakai.version}</version>
++ 		</dependency>
++ 		<dependency>
++ 			<groupId>org.sakaiproject</groupId>
++ 			<artifactId>sakai-tool-api</artifactId>
++ 			<version>${sakai.version}</version>
++ 		</dependency>
++ 		<dependency>
++ 			<groupId>org.sakaiproject</groupId>
++ 			<artifactId>sakai-tool-servlet</artifactId>
++ 			<version>${sakai.version}</version>
++ 			<scope>provided</scope>
++ 		</dependency>
++ 		<dependency>
++ 			<groupId>org.sakaiproject</groupId>
++ 			<artifactId>sakai-user-api</artifactId>
++ 			<version>${sakai.version}</version>
++ 		</dependency>
++ 		<dependency>
++ 			<groupId>org.sakaiproject</groupId>
++ 			<artifactId>sakai-util-api</artifactId>
++ 			<version>${sakai.version}</version>
++ 		</dependency>
  		<!--  Google Web Toolkit Dependencies -->
  		<dependency>
  			<groupId>com.google.gwt</groupId>
@@ -140,7 +146,7 @@ Index: server/pom.xml
  			<artifactId>spring-mock</artifactId>
 Index: war/pom.xml
 ===================================================================
---- war/pom.xml	(revision 66142)
+--- war/pom.xml	(revision 66370)
 +++ war/pom.xml	(working copy)
 @@ -39,15 +39,15 @@
  		</dependency>
@@ -148,89 +154,96 @@ Index: war/pom.xml
  		<dependency>
 -			<groupId>org.sakaiproject.edu-services.gradebook</groupId>
 -			<artifactId>gradebook-service-api</artifactId>
--			<version>${sakai.edu.services.version}</version>
-+			<groupId>org.sakaiproject</groupId>
-+			<artifactId>sakai-gradebook-service-api</artifactId>
-+			<version>${sakai.version}</version>
+-			<version>${sakai.edu-services.version}</version>
++ 			<groupId>org.sakaiproject</groupId>
++ 			<artifactId>sakai-gradebook-service-api</artifactId>
++ 			<version>${sakai.version}</version>
  			<scope>provided</scope>
  		</dependency>
  		<dependency>
 -			<groupId>org.sakaiproject.edu-services.gradebook</groupId>
 -			<artifactId>gradebook-service-hibernate</artifactId>
--			<version>${sakai.edu.services.version}</version>
-+			<groupId>org.sakaiproject</groupId>
-+			<artifactId>sakai-gradebook-service-hibernate</artifactId>
-+			<version>${sakai.version}</version>
+-			<version>${sakai.edu-services.version}</version>
++ 			<groupId>org.sakaiproject</groupId>
++ 			<artifactId>sakai-gradebook-service-hibernate</artifactId>
++ 			<version>${sakai.version}</version>
  			<scope>provided</scope>
  		</dependency>
  		<!-- Other External Dependencies -->
 Index: api/pom.xml
 ===================================================================
---- api/pom.xml	(revision 66142)
+--- api/pom.xml	(revision 66370)
 +++ api/pom.xml	(working copy)
-@@ -29,22 +29,56 @@
+@@ -29,28 +29,56 @@
  		</dependency>
  		<!-- Gradebook1 Dependencies -->
  		<dependency>
 -			<groupId>org.sakaiproject.edu-services.gradebook</groupId>
 -			<artifactId>gradebook-service-api</artifactId>
--			<version>${sakai.edu.services.version}</version>
-+			<groupId>org.sakaiproject</groupId>
-+			<artifactId>sakai-gradebook-service-api</artifactId>
-+			<version>${sakai.version}</version>
+-			<version>${sakai.edu-services.version}</version>
++ 			<groupId>org.sakaiproject</groupId>
++ 			<artifactId>sakai-gradebook-service-api</artifactId>
++ 			<version>${sakai.version}</version>
  			<scope>provided</scope>
  		</dependency>
  		<dependency>
 -			<groupId>org.sakaiproject.edu-services.gradebook</groupId>
 -			<artifactId>gradebook-service-hibernate</artifactId>
--			<version>${sakai.edu.services.version}</version>
-+			<groupId>org.sakaiproject</groupId>
-+			<artifactId>sakai-gradebook-service-hibernate</artifactId>
-+			<version>${sakai.version}</version>
+-			<version>${sakai.edu-services.version}</version>
++ 			<groupId>org.sakaiproject</groupId>
++ 			<artifactId>sakai-gradebook-service-hibernate</artifactId>
++ 			<version>${sakai.version}</version>
  			<scope>provided</scope>
  		</dependency>
-+                <!-- Sakai Course Management Dependency -->
-+                <dependency>
-+                        <groupId>org.sakaiproject</groupId>
-+                        <artifactId>sakai-coursemanagement-api</artifactId>
-+                        <version>${sakai.version}</version>
-+                        <scope>provided</scope>
-+                </dependency>
-+                <!-- Sakai Sections Dependency -->
-+                <dependency>
-+                        <groupId>org.sakaiproject</groupId>
-+                        <artifactId>sakai-sections-api</artifactId>
-+                        <version>${sakai.version}</version>
-+                        <scope>provided</scope>
-+                </dependency>
+-		<dependency>
+-			<groupId>org.sakaiproject.edu-services.sections</groupId>
+-			<artifactId>sections-api</artifactId>
+-			<version>${sakai.edu-services.version}</version>
+-			<scope>provided</scope>
+-		</dependency>
++                 <!-- Sakai Course Management Dependency -->
++                 <dependency>
++                         <groupId>org.sakaiproject</groupId>
++                         <artifactId>sakai-coursemanagement-api</artifactId>
++                         <version>${sakai.version}</version>
++                         <scope>provided</scope>
++                 </dependency>
++                 <!-- Sakai Sections Dependency -->
++                 <dependency>
++                         <groupId>org.sakaiproject</groupId>
++                         <artifactId>sakai-sections-api</artifactId>
++                         <version>${sakai.version}</version>
++                         <scope>provided</scope>
++                 </dependency>
  		<!-- Misc Sakai Dependencies -->
- 		<dependency>
+-		<dependency>
 - 			<groupId>org.sakaiproject.kernel</groupId>
 - 			<artifactId>sakai-kernel-api</artifactId>
 -  		</dependency>
-+			<groupId>org.sakaiproject</groupId>
-+			<artifactId>sakai-authz-api</artifactId>
-+			<version>${sakai.version}</version>
-+			<scope>provided</scope>
-+		</dependency>
-+		<dependency>
-+			<groupId>org.sakaiproject</groupId>
-+			<artifactId>sakai-entity-api</artifactId>
-+			<version>${sakai.version}</version>
-+			<scope>provided</scope>
-+		</dependency>
-+		<dependency>
-+			<groupId>org.sakaiproject</groupId>
-+			<artifactId>sakai-site-api</artifactId>
-+			<version>${sakai.version}</version>
-+			<scope>provided</scope>
-+		</dependency>
-+		<dependency>
-+			<groupId>org.sakaiproject</groupId>
-+			<artifactId>sakai-user-api</artifactId>
-+			<version>${sakai.version}</version>
-+			<scope>provided</scope>
-+		</dependency>
++  		<dependency>
++ 			<groupId>org.sakaiproject</groupId>
++ 			<artifactId>sakai-authz-api</artifactId>
++ 			<version>${sakai.version}</version>
++ 			<scope>provided</scope>
++ 		</dependency>
++ 		<dependency>
++ 			<groupId>org.sakaiproject</groupId>
++ 			<artifactId>sakai-entity-api</artifactId>
++ 			<version>${sakai.version}</version>
++ 			<scope>provided</scope>
++ 		</dependency>
++ 		<dependency>
++ 			<groupId>org.sakaiproject</groupId>
++ 			<artifactId>sakai-site-api</artifactId>
++ 			<version>${sakai.version}</version>
++ 			<scope>provided</scope>
++ 		</dependency>
++ 		<dependency>
++ 			<groupId>org.sakaiproject</groupId>
++ 			<artifactId>sakai-user-api</artifactId>
++ 			<version>${sakai.version}</version>
++ 			<scope>provided</scope>
++ 		</dependency>
  		<!-- External Dependencies -->
  		<dependency>
          	<groupId>javax.servlet</groupId>
