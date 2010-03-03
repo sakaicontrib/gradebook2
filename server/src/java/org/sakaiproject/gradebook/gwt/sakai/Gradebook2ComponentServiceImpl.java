@@ -4345,58 +4345,6 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 	}
 
 	/*
-	private Map<String,Object> getItemMap(Gradebook gradebook, List<Assignment> assignments, List<Category> categories, Long categoryId, Long assignmentId) {
-
-		Map<String,Object> gradebookItemModel = createItemMap(gradebook);
-
-		boolean isNotInCategoryMode = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_NO_CATEGORY;
-
-		if (isNotInCategoryMode) {
-			calculateItemCategoryPercent(gradebook, null, gradebookItemModel, null, assignments, assignmentId);
-
-		} else {
-
-			if (categories != null) {
-				BigDecimal gradebookWeightSum = BigDecimal.ZERO;
-				BigDecimal gradebookPointsSum = BigDecimal.ZERO;
-				for (Category category : categories) {
-					boolean isExtraCredit = category.isExtraCredit() != null && category.isExtraCredit().booleanValue();
-					boolean isUnweighted = category.isUnweighted() != null && category.isUnweighted().booleanValue();
-
-					if (!category.isRemoved() || isNotInCategoryMode) {
-						double categoryWeight = category.getWeight() == null ? 0d : category.getWeight().doubleValue() * 100d;
-
-						List<Assignment> items = getUncheckedAssignmentList(category);
-						Map<String, Object> categoryItemModel = createItemMap(gradebook, category, items);
-
-						if (!isNotInCategoryMode) {
-							Util.makeChild(gradebookItemModel, categoryItemModel);
-						}
-
-						if (categoryId != null && category.getId().equals(categoryId))
-							categoryItemModel.put(ItemKey.IS_ACTIVE.name(), true);
-
-						calculateItemCategoryPercent(gradebook, category, gradebookItemModel, categoryItemModel, items, assignmentId);
-
-						double categoryPoints = getPoints(categoryItemModel); //.getPoints() == null ? 0d : categoryItemModel.getPoints().doubleValue();
-
-						if (!isExtraCredit && !isUnweighted) {
-							categoryWeight = getPercentCourseGrade(categoryItemModel); //.getPercentCourseGrade() == null ? 0d : categoryItemModel.getPercentCourseGrade().doubleValue();
-							gradebookWeightSum = gradebookWeightSum.add(BigDecimal.valueOf(categoryWeight));
-							gradebookPointsSum = gradebookPointsSum.add(BigDecimal.valueOf(categoryPoints));
-						}
-
-					}
-				}
-				gradebookItemModel.put(ItemKey.POINTS.name(), Double.valueOf(gradebookPointsSum.doubleValue()));
-				gradebookItemModel.put(ItemKey.PERCENT_COURSE_GRADE.name(), Double.valueOf(gradebookWeightSum.doubleValue()));
-			}
-		}
-
-		return gradebookItemModel;
-	}*/
-
-	/*
 	 * GENERAL HELPER METHODS
 	 */
 	private String[] getLearnerRoleNames() {

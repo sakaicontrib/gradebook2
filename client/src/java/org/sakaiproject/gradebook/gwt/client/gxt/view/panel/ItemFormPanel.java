@@ -152,40 +152,40 @@ public class ItemFormPanel extends GradebookPanel {
 		setHeaderVisible(true);
 		setFrame(true);
 		setScrollMode(Scroll.AUTO);
-		setButtonAlign(Style.HorizontalAlignment.LEFT);
 		setLayout(new FlowLayout());
 
 		initListeners();
+		
+		formPanel = new FormPanel();
+		formPanel.setButtonAlign(Style.HorizontalAlignment.LEFT);
+		formPanel.setHeaderVisible(false);
+		formPanel.setLabelWidth(180);
+		formPanel.setVisible(false);
 		
 		categoryStore = new ListStore<ItemModel>();
 		categoryStore.setModelComparer(new ItemModelComparer<ItemModel>());
 		
 		deleteButton = new AriaButton(i18n.deleteButton(), selectionListener, 'd');
 		deleteButton.setData(selectionTypeField, SelectionType.REQUEST_DELETE);
-		addButton(deleteButton);
+		formPanel.addButton(deleteButton);
 		
-		getButtonBar().add(new FillToolItem());
+		formPanel.getButtonBar().add(new FillToolItem());
 		
 		okButton = new AriaButton("", selectionListener, 's');
-		addButton(okButton);
+		formPanel.addButton(okButton);
 
 		okCloseButton = new AriaButton(i18n.saveAndCloseButton(), selectionListener, 'm');
-		addButton(okCloseButton);
+		formPanel.addButton(okCloseButton);
 
 		cancelButton = new AriaButton(i18n.closeButton(), selectionListener, 'x');
 		cancelButton.setData(selectionTypeField, SelectionType.CANCEL);
 
-		addButton(cancelButton);
+		formPanel.addButton(cancelButton);
 	    
 	    ListStore<ModelData> categoryTypeStore = new ListStore<ModelData>();
 		categoryTypeStore.add(getCategoryTypeModel(CategoryType.NO_CATEGORIES));
 		categoryTypeStore.add(getCategoryTypeModel(CategoryType.SIMPLE_CATEGORIES));
-		categoryTypeStore.add(getCategoryTypeModel(CategoryType.WEIGHTED_CATEGORIES));
-	    
-		formPanel = new FormPanel();
-		formPanel.setHeaderVisible(false);
-		formPanel.setLabelWidth(180);
-		formPanel.setVisible(false);
+		categoryTypeStore.add(getCategoryTypeModel(CategoryType.WEIGHTED_CATEGORIES));		
 
 		directionsField = new LabelField();
 		directionsField.setName("directions");

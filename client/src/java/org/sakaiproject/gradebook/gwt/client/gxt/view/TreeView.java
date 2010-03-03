@@ -225,7 +225,7 @@ public class TreeView extends View {
 	}
 
 	protected void onMaskItemTree() {
-		treePanel.onMaskItemTree();
+		//treePanel.onMaskItemTree();
 	}
 
 	protected void onNewCategory(ItemModel itemModel) {
@@ -322,7 +322,7 @@ public class TreeView extends View {
 	}
 
 	protected void onUnmaskItemTree() {
-		treePanel.onUnmaskItemTree();
+		//treePanel.onUnmaskItemTree();
 	}
 
 	/*protected void onUserChange(UserEntityAction<?> action) {

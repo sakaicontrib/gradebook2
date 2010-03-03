@@ -99,6 +99,8 @@ public class ItemTreePanel extends GradebookPanel {
 	private MenuItem addCategoryMenuItem, updateCategoryMenuItem, updateItemMenuItem, deleteCategoryMenuItem, deleteItemMenuItem;
 	private MenuItem moveDownMenuItem, moveUpMenuItem;
 	
+	private TabPanel tabPanel;
+	
 	private TreeLoader<FixedColumnModel> learnerAttributeLoader;
 	private TreeGrid<ItemModel> itemGrid;
 	private TreePanel<FixedColumnModel> learnerAttributeTree;
@@ -342,7 +344,7 @@ public class ItemTreePanel extends GradebookPanel {
 		if (isEditable)
 			itemGrid.setContextMenu(newTreeContextMenu(i18n)); 
 		
-		TabPanel tabPanel = new AriaTabPanel();
+		tabPanel = new AriaTabPanel();
 
 		TabItem item = new AriaTabItem(i18n.navigationPanelFixedTabHeader()) {
 			@Override
@@ -431,8 +433,8 @@ public class ItemTreePanel extends GradebookPanel {
 	}
 	
 	public void onMaskItemTree() {
+		tabPanel.mask();
 		itemGrid.hide();
-		itemGrid.mask();
 	}
 	
 	public void onRefreshGradebookItems(final Gradebook gradebookModel, TreeLoader<ItemModel> treeLoader, final ItemModel rootItem) {
@@ -664,7 +666,7 @@ public class ItemTreePanel extends GradebookPanel {
 	
 	public void onUnmaskItemTree() {
 		itemGrid.show();
-		itemGrid.unmask();
+		tabPanel.unmask();
 	}
 	
 	/*
