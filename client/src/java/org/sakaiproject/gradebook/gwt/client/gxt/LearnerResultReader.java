@@ -32,9 +32,6 @@ public class LearnerResultReader<D> extends JsonPagingLoadResultReader<D> {
 	@SuppressWarnings("unchecked")
 	@Override
 	public D read(Object loadConfig, Object data) {
-		//Gradebook gbModel = Registry.get(AppConstants.CURRENT);
-		//Item gbItem = gbModel.getGradebookItemModel();
-		//ModelType modelType = LearnerTranslater.generateLearnerModelType(gbItem, false);
 		JSONObject jsonRoot = null;
 		if (data instanceof JavaScriptObject) {
 			jsonRoot = new JSONObject((JavaScriptObject) data);

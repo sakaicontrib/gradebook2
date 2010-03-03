@@ -149,90 +149,9 @@ public class RestBuilder extends RequestBuilder {
 			ModelType type, Method method, String ... urlArgs) {	
 		HttpProxy<String> proxy = getProxy(urlArgs, null);
 		
-		JsonPagingLoadResultReader<PagingLoadResult<M>> reader = new LearnerResultReader<PagingLoadResult<M>>(type);
+		JsonPagingLoadResultReader<PagingLoadResult<M>> reader = 
+			new LearnerResultReader<PagingLoadResult<M>>(type);
 		
-		/*
-		JsonPagingLoadResultReader<PagingLoadResult<M>> reader = new JsonPagingLoadResultReader<PagingLoadResult<M>>(type) {
-			protected ModelData newModelInstance() {
-			    return new BaseModel();
-			}
-			
-			@SuppressWarnings("unchecked")
-			@Override
-			public PagingLoadResult<M> read(Object loadConfig, Object data) {
-				Gradebook gbModel = Registry.get(AppConstants.CURRENT);
-			    Item gbItem = gbModel.getGradebookItemModel();
-				ModelType modelType = LearnerTranslater.generateLearnerModelType(gbItem, false);
-				JSONObject jsonRoot = null;
-			    if (data instanceof JavaScriptObject) {
-			      jsonRoot = new JSONObject((JavaScriptObject) data);
-			    } else {
-			      jsonRoot = (JSONObject) JSONParser.parse((String) data);
-			    }
-			    JSONArray root = (JSONArray) jsonRoot.get(modelType.getRoot());
-			    int size = root.size();
-			    ArrayList<ModelData> models = new ArrayList<ModelData>();
-			    for (int i = 0; i < size; i++) {
-			      JSONObject obj = (JSONObject) root.get(i);
-			      ModelData model = newModelInstance();
-			      for (int j = 0; j < modelType.getFieldCount(); j++) {
-			        DataField field = modelType.getField(j);
-			        String name = field.getName();
-			        Class type = field.getType();
-			        String map = field.getMap() != null ? field.getMap() : field.getName();
-			        JSONValue value = obj.get(map);
-
-			        if (value == null) continue;
-			        if (value.isArray() != null) {
-			          // nothing
-			        } else if (value.isBoolean() != null) {
-			          model.set(name, value.isBoolean().booleanValue());
-			        } else if (value.isNumber() != null) {
-			          if (type != null) {
-			            Double d = value.isNumber().doubleValue();
-			            if (type.equals(Integer.class)) {
-			              model.set(name, d.intValue());
-			            } else if (type.equals(Long.class)) {
-			              model.set(name, d.longValue());
-			            } else if (type.equals(Float.class)) {
-			              model.set(name, d.floatValue());
-			            } else {
-			              model.set(name, d);
-			            }
-			          } else {
-			            model.set(name, value.isNumber().doubleValue());
-			          }
-			        } else if (value.isObject() != null) {
-			          // nothing
-			        } else if (value.isString() != null) {
-			          String s = value.isString().stringValue();
-			          if (type != null) {
-			            if (type.equals(Date.class)) {
-			              if ("timestamp".equals(field.getFormat())) {
-			                Date d = new Date(Long.parseLong(s) * 1000);
-			                model.set(name, d);
-			              } else {
-			                DateTimeFormat format = DateTimeFormat.getFormat(field.getFormat());
-			                Date d = format.parse(s);
-			                model.set(name, d);
-			              }
-			            }
-			          } else {
-			            model.set(name, s);
-			          }
-			        } else if (value.isNull() != null) {
-			          model.set(name, null);
-			        }
-			      }
-			      models.add(model);
-			    }
-			    int totalCount = models.size();
-			    if (modelType.getTotalName() != null) {
-			      totalCount = getTotalCount(jsonRoot);
-			    }
-			    return (PagingLoadResult<M>) createReturnData(loadConfig, models, totalCount);
-			  }
-		};*/
 		return new BasePagingLoader<PagingLoadResult<M>>(proxy, reader);
 	}
 	
