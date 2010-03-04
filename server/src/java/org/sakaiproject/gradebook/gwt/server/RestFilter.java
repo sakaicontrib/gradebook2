@@ -22,7 +22,19 @@ public class RestFilter extends SpringServlet {
 
 	private static final Log log = LogFactory.getLog(RestFilter.class);
 	
-	private boolean isHostedMode = false;
+	public void doFilter(ServletRequest request, ServletResponse response,
+			FilterChain chain) throws IOException, ServletException {
+		
+		// We need to force IE not to cache REST/AJAX calls
+		//Pragma: no-cache
+		//Cache-Control: no-cache
+		//Expires: Fri, 30 Oct 1998 14:19:41 GMT
+		((HttpServletResponse)response).setHeader("Pragma", "no-cache");
+		((HttpServletResponse)response).setHeader("Cache-Control", "no-cache");
+		((HttpServletResponse)response).setHeader("Expires", "Fri, 12 Dec 1990 12:00:00 GMT");
+		
+		chain.doFilter(request, response);
+	}
 	
 	/*
 	public void destroy() {
