@@ -462,6 +462,9 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 	
 	public Item createItem(String gradebookUid, Long gradebookId, Item item, boolean enforceNoNewCategories) throws InvalidInputException {
 
+		if (!authz.isUserAbleToEditAssessments(gradebookUid))
+			throw new InvalidInputException("You are not authorized to create items.");
+		
 		ItemType itemType = item.getItemType();
 
 		if (itemType != null) {
@@ -1901,6 +1904,10 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 	
 		Gradebook gradebook = assignment.getGradebook();
 	
+		if (!authz.isUserAbleToEditAssessments(gradebook.getUid()))
+			throw new InvalidInputException("You are not authorized to edit items.");
+		
+		
 		if (category == null)
 			category = findDefaultCategory(gradebook.getId());
 	
@@ -4831,6 +4838,10 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		
 		Gradebook gradebook = category.getGradebook();
 
+		if (!authz.isUserAbleToEditAssessments(gradebook.getUid()))
+			throw new InvalidInputException("You are not authorized to edit categories.");
+		
+		
 		ActionRecord actionRecord = createActionRecord(category.getName(), String.valueOf(category.getId()), gradebook, item, EntityType.CATEGORY.name(), ActionType.UPDATE.name());
 		
 		try {
@@ -4968,6 +4979,10 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 		Gradebook gradebook = gbService.getGradebook(item.getIdentifier());
 
+		if (!authz.isUserAbleToEditAssessments(gradebook.getUid()))
+			throw new InvalidInputException("You are not authorized to edit this gradebook.");
+		
+		
 		ActionRecord actionRecord = createActionRecord(gradebook.getName(), gradebook.getUid(), gradebook, item, EntityType.GRADEBOOK.name(), ActionType.UPDATE.name());
 			
 		//	new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.GRADEBOOK.name(), ActionType.UPDATE.name());
