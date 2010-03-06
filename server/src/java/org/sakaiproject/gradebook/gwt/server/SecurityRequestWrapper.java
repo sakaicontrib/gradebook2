@@ -127,7 +127,8 @@ public class SecurityRequestWrapper extends HttpServletRequestWrapper {
 
 		int bodySize = body.getBytes().length;
 
-		if (bodySize != contentLength) {
+		// GRBK-517 : TPA : For "application/json" requests, when the content body is empty, contentLength = -1. 
+		if (bodySize != contentLength && contentLength != -1) {
 			throw new ServletException("The request's and actual body content length do not match");
 		}
 

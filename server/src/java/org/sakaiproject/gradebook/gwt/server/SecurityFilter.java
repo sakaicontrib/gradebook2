@@ -39,7 +39,8 @@ import javax.servlet.http.HttpServletResponse;
 public class SecurityFilter implements Filter {
 
 	private static final String SCRIPT_REGEX = "((<[\\s\\/]*script\\b[^>]*>)([^>]*)(<\\/script>))";
-	private static final String GWT_RPC_CONTENT_TYPE = "text/x-gwt-rpc";
+	// GRBK-517 : TPA : Changed the content type from gwt-rpc to "application/json"
+	private static final String APPLICATION_JSON_CONTENT_TYPE = "application/json";
 	private static final Pattern pattern = Pattern.compile(SCRIPT_REGEX);
 	private static final int HTTP_500 = 500;
 
@@ -47,7 +48,7 @@ public class SecurityFilter implements Filter {
 
 		String contentType = request.getContentType();
 
-		if(null != contentType && contentType.startsWith(GWT_RPC_CONTENT_TYPE)) {
+		if(null != contentType && contentType.startsWith(APPLICATION_JSON_CONTENT_TYPE)) {
 
 			SecurityRequestWrapper securityRequestWrapper = new SecurityRequestWrapper((HttpServletRequest) request);
 
