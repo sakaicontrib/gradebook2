@@ -47,13 +47,14 @@ public class Notifier {
 			
 			int panelWidth = XDOM.getViewportSize().width / 2;
 			int x = XDOM.getViewportSize().width / 2 - panelWidth / 2;
-			
+			int y = XDOM.getViewportHeight() / 2 - 60;
+
 			LogConfig infoConfig = new LogConfig(title, text, infoParams);
 			infoConfig.display = 5000;
 			infoConfig.width = panelWidth;
 			infoConfig.height = 60;
 			
-			LogDisplay.display(x, 0, infoConfig);
+			LogDisplay.display(x, y, infoConfig);
 		}
 	}
 	
@@ -98,13 +99,14 @@ public class Notifier {
 	
 			int panelWidth = XDOM.getViewportSize().width / 2;
 			int x = XDOM.getViewportSize().width / 2 - panelWidth / 2;
+			int y = XDOM.getViewportHeight() / 2 - 60;
 			
 			LogConfig infoConfig = new LogConfig(title, text, infoParams);
 			infoConfig.width = panelWidth;
 			infoConfig.height = 60;
 			infoConfig.isPermanent = true;
 			
-			LogDisplay.display(x, 0, infoConfig);
+			LogDisplay.display(x, y, infoConfig);
 		}
 	}
 	
@@ -113,6 +115,7 @@ public class Notifier {
 
 		int panelWidth = XDOM.getViewportSize().width / 2;
 		int x = XDOM.getViewportSize().width / 2 - panelWidth / 2;
+		int y = XDOM.getViewportHeight() / 2 - 60;
 		
 		LogConfig infoConfig = new LogConfig(title, text, infoParams);
 		if (!isPermanent)
@@ -121,7 +124,7 @@ public class Notifier {
 		infoConfig.height = 60;
 		infoConfig.isPermanent = isPermanent;
 		
-		LogDisplay.display(x, 0, infoConfig);
+		LogDisplay.display(x, y, infoConfig);
 	}
 	
 	
