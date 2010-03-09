@@ -3084,7 +3084,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				site = siteService.getSite(getSiteContext());
 
 				if (site.getId().equals(gradebook.getName())) {
-					gradebook.setName("My Default Gradebook");
+					gradebook.setName(i18n.getString("defaultGradebookName"));
 				}
 
 			} catch (IdUnusedException e) {
@@ -3425,7 +3425,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		} catch (GradebookNotFoundException gnfe) {
 			// If it doesn't exist, then create it
 			if (frameworkService != null) {
-				frameworkService.addGradebook(gradebookUid, "My Default Gradebook");
+				frameworkService.addGradebook(gradebookUid, i18n.getString("defaultGradebookName"));
 				gradebook = gbService.getGradebook(gradebookUid);
 				isNewGradebook = true;
 			}
@@ -4097,28 +4097,8 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			} catch (GradebookNotFoundException gnfe) {
 				// If it doesn't exist, then create it
 				if (frameworkService != null) {
-					frameworkService.addGradebook(gradebookUids[i], "My Default Gradebook");
+					frameworkService.addGradebook(gradebookUids[i], i18n.getString("defaultGradebookName"));
 					gradebook = gbService.getGradebook(gradebookUids[i]);
-
-					// Add the default configuration settings
-					/*gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebook.getId(), 
-							ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, 
-									StudentModel.Key.DISPLAY_ID.name()), String.valueOf(Boolean.TRUE));
-					gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebook.getId(), 
-							ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, 
-									StudentModel.Key.DISPLAY_NAME.name()), String.valueOf(Boolean.TRUE));
-					gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebook.getId(), 
-							ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, 
-									StudentModel.Key.EMAIL.name()), String.valueOf(Boolean.TRUE));
-					gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebook.getId(), 
-							ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, 
-									StudentModel.Key.SECTION.name()), String.valueOf(Boolean.TRUE));	
-					gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebook.getId(), 
-							ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, 
-									StudentModel.Key.CALCULATED_GRADE.name()), String.valueOf(Boolean.TRUE));
-					gbService.createOrUpdateUserConfiguration(getCurrentUser(), gradebook.getId(), 
-							ConfigurationModel.getColumnHiddenId(AppConstants.ITEMTREE, 
-									StudentModel.Key.LETTER_GRADE.name()), String.valueOf(Boolean.TRUE));*/
 				} 
 			}
 			AuthModel authModel = new AuthModel();
