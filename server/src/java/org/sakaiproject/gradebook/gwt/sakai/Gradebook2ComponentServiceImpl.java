@@ -345,6 +345,69 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return gradebook;
 	}
 	
+	public Learner assignExcused(String itemId, String studentUid, Boolean isExcludedFromGrade) throws InvalidInputException {
+		int indexOf = itemId.indexOf(AppConstants.EXCUSE_FLAG);
+		Long assignmentId = Long.valueOf(itemId.substring(0, indexOf));
+		Assignment assignment = gbService.getAssignment(Long.valueOf(assignmentId));
+		
+		if (assignment == null)
+			throw new InvalidInputException("This is not a valid item.");
+		
+		Gradebook gradebook = assignment.getGradebook();
+		boolean isUserAbleToGrade = authz.isUserAbleToGradeAll(gradebook.getUid()) || authz.isUserAbleToGradeItemForStudent(gradebook.getUid(), assignment.getId(), studentUid);
+
+		if (!isUserAbleToGrade)
+			throw new InvalidInputException("You are not authorized to grade this student for this item.");
+		
+		
+		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.GRADE_RECORD.name(), ActionType.GRADED.name());
+		actionRecord.setEntityId(String.valueOf(assignment.getId()));
+		actionRecord.setStudentUid(studentUid);
+		Map<String, String> propertyMap = actionRecord.getPropertyMap();
+
+		propertyMap.put("score", "Excused");
+		
+		List<AssignmentGradeRecord> gradeRecords = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), studentUid);
+
+		AssignmentGradeRecord assignmentGradeRecord = null;
+
+		for (AssignmentGradeRecord currentGradeRecord : gradeRecords) {
+			Assignment a = currentGradeRecord.getAssignment();
+			if (a.getId().equals(assignment.getId()))
+				assignmentGradeRecord = currentGradeRecord;
+		}
+
+		if (assignmentGradeRecord == null) {
+			assignmentGradeRecord = new AssignmentGradeRecord();
+		}
+		
+		// Set the record as "excused"
+		assignmentGradeRecord.setExcludedFromGrade(isExcludedFromGrade);
+		
+		// Prepare record for update
+		assignmentGradeRecord.setGradableObject(assignment);
+		assignmentGradeRecord.setStudentId(studentUid);
+
+		Collection<AssignmentGradeRecord> updateGradeRecords = new LinkedList<AssignmentGradeRecord>();
+		updateGradeRecords.add(assignmentGradeRecord);
+		gbService.updateAssignmentGradeRecords(assignment, updateGradeRecords);
+		postEvent("gradebook2.excuseGrade", String.valueOf(gradebook.getId()), String.valueOf(assignment.getId()), studentUid);
+		
+		Site site = getSite();
+		User user = null;
+		try {
+			user = userService.getUser(studentUid);
+		} catch (UserNotDefinedException unde) {
+			log.warn("User not defined: " + studentUid);
+		}
+		Learner student = getStudent(gradebook, site, user);
+		
+		actionRecord.setEntityName(new StringBuilder().append((String)student.get(LearnerKey.DISPLAY_NAME.name())).append(" : ").append(assignment.getName()).toString());
+		gbService.storeActionRecord(actionRecord);
+
+		return student;
+	}
+	
 	public Learner assignScore(String gradebookUid, String studentUid, String assignmentId, Double value, Double previousValue) throws InvalidInputException {
 		Assignment assignment = gbService.getAssignment(Long.valueOf(assignmentId));
 		Gradebook gradebook = assignment.getGradebook();

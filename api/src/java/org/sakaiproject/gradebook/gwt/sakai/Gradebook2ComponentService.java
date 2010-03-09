@@ -25,6 +25,8 @@ public interface Gradebook2ComponentService {
 
 	public Learner assignComment(String assignmentId, String studentUid, String text);
 	
+	public Learner assignExcused(String assignmentId, String studentUid, Boolean isExcused) throws InvalidInputException;
+	
 	public Learner assignScore(String gradebookUid, String studentUid, String assignmentId, Double value, Double previousValue) throws InvalidInputException;
 	
 	public Learner assignScore(String gradebookUid, String studentUid, String assignmentId, String value, String previousValue) throws InvalidInputException;

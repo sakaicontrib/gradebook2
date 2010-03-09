@@ -46,6 +46,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.LearnerUtil;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.ExtraCreditNumericCellRenderer;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeContextMenu;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig;
@@ -560,37 +561,33 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 			protected String markupCss(Record r, ModelData model, String property, boolean isShowDirtyCells, boolean isPropertyChanged) {
 				StringBuilder css = new StringBuilder();
 
-				if (isShowDirtyCells && r != null) {
-					String failedProperty = new StringBuilder().append(property).append(AppConstants.FAILED_FLAG).toString();
-					String failedMessage = (String)r.get(failedProperty);
+				if (!LearnerUtil.isFixed(property)) {
+					if (isShowDirtyCells && r != null) {
+						String failedProperty = new StringBuilder().append(property).append(AppConstants.FAILED_FLAG).toString();
+						String failedMessage = (String)r.get(failedProperty);
+						
+						if (failedMessage != null) 
+							css.append(" ").append(resources.css().gbCellFailed());
+					}
 					
-					if (failedMessage != null) 
-						css.append(" ").append(resources.css().gbCellFailed());
-				}
-				
-				if (isShowDirtyCells && isPropertyChanged) {
-					//String failedProperty = new StringBuilder().append(property).append(AppConstants.FAILED_FLAG).toString();
-					//String failedMessage = (String)r.get(failedProperty);
-
-					String successProperty = new StringBuilder().append(property).append(AppConstants.SUCCESS_FLAG).toString();
-					String successMessage = (String)r.get(successProperty);
-					
-					//if (failedMessage != null) {
-					//	css.append(" ").append(resources.css().gbCellFailed());
-					//} else 
-					if (successMessage != null) {
-						css.append(" ").append(resources.css().gbCellSucceeded());
+					if (isShowDirtyCells && r != null /*&& isPropertyChanged*/) {
+						String successProperty = new StringBuilder().append(property).append(AppConstants.SUCCESS_FLAG).toString();
+						String successMessage = (String)r.get(successProperty);
+	
+						if (successMessage != null) {
+							css.append(" ").append(resources.css().gbCellSucceeded());
+						}
+					}
+	
+					if (isDropped(model, property)) {
+						css.append(" ").append(resources.css().gbCellDropped());
+					}
+	
+					if (isReleased(model, property)) {
+						css.append(" ").append(resources.css().gbReleased());
 					}
 				}
-
-				if (isDropped(model, property)) {
-					css.append(" ").append(resources.css().gbCellDropped());
-				}
-
-				if (isReleased(model, property)) {
-					css.append(" ").append(resources.css().gbReleased());
-				}
-
+				
 				if (css.length() > 0)
 					return css.toString();
 

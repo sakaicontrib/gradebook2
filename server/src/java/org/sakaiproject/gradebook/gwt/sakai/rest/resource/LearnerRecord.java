@@ -33,6 +33,22 @@ public class LearnerRecord extends Resource {
 		return toJson(map);
 	}
 	
+	@PUT @Path("excuse/{gradebookUid}/{itemId}/{studentUid}")
+	@Consumes({"application/xml", "application/json"})
+	public String assignExcused(@PathParam("gradebookUid") String gradebookUid,
+			@PathParam("itemId") String itemId,
+			@PathParam("studentUid") String studentUid,
+			JAXBElement<GradeRecord> jaxbAction) throws InvalidInputException {
+		
+		if (log.isDebugEnabled()) 
+			log.debug("assignExcused " + gradebookUid + " " + itemId + " " + studentUid);
+		
+		GradeRecord action = jaxbAction.getValue();
+		Learner map = service.assignExcused(itemId, studentUid, action.getBooleanValue());
+		
+		return toJson(map);
+	}
+	
 	@PUT @Path("numeric/{gradebookUid}/{itemId}/{studentUid}")
 	@Consumes({"application/xml", "application/json"})
 	public String assignNumericScore(@PathParam("gradebookUid") String gradebookUid,

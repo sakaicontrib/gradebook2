@@ -26,8 +26,10 @@ package org.sakaiproject.gradebook.gwt.client.gxt.controller;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
@@ -47,6 +49,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ConfigurationModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.LearnerUtil;
 import org.sakaiproject.gradebook.gwt.client.model.Configuration;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
@@ -445,8 +448,72 @@ public class ServiceController extends Controller {
 		Record record = event.record;
 		String property = event.property;
 
+		
+		Collection<String> recordPropertyNames = record.getPropertyNames();
+		Collection<String> resultPropertyNames = result.getPropertyNames();
+		
+		Set<String> unionPropertyNames = new HashSet<String>();
+		if (recordPropertyNames != null)
+			unionPropertyNames.addAll(recordPropertyNames);
+		if (resultPropertyNames != null)
+			unionPropertyNames.addAll(resultPropertyNames);
+		
+		if (unionPropertyNames != null) {
+			for (String p : unionPropertyNames) {
+				// We're only interested in assignment ids here
+				if (!LearnerUtil.isFixed(p)) {
+					
+					Object newObj = result.get(p);
+					Object oldObj = record.get(p);
+					
+					boolean needsRefreshing = false;
+					int index = -1;
+
+					if (p.endsWith(AppConstants.DROP_FLAG)) {
+						index = p.indexOf(AppConstants.DROP_FLAG);
+						needsRefreshing = true;
+					} else if (p.endsWith(AppConstants.COMMENTED_FLAG)) {
+						index = p.indexOf(AppConstants.COMMENTED_FLAG);
+						needsRefreshing = true;
+					}
+					
+					if (newObj == null && oldObj != null) {
+						// If the entry is now missing, we want to remove it
+						record.set(p, null);
+					} else {
+						// Otherwise, we simply replace the entry
+						record.set(p, newObj);
+					}
+					
+					// If we're dealing with a drop flag or a comment flag, we need to update the corresponding assignment id entry
+					// to force the BaseModel to call notifyPropertyChanged -- this makes the cell in the grid refresh
+					/*if (needsRefreshing && index != -1) {
+						String assignmentId = p.substring(0, index);
+						Object value = result.get(assignmentId);
+						Boolean recordFlagValue = (Boolean)record.get(p);
+						Boolean resultFlagValue = result.get(p);
+
+						boolean isDropped = resultFlagValue != null && resultFlagValue.booleanValue();
+						boolean wasDropped = recordFlagValue != null && recordFlagValue.booleanValue();
+
+						record.set(p, resultFlagValue);
+
+						if (isDropped || wasDropped) {
+							record.set(assignmentId, null);
+							record.set(assignmentId, value);
+						}
+					}*/
+				}
+			}
+			
+		}
+		
+		
+		
+		
+		
 		// Need to refresh any items that may have been dropped
-		for (String p : result.getPropertyNames()) {
+		/*for (String p : result.getPropertyNames()) {
 			boolean needsRefreshing = false;
 
 			int index = -1;
@@ -475,26 +542,23 @@ public class ServiceController extends Controller {
 					record.set(assignmentId, value);
 				}
 			}
-		}
+		}*/
 
 		String courseGrade = result.get(LearnerKey.COURSE_GRADE.name());
 
-		if (record.isModified(LearnerKey.COURSE_GRADE.name()))
+		if (courseGrade != null && record.isModified(LearnerKey.COURSE_GRADE.name()))
 			record.set(LearnerKey.COURSE_GRADE.name(), null);
-		if (courseGrade != null) 
-			record.set(LearnerKey.COURSE_GRADE.name(), courseGrade);
+		record.set(LearnerKey.COURSE_GRADE.name(), courseGrade);
 		
 		String calculatedGrade = result.get(LearnerKey.CALCULATED_GRADE.name());
-		if (record.isModified(LearnerKey.CALCULATED_GRADE.name()))
+		if (calculatedGrade != null && record.isModified(LearnerKey.CALCULATED_GRADE.name()))
 			record.set(LearnerKey.CALCULATED_GRADE.name(), null);
-		if (calculatedGrade != null)
-			record.set(LearnerKey.CALCULATED_GRADE.name(), calculatedGrade);
+		record.set(LearnerKey.CALCULATED_GRADE.name(), calculatedGrade);
 		
 		String letterGrade = result.get(LearnerKey.LETTER_GRADE.name());
-		if (record.isModified(LearnerKey.LETTER_GRADE.name()))
+		if (letterGrade != null && record.isModified(LearnerKey.LETTER_GRADE.name()))
 			record.set(LearnerKey.LETTER_GRADE.name(), null);
-		if (letterGrade != null)
-			record.set(LearnerKey.LETTER_GRADE.name(), letterGrade);
+		record.set(LearnerKey.LETTER_GRADE.name(), letterGrade);
 
 		// Ensure that we clear out any older failure messages
 		// Save the exception message on the record
@@ -503,12 +567,12 @@ public class ServiceController extends Controller {
 
 		record.setValid(property, true);
 
-		Object value = result.get(property);
+		/*Object value = result.get(property);
 
 		if (value == null)
 			record.set(property, null);
 		else
-			record.set(property, value);
+			record.set(property, value);*/
 
 		// FIXME: Move all this to a log event listener
 		StringBuilder buffer = new StringBuilder();
@@ -594,6 +658,13 @@ public class ServiceController extends Controller {
 		JSONObject json = new JSONObject();
 
 		switch (classType) {
+		case BOOLEAN:
+			if (event.value != null)
+				json.put(AppConstants.BOOL_VALUE_CONSTANT, JSONBoolean.getInstance(DataTypeConversionUtil.checkBoolean((Boolean)event.value)));
+			if (event.oldValue != null)
+				json.put(AppConstants.BOOL_START_VALUE_CONSTANT, JSONBoolean.getInstance(DataTypeConversionUtil.checkBoolean((Boolean)event.oldValue)));
+			entity = "excuse";
+			break;
 		case STRING:
 			if (event.value != null)
 				json.put(AppConstants.STR_VALUE_CONSTANT, new JSONString((String)event.value));

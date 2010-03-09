@@ -13,6 +13,8 @@ public class GradeRecord {
 	private Double previousValue;
 	private String stringValue;
 	private String previousStringValue;
+	private Boolean booleanValue;
+	private Boolean previousBooleanValue;
 	private Boolean numeric;
 	
 	public GradeRecord() { }
@@ -39,6 +41,18 @@ public class GradeRecord {
 		this.previousStringValue = previousStringValue;
 	}
 
+	public GradeRecord(String gradebookUid, Long gradebookId,
+			String studentUid, String itemId, Boolean booleanValue, Boolean previousBooleanValue) {
+		super();
+		this.gradebookUid = gradebookUid;
+		this.gradebookId = gradebookId;
+		this.studentUid = studentUid;
+		this.itemId = itemId;
+		this.booleanValue = booleanValue;
+		this.previousBooleanValue = previousBooleanValue;
+	}
+	
+	
 	public String getGradebookUid() {
 		return gradebookUid;
 	}
@@ -109,6 +123,22 @@ public class GradeRecord {
 
 	public void setNumeric(Boolean numeric) {
 		this.numeric = numeric;
+	}
+
+	public Boolean getBooleanValue() {
+		return booleanValue;
+	}
+
+	public void setBooleanValue(Boolean booleanValue) {
+		this.booleanValue = booleanValue;
+	}
+
+	public Boolean getPreviousBooleanValue() {
+		return previousBooleanValue;
+	}
+
+	public void setPreviousBooleanValue(Boolean previousBooleanValue) {
+		this.previousBooleanValue = previousBooleanValue;
 	}
 
 	
