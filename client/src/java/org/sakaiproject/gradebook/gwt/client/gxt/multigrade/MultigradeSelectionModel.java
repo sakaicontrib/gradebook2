@@ -53,31 +53,41 @@ public class MultigradeSelectionModel<M extends ModelData> extends CellSelection
 		CellEditor editor = ((GbEditorGrid<M>)grid).getEditorSupport().getActiveEditor();
 		switch (k) {
 		case KeyCodes.KEY_ENTER:
-		case KeyCodes.KEY_TAB:
 			e.stopEvent();
 			if (editor != null) {
 				editor.completeEdit();
 			}
-			if ((k == KeyCodes.KEY_ENTER && isMoveEditorOnEnter())) {
+			if (isMoveEditorOnEnter()) {
 				if (e.isShiftKey()) {
 					newCell = ((GbEditorGrid<M>)grid).doWalkCells(editor.row - 1, editor.col, -1, callback, true);
 				} else {
 					newCell = ((GbEditorGrid<M>)grid).doWalkCells(editor.row + 1, editor.col, 1, callback, true);
 				}
-			} else if (k == KeyCodes.KEY_TAB) {
-				if (e.isShiftKey()) {
-					newCell = ((GbEditorGrid<M>) grid).doWalkCells(editor.row,
-							editor.col - 1, -1, callback, true);
-				} else {
-					newCell = ((GbEditorGrid<M>) grid).doWalkCells(editor.row,
-							editor.col + 1, 1, callback, true);
-				}
+			}
+			break;
+		case KeyCodes.KEY_TAB:
+			e.stopEvent();
+			if (editor != null) {
+				editor.completeEdit();
+			}
+			if (e.isShiftKey()) {
+				newCell = ((GbEditorGrid<M>) grid).doWalkCells(editor.row,
+						editor.col - 1, -1, callback, true);
+			} else {
+				newCell = ((GbEditorGrid<M>) grid).doWalkCells(editor.row,
+						editor.col + 1, 1, callback, true);
 			}
 			break;
 		case KeyCodes.KEY_ESCAPE:
 			if (editor != null) {
 				editor.cancelEdit();
 			}
+			break;
+		case KeyCodes.KEY_UP:
+			newCell = ((GbEditorGrid<M>)grid).doWalkCells(editor.row - 1, editor.col, -1, callback, true);
+			break;
+		case KeyCodes.KEY_DOWN:
+			newCell = ((GbEditorGrid<M>)grid).doWalkCells(editor.row + 1, editor.col, 1, callback, true);
 			break;
 		}
 		if (newCell != null) {
