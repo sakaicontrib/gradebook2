@@ -7,6 +7,8 @@
 	
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.InvalidInputMapper"/>
 	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.SecurityMapper"/>
+	
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" 
 		  abstract="true"
 		  class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource">

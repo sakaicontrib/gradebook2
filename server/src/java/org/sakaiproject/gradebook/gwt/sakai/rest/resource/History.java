@@ -5,7 +5,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-
+import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 
 @Path("/gradebook/rest/history/{uid}/{id}")
 public class History extends Resource {
@@ -14,7 +14,8 @@ public class History extends Resource {
     @Produces("application/json")
     public String get(@PathParam("uid") String gradebookUid, @PathParam("id") Long gradebookId,
     		@QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset,
-    		@QueryParam("sortField") String sortField, @QueryParam("sortDir") String sortDir) {
+    		@QueryParam("sortField") String sortField, @QueryParam("sortDir") String sortDir)
+	throws SecurityException { 
     
 		org.sakaiproject.gradebook.gwt.client.model.History history = 
 			service.getHistory(gradebookUid, gradebookId, offset, limit);

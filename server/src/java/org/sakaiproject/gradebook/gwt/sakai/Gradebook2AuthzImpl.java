@@ -846,6 +846,9 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 			if (roleProperty == null || roleProperty.equals("anonymous")) 
 				return false;
 			
+			if (roleProperty.equals("ta"))
+				return "gradebook.gradeSection".equals(permission);
+			
 			if (roleProperty.equals("student")) 
 				return "gradebook.viewOwnGrades".equals(permission);
 			

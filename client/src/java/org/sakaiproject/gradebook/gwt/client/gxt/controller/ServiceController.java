@@ -380,7 +380,7 @@ public class ServiceController extends Controller {
 		RestBuilder builder = RestBuilder.getInstance(Method.DELETE, 
 				GWT.getModuleBaseURL(),
 				AppConstants.REST_FRAGMENT,
-				AppConstants.PERMISSION_FRAGMENT);
+				AppConstants.PERMISSION_FRAGMENT, selectedGradebook.getGradebookUid());
 		
 		JSONObject jsonObject = RestBuilder.convertModel(model);
 		

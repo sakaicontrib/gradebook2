@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
+import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.GradeEvent;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
@@ -33,9 +34,9 @@ public interface Gradebook2ComponentService {
 	
 	public Item createItem(String gradebookUid, Long gradebookId, Item item, boolean enforceNoNewCategories) throws InvalidInputException;
 	
-	public Permission createPermission(String gradebookUid, Long gradebookId, Permission permissionRequest) throws InvalidInputException;
+	public Permission createPermission(String gradebookUid, Long gradebookId, Permission permissionRequest) throws SecurityException, InvalidInputException;
 	
-	public Permission deletePermission(Permission permissionDeleteRequest);
+	public Permission deletePermission(String gradebookUid, Permission permissionDeleteRequest) throws SecurityException;
 	
 	public List<UserDereference> findAllUserDereferences();
 	
@@ -57,13 +58,13 @@ public interface Gradebook2ComponentService {
 	
 	public List<GradeEvent> getGradeEvents(Long assignmentId, String studentUid);
 	
-	public List<Map<String,Object>> getGradeMaps(String gradebookUid);
+	public List<Map<String,Object>> getGradeMaps(String gradebookUid) throws SecurityException;
 	
-	public List<Map<String, Object>> getGraders(String gradebookUid, Long gradebookId);
+	public List<Map<String, Object>> getGraders(String gradebookUid, Long gradebookId) throws SecurityException;
 	
-	public Map<String,Object> getGradesVerification(String gradebookUid, Long gradebookId);
+	public Map<String,Object> getGradesVerification(String gradebookUid, Long gradebookId) throws SecurityException;
 	
-	public History getHistory(String gradebookUid, Long gradebookId, Integer offset, Integer limit);
+	public History getHistory(String gradebookUid, Long gradebookId, Integer offset, Integer limit) throws SecurityException;
 	
 	public Item getItem(String gradebookUid, Long gradebookId, String type);
 	
@@ -71,21 +72,21 @@ public interface Gradebook2ComponentService {
 	
 	public Roster getRoster(String gradebookUid, Long gradebookId, Integer limit, Integer offset, String sectionUuid, String searchString, String sortField, boolean includeCMId, boolean isDescending);
 	
-	public List<Permission> getPermissions(String gradebookUid, Long gradebookId, String graderId);
+	public List<Permission> getPermissions(String gradebookUid, Long gradebookId, String graderId) throws SecurityException;
 	
-	public List<Statistics> getStatistics(String gradebookUid, Long gradebookId, String studentId);
+	public List<Statistics> getStatistics(String gradebookUid, Long gradebookId, String studentId) throws SecurityException;
 	
 	public List<Map<String,Object>> getVisibleSections(String gradebookUid, boolean enableAllSectionsEntry, String allSectionsEntryTitle);
 	
 	public void postEvent(String message, String gradebookId, String... args);
 	
-	public void resetGradeMap(String gradebookUid);
+	public void resetGradeMap(String gradebookUid) throws SecurityException;
 	
 	public void submitFinalGrade(List<Map<Column, String>> studentDataList, String gradebookUid, HttpServletRequest request, HttpServletResponse response);
 	
 	public Boolean updateConfiguration(Long gradebookId, String field, String value);
 	
-	public void updateGradeMap(String gradebookUid, String affectedLetterGrade, Object value) throws InvalidInputException;
+	public void updateGradeMap(String gradebookUid, String affectedLetterGrade, Object value) throws InvalidInputException, SecurityException;
 	
 	public Item updateItem(Item item) throws InvalidInputException;
 

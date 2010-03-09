@@ -88,53 +88,49 @@ public class AuthModel {
 		this.placementId = placementId;
 	}
 	
+	private String fromBoolean(Boolean b) {
+		if (b != null && b.booleanValue())
+			return "F";
+		return ".";
+	}
+	
+	private Boolean toBoolean(char c) {
+		switch (c) {
+		case 'F':
+			return Boolean.TRUE;
+		}
+		return Boolean.FALSE;
+	}
+	
+	private String pack(Boolean b1, Boolean b2, Boolean b3, Boolean b4, Boolean b5, String id) {
+		StringBuilder builder = new StringBuilder();
+		
+		builder.append(fromBoolean(b1)).append(fromBoolean(b2)).append(fromBoolean(b3))
+			.append(fromBoolean(b4)).append(fromBoolean(b5)).append(id);
+		
+		return builder.toString();
+	}
+	
+	// FFFF.sdf
+	private void unpack(String s) {
+		if (s != null) {
+			isUserAbleToViewOwnGrades = toBoolean(s.charAt(0));
+			isUserHasGraderPermissions = toBoolean(s.charAt(1));
+			isUserAbleToGrade = toBoolean(s.charAt(2));
+			isUserAbleToEditAssessments = toBoolean(s.charAt(3));
+			isNewGradebook = toBoolean(s.charAt(4));
+			placementId = s.substring(5);
+		}
+	}
 	
 	public String toString() {
-		StringBuilder buffer = new StringBuilder().append("?");
-		
-		boolean hasEntry = false;
-		if (isUserAbleToViewOwnGrades != null) {
-			buffer.append("isUserAbleToViewOwnGrades=").append(String.valueOf(isUserAbleToViewOwnGrades));
-			hasEntry = true;
-		}
-		if (isUserHasGraderPermissions != null) {
-			if (hasEntry)
-				buffer.append("&");
-			buffer.append("isUserHasGraderPermissions=").append(String.valueOf(isUserHasGraderPermissions));
-			hasEntry = true;
-		}
-		if (isUserAbleToGrade != null) {
-			if (hasEntry)
-				buffer.append("&");
-			buffer.append("isUserAbleToGrade=").append(String.valueOf(isUserAbleToGrade));
-			hasEntry = true;
-		}
-		if (isUserAbleToEditAssessments != null) {
-			if (hasEntry)
-				buffer.append("&");
-			buffer.append("isUserAbleToEditAssessments=").append(String.valueOf(isUserAbleToEditAssessments));
-			hasEntry = true;
-		}
-		if (isNewGradebook != null) {
-			if (hasEntry)
-				buffer.append("&");
-			buffer.append("isNewGradebook=").append(String.valueOf(isNewGradebook));
-			hasEntry = true;
-		}
-		if (placementId != null) {
-			if (hasEntry)
-				buffer.append("&");
-			buffer.append("placementId=").append(placementId);
-		}
-		
-		return buffer.toString();
+		return new StringBuilder().append("?token=")
+			.append(pack(isUserAbleToViewOwnGrades, isUserHasGraderPermissions, isUserAbleToGrade,
+				isUserAbleToEditAssessments, isNewGradebook, placementId)).toString();
 	}
 	
 	public void parse(String authString) {
-
-		if (authString != null && authString.length() > 1) {
-			HashMap<String, Object> nameValueMap = new HashMap<String, Object>();
-			
+		if (authString != null) {
 			authString = authString.substring(1);
 			
 			String[] params = authString.split("&");
@@ -142,25 +138,8 @@ public class AuthModel {
 			if (params != null) {
 				for (int i=0;i<params.length;i++) {
 					String[] parts = params[i].split("=");
-					
-					Object value = null;
-
-					if (!parts[0].equals("placementId") && parts[1] != null)
-						value = Boolean.valueOf(parts[1]);
-					else
-						value = parts[1];
-					
-					if (value != null)
-						nameValueMap.put(parts[0], value);
-				}
-				
-				if (nameValueMap != null) {
-					isUserAbleToViewOwnGrades = (Boolean)nameValueMap.get("isUserAbleToViewOwnGrades");
-					isUserHasGraderPermissions = (Boolean)nameValueMap.get("isUserHasGraderPermissions");
-					isUserAbleToGrade = (Boolean)nameValueMap.get("isUserAbleToGrade");
-					isUserAbleToEditAssessments = (Boolean)nameValueMap.get("isUserAbleToEditAssessments");
-					isNewGradebook = (Boolean)nameValueMap.get("isNewGradebook");
-					placementId = (String)nameValueMap.get("placementId");
+					if (parts[0].equals("token") && parts[1] != null)
+						unpack(parts[1]);
 				}
 			}
 		}

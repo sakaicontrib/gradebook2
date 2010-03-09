@@ -9,6 +9,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
+import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 import org.sakaiproject.gradebook.gwt.server.model.PermissionImpl;
 
 @Path("/gradebook/rest/permission")
@@ -17,7 +18,7 @@ public class Permission extends Resource {
 	@POST @Path("{uid}/{id}")
 	@Consumes({"application/xml", "application/json"})
 	public String create(@PathParam("uid") String gradebookUid, @PathParam("id") Long gradebookId, 
-			String model) throws InvalidInputException {
+			String model) throws InvalidInputException, SecurityException {
 		
 		Map<String,Object> map = fromJson(model, Map.class);
 		org.sakaiproject.gradebook.gwt.client.model.Permission result = 
@@ -26,12 +27,12 @@ public class Permission extends Resource {
 		return toJson(result);
 	}
 		
-	@DELETE
+	@DELETE @Path("{uid}")
 	@Consumes({"application/xml", "application/json"})
-	public String remove(String model) throws InvalidInputException {
+	public String remove(@PathParam("uid") String gradebookUid, String model) throws SecurityException {
 		Map<String,Object> map = fromJson(model, Map.class);
 		org.sakaiproject.gradebook.gwt.client.model.Permission result = 
-			service.deletePermission(new PermissionImpl(map));
+			service.deletePermission(gradebookUid, new PermissionImpl(map));
 		
 		return toJson(result);
 	}

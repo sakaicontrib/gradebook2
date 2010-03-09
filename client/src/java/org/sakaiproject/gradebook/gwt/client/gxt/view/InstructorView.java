@@ -215,7 +215,8 @@ public class InstructorView extends AppView {
 	protected void initUI(ApplicationSetup model) {
 		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);		
 
-		addCategoryMenuItem.setVisible(selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
+		if (addCategoryMenuItem != null)
+			addCategoryMenuItem.setVisible(selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
 		
 		if (DataTypeConversionUtil.checkBoolean(selectedGradebook.isNewGradebook()))
 			Dispatcher.forwardEvent(GradebookEvents.StartEditItem.getEventType(), selectedGradebook.getGradebookItemModel());

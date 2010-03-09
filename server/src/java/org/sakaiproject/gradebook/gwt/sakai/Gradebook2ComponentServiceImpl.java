@@ -33,6 +33,7 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.ConfigUtil;
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
+import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
 import org.sakaiproject.gradebook.gwt.client.model.Configuration;
@@ -621,7 +622,11 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return getGradeItem(gradebook, assignments, categories, categoryId, null);
 	}
 	
-	public org.sakaiproject.gradebook.gwt.client.model.Permission createPermission(String gradebookUid, Long gradebookId, org.sakaiproject.gradebook.gwt.client.model.Permission permissionRequest) throws InvalidInputException {
+	public org.sakaiproject.gradebook.gwt.client.model.Permission createPermission(String gradebookUid, Long gradebookId, org.sakaiproject.gradebook.gwt.client.model.Permission permissionRequest) throws SecurityException, InvalidInputException {
+		
+		if (!authz.isUserAbleToEditAssessments(gradebookUid))
+			throw new SecurityException("You are not authorized to create permissions.");
+		
 		Permission newPermission = toPermission(gradebookId, permissionRequest);
 		// First, we want to verify that the permission does not already exist
 		List<Permission> permissions = gbService.getPermissionsForUser(gradebookId, newPermission.getUserId());
@@ -667,7 +672,12 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return permissionRequest;
 	}
 	
-	public org.sakaiproject.gradebook.gwt.client.model.Permission deletePermission(org.sakaiproject.gradebook.gwt.client.model.Permission permissionDeleteRequest) {
+	public org.sakaiproject.gradebook.gwt.client.model.Permission deletePermission(String gradebookUid, org.sakaiproject.gradebook.gwt.client.model.Permission permissionDeleteRequest) 
+	throws SecurityException {
+		
+		if (!authz.isUserAbleToEditAssessments(gradebookUid))
+			throw new SecurityException("You are not authorized to delete permissions.");
+		
 		Permission p = toPermission(null, permissionDeleteRequest);
 		gbService.deletePermission(p.getId());
 		return permissionDeleteRequest;
@@ -865,7 +875,11 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return gradeEvents;
 	}
 	
-	public List<Map<String,Object>> getGradeMaps(String gradebookUid) {
+	public List<Map<String,Object>> getGradeMaps(String gradebookUid) throws SecurityException {
+		
+		if (!authz.isUserAbleToEditAssessments(gradebookUid))
+			throw new SecurityException("You are not authorized to view grade mappings.");
+		
 		List<Map<String,Object>> gradeScaleMappings = new ArrayList<Map<String,Object>>();
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
 		GradeMapping gradeMapping = gradebook.getSelectedGradeMapping();
@@ -897,7 +911,13 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 	
 	
 	@SuppressWarnings("unchecked")
-	public List<Map<String, Object>> getGraders(String gradebookUid, Long gradebookId) {
+	public List<Map<String, Object>> getGraders(String gradebookUid, Long gradebookId) throws SecurityException {
+		
+		boolean isUserAbleToGrade = authz.isUserAbleToGradeAll(gradebookUid);
+
+		if (!isUserAbleToGrade)
+			throw new SecurityException("You are not authorized to view graders.");
+		
 		List<Map<String, Object>> userList = new ArrayList<Map<String, Object>>();
 
 		String placementId = lookupDefaultGradebookUid();
@@ -914,7 +934,13 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return userList;
 	}
 	
-	public Map<String,Object> getGradesVerification(String gradebookUid, Long gradebookId) {
+	public Map<String,Object> getGradesVerification(String gradebookUid, Long gradebookId) throws SecurityException {
+		
+		boolean isUserAbleToGrade = authz.isUserAbleToGradeAll(gradebookUid);
+
+		if (!isUserAbleToGrade)
+			throw new SecurityException("You are not authorized to submit grades.");
+		
 		String[] roleNames = getLearnerRoleNames();
 		Site site = getSite();
 		String siteId = site == null ? null : site.getId();
@@ -952,7 +978,12 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 	}
 	
 	public History getHistory(String gradebookUid, Long gradebookId,
-			Integer offset, Integer limit) {
+			Integer offset, Integer limit) throws SecurityException {
+		
+		boolean isUserAbleToGrade = authz.isUserAbleToGradeAll(gradebookUid);
+
+		if (!isUserAbleToGrade)
+			throw new SecurityException("You are not authorized to view history.");
 		
 		int off = offset == null ? -1 : offset.intValue();
 		int lim = limit == null ? -1 : limit.intValue();
@@ -1110,7 +1141,12 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return list;
 	}
 	
-	public List<org.sakaiproject.gradebook.gwt.client.model.Permission> getPermissions(String gradebookUid, Long gradebookId, String graderId) {
+	public List<org.sakaiproject.gradebook.gwt.client.model.Permission> getPermissions(String gradebookUid, Long gradebookId, String graderId) throws SecurityException {
+		
+		if (!authz.isUserAbleToEditAssessments(gradebookUid))
+			throw new SecurityException("You are not authorized to view permissions.");
+		
+		
 		List<org.sakaiproject.gradebook.gwt.client.model.Permission> list = 
 			new ArrayList<org.sakaiproject.gradebook.gwt.client.model.Permission>();
 
@@ -1431,7 +1467,8 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return siteService;
 	}
 
-	public List<Statistics> getStatistics(String gradebookUid, Long gradebookId, String studentId) {
+	public List<Statistics> getStatistics(String gradebookUid, Long gradebookId, String studentId) throws SecurityException {
+		
 		Gradebook gradebook = null;
 		if (gradebookId == null) {
 			gradebook = gbService.getGradebook(gradebookUid);
@@ -1738,7 +1775,10 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
         eventTrackingService.post(event);
 	}
 
-	public void resetGradeMap(String gradebookUid) {
+	public void resetGradeMap(String gradebookUid) throws SecurityException {
+		if (!authz.isUserAbleToEditAssessments(gradebookUid))
+			throw new SecurityException("You are not authorized to update grade mappings.");
+		
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
 		GradeMapping gradeMapping = gradebook.getSelectedGradeMapping();
 		gradeMapping.setDefaultValues();
@@ -1854,7 +1894,11 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return Boolean.TRUE;
 	}
 
-	public void updateGradeMap(String gradebookUid, String affectedLetterGrade, Object value) throws InvalidInputException {
+	public void updateGradeMap(String gradebookUid, String affectedLetterGrade, Object value) 
+	throws InvalidInputException, SecurityException {
+		
+		if (!authz.isUserAbleToEditAssessments(gradebookUid))
+			throw new SecurityException("You are not authorized to update grade mappings.");
 		
 		if (value == null) {
 			throw new InvalidInputException(i18n.getString("noBlankValue"));
@@ -2191,6 +2235,12 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 	public Upload upload(String gradebookUid, Long gradebookId, Upload upload, boolean isDryRun) throws InvalidInputException {
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
+		
+		boolean isUserAbleToGrade = authz.isUserAbleToGradeAll(gradebook.getUid());
+
+		if (!isUserAbleToGrade)
+			throw new InvalidInputException("You are not authorized to upload grades.");
+		
 		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
 		boolean isLetterGrading = gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER;
 		Map<String, Assignment> idToAssignmentMap = new HashMap<String, Assignment>();
