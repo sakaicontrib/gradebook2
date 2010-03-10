@@ -4,7 +4,7 @@
 package org.sakaiproject.gradebook.gwt.client.model.key;
 
 public enum VerificationKey { 
-	NUMBER_LEARNERS(Integer.class), IS_MISSING_SCORES, IS_FULLY_WEIGHTED;
+	NUMBER_LEARNERS(Integer.class), IS_MISSING_SCORES, IS_FULLY_WEIGHTED, IS_CATEGORY_FULLY_WEIGHTED;
 	
 	private Class<?> type;
 	

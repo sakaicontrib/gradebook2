@@ -956,6 +956,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
 		boolean isMissingScores = false;
 		boolean isFullyWeighted = isFullyWeighted(gradebook);
+		boolean isCategoryFullyWeighted = isCategoryFullyWeighted(gradebook);
 		
 		if (dereferences != null) {
 			for (UserDereference dereference : dereferences) {
@@ -973,6 +974,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		map.put(VerificationKey.NUMBER_LEARNERS.name(), Integer.valueOf(numberOfLearners));
 		map.put(VerificationKey.IS_MISSING_SCORES.name(), Boolean.valueOf(isMissingScores));
 		map.put(VerificationKey.IS_FULLY_WEIGHTED.name(), Boolean.valueOf(isFullyWeighted));
+		map.put(VerificationKey.IS_CATEGORY_FULLY_WEIGHTED.name(), Boolean.valueOf(isCategoryFullyWeighted));
 		
 		return map;
 	}
@@ -4623,6 +4625,79 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return items;
 	}
 
+	// GRBK-488 : TPA
+	private boolean isCategoryFullyWeighted(Gradebook gradebook) {
+		
+		switch (gradebook.getCategory_type()) {
+		
+		case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
+			
+			List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
+			List<Category> categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+			
+			boolean isCategoryFullyWeighted = false;
+			
+			if (categories != null) {
+				
+				BigDecimal gradebookWeightSum = BigDecimal.ZERO;
+				BigDecimal gradebookPointsSum = BigDecimal.ZERO;
+				
+				for (Category category : categories) {
+					
+					boolean isExtraCredit = category.isExtraCredit() != null && category.isExtraCredit().booleanValue();
+					boolean isUnweighted = category.isUnweighted() != null && category.isUnweighted().booleanValue();
+
+					if (!category.isRemoved()) {
+						
+						double categoryWeight = category.getWeight() == null ? 0d : category.getWeight().doubleValue() * 100d;
+
+						if (!isExtraCredit && !isUnweighted) {
+								
+							// We only verify categories for which equal weight and weighting by points has been turned off
+							if(category.isEqualWeightAssignments() || category.isEnforcePointWeighting()) {
+								continue;
+							}
+							
+							// Get the category's assignments
+							List<Assignment> categoryAssignmentList = category.getAssignmentList();
+							
+							// If the list of category assignments is null we skip the rest
+							if(null == categoryAssignmentList) {
+								continue;
+							}
+							
+							BigDecimal categoryAssignmentWeightSum = BigDecimal.ZERO;
+							
+							// Adding up all the assignment weights
+							for(Assignment assignment : categoryAssignmentList) {
+								
+								// Ignoring extract credit assignments
+								if(!assignment.isExtraCredit()) {
+									
+									double assignmentWeighting = assignment.getAssignmentWeighting() * 100d;
+									categoryAssignmentWeightSum = categoryAssignmentWeightSum.add(BigDecimal.valueOf(assignmentWeighting));
+								}
+							}
+							
+							// Scale/round the sum
+							categoryAssignmentWeightSum = categoryAssignmentWeightSum.setScale(AppConstants.DISPLAY_SCALE, BigDecimal.ROUND_HALF_UP);
+							
+							// Check if the sum of assignment weights adds up to 100%
+							isCategoryFullyWeighted = categoryAssignmentWeightSum.compareTo(BigDecimal.valueOf(100d)) == 0;
+							
+							// If the weighted assignment sum doesn't add up to 100%, we just return and stop checking the rest
+							if(!isCategoryFullyWeighted) { 
+								return isCategoryFullyWeighted;
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		return true;
+	}
+	
 	private boolean isFullyWeighted(Gradebook gradebook) {
 		
 		switch (gradebook.getCategory_type()) {

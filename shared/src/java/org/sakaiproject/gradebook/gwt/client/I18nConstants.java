@@ -100,6 +100,8 @@ public interface I18nConstants extends Constants {
 	String finalGradeSubmissionMessageText7a();
 	String finalGradeSubmissionMessageText8a();
 	String finalGradeSubmissionMessageText9a();
+	String finalGradeSubmissionMessageText10a();
+	String finalGradeSubmissionMessageText11a();
 	String finalGradeSubmissionTitle();
 	String finalGradeSubmissionVerificationTitle();
 	String finalGradeSubmissionWarningPrefix1();

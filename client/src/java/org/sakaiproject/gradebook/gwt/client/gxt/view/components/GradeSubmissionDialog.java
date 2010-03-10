@@ -94,11 +94,22 @@ public class GradeSubmissionDialog extends Dialog {
 				
 				StringBuilder text = new StringBuilder();
 				
+				boolean isCategoryFulluWeighted = result.get(VerificationKey.IS_CATEGORY_FULLY_WEIGHTED.name()) != null && ((Boolean)result.get(VerificationKey.IS_CATEGORY_FULLY_WEIGHTED.name())).booleanValue();
 				boolean isFullyWeighted = result.get(VerificationKey.IS_FULLY_WEIGHTED.name()) != null && ((Boolean)result.get(VerificationKey.IS_FULLY_WEIGHTED.name())).booleanValue();
 				boolean isMissingScores = result.get(VerificationKey.IS_MISSING_SCORES.name()) != null && ((Boolean)result.get(VerificationKey.IS_MISSING_SCORES.name())).booleanValue();
 				int numberOfLearners = result.get(VerificationKey.NUMBER_LEARNERS.name()) == null ? 0 : ((Integer)result.get(VerificationKey.NUMBER_LEARNERS.name())).intValue();
-								
-				if (isFullyWeighted) {
+				
+				if (!isCategoryFulluWeighted && !isFullyWeighted) {
+					setHeading(i18n.finalGradeSubmissionConfirmAltTitle());
+					text.append(i18n.finalGradeSubmissionMessageText11a());
+					setButtons(Dialog.OK);
+				}
+				else if (!isCategoryFulluWeighted) {
+					setHeading(i18n.finalGradeSubmissionConfirmAltTitle());
+					text.append(i18n.finalGradeSubmissionMessageText10a());
+					setButtons(Dialog.OK);
+				}
+				else if (isFullyWeighted) {
 					setButtons(Dialog.YESNO);
 					setHeading(i18n.finalGradeSubmissionConfirmTitle());
 					text.append(i18n.finalGradeSubmissionWarningPrefix1()).append(" ");
