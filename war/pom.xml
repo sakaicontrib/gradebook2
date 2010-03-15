@@ -118,7 +118,7 @@
 					<webXml>WEB-INF/web.xml</webXml>
 				</configuration>
 			</plugin>
-			<plugin>
+			<!-- plugin>
 				<inherited>true</inherited>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
@@ -129,7 +129,26 @@
 					<autoVersionSubmodules>true</autoVersionSubmodules>
 					<useReleaseProfile>true</useReleaseProfile>
 				</configuration>
+			</plugin-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.2</version>
+				<executions>
+					<execution>
+						<phase>compile</phase>
+						<configuration>						
+							<tasks unless="gwt.unpack.skip">
+								<ant antfile = "${basedir}/build.xml"/>
+							</tasks>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
+
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>

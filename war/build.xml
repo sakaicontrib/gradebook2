@@ -1,0 +1,69 @@
+<project name="DeployGWT" default="build" basedir=".">
+	
+	<!--property name="tarball.isNewer" value="false"/-->
+	<!--property name="tarball.doExpand" value="false"/-->
+	
+	<target name="checkIfDirectoryIsAvailable">
+		<echo>Checking if directory is available</echo>
+		<available file="gradebook" type="dir" property="directory.isAvailable"/>
+		<echo>Result: ${directory.isAvailable}</echo>
+	</target>
+	
+	<target name="checkIfTarballIsAvailable">
+		<echo>Checking if tarball is available</echo>
+		<available file="gradebook.tar.gz" type="file" property="tarball.isAvailable"/>
+		<echo>Result: ${tarball.isAvailable}</echo>
+	</target>
+	
+	<target name="checkIfTarballIsNewer" if="directory.isAvailable">
+		<echo>Checking if tarball is newer</echo>
+		<uptodate property="tarball.isNewer" targetfile="gradebook.tar.gz" value="true">
+			<srcfiles dir="gradebook" includes="*.cache.html"/>
+		</uptodate>
+		<echo>Result: ${tarball.isNewer}</echo>
+	</target>
+	
+	<target name="checkOver" depends="checkIfDirectoryIsAvailable,checkIfTarballIsAvailable,checkIfTarballIsNewer">
+		<echo>Determining if we want to expand the tarball</echo>
+		<!-- We only want to expand the tarball if (a) it's newer, or (b) the directory doesn't exist -->
+		<condition property="tarball.doExpand">
+			<and>
+				<istrue value="${tarball.isAvailable}"/>
+				<or>
+					<isfalse value="${directory.isAvailable}"/>
+					<istrue value="${tarball.isNewer}"/>
+				</or>
+			</and>
+		</condition>
+		<echo>Result: ${tarball.doExpand} = ${tarball.isAvailable} [and]  ( ! ${directory.isAvailable} or ${tarball.isNewer} ) </echo>
+	</target>
+	
+	<target name="removeDirectory" if="directory.isAvailable">
+		<echo>Removing gradebook directory</echo>
+		<delete dir="gradebook"/>
+	</target>
+	
+	<target name="expand" description="Replace compiled GWT code" if="tarball.doExpand">
+		<antcall target="removeDirectory"/>
+		<echo>Replacing compiled GWT code from Repository</echo>
+		<untar src="gradebook.tar.gz" dest="gradebook" compression="gzip"/>
+	</target>
+	
+	<target name="removeTarball" if="tarball.isAvailable">
+		<echo>Removing gradebook tarball</echo>
+		<delete file="gradebook.tar.gz"/>
+	</target>
+	
+	<target name="compress" description="Rebuild tarball" unless="tarball.doExpand">
+		<antcall target="removeTarball"/>
+		<echo>Rebuilding tarball from compiled GWT code</echo>
+		<tar basedir="gradebook" destfile="gradebook.tar.gz" compression="gzip"/>
+	</target>
+	
+	<target name="begin" depends="expand,compress">
+	</target>
+	
+	<target name="build" description="Build this project" depends="checkOver, begin">
+	</target>
+	
+</project>
