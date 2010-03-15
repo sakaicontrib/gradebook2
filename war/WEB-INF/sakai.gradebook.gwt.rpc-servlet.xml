@@ -23,14 +23,10 @@
             <bean class="org.sakaiproject.gradebook.gwt.server.DefaultFilenameHandler" />
         </property>
    	</bean>
-   	
-   	<!-- bean id="RestForwardingController" class="org.springframework.web.servlet.mvc.ServletForwardingController">
- 		<property name="servletName"><value>sakai.gradebook.rest.filter</value></property>
- 	</bean-->
-
+ 	
 	<bean id="RestWrappingController" class="org.springframework.web.servlet.mvc.ServletWrappingController">
    		<property name="servletClass">
-     		<value>org.sakaiproject.gradebook.gwt.server.RestFilter</value>
+     		<value>org.sakaiproject.gradebook.gwt.server.RestServlet</value>
    		</property>
   	 	<property name="servletName">
     		<value>sakai.gradebook.rest.servlet</value>
