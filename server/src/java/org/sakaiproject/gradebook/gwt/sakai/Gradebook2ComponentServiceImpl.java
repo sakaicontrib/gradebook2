@@ -666,6 +666,13 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				}
 			}
 		}
+
+		String newGroupId = newPermission.getGroupId();
+
+		if (newGroupId != null && newGroupId.equalsIgnoreCase("ALL"))
+			newGroupId = null;
+		
+		newPermission.setGroupId(newGroupId);
 		
 		Long id = gbService.createPermission(newPermission);
 		permissionRequest.setId(id);

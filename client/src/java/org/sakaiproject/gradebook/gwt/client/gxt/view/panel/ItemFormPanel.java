@@ -40,7 +40,6 @@ import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModelComparer;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.AppView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.ItemFormComboBox;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.NullSensitiveCheckBox;
-import org.sakaiproject.gradebook.gwt.client.model.Configuration;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
@@ -499,8 +498,8 @@ public class ItemFormPanel extends GradebookPanel {
 	private void doEditItemButtons(Item itemModel) {
 		boolean isAllowedToEdit = DataTypeConversionUtil.checkBoolean((Boolean)Registry.get(AppConstants.IS_ABLE_TO_EDIT));
 
-		deleteButton.setVisible(itemModel.getItemType() != ItemType.GRADEBOOK);
-		deleteButton.setEnabled(itemModel.getItemType() != ItemType.GRADEBOOK);
+		deleteButton.setVisible(itemModel.getItemType() != ItemType.GRADEBOOK && isAllowedToEdit);
+		deleteButton.setEnabled(itemModel.getItemType() != ItemType.GRADEBOOK && isAllowedToEdit);
 		okButton.setText(i18n.saveButton());
 		okButton.setData(selectionTypeField, SelectionType.SAVE);
 		okButton.setVisible(isAllowedToEdit && itemModel != null && itemModel.isEditable());

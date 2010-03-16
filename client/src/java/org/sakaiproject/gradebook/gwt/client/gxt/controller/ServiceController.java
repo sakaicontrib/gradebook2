@@ -932,6 +932,9 @@ public class ServiceController extends Controller {
 
 					Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades.getEventType(),
 							selectedGradebook);
+				} else if (isGradeScaleUpdated) {
+					Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades.getEventType(),
+							selectedGradebook);
 				}
 
 				break;
