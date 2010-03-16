@@ -8,9 +8,10 @@ following actions:
 (3) Apply the patch sakai/2-5-x/sam.patch under the sam module.
 (4) Check out this project as "gradebook2" and add it as a module under your sakai pom.xml for the active profile.
 (5) Apply the patch sakai/2-5-x/gradebook2.patch under the gradebook2 module.
-(6) Run setSakaiVersion.sh to set the Eclipse .classpath and maven pom.xml versions within the project.
-(7) Optional: Implement and deploy an InstitutionalAdvisor bean via Spring under Sakai components.
-
+(6) Optional: Implement and deploy an InstitutionalAdvisor bean via Spring under Sakai components.
+(7) Add the following properties to your sakai.properties:
+	gb2.gradable.role.names=Student,access
+	gb2.enabled.grade.types=points,percentages,letters
 
 In other words, at your sakai base directory:
 > svn co https://source.sakaiproject.org/contrib/gradebook2/trunk gradebook2

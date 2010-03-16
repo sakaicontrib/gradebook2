@@ -17,7 +17,9 @@ do
 			patch -p0 < ../gradebook2/sakai/2-6-x/gradebook.patch
 			cd ../sam
 			patch -p0 < ../gradebook2/sakai/2-6-x/sam.patch
-
+			cd ../gradebook2
+			patch -p0 < ../gradebook2/sakai/2-6-x/gradebook2.patch
+			
 			exit 0
 		else
 			echo $result
