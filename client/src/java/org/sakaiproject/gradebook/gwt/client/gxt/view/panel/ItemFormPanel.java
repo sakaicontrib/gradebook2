@@ -710,8 +710,11 @@ public class ItemFormPanel extends GradebookPanel {
 	}
 
 	public void onRefreshGradebookSetup(Gradebook selectedGradebook) {
+		this.selectedGradebook = selectedGradebook;
+		
 		if (formBindings != null) {
 			if (mode == Mode.EDIT && selectedItemModel != null && selectedItemModel.getItemType() == ItemType.GRADEBOOK) {
+				selectedItemModel = (ItemModel)selectedGradebook.getGradebookItemModel();
 				doEditItem(selectedItemModel, true, false);
 				clearChanges();
 			}
