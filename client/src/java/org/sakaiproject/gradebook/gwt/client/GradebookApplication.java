@@ -34,6 +34,7 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.Response;
+import com.google.gwt.user.client.Cookies;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -62,13 +63,13 @@ public class GradebookApplication implements EntryPoint {
 		Registry.register(AppConstants.VERSION, getVersion());
 		Registry.register(AppConstants.I18N, i18n);
 
-		String paramString = getParamString();
+		String layout = Cookies.getCookie(AppConstants.AUTH_COOKIE_NAME);
 		
 		AuthModel authModel = null;
-		
-		if (paramString != null && paramString.length() > 0) {			
+
+		if (layout != null && layout.length() > 0) {			
 			authModel = new AuthModel();
-			authModel.parse(paramString);
+			authModel.parse(layout);
 		}
 		
 		if (authModel != null && authModel.getPlacementId() != null) {
@@ -78,9 +79,14 @@ public class GradebookApplication implements EntryPoint {
 		}
 	}
 	
-	private native String getVersion() /*-{
-		return $wnd.gb2_version;
-	}-*/;
+	private String getVersion() {
+		String version = Cookies.getCookie(AppConstants.VERSION_COOKIE_NAME);
+		
+		if (version == null)
+			version = "Development";
+		
+		return version;
+	}
 	
 	private native String getParamString() /*-{
     	return $wnd.location.search;

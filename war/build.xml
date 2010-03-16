@@ -64,6 +64,7 @@
 	</target>
 	
 	<target name="build" description="Build this project" depends="checkOver, begin">
+		<echo file="WEB-INF/classes/org/sakaiproject/gradebook/gwt/server/version.txt">${basedir}</echo>
 	</target>
 	
 </project>

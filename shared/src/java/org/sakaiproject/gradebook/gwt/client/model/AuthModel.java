@@ -23,7 +23,6 @@
 
 package org.sakaiproject.gradebook.gwt.client.model;
 
-import java.util.HashMap;
 
 public class AuthModel {
 
@@ -90,13 +89,13 @@ public class AuthModel {
 	
 	private String fromBoolean(Boolean b) {
 		if (b != null && b.booleanValue())
-			return "F";
-		return ".";
+			return "b";
+		return "a";
 	}
 	
 	private Boolean toBoolean(char c) {
 		switch (c) {
-		case 'F':
+		case 'b':
 			return Boolean.TRUE;
 		}
 		return Boolean.FALSE;
@@ -124,24 +123,14 @@ public class AuthModel {
 	}
 	
 	public String toString() {
-		return new StringBuilder().append("?token=")
+		return new StringBuilder()
 			.append(pack(isUserAbleToViewOwnGrades, isUserHasGraderPermissions, isUserAbleToGrade,
 				isUserAbleToEditAssessments, isNewGradebook, placementId)).toString();
 	}
 	
 	public void parse(String authString) {
 		if (authString != null) {
-			authString = authString.substring(1);
-			
-			String[] params = authString.split("&");
-			
-			if (params != null) {
-				for (int i=0;i<params.length;i++) {
-					String[] parts = params[i].split("=");
-					if (parts[0].equals("token") && parts[1] != null)
-						unpack(parts[1]);
-				}
-			}
+			unpack(authString);
 		}
 	}
 	

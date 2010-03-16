@@ -179,4 +179,7 @@ public interface AppConstants {
 	public static final String FAILED_FLAG = ":F";
 	public static final String GRADED_FLAG = ":G";
 	public static final String SUCCESS_FLAG = ":S";
+	
+	public static final String AUTH_COOKIE_NAME = "placement";
+	public static final String VERSION_COOKIE_NAME = "gb2version";
 }

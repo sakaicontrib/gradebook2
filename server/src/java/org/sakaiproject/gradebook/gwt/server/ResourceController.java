@@ -1,10 +1,17 @@
 package org.sakaiproject.gradebook.gwt.server;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
@@ -38,9 +45,44 @@ public class ResourceController implements Controller {
 			String authDetails = service.getAuthorizationDetails();
 		
 			if (authDetails != null) {
-				url.append(authDetails);
+				Cookie cookie = new Cookie(AppConstants.AUTH_COOKIE_NAME, authDetails);
+				response.addCookie(cookie);
 			}
 		}
+		
+		try {
+			InputStream inputStream = this.getClass().getResourceAsStream("version.txt");
+			if (inputStream != null) {
+				StringBuilder builder = new StringBuilder();
+				BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+				String line = null;
+				
+				while ((line = reader.readLine()) != null) {
+					builder.append(line);
+				}
+				
+				reader.close();
+				
+				String result = builder.toString();
+				
+				if (result != null) {
+					String[] tokens = result.split("/");
+					
+					if (tokens.length > 3) {
+						String version = tokens[tokens.length - 3];
+						log.info("Version is: " + version);
+						Cookie cookie = new Cookie(AppConstants.VERSION_COOKIE_NAME, version);
+						response.addCookie(cookie);
+					}
+					
+				}
+				inputStream.close();
+			}
+			
+		} catch (Exception e) {
+			log.warn("Unable to read version file", e);
+		} 
+		
 		
 		response.sendRedirect(url.toString());
 		
