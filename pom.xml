@@ -28,8 +28,7 @@
 	<properties>
 		<gb2.version>1.2.0-SNAPSHOT</gb2.version>
 		<gxt.version>2.1.1</gxt.version>
-		<gwt.version>2.0.3</gwt.version> 
-		<gwtsl.version>1.0-r434</gwtsl.version>
+		<gwt.version>2.0.3</gwt.version>
 		<gb2.commons.logging.version>1.0.4</gb2.commons.logging.version>
 		<gb2.jackson.version>1.1.1</gb2.jackson.version>
 		<gb2.jersey.version>1.1.4.1</gb2.jersey.version>
@@ -40,46 +39,406 @@
 		<module>api</module>
 		<module>shared</module>
 		<module>server</module>
+		<!-- module>client</module-->
 		<module>war</module>
 	</modules>
-	
+
 	<profiles>
-        <profile>
-            <id>gwt-dev-windows</id>
-            <properties>
-                <platform>windows</platform>
-            </properties>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <os>
-                    <family>windows</family>
-                </os>
-            </activation>
-        </profile>
-        <profile>
-            <id>gwt-dev-mac</id>
-            <properties>
-                <platform>mac</platform>
-            </properties>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <os>
-                    <family>mac</family>
-                </os>
-            </activation>
-        </profile>        
-        <profile>
-            <id>gwt-dev-linux</id>
-            <properties>
-                <platform>linux</platform>
-            </properties>
-            <activation>
+		<profile>
+			<id>sakai2.7</id>
+			<activation>
                 <activeByDefault>true</activeByDefault>
-                <os>
-                    <name>linux</name>
-                </os>
-            </activation>
-        </profile>
+			</activation>
+			<properties>
+				<gb2.cm.groupId>org.sakaiproject.edu-services.course-management</gb2.cm.groupId>
+				<gb2.cm.artifactId>coursemanagement-api</gb2.cm.artifactId>
+				<gb2.cm.version>${sakai.edu-services.version}</gb2.cm.version>
+				
+				<gb1.groupId>org.sakaiproject.edu-services.gradebook</gb1.groupId>
+				<gb1.api.artifactId>gradebook-service-api</gb1.api.artifactId>
+				<gb1.hibernate.artifactId>gradebook-service-hibernate</gb1.hibernate.artifactId>
+				<gb1.service.artifactId>gradebook-service-impl</gb1.service.artifactId>
+				<gb1.version>${sakai.edu-services.version}</gb1.version>
+				
+				<gb2.sections.groupId>org.sakaiproject.edu-services.sections</gb2.sections.groupId>
+				<gb2.sections.artifactId>sections-api</gb2.sections.artifactId>
+				<gb2.sections.version>${sakai.edu-services.version}</gb2.sections.version>
+			</properties>
+			<dependencies>
+				<!-- Misc Sakai Dependencies -->
+				<dependency>
+					<groupId>org.sakaiproject.kernel</groupId>
+					<artifactId>sakai-kernel-api</artifactId>
+				</dependency>
+				<dependency>
+					<groupId>org.sakaiproject.kernel</groupId>
+					<artifactId>sakai-component-manager</artifactId>
+				</dependency>
+				<dependency>
+					<groupId>org.sakaiproject.kernel</groupId>
+					<artifactId>sakai-kernel-util</artifactId>
+				</dependency>
+				<dependency>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-beans</artifactId>
+					<version>${sakai.spring.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-context</artifactId>
+					<version>${sakai.spring.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-core</artifactId>
+					<version>${sakai.spring.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-web</artifactId>
+					<version>${sakai.spring.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-webmvc</artifactId>
+					<version>${sakai.spring.version}</version>
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+			<id>sakai2.6</id>
+			<properties>
+				<gb2.cm.groupId>org.sakaiproject</gb2.cm.groupId>
+				<gb2.cm.artifactId>sakai-coursemanagement-api</gb2.cm.artifactId>
+				<gb2.cm.version>${sakai.version}</gb2.cm.version>
+				
+				<gb1.groupId>org.sakaiproject</gb1.groupId>
+				<gb1.api.artifactId>sakai-gradebook-service-api</gb1.api.artifactId>
+				<gb1.hibernate.artifactId>sakai-gradebook-service-hibernate</gb1.hibernate.artifactId>
+				<gb1.service.artifactId>sakai-gradebook-service-impl</gb1.service.artifactId>
+				<gb1.version>${sakai.version}</gb1.version>
+				
+				<gb2.sections.groupId>org.sakaiproject</gb2.sections.groupId>
+				<gb2.sections.artifactId>sakai-sections-api</gb2.sections.artifactId>
+				<gb2.sections.version>${sakai.version}</gb2.sections.version>
+			</properties>
+			<dependencies>
+				<!-- Misc Sakai Dependencies -->
+				<dependency>
+					<groupId>org.sakaiproject.kernel</groupId>
+					<artifactId>sakai-kernel-api</artifactId>
+				</dependency>
+				<dependency>
+					<groupId>org.sakaiproject.kernel</groupId>
+					<artifactId>sakai-component-manager</artifactId>
+				</dependency>
+				<dependency>
+					<groupId>org.sakaiproject.kernel</groupId>
+					<artifactId>sakai-kernel-util</artifactId>
+				</dependency>
+				<dependency>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring</artifactId>
+					<version>${sakai.spring.version}</version>
+					<scope>provided</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+			<id>sakai2.5</id>
+			<properties>
+				<gb2.cm.groupId>org.sakaiproject</gb2.cm.groupId>
+				<gb2.cm.artifactId>sakai-coursemanagement-api</gb2.cm.artifactId>
+				<gb2.cm.version>${sakai.version}</gb2.cm.version>
+				
+				<gb1.groupId>org.sakaiproject</gb1.groupId>
+				<gb1.api.artifactId>sakai-gradebook-service-api</gb1.api.artifactId>
+				<gb1.hibernate.artifactId>sakai-gradebook-service-hibernate</gb1.hibernate.artifactId>
+				<gb1.service.artifactId>sakai-gradebook-service-impl</gb1.service.artifactId>
+				<gb1.version>${sakai.version}</gb1.version>
+				
+				<gb2.sections.groupId>org.sakaiproject</gb2.sections.groupId>
+				<gb2.sections.artifactId>sakai-sections-api</gb2.sections.artifactId>
+				<gb2.sections.version>${sakai.version}</gb2.sections.version>
+			</properties>
+			<dependencies>
+				<!-- Misc Sakai Dependencies -->
+				<dependency>
+		 			<groupId>org.sakaiproject</groupId>
+		 			<artifactId>sakai-authz-api</artifactId>
+		 			<version>${sakai.version}</version>
+		  		</dependency>
+		  		<dependency>
+		 			<groupId>org.sakaiproject</groupId>
+		 			<artifactId>sakai-component</artifactId>
+		 			<version>${sakai.version}</version>
+		  		</dependency>
+		  		<dependency>
+		 			<groupId>org.sakaiproject</groupId>
+		 			<artifactId>sakai-component-api</artifactId>
+		 			<version>${sakai.version}</version>
+		  		</dependency>
+		 		<dependency>
+		 			<groupId>org.sakaiproject</groupId>
+		 			<artifactId>sakai-entity-api</artifactId>
+		 			<version>${sakai.version}</version>
+		 		</dependency>
+		 		<dependency>
+		 			<groupId>org.sakaiproject</groupId>
+		 			<artifactId>sakai-event-api</artifactId>
+		 			<version>${sakai.version}</version>
+		 		</dependency>
+		 		<dependency>
+		 			<groupId>org.sakaiproject</groupId>
+		 			<artifactId>sakai-site-api</artifactId>
+		 			<version>${sakai.version}</version>
+		 		</dependency>
+		 		<dependency>
+		 			<groupId>org.sakaiproject</groupId>
+		 			<artifactId>sakai-tool-api</artifactId>
+		 			<version>${sakai.version}</version>
+		 		</dependency>
+		 		<dependency>
+		 			<groupId>org.sakaiproject</groupId>
+		 			<artifactId>sakai-tool-servlet</artifactId>
+		 			<version>${sakai.version}</version>
+		 			<scope>provided</scope>
+		 		</dependency>
+		 		<dependency>
+		 			<groupId>org.sakaiproject</groupId>
+		 			<artifactId>sakai-user-api</artifactId>
+		 			<version>${sakai.version}</version>
+		 		</dependency>
+		 		<dependency>
+		 			<groupId>org.sakaiproject</groupId>
+		 			<artifactId>sakai-util-api</artifactId>
+		 			<version>${sakai.version}</version>
+		 		</dependency>
+		 		<dependency>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring</artifactId>
+					<version>${sakai.spring.version}</version>
+					<scope>provided</scope>
+				</dependency>
+			</dependencies>		
+		</profile>
     </profiles>
+    
+    <dependencies>
+    	<!-- GWT Dependencies -->
+    	<dependency>
+			<groupId>com.google.gwt</groupId>
+			<artifactId>gwt-servlet</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+    	
+    	<dependency>
+			<groupId>com.google.gwt</groupId>
+			<artifactId>gwt-user</artifactId>
+			<scope>provided</scope>
+		</dependency>
+    
+    	<!-- GXT Dependency -->
+		<dependency>
+			<groupId>com.extjs</groupId>
+			<artifactId>gxt</artifactId>
+		</dependency>
+    
+    	<!-- Gradebook1 Dependencies -->
+		<dependency>
+			<groupId>${gb1.groupId}</groupId>
+			<artifactId>${gb1.api.artifactId}</artifactId>
+			<version>${gb1.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>${gb1.groupId}</groupId>
+			<artifactId>${gb1.hibernate.artifactId}</artifactId>
+			<version>${gb1.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+        	<groupId>${gb1.groupId}</groupId>
+       	 	<artifactId>${gb1.service.artifactId}</artifactId>
+        	<version>${gb1.version}</version>
+        	<scope>provided</scope>
+      	</dependency>
+      	
+		<!-- Sakai Course Management Dependency -->
+		<dependency>
+			<groupId>${gb2.cm.groupId}</groupId>
+			<artifactId>${gb2.cm.artifactId}</artifactId>
+			<version>${gb2.cm.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		
+		<!-- Sakai Sections Dependency -->
+		<dependency>
+			<groupId>${gb2.sections.groupId}</groupId>
+			<artifactId>${gb2.sections.artifactId}</artifactId>
+			<version>${gb2.sections.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		
+		<dependency>
+        	<groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.4</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+    
+    <dependencyManagement>
+    	<dependencies>
+			<!-- Project Dependencies -->    	
+			<dependency>
+	      		<groupId>org.sakaiproject.gradebook2</groupId>
+	      		<artifactId>gradebook2-api</artifactId>
+	      		<version>${gb2.version}</version>
+	      		<scope>provided</scope>
+	   		</dependency>
+	
+			<dependency>
+	  	  		<groupId>org.sakaiproject.gradebook2</groupId>
+	      		<artifactId>gradebook2-model</artifactId>
+	      		<version>${gb2.version}</version>
+	      		<scope>provided</scope>
+	  		</dependency>
+	
+			<dependency>
+	  	  		<groupId>org.sakaiproject.gradebook2</groupId>
+	      		<artifactId>gradebook2-shared</artifactId>
+	      		<version>${gb2.version}</version>
+	  		</dependency>
+	  		
+	  		<dependency>
+	  	  		<groupId>org.sakaiproject.gradebook2</groupId>
+	      		<artifactId>gradebook2-server</artifactId>
+	      		<version>${gb2.version}</version>
+	  		</dependency>
+	  		
+	  		<!-- GWT Dependencies -->
+	  		
+	  		<dependency>
+				<groupId>com.google.gwt</groupId>
+				<artifactId>gwt-servlet</artifactId>
+				<version>${gwt.version}</version>
+				<scope>runtime</scope>
+			</dependency>
+			
+			<dependency>
+				<groupId>com.google.gwt</groupId>
+				<artifactId>gwt-user</artifactId>
+				<version>${gwt.version}</version>
+				<scope>provided</scope>
+			</dependency>
+		  		
+		  	<!-- Ext-GWT Dependency -->
+			<dependency>
+				<groupId>com.extjs</groupId>
+				<artifactId>gxt</artifactId>
+				<version>${gxt.version}</version>
+			</dependency>
+		  	
+			<!-- Gradebook1 Dependencies -->
+			<dependency>
+				<groupId>org.sakaiproject.edu-services.gradebook</groupId>
+				<artifactId>gradebook-service-api</artifactId>
+				<version>${sakai.edu-services.version}</version>
+				<scope>provided</scope>
+			</dependency>
+			
+			<dependency>
+				<groupId>org.sakaiproject.edu-services.gradebook</groupId>
+				<artifactId>gradebook-service-hibernate</artifactId>
+				<version>${sakai.edu-services.version}</version>
+				<scope>provided</scope>
+			</dependency>
+			
+			<!-- Sakai Course Management Dependency -->
+			<dependency>
+				<groupId>org.sakaiproject.edu-services.course-management</groupId>
+				<artifactId>coursemanagement-api</artifactId>
+				<version>${sakai.edu-services.version}</version>
+				<scope>provided</scope>
+			</dependency>
+			
+			<!-- Sakai Sections Dependency -->
+			<dependency>
+				<groupId>org.sakaiproject.edu-services.sections</groupId>
+				<artifactId>sections-api</artifactId>
+				<version>${sakai.edu-services.version}</version>
+				<scope>provided</scope>
+			</dependency>
+			
+			<!-- Other Provided Dependencies -->
+			<dependency>
+				<groupId>aopalliance</groupId>
+				<artifactId>aopalliance</artifactId>
+				<version>1.0</version>
+				<scope>provided</scope>
+			</dependency>
+			
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>4.1</version>
+				<scope>test</scope>
+			</dependency>
+			
+			<dependency>
+				<groupId>javax.servlet</groupId>
+				<artifactId>servlet-api</artifactId>
+				<version>${sakai.servletapi.version}</version>
+				<scope>provided</scope>
+			</dependency>
+			
+			<dependency>
+				<groupId>commons-lang</groupId>
+				<artifactId>commons-lang</artifactId>
+				<version>${sakai.commons.lang.version}</version>
+				<scope>provided</scope>
+			</dependency>
+			
+			<dependency>
+				<groupId>commons-logging</groupId>
+				<artifactId>commons-logging</artifactId>
+				<version>${gb2.commons.logging.version}</version>
+				<scope>provided</scope>
+			</dependency>
+			
+			<dependency>
+				<groupId>jexcelapi</groupId>
+				<artifactId>jxl</artifactId>
+				<version>2.4.2</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>net.sf.opencsv</groupId>
+				<artifactId>opencsv</artifactId>
+				<version>1.8</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>org.apache.poi</groupId>
+				<artifactId>poi</artifactId>
+				<version>3.2-FINAL</version>
+			</dependency>
+			
+			<!-- This entry below is to prevent jackson and jersey
+			from bringing in 1.0.1 and 1.0-2 together -->
+			<dependency>
+				<groupId>stax</groupId>
+				<artifactId>stax-api</artifactId>
+				<version>1.0.1</version>
+				<scope>provided</scope>
+			</dependency>
+			
+    	</dependencies>
+    </dependencyManagement> 
     
 </project>

@@ -17,58 +17,14 @@
 		<!-- Project Dependencies -->
 		<dependency>
 			<groupId>org.sakaiproject.gradebook2</groupId>
-			<artifactId>gradebook2-api</artifactId>
-			<version>${gb2.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.sakaiproject.gradebook2</groupId>
-			<artifactId>gradebook2-model</artifactId>
-			<version>${gb2.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.sakaiproject.gradebook2</groupId>
 			<artifactId>gradebook2-server</artifactId>
-			<version>${gb2.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.sakaiproject.gradebook2</groupId>
 			<artifactId>gradebook2-shared</artifactId>
-			<version>${gb2.version}</version>
 		</dependency>
-		<!-- Gradebook1 Dependencies -->
-		<dependency>
-			<groupId>org.sakaiproject.edu-services.gradebook</groupId>
-			<artifactId>gradebook-service-api</artifactId>
-			<version>${sakai.edu-services.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.sakaiproject.edu-services.gradebook</groupId>
-			<artifactId>gradebook-service-hibernate</artifactId>
-			<version>${sakai.edu-services.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<!-- Other External Dependencies -->
-		<dependency>
-			<groupId>aopalliance</groupId>
-			<artifactId>aopalliance</artifactId>
-			<version>1.0</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.1</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
-			<version>${sakai.servletapi.version}</version>
-			<scope>provided</scope>
-		</dependency>
+		
+		<!-- Need this to prevent these spring artifacts from being placed in WEB-INF -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-beans</artifactId>
@@ -147,26 +103,6 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.1</version>
-				<executions>
-					<execution>
-						<phase>compile</phase>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<executable>sh</executable>
-					<arguments>
-						<argument>../deployGWTCode.sh</argument>
-					</arguments>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>

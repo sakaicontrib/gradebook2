@@ -70,17 +70,18 @@ public class JsonTranslater {
 				String format = "yyyy-MM-dd";
 				
 				if (!ignoreType) {
-					if (e instanceof GradebookKey) 
-						type = ((GradebookKey)e).getType();
-					else if (e instanceof ItemKey) 
-						type = ((ItemKey)e).getType();
-					else if (e instanceof GradeFormatKey) 
-						type = ((GradeFormatKey)e).getType();
-					else if (e instanceof ActionKey) {
-						type = ((ActionKey)e).getType();
+					Object o = e;
+					if (o instanceof GradebookKey)
+						type = ((GradebookKey)(Object)e).getType();
+					else if (o instanceof ItemKey) 
+						type = ((ItemKey)(Object)e).getType();
+					else if (o instanceof GradeFormatKey) 
+						type = ((GradeFormatKey)(Object)e).getType();
+					else if (o instanceof ActionKey) {
+						type = ((ActionKey)(Object)e).getType();
 						format = DateTimeFormat.getMediumDateFormat().getPattern();
-					} else if (e instanceof VerificationKey) 
-						type = ((VerificationKey)e).getType();
+					} else if (o instanceof VerificationKey) 
+						type = ((VerificationKey)(Object)e).getType();
 					
 					if (type != null) {
 						if (type.equals(String.class))

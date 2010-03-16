@@ -21,18 +21,8 @@ One major advantage of this is also that GB2 does not have to maintain maintenan
 Our recommendation is that in cases where a blocker bug exists in a particular version
 of GB2, all institutions should upgrade to a version where that bug has been fixed.
 
-The major disadvantage of this strategy is that we have to somehow deploy each release
-for some reasonable set of supported versions of Sakai. The way we do that currently is
-by maintaining patches in the sakai/ subdirectory of the project. So for example the 
-current patch to make the trunk version compile against Sakai 2.6 can be found in
-gradebook2/sakai/2-6-x/gradebook2.patch -- applying this patch and tweaking the minor
-version number should produce a compatible release of GB2. 
-
-Of course, any time we change the maven dependencies of the project, we also have to
-update those existing gradebook2.patch files for each supported version.
-
-
-
-
+The major disadvantage is that we have to make the GB2 code build
+against different versions of Sakai. Our current strategy for this is to make use of 
+maven's profile functionality and to pass in different -P values for each build. 
 
 
