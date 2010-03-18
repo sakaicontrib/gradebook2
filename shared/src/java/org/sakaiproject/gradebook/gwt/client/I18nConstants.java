@@ -79,6 +79,10 @@ public interface I18nConstants extends Constants {
 	String editCategoryHeading();
 	String editGradebookHeading();
 	String editItemHeading();
+	String editMenuHeader(); 
+	String editMenuGradebookSetupHeading();
+	String editMenuGraderPermissionsHeading();
+	String editMenuGradescaleHeading();
 	String enforcePointWeightingFieldLabel();
 	String enforcePointWeightingToolTip();
 	String equallyWeightChildrenFieldLabel();
@@ -86,6 +90,8 @@ public interface I18nConstants extends Constants {
 	String extraCreditFieldLabel();
 	String extraCreditToolTip();
 	String fileLabel();
+	String fileMenuNewCategory(); 
+	String fileMenuNewItem();
 	String finalGradeSubmissionConfirmAltTitle();
 	String finalGradeSubmissionConfirmText();
 	String finalGradeSubmissionConfirmTitle();
@@ -280,6 +286,11 @@ public interface I18nConstants extends Constants {
 	String userHeader();
 	String usersEmptyText();
 	String viewAsLearner();	
-	String viewMenuHeader();	
+	String viewMenuHeader();
+	String viewMenuStatsHeading();
+	String viewMenuHistoryHeading();
+
 	String weightName();	
+	
+	
 }

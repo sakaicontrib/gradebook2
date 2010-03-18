@@ -105,7 +105,8 @@ public class InstructorView extends AppView {
 	private ToolBar toolBar;
 
 	private Menu fileMenu;
-	private Menu windowMenu;
+	private Menu viewMenu;
+	private Menu editMenu;
 
 	private MenuItem addCategoryMenuItem;
 
@@ -191,12 +192,12 @@ public class InstructorView extends AppView {
 		borderLayoutContainer.add(eastLayoutContainer, eastData);
 
 		if (isEditable) {
-			tabConfigurations.add(new TabConfig(AppConstants.TAB_SETUP, i18n.tabSetupHeader(), resources.css().gbSetupButton(), true, MenuSelector.SETUP));
-			tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADESCALE, i18n.tabGradeScaleHeader(), resources.css().gbGradeScaleButton(), true, MenuSelector.GRADE_SCALE));
-			tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADER_PER_SET, i18n.tabGraderPermissionSettingsHeader(), resources.css().gbGraderPermissionSettings(), true, MenuSelector.GRADER_PERMISSION_SETTINGS));
-			tabConfigurations.add(new TabConfig(AppConstants.TAB_HISTORY, i18n.tabHistoryHeader(), resources.css().gbHistoryButton(), true, MenuSelector.HISTORY));
+			tabConfigurations.add(new TabConfig(AppConstants.TAB_SETUP, i18n.tabSetupHeader(), resources.css().gbSetupButton(), true, MenuSelector.SETUP, i18n.editMenuGradebookSetupHeading()));
+			tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADESCALE, i18n.tabGradeScaleHeader(), resources.css().gbGradeScaleButton(), true, MenuSelector.GRADE_SCALE, i18n.editMenuGradescaleHeading()));
+			tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADER_PER_SET, i18n.tabGraderPermissionSettingsHeader(), resources.css().gbGraderPermissionSettings(), true, MenuSelector.GRADER_PERMISSION_SETTINGS, i18n.editMenuGraderPermissionsHeading()));
+			tabConfigurations.add(new TabConfig(AppConstants.TAB_HISTORY, i18n.tabHistoryHeader(), resources.css().gbHistoryButton(), true, MenuSelector.HISTORY, i18n.viewMenuHistoryHeading()));
 		}
-		tabConfigurations.add(new TabConfig(AppConstants.TAB_STATISTICS, i18n.tabStatisticsHeader(), resources.css().gbStatisticsButton(), true, MenuSelector.STATISTICS));
+		tabConfigurations.add(new TabConfig(AppConstants.TAB_STATISTICS, i18n.tabStatisticsHeader(), resources.css().gbStatisticsButton(), true, MenuSelector.STATISTICS, i18n.viewMenuStatsHeading()));
 
 		populateToolBar(i18n);
 
@@ -642,9 +643,13 @@ public class InstructorView extends AppView {
 			toolBar.add(fileItem);
 		}
 
-		AriaButton windowItem = new AriaButton(i18n.viewMenuHeader());
-		windowMenu = newWindowMenu(i18n);
-		windowItem.setMenu(windowMenu);
+		AriaButton editItem = new AriaButton(i18n.editMenuHeader());
+		editMenu = newEditMenu(i18n);
+		editItem.setMenu(editMenu);
+
+		AriaButton viewItem = new AriaButton(i18n.viewMenuHeader());
+		viewMenu = newViewMenu(i18n);
+		viewItem.setMenu(viewMenu);
 
 		AriaButton moreItem = new AriaButton(i18n.moreMenuHeader());
 		moreItem.setMenu(newMoreActionsMenu());
@@ -652,7 +657,8 @@ public class InstructorView extends AppView {
 		AriaButton helpItem = new AriaButton(i18n.helpMenuHeader());
 		helpItem.addSelectionListener(toolBarSelectionListener);
 
-		toolBar.add(windowItem);
+		toolBar.add(editItem);
+		toolBar.add(viewItem);
 		toolBar.add(moreItem);
 		toolBar.add(helpItem);
 		
@@ -672,11 +678,11 @@ public class InstructorView extends AppView {
 
 		// This should be obvious. Just create the required menu object and its menu items
 		fileMenu = new AriaMenu();
-		addCategoryMenuItem = new AriaMenuItem(i18n.categoryName(), menuSelectionListener);
+		addCategoryMenuItem = new AriaMenuItem(i18n.fileMenuNewCategory(), menuSelectionListener);
 		addCategoryMenuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.ADD_CATEGORY);
 		addCategoryMenuItem.setIconStyle(resources.css().gbAddCategoryIcon());
 		addCategoryMenuItem.setId(AppConstants.ID_ADD_CATEGORY_MENUITEM);
-		MenuItem addItem = new AriaMenuItem(i18n.itemName(), menuSelectionListener);
+		MenuItem addItem = new AriaMenuItem(i18n.fileMenuNewItem(), menuSelectionListener);
 		addItem.setData(MENU_SELECTOR_FLAG, MenuSelector.ADD_ITEM);
 		addItem.setIconStyle(resources.css().gbAddItemIcon());
 		addItem.setId(AppConstants.ID_ADD_ITEM_MENUITEM);
@@ -689,21 +695,40 @@ public class InstructorView extends AppView {
 		return fileMenu;
 	}
 
-	private Menu newWindowMenu(I18nConstants i18n) {
-		Menu windowMenu = new AriaMenu();
+	private Menu newViewMenu(I18nConstants i18n) 
+	{
+		Menu viewMenu = new AriaMenu();
 
 		for (TabConfig tabConfig : tabConfigurations) {
-			MenuItem windowMenuItem = newWindowMenuItem(tabConfig);
-			windowMenu.add(windowMenuItem);
+			if (tabConfig.id.equals(AppConstants.TAB_HISTORY) || 
+					tabConfig.id.equals(AppConstants.TAB_STATISTICS) )
+			{
+				MenuItem tabBasedMenuItem = newTabBasedMenuItem(tabConfig);
+				viewMenu.add(tabBasedMenuItem);
+			}
+		}	
+		return viewMenu;
+	}
+	private Menu newEditMenu(I18nConstants i18n) {
+		Menu editMenu = new AriaMenu();
+
+		for (TabConfig tabConfig : tabConfigurations) {
+			if (tabConfig.id.equals(AppConstants.TAB_SETUP) || 
+					tabConfig.id.equals(AppConstants.TAB_GRADER_PER_SET) || 
+					tabConfig.id.equals(AppConstants.TAB_GRADESCALE))
+			{
+				MenuItem tabBasedMenuItem = newTabBasedMenuItem(tabConfig);
+				editMenu.add(tabBasedMenuItem);
+			}
 		}
 
-		return windowMenu;
+		return editMenu;
 	}
 
-	private MenuItem newWindowMenuItem(TabConfig tabConfig) {
+	private MenuItem newTabBasedMenuItem(TabConfig tabConfig) {
 		String id = new StringBuilder().append(AppConstants.WINDOW_MENU_ITEM_PREFIX).append(tabConfig.id).toString();
 		MenuItem menuItem = new AriaMenuItem();
-		menuItem.setText(tabConfig.header);
+		menuItem.setText(tabConfig.menuHeader);
 		menuItem.setData(MENU_SELECTOR_FLAG, tabConfig.menuSelector);
 		menuItem.setEnabled(tabConfig.isClosable);
 		menuItem.setId(id);

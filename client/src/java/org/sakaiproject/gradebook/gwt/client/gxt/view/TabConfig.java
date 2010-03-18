@@ -33,13 +33,15 @@ public class TabConfig {
 	public String menuItemId;
 	public MenuSelector menuSelector;
 	public String iconStyle;
+	public String menuHeader; 
 	
-	public TabConfig(String id, String header, String iconStyle, boolean isClosable, MenuSelector menuSelector) {
+	public TabConfig(String id, String header, String iconStyle, boolean isClosable, MenuSelector menuSelector, String menuHeader) {
 		this.id = id;
 		this.header = header;
 		this.iconStyle = iconStyle;
 		this.isClosable = isClosable;
 		this.menuSelector = menuSelector;
+		this.menuHeader = menuHeader;
 	}
 	
 }
