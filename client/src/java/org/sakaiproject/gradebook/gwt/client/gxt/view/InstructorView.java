@@ -800,8 +800,8 @@ public class InstructorView extends AppView {
 			menuItem.setTitle(i18n.headerImportTitle());
 			moreActionsMenu.add(menuItem);
 
-
-			moreActionsMenu.add(new SeparatorMenuItem());
+			// GBRK-534 
+			//moreActionsMenu.add(new SeparatorMenuItem());
 
 			// GRBK-37 : TPA
 			menuItem = new AriaMenuItem(i18n.headerFinalGrade(), menuSelectionListener);
