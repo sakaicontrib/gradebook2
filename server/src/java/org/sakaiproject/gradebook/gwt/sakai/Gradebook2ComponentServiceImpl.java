@@ -1230,7 +1230,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 	@SuppressWarnings("unchecked")
 	public Roster getRoster(String gradebookUid, Long gradebookId,
 			Integer numberLimit, Integer numberOffset, String sectionUuid,
-			String searchString, String sortField, boolean includeCMId, boolean isDescending) {
+			String searchCriteria, String sortField, boolean includeCMId, boolean isDescending) {
 		
 		List<Learner> rows = new ArrayList<Learner>();
 
@@ -1264,7 +1264,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		int offset = numberOffset == null ? -1 : numberOffset.intValue() ;
 		int limit = numberLimit == null ? -1 : numberLimit.intValue();
 
-		String searchCriteria = null;
+		String searchField = "sortName";
 		
 		if (sortField != null) {
 			columnId = sortField;
@@ -1390,8 +1390,8 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 					// FIXME : GRBK-233 : If a site has sections as well as adhoc groups users that are 
 					// in both sections and adhoc groups show up twice
-					userRecords = findLearnerRecordPage(gradebook, site, realmIds, groupReferences, groupReferenceMap, sortField, searchString, searchCriteria, offset, limit, !isDescending, includeCMId);
-					totalUsers = gbService.getUserCountForSite(realmIds, sortField, searchString, searchCriteria, learnerRoleNames);
+					userRecords = findLearnerRecordPage(gradebook, site, realmIds, groupReferences, groupReferenceMap, sortField, searchField, searchCriteria, offset, limit, !isDescending, includeCMId);
+					totalUsers = gbService.getUserCountForSite(realmIds, sortField, searchField, searchCriteria, learnerRoleNames);
 
 					List<FixedColumn> columns = getColumns(true);
 
@@ -1412,7 +1412,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				case CALCULATED_GRADE:
 				case ASSIGNMENT:
 
-					userRecords = findLearnerRecordPage(gradebook, site, realmIds, groupReferences, groupReferenceMap, null, searchString, searchCriteria, -1, -1, !isDescending, includeCMId);
+					userRecords = findLearnerRecordPage(gradebook, site, realmIds, groupReferences, groupReferenceMap, null, searchField, searchCriteria, -1, -1, !isDescending, includeCMId);
 
 					Map<String, UserRecord> userRecordMap = new HashMap<String, UserRecord>();
 
@@ -1422,7 +1422,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 					List<String> studentUids = new ArrayList<String>(userRecordMap.keySet());
 
-					userRecords = doSearchAndSortUserRecords(gradebook, assignments, categories, studentUids, userRecordMap, searchString, columnId, isDescending, sortColumnKey);
+					userRecords = doSearchAndSortUserRecords(gradebook, assignments, categories, studentUids, userRecordMap, searchCriteria, columnId, isDescending, sortColumnKey);
 					totalUsers = userRecords.size();
 					break;
 			}
