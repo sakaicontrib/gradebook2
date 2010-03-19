@@ -4661,7 +4661,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 						if (!isExtraCredit && !isUnweighted) {
 								
 							// We only verify categories for which equal weight and weighting by points has been turned off
-							if(category.isEqualWeightAssignments() || category.isEnforcePointWeighting()) {
+							if(category.isEqualWeightAssignments().booleanValue() || category.isEnforcePointWeighting().booleanValue()) {
 								continue;
 							}
 							
@@ -4679,9 +4679,9 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 							for(Assignment assignment : categoryAssignmentList) {
 								
 								// Ignoring extract credit assignments
-								if(!assignment.isExtraCredit()) {
+								if(!assignment.isExtraCredit().booleanValue()) {
 									
-									double assignmentWeighting = assignment.getAssignmentWeighting() * 100d;
+									double assignmentWeighting = assignment.getAssignmentWeighting().doubleValue() * 100d;
 									categoryAssignmentWeightSum = categoryAssignmentWeightSum.add(BigDecimal.valueOf(assignmentWeighting));
 								}
 							}
@@ -4701,7 +4701,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 							// Handling extra credit categories
 							
 							// We only verify categories for which equal weight and weighting by points has been turned off
-							if(category.isEqualWeightAssignments() || category.isEnforcePointWeighting()) {
+							if(category.isEqualWeightAssignments().booleanValue() || category.isEnforcePointWeighting().booleanValue()) {
 								continue;
 							}
 							
@@ -4718,7 +4718,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 							// Adding up all the assignment weights
 							for(Assignment assignment : categoryAssignmentList) {
 
-								double assignmentWeighting = assignment.getAssignmentWeighting() * 100d;
+								double assignmentWeighting = assignment.getAssignmentWeighting().doubleValue() * 100d;
 								categoryAssignmentWeightSum = categoryAssignmentWeightSum.add(BigDecimal.valueOf(assignmentWeighting));
 							}
 							
