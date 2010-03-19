@@ -674,11 +674,9 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 			public void selectionChanged(SelectionChangedEvent<ModelData> se) {
 				ModelData model = se.getSelectedItem();
 
-				String searchString = null;
+				String searchString = searchField.getValue();
 				String sectionUuid = null;
 
-				if (loadConfig != null)
-					searchString = ((MultiGradeLoadConfig) loadConfig).getSearchString();
 				if (model != null) 
 					sectionUuid = model.get(SectionKey.ID.name());
 
