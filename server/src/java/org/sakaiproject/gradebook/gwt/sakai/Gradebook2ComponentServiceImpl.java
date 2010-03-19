@@ -4697,6 +4697,42 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 								return isCategoryFullyWeighted;
 							}
 						}
+						else if(isExtraCredit && !isUnweighted) {
+							// Handling extra credit categories
+							
+							// We only verify categories for which equal weight and weighting by points has been turned off
+							if(category.isEqualWeightAssignments() || category.isEnforcePointWeighting()) {
+								continue;
+							}
+							
+							// Get the category's assignments
+							List<Assignment> categoryAssignmentList = category.getAssignmentList();
+							
+							// If the list of category assignments is null we skip the rest
+							if(null == categoryAssignmentList) {
+								continue;
+							}
+							
+							BigDecimal categoryAssignmentWeightSum = BigDecimal.ZERO;
+							
+							// Adding up all the assignment weights
+							for(Assignment assignment : categoryAssignmentList) {
+
+								double assignmentWeighting = assignment.getAssignmentWeighting() * 100d;
+								categoryAssignmentWeightSum = categoryAssignmentWeightSum.add(BigDecimal.valueOf(assignmentWeighting));
+							}
+							
+							// Scale/round the sum
+							categoryAssignmentWeightSum = categoryAssignmentWeightSum.setScale(AppConstants.DISPLAY_SCALE, BigDecimal.ROUND_HALF_UP);
+							
+							// Check if the sum of assignment weights adds up to 100%
+							isCategoryFullyWeighted = categoryAssignmentWeightSum.compareTo(BigDecimal.valueOf(100d)) == 0;
+							
+							// If the weighted assignment sum doesn't add up to 100%, we just return and stop checking the rest
+							if(!isCategoryFullyWeighted) { 
+								return isCategoryFullyWeighted;
+							}
+						}
 					}
 				}
 			}
