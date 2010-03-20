@@ -69,7 +69,6 @@ import com.extjs.gxt.ui.client.widget.layout.BorderLayoutData;
 import com.extjs.gxt.ui.client.widget.layout.CardLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
-import com.extjs.gxt.ui.client.widget.menu.SeparatorMenuItem;
 import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.user.client.Element;
@@ -643,10 +642,13 @@ public class InstructorView extends AppView {
 			toolBar.add(fileItem);
 		}
 
-		AriaButton editItem = new AriaButton(i18n.editMenuHeader());
-		editMenu = newEditMenu(i18n);
-		editItem.setMenu(editMenu);
-
+		if (isEditable) {
+			AriaButton editItem = new AriaButton(i18n.editMenuHeader());
+			editMenu = newEditMenu(i18n);
+			editItem.setMenu(editMenu);
+			toolBar.add(editItem);
+		}
+			
 		AriaButton viewItem = new AriaButton(i18n.viewMenuHeader());
 		viewMenu = newViewMenu(i18n);
 		viewItem.setMenu(viewMenu);
@@ -657,7 +659,6 @@ public class InstructorView extends AppView {
 		AriaButton helpItem = new AriaButton(i18n.helpMenuHeader());
 		helpItem.addSelectionListener(toolBarSelectionListener);
 
-		toolBar.add(editItem);
 		toolBar.add(viewItem);
 		toolBar.add(moreItem);
 		toolBar.add(helpItem);
@@ -753,14 +754,18 @@ public class InstructorView extends AppView {
 		Menu subMenu = new AriaMenu();
 		menuItem.setSubMenu(subMenu);
 
-
-		menuItem = new AriaMenuItem(i18n.headerExportData());
-		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_DATA);
-		menuItem.setTitle(i18n.headerExportDataTitle());
-		subMenu.add(menuItem);
-
-		Menu typeMenu = new AriaMenu();
-		menuItem.setSubMenu(typeMenu);
+		Menu typeMenu = subMenu; 
+		
+		// If we're dealing with an "editable" instance of the tool, then make the appropriate submenus for export
+		if (isEditable) {
+			menuItem = new AriaMenuItem(i18n.headerExportData());
+			menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_DATA);
+			menuItem.setTitle(i18n.headerExportDataTitle());
+			subMenu.add(menuItem);
+	
+			typeMenu = new AriaMenu();
+			menuItem.setSubMenu(typeMenu);
+		}
 		
 		menuItem = new AriaMenuItem(i18n.headerExportCSV(), menuSelectionListener);
 		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_DATA_CSV);
@@ -772,36 +777,31 @@ public class InstructorView extends AppView {
 		menuItem.setTitle(i18n.headerExportXLSTitle());
 		typeMenu.add(menuItem);
 
-		
-		menuItem = new AriaMenuItem(i18n.headerExportStructure());
-		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_STRUCTURE);
-		menuItem.setTitle(i18n.headerExportStructureTitle());
-		subMenu.add(menuItem);
-
-		
-		typeMenu = new AriaMenu();
-		menuItem.setSubMenu(typeMenu);
-		
-		menuItem = new AriaMenuItem(i18n.headerExportCSV(), menuSelectionListener);
-		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_STRUCTURE_CSV);
-		menuItem.setTitle(i18n.headerExportCSVTitle());
-		typeMenu.add(menuItem);
-
-		menuItem = new AriaMenuItem(i18n.headerExportXLS(), menuSelectionListener);
-		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_STRUCTURE_XLS);
-		menuItem.setTitle(i18n.headerExportXLSTitle());
-		typeMenu.add(menuItem);
-		
-
+		// If we're dealing with an "editable" instance of the tool, show the other editing menu items
 		if (isEditable) {
+			menuItem = new AriaMenuItem(i18n.headerExportStructure());
+			menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_STRUCTURE);
+			menuItem.setTitle(i18n.headerExportStructureTitle());
+			subMenu.add(menuItem);
+	
+			typeMenu = new AriaMenu();
+			menuItem.setSubMenu(typeMenu);
+			
+			menuItem = new AriaMenuItem(i18n.headerExportCSV(), menuSelectionListener);
+			menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_STRUCTURE_CSV);
+			menuItem.setTitle(i18n.headerExportCSVTitle());
+			typeMenu.add(menuItem);
+	
+			menuItem = new AriaMenuItem(i18n.headerExportXLS(), menuSelectionListener);
+			menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_STRUCTURE_XLS);
+			menuItem.setTitle(i18n.headerExportXLSTitle());
+			typeMenu.add(menuItem);
+
 			menuItem = new AriaMenuItem(i18n.headerImport(), menuSelectionListener);
 			menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.IMPORT);
 			menuItem.setIconStyle(resources.css().gbImportItemIcon());
 			menuItem.setTitle(i18n.headerImportTitle());
 			moreActionsMenu.add(menuItem);
-
-			// GBRK-534 
-			//moreActionsMenu.add(new SeparatorMenuItem());
 
 			// GRBK-37 : TPA
 			menuItem = new AriaMenuItem(i18n.headerFinalGrade(), menuSelectionListener);

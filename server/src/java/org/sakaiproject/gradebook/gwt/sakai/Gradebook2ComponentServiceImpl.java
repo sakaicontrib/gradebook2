@@ -4288,7 +4288,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		columns.add(new FixedColumnImpl(LearnerKey.LAST_NAME_FIRST, i18n.getString("lastNameFirst"), 180, false));
 		columns.add(new FixedColumnImpl(LearnerKey.EMAIL, i18n.getString("email"), 230, true));
 		columns.add(new FixedColumnImpl(LearnerKey.SECTION, i18n.getString("section"), 120, true));
-		columns.add(new FixedColumnImpl(LearnerKey.COURSE_GRADE, i18n.getString("courseGrade"), 120, false));
+		columns.add(new FixedColumnImpl(LearnerKey.COURSE_GRADE, i18n.getString("courseGrade"), 140, false));
 		if (isUserAbleToGradeAll) {
 			FixedColumn gradeOverrideColumn = new FixedColumnImpl(LearnerKey.GRADE_OVERRIDE, i18n.getString("gradeOverride"), 120, false);
 			gradeOverrideColumn.setEditable(Boolean.TRUE);
