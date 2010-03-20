@@ -3,7 +3,8 @@
 	<!--property name="tarball.isNewer" value="false"/-->
 	<!--property name="tarball.doExpand" value="false"/-->
 	
-	<target name="checkIfDirectoryIsAvailable">
+	<!-- Commenting out build code below to turn off subversion caching of compiled gwt -->
+	<!--target name="checkIfDirectoryIsAvailable">
 		<echo>Checking if directory is available</echo>
 		<available file="gradebook" type="dir" property="directory.isAvailable"/>
 		<echo>Result: ${directory.isAvailable}</echo>
@@ -25,7 +26,6 @@
 	
 	<target name="checkOver" depends="checkIfDirectoryIsAvailable,checkIfTarballIsAvailable,checkIfTarballIsNewer">
 		<echo>Determining if we want to expand the tarball</echo>
-		<!-- We only want to expand the tarball if (a) it's newer, or (b) the directory doesn't exist -->
 		<condition property="tarball.doExpand">
 			<and>
 				<istrue value="${tarball.isAvailable}"/>
@@ -63,7 +63,10 @@
 	<target name="begin" depends="expand,compress">
 	</target>
 	
-	<target name="build" description="Build this project" depends="checkOver, begin">
+	<target name="build" description="Build this project" depends="checkOver, begin"-->
+		
+		
+	<target name="build" description="Build this project" >
 		<echo file="WEB-INF/classes/org/sakaiproject/gradebook/gwt/server/version.txt">${basedir}</echo>
 	</target>
 	

@@ -89,7 +89,7 @@
 			<!-- Uncomment this if you want to revert to the older style of
 			     pre-compiling all gwt code using Eclipse, you will 
 			     also want to run "svn add war/gradebook.tar.gz"  -->
-			<!-- plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
 				<version>1.2</version>
@@ -106,7 +106,7 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin-->
+			</plugin>
 		</plugins>
 	</build>
 </project>

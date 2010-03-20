@@ -68,6 +68,7 @@ public class WebAppToolServlet extends HttpServlet {
 			String uri = new StringBuilder().append(contextPath).append(getInitParameter(FIRST_PAGE)).toString();
 
 			addVersionAsCookie(response, uri);
+			
 			// Do redirect to first-page
 			response.sendRedirect(uri);
 		} else if (request.getPathInfo() == null && !request.getRequestURI().endsWith("/")) {
@@ -88,8 +89,7 @@ public class WebAppToolServlet extends HttpServlet {
 			if (request.getPathInfo() == null) {
 				dispatcher = request.getRequestDispatcher("");
 			} else {
-				dispatcher = request
-				.getRequestDispatcher(request.getPathInfo());
+				dispatcher = request.getRequestDispatcher(request.getPathInfo());
 			}
 
 			dispatcher.forward(wrappedRequest, response);
@@ -117,9 +117,10 @@ public class WebAppToolServlet extends HttpServlet {
 				if (result != null) {
 					String[] tokens = result.split("/");
 
-					if (tokens.length > 3) {
-						String version = tokens[tokens.length - 3];
-						log.info("Version is: " + version);
+					if (tokens.length > 2) {
+						String version = tokens[tokens.length - 2];
+						if (log.isDebugEnabled())
+							log.debug("Version is: " + version);
 						Cookie cookie = new Cookie(AppConstants.VERSION_COOKIE_NAME, version);
 						cookie.setMaxAge(-1);
 						cookie.setPath(uri);
