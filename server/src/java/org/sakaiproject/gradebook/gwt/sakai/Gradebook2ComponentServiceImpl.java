@@ -52,7 +52,6 @@ import org.sakaiproject.gradebook.gwt.client.model.key.GradeMapKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.GraderKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
-import org.sakaiproject.gradebook.gwt.client.model.key.PermissionKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.SectionKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.VerificationKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.ActionType;
@@ -349,7 +348,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 	public Learner assignExcused(String itemId, String studentUid, Boolean isExcludedFromGrade) throws InvalidInputException {
 		int indexOf = itemId.indexOf(AppConstants.EXCUSE_FLAG);
 		Long assignmentId = Long.valueOf(itemId.substring(0, indexOf));
-		Assignment assignment = gbService.getAssignment(Long.valueOf(assignmentId));
+		Assignment assignment = gbService.getAssignment(assignmentId);
 		
 		if (assignment == null)
 			throw new InvalidInputException("This is not a valid item.");
@@ -941,6 +940,8 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return userList;
 	}
 	
+	private enum WeightedCategoriesState { VALID, INVALID_PERCENT_GRADE, INVALID_PERCENT_CATEGORY };
+	
 	public Map<String,Object> getGradesVerification(String gradebookUid, Long gradebookId) throws SecurityException {
 		
 		boolean isUserAbleToGrade = authz.isUserAbleToGradeAll(gradebookUid);
@@ -962,8 +963,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
 		boolean isMissingScores = false;
-		boolean isFullyWeighted = isFullyWeighted(gradebook);
-		boolean isCategoryFullyWeighted = isCategoryFullyWeighted(gradebook);
+		WeightedCategoriesState state = isFullyWeighted(gradebook);
 		
 		if (dereferences != null) {
 			for (UserDereference dereference : dereferences) {
@@ -980,8 +980,8 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		Map<String,Object> map = new HashMap<String,Object>();
 		map.put(VerificationKey.NUMBER_LEARNERS.name(), Integer.valueOf(numberOfLearners));
 		map.put(VerificationKey.IS_MISSING_SCORES.name(), Boolean.valueOf(isMissingScores));
-		map.put(VerificationKey.IS_FULLY_WEIGHTED.name(), Boolean.valueOf(isFullyWeighted));
-		map.put(VerificationKey.IS_CATEGORY_FULLY_WEIGHTED.name(), Boolean.valueOf(isCategoryFullyWeighted));
+		map.put(VerificationKey.IS_FULLY_WEIGHTED.name(), Boolean.valueOf(state != WeightedCategoriesState.INVALID_PERCENT_GRADE));
+		map.put(VerificationKey.IS_CATEGORY_FULLY_WEIGHTED.name(), Boolean.valueOf(state != WeightedCategoriesState.INVALID_PERCENT_CATEGORY));
 		
 		return map;
 	}
@@ -1312,7 +1312,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		// If the user doesn't have any of the necessary credentials we return
 		// an empty data set
 		if (!isInstructor && !hasUserGraderPermissions && !isUserAssignedSectionTa) {
-			return new RosterImpl(rows, 0);
+			return new RosterImpl(rows, Integer.valueOf(0));
 		}
 
 		// Was a section selected
@@ -1359,7 +1359,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			if (siteId == null) {
 				if (log.isInfoEnabled())
 					log.info("No siteId defined");
-				return new RosterImpl(rows, 0);
+				return new RosterImpl(rows, Integer.valueOf(0));
 			}
 
 			realmIds = new String[1];
@@ -2199,7 +2199,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 					isWeightChanged = true;
 					if (businessLogic.checkRecalculateEqualWeightingRule(category)) {
 						assignments = gbService.getAssignmentsForCategory(category.getId());
-						recalculateAssignmentWeights(category, !isUnweighted, assignments);
+						recalculateAssignmentWeights(category, Boolean.valueOf(!isUnweighted), assignments);
 					}
 				}
 	
@@ -2314,16 +2314,18 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 						if (weight != null && assignment.getAssignmentWeighting() != null && !weight.equals(assignment.getAssignmentWeighting())) {
 
-							weight = weight.doubleValue() * 0.01d;
+							BigDecimal decimalWeight = BigDecimal.valueOf(weight.doubleValue()).multiply(BigDecimal.valueOf(0.01d), GradeCalculations.MATH_CONTEXT);
+							
+							weight = Double.valueOf(decimalWeight.doubleValue());
 
 							assignment.setAssignmentWeighting(weight);
 							isModified = true;
 						}
 
-						boolean wasIncluded = DataTypeConversionUtil.checkBoolean(assignment.isCounted());
+						boolean wasIncluded = assignment.isCounted();
 
 						if (wasIncluded != isIncluded) {
-							assignment.setCounted(Boolean.valueOf(isIncluded));
+							assignment.setCounted(isIncluded);
 							isModified = true;
 						}
 
@@ -3299,7 +3301,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		Boolean isAssignmentExtraCredit = assignment.isExtraCredit() == null ? Boolean.FALSE : assignment.isExtraCredit();
 		Boolean isAssignmentReleased = Boolean.valueOf(assignment.isReleased());
 		Boolean isAssignmentRemoved = Boolean.valueOf(assignment.isRemoved());
-		double points = assignment.getPointsPossible() == null ? 0d : assignment.getPointsPossible().doubleValue();
+		//double points = assignment.getPointsPossible() == null ? 0d : assignment.getPointsPossible().doubleValue();
 		
 		
 		Gradebook gradebook = assignment.getGradebook();
@@ -3414,7 +3416,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			}
 		}
 		
-		if (isScaledExtraCreditEnabled && limitScaledExtraCreditToCategoryType != null) {
+		if (isScaledExtraCreditEnabled.booleanValue() && limitScaledExtraCreditToCategoryType != null) {
 			CategoryType categoryType = null;
 			
 			switch (gradebook.getCategory_type()) {
@@ -3428,7 +3430,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 					categoryType = CategoryType.WEIGHTED_CATEGORIES;
 			}
 			
-			isScaledExtraCreditEnabled = categoryType == limitScaledExtraCreditToCategoryType;
+			isScaledExtraCreditEnabled = Boolean.valueOf(categoryType == limitScaledExtraCreditToCategoryType);
 		}
 		
 		itemModel.setScaledExtraCreditEnabled(isScaledExtraCreditEnabled);
@@ -4216,7 +4218,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 						categoryMap.put(category.getId(), category);
 						Integer order = category.getCategoryOrder();
 						if (order == null)
-							category.setCategoryOrder(categoryOrder++);
+							category.setCategoryOrder(Integer.valueOf(categoryOrder++));
 					}
 				}
 			}
@@ -4243,7 +4245,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 							defaultCategory = findDefaultCategory(gradebookId);
 							if (categories != null) {
 								categories.add(defaultCategory);
-								defaultCategory.setCategoryOrder(categoryOrder++);
+								defaultCategory.setCategoryOrder(Integer.valueOf(categoryOrder++));
 							} else
 								categoryMap.put(defaultCategory.getId(), defaultCategory);
 						}
@@ -4289,7 +4291,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		columns.add(new FixedColumnImpl(LearnerKey.COURSE_GRADE, i18n.getString("courseGrade"), 120, false));
 		if (isUserAbleToGradeAll) {
 			FixedColumn gradeOverrideColumn = new FixedColumnImpl(LearnerKey.GRADE_OVERRIDE, i18n.getString("gradeOverride"), 120, false);
-			gradeOverrideColumn.setEditable(true);
+			gradeOverrideColumn.setEditable(Boolean.TRUE);
 			columns.add(gradeOverrideColumn);
 		}
 		columns.add(new FixedColumnImpl(LearnerKey.LETTER_GRADE, i18n.getString("letterGrade"), 80, true));
@@ -4487,10 +4489,6 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return null;
 	}
 
-	private double getPercentCourseGrade(Map<String, Object> map) {
-		return Util.toDouble(map, ItemKey.PERCENT_COURSE_GRADE.name());
-	}
-
 	private String getPlacementId() {
 
 		if (toolManager == null)
@@ -4502,10 +4500,6 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			return null;
 
 		return placement.getId();
-	}
-
-	private double getPoints(Map<String, Object> map) {
-		return Util.toDouble(map, ItemKey.POINTS.name());
 	}
 
 	private Site getSite() {
@@ -4631,117 +4625,61 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			items = category.getAssignmentList();
 		return items;
 	}
-
-	// GRBK-488 : TPA
-	private boolean isCategoryFullyWeighted(Gradebook gradebook) {
-		
-		switch (gradebook.getCategory_type()) {
-		
-		case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
-			
-			List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
-			List<Category> categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
-			
-			boolean isCategoryFullyWeighted = false;
-			
-			if (categories != null) {
-				
-				BigDecimal gradebookWeightSum = BigDecimal.ZERO;
-				BigDecimal gradebookPointsSum = BigDecimal.ZERO;
-				
-				for (Category category : categories) {
+	
+	
+	private boolean isCategoryFullyWeighted(Category category) {
 					
-					boolean isExtraCredit = category.isExtraCredit() != null && category.isExtraCredit().booleanValue();
-					boolean isUnweighted = category.isUnweighted() != null && category.isUnweighted().booleanValue();
+		boolean isExtraCreditCategory = DataTypeConversionUtil.checkBoolean(category.isExtraCredit()); 
+		boolean isCategoryWeightingItemsEqually = DataTypeConversionUtil.checkBoolean(category.isEqualWeightAssignments());
+		boolean isCategoryPointsWeighted = DataTypeConversionUtil.checkBoolean(category.isEnforcePointWeighting());
 
-					if (!category.isRemoved()) {
-						
-						double categoryWeight = category.getWeight() == null ? 0d : category.getWeight().doubleValue() * 100d;
+		// Get the category's assignments
+		List<Assignment> categoryAssignmentList = getUncheckedAssignmentList(category);
+					
+		// If the list of category assignments is null or empty then the category is not valid
+		if (null == categoryAssignmentList || categoryAssignmentList.isEmpty()) {
+			return false;
+		}
+					
 
-						if (!isExtraCredit && !isUnweighted) {
-								
-							// We only verify categories for which equal weight and weighting by points has been turned off
-							if(category.isEqualWeightAssignments().booleanValue() || category.isEnforcePointWeighting().booleanValue()) {
-								continue;
-							}
-							
-							// Get the category's assignments
-							List<Assignment> categoryAssignmentList = category.getAssignmentList();
-							
-							// If the list of category assignments is null we skip the rest
-							if(null == categoryAssignmentList) {
-								continue;
-							}
-							
-							BigDecimal categoryAssignmentWeightSum = BigDecimal.ZERO;
-							
-							// Adding up all the assignment weights
-							for(Assignment assignment : categoryAssignmentList) {
-								
-								// Ignoring extract credit assignments
-								if(!assignment.isExtraCredit().booleanValue()) {
-									
-									double assignmentWeighting = assignment.getAssignmentWeighting().doubleValue() * 100d;
-									categoryAssignmentWeightSum = categoryAssignmentWeightSum.add(BigDecimal.valueOf(assignmentWeighting));
-								}
-							}
-							
-							// Scale/round the sum
-							categoryAssignmentWeightSum = categoryAssignmentWeightSum.setScale(AppConstants.DISPLAY_SCALE, BigDecimal.ROUND_HALF_UP);
-							
-							// Check if the sum of assignment weights adds up to 100%
-							isCategoryFullyWeighted = categoryAssignmentWeightSum.compareTo(BigDecimal.valueOf(100d)) == 0;
-							
-							// If the weighted assignment sum doesn't add up to 100%, we just return and stop checking the rest
-							if(!isCategoryFullyWeighted) { 
-								return isCategoryFullyWeighted;
-							}
-						}
-						else if(isExtraCredit && !isUnweighted) {
-							// Handling extra credit categories
-							
-							// We only verify categories for which equal weight and weighting by points has been turned off
-							if(category.isEqualWeightAssignments().booleanValue() || category.isEnforcePointWeighting().booleanValue()) {
-								continue;
-							}
-							
-							// Get the category's assignments
-							List<Assignment> categoryAssignmentList = category.getAssignmentList();
-							
-							// If the list of category assignments is null we skip the rest
-							if(null == categoryAssignmentList) {
-								continue;
-							}
-							
-							BigDecimal categoryAssignmentWeightSum = BigDecimal.ZERO;
-							
-							// Adding up all the assignment weights
-							for(Assignment assignment : categoryAssignmentList) {
+		BigDecimal categoryAssignmentWeightSum = BigDecimal.ZERO;
 
-								double assignmentWeighting = assignment.getAssignmentWeighting().doubleValue() * 100d;
-								categoryAssignmentWeightSum = categoryAssignmentWeightSum.add(BigDecimal.valueOf(assignmentWeighting));
-							}
-							
-							// Scale/round the sum
-							categoryAssignmentWeightSum = categoryAssignmentWeightSum.setScale(AppConstants.DISPLAY_SCALE, BigDecimal.ROUND_HALF_UP);
-							
-							// Check if the sum of assignment weights adds up to 100%
-							isCategoryFullyWeighted = categoryAssignmentWeightSum.compareTo(BigDecimal.valueOf(100d)) == 0;
-							
-							// If the weighted assignment sum doesn't add up to 100%, we just return and stop checking the rest
-							if(!isCategoryFullyWeighted) { 
-								return isCategoryFullyWeighted;
-							}
-						}
-					}
-				}
+		// Adding up all the assignment weights
+		for (Assignment assignment : categoryAssignmentList) {
+
+			// Don't count deleted items
+			if (assignment.isRemoved())
+				continue;
+
+			// Don't count items that have been removed from grading or that have null weights
+			if (assignment.isNotCounted() || assignment.getAssignmentWeighting() == null)
+				continue;
+
+			boolean isExtraCreditItem = DataTypeConversionUtil.checkBoolean(assignment.isExtraCredit());
+			// Only check extra credit items in an extra credit category
+			// But as long as the item is not an extra credit item, we definitely want to count it either way
+			if (isExtraCreditCategory || !isExtraCreditItem) {
+				
+				// For equally weighted and points weighted categories, this is success: we have at least one 
+				// non-extra credit item in a non-extra credit category or at least one item 
+				// in an extra credit category
+				if (isCategoryWeightingItemsEqually || isCategoryPointsWeighted) 
+					return true;
+				
+				// Remember that these weights are decimal representations of the percent, like .5 for 50%
+				BigDecimal bigItemWeight = new BigDecimal(assignment.getAssignmentWeighting().toString());
+				categoryAssignmentWeightSum = categoryAssignmentWeightSum.add(bigItemWeight);
 			}
 		}
-		
-		return true;
+
+		// Scale/round the sum
+		categoryAssignmentWeightSum = categoryAssignmentWeightSum.setScale(AppConstants.DISPLAY_SCALE, BigDecimal.ROUND_HALF_UP);
+
+		// Check if the sum of assignment weights adds up to 1 (that is, 100%)
+		return categoryAssignmentWeightSum.compareTo(BigDecimal.ONE) == 0;
 	}
 	
-	private boolean isFullyWeighted(Gradebook gradebook) {
+	private WeightedCategoriesState isFullyWeighted(Gradebook gradebook) {
 		
 		switch (gradebook.getCategory_type()) {
 		case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
@@ -4750,41 +4688,49 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			
 			boolean isFullyWeighted = false;
 			
-			if (categories != null) {
-				BigDecimal gradebookWeightSum = BigDecimal.ZERO;
-				BigDecimal gradebookPointsSum = BigDecimal.ZERO;
-				for (Category category : categories) {
-					boolean isExtraCredit = category.isExtraCredit() != null && category.isExtraCredit().booleanValue();
-					boolean isUnweighted = category.isUnweighted() != null && category.isUnweighted().booleanValue();
+			// It's not possible to be ready for final grading when there are no categories in a weighted categories gradebook
+			if (categories == null || categories.isEmpty())
+				return WeightedCategoriesState.INVALID_PERCENT_GRADE;
+			
+			BigDecimal gradebookWeightSum = BigDecimal.ZERO;
+			for (Category category : categories) {
+					
+				// Don't count deleted categories
+				if (category.isRemoved())
+					continue;
+					
+				boolean isUnweighted = DataTypeConversionUtil.checkBoolean(category.isUnweighted());
+					
+				// Don't count unweighted, null weighted or 0 weighted categories
+				if (isUnweighted || category.getWeight() == null || new BigDecimal(category.getWeight().toString()).compareTo(BigDecimal.ZERO) == 0)
+					continue;
+						
+				boolean isExtraCredit = DataTypeConversionUtil.checkBoolean(category.isExtraCredit());
 
-					if (!category.isRemoved()) {
-						double categoryWeight = category.getWeight() == null ? 0d : category.getWeight().doubleValue() * 100d;
 
-						if (!isExtraCredit && !isUnweighted) {
-							gradebookWeightSum = gradebookWeightSum.add(BigDecimal.valueOf(categoryWeight));
-						}
-					}
+				boolean doItemsInCategoryAddUp = isCategoryFullyWeighted(category);
+				
+				// If one of the categories doesn't add up, then we can just fail the test now
+				if (!doItemsInCategoryAddUp) {
+					return WeightedCategoriesState.INVALID_PERCENT_CATEGORY;	
 				}
 				
-				isFullyWeighted = gradebookWeightSum.compareTo(BigDecimal.valueOf(100d)) == 0;
+				// Don't count extra credit categories once we've verified the items add up
+				if (isExtraCredit)
+					continue;
+				
+				// Assuming it does add up, we need to check that it's contribution to the overall grade adds up
+				BigDecimal bigCategoryWeight = new BigDecimal(category.getWeight().toString());
+				gradebookWeightSum = gradebookWeightSum.add(bigCategoryWeight);
 			}
 			
-			return isFullyWeighted;
+			isFullyWeighted = gradebookWeightSum.compareTo(BigDecimal.ONE) == 0;
+			
+			if (!isFullyWeighted)
+				return WeightedCategoriesState.INVALID_PERCENT_GRADE;
 		}
 		
-		return true;
-	}
-
-	private void logActionRecord(ActionRecord actionRecord, Item item) {
-
-		Map<String, String> propertyMap = actionRecord.getPropertyMap();
-		for (String propertyName : item.getPropertyNames()) {
-			Object value = ((GradeItem)item).get(propertyName);
-			if (value != null)
-				propertyMap.put(propertyName, String.valueOf(value));
-		}
-
-		gbService.storeActionRecord(actionRecord);
+		return WeightedCategoriesState.VALID;
 	}
 
 	private String lookupDefaultGradebookUid() {
@@ -4907,10 +4853,10 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		case GradebookService.GRADE_TYPE_LETTER:
 			BigDecimal pointsEarned = null;
 			if (value != null) {
-				if (value.compareTo(100d) > 0)
-					throw new InvalidInputException("This grade cannot be larger than " + DataTypeConversionUtil.formatDoubleAsPointsString(100d) + "%");
-				else if (value.compareTo(0d) < 0)
-					throw new InvalidInputException("This grade cannot be less than " + DataTypeConversionUtil.formatDoubleAsPointsString(0d) + "%");
+				if (value.compareTo(Double.valueOf(100d)) > 0)
+					throw new InvalidInputException("This grade cannot be larger than " + DataTypeConversionUtil.formatDoubleAsPointsString(Double.valueOf(100d)) + "%");
+				else if (value.compareTo(Double.valueOf(0d)) < 0)
+					throw new InvalidInputException("This grade cannot be less than " + DataTypeConversionUtil.formatDoubleAsPointsString(Double.valueOf(0d)) + "%");
 
 
 				pointsEarned = gradeCalculations.getPercentAsPointsEarned(assignment, value);					
@@ -4921,39 +4867,6 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			assignmentGradeRecord.setPercentEarned(value);
 			break;
 		}
-
-		
-		/*if (gradeType == GradebookService.GRADE_TYPE_POINTS && value != null) {
-			if (value.compareTo(assignment.getPointsPossible()) > 0)
-				throw new InvalidInputException("This grade cannot be larger than " + DataTypeConversionUtil.formatDoubleAsPointsString(assignment.getPointsPossible()));
-			else if (value.compareTo(Double.valueOf(0d)) < 0) {
-				double v = value.doubleValue();
-
-				if (v < -1d * assignment.getPointsPossible().doubleValue())
-					throw new InvalidInputException("The absolute value of a negative point score assigned to a student cannot be greater than the total possible points allowed for an item");
-			}
-
-		} else if ((gradebook.getGrade_type() == GradebookService.GRADE_TYPE_PERCENTAGE 
-				|| gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER) && value != null) {
-			if (value.compareTo(Double.valueOf(100d)) > 0)
-				throw new InvalidInputException("This grade cannot be larger than " + DataTypeConversionUtil.formatDoubleAsPointsString(100d) + "%");
-
-			else if (value.compareTo(Double.valueOf(0d)) < 0)
-				throw new InvalidInputException("This grade cannot be less than " + DataTypeConversionUtil.formatDoubleAsPointsString(0d) + "%");
-		}
-
-		switch (gradebook.getGrade_type()) {
-			case GradebookService.GRADE_TYPE_POINTS:
-				assignmentGradeRecord.setPointsEarned(value);
-				break;
-			case GradebookService.GRADE_TYPE_PERCENTAGE:
-			case GradebookService.GRADE_TYPE_LETTER:
-				BigDecimal pointsEarned = gradeCalculations.getPercentAsPointsEarned(assignment, value);
-				Double pointsEarnedDouble = pointsEarned == null ? null : Double.valueOf(pointsEarned.doubleValue());
-				assignmentGradeRecord.setPointsEarned(pointsEarnedDouble);
-				assignmentGradeRecord.setPercentEarned(value);
-				break;
-		}*/
 
 		// Prepare record for update
 		assignmentGradeRecord.setGradableObject(assignment);
@@ -4989,39 +4902,6 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		perm.setGroupId(groupId);
 	
 		return perm;
-	}
-	
-	private Permission toPermission(Long gradebookId, Map<String, Object> attributes) {
-		
-		Object permissionIdObj = attributes.get(PermissionKey.ID.name());
-		Object categoryIdObj = attributes.get(PermissionKey.CATEGORY_ID.name());
-		Object gradebookIdObject = attributes.get(PermissionKey.GRADEBOOK_ID.name());
-		
-		if (permissionIdObj instanceof Integer)
-			permissionIdObj = permissionIdObj == null ? null : Long.valueOf(((Integer) permissionIdObj).longValue());
-		if (categoryIdObj instanceof Integer)
-			categoryIdObj = categoryIdObj == null ? null : Long.valueOf(((Integer) categoryIdObj).longValue());
-		if (gradebookIdObject instanceof Integer)
-			gradebookIdObject = categoryIdObj == null ? null : Long.valueOf(((Integer) gradebookIdObject).longValue());
-		
-		Long permissionId = (Long)permissionIdObj;
-		Long categoryId = (Long)categoryIdObj;
-		String function = (String)attributes.get(PermissionKey.PERMISSION_ID.name());
-		String userId = (String)attributes.get(PermissionKey.USER_ID.name());
-		String groupId = (String)attributes.get(PermissionKey.SECTION_ID.name());
-		
-		if (gradebookId == null)
-			gradebookId = (Long)gradebookIdObject;
-		
-		Permission permission = new Permission();
-		permission.setId(permissionId);
-		permission.setGradebookId(gradebookId);
-		permission.setCategoryId(categoryId);
-		permission.setFunction(function);
-		permission.setUserId(userId);
-		permission.setGroupId(groupId);
-	
-		return permission;
 	}
 
 	/**
@@ -5156,8 +5036,6 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			if (hasCategories) {
 				List<Assignment> assignmentsForCategory = gbService.getAssignmentsForCategory(category.getId());
 
-				boolean wasReleased = businessLogic.checkReleased(assignmentsForCategory);
-				
 				if (isRemoved && !wasRemoved)
 					businessLogic.applyRemoveChildItemsWhenCategoryRemoved(category, assignmentsForCategory);
 
