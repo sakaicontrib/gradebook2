@@ -8,7 +8,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
 
-@Path("/gradebook/rest/gradeevent")
+@Path("gradeevent")
 public class GradeEvent extends Resource {
 
 	@GET @Path("{studentUid}/{itemId}")

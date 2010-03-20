@@ -180,6 +180,11 @@ public interface AppConstants {
 	public static final String GRADED_FLAG = ":G";
 	public static final String SUCCESS_FLAG = ":S";
 	
-	public static final String AUTH_COOKIE_NAME = "placement";
+	public static final String APP_COOKIE_NAME = "gb2application";
+	public static final String AUTH_COOKIE_NAME = "gb2placement";
 	public static final String VERSION_COOKIE_NAME = "gb2version";
+	
+	public static final String IMPORT_SERVLET = "import";
+	public static final String EXPORT_SERVLET = "export";
+	public static final String SUBMISSION_SERVLET = "submit";
 }

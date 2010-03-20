@@ -16,14 +16,14 @@ public class FixedColumnImpl extends BaseModel implements FixedColumn {
 		setEditable(Boolean.FALSE);
 	}
 	
-	public FixedColumnImpl(LearnerKey key, String displayName, Integer width, Boolean isHidden) {
+	public FixedColumnImpl(LearnerKey key, String displayName, int width, boolean isHidden) {
 		super();
 		setIdentifier(key.name());
 		setName(displayName);
 		setKey(key.name());
-		setWidth(width);
+		setWidth(Integer.valueOf(width));
 		setUnweighted(Boolean.FALSE);
-		setHidden(isHidden);
+		setHidden(Boolean.valueOf(isHidden));
 		setEditable(Boolean.FALSE);
 	}
 	

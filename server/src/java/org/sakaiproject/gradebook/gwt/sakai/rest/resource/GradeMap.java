@@ -13,7 +13,7 @@ import javax.ws.rs.Produces;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 
-@Path("/gradebook/rest/grademap/{uid}/{id}")
+@Path("grademap/{uid}/{id}")
 public class GradeMap extends Resource {
 
 	@GET 

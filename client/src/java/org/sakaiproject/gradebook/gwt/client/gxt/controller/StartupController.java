@@ -18,12 +18,14 @@ import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
+import com.extjs.gxt.ui.client.widget.Info;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
+import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.RootPanel;
 
@@ -65,7 +67,7 @@ public class StartupController extends Controller {
 					Dispatcher dispatcher = Dispatcher.get();
 					dispatcher.addController(new InstructorController(i18n, isUserAbleToEditItems, isNewGradebook));					
 					dispatcher.addController(new ServiceController(i18n));
-					getApplicationModel(0, authModel);
+					findApplicationModel(authModel);
 				}
 			});
 		} else if (isUserAbleToViewOwnGrades) {
@@ -78,11 +80,22 @@ public class StartupController extends Controller {
 					Dispatcher dispatcher = Dispatcher.get();
 					dispatcher.addController(new StudentController());
 					dispatcher.addController(new ServiceController(i18n));
-					getApplicationModel(0, authModel);
+					findApplicationModel(authModel);
 				}
 			});
 		} else {
 			RootPanel.get().add(new HTML("This user is not authorized to view grade information."));
+		}
+	}
+	
+	private void findApplicationModel(AuthModel authModel) {
+		String appAsJson = Cookies.getCookie(AppConstants.APP_COOKIE_NAME);
+		
+		if (appAsJson != null && !appAsJson.isEmpty()) {
+			Info.display("Application", "As cookie");
+			onApplicationModelSuccess(appAsJson);
+		} else {
+			getApplicationModel(0, authModel);
 		}
 	}
 	
@@ -109,16 +122,7 @@ public class StartupController extends Controller {
 					
 					String result = response.getText();
 
-					JsonTranslater translater = new JsonTranslater(new ApplicationModelType()) {
-						protected ModelData newModelInstance() {
-							return new ApplicationModel();
-						}
-					};
-					ApplicationSetup applicationModel = (ApplicationSetup)translater.translate(result);
-					
-					Dispatcher dispatcher = Dispatcher.get();
-					dispatcher.dispatch(GradebookEvents.Startup.getEventType(), applicationModel);
-					
+					onApplicationModelSuccess(result);
 				}
 				
 			});
@@ -148,6 +152,18 @@ public class StartupController extends Controller {
 		Gradebook2RPCServiceAsync dataService = Registry.get(AppConstants.SERVICE);
 		dataService.get(null, null, EntityType.APPLICATION, null, null, SecureToken.get(), callback);
 		*/
+	}
+	
+	private void onApplicationModelSuccess(String result) {
+		JsonTranslater translater = new JsonTranslater(new ApplicationModelType()) {
+			protected ModelData newModelInstance() {
+				return new ApplicationModel();
+			}
+		};
+		ApplicationSetup applicationModel = (ApplicationSetup)translater.translate(result);
+		
+		Dispatcher dispatcher = Dispatcher.get();
+		dispatcher.dispatch(GradebookEvents.Startup.getEventType(), applicationModel);
 	}
 	
 	private void onApplicationModelFailure(int i, AuthModel authModel, Throwable caught) {

@@ -6,7 +6,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
-@Path("/gradebook/rest/roster")
+@Path("roster")
 public class Roster extends Resource {
     
     @GET @Path("{uid}/{id}")

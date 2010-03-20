@@ -4,11 +4,7 @@
 <beans>
 
 	<import resource="db.xml"/>
-
-	<bean id="ResourceController" class="org.sakaiproject.gradebook.gwt.server.ResourceController">
-		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
-	</bean>
-    
+   
     <bean id="DevelopmentModeBean"
     	class="org.sakaiproject.gradebook.gwt.sakai.mock.DevelopmentModeBean"
     	init-method="init">

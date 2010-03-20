@@ -7,7 +7,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 
-@Path("/gradebook/rest/history/{uid}/{id}")
+@Path("history/{uid}/{id}")
 public class History extends Resource {
 
 	@GET 

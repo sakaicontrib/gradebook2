@@ -2,6 +2,7 @@ package org.sakaiproject.gradebook.gwt.server;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -19,6 +20,28 @@ public class RestServlet extends SpringServlet {
 	
 	public void service(URI baseUri, URI requestUri, final HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
+		
+		// Need to handle the case of different baseUri from requestUri
+		if (baseUri != null && requestUri != null && baseUri.getPath() != null &&
+				requestUri.getPath() != null) {
+		
+			String requestUriString = requestUri.toString();
+			
+			int indexOf = requestUriString.indexOf("/gradebook/rest/");
+			
+			if (indexOf != -1) {
+				String baseUriString = new StringBuilder()
+					.append(requestUriString.substring(0, indexOf))
+					.append("/gradebook/rest/").toString();
+				
+				try {
+					baseUri = new URI(baseUriString);
+				} catch (URISyntaxException e) {
+					log.error("Unable to generate base uri", e);
+				}
+			}
+		}
+		
 		if (log.isDebugEnabled())
 			log.debug("doService() " + baseUri + " " + requestUri);
 		((HttpServletResponse)response).setHeader("Pragma", "no-cache");

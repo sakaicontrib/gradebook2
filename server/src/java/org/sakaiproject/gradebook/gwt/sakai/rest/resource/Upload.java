@@ -10,7 +10,7 @@ import javax.ws.rs.PathParam;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.server.model.UploadImpl;
 
-@Path("/gradebook/rest/upload")
+@Path("upload")
 public class Upload extends Resource {
 
 	@PUT @Path("{uid}/{id}")

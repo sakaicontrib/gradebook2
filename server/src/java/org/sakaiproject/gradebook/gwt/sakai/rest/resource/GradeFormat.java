@@ -9,7 +9,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
 
-@Path("/gradebook/rest/gradeformat")
+@Path("gradeformat")
 public class GradeFormat extends Resource {
 
 	@GET @Path("{uid}/{id}")

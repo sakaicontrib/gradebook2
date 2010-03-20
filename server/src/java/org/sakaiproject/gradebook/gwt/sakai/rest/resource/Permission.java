@@ -12,7 +12,7 @@ import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 import org.sakaiproject.gradebook.gwt.server.model.PermissionImpl;
 
-@Path("/gradebook/rest/permission")
+@Path("permission")
 public class Permission extends Resource {
 
 	@POST @Path("{uid}/{id}")

@@ -596,8 +596,11 @@ public class ImportPanel extends GradebookPanel {
 
 		fileUploadPanel.setHeaderVisible(false);
 
+		String action = new StringBuilder().append(GWT.getHostPageBaseURL())
+			.append(AppConstants.IMPORT_SERVLET).toString();
+		
 		fileUploadPanel.setFrame(true);
-		fileUploadPanel.setAction(GWT.getModuleBaseURL() + "importHandler");
+		fileUploadPanel.setAction(action);
 		fileUploadPanel.setEncoding(Encoding.MULTIPART);
 		fileUploadPanel.setMethod(Method.POST);
 		fileUploadPanel.setPadding(4);

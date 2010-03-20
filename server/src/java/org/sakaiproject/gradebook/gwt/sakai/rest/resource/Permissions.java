@@ -9,7 +9,7 @@ import javax.ws.rs.Produces;
 
 import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 
-@Path("/gradebook/rest/permissions/{uid}/{id}/{graderId}")
+@Path("permissions/{uid}/{id}/{graderId}")
 public class Permissions extends Resource {
 
 	@GET 

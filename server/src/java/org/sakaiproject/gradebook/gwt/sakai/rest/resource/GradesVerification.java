@@ -7,7 +7,7 @@ import javax.ws.rs.Produces;
 
 import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 
-@Path("/gradebook/rest/verification/{uid}/{id}")
+@Path("verification/{uid}/{id}")
 public class GradesVerification extends Resource {
 
 	@GET 

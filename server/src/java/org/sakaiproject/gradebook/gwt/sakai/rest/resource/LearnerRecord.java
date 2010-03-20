@@ -12,7 +12,7 @@ import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.server.model.GradeRecord;
 
-@Path("/gradebook/rest/learner")
+@Path("learner")
 public class LearnerRecord extends Resource {
 
 	private static final Log log = LogFactory.getLog(LearnerRecord.class);

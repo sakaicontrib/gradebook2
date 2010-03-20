@@ -15,7 +15,7 @@ import javax.ws.rs.QueryParam;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.server.model.GradeItemImpl;
 
-@Path("/gradebook/rest/item")
+@Path("item")
 public class Item extends Resource {
 	
 	@POST @Path("{uid}/{id}")

@@ -9,11 +9,6 @@
  		<param-name>contextClass</param-name>
  		<param-value>org.sakaiproject.gradebook.gwt.server.WebApplicationContext</param-value>
  	</context-param>
- 
-	<!-- context-param>
-		<param-name>contextConfigLocation</param-name>
-		<param-value>WEB-INF/applicationContext*.xml</param-value>
-	</context-param-->
 
 	<listener>
         <listener-class>org.sakaiproject.util.ContextLoaderListener</listener-class>
@@ -37,7 +32,7 @@
     <filter>
         <filter-name>sakai.request</filter-name>
         <filter-class>org.sakaiproject.gradebook.gwt.server.RequestFilter</filter-class>
-         <init-param>
+        <init-param>
         	<param-name>upload.enabled</param-name>
         	<param-value>false</param-value>
         </init-param>
@@ -49,44 +44,69 @@
         <dispatcher>FORWARD</dispatcher>
         <dispatcher>INCLUDE</dispatcher>
     </filter-mapping>
-  
-    <!-- filter>
-       <filter-name>sakai.gradebook.rest.filter</filter-name>
-       <filter-class>com.sun.jersey.spi.spring.container.servlet.SpringServlet</filter-class>
-       <init-param>
-			<param-name>com.sun.jersey.config.property.packages</param-name>
-			<param-value>managed</param-value>
-	   </init-param>
-    </filter>
+	<filter-mapping>
+        <filter-name>sakai.request</filter-name>
+        <servlet-name>sakai.gradebook2.rest.servlet</servlet-name>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
+        <dispatcher>INCLUDE</dispatcher>
+    </filter-mapping>
     <filter-mapping>
-       <filter-name>sakai.gradebook.rest.filter</filter-name>
-       <url-pattern>/rest/</url-pattern>
-    </filter-mapping-->
-
-	<!-- servlet>
-       <servlet-name>sakai.gradebook.rest.filter</servlet-name>
-       <servlet-class>com.sun.jersey.spi.spring.container.servlet.SpringServlet</servlet-class>
-       <init-param>
-           <param-name>com.sun.jersey.config.property.packages</param-name>
-           <param-value>managed</param-value>
-       </init-param>
-       <load-on-startup>1</load-on-startup>
-    </servlet>
-	
-	<servlet-mapping>
-		<servlet-name>sakai.gradebook.rest.filter</servlet-name>
-		<url-pattern>/rest/</url-pattern>
-	</servlet-mapping-->
+        <filter-name>sakai.request</filter-name>
+        <servlet-name>sakai.gradebook2.dispatcher</servlet-name>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
+        <dispatcher>INCLUDE</dispatcher>
+    </filter-mapping>
 
 	<servlet>
 		<servlet-name>sakai.gradebook.gwt.rpc</servlet-name>
-		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<servlet-class>org.sakaiproject.gradebook.gwt.server.WebAppToolServlet</servlet-class>
+		<init-param>
+        	<param-name>main-page</param-name>
+        	<param-value>/GradebookApplication.html</param-value>
+        </init-param>
         <load-on-startup>1</load-on-startup>
 	</servlet>
 	
+	<!-- servlet>
+		<servlet-name>sakai.gradebook2.rest.servlet</servlet-name>
+		<servlet-class>org.sakaiproject.gradebook.gwt.server.RestServlet</servlet-class>
+		<init-param>
+        	<param-name>com.sun.jersey.config.property.packages</param-name>
+        	<param-value>managed</param-value>
+        </init-param>
+		<init-param>
+        	<param-name>com.sun.jersey.spi.container.ContainerRequestFilters</param-name>
+        	<param-value>com.sun.jersey.api.container.filter.PostReplaceFilter</param-value>
+        </init-param>
+        <load-on-startup>2</load-on-startup>
+	</servlet-->
+	
+	<servlet>
+		<servlet-name>sakai.gradebook2.dispatcher</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<load-on-startup>2</load-on-startup>
+	</servlet>
+	
 	<servlet-mapping>
-		<servlet-name>sakai.gradebook.gwt.rpc</servlet-name>
-		<url-pattern>/</url-pattern>
+		<servlet-name>sakai.gradebook2.dispatcher</servlet-name>
+		<url-pattern>/gradebook/rest/*</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+		<servlet-name>sakai.gradebook2.dispatcher</servlet-name>
+		<url-pattern>/export</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+		<servlet-name>sakai.gradebook2.dispatcher</servlet-name>
+		<url-pattern>/import</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+		<servlet-name>sakai.gradebook2.dispatcher</servlet-name>
+		<url-pattern>/submit</url-pattern>
 	</servlet-mapping>
 
   	<welcome-file-list>

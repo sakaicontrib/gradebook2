@@ -131,7 +131,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 
 	private MultiGradeContextMenu contextMenu;
 
-	private CheckBox useClassicNavigationCheckBox;
+	//private CheckBox useClassicNavigationCheckBox;
 	private LabelField modeLabel;
 	private TextField<String> searchField;
 	private NumberField pageSizeField;
@@ -496,8 +496,8 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 				store.setDefaultSort(storedSortField, sortDir);
 		}
 		
-		Boolean useClassicNavigation = Boolean.valueOf(configModel.isClassicNavigation());
-		useClassicNavigationCheckBox.setValue(useClassicNavigation);
+		//Boolean useClassicNavigation = Boolean.valueOf(configModel.isClassicNavigation());
+		//useClassicNavigationCheckBox.setValue(useClassicNavigation);
 		
 		int pageSize = configModel.getPageSize(gridId);
 		
@@ -732,7 +732,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 
 		});
 
-		useClassicNavigationCheckBox = new CheckBox();
+		/*useClassicNavigationCheckBox = new CheckBox();
 		useClassicNavigationCheckBox.setBoxLabel(i18n.useClassicNavigation());
 		useClassicNavigationCheckBox.addListener(Events.Change, new Listener<FieldEvent>() {
 
@@ -746,7 +746,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 				Dispatcher.forwardEvent(GradebookEvents.Configuration.getEventType(), model);
 			}
 			
-		});
+		});*/
 		
 		modeLabel = new LabelField();
 		
@@ -782,8 +782,8 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 		searchToolBar.add(clearSearchItem);
 		searchToolBar.add(new SeparatorToolItem());
 		searchToolBar.add(sectionListBox);
-		searchToolBar.add(new SeparatorToolItem());
-		searchToolBar.add(useClassicNavigationCheckBox);
+		//searchToolBar.add(new SeparatorToolItem());
+		//searchToolBar.add(useClassicNavigationCheckBox);
 		searchToolBar.add(new FillToolItem());
 		searchToolBar.add(modeLabel);
 

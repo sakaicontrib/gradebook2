@@ -7,21 +7,22 @@
     	<property name="mappings">
                         <map>
                         
-                                <entry key="/**/importHandler" value-ref="GradebookImportService" />
+                                <entry key="/**/import" value-ref="GradebookImportService" />
 
-                                <entry key="/**/exportGradebook.csv" value-ref="GradebookExportService" />
+                                <entry key="/**/export" value-ref="GradebookExportService" />
 
-                                <entry key="/**/final-grade-submission" value-ref="GradebookFinalGradeSubmissionService" />
+                                <entry key="/**/submit" value-ref="GradebookFinalGradeSubmissionService" />
 
-								<entry key="/gradebook/rest/**" value-ref="RestWrappingController" />
+								<entry key="/*" value-ref="RestWrappingController" />
 
-                                <entry key="/" value-ref="ResourceController" />
+                                <!-- entry key="/" value-ref="ResourceController" />
                                 
+                                <entry key="/*" value-ref="DefaultWrappingController" /-->
                         </map>
         </property>
-        <property name="defaultHandler">
+        <!-- property name="defaultHandler">
             <bean class="org.sakaiproject.gradebook.gwt.server.DefaultFilenameHandler" />
-        </property>
+        </property-->
    	</bean>
  	
 	<bean id="RestWrappingController" class="org.springframework.web.servlet.mvc.ServletWrappingController">

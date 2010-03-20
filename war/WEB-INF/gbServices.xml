@@ -2,10 +2,6 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 
 <beans>
-
-	<bean id="ResourceController" class="org.sakaiproject.gradebook.gwt.server.ResourceController">
-		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
-	</bean>
 	
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService" 
 		class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentServiceImpl"

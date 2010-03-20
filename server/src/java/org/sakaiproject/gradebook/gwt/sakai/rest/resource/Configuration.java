@@ -10,7 +10,7 @@ import javax.ws.rs.PathParam;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.key.ConfigurationKey;
 
-@Path("/gradebook/rest/config")
+@Path("config")
 public class Configuration extends Resource {
 
 	@PUT @Path("{gradebookId}")

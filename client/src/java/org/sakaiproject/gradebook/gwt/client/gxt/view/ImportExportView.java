@@ -50,21 +50,23 @@ public class ImportExportView extends View {
 			}
 		
 			Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
-			String uri = GWT.getModuleBaseURL() + "exportGradebook.csv?gradebookUid=" + selectedGradebook.getGradebookUid();
+			StringBuilder uri = new StringBuilder().append(GWT.getHostPageBaseURL())
+				.append(AppConstants.EXPORT_SERVLET)
+				.append("?gradebookUid=")
+				.append(selectedGradebook.getGradebookUid());
 			
 			if (includeStructure)
-				uri += "&include=true";
-			if (fileType != "")
-			{
-				uri += "&filetype=";
-				uri += fileType;
+				uri.append("&include=true");
+			if (fileType != "") {
+				uri.append("&filetype=");
+				uri.append(fileType);
 			}
 			if (downloadFileFrame == null) {
-				downloadFileFrame = new Frame(uri);
+				downloadFileFrame = new Frame(uri.toString());
 				downloadFileFrame.setVisible(false);
 				RootPanel.get().add(downloadFileFrame);
 			} else {
-				downloadFileFrame.setUrl(uri);
+				downloadFileFrame.setUrl(uri.toString());
 			}
 			break;
 		}

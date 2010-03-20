@@ -143,7 +143,8 @@ public class GradeSubmissionDialog extends Dialog {
 			Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 			final MessageBox box = MessageBox.wait(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText1a(),  i18n.finalGradeSubmissionMessageText1b()); 
 			
-			String uri = GWT.getModuleBaseURL() + "/final-grade-submission?gradebookUid=" + selectedGradebook.getGradebookUid();
+			String uri = new StringBuilder().append(GWT.getHostPageBaseURL())
+				.append(AppConstants.SUBMISSION_SERVLET).append("?gradebookUid=").append(selectedGradebook.getGradebookUid()).toString();
 			RequestBuilder requestBuilder = new RequestBuilder(RequestBuilder.GET, uri);
 			requestBuilder.setHeader("Content-Type", "text/html");
 			try {
