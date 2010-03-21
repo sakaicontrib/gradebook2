@@ -78,7 +78,6 @@ import com.extjs.gxt.ui.client.data.SortInfo;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.Events;
-import com.extjs.gxt.ui.client.event.FieldEvent;
 import com.extjs.gxt.ui.client.event.GridEvent;
 import com.extjs.gxt.ui.client.event.KeyListener;
 import com.extjs.gxt.ui.client.event.Listener;
@@ -92,7 +91,6 @@ import com.extjs.gxt.ui.client.store.Store;
 import com.extjs.gxt.ui.client.store.StoreEvent;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.extjs.gxt.ui.client.widget.form.CheckBox;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
 import com.extjs.gxt.ui.client.widget.form.Field;
 import com.extjs.gxt.ui.client.widget.form.LabelField;
@@ -135,6 +133,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 	private LabelField modeLabel;
 	private TextField<String> searchField;
 	private NumberField pageSizeField;
+	private ComboBox<ModelData> sectionListBox;
 
 	private Listener<ComponentEvent> componentEventListener;
 	private Listener<GridEvent<ModelData>> gridEventListener;
@@ -386,9 +385,14 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 				if (ce.getType() == GradebookEvents.DoSearch.getEventType()) {
 					int pageSize = getPageSize();
 					String searchString = searchField.getValue();
-					String sectionUuid = null;	
-					if (loadConfig != null)
-						sectionUuid = ((MultiGradeLoadConfig) loadConfig).getSectionUuid();
+					String sectionUuid = null;
+					if (sectionListBox != null) {
+						List<ModelData> selectedItems = sectionListBox.getSelection();
+						if (selectedItems != null && selectedItems.size() > 0) {
+							ModelData m = selectedItems.get(0);
+							sectionUuid = m.get(SectionKey.ID.name());
+						}
+					}
 					loadConfig = new MultiGradeLoadConfig();
 					loadConfig.setLimit(0);
 					loadConfig.setOffset(pageSize);
@@ -400,8 +404,13 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 					int pageSize = getPageSize();
 					searchField.setValue(null);
 					String sectionUuid = null;
-					if (loadConfig != null)
-						sectionUuid = ((MultiGradeLoadConfig) loadConfig).getSectionUuid();
+					if (sectionListBox != null) {
+						List<ModelData> selectedItems = sectionListBox.getSelection();
+						if (selectedItems != null && selectedItems.size() > 0) {
+							ModelData m = selectedItems.get(0);
+							sectionUuid = m.get(SectionKey.ID.name());
+						}
+					}
 					loadConfig = new MultiGradeLoadConfig();
 					loadConfig.setLimit(0);
 					loadConfig.setOffset(pageSize);
@@ -410,7 +419,6 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 					newLoader().load(0, pageSize);
 				}
 			}
-
 		};
 
 		gridEventListener = new Listener<GridEvent<ModelData>>() {
@@ -658,7 +666,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 		ListStore<ModelData> sectionStore = new ListStore<ModelData>(sectionsLoader);
 		sectionStore.setModelComparer(new EntityModelComparer<ModelData>(SectionKey.ID.name()));
 
-		ComboBox<ModelData> sectionListBox = new ComboBox<ModelData>(); 
+		sectionListBox = new ComboBox<ModelData>(); 
 		//sectionListBox.setAllQuery(null);
 		sectionListBox.setEditable(false);
 		sectionListBox.setFieldLabel("Sections");
