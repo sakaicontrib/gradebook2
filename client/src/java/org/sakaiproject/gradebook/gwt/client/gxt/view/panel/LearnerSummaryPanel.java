@@ -58,6 +58,7 @@ import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.TreeStore;
 import com.extjs.gxt.ui.client.widget.Component;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
+import com.extjs.gxt.ui.client.widget.Info;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.TabItem;
 import com.extjs.gxt.ui.client.widget.TabPanel;
@@ -501,8 +502,21 @@ public class LearnerSummaryPanel extends GradebookPanel {
 							if (name != null && name.length() > 0) {
 								FieldBinding b = new FieldBinding(f, f.getName()) {
 
+									private boolean isBinding = false;
+									
 									@Override
-									protected void onFieldChange(FieldEvent e) {									
+									public void bind(ModelData model) {
+										this.isBinding = true;
+										super.bind(model);
+										this.isBinding = false;
+									}
+									
+									@Override
+									protected void onFieldChange(FieldEvent e) {
+										// We don't want to send events when we're still binding
+										if (isBinding)
+											return;
+										
 										ModelData learner = this.model;
 										e.getField().setEnabled(false);
 
