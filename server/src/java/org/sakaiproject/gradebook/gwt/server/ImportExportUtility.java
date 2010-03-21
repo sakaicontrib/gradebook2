@@ -264,7 +264,11 @@ public class ImportExportUtility {
 					headerIds.add(itemModel.getIdentifier());
 					headerColumns.add(text.toString());
 
-					pointsRow.add(String.valueOf(itemModel.getPoints()));
+					if (itemModel.getPoints() == null)
+						pointsRow.add("");
+					else
+						pointsRow.add(String.valueOf(itemModel.getPoints()));
+					
 					percentCategoryRow.add(new StringBuilder()
 					.append(String.valueOf(itemModel.getPercentCategory()))
 					.append("%").toString());
@@ -1237,7 +1241,8 @@ public class ImportExportUtility {
 							header.setAssignmentId(model.getIdentifier());
 							header.setId(new StringBuilder().append(model.getIdentifier()).append(AppConstants.COMMENT_TEXT_FLAG).toString());
 							header.setCategoryName(model.getCategoryName());
-							header.setCategoryId(String.valueOf(model.getCategoryId()));
+							if (model.getCategoryId() != null)
+								header.setCategoryId(String.valueOf(model.getCategoryId()));
 						} else {
 							String newId = new StringBuilder().append("NEW:").append(i - 1).toString();
 							header.setAssignmentId(newId);
@@ -1262,11 +1267,10 @@ public class ImportExportUtility {
 						if (model != null) {
 							header.setId(model.getIdentifier());
 							header.setCategoryName(model.getCategoryName());
-							header.setCategoryId(String.valueOf(model
-									.getCategoryId()));
-
-							importInfo.getCategoryIdNameMap().put(
-									model.getCategoryId(), model.getCategoryName());
+							if (model.getCategoryId() != null) {
+								header.setCategoryId(String.valueOf(model.getCategoryId()));
+								importInfo.getCategoryIdNameMap().put(model.getCategoryId(), model.getCategoryName());
+							}
 						} else {
 							header.setId(new StringBuilder().append("NEW:").append(
 									i).toString());
@@ -1528,12 +1532,16 @@ public class ImportExportUtility {
 						Item activeModel = getActiveModel((GradeItem)result);
 
 						if (activeModel != null) {
-							currentCategoryId = activeModel.getIdentifier();
-							if (categoryRangeColumns.length > i)
-								categoryRangeColumns[i] = currentCategoryId;
-
-							ieInfo.getCategoryIdNameMap().put(
+							if (activeModel.getIdentifier() != null && !activeModel.getIdentifier().equals("null")) {
+								currentCategoryId = activeModel.getIdentifier();
+							
+								if (categoryRangeColumns.length > i)
+									categoryRangeColumns[i] = currentCategoryId;
+							}
+							if (activeModel.getCategoryId() != null) {
+								ieInfo.getCategoryIdNameMap().put(
 									activeModel.getCategoryId(), activeModel.getName());
+							}
 						}
 					}
 				}

@@ -721,7 +721,9 @@ public class ImportPanel extends GradebookPanel {
 						RestBuilder builder = RestBuilder.getInstance(RestBuilder.Method.GET, 
 								GWT.getModuleBaseURL(),
 								AppConstants.REST_FRAGMENT,
-								AppConstants.ITEM_FRAGMENT);
+								AppConstants.ITEM_FRAGMENT,
+								selectedGradebook.getGradebookUid(),
+								String.valueOf(selectedGradebook.getGradebookId()));
 						
 					
 						builder.sendRequest(200, 400, null, new RestCallback() {
@@ -786,6 +788,9 @@ public class ImportPanel extends GradebookPanel {
 					if (id == null)
 						continue;
 
+					if (categoryId != null && categoryId.equals("null"))
+						categoryId = null;
+					
 					if (id.equals("ID"))
 						width = 100;
 					else if (!id.equals("NAME"))
@@ -1182,7 +1187,11 @@ public class ImportPanel extends GradebookPanel {
 				itemModel.setExtraCredit(header.getExtraCredit());
 				itemModel.setIncluded(Boolean.valueOf(!DataTypeConversionUtil.checkBoolean(header.getUnincluded())));
 				if (header.getCategoryId() != null) {
-					itemModel.setCategoryId(Long.valueOf(header.getCategoryId()));
+					try {
+						itemModel.setCategoryId(Long.valueOf(header.getCategoryId()));
+					} catch (NumberFormatException nfe) {
+						Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(nfe));
+					}
 					itemModel.setCategoryName(header.getCategoryName());
 				}
 				itemModel.setPercentCategory(header.getPercentCategory());

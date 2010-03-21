@@ -34,7 +34,7 @@ public class Item extends Resource {
 	@Produces("application/json")
 	public String getList(@PathParam("uid") String gradebookUid, @PathParam("id") Long gradebookId, 
 			@QueryParam("type") String itemType) {
-		return toJson(service.getItem(gradebookUid, gradebookId, itemType));
+		return toJson(service.getItem(gradebookUid, gradebookId, null));
 	}
 	
 	@DELETE
