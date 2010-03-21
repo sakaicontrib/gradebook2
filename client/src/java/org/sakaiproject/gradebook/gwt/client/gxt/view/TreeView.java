@@ -43,6 +43,7 @@ import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.data.BaseTreeLoader;
 import com.extjs.gxt.ui.client.data.ModelData;
+import com.extjs.gxt.ui.client.data.ModelKeyProvider;
 import com.extjs.gxt.ui.client.data.TreeLoader;
 import com.extjs.gxt.ui.client.data.TreeModel;
 import com.extjs.gxt.ui.client.data.TreeModelReader;
@@ -70,7 +71,7 @@ public class TreeView extends View {
 		
 		
 		if (treeLoader == null) {
-			treeLoader = new BaseTreeLoader<ItemModel>(new TreeModelReader() {
+			treeLoader = new BaseTreeLoader<ItemModel>(new TreeModelReader()/* {
 
 				@Override
 				protected List<? extends ModelData> getChildren(ModelData parent) {
@@ -83,7 +84,7 @@ public class TreeView extends View {
 
 					return visibleChildren;
 				}
-			}) {
+			}*/) {
 
 				@Override
 				public boolean hasChildren(ItemModel parent) {
@@ -102,6 +103,16 @@ public class TreeView extends View {
 		if (treeStore == null) {
 			treeStore = new TreeStore<ItemModel>(treeLoader);
 			treeStore.setModelComparer(new ItemModelComparer<ItemModel>());
+			treeStore.setKeyProvider(new ModelKeyProvider<ItemModel>() {  
+
+				public String getKey(ItemModel model) {  
+					return new StringBuilder()
+						.append(model.getItemType().getName())
+						.append(":")
+						.append(model.getIdentifier()).toString();
+				}
+
+			});
 
 			//treePanel.onTreeStoreInitialized(treeStore, selectedGradebook.isUserAbleToEditAssessments());
 			formPanel.onTreeStoreInitialized(treeStore);
@@ -237,7 +248,7 @@ public class TreeView extends View {
 	}
 
 	protected void onRefreshGradebookItems(Gradebook gradebookModel) {
-		onMaskItemTree();
+		//onMaskItemTree();
 		treeStore.removeAll();
 		ItemModel gradebookItemModel = (ItemModel)gradebookModel.getGradebookItemModel();
 		ItemModel rootItemModel = new ItemModel();
@@ -251,7 +262,7 @@ public class TreeView extends View {
 
 		//treePanel.expandTrees();
 		//treePanel.layout();
-		onUnmaskItemTree();
+		//onUnmaskItemTree();
 	}
 
 	protected void onRefreshGradebookSetup(Gradebook gradebookModel) {
@@ -262,13 +273,24 @@ public class TreeView extends View {
 	protected void onSelectItem(String itemModelId) {
 
 		if (treeStore != null) {
-			List<ItemModel> itemModels = treeStore.findModels(ItemKey.ID.name(), itemModelId);
-			if (itemModels != null) {
-				for (ItemModel itemModel : itemModels) {
-					ItemType itemType = itemModel.getItemType();
-					if (itemType == ItemType.ITEM) {
-						onEditItem(itemModel);
-						break;
+			String key = new StringBuilder()
+				.append(ItemType.ITEM.getName())
+				.append(":")
+				.append(itemModelId).toString();
+			
+			ItemModel m = treeStore.findModel(key);
+			
+			if (m != null) {
+				onEditItem(m);
+			} else {
+				List<ItemModel> itemModels = treeStore.findModels(ItemKey.ID.name(), itemModelId);
+				if (itemModels != null) {
+					for (ItemModel itemModel : itemModels) {
+						ItemType itemType = itemModel.getItemType();
+						if (itemType == ItemType.ITEM) {
+							onEditItem(itemModel);
+							break;
+						}
 					}
 				}
 			}

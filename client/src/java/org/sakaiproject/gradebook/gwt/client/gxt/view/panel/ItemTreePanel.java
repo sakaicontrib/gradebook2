@@ -336,6 +336,7 @@ public class ItemTreePanel extends GradebookPanel {
 			}
 		};
 		itemGrid.addListener(Events.RowDoubleClick, gridEventListener);
+		itemGrid.setAutoExpand(true);
 		itemGrid.setSelectionModel(sm);
 		itemGrid.setStripeRows(false);
 		itemGrid.setView(itemGridView);
@@ -390,8 +391,8 @@ public class ItemTreePanel extends GradebookPanel {
 		learnerAttributeTree.setCheckStyle(CheckCascade.CHILDREN);
 		learnerAttributeTree.setCheckNodes(CheckNodes.LEAF);
 		learnerAttributeTree.setDisplayProperty(FixedColumnKey.NAME.name());
-		learnerAttributeTree.setStateful(true);
-		learnerAttributeTree.setStateId(AppConstants.LEARNER_ATTRIBUTE_TREE);
+		//learnerAttributeTree.setStateful(true);
+		//learnerAttributeTree.setStateId(AppConstants.LEARNER_ATTRIBUTE_TREE);
 		
 		item = new AriaTabItem(i18n.navigationPanelDynamicTabHeader());
 		item.setLayout(new FitLayout());
@@ -433,23 +434,30 @@ public class ItemTreePanel extends GradebookPanel {
 	}
 	
 	public void onMaskItemTree() {
-		tabPanel.mask();
-		itemGrid.hide();
+		//itemGrid.mask();
+		//itemGrid.hide();
 	}
+	
+	private boolean isLoadEventRun = false;
 	
 	public void onRefreshGradebookItems(final Gradebook gradebookModel, TreeLoader<ItemModel> treeLoader, final ItemModel rootItem) {
 		if (itemLoadListener != null)
 			treeLoader.removeLoadListener(itemLoadListener);
-		
+				
 		itemLoadListener = new LoadListener() {
 			public void loaderLoad(LoadEvent le) {
-				ItemModel gradebookItemModel = (ItemModel)rootItem.getChild(0);
-				if (gradebookItemModel != null)
-					itemGrid.setExpanded(gradebookItemModel, true, true);
+				if (isLoadEventRun) 
+					return;
+				
+				isLoadEventRun = true;
+				//ItemModel gradebookItemModel = (ItemModel)rootItem.getChild(0);
+				//if (gradebookItemModel != null)
+				//	itemGrid.setExpanded(gradebookItemModel, true, true);
 				
 				verifyCheckedState(gradebookModel);
 			}
 		};
+		isLoadEventRun = false;
 		treeLoader.addLoadListener(itemLoadListener);
 		treeLoader.load(rootItem);
 		if (itemGrid.isRendered())
