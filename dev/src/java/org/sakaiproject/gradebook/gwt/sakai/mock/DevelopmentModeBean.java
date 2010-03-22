@@ -29,6 +29,7 @@ import java.util.List;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
+import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
@@ -53,11 +54,13 @@ public class DevelopmentModeBean {
 			
 			Gradebook2AuthzMockImpl authz = (Gradebook2AuthzMockImpl)((Gradebook2ComponentServiceImpl)service).getAuthz();
 			
-			authz.setStartUp(true);
+			
 			String authDetails = service.getAuthorizationDetails();
 			
 			ApplicationSetup applicationSetup = service.getApplicationSetup();
 			List<Gradebook> gbModels = applicationSetup.getGradebookModels();
+			
+			authz.setStartUp(true);
 			
 			Gradebook gbModel = gbModels.get(0);
 
@@ -65,11 +68,15 @@ public class DevelopmentModeBean {
 			
 			gradebook.setName("Test Gradebook");
 			gradebook.setCategoryType(CategoryType.WEIGHTED_CATEGORIES);
-			gradebook.setGradeType(GradeType.PERCENTAGES);
+			gradebook.setGradeType(GradeType.LETTERS);
 			gradebook.setItemType(ItemType.GRADEBOOK);
 			gradebook.setExtraCreditScaled(Boolean.TRUE);
 			gradebook.setReleaseGrades(Boolean.FALSE);
 			gradebook.setReleaseItems(Boolean.TRUE);
+			gradebook.setShowItemStatistics(Boolean.TRUE);
+			gradebook.setShowMean(Boolean.FALSE);
+			gradebook.setShowMedian(Boolean.FALSE);
+			gradebook.setShowMode(Boolean.TRUE);
 			
 			service.updateItem(gradebook);
 			
@@ -85,7 +92,6 @@ public class DevelopmentModeBean {
 			essaysCategory.setIncluded(Boolean.TRUE);
 			essaysCategory.setEnforcePointWeighting(Boolean.TRUE);
 			essaysCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, essaysCategory, false));
-
 			
 			GradeItem hwCategory = new GradeItemImpl();
 			hwCategory.setName("My Homework");
@@ -125,7 +131,13 @@ public class DevelopmentModeBean {
 			essay1.setReleased(Boolean.TRUE);
 			essay1.setItemType(ItemType.ITEM);
 			essay1.setIncluded(Boolean.TRUE);
-			service.createItem(gradebookUid, gradebookId, essay1, false);
+			essay1 = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, essay1, false));
+			
+			
+			Learner learner = gbModel.getUserAsStudent();
+			if (learner != null) {
+				service.assignScore(gradebookUid, learner.getIdentifier(), essay1.getIdentifier(), "A", null);
+			}
 			
 			GradeItem essay2 = new GradeItemImpl();
 			essay2.setName("Essay 2");
@@ -223,7 +235,7 @@ public class DevelopmentModeBean {
 			ec1.setCategoryId(ecCategory.getCategoryId());
 			ec1.setIncluded(Boolean.TRUE);
 			ec1.setExtraCredit(Boolean.TRUE);
-			ec1.setReleased(Boolean.TRUE);
+			ec1.setReleased(Boolean.FALSE);
 			service.createItem(gradebookUid, gradebookId, ec1, false);
 			
 			GradeItem ec2 = new GradeItemImpl();
@@ -234,7 +246,7 @@ public class DevelopmentModeBean {
 			ec2.setCategoryId(ecCategory.getCategoryId());
 			ec2.setIncluded(Boolean.TRUE);
 			ec2.setExtraCredit(Boolean.TRUE);
-			ec2.setReleased(Boolean.TRUE);
+			ec2.setReleased(Boolean.FALSE);
 			service.createItem(gradebookUid, gradebookId, ec2, false);
 			
 			authz.setStartUp(false);

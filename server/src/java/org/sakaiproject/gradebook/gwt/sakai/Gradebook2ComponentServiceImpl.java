@@ -3260,23 +3260,25 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 					model.setUserAsStudent(buildStudentRow(gradebook, userRecord, columns, assignments, categories));
 				}
 				
-				List<Statistics> statsList = generateStatsList(gradebook, user.getId(), assignments, categories);		
-				Collections.sort(statsList, new Comparator<Statistics>() {
-
-					public int compare(Statistics o1, Statistics o2) {
-						if (o1 != null && o2 != null) {
-							String id1 = o1.getAssignmentId();
-							String id2 = o2.getAssignmentId();
-							if (id1 != null && id2 != null) {
-								return id1.compareTo(id2); 
+				/*if (!isSingleUserView) {
+					List<Statistics> statsList = generateStatsList(gradebook, user.getId(), assignments, categories);		
+					Collections.sort(statsList, new Comparator<Statistics>() {
+	
+						public int compare(Statistics o1, Statistics o2) {
+							if (o1 != null && o2 != null) {
+								String id1 = o1.getAssignmentId();
+								String id2 = o2.getAssignmentId();
+								if (id1 != null && id2 != null) {
+									return id1.compareTo(id2); 
+								}
 							}
+							return -1;
 						}
-						return -1;
-					}
+						
+					}); 
 					
-				}); 
-				
-				model.setStatsModel(statsList);
+					model.setStatsModel(statsList);
+				}*/
 				model.setUserName(user.getDisplayName());
 			}
 		} else {
@@ -3526,6 +3528,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		String rank = NA;  
 
 		boolean isStudentView = studentId != null;
+		boolean isCourseStats = id != null && id.equals(Long.valueOf(0l));
 		
 		if (studentId != null && statistics != null)
 		{
@@ -3544,25 +3547,29 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			sb = null; 
 		}
 		
+		boolean isShowCourseStats = gradebook.isCourseGradeDisplayed() && isCourseStats;
+		boolean isShowItemStats = DataTypeConversionUtil.checkBoolean(gradebook.getShowItemStatistics()) && !isCourseStats;
 		boolean isShowMean = DataTypeConversionUtil.checkBoolean(gradebook.getShowMean());
     	boolean isShowMedian = DataTypeConversionUtil.checkBoolean(gradebook.getShowMedian());
     	boolean isShowMode = DataTypeConversionUtil.checkBoolean(gradebook.getShowMode());
     	boolean isShowRank = DataTypeConversionUtil.checkBoolean(gradebook.getShowRank());
 		
-		if (!isStudentView || isShowMean) {
-			model.setMean(mean);
-			model.setStandardDeviation(standardDev);	
-		}
-		
-		if (!isStudentView || isShowMedian)
-			model.setMedian(median);
-		
-		if (!isStudentView || isShowMode)
-			model.setMode(mode);
-		
-		if (!isStudentView || isShowRank)
-			model.setRank(rank); 
-		
+    	if (!isStudentView || isShowCourseStats || isShowItemStats) {
+			if (!isStudentView || isShowMean) {
+				model.setMean(mean);
+				model.setStandardDeviation(standardDev);	
+			}
+			
+			if (!isStudentView || isShowMedian)
+				model.setMedian(median);
+			
+			if (!isStudentView || isShowMode)
+				model.setMode(mode);
+			
+			if (!isStudentView || isShowRank)
+				model.setRank(rank); 
+    	}
+    	
 		return model;
 	}
 
@@ -4568,7 +4575,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		String standardDev = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getStandardDeviation(), true) : NA;
 		String rank = NA;  
 
-		boolean isGrader = authz.isUserAbleToGradeAll(gradebook.getUid()) || authz.isUserAbleToGrade(gradebook.getUid());
+		boolean isGrader = authz.isUserAbleToGradeAll(gradebook.getUid()); // || authz.isUserAbleToGrade(gradebook.getUid());
 		
 		if (studentId != null && statistics != null)
 		{
@@ -4587,6 +4594,9 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			sb = null; 
 		}
 		
+		boolean isCourseStats = assignmentId != null && assignmentId.equals(Long.valueOf(-1l));
+		boolean isShowCourseStats = gradebook.isCourseGradeDisplayed() && isCourseStats;
+		boolean isShowItemStats = DataTypeConversionUtil.checkBoolean(gradebook.getShowItemStatistics()) && !isCourseStats;
 		boolean isShowMean = DataTypeConversionUtil.checkBoolean(gradebook.getShowMean());
     	boolean isShowMedian = DataTypeConversionUtil.checkBoolean(gradebook.getShowMedian());
     	boolean isShowMode = DataTypeConversionUtil.checkBoolean(gradebook.getShowMode());
@@ -4595,20 +4605,22 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
     	// Only transmit the stats data to the client if the user is a grader or
     	// if the grader has authorized students to view that stat
     	
-		if (isGrader || isShowMean) {
-			model.setMean(mean);
-			model.setStandardDeviation(standardDev);	
-		}
-		
-		if (isGrader || isShowMedian)
-			model.setMedian(median);
-		
-		if (isGrader || isShowMode)
-			model.setMode(mode);
-		
-		if (isGrader || isShowRank)
-			model.setRank(rank); 
-		
+    	if (isGrader || isShowCourseStats || isShowItemStats) {
+			if (isGrader || isShowMean) {
+				model.setMean(mean);
+				model.setStandardDeviation(standardDev);	
+			}
+			
+			if (isGrader || isShowMedian)
+				model.setMedian(median);
+			
+			if (isGrader || isShowMode)
+				model.setMode(mode);
+			
+			if (isGrader || isShowRank)
+				model.setRank(rank); 
+    	}
+    	
 		return model;
 	}
 

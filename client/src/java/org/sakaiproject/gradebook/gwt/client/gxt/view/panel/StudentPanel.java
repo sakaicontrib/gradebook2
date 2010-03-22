@@ -134,7 +134,7 @@ public class StudentPanel extends GradebookPanel {
 		this.defaultTextArea.addInputStyleName(resources.css().gbTextAreaInput());
 		this.defaultTextField.addInputStyleName(resources.css().gbTextFieldInput());
 		this.displayRank = displayRank;
-		this.statsList = null;
+		//this.statsList = null;
 		setFrame(true);
 		setHeaderVisible(false);
 		setLayout(new FlowLayout());
@@ -277,21 +277,25 @@ public class StudentPanel extends GradebookPanel {
 		meanColumn = new ColumnConfig(Key.MEAN.name(), i18n.meanName(), 60);
 		meanColumn.setGroupable(false);
 		meanColumn.setMenuDisabled(true);
+		meanColumn.setHidden(true);
 		columns.add(meanColumn);
 		
 		stdvColumn = new ColumnConfig(Key.STDV.name(), i18n.stdvName(), 60);
 		stdvColumn.setGroupable(false);
 		stdvColumn.setMenuDisabled(true);
+		stdvColumn.setHidden(true);
 		columns.add(stdvColumn);
 		
 		medianColumn = new ColumnConfig(Key.MEDI.name(), i18n.medianName(), 60);
 		medianColumn.setGroupable(false);
 		medianColumn.setMenuDisabled(true);
+		medianColumn.setHidden(true);
 		columns.add(medianColumn);
 		
 		modeColumn = new ColumnConfig(Key.MODE.name(), i18n.modeName(), 60);
 		modeColumn.setGroupable(false);
 		modeColumn.setMenuDisabled(true);
+		modeColumn.setHidden(true);
 		columns.add(modeColumn);
 		
 		cm = new ColumnModel(columns);
@@ -400,8 +404,9 @@ public class StudentPanel extends GradebookPanel {
         
         updateCourseGrade((String)learnerGradeRecordCollection.get(LearnerKey.LETTER_GRADE.name()), overrideString, (String)learnerGradeRecordCollection.get(LearnerKey.CALCULATED_GRADE.name()));
 		
-		List<Statistics> statsList = selectedGradebook.getStatsModel();
-		refreshGradeData(learnerGradeRecordCollection, statsList);
+        isPossibleStatsChanged = true;
+		//List<Statistics> statsList = selectedGradebook.getStatsModel();
+		//refreshGradeData(learnerGradeRecordCollection, statsList);
 	}
 	
 	public void onChangeModel(Gradebook selectedGradebook, final ModelData learnerGradeRecordCollection) {
@@ -412,12 +417,9 @@ public class StudentPanel extends GradebookPanel {
 			
 			updateCourseGrade((String)learnerGradeRecordCollection.get(LearnerKey.LETTER_GRADE.name()), overrideString, (String)learnerGradeRecordCollection.get(LearnerKey.CALCULATED_GRADE.name()));
 			
-			if (isPossibleStatsChanged) {
+			if (isPossibleStatsChanged || statsList == null) {
 				loader.load();
 			} else {
-				if (statsList == null)
-					statsList = selectedGradebook.getStatsModel();
-				
 				refreshGradeData(learnerGradeRecordCollection, statsList);
 			}
 		}
@@ -546,103 +548,119 @@ public class StudentPanel extends GradebookPanel {
         studentInformation.setText(PI_ROW_BLANK, PI_COL_HEADING, "");
         studentInformation.setText(PI_ROW_BLANK, PI_COL_VALUE, "");*/
         
-        if (!isStudentView || (DataTypeConversionUtil.checkBoolean(selectedGradebook.getGradebookItemModel().getReleaseGrades()))) {
-	        studentInformation.setText(PI_ROW_COURSE_GRADE, PI_COL_HEADING, "Course Grade");
-	        formatter.setStyleName(PI_ROW_COURSE_GRADE, PI_COL_HEADING, resources.css().gbImpact());
-	        studentInformation.setText(PI_ROW_COURSE_GRADE, PI_COL_VALUE, (String)learnerGradeRecordCollection.get(LearnerKey.LETTER_GRADE.name()));
+        boolean doReleaseGrades = DataTypeConversionUtil.checkBoolean(selectedGradebook.getGradebookItemModel().getReleaseGrades());
+        boolean doReleaseItems = DataTypeConversionUtil.checkBoolean(selectedGradebook.getGradebookItemModel().getReleaseItems());
+        
+        if (!isStudentView || doReleaseGrades || doReleaseItems) {
+        	
+        	Item gradebookItemModel = selectedGradebook.getGradebookItemModel();
+        	boolean isShowMean = DataTypeConversionUtil.checkBoolean(gradebookItemModel.getShowMean());
+        	boolean isShowMedian = DataTypeConversionUtil.checkBoolean(gradebookItemModel.getShowMedian());
+        	boolean isShowMode = DataTypeConversionUtil.checkBoolean(gradebookItemModel.getShowMode());
+        	boolean isShowRank = DataTypeConversionUtil.checkBoolean(gradebookItemModel.getShowRank());
+        	boolean isShowItemStatistics = DataTypeConversionUtil.checkBoolean(gradebookItemModel.getShowItemStatistics());
+        	boolean isShowAny = isShowMean || isShowMedian || isShowMode || isShowRank;
 	        
-	        Item gradebookItemModel = selectedGradebook.getGradebookItemModel();
-	        boolean isLetterGrading = gradebookItemModel.getGradeType() == GradeType.LETTERS;
-	        
-	        if (!isLetterGrading)
-	        {
-	        	String calculatedGrade = (String)learnerGradeRecordCollection.get(LearnerKey.CALCULATED_GRADE.name());
-		        studentInformation.setHTML(PI_ROW_CALCULATED_GRADE, PI_COL_HEADING, "Calculated Grade");
-		        formatter.setStyleName(PI_ROW_CALCULATED_GRADE, PI_COL_HEADING, resources.css().gbImpact());
-		        formatter.setWordWrap(PI_ROW_CALCULATED_GRADE, PI_COL_HEADING, false);
-		        studentInformation.setText(PI_ROW_CALCULATED_GRADE, PI_COL_VALUE, calculatedGrade);
-	        }
-	        
-	        if (courseGradeStats != null)
-	        {
-	        	boolean isShowMean = DataTypeConversionUtil.checkBoolean(gradebookItemModel.getShowMean());
-	        	boolean isShowMedian = DataTypeConversionUtil.checkBoolean(gradebookItemModel.getShowMedian());
-	        	boolean isShowMode = DataTypeConversionUtil.checkBoolean(gradebookItemModel.getShowMode());
-	        	boolean isShowRank = DataTypeConversionUtil.checkBoolean(gradebookItemModel.getShowRank());
-	        	boolean isShowItemStatistics = DataTypeConversionUtil.checkBoolean(gradebookItemModel.getShowItemStatistics());
-	        	boolean isShowAny = isShowMean || isShowMedian || isShowMode || isShowRank;
-	        	
-	        	if (isShowAny) {
-	        		studentInformation.setText(PI_ROW_STATS, PI_COL2_HEADING, "Course Statistics");
-	        		formatter.setStyleName(PI_ROW_STATS, PI_COL2_HEADING, resources.css().gbHeading());
-	        	}
-	        	
-	        	int row = PI_ROW_MEAN;
-	        	if (isShowMean) {
-	        		studentInformation.setText(PI_ROW_MEAN, PI_COL2_HEADING, "Mean");
-		        	formatter.setStyleName(PI_ROW_MEAN, PI_COL2_HEADING, resources.css().gbImpact());
-		        	formatter.setWordWrap(PI_ROW_MEAN, PI_COL2_HEADING, false);
-		        	studentInformation.setText(PI_ROW_MEAN, PI_COL2_VALUE, courseGradeStats.getMean());
-		 
-		        	row++;
-		        	
-		        	studentInformation.setText(PI_ROW_STDV, PI_COL2_HEADING, "Standard Deviation");
-		        	formatter.setStyleName(PI_ROW_STDV, PI_COL2_HEADING, resources.css().gbImpact());
-		        	formatter.setWordWrap(PI_ROW_STDV, PI_COL2_HEADING, false);
-		        	studentInformation.setText(PI_ROW_STDV, PI_COL2_VALUE, courseGradeStats.getStandardDeviation());
-		
-		        	row++;
-	        	} else {
-	        		studentInformation.setText(PI_ROW_MEAN, PI_COL2_HEADING, "");
-		        	studentInformation.setText(PI_ROW_MEAN, PI_COL2_VALUE, "");
-		        	studentInformation.setText(PI_ROW_STDV, PI_COL2_HEADING, "");
-		        	studentInformation.setText(PI_ROW_STDV, PI_COL2_VALUE, "");
-	        	}
-	        	
-	        	meanColumn.setHidden(!isShowItemStatistics || !isShowMean);
-	        	stdvColumn.setHidden(!isShowItemStatistics || !isShowMean);
-	        	
-	        	if (isShowMedian) {
-	        		studentInformation.setText(row, PI_COL2_HEADING, "Median");
-		        	formatter.setStyleName(row, PI_COL2_HEADING, resources.css().gbImpact());
-		        	studentInformation.setText(row, PI_COL2_VALUE, (String)courseGradeStats.getMedian());
-		        	
-		        	row++;
-	        	} else {
-	        		studentInformation.setText(PI_ROW_MEDI, PI_COL2_HEADING, "");
-		        	studentInformation.setText(PI_ROW_MEDI, PI_COL2_VALUE, "");
-	        	}
-	        	
-	        	medianColumn.setHidden(!isShowItemStatistics || !isShowMedian);
-	        	
-	        	if (isShowMode) {
-	        		studentInformation.setText(row, PI_COL2_HEADING, "Mode");
-		        	formatter.setStyleName(row, PI_COL2_HEADING, resources.css().gbImpact());
-		        	studentInformation.setText(row, PI_COL2_VALUE, courseGradeStats.getMode());
-	        	
-		        	row++;
-	        	} else {
-	        		studentInformation.setText(PI_ROW_MODE, PI_COL2_HEADING, "");
-		        	studentInformation.setText(PI_ROW_MODE, PI_COL2_VALUE, "");
-	        	}
+        	
+        	if (doReleaseGrades) {
+		        studentInformation.setText(PI_ROW_COURSE_GRADE, PI_COL_HEADING, "Course Grade");
+		        formatter.setStyleName(PI_ROW_COURSE_GRADE, PI_COL_HEADING, resources.css().gbImpact());
+		        studentInformation.setText(PI_ROW_COURSE_GRADE, PI_COL_VALUE, (String)learnerGradeRecordCollection.get(LearnerKey.LETTER_GRADE.name()));
 		        
-	        	modeColumn.setHidden(!isShowItemStatistics || !isShowMode);
-	        	
-		        if (isShowRank)
+		        boolean isLetterGrading = gradebookItemModel.getGradeType() == GradeType.LETTERS;
+		        
+		        if (!isLetterGrading)
 		        {
-		        	studentInformation.setText(row, PI_COL2_HEADING, "Rank");
-		        	formatter.setStyleName(row, PI_COL2_HEADING, resources.css().gbImpact());
-		        	if (displayRank)
-		        		studentInformation.setText(row, PI_COL2_VALUE, courseGradeStats.getRank());
-		        	else
-		        		studentInformation.setText(row, PI_COL2_VALUE, "Visible to Student");
-		        } else {
-	        		studentInformation.setText(PI_ROW_RANK, PI_COL2_HEADING, "");
-		        	studentInformation.setText(PI_ROW_RANK, PI_COL2_VALUE, "");
-	        	}
+		        	String calculatedGrade = (String)learnerGradeRecordCollection.get(LearnerKey.CALCULATED_GRADE.name());
+			        studentInformation.setHTML(PI_ROW_CALCULATED_GRADE, PI_COL_HEADING, "Calculated Grade");
+			        formatter.setStyleName(PI_ROW_CALCULATED_GRADE, PI_COL_HEADING, resources.css().gbImpact());
+			        formatter.setWordWrap(PI_ROW_CALCULATED_GRADE, PI_COL_HEADING, false);
+			        studentInformation.setText(PI_ROW_CALCULATED_GRADE, PI_COL_VALUE, calculatedGrade);
+		        }
+		            
+		        if (courseGradeStats != null) {
+		        	
+		        	if (isShowAny) {
+		        		studentInformation.setText(PI_ROW_STATS, PI_COL2_HEADING, "Course Statistics");
+		        		formatter.setStyleName(PI_ROW_STATS, PI_COL2_HEADING, resources.css().gbHeading());
+		        	}
+		        	
+		        	int row = PI_ROW_MEAN;
+		        	if (isShowMean) {
+		        		studentInformation.setText(PI_ROW_MEAN, PI_COL2_HEADING, "Mean");
+			        	formatter.setStyleName(PI_ROW_MEAN, PI_COL2_HEADING, resources.css().gbImpact());
+			        	formatter.setWordWrap(PI_ROW_MEAN, PI_COL2_HEADING, false);
+			        	studentInformation.setText(PI_ROW_MEAN, PI_COL2_VALUE, courseGradeStats.getMean());
+			 
+			        	row++;
+			        	
+			        	studentInformation.setText(PI_ROW_STDV, PI_COL2_HEADING, "Standard Deviation");
+			        	formatter.setStyleName(PI_ROW_STDV, PI_COL2_HEADING, resources.css().gbImpact());
+			        	formatter.setWordWrap(PI_ROW_STDV, PI_COL2_HEADING, false);
+			        	studentInformation.setText(PI_ROW_STDV, PI_COL2_VALUE, courseGradeStats.getStandardDeviation());
+			
+			        	row++;
+		        	} else {
+		        		studentInformation.setText(PI_ROW_MEAN, PI_COL2_HEADING, "");
+			        	studentInformation.setText(PI_ROW_MEAN, PI_COL2_VALUE, "");
+			        	studentInformation.setText(PI_ROW_STDV, PI_COL2_HEADING, "");
+			        	studentInformation.setText(PI_ROW_STDV, PI_COL2_VALUE, "");
+		        	}
+		        		        	
+		        	if (isShowMedian) {
+		        		studentInformation.setText(row, PI_COL2_HEADING, "Median");
+			        	formatter.setStyleName(row, PI_COL2_HEADING, resources.css().gbImpact());
+			        	studentInformation.setText(row, PI_COL2_VALUE, (String)courseGradeStats.getMedian());
+			        	
+			        	row++;
+		        	} else {
+		        		studentInformation.setText(PI_ROW_MEDI, PI_COL2_HEADING, "");
+			        	studentInformation.setText(PI_ROW_MEDI, PI_COL2_VALUE, "");
+		        	}
+		        			        	
+		        	if (isShowMode) {
+		        		studentInformation.setText(row, PI_COL2_HEADING, "Mode");
+			        	formatter.setStyleName(row, PI_COL2_HEADING, resources.css().gbImpact());
+			        	studentInformation.setText(row, PI_COL2_VALUE, courseGradeStats.getMode());
+		        	
+			        	row++;
+		        	} else {
+		        		studentInformation.setText(PI_ROW_MODE, PI_COL2_HEADING, "");
+			        	studentInformation.setText(PI_ROW_MODE, PI_COL2_VALUE, "");
+		        	}
+			        
+		        		        	
+			        if (isShowRank)
+			        {
+			        	studentInformation.setText(row, PI_COL2_HEADING, "Rank");
+			        	formatter.setStyleName(row, PI_COL2_HEADING, resources.css().gbImpact());
+			        	if (displayRank)
+			        		studentInformation.setText(row, PI_COL2_VALUE, courseGradeStats.getRank());
+			        	else
+			        		studentInformation.setText(row, PI_COL2_VALUE, "Visible to Student");
+			        } else {
+		        		studentInformation.setText(PI_ROW_RANK, PI_COL2_HEADING, "");
+			        	studentInformation.setText(PI_ROW_RANK, PI_COL2_VALUE, "");
+		        	}
+		        }
+        	} 
 		        
-		        if (grid != null && grid.getView() != null && grid.isRendered())
-		        	grid.getView().refresh(true);
+		    if (doReleaseItems) {
+			        cm.setHidden(cm.getIndexById(meanColumn.getId()), !isShowItemStatistics || !isShowMean);
+		        	//meanColumn.setHidden(!isShowItemStatistics || !isShowMean);
+		        	
+		        	cm.setHidden(cm.getIndexById(stdvColumn.getId()), !isShowItemStatistics || !isShowMean);	
+		        	//stdvColumn.setHidden(!isShowItemStatistics || !isShowMean);
+			        
+		        	cm.setHidden(cm.getIndexById(medianColumn.getId()), !isShowItemStatistics || !isShowMedian);	
+		        	//medianColumn.setHidden(!isShowItemStatistics || !isShowMedian);
+		        	
+			        cm.setHidden(cm.getIndexById(modeColumn.getId()), !isShowItemStatistics || !isShowMode);
+		        	//modeColumn.setHidden(!isShowItemStatistics || !isShowMode);
+		        
+		        	//if (grid != null && grid.getView() != null && grid.isRendered())
+			        //	grid.getView().refresh(true);
+		        
 	        }
 	        else
 	        {
