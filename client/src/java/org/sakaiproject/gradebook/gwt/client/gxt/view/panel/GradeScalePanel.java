@@ -287,7 +287,8 @@ public class GradeScalePanel extends GradebookPanel {
 	private void loadGradeScaleData(Long selectedGradeScaleId) {
 		for (int i=0;i<gradeFormatStore.getCount();i++) {
 			ModelData m = gradeFormatStore.getAt(i);
-			if (m.get(GradeFormatKey.ID.name()).equals(selectedGradeScaleId)) {
+			Long id1 = m.get(GradeFormatKey.ID.name());
+			if (id1 != null && id1.equals(selectedGradeScaleId)) {
 				if (currentGradeScaleId == null || !currentGradeScaleId.equals(selectedGradeScaleId)) {
 					gradeFormatListBox.setValue(m);
 				}

@@ -445,8 +445,10 @@ public class ImportPanel extends GradebookPanel {
 	
 							if (hasChanges) {
 								ModelData model = rowStore.getAt(rowNumber);
-								if (model.get(LearnerKey.UID.name()) == null || !model.get(LearnerKey.UID.name()).equals(student.get(LearnerKey.UID.name())))
-									model = rowStore.findModel(LearnerKey.UID.name(), student.get(LearnerKey.UID.name()));
+								String learnerUid = model.get(LearnerKey.UID.name());
+								String currentUid = student.get(LearnerKey.UID.name());
+								if (learnerUid == null || !learnerUid.equals(currentUid))
+									model = rowStore.findModel(LearnerKey.UID.name(), currentUid);
 								Record record = rowStore.getRecord(model);
 								record.beginEdit();
 	

@@ -203,9 +203,13 @@ public class LearnerSummaryPanel extends GradebookPanel {
 	}
 	
 	public void onLearnerGradeRecordUpdated(ModelData learner) {
-		if (this.learner != null && learner != null 
-				&& this.learner.get(LearnerKey.UID.name()).equals(learner.get(LearnerKey.UID.name()))) 
-			updateLearnerInfo(learner, true);
+		if (this.learner != null && learner != null) { 
+			String uid1 = this.learner.get(LearnerKey.UID.name());
+			String uid2 = learner.get(LearnerKey.UID.name());
+			
+			if (uid1 != null && uid2 != null && uid1.equals(uid2))
+				updateLearnerInfo(learner, true);
+		}
 	}
 
 	public void onRefreshGradebookSetup(Gradebook gradebookModel) {
@@ -313,7 +317,8 @@ public class LearnerSummaryPanel extends GradebookPanel {
 
 			@Override
 			public void componentSelected(ComponentEvent be) {
-				ButtonSelector selector = be.getComponent().getData(BUTTON_SELECTOR_FLAG);
+				Component c = be.getComponent();
+				ButtonSelector selector = c.getData(BUTTON_SELECTOR_FLAG);
 
 				BrowseLearner bse = null;
 
@@ -322,7 +327,7 @@ public class LearnerSummaryPanel extends GradebookPanel {
 						Dispatcher.forwardEvent(GradebookEvents.HideEastPanel.getEventType(), Boolean.FALSE);
 						break;
 					case COMMENT:
-						String id = be.getComponent().getData(ITEM_IDENTIFIER_FLAG);
+						String id = c.getData(ITEM_IDENTIFIER_FLAG);
 						break;
 					case NEXT:
 						bse = new BrowseLearner(learner, BrowseType.NEXT);

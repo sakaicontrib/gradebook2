@@ -91,7 +91,7 @@ public class StartupController extends Controller {
 	private void findApplicationModel(AuthModel authModel) {
 		String appAsJson = Cookies.getCookie(AppConstants.APP_COOKIE_NAME);
 		
-		if (appAsJson != null && !appAsJson.isEmpty()) {
+		if (appAsJson != null && !appAsJson.equals("")) {
 			Info.display("Application", "As cookie");
 			onApplicationModelSuccess(appAsJson);
 		} else {
