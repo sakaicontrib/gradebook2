@@ -3,8 +3,7 @@
 	<!--property name="tarball.isNewer" value="false"/-->
 	<!--property name="tarball.doExpand" value="false"/-->
 	
-	<!-- Commenting out build code below to turn off subversion caching of compiled gwt -->
-	<!--target name="checkIfDirectoryIsAvailable">
+	<target name="checkIfDirectoryIsAvailable">
 		<echo>Checking if directory is available</echo>
 		<available file="gradebook" type="dir" property="directory.isAvailable"/>
 		<echo>Result: ${directory.isAvailable}</echo>
@@ -63,11 +62,8 @@
 	<target name="begin" depends="expand,compress">
 	</target>
 	
-	<target name="build" description="Build this project" depends="checkOver, begin"-->
+	<target name="build" description="Build this project" depends="checkOver, begin">
 		
-		
-	<target name="build" description="Build this project" >
-		<echo file="WEB-INF/classes/org/sakaiproject/gradebook/gwt/server/version.txt">${basedir}</echo>
 	</target>
 	
 </project>

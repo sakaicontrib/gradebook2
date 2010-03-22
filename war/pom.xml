@@ -86,9 +86,10 @@
 					<useReleaseProfile>true</useReleaseProfile>
 				</configuration>
 			</plugin-->
-			<!-- Uncomment this if you want to revert to the older style of
-			     pre-compiling all gwt code using Eclipse, you will 
-			     also want to run "svn add war/gradebook.tar.gz"  -->
+			<!-- This gets run if you choose the sakai2.7, sakai2.6, or sakai2.5
+				 profiles... sakai2.7+gwt, sakai2.6+gwt, and sakai2.5+gwt turn
+				 it off.
+			  -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
