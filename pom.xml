@@ -36,7 +36,7 @@
 	
 	<profiles>
 		<profile>
-			<id>sakai2.7+gwt</id>
+			<id>sakai2.7</id>
 			<activation>
 				<activeByDefault>true</activeByDefault>
 			</activation>
@@ -111,7 +111,7 @@
 		</profile>
 		
 		<profile>
-			<id>sakai2.7</id>
+			<id>sakai2.7-nogwt</id>
 			<modules>
 				<module>model</module>
 				<module>api</module>
@@ -181,7 +181,7 @@
 		</profile>
 		
 		<profile>
-			<id>sakai2.6+gwt</id>
+			<id>sakai2.6</id>
 			<properties>
 				<gb2.cm.groupId>org.sakaiproject</gb2.cm.groupId>
 				<gb2.cm.artifactId>sakai-coursemanagement-api</gb2.cm.artifactId>
@@ -230,7 +230,7 @@
 		</profile>
 		
 		<profile>
-			<id>sakai2.6</id>
+			<id>sakai2.6-nogwt</id>
 			<properties>
 				<gb2.cm.groupId>org.sakaiproject</gb2.cm.groupId>
 				<gb2.cm.artifactId>sakai-coursemanagement-api</gb2.cm.artifactId>
@@ -277,7 +277,7 @@
 		</profile>
 		
 		<profile>
-			<id>sakai2.5+gwt</id>
+			<id>sakai2.5</id>
 			<properties>
 				<gb2.cm.groupId>org.sakaiproject</gb2.cm.groupId>
 				<gb2.cm.artifactId>sakai-coursemanagement-api</gb2.cm.artifactId>
@@ -365,7 +365,7 @@
 		</profile>
 		
 		<profile>
-			<id>sakai2.5</id>
+			<id>sakai2.5-nogwt</id>
 			<properties>
 				<gb2.cm.groupId>org.sakaiproject</gb2.cm.groupId>
 				<gb2.cm.artifactId>sakai-coursemanagement-api</gb2.cm.artifactId>
