@@ -360,7 +360,7 @@ public class ImportExportUtility {
 			if (rows != null) {
 				for (Learner row : rows) {
 					List<String> dataColumns = new LinkedList<String>();
-
+//TODO: JLR : Could use array here instead	
 					dataColumns.add((String)row.get(LearnerKey.EXPORT_USER_ID.name()));
 					dataColumns.add((String)row.get(LearnerKey.LAST_NAME_FIRST.name()));
 
@@ -404,7 +404,8 @@ public class ImportExportUtility {
 			} 
 
 		}
-
+// TODO: GRBK-515 : Change file name to use site title here
+		
 		StringBuilder filename = new StringBuilder();
 
 		if (gradebook.getName() == null)
@@ -448,29 +449,34 @@ public class ImportExportUtility {
 	}
 	
 
-	private void createXLS97File(String title, HttpServletResponse response, RawFile out) throws FatalException 
-	{
+	private void createXLS97File(String title, HttpServletResponse response, RawFile out) throws FatalException {
 		HSSFWorkbook wb = new HSSFWorkbook();
 		HSSFSheet s = wb.createSheet(title);
 		
 		out.startReading(); 
 		String[] curLine = null; 
 		int row = 0; 
-		while ( (curLine = out.readNext()) != null)
-		{
-			HSSFRow r = s.createRow(row); 
+		
+		HSSFRow r = null;
+		while ( (curLine = out.readNext()) != null) {
+			r = s.createRow(row); 
 
-			for (int i = 0; i < curLine.length ; i++)
-			{
+			for (int i = 0; i < curLine.length ; i++) {
 				HSSFCell cl = r.createCell(i);
 				cl.setCellType(HSSFCell.CELL_TYPE_STRING); 
 				cl.setCellValue(new HSSFRichTextString(curLine[i])); 
-				s.autoSizeColumn((short) i);
 			}
 			
 			row++; 
 		}
 		
+		// Run autosize on last row's columns
+		if (r != null) {
+			for (int i = 0; i <= r.getLastCellNum() ; i++) {
+				s.autoSizeColumn((short) i);
+			}
+		}
+ 		
 		try {
 			wb.write(response.getOutputStream());
 			response.getOutputStream().flush();
@@ -480,7 +486,6 @@ public class ImportExportUtility {
 			throw new FatalException(e); 
 
 		}
-		
 	}
 
 
