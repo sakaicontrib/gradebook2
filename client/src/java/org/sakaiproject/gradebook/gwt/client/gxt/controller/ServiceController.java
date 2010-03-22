@@ -776,17 +776,22 @@ public class ServiceController extends Controller {
 		record.setValid(property, false);
 	}
 
+	private ShowColumnsEvent lastEvent = null;
+	
 	private void onShowColumns(final ShowColumnsEvent event) {
-		if (showColumnsTask != null)
-			showColumnsTask.cancel();
+		if (lastEvent != null && event != null && event.equals(lastEvent)) {
+			if (showColumnsTask != null)
+				showColumnsTask.cancel();
+		}
 		
+		lastEvent = event;
 		showColumnsTask = new DelayedTask(new Listener<BaseEvent>() {
-		
+			
 			public void handleEvent(BaseEvent be) {
 				doShowColumns(event);
 			}
 		});
-		
+			
 		showColumnsTask.delay(1000);
 	}
 	

@@ -76,4 +76,31 @@ public class ShowColumnsEvent {
 		this.isSingle = false;
 	}
 	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof ShowColumnsEvent) {
+			ShowColumnsEvent other = (ShowColumnsEvent)obj;
+			
+			if (other.isSingle == isSingle) {
+				if (isSingle) {
+					if (other.isFixed && isFixed) {
+						return other.fixedModel.getIdentifier() != null &&
+							fixedModel.getIdentifier() != null &&
+							other.fixedModel.getIdentifier()
+								.equals(fixedModel.getIdentifier());
+					} else if (!other.isFixed && !isFixed){
+						return other.model.getIdentifier() != null &&
+						model.getIdentifier() != null &&
+						other.model.getIdentifier()
+							.equals(model.getIdentifier());
+					}
+				} else {
+					return true;
+				}
+			} 
+		}
+		
+		return false;
+	}
+	
 }
