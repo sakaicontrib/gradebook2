@@ -188,7 +188,7 @@ public class WebAppToolServlet extends HttpServlet {
 		}
 
 		public String getVersion() {
-			if (url != null && !url.isEmpty()) {
+			if (url != null && !url.equals("")) {
 				String[] tokens = url.split("/");
 				if (tokens.length > 2) {
 					return tokens[tokens.length - 2];
