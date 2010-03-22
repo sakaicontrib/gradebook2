@@ -845,7 +845,7 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 		return toolManager.getCurrentPlacement().getContext();
 	}
 	
-	private boolean hasPermission(String gradebookUid, String permission) {
+	protected boolean hasPermission(String gradebookUid, String permission) {
 		if (securityService == null) {
 			String roleProperty = System.getProperty("gb2.role");
 			

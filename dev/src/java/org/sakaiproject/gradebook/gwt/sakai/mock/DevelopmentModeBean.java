@@ -33,6 +33,7 @@ import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
+import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentServiceImpl;
 import org.sakaiproject.gradebook.gwt.server.model.GradeItem;
 import org.sakaiproject.gradebook.gwt.server.model.GradeItemImpl;
 import org.sakaiproject.service.gradebook.shared.GradebookExternalAssessmentService;
@@ -49,6 +50,10 @@ public class DevelopmentModeBean {
 	public void init() {	
 		
 		try {
+			
+			Gradebook2AuthzMockImpl authz = (Gradebook2AuthzMockImpl)((Gradebook2ComponentServiceImpl)service).getAuthz();
+			
+			authz.setStartUp(true);
 			String authDetails = service.getAuthorizationDetails();
 			
 			ApplicationSetup applicationSetup = service.getApplicationSetup();
@@ -63,7 +68,8 @@ public class DevelopmentModeBean {
 			gradebook.setGradeType(GradeType.PERCENTAGES);
 			gradebook.setItemType(ItemType.GRADEBOOK);
 			gradebook.setExtraCreditScaled(Boolean.TRUE);
-			gradebook.setReleaseGrades(Boolean.TRUE);
+			gradebook.setReleaseGrades(Boolean.FALSE);
+			gradebook.setReleaseItems(Boolean.TRUE);
 			
 			service.updateItem(gradebook);
 			
@@ -116,7 +122,7 @@ public class DevelopmentModeBean {
 			essay1.setPoints(Double.valueOf(10d));
 			essay1.setDueDate(new Date());
 			essay1.setCategoryId(essaysCategory.getCategoryId());
-			essay1.setReleased(Boolean.FALSE);
+			essay1.setReleased(Boolean.TRUE);
 			essay1.setItemType(ItemType.ITEM);
 			essay1.setIncluded(Boolean.TRUE);
 			service.createItem(gradebookUid, gradebookId, essay1, false);
@@ -126,7 +132,7 @@ public class DevelopmentModeBean {
 			essay2.setPoints(Double.valueOf(20d));
 			essay2.setDueDate(new Date());
 			essay2.setCategoryId(essaysCategory.getCategoryId());
-			essay2.setReleased(Boolean.FALSE);
+			essay2.setReleased(Boolean.TRUE);
 			essay2.setItemType(ItemType.ITEM);
 			essay2.setIncluded(Boolean.TRUE);
 			service.createItem(gradebookUid, gradebookId, essay2, false);
@@ -136,7 +142,7 @@ public class DevelopmentModeBean {
 			essay3.setPoints(Double.valueOf(10d));
 			essay3.setDueDate(new Date());
 			essay3.setCategoryId(essaysCategory.getCategoryId());
-			essay3.setReleased(Boolean.FALSE);
+			essay3.setReleased(Boolean.TRUE);
 			essay3.setItemType(ItemType.ITEM);
 			essay3.setIncluded(Boolean.TRUE);
 			service.createItem(gradebookUid, gradebookId, essay3, false);
@@ -147,7 +153,7 @@ public class DevelopmentModeBean {
 			ecEssay.setPoints(Double.valueOf(5d));
 			ecEssay.setDueDate(new Date());
 			ecEssay.setCategoryId(essaysCategory.getCategoryId());
-			ecEssay.setIncluded(Boolean.FALSE);
+			ecEssay.setIncluded(Boolean.TRUE);
 			ecEssay.setExtraCredit(Boolean.TRUE);
 			ecEssay.setReleased(Boolean.FALSE);
 			service.createItem(gradebookUid, gradebookId, ecEssay, false);
@@ -175,7 +181,7 @@ public class DevelopmentModeBean {
 			hw1.setCategoryId(hwCategory.getCategoryId());
 			hw1.setItemType(ItemType.ITEM);
 			hw1.setIncluded(Boolean.TRUE);
-			hw1.setReleased(Boolean.FALSE);
+			hw1.setReleased(Boolean.TRUE);
 			service.createItem(gradebookUid, gradebookId, hw1, false);
 			
 			GradeItem hw2 = new GradeItemImpl();
@@ -185,7 +191,7 @@ public class DevelopmentModeBean {
 			hw2.setCategoryId(hwCategory.getCategoryId());
 			hw2.setItemType(ItemType.ITEM);
 			hw2.setIncluded(Boolean.TRUE);
-			hw2.setReleased(Boolean.FALSE);
+			hw2.setReleased(Boolean.TRUE);
 			service.createItem(gradebookUid, gradebookId, hw2, false);
 			
 			GradeItem hw3 = new GradeItemImpl();
@@ -195,7 +201,7 @@ public class DevelopmentModeBean {
 			hw3.setCategoryId(hwCategory.getCategoryId());
 			hw3.setItemType(ItemType.ITEM);
 			hw3.setIncluded(Boolean.TRUE);
-			hw3.setReleased(Boolean.FALSE);
+			hw3.setReleased(Boolean.TRUE);
 			service.createItem(gradebookUid, gradebookId, hw3, false);
 			
 			GradeItem hw4 = new GradeItemImpl();
@@ -205,7 +211,7 @@ public class DevelopmentModeBean {
 			hw4.setCategoryId(hwCategory.getCategoryId());
 			hw4.setItemType(ItemType.ITEM);
 			hw4.setIncluded(Boolean.TRUE);
-			hw4.setReleased(Boolean.FALSE);
+			hw4.setReleased(Boolean.TRUE);
 			service.createItem(gradebookUid, gradebookId, hw4, false);
 
 			
@@ -217,7 +223,7 @@ public class DevelopmentModeBean {
 			ec1.setCategoryId(ecCategory.getCategoryId());
 			ec1.setIncluded(Boolean.TRUE);
 			ec1.setExtraCredit(Boolean.TRUE);
-			ec1.setReleased(Boolean.FALSE);
+			ec1.setReleased(Boolean.TRUE);
 			service.createItem(gradebookUid, gradebookId, ec1, false);
 			
 			GradeItem ec2 = new GradeItemImpl();
@@ -228,10 +234,10 @@ public class DevelopmentModeBean {
 			ec2.setCategoryId(ecCategory.getCategoryId());
 			ec2.setIncluded(Boolean.TRUE);
 			ec2.setExtraCredit(Boolean.TRUE);
-			ec2.setReleased(Boolean.FALSE);
+			ec2.setReleased(Boolean.TRUE);
 			service.createItem(gradebookUid, gradebookId, ec2, false);
 			
-			
+			authz.setStartUp(false);
 			
 		} catch (Exception fe) {
 			GWT.log("Failed to update gradebook properties", fe);

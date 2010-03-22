@@ -1804,6 +1804,10 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		this.applicationContext = applicationContext;
 	}
 
+	public Gradebook2Authz getAuthz() {
+		return authz;
+	}
+	
 	public void setAuthz(Gradebook2Authz authz) {
 
 		this.authz = authz;

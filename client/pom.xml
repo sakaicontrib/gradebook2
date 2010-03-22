@@ -67,8 +67,9 @@
 					<execution>
 						<configuration>
 							<module>org.sakaiproject.gradebook.gwt.GradebookApplication</module>
-							<extraJvmArgs>-Xmx1g</extraJvmArgs>
+							<extraJvmArgs>-Xmx512m</extraJvmArgs>
 							<inplace>true</inplace>
+							<soyc>false</soyc>
 							<warSourceDirectory>${basedir}/../war</warSourceDirectory>
 						</configuration>
 						<goals>

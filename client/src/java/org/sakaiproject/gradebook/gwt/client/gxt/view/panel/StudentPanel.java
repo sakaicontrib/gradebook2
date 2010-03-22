@@ -268,9 +268,9 @@ public class StudentPanel extends GradebookPanel {
 		outOfColumn.setMenuDisabled(true);
 		columns.add(outOfColumn);
 		
-		dateDueColumn = new ColumnConfig(Key.DATEDUE.name(), i18n.dateDueName(), 160);
+		dateDueColumn = new ColumnConfig(Key.DATEDUE.name(), i18n.dateDueName(), 90);
 		dateDueColumn.setGroupable(false);
-		dateDueColumn.setDateTimeFormat(DateTimeFormat.getShortDateTimeFormat());
+		dateDueColumn.setDateTimeFormat(DateTimeFormat.getShortDateFormat());
 		dateDueColumn.setMenuDisabled(true);
 		columns.add(dateDueColumn);
 		
@@ -319,20 +319,22 @@ public class StudentPanel extends GradebookPanel {
 
 		grid = new Grid<BaseModel>(store, cm);
 		grid.setBorders(true);
+		//grid.setAutoHeight(true);
 		grid.setSelectionModel(selectionModel);
 		grid.setView(view);
 
-		
 		cardLayoutContainer = new LayoutContainer() {
 			protected void onResize(final int width, final int height) {
 				super.onResize(width, height);
 				
-				gradeInformationPanel.setSize(width, 400);
+				if (gradeInformationPanel.getWidth() != width ||
+						gradeInformationPanel.getHeight() != 340)
+					gradeInformationPanel.setSize(width, 340);
 			}
 		};
 		cardLayout = new CardLayout();
 		cardLayoutContainer.setLayout(cardLayout);
-		cardLayoutContainer.setHeight(600);
+		cardLayoutContainer.setHeight(365);
 		
 		gradeInformationPanel = new ContentPanel() {
 			
@@ -340,7 +342,8 @@ public class StudentPanel extends GradebookPanel {
 				super.onResize(width, height);
 				
 				grid.setSize(width - 300, height - 42);
-				
+				if (grid.isRendered() && grid.getView() != null)
+					grid.getView().refresh(true);
 				commentArea.setHeight(height - 76);
 			}
 			
@@ -381,9 +384,9 @@ public class StudentPanel extends GradebookPanel {
 		textNotification = textPanel.addText("");
 		
 		cardLayoutContainer.add(gradeInformationPanel);
-		cardLayoutContainer.add(textPanel);
 		cardLayout.setActiveItem(gradeInformationPanel);
 		
+		cardLayoutContainer.add(textPanel);
 		add(cardLayoutContainer); //, new RowData(1, 1, new Margins(5, 0, 0, 0)));
 	}
 	
@@ -758,7 +761,7 @@ public class StudentPanel extends GradebookPanel {
 
 	private void setGradeInfoTable(Gradebook selectedGradebook, ModelData learner, List<Statistics> statsList) {		
 		// To force a refresh, let's first hide the owning panel
-		gradeInformationPanel.hide();
+		//gradeInformationPanel.hide();
 		
 		ItemModel gradebookItemModel = (ItemModel)selectedGradebook.getGradebookItemModel();
 		CategoryType categoryType = gradebookItemModel.getCategoryType();
@@ -848,17 +851,20 @@ public class StudentPanel extends GradebookPanel {
 				cardLayout.setActiveItem(textPanel);
 				I18nConstants i18n = Registry.get(AppConstants.I18N);
 				textNotification.setHtml(i18n.notifyNoReleasedItems());
+				textPanel.show();
 			} else {
 				cardLayout.setActiveItem(gradeInformationPanel);
+				gradeInformationPanel.show();
 			}
 			
 		} else {
-			cardLayout.setActiveItem(textPanel);
 			I18nConstants i18n = Registry.get(AppConstants.I18N);
 			textNotification.setHtml(i18n.notifyNotDisplayingReleasedItems());
+			cardLayout.setActiveItem(textPanel);
+			textPanel.show();
 		}
 
-        gradeInformationPanel.show();
+        //gradeInformationPanel.show();
 	}
 	
 	private Statistics getStatsModelForItem(String id, List<Statistics> statsList) {

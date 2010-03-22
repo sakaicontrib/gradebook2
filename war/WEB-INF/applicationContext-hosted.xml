@@ -19,13 +19,6 @@
 		
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authn" class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2AuthnImpl">
 	</bean>
-
-	<bean id="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authz" class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2AuthzImpl">
-		<property name="authn" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authn"/>
-		<property name="sectionAwareness" ref="org.sakaiproject.section.api.SectionAwareness"/>
-		<property name="gbToolService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/>
-		<!-- property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/-->
-	</bean>
 	
 	<bean id="GradebookExportService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookExportController">
 		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>

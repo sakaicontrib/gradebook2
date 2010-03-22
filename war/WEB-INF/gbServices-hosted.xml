@@ -52,6 +52,13 @@
 		</property>
 	</bean>
 	
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authz" class="org.sakaiproject.gradebook.gwt.sakai.mock.Gradebook2AuthzMockImpl">
+		<property name="authn" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authn"/>
+		<property name="sectionAwareness" ref="org.sakaiproject.section.api.SectionAwareness"/>
+		<property name="gbToolService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/>
+		<!-- property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/-->
+	</bean>
+	
 	<bean id="org.sakaiproject.component.api.ServerConfigurationService"
 		class="org.sakaiproject.gradebook.gwt.sakai.mock.ServerConfigurationServiceMock">
 	</bean>
@@ -60,9 +67,9 @@
 		class="org.sakaiproject.gradebook.gwt.sakai.mock.SiteServiceMock">
 	</bean>
 	
-	<bean id="org_sakaiproject_tool_gradebook_facades_Authz" class="org.sakaiproject.gradebook.gwt.sakai.mock.AuthzMock">
+	<!-- bean id="org_sakaiproject_tool_gradebook_facades_Authz" class="org.sakaiproject.gradebook.gwt.sakai.mock.AuthzMock">
 		<property name="sectionAwareness" ref="org.sakaiproject.section.api.SectionAwareness"/>
-	</bean>
+	</bean-->
 	
 	<bean id="org_sakaiproject_tool_gradebook_facades_Authn" class="org.sakaiproject.gradebook.gwt.sakai.mock.AuthnMock">
 	</bean>
