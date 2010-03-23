@@ -25,5 +25,5 @@ In other words, at your sakai base directory:
 > vi pom.xml (and edit to include "gradebook2" as a module)
 > cd gradebook2
 > ./setSakaiVersion.sh
-> mvn install sakai:deploy 
+> mvn install sakai:deploy -Psakai2.6
 

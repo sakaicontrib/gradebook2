@@ -1,0 +1,36 @@
+STEPS FOR UPGRADING GRADEBOOK2 FROM 1.1.x TO 1.2.x
+
+
+With the release of Gradebook2 version 1.2.0 there are several important 
+configuration changes that need to be taken into account. We added a number 
+of new database columns to the old "gradebook" data model, and this necessitates 
+a further patch to that code, as well as a database change. If you're running 
+a Sakai instance with auto.ddl turned on then you can ignore step 4 with the 
+database scripts.  
+
+Finally, we've made several changes to the way the code is deployed in maven, 
+and if you're running a Sakai 2.6 environment you'll need to pass a profile
+in to the mvn command so it knows which version of Sakai you're building against.
+
+
+(1) Apply data model code patch:
+> cd gradebook
+> patch -p0 < ../gradebook2/sakai/2-6-x/gradebook-upgrade-1.1.x-to-1.2.x.patch
+
+(2) Apply the parent pom version patch:
+> cd gradebook2
+> patch -p0 < sakai/2-6-x/gradebook2.patch   (for Sakai 2.6.1)
+or
+> patch -p0 < sakai/2-6-x/gradebook2-2.6.2.patch 
+or
+> patch -p0 < sakai/2-6-x/gradebook2-2.6.3.patch 
+
+(3) From now on you'll need to include -Psakai2.6 as an arg to the mvn command
+> mvn clean install sakai:deploy -Psakai2.6
+
+(4) If you're starting from a 1.1.x database and don't have auto.ddl turned on,
+run one of the following database scripts (doesn't include commit statement):
+sakai/2-6-x/sql/oracle/conversion_1.1.x_to_1.2.x.sql
+or
+sakai/2-6-x/sql/mysql/conversion_1.1.x_to_1.2.x.sql
+

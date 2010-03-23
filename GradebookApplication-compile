@@ -1,3 +1,0 @@
-#!/bin/sh
-. GradebookApplication-classpath;
-java $OPTS -cp "$CP" com.google.gwt.dev.GWTCompiler -out "$APPDIR/www" "$@" org.sakaiproject.gradebook.gwt.GradebookApplication;

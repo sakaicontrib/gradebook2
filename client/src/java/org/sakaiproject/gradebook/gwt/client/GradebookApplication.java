@@ -83,7 +83,7 @@ public class GradebookApplication implements EntryPoint {
 		String version = Cookies.getCookie(AppConstants.VERSION_COOKIE_NAME);
 		
 		if (version == null)
-			version = "Development";
+			version = "";
 		
 		return version;
 	}

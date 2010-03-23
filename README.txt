@@ -19,6 +19,14 @@ additional steps required:
 (2) Add the -Psakai2.6 or -Psakai2.5 profile to your mvn command when building
 
 
+INSTALLATION INSTRUCTIONS
+
+More specifics on installing are available under one of the following files:
+- sakai/2-5-x/INSTALL.txt
+- sakai/2-6-x/INSTALL.txt
+- sakai/2-7-x/INSTALL.txt
+
+
 SUPPORT
 
 The best place to look for bugs, feature requests, and upcoming changes is JIRA:
