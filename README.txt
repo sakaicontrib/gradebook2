@@ -27,8 +27,49 @@ More specifics on installing are available under one of the following files:
 - sakai/2-7-x/INSTALL.txt
 
 
+GB2-SPECIFIC SAKAI PROPERTIES
+
+Since v1.1.x:
+-------------
+
+gb2.help.url=<url to HTML help text>
+- e.g. gb2.help.url=http://somelocation.edu/gradebook-help.html
+
+gb2.enabled.grade.types= [ points, percentages, letters]
+- points = points grade mode
+- percentage = percentage grade mode
+- letters = letters grade mode
+- e.g. gb2.enabled.grade.types=points,percentages,letters
+
+gb2.gradable.role.names=<sakai role name(s)>
+- e.g. gb2.gradable.role.names=Student,access
+
+
+
+Since v1.2.x:
+-------------
+
+gb2.enable.scaled.extra.credit = [OFF, TRUE, FALSE, INSTRUCTOR, ADMIN] (case insensitive, true will operate as ADMIN-only) 
+- default: OFF
+- OFF = "scale extra credit" is disabled
+- FALSE = "scale extra credit" is disabled
+- TRUE = only admin can enable "scale extra credit"
+- ADMIN = only admin can enable "scale extra credit"
+- INSTRUCTOR = only instructor can enable "scale extra credit"
+
+gb2.limit.scaled.extra.credit = [ CATEGORIES, WEIGHTED CATEGORIES] (case insensitive) 
+- default: CATEGORIES,WEIGHTED CATEGORIES
+-- This property only takes effect if gb2.enable.scaled.extra.credit is set to either [TRUE, INSTRUCTOR, ADMIN]
+
+
+
 SUPPORT
 
 The best place to look for bugs, feature requests, and upcoming changes is JIRA:
 http://jira.sakaiproject.org/browse/GRBK
+
+Some more information about the project can be found in Confluence:
+http://confluence.sakaiproject.org//x/LACo
+
+
 
