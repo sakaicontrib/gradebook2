@@ -46,6 +46,7 @@ add (
 alter table GB_GRADABLE_OBJECT_T
 add (
 	ASSIGNMENT_WEIGHTING double precision,
+	IS_NULL_ZERO tinyint(1),
 	SORT_ORDER INT
 );
 

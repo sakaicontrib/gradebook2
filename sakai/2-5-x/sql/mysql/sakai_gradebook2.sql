@@ -49,6 +49,7 @@ add (
 	IS_EXTRA_CREDIT tinyint(1),
 	ASSIGNMENT_WEIGHTING double precision,
 	IS_UNWEIGHTED tinyint(1),
+	IS_NULL_ZERO tinyint(1),
 	SORT_ORDER INT
 );
 
