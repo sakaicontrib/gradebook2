@@ -6,6 +6,7 @@ add (
 
 alter table GB_GRADABLE_OBJECT_T
 add (
+	IS_NULL_ZERO number(1,0),
 	SORT_ORDER number(10,0)
 );
 

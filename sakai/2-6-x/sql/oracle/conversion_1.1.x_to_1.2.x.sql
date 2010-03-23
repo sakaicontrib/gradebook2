@@ -1,5 +1,12 @@
 
 -- CONVERSION FROM 1.1.x to 1.2.x
+
+alter table GB_GRADABLE_OBJECT_T
+add (
+        IS_NULL_ZERO number(1,0),
+		SORT_ORDER number(10,0)
+);
+
 update GB_GRADE_RECORD_T
 set IS_EXCLUDED_FROM_GRADE=EXCLUDED
 where EXCLUDED is not NULL;
