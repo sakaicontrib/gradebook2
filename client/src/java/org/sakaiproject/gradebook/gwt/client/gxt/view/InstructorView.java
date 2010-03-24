@@ -73,6 +73,7 @@ import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.AbstractImagePrototype;
 
 public class InstructorView extends AppView {
 
@@ -191,12 +192,12 @@ public class InstructorView extends AppView {
 		borderLayoutContainer.add(eastLayoutContainer, eastData);
 
 		if (isEditable) {
-			tabConfigurations.add(new TabConfig(AppConstants.TAB_SETUP, i18n.tabSetupHeader(), resources.css().gbSetupButton(), true, MenuSelector.SETUP, i18n.editMenuGradebookSetupHeading()));
-			tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADESCALE, i18n.tabGradeScaleHeader(), resources.css().gbGradeScaleButton(), true, MenuSelector.GRADE_SCALE, i18n.editMenuGradescaleHeading()));
-			tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADER_PER_SET, i18n.tabGraderPermissionSettingsHeader(), resources.css().gbGraderPermissionSettings(), true, MenuSelector.GRADER_PERMISSION_SETTINGS, i18n.editMenuGraderPermissionsHeading()));
-			tabConfigurations.add(new TabConfig(AppConstants.TAB_HISTORY, i18n.tabHistoryHeader(), resources.css().gbHistoryButton(), true, MenuSelector.HISTORY, i18n.viewMenuHistoryHeading()));
+			tabConfigurations.add(new TabConfig(AppConstants.TAB_SETUP, i18n.tabSetupHeader(), resources.application_edit(), true, MenuSelector.SETUP, i18n.editMenuGradebookSetupHeading()));
+			tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADESCALE, i18n.tabGradeScaleHeader(), resources.calculator_edit(), true, MenuSelector.GRADE_SCALE, i18n.editMenuGradescaleHeading()));
+			tabConfigurations.add(new TabConfig(AppConstants.TAB_GRADER_PER_SET, i18n.tabGraderPermissionSettingsHeader(), resources.table_add(), true, MenuSelector.GRADER_PERMISSION_SETTINGS, i18n.editMenuGraderPermissionsHeading()));
+			tabConfigurations.add(new TabConfig(AppConstants.TAB_HISTORY, i18n.tabHistoryHeader(), resources.calendar(), true, MenuSelector.HISTORY, i18n.viewMenuHistoryHeading()));
 		}
-		tabConfigurations.add(new TabConfig(AppConstants.TAB_STATISTICS, i18n.tabStatisticsHeader(), resources.css().gbStatisticsButton(), true, MenuSelector.STATISTICS, i18n.viewMenuStatsHeading()));
+		tabConfigurations.add(new TabConfig(AppConstants.TAB_STATISTICS, i18n.tabStatisticsHeader(), resources.chart_curve(), true, MenuSelector.STATISTICS, i18n.viewMenuStatsHeading()));
 
 		populateToolBar(i18n);
 
@@ -681,11 +682,11 @@ public class InstructorView extends AppView {
 		fileMenu = new AriaMenu();
 		addCategoryMenuItem = new AriaMenuItem(i18n.fileMenuNewCategory(), menuSelectionListener);
 		addCategoryMenuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.ADD_CATEGORY);
-		addCategoryMenuItem.setIconStyle(resources.css().gbAddCategoryIcon());
+		addCategoryMenuItem.setIcon(AbstractImagePrototype.create(resources.folder_add()));
 		addCategoryMenuItem.setId(AppConstants.ID_ADD_CATEGORY_MENUITEM);
 		MenuItem addItem = new AriaMenuItem(i18n.fileMenuNewItem(), menuSelectionListener);
 		addItem.setData(MENU_SELECTOR_FLAG, MenuSelector.ADD_ITEM);
-		addItem.setIconStyle(resources.css().gbAddItemIcon());
+		addItem.setIcon(AbstractImagePrototype.create(resources.table_add()));
 		addItem.setId(AppConstants.ID_ADD_ITEM_MENUITEM);
 
 		// Attach the items to the menu
@@ -733,7 +734,7 @@ public class InstructorView extends AppView {
 		menuItem.setData(MENU_SELECTOR_FLAG, tabConfig.menuSelector);
 		menuItem.setEnabled(tabConfig.isClosable);
 		menuItem.setId(id);
-		menuItem.setIconStyle(tabConfig.iconStyle);
+		menuItem.setIcon(AbstractImagePrototype.create(tabConfig.icon));
 		tabConfig.menuItemId = id;
 
 		menuItem.addListener(Events.Select, menuEventListener);
@@ -747,7 +748,8 @@ public class InstructorView extends AppView {
 
 		MenuItem menuItem = new AriaMenuItem(i18n.headerExport());
 		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT);
-		menuItem.setIconStyle(resources.css().gbExportItemIcon());
+		//menuItem.setIconStyle(resources.css().gbExportItemIcon());
+		menuItem.setIcon(AbstractImagePrototype.create(resources.page_white_put()));
 		menuItem.setTitle(i18n.headerExportTitle());
 		moreActionsMenu.add(menuItem);
 
@@ -799,14 +801,16 @@ public class InstructorView extends AppView {
 
 			menuItem = new AriaMenuItem(i18n.headerImport(), menuSelectionListener);
 			menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.IMPORT);
-			menuItem.setIconStyle(resources.css().gbImportItemIcon());
+			//menuItem.setIconStyle(resources.css().gbImportItemIcon());
+			menuItem.setIcon(AbstractImagePrototype.create(resources.page_white_get()));
 			menuItem.setTitle(i18n.headerImportTitle());
 			moreActionsMenu.add(menuItem);
 
 			// GRBK-37 : TPA
 			menuItem = new AriaMenuItem(i18n.headerFinalGrade(), menuSelectionListener);
 			menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.FINAL_GRADE);
-			menuItem.setIconStyle(resources.css().gbExportItemIcon());
+			//menuItem.setIconStyle(resources.css().gbExportItemIcon());
+			menuItem.setIcon(AbstractImagePrototype.create(resources.page_white_put()));
 			menuItem.setTitle(i18n.headerFinalGradeTitle());
 			moreActionsMenu.add(menuItem);
 		}

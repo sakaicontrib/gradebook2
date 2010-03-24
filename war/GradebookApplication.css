@@ -34,7 +34,32 @@
 }
 
 
+.ieGbCellCommented {
+	background-image:url(images/gb2/grid/commented.gif);
+	background-color:transparent;
+	background-position:top right;
+	background-repeat:no-repeat;
+	height: auto;
+	width: auto;	
+}
 
+.ieGbCellFailed {
+	background-image:url(images/gb2/grid/failed.gif);
+	background-color:transparent;
+	background-position:top left;
+	background-repeat:no-repeat;
+	height: auto;
+	width: auto;	
+}
+
+.ieGbCellSucceeded {
+	background-image:url(images/gb2/grid/modified.gif);
+	background-color:transparent;
+	background-position:top left;
+	background-repeat:no-repeat;
+	height: auto;
+	width: auto;	
+}
 
 .my-treetbl {
 	border:0 solid #C6C5C5;

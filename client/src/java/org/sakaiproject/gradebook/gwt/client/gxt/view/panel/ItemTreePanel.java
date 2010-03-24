@@ -821,7 +821,7 @@ public class ItemTreePanel extends GradebookPanel {
 
 		addCategoryMenuItem = new AriaMenuItem();
 		addCategoryMenuItem.setData(selectionTypeField, SelectionType.CREATE_CATEGORY);
-		addCategoryMenuItem.setIconStyle(resources.css().gbAddCategoryIcon());
+		addCategoryMenuItem.setIcon(AbstractImagePrototype.create(resources.folder_add()));
 		addCategoryMenuItem.setItemId(AppConstants.ID_CT_ADD_CATEGORY_MENUITEM);
 		addCategoryMenuItem.setText(i18n.headerAddCategory());
 		addCategoryMenuItem.setTitle(i18n.headerAddCategoryTitle());
@@ -830,7 +830,7 @@ public class ItemTreePanel extends GradebookPanel {
 
 		updateCategoryMenuItem = new AriaMenuItem();
 		updateCategoryMenuItem.setData(selectionTypeField, SelectionType.UPDATE_ITEM);
-		updateCategoryMenuItem.setIconStyle(resources.css().gbEditCategoryIcon());
+		updateCategoryMenuItem.setIcon(AbstractImagePrototype.create(resources.folder_edit()));
 		updateCategoryMenuItem.setItemId(AppConstants.ID_CT_EDIT_CATEGORY_MENUITEM);
 		updateCategoryMenuItem.setText(i18n.headerEditCategory());
 		updateCategoryMenuItem.addSelectionListener(menuSelectionListener);
@@ -838,7 +838,7 @@ public class ItemTreePanel extends GradebookPanel {
 
 		deleteCategoryMenuItem = new AriaMenuItem();
 		deleteCategoryMenuItem.setData(selectionTypeField, SelectionType.DELETE_ITEM);
-		deleteCategoryMenuItem.setIconStyle(resources.css().gbDeleteCategoryIcon());
+		deleteCategoryMenuItem.setIcon(AbstractImagePrototype.create(resources.folder_delete()));
 		deleteCategoryMenuItem.setItemId(AppConstants.ID_CT_DELETE_ITEM_MENUITEM);
 		deleteCategoryMenuItem.setText(i18n.headerDeleteCategory());
 		deleteCategoryMenuItem.addSelectionListener(menuSelectionListener);
@@ -847,7 +847,7 @@ public class ItemTreePanel extends GradebookPanel {
 
 		MenuItem menuItem = new AriaMenuItem();
 		menuItem.setData(selectionTypeField, SelectionType.CREATE_ITEM);
-		menuItem.setIconStyle(resources.css().gbAddItemIcon());
+		menuItem.setIcon(AbstractImagePrototype.create(resources.table_add()));
 		menuItem.setItemId(AppConstants.ID_CT_ADD_ITEM_MENUITEM);
 		menuItem.setText(i18n.headerAddItem());
 		menuItem.setTitle(i18n.headerAddItemTitle());
@@ -856,7 +856,7 @@ public class ItemTreePanel extends GradebookPanel {
 
 		updateItemMenuItem = new AriaMenuItem();
 		updateItemMenuItem.setData(selectionTypeField, SelectionType.UPDATE_ITEM);
-		updateItemMenuItem.setIconStyle(resources.css().gbEditItemIcon());
+		updateItemMenuItem.setIcon(AbstractImagePrototype.create(resources.table_edit()));
 		updateItemMenuItem.setItemId(AppConstants.ID_CT_EDIT_ITEM_MENUITEM);
 		updateItemMenuItem.setText(i18n.headerEditItem());
 		updateItemMenuItem.addSelectionListener(menuSelectionListener);
@@ -864,7 +864,7 @@ public class ItemTreePanel extends GradebookPanel {
 
 		deleteItemMenuItem = new AriaMenuItem();
 		deleteItemMenuItem.setData(selectionTypeField, SelectionType.DELETE_ITEM);
-		deleteItemMenuItem.setIconStyle(resources.css().gbDeleteItemIcon());
+		deleteItemMenuItem.setIcon(AbstractImagePrototype.create(resources.table_delete()));
 		deleteItemMenuItem.setItemId(AppConstants.ID_CT_DELETE_ITEM_MENUITEM);
 		deleteItemMenuItem.setText(i18n.headerDeleteItem());
 		deleteItemMenuItem.addSelectionListener(menuSelectionListener);

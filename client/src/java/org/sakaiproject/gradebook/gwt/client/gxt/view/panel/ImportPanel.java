@@ -50,6 +50,7 @@ import org.sakaiproject.gradebook.gwt.client.model.key.UploadKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 
+import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.SelectionMode;
@@ -247,7 +248,10 @@ public class ImportPanel extends GradebookPanel {
 						css.append(" ").append(resources.css().gbCellFailedImport());
 						isGradingFailure = true;
 					} else if (successMessage != null) {
-						css.append(" ").append(resources.css().gbCellSucceeded());
+						if (GXT.isIE)
+							css.append(" ieGbCellSucceeded");
+						else
+							css.append(" ").append(resources.css().gbCellSucceeded());
 					}
 				}
 

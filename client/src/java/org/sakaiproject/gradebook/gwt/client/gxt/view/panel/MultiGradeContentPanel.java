@@ -64,6 +64,7 @@ import org.sakaiproject.gradebook.gwt.client.model.type.EntityType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
+import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.SelectionMode;
@@ -574,8 +575,12 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 						String failedProperty = new StringBuilder().append(property).append(AppConstants.FAILED_FLAG).toString();
 						String failedMessage = (String)r.get(failedProperty);
 						
-						if (failedMessage != null) 
-							css.append(" ").append(resources.css().gbCellFailed());
+						if (failedMessage != null) {
+							if (GXT.isIE)
+								css.append(" ieGbCellFailed");
+							else
+								css.append(" ").append(resources.css().gbCellFailed());
+						}
 					}
 					
 					if (isShowDirtyCells && r != null /*&& isPropertyChanged*/) {
@@ -583,7 +588,10 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 						String successMessage = (String)r.get(successProperty);
 	
 						if (successMessage != null) {
-							css.append(" ").append(resources.css().gbCellSucceeded());
+							if (GXT.isIE)
+								css.append(" ieGbCellSucceeded");
+							else
+								css.append(" ").append(resources.css().gbCellSucceeded());
 						}
 					}
 	
@@ -604,30 +612,34 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 
 			@Override
 			protected String markupInnerCss(ModelData model, String property, boolean isShowDirtyCells, boolean isPropertyChanged) {
-
-				GradebookResources resources = Registry.get(AppConstants.RESOURCES);
 				StringBuilder innerCssClass = new StringBuilder();
-
+				
+				GradebookResources resources = Registry.get(AppConstants.RESOURCES);
+					
 				if (isCommented(model, property)) {
-					innerCssClass.append(" ").append(resources.css().gbCellCommented());
-				} 
-
+					if (GXT.isIE)
+						innerCssClass.append(" ieGbCellCommented");
+					else
+						innerCssClass.append(" ").append(resources.css().gbCellCommented());
+				}
+	
 				if (isClickable(model, property)) {
 					innerCssClass.append(" ").append(resources.css().gbCellClickable());
 				}
-
+									
 				if (innerCssClass.length() > 0)
 					return innerCssClass.toString();
-
+				
 				return null;
 			}
+			
 			
 		};
 		view.setEmptyText("-");
 
 		return view;
 	}
-
+	
 	@Override
 	protected Menu newContextMenu() {
 		contextMenu = new MultiGradeContextMenu(this);

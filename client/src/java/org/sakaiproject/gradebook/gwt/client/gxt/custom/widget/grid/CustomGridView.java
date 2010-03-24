@@ -59,6 +59,7 @@ import com.extjs.gxt.ui.client.widget.menu.CheckMenuItem;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.extjs.gxt.ui.client.widget.menu.SeparatorMenuItem;
+import com.google.gwt.user.client.ui.AbstractImagePrototype;
 
 
 // SAK-2394 
@@ -193,7 +194,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			item.setData("colIndex", Integer.valueOf(colIndex));
 			item.setText(i18n.headerGradeScale());
 			item.setTitle(i18n.headerGradeScaleTitle());
-			item.setIconStyle(resources.css().gbGradeScaleButton());
+			item.setIcon(AbstractImagePrototype.create(resources.calculator_edit()));
 			item.addSelectionListener(selectionListener);
 
 			menu.add(item);
@@ -206,7 +207,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			item.setData("colIndex", Integer.valueOf(colIndex));
 			item.setText(i18n.headerAddCategory());
 			item.setTitle(i18n.headerAddCategoryTitle());
-			item.setIconStyle(resources.css().gbAddCategoryIcon());
+			item.setIcon(AbstractImagePrototype.create(resources.folder_add()));
 			item.addSelectionListener(selectionListener);
 
 			menu.add(item);
@@ -218,7 +219,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 		item.setData("colIndex", Integer.valueOf(colIndex));
 		item.setText(i18n.headerAddItem());
 		item.setTitle(i18n.headerAddItemTitle());
-		item.setIconStyle(resources.css().gbAddItemIcon());
+		item.setIcon(AbstractImagePrototype.create(resources.table_add()));
 		item.addSelectionListener(selectionListener);
 
 		menu.add(item);
@@ -230,7 +231,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			item.setData("colIndex", Integer.valueOf(colIndex));
 			item.setText(i18n.headerEditItem());
 			item.setTitle(i18n.headerEditItemTitle());
-			item.setIconStyle(resources.css().gbEditItemIcon());
+			item.setIcon(AbstractImagePrototype.create(resources.table_edit()));
 			item.addSelectionListener(selectionListener);
 
 			menu.add(item);
@@ -241,7 +242,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			item.setData("colIndex", Integer.valueOf(colIndex));
 			item.setText(i18n.headerDeleteItem());
 			item.setTitle(i18n.headerDeleteItemTitle());
-			item.setIconStyle(resources.css().gbDeleteItemIcon());
+			item.setIcon(AbstractImagePrototype.create(resources.table_delete()));
 			item.addSelectionListener(selectionListener);
 
 			menu.add(item);
