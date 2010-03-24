@@ -165,6 +165,9 @@
 }
 
 .x-grid3-row td.x-grid3-cell, .x-grid3-summary-row td.x-grid3-cell {
+	border-left:1px solid lavender;
+	padding-left:1px;
+	padding-right:0;
 	line-height: 1.5em; /*23px;*/
 }
 
@@ -175,11 +178,7 @@
 }
  
 .x-grid3-cell-inner, .x-grid3-hd-inner {
-	overflow: hidden;
-  	-o-text-overflow: ellipsis;
-  	text-overflow: ellipsis;
   	padding: 3px 3px 3px 5px;
-  	white-space: nowrap;
 	font-size: 12pt;
 }
 
@@ -219,6 +218,13 @@
 	overflow:hidden;
 	padding:3px 5px;
 	white-space:nowrap;
+}
+
+.x-treegrid .x-grid3-row td.x-grid3-cell, .x-treegrid .x-grid3-summary-row td.x-grid3-cell {
+	border-left: 0px;
+	padding-left: 1px;
+	padding-right: 1px;
+	line-height: 1.2em; /*23px;*/
 }
 
 .x-tree3-node-text {

@@ -47,7 +47,6 @@ import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.SortDir;
 import com.extjs.gxt.ui.client.event.BaseEvent;
-import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.MenuEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
@@ -86,13 +85,13 @@ public abstract class CustomGridView extends BaseCustomGridView {
 		this.gridId = gridId;
 		this.resources = Registry.get(AppConstants.RESOURCES);
 		
-		addListener(Events.Refresh, new Listener() {
+		/*addListener(Events.Refresh, new Listener() {
 
 			public void handleEvent(BaseEvent be) {
 				grid.el().unmask();
 			}
 
-		});
+		});*/
 
 		selectionListener = new SelectionListener<MenuEvent>() {
 
@@ -351,36 +350,6 @@ public abstract class CustomGridView extends BaseCustomGridView {
 				model.setColumnWidth(gridId, columnId, Integer.valueOf(width));
 
 				Dispatcher.forwardEvent(GradebookEvents.Configuration.getEventType(), model);
-
-				/*
-				Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
-
-				AsyncCallback<ConfigurationModel> callback = new AsyncCallback<ConfigurationModel>() {
-
-					public void onFailure(Throwable caught) {
-						// FIXME: Should we notify the user when this fails?
-					}
-
-					public void onSuccess(ConfigurationModel result) {
-						GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-						ConfigurationModel configModel = selectedGradebook.getConfigurationModel();
-
-						Collection<String> propertyNames = result.getPropertyNames();
-						if (propertyNames != null) {
-							List<String> names = new ArrayList<String>(propertyNames);
-
-							for (int i=0;i<names.size();i++) {
-								String name = names.get(i);
-								String value = result.get(name);
-								configModel.set(name, value);
-							}
-						}
-					}
-
-				};
-
-				service.update(model, EntityType.CONFIGURATION, null, SecureToken.get(), callback);
-				*/
 			}
 		});
 
