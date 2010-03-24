@@ -175,10 +175,11 @@
 }
  
 .x-grid3-cell-inner, .x-grid3-hd-inner {
-	border-right: 2px solid #EEEEEE;
-	overflow:hidden;
-	padding:3px 5px 3px 5px;
-	white-space:nowrap;
+	overflow: hidden;
+  	-o-text-overflow: ellipsis;
+  	text-overflow: ellipsis;
+  	padding: 3px 3px 3px 5px;
+  	white-space: nowrap;
 	font-size: 12pt;
 }
 

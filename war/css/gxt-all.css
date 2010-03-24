@@ -1,5 +1,5 @@
 /*
- * Ext GWT Library 2.1.0
+ * Ext GWT Library 2.1.1
  * Copyright(c) 2006-2009, Ext JS, LLC.
  * licensing@extjs.com
  * 
@@ -34,6 +34,9 @@ html,body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,p,bloc
 }
 .ext-webkit *:focus{
     outline: none !important;
+}
+.ext-webkit .x-form-check-wrap input:focus {
+    outline: auto !important; 
 }
 .ext-shim {
     position:absolute;
@@ -83,6 +86,15 @@ html,body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,p,bloc
     -khtml-user-select: none;
     -webkit-user-select: ignore;
 }
+.x-unselectable-single  {
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: ignore;
+}
+.x-selectable, .x-selectable * {
+    -moz-user-select: text !important;
+    -webkit-user-select: auto;
+}
 .x-repaint {
     zoom: 1;
     background-color: transparent;
@@ -94,6 +106,11 @@ html,body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,p,bloc
     -moz-opacity: .6;
     filter: alpha(opacity=60);
 }
+
+.ext-ie .x-item-disabled {
+    filter: none !important;	
+}
+
 .x-item-disabled * {
 	cursor: default !important;
 }
@@ -953,8 +970,8 @@ ul.x-tab-strip li.x-tab-edge {
   border: 1px solid;
 }
 
-textarea.x-form-field {
-  padding: 2px 3px;
+.ext-gecko textarea.x-form-field {
+  padding: 0;
 }
 
 .x-form-text,.ext-ie .x-form-file {
@@ -1527,6 +1544,10 @@ fieldset.x-panel-collapsed .x-fieldset-bwrap {
 
 .x-triggerfield-noedit {
   cursor: pointer;
+}
+
+.ext-webkit .x-form-checkbox:focus { 
+  outline: auto !important;
 }.x-btn{
 	cursor:pointer;
 	white-space: nowrap;
@@ -1739,32 +1760,59 @@ fieldset.x-panel-collapsed .x-fieldset-bwrap {
 .x-btn-over .x-btn-bc{
 	background-position: 0 -18px;
 }
+.ext-webkit .x-btn-focus .x-btn-tl{
+	background-position: -6px 0;
+}
+.ext-webkit .x-btn-focus .x-btn-tr{
+	background-position: -9px 0;
+}
+.ext-webkit .x-btn-focus .x-btn-tc{
+	background-position: 0 -9px;
+}
+.ext-webkit .x-btn-focus .x-btn-ml{
+	background-position: -6px -24px;
+}
+.ext-webkit .x-btn-focus .x-btn-mr{
+	background-position: -9px -24px;
+}
+.ext-webkit .x-btn-focus .x-btn-mc{
+	background-position: 0 -2168px;
+}
+.ext-webkit .x-btn-focus .x-btn-bl{
+	background-position: -6px -3px;
+}
+.ext-webkit .x-btn-focus .x-btn-br{
+	background-position: -9px -3px;
+}
+.ext-webkit .x-btn-focus .x-btn-bc{
+	background-position: 0 -18px;
+}
 .x-btn-click .x-btn-tl, .x-btn-menu-active .x-btn-tl, .x-btn-pressed .x-btn-tl{
-	background-position: -12px 0;
+	background-position: -12px 0 !important;
 }
 .x-btn-click .x-btn-tr, .x-btn-menu-active .x-btn-tr, .x-btn-pressed .x-btn-tr{
-	background-position: -15px 0;
+	background-position: -15px 0 !important;
 }
 .x-btn-click .x-btn-tc, .x-btn-menu-active .x-btn-tc, .x-btn-pressed .x-btn-tc{
-	background-position: 0 -12px;
+	background-position: 0 -12px !important;
 }
 .x-btn-click .x-btn-ml, .x-btn-menu-active .x-btn-ml, .x-btn-pressed .x-btn-ml{
-	background-position: -12px -24px;
+	background-position: -12px -24px !important;
 }
 .x-btn-click .x-btn-mr, .x-btn-menu-active .x-btn-mr, .x-btn-pressed .x-btn-mr{
-	background-position: -15px -24px;
+	background-position: -15px -24px !important;
 }
 .x-btn-click .x-btn-mc, .x-btn-menu-active .x-btn-mc, .x-btn-pressed .x-btn-mc{
-	background-position: 0 -3240px;
+	background-position: 0 -3240px !important;
 }
 .x-btn-click .x-btn-bl, .x-btn-menu-active .x-btn-bl, .x-btn-pressed .x-btn-bl{
-	background-position: -12px -3px;
+	background-position: -12px -3px !important;
 }
 .x-btn-click .x-btn-br, .x-btn-menu-active .x-btn-br, .x-btn-pressed .x-btn-br{
-	background-position: -15px -3px;
+	background-position: -15px -3px !important;
 }
 .x-btn-click .x-btn-bc, .x-btn-menu-active .x-btn-bc, .x-btn-pressed .x-btn-bc{
-	background-position: 0 -21px;
+	background-position: 0 -21px !important;
 }
 .x-btn-disabled *{
 	cursor:default !important;
@@ -2168,7 +2216,7 @@ div.x-toolbar-no-items {
   -moz-user-focus: normal;
 }
 
-.x-grid3-row,.x-grid3-summary-row{
+ .x-grid3-summary-row{
   -moz-user-select: none;
   -khtml-user-select: none;
   -webkit-user-select: ignore;
@@ -2435,7 +2483,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner,td.sort-desc .x-grid3-hd-inner,td.sort-asc 
   background: transparent no-repeat 0 0;
 }
 
-..x-grid3-invalid-cell {
+.x-grid3-invalid-cell {
   background: repeat-x bottom;
 }
 
@@ -2549,6 +2597,10 @@ a.x-grid3-hd-btn:hover {
   height: 100%;
 }
 
+.x-grid3-group-checker {
+  float: left;	
+}
+
 .x-grid3-row-checker,.x-grid3-hd-checker {
   width: 100%;
   height: 18px;
@@ -2636,12 +2688,12 @@ a.x-grid3-hd-btn:hover {
   padding-top: 6px;
 }
 
-.x-grid-group-hd div {
+.x-grid-group-hd .x-grid-group-div {
   background: transparent no-repeat 3px -47px;
   padding: 4px 4px 4px 17px;
 }
 
-.x-grid-group-collapsed .x-grid-group-hd div {
+.x-grid-group-collapsed .x-grid-group-hd .x-grid-group-div {
   background-position: 3px 3px;
 }
 
@@ -2751,6 +2803,22 @@ a.x-grid3-hd-btn:hover {
   overflow-y: scroll;
   overflow-x: hidden;
 }
+
+.x-grid3-group-checker div {
+  width: 14px;
+  height: 18px;
+  background-position: -1 -2px;
+  background-repeat: no-repeat;
+  background-color: transparent;
+}
+
+.x-grid-group-hd .x-grid3-group-check {
+  background-image:url(../images/default/menu/checked.gif);
+}
+
+.x-grid-group-hd .x-grid3-group-uncheck {
+  background-image:url(../images/default/menu/unchecked.gif);
+} 
 .x-dd-drag-proxy{
 	position:absolute;
 	left:0;
@@ -6390,7 +6458,7 @@ td.x-grid3-hd-over .x-grid3-hd-inner, td.sort-desc .x-grid3-hd-inner, td.sort-as
 .x-grid-group-hd {
     border-bottom-color:#99bbe8;
 }
-.x-grid-group-hd div {
+.x-grid-group-hd .x-grid-group-div {
     background-image:url(../images/default/grid/group-expand-sprite.gif);
     color:#3764a0;
     font:bold 11px tahoma, arial, helvetica, sans-serif;
