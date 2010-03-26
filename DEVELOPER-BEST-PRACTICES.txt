@@ -30,14 +30,5 @@ This still requires that the root pom.xml file be modified to change it's versio
 to 2.6.3, for example), which is unfortunate. We would like to eliminate that step in the future. 
 
 
-h5. 2. Pre-compiling GWT code
-\\
-Currently we are pre-compiling our GWT code in Eclipse to speed up the build process in deployment. 
-This adds a fair amount of complexity to the process and has the major disadvantage that it's possible for
-the developer to forget to compile his or her client code, and deploy a version that it incompatible with 
-itself. We've recently upgraded the mvn build for the "client" module, so it would be straightforward to
-change this strategy, but for the moment it's important to remember to click on the GWT Compile button
-in Eclipse, wait for it to complete compilation, then run mvn clean install (at least) before checking in 
-any changes that impact client code. *This is very important.*
 
 
