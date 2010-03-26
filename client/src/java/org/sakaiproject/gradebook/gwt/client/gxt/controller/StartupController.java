@@ -3,29 +3,16 @@ package org.sakaiproject.gradebook.gwt.client.gxt.controller;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
-import org.sakaiproject.gradebook.gwt.client.RestBuilder;
-import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
-import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
-import org.sakaiproject.gradebook.gwt.client.gxt.model.ApplicationModel;
-import org.sakaiproject.gradebook.gwt.client.gxt.model.type.ApplicationModelType;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
 
 import com.extjs.gxt.ui.client.Registry;
-import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
-import com.extjs.gxt.ui.client.widget.Info;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.RunAsyncCallback;
-import com.google.gwt.http.client.Request;
-import com.google.gwt.http.client.RequestCallback;
-import com.google.gwt.http.client.RequestException;
-import com.google.gwt.http.client.Response;
-import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.RootPanel;
 
@@ -67,7 +54,8 @@ public class StartupController extends Controller {
 					Dispatcher dispatcher = Dispatcher.get();
 					dispatcher.addController(new InstructorController(i18n, isUserAbleToEditItems, isNewGradebook));					
 					dispatcher.addController(new ServiceController(i18n));
-					findApplicationModel(authModel);
+					
+					doNextStep();
 				}
 			});
 		} else if (isUserAbleToViewOwnGrades) {
@@ -80,7 +68,8 @@ public class StartupController extends Controller {
 					Dispatcher dispatcher = Dispatcher.get();
 					dispatcher.addController(new StudentController());
 					dispatcher.addController(new ServiceController(i18n));
-					findApplicationModel(authModel);
+					
+					doNextStep();
 				}
 			});
 		} else {
@@ -88,92 +77,14 @@ public class StartupController extends Controller {
 		}
 	}
 	
-	private void findApplicationModel(AuthModel authModel) {
-		String appAsJson = Cookies.getCookie(AppConstants.APP_COOKIE_NAME);
+	private void doNextStep() {
+		ApplicationSetup appModel = Registry.get(AppConstants.APP_MODEL);
 		
-		if (appAsJson != null && !appAsJson.equals("")) {
-			Info.display("Application", "As cookie");
-			onApplicationModelSuccess(appAsJson);
-		} else {
-			getApplicationModel(0, authModel);
-		}
-	}
+		if (appModel == null) 
+			Registry.register(AppConstants.HAS_CONTROLLERS, Boolean.TRUE);
+		else 
+			Dispatcher.forwardEvent(GradebookEvents.Startup.getEventType(), appModel);
 	
-	private void getApplicationModel(final int i, final AuthModel authModel) {
-		
-		RestBuilder builder = RestBuilder.getInstance(Method.GET, 
-				GWT.getModuleBaseURL(),
-				AppConstants.REST_FRAGMENT,
-				AppConstants.APPLICATION_FRAGMENT);
-		
-		try {
-			builder.sendRequest(null, new RequestCallback() {
-
-				public void onError(Request request, Throwable caught) {
-					onApplicationModelFailure(i, authModel, caught);
-				}
-
-				public void onResponseReceived(Request request, Response response) {
-					
-					if (response.getStatusCode() != 200) {
-						Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent("Status", "Code: " + response.getStatusCode(), true));
-						return;
-					}
-					
-					String result = response.getText();
-
-					onApplicationModelSuccess(result);
-				}
-				
-			});
-		} catch (RequestException e) {
-			Dispatcher.forwardEvent(GradebookEvents.Exception.getEventType(), new NotificationEvent(e));
-		}
-		
-		/*
-		AsyncCallback<ApplicationModel> callback = 
-			new AsyncCallback<ApplicationModel>() {
-
-				public void onFailure(Throwable caught) {
-					Dispatcher dispatcher = Dispatcher.get();
-					// If this is the first try, then give it another shot
-					if (i == 0)
-						getApplicationModel(i+1, authModel);
-					else
-						dispatcher.dispatch(GradebookEvents.Exception.getEventType(), new NotificationEvent(caught));
-				}
-
-				public void onSuccess(ApplicationModel result) {
-					Dispatcher dispatcher = Dispatcher.get();
-					dispatcher.dispatch(GradebookEvents.Startup.getEventType(), result);
-				}
-			
-		};
-		Gradebook2RPCServiceAsync dataService = Registry.get(AppConstants.SERVICE);
-		dataService.get(null, null, EntityType.APPLICATION, null, null, SecureToken.get(), callback);
-		*/
-	}
-	
-	private void onApplicationModelSuccess(String result) {
-		JsonTranslater translater = new JsonTranslater(new ApplicationModelType()) {
-			protected ModelData newModelInstance() {
-				return new ApplicationModel();
-			}
-		};
-		ApplicationSetup applicationModel = (ApplicationSetup)translater.translate(result);
-		
-		Dispatcher dispatcher = Dispatcher.get();
-		dispatcher.dispatch(GradebookEvents.Startup.getEventType(), applicationModel);
-	}
-	
-	private void onApplicationModelFailure(int i, AuthModel authModel, Throwable caught) {
-		Dispatcher dispatcher = Dispatcher.get();
-		// If this is the first try, then give it another shot
-		if (i == 0)
-			getApplicationModel(i+1, authModel);
-		else
-			dispatcher.dispatch(GradebookEvents.Exception.getEventType(), new NotificationEvent(caught));
-
 	}
 
 }

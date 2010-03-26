@@ -34,6 +34,8 @@ public interface AppConstants {
 	public static final String VERSION			= "version";
 	public static final String IS_ABLE_TO_GRADE = "canGrade";
 	public static final String IS_ABLE_TO_EDIT 	= "canEdit";
+	public static final String HAS_CONTROLLERS	= "hasControllers";
+	public static final String APP_MODEL		= "appModel";
 	
 	// Item type constants
 	public static final String GRADEBOOK 	= "Gradebook";

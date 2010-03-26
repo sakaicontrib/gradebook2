@@ -22,17 +22,27 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client;
 
+import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
+import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
 import org.sakaiproject.gradebook.gwt.client.gxt.controller.StartupController;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.ApplicationModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.type.ApplicationModelType;
+import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
 import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Registry;
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
+import com.extjs.gxt.ui.client.widget.Info;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.Request;
+import com.google.gwt.http.client.RequestCallback;
+import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.Cookies;
 
@@ -77,6 +87,7 @@ public class GradebookApplication implements EntryPoint {
 		} else {
 			getAuthorization(0);
 		}
+		findApplicationModel();
 	}
 	
 	private String getVersion() {
@@ -124,7 +135,74 @@ public class GradebookApplication implements EntryPoint {
 		GXT.hideLoadingPanel("loading");
 	}
 	
+	private void findApplicationModel() {
+		String appAsJson = Cookies.getCookie(AppConstants.APP_COOKIE_NAME);
+		
+		if (appAsJson != null && !appAsJson.equals("")) {
+			Info.display("Application", "As cookie");
+			onApplicationModelSuccess(appAsJson);
+		} else {
+			getApplicationModel(0);
+		}
+	}
 	
+	private void getApplicationModel(final int i) {
+		
+		RestBuilder builder = RestBuilder.getInstance(Method.GET, 
+				GWT.getModuleBaseURL(),
+				AppConstants.REST_FRAGMENT,
+				AppConstants.APPLICATION_FRAGMENT);
+		
+		try {
+			builder.sendRequest(null, new RequestCallback() {
+
+				public void onError(Request request, Throwable caught) {
+					onApplicationModelFailure(i, caught);
+				}
+
+				public void onResponseReceived(Request request, Response response) {
+					
+					if (response.getStatusCode() != 200) {
+						Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent("Status", "Code: " + response.getStatusCode(), true));
+						return;
+					}
+					
+					String result = response.getText();
+
+					onApplicationModelSuccess(result);
+				}
+				
+			});
+		} catch (RequestException e) {
+			Dispatcher.forwardEvent(GradebookEvents.Exception.getEventType(), new NotificationEvent(e));
+		}
+	}
+	
+	private void onApplicationModelSuccess(String result) {
+		JsonTranslater translater = new JsonTranslater(new ApplicationModelType()) {
+			protected ModelData newModelInstance() {
+				return new ApplicationModel();
+			}
+		};
+		ApplicationSetup applicationModel = (ApplicationSetup)translater.translate(result);
+		
+		Boolean hasControllers = Registry.get(AppConstants.HAS_CONTROLLERS);
+		if (DataTypeConversionUtil.checkBoolean(hasControllers)) {
+			Dispatcher.forwardEvent(GradebookEvents.Startup.getEventType(), applicationModel);
+		} else {
+			Registry.register(AppConstants.APP_MODEL, applicationModel);
+		}
+	}
+	
+	private void onApplicationModelFailure(int i, Throwable caught) {
+		Dispatcher dispatcher = Dispatcher.get();
+		// If this is the first try, then give it another shot
+		if (i == 0)
+			getApplicationModel(i+1);
+		else
+			dispatcher.dispatch(GradebookEvents.Exception.getEventType(), new NotificationEvent(caught));
+
+	}
 	
 	public native void resizeMainFrame(String placementId, int setHeight) /*-{	
 		
