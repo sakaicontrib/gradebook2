@@ -23,15 +23,11 @@
 
 package org.sakaiproject.gradebook.gwt.client.gxt.view;
 
-import java.util.EnumSet;
-
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
-import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
-import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.LearnerTranslater;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
@@ -101,24 +97,15 @@ public class MultigradeView extends View {
 			}
 
 		};
-		this.multigrade = new MultiGradeContentPanel(null) {
-
-			protected PagingLoader<PagingLoadResult<ModelData>> newLoader() {
-				return multigradeLoader;
-			}
-
-			protected ListStore<ModelData> newStore(PagingLoader<PagingLoadResult<ModelData>> loader) {
-				return multigradeStore;
-			}
-		};
+		
 	}
 
 	public ListStore<ModelData> getStore() {
-		return multigrade.getStore();
+		return multigradeStore;
 	}
 
 	public void deselectAll() {
-		multigrade.deselectAll();
+		getMultiGradeContentPanel().deselectAll();
 	}
 
 	@Override
@@ -160,6 +147,7 @@ public class MultigradeView extends View {
 			case STARTUP:
 				ApplicationSetup applicationModel = (ApplicationSetup)event.getData();
 				initUI(applicationModel);
+				getMultiGradeContentPanel();
 				Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 				onSwitchGradebook(selectedGradebook);
 				break;
@@ -192,60 +180,72 @@ public class MultigradeView extends View {
 	}
 
 	protected void onBeginItemUpdates() {
-		multigrade.onBeginItemUpdates();
+		getMultiGradeContentPanel().onBeginItemUpdates();
 	}
 
 	protected void onBrowseLearner(BrowseLearner event) {
-		multigrade.onBrowseLearner(event);
+		getMultiGradeContentPanel().onBrowseLearner(event);
 	}
 
 	protected void onEndItemUpdates() {
-		multigrade.onEndItemUpdates();
+		getMultiGradeContentPanel().onEndItemUpdates();
 	}
 
 	protected void onItemCreated(ItemModel itemModel) {
-		multigrade.onItemCreated(itemModel);
+		getMultiGradeContentPanel().onItemCreated(itemModel);
 	}
 
 	protected void onItemDeleted(Item itemModel) {
-		multigrade.onItemDeleted(itemModel);
+		getMultiGradeContentPanel().onItemDeleted(itemModel);
 	}
 
 	protected void onItemUpdated(Item itemModel) {	
-		multigrade.onItemUpdated(itemModel);
+		getMultiGradeContentPanel().onItemUpdated(itemModel);
 	}
 
 	protected void onLearnerGradeRecordUpdated(UserEntityAction<?> action) {
-		multigrade.onLearnerGradeRecordUpdated(action);
+		getMultiGradeContentPanel().onLearnerGradeRecordUpdated(action);
 	}
 
 	protected void onRefreshCourseGrades() {
-		multigrade.onRefreshCourseGrades();
+		getMultiGradeContentPanel().onRefreshCourseGrades();
 	}
 
 	protected void onRefreshGradebookItems(Gradebook gradebookModel) {
 		//buildLoaderAndStore(gradebookModel);
-		multigrade.onRefreshGradebookItems(gradebookModel);
+		getMultiGradeContentPanel().onRefreshGradebookItems(gradebookModel);
 	}
 
 	protected void onRefreshGradebookSetup(Gradebook gradebookModel) {
-		multigrade.onRefreshGradebookSetup(gradebookModel);
+		getMultiGradeContentPanel().onRefreshGradebookSetup(gradebookModel);
 	}
 
 	protected void onShowColumns(ShowColumnsEvent event) {
-		multigrade.onShowColumns(event);
+		getMultiGradeContentPanel().onShowColumns(event);
 	}
 
 	protected void onSwitchGradebook(Gradebook selectedGradebook) {
-		multigrade.onSwitchGradebook(selectedGradebook);
+		getMultiGradeContentPanel().onSwitchGradebook(selectedGradebook);
 	}
 
 	protected void onUserChange(UserEntityAction<?> action) {
-		multigrade.onUserChange(action);
+		getMultiGradeContentPanel().onUserChange(action);
 	}
 
 	public MultiGradeContentPanel getMultiGradeContentPanel() {
+		if (multigrade == null) {
+			this.multigrade = new MultiGradeContentPanel(null, multigradeStore) {
+
+				protected PagingLoader<PagingLoadResult<ModelData>> newLoader() {
+					return multigradeLoader;
+				}
+
+				protected ListStore<ModelData> newStore(PagingLoader<PagingLoadResult<ModelData>> loader) {
+					return multigradeStore;
+				}
+			};
+		}
 		return multigrade;
 	}
-
+	
 }

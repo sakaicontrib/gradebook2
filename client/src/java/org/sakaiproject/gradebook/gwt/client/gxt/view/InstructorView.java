@@ -168,9 +168,9 @@ public class InstructorView extends AppView {
 		centerCardLayout = new CardLayout();
 		centerLayoutContainer.setLayout(centerCardLayout);
 
-		centerLayoutContainer.add(multigradeView.getMultiGradeContentPanel());
-		centerLayoutContainer.add(treeView.getFormPanel());
-		centerCardLayout.setActiveItem(multigradeView.getMultiGradeContentPanel());
+		//centerLayoutContainer.add(multigradeView.getMultiGradeContentPanel());
+		//centerLayoutContainer.add(treeView.getFormPanel());
+		//centerCardLayout.setActiveItem(multigradeView.getMultiGradeContentPanel());
 
 		eastLayoutContainer = new ContentPanel() {
 			protected void onRender(Element parent, int index) {
@@ -220,6 +220,10 @@ public class InstructorView extends AppView {
 		
 		if (DataTypeConversionUtil.checkBoolean(selectedGradebook.isNewGradebook()))
 			Dispatcher.forwardEvent(GradebookEvents.StartEditItem.getEventType(), selectedGradebook.getGradebookItemModel());
+	
+		centerLayoutContainer.add(multigradeView.getMultiGradeContentPanel());
+		centerLayoutContainer.add(treeView.getFormPanel());
+		centerCardLayout.setActiveItem(multigradeView.getMultiGradeContentPanel());
 	}
 
 	@Override

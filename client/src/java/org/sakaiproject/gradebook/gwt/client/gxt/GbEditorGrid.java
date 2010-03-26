@@ -45,5 +45,5 @@ public class GbEditorGrid<M extends ModelData> extends EditorGrid<M> {
 	public EditorSupport<M> getEditorSupport() {
 	    return editSupport;
 	}
-
+	
 }

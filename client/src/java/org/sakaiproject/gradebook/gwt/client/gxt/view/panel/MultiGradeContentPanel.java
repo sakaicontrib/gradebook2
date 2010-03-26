@@ -145,8 +145,8 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 	private ListLoader<ListLoadResult<ModelData>> sectionsLoader;
 
 
-	public MultiGradeContentPanel(ContentPanel childPanel) {
-		super(AppConstants.MULTIGRADE, EntityType.LEARNER, childPanel);
+	public MultiGradeContentPanel(ContentPanel childPanel, ListStore<ModelData> store) {
+		super(AppConstants.MULTIGRADE, EntityType.LEARNER, childPanel, store);
 		setHeaderVisible(false);
 
 		// This UserChangeEvent listener
@@ -489,7 +489,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 	public void onShowColumns(ShowColumnsEvent event) {
 		showColumns(event, cm);
 	}
-
+	
 	public void onSwitchGradebook(Gradebook selectedGradebook) {
 
 		Configuration configModel = selectedGradebook.getConfigurationModel();
@@ -514,14 +514,14 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 			pageSize = DEFAULT_PAGE_SIZE;
 		
 		pagingToolBar.setPageSize(pageSize);
-
+		
 		onRefreshGradebookSetup(selectedGradebook);
-		reconfigureGrid(newColumnModel(selectedGradebook));
+		
+		if (!isPopulated) 
+			reconfigureGrid(newColumnModel(selectedGradebook));
 
-		if (newLoader() != null) 
-			newLoader().load(0, pageSize);
+		pagingToolBar.refresh();
 		pageSizeField.setValue(Integer.valueOf(pageSize));
-
 	}
 
 	public void onUserChange(UserEntityAction<?> action) {

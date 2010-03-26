@@ -89,14 +89,17 @@ public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 	
 	protected RefreshAction refreshAction = RefreshAction.NONE;
 	
-	public GridPanel(String gridId, EntityType entityType) {
-		this(gridId, entityType, null);
+	protected boolean isPopulated = false;
+	
+	public GridPanel(String gridId, EntityType entityType, ListStore<M> store) {
+		this(gridId, entityType, null, store);
 	}
 	
-	public GridPanel(String gridId, EntityType entityType, ContentPanel childPanel) {
+	public GridPanel(String gridId, EntityType entityType, ContentPanel childPanel, ListStore<M> store) {
 		super();
 		this.gridId = gridId;
 		this.entityType = entityType;
+		this.store = store;
 		
 		setHeaderVisible(false);
 		setLayout( new FitLayout());
@@ -111,10 +114,21 @@ public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 		
 		addComponents();
 
-		store = new ListStore<M>();
-		cm  = new CustomColumnModel("", gridId, new ArrayList<ColumnConfig>());
+		if (this.store == null)
+			this.store = new ListStore<M>();
+		else {
+			pagingToolBar.bind(newLoader());
+		}
+		
+		Gradebook gbModel = Registry.get(AppConstants.CURRENT);
+		if (gbModel != null) {
+			this.isPopulated = true;
+			cm = newColumnModel(gbModel);
+		} else {
+			cm  = new CustomColumnModel("", gridId, new ArrayList<ColumnConfig>());
+		}
 	
-		grid = new GbEditorGrid<M>(store, cm);
+		grid = new GbEditorGrid<M>(this.store, cm);
 		
 		addGridListenersAndPlugins(grid);
 		
@@ -166,7 +180,6 @@ public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 		}
 		refreshAction = RefreshAction.NONE;
 	}
-	
 	
 	protected FormPanel createForm() {
 		return null;
@@ -270,9 +283,6 @@ public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 		pagingToolBar.bind(newLoader());
 
 		grid.reconfigure(store, cm);
-		
-		if (grid.isRendered())
-			grid.el().unmask();
 	}
 	
 	protected GridView newGridView() {
@@ -333,6 +343,7 @@ public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 		if (!useExistingColumnModel || cm == null)
 			cm = newColumnModel(selectedGradebook);
+		
 		grid.reconfigure(newStore(newLoader()), cm);
 		
 		if (grid.isRendered())
