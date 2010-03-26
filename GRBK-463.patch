@@ -1,0 +1,301 @@
+Index: client/src/java/org/sakaiproject/gradebook/gwt/client/gxt/GridPanel.java
+===================================================================
+--- client/src/java/org/sakaiproject/gradebook/gwt/client/gxt/GridPanel.java	(revision 66811)
++++ client/src/java/org/sakaiproject/gradebook/gwt/client/gxt/GridPanel.java	(working copy)
+@@ -89,14 +89,17 @@
+ 	
+ 	protected RefreshAction refreshAction = RefreshAction.NONE;
+ 	
+-	public GridPanel(String gridId, EntityType entityType) {
+-		this(gridId, entityType, null);
++	protected boolean isPopulated = false;
++	
++	public GridPanel(String gridId, EntityType entityType, ListStore<M> store) {
++		this(gridId, entityType, null, store);
+ 	}
+ 	
+-	public GridPanel(String gridId, EntityType entityType, ContentPanel childPanel) {
++	public GridPanel(String gridId, EntityType entityType, ContentPanel childPanel, ListStore<M> store) {
+ 		super();
+ 		this.gridId = gridId;
+ 		this.entityType = entityType;
++		this.store = store;
+ 		
+ 		setHeaderVisible(false);
+ 		setLayout( new FitLayout());
+@@ -111,10 +114,18 @@
+ 		
+ 		addComponents();
+ 
+-		store = new ListStore<M>();
+-		cm  = new CustomColumnModel("", gridId, new ArrayList<ColumnConfig>());
++		if (this.store == null)
++			this.store = new ListStore<M>();
++		
++		Gradebook gbModel = Registry.get(AppConstants.CURRENT);
++		if (gbModel != null) {
++			this.isPopulated = true;
++			cm = newColumnModel(gbModel);
++		} else {
++			cm  = new CustomColumnModel("", gridId, new ArrayList<ColumnConfig>());
++		}
+ 	
+-		grid = new GbEditorGrid<M>(store, cm);
++		grid = new GbEditorGrid<M>(this.store, cm);
+ 		
+ 		addGridListenersAndPlugins(grid);
+ 		
+@@ -167,7 +178,6 @@
+ 		refreshAction = RefreshAction.NONE;
+ 	}
+ 	
+-	
+ 	protected FormPanel createForm() {
+ 		return null;
+ 	}
+@@ -270,9 +280,6 @@
+ 		pagingToolBar.bind(newLoader());
+ 
+ 		grid.reconfigure(store, cm);
+-		
+-		if (grid.isRendered())
+-			grid.el().unmask();
+ 	}
+ 	
+ 	protected GridView newGridView() {
+@@ -333,6 +340,7 @@
+ 		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
+ 		if (!useExistingColumnModel || cm == null)
+ 			cm = newColumnModel(selectedGradebook);
++		
+ 		grid.reconfigure(newStore(newLoader()), cm);
+ 		
+ 		if (grid.isRendered())
+Index: client/src/java/org/sakaiproject/gradebook/gwt/client/gxt/GbEditorGrid.java
+===================================================================
+--- client/src/java/org/sakaiproject/gradebook/gwt/client/gxt/GbEditorGrid.java	(revision 66811)
++++ client/src/java/org/sakaiproject/gradebook/gwt/client/gxt/GbEditorGrid.java	(working copy)
+@@ -45,5 +45,5 @@
+ 	public EditorSupport<M> getEditorSupport() {
+ 	    return editSupport;
+ 	}
+-
++	
+ }
+Index: client/src/java/org/sakaiproject/gradebook/gwt/client/gxt/view/InstructorView.java
+===================================================================
+--- client/src/java/org/sakaiproject/gradebook/gwt/client/gxt/view/InstructorView.java	(revision 66819)
++++ client/src/java/org/sakaiproject/gradebook/gwt/client/gxt/view/InstructorView.java	(working copy)
+@@ -168,9 +168,9 @@
+ 		centerCardLayout = new CardLayout();
+ 		centerLayoutContainer.setLayout(centerCardLayout);
+ 
+-		centerLayoutContainer.add(multigradeView.getMultiGradeContentPanel());
+-		centerLayoutContainer.add(treeView.getFormPanel());
+-		centerCardLayout.setActiveItem(multigradeView.getMultiGradeContentPanel());
++		//centerLayoutContainer.add(multigradeView.getMultiGradeContentPanel());
++		//centerLayoutContainer.add(treeView.getFormPanel());
++		//centerCardLayout.setActiveItem(multigradeView.getMultiGradeContentPanel());
+ 
+ 		eastLayoutContainer = new ContentPanel() {
+ 			protected void onRender(Element parent, int index) {
+@@ -220,6 +220,10 @@
+ 		
+ 		if (DataTypeConversionUtil.checkBoolean(selectedGradebook.isNewGradebook()))
+ 			Dispatcher.forwardEvent(GradebookEvents.StartEditItem.getEventType(), selectedGradebook.getGradebookItemModel());
++	
++		centerLayoutContainer.add(multigradeView.getMultiGradeContentPanel());
++		centerLayoutContainer.add(treeView.getFormPanel());
++		centerCardLayout.setActiveItem(multigradeView.getMultiGradeContentPanel());
+ 	}
+ 
+ 	@Override
+Index: client/src/java/org/sakaiproject/gradebook/gwt/client/gxt/view/panel/MultiGradeContentPanel.java
+===================================================================
+--- client/src/java/org/sakaiproject/gradebook/gwt/client/gxt/view/panel/MultiGradeContentPanel.java	(revision 66819)
++++ client/src/java/org/sakaiproject/gradebook/gwt/client/gxt/view/panel/MultiGradeContentPanel.java	(working copy)
+@@ -145,8 +145,8 @@
+ 	private ListLoader<ListLoadResult<ModelData>> sectionsLoader;
+ 
+ 
+-	public MultiGradeContentPanel(ContentPanel childPanel) {
+-		super(AppConstants.MULTIGRADE, EntityType.LEARNER, childPanel);
++	public MultiGradeContentPanel(ContentPanel childPanel, ListStore<ModelData> store) {
++		super(AppConstants.MULTIGRADE, EntityType.LEARNER, childPanel, store);
+ 		setHeaderVisible(false);
+ 
+ 		// This UserChangeEvent listener
+@@ -490,6 +490,8 @@
+ 		showColumns(event, cm);
+ 	}
+ 
++	private boolean isGridRefreshedAfterReconfigure = false;
++	
+ 	public void onSwitchGradebook(Gradebook selectedGradebook) {
+ 
+ 		Configuration configModel = selectedGradebook.getConfigurationModel();
+@@ -516,12 +518,17 @@
+ 		pagingToolBar.setPageSize(pageSize);
+ 
+ 		onRefreshGradebookSetup(selectedGradebook);
+-		reconfigureGrid(newColumnModel(selectedGradebook));
++		
++		if (!isPopulated)
++			reconfigureGrid(newColumnModel(selectedGradebook));
++		else {
++			pagingToolBar.bind(newLoader());
++		}
+ 
+-		if (newLoader() != null) 
+-			newLoader().load(0, pageSize);
++		pagingToolBar.refresh();
++		//if (newLoader() != null) 
++		//	newLoader().load(0, pageSize);
+ 		pageSizeField.setValue(Integer.valueOf(pageSize));
+-
+ 	}
+ 
+ 	public void onUserChange(UserEntityAction<?> action) {
+Index: client/src/java/org/sakaiproject/gradebook/gwt/client/gxt/view/MultigradeView.java
+===================================================================
+--- client/src/java/org/sakaiproject/gradebook/gwt/client/gxt/view/MultigradeView.java	(revision 66811)
++++ client/src/java/org/sakaiproject/gradebook/gwt/client/gxt/view/MultigradeView.java	(working copy)
+@@ -23,15 +23,11 @@
+ 
+ package org.sakaiproject.gradebook.gwt.client.gxt.view;
+ 
+-import java.util.EnumSet;
+-
+ import org.sakaiproject.gradebook.gwt.client.AppConstants;
+-import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
+ import org.sakaiproject.gradebook.gwt.client.I18nConstants;
+ import org.sakaiproject.gradebook.gwt.client.RestBuilder;
+ import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
+ import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
+-import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
+ import org.sakaiproject.gradebook.gwt.client.gxt.LearnerTranslater;
+ import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
+ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
+@@ -101,24 +97,15 @@
+ 			}
+ 
+ 		};
+-		this.multigrade = new MultiGradeContentPanel(null) {
+-
+-			protected PagingLoader<PagingLoadResult<ModelData>> newLoader() {
+-				return multigradeLoader;
+-			}
+-
+-			protected ListStore<ModelData> newStore(PagingLoader<PagingLoadResult<ModelData>> loader) {
+-				return multigradeStore;
+-			}
+-		};
++		
+ 	}
+ 
+ 	public ListStore<ModelData> getStore() {
+-		return multigrade.getStore();
++		return multigradeStore;
+ 	}
+ 
+ 	public void deselectAll() {
+-		multigrade.deselectAll();
++		getMultiGradeContentPanel().deselectAll();
+ 	}
+ 
+ 	@Override
+@@ -160,6 +147,7 @@
+ 			case STARTUP:
+ 				ApplicationSetup applicationModel = (ApplicationSetup)event.getData();
+ 				initUI(applicationModel);
++				getMultiGradeContentPanel();
+ 				Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
+ 				onSwitchGradebook(selectedGradebook);
+ 				break;
+@@ -192,60 +180,72 @@
+ 	}
+ 
+ 	protected void onBeginItemUpdates() {
+-		multigrade.onBeginItemUpdates();
++		getMultiGradeContentPanel().onBeginItemUpdates();
+ 	}
+ 
+ 	protected void onBrowseLearner(BrowseLearner event) {
+-		multigrade.onBrowseLearner(event);
++		getMultiGradeContentPanel().onBrowseLearner(event);
+ 	}
+ 
+ 	protected void onEndItemUpdates() {
+-		multigrade.onEndItemUpdates();
++		getMultiGradeContentPanel().onEndItemUpdates();
+ 	}
+ 
+ 	protected void onItemCreated(ItemModel itemModel) {
+-		multigrade.onItemCreated(itemModel);
++		getMultiGradeContentPanel().onItemCreated(itemModel);
+ 	}
+ 
+ 	protected void onItemDeleted(Item itemModel) {
+-		multigrade.onItemDeleted(itemModel);
++		getMultiGradeContentPanel().onItemDeleted(itemModel);
+ 	}
+ 
+ 	protected void onItemUpdated(Item itemModel) {	
+-		multigrade.onItemUpdated(itemModel);
++		getMultiGradeContentPanel().onItemUpdated(itemModel);
+ 	}
+ 
+ 	protected void onLearnerGradeRecordUpdated(UserEntityAction<?> action) {
+-		multigrade.onLearnerGradeRecordUpdated(action);
++		getMultiGradeContentPanel().onLearnerGradeRecordUpdated(action);
+ 	}
+ 
+ 	protected void onRefreshCourseGrades() {
+-		multigrade.onRefreshCourseGrades();
++		getMultiGradeContentPanel().onRefreshCourseGrades();
+ 	}
+ 
+ 	protected void onRefreshGradebookItems(Gradebook gradebookModel) {
+ 		//buildLoaderAndStore(gradebookModel);
+-		multigrade.onRefreshGradebookItems(gradebookModel);
++		getMultiGradeContentPanel().onRefreshGradebookItems(gradebookModel);
+ 	}
+ 
+ 	protected void onRefreshGradebookSetup(Gradebook gradebookModel) {
+-		multigrade.onRefreshGradebookSetup(gradebookModel);
++		getMultiGradeContentPanel().onRefreshGradebookSetup(gradebookModel);
+ 	}
+ 
+ 	protected void onShowColumns(ShowColumnsEvent event) {
+-		multigrade.onShowColumns(event);
++		getMultiGradeContentPanel().onShowColumns(event);
+ 	}
+ 
+ 	protected void onSwitchGradebook(Gradebook selectedGradebook) {
+-		multigrade.onSwitchGradebook(selectedGradebook);
++		getMultiGradeContentPanel().onSwitchGradebook(selectedGradebook);
+ 	}
+ 
+ 	protected void onUserChange(UserEntityAction<?> action) {
+-		multigrade.onUserChange(action);
++		getMultiGradeContentPanel().onUserChange(action);
+ 	}
+ 
+ 	public MultiGradeContentPanel getMultiGradeContentPanel() {
++		if (multigrade == null) {
++			this.multigrade = new MultiGradeContentPanel(null, multigradeStore) {
++
++				protected PagingLoader<PagingLoadResult<ModelData>> newLoader() {
++					return multigradeLoader;
++				}
++
++				protected ListStore<ModelData> newStore(PagingLoader<PagingLoadResult<ModelData>> loader) {
++					return multigradeStore;
++				}
++			};
++		}
+ 		return multigrade;
+ 	}
+-
++	
+ }
