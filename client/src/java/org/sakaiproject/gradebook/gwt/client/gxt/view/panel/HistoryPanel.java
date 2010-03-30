@@ -99,7 +99,7 @@ public class HistoryPanel extends EntityPanel {
 			
 			public Object convertModelValue(Object value) {
 				
-				if (value instanceof String && (((String)value).equalsIgnoreCase("true") || ((String)value).equalsIgnoreCase("false")))
+				if (value != null && value instanceof String && (((String)value).equalsIgnoreCase("true") || ((String)value).equalsIgnoreCase("false")))
 					return Boolean.valueOf((String)value);
 				
 			    return value;
