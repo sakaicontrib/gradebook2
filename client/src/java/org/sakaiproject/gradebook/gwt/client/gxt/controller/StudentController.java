@@ -4,8 +4,6 @@ import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
-import org.sakaiproject.gradebook.gwt.client.gxt.model.GradebookModel;
-import org.sakaiproject.gradebook.gwt.client.gxt.view.NotificationView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.StudentView;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
@@ -17,17 +15,11 @@ import com.extjs.gxt.ui.client.mvc.Controller;
 public class StudentController extends Controller {
 
 	private StudentView appView;
-	private NotificationView notificationView;
 	
 	public StudentController() {
 		super();
 		appView = new StudentView(this);
-		notificationView = new NotificationView(this);
 		
-		registerEventTypes(GradebookEvents.Exception.getEventType());
-		registerEventTypes(GradebookEvents.Confirmation.getEventType());
-		registerEventTypes(GradebookEvents.CloseNotification.getEventType());
-		registerEventTypes(GradebookEvents.Notification.getEventType());
 		registerEventTypes(GradebookEvents.LearnerGradeRecordUpdated.getEventType());
 		registerEventTypes(GradebookEvents.RefreshGradebookItems.getEventType());
 		registerEventTypes(GradebookEvents.RefreshGradebookSetup.getEventType());
@@ -41,13 +33,6 @@ public class StudentController extends Controller {
 		// Note: the 'missing' break statements in this switch are intentional, they
 		// allow certain events to drop through to multiple views
 		switch (GradebookEvents.getEvent(event.getType()).getEventKey()) {
-			case EXCEPTION:
-			case CONFIRMATION:
-			case CLOSE_NOTIFICATION:
-			case NOTIFICATION:
-				if (notificationView != null)
-					forwardToView(notificationView, event);
-				break;
 			case LEARNER_GRADE_RECORD_UPDATED:
 				forwardToView(appView, event);
 				break;

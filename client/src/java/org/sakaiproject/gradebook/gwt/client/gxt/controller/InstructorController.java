@@ -29,7 +29,6 @@ public class InstructorController extends Controller {
 	private MultigradeView multigradeView;
 	private FinalGradeSubmissionView finalGradeSubmissionView;
 	private InstructorView appView;
-	private NotificationView notificationView;
 	private PermissionsView permissionsView;
 	
 	public InstructorController(I18nConstants i18n, boolean isUserAbleToEditItems, boolean isNewGradebook) {
@@ -39,17 +38,12 @@ public class InstructorController extends Controller {
 		multigradeView = new MultigradeView(this, i18n);
 		permissionsView = new PermissionsView(this);
 		appView = new InstructorView(this, treeView, multigradeView, singleView, permissionsView, isUserAbleToEditItems, isNewGradebook);
-		notificationView = new NotificationView(this);
-		
 		
 		registerEventTypes(GradebookEvents.BeginItemUpdates.getEventType());
 		registerEventTypes(GradebookEvents.BrowseLearner.getEventType());
-		registerEventTypes(GradebookEvents.CloseNotification.getEventType());
-		registerEventTypes(GradebookEvents.Confirmation.getEventType());
 		registerEventTypes(GradebookEvents.ConfirmDeleteItem.getEventType());
 		registerEventTypes(GradebookEvents.EndItemUpdates.getEventType());
 		registerEventTypes(GradebookEvents.ExpandEastPanel.getEventType());
-		registerEventTypes(GradebookEvents.Exception.getEventType());
 		registerEventTypes(GradebookEvents.FailedToUpdateItem.getEventType());
 		registerEventTypes(GradebookEvents.GradeTypeUpdated.getEventType());
 		registerEventTypes(GradebookEvents.HideColumn.getEventType());
@@ -62,7 +56,6 @@ public class InstructorController extends Controller {
 		registerEventTypes(GradebookEvents.MaskItemTree.getEventType());
 		registerEventTypes(GradebookEvents.NewCategory.getEventType());
 		registerEventTypes(GradebookEvents.NewItem.getEventType());
-		registerEventTypes(GradebookEvents.Notification.getEventType());
 		registerEventTypes(GradebookEvents.PermissionCreated.getEventType());
 		registerEventTypes(GradebookEvents.PermissionDeleted.getEventType());
 		registerEventTypes(GradebookEvents.RefreshCourseGrades.getEventType());
@@ -102,13 +95,6 @@ public class InstructorController extends Controller {
 			case BEGIN_ITEM_UPDATES:
 			case END_ITEM_UPDATES:
 				forwardToView(multigradeView, event);
-				break;
-			case EXCEPTION:
-			case CONFIRMATION:
-			case CLOSE_NOTIFICATION:
-			case NOTIFICATION:
-				if (notificationView != null)
-					forwardToView(notificationView, event);
 				break;
 			case HIDE_COLUMN:
 				forwardToView(treeView, event);

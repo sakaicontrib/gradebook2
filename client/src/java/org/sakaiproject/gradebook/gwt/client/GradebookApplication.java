@@ -24,6 +24,7 @@ package org.sakaiproject.gradebook.gwt.client;
 
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
+import org.sakaiproject.gradebook.gwt.client.gxt.controller.NotificationController;
 import org.sakaiproject.gradebook.gwt.client.gxt.controller.StartupController;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
@@ -45,6 +46,8 @@ import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.Cookies;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.RootPanel;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -68,6 +71,7 @@ public class GradebookApplication implements EntryPoint {
 		dispatcher = Dispatcher.get();
 		
 		dispatcher.addController(new StartupController());
+		dispatcher.addController(new NotificationController());
 				
 		Registry.register(AppConstants.RESOURCES, resources);
 		Registry.register(AppConstants.VERSION, getVersion());
@@ -113,6 +117,10 @@ public class GradebookApplication implements EntryPoint {
 	
 		builder.sendRequest(200, 400, null, new RestCallback() {
 
+			public void onError(Request request, Throwable exception) {
+				warnUser(exception);
+			}
+			
 			public void onSuccess(Request request, Response response) {
 				AuthModel authModel = new AuthModel();
 				authModel.parse(response.getText());
@@ -152,30 +160,29 @@ public class GradebookApplication implements EntryPoint {
 				GWT.getModuleBaseURL(),
 				AppConstants.REST_FRAGMENT,
 				AppConstants.APPLICATION_FRAGMENT);
-		
-		try {
-			builder.sendRequest(null, new RequestCallback() {
 
-				public void onError(Request request, Throwable caught) {
-					onApplicationModelFailure(i, caught);
-				}
 
-				public void onResponseReceived(Request request, Response response) {
-					
-					if (response.getStatusCode() != 200) {
-						Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent("Status", "Code: " + response.getStatusCode(), true));
-						return;
-					}
-					
-					String result = response.getText();
+		builder.sendRequest(200, 400, null, new RestCallback() {
 
-					onApplicationModelSuccess(result);
-				}
-				
-			});
-		} catch (RequestException e) {
-			Dispatcher.forwardEvent(GradebookEvents.Exception.getEventType(), new NotificationEvent(e));
-		}
+			public void onError(Request request, Throwable caught) {
+				onApplicationModelFailure(i, caught);
+			}
+
+			public void onSuccess(Request request, Response response) {
+				onApplicationModelSuccess(response.getText());
+			}
+
+		});
+
+	}
+	
+	private void warnUser(Throwable e) {
+		GXT.hideLoadingPanel("loading");
+		RootPanel.get().clear();
+		RootPanel rootPanel = RootPanel.get("alert");
+		rootPanel.clear();
+		String warning = e == null ? "Unable to communicate with server." : e.getMessage();
+		rootPanel.add(new HTML(warning));
 	}
 	
 	private void onApplicationModelSuccess(String result) {
@@ -195,13 +202,11 @@ public class GradebookApplication implements EntryPoint {
 	}
 	
 	private void onApplicationModelFailure(int i, Throwable caught) {
-		Dispatcher dispatcher = Dispatcher.get();
 		// If this is the first try, then give it another shot
 		if (i == 0)
 			getApplicationModel(i+1);
 		else
-			dispatcher.dispatch(GradebookEvents.Exception.getEventType(), new NotificationEvent(caught));
-
+			dispatcher.dispatch(GradebookEvents.Exception.getEventType(), new NotificationEvent(caught, "Unable to communicate with server"));
 	}
 	
 	public native void resizeMainFrame(String placementId, int setHeight) /*-{	
