@@ -312,10 +312,11 @@ public class ItemTreePanel extends GradebookPanel {
 				if (isExtraCredit) 
 					sb.append(" ").append(resources.css().gbCellExtraCredit());
 				sb.append("\">&nbsp;");
-				sb.append(text);
 				if (dropLowest > 0) {
-					sb.append("<font style=\"font-style: regular;font-size:9pt\"> -").append(dropLowest).append("</font>");
+					sb.append("<font style=\"font-style: regular;font-size:9pt\"> -").append(dropLowest).append("</font>&nbsp;");
 				}
+				sb.append(text);
+				
 				sb.append("</span>");		
 
 				sb.append("</div>");
