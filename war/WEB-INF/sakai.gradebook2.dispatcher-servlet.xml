@@ -25,7 +25,7 @@
         </property-->
    	</bean>
  	
-	<bean id="RestWrappingController" class="org.springframework.web.servlet.mvc.ServletWrappingController">
+	<bean id="RestWrappingController" class="org.sakaiproject.gradebook.gwt.server.ServletWrappingController">
    		<property name="servletClass">
      		<value>org.sakaiproject.gradebook.gwt.server.RestServlet</value>
    		</property>
@@ -38,6 +38,7 @@
        		<prop key="com.sun.jersey.spi.container.ContainerRequestFilters">com.sun.jersey.api.container.filter.PostReplaceFilter</prop>
     	</props>
    		</property>
+   		<property name="sessionManager" ref="org.sakaiproject.tool.api.SessionManager"/>
  	</bean>
 
 </beans>
