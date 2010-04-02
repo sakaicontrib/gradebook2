@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.sakaiproject.gradebook.gwt.client.exceptions.GradebookCreationException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
@@ -48,7 +49,7 @@ public interface Gradebook2ComponentService {
 
 	public String getFinalGradeUserId(UserDereference dereference);
 	
-	public ApplicationSetup getApplicationSetup(String... gradebookUids);
+	public ApplicationSetup getApplicationSetup(String... gradebookUids) throws GradebookCreationException;
 	
 	public String getAuthorizationDetails(String... gradebookUids);
 	

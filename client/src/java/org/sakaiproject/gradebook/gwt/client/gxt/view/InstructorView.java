@@ -224,6 +224,14 @@ public class InstructorView extends AppView {
 		centerLayoutContainer.add(multigradeView.getMultiGradeContentPanel());
 		centerLayoutContainer.add(treeView.getFormPanel());
 		centerCardLayout.setActiveItem(multigradeView.getMultiGradeContentPanel());
+
+		Boolean isNewGBFromAuth = Registry.get(AppConstants.IS_NEW_GRADEBOOK);
+		Boolean isNewGBFromApp = selectedGradebook.isNewGradebook();
+		boolean isNewGradebook = DataTypeConversionUtil.checkBoolean(isNewGBFromAuth) ||
+			DataTypeConversionUtil.checkBoolean(isNewGBFromApp);
+		if (isNewGradebook) {
+			onShowSetup();
+		}
 	}
 
 	@Override

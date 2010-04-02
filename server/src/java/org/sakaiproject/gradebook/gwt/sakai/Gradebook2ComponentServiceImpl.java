@@ -32,6 +32,7 @@ import org.sakaiproject.exception.IdUnusedException;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.ConfigUtil;
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
+import org.sakaiproject.gradebook.gwt.client.exceptions.GradebookCreationException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
@@ -717,10 +718,10 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return advisor;
 	}
 	
-	public ApplicationSetup getApplicationSetup(String... gradebookUids) {
+	public ApplicationSetup getApplicationSetup(String... gradebookUids) 
+	throws GradebookCreationException {
 
 		ApplicationSetup setup = new ApplicationSetupImpl();
-
 		setup.setGradebookModels(getGradebookModels(gradebookUids));
 		setup.setHelpUrl(helpUrl);
 		setup.setEnabledGradeTypes(enabledGradeTypes);
@@ -3479,7 +3480,8 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return model;
 	}
 
-	private org.sakaiproject.gradebook.gwt.client.model.Gradebook createOrRetrieveGradebookModel(String gradebookUid) {
+	private org.sakaiproject.gradebook.gwt.client.model.Gradebook retrieveGradebookModel(String gradebookUid) 
+	throws GradebookCreationException {
 
 		org.sakaiproject.gradebook.gwt.client.model.Gradebook model = null;
 		Gradebook gradebook = null;
@@ -3489,13 +3491,21 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		try {
 			// First thing, grab the default gradebook if one exists
 			gradebook = gbService.getGradebook(gradebookUid);
+			
+			// The following statements are to absolutely ensure that we have a fully
+			// populated gradebook -- that the Framework Service has finished initializing
+			// one we have.
+			if (gradebook.getSelectedGradeMapping() == null)
+				throw new GradebookNotFoundException("");
+			
+			if (gradebook.getGrade_type() <= 0)
+				throw new GradebookNotFoundException("");
+			
+			if (gradebook.getCategory_type() <= 0)
+				throw new GradebookNotFoundException("");
+			
 		} catch (GradebookNotFoundException gnfe) {
-			// If it doesn't exist, then create it
-			if (frameworkService != null) {
-				frameworkService.addGradebook(gradebookUid, i18n.getString("defaultGradebookName"));
-				gradebook = gbService.getGradebook(gradebookUid);
-				isNewGradebook = true;
-			}
+			throw new GradebookCreationException("Need to wait for first call to complete");
 		}
 
 		// If we have a gradebook already, then we have to ensure that it's set
@@ -3508,6 +3518,8 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
 				categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
 
+			isNewGradebook = assignments != null && assignments.size() > 0;
+			
 			model = createGradebookModel(gradebook, assignments, categories, isNewGradebook);
 		}
 
@@ -4156,7 +4168,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 	}
 
 	private AuthModel getAuthorization(String... gradebookUids) {
-
+		
 		if (gradebookUids == null || gradebookUids.length == 0)
 			gradebookUids = new String[] { lookupDefaultGradebookUid() };
 
@@ -4171,6 +4183,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				if (frameworkService != null) {
 					frameworkService.addGradebook(gradebookUids[i], i18n.getString("defaultGradebookName"));
 					gradebook = gbService.getGradebook(gradebookUids[i]);
+					isNewGradebook = true;
 				} 
 			}
 			AuthModel authModel = new AuthModel();
@@ -4402,7 +4415,8 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return gradebookGradeItem;
 	}
 
-	private List<org.sakaiproject.gradebook.gwt.client.model.Gradebook> getGradebookModels(String[] gradebookUids) {
+	private List<org.sakaiproject.gradebook.gwt.client.model.Gradebook> getGradebookModels(String[] gradebookUids) 
+	throws GradebookCreationException {
 
 		List<org.sakaiproject.gradebook.gwt.client.model.Gradebook> models = new LinkedList<org.sakaiproject.gradebook.gwt.client.model.Gradebook>();
 
@@ -4410,7 +4424,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			gradebookUids = new String[] { lookupDefaultGradebookUid() };
 
 		for (int i = 0; i < gradebookUids.length; i++)
-			models.add(createOrRetrieveGradebookModel(gradebookUids[i]));
+			models.add(retrieveGradebookModel(gradebookUids[i]));
 
 		return models;
 	}

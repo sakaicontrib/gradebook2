@@ -39,6 +39,7 @@ public class StartupController extends Controller {
 		final boolean isUserAbleToEditItems = DataTypeConversionUtil.checkBoolean(authModel.isUserAbleToEditAssessments());
 		final boolean isNewGradebook = DataTypeConversionUtil.checkBoolean(authModel.isNewGradebook());
 
+		Registry.register(AppConstants.IS_NEW_GRADEBOOK, Boolean.valueOf(isNewGradebook));
 		Registry.register(AppConstants.IS_ABLE_TO_GRADE, Boolean.valueOf(isUserAbleToGrade));
 		Registry.register(AppConstants.IS_ABLE_TO_EDIT, Boolean.valueOf(isUserAbleToEditItems));
 		

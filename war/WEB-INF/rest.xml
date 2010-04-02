@@ -9,6 +9,8 @@
 	
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.SecurityMapper"/>
 	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.GradebookCreationMapper"/>
+	
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" 
 		  abstract="true"
 		  class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource">

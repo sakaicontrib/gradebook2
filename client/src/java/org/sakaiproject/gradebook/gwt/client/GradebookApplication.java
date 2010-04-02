@@ -37,13 +37,14 @@ import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.data.ModelData;
+import com.extjs.gxt.ui.client.event.BaseEvent;
+import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
+import com.extjs.gxt.ui.client.util.DelayedTask;
 import com.extjs.gxt.ui.client.widget.Info;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.Request;
-import com.google.gwt.http.client.RequestCallback;
-import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.ui.HTML;
@@ -154,6 +155,8 @@ public class GradebookApplication implements EntryPoint {
 		}
 	}
 	
+	private DelayedTask retrieveDataTask;
+	
 	private void getApplicationModel(final int i) {
 		
 		RestBuilder builder = RestBuilder.getInstance(Method.GET, 
@@ -162,10 +165,28 @@ public class GradebookApplication implements EntryPoint {
 				AppConstants.APPLICATION_FRAGMENT);
 
 
-		builder.sendRequest(200, 400, null, new RestCallback() {
+		builder.sendRequest(200, 202, null, new RestCallback() {
 
 			public void onError(Request request, Throwable caught) {
 				onApplicationModelFailure(i, caught);
+			}
+			
+			public void onFailure(Request request, Throwable exception) {
+				if (i > 5)
+					super.onError(request, exception);
+				
+				if (retrieveDataTask != null)
+					retrieveDataTask.cancel();
+				
+				retrieveDataTask = new DelayedTask(new Listener<BaseEvent>() {
+					
+					public void handleEvent(BaseEvent be) {
+						getApplicationModel(i+1);
+					}
+					
+				});
+				
+				retrieveDataTask.delay(500*(i+1));
 			}
 
 			public void onSuccess(Request request, Response response) {
@@ -203,10 +224,7 @@ public class GradebookApplication implements EntryPoint {
 	
 	private void onApplicationModelFailure(int i, Throwable caught) {
 		// If this is the first try, then give it another shot
-		if (i == 0)
-			getApplicationModel(i+1);
-		else
-			dispatcher.dispatch(GradebookEvents.Exception.getEventType(), new NotificationEvent(caught, "Unable to communicate with server"));
+		dispatcher.dispatch(GradebookEvents.Exception.getEventType(), new NotificationEvent(caught, "Unable to communicate with server"));
 	}
 	
 	public native void resizeMainFrame(String placementId, int setHeight) /*-{	

@@ -48,6 +48,8 @@ import org.xml.sax.helpers.XMLReaderFactory;
 // for use in Gradebook2
 public class WebAppToolServlet extends HttpServlet {
 
+	private static final long serialVersionUID = 1L;
+
 	private static final Log log = LogFactory.getLog(WebAppToolServlet.class);
 
 	private static String version = null;
@@ -75,7 +77,7 @@ public class WebAppToolServlet extends HttpServlet {
 
 			String uri = new StringBuilder().append(contextPath).append(getInitParameter(FIRST_PAGE)).toString();
 
-			addVersionAsCookie(response, uri);
+			addVersionAsCookie(response, contextPath);
 			
 			// Do redirect to first-page
 			response.sendRedirect(uri);
@@ -135,35 +137,6 @@ public class WebAppToolServlet extends HttpServlet {
 				WebAppToolServlet.version = helper.getVersion();
 			}
 			
-			/*
-			InputStream inputStream = this.getClass().getResourceAsStream("version.txt");
-			if (inputStream != null) {
-				StringBuilder builder = new StringBuilder();
-				BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-				String line = null;
-
-				while ((line = reader.readLine()) != null) {
-					builder.append(line);
-				}
-
-				reader.close();
-
-				String result = builder.toString();
-
-				if (result != null) {
-					String[] tokens = result.split("/");
-
-					if (tokens.length > 2) {
-						String version = tokens[tokens.length - 2];
-						if (log.isDebugEnabled())
-							log.debug("Version is: " + version);
-						
-					}
-
-				}
-				inputStream.close();
-			}*/
-
 		} catch (Exception e) {
 			log.warn("Unable to read version file", e);
 		} 
@@ -190,8 +163,8 @@ public class WebAppToolServlet extends HttpServlet {
 		public String getVersion() {
 			if (url != null && !url.equals("")) {
 				String[] tokens = url.split("/");
-				if (tokens.length > 2) {
-					return tokens[tokens.length - 2];
+				if (tokens.length > 1) {
+					return tokens[tokens.length - 1];
 				}
 			}
 			return null;

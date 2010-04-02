@@ -227,7 +227,7 @@ public class ItemFormPanel extends GradebookPanel {
 		displayToStudentFieldSet.setScrollMode(Scroll.AUTO);
 		displayToStudentFieldSet.setVisible(false);
 
-		main.setWidth(400);
+		main.setWidth(500);
 		
 		FormLayout leftLayout = new FormLayout(); 
 		leftLayout.setLabelWidth(140);

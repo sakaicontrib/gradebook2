@@ -49,7 +49,7 @@ public class DevelopmentModeBean {
 	
 	
 	public void init() {	
-		
+		/*
 		try {
 			
 			Gradebook2AuthzMockImpl authz = (Gradebook2AuthzMockImpl)((Gradebook2ComponentServiceImpl)service).getAuthz();
@@ -170,18 +170,7 @@ public class DevelopmentModeBean {
 			ecEssay.setReleased(Boolean.FALSE);
 			service.createItem(gradebookUid, gradebookId, ecEssay, false);
 			
-			/*
-			GradeItem assign1 = new GradeItemImpl();
-			assign1.setName("External Assignment");
-			//assign1.setPercentCategory(Double.valueOf(100d));
-			assign1.setPoints(Double.valueOf(10d));
-			assign1.setDueDate(new Date());
-			assign1.setCategoryId(essaysCategory.getCategoryId());
-			//assign1.setIncluded(Boolean.FALSE);
-			assign1.setExtraCredit(Boolean.FALSE);
-			assign1.setReleased(Boolean.FALSE);
-			service.createItem(gradebookUid, gradebookId, assign1, false);
-			*/
+
 			externalService.addExternalAssessment(gradebookUid, "sakai.assignment.tool", "http://assignments.ucdavis.edu", "Assignment 1", 
 					Double.valueOf(10d), 
 					null, "Assignments", Boolean.FALSE);
@@ -253,7 +242,7 @@ public class DevelopmentModeBean {
 			
 		} catch (Exception fe) {
 			GWT.log("Failed to update gradebook properties", fe);
-		}
+		}*/
 	}
 	
 	private GradeItem getActiveItem(GradeItem parent) {
