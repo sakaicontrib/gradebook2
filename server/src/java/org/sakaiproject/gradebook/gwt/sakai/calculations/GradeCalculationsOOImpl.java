@@ -93,7 +93,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		BigDecimal percentCategory = BigDecimal.ZERO;
 		if (!isUnweighted) {
 			if (isEnforcePointWeighting) {
-				double p = a == null | a.getPointsPossible() == null ? 0d : a.getPointsPossible().doubleValue();
+				double p = a == null || a.getPointsPossible() == null ? 0d : a.getPointsPossible().doubleValue();
 				
 				BigDecimal assignmentPoints = BigDecimal.valueOf(p);
 				
@@ -512,12 +512,16 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		boolean doPreventUnequalDropLowest = ((isWeighted && isWeightByPointsCategory) || !isWeighted);
 		
 		Double lastPointValue = null;
-		BigDecimal lastPercentValue = null;
+		BigDecimal lastPercentValue = BigDecimal.ZERO;
 		
 		int dropLowest = category == null ? 0 : category.getDrop_lowest();
 		// Check to ensure that we don't apply drop lowest with unweighted, unequal point value items
 		if (dropLowest > 0 && assignments != null) {
 			for (Assignment assignment : assignments) {
+				
+				if (assignment.isRemoved() || assignment.isNotCounted())
+					continue;
+				
 				// Exclude extra credit items from determining whether drop lowest should be allowed
 				if (DataTypeConversionUtil.checkBoolean(assignment.isExtraCredit()))
 					continue;
@@ -529,7 +533,10 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 					break;
 				}
 				lastPointValue = assignment.getPointsPossible();
-				lastPercentValue = getAssignmentWeight(assignment);
+				
+				BigDecimal wt = getAssignmentWeight(assignment);
+				if (wt != null)
+					lastPercentValue = wt;
 			}
 		}
 			
@@ -609,7 +616,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 			
 			BigDecimal representativePointsPossible = lastPointValue == null ? BigDecimal.ZERO : BigDecimal.valueOf(lastPointValue.doubleValue());
 			totalCategoryPoints = totalCategoryPoints.subtract(BigDecimal.valueOf(dropLowest).multiply(representativePointsPossible, MATH_CONTEXT));
-			if (totalCategoryPercent != null)
+			if (totalCategoryPercent != null && lastPercentValue != null)
 				totalCategoryPercent = totalCategoryPercent.subtract(BigDecimal.valueOf(dropLowest).multiply(lastPercentValue.multiply(BigDecimal.valueOf(100d), MATH_CONTEXT), MATH_CONTEXT));
 		}
 		
