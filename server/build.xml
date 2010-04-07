@@ -1,0 +1,25 @@
+<project name="CheckVersion" default="build" basedir=".">
+	
+	<target name="doSvnInfo">
+		<exec executable="svn" dir="../." output="version.xml" resultproperty="svninfo.result">
+			<arg value="info"/>
+			<arg value="--xml"/>
+		</exec>
+	</target>
+
+	<target name="moveSvnInfo" if="do.move.version">
+		<echo>Overwriting version.xml with new copy!</echo>
+		<move file="version.xml" tofile="src/java/org/sakaiproject/gradebook/gwt/server/version.xml"/>
+	</target>
+		
+	<target name="begin" depends="doSvnInfo">
+		<condition property="do.move.version">
+			<equals arg1="${svninfo.result}" arg2="0"/>
+		</condition>
+	</target>
+	
+	<target name="build" description="Build this project" depends="begin">
+		<antcall target="moveSvnInfo"/>
+	</target>
+	
+</project>

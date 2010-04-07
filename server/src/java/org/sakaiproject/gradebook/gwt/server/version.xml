@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<info>
+<entry
+   kind="dir"
+   path="."
+   revision="67029">
+<url>https://source.sakaiproject.org/contrib/gradebook2/tags/1.2.0</url>
+<repository>
+<root>https://source.sakaiproject.org/contrib</root>
+<uuid>fdecad78-55fc-0310-b1b2-d7d25cf747c9</uuid>
+</repository>
+<wc-info>
+<schedule>normal</schedule>
+<depth>infinity</depth>
+</wc-info>
+<commit
+   revision="67026">
+<author>jlrenfro@ucdavis.edu</author>
+<date>2010-04-06T23:21:33.028109Z</date>
+</commit>
+</entry>
+</info>

@@ -118,10 +118,7 @@
 						<phase>validate</phase>
 						<configuration>						
 							<tasks>
-								<exec executable="svn" dir="../." output="src/java/org/sakaiproject/gradebook/gwt/server/version.xml" >
-									<arg value="info"/>
-									<arg value="--xml"/>
-								</exec>
+								<ant antfile = "${basedir}/build.xml"/>
 							</tasks>
 						</configuration>
 						<goals>
