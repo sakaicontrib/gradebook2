@@ -51,22 +51,23 @@
 		</dependency>
 	</dependencies>
 	<build>
-		<resources />
+		<directory>../war-target</directory>
+		<resources>
+		</resources>
 		<plugins>
 			<plugin>
+				<inherited>true</inherited>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
 				<version>2.0</version>
 				<configuration>
 					<warSourceDirectory>${basedir}</warSourceDirectory>
-					<warSourceExcludes>WEB-INF/*-hosted.xml,gradebook.tar.gz
-					</warSourceExcludes>
+					<warSourceExcludes>WEB-INF/*-hosted.xml,gradebook.tar.gz</warSourceExcludes>
 					<webResources>
 						<resource>
 							<directory>${basedir}</directory>
 							<excludes>
 								<exclude>WEB-INF/*-hosted.xml</exclude>
-								<exclude>m2-target/**/*.*</exclude>
 								<exclude>gradebook.tar.gz</exclude>
 							</excludes>
 						</resource>
