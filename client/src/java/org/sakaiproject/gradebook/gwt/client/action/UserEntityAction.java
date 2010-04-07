@@ -78,55 +78,55 @@ public abstract class UserEntityAction<M extends ModelData> extends Action {
 	}
 
 	public Long getParentId() {
-		return get(ActionKey.PARENT_ID.name());
+		return get(ActionKey.L_PRNT_ID.name());
 	}
 
 	public void setParentId(Long parentId) {
-		set(ActionKey.PARENT_ID.name(), parentId);
+		set(ActionKey.L_PRNT_ID.name(), parentId);
 	}
 
 	public M getModel() {
-		return this.<M>get(ActionKey.MODEL.name());
+		return this.<M>get(ActionKey.M_MDL.name());
 	}
 
 	public void setModel(M model) {
-		set(ActionKey.MODEL.name(), model);
+		set(ActionKey.M_MDL.name(), model);
 	}
 
 	public String getKey() {
-		return get(ActionKey.PROPERTY.name());
+		return get(ActionKey.S_PROP.name());
 	}
 
 	public void setKey(String key) {
-		set(ActionKey.PROPERTY.name(), key);
+		set(ActionKey.S_PROP.name(), key);
 	}
 
 	public <X> X getValue() {
-		return this.<X>get(ActionKey.VALUE.name());
+		return this.<X>get(ActionKey.O_VALUE.name());
 	}
 
 	public <X> void setValue(X value) {
-		set(ActionKey.VALUE.name(), value);
+		set(ActionKey.O_VALUE.name(), value);
 	}
 
 	public <X> X getStartValue() {
-		return this.<X>get(ActionKey.START_VALUE.name());
+		return this.<X>get(ActionKey.O_OLD_VALUE.name());
 	}
 
 	public <X> void setStartValue(X startValue) {
-		set(ActionKey.START_VALUE.name(), startValue);
+		set(ActionKey.O_OLD_VALUE.name(), startValue);
 	}
 
 	public BaseModel getStudentModel() {
-		return get(ActionKey.STUDENT_MODEL.name());
+		return get(ActionKey.M_LRNR_MDL.name());
 	}
 
 	public void setStudentModel(BaseModel studentModel) {
-		set(ActionKey.STUDENT_MODEL.name(), studentModel);
+		set(ActionKey.M_LRNR_MDL.name(), studentModel);
 	}
 
 	public Status getStatus() {
-		String status = get(ActionKey.STATUS.name());
+		String status = get(ActionKey.O_STATUS.name());
 
 		if (status == null)
 			return Status.UNSUBMITTED;
@@ -134,7 +134,7 @@ public abstract class UserEntityAction<M extends ModelData> extends Action {
 	}
 
 	public void setStatus(Status status) {
-		set(ActionKey.STATUS.name(), status.name());
+		set(ActionKey.O_STATUS.name(), status.name());
 	}
 
 }

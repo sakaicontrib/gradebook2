@@ -32,14 +32,16 @@ import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.model.Configuration;
 import org.sakaiproject.gradebook.gwt.client.model.key.ConfigurationKey;
 
-import com.extjs.gxt.ui.client.data.BaseModel;
-
-public class ConfigurationModel extends BaseModel implements Configuration {
+public class ConfigurationModel extends EntityModel implements Configuration {
 
 	private static final long serialVersionUID = 1L;
 	
 	public ConfigurationModel() {
-		
+		super();
+	}
+	
+	public ConfigurationModel(EntityOverlay overlay) {
+		super(overlay);
 	}
 	
 	public ConfigurationModel(Long gradebookId) {
@@ -50,28 +52,28 @@ public class ConfigurationModel extends BaseModel implements Configuration {
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Configuration#getGradebookId()
 	 */
 	public Long getGradebookId() {
-		return get(ConfigurationKey.GRADEBOOKID.name());
+		return getLong(ConfigurationKey.L_GB_ID.name());
 	}
 
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Configuration#setGradebookId(java.lang.Long)
 	 */
 	public void setGradebookId(Long gradebookId) {
-		set(ConfigurationKey.GRADEBOOKID.name(), gradebookId);
+		set(ConfigurationKey.L_GB_ID.name(), gradebookId);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Configuration#getUserUid()
 	 */
 	public String getUserUid() {
-		return get(ConfigurationKey.USERUID.name());
+		return get(ConfigurationKey.S_USER_UID.name());
 	}
 
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Configuration#setUserUid(java.lang.String)
 	 */
 	public void setUserUid(String userUid) {
-		set(ConfigurationKey.USERUID.name(), userUid);
+		set(ConfigurationKey.S_USER_UID.name(), userUid);
 	}
 
 	/* (non-Javadoc)
@@ -198,7 +200,7 @@ public class ConfigurationModel extends BaseModel implements Configuration {
 	}
 
 	public boolean isClassicNavigation() {
-		Object useClassicNav = get(ConfigurationKey.USE_CLASSIC_NAV.name());
+		Object useClassicNav = get(ConfigurationKey.B_CLASSIC_NAV.name());
 		
 		if (useClassicNav instanceof String)
 			return useClassicNav != null && "true".equalsIgnoreCase((String)useClassicNav);
@@ -207,7 +209,20 @@ public class ConfigurationModel extends BaseModel implements Configuration {
 	}
 
 	public void setClassicNavigation(Boolean useClassicNavigation) {
-		set(ConfigurationKey.USE_CLASSIC_NAV.name(), useClassicNavigation);
+		set(ConfigurationKey.B_CLASSIC_NAV.name(), useClassicNavigation);
 	}
+
+	/*
+	@Override
+	public String getDisplayName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getIdentifier() {
+		// TODO Auto-generated method stub
+		return null;
+	}*/
 		
 }

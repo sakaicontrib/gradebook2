@@ -391,7 +391,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 						List<ModelData> selectedItems = sectionListBox.getSelection();
 						if (selectedItems != null && selectedItems.size() > 0) {
 							ModelData m = selectedItems.get(0);
-							sectionUuid = m.get(SectionKey.ID.name());
+							sectionUuid = m.get(SectionKey.S_ID.name());
 						}
 					}
 					loadConfig = new MultiGradeLoadConfig();
@@ -409,7 +409,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 						List<ModelData> selectedItems = sectionListBox.getSelection();
 						if (selectedItems != null && selectedItems.size() > 0) {
 							ModelData m = selectedItems.get(0);
-							sectionUuid = m.get(SectionKey.ID.name());
+							sectionUuid = m.get(SectionKey.S_ID.name());
 						}
 					}
 					loadConfig = new MultiGradeLoadConfig();
@@ -543,9 +543,9 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 			}
 
 			protected boolean isClickable(ModelData model, String property) {
-				return property.equals(LearnerKey.DISPLAY_NAME.name()) ||
-				property.equals(LearnerKey.LAST_NAME_FIRST.name()) ||
-				property.equals(LearnerKey.DISPLAY_ID.name());
+				return property.equals(LearnerKey.S_DSPLY_NM.name()) ||
+				property.equals(LearnerKey.S_LST_NM_FRST.name()) ||
+				property.equals(LearnerKey.S_DSPLY_ID.name());
 			}
 
 			protected boolean isCommented(ModelData model, String property) {
@@ -572,7 +572,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 
 				if (!LearnerUtil.isFixed(property)) {
 					if (isShowDirtyCells && r != null) {
-						String failedProperty = new StringBuilder().append(property).append(AppConstants.FAILED_FLAG).toString();
+						String failedProperty = DataTypeConversionUtil.buildFailedKey(property);
 						String failedMessage = (String)r.get(failedProperty);
 						
 						if (failedMessage != null) {
@@ -584,7 +584,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 					}
 					
 					if (isShowDirtyCells && r != null /*&& isPropertyChanged*/) {
-						String successProperty = new StringBuilder().append(property).append(AppConstants.SUCCESS_FLAG).toString();
+						String successProperty = DataTypeConversionUtil.buildSuccessKey(property);
 						String successMessage = (String)r.get(successProperty);
 	
 						if (successMessage != null) {
@@ -653,7 +653,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 		loadConfig.setLimit(0);
 		loadConfig.setOffset(pageSize);	
 		if (sortInfo == null)
-			sortInfo = new SortInfo(LearnerKey.LAST_NAME_FIRST.name(), SortDir.ASC);
+			sortInfo = new SortInfo(LearnerKey.S_LST_NM_FRST.name(), SortDir.ASC);
 
 		loadConfig.setSortInfo(sortInfo);
 
@@ -670,19 +670,20 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 		unweightedNumericCellRenderer = new UnweightedNumericCellRenderer();
 		extraCreditNumericCellRenderer = new ExtraCreditNumericCellRenderer();
 
-		sectionsLoader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, EnumSet.allOf(SectionKey.class), Method.GET, 
+		sectionsLoader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, 
+				EnumSet.allOf(SectionKey.class), Method.GET, null, null,
 				GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.SECTION_FRAGMENT);
 			
 		sectionsLoader.setRemoteSort(true);
 
 		ListStore<ModelData> sectionStore = new ListStore<ModelData>(sectionsLoader);
-		sectionStore.setModelComparer(new EntityModelComparer<ModelData>(SectionKey.ID.name()));
+		sectionStore.setModelComparer(new EntityModelComparer<ModelData>(SectionKey.S_ID.name()));
 
 		sectionListBox = new ComboBox<ModelData>(); 
 		//sectionListBox.setAllQuery(null);
 		sectionListBox.setEditable(false);
 		sectionListBox.setFieldLabel("Sections");
-		sectionListBox.setDisplayField(SectionKey.SECTION_NAME.name());  
+		sectionListBox.setDisplayField(SectionKey.S_NM.name());  
 		sectionListBox.setStore(sectionStore);
 		sectionListBox.setForceSelection(true);
 		sectionListBox.setEmptyText(i18n.sectionEmptyText());
@@ -698,7 +699,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 				String sectionUuid = null;
 
 				if (model != null) 
-					sectionUuid = model.get(SectionKey.ID.name());
+					sectionUuid = model.get(SectionKey.S_ID.name());
 
 				int pageSize = getPageSize();
 				loadConfig = new MultiGradeLoadConfig();
@@ -917,7 +918,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 	}
 
 	private ColumnConfig buildColumn(Gradebook selectedGradebook, FixedColumn column, Configuration configModel) {
-		boolean isHidden = configModel.isColumnHidden(AppConstants.ITEMTREE, column.getIdentifier(), column.isHidden());
+		boolean isHidden = configModel.isColumnHidden(AppConstants.ITEMTREE, column.getIdentifier(), DataTypeConversionUtil.checkBoolean(column.isHidden()));
 		return buildColumn(selectedGradebook, column.getKey(), column.getIdentifier(), column.getName(),
 				true, false, convertBoolean(column.isEditable()), isHidden);
 	}
@@ -945,7 +946,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 			GWT.log("Grade Type is null for some reason", null);
 		}
 
-		if (item.getStudentModelKey() != null && item.getStudentModelKey().equals(LearnerKey.GRADE_OVERRIDE.name()))
+		if (item.getStudentModelKey() != null && item.getStudentModelKey().equals(LearnerKey.S_OVRD_GRD.name()))
 			columnNameBuilder.append(" [A-F]");
 
 		return buildColumn(selectedGradebook, item.getStudentModelKey(), item.getIdentifier(), 
@@ -965,7 +966,7 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 		Field<?> field = null;
 		LearnerKey key = LearnerKey.valueOf(property);
 		switch (key) {
-			case ASSIGNMENT:
+			case S_ITEM:
 				Item gradebookItemModel = selectedGradebook.getGradebookItemModel();
 				GradeType gradeType = gradebookItemModel.getGradeType();
 				
@@ -1007,10 +1008,10 @@ public class MultiGradeContentPanel extends GridPanel<ModelData> implements Stud
 				}
 
 				break;
-			case COURSE_GRADE:
+			case S_CRS_GRD:
 
 				break;
-			case GRADE_OVERRIDE:
+			case S_OVRD_GRD:
 				TextField<String> textField = new TextField<String>();
 				textField.addInputStyleName(resources.css().gbTextFieldInput());
 				textField.setSelectOnFocus(true);

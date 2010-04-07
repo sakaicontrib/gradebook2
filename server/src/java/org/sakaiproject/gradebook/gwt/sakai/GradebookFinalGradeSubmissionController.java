@@ -76,12 +76,12 @@ public class GradebookFinalGradeSubmissionController implements Controller {
 			for (Learner studentModel : rows) {
 	
 				Map<Column, String> studentData = new HashMap<Column, String>();
-				studentData.put(Column.STUDENT_UID, (String)studentModel.get(LearnerKey.UID.name()));
-				studentData.put(Column.FINAL_GRADE_USER_ID, (String)studentModel.get(LearnerKey.FINAL_GRADE_USER_ID.name()));
-				studentData.put(Column.EXPORT_USER_ID, (String)studentModel.get(LearnerKey.EXPORT_USER_ID.name()));
-				studentData.put(Column.STUDENT_NAME, (String)studentModel.get(LearnerKey.DISPLAY_NAME.name()));
-				studentData.put(Column.EXPORT_CM_ID, (String)studentModel.get(LearnerKey.EXPORT_CM_ID.name()));
-				studentData.put(Column.LETTER_GRADE, (String)studentModel.get(LearnerKey.LETTER_GRADE.name()));
+				studentData.put(Column.STUDENT_UID, (String)studentModel.get(LearnerKey.S_UID.name()));
+				studentData.put(Column.FINAL_GRADE_USER_ID, (String)studentModel.get(LearnerKey.S_FNL_GRD_ID.name()));
+				studentData.put(Column.EXPORT_USER_ID, (String)studentModel.get(LearnerKey.S_EXPRT_USR_ID.name()));
+				studentData.put(Column.STUDENT_NAME, (String)studentModel.get(LearnerKey.S_DSPLY_NM.name()));
+				studentData.put(Column.EXPORT_CM_ID, (String)studentModel.get(LearnerKey.S_EXPRT_CM_ID.name()));
+				studentData.put(Column.LETTER_GRADE, (String)studentModel.get(LearnerKey.S_LTR_GRD.name()));
 				studentDataList.add(studentData);
 			}
 		}

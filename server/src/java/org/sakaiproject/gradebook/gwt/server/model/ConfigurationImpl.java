@@ -49,7 +49,7 @@ public class ConfigurationImpl extends BaseModel implements Configuration {
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Configuration#getGradebookId()
 	 */
 	public Long getGradebookId() {
-		return Util.toLong(get(ConfigurationKey.GRADEBOOKID.name()));
+		return Util.toLong(get(ConfigurationKey.L_GB_ID.name()));
 	}
 
 	/* (non-Javadoc)
@@ -93,7 +93,7 @@ public class ConfigurationImpl extends BaseModel implements Configuration {
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Configuration#getUserUid()
 	 */
 	public String getUserUid() {
-		return Util.toString(get(ConfigurationKey.USERUID.name()));
+		return Util.toString(get(ConfigurationKey.S_USER_UID.name()));
 	}
 	
 	/* (non-Javadoc)
@@ -142,7 +142,7 @@ public class ConfigurationImpl extends BaseModel implements Configuration {
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Configuration#setGradebookId(java.lang.Long)
 	 */
 	public void setGradebookId(Long gradebookId) {
-		put(ConfigurationKey.GRADEBOOKID.name(), gradebookId);
+		put(ConfigurationKey.L_GB_ID.name(), gradebookId);
 	}
 	
 	
@@ -171,14 +171,14 @@ public class ConfigurationImpl extends BaseModel implements Configuration {
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Configuration#setUserUid(java.lang.String)
 	 */
 	public void setUserUid(String userUid) {
-		put(ConfigurationKey.USERUID.name(), userUid);
+		put(ConfigurationKey.S_USER_UID.name(), userUid);
 	}
 	
 	public boolean isClassicNavigation() {
-		return Util.toBooleanPrimitive(get(ConfigurationKey.USE_CLASSIC_NAV.name()));
+		return Util.toBooleanPrimitive(get(ConfigurationKey.B_CLASSIC_NAV.name()));
 	}
 
 	public void setClassicNavigation(Boolean useClassicNavigation) {
-		put(ConfigurationKey.USE_CLASSIC_NAV.name(), useClassicNavigation);
+		put(ConfigurationKey.B_CLASSIC_NAV.name(), useClassicNavigation);
 	}	
 }

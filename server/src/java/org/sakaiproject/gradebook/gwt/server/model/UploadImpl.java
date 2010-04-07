@@ -19,7 +19,7 @@ public class UploadImpl extends BaseModel implements Upload {
 		
 				
 		List<Map<String, Object>> headers = 
-			(List<Map<String, Object>>)map.get(UploadKey.HEADERS.name());
+			(List<Map<String, Object>>)map.get(UploadKey.A_HDRS.name());
 		
 		if (headers != null && !headers.isEmpty()) {
 			List<Item> itemHeaders = new ArrayList<Item>(headers.size());
@@ -29,10 +29,10 @@ public class UploadImpl extends BaseModel implements Upload {
 			setHeaders(itemHeaders);
 		}
 		
-		setPercentage(Util.toBooleanPrimitive(map.get(UploadKey.IS_PERCENTAGE.name())));
+		setPercentage(Util.toBooleanPrimitive(map.get(UploadKey.B_PCT.name())));
 		
 		List<Map<String, Object>> rows = 
-			(List<Map<String, Object>>)map.get(UploadKey.ROWS.name());
+			(List<Map<String, Object>>)map.get(UploadKey.A_ROWS.name());
 	
 		if (rows != null && !rows.isEmpty()) {
 			List<Learner> learners = new ArrayList<Learner>(rows.size());
@@ -44,47 +44,47 @@ public class UploadImpl extends BaseModel implements Upload {
 	}
 	
 	public Item getGradebookItemModel() {
-		return get(UploadKey.GRADEBOOK_ITEM_MODEL.name());
+		return get(UploadKey.M_GB_ITM.name());
 	}
 
 	public List<Item> getHeaders() {
-		return get(UploadKey.HEADERS.name());
+		return get(UploadKey.A_HDRS.name());
 	}
 
 	public List<String> getResults() {
-		return get(UploadKey.RESULTS.name());
+		return get(UploadKey.A_RSTS.name());
 	}
 
 	public List<Learner> getRows() {
-		return get(UploadKey.ROWS.name());
+		return get(UploadKey.A_ROWS.name());
 	}
 
 	public boolean isPercentage() {
-		return Util.toBooleanPrimitive(get(UploadKey.IS_PERCENTAGE.name()));
+		return Util.toBooleanPrimitive(get(UploadKey.B_PCT.name()));
 	}
 
 	public void setDisplayName(String displayName) {
-		set(UploadKey.DISPLAY_NAME.name(), displayName);
+		set(UploadKey.S_NM.name(), displayName);
 	}
 
 	public void setGradebookItemModel(Item gradebookItemModel) {
-		set(UploadKey.GRADEBOOK_ITEM_MODEL.name(), gradebookItemModel);	
+		set(UploadKey.M_GB_ITM.name(), gradebookItemModel);	
 	}
 
 	public void setHeaders(List<Item> headers) {
-		set(UploadKey.HEADERS.name(), headers);
+		set(UploadKey.A_HDRS.name(), headers);
 	}
 
 	public void setPercentage(boolean isPercentage) {
-		set(UploadKey.IS_PERCENTAGE.name(), Boolean.valueOf(isPercentage));
+		set(UploadKey.B_PCT.name(), Boolean.valueOf(isPercentage));
 	}
 
 	public void setResults(List<String> results) {
-		set(UploadKey.RESULTS.name(), results);
+		set(UploadKey.A_RSTS.name(), results);
 	}
 
 	public void setRows(List<Learner> rows) {
-		set(UploadKey.ROWS.name(), rows);
+		set(UploadKey.A_ROWS.name(), rows);
 	}
 
 }

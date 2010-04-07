@@ -5,9 +5,11 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
-import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
-import org.sakaiproject.gradebook.gwt.client.gxt.LearnerResultReader;
+import org.sakaiproject.gradebook.gwt.client.gxt.EntityOverlayResultReader;
 import org.sakaiproject.gradebook.gwt.client.gxt.NewModelCallback;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityOverlay;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.LearnerModel;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
@@ -80,7 +82,7 @@ public class RestBuilder extends RequestBuilder {
 		return getInstance(method, buildInitUrl(urlArgs));
 	}
 	
-	public static <M extends ModelData> ListLoader<ListLoadResult<M>> getDelayLoader(String root,
+	/*public static <M extends ModelData> ListLoader<ListLoadResult<M>> getDelayLoader(String root,
 			EnumSet<?> enumSet, Method method, String ... urlArgs) {
 		return getDelayLoader(root, enumSet, method, null, urlArgs);
 	}
@@ -94,7 +96,7 @@ public class RestBuilder extends RequestBuilder {
 			}
 			
 		}, urlArgs);
-	}
+	}*/
 	
 	public static <M extends ModelData> ListLoader<ListLoadResult<M>> getDelayLoader(String root,
 			EnumSet<?> enumSet, Method method, UrlArgsCallback argsCallback, 
@@ -105,18 +107,24 @@ public class RestBuilder extends RequestBuilder {
 		type.setRoot(root);
 		type.setTotalName(AppConstants.TOTAL);
 		
-		JsonTranslater.addModelTypeFields(type, enumSet, false);
+		//JsonTranslater.addModelTypeFields(type, enumSet, false);
 
-		JsonLoadResultReader<ListLoadResult<M>> reader = new JsonLoadResultReader<ListLoadResult<M>>(type) {
-			protected ModelData newModelInstance() {
-			    return modelCallback.newModelInstance();
-			}
-		};
+		JsonLoadResultReader<ListLoadResult<M>> reader = 
+			new EntityOverlayResultReader<ListLoadResult<M>>(type) {
+			
+				protected ModelData newModelInstance(EntityOverlay overlay) {
+					if (modelCallback == null)
+						return new EntityModel(overlay);
+					
+					return modelCallback.newModelInstance(overlay);
+				}
+			
+			};
 
 		return new BaseListLoader<ListLoadResult<M>>(proxy, reader);
 	}
 	
-	public static <M extends ModelData> PagingLoader<PagingLoadResult<M>> getPagingDelayLoader(String root,
+	/*public static <M extends ModelData> PagingLoader<PagingLoadResult<M>> getPagingDelayLoader(String root,
 			EnumSet<?> enumSet, Method method, String ... urlArgs) {	
 		
 		ModelType type = new ModelType();
@@ -139,30 +147,50 @@ public class RestBuilder extends RequestBuilder {
 		JsonTranslater.addModelTypeFields(type, enumSet2, true);
 		
 		return getPagingDelayLoader(type, method, urlArgs);
-	}
+	}*/
 	
 	public static <M extends ModelData> PagingLoader<PagingLoadResult<M>> getPagingDelayLoader(
-			ModelType type, Method method, String ... urlArgs) {	
+			Method method, final NewModelCallback modelCallback, String ... urlArgs) {	
 		HttpProxy<String> proxy = getProxy(urlArgs, null);
 		
-		JsonPagingLoadResultReader<PagingLoadResult<M>> reader = new JsonPagingLoadResultReader<PagingLoadResult<M>>(type) {
-			protected ModelData newModelInstance() {
-			    return new BaseModel();
+		ModelType type = new ModelType();
+		type.setRoot(AppConstants.LIST_ROOT);
+		type.setTotalName(AppConstants.TOTAL);
+		
+		JsonPagingLoadResultReader<PagingLoadResult<M>> reader = 
+			new EntityOverlayResultReader<PagingLoadResult<M>>(type) {
+			
+			protected ModelData newModelInstance(EntityOverlay overlay) {
+				if (modelCallback == null)
+					return new EntityModel(overlay);
+				return modelCallback.newModelInstance(overlay);
 			}
-		}; 
+			
+		};
 		return new BasePagingLoader<PagingLoadResult<M>>(proxy, reader);
 	}
 	
 	public static <M extends ModelData> PagingLoader<PagingLoadResult<M>> getLearnerLoader(
-			ModelType type, Method method, String ... urlArgs) {	
+			Method method, String ... urlArgs) {	
 		HttpProxy<String> proxy = getProxy(urlArgs, null);
 		
+		ModelType type = new ModelType();
+		type.setRoot(AppConstants.LIST_ROOT);
+		type.setTotalName(AppConstants.TOTAL);
+		
 		JsonPagingLoadResultReader<PagingLoadResult<M>> reader = 
-			new LearnerResultReader<PagingLoadResult<M>>(type);
+			new EntityOverlayResultReader<PagingLoadResult<M>>(type) {
+			
+				protected ModelData newModelInstance(EntityOverlay overlay) {
+					return new LearnerModel(overlay);
+				}
+				
+			};
 		
 		return new BasePagingLoader<PagingLoadResult<M>>(proxy, reader);
 	}
 	
+	/*
 	public static JSONArray convertList(List<ModelData> list) {
 		JSONArray itemArray = new JSONArray();
 		
@@ -219,7 +247,7 @@ public class RestBuilder extends RequestBuilder {
 		}
 		
 		return json;
-	}
+	}*/
 	
 	public Request sendRequest(final int successCode, final int failureCode, String requestData, final RestCallback callback) {
 		Request request = null;

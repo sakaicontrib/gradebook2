@@ -30,42 +30,42 @@ public class GradeItemImpl extends BaseModel implements GradeItem {
 			Boolean doReleaseGrades, Boolean doReleaseItems, Boolean doScaleExtraCredit, Boolean doShowMean, Boolean doShowMedian,
 			Boolean doShowMode, Boolean doShowRank, Boolean doShowItemStatistics) {
 		
-		put(ItemKey.ID.name(), id);
-		put(ItemKey.NAME.name(), name);
-		put(ItemKey.ITEM_TYPE.name(), ItemType.GRADEBOOK);
-		put(ItemKey.CATEGORYTYPE.name(), categoryType);
-		put(ItemKey.GRADETYPE.name(), gradeType);
-		put(ItemKey.RELEASEGRADES.name(), doReleaseGrades);
-		put(ItemKey.RELEASEITEMS.name(), doReleaseItems);
-		put(ItemKey.GRADESCALEID.name(), gradeScaleId);
-		put(ItemKey.EXTRA_CREDIT_SCALED.name(), doScaleExtraCredit);
-		put(ItemKey.SHOWMEAN.name(), doShowMean);
-		put(ItemKey.SHOWMEDIAN.name(), doShowMedian);
-		put(ItemKey.SHOWMODE.name(), doShowMode);
-		put(ItemKey.SHOWRANK.name(), doShowRank);
-		put(ItemKey.SHOWITEMSTATS.name(), doShowItemStatistics);
+		put(ItemKey.S_ID.name(), id);
+		put(ItemKey.S_NM.name(), name);
+		put(ItemKey.S_ITM_TYPE.name(), ItemType.GRADEBOOK);
+		put(ItemKey.C_CTGRY_TYPE.name(), categoryType);
+		put(ItemKey.G_GRD_TYPE.name(), gradeType);
+		put(ItemKey.B_REL_GRDS.name(), doReleaseGrades);
+		put(ItemKey.B_REL_ITMS.name(), doReleaseItems);
+		put(ItemKey.L_GRD_SCL_ID.name(), gradeScaleId);
+		put(ItemKey.B_SCL_X_CRDT.name(), doScaleExtraCredit);
+		put(ItemKey.B_SHW_MEAN.name(), doShowMean);
+		put(ItemKey.B_SHW_MEDIAN.name(), doShowMedian);
+		put(ItemKey.B_SHW_MODE.name(), doShowMode);
+		put(ItemKey.B_SHW_RANK.name(), doShowRank);
+		put(ItemKey.B_SHW_ITM_STATS.name(), doShowItemStatistics);
 	}
 	
 	public GradeItemImpl(String id, String name, String gradebookName, Long categoryId, Double percentCourseGrade,
 			Integer dropLowest, Integer sortOrder, Boolean doEqualWeight, Boolean doExtraCredit, Boolean doInclude, Boolean doRemove,
 			Boolean doRelease, Boolean isEditable, Boolean doPointWeighting) {
 
-		put(ItemKey.ID.name(), id);
-		put(ItemKey.NAME.name(), name);
-		put(ItemKey.ITEM_TYPE.name(), ItemType.CATEGORY);
-		put(ItemKey.GRADEBOOK.name(), gradebookName);
-		put(ItemKey.CATEGORY_ID.name(), categoryId);
-		put(ItemKey.WEIGHT.name(), percentCourseGrade);
-		put(ItemKey.EQUAL_WEIGHT.name(), doEqualWeight);
-		put(ItemKey.EXTRA_CREDIT.name(), doExtraCredit);
-		put(ItemKey.INCLUDED.name(), doInclude);
-		put(ItemKey.DROP_LOWEST.name(), dropLowest);
-		put(ItemKey.REMOVED.name(), doRemove);
-		put(ItemKey.RELEASED.name(), doRelease);
-		put(ItemKey.PERCENT_COURSE_GRADE.name(), percentCourseGrade);	
-		put(ItemKey.IS_EDITABLE.name(), isEditable);
-		put(ItemKey.ITEM_ORDER.name(), sortOrder);
-		put(ItemKey.ENFORCE_POINT_WEIGHTING.name(), doPointWeighting);
+		put(ItemKey.S_ID.name(), id);
+		put(ItemKey.S_NM.name(), name);
+		put(ItemKey.S_ITM_TYPE.name(), ItemType.CATEGORY);
+		put(ItemKey.S_GB_NAME.name(), gradebookName);
+		put(ItemKey.L_CTGRY_ID.name(), categoryId);
+		put(ItemKey.D_WGHT.name(), percentCourseGrade);
+		put(ItemKey.B_EQL_WGHT.name(), doEqualWeight);
+		put(ItemKey.B_X_CRDT.name(), doExtraCredit);
+		put(ItemKey.B_INCLD.name(), doInclude);
+		put(ItemKey.I_DRP_LWST.name(), dropLowest);
+		put(ItemKey.B_RMVD.name(), doRemove);
+		put(ItemKey.B_RLSD.name(), doRelease);
+		put(ItemKey.D_PCT_GRD.name(), percentCourseGrade);	
+		put(ItemKey.B_EDITABLE.name(), isEditable);
+		put(ItemKey.I_SRT_ORDR.name(), sortOrder);
+		put(ItemKey.B_WT_BY_PTS.name(), doPointWeighting);
 	}
 	
 	public GradeItemImpl(String id, String name, String categoryName, Long categoryId, Long itemId,
@@ -73,26 +73,26 @@ public class GradeItemImpl extends BaseModel implements GradeItem {
 			Date dueDate, Boolean doExtraCredit, Boolean doRemove, String source, String dataType, String learnerKey, Integer itemOrder, 
 			Boolean doNullsAsZeros) {
 		
-		put(ItemKey.ID.name(), id);
-		put(ItemKey.NAME.name(), name);
-		put(ItemKey.ITEM_TYPE.name(), ItemType.ITEM);
-		put(ItemKey.CATEGORY_NAME.name(), categoryName);
-		put(ItemKey.CATEGORY_ID.name(), categoryId);
-		put(ItemKey.ASSIGNMENT_ID.name(), itemId);
-		put(ItemKey.WEIGHT.name(), itemWeight);
-		put(ItemKey.RELEASED.name(), doRelease);
-		put(ItemKey.INCLUDED.name(), doInclude);
-		put(ItemKey.DUE_DATE.name(), dueDate);
-		put(ItemKey.POINTS.name(), points);
-		put(ItemKey.EXTRA_CREDIT.name(), doExtraCredit);
-		put(ItemKey.REMOVED.name(), doRemove);
-		put(ItemKey.SOURCE.name(), source);
-		put(ItemKey.DATA_TYPE.name(), dataType);
-		put(ItemKey.STUDENT_MODEL_KEY.name(), learnerKey);
-		put(ItemKey.ITEM_ORDER.name(), itemOrder);
-		put(ItemKey.PERCENT_CATEGORY.name(), percentCategory);
-		put(ItemKey.PERCENT_COURSE_GRADE.name(), percentCourseGrade);
-		put(ItemKey.NULLSASZEROS.name(), doNullsAsZeros);
+		put(ItemKey.S_ID.name(), id);
+		put(ItemKey.S_NM.name(), name);
+		put(ItemKey.S_ITM_TYPE.name(), ItemType.ITEM);
+		put(ItemKey.S_CTGRY_NAME.name(), categoryName);
+		put(ItemKey.L_CTGRY_ID.name(), categoryId);
+		put(ItemKey.L_ITM_ID.name(), itemId);
+		put(ItemKey.D_WGHT.name(), itemWeight);
+		put(ItemKey.B_RLSD.name(), doRelease);
+		put(ItemKey.B_INCLD.name(), doInclude);
+		put(ItemKey.W_DUE.name(), dueDate);
+		put(ItemKey.D_PNTS.name(), points);
+		put(ItemKey.B_X_CRDT.name(), doExtraCredit);
+		put(ItemKey.B_RMVD.name(), doRemove);
+		put(ItemKey.S_SOURCE.name(), source);
+		put(ItemKey.S_DATA_TYPE.name(), dataType);
+		put(ItemKey.O_LRNR_KEY.name(), learnerKey);
+		put(ItemKey.I_SRT_ORDR.name(), itemOrder);
+		put(ItemKey.D_PCT_CTGRY.name(), percentCategory);
+		put(ItemKey.D_PCT_GRD.name(), percentCourseGrade);
+		put(ItemKey.B_NLLS_ZEROS.name(), doNullsAsZeros);
 	}
 	
 	public void addChild(GradeItem child) {
@@ -101,7 +101,7 @@ public class GradeItemImpl extends BaseModel implements GradeItem {
 
 		child.setParentName(getName());
 		
-		List<Item> childrenList = (List<Item>)get(ItemKey.CHILDREN.name());
+		List<Item> childrenList = (List<Item>)get(ItemKey.A_CHILDREN.name());
 
 		if (childrenList == null)
 			childrenList = new ArrayList<Item>();
@@ -109,25 +109,25 @@ public class GradeItemImpl extends BaseModel implements GradeItem {
 		if (!childrenList.contains(child))
 			childrenList.add(child);
 
-		put(ItemKey.CHILDREN.name(), childrenList);
+		put(ItemKey.A_CHILDREN.name(), childrenList);
 	}
 	
 	// Getters
 
 	public Long getCategoryId() {
-		return Util.toLong(get(ItemKey.CATEGORY_ID.name()));
+		return Util.toLong(get(ItemKey.L_CTGRY_ID.name()));
 	}
 
 	public String getCategoryName() {
-		return Util.toString(get(ItemKey.CATEGORY_NAME.name()));
+		return Util.toString(get(ItemKey.S_CTGRY_NAME.name()));
 	}
 
 	public CategoryType getCategoryType() {
-		return Util.toCategoryType(get(ItemKey.CATEGORYTYPE.name()));
+		return Util.toCategoryType(get(ItemKey.C_CTGRY_TYPE.name()));
 	}
 	
 	public int getChildCount() {
-		List<Map<String,Object>> childrenList = (List<Map<String,Object>>)get(ItemKey.CHILDREN.name());
+		List<Map<String,Object>> childrenList = (List<Map<String,Object>>)get(ItemKey.A_CHILDREN.name());
 		
 		if (childrenList != null) {
 			return childrenList.size();
@@ -138,7 +138,7 @@ public class GradeItemImpl extends BaseModel implements GradeItem {
 
 	public List<GradeItem> getChildren() {
 		List<GradeItem> children = new ArrayList<GradeItem>();
-		List<Map<String,Object>> childrenList = (List<Map<String,Object>>)get(ItemKey.CHILDREN.name());
+		List<Map<String,Object>> childrenList = (List<Map<String,Object>>)get(ItemKey.A_CHILDREN.name());
 	
 		if (childrenList != null) {
 			for (Map<String,Object> childMap : childrenList) {
@@ -150,7 +150,7 @@ public class GradeItemImpl extends BaseModel implements GradeItem {
 	}
 
 	public String getDataType() {
-		return Util.toString(get(ItemKey.DATA_TYPE.name()));
+		return Util.toString(get(ItemKey.S_DATA_TYPE.name()));
 	}
 
 	public String getDisplayName() {
@@ -158,67 +158,67 @@ public class GradeItemImpl extends BaseModel implements GradeItem {
 	}
 
 	public Boolean getDoRecalculatePoints() {
-		return Util.toBoolean(get(ItemKey.DO_RECALCULATE_POINTS.name()));
+		return Util.toBoolean(get(ItemKey.B_RECALC_PTS.name()));
 	}
 
 	public Integer getDropLowest() {
-		return Util.toInteger(get(ItemKey.DROP_LOWEST.name()));
+		return Util.toInteger(get(ItemKey.I_DRP_LWST.name()));
 	}
 
 	public Date getDueDate() {
-		return Util.toDate(get(ItemKey.DUE_DATE.name()));
+		return Util.toDate(get(ItemKey.W_DUE.name()));
 	}
 
 	public Boolean getEnforcePointWeighting() {
-		return Util.toBoolean(get(ItemKey.ENFORCE_POINT_WEIGHTING.name()));
+		return Util.toBoolean(get(ItemKey.B_WT_BY_PTS.name()));
 	}
 
 	public Boolean getEqualWeightAssignments() {
-		return Util.toBoolean(get(ItemKey.EQUAL_WEIGHT.name()));
+		return Util.toBoolean(get(ItemKey.B_EQL_WGHT.name()));
 	}
 
 	public Boolean getExtraCredit() {
-		return Util.toBoolean(get(ItemKey.EXTRA_CREDIT.name()));
+		return Util.toBoolean(get(ItemKey.B_X_CRDT.name()));
 	}
 
 	public Boolean getExtraCreditScaled() {
-		return Util.toBoolean(get(ItemKey.EXTRA_CREDIT_SCALED.name()));
+		return Util.toBoolean(get(ItemKey.B_SCL_X_CRDT.name()));
 	}
 
 	public String getGradebook() {
-		return Util.toString(get(ItemKey.GRADEBOOK.name()));
+		return Util.toString(get(ItemKey.S_GB_NAME.name()));
 	}
 
 	public Long getGradeScaleId() {
-		return Util.toLong(get(ItemKey.GRADESCALEID.name()));
+		return Util.toLong(get(ItemKey.L_GRD_SCL_ID.name()));
 	}
 
 	public GradeType getGradeType() {
-		return Util.toGradeType(get(ItemKey.GRADETYPE.name()));
+		return Util.toGradeType(get(ItemKey.G_GRD_TYPE.name()));
 	}
 
 	public String getIdentifier() {
-		return Util.toString(get(ItemKey.ID.name()));
+		return Util.toString(get(ItemKey.S_ID.name()));
 	}
 
 	public Boolean getIncluded() {
-		return Util.toBoolean(get(ItemKey.INCLUDED.name()));
+		return Util.toBoolean(get(ItemKey.B_INCLD.name()));
 	}
 
 	public Boolean getIsPercentage() {
-		return Util.toBoolean(get(ItemKey.IS_PERCENTAGE.name()));
+		return Util.toBoolean(get(ItemKey.B_IS_PCT.name()));
 	}
 
 	public Long getItemId() {
-		return Util.toLong(get(ItemKey.ASSIGNMENT_ID.name()));
+		return Util.toLong(get(ItemKey.L_ITM_ID.name()));
 	}
 
 	public Integer getItemOrder() {
-		return Util.toInteger(get(ItemKey.ITEM_ORDER.name()));
+		return Util.toInteger(get(ItemKey.I_SRT_ORDR.name()));
 	}
 
 	public ItemType getItemType() {
-		return Util.toItemType(get(ItemKey.ITEM_TYPE.name()));
+		return Util.toItemType(get(ItemKey.S_ITM_TYPE.name()));
 	}
 
 	public Map<String, Object> getMap() {
@@ -226,27 +226,27 @@ public class GradeItemImpl extends BaseModel implements GradeItem {
 	}
 
 	public String getName() {
-		return Util.toString(get(ItemKey.NAME.name()));
+		return Util.toString(get(ItemKey.S_NM.name()));
 	}
 
 	public Boolean getNullsAsZeros() {
-		return Util.toBoolean(get(ItemKey.NULLSASZEROS.name()));
+		return Util.toBoolean(get(ItemKey.B_NLLS_ZEROS.name()));
 	}
 
 	public String getParentName() {
-		return Util.toString(get(ItemKey.PARENT_NAME.name()));
+		return Util.toString(get(ItemKey.S_PARENT.name()));
 	}
 
 	public Double getPercentCategory() {
-		return Util.toDouble(get(ItemKey.PERCENT_CATEGORY.name()));
+		return Util.toDouble(get(ItemKey.D_PCT_CTGRY.name()));
 	}
 
 	public Double getPercentCourseGrade() {
-		return Util.toDouble(get(ItemKey.PERCENT_COURSE_GRADE.name()));
+		return Util.toDouble(get(ItemKey.D_PCT_GRD.name()));
 	}
 
 	public Double getPoints() {
-		return Util.toDouble(get(ItemKey.POINTS.name()));
+		return Util.toDouble(get(ItemKey.D_PNTS.name()));
 	}
 
 	public Map<String, Object> getProperties() {
@@ -258,246 +258,246 @@ public class GradeItemImpl extends BaseModel implements GradeItem {
 	}
 
 	public Boolean getReleased() {
-		return Util.toBoolean(get(ItemKey.RELEASED.name()));
+		return Util.toBoolean(get(ItemKey.B_RLSD.name()));
 	}
 
 	public Boolean getReleaseGrades() {
-		return Util.toBoolean(get(ItemKey.RELEASEGRADES.name()));
+		return Util.toBoolean(get(ItemKey.B_REL_GRDS.name()));
 	}
 
 	public Boolean getReleaseItems() {
-		return Util.toBoolean(get(ItemKey.RELEASEITEMS.name()));
+		return Util.toBoolean(get(ItemKey.B_REL_ITMS.name()));
 	}
 
 	public Boolean getRemoved() {
-		return Util.toBoolean(get(ItemKey.REMOVED.name()));
+		return Util.toBoolean(get(ItemKey.B_RMVD.name()));
 	}
 
 	public Boolean getShowItemStatistics() {
-		return Util.toBoolean(get(ItemKey.SHOWITEMSTATS.name()));
+		return Util.toBoolean(get(ItemKey.B_SHW_ITM_STATS.name()));
 	}
 
 	public Boolean getShowMean() {
-		return Util.toBoolean(get(ItemKey.SHOWMEAN.name()));
+		return Util.toBoolean(get(ItemKey.B_SHW_MEAN.name()));
 	}
 
 	public Boolean getShowMedian() {
-		return Util.toBoolean(get(ItemKey.SHOWMEDIAN.name()));
+		return Util.toBoolean(get(ItemKey.B_SHW_MEDIAN.name()));
 	}
 
 	public Boolean getShowMode() {
-		return Util.toBoolean(get(ItemKey.SHOWMODE.name()));
+		return Util.toBoolean(get(ItemKey.B_SHW_MODE.name()));
 	}
 
 	public Boolean getShowRank() {
-		return Util.toBoolean(get(ItemKey.SHOWRANK.name()));
+		return Util.toBoolean(get(ItemKey.B_SHW_RANK.name()));
 	}
 
 	public String getSource() {
-		return Util.toString(get(ItemKey.SOURCE.name()));
+		return Util.toString(get(ItemKey.S_SOURCE.name()));
 	}
 	
 	public String getStudentModelKey() {
-		return Util.toString(get(ItemKey.STUDENT_MODEL_KEY.name()));
+		return Util.toString(get(ItemKey.O_LRNR_KEY.name()));
 	}
 	
 	@SuppressWarnings("unchecked")
 	public List<Item> getSubItems() {
-		return (List<Item>)get(ItemKey.CHILDREN.name());
+		return (List<Item>)get(ItemKey.A_CHILDREN.name());
 	}
 	
 	public Integer getSubItemCount() {
-		List<?> list = get(ItemKey.CHILDREN.name());
+		List<?> list = get(ItemKey.A_CHILDREN.name());
 		return list == null ? Integer.valueOf(0) : Integer.valueOf(list.size());
 	}
 	
 	// Setters
 	
 	public Double getWeighting() {
-		return Util.toDouble(get(ItemKey.WEIGHT.name()));
+		return Util.toDouble(get(ItemKey.D_WGHT.name()));
 	}
 
 	public boolean isActive() {
-		return Util.toBooleanPrimitive(get(ItemKey.IS_ACTIVE.name()));
+		return Util.toBooleanPrimitive(get(ItemKey.B_ACTIVE.name()));
 	}
 	
 	public boolean isChecked() {
-		return Util.toBooleanPrimitive(get(ItemKey.IS_CHECKED.name()));
+		return Util.toBooleanPrimitive(get(ItemKey.B_CHCKD.name()));
 	}
 	
 	public boolean isEditable() {
-		return Util.toBooleanPrimitive(get(ItemKey.IS_EDITABLE.name()));
+		return Util.toBooleanPrimitive(get(ItemKey.B_EDITABLE.name()));
 	}
 
 	public void setActive(boolean isActive) {
-		put(ItemKey.IS_ACTIVE.name(), isActive);
+		put(ItemKey.B_ACTIVE.name(), isActive);
 	}
 
 	public void setCategoryId(Long categoryId) {
-		put(ItemKey.CATEGORY_ID.name(), categoryId);
+		put(ItemKey.L_CTGRY_ID.name(), categoryId);
 	}
 
 	public void setCategoryName(String categoryName) {
-		put(ItemKey.CATEGORY_NAME.name(), categoryName);
+		put(ItemKey.S_CTGRY_NAME.name(), categoryName);
 	}
 
 	public void setCategoryType(CategoryType type) {
-		put(ItemKey.CATEGORYTYPE.name(), type);
+		put(ItemKey.C_CTGRY_TYPE.name(), type);
 	}
 
 	public void setChecked(boolean isChecked) {
-		put(ItemKey.IS_CHECKED.name(), isChecked);
+		put(ItemKey.B_CHCKD.name(), isChecked);
 	}
 
 	public void setDataType(String dataType) {
-		put(ItemKey.DATA_TYPE.name(), dataType);
+		put(ItemKey.S_DATA_TYPE.name(), dataType);
 	}
 
 	public void setDoRecalculatePoints(Boolean doRecalculate) {
-		put(ItemKey.DO_RECALCULATE_POINTS.name(), doRecalculate);
+		put(ItemKey.B_RECALC_PTS.name(), doRecalculate);
 	}
 
 	public void setDropLowest(Integer dropLowest) {
-		put(ItemKey.DROP_LOWEST.name(), dropLowest);
+		put(ItemKey.I_DRP_LWST.name(), dropLowest);
 	}
 
 	public void setDueDate(Date dueDate) {
-		put(ItemKey.DUE_DATE.name(), dueDate);	}
+		put(ItemKey.W_DUE.name(), dueDate);	}
 
 	public void setEditable(boolean isEditable) {
-		put(ItemKey.IS_EDITABLE.name(), Boolean.valueOf(isEditable));
+		put(ItemKey.B_EDITABLE.name(), Boolean.valueOf(isEditable));
 	}
 
 	public void setEnforcePointWeighting(Boolean doEnforce) {
-		put(ItemKey.ENFORCE_POINT_WEIGHTING.name(), doEnforce);
+		put(ItemKey.B_WT_BY_PTS.name(), doEnforce);
 	}
 
 	public void setEqualWeightAssignments(Boolean equalWeight) {
-		put(ItemKey.EQUAL_WEIGHT.name(), equalWeight);
+		put(ItemKey.B_EQL_WGHT.name(), equalWeight);
 	}
 
 	public void setExtraCredit(Boolean extraCredit) {
-		put(ItemKey.EXTRA_CREDIT.name(), extraCredit);
+		put(ItemKey.B_X_CRDT.name(), extraCredit);
 	}
 
 	public void setExtraCreditScaled(Boolean scaled) {
-		put(ItemKey.EXTRA_CREDIT_SCALED.name(), scaled);
+		put(ItemKey.B_SCL_X_CRDT.name(), scaled);
 	}
 
 	public void setGradebook(String gradebook) {
-		put(ItemKey.GRADEBOOK.name(), gradebook);
+		put(ItemKey.S_GB_NAME.name(), gradebook);
 	}
 
 	public void setGradeScaleId(Long id) {
-		put(ItemKey.GRADESCALEID.name(), id);
+		put(ItemKey.L_GRD_SCL_ID.name(), id);
 	}
 
 	public void setGradeType(GradeType type) {
-		put(ItemKey.GRADETYPE.name(), type.name());
+		put(ItemKey.G_GRD_TYPE.name(), type.name());
 	}
 
 	public void setIdentifier(String id) {
-		put(ItemKey.ID.name(), id);
+		put(ItemKey.S_ID.name(), id);
 	}
 
 	public void setIncluded(Boolean included) {
-		put(ItemKey.INCLUDED.name(), included);
+		put(ItemKey.B_INCLD.name(), included);
 	}
 
 	public void setIsPercentage(Boolean isPercentage) {
-		put(ItemKey.IS_PERCENTAGE.name(), isPercentage);
+		put(ItemKey.B_IS_PCT.name(), isPercentage);
 	}
 
 	public void setItemId(Long itemId) {
-		put(ItemKey.ASSIGNMENT_ID.name(), itemId);
+		put(ItemKey.L_ITM_ID.name(), itemId);
 	}
 
 	public void setItemOrder(Integer itemOrder) {
-		put(ItemKey.ITEM_ORDER.name(), itemOrder);
+		put(ItemKey.I_SRT_ORDR.name(), itemOrder);
 	}
 
 	public void setItemType(ItemType type) {
-		put(ItemKey.ITEM_TYPE.name(), type.name());
+		put(ItemKey.S_ITM_TYPE.name(), type.name());
 	}
 
 	public void setName(String name) {
-		put(ItemKey.NAME.name(), name);
+		put(ItemKey.S_NM.name(), name);
 	}
 
 	public void setNullsAsZeros(Boolean nullsAsZeros) {
-		put(ItemKey.NULLSASZEROS.name(), nullsAsZeros);
+		put(ItemKey.B_NLLS_ZEROS.name(), nullsAsZeros);
 	}
 
 	public void setParentName(String parentName) {
-		put(ItemKey.PARENT_NAME.name(), parentName);
+		put(ItemKey.S_PARENT.name(), parentName);
 	}
 
 	public void setPercentCategory(Double percent) {
-		put(ItemKey.PERCENT_CATEGORY.name(), percent);
+		put(ItemKey.D_PCT_CTGRY.name(), percent);
 	}
 
 	public void setPercentCourseGrade(Double percent) {
-		put(ItemKey.PERCENT_COURSE_GRADE.name(), percent);
+		put(ItemKey.D_PCT_GRD.name(), percent);
 	}
 
 	public void setPoints(Double points) {
-		put(ItemKey.POINTS.name(), points);
+		put(ItemKey.D_PNTS.name(), points);
 	}
 
 	public void setReleased(Boolean released) {
-		put(ItemKey.RELEASED.name(), released);
+		put(ItemKey.B_RLSD.name(), released);
 	}
 
 	public void setReleaseGrades(Boolean release) {
-		put(ItemKey.RELEASEGRADES.name(), release);
+		put(ItemKey.B_REL_GRDS.name(), release);
 	}
 
 	public void setReleaseItems(Boolean release) {
-		put(ItemKey.RELEASEITEMS.name(), release);
+		put(ItemKey.B_REL_ITMS.name(), release);
 	}
 
 	public void setRemoved(Boolean removed) {
-		put(ItemKey.REMOVED.name(), removed);
+		put(ItemKey.B_RMVD.name(), removed);
 	}
 
 	public void setShowItemStatistics(Boolean showItemStatistics) {
-		put(ItemKey.SHOWITEMSTATS.name(), showItemStatistics);
+		put(ItemKey.B_SHW_ITM_STATS.name(), showItemStatistics);
 	}
 
 	public void setShowMean(Boolean showMean) {
-		put(ItemKey.SHOWMEAN.name(), showMean);
+		put(ItemKey.B_SHW_MEAN.name(), showMean);
 	}
 
 	public void setShowMedian(Boolean showMedian) {
-		put(ItemKey.SHOWMEDIAN.name(), showMedian);
+		put(ItemKey.B_SHW_MEDIAN.name(), showMedian);
 	}
 
 	public void setShowMode(Boolean showMode) {
-		put(ItemKey.SHOWMODE.name(), showMode);
+		put(ItemKey.B_SHW_MODE.name(), showMode);
 	}
 
 	public void setShowRank(Boolean showRank) {
-		put(ItemKey.SHOWRANK.name(), showRank);
+		put(ItemKey.B_SHW_RANK.name(), showRank);
 	}
 
 	public void setSource(String source) {
-		put(ItemKey.SOURCE.name(), source);
+		put(ItemKey.S_SOURCE.name(), source);
 	}
 
 	public void setStudentModelKey(String key) {
-		put(ItemKey.STUDENT_MODEL_KEY.name(), key);
+		put(ItemKey.O_LRNR_KEY.name(), key);
 	}
 	
 	public void setWeighting(Double weighting) {
-		put(ItemKey.WEIGHT.name(), weighting);
+		put(ItemKey.D_WGHT.name(), weighting);
 	}
 	
 	public boolean isScaledExtraCreditEnabled() {
-		return Util.toBooleanPrimitive(get(ItemKey.ALLOW_SCALED_EXTRA_CREDIT.name()));
+		return Util.toBooleanPrimitive(get(ItemKey.B_ALW_SCL_X_CRDT.name()));
 	}
 
 	public void setScaledExtraCreditEnabled(Boolean allowScaledExtraCredit) {
-		put(ItemKey.ALLOW_SCALED_EXTRA_CREDIT.name(), allowScaledExtraCredit);
+		put(ItemKey.B_ALW_SCL_X_CRDT.name(), allowScaledExtraCredit);
 	}
 	
 }

@@ -24,7 +24,6 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,12 +33,15 @@ import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestCallback;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
-import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
+import org.sakaiproject.gradebook.gwt.client.gxt.JsonUtil;
 import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.BaseCustomGridView;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityOverlay;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.LearnerModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader.Field;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
@@ -201,7 +203,7 @@ public class ImportPanel extends GradebookPanel {
 		
 		rowStore = new ListStore<ModelData>();
 		rowStore.setMonitorChanges(true);
-		rowStore.setModelComparer(new EntityModelComparer<ModelData>(LearnerKey.UID.name()));
+		rowStore.setModelComparer(new EntityModelComparer<ModelData>(LearnerKey.S_UID.name()));
 
 		ColumnModel cm = new ColumnModel(configs);
 		grid = new Grid<ModelData>(rowStore, cm);
@@ -238,10 +240,10 @@ public class ImportPanel extends GradebookPanel {
 				StringBuilder css = new StringBuilder();
 
 				if (r != null) {
-					String failedProperty = new StringBuilder().append(property).append(AppConstants.FAILED_FLAG).toString();
+					String failedProperty = DataTypeConversionUtil.buildFailedKey(property); 
 					String failedMessage = (String)r.get(failedProperty);
 
-					String successProperty = new StringBuilder().append(property).append(AppConstants.SUCCESS_FLAG).toString();
+					String successProperty = DataTypeConversionUtil.buildSuccessKey(property);
 					String successMessage = (String)r.get(successProperty);
 					
 					if (failedMessage != null) {
@@ -305,7 +307,7 @@ public class ImportPanel extends GradebookPanel {
 				allItemModels.addAll(invisibleItemModels);
 				List<ModelData> rowModels = rowStore.getModels();
 				int numberOfRows = rowModels == null ? 0 : rowModels.size();
-				JSONObject spreadsheetModel = composeSpreadsheetModel(allItemModels, rowModels, previewColumns);
+				EntityModel spreadsheetModel = composeSpreadsheetModel(allItemModels, rowModels, previewColumns);
 
 				submitButton.setVisible(false);
 				uploadSpreadsheet(spreadsheetModel, numberOfRows);
@@ -368,15 +370,14 @@ public class ImportPanel extends GradebookPanel {
 
 	}
 
-	private JSONObject composeSpreadsheetModel(List<ModelData> items, 
+	private EntityModel composeSpreadsheetModel(List<ModelData> items, 
 			List<ModelData> importRows, List<ColumnConfig> previewColumns) {
 
-		JSONObject spreadsheetModel = new JSONObject();
-		JSONArray itemArray = RestBuilder.convertList(items);
+		EntityModel spreadsheetModel = new EntityModel();
 		
-		spreadsheetModel.put(UploadKey.HEADERS.name(), itemArray);
+		spreadsheetModel.set(UploadKey.A_HDRS.name(), items);
 
-		JSONArray rows = new JSONArray();
+		List<LearnerModel> rows = new ArrayList<LearnerModel>();
 		int i=0;
 		for (ModelData importRow : importRows) {
 			
@@ -385,30 +386,27 @@ public class ImportPanel extends GradebookPanel {
 			if (isUserNotFound)
 				continue;
 
-			String uid = importRow.get("userUid");
+			String uid = importRow.get("S_userUid");
 			if (uid == null)
-				uid = importRow.get("userImportId");
+				uid = importRow.get("S_userImportId");
 
-			JSONObject student = new JSONObject();
-			student.put(LearnerKey.UID.name(), new JSONString(uid));
+			LearnerModel student = new LearnerModel();
+			student.set(LearnerKey.S_UID.name(), uid);
 
 			for (ColumnConfig column : previewColumns) {
 				String id = column.getId();
 				Object value = importRow.get(id);
-				if (value instanceof String)
-					student.put(id, new JSONString((String)value));
-				else if (value instanceof Double)
-					student.put(id, new JSONNumber((Double)value));
+				student.set(id, value);
 			}
-			rows.set(i++, student);
+			rows.add(student);
 		}
-		spreadsheetModel.put(UploadKey.ROWS.name(), rows);
-		spreadsheetModel.put(UploadKey.NUMBER_OF_ROWS.name(), new JSONNumber(Double.valueOf(i)));
+		spreadsheetModel.set(UploadKey.A_ROWS.name(), rows);
+		spreadsheetModel.set(UploadKey.I_NUM_ROWS.name(), Double.valueOf(i));
 
 		return spreadsheetModel;
 	}
 	
-	private void uploadSpreadsheet(JSONObject spreadsheetModel, int numberOfLearners) {
+	private void uploadSpreadsheet(EntityModel spreadsheetModel, int numberOfLearners) {
 		Gradebook gbModel = Registry.get(AppConstants.CURRENT);
 
 		String message = new StringBuilder().append(i18n.uploadingLearnerGradesPrefix()).append(" ")
@@ -420,7 +418,10 @@ public class ImportPanel extends GradebookPanel {
 				AppConstants.REST_FRAGMENT,
 				AppConstants.UPLOAD_FRAGMENT, gbModel.getGradebookUid(), String.valueOf(gbModel.getGradebookId()));
 
-		builder.sendRequest(200, 400, spreadsheetModel.toString(), new RestCallback() {
+		
+		String jsonText = spreadsheetModel == null ? null : spreadsheetModel.getJSON();
+		
+		builder.sendRequest(200, 400, jsonText, new RestCallback() {
 
 			@Override
 			public void onError(Request request, Throwable caught) {
@@ -434,11 +435,14 @@ public class ImportPanel extends GradebookPanel {
 				
 				try {
 					
-					JsonTranslater translater = new JsonTranslater(EnumSet.allOf(UploadKey.class));
+					EntityOverlay overlay = JsonUtil.toOverlay(response.getText());
+					ModelData result = new EntityModel(overlay) {
+						public ModelData newChildModel(String property, EntityOverlay overlay) {
+							 return new ItemModel(overlay);
+						 }
+					}; 
 					
-					ModelData result = translater.translate(response.getText());
-					
-					List<ModelData> rows = result.get(UploadKey.ROWS.name());
+					List<ModelData> rows = result.get(UploadKey.A_ROWS.name());
 					
 					int numberOfScoresChanged = 0;
 					if (rows != null) {
@@ -449,29 +453,29 @@ public class ImportPanel extends GradebookPanel {
 	
 							if (hasChanges) {
 								ModelData model = rowStore.getAt(rowNumber);
-								String learnerUid = model.get(LearnerKey.UID.name());
-								String currentUid = student.get(LearnerKey.UID.name());
+								String learnerUid = model.get(LearnerKey.S_UID.name());
+								String currentUid = student.get(LearnerKey.S_UID.name());
 								if (learnerUid == null || !learnerUid.equals(currentUid))
-									model = rowStore.findModel(LearnerKey.UID.name(), currentUid);
+									model = rowStore.findModel(LearnerKey.S_UID.name(), currentUid);
 								Record record = rowStore.getRecord(model);
 								record.beginEdit();
 	
 								for (String p : student.getPropertyNames()) {
 									boolean needsRefreshing = false;
 	
-									int index = -1;
+									//int index = -1;
 	
-									if (p.endsWith(AppConstants.FAILED_FLAG)) {
-										index = p.indexOf(AppConstants.FAILED_FLAG);
+									if (p.startsWith(AppConstants.FAILED_FLAG)) {
+										//index = p.indexOf(AppConstants.FAILED_FLAG);
 										needsRefreshing = true;
-									} else if (p.endsWith(AppConstants.SUCCESS_FLAG)) {
-										index = p.indexOf(AppConstants.SUCCESS_FLAG);
+									} else if (p.startsWith(AppConstants.SUCCESS_FLAG)) {
+										//index = p.indexOf(AppConstants.SUCCESS_FLAG);
 										needsRefreshing = true;
 										numberOfScoresChanged++;
 									}
 	
-									if (needsRefreshing && index != -1) {
-										String assignmentId = p.substring(0, index);
+									if (needsRefreshing) {
+										String assignmentId = DataTypeConversionUtil.unpackItemIdFromKey(p);
 										Object value = student.get(assignmentId);
 	
 										record.set(p, student.get(p));
@@ -496,7 +500,7 @@ public class ImportPanel extends GradebookPanel {
 					cancelButton.setText("Done");
 
 					Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
-					selectedGradebook.setGradebookGradeItem((ItemModel)result.get(UploadKey.GRADEBOOK_ITEM_MODEL.name()));
+					selectedGradebook.setGradebookGradeItem((ItemModel)result.get(UploadKey.M_GB_ITM.name()));
 					Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookSetup.getEventType(), selectedGradebook);
 					Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookItems.getEventType(), selectedGradebook);
 					// Have to do this one, otherwise the multigrid is not fully refreshed. 
@@ -513,82 +517,6 @@ public class ImportPanel extends GradebookPanel {
 			}
 			
 		});
-		
-		/*
-		AsyncCallback<SpreadsheetModel> callback =
-			new AsyncCallback<SpreadsheetModel>() {
-
-			public void onFailure(Throwable caught) {
-				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught));
-				uploadingBox.close();
-			}
-
-			public void onSuccess(SpreadsheetModel result) {
-
-				try {
-					List<ModelData> rows = result.getRows();
-					int size = rows == null ? 0 : rows.size();
-					
-					StringBuilder heading = new StringBuilder().append("Result Data (").append(size).append(" records uploaded)");
-					previewTab.setText(heading.toString());
-					
-					for (ModelData student : rows) {
-
-						boolean hasChanges = DataTypeConversionUtil.checkBoolean((Boolean)student.get(AppConstants.IMPORT_CHANGES));
-
-						if (hasChanges) {
-							Record record = rowStore.getRecord(student);
-							record.beginEdit();
-
-							for (String p : student.getPropertyNames()) {
-								boolean needsRefreshing = false;
-
-								int index = -1;
-
-								if (p.endsWith(StudentModel.FAILED_FLAG)) {
-									index = p.indexOf(StudentModel.FAILED_FLAG);
-									needsRefreshing = true;
-								} 
-
-								if (needsRefreshing && index != -1) {
-									String assignmentId = p.substring(0, index);
-									Object value = result.get(assignmentId);
-
-									record.set(assignmentId, null);
-									record.set(assignmentId, value);
-
-								}
-							}
-							record.endEdit();
-						}
-					}
-
-					uploadingBox.setProgressText("Loading");
-
-					cancelButton.setText("Done");
-
-					GradebookModel selectedGradebook = Registry.get(AppConstants.CURRENT);
-					selectedGradebook.setGradebookItemModel(result.getGradebookItemModel());
-					Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookSetup.getEventType(), selectedGradebook);
-					Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookItems.getEventType(), selectedGradebook);
-					// Have to do this one, otherwise the multigrid is not fully refreshed. 
-					Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades.getEventType());
-				} catch (Exception e) {
-					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(e));
-				} finally {
-					uploadingBox.close();
-				}
-				
-				if (isGradingFailure) {
-					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.importGradesFailedTitle(), i18n.importGradesFailedMessage(), true, true));
-				}
-			}
-		};
-
-		Gradebook2RPCServiceAsync service = Registry.get(AppConstants.SERVICE);
-
-		service.create(gbModel.getGradebookUid(), gbModel.getGradebookId(), spreadsheetModel, EntityType.SPREADSHEET, SecureToken.get(), callback);
-		*/
 	}
 
 	private FormPanel buildFileUploadPanel() {
@@ -735,14 +663,15 @@ public class ImportPanel extends GradebookPanel {
 						builder.sendRequest(200, 400, null, new RestCallback() {
 
 							public void onSuccess(Request request, Response response) {
-								String result = response.getText();
+								/*String result = response.getText();
 
 								JsonTranslater translater = new JsonTranslater(EnumSet.allOf(ItemKey.class)) {
 									protected ModelData newModelInstance() {
 										return new ItemModel();
 									}
-								};
-								ItemModel itemModel = (ItemModel)translater.translate(result);
+								};*/
+								EntityOverlay overlay = JsonUtil.toOverlay(response.getText());
+								ItemModel itemModel = new ItemModel(overlay); //(ItemModel)translater.translate(result);
 								
 								if (itemModel != null) {
 									refreshCategoryPickerStore(itemModel);
@@ -797,9 +726,9 @@ public class ImportPanel extends GradebookPanel {
 					if (categoryId != null && categoryId.equals("null"))
 						categoryId = null;
 					
-					if (id.equals("ID"))
+					if (id.equals("S_ID"))
 						width = 100;
-					else if (!id.equals("NAME"))
+					else if (!id.equals("S_NAME"))
 						width = name.length() * 7;
 
 					if (id.startsWith("NEW:")) {
@@ -864,14 +793,14 @@ public class ImportPanel extends GradebookPanel {
 					
 					ModelData model = new BaseModel();
 					if (userUid != null)
-						model.set(LearnerKey.UID.name(), userUid);
+						model.set(LearnerKey.S_UID.name(), userUid);
 					else if (userImportId != null)
-						model.set(LearnerKey.UID.name(), userImportId);
+						model.set(LearnerKey.S_UID.name(), userImportId);
 
-					model.set("userUid", userUid);
-					model.set("userImportId", userImportId);
-					model.set("userDisplayName", userDisplayName);
-					model.set("userNotFound", userNotFound);
+					model.set("S_userUid", userUid);
+					model.set("S_userImportId", userImportId);
+					model.set("S_userDisplayName", userDisplayName);
+					model.set("B_userNotFound", userNotFound);
 
 					if (columnsArray != null) {
 						for (int j=0;j<columnsArray.size();j++) {
@@ -886,7 +815,7 @@ public class ImportPanel extends GradebookPanel {
 										continue;
 									String configId = config.getId(); 
 									ImportHeader h = headerMap.get(configId);
-									if (isPointsMode && null != h && h.getField().equals(Field.ITEM.name()) &&
+									if (isPointsMode && null != h && h.getField().equals(Field.S_ITEM.name()) &&
 											null != itemString && !"".equals(itemString.stringValue())) {
 										
 										Double maxPoints = h.getPoints(); 
@@ -1042,7 +971,7 @@ public class ImportPanel extends GradebookPanel {
 				String categoryName = categoryIdNameMap.get(categoryId);
 				if (categoryName == null) {
 
-					ItemModel categoryModel = categoriesStore.findModel(ItemKey.ID.name(), String.valueOf(categoryId));
+					ItemModel categoryModel = categoriesStore.findModel(ItemKey.S_ID.name(), String.valueOf(categoryId));
 
 					if (categoryModel == null && itemModel.getCategoryName() != null) {
 						categoryModel = new ItemModel();
@@ -1079,31 +1008,31 @@ public class ImportPanel extends GradebookPanel {
 		textField.addInputStyleName(resources.css().gbTextFieldInput());
 		CellEditor textCellEditor = new CellEditor(textField);
 
-		ColumnConfig name = new ColumnConfig(ItemKey.NAME.name(), "Item", 200);
+		ColumnConfig name = new ColumnConfig(ItemKey.S_NM.name(), "Item", 200);
 		name.setEditor(textCellEditor);
 		itemColumns.add(name);
 
-		percentCategory = new ColumnConfig(ItemKey.PERCENT_CATEGORY.name(), "% Category", 100);
+		percentCategory = new ColumnConfig(ItemKey.D_PCT_CTGRY.name(), "% Category", 100);
 		percentCategory.setEditor(new CellEditor(new NumberField()));
 		itemColumns.add(percentCategory);
 
-		ColumnConfig points = new ColumnConfig(ItemKey.POINTS.name(), "Points", 100);
+		ColumnConfig points = new ColumnConfig(ItemKey.D_PNTS.name(), "Points", 100);
 		points.setEditor(new CellEditor(new NumberField()));
 		itemColumns.add(points);
 
 		categoryPicker = new ComboBox<ItemModel>(); 
 		categoryPicker.setAllowBlank(false); 
 		categoryPicker.setAllQuery(null);
-		categoryPicker.setDisplayField(ItemKey.NAME.name());  
+		categoryPicker.setDisplayField(ItemKey.S_NM.name());  
 		categoryPicker.setEditable(true);
 		categoryPicker.setEmptyText("Required");
 		categoryPicker.setFieldLabel("Category");
 		categoryPicker.setForceSelection(true);
 		categoryPicker.setStore(categoriesStore);
-		categoryPicker.setValueField(ItemKey.ID.name());
+		categoryPicker.setValueField(ItemKey.S_ID.name());
 		categoryPicker.addInputStyleName(resources.css().gbTextFieldInput());
 
-		ColumnConfig category = new ColumnConfig(ItemKey.CATEGORY_ID.name(), "Category", 140);
+		ColumnConfig category = new ColumnConfig(ItemKey.L_CTGRY_ID.name(), "Category", 140);
 				
 		categoryEditor =	new CellEditor(categoryPicker) {
 
@@ -1120,7 +1049,7 @@ public class ImportPanel extends GradebookPanel {
 			public Object preProcessValue(Object value) {
 				Long id = (Long)value;
 
-				return categoriesStore.findModel(ItemKey.ID.name(), String.valueOf(id));
+				return categoriesStore.findModel(ItemKey.S_ID.name(), String.valueOf(id));
 			}
 
 		};
@@ -1140,7 +1069,7 @@ public class ImportPanel extends GradebookPanel {
 				else
 					lookupId = (String)identifier;
 
-				Item itemModel = categoriesStore.findModel(ItemKey.ID.name(), lookupId);
+				Item itemModel = categoriesStore.findModel(ItemKey.S_ID.name(), lookupId);
 
 				if (itemModel == null)
 					return AppConstants.DEFAULT_CATEGORY_NAME;
@@ -1175,15 +1104,15 @@ public class ImportPanel extends GradebookPanel {
 				if (header == null)
 					continue;
 
-				if (header.getId().equals("ID"))
+				if (header.getId().equals("S_ID"))
 					continue;
 
-				if (header.getId().equals("NAME"))
+				if (header.getId().equals("S_NAME"))
 					continue;
 				
 				ItemType type = ItemType.ITEM;
 				
-				if (header.getField().equals(Field.COMMENT.name()))
+				if (header.getField().equals(Field.S_COMMENT.name()))
 					type = ItemType.COMMENT;
 
 				itemModel.setIdentifier(header.getId());

@@ -1,19 +1,17 @@
 package org.sakaiproject.gradebook.gwt.client.model.key;
 
-public enum GradeFormatKey { ID(Long.class), NAME(String.class);
+public enum GradeFormatKey { 
+	
+	L_ID("id"), 
+	S_NM("name"); 
+	
+	private String property;
 
-	private Class<?> type;
-	
-	private GradeFormatKey() {
-		
-	}
-	
-	private GradeFormatKey(Class<?> type) {
-		this.type = type;
-	}
-	
-	public Class<?> getType() {
-		return type;
+	private GradeFormatKey(String property) {
+		this.property = property;
 	}
 
+	public String getProperty() {
+		return property;
+	}
 }

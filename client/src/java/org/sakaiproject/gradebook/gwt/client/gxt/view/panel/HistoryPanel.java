@@ -23,7 +23,6 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
@@ -31,10 +30,11 @@ import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.key.ActionKey;
-import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.EntityType;
 
+import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.binding.Converter;
 import com.extjs.gxt.ui.client.binding.FieldBinding;
 import com.extjs.gxt.ui.client.binding.FormBinding;
@@ -122,31 +122,31 @@ public class HistoryPanel extends EntityPanel {
 		formPanel.setVisible(false);
 	
 		LabelField dateField = new LabelField();
-		dateField.setName(ActionKey.DATE_RECORDED.name());
+		dateField.setName(ActionKey.S_RECORD.name());
 		dateField.setFieldLabel(i18n.actionDateFieldLabel());
 		dateField.setStyleAttribute("font-size", "12pt");
 		formPanel.add(dateField);
 		
 		LabelField descriptionField = new LabelField();
-		descriptionField.setName(ActionKey.DESCRIPTION.name());
+		descriptionField.setName(ActionKey.S_DESC.name());
 		descriptionField.setFieldLabel(i18n.actionDescriptionFieldLabel());
 		descriptionField.setStyleAttribute("font-size", "12pt");
 		formPanel.add(descriptionField);
 		
 		LabelField entityField = new LabelField();
-		entityField.setName(ActionKey.ENTITY_NAME.name());
+		entityField.setName(ActionKey.S_ENTY_NM.name());
 		entityField.setFieldLabel(i18n.actionEntityFieldLabel());
 		entityField.setStyleAttribute("font-size", "12pt");
 		formPanel.add(entityField);
 		
 		studentNameField = new LabelField();
-		studentNameField.setName(ActionKey.STUDENT_NAME.name());
+		studentNameField.setName(ActionKey.S_LRNR_NM.name());
 		studentNameField.setFieldLabel(i18n.actionStudentNameFieldLabel());
 		studentNameField.setStyleAttribute("font-size", "12pt");
 		formPanel.add(studentNameField);
 		
 		LabelField actorNameField = new LabelField();
-		actorNameField.setName(ActionKey.GRADER_NAME.name());
+		actorNameField.setName(ActionKey.S_GRDR_NM.name());
 		actorNameField.setFieldLabel(i18n.actionActor());
 		actorNameField.setStyleAttribute("font-size", "12pt");
 		formPanel.add(actorNameField);
@@ -162,8 +162,8 @@ public class HistoryPanel extends EntityPanel {
 		
 		formPanel.add(fieldSet);
 
-		loader = RestBuilder.getPagingDelayLoader(EnumSet.allOf(ActionKey.class), EnumSet.allOf(ItemKey.class), 
-				Method.GET, GWT.getModuleBaseURL(), 
+		loader = RestBuilder.getPagingDelayLoader(
+				Method.GET, null, GWT.getModuleBaseURL(), 
 				AppConstants.REST_FRAGMENT, AppConstants.HISTORY_FRAGMENT);
 
 		pagingToolBar = new PagingToolBar(20);
@@ -173,20 +173,21 @@ public class HistoryPanel extends EntityPanel {
 		
 		ArrayList<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 		
-		ColumnConfig column = new ColumnConfig(ActionKey.DATE_RECORDED.name(), i18n.actionDateFieldLabel(), 200);
+		ColumnConfig column = new ColumnConfig(ActionKey.S_RECORD.name(), i18n.actionDateFieldLabel(), 200);
 		configs.add(column);
 		
-		column = new ColumnConfig(ActionKey.DESCRIPTION.name(), i18n.actionDescriptionFieldLabel(), 150);
+		column = new ColumnConfig(ActionKey.S_DESC.name(), i18n.actionDescriptionFieldLabel(), 150);
 		configs.add(column);
 		
-		column = new ColumnConfig(ActionKey.ENTITY_NAME.name(), i18n.actionEntityFieldLabel(), 180);
+		column = new ColumnConfig(ActionKey.S_ENTY_NM.name(), i18n.actionEntityFieldLabel(), 180);
 		configs.add(column);
 		
-		column = new ColumnConfig(ActionKey.STUDENT_NAME.name(), i18n.actionStudentNameFieldLabel(), 140);
+		column = new ColumnConfig(ActionKey.S_LRNR_NM.name(), i18n.actionStudentNameFieldLabel(), 140);
 		configs.add(column);
 		
 		columnModel = new ColumnModel(configs);
 		store = new ListStore<ModelData>(loader);
+		store.setModelComparer(new EntityModelComparer<ModelData>(ActionKey.S_ID.name()));
 		selectionListener = new SelectionChangedListener<ModelData>() {
 
 			@Override
@@ -208,6 +209,7 @@ public class HistoryPanel extends EntityPanel {
 		
 		selectionModel = new GridSelectionModel<ModelData>();
 		selectionModel.addSelectionChangedListener(selectionListener);
+		selectionModel.setSelectionMode(SelectionMode.SINGLE);
 		grid = new Grid<ModelData>(store, columnModel);
 		grid.setBorders(true);
 		grid.setSelectionModel(selectionModel);
@@ -269,7 +271,7 @@ public class HistoryPanel extends EntityPanel {
 	}
 	
 	private void initState(ModelData action) {
-		String entityTypeString = action.get(ActionKey.ENTITY_TYPE.name());
+		String entityTypeString = action.get(ActionKey.O_ENTY_TYPE.name());
 		EntityType entityType = entityTypeString == null ? null : EntityType.valueOf(entityTypeString);
 		boolean isGradebook = entityType != null && entityType == EntityType.GRADEBOOK;
 		boolean isCategory = entityType != null && entityType == EntityType.CATEGORY;

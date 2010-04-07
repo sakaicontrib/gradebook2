@@ -204,8 +204,8 @@ public class LearnerSummaryPanel extends GradebookPanel {
 	
 	public void onLearnerGradeRecordUpdated(ModelData learner) {
 		if (this.learner != null && learner != null) { 
-			String uid1 = this.learner.get(LearnerKey.UID.name());
-			String uid2 = learner.get(LearnerKey.UID.name());
+			String uid1 = this.learner.get(LearnerKey.S_UID.name());
+			String uid2 = learner.get(LearnerKey.S_UID.name());
 			
 			if (uid1 != null && uid2 != null && uid1.equals(uid2))
 				updateLearnerInfo(learner, true);
@@ -408,26 +408,26 @@ public class LearnerSummaryPanel extends GradebookPanel {
 		learnerInfoTable.setText(1, 0, i18n.columnTitleDisplayName());
 		formatter.setStyleName(1, 0, resources.css().gbImpact());
 		formatter.setHeight(1, 0, rowHeight);
-		learnerInfoTable.setText(1, 1, (String)learnerGradeRecordCollection.get(LearnerKey.DISPLAY_NAME.name()));
+		learnerInfoTable.setText(1, 1, (String)learnerGradeRecordCollection.get(LearnerKey.S_DSPLY_NM.name()));
 		formatter.setHeight(1, 1, rowHeight);
 		learnerInfoTable.setAutoHeight(true);
 		
 		learnerInfoTable.setText(2, 0, i18n.columnTitleEmail());
 		formatter.setStyleName(2, 0, resources.css().gbImpact());
 		formatter.setHeight(2, 0, rowHeight);
-		learnerInfoTable.setText(2, 1, (String)learnerGradeRecordCollection.get(LearnerKey.EMAIL.name()));
+		learnerInfoTable.setText(2, 1, (String)learnerGradeRecordCollection.get(LearnerKey.S_EMAIL.name()));
 		formatter.setHeight(2, 1, rowHeight);
 		
 		learnerInfoTable.setText(3, 0, i18n.columnTitleDisplayId());
 		formatter.setStyleName(3, 0, resources.css().gbImpact());
 		formatter.setHeight(3, 0, rowHeight);
-		learnerInfoTable.setText(3, 1, (String)learnerGradeRecordCollection.get(LearnerKey.DISPLAY_ID.name()));
+		learnerInfoTable.setText(3, 1, (String)learnerGradeRecordCollection.get(LearnerKey.S_DSPLY_ID.name()));
 		formatter.setHeight(3, 1, rowHeight);
 		
 		learnerInfoTable.setText(4, 0, i18n.columnTitleSection());
 		formatter.setStyleName(4, 0, resources.css().gbImpact());
 		formatter.setHeight(4, 0, rowHeight);
-		learnerInfoTable.setText(4, 1, (String)learnerGradeRecordCollection.get(LearnerKey.SECTION.name()));
+		learnerInfoTable.setText(4, 1, (String)learnerGradeRecordCollection.get(LearnerKey.S_SECT.name()));
 		formatter.setHeight(4, 1, rowHeight);
 		
 		//learnerInfoTable.setText(5, 0, "");
@@ -437,7 +437,7 @@ public class LearnerSummaryPanel extends GradebookPanel {
 		learnerInfoTable.setText(5, 0, "Course Grade");
 		formatter.setStyleName(5, 0, resources.css().gbImpact());
 		formatter.setHeight(5, 0, rowHeight);
-		learnerInfoTable.setText(5, 1, (String)learnerGradeRecordCollection.get(LearnerKey.COURSE_GRADE.name()));
+		learnerInfoTable.setText(5, 1, (String)learnerGradeRecordCollection.get(LearnerKey.S_CRS_GRD.name()));
 		formatter.setHeight(5, 1, rowHeight);
 		learnerInfoPanel.show();
 	}

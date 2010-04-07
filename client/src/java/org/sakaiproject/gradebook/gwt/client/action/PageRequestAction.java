@@ -36,7 +36,7 @@ public class PageRequestAction extends Action {
 		super(entityType, gradebookUid, gradebookId);
 	}
 
-	@Override
+	/*@Override
 	public String getDisplayName() {
 		return "Page Request for " + getEntityType();
 	}
@@ -44,6 +44,6 @@ public class PageRequestAction extends Action {
 	@Override
 	public String getIdentifier() {
 		return getEntityId();
-	}
+	}*/
 
 }

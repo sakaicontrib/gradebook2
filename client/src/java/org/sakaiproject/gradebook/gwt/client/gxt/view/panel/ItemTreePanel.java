@@ -1,7 +1,6 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 
@@ -11,7 +10,7 @@ import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestCallback;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
-import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
+import org.sakaiproject.gradebook.gwt.client.gxt.JsonUtil;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenu;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTabItem;
@@ -22,6 +21,8 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityOverlay;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.Configuration;
@@ -148,7 +149,7 @@ public class ItemTreePanel extends GradebookPanel {
 		
 		TreeGridCellRenderer<ItemModel> renderer = new TreeGridCellRenderer<ItemModel>();
 		
-		ColumnConfig nameColumn = new ColumnConfig(ItemKey.NAME.name(), 
+		ColumnConfig nameColumn = new ColumnConfig(ItemKey.S_NM.name(), 
 				i18n.nameFieldLabel(), 200);
 		nameColumn.setMenuDisabled(true);
 		nameColumn.setRenderer(renderer);
@@ -169,9 +170,9 @@ public class ItemTreePanel extends GradebookPanel {
 					boolean isItem = itemModel.getItemType() == ItemType.ITEM;
 					boolean isCategory = itemModel.getItemType() == ItemType.CATEGORY;
 					boolean isGradebook = !isItem && !isCategory;
-					boolean isPercentCategory = property.equals(ItemKey.PERCENT_CATEGORY.name());
-					boolean isPercentGrade = property.equals(ItemKey.PERCENT_COURSE_GRADE.name());
-					boolean isPoints = property.equals(ItemKey.POINTS.name());
+					boolean isPercentCategory = property.equals(ItemKey.D_PCT_CTGRY.name());
+					boolean isPercentGrade = property.equals(ItemKey.D_PCT_GRD.name());
+					boolean isPoints = property.equals(ItemKey.D_PNTS.name());
 					
 					if (value == null)
 						return null;
@@ -223,21 +224,21 @@ public class ItemTreePanel extends GradebookPanel {
 			
 		};
 		
-		percentCourseGradeColumn =  new ColumnConfig(ItemKey.PERCENT_COURSE_GRADE.name(), 
+		percentCourseGradeColumn =  new ColumnConfig(ItemKey.D_PCT_GRD.name(), 
 				i18n.percentCourseGradeFieldLabel(), i18n.percentCourseGradeFieldLabel().length() * CHARACTER_WIDTH + 30);
 		percentCourseGradeColumn.setAlignment(HorizontalAlignment.RIGHT);
 		percentCourseGradeColumn.setRenderer(numericRenderer);
 		percentCourseGradeColumn.setSortable(false);
 		columns.add(percentCourseGradeColumn);
 
-		percentCategoryColumn =  new ColumnConfig(ItemKey.PERCENT_CATEGORY.name(), 
+		percentCategoryColumn =  new ColumnConfig(ItemKey.D_PCT_CTGRY.name(), 
 				i18n.percentCategoryFieldLabel(), i18n.percentCategoryFieldLabel().length() * CHARACTER_WIDTH + 20);
 		percentCategoryColumn.setAlignment(HorizontalAlignment.RIGHT);
 		percentCategoryColumn.setRenderer(numericRenderer);
 		percentCategoryColumn.setSortable(false);
 		columns.add(percentCategoryColumn);
 
-		pointsColumn = new ColumnConfig(ItemKey.POINTS.name(), 
+		pointsColumn = new ColumnConfig(ItemKey.D_PNTS.name(), 
 				i18n.pointsFieldLabel(), i18n.pointsFieldLabel().length() * CHARACTER_WIDTH + 30);
 		pointsColumn.setAlignment(HorizontalAlignment.RIGHT);
 		pointsColumn.setRenderer(numericRenderer);
@@ -391,7 +392,7 @@ public class ItemTreePanel extends GradebookPanel {
 		learnerAttributeTree.setCheckable(true);
 		learnerAttributeTree.setCheckStyle(CheckCascade.CHILDREN);
 		learnerAttributeTree.setCheckNodes(CheckNodes.LEAF);
-		learnerAttributeTree.setDisplayProperty(FixedColumnKey.NAME.name());
+		learnerAttributeTree.setDisplayProperty(FixedColumnKey.S_NAME.name());
 		//learnerAttributeTree.setStateful(true);
 		//learnerAttributeTree.setStateId(AppConstants.LEARNER_ATTRIBUTE_TREE);
 		
@@ -473,7 +474,7 @@ public class ItemTreePanel extends GradebookPanel {
 				
 				fullStaticIdSet.add(column.getIdentifier());
 				
-				boolean isDefaultHidden = column.isHidden();
+				boolean isDefaultHidden = DataTypeConversionUtil.checkBoolean(column.isHidden());
 				boolean isChecked = !configModel.isColumnHidden(AppConstants.ITEMTREE, column.getIdentifier(), isDefaultHidden);
 				
 				if (isChecked)
@@ -623,9 +624,9 @@ public class ItemTreePanel extends GradebookPanel {
 									AppConstants.REST_FRAGMENT,
 									AppConstants.ITEM_FRAGMENT);
 							
-							JSONObject jsonObject = RestBuilder.convertModel(item);
+							String jsonText = item == null ? null : item.getJSON();
 							
-							builder.sendRequest(200, 400, jsonObject.toString(), new RestCallback() {
+							builder.sendRequest(200, 400, jsonText, new RestCallback() {
 
 								public void onError(Request request, Throwable exception) {
 									Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(exception, "Failed to update item: "));
@@ -633,14 +634,15 @@ public class ItemTreePanel extends GradebookPanel {
 								}
 
 								public void onSuccess(Request request, Response response) {
-									String result = response.getText();
+									/*String result = response.getText();
 
 									JsonTranslater translater = new JsonTranslater(EnumSet.allOf(ItemKey.class)) {
 										protected ModelData newModelInstance() {
 											return new ItemModel();
 										}
-									};
-									ItemModel itemModel = (ItemModel)translater.translate(result);
+									};*/
+									EntityOverlay overlay = JsonUtil.toOverlay(response.getText());
+									ItemModel itemModel = new ItemModel(overlay); // (ItemModel)translater.translate(result);
 									
 									Dispatcher.forwardEvent(GradebookEvents.BeginItemUpdates.getEventType());
 
@@ -902,7 +904,7 @@ public class ItemTreePanel extends GradebookPanel {
 			String id = model.get("id");
 
 			if (id == null)
-				id = model.get(ItemKey.ID.name());
+				id = model.get(ItemKey.S_ID.name());
 
 			if (id != null)
 				staticIds.add(id);

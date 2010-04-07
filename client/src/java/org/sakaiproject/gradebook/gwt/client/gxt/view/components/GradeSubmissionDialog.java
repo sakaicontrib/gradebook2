@@ -23,8 +23,6 @@
 
 package org.sakaiproject.gradebook.gwt.client.gxt.view.components;
 
-import java.util.EnumSet;
-
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
@@ -32,9 +30,11 @@ import org.sakaiproject.gradebook.gwt.client.RestCallback;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.advisor.ClientExportAdvisorImpl;
 import org.sakaiproject.gradebook.gwt.client.api.ClientExportAdvisor;
-import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
+import org.sakaiproject.gradebook.gwt.client.gxt.JsonUtil;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityOverlay;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.key.VerificationKey;
 
@@ -87,17 +87,18 @@ public class GradeSubmissionDialog extends Dialog {
 			@Override
 			public void onSuccess(Request request, Response response) {
 				
-				JsonTranslater translater = new JsonTranslater(EnumSet.allOf(VerificationKey.class));
-				ModelData result = translater.translate(response.getText());
+				//JsonTranslater translater = new JsonTranslater(EnumSet.allOf(VerificationKey.class));
+				EntityOverlay overlay = JsonUtil.toOverlay(response.getText());
+				ModelData result = new EntityModel(overlay); //translater.translate(response.getText());
 				
 				box.close();
 				
 				StringBuilder text = new StringBuilder();
 				
-				boolean isCategoryFulluWeighted = result.get(VerificationKey.IS_CATEGORY_FULLY_WEIGHTED.name()) != null && ((Boolean)result.get(VerificationKey.IS_CATEGORY_FULLY_WEIGHTED.name())).booleanValue();
-				boolean isFullyWeighted = result.get(VerificationKey.IS_FULLY_WEIGHTED.name()) != null && ((Boolean)result.get(VerificationKey.IS_FULLY_WEIGHTED.name())).booleanValue();
-				boolean isMissingScores = result.get(VerificationKey.IS_MISSING_SCORES.name()) != null && ((Boolean)result.get(VerificationKey.IS_MISSING_SCORES.name())).booleanValue();
-				int numberOfLearners = result.get(VerificationKey.NUMBER_LEARNERS.name()) == null ? 0 : ((Integer)result.get(VerificationKey.NUMBER_LEARNERS.name())).intValue();
+				boolean isCategoryFulluWeighted = result.get(VerificationKey.B_CTGRY_WGHTD.name()) != null && ((Boolean)result.get(VerificationKey.B_CTGRY_WGHTD.name())).booleanValue();
+				boolean isFullyWeighted = result.get(VerificationKey.B_GB_WGHTD.name()) != null && ((Boolean)result.get(VerificationKey.B_GB_WGHTD.name())).booleanValue();
+				boolean isMissingScores = result.get(VerificationKey.B_MISS_SCRS.name()) != null && ((Boolean)result.get(VerificationKey.B_MISS_SCRS.name())).booleanValue();
+				int numberOfLearners = result.get(VerificationKey.I_NUM_LRNRS.name()) == null ? 0 : ((Integer)result.get(VerificationKey.I_NUM_LRNRS.name())).intValue();
 				
 				if (!isCategoryFulluWeighted && !isFullyWeighted) {
 					setHeading(i18n.finalGradeSubmissionConfirmAltTitle());

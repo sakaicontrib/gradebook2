@@ -52,19 +52,19 @@ public class UserEntityCreateAction<M extends BaseModel> extends UserEntityActio
 
 
 	public String getName() {
-		return get(ActionKey.NAME.name());
+		return get(ActionKey.S_NAME.name());
 	}
 
 	public void setName(String name) {
-		set(ActionKey.NAME.name(), name);
+		set(ActionKey.S_NAME.name(), name);
 	}
 
 	public Double getWeight() {
-		return get(ActionKey.WEIGHT.name());
+		return get(ActionKey.D_WGHT.name());
 	}
 
 	public void setWeight(Double weight) {
-		set(ActionKey.WEIGHT.name(), weight);
+		set(ActionKey.D_WGHT.name(), weight);
 	}
 
 	public String toString() {

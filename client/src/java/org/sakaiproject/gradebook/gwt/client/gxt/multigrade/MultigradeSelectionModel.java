@@ -63,6 +63,12 @@ public class MultigradeSelectionModel<M extends ModelData> extends CellSelection
 				} else {
 					newCell = ((GbEditorGrid<M>)grid).doWalkCells(editor.row + 1, editor.col, 1, callback, true);
 				}
+			} else if (k == KeyCodes.KEY_DOWN) {
+				newCell = ((GbEditorGrid<M>)grid).doWalkCells(editor.row + 1, editor.col, 1, callback, false);
+				break;
+			} else if (k == KeyCodes.KEY_UP) {
+				newCell = ((GbEditorGrid<M>)grid).doWalkCells(editor.row - 1, editor.col, -1, callback, false);
+				break;
 			}
 			break;
 		case KeyCodes.KEY_TAB:

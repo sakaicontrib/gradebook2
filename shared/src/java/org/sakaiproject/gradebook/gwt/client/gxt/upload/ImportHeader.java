@@ -27,7 +27,7 @@ import java.io.Serializable;
 
 public class ImportHeader implements Serializable {
 
-	public enum Field { ID, NAME, ITEM, COMMENT }
+	public enum Field { S_ID, S_NAME, S_ITEM, S_COMMENT }
 	public enum Mode { POINTS, PERCENTAGES, LETTERGRADES };
 
 	private static final long serialVersionUID = 1L;

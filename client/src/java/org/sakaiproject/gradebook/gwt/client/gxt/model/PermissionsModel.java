@@ -39,37 +39,37 @@ public class PermissionsModel extends EntityModel implements Permission {
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Permission#getCategoryDisplayName()
 	 */
 	public String getCategoryDisplayName() {
-		return get(PermissionKey.CATEGORY_DISPLAY_NAME.name());
+		return get(PermissionKey.S_CTGRY_NAME.name());
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Permission#getCategoryId()
 	 */
 	public Long getCategoryId() {
-		return get(PermissionKey.CATEGORY_ID.name());
+		return getLong(PermissionKey.L_CTGRY_ID.name());
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Permission#getDeleteAction()
 	 */
 	public String getDeleteAction() {
-		return get(PermissionKey.DELETE_ACTION.name());
+		return get(PermissionKey.S_DEL_ACT.name());
 	}
 	
-	@Override
+	/*@Override
 	public String getDisplayName() {
 		return getIdentifier();
-	}
+	}*/
 	
 	public Long getGradebookId() {
-		return get(PermissionKey.GRADEBOOK_ID.name());
+		return getLong(PermissionKey.L_GB_ID.name());
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Permission#getId()
 	 */
 	public Long getId() {
-		return get(PermissionKey.ID.name());
+		return getLong(PermissionKey.L_ID.name());
 	}
 	
 	/* (non-Javadoc)
@@ -85,101 +85,101 @@ public class PermissionsModel extends EntityModel implements Permission {
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Permission#getPermissionId()
 	 */
 	public String getPermissionId() {
-		return get(PermissionKey.PERMISSION_ID.name());
+		return get(PermissionKey.S_PERM_ID.name());
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Permission#getSectionDisplayName()
 	 */
 	public String getSectionDisplayName() {
-		return get(PermissionKey.SECTION_DISPLAY_NAME.name());
+		return get(PermissionKey.S_SECT_NM.name());
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Permission#getSectionId()
 	 */
 	public String getSectionId() {
-		return get(PermissionKey.SECTION_ID.name());
+		return get(PermissionKey.S_SECT_ID.name());
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Permission#getUserDisplayName()
 	 */
 	public String getUserDisplayName() {
-		return get(PermissionKey.USER_DISPLAY_NAME.name());
+		return get(PermissionKey.S_DSPLY_NM.name());
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Permission#getUserId()
 	 */
 	public String getUserId() {
-		return get(PermissionKey.USER_ID.name());
+		return get(PermissionKey.S_USR_ID.name());
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Permission#setCategoryDisplayName(java.lang.String)
 	 */
 	public void setCategoryDisplayName(String categoryDisplayName) {
-		set(PermissionKey.CATEGORY_DISPLAY_NAME.name(), categoryDisplayName);
+		set(PermissionKey.S_CTGRY_NAME.name(), categoryDisplayName);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Permission#setCategoryId(java.lang.Long)
 	 */
 	public void setCategoryId(Long categoryId) {
-		set(PermissionKey.CATEGORY_ID.name(), categoryId);
+		set(PermissionKey.L_CTGRY_ID.name(), categoryId);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Permission#setDeleteAction(java.lang.String)
 	 */
 	public void setDeleteAction(String deleteAction) {
-		set(PermissionKey.DELETE_ACTION.name(), deleteAction);
+		set(PermissionKey.S_DEL_ACT.name(), deleteAction);
 	}
 	
 	public void setGradebookId(Long gradebookId) {
-		set(PermissionKey.GRADEBOOK_ID.name(), gradebookId);
+		set(PermissionKey.L_GB_ID.name(), gradebookId);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Permission#setId(java.lang.Long)
 	 */
 	public void setId(Long id) {
-		set(PermissionKey.ID.name(), id);
+		set(PermissionKey.L_ID.name(), id);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Permission#setPermissionId(java.lang.String)
 	 */
 	public void setPermissionId(String permissionId) {
-		set(PermissionKey.PERMISSION_ID.name(), permissionId);
+		set(PermissionKey.S_PERM_ID.name(), permissionId);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Permission#setSectionDisplayName(java.lang.String)
 	 */
 	public void setSectionDisplayName(String sectionDisplayName) {
-		set(PermissionKey.SECTION_DISPLAY_NAME.name(), sectionDisplayName);
+		set(PermissionKey.S_SECT_NM.name(), sectionDisplayName);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Permission#setSectionId(java.lang.String)
 	 */
 	public void setSectionId(String sectionId) {
-		set(PermissionKey.SECTION_ID.name(), sectionId);
+		set(PermissionKey.S_SECT_ID.name(), sectionId);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Permission#setUserDisplayName(java.lang.String)
 	 */
 	public void setUserDisplayName(String userDisplayName) {
-		set(PermissionKey.USER_DISPLAY_NAME.name(), userDisplayName);
+		set(PermissionKey.S_DSPLY_NM.name(), userDisplayName);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Permission#setUserId(java.lang.String)
 	 */
 	public void setUserId(String userId) {
-		set(PermissionKey.USER_ID.name(), userId);
+		set(PermissionKey.S_USR_ID.name(), userId);
 	}
 }

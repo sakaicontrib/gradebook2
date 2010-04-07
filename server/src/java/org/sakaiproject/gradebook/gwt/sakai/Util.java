@@ -1,15 +1,14 @@
 package org.sakaiproject.gradebook.gwt.sakai;
 
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
@@ -25,20 +24,20 @@ public class Util {
 			Boolean doShowMode, Boolean doShowRank, Boolean doShowItemStatistics) {
 		
 		Map<String,Object> map = new HashMap<String,Object>();
-		map.put(ItemKey.ID.name(), id);
-		map.put(ItemKey.NAME.name(), name);
-		map.put(ItemKey.ITEM_TYPE.name(), ItemType.GRADEBOOK);
-		map.put(ItemKey.CATEGORYTYPE.name(), categoryType);
-		map.put(ItemKey.GRADETYPE.name(), gradeType);
-		map.put(ItemKey.RELEASEGRADES.name(), doReleaseGrades);
-		map.put(ItemKey.RELEASEITEMS.name(), doReleaseItems);
-		map.put(ItemKey.GRADESCALEID.name(), gradeScaleId);
-		map.put(ItemKey.EXTRA_CREDIT_SCALED.name(), doScaleExtraCredit);
-		map.put(ItemKey.SHOWMEAN.name(), doShowMean);
-		map.put(ItemKey.SHOWMEDIAN.name(), doShowMedian);
-		map.put(ItemKey.SHOWMODE.name(), doShowMode);
-		map.put(ItemKey.SHOWRANK.name(), doShowRank);
-		map.put(ItemKey.SHOWITEMSTATS.name(), doShowItemStatistics);
+		map.put(ItemKey.S_ID.name(), id);
+		map.put(ItemKey.S_NM.name(), name);
+		map.put(ItemKey.S_ITM_TYPE.name(), ItemType.GRADEBOOK);
+		map.put(ItemKey.C_CTGRY_TYPE.name(), categoryType);
+		map.put(ItemKey.G_GRD_TYPE.name(), gradeType);
+		map.put(ItemKey.B_REL_GRDS.name(), doReleaseGrades);
+		map.put(ItemKey.B_REL_ITMS.name(), doReleaseItems);
+		map.put(ItemKey.L_GRD_SCL_ID.name(), gradeScaleId);
+		map.put(ItemKey.B_SCL_X_CRDT.name(), doScaleExtraCredit);
+		map.put(ItemKey.B_SHW_MEAN.name(), doShowMean);
+		map.put(ItemKey.B_SHW_MEDIAN.name(), doShowMedian);
+		map.put(ItemKey.B_SHW_MODE.name(), doShowMode);
+		map.put(ItemKey.B_SHW_RANK.name(), doShowRank);
+		map.put(ItemKey.B_SHW_ITM_STATS.name(), doShowItemStatistics);
 		
 		return map;
 	}
@@ -48,22 +47,22 @@ public class Util {
 			Boolean doRelease, Boolean isEditable, Boolean doPointWeighting) {
 		
 		Map<String,Object> map = new HashMap<String,Object>();
-		map.put(ItemKey.ID.name(), id);
-		map.put(ItemKey.NAME.name(), name);
-		map.put(ItemKey.ITEM_TYPE.name(), ItemType.CATEGORY);
-		map.put(ItemKey.GRADEBOOK.name(), gradebookName);
-		map.put(ItemKey.CATEGORY_ID.name(), categoryId);
-		map.put(ItemKey.WEIGHT.name(), percentCourseGrade);
-		map.put(ItemKey.EQUAL_WEIGHT.name(), doEqualWeight);
-		map.put(ItemKey.EXTRA_CREDIT.name(), doExtraCredit);
-		map.put(ItemKey.INCLUDED.name(), doInclude);
-		map.put(ItemKey.DROP_LOWEST.name(), dropLowest);
-		map.put(ItemKey.REMOVED.name(), doRemove);
-		map.put(ItemKey.RELEASED.name(), doRelease);
-		map.put(ItemKey.PERCENT_COURSE_GRADE.name(), percentCourseGrade);	
-		map.put(ItemKey.IS_EDITABLE.name(), isEditable);
-		map.put(ItemKey.ITEM_ORDER.name(), sortOrder);
-		map.put(ItemKey.ENFORCE_POINT_WEIGHTING.name(), doPointWeighting);
+		map.put(ItemKey.S_ID.name(), id);
+		map.put(ItemKey.S_NM.name(), name);
+		map.put(ItemKey.S_ITM_TYPE.name(), ItemType.CATEGORY);
+		map.put(ItemKey.S_GB_NAME.name(), gradebookName);
+		map.put(ItemKey.L_CTGRY_ID.name(), categoryId);
+		map.put(ItemKey.D_WGHT.name(), percentCourseGrade);
+		map.put(ItemKey.B_EQL_WGHT.name(), doEqualWeight);
+		map.put(ItemKey.B_X_CRDT.name(), doExtraCredit);
+		map.put(ItemKey.B_INCLD.name(), doInclude);
+		map.put(ItemKey.I_DRP_LWST.name(), dropLowest);
+		map.put(ItemKey.B_RMVD.name(), doRemove);
+		map.put(ItemKey.B_RLSD.name(), doRelease);
+		map.put(ItemKey.D_PCT_GRD.name(), percentCourseGrade);	
+		map.put(ItemKey.B_EDITABLE.name(), isEditable);
+		map.put(ItemKey.I_SRT_ORDR.name(), sortOrder);
+		map.put(ItemKey.B_WT_BY_PTS.name(), doPointWeighting);
 		
 		return map;
 	}
@@ -74,26 +73,26 @@ public class Util {
 			Boolean doNullsAsZeros) {
 		
 		Map<String,Object> map = new HashMap<String,Object>();
-		map.put(ItemKey.ID.name(), id);
-		map.put(ItemKey.NAME.name(), name);
-		map.put(ItemKey.ITEM_TYPE.name(), ItemType.ITEM);
-		map.put(ItemKey.CATEGORY_NAME.name(), categoryName);
-		map.put(ItemKey.CATEGORY_ID.name(), categoryId);
-		map.put(ItemKey.ASSIGNMENT_ID.name(), itemId);
-		map.put(ItemKey.WEIGHT.name(), itemWeight);
-		map.put(ItemKey.RELEASED.name(), doRelease);
-		map.put(ItemKey.INCLUDED.name(), doInclude);
-		map.put(ItemKey.DUE_DATE.name(), dueDate);
-		map.put(ItemKey.POINTS.name(), points);
-		map.put(ItemKey.EXTRA_CREDIT.name(), doExtraCredit);
-		map.put(ItemKey.REMOVED.name(), doRemove);
-		map.put(ItemKey.SOURCE.name(), source);
-		map.put(ItemKey.DATA_TYPE.name(), dataType);
-		map.put(ItemKey.STUDENT_MODEL_KEY.name(), learnerKey);
-		map.put(ItemKey.ITEM_ORDER.name(), itemOrder);
-		map.put(ItemKey.PERCENT_CATEGORY.name(), percentCategory);
-		map.put(ItemKey.PERCENT_COURSE_GRADE.name(), percentCourseGrade);
-		map.put(ItemKey.NULLSASZEROS.name(), doNullsAsZeros);
+		map.put(ItemKey.S_ID.name(), id);
+		map.put(ItemKey.S_NM.name(), name);
+		map.put(ItemKey.S_ITM_TYPE.name(), ItemType.ITEM);
+		map.put(ItemKey.S_CTGRY_NAME.name(), categoryName);
+		map.put(ItemKey.L_CTGRY_ID.name(), categoryId);
+		map.put(ItemKey.L_ITM_ID.name(), itemId);
+		map.put(ItemKey.D_WGHT.name(), itemWeight);
+		map.put(ItemKey.B_RLSD.name(), doRelease);
+		map.put(ItemKey.B_INCLD.name(), doInclude);
+		map.put(ItemKey.W_DUE.name(), dueDate);
+		map.put(ItemKey.D_PNTS.name(), points);
+		map.put(ItemKey.B_X_CRDT.name(), doExtraCredit);
+		map.put(ItemKey.B_RMVD.name(), doRemove);
+		map.put(ItemKey.S_SOURCE.name(), source);
+		map.put(ItemKey.S_DATA_TYPE.name(), dataType);
+		map.put(ItemKey.O_LRNR_KEY.name(), learnerKey);
+		map.put(ItemKey.I_SRT_ORDR.name(), itemOrder);
+		map.put(ItemKey.D_PCT_CTGRY.name(), percentCategory);
+		map.put(ItemKey.D_PCT_GRD.name(), percentCourseGrade);
+		map.put(ItemKey.B_NLLS_ZEROS.name(), doNullsAsZeros);
 
 		return map;
 	}
@@ -103,7 +102,7 @@ public class Util {
 		assert(parent != null);
 		assert(child != null);
 		
-		List<Map<String,Object>> childrenList = (List<Map<String,Object>>)parent.get(ItemKey.CHILDREN.name());
+		List<Map<String,Object>> childrenList = (List<Map<String,Object>>)parent.get(ItemKey.A_CHILDREN.name());
 		
 		if (childrenList == null)
 			childrenList = new ArrayList<Map<String,Object>>();
@@ -111,44 +110,20 @@ public class Util {
 		if (!childrenList.contains(child))
 			childrenList.add(child);
 		
-		parent.put(ItemKey.CHILDREN.name(), childrenList);
+		parent.put(ItemKey.A_CHILDREN.name(), childrenList);
 	}
 	
-	public static void sanitize(Map<String, Object> map) {
-
-		for (ItemKey key : EnumSet.allOf(ItemKey.class)) {
-			if (key.getType() != null) {
-				try {
-					Object rawValue = map.get(key.name());
-					Object value = rawValue;
-					
-					if (rawValue != null) {
-						if (key.getType().equals(Long.class)) 
-							value = Long.valueOf(rawValue.toString());
-						else if (key.getType().equals(Double.class))
-							value = Double.valueOf(rawValue.toString());
-						else if (key.getType().equals(Date.class))
-							value = new Date((Long)rawValue);
-					}
-					
-					map.put(key.name(), value);
-				} catch (ClassCastException cce) {
-					log.info("Unable to cast value for " + key.name() + " as " + key.getType().getCanonicalName());
-				}
-			} 
-		}
-	}
 	
 	public static void setPoints(Map<String, Object> map, Double points) {
-		map.put(ItemKey.POINTS.name(), points);
+		map.put(ItemKey.D_PNTS.name(), points);
 		if (points != null)
-			map.put(ItemKey.POINTS_STRING.name(), String.valueOf(points));
+			map.put(ItemKey.S_PNTS.name(), String.valueOf(points));
 	}
 	
 	public static void setPercentCategory(Map<String, Object> map, Double percent) {
-		map.put(ItemKey.PERCENT_CATEGORY.name(), percent);
+		map.put(ItemKey.D_PCT_CTGRY.name(), percent);
 		if (percent != null)
-			map.put(ItemKey.PERCENT_CATEGORY_STRING.name(), String.valueOf(percent));
+			map.put(ItemKey.S_PCT_CTGRY.name(), String.valueOf(percent));
 	}
 	
 	public static Boolean toBoolean(Object object) {
@@ -286,5 +261,35 @@ public class Util {
 		}
 		
 		return s;
+	}
+	
+	public static String buildCommentKey(String itemId) {
+		return new StringBuilder(AppConstants.COMMENTED_FLAG).append(itemId).toString();
+	}
+	
+	public static String buildCommentTextKey(String itemId) {
+		return new StringBuilder(AppConstants.COMMENT_TEXT_FLAG).append(itemId).toString();
+	}
+	
+	public static String buildDroppedKey(String itemId) {
+		return new StringBuilder(AppConstants.DROP_FLAG).append(itemId).toString();
+	}
+	
+	public static String buildExcusedKey(String itemId) {
+		return new StringBuilder(AppConstants.EXCUSE_FLAG).append(itemId).toString();
+	}
+	
+	public static String buildFailedKey(String itemId) {
+		return new StringBuilder(AppConstants.FAILED_FLAG).append(itemId).toString();
+	}
+	
+	public static String buildSuccessKey(String itemId) {
+		return new StringBuilder(AppConstants.SUCCESS_FLAG).append(itemId).toString();
+	}
+	
+	public static String unpackItemIdFromKey(String key) {
+		if (key == null || key.length() < 5)
+			return null;
+		return key.substring(4);
 	}
 }

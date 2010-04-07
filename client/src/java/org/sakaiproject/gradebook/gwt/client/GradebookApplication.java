@@ -23,20 +23,19 @@
 package org.sakaiproject.gradebook.gwt.client;
 
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
-import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
+import org.sakaiproject.gradebook.gwt.client.gxt.JsonUtil;
 import org.sakaiproject.gradebook.gwt.client.gxt.controller.NotificationController;
 import org.sakaiproject.gradebook.gwt.client.gxt.controller.StartupController;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ApplicationModel;
-import org.sakaiproject.gradebook.gwt.client.gxt.model.type.ApplicationModelType;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityOverlay;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
 import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Registry;
-import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
@@ -207,12 +206,9 @@ public class GradebookApplication implements EntryPoint {
 	}
 	
 	private void onApplicationModelSuccess(String result) {
-		JsonTranslater translater = new JsonTranslater(new ApplicationModelType()) {
-			protected ModelData newModelInstance() {
-				return new ApplicationModel();
-			}
-		};
-		ApplicationSetup applicationModel = (ApplicationSetup)translater.translate(result);
+		EntityOverlay overlay = JsonUtil.toOverlay(result);
+		
+		ApplicationSetup applicationModel = new ApplicationModel(overlay);
 		
 		Boolean hasControllers = Registry.get(AppConstants.HAS_CONTROLLERS);
 		if (DataTypeConversionUtil.checkBoolean(hasControllers)) {

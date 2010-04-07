@@ -21,49 +21,49 @@ public class LearnerImpl extends BaseModel implements Learner, Comparable<Learne
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#getIdentifier()
 	 */
 	public String getIdentifier() {
-		return get(LearnerKey.UID.name());
+		return get(LearnerKey.S_UID.name());
 	}
 
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#setIdentifier(java.lang.String)
 	 */
 	public void setIdentifier(String id) {
-		put(LearnerKey.UID.name(), id);
+		put(LearnerKey.S_UID.name(), id);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#getEid()
 	 */
 	public String getEid() {
-		return get(LearnerKey.EID.name());
+		return get(LearnerKey.S_EID.name());
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#setEid(java.lang.String)
 	 */
 	public void setEid(String eid) {
-		put(LearnerKey.EID.name(), eid);
+		put(LearnerKey.S_EID.name(), eid);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#getDisplayName()
 	 */
 	public String getDisplayName() {
-		return get(LearnerKey.DISPLAY_NAME.name());
+		return get(LearnerKey.S_DSPLY_NM.name());
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#getLastNameFirst()
 	 */
 	public String getLastNameFirst() {
-		return get(LearnerKey.LAST_NAME_FIRST.name());
+		return get(LearnerKey.S_LST_NM_FRST.name());
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#setLastNameFirst(java.lang.String)
 	 */
 	public void setLastNameFirst(String name) {
-		put(LearnerKey.LAST_NAME_FIRST.name(), name);
+		put(LearnerKey.S_LST_NM_FRST.name(), name);
 	}
 	
 	/* (non-Javadoc)
@@ -71,7 +71,7 @@ public class LearnerImpl extends BaseModel implements Learner, Comparable<Learne
 	 */
 	public String getStudentName()
 	{
-		return get(LearnerKey.DISPLAY_NAME.name());
+		return get(LearnerKey.S_DSPLY_NM.name());
 	}
 	
 	/* (non-Javadoc)
@@ -79,7 +79,7 @@ public class LearnerImpl extends BaseModel implements Learner, Comparable<Learne
 	 */
 	public void setStudentName(String studentName)
 	{
-		put(LearnerKey.DISPLAY_NAME.name(), studentName);
+		put(LearnerKey.S_DSPLY_NM.name(), studentName);
 	}
 
 	/* (non-Javadoc)
@@ -87,7 +87,7 @@ public class LearnerImpl extends BaseModel implements Learner, Comparable<Learne
 	 */
 	public String getStudentDisplayId()
 	{
-		return get(LearnerKey.DISPLAY_ID.name());
+		return get(LearnerKey.S_DSPLY_ID.name());
 	}
 	
 	/* (non-Javadoc)
@@ -95,7 +95,7 @@ public class LearnerImpl extends BaseModel implements Learner, Comparable<Learne
 	 */
 	public void setStudentDisplayId(String studentDisplayId)
 	{
-		put(LearnerKey.DISPLAY_ID.name(), studentDisplayId);
+		put(LearnerKey.S_DSPLY_ID.name(), studentDisplayId);
 	}
 	
 	/* (non-Javadoc)
@@ -103,7 +103,7 @@ public class LearnerImpl extends BaseModel implements Learner, Comparable<Learne
 	 */
 	public String getStudentEmail()
 	{
-		return get(LearnerKey.EMAIL.name());
+		return get(LearnerKey.S_EMAIL.name());
 	}
 	
 	/* (non-Javadoc)
@@ -111,7 +111,7 @@ public class LearnerImpl extends BaseModel implements Learner, Comparable<Learne
 	 */
 	public void setStudentEmail(String studentEmail)
 	{
-		put(LearnerKey.EMAIL.name(), studentEmail);
+		put(LearnerKey.S_EMAIL.name(), studentEmail);
 	}
 
 	/* (non-Javadoc)
@@ -119,7 +119,7 @@ public class LearnerImpl extends BaseModel implements Learner, Comparable<Learne
 	 */
 	public String getStudentSections()
 	{
-		return get(LearnerKey.SECTION.name());
+		return get(LearnerKey.S_SECT.name());
 	}
 	
 	/* (non-Javadoc)
@@ -127,7 +127,7 @@ public class LearnerImpl extends BaseModel implements Learner, Comparable<Learne
 	 */
 	public void setStudentSections(String studentSections)
 	{
-		put(LearnerKey.SECTION.name(), studentSections);
+		put(LearnerKey.S_SECT.name(), studentSections);
 	}
 
 	/* (non-Javadoc)
@@ -135,7 +135,7 @@ public class LearnerImpl extends BaseModel implements Learner, Comparable<Learne
 	 */
 	public String getStudentGrade()
 	{
-		return get(LearnerKey.COURSE_GRADE.name());
+		return get(LearnerKey.S_CRS_GRD.name());
 	}
 	
 	/* (non-Javadoc)
@@ -143,7 +143,7 @@ public class LearnerImpl extends BaseModel implements Learner, Comparable<Learne
 	 */
 	public void setStudentGrade(String studentGrade)
 	{
-		put(LearnerKey.COURSE_GRADE.name(), studentGrade);
+		put(LearnerKey.S_CRS_GRD.name(), studentGrade);
 	}
 	
 	/* (non-Javadoc)
@@ -151,7 +151,7 @@ public class LearnerImpl extends BaseModel implements Learner, Comparable<Learne
 	 */
 	public String getCalculatedGrade()
 	{
-		return get(LearnerKey.CALCULATED_GRADE.name());
+		return get(LearnerKey.S_CALC_GRD.name());
 	}
 	
 	/* (non-Javadoc)
@@ -159,21 +159,21 @@ public class LearnerImpl extends BaseModel implements Learner, Comparable<Learne
 	 */
 	public void setCalculatedGrade(String calculatedGrade)
 	{
-		put(LearnerKey.CALCULATED_GRADE.name(), calculatedGrade);
+		put(LearnerKey.S_CALC_GRD.name(), calculatedGrade);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#getLetterGrade()
 	 */
 	public String getLetterGrade() {
-		return get(LearnerKey.LETTER_GRADE.name());
+		return get(LearnerKey.S_LTR_GRD.name());
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#setLetterGrade(java.lang.String)
 	 */
 	public void setLetterGrade(String letterGrade) {
-		put(LearnerKey.LETTER_GRADE.name(), letterGrade);
+		put(LearnerKey.S_LTR_GRD.name(), letterGrade);
 	}
 	
 	/* (non-Javadoc)
@@ -181,7 +181,7 @@ public class LearnerImpl extends BaseModel implements Learner, Comparable<Learne
 	 */
 	public String getExportCmId()
 	{
-		return get(LearnerKey.EXPORT_CM_ID.name());
+		return get(LearnerKey.S_EXPRT_CM_ID.name());
 	}
 	
 	/* (non-Javadoc)
@@ -189,7 +189,7 @@ public class LearnerImpl extends BaseModel implements Learner, Comparable<Learne
 	 */
 	public void setExportCmId(String exportCmId)
 	{
-		put(LearnerKey.EXPORT_CM_ID.name(), exportCmId);
+		put(LearnerKey.S_EXPRT_CM_ID.name(), exportCmId);
 	}
 	
 	/* (non-Javadoc)
@@ -197,7 +197,7 @@ public class LearnerImpl extends BaseModel implements Learner, Comparable<Learne
 	 */
 	public String getExportUserId()
 	{
-		return get(LearnerKey.EXPORT_USER_ID.name());
+		return get(LearnerKey.S_EXPRT_USR_ID.name());
 	}
 	
 	/* (non-Javadoc)
@@ -205,21 +205,21 @@ public class LearnerImpl extends BaseModel implements Learner, Comparable<Learne
 	 */
 	public void setExportUserId(String exportUserId)
 	{
-		put(LearnerKey.EXPORT_USER_ID.name(), exportUserId);
+		put(LearnerKey.S_EXPRT_USR_ID.name(), exportUserId);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#getFinalGradeUserId()
 	 */
 	public String getFinalGradeUserId() {
-		return get(LearnerKey.FINAL_GRADE_USER_ID.name());
+		return get(LearnerKey.S_FNL_GRD_ID.name());
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#setFinalGradeUserId(java.lang.String)
 	 */
 	public void setFinalGradeUserId(String finalGradeUserId) {
-		put(LearnerKey.FINAL_GRADE_USER_ID.name(), finalGradeUserId);
+		put(LearnerKey.S_FNL_GRD_ID.name(), finalGradeUserId);
 	}
 	
 	@Override

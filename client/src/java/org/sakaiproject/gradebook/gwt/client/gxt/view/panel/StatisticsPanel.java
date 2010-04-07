@@ -65,7 +65,7 @@ public class StatisticsPanel extends ContentPanel {
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 
 		ColumnConfig column = new ColumnConfig();  
-		column.setId(StatisticsKey.NAME.name());  
+		column.setId(StatisticsKey.S_NM.name());  
 		column.setHeader(i18n.statsNameHeader());
 		column.setWidth(200);
 		column.setGroupable(false);
@@ -74,7 +74,7 @@ public class StatisticsPanel extends ContentPanel {
 		configs.add(column); 
 
 		column = new ColumnConfig();  
-		column.setId(StatisticsKey.MEAN.name());  
+		column.setId(StatisticsKey.S_MEAN.name());  
 		column.setHeader(i18n.statsMeanHeader());
 		column.setWidth(80);
 		column.setGroupable(false);
@@ -83,7 +83,7 @@ public class StatisticsPanel extends ContentPanel {
 		configs.add(column);
 
 		column = new ColumnConfig();  
-		column.setId(StatisticsKey.STANDARD_DEVIATION.name());  
+		column.setId(StatisticsKey.S_STD_DEV.name());  
 		column.setHeader(i18n.statsStdDvHeader());
 		column.setWidth(80);
 		column.setGroupable(false);
@@ -92,7 +92,7 @@ public class StatisticsPanel extends ContentPanel {
 		configs.add(column);
 
 		column = new ColumnConfig();  
-		column.setId(StatisticsKey.MEDIAN.name());  
+		column.setId(StatisticsKey.S_MEDIAN.name());  
 		column.setHeader(i18n.statsMedianHeader());
 		column.setWidth(80);
 		column.setGroupable(false);
@@ -101,7 +101,7 @@ public class StatisticsPanel extends ContentPanel {
 		configs.add(column);
 
 		column = new ColumnConfig();  
-		column.setId(StatisticsKey.MODE.name());  
+		column.setId(StatisticsKey.S_MODE.name());  
 		column.setHeader(i18n.statsModeHeader());
 		column.setWidth(160);
 		column.setGroupable(false);
@@ -122,11 +122,12 @@ public class StatisticsPanel extends ContentPanel {
 
 		};*/
 
-		loader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, EnumSet.allOf(StatisticsKey.class), Method.GET, 
+		loader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, 
+				EnumSet.allOf(StatisticsKey.class), Method.GET, null, null,
 				GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.STATISTICS_FRAGMENT);
 
 		final ListStore<StatisticsModel> store = new ListStore<StatisticsModel>(loader);
-		store.setModelComparer(new EntityModelComparer<StatisticsModel>(StatisticsKey.ID.name()));
+		store.setModelComparer(new EntityModelComparer<StatisticsModel>(StatisticsKey.S_ID.name()));
 
 		//loader.load();  
 

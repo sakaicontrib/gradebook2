@@ -3,10 +3,9 @@ DEVELOPER BEST PRACTICES
 
 This is a quick reference document for developer best practices when working on the 
 Gradebook2 project.
-\\
-\\
-h5. 1. Versioning
-\\
+
+1. Versioning
+
 We made a decision fairly early on in the development of Gradebook2 that it should be 
 versioned independently of Sakai releases. The basic thinking is that functionality within 
 the GB2 codebase is going to change at a different rate than the Sakai APIs themselves, and 
@@ -16,18 +15,39 @@ stick with version 1.2.0 of GB2. Perhaps more importantly, if an institution is 
 to staying at a particular Sakai release for some period, it will not be forced
 to upgrade the overall release simply to get new functionality included in a later
 version of the GB2 code. 
-\\
+
 One major advantage of this is also that GB2 does not have to maintain maintenance branches.
 Our recommendation is that in cases where a blocker bug exists in a particular version
 of GB2, all institutions should upgrade to a version where that bug has been fixed.
-\\
+
 The major disadvantage is that we have to make the GB2 code build
 against different versions of Sakai. Our current strategy for this is to make use of 
 maven's profile functionality and to pass in different -P values for each build, for example
 -Psakai2.6 to build against a 2.6 Sakai instance. 
-\\
+
 This still requires that the root pom.xml file be modified to change it's version (from 2.8-SNAPSHOT
 to 2.6.3, for example), which is unfortunate. We would like to eliminate that step in the future. 
+
+
+2. Layout of the Project
+
+As you'll see from looking in the root maven pom.xml file, the project is currently broken 
+down into six "modules". Each module is a directory with a src sub directory containing code
+and/or xml configuration files. Here's a quick functional break down of what's in each one:
+
+- model : data model objects to be shared with all of sakai, and deployed as a jar to shared/lib
+- api : interface definitions for the services to be shared, and deployed as a jar to shared/lib
+- shared : actually builds into a jar that server and client require for compilation
+- server : server-side classes (including services), deployed (via war) as a webapp
+- client : client-side classes that compile into javascript and static html, deployed in webapp
+- war : wrapper for both client and server including the WEB-INF/web.xml and other static files (css, etc)
+
+Note that client's java classes (and bytecode) simply get thrown away once the project is built 
+and run through the GWT compiler. So only those 
+
+
+
+
 
 
 

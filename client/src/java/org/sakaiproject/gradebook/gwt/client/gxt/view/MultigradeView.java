@@ -28,7 +28,6 @@ import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
-import org.sakaiproject.gradebook.gwt.client.gxt.LearnerTranslater;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
@@ -45,7 +44,6 @@ import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.SortDir;
 import com.extjs.gxt.ui.client.data.ModelData;
-import com.extjs.gxt.ui.client.data.ModelType;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 import com.extjs.gxt.ui.client.data.PagingLoader;
 import com.extjs.gxt.ui.client.event.BaseEvent;
@@ -166,15 +164,15 @@ public class MultigradeView extends View {
 	}
 	
 	private void buildLoaderAndStore(Gradebook gbModel) {
-		ModelType type = LearnerTranslater.generateLearnerModelType();
+		//ModelType type = LearnerTranslater.generateLearnerModelType();
 		
-		multigradeLoader = RestBuilder.getLearnerLoader(type, Method.GET, 
+		multigradeLoader = RestBuilder.getLearnerLoader(Method.GET, 
 				GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.ROSTER_FRAGMENT);
 
 		multigradeStore = new ListStore<ModelData>(multigradeLoader);
-		multigradeStore.setModelComparer(new EntityModelComparer<ModelData>(LearnerKey.UID.name()));
+		multigradeStore.setModelComparer(new EntityModelComparer<ModelData>(LearnerKey.S_UID.name()));
 		multigradeStore.setMonitorChanges(true);
-		multigradeStore.setDefaultSort(LearnerKey.LAST_NAME_FIRST.name(), SortDir.ASC);
+		multigradeStore.setDefaultSort(LearnerKey.S_LST_NM_FRST.name(), SortDir.ASC);
 
 		multigradeStore.addListener(Store.Sort, storeListener);
 	}

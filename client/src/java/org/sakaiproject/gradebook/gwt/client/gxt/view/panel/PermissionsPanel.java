@@ -123,26 +123,27 @@ public class PermissionsPanel extends ContentPanel {
 					public String getUrlArg() {
 						List<ModelData> users = userComboBox.getSelection();
 						if (null != users && 1 == users.size()) {
-							return (String)users.get(0).get(GraderKey.ID.name());
+							return (String)users.get(0).get(GraderKey.S_ID.name());
 						}
 						return null;
 					}
 					
-				},
+				}, null,
 				GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, 
 				AppConstants.PERMISSIONS_FRAGMENT);
 		
 		permissionEntryListStore = new ListStore<ModelData>(permissionLoader);
-		permissionEntryListStore.setModelComparer(new EntityModelComparer<ModelData>(PermissionKey.ID.name()));
+		permissionEntryListStore.setModelComparer(new EntityModelComparer<ModelData>(PermissionKey.L_ID.name()));
 		
 		// LOADING DATA
 		
 		// USERS
-		userLoader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, EnumSet.allOf(GraderKey.class), Method.GET, 
+		userLoader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, 
+				EnumSet.allOf(GraderKey.class), Method.GET, null, null,
 				GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.GRADER_FRAGMENT);
 		//userLoader.load();
 		ListStore<ModelData> userListStore = new ListStore<ModelData>(userLoader);
-		userListStore.setModelComparer(new EntityModelComparer<ModelData>(GraderKey.ID.name()));
+		userListStore.setModelComparer(new EntityModelComparer<ModelData>(GraderKey.S_ID.name()));
 		
 		// PERMISSION TYPES
 		List<PermissionType> permissionList = new ArrayList<PermissionType>();
@@ -153,20 +154,22 @@ public class PermissionsPanel extends ContentPanel {
 		permissionListStore.add(permissionList);		
 		
 		// CATEGORIES
-		categoryLoader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, EnumSet.allOf(ItemKey.class), Method.GET, 
+		categoryLoader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, 
+				EnumSet.allOf(ItemKey.class), Method.GET, null, null,
 				GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.ITEMS_FRAGMENT);
 		//categoryLoader.load();
 		ListStore<ModelData> categoryListStore = new ListStore<ModelData>(categoryLoader);
-		categoryListStore.setModelComparer(new EntityModelComparer<ModelData>(ItemKey.ID.name()));
+		categoryListStore.setModelComparer(new EntityModelComparer<ModelData>(ItemKey.S_ID.name()));
 		
 		
 		// SECTIONS
 		sectionsLoader = 
-			RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, EnumSet.allOf(SectionKey.class), Method.GET, 
+			RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, 
+					EnumSet.allOf(SectionKey.class), Method.GET, null, null,
 					GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.SECTION_FRAGMENT);
 		sectionsLoader.setRemoteSort(true);
 		ListStore<ModelData> sectionStore = new ListStore<ModelData>(sectionsLoader);
-		sectionStore.setModelComparer(new EntityModelComparer<ModelData>(SectionKey.ID.name()));
+		sectionStore.setModelComparer(new EntityModelComparer<ModelData>(SectionKey.S_ID.name()));
 		
 		
 		// Combo Boxes
@@ -174,7 +177,7 @@ public class PermissionsPanel extends ContentPanel {
 		// Users
 		userComboBox = new ComboBox<ModelData>();
 		userComboBox.setEmptyText(i18n.usersEmptyText());
-		userComboBox.setDisplayField(GraderKey.USER_DISPLAY_NAME.name());
+		userComboBox.setDisplayField(GraderKey.S_NM.name());
 		userComboBox.setWidth(150); 
 		userComboBox.setStore(userListStore);
 		userComboBox.setTypeAhead(true);
@@ -210,7 +213,7 @@ public class PermissionsPanel extends ContentPanel {
 		// Categories
 		categoryComboBox = new ComboBox<ModelData>();
 		categoryComboBox.setEmptyText(i18n.categoriesEmptyText());
-		categoryComboBox.setDisplayField(ItemKey.NAME.name());
+		categoryComboBox.setDisplayField(ItemKey.S_NM.name());
 		categoryComboBox.setWidth(150); 
 		categoryComboBox.setStore(categoryListStore);
 		categoryComboBox.setTypeAhead(true);
@@ -221,7 +224,7 @@ public class PermissionsPanel extends ContentPanel {
 		// Sections
 		sectionComboBox = new ComboBox<ModelData>();
 		sectionComboBox.setEmptyText(i18n.sectionsEmptyText());
-		sectionComboBox.setDisplayField(SectionKey.SECTION_NAME.name());
+		sectionComboBox.setDisplayField(SectionKey.S_NM.name());
 		sectionComboBox.setWidth(150); 
 		sectionComboBox.setStore(sectionStore);
 		sectionComboBox.setTypeAhead(true);
@@ -241,8 +244,8 @@ public class PermissionsPanel extends ContentPanel {
 				// Enforce selection
 				List<ModelData> users = userComboBox.getSelection();
 				if(null != users && 1 == users.size()) {
-					permissionEntryModel.setUserDisplayName((String)users.get(0).get(GraderKey.USER_DISPLAY_NAME.name()));
-					permissionEntryModel.setUserId((String)users.get(0).get(GraderKey.ID.name()));
+					permissionEntryModel.setUserDisplayName((String)users.get(0).get(GraderKey.S_NM.name()));
+					permissionEntryModel.setUserId((String)users.get(0).get(GraderKey.S_ID.name()));
 				}
 				else {
 					MessageBox.alert("Warn", "Please select a user", null);
@@ -264,9 +267,9 @@ public class PermissionsPanel extends ContentPanel {
 				List<ModelData> categories = categoryComboBox.getSelection();
 				if(null != categories && 1 == categories.size()) {
 					ModelData categoryModel = categories.get(0);
-					Long categoryId = categoryModel.get(ItemKey.CATEGORY_ID.name());
+					Long categoryId = categoryModel.get(ItemKey.L_CTGRY_ID.name());
 					permissionEntryModel.setCategoryId(categoryId);
-					permissionEntryModel.setCategoryDisplayName((null == categoryId) ? "All" : (String)categoryModel.get(ItemKey.NAME.name()));
+					permissionEntryModel.setCategoryDisplayName((null == categoryId) ? "All" : (String)categoryModel.get(ItemKey.S_NM.name()));
 				}
 				else {
 					// Per old gradebook, it seems that if all categories are selected, the ID is set to null
@@ -277,9 +280,9 @@ public class PermissionsPanel extends ContentPanel {
 				List<ModelData> sections = sectionComboBox.getSelection();
 				if(null != sections && 1 == sections.size()) {
 					ModelData sectionModel = sections.get(0);
-					String sectionId = (String)sectionModel.get(SectionKey.ID.name());
+					String sectionId = (String)sectionModel.get(SectionKey.S_ID.name());
 					permissionEntryModel.setSectionId(sectionId);
-					permissionEntryModel.setSectionDisplayName((null == sectionId) ? "All" : (String)sectionModel.get(SectionKey.SECTION_NAME.name()));
+					permissionEntryModel.setSectionDisplayName((null == sectionId) ? "All" : (String)sectionModel.get(SectionKey.S_NM.name()));
 				}
 				else {
 					// Per old gradebook, it seems that if all sections are selected, the ID is set to null
@@ -308,7 +311,7 @@ public class PermissionsPanel extends ContentPanel {
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();  
 
 		ColumnConfig column = new ColumnConfig();  
-		column.setId(PermissionKey.USER_DISPLAY_NAME.name());  
+		column.setId(PermissionKey.S_DSPLY_NM.name());  
 		column.setHeader(i18n.userHeader());  
 		column.setWidth(150);
 		column.setMenuDisabled(true);
@@ -316,7 +319,7 @@ public class PermissionsPanel extends ContentPanel {
 		configs.add(column);  
 		
 		column = new ColumnConfig();  
-		column.setId(PermissionKey.PERMISSION_ID.name());  
+		column.setId(PermissionKey.S_PERM_ID.name());  
 		column.setHeader(i18n.permissionHeader());  
 		column.setWidth(100);
 		column.setMenuDisabled(true);
@@ -327,7 +330,7 @@ public class PermissionsPanel extends ContentPanel {
 		if(hasCategories()) {
 			
 			column = new ColumnConfig();
-			column.setId(PermissionKey.CATEGORY_DISPLAY_NAME.name());
+			column.setId(PermissionKey.S_CTGRY_NAME.name());
 			column.setHeader(i18n.categoryHeader());
 			column.setWidth(150);
 			column.setMenuDisabled(true);
@@ -336,7 +339,7 @@ public class PermissionsPanel extends ContentPanel {
 		}
 		
 		column = new ColumnConfig();  
-		column.setId(PermissionKey.SECTION_DISPLAY_NAME.name());  
+		column.setId(PermissionKey.S_SECT_NM.name());  
 		column.setHeader(i18n.sectionHeader());  
 		column.setWidth(150);
 		column.setMenuDisabled(true);
@@ -344,7 +347,7 @@ public class PermissionsPanel extends ContentPanel {
 		configs.add(column);
 		
 		column = new ColumnConfig();  
-		column.setId(PermissionKey.DELETE_ACTION.name());  
+		column.setId(PermissionKey.S_DEL_ACT.name());  
 		column.setHeader(i18n.deleteHeader());  
 		column.setWidth(100);
 		column.setMenuDisabled(true);

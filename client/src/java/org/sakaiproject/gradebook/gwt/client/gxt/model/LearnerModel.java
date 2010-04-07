@@ -36,6 +36,10 @@ public class LearnerModel extends EntityModel implements Comparable<LearnerModel
 		super();
 	}
 	
+	public LearnerModel(EntityOverlay obj) {
+		super(obj);
+	}
+	
 	public LearnerModel(Map<String, Object> properties) {
 		super(properties);
 	}
@@ -44,49 +48,49 @@ public class LearnerModel extends EntityModel implements Comparable<LearnerModel
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#getIdentifier()
 	 */
 	public String getIdentifier() {
-		return get(LearnerKey.UID.name());
+		return get(LearnerKey.S_UID.name());
 	}
 
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#setIdentifier(java.lang.String)
 	 */
 	public void setIdentifier(String id) {
-		set(LearnerKey.UID.name(), id);
+		set(LearnerKey.S_UID.name(), id);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#getEid()
 	 */
 	public String getEid() {
-		return get(LearnerKey.EID.name());
+		return get(LearnerKey.S_EID.name());
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#setEid(java.lang.String)
 	 */
 	public void setEid(String eid) {
-		set(LearnerKey.EID.name(), eid);
+		set(LearnerKey.S_EID.name(), eid);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#getDisplayName()
 	 */
 	public String getDisplayName() {
-		return get(LearnerKey.DISPLAY_NAME.name());
+		return get(LearnerKey.S_DSPLY_NM.name());
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#getLastNameFirst()
 	 */
 	public String getLastNameFirst() {
-		return get(LearnerKey.LAST_NAME_FIRST.name());
+		return get(LearnerKey.S_LST_NM_FRST.name());
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#setLastNameFirst(java.lang.String)
 	 */
 	public void setLastNameFirst(String name) {
-		set(LearnerKey.LAST_NAME_FIRST.name(), name);
+		set(LearnerKey.S_LST_NM_FRST.name(), name);
 	}
 	
 	/* (non-Javadoc)
@@ -94,7 +98,7 @@ public class LearnerModel extends EntityModel implements Comparable<LearnerModel
 	 */
 	public String getStudentName()
 	{
-		return get(LearnerKey.DISPLAY_NAME.name());
+		return get(LearnerKey.S_DSPLY_NM.name());
 	}
 	
 	/* (non-Javadoc)
@@ -102,7 +106,7 @@ public class LearnerModel extends EntityModel implements Comparable<LearnerModel
 	 */
 	public void setStudentName(String studentName)
 	{
-		set(LearnerKey.DISPLAY_NAME.name(), studentName);
+		set(LearnerKey.S_DSPLY_NM.name(), studentName);
 	}
 
 	/* (non-Javadoc)
@@ -110,7 +114,7 @@ public class LearnerModel extends EntityModel implements Comparable<LearnerModel
 	 */
 	public String getStudentDisplayId()
 	{
-		return get(LearnerKey.DISPLAY_ID.name());
+		return get(LearnerKey.S_DSPLY_ID.name());
 	}
 	
 	/* (non-Javadoc)
@@ -118,7 +122,7 @@ public class LearnerModel extends EntityModel implements Comparable<LearnerModel
 	 */
 	public void setStudentDisplayId(String studentDisplayId)
 	{
-		set(LearnerKey.DISPLAY_ID.name(), studentDisplayId);
+		set(LearnerKey.S_DSPLY_ID.name(), studentDisplayId);
 	}
 	
 	/* (non-Javadoc)
@@ -126,7 +130,7 @@ public class LearnerModel extends EntityModel implements Comparable<LearnerModel
 	 */
 	public String getStudentEmail()
 	{
-		return get(LearnerKey.EMAIL.name());
+		return get(LearnerKey.S_EMAIL.name());
 	}
 	
 	/* (non-Javadoc)
@@ -134,7 +138,7 @@ public class LearnerModel extends EntityModel implements Comparable<LearnerModel
 	 */
 	public void setStudentEmail(String studentEmail)
 	{
-		set(LearnerKey.EMAIL.name(), studentEmail);
+		set(LearnerKey.S_EMAIL.name(), studentEmail);
 	}
 
 	/* (non-Javadoc)
@@ -142,7 +146,7 @@ public class LearnerModel extends EntityModel implements Comparable<LearnerModel
 	 */
 	public String getStudentSections()
 	{
-		return get(LearnerKey.SECTION.name());
+		return get(LearnerKey.S_SECT.name());
 	}
 	
 	/* (non-Javadoc)
@@ -150,7 +154,7 @@ public class LearnerModel extends EntityModel implements Comparable<LearnerModel
 	 */
 	public void setStudentSections(String studentSections)
 	{
-		set(LearnerKey.SECTION.name(), studentSections);
+		set(LearnerKey.S_SECT.name(), studentSections);
 	}
 
 	/* (non-Javadoc)
@@ -158,7 +162,7 @@ public class LearnerModel extends EntityModel implements Comparable<LearnerModel
 	 */
 	public String getStudentGrade()
 	{
-		return get(LearnerKey.COURSE_GRADE.name());
+		return get(LearnerKey.S_CRS_GRD.name());
 	}
 	
 	/* (non-Javadoc)
@@ -166,7 +170,7 @@ public class LearnerModel extends EntityModel implements Comparable<LearnerModel
 	 */
 	public void setStudentGrade(String studentGrade)
 	{
-		set(LearnerKey.COURSE_GRADE.name(), studentGrade);
+		set(LearnerKey.S_CRS_GRD.name(), studentGrade);
 	}
 	
 	/* (non-Javadoc)
@@ -174,7 +178,7 @@ public class LearnerModel extends EntityModel implements Comparable<LearnerModel
 	 */
 	public String getCalculatedGrade()
 	{
-		return get(LearnerKey.CALCULATED_GRADE.name());
+		return get(LearnerKey.S_CALC_GRD.name());
 	}
 	
 	/* (non-Javadoc)
@@ -182,21 +186,21 @@ public class LearnerModel extends EntityModel implements Comparable<LearnerModel
 	 */
 	public void setCalculatedGrade(String calculatedGrade)
 	{
-		set(LearnerKey.CALCULATED_GRADE.name(), calculatedGrade);
+		set(LearnerKey.S_CALC_GRD.name(), calculatedGrade);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#getLetterGrade()
 	 */
 	public String getLetterGrade() {
-		return get(LearnerKey.LETTER_GRADE.name());
+		return get(LearnerKey.S_LTR_GRD.name());
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#setLetterGrade(java.lang.String)
 	 */
 	public void setLetterGrade(String letterGrade) {
-		set(LearnerKey.LETTER_GRADE.name(), letterGrade);
+		set(LearnerKey.S_LTR_GRD.name(), letterGrade);
 	}
 	
 	/* (non-Javadoc)
@@ -204,7 +208,7 @@ public class LearnerModel extends EntityModel implements Comparable<LearnerModel
 	 */
 	public String getExportCmId()
 	{
-		return get(LearnerKey.EXPORT_CM_ID.name());
+		return get(LearnerKey.S_EXPRT_CM_ID.name());
 	}
 	
 	/* (non-Javadoc)
@@ -212,7 +216,7 @@ public class LearnerModel extends EntityModel implements Comparable<LearnerModel
 	 */
 	public void setExportCmId(String exportCmId)
 	{
-		set(LearnerKey.EXPORT_CM_ID.name(), exportCmId);
+		set(LearnerKey.S_EXPRT_CM_ID.name(), exportCmId);
 	}
 	
 	/* (non-Javadoc)
@@ -220,7 +224,7 @@ public class LearnerModel extends EntityModel implements Comparable<LearnerModel
 	 */
 	public String getExportUserId()
 	{
-		return get(LearnerKey.EXPORT_USER_ID.name());
+		return get(LearnerKey.S_EXPRT_USR_ID.name());
 	}
 	
 	/* (non-Javadoc)
@@ -228,21 +232,21 @@ public class LearnerModel extends EntityModel implements Comparable<LearnerModel
 	 */
 	public void setExportUserId(String exportUserId)
 	{
-		set(LearnerKey.EXPORT_USER_ID.name(), exportUserId);
+		set(LearnerKey.S_EXPRT_USR_ID.name(), exportUserId);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#getFinalGradeUserId()
 	 */
 	public String getFinalGradeUserId() {
-		return get(LearnerKey.FINAL_GRADE_USER_ID.name());
+		return get(LearnerKey.S_FNL_GRD_ID.name());
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Learner#setFinalGradeUserId(java.lang.String)
 	 */
 	public void setFinalGradeUserId(String finalGradeUserId) {
-		set(LearnerKey.FINAL_GRADE_USER_ID.name(), finalGradeUserId);
+		set(LearnerKey.S_FNL_GRD_ID.name(), finalGradeUserId);
 	}
 	
 	@Override

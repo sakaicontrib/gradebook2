@@ -20,14 +20,15 @@ public class Configuration extends Resource {
 
 		Map<String,Object> map = fromJson(model, Map.class);
 		
-		for (String field : map.keySet()) {
-			if (!field.equals(ConfigurationKey.GRADEBOOKID.name()) &&
-					!field.equals(ConfigurationKey.USERUID.name())) {
-				String value = String.valueOf(map.get(field));
-				service.updateConfiguration(gradebookId, field, value);
+		if (map != null && map.size() > 0) {
+			for (String field : map.keySet()) {
+				if (!field.equals(ConfigurationKey.L_GB_ID.name()) &&
+						!field.equals(ConfigurationKey.S_USER_UID.name())) {
+					String value = String.valueOf(map.get(field));
+					service.updateConfiguration(gradebookId, field, value);
+				}
 			}
 		}
-		
 		return model;
 	}
 	

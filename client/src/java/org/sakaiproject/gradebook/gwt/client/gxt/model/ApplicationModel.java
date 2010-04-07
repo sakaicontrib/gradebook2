@@ -29,54 +29,56 @@ import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.key.ApplicationKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 
+import com.extjs.gxt.ui.client.data.BaseModel;
+import com.extjs.gxt.ui.client.data.ModelData;
+
 
 public class ApplicationModel extends EntityModel implements ApplicationSetup {
 
 	private static final long serialVersionUID = 1L;
 		
 	public ApplicationModel() {
-		
+		super();
+	}
+	
+	public ApplicationModel(EntityOverlay overlay) {
+		super(overlay);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Application#getGradebookModels()
 	 */
 	public List<Gradebook> getGradebookModels() {
-		return get(ApplicationKey.GRADEBOOKMODELS.name());
+		return get(ApplicationKey.A_GB_MODELS.name());
 	}
 
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Application#setGradebookModels(java.util.List)
 	 */
 	public void setGradebookModels(List<Gradebook> gradebookModels) {
-		set(ApplicationKey.GRADEBOOKMODELS.name(), gradebookModels);
+		set(ApplicationKey.A_GB_MODELS.name(), gradebookModels);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Application#getPlacementId()
 	 */
 	public String getPlacementId() {
-		return get(ApplicationKey.PLACEMENTID.name());
+		return get(ApplicationKey.S_PLACE_ID.name());
 	}
 
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Application#setPlacementId(java.lang.String)
 	 */
 	public void setPlacementId(String placementId) {
-		set(ApplicationKey.PLACEMENTID.name(), placementId);
+		set(ApplicationKey.S_PLACE_ID.name(), placementId);
 	}
 
-	@Override
+	/*@Override
 	public String getDisplayName() {
 		return "Gradebook Tool";
-	}
-
-	/* (non-Javadoc)
-	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Application#getIdentifier()
-	 */
-	@Override
-	public String getIdentifier() {
-		
+	}*/
+	
+	public String getIdentifier() {	
 		return getPlacementId();
 	}
 
@@ -84,28 +86,42 @@ public class ApplicationModel extends EntityModel implements ApplicationSetup {
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Application#getHelpUrl()
 	 */
 	public String getHelpUrl() {
-		return get(ApplicationKey.HELPURL.name());
+		return get(ApplicationKey.S_HELPURL.name());
 	}
 
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Application#setHelpUrl(java.lang.String)
 	 */
 	public void setHelpUrl(String helpUrl) {
-		set(ApplicationKey.HELPURL.name(), helpUrl);
+		set(ApplicationKey.S_HELPURL.name(), helpUrl);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Application#getEnabledGradeTypes()
 	 */
 	public List<GradeType> getEnabledGradeTypes() {
-		return get(ApplicationKey.ENABLEDGRADETYPES.name());
+		return get(ApplicationKey.V_ENBLD_GRD_TYPES.name());
 	}
 
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Application#setEnabledGradeTypes(java.util.List)
 	 */
 	public void setEnabledGradeTypes(List<GradeType> enabledGradeTypes) {
-		set(ApplicationKey.ENABLEDGRADETYPES.name(), enabledGradeTypes);
+		set(ApplicationKey.V_ENBLD_GRD_TYPES.name(), enabledGradeTypes);
 	}
 	
+	public boolean isChildString(String property) {
+		return isGradeType(property);
+	}
+
+	public boolean isGradeType(String property) {
+		return property.equals(ApplicationKey.V_ENBLD_GRD_TYPES.name());
+	}
+
+	public ModelData newChildModel(String property, EntityOverlay overlay) {
+		if (property.equals(ApplicationKey.A_GB_MODELS.name()))
+			return new GradebookModel(overlay);
+
+		return new BaseModel();
+	}
 }

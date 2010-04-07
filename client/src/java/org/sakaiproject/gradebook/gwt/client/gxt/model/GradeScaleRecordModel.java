@@ -33,47 +33,47 @@ public class GradeScaleRecordModel extends EntityModel {
 	}
 	
 	public GradeScaleRecordModel(String letterGrade, Double fromRange, Double toRange) {
-		set(GradeMapKey.LETTER_GRADE.name(), letterGrade);
-		set(GradeMapKey.FROM_RANGE.name(), fromRange);
-		set(GradeMapKey.TO_RANGE.name(), toRange);		
+		set(GradeMapKey.S_LTR_GRD.name(), letterGrade);
+		set(GradeMapKey.D_FROM.name(), fromRange);
+		set(GradeMapKey.D_TO.name(), toRange);		
 	}
 	
-	@Override
+	/*@Override
 	public String getIdentifier() {
-		return get(GradeMapKey.ID.name());
+		return get(GradeMapKey.S_ID.name());
 	}
 	
 	public void setIdentifier(String letterGrade) {
-		set(GradeMapKey.ID.name(), letterGrade);
+		set(GradeMapKey.S_ID.name(), letterGrade);
 	}
 	
 	@Override
 	public String getDisplayName() {
 		return getLetterGrade();
-	}
+	}*/
 	
 	public String getLetterGrade() {
-		return get(GradeMapKey.LETTER_GRADE.name());
+		return get(GradeMapKey.S_LTR_GRD.name());
 	}
 	
 	public Double getFromRange() {
-		return get(GradeMapKey.FROM_RANGE.name());
+		return get(GradeMapKey.D_FROM.name());
 	}
 	
 	public Double getToRange() {
-		return get(GradeMapKey.TO_RANGE.name());
+		return get(GradeMapKey.D_TO.name());
 	}
 	
 	public void setLetterGrade(String letterGrade) {
-		set(GradeMapKey.LETTER_GRADE.name(), letterGrade);
+		set(GradeMapKey.S_LTR_GRD.name(), letterGrade);
 	}
 	
 	public void setFromRange(Double fromRange) {
-		set(GradeMapKey.FROM_RANGE.name(), fromRange);
+		set(GradeMapKey.D_FROM.name(), fromRange);
 	}
 	
 	public void setToRange(Double toRange) {
-		set(GradeMapKey.TO_RANGE.name(), toRange);
+		set(GradeMapKey.D_TO.name(), toRange);
 	}
 	
 	public GradeMapKey getKey(String keyName) {

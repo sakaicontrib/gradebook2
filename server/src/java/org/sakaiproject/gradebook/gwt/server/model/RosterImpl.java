@@ -20,19 +20,19 @@ public class RosterImpl extends HashMap<String, Object> implements Roster {
 	}
 	
 	public List<Learner> getLearnerPage() {
-		return (List<Learner>)get(RosterKey.LEARNER_PAGE.toString());
+		return (List<Learner>)get(RosterKey.A_PAGE.name());
 	}
 
 	public Integer getTotal() {
-		return Util.toInteger(get(RosterKey.TOTAL.toString()));
+		return Util.toInteger(get(RosterKey.I_TOTAL.name()));
 	}
 
 	public void setLearnerPage(List<Learner> learners) {
-		put(RosterKey.LEARNER_PAGE.toString(), learners);
+		put(RosterKey.A_PAGE.name(), learners);
 	}
 
 	public void setTotal(Integer total) {
-		put(RosterKey.TOTAL.toString(), total);
+		put(RosterKey.I_TOTAL.name(), total);
 	}
 
 }

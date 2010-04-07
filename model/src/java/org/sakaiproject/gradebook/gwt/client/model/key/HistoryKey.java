@@ -1,17 +1,16 @@
 package org.sakaiproject.gradebook.gwt.client.model.key;
 
 public enum HistoryKey {
-
-	HISTORY_PAGE("historyPage"), TOTAL("total");
+	A_PAGE("page"), 
+	I_TOTAL("total");
 	
 	private String property;
-	
+
 	private HistoryKey(String property) {
 		this.property = property;
 	}
-	
-	public String toString() {
+
+	public String getProperty() {
 		return property;
 	}
-	
 }

@@ -95,38 +95,44 @@ public class DataTypeConversionUtil {
 	}
 	
 	public static String buildCommentKey(String itemId) {
-		return new StringBuilder(itemId).append(AppConstants.COMMENTED_FLAG).toString();
+		return new StringBuilder(AppConstants.COMMENTED_FLAG).append(itemId).toString();
 	}
 	
 	public static String buildCommentTextKey(String itemId) {
-		return new StringBuilder(itemId).append(AppConstants.COMMENT_TEXT_FLAG).toString();
+		return new StringBuilder(AppConstants.COMMENT_TEXT_FLAG).append(itemId).toString();
 	}
 	
 	public static String buildDroppedKey(String itemId) {
-		return new StringBuilder().append(itemId).append(AppConstants.DROP_FLAG).toString();
+		return new StringBuilder(AppConstants.DROP_FLAG).append(itemId).toString();
 	}
 	
 	public static String buildExcusedKey(String itemId) {
-		return new StringBuilder().append(itemId).append(AppConstants.EXCUSE_FLAG).toString();
+		return new StringBuilder(AppConstants.EXCUSE_FLAG).append(itemId).toString();
 	}
 	
 	public static String buildFailedKey(String itemId) {
-		return new StringBuilder().append(itemId).append(AppConstants.FAILED_FLAG).toString();
+		return new StringBuilder(AppConstants.FAILED_FLAG).append(itemId).toString();
 	}
 	
 	public static String buildSuccessKey(String itemId) {
-		return new StringBuilder().append(itemId).append(AppConstants.SUCCESS_FLAG).toString();
+		return new StringBuilder(AppConstants.SUCCESS_FLAG).append(itemId).toString();
+	}
+	
+	public static String unpackItemIdFromKey(String key) {
+		if (key == null || key.length() < 5)
+			return null;
+		return key.substring(4);
 	}
 
 	public static ClassType lookupClassType(String property, GradeType gradeType) {
 		
-		if (property.equals(LearnerKey.GRADE_OVERRIDE.name()))
+		if (property.equals(LearnerKey.S_OVRD_GRD.name()))
 			return ClassType.STRING;
 		
-		if (property.endsWith(AppConstants.COMMENT_TEXT_FLAG))
+		if (property.startsWith(AppConstants.COMMENT_TEXT_FLAG))
 			return ClassType.STRING;
 		
-		if (property.endsWith(AppConstants.EXCUSE_FLAG))
+		if (property.startsWith(AppConstants.EXCUSE_FLAG))
 			return ClassType.BOOLEAN;
 		
 		if (gradeType == GradeType.LETTERS)

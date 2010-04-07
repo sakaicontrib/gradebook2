@@ -32,7 +32,8 @@ import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.Statistics;
 import org.sakaiproject.gradebook.gwt.client.model.key.GradebookKey;
 
-
+import com.extjs.gxt.ui.client.data.BaseModel;
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 public class GradebookModel extends EntityModel implements IsSerializable, Gradebook {
@@ -40,6 +41,12 @@ public class GradebookModel extends EntityModel implements IsSerializable, Grade
 	private static final long serialVersionUID = 1L;
 	
 	public GradebookModel() {
+		super();
+		setNewGradebook(Boolean.FALSE);
+	}
+	
+	public GradebookModel(EntityOverlay overlay) {
+		super(overlay);
 		setNewGradebook(Boolean.FALSE);
 	}
 
@@ -47,49 +54,49 @@ public class GradebookModel extends EntityModel implements IsSerializable, Grade
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Gradebook#getGradebookUid()
 	 */
 	public String getGradebookUid() {
-		return get(GradebookKey.GRADEBOOKUID.name());
+		return get(GradebookKey.S_GB_UID.name());
 	}
 
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Gradebook#setGradebookUid(java.lang.String)
 	 */
 	public void setGradebookUid(String gradebookUid) {
-		set(GradebookKey.GRADEBOOKUID.name(), gradebookUid);
+		set(GradebookKey.S_GB_UID.name(), gradebookUid);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Gradebook#getGradebookId()
 	 */
 	public Long getGradebookId() {
-		return get(GradebookKey.GRADEBOOKID.name());
+		return getLong(GradebookKey.L_GB_ID.name());
 	}
 
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Gradebook#setGradebookId(java.lang.Long)
 	 */
 	public void setGradebookId(Long gradebookId) {
-		set(GradebookKey.GRADEBOOKID.name(), gradebookId);
+		set(GradebookKey.L_GB_ID.name(), gradebookId);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Gradebook#getConfigurationModel()
 	 */
 	public Configuration getConfigurationModel() {
-		return get(GradebookKey.CONFIGURATIONMODEL.name());
+		return get(GradebookKey.M_CONF.name());
 	}
 
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Gradebook#setConfigurationModel(org.sakaiproject.gradebook.gwt.client.model.Configuration)
 	 */
 	public void setConfigurationModel(Configuration configuration) {
-		set(GradebookKey.CONFIGURATIONMODEL.name(), configuration);
+		set(GradebookKey.M_CONF.name(), configuration);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Gradebook#getName()
 	 */
 	public String getName() {
-		return get(GradebookKey.NAME.name());
+		return get(GradebookKey.S_NM.name());
 	}
 
 
@@ -97,45 +104,42 @@ public class GradebookModel extends EntityModel implements IsSerializable, Grade
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Gradebook#setName(java.lang.String)
 	 */
 	public void setName(String name) {
-		set(GradebookKey.NAME.name(), name);
+		set(GradebookKey.S_NM.name(), name);
 	}	
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Gradebook#getColumns()
 	 */
 	public List<FixedColumn> getColumns() {
-		return get(GradebookKey.COLUMNS.name());
+		return get(GradebookKey.A_CLMNS.name());
 	}
 
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Gradebook#setColumns(java.util.List)
 	 */
 	public void setColumns(List<FixedColumn> columns) {
-		set(GradebookKey.COLUMNS.name(), columns);
+		set(GradebookKey.A_CLMNS.name(), columns);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Gradebook#getUserAsStudent()
 	 */
 	public Learner getUserAsStudent() {
-		return get(GradebookKey.USERASSTUDENT.name());
+		return get(GradebookKey.M_USER.name());
 	}
 
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Gradebook#setUserAsStudent(org.sakaiproject.gradebook.gwt.client.model.Learner)
 	 */
 	public void setUserAsStudent(Learner userAsStudent) {
-		set(GradebookKey.USERASSTUDENT.name(), userAsStudent);
+		set(GradebookKey.M_USER.name(), userAsStudent);
 	}
 
-	@Override
+	/*@Override
 	public String getDisplayName() {
 		return getName();
-	}
+	}*/
 
-	/* (non-Javadoc)
-	 * @see org.sakaiproject.gradebook.gwt.client.model.Gradebook#getIdentifier()
-	 */
 	@Override
 	public String getIdentifier() {
 		return getGradebookUid();
@@ -145,55 +149,71 @@ public class GradebookModel extends EntityModel implements IsSerializable, Grade
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Gradebook#getUserName()
 	 */
 	public String getUserName() {
-		return get(GradebookKey.USERNAME.name());
+		return get(GradebookKey.S_USR_NM.name());
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Gradebook#setUserName(java.lang.String)
 	 */
 	public void setUserName(String userName) {
-		set(GradebookKey.USERNAME.name(), userName);
+		set(GradebookKey.S_USR_NM.name(), userName);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Gradebook#getGradebookItemModel()
 	 */
 	public Item getGradebookItemModel() {	
-		return get(GradebookKey.GRADEBOOKITEMMODEL.name());
+		return get(GradebookKey.M_GB_ITM.name());
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Gradebook#setGradebookGradeItem(org.sakaiproject.gradebook.gwt.client.model.Item)
 	 */
 	public void setGradebookGradeItem(Item gradebookGradeItem) {
-		set(GradebookKey.GRADEBOOKITEMMODEL.name(), gradebookGradeItem);
+		set(GradebookKey.M_GB_ITM.name(), gradebookGradeItem);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Gradebook#isNewGradebook()
 	 */
 	public Boolean isNewGradebook() {
-		return get(GradebookKey.ISNEWGRADEBOOK.name());
+		return get(GradebookKey.B_NEW_GB.name());
 	}
 
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Gradebook#setNewGradebook(java.lang.Boolean)
 	 */
 	public void setNewGradebook(Boolean isNewGradebook) {
-		set(GradebookKey.ISNEWGRADEBOOK.name(), isNewGradebook);
+		set(GradebookKey.B_NEW_GB.name(), isNewGradebook);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Gradebook#getStatsModel()
 	 */
 	public List<Statistics> getStatsModel() {
-		return get(GradebookKey.STATSMODELS.name());
+		return get(GradebookKey.A_STATS.name());
 	}
 
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Gradebook#setStatsModel(java.util.List)
 	 */
 	public void setStatsModel(List<Statistics> statsModel) {
-		set(GradebookKey.STATSMODELS.name(), statsModel);
+		set(GradebookKey.A_STATS.name(), statsModel);
+	}
+	
+	
+	public ModelData newChildModel(String property, EntityOverlay overlay) {
+		if (property.equals(GradebookKey.A_STATS.name()))
+			return new StatisticsModel(overlay);
+		if (property.equals(GradebookKey.M_GB_ITM.name()))
+			return new ItemModel(overlay);
+		if (property.equals(GradebookKey.M_USER.name()))
+			return new LearnerModel(overlay);
+		if (property.equals(GradebookKey.A_CLMNS.name()))
+			return new FixedColumnModel(overlay);
+		if (property.equals(GradebookKey.M_CONF.name()))
+			return new ConfigurationModel(overlay);
+		
+		return new BaseModel();
 	}
 }

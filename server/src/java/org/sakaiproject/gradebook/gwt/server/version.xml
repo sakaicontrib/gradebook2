@@ -4,7 +4,7 @@
    kind="dir"
    path="."
    revision="67029">
-<url>https://source.sakaiproject.org/contrib/gradebook2/tags/1.2.0</url>
+<url>https://source.sakaiproject.org/contrib/gradebook2/trunk</url>
 <repository>
 <root>https://source.sakaiproject.org/contrib</root>
 <uuid>fdecad78-55fc-0310-b1b2-d7d25cf747c9</uuid>

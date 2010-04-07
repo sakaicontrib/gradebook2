@@ -35,6 +35,7 @@ import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.UrlArgsCallback;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.gxt.NewModelCallback;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityOverlay;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.StatisticsModel;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
@@ -93,7 +94,23 @@ import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
 
 public class StudentPanel extends GradebookPanel {
 
-	private enum Key { CATEGORY_NAME, ITEM_NAME, ITEM_WEIGHT, GRADE, MEAN, STDV, MEDI, MODE, RANK, COMMENT, ORDER, ID, OUTOF, DATEDUE, DROPPED };
+	private enum Key { 
+		S_CTGRY_NM, 
+		S_ITM_NM, 
+		S_ITM_WGHT, 
+		S_GRD, 
+		S_MEAN, 
+		S_STDV, 
+		S_MEDI, 
+		S_MODE, 
+		S_RANK, 
+		S_COMMENT, 
+		S_ORDER, 
+		S_ID, 
+		S_OUTOF,
+		T_DATEDUE, 
+		B_DROPPED
+	};
 	
 	private TextField<String> defaultTextField= new TextField<String>();
 	private TextArea defaultTextArea = new TextArea();
@@ -153,7 +170,7 @@ public class StudentPanel extends GradebookPanel {
 
 		store = new GroupingStore<BaseModel>();
 		store.setGroupOnSort(false);
-		store.setSortField(Key.ORDER.name());
+		store.setSortField(Key.S_ORDER.name());
 		store.setSortDir(Style.SortDir.ASC);
 		store.setModelComparer(new ModelComparer<BaseModel>() {
 
@@ -161,8 +178,8 @@ public class StudentPanel extends GradebookPanel {
 				if (m1 == null || m2 == null)
 					return false;
 				
-				String id1 = m1.get(Key.ID.name());
-				String id2 = m2.get(Key.ID.name());
+				String id1 = m1.get(Key.S_ID.name());
+				String id2 = m2.get(Key.S_ID.name());
 				
 				if (id1 != null && id2 != null) {
 					return id1.equals(id2);
@@ -178,11 +195,11 @@ public class StudentPanel extends GradebookPanel {
 			    if (property != null) {
 			    	
 			    	// We do not want the sort by category to take
-			    	if (property.equals(Key.CATEGORY_NAME.name()))
+			    	if (property.equals(Key.S_CTGRY_NM.name()))
 			    		return 0;
 			    	
-			    	if (property.equals(Key.ITEM_NAME.name()))
-			    		property = Key.ORDER.name();
+			    	if (property.equals(Key.S_ITM_NM.name()))
+			    		property = Key.S_ORDER.name();
 			    		
 			    	Object v1 = m1.get(property);
 			    	Object v2 = m2.get(property);
@@ -197,15 +214,15 @@ public class StudentPanel extends GradebookPanel {
 				EnumSet.allOf(StatisticsKey.class), Method.GET, new UrlArgsCallback() {
 
 					public String getUrlArg() {
-						String uid = learnerGradeRecordCollection.get(LearnerKey.UID.name());
+						String uid = learnerGradeRecordCollection.get(LearnerKey.S_UID.name());
 						return uid;
 					}
 			
 				},	
 				new NewModelCallback() {
 
-					public ModelData newModelInstance() {
-						return new StatisticsModel();
+					public ModelData newModelInstance(EntityOverlay overlay) {
+						return new StatisticsModel(overlay);
 					}
 					
 				},
@@ -225,23 +242,23 @@ public class StudentPanel extends GradebookPanel {
 		
 		ArrayList<ColumnConfig> columns = new ArrayList<ColumnConfig>();
 		
-		categoryColumn = new ColumnConfig(Key.CATEGORY_NAME.name(), i18n.categoryName(), 200);
+		categoryColumn = new ColumnConfig(Key.S_CTGRY_NM.name(), i18n.categoryName(), 200);
 		categoryColumn.setGroupable(true);
 		categoryColumn.setHidden(true);
 		categoryColumn.setMenuDisabled(true);
 		columns.add(categoryColumn);
 		
-		ColumnConfig column = new ColumnConfig(Key.ITEM_NAME.name(), i18n.itemName(), 160);
+		ColumnConfig column = new ColumnConfig(Key.S_ITM_NM.name(), i18n.itemName(), 160);
 		column.setGroupable(false);
 		column.setMenuDisabled(true);
 		columns.add(column);
 		
-		weightColumn = new ColumnConfig(Key.ITEM_WEIGHT.name(), i18n.weightName(), 90);
+		weightColumn = new ColumnConfig(Key.S_ITM_WGHT.name(), i18n.weightName(), 90);
 		weightColumn.setGroupable(false);
 		weightColumn.setMenuDisabled(true);
 		columns.add(weightColumn);
 		
-		column = new ColumnConfig(Key.GRADE.name(), i18n.scoreName(), 60);
+		column = new ColumnConfig(Key.S_GRD.name(), i18n.scoreName(), 60);
 		column.setGroupable(false);
 		column.setAlignment(Style.HorizontalAlignment.RIGHT);
 		column.setMenuDisabled(true);
@@ -251,7 +268,7 @@ public class StudentPanel extends GradebookPanel {
 					com.extjs.gxt.ui.client.widget.grid.ColumnData config,
 					int rowIndex, int colIndex, ListStore store, Grid grid) {
 				
-				if (DataTypeConversionUtil.checkBoolean((Boolean)model.get(Key.DROPPED.name()))) {
+				if (DataTypeConversionUtil.checkBoolean((Boolean)model.get(Key.B_DROPPED.name()))) {
 					return new StringBuilder().append("<span class=\"").append(resources.css().gbCellDropped()).append("\">")
 						.append(model.get(property)).append("</span>");
 				}
@@ -262,37 +279,37 @@ public class StudentPanel extends GradebookPanel {
 		});
 		columns.add(column);
 		
-		outOfColumn = new ColumnConfig(Key.OUTOF.name(), i18n.outOfName(), 60);
+		outOfColumn = new ColumnConfig(Key.S_OUTOF.name(), i18n.outOfName(), 60);
 		outOfColumn.setGroupable(false);
 		outOfColumn.setAlignment(Style.HorizontalAlignment.RIGHT);
 		outOfColumn.setMenuDisabled(true);
 		columns.add(outOfColumn);
 		
-		dateDueColumn = new ColumnConfig(Key.DATEDUE.name(), i18n.dateDueName(), 90);
+		dateDueColumn = new ColumnConfig(Key.T_DATEDUE.name(), i18n.dateDueName(), 90);
 		dateDueColumn.setGroupable(false);
 		dateDueColumn.setDateTimeFormat(DateTimeFormat.getShortDateFormat());
 		dateDueColumn.setMenuDisabled(true);
 		columns.add(dateDueColumn);
 		
-		meanColumn = new ColumnConfig(Key.MEAN.name(), i18n.meanName(), 60);
+		meanColumn = new ColumnConfig(Key.S_MEAN.name(), i18n.meanName(), 60);
 		meanColumn.setGroupable(false);
 		meanColumn.setMenuDisabled(true);
 		meanColumn.setHidden(true);
 		columns.add(meanColumn);
 		
-		stdvColumn = new ColumnConfig(Key.STDV.name(), i18n.stdvName(), 60);
+		stdvColumn = new ColumnConfig(Key.S_STDV.name(), i18n.stdvName(), 60);
 		stdvColumn.setGroupable(false);
 		stdvColumn.setMenuDisabled(true);
 		stdvColumn.setHidden(true);
 		columns.add(stdvColumn);
 		
-		medianColumn = new ColumnConfig(Key.MEDI.name(), i18n.medianName(), 60);
+		medianColumn = new ColumnConfig(Key.S_MEDI.name(), i18n.medianName(), 60);
 		medianColumn.setGroupable(false);
 		medianColumn.setMenuDisabled(true);
 		medianColumn.setHidden(true);
 		columns.add(medianColumn);
 		
-		modeColumn = new ColumnConfig(Key.MODE.name(), i18n.modeName(), 60);
+		modeColumn = new ColumnConfig(Key.S_MODE.name(), i18n.modeName(), 60);
 		modeColumn.setGroupable(false);
 		modeColumn.setMenuDisabled(true);
 		modeColumn.setHidden(true);
@@ -369,7 +386,7 @@ public class StudentPanel extends GradebookPanel {
 		commentsPanel.setWidth(300);
 		
 		commentArea = new TextArea();
-		commentArea.setName(Key.COMMENT.name());
+		commentArea.setName(Key.S_COMMENT.name());
 		commentArea.setFieldLabel(i18n.commentName());
 		commentArea.setWidth(270);
 		commentArea.setHeight(300);
@@ -400,9 +417,8 @@ public class StudentPanel extends GradebookPanel {
 	
 	public void onRefreshGradebookSetup(Gradebook selectedGradebook) {
 		this.selectedGradebook = selectedGradebook;
-        String overrideString = learnerGradeRecordCollection.get(LearnerKey.IS_GRADE_OVERRIDDEN.name()); 
-        
-        updateCourseGrade((String)learnerGradeRecordCollection.get(LearnerKey.LETTER_GRADE.name()), overrideString, (String)learnerGradeRecordCollection.get(LearnerKey.CALCULATED_GRADE.name()));
+
+        updateCourseGrade((String)learnerGradeRecordCollection.get(LearnerKey.S_LTR_GRD.name()), (String)learnerGradeRecordCollection.get(LearnerKey.S_CALC_GRD.name()));
 		
         isPossibleStatsChanged = true;
 		//List<Statistics> statsList = selectedGradebook.getStatsModel();
@@ -413,9 +429,8 @@ public class StudentPanel extends GradebookPanel {
 		if (learnerGradeRecordCollection != null) {
 			this.selectedGradebook = selectedGradebook;
 			this.learnerGradeRecordCollection = learnerGradeRecordCollection;
-			String overrideString = learnerGradeRecordCollection.get(LearnerKey.IS_GRADE_OVERRIDDEN.name()); 
-			
-			updateCourseGrade((String)learnerGradeRecordCollection.get(LearnerKey.LETTER_GRADE.name()), overrideString, (String)learnerGradeRecordCollection.get(LearnerKey.CALCULATED_GRADE.name()));
+
+			updateCourseGrade((String)learnerGradeRecordCollection.get(LearnerKey.S_LTR_GRD.name()), (String)learnerGradeRecordCollection.get(LearnerKey.S_CALC_GRD.name()));
 			
 			if (isPossibleStatsChanged || statsList == null) {
 				loader.load();
@@ -453,7 +468,7 @@ public class StudentPanel extends GradebookPanel {
 	}
 
 	
-	private void updateCourseGrade(String newGrade, String overrideString, String calcGrade)
+	private void updateCourseGrade(String newGrade, String calcGrade)
 	{
 		
 		if (!isStudentView || (selectedGradebook != null && selectedGradebook.getGradebookItemModel() != null 
@@ -524,25 +539,25 @@ public class StudentPanel extends GradebookPanel {
         formatter.setWidth(PI_ROW_NAME, PI_COL_HEADING, FIRST_COLUMN_WIDTH);
         formatter.setStyleName(PI_ROW_NAME, PI_COL_HEADING, resources.css().gbImpact());
         formatter.setWordWrap(PI_ROW_NAME, PI_COL_HEADING, false);
-        studentInformation.setText(PI_ROW_NAME, PI_COL_VALUE, (String)learnerGradeRecordCollection.get(LearnerKey.DISPLAY_NAME.name()));
+        studentInformation.setText(PI_ROW_NAME, PI_COL_VALUE, (String)learnerGradeRecordCollection.get(LearnerKey.S_DSPLY_NM.name()));
 
         studentInformation.setText(PI_ROW_EMAIL, PI_COL_HEADING, "Email");
         formatter.setWidth(PI_ROW_EMAIL, PI_COL_HEADING, FIRST_COLUMN_WIDTH);
         formatter.setStyleName(PI_ROW_EMAIL, PI_COL_HEADING, resources.css().gbImpact());
         formatter.setWordWrap(PI_ROW_EMAIL, PI_COL_HEADING, false);
-        studentInformation.setText(PI_ROW_EMAIL, PI_COL_VALUE, (String)learnerGradeRecordCollection.get(LearnerKey.EMAIL.name()));
+        studentInformation.setText(PI_ROW_EMAIL, PI_COL_VALUE, (String)learnerGradeRecordCollection.get(LearnerKey.S_EMAIL.name()));
 
         studentInformation.setText(PI_ROW_ID, PI_COL_HEADING, "Id");
         formatter.setWidth(PI_ROW_ID, PI_COL_HEADING, FIRST_COLUMN_WIDTH);
         formatter.setStyleName(PI_ROW_ID, PI_COL_HEADING, resources.css().gbImpact());
         formatter.setWordWrap(PI_ROW_ID, PI_COL_HEADING, false);
-        studentInformation.setText(PI_ROW_ID, PI_COL_VALUE, (String)learnerGradeRecordCollection.get(LearnerKey.DISPLAY_ID.name()));
+        studentInformation.setText(PI_ROW_ID, PI_COL_VALUE, (String)learnerGradeRecordCollection.get(LearnerKey.S_DSPLY_ID.name()));
 
         studentInformation.setText(PI_ROW_SECTION, PI_COL_HEADING, "Section");
         formatter.setWidth(PI_ROW_SECTION, PI_COL_HEADING, FIRST_COLUMN_WIDTH);
         formatter.setStyleName(PI_ROW_SECTION, PI_COL_HEADING, resources.css().gbImpact());
         formatter.setWordWrap(PI_ROW_SECTION, PI_COL_HEADING, false);
-        studentInformation.setText(PI_ROW_SECTION, PI_COL_VALUE, (String)learnerGradeRecordCollection.get(LearnerKey.SECTION.name()));
+        studentInformation.setText(PI_ROW_SECTION, PI_COL_VALUE, (String)learnerGradeRecordCollection.get(LearnerKey.S_SECT.name()));
     
         /*formatter.setWidth(PI_ROW_BLANK, PI_COL_HEADING, FIRST_COLUMN_WIDTH);
         studentInformation.setText(PI_ROW_BLANK, PI_COL_HEADING, "");
@@ -565,13 +580,13 @@ public class StudentPanel extends GradebookPanel {
         	if (doReleaseGrades) {
 		        studentInformation.setText(PI_ROW_COURSE_GRADE, PI_COL_HEADING, "Course Grade");
 		        formatter.setStyleName(PI_ROW_COURSE_GRADE, PI_COL_HEADING, resources.css().gbImpact());
-		        studentInformation.setText(PI_ROW_COURSE_GRADE, PI_COL_VALUE, (String)learnerGradeRecordCollection.get(LearnerKey.LETTER_GRADE.name()));
+		        studentInformation.setText(PI_ROW_COURSE_GRADE, PI_COL_VALUE, (String)learnerGradeRecordCollection.get(LearnerKey.S_LTR_GRD.name()));
 		        
 		        boolean isLetterGrading = gradebookItemModel.getGradeType() == GradeType.LETTERS;
 		        
 		        if (!isLetterGrading)
 		        {
-		        	String calculatedGrade = (String)learnerGradeRecordCollection.get(LearnerKey.CALCULATED_GRADE.name());
+		        	String calculatedGrade = (String)learnerGradeRecordCollection.get(LearnerKey.S_CALC_GRD.name());
 			        studentInformation.setHTML(PI_ROW_CALCULATED_GRADE, PI_COL_HEADING, "Calculated Grade");
 			        formatter.setStyleName(PI_ROW_CALCULATED_GRADE, PI_COL_HEADING, resources.css().gbImpact());
 			        formatter.setWordWrap(PI_ROW_CALCULATED_GRADE, PI_COL_HEADING, false);
@@ -672,12 +687,12 @@ public class StudentPanel extends GradebookPanel {
 	}
 
 	
-	private BaseModel populateGradeInfoRow(int row, ItemModel item, ModelData learner, Statistics stats, CategoryType categoryType, GradeType gradeType) {
+	private BaseModel populateGradeInfoRow(int row, ItemModel item, ItemModel category, ModelData learner, Statistics stats, CategoryType categoryType, GradeType gradeType) {
 		String itemId = item.getIdentifier();
 		Object value = learner.get(itemId);
-		String commentFlag = new StringBuilder().append(itemId).append(AppConstants.COMMENT_TEXT_FLAG).toString();
+		String commentFlag = DataTypeConversionUtil.buildCommentTextKey(String.valueOf(itemId)); //new StringBuilder().append(itemId).append(AppConstants.COMMENT_TEXT_FLAG).toString();
 		String comment = learner.get(commentFlag);
-		String excusedFlag = new StringBuilder().append(itemId).append(AppConstants.DROP_FLAG).toString();
+		String excusedFlag = DataTypeConversionUtil.buildDroppedKey(String.valueOf(itemId)); //new StringBuilder().append(itemId).append(AppConstants.DROP_FLAG).toString();
 		
 		String mean = (stats == null ? "" : stats.getMean());
 		String stdDev = (stats == null ? "" : stats.getStandardDeviation()); 
@@ -697,17 +712,15 @@ public class StudentPanel extends GradebookPanel {
 		StringBuilder categoryName = new StringBuilder();
 		categoryName.append(item.getCategoryName());
 		
-		Item category = (Item)item.getParent();;
-		
 		switch (categoryType) {
 		case WEIGHTED_CATEGORIES:
 			categoryName.append(" (").append(category.getPercentCourseGrade()).append("% of course grade)");
 			if (!isIncluded)
-				model.set(Key.ITEM_WEIGHT.name(), "Excluded");
+				model.set(Key.S_ITM_WGHT.name(), "Excluded");
 			else if (isExcused) 
-				model.set(Key.ITEM_WEIGHT.name(), "Dropped");
+				model.set(Key.S_ITM_WGHT.name(), "Dropped");
 			else
-				model.set(Key.ITEM_WEIGHT.name(), NumberFormat.getDecimalFormat().format(((Double)item.getPercentCourseGrade())));
+				model.set(Key.S_ITM_WGHT.name(), NumberFormat.getDecimalFormat().format(((Double)item.getPercentCourseGrade())));
 		
 		case SIMPLE_CATEGORIES:
 			if (category != null) {
@@ -715,21 +728,21 @@ public class StudentPanel extends GradebookPanel {
 				if (dropLowest > 0)
 					categoryName.append(" (drop lowest ").append(dropLowest).append(")");
 			}
-			model.set(Key.CATEGORY_NAME.name(), categoryName.toString());
+			model.set(Key.S_CTGRY_NM.name(), categoryName.toString());
 			id.append(item.getCategoryId()).append(":");
 		default:
-			model.set(Key.ITEM_NAME.name(), item.getName());
-			model.set(Key.COMMENT.name(), comment);
+			model.set(Key.S_ITM_NM.name(), item.getName());
+			model.set(Key.S_COMMENT.name(), comment);
 			id.append(itemId);
 		}
 		
-		model.set(Key.ID.name(), id.toString());
-		model.set(Key.DATEDUE.name(), item.getDueDate());
+		model.set(Key.S_ID.name(), id.toString());
+		model.set(Key.T_DATEDUE.name(), item.getDueDate());
 		
 		switch (gradeType) {
     	case POINTS:
     		if (item.getPoints() != null)
-    			model.set(Key.OUTOF.name(), NumberFormat.getDecimalFormat().format((item.getPoints().doubleValue())));
+    			model.set(Key.S_OUTOF.name(), NumberFormat.getDecimalFormat().format((item.getPoints().doubleValue())));
     		break;
 		};
 		
@@ -756,20 +769,20 @@ public class StudentPanel extends GradebookPanel {
         }
         
         if (!isIncluded || isExcused) 
-			model.set(Key.DROPPED.name(), Boolean.TRUE);
+			model.set(Key.B_DROPPED.name(), Boolean.TRUE);
         
-        model.set(Key.GRADE.name(), resultBuilder.toString());
+        model.set(Key.S_GRD.name(), resultBuilder.toString());
         
         if (stats != null) {
-        	model.set(Key.MEAN.name(), mean);
-        	model.set(Key.STDV.name(), stdDev);
-        	model.set(Key.MEDI.name(), median);
-        	model.set(Key.MODE.name(), mode);
-        	model.set(Key.RANK.name(), rank);
+        	model.set(Key.S_MEAN.name(), mean);
+        	model.set(Key.S_STDV.name(), stdDev);
+        	model.set(Key.S_MEDI.name(), median);
+        	model.set(Key.S_MODE.name(), mode);
+        	model.set(Key.S_RANK.name(), rank);
         }
         
         
-        model.set(Key.ORDER.name(), String.valueOf(row));
+        model.set(Key.S_ORDER.name(), String.valueOf(row));
      
         return model;
 	}
@@ -832,8 +845,8 @@ public class StudentPanel extends GradebookPanel {
 									Statistics stats = null; 
 									stats = getStatsModelForItem(item.getIdentifier(), statsList); 
 				
-									BaseModel model = populateGradeInfoRow(i*1000 + j + 10000, item, learner, stats, categoryType, gradeType);
-									if (!isAnyCommentPopulated && model.get(Key.COMMENT.name()) != null)
+									BaseModel model = populateGradeInfoRow(i*1000 + j + 10000, item, child, learner, stats, categoryType, gradeType);
+									if (!isAnyCommentPopulated && model.get(Key.S_COMMENT.name()) != null)
 										isAnyCommentPopulated = true;
 									models.add(model);
 									isNothingToDisplay = false;
@@ -846,8 +859,8 @@ public class StudentPanel extends GradebookPanel {
 						Statistics stats = getStatsModelForItem(child.getIdentifier(), statsList); 
 
 						if (DataTypeConversionUtil.checkBoolean(child.getReleased())) {
-							BaseModel model = populateGradeInfoRow(row, child, learner, stats, categoryType, gradeType);
-							if (!isAnyCommentPopulated && model.get(Key.COMMENT.name()) != null)
+							BaseModel model = populateGradeInfoRow(row, child, null, learner, stats, categoryType, gradeType);
+							if (!isAnyCommentPopulated && model.get(Key.S_COMMENT.name()) != null)
 								isAnyCommentPopulated = true;
 							models.add(model);
 							isNothingToDisplay = false;
@@ -862,7 +875,7 @@ public class StudentPanel extends GradebookPanel {
 					categoryColumn.setHidden(true);
 					store.clearGrouping();
 				} else
-					store.groupBy(Key.CATEGORY_NAME.name());
+					store.groupBy(Key.S_CTGRY_NM.name());
 			}
 			
 			if (isNothingToDisplay) {

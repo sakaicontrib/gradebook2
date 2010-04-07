@@ -174,7 +174,7 @@ public class ItemTreeSelectionModel extends GridSelectionModel<ItemModel> implem
 	}
 	
 	private void toggleItem(ItemModel m, boolean isChecked, int rowIndex) {
-		String id = m.get(ItemKey.ID.name());
+		String id = m.get(ItemKey.S_ID.name());
 
 		if (id != null) {
 			doToggle(m, isChecked, rowIndex);

@@ -4,20 +4,19 @@
 package org.sakaiproject.gradebook.gwt.client.model.key;
 
 public enum VerificationKey { 
-	NUMBER_LEARNERS(Integer.class), IS_MISSING_SCORES, IS_FULLY_WEIGHTED, IS_CATEGORY_FULLY_WEIGHTED;
+	I_NUM_LRNRS("numberOfLearners"), 
+	B_MISS_SCRS("isMissingScores"), 
+	B_GB_WGHTD("isFullyWeighted"), 
+	B_CTGRY_WGHTD("isCategoryFullyWeighted");
 	
-	private Class<?> type;
-	
-	private VerificationKey() {
+	private String property;
 		
+	private VerificationKey(String property) {
+		this.property = property;
 	}
 	
-	private VerificationKey(Class<?> type) {
-		this.type = type;
-	}
-	
-	public Class<?> getType() {
-		return type;
+	public String getProperty() {
+		return property;
 	}
 }
 

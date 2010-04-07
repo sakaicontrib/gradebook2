@@ -187,7 +187,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			menu.add(new SeparatorMenuItem());
 		}
 
-		if (config.getId().equals(LearnerKey.COURSE_GRADE.name())) {
+		if (config.getId().equals(LearnerKey.S_CRS_GRD.name())) {
 			item = new AriaMenuItem();
 			item.setData(selectionTypeField, SelectionType.GRADE_SCALE);
 			item.setItemId(AppConstants.ID_HD_GRADESCALE_MENUITEM);

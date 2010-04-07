@@ -30,11 +30,13 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
+import org.sakaiproject.gradebook.gwt.client.gxt.NewModelCallback;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeMapUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityOverlay;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.TreeView;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
@@ -94,20 +96,22 @@ public class GradeScalePanel extends GradebookPanel {
 		
 		LabelField gradeScale = new LabelField(i18n.gradeFormatLabel());
 		toolbar.add(gradeScale);
-
-		gradeFormatLoader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, EnumSet.allOf(GradeFormatKey.class), Method.GET, 
-				GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.GRADE_FORMAT_FRAGMENT);
+		
+		gradeFormatLoader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, 
+				EnumSet.allOf(GradeFormatKey.class), Method.GET, null, null,
+				GWT.getModuleBaseURL(), 
+				AppConstants.REST_FRAGMENT, AppConstants.GRADE_FORMAT_FRAGMENT);
 
 		gradeFormatLoader.setRemoteSort(true);
 
 		gradeFormatStore = new ListStore<ModelData>(gradeFormatLoader);
-		gradeFormatStore.setModelComparer(new EntityModelComparer<ModelData>(GradeFormatKey.ID.name()));
+		gradeFormatStore.setModelComparer(new EntityModelComparer<ModelData>(GradeFormatKey.L_ID.name()));
 		
 		gradeFormatListBox = new ComboBox<ModelData>(); 
 		gradeFormatListBox.setAllQuery(null);
 		gradeFormatListBox.setEditable(false);
 		gradeFormatListBox.setFieldLabel("Grade Format");
-		gradeFormatListBox.setDisplayField(GradeFormatKey.NAME.name());  
+		gradeFormatListBox.setDisplayField(GradeFormatKey.S_NM.name());  
 		gradeFormatListBox.setStore(gradeFormatStore);
 		gradeFormatListBox.setForceSelection(true);
 		gradeFormatListBox.setLazyRender(true);
@@ -120,15 +124,15 @@ public class GradeScalePanel extends GradebookPanel {
 				Item selectedItemModel = selectedGradebookModel.getGradebookItemModel();
 				ModelData gradeFormatModel = se.getSelectedItem();
 				
-				currentGradeScaleId = gradeFormatModel == null ? null : (Long)gradeFormatModel.get(GradeFormatKey.ID.name());
+				currentGradeScaleId = gradeFormatModel == null ? null : (Long)gradeFormatModel.get(GradeFormatKey.L_ID.name());
 				
 				if (currentGradeScaleId != null && !currentGradeScaleId.equals(selectedItemModel.getGradeScaleId())) {
 					Record record = treeView.getTreeStore().getRecord((ItemModel)selectedItemModel);
 					record.beginEdit();
-					record.set(ItemKey.GRADESCALEID.name(), currentGradeScaleId);
+					record.set(ItemKey.L_GRD_SCL_ID.name(), currentGradeScaleId);
 					grid.mask();
 					ItemUpdate itemUpdate = new ItemUpdate(treeView.getTreeStore(), record, selectedItemModel, false);
-					itemUpdate.property = ItemKey.GRADESCALEID.name();
+					itemUpdate.property = ItemKey.L_GRD_SCL_ID.name();
 					Dispatcher.forwardEvent(GradebookEvents.UpdateItem.getEventType(), itemUpdate);
 				} else {
 					loader.load();
@@ -155,7 +159,7 @@ public class GradeScalePanel extends GradebookPanel {
 		NumberFormat defaultNumberFormat = DataTypeConversionUtil.getDefaultNumberFormat();
 
 		ColumnConfig column = new ColumnConfig();  
-		column.setId(GradeMapKey.LETTER_GRADE.name());  
+		column.setId(GradeMapKey.S_LTR_GRD.name());  
 		column.setHeader(i18n.letterGradeHeader());
 		column.setAlignment(HorizontalAlignment.CENTER);
 		column.setWidth(100);
@@ -165,7 +169,7 @@ public class GradeScalePanel extends GradebookPanel {
 		configs.add(column); 
 		
 		column = new ColumnConfig();  
-		column.setId(GradeMapKey.FROM_RANGE.name());  
+		column.setId(GradeMapKey.D_FROM.name());  
 		column.setHeader(i18n.fromHeader());
 		column.setAlignment(HorizontalAlignment.CENTER);
 		column.setWidth(70);
@@ -183,7 +187,7 @@ public class GradeScalePanel extends GradebookPanel {
 		configs.add(column);
 		
 		column = new ColumnConfig();  
-		column.setId(GradeMapKey.TO_RANGE.name());
+		column.setId(GradeMapKey.D_TO.name());
 		column.setHeader(i18n.toHeader());
 		column.setAlignment(HorizontalAlignment.CENTER);
 		column.setWidth(100);
@@ -193,11 +197,12 @@ public class GradeScalePanel extends GradebookPanel {
 		column.setNumberFormat(defaultNumberFormat);
 		configs.add(column);
 
-		loader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, EnumSet.allOf(GradeMapKey.class), Method.GET, 
+		loader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, 
+				EnumSet.allOf(GradeMapKey.class), Method.GET, null, null,
 				GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.GRADE_MAP_FRAGMENT);
 
 		final ListStore<ModelData> store = new ListStore<ModelData>(loader);
-		store.setModelComparer(new EntityModelComparer<ModelData>(GradeMapKey.LETTER_GRADE.name()));
+		store.setModelComparer(new EntityModelComparer<ModelData>(GradeMapKey.S_LTR_GRD.name()));
 
 		loader.addListener(Loader.Load, new Listener<LoadEvent>() {
 
@@ -260,9 +265,9 @@ public class GradeScalePanel extends GradebookPanel {
 	public void onFailedToUpdateItem(ItemUpdate itemUpdate) {
 		
 		// Ensure that the failure is on an attempt to update the GRADESCALEID
-		if (itemUpdate.property != null && itemUpdate.property.equals(ItemKey.GRADESCALEID.name())) {
+		if (itemUpdate.property != null && itemUpdate.property.equals(ItemKey.L_GRD_SCL_ID.name())) {
 			
-			Long gradeScaleId = itemUpdate.item.get(ItemKey.GRADESCALEID.name());
+			Long gradeScaleId = itemUpdate.item.get(ItemKey.L_GRD_SCL_ID.name());
 		
 			if (gradeScaleId != null && currentGradeScaleId != null &&
 					!currentGradeScaleId.equals(gradeScaleId)) {
@@ -287,7 +292,7 @@ public class GradeScalePanel extends GradebookPanel {
 	private void loadGradeScaleData(Long selectedGradeScaleId) {
 		for (int i=0;i<gradeFormatStore.getCount();i++) {
 			ModelData m = gradeFormatStore.getAt(i);
-			Long id1 = m.get(GradeFormatKey.ID.name());
+			Long id1 = m.get(GradeFormatKey.L_ID.name());
 			if (id1 != null && id1.equals(selectedGradeScaleId)) {
 				if (currentGradeScaleId == null || !currentGradeScaleId.equals(selectedGradeScaleId)) {
 					gradeFormatListBox.setValue(m);

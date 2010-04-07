@@ -25,7 +25,6 @@ package org.sakaiproject.gradebook.gwt.client.gxt.controller;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -38,8 +37,7 @@ import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestCallback;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
-import org.sakaiproject.gradebook.gwt.client.gxt.JsonTranslater;
-import org.sakaiproject.gradebook.gwt.client.gxt.LearnerTranslater;
+import org.sakaiproject.gradebook.gwt.client.gxt.JsonUtil;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeMapUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
@@ -48,7 +46,10 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ConfigurationModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityOverlay;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.LearnerModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.LearnerUtil;
 import org.sakaiproject.gradebook.gwt.client.model.Configuration;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
@@ -62,7 +63,6 @@ import org.sakaiproject.gradebook.gwt.client.model.type.ClassType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 
 import com.extjs.gxt.ui.client.Registry;
-import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.BaseTreeModel;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.BaseEvent;
@@ -151,8 +151,7 @@ public class ServiceController extends Controller {
 		
 		Long gradebookId = selectedGradebook.getGradebookId();
 
-		JSONObject json = model == null ? null : RestBuilder.convertModel(model);
-		String jsonText = json == null ? null : json.toString();
+		String jsonText = model == null ? null : model.getJSON();
 		
 		RestBuilder builder = RestBuilder.getInstance(Method.PUT, 
 				GWT.getModuleBaseURL(),
@@ -163,13 +162,14 @@ public class ServiceController extends Controller {
 
 			public void onSuccess(Request request, Response response) {
 				
-				JsonTranslater configTranslater = new JsonTranslater() {
+				/*JsonTranslater configTranslater = new JsonTranslater() {
 					protected ModelData newModelInstance() {
 						return new ConfigurationModel();
 					}
-				};
+				}*/
 				
-				ModelData m = configTranslater.translate(response.getText());
+				EntityOverlay overlay = JsonUtil.toOverlay(response.getText());
+				ModelData m = new ConfigurationModel(overlay); //configTranslater.translate(response.getText());
 				
 				Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 				Configuration configModel = selectedGradebook.getConfigurationModel();
@@ -200,9 +200,10 @@ public class ServiceController extends Controller {
 				AppConstants.ITEM_FRAGMENT, gbModel.getGradebookUid(),
 				String.valueOf(gbModel.getGradebookId()));
 		
-		JSONObject jsonObject = RestBuilder.convertModel(event.item);
+		ItemModel model = event.item;
+		String jsonText = model == null ? null : model.getJSON();
 		
-		builder.sendRequest(200, 400, jsonObject.toString(), new RestCallback() {
+		builder.sendRequest(200, 400, jsonText, new RestCallback() {
 
 			public void onError(Request request, Throwable exception) {
 				super.onError(request, exception);
@@ -215,14 +216,15 @@ public class ServiceController extends Controller {
 			}
 
 			public void onSuccess(Request request, Response response) {
-				String result = response.getText();
+				//String result = response.getText();
 
-				JsonTranslater translater = new JsonTranslater(EnumSet.allOf(ItemKey.class)) {
+				/*JsonTranslater translater = new JsonTranslater(EnumSet.allOf(ItemKey.class)) {
 					protected ModelData newModelInstance() {
 						return new ItemModel();
 					}
-				};
-				ItemModel itemModel = (ItemModel)translater.translate(result);
+				};*/
+				EntityOverlay overlay = JsonUtil.toOverlay(response.getText());
+				ItemModel itemModel = new ItemModel(overlay); //(ItemModel)translater.translate(result);
 				
 				if (event.close)
 					Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
@@ -276,21 +278,21 @@ public class ServiceController extends Controller {
 				AppConstants.REST_FRAGMENT,
 				AppConstants.PERMISSION_FRAGMENT, gradebookUid, gradebookId);
 		
-		JSONObject jsonObject = RestBuilder.convertModel(model);
+		String jsonText = model == null ? null : ((EntityModel)model).getJSON();
 		
-		builder.sendRequest(200, 400, jsonObject.toString(), new RestCallback() {
+		builder.sendRequest(200, 400, jsonText, new RestCallback() {
 			
 			@Override
 			public void onSuccess(Request request, Response response) {
-				String result = response.getText();
+				/*String result = response.getText();
 				JsonTranslater translater = new JsonTranslater(EnumSet.allOf(PermissionKey.class)) {
 					protected ModelData newModelInstance() {
 						return new BaseModel();
 					}
-				};
-				ModelData model = translater.translate(result);
-				Dispatcher.forwardEvent(
-						GradebookEvents.PermissionCreated.getEventType(),
+				};*/
+				EntityOverlay overlay = JsonUtil.toOverlay(response.getText());
+				ModelData model = new EntityModel(overlay); //translater.translate(result);
+				Dispatcher.forwardEvent(GradebookEvents.PermissionCreated.getEventType(),
 						model);
 			}
 			
@@ -338,9 +340,10 @@ public class ServiceController extends Controller {
 				AppConstants.REST_FRAGMENT,
 				AppConstants.ITEM_FRAGMENT);
 		
-		JSONObject jsonObject = RestBuilder.convertModel((ModelData)event.item);
+		ItemModel model = (ItemModel)event.item;
+		String jsonText = model == null ? null : model.getJSON();
 		
-		builder.sendRequest(200, 400, jsonObject.toString(), new RestCallback() {
+		builder.sendRequest(200, 400, jsonText, new RestCallback() {
 
 			public void onError(Request request, Throwable exception) {
 				super.onError(request, exception);
@@ -354,14 +357,15 @@ public class ServiceController extends Controller {
 			}
 
 			public void onSuccess(Request request, Response response) {
-				String result = response.getText();
+				/*String result = response.getText();
 
 				JsonTranslater translater = new JsonTranslater(EnumSet.allOf(ItemKey.class)) {
 					protected ModelData newModelInstance() {
 						return new ItemModel();
 					}
-				};
-				ItemModel itemModel = (ItemModel)translater.translate(result);
+				};*/
+				EntityOverlay overlay = JsonUtil.toOverlay(response.getText());
+				ItemModel itemModel = new ItemModel(overlay); // (ItemModel)translater.translate(result);
 				
 				Dispatcher.forwardEvent(GradebookEvents.BeginItemUpdates.getEventType());
 				onUpdateItemSuccess(event, itemModel);
@@ -377,26 +381,27 @@ public class ServiceController extends Controller {
 		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 		
 		Long gradebookId = selectedGradebook.getGradebookId();
-		model.set(PermissionKey.GRADEBOOK_ID.name(), gradebookId);
+		model.set(PermissionKey.L_GB_ID.name(), gradebookId);
 		
 		RestBuilder builder = RestBuilder.getInstance(Method.DELETE, 
 				GWT.getModuleBaseURL(),
 				AppConstants.REST_FRAGMENT,
 				AppConstants.PERMISSION_FRAGMENT, selectedGradebook.getGradebookUid());
 		
-		JSONObject jsonObject = RestBuilder.convertModel(model);
+		String jsonText = model == null ? null : ((EntityModel)model).getJSON();
 		
-		builder.sendRequest(200, 400, jsonObject.toString(), new RestCallback() {
+		builder.sendRequest(200, 400, jsonText, new RestCallback() {
 			
 			@Override
 			public void onSuccess(Request request, Response response) {
-				String result = response.getText();
+				/*String result = response.getText();
 				JsonTranslater translater = new JsonTranslater(EnumSet.allOf(PermissionKey.class)) {
 					protected ModelData newModelInstance() {
 						return new BaseModel();
 					}
-				};
-				ModelData model = translater.translate(result);
+				};*/
+				EntityOverlay overlay = JsonUtil.toOverlay(response.getText());
+				ModelData model = new EntityModel(overlay); //translater.translate(result);
 				Dispatcher.forwardEvent(
 						GradebookEvents.PermissionDeleted.getEventType(),
 						model);
@@ -424,14 +429,13 @@ public class ServiceController extends Controller {
 
 		record.setValid(property, false);
 
-		String message = new StringBuilder().append(i18n.gradeUpdateFailedException()).append(" ").append(record.get(LearnerKey.DISPLAY_NAME.name())).append(". ").toString();
+		String message = new StringBuilder().append(i18n.gradeUpdateFailedException()).append(" ").append(record.get(LearnerKey.S_DSPLY_NM.name())).append(". ").toString();
 		
 		Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught, message));
 	}
 	
 	private void setFailedFlag(Record record, String property, String message) {
-		String failedProperty = 
-			new StringBuilder(property).append(AppConstants.FAILED_FLAG).toString();
+		String failedProperty = DataTypeConversionUtil.buildFailedKey(property);
 		if (record.isModified(failedProperty))
 			record.set(failedProperty, null);
 		if (message != null) 
@@ -439,8 +443,7 @@ public class ServiceController extends Controller {
 	}
 	
 	private void setSuccessFlag(Record record, String property) {
-		String successProperty = 
-			new StringBuilder(property).append(AppConstants.SUCCESS_FLAG).toString();
+		String successProperty = DataTypeConversionUtil.buildSuccessKey(property);
 		if (record.isModified(successProperty))
 			record.set(successProperty, null);
 		record.set(successProperty, "Success");
@@ -468,7 +471,7 @@ public class ServiceController extends Controller {
 					Object newObj = result.get(p);
 					Object oldObj = record.get(p);
 					
-					boolean needsRefreshing = false;
+					/*boolean needsRefreshing = false;
 					int index = -1;
 
 					if (p.endsWith(AppConstants.DROP_FLAG)) {
@@ -477,7 +480,7 @@ public class ServiceController extends Controller {
 					} else if (p.endsWith(AppConstants.COMMENTED_FLAG)) {
 						index = p.indexOf(AppConstants.COMMENTED_FLAG);
 						needsRefreshing = true;
-					}
+					}*/
 					
 					if (newObj == null && oldObj != null) {
 						// If the entry is now missing, we want to remove it
@@ -546,21 +549,21 @@ public class ServiceController extends Controller {
 			}
 		}*/
 
-		String courseGrade = result.get(LearnerKey.COURSE_GRADE.name());
+		String courseGrade = result.get(LearnerKey.S_CRS_GRD.name());
 
-		if (courseGrade != null && record.isModified(LearnerKey.COURSE_GRADE.name()))
-			record.set(LearnerKey.COURSE_GRADE.name(), null);
-		record.set(LearnerKey.COURSE_GRADE.name(), courseGrade);
+		if (courseGrade != null && record.isModified(LearnerKey.S_CRS_GRD.name()))
+			record.set(LearnerKey.S_CRS_GRD.name(), null);
+		record.set(LearnerKey.S_CRS_GRD.name(), courseGrade);
 		
-		String calculatedGrade = result.get(LearnerKey.CALCULATED_GRADE.name());
-		if (calculatedGrade != null && record.isModified(LearnerKey.CALCULATED_GRADE.name()))
-			record.set(LearnerKey.CALCULATED_GRADE.name(), null);
-		record.set(LearnerKey.CALCULATED_GRADE.name(), calculatedGrade);
+		String calculatedGrade = result.get(LearnerKey.S_CALC_GRD.name());
+		if (calculatedGrade != null && record.isModified(LearnerKey.S_CALC_GRD.name()))
+			record.set(LearnerKey.S_CALC_GRD.name(), null);
+		record.set(LearnerKey.S_CALC_GRD.name(), calculatedGrade);
 		
-		String letterGrade = result.get(LearnerKey.LETTER_GRADE.name());
-		if (letterGrade != null && record.isModified(LearnerKey.LETTER_GRADE.name()))
-			record.set(LearnerKey.LETTER_GRADE.name(), null);
-		record.set(LearnerKey.LETTER_GRADE.name(), letterGrade);
+		String letterGrade = result.get(LearnerKey.S_LTR_GRD.name());
+		if (letterGrade != null && record.isModified(LearnerKey.S_LTR_GRD.name()))
+			record.set(LearnerKey.S_LTR_GRD.name(), null);
+		record.set(LearnerKey.S_LTR_GRD.name(), letterGrade);
 
 		// Ensure that we clear out any older failure messages
 		// Save the exception message on the record
@@ -578,20 +581,20 @@ public class ServiceController extends Controller {
 
 		// FIXME: Move all this to a log event listener
 		StringBuilder buffer = new StringBuilder();
-		String displayName = (String)record.get(LearnerKey.DISPLAY_NAME.name());
+		String displayName = (String)record.get(LearnerKey.S_DSPLY_NM.name());
 		if (displayName != null)
 			buffer.append(displayName);
 		buffer.append(":").append(event.label);
 		
 		String message = null;
-		if (property.endsWith(AppConstants.COMMENT_TEXT_FLAG)) {
+		if (property.startsWith(AppConstants.COMMENT_TEXT_FLAG)) {
 			message = buffer.append("- stored comment as '")
 			.append(result.get(property))
 			.append("'").toString();
 		} else {
 			message = buffer.append("- stored item grade as '")
 			.append(result.get(property))
-			.append("' and recalculated course grade to '").append(result.get(LearnerKey.COURSE_GRADE.name()))
+			.append("' and recalculated course grade to '").append(result.get(LearnerKey.S_CRS_GRD.name()))
 			.append("'").toString();
 		}
 
@@ -604,7 +607,7 @@ public class ServiceController extends Controller {
 		
 		String gradebookUid = selectedGradebook.getGradebookUid();
 		String gradebookId = String.valueOf(selectedGradebook.getGradebookId());
-		String letterGrade = (String)record.get(GradeMapKey.LETTER_GRADE.name());
+		String letterGrade = (String)record.get(GradeMapKey.S_LTR_GRD.name());
 		
 		RestBuilder builder = RestBuilder.getInstance(Method.PUT, 
 				GWT.getModuleBaseURL(),
@@ -656,7 +659,7 @@ public class ServiceController extends Controller {
 
 		String gradebookUid = selectedGradebook.getGradebookUid();
 		String entity = null;
-		String studentUid = (String)record.getModel().get(LearnerKey.UID.name());
+		String studentUid = (String)record.getModel().get(LearnerKey.S_UID.name());
 		String itemId = (String)event.property;
 		
 		JSONObject json = new JSONObject();
@@ -687,7 +690,7 @@ public class ServiceController extends Controller {
 			break;
 		}
 		
-		if (event.property.endsWith(AppConstants.COMMENT_TEXT_FLAG))
+		if (event.property.startsWith(AppConstants.COMMENT_TEXT_FLAG))
 			entity = "comment";
 
 		RestBuilder builder = RestBuilder.getInstance(Method.PUT, 
@@ -712,8 +715,10 @@ public class ServiceController extends Controller {
 			}
 
 			public void onSuccess(Request request, Response response) {
-				JsonTranslater reader = new LearnerTranslater(selectedGradebook.getGradebookItemModel(), false);
-				ModelData result = reader.translate(response.getText());
+				//JsonTranslater reader = new LearnerTranslater(selectedGradebook.getGradebookItemModel(), false);
+				//ModelData result = reader.translate(response.getText());
+				EntityOverlay overlay = JsonUtil.toOverlay(response.getText());
+				LearnerModel result = new LearnerModel(overlay);
 				
 				record.beginEdit();
 				onUpdateGradeRecordSuccess(event, result);
@@ -723,6 +728,7 @@ public class ServiceController extends Controller {
 			}
 			
 		});
+		
 		
 		/*
 		AsyncCallback<ModelData> callback = new AsyncCallback<ModelData>() {
@@ -901,12 +907,12 @@ public class ServiceController extends Controller {
 		if (event.record != null && event.record.isEditing()) {
 			Map<String, Object> changes = event.record.getChanges();
 
-			isGradeScaleUpdated = changes != null && changes.get(ItemKey.GRADESCALEID.name()) != null;
-			isGradeTypeUpdated = changes != null && changes.get(ItemKey.GRADETYPE.name()) != null;
-			isCategoryTypeUpdated = changes != null && changes.get(ItemKey.CATEGORYTYPE.name()) != null;
-			isReleaseGradesUpdated = changes != null && changes.get(ItemKey.RELEASEGRADES.name()) != null;
-			isReleaseItemsUpdated = changes != null && changes.get(ItemKey.RELEASEITEMS.name()) != null;
-			isExtraCreditScaled = changes != null && changes.get(ItemKey.EXTRA_CREDIT_SCALED.name()) != null;
+			isGradeScaleUpdated = changes != null && changes.get(ItemKey.L_GRD_SCL_ID.name()) != null;
+			isGradeTypeUpdated = changes != null && changes.get(ItemKey.G_GRD_TYPE.name()) != null;
+			isCategoryTypeUpdated = changes != null && changes.get(ItemKey.C_CTGRY_TYPE.name()) != null;
+			isReleaseGradesUpdated = changes != null && changes.get(ItemKey.B_REL_GRDS.name()) != null;
+			isReleaseItemsUpdated = changes != null && changes.get(ItemKey.B_REL_ITMS.name()) != null;
+			isExtraCreditScaled = changes != null && changes.get(ItemKey.B_SCL_X_CRDT.name()) != null;
 			
 			event.record.commit(false);
 		}
@@ -974,9 +980,10 @@ public class ServiceController extends Controller {
 				AppConstants.REST_FRAGMENT,
 				AppConstants.ITEM_FRAGMENT);
 		
-		JSONObject jsonObject = RestBuilder.convertModel((ModelData)event.getModifiedItem());
+		ItemModel model = (ItemModel)event.getModifiedItem();
+		String jsonText = model == null ? null : model.getJSON();
 		
-		builder.sendRequest(200, 400, jsonObject.toString(), new RestCallback() {
+		builder.sendRequest(200, 400, jsonText, new RestCallback() {
 
 			public void onError(Request request, Throwable exception) {
 				super.onError(request, exception);
@@ -990,14 +997,15 @@ public class ServiceController extends Controller {
 			}
 
 			public void onSuccess(Request request, Response response) {
-				String result = response.getText();
+				/*String result = response.getText();
 
 				JsonTranslater translater = new JsonTranslater(EnumSet.allOf(ItemKey.class)) {
 					protected ModelData newModelInstance() {
 						return new ItemModel();
 					}
-				};
-				ItemModel itemModel = (ItemModel)translater.translate(result);
+				};*/
+				EntityOverlay overlay = JsonUtil.toOverlay(response.getText());
+				ItemModel itemModel = new ItemModel(overlay); //(ItemModel)translater.translate(result);
 				
 				Dispatcher.forwardEvent(GradebookEvents.BeginItemUpdates.getEventType());
 				onUpdateItemSuccess(event, itemModel);

@@ -20,19 +20,19 @@ public class HistoryImpl extends HashMap<String, Object> implements History {
 	
 	@SuppressWarnings("unchecked")
 	public List<HistoryRecord> getHistoryPage() {
-		return (List<HistoryRecord>)get(HistoryKey.HISTORY_PAGE.toString());
+		return (List<HistoryRecord>)get(HistoryKey.A_PAGE.name());
 	}
 
 	public Integer getTotal() {
-		return Util.toInteger(get(HistoryKey.TOTAL.toString()));
+		return Util.toInteger(get(HistoryKey.I_TOTAL.name()));
 	}
 
 	public void setHistoryPage(List<HistoryRecord> records) {
-		put(HistoryKey.HISTORY_PAGE.toString(), records);
+		put(HistoryKey.A_PAGE.name(), records);
 	}
 
 	public void setTotal(Integer total) {
-		put(HistoryKey.TOTAL.toString(), total);
+		put(HistoryKey.I_TOTAL.name(), total);
 	}
 
 }

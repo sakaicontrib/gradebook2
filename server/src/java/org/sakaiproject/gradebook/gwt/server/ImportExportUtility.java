@@ -76,6 +76,7 @@ import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookImportException;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
+import org.sakaiproject.gradebook.gwt.sakai.Util;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.gradebook.gwt.server.model.GradeItem;
 import org.sakaiproject.gradebook.gwt.server.model.GradeItemImpl;
@@ -361,8 +362,8 @@ public class ImportExportUtility {
 				for (Learner row : rows) {
 					List<String> dataColumns = new LinkedList<String>();
 //TODO: JLR : Could use array here instead	
-					dataColumns.add((String)row.get(LearnerKey.EXPORT_USER_ID.name()));
-					dataColumns.add((String)row.get(LearnerKey.LAST_NAME_FIRST.name()));
+					dataColumns.add((String)row.get(LearnerKey.S_EXPRT_USR_ID.name()));
+					dataColumns.add((String)row.get(LearnerKey.S_LST_NM_FRST.name()));
 
 					for (int column = 0; column < headerIds.size(); column++) {
 						String columnIndex = headerIds.get(column);
@@ -385,8 +386,7 @@ public class ImportExportUtility {
 						}
 
 						if (includeComments) {
-							String commentId = new StringBuilder()
-							.append(headerIds.get(column)).append(AppConstants.COMMENT_TEXT_FLAG).toString();
+							String commentId = Util.buildCommentTextKey(headerIds.get(column)); 
 
 							Object comment = row.get(commentId);
 
@@ -397,7 +397,7 @@ public class ImportExportUtility {
 						}
 					}
 
-					dataColumns.add((String)row.get(LearnerKey.COURSE_GRADE.name()));
+					dataColumns.add((String)row.get(LearnerKey.S_CRS_GRD.name()));
 
 					out.addRow(dataColumns.toArray(new String[dataColumns.size()]));
 				}
@@ -1147,15 +1147,15 @@ public class ImportExportUtility {
 			} else if (nameSet.contains(lowerText)) {
 				if (log.isDebugEnabled())
 					log.debug("HI: Column " + i + " is student name");
-				header = new ImportHeader(Field.NAME, text);
-				header.setId("NAME");
+				header = new ImportHeader(Field.S_NAME, text);
+				header.setId("S_NAME");
 				importInfo.setNameFieldIndex(i);
 				// FIXME - Should this be like this? 
 			} else if (idSet.contains(lowerText)) {
 				if (log.isDebugEnabled())
 					log.debug("HI: Column " + i + " is student id");
-				header = new ImportHeader(Field.ID, text);
-				header.setId("ID");
+				header = new ImportHeader(Field.S_ID, text);
+				header.setId("S_ID");
 				importInfo.setIdFieldIndex(i);
 			} else if (lowerText.equalsIgnoreCase("course grade")) {
 				// Do nothing
@@ -1241,17 +1241,17 @@ public class ImportExportUtility {
 					Item model = findModelByName(name, categoryName, gradebook.getGradebookItemModel());
 
 					if (isComment) {
-						header = new ImportHeader(Field.COMMENT, text);
+						header = new ImportHeader(Field.S_COMMENT, text);
 						if (model != null) {
 							header.setAssignmentId(model.getIdentifier());
-							header.setId(new StringBuilder().append(model.getIdentifier()).append(AppConstants.COMMENT_TEXT_FLAG).toString());
+							header.setId(Util.buildCommentTextKey(model.getIdentifier())); //new StringBuilder().append(model.getIdentifier()).append(AppConstants.COMMENT_TEXT_FLAG).toString());
 							header.setCategoryName(model.getCategoryName());
 							if (model.getCategoryId() != null)
 								header.setCategoryId(String.valueOf(model.getCategoryId()));
 						} else {
 							String newId = new StringBuilder().append("NEW:").append(i - 1).toString();
 							header.setAssignmentId(newId);
-							header.setId(new StringBuilder().append(newId).append(AppConstants.COMMENT_TEXT_FLAG).toString());
+							header.setId(Util.buildCommentTextKey(newId));
 						}
 						
 					} else {
@@ -1267,7 +1267,7 @@ public class ImportExportUtility {
 						if (points != null && points.length() > 0)
 							value.append(" [").append(points).append("]");
 
-						header = new ImportHeader(Field.ITEM, value.toString());
+						header = new ImportHeader(Field.S_ITEM, value.toString());
 
 						if (model != null) {
 							header.setId(model.getIdentifier());
@@ -1616,7 +1616,7 @@ public class ImportExportUtility {
 
 				if (header != null) {
 					
-					if (header.getField() == null || header.getField().equals(Field.COMMENT.name()))
+					if (header.getField() == null || header.getField().equals(Field.S_COMMENT.name()))
 						continue;
 					
 					if (isExtraCredit)

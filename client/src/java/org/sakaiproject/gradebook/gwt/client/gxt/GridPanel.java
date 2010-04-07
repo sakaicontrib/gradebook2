@@ -436,7 +436,7 @@ public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 		
 		if (config != null) {
 			String entityName = new StringBuilder().append(config.getHeader())
-				.append(" : ").append((String)model.get(LearnerKey.DISPLAY_NAME.name())).toString();
+				.append(" : ").append((String)model.get(LearnerKey.S_DSPLY_NM.name())).toString();
 			action.setEntityName(entityName);
 		}
 		

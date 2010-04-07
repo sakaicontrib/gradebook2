@@ -4,21 +4,27 @@
 package org.sakaiproject.gradebook.gwt.client.model.key;
 
 public enum FixedColumnKey {
-	ID("id"), NAME("name"), ASSIGNMENT_ID("itemId"), CATEGORY_ID("categoryId"), 
-	CATEGORY_NAME("categoryName"), WIDTH("width"), POINTS("points"), 
-	UNWEIGHTED("unweighted"),
-	HIDDEN("hidden"), EDITABLE("editable"), 
-	STUDENT_MODEL_KEY("studentModelKey"), EXTRA_CREDIT("extraCredit"), 
-	IS_CHECKED("isChecked");
+	S_ID("id"), 
+	S_NAME("name"), 
+	L_ITEM_ID("itemId"), 
+	L_CTGRY_ID("categoryId"), 
+	S_CTGRY_NM("categoryName"), 
+	I_WIDTH("width"), 
+	D_PNTS("points"), 
+	B_UNWGHTD("isUnweighted"),
+	B_HDN("isHidden"), 
+	B_EDIT("isEditable"), 
+	O_LRNR_KEY("learnerKey"), 
+	B_X_CRDT("isExtraCredit"), 
+	B_CHCKD("isChecked");
 	
 	private String property;
-	
+
 	private FixedColumnKey(String property) {
 		this.property = property;
 	}
-
-	public String toString() {
+	
+	public String getProperty() {
 		return property;
 	}
-	
 }

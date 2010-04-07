@@ -42,6 +42,7 @@ import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.data.BaseTreeLoader;
+import com.extjs.gxt.ui.client.data.DataReader;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.ModelKeyProvider;
 import com.extjs.gxt.ui.client.data.TreeLoader;
@@ -71,25 +72,14 @@ public class TreeView extends View {
 		
 		
 		if (treeLoader == null) {
-			treeLoader = new BaseTreeLoader<ItemModel>(new TreeModelReader()/* {
-
-				@Override
-				protected List<? extends ModelData> getChildren(ModelData parent) {
-					List visibleChildren = new ArrayList();
-					List<? extends ModelData> children = super.getChildren(parent);
-
-					for (ModelData model : children) {
-						visibleChildren.add(model);
-					}
-
-					return visibleChildren;
-				}
-			}*/) {
+			DataReader<List<ItemModel>> reader = new TreeModelReader<List<ItemModel>>();
+			
+			treeLoader = new BaseTreeLoader<ItemModel>(reader) {
 
 				@Override
 				public boolean hasChildren(ItemModel parent) {
 					
-					if (parent.getItemType() == ItemType.CATEGORY)
+					if (parent.getItemType() != ItemType.ITEM)
 						return true;
 					
 					if (parent instanceof TreeModel) {
@@ -283,7 +273,7 @@ public class TreeView extends View {
 			if (m != null) {
 				onEditItem(m);
 			} else {
-				List<ItemModel> itemModels = treeStore.findModels(ItemKey.ID.name(), itemModelId);
+				List<ItemModel> itemModels = treeStore.findModels(ItemKey.S_ID.name(), itemModelId);
 				if (itemModels != null) {
 					for (ItemModel itemModel : itemModels) {
 						ItemType itemType = itemModel.getItemType();
@@ -373,7 +363,7 @@ public class TreeView extends View {
 	private ItemModel findItemByColumnId(String itemModelId) {
 		ItemModel itemModel = null;
 
-		List<ItemModel> itemModels = treeStore.findModels(ItemKey.ID.name(), itemModelId);
+		List<ItemModel> itemModels = treeStore.findModels(ItemKey.S_ID.name(), itemModelId);
 		if (itemModels != null) {
 			for (ItemModel current : itemModels) {
 				ItemType itemType = current.getItemType();

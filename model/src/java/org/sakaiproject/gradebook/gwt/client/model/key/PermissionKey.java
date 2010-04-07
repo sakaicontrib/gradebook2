@@ -4,22 +4,24 @@
 package org.sakaiproject.gradebook.gwt.client.model.key;
 
 public enum PermissionKey {
-	ID(Long.class), USER_ID, USER_DISPLAY_NAME, PERMISSION_ID(Long.class), 
-	GRADEBOOK_ID(Long.class), CATEGORY_ID(Long.class), CATEGORY_DISPLAY_NAME, 
-	SECTION_ID, SECTION_DISPLAY_NAME, DELETE_ACTION; 
+	L_ID("id"), 
+	S_USR_ID("userId"), 
+	S_DSPLY_NM("displayName"), 
+	S_PERM_ID("permissionId"), 
+	L_GB_ID("gradebookId"), 
+	L_CTGRY_ID("categoryId"), 
+	S_CTGRY_NAME("categoryName"), 
+	S_SECT_ID("sectionId"), 
+	S_SECT_NM("sectionName"), 
+	S_DEL_ACT("deleteAction");
 	
-	private Class<?> type;
-	
-	private PermissionKey() {
-		
+	private String property;
+
+	private PermissionKey(String property) {
+		this.property = property;
 	}
 	
-	private PermissionKey(Class<?> type) {
-		this.type = type;
+	public String getProperty() {
+		return property;
 	}
-	
-	public Class<?> getType() {
-		return type;
-	}
-	
 }

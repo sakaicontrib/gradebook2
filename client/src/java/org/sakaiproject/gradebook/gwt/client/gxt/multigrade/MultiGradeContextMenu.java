@@ -27,17 +27,16 @@ import java.util.EnumSet;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.GradeEventModel;
-import org.sakaiproject.gradebook.gwt.client.gxt.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.model.key.GradeEventKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 
-import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.data.BaseListLoader;
@@ -171,7 +170,7 @@ public class MultiGradeContextMenu extends Menu {
 			public void load(final DataReader<String> reader, final Object loadConfig, final AsyncCallback<String> callback) {
 				initUrl = RestBuilder.buildInitUrl(GWT.getModuleBaseURL(),
 						AppConstants.REST_FRAGMENT, AppConstants.GRADE_EVENT_FRAGMENT,
-						(String)owner.getSelectedModel().get(LearnerKey.UID.name()), String.valueOf(owner.getSelectedAssignment()));
+						(String)owner.getSelectedModel().get(LearnerKey.S_UID.name()), String.valueOf(owner.getSelectedAssignment()));
 				super.load(reader, loadConfig, callback);
 			}
 			
@@ -194,7 +193,7 @@ public class MultiGradeContextMenu extends Menu {
 		
 		
 		ColumnConfig column = new ColumnConfig();  
-		column.setId(GradeEventKey.DATE_GRADED.name());  
+		column.setId(GradeEventKey.T_GRADED.name());  
 		column.setHeader("Date");
 		column.setAlignment(HorizontalAlignment.CENTER);
 		column.setWidth(120);
@@ -204,7 +203,7 @@ public class MultiGradeContextMenu extends Menu {
 		configs.add(column); 
 		
 		column = new ColumnConfig();  
-		column.setId(GradeEventKey.GRADE.name());  
+		column.setId(GradeEventKey.S_GRD.name());  
 		column.setHeader("Grade");
 		column.setAlignment(HorizontalAlignment.CENTER);
 		column.setWidth(70);
@@ -214,7 +213,7 @@ public class MultiGradeContextMenu extends Menu {
 		configs.add(column);
 		
 		column = new ColumnConfig();  
-		column.setId(GradeEventKey.GRADER_NAME.name());
+		column.setId(GradeEventKey.S_GRDR_NM.name());
 		column.setHeader("Grader");
 		column.setAlignment(HorizontalAlignment.CENTER);
 		column.setWidth(120);
@@ -227,7 +226,7 @@ public class MultiGradeContextMenu extends Menu {
 		
 		
 		ListStore<GradeEventModel> store = new ListStore<GradeEventModel>(loader);
-		store.setModelComparer(new EntityModelComparer<GradeEventModel>(GradeEventKey.ID.name()));
+		store.setModelComparer(new EntityModelComparer<GradeEventModel>(GradeEventKey.S_ID.name()));
 		viewGradeHistoryGrid = new Grid<GradeEventModel>(store, cm);
 		viewGradeHistoryGrid.setBorders(true);
 		
@@ -259,7 +258,7 @@ public class MultiGradeContextMenu extends Menu {
 					Long itemId = owner.getSelectedAssignment();
 					
 					if (learner != null && itemId != null) {
-						String property = new StringBuilder().append(String.valueOf(itemId)).append(AppConstants.COMMENT_TEXT_FLAG).toString();
+						String property = DataTypeConversionUtil.buildCommentTextKey(String.valueOf(itemId)); //new StringBuilder().append(String.valueOf(itemId)).append(AppConstants.COMMENT_TEXT_FLAG).toString();
 						
 						String commentText = learner.get(property);
 						editCommentTextArea.setValue(commentText);
@@ -293,7 +292,7 @@ public class MultiGradeContextMenu extends Menu {
 		ModelData learner = owner.getSelectedModel();
     	Long itemId = owner.getSelectedAssignment();
     	
-    	String property = new StringBuilder().append(String.valueOf(itemId)).append(AppConstants.COMMENT_TEXT_FLAG).toString();
+    	String property = DataTypeConversionUtil.buildCommentTextKey(String.valueOf(itemId)); //new StringBuilder().append(String.valueOf(itemId)).append(AppConstants.COMMENT_TEXT_FLAG).toString();
     	
     	String newCommentText = value;
     	String oldCommentText = learner.get(property);
@@ -306,7 +305,7 @@ public class MultiGradeContextMenu extends Menu {
 		ModelData learner = owner.getSelectedModel();
     	Long itemId = owner.getSelectedAssignment();
     	
-    	String property = new StringBuilder().append(String.valueOf(itemId)).append(AppConstants.COMMENT_TEXT_FLAG).toString();
+    	String property = DataTypeConversionUtil.buildCommentTextKey(String.valueOf(itemId)); //new StringBuilder().append(String.valueOf(itemId)).append(AppConstants.COMMENT_TEXT_FLAG).toString();
     	
     	String newCommentText = value;
     	String oldCommentText = learner.get(property);

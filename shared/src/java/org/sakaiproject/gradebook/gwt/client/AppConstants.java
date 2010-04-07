@@ -25,6 +25,20 @@ package org.sakaiproject.gradebook.gwt.client;
 
 public interface AppConstants {
 
+	public static final char BOOLEAN_PREFIX			= 'B';
+	public static final char STRING_PREFIX 			= 'S';
+	public static final char DOUBLE_PREFIX 			= 'D';
+	public static final char INTEGER_PREFIX 		= 'I';
+	public static final char DATE_PREFIX 			= 'T';
+	public static final char ODD_DATE_PREFIX 		= 'W';
+	public static final char LONG_PREFIX 			= 'L';
+	public static final char M_ARRAY_PREFIX			= 'A';
+	public static final char O_ARRAY_PREFIX			= 'V';
+	public static final char OBJECT_PREFIX			= 'O';
+	public static final char MODEL_PREFIX			= 'M';
+	public static final char GRADETYPE_PREFIX		= 'G';
+	public static final char CATEGORYTYPE_PREFIX	= 'C';
+	
 	// Registry constants
 	public static final String CURRENT 			= "current";
 	public static final String ENABLE_POPUPS 	= "enableNotifications";
@@ -175,13 +189,12 @@ public interface AppConstants {
 	public static final String BOOL_VALUE_CONSTANT			= "booleanValue";
 	public static final String BOOL_START_VALUE_CONSTANT	= "previousBooleanValue";
 	
-	public static final String COMMENTED_FLAG = ":C";
-	public static final String COMMENT_TEXT_FLAG = ":T";
-	public static final String DROP_FLAG = ":D";
-	public static final String EXCUSE_FLAG = ":E";
-	public static final String FAILED_FLAG = ":F";
-	public static final String GRADED_FLAG = ":G";
-	public static final String SUCCESS_FLAG = ":S";
+	public static final String COMMENTED_FLAG = "B_C:";
+	public static final String COMMENT_TEXT_FLAG = "S_T:";
+	public static final String DROP_FLAG = "B_D:";
+	public static final String EXCUSE_FLAG = "B_E:";
+	public static final String FAILED_FLAG = "S_F:";
+	public static final String SUCCESS_FLAG = "S_S:";
 	
 	public static final String APP_COOKIE_NAME = "gb2application";
 	public static final String AUTH_COOKIE_NAME = "gb2placement";
