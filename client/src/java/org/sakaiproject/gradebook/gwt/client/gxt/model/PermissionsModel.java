@@ -75,7 +75,6 @@ public class PermissionsModel extends EntityModel implements Permission {
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Permission#getIdentifier()
 	 */
-	@Override
 	public String getIdentifier() {
 		Long id = getId();
 		return (null == id) ? null : getId().toString();

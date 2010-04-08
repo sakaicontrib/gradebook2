@@ -140,7 +140,6 @@ public class GradebookModel extends EntityModel implements IsSerializable, Grade
 		return getName();
 	}*/
 
-	@Override
 	public String getIdentifier() {
 		return getGradebookUid();
 	}
