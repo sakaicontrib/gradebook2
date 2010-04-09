@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -69,8 +71,11 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 			log.error("ERROR : Group is null");
 			return null;
 		}
-
-		return null;
+		if(null == group.getProviderGroupId()) {
+			log.warn("Group Provider Id is null");
+			return null;
+		}
+		return Arrays.asList(group.getProviderGroupId().split("\\+"));
 	}
 
 	public String getExportCourseManagementId(String userEid, Group group, List<String> enrollmentSetEids) {
@@ -279,6 +284,14 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 
 	public void setToolManager(ToolManager toolManager) {
 		this.toolManager = toolManager;
+	}
+
+	public String getDisplaySectionId(String enrollmentSetEid) {
+		return "DisplayId for eid: " + enrollmentSetEid;
+	}
+
+	public String getPrimarySectionEid(List<String> eids) {
+		return eids.get(0);
 	}
 
 }

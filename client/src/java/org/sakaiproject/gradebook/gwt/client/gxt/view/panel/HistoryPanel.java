@@ -32,6 +32,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.key.ActionKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.EntityType;
 
 import com.extjs.gxt.ui.client.Style.SelectionMode;
@@ -76,10 +77,13 @@ public class HistoryPanel extends EntityPanel {
 	private ListStore<ModelData> store;
 	private SelectionChangedListener<ModelData> selectionListener;
 	
-	private LabelField studentNameField;
+	
+	
+	
 	
 	private FieldSet fieldSet;
 	private Converter converter;
+	
 	
 	public HistoryPanel(I18nConstants i18n) {
 		super(i18n, true);
@@ -139,12 +143,6 @@ public class HistoryPanel extends EntityPanel {
 		entityField.setStyleAttribute("font-size", "12pt");
 		formPanel.add(entityField);
 		
-		studentNameField = new LabelField();
-		studentNameField.setName(ActionKey.S_LRNR_NM.name());
-		studentNameField.setFieldLabel(i18n.actionStudentNameFieldLabel());
-		studentNameField.setStyleAttribute("font-size", "12pt");
-		formPanel.add(studentNameField);
-		
 		LabelField actorNameField = new LabelField();
 		actorNameField.setName(ActionKey.S_GRDR_NM.name());
 		actorNameField.setFieldLabel(i18n.actionActor());
@@ -159,7 +157,7 @@ public class HistoryPanel extends EntityPanel {
 		fieldSet.setHeading(i18n.actionDetails());
 		fieldSet.setCheckboxToggle(false);
 		fieldSet.setLayout(formLayout);
-		
+				
 		formPanel.add(fieldSet);
 
 		loader = RestBuilder.getPagingDelayLoader(
@@ -280,7 +278,7 @@ public class HistoryPanel extends EntityPanel {
 				entityType != null && entityType == EntityType.COURSE_GRADE_RECORD);
 		
 		studentNameField.setVisible(isGradeOrCourseGrade);
-		fieldSet.setVisible(!isGradeOrCourseGrade);
+		fieldSet.setVisible(isItem || isGradeOrCourseGrade);
 		
 		directionsField.setVisible(false);
 		nameField.setVisible(isGradebook || isCategory || isItem);

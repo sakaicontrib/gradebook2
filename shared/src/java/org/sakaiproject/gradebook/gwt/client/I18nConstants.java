@@ -247,6 +247,7 @@ public interface I18nConstants extends Constants {
 	String searchLearnerEmptyText();
 	String sectionEmptyText();
 	String sectionHeader();
+	String studentSectionDisplayIdFieldLabel();
 	String sectionsEmptyText();
 	String serviceException();
 	String showItemStatsFieldLabel();	

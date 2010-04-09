@@ -32,10 +32,16 @@ public class CourseSectionMock implements CourseSection {
 
 	private String uuid;
 	private String title;
+	private String eid =  null;
 	
 	public CourseSectionMock(String uuid, String title) {
+		this(uuid, title, null);
+	}
+	
+	public CourseSectionMock(String uuid, String title, String eid) {
 		this.uuid = uuid;
 		this.title = title;
+		this.eid = eid;
 	}
 	
 	public String getCategory() {
@@ -49,8 +55,7 @@ public class CourseSectionMock implements CourseSection {
 	}
 
 	public String getEid() {
-		// TODO Auto-generated method stub
-		return null;
+		return eid;
 	}
 
 	public Integer getMaxEnrollments() {

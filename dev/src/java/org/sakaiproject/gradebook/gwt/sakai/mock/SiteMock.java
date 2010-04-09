@@ -23,6 +23,7 @@
 
 package org.sakaiproject.gradebook.gwt.sakai.mock;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -86,13 +87,18 @@ public class SiteMock implements Site {
 	}
 
 	public Collection getGroups() {
-		// TODO Auto-generated method stub
-		return null;
+		
+		List<Object> rv = new ArrayList<Object>();
+		rv.add(new BaseGroupMock());
+		
+		return rv;
 	}
 
 	public Collection getGroupsWithMember(String arg0) {
-		// TODO Auto-generated method stub
-		return null;
+		List<Object> rv = new ArrayList<Object>();
+		rv.add(new BaseGroupMock());
+		
+		return rv;
 	}
 
 	public Collection getGroupsWithMemberHasRole(String arg0, String arg1) {

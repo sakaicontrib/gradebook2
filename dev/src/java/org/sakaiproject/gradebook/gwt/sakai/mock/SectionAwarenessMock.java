@@ -46,6 +46,7 @@ public class SectionAwarenessMock implements SectionAwareness {
 	List<CourseSection> sections;
 	private final static int NUMBER_OF_TAS = 5;
 	private static final String[] SECTIONS = { "001", "002", "003", "004" };
+	private static final String[] SECTION_EIDs = { "/section/018u012", null, "/section/sd32122", null };
 
 	public SectionAwarenessMock() {
 
@@ -61,14 +62,14 @@ public class SectionAwarenessMock implements SectionAwareness {
 		for(int i = 0; i < numberOfUsers; i++) {
 			User user = users.get(i);
 			org.sakaiproject.section.api.coursemanagement.User userSectionMock =  new UserSectionMock(user.getId(), user.getDisplayId(), user.getDisplayName(), user.getSortName());
-			String section = getRandomSection();
-			LearningContext learningContext = new LearningContextMock(section, "Section " + section);
+			CourseSection courseSection = getRandomSection();
+			//LearningContext learningContext = new LearningContextMock(section, "Section " + section);
 
 			if(i < (numberOfUsers - NUMBER_OF_TAS)) {
-				allRecords.add(new EnrollmentRecordMock(learningContext, Role.STUDENT, userSectionMock));
+				allRecords.add(new EnrollmentRecordMock((LearningContext)courseSection, Role.STUDENT, userSectionMock));
 			}
 			else {
-				allRecords.add(new EnrollmentRecordMock(learningContext, Role.TA, userSectionMock));
+				allRecords.add(new EnrollmentRecordMock((LearningContext)courseSection, Role.TA, userSectionMock));
 			}
 		}
 	}
@@ -196,8 +197,11 @@ public class SectionAwarenessMock implements SectionAwareness {
 		return new ArrayList<String>(Arrays.asList(SECTIONS));
 	}
 
-	private String getRandomSection() {
-		return SECTIONS[getRandomInt(SECTIONS.length)];
+	private CourseSection getRandomSection() {
+		String sectionUid = SECTIONS[getRandomInt(SECTIONS.length)];
+		String eid = SECTION_EIDs[getRandomInt(SECTION_EIDs.length)];
+		CourseSection cs = new CourseSectionMock(sectionUid, "Section " + eid, eid);
+		return cs;
 	}
 
 	private Random random = new Random();

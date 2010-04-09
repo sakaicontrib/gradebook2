@@ -24,7 +24,7 @@
 	
 	<!-- Performance Target -->
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService" 
-		class="org.sakaiproject.gradebook.gwt.sakai.hibernate.GradebookToolServiceImpl">
+		class="org.sakaiproject.gradebook.gwt.sakai.hibernate.GradebookToolServiceMock">
 				<property name="sessionFactory"><ref bean="alt.gradebookSessionFactory"/></property>
 				<property name="sectionAwareness">
 					<ref bean="org.sakaiproject.section.api.SectionAwareness" />

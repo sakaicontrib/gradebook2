@@ -47,7 +47,9 @@ public class UserRecord {
 	private Map<Long, Comment> commentMap;
 	private DisplayGrade displayGrade;
 	private BigDecimal calculatedGrade;
-	private String exportCourseManagemntId;
+	private String exportCourseManagementId;
+	private String displayCourseManagementId = null;
+	
 	private String exportUserId;
 	private String finalGradeUserId;
 
@@ -191,12 +193,12 @@ public class UserRecord {
 		this.userEid = userEid;
 	}
 
-	public String getExportCourseManagemntId() {
-		return exportCourseManagemntId;
+	public String getExportCourseManagementId() {
+		return exportCourseManagementId;
 	}
 
-	public void setExportCourseManagemntId(String exportCourseManagemntId) {
-		this.exportCourseManagemntId = exportCourseManagemntId;
+	public void setExportCourseManagementId(String exportCourseManagementId) {
+		this.exportCourseManagementId = exportCourseManagementId;
 	}
 
 	public String getExportUserId() {
@@ -230,4 +232,14 @@ public class UserRecord {
 	public void setCalculatedGrade(BigDecimal calculatedGrade) {
 		this.calculatedGrade = calculatedGrade;
 	}
+	
+	public String getDisplayCourseManagementId() {
+		return displayCourseManagementId;
+	}
+
+	public void setDisplayCourseManagementId(String displayCourseManagementId) {
+		this.displayCourseManagementId = displayCourseManagementId;
+	}
+
+	
 }

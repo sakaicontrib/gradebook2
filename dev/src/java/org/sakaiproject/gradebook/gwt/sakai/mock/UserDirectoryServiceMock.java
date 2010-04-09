@@ -50,7 +50,7 @@ import org.w3c.dom.Element;
 public class UserDirectoryServiceMock implements UserDirectoryService {
 
 	private List<User> users;
-	private static int DEFAULT_NUMBER_TEST_LEARNERS = 200;
+	public static int DEFAULT_NUMBER_TEST_LEARNERS = 200;
 	
 	public void init() {
 		

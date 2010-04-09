@@ -360,13 +360,6 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			throw new InvalidInputException("You are not authorized to grade this student for this item.");
 		
 		
-		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.GRADE_RECORD.name(), ActionType.GRADED.name());
-		actionRecord.setEntityId(String.valueOf(assignment.getId()));
-		actionRecord.setStudentUid(studentUid);
-		Map<String, String> propertyMap = actionRecord.getPropertyMap();
-
-		propertyMap.put("score", "Excused");
-		
 		List<AssignmentGradeRecord> gradeRecords = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), studentUid);
 
 		AssignmentGradeRecord assignmentGradeRecord = null;
@@ -401,6 +394,15 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			log.warn("User not defined: " + studentUid);
 		}
 		Learner student = getStudent(gradebook, site, user);
+
+		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.GRADE_RECORD.name(), ActionType.GRADED.name());
+		actionRecord.setEntityId(String.valueOf(assignment.getId()));
+		actionRecord.setStudentUid(studentUid);
+		Map<String, String> propertyMap = actionRecord.getPropertyMap();
+
+		propertyMap.put("score", "Excused");
+		
+		populatePropertiesFromLearner(propertyMap, student);
 		
 		actionRecord.setEntityName(new StringBuilder().append((String)student.get(LearnerKey.S_DSPLY_NM.name())).append(" : ").append(assignment.getName()).toString());
 		gbService.storeActionRecord(actionRecord);
@@ -408,16 +410,27 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return student;
 	}
 	
+	private void populatePropertiesFromLearner(Map<String, String> propertyMap,
+			Learner student) {
+		
+		for (String propertyName : student.getProperties().keySet()) { 
+			Object value = student.get(propertyName);
+			if (value != null) {
+				String stringValue = String.valueOf(value);
+				
+				if (stringValue.length() >= 756) {
+					log.warn("Trying to store a property with a value that's too long for the field, truncating the property " + propertyName + " : " + stringValue);
+					stringValue = stringValue.substring(0, 755);
+				}
+				propertyMap.put(propertyName, stringValue);
+			}
+		}
+		
+	}
+
 	public Learner assignScore(String gradebookUid, String studentUid, String assignmentId, Double value, Double previousValue) throws InvalidInputException {
 		Assignment assignment = gbService.getAssignment(Long.valueOf(assignmentId));
 		Gradebook gradebook = assignment.getGradebook();
-
-		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.GRADE_RECORD.name(), ActionType.GRADED.name());
-		actionRecord.setEntityId(String.valueOf(assignment.getId()));
-		actionRecord.setStudentUid(studentUid);
-		Map<String, String> propertyMap = actionRecord.getPropertyMap();
-
-		propertyMap.put("score", String.valueOf(value));
 
 		List<AssignmentGradeRecord> gradeRecords = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), studentUid);
 
@@ -445,6 +458,15 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			log.warn("User not defined: " + studentUid);
 		}
 		Learner student = getStudent(gradebook, site, user);
+		
+		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.GRADE_RECORD.name(), ActionType.GRADED.name());
+		actionRecord.setEntityId(String.valueOf(assignment.getId()));
+		actionRecord.setStudentUid(studentUid);
+		Map<String, String> propertyMap = actionRecord.getPropertyMap();
+
+		propertyMap.put("score", String.valueOf(value));
+		
+		populatePropertiesFromLearner(propertyMap, student);
 		
 		actionRecord.setEntityName(new StringBuilder().append((String)student.get(LearnerKey.S_DSPLY_NM.name())).append(" : ").append(assignment.getName()).toString());
 		gbService.storeActionRecord(actionRecord);
@@ -496,6 +518,11 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 	
 			gbService.updateCourseGradeRecords(courseGrade, gradeRecords);
 	
+			
+			Site site = getSite();
+
+			student = getStudent(gradebook, site, user);
+			
 			ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.COURSE_GRADE_RECORD.name(), ActionType.GRADED.name());
 			actionRecord.setEntityId(String.valueOf(gradebook.getId()));
 			actionRecord.setStudentUid(studentUid);
@@ -503,9 +530,8 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 			propertyMap.put("score", value);
 			
-			Site site = getSite();
-
-			student = getStudent(gradebook, site, user);
+			populatePropertiesFromLearner(propertyMap, student);
+			
 			actionRecord.setEntityName(new StringBuilder().append((String)student.get(LearnerKey.S_DSPLY_NM.name())).append(" : ").append(gradebook.getName()).toString());
 			gbService.storeActionRecord(actionRecord);
 
@@ -1099,7 +1125,6 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				}
 
 				actionModel.set(ActionKey.S_GRDR_NM.name(), actionRecord.getGraderId());
-
 				if (userService != null && actionRecord.getGraderId() != null) {
 
 					try {
@@ -2782,7 +2807,8 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		// This is how we track which column is which - by the user's uid
 		cellMap.put(LearnerKey.S_UID.name(), userRecord.getUserUid());
 		cellMap.put(LearnerKey.S_EID.name(), userRecord.getUserEid());
-		cellMap.put(LearnerKey.S_EXPRT_CM_ID.name(), userRecord.getExportCourseManagemntId());
+		cellMap.put(LearnerKey.S_EXPRT_CM_ID.name(), userRecord.getExportCourseManagementId());
+		cellMap.put(LearnerKey.S_DSPLY_CM_ID.name(), userRecord.getDisplayCourseManagementId());
 		cellMap.put(LearnerKey.S_EXPRT_USR_ID.name(), userRecord.getExportUserId());
 		cellMap.put(LearnerKey.S_FNL_GRD_ID.name(), userRecord.getFinalGradeUserId());
 		
@@ -2875,7 +2901,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 	private Learner buildStudentRow(Gradebook gradebook, UserRecord userRecord, List<FixedColumn> columns, List<Assignment> assignments, List<Category> categories) {
 		return buildLearnerGradeRecord(gradebook, userRecord, columns, assignments, categories);
 	}
-
+	
 	private UserRecord buildUserRecord(Site site, User user, Gradebook gradebook) {
 		UserRecord userRecord = new UserRecord(user);
 		if (site != null) {
@@ -2921,6 +2947,72 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		
 		return userRecord;
 	}
+	
+	
+	private UserRecord buildUserRecordWithSectionInfo(Site site, User user, Gradebook gradebook) {
+	
+		UserRecord userRecord = buildUserRecord(site, user, gradebook);
+		
+		Site s = null;
+		try {
+			s = siteService.getSite(toolManager.getCurrentPlacement().getContext());
+		} catch (IdUnusedException e) {
+			log.error("current site not found trying store '" + ActionType.GRADED.name() + "' actionrecord");
+			
+		}
+		Collection<Group> groups = ( null==s ? new ArrayList<Group>() : s.getGroups() );
+		List<String> groupReferences = new ArrayList<String>();
+		Map<String, Group> groupReferenceMap = new HashMap<String, Group>();
+		
+		for (Iterator<Group> i = groups.iterator();i.hasNext();) {
+			Group g = i.next();
+			if ( g != null ) {
+				groupReferences.add(g.getReference());
+				groupReferenceMap.put(g.getReference(), g);
+			}
+		}
+		
+		String[] learnerRoleNames = getLearnerRoleNames();
+		List<Object[]> tuples = gbService.getUserGroupReferences(groupReferences, learnerRoleNames);
+		List<Group> userGroups = new ArrayList<Group>();
+		List<String> eids = new ArrayList<String>();
+		
+		if (tuples != null) {
+			for (Object[] tuple : tuples) {
+				String userUid = (String) tuple[0];
+				String realmId = (String) tuple[1];
+				
+				if ( userRecord.getUserUid().equalsIgnoreCase(userUid) ) {
+					userGroups.add(groupReferenceMap.get(realmId));
+				}
+			}
+		}
+		if(log.isDebugEnabled()) {
+			log.debug("[" + userGroups.size() + "] groups found for student");
+		}
+		
+		for (Group g : userGroups) {
+			eids.addAll(advisor.getExportCourseManagementSetEids(g));
+		}
+		 
+		String primaryEid = advisor.getPrimarySectionEid(eids);
+		
+		String old = userRecord.getExportCourseManagementId();
+	
+		
+		if (old != null && !old.equals(primaryEid)) {
+			log.info("(Graded) ActionRecord change of primary eid for user: " + userRecord.getUserUid());
+		}
+		
+		userRecord.setExportCourseManagementId(primaryEid);
+		userRecord.setDisplayCourseManagementId(advisor.getDisplaySectionId(primaryEid));
+	
+	
+		
+		return userRecord;
+		
+	}
+
 
 	private void calculateItemCategoryPercent(Gradebook gradebook, Category category, GradeItem gradebookGradeItem, GradeItem categoryGradeItem, List<Assignment> assignments, Long assignmentId) {
 
@@ -4002,7 +4094,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 					userRecord.setSectionTitle(groupTitles.toString());
 
 					if (includeCMId)
-						userRecord.setExportCourseManagemntId(courseManagementIds.toString());
+						userRecord.setExportCourseManagementId(courseManagementIds.toString());
 				}
 				if (includeCMId) {
 					userRecord.setExportUserId(advisor.getExportUserId(dereference));
@@ -4658,7 +4750,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 	private Learner getStudent(Gradebook gradebook, Site site, User user) {
 		List<FixedColumn> columns = getColumns(true);
-		UserRecord userRecord = buildUserRecord(site, user, gradebook);
+		UserRecord userRecord = buildUserRecordWithSectionInfo(site, user, gradebook);
 		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
 		List<Category> categories = null;
 		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
@@ -4784,7 +4876,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 	private String lookupDefaultGradebookUid() {
 
 		if (toolManager == null)
-			return "TESTGRADEBOOK";
+			return "TESTSITECONTEXT";
 
 		Placement placement = toolManager.getCurrentPlacement();
 		if (placement == null) {
@@ -5244,4 +5336,9 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			gbService.syncUserDereferenceBySite(siteId, null, findAllMembers(site, learnerRoleKeys), diff, learnerRoleKeys);
 		}
 	}
+	
+
+	
+	
+	
 }

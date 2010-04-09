@@ -97,6 +97,26 @@ public interface InstitutionalAdvisor {
 	 * @param response : the current HttpServletResponse
 	 */
 	public void submitFinalGrade(List<Map<Column,String>> studentDataList, String gradebookUid, HttpServletRequest request, HttpServletResponse response);
+	
+		
+	/*
+	 * given a section eid as a string, return a unique human readable form of the section id. 
+	 * Depending on the CMS implementation, this could be the same as the eid,
+	 * the section title, or something other locally identifiable id number or code for a section. 
+	 * 
+	 * @param sectionEid : a CMS section eid
+	 */
+	public String getDisplaySectionId(String sectionEid);
+	
+	
+	/*
+	 * given a list of section eids, return one that should be used to identify a students primary enrollment in a site
+	 *  - since GB[2] cannot differentiate among the different sections it is an institutional obligation to determine 
+	 *  the chosen section (for grading etc)
+	 * 
+	 * @param eids : a list of eids to sort out
+	 */
+	public String getPrimarySectionEid(List<String> eids);
 
 	
 }

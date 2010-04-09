@@ -25,14 +25,41 @@ http://dl.google.com/eclipse/plugin/3.4
 Eclipse 3.3 (Europa)
 http://dl.google.com/eclipse/plugin/3.3
 
+To create a run configuration, right-click on the gradebook2 eclipse prject, select 'Run As...' -> 'Run Configurations...'. 
+	That should create a new Web Application run configuration. If not, double click on 'Web Application'
+
+To select a 32 bit JVM use the JRE tab.
+
 
 You will also need to include the following VM args in the Run Configuration:
 
 -Xmx1028m -XX:PermSize=256m -XX:MaxPermSize=400m -Dgb2.security=false -Dgb2.mode=hosted -Dgb2.role=admin -Dgb2.config.gb2.enable.scaled.extra.credit=admin -Dgb2.config.gb2.limit.scaled.extra.credit=categories -Dgb2.config.gb2.gradable.role.names=Student,access -Dgb2.config.enabled.grade.types=POINT,PERCENT,LETTER
 
+(if you are building with a version other than trunkm you'll need a property for the point release: add -Dsakai2.6 or -Dsakai2.5, for example.)
+
+Select the '(x)= Arguments' tab and in the 'VM' field, paste the above as one long line of text.
+
 
 Finally, you will need to configure your browser to support GWT development mode. In Firefox, simply install the GWT Developer Plugin for Firefox:
 https://dl-ssl.google.com/gwt/plugins/firefox/gwt-dev-plugin.xpi
+
+
+------------
+-----------
+
+FAQ
+-----------
+
+1. I am getting 'java.lang.NoClassDefFoundError: javax/activation/DataSource' in eclipse
+  mvn eclipse:eclipse doesn't pic pu the need for activation.jar for some reason (add instuctions for downloading adding to classpath)
+
+
+
+2. I am getting 'Illegal constant pool index' errors in the construction of the web applciation class
+
+  see http://code.google.com/p/google-web-toolkit/issues/detail?id=4254
+
+
 
 
 

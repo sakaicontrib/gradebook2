@@ -8,7 +8,9 @@ import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.NullSensitiveCheckBox;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
+import org.sakaiproject.gradebook.gwt.client.model.key.ActionKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 
 import com.extjs.gxt.ui.client.data.ModelData;
@@ -54,6 +56,8 @@ public abstract class EntityPanel extends ContentPanel {
 	protected Field dropLowestField;
 	protected Field dueDateField;
 	protected Field sourceField;
+	protected Field studentSectionDisplayIdField;
+	protected Field studentNameField;
 	
 	private FieldSet displayToStudentFieldSet;
 	
@@ -61,6 +65,7 @@ public abstract class EntityPanel extends ContentPanel {
 	private final boolean isReadOnly;
 	
 	protected Gradebook selectedGradebook;
+	
 	
 	public EntityPanel(I18nConstants i18n, boolean isReadOnly) {
 		this.i18n = i18n;
@@ -128,6 +133,8 @@ public abstract class EntityPanel extends ContentPanel {
 			formPanel.add(displayToStudentFieldSet);
 		}
 		
+		formPanel.add(studentNameField);
+		formPanel.add(studentSectionDisplayIdField);
 		formPanel.add(percentCourseGradeField);
 		formPanel.add(percentCategoryField);
 		formPanel.add(pointsField);
@@ -243,6 +250,7 @@ public abstract class EntityPanel extends ContentPanel {
 		percentCourseGradeField.setToolTip(newToolTipConfig(i18n.percentCourseGradeToolTip()));
 		this.percentCourseGradeField = percentCourseGradeField;
 		
+		
 		LabelField percentCategoryField = new LabelField();
 		percentCategoryField.setName(ItemKey.D_PCT_CTGRY.name());
 		percentCategoryField.setFieldLabel(i18n.percentCategoryFieldLabel());
@@ -284,6 +292,19 @@ public abstract class EntityPanel extends ContentPanel {
 		sourceField.setStyleAttribute("font-size", "12pt");
 		sourceField.setVisible(false);
 		this.sourceField = sourceField;
+		
+		LabelField studentNameField = new LabelField();
+		studentNameField.setName(ActionKey.S_LRNR_NM.name());
+		studentNameField.setFieldLabel(i18n.actionStudentNameFieldLabel());
+		studentNameField.setStyleAttribute("font-size", "12pt");
+		this.studentNameField = studentNameField;
+		
+		LabelField studentSectionDisplayIdField = new LabelField();
+		studentSectionDisplayIdField.setName(LearnerKey.S_DSPLY_CM_ID.name());
+		studentSectionDisplayIdField.setFieldLabel(i18n.studentSectionDisplayIdFieldLabel());
+		studentSectionDisplayIdField.setStyleAttribute("font-size", "12pt");
+		this.studentSectionDisplayIdField = studentSectionDisplayIdField;
+		
 		
 	}
 	

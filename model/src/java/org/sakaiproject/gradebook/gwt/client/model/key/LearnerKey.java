@@ -21,12 +21,14 @@ public enum LearnerKey {
 	S_EXPRT_CM_ID("exportCMId", GroupType.STUDENT_INFORMATION),
 	S_EXPRT_USR_ID("exportUserId", GroupType.STUDENT_INFORMATION),
 	S_FNL_GRD_ID("finalGradeId", GroupType.STUDENT_INFORMATION),
-	B_GRD_OVRDN("isGradeOverridden", GroupType.GRADES);
+	B_GRD_OVRDN("isGradeOverridden", GroupType.GRADES), 
+	S_DSPLY_CM_ID("displayCMId", GroupType.STUDENT_INFORMATION);
 
 	private String property;
 	private GroupType group;
 
 	private LearnerKey(String property, GroupType group) {
+		this.property = property;
 		this.group = group;
 	}
 
