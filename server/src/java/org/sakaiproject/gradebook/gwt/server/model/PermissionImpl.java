@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.model.Permission;
 import org.sakaiproject.gradebook.gwt.client.model.key.PermissionKey;
-import org.sakaiproject.gradebook.gwt.sakai.Util;
+import org.sakaiproject.gradebook.gwt.server.Util;
 
 public class PermissionImpl extends BaseModel implements Permission {
 

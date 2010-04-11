@@ -10,8 +10,8 @@ import javax.ws.rs.PathParam;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.server.model.UploadImpl;
 
-@Path("oldupload")
-public class Upload extends Resource {
+@Path("upload")
+public class OldUpload extends Resource {
 
 	@PUT @Path("{uid}/{id}")
 	@Consumes({"application/json"})
@@ -20,7 +20,7 @@ public class Upload extends Resource {
 		
 		Map<String,Object> map = fromJson(model, Map.class);
 		org.sakaiproject.gradebook.gwt.client.model.Upload result = 
-			service.oldUpload(gradebookUid, gradebookId, new UploadImpl(map), false);
+			service.upload(gradebookUid, gradebookId, new UploadImpl(map), false);
 		
 		return toJson(result);
 	}

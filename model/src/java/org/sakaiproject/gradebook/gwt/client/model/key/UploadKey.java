@@ -9,9 +9,14 @@ public enum UploadKey {
 	A_HDRS("headers"), 
 	A_ROWS("rows"), 
 	B_PCT("isPercentage"), 
-	A_RSTS("results"), 
+	V_RSTS("results"), 
 	M_GB_ITM("gradebookItem"), 
-	I_NUM_ROWS("numberOfRows");
+	I_NUM_ROWS("numberOfRows"),
+	B_HAS_ERRS("hasErrors"),
+	S_NOTES("notes"),
+	B_NTFY_ITM_NM("isNotifyItemName"),
+	G_GRD_TYPE("gradeType"),
+	C_CTGRY_TYPE("categoryType");
 	
 	private String property;
 

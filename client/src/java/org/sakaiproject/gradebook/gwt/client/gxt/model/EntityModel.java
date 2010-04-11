@@ -34,7 +34,9 @@ import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONValue;
 
 public class EntityModel extends BaseModel implements EntityOverlayOwner {
 
@@ -61,7 +63,21 @@ public class EntityModel extends BaseModel implements EntityOverlayOwner {
 	
 	public String getJSON() {
 		if (overlay != null) {
-			JSONObject jso = new JSONObject(overlay);
+			JSONObject jso = new JSONObject(overlay)  {
+				public JSONValue get(String key) {
+				    if (key == null) {
+				      throw new NullPointerException();
+				    }
+				    
+				    if (key.startsWith("M_")) {
+				    	return new JSONObject(overlay.getEntityOverlay(key));
+				    } else if (key.startsWith("A_")) {
+				    	return new JSONArray(overlay.getArray(key));
+				    }
+				    
+				    return super.get(key);
+				}
+			};
 			return jso.toString();
 		}
 			

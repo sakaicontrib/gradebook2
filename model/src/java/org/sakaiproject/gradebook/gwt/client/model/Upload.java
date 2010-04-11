@@ -2,26 +2,49 @@ package org.sakaiproject.gradebook.gwt.client.model;
 
 import java.util.List;
 
+import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
+
 public interface Upload {
 
-	public abstract List<Item> getHeaders();
+	public List<Item> getHeaders();
 
-	public abstract void setHeaders(List<Item> headers);
+	public void setHeaders(List<Item> headers);
 
-	public abstract List<Learner> getRows();
+	public List<Learner> getRows();
 
-	public abstract void setRows(List<Learner> rows);
+	public void setRows(List<Learner> rows);
 
-	public abstract boolean isPercentage();
+	public boolean isPercentage();
 
-	public abstract void setPercentage(boolean isPercentage);
+	public void setPercentage(boolean isPercentage);
 
-	public abstract List<String> getResults();
+	public List<String> getResults();
 
-	public abstract void setResults(List<String> results);
+	public void setResults(List<String> results);
 
-	public abstract Item getGradebookItemModel();
+	public Item getGradebookItemModel();
 
-	public abstract void setGradebookItemModel(Item gradebookItemModel);
+	public void setGradebookItemModel(Item gradebookItemModel);
 
+	public boolean hasErrors();
+	
+	public void setErrors(boolean hasErrors);
+	
+	public String getNotes();
+	
+	public void setNotes(String notes);
+	
+	public boolean isNotifyAssignmentName();
+	
+	public void setNotifyAssignmentName(boolean doNotify);
+
+	public GradeType getGradeType();
+	
+	public void setGradeType(GradeType gradeType);
+	
+	public CategoryType getCategoryType();
+	
+	public void setCategoryType(CategoryType categoryType);
+	
 }

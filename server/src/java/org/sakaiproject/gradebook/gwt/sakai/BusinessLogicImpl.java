@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
-import org.sakaiproject.gradebook.gwt.server.DataTypeConversionUtil;
+import org.sakaiproject.gradebook.gwt.server.Util;
 import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.Category;
 
@@ -220,7 +220,7 @@ public class BusinessLogicImpl implements BusinessLogic {
 	 * @see org.sakaiproject.gradebook.gwt.sakai.BusinessLogic#checkRecalculateEqualWeightingRule(org.sakaiproject.tool.gradebook.Category, java.lang.Boolean, java.util.List)
 	 */
 	public boolean checkRecalculateEqualWeightingRule(Category category) {
-		boolean hasEqualWeighting = category != null && DataTypeConversionUtil.checkBoolean(category.isEqualWeightAssignments());
+		boolean hasEqualWeighting = category != null && Util.checkBoolean(category.isEqualWeightAssignments());
 		return hasEqualWeighting;
 	}
 
@@ -251,7 +251,7 @@ public class BusinessLogicImpl implements BusinessLogic {
 		if (assignments != null) {
 			for (Assignment assignment : assignments) {
 
-				if (DataTypeConversionUtil.checkBoolean(assignment.isExtraCredit())) {
+				if (Util.checkBoolean(assignment.isExtraCredit())) {
 					assignment.setExtraCredit(Boolean.FALSE);
 					gbService.updateAssignment(assignment);
 				}

@@ -64,4 +64,8 @@ public interface Learner {
 
 	public abstract void setFinalGradeUserId(String finalGradeUserId);
 
+	public abstract Boolean getUserNotFound();
+	
+	public abstract void setUserNotFound(Boolean isNotFound);
+	
 }

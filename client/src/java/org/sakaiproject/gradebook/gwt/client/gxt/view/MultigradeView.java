@@ -116,7 +116,7 @@ public class MultigradeView extends View {
 				onBrowseLearner((BrowseLearner)event.getData());
 				break;
 			case END_ITEM_UPDATES:
-				onEndItemUpdates();
+				onEndItemUpdates((Gradebook)event.getData());
 				break;
 			case LEARNER_GRADE_RECORD_UPDATED:
 				onLearnerGradeRecordUpdated((UserEntityAction<?>)event.getData());
@@ -131,7 +131,7 @@ public class MultigradeView extends View {
 				onItemUpdated((Item)event.getData());
 				break;
 			case REFRESH_COURSE_GRADES:
-				onRefreshCourseGrades();
+				onRefreshCourseGrades((Gradebook)event.getData());
 				break;
 			case REFRESH_GRADEBOOK_ITEMS:
 				onRefreshGradebookItems((Gradebook)event.getData());
@@ -185,8 +185,9 @@ public class MultigradeView extends View {
 		getMultiGradeContentPanel().onBrowseLearner(event);
 	}
 
-	protected void onEndItemUpdates() {
-		getMultiGradeContentPanel().onEndItemUpdates();
+	protected void onEndItemUpdates(Gradebook gradebookModel) {
+		getMultiGradeContentPanel().onEndItemUpdates(gradebookModel.getConfigurationModel(),
+				gradebookModel.getColumns(), (ItemModel)gradebookModel.getGradebookItemModel());
 	}
 
 	protected void onItemCreated(ItemModel itemModel) {
@@ -205,13 +206,14 @@ public class MultigradeView extends View {
 		getMultiGradeContentPanel().onLearnerGradeRecordUpdated(action);
 	}
 
-	protected void onRefreshCourseGrades() {
-		getMultiGradeContentPanel().onRefreshCourseGrades();
+	protected void onRefreshCourseGrades(Gradebook gradebookModel) {
+		getMultiGradeContentPanel().onRefreshCourseGrades(gradebookModel.getConfigurationModel(),
+				gradebookModel.getColumns(), (ItemModel)gradebookModel.getGradebookItemModel());
 	}
 
 	protected void onRefreshGradebookItems(Gradebook gradebookModel) {
 		//buildLoaderAndStore(gradebookModel);
-		getMultiGradeContentPanel().onRefreshGradebookItems(gradebookModel);
+		getMultiGradeContentPanel().onRefreshGradebookItems(gradebookModel, null);
 	}
 
 	protected void onRefreshGradebookSetup(Gradebook gradebookModel) {
@@ -232,16 +234,19 @@ public class MultigradeView extends View {
 
 	public MultiGradeContentPanel getMultiGradeContentPanel() {
 		if (multigrade == null) {
-			this.multigrade = new MultiGradeContentPanel(null, multigradeStore) {
+			this.multigrade = new MultiGradeContentPanel(multigradeStore, false) {
 
 				protected PagingLoader<PagingLoadResult<ModelData>> newLoader() {
 					return multigradeLoader;
 				}
 
-				protected ListStore<ModelData> newStore(PagingLoader<PagingLoadResult<ModelData>> loader) {
+				protected ListStore<ModelData> newStore() {
 					return multigradeStore;
 				}
 			};
+			Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
+			multigrade.addGrid(selectedGradebook.getConfigurationModel(),
+					selectedGradebook.getColumns(), (ItemModel)selectedGradebook.getGradebookItemModel());
 		}
 		return multigrade;
 	}

@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
-import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
+import org.sakaiproject.gradebook.gwt.server.NewImportExportUtility;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.Controller;
 
@@ -56,7 +56,7 @@ public class GradebookExportController implements Controller {
 			fileType = "csv"; 
 		}
 
-		ImportExportUtility utility = new ImportExportUtility();
+		NewImportExportUtility utility = new NewImportExportUtility();
 		
 		try {
 			utility.exportGradebook(service, gradebookUid, doIncludeStructure, true, null, response, fileType);

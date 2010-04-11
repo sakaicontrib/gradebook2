@@ -97,7 +97,7 @@ public class ItemTreePanel extends GradebookPanel {
 	private static final String selectionTypeField = "selectionType";
 	
 	private Menu treeContextMenu;
-	private MenuItem addCategoryMenuItem, updateCategoryMenuItem, updateItemMenuItem, deleteCategoryMenuItem, deleteItemMenuItem;
+	private MenuItem addCategoryMenuItem, updateGradebookMenuItem, updateCategoryMenuItem, updateItemMenuItem, deleteCategoryMenuItem, deleteItemMenuItem;
 	private MenuItem moveDownMenuItem, moveUpMenuItem;
 	
 	private TabPanel tabPanel;
@@ -107,6 +107,7 @@ public class ItemTreePanel extends GradebookPanel {
 	private TreePanel<FixedColumnModel> learnerAttributeTree;
 	
 	private final boolean isEditable;
+	private final boolean isImport;
 	
 	// Listeners
 	private CheckChangedListener<FixedColumnModel> checkListener;
@@ -126,20 +127,31 @@ public class ItemTreePanel extends GradebookPanel {
 	private HashSet<String> fullStaticIdSet;
 	private List<FixedColumnModel> checkedSelection;
 	
-	private boolean isAllowedToDropToGradebook = false;
+	//private boolean isAllowedToDropToGradebook = false;
 	private boolean isLearnerAttributeTreeLoaded = false;
 	
-	public ItemTreePanel(TreeStore<ItemModel> treeStore, boolean isEditable) {
+	public ItemTreePanel(TreeStore<ItemModel> treeStore, boolean isEditable, boolean isImport) {
 		super();
 		this.treeStore = treeStore;
 		this.enableLayout = false;
 		this.isEditable = isEditable;
+		this.isImport = isImport;
 		setBorders(true);
-		setHeading(i18n.navigationPanelHeader());
+		if (isImport)
+			setHeading(i18n.navigationPanelImportHeader());
+		else
+			setHeading(i18n.navigationPanelHeader());
 		setLayout(new FillLayout());
 		initListeners();
 
-		sm = new ItemTreeSelectionModel();
+		sm = new ItemTreeSelectionModel() {
+			
+			@Override
+			protected void sendShowColumnsEvent(ShowColumnsEvent event) {
+				ItemTreePanel.this.sendShowColumnsEvent(event);
+			}
+			
+		};
 		sm.addSelectionChangedListener(selectionChangedListener);
 		sm.setSelectionMode(SelectionMode.MULTI);
 		
@@ -173,6 +185,13 @@ public class ItemTreePanel extends GradebookPanel {
 					boolean isPercentCategory = property.equals(ItemKey.D_PCT_CTGRY.name());
 					boolean isPercentGrade = property.equals(ItemKey.D_PCT_GRD.name());
 					boolean isPoints = property.equals(ItemKey.D_PNTS.name());
+					
+					if (isPercentGrade || (isPoints && !isItem)) {
+						boolean isNotCalculable = DataTypeConversionUtil.checkBoolean((Boolean)itemModel.get(ItemKey.B_ISNT_CALCBLE.name()));
+					
+						if (isNotCalculable)
+							return "?";
+					}
 					
 					if (value == null)
 						return null;
@@ -371,12 +390,13 @@ public class ItemTreePanel extends GradebookPanel {
 		learnerAttributes.setParent(learnerAttributeRoot);
 		learnerAttributeRoot.add(learnerAttributes);
 
-		gradingColumns = new FixedColumnModel();
-		gradingColumns.setName("Grades");
-		gradingColumns.setIdentifier("gradingColumns");
-		gradingColumns.setParent(learnerAttributeRoot);
-		learnerAttributeRoot.add(gradingColumns);
-
+		if (!isImport) {
+			gradingColumns = new FixedColumnModel();
+			gradingColumns.setName("Grades");
+			gradingColumns.setIdentifier("gradingColumns");
+			gradingColumns.setParent(learnerAttributeRoot);
+			learnerAttributeRoot.add(gradingColumns);
+		}
 			
 		learnerAttributeStore = new TreeStore<FixedColumnModel>(learnerAttributeLoader);
 		learnerAttributeTree = new TreePanel<FixedColumnModel>(learnerAttributeStore) {
@@ -396,7 +416,10 @@ public class ItemTreePanel extends GradebookPanel {
 		//learnerAttributeTree.setStateful(true);
 		//learnerAttributeTree.setStateId(AppConstants.LEARNER_ATTRIBUTE_TREE);
 		
-		item = new AriaTabItem(i18n.navigationPanelDynamicTabHeader());
+		if (isImport)
+			item = new AriaTabItem(i18n.navigationPanelDynamicTabImportHeader());
+		else
+			item = new AriaTabItem(i18n.navigationPanelDynamicTabHeader());
 		item.setLayout(new FitLayout());
 		learnerAttributeTree.setWidth(500);
 		item.add(learnerAttributeTree);
@@ -436,8 +459,7 @@ public class ItemTreePanel extends GradebookPanel {
 	}
 	
 	public void onMaskItemTree() {
-		//itemGrid.mask();
-		//itemGrid.hide();
+		
 	}
 	
 	private boolean isLoadEventRun = false;
@@ -452,9 +474,6 @@ public class ItemTreePanel extends GradebookPanel {
 					return;
 				
 				isLoadEventRun = true;
-				//ItemModel gradebookItemModel = (ItemModel)rootItem.getChild(0);
-				//if (gradebookItemModel != null)
-				//	itemGrid.setExpanded(gradebookItemModel, true, true);
 				
 				verifyCheckedState(gradebookModel);
 			}
@@ -485,8 +504,10 @@ public class ItemTreePanel extends GradebookPanel {
 				
 				switch (key.getGroup()) {
 				case GRADES:
-					((FixedColumnModel)column).setParent(gradingColumns);
-					gradingColumns.add((ModelData)column);
+					if (!isImport) {
+						((FixedColumnModel)column).setParent(gradingColumns);
+						gradingColumns.add((ModelData)column);
+					}
 					break;
 				default:
 					((FixedColumnModel)column).setParent(learnerAttributes);
@@ -501,14 +522,13 @@ public class ItemTreePanel extends GradebookPanel {
 		}
 	}
 	
-	public void onRefreshGradebookSetup(Gradebook gradebookModel) {
+	public void onRefreshGradebookSetup(Gradebook gradebookModel, Item gradebookItemModel) {
 		if (addCategoryMenuItem != null)
-			addCategoryMenuItem.setVisible(gradebookModel.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
+			addCategoryMenuItem.setVisible(!isImport && gradebookItemModel.getCategoryType() != CategoryType.NO_CATEGORIES);
 
 		Configuration configModel = gradebookModel.getConfigurationModel();
 
 		if (configModel != null) {
-			Item gradebookItemModel = gradebookModel.getGradebookItemModel();
 			CategoryType categoryType = gradebookItemModel.getCategoryType();
 			switch (categoryType) {
 				case NO_CATEGORIES:
@@ -569,9 +589,9 @@ public class ItemTreePanel extends GradebookPanel {
 	public void onSwitchGradebook(Gradebook selectedGradebook) {
 		verifyCheckedState(selectedGradebook);
 		
-		Item gradebookItemModel = selectedGradebook.getGradebookItemModel();
+		//Item gradebookItemModel = selectedGradebook.getGradebookItemModel();
 		
-		isAllowedToDropToGradebook = gradebookItemModel.getCategoryType() == CategoryType.NO_CATEGORIES;
+		//isAllowedToDropToGradebook = gradebookItemModel.getCategoryType() == CategoryType.NO_CATEGORIES;
 		
 		// Only allow the user to reorder if s/he has the permission
 		if (DataTypeConversionUtil.checkBoolean(isEditable)) {
@@ -650,7 +670,7 @@ public class ItemTreePanel extends GradebookPanel {
 									selectedGradebook.setGradebookGradeItem(itemModel);
 									Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookItems.getEventType(),
 												selectedGradebook);
-									Dispatcher.forwardEvent(GradebookEvents.EndItemUpdates.getEventType());
+									Dispatcher.forwardEvent(GradebookEvents.EndItemUpdates.getEventType(), selectedGradebook);
 									Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
 								}
 								
@@ -702,8 +722,32 @@ public class ItemTreePanel extends GradebookPanel {
 		}
 	}*/
 	
+	protected void doNewCategory(Item item) {
+		Dispatcher.forwardEvent(GradebookEvents.NewCategory.getEventType(), item);
+	}
+	
+	protected void doNewItem(Item item) {
+		Dispatcher.forwardEvent(GradebookEvents.NewItem.getEventType(), item);
+	}
+	
+	protected void doDeleteItem(Item item) {
+		Dispatcher.forwardEvent(GradebookEvents.ConfirmDeleteItem.getEventType(), item);
+	}
+	
+	protected void doChangeEditItem(Item item) {
+		Dispatcher.forwardEvent(GradebookEvents.SwitchEditItem.getEventType(), item);
+	}
+	
+	protected void doEditItem(Item item) {
+		Dispatcher.forwardEvent(GradebookEvents.StartEditItem.getEventType(), item);
+	}
+	
 	protected String getAdvice() {
 		return i18n.treeDirections();
+	}
+	
+	protected void sendShowColumnsEvent(ShowColumnsEvent event) {
+		Dispatcher.forwardEvent(GradebookEvents.ShowColumns.getEventType(), event);
 	}
 	
 	
@@ -711,14 +755,12 @@ public class ItemTreePanel extends GradebookPanel {
 
 		attributeLoadListener = new LoadListener() {
 			public void loaderBeforeLoad(LoadEvent le) {
-				//learnerAttributeTree.removeCheckListener(checkListener);
 			}
 			
 			public void loaderLoad(LoadEvent le) {
-				//learnerAttributeTree.setCheckedSelection(checkedSelection);
 				learnerAttributeTree.setExpanded(learnerAttributes, true, true);
-				learnerAttributeTree.setExpanded(gradingColumns, true, true);
-				//learnerAttributeTree.addCheckListener(checkListener);
+				if (!isImport)
+					learnerAttributeTree.setExpanded(gradingColumns, true, true);
 			}
 		};
 		
@@ -740,16 +782,16 @@ public class ItemTreePanel extends GradebookPanel {
 				int itemOrder = item.getItemOrder() == null ? 0 : item.getItemOrder().intValue();
 				switch (selectionType) {
 					case CREATE_CATEGORY:
-						Dispatcher.forwardEvent(GradebookEvents.NewCategory.getEventType(), item);
+						doNewCategory(item);
 						break;
 					case CREATE_ITEM:
-						Dispatcher.forwardEvent(GradebookEvents.NewItem.getEventType(), item);
+						doNewItem(item);
 						break;
 					case UPDATE_ITEM:
-						Dispatcher.forwardEvent(GradebookEvents.StartEditItem.getEventType(), item);
+						doEditItem(item);
 						break;
 					case DELETE_ITEM:
-						Dispatcher.forwardEvent(GradebookEvents.ConfirmDeleteItem.getEventType(), item);
+						doDeleteItem(item);
 						break;
 					case MOVE_DOWN:
 						item.setItemOrder(Integer.valueOf(itemOrder + 1));
@@ -771,30 +813,32 @@ public class ItemTreePanel extends GradebookPanel {
 				Item itemModel = se.getSelectedItem();
 
 				if (itemModel != null && isEditable) {
-					boolean isNotGradebook = itemModel.getItemType() != ItemType.GRADEBOOK;
 
 					switch (itemModel.getItemType()) {
 						case CATEGORY:
+							updateGradebookMenuItem.setVisible(false);
 							updateCategoryMenuItem.setVisible(true);
 							updateItemMenuItem.setVisible(false);
-							deleteCategoryMenuItem.setVisible(itemModel.isEditable());
+							deleteCategoryMenuItem.setVisible(itemModel.isEditable() && !isImport);
 							deleteItemMenuItem.setVisible(false);	
 							break;
 						case GRADEBOOK:
+							updateGradebookMenuItem.setVisible(true);
 							updateCategoryMenuItem.setVisible(false);
 							updateItemMenuItem.setVisible(false);
 							deleteCategoryMenuItem.setVisible(false);
 							deleteItemMenuItem.setVisible(false);		
 							break;
 						case ITEM:
+							updateGradebookMenuItem.setVisible(false);
 							updateCategoryMenuItem.setVisible(false);
 							updateItemMenuItem.setVisible(true);
 							deleteCategoryMenuItem.setVisible(false);
-							deleteItemMenuItem.setVisible(true);
+							deleteItemMenuItem.setVisible(!isImport);
 							break;
 					}
 
-					Dispatcher.forwardEvent(GradebookEvents.SwitchEditItem.getEventType(), itemModel);
+					doChangeEditItem(itemModel);
 				}
 			}
 
@@ -813,7 +857,7 @@ public class ItemTreePanel extends GradebookPanel {
 	
 	private void doSelectItem(GridEvent ge) {
 		Item itemModel = (Item)ge.getModel();
-		Dispatcher.forwardEvent(GradebookEvents.StartEditItem.getEventType(), itemModel);
+		doEditItem(itemModel);
 		ge.stopEvent();
 	}
 	
@@ -822,6 +866,14 @@ public class ItemTreePanel extends GradebookPanel {
 		treeContextMenu = new AriaMenu();
 		treeContextMenu.setWidth(180);
 
+		updateGradebookMenuItem = new AriaMenuItem();
+		updateGradebookMenuItem.setData(selectionTypeField, SelectionType.UPDATE_ITEM);
+		updateGradebookMenuItem.setIcon(AbstractImagePrototype.create(resources.folder_edit()));
+		updateGradebookMenuItem.setItemId(AppConstants.ID_CT_EDIT_GRADEBOOK_MENUITEM);
+		updateGradebookMenuItem.setText(i18n.headerEditGradebook());
+		updateGradebookMenuItem.addSelectionListener(menuSelectionListener);
+		treeContextMenu.add(updateGradebookMenuItem);
+		
 		addCategoryMenuItem = new AriaMenuItem();
 		addCategoryMenuItem.setData(selectionTypeField, SelectionType.CREATE_CATEGORY);
 		addCategoryMenuItem.setIcon(AbstractImagePrototype.create(resources.folder_add()));
@@ -848,14 +900,16 @@ public class ItemTreePanel extends GradebookPanel {
 		treeContextMenu.add(deleteCategoryMenuItem);
 
 
-		MenuItem menuItem = new AriaMenuItem();
-		menuItem.setData(selectionTypeField, SelectionType.CREATE_ITEM);
-		menuItem.setIcon(AbstractImagePrototype.create(resources.table_add()));
-		menuItem.setItemId(AppConstants.ID_CT_ADD_ITEM_MENUITEM);
-		menuItem.setText(i18n.headerAddItem());
-		menuItem.setTitle(i18n.headerAddItemTitle());
-		menuItem.addSelectionListener(menuSelectionListener);
-		treeContextMenu.add(menuItem);
+		if (!isImport) {
+			MenuItem menuItem = new AriaMenuItem();
+			menuItem.setData(selectionTypeField, SelectionType.CREATE_ITEM);
+			menuItem.setIcon(AbstractImagePrototype.create(resources.table_add()));
+			menuItem.setItemId(AppConstants.ID_CT_ADD_ITEM_MENUITEM);
+			menuItem.setText(i18n.headerAddItem());
+			menuItem.setTitle(i18n.headerAddItemTitle());
+			menuItem.addSelectionListener(menuSelectionListener);
+			treeContextMenu.add(menuItem);
+		}
 
 		updateItemMenuItem = new AriaMenuItem();
 		updateItemMenuItem.setData(selectionTypeField, SelectionType.UPDATE_ITEM);
@@ -909,7 +963,7 @@ public class ItemTreePanel extends GradebookPanel {
 			if (id != null)
 				staticIds.add(id);
 		}
-		Dispatcher.forwardEvent(GradebookEvents.ShowColumns.getEventType(), 
-				new ShowColumnsEvent(fullStaticIdSet, staticIds));
+		 
+		sendShowColumnsEvent(new ShowColumnsEvent(fullStaticIdSet, staticIds));
 	}
 }

@@ -168,9 +168,17 @@ public class MultiGradeContextMenu extends Menu {
 		HttpProxy<String> proxy = new HttpProxy<String>(builder) {
 			
 			public void load(final DataReader<String> reader, final Object loadConfig, final AsyncCallback<String> callback) {
+				ModelData learner = owner.getSelectedModel();
+				if (learner == null)
+					return;
+				
+				String learnerUid = learner.get(LearnerKey.S_UID.name());
+				Long selectedAssignment = owner.getSelectedAssignment();
+				
 				initUrl = RestBuilder.buildInitUrl(GWT.getModuleBaseURL(),
 						AppConstants.REST_FRAGMENT, AppConstants.GRADE_EVENT_FRAGMENT,
-						(String)owner.getSelectedModel().get(LearnerKey.S_UID.name()), String.valueOf(owner.getSelectedAssignment()));
+						learnerUid, String.valueOf(selectedAssignment));
+
 				super.load(reader, loadConfig, callback);
 			}
 			

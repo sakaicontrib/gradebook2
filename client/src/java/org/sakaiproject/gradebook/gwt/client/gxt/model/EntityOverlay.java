@@ -177,6 +177,9 @@ public class EntityOverlay extends JavaScriptObject {
 			String s = f.format((Date)value);
 			setString(property, s);
 			break;
+		case AppConstants.MODEL_PREFIX:
+			setNative(property, ((EntityOverlayOwner)value).getOverlay());
+			break;
 		case AppConstants.O_ARRAY_PREFIX:
 			JsArrayString jsArrayString = getEmptyArrayString();
 			
@@ -279,6 +282,10 @@ public class EntityOverlay extends JavaScriptObject {
 	public final native <X> X getNative(String key) /*-{
 		var v = this[key];
 		return v;
+	}-*/;
+	
+	public final native EntityOverlay getEntityOverlay(String key) /*-{
+		return this[key];
 	}-*/;
 	
 	public final native void setArray(String key, JsArray<EntityOverlay> array) /*-{

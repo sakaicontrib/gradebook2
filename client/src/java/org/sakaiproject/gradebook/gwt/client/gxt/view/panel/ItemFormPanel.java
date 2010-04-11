@@ -136,7 +136,8 @@ public class ItemFormPanel extends GradebookPanel {
 	private RowData topRowData, bottomRowData;
 	private Button deleteButton, okButton, okCloseButton, cancelButton;
 
-	private Gradebook selectedGradebook;
+	private Item gradebookItemModel;
+	//private Gradebook selectedGradebook;
 	private ItemModel selectedItemModel;
 	private ItemType createItemType;
 
@@ -407,6 +408,10 @@ public class ItemFormPanel extends GradebookPanel {
 		
 	}
 
+	public void clearSelected() {
+		this.selectedItemModel = null;
+	}
+	
 	public void onRequestDeleteItem(final ItemModel itemModel) {
 		if (hasChanges) {
 			MessageBox.confirm(i18n.hasChangesTitle(), i18n.hasChangesMessage(), new Listener<MessageBoxEvent>() {
@@ -451,7 +456,7 @@ public class ItemFormPanel extends GradebookPanel {
 
 			formBindings.bind(itemModel);
 
-			Dispatcher.forwardEvent(GradebookEvents.ExpandEastPanel.getEventType(), AppView.EastCard.DELETE_ITEM);
+			showDeleteScreen();
 		}
 		formPanel.show();
 	}
@@ -474,7 +479,7 @@ public class ItemFormPanel extends GradebookPanel {
 			}
 			
 		}
-		Dispatcher.forwardEvent(GradebookEvents.ExpandEastPanel.getEventType(), activeCard);
+		showEditScreen(activeCard);
 
 		clearActiveRecord();
 		
@@ -523,6 +528,7 @@ public class ItemFormPanel extends GradebookPanel {
 		if (formBindings == null) {
 			initFormBindings();
 		} else {
+			formBindings.removeAllListeners();
 			formBindings.unbind();
 		}
 
@@ -711,12 +717,13 @@ public class ItemFormPanel extends GradebookPanel {
 		formPanel.show();
 	}
 
-	public void onRefreshGradebookSetup(Gradebook selectedGradebook) {
-		this.selectedGradebook = selectedGradebook;
+	public void onRefreshGradebookSetup(Gradebook selectedGradebook, ItemModel gradebookItemModel) {
+		this.gradebookItemModel = gradebookItemModel;
 		
 		if (formBindings != null) {
-			if (mode == Mode.EDIT && selectedItemModel != null && selectedItemModel.getItemType() == ItemType.GRADEBOOK) {
-				selectedItemModel = (ItemModel)selectedGradebook.getGradebookItemModel();
+			if (mode == Mode.EDIT && selectedItemModel != null 
+					&& selectedItemModel.getItemType() == ItemType.GRADEBOOK) {
+				selectedItemModel = gradebookItemModel;
 				doEditItem(selectedItemModel, true, false);
 				clearChanges();
 			}
@@ -739,8 +746,8 @@ public class ItemFormPanel extends GradebookPanel {
 		initFormBindings();
 	}
 
-	public void onSwitchGradebook(Gradebook selectedGradebook) {
-		this.selectedGradebook = selectedGradebook;
+	public void onSwitchGradebook(Gradebook selectedGradebook, Item gradebookItemModel) {
+		this.gradebookItemModel = gradebookItemModel;
 		
 		if (gradeTypeStore == null) {
 			gradeTypeStore = new ListStore<ModelData>();
@@ -811,7 +818,7 @@ public class ItemFormPanel extends GradebookPanel {
 			okCloseButton.setEnabled(true);
 		}
 		
-		Item gradebookItem = selectedGradebook.getGradebookItemModel();
+		Item gradebookItem = gradebookItemModel;
 		CategoryType categoryType = gradebookItem.getCategoryType();
 
 		boolean isAllowedToEdit = DataTypeConversionUtil.checkBoolean((Boolean)Registry.get(AppConstants.IS_ABLE_TO_EDIT));
@@ -1142,7 +1149,7 @@ public class ItemFormPanel extends GradebookPanel {
 			
 			public void handleEvent(FieldEvent fe) {
 				boolean isChecked = DataTypeConversionUtil.checkBoolean(((CheckBox)fe.getField()).getValue());
-				CategoryType categoryType = selectedGradebook.getGradebookItemModel().getCategoryType();
+				CategoryType categoryType = gradebookItemModel.getCategoryType();
 				boolean hasWeights = categoryType == CategoryType.WEIGHTED_CATEGORIES;
 				setChanges();
 				boolean isDropLowestVisible = false;
@@ -1169,7 +1176,7 @@ public class ItemFormPanel extends GradebookPanel {
 
 			public void handleEvent(FieldEvent fe) {
 				boolean isChecked = DataTypeConversionUtil.checkBoolean(((CheckBox)fe.getField()).getValue());
-				CategoryType categoryType = selectedGradebook.getGradebookItemModel().getCategoryType();
+				CategoryType categoryType = gradebookItemModel.getCategoryType();
 				Item category = categoryPicker.getValue();
 				boolean isWeightByPoints = false;
 				boolean isEqualWeight = false;
@@ -1230,7 +1237,7 @@ public class ItemFormPanel extends GradebookPanel {
 
 						switch (selectionType) {
 							case CLOSE:
-								Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
+								hideFormPanel();
 								break;
 							case CREATECLOSE:
 								close = true;
@@ -1269,15 +1276,14 @@ public class ItemFormPanel extends GradebookPanel {
 
 								clearChanges();
 
-								Dispatcher.forwardEvent(GradebookEvents.CreateItem.getEventType(), new ItemCreate(treeStore, item, close));
+								sendItemCreateEvent(item, close);
 								break;
 							case DELETE:
-								Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
-								Dispatcher.forwardEvent(GradebookEvents.DeleteItem.getEventType(), new ItemUpdate(treeStore, selectedItemModel, ItemKey.B_RMVD.name(), Boolean.FALSE, Boolean.TRUE));
+								sendItemDeleteEvent(selectedItemModel);
 								break;
 							case CANCEL:
 								clearActiveRecord();
-								Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
+								sendCancelEvent();
 								break;
 							case REQUEST_DELETE:
 								onRequestDeleteItem(selectedItemModel);
@@ -1321,7 +1327,7 @@ public class ItemFormPanel extends GradebookPanel {
 															r.set(ItemKey.B_RECALC_PTS.name(), Boolean.FALSE);
 														}
 														
-														Dispatcher.forwardEvent(GradebookEvents.UpdateItem.getEventType(), new ItemUpdate(treeStore, r, selectedItemModel, close));
+														sendItemUpdateEvent(r, selectedItemModel, close);
 													}
 													
 												}
@@ -1339,8 +1345,7 @@ public class ItemFormPanel extends GradebookPanel {
 										}
 									}
 									
-									Dispatcher.forwardEvent(GradebookEvents.UpdateItem.getEventType(), new ItemUpdate(treeStore, record, selectedItemModel, close));
-								}
+									sendItemUpdateEvent(record, selectedItemModel, close);								}
 								break;
 						}
 					}
@@ -1351,12 +1356,41 @@ public class ItemFormPanel extends GradebookPanel {
 		};
 
 	}
+	
+	protected void sendCancelEvent() {
+		Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
+	}
+	
+	protected void sendItemCreateEvent(ItemModel item, boolean close) {
+		Dispatcher.forwardEvent(GradebookEvents.CreateItem.getEventType(), new ItemCreate(treeStore, item, close));
+	}
+	
+	protected void sendItemDeleteEvent(ItemModel item) {
+		Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
+		Dispatcher.forwardEvent(GradebookEvents.DeleteItem.getEventType(), new ItemUpdate(treeStore, item, ItemKey.B_RMVD.name(), Boolean.FALSE, Boolean.TRUE));
+	}
+	
+	protected void sendItemUpdateEvent(Record record, ItemModel item, boolean close) {
+		Dispatcher.forwardEvent(GradebookEvents.UpdateItem.getEventType(), new ItemUpdate(treeStore, record, item, close));
+	}
+	
+	protected void showDeleteScreen() {
+		Dispatcher.forwardEvent(GradebookEvents.ExpandEastPanel.getEventType(), AppView.EastCard.DELETE_ITEM);
+	}
+	
+	protected void showEditScreen(AppView.EastCard activeCard) {
+		Dispatcher.forwardEvent(GradebookEvents.ExpandEastPanel.getEventType(), activeCard);
+	}
+	
+	protected void hideFormPanel() {
+		Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
+	}
 
 	private void establishSelectedCategoryState(ItemModel itemModel) {
 		if (itemModel == null)
 			return;
 
-		CategoryType categoryType = selectedGradebook.getGradebookItemModel().getCategoryType();
+		CategoryType categoryType = gradebookItemModel.getCategoryType();
 
 		boolean hasCategories = categoryType != CategoryType.NO_CATEGORIES;
 
@@ -1379,7 +1413,7 @@ public class ItemFormPanel extends GradebookPanel {
 	}
 
 	private void refreshSelectedCategoryState(ItemModel itemModel) {
-		CategoryType categoryType = selectedGradebook.getGradebookItemModel().getCategoryType();
+		CategoryType categoryType = gradebookItemModel.getCategoryType();
 
 		boolean isAllowedToEdit = DataTypeConversionUtil.checkBoolean((Boolean)Registry.get(AppConstants.IS_ABLE_TO_EDIT));
 		boolean hasWeights = categoryType == CategoryType.WEIGHTED_CATEGORIES;

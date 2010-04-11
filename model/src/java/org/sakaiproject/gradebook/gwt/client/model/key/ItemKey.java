@@ -51,7 +51,8 @@ public enum ItemKey {
 	B_EDITABLE("isEditable"), 
 	B_CHCKD("isChecked"), 
 	S_PARENT("parent"), 
-	B_ALW_SCL_X_CRDT("isAllowScaledExtraCredit");
+	B_ALW_SCL_X_CRDT("isAllowScaledExtraCredit"),
+	B_ISNT_CALCBLE("isNotCalculable");
 	
 	
 	private String property;

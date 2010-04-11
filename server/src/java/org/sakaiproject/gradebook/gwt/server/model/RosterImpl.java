@@ -6,7 +6,7 @@ import java.util.HashMap;
 import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.Roster;
 import org.sakaiproject.gradebook.gwt.client.model.key.RosterKey;
-import org.sakaiproject.gradebook.gwt.sakai.Util;
+import org.sakaiproject.gradebook.gwt.server.Util;
 
 
 public class RosterImpl extends HashMap<String, Object> implements Roster {

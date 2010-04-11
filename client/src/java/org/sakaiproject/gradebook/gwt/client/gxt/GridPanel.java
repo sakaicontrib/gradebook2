@@ -23,6 +23,7 @@
 package org.sakaiproject.gradebook.gwt.client.gxt;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
@@ -36,7 +37,9 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.UserChangeEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.GradebookPanel;
 import org.sakaiproject.gradebook.gwt.client.model.Configuration;
+import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
+import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.ClassType;
 import org.sakaiproject.gradebook.gwt.client.model.type.EntityType;
@@ -90,16 +93,18 @@ public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 	protected RefreshAction refreshAction = RefreshAction.NONE;
 	
 	protected boolean isPopulated = false;
-	
-	public GridPanel(String gridId, EntityType entityType, ListStore<M> store) {
-		this(gridId, entityType, null, store);
+	protected final boolean isImport;
+
+	public GridPanel(String gridId, EntityType entityType, ListStore<M> store, boolean isImport) {
+		this(gridId, entityType, null, store, isImport);
 	}
 	
-	public GridPanel(String gridId, EntityType entityType, ContentPanel childPanel, ListStore<M> store) {
+	public GridPanel(String gridId, EntityType entityType, ContentPanel childPanel, ListStore<M> store, boolean isImport) {
 		super();
 		this.gridId = gridId;
 		this.entityType = entityType;
 		this.store = store;
+		this.isImport = isImport;
 		
 		setHeaderVisible(false);
 		setLayout( new FitLayout());
@@ -123,9 +128,9 @@ public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 		Gradebook gbModel = Registry.get(AppConstants.CURRENT);
 		if (gbModel != null) {
 			this.isPopulated = true;
-			cm = newColumnModel(gbModel);
+			cm = newColumnModel(null, null, null);
 		} else {
-			cm  = new CustomColumnModel("", gridId, new ArrayList<ColumnConfig>());
+			cm  = new CustomColumnModel(new ArrayList<ColumnConfig>());
 		}
 	
 		grid = new GbEditorGrid<M>(this.store, cm);
@@ -234,15 +239,11 @@ public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 		return cm;
 	}
 	
-	public ListStore<M> getStore() {
-		return store;
-	}
-	
 	public PagingToolBar getToolBar() {
 		return pagingToolBar;
 	}
 	
-	protected abstract CustomColumnModel newColumnModel(Gradebook selectedGradebook);
+	protected abstract CustomColumnModel newColumnModel(Configuration configModel, List<FixedColumn> staticColumns, Item gradebookItemModel);
 		
 	protected void addComponents()  {
 		// Empty
@@ -342,7 +343,7 @@ public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 	protected void refreshGrid(RefreshAction action, boolean useExistingColumnModel) {
 		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 		if (!useExistingColumnModel || cm == null)
-			cm = newColumnModel(selectedGradebook);
+			cm = newColumnModel(null, null, null);
 		
 		grid.reconfigure(newStore(newLoader()), cm);
 		

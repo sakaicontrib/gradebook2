@@ -32,7 +32,7 @@ public class CustomColumnModel extends ColumnModel {
 
 	private HashMap<String, Integer> dataIndexMap;
 	
-	public CustomColumnModel(String gradebookUid, String gridId, List<ColumnConfig> columns) {
+	public CustomColumnModel(List<ColumnConfig> columns) {
 		super(columns);
 		this.dataIndexMap = new HashMap<String, Integer>();
 		

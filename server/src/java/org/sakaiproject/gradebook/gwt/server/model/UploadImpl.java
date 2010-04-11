@@ -8,16 +8,21 @@ import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.Upload;
 import org.sakaiproject.gradebook.gwt.client.model.key.UploadKey;
-import org.sakaiproject.gradebook.gwt.sakai.Util;
+import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
+import org.sakaiproject.gradebook.gwt.server.Util;
 
 public class UploadImpl extends BaseModel implements Upload {
 
 	private static final long serialVersionUID = 1L;
 
-	public UploadImpl(Map<String,Object> map) {
+	public UploadImpl() {	
 		super();
+	}
+	
+	public UploadImpl(Map<String,Object> map) {
+		super(map);
 		
-				
 		List<Map<String, Object>> headers = 
 			(List<Map<String, Object>>)map.get(UploadKey.A_HDRS.name());
 		
@@ -41,6 +46,34 @@ public class UploadImpl extends BaseModel implements Upload {
 			}
 			setRows(learners);
 		}
+		
+		String categoryTypeStr = (String)map.get(UploadKey.C_CTGRY_TYPE.name());
+		if (categoryTypeStr != null)	
+			setCategoryType(CategoryType.valueOf(categoryTypeStr));
+		
+		String gradeTypeStr = (String)map.get(UploadKey.G_GRD_TYPE.name());
+		if (gradeTypeStr != null)
+			setGradeType(GradeType.valueOf(gradeTypeStr));
+		
+		Map<String, Object> gradebookItemMap = (Map<String, Object>)map.get(UploadKey.M_GB_ITM.name());
+		if (gradebookItemMap != null) { 
+			GradeItem gradebookItem = new GradeItemImpl(gradebookItemMap);
+			setGradebookItemModel(gradebookItem);
+		}
+		
+		setNotifyAssignmentName(Util.toBooleanPrimitive(map.get(UploadKey.B_NTFY_ITM_NM.name())));	
+	}
+	
+	public void addNotes(String notes) {
+		
+		StringBuilder allNotes = new StringBuilder();
+		
+		if (getNotes() != null) {
+			allNotes.append(getNotes());
+		}
+		allNotes.append(notes).append("<br>");
+		
+		setNotes(allNotes.toString());
 	}
 	
 	public Item getGradebookItemModel() {
@@ -52,7 +85,7 @@ public class UploadImpl extends BaseModel implements Upload {
 	}
 
 	public List<String> getResults() {
-		return get(UploadKey.A_RSTS.name());
+		return get(UploadKey.V_RSTS.name());
 	}
 
 	public List<Learner> getRows() {
@@ -80,11 +113,61 @@ public class UploadImpl extends BaseModel implements Upload {
 	}
 
 	public void setResults(List<String> results) {
-		set(UploadKey.A_RSTS.name(), results);
+		set(UploadKey.V_RSTS.name(), results);
 	}
 
 	public void setRows(List<Learner> rows) {
 		set(UploadKey.A_ROWS.name(), rows);
+	}
+
+	@Override
+	public CategoryType getCategoryType() {
+		return Util.toCategoryType(get(UploadKey.C_CTGRY_TYPE.name()));
+	}
+
+	@Override
+	public GradeType getGradeType() {
+		return Util.toGradeType(get(UploadKey.G_GRD_TYPE.name()));
+	}
+
+	@Override
+	public String getNotes() {
+		return get(UploadKey.S_NOTES.name());
+	}
+
+	@Override
+	public boolean hasErrors() {
+		return Util.toBooleanPrimitive(get(UploadKey.B_HAS_ERRS.name()));
+	}
+
+	@Override
+	public boolean isNotifyAssignmentName() {
+		return Util.toBooleanPrimitive(get(UploadKey.B_NTFY_ITM_NM.name()));
+	}
+
+	@Override
+	public void setCategoryType(CategoryType categoryType) {
+		put(UploadKey.C_CTGRY_TYPE.name(), categoryType.name());
+	}
+
+	@Override
+	public void setErrors(boolean hasErrors) {
+		put(UploadKey.B_HAS_ERRS.name(), Boolean.valueOf(hasErrors));
+	}
+
+	@Override
+	public void setGradeType(GradeType gradeType) {
+		put(UploadKey.G_GRD_TYPE.name(), gradeType.name());
+	}
+
+	@Override
+	public void setNotes(String notes) {
+		put(UploadKey.S_NOTES.name(), notes);
+	}
+
+	@Override
+	public void setNotifyAssignmentName(boolean doNotify) {
+		put(UploadKey.B_NTFY_ITM_NM.name(), Boolean.valueOf(doNotify));
 	}
 
 }

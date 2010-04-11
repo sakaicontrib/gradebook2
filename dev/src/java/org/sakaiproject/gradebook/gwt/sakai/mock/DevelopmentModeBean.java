@@ -49,7 +49,7 @@ public class DevelopmentModeBean {
 	
 	
 	public void init() {	
-		
+
 		try {
 			
 			Gradebook2AuthzMockImpl authz = (Gradebook2AuthzMockImpl)((Gradebook2ComponentServiceImpl)service).getAuthz();
@@ -68,7 +68,7 @@ public class DevelopmentModeBean {
 			
 			gradebook.setName("Test Gradebook");
 			gradebook.setCategoryType(CategoryType.WEIGHTED_CATEGORIES);
-			gradebook.setGradeType(GradeType.LETTERS);
+			gradebook.setGradeType(GradeType.POINTS);
 			gradebook.setItemType(ItemType.GRADEBOOK);
 			gradebook.setExtraCreditScaled(Boolean.TRUE);
 			gradebook.setReleaseGrades(Boolean.FALSE);

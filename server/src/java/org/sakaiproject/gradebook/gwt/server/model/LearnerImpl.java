@@ -13,6 +13,10 @@ public class LearnerImpl extends BaseModel implements Learner, Comparable<Learne
 		super(map);
 	}
 	
+	public LearnerImpl() {
+		super();
+	}
+
 	public Map<String, Object> getProperties() {
 		return this;
 	}
@@ -220,6 +224,16 @@ public class LearnerImpl extends BaseModel implements Learner, Comparable<Learne
 	 */
 	public void setFinalGradeUserId(String finalGradeUserId) {
 		put(LearnerKey.S_FNL_GRD_ID.name(), finalGradeUserId);
+	}
+	
+	@Override
+	public Boolean getUserNotFound() {
+		return get(LearnerKey.B_USR_NT_FD.name());
+	}
+
+	@Override
+	public void setUserNotFound(Boolean isNotFound) {
+		put(LearnerKey.B_USR_NT_FD.name(), isNotFound);
 	}
 	
 	@Override

@@ -21,7 +21,9 @@ import org.sakaiproject.gradebook.gwt.client.model.Statistics;
 import org.sakaiproject.gradebook.gwt.client.model.Upload;
 import org.sakaiproject.gradebook.gwt.sakai.InstitutionalAdvisor.Column;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
+import org.sakaiproject.gradebook.gwt.server.model.GradeItem;
 import org.sakaiproject.site.api.Group;
+import org.sakaiproject.site.api.Site;
 
 public interface Gradebook2ComponentService {
 
@@ -36,6 +38,8 @@ public interface Gradebook2ComponentService {
 	public Item createItem(String gradebookUid, Long gradebookId, Item item, boolean enforceNoNewCategories) throws InvalidInputException;
 	
 	public Permission createPermission(String gradebookUid, Long gradebookId, Permission permissionRequest) throws SecurityException, InvalidInputException;
+	
+	public GradeItem decorateGradebook(GradeItem gradebookGradeItem, Long categoryId, Long assignmentId);
 	
 	public Permission deletePermission(String gradebookUid, Permission permissionDeleteRequest) throws SecurityException;
 	
@@ -75,10 +79,14 @@ public interface Gradebook2ComponentService {
 	
 	public List<Permission> getPermissions(String gradebookUid, Long gradebookId, String graderId) throws SecurityException;
 	
+	public Site getSite();
+	
 	public List<Statistics> getStatistics(String gradebookUid, Long gradebookId, String studentId) throws SecurityException;
 	
 	public List<Map<String,Object>> getVisibleSections(String gradebookUid, boolean enableAllSectionsEntry, String allSectionsEntryTitle);
 	
+	public boolean isValidLetterGrade(String letterGrade);
+
 	public void postEvent(String message, String gradebookId, String... args);
 	
 	public void resetGradeMap(String gradebookUid) throws SecurityException;
@@ -92,5 +100,8 @@ public interface Gradebook2ComponentService {
 	public Item updateItem(Item item) throws InvalidInputException;
 
 	public Upload upload(String gradebookUid, Long gradebookId, Upload upload, boolean isDryRun) throws InvalidInputException;
+	
+	public Upload oldUpload(String gradebookUid, Long gradebookId, Upload upload, boolean isDryRun) throws InvalidInputException;
+	
 	
 }

@@ -68,6 +68,7 @@ public interface AppConstants {
 	public static final String ID_GT_PERCENTAGES_MENUITEM	= "gradeTypePercentagesMenuItem";
 	public static final String ID_RG_YES_MENUITEM			= "releaseGradesYesMenuItem";
 	public static final String ID_RG_NO_MENUITEM			= "releaseGradesNoMenuItem";
+	public static final String ID_CT_EDIT_GRADEBOOK_MENUITEM = "contextEditGradebookMenuItem";
 	public static final String ID_CT_ADD_CATEGORY_MENUITEM  = "contextAddCategoryMenuItem";
 	public static final String ID_CT_ADD_ITEM_MENUITEM  	= "contextAddItemMenuItem";
 	public static final String ID_CT_DELETE_ITEM_MENUITEM  	= "contextDeleteItemMenuItem";
@@ -122,7 +123,7 @@ public interface AppConstants {
 	public static final int SCALE = 10;
 	public static final int DISPLAY_SCALE = 2;
 	
-	public static final String IMPORT_CHANGES		= "importChangesMade";
+	public static final String IMPORT_CHANGES		= "B_IMP_CHG";
 
 	public static final String HELP_URL				= "helpUrl";
 	public static final String HELP_URL_CONFIG_ID	= "gb2.help.url";
@@ -176,6 +177,7 @@ public interface AppConstants {
 	public static final String STATISTICS_FRAGMENT			= "statistics";
 	public static final String GRADES_VERIFICATION_FRAGMENT	= "verification";
 	public static final String UPLOAD_FRAGMENT				= "upload";
+	public static final String OLD_UPLOAD_FRAGMENT			= "oldupload";
 	public static final String AUTHORIZATION_FRAGMENT		= "authorization";
 	
 	public static final String LIST_ROOT				= "list";

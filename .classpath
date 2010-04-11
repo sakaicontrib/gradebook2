@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="org/sakaiproject/gradebook/gwt/client/GradebookState.java" kind="src" path="client/src/java"/>
+	<classpathentry excluding="org/sakaiproject/gradebook/gwt/client/GradebookState.java|org/sakaiproject/gradebook/gwt/client/gxt/view/panel/ImportPanelx.java" kind="src" path="client/src/java"/>
 	<classpathentry kind="src" path="api/src/java"/>
 	<classpathentry kind="src" path="model/src/java"/>
 	<classpathentry kind="src" path="model/src/hibernate"/>
-	<classpathentry excluding="org/sakaiproject/gradebook/gwt/sakai/mock/tool/gradebook/" kind="src" path="server/src/java"/>
+	<classpathentry excluding="org/sakaiproject/gradebook/gwt/sakai/mock/tool/gradebook/|org/sakaiproject/gradebook/gwt/sakai/Util.java" kind="src" path="server/src/java"/>
 	<classpathentry kind="src" path="shared/src/java"/>
 	<classpathentry including="*" kind="src" path="test-config"/>
 	<classpathentry kind="src" path="dev/src/java"/>

@@ -1,9 +1,6 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.custom;
 
-import java.util.List;
-
 import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.ItemTreeGridView;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ShowColumnsEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
@@ -13,9 +10,7 @@ import com.extjs.gxt.ui.client.core.El;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.GridEvent;
 import com.extjs.gxt.ui.client.event.Listener;
-import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
-import com.extjs.gxt.ui.client.store.StoreEvent;
 import com.extjs.gxt.ui.client.widget.Component;
 import com.extjs.gxt.ui.client.widget.ComponentPlugin;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
@@ -25,7 +20,7 @@ import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.grid.GridSelectionModel;
 import com.google.gwt.user.client.Event;
 
-public class ItemTreeSelectionModel extends GridSelectionModel<ItemModel> implements ComponentPlugin {
+public abstract class ItemTreeSelectionModel extends GridSelectionModel<ItemModel> implements ComponentPlugin {
 	
 	protected ColumnConfig config;
 	
@@ -92,51 +87,13 @@ public class ItemTreeSelectionModel extends GridSelectionModel<ItemModel> implem
 		if (c == config) {
 			El hd = e.getTargetEl().getParent();
 			boolean isChecked = hd.hasStyleName("x-grid3-hd-checker-on");
-			if (isChecked) {
-				//setChecked(false);
-				//deselectAll();
-			} else {
-				//setChecked(true);
-				//selectAll();
-			}
+
 		}
 	}
-
-	@Override
-	protected void onAdd(List<? extends ItemModel> models) {
-		super.onAdd(models);
-		//setChecked(getSelection().size() == grid.getStore().getCount());
-	}
-
-	@Override
-	protected void onClear(StoreEvent<ItemModel> se) {
-		super.onClear(se);
-		//setChecked(false);
-	}
-
-	@Override
-	protected void onRemove(ItemModel model) {
-		super.onRemove(model);
-		//setChecked(getSelection().size() == grid.getStore().getCount());
-	}
-
-	@Override
-	protected void onSelectChange(ItemModel model, boolean select) {
-		super.onSelectChange(model, select);
-		//setChecked(getSelection().size() == grid.getStore().getCount());
-	}
-
-	/*private void setChecked(boolean checked) {
-		if (grid.isViewReady()) {
-			El hd = grid.getView().innerHd.child("div.x-grid3-hd-checker");
-			hd.getParent().setStyleName("x-grid3-hd-checker-on", checked);
-		}
-	}*/
 	
 	public void toggle(ItemModel m, boolean isChecked) {
 		toggleItem(m, !isChecked, listStore.indexOf(m));
-		Dispatcher.forwardEvent(GradebookEvents.ShowColumns.getEventType(),
-				new ShowColumnsEvent(m, !isChecked));
+		sendShowColumnsEvent(new ShowColumnsEvent(m, !isChecked));
 	}
 	
 	public void toggle(ItemModel m, int rowIndex) {
@@ -151,9 +108,11 @@ public class ItemTreeSelectionModel extends GridSelectionModel<ItemModel> implem
 			toggleItem(m, m.isChecked(), rowIndex);
 			break;
 		}
-		Dispatcher.forwardEvent(GradebookEvents.ShowColumns.getEventType(),
-				new ShowColumnsEvent(m, !m.isChecked()));
+		sendShowColumnsEvent(new ShowColumnsEvent(m, !m.isChecked()));
 	}
+	
+	protected abstract void sendShowColumnsEvent(ShowColumnsEvent event);
+	
 	
 	private void toggleCategory(ItemModel m, boolean isChecked, int rowIndex) {
 		if (m.getChildCount() > 0) {

@@ -120,7 +120,7 @@ public class SiteServiceMock implements SiteService {
 	}
 
 	public Site getSite(String context) throws IdUnusedException {
-		return new SiteMock(context);
+		return new SiteMock(context, "Test Site");
 	}
 
 	public List<SiteAdvisor> getSiteAdvisors() {

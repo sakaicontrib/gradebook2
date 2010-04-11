@@ -25,6 +25,7 @@ package org.sakaiproject.gradebook.gwt.sakai;
 
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -35,9 +36,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportFile;
-import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
-import org.sakaiproject.gradebook.gwt.server.ImportExportUtility.Delimiter;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.sakaiproject.gradebook.gwt.client.model.Upload;
+import org.sakaiproject.gradebook.gwt.server.NewImportExportUtility;
+import org.sakaiproject.gradebook.gwt.server.NewImportExportUtility.Delimiter;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.multipart.MultipartFile;
@@ -45,9 +47,6 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.support.ByteArrayMultipartFileEditor;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.SimpleFormController;
-
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
 
 public class GradebookImportController extends SimpleFormController {
 
@@ -77,20 +76,23 @@ public class GradebookImportController extends SimpleFormController {
 				delimiterSet.add(Delimiter.COLON);
 		}
 		
-		ImportExportUtility utility = new ImportExportUtility();
-
+		String preventScantronOverwrite = multipartRequest.getParameter("preventScantronOverwrite");
+		boolean doPreventScrantronOverwrite = preventScantronOverwrite == null ? Boolean.FALSE : Boolean.valueOf(preventScantronOverwrite);
+		
+		NewImportExportUtility utility = new NewImportExportUtility();
+		
 		for (Iterator<String> fileNameIterator = multipartRequest.getFileNames();fileNameIterator.hasNext();) {
 			String fileName = fileNameIterator.next();
 
 			MultipartFile file = multipartRequest.getFile(fileName);
 			String origName = file.getOriginalFilename(); 
-			ImportFile importFile;
+			Upload importFile;
 
 			log.debug("Original Name: " + origName);
 			if (origName.toLowerCase().endsWith("xls"))
 			{
 				log.debug("Excel file detected"); 
-				importFile = utility.parseImportXLS(service, gradebookUid, file.getInputStream(), origName.toLowerCase(), gbToolService);
+				importFile = utility.parseImportXLS(service, gradebookUid, file.getInputStream(), origName.toLowerCase(), gbToolService, doPreventScrantronOverwrite);
 
 			}
 			else
@@ -102,14 +104,27 @@ public class GradebookImportController extends SimpleFormController {
 
 			PrintWriter writer = response.getWriter();
 			response.setContentType("text/html");
-			XStream xstream = new XStream(new JsonHierarchicalStreamDriver());
-			log.debug("json: " + xstream.toXML(importFile) ); 
-			writer.write(xstream.toXML(importFile)); 
+			//XStream xstream = new XStream(new JsonHierarchicalStreamDriver());
+			//log.debug("json: " + xstream.toXML(importFile) ); 
+			
+			writer.write(toJson(importFile)); 
 			writer.flush();
 			writer.close();
 		}
 
 		return null;
+	}
+	
+	protected String toJson(Object o) {
+		ObjectMapper mapper = new ObjectMapper();
+		StringWriter w = new StringWriter();
+		try {
+			mapper.writeValue(w, o);
+		} catch (Exception e) {
+			log.error("Caught an exception serializing to JSON: ", e);
+		}
+		
+		return w.toString();
 	}
 
 	protected void initBinder(HttpServletRequest request, ServletRequestDataBinder binder) throws ServletException {

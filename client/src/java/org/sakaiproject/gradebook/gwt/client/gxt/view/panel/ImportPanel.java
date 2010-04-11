@@ -232,7 +232,7 @@ public class ImportPanel extends GradebookPanel {
 				if (property == null || property.equalsIgnoreCase("numberer"))
 					return null;
 				
-				boolean isUserNotFound = DataTypeConversionUtil.checkBoolean((Boolean)model.get("userNotFound"));
+				boolean isUserNotFound = DataTypeConversionUtil.checkBoolean((Boolean)model.get("B_userNotFound"));
 
 				if (isUserNotFound)
 					return resources.css().gbCellDropped();
@@ -381,7 +381,7 @@ public class ImportPanel extends GradebookPanel {
 		int i=0;
 		for (ModelData importRow : importRows) {
 			
-			boolean isUserNotFound = DataTypeConversionUtil.checkBoolean((Boolean)importRow.get("userNotFound"));
+			boolean isUserNotFound = DataTypeConversionUtil.checkBoolean((Boolean)importRow.get("B_userNotFound"));
 
 			if (isUserNotFound)
 				continue;
@@ -416,7 +416,7 @@ public class ImportPanel extends GradebookPanel {
 
 		RestBuilder builder = RestBuilder.getInstance(RestBuilder.Method.PUT, GWT.getModuleBaseURL(),
 				AppConstants.REST_FRAGMENT,
-				AppConstants.UPLOAD_FRAGMENT, gbModel.getGradebookUid(), String.valueOf(gbModel.getGradebookId()));
+				AppConstants.OLD_UPLOAD_FRAGMENT, gbModel.getGradebookUid(), String.valueOf(gbModel.getGradebookId()));
 
 		
 		String jsonText = spreadsheetModel == null ? null : spreadsheetModel.getJSON();
@@ -789,7 +789,7 @@ public class ImportPanel extends GradebookPanel {
 					JSONArray columnsArray = getArray(rowObject, "columns");
 
 					if (!hasUserNotFound && DataTypeConversionUtil.checkBoolean(userNotFound))
-						hasUserNotFound = userNotFound;
+						hasUserNotFound = DataTypeConversionUtil.checkBoolean(userNotFound);
 					
 					ModelData model = new BaseModel();
 					if (userUid != null)

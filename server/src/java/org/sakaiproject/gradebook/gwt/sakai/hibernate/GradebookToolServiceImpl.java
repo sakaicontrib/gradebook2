@@ -53,7 +53,7 @@ import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserConfiguration;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereferenceRealmUpdate;
-import org.sakaiproject.gradebook.gwt.server.DataTypeConversionUtil;
+import org.sakaiproject.gradebook.gwt.server.Util;
 import org.sakaiproject.section.api.SectionAwareness;
 import org.sakaiproject.section.api.coursemanagement.EnrollmentRecord;
 import org.sakaiproject.section.api.facade.Role;
@@ -139,7 +139,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				asn.setPointsPossible(points);
 				asn.setAssignmentWeighting(weight);
 				asn.setDueDate(dueDate);
-				asn.setNotCounted(DataTypeConversionUtil.checkBoolean(isUnweighted));
+				asn.setNotCounted(Util.checkBoolean(isUnweighted));
 				asn.setExtraCredit(isExtraCredit);
 				asn.setUngraded(false);
 				if (isNotCounted != null) {

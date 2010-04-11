@@ -55,6 +55,10 @@ public interface I18nConstants extends Constants {
 	String clearButton();
 	String close();
 	String closeButton();
+	String columnSuffixPrefix();
+	String columnSuffixLetterGrades();
+	String columnSuffixPercentages();
+	String columnSuffixPoints();
 	String columnTitleDisplayId();
 	String columnTitleDisplayName();
 	String columnTitleEmail();
@@ -135,6 +139,8 @@ public interface I18nConstants extends Constants {
 	String headerDeleteItemTitle();
 	String headerEditCategory();
 	String headerEditCategoryTitle();
+	String headerEditGradebook();
+	String headerEditGradebookTitle();
 	String headerEditItem(); 
 	String headerEditItemTitle();
 	String headerExport();
@@ -190,10 +196,13 @@ public interface I18nConstants extends Constants {
 	String modeName();
 	String modeText();
 	String moreMenuHeader();
+	String multigradeImportHeader();
 	String nameFieldLabel();
 	String navigationPanelDynamicTabHeader();
+	String navigationPanelDynamicTabImportHeader();
 	String navigationPanelFixedTabHeader();
 	String navigationPanelHeader();
+	String navigationPanelImportHeader();
 	String newCategoryHeading();
 	String newItemHeading();
 	String newMenuHeader();
@@ -230,6 +239,7 @@ public interface I18nConstants extends Constants {
 	String prefMenuReleaseGradesNo();
 	String prefMenuReleaseGradesYes();
 	String prevLearner();
+	String preventScantronOverwrite();
 	String rankName();	
 	String releasedFieldLabel();
 	String releasedToolTip();

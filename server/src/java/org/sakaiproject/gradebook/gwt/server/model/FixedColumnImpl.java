@@ -3,7 +3,7 @@ package org.sakaiproject.gradebook.gwt.server.model;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
 import org.sakaiproject.gradebook.gwt.client.model.key.FixedColumnKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
-import org.sakaiproject.gradebook.gwt.sakai.Util;
+import org.sakaiproject.gradebook.gwt.server.Util;
 
 public class FixedColumnImpl extends BaseModel implements FixedColumn {
 

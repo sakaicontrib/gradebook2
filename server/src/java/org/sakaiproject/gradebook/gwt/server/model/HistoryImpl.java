@@ -6,7 +6,7 @@ import java.util.List;
 import org.sakaiproject.gradebook.gwt.client.model.History;
 import org.sakaiproject.gradebook.gwt.client.model.HistoryRecord;
 import org.sakaiproject.gradebook.gwt.client.model.key.HistoryKey;
-import org.sakaiproject.gradebook.gwt.sakai.Util;
+import org.sakaiproject.gradebook.gwt.server.Util;
 
 public class HistoryImpl extends HashMap<String, Object> implements History {
 

@@ -7,12 +7,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.model.Item;
-import org.sakaiproject.gradebook.gwt.client.model.key.ConfigurationKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
-import org.sakaiproject.gradebook.gwt.sakai.Util;
+import org.sakaiproject.gradebook.gwt.server.Util;
 
 public class GradeItemImpl extends BaseModel implements GradeItem {
 
@@ -24,6 +23,19 @@ public class GradeItemImpl extends BaseModel implements GradeItem {
 	
 	public GradeItemImpl(Map<String,Object> map) {
 		super(map);
+		
+		List<Map<String,Object>> children = (List<Map<String, Object>>) map.get(ItemKey.A_CHILDREN.name());
+		List<GradeItem> items = new ArrayList<GradeItem>();
+		
+		if (children != null) {
+			for (int i=0;i<children.size();i++) {
+				GradeItem item = new GradeItemImpl(children.get(i));
+				item.setParentName(getName());
+				items.add(item);
+			}
+		}
+		
+		setChildren(items);	
 	}
 	
 	public GradeItemImpl(String id, String name, CategoryType categoryType, GradeType gradeType, Long gradeScaleId,
@@ -112,6 +124,10 @@ public class GradeItemImpl extends BaseModel implements GradeItem {
 		put(ItemKey.A_CHILDREN.name(), childrenList);
 	}
 	
+	public void setChildren(List<GradeItem> children) {
+		put(ItemKey.A_CHILDREN.name(), children);
+	}
+	
 	// Getters
 
 	public Long getCategoryId() {
@@ -137,16 +153,16 @@ public class GradeItemImpl extends BaseModel implements GradeItem {
 	}
 
 	public List<GradeItem> getChildren() {
-		List<GradeItem> children = new ArrayList<GradeItem>();
+		/*List<GradeItem> children = new ArrayList<GradeItem>();
 		List<Map<String,Object>> childrenList = (List<Map<String,Object>>)get(ItemKey.A_CHILDREN.name());
-	
+		
 		if (childrenList != null) {
 			for (Map<String,Object> childMap : childrenList) {
 				children.add(new GradeItemImpl(childMap));
 			}
-		}
+		}*/
 		
-		return children;
+		return (List<GradeItem>)get(ItemKey.A_CHILDREN.name());
 	}
 
 	public String getDataType() {

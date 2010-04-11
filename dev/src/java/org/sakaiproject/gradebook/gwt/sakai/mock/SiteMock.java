@@ -47,13 +47,15 @@ import org.w3c.dom.Element;
 public class SiteMock implements Site {
 
 	private String id;
+	private String title;
 
 	public SiteMock() {
 
 	}
 
-	public SiteMock(String id) {
+	public SiteMock(String id, String title) {
 		this.id = id;
+		this.title = title;
 	}
 
 	public Group addGroup() {
@@ -167,8 +169,7 @@ public class SiteMock implements Site {
 	}
 
 	public String getTitle() {
-		// TODO Auto-generated method stub
-		return null;
+		return title;
 	}
 
 	public ToolConfiguration getTool(String arg0) {

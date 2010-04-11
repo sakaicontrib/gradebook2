@@ -32,7 +32,7 @@ import com.extjs.gxt.ui.client.data.BeanModelLookup;
 
 public class ClientUploadUtility {
 
-	public static List<BeanModel> convertHeadersToBeanModels(List<ImportHeader> headers) {
+	public static List<BeanModel> convertHeadersToBeanModels(List<NewImportHeader> headers) {
 		List<BeanModel> itemModels = new ArrayList<BeanModel>();
 		BeanModelFactory factory = BeanModelLookup.get().getFactory(headers.get(0).getClass());
 		if (factory == null) {

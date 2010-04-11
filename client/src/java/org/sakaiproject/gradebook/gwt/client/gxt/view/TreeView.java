@@ -42,7 +42,6 @@ import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.data.BaseTreeLoader;
-import com.extjs.gxt.ui.client.data.DataReader;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.ModelKeyProvider;
 import com.extjs.gxt.ui.client.data.TreeLoader;
@@ -72,9 +71,7 @@ public class TreeView extends View {
 		
 		
 		if (treeLoader == null) {
-			DataReader<List<ItemModel>> reader = new TreeModelReader<List<ItemModel>>();
-			
-			treeLoader = new BaseTreeLoader<ItemModel>(reader) {
+			treeLoader = new BaseTreeLoader<ItemModel>(new TreeModelReader()) {
 
 				@Override
 				public boolean hasChildren(ItemModel parent) {
@@ -108,7 +105,7 @@ public class TreeView extends View {
 			formPanel.onTreeStoreInitialized(treeStore);
 		}
 		
-		this.treePanel = new ItemTreePanel(treeStore, isEditable);
+		this.treePanel = new ItemTreePanel(treeStore, isEditable, false);
 	}
 
 	@Override
@@ -238,7 +235,6 @@ public class TreeView extends View {
 	}
 
 	protected void onRefreshGradebookItems(Gradebook gradebookModel) {
-		//onMaskItemTree();
 		treeStore.removeAll();
 		ItemModel gradebookItemModel = (ItemModel)gradebookModel.getGradebookItemModel();
 		ItemModel rootItemModel = new ItemModel();
@@ -249,15 +245,11 @@ public class TreeView extends View {
 		treePanel.onBeforeLoadItemTreeModel(gradebookModel, rootItemModel);
 		treePanel.onRefreshGradebookItems(gradebookModel, treeLoader, rootItemModel);
 		formPanel.onLoadItemTreeModel(rootItemModel);
-
-		//treePanel.expandTrees();
-		//treePanel.layout();
-		//onUnmaskItemTree();
 	}
 
 	protected void onRefreshGradebookSetup(Gradebook gradebookModel) {
-		treePanel.onRefreshGradebookSetup(gradebookModel);
-		formPanel.onRefreshGradebookSetup(gradebookModel);
+		treePanel.onRefreshGradebookSetup(gradebookModel, (ItemModel)gradebookModel.getGradebookItemModel());
+		formPanel.onRefreshGradebookSetup(gradebookModel, (ItemModel)gradebookModel.getGradebookItemModel());
 	}
 
 	protected void onSelectItem(String itemModelId) {
@@ -299,7 +291,7 @@ public class TreeView extends View {
 	protected void onSwitchGradebook(final Gradebook selectedGradebook) {
 		this.selectedGradebook = selectedGradebook;
 
-		formPanel.onSwitchGradebook(selectedGradebook);
+		formPanel.onSwitchGradebook(selectedGradebook, selectedGradebook.getGradebookItemModel());
 		treePanel.onSwitchGradebook(selectedGradebook);
 
 		// FIXME: Need to send an event to show which ones are checked

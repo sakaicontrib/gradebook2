@@ -3,7 +3,7 @@ package org.sakaiproject.gradebook.gwt.client.gxt.view;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.ExportDetails;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
-import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ImportPanel;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.NewImportPanel;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -16,7 +16,7 @@ import com.google.gwt.user.client.ui.RootPanel;
 
 public class ImportExportView extends View {
 
-	private ImportPanel importPanel;
+	private NewImportPanel importPanel;
 	private Frame downloadFileFrame;
 	
 	public ImportExportView(Controller controller) {
@@ -72,9 +72,9 @@ public class ImportExportView extends View {
 		}
 	}
 
-	public ImportPanel getImportDialog() {
+	public NewImportPanel getImportDialog() {
 		if (importPanel == null)
-			importPanel = new ImportPanel();
+			importPanel = new NewImportPanel();
 		return importPanel;
 	}
 

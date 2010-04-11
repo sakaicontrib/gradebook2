@@ -68,8 +68,8 @@ public class ItemModel extends EntityTreeModel implements Item {
 		adopt(child);
 		List<ModelData> children = getChildren();
 	    children.add(index, child);
-	    if (children.size() == 1)
-	    	setChildren(children);
+	    //if (children.size() == 1)
+	    setChildren(children);
 	    ChangeEvent evt = new ChangeEvent(Add, this);
 	    evt.setParent(this);
 	    evt.setItem(child);
@@ -115,6 +115,16 @@ public class ItemModel extends EntityTreeModel implements Item {
 		if (children == null)
 			return new ArrayList<ModelData>();
 		return children;
+	}
+	
+	public void removeChild(int i) {
+		List<ModelData> children = getChildren();
+		
+		if (children.size() > i) {
+			children.remove(i);
+		}
+		
+		setChildren(children);
 	}
 	
 	@Override
@@ -825,6 +835,14 @@ public class ItemModel extends EntityTreeModel implements Item {
 
 	public void setScaledExtraCreditEnabled(Boolean allowScaledExtraCredit) {
 		set(ItemKey.B_ALW_SCL_X_CRDT.name(), allowScaledExtraCredit);
+	}
+	
+	public boolean isNotCalculable() {
+		return DataTypeConversionUtil.checkBoolean((Boolean)get(ItemKey.B_ISNT_CALCBLE.name()));
+	}
+	
+	public void setNotCalculable(boolean isNotCalculable) {
+		set(ItemKey.B_ISNT_CALCBLE.name(), Boolean.valueOf(isNotCalculable));
 	}
 
 	public List<Item> getSubItems() {

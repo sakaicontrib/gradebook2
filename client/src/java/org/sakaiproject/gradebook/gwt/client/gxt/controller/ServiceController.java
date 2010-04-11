@@ -370,7 +370,8 @@ public class ServiceController extends Controller {
 				Dispatcher.forwardEvent(GradebookEvents.BeginItemUpdates.getEventType());
 				onUpdateItemSuccess(event, itemModel);
 				onDeleteItemSuccess(event);
-				Dispatcher.forwardEvent(GradebookEvents.EndItemUpdates.getEventType());
+				Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
+				Dispatcher.forwardEvent(GradebookEvents.EndItemUpdates.getEventType(), selectedGradebook);
 				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
 			}
 			
@@ -1009,7 +1010,8 @@ public class ServiceController extends Controller {
 				
 				Dispatcher.forwardEvent(GradebookEvents.BeginItemUpdates.getEventType());
 				onUpdateItemSuccess(event, itemModel);
-				Dispatcher.forwardEvent(GradebookEvents.EndItemUpdates.getEventType());
+				Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
+				Dispatcher.forwardEvent(GradebookEvents.EndItemUpdates.getEventType(), selectedGradebook);
 				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
 			}
 			
