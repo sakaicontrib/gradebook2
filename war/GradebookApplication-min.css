@@ -1,0 +1,38 @@
+#cardLayoutContainer{z-index:5;}
+#loading a{color:#258;}
+#loading .loading-indicator{background:white;color:#444;font:bold 13px tahoma,arial,helvetica;padding:10px;margin:0;height:auto;}
+#loading .loading-indicator img{margin-right:8px;float:left;vertical-align:top;}
+#loading-msg{font:normal 10px arial,tahoma,sans-serif;}
+#multigrade{z-index:1;}
+.ieGbCellCommented{background-image:url(images/gb2/grid/commented.gif);background-color:transparent;background-position:top right;background-repeat:no-repeat;height:auto;width:auto;}
+.ieGbCellFailed{background-image:url(images/gb2/grid/failed.gif);background-color:transparent;background-position:top left;background-repeat:no-repeat;height:auto;width:auto;}
+.ieGbCellSucceeded{background-image:url(images/gb2/grid/modified.gif);background-color:transparent;background-position:top left;background-repeat:no-repeat;height:auto;width:auto;}
+.my-treetbl{border:0 solid #c6c5c5;}
+.my-treeitem,.my-treeitem table,.my-treeitem table td{-moz-user-focus:normal;font-size:12pt;outline-color:-moz-use-text-color;outline-style:none;outline-width:medium;}
+.my-treetbl-data .my-treetbl-cell-text{font-family:arial,tahoma,helvetica,sans-serif;font-size:12pt;padding:1px 4px;}
+.my-treetbl-item{-moz-user-focus:normal;border-bottom:1px solid white;border-top:1px solid white;cursor:default;outline-color:-moz-use-text-color;outline-style:none;outline-width:medium;}
+.my-tree-item-text span{cursor:pointer;display:block;font-family:arial,tahoma,helvetica,sans-serif;font-size:12pt;height:1.2em;padding-left:3px;padding-right:3px;white-space:nowrap;}
+.my-treetbl-item-text span{cursor:pointer;display:block;font-family:arial,tahoma,helvetica,sans-serif;font-size:12pt;height:1.2em;padding-left:3px;padding-right:3px;white-space:nowrap;}
+.x-btn button{-x-system-font:none;background:transparent none repeat scroll 0 0;border:0 none;cursor:pointer;font-family:tahoma,verdana,helvetica;font-size:10pt;font-size-adjust:none;font-stretch:normal;font-style:normal;font-variant:normal;font-weight:normal;line-height:normal;margin:0;outline-color:-moz-use-text-color;outline-style:none;outline-width:0;overflow:visible;padding-left:3px;padding-right:3px;width:auto;}
+.x-fieldset{margin-top:20px;}
+.x-form-focus,textarea.x-form-focus{border:2px solid #7eadd9;}
+.x-form-item{font-family:tahoma,arial,helvetica,sans-serif;font-size:12pt;font-size-adjust:none;font-style:normal;font-variant:normal;font-weight:normal;line-height:normal;margin-bottom:0;}
+.x-form-item label{-x-system-font:none;font-family:tahoma,arial,helvetica,sans-serif;font-size:12pt;font-size-adjust:none;font-stretch:normal;font-style:normal;font-variant:normal;font-weight:normal;line-height:normal;}
+.x-grid3-body .x-grid3-td-checker{background-image:none;}
+.x-grid3-row-selected .x-grid3-row-checker{background-position:2px 2px;}
+.x-grid3-row-checked .x-grid3-row-checker{background-position:-23px 2px;}
+.x-grid3-hd-checker-on .x-grid3-hd-checker{background-position:-23px 2px;}
+.x-grid3-hd-inner{cursor:inherit;font-size:9pt!important;padding:4px 3px 4px 5px;position:relative;}
+.x-grid3-row td.x-grid3-cell,.x-grid3-summary-row td.x-grid3-cell{border-left:1px solid lavender;padding-left:1px;padding-right:0;line-height:1.5em;}
+.x-grid3-row-checker{background-color:white;border:0 solid white;width:30px;}
+.x-grid3-cell-inner,.x-grid3-hd-inner{padding:3px 3px 3px 5px;font-size:12pt;}
+.x-info{border-style:solid;border-color:#99bbe8;border-width:0;z-index:99999999;}
+.x-menu-sep{border-bottom:1px solid #e0e0e0;display:block;font-size:1px;line-height:1px;margin:0 25px 3px;overflow:hidden;}
+.x-panel-mc{font-family:tahoma,arial,helvetica,sans-serif;font-size:12pt;font-size-adjust:none;font-style:normal;font-variant:normal;font-weight:normal;line-height:normal;}
+.x-treegrid .x-grid3-row{border-color:#fff;}
+.x-treegrid .x-grid3-cell-inner,.x-grid3-hd-inner{border-right:0 solid #fff;font-size:12pt;overflow:hidden;padding:3px 5px;white-space:nowrap;}
+.x-treegrid .x-grid3-row td.x-grid3-cell,.x-treegrid .x-grid3-summary-row td.x-grid3-cell{border-left:0;padding-left:1px;padding-right:1px;line-height:1.2em;}
+.x-tree3-node-text{-x-system-font:none;color:black;font-family:arial,tahoma,helvetica,sans-serif;font-size:12pt;font-size-adjust:none;font-stretch:normal;font-style:normal;font-variant:normal;font-weight:normal;line-height:normal;}
+.x-window-mc{font-size:12pt;padding:10px;}
+.grid-show-columns{background-image:url(images/gb2/grid/table_row_insert.png);}
+.grid-hide-columns{background-image:url(images/gb2/grid/table_row_delete.png);}
