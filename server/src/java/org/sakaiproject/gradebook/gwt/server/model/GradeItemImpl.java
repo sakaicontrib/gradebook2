@@ -153,8 +153,13 @@ public class GradeItemImpl extends BaseModel implements GradeItem {
 	}
 
 	public List<GradeItem> getChildren() {
-		/*List<GradeItem> children = new ArrayList<GradeItem>();
-		List<Map<String,Object>> childrenList = (List<Map<String,Object>>)get(ItemKey.A_CHILDREN.name());
+		
+		List<GradeItem> children = (List<GradeItem>)get(ItemKey.A_CHILDREN.name()); 
+		
+		if (children == null)
+			children = new ArrayList<GradeItem>();
+		
+		/*List<Map<String,Object>> childrenList = (List<Map<String,Object>>)get(ItemKey.A_CHILDREN.name());
 		
 		if (childrenList != null) {
 			for (Map<String,Object> childMap : childrenList) {
@@ -162,7 +167,7 @@ public class GradeItemImpl extends BaseModel implements GradeItem {
 			}
 		}*/
 		
-		return (List<GradeItem>)get(ItemKey.A_CHILDREN.name());
+		return children;
 	}
 
 	public String getDataType() {

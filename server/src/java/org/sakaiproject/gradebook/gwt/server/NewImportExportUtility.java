@@ -1608,8 +1608,12 @@ public class NewImportExportUtility {
 			
 			if (cType != CategoryType.NO_CATEGORIES && gradebookItemModel != null) {
 			
-				for (GradeItem categoryModel : gradebookItemModel.getChildren()) {
-					ieInfo.getCategoryIdItemMap().put(categoryModel.getIdentifier(), categoryModel);
+				List<GradeItem> children = gradebookItemModel.getChildren();
+				
+				if (children != null) {
+					for (GradeItem categoryModel : children) {
+						ieInfo.getCategoryIdItemMap().put(categoryModel.getIdentifier(), categoryModel);
+					}
 				}
 				
 				if (ieInfo.getCategoryIdItemMap().get("-1") == null) {
@@ -1773,7 +1777,9 @@ public class NewImportExportUtility {
 					header.setItem(itemModel);
 				}
 				
-				if (categoryModel != null) {
+				if (categoryType == CategoryType.NO_CATEGORIES) {
+					((GradeItem)gradebookItemModel).addChild(itemModel);
+				} else if (categoryModel != null) {
 					if (categoryModel.getName() != null && categoryModel.getName().equals(AppConstants.DEFAULT_CATEGORY_NAME))
 						itemModel.setIncluded(Boolean.FALSE);
 						

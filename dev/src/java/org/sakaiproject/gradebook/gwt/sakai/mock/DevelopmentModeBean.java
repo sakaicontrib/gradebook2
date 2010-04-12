@@ -49,7 +49,7 @@ public class DevelopmentModeBean {
 	
 	
 	public void init() {	
-
+/*
 		try {
 			
 			Gradebook2AuthzMockImpl authz = (Gradebook2AuthzMockImpl)((Gradebook2ComponentServiceImpl)service).getAuthz();
@@ -242,7 +242,7 @@ public class DevelopmentModeBean {
 			
 		} catch (Exception fe) {
 			GWT.log("Failed to update gradebook properties", fe);
-		}
+		}*/
 	}
 	
 	private GradeItem getActiveItem(GradeItem parent) {
