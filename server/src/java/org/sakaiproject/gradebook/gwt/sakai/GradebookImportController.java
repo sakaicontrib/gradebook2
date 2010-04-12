@@ -37,7 +37,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportFile;
 import org.sakaiproject.gradebook.gwt.client.model.Upload;
+import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
 import org.sakaiproject.gradebook.gwt.server.NewImportExportUtility;
 import org.sakaiproject.gradebook.gwt.server.NewImportExportUtility.Delimiter;
 import org.springframework.validation.BindException;
@@ -47,6 +49,9 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.support.ByteArrayMultipartFileEditor;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.SimpleFormController;
+
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
 
 public class GradebookImportController extends SimpleFormController {
 
@@ -79,37 +84,74 @@ public class GradebookImportController extends SimpleFormController {
 		String preventScantronOverwrite = multipartRequest.getParameter("preventScantronOverwrite");
 		boolean doPreventScrantronOverwrite = preventScantronOverwrite == null ? Boolean.FALSE : Boolean.valueOf(preventScantronOverwrite);
 		
-		NewImportExportUtility utility = new NewImportExportUtility();
-		
-		for (Iterator<String> fileNameIterator = multipartRequest.getFileNames();fileNameIterator.hasNext();) {
-			String fileName = fileNameIterator.next();
-
-			MultipartFile file = multipartRequest.getFile(fileName);
-			String origName = file.getOriginalFilename(); 
-			Upload importFile;
-
-			log.debug("Original Name: " + origName);
-			if (origName.toLowerCase().endsWith("xls"))
-			{
-				log.debug("Excel file detected"); 
-				importFile = utility.parseImportXLS(service, gradebookUid, file.getInputStream(), origName.toLowerCase(), gbToolService, doPreventScrantronOverwrite);
-
-			}
-			else
-			{
-				log.debug("Assuming CSV file"); 
-				InputStreamReader reader = new InputStreamReader(file.getInputStream());
-				importFile = utility.parseImportCSV(service, gradebookUid, reader);
-			}
-
-			PrintWriter writer = response.getWriter();
-			response.setContentType("text/html");
-			//XStream xstream = new XStream(new JsonHierarchicalStreamDriver());
-			//log.debug("json: " + xstream.toXML(importFile) ); 
+		if (service.isOldImport()) {
+			ImportExportUtility utility = new ImportExportUtility();
 			
-			writer.write(toJson(importFile)); 
-			writer.flush();
-			writer.close();
+			for (Iterator<String> fileNameIterator = multipartRequest.getFileNames();fileNameIterator.hasNext();) {
+				String fileName = fileNameIterator.next();
+	
+				MultipartFile file = multipartRequest.getFile(fileName);
+				String origName = file.getOriginalFilename(); 
+				ImportFile importFile;
+	
+				log.debug("Original Name: " + origName);
+				if (origName.toLowerCase().endsWith("xls"))
+				{
+					log.debug("Excel file detected"); 
+					importFile = utility.parseImportXLS(service, gradebookUid, file.getInputStream(), origName.toLowerCase(), gbToolService);
+	
+				}
+				else
+				{
+					log.debug("Assuming CSV file"); 
+					InputStreamReader reader = new InputStreamReader(file.getInputStream());
+					importFile = utility.parseImportCSV(service, gradebookUid, reader);
+				}
+	
+				PrintWriter writer = response.getWriter();
+				response.setContentType("text/html");
+				XStream xstream = new XStream(new JsonHierarchicalStreamDriver());
+				//log.debug("json: " + xstream.toXML(importFile) ); 
+				
+				writer.write(xstream.toXML(importFile)); 
+				writer.flush();
+				writer.close();
+			}
+			
+		} else {
+		
+			NewImportExportUtility utility = new NewImportExportUtility();
+			
+			for (Iterator<String> fileNameIterator = multipartRequest.getFileNames();fileNameIterator.hasNext();) {
+				String fileName = fileNameIterator.next();
+	
+				MultipartFile file = multipartRequest.getFile(fileName);
+				String origName = file.getOriginalFilename(); 
+				Upload importFile;
+	
+				log.debug("Original Name: " + origName);
+				if (origName.toLowerCase().endsWith("xls"))
+				{
+					log.debug("Excel file detected"); 
+					importFile = utility.parseImportXLS(service, gradebookUid, file.getInputStream(), origName.toLowerCase(), gbToolService, doPreventScrantronOverwrite);
+	
+				}
+				else
+				{
+					log.debug("Assuming CSV file"); 
+					InputStreamReader reader = new InputStreamReader(file.getInputStream());
+					importFile = utility.parseImportCSV(service, gradebookUid, reader);
+				}
+	
+				PrintWriter writer = response.getWriter();
+				response.setContentType("text/html");
+				//XStream xstream = new XStream(new JsonHierarchicalStreamDriver());
+				//log.debug("json: " + xstream.toXML(importFile) ); 
+				
+				writer.write(toJson(importFile)); 
+				writer.flush();
+				writer.close();
+			}
 		}
 
 		return null;

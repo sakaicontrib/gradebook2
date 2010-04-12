@@ -501,12 +501,13 @@ public class ImportPanel extends GradebookPanel {
 
 					Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 					selectedGradebook.setGradebookGradeItem((ItemModel)result.get(UploadKey.M_GB_ITM.name()));
-					Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookSetup.getEventType(), selectedGradebook);
-					Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookItems.getEventType(), selectedGradebook);
+					//Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookSetup.getEventType(), selectedGradebook);
+					//Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookItems.getEventType(), selectedGradebook);
 					// Have to do this one, otherwise the multigrid is not fully refreshed. 
-					Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades.getEventType());
+					Dispatcher.forwardEvent(GradebookEvents.SwitchGradebook.getEventType(), selectedGradebook);
 				} catch (Exception e) {
 					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(e));
+					GWT.log("Caught exception", e);
 				} finally {
 					uploadingBox.close();
 				}

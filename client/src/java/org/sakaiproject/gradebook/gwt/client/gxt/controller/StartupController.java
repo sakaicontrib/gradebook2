@@ -38,10 +38,12 @@ public class StartupController extends Controller {
 		final boolean isUserAbleToViewOwnGrades = authModel.isUserAbleToViewOwnGrades() == null ? false : authModel.isUserAbleToViewOwnGrades().booleanValue();
 		final boolean isUserAbleToEditItems = DataTypeConversionUtil.checkBoolean(authModel.isUserAbleToEditAssessments());
 		final boolean isNewGradebook = DataTypeConversionUtil.checkBoolean(authModel.isNewGradebook());
-
+		final boolean isOldImport = DataTypeConversionUtil.checkBoolean(authModel.isOldImport());
+		
 		Registry.register(AppConstants.IS_NEW_GRADEBOOK, Boolean.valueOf(isNewGradebook));
 		Registry.register(AppConstants.IS_ABLE_TO_GRADE, Boolean.valueOf(isUserAbleToGrade));
 		Registry.register(AppConstants.IS_ABLE_TO_EDIT, Boolean.valueOf(isUserAbleToEditItems));
+		Registry.register(AppConstants.IS_OLD_IMPORT, Boolean.valueOf(isOldImport));
 		
 		final I18nConstants i18n = Registry.get(AppConstants.I18N);
 		

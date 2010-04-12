@@ -266,6 +266,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 	private SiteService siteService;
 	private ToolManager toolManager;	
 	private UserDirectoryService userService;
+	private boolean isOldImport = false;
 	
 	
 	public Learner assignComment(String itemId, String studentUid, String text) {
@@ -1823,6 +1824,9 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 					limitScaledExtraCreditToCategoryType = CategoryType.SIMPLE_CATEGORIES;
 			}
 			
+			String oldImportIndicator = configService.getString(AppConstants.USE_OLD_IMPORT);
+			isOldImport = oldImportIndicator != null && oldImportIndicator.equalsIgnoreCase("true");
+			
 		} else {
 			enabledGradeTypes.add(GradeType.POINTS);
 			enabledGradeTypes.add(GradeType.PERCENTAGES);
@@ -1835,6 +1839,10 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		if (learnerRoleNames == null)
 			learnerRoleNames = new String[] { "Student", "access" };
 		
+	}
+	
+	public boolean isOldImport() {
+		return isOldImport;
 	}
 	
 	public boolean isValidLetterGrade(String letterGrade) {
@@ -4648,6 +4656,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			authModel.setUserAbleToViewOwnGrades(Boolean.valueOf(isUserAbleToViewOwnGrades));
 			authModel.setUserHasGraderPermissions(Boolean.valueOf(authz.hasUserGraderPermissions(gradebook.getUid())));
 			authModel.setNewGradebook(Boolean.valueOf(isNewGradebook));
+			authModel.setOldImport(Boolean.valueOf(isOldImport));
 			authModel.setPlacementId(getPlacementId());
 
 			return authModel;

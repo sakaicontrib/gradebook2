@@ -84,6 +84,8 @@ public interface Gradebook2ComponentService {
 	public List<Statistics> getStatistics(String gradebookUid, Long gradebookId, String studentId) throws SecurityException;
 	
 	public List<Map<String,Object>> getVisibleSections(String gradebookUid, boolean enableAllSectionsEntry, String allSectionsEntryTitle);
+
+	public boolean isOldImport();
 	
 	public boolean isValidLetterGrade(String letterGrade);
 

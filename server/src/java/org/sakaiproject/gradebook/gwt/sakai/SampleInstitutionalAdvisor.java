@@ -80,8 +80,13 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 
 	public String getExportCourseManagementId(String userEid, Group group, List<String> enrollmentSetEids) {
 
-		if(null == group) {
+		if (null == group) {
 			log.error("ERROR : Group is null");
+			return null;
+		}
+		
+		if (null == group.getContainingSite()) {
+			log.warn("Containing site is null");
 			return null;
 		}
 
