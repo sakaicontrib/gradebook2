@@ -1624,6 +1624,7 @@ public class NewImportExportUtility {
 					categoryModel.setName(AppConstants.DEFAULT_CATEGORY_NAME);
 					
 					gradebookItemModel.addChild((GradeItem)categoryModel);
+					ieInfo.getCategoryIdItemMap().put("-1", categoryModel);
 				}
 			}
 		}
