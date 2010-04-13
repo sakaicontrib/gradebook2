@@ -354,7 +354,15 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.COMMENT.name(), actionType);
 		actionRecord.setEntityName(assignment.getName());
 		Map<String, String> propertyMap = actionRecord.getPropertyMap();
-		propertyMap.put("comment", text);
+		
+		if (text != null && text.length() > 255)
+		{
+			propertyMap.put("comment", "Comment text is too long and is truncated.  Here are the first 100 characters: " + text.substring(0, 100));			
+		}
+		else
+		{
+			propertyMap.put("comment", text);
+		}
 		
 		try {
 			gbService.updateComment(comment);
