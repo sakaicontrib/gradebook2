@@ -5399,8 +5399,17 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			}
 			assignmentGradeRecord.setPointsEarned(value);
 			break;
-		case GradebookService.GRADE_TYPE_PERCENTAGE:
 		case GradebookService.GRADE_TYPE_LETTER:
+			// GRBK-582 : We reversed the case statements so that we can
+			// can reverse lookup the letter grade and set it in the assignmentGradeRecord object
+			if(null == value) {
+				assignmentGradeRecord.setLetterEarned("");
+			}
+			else {
+				assignmentGradeRecord.setLetterEarned(gradeCalculations.convertPercentageToLetterGrade(new BigDecimal(value)));
+			}
+		case GradebookService.GRADE_TYPE_PERCENTAGE:
+		
 			BigDecimal pointsEarned = null;
 			if (value != null) {
 				if (value.compareTo(Double.valueOf(100d)) > 0)
