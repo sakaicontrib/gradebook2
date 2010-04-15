@@ -551,6 +551,11 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 							assignId = Long.parseLong(assignIdStr);
 						} catch (NumberFormatException e) {
 							ge.stopEvent();
+							// GRBK-575 : disabling all context menu items if the user clicks
+							// on a none grade item cell
+							contextMenu.enableAddComment(false);
+							contextMenu.enableEditComment(false);
+							contextMenu.enableViewGradeHistory(false);
 							return;
 						}
 						commentingStudentModel = newStore().getAt(ge.getRowIndex());
