@@ -120,52 +120,42 @@ public class UploadImpl extends BaseModel implements Upload {
 		set(UploadKey.A_ROWS.name(), rows);
 	}
 
-	@Override
 	public CategoryType getCategoryType() {
 		return Util.toCategoryType(get(UploadKey.C_CTGRY_TYPE.name()));
 	}
 
-	@Override
 	public GradeType getGradeType() {
 		return Util.toGradeType(get(UploadKey.G_GRD_TYPE.name()));
 	}
 
-	@Override
 	public String getNotes() {
 		return get(UploadKey.S_NOTES.name());
 	}
 
-	@Override
 	public boolean hasErrors() {
 		return Util.toBooleanPrimitive(get(UploadKey.B_HAS_ERRS.name()));
 	}
 
-	@Override
 	public boolean isNotifyAssignmentName() {
 		return Util.toBooleanPrimitive(get(UploadKey.B_NTFY_ITM_NM.name()));
 	}
 
-	@Override
 	public void setCategoryType(CategoryType categoryType) {
 		put(UploadKey.C_CTGRY_TYPE.name(), categoryType.name());
 	}
 
-	@Override
 	public void setErrors(boolean hasErrors) {
 		put(UploadKey.B_HAS_ERRS.name(), Boolean.valueOf(hasErrors));
 	}
 
-	@Override
 	public void setGradeType(GradeType gradeType) {
 		put(UploadKey.G_GRD_TYPE.name(), gradeType.name());
 	}
 
-	@Override
 	public void setNotes(String notes) {
 		put(UploadKey.S_NOTES.name(), notes);
 	}
 
-	@Override
 	public void setNotifyAssignmentName(boolean doNotify) {
 		put(UploadKey.B_NTFY_ITM_NM.name(), Boolean.valueOf(doNotify));
 	}

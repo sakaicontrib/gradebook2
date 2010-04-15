@@ -378,6 +378,7 @@ public class ItemTreePanel extends GradebookPanel {
 		};
 		item.setLayout(new FitLayout());
 		item.add(itemGrid);
+	
 		tabPanel.add(item);
 
 		learnerAttributeLoader = new BaseTreeLoader<FixedColumnModel>(new TreeModelReader());
@@ -426,6 +427,7 @@ public class ItemTreePanel extends GradebookPanel {
 		tabPanel.add(item);
 
 		add(tabPanel);
+		//add(new message)
 	}
 	
 	public void onBeforeLoadItemTreeModel(Gradebook selectedGradebook, Item rootItem) {

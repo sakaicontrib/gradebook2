@@ -234,7 +234,7 @@ public class TreeView extends View {
 		formPanel.onNewItem(itemModel);
 	}
 
-	protected void onRefreshGradebookItems(Gradebook gradebookModel) {
+	protected void onRefreshGradebookItems(Gradebook gradebookModel) {////message here?
 		treeStore.removeAll();
 		ItemModel gradebookItemModel = (ItemModel)gradebookModel.getGradebookItemModel();
 		ItemModel rootItemModel = new ItemModel();

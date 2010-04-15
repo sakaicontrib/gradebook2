@@ -9,7 +9,11 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Accessibility;
-
+/*
+ * 
+ * @deprecated - {@see TreeGrid}
+ */
+@Deprecated
 public class AriaTreeTable extends TreeTable {
 
 	private String summary;

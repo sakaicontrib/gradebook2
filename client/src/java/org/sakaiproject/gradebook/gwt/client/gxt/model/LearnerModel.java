@@ -263,12 +263,10 @@ public class LearnerModel extends EntityModel implements Comparable<LearnerModel
 		return getIdentifier().compareTo(o.getIdentifier());
 	}
 
-	@Override
 	public Boolean getUserNotFound() {
 		return get(LearnerKey.B_USR_NT_FD.name());
 	}
 
-	@Override
 	public void setUserNotFound(Boolean isNotFound) {
 		set(LearnerKey.B_USR_NT_FD.name(), isNotFound);
 	}

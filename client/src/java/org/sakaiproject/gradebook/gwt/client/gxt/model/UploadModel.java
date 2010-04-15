@@ -64,7 +64,6 @@ public class UploadModel extends EntityModel implements Upload {
 		set(UploadKey.A_ROWS.name(), rows);
 	}
 
-	@Override
 	public CategoryType getCategoryType() {
 		Object obj = get(UploadKey.C_CTGRY_TYPE.name());
 		
@@ -77,7 +76,6 @@ public class UploadModel extends EntityModel implements Upload {
 		return CategoryType.valueOf((String)obj);
 	}
 
-	@Override
 	public GradeType getGradeType() {
 	 	Object obj = get(UploadKey.G_GRD_TYPE.name());
 		
@@ -90,42 +88,34 @@ public class UploadModel extends EntityModel implements Upload {
 		return GradeType.valueOf((String)obj);
 	}
 
-	@Override
 	public String getNotes() {
 		return get(UploadKey.S_NOTES.name());
 	}
 
-	@Override
 	public boolean hasErrors() {
 		return DataTypeConversionUtil.checkBoolean((Boolean)get(UploadKey.B_HAS_ERRS.name()));
 	}
 
-	@Override
 	public boolean isNotifyAssignmentName() {
 		return DataTypeConversionUtil.checkBoolean((Boolean)get(UploadKey.B_NTFY_ITM_NM.name()));
 	}
 
-	@Override
 	public void setCategoryType(CategoryType categoryType) {
 		set(UploadKey.C_CTGRY_TYPE.name(), categoryType.name());
 	}
 
-	@Override
 	public void setErrors(boolean hasErrors) {
 		set(UploadKey.B_HAS_ERRS.name(), Boolean.valueOf(hasErrors));
 	}
 
-	@Override
 	public void setGradeType(GradeType gradeType) {
 		set(UploadKey.G_GRD_TYPE.name(), gradeType.name());
 	}
 
-	@Override
 	public void setNotes(String notes) {
 		set(UploadKey.S_NOTES.name(), notes);
 	}
 
-	@Override
 	public void setNotifyAssignmentName(boolean doNotify) {
 		set(UploadKey.B_NTFY_ITM_NM.name(), Boolean.valueOf(doNotify));
 	}
