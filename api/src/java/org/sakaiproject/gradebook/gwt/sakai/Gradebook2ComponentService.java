@@ -20,8 +20,8 @@ import org.sakaiproject.gradebook.gwt.client.model.Roster;
 import org.sakaiproject.gradebook.gwt.client.model.Statistics;
 import org.sakaiproject.gradebook.gwt.client.model.Upload;
 import org.sakaiproject.gradebook.gwt.sakai.InstitutionalAdvisor.Column;
+import org.sakaiproject.gradebook.gwt.sakai.model.GradeItem;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
-import org.sakaiproject.gradebook.gwt.server.model.GradeItem;
 import org.sakaiproject.site.api.Group;
 import org.sakaiproject.site.api.Site;
 

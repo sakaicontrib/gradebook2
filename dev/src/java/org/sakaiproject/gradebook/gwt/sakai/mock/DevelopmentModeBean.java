@@ -35,7 +35,7 @@ import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentServiceImpl;
-import org.sakaiproject.gradebook.gwt.server.model.GradeItem;
+import org.sakaiproject.gradebook.gwt.sakai.model.GradeItem;
 import org.sakaiproject.gradebook.gwt.server.model.GradeItemImpl;
 import org.sakaiproject.service.gradebook.shared.GradebookExternalAssessmentService;
 
