@@ -43,13 +43,23 @@ import com.google.gwt.core.client.GWT;
 
 public class DevelopmentModeBean {
 
+	public static final String PROP_GB2_DEV_MOCKDATA = "gb2.dev.mockItems";
 	private static final long serialVersionUID = 1L;
 	private Gradebook2ComponentService service;
 	private GradebookExternalAssessmentService externalService;
 	
 	
 	public void init() {	
-/*
+		
+		if(System.getProperty(PROP_GB2_DEV_MOCKDATA, "true").equals("true")) {
+			setUpMockData();
+		}
+		
+		
+	}
+	
+	private void setUpMockData() {
+
 		try {
 			
 			Gradebook2AuthzMockImpl authz = (Gradebook2AuthzMockImpl)((Gradebook2ComponentServiceImpl)service).getAuthz();
@@ -242,9 +252,10 @@ public class DevelopmentModeBean {
 			
 		} catch (Exception fe) {
 			GWT.log("Failed to update gradebook properties", fe);
-		}*/
+		}
+		
 	}
-	
+
 	private GradeItem getActiveItem(GradeItem parent) {
 		if (parent.isActive())
 			return parent;
