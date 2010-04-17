@@ -303,5 +303,7 @@ public interface I18nConstants extends Constants {
 
 	String weightName();	
 	
-	
+	String statisticsDataErrorTitle();
+	String statisticsDataErrorMsg();
+	String statisticsGraphInstructions();
 }

@@ -62,6 +62,12 @@ public interface GradebookCssResource extends CssResource {
 	
 	String gbStatisticsButton();
 	
+	String gbStatisticsButtonPie();
+	
+	String gbStatisticsButtonBar();
+	
+	String gbStatisticsButtonLine();
+	
 	String gbStudentInformation();
 	
 	String gbTabMargins();
@@ -73,5 +79,7 @@ public interface GradebookCssResource extends CssResource {
 	String gbWarning();
 	
 	String loadingIndicator();
+	
+	String gbStatisticsInstructions();
 
 }

@@ -1552,6 +1552,35 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return siteService;
 	}
 
+	public int[] getGradeItemStatistics(Long assignmentId) throws SecurityException {
+		
+		int[] gradeFrequencies = new int[10];
+		
+		List<AssignmentGradeRecord> assignmentGradeRecords = gbService.getAllAssignmentGradeRecords(new Long[] {assignmentId});
+		
+		for(AssignmentGradeRecord assignmentGradeRecord : assignmentGradeRecords) {
+			
+			Double gradeAsPercentage = assignmentGradeRecord.getGradeAsPercentage();
+			
+			// In case we encounter an assignmentGradeRecords,
+			// for which the grade has been deleted
+			if(null == gradeAsPercentage) {
+				continue;
+			}
+			
+			// If the percentage grade is 100%, we subtract one so that we don't
+			// get an index out of bound exception. 100% is part of the 90+ % category
+			if(0 == gradeAsPercentage.compareTo(new Double(100))) {
+				gradeAsPercentage = new Double(99);
+			}
+			
+			int value = gradeAsPercentage.intValue() / 10;
+			gradeFrequencies[value] = ++gradeFrequencies[value];
+		}
+		
+		return gradeFrequencies;
+	}
+	
 	public List<Statistics> getStatistics(String gradebookUid, Long gradebookId, String studentId) throws SecurityException {
 		
 		Gradebook gradebook = null;

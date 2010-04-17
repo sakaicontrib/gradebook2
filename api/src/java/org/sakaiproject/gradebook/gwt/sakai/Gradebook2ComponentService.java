@@ -80,6 +80,8 @@ public interface Gradebook2ComponentService {
 	public List<Permission> getPermissions(String gradebookUid, Long gradebookId, String graderId) throws SecurityException;
 	
 	public Site getSite();
+
+	public int[] getGradeItemStatistics(Long assignmentId) throws SecurityException;
 	
 	public List<Statistics> getStatistics(String gradebookUid, Long gradebookId, String studentId) throws SecurityException;
 	

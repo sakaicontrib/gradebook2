@@ -23,6 +23,15 @@ public interface GradebookResources extends ClientBundle {
 	@Source("chart_curve.png")
 	ImageResource chart_curve();
 	
+	@Source("chart_bar.png")
+	ImageResource chart_bar();
+	
+	@Source("chart_line.png")
+	ImageResource chart_line();
+	
+	@Source("chart_pie.png")
+	ImageResource chart_pie();
+	
 	@Source("commented.gif")
 	@ImageOptions(repeatStyle=RepeatStyle.None)
 	ImageResource commented();

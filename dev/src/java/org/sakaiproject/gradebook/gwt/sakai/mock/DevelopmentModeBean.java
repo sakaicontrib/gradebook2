@@ -253,7 +253,6 @@ public class DevelopmentModeBean {
 		} catch (Exception fe) {
 			GWT.log("Failed to update gradebook properties", fe);
 		}
-		
 	}
 
 	private GradeItem getActiveItem(GradeItem parent) {

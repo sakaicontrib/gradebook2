@@ -110,6 +110,14 @@
       		<artifactId>gradebook2-shared</artifactId>
   		</dependency>
 
+		<!-- GWT Visualization Dependency -->
+    	<dependency>
+    		<groupId>com.google.gwt.google-apis</groupId>
+    		<artifactId>gwt-visualization</artifactId>
+    		<version>1.0.2</version>
+    		<scope>compile</scope>
+    	</dependency>
+    	
 	</dependencies>	
 </project>
 

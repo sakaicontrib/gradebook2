@@ -35,7 +35,7 @@
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/1.2.0-SNAPSHOT/kernel-1.2.0-SNAPSHOT.pom"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/course-management/coursemanagement-api/1.1-SNAPSHOT/coursemanagement-api-1.1-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/gradebook/gradebook-service-api/1.1-SNAPSHOT/gradebook-service-api-1.1-SNAPSHOT.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/gradebook/gradebook-service-hibernate/1.1-SNAPSHOT/gradebook-service-hibernate-1.1-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/gradebook/gradebook-service-hibernate/1.1-SNAPSHOT/gradebook-service-hibernate-1.1-SNAPSHOT.jar" sourcepath="/EDU-SERVICE-SRC"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/gradebook/gradebook-service-impl/1.1-SNAPSHOT/gradebook-service-impl-1.1-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-component-manager/1.2.0-SNAPSHOT/sakai-component-manager-1.2.0-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-kernel-api/1.2.0-SNAPSHOT/sakai-kernel-api-1.2.0-SNAPSHOT.jar" sourcepath="/src/kernel"/>
@@ -57,5 +57,6 @@
 	<classpathentry kind="var" path="M2_REPO/org/codehaus/jackson/jackson-jaxrs/1.1.1/jackson-jaxrs-1.1.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/codehaus/jackson/jackson-mapper-asl/1.1.1/jackson-mapper-asl-1.1.1.jar"/>
 	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
+	<classpathentry kind="var" path="M2_REPO/com/google/gwt/google-apis/gwt-visualization/1.0.2/gwt-visualization-1.0.2.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

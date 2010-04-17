@@ -2,13 +2,17 @@
 
 	<!-- Inherit the core Web Toolkit stuff.                  -->
 	<inherits name='com.google.gwt.user.User'/>
+	
+	<!-- Inherit the GWT Visualization library -->
+	<inherits name="com.google.gwt.visualization.Visualization" />
+	
 	<inherits name='com.google.gwt.json.JSON'/>
 	<!--inherits name='com.google.gwt.animation.Animation'/-->
 	<!-- Inherit internationalization 						  -->
 	<inherits name='com.google.gwt.i18n.I18N'/>
 	<inherits name="com.google.gwt.resources.Resources" />
 	
-	<!-- Inherit the Ext-GWT (gxt-1.1) Toolkit library -->
+	<!-- Inherit the Ext-GWT Toolkit library -->
 	<inherits name='com.extjs.gxt.ui.GXT'/>
 	
 	<!-- Specify the app entry point class.                   -->

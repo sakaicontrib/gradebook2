@@ -115,6 +115,10 @@
 	padding: 5 5 10 5;
 }
 
+.gbStatisticsInstructions {
+	padding-left: 10px;
+}
+
 @sprite .gbItemIcon {
 	gwt-image: "table";	
 }
@@ -169,6 +173,18 @@
 
 @sprite .gbStatisticsButton {
 	gwt-image: "chart_curve";
+}
+
+@sprite .gbStatisticsButtonLine {
+	gwt-image: "chart_line";
+}
+
+@sprite .gbStatisticsButtonPie {
+	gwt-image: "chart_pie";
+}
+
+@sprite .gbStatisticsButtonBar {
+	gwt-image: "chart_bar";
 }
 
 @sprite .loadingIndicator {

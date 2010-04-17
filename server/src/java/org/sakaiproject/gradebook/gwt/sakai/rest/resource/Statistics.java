@@ -7,28 +7,36 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 
-@Path("statistics/{uid}/{id}")
+@Path(AppConstants.STATISTICS_FRAGMENT)
 public class Statistics extends Resource {
 
-	@GET 
+	@GET @Path("/{uid}/{id}")
     @Produces("application/json")
-    public String get(@PathParam("uid") String gradebookUid, @PathParam("id") Long gradebookId) 
-	throws SecurityException {
+    public String get(@PathParam("uid") String gradebookUid, @PathParam("id") Long gradebookId) throws SecurityException {
+		
 		List<org.sakaiproject.gradebook.gwt.client.model.Statistics> list = 
 			service.getStatistics(gradebookUid, gradebookId, null);
 		return toJson(list, list.size());
 	}
 	
-	@GET @Path("{studentUid}")
+	@GET @Path("/{uid}/{id}/{studentUid}")
     @Produces("application/json")
     public String get(@PathParam("uid") String gradebookUid, @PathParam("id") Long gradebookId,
-    		@PathParam("studentUid") String studentUid) 
-	throws SecurityException {
+    		@PathParam("studentUid") String studentUid) throws SecurityException {
+		
 		List<org.sakaiproject.gradebook.gwt.client.model.Statistics> list = 
 			service.getStatistics(gradebookUid, gradebookId, studentUid);
 		return toJson(list, list.size());
 	}
 	
+	@GET @Path("/" + AppConstants.INSTRUCTOR_FRAGMENT + "/{assignmentId}")
+	@Produces("application/json")
+	public String get(@PathParam("assignmentId") Long assignmentId) throws SecurityException {
+		
+		int[] gradeFrequencies = service.getGradeItemStatistics(assignmentId);
+		return toJson(gradeFrequencies);
+	}
 }
