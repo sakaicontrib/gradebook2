@@ -35,6 +35,9 @@ You will also need to include the following VM args in the Run Configuration:
 
 -Xmx1028m -XX:PermSize=256m -XX:MaxPermSize=400m -Dgb2.security=false -Dgb2.mode=hosted -Dgb2.role=admin -Dgb2.config.gb2.enable.scaled.extra.credit=admin -Dgb2.config.gb2.limit.scaled.extra.credit=categories -Dgb2.config.gb2.gradable.role.names=Student,access -Dgb2.config.enabled.grade.types=POINT,PERCENT,LETTER
 
+Additional DEV mode configurations:
+- By default, the gradebook is populated with test data in DEV mode. This can be turned off via : -Dgb2.dev.mockItems=false 
+
 (if you are building with a version other than trunkm you'll need a property for the point release: add -Dsakai2.6 or -Dsakai2.5, for example.)
 
 Select the '(x)= Arguments' tab and in the 'VM' field, paste the above as one long line of text.
