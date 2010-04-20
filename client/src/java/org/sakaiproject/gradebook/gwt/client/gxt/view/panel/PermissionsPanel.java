@@ -37,6 +37,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.PermissionsModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.PermissionDeleteCellRenderer;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.components.SectionsComboBox;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Permission;
 import org.sakaiproject.gradebook.gwt.client.model.key.GraderKey;
@@ -94,7 +95,8 @@ public class PermissionsPanel extends ContentPanel {
 	private ComboBox<ModelData> userComboBox = null;
 	private ComboBox<PermissionType> permissionComboBox = null;
 	private ComboBox<ModelData> categoryComboBox = null;
-	private ComboBox<ModelData> sectionComboBox = null;
+	//private ComboBox<ModelData> sectionComboBox = null;
+	private SectionsComboBox<ModelData> sectionComboBox = null;
 	
 	private ListLoader<ListLoadResult<ModelData>> categoryLoader, permissionLoader, sectionsLoader, userLoader;
 	
@@ -163,14 +165,14 @@ public class PermissionsPanel extends ContentPanel {
 		
 		
 		// SECTIONS
-		sectionsLoader = 
-			RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, 
-					EnumSet.allOf(SectionKey.class), Method.GET, null, null,
-					GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.SECTION_FRAGMENT);
-		sectionsLoader.setRemoteSort(true);
-		ListStore<ModelData> sectionStore = new ListStore<ModelData>(sectionsLoader);
-		sectionStore.setModelComparer(new EntityModelComparer<ModelData>(SectionKey.S_ID.name()));
-		
+//		sectionsLoader = 
+//			RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, 
+//					EnumSet.allOf(SectionKey.class), Method.GET, null, null,
+//					GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.SECTION_FRAGMENT);
+//		sectionsLoader.setRemoteSort(true);
+//		ListStore<ModelData> sectionStore = new ListStore<ModelData>(sectionsLoader);
+//		sectionStore.setModelComparer(new EntityModelComparer<ModelData>(SectionKey.S_ID.name()));
+//		
 		
 		// Combo Boxes
 		
@@ -222,14 +224,15 @@ public class PermissionsPanel extends ContentPanel {
 
 
 		// Sections
-		sectionComboBox = new ComboBox<ModelData>();
-		sectionComboBox.setEmptyText(i18n.sectionsEmptyText());
-		sectionComboBox.setDisplayField(SectionKey.S_NM.name());
-		sectionComboBox.setWidth(150); 
-		sectionComboBox.setStore(sectionStore);
-		sectionComboBox.setTypeAhead(true);
-		sectionComboBox.setTriggerAction(TriggerAction.ALL);
-		sectionComboBox.setEditable(false);
+		sectionComboBox = new SectionsComboBox<ModelData>(false);
+//		sectionComboBox = new ComboBox<ModelData>();
+//		sectionComboBox.setEmptyText(i18n.sectionsEmptyText());
+//		sectionComboBox.setDisplayField(SectionKey.S_NM.name());
+//		sectionComboBox.setWidth(150); 
+//		sectionComboBox.setStore(sectionStore);
+//		sectionComboBox.setTypeAhead(true);
+//		sectionComboBox.setTriggerAction(TriggerAction.ALL);
+//		sectionComboBox.setEditable(false);
 		
 		
 		// Add Button
@@ -440,7 +443,8 @@ public class PermissionsPanel extends ContentPanel {
 		super.onRender(parent, pos);
 		categoryLoader.load();
 		userLoader.load();
-		sectionsLoader.load();
+		//sectionsLoader.load();
+		sectionComboBox.load();
 	}
 	
 	/*

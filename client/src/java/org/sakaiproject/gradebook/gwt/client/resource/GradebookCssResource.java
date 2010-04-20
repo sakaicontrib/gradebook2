@@ -81,5 +81,7 @@ public interface GradebookCssResource extends CssResource {
 	String loadingIndicator();
 	
 	String gbStatisticsInstructions();
+	
+	String gbStatisticsSectionsComboBox();
 
 }
