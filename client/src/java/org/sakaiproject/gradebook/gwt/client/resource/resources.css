@@ -119,8 +119,12 @@
 	padding-left: 10px;
 }
 
-.gbStatisticsSectionsComboBox {
-	padding-left: 10px;
+.gbStatisticsChartPanel {
+	padding-left: 20px;
+}
+
+.gbStatisticsChartIconPanel {
+	padding-top: 10px;	
 }
 
 @sprite .gbItemIcon {

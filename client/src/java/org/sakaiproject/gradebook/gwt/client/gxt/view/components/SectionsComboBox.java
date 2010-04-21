@@ -15,16 +15,13 @@ import com.extjs.gxt.ui.client.data.ListLoader;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.SelectionChangedListener;
 import com.extjs.gxt.ui.client.store.ListStore;
+import com.extjs.gxt.ui.client.widget.Composite;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
 import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.SimplePanel;
 
 public class SectionsComboBox<D extends ModelData> extends Composite {
 	
-	private Panel panel = null;
 	private ComboBox<D> sectionComboBox = null;
 	private I18nConstants i18n = null;
 	private ListLoader<ListLoadResult<D>> sectionsLoader;
@@ -38,8 +35,6 @@ public class SectionsComboBox<D extends ModelData> extends Composite {
 	public SectionsComboBox(boolean doLoad) {
 		
 		i18n = (I18nConstants) GWT.create(I18nConstants.class);
-		
-		panel = new SimplePanel();
 		
 		sectionsLoader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, 
 													EnumSet.allOf(SectionKey.class),
@@ -62,13 +57,12 @@ public class SectionsComboBox<D extends ModelData> extends Composite {
 		sectionComboBox.setTriggerAction(TriggerAction.ALL);
 		sectionComboBox.setEditable(false);
 		
-		panel.add(sectionComboBox);
-		
 		if(doLoad) {
 			sectionsLoader.load();
 		}
 		
-		initWidget(panel);
+		initComponent(sectionComboBox);
+
 	}
 	
 	// Add a selection change listener
@@ -103,5 +97,4 @@ public class SectionsComboBox<D extends ModelData> extends Composite {
 			sectionComboBox.reset();
 		}
 	}
-
 }

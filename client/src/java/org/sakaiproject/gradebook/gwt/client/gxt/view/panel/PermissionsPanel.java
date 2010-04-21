@@ -95,7 +95,6 @@ public class PermissionsPanel extends ContentPanel {
 	private ComboBox<ModelData> userComboBox = null;
 	private ComboBox<PermissionType> permissionComboBox = null;
 	private ComboBox<ModelData> categoryComboBox = null;
-	//private ComboBox<ModelData> sectionComboBox = null;
 	private SectionsComboBox<ModelData> sectionComboBox = null;
 	
 	private ListLoader<ListLoadResult<ModelData>> categoryLoader, permissionLoader, sectionsLoader, userLoader;
@@ -165,14 +164,7 @@ public class PermissionsPanel extends ContentPanel {
 		
 		
 		// SECTIONS
-//		sectionsLoader = 
-//			RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, 
-//					EnumSet.allOf(SectionKey.class), Method.GET, null, null,
-//					GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.SECTION_FRAGMENT);
-//		sectionsLoader.setRemoteSort(true);
-//		ListStore<ModelData> sectionStore = new ListStore<ModelData>(sectionsLoader);
-//		sectionStore.setModelComparer(new EntityModelComparer<ModelData>(SectionKey.S_ID.name()));
-//		
+		// The section loader is defined in the SectionsComboBox component
 		
 		// Combo Boxes
 		
@@ -224,16 +216,7 @@ public class PermissionsPanel extends ContentPanel {
 
 
 		// Sections
-		sectionComboBox = new SectionsComboBox<ModelData>(false);
-//		sectionComboBox = new ComboBox<ModelData>();
-//		sectionComboBox.setEmptyText(i18n.sectionsEmptyText());
-//		sectionComboBox.setDisplayField(SectionKey.S_NM.name());
-//		sectionComboBox.setWidth(150); 
-//		sectionComboBox.setStore(sectionStore);
-//		sectionComboBox.setTypeAhead(true);
-//		sectionComboBox.setTriggerAction(TriggerAction.ALL);
-//		sectionComboBox.setEditable(false);
-		
+		sectionComboBox = new SectionsComboBox<ModelData>(false);		
 		
 		// Add Button
 		Button addButton = new Button(i18n.addButton());

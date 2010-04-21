@@ -40,6 +40,8 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.StatisticsModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.components.SectionsComboBox;
+import org.sakaiproject.gradebook.gwt.client.model.key.SectionKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.StatisticsKey;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
@@ -52,6 +54,8 @@ import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.GridEvent;
 import com.extjs.gxt.ui.client.event.Listener;
+import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
+import com.extjs.gxt.ui.client.event.SelectionChangedListener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
@@ -97,6 +101,8 @@ public class StatisticsPanel extends ContentPanel {
 	private VerticalPanel verticalGraphPanel;
 	private Panel statisticsGraphPanel;
 
+	private SectionsComboBox<ModelData> sectionsComboBox;
+	
 	List<ColumnConfig> configs;
 	private Grid<StatisticsModel> grid;
 	
@@ -148,6 +154,21 @@ public class StatisticsPanel extends ContentPanel {
 		// Configuring various UI elements: initializing, adding handlers etc.
 		configureChartIcons();
 		configureGrid();
+		
+		sectionsComboBox = new SectionsComboBox<ModelData>();
+		sectionsComboBox.setStyleName(resources.css().gbStatisticsChartPanel());
+		sectionsComboBox.addSelectionChangedListener(new SelectionChangedListener<ModelData>() {
+			
+			@Override
+			public void selectionChanged(SelectionChangedEvent<ModelData> se) {
+				ModelData model = se.getSelectedItem();
+
+				if (model != null) {
+					GWT.log("XXXXX: " + model.get(SectionKey.S_ID.name()));
+					// TODO : change grid data for selected section
+				}
+			}
+		});
 		
 		loader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, 
 				EnumSet.allOf(StatisticsKey.class), Method.GET, null, null,
@@ -235,19 +256,21 @@ public class StatisticsPanel extends ContentPanel {
 		
 		horizontalPanel = new HorizontalPanel();
 		verticalGraphPanel = new  VerticalPanel();
+		verticalGraphPanel.setStyleName(resources.css().gbStatisticsChartPanel());
 		statisticsGraphPanel = new SimplePanel();
 		horizontalIconPanel = new HorizontalPanel();
 		
 		HTML instructions = new HTML(i18n.statisticsGraphInstructions());
-		instructions.setStyleName(resources.css().gbStatisticsInstructions());
 		mainVerticalPanel.add(instructions);
+		mainVerticalPanel.add(sectionsComboBox);
 		mainVerticalPanel.add(horizontalPanel);
-		horizontalPanel.setSpacing(10);
+		
 		horizontalPanel.add(grid);
 		horizontalPanel.add(verticalGraphPanel);
 		
 		horizontalIconPanel.setWidth("30%");
-		horizontalIconPanel.setSpacing(10);
+		horizontalIconPanel.setStyleName(resources.css().gbStatisticsChartIconPanel());
+		//horizontalIconPanel.setSpacing(10);
 		horizontalIconPanel.setVisible(false);
 		
 		verticalGraphPanel.add(statisticsGraphPanel);
@@ -292,6 +315,14 @@ public class StatisticsPanel extends ContentPanel {
 	
 	private void getStatisticsData(String assignmentId) {
 		
+		List<ModelData> selection = sectionsComboBox.getSelection();
+		if(selection.size() < 1) {
+			GWT.log("No section was selected");
+		}
+		else {
+		
+			GWT.log("XXXX: Selected section is = " + sectionsComboBox.getSelection().get(0).get(SectionKey.S_ID.name()));
+		}
 		// First we check the cache if we have the data already
 		if(dataTableCache.containsKey(assignmentId)) {
 			
@@ -428,7 +459,6 @@ public class StatisticsPanel extends ContentPanel {
 		
 		columnChartIcon.addClickHandler(new ClickHandler() {
 
-			@Override
 			public void onClick(ClickEvent event) {
 				columnChart = new ColumnChart(dataTable, createColumnChartOptions());
 				removeAllWidgetsFrom(statisticsGraphPanel);
@@ -439,7 +469,6 @@ public class StatisticsPanel extends ContentPanel {
 		
 		lineChartIcon.addClickHandler(new ClickHandler() {
 
-			@Override
 			public void onClick(ClickEvent event) {
 				lineChart = new LineChart(dataTable, createLineChartOptions());
 				removeAllWidgetsFrom(statisticsGraphPanel);
@@ -450,7 +479,6 @@ public class StatisticsPanel extends ContentPanel {
 		
 		pieChartIcon.addClickHandler(new ClickHandler() {
 
-			@Override
 			public void onClick(ClickEvent event) {
 				pieChart = new PieChart(dataTable, createPieChartOptions());
 				removeAllWidgetsFrom(statisticsGraphPanel);

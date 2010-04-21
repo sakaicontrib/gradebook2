@@ -51,6 +51,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultigradeSelectionModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.StudentModelOwner;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.UnweightedNumericCellRenderer;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.components.SectionsComboBox;
 import org.sakaiproject.gradebook.gwt.client.model.Configuration;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
@@ -92,6 +93,7 @@ import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.store.Store;
 import com.extjs.gxt.ui.client.store.StoreEvent;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
+import com.extjs.gxt.ui.client.widget.HtmlContainer;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
 import com.extjs.gxt.ui.client.widget.form.Field;
@@ -161,7 +163,8 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	private LabelField modeLabel;
 	private TextField<String> searchField;
 	private NumberField pageSizeField;
-	private ComboBox<ModelData> sectionListBox;
+	
+	private SectionsComboBox<ModelData> sectionListBox;
 
 	private Listener<ComponentEvent> componentEventListener;
 	private Listener<GridEvent<ModelData>> gridEventListener;
@@ -169,7 +172,6 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	//private Listener<UserChangeEvent> userChangeEventListener;
 
 	private MultigradeSelectionModel<ModelData> cellSelectionModel;
-	private ListLoader<ListLoadResult<ModelData>> sectionsLoader;
 	
 	public MultiGradeContentPanel(ListStore<ModelData> store, boolean isImport) {
 		super();
@@ -824,25 +826,9 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		searchToolBar = new ToolBar();
 		
 		if (!isImport) {
-			sectionsLoader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, EnumSet.allOf(SectionKey.class), 
-					Method.GET, null, null,
-					GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.SECTION_FRAGMENT);
-				
-			sectionsLoader.setRemoteSort(true);
+			
 	
-			ListStore<ModelData> sectionStore = new ListStore<ModelData>(sectionsLoader);
-			sectionStore.setModelComparer(new EntityModelComparer<ModelData>(SectionKey.S_ID.name()));
-	
-			sectionListBox = new ComboBox<ModelData>(); 
-			//sectionListBox.setAllQuery(null);
-			sectionListBox.setEditable(false);
-			sectionListBox.setFieldLabel("Sections");
-			sectionListBox.setDisplayField(SectionKey.S_NM.name());  
-			sectionListBox.setStore(sectionStore);
-			sectionListBox.setForceSelection(true);
-			sectionListBox.setEmptyText(i18n.sectionEmptyText());
-			sectionListBox.setTriggerAction(ComboBox.TriggerAction.ALL);
-	
+			sectionListBox = new SectionsComboBox<ModelData>();	
 			sectionListBox.addSelectionChangedListener(new SelectionChangedListener<ModelData>() {
 	
 				@Override
@@ -913,7 +899,6 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 			searchToolBar.add(clearSearchItem);
 			searchToolBar.add(new SeparatorToolItem());
 			searchToolBar.add(sectionListBox);
-
 		}
 		
 		/*useClassicNavigationCheckBox = new CheckBox();
