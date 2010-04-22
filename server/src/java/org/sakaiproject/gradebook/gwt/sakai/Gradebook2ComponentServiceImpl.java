@@ -5,6 +5,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -1030,7 +1031,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
 		boolean isMissingScores = false;
-		WeightedCategoriesState state = isFullyWeighted(gradebook);
+		List<WeightedCategoriesState> state = isFullyWeighted(gradebook);
 		
 		if (dereferences != null) {
 			for (UserDereference dereference : dereferences) {
@@ -1047,8 +1048,8 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		Map<String,Object> map = new HashMap<String,Object>();
 		map.put(VerificationKey.I_NUM_LRNRS.name(), Integer.valueOf(numberOfLearners));
 		map.put(VerificationKey.B_MISS_SCRS.name(), Boolean.valueOf(isMissingScores));
-		map.put(VerificationKey.B_GB_WGHTD.name(), Boolean.valueOf(state != WeightedCategoriesState.INVALID_PERCENT_GRADE));
-		map.put(VerificationKey.B_CTGRY_WGHTD.name(), Boolean.valueOf(state != WeightedCategoriesState.INVALID_PERCENT_CATEGORY));
+		map.put(VerificationKey.B_GB_WGHTD.name(), Boolean.valueOf(!state.contains(WeightedCategoriesState.INVALID_PERCENT_GRADE)));
+		map.put(VerificationKey.B_CTGRY_WGHTD.name(), Boolean.valueOf(!state.contains(WeightedCategoriesState.INVALID_PERCENT_CATEGORY)));
 		
 		return map;
 	}
@@ -5258,7 +5259,10 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return categoryAssignmentWeightSum.compareTo(BigDecimal.ONE) == 0;
 	}
 	
-	private WeightedCategoriesState isFullyWeighted(Gradebook gradebook) {
+	private List<WeightedCategoriesState> isFullyWeighted(Gradebook gradebook) {
+		
+		
+		List<WeightedCategoriesState> statuses = new ArrayList<WeightedCategoriesState>();
 		
 		switch (gradebook.getCategory_type()) {
 		case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
@@ -5268,8 +5272,12 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			boolean isFullyWeighted = false;
 			
 			// It's not possible to be ready for final grading when there are no categories in a weighted categories gradebook
-			if (categories == null || categories.isEmpty())
-				return WeightedCategoriesState.INVALID_PERCENT_GRADE;
+			if (categories == null || categories.isEmpty()) {
+				return  Arrays.asList(WeightedCategoriesState.INVALID_PERCENT_GRADE);
+				}
+			
+			
+			
 			
 			BigDecimal gradebookWeightSum = BigDecimal.ZERO;
 			for (Category category : categories) {
@@ -5291,7 +5299,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				
 				// If one of the categories doesn't add up, then we can just fail the test now
 				if (!doItemsInCategoryAddUp) {
-					return WeightedCategoriesState.INVALID_PERCENT_CATEGORY;	
+					statuses.add(WeightedCategoriesState.INVALID_PERCENT_CATEGORY);	
 				}
 				
 				// Don't count extra credit categories once we've verified the items add up
@@ -5306,10 +5314,18 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			isFullyWeighted = gradebookWeightSum.compareTo(BigDecimal.ONE) == 0;
 			
 			if (!isFullyWeighted)
-				return WeightedCategoriesState.INVALID_PERCENT_GRADE;
+				statuses.add(WeightedCategoriesState.INVALID_PERCENT_GRADE);
 		}
 		
-		return WeightedCategoriesState.VALID;
+		
+		if(statuses.size() == 0) 
+				return Arrays.asList(WeightedCategoriesState.VALID);
+		
+		//make unique entries:
+		Set<WeightedCategoriesState> set = new HashSet<WeightedCategoriesState>(statuses);
+		List<WeightedCategoriesState> rv = new ArrayList<WeightedCategoriesState>(set);
+		
+		return rv;
 	}
 
 	private String lookupDefaultGradebookUid() {
