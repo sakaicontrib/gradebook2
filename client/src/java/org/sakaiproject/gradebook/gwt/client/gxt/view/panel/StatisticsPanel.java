@@ -509,7 +509,6 @@ public class StatisticsPanel extends ContentPanel {
 	 */
 	private class VisualizationRunnable implements Runnable {
 		
-		@Override
 		public void run() {
 			isVisualizationApiLoaded = true;
 		}

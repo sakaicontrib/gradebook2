@@ -57,6 +57,7 @@ public class GradebookApplication implements EntryPoint {
 	private Dispatcher dispatcher;
 	private GradebookResources resources;
 	private I18nConstants i18n;
+	private I18nMessages i18nTemplates;
 	private int screenHeight = 580;
 	
     public GradebookApplication() {
@@ -65,6 +66,7 @@ public class GradebookApplication implements EntryPoint {
 	
 	public void onModuleLoad() {
 		i18n = (I18nConstants) GWT.create(I18nConstants.class);
+		i18nTemplates = (I18nMessages) GWT.create(I18nMessages.class);
 		resources = GWT.create(GradebookResources.class);
 		resources.css().ensureInjected();
 
@@ -76,6 +78,7 @@ public class GradebookApplication implements EntryPoint {
 		Registry.register(AppConstants.RESOURCES, resources);
 		Registry.register(AppConstants.VERSION, getVersion());
 		Registry.register(AppConstants.I18N, i18n);
+		Registry.register(AppConstants.I18N_TEMPLATES, i18nTemplates);
 
 		String layout = Cookies.getCookie(AppConstants.AUTH_COOKIE_NAME);
 		

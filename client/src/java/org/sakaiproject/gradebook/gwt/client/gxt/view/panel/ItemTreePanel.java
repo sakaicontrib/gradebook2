@@ -32,6 +32,7 @@ import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.key.FixedColumnKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.VerificationKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 
@@ -65,6 +66,8 @@ import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.TreeStore;
+import com.extjs.gxt.ui.client.widget.MessageBox;
+import com.extjs.gxt.ui.client.widget.Status;
 import com.extjs.gxt.ui.client.widget.TabItem;
 import com.extjs.gxt.ui.client.widget.TabPanel;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
@@ -76,6 +79,8 @@ import com.extjs.gxt.ui.client.widget.layout.FillLayout;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
+import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
+import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.extjs.gxt.ui.client.widget.treegrid.TreeGrid;
 import com.extjs.gxt.ui.client.widget.treegrid.TreeGridCellRenderer;
 import com.extjs.gxt.ui.client.widget.treegrid.TreeGridView;
@@ -130,6 +135,12 @@ public class ItemTreePanel extends GradebookPanel {
 	//private boolean isAllowedToDropToGradebook = false;
 	private boolean isLearnerAttributeTreeLoaded = false;
 	
+	private MessageBox verifyingCatsBox = null;
+
+	private ToolBar topStatus;
+
+	private Status status;
+	
 	public ItemTreePanel(TreeStore<ItemModel> treeStore, boolean isEditable, boolean isImport) {
 		super();
 		this.treeStore = treeStore;
@@ -144,6 +155,16 @@ public class ItemTreePanel extends GradebookPanel {
 		setLayout(new FillLayout());
 		initListeners();
 
+		
+		topStatus = new ToolBar();
+		topStatus.add(new FillToolItem());
+		status = new Status();
+		status.setBox(true);
+		status.setAutoWidth(true);
+		topStatus.add(status);
+		setTopComponent(topStatus); 
+		topStatus.hide();
+		
 		sm = new ItemTreeSelectionModel() {
 			
 			@Override
@@ -263,7 +284,7 @@ public class ItemTreePanel extends GradebookPanel {
 		pointsColumn.setRenderer(numericRenderer);
 		pointsColumn.setSortable(false);
 		columns.add(pointsColumn);
-
+		
 		cm = new ColumnModel(columns);
 		
 		
@@ -430,8 +451,90 @@ public class ItemTreePanel extends GradebookPanel {
 		//add(new message)
 	}
 	
-	public void onBeforeLoadItemTreeModel(Gradebook selectedGradebook, Item rootItem) {
+	private void checkCategoryTotals() {
+
+		Gradebook gb = Registry.get(AppConstants.CURRENT);
 		
+		if (gb != null) {
+
+			verifyingCatsBox = MessageBox.wait("", i18n
+					.finalGradeSubmissionMessageText1c(), i18n
+					.finalGradeSubmissionMessageText1c());
+
+			RestBuilder rest = RestBuilder.getInstance(Method.GET, GWT
+					.getModuleBaseURL(), AppConstants.REST_FRAGMENT,
+					AppConstants.GRADES_VERIFICATION_FRAGMENT, gb
+							.getGradebookUid(), String.valueOf(gb.getGradebookId()));
+
+			rest.sendRequest(200, 400, "", new RestCallback() {
+				//TODO: i18n for error messages in this class
+				@Override
+				public void onError(Request request, Throwable exception) {
+					Dispatcher.forwardEvent(GradebookEvents.Notification
+							.getEventType(), new NotificationEvent(exception,
+							"Unable to verify student grades")); 
+					verifyingCatsBox.close();
+					
+					status.setText("Error: server error verifying gradebook");
+					topStatus.show();		
+				}
+
+				@Override
+				public void onSuccess(Request request, Response response) {
+
+					EntityOverlay overlay = JsonUtil.toOverlay(response
+							.getText());
+					ModelData result = new EntityModel(overlay); // translater.translate(response.getText());
+
+					verifyingCatsBox.close();
+
+					StringBuilder text = new StringBuilder();
+
+					boolean isCategoryFullyWeighted = result
+							.get(VerificationKey.B_CTGRY_WGHTD.name()) != null
+							&& ((Boolean) result.get(VerificationKey.B_CTGRY_WGHTD.name())).booleanValue();
+					
+					boolean isFullyWeighted = result.get(VerificationKey.B_GB_WGHTD.name()) != null
+							&& ((Boolean) result.get(VerificationKey.B_GB_WGHTD.name())).booleanValue();					
+					
+					if (!isCategoryFullyWeighted || !isFullyWeighted) {
+
+						status.setText(i18nTemplates.itemTreePanelAlertMessage(resources.css().gbCellError(), 
+								i18n.categoriesNot100Percent()));
+						
+						if (!isCategoryFullyWeighted && !isFullyWeighted) {
+							text.append("one or more categories").append(", ")
+							.append("sum of categories");
+							
+						} else if (!isCategoryFullyWeighted) {
+							text.append("one or more categories");
+						} else if (!isFullyWeighted) {
+							text.append("sum of categories");
+						}
+						
+						status.setToolTip(text.toString());
+						
+						if (!topStatus.isVisible()) {
+							topStatus.show();
+						}					
+					} else {
+						if(topStatus.isVisible()) {
+							topStatus.hide();
+						}
+					}
+
+				}
+			});
+		}
+
+		
+				
+		
+		
+	}
+
+	public void onBeforeLoadItemTreeModel(Gradebook selectedGradebook, Item rootItem) {
+		checkCategoryTotals();
 	}
 	
 	public void onHideColumn(FixedColumnModel fixedModel) {
@@ -478,8 +581,10 @@ public class ItemTreePanel extends GradebookPanel {
 				isLoadEventRun = true;
 				
 				verifyCheckedState(gradebookModel);
+				
 			}
 		};
+
 		isLoadEventRun = false;
 		treeLoader.addLoadListener(itemLoadListener);
 		treeLoader.load(rootItem);
@@ -520,7 +625,8 @@ public class ItemTreePanel extends GradebookPanel {
 			learnerAttributeLoader.addLoadListener(attributeLoadListener);
 	
 			learnerAttributeLoader.load(learnerAttributeRoot);
-			isLearnerAttributeTreeLoaded = true;
+			isLearnerAttributeTreeLoaded = true;			
+			 
 		}
 	}
 	

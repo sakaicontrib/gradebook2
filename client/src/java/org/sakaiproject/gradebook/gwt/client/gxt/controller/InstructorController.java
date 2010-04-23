@@ -9,7 +9,6 @@ import org.sakaiproject.gradebook.gwt.client.gxt.view.FinalGradeSubmissionView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.ImportExportView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.InstructorView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.MultigradeView;
-import org.sakaiproject.gradebook.gwt.client.gxt.view.NotificationView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.PermissionsView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.SingleGradeView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.TreeView;

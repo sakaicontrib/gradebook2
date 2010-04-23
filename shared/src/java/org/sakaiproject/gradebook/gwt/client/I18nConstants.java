@@ -307,4 +307,5 @@ public interface I18nConstants extends Constants {
 	String statisticsDataErrorMsg();
 	String statisticsGraphInstructions();
 	String statisticsVisualizationErrorMsg();
+	String categoriesNot100Percent();
 }

@@ -419,7 +419,7 @@ public class ItemFormPanel extends GradebookPanel {
 				public void handleEvent(MessageBoxEvent be) {
 					Button button = be.getButtonClicked();
 				
-					if (button.getText().equals("Yes"))
+					if (button.getItemId().equals(Dialog.YES))
 						doConfirmDeleteItem(itemModel);
 				}
 				
