@@ -89,7 +89,7 @@ import com.google.gwt.visualization.client.visualizations.PieChart;
 
 public class StatisticsPanel extends ContentPanel {
 
-	I18nConstants i18n;
+	private final I18nConstants i18n;
 	
 	private ListLoader<ListLoadResult<ModelData>> loader;
 	
@@ -119,6 +119,8 @@ public class StatisticsPanel extends ContentPanel {
 	private int selectedGradeItemRow = 0;
 	private String selectedAssignmentId;
 	
+	private boolean isVisualizationApiLoaded = false;
+	
 	private Map<String, DataTable> dataTableCache = new HashMap<String, DataTable>();
 	
 	private final static int FIRST_ROW = 0;
@@ -139,9 +141,12 @@ public class StatisticsPanel extends ContentPanel {
 													   "80-89",
 													   "90-100"};
 	
-	public StatisticsPanel(I18nConstants i18n) {
+	public StatisticsPanel(final I18nConstants i18n) {
 		
 		super();
+		
+		// Loading visualization APIs
+		VisualizationUtils.loadVisualizationApi(new VisualizationRunnable(), PieChart.PACKAGE,  ColumnChart.PACKAGE, LineChart.PACKAGE);
 		
 		// Getting needed resources
 		this.i18n = i18n;
@@ -216,7 +221,16 @@ public class StatisticsPanel extends ContentPanel {
 					String mean = gridEvent.getModel().get(StatisticsKey.S_MEAN.name());
 					
 					if(null != mean && mean.matches("\\d*\\.\\d*")) {
-						VisualizationUtils.loadVisualizationApi(new VisualizationRunnable(assignmentId), PieChart.PACKAGE,  ColumnChart.PACKAGE, LineChart.PACKAGE);
+						
+						// Before we get the data and show the graph(s), we check
+						// if the Visualization APIs have been loaded properly
+						if(isVisualizationApiLoaded) {
+							getStatisticsData(assignmentId);
+						}
+						else {
+							Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsVisualizationErrorMsg(), false));
+							
+						}
 					}
 					else {
 						
@@ -385,7 +399,7 @@ public class StatisticsPanel extends ContentPanel {
 	}
 	
 	private void showGraph() {
-		
+	
 		columnChart = new ColumnChart(dataTable, createColumnChartOptions());
 		statisticsGraphPanel.add(columnChart);
 		horizontalIconPanel.setVisible(true);
@@ -494,17 +508,10 @@ public class StatisticsPanel extends ContentPanel {
 	 * VisualizationUtils.loadVisualizationApi(...)
 	 */
 	private class VisualizationRunnable implements Runnable {
-
-		private String assignmentId;
-
-		public VisualizationRunnable(String assignmentId) {
-			this.assignmentId = assignmentId;
-		}
 		
 		@Override
 		public void run() {
-			
-			getStatisticsData(assignmentId);
+			isVisualizationApiLoaded = true;
 		}
 	}
 }
