@@ -5207,58 +5207,86 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 	}
 	
 	
+	// GRBK-488 : TPA
+	// GRBK-602 : JPG
 	private boolean isCategoryFullyWeighted(Category category) {
-					
-		boolean isExtraCreditCategory = Util.checkBoolean(category.isExtraCredit()); 
-		boolean isCategoryWeightingItemsEqually = Util.checkBoolean(category.isEqualWeightAssignments());
-		boolean isCategoryPointsWeighted = Util.checkBoolean(category.isEnforcePointWeighting());
-
-		// Get the category's assignments
-		List<Assignment> categoryAssignmentList = getUncheckedAssignmentList(category);
-					
-		// If the list of category assignments is null or empty then the category is not valid
-		if (null == categoryAssignmentList || categoryAssignmentList.isEmpty()) {
+		
+		if (null == category) {
+			log.error(" isCategoryFullyWeighted(null) ");
 			return false;
 		}
+		
+		boolean isExtraCreditCategory = Util.checkBoolean(category.isExtraCredit());
+		boolean isCategoryWeightingItemsEqually = Util.checkBoolean(category.isEqualWeightAssignments());
+		boolean isCategoryPointsWeighted = Util.checkBoolean(category.isEnforcePointWeighting()); 
+		boolean isUnweighted = category.isUnweighted() != null && category.isUnweighted().booleanValue();
+	
+		boolean isCategoryFullyWeighted = false;
+
+
+		BigDecimal gradebookWeightSum = BigDecimal.ZERO;
+		BigDecimal gradebookPointsSum = BigDecimal.ZERO;
+
+		if (!category.isRemoved()) {
+
+			double categoryWeight = category.getWeight() == null ? 0d : category.getWeight().doubleValue() * 100d;
+
+			if (!isUnweighted) {
+
+				// We only verify categories for which equal weight and weighting by points has been turned off
+				
+
+				// Get the category's assignments
+				List<Assignment> categoryAssignmentList = category.getAssignmentList();
+
+				// need to have at least on assigment to be fully weighted
+				if(null == categoryAssignmentList || categoryAssignmentList.size() == 0) {
+					return false;
+				}
+
+				BigDecimal categoryAssignmentWeightSum = BigDecimal.ZERO;
+
+				// Adding up all the assignment weights
+				for(Assignment assignment : categoryAssignmentList) {
 					
+					boolean isExtraCreditItem = Util.checkBoolean(assignment.isExtraCredit()); 
+					// For equally weighted and points weighted categories, this is success: we have at least one
+					// non-extra credit item in a non-extra credit category or at least one item
+					// in an extra credit category 
+					if( (isCategoryWeightingItemsEqually || isCategoryPointsWeighted) 
+							&& !isExtraCreditCategory && !isExtraCreditItem) {
+						return true;
+					}
 
-		BigDecimal categoryAssignmentWeightSum = BigDecimal.ZERO;
+					// Ignoring extra credit assignment weights
+					if(!isExtraCreditCategory && isExtraCreditItem) {
+						continue;
+					}
 
-		// Adding up all the assignment weights
-		for (Assignment assignment : categoryAssignmentList) {
+					double assignmentWeighting = assignment.getAssignmentWeighting().doubleValue() * 100d;
+					categoryAssignmentWeightSum = categoryAssignmentWeightSum.add(BigDecimal.valueOf(assignmentWeighting));
+					
+				}
 
-			// Don't count deleted items
-			if (assignment.isRemoved())
-				continue;
+				// Scale/round the sum
+				categoryAssignmentWeightSum = categoryAssignmentWeightSum.setScale(AppConstants.DISPLAY_SCALE, BigDecimal.ROUND_HALF_UP);
 
-			// Don't count items that have been removed from grading or that have null weights
-			if (assignment.isNotCounted() || assignment.getAssignmentWeighting() == null)
-				continue;
+				// Check if the sum of assignment weights adds up to 100%
+				isCategoryFullyWeighted = categoryAssignmentWeightSum.compareTo(BigDecimal.valueOf(100d)) == 0;
 
-			boolean isExtraCreditItem = Util.checkBoolean(assignment.isExtraCredit());
-			// Only check extra credit items in an extra credit category
-			// But as long as the item is not an extra credit item, we definitely want to count it either way
-			if (isExtraCreditCategory || !isExtraCreditItem) {
-				
-				// For equally weighted and points weighted categories, this is success: we have at least one 
-				// non-extra credit item in a non-extra credit category or at least one item 
-				// in an extra credit category
-				if (isCategoryWeightingItemsEqually || isCategoryPointsWeighted) 
-					return true;
-				
-				// Remember that these weights are decimal representations of the percent, like .5 for 50%
-				BigDecimal bigItemWeight = new BigDecimal(assignment.getAssignmentWeighting().toString());
-				categoryAssignmentWeightSum = categoryAssignmentWeightSum.add(bigItemWeight);
+				// If the weighted assignment sum doesn't add up to 100%, we just return and stop checking the rest
+				if(!isCategoryFullyWeighted) { 
+					return isCategoryFullyWeighted;
+				}
 			}
 		}
 
-		// Scale/round the sum
-		categoryAssignmentWeightSum = categoryAssignmentWeightSum.setScale(AppConstants.DISPLAY_SCALE, BigDecimal.ROUND_HALF_UP);
 
-		// Check if the sum of assignment weights adds up to 1 (that is, 100%)
-		return categoryAssignmentWeightSum.compareTo(BigDecimal.ONE) == 0;
+
+
+		return true;
 	}
-	
+
 	private List<WeightedCategoriesState> isFullyWeighted(Gradebook gradebook) {
 		
 		
