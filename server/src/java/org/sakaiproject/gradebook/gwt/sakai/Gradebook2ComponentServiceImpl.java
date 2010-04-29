@@ -5224,12 +5224,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		boolean isCategoryFullyWeighted = false;
 
 
-		BigDecimal gradebookWeightSum = BigDecimal.ZERO;
-		BigDecimal gradebookPointsSum = BigDecimal.ZERO;
-
 		if (!category.isRemoved()) {
-
-			double categoryWeight = category.getWeight() == null ? 0d : category.getWeight().doubleValue() * 100d;
 
 			if (!isUnweighted) {
 
@@ -5237,7 +5232,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				
 
 				// Get the category's assignments
-				List<Assignment> categoryAssignmentList = category.getAssignmentList();
+				List<Assignment> categoryAssignmentList = getUncheckedAssignmentList(category);
 
 				// need to have at least on assigment to be fully weighted
 				if(null == categoryAssignmentList || categoryAssignmentList.size() == 0) {
