@@ -142,7 +142,14 @@ public class TreeView extends View {
 				onLoadItemTreeModel((Gradebook)event.getData());
 				break;
 			case NEW_CATEGORY:
-				onNewCategory((ItemModel)event.getData());
+				// GRBK-591 : If the category gets created via the main "File -> New Category",
+				// menu, then the event has a null ItemModel. In this case, we just pass in the GB item model
+				ItemModel itemModel = event.getData();
+				if(null == itemModel) {
+					Gradebook gradebookModel = Registry.get(AppConstants.CURRENT);
+					itemModel = (ItemModel) gradebookModel.getGradebookItemModel();
+				}
+				onNewCategory(itemModel);
 				break;
 			case NEW_ITEM:
 				onNewItem((ItemModel)event.getData());
