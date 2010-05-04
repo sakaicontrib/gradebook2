@@ -24,6 +24,7 @@ package org.sakaiproject.gradebook.gwt.client.gxt.model;
 
 import java.util.List;
 
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.model.Configuration;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
@@ -32,6 +33,7 @@ import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.Statistics;
 import org.sakaiproject.gradebook.gwt.client.model.key.GradebookKey;
 
+import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.google.gwt.user.client.rpc.IsSerializable;
@@ -214,5 +216,31 @@ public class GradebookModel extends EntityModel implements IsSerializable, Grade
 			return new ConfigurationModel(overlay);
 		
 		return new BaseModel();
+	}
+
+	public ItemModel getCategoryItemModel(Long categoryId) {
+		
+		ItemModel gradebookItemModel = (ItemModel) this.getGradebookItemModel();
+		
+		if(null == gradebookItemModel)
+			return null;
+		
+		List<ModelData> categoryItemModels = gradebookItemModel.getChildren();
+		
+		for(ModelData modelData : categoryItemModels) {
+			
+			ItemModel categoryItemModel = (ItemModel) modelData;
+			
+			Long categoryItemModelId = categoryItemModel.getCategoryId();
+			
+			if(null == categoryItemModelId)
+				continue;
+			
+			if(0 == categoryItemModelId.compareTo(categoryId)) {
+				return categoryItemModel;
+			}
+		}
+		
+		return null;
 	}
 }

@@ -36,6 +36,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemCreate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModelComparer;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.AppView;
@@ -855,7 +856,7 @@ public class ItemFormPanel extends GradebookPanel {
 					category = itemModel;
 					break;
 				case ITEM:
-					category = (ItemModel) itemModel.getParent();
+					category = getCategoryItemModel(itemModel.getCategoryId());
 					break;
 				default:
 					isPercentCategoryVisible = (hasWeights && isExtraCredit) && isItem;
@@ -1404,7 +1405,7 @@ public class ItemFormPanel extends GradebookPanel {
 					categoryPicker.select(itemModel);
 					break;
 				case ITEM:
-					category = (ItemModel) itemModel.getParent();
+					category = getCategoryItemModel(itemModel.getCategoryId());
 					if (category != null && category.getItemType() == ItemType.CATEGORY)
 						categoryPicker.select(category);
 					break;
@@ -1429,7 +1430,7 @@ public class ItemFormPanel extends GradebookPanel {
 					category = itemModel;
 					break;
 				case ITEM:
-					category = (Item) itemModel.getParent();
+					category = getCategoryItemModel(itemModel.getCategoryId());
 					break;
 			}
 
@@ -1494,6 +1495,12 @@ public class ItemFormPanel extends GradebookPanel {
 		ToolTipConfig ttc = new ToolTipConfig(text);
 		ttc.setDismissDelay(10000);
 		return ttc;
+	}
+	
+	private ItemModel getCategoryItemModel(Long categoryId) {
+		
+		Gradebook gradebookModel = Registry.get(AppConstants.CURRENT);
+		return gradebookModel.getCategoryItemModel(categoryId);
 	}
 
 }

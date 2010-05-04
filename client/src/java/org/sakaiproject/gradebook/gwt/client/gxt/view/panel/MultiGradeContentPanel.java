@@ -398,12 +398,15 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 
 		ItemModel gradebookModel = (ItemModel)selectedGradebook.getGradebookItemModel();
-
-		if (gradebookModel.equals(itemModel.getParent())) {
+		
+		ItemModel categoryItemModel = selectedGradebook.getCategoryItemModel(itemModel.getCategoryId());
+		
+		if(gradebookModel.equals(categoryItemModel)) {
 			gradebookModel.getChildren().add(itemModel);
+		
 		} else {
 			for (ModelData category : gradebookModel.getChildren()) {
-				if (category.equals(itemModel.getParent()))
+				if (category.equals(categoryItemModel))
 					((BaseTreeModel) category).getChildren().add(itemModel);
 			}
 		}

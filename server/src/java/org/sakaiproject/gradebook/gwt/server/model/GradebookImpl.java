@@ -2,6 +2,7 @@ package org.sakaiproject.gradebook.gwt.server.model;
 
 import java.util.List;
 
+import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.Configuration;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
@@ -10,6 +11,8 @@ import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.Statistics;
 import org.sakaiproject.gradebook.gwt.client.model.key.GradebookKey;
 import org.sakaiproject.gradebook.gwt.server.Util;
+
+import com.extjs.gxt.ui.client.data.ModelData;
 
 public class GradebookImpl extends BaseModel implements Gradebook {
 
@@ -167,5 +170,31 @@ public class GradebookImpl extends BaseModel implements Gradebook {
 	public void setStatsModel(List<Statistics> statsModel) {
 		set(GradebookKey.A_STATS.name(), statsModel);
 	}
+
 	
+	public ItemModel getCategoryItemModel(Long categoryId) {
+		ItemModel gradebookItemModel = (ItemModel) this.getGradebookItemModel();
+
+		if(null == gradebookItemModel)
+			return null;
+
+		List<ModelData> categoryItemModels = gradebookItemModel.getChildren();
+
+		for(ModelData modelData : categoryItemModels) {
+
+			ItemModel categoryItemModel = (ItemModel) modelData;
+
+			Long categoryItemModelId = categoryItemModel.getCategoryId();
+
+			if(null == categoryItemModelId)
+				continue;
+
+			if(0 == categoryItemModelId.compareTo(categoryId)) {
+				return categoryItemModel;
+			}
+		}
+
+		return null;
+	}
+
 }

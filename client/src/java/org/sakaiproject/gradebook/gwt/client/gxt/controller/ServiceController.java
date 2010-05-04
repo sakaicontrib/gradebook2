@@ -328,7 +328,8 @@ public class ServiceController extends Controller {
 	private void onDeleteItemSuccess(ItemUpdate event) {
 		Dispatcher.forwardEvent(GradebookEvents.ItemDeleted.getEventType(), event.item);
 		TreeStore<ItemModel> treeStore = (TreeStore<ItemModel>)event.store;
-		treeStore.remove((ItemModel) ((BaseTreeModel)event.item).getParent(), (ItemModel)event.item);
+		ItemModel categoryItemModel = getCategoryItemModel(event.item.getCategoryId());
+		treeStore.remove(categoryItemModel, (ItemModel)event.item);
 	}
 
 	private void onDeleteItem(final ItemUpdate event) {
@@ -1021,7 +1022,8 @@ public class ServiceController extends Controller {
 
 	private void doCreateItem(ItemCreate itemCreate, ItemModel createdItem) {
 		TreeStore<ItemModel> treeStore = (TreeStore<ItemModel>)itemCreate.store;
-		treeStore.add((ItemModel) createdItem.getParent(), createdItem, true);
+		ItemModel categoryItemModel = getCategoryItemModel(createdItem.getCategoryId());
+		treeStore.add(categoryItemModel, createdItem, true);
 		Dispatcher.forwardEvent(GradebookEvents.ItemCreated.getEventType(), createdItem);
 		doUpdatePercentCourseGradeTotal(itemCreate.store, itemCreate.item, createdItem);
 	}
@@ -1029,7 +1031,7 @@ public class ServiceController extends Controller {
 	private void doUpdatePercentCourseGradeTotal(Store store, Item oldItem, ItemModel updatedItem) {
 		switch (updatedItem.getItemType()) {
 			case CATEGORY:
-				ItemModel gradebookItemModel = (ItemModel) updatedItem.getParent();
+				ItemModel gradebookItemModel = getCategoryItemModel(updatedItem.getCategoryId());
 				if (gradebookItemModel != null && gradebookItemModel.getItemType() == ItemType.GRADEBOOK)
 					doUpdateItem(store, null, null, gradebookItemModel);
 				break;
@@ -1101,5 +1103,11 @@ public class ServiceController extends Controller {
 		}
 
 		return null;
+	}
+
+	private ItemModel getCategoryItemModel(Long categoryId) {
+
+		Gradebook gradebookModel = Registry.get(AppConstants.CURRENT);
+		return gradebookModel.getCategoryItemModel(categoryId);
 	}
 }
