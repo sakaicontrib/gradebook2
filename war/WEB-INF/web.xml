@@ -24,11 +24,10 @@
 	</filter>
 	<filter-mapping>
 		<filter-name>gwt.security</filter-name>
-		<servlet-name>sakai.gradebook.gwt.rpc</servlet-name>
+		<servlet-name>sakai.gradebook2.dispatcher</servlet-name>
 		<dispatcher>REQUEST</dispatcher>
 		<dispatcher>FORWARD</dispatcher>
 	</filter-mapping>
-	
     <filter>
         <filter-name>sakai.request</filter-name>
         <filter-class>org.sakaiproject.gradebook.gwt.server.RequestFilter</filter-class>
@@ -40,13 +39,6 @@
     <filter-mapping>
         <filter-name>sakai.request</filter-name>
         <servlet-name>sakai.gradebook.gwt.rpc</servlet-name>
-        <dispatcher>REQUEST</dispatcher>
-        <dispatcher>FORWARD</dispatcher>
-        <dispatcher>INCLUDE</dispatcher>
-    </filter-mapping>
-	<filter-mapping>
-        <filter-name>sakai.request</filter-name>
-        <servlet-name>sakai.gradebook2.rest.servlet</servlet-name>
         <dispatcher>REQUEST</dispatcher>
         <dispatcher>FORWARD</dispatcher>
         <dispatcher>INCLUDE</dispatcher>
@@ -68,20 +60,6 @@
         </init-param>
         <load-on-startup>1</load-on-startup>
 	</servlet>
-	
-	<!-- servlet>
-		<servlet-name>sakai.gradebook2.rest.servlet</servlet-name>
-		<servlet-class>org.sakaiproject.gradebook.gwt.server.RestServlet</servlet-class>
-		<init-param>
-        	<param-name>com.sun.jersey.config.property.packages</param-name>
-        	<param-value>managed</param-value>
-        </init-param>
-		<init-param>
-        	<param-name>com.sun.jersey.spi.container.ContainerRequestFilters</param-name>
-        	<param-value>com.sun.jersey.api.container.filter.PostReplaceFilter</param-value>
-        </init-param>
-        <load-on-startup>2</load-on-startup>
-	</servlet-->
 	
 	<servlet>
 		<servlet-name>sakai.gradebook2.dispatcher</servlet-name>
