@@ -172,28 +172,13 @@ public class GradebookImpl extends BaseModel implements Gradebook {
 	}
 
 	
-	public ItemModel getCategoryItemModel(Long categoryId) {
-		ItemModel gradebookItemModel = (ItemModel) this.getGradebookItemModel();
-
-		if(null == gradebookItemModel)
-			return null;
-
-		List<ModelData> categoryItemModels = gradebookItemModel.getChildren();
-
-		for(ModelData modelData : categoryItemModels) {
-
-			ItemModel categoryItemModel = (ItemModel) modelData;
-
-			Long categoryItemModelId = categoryItemModel.getCategoryId();
-
-			if(null == categoryItemModelId)
-				continue;
-
-			if(0 == categoryItemModelId.compareTo(categoryId)) {
-				return categoryItemModel;
-			}
-		}
-
+	/*
+	 * (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Gradebook#getCategoryItemModel(java.lang.Long)
+	 */
+	public Item getCategoryItemModel(Long categoryId) {
+		
+		// Returning null because it's not called on the server side
 		return null;
 	}
 

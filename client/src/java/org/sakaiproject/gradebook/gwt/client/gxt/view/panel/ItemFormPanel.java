@@ -1500,7 +1500,7 @@ public class ItemFormPanel extends GradebookPanel {
 	private ItemModel getCategoryItemModel(Long categoryId) {
 		
 		Gradebook gradebookModel = Registry.get(AppConstants.CURRENT);
-		return gradebookModel.getCategoryItemModel(categoryId);
+		return (ItemModel) gradebookModel.getCategoryItemModel(categoryId);
 	}
 
 }
