@@ -16,7 +16,7 @@ org.springframework.web.servlet.mvc.ServletWrappingController {
 	private static final Log log = LogFactory.getLog(ServletWrappingController.class);
 	
 	// We don't want users to access the GB2 servlet directly
-	private static final String VALID_CONTEXT_PATH = "/portal/tool/";
+	private static final String VALID_CONTEXT_PATH = "/xsl-portal/";
 
 	private SessionManager sessionManager = null;
 
