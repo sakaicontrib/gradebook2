@@ -3366,25 +3366,14 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		}
 		
 		for (Group g : userGroups) {
-			eids.addAll(advisor.getExportCourseManagementSetEids(g));
+			eids.add(g.getProviderGroupId());
 		}
 		 
 		String primaryEid = advisor.getPrimarySectionEid(eids);
 		
-		String old = userRecord.getExportCourseManagementId();
-	
-		
-		if (old != null && !old.equals(primaryEid)) {
-			log.info("(Graded) ActionRecord change of primary eid for user: " + userRecord.getUserUid());
-		}
-		
-		userRecord.setExportCourseManagementId(primaryEid);
 		userRecord.setDisplayCourseManagementId(advisor.getDisplaySectionId(primaryEid));
-	
-	
 		
 		return userRecord;
-		
 	}
 
 
