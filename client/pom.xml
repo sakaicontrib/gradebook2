@@ -3,7 +3,7 @@
 	<parent>
     	<artifactId>gradebook2-base</artifactId>
     	<groupId>org.sakaiproject.gradebook2</groupId>
-    	<version>1.2.0-SNAPSHOT</version>
+    	<version>1.3.0-SNAPSHOT</version>
    		<relativePath>../pom.xml</relativePath>
   	</parent>
   	
