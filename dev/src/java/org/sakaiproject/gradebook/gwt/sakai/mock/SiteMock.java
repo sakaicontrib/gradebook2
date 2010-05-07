@@ -25,37 +25,68 @@ package org.sakaiproject.gradebook.gwt.sakai.mock;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
+import java.util.Vector;
 
 import org.sakaiproject.authz.api.AuthzGroup;
+import org.sakaiproject.authz.api.AuthzGroupService;
 import org.sakaiproject.authz.api.Member;
 import org.sakaiproject.authz.api.Role;
 import org.sakaiproject.authz.api.RoleAlreadyDefinedException;
+import org.sakaiproject.component.section.sakai.CourseImpl;
+import org.sakaiproject.entity.api.Entity;
+import org.sakaiproject.entity.api.Reference;
 import org.sakaiproject.entity.api.ResourceProperties;
 import org.sakaiproject.entity.api.ResourcePropertiesEdit;
 import org.sakaiproject.site.api.Group;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SitePage;
+import org.sakaiproject.site.api.SiteService;
 import org.sakaiproject.site.api.ToolConfiguration;
+import org.sakaiproject.site.impl.BaseSiteService;
+import org.sakaiproject.site.impl.ResourceVector;
 import org.sakaiproject.time.api.Time;
 import org.sakaiproject.user.api.User;
+import org.sakaiproject.util.BaseResourceProperties;
+import org.sakaiproject.util.BaseResourcePropertiesEdit;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class SiteMock implements Site {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private String id;
 	private String title;
+	private BaseResourceProperties props = new BaseResourcePropertiesEdit();
+	private List<Group> groups = null;
+	private BaseSiteService siteService;
+	private AuthzGroupService authzGroupService;
 
-	public SiteMock() {
-
+	public SiteMock(BaseSiteService siteService, AuthzGroupService authzGroupService) {
+		props.addProperty(CourseImpl.EXTERNALLY_MAINTAINED, "true");
+		props.addProperty(CourseImpl.STUDENT_REGISTRATION_ALLOWED, "false");
+		props.addProperty(CourseImpl.STUDENT_SWITCHING_ALLOWED, "false");
+		this.siteService = siteService;
 	}
 
-	public SiteMock(String id, String title) {
+	public SiteMock(String id, String title, BaseSiteService siteService, AuthzGroupService authzGroupService) {
 		this.id = id;
 		this.title = title;
+		this.siteService = siteService;
+		this.authzGroupService = authzGroupService;
+		props.addProperty(CourseImpl.EXTERNALLY_MAINTAINED, "true");
+		props.addProperty(CourseImpl.STUDENT_REGISTRATION_ALLOWED, "false");
+		props.addProperty(CourseImpl.STUDENT_SWITCHING_ALLOWED, "false");
+		groups = new ArrayList<Group>();
+		for (int i = 0; i < SectionAwarenessMock.NUMBER_OF_MOCK_SECTIONS; ++i) {
+			groups.add(new BaseGroupMock("eid_"+ (new Integer(i)).toString(), siteService, this, "groupid:" + i));
+		}
 	}
 
 	public Group addGroup() {
@@ -83,23 +114,38 @@ public class SiteMock implements Site {
 		return null;
 	}
 
-	public Group getGroup(String arg0) {
-		// TODO Auto-generated method stub
-		return null;
+	public Group getGroup(String id) {
+		
+		if (id == null) return null;
+
+		//?!!!NOT THIS IS NOT checking for references!! See BaseSite.getGroup(id)
+		return (Group) ((ResourceVector) getGroups()).getById(id);
 	}
 
 	public Collection getGroups() {
-		
-		List<Object> rv = new ArrayList<Object>();
-		rv.add(new BaseGroupMock());
-		
-		return rv;
+		return groups;
 	}
 
-	public Collection getGroupsWithMember(String arg0) {
-		List<Object> rv = new ArrayList<Object>();
-		rv.add(new BaseGroupMock());
-		
+	@SuppressWarnings("unchecked")
+	public Collection getGroupsWithMember(String userId) {
+		Collection siteGroups = getGroups();
+		ArrayList<String> siteGroupRefs = new ArrayList<String>(siteGroups.size());
+		for ( Iterator it=siteGroups.iterator(); it.hasNext(); )
+			siteGroupRefs.add( ((Group)it.next()).getReference() );
+			
+		List groups = authzGroupService.getAuthzUserGroupIds(siteGroupRefs, userId);
+		Collection<Group> rv = new Vector<Group>();
+		for (Iterator i = groups.iterator(); i.hasNext();)
+		{
+			Member m = null;
+			Group g = getGroup( (String)i.next() );
+			
+			if ( g != null )
+				m = g.getMember(userId);
+			if ((m != null) && (m.isActive()))
+				rv.add(g);
+		}
+
 		return rv;
 	}
 
@@ -308,8 +354,10 @@ public class SiteMock implements Site {
 	}
 
 	public ResourcePropertiesEdit getPropertiesEdit() {
-		// TODO Auto-generated method stub
-		return null;
+		if (null == props) {
+			props = new BaseResourcePropertiesEdit();
+		}
+		return (ResourcePropertiesEdit) props;
 	}
 
 	public boolean isActiveEdit() {
@@ -322,8 +370,10 @@ public class SiteMock implements Site {
 	}
 
 	public ResourceProperties getProperties() {
-		// TODO Auto-generated method stub
-		return null;
+		if (null == props) {
+			props = new BaseResourcePropertiesEdit();
+		}
+		return props;
 	}
 
 	public String getReference() {

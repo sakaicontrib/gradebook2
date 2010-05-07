@@ -518,6 +518,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		return result;
 	}
 
+	//FIXME: this might be better done with Site.getMembers()
 	public int getFullUserCountForSite(final String siteId, final String realmGroupId, final String[] roleNames) {
 		HibernateCallback hc = new HibernateCallback() {
 			public Object doInHibernate(Session session) throws HibernateException {
@@ -535,7 +536,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				Query query = null;
 
 				StringBuilder builder = new StringBuilder()
-				.append("select count(rg) from Realm as r, RealmGroup rg, RealmRole rr ")
+				.append("select count(*) from Realm as r, RealmGroup rg, RealmRole rr ")
 				.append("where rg.realmKey=r.realmKey ")
 				.append("and r.realmId=:realmId ")
 				.append("and rr.roleKey = rg.roleKey ")
@@ -573,7 +574,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				Query query = null;
 
 				StringBuilder builder = new StringBuilder()
-				.append("select count(rg) from Realm as r, RealmGroup rg, RealmRole rr, UserDereference u ")
+				.append("select count(*) from Realm as r, RealmGroup rg, RealmRole rr, UserDereference u ")
 				.append("where rg.realmKey=r.realmKey ")
 				.append("and u.userUid = rg.userId ")
 				.append("and r.realmId=:realmId ")
@@ -621,6 +622,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		return (List<UserConfiguration>)getHibernateTemplate().execute(hc);
 	}
 
+	/// FIXME: check Site API for the same thing
 	public int getUserCountForSite(final String[] realmIds, final String sortField, 
 			final String searchField, final String searchCriteria, final String[] roleNames) {
 		HibernateCallback hc = new HibernateCallback() {

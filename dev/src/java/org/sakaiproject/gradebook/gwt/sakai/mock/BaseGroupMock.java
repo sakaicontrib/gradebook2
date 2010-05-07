@@ -10,22 +10,42 @@ import org.sakaiproject.authz.api.RoleAlreadyDefinedException;
 import org.sakaiproject.entity.api.ResourceProperties;
 import org.sakaiproject.entity.api.ResourcePropertiesEdit;
 import org.sakaiproject.exception.IdUnusedException;
+import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.site.api.Group;
 import org.sakaiproject.site.api.Site;
+import org.sakaiproject.site.api.SiteService;
 import org.sakaiproject.time.api.Time;
 import org.sakaiproject.user.api.User;
+import org.sakaiproject.util.BaseResourceProperties;
+import org.sakaiproject.util.BaseResourcePropertiesEdit;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
+import com.google.gwt.core.client.GWT;
 
 public class BaseGroupMock implements Group {
 
 	private String testSite_ContextId = "TESTSITECONTEXT";
-	private String testGroupId = "TESTGROUPID";
+	private String testGroupId = "TESTGROUP_" + Math.random()*System.currentTimeMillis();
+	private BaseResourceProperties props = new BaseResourcePropertiesEdit();
+	private String providerId = null;
+	private Site site = null;
+	private SiteService siteService = null;
+	private String groupId = null;
 	
+	
+	public BaseGroupMock(String providerId, SiteService siteService, Site site, String groupId) {
+		this.providerId = "sectionEid: " + providerId;
+		this.site = site;
+		this.siteService = siteService;
+		this.groupId = groupId;
+
+	}
+
 	public Site getContainingSite() {
 		Site s = null;
 		try {
-			new SiteServiceMock().getSite(testSite_ContextId);
+			s = (new SiteServiceMock()).getSite(testSite_ContextId);
 		}catch (IdUnusedException e) {}
 		
 		return s;
@@ -37,7 +57,7 @@ public class BaseGroupMock implements Group {
 	}
 
 	public String getTitle() {
-		return "Section: " + getProviderGroupId();
+		return "sec.: " + getProviderGroupId();
 	}
 
 	public void setDescription(String arg0) {
@@ -51,8 +71,10 @@ public class BaseGroupMock implements Group {
 	}
 
 	public ResourcePropertiesEdit getPropertiesEdit() {
-		// TODO Auto-generated method stub
-		return null;
+		if (null == props) {
+			props = new BaseResourcePropertiesEdit();
+		}
+		return (ResourcePropertiesEdit) props;
 	}
 
 	public boolean isActiveEdit() {
@@ -66,13 +88,15 @@ public class BaseGroupMock implements Group {
 	}
 
 	public ResourceProperties getProperties() {
-		// TODO Auto-generated method stub
-		return null;
+		if (null == props) {
+			props = new BaseResourcePropertiesEdit();
+		}
+		return (ResourceProperties) props;
 	}
 
 	public String getReference() {
 		
-		return "/site/" + testSite_ContextId + "/group/" + testGroupId;
+		return siteService.siteGroupReference(site.getId(), getId());
 	}
 
 	public String getReference(String arg0) {
@@ -147,8 +171,10 @@ public class BaseGroupMock implements Group {
 	}
 
 	public String getProviderGroupId() {
-		
-		return "12345678";
+		if (null == providerId) {
+			providerId = "" + Math.floor(Math.random() * 4.5);
+		}
+		return providerId;
 	}
 
 	public Role getRole(String arg0) {

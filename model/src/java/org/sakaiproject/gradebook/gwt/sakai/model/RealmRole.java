@@ -23,11 +23,20 @@
 
 package org.sakaiproject.gradebook.gwt.sakai.model;
 
+import java.util.Set;
+
 public class RealmRole {
 
 	private Long roleKey;
 	private String roleName;
+	private Set<RealmGroup> realmGroups;
 	
+	public Set<RealmGroup> getRealmGroups() {
+		return realmGroups;
+	}
+	public void setRealmGroups(Set<RealmGroup> realmGroups) {
+		this.realmGroups = realmGroups;
+	}
 	public Long getRoleKey() {
 		return roleKey;
 	}

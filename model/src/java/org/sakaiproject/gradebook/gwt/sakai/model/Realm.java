@@ -22,13 +22,24 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.sakai.model;
 
+import java.util.Set;
+
 
 public class Realm {
 	
 	Long realmKey;
 	String realmId;
 	String providerId;
+	Set<RealmGroup> realmGroups;
 	
+	public Set<RealmGroup> getRealmGroups() {
+		return realmGroups;
+	}
+
+	public void setRealmGroups(Set<RealmGroup> realmGroups) {
+		this.realmGroups = realmGroups;
+	}
+
 	public Long getRealmKey() {
 	
 		return realmKey;

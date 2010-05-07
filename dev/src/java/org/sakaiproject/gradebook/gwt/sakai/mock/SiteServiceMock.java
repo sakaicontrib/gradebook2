@@ -6,25 +6,40 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.sakaiproject.authz.api.AuthzGroupService;
+import org.sakaiproject.authz.api.FunctionManager;
+import org.sakaiproject.authz.api.SecurityService;
+import org.sakaiproject.component.api.ServerConfigurationService;
 import org.sakaiproject.entity.api.Entity;
+import org.sakaiproject.entity.api.EntityManager;
 import org.sakaiproject.entity.api.HttpAccess;
 import org.sakaiproject.entity.api.Reference;
 import org.sakaiproject.entity.api.ResourceProperties;
+import org.sakaiproject.event.api.EventTrackingService;
 import org.sakaiproject.exception.IdInvalidException;
 import org.sakaiproject.exception.IdUnusedException;
 import org.sakaiproject.exception.IdUsedException;
 import org.sakaiproject.exception.PermissionException;
 import org.sakaiproject.javax.PagingPosition;
+import org.sakaiproject.memory.api.MemoryService;
 import org.sakaiproject.site.api.Group;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SiteAdvisor;
 import org.sakaiproject.site.api.SitePage;
 import org.sakaiproject.site.api.SiteService;
 import org.sakaiproject.site.api.ToolConfiguration;
+import org.sakaiproject.site.impl.BaseSiteService;
+import org.sakaiproject.thread_local.api.ThreadLocalManager;
+import org.sakaiproject.time.api.TimeService;
+import org.sakaiproject.tool.api.SessionManager;
+import org.sakaiproject.user.api.UserDirectoryService;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class SiteServiceMock implements SiteService {
+public class SiteServiceMock extends BaseSiteService {
+
+	private Site devModeSite = null;
+	private AuthzGroupService authzGroupService = null;
 
 	public Site addSite(String arg0, String arg1) throws IdInvalidException,
 			IdUsedException, PermissionException {
@@ -93,11 +108,6 @@ public class SiteServiceMock implements SiteService {
 		return false;
 	}
 
-	public int countSites(SelectionType arg0, Object arg1, String arg2,
-			Map<String, String> arg3) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
 
 	public Group findGroup(String arg0) {
 		// TODO Auto-generated method stub
@@ -120,7 +130,16 @@ public class SiteServiceMock implements SiteService {
 	}
 
 	public Site getSite(String context) throws IdUnusedException {
-		return new SiteMock(context, "Test Site");
+
+		if (null == devModeSite) {
+			devModeSite = new SiteMock(context, "Test Site", this, authzGroupService);
+		}
+		return devModeSite;
+
+	}
+
+	public void setAuthzGroupService(AuthzGroupService authzGroupService) {
+		this.authzGroupService = authzGroupService;
 	}
 
 	public List<SiteAdvisor> getSiteAdvisors() {
@@ -155,12 +174,6 @@ public class SiteServiceMock implements SiteService {
 
 	public Site getSiteVisit(String arg0) throws IdUnusedException,
 			PermissionException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public List<Site> getSites(SelectionType arg0, Object arg1, String arg2,
-			Map<String, String> arg3, SortType arg4, PagingPosition arg5) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -228,26 +241,14 @@ public class SiteServiceMock implements SiteService {
 
 	}
 
-	public void setSiteSecurity(String arg0, Set<String> arg1,
-			Set<String> arg2, Set<String> arg3) {
-		// TODO Auto-generated method stub
-
-	}
-
-	public void setUserSecurity(String arg0, Set<String> arg1,
-			Set<String> arg2, Set<String> arg3) {
-		// TODO Auto-generated method stub
-
-	}
 
 	public boolean siteExists(String arg0) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	public String siteGroupReference(String arg0, String arg1) {
-		// TODO Auto-generated method stub
-		return null;
+	public String siteGroupReference(String siteId, String groupId) {
+		return "/site/"+siteId+"/group/"+groupId;
 	}
 
 	public String sitePageReference(String arg0, String arg1) {
@@ -326,6 +327,78 @@ public class SiteServiceMock implements SiteService {
 	public boolean willArchiveMerge() {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	protected AuthzGroupService authzGroupService() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected EntityManager entityManager() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected EventTrackingService eventTrackingService() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected FunctionManager functionManager() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected MemoryService memoryService() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected Storage newStorage() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected SecurityService securityService() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected ServerConfigurationService serverConfigurationService() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected SessionManager sessionManager() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected ThreadLocalManager threadLocalManager() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected TimeService timeService() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected UserDirectoryService userDirectoryService() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

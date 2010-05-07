@@ -23,6 +23,9 @@
 
 package org.sakaiproject.gradebook.gwt.sakai.model;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 
 public class RealmGroup {
 	
@@ -30,7 +33,35 @@ public class RealmGroup {
 	String userId;
 	Long roleKey;
 	Boolean active;
+	Realm realm;
+	RealmRole role;
+	RealmRlGroupId id;
 	
+	
+	public RealmRlGroupId getId() {
+		return id;
+	}
+
+	public void setId(RealmRlGroupId id) {
+		this.id = id;
+	}
+
+	public Realm getRealm() {
+		return realm;
+	}
+
+	public void setRealm(Realm realm) {
+		this.realm = realm;
+	}
+
+	public RealmRole getRole() {
+		return role;
+	}
+
+	public void setRole(RealmRole role) {
+		this.role = role;
+	}
+
 	public Long getRealmKey() {
 	
 		return realmKey;
@@ -66,4 +97,6 @@ public class RealmGroup {
 	public void setActive(Boolean active) {
 		this.active = active;
 	}
+	
+
 }

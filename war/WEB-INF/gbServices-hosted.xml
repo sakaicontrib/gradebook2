@@ -33,6 +33,14 @@
     	<property name="sessionManager" ref="org.sakaiproject.tool.api.SessionManager" />
     	<property name="configService" ref="org.sakaiproject.component.api.ServerConfigurationService" />
 	</bean>
+	
+	<bean id="org.sakaiproject.authz.api.AuthzGroupService" parent="alt.gradebookTxTemplate" >
+		<property name="target">
+		  <bean class="org.sakaiproject.gradebook.gwt.sakai.mock.AuthzGroupServiceMock" >
+		     <property name="sessionFactory"><ref bean="alt.gradebookSessionFactory"/></property>
+		  </bean>
+		</property>
+    </bean>
 		
 	<!-- Tool Service -->
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService" parent="alt.gradebookTxTemplate">
@@ -62,12 +70,14 @@
 		<!-- property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/-->
 	</bean>
 	
+	
 	<bean id="org.sakaiproject.component.api.ServerConfigurationService"
 		class="org.sakaiproject.gradebook.gwt.sakai.mock.ServerConfigurationServiceMock">
 	</bean>
 	
 	<bean id="org.sakaiproject.site.api.SiteService" 
 		class="org.sakaiproject.gradebook.gwt.sakai.mock.SiteServiceMock">
+		<property name="authzGroupService" ref="org.sakaiproject.authz.api.AuthzGroupService"/>
 	</bean>
 	
 	<bean id="org_sakaiproject_tool_gradebook_facades_Authz" class="org.sakaiproject.gradebook.gwt.sakai.mock.Gradebook2AuthzMockImpl">
@@ -85,6 +95,8 @@
 	<bean id="org.sakaiproject.section.api.SectionAwareness" class="org.sakaiproject.gradebook.gwt.sakai.mock.SectionAwarenessMock"
 		init-method="init">
 		<property name="userDirectoryService" ref="org.sakaiproject.user.api.UserDirectoryService"/>
+		<property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/>
+		<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>
 	</bean>
 	
 	<bean id="org.sakaiproject.service.gradebook.GradebookFrameworkService"
@@ -94,6 +106,10 @@
 		<property name="authn">
 					<ref bean="org_sakaiproject_tool_gradebook_facades_Authn" />
 				</property>
+				
+		<property name="siteService"><ref bean="org.sakaiproject.site.api.SiteService"/></property>
+		<property name="userService"><ref bean="org.sakaiproject.user.api.UserDirectoryService"/></property>
+		<property name="toolManager"><ref bean="org.sakaiproject.tool.api.ToolManager"/></property>
 	</bean>
 	
 	<bean id="org.sakaiproject.user.api.UserDirectoryService"

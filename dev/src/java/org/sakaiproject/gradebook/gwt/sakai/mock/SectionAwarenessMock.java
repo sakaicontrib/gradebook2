@@ -25,28 +25,46 @@ package org.sakaiproject.gradebook.gwt.sakai.mock;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.sakaiproject.component.section.sakai.CourseSectionImpl;
+import org.sakaiproject.exception.IdUnusedException;
 import org.sakaiproject.section.api.SectionAwareness;
 import org.sakaiproject.section.api.coursemanagement.CourseSection;
 import org.sakaiproject.section.api.coursemanagement.LearningContext;
 import org.sakaiproject.section.api.coursemanagement.ParticipationRecord;
 import org.sakaiproject.section.api.facade.Role;
+import org.sakaiproject.site.api.Group;
+import org.sakaiproject.site.api.SiteService;
+import org.sakaiproject.tool.api.ToolManager;
 import org.sakaiproject.user.api.User;
 import org.sakaiproject.user.api.UserDirectoryService;
 
 public class SectionAwarenessMock implements SectionAwareness {
+	
+	Log log = LogFactory.getLog(SectionAwarenessMock.class);
 
 	private UserDirectoryService userDirectoryService = null;
 
 	private List<ParticipationRecord> allRecords;
 	List<CourseSection> sections;
+
+	private SiteService siteService;
+	private ToolManager toolManager;
+	
 	private final static int NUMBER_OF_TAS = 5;
 	private static final String[] SECTIONS = { "001", "002", "003", "004" };
 	private static final String[] SECTION_EIDs = { "/section/018u012", null, "/section/sd32122", null };
+
+	public static final int NUMBER_OF_MOCK_SECTIONS = 4;
 
 	public SectionAwarenessMock() {
 
@@ -98,8 +116,9 @@ public class SectionAwarenessMock implements SectionAwareness {
 		return null;
 	}
 
+	@SuppressWarnings("unchecked")
 	public CourseSection getSection(String sectionUuid) {
-		List<CourseSection> courseSections = getSections(null);
+		List<CourseSection> courseSections = getSections(toolManager.getCurrentPlacement().getContext());
 		for(CourseSection courseSection : courseSections) {
 			if(courseSection.getUuid().equals(sectionUuid)) {
 				return courseSection;
@@ -135,18 +154,29 @@ public class SectionAwarenessMock implements SectionAwareness {
 		return records;
 	}
 
+	@SuppressWarnings("unchecked")
 	public List getSections(String siteContext) {
+		
+	    	if(log.isDebugEnabled()) log.debug("Getting sections for context " + siteContext);
+	    	List<CourseSectionImpl> sectionList = new ArrayList<CourseSectionImpl>();
+	    	Collection sections;
+	    	try {
+	    		sections = siteService.getSite(siteContext).getGroups();
+	    	} catch (IdUnusedException e) {
+	    		log.error("No site with id = " + siteContext);
+	    		return sectionList;
+	    	}
+	    	for(Iterator iter = sections.iterator(); iter.hasNext();) {
+	    		Group group = (Group)iter.next();
+	    		sectionList.add(new CourseSectionImpl(group));
+	    	}
+	    	Collections.sort(sectionList);
+	    	return sectionList;
+	    
+	}
 
-		if(null == sections) {
-
-			sections = new LinkedList<CourseSection>();
-
-			for (String sectionId : getSectionIdList()) {
-				sections.add(new CourseSectionMock(sectionId, "Section " + sectionId));
-			}
-		}
-
-		return sections;
+	public void setSiteService(SiteService siteService) {
+		this.siteService = siteService;
 	}
 
 	public List getSectionsInCategory(String siteContext, String categoryId) {
@@ -193,15 +223,25 @@ public class SectionAwarenessMock implements SectionAwareness {
 	 * Helper methods
 	 */
 
+	@SuppressWarnings("unchecked")
 	private List<String> getSectionIdList() {
-		return new ArrayList<String>(Arrays.asList(SECTIONS));
+		List<String> sectionIds = new ArrayList<String>();
+		for(CourseSection s : ((List<CourseSection>) getSections(toolManager.getCurrentPlacement().getContext()))) {
+			sectionIds.add(s.getUuid());
+		}
+		return sectionIds;
 	}
 
+	public void setToolManager(ToolManager toolManager) {
+		this.toolManager = toolManager;
+	}
+
+	@SuppressWarnings("unchecked")
 	private CourseSection getRandomSection() {
-		String sectionUid = SECTIONS[getRandomInt(SECTIONS.length)];
-		String eid = SECTION_EIDs[getRandomInt(SECTION_EIDs.length)];
-		CourseSection cs = new CourseSectionMock(sectionUid, "Section " + eid, eid);
-		return cs;
+		
+		List sections = getSections(toolManager.getCurrentPlacement().getContext());
+
+		return (CourseSection) sections.get(getRandomInt(sections.size()));
 	}
 
 	private Random random = new Random();

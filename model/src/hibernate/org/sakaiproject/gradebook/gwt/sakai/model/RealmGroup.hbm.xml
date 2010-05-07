@@ -9,12 +9,13 @@
 
     	<cache usage="read-only" />
         
-        <id name="realmKey">
-        	<column name="REALM_KEY"/>
-       		<generator class="native"/>
-       	</id>
-       	<property name="userId" column="USER_ID"/>
-       	<property name="roleKey" column="ROLE_KEY"/>
+        <composite-id class="org.sakaiproject.gradebook.gwt.sakai.model.RealmRlGroupId" mapped="true">
+	        <key-property name="userId" column="USER_ID"/>
+	        <key-property name="roleKey" column="ROLE_KEY"/>
+	        <key-property name="realmKey" column="REALM_KEY"/>
+	    </composite-id>
+	    
+
        	<property name="active" column="ACTIVE"/>
     </class>
     	
