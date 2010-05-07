@@ -5242,8 +5242,12 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 						return true;
 					}
 
-					// Ignoring extra credit assignment weights
-					if(!isExtraCreditCategory && isExtraCreditItem) {
+					// Ignoring
+					// - extra credit assignment weights
+					// - not counted items in any category
+					if((!isExtraCreditCategory && isExtraCreditItem) ||
+					   (assignment.isNotCounted())) {
+						
 						continue;
 					}
 
