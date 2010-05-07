@@ -38,7 +38,6 @@
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/gradebook/gradebook-service-hibernate/1.1-SNAPSHOT/gradebook-service-hibernate-1.1-SNAPSHOT.jar" sourcepath="/EDU-SERVICE-SRC"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/gradebook/gradebook-service-impl/1.1-SNAPSHOT/gradebook-service-impl-1.1-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-component-manager/1.2.0-SNAPSHOT/sakai-component-manager-1.2.0-SNAPSHOT.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-kernel-api/1.2.0-SNAPSHOT/sakai-kernel-api-1.2.0-SNAPSHOT.jar" sourcepath="/src/kernel"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/sections/sections-api/1.1-SNAPSHOT/sections-api-1.1-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-webmvc/2.5.6.SEC01/spring-webmvc-2.5.6.SEC01.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-kernel-private/1.2.0-SNAPSHOT/sakai-kernel-private-1.2.0-SNAPSHOT.jar"/>
@@ -62,5 +61,6 @@
 	<classpathentry kind="var" path="M2_REPO/activation"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-kernel-component/1.2.0-SNAPSHOT"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/sections/sections-model/1.1-SNAPSHOT/sections-model-1.1-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-kernel-api/1.2.0-SNAPSHOT/sakai-kernel-api-1.2.0-SNAPSHOT.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

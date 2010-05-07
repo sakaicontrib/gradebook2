@@ -274,7 +274,6 @@ public class AuthzGroupServiceMock extends HibernateDaoSupport implements AuthzG
 		return false;
 	}
 
-	@Override
 	public Map<String, String> getUserRoles(String arg0, Collection<String> arg1) {
 		// TODO Auto-generated method stub
 		return null;
