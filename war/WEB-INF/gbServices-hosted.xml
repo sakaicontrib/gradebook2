@@ -45,7 +45,7 @@
 	<!-- Tool Service -->
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService" parent="alt.gradebookTxTemplate">
 		<property name="target">
-			<bean class="org.sakaiproject.gradebook.gwt.sakai.mock.GradebookToolServiceMock">
+			<bean class="org.sakaiproject.gradebook.gwt.sakai.hibernate.GradebookToolServiceImpl">
 				<property name="sessionFactory"><ref bean="alt.gradebookSessionFactory"/></property>
 				<property name="sectionAwareness">
 					<ref bean="org.sakaiproject.section.api.SectionAwareness" />

@@ -67,6 +67,7 @@ public class SiteMock implements Site {
 	private ResourceVector groups = null;
 	private BaseSiteService siteService;
 	private AuthzGroupService authzGroupService;
+	private String providerId;
 
 	public SiteMock(BaseSiteService siteService, AuthzGroupService authzGroupService) {
 		props.addProperty(CourseImpl.EXTERNALLY_MAINTAINED, "true");
@@ -85,9 +86,16 @@ public class SiteMock implements Site {
 		props.addProperty(CourseImpl.STUDENT_REGISTRATION_ALLOWED, "false");
 		props.addProperty(CourseImpl.STUDENT_SWITCHING_ALLOWED, "false");
 		groups = new ResourceVector();
+		StringBuilder providerId = new StringBuilder();
 		for (int i = 0; i < SectionAwarenessMock.NUMBER_OF_MOCK_SECTIONS; ++i) {
-			groups.add(new BaseGroupMock("eid_"+ (new Integer(i)).toString(), siteService, this, "groupid:" + i));
+			String groupPoviderId = "eid_"+ (new Integer(i)).toString();
+			groups.add(new BaseGroupMock(groupPoviderId , siteService, this, "groupid:" + i));
+			if (i>0)
+				providerId.append("+");
+			providerId.append(groupPoviderId);
 		}
+		setProviderGroupId(providerId.toString());
+		
 	}
 
 	public Group addGroup() {
@@ -438,8 +446,7 @@ public class SiteMock implements Site {
 	}
 
 	public String getProviderGroupId() {
-		// TODO Auto-generated method stub
-		return null;
+		return providerId;
 	}
 
 	public Role getRole(String arg0) {
@@ -522,8 +529,8 @@ public class SiteMock implements Site {
 
 	}
 
-	public void setProviderGroupId(String arg0) {
-		// TODO Auto-generated method stub
+	public void setProviderGroupId(String providerId) {
+		this.providerId = providerId;
 
 	}
 

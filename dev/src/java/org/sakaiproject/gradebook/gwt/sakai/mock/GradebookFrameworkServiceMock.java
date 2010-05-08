@@ -126,6 +126,7 @@ public class GradebookFrameworkServiceMock extends
 				// / save to realms tables
 				int remainder = users.size() % groups.size();
 				
+				int share = 1; //default to one person per group
 				if (users.size() >= groupList.size()) {
 
 					// /stuff the remainder in the first group
@@ -143,20 +144,24 @@ public class GradebookFrameworkServiceMock extends
 									realmRole, session);
 						}
 					}
-					int share = new Double(Math.floor(users.size() / groups.size())).intValue();
-					for(int g=0;g<groupList.size();++g) {
-						for (int u=0;u<share;++u) {
-							User user = users.get(u+remainder+share*g);
-							if (user != null) {
-								if (!addedToSiteRealm.contains(user)) {//siteRealm first
-									addUserToRealmRole(user, siteRealm, realmRole, session);
-									addedToSiteRealm.add(user);
-								}
-								addUserToGroupInRole(user, groupList.get(g), realmRole, session);
+					share = new Double(Math.floor(users.size() / groups.size())).intValue();
+				}
+				for(int g=0;g<groupList.size();++g) {
+					for (int u=0;u<share;++u) {
+						int index = u+remainder+share*g;
+						if (index>users.size()-1) /// probably a case where groups>users
+							break;
+						User user = users.get(index);
+						if (user != null) {
+							if (!addedToSiteRealm.contains(user)) {//siteRealm first
+								addUserToRealmRole(user, siteRealm, realmRole, session);
+								addedToSiteRealm.add(user);
 							}
+							addUserToGroupInRole(user, groupList.get(g), realmRole, session);
 						}
 					}
 				}
+				
 
 				return null;
 			}
