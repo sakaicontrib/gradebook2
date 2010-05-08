@@ -112,7 +112,8 @@ public class AuthzGroupServiceMock extends HibernateDaoSupport implements AuthzG
 
 			public Object doInHibernate(Session session)
 					throws HibernateException, SQLException {
-				Query q = session.createQuery("rg.realm.id from RealmGroup as rg where rg.userId :userId ");
+				Query q = session.createQuery("select r.realmId from Realm as r,RealmGroup as rg where rg.userId=:userId "
+						+ "and r.realmKey=rg.realmKey");
 				q.setString("userId", userId);
 				return q.list();
 			}

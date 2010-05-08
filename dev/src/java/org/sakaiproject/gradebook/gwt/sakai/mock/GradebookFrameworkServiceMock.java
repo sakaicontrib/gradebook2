@@ -76,7 +76,7 @@ public class GradebookFrameworkServiceMock extends
 		/*
 		 * GRBK-603 
 		 * - divides the available students across available groups
-		 * - this number of the first users are added to the first group" #users%#groups
+		 * - this number of the first users are added to the first group: #users%#groups
 		 * - creates Student role (only)
 		 */
 		Site thisSite = null;
@@ -99,7 +99,7 @@ public class GradebookFrameworkServiceMock extends
 				// why not)
 
 				RealmRole realmRole = new RealmRole();
-				// realmRole.setRoleKey(Long.valueOf(1l));
+
 				realmRole.setRoleName("Student");
 				try {
 					session.save(realmRole);
@@ -109,7 +109,7 @@ public class GradebookFrameworkServiceMock extends
 				}
 
 				Realm siteRealm = new Realm();
-				// realm.setRealmKey(Long.valueOf(i));
+				
 				siteRealm.setRealmId("/site/TESTSITECONTEXT");
 				try {
 					session.save(siteRealm);
@@ -173,7 +173,6 @@ public class GradebookFrameworkServiceMock extends
 		group = populateGroupFromUserRealmRole(group, user, siteRealm, realmRole);
 		try {
 			session.save(group);
-			session.flush();
 		} catch (Exception e) {
 			log.error("Trying to save realm(role)group:");
 			e.printStackTrace();
@@ -182,15 +181,16 @@ public class GradebookFrameworkServiceMock extends
 	}
 
 	private RealmGroup populateGroupFromUserRealmRole(RealmGroup group, User user,
-			Realm siteRealm, RealmRole realmRole) {
+			Realm realm, RealmRole realmRole) {
 		
 		RealmRlGroupId id = new RealmRlGroupId();
-		group.setRealmKey(siteRealm.getRealmKey());
+		group.setRealmKey(realm.getRealmKey());
 		group.setRoleKey(realmRole.getRoleKey());
 		group.setUserId(user.getId());
-		id.setRealmKey(siteRealm.getRealmKey());
+		id.setRealmKey(realm.getRealmKey());
 		id.setRoleKey(realmRole.getRoleKey());
 		id.setUserId(user.getId());
+		group.setRealm(realm);
 		group.setId(id);
 		group.setActive(Boolean.TRUE);
 		

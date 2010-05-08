@@ -14,6 +14,7 @@ import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.site.api.Group;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SiteService;
+import org.sakaiproject.site.impl.Identifiable;
 import org.sakaiproject.time.api.Time;
 import org.sakaiproject.user.api.User;
 import org.sakaiproject.util.BaseResourceProperties;
@@ -23,7 +24,7 @@ import org.w3c.dom.Element;
 
 import com.google.gwt.core.client.GWT;
 
-public class BaseGroupMock implements Group {
+public class BaseGroupMock implements Group, Identifiable {
 
 	private String testSite_ContextId = "TESTSITECONTEXT";
 	private String testGroupId = "TESTGROUP_" + Math.random()*System.currentTimeMillis();

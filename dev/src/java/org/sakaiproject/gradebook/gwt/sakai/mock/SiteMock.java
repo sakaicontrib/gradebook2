@@ -64,7 +64,7 @@ public class SiteMock implements Site {
 	private String id;
 	private String title;
 	private BaseResourceProperties props = new BaseResourcePropertiesEdit();
-	private List<Group> groups = null;
+	private ResourceVector groups = null;
 	private BaseSiteService siteService;
 	private AuthzGroupService authzGroupService;
 
@@ -75,6 +75,7 @@ public class SiteMock implements Site {
 		this.siteService = siteService;
 	}
 
+	@SuppressWarnings("unchecked")
 	public SiteMock(String id, String title, BaseSiteService siteService, AuthzGroupService authzGroupService) {
 		this.id = id;
 		this.title = title;
@@ -83,7 +84,7 @@ public class SiteMock implements Site {
 		props.addProperty(CourseImpl.EXTERNALLY_MAINTAINED, "true");
 		props.addProperty(CourseImpl.STUDENT_REGISTRATION_ALLOWED, "false");
 		props.addProperty(CourseImpl.STUDENT_SWITCHING_ALLOWED, "false");
-		groups = new ArrayList<Group>();
+		groups = new ResourceVector();
 		for (int i = 0; i < SectionAwarenessMock.NUMBER_OF_MOCK_SECTIONS; ++i) {
 			groups.add(new BaseGroupMock("eid_"+ (new Integer(i)).toString(), siteService, this, "groupid:" + i));
 		}
