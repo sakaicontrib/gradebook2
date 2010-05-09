@@ -760,7 +760,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 				StringBuilder builder = new StringBuilder();
 
-				builder.append(" select agr from AssignmentGradeRecord agr ")
+				builder.append("select agr from AssignmentGradeRecord agr ")
 				.append(" where agr.gradableObject.id in (:assignmentIds) ");
 
 				query = session.createQuery(builder.toString());
@@ -773,6 +773,30 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		return (List<AssignmentGradeRecord>)getHibernateTemplate().execute(hc);
 	}
 
+	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(final Long[] assignmentIds, final String[] realmIds) {
+		HibernateCallback hc = new HibernateCallback() {
+			public Object doInHibernate(Session session) throws HibernateException {
+
+				Query query = null;
+
+				StringBuilder builder = new StringBuilder();
+
+				builder.append("select agr from AssignmentGradeRecord as agr, Realm as r, RealmGroup as rg ")
+				.append(" where agr.studentId = rg.userId ")
+				.append(" and r.realmKey = rg.realmKey ")
+				.append(" and agr.gradableObject.id in (:assignmentIds) ")
+				.append(" and r.realmId in (:realmIds) ");
+				
+				query = session.createQuery(builder.toString());
+				query.setParameterList("assignmentIds", assignmentIds);
+				query.setParameterList("realmIds", realmIds);
+
+				return query.list();
+			}
+		};
+		return (List<AssignmentGradeRecord>)getHibernateTemplate().execute(hc);
+		
+	}
 
 	// GRBK-40 : TPA : Eliminated the in java filtering
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(final Long gradebookId, final String[] realmIds, final String[] roleNames) {

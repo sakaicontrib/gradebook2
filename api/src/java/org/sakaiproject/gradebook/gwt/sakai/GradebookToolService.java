@@ -65,6 +65,8 @@ public interface GradebookToolService {
 	
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(final Long[] assignmentIds);
 	
+	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(final Long[] assignmentIds, final String[] realmIds);
+	
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(Long gradebookId, Collection<String> studentUids);
 	
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(Long gradebookId, String[] realmIds, String[] roleNames);

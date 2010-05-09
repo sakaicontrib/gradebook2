@@ -81,7 +81,7 @@ public interface Gradebook2ComponentService {
 	
 	public Site getSite();
 
-	public int[] getGradeItemStatistics(Long assignmentId) throws SecurityException;
+	public int[] getGradeItemStatistics(Long assignmentId, String sectionId) throws SecurityException;
 	
 	/*
 	 * @deprecated As of 1.3.0

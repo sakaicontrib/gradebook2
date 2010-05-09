@@ -1553,11 +1553,20 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return siteService;
 	}
 
-	public int[] getGradeItemStatistics(Long assignmentId) throws SecurityException {
+	public int[] getGradeItemStatistics(Long assignmentId, String sectionId) throws SecurityException {
 		
 		int[] gradeFrequencies = new int[10];
+
+		List<AssignmentGradeRecord> assignmentGradeRecords = null;
 		
-		List<AssignmentGradeRecord> assignmentGradeRecords = gbService.getAllAssignmentGradeRecords(new Long[] {assignmentId});
+		if(sectionId.equals(AppConstants.ALL_SECTIONS)) {
+			
+			assignmentGradeRecords = gbService.getAllAssignmentGradeRecords(new Long[] {assignmentId});
+		}
+		else {
+			
+			assignmentGradeRecords = gbService.getAllAssignmentGradeRecords(new Long[] {assignmentId}, new String[] {sectionId});
+		}
 		
 		for(AssignmentGradeRecord assignmentGradeRecord : assignmentGradeRecords) {
 			
