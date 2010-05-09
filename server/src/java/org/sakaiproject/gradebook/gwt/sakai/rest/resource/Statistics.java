@@ -7,35 +7,39 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
-import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 
-@Path(AppConstants.STATISTICS_FRAGMENT)
+@Path("statistics")
 public class Statistics extends Resource {
 
-	@GET @Path("/{uid}/{id}")
-    @Produces("application/json")
-    public String get(@PathParam("uid") String gradebookUid, @PathParam("id") Long gradebookId) throws SecurityException {
-		
+	@GET @Path("/instructor/{uid}/{id}/{sectionId}")
+	@Produces("application/json")
+	public String getInstructorStatistics(
+			@PathParam("uid") String gradebookUid,
+			@PathParam("id") Long gradebookId,
+			@PathParam("sectionId") String sectionId) throws SecurityException {
+
 		List<org.sakaiproject.gradebook.gwt.client.model.Statistics> list = 
-			service.getStatistics(gradebookUid, gradebookId, null);
+			service.getGraderStatistics(gradebookUid, gradebookId, sectionId);
 		return toJson(list, list.size());
 	}
-	
+
 	@GET @Path("/{uid}/{id}/{studentUid}")
-    @Produces("application/json")
-    public String get(@PathParam("uid") String gradebookUid, @PathParam("id") Long gradebookId,
-    		@PathParam("studentUid") String studentUid) throws SecurityException {
-		
+	@Produces("application/json")
+	public String getStudentStatistics(
+			@PathParam("uid") String gradebookUid,
+			@PathParam("id") Long gradebookId,
+			@PathParam("studentUid") String studentUid) throws SecurityException {
+
 		List<org.sakaiproject.gradebook.gwt.client.model.Statistics> list = 
-			service.getStatistics(gradebookUid, gradebookId, studentUid);
+			service.getLearnerStatistics(gradebookUid, gradebookId, studentUid);
 		return toJson(list, list.size());
 	}
-	
-	@GET @Path("/" + AppConstants.INSTRUCTOR_FRAGMENT + "/{assignmentId}")
+
+	@GET @Path("/instructor/{assignmentId}")
 	@Produces("application/json")
 	public String get(@PathParam("assignmentId") Long assignmentId) throws SecurityException {
-		
+
 		int[] gradeFrequencies = service.getGradeItemStatistics(assignmentId);
 		return toJson(gradeFrequencies);
 	}

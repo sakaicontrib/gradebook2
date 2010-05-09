@@ -34,6 +34,7 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestCallback;
+import org.sakaiproject.gradebook.gwt.client.UrlArgsCallback;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
@@ -41,6 +42,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.StatisticsModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.SectionsComboBox;
+import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.SectionKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.StatisticsKey;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
@@ -103,8 +105,9 @@ public class StatisticsPanel extends ContentPanel {
 
 	private SectionsComboBox<ModelData> sectionsComboBox;
 	
-	List<ColumnConfig> configs;
-	private Grid<StatisticsModel> grid;
+	private Panel gridPanel;
+	
+	private Grid<StatisticsModel> grid = null;
 	
 	private Image columnChartIcon;
 	private Image pieChartIcon;
@@ -158,7 +161,6 @@ public class StatisticsPanel extends ContentPanel {
 		
 		// Configuring various UI elements: initializing, adding handlers etc.
 		configureChartIcons();
-		configureGrid();
 		
 		sectionsComboBox = new SectionsComboBox<ModelData>();
 		sectionsComboBox.setStyleName(resources.css().gbStatisticsChartPanel());
@@ -170,78 +172,19 @@ public class StatisticsPanel extends ContentPanel {
 
 				if (model != null) {
 					GWT.log("XXXXX: " + model.get(SectionKey.S_ID.name()));
-					// TODO : change grid data for selected section
+					gridPanel.remove(grid);
+					horizontalPanel.remove(grid);
+					grid = getGrid();
+					gridPanel.add(grid);
+					grid.getStore().getLoader().load();
 				}
 			}
 		});
 		
-		loader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, 
-				EnumSet.allOf(StatisticsKey.class), Method.GET, null, null,
-				GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, AppConstants.STATISTICS_FRAGMENT);
-		
-		final ListStore<StatisticsModel> store = new ListStore<StatisticsModel>(loader);
-		store.setModelComparer(new EntityModelComparer<StatisticsModel>(StatisticsKey.S_ID.name()));
-
-		final ColumnModel cm = new ColumnModel(configs);
-
 		setBodyBorder(true);
 		setButtonAlign(HorizontalAlignment.RIGHT);
 		
-		grid = new Grid<StatisticsModel>(store, cm);  
-		grid.setStyleAttribute("borderTop", "none");   
-		grid.setBorders(true);
-		grid.setAutoHeight(true);
-		
-		grid.addListener(Events.RowClick, new Listener<GridEvent<?>>() {
-
-			public void handleEvent(GridEvent<?> gridEvent) {
-				
-				// If we click on the first row, which shows the Course Grade data, we don't do anything
-				int rowIndex = gridEvent.getRowIndex();
-				
-				if(rowIndex != FIRST_ROW) {
-					
-					// We keep track of the selected row in case the user keeps
-					// clicking on the same grade item, in which case we don't
-					// need to fetch new data
-					if(selectedGradeItemRow == rowIndex) {
-						return;
-					}
-					else {
-						
-						selectedGradeItemRow = rowIndex;
-					}
-					// Remove existing chart
-					removeAllWidgetsFrom(statisticsGraphPanel);
-					
-					String assignmentId = gridEvent.getModel().get(StatisticsKey.S_ITEM_ID.name());
-					
-					// Getting the mean so that we can determine if any grades have been entered
-					// for the selected grade item
-					String mean = gridEvent.getModel().get(StatisticsKey.S_MEAN.name());
-					
-					if(null != mean && mean.matches("\\d*\\.\\d*")) {
-						
-						// Before we get the data and show the graph(s), we check
-						// if the Visualization APIs have been loaded properly
-						if(isVisualizationApiLoaded) {
-							getStatisticsData(assignmentId);
-						}
-						else {
-							Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsVisualizationErrorMsg(), false));
-							
-						}
-					}
-					else {
-						
-						// If there is no data to show, we hide the graph icons
-						horizontalIconPanel.setVisible(false);
-						
-						// TODO: Should we show a notification if the user clicks on a row with no data?
-					}
-				}
-			}
-		});
+		grid = getGrid();
 
 		Button button = new AriaButton(i18n.close(), new SelectionListener<ButtonEvent>() {
 
@@ -279,7 +222,9 @@ public class StatisticsPanel extends ContentPanel {
 		mainVerticalPanel.add(sectionsComboBox);
 		mainVerticalPanel.add(horizontalPanel);
 		
-		horizontalPanel.add(grid);
+		gridPanel = new SimplePanel();
+		gridPanel.add(grid);
+		horizontalPanel.add(gridPanel);
 		horizontalPanel.add(verticalGraphPanel);
 		
 		horizontalIconPanel.setWidth("30%");
@@ -414,9 +359,98 @@ public class StatisticsPanel extends ContentPanel {
         }
 	}
 	
-	private void configureGrid() {
+	private Grid<StatisticsModel> getGrid() {
 	
-		configs = new ArrayList<ColumnConfig>();
+		UrlArgsCallback urlArgsCallback = new UrlArgsCallback() {
+
+			public String getUrlArg() {
+				String selectedSectionId = getSelectedSection();
+				return selectedSectionId;
+			}
+	
+		};
+		
+		loader = RestBuilder.getDelayLoader(
+				AppConstants.LIST_ROOT, 
+				EnumSet.allOf(StatisticsKey.class),
+				Method.GET,
+				urlArgsCallback,
+				null,
+				GWT.getModuleBaseURL(),
+				AppConstants.REST_FRAGMENT,
+				AppConstants.STATISTICS_FRAGMENT,
+				AppConstants.INSTRUCTOR_FRAGMENT);
+		
+		
+		final ListStore<StatisticsModel> store = new ListStore<StatisticsModel>(loader);
+		store.setModelComparer(new EntityModelComparer<StatisticsModel>(StatisticsKey.S_ID.name()));
+		
+		final ColumnModel cm = new ColumnModel(configureGrid());
+		
+		Grid<StatisticsModel> grid = new Grid<StatisticsModel>(store, cm);
+		grid.setStyleAttribute("borderTop", "none");   
+		grid.setBorders(true);
+		grid.setAutoHeight(true);
+		
+		grid.addListener(Events.RowClick, new Listener<GridEvent<?>>() {
+
+			public void handleEvent(GridEvent<?> gridEvent) {
+				
+				// If we click on the first row, which shows the Course Grade data, we don't do anything
+				int rowIndex = gridEvent.getRowIndex();
+				
+				if(rowIndex != FIRST_ROW) {
+					
+					// We keep track of the selected row in case the user keeps
+					// clicking on the same grade item, in which case we don't
+					// need to fetch new data
+					if(selectedGradeItemRow == rowIndex) {
+						return;
+					}
+					else {
+						
+						selectedGradeItemRow = rowIndex;
+					}
+					// Remove existing chart
+					removeAllWidgetsFrom(statisticsGraphPanel);
+					
+					String assignmentId = gridEvent.getModel().get(StatisticsKey.S_ITEM_ID.name());
+					
+					// Getting the mean so that we can determine if any grades have been entered
+					// for the selected grade item
+					String mean = gridEvent.getModel().get(StatisticsKey.S_MEAN.name());
+					
+					if(null != mean && mean.matches("\\d*\\.\\d*")) {
+						
+						// Before we get the data and show the graph(s), we check
+						// if the Visualization APIs have been loaded properly
+						if(isVisualizationApiLoaded) {
+							getStatisticsData(assignmentId);
+						}
+						else {
+							Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsVisualizationErrorMsg(), false));
+							
+						}
+					}
+					else {
+						
+						// If there is no data to show, we hide the graph icons
+						horizontalIconPanel.setVisible(false);
+						
+						// TODO: Should we show a notification if the user clicks on a row with no data?
+					}
+				}
+			}
+		});
+		
+		return grid;
+		
+	}
+	
+	
+	private List<ColumnConfig> configureGrid() {
+	
+		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 		
 		ColumnConfig column = new ColumnConfig();  
 		column.setId(StatisticsKey.S_NM.name());  
@@ -463,6 +497,8 @@ public class StatisticsPanel extends ContentPanel {
 		column.setSortable(false);
 		column.setResizable(true); 
 		configs.add(column);
+		
+		return configs;
 	}
 	
 	private void configureChartIcons() {
@@ -500,6 +536,22 @@ public class StatisticsPanel extends ContentPanel {
 				horizontalIconPanel.setVisible(true);
 			}
 		});
+	}
+	
+	// Method that returns the selected section
+	private String getSelectedSection() {
+		
+		List<ModelData> selection = sectionsComboBox.getSelection();
+		
+		if(null != selection && selection.size() == 1) {
+			
+			return selection.get(0).get(SectionKey.S_ID.name());
+		}
+		else {
+		
+			return AppConstants.ALL_SECTIONS;
+		}
+		
 	}
 	
 	/*

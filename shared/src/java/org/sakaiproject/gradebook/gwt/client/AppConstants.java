@@ -210,4 +210,7 @@ public interface AppConstants {
 	public static final String IMPORT_SERVLET = "import";
 	public static final String EXPORT_SERVLET = "export";
 	public static final String SUBMISSION_SERVLET = "submit";
+	
+	// Statistics panel
+	public static final String ALL_SECTIONS = "ALL";
 }

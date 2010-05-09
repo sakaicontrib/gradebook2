@@ -83,7 +83,23 @@ public interface Gradebook2ComponentService {
 
 	public int[] getGradeItemStatistics(Long assignmentId) throws SecurityException;
 	
+	/*
+	 * @deprecated As of 1.3.0
+	 * @see getGraderStatistics(String, Long, String)
+	 * @see getLearnerStatistics(String, Long, String)
+	 */
+	@Deprecated 
 	public List<Statistics> getStatistics(String gradebookUid, Long gradebookId, String studentId) throws SecurityException;
+	
+	/*
+	 * @since 1.3.0
+	 */
+	public List<Statistics> getGraderStatistics(String gradebookUid, Long gradebookId, String sectionId) throws SecurityException;
+	
+	/*
+	 * @since 1.3.0
+	 */
+	public List<Statistics> getLearnerStatistics(String gradebookUid, Long gradebookId, String learnerId) throws SecurityException;
 	
 	public List<Map<String,Object>> getVisibleSections(String gradebookUid, boolean enableAllSectionsEntry, String allSectionsEntryTitle);
 
