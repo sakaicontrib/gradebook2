@@ -874,7 +874,7 @@ public class NewImportPanel extends GradebookPanel {
 									model = (LearnerModel) multigradeStore.findModel(LearnerKey.S_UID.name(), currentUid);
 								
 								if (model == null) {
-									GWT.log("Could not find a model for: " + currentUid);
+									GWT.log("Could not find a model for: " + currentUid, null);
 									continue;
 								}
 								
