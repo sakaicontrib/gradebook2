@@ -55,7 +55,7 @@
 	<classpathentry kind="var" path="M2_REPO/org/codehaus/jackson/jackson-jaxrs/1.1.1/jackson-jaxrs-1.1.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/codehaus/jackson/jackson-mapper-asl/1.1.1/jackson-mapper-asl-1.1.1.jar"/>
 	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
-	<classpathentry kind="var" path="M2_REPO/com/google/gwt/google-apis/gwt-visualization/1.0.2/gwt-visualization-1.0.2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/google/gwt/google-apis/gwt-visualization/1.1.0/gwt-visualization-1.1.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-kernel-util/1.2.0-SNAPSHOT/sakai-kernel-util-1.2.0-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-kernel-impl/1.0.12/sakai-kernel-impl-1.0.12.jar"/>
 	<classpathentry kind="var" path="M2_REPO/activation"/>
