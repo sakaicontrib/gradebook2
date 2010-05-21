@@ -103,7 +103,9 @@ public class ImportExportUtility {
 	};
 
 	private static enum StructureRow {
-		GRADEBOOK("Gradebook:"), CATEGORY("Category:"), PERCENT_GRADE("% Grade:"), POINTS("Points:"), 
+		GRADEBOOK("Gradebook:"), SCALED_EC("Scaled XC:"), 
+		SHOWITEMSTATS("ShowItemStats:"), SHOWMEAN("ShowMean:"), SHOWMEDIAN("ShowMedian:"), SHOWMODE("ShowMode:"), SHOWRANK("ShowRank:"), 
+		CATEGORY("Category:"), PERCENT_GRADE("% Grade:"), POINTS("Points:"), 
 		PERCENT_CATEGORY("% Category:"), DROP_LOWEST("Drop Lowest:"), EQUAL_WEIGHT("Equal Weight Items:");
 
 		private String displayName;
@@ -137,6 +139,7 @@ public class ImportExportUtility {
 		for (int i=0;i<scantronIgnoreColumns.length;i++) {
 			scantronIgnoreSet.add(scantronIgnoreColumns[i].toLowerCase());
 		}
+		log.warn("Here we are!"); 
 	}
 
 	public void exportGradebook(Gradebook2ComponentService service, String gradebookUid, 
@@ -163,6 +166,8 @@ public class ImportExportUtility {
 			// First, we need to add a row for basic gradebook info
 			String[] gradebookInfoRow = { "", StructureRow.GRADEBOOK.getDisplayName(), gradebookItemModel.getName(), categoryTypeText, gradeTypeText};
 			out.addRow(gradebookInfoRow);
+			
+			exportViewOptionsAndScaleEC(out, gradebook); 
 
 			final List<String> categoriesRow = new LinkedList<String>();
 			final List<String> percentageGradeRow = new LinkedList<String>();
@@ -447,6 +452,20 @@ public class ImportExportUtility {
 
 	}
 	
+
+	private void exportViewOptionsAndScaleEC(RawFile out, Gradebook gradebook) {
+		
+		String[] rowString; 
+		if (gradebook.getGradebookItemModel().getExtraCreditScaled().booleanValue())
+		{
+			rowString = new String[3]; 
+			rowString[0] = ""; 
+			rowString[1] = StructureRow.SCALED_EC.getDisplayName(); 
+			rowString[2] = "true"; 
+			out.addRow(rowString); 
+		}
+		
+	}
 
 	private void createXLS97File(String title, HttpServletResponse response, RawFile out) throws FatalException {
 		HSSFWorkbook wb = new HSSFWorkbook();

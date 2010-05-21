@@ -30,6 +30,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -103,9 +104,13 @@ public class NewImportExportUtility {
 	public static enum Delimiter {
 		TAB, COMMA, SPACE, COLON
 	};
+	
+	public static enum OptionState { NULL, TRUE, FALSE}; 
 
 	private static enum StructureRow {
-		GRADEBOOK("Gradebook:"), CATEGORY("Category:"), PERCENT_GRADE("% Grade:"), POINTS("Points:"), 
+		GRADEBOOK("Gradebook:"),  SCALED_EC("Scaled XC:"), SHOWCOURSEGRADES("ShowCourseGrades:"), SHOWRELEASEDITEMS("ShowReleasedItems:"),
+		SHOWITEMSTATS("ShowItemStats:"), SHOWMEAN("ShowMean:"), SHOWMEDIAN("ShowMedian:"), SHOWMODE("ShowMode:"), SHOWRANK("ShowRank:"),  
+		CATEGORY("Category:"), PERCENT_GRADE("% Grade:"), POINTS("Points:"), 
 		PERCENT_CATEGORY("% Category:"), DROP_LOWEST("Drop Lowest:"), EQUAL_WEIGHT("Equal Weight Items:");
 
 		private String displayName;
@@ -168,6 +173,9 @@ public class NewImportExportUtility {
 			// First, we need to add a row for basic gradebook info
 			String[] gradebookInfoRow = { "", StructureRow.GRADEBOOK.getDisplayName(), gradebookItemModel.getName(), categoryTypeText, gradeTypeText};
 			out.addRow(gradebookInfoRow);
+
+			exportViewOptionsAndScaleEC(out, gradebook); 
+
 
 			final List<String> categoriesRow = new LinkedList<String>();
 			final List<String> percentageGradeRow = new LinkedList<String>();
@@ -457,6 +465,59 @@ public class NewImportExportUtility {
 
 	}
 	
+	private void exportViewOptionsAndScaleEC(NewRawFile out, Gradebook gradebook) {
+		
+		Item firstGBItem = gradebook.getGradebookItemModel(); 
+		if (firstGBItem.getExtraCreditScaled().booleanValue())
+		{
+			outputStructureTwoPartExportRow(StructureRow.SCALED_EC.getDisplayName(), "true", out); 
+		}
+		
+		if (firstGBItem.getReleaseGrades().booleanValue())
+		{
+			outputStructureTwoPartExportRow(StructureRow.SHOWCOURSEGRADES.getDisplayName(), "true", out); 		
+		}
+
+		if (firstGBItem.getReleaseItems().booleanValue())
+		{
+			outputStructureTwoPartExportRow(StructureRow.SHOWRELEASEDITEMS.getDisplayName(), "true", out); 		
+		}
+
+		if (firstGBItem.getShowItemStatistics().booleanValue())
+		{
+			outputStructureTwoPartExportRow(StructureRow.SHOWITEMSTATS.getDisplayName(), "true", out); 
+		}
+
+		if (firstGBItem.getShowMean().booleanValue())
+		{
+			outputStructureTwoPartExportRow(StructureRow.SHOWMEAN.getDisplayName(), "true", out); 
+		}
+
+		if (firstGBItem.getShowMedian().booleanValue())
+		{
+			outputStructureTwoPartExportRow(StructureRow.SHOWMEDIAN.getDisplayName(), "true", out); 
+		}
+
+		if (firstGBItem.getShowMode().booleanValue())
+		{
+			outputStructureTwoPartExportRow(StructureRow.SHOWMODE.getDisplayName(), "true", out); 
+		}
+
+		if (firstGBItem.getShowRank().booleanValue())
+		{
+			outputStructureTwoPartExportRow(StructureRow.SHOWRANK.getDisplayName(), "true", out); 
+		}		
+	}
+
+	private void outputStructureTwoPartExportRow(String optionName, String optionValue, NewRawFile out)
+	{
+		String[] rowString; 
+		rowString = new String[3]; 
+		rowString[0] = ""; 
+		rowString[1] = optionName;
+		rowString[2] = optionValue;
+		out.addRow(rowString); 
+	}
 
 	private void createXLS97File(String title, HttpServletResponse response, NewRawFile out) throws FatalException {
 		HSSFWorkbook wb = new HSSFWorkbook();
@@ -1421,7 +1482,7 @@ public class NewImportExportUtility {
 
 			//gradebookItemModel = service.updateItem(gradebookItemModel);
 		}
-		
+		processStructureInformationForDisplayAndScaledOptions(gradebookItemModel, ieInfo, structureColumnsMap);
 		// We don't need to process any of the logic below if the gradebook is in "No Categories" mode
 		if (cType == CategoryType.NO_CATEGORIES)
 			return;
@@ -1633,6 +1694,79 @@ public class NewImportExportUtility {
 	}
 
 	
+	private void processStructureInformationForDisplayAndScaledOptions(
+			GradeItem gradebookItemModel, NewImportExportInformation ieInfo,
+			Map<StructureRow, String[]> structureColumnsMap) {
+		
+		OptionState scaledEC = checkRowOption(StructureRow.SCALED_EC, structureColumnsMap); 
+		OptionState showCourseGrades = checkRowOption(StructureRow.SHOWCOURSEGRADES, structureColumnsMap);
+		OptionState showItemStats = checkRowOption(StructureRow.SHOWITEMSTATS, structureColumnsMap); 
+		OptionState showMean = checkRowOption(StructureRow.SHOWMEAN, structureColumnsMap);
+		OptionState showMedian = checkRowOption(StructureRow.SHOWMEDIAN, structureColumnsMap); 
+		OptionState showMode = checkRowOption(StructureRow.SHOWMODE, structureColumnsMap);
+		OptionState showRank = checkRowOption(StructureRow.SHOWRANK, structureColumnsMap); 
+		OptionState showReleasedItems = checkRowOption(StructureRow.SHOWRELEASEDITEMS, structureColumnsMap);
+		
+		if (scaledEC != OptionState.NULL)
+		{
+			gradebookItemModel.setExtraCreditScaled(scaledEC == OptionState.TRUE ? Boolean.TRUE : Boolean.FALSE);
+		}
+
+		if (showCourseGrades != OptionState.NULL)
+		{
+			gradebookItemModel.setReleaseGrades(showCourseGrades == OptionState.TRUE ? Boolean.TRUE : Boolean.FALSE);
+		}
+
+		if (showItemStats != OptionState.NULL)
+		{
+			gradebookItemModel.setShowItemStatistics(showItemStats == OptionState.TRUE ? Boolean.TRUE : Boolean.FALSE);
+		}
+		
+		if (showMean != OptionState.NULL)
+		{
+			gradebookItemModel.setShowMean(showMean == OptionState.TRUE ? Boolean.TRUE : Boolean.FALSE);
+		}
+		if (showMedian != OptionState.NULL)
+		{
+			gradebookItemModel.setShowMedian(showMedian == OptionState.TRUE ? Boolean.TRUE : Boolean.FALSE);
+		}
+
+		if (showMode != OptionState.NULL)
+		{
+			gradebookItemModel.setShowMode(showMode == OptionState.TRUE ? Boolean.TRUE : Boolean.FALSE);
+		}
+		
+		if (showRank != OptionState.NULL)
+		{
+			gradebookItemModel.setShowRank(showRank == OptionState.TRUE ? Boolean.TRUE : Boolean.FALSE);
+		}
+
+		if (showReleasedItems != OptionState.NULL)
+		{
+			gradebookItemModel.setReleaseItems(showReleasedItems == OptionState.TRUE ? Boolean.TRUE : Boolean.FALSE);
+		}
+
+	}
+	private OptionState checkRowOption(StructureRow theRow, Map<StructureRow, String[]> structureColumnsMap)
+	{
+		String[] rowData = structureColumnsMap.get(theRow); 
+	
+		log.debug("rowData: " + Arrays.toString(rowData)); 
+		if (rowData == null)
+		{
+			return OptionState.NULL; 
+		}
+		else if (rowData[2].compareToIgnoreCase("true") == 0) 
+		{
+			return OptionState.TRUE; 
+		}
+		else
+		{
+			return OptionState.FALSE; 
+		}
+		
+	}
+
 	private void processHeaders(NewImportExportInformation ieInfo, Map<StructureRow, String[]> structureColumnsMap) throws ImportFormatException {
 		NewImportHeader[] headers = ieInfo.getHeaders();
 		
