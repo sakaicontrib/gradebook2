@@ -20,4 +20,11 @@
 	<!-- Specify the app entry point class.                   -->
 	<entry-point class='org.sakaiproject.gradebook.gwt.client.GradebookApplication'/>
 
+	<!-- devel-mode-only 
+
+	<set-property name="user.agent" value="gecko" />
+  	<set-property name="locale" value="default" />
+
+	 end devel-mode-only -->
+
 </module>

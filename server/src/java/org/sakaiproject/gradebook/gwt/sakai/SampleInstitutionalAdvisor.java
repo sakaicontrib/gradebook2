@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -49,6 +50,8 @@ import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SiteService;
 import org.sakaiproject.tool.api.ToolManager;
 import org.sakaiproject.tool.gradebook.Gradebook;
+
+import com.google.gwt.core.client.GWT;
 
 
 public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
@@ -144,9 +147,30 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 			return;
 		}
 
+		
 		// Test if the path has a trailing file separator
 		if(!finalGradeSubmissionPath.endsWith(File.separator)) {
 			finalGradeSubmissionPath += File.separator;
+		}
+		
+		String outputPath = finalGradeSubmissionPath;
+		
+		boolean relativePath = false;
+		// if the path does not begin with a file separator, save relative to webroot
+		if(!finalGradeSubmissionPath.startsWith((File.separator))) {
+			////WARNING: This may not work in Weblogic J2EE containers: getRealPath() is optional
+			outputPath = request.getSession().getServletContext().getRealPath("/") + outputPath;
+			
+			
+			if (log.isDebugEnabled()) {
+				log.debug("found relative path for gradefiles, setting relative to webroot: " + outputPath);
+			}
+			
+			relativePath = true;
+			
+			log
+					.info("found relative path for gradefiles, setting relative to webroot: "
+							+ outputPath);
 		}
 
 		response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF8);
@@ -180,7 +204,7 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 		}
 
 		// Test if path to final grade submission file exits
-		File finalGradesPath = new File(finalGradeSubmissionPath);
+		File finalGradesPath = new File(outputPath);
 		if(!finalGradesPath.exists()) {
 			try {
 
@@ -202,7 +226,7 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 
 		// Using string buffer for thread safety
 		StringBuffer finalGradeSubmissionFile = new StringBuffer();
-		finalGradeSubmissionFile.append(finalGradeSubmissionPath);
+		finalGradeSubmissionFile.append(outputPath);
 		finalGradeSubmissionFile.append(siteId);
 		finalGradeSubmissionFile.append(FILE_EXTENSION);
 		File finalGradesFile = new File(finalGradeSubmissionFile.toString());
@@ -235,9 +259,29 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 
 				filePrintWriter.flush();
 				filePrintWriter.close();
-
+				
+				
 				// 201 Created
 				response.setStatus(201);
+
+				if(relativePath) {
+					PrintWriter w = response.getWriter();
+					StringBuffer next = new StringBuffer(request.getScheme());
+					next.append("://")
+					.append(request.getServerName())
+					.append(":")
+					.append(request.getLocalPort())
+					.append("/")
+					.append(finalGradeSubmissionPath) 
+					.append(siteId)
+					.append(FILE_EXTENSION);
+				
+	
+					log.info("returning URL: " + next);
+					w.append(next.toString());
+					w.close();
+				}
+				
 			} else {
 				log.error("Wasn't able to create final grade submission file");
 				// 500 Internal Server Error
