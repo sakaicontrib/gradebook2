@@ -51,24 +51,24 @@ public class ClientExportAdvisorImpl implements ClientExportAdvisor {
 		else {
 			Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText4a(), true));
 			//Info.display(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText4a());
-			showStatus(responseText);
+			showStatus(responseText, i18n.popupBlockerDetected());
 		}
 	}
 	
-	private native boolean showStatus(String responseText) /*-{
+	private native boolean showStatus(String responseText, String errorText) /*-{
 		 var $rv = false;
 		 var $p = null;
 		 
 		 try {
 				$p = $wnd.open(responseText, "_blank","status=0,toolbar=0,menubar=0,location=0,scrollbars=1,resizable=1");
 			} catch (error) { // it may be good to log errors once client logging is possible
-				$wnd.alert("There was an error. Enable pop-up windows for this site and try to submit grades again.");
+				$wnd.alert(errorText);
 			}
 		
 		if ($p) {
 			$rv = true;
 		} else {
-			$wnd.alert("There was an error. Enable pop-up windows for this site and try to submit grades again.");
+			$wnd.alert(errorText);
 		}
 		return $rv;
 	    
