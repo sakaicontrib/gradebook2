@@ -88,7 +88,8 @@ public class ServerConfigurationServiceMock implements ServerConfigurationServic
 	}
 
 	public String getString(String property) {
-		String configProperty = System.getProperty("gb2.config." + property);
+		// GRBK-617 : Remove getProperty prefix "gb2.config."
+		String configProperty = System.getProperty(property);
 		return configProperty;
 	}
 
