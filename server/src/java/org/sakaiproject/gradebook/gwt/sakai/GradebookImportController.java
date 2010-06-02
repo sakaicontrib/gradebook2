@@ -23,6 +23,8 @@
 
 package org.sakaiproject.gradebook.gwt.sakai;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -37,6 +39,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportFile;
 import org.sakaiproject.gradebook.gwt.client.model.Upload;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
@@ -145,8 +148,7 @@ public class GradebookImportController extends SimpleFormController {
 	
 				PrintWriter writer = response.getWriter();
 				response.setContentType("text/html");
-				//XStream xstream = new XStream(new JsonHierarchicalStreamDriver());
-				//log.debug("json: " + xstream.toXML(importFile) ); 
+				//saveJsonToFile(importFile, "/tmp/data.json"); 
 				
 				writer.write(toJson(importFile)); 
 				writer.flush();
@@ -157,8 +159,32 @@ public class GradebookImportController extends SimpleFormController {
 		return null;
 	}
 	
-	protected String toJson(Object o) {
+	private void saveJsonToFile(Upload importFile, String outfile) {
+
+		File f = new File(outfile);
+		f.delete(); 
+
+		PrintWriter out;
+		try {
+			out = new PrintWriter(f);
+			out.write(toJson(importFile, true));
+			out.flush();
+			out.close(); 
+		} catch (FileNotFoundException e) {
+			log.warn("Caught exception: " + e, e); 
+		} 
+	}
+
+	protected String toJson(Object o)
+	{
+		return toJson(o, false); 
+	}
+	protected String toJson(Object o, boolean prettyPrint) {
 		ObjectMapper mapper = new ObjectMapper();
+		if (prettyPrint)
+		{
+			mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true); 
+		}
 		StringWriter w = new StringWriter();
 		try {
 			mapper.writeValue(w, o);

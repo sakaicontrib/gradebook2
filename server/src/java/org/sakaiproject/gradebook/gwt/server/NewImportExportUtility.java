@@ -90,6 +90,10 @@ import au.com.bytecode.opencsv.CSVWriter;
 public class NewImportExportUtility {
 
 	private static final Log log = LogFactory.getLog(NewImportExportUtility.class);
+	
+	private final static int RAWFIELD_FIRST_POSITION = 0; 
+	private final static int RAWFIELD_SECOND_POSITION = 1; 
+
 	private static final String SCANTRON_HEADER_STUDENT_ID = "student_id"; 
 	private static final String SCANTRON_HEADER_SCORE = "score"; 
 	private static ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
@@ -124,21 +128,21 @@ public class NewImportExportUtility {
 		}
 	};
 	
-	private Set<String> headerLineIndicatorSet, idSet, nameSet, scantronIgnoreSet;
+	private Set<String> headerRowIndicatorSet, idSet, nameSet, scantronIgnoreSet;
 	
 	public NewImportExportUtility() {	
 		// FIXME - Need to decide whether this should be institutional based.  
 		// FIXME - does this need i18n ? 
-		this.headerLineIndicatorSet = new HashSet<String>();
+		this.headerRowIndicatorSet = new HashSet<String>();
 		this.nameSet = new HashSet<String>();
 		for (int i=0;i<nameColumns.length;i++) {
 			nameSet.add(nameColumns[i].toLowerCase());
-			headerLineIndicatorSet.add(nameColumns[i].toLowerCase());
+			headerRowIndicatorSet.add(nameColumns[i].toLowerCase());
 		}
 		this.idSet = new HashSet<String>();
 		for (int i=0;i<idColumns.length;i++) {
 			idSet.add(idColumns[i].toLowerCase());
-			headerLineIndicatorSet.add(idColumns[i].toLowerCase());
+			headerRowIndicatorSet.add(idColumns[i].toLowerCase());
 		}
 		this.scantronIgnoreSet = new HashSet<String>();
 		for (int i=0;i<scantronIgnoreColumns.length;i++) {
@@ -320,8 +324,8 @@ public class NewImportExportUtility {
 					break;
 			}
 
-			String[] blankLine = { "" };
-			out.addRow(blankLine);
+			String[] blankRow = { "" };
+			out.addRow(blankRow);
 		} else {
 
 			ItemModelProcessor processor = new ItemModelProcessor(gradebookItemModel) {
@@ -524,17 +528,17 @@ public class NewImportExportUtility {
 		HSSFSheet s = wb.createSheet(title);
 		
 		out.startReading(); 
-		String[] curLine = null; 
+		String[] curRow = null; 
 		int row = 0; 
 		
 		HSSFRow r = null;
-		while ( (curLine = out.readNext()) != null) {
+		while ( (curRow = out.readNext()) != null) {
 			r = s.createRow(row); 
 
-			for (int i = 0; i < curLine.length ; i++) {
+			for (int i = 0; i < curRow.length ; i++) {
 				HSSFCell cl = r.createCell(i);
 				cl.setCellType(HSSFCell.CELL_TYPE_STRING); 
-				cl.setCellValue(new HSSFRichTextString(curLine[i])); 
+				cl.setCellValue(new HSSFRichTextString(curRow[i])); 
 			}
 			
 			row++; 
@@ -546,7 +550,12 @@ public class NewImportExportUtility {
 				s.autoSizeColumn((short) i);
 			}
 		}
+ 		writeXLSResponse(wb, response); 
  		
+	}
+
+
+	private void writeXLSResponse(HSSFWorkbook wb, HttpServletResponse response) throws FatalException {
 		try {
 			wb.write(response.getOutputStream());
 			response.getOutputStream().flush();
@@ -555,9 +564,8 @@ public class NewImportExportUtility {
 			log.error("Caught exception " + e, e); 
 			throw new FatalException(e); 
 
-		}
+		}		
 	}
-
 
 	private void createCSVFile(HttpServletResponse response,
 			 NewRawFile out) throws IOException {
@@ -565,10 +573,10 @@ public class NewImportExportUtility {
 		
 		CSVWriter csvWriter = new CSVWriter(response.getWriter());
 		out.startReading(); 
-		String[] curLine; 
-		while ((curLine = out.readNext()) != null)
+		String[] curRow; 
+		while ((curRow = out.readNext()) != null)
 		{
-			csvWriter.writeNext(curLine); 
+			csvWriter.writeNext(curRow); 
 		}
 		try {
 			csvWriter.close();
@@ -584,7 +592,6 @@ public class NewImportExportUtility {
 	{
 		HSSFWorkbook ret = null; 
 		HSSFWorkbook inspread = null;
-
 
 		is.mark(1024*1024*512); 
 		try {
@@ -626,8 +633,8 @@ public class NewImportExportUtility {
 		}
 
 		return false; 
-
 	}
+
 	private String getUniqueFileNameForFileName(String fileName,
 			Gradebook2ComponentService service, GradebookToolService gbToolService, String gradebookUid) throws GradebookImportException {
 
@@ -671,13 +678,8 @@ public class NewImportExportUtility {
 		log.debug("parseImportXLS() called"); 
 
 		// Strip off extension
-		if (fileName != null) {
-			int indexOfExtension = fileName.lastIndexOf('.');
-			if (indexOfExtension != -1 && indexOfExtension < fileName.length()) {
-				fileName = fileName.substring(0, indexOfExtension);
-			}
-		}
-		
+		fileName = removeFileExenstion(fileName);
+
 		String realFileName = fileName; 
 		boolean isOriginalName; 
 		
@@ -690,6 +692,7 @@ public class NewImportExportUtility {
 			return importFile; 
 		} 
 		isOriginalName = realFileName.equals(fileName);
+		
 		log.debug("realFileName=" + realFileName);
 		log.debug("isOriginalName=" + isOriginalName);
 
@@ -711,6 +714,16 @@ public class NewImportExportUtility {
 			return handleJExcelAPISpreadSheet(bufStream, service, gradebookUid, realFileName, isOriginalName); 
 		}
 
+	}
+
+	private String removeFileExenstion(String fileName) {
+		if (fileName != null) {
+			int indexOfExtension = fileName.lastIndexOf('.');
+			if (indexOfExtension != -1 && indexOfExtension < fileName.length()) {
+				fileName = fileName.substring(0, indexOfExtension);
+			}
+		}
+		return fileName; 
 	}
 
 	private Upload handleJExcelAPISpreadSheet(BufferedInputStream is,
@@ -771,8 +784,6 @@ public class NewImportExportUtility {
 
 		return parseImportGeneric(service, gradebookUid, raw);
 	}
-	private final static int RAWFIELD_FIRST_POSITION = 0; 
-	private final static int RAWFIELD_SECOND_POSITION = 1; 
 
 	private Upload handleScantronSheetForJExcelApi(Sheet s,
 			Gradebook2ComponentService service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName) throws InvalidInputException, FatalException 
@@ -799,7 +810,7 @@ public class NewImportExportUtility {
 
 		if (! stop) 
 		{
-			raw.addRow(getScantronHeaderLine(fileName)); 
+			raw.addRow(getScantronHeaderRow(fileName)); 
 			for (int i = 0 ; i < s.getRows() ; i++)
 			{
 				Cell idCell; 
@@ -833,7 +844,7 @@ public class NewImportExportUtility {
 
 			}
 
-	private String[] getScantronHeaderLine(String fileName)
+	private String[] getScantronHeaderRow(String fileName)
 	{
 		String[] header = new String[2]; 
 		header[RAWFIELD_FIRST_POSITION] = "Student Id"; 
@@ -1002,7 +1013,7 @@ public class NewImportExportUtility {
 
 		if (! stop) 
 		{
-			data.addRow(getScantronHeaderLine(fileName));
+			data.addRow(getScantronHeaderRow(fileName));
 			while (rowIter.hasNext())
 			{ 
 				HSSFRow curRow = rowIter.next();  
@@ -1063,7 +1074,7 @@ public class NewImportExportUtility {
 	// if we can't find it, we return null. 
 	// 
 
-	public HSSFCell findCellWithTextonSheetForPoi(HSSFSheet s, String searchText)
+	private HSSFCell findCellWithTextonSheetForPoi(HSSFSheet s, String searchText)
 	{
 		if (searchText == null || s == null) 
 		{
@@ -1129,7 +1140,7 @@ public class NewImportExportUtility {
 				return true; 
 			}
 		}
-		// If after all that, we don't find a line starting with "student_row", we're not a scantron.. 
+		// If after all that, we don't find a row starting with "student_row", we're not a scantron.. 
 		return false;
 	}
 
@@ -1155,180 +1166,265 @@ public class NewImportExportUtility {
 		return parseImportGeneric(service, gradebookUid, rawData);
 	}	
 
-	private int readDataForStructureInformation(NewRawFile rawData, Map<String, StructureRow> structureLineIndicatorMap, Map<StructureRow, String[]> structureColumnsMap) 
+	/*
+	 * Some background on how the actual file data looks is needed for this method. 
+	 * 
+	 * There are three parts to the import/export file.  
+	 * 
+	 * The first part is
+	 * structure information.  Structure information is data that is included when 
+	 * exporting the GB with structure.  This data generally has the first field in
+	 * the array as blank.  The next field has an identifier that signifies the type 
+	 * of structure data it represents, and then the rest of the row contains data for 
+	 * that type.  
+	 * 
+	 * The second part is what we call the header row.  The header row can be thought 
+	 * of as the first row in the spreadsheet if you remove all the structure information.  
+	 * It contains column headers for the remaining rows in the spreadsheet. This row 
+	 * has data in the first entry which must be contained in the nameColumns static array 
+	 * in the beginning of this file. 
+	 * 
+	 * The third and last part are the student rows which is by definition anything after 
+	 * the header row.  Each student row contains data for an individual student.  
+	 * Each of these rows has positional data based on the header row.  
+	 * 
+	 * This method has two goals, bring in the structure information, and find where the 
+	 * header row is for later use. 
+	 *   
+	 */
+	private int readDataForStructureInformation(NewRawFile rawData, Map<String, StructureRow> structureRowIndicatorMap, Map<StructureRow, String[]> structureColumnsMap) 
 	{
 		log.debug("readDataForStructureInformation() called");
-		int rows = 0;
+		int curRowNumber = 0;
 		int retRows = -1; 
 		boolean headerFound = false; 
-		String[] columns;
+		String[] curRow;
 		rawData.startReading();
-		while ( !headerFound && (columns = rawData.readNext()) != null) 
+		while ( !headerFound && (curRow = rawData.readNext()) != null) 
 		{
-			// Until we run into a line that begins with one of the header line indicators, we can safely 
-			// assume that we might find some structure info
-			// Not sure what cases the first column will be null.  
-			if (columns[0] == null)
-			{
-				continue;
-			}
-			String firstColumnLowerCase = columns[0].toLowerCase();
-			if (log.isDebugEnabled())
-				log.debug("SI: firstColumnLowerCase=" + firstColumnLowerCase);
-			
-			if (!headerLineIndicatorSet.contains(firstColumnLowerCase)) {
-				log.debug("Processed non header line"); 
-				// Since it's not processed yet, check to see if the current row has any useful info
-				for (int i=0;i<columns.length;i++) {
-					if (columns[i] != null && !columns[i].equals("")) 
-					{
-
-						String columnLowerCase = columns[i].trim().toLowerCase();
-						if (log.isDebugEnabled())
-							log.debug("SI: columnLowerCase=" + columnLowerCase);
-						StructureRow structureRow = structureLineIndicatorMap.get(columnLowerCase);
-
-						if (structureRow != null) {
-							structureColumnsMap.put(structureRow, columns);
-						}
-					}
-				}
-
+			String firstColumnLowerCase = curRow[0].toLowerCase();
+			log.debug("SI[" + curRowNumber + "]: firstColumnLowerCase=" + firstColumnLowerCase);
+			/*
+			 *  So if we're not a header we are probably a structure row.  We're assuming the 
+			 *  import spreadsheet is built as above in proper order
+			 */
+			if (!headerRowIndicatorSet.contains(firstColumnLowerCase)) {
+				processStructureRow(curRow, structureColumnsMap, structureRowIndicatorMap, firstColumnLowerCase, curRowNumber);
 			} else {
-				retRows = rows; 
+				retRows = curRowNumber; 
+				headerFound = true;
 			}
-			rows++; 
+			curRowNumber++; 
 		}
-
 		return retRows; 
 	}
 
-
-	public void readInHeaderColumns(NewRawFile rawData, NewImportExportInformation ieInfo, int startRow) {
-		String[] headerColumns = null;
-		headerColumns = rawData.getRow(startRow);
+	private void processStructureRow(String[] curRow,
+			Map<StructureRow, String[]> structureRowMap,
+			Map<String, StructureRow> structureRowIndicatorMap,
+			String firstColumnLowerCase, int curRowNumber) {
 		
-		if (headerColumns == null)
-			return;
-		
-		NewImportHeader[] headers = new NewImportHeader[headerColumns.length];
-		
-		//ieInfo.setHeaderColumns(headerColumns);
+		log.debug("Processed non header row for row #" + curRowNumber);
+		// So for each column in the row, check to see if the text is in the
+		// set of structure rows possible, if it is, save it off in the map. 
+		for (int i=0;i<curRow.length;i++) {
+			if (curRow[i] != null && !curRow[i].equals("")) 
+			{
 
-		for (int i = 0; i < headerColumns.length; i++) {
-			String text = headerColumns[i];
-			String lowerText = text == null ? null : text.trim().toLowerCase();
+				String columnLowerCase = curRow[i].trim().toLowerCase();
+				if (log.isDebugEnabled())
+					log.debug("SI: columnLowerCase=" + columnLowerCase);
+				StructureRow structureRow = structureRowIndicatorMap.get(columnLowerCase);
 
-			NewImportHeader header = null;
-			
-			// Check for name field
-			if (lowerText == null || lowerText.equals("") || scantronIgnoreSet.contains(lowerText)) {
-				continue;
-			} else if (nameSet.contains(lowerText)) {
-				header = new NewImportHeader(Field.S_NAME, text, i);
-				header.setId("NAME");
-				//ieInfo.setNameFieldIndex(i);
-			} else if (idSet.contains(lowerText)) {
-				header = new NewImportHeader(Field.S_ID, text, i);
-				header.setId("ID");
-				ieInfo.trackActiveHeaderIndex(i);
-				//ieInfo.setIdFieldIndex(i);
-			} else if (lowerText.equalsIgnoreCase("course grade")) {
-				header = new NewImportHeader(Field.S_CRS_GRD, text, i);
-				//ieInfo.setCourseGradeFieldIndex(i);
-			} else if (lowerText.equalsIgnoreCase("calculated grade")) {
-				header = new NewImportHeader(Field.S_CALC_GRD, text, i);
-			} else if (lowerText.equalsIgnoreCase("letter grade")) {
-				header = new NewImportHeader(Field.S_LTR_GRD, text, i);
-			} else if (lowerText.equalsIgnoreCase("audit grade")) {
-				header = new NewImportHeader(Field.S_ADT_GRD, text, i);
-			} else if (lowerText.equalsIgnoreCase("grade override")) {
-				header = new NewImportHeader(Field.S_GRB_OVRD, text, i);
-				ieInfo.trackActiveHeaderIndex(i);
-			} else {
-				
-				// Build an item or comments header
-				String name = null;
-				String points = null;
-				boolean isExtraCredit = text.contains(AppConstants.EXTRA_CREDIT_INDICATOR);
-
-				if (isExtraCredit) {
-					if (log.isDebugEnabled())
-						log.debug("X: Column " + i + " has extra credit");
-					text = text.replace(AppConstants.EXTRA_CREDIT_INDICATOR, "");
-				}
-
-				boolean isUnincluded = text.contains(AppConstants.UNINCLUDED_INDICATOR);
-
-				if (isUnincluded) {
-					if (log.isDebugEnabled())
-						log.debug("X: Column " + i + " is unincluded");
-					text = text.replace(AppConstants.UNINCLUDED_INDICATOR, "");
-				}
-
-				name = text;
-
-				boolean isComment = text.startsWith(AppConstants.COMMENTS_INDICATOR);
-
-				if (isComment) {
-					name = text.substring(AppConstants.COMMENTS_INDICATOR.length());
-				}
-
-				int startParenthesis = text.indexOf("[");
-				int endParenthesis = text.indexOf("pts]");
-
-				if (endParenthesis == -1)
-					endParenthesis = text.indexOf("]");
-
-				if (startParenthesis != -1 && endParenthesis != -1
-						&& endParenthesis > startParenthesis + 1) {
-					if (log.isDebugEnabled())
-						log.debug("X: Column " + i + " has pts indicated");
-					points = text.substring(startParenthesis + 1, endParenthesis);
-					if (log.isDebugEnabled())
-						log.debug("X: Column " + i + " points are " + points);
-					name = text.substring(0, startParenthesis);
-					if (log.isDebugEnabled())
-						log.debug("X: Column " + i + " name is " + points);
-
-					if (name != null)
-						name = name.trim();
-				}
-
-				if (name != null) {
-					if (isComment) {
-						header = new NewImportHeader(Field.S_COMMENT, text, i);
-						header.setHeaderName(name);
-						ieInfo.trackActiveHeaderIndex(i);
-					} else {
-						StringBuffer value = new StringBuffer(name);
-						header = new NewImportHeader(Field.S_ITEM, value.toString(), i);
-						header.setHeaderName(name);
-						header.setExtraCredit(isExtraCredit);
-						header.setUnincluded(isUnincluded);
-						header.setPoints(points);
-						
-						ieInfo.trackActiveHeaderIndex(i);
-					}
+				if (structureRow != null) {
+					structureRowMap.put(structureRow, curRow);
 				}
 			}
+		}
 
+	}
+
+	private boolean isScantronHeader(String in) 
+	{
+		return scantronIgnoreSet.contains(in);
+	}
+
+	private void readInHeaderRow(NewRawFile rawData, NewImportExportInformation ieInfo, int startRow) {
+		String[] headerRow = null;
+		headerRow = rawData.getRow(startRow);
+		
+		if (headerRow == null)
+			return;
+		
+		NewImportHeader[] headers = new NewImportHeader[headerRow.length];
+		
+		for (int i = 0; i < headerRow.length; i++) {
+			String text = headerRow[i];
+			NewImportHeader header = null;
+
+			header = handleHeaderRowEntry(text, i, ieInfo); 
+			
+			/*
+			 * Note The above handleHeaderRowEntry can return null, but checking for 
+			 * null is a check, so I think not checking and just assigning it in the array 
+			 * is more efficient. 
+			 * 
+			 */
+			
 			headers[i] = header;
 		}
 		ieInfo.setHeaders(headers);
-		//importInfo.setHeaderColumns(headerColumns);
 		log.debug("XXX: readInHeaderInfo() finished");
 	}
 
-	public void readInGradeDataFromImportFile(NewRawFile rawData, 
+	private boolean isName(String in)
+	{
+		return nameSet.contains(in);
+	}
+	private boolean isId(String in)
+	{
+		return idSet.contains(in);
+	}
+	private NewImportHeader handleHeaderRowEntry(String text, int entryNumber, NewImportExportInformation ieInfo) {
+		String lowerText = text == null ? null : text.trim().toLowerCase();
+		NewImportHeader header = null;
+		/* 
+		 * FIXME - There's gotta be a better way to handle this. 
+		 * 
+		 */
+		if (isEmpty(lowerText) || isScantronHeader(lowerText)) { // Empty rows or scantron data in general needs to be skipped. 
+			return null;
+		} else if (isName(lowerText)) {
+			header = new NewImportHeader(Field.S_NAME, text, entryNumber);
+			header.setId("NAME");
+		} else if (isId(lowerText)) {
+			header = new NewImportHeader(Field.S_ID, text, entryNumber);
+			header.setId("ID");
+			ieInfo.trackActiveHeaderIndex(entryNumber);
+		} else if (lowerText.equalsIgnoreCase("course grade")) {
+			header = new NewImportHeader(Field.S_CRS_GRD, text, entryNumber);
+		} else if (lowerText.equalsIgnoreCase("calculated grade")) {
+			header = new NewImportHeader(Field.S_CALC_GRD, text, entryNumber);
+		} else if (lowerText.equalsIgnoreCase("letter grade")) {
+			header = new NewImportHeader(Field.S_LTR_GRD, text, entryNumber);
+		} else if (lowerText.equalsIgnoreCase("audit grade")) {
+			header = new NewImportHeader(Field.S_ADT_GRD, text, entryNumber);
+		} else if (lowerText.equalsIgnoreCase("grade override")) {
+			header = new NewImportHeader(Field.S_GRB_OVRD, text, entryNumber);
+			ieInfo.trackActiveHeaderIndex(entryNumber);
+		} else {
+			header = buildItemOrCommentHeader(entryNumber, text, lowerText, ieInfo); 			
+		}
+		return header;
+	}
+
+	private String removeIndicatorsFromAssignmentName(String name)
+	{
+		if (name.contains(AppConstants.EXTRA_CREDIT_INDICATOR))
+		{
+			name = name.replace(AppConstants.EXTRA_CREDIT_INDICATOR, "");
+		}
+		
+		if (name.contains(AppConstants.UNINCLUDED_INDICATOR))
+		{
+			name = name.replace(AppConstants.UNINCLUDED_INDICATOR, ""); 
+		}
+		
+		if (name.startsWith(AppConstants.COMMENTS_INDICATOR)) {
+			name = name.substring(AppConstants.COMMENTS_INDICATOR.length());
+		}
+		return name; 
+	}
+	
+	private NewImportHeader buildItemOrCommentHeader(int entryNumber, String text,
+			String lowerText, NewImportExportInformation ieInfo) {
+		
+		NewImportHeader header = null; 
+		String name = null;
+		String points = null;
+		
+		boolean isExtraCredit = text.contains(AppConstants.EXTRA_CREDIT_INDICATOR);
+		boolean isUnincluded = text.contains(AppConstants.UNINCLUDED_INDICATOR);
+		boolean isComment = text.startsWith(AppConstants.COMMENTS_INDICATOR);
+		text = removeIndicatorsFromAssignmentName(text);
+		name = text; 
+		points = getPointsFromName(name, entryNumber); 
+		name = removePointsInfoFromName(name, entryNumber); 
+		if (name != null) {
+			header = createHeaderForItemOrComment(text, name, entryNumber, points, isExtraCredit, isUnincluded, isComment, ieInfo);
+		}
+		return header; 
+	}
+	
+	
+
+	private NewImportHeader createHeaderForItemOrComment(String text,
+			String name, int entryNumber, String points, boolean isExtraCredit,
+			boolean isUnincluded, boolean isComment, NewImportExportInformation ieInfo) {
+		NewImportHeader header = null; 
+		
+		if (isComment) {
+			header = new NewImportHeader(Field.S_COMMENT, text, entryNumber);
+			ieInfo.trackActiveHeaderIndex(entryNumber);
+		} else {
+			header = new NewImportHeader(Field.S_ITEM, name, entryNumber);
+			header.setExtraCredit(isExtraCredit);
+			header.setUnincluded(isUnincluded);
+			header.setPoints(points);
+			ieInfo.trackActiveHeaderIndex(entryNumber);
+		}
+		header.setHeaderName(name);
+
+		return header; 
+	}
+
+	private String removePointsInfoFromName(String text, int entryNumber) {
+		String name = text;
+		int startParenthesis = text.indexOf("[");
+		if (startParenthesis >= 0)
+		{
+			name = text.substring(0, startParenthesis);
+		}
+		
+		if (log.isDebugEnabled())
+			log.debug("X: Column " + entryNumber + " name is " + name);
+
+		if (name != null)
+			return name.trim();
+		else
+			return name; 
+	}
+
+	private String getPointsFromName(String text, int entryNumber) {
+		
+		String points = null; 
+		
+		int startParenthesis = text.indexOf("[");
+		int endParenthesis = text.indexOf("pts]");
+
+		if (endParenthesis == -1)
+			endParenthesis = text.indexOf("]");
+
+		if (startParenthesis != -1 && endParenthesis != -1
+				&& endParenthesis > startParenthesis + 1) {
+			if (log.isDebugEnabled())
+				log.debug("X: Column " + entryNumber + " has pts indicated");
+			points = text.substring(startParenthesis + 1, endParenthesis);
+			if (log.isDebugEnabled())
+				log.debug("X: Column " + entryNumber + " points are " + points);
+
+		}
+		return points;
+	}
+
+	private void readInGradeDataFromImportFile(NewRawFile rawData, 
 			NewImportExportInformation ieInfo, Map<String, UserDereference> userDereferenceMap, 
 			List<Learner> importRows, int startRow, Gradebook2ComponentService service) {
-		String[] columns; 
-		
+		String[] curRow; 
 		rawData.goToRow(startRow); 
-		while ((columns = rawData.readNext()) != null) {
+		while ((curRow = rawData.readNext()) != null) {
 
-			Learner row = new LearnerImpl();
+			Learner learnerRow = new LearnerImpl();
 			
 			GradeType gradeType = ieInfo.getGradebookItemModel().getGradeType();
 			
@@ -1336,364 +1432,523 @@ public class NewImportExportUtility {
 				
 				if (importHeader == null)
 					continue;
-				
-				int i = importHeader.getColumnIndex();
-				String id = importHeader.getId();
-				
-				if (i >= columns.length)
-					continue;
-				
-				if (columns[i] != null && !columns[i].equals("") && importHeader.getField() != null) {
-					switch (importHeader.getField()) {
-					case S_ID:
-						String userImportId = columns[i];
-						row.setExportUserId(userImportId);
-						row.setStudentDisplayId(userImportId);
-						
-						UserDereference userDereference = userDereferenceMap.get(userImportId);
 
-						if (userDereference != null) {
-							row.setIdentifier(userDereference.getUserUid());
-							row.setStudentName(userDereference.getDisplayName());
-							row.setLastNameFirst(userDereference.getLastNameFirst());
-							row.setStudentDisplayId(userDereference.getDisplayId());
-							row.setUserNotFound(Boolean.FALSE);
-						} else {
-							row.setLastNameFirst("User not found");
-							row.setUserNotFound(Boolean.TRUE);
-							ieInfo.setUserNotFound(true);
-						}
-						break;
-					case S_NAME:
-						row.set(LearnerKey.S_DSPLY_NM.name(), columns[i]);
-						break;
-					case S_GRB_OVRD:
-						row.set(LearnerKey.S_OVRD_GRD.name(), columns[i]);
-						break;
-					case S_ITEM:
-						boolean isFailure = false;
-						try {
-							double d = Double.parseDouble(columns[i]);
-							
-							Item item = importHeader.getItem();
-							if (item != null) {
-								Double points = item.getPoints();
-								if (points != null) {
-									if (points.doubleValue() < d) {
-										
-										if (item.getItemId() != null && item.getItemId().equals(Long.valueOf(-1l))) {
-											// Ensure that we have an int
-											d = Math.ceil(d);
-											
-											// Round to the nearest hundred if d > 100,
-											// otherwise, round to the nearest ten
-											if (d > 100) {
-												d = d / 100;
-												d = Math.ceil(d);
-												d = d * 100;
-											} else if (d > 10) {
-												d = d / 10;
-												d = Math.ceil(d);
-												d = d * 10;
-											}
-											
-											item.setPoints(d);
-										} else {
-											isFailure = true;
-											ieInfo.setInvalidScore(true);
-										}
-									}
-								}
-							} 
-							
-						} catch (NumberFormatException nfe) {
-							// This is not necessarily an exception, for example, we might be
-							// reading letter grades
-							
-							if (gradeType != GradeType.LETTERS || !service.isValidLetterGrade(columns[i])) {
-								isFailure = true;
-								ieInfo.setInvalidScore(true);
-							} 
-						}
-						
-						if (isFailure) {
-							String failedId = Util.buildFailedKey(id);
-							row.set(failedId, "This entry is not valid");
-						}
-						
-						row.set(id, columns[i]);
-						break;
-					case S_COMMENT:
-						row.set(Util.buildCommentKey(id), Boolean.TRUE);
-						row.set(Util.buildCommentTextKey(id), columns[i]);
-						break;
-					}
+				int colIdx = importHeader.getColumnIndex();
+				String id = importHeader.getId();
+				if (colIdx >= curRow.length)
+					continue;
+				if (curRow[colIdx] != null && !curRow[colIdx].equals("") && importHeader.getField() != null) {
+					decorateLearnerForSingleHeaderAndRowData(importHeader, curRow, learnerRow, userDereferenceMap, ieInfo, gradeType, service, colIdx, id);
 				}
 			}
 			
-			importRows.add(row);
+			importRows.add(learnerRow);
 		}	
 		
 	}
-
-	public void processStructureInformation(NewImportExportInformation ieInfo, Map<StructureRow, String[]> structureColumnsMap) throws InvalidInputException
+	
+	private void decorateLearnerForSingleHeaderAndRowData(NewImportHeader importHeader, String[] rowData, 
+			Learner learnerRow, Map<String, UserDereference> userDereferenceMap, 
+			NewImportExportInformation ieInfo, GradeType gradeType, Gradebook2ComponentService service,
+			int colIdx, String id)
 	{
-		// Now, modify gradebook structure according to the data stored
-		String[] gradebookColumns = structureColumnsMap.get(StructureRow.GRADEBOOK);
-		GradeItem gradebookItemModel = (GradeItem)ieInfo.getGradebookItemModel();
-		CategoryType cType = gradebookItemModel.getCategoryType();
-		GradeType gType = gradebookItemModel.getGradeType();
-		
-		if (gradebookColumns != null && gradebookItemModel != null) {
-			String gradebookName = null;
-			String categoryType = null;
-			String gradeType = null;
 
-			if (gradebookColumns.length >= 3)
-				gradebookName = gradebookColumns[2];
-			if (gradebookColumns.length >= 4)
-				categoryType = gradebookColumns[3];
-			if (gradebookColumns.length >= 5)
-				gradeType = gradebookColumns[4];
-
-			if (gradebookName != null)
-				gradebookItemModel.setName(gradebookName);
-			if (categoryType != null) {
-				if (CategoryType.NO_CATEGORIES.getDisplayName().equals(categoryType))
-					cType = CategoryType.NO_CATEGORIES;
-				else if (CategoryType.SIMPLE_CATEGORIES.getDisplayName().equals(categoryType))
-					cType = CategoryType.SIMPLE_CATEGORIES;
-				else if (CategoryType.WEIGHTED_CATEGORIES.getDisplayName().equals(categoryType))
-					cType = CategoryType.WEIGHTED_CATEGORIES;
-
-				// If the upload changes the status of having categories, then update this local var
-				//ieInfo.setCategoryType(cType);
-
-				gradebookItemModel.setCategoryType(cType);
-			}
-			if (gradeType != null) {
-				if (getDisplayName(GradeType.PERCENTAGES).equals(gradeType))
-					gType = GradeType.PERCENTAGES;
-				else if (getDisplayName(GradeType.POINTS).equals(gradeType))
-					gType = GradeType.POINTS;//TODO: Add letter grades
-
-				gradebookItemModel.setGradeType(gType);
-			}
-
-			//gradebookItemModel = service.updateItem(gradebookItemModel);
+		switch (importHeader.getField()) {
+		case S_ID:
+			decorateLearnerIdFromHeaderAndRowData(learnerRow, userDereferenceMap, rowData, colIdx, ieInfo);
+			break;
+		case S_NAME:
+			learnerRow.set(LearnerKey.S_DSPLY_NM.name(), rowData[colIdx]);
+			break;
+		case S_GRB_OVRD:
+			learnerRow.set(LearnerKey.S_OVRD_GRD.name(), rowData[colIdx]);
+			break;
+		case S_ITEM:
+			decorateLearnerItemFromHeaderAndRowData(learnerRow, importHeader, rowData, colIdx, ieInfo, gradeType, service, id);
+			break;
+		case S_COMMENT:
+			learnerRow.set(Util.buildCommentKey(id), Boolean.TRUE);
+			learnerRow.set(Util.buildCommentTextKey(id), rowData[colIdx]);
+			break;
 		}
-		processStructureInformationForDisplayAndScaledOptions(gradebookItemModel, ieInfo, structureColumnsMap);
-		// We don't need to process any of the logic below if the gradebook is in "No Categories" mode
-		if (cType == CategoryType.NO_CATEGORIES)
-			return;
-
-		String[] categoryColumns = structureColumnsMap.get(StructureRow.CATEGORY);
-		String[] percentGradeColumns = structureColumnsMap.get(StructureRow.PERCENT_GRADE);
-		String[] dropLowestColumns = structureColumnsMap.get(StructureRow.DROP_LOWEST);
-		String[] equalWeightColumns = structureColumnsMap.get(StructureRow.EQUAL_WEIGHT);
-		//String[] pointsColumns = structureColumnsMap.get(StructureRow.POINTS);
-		//String[] percentCategoryColumns = structureColumnsMap.get(StructureRow.PERCENT_CATEGORY);
-
-		String[] categoryRangeColumns = new String[(ieInfo.getHeaders() != null ? ieInfo.getHeaders().length : 0)];
-		Map<String, GradeItem> categoryMap = new HashMap<String, GradeItem>();
-
-		if (categoryColumns != null) {
-
-			for (GradeItem child : gradebookItemModel.getChildren()) {
-				if (child.getItemType() != null && child.getItemType() == ItemType.CATEGORY)
-					categoryMap.put(child.getName(), child);
-			}
-
-			String currentCategoryId = null;
-
-			for (int i=0;i<categoryColumns.length;i++) {
-				if (categoryColumns[i].trim().equals("")) {
-					if (currentCategoryId != null && i < categoryRangeColumns.length)
-						categoryRangeColumns[i] = currentCategoryId;
-					
-					
-					continue;
-				}
-
-				if (categoryColumns[i].equals(StructureRow.CATEGORY.getDisplayName()))
-					continue;
-
-				GradeItem categoryModel = null;
-				// In this case, we have a new category that needs to be added to the gradebook
-				String categoryName = categoryColumns[i];
-				boolean isExtraCredit = categoryName.contains(AppConstants.EXTRA_CREDIT_INDICATOR);
-
-				if (isExtraCredit)
-					categoryName = categoryName.replace(AppConstants.EXTRA_CREDIT_INDICATOR, "");
-
-				boolean isUnincluded = categoryName.contains(AppConstants.UNINCLUDED_INDICATOR);
-
-				if (isUnincluded)
-					categoryName = categoryName.replace(AppConstants.UNINCLUDED_INDICATOR, "");
-
-				boolean isDefaultCategory = categoryName.equalsIgnoreCase(AppConstants.DEFAULT_CATEGORY_NAME);
-				boolean isNewCategory = !categoryMap.containsKey(categoryName);
-				
-				if (isNewCategory || isDefaultCategory) {
-					
-					if (isDefaultCategory) {
-						// Check if the default category is already in this Gradebook
-						List<GradeItem> children = gradebookItemModel.getChildren();
-						if (children != null && children.size() > 0) {
-							for (GradeItem child : children) {
-								if (child.getName().equals(AppConstants.DEFAULT_CATEGORY_NAME)) {
-									categoryModel = child;
-									break;
-								}
-							}
-						}
-					}
-					
-					if (categoryModel == null) {
-						String identifier = isDefaultCategory ? String.valueOf(Long.valueOf(-1l)) : "NEW:CAT:" + i;
-						
-						categoryModel = new GradeItemImpl();
-						categoryModel.setIdentifier(identifier);
-						categoryModel.setItemType(ItemType.CATEGORY);
-						categoryModel.setName(categoryName);
-						if (isNewCategory) {
-							// We only worry about these for new categories, the default category is by definition unincluded and not extra credit
-							categoryModel.setIncluded(Boolean.valueOf(!isUnincluded));
-							categoryModel.setExtraCredit(Boolean.valueOf(isExtraCredit));
-						}
-						
-						gradebookItemModel.addChild((GradeItem)categoryModel);
-					}
-				} else {
-					// Otherwise, we may still want to update scores
-					categoryModel = categoryMap.get(categoryName);
-				}
-
-
-				if (categoryModel != null) {
-					if (percentGradeColumns != null && percentGradeColumns.length > i) {
-						String percentGrade = percentGradeColumns[i];
-
-						if (percentGrade != null) {
-							try {
-								percentGrade = percentGrade.replace("%", "");
-								double pG = Double.parseDouble(percentGrade);
-								categoryModel.setPercentCourseGrade(Double.valueOf(pG));
-								categoryModel.setWeighting(Double.valueOf(pG));
-							} catch (NumberFormatException nfe) {
-								log.info("Failed to parse " + percentGrade + " as a Double");
-							}
-						}
-					}
-
-					if (dropLowestColumns != null && dropLowestColumns.length > i) {
-						String dropLowest = dropLowestColumns[i];
-
-						if (dropLowest != null) {
-							try {
-								if (dropLowest.trim().equals(""))
-									dropLowest = "0";
-
-								int dL = Integer.parseInt(dropLowest);
-								categoryModel.setDropLowest(Integer.valueOf(dL));
-							} catch (NumberFormatException nfe) {
-								log.info("Failed to parse " + dropLowest + " as an Integer");
-							}
-						}
-
-					}
-
-					if (equalWeightColumns != null && equalWeightColumns.length > i) {
-						String equalWeight = equalWeightColumns[i];
-
-						if (equalWeight != null) {
-							try {
-								boolean isEqualWeight = Boolean.parseBoolean(equalWeight);
-								categoryModel.setEqualWeightAssignments(Boolean.valueOf(isEqualWeight));
-							} catch (NumberFormatException nfe) {
-								log.info("Failed to parse " + equalWeight + " as an Boolean");
-							}
-						}
-					}
-					
-					
-					/*Item result = null;
-					if (/--*!*--/isDefaultCategory) {
-						/--*if (isModelNew) {
-							result = service.createItem(gradebook.getGradebookUid(), gradebook.getGradebookId(), categoryModel, false);
-						} else if (isModelUpdated) 
-							result = service.updateItem(categoryModel);
-					} else {*--/
-						currentCategoryId = "-1";
-						if (categoryRangeColumns.length > i)
-							categoryRangeColumns[i] = "-1";
-					}*/
-
-					if (categoryModel != null) {
-						if (categoryModel.getIdentifier() != null && !categoryModel.getIdentifier().equals("null")) {
-							currentCategoryId = categoryModel.getIdentifier();
-							ieInfo.getCategoryIdItemMap().put(currentCategoryId, categoryModel);
-							
-							if (categoryRangeColumns.length > i)
-								categoryRangeColumns[i] = currentCategoryId;
-						}
-						if (categoryModel.getCategoryId() != null) {
-							String categoryIdAsString = String.valueOf(categoryModel.getCategoryId());
-							ieInfo.getCategoryIdNameMap().put(categoryIdAsString, categoryModel.getName());
-						}
-					}
-					
-					categoryModel.setChecked(true);
-					/*
-					if (result != null) {
-						Item activeModel = getActiveModel((GradeItem)result);
-
-						if (activeModel != null) {
-							if (activeModel.getIdentifier() != null && !activeModel.getIdentifier().equals("null")) {
-								currentCategoryId = activeModel.getIdentifier();
-							
-								if (categoryRangeColumns.length > i)
-									categoryRangeColumns[i] = currentCategoryId;
-							}
-							if (activeModel.getCategoryId() != null) {
-								ieInfo.getCategoryIdNameMap().put(
-									activeModel.getCategoryId(), activeModel.getName());
-							}
-						}
-					}*/
-				}
-			}
-		} else {
-			// Category columns are null, we still need to ensure that we track all of the existing 
-			// categories in this gradebook
-			
-			if (cType != CategoryType.NO_CATEGORIES && gradebookItemModel != null) {
-			
-				List<GradeItem> children = gradebookItemModel.getChildren();
-				
-				if (children != null) {
-					for (GradeItem categoryModel : children) {
-						ieInfo.getCategoryIdItemMap().put(categoryModel.getIdentifier(), categoryModel);
-					}
-				}
-				
-				if (ieInfo.getCategoryIdItemMap().get("-1") == null) {
-					GradeItem categoryModel = new GradeItemImpl();
-					categoryModel.setIdentifier("-1");
-					categoryModel.setCategoryId(Long.valueOf(-1l));
-					categoryModel.setItemType(ItemType.CATEGORY);
-					categoryModel.setName(AppConstants.DEFAULT_CATEGORY_NAME);
-					
-					gradebookItemModel.addChild((GradeItem)categoryModel);
-					ieInfo.getCategoryIdItemMap().put("-1", categoryModel);
-				}
-			}
-		}
-
-		ieInfo.setCategoryRangeColumns(categoryRangeColumns);
+	
 	}
 
+	private void decorateLearnerItemFromHeaderAndRowData(Learner learnerRow, NewImportHeader importHeader, String[] rowData,
+			int colIdx, NewImportExportInformation ieInfo, GradeType gradeType, Gradebook2ComponentService service, String id) {
+
+		boolean isFailure = false;
+		try {
+			double d = Double.parseDouble(rowData[colIdx]);
+			Item item = importHeader.getItem();
+			isFailure = handleSpecialPointsCaseForItem(item, d, ieInfo); 
+		} catch (NumberFormatException nfe) {
+			// This is not necessarily an exception, for example, we might be
+			// reading letter grades
+			
+			if (gradeType != GradeType.LETTERS || !service.isValidLetterGrade(rowData[colIdx])) {
+				log.info("Caught exception " + nfe + " while importing grades.", nfe); 
+				isFailure = true;
+				ieInfo.setInvalidScore(true);
+			} 
+		}
+		
+		if (isFailure) {
+			String failedId = Util.buildFailedKey(id);
+			learnerRow.set(failedId, "This entry is not valid");
+		}
+		
+		learnerRow.set(id, rowData[colIdx]);
+		
+	}
+
+	// FIXME - based on Kirk/Trainers, this will probably change. 
+	private boolean handleSpecialPointsCaseForItem(Item item, double d, NewImportExportInformation ieInfo) {
+		boolean isFailure = false;
+		if (item != null) {
+			Double points = item.getPoints();
+			if (points != null) {
+				if (points.doubleValue() < d) {
+					
+					if (item.getItemId() != null && item.getItemId().equals(Long.valueOf(-1l))) {
+						// Ensure that we have an int
+						d = Math.ceil(d);
+						// Round to the nearest hundred if d > 100,
+						// otherwise, round to the nearest ten
+						if (d > 100) {
+							d = d / 100;
+							d = Math.ceil(d);
+							d = d * 100;
+						} else if (d > 10) {
+							d = d / 10;
+							d = Math.ceil(d);
+							d = d * 10;
+						}
+						item.setPoints(d);
+					} else {
+						isFailure = true;
+						ieInfo.setInvalidScore(true);
+					}
+				}
+			}
+		} 
+		return isFailure; 
+	}
+
+	private void decorateLearnerIdFromHeaderAndRowData(
+			Learner learnerRow,
+			Map<String, UserDereference> userDereferenceMap, String[] rowData,
+			int colIdx, NewImportExportInformation ieInfo) {
+		
+		String userImportId = rowData[colIdx];
+		learnerRow.setExportUserId(userImportId);
+		learnerRow.setStudentDisplayId(userImportId);
+		
+		UserDereference userDereference = userDereferenceMap.get(userImportId);
+
+		if (userDereference != null) {
+			learnerRow.setIdentifier(userDereference.getUserUid());
+			learnerRow.setStudentName(userDereference.getDisplayName());
+			learnerRow.setLastNameFirst(userDereference.getLastNameFirst());
+			learnerRow.setStudentDisplayId(userDereference.getDisplayId());
+			learnerRow.setUserNotFound(Boolean.FALSE);
+		} else {
+			learnerRow.setLastNameFirst("User not found");
+			learnerRow.setUserNotFound(Boolean.TRUE);
+			ieInfo.setUserNotFound(true);
+		}
+		
+	}
+
+	private CategoryType getGradebookCategoryTypeFromGradebookRow(String[] gradebookRow, GradeItem gradebookItemModel)
+	{
+		CategoryType cType = gradebookItemModel.getCategoryType();
+		String categoryType = null;
+		if (gradebookRow.length >= 4)
+			categoryType = gradebookRow[3];
+
+		if (categoryType != null) {
+			if (CategoryType.NO_CATEGORIES.getDisplayName().equals(categoryType))
+				cType = CategoryType.NO_CATEGORIES;
+			else if (CategoryType.SIMPLE_CATEGORIES.getDisplayName().equals(categoryType))
+				cType = CategoryType.SIMPLE_CATEGORIES;
+			else if (CategoryType.WEIGHTED_CATEGORIES.getDisplayName().equals(categoryType))
+				cType = CategoryType.WEIGHTED_CATEGORIES;
+
+		}
+		return cType; 
+
+	}
 	
+	private String getGradebookNameFromGradebookRow(String[] gradebookRow, GradeItem gradebookItemModel)
+	{
+		String gradebookName = gradebookItemModel.getName();
+		if (gradebookRow.length >= 3)
+			gradebookName = gradebookRow[2];
+		return gradebookName; 
+	}
+	
+	private GradeType getGradeTypeFromGradebookRow(String[] gradebookRow, GradeItem gradebookItemModel)
+	{
+		GradeType gType =  gradebookItemModel.getGradeType();
+		String gradeType = null;  
+		if (gradebookRow.length >= 5)
+			gradeType = gradebookRow[4];
+		
+		if (gradeType != null) {
+			if (getDisplayName(GradeType.PERCENTAGES).equals(gradeType))
+				gType = GradeType.PERCENTAGES;
+			else if (getDisplayName(GradeType.POINTS).equals(gradeType))
+				gType = GradeType.POINTS;
+			else if (getDisplayName(GradeType.LETTERS).equals(gradeType))
+			{
+				gType = GradeType.LETTERS;				
+			}
+		}
+
+		return gType; 
+		
+	}
+	
+	private void processStructureInformationForGradebookRow(GradeItem gradebookItemModel, String[] gradebookRow)
+	{
+
+		if (gradebookRow != null && gradebookItemModel != null) {
+			CategoryType cType = getGradebookCategoryTypeFromGradebookRow(gradebookRow, gradebookItemModel);
+			GradeType gType = getGradeTypeFromGradebookRow(gradebookRow, gradebookItemModel);
+			String gradebookName = getGradebookNameFromGradebookRow(gradebookRow, gradebookItemModel);
+			gradebookItemModel.setCategoryType(cType);
+			gradebookItemModel.setGradeType(gType);
+			gradebookItemModel.setName(gradebookName);
+		}
+
+	}
+		
+	private void processStructureInformation(NewImportExportInformation ieInfo, Map<StructureRow, String[]> structureColumnsMap) throws InvalidInputException
+	{
+		// Now, modify gradebook structure according to the data stored
+		String[] gradebookRow = structureColumnsMap.get(StructureRow.GRADEBOOK);
+		GradeItem gradebookItemModel = (GradeItem) ieInfo.getGradebookItemModel();
+		
+		// this reads from the "Gradebook:" row and processes its options. 
+		processStructureInformationForGradebookRow(gradebookItemModel, gradebookRow);
+		// this reads from a set of  having to do with display and scaled EC liens. 
+		processStructureInformationForDisplayAndScaledOptions(gradebookItemModel, ieInfo, structureColumnsMap);
+		
+		// If we're in no categories mode, either from the import file itself or
+		// because the import file doesn't contain any category info and the gb is a no cats gb
+		// then we skip the rest
+		if (gradebookItemModel.getCategoryType()  == CategoryType.NO_CATEGORIES)
+			return;
+		
+		String[] categoryRow = structureColumnsMap.get(StructureRow.CATEGORY);
+		String[] percentGradeRow = structureColumnsMap.get(StructureRow.PERCENT_GRADE);
+		String[] dropLowestRow = structureColumnsMap.get(StructureRow.DROP_LOWEST);
+		String[] equalWeightRow = structureColumnsMap.get(StructureRow.EQUAL_WEIGHT);
+
+		/*
+		 *  In order to understand this, one needs to know that the import data is positional 
+		 *  in nature.  Categories are at a particular position in the file, and items are 
+		 *  relational to the category. So if category A starts at column #4 and the next category 
+		 *  starts at column #10, then items in columns 4-10 are in the category A. This is true
+		 *  with other row structure data such as percent grade, drop lowest, etc.  
+		 *  
+		 *  Also, I realize this may not be the most efficient way of doing this.  I'm aiming for 
+		 *  being readable/understandable over raw efficiency.  Also, there are a known number of 
+		 *  structure rows, so iterating in memory over this list should not be that bad. 
+		 *  
+		 */
+		
+		List<CategoryPosition> categoryPositions; 
+		categoryPositions = processCategoryRow(categoryRow, gradebookItemModel, ieInfo);
+		if (categoryPositions != null)
+		{
+			processExtraCategoryRelatedData(equalWeightRow, percentGradeRow, dropLowestRow, gradebookItemModel, categoryPositions);
+		}
+		else 
+			/*
+			 * The category row either didn't exist, or there was nothing in it.  The old way of doing things said we had 
+			 * to build the category list, so that's what we'll do. 
+			 */
+		{
+			populatecategoryIdItemMap(ieInfo, gradebookItemModel); 
+			addDefaultCategoryIfNeeded(ieInfo, gradebookItemModel); 
+			
+		}
+	}
+	
+	private void addDefaultCategoryIfNeeded(NewImportExportInformation ieInfo,
+			GradeItem gradebookItemModel) {
+		if (ieInfo.getCategoryIdItemMap().get("-1") == null) {
+			GradeItem categoryModel = new GradeItemImpl();
+			categoryModel.setIdentifier("-1");
+			categoryModel.setCategoryId(Long.valueOf(-1l));
+			categoryModel.setItemType(ItemType.CATEGORY);
+			categoryModel.setName(AppConstants.DEFAULT_CATEGORY_NAME);
+
+			gradebookItemModel.addChild((GradeItem)categoryModel);
+			ieInfo.getCategoryIdItemMap().put("-1", categoryModel);
+		}
+		
+	}
+
+	private void populatecategoryIdItemMap(NewImportExportInformation ieInfo,
+			GradeItem gradebookItemModel) {
+		
+		List<GradeItem> children = gradebookItemModel.getChildren();
+
+		if (children != null) {
+			for (GradeItem categoryModel : children) {
+				ieInfo.getCategoryIdItemMap().put(categoryModel.getIdentifier(), categoryModel);
+			}
+		}		
+	}
+
+	private void processExtraCategoryRelatedData(String[] equalWeightRow, String[] percentGradeRow, String[] dropLowestRow,
+			GradeItem gradebookItemModel,
+			List<CategoryPosition> categoryPositions) {
+			for (CategoryPosition p : categoryPositions)
+			{
+				int col = p.getColNumber(); 
+				GradeItem categoryModel = p.getCategory(); 
+				processPercentGradeRow(percentGradeRow, categoryModel, col);
+				processEqualWeightRow(equalWeightRow, categoryModel, col); 
+				processDropLowestRow(dropLowestRow, categoryModel, col);
+			}
+	}
+
+	private void processEqualWeightRow(String[] equalWeightRow, GradeItem categoryModel, int col) {
+		if (equalWeightRow != null)
+		{
+			if (equalWeightRow.length > col)
+			{
+				String curEqualWeight = equalWeightRow[col]; 
+					
+				if (!isEmpty(curEqualWeight))
+				{
+					try {
+						boolean isEqualWeight = Boolean.parseBoolean(curEqualWeight);
+						categoryModel.setEqualWeightAssignments(Boolean.valueOf(isEqualWeight));
+					} catch (NumberFormatException nfe) {
+						log.info("Failed to parse " + curEqualWeight + " as an Boolean for col " + col + " on Equal Weight ROW.", nfe);
+					}
+				}
+			}
+		}		
+	}
+
+	private void processDropLowestRow(String[] dropLowestRow,
+			GradeItem categoryModel, int col) {
+		if (dropLowestRow != null)
+		{
+			if (dropLowestRow.length > col)
+			{
+				String curDropLowest = dropLowestRow[col]; 
+
+				if (!isEmpty(curDropLowest))
+				{
+					try {
+						int dL = Integer.parseInt(curDropLowest);
+						categoryModel.setDropLowest(Integer.valueOf(dL));
+					} catch (NumberFormatException nfe) {
+						log.warn("Failed to parse " + curDropLowest+ " as an Integer for col " + col + " on Drop Lowest row.", nfe);
+					}
+
+				}
+			}				
+		}
+		
+	}
+
+	private void processPercentGradeRow(String[] percentGradeRow,
+			GradeItem categoryModel, int col) 
+	{
+		if (percentGradeRow != null)
+		{
+			if (percentGradeRow.length > col)
+			{
+				String curPercentGrade = percentGradeRow[col]; 
+				if (!isEmpty(curPercentGrade))
+				{
+					try {
+						curPercentGrade = curPercentGrade.replace("%", "");
+						double pG = Double.parseDouble(curPercentGrade);
+						categoryModel.setPercentCourseGrade(Double.valueOf(pG));
+						categoryModel.setWeighting(Double.valueOf(pG));
+					} catch (NumberFormatException nfe) {
+						log.info("Failed to parse " + curPercentGrade + " as a Double for col " + col + " on percent Grade row.", nfe);
+					}
+
+				}
+			}
+
+			
+		}
+	}
+
+	private boolean isEmpty(String in) 
+	{
+		if (in != null)
+		{
+			return "".equals(in.trim());
+		}
+		else
+		{
+			return true; 
+		}
+	}
+	private List<CategoryPosition> processCategoryRow(String[] categoryRow,
+			GradeItem gradebookItemModel, NewImportExportInformation ieInfo) {
+		List<CategoryPosition> ret = new ArrayList<CategoryPosition>();
+		Map<String, GradeItem> categoryMap = new HashMap<String, GradeItem>();
+		
+		addExistingCategoriesFromGradebookItemModelToMap(categoryMap, gradebookItemModel); 
+		// First position is a blank, second is the Category row identifier.
+		// Since this had already been read in as a category, probably don't 
+		// need to check twice
+		if (categoryRow != null && categoryRow.length > 2)
+		{
+
+			processActualCategoryRowData(categoryRow, categoryMap, gradebookItemModel, ret, ieInfo);
+			return ret;			
+		}
+		else
+		{
+			return null; 
+		}
+	}
+
+private void processActualCategoryRowData(String[] categoryRow, Map<String, GradeItem> categoryMap, 
+		GradeItem gradebookItemModel, List<CategoryPosition> catpositions, NewImportExportInformation ieInfo) {
+
+	// This array is a quick map from assignment position to category ID.  
+	String[] assignmentToCategoryQuick = new String[(ieInfo.getHeaders() != null ? ieInfo.getHeaders().length : 0)];
+	String currentCategoryId = null;
+
+	// First position should be blank, second should have Category: in it.  We'll start at two.
+	for (int i=2;i<categoryRow.length;i++) {
+		String curCategoryString = categoryRow[i];  
+		
+		if (!isEmpty(curCategoryString))
+		{
+			GradeItem categoryModel = null;
+			categoryModel = buildOrGetExistingCategoryForUpdate(i,curCategoryString, categoryMap, gradebookItemModel);
+			curCategoryString = removeIndicators(curCategoryString); 
+			// At this point we either have a current category or we made one.  So lets save off the position for posterity...	
+			CategoryPosition pos = new CategoryPosition(i, categoryModel, curCategoryString);
+			catpositions.add(pos);
+			if (categoryModel.getIdentifier() != null && !categoryModel.getIdentifier().equals("null")) {
+				currentCategoryId = categoryModel.getIdentifier();
+				ieInfo.getCategoryIdItemMap().put(currentCategoryId, categoryModel);
+				assignmentToCategoryQuick[i] = currentCategoryId;			
+			}
+			else
+			{
+				currentCategoryId = null; 
+				assignmentToCategoryQuick[i] = currentCategoryId;							
+			}
+
+			if (categoryModel.getCategoryId() != null) {
+				String categoryIdAsString = String.valueOf(categoryModel.getCategoryId());
+				ieInfo.getCategoryIdNameMap().put(categoryIdAsString, categoryModel.getName());
+			}
+			categoryModel.setChecked(true);
+		
+		}
+		else
+		{
+			assignmentToCategoryQuick[i] = currentCategoryId;
+		}
+	}
+	ieInfo.setAssignmentPositionToCategoryIdQuick(assignmentToCategoryQuick); 
+		
+}
+
+	
+private String removeIndicators(String curCategoryString) {
+
+	// We have to do some extra work in here, a cpl of times, but this should be pretty quick.. 
+	boolean isExtraCredit = curCategoryString.contains(AppConstants.EXTRA_CREDIT_INDICATOR);
+
+	if (isExtraCredit)
+		curCategoryString = curCategoryString.replace(AppConstants.EXTRA_CREDIT_INDICATOR, "");
+
+	boolean isUnincluded = curCategoryString.contains(AppConstants.UNINCLUDED_INDICATOR);
+
+	if (isUnincluded)
+		curCategoryString = curCategoryString.replace(AppConstants.UNINCLUDED_INDICATOR, "");
+	return curCategoryString;
+}
+
+private GradeItem buildOrGetExistingCategoryForUpdate(int col, String curCategoryString, Map<String, GradeItem> categoryMap, GradeItem gradebookItemModel) {
+	
+	GradeItem categoryModel = null;
+	
+	boolean isNewCategory = !categoryMap.containsKey(curCategoryString);	
+	boolean isExtraCredit = curCategoryString.contains(AppConstants.EXTRA_CREDIT_INDICATOR);
+	boolean isUnincluded = curCategoryString.contains(AppConstants.UNINCLUDED_INDICATOR);
+	boolean isDefaultCategory = curCategoryString.equalsIgnoreCase(AppConstants.DEFAULT_CATEGORY_NAME);
+	
+	if (isDefaultCategory) {
+		// Check if the default category is already in this Gradebook
+		categoryModel = getDefaultCategoryFromGradebookItemModel(gradebookItemModel);	
+	}
+	
+	if (categoryModel == null)
+	{
+		if (isNewCategory)
+		{
+			categoryModel = buildNewCategory(curCategoryString, isDefaultCategory, isUnincluded, isExtraCredit, col);
+			gradebookItemModel.addChild((GradeItem)categoryModel);
+		}
+		else
+		{
+			categoryModel = categoryMap.get(removeIndicators(curCategoryString));
+		}
+	}
+	return categoryModel;
+}
+
+private GradeItem buildNewCategory(String curCategoryString,
+			boolean isDefaultCategory, boolean isUnincluded,
+			boolean isExtraCredit, int col) {
+		GradeItem categoryModel; 
+		String identifier = isDefaultCategory ? String.valueOf(Long.valueOf(-1l)) : "NEW:CAT:" + col;
+		
+		categoryModel = new GradeItemImpl();
+		categoryModel.setIdentifier(identifier);
+		categoryModel.setItemType(ItemType.CATEGORY);
+		categoryModel.setName(removeIndicators(curCategoryString));
+		if (!isDefaultCategory) {
+			// We only worry about these for new categories, the default category is by definition unincluded and not extra credit
+			categoryModel.setIncluded(Boolean.valueOf(!isUnincluded));
+			categoryModel.setExtraCredit(Boolean.valueOf(isExtraCredit));
+		}
+		
+		return categoryModel;
+
+	}
+
+	private GradeItem getDefaultCategoryFromGradebookItemModel(GradeItem gradebookItemModel)
+	{
+		List<GradeItem> children = gradebookItemModel.getChildren();
+		if (children != null && children.size() > 0) {
+			for (GradeItem child : children) {
+				if (child.getName().equals(AppConstants.DEFAULT_CATEGORY_NAME)) {
+					return child; 
+				}
+			}
+		}
+		return null; 
+	}
+	private void addExistingCategoriesFromGradebookItemModelToMap(Map<String, GradeItem> categoryMap,
+			GradeItem gradebookItemModel) {
+		for (GradeItem child : gradebookItemModel.getChildren()) {
+			if (child.getItemType() != null && child.getItemType() == ItemType.CATEGORY)
+				categoryMap.put(child.getName(), child);
+		}
+	}
+
 	private void processStructureInformationForDisplayAndScaledOptions(
 			GradeItem gradebookItemModel, NewImportExportInformation ieInfo,
 			Map<StructureRow, String[]> structureColumnsMap) {
@@ -1773,18 +2028,13 @@ public class NewImportExportUtility {
 		if (headers == null)
 			return;
 		
-		Item gradebookItemModel = ieInfo.getGradebookItemModel();
-		CategoryType categoryType = gradebookItemModel.getCategoryType();
 		
 		// Although these contain "structure" information, it's most efficient to check them while we're looping through 
 		// the header columns
+		// During the 6/1 refactor I left this alone, probably could have moved this back as 
 		String[] pointsColumns = structureColumnsMap.get(StructureRow.POINTS);
 		String[] percentCategoryColumns = structureColumnsMap.get(StructureRow.PERCENT_CATEGORY);
-		
-		String[] categoryRangeColumns = ieInfo.getCategoryRangeColumns();
-	
-		Map<String, GradeItem> categoryIdItemMap = ieInfo.getCategoryIdItemMap();
-		
+			
 		// Iterate through each header once
 		for (int i=0;i<headers.length;i++) {
 		
@@ -1796,262 +2046,222 @@ public class NewImportExportUtility {
 	
 			
 			if (header.getField() == Field.S_ITEM || header.getField() == Field.S_COMMENT) {
-				
-				// These two rows (pointsColumns and percentCategoryColumns) may not be present, for example, if it's a grades-only
-				// import, in which case we want to ensure that 
-				if (header.getField() == Field.S_ITEM) {
-					if (pointsColumns != null && pointsColumns.length > i && Util.isNotNullOrEmpty(pointsColumns[i])) {
-						header.setPoints(pointsColumns[i]);
-					}
-		
-					if (percentCategoryColumns != null && percentCategoryColumns.length > i && Util.isNotNullOrEmpty(percentCategoryColumns[i])) {
-						header.setPercentCategory(percentCategoryColumns[i]);
-					}
-				}
-				
-				String itemName = header.getHeaderName();
-				GradeItem itemModel = null;
-				GradeItem categoryModel = null;
-				
-				switch (categoryType) {
-				case NO_CATEGORIES:
-					itemModel = findModelByName(itemName, gradebookItemModel);
-					break;
-				case SIMPLE_CATEGORIES:
-				case WEIGHTED_CATEGORIES:
-					String categoryId = categoryRangeColumns[i];
-					
-					if (categoryId == null) {
-						itemModel = findModelByName(itemName, gradebookItemModel);
-						
-						// If this is a new item, and we don't have structure info, then
-						// we have to make it "Unassigned"
-						if (itemModel == null)
-							categoryModel = categoryIdItemMap.get("-1");
-						
-					} else {
-						categoryModel = categoryId == null ? null : categoryIdItemMap.get(categoryId);
-						
-						if (categoryModel != null) {
-							header.setCategoryId(categoryModel.getIdentifier());
-							header.setCategoryName(categoryModel.getCategoryName());
-						
-							List<GradeItem> children = categoryModel.getChildren();
-							if (children != null && children.size() > 0) {
-								for (GradeItem item : children) {
-									if (item.getName().equals(itemName)) {
-										itemModel = item;
-										break;
-									}
-								}
-								
-							}
-						} 
-					} 
-					
-					break;
-				}
-				
-
-				boolean isNewItem = false;
-				
-				if (itemModel == null) {
-					isNewItem = true;
-					itemModel = new GradeItemImpl();
-					
-					String identifier = new StringBuilder().append("NEW:").append(i).toString();
-					header.setId(identifier);
-					itemModel.setItemType(ItemType.ITEM);
-					itemModel.setStudentModelKey(LearnerKey.S_ITEM.name());
-					itemModel.setIdentifier(identifier);
-					itemModel.setName(header.getHeaderName());
-					itemModel.setItemId(Long.valueOf(-1l));
-					itemModel.setCategoryId(Long.valueOf(-1l));
-					itemModel.setCategoryName(header.getCategoryName());
-					itemModel.setPoints(Double.valueOf(100d));
-				} else {
-					header.setId(itemModel.getIdentifier());
-				}
-				
-				if (header.getField() == Field.S_ITEM) {
-					// Modify the points if a point value was included in the import file
-					if (header.getPoints() != null) {
-						String pointsField = header.getPoints();
-						
-						if (!pointsField.contains("A-F") &&
-								!pointsField.contains("%")) {
-							
-							try {
-								Double points = Util.convertStringToDouble(pointsField);
-								itemModel.setPoints(points);
-							} catch (NumberFormatException nfe) {
-								log.info("User error. Failed on import: points field for column " + header.getValue() + " or " + pointsField + " cannot be formatted as a double");
-								throw new ImportFormatException("Failed to import this file. For the column " + header.getValue() + ", the points field " + pointsField + " cannot be read as a number.");
-							}
-						}
-					}
-					
-					// Modify the percentage category contribution
-					if (header.getPercentCategory() != null) {
-						String percentCategoryField = header.getPercentCategory();
-						
-						try {
-							Double percentCategory = Util.fromPercentString(percentCategoryField);
-							itemModel.setPercentCategory(percentCategory);
-							itemModel.setWeighting(percentCategory);
-						} catch (NumberFormatException nfe) {
-							log.info("User error. Failed on import: percent category field for column " + header.getValue() + " or " + percentCategoryField + " cannot be formatted as a double");
-							throw new ImportFormatException("Failed to import this file. For the column " + header.getValue() + ", the percent category field " + percentCategoryField + " cannot be read as a number.");
-						}
-					}
-					
-					itemModel.setIncluded(Boolean.valueOf(!header.isUnincluded()));
-					itemModel.setExtraCredit(Boolean.valueOf(header.isExtraCredit()));
-					itemModel.setChecked(true);
-					
-					header.setItem(itemModel);
-				}
-				
-				if (categoryType == CategoryType.NO_CATEGORIES) {
-					((GradeItem)gradebookItemModel).addChild(itemModel);
-				} else if (categoryModel != null) {
-					if (categoryModel.getName() != null && categoryModel.getName().equals(AppConstants.DEFAULT_CATEGORY_NAME))
-						itemModel.setIncluded(Boolean.FALSE);
-						
-					categoryModel.addChild(itemModel);
-				} else if (isNewItem) {
-					itemModel.setIncluded(Boolean.FALSE);
-				}
+				handleItemOrComment(header, pointsColumns, percentCategoryColumns, ieInfo, i);
 			}
 		
 		}
 	}
+	private String getEntryFromRow(String[] row, int col)
+	{
+		if (row != null && row.length > col && Util.isNotNullOrEmpty(row[col])) {
+			return row[col];
+		}
+		else
+		{
+			return "";
+		}
+		
+	}
 	
+	private void handleItemOrComment(NewImportHeader header, String[] pointsColumns, 
+			String[] percentCategoryColumns, NewImportExportInformation ieInfo, int headerNumber) throws ImportFormatException {
+
+		Map<String, GradeItem> categoryIdItemMap = ieInfo.getCategoryIdItemMap();
+		Item gradebookItemModel = ieInfo.getGradebookItemModel();
+		CategoryType categoryType = gradebookItemModel.getCategoryType();
+		String itemName = header.getHeaderName();
+		
+		if (header.getField() == Field.S_ITEM) {
+			// If we have the points and percent Category from the structure information, this will put it where it needs to be. 
+			handlePointsAndPercentCategoryForHeader(pointsColumns, percentCategoryColumns, headerNumber, header); 
+		}
+		CategoryItemPair p = getCategoryAndItemInformation(categoryType, itemName, gradebookItemModel, header, headerNumber, ieInfo); 
+		GradeItem itemModel = p.getItem();
+		GradeItem categoryModel = p.getCategory();
+		boolean isNewItem = false;
+
+		if (itemModel == null) {
+			isNewItem = true;
+			itemModel =  createNewGradeItem(header, headerNumber);
+		} else {
+			header.setId(itemModel.getIdentifier());
+		}
+
+		if (header.getField() == Field.S_ITEM) {
+			decorateItemFromHeader(header, itemModel, categoryModel); 
+		}
+
+		putItemInGradebookModelHierarchy(categoryType, itemModel, gradebookItemModel, categoryModel, isNewItem); 
+	}
 	
-	/*
-	private void processHeadersX(NewImportExportInformation ieInfo, Map<StructureRow, String[]> structureColumnsMap) {
-		if (ieInfo.getHeaderColumns() != null) {
-			
-			
-			String[] pointsColumns = structureColumnsMap.get(StructureRow.POINTS);
-			String[] percentCategoryColumns = structureColumnsMap.get(StructureRow.PERCENT_CATEGORY);
-			String[] categoryRangeColumns = ieInfo.getCategoryRangeColumns();
+	private void decorateItemFromHeader(NewImportHeader header,
+			GradeItem itemModel, GradeItem categoryModel) throws ImportFormatException {
+		/*
+		 * This stuff is because we can include indicators on the normal header row which have points and percent grade. 
+		 */
+		// Modify the percentage category contribution
+		decorateItemForStructureInfo(header, itemModel); 
+		itemModel.setIncluded(Boolean.valueOf(!header.isUnincluded()));
+		itemModel.setExtraCredit(Boolean.valueOf(header.isExtraCredit()));
+		itemModel.setChecked(true);
+		header.setItem(itemModel);
+	}
 
-			String[] headerColumns = ieInfo.getHeaderColumns(); 
-			for (int i=0;i<headerColumns.length;i++) {
-				String text = headerColumns[i];
-				if (text == null || text.trim().equals("")) {
-					continue;
-				} else if (text.equalsIgnoreCase("student name") || text.equalsIgnoreCase("name") ||
-						text.equalsIgnoreCase("learner")) {
-					continue;
-				} else if (text.equalsIgnoreCase("student id") || text.equalsIgnoreCase("identifier") ||
-						text.equalsIgnoreCase("userId") || text.equalsIgnoreCase("learnerid")) {
-					continue;
-				} else if (text.equalsIgnoreCase("course grade")) {
-					continue;
-				}
+	private void putItemInGradebookModelHierarchy(CategoryType categoryType,
+			GradeItem itemModel, Item gradebookItemModel,
+			GradeItem categoryModel, boolean isNewItem) {
 
-				boolean isExtraCredit = text.contains(AppConstants.EXTRA_CREDIT_INDICATOR);
+		if (categoryType == CategoryType.NO_CATEGORIES) {
+			((GradeItem)gradebookItemModel).addChild(itemModel);
+		} else if (categoryModel != null) {
+			if (categoryModel.getName() != null && categoryModel.getName().equals(AppConstants.DEFAULT_CATEGORY_NAME))
+				itemModel.setIncluded(Boolean.FALSE);
 
-				if (isExtraCredit) {
-					text = text.replace(AppConstants.EXTRA_CREDIT_INDICATOR, "");
-				}
+			categoryModel.addChild(itemModel);
+		} else if (isNewItem) {
+			itemModel.setIncluded(Boolean.FALSE);
+		}
+	}
+	private void decorateItemForStructureInfo(NewImportHeader header,
+			GradeItem itemModel) throws ImportFormatException {
+		// First handle points
+		if (header.getPoints() != null) {
+			String pointsField = header.getPoints();
 
-				boolean isUnincluded = text.contains(AppConstants.UNINCLUDED_INDICATOR);
+			if (!pointsField.contains("A-F") &&
+					!pointsField.contains("%")) {
 
-				if (isUnincluded) {
-					text = text.replace(AppConstants.UNINCLUDED_INDICATOR, "");
-				}
-
-				String name = text;
-
-				int startParenthesis = text.indexOf("[");
-				int endParenthesis = text.indexOf("pts]");
-
-				if (endParenthesis == -1)
-					endParenthesis = text.indexOf("]");
-
-				if (startParenthesis != -1 && endParenthesis != -1 && endParenthesis > startParenthesis+1) {
-					name = text.substring(0, startParenthesis);
-
-					if (name != null)
-						name = name.trim();
-				}
-
-				StringBuilder key = new StringBuilder();
-
-				String categoryId = null;
-				String categoryName = null;
-				if (categoryRangeColumns != null && categoryRangeColumns.length > i) {
-					categoryId = categoryRangeColumns[i];
-
-					if (categoryId != null) {
-						categoryName = ieInfo.getCategoryIdNameMap().get(categoryId);
-						if (categoryName != null) 
-							key.append(categoryName).append("::");
-					}
-				}
-
-				key.append(name);
-
-				ImportHeader header = ieInfo.getHeaderMap().get(key.toString());
-
-				if (header != null) {
-					
-					if (header.getField() == null || header.getField().equals(Field.S_COMMENT.name()))
-						continue;
-					
-					if (isExtraCredit)
-						header.setExtraCredit(Boolean.valueOf(isExtraCredit));
-
-					if (pointsColumns != null && pointsColumns.length > i) {
-						String points = pointsColumns[i];
-
-						if (points != null) {
-							header.setPoints(points);
-							/--*try {
-								double p = Double.parseDouble(points);
-								header.setPoints(Double.valueOf(p));
-							} catch (NumberFormatException nfe) {
-								log.info("Failed to parse " + points + " as a Double");
-							}*--/
-						}
-
-					}
-
-					if (percentCategoryColumns != null && percentCategoryColumns.length > i) {
-						String percentCategory = percentCategoryColumns[i];
-
-						if (percentCategory != null) {
-							try {
-								percentCategory = percentCategory.replace("%", "");
-								double p = Double.parseDouble(percentCategory);
-								header.setPercentCategory(Double.valueOf(p));
-							} catch (NumberFormatException nfe) {
-								log.info("Failed to parse " + percentCategory + " as a Double");
-							}
-						}
-					}
-
-					if (categoryId != null) {
-						if (categoryName != null)
-							header.setCategoryName(categoryName);
-						header.setCategoryId(categoryId);
-						
-						GradeItem category = (GradeItem)ieInfo.getCategoryIdItemMap().get(categoryId);
-						
-						if (category != null) {
-							category.addChild((GradeItem)header.getItem());
-						}
-						
-					}
-
+				try {
+					Double points = Util.convertStringToDouble(pointsField);
+					itemModel.setPoints(points);
+				} catch (NumberFormatException nfe) {
+					log.info("User error. Failed on import: points field for column " + header.getValue() + " or " + pointsField + " cannot be formatted as a double");
+					throw new ImportFormatException("Failed to import this file. For the column " + header.getValue() + ", the points field " + pointsField + " cannot be read as a number.");
 				}
 			}
 		}
-	}*/
-	
+		// Now handle percent category
+		if (header.getPercentCategory() != null) {
+			String percentCategoryField = header.getPercentCategory();
+
+			try {
+				Double percentCategory = Util.fromPercentString(percentCategoryField);
+				itemModel.setPercentCategory(percentCategory);
+				itemModel.setWeighting(percentCategory);
+			} catch (NumberFormatException nfe) {
+				log.info("User error. Failed on import: percent category field for column " + header.getValue() + " or " + percentCategoryField + " cannot be formatted as a double");
+				throw new ImportFormatException("Failed to import this file. For the column " + header.getValue() + ", the percent category field " + percentCategoryField + " cannot be read as a number.");
+			}
+		}		
+	}
+
+	private GradeItem createNewGradeItem(NewImportHeader header, int headerNumber) {
+		GradeItem itemModel = null; 
+		
+		itemModel = new GradeItemImpl();
+
+		String identifier = new StringBuilder().append("NEW:").append(headerNumber).toString();
+		header.setId(identifier);
+		itemModel.setItemType(ItemType.ITEM);
+		itemModel.setStudentModelKey(LearnerKey.S_ITEM.name());
+		itemModel.setIdentifier(identifier);
+		itemModel.setName(header.getHeaderName());
+		itemModel.setItemId(Long.valueOf(-1l));
+		itemModel.setCategoryId(Long.valueOf(-1l));
+		itemModel.setCategoryName(header.getCategoryName());
+		itemModel.setPoints(Double.valueOf(100d));
+		return itemModel; 		
+	}
+
+	private CategoryItemPair getCategoryAndItemInformation(
+			CategoryType categoryType, String itemName,
+			Item gradebookItemModel, NewImportHeader header, int headerNumber,
+			NewImportExportInformation ieInfo) {
+
+		String[] assignmentPositionToCategoryIdQuick = ieInfo.getAssignmentPositionToCategoryIdQuick();
+		CategoryItemPair p = null; 
+
+		switch (categoryType) {
+		case NO_CATEGORIES:
+			p = new CategoryItemPair(null, findModelByName(itemName, gradebookItemModel));
+			break;
+		case SIMPLE_CATEGORIES:
+		case WEIGHTED_CATEGORIES:
+			String categoryId = assignmentPositionToCategoryIdQuick[headerNumber];
+			p = getCategoryAndItemModel(categoryId, itemName, gradebookItemModel, header, ieInfo.getCategoryIdItemMap());
+			break;
+		}
+		
+		return p; 
+	}
+
+	private void handlePointsAndPercentCategoryForHeader(
+			String[] pointsColumns, String[] percentCategoryColumns,
+			int headerNumber, NewImportHeader header) {
+		
+		if (!"".equals(getEntryFromRow(pointsColumns, headerNumber))) {
+			header.setPoints(getEntryFromRow(pointsColumns, headerNumber));
+		}
+
+		if (!"".equals(getEntryFromRow(percentCategoryColumns, headerNumber)))
+		{
+			header.setPercentCategory( getEntryFromRow(percentCategoryColumns, headerNumber) );
+		}		
+	}
+
+	private CategoryItemPair getCategoryAndItemModel(String categoryId,
+			String itemName, Item gradebookItemModel, NewImportHeader header,
+			Map<String, GradeItem> categoryIdItemMap) {
+		GradeItem itemModel = null; 
+		GradeItem categoryModel = null; 
+		
+		if (categoryId == null) {
+			itemModel = findModelByName(itemName, gradebookItemModel);
+			// If this is a new item, and we don't have structure info, then
+			// we have to make it "Unassigned"
+			if (itemModel == null)
+				categoryModel = categoryIdItemMap.get("-1");
+		} else {
+			categoryModel = categoryIdItemMap.get(categoryId);
+			if (categoryModel != null) {
+				decorateHeaderWithCategoryModel(header, categoryModel); 
+				if (findItemInCategory(categoryModel, itemName) != null)
+				{
+					itemModel = findItemInCategory(categoryModel, itemName); 
+				}
+			} 
+			else
+			{
+				log.warn("CategoryModel is null via lookup in map");
+			}
+		} 
+		return new CategoryItemPair(categoryModel, itemModel); 
+	}
+
+	private GradeItem findItemInCategory(GradeItem categoryModel,
+			String itemName) {
+		GradeItem itemModel = null; 
+		List<GradeItem> children = categoryModel.getChildren();
+		if (children != null && children.size() > 0) {
+			for (GradeItem item : children) {
+				if (item.getName().equals(itemName)) {
+					itemModel = item;
+					break;
+				}
+			}
+		}
+
+		return itemModel;
+	}
+
+	private void decorateHeaderWithCategoryModel(NewImportHeader header,
+			GradeItem categoryModel) {
+		if (categoryModel != null) {
+			header.setCategoryId(categoryModel.getIdentifier());
+			header.setCategoryName(categoryModel.getCategoryName());
+		}		
+	}
+
 	public Upload parseImportGeneric(Gradebook2ComponentService service, 
 			String gradebookUid, NewRawFile rawData) throws InvalidInputException, FatalException {
 		String msgs = rawData.getMessages();
@@ -2069,12 +2279,7 @@ public class NewImportExportUtility {
 
 		List<UserDereference> userDereferences = service.findAllUserDereferences();
 		Map<String, UserDereference> userDereferenceMap = new HashMap<String, UserDereference>();
-
-		for (UserDereference dereference : userDereferences) {
-			String exportUserId = service.getExportUserId(dereference); 
-			userDereferenceMap.put(exportUserId, dereference);
-		}
-
+		buildDereferenceIdMap(userDereferences, userDereferenceMap, service);
 		NewImportExportInformation ieInfo = new NewImportExportInformation();
 		
 		UploadImpl importFile = new UploadImpl();
@@ -2082,7 +2287,7 @@ public class NewImportExportUtility {
 		if (rawData.isScantronFile())
 		{
 			importFile.setNotifyAssignmentName(!rawData.isNewAssignment()); 
-			if (!rawData.isNewAssignment())
+			if (!rawData.isNewAssignment()) // FIXME - i18n 
 				importFile.addNotes("The scantron assignment entered has previously been imported.  We have changed the assignment name so that it will be imported uniquely. If you wanted to replace the old data, then please change it back.");
 		}
 		
@@ -2090,27 +2295,21 @@ public class NewImportExportUtility {
 		
 		ArrayList<Learner> importRows = new ArrayList<Learner>();
 
-		Map<String, StructureRow> structureLineIndicatorMap = new HashMap<String, StructureRow>();
+		Map<String, StructureRow> structureRowIndicatorMap = new HashMap<String, StructureRow>();
 		Map<StructureRow, String[]> structureColumnsMap = new HashMap<StructureRow, String[]>();
 
-		for (StructureRow structureRow : EnumSet.allOf(StructureRow.class)) {
-			String lowercase = structureRow.getDisplayName().toLowerCase();
-			structureLineIndicatorMap.put(lowercase, structureRow);
-		}
+		buildRowIndicatorMap(structureRowIndicatorMap);
+
 		int structureStop = 0; 
 
-		structureStop = readDataForStructureInformation(rawData, structureLineIndicatorMap, structureColumnsMap);
+		structureStop = readDataForStructureInformation(rawData, structureRowIndicatorMap, structureColumnsMap);
 		if (structureStop != -1)
 		{
 			try {
-				readInHeaderColumns(rawData, ieInfo, structureStop);
-				
+				readInHeaderRow(rawData, ieInfo, structureStop);
 				processStructureInformation(ieInfo, structureColumnsMap);
-				
 				processHeaders(ieInfo, structureColumnsMap);
-				
 				readInGradeDataFromImportFile(rawData, ieInfo, userDereferenceMap, importRows, structureStop, service);
-
 				GradeItem gradebookGradeItem = (GradeItem)ieInfo.getGradebookItemModel();
 				service.decorateGradebook(gradebookGradeItem, null, null);
 				importFile.setGradebookItemModel(gradebookGradeItem);
@@ -2123,14 +2322,11 @@ public class NewImportExportUtility {
 
 				if (ieInfo.isInvalidScore()) 
 					importFile.addNotes("One or more uploaded scores cannot be accepted because they are not in the correct format or the scores are higher than the maximum allowed for those items. These entries have been highlighted in red.");
-				
-				
 			} catch (Exception e) {
 				importFile.setErrors(true);
 				importFile.setNotes(e.getMessage());
 				importFile.setRows(null);
-				log.warn(e);
-				e.printStackTrace();
+				log.warn(e, e);
 			}
 		}
 		else
@@ -2144,23 +2340,22 @@ public class NewImportExportUtility {
 		return importFile;
 	}
 
-	private Item getActiveModel(GradeItem itemModel) {
+	private void buildDereferenceIdMap(List<UserDereference> userDereferences,
+			Map<String, UserDereference> userDereferenceMap,
+			Gradebook2ComponentService service) {
 
-		if (itemModel.isActive())
-			return itemModel;
-
-		for (Item m : itemModel.getChildren()) {
-			Item child = (Item)m;
-			if (child.isActive())
-				return child;
-
-			Item c2 = getActiveModel((GradeItem)child);
-
-			if (c2 != null)
-				return c2;
+		for (UserDereference dereference : userDereferences) {
+			String exportUserId = service.getExportUserId(dereference); 
+			userDereferenceMap.put(exportUserId, dereference);
 		}
+	}
 
-		return null;
+	private void buildRowIndicatorMap(
+			Map<String, StructureRow> structureRowIndicatorMap) {
+		for (StructureRow structureRow : EnumSet.allOf(StructureRow.class)) {
+			String lowercase = structureRow.getDisplayName().toLowerCase();
+			structureRowIndicatorMap.put(lowercase, structureRow);
+		}		
 	}
 	
 	private String getDisplayName(CategoryType categoryType) {
@@ -2212,37 +2407,6 @@ public class NewImportExportUtility {
 
 		return (GradeItem)processor.getResult();
 	}
-
-	/*private class CategoryRange {
-
-		private Item categoryModel;
-		private int startColumn;
-		private int endColumn;
-
-		public CategoryRange(Item categoryModel) {
-			this.categoryModel = categoryModel;
-			this.startColumn = -1;
-			this.endColumn = -1;
-		}
-
-		public int getStartColumn() {
-			return startColumn;
-		}
-
-		public void setStartColumn(int startColumn) {
-			this.startColumn = startColumn;
-		}
-
-		public int getEndColumn() {
-			return endColumn;
-		}
-
-		public void setEndColumn(int endColumn) {
-			this.endColumn = endColumn;
-		}
-
-	}*/
-
 }
 
 class NewImportExportInformation 
@@ -2255,14 +2419,15 @@ class NewImportExportInformation
 	boolean foundHeader; 
 	Map<String, String> categoryIdNameMap;
 	Map<String, GradeItem> categoryIdItemMap;
-	NewImportHeader[] headers;
-	String[] categoryRangeColumns;
 	
+	NewImportHeader[] headers;
+	String[] assignmentPositionToCategoryIdQuick;
+
 	boolean isInvalidScore;
 	boolean isUserNotFound;
 	
 	List<Integer> activeHeaderIndexes;
-
+	List<CategoryPosition> categoryPositions; 
 	Item gradebookItemModel;
 	
 	
@@ -2338,14 +2503,6 @@ class NewImportExportInformation
 		this.categoryIdItemMap = categoryIdItemMap;
 	}
 
-	public String[] getCategoryRangeColumns() {
-		return categoryRangeColumns;
-	}
-
-	public void setCategoryRangeColumns(String[] categoryRangeColumns) {
-		this.categoryRangeColumns = categoryRangeColumns;
-	}
-
 	public NewImportHeader[] findActiveHeaders() {
 		NewImportHeader[] activeHeaders = new NewImportHeader[activeHeaderIndexes.size()];
 		
@@ -2382,17 +2539,123 @@ class NewImportExportInformation
 		this.isUserNotFound = isUserNotFound;
 	}
 
+	public List<CategoryPosition> getCategoryPositions() {
+		return categoryPositions;
+	}
+
+	public void setCategoryPositions(List<CategoryPosition> categoryPositions) {
+		this.categoryPositions = categoryPositions;
+	}
+
+	public String[] getAssignmentPositionToCategoryIdQuick() {
+		return assignmentPositionToCategoryIdQuick;
+	}
+
+	public void setAssignmentPositionToCategoryIdQuick(String[] categoryRangeColumns) {
+		this.assignmentPositionToCategoryIdQuick = categoryRangeColumns;
+	}
+
+}
+/*
+ * This class exists because the way the import file is structured.  Stuff like categories 
+ */
+class CategoryPosition implements Comparable<CategoryPosition>
+{
+	
+	private int colNumber; 
+	private GradeItem category;
+	private String name; 
+
+	public CategoryPosition(int colNumber, GradeItem category, String name) {
+		super();
+		this.colNumber = colNumber;
+		this.category = category;
+		this.name = name;
+	}
+
+	public int getColNumber() {
+		return colNumber;
+	}
+
+	public void setColNumber(int colNumber) {
+		this.colNumber = colNumber;
+	}
+
+	public GradeItem getCategory() {
+		return category;
+	}
+
+	public void setCategory(GradeItem category) {
+		this.category = category;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public int compareTo(CategoryPosition o) {
+		return getColNumber() - o.getColNumber(); 
+	}
+	
 }
 
-
+class CategoryItemPair 
+{
+	private GradeItem category; 
+	private GradeItem item;
+	
+	
+	public CategoryItemPair(GradeItem category, GradeItem item) {
+		this.category = category;
+		this.item = item;
+	}
+	
+	public GradeItem getCategory() {
+		return category;
+	}
+	public void setCategory(GradeItem category) {
+		this.category = category;
+	}
+	public GradeItem getItem() {
+		return item;
+	}
+	public void setItem(GradeItem item) {
+		this.item = item;
+	} 
+	
+	
+}
 class NewRawFile 
 {
+	private static final Log log = LogFactory.getLog(RawFile.class);
+
 	private String fileType; 
 	private String messages; 
 	private boolean errorsFound; 
 	private boolean newAssignment; 
 	private boolean scantronFile;
+	private List<String[]> allRows; 
+	private int curRow; 
 
+	public NewRawFile()
+	{
+		this.errorsFound = false; 
+		this.newAssignment = false; 
+		this.scantronFile = false; 
+		allRows = new ArrayList<String[]>(); 
+	}
+	
+	public List<String[]> getAllRows() {
+		return allRows;
+	}
+
+	public void setAllRows(List<String[]> allRows) {
+		this.allRows = allRows;
+	}
 
 	public boolean isNewAssignment() {
 		return newAssignment;
@@ -2410,26 +2673,7 @@ class NewRawFile
 		this.scantronFile = scantronFile;
 	}
 
-	private static final Log log = LogFactory.getLog(RawFile.class);
 
-	private List<String[]> allRows; 
-	private int curRow; 
-
-	public List<String[]> getAllRows() {
-		return allRows;
-	}
-
-	public void setAllRows(List<String[]> allRows) {
-		this.allRows = allRows;
-	}
-
-	public NewRawFile()
-	{
-		this.errorsFound = false; 
-		this.newAssignment = false; 
-		this.scantronFile = false; 
-		allRows = new ArrayList<String[]>(); 
-	}
 	public void goToRow(int row)
 	{
 		if (row > 0 && row < allRows.size())
@@ -2442,7 +2686,7 @@ class NewRawFile
 		}
 	}
 
-	public int getCurrentLineNumber()
+	public int getCurrentRowNumber()
 	{
 		return curRow; 
 	}
@@ -2526,5 +2770,4 @@ class NewRawFile
 	public void setErrorsFound(boolean errorsFound) {
 		this.errorsFound = errorsFound;
 	}
-
 }
