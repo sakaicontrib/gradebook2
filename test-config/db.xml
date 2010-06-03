@@ -3,13 +3,8 @@
 
 <beans>
 
-	<bean id="org.sakaiproject.log.api.LogConfigurationManager"
-			class="org.sakaiproject.gradebook2.test.sakai.Log4jConfigurationManager"
-			init-method="init"
-			destroy-method="destroy"
-			singleton="true">
-	</bean>
-
+	
+<!-- Deprecated  -->
 
     <!-- database beans -->
     
