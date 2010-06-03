@@ -28,6 +28,8 @@ public class AuthModel {
 
 	private static final long serialVersionUID = 1L;
 	
+	public static String AUTHMODEL_STRING_DELIMITER = "!";
+	
 	private Boolean isUserAbleToViewOwnGrades;
 	private Boolean isUserHasGraderPermissions;
 	private Boolean isUserAbleToGrade;
@@ -139,8 +141,19 @@ public class AuthModel {
 	}
 	
 	public void parse(String authString) {
-		if (authString != null) {
-			unpack(authString);
+		parse(authString, 0);
+	}
+	
+	/*
+	 * parse the authmodel found at index 'index' in the string
+	 */
+	
+	public void parse(String authString, int index) {
+		String[] parts = authString.split(AUTHMODEL_STRING_DELIMITER);
+		
+		if (parts.length>0 && index>0 && index<parts.length
+				&& parts[index] != null && parts[index].length()>0) {
+			unpack(parts[index]);
 		}
 	}
 	

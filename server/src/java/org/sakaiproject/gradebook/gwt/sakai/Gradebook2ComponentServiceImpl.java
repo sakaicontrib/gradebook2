@@ -797,8 +797,15 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 	}
 	
 	public String getAuthorizationDetails(String... gradebookUids) {
-		AuthModel authModel = getAuthorization(gradebookUids);
-		return authModel.toString();
+		StringBuilder rv = new StringBuilder();
+		for (AuthModel m : getAuthorization(gradebookUids)) {
+			if (rv.length()!=0) {
+				rv.append(AuthModel.AUTHMODEL_STRING_DELIMITER);
+			}
+			rv.append(m.toString());
+		}
+		log.info(rv.toString()); ///TODO:REMOVE ME
+		return rv.toString();
 	}
 	
 	public List<Map<String,Object>> getAvailableGradeFormats(String gradebookUid, Long gradebookId) {
@@ -4848,7 +4855,9 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return null;
 	}
 
-	private AuthModel getAuthorization(String... gradebookUids) {
+	private List<AuthModel> getAuthorization(String... gradebookUids) {
+		
+		List<AuthModel> rv = new ArrayList<AuthModel>();
 		
 		if (gradebookUids == null || gradebookUids.length == 0)
 			gradebookUids = new String[] { lookupDefaultGradebookUid() };
@@ -4879,9 +4888,9 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			authModel.setOldImport(Boolean.valueOf(isOldImport));
 			authModel.setPlacementId(getPlacementId());
 
-			return authModel;
+			rv.add(authModel);
 		}
-		return null;
+		return rv;
 	}
 
 	private BigDecimal getCalculatedGrade(Gradebook gradebook, List<Assignment> assignments, List<Category> categories, Map<Long, AssignmentGradeRecord> studentGradeMap) {

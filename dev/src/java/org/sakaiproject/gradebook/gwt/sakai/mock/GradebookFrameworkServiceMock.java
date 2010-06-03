@@ -71,6 +71,9 @@ public class GradebookFrameworkServiceMock extends
 
 	public void addGradebook(final String uid, final String name) {
 		super.addGradebook(uid, name);
+		
+		if(!uid.equals(BaseGroupMock.testSite_ContextId))
+			return; // there maybe other sites' gradebooks being setup
 
 		
 		/*

@@ -26,6 +26,9 @@ package org.sakaiproject.gradebook.gwt.sakai.mock;
 import java.util.Date;
 import java.util.List;
 
+import javax.management.RuntimeErrorException;
+
+import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
@@ -65,194 +68,214 @@ public class DevelopmentModeBean {
 			Gradebook2AuthzMockImpl authz = (Gradebook2AuthzMockImpl)((Gradebook2ComponentServiceImpl)service).getAuthz();
 			
 			
-			String authDetails = service.getAuthorizationDetails();
-			
-			ApplicationSetup applicationSetup = service.getApplicationSetup();
+			String authDetails = service.getAuthorizationDetails(new String[]{BaseGroupMock.testSite_ContextId, "ANOTHER_SITE_CONTEXTID"});
+			// since we want to set up another site's gradebook too, we have to 
+			// pass  in the uid's
+			ApplicationSetup applicationSetup = service.getApplicationSetup(
+					new String[]{BaseGroupMock.testSite_ContextId, "ANOTHER_SITE_CONTEXTID"});
 			List<Gradebook> gbModels = applicationSetup.getGradebookModels();
 			
 			authz.setStartUp(true);
 			
-			Gradebook gbModel = gbModels.get(0);
-
-			Item gradebook = gbModel.getGradebookItemModel();
+			// get the main test gb
 			
-			gradebook.setName("Test Gradebook");
-			gradebook.setCategoryType(CategoryType.WEIGHTED_CATEGORIES);
-			gradebook.setGradeType(GradeType.POINTS);
-			gradebook.setItemType(ItemType.GRADEBOOK);
-			gradebook.setExtraCreditScaled(Boolean.TRUE);
-			gradebook.setReleaseGrades(Boolean.FALSE);
-			gradebook.setReleaseItems(Boolean.TRUE);
-			gradebook.setShowItemStatistics(Boolean.TRUE);
-			gradebook.setShowMean(Boolean.FALSE);
-			gradebook.setShowMedian(Boolean.FALSE);
-			gradebook.setShowMode(Boolean.TRUE);
-			
-			service.updateItem(gradebook);
-			
-			String gradebookUid = gbModel.getGradebookUid();
-			Long gradebookId = gbModel.getGradebookId();
-			
-			GradeItem essaysCategory = new GradeItemImpl();
-			essaysCategory.setName("My Essays");
-			essaysCategory.setPercentCourseGrade(Double.valueOf(50d));
-			essaysCategory.setDropLowest(Integer.valueOf(0));
-			essaysCategory.setEqualWeightAssignments(Boolean.TRUE);
-			essaysCategory.setItemType(ItemType.CATEGORY);
-			essaysCategory.setIncluded(Boolean.TRUE);
-			essaysCategory.setEnforcePointWeighting(Boolean.TRUE);
-			essaysCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, essaysCategory, false));
-			
-			GradeItem hwCategory = new GradeItemImpl();
-			hwCategory.setName("My Homework");
-			hwCategory.setPercentCourseGrade(Double.valueOf(40d));
-			hwCategory.setDropLowest(Integer.valueOf(0));
-			hwCategory.setEqualWeightAssignments(Boolean.TRUE);
-			hwCategory.setItemType(ItemType.CATEGORY);
-			hwCategory.setIncluded(Boolean.TRUE);
-			hwCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, hwCategory, false));
-			
-			GradeItem emptyCategory = new GradeItemImpl();
-			emptyCategory.setName("Empty");
-			emptyCategory.setPercentCourseGrade(Double.valueOf(10d));
-			emptyCategory.setDropLowest(Integer.valueOf(0));
-			emptyCategory.setEqualWeightAssignments(Boolean.TRUE);
-			emptyCategory.setItemType(ItemType.CATEGORY);
-			emptyCategory.setIncluded(Boolean.TRUE);
-			emptyCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, emptyCategory, false));
-			
-			
-			GradeItem ecCategory = new GradeItemImpl();
-			ecCategory.setName("Extra Credit");
-			ecCategory.setPercentCourseGrade(Double.valueOf(10d));
-			ecCategory.setDropLowest(Integer.valueOf(0));
-			ecCategory.setEqualWeightAssignments(Boolean.TRUE);
-			ecCategory.setItemType(ItemType.CATEGORY);
-			ecCategory.setExtraCredit(Boolean.TRUE);
-			ecCategory.setIncluded(Boolean.TRUE);
-			ecCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, ecCategory, false));
-			
-			
-			GradeItem essay1 = new GradeItemImpl();
-			essay1.setName("Essay 1");
-			essay1.setPoints(Double.valueOf(10d));
-			essay1.setDueDate(new Date());
-			essay1.setCategoryId(essaysCategory.getCategoryId());
-			essay1.setReleased(Boolean.TRUE);
-			essay1.setItemType(ItemType.ITEM);
-			essay1.setIncluded(Boolean.TRUE);
-			essay1 = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, essay1, false));
-			
-			
-			Learner learner = gbModel.getUserAsStudent();
-			if (learner != null) {
-				service.assignScore(gradebookUid, learner.getIdentifier(), essay1.getIdentifier(), "A", null);
+			Gradebook gbModel = null;
+			for (Gradebook gb : gbModels ){
+				if (BaseGroupMock.testSite_ContextId.equals(gb.getGradebookUid())) {
+					gbModel = gb;
+					break;
+				}
 			}
 			
-			GradeItem essay2 = new GradeItemImpl();
-			essay2.setName("Essay 2");
-			essay2.setPoints(Double.valueOf(20d));
-			essay2.setDueDate(new Date());
-			essay2.setCategoryId(essaysCategory.getCategoryId());
-			essay2.setReleased(Boolean.TRUE);
-			essay2.setItemType(ItemType.ITEM);
-			essay2.setIncluded(Boolean.TRUE);
-			service.createItem(gradebookUid, gradebookId, essay2, false);
-			
-			GradeItem essay3 = new GradeItemImpl();
-			essay3.setName("Essay 3");
-			essay3.setPoints(Double.valueOf(10d));
-			essay3.setDueDate(new Date());
-			essay3.setCategoryId(essaysCategory.getCategoryId());
-			essay3.setReleased(Boolean.TRUE);
-			essay3.setItemType(ItemType.ITEM);
-			essay3.setIncluded(Boolean.TRUE);
-			service.createItem(gradebookUid, gradebookId, essay3, false);
-
-			GradeItem ecEssay = new GradeItemImpl();
-			ecEssay.setName("EC Essay");
-			ecEssay.setPercentCategory(Double.valueOf(100d));
-			ecEssay.setPoints(Double.valueOf(5d));
-			ecEssay.setDueDate(new Date());
-			ecEssay.setCategoryId(essaysCategory.getCategoryId());
-			ecEssay.setIncluded(Boolean.TRUE);
-			ecEssay.setExtraCredit(Boolean.TRUE);
-			ecEssay.setReleased(Boolean.FALSE);
-			service.createItem(gradebookUid, gradebookId, ecEssay, false);
-			
-
-			externalService.addExternalAssessment(gradebookUid, "sakai.assignment.tool", "http://assignments.ucdavis.edu", "Assignment 1", 
-					Double.valueOf(10d), 
-					null, "Assignments", Boolean.FALSE);
-			
-			GradeItem hw1 = new GradeItemImpl();
-			hw1.setName("HW 1");
-			hw1.setPoints(Double.valueOf(10d));
-			hw1.setDueDate(new Date());
-			hw1.setCategoryId(hwCategory.getCategoryId());
-			hw1.setItemType(ItemType.ITEM);
-			hw1.setIncluded(Boolean.TRUE);
-			hw1.setReleased(Boolean.TRUE);
-			service.createItem(gradebookUid, gradebookId, hw1, false);
-			
-			GradeItem hw2 = new GradeItemImpl();
-			hw2.setName("HW 2");
-			hw2.setPoints(Double.valueOf(10d));
-			hw2.setDueDate(new Date());
-			hw2.setCategoryId(hwCategory.getCategoryId());
-			hw2.setItemType(ItemType.ITEM);
-			hw2.setIncluded(Boolean.TRUE);
-			hw2.setReleased(Boolean.TRUE);
-			service.createItem(gradebookUid, gradebookId, hw2, false);
-			
-			GradeItem hw3 = new GradeItemImpl();
-			hw3.setName("HW 3");
-			hw3.setPoints(Double.valueOf(10d));
-			hw3.setDueDate(new Date());
-			hw3.setCategoryId(hwCategory.getCategoryId());
-			hw3.setItemType(ItemType.ITEM);
-			hw3.setIncluded(Boolean.TRUE);
-			hw3.setReleased(Boolean.TRUE);
-			service.createItem(gradebookUid, gradebookId, hw3, false);
-			
-			GradeItem hw4 = new GradeItemImpl();
-			hw4.setName("HW 4");
-			hw4.setPoints(Double.valueOf(10d));
-			hw4.setDueDate(new Date());
-			hw4.setCategoryId(hwCategory.getCategoryId());
-			hw4.setItemType(ItemType.ITEM);
-			hw4.setIncluded(Boolean.TRUE);
-			hw4.setReleased(Boolean.TRUE);
-			service.createItem(gradebookUid, gradebookId, hw4, false);
 
 			
-			GradeItem ec1 = new GradeItemImpl();
-			ec1.setName("EC 1");
-			ec1.setPercentCategory(Double.valueOf(100d));
-			ec1.setPoints(Double.valueOf(10d));
-			ec1.setDueDate(new Date());
-			ec1.setCategoryId(ecCategory.getCategoryId());
-			ec1.setIncluded(Boolean.TRUE);
-			ec1.setExtraCredit(Boolean.TRUE);
-			ec1.setReleased(Boolean.FALSE);
-			service.createItem(gradebookUid, gradebookId, ec1, false);
-			
-			GradeItem ec2 = new GradeItemImpl();
-			ec2.setName("EC 2");
-			ec2.setPercentCategory(Double.valueOf(100d));
-			ec2.setPoints(Double.valueOf(10d));
-			ec2.setDueDate(new Date());
-			ec2.setCategoryId(ecCategory.getCategoryId());
-			ec2.setIncluded(Boolean.TRUE);
-			ec2.setExtraCredit(Boolean.TRUE);
-			ec2.setReleased(Boolean.FALSE);
-			service.createItem(gradebookUid, gradebookId, ec2, false);
+			createMainTestGradebook(gbModel);
 			
 			authz.setStartUp(false);
 			
 		} catch (Exception fe) {
 			GWT.log("Failed to update gradebook properties", fe);
+			throw new RuntimeException(fe);
 		}
+	}
+
+	private void createMainTestGradebook(Gradebook gbModel) throws InvalidInputException {
+		
+		Item itemModel = gbModel.getGradebookItemModel();
+		
+		
+		itemModel.setName("Test Gradebook");
+		itemModel.setCategoryType(CategoryType.WEIGHTED_CATEGORIES);
+		itemModel.setGradeType(GradeType.POINTS);
+		itemModel.setItemType(ItemType.GRADEBOOK);
+		itemModel.setExtraCreditScaled(Boolean.TRUE);
+		itemModel.setReleaseGrades(Boolean.FALSE);
+		itemModel.setReleaseItems(Boolean.TRUE);
+		itemModel.setShowItemStatistics(Boolean.TRUE);
+		itemModel.setShowMean(Boolean.FALSE);
+		itemModel.setShowMedian(Boolean.FALSE);
+		itemModel.setShowMode(Boolean.TRUE);
+		
+		service.updateItem(itemModel);
+		
+		String gradebookUid = gbModel.getGradebookUid();
+		Long gradebookId = gbModel.getGradebookId();
+		
+		GradeItem essaysCategory = new GradeItemImpl();
+		essaysCategory.setName("My Essays");
+		essaysCategory.setPercentCourseGrade(Double.valueOf(50d));
+		essaysCategory.setDropLowest(Integer.valueOf(0));
+		essaysCategory.setEqualWeightAssignments(Boolean.TRUE);
+		essaysCategory.setItemType(ItemType.CATEGORY);
+		essaysCategory.setIncluded(Boolean.TRUE);
+		essaysCategory.setEnforcePointWeighting(Boolean.TRUE);
+		essaysCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, essaysCategory, false));
+		
+		GradeItem hwCategory = new GradeItemImpl();
+		hwCategory.setName("My Homework");
+		hwCategory.setPercentCourseGrade(Double.valueOf(40d));
+		hwCategory.setDropLowest(Integer.valueOf(0));
+		hwCategory.setEqualWeightAssignments(Boolean.TRUE);
+		hwCategory.setItemType(ItemType.CATEGORY);
+		hwCategory.setIncluded(Boolean.TRUE);
+		hwCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, hwCategory, false));
+		
+		GradeItem emptyCategory = new GradeItemImpl();
+		emptyCategory.setName("Empty");
+		emptyCategory.setPercentCourseGrade(Double.valueOf(10d));
+		emptyCategory.setDropLowest(Integer.valueOf(0));
+		emptyCategory.setEqualWeightAssignments(Boolean.TRUE);
+		emptyCategory.setItemType(ItemType.CATEGORY);
+		emptyCategory.setIncluded(Boolean.TRUE);
+		emptyCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, emptyCategory, false));
+		
+		
+		GradeItem ecCategory = new GradeItemImpl();
+		ecCategory.setName("Extra Credit");
+		ecCategory.setPercentCourseGrade(Double.valueOf(10d));
+		ecCategory.setDropLowest(Integer.valueOf(0));
+		ecCategory.setEqualWeightAssignments(Boolean.TRUE);
+		ecCategory.setItemType(ItemType.CATEGORY);
+		ecCategory.setExtraCredit(Boolean.TRUE);
+		ecCategory.setIncluded(Boolean.TRUE);
+		ecCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, ecCategory, false));
+		
+		
+		GradeItem essay1 = new GradeItemImpl();
+		essay1.setName("Essay 1");
+		essay1.setPoints(Double.valueOf(10d));
+		essay1.setDueDate(new Date());
+		essay1.setCategoryId(essaysCategory.getCategoryId());
+		essay1.setReleased(Boolean.TRUE);
+		essay1.setItemType(ItemType.ITEM);
+		essay1.setIncluded(Boolean.TRUE);
+		essay1 = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, essay1, false));
+		
+		
+		Learner learner = gbModel.getUserAsStudent();
+		if (learner != null) {
+			service.assignScore(gradebookUid, learner.getIdentifier(), essay1.getIdentifier(), "A", null);
+		}
+		
+		GradeItem essay2 = new GradeItemImpl();
+		essay2.setName("Essay 2");
+		essay2.setPoints(Double.valueOf(20d));
+		essay2.setDueDate(new Date());
+		essay2.setCategoryId(essaysCategory.getCategoryId());
+		essay2.setReleased(Boolean.TRUE);
+		essay2.setItemType(ItemType.ITEM);
+		essay2.setIncluded(Boolean.TRUE);
+		service.createItem(gradebookUid, gradebookId, essay2, false);
+		
+		GradeItem essay3 = new GradeItemImpl();
+		essay3.setName("Essay 3");
+		essay3.setPoints(Double.valueOf(10d));
+		essay3.setDueDate(new Date());
+		essay3.setCategoryId(essaysCategory.getCategoryId());
+		essay3.setReleased(Boolean.TRUE);
+		essay3.setItemType(ItemType.ITEM);
+		essay3.setIncluded(Boolean.TRUE);
+		service.createItem(gradebookUid, gradebookId, essay3, false);
+
+		GradeItem ecEssay = new GradeItemImpl();
+		ecEssay.setName("EC Essay");
+		ecEssay.setPercentCategory(Double.valueOf(100d));
+		ecEssay.setPoints(Double.valueOf(5d));
+		ecEssay.setDueDate(new Date());
+		ecEssay.setCategoryId(essaysCategory.getCategoryId());
+		ecEssay.setIncluded(Boolean.TRUE);
+		ecEssay.setExtraCredit(Boolean.TRUE);
+		ecEssay.setReleased(Boolean.FALSE);
+		service.createItem(gradebookUid, gradebookId, ecEssay, false);
+		
+
+		externalService.addExternalAssessment(gradebookUid, "sakai.assignment.tool", "http://assignments.ucdavis.edu", "Assignment 1", 
+				Double.valueOf(10d), 
+				null, "Assignments", Boolean.FALSE);
+		
+		GradeItem hw1 = new GradeItemImpl();
+		hw1.setName("HW 1");
+		hw1.setPoints(Double.valueOf(10d));
+		hw1.setDueDate(new Date());
+		hw1.setCategoryId(hwCategory.getCategoryId());
+		hw1.setItemType(ItemType.ITEM);
+		hw1.setIncluded(Boolean.TRUE);
+		hw1.setReleased(Boolean.TRUE);
+		service.createItem(gradebookUid, gradebookId, hw1, false);
+		
+		GradeItem hw2 = new GradeItemImpl();
+		hw2.setName("HW 2");
+		hw2.setPoints(Double.valueOf(10d));
+		hw2.setDueDate(new Date());
+		hw2.setCategoryId(hwCategory.getCategoryId());
+		hw2.setItemType(ItemType.ITEM);
+		hw2.setIncluded(Boolean.TRUE);
+		hw2.setReleased(Boolean.TRUE);
+		service.createItem(gradebookUid, gradebookId, hw2, false);
+		
+		GradeItem hw3 = new GradeItemImpl();
+		hw3.setName("HW 3");
+		hw3.setPoints(Double.valueOf(10d));
+		hw3.setDueDate(new Date());
+		hw3.setCategoryId(hwCategory.getCategoryId());
+		hw3.setItemType(ItemType.ITEM);
+		hw3.setIncluded(Boolean.TRUE);
+		hw3.setReleased(Boolean.TRUE);
+		service.createItem(gradebookUid, gradebookId, hw3, false);
+		
+		GradeItem hw4 = new GradeItemImpl();
+		hw4.setName("HW 4");
+		hw4.setPoints(Double.valueOf(10d));
+		hw4.setDueDate(new Date());
+		hw4.setCategoryId(hwCategory.getCategoryId());
+		hw4.setItemType(ItemType.ITEM);
+		hw4.setIncluded(Boolean.TRUE);
+		hw4.setReleased(Boolean.TRUE);
+		service.createItem(gradebookUid, gradebookId, hw4, false);
+
+		
+		GradeItem ec1 = new GradeItemImpl();
+		ec1.setName("EC 1");
+		ec1.setPercentCategory(Double.valueOf(100d));
+		ec1.setPoints(Double.valueOf(10d));
+		ec1.setDueDate(new Date());
+		ec1.setCategoryId(ecCategory.getCategoryId());
+		ec1.setIncluded(Boolean.TRUE);
+		ec1.setExtraCredit(Boolean.TRUE);
+		ec1.setReleased(Boolean.FALSE);
+		service.createItem(gradebookUid, gradebookId, ec1, false);
+		
+		GradeItem ec2 = new GradeItemImpl();
+		ec2.setName("EC 2");
+		ec2.setPercentCategory(Double.valueOf(100d));
+		ec2.setPoints(Double.valueOf(10d));
+		ec2.setDueDate(new Date());
+		ec2.setCategoryId(ecCategory.getCategoryId());
+		ec2.setIncluded(Boolean.TRUE);
+		ec2.setExtraCredit(Boolean.TRUE);
+		ec2.setReleased(Boolean.FALSE);
+		service.createItem(gradebookUid, gradebookId, ec2, false);
+		
 	}
 
 	private GradeItem getActiveItem(GradeItem parent) {

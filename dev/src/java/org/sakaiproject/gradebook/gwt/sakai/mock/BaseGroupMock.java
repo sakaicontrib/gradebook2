@@ -26,7 +26,7 @@ import com.google.gwt.core.client.GWT;
 
 public class BaseGroupMock implements Group, Identifiable {
 
-	private String testSite_ContextId = "TESTSITECONTEXT";
+	public static String testSite_ContextId = "TESTSITECONTEXT";
 	private String testGroupId = "TESTGROUP_" + Math.random()*System.currentTimeMillis();
 	private BaseResourceProperties props = new BaseResourcePropertiesEdit();
 	private String providerId = null;
