@@ -765,6 +765,7 @@ public class ItemModel extends EntityTreeModel implements Item {
 	
 	 @Override
 	 public int hashCode() {
+		 // FIXME: TPA : getItemType() can return null : need to protect against null pointer exception : old import
 		 String id = new StringBuilder().append(getItemType().name()).append(":").append(getIdentifier()).toString();
 		 int hash = 0;
 		 if (id != null) 

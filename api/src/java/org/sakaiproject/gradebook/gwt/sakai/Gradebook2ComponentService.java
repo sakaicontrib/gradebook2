@@ -123,5 +123,7 @@ public interface Gradebook2ComponentService {
 	
 	public Upload oldUpload(String gradebookUid, Long gradebookId, Upload upload, boolean isDryRun) throws InvalidInputException;
 	
+	public Upload newUpload(String gradebookUid, Long gradebookId, Upload upload, boolean isDryRun) throws InvalidInputException;
+	
 	
 }
