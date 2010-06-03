@@ -151,7 +151,7 @@ public class AuthModel {
 	public void parse(String authString, int index) {
 		String[] parts = authString.split(AUTHMODEL_STRING_DELIMITER);
 		
-		if (parts.length>0 && index>0 && index<parts.length
+		if (parts.length>0 && index>-1 && index<parts.length
 				&& parts[index] != null && parts[index].length()>0) {
 			unpack(parts[index]);
 		}
