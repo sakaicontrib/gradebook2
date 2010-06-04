@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="org/sakaiproject/gradebook/gwt/client/GradebookState.java|org/sakaiproject/gradebook/gwt/client/gxt/view/panel/ImportPanelx.java" kind="src" path="client/src/java"/>
+	<classpathentry kind="src" path="spring-test/src/java"/>
+	<classpathentry kind="src" path="server/src/test"/>
 	<classpathentry kind="src" path="api/src/java"/>
 	<classpathentry kind="src" path="model/src/java"/>
 	<classpathentry kind="src" path="model/src/hibernate"/>
@@ -58,9 +60,10 @@
 	<classpathentry kind="var" path="M2_REPO/com/google/gwt/google-apis/gwt-visualization/1.1.0/gwt-visualization-1.1.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-kernel-util/1.2.0-SNAPSHOT/sakai-kernel-util-1.2.0-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-kernel-impl/1.0.12/sakai-kernel-impl-1.0.12.jar"/>
-	<classpathentry kind="var" path="M2_REPO/activation"/>
+	<classpathentry kind="var" path="M2_REPO/javax/activation/activation/1.1.1/activation-1.1.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-kernel-component/1.2.0-SNAPSHOT"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/sections/sections-model/1.1-SNAPSHOT/sections-model-1.1-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-kernel-api/1.2.0-SNAPSHOT/sakai-kernel-api-1.2.0-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-test/2.5.6.SEC01/spring-test-2.5.6.SEC01.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

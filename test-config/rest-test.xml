@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.JAXBContextResolver"/>
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.InvalidInputMapper"/>
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.SecurityMapper"/>
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.GradebookCreationMapper"/>
+	
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" 
+		  abstract="true"
+		  class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource">
+		 <property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/> 
+	</bean>
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Application" 
+		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Authorization" 
+		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Configuration"
+		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.GradeEvent" 
+		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.GradeFormat" 
+		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.GradeMap" 
+		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Grader" 
+		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+		  
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.GradesVerification" 
+		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+		  
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.History" 
+		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Item"
+		parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Items"
+		parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.LearnerRecord"
+		parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Permission"
+		parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Permissions"
+		parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Roster"
+		parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Sections" 
+		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Statistics"
+		parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Upload" 
+		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.OldUpload" 
+		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+
+</beans>

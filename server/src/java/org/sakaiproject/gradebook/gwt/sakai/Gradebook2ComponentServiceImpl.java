@@ -1990,10 +1990,12 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		// parent ApplicationContext so that we can access all the beans that have been registered
 		// with the component manager
 		ApplicationContext parentApplicationContext = applicationContext.getParent();
-
+		String[] beans = null; 
 		// Checking in the parent ApplicationContext for InstitutionalAdvisor implementation(s)
-		String[] beans = parentApplicationContext.getBeanNamesForType(InstitutionalAdvisor.class);
-
+		if (parentApplicationContext != null)
+		{
+			beans = parentApplicationContext.getBeanNamesForType(InstitutionalAdvisor.class);
+		}
 		// Make sure that there is just one implementation in the parent context
 		if(beans != null && beans.length == 1) {
 			advisor = (InstitutionalAdvisor) parentApplicationContext.getBean(beans[0]);
