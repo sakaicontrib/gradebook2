@@ -140,6 +140,8 @@ public interface AppConstants {
 	
 	public static final String USE_OLD_IMPORT = "gb2.use.old.import";
 	
+	public static final String IMPORT_DELETE_MISSING_GRADES = "gb2.import.delete.missing.grades";
+	
 	public static final String DEFAULT_CATEGORY_NAME = "Unassigned";
 	
 	public static final String EXTRA_CREDIT_INDICATOR = " (+)";

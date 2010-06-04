@@ -61,7 +61,12 @@ gb2.limit.scaled.extra.credit = [ CATEGORIES, WEIGHTED CATEGORIES] (case insensi
 - default: CATEGORIES,WEIGHTED CATEGORIES
 -- This property only takes effect if gb2.enable.scaled.extra.credit is set to either [TRUE, INSTRUCTOR, ADMIN]
 
+Since v1.3.x:
+-------------
 
+gb2.import.delete.missing.grades = [true, false]
+- default: true
+- For more details, please see http://jira.sakaiproject.org/browse/GRBK-619
 
 SUPPORT
 

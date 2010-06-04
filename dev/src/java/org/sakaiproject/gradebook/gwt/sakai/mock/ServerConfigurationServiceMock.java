@@ -18,8 +18,22 @@ public class ServerConfigurationServiceMock implements ServerConfigurationServic
 	}
 
 	public boolean getBoolean(String arg0, boolean arg1) {
-		// TODO Auto-generated method stub
-		return false;
+
+		String configProperty = System.getProperty(arg0);
+		
+		if(configProperty == null || "".equals(configProperty)) {
+			return arg1;
+		}
+		else if(configProperty.equalsIgnoreCase("true")) {
+			return true;
+		}
+		else if(configProperty.equalsIgnoreCase("false")) {
+			return false;
+		}
+		else {
+			// In case it's misspelled 
+			return arg1;
+		}
 	}
 
 	public List<String> getDefaultTools(String arg0) {

@@ -3169,7 +3169,13 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 						if (oldValue == null && value == null)
 							continue;
-						
+
+						// GRBK-619 : TPA
+						boolean canDeleteMissingGrades = configService.getBoolean(AppConstants.IMPORT_DELETE_MISSING_GRADES, true);
+						if(!canDeleteMissingGrades && oldValue != null && value == null) {
+							continue;
+						}
+
 						gradedRecords.add(scoreItem(gradebook, gradeType, assignment, assignmentGradeRecord, studentUid, value, true, true));
 
 						String successProperty = Util.buildSuccessKey(String.valueOf(assignment.getId()));
