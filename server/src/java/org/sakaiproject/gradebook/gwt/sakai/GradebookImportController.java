@@ -148,7 +148,7 @@ public class GradebookImportController extends SimpleFormController {
 	
 				PrintWriter writer = response.getWriter();
 				response.setContentType("text/html");
-				//saveJsonToFile(importFile, "/tmp/data.json"); 
+				saveJsonToFile(importFile, "/tmp/data.json"); 
 				
 				writer.write(toJson(importFile)); 
 				writer.flush();

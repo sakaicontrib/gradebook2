@@ -1267,7 +1267,7 @@ public class ImportExportUtility {
 							if (model.getCategoryId() != null)
 								header.setCategoryId(String.valueOf(model.getCategoryId()));
 						} else {
-							String newId = new StringBuilder().append("NEW:").append(i - 1).toString();
+							String newId = new StringBuilder().append(AppConstants.NEW_PREFIX).append(i - 1).toString();
 							header.setAssignmentId(newId);
 							header.setId(Util.buildCommentTextKey(newId));
 						}
@@ -1295,7 +1295,7 @@ public class ImportExportUtility {
 								importInfo.getCategoryIdNameMap().put(model.getCategoryId(), model.getCategoryName());
 							}
 						} else {
-							header.setId(new StringBuilder().append("NEW:").append(
+							header.setId(new StringBuilder().append(AppConstants.NEW_PREFIX).append(
 									i).toString());
 							if (categoryName == null)
 								header.setCategoryName("Unassigned");

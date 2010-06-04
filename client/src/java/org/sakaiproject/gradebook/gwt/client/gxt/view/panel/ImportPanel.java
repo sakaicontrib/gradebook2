@@ -732,7 +732,7 @@ public class ImportPanel extends GradebookPanel {
 					else if (!id.equals("S_NAME"))
 						width = name.length() * 7;
 
-					if (id.startsWith("NEW:")) {
+					if (id.startsWith(AppConstants.NEW_PREFIX)) {
 						nameBuilder.append("*");
 
 						if (categoryId == null)

@@ -1913,7 +1913,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 			boolean isDefaultCategory, boolean isUnincluded,
 			boolean isExtraCredit, int col) {
 		GradeItem categoryModel; 
-		String identifier = isDefaultCategory ? String.valueOf(Long.valueOf(-1l)) : "NEW:CAT:" + col;
+		String identifier = isDefaultCategory ? String.valueOf(Long.valueOf(-1l)) : AppConstants.NEW_CAT_PREFIX + col;
 		
 		categoryModel = new GradeItemImpl();
 		categoryModel.setIdentifier(identifier);
@@ -2160,7 +2160,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 		
 		itemModel = new GradeItemImpl();
 
-		String identifier = new StringBuilder().append("NEW:").append(headerNumber).toString();
+		String identifier = new StringBuilder().append(AppConstants.NEW_PREFIX).append(headerNumber).toString();
 		header.setId(identifier);
 		itemModel.setItemType(ItemType.ITEM);
 		itemModel.setStudentModelKey(LearnerKey.S_ITEM.name());

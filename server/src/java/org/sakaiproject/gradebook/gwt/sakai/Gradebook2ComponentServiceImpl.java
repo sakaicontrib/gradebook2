@@ -2590,8 +2590,9 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		case ITEM:
 
 			// Handle new grade item
-			if(itemIdentifier.startsWith("NEW:")) {
-
+			if(itemIdentifier.startsWith(AppConstants.NEW_PREFIX)) {
+				
+				// Case where assignment is assigned to a category
 				if(null != categoryId) {
 			
 					Category category = gbService.getCategory(categoryId);
@@ -2600,10 +2601,10 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 					Item newItem = createItem(gradebookUid, gradebookId, item, false);
 					itemId = newItem.getItemId();
 				}
-				else {
+				else { // Case where assignment has no assigned category
 					
-					log.error("Was not able to persist assignment because categoryId is NULL");
-					itemId = Long.valueOf(-1);
+					Item newItem = createItem(gradebookUid, gradebookId, item, false);
+					itemId = newItem.getItemId();
 				}
 			}
 			else { // Handle existing grade item
@@ -2628,14 +2629,24 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		case CATEGORY:
 
 			// Handle new categories
-			if(itemIdentifier.startsWith("NEW:")) {
+			if(itemIdentifier.startsWith(AppConstants.NEW_PREFIX)) {
 
 				Item newCategory = createItem(gradebookUid, gradebookId, item, false);
 				categoryId = newCategory.getCategoryId();
 			}
 			else { // Handle existing categories
 
-				itemId = item.getItemId();
+				try {
+				
+					itemId = Long.valueOf(itemIdentifier);
+				}
+				catch(NumberFormatException nfe) {
+					
+					log.error("ItemIdentifier is not a valid id = " + itemIdentifier);
+					// Exit switch CATEGORY case
+					break;
+				}
+				
 				Category category = gbService.getCategory(itemId);
 
 				if(null !=  category) {
@@ -2645,7 +2656,6 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				else {
 
 					log.error("Was not able to get category for id = " + itemId);
-					itemId = Long.valueOf(-1);
 				}
 			}
 			break;
@@ -2659,7 +2669,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 		default:
 
-			itemId = Long.valueOf(-1);
+			log.error("Did not recognize ItemType : " + itemType.name());
 		}
 
 
@@ -2678,7 +2688,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			}
 		} else {
 
-			// Recursively traverse the tree to handle (gradebook, categories, assignments)
+			// For each child, recursively traverse the tree to handle (gradebook, categories, assignments)
 			List<GradeItem> subChildren = item.getChildren();
 
 			for (GradeItem subChild : subChildren) {
@@ -2694,7 +2704,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 		String identifier = item.getIdentifier();
 		
-		if (identifier.startsWith("NEW:") && item.getItemId().equals(Long.valueOf(-1l))) {
+		if (identifier.startsWith(AppConstants.NEW_PREFIX) && item.getItemId().equals(Long.valueOf(-1l))) {
 			Gradebook gradebook = gbService.getGradebook(gradebookUid);
 			boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
 			itemId = doCreateItem(gradebook, item, hasCategories, false);
@@ -3017,8 +3027,8 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		String[] realmIds = null;
 
 		if (siteId == null) {
-			if (log.isInfoEnabled())
-				log.info("No siteId defined");
+			
+			log.error("No siteId defined");
 			throw new InvalidInputException("No site defined!");
 		}
 
@@ -3159,7 +3169,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 						if (oldValue == null && value == null)
 							continue;
-
+						
 						gradedRecords.add(scoreItem(gradebook, gradeType, assignment, assignmentGradeRecord, studentUid, value, true, true));
 
 						String successProperty = Util.buildSuccessKey(String.valueOf(assignment.getId()));
@@ -3243,7 +3253,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 						String realId = Util.unpackItemIdFromKey(id);
 
 						Assignment assignment = null;
-						if (realId.startsWith("NEW:")) {
+						if (realId.startsWith(AppConstants.NEW_PREFIX)) {
 							assignment = idToAssignmentMap.get(realId);
 
 						} else {
@@ -3251,7 +3261,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 						}
 
 						commentIdToAssignmentMap.put(realId, assignment);
-					} else if (id.startsWith("NEW:")) {
+					} else if (id.startsWith(AppConstants.NEW_PREFIX)) {
 
 						GradeItem itemModel = new GradeItemImpl();
 						itemModel.setCategoryId(categoryId);
