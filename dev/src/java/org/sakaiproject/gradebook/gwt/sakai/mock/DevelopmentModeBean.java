@@ -88,7 +88,7 @@ public class DevelopmentModeBean {
 			// since we want to set up another site's gradebook too, we have to 
 			// pass  in the uid's
 			ApplicationSetup applicationSetup = service.getApplicationSetup(
-					new String[]{BaseGroupMock.testSite_ContextId, "ANOTHER_SITE_CONTEXTID"});
+					new String[]{BaseGroupMock.testSite_ContextId, ArchiveServiceMock.ANOTHER_SITE_CONTEXT});
 			List<Gradebook> gbModels = applicationSetup.getGradebookModels();
 			
 			authz.setStartUp(true);

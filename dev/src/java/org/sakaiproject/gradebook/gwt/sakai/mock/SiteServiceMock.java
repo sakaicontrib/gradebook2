@@ -130,9 +130,18 @@ public class SiteServiceMock extends BaseSiteService {
 	}
 
 	public Site getSite(String context) throws IdUnusedException {
+		
+		if (null == context
+				|| !context.equals(BaseGroupMock.testSite_ContextId) 
+				&& !context.equals(ArchiveServiceMock.ANOTHER_SITE_CONTEXT)) {
+				
+			throw new IdUnusedException("not one of these: '"
+					+ BaseGroupMock.testSite_ContextId + "','"
+					+ ArchiveServiceMock.ANOTHER_SITE_CONTEXT + "'");
+		}
 
 		if (null == devModeSite) {
-			devModeSite = new SiteMock(context, "Test Site", this, authzGroupService);
+			devModeSite = new SiteMock(BaseGroupMock.testSite_ContextId, "Test Site", this, authzGroupService);
 		}
 		return devModeSite;
 

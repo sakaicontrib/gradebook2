@@ -2,7 +2,6 @@
 <classpath>
 	<classpathentry excluding="org/sakaiproject/gradebook/gwt/client/GradebookState.java|org/sakaiproject/gradebook/gwt/client/gxt/view/panel/ImportPanelx.java" kind="src" path="client/src/java"/>
 	<classpathentry kind="src" path="spring-test/src/java"/>
-	<classpathentry kind="src" path="server/src/test"/>
 	<classpathentry kind="src" path="api/src/java"/>
 	<classpathentry kind="src" path="model/src/java"/>
 	<classpathentry kind="src" path="model/src/hibernate"/>
@@ -65,5 +64,7 @@
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/sections/sections-model/1.1-SNAPSHOT/sections-model-1.1-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-kernel-api/1.2.0-SNAPSHOT/sakai-kernel-api-1.2.0-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-test/2.5.6.SEC01/spring-test-2.5.6.SEC01.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-archive-api/2.6-SNAPSHOT/sakai-archive-api-2.6-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/sakai-archive-impl/2.6-SNAPSHOT/sakai-archive-impl-2.6-SNAPSHOT.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>
