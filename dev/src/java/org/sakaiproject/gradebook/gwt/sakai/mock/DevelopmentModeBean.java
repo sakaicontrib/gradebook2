@@ -45,23 +45,39 @@ import org.sakaiproject.service.gradebook.shared.GradebookExternalAssessmentServ
 import com.google.gwt.core.client.GWT;
 
 public class DevelopmentModeBean {
-
+	@Deprecated
 	public static final String PROP_GB2_DEV_MOCKDATA = "gb2.dev.mockItems";
+	
+	public static final String PROP_GB2_DEV_MOCKGB = "gb2.dev.mockGradebook";
+	public static final String PROP_GB2_DEV_MOCKITEMS = "gb2.dev.mockGradebookItems";
+
+
 	private static final long serialVersionUID = 1L;
 	private Gradebook2ComponentService service;
 	private GradebookExternalAssessmentService externalService;
 	
 	
 	public void init() {	
+
 		
-		if(System.getProperty(PROP_GB2_DEV_MOCKDATA, "true").equals("true")) {
-			setUpMockData();
+		boolean mockGradebook = System.getProperty(PROP_GB2_DEV_MOCKGB, "true").equals("true"); 
+		boolean mockGradebookItems = System.getProperty(PROP_GB2_DEV_MOCKITEMS, "true").equals("true"); 
+		boolean mockItems = System.getProperty(PROP_GB2_DEV_MOCKDATA, "false").equals("true"); 
+		
+		boolean runSetup = false; 
+		boolean populateData = false; 
+		
+		runSetup = mockItems || mockGradebook;
+		populateData = mockItems || mockGradebookItems;
+		
+		if(runSetup) {
+			setUpMockData(populateData);
 		}
 		
 		
 	}
 	
-	private void setUpMockData() {
+	private void setUpMockData(boolean populate) {
 
 		try {
 			
@@ -88,8 +104,8 @@ public class DevelopmentModeBean {
 			}
 			
 
-			
-			createMainTestGradebook(gbModel);
+
+			createMainTestGradebook(gbModel, populate);
 			
 			authz.setStartUp(false);
 			
@@ -99,8 +115,9 @@ public class DevelopmentModeBean {
 		}
 	}
 
-	private void createMainTestGradebook(Gradebook gbModel) throws InvalidInputException {
+	private void createMainTestGradebook(Gradebook gbModel, boolean populate) throws InvalidInputException {
 		
+		System.out.println("here1"); 
 		Item itemModel = gbModel.getGradebookItemModel();
 		
 		
@@ -120,7 +137,10 @@ public class DevelopmentModeBean {
 		
 		String gradebookUid = gbModel.getGradebookUid();
 		Long gradebookId = gbModel.getGradebookId();
+		System.out.println("gradebookUid: " + gbModel.getGradebookUid());
 		
+		if (!populate)
+			return; 
 		GradeItem essaysCategory = new GradeItemImpl();
 		essaysCategory.setName("My Essays");
 		essaysCategory.setPercentCourseGrade(Double.valueOf(50d));
