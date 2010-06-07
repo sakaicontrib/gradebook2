@@ -62,7 +62,7 @@ public class DevelopmentModeBean {
 		boolean runSetup = false; 
 		boolean populateData = false; 
 
-		if (System.getProperties().containsKey(PROP_GB2_DEV_MOCKITEMS))
+		if (System.getProperties().containsKey(PROP_GB2_DEV_MOCKDATA))
 		{
 			boolean mockItems = System.getProperty(PROP_GB2_DEV_MOCKDATA).equals("true"); 
 			runSetup = mockItems;
