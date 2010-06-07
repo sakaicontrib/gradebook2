@@ -140,8 +140,8 @@ public class ItemSetupPanel extends GradebookPanel {
 
 		populateCategoryItemStore(gradebookItemModel);
 
-		List<Item> gradeItems = getGradeItems(gradebookItemModel);
-		itemStore.add((List<? extends ItemModel>) gradeItems);
+		List<ItemModel> gradeItems = (List<ItemModel>) getGradeItems(gradebookItemModel);
+		itemStore.add(gradeItems);
 
 	}
 
@@ -149,7 +149,7 @@ public class ItemSetupPanel extends GradebookPanel {
 	/*
 	 * Get all the unique categories
 	 */
-	private List<Item> getCategoryItems(List<Item> gradebookItemModels) {
+	private List<? extends Item> getCategoryItems(List<Item> gradebookItemModels) {
 
 		Map<String, Item> uniqueCategories = new HashMap<String, Item>();
 
@@ -179,7 +179,7 @@ public class ItemSetupPanel extends GradebookPanel {
 	/*
 	 * Get all the grade items
 	 */
-	private ArrayList<Item> getGradeItems(Item gradebookItemModel) {
+	private ArrayList<? extends Item> getGradeItems(Item gradebookItemModel) {
 
 		ArrayList<Item> items = new ArrayList<Item>();
 
@@ -224,7 +224,7 @@ public class ItemSetupPanel extends GradebookPanel {
 			categoryItemModels.add(selectedGradebook.getGradebookItemModel());
 
 			categoriesStore.removeAll();
-			categoriesStore.add((List<? extends ItemModel>) getCategoryItems(categoryItemModels));	
+			categoriesStore.add((List<ItemModel>)getCategoryItems(categoryItemModels));	
 		}
 		else {
 
@@ -232,7 +232,7 @@ public class ItemSetupPanel extends GradebookPanel {
 			categoryItemModels.add(importGradebookItemModel);
 
 			categoriesStore.removeAll();
-			categoriesStore.add((List<? extends ItemModel>) getCategoryItems(categoryItemModels));	
+			categoriesStore.add((List<ItemModel>) getCategoryItems(categoryItemModels));	
 
 		}
 	}
