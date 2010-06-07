@@ -49,7 +49,7 @@ public class DevelopmentModeBean {
 	public static final String PROP_GB2_DEV_MOCKDATA = "gb2.dev.mockItems";
 	
 	public static final String PROP_GB2_DEV_MOCKGB = "gb2.dev.mockGradebook";
-	public static final String PROP_GB2_DEV_MOCKITEMS = "gb2.dev.mockGradebookItems";
+	public static final String PROP_GB2_DEV_MOCKITEMS = "gb2.dev.mockGradebookWithData";
 
 
 	private static final long serialVersionUID = 1L;
@@ -59,16 +59,23 @@ public class DevelopmentModeBean {
 	
 	public void init() {	
 
-		
-		boolean mockGradebook = System.getProperty(PROP_GB2_DEV_MOCKGB, "true").equals("true"); 
-		boolean mockGradebookItems = System.getProperty(PROP_GB2_DEV_MOCKITEMS, "true").equals("true"); 
-		boolean mockItems = System.getProperty(PROP_GB2_DEV_MOCKDATA, "false").equals("true"); 
-		
 		boolean runSetup = false; 
 		boolean populateData = false; 
-		
-		runSetup = mockItems || mockGradebook;
-		populateData = mockItems || mockGradebookItems;
+
+		if (System.getProperties().containsKey(PROP_GB2_DEV_MOCKITEMS))
+		{
+			boolean mockItems = System.getProperty(PROP_GB2_DEV_MOCKDATA).equals("true"); 
+			runSetup = mockItems;
+			populateData = mockItems;
+		}
+		else
+		{
+			boolean mockGradebook = System.getProperty(PROP_GB2_DEV_MOCKGB, "true").equals("true"); 
+			boolean mockGradebookItems = System.getProperty(PROP_GB2_DEV_MOCKITEMS, "true").equals("true"); 
+			
+			runSetup =  mockGradebook || mockGradebookItems;
+			populateData = mockGradebookItems;
+		}
 		
 		if(runSetup) {
 			setUpMockData(populateData);
