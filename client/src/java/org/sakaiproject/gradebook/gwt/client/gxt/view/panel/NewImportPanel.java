@@ -572,32 +572,29 @@ public class NewImportPanel extends GradebookPanel {
 	}
 
 	private void fixMangledHtmlNames(ItemModel gradebookItemModel) {
-		
-		String r = repairString(gradebookItemModel.getName());
-		gradebookItemModel.setName(r); 
-		/* 
-		 * In a categories GB, there's two levels, no cats, just one.  If we ever have subitems or a hierarchy, this will need to change
-		 */
-		for (ModelData md : gradebookItemModel.getChildren())
-		{
-			ItemModel i = (ItemModel) md; 
-			
-			String o, n; 
-			o = i.getName();
-			n = repairString(o);
-			i.setName(n); 
-			if (i.getChildCount() > 0)
-			{
-				for (ModelData md2 :i.getChildren())
-				{
-					ItemModel i2 = (ItemModel) md2; 
-					o = i2.getName(); 
-					n = repairString(o);
-					i2.setName(n); 
-				}
+				
+		ItemModelProcessor processor = new ItemModelProcessor(gradebookItemModel) {
+
+			@Override
+			public void doCategory(Item categoryModel) {
+				String r = repairString(categoryModel.getName());
+				categoryModel.setName(r); 
 			}
-			
-		}
+
+			@Override
+			public void doGradebook(Item gradebookModel) {
+				String r = repairString(gradebookModel.getName());
+				gradebookModel.setName(r); 
+			}
+
+			@Override
+			public void doItem(Item itemModel) {
+				String r = repairString(itemModel.getName());
+				itemModel.setName(r);
+			}
+		};
+		
+		processor.process();
 	}
 
 
