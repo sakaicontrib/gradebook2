@@ -25,6 +25,7 @@ package org.sakaiproject.gradebook.gwt.sakai.mock;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.management.RuntimeErrorException;
 
@@ -43,6 +44,7 @@ import org.sakaiproject.gradebook.gwt.server.model.GradeItemImpl;
 import org.sakaiproject.service.gradebook.shared.GradebookExternalAssessmentService;
 
 import com.google.gwt.core.client.GWT;
+import java.util.HashMap;
 
 public class DevelopmentModeBean {
 	@Deprecated
@@ -91,7 +93,7 @@ public class DevelopmentModeBean {
 			Gradebook2AuthzMockImpl authz = (Gradebook2AuthzMockImpl)((Gradebook2ComponentServiceImpl)service).getAuthz();
 			
 			
-			String authDetails = service.getAuthorizationDetails(new String[]{BaseGroupMock.testSite_ContextId, "ANOTHER_SITE_CONTEXTID"});
+			String authDetails = service.getAuthorizationDetails(new String[]{BaseGroupMock.testSite_ContextId, ArchiveServiceMock.ANOTHER_SITE_CONTEXT});
 			// since we want to set up another site's gradebook too, we have to 
 			// pass  in the uid's
 			ApplicationSetup applicationSetup = service.getApplicationSetup(
@@ -102,17 +104,20 @@ public class DevelopmentModeBean {
 			
 			// get the main test gb
 			
-			Gradebook gbModel = null;
+			Map<String, Gradebook> gradebookBySiteId = new HashMap<String, Gradebook>();
 			for (Gradebook gb : gbModels ){
 				if (BaseGroupMock.testSite_ContextId.equals(gb.getGradebookUid())) {
-					gbModel = gb;
-					break;
+					gradebookBySiteId.put(BaseGroupMock.testSite_ContextId, gb);
+				} else if (ArchiveServiceMock.ANOTHER_SITE_CONTEXT.equals(gb.getGradebookUid())) {
+					gradebookBySiteId.put(ArchiveServiceMock.ANOTHER_SITE_CONTEXT, gb);
 				}
 			}
 			
 
 
-			createMainTestGradebook(gbModel, populate);
+			createMainTestGradebook(gradebookBySiteId.get(BaseGroupMock.testSite_ContextId), populate);
+			
+			createSecondGradebook(gradebookBySiteId.get(ArchiveServiceMock.ANOTHER_SITE_CONTEXT), populate);
 			
 			authz.setStartUp(false);
 			
@@ -122,9 +127,10 @@ public class DevelopmentModeBean {
 		}
 	}
 
+	
+
 	private void createMainTestGradebook(Gradebook gbModel, boolean populate) throws InvalidInputException {
-		
-		System.out.println("here1"); 
+		 
 		Item itemModel = gbModel.getGradebookItemModel();
 		
 		
@@ -304,6 +310,46 @@ public class DevelopmentModeBean {
 		service.createItem(gradebookUid, gradebookId, ec2, false);
 		
 	}
+	
+private void createSecondGradebook(Gradebook gbModel, boolean populate) throws InvalidInputException {
+		
+		Item itemModel = gbModel.getGradebookItemModel();
+		
+		
+		itemModel.setName("Test Gradebook");
+		itemModel.setCategoryType(CategoryType.WEIGHTED_CATEGORIES);
+		itemModel.setGradeType(GradeType.POINTS);
+		itemModel.setItemType(ItemType.GRADEBOOK);
+		itemModel.setExtraCreditScaled(Boolean.TRUE);
+		itemModel.setReleaseGrades(Boolean.FALSE);
+		itemModel.setReleaseItems(Boolean.TRUE);
+		itemModel.setShowItemStatistics(Boolean.TRUE);
+		itemModel.setShowMean(Boolean.FALSE);
+		itemModel.setShowMedian(Boolean.FALSE);
+		itemModel.setShowMode(Boolean.TRUE);
+		
+		service.updateItem(itemModel);
+		
+		String gradebookUid = gbModel.getGradebookUid();
+		Long gradebookId = gbModel.getGradebookId();
+		System.out.println("gradebookUid: " + gbModel.getGradebookUid());
+		
+		if(!populate)
+			return;
+		
+		GradeItem essaysCategory = new GradeItemImpl();
+		essaysCategory.setName("My Essays From Site '" + ArchiveServiceMock.ANOTHER_SITE_CONTEXT + "'");
+		essaysCategory.setPercentCourseGrade(Double.valueOf(50d));
+		essaysCategory.setDropLowest(Integer.valueOf(0));
+		essaysCategory.setEqualWeightAssignments(Boolean.TRUE);
+		essaysCategory.setItemType(ItemType.CATEGORY);
+		essaysCategory.setIncluded(Boolean.TRUE);
+		essaysCategory.setEnforcePointWeighting(Boolean.TRUE);
+		essaysCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, essaysCategory, false));
+		
+		
+	}
+
 
 	private GradeItem getActiveItem(GradeItem parent) {
 		if (parent.isActive())
