@@ -290,6 +290,12 @@ public class NewImportPanel extends GradebookPanel {
 		return fileUploadPanel;
 	}
 
+	private native String repairString(String inStr) /*-{
+		var temp_div = document.createElement('div');
+		temp_div.innerHTML = inStr.replace(/>/g, "&gt;").replace(/</g, "&lt;");
+		return temp_div.firstChild?temp_div.firstChild.nodeValue:''
+	}-*/;
+
 	private void readFile() {
 
 		if (file.getValue() != null && file.getValue().trim().length() > 0) {
@@ -477,7 +483,8 @@ public class NewImportPanel extends GradebookPanel {
 
 			Gradebook gradebookModel = Registry.get(AppConstants.CURRENT);
 			ItemModel gradebookItemModel = (ItemModel)upload.getGradebookItemModel();
-
+			
+			fixMangledHtmlNames(gradebookItemModel); 
 			if (gradebookItemModel == null) {
 				throw new Exception("Could not find the gradebook item model");
 			}
@@ -563,6 +570,36 @@ public class NewImportPanel extends GradebookPanel {
 			Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent("Warning", msgsFromServer, true, true));
 		}
 	}
+
+	private void fixMangledHtmlNames(ItemModel gradebookItemModel) {
+		
+		String r = repairString(gradebookItemModel.getName());
+		gradebookItemModel.setName(r); 
+		/* 
+		 * In a categories GB, there's two levels, no cats, just one.  If we ever have subitems or a hierarchy, this will need to change
+		 */
+		for (ModelData md : gradebookItemModel.getChildren())
+		{
+			ItemModel i = (ItemModel) md; 
+			
+			String o, n; 
+			o = i.getName();
+			n = repairString(o);
+			i.setName(n); 
+			if (i.getChildCount() > 0)
+			{
+				for (ModelData md2 :i.getChildren())
+				{
+					ItemModel i2 = (ItemModel) md2; 
+					o = i2.getName(); 
+					n = repairString(o);
+					i2.setName(n); 
+				}
+			}
+			
+		}
+	}
+
 
 	private boolean localUpdateItem(ItemModel gradebookItemModel, final ItemModel item, final Record record) {
 		boolean doFullRefresh = false;
