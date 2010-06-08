@@ -57,6 +57,7 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.ss.usermodel.Row;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
@@ -830,13 +831,13 @@ public class ImportExportUtility {
 		log.debug("processNormalXls() called");
 		RawFile data = new RawFile();
 		int numCols = getNumberOfColumnsFromSheet(s); 
-		Iterator<HSSFRow> rowIter = s.rowIterator(); 
+		Iterator<Row> rowIter = s.rowIterator(); 
 		boolean headerFound = false;
 		int id_col = -1; 
 		while (rowIter.hasNext())
 		{
 
-			HSSFRow curRow = rowIter.next();  
+			Row curRow = rowIter.next();  
 			if (!headerFound)
 			{
 				id_col = readHeaderRow(curRow); 
@@ -848,7 +849,7 @@ public class ImportExportUtility {
 			log.debug("numCols = " + numCols); 
 
 			for (int i = 0; i < numCols; i++) {
-				HSSFCell cl = curRow.getCell(i);
+				org.apache.poi.ss.usermodel.Cell cl = curRow.getCell(i);
 				String cellData;
 				if (i == id_col && null != cl) {
 					if (cl.getCellType() == HSSFCell.CELL_TYPE_NUMERIC) {
@@ -884,10 +885,10 @@ public class ImportExportUtility {
 
 	private int getNumberOfColumnsFromSheet(HSSFSheet s) {
 		int numCols = 0; 
-		Iterator<HSSFRow> rowIter = s.rowIterator(); 
+		Iterator<Row> rowIter = s.rowIterator(); 
 		while (rowIter.hasNext())
 		{
-			HSSFRow curRow = rowIter.next(); 
+			Row curRow = rowIter.next(); 
 			
 			if (curRow.getLastCellNum() > numCols)
 			{
@@ -898,14 +899,14 @@ public class ImportExportUtility {
 	}
 
 
-	private int readHeaderRow(HSSFRow curRow) {
+	private int readHeaderRow(Row curRow) {
 		int ret = -1; 
-		Iterator<HSSFCell> cellIterator = curRow.cellIterator(); 
+		Iterator<org.apache.poi.ss.usermodel.Cell> cellIterator = curRow.cellIterator(); 
 		// FIXME - need to decide to take this out into the institutional adviser 
 
 		while (cellIterator.hasNext())
 		{
-			HSSFCell cl = cellIterator.next();
+			HSSFCell cl = (HSSFCell) cellIterator.next();
 			String cellData =  new HSSFDataFormatter().formatCellValue(cl).toLowerCase();
 
 			if ("student id".equals(cellData))
@@ -919,7 +920,7 @@ public class ImportExportUtility {
 
 	private RawFile processScantronXls(HSSFSheet s, String fileName) {
 		RawFile data = new RawFile(); 
-		Iterator<HSSFRow> rowIter = s.rowIterator(); 
+		Iterator<Row> rowIter = s.rowIterator(); 
 		StringBuilder err = new StringBuilder("Scantron File with errors"); 
 		boolean stop = false; 
 
@@ -943,8 +944,9 @@ public class ImportExportUtility {
 			data.addRow(getScantronHeaderLine(fileName));
 			while (rowIter.hasNext())
 			{ 
-				HSSFRow curRow = rowIter.next();  
-				HSSFCell score = null, id = null; 
+				Row curRow = rowIter.next();  
+				org.apache.poi.ss.usermodel.Cell score = null;
+				org.apache.poi.ss.usermodel.Cell id = null; 
 
 				id = curRow.getCell(studentIdHeader.getColumnIndex());
 				score = curRow.getCell(scoreHeader.getColumnIndex()); 
@@ -961,8 +963,8 @@ public class ImportExportUtility {
 				if (!id.equals(studentIdHeader))
 				{
 					// FIXME - need to decide if this is OK for everyone, not everyone will have an ID as a 
-					idStr = getDataFromHSSFCellAsStringRegardlessOfCellType(id, false); 
-					scoreStr = getDataFromHSSFCellAsStringRegardlessOfCellType(score, true); 
+					idStr = getDataFromCellAsStringRegardlessOfCellType(id, false); 
+					scoreStr = getDataFromCellAsStringRegardlessOfCellType(score, true); 
 					String[] ent = new String[2];
 					ent[0] = idStr; 
 					ent[1] = scoreStr;
@@ -975,7 +977,7 @@ public class ImportExportUtility {
 
 	}
 
-	private String getDataFromHSSFCellAsStringRegardlessOfCellType(HSSFCell c, boolean decimal)
+	private String getDataFromCellAsStringRegardlessOfCellType(org.apache.poi.ss.usermodel.Cell c, boolean decimal)
 	{
 		String ret = "";
 		String fmt = "%.0f"; 
@@ -1008,16 +1010,16 @@ public class ImportExportUtility {
 			return null; 			
 		}
 
-		Iterator<HSSFRow> rIter = s.rowIterator(); 
+		Iterator<Row> rIter = s.rowIterator(); 
 
 		while (rIter.hasNext())
 		{
-			HSSFRow curRow = rIter.next(); 
-			Iterator<HSSFCell> cIter = curRow.cellIterator(); 
+			HSSFRow curRow = (HSSFRow) rIter.next(); 
+			Iterator<org.apache.poi.ss.usermodel.Cell> cIter = curRow.cellIterator(); 
 
 			while (cIter.hasNext())
 			{
-				HSSFCell curCell = cIter.next(); 
+				HSSFCell curCell = (HSSFCell) cIter.next(); 
 
 				if (curCell.getCellType() == HSSFCell.CELL_TYPE_STRING)
 				{
@@ -1056,13 +1058,12 @@ public class ImportExportUtility {
 	
 	
 	private boolean isScantronSheetFromPoi(HSSFSheet s) {
-		Iterator<HSSFRow> rowIter = s.rowIterator(); 
+		Iterator<Row> rowIter = s.rowIterator(); 
 		while (rowIter.hasNext())
 		{
-			HSSFRow curRow = rowIter.next();  
-			HSSFCell possibleHeader = curRow.getCell(0); 
-
-			if (possibleHeader != null && possibleHeader.getCellType() == HSSFCell.CELL_TYPE_STRING &&  SCANTRON_HEADER_STUDENT_ID.equals(possibleHeader.getRichStringCellValue().getString()) )
+			Row curRow = rowIter.next();  
+			org.apache.poi.ss.usermodel.Cell possibleHeader = curRow.getCell(0); 
+			if (possibleHeader != null && possibleHeader.getCellType() == org.apache.poi.ss.usermodel.Cell.CELL_TYPE_STRING &&  SCANTRON_HEADER_STUDENT_ID.equals(possibleHeader.getRichStringCellValue().getString()) )
 			{
 				return true; 
 			}
