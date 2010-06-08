@@ -665,7 +665,7 @@
 			<dependency>
 				<groupId>org.apache.poi</groupId>
 				<artifactId>poi</artifactId>
-				<version>3.2-FINAL</version>
+				<version>3.6</version>
 			</dependency>
 			
 			<!-- This entry below is to prevent jackson and jersey
