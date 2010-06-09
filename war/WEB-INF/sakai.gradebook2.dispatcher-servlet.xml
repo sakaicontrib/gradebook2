@@ -25,7 +25,9 @@
         </property-->
    	</bean>
  	
-	<bean id="RestWrappingController" class="org.sakaiproject.gradebook.gwt.server.ServletWrappingController">
+	<bean id="RestWrappingController"
+		  class="org.sakaiproject.gradebook.gwt.server.ServletWrappingController"
+		  init-method="init">
    		<property name="servletClass">
      		<value>org.sakaiproject.gradebook.gwt.server.RestServlet</value>
    		</property>
@@ -39,6 +41,7 @@
     	</props>
    		</property>
    		<property name="sessionManager" ref="org.sakaiproject.tool.api.SessionManager"/>
+   		<property name="configService" ref="org.sakaiproject.component.api.ServerConfigurationService" />
  	</bean>
 
 </beans>

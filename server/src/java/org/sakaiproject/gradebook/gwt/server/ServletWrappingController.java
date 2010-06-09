@@ -6,6 +6,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.sakaiproject.component.api.ServerConfigurationService;
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.tool.api.Session;
 import org.sakaiproject.tool.api.SessionManager;
 import org.springframework.web.servlet.ModelAndView;
@@ -16,26 +18,44 @@ org.springframework.web.servlet.mvc.ServletWrappingController {
 	private static final Log log = LogFactory.getLog(ServletWrappingController.class);
 	
 	// We don't want users to access the GB2 servlet directly
-	private static final String VALID_CONTEXT_PATH = "/xsl-portal/";
+	//private static final String VALID_CONTEXT_PATH = "/xsl-portal/";
 
 	private SessionManager sessionManager = null;
+	private ServerConfigurationService configService = null;
+	
+	private boolean hasEnabledSecurityChecks;
+	private String validContextPrefix;
 
-	public ModelAndView handleRequestInternal(HttpServletRequest request, HttpServletResponse response) 
-	throws Exception {
+	// IOC init method
+	public void init() {
 
 		/*
-		 * This security check can be disabled by setting the java property
-		 * -Dgb2.security=false
-		 * This needs to be done in GWT hosted/dev mode
+		 * This security check can be disabled by setting the Sakai property
+		 * gb2.security.enabled=false
+		 * This needs to be done in GWT hosted/dev mode via -Dgb2.security=false
 		 * By default security check is enabled.
 		 * 
 		 */
 
-		// System property to turn on/off the session validation
-		String securityProperty = System.getProperty("gb2.security");
+		// Getting the security related Sakai properties
+		hasEnabledSecurityChecks = configService.getBoolean(AppConstants.ENABLED_SECURITY_CHECKS, true);
+		log.info("GB2: security is enabled = " + hasEnabledSecurityChecks);
 
+		// We don't want users to access the GB2 servlet directly
+		validContextPrefix = configService.getString(AppConstants.SECURITY_CHECK_CONTEXT_PREFIX, AppConstants.SECURITY_CHECK_CONTEXT_PREFIX_DEFAULT);
+		log.info("GB2: security check context prefix = " + validContextPrefix);
+		if(null == validContextPrefix || "".equals(validContextPrefix)) {
+			validContextPrefix = AppConstants.SECURITY_CHECK_CONTEXT_PREFIX_DEFAULT;
+			log.info("GB2: security check context prefix was not set. Setting it to " + validContextPrefix);
+		}
+	}
+
+	public ModelAndView handleRequestInternal(HttpServletRequest request, HttpServletResponse response) 
+	throws Exception {
+
+	
 		// In case the user has disabled the gb2.security setting
-		if("false".equals(securityProperty)) {
+		if(!hasEnabledSecurityChecks) {
 
 			return super.handleRequestInternal(request, response);
 		}
@@ -43,8 +63,9 @@ org.springframework.web.servlet.mvc.ServletWrappingController {
 
 			// First we check if someone is trying to access the servlet directly
 			String contextPath = request.getContextPath();
-			// The contextPath needs to start with /portal/tool/
-			if(!contextPath.startsWith(VALID_CONTEXT_PATH)) {
+			// The contextPath needs to start with what's defined in validContextPrefix
+			// e.g. /portal/ or /xls-portal/, etc
+			if(!contextPath.startsWith(validContextPrefix)) {
 				
 				log.error("ERROR: User tried to access GB2 via : " + contextPath);
 				response.setContentType("text/plain");
@@ -110,5 +131,10 @@ org.springframework.web.servlet.mvc.ServletWrappingController {
 	// IOC setter
 	public void setSessionManager(SessionManager sessionManager) {
 		this.sessionManager = sessionManager;
+	}
+	
+	// IOC setter
+	public void setConfigService(ServerConfigurationService configService) {
+		this.configService = configService;
 	}
 }

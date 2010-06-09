@@ -108,8 +108,13 @@ public class ServerConfigurationServiceMock implements ServerConfigurationServic
 	}
 
 	public String getString(String arg0, String arg1) {
-		// TODO Auto-generated method stub
-		return null;
+		
+		String configProperty = System.getProperty(arg0);
+		
+		if(null == configProperty || "".equals(configProperty)) {
+			return arg1;
+		}
+		return configProperty;
 	}
 
 	public String[] getStrings(String arg0) {

@@ -142,6 +142,10 @@ public interface AppConstants {
 	
 	public static final String IMPORT_DELETE_MISSING_GRADES = "gb2.import.delete.missing.grades";
 	
+	public static final String ENABLED_SECURITY_CHECKS = "gb2.security.enabled";
+	public static final String SECURITY_CHECK_CONTEXT_PREFIX = "gb2.security.context.prefix";
+	public static final String SECURITY_CHECK_CONTEXT_PREFIX_DEFAULT = "/portal/";
+	
 	public static final String DEFAULT_CATEGORY_NAME = "Unassigned";
 	
 	public static final String EXTRA_CREDIT_INDICATOR = " (+)";

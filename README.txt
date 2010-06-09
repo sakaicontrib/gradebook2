@@ -68,6 +68,13 @@ gb2.import.delete.missing.grades = [true, false]
 - default: true
 - For more details, please see http://jira.sakaiproject.org/browse/GRBK-619
 
+gb2.security.enabled = [true, false]
+- default: true
+
+gb2.security.context.prefix = [/portal/, /xsl-portal/, ...]
+- default: /portal/
+
+
 SUPPORT
 
 The best place to look for bugs, feature requests, and upcoming changes is JIRA:
