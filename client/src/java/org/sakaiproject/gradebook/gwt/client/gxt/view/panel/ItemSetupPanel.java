@@ -1,24 +1,20 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.sakaiproject.gradebook.gwt.client.AppConstants;
-import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.BaseCustomGridView;
+import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
-import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 
-import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.form.TextField;
+import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
 import com.extjs.gxt.ui.client.widget.grid.CellEditor;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
@@ -26,6 +22,7 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.EditorGrid;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
+import com.extjs.gxt.ui.client.widget.grid.GridView;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.google.gwt.core.client.GWT;
 
@@ -64,37 +61,80 @@ public class ItemSetupPanel extends GradebookPanel {
 		itemColumns.add(points);
 
 		categoryPicker = new ComboBox<ItemModel>(); 
-		categoryPicker.setAllowBlank(false); 
-		categoryPicker.setAllQuery(null);
+		//categoryPicker.setAllowBlank(false); 
+		//categoryPicker.setAllQuery(null);
 		categoryPicker.setDisplayField(ItemKey.S_NM.name());  
+		//categoryPicker.setEditable(false);
 		categoryPicker.setEditable(true);
+		categoryPicker.setTriggerAction(TriggerAction.ALL);
 		categoryPicker.setEmptyText("Required");
 		categoryPicker.setFieldLabel("Category");
 		categoryPicker.setForceSelection(true);
 		categoryPicker.setStore(categoriesStore);
 		categoryPicker.setValueField(ItemKey.S_ID.name());
-		categoryPicker.addInputStyleName(resources.css().gbTextFieldInput());
+		//categoryPicker.addInputStyleName(resources.css().gbTextFieldInput());
 
+		//ColumnConfig category = new ColumnConfig(ItemKey.L_CTGRY_ID.name(), "Category", 140);
+		//ColumnConfig category = new ColumnConfig(ItemKey.S_ID.name(), "Category", 140);
 		ColumnConfig category = new ColumnConfig(ItemKey.L_CTGRY_ID.name(), "Category", 140);
 
 		categoryEditor = new CellEditor(categoryPicker) {
 
 			@Override
-			public Object postProcessValue(Object value) {
-				if (value != null) {
-					Item model = (Item)value;
-					return model.getIdentifier();
-				}
-				return "None/Default";
-			}
-
-			@Override
 			public Object preProcessValue(Object value) {
-				Long id = (Long)value;
-
-				return categoriesStore.findModel(ItemKey.S_ID.name(), String.valueOf(id));
+				
+				Long categoryId = (Long) value;
+				
+				ItemModel categoryModel = categoriesStore.findModel(ItemKey.L_ITM_ID.name());
+				
+				return categoryModel;
+				
+//				GWT.log("DEBUG: CellEditor.preProcessValue()");
+//				GWT.log("DEBUG: CellEditor.preProcessValue() value = " + value);
+//				
+//				ItemModel itemModel = itemStore.findModel(ItemKey.S_ID.name(), (String) value);
+//				String categoryName = itemModel.get(ItemKey.S_PARENT.name());
+//				GWT.log("DEBUG: CellEditor.preProcessValue() categoryName = " + categoryName);
+//				
+//				ItemModel categoryModel = categoriesStore.findModel(ItemKey.S_NM.name(), categoryName);
+//				if(null == categoryModel) {
+//					GWT.log("DEBUG: CellEditor.preProcessValue() categoryModel = NULL");
+//				}
+//				
+//				GWT.log("DEBUG: CellEditor.preProcessValue() categoryName = " + categoryModel.getName());
+//				return categoryModel;
 			}
+			
+			@Override
+			public Object postProcessValue(Object value) {
+				GWT.log("DEBUG: CellEditor.postProcessValue()");
+				GWT.log("DEBUG: CellEditor.postProcessValue() value = " + value);
 
+				if (value == null) {
+					
+					return value;
+				}
+				
+				String identifier = ((ItemModel) value).getIdentifier();
+				GWT.log("DEBUG: CellEditor.postProcessValue() identifier = " + identifier);
+				GWT.log("DEBUG: CellEditor.postProcessValue() name = " + ((ItemModel) value).getName());
+				
+				// FIXME: we need to figure out how to handle both cases were the identifier is:
+				// - a string: NEW:CAT:N
+				// - a number: N
+				
+				Long categoryId = null;
+				try {
+					
+					categoryId = Long.valueOf(identifier);
+				}
+				catch(NumberFormatException nfe) {
+					
+				}
+				
+				//return identifier;
+				return categoryId;
+			}
 		};
 		
 		category.setEditor(categoryEditor);
@@ -104,8 +144,13 @@ public class ItemSetupPanel extends GradebookPanel {
 			public String render(ModelData model, String property, ColumnData config, 
 					int rowIndex, int colIndex, ListStore store, Grid grid) {
 
-				Object identifier = model.get(property);
+				GWT.log("DEBUG: GridCellRenderer.render()");
 
+
+				Object identifier = model.get(property);
+				GWT.log("DEBUG: GCR.render() property = " + property);
+				GWT.log("DEBUG: GCR.render() identifier = " + identifier);
+				
 				String lookupId = null;
 
 				if (identifier instanceof Long) 
@@ -113,11 +158,21 @@ public class ItemSetupPanel extends GradebookPanel {
 				else
 					lookupId = (String)identifier;
 
+				//GWT.log("DEBUG: REN lookupId = " + lookupId);
 				Item itemModel = categoriesStore.findModel(ItemKey.S_ID.name(), lookupId);
 
-				if (itemModel == null)
-					return AppConstants.DEFAULT_CATEGORY_NAME;
+				if (itemModel == null) {
+					GWT.log("DEBUG: REN ItemModel is null : returning name = " + model.get(ItemKey.S_PARENT.name()));
+					List<ItemModel> categories = categoriesStore.getModels();
+					for(ItemModel category : categories) {
+						GWT.log("DEBUG: REN ... categoryId = " + category.getIdentifier() + " : categoryName = " + category.getName());
+					}
+					return model.get(ItemKey.S_PARENT.name());
+				}
+				
+				
 
+				GWT.log("DEBUG: REN returning categoryNane = " + itemModel.getName());
 				return itemModel.getName();
 			}
 
@@ -130,51 +185,20 @@ public class ItemSetupPanel extends GradebookPanel {
 
 		itemGrid = new EditorGrid<ItemModel>(itemStore, itemColumnModel);
 		itemGrid.setBorders(true);
-		itemGrid.setView(new BaseCustomGridView());
-
+		//itemGrid.setView(new BaseCustomGridView());
+		itemGrid.setView(new GridView());
 		add(itemGrid);
 
 	}
 
 	public void onRender(Item gradebookItemModel) {
-
-		populateCategoryItemStore(gradebookItemModel);
+		
+		refreshCategoryPickerStore(gradebookItemModel);
 
 		List<ItemModel> gradeItems = (List<ItemModel>) getGradeItems(gradebookItemModel);
 		itemStore.add(gradeItems);
-
 	}
-
-
-	/*
-	 * Get all the unique categories
-	 */
-	private List<? extends Item> getCategoryItems(List<Item> gradebookItemModels) {
-
-		Map<String, Item> uniqueCategories = new HashMap<String, Item>();
-
-		for(Item gradebookItemModel : gradebookItemModels) {
-
-			CategoryType categoryType = gradebookItemModel.getCategoryType();
-
-			if(CategoryType.NO_CATEGORIES != categoryType) {
-
-				List<Item> categories = gradebookItemModel.getSubItems();
-
-				for(Item category : categories) {
-
-					String identifier = category.getIdentifier();
-
-					if(!uniqueCategories.containsKey(identifier)) {
-
-						uniqueCategories.put(identifier, category);
-					}
-				}
-			}
-		}
-
-		return new ArrayList<Item>(uniqueCategories.values());
-	}
+	
 
 	/*
 	 * Get all the grade items
@@ -188,8 +212,6 @@ public class ItemSetupPanel extends GradebookPanel {
 		if(CategoryType.NO_CATEGORIES == categoryType) {
 
 			items.addAll(gradebookItemModel.getSubItems());
-
-			GWT.log("getGradeItems : NO_CATEGRIES");
 		}
 		else {
 
@@ -199,41 +221,33 @@ public class ItemSetupPanel extends GradebookPanel {
 
 				items.addAll(category.getSubItems());
 			}
-
-			GWT.log("getGradeItems : CATEGRIES");
 		}
 
 		return items;
 	}
 
+	
+	private void refreshCategoryPickerStore(Item gradebookItemModel) {
+		categoriesStore.removeAll();
+		if (gradebookItemModel != null) {
 
-	/*
-	 * This gets all the categories (import file and selected GB)  and sets the categoriesStore
-	 */
-	private void populateCategoryItemStore(final Item importGradebookItemModel) {
+			ItemModelProcessor processor = new ItemModelProcessor(gradebookItemModel) {
 
-		final Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
+				@Override
+				public void doCategory(Item categoryModel) {
+					categoriesStore.add((ItemModel)categoryModel);
+				}
 
-		// If the current/selected GB has categories, we list them as well
-		CategoryType categoryType = selectedGradebook.getGradebookItemModel().getCategoryType();
+			};
 
-		if(CategoryType.NO_CATEGORIES != categoryType) {
-
-			List<Item> categoryItemModels = new ArrayList<Item>();
-			categoryItemModels.add(importGradebookItemModel);
-			categoryItemModels.add(selectedGradebook.getGradebookItemModel());
-
-			categoriesStore.removeAll();
-			categoriesStore.add((List<ItemModel>)getCategoryItems(categoryItemModels));	
+			processor.process();
 		}
-		else {
-
-			List<Item> categoryItemModels = new ArrayList<Item>();
-			categoryItemModels.add(importGradebookItemModel);
-
-			categoriesStore.removeAll();
-			categoriesStore.add((List<ItemModel>) getCategoryItems(categoryItemModels));	
-
+	}
+	
+	public void showItems() {
+		List<ItemModel> items = itemStore.getModels();
+		for(Item item : items) {
+			GWT.log("DEBUG: XX Item : name = " + item.getName() + " : categoryName = " + item.getCategoryName() + " : categoryId = " + item.getCategoryId());
 		}
 	}
 }
