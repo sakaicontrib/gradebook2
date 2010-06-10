@@ -342,14 +342,34 @@ public class ItemTreePanel extends GradebookPanel {
 					sb.append("<span></span>");
 				}
 				sb.append("<span class=\"x-tree3-node-text");
+				boolean isExtraCredit = itemModel.getExtraCredit() != null && itemModel.getExtraCredit().booleanValue();
+
 				if (!isIncluded && (isItem || isCategory))
-					sb.append(" ").append(resources.css().gbNotIncluded());
+				{
+					if (isExtraCredit)
+					{
+						sb.append(" ").append(resources.css().gbNotIncludedEC());
+					}
+					else
+					{
+						sb.append(" ").append(resources.css().gbNotIncluded());
+					}
+				}
+				
 				if (!isItem) 
 					sb.append(" ").append(resources.css().gbCellStrong());
-				else if (isReleased) 
-					sb.append(" ").append(resources.css().gbReleased());
+				else if (isReleased)
+				{
+					if (isExtraCredit)
+					{
+						sb.append(" ").append(resources.css().gbReleasedEC());
+					}
+					else
+					{
+						sb.append(" ").append(resources.css().gbReleased());		
+					}
+				}
 				
-				boolean isExtraCredit = itemModel.getExtraCredit() != null && itemModel.getExtraCredit().booleanValue();
 				if (isExtraCredit) 
 					sb.append(" ").append(resources.css().gbCellExtraCredit());
 				sb.append("\">&nbsp;");

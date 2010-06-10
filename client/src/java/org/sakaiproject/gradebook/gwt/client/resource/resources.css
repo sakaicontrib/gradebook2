@@ -64,9 +64,19 @@
 	font-style: italic;	
 }
 
+.gbNotIncludedEC {
+	color: green;
+	font-style: italic;	
+}
+
 .gbReleased {
 	color: blue;
 	font-weight: bold;	
+}
+
+.gbReleasedEC {
+	color: green; 
+	font-weight: bold; 
 }
 
 .gbTabMargins {

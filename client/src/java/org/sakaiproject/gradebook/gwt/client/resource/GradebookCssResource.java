@@ -53,11 +53,15 @@ public interface GradebookCssResource extends CssResource {
 	String gbItemIcon();
 	
 	String gbNotIncluded();
-	
+
+	String gbNotIncludedEC();
+
 	String gbNumericFieldInput();
 	
 	String gbReleased();
-	
+
+	String gbReleasedEC();
+
 	String gbSetupButton();
 	
 	String gbStatisticsButton();
