@@ -36,13 +36,18 @@ public class Resource {
 	}
 	
 	protected String toJson(List<?> list, int size) {
+		return toJson(list, size, false); 
+	}
+	
+	protected String toJson(List<?> list, int size, boolean pretty) 
+	{
 		Map<String,Object> wrapper = new HashMap<String, Object>();
 		wrapper.put(AppConstants.LIST_ROOT, list);
 		wrapper.put(AppConstants.TOTAL, String.valueOf(size));
 		
-		return toJson(wrapper);
+		return toJson(wrapper, pretty);
+		
 	}
-	
 	protected String toJson(Object o)
 	{
 		return toJson(o, false); 
@@ -64,7 +69,21 @@ public class Resource {
 		
 		return w.toString();
 	}
+	
+	protected void logJsonToFile(List<?> list, int s, String outfile)
+	{
+		String jsonData; 
+		jsonData = toJson(list, s, true); 
+		logJsonToFileActual(jsonData, outfile); 
+	}
+	
 	protected void logJsonToFile(Object o, String outfile) 
+	{
+		String jsonData; 
+		jsonData = toJson(o, true); 
+		logJsonToFileActual(jsonData, outfile);
+	}
+	private void logJsonToFileActual(String s, String outfile) 
 	{
 		File f = new File(outfile);
 		f.delete(); 
@@ -72,7 +91,7 @@ public class Resource {
 		PrintWriter out;
 		try {
 			out = new PrintWriter(f);
-			out.write(toJson(o, true));
+			out.write(s);
 			out.flush();
 			out.close(); 
 		} catch (FileNotFoundException e) {
