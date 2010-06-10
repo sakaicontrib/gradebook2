@@ -2567,7 +2567,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 		Gradebook gradebook = assignment.getGradebook();
 		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
-
+		 
 		doUpdateItem(item, assignment);
 
 		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
@@ -6124,7 +6124,12 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 			isWeightChanged = isWeightChanged || Util.notEquals(newCategoryWeight, oldCategoryWeight);
 
-			double w = newCategoryWeight == null ? 0d : ((Double) newCategoryWeight).doubleValue() * 0.01;
+			double w = 0.0;
+			if (newCategoryWeight != null)
+			{
+				w = Util.divideWithPrecision(newCategoryWeight.doubleValue(), 100.0);
+			}
+			log.debug("w: " + w); 
 
 			boolean isEqualWeighting = Util.checkBoolean(item.getEqualWeightAssignments());
 			boolean wasEqualWeighting = Util.checkBoolean(category.isEqualWeightAssignments());

@@ -22,6 +22,7 @@
  **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.server;
 
+import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.Date;
 import java.util.Map;
@@ -32,6 +33,16 @@ import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 
 public class Util {
+	
+	public static double divideWithPrecision(double dend, double dor)
+	{
+		double ret = 0.0; 
+		BigDecimal val = new BigDecimal(dend); 
+		BigDecimal divisor = new BigDecimal(dor); 
+		BigDecimal result = val.divide(divisor);
+		ret = result.doubleValue(); 
+		return ret; 
+	}
 
 	public static Double fromPercentString(String s) throws NumberFormatException {
 		if (s != null) {
