@@ -1,5 +1,8 @@
 package org.sakaiproject.gradebook.gwt.sakai.rest.resource;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.List;
@@ -8,6 +11,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
 import org.codehaus.jackson.map.SerializationConfig.Feature;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
@@ -39,8 +43,18 @@ public class Resource {
 		return toJson(wrapper);
 	}
 	
-	protected String toJson(Object o) {
+	protected String toJson(Object o)
+	{
+		return toJson(o, false); 
+	}
+	protected String toJson(Object o, boolean pretty) {
 		ObjectMapper mapper = new ObjectMapper();
+		
+		if (pretty)
+		{
+			mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true); 
+		}
+
 		StringWriter w = new StringWriter();
 		try {
 			mapper.writeValue(w, o);
@@ -50,7 +64,22 @@ public class Resource {
 		
 		return w.toString();
 	}
-	
+	protected void logJsonToFile(Object o, String outfile) 
+	{
+		File f = new File(outfile);
+		f.delete(); 
+
+		PrintWriter out;
+		try {
+			out = new PrintWriter(f);
+			out.write(toJson(o, true));
+			out.flush();
+			out.close(); 
+		} catch (FileNotFoundException e) {
+			log.warn("Caught exception: " + e, e); 
+		} 
+
+	}
 	public Gradebook2ComponentService getService() {
 		return service;
 	}
