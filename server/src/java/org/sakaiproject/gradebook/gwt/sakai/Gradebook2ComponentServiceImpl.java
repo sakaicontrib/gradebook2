@@ -33,6 +33,7 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.ConfigUtil;
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.GradebookCreationException;
+import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidDataException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
@@ -1559,7 +1560,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return siteService;
 	}
 
-	public int[] getGradeItemStatistics(Long assignmentId, String sectionId) throws SecurityException {
+	public int[] getGradeItemStatistics(Long assignmentId, String sectionId) throws SecurityException, InvalidDataException {
 
 		int[] gradeFrequencies = new int[10];
 
@@ -1591,7 +1592,14 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			}
 
 			int value = gradeAsPercentage.intValue() / 10;
-			gradeFrequencies[value] = ++gradeFrequencies[value];
+			
+			try {
+				gradeFrequencies[value] = ++gradeFrequencies[value];
+			}
+			catch(ArrayIndexOutOfBoundsException e) {
+				log.error("ArrayIndexOutOfBoundsException: expected value = [0, 1, 2, ...,9] but got value = " + value);
+				throw new InvalidDataException("Value out of bound [0, 1, 2, ..., 9] : value = " + value);
+			}
 		}
 
 		return gradeFrequencies;

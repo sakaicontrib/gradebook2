@@ -11,6 +11,8 @@
 	
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.GradebookCreationMapper"/>
 	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.InvalidDataMapper"/>
+	
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" 
 		  abstract="true"
 		  class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource">

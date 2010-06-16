@@ -7,6 +7,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
+import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidDataException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 
 @Path("statistics")
@@ -40,7 +41,7 @@ public class Statistics extends Resource {
 	@Produces("application/json")
 	public String getStatisticsData(
 			@PathParam("assignmentId") Long assignmentId,
-			@PathParam("sectionId") String sectionId) throws SecurityException {
+			@PathParam("sectionId") String sectionId) throws SecurityException, InvalidDataException {
 
 		int[] gradeFrequencies = service.getGradeItemStatistics(assignmentId, sectionId);
 		return toJson(gradeFrequencies);

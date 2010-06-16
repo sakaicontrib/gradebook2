@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.sakaiproject.gradebook.gwt.client.exceptions.GradebookCreationException;
+import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidDataException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
@@ -81,7 +82,7 @@ public interface Gradebook2ComponentService {
 	
 	public Site getSite();
 
-	public int[] getGradeItemStatistics(Long assignmentId, String sectionId) throws SecurityException;
+	public int[] getGradeItemStatistics(Long assignmentId, String sectionId) throws SecurityException, InvalidDataException;
 	
 	/*
 	 * @deprecated As of 1.3.0
