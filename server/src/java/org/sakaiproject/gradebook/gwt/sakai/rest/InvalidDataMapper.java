@@ -7,7 +7,6 @@ import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidDataException;
 
 public class InvalidDataMapper implements ExceptionMapper<InvalidDataException> {
 
-	@Override
 	public Response toResponse(InvalidDataException ex) {
 		String message = ex.getMessage();
 		if(null == message || "".equals(message)) {
