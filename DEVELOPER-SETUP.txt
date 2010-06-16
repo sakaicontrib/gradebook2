@@ -45,6 +45,7 @@ You will also need to include the following VM args in the Run Configuration:
 -Dgb2.import.delete.missing.grades=true
 -Dgb2.security.enabled=false
 -Dgb2.security.context.prefix=/portal/
+-Dgb2.dev.mockItems=true
 
 Additional DEV mode configurations:
 - By default, the gradebook is populated with test data in DEV mode. This can be turned off via : -Dgb2.dev.mockItems=false 
