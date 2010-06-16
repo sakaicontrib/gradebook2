@@ -427,7 +427,7 @@ public class StatisticsPanel extends ContentPanel {
 					// for the selected grade item
 					String mean = gridEvent.getModel().get(StatisticsKey.S_MEAN.name());
 
-					if(null != mean && mean.matches("\\d*\\.\\d*")) {
+					if(null != mean && !AppConstants.STATISTICS_DATA_NA.equals(mean)) {
 
 						// Before we get the data and show the graph(s), we check
 						// if the Visualization APIs have been loaded properly

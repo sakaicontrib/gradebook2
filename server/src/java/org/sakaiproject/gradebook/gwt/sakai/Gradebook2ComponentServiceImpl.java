@@ -119,7 +119,6 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 	private static ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 	private static final Log log = LogFactory.getLog(Gradebook2ComponentServiceImpl.class);
 
-	private static final String NA = "-";
 	private static final String UNIQUESET = "N/A";
 	private static enum FunctionalityStatus { OFF, ADMIN_ONLY, INSTRUCTOR_ONLY, GRADER_ONLY, STUDENT_ONLY };
 
@@ -4073,7 +4072,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		boolean first  = true; 
 		if (modeList == null) 
 		{
-			return NA; 
+			return AppConstants.STATISTICS_DATA_NA; 
 		}
 		if (modeList.size() == 0)
 		{
@@ -4119,12 +4118,12 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		switch (gradebook.getGrade_type()) {
 		case GradebookService.GRADE_TYPE_LETTER:
 			if (isStandardDev)
-				statAsString = stat != null && stat.compareTo(BigDecimal.ZERO) != 0 ? stat.divide(BigDecimal.valueOf(10), new MathContext(AppConstants.DISPLAY_SCALE, RoundingMode.HALF_EVEN)).toString() : NA;
+				statAsString = stat != null && stat.compareTo(BigDecimal.ZERO) != 0 ? stat.divide(BigDecimal.valueOf(10), new MathContext(AppConstants.DISPLAY_SCALE, RoundingMode.HALF_EVEN)).toString() : AppConstants.STATISTICS_DATA_NA;
 				else
-					statAsString = stat != null ? gradeCalculations.convertPercentageToLetterGrade(stat) : NA;
+					statAsString = stat != null ? gradeCalculations.convertPercentageToLetterGrade(stat) : AppConstants.STATISTICS_DATA_NA;
 					break;
 		default:
-			statAsString = stat != null ? stat.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode()).toString() : NA;
+			statAsString = stat != null ? stat.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode()).toString() : AppConstants.STATISTICS_DATA_NA;
 		}
 
 		return statAsString;
@@ -4584,11 +4583,11 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		model.setAssignmentId(String.valueOf(assignmentId));
 		model.setName(name);
 
-		String mean = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getMean(), false) : NA;
-		String median = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getMedian(), false) : NA;
-		String mode = 	statistics != null ? composeModeString(statistics, gradebook) : NA;
-		String standardDev = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getStandardDeviation(), true) : NA;
-		String rank = NA;  
+		String mean = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getMean(), false) : AppConstants.STATISTICS_DATA_NA;
+		String median = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getMedian(), false) : AppConstants.STATISTICS_DATA_NA;
+		String mode = 	statistics != null ? composeModeString(statistics, gradebook) : AppConstants.STATISTICS_DATA_NA;
+		String standardDev = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getStandardDeviation(), true) : AppConstants.STATISTICS_DATA_NA;
+		String rank = AppConstants.STATISTICS_DATA_NA;  
 
 		boolean isStudentView = studentId != null;
 		boolean isCourseStats = id != null && id.equals(Long.valueOf(0l));
@@ -5697,11 +5696,11 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		model.setAssignmentId(String.valueOf(assignmentId));
 		model.setName(name);
 
-		String mean = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getMean(), false) : NA;
-		String median = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getMedian(), false) : NA;
-		String mode = 	statistics != null ? composeModeString(statistics, gradebook) : NA;
-		String standardDev = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getStandardDeviation(), true) : NA;
-		String rank = NA;  
+		String mean = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getMean(), false) : AppConstants.STATISTICS_DATA_NA;
+		String median = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getMedian(), false) : AppConstants.STATISTICS_DATA_NA;
+		String mode = 	statistics != null ? composeModeString(statistics, gradebook) : AppConstants.STATISTICS_DATA_NA;
+		String standardDev = statistics != null ? convertBigDecimalStatToString(gradebook, statistics.getStandardDeviation(), true) : AppConstants.STATISTICS_DATA_NA;
+		String rank = AppConstants.STATISTICS_DATA_NA;  
 
 		boolean isGrader = authz.isUserAbleToGradeAll(gradebook.getUid()); // || authz.isUserAbleToGrade(gradebook.getUid());
 

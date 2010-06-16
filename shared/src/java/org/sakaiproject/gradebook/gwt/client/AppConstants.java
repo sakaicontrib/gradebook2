@@ -220,6 +220,9 @@ public interface AppConstants {
 	// Statistics panel
 	public static final String ALL_SECTIONS = "ALL";
 	
+	// Statistics Data
+	public static final String STATISTICS_DATA_NA = "-";
+	
 	// Import/Export
 	public static final String NEW_PREFIX = "NEW:";
 	public static final String NEW_CAT_PREFIX = "NEW:CAT:";
