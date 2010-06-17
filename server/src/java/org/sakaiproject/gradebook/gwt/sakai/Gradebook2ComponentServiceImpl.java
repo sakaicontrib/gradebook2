@@ -647,7 +647,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 					categoryOrder = categories == null || categories.isEmpty() ? Integer.valueOf(0) : Integer.valueOf(categories.size());
 			}
 
-			double w = weight == null ? 0d : ((Double)weight).doubleValue() * 0.01;
+			double w = weight == null ? 0d : ((new BigDecimal(weight)).multiply(new BigDecimal("0.01"))).doubleValue();
 
 			if (hasCategories) {
 				int dropLowestInt = dropLowest == null ? 0 : dropLowest.intValue();
@@ -977,7 +977,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 		for (String letterGrade : letterGradesList) {
 
-			upperScale = (null == upperScale) ? new Double(100d) : upperScale.equals(Double.valueOf(0d)) ? Double.valueOf(0d) : Double.valueOf(upperScale.doubleValue() - 0.01d);
+			upperScale = (null == upperScale) ? new Double(100d) : upperScale.equals(Double.valueOf(0d)) ? Double.valueOf(0d) : ((new BigDecimal(upperScale)).subtract(new BigDecimal("0.01"))).doubleValue();
 
 			Map<String,Object> gradeScaleModel = new HashMap<String,Object>();
 			gradeScaleModel.put(GradeMapKey.S_ID.name(), letterGrade);
@@ -2280,7 +2280,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		for (String letterGrade : letterGradesList) {
 			BigDecimal bigOldUpperScale = upperScale == null ? BigDecimal.valueOf(200d) : BigDecimal.valueOf(upperScale.doubleValue());
 
-			upperScale = (null == upperScale) ? new Double(100d) : upperScale.equals(Double.valueOf(0d)) ? Double.valueOf(0d) : Double.valueOf(upperScale.doubleValue() - 0.01d);
+			upperScale = (null == upperScale) ? new Double(100d) : upperScale.equals(Double.valueOf(0d)) ? Double.valueOf(0d) : ((new BigDecimal(upperScale)).subtract(new BigDecimal("0.01"))).doubleValue();
 
 			if (affectedLetterGrade.equals(letterGrade)) {
 				Double oldValue = gradeMapping.getGradeMap().get(letterGrade);
@@ -3627,7 +3627,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 					categoryOrder = categories == null || categories.isEmpty() ? Integer.valueOf(0) : Integer.valueOf(categories.size());
 			}
 
-			double w = weight == null ? 0d : ((Double)weight).doubleValue() * 0.01;
+			double w = weight == null ? 0d : ((new BigDecimal(weight)).multiply(new BigDecimal("0.01"))).doubleValue();
 
 			if (hasCategories) {
 				int dropLowestInt = dropLowest == null ? 0 : dropLowest.intValue();
@@ -4362,7 +4362,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 		GradeItem model = new GradeItemImpl();
 
-		double assignmentWeight = assignment.getAssignmentWeighting() == null ? 0d : assignment.getAssignmentWeighting().doubleValue() * 100.0;
+		double assignmentWeight = assignment.getAssignmentWeighting() == null ? 0d : ((new BigDecimal(assignment.getAssignmentWeighting())).multiply(new BigDecimal("100.0"))).doubleValue();
 		Boolean isAssignmentIncluded = Boolean.valueOf(assignment.isCounted());
 		Boolean isAssignmentExtraCredit = assignment.isExtraCredit() == null ? Boolean.FALSE : assignment.isExtraCredit();
 		Boolean isAssignmentReleased = Boolean.valueOf(assignment.isReleased());
@@ -4510,7 +4510,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 		boolean isDefaultCategory = category.getName().equalsIgnoreCase(AppConstants.DEFAULT_CATEGORY_NAME);
 
-		double categoryWeight = category.getWeight() == null ? 0d : category.getWeight().doubleValue() * 100d;
+		double categoryWeight = category.getWeight() == null ? 0d : ((new BigDecimal(category.getWeight())).multiply(new BigDecimal("100.0"))).doubleValue();
 		boolean isIncluded = category.isUnweighted() == null ? !isDefaultCategory : !isDefaultCategory && !category.isUnweighted().booleanValue();
 
 		boolean hasWeights = true;
@@ -4718,7 +4718,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			if (itemOrder == null)
 				itemOrder = assignments == null || assignments.isEmpty() ? Integer.valueOf(0) : Integer.valueOf(assignments.size());
 
-				double w = weight == null ? 0d : ((Double) weight).doubleValue() * 0.01;
+				double w = weight == null ? 0d : ((new BigDecimal(weight)).multiply(new BigDecimal("0.01"))).doubleValue();
 
 				assignmentId = gbService.createAssignmentForCategory(gradebook.getId(), categoryId, name, points, Double.valueOf(w), dueDate, Boolean.valueOf(!Util.checkBoolean(isIncluded)), isExtraCredit, Boolean.FALSE,
 						isReleased, itemOrder, isNullsAsZeros);
@@ -5510,7 +5510,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 					boolean isUnweighted = category.isUnweighted() != null && category.isUnweighted().booleanValue();
 
 					if (!category.isRemoved() || isNotInCategoryMode) {
-						double categoryWeight = category.getWeight() == null ? 0d : category.getWeight().doubleValue() * 100d;
+						double categoryWeight = category.getWeight() == null ? 0d : ((new BigDecimal(category.getWeight())).multiply(new BigDecimal("100.0"))).doubleValue();
 
 						List<Assignment> items = getUncheckedAssignmentList(category);
 						GradeItem categoryGradeItem = createGradeItem(gradebook, category, items);
@@ -5571,7 +5571,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 					boolean isRemoved = Util.checkBoolean(categoryGradeItem.getRemoved());
 
 					if (!isRemoved || isNotInCategoryMode) {
-						double categoryWeight = categoryGradeItem.getWeighting() == null ? 0d : categoryGradeItem.getWeighting().doubleValue() * 100d;
+						double categoryWeight = categoryGradeItem.getWeighting() == null ? 0d : ((new BigDecimal(categoryGradeItem.getWeighting())).multiply(new BigDecimal("100.0"))).doubleValue();
 
 						List<GradeItem> items = categoryGradeItem.getChildren();
 
@@ -5834,7 +5834,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 						continue;
 					}
 
-					double assignmentWeighting = assignment.getAssignmentWeighting().doubleValue() * 100d;
+					double assignmentWeighting = ((new BigDecimal(assignment.getAssignmentWeighting())).multiply(new BigDecimal("100.0"))).doubleValue();
 					categoryAssignmentWeightSum = categoryAssignmentWeightSum.add(BigDecimal.valueOf(assignmentWeighting));
 
 				}
@@ -6500,8 +6500,9 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			if (!exists) {
 				CategoryType type = item.getCategoryType();
 
-				gbService.createCategory(gradebookId, item.getName(), item
-						.getWeighting() * 0.01, item.getDropLowest(), item
+				gbService.createCategory(gradebookId, item.getName(), 
+						((new BigDecimal(item.getWeighting())).multiply(new BigDecimal("0.01"))).doubleValue(), 
+						item.getDropLowest(), item
 						.getEqualWeightAssignments(),
 						type == CategoryType.SIMPLE_CATEGORIES, item
 						.getExtraCredit(), item.getItemOrder(), item
@@ -6550,7 +6551,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 					.createCategory(
 							gradebookId,
 							item.getCategoryName(),
-							item.getWeighting() * 0.01,
+							((new BigDecimal(item.getWeighting())).multiply(new BigDecimal("0.01"))).doubleValue(),
 							item.getDropLowest(),
 							item.getEqualWeightAssignments(),
 							item.getCategoryType() == CategoryType.SIMPLE_CATEGORIES,
@@ -6572,7 +6573,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 						categoryId, // if this is null, it goes into 'Unassigned'
 						item.getName(),
 						item.getPoints(),
-						item.getWeighting() * 0.01,
+						(new BigDecimal(item.getWeighting()).multiply(new BigDecimal("0.01"))).doubleValue(),
 						item.getDueDate(),
 						item.getCategoryType() == CategoryType.SIMPLE_CATEGORIES,
 						item.getExtraCredit(), item.getIncluded(), item
