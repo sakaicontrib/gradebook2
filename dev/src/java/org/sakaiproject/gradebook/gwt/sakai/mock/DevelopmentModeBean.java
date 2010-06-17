@@ -332,7 +332,7 @@ private void createSecondGradebook(Gradebook gbModel, boolean populate) throws I
 		
 		String gradebookUid = gbModel.getGradebookUid();
 		Long gradebookId = gbModel.getGradebookId();
-		System.out.println("gradebookUid: " + gbModel.getGradebookUid());
+		System.out.println("gradebookUid: " + gradebookUid);
 		
 		if(!populate)
 			return;
@@ -346,6 +346,17 @@ private void createSecondGradebook(Gradebook gbModel, boolean populate) throws I
 		essaysCategory.setIncluded(Boolean.TRUE);
 		essaysCategory.setEnforcePointWeighting(Boolean.TRUE);
 		essaysCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, essaysCategory, false));
+		
+
+		GradeItem hw1 = new GradeItemImpl();
+		hw1.setName("HW 1 From site '" + ArchiveServiceMock.ANOTHER_SITE_CONTEXT + "'");
+		hw1.setPoints(Double.valueOf(10d));
+		hw1.setDueDate(new Date());
+		hw1.setCategoryId(essaysCategory.getCategoryId());
+		hw1.setItemType(ItemType.ITEM);
+		hw1.setIncluded(Boolean.TRUE);
+		hw1.setReleased(Boolean.TRUE);
+		service.createItem(gradebookUid, gradebookId, hw1, false);
 		
 		
 	}

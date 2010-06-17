@@ -9,15 +9,25 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.archive.api.ArchiveService;
 import org.sakaiproject.entity.api.EntityManager;
+import org.sakaiproject.entity.api.EntityProducer;
+import org.sakaiproject.entity.api.EntityTransferrer;
+import org.sakaiproject.gradebook.gwt.sakai.mock.ArchiveServiceMock;
+import org.sakaiproject.gradebook.gwt.sakai.mock.BaseGroupMock;
 
 @Path("archive")
 public class EntityArchiveTester extends Resource {
 	
-	ArchiveService archiveService = null;
+	private ArchiveService archiveService = null;
+	private EntityManager entityManager;
 
 
 
+	
 	Log log = LogFactory.getLog(EntityArchiveTester.class);
+
+
+
+	
 
 	@GET @Path("{siteId}")
 	@Produces("text/plain")
@@ -27,8 +37,8 @@ public class EntityArchiveTester extends Resource {
 		}
 		
 		if(null == archiveService) {
-			log.error("EntityManager was not injected!");
-			return "EntityManager was not injected!";
+			log.error("ArchiveService was not injected!");
+			return "ArchiveService was not injected!";
 		}
 		
 		return archiveService.archive(siteId);
@@ -40,15 +50,19 @@ public class EntityArchiveTester extends Resource {
 	@GET @Path("transfer/{from}/{to}")
     @Produces("text/plain")
     public String transfer(@PathParam("from") String fromContext, @PathParam("to") String toContext) {
-		if(log.isDebugEnabled()) {
-			log.debug("called --> transfer(" + fromContext + "," + toContext + ")");
-		}
+
+		log.info("Gradebook2 transfer(" + fromContext + "," + toContext + ")");
 		
-		if(null == archiveService) {
+		
+		if (null == entityManager) {
 			log.error("EntityManager was not injected!");
 			return "EntityManager was not injected!";
 		}
-		
+		for (Object e : entityManager.getEntityProducers()) {
+			if (e!=null && e instanceof EntityTransferrer) {
+				((EntityTransferrer)e).transferCopyEntities(ArchiveServiceMock.ANOTHER_SITE_CONTEXT, BaseGroupMock.testSite_ContextId, null);
+			}
+		}
 		
 		return "done";
 	}
@@ -80,5 +94,15 @@ public class EntityArchiveTester extends Resource {
 	public void setArchiveService(ArchiveService archiveService) {
 		this.archiveService = archiveService;
 	}
+	
+	public EntityManager getEntityManager() {
+		return entityManager;
+	}
+
+	public void setEntityManager(EntityManager entityManager) {
+		this.entityManager = entityManager;
+	}
+
+	
 	
 }

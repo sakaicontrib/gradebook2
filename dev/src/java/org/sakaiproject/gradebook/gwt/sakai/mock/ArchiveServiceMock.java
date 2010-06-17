@@ -77,7 +77,7 @@ public class ArchiveServiceMock extends BasicArchiveService {
 			Element root = doc.createElement("archive");
 			doc.appendChild(root);
 			root.setAttribute("source", siteId);
-			root.setAttribute("server", m_serverConfigurationService.getServerId());
+			root.setAttribute("server", "No Server: GWT Devel Mode");
 			root.setAttribute("date", now.toString());
 			root.setAttribute("system", FROM_SAKAI);
 			

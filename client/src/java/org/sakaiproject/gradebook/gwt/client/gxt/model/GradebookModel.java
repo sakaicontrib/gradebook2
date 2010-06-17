@@ -241,4 +241,10 @@ public class GradebookModel extends EntityModel implements IsSerializable, Grade
 		
 		return null;
 	}
+
+	public String toXml() {
+		return null;
+	}
+	
+	public void fromXml(String xml) {}
 }

@@ -1,6 +1,14 @@
 package org.sakaiproject.gradebook.gwt.server.model;
 
+import java.beans.XMLDecoder;
+import java.beans.XMLEncoder;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.model.Configuration;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
@@ -9,6 +17,8 @@ import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.Statistics;
 import org.sakaiproject.gradebook.gwt.client.model.key.GradebookKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
+import org.sakaiproject.gradebook.gwt.client.model.type.EntityType;
 import org.sakaiproject.gradebook.gwt.server.Util;
 
 public class GradebookImpl extends BaseModel implements Gradebook {
@@ -177,6 +187,89 @@ public class GradebookImpl extends BaseModel implements Gradebook {
 		
 		// Returning null because it's not called on the server side
 		return null;
+	}
+
+
+	public String toXml() {
+		
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		XMLEncoder encoder = new XMLEncoder(new BufferedOutputStream(baos));
+	    encoder.writeObject(this);
+	    encoder.flush();
+	    encoder.close();
+	    String xml = baos.toString();
+		return xml;
+	}
+
+	@SuppressWarnings("unchecked")
+	public void fromXml(String xml) {
+
+		ByteArrayInputStream in = new ByteArrayInputStream(xml.getBytes());
+		XMLDecoder decoder = new XMLDecoder(new BufferedInputStream(in));
+		GradebookImpl source = (GradebookImpl)decoder.readObject();
+		decoder.close();
+
+		Map<String, Object> items = (Map<String, Object>) source.get(GradebookKey.M_GB_ITM.name());
+				
+		fixMap(items);
+		
+		put(GradebookKey.M_GB_ITM.name(), items);
+		
+        for (String key : this.keySet()) {
+        	put(key, source.get(key));
+        }
+        
+        
+	}
+	
+
+	private void fixMap(Map<String, Object> items) {
+		
+		fixLeaves(items);
+		
+		fixBranches(items);
+		
+	}
+	
+
+	private void fixBranches(Map<String, Object> items) {
+		
+		for ( String key : items.keySet()) {
+			Object o = items.get(key);
+			if (o instanceof List<?>) {
+				List<Map<String,Object>> l = (List<Map<String,Object>>)o;
+				for (Object lo : l) {
+					fixMap((Map)lo);
+				}
+				
+			} else if (o instanceof Map<?, ?>) {
+				fixMap((Map)o);
+			}
+		}
+		
+	}
+
+	private void fixLeaves(Map<String, Object> items) {
+
+		if (items.containsKey(ItemKey.S_ITM_TYPE.name())) {
+			if (items.get(ItemKey.S_ITM_TYPE.name())
+					.equals(EntityType.CATEGORY)) {
+				items.put(ItemKey.S_PARENT.name(), get(ItemKey.S_NM.name()));
+
+			} else if (items.get(ItemKey.S_ITM_TYPE.name()).equals(
+					EntityType.GRADEBOOK.name())
+					&& items.containsKey(ItemKey.S_ID.name())) {
+				items.put(ItemKey.S_ID.name(), get(GradebookKey.S_GB_UID.name()));
+
+			}
+		}
+		if (items.containsKey(GradebookKey.S_GB_UID.name())) {
+			items.put(GradebookKey.S_GB_UID.name(), get(GradebookKey.S_GB_UID.name()));
+		}
+		if (items.containsKey(ItemKey.S_GB_NAME.name())) {
+			items.put(ItemKey.S_GB_NAME.name(), get(ItemKey.S_NM.name()));
+		}
+
 	}
 
 }

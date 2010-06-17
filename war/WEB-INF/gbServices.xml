@@ -40,5 +40,19 @@
 		</property>
 	</bean>
 	
+	<bean id="gradebook2.EntityProducerTransferrer" 
+		class="org.sakaiproject.gradebook.entity.Gradebook2EntityProducerTransferAgent"
+		init-method="init"> 
+		<property name="entityManager" ref="org.sakaiproject.entity.api.EntityManager" />
+		<property name="componentService" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService" />
+		<property name="toolService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService" />
+		<property name="label"><value>gradebook2</value></property>
+		<property name="myToolIds">
+			<set>
+				<value>sakai.gradebook.gwt.rpc</value>
+			</set>	
+		</property>
+	</bean>
+	
 	
 </beans>

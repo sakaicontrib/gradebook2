@@ -11,6 +11,9 @@
 		  <property name="archiveService">
 		  	<ref bean="org.sakaiproject.archive.api.ArchiveService"/>
 		  </property>
+		  <property name="entityManager">
+		  	<ref bean="org.sakaiproject.entity.api.EntityManager"/>
+		  </property>
 	</bean>
 
 </beans>

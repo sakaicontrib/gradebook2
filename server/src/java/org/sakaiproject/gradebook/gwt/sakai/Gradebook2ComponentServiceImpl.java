@@ -32,6 +32,7 @@ import org.sakaiproject.exception.IdUnusedException;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.ConfigUtil;
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
+import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.GradebookCreationException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidDataException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
@@ -2559,7 +2560,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 	public Item updateItem(Item item) throws InvalidInputException {
 
-		if (item == null)
+		if (item == null || item.getItemType() == null)
 			return null;
 
 		switch (item.getItemType()) {
@@ -6421,4 +6422,167 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			gbService.syncUserDereferenceBySite(siteId, null, findAllMembers(site, learnerRoleKeys), diff, learnerRoleKeys);
 		}
 	}	
+	
+	public void saveFullGradebookFromClientModel (
+			org.sakaiproject.gradebook.gwt.client.model.Gradebook newGradebook) 
+	 throws FatalException, InvalidInputException {
+		
+		if(!(newGradebook instanceof GradebookImpl)) {
+			throw new FatalException("Expected Gradebook implementation of type: " + GradebookImpl.class.getName());
+		}
+		
+		Gradebook from = gbService.getGradebook(newGradebook.getGradebookUid());
+				
+		GradeItem itemModel =  (GradeItem) newGradebook.getGradebookItemModel();
+		
+		GradeItemImpl gradebookAsGradeItem = new GradeItemImpl((Map)newGradebook);
+		
+		gradebookAsGradeItem.setItemType(ItemType.GRADEBOOK);
+		
+		gradebookAsGradeItem.setIdentifier(newGradebook.getGradebookUid());
+		
+		updateItem((Item)gradebookAsGradeItem);
+		
+		saveAllGradebookItems(itemModel, newGradebook.getGradebookUid());
+	
+	}
+	
+	public void saveAllGradebookItems(GradeItem gradeItemsModel, String gradebookUid) throws InvalidInputException, FatalException {
+		
+		
+		Long gbId = getGradebook(gradebookUid).getGradebookId();
+		
+		
+		String lastCat = null;
+		for ( GradeItem item1: gradeItemsModel.getChildren() ) {
+			
+			boolean newCat =  ( item1.getItemType() == ItemType.CATEGORY 
+								&& !item1.getName().equals(lastCat) );
+			lastCat = item1.getName();
+				
+			
+			if (log.isDebugEnabled()) {
+				log.debug("Level 1: " + item1);
+			}
+			
+			if (item1.getChildCount()<1) { 
+				saveOrUpdateItem(item1, gbId, false);
+			}
+			for (GradeItem item2 : item1.getChildren()) {
+				if (log.isDebugEnabled()) {
+					log.debug("Level 2: " + item2);
+				}
+				
+				saveOrUpdateItem(item2, gbId, newCat);
+			}
+		}
+	}
+	
+	private void saveOrUpdateItem(Item item, Long gradebookId, boolean createParentCategory) {
+		List<Category> currentCategories = gbService.getCategories(gradebookId);
+
+		if (item.getItemType() == ItemType.CATEGORY) {
+			if (log.isDebugEnabled()) {
+				log.debug("category: " + item.getName());
+			}
+
+			boolean exists = false;
+			for (Category cat : currentCategories) {
+				if (cat.getName().equals(item.getName()) ){
+					if (log.isDebugEnabled()) {
+						log.debug("exists");
+					}
+					exists = true;
+					break;
+				} 
+
+			}
+			if (!exists) {
+				CategoryType type = item.getCategoryType();
+
+				gbService.createCategory(gradebookId, item.getName(), item
+						.getWeighting() * 0.01, item.getDropLowest(), item
+						.getEqualWeightAssignments(),
+						type == CategoryType.SIMPLE_CATEGORIES, item
+						.getExtraCredit(), item.getItemOrder(), item
+						.getEnforcePointWeighting());
+			}
+		} else {
+			if (log.isDebugEnabled()) {
+				log.debug("not a cat");
+			}
+			if (item.getItemType() == ItemType.ITEM) {
+				if (log.isDebugEnabled()) {
+					log.debug("... but an assignment: " + item.getName());
+				}
+				String targetCatName = item.getCategoryName();
+				List<Assignment> currentAssignments = null;
+				boolean assignmentExists = false;
+				boolean catExists = false;
+				Long categoryId =  null;
+				Long assignmentId = null;
+				for (Category cat : currentCategories) {
+					if (cat.getName().equals(targetCatName)) { 
+						catExists = true;
+						categoryId = cat.getId();
+						currentAssignments = gbService.getAssignmentsForCategory(categoryId);
+						for (Assignment a : currentAssignments) {
+							if (a.getName().equals(item.getName())) {
+								assignmentId = a.getId();
+								assignmentExists = true;
+								break; // got the assignment name
+							}
+						}
+
+						break; /// got the cat name 
+					}
+				}
+
+				//Category
+				if (createParentCategory && targetCatName != null) {
+					if (catExists) {
+						/// delete the old one
+						Category delete = gbService.getCategory(categoryId);
+						delete.setRemoved(true);
+						gbService.updateCategory(delete);
+					}
+					categoryId = gbService
+					.createCategory(
+							gradebookId,
+							item.getCategoryName(),
+							item.getWeighting() * 0.01,
+							item.getDropLowest(),
+							item.getEqualWeightAssignments(),
+							item.getCategoryType() == CategoryType.SIMPLE_CATEGORIES,
+							item.getExtraCredit(), item.getItemOrder(),
+							item.getEnforcePointWeighting());
+				}
+				
+				//Assignment
+				if(assignmentExists) {
+					/// remove the old one 
+					Assignment matchingAssignment = gbService.getAssignment(assignmentId);
+					matchingAssignment.setRemoved(true);
+					gbService.updateAssignment(matchingAssignment);
+
+				}
+				gbService
+				.createAssignmentForCategory(
+						gradebookId,
+						categoryId, // if this is null, it goes into 'Unassigned'
+						item.getName(),
+						item.getPoints(),
+						item.getWeighting() * 0.01,
+						item.getDueDate(),
+						item.getCategoryType() == CategoryType.SIMPLE_CATEGORIES,
+						item.getExtraCredit(), item.getIncluded(), item
+						.getReleased(), item.getItemOrder(),
+						item.getNullsAsZeros());
+
+
+			}
+		}
+	}
+
+
 }
