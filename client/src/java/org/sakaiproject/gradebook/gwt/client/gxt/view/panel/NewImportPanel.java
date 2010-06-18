@@ -1,3 +1,26 @@
+/**********************************************************************************
+*
+* $Id:$
+*
+***********************************************************************************
+*
+* Copyright (c) 2008, 2009, 2010 The Regents of the University of California
+*
+* Licensed under the
+* Educational Community License, Version 2.0 (the "License"); you may
+* not use this file except in compliance with the License. You may
+* obtain a copy of the License at
+* 
+* http://www.osedu.org/licenses/ECL-2.0
+* 
+* Unless required by applicable law or agreed to in writing,
+* software distributed under the License is distributed on an "AS IS"
+* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+* or implied. See the License for the specific language governing
+* permissions and limitations under the License.
+*
+**********************************************************************************/
+
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import java.util.Collection;
@@ -15,6 +38,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityOverlay;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModelComparer;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemUtil;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.LearnerModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.UploadModel;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
@@ -122,8 +146,8 @@ public class NewImportPanel extends GradebookPanel {
 				submitButton.setVisible(false);
 				
 				//show(gradebookItemModel);
-				setupPanel.showItems();
-				
+				//setupPanel.showItems();
+				ItemUtil.showItem(gradebookItemModel);
 				upload.setGradebookItemModel(gradebookItemModel);
 //				List<ItemModel> rootItems = treeStore.getRootItems();
 //				if (rootItems != null && rootItems.size() > 0) {
@@ -306,7 +330,7 @@ public class NewImportPanel extends GradebookPanel {
 				multigrade.addGrid(gradebookModel.getConfigurationModel(), gradebookModel.getColumns(),
 						gradebookItemModel);
 
-				BorderLayoutData westData = new BorderLayoutData(LayoutRegion.WEST, 400, 100, 800);  
+				BorderLayoutData westData = new BorderLayoutData(LayoutRegion.WEST, 550, 200, 800);  
 				westData.setSplit(true);  
 				westData.setCollapsible(true);  
 				westData.setMargins(new Margins(5));

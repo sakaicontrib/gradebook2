@@ -123,6 +123,8 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 	private static final String UNIQUESET = "N/A";
 	private static enum FunctionalityStatus { OFF, ADMIN_ONLY, INSTRUCTOR_ONLY, GRADER_ONLY, STUDENT_ONLY };
+	
+	private static final Long NEG_ONE = Long.valueOf(-1l);
 
 	static final Comparator<UserRecord> DEFAULT_ID_COMPARATOR = new Comparator<UserRecord>() {
 
@@ -2586,8 +2588,11 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return getGradeItem(gradebook, assignments, categories, null, assignment.getId());
 	}
 
+	// TODO
+	// FIXME
 	// GRBK-554 : TPA : This is experimental. If it works, it will replace the current handleImportItemModification(...) method
-	private void newHandleImportItemModification(String gradebookUid, Long gradebookId, GradeItem item, Map<String, Assignment> idToAssignmentMap, Long categoryId) throws InvalidInputException {
+	private void newHandleImportItemModification(String gradebookUid, Long gradebookId, GradeItem item, 
+			Map<String, Assignment> idToAssignmentMap, Long categoryId) throws InvalidInputException {
 
 		Long itemId = null;
 		ItemType itemType = item.getItemType();
@@ -2602,12 +2607,13 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				
 				// Case where assignment is assigned to a category
 				if(null != categoryId) {
-			
+					
 					Category category = gbService.getCategory(categoryId);
 					item.setCategoryId(categoryId);
 					item.setCategoryName(category.getName());
 					Item newItem = createItem(gradebookUid, gradebookId, item, false);
 					itemId = newItem.getItemId();
+					log.info("DEBUG: Creating new assignment : itemId = " + itemId);
 				}
 				else { // Case where assignment has no assigned category
 					
@@ -2618,8 +2624,24 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			else { // Handle existing grade item
 
 				itemId = item.getItemId();
-				Assignment assignment = gbService.getAssignment(itemId);
-
+				
+				// Only check for an assignment if the assignmentId is equals or greater than zero
+				Assignment assignment = null;
+				
+				if(0 <= NEG_ONE.compareTo(itemId)) {
+					
+					log.info("DEBUG: get assignment for itemId = " + itemId);
+					
+					try {
+						assignment = gbService.getAssignment(itemId);
+					}
+					catch(Exception e) {
+						
+						// Catching possible Hibernate exception
+						log.warn("Was not able to get assignment for assignmentId = " + itemId);
+					}
+				}
+				 
 				if(null !=  assignment) {
 
 					item.setIdentifier(String.valueOf(itemId));
@@ -2628,7 +2650,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				else {
 
 					log.error("Was not able to get gradeItem for id = " + itemId);
-					itemId = Long.valueOf(-1);
+					itemId = NEG_ONE;
 				}
 			}
 
@@ -2657,7 +2679,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				
 				Category category = gbService.getCategory(itemId);
 
-				if(null !=  category) {
+				if(null != category) {
 
 					itemId = doUpdateCategory(item, category);
 				}
@@ -2712,11 +2734,13 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 		String identifier = item.getIdentifier();
 		
-		if (identifier.startsWith(AppConstants.NEW_PREFIX) && item.getItemId().equals(Long.valueOf(-1l))) {
+		if (identifier.startsWith(AppConstants.NEW_PREFIX) && item.getItemId().equals(NEG_ONE)) {
+			
 			Gradebook gradebook = gbService.getGradebook(gradebookUid);
 			boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
 			itemId = doCreateItem(gradebook, item, hasCategories, false);
-		} else if (!item.getIdentifier().equals("-1" )) {
+			
+		} else if (!item.getIdentifier().equals("-1")) {
 
 			switch (item.getItemType()) {
 			case ITEM:
@@ -2739,11 +2763,14 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				break;
 			}
 		} else {
-			itemId = Long.valueOf(-1);
+			
+			itemId = NEG_ONE;
 		}
 
 		if (item.getItemType() == ItemType.ITEM) {
+			
 			if (itemId != null) {
+			
 				// First, check to make sure we haven't already stored this item
 				Assignment assignment = idToAssignmentMap.get(identifier);
 
@@ -2753,6 +2780,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				}
 			}
 		} else {
+			
 			List<GradeItem> subChildren = item.getChildren();
 
 			for (GradeItem subChild : subChildren) {
@@ -3013,6 +3041,9 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 		if (gradebookItem != null) {
 
+			// If and assignment category has changed, we move the assignment(s) to the correct categories
+			gradebookItem = (GradeItem) cleanupGradeItem(gradebookItem);
+			
 			// Create, update gradebook items such as (gradebook, categories, assignments)
 			newHandleImportItemModification(gradebookUid, gradebookId, gradebookItem, idToAssignmentMap, null);
 
@@ -6586,5 +6617,47 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		}
 	}
 
+	
+	private GradeItem cleanupGradeItem(GradeItem gradebookItem) {
+		
+		List<GradeItem> cleanupAssignments = new ArrayList<GradeItem>();
+		
+		List<GradeItem> categories = gradebookItem.getChildren();
+		
+		for(GradeItem category : categories) {
+			
+			List<GradeItem> assignments = category.getChildren();
+			
+			for(GradeItem assignment : assignments) {
+				
+				String newCategoryId = assignment.get(ItemKey.S_CTGRY_ID.name());
+				
+				if(null != newCategoryId && !"".equals(newCategoryId)) {
+					
+					log.info("DEBUG: newCategoryId = " + newCategoryId);
+					cleanupAssignments.add(assignment);
+					assignments.remove(assignment);
+				}
+			}
+		}
+		
+		for(GradeItem assignment : cleanupAssignments) {
+			
+			for(GradeItem category : categories) {
+				
+				String categoryId = category.get(ItemKey.S_ID.name());
+				String assignmentCategoryId = assignment.get(ItemKey.S_CTGRY_ID.name());
+				
+				if(categoryId.equals(assignmentCategoryId)) {
+					
+					List<GradeItem> categoryAssignments = category.getChildren();
+					categoryAssignments.add(assignment);
+					log.info("DEBUG: found category for assignment = " + assignment.get(ItemKey.S_ID.name()));
+				}
+			}
+		}
+		
+		return gradebookItem;
+	}
 
 }

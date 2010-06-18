@@ -1,3 +1,26 @@
+/**********************************************************************************
+*
+* $Id:$
+*
+***********************************************************************************
+*
+* Copyright (c) 2008, 2009, 2010 The Regents of the University of California
+*
+* Licensed under the
+* Educational Community License, Version 2.0 (the "License"); you may
+* not use this file except in compliance with the License. You may
+* obtain a copy of the License at
+* 
+* http://www.osedu.org/licenses/ECL-2.0
+* 
+* Unless required by applicable law or agreed to in writing,
+* software distributed under the License is distributed on an "AS IS"
+* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+* or implied. See the License for the specific language governing
+* permissions and limitations under the License.
+*
+**********************************************************************************/
+
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import java.util.ArrayList;
@@ -5,11 +28,11 @@ import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemUtil;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 
-import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
@@ -28,20 +51,27 @@ import com.google.gwt.core.client.GWT;
 
 public class ItemSetupPanel extends GradebookPanel {
 
-	private ComboBox<ItemModel> categoryPicker;
-	private ListStore<ItemModel> categoriesStore;
-	private CellEditor categoryEditor;
+	private ComboBox<ItemModel> categoryComboBox;
+	private ListStore<ItemModel> categoryStore;
+	private CellEditor categoryCellEditor;
 	private ListStore<ItemModel> itemStore;
 	private EditorGrid<ItemModel> itemGrid;
+	
+	private Item gradebookItemModelRef;
+	
+	private final String ITEM_MARKER = "+";
+	private final String ITEM_PREFIX = ":";
+	
 
 	public ItemSetupPanel() {
 
 		super();
 
-		categoriesStore = new ListStore<ItemModel>();
+		categoryStore = new ListStore<ItemModel>();
 
 		setLayout(new FitLayout());
 
+		// Grid setup / configuration
 		ArrayList<ColumnConfig> itemColumns = new ArrayList<ColumnConfig>();
 
 		TextField<String> textField = new TextField<String>();
@@ -60,122 +90,112 @@ public class ItemSetupPanel extends GradebookPanel {
 		points.setEditor(new CellEditor(new NumberField()));
 		itemColumns.add(points);
 
-		categoryPicker = new ComboBox<ItemModel>(); 
-		//categoryPicker.setAllowBlank(false); 
-		//categoryPicker.setAllQuery(null);
-		categoryPicker.setDisplayField(ItemKey.S_NM.name());  
-		//categoryPicker.setEditable(false);
-		categoryPicker.setEditable(true);
-		categoryPicker.setTriggerAction(TriggerAction.ALL);
-		categoryPicker.setEmptyText("Required");
-		categoryPicker.setFieldLabel("Category");
-		categoryPicker.setForceSelection(true);
-		categoryPicker.setStore(categoriesStore);
-		categoryPicker.setValueField(ItemKey.S_ID.name());
-		//categoryPicker.addInputStyleName(resources.css().gbTextFieldInput());
+		categoryComboBox = new ComboBox<ItemModel>(); 
+		categoryComboBox.setDisplayField(ItemKey.S_NM.name());  
+		categoryComboBox.setEditable(true);
+		categoryComboBox.setTriggerAction(TriggerAction.ALL);
+		categoryComboBox.setForceSelection(true);
+		categoryComboBox.setStore(categoryStore);
 
-		//ColumnConfig category = new ColumnConfig(ItemKey.L_CTGRY_ID.name(), "Category", 140);
-		//ColumnConfig category = new ColumnConfig(ItemKey.S_ID.name(), "Category", 140);
-		ColumnConfig category = new ColumnConfig(ItemKey.L_CTGRY_ID.name(), "Category", 140);
+		ColumnConfig category = new ColumnConfig(ItemKey.S_ID.name(), "Category", 140);
 
-		categoryEditor = new CellEditor(categoryPicker) {
+		categoryCellEditor = new CellEditor(categoryComboBox) {
 
+			// Called before the editor sets the value on the wrapped field
 			@Override
 			public Object preProcessValue(Object value) {
 				
-				Long categoryId = (Long) value;
+				// Method argument is the selected grid item model id
+				String assignmentId = (String) value;
 				
-				ItemModel categoryModel = categoriesStore.findModel(ItemKey.L_ITM_ID.name());
+				// Get the assignment and the associated category name
+				ItemModel assignment = itemStore.findModel(ItemKey.S_ID.name(), assignmentId);
+				String categoryName = assignment.get(ItemKey.S_PARENT.name());
 				
-				return categoryModel;
+				// Find the category from the category name
+				ItemModel category = categoryStore.findModel(ItemKey.S_NM.name(), categoryName);
 				
-//				GWT.log("DEBUG: CellEditor.preProcessValue()");
-//				GWT.log("DEBUG: CellEditor.preProcessValue() value = " + value);
-//				
-//				ItemModel itemModel = itemStore.findModel(ItemKey.S_ID.name(), (String) value);
-//				String categoryName = itemModel.get(ItemKey.S_PARENT.name());
-//				GWT.log("DEBUG: CellEditor.preProcessValue() categoryName = " + categoryName);
-//				
-//				ItemModel categoryModel = categoriesStore.findModel(ItemKey.S_NM.name(), categoryName);
-//				if(null == categoryModel) {
-//					GWT.log("DEBUG: CellEditor.preProcessValue() categoryModel = NULL");
-//				}
-//				
-//				GWT.log("DEBUG: CellEditor.preProcessValue() categoryName = " + categoryModel.getName());
-//				return categoryModel;
+				// Mark the assignment as the one the user is performing an action on.
+				// We will use the marker in the postProcessValue() method to find the assignment,
+				// since the assignment is not readily available in that method.
+				assignment.set(ItemKey.S_CTGRY_ID.name(), ITEM_MARKER);
+				
+				// FIXME:
+				// Returning the category. Interestingly, I am not quite sure what the returned
+				// object is used for. Testing this with returning null didn't change anything.
+				// Following GXT sample code ??
+				return category;
 			}
 			
+			// Called after the editor completes an edit.
 			@Override
 			public Object postProcessValue(Object value) {
-				GWT.log("DEBUG: CellEditor.postProcessValue()");
-				GWT.log("DEBUG: CellEditor.postProcessValue() value = " + value);
+				
+				// Method argument is the selected category model
+				ItemModel category = (ItemModel) value;
+				
+				// Get the categoryId
+				String categoryId = category.get(ItemKey.S_ID.name());
+				
+				// We search through all the assignments to find the one that has been marked
+				// by the preProcessValue() method
+				List<ItemModel> assignments = itemStore.getModels();
 
-				if (value == null) {
-					
-					return value;
+				for(ItemModel assignment : assignments) {
+
+					if(ITEM_MARKER.equals(assignment.get(ItemKey.S_CTGRY_ID.name()))) {
+						
+						// We have found the marked assignment
+						// In the marked assignment, we set the categoryId 
+						assignment.set(ItemKey.S_CTGRY_ID.name(), categoryId);
+						
+						// Returning the assignmentId but prefix it so that the renderer thinks
+						// that something changes. If we were to just return the assignmentId,
+						// the renderer is not called. This also sets the assignmentId to this new
+						// prefixed ID. This is fixed in the renderer code.
+						return ITEM_PREFIX + assignment.get(ItemKey.S_ID.name()).toString();
+					}
 				}
 				
-				String identifier = ((ItemModel) value).getIdentifier();
-				GWT.log("DEBUG: CellEditor.postProcessValue() identifier = " + identifier);
-				GWT.log("DEBUG: CellEditor.postProcessValue() name = " + ((ItemModel) value).getName());
-				
-				// FIXME: we need to figure out how to handle both cases were the identifier is:
-				// - a string: NEW:CAT:N
-				// - a number: N
-				
-				Long categoryId = null;
-				try {
-					
-					categoryId = Long.valueOf(identifier);
-				}
-				catch(NumberFormatException nfe) {
-					
-				}
-				
-				//return identifier;
-				return categoryId;
+				// In case we didn't find a marked assignment, we return null
+				return null;
 			}
 		};
 		
-		category.setEditor(categoryEditor);
+		category.setEditor(categoryCellEditor);
 
-		category.setRenderer(new GridCellRenderer() {
+		category.setRenderer(new GridCellRenderer<ItemModel>() {
 
-			public String render(ModelData model, String property, ColumnData config, 
-					int rowIndex, int colIndex, ListStore store, Grid grid) {
+			public String render(ItemModel model, String property, ColumnData config, 
+					int rowIndex, int colIndex, ListStore<ItemModel> store, Grid<ItemModel> grid) {
 
-				GWT.log("DEBUG: GridCellRenderer.render()");
-
-
-				Object identifier = model.get(property);
-				GWT.log("DEBUG: GCR.render() property = " + property);
-				GWT.log("DEBUG: GCR.render() identifier = " + identifier);
+				// Method argument "model" is the selected grid item model				
+				String categoryId = model.get(ItemKey.S_CTGRY_ID.name());
 				
-				String lookupId = null;
-
-				if (identifier instanceof Long) 
-					lookupId = String.valueOf(identifier);
-				else
-					lookupId = (String)identifier;
-
-				//GWT.log("DEBUG: REN lookupId = " + lookupId);
-				Item itemModel = categoriesStore.findModel(ItemKey.S_ID.name(), lookupId);
-
-				if (itemModel == null) {
-					GWT.log("DEBUG: REN ItemModel is null : returning name = " + model.get(ItemKey.S_PARENT.name()));
-					List<ItemModel> categories = categoriesStore.getModels();
-					for(ItemModel category : categories) {
-						GWT.log("DEBUG: REN ... categoryId = " + category.getIdentifier() + " : categoryName = " + category.getName());
-					}
+				// Case when we render the grid for the first time
+				if(null == categoryId || "".equals(categoryId)) {
+					
+					GWT.log("DEBUG: S_CTGRY_ID = " + categoryId);
 					return model.get(ItemKey.S_PARENT.name());
 				}
-				
-				
+				else { // Case where a user selects a different category from the ComboBox
 
-				GWT.log("DEBUG: REN returning categoryNane = " + itemModel.getName());
-				return itemModel.getName();
+					// First we "restore" the itemId since we prefixed it in the postProcessValue() method
+					String assignmentId = model.get(ItemKey.S_ID.name());
+					
+					if(assignmentId.startsWith(ITEM_PREFIX)) {
+						
+						String fixedAssignmentId = assignmentId.substring(ITEM_PREFIX.length());
+						model.set(ItemKey.S_ID.name(), fixedAssignmentId);
+					}
+					
+					ItemModel category = categoryStore.findModel(ItemKey.S_ID.name(), categoryId);
+					String categoryName = category.get(ItemKey.S_NM.name());
+					model.set(ItemKey.S_PARENT.name(), categoryName);
+					
+					return categoryName;
+				}
 			}
-
 		});
 		
 		itemColumns.add(category);
@@ -192,6 +212,8 @@ public class ItemSetupPanel extends GradebookPanel {
 	}
 
 	public void onRender(Item gradebookItemModel) {
+		
+		this.gradebookItemModelRef = gradebookItemModel;
 		
 		refreshCategoryPickerStore(gradebookItemModel);
 
@@ -228,14 +250,14 @@ public class ItemSetupPanel extends GradebookPanel {
 
 	
 	private void refreshCategoryPickerStore(Item gradebookItemModel) {
-		categoriesStore.removeAll();
+		categoryStore.removeAll();
 		if (gradebookItemModel != null) {
 
 			ItemModelProcessor processor = new ItemModelProcessor(gradebookItemModel) {
 
 				@Override
 				public void doCategory(Item categoryModel) {
-					categoriesStore.add((ItemModel)categoryModel);
+					categoryStore.add((ItemModel)categoryModel);
 				}
 
 			};
@@ -247,7 +269,10 @@ public class ItemSetupPanel extends GradebookPanel {
 	public void showItems() {
 		List<ItemModel> items = itemStore.getModels();
 		for(Item item : items) {
-			GWT.log("DEBUG: XX Item : name = " + item.getName() + " : categoryName = " + item.getCategoryName() + " : categoryId = " + item.getCategoryId());
+			GWT.log("DEBUG: XX Item : S_ID = " + item.get(ItemKey.S_ID.name()) + 
+					" : S_PARENT = " + item.get(ItemKey.S_PARENT.name()) + 
+					" : L_CTGRY_ID = " + item.get(ItemKey.L_CTGRY_ID.name()) +
+					" : S_CTGRY_ID = " + item.get(ItemKey.S_CTGRY_ID.name()));
 		}
 	}
 }
