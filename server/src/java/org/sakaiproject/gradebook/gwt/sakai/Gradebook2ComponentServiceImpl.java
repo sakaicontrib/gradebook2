@@ -6500,6 +6500,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			if (!exists) {
 				CategoryType type = item.getCategoryType();
 
+
 				gbService.createCategory(gradebookId, item.getName(), 
 						((new BigDecimal(item.getWeighting())).multiply(new BigDecimal("0.01"))).doubleValue(), 
 						item.getDropLowest(), item
