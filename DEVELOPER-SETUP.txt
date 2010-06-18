@@ -44,7 +44,7 @@ You will also need to include the following VM args in the Run Configuration:
 -Dgb2.enabled.grade.types=points,percentages,letters
 -Dgb2.import.delete.missing.grades=true
 -Dgb2.security.enabled=false
--Dgb2.security.context.prefix=/portal/
+-DportalPath=/portal/
 -Dgb2.dev.mockItems=true
 
 Additional DEV mode configurations:

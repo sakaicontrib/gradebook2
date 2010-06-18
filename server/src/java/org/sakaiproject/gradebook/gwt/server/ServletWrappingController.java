@@ -42,12 +42,11 @@ org.springframework.web.servlet.mvc.ServletWrappingController {
 		log.info("GB2: security is enabled = " + hasEnabledSecurityChecks);
 
 		// We don't want users to access the GB2 servlet directly
-		validContextPrefix = configService.getString(AppConstants.SECURITY_CHECK_CONTEXT_PREFIX, AppConstants.SECURITY_CHECK_CONTEXT_PREFIX_DEFAULT);
-		log.info("GB2: security check context prefix = " + validContextPrefix);
-		if(null == validContextPrefix || "".equals(validContextPrefix)) {
-			validContextPrefix = AppConstants.SECURITY_CHECK_CONTEXT_PREFIX_DEFAULT;
-			log.info("GB2: security check context prefix was not set. Setting it to " + validContextPrefix);
+		validContextPrefix = configService.getString(AppConstants.SECURITY_CHECK_CONTEXT_PREFIX_PROPNAME, AppConstants.SECURITY_CHECK_CONTEXT_PREFIX_DEFAULT);
+		if(validContextPrefix.lastIndexOf("/") != validContextPrefix.length()-1) {
+			validContextPrefix += "/";
 		}
+		log.info("GB2: security check context prefix = " + validContextPrefix);
 	}
 
 	public ModelAndView handleRequestInternal(HttpServletRequest request, HttpServletResponse response) 
