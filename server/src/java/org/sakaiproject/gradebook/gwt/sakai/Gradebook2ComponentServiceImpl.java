@@ -2613,7 +2613,6 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 					item.setCategoryName(category.getName());
 					Item newItem = createItem(gradebookUid, gradebookId, item, false);
 					itemId = newItem.getItemId();
-					log.info("DEBUG: Creating new assignment : itemId = " + itemId);
 				}
 				else { // Case where assignment has no assigned category
 					
@@ -2629,8 +2628,6 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				Assignment assignment = null;
 				
 				if(0 <= NEG_ONE.compareTo(itemId)) {
-					
-					log.info("DEBUG: get assignment for itemId = " + itemId);
 					
 					try {
 						assignment = gbService.getAssignment(itemId);
@@ -3042,7 +3039,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		if (gradebookItem != null) {
 
 			// If and assignment category has changed, we move the assignment(s) to the correct categories
-			gradebookItem = (GradeItem) cleanupGradeItem(gradebookItem);
+			cleanupGradeItem(gradebookItem);
 			
 			// Create, update gradebook items such as (gradebook, categories, assignments)
 			newHandleImportItemModification(gradebookUid, gradebookId, gradebookItem, idToAssignmentMap, null);
@@ -6618,7 +6615,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 	}
 
 	
-	private GradeItem cleanupGradeItem(GradeItem gradebookItem) {
+	private void cleanupGradeItem(GradeItem gradebookItem) {
 		
 		List<GradeItem> cleanupAssignments = new ArrayList<GradeItem>();
 		
@@ -6628,15 +6625,16 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			
 			List<GradeItem> assignments = category.getChildren();
 			
-			for(GradeItem assignment : assignments) {
+			for(Iterator<GradeItem> iter = assignments.iterator(); iter.hasNext();) {
+			
+				GradeItem assignment = iter.next();
 				
 				String newCategoryId = assignment.get(ItemKey.S_CTGRY_ID.name());
 				
 				if(null != newCategoryId && !"".equals(newCategoryId)) {
 					
-					log.info("DEBUG: newCategoryId = " + newCategoryId);
 					cleanupAssignments.add(assignment);
-					assignments.remove(assignment);
+					iter.remove();
 				}
 			}
 		}
@@ -6652,12 +6650,9 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 					
 					List<GradeItem> categoryAssignments = category.getChildren();
 					categoryAssignments.add(assignment);
-					log.info("DEBUG: found category for assignment = " + assignment.get(ItemKey.S_ID.name()));
 				}
 			}
 		}
-		
-		return gradebookItem;
 	}
 
 }

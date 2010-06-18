@@ -147,7 +147,7 @@ public class NewImportPanel extends GradebookPanel {
 				
 				//show(gradebookItemModel);
 				//setupPanel.showItems();
-				ItemUtil.showItem(gradebookItemModel);
+				//ItemUtil.showItem(gradebookItemModel);
 				upload.setGradebookItemModel(gradebookItemModel);
 //				List<ItemModel> rootItems = treeStore.getRootItems();
 //				if (rootItems != null && rootItems.size() > 0) {

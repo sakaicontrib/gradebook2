@@ -175,7 +175,6 @@ public class ItemSetupPanel extends GradebookPanel {
 				// Case when we render the grid for the first time
 				if(null == categoryId || "".equals(categoryId)) {
 					
-					GWT.log("DEBUG: S_CTGRY_ID = " + categoryId);
 					return model.get(ItemKey.S_PARENT.name());
 				}
 				else { // Case where a user selects a different category from the ComboBox

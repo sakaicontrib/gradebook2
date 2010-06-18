@@ -220,8 +220,6 @@ public class GradeItemImpl extends BaseModel implements GradeItem {
 	}
 
 	public String getIdentifier() {
-		System.out.println("returning: " + ItemKey.S_ID.name() + "=" + Util.toString(get(ItemKey.S_ID.name())));
-		
 		return Util.toString(get(ItemKey.S_ID.name()));
 	}
 
