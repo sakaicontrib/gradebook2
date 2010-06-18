@@ -153,7 +153,7 @@ public class ItemSetupPanel extends GradebookPanel {
 						// that something changes. If we were to just return the assignmentId,
 						// the renderer is not called. This also sets the assignmentId to this new
 						// prefixed ID. This is fixed in the renderer code.
-						return ITEM_PREFIX + assignment.get(ItemKey.S_ID.name()).toString();
+						return ITEM_PREFIX + assignment.get(ItemKey.S_ID.name());
 					}
 				}
 				
