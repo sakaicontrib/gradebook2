@@ -69,6 +69,7 @@ import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.Roster;
 import org.sakaiproject.gradebook.gwt.client.model.Upload;
+import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
@@ -1802,6 +1803,7 @@ public class NewImportExportUtility {
 	}
 	private List<CategoryPosition> processCategoryRow(String[] categoryRow,
 			GradeItem gradebookItemModel, NewImportExportInformation ieInfo) {
+		
 		List<CategoryPosition> ret = new ArrayList<CategoryPosition>();
 		Map<String, GradeItem> categoryMap = new HashMap<String, GradeItem>();
 		
@@ -1944,16 +1946,12 @@ private GradeItem buildNewCategory(String curCategoryString,
 		}
 		return null; 
 	}
+	
 	private void addExistingCategoriesFromGradebookItemModelToMap(Map<String, GradeItem> categoryMap,
 			GradeItem gradebookItemModel) {
 		for (GradeItem child : gradebookItemModel.getChildren()) {
 			if (child.getItemType() != null && child.getItemType() == ItemType.CATEGORY)
 			{
-				if (child.getChildCount() > 0)
-				{
-					GradeItemImpl gi = (GradeItemImpl) child;
-					gi.setChildren(null); 
-				}
 				categoryMap.put(child.getName(), child);
 			}
 		}
@@ -2324,6 +2322,11 @@ private GradeItem buildNewCategory(String curCategoryString,
 				readInHeaderRow(rawData, ieInfo, structureStop);
 				processStructureInformation(ieInfo, structureColumnsMap);
 				processHeaders(ieInfo, structureColumnsMap);
+				
+				// At this point, we need to remove assignments that are not in the import
+				// file
+				adjustGradebookItemModel(ieInfo);
+				
 				readInGradeDataFromImportFile(rawData, ieInfo, userDereferenceMap, importRows, structureStop, service);
 				GradeItem gradebookGradeItem = (GradeItem)ieInfo.getGradebookItemModel();
 				service.decorateGradebook(gradebookGradeItem, null, null);
@@ -2353,6 +2356,47 @@ private GradeItem buildNewCategory(String curCategoryString,
 		service.postEvent("gradebook2.import", String.valueOf(gradebook.getGradebookId()));
 
 		return importFile;
+	}
+
+	/*
+	 * This method removes assignments that are not present in the import file
+	 * but are already in the gradebook
+	 */
+	private void adjustGradebookItemModel(NewImportExportInformation ieInfo) {
+		
+		GradeItem gradeItem = (GradeItem) ieInfo.getGradebookItemModel();
+		NewImportHeader[] newImportHeader = ieInfo.getHeaders();
+		
+		Arrays.sort(newImportHeader);
+		
+		for(GradeItem category : gradeItem.getChildren()) {
+			
+			for(Iterator<GradeItem> iter = category.getChildren().iterator(); iter.hasNext(); ) {
+				
+				GradeItem assignment = iter.next();
+				
+				if(!hasAssignment(newImportHeader, assignment.getName())) {
+					iter.remove();
+				}
+			}
+		}
+		
+	}
+	
+	/*
+	 * The sortedImportHeader argument needs to be a sorted array e.g. Array.sort()
+	 */
+	private boolean hasAssignment(NewImportHeader[] sortedImportHeader, String assignmentName) {
+		
+		NewImportHeader t = new NewImportHeader();
+		t.setHeaderName(assignmentName);
+		GradeItem gradeItem = new GradeItemImpl();
+		gradeItem.setName(assignmentName);
+		t.setItem(gradeItem);
+		
+		int result = Arrays.binarySearch(sortedImportHeader, t);
+		
+		return result >= 0;
 	}
 
 	private void buildDereferenceIdMap(List<UserDereference> userDereferences,

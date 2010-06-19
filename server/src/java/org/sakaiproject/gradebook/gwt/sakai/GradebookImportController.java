@@ -40,6 +40,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportFile;
 import org.sakaiproject.gradebook.gwt.client.model.Upload;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
@@ -62,6 +63,18 @@ public class GradebookImportController extends SimpleFormController {
 
 	private Gradebook2ComponentService service;
 	private GradebookToolService gbToolService;
+	
+	private final String DELIMINATOR_COMMA = "delimiter:comma";
+	private final String DELIMINATOR_TAB = "delimiter:tab";
+	private final String DELIMINATOR_SPACE = "delimiter:space";
+	private final String DELIMINATOR_COLON = "delimiter:colon";
+	
+	private final String FILE_EXTENSION_XLS = "xls";
+	
+	private final String CONTENT_TYPE_TEXT_HTML = "text/html";
+	
+	private final String REQUEST_PARAMETER_PSO = "preventScantronOverwrite";
+	
 
 	protected ModelAndView onSubmit(HttpServletRequest request,
 			HttpServletResponse response,
@@ -69,22 +82,22 @@ public class GradebookImportController extends SimpleFormController {
 
 		MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest)request;
 
-		String gradebookUid = multipartRequest.getParameter("gradebookUid");
+		String gradebookUid = multipartRequest.getParameter(AppConstants.REQUEST_FORM_FIELD_GBUID);
 
 		EnumSet<Delimiter> delimiterSet = EnumSet.noneOf(Delimiter.class);
 		for (Enumeration<String> paramNames = multipartRequest.getParameterNames();paramNames.hasMoreElements();) {
 			String name = paramNames.nextElement();
-			if (name.equals("delimiter:comma")) 
+			if (name.equals(DELIMINATOR_COMMA)) 
 				delimiterSet.add(Delimiter.COMMA);
-			else if (name.equals("delimiter:tab")) 
+			else if (name.equals(DELIMINATOR_TAB)) 
 				delimiterSet.add(Delimiter.TAB);
-			else if (name.equals("delimiter:space"))
+			else if (name.equals(DELIMINATOR_SPACE))
 				delimiterSet.add(Delimiter.SPACE);
-			else if (name.equals("delimiter:colon"))
+			else if (name.equals(DELIMINATOR_COLON))
 				delimiterSet.add(Delimiter.COLON);
 		}
 		
-		String preventScantronOverwrite = multipartRequest.getParameter("preventScantronOverwrite");
+		String preventScantronOverwrite = multipartRequest.getParameter(REQUEST_PARAMETER_PSO);
 		boolean doPreventScrantronOverwrite = preventScantronOverwrite == null ? Boolean.FALSE : Boolean.valueOf(preventScantronOverwrite);
 		
 		if (service.isOldImport()) {
@@ -98,7 +111,7 @@ public class GradebookImportController extends SimpleFormController {
 				ImportFile importFile;
 	
 				log.debug("Original Name: " + origName);
-				if (origName.toLowerCase().endsWith("xls"))
+				if (origName.toLowerCase().endsWith(FILE_EXTENSION_XLS))
 				{
 					log.debug("Excel file detected"); 
 					importFile = utility.parseImportXLS(service, gradebookUid, file.getInputStream(), origName.toLowerCase(), gbToolService);
@@ -112,9 +125,8 @@ public class GradebookImportController extends SimpleFormController {
 				}
 	
 				PrintWriter writer = response.getWriter();
-				response.setContentType("text/html");
+				response.setContentType(CONTENT_TYPE_TEXT_HTML);
 				XStream xstream = new XStream(new JsonHierarchicalStreamDriver());
-				//log.debug("json: " + xstream.toXML(importFile) ); 
 				
 				writer.write(xstream.toXML(importFile)); 
 				writer.flush();
@@ -133,7 +145,7 @@ public class GradebookImportController extends SimpleFormController {
 				Upload importFile;
 	
 				log.debug("Original Name: " + origName);
-				if (origName.toLowerCase().endsWith("xls"))
+				if (origName.toLowerCase().endsWith(FILE_EXTENSION_XLS))
 				{
 					log.debug("Excel file detected"); 
 					importFile = utility.parseImportXLS(service, gradebookUid, file.getInputStream(), origName.toLowerCase(), gbToolService, doPreventScrantronOverwrite);
@@ -147,8 +159,10 @@ public class GradebookImportController extends SimpleFormController {
 				}
 	
 				PrintWriter writer = response.getWriter();
-				response.setContentType("text/html");
-				saveJsonToFile(importFile, "/tmp/data.json"); 
+				response.setContentType(CONTENT_TYPE_TEXT_HTML);
+				
+				// NOTE: Only use this during DEV phase
+				//saveJsonToFile(importFile, "/tmp/data.json"); 
 				
 				writer.write(toJson(importFile)); 
 				writer.flush();

@@ -309,4 +309,14 @@ public interface I18nConstants extends Constants {
 	String statisticsVisualizationErrorMsg();
 	String categoriesNot100Percent();
 	String popupBlockerDetected();
+	
+	// Import
+	String importSetupGridItemHeader();
+	String importSetupGridCategoryPercentHeader();
+	String importSetupGridPointsHeader();
+	String importSetupGridCategoryHeader();
+	String importPanelNextButton();
+	String importPanelCancelButton();
+	String importPanelRetrunButton();
+	
 }

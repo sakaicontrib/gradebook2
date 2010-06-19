@@ -2588,9 +2588,9 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return getGradeItem(gradebook, assignments, categories, null, assignment.getId());
 	}
 
-	// TODO
+	// TODO : Remove/cleanup old/new upload methods and REST resources
 	// FIXME
-	// GRBK-554 : TPA : This is experimental. If it works, it will replace the current handleImportItemModification(...) method
+	// GRBK-554 : TPA 
 	private void newHandleImportItemModification(String gradebookUid, Long gradebookId, GradeItem item, 
 			Map<String, Assignment> idToAssignmentMap, Long categoryId) throws InvalidInputException {
 
@@ -2627,7 +2627,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				// Only check for an assignment if the assignmentId is equals or greater than zero
 				Assignment assignment = null;
 				
-				if(0 <= NEG_ONE.compareTo(itemId)) {
+				if(0 <= itemId.compareTo(NEG_ONE)) {
 					
 					try {
 						assignment = gbService.getAssignment(itemId);
@@ -2639,7 +2639,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 					}
 				}
 				 
-				if(null !=  assignment) {
+				if(null != assignment) {
 
 					item.setIdentifier(String.valueOf(itemId));
 					itemId = doUpdateItem(item, assignment);
@@ -2709,7 +2709,15 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 				if (assignment == null) {
 
-					assignment = gbService.getAssignment(itemId);
+
+					try {
+						
+						assignment = gbService.getAssignment(itemId);
+					}
+					catch(Exception e) {
+						log.warn("Could not find assignment for id = " + itemId, e);
+					}
+
 					idToAssignmentMap.put(itemIdentifier, assignment);
 				}
 			}
@@ -3019,7 +3027,8 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return upload;	
 	}
 
-	// GRBK-554 : TPA : This is experimental. If it works, it will replace the current upload and oldUploda APIs
+	// TODO : cleanup old/new upload related methods
+	// GRBK-554 : TPA 
 	public Upload newUpload(String gradebookUid, Long gradebookId, Upload upload, boolean isDryRun) throws InvalidInputException {
 
 		// Check if user is able to grade
@@ -3038,7 +3047,8 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 		if (gradebookItem != null) {
 
-			// If and assignment category has changed, we move the assignment(s) to the correct categories
+			// If the user changed an assignment's category via the UI, we need to 
+			// move the affected assignments to their new categories
 			cleanupGradeItem(gradebookItem);
 			
 			// Create, update gradebook items such as (gradebook, categories, assignments)
@@ -3221,21 +3231,22 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 					} catch (NumberFormatException nfe) {
 						String failedProperty = Util.buildFailedKey(id);
 						student.set(failedProperty, "Invalid input");
-						log.warn("Number Format: Failed to score item for " + student.getDisplayName() + " and item " + assignment.getId() + " to " + v);
+						
+						log.warn("Number Format: Failed to score item for " + (student == null  ? "null" : student.getDisplayName()) + " and item " + (assignment == null ? "null" : assignment.getId()) + " to " + v);
 
 						student.set(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
 					} catch (InvalidInputException e) {
 						String failedProperty = Util.buildFailedKey(id);
 						String failedMessage = e != null && e.getMessage() != null ? e.getMessage() : "Failed";
 						student.set(failedProperty, failedMessage);
-						log.warn("Invalid Input: Failed to score numeric item for " + student.getDisplayName() + " and item " + assignment.getId() + " to " + value + " : " + failedMessage);
+						log.warn("Invalid Input: Failed to score numeric item for " + (student == null  ? "null" : student.getDisplayName()) + " and item " + (assignment == null ? "null" : assignment.getId()) + " to " + value + " : " + failedMessage);
 
 						student.set(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
 					} catch (Exception e) {
 						String failedProperty = Util.buildFailedKey(id);
 						student.set(failedProperty, e.getMessage());
 
-						log.warn("Failed to score numeric item for " + student.getDisplayName() + " and item " + assignment.getId() + " to " + value, e);
+						log.warn("Failed to score numeric item for " + (student == null  ? "null" : student.getDisplayName()) + " and item " + (assignment == null ? "null" : assignment.getId()) + " to " + value, e);
 
 						student.set(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
 					} 
@@ -6614,17 +6625,29 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		}
 	}
 
-	
+	/*
+	 * GRBK-554
+	 * This method takes an Item structure (gradebook, categories, assignments)
+	 * and makes sure that all assignments have the correct parent/child
+	 * relationship with their respective categories.
+	 * The assignment's category association may have changed during the 
+	 * file import process.
+	 */
 	private void cleanupGradeItem(GradeItem gradebookItem) {
 		
+		// A list of assignments for which the category association has changed
 		List<GradeItem> cleanupAssignments = new ArrayList<GradeItem>();
 		
+		// First we check all categories' assignments, looking for assignments with
+		// new category association. We keep track to those assignments in a new list
+		// and at the same time remove them from their "old" category
 		List<GradeItem> categories = gradebookItem.getChildren();
 		
 		for(GradeItem category : categories) {
 			
 			List<GradeItem> assignments = category.getChildren();
 			
+			// Using an iterator because we manipulate the list as we "loop" over it
 			for(Iterator<GradeItem> iter = assignments.iterator(); iter.hasNext();) {
 			
 				GradeItem assignment = iter.next();
@@ -6639,6 +6662,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			}
 		}
 		
+		// Iterate over assignments that have new category associated
 		for(GradeItem assignment : cleanupAssignments) {
 			
 			for(GradeItem category : categories) {
@@ -6650,6 +6674,10 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 					
 					List<GradeItem> categoryAssignments = category.getChildren();
 					categoryAssignments.add(assignment);
+					// If we are dealing with existing assignments, we have to make sure
+					// that we update its category information
+					assignment.setCategoryId(category.getCategoryId());
+					assignment.setCategoryName(category.getName());
 				}
 			}
 		}

@@ -30,6 +30,7 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestCallback;
+import org.sakaiproject.gradebook.gwt.client.dev.ItemUtil;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.JsonUtil;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
@@ -37,8 +38,6 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityOverlay;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
-import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModelComparer;
-import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemUtil;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.LearnerModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.UploadModel;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
@@ -48,25 +47,20 @@ import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.UploadKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 
+
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.LayoutRegion;
 import com.extjs.gxt.ui.client.Style.SortDir;
 import com.extjs.gxt.ui.client.data.BasePagingLoader;
-import com.extjs.gxt.ui.client.data.BaseTreeLoader;
 import com.extjs.gxt.ui.client.data.ModelData;
-import com.extjs.gxt.ui.client.data.ModelKeyProvider;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 import com.extjs.gxt.ui.client.data.PagingLoader;
 import com.extjs.gxt.ui.client.data.PagingModelMemoryProxy;
-import com.extjs.gxt.ui.client.data.TreeLoader;
-import com.extjs.gxt.ui.client.data.TreeModel;
-import com.extjs.gxt.ui.client.data.TreeModelReader;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
-import com.extjs.gxt.ui.client.store.TreeStore;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
@@ -96,15 +90,11 @@ public class NewImportPanel extends GradebookPanel {
 	protected MessageBox uploadBox, uploadingBox;
 	private UploadModel upload;
 
-	private String msgsFromServer;
-
 	private MultiGradeContentPanel multigrade;
 	private ItemSetupPanel setupPanel;
 
 	private PagingLoader<PagingLoadResult<ModelData>> multigradeLoader;
 	private ListStore<ModelData> multigradeStore;
-	private TreeStore<ItemModel> treeStore;
-	private TreeLoader<ItemModel> treeLoader;
 	
 	private ItemModel gradebookItemModel;
 
@@ -137,36 +127,24 @@ public class NewImportPanel extends GradebookPanel {
 		/*
 		 * This is the next button that uploads the imported data to the server
 		 */
-		submitButton = new Button("Next");
+		submitButton = new Button(i18n.importPanelNextButton());
 		submitButton.setMinWidth(120);
 		submitButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
 
 			@Override
 			public void componentSelected(ButtonEvent ce) {	
+
 				submitButton.setVisible(false);
 				
-				//show(gradebookItemModel);
-				//setupPanel.showItems();
-				//ItemUtil.showItem(gradebookItemModel);
 				upload.setGradebookItemModel(gradebookItemModel);
-//				List<ItemModel> rootItems = treeStore.getRootItems();
-//				if (rootItems != null && rootItems.size() > 0) {
-//					ItemModel rootItem = rootItems.get(0);
-//					if (rootItem.getItemType() == ItemType.GRADEBOOK) {
-//						upload.setGradebookItemModel(rootItem);
-//					} else if (rootItem.getItemType() == ItemType.ROOT && rootItem.getChildCount() > 0) {
-//						ItemModel gradebookItem = (ItemModel)rootItem.getChild(0);
-//						upload.setGradebookItemModel(gradebookItem);
-//					}
-//				}
 
 				uploadSpreadsheet(upload);
-
 			}
 		});
+		
 		borderLayoutContainer.addButton(submitButton);
 
-		cancelButton = new Button("Cancel");
+		cancelButton = new Button(i18n.importPanelCancelButton());
 		cancelButton.setMinWidth(120);
 		cancelButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
 
@@ -179,7 +157,7 @@ public class NewImportPanel extends GradebookPanel {
 
 		borderLayoutContainer.addButton(cancelButton);
 
-		errorReturnButton = new Button("Return");
+		errorReturnButton = new Button(i18n.importPanelRetrunButton());
 		errorReturnButton.setMinWidth(120);
 		errorReturnButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
 
@@ -208,84 +186,49 @@ public class NewImportPanel extends GradebookPanel {
 
 
 	protected void onRender(Element parent, int pos) {
+		
 		super.onRender(parent, pos);
 	}
 
 	@Override
 	protected void onResize(final int width, final int height) {
+		
+		GWT.log("DEBUG: onResize(...)");
+		
 		super.onResize(width, height);
 
 		if (multigrade != null)
 			multigrade.setHeight(height - 100);
 		
-		// FIXME setupPanel
-		
-	}
-
-
-	private void show(Item gradebookItem) {
-		
-		List<Item> categories = gradebookItem.getSubItems();
-		for(Item category : categories) {
-			GWT.log("DEBUG: Category : name = " + category.getName());
-			List<Item> assignments = category.getSubItems();
-			for(Item assignment : assignments) {
-				GWT.log("    DEBUG : Assignment : name = " + assignment.getName() + " : category = " + assignment.getCategoryName());
-			}
-		}
+		// FIXME : make this work for setupPanel
 	}
 	
+	
+	/*
+	 * This method is called to read the response from the 
+	 * server side file upload
+	 */
 	protected void readSubmitResponse(String result) {
 
+		GWT.log("DEBUG: readSubmitResponse(...)");
+		
+		String msgsFromServer = null;
+		
 		try {
 
+			// Getting the JSON from REST call and create an UploadModel
 			EntityOverlay overlay = JsonUtil.toOverlay(result);
 			upload = new UploadModel(overlay);
 
-			boolean hasErrors = upload.hasErrors(); //DataTypeConversionUtil.checkBoolean(getBoolean(jsonObject, "hasErrors")); 
-			//boolean hasAssignmentNameIssueForScantron = upload.isNotifyAssignmentName(); //DataTypeConversionUtil.checkBoolean(getBoolean(jsonObject, "notifyAssignmentName")); 
-
-			msgsFromServer = upload.getNotes(); //getString(jsonObject, "notes");
-
+			boolean hasErrors = upload.hasErrors(); 
+			
+			msgsFromServer = upload.getNotes(); 
+			
 			// If we have errors we want to do something different
 			if (hasErrors) {
 				errorContainer.addText(msgsFromServer); 
 				mainCardLayout.setActiveItem(errorContainer);
 				return; 
-			} 
-
-			if (treeLoader == null) {
-				treeLoader = new BaseTreeLoader<ItemModel>(new TreeModelReader()) {
-
-					@Override
-					public boolean hasChildren(ItemModel parent) {
-
-						if (parent.getItemType() != ItemType.ITEM)
-							return true;
-
-						if (parent instanceof TreeModel) {
-							return !((TreeModel) parent).isLeaf();
-						}
-						return false;
-					}
-				};
-			}
-
-			if (treeStore == null) {
-				treeStore = new TreeStore<ItemModel>(treeLoader);
-				treeStore.setModelComparer(new ItemModelComparer<ItemModel>());
-				ModelKeyProvider<ItemModel> modelKeyProvider = new ModelKeyProvider<ItemModel>() {  
-
-					public String getKey(ItemModel model) {  
-						return new StringBuilder()
-						.append(model.getItemType().getName())
-						.append(":")
-						.append(model.getIdentifier()).toString();
-					}
-
-				};
-
-				treeStore.setKeyProvider(modelKeyProvider);
 			}
 
 			if(setupPanel == null) {
@@ -368,10 +311,14 @@ public class NewImportPanel extends GradebookPanel {
 				}
 				showMessageBox(sendText, !hasDefaultMsg);
 			}
+			
 		} catch (Exception e) {
+			
 			Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(e));
 			GWT.log("Caught exception: ", e);
+			
 		} finally {
+			
 			uploadBox.close();
 		}
 
@@ -388,6 +335,8 @@ public class NewImportPanel extends GradebookPanel {
 
 	private void fixMangledHtmlNames(ItemModel gradebookItemModel) {
 
+		GWT.log("DEBUG: fixMangledHtmlNames(...)");
+		
 		ItemModelProcessor processor = new ItemModelProcessor(gradebookItemModel) {
 
 			@Override
@@ -413,8 +362,9 @@ public class NewImportPanel extends GradebookPanel {
 	}
 
 	private void refreshGradebookItemModel(ItemModel gradebookItemModel) {
+		
+		GWT.log("DEBUG: refreshGradebookItemModel(...)");
 		Gradebook gradebookModel = Registry.get(AppConstants.CURRENT);
-		treeStore.removeAll();
 		ItemModel rootItemModel = new ItemModel();
 		rootItemModel.setItemType(ItemType.ROOT);
 		rootItemModel.setName("Root");
@@ -422,10 +372,12 @@ public class NewImportPanel extends GradebookPanel {
 		rootItemModel.add(gradebookItemModel);
 
 		multigrade.onRefreshGradebookItems(gradebookModel, gradebookItemModel);
-
 	}
 
 	private void showMessageBox(String alertText, boolean overrideText) {
+		
+		GWT.log("DEBUG: showMessageBox(...)");
+		
 		String defaultMessageText =  i18n.importDefaultShowPanelMessage();
 		String messageText;
 		StringBuilder sb; 
@@ -459,6 +411,9 @@ public class NewImportPanel extends GradebookPanel {
 
 
 	private void uploadSpreadsheet(UploadModel spreadsheetModel) {
+		
+		GWT.log("DEBUG: uploadSpreadsheet(...)");
+		
 		Gradebook gbModel = Registry.get(AppConstants.CURRENT);
 
 		int numberOfLearners = upload.getRows() == null ? 0 : upload.getRows().size();
@@ -564,7 +519,7 @@ public class NewImportPanel extends GradebookPanel {
 						selectedGradebook.setGradebookGradeItem(gradebookItem);
 
 					if (gradebookItem != null) {
-						treeStore.removeAll();
+						//treeStore.removeAll();
 						ItemModel rootItemModel = new ItemModel();
 						rootItemModel.setItemType(ItemType.ROOT);
 						rootItemModel.setName("Root");

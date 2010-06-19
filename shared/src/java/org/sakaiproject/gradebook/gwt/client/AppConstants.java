@@ -226,5 +226,6 @@ public interface AppConstants {
 	// Import/Export
 	public static final String NEW_PREFIX = "NEW:";
 	public static final String NEW_CAT_PREFIX = "NEW:CAT:";
+	public static final String REQUEST_FORM_FIELD_GBUID = "gradebookUid";
 	
 }

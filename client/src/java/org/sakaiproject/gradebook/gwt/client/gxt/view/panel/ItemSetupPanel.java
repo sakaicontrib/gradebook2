@@ -28,7 +28,6 @@ import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
-import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemUtil;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
@@ -47,7 +46,6 @@ import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.grid.GridView;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
-import com.google.gwt.core.client.GWT;
 
 public class ItemSetupPanel extends GradebookPanel {
 
@@ -56,8 +54,6 @@ public class ItemSetupPanel extends GradebookPanel {
 	private CellEditor categoryCellEditor;
 	private ListStore<ItemModel> itemStore;
 	private EditorGrid<ItemModel> itemGrid;
-	
-	private Item gradebookItemModelRef;
 	
 	private final String ITEM_MARKER = "+";
 	private final String ITEM_PREFIX = ":";
@@ -71,22 +67,23 @@ public class ItemSetupPanel extends GradebookPanel {
 
 		setLayout(new FitLayout());
 
-		// Grid setup / configuration
+		// Grid: setup / configuration
 		ArrayList<ColumnConfig> itemColumns = new ArrayList<ColumnConfig>();
 
 		TextField<String> textField = new TextField<String>();
 		textField.addInputStyleName(resources.css().gbTextFieldInput());
 		CellEditor textCellEditor = new CellEditor(textField);
+		
 
-		ColumnConfig name = new ColumnConfig(ItemKey.S_NM.name(), "Item", 200);
+		ColumnConfig name = new ColumnConfig(ItemKey.S_NM.name(), i18n.importSetupGridItemHeader(), 200);
 		name.setEditor(textCellEditor);
 		itemColumns.add(name);
 
-		ColumnConfig percentCategory = new ColumnConfig(ItemKey.D_PCT_CTGRY.name(), "% Category", 100);
+		ColumnConfig percentCategory = new ColumnConfig(ItemKey.D_PCT_CTGRY.name(), i18n.importSetupGridCategoryPercentHeader(), 100);
 		percentCategory.setEditor(new CellEditor(new NumberField()));
 		itemColumns.add(percentCategory);
 
-		ColumnConfig points = new ColumnConfig(ItemKey.D_PNTS.name(), "Points", 100);
+		ColumnConfig points = new ColumnConfig(ItemKey.D_PNTS.name(), i18n.importSetupGridPointsHeader(), 100);
 		points.setEditor(new CellEditor(new NumberField()));
 		itemColumns.add(points);
 
@@ -97,7 +94,7 @@ public class ItemSetupPanel extends GradebookPanel {
 		categoryComboBox.setForceSelection(true);
 		categoryComboBox.setStore(categoryStore);
 
-		ColumnConfig category = new ColumnConfig(ItemKey.S_ID.name(), "Category", 140);
+		ColumnConfig category = new ColumnConfig(ItemKey.S_ID.name(), i18n.importSetupGridCategoryHeader(), 140);
 
 		categoryCellEditor = new CellEditor(categoryComboBox) {
 
@@ -145,8 +142,9 @@ public class ItemSetupPanel extends GradebookPanel {
 
 					if(ITEM_MARKER.equals(assignment.get(ItemKey.S_CTGRY_ID.name()))) {
 						
-						// We have found the marked assignment
-						// In the marked assignment, we set the categoryId 
+						// We have found the marked assignment and are setting the string based categoryId
+						// Also, this string based category is used on the server side to reassociate the
+						// assignment with the correct category before things are persisted and updated
 						assignment.set(ItemKey.S_CTGRY_ID.name(), categoryId);
 						
 						// Returning the assignmentId but prefix it so that the renderer thinks
@@ -204,15 +202,16 @@ public class ItemSetupPanel extends GradebookPanel {
 
 		itemGrid = new EditorGrid<ItemModel>(itemStore, itemColumnModel);
 		itemGrid.setBorders(true);
-		//itemGrid.setView(new BaseCustomGridView());
+		
+		// TODO: In the old upload code, we used the BaseCustomGridView() instead of the GridView()
+		// I am not sure yet if this is still needed. Maybe for some CSS adjustments?
 		itemGrid.setView(new GridView());
+		
 		add(itemGrid);
 
 	}
 
 	public void onRender(Item gradebookItemModel) {
-		
-		this.gradebookItemModelRef = gradebookItemModel;
 		
 		refreshCategoryPickerStore(gradebookItemModel);
 
@@ -249,7 +248,9 @@ public class ItemSetupPanel extends GradebookPanel {
 
 	
 	private void refreshCategoryPickerStore(Item gradebookItemModel) {
+		
 		categoryStore.removeAll();
+		
 		if (gradebookItemModel != null) {
 
 			ItemModelProcessor processor = new ItemModelProcessor(gradebookItemModel) {
@@ -258,20 +259,9 @@ public class ItemSetupPanel extends GradebookPanel {
 				public void doCategory(Item categoryModel) {
 					categoryStore.add((ItemModel)categoryModel);
 				}
-
 			};
 
 			processor.process();
-		}
-	}
-	
-	public void showItems() {
-		List<ItemModel> items = itemStore.getModels();
-		for(Item item : items) {
-			GWT.log("DEBUG: XX Item : S_ID = " + item.get(ItemKey.S_ID.name()) + 
-					" : S_PARENT = " + item.get(ItemKey.S_PARENT.name()) + 
-					" : L_CTGRY_ID = " + item.get(ItemKey.L_CTGRY_ID.name()) +
-					" : S_CTGRY_ID = " + item.get(ItemKey.S_CTGRY_ID.name()));
 		}
 	}
 }
