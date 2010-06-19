@@ -70,9 +70,8 @@ gb2.import.delete.missing.grades = [true, false]
 
 gb2.security.enabled = [true, false]
 - default: true
-
-gb2.security.context.prefix = [/portal/, /xsl-portal/, ...]
-- default: /portal/
+- NOTE: If you use xsl-portal, make sure that you use the following sakai property
+-- portalPath=/xsl-portal
 
 
 SUPPORT
