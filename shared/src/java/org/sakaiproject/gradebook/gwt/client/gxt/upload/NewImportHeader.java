@@ -213,7 +213,6 @@ public class NewImportHeader implements Serializable, Comparable<NewImportHeader
 		this.item = item;
 	}
 
-	@Override
 	public int compareTo(NewImportHeader o) {
 		
 		if(null != o) {
