@@ -93,6 +93,7 @@ public class ItemSetupPanel extends GradebookPanel {
 		categoryComboBox.setTriggerAction(TriggerAction.ALL);
 		categoryComboBox.setForceSelection(true);
 		categoryComboBox.setStore(categoryStore);
+		categoryComboBox.addInputStyleName(resources.css().gbTextFieldInput());
 
 		ColumnConfig category = new ColumnConfig(ItemKey.S_ID.name(), i18n.importSetupGridCategoryHeader(), 140);
 

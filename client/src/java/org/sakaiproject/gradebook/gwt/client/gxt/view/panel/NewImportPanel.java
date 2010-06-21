@@ -30,7 +30,6 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestCallback;
-import org.sakaiproject.gradebook.gwt.client.dev.ItemUtil;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.JsonUtil;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
@@ -46,7 +45,6 @@ import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.UploadKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
-
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.LayoutRegion;
@@ -193,8 +191,6 @@ public class NewImportPanel extends GradebookPanel {
 	@Override
 	protected void onResize(final int width, final int height) {
 		
-		GWT.log("DEBUG: onResize(...)");
-		
 		super.onResize(width, height);
 
 		if (multigrade != null)
@@ -209,8 +205,6 @@ public class NewImportPanel extends GradebookPanel {
 	 * server side file upload
 	 */
 	protected void readSubmitResponse(String result) {
-
-		GWT.log("DEBUG: readSubmitResponse(...)");
 		
 		String msgsFromServer = null;
 		
@@ -315,7 +309,7 @@ public class NewImportPanel extends GradebookPanel {
 		} catch (Exception e) {
 			
 			Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(e));
-			GWT.log("Caught exception: ", e);
+			// GWT.log("Caught exception: ", e);
 			
 		} finally {
 			
@@ -334,8 +328,6 @@ public class NewImportPanel extends GradebookPanel {
 	}-*/;
 
 	private void fixMangledHtmlNames(ItemModel gradebookItemModel) {
-
-		GWT.log("DEBUG: fixMangledHtmlNames(...)");
 		
 		ItemModelProcessor processor = new ItemModelProcessor(gradebookItemModel) {
 
@@ -363,7 +355,6 @@ public class NewImportPanel extends GradebookPanel {
 
 	private void refreshGradebookItemModel(ItemModel gradebookItemModel) {
 		
-		GWT.log("DEBUG: refreshGradebookItemModel(...)");
 		Gradebook gradebookModel = Registry.get(AppConstants.CURRENT);
 		ItemModel rootItemModel = new ItemModel();
 		rootItemModel.setItemType(ItemType.ROOT);
@@ -375,8 +366,6 @@ public class NewImportPanel extends GradebookPanel {
 	}
 
 	private void showMessageBox(String alertText, boolean overrideText) {
-		
-		GWT.log("DEBUG: showMessageBox(...)");
 		
 		String defaultMessageText =  i18n.importDefaultShowPanelMessage();
 		String messageText;
@@ -411,9 +400,7 @@ public class NewImportPanel extends GradebookPanel {
 
 
 	private void uploadSpreadsheet(UploadModel spreadsheetModel) {
-		
-		GWT.log("DEBUG: uploadSpreadsheet(...)");
-		
+				
 		Gradebook gbModel = Registry.get(AppConstants.CURRENT);
 
 		int numberOfLearners = upload.getRows() == null ? 0 : upload.getRows().size();
@@ -465,7 +452,7 @@ public class NewImportPanel extends GradebookPanel {
 									model = (LearnerModel) multigradeStore.findModel(LearnerKey.S_UID.name(), currentUid);
 
 								if (model == null) {
-									GWT.log("Could not find a model for: " + currentUid, null);
+									//GWT.log("Could not find a model for: " + currentUid, null);
 									continue;
 								}
 
@@ -519,7 +506,7 @@ public class NewImportPanel extends GradebookPanel {
 						selectedGradebook.setGradebookGradeItem(gradebookItem);
 
 					if (gradebookItem != null) {
-						//treeStore.removeAll();
+						
 						ItemModel rootItemModel = new ItemModel();
 						rootItemModel.setItemType(ItemType.ROOT);
 						rootItemModel.setName("Root");
@@ -531,7 +518,7 @@ public class NewImportPanel extends GradebookPanel {
 
 				} catch (Exception e) {
 					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(e));
-					GWT.log("Caught unexpected exception.", e);
+					//GWT.log("Caught unexpected exception.", e);
 				} finally {
 					Dispatcher.forwardEvent(GradebookEvents.SwitchGradebook.getEventType(), selectedGradebook);
 					//Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades.getEventType(), selectedGradebook);
