@@ -219,6 +219,8 @@ public interface AppConstants {
 	
 	// Statistics panel
 	public static final String ALL_SECTIONS = "ALL";
+	public static final int POSITIVE_NUMBER = 0;
+	public static final int NEGATIVE_NUMBER = 1;
 	
 	// Statistics Data
 	public static final String STATISTICS_DATA_NA = "-";

@@ -43,7 +43,7 @@ public class Statistics extends Resource {
 			@PathParam("assignmentId") Long assignmentId,
 			@PathParam("sectionId") String sectionId) throws SecurityException, InvalidDataException {
 
-		int[] gradeFrequencies = service.getGradeItemStatistics(assignmentId, sectionId);
+		int[][] gradeFrequencies = service.getGradeItemStatistics(assignmentId, sectionId);
 		return toJson(gradeFrequencies);
 	}
 }

@@ -1563,10 +1563,19 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return siteService;
 	}
 
-	public int[] getGradeItemStatistics(Long assignmentId, String sectionId) throws SecurityException, InvalidDataException {
-
-		int[] gradeFrequencies = new int[10];
-
+	public int[][] getGradeItemStatistics(Long assignmentId, String sectionId) throws SecurityException, InvalidDataException {
+		
+		// Create and initialize two dimensional array to keep track of grade frequencies
+		// NOTE: we keep track of both positive as well at negative grades
+		final int TEN = 10;
+		int[][] gradeFrequencies = new int[2][TEN];
+		
+		for(int i = 0; i < TEN; i++) {
+			gradeFrequencies[AppConstants.POSITIVE_NUMBER][i] = 0;
+			gradeFrequencies[AppConstants.NEGATIVE_NUMBER][i] = 0;
+		}
+		
+		// Getting grade records either for all sections or just for the specified one
 		List<AssignmentGradeRecord> assignmentGradeRecords = null;
 
 		if(sectionId.equals(AppConstants.ALL_SECTIONS)) {
@@ -1578,10 +1587,20 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			assignmentGradeRecords = gbService.getAllAssignmentGradeRecords(new Long[] {assignmentId}, new String[] {sectionId});
 		}
 
+		// Looping over grade records and record their frequencies:
+		// The frequency intervals are:
+		// 0-9, 10-19, 20-29, ..., 80-89, 90-100
 		for(AssignmentGradeRecord assignmentGradeRecord : assignmentGradeRecords) {
 
 			Double gradeAsPercentage = assignmentGradeRecord.getGradeAsPercentage();
-
+			
+			// This boolean is used to differentiate e.g. 0.5 and -0.5, making sure that
+			// negative decimal values that are less than one are counted as negative numbers
+			boolean isNegative = false;
+			
+			if(0 > gradeAsPercentage.compareTo(new Double(0.0d))) {
+				isNegative = true;
+			}
 			// In case we encounter an assignmentGradeRecords,
 			// for which the grade has been deleted
 			if(null == gradeAsPercentage) {
@@ -1590,14 +1609,26 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 			// If the percentage grade is 100%, we subtract one so that we don't
 			// get an index out of bound exception. 100% is part of the 90+ % category
-			if(0 == gradeAsPercentage.compareTo(new Double(100))) {
-				gradeAsPercentage = new Double(99);
+			if(0 == gradeAsPercentage.compareTo(new Double(100d))) {
+				gradeAsPercentage = new Double(99d);
+			}
+			else if(0 == gradeAsPercentage.compareTo(new Double(-100d))) {
+				gradeAsPercentage = new Double(-99d);
 			}
 
 			int value = gradeAsPercentage.intValue() / 10;
 			
 			try {
-				gradeFrequencies[value] = ++gradeFrequencies[value];
+				
+				// Handling negative number grades
+				if(value < 0 || isNegative) {
+					int positiveValue = Math.abs(value);
+					gradeFrequencies[AppConstants.NEGATIVE_NUMBER][positiveValue] = ++gradeFrequencies[AppConstants.NEGATIVE_NUMBER][positiveValue];
+				}
+				else { // Handling positive number grades
+				
+					gradeFrequencies[AppConstants.POSITIVE_NUMBER][value] = ++gradeFrequencies[AppConstants.POSITIVE_NUMBER][value];
+				}
 			}
 			catch(ArrayIndexOutOfBoundsException e) {
 				log.error("ArrayIndexOutOfBoundsException: expected value = [0, 1, 2, ...,9] but got value = " + value);

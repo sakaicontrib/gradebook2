@@ -267,6 +267,7 @@ public class StatisticsPanel extends ContentPanel {
 		options.setHeight(CHART_HEIGHT);
 		options.set3D(IS_CHART_3D);
 		options.setTitle(CHART_TITLE);
+		//options.setStacked(true);
 		return options;
 	}
 
@@ -320,22 +321,31 @@ public class StatisticsPanel extends ContentPanel {
 
 				public void onSuccess(Request request, Response response) {
 
+					// Getting two dimensional INT array
 					JSONValue jsonValue = JSONParser.parse(response.getText());
 					JSONArray jsonArray = jsonValue.isArray();
 
+					JSONArray positiveFrequencies = jsonArray.get(AppConstants.POSITIVE_NUMBER).isArray();
+					
+					// TODO: For now, we don't show the negative grade frequency
+					//JSONArray negativeFrequencies = jsonArray.get(AppConstants.NEGATIVE_NUMBER).isArray();
+					
 					dataTable = DataTable.create();
 					dataTable.addColumn(ColumnType.STRING, "Range");
-					dataTable.addColumn(ColumnType.NUMBER, "Frequencey");
-					dataTable.addRows(jsonArray.size());
+					dataTable.addColumn(ColumnType.NUMBER, "Positive Grade Frequencey");
+					//dataTable.addColumn(ColumnType.NUMBER, "Negative Grade Frequency");
+					dataTable.addRows(positiveFrequencies.size());
 
-					for (int i = 0; i < jsonArray.size(); i++) {
+					for (int i = 0; i < positiveFrequencies.size(); i++) {
 
 						// Set label
 						dataTable.setValue(i, 0, RANGE[i]);
 
 						// Set value
-						double value = jsonArray.get(i).isNumber().doubleValue();
-						dataTable.setValue(i, 1, value);
+						double positiveValue = positiveFrequencies.get(i).isNumber().doubleValue();
+						//double negativeValue = negativeFrequencies.get(i).isNumber().doubleValue() * -1;
+						dataTable.setValue(i, 1, positiveValue);
+						//dataTable.setValue(i, 2, negativeValue);
 					}
 
 					// adding the dataTable to the cache
