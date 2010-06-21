@@ -1297,7 +1297,7 @@ public class NewImportExportUtility {
 		 * 
 		 */
 		if (isEmpty(lowerText) || isScantronHeader(lowerText)) { // Empty rows or scantron data in general needs to be skipped. 
-			return null;
+			return new NewImportHeader(Field.S_EMPTY, text, entryNumber); 
 		} else if (isName(lowerText)) {
 			header = new NewImportHeader(Field.S_NAME, text, entryNumber);
 			header.setId("NAME");

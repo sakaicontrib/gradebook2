@@ -30,7 +30,7 @@ import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 
 public class NewImportHeader implements Serializable, Comparable<NewImportHeader> {
 
-	public enum Field { S_ID, S_NAME, S_CRS_GRD, S_LTR_GRD, S_CALC_GRD, S_ADT_GRD, S_GRB_OVRD, S_ITEM, S_COMMENT }
+	public enum Field { S_ID, S_NAME, S_CRS_GRD, S_LTR_GRD, S_CALC_GRD, S_ADT_GRD, S_GRB_OVRD, S_ITEM, S_COMMENT, S_EMPTY }
 
 	public enum Mode { POINTS, PERCENTAGES, LETTERGRADES };
 
