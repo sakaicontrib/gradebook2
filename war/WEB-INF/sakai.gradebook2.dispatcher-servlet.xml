@@ -9,8 +9,6 @@
                         
                                 <entry key="/**/import" value-ref="GradebookImportService" />
 
-                                <entry key="/**/export" value-ref="GradebookExportService" />
-
                                 <entry key="/**/submit" value-ref="GradebookFinalGradeSubmissionService" />
 
 								<entry key="/*" value-ref="RestWrappingController" />

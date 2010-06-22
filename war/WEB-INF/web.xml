@@ -74,11 +74,6 @@
 	
 	<servlet-mapping>
 		<servlet-name>sakai.gradebook2.dispatcher</servlet-name>
-		<url-pattern>/export</url-pattern>
-	</servlet-mapping>
-	
-	<servlet-mapping>
-		<servlet-name>sakai.gradebook2.dispatcher</servlet-name>
 		<url-pattern>/import</url-pattern>
 	</servlet-mapping>
 	
