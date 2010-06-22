@@ -25,6 +25,8 @@ org.springframework.web.servlet.mvc.ServletWrappingController {
 	
 	private boolean hasEnabledSecurityChecks;
 	private String validContextPrefix;
+	
+	private boolean hosted = false;
 
 	// IOC init method
 	public void init() {
@@ -45,6 +47,11 @@ org.springframework.web.servlet.mvc.ServletWrappingController {
 		validContextPrefix = configService.getString(AppConstants.SECURITY_CHECK_CONTEXT_PREFIX_PROPNAME, AppConstants.SECURITY_CHECK_CONTEXT_PREFIX_DEFAULT);
 		if(validContextPrefix.lastIndexOf("/") != validContextPrefix.length()-1) {
 			validContextPrefix += "/";
+		}
+		hosted = "hosted".equals(System.getProperty("gb2.mode"));
+		
+		if (hosted) {
+			validContextPrefix = "";
 		}
 		log.info("GB2: security check context prefix = " + validContextPrefix);
 	}
@@ -82,6 +89,10 @@ org.springframework.web.servlet.mvc.ServletWrappingController {
 
 				// X-XSRF-Cookie is a client side defined cookie : RestBuilder.java
 				String jsessionId = request.getHeader("X-XSRF-Cookie");
+				
+				if(null == jsessionId) {
+					jsessionId = request.getParameter("form-token");
+				}
 
 				// Getting the current session and then the sessionId
 				Session session = sessionManager.getCurrentSession();
@@ -91,7 +102,8 @@ org.springframework.web.servlet.mvc.ServletWrappingController {
 					String sessionId = session.getId();
 
 					// We only continue if the JSESSIONIDs match
-					if((jsessionId.startsWith(sessionId))) {
+					if((jsessionId.startsWith(sessionId)) 
+							 || hosted) { // until we can figure out how to sycn client and server in devel mode
 
 						return super.handleRequestInternal(request, response);
 					}

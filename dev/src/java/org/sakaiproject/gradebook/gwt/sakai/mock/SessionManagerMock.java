@@ -5,9 +5,11 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.mutable.MutableLong;
 import org.sakaiproject.tool.api.Session;
 import org.sakaiproject.tool.api.SessionManager;
 import org.sakaiproject.tool.api.ToolSession;
+import org.sakaiproject.tool.impl.MySession;
 
 public class SessionManagerMock implements SessionManager {
 
@@ -18,7 +20,11 @@ public class SessionManagerMock implements SessionManager {
 
 	public Session getCurrentSession() {
 		// TODO Auto-generated method stub
-		return null;
+		
+		MySession session = new MySession(this, "sessionid", null, null, null, null, 0, null, new MutableLong(1000l* 60l* 60l* 24l));
+		
+		
+		return session;
 	}
 
 	public String getCurrentSessionUserId() {
