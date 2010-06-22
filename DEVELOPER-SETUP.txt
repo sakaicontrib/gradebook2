@@ -47,6 +47,8 @@ You will also need to include the following VM args in the Run Configuration:
 -DportalPath=/portal/
 -Dgb2.dev.mockItems=true
 
+portalPath is really ignored in devel mode now and the portal path is set to "" for security checks if gb2.security.enabled=true
+
 Additional DEV mode configurations:
 - By default, the gradebook is populated with test data in DEV mode. This can be turned off via : -Dgb2.dev.mockItems=false 
 
