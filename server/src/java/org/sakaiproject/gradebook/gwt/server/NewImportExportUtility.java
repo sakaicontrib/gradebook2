@@ -1889,7 +1889,7 @@ private GradeItem buildOrGetExistingCategoryForUpdate(int col, String curCategor
 	
 	GradeItem categoryModel = null;
 	
-	boolean isNewCategory = !categoryMap.containsKey(curCategoryString);	
+	boolean isNewCategory = !categoryMap.containsKey(removeIndicators(curCategoryString));	
 	boolean isExtraCredit = curCategoryString.contains(AppConstants.EXTRA_CREDIT_INDICATOR);
 	boolean isUnincluded = curCategoryString.contains(AppConstants.UNINCLUDED_INDICATOR);
 	boolean isDefaultCategory = curCategoryString.equalsIgnoreCase(AppConstants.DEFAULT_CATEGORY_NAME);
@@ -2052,7 +2052,6 @@ private GradeItem buildNewCategory(String curCategoryString,
 			if (header == null)
 				continue;
 	
-			
 			if (header.getField() == Field.S_ITEM || header.getField() == Field.S_COMMENT) {
 				handleItemOrComment(header, pointsColumns, percentCategoryColumns, ieInfo, i);
 			}
