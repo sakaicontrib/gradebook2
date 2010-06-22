@@ -801,8 +801,12 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	// GRBK-40 : TPA : Eliminated the in java filtering
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(final Long gradebookId, final String[] realmIds, final String[] roleNames) {
 		HibernateCallback hc = new HibernateCallback() {
+			
 			public Object doInHibernate(Session session) throws HibernateException {
 
+				// FIXME: this log.info needs to be removed
+				log.info("DEBUG: #### : realmId = " + ((null != realmIds && realmIds.length > 0) ? realmIds[0] : "realmIds is null or zero size"));
+				
 				Query query = null;
 
 				StringBuilder builder = new StringBuilder();
