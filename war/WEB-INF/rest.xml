@@ -76,7 +76,10 @@
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.OldUpload" 
 		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
 		  
-		  <bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Export" 
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Export" 
+		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+		  
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.SubmitFinalGrades" 
 		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
 		  
 

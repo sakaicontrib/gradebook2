@@ -45,6 +45,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportFile;
 import org.sakaiproject.gradebook.gwt.client.model.Upload;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
 import org.sakaiproject.gradebook.gwt.server.NewImportExportUtility;
+import org.sakaiproject.gradebook.gwt.server.OpenController;
 import org.sakaiproject.gradebook.gwt.server.NewImportExportUtility.Delimiter;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.ServletRequestDataBinder;
@@ -57,7 +58,7 @@ import org.springframework.web.servlet.mvc.SimpleFormController;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
 
-public class GradebookImportController extends SimpleFormController {
+public class GradebookImportController extends SimpleFormController implements OpenController {
 
 	private static final Log log = LogFactory.getLog(GradebookImportController.class);
 
@@ -75,7 +76,17 @@ public class GradebookImportController extends SimpleFormController {
 	
 	private final String REQUEST_PARAMETER_PSO = "preventScantronOverwrite";
 	
-
+	public ModelAndView submit(HttpServletRequest request,
+			HttpServletResponse response,
+			Object command, BindException errors) throws Exception {
+		
+		
+		
+		return onSubmit(request, response, command, errors);
+		
+		
+	}
+	
 	protected ModelAndView onSubmit(HttpServletRequest request,
 			HttpServletResponse response,
 			Object command, BindException errors) throws Exception {
@@ -209,11 +220,19 @@ public class GradebookImportController extends SimpleFormController {
 		return w.toString();
 	}
 
-	protected void initBinder(HttpServletRequest request, ServletRequestDataBinder binder) throws ServletException {
+	public void initializeBinder(HttpServletRequest request, ServletRequestDataBinder binder) throws ServletException {
 		// to actually be able to convert Multipart instance to byte[]
 		// we have to register a custom editor
 		binder.registerCustomEditor(byte[].class, new ByteArrayMultipartFileEditor());
 		// now Spring knows how to handle multipart object and convert them
+	}
+
+	
+	@Override
+	protected void initBinder(HttpServletRequest request,
+			ServletRequestDataBinder binder) throws Exception {
+		
+		initializeBinder(request, binder);
 	}
 
 	public Gradebook2ComponentService getService() {

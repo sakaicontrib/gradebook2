@@ -76,11 +76,6 @@
 		<servlet-name>sakai.gradebook2.dispatcher</servlet-name>
 		<url-pattern>/import</url-pattern>
 	</servlet-mapping>
-	
-	<servlet-mapping>
-		<servlet-name>sakai.gradebook2.dispatcher</servlet-name>
-		<url-pattern>/submit</url-pattern>
-	</servlet-mapping>
 
   	<welcome-file-list>
     	<welcome-file>GradebookApplication.html</welcome-file>

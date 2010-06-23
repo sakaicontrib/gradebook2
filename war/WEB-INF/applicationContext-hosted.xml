@@ -20,10 +20,6 @@
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authn" class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2AuthnImpl">
 	</bean>
 	
-	<bean id="GradebookExportService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookExportController">
-		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
-	</bean>
-	
 	<bean id="org.sakaiproject.entity.api.EntityManager" class="org.sakaiproject.entity.impl.EntityManagerComponent" />
 	
 	<bean id="org.sakaiproject.time.api.TimeService" class="org.sakaiproject.time.impl.BasicTimeService" 
@@ -34,10 +30,6 @@
 		<property name="siteService" ref="org.sakaiproject.site.api.SiteService" />
 		<property name="entityManager" ref="org.sakaiproject.entity.api.EntityManager" />
 		<property name="storagePath"><value>./</value></property>
-	</bean>
-	
-	<bean id="GradebookFinalGradeSubmissionService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookFinalGradeSubmissionController">
-		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
 	</bean>
 	
 	<bean id="GradebookImportService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookImportController">

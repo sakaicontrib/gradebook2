@@ -144,12 +144,19 @@ public class GradeSubmissionDialog extends Dialog {
 			Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 			final MessageBox box = MessageBox.wait(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText1a(),  i18n.finalGradeSubmissionMessageText1b()); 
 			
-			String uri = new StringBuilder().append(GWT.getHostPageBaseURL())
-				.append(AppConstants.SUBMISSION_SERVLET).append("?gradebookUid=").append(selectedGradebook.getGradebookUid()).toString();
-			RequestBuilder requestBuilder = new RequestBuilder(RequestBuilder.GET, uri);
-			requestBuilder.setHeader("Content-Type", "text/html");
+			String uri = new StringBuilder().append(GWT.getModuleBaseURL())
+				.append(AppConstants.REST_FRAGMENT)
+				.append("/").append(AppConstants.SUBMISSION_SERVLET)
+				.append("/").append(selectedGradebook.getGradebookUid()).toString();
+			RestBuilder restBuilder = RestBuilder.getInstance(Method.GET, 
+					GWT.getModuleBaseURL(),
+					AppConstants.REST_FRAGMENT,
+					AppConstants.SUBMISSION_SERVLET,
+					selectedGradebook.getGradebookUid());
+			
+			restBuilder.setHeader("Content-Type", "text/html");
 			try {
-				requestBuilder.sendRequest("", new RequestCallback() {
+				restBuilder.sendRequest("", new RequestCallback() {
 
 					public void onError(Request request, Throwable exception) {
 

@@ -10,10 +10,11 @@ import org.sakaiproject.component.api.ServerConfigurationService;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.tool.api.Session;
 import org.sakaiproject.tool.api.SessionManager;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.servlet.ModelAndView;
 
 public class ServletWrappingController extends
-org.springframework.web.servlet.mvc.ServletWrappingController {
+org.springframework.web.servlet.mvc.ServletWrappingController implements ApplicationContextAware {
 
 	private static final Log log = LogFactory.getLog(ServletWrappingController.class);
 	
@@ -28,6 +29,12 @@ org.springframework.web.servlet.mvc.ServletWrappingController {
 	
 	private boolean hosted = false;
 
+	private boolean useControllerBean = false;
+
+	private String controllerBeanName = null;
+
+	private OpenController controllerBean = null;
+
 	// IOC init method
 	public void init() {
 
@@ -39,6 +46,7 @@ org.springframework.web.servlet.mvc.ServletWrappingController {
 		 * 
 		 */
 
+	
 		// Getting the security related Sakai properties
 		hasEnabledSecurityChecks = configService.getBoolean(AppConstants.ENABLED_SECURITY_CHECKS, true);
 		log.info("GB2: security is enabled = " + hasEnabledSecurityChecks);
@@ -63,6 +71,9 @@ org.springframework.web.servlet.mvc.ServletWrappingController {
 		// In case the user has disabled the gb2.security setting
 		if(!hasEnabledSecurityChecks) {
 
+			if(useControllerBean && controllerBean != null) {
+				return controllerBean.submit(request, response, null, null);
+			}
 			return super.handleRequestInternal(request, response);
 		}
 		else {
@@ -91,7 +102,7 @@ org.springframework.web.servlet.mvc.ServletWrappingController {
 				String jsessionId = request.getHeader("X-XSRF-Cookie");
 				
 				if(null == jsessionId) {
-					jsessionId = request.getParameter("form-token");
+					jsessionId = request.getParameter(AppConstants.REQUEST_FORM_FIELD_FORM_TOKEN);
 				}
 
 				// Getting the current session and then the sessionId
@@ -105,6 +116,9 @@ org.springframework.web.servlet.mvc.ServletWrappingController {
 					if((jsessionId.startsWith(sessionId)) 
 							 || hosted) { // until we can figure out how to sycn client and server in devel mode
 
+						if(useControllerBean && controllerBean != null) {
+							return controllerBean.submit(request, response, null, null);
+						}
 						return super.handleRequestInternal(request, response);
 					}
 					// else case is handled at the end of method
@@ -138,6 +152,17 @@ org.springframework.web.servlet.mvc.ServletWrappingController {
         writer.print("Security Exception");
         return null;
 	}
+	
+	
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		if(isUseControllerBean() && controllerBeanName != null) {		
+			controllerBean = (OpenController) getApplicationContext().getBean(controllerBeanName, OpenController.class);
+		} else{
+			super.afterPropertiesSet();
+		}
+	}
 
 	// IOC setter
 	public void setSessionManager(SessionManager sessionManager) {
@@ -148,4 +173,23 @@ org.springframework.web.servlet.mvc.ServletWrappingController {
 	public void setConfigService(ServerConfigurationService configService) {
 		this.configService = configService;
 	}
+	
+	public boolean isUseControllerBean() {
+		return useControllerBean;
+	}
+
+	public void setUseControllerBean(boolean useControllerBean) {
+		this.useControllerBean = useControllerBean;
+	}
+	
+	public String getControllerBeanName() {
+		return controllerBeanName;
+	}
+
+	public void setControllerBeanName(String controllerBeanName) {
+		this.controllerBeanName = controllerBeanName;
+	}
+
+	
+	
 }

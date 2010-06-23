@@ -3,7 +3,7 @@
 <entry
    kind="dir"
    path="."
-   revision="67203">
+   revision="68910">
 <url>https://source.sakaiproject.org/contrib/gradebook2/trunk</url>
 <repository>
 <root>https://source.sakaiproject.org/contrib</root>
@@ -14,9 +14,9 @@
 <depth>infinity</depth>
 </wc-info>
 <commit
-   revision="67203">
-<author>jpgorrono@ucdavis.edu</author>
-<date>2010-04-16T01:04:41.806914Z</date>
+   revision="68910">
+<author>tpamsler@ucdavis.edu</author>
+<date>2010-06-23T17:34:39.666864Z</date>
 </commit>
 </entry>
 </info>

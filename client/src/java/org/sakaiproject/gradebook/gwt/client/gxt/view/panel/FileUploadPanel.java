@@ -44,6 +44,7 @@ import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.HiddenField;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Cookies;
 
 public class FileUploadPanel extends FormPanel {
 
@@ -94,6 +95,11 @@ public class FileUploadPanel extends FormPanel {
 		gradebookUidField.setName(AppConstants.REQUEST_FORM_FIELD_GBUID);
 		gradebookUidField.setValue(gbModel.getGradebookUid());
 		add(gradebookUidField);
+		
+		HiddenField<String> formTokenField = new HiddenField<String>();
+		formTokenField.setName(AppConstants.REQUEST_FORM_FIELD_FORM_TOKEN);
+		formTokenField.setValue(Cookies.getCookie("JSESSIONID"));
+		add(formTokenField);
 
 		Button submitButton = new Button(i18n.nextButton());
 		submitButton.setMinWidth(120);
