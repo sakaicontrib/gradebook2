@@ -10,6 +10,8 @@ import javax.ws.rs.Produces;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidDataException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 
+import com.sun.jersey.core.util.Base64;
+
 @Path("statistics")
 public class Statistics extends Resource {
 
@@ -21,7 +23,7 @@ public class Statistics extends Resource {
 			@PathParam("sectionId") String sectionId) throws SecurityException {
 
 		List<org.sakaiproject.gradebook.gwt.client.model.Statistics> list = 
-			service.getGraderStatistics(gradebookUid, gradebookId, sectionId);
+			service.getGraderStatistics(gradebookUid, gradebookId, Base64.base64Decode(sectionId));
 		return toJson(list, list.size());
 	}
 
@@ -43,7 +45,7 @@ public class Statistics extends Resource {
 			@PathParam("assignmentId") Long assignmentId,
 			@PathParam("sectionId") String sectionId) throws SecurityException, InvalidDataException {
 
-		int[][] gradeFrequencies = service.getGradeItemStatistics(assignmentId, sectionId);
+		int[][] gradeFrequencies = service.getGradeItemStatistics(assignmentId, Base64.base64Decode(sectionId));
 		return toJson(gradeFrequencies);
 	}
 }

@@ -45,6 +45,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.view.components.SectionsComboBo
 import org.sakaiproject.gradebook.gwt.client.model.key.SectionKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.StatisticsKey;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
+import org.sakaiproject.gradebook.gwt.client.util.Base64;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
@@ -557,15 +558,23 @@ public class StatisticsPanel extends ContentPanel {
 
 		List<ModelData> selection = sectionsComboBox.getSelection();
 
+		String sectionId = null;
+		
 		if(null != selection && selection.size() == 1) {
 
-			return (String) selection.get(0).get(SectionKey.S_ID.name());
+			sectionId =  (String) selection.get(0).get(SectionKey.S_ID.name());
 			
 		}
 		else {
 
-			return AppConstants.ALL_SECTIONS;
+			sectionId = AppConstants.ALL_SECTIONS;
 		}
+		
+		// GRBK-636 : Since the sctionIds have characters that are not URL safe, we Base64 encode
+		// the sectionId here and then decode it on the server side. Initially, we tried to just 
+		// URL encode the sectionId but that didn't work because "something" on the server side
+		// decoded the URL and then return a 400
+		return Base64.encode(sectionId);
 
 	}
 

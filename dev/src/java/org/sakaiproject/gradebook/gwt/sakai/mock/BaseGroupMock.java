@@ -45,8 +45,6 @@ public class BaseGroupMock implements Group, Identifiable {
 		this.siteService = siteService;
 		this.groupId = groupId;
 		this.groupTitle = title;
-		
-		log.info("DEBUG: BadeGroupMock construcotr providerId = " + this.providerId);
 	}
 
 	public Site getContainingSite() {
