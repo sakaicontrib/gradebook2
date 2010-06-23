@@ -47,7 +47,7 @@ import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.grid.GridView;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 
-public class ItemSetupPanel extends GradebookPanel {
+public class ImportItemSetupPanel extends GradebookPanel {
 
 	private ComboBox<ItemModel> categoryComboBox;
 	private ListStore<ItemModel> categoryStore;
@@ -59,7 +59,7 @@ public class ItemSetupPanel extends GradebookPanel {
 	private final String ITEM_PREFIX = ":";
 	
 
-	public ItemSetupPanel() {
+	public ImportItemSetupPanel() {
 
 		super();
 

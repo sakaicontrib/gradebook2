@@ -50,9 +50,9 @@ public class FileUploadPanel extends FormPanel {
 
 	private FileUploadField file;
 	private final I18nConstants i18n;
-	private final NewImportPanel newImportPanel;
+	private final ImportPanel newImportPanel;
 	
-	public FileUploadPanel(final NewImportPanel newImportPanel) {
+	public FileUploadPanel(final ImportPanel newImportPanel) {
 		
 		super();
 	

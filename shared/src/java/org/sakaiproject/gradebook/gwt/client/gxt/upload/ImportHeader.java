@@ -25,15 +25,19 @@ package org.sakaiproject.gradebook.gwt.client.gxt.upload;
 
 import java.io.Serializable;
 
-public class ImportHeader implements Serializable {
+import org.sakaiproject.gradebook.gwt.client.model.Item;
+import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 
-	public enum Field { S_ID, S_NAME, S_ITEM, S_COMMENT }
+public class ImportHeader implements Serializable, Comparable<ImportHeader> {
+
+	public enum Field { S_ID, S_NAME, S_CRS_GRD, S_LTR_GRD, S_CALC_GRD, S_ADT_GRD, S_GRB_OVRD, S_ITEM, S_COMMENT, S_EMPTY }
+
 	public enum Mode { POINTS, PERCENTAGES, LETTERGRADES };
 
 	private static final long serialVersionUID = 1L;
 
 	private String id;
-	private String field;
+	private Field field;
 	private String assignmentId;
 	private String categoryId;
 	private String headerName;
@@ -41,25 +45,29 @@ public class ImportHeader implements Serializable {
 	private String value;
 	private Double numericValue;
 	private String categoryName;
-	private Double points;
+	private String points;
 	private boolean isPercentage;
-	private Double percentCategory;
-	private Boolean extraCredit;
-	private Boolean unincluded;
-
+	private String percentCategory;
+	private boolean extraCredit;
+	private boolean unincluded;
+	private int columnIndex;
+	private Item item;
+	
 	private boolean checker;
 
 	public ImportHeader() {
 
 	}
 
-	public ImportHeader(Field field, String value) {
-		this.field = field.name();
+	public ImportHeader(Field field, String value, int columnIndex) {
+		this.field = field;
 		this.value = value;
+		this.columnIndex = columnIndex;
 	}
 
-	public ImportHeader(String header) {
+	public ImportHeader(String header, int columnIndex) {
 		this.headerName = header;
+		this.columnIndex = columnIndex;
 	}
 
 	public ImportHeader(String assignmentId, String headerName, Mode mode, Double numericValue) {
@@ -109,19 +117,19 @@ public class ImportHeader implements Serializable {
 		this.id = id;
 	}
 
-	public Double getPoints() {
+	public String getPoints() {
 		return points;
 	}
 
-	public void setPoints(Double points) {
+	public void setPoints(String points) {
 		this.points = points;
 	}
 
-	public String getField() {
+	public Field getField() {
 		return field;
 	}
 
-	public void setField(String field) {
+	public void setField(Field field) {
 		this.field = field;
 	}
 
@@ -157,11 +165,11 @@ public class ImportHeader implements Serializable {
 		this.categoryId = categoryId;
 	}
 
-	public Double getPercentCategory() {
+	public String getPercentCategory() {
 		return percentCategory;
 	}
 
-	public void setPercentCategory(Double percentCategory) {
+	public void setPercentCategory(String percentCategory) {
 		this.percentCategory = percentCategory;
 	}
 
@@ -173,20 +181,49 @@ public class ImportHeader implements Serializable {
 		this.value = value;
 	}
 
-	public Boolean getExtraCredit() {
+	public boolean isExtraCredit() {
 		return extraCredit;
 	}
 
-	public void setExtraCredit(Boolean extraCredit) {
+	public void setExtraCredit(boolean extraCredit) {
 		this.extraCredit = extraCredit;
 	}
 
-	public Boolean getUnincluded() {
+	public boolean isUnincluded() {
 		return unincluded;
 	}
 
-	public void setUnincluded(Boolean unincluded) {
+	public void setUnincluded(boolean unincluded) {
 		this.unincluded = unincluded;
 	}
+
+	public int getColumnIndex() {
+		return columnIndex;
+	}
+
+	public void setColumnIndex(int columnIndex) {
+		this.columnIndex = columnIndex;
+	}
+
+	public Item getItem() {
+		return item;
+	}
+
+	public void setItem(Item item) {
+		this.item = item;
+	}
+
+	public int compareTo(ImportHeader o) {
+		
+		if(null != o) {
+			
+			String assignmentName = (String) (null != getItem() ? getItem().get(ItemKey.S_NM.name()) : "");
+			String assignmentName2 = (String) (null != o.getItem() ? o.getItem().get(ItemKey.S_NM.name()) : "");
+			return assignmentName.compareTo(assignmentName2);
+		}
+		
+		return -1;
+	}
+
 
 }

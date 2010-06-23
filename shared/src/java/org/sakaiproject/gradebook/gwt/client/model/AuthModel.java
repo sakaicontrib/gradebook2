@@ -35,7 +35,6 @@ public class AuthModel {
 	private Boolean isUserAbleToGrade;
 	private Boolean isUserAbleToEditAssessments;
 	private Boolean isNewGradebook;
-	private Boolean isOldImport;
 	private String placementId;
 	
 	public AuthModel() {
@@ -82,14 +81,6 @@ public class AuthModel {
 		this.isNewGradebook = isNewGradebook;
 	}
 	
-	public Boolean isOldImport() {
-		return isOldImport;
-	}
-
-	public void setOldImport(Boolean isOldImport) {
-		this.isOldImport = isOldImport;
-	}
-
 	public String getPlacementId() {
 		return placementId;
 	}
@@ -129,7 +120,6 @@ public class AuthModel {
 			isUserAbleToGrade = toBoolean(s.charAt(2));
 			isUserAbleToEditAssessments = toBoolean(s.charAt(3));
 			isNewGradebook = toBoolean(s.charAt(4));
-			isOldImport = toBoolean(s.charAt(5));
 			placementId = s.substring(6);
 		}
 	}
@@ -137,7 +127,7 @@ public class AuthModel {
 	public String toString() {
 		return new StringBuilder()
 			.append(pack(isUserAbleToViewOwnGrades, isUserHasGraderPermissions, isUserAbleToGrade,
-				isUserAbleToEditAssessments, isNewGradebook, isOldImport, placementId)).toString();
+				isUserAbleToEditAssessments, isNewGradebook, Boolean.FALSE, placementId)).toString();
 	}
 	
 	public void parse(String authString) {

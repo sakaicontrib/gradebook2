@@ -20,7 +20,7 @@ public class Upload extends Resource {
 		
 		Map<String,Object> map = fromJson(model, Map.class);
 		org.sakaiproject.gradebook.gwt.client.model.Upload result = 
-			service.newUpload(gradebookUid, gradebookId, new UploadImpl(map), false);
+			service.upload(gradebookUid, gradebookId, new UploadImpl(map), false);
 		
 		return toJson(result);
 	}

@@ -32,7 +32,7 @@ import com.extjs.gxt.ui.client.data.BeanModelLookup;
 
 public class ClientUploadUtility {
 
-	public static List<BeanModel> convertHeadersToBeanModels(List<NewImportHeader> headers) {
+	public static List<BeanModel> convertHeadersToBeanModels(List<ImportHeader> headers) {
 		List<BeanModel> itemModels = new ArrayList<BeanModel>();
 		BeanModelFactory factory = BeanModelLookup.get().getFactory(headers.get(0).getClass());
 		if (factory == null) {
@@ -43,41 +43,6 @@ public class ClientUploadUtility {
 
 		return itemModels;
 	}
-
-
-	/*
-	public static SpreadsheetModel composeSpreadsheetModelFromBeanModels(List<BeanModel> headers, 
-			List<ModelData> importRows, List<ColumnConfig> previewColumns) {
-
-		// Create new items
-		List<ItemModel> items = new ArrayList<ItemModel>();
-		if (headers != null) {
-			for (BeanModel importHeader : headers) {
-				String categoryId = importHeader.get("categoryId");
-				String categoryName = importHeader.get("categoryName");
-
-				ItemModel item = new ItemModel();
-				item.setIdentifier((String)importHeader.get("id"));
-				if (categoryId != null && !categoryId.equals("null"))
-					item.setCategoryId(Long.valueOf(categoryId));
-				if (categoryName != null && !categoryName.equals("null"))
-					item.setCategoryName(categoryName);
-				item.setName((String)importHeader.get("headerName"));
-
-				boolean isPercentage = importHeader.get("isPercentage") != null && ((Boolean)importHeader.get("isPercentage")).booleanValue();
-				if (!isPercentage) 
-					item.setPoints((Double)importHeader.get("points"));
-
-				item.setPercentCategory((Double)importHeader.get("percentCategory"));
-
-				item.setIsPercentage(Boolean.valueOf(isPercentage));
-
-				items.add(item);
-			}
-		}
-
-		return composeSpreadsheetModel(items, importRows, previewColumns);
-	}*/
 
 
 }

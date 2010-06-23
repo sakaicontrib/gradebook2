@@ -111,8 +111,6 @@ public interface Gradebook2ComponentService {
 	
 	public List<Map<String,Object>> getVisibleSections(String gradebookUid, boolean enableAllSectionsEntry, String allSectionsEntryTitle);
 
-	public boolean isOldImport();
-	
 	public boolean isValidLetterGrade(String letterGrade);
 
 	public void postEvent(String message, String gradebookId, String... args);
@@ -126,12 +124,8 @@ public interface Gradebook2ComponentService {
 	public void updateGradeMap(String gradebookUid, String affectedLetterGrade, Object value) throws InvalidInputException, SecurityException;
 	
 	public Item updateItem(Item item) throws InvalidInputException;
-
+	
 	public Upload upload(String gradebookUid, Long gradebookId, Upload upload, boolean isDryRun) throws InvalidInputException;
-	
-	public Upload oldUpload(String gradebookUid, Long gradebookId, Upload upload, boolean isDryRun) throws InvalidInputException;
-	
-	public Upload newUpload(String gradebookUid, Long gradebookId, Upload upload, boolean isDryRun) throws InvalidInputException;
 	
 	public void saveFullGradebookFromClientModel(Gradebook newGradebook) throws FatalException, InvalidInputException;
 	

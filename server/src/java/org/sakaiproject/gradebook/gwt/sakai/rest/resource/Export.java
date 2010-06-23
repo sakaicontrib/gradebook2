@@ -11,7 +11,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
-import org.sakaiproject.gradebook.gwt.server.NewImportExportUtility;
 
 @Path("export")
 public class Export extends Resource {
@@ -30,27 +29,14 @@ public class Export extends Resource {
 		
 		String fileType = "".equals(format) || format.indexOf("/") == -1 ? "csv"  : format.split("/")[2].toLowerCase();
 		
-		if (service.isOldImport()) {
-			ImportExportUtility utility = new ImportExportUtility();
-			
-			try {
-				utility.exportGradebook(service, gradebookUid, includeStructure, true, null, response, fileType);
-			} catch (FatalException e) {
-				log.error("EXCEPTION: Wasn't able to export gradebook: " + gradebookUid, e);
-				// 500 Internal Server Error
-				response.setStatus(500);
-			}
-			
-		} else {
-			NewImportExportUtility utility = new NewImportExportUtility();
-			
-			try {
-				utility.exportGradebook(service, gradebookUid, includeStructure, true, null, response, fileType);
-			} catch (FatalException e) {
-				log.error("EXCEPTION: Wasn't able to export gradebook: " + gradebookUid, e);
-				// 500 Internal Server Error
-				response.setStatus(500);
-			}
+		ImportExportUtility utility = new ImportExportUtility();
+
+		try {
+			utility.exportGradebook(service, gradebookUid, includeStructure, true, null, response, fileType);
+		} catch (FatalException e) {
+			log.error("EXCEPTION: Wasn't able to export gradebook: " + gradebookUid, e);
+			// 500 Internal Server Error
+			response.setStatus(500);
 		}
 		return null;
 	}

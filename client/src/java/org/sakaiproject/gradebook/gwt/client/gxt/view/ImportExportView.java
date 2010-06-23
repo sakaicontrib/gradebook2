@@ -5,7 +5,6 @@ import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.ExportDetails;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ImportPanel;
-import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.NewImportPanel;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -77,13 +76,8 @@ public class ImportExportView extends View {
 	}
 
 	public ContentPanel getImportDialog() {
-		Boolean isOld = Registry.get(AppConstants.IS_OLD_IMPORT);
-		boolean useOldImport = DataTypeConversionUtil.checkBoolean(isOld);
 		if (importPanel == null) {
-			if (useOldImport)
-				importPanel = new ImportPanel();
-			else
-				importPanel = new NewImportPanel();
+			importPanel = new ImportPanel();
 		}
 		return importPanel;
 	}

@@ -49,7 +49,6 @@ public interface AppConstants {
 	public static final String VERSION			= "version";
 	public static final String IS_ABLE_TO_GRADE = "canGrade";
 	public static final String IS_ABLE_TO_EDIT 	= "canEdit";
-	public static final String IS_OLD_IMPORT	= "oldImport";
 	public static final String IS_NEW_GRADEBOOK	= "newGradebook";
 	public static final String HAS_CONTROLLERS	= "hasControllers";
 	public static final String APP_MODEL		= "appModel";
@@ -137,8 +136,6 @@ public interface AppConstants {
 	
 	public static final String ENABLE_SCALED_EC	= "gb2.enable.scaled.extra.credit";
 	public static final String LIMIT_SCALED_EC	= "gb2.limit.scaled.extra.credit";
-	
-	public static final String USE_OLD_IMPORT = "gb2.use.old.import";
 	
 	public static final String IMPORT_DELETE_MISSING_GRADES = "gb2.import.delete.missing.grades";
 	
