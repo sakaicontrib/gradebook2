@@ -8,7 +8,9 @@ public enum ActionType { CREATE("Create", "Added "),
 	GRADED("Grade", "Set grade to"),
 	UPDATE("Update", "Updated "), 
 	DELETE("Delete", "Deleted "),
-	SUBMITTED("Submit", "Submitted ");
+	SUBMITTED("Submit", "Submitted "),
+	IMPORT_GRADE_CHANGE("File-Import", "Import changed score to ");
+	
 
 private String desc;
 private String verb;

@@ -1095,6 +1095,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 					description = new StringBuilder().append(actionType.getVerb()).append(" ")
 					.append(entityType).toString();
 					break;
+				case IMPORT_GRADE_CHANGE:
 				case GRADED:
 					score = actionRecord.getPropertyMap().get("score");
 					if (score == null)
@@ -3008,13 +3009,33 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 						if (oldValue == null && value == null)
 							continue;
 
-						// GRBK-619 : TPA
-						boolean canDeleteMissingGrades = configService.getBoolean(AppConstants.IMPORT_DELETE_MISSING_GRADES, true);
-						if(!canDeleteMissingGrades && oldValue != null && value == null) {
-							continue;
+						
+						boolean changedScore = (oldValue != null && value == null);
+						
+						if(changedScore) {
+							// GRBK-619 : TPA
+							boolean canDeleteMissingGrades = configService.getBoolean(AppConstants.IMPORT_DELETE_MISSING_GRADES, true);
+							if(!canDeleteMissingGrades) {
+								continue;
+							} else {
+								// GRBK-611 : JPG
+								ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.GRADE_RECORD.name(), ActionType.IMPORT_GRADE_CHANGE.name());
+								actionRecord.setEntityId(String.valueOf(assignment.getId()));
+								actionRecord.setStudentUid(studentUid);
+								Map<String, String> propertyMap = actionRecord.getPropertyMap();
+
+								propertyMap.put("score", String.valueOf(value));
+
+								populatePropertiesFromLearner(propertyMap, student);
+
+								actionRecord.setEntityName(new StringBuilder().append((String)student.get(LearnerKey.S_DSPLY_NM.name())).append(" : ").append(assignment.getName()).toString());
+								gbService.storeActionRecord(actionRecord);
+							}
 						}
 
 						gradedRecords.add(scoreItem(gradebook, gradeType, assignment, assignmentGradeRecord, studentUid, value, true, true));
+						
+						
 
 						String successProperty = Util.buildSuccessKey(String.valueOf(assignment.getId()));
 						student.set(successProperty, "S");
