@@ -70,7 +70,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.Response;
-import com.google.gwt.http.client.URL;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONValue;
@@ -170,7 +169,7 @@ public class StatisticsPanel extends ContentPanel {
 			public void selectionChanged(SelectionChangedEvent<ModelData> se) {
 
 				// When the section selection changes, we do:
-				// - Reloaded the grid with the section relevant data
+				// - Reload the grid with the section relevant data
 				// - Reset the selected grade item so that new data is loaded
 				//   if the user clicks on a grade item row
 				// - Remove existing chart
@@ -284,7 +283,7 @@ public class StatisticsPanel extends ContentPanel {
 
 		// First we check the cache if we have the data already
 		String cacheKey = assignmentId + sectionId;
-
+		
 		if(dataTableCache.containsKey(cacheKey)) {
 			
 			dataTable = dataTableCache.get(cacheKey);
@@ -299,7 +298,7 @@ public class StatisticsPanel extends ContentPanel {
 					AppConstants.STATISTICS_FRAGMENT,
 					AppConstants.INSTRUCTOR_FRAGMENT,
 					assignmentId,
-					getSelectedSection());
+					sectionId);
 
 
 			// Keeping track of the assignmentId so that we can add the dataTable to
@@ -560,7 +559,8 @@ public class StatisticsPanel extends ContentPanel {
 
 		if(null != selection && selection.size() == 1) {
 
-			return URL.encodeComponent((String) selection.get(0).get(SectionKey.S_ID.name()));
+			return (String) selection.get(0).get(SectionKey.S_ID.name());
+			
 		}
 		else {
 

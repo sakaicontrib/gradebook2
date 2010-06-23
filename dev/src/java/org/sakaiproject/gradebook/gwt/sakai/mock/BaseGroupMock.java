@@ -3,6 +3,8 @@ package org.sakaiproject.gradebook.gwt.sakai.mock;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.authz.api.AuthzGroup;
 import org.sakaiproject.authz.api.Member;
 import org.sakaiproject.authz.api.Role;
@@ -10,7 +12,6 @@ import org.sakaiproject.authz.api.RoleAlreadyDefinedException;
 import org.sakaiproject.entity.api.ResourceProperties;
 import org.sakaiproject.entity.api.ResourcePropertiesEdit;
 import org.sakaiproject.exception.IdUnusedException;
-import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.site.api.Group;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SiteService;
@@ -22,25 +23,30 @@ import org.sakaiproject.util.BaseResourcePropertiesEdit;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.google.gwt.core.client.GWT;
-
 public class BaseGroupMock implements Group, Identifiable {
 
+	private static final long serialVersionUID = 1L;
+
+	Log log = LogFactory.getLog(BaseGroupMock.class);
+	
 	public static String testSite_ContextId = "TESTSITECONTEXT";
-	private String testGroupId = "TESTGROUP_" + Math.random()*System.currentTimeMillis();
 	private BaseResourceProperties props = new BaseResourcePropertiesEdit();
 	private String providerId = null;
 	private Site site = null;
 	private SiteService siteService = null;
 	private String groupId = null;
+	private String groupTitle = null;
 	
 	
-	public BaseGroupMock(String providerId, SiteService siteService, Site site, String groupId) {
-		this.providerId = "sectionEid: " + providerId;
+	public BaseGroupMock(String providerId, SiteService siteService, Site site, String groupId, String title) {
+		
+		this.providerId = providerId;
 		this.site = site;
 		this.siteService = siteService;
 		this.groupId = groupId;
-
+		this.groupTitle = title;
+		
+		log.info("DEBUG: BadeGroupMock construcotr providerId = " + this.providerId);
 	}
 
 	public Site getContainingSite() {
@@ -58,7 +64,8 @@ public class BaseGroupMock implements Group, Identifiable {
 	}
 
 	public String getTitle() {
-		return "sec.: " + getProviderGroupId();
+		
+		return groupTitle;
 	}
 
 	public void setDescription(String arg0) {
@@ -84,8 +91,7 @@ public class BaseGroupMock implements Group, Identifiable {
 	}
 
 	public String getId() {
-		
-		return testGroupId;
+		return groupId;
 	}
 
 	public ResourceProperties getProperties() {
@@ -172,9 +178,13 @@ public class BaseGroupMock implements Group, Identifiable {
 	}
 
 	public String getProviderGroupId() {
+		
 		if (null == providerId) {
-			providerId = "" + Math.floor(Math.random() * 4.5);
+			
+			providerId = Double.toString(Math.floor(Math.random() * 4.5));
+			log.error("ERROR: providerId = null : generated providerId = " + providerId );
 		}
+		
 		return providerId;
 	}
 

@@ -37,14 +37,11 @@ import org.sakaiproject.authz.api.Member;
 import org.sakaiproject.authz.api.Role;
 import org.sakaiproject.authz.api.RoleAlreadyDefinedException;
 import org.sakaiproject.component.section.sakai.CourseImpl;
-import org.sakaiproject.entity.api.Entity;
-import org.sakaiproject.entity.api.Reference;
 import org.sakaiproject.entity.api.ResourceProperties;
 import org.sakaiproject.entity.api.ResourcePropertiesEdit;
 import org.sakaiproject.site.api.Group;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SitePage;
-import org.sakaiproject.site.api.SiteService;
 import org.sakaiproject.site.api.ToolConfiguration;
 import org.sakaiproject.site.impl.BaseSiteService;
 import org.sakaiproject.site.impl.ResourceVector;
@@ -57,15 +54,16 @@ import org.w3c.dom.Element;
 
 public class SiteMock implements Site {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
+	
+	private static final String GROUP_PROVIDER_PREFIX = "http://university.edu/section/abc";
+	private static final String GROUP_ID_PREFIX = "groupid:";
+	private static final String GROUP_NAME_PREFIX = "Section ";
+	
 	private String id;
 	private String title;
 	private BaseResourceProperties props = new BaseResourcePropertiesEdit();
 	private ResourceVector groups = null;
-	private BaseSiteService siteService;
 	private AuthzGroupService authzGroupService;
 	private String providerId;
 
@@ -73,26 +71,31 @@ public class SiteMock implements Site {
 		props.addProperty(CourseImpl.EXTERNALLY_MAINTAINED, "true");
 		props.addProperty(CourseImpl.STUDENT_REGISTRATION_ALLOWED, "false");
 		props.addProperty(CourseImpl.STUDENT_SWITCHING_ALLOWED, "false");
-		this.siteService = siteService;
 	}
 
 	@SuppressWarnings("unchecked")
 	public SiteMock(String id, String title, BaseSiteService siteService, AuthzGroupService authzGroupService) {
 		this.id = id;
 		this.title = title;
-		this.siteService = siteService;
 		this.authzGroupService = authzGroupService;
 		props.addProperty(CourseImpl.EXTERNALLY_MAINTAINED, "true");
 		props.addProperty(CourseImpl.STUDENT_REGISTRATION_ALLOWED, "false");
 		props.addProperty(CourseImpl.STUDENT_SWITCHING_ALLOWED, "false");
 		groups = new ResourceVector();
 		StringBuilder providerId = new StringBuilder();
+		
 		for (int i = 0; i < SectionAwarenessMock.NUMBER_OF_MOCK_SECTIONS; ++i) {
-			String groupPoviderId = "eid_"+ (new Integer(i)).toString();
-			groups.add(new BaseGroupMock(groupPoviderId , siteService, this, "groupid:" + i));
+			
+			String groupProviderId = GROUP_PROVIDER_PREFIX + Integer.toString(i);
+			String groupId = GROUP_ID_PREFIX + Integer.toString(i);
+			String groupName = GROUP_NAME_PREFIX + Integer.toString(i);
+			
+			groups.add(new BaseGroupMock(groupProviderId , siteService, this, groupId, groupName));
+			
 			if (i>0)
 				providerId.append("+");
-			providerId.append(groupPoviderId);
+			
+			providerId.append(groupProviderId);
 		}
 		setProviderGroupId(providerId.toString());
 		
