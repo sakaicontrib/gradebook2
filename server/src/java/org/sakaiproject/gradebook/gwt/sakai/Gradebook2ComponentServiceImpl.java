@@ -83,6 +83,7 @@ import org.sakaiproject.gradebook.gwt.server.model.LearnerImpl;
 import org.sakaiproject.gradebook.gwt.server.model.PermissionImpl;
 import org.sakaiproject.gradebook.gwt.server.model.RosterImpl;
 import org.sakaiproject.gradebook.gwt.server.model.StatisticsImpl;
+import org.sakaiproject.gradebook.gwt.util.NumericUtils;
 import org.sakaiproject.section.api.SectionAwareness;
 import org.sakaiproject.section.api.coursemanagement.CourseSection;
 import org.sakaiproject.section.api.coursemanagement.EnrollmentRecord;
@@ -647,8 +648,13 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				if (categoryOrder == null)
 					categoryOrder = categories == null || categories.isEmpty() ? Integer.valueOf(0) : Integer.valueOf(categories.size());
 			}
-
-			double w = weight == null ? 0d : ((new BigDecimal(weight)).multiply(new BigDecimal("0.01"))).doubleValue();
+			// GRBK-613 / GRBK-626
+			double w = 0.0; 
+			if (weight != null)
+			{
+				w = NumericUtils.divideWithPrecision(weight, 100.0);
+				
+			}
 
 			if (hasCategories) {
 				int dropLowestInt = dropLowest == null ? 0 : dropLowest.intValue();
@@ -5845,7 +5851,8 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			double w = 0.0;
 			if (newCategoryWeight != null)
 			{
-				w = Util.divideWithPrecision(newCategoryWeight.doubleValue(), 100.0);
+				// We need to convert this into a double with precision because the weight is stored in the db that way. 
+				w = NumericUtils.divideWithPrecision(newCategoryWeight.doubleValue(), 100.0);
 			}
 			log.debug("w: " + w); 
 
