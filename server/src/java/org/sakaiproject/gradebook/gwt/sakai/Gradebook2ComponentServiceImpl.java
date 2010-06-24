@@ -806,7 +806,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			}
 			rv.append(m.toString());
 		}
-		log.info(rv.toString()); ///TODO:REMOVE ME
+		
 		return rv.toString();
 	}
 
@@ -1568,7 +1568,13 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return siteService;
 	}
 
-	public int[][] getGradeItemStatistics(Long assignmentId, String sectionId) throws SecurityException, InvalidDataException {
+	// 
+	public int[][] getGradeItemStatistics(String gradebookUid, Long assignmentId, String sectionId) throws SecurityException, InvalidDataException {
+		
+		boolean isUserAbleToGrade = authz.isUserAbleToGradeAll(gradebookUid);
+
+		if (!isUserAbleToGrade)
+			throw new SecurityException("You are not authorized to view statistics charts.");
 		
 		// Create and initialize two dimensional array to keep track of grade frequencies
 		// NOTE: we keep track of both positive as well at negative grades
@@ -1815,14 +1821,194 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 		return statsList;
 	}
+	
 
 	public List<Statistics> getLearnerStatistics(String gradebookUid, Long gradebookId, String learnerId) throws SecurityException {
+		
+		// Security check
+		// 1. is it an instructor
+		// 2. is user able to view grades
+		
+		boolean isUserAbleToGrade = authz.isUserAbleToGradeAll(gradebookUid);
+		boolean isUserAbleToViewOwnGrades = authz.isUserAbleToViewOwnGrades(gradebookUid);
+		
+		if (!isUserAbleToViewOwnGrades && !isUserAbleToGrade) {
+			throw new SecurityException("You are not authorized to view statistics data.");
+		}
+		
+		Gradebook gradebook = null;
+		if (gradebookId == null) {
+			gradebook = gbService.getGradebook(gradebookUid);
+			gradebookId = gradebook.getId();
+		}
 
-		return getStatistics(gradebookUid, gradebookId, learnerId);
+		List<Assignment> assignments = gbService.getAssignments(gradebookId);
+
+		// Don't bother going out to the db for the Gradebook if we've already
+		// retrieved it
+		if (gradebook == null && assignments != null && assignments.size() > 0)
+			gradebook = assignments.get(0).getGradebook();
+
+		if (gradebook == null)
+			gradebook = gbService.getGradebook(gradebookId);
+
+		List<Category> categories = null;
+		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
+		if (hasCategories)
+			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+
+		int gradeType = gradebook.getGrade_type();
+
+		String siteId = getSiteId();
+
+		String[] realmIds = new String[1];
+		realmIds[0] = new StringBuffer().append("/site/").append(siteId).toString();
+
+		String[] learnerRoleNames = getLearnerRoleNames();
+
+		List<AssignmentGradeRecord> allGradeRecords = gbService.getAllAssignmentGradeRecords(gradebook.getId(), realmIds, learnerRoleNames);
+		Map<String, Map<Long, AssignmentGradeRecord>> studentGradeRecordMap = new HashMap<String, Map<Long, AssignmentGradeRecord>>();
+
+		List<String> gradedStudentUids = new ArrayList<String>();
+
+		Map<Long, BigDecimal> assignmentSumMap = new HashMap<Long, BigDecimal>();
+		Map<Long, List<StudentScore>> assignmentGradeListMap = new HashMap<Long, List<StudentScore>>();
+
+		if (allGradeRecords != null) {
+			for (AssignmentGradeRecord gradeRecord : allGradeRecords) {
+				gradeRecord.setUserAbleToView(true);
+				String studentUid = gradeRecord.getStudentId();
+				Map<Long, AssignmentGradeRecord> studentMap = studentGradeRecordMap.get(studentUid);
+				if (studentMap == null) {
+					studentMap = new HashMap<Long, AssignmentGradeRecord>();
+				}
+				GradableObject go = gradeRecord.getGradableObject();
+				studentMap.put(go.getId(), gradeRecord);
+
+				BigDecimal value = null;
+				if (gradeRecord.getPointsEarned() != null) {
+					Assignment assignment = (Assignment) gradeRecord.getGradableObject();
+					switch (gradeType) {
+					case GradebookService.GRADE_TYPE_POINTS:
+						value = BigDecimal.valueOf(gradeRecord.getPointsEarned().doubleValue());
+						break;
+					case GradebookService.GRADE_TYPE_PERCENTAGE:
+					case GradebookService.GRADE_TYPE_LETTER:
+						value = gradeCalculations.getPointsEarnedAsPercent(assignment, gradeRecord);
+						break;
+					}
+
+					if (value != null && assignment != null) {
+						Long assignmentId = assignment.getId();
+						List<StudentScore> gradeList = assignmentGradeListMap.get(assignmentId);
+						if (gradeList == null) {
+							gradeList = new ArrayList<StudentScore>();
+							assignmentGradeListMap.put(assignmentId, gradeList);
+						}
+
+						gradeList.add(new StudentScore(gradeRecord.getStudentId(), value));
+
+						BigDecimal itemSum = assignmentSumMap.get(assignmentId);
+						if (itemSum == null)
+							itemSum = BigDecimal.ZERO;
+						itemSum = itemSum.add(value);
+						assignmentSumMap.put(assignmentId, itemSum);
+					}
+
+				}
+				studentGradeRecordMap.put(studentUid, studentMap);
+
+				if (!gradedStudentUids.contains(studentUid))
+					gradedStudentUids.add(studentUid);
+			}
+		}
+
+		// Now we can calculate the mean course grade
+		List<StudentScore> courseGradeList = new ArrayList<StudentScore>();
+		BigDecimal sumCourseGrades = BigDecimal.ZERO;
+		for (String studentUid : gradedStudentUids) {
+			Map<Long, AssignmentGradeRecord> studentMap = studentGradeRecordMap.get(studentUid);
+			BigDecimal courseGrade = null;
+
+			boolean isScaledExtraCredit = Util.checkBoolean(gradebook.isScaledExtraCredit());
+			switch (gradebook.getCategory_type()) {
+			case GradebookService.CATEGORY_TYPE_NO_CATEGORY:
+				courseGrade = gradeCalculations.getCourseGrade(gradebook, assignments, studentMap, isScaledExtraCredit);
+				break;
+			default:
+				courseGrade = gradeCalculations.getCourseGrade(gradebook, categories, studentMap, isScaledExtraCredit);
+			}
+
+			if (courseGrade != null) {
+				sumCourseGrades = sumCourseGrades.add(courseGrade);
+				courseGradeList.add(new StudentScore(studentUid, courseGrade));
+			}
+		} 
+
+		GradeStatistics courseGradeStatistics = gradeCalculations.calculateStatistics(courseGradeList, sumCourseGrades, learnerId);
+
+		List<Statistics> statsList = new ArrayList<Statistics>();
+
+		long id = 0;
+		statsList.add(getStatisticsMap(gradebook, "Course Grade", courseGradeStatistics, Long.valueOf(id), Long.valueOf(-1), learnerId ));
+		id++;
+
+		if (assignments != null) {
+
+			if (hasCategories) {
+				if (categories != null) {
+					for (Category category : categories) {
+						List<Assignment> asns = getUncheckedAssignmentList(category);
+						if (asns != null) {
+							for (Assignment a : asns) {
+								Long assignmentId = a.getId();
+								String name = a.getName();
+
+								List<StudentScore> gradeList = assignmentGradeListMap.get(assignmentId);
+								BigDecimal sum = assignmentSumMap.get(assignmentId);
+
+								GradeStatistics assignmentStatistics = null;
+								if (gradeList != null && sum != null) {
+									assignmentStatistics = gradeCalculations.calculateStatistics(gradeList, sum, learnerId);
+								}
+
+								statsList.add(getStatisticsMap(gradebook, name, assignmentStatistics, Long.valueOf(id), assignmentId, learnerId));
+								id++;
+							}
+						}
+					}
+				}
+			} else {
+
+				for (Assignment assignment : assignments) {
+					Long assignmentId = assignment.getId();
+					String name = assignment.getName();
+
+					List<StudentScore> gradeList = assignmentGradeListMap.get(assignmentId);
+					BigDecimal sum = assignmentSumMap.get(assignmentId);
+
+					GradeStatistics assignmentStatistics = null;
+					if (gradeList != null && sum != null) {
+						assignmentStatistics = gradeCalculations.calculateStatistics(gradeList, sum, learnerId);
+					}
+
+					statsList.add(getStatisticsMap(gradebook, name, assignmentStatistics, Long.valueOf(id), assignmentId, learnerId));
+					id++;
+				}
+			}
+		}
+
+		return statsList;
 	}
 
 	public List<Statistics> getGraderStatistics(String gradebookUid, Long gradebookId, String sectionId) throws SecurityException {
 
+		
+		boolean isUserAbleToGrade = authz.isUserAbleToGradeAll(gradebookUid);
+
+		if (!isUserAbleToGrade)
+			throw new SecurityException("You are not authorized to view statistics data.");
+		
 		Gradebook gradebook = null;
 		if (gradebookId == null) {
 			gradebook = gbService.getGradebook(gradebookUid);

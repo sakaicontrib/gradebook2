@@ -228,4 +228,7 @@ public interface AppConstants {
 	public static final String REQUEST_FORM_FIELD_GBUID = "gradebookUid";
 	public static final String REQUEST_FORM_FIELD_FORM_TOKEN = "form-token";
 	
+	// Hosted Mode
+	public static final String SYSTEM_PROPERTY_KEY_MODE = "gb2.mode";
+	public static final String SYSTEM_PROPERTY_VALUE_HOSTED = "hosted";
 }

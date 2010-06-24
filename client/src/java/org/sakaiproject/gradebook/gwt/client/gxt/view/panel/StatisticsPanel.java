@@ -42,6 +42,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.StatisticsModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.SectionsComboBox;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.key.SectionKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.StatisticsKey;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
@@ -292,12 +293,16 @@ public class StatisticsPanel extends ContentPanel {
 		}
 		else {
 			
+			Gradebook gbModel = Registry.get(AppConstants.CURRENT);
+			
 			RestBuilder builder = RestBuilder.getInstance(
 					Method.GET,
 					GWT.getModuleBaseURL(),
 					AppConstants.REST_FRAGMENT,
 					AppConstants.STATISTICS_FRAGMENT,
 					AppConstants.INSTRUCTOR_FRAGMENT,
+					gbModel.getGradebookUid(),
+					gbModel.getGradebookId().toString(),
 					assignmentId,
 					sectionId);
 

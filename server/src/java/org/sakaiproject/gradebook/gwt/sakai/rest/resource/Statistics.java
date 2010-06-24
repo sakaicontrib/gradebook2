@@ -39,13 +39,15 @@ public class Statistics extends Resource {
 		return toJson(list, list.size());
 	}
 
-	@GET @Path("/instructor/{assignmentId}/{sectionId}")
+	@GET @Path("/instructor/{uid}/{id}/{assignmentId}/{sectionId}")
 	@Produces("application/json")
 	public String getStatisticsData(
+			@PathParam("uid") String gradebookUid,
+			@PathParam("id") Long gradebookId,
 			@PathParam("assignmentId") Long assignmentId,
 			@PathParam("sectionId") String sectionId) throws SecurityException, InvalidDataException {
 
-		int[][] gradeFrequencies = service.getGradeItemStatistics(assignmentId, Base64.base64Decode(sectionId));
+		int[][] gradeFrequencies = service.getGradeItemStatistics(gradebookUid, assignmentId, Base64.base64Decode(sectionId));
 		return toJson(gradeFrequencies);
 	}
 }

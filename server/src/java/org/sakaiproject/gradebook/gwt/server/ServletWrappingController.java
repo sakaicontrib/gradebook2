@@ -45,9 +45,12 @@ org.springframework.web.servlet.mvc.ServletWrappingController implements Applica
 		 * By default security check is enabled.
 		 * 
 		 */
-
-	
-		// Getting the security related Sakai properties
+		
+		// Getting the security related Sakai properties and make sure that they are not null
+		if(null == configService) {
+			throw new RuntimeException("EXCEPTION: Configuration Service was not initialized");
+		}
+		
 		hasEnabledSecurityChecks = configService.getBoolean(AppConstants.ENABLED_SECURITY_CHECKS, true);
 		log.info("GB2: security is enabled = " + hasEnabledSecurityChecks);
 
@@ -56,11 +59,14 @@ org.springframework.web.servlet.mvc.ServletWrappingController implements Applica
 		if(validContextPrefix.lastIndexOf("/") != validContextPrefix.length()-1) {
 			validContextPrefix += "/";
 		}
-		hosted = "hosted".equals(System.getProperty("gb2.mode"));
+		
+		// Are we running in GWT hosted/dev mode
+		hosted = AppConstants.SYSTEM_PROPERTY_VALUE_HOSTED.equals(System.getProperty(AppConstants.SYSTEM_PROPERTY_KEY_MODE));
 		
 		if (hosted) {
 			validContextPrefix = "";
 		}
+		
 		log.info("GB2: security check context prefix = " + validContextPrefix);
 	}
 
@@ -74,6 +80,7 @@ org.springframework.web.servlet.mvc.ServletWrappingController implements Applica
 			if(useControllerBean && controllerBean != null) {
 				return controllerBean.submit(request, response, null, null);
 			}
+			
 			return super.handleRequestInternal(request, response);
 		}
 		else {
@@ -82,7 +89,7 @@ org.springframework.web.servlet.mvc.ServletWrappingController implements Applica
 			String contextPath = request.getContextPath();
 			// The contextPath needs to start with what's defined in validContextPrefix
 			// e.g. /portal/ or /xls-portal/, etc
-			if(!contextPath.startsWith(validContextPrefix)) {
+			if(null != contextPath && !contextPath.startsWith(validContextPrefix)) {
 				
 				log.error("ERROR: User tried to access GB2 via : " + contextPath);
 				response.setContentType("text/plain");
@@ -108,7 +115,7 @@ org.springframework.web.servlet.mvc.ServletWrappingController implements Applica
 				// Getting the current session and then the sessionId
 				Session session = sessionManager.getCurrentSession();
 
-				if(null != session) {
+				if(null != session && null != jsessionId) {
 
 					String sessionId = session.getId();
 
@@ -189,7 +196,4 @@ org.springframework.web.servlet.mvc.ServletWrappingController implements Applica
 	public void setControllerBeanName(String controllerBeanName) {
 		this.controllerBeanName = controllerBeanName;
 	}
-
-	
-	
 }

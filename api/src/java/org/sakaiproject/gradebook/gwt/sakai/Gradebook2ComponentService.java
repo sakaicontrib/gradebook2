@@ -89,7 +89,7 @@ public interface Gradebook2ComponentService {
 	 * 
 	 * @since 1.3.0
 	 */
-	public int[][] getGradeItemStatistics(Long assignmentId, String sectionId) throws SecurityException, InvalidDataException;
+	public int[][] getGradeItemStatistics(String gradebookUid, Long assignmentId, String sectionId) throws SecurityException, InvalidDataException;
 	
 	/*
 	 * @deprecated As of 1.3.0

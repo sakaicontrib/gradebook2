@@ -187,14 +187,6 @@ public class RestBuilder extends RequestBuilder {
 
 			
 			builder.append(args[i]);
-			// The first argument is the server's URL, so we don't want to encode it
-//			if(0 == i) {
-//				builder.append(args[i]);
-//			}
-//			else {
-//				// All the other arguments need to be encoded
-//				builder.append(URL.encodeComponent(args[i]));
-//			}
 
 			if (!args[i].endsWith("/")) {
 			
