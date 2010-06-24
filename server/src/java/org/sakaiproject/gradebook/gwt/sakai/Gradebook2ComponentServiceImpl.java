@@ -1599,6 +1599,12 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 			Double gradeAsPercentage = assignmentGradeRecord.getGradeAsPercentage();
 			
+			// In case we encounter an assignmentGradeRecords,
+			// for which the grade has been deleted
+			if(null == gradeAsPercentage) {
+				continue;
+			}
+
 			// This boolean is used to differentiate e.g. 0.5 and -0.5, making sure that
 			// negative decimal values that are less than one are counted as negative numbers
 			boolean isNegative = false;
@@ -1606,12 +1612,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			if(0 > gradeAsPercentage.compareTo(new Double(0.0d))) {
 				isNegative = true;
 			}
-			// In case we encounter an assignmentGradeRecords,
-			// for which the grade has been deleted
-			if(null == gradeAsPercentage) {
-				continue;
-			}
-
+			
 			// If the percentage grade is 100%, we subtract one so that we don't
 			// get an index out of bound exception. 100% is part of the 90+ % category
 			if(0 == gradeAsPercentage.compareTo(new Double(100d))) {
