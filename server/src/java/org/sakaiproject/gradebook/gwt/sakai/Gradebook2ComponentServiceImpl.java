@@ -1089,6 +1089,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				ActionType actionType = ActionType.valueOf(actionRecord.getActionType());
 				EntityType entityType = EntityType.valueOf(actionRecord.getEntityType());
 				String score = null;
+				String oldScore = null;
 				StringBuilder text = new StringBuilder();
 				switch (actionType) {
 				case CREATE:
@@ -1096,14 +1097,18 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 					.append(entityType).toString();
 					break;
 				case IMPORT_GRADE_CHANGE:
+					oldScore = actionRecord.getPropertyMap().get("oldScore");
 				case GRADED:
 					score = actionRecord.getPropertyMap().get("score");
 					if (score == null)
 						score = "";
 					actionModel.set("score", score);
 
-					text.append(actionType.getVerb()).append(" '").append(score)
-					.append("'");
+					text.append(actionType.getVerb()).append(" '");
+					if (oldScore != null ) {
+						text.append(oldScore).append("'-->'");
+					}
+					text.append(score).append("'");
 
 					description = text.toString();
 					break;
@@ -3008,29 +3013,30 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 						if (oldValue == null && value == null)
 							continue;
-
+						// the following line depends on both not being null
+						boolean changing = (null == oldValue || null== value  || oldValue.doubleValue() != value.doubleValue());
+						boolean deleting = (oldValue != null && value == null);
 						
-						boolean changedScore = (oldValue != null && value == null);
-						
-						if(changedScore) {
+						if(changing) {
 							// GRBK-619 : TPA
 							boolean canDeleteMissingGrades = configService.getBoolean(AppConstants.IMPORT_DELETE_MISSING_GRADES, true);
-							if(!canDeleteMissingGrades) {
+							if(deleting && !canDeleteMissingGrades) {
 								continue;
-							} else {
-								// GRBK-611 : JPG
-								ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.GRADE_RECORD.name(), ActionType.IMPORT_GRADE_CHANGE.name());
-								actionRecord.setEntityId(String.valueOf(assignment.getId()));
-								actionRecord.setStudentUid(studentUid);
-								Map<String, String> propertyMap = actionRecord.getPropertyMap();
-
-								propertyMap.put("score", String.valueOf(value));
-
-								populatePropertiesFromLearner(propertyMap, student);
-
-								actionRecord.setEntityName(new StringBuilder().append((String)student.get(LearnerKey.S_DSPLY_NM.name())).append(" : ").append(assignment.getName()).toString());
-								gbService.storeActionRecord(actionRecord);
 							}
+								// GRBK-611 : JPG
+							ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.GRADE_RECORD.name(), ActionType.IMPORT_GRADE_CHANGE.name());
+							actionRecord.setEntityId(String.valueOf(assignment.getId()));
+							actionRecord.setStudentUid(studentUid);
+							Map<String, String> propertyMap = actionRecord.getPropertyMap();
+
+							propertyMap.put("score", String.valueOf(value));
+							propertyMap.put("oldScore", String.valueOf(oldValue));
+
+							populatePropertiesFromLearner(propertyMap, student);
+
+							actionRecord.setEntityName(new StringBuilder().append((String)student.get(LearnerKey.S_DSPLY_NM.name())).append(" : ").append(assignment.getName()).toString());
+							gbService.storeActionRecord(actionRecord);
+						
 						}
 
 						gradedRecords.add(scoreItem(gradebook, gradeType, assignment, assignmentGradeRecord, studentUid, value, true, true));

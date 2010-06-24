@@ -9,7 +9,7 @@ public enum ActionType { CREATE("Create", "Added "),
 	UPDATE("Update", "Updated "), 
 	DELETE("Delete", "Deleted "),
 	SUBMITTED("Submit", "Submitted "),
-	IMPORT_GRADE_CHANGE("File-Import", "Import changed score to ");
+	IMPORT_GRADE_CHANGE("File-Import", "Import score: ");
 	
 
 private String desc;
