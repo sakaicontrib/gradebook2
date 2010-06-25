@@ -802,9 +802,11 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 				dropLowest = numberOfItems;
 			
 			BigDecimal representativePointsPossible = lastPointValue == null ? BigDecimal.ZERO : BigDecimal.valueOf(lastPointValue.doubleValue());
-			totalCategoryPoints = totalCategoryPoints.subtract(BigDecimal.valueOf(dropLowest).multiply(representativePointsPossible, MATH_CONTEXT), MATH_CONTEXT);
-			if (totalCategoryPercent != null)
+			totalCategoryPoints = totalCategoryPoints.subtract(BigDecimal.valueOf(dropLowest).multiply(representativePointsPossible, MATH_CONTEXT));
+			if (null != totalCategoryPercent  && null != lastPercentValue)
+			{
 				totalCategoryPercent = totalCategoryPercent.subtract(BigDecimal.valueOf(dropLowest).multiply(lastPercentValue, MATH_CONTEXT), MATH_CONTEXT);
+			}
 		}
 		
 		if (categoryCalculationUnit != null)
