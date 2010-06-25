@@ -55,6 +55,11 @@ public class ImportItemSetupPanel extends GradebookPanel {
 	private ListStore<ItemModel> itemStore;
 	private EditorGrid<ItemModel> itemGrid;
 	
+	private ColumnConfig columnConfigName;
+	private ColumnConfig columnConfigPercentCategory;
+	private ColumnConfig columnConfigPoints;
+	private ColumnConfig columnConfigCategory;
+	
 	private static final String ITEM_MARKER = "+";
 	private static final String ITEM_PREFIX = ":";
 	
@@ -75,17 +80,17 @@ public class ImportItemSetupPanel extends GradebookPanel {
 		CellEditor textCellEditor = new CellEditor(textField);
 		
 
-		ColumnConfig name = new ColumnConfig(ItemKey.S_NM.name(), i18n.importSetupGridItemHeader(), 200);
-		name.setEditor(textCellEditor);
-		itemColumns.add(name);
+		columnConfigName = new ColumnConfig(ItemKey.S_NM.name(), i18n.importSetupGridItemHeader(), 200);
+		columnConfigName.setEditor(textCellEditor);
+		itemColumns.add(columnConfigName);
 
-		ColumnConfig percentCategory = new ColumnConfig(ItemKey.D_PCT_CTGRY.name(), i18n.importSetupGridCategoryPercentHeader(), 100);
-		percentCategory.setEditor(new CellEditor(new NumberField()));
-		itemColumns.add(percentCategory);
+		columnConfigPercentCategory = new ColumnConfig(ItemKey.D_PCT_CTGRY.name(), i18n.importSetupGridCategoryPercentHeader(), 100);
+		columnConfigPercentCategory.setEditor(new CellEditor(new NumberField()));
+		itemColumns.add(columnConfigPercentCategory);
 
-		ColumnConfig points = new ColumnConfig(ItemKey.D_PNTS.name(), i18n.importSetupGridPointsHeader(), 100);
-		points.setEditor(new CellEditor(new NumberField()));
-		itemColumns.add(points);
+		columnConfigPoints = new ColumnConfig(ItemKey.D_PNTS.name(), i18n.importSetupGridPointsHeader(), 100);
+		columnConfigPoints.setEditor(new CellEditor(new NumberField()));
+		itemColumns.add(columnConfigPoints);
 
 		categoryComboBox = new ComboBox<ItemModel>(); 
 		categoryComboBox.setDisplayField(ItemKey.S_NM.name());  
@@ -95,7 +100,7 @@ public class ImportItemSetupPanel extends GradebookPanel {
 		categoryComboBox.setStore(categoryStore);
 		categoryComboBox.addInputStyleName(resources.css().gbTextFieldInput());
 
-		ColumnConfig category = new ColumnConfig(ItemKey.S_ID.name(), i18n.importSetupGridCategoryHeader(), 140);
+		columnConfigCategory = new ColumnConfig(ItemKey.S_ID.name(), i18n.importSetupGridCategoryHeader(), 140);
 
 		categoryCellEditor = new CellEditor(categoryComboBox) {
 
@@ -161,9 +166,9 @@ public class ImportItemSetupPanel extends GradebookPanel {
 			}
 		};
 		
-		category.setEditor(categoryCellEditor);
+		columnConfigCategory.setEditor(categoryCellEditor);
 
-		category.setRenderer(new GridCellRenderer<ItemModel>() {
+		columnConfigCategory.setRenderer(new GridCellRenderer<ItemModel>() {
 
 			public String render(ItemModel model, String property, ColumnData config, 
 					int rowIndex, int colIndex, ListStore<ItemModel> store, Grid<ItemModel> grid) {
@@ -196,7 +201,7 @@ public class ImportItemSetupPanel extends GradebookPanel {
 			}
 		});
 		
-		itemColumns.add(category);
+		itemColumns.add(columnConfigCategory);
 
 		ColumnModel itemColumnModel = new ColumnModel(itemColumns);
 		itemStore = new ListStore<ItemModel>();
@@ -218,6 +223,16 @@ public class ImportItemSetupPanel extends GradebookPanel {
 
 		List<ItemModel> gradeItems = (List<ItemModel>) getGradeItems(gradebookItemModel);
 		itemStore.add(gradeItems);
+		
+		// GRBK-643
+		// If we have an import file/GB that doesn't have categories, we hide the columns in the setup grid
+		CategoryType cateogryType = gradebookItemModel.getCategoryType();
+		if(CategoryType.NO_CATEGORIES == cateogryType) {
+			
+			// Hide category related columns
+			columnConfigCategory.setHidden(true);
+			columnConfigPercentCategory.setHidden(true);
+		}
 	}
 	
 
