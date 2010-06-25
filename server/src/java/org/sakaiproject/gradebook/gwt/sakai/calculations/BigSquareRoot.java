@@ -25,6 +25,8 @@ package org.sakaiproject.gradebook.gwt.sakai.calculations;
 
 import java.math.*;
 
+import org.sakaiproject.gradebook.gwt.sakai.GradeCalculations;
+
 
 /**
  * Code from http://www.merriampark.com/bigsqrt.htm
@@ -150,11 +152,11 @@ public class BigSquareRoot {
 			guess = guess.add(lastGuess);
 			guess = guess.divide(TWO, scale, BigDecimal.ROUND_HALF_UP);
 			trace("Next guess " + guess.toString());
-			error = n.subtract(guess.multiply(guess));
+			error = n.subtract(guess.multiply(guess), GradeCalculations.MATH_CONTEXT);
 			if (++iterations >= maxIterations) {
 				more = false;
 			} else if (lastGuess.equals(guess)) {
-				more = error.abs().compareTo(ONE) >= 0;
+				more = error.abs(GradeCalculations.MATH_CONTEXT).compareTo(ONE) >= 0;
 			}
 		}
 		return guess;

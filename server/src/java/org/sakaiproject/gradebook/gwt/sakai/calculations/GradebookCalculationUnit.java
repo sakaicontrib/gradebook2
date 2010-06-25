@@ -376,8 +376,8 @@ public class GradebookCalculationUnit {
 				entry.setDropped(true);
 
 				if (pointsReceived != null && pointsPossible != null) {
-					sumPoints = sumPoints.subtract(pointsReceived);
-					sumPointsPossible = sumPointsPossible.subtract(pointsPossible);
+					sumPoints = sumPoints.subtract(pointsReceived, GradeCalculations.MATH_CONTEXT);
+					sumPointsPossible = sumPointsPossible.subtract(pointsPossible, GradeCalculations.MATH_CONTEXT);
 
 					// This is a special case where the sumPoints is non-null because the drop
 					// lowest was not taken into account earlier, but it should be null

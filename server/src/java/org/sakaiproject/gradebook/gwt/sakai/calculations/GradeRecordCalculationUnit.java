@@ -94,7 +94,7 @@ public class GradeRecordCalculationUnit {
 
 	public void calculateRawDifference() {
 		if (pointsReceived != null && pointsPossible != null)
-			pointsDifference = pointsPossible.subtract(pointsReceived);
+			pointsDifference = pointsPossible.subtract(pointsReceived, GradeCalculations.MATH_CONTEXT);
 		else
 			pointsDifference = null;
 	}

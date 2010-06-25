@@ -986,7 +986,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 		for (String letterGrade : letterGradesList) {
 
-			upperScale = (null == upperScale) ? new Double(100d) : upperScale.equals(Double.valueOf(0d)) ? Double.valueOf(0d) : ((new BigDecimal(Double.toString(upperScale))).subtract(new BigDecimal("0.01"))).doubleValue();
+			upperScale = (null == upperScale) ? new Double(100d) : upperScale.equals(Double.valueOf(0d)) ? Double.valueOf(0d) : ((new BigDecimal(Double.toString(upperScale))).subtract(new BigDecimal("0.01"),GradeCalculations.MATH_CONTEXT)).doubleValue();
 
 			Map<String,Object> gradeScaleModel = new HashMap<String,Object>();
 			gradeScaleModel.put(GradeMapKey.S_ID.name(), letterGrade);
@@ -2507,7 +2507,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		for (String letterGrade : letterGradesList) {
 			BigDecimal bigOldUpperScale = upperScale == null ? BigDecimal.valueOf(200d) : BigDecimal.valueOf(upperScale.doubleValue());
 
-			upperScale = (null == upperScale) ? new Double(100d) : upperScale.equals(Double.valueOf(0d)) ? Double.valueOf(0d) : ((new BigDecimal(Double.toString(upperScale))).subtract(new BigDecimal("0.01"))).doubleValue();
+			upperScale = (null == upperScale) ? new Double(100d) : upperScale.equals(Double.valueOf(0d)) ? Double.valueOf(0d) : ((new BigDecimal(Double.toString(upperScale))).subtract(new BigDecimal("0.01"), GradeCalculations.MATH_CONTEXT)).doubleValue();
 
 			if (affectedLetterGrade.equals(letterGrade)) {
 				Double oldValue = gradeMapping.getGradeMap().get(letterGrade);

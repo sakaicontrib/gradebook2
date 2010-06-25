@@ -236,7 +236,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 				BigDecimal courseGrade = rec.getScore(); 
 				BigDecimal roundedCourseGrade = courseGrade.setScale(2, GradeCalculations.MATH_CONTEXT.getRoundingMode());
 				// Take the square of the difference and add it to the sum, A 
-				BigDecimal difference = courseGrade.subtract(mean);
+				BigDecimal difference = courseGrade.subtract(mean, GradeCalculations.MATH_CONTEXT);
 				BigDecimal square = difference.multiply(difference);
 				sumOfSquareOfDifferences = sumOfSquareOfDifferences.add(square);
 
@@ -390,7 +390,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 			if (percentage.compareTo(BigDecimal.ZERO) == 0)
 				return "0";
 			
-			BigDecimal minus60 = percentage.subtract(BigDecimal.valueOf(60d));
+			BigDecimal minus60 = percentage.subtract(BigDecimal.valueOf(60d), GradeCalculations.MATH_CONTEXT);
 			
 			if (minus60.compareTo(BigDecimal.ZERO) < 0)
 				return "F";
@@ -619,7 +619,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 				if //(!isExtraCreditItemOrCategory 
 					((!isExtraCreditItem || isExtraCreditCategory)
 						&& assignment.getPointsPossible() != null) {
-					totalCategoryPoints = totalCategoryPoints.add(BigDecimal.valueOf(assignment.getPointsPossible().doubleValue()));
+					totalCategoryPoints = totalCategoryPoints.add(BigDecimal.valueOf(assignment.getPointsPossible().doubleValue()), MATH_CONTEXT);
 				
 					if (!isUnweighted && null != assignmentWeight) {
 						//double assignmentCategoryPercent = assignment.getAssignmentWeighting() == null ? 0.0 : assignment.getAssignmentWeighting().doubleValue();	
@@ -675,9 +675,9 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 				dropLowest = numberOfItems;
 			
 			BigDecimal representativePointsPossible = lastPointValue == null ? BigDecimal.ZERO : BigDecimal.valueOf(lastPointValue.doubleValue());
-			totalCategoryPoints = totalCategoryPoints.subtract(BigDecimal.valueOf(dropLowest).multiply(representativePointsPossible, MATH_CONTEXT));
+			totalCategoryPoints = totalCategoryPoints.subtract(BigDecimal.valueOf(dropLowest).multiply(representativePointsPossible, MATH_CONTEXT), MATH_CONTEXT);
 			if (totalCategoryPercent != null && lastPercentValue != null)
-				totalCategoryPercent = totalCategoryPercent.subtract(BigDecimal.valueOf(dropLowest).multiply(lastPercentValue.multiply(BigDecimal.valueOf(100d), MATH_CONTEXT), MATH_CONTEXT));
+				totalCategoryPercent = totalCategoryPercent.subtract(BigDecimal.valueOf(dropLowest).multiply(lastPercentValue.multiply(BigDecimal.valueOf(100d), MATH_CONTEXT), MATH_CONTEXT), MATH_CONTEXT);
 		}
 		
 		if (categoryCalculationUnit != null)
@@ -802,9 +802,9 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 				dropLowest = numberOfItems;
 			
 			BigDecimal representativePointsPossible = lastPointValue == null ? BigDecimal.ZERO : BigDecimal.valueOf(lastPointValue.doubleValue());
-			totalCategoryPoints = totalCategoryPoints.subtract(BigDecimal.valueOf(dropLowest).multiply(representativePointsPossible, MATH_CONTEXT));
+			totalCategoryPoints = totalCategoryPoints.subtract(BigDecimal.valueOf(dropLowest).multiply(representativePointsPossible, MATH_CONTEXT), MATH_CONTEXT);
 			if (totalCategoryPercent != null)
-				totalCategoryPercent = totalCategoryPercent.subtract(BigDecimal.valueOf(dropLowest).multiply(lastPercentValue, MATH_CONTEXT));
+				totalCategoryPercent = totalCategoryPercent.subtract(BigDecimal.valueOf(dropLowest).multiply(lastPercentValue, MATH_CONTEXT), MATH_CONTEXT);
 		}
 		
 		if (categoryCalculationUnit != null)
@@ -855,7 +855,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		pointsEarned = new BigDecimal(assignmentGradeRecord.getPointsEarned().toString());
 		if (assignment.getPointsPossible() != null) {
 			pointsPossible = new BigDecimal(assignment.getPointsPossible().toString());
-			percentageEarned = pointsEarned.multiply(BIG_DECIMAL_100).divide(pointsPossible, MATH_CONTEXT);
+			percentageEarned = pointsEarned.multiply(BIG_DECIMAL_100, MATH_CONTEXT).divide(pointsPossible, MATH_CONTEXT);
 		}
 		return percentageEarned;
 	}
