@@ -73,7 +73,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	// Member variables
 	// FindBugs
 //	private Gradebook gradebookModel = null;
-	private boolean isDisplayLoadMaskOnRender = true;
+//	private boolean isDisplayLoadMaskOnRender = true;
 	private String gridId;
 	private GradebookResources resources;
 	
@@ -278,7 +278,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	protected void onDataChanged(StoreEvent se) {
 		super.onDataChanged(se);
 		// Ensure that we set this to false in case the data changes before the grid view is rendered
-		isDisplayLoadMaskOnRender = false;
+		//isDisplayLoadMaskOnRender = false;
 	}
 
 	/*@Override
@@ -357,7 +357,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 		syncTask[col].delay(1000);
 	}
 
-	public class ColumnGroup {
+	public static class ColumnGroup {
 
 		private GroupType group;
 		private ArrayList<FixedColumnModel> columns;
@@ -475,8 +475,8 @@ public abstract class CustomGridView extends BaseCustomGridView {
 		return false;
 	}
 
-	public void setDisplayLoadMaskOnRender(boolean isDisplayLoadMaskOnRender) {
-		this.isDisplayLoadMaskOnRender = isDisplayLoadMaskOnRender;
-	}
+//	public void setDisplayLoadMaskOnRender(boolean isDisplayLoadMaskOnRender) {
+//		this.isDisplayLoadMaskOnRender = isDisplayLoadMaskOnRender;
+//	}
 	
 }

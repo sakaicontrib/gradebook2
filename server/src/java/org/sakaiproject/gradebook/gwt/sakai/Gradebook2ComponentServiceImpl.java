@@ -3727,7 +3727,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 		double pG = categoryGradeItem == null || categoryGradeItem.getPercentCourseGrade() == null ? 0d : categoryGradeItem.getPercentCourseGrade().doubleValue();
 
-		CategoryType categoryType = gradebookGradeItem.getCategoryType();
+		CategoryType categoryType = (null != gradebookGradeItem) ? gradebookGradeItem.getCategoryType() : null;
 		boolean isWeighted = categoryType == CategoryType.WEIGHTED_CATEGORIES;
 		boolean isNoCategories = categoryType == CategoryType.NO_CATEGORIES;
 		boolean isCategoryExtraCredit = categoryGradeItem != null && Util.checkBoolean(categoryGradeItem.getExtraCredit());

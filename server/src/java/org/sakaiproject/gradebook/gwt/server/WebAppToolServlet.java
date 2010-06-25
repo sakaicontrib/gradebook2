@@ -142,7 +142,7 @@ public class WebAppToolServlet extends HttpServlet {
 		} 
 	}
 	
-	private class SvnInfoParserHelper extends DefaultHandler {
+	private static class SvnInfoParserHelper extends DefaultHandler {
 		
 		private boolean isReading = false;
 		private String url;

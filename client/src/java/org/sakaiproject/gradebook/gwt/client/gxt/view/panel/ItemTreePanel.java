@@ -103,7 +103,7 @@ public class ItemTreePanel extends GradebookPanel {
 	
 	private Menu treeContextMenu;
 	private MenuItem addCategoryMenuItem, updateGradebookMenuItem, updateCategoryMenuItem, updateItemMenuItem, deleteCategoryMenuItem, deleteItemMenuItem;
-	private MenuItem moveDownMenuItem, moveUpMenuItem;
+	//private MenuItem moveDownMenuItem, moveUpMenuItem;
 	
 	private TabPanel tabPanel;
 	
@@ -197,7 +197,7 @@ public class ItemTreePanel extends GradebookPanel {
 				
 				String prefix = "";
 				String result = null;
-				Object value = itemModel.get(property);
+				Object value = (null != itemModel) ? itemModel.get(property) : null;
 				
 				if (itemModel != null && itemModel.getItemType() != null) {
 					boolean isItem = itemModel.getItemType() == ItemType.ITEM;
@@ -740,7 +740,7 @@ public class ItemTreePanel extends GradebookPanel {
 					TreeGrid<ItemModel>.TreeNode item = itemGrid.findNode(e.getTarget());
 					Item itemModel = item == null ? null : item.getModel();
 					
-					if (itemModel != null || itemModel.getItemType() == ItemType.GRADEBOOK) {
+					if (itemModel != null && itemModel.getItemType() == ItemType.GRADEBOOK) {
 						e.stopEvent();
 						e.getStatus().setStatus(false);
 						return;

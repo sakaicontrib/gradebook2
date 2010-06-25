@@ -51,14 +51,12 @@ import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.PropertyChangeEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.FieldEvent;
-import com.extjs.gxt.ui.client.event.KeyListener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.TreeStore;
 import com.extjs.gxt.ui.client.widget.Component;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
-import com.extjs.gxt.ui.client.widget.Info;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.TabItem;
 import com.extjs.gxt.ui.client.widget.TabPanel;
@@ -81,7 +79,7 @@ import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
 public class LearnerSummaryPanel extends GradebookPanel {
 
 	private static final String FIELD_STATE_FIELD = "fieldState";
-	private static final String ITEM_IDENTIFIER_FLAG = "itemIdentifier";
+	//private static final String ITEM_IDENTIFIER_FLAG = "itemIdentifier";
 	private static final String BUTTON_SELECTOR_FLAG = "buttonSelector";
 	private enum ButtonSelector { CLOSE, COMMENT, NEXT, PREVIOUS, VIEW_AS_LEARNER };
 
@@ -91,7 +89,7 @@ public class LearnerSummaryPanel extends GradebookPanel {
 	private LayoutContainer commentFormPanel;
 	private LayoutContainer excuseFormPanel;
 	private LayoutContainer scoreFormPanel;
-	private KeyListener keyListener;
+	//private KeyListener keyListener;
 	private SelectionListener<ComponentEvent> selectionListener;
 	private ModelData learner;
 
@@ -301,17 +299,17 @@ public class LearnerSummaryPanel extends GradebookPanel {
 
 	private void initListeners() {
 
-		keyListener = new KeyListener() {
-
-			@Override
-			public void componentKeyPress(ComponentEvent event) {
-				/*switch (event.getEvent().getKeyCode()) {
-					case KeyCodes.KEY_ENTER:
-						break;
-				}*/
-			}
-
-		};
+//		keyListener = new KeyListener() {
+//
+//			@Override
+//			public void componentKeyPress(ComponentEvent event) {
+//				/*switch (event.getEvent().getKeyCode()) {
+//					case KeyCodes.KEY_ENTER:
+//						break;
+//				}*/
+//			}
+//
+//		};
 
 		selectionListener = new SelectionListener<ComponentEvent>() {
 
@@ -570,7 +568,7 @@ public class LearnerSummaryPanel extends GradebookPanel {
 	}
 
 
-	public class FlexTableContainer extends WidgetComponent {
+	public static class FlexTableContainer extends WidgetComponent {
 
 		private FlexTable table;
 

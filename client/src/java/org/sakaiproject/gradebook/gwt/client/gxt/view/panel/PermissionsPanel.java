@@ -82,7 +82,7 @@ public class PermissionsPanel extends ContentPanel {
 	private final static int DELETE_ACTION_GRID_CELL_WITHOUT_CATEGORIES = 3;
 	private final static int DELETE_ACTION_GRID_CELL_WITH_CATEGORIES = 4;
 	
-	private final static String CAN_VIEW_PERMISSION = "view";
+	//private final static String CAN_VIEW_PERMISSION = "view";
 	private final static String CAN_GRADE_PERMISSION = "grade";
 
 	private VerticalPanel mainVerticalPanel = null;
@@ -97,7 +97,7 @@ public class PermissionsPanel extends ContentPanel {
 	private ComboBox<ModelData> categoryComboBox = null;
 	private SectionsComboBox<ModelData> sectionComboBox = null;
 	
-	private ListLoader<ListLoadResult<ModelData>> categoryLoader, permissionLoader, sectionsLoader, userLoader;
+	private ListLoader<ListLoadResult<ModelData>> categoryLoader, permissionLoader, userLoader;
 	
 	public PermissionsPanel(I18nConstants i18n) {
 		super();
@@ -571,7 +571,7 @@ public class PermissionsPanel extends ContentPanel {
 	}
 	*/
 	
-	private class PermissionType extends BaseModel {
+	private static class PermissionType extends BaseModel {
 
 		private static final long serialVersionUID = 1L;
 		

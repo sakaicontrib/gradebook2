@@ -62,8 +62,11 @@ public class ArchiveServiceMock extends BasicArchiveService {
 
 		// create the directory for the archive
 		File dir = new File(m_storagePath + siteId + "-archive/");
-		dir.mkdirs();
+		boolean isCreated = dir.mkdirs();
 
+		if(!isCreated) {
+			log.error("Was not able to create directories = " + dir.getName());
+		}
 		// for each registered ResourceService, give it a chance to archve
 		List services = m_entityManager.getEntityProducers();
 		for (Iterator iServices = services.iterator(); iServices.hasNext();)

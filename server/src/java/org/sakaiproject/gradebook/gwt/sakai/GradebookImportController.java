@@ -146,7 +146,11 @@ public class GradebookImportController extends SimpleFormController implements O
 	private void saveJsonToFile(Upload importFile, String outfile) {
 
 		File f = new File(outfile);
-		f.delete(); 
+		boolean isDeleted = f.delete();
+		
+		if(!isDeleted) {
+			log.error("Was not able to delete file = " + f.getName());
+		}
 
 		PrintWriter out;
 		try {

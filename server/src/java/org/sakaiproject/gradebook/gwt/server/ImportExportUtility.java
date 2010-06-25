@@ -462,7 +462,9 @@ public class ImportExportUtility {
 				response.setHeader("Content-Disposition", "attachment; filename=" + filename.toString());
 			}
 			try {
-				createCSVFile(response, out);
+				if(null != response) {
+					createCSVFile(response, out);
+				}
 			} catch (IOException e) {
 				log.error("Caught I/O exception ", e); 
 				throw new FatalException(e); 
@@ -2472,8 +2474,8 @@ private GradeItem buildNewCategory(String curCategoryString,
 class ImportExportInformation 
 {
 	Set<Integer> ignoreColumns;
-	int idFieldIndex;
-	int nameFieldIndex;
+	//int idFieldIndex;
+	//int nameFieldIndex;
 	int courseGradeFieldIndex;
 	boolean foundStructure; 
 	boolean foundHeader; 
@@ -2494,8 +2496,8 @@ class ImportExportInformation
 	public ImportExportInformation() 
 	{
 		ignoreColumns = new HashSet<Integer>();
-		idFieldIndex = -1;
-		nameFieldIndex = -1;
+		//idFieldIndex = -1;
+		//nameFieldIndex = -1;
 		courseGradeFieldIndex = -1;
 		categoryIdNameMap = new HashMap<String, String>();
 		categoryIdItemMap = new HashMap<String, GradeItem>();

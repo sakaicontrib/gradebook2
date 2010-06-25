@@ -55,8 +55,8 @@ public class ImportItemSetupPanel extends GradebookPanel {
 	private ListStore<ItemModel> itemStore;
 	private EditorGrid<ItemModel> itemGrid;
 	
-	private final String ITEM_MARKER = "+";
-	private final String ITEM_PREFIX = ":";
+	private static final String ITEM_MARKER = "+";
+	private static final String ITEM_PREFIX = ":";
 	
 
 	public ImportItemSetupPanel() {

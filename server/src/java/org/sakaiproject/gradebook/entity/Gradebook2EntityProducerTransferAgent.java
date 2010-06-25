@@ -266,10 +266,5 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 		} else if (item.getItemType() == ItemType.ITEM) {
 			toolService.updateAssignment((Assignment)item);
 		}
-		
-		
 	}
-	
-
-
 }

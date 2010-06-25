@@ -158,7 +158,7 @@ public class Util {
 
 		if (object != null) {
 			if (object instanceof Integer)
-				l = object == null ? null : Long.valueOf(((Integer)object).longValue());
+				l = Long.valueOf(((Integer)object).longValue());
 			else if (object instanceof Long)
 				l = (Long)object;
 			else if (object instanceof String)

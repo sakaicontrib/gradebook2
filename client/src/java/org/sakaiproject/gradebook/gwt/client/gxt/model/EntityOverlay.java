@@ -1,5 +1,6 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -14,7 +15,9 @@ import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.i18n.client.DateTimeFormat;
 
-public class EntityOverlay extends JavaScriptObject {
+public class EntityOverlay extends JavaScriptObject implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	protected EntityOverlay() {
 		

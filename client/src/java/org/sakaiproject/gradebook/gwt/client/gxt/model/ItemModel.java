@@ -362,7 +362,7 @@ public class ItemModel extends EntityTreeModel implements Item {
 		 */
 		if (null == o) 
 		{
-			return new Long(-1); 
+			return Long.valueOf(-1);
 		}
 		else if (o instanceof Long)
 		{

@@ -26,8 +26,6 @@ import org.w3c.dom.Element;
 public class BaseGroupMock implements Group, Identifiable {
 
 	private static final long serialVersionUID = 1L;
-
-	Log log = LogFactory.getLog(BaseGroupMock.class);
 	
 	public static String testSite_ContextId = "TESTSITECONTEXT";
 	private BaseResourceProperties props = new BaseResourcePropertiesEdit();
@@ -180,7 +178,6 @@ public class BaseGroupMock implements Group, Identifiable {
 		if (null == providerId) {
 			
 			providerId = Double.toString(Math.floor(Math.random() * 4.5));
-			log.error("ERROR: providerId = null : generated providerId = " + providerId );
 		}
 		
 		return providerId;

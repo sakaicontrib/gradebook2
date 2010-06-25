@@ -1176,7 +1176,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	// FIXME: When changing gradebooks we will need to re-assemble the column model
 	private CustomColumnModel assembleColumnModel(Configuration configModel, List<FixedColumn> staticColumns, ItemModel gradebookItemModel) {
 
-		GradeType gradeType = gradebookItemModel.getGradeType();
+		GradeType gradeType = (null != gradebookItemModel) ? gradebookItemModel.getGradeType() : null;
 		
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 

@@ -2352,7 +2352,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 					total = new Integer(totalList.size());
 					if (log.isInfoEnabled()) log.info("total number of explicitly entered course grade records = " + total);
 				} else {
-					total = new Integer(0);
+					total = Integer.valueOf(0);
 					Query q = session.createQuery(
 					"select cgr.studentId from CourseGradeRecord as cgr where cgr.enteredGrade is not null and cgr.gradableObject.gradebook.id=:gradebookId");
 					q.setLong("gradebookId", gradebookId.longValue());

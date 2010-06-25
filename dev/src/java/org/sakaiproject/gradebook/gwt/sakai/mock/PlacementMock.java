@@ -8,11 +8,11 @@ import org.sakaiproject.tool.api.Tool;
 public class PlacementMock implements Placement {
 	
 	private String m_id;
-	private String m_toolId;
-	private Tool m_tool;
-	private Properties m_config;
+	//private String m_toolId;
+	//private Tool m_tool;
+	//private Properties m_config;
 	private String m_context;
-	private String m_title;
+	//private String m_title;
 
 	/**
 	 * Construct
@@ -40,14 +40,14 @@ public class PlacementMock implements Placement {
 	public PlacementMock(String id, String toolId, Tool tool, Properties config, String context, String title)
 	{
 		m_id = id; 
-		m_toolId = toolId;// TODO
-		m_tool = tool;// TODO
+		//m_toolId = toolId;// TODO
+		//m_tool = tool;// TODO
 		if (config != null)
 		{
-			m_config = config;// TODO
+			//m_config = config;// TODO
 		}
 		m_context = context;
-		m_title = title;// TODO
+		//m_title = title;// TODO
 	}
 	
 

@@ -86,8 +86,12 @@ public class Resource {
 	private void logJsonToFileActual(String s, String outfile) 
 	{
 		File f = new File(outfile);
-		f.delete(); 
+		boolean isDeleted = f.delete(); 
 
+		if(!isDeleted) {
+			log.error("Was not able to delete file = " + f.getName());
+		}
+		
 		PrintWriter out;
 		try {
 			out = new PrintWriter(f);

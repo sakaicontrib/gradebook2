@@ -1001,7 +1001,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		this.letterGradeMap = letterGradeMap;
 	}
 	
-	class FrequencyScore implements Comparable<FrequencyScore>
+	static class FrequencyScore implements Comparable<FrequencyScore>
 	{
 		private BigDecimal score; 
 		private Integer frequency;
