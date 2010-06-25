@@ -25,7 +25,9 @@ public class UserEntitySubmitAction extends UserEntityUpdateAction<LearnerModel>
 		StringBuilder text = new StringBuilder();
 
 		Object value = getValue();
-		Object startValue = getStartValue();
+		
+		// FindBugs
+		// Object startValue = getStartValue();
 
 		text.append(getActionType().getVerb()).append(" \"").append(value).append("\"");
 

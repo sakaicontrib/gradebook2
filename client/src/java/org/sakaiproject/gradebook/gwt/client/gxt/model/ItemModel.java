@@ -39,6 +39,7 @@ import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 import com.extjs.gxt.ui.client.data.ChangeEvent;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.TreeModel;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.DateTimeFormat;
 
 public class ItemModel extends EntityTreeModel implements Item {
@@ -353,6 +354,9 @@ public class ItemModel extends EntityTreeModel implements Item {
 	 */
 	public Long getCategoryId() {
 		Object o = getLong(ItemKey.L_CTGRY_ID.name());
+		
+		// FIXME: we need to check if this is still true
+		// adding GWT log messages so that we can spot this in GWT DEV mode
 		/* 
 		 * This hack exists because for some odd reason, the category ID is sometimes a string.  Maybe bad serialization? 
 		 */
@@ -366,10 +370,12 @@ public class ItemModel extends EntityTreeModel implements Item {
 		}
 		else if (o instanceof Integer) 
 		{
+			GWT.log("ERROR: #### this should not happen ####");
 			return Long.valueOf(((Integer)o).intValue());
 		}
 		else
 		{
+			GWT.log("ERROR: #### this should not happen ####");
 			Long ret = null; 
 			try {
 				ret= Long.decode((String) o);

@@ -26,7 +26,6 @@ package org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -72,7 +71,8 @@ public abstract class CustomGridView extends BaseCustomGridView {
 
 
 	// Member variables
-	private Gradebook gradebookModel = null;
+	// FindBugs
+//	private Gradebook gradebookModel = null;
 	private boolean isDisplayLoadMaskOnRender = true;
 	private String gridId;
 	private GradebookResources resources;
@@ -400,43 +400,45 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	}
 
 	// Helper method
-	protected ArrayList<ColumnGroup> getColumnGroups() {
-
-		LinkedHashMap<GroupType, ColumnGroup> columnGroupMap = new LinkedHashMap<GroupType, ColumnGroup>();
-		List<FixedColumn> gradebookColumunConfigs = gradebookModel.getColumns();
-
-		for(FixedColumn gradebookColumnConfig : gradebookColumunConfigs) {
-			LearnerKey key = LearnerKey.valueOf(gradebookColumnConfig.getKey());
-			GroupType group = key.getGroup();
-			ColumnGroup columnGroup = columnGroupMap.get(group);
-
-			if (columnGroup == null) {
-				columnGroup = new ColumnGroup(group);
-				columnGroupMap.put(group, columnGroup);
-			}
-			columnGroup.addColumn((FixedColumnModel)gradebookColumnConfig);
-		}
-
-		return new ArrayList<ColumnGroup>(columnGroupMap.values());
-	}
+	// FindBugs
+//	protected ArrayList<ColumnGroup> getColumnGroups() {
+//
+//		LinkedHashMap<GroupType, ColumnGroup> columnGroupMap = new LinkedHashMap<GroupType, ColumnGroup>();
+//		List<FixedColumn> gradebookColumunConfigs = gradebookModel.getColumns();
+//
+//		for(FixedColumn gradebookColumnConfig : gradebookColumunConfigs) {
+//			LearnerKey key = LearnerKey.valueOf(gradebookColumnConfig.getKey());
+//			GroupType group = key.getGroup();
+//			ColumnGroup columnGroup = columnGroupMap.get(group);
+//
+//			if (columnGroup == null) {
+//				columnGroup = new ColumnGroup(group);
+//				columnGroupMap.put(group, columnGroup);
+//			}
+//			columnGroup.addColumn((FixedColumnModel)gradebookColumnConfig);
+//		}
+//
+//		return new ArrayList<ColumnGroup>(columnGroupMap.values());
+//	}
 
 	// Helper method
-	protected Collection<LearnerKey> getGroupColumnKeys(GroupType group) {
-
-		ArrayList<LearnerKey> groupColumnKeys = new ArrayList<LearnerKey>();
-		List<FixedColumn> gradebookColumunConfigs = gradebookModel.getColumns();
-
-		for(FixedColumn gradebookColumnConfig : gradebookColumunConfigs) {
-
-			LearnerKey key = LearnerKey.valueOf(gradebookColumnConfig.getKey());
-
-			if(group.equals(key.getGroup())) {
-				groupColumnKeys.add(key);
-			}
-		}
-
-		return groupColumnKeys;
-	}
+	// FindBugs
+//	protected Collection<LearnerKey> getGroupColumnKeys(GroupType group) {
+//
+//		ArrayList<LearnerKey> groupColumnKeys = new ArrayList<LearnerKey>();
+//		List<FixedColumn> gradebookColumunConfigs = gradebookModel.getColumns();
+//
+//		for(FixedColumn gradebookColumnConfig : gradebookColumunConfigs) {
+//
+//			LearnerKey key = LearnerKey.valueOf(gradebookColumnConfig.getKey());
+//
+//			if(group.equals(key.getGroup())) {
+//				groupColumnKeys.add(key);
+//			}
+//		}
+//
+//		return groupColumnKeys;
+//	}
 
 	// Helper method
 	protected Collection<LearnerKey> getGroupColumnKeys(ColumnGroup columnGroup) {

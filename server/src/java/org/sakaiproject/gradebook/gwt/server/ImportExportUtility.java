@@ -2073,7 +2073,9 @@ private GradeItem buildNewCategory(String curCategoryString,
 	private void handleItemOrComment(ImportHeader header, String[] pointsColumns, 
 			String[] percentCategoryColumns, ImportExportInformation ieInfo, int headerNumber) throws ImportFormatException {
 
-		Map<String, GradeItem> categoryIdItemMap = ieInfo.getCategoryIdItemMap();
+		// FindBug
+		// Map<String, GradeItem> categoryIdItemMap = ieInfo.getCategoryIdItemMap();
+		
 		Item gradebookItemModel = ieInfo.getGradebookItemModel();
 		CategoryType categoryType = gradebookItemModel.getCategoryType();
 		String itemName = header.getHeaderName();

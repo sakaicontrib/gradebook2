@@ -185,6 +185,10 @@ public class RestBuilder extends RequestBuilder {
 
 		for (int i = 0; i < args.length; i++) {
 
+			if(null == args[i]) {
+				GWT.log("ERROR: encountered a NULL URL item.");
+				continue;
+			}
 			
 			builder.append(args[i]);
 

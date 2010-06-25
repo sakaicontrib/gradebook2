@@ -231,7 +231,8 @@ public class GradeScalePanel extends GradebookPanel {
 				ge.stopEvent();
 				
 				final Record record = ge.getRecord();
-				String property = ge.getProperty();
+				// FindBugs
+				// String property = ge.getProperty();
 				Object newValue = ge.getValue();
 				Object originalValue = ge.getStartValue();
 

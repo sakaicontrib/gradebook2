@@ -234,8 +234,7 @@ public class GradebookImpl extends BaseModel implements Gradebook {
 
 	private void fixBranches(Map<String, Object> items) {
 		
-		for ( String key : items.keySet()) {
-			Object o = items.get(key);
+		for ( Object o : items.entrySet()) {
 			if (o instanceof List<?>) {
 				List<Map<String,Object>> l = (List<Map<String,Object>>)o;
 				for (Object lo : l) {

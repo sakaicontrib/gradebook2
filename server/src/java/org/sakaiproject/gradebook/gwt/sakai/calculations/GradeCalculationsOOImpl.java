@@ -93,7 +93,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 	
 	public BigDecimal[] calculateCourseGradeCategoryPercents(Assignment a, BigDecimal percentGrade, BigDecimal percentCategorySum, BigDecimal pointsSum, boolean isEnforcePointWeighting) {
 		
-		boolean isUnweighted = a.isNotCounted();
+		boolean isUnweighted = (a != null) ? a.isNotCounted() : false;
 
 		BigDecimal courseGradePercent = BigDecimal.ZERO;
 		BigDecimal percentCategory = BigDecimal.ZERO;
@@ -130,13 +130,14 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 	
 	public BigDecimal[] calculateCourseGradeCategoryPercents(GradeItem a, BigDecimal percentGrade, 
 			BigDecimal percentCategorySum, BigDecimal pointsSum, boolean isEnforcePointWeighting) {
-		boolean isIncluded = Util.checkBoolean(a.getIncluded());
+		
+		boolean isIncluded = Util.checkBoolean((a == null) ? false : a.getIncluded());
 
 		BigDecimal courseGradePercent = BigDecimal.ZERO;
 		BigDecimal percentCategory = BigDecimal.ZERO;
 		if (isIncluded) {
 			if (isEnforcePointWeighting) {
-				double p = a == null | a.getPoints() == null ? 0d : a.getPoints().doubleValue();
+				double p = (a == null || a.getPoints() == null) ? 0d : a.getPoints().doubleValue();
 				
 				BigDecimal assignmentPoints = BigDecimal.valueOf(p);
 				

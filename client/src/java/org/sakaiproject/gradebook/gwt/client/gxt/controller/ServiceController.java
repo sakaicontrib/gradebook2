@@ -334,8 +334,11 @@ public class ServiceController extends Controller {
 
 	private void onDeleteItem(final ItemUpdate event) {
 		Dispatcher.forwardEvent(GradebookEvents.MaskItemTree.getEventType());
-		event.item.setRemoved(Boolean.TRUE);
-
+		
+		if(null != event.item) {
+			event.item.setRemoved(Boolean.TRUE);
+		}
+		
 		RestBuilder builder = RestBuilder.getInstance(Method.DELETE, 
 				GWT.getModuleBaseURL(),
 				AppConstants.REST_FRAGMENT,
@@ -383,8 +386,11 @@ public class ServiceController extends Controller {
 		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 		
 		Long gradebookId = selectedGradebook.getGradebookId();
-		model.set(PermissionKey.L_GB_ID.name(), gradebookId);
 		
+		if(null != model) {
+			model.set(PermissionKey.L_GB_ID.name(), gradebookId);
+		}
+
 		RestBuilder builder = RestBuilder.getInstance(Method.DELETE, 
 				GWT.getModuleBaseURL(),
 				AppConstants.REST_FRAGMENT,
@@ -609,7 +615,7 @@ public class ServiceController extends Controller {
 		
 		String gradebookUid = selectedGradebook.getGradebookUid();
 		String gradebookId = String.valueOf(selectedGradebook.getGradebookId());
-		String letterGrade = (String)record.get(GradeMapKey.S_LTR_GRD.name());
+		String letterGrade = (null != record) ? (String)record.get(GradeMapKey.S_LTR_GRD.name()) : null;
 		
 		RestBuilder builder = RestBuilder.getInstance(Method.PUT, 
 				GWT.getModuleBaseURL(),
@@ -884,7 +890,8 @@ public class ServiceController extends Controller {
 	private void onUpdateItemFailure(ItemUpdate event, Throwable caught) {
 
 		if (event.record != null) {
-			Map<String, Object> changes = event.record.getChanges();
+			// FindBug
+			// Map<String, Object> changes = event.record.getChanges();
 			
 			event.record.reject(false);
 		}

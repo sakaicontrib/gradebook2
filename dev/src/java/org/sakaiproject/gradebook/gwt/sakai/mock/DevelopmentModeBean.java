@@ -24,10 +24,9 @@
 package org.sakaiproject.gradebook.gwt.sakai.mock;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.management.RuntimeErrorException;
 
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
@@ -44,7 +43,6 @@ import org.sakaiproject.gradebook.gwt.server.model.GradeItemImpl;
 import org.sakaiproject.service.gradebook.shared.GradebookExternalAssessmentService;
 
 import com.google.gwt.core.client.GWT;
-import java.util.HashMap;
 
 public class DevelopmentModeBean {
 	@Deprecated

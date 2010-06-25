@@ -327,7 +327,8 @@ public class LearnerSummaryPanel extends GradebookPanel {
 						Dispatcher.forwardEvent(GradebookEvents.HideEastPanel.getEventType(), Boolean.FALSE);
 						break;
 					case COMMENT:
-						String id = c.getData(ITEM_IDENTIFIER_FLAG);
+						// FindBugs
+						// String id = c.getData(ITEM_IDENTIFIER_FLAG);
 						break;
 					case NEXT:
 						bse = new BrowseLearner(learner, BrowseType.NEXT);

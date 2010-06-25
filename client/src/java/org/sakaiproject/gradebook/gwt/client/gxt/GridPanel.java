@@ -341,7 +341,10 @@ public abstract class GridPanel<M extends ModelData> extends GradebookPanel {
 	}
 	
 	protected void refreshGrid(RefreshAction action, boolean useExistingColumnModel) {
-		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
+		
+		// FindBugs
+		// Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
+		
 		if (!useExistingColumnModel || cm == null)
 			cm = newColumnModel(null, null, null);
 		

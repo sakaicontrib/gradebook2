@@ -314,7 +314,8 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 					|| (comment.getCommentText() != null && text != null && text.equals(comment.getCommentText()))) 
 				return null;
 
-			assignment = (Assignment)comment.getGradableObject();
+			// FindBug
+			//assignment = (Assignment)comment.getGradableObject();
 			comment.setCommentText(text);
 		}
 
@@ -484,7 +485,8 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 		scoreItem(gradebook, gradebook.getGrade_type(), assignment, assignmentGradeRecord, studentUid, value, false, false);
 
-		gradeRecords = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), studentUid);
+		// FindBugs
+		// gradeRecords = gbService.getAssignmentGradeRecordsForStudent(gradebook.getId(), studentUid);
 
 		Site site = getSite();
 		User user = null;
@@ -4271,7 +4273,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			// The following statements are to absolutely ensure that we have a fully
 			// populated gradebook -- that the Framework Service has finished initializing
 			// one we have.
-			if (gradebook.getSelectedGradeMapping() == null)
+			if (null == gradebook || null == gradebook.getSelectedGradeMapping())
 				throw new GradebookNotFoundException("");
 
 			if (gradebook.getGrade_type() <= 0)
@@ -6148,7 +6150,8 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			throw new FatalException("Expected Gradebook implementation of type: " + GradebookImpl.class.getName());
 		}
 		
-		Gradebook from = gbService.getGradebook(newGradebook.getGradebookUid());
+		// FindBugs
+		// Gradebook from = gbService.getGradebook(newGradebook.getGradebookUid());
 				
 		GradeItem itemModel =  (GradeItem) newGradebook.getGradebookItemModel();
 		

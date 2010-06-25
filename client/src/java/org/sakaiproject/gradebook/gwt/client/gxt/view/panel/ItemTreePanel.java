@@ -761,11 +761,16 @@ public class ItemTreePanel extends GradebookPanel {
 						TreeModel test = (TreeModel) models.get(0);
 						// drop is in form from tree store
 						if (test.getPropertyNames().contains("model")) {
-							final ItemModel item = (ItemModel)test.get("model");
-							item.setItemOrder(Integer.valueOf(index));
-							if (p != null && item.getItemType() == ItemType.ITEM)
-								item.setCategoryId(((Item)p).getCategoryId());
 							
+							
+							final ItemModel item = (ItemModel)test.get("model");
+							
+							if(null != item) {
+								
+								item.setItemOrder(Integer.valueOf(index));
+								if (p != null && item.getItemType() == ItemType.ITEM)
+									item.setCategoryId(((Item)p).getCategoryId());
+							}
 							
 							RestBuilder builder = RestBuilder.getInstance(Method.PUT, 
 									GWT.getModuleBaseURL(),
