@@ -132,7 +132,7 @@ public class DevelopmentModeBean {
 		Item itemModel = gbModel.getGradebookItemModel();
 		
 		
-		itemModel.setName("Test Gradebook");
+		itemModel.setName("Gradebook");
 		itemModel.setCategoryType(CategoryType.WEIGHTED_CATEGORIES);
 		itemModel.setGradeType(GradeType.POINTS);
 		itemModel.setItemType(ItemType.GRADEBOOK);
@@ -314,7 +314,7 @@ private void createSecondGradebook(Gradebook gbModel, boolean populate) throws I
 		Item itemModel = gbModel.getGradebookItemModel();
 		
 		
-		itemModel.setName("Test Gradebook");
+		itemModel.setName("My Deafult Gradebook"); //sic - caopying the name of an existing GB for testing 
 		itemModel.setCategoryType(CategoryType.WEIGHTED_CATEGORIES);
 		itemModel.setGradeType(GradeType.POINTS);
 		itemModel.setItemType(ItemType.GRADEBOOK);
@@ -325,7 +325,7 @@ private void createSecondGradebook(Gradebook gbModel, boolean populate) throws I
 		itemModel.setShowMean(Boolean.FALSE);
 		itemModel.setShowMedian(Boolean.FALSE);
 		itemModel.setShowMode(Boolean.TRUE);
-		
+				
 		service.updateItem(itemModel);
 		
 		String gradebookUid = gbModel.getGradebookUid();
@@ -335,26 +335,192 @@ private void createSecondGradebook(Gradebook gbModel, boolean populate) throws I
 		if(!populate)
 			return;
 		
-		GradeItem essaysCategory = new GradeItemImpl();
-		essaysCategory.setName("My Essays From Site '" + ArchiveServiceMock.ANOTHER_SITE_CONTEXT + "'");
-		essaysCategory.setPercentCourseGrade(Double.valueOf(50d));
-		essaysCategory.setDropLowest(Integer.valueOf(0));
-		essaysCategory.setEqualWeightAssignments(Boolean.TRUE);
-		essaysCategory.setItemType(ItemType.CATEGORY);
-		essaysCategory.setIncluded(Boolean.TRUE);
-		essaysCategory.setEnforcePointWeighting(Boolean.TRUE);
-		essaysCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, essaysCategory, false));
+		
+		//Quizes
+		GradeItem quizesCategory = new GradeItemImpl();
+		quizesCategory.setName("Quizzes");
+		quizesCategory.setPercentCourseGrade(Double.valueOf(50d));
+		quizesCategory.setDropLowest(Integer.valueOf(0));
+		quizesCategory.setEqualWeightAssignments(Boolean.TRUE);
+		quizesCategory.setItemType(ItemType.CATEGORY);
+		quizesCategory.setIncluded(Boolean.TRUE);
+		quizesCategory.setEnforcePointWeighting(Boolean.TRUE);
+		quizesCategory.setDropLowest(1);
+		quizesCategory.setPercentCategory(0.30d);
+		quizesCategory.setEqualWeightAssignments(Boolean.TRUE);
+		quizesCategory.setExtraCredit(new Boolean(true));
+		quizesCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, quizesCategory, false));
 		
 
-		GradeItem hw1 = new GradeItemImpl();
-		hw1.setName("HW 1 From site '" + ArchiveServiceMock.ANOTHER_SITE_CONTEXT + "'");
-		hw1.setPoints(Double.valueOf(10d));
-		hw1.setDueDate(new Date());
-		hw1.setCategoryId(essaysCategory.getCategoryId());
-		hw1.setItemType(ItemType.ITEM);
-		hw1.setIncluded(Boolean.TRUE);
-		hw1.setReleased(Boolean.TRUE);
-		service.createItem(gradebookUid, gradebookId, hw1, false);
+		GradeItem quiz1 = new GradeItemImpl();
+		quiz1.setName("Quiz 1");
+		quiz1.setPoints(Double.valueOf(10d));
+		quiz1.setDueDate(new Date());
+		quiz1.setCategoryId(quizesCategory.getCategoryId());
+		quiz1.setItemType(ItemType.ITEM);
+		quiz1.setIncluded(Boolean.TRUE);
+		quiz1.setReleased(Boolean.TRUE);
+		service.createItem(gradebookUid, gradebookId, quiz1, false);
+		
+		GradeItem quiz2 = new GradeItemImpl();
+		quiz2.setName("Quiz 2");
+		quiz2.setPoints(Double.valueOf(10d));
+		quiz2.setDueDate(new Date());
+		quiz2.setCategoryId(quizesCategory.getCategoryId());
+		quiz2.setItemType(ItemType.ITEM);
+		quiz2.setIncluded(Boolean.TRUE);
+		quiz2.setReleased(Boolean.TRUE);
+		service.createItem(gradebookUid, gradebookId, quiz2, false);
+		
+		GradeItem quiz3 = new GradeItemImpl();
+		quiz3.setName("Quiz 3");
+		quiz3.setPoints(Double.valueOf(10d));
+		quiz3.setDueDate(new Date());
+		quiz3.setCategoryId(quizesCategory.getCategoryId());
+		quiz3.setItemType(ItemType.ITEM);
+		quiz3.setIncluded(Boolean.TRUE);
+		quiz3.setReleased(Boolean.TRUE);
+		service.createItem(gradebookUid, gradebookId, quiz3, false);
+		
+		GradeItem quiz4 = new GradeItemImpl();
+		quiz4.setName("Quiz 4");
+		quiz4.setPoints(Double.valueOf(10d));
+		quiz4.setDueDate(new Date());
+		quiz4.setCategoryId(quizesCategory.getCategoryId());
+		quiz4.setItemType(ItemType.ITEM);
+		quiz4.setIncluded(Boolean.TRUE);
+		quiz4.setReleased(Boolean.TRUE);
+		service.createItem(gradebookUid, gradebookId, quiz4, false);
+		
+		GradeItem quiz5 = new GradeItemImpl();
+		quiz5.setName("Quiz 5");
+		quiz5.setPoints(Double.valueOf(10d));
+		quiz5.setDueDate(new Date());
+		quiz5.setCategoryId(quizesCategory.getCategoryId());
+		quiz5.setItemType(ItemType.ITEM);
+		quiz5.setIncluded(Boolean.TRUE);
+		quiz5.setReleased(Boolean.TRUE);
+		service.createItem(gradebookUid, gradebookId, quiz5, false);
+		
+		GradeItem quiz6 = new GradeItemImpl();
+		quiz6.setName("Quiz 6");
+		quiz6.setPoints(Double.valueOf(10d));
+		quiz6.setDueDate(new Date());
+		quiz6.setCategoryId(quizesCategory.getCategoryId());
+		quiz6.setItemType(ItemType.ITEM);
+		quiz6.setIncluded(Boolean.TRUE);
+		quiz6.setReleased(Boolean.TRUE);
+		service.createItem(gradebookUid, gradebookId, quiz6, false);
+		
+		
+		
+		
+		
+		//Tests
+		GradeItem testsCategory = new GradeItemImpl();
+		testsCategory.setName("Tests");
+		testsCategory.setPercentCourseGrade(Double.valueOf(50d));
+		testsCategory.setDropLowest(Integer.valueOf(0));
+		testsCategory.setEqualWeightAssignments(Boolean.TRUE);
+		testsCategory.setItemType(ItemType.CATEGORY);
+		testsCategory.setIncluded(Boolean.TRUE);
+		testsCategory.setEnforcePointWeighting(Boolean.TRUE);
+		testsCategory.setDropLowest(1);
+		testsCategory.setPercentCategory(0.50d);
+		testsCategory.setEqualWeightAssignments(Boolean.TRUE);
+		testsCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, testsCategory, false));
+		
+
+		GradeItem midterm1 = new GradeItemImpl();
+		midterm1.setName("Midterm 1");
+		midterm1.setPoints(Double.valueOf(10d));
+		midterm1.setDueDate(new Date());
+		midterm1.setCategoryId(testsCategory.getCategoryId());
+		midterm1.setItemType(ItemType.ITEM);
+		midterm1.setIncluded(Boolean.TRUE);
+		midterm1.setReleased(Boolean.TRUE);
+		service.createItem(gradebookUid, gradebookId, midterm1, false);
+		
+		GradeItem midterm2 = new GradeItemImpl();
+		midterm2.setName("Midterm 2");
+		midterm2.setPoints(Double.valueOf(10d));
+		midterm2.setDueDate(new Date());
+		midterm2.setCategoryId(testsCategory.getCategoryId());
+		midterm2.setItemType(ItemType.ITEM);
+		midterm2.setIncluded(Boolean.TRUE);
+		midterm2.setReleased(Boolean.TRUE);
+		service.createItem(gradebookUid, gradebookId, midterm2, false);
+		
+		GradeItem finalExam = new GradeItemImpl();
+		finalExam.setName("Final");
+		finalExam.setPoints(Double.valueOf(10d));
+		finalExam.setDueDate(new Date());
+		finalExam.setCategoryId(testsCategory.getCategoryId());
+		finalExam.setItemType(ItemType.ITEM);
+		finalExam.setIncluded(Boolean.TRUE);
+		finalExam.setReleased(Boolean.TRUE);
+		service.createItem(gradebookUid, gradebookId, finalExam, false);
+		
+		
+		
+		//Essay
+		GradeItem essayCategory = new GradeItemImpl();
+		essayCategory.setName("Essay");
+		essayCategory.setPercentCourseGrade(Double.valueOf(50d));
+		essayCategory.setDropLowest(Integer.valueOf(0));
+		essayCategory.setEqualWeightAssignments(Boolean.TRUE);
+		essayCategory.setItemType(ItemType.CATEGORY);
+		essayCategory.setIncluded(Boolean.TRUE);
+		essayCategory.setEnforcePointWeighting(Boolean.TRUE);
+		essayCategory.setPercentCategory(0.10d);
+		essayCategory.setEqualWeightAssignments(Boolean.FALSE);
+		essayCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, essayCategory, false));
+		
+
+		GradeItem essay = new GradeItemImpl();
+		essay.setName("Essay");
+		essay.setPoints(Double.valueOf(10d));
+		essay.setDueDate(new Date());
+		essay.setCategoryId(essayCategory.getCategoryId());
+		essay.setItemType(ItemType.ITEM);
+		essay.setIncluded(Boolean.TRUE);
+		essay.setReleased(Boolean.TRUE);
+		service.createItem(gradebookUid, gradebookId, essay, false);
+		
+		
+		//Participation
+		GradeItem participationCategory = new GradeItemImpl();
+		participationCategory.setName("Participation");
+		participationCategory.setPercentCourseGrade(Double.valueOf(50d));
+		participationCategory.setDropLowest(Integer.valueOf(0));
+		participationCategory.setEqualWeightAssignments(Boolean.TRUE);
+		participationCategory.setItemType(ItemType.CATEGORY);
+		participationCategory.setIncluded(Boolean.TRUE);
+		participationCategory.setEnforcePointWeighting(Boolean.TRUE);
+		participationCategory.setPercentCategory(0.10d);
+		participationCategory.setEqualWeightAssignments(Boolean.TRUE);
+		participationCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, participationCategory, false));
+		
+
+		GradeItem participationWeek1_5 = new GradeItemImpl();
+		participationWeek1_5.setName("Participation Week 1-5");
+		participationWeek1_5.setPoints(Double.valueOf(10d));
+		participationWeek1_5.setDueDate(new Date());
+		participationWeek1_5.setCategoryId(participationCategory.getCategoryId());
+		participationWeek1_5.setItemType(ItemType.ITEM);
+		participationWeek1_5.setIncluded(Boolean.TRUE);
+		participationWeek1_5.setReleased(Boolean.TRUE);
+		service.createItem(gradebookUid, gradebookId, participationWeek1_5, false);
+		
+		GradeItem participationWeek6_10 = new GradeItemImpl();
+		participationWeek6_10.setName("Participation Week 6-10");
+		participationWeek6_10.setPoints(Double.valueOf(10d));
+		participationWeek6_10.setDueDate(new Date());
+		participationWeek6_10.setCategoryId(participationCategory.getCategoryId());
+		participationWeek6_10.setItemType(ItemType.ITEM);
+		participationWeek6_10.setIncluded(Boolean.TRUE);
+		participationWeek6_10.setReleased(Boolean.TRUE);
+		service.createItem(gradebookUid, gradebookId, participationWeek6_10, false);
 		
 		
 	}

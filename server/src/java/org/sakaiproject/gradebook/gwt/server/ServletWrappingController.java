@@ -115,13 +115,15 @@ org.springframework.web.servlet.mvc.ServletWrappingController implements Applica
 				// Getting the current session and then the sessionId
 				Session session = sessionManager.getCurrentSession();
 
-				if(null != session && null != jsessionId) {
+				if ((null != session && null != jsessionId) 
+					|| hosted) {// <--until we can figure out how to sycn client and server in devel mode
 
 					String sessionId = session.getId();
 
 					// We only continue if the JSESSIONIDs match
-					if((jsessionId.startsWith(sessionId)) 
-							 || hosted) { // until we can figure out how to sycn client and server in devel mode
+					if(hosted  // <--until we can figure out how to sycn client and server in devel mode
+						|| jsessionId.startsWith(sessionId)) {
+							 
 
 						if(useControllerBean && controllerBean != null) {
 							return controllerBean.submit(request, response, null, null);
