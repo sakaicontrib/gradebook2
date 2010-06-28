@@ -3727,7 +3727,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 		double pG = categoryGradeItem == null || categoryGradeItem.getPercentCourseGrade() == null ? 0d : categoryGradeItem.getPercentCourseGrade().doubleValue();
 
-		CategoryType categoryType = (null != gradebookGradeItem) ? gradebookGradeItem.getCategoryType() : null;
+		CategoryType categoryType = gradebookGradeItem.getCategoryType();
 		boolean isWeighted = categoryType == CategoryType.WEIGHTED_CATEGORIES;
 		boolean isNoCategories = categoryType == CategoryType.NO_CATEGORIES;
 		boolean isCategoryExtraCredit = categoryGradeItem != null && Util.checkBoolean(categoryGradeItem.getExtraCredit());
@@ -6194,6 +6194,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				}
 				
 				saveOrUpdateItem(item2, gbId, newCat);
+				newCat=false; // in case we have more assignments in this cat
 			}
 		}
 	}
@@ -6256,7 +6257,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 							}
 						}
 
-						break; /// got the cat name 
+						break;  
 					}
 				}
 
