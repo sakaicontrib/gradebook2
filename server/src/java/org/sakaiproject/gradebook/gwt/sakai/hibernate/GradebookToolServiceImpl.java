@@ -78,6 +78,7 @@ import org.sakaiproject.tool.gradebook.Permission;
 import org.sakaiproject.tool.gradebook.facades.EventTrackingService;
 import org.sakaiproject.user.api.User;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
@@ -317,14 +318,24 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				return criteria.uniqueResult();
 			}
 		};
+		
+		UserDereferenceRealmUpdate userDereferenceRealmUpdate = null;
 
-		return (UserDereferenceRealmUpdate)getHibernateTemplate().execute(hc);
+		try {
+			
+			userDereferenceRealmUpdate = (UserDereferenceRealmUpdate)getHibernateTemplate().execute(hc);
+		}
+		catch(IncorrectResultSizeDataAccessException irsdae) {
+			log.warn("Did not return a unique result" , irsdae);
+		}
+
+		return userDereferenceRealmUpdate;
 	}
 
-	public synchronized void syncUserDereferenceBySite(final String siteId, final String realmGroupId, final List<User> users, final int realmCount, final String[] roleNames) {
+	public void syncUserDereferenceBySite(final String siteId, final String realmGroupId, final List<User> users, final int realmCount, final String[] roleNames) {
 		HibernateCallback hc = new HibernateCallback() {
 			public Object doInHibernate(Session session) throws HibernateException {
-
+				
 				String realmId = realmGroupId;
 
 				if (realmGroupId == null)
@@ -342,7 +353,19 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				.append("and user.userUid=rg.userId ")
 				.append("and rg.active=true ");
 
-				Query query = session.createQuery(builder.toString());
+				Query query = null;
+
+				try {
+					query = session.createQuery(builder.toString());
+				}
+				catch(HibernateException he) {
+					log.warn("Exception occured during createQuery() call", he);
+				}
+				
+				if(null == query) {
+					return null;
+				}
+				
 				query.setString("realmId", realmId);
 
 				List<UserDereference> userDereferences = query.list();
@@ -452,28 +475,66 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 				// Finally, we remove any dereferences that are still in the map
 				for (UserDereference dereference : userDereferenceMap.values()) {
-					session.delete(dereference);
+					
+					try {
+						session.delete(dereference);
+					}
+					catch(HibernateException he) {
+						log.warn("Exception occured during a UserDereference deletion", he);
+					}
+					
 					i++;
 
 					if ( i % 20 == 0 ) { //20, same as the JDBC batch size
 						//flush a batch of deletes and release memory:
-						session.flush();
-						session.clear();
+						try {
+							session.flush();
+							session.clear();
+						}
+						catch(HibernateException he) {
+							log.warn("Exception occured during a UserDereference deletion (flush/clear)", he);
+						}
 					}
 				}
+
 
 				Criteria criteria = session.createCriteria(UserDereferenceRealmUpdate.class);
 				criteria.add(Restrictions.eq("realmId", realmId));
 
-				UserDereferenceRealmUpdate lastUpdate = (UserDereferenceRealmUpdate)criteria.uniqueResult();
+				UserDereferenceRealmUpdate lastUpdate = null;
+				
+				try {
+					lastUpdate = (UserDereferenceRealmUpdate)criteria.uniqueResult();
+				}
+				catch(IncorrectResultSizeDataAccessException irsdae) {
+					
+					log.warn("Did not return a unique result" , irsdae);
+				}
 
 				if (lastUpdate == null) {
+					
 					lastUpdate = new UserDereferenceRealmUpdate(realmId, Integer.valueOf(realmCount));
-					session.save(lastUpdate);
+
+					try {
+						session.save(lastUpdate);
+					}
+					catch(ConstraintViolationException cve) {
+						
+						log.info("Caught a constraint violation exception trying to save a UserDereferenceRealmUpdate record. This is not necessarily a bug. ", cve);
+					}
+					
 				} else {
+					
 					lastUpdate.setRealmCount(Integer.valueOf(realmCount));
 					lastUpdate.setLastUpdate(new Date());
-					session.update(lastUpdate);
+					
+					try {
+						session.update(lastUpdate);
+					}
+					catch(ConstraintViolationException cve) {
+
+						log.info("Caught a constraint violation exception trying to save a UserDereferenceRealmUpdate record. This is not necessarily a bug. ", cve);
+					}
 				}
 
 				return null;
@@ -482,8 +543,12 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 		try {
 			getHibernateTemplate().execute(hc);
-		} catch (ConstraintViolationException he) {
+		} 
+		catch (ConstraintViolationException he) {
 			log.info("Caught a constraint violation exception trying to save a user record. This is not necessarily a bug. ", he);
+		}
+		catch(IncorrectResultSizeDataAccessException irsdae)  {
+			log.warn("Did not return a unique result", irsdae);
 		}
 	}
 

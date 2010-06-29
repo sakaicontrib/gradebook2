@@ -231,4 +231,8 @@ public interface AppConstants {
 	// Hosted Mode
 	public static final String SYSTEM_PROPERTY_KEY_MODE = "gb2.mode";
 	public static final String SYSTEM_PROPERTY_VALUE_HOSTED = "hosted";
+	
+	// Component Service
+	public static final long ONEHOUR = 1000l * 60l * 60l;
+	
 }

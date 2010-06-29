@@ -2225,6 +2225,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 	}
 
 	public void init() {
+
 		enabledGradeTypes = new ArrayList<GradeType>();
 
 		// Since the ApplicationContext only contains the tool specific beans, we need to get the
@@ -6131,14 +6132,17 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 		int diff = totalUsers - dereferencedUsers;
 
-		UserDereferenceRealmUpdate lastUpdate = gbService.getLastUserDereferenceSync(siteId, null);
+		// GRBK-641
+		synchronized(this) {
+			
+			UserDereferenceRealmUpdate lastUpdate = gbService.getLastUserDereferenceSync(siteId, null);
 
-		// Obviously if the realm count has changed, then we need to update, but
-		// let's also do it if more than an hour has passe
-		long ONEHOUR = 1000l * 60l * 60l;
-		if (lastUpdate == null || lastUpdate.getRealmCount() == null || !lastUpdate.getRealmCount().equals(Integer.valueOf(diff)) || lastUpdate.getLastUpdate() == null
-				|| lastUpdate.getLastUpdate().getTime() + ONEHOUR < new Date().getTime()) {
-			gbService.syncUserDereferenceBySite(siteId, null, findAllMembers(site, learnerRoleKeys), diff, learnerRoleKeys);
+			// Obviously if the realm count has changed, then we need to update, but
+			// let's also do it if more than an hour has passe
+			if (lastUpdate == null || lastUpdate.getRealmCount() == null || !lastUpdate.getRealmCount().equals(Integer.valueOf(diff)) || lastUpdate.getLastUpdate() == null
+					|| lastUpdate.getLastUpdate().getTime() + AppConstants.ONEHOUR < new Date().getTime()) {
+				gbService.syncUserDereferenceBySite(siteId, null, findAllMembers(site, learnerRoleKeys), diff, learnerRoleKeys);
+			}
 		}
 	}	
 	
