@@ -36,7 +36,6 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemCreate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
-import org.sakaiproject.gradebook.gwt.client.gxt.model.GradebookModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModelComparer;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.AppView;
@@ -95,6 +94,7 @@ import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
+import com.google.gwt.core.client.GWT;
 
 public class ItemFormPanel extends GradebookPanel {
 
@@ -843,6 +843,7 @@ public class ItemFormPanel extends GradebookPanel {
 		boolean isExtraCredit = false;
 		boolean isDropLowestVisible = isEditable && isCategory;
 		boolean isWeightByPoints = false;
+		boolean isParentExtraCreditCategory = false;
 		
 		if (itemModel != null) {
 			isExtraCredit = DataTypeConversionUtil.checkBoolean(itemModel.getExtraCredit());
@@ -864,13 +865,17 @@ public class ItemFormPanel extends GradebookPanel {
 					isPercentCategoryVisible = (hasWeights && isExtraCredit) && isItem;
 			}
 
+			// GRBK-599 : Determine if the item's category is an extra credit category. Don't show the % Category field
+			// for items that are part of an extra credit category and the category is equally weighted
+			isParentExtraCreditCategory = (category != null && category.getExtraCredit()) ? true : false;
 			isWeightByPoints = category == null ? false : DataTypeConversionUtil.checkBoolean(category.getEnforcePointWeighting());
 			isEqualWeight = category == null ? false : DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments());
-			isPercentCategoryVisible = hasWeights && (!isEqualWeight || isExtraCredit) && isItem && !isWeightByPoints;
+			isPercentCategoryVisible = hasWeights && (!isEqualWeight || isExtraCredit) && isItem && !isWeightByPoints && (!isParentExtraCreditCategory || !isEqualWeight);
 			isWeightByPointsVisible = isEditable && isCategory && hasWeights;
 			isWeightByPointsVisible = category == null ? isWeightByPointsVisible : isWeightByPointsVisible && !DataTypeConversionUtil.checkBoolean(category.getExtraCredit());
 			
 			isDropLowestVisible = checkIfDropLowestVisible(category, categoryType, isEditable, isCategory, isWeightByPoints, isExtraCredit);
+			
 		} else {
 			isPercentCategoryVisible = hasWeights && isItem;
 		}
