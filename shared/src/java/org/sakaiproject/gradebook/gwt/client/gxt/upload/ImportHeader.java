@@ -26,9 +26,8 @@ package org.sakaiproject.gradebook.gwt.client.gxt.upload;
 import java.io.Serializable;
 
 import org.sakaiproject.gradebook.gwt.client.model.Item;
-import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 
-public class ImportHeader implements Serializable, Comparable<ImportHeader> {
+public class ImportHeader implements Serializable {
 
 	public enum Field { S_ID, S_NAME, S_CRS_GRD, S_LTR_GRD, S_CALC_GRD, S_ADT_GRD, S_GRB_OVRD, S_ITEM, S_COMMENT, S_EMPTY }
 
@@ -212,18 +211,4 @@ public class ImportHeader implements Serializable, Comparable<ImportHeader> {
 	public void setItem(Item item) {
 		this.item = item;
 	}
-
-	public int compareTo(ImportHeader o) {
-		
-		if(null != o) {
-			
-			String assignmentName = (String) (null != getItem() ? getItem().get(ItemKey.S_NM.name()) : "");
-			String assignmentName2 = (String) (null != o.getItem() ? o.getItem().get(ItemKey.S_NM.name()) : "");
-			return assignmentName.compareTo(assignmentName2);
-		}
-		
-		return -1;
-	}
-
-
 }

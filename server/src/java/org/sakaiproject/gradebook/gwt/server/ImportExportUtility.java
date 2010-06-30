@@ -69,7 +69,6 @@ import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.Roster;
 import org.sakaiproject.gradebook.gwt.client.model.Upload;
-import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
@@ -922,8 +921,8 @@ public class ImportExportUtility {
 			}
 			String[] dataEntity = new String[numCols]; 
 
-			log.debug("numCols = " + numCols); 
-
+			log.debug("numCols = " + numCols);
+			
 			for (int i = 0; i < numCols; i++) {
 				org.apache.poi.ss.usermodel.Cell cl = curRow.getCell(i);
 				String cellData;
@@ -1427,7 +1426,7 @@ public class ImportExportUtility {
 			ImportExportInformation ieInfo, Map<String, UserDereference> userDereferenceMap, 
 			List<Learner> importRows, int startRow, Gradebook2ComponentService service) {
 		String[] curRow; 
-		rawData.goToRow(startRow); 
+		rawData.goToRow(startRow);
 		while ((curRow = rawData.readNext()) != null) {
 
 			Learner learnerRow = new LearnerImpl();
@@ -1443,7 +1442,7 @@ public class ImportExportUtility {
 				String id = importHeader.getId();
 				if (colIdx >= curRow.length)
 					continue;
-				if (curRow[colIdx] != null && !curRow[colIdx].equals("") && importHeader.getField() != null) {
+				if (curRow[colIdx] != null && !curRow[colIdx].equals("") && importHeader.getField() != null) { 
 					decorateLearnerForSingleHeaderAndRowData(importHeader, curRow, learnerRow, userDereferenceMap, ieInfo, gradeType, service, colIdx, id);
 				}
 			}
@@ -1508,7 +1507,8 @@ public class ImportExportUtility {
 		
 	}
 
-	// FIXME - based on Kirk/Trainers, this will probably change. 
+	// FIXME - based on Kirk/Trainers, this will probably change.
+	// GRBK-629
 	private boolean handleSpecialPointsCaseForItem(Item item, double d, ImportExportInformation ieInfo) {
 		boolean isFailure = false;
 		if (item != null) {
@@ -2280,6 +2280,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 
 	public Upload parseImportGeneric(Gradebook2ComponentService service, 
 			String gradebookUid, ImportExportDataFile rawData) throws InvalidInputException, FatalException {
+		
 		String msgs = rawData.getMessages();
 		boolean errorsFound = rawData.isErrorsFound(); 
 
@@ -2368,9 +2369,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 	private void adjustGradebookItemModel(ImportExportInformation ieInfo) {
 		
 		GradeItem gradeItem = (GradeItem) ieInfo.getGradebookItemModel();
-		ImportHeader[] newImportHeader = ieInfo.getHeaders();
-		
-		Arrays.sort(newImportHeader);
+		ImportHeader[] newImportHeaders = ieInfo.getHeaders();
 		
 		for(GradeItem category : gradeItem.getChildren()) {
 			
@@ -2378,7 +2377,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 				
 				GradeItem assignment = iter.next();
 				
-				if(!hasAssignment(newImportHeader, assignment.getName())) {
+				if(!hasAssignment(newImportHeaders, assignment.getName())) {
 					iter.remove();
 				}
 			}
@@ -2386,20 +2385,20 @@ private GradeItem buildNewCategory(String curCategoryString,
 		
 	}
 	
-	/*
-	 * The sortedImportHeader argument needs to be a sorted array e.g. Array.sort()
-	 */
-	private boolean hasAssignment(ImportHeader[] sortedImportHeader, String assignmentName) {
+	
+	private boolean hasAssignment(ImportHeader[] importHeaders, String assignmentName) {
 		
-		ImportHeader t = new ImportHeader();
-		t.setHeaderName(assignmentName);
-		GradeItem gradeItem = new GradeItemImpl();
-		gradeItem.setName(assignmentName);
-		t.setItem(gradeItem);
+		for(ImportHeader importHeader : importHeaders) {
+			
+			Item item = importHeader.getItem();
+			
+			if(null != item && null != item.getName() && item.getName().equals(assignmentName)) {
+				return true;
+			}
+		}
 		
-		int result = Arrays.binarySearch(sortedImportHeader, t);
-		
-		return result >= 0;
+		return false;
+
 	}
 
 	private void buildDereferenceIdMap(List<UserDereference> userDereferences,
