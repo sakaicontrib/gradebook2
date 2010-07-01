@@ -130,6 +130,8 @@ public class ImportExportUtility {
 	};
 	
 	private Set<String> headerRowIndicatorSet, idSet, nameSet, scantronIgnoreSet;
+
+	private static String UNSAFE_FILENAME_CHAR_REGEX = "[\\\\/:\\*\\?\"\\|<>\\. '\\()]";
 	
 	public ImportExportUtility() {	
 		// FIXME - Need to decide whether this should be institutional based.  
@@ -434,7 +436,7 @@ public class ImportExportUtility {
 			filename.append("gradebook");
 		else {
 			String name = site.getTitle();
-			name = name.replaceAll("\\s", "");
+			name = name.replaceAll(UNSAFE_FILENAME_CHAR_REGEX , "_");
 
 			filename.append(name);
 		}
