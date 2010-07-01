@@ -68,6 +68,7 @@ import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayout;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayoutData;
 import com.extjs.gxt.ui.client.widget.layout.CardLayout;
+import com.extjs.gxt.ui.client.widget.layout.FitData;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.google.gwt.core.client.GWT;
@@ -108,6 +109,7 @@ public class ImportPanel extends GradebookPanel {
 		setHeading(i18n.headerImport());
 		setHideCollapseTool(true);
 		setLayout(new FitLayout());
+		setBodyStyle("backgroundColor: slategrey;");
 
 		mainCardLayout = new CardLayout();
 		mainCardLayoutContainer = new LayoutContainer();
@@ -179,7 +181,7 @@ public class ImportPanel extends GradebookPanel {
 		mainCardLayoutContainer.add(borderLayoutContainer);
 		mainCardLayoutContainer.add(errorContainer); 
 		mainCardLayout.setActiveItem(fileUploadContainer);
-		add(mainCardLayoutContainer);
+		add(mainCardLayoutContainer, new FitData(50));
 	}
 
 
