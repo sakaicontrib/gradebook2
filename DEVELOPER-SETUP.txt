@@ -60,6 +60,30 @@ Select the '(x)= Arguments' tab and in the 'VM' field, paste the above as one lo
 Finally, you will need to configure your browser to support GWT development mode. In Firefox, simply install the GWT Developer Plugin for Firefox:
 https://dl-ssl.google.com/gwt/plugins/firefox/gwt-dev-plugin.xpi
 
+------------
+Logging in Devel Mode
+------------
+
+Adjust the Log4J settings for devel mode using 
+dev/src/java/log4j.properties
+
+Example edit:
+
+	To enable DEBUG level logging for class ImportExportUtility add the line
+
+log4j.logger.org.sakaiproject.gradebook.gwt.server.ImportExportUtility=DEBUG
+
+Default setting send INFO level logs to 
+war/logs/hosted-log4j.log
+
+Each run will roll the logs:
+./war/logs/hosted-log4j.log
+./war/logs/hosted-log4j.log.1
+./war/logs/hosted-log4j.log.2
+./war/logs/hosted-log4j.log.3
+
+
+
 
 ------------
 -----------
