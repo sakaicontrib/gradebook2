@@ -131,7 +131,7 @@ public class ImportExportUtility {
 	
 	private Set<String> headerRowIndicatorSet, idSet, nameSet, scantronIgnoreSet;
 
-	private static String UNSAFE_FILENAME_CHAR_REGEX = "[\\\\/:\\*\\?\"\\|<>\\. '\\()]";
+	private static String UNSAFE_FILENAME_CHAR_REGEX = "[\\p{Punct}\\p{Space}\\p{Cntrl}]";
 	
 	public ImportExportUtility() {	
 		// FIXME - Need to decide whether this should be institutional based.  
