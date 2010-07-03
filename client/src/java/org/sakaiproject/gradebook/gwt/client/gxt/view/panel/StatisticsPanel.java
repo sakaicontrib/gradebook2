@@ -4,7 +4,7 @@
  *
  ***********************************************************************************
  *
- * Copyright (c) 2008, 2009 The Regents of the University of California
+ * Copyright (c) 2008, 2009, 2010 The Regents of the University of California
  *
  * Licensed under the
  * Educational Community License, Version 2.0 (the "License"); you may
@@ -26,16 +26,15 @@ package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
+import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.RestCallback;
 import org.sakaiproject.gradebook.gwt.client.UrlArgsCallback;
-import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
@@ -50,6 +49,7 @@ import org.sakaiproject.gradebook.gwt.client.util.Base64;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
+import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
 import com.extjs.gxt.ui.client.data.ListLoader;
 import com.extjs.gxt.ui.client.data.ModelData;
@@ -63,6 +63,8 @@ import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
+import com.extjs.gxt.ui.client.widget.HorizontalPanel;
+import com.extjs.gxt.ui.client.widget.Text;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
@@ -75,16 +77,10 @@ import com.google.gwt.http.client.Response;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONValue;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
-import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.VisualizationUtils;
-import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.visualizations.ColumnChart;
 import com.google.gwt.visualization.client.visualizations.LineChart;
 import com.google.gwt.visualization.client.visualizations.PieChart;
@@ -98,27 +94,15 @@ public class StatisticsPanel extends ContentPanel {
 
 	private GradebookResources resources;
 
-	private VerticalPanel mainVerticalPanel;
-	private HorizontalPanel horizontalPanel;
-	private HorizontalPanel horizontalIconPanel;
-	private VerticalPanel verticalGraphPanel;
-	private Panel statisticsGraphPanel;
+	private HorizontalPanel gridAndChartHorizontalPanel;
+	
+	private ChartPanel chartPanel;
 
 	private SectionsComboBox<ModelData> sectionsComboBox;
 
-	private Panel gridPanel;
-
 	private Grid<StatisticsModel> grid = null;
 
-	private Image columnChartIcon;
-	private Image pieChartIcon;
-	private Image lineChartIcon;
-
 	private DataTable dataTable;
-
-	private PieChart pieChart;
-	private ColumnChart columnChart;
-	private LineChart lineChart;
 
 	private int selectedGradeItemRow = 0;
 	private String selectedAssignmentId;
@@ -129,13 +113,13 @@ public class StatisticsPanel extends ContentPanel {
 	private Map<String, DataTable> dataTableCache = new HashMap<String, DataTable>();
 
 	private final static int FIRST_ROW = 0;
-	private final static String CHART_TITLE = "Grades Distribution";
 	private final static int CHART_WIDTH = 600;
 	private final static int CHART_HEIGHT = 300;
 	private final static boolean IS_CHART_3D = true;
 
 
-	private final static String[] RANGE = new String[]{"0-9",
+	private final static String[] RANGE = new String[]{
+		"0-9",
 		"10-19",
 		"20-29",
 		"30-39",
@@ -160,45 +144,57 @@ public class StatisticsPanel extends ContentPanel {
 		// Configure main ContentPanel
 		setHeading(i18n.statisticsHeading());
 		setFrame(true);
-
-		// Configuring various UI elements: initializing, adding handlers etc.
-		configureChartIcons();
+		setBodyBorder(true);
+		setButtonAlign(HorizontalAlignment.RIGHT);
+		setBodyStyle("padding: 10px");
+		setScrollMode(Scroll.AUTO);
+		
 
 		sectionsComboBox = new SectionsComboBox<ModelData>();
-		sectionsComboBox.setStyleName(resources.css().gbStatisticsChartPanel());
+		sectionsComboBox.setStyleAttribute("padding-left", "10px");
 		sectionsComboBox.addSelectionChangedListener(new SelectionChangedListener<ModelData>() {
 
 			public void selectionChanged(SelectionChangedEvent<ModelData> se) {
 
-				// When the section selection changes, we do:
-				// - Reload the grid with the section relevant data
-				// - Reset the selected grade item so that new data is loaded
-				//   if the user clicks on a grade item row
-				// - Remove existing chart
-				removeAllWidgetsFrom(statisticsGraphPanel);
-				horizontalIconPanel.setVisible(false);
+				chartPanel.hide();
 				grid.getStore().removeAll();
 				grid.getStore().getLoader().load();
 				selectedGradeItemRow = 0;
 			}
 		});
 
-		setBodyBorder(true);
-		setButtonAlign(HorizontalAlignment.RIGHT);
+		// Adding the combobox
+		add(sectionsComboBox);
+		
+		// Adding the instructions on how to show a chart
+		Text instructions = new Text(i18n.statisticsGraphInstructions());
+		instructions.setStyleAttribute("padding", "10px");
+		add(instructions);
 
+		// Creating the grade item statistics grid
 		grid = getGrid();
-
-		Button button = new AriaButton(i18n.close(), new SelectionListener<ButtonEvent>() {
+		
+		// Creating the chart panel and initially hide it
+		chartPanel = new ChartPanel();
+		chartPanel.setSize(CHART_WIDTH, CHART_HEIGHT + 80);
+		chartPanel.hide();
+		
+		gridAndChartHorizontalPanel = new HorizontalPanel();
+		gridAndChartHorizontalPanel.setSpacing(10);
+		gridAndChartHorizontalPanel.add(grid);
+		gridAndChartHorizontalPanel.add(chartPanel);
+		add(gridAndChartHorizontalPanel);
+		
+		
+		// Creating the close button to the ContentPanel
+		Button closeButton = new AriaButton(i18n.close(), new SelectionListener<ButtonEvent>() {
 
 			@Override
 			public void componentSelected(ButtonEvent be) {
 				Dispatcher.forwardEvent(GradebookEvents.StopStatistics.getEventType(), Boolean.FALSE);
 
-				// Remove existing chart
-				removeAllWidgetsFrom(statisticsGraphPanel);
-
-				// Hide the graph icons
-				horizontalIconPanel.setVisible(false);
+				// Hide the chart panel
+				chartPanel.hide();
 
 				// Reset the last selected grade item row
 				selectedGradeItemRow = 0;
@@ -211,39 +207,8 @@ public class StatisticsPanel extends ContentPanel {
 			}
 		});
 
-		addButton(button);
+		addButton(closeButton);
 
-		mainVerticalPanel = new VerticalPanel();
-		mainVerticalPanel.setSpacing(10);
-
-		horizontalPanel = new HorizontalPanel();
-		verticalGraphPanel = new  VerticalPanel();
-		verticalGraphPanel.setStyleName(resources.css().gbStatisticsChartPanel());
-		statisticsGraphPanel = new SimplePanel();
-		horizontalIconPanel = new HorizontalPanel();
-
-		HTML instructions = new HTML(i18n.statisticsGraphInstructions());
-		mainVerticalPanel.add(instructions);
-		mainVerticalPanel.add(sectionsComboBox);
-		mainVerticalPanel.add(horizontalPanel);
-
-		gridPanel = new SimplePanel();
-		gridPanel.add(grid);
-		horizontalPanel.add(gridPanel);
-		horizontalPanel.add(verticalGraphPanel);
-
-		horizontalIconPanel.setWidth("30%");
-		horizontalIconPanel.setStyleName(resources.css().gbStatisticsChartIconPanel());
-		horizontalIconPanel.setVisible(false);
-
-		verticalGraphPanel.add(statisticsGraphPanel);
-		verticalGraphPanel.add(horizontalIconPanel);
-
-		horizontalIconPanel.add(columnChartIcon);
-		horizontalIconPanel.add(pieChartIcon);
-		horizontalIconPanel.add(lineChartIcon);
-
-		add(mainVerticalPanel);
 	}
 
 	public void onLearnerGradeRecordUpdated(ModelData learner) {
@@ -251,48 +216,22 @@ public class StatisticsPanel extends ContentPanel {
 		loader.load();
 	}
 
-	private PieChart.Options createPieChartOptions() {
-		
-		PieChart.Options options = PieChart.Options.create();
-		options.setWidth(CHART_WIDTH);
-		options.setHeight(CHART_HEIGHT);
-		options.set3D(IS_CHART_3D);
-		options.setTitle(CHART_TITLE);
-		return options;
-	}
+	
 
-	private ColumnChart.Options createColumnChartOptions() {
-		
-		ColumnChart.Options options = ColumnChart.Options.create();
-		options.setWidth(CHART_WIDTH);
-		options.setHeight(CHART_HEIGHT);
-		options.set3D(IS_CHART_3D);
-		options.setTitle(CHART_TITLE);
-		//options.setStacked(true);
-		return options;
-	}
-
-	private LineChart.Options createLineChartOptions() {
-		
-		LineChart.Options options = LineChart.Options.create();
-		options.setWidth(CHART_WIDTH);
-		options.setHeight(CHART_HEIGHT);
-		options.setTitle(CHART_TITLE);
-		return options;
-	}
-
-	private void getStatisticsData(String assignmentId, String sectionId) {
+	private void getStatisticsChartData(String assignmentId, String sectionId) {
 
 		// First we check the cache if we have the data already
 		String cacheKey = assignmentId + sectionId;
 		
 		if(dataTableCache.containsKey(cacheKey)) {
 			
+			// Cache hit
 			dataTable = dataTableCache.get(cacheKey);
-			showGraph();
+			chartPanel.show();
 		}
 		else {
 			
+			// Data is not in cache yet
 			Gradebook gbModel = Registry.get(AppConstants.CURRENT);
 			
 			RestBuilder builder = RestBuilder.getInstance(
@@ -316,12 +255,12 @@ public class StatisticsPanel extends ContentPanel {
 
 				public void onError(Request request, Throwable caught) {
 
-					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsDataErrorMsg(), false));
+					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsDataErrorMsg(), true));
 				}
 
 				public void onFailure(Request request, Throwable exception) {
 
-					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsDataErrorMsg(), false));
+					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsDataErrorMsg(), true));
 				}
 
 				public void onSuccess(Request request, Response response) {
@@ -332,12 +271,13 @@ public class StatisticsPanel extends ContentPanel {
 
 					JSONArray positiveFrequencies = jsonArray.get(AppConstants.POSITIVE_NUMBER).isArray();
 					
-					// TODO: For now, we don't show the negative grade frequency
+					// TODO: For now, we don't show the negative grade frequency : leaving code in place
+					// until we handle negative number frequencies
 					//JSONArray negativeFrequencies = jsonArray.get(AppConstants.NEGATIVE_NUMBER).isArray();
 					
 					dataTable = DataTable.create();
-					dataTable.addColumn(ColumnType.STRING, "Range");
-					dataTable.addColumn(ColumnType.NUMBER, "Positive Grade Frequencey");
+					dataTable.addColumn(ColumnType.STRING, i18n.statisticsChartLabelDistribution());
+					dataTable.addColumn(ColumnType.NUMBER, i18n.statisticsChartLabelFrequency());
 					//dataTable.addColumn(ColumnType.NUMBER, "Negative Grade Frequency");
 					dataTable.addRows(positiveFrequencies.size());
 
@@ -355,29 +295,12 @@ public class StatisticsPanel extends ContentPanel {
 
 					// adding the dataTable to the cache
 					dataTableCache.put(selectedAssignmentId + selectedSectionId, dataTable);
-					showGraph();
+					chartPanel.show();
 				}
 			});
 		}
 	}
 
-	private void showGraph() {
-
-		columnChart = new ColumnChart(dataTable, createColumnChartOptions());
-		statisticsGraphPanel.add(columnChart);
-		horizontalIconPanel.setVisible(true);
-	}
-
-	private void removeAllWidgetsFrom(Panel panel) {
-
-		Iterator<Widget> itr = panel.iterator();
-		
-		while(itr.hasNext()) {
-			
-			itr.next();
-			itr.remove();
-		}
-	}
 
 	private Grid<StatisticsModel> getGrid() {
 
@@ -391,6 +314,7 @@ public class StatisticsPanel extends ContentPanel {
 			}
 		};
 
+		// Get the Statistics grid data
 		loader = RestBuilder.getDelayLoader(
 				AppConstants.LIST_ROOT, 
 				EnumSet.allOf(StatisticsKey.class),
@@ -409,10 +333,8 @@ public class StatisticsPanel extends ContentPanel {
 		final ColumnModel cm = new ColumnModel(configureGrid());
 
 		Grid<StatisticsModel> grid = new Grid<StatisticsModel>(store, cm);
-		grid.setStyleAttribute("borderTop", "none");   
 		grid.setBorders(true);
 		grid.setAutoHeight(true);
-
 		grid.addListener(Events.RowClick, new Listener<GridEvent<?>>() {
 
 			public void handleEvent(GridEvent<?> gridEvent) {
@@ -432,9 +354,6 @@ public class StatisticsPanel extends ContentPanel {
 
 						selectedGradeItemRow = rowIndex;
 					}
-					
-					// Remove existing chart
-					removeAllWidgetsFrom(statisticsGraphPanel);
 
 					String assignmentId = gridEvent.getModel().get(StatisticsKey.S_ITEM_ID.name());
 
@@ -444,21 +363,22 @@ public class StatisticsPanel extends ContentPanel {
 
 					if(null != mean && !AppConstants.STATISTICS_DATA_NA.equals(mean)) {
 
-						// Before we get the data and show the graph(s), we check
+						// Before we get the data and show the graph, we check
 						// if the Visualization APIs have been loaded properly
 						if(isVisualizationApiLoaded) {
 							
-							getStatisticsData(assignmentId, getSelectedSection());
+							getStatisticsChartData(assignmentId, getSelectedSection());
 						}
 						else {
 							
-							Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsVisualizationErrorMsg(), false));
+							Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsVisualizationErrorMsg(), true));
+							chartPanel.hide();
 						}
 					}
 					else {
 
-						// If there is no data to show, we hide the graph icons
-						horizontalIconPanel.setVisible(false);
+						// If there is no data to show, we hide the chart
+						chartPanel.hide();
 					}
 				}
 			}
@@ -521,43 +441,6 @@ public class StatisticsPanel extends ContentPanel {
 		return configs;
 	}
 
-	private void configureChartIcons() {
-
-		columnChartIcon = new Image(resources.chart_bar());
-		pieChartIcon = new Image(resources.chart_pie());
-		lineChartIcon = new Image(resources.chart_line());
-
-		columnChartIcon.addClickHandler(new ClickHandler() {
-
-			public void onClick(ClickEvent event) {
-				columnChart = new ColumnChart(dataTable, createColumnChartOptions());
-				removeAllWidgetsFrom(statisticsGraphPanel);
-				statisticsGraphPanel.add(columnChart);
-				horizontalIconPanel.setVisible(true);
-			}
-		});
-
-		lineChartIcon.addClickHandler(new ClickHandler() {
-
-			public void onClick(ClickEvent event) {
-				lineChart = new LineChart(dataTable, createLineChartOptions());
-				removeAllWidgetsFrom(statisticsGraphPanel);
-				statisticsGraphPanel.add(lineChart);
-				horizontalIconPanel.setVisible(true);
-			}
-		});
-
-		pieChartIcon.addClickHandler(new ClickHandler() {
-
-			public void onClick(ClickEvent event) {
-				pieChart = new PieChart(dataTable, createPieChartOptions());
-				removeAllWidgetsFrom(statisticsGraphPanel);
-				statisticsGraphPanel.add(pieChart);
-				horizontalIconPanel.setVisible(true);
-			}
-		});
-	}
-
 	// Method that returns the selected section
 	private String getSelectedSection() {
 
@@ -581,6 +464,113 @@ public class StatisticsPanel extends ContentPanel {
 		// decoded the URL and then return a 400
 		return Base64.encode(sectionId);
 
+	}
+	
+	private class ChartPanel extends ContentPanel {
+
+		private Image columnChartIcon;
+		private Image pieChartIcon;
+		private Image lineChartIcon;
+		
+		private HorizontalPanel graphPanel;
+		private HorizontalPanel chartIconPanel;
+
+		public ChartPanel() {
+			
+			setFrame(true);
+			setBodyBorder(true);
+			setTitle(i18n.statisticsChartTitle());
+			setHeading(i18n.statisticsChartTitle());
+			
+			graphPanel = new HorizontalPanel();
+			add(graphPanel);
+			
+			// Create the image icons
+			columnChartIcon = new Image(resources.chart_bar());
+			pieChartIcon = new Image(resources.chart_pie());
+			lineChartIcon = new Image(resources.chart_line());
+
+			columnChartIcon.addClickHandler(new ClickHandler() {
+
+				public void onClick(ClickEvent event) {
+					graphPanel.removeAll();
+					graphPanel.add(new ColumnChart(dataTable, createColumnChartOptions()));
+					graphPanel.layout();
+				}
+			});
+
+			lineChartIcon.addClickHandler(new ClickHandler() {
+
+				public void onClick(ClickEvent event) {
+					graphPanel.removeAll();
+					graphPanel.add(new LineChart(dataTable, createLineChartOptions()));
+					graphPanel.layout();
+				}
+			});
+
+			pieChartIcon.addClickHandler(new ClickHandler() {
+
+				public void onClick(ClickEvent event) {
+					graphPanel.removeAll();
+					graphPanel.add(new PieChart(dataTable, createPieChartOptions()));
+					graphPanel.layout();
+				}
+			});
+
+			chartIconPanel = new HorizontalPanel();
+			chartIconPanel.setSpacing(15);
+			chartIconPanel.add(columnChartIcon);
+			chartIconPanel.add(pieChartIcon);
+			chartIconPanel.add(lineChartIcon);
+			add(chartIconPanel);
+			
+			layout();
+		}
+		
+		
+		@Override
+		public void show() {
+			
+			if(null != dataTable) {
+				
+				super.show();
+				graphPanel.removeAll();
+				graphPanel.add(new ColumnChart(dataTable, createColumnChartOptions()));
+				graphPanel.layout();
+				
+			}
+			else {
+				
+				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsDataErrorMsg(), true));
+			}
+		}
+		
+		private PieChart.Options createPieChartOptions() {
+			
+			PieChart.Options options = PieChart.Options.create();
+			options.setWidth(CHART_WIDTH);
+			options.setHeight(CHART_HEIGHT);
+			options.set3D(IS_CHART_3D);
+			return options;
+		}
+
+		private ColumnChart.Options createColumnChartOptions() {
+			
+			ColumnChart.Options options = ColumnChart.Options.create();
+			options.setWidth(CHART_WIDTH);
+			options.setHeight(CHART_HEIGHT);
+			options.set3D(IS_CHART_3D);
+			//options.setStacked(true);
+			return options;
+		}
+
+		private LineChart.Options createLineChartOptions() {
+			
+			LineChart.Options options = LineChart.Options.create();
+			options.setWidth(CHART_WIDTH);
+			options.setHeight(CHART_HEIGHT);
+			return options;
+		}
 	}
 
 	/*

@@ -303,12 +303,18 @@ public interface I18nConstants extends Constants {
 
 	String weightName();	
 	
+	// Statistics
 	String statisticsDataErrorTitle();
 	String statisticsDataErrorMsg();
 	String statisticsGraphInstructions();
 	String statisticsVisualizationErrorMsg();
+	String statisticsChartLabelDistribution();
+	String statisticsChartLabelFrequency();
+	String statisticsChartTitle();
+	
 	String categoriesNot100Percent();
 	String popupBlockerDetected();
+	
 	
 	// Import
 	String importSetupGridItemHeader();
