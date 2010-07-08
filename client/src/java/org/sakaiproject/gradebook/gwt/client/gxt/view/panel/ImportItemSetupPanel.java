@@ -26,6 +26,7 @@ package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.sakaiproject.gradebook.gwt.client.dev.ItemUtil;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
@@ -46,6 +47,7 @@ import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.grid.GridView;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
+import com.google.gwt.core.client.GWT;
 
 public class ImportItemSetupPanel extends GradebookPanel {
 
@@ -178,6 +180,27 @@ public class ImportItemSetupPanel extends GradebookPanel {
 				
 				// Case when we render the grid for the first time
 				if(null == categoryId || "".equals(categoryId)) {
+					
+					// Making sure that assignments have the categoryId
+					// set if possible
+					if(model.getCategoryId().equals(Long.valueOf(-1l))) {
+						
+						String categoryName = model.get(ItemKey.S_PARENT.name());
+						if(null != categoryName && !"".equals(categoryName)) {
+							
+							Item category = categoryStore.findModel(ItemKey.S_NM.name(), categoryName);
+							ItemUtil.showItem(category);
+							
+							try {
+
+								Long catId = Long.valueOf((String) category.get(ItemKey.S_ID.name()));
+								model.setCategoryId(catId);
+							}
+							catch(NumberFormatException nfe) {
+								// We don't do anything
+							}
+						}	
+					}
 					
 					return model.get(ItemKey.S_PARENT.name());
 				}
