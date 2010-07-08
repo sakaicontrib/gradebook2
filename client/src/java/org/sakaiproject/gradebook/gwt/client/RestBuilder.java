@@ -29,7 +29,6 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
-import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -62,12 +61,12 @@ public class RestBuilder extends RequestBuilder {
 		if (header != null)
 			builder.setHeader("X-HTTP-Method-Override", header);
 
-		builder.setHeader("Content-Type", "application/json; charset=utf-8");
-		String jSessionId = Cookies.getCookie("JSESSIONID");
+		builder.setHeader("Content-Type", AppConstants.HEADER_CONTENT_TYPE_JSON_UTF8);
+		String jSessionId = Cookies.getCookie(AppConstants.SESSION_COOKIE_KEY);
 		if (null == jSessionId || "".equals(jSessionId)) {
-			builder.setHeader("X-XSRF-Cookie", "No-Cookie");
+			builder.setHeader(AppConstants.X_XSRF_COOKIE, AppConstants.NO_VALUE_COOKIE);
 		} else {
-			builder.setHeader("X-XSRF-Cookie", jSessionId);
+			builder.setHeader(AppConstants.X_XSRF_COOKIE, jSessionId);
 		}
 
 		return builder;

@@ -126,6 +126,7 @@ public interface AppConstants {
 	
 	public static final String IMPORT_CHANGES		= "B_IMP_CHG";
 
+	// Sakai properties
 	public static final String HELP_URL				= "helpUrl";
 	public static final String HELP_URL_CONFIG_ID	= "gb2.help.url";
 	
@@ -234,5 +235,11 @@ public interface AppConstants {
 	
 	// Component Service
 	public static final long ONEHOUR = 1000l * 60l * 60l;
+	
+	// REST Communication
+	public static final String X_XSRF_COOKIE = "X-XSRF-Cookie";
+	public static final String SESSION_COOKIE_KEY = "JSESSIONID";
+	public static final String NO_VALUE_COOKIE = "No-Cookie";
+	public static final String HEADER_CONTENT_TYPE_JSON_UTF8 = "application/json; charset=utf-8";
 	
 }

@@ -106,7 +106,7 @@ org.springframework.web.servlet.mvc.ServletWrappingController implements Applica
 			if(sessionManager != null) {
 
 				// X-XSRF-Cookie is a client side defined cookie : RestBuilder.java
-				String jsessionId = request.getHeader("X-XSRF-Cookie");
+				String jsessionId = request.getHeader(AppConstants.X_XSRF_COOKIE);
 				
 				if(null == jsessionId) {
 					jsessionId = request.getParameter(AppConstants.REQUEST_FORM_FIELD_FORM_TOKEN);
@@ -121,8 +121,8 @@ org.springframework.web.servlet.mvc.ServletWrappingController implements Applica
 					String sessionId = session.getId();
 
 					// We only continue if the JSESSIONIDs match
-					if(hosted  // <--until we can figure out how to sycn client and server in devel mode
-						|| jsessionId.startsWith(sessionId)) {
+					if(jsessionId.startsWith(sessionId) ||  
+					   hosted) {// <--until we can figure out how to sycn client and server in devel mode
 							 
 
 						if(useControllerBean && controllerBean != null) {
@@ -154,7 +154,7 @@ org.springframework.web.servlet.mvc.ServletWrappingController implements Applica
 		}
 
 		// Handling the case where the JSESSIONIDs don't match
-		log.error("ERROR: X-XSRF-Cookie violation");
+		log.error("ERROR: " + AppConstants.X_XSRF_COOKIE + " violation");
 		response.setContentType("text/plain");
         response.setStatus(400);
         PrintWriter writer = response.getWriter();

@@ -3,7 +3,6 @@
 
 <beans>
 
-	<import resource="db.xml"/>
    
     <bean id="DevelopmentModeBean"
     	class="org.sakaiproject.gradebook.gwt.sakai.mock.DevelopmentModeBean"
