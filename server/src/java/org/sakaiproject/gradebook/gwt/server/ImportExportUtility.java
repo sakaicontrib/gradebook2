@@ -1509,34 +1509,24 @@ public class ImportExportUtility {
 		
 	}
 
-	// FIXME - based on Kirk/Trainers, this will probably change.
-	// GRBK-629
 	private boolean handleSpecialPointsCaseForItem(Item item, double d, ImportExportInformation ieInfo) {
+		
 		boolean isFailure = false;
+		
 		if (item != null) {
+		
 			Double points = item.getPoints();
+		
 			if (points != null) {
+				
 				if (points.doubleValue() < d) {
-					
-					if (item.getItemId() != null && item.getItemId().equals(Long.valueOf(-1l))) {
-						// Ensure that we have an int
-						d = Math.ceil(d);
-						// Round to the nearest hundred if d > 100,
-						// otherwise, round to the nearest ten
-						if (d > 100) {
-							d = d / 100;
-							d = Math.ceil(d);
-							d = d * 100;
-						} else if (d > 10) {
-							d = d / 10;
-							d = Math.ceil(d);
-							d = d * 10;
-						}
-						item.setPoints(d);
-					} else {
-						isFailure = true;
-						ieInfo.setInvalidScore(true);
-					}
+
+					// GRBK-629 : We don't auto adjust total points for GradeItems that
+					// are created new via the import process depending on entered user grades
+
+					// If a grade is higher than total points possible, we flag an error
+					isFailure = true;
+					ieInfo.setInvalidScore(true);
 				}
 			}
 		} 
