@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Set;
 
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.tool.api.Placement;
 import org.sakaiproject.tool.api.Tool;
 import org.sakaiproject.tool.api.ToolManager;
@@ -18,7 +19,7 @@ public class ToolManagerMock implements ToolManager {
 
 	public Placement getCurrentPlacement() {
 		
-		return new PlacementMock("toolid00-7c76-43ed-8090-1d6cbbf15a1b", null, null, null, "TESTSITECONTEXT", null);
+		return new PlacementMock("toolid00-7c76-43ed-8090-1d6cbbf15a1b", null, null, null, AppConstants.TEST_SITE_CONTEXT_ID, null);
 	}
 
 	public Tool getCurrentTool() {

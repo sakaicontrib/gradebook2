@@ -20,13 +20,12 @@ import org.sakaiproject.exception.IdInvalidException;
 import org.sakaiproject.exception.IdUnusedException;
 import org.sakaiproject.exception.IdUsedException;
 import org.sakaiproject.exception.PermissionException;
-import org.sakaiproject.javax.PagingPosition;
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.memory.api.MemoryService;
 import org.sakaiproject.site.api.Group;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SiteAdvisor;
 import org.sakaiproject.site.api.SitePage;
-import org.sakaiproject.site.api.SiteService;
 import org.sakaiproject.site.api.ToolConfiguration;
 import org.sakaiproject.site.impl.BaseSiteService;
 import org.sakaiproject.thread_local.api.ThreadLocalManager;
@@ -132,16 +131,16 @@ public class SiteServiceMock extends BaseSiteService {
 	public Site getSite(String context) throws IdUnusedException {
 		
 		if (null == context
-				|| !context.equals(BaseGroupMock.testSite_ContextId) 
+				|| !context.equals(AppConstants.TEST_SITE_CONTEXT_ID) 
 				&& !context.equals(ArchiveServiceMock.ANOTHER_SITE_CONTEXT)) {
 				
 			throw new IdUnusedException("not one of these: '"
-					+ BaseGroupMock.testSite_ContextId + "','"
+					+ AppConstants.TEST_SITE_CONTEXT_ID + "','"
 					+ ArchiveServiceMock.ANOTHER_SITE_CONTEXT + "'");
 		}
 
 		if (null == devModeSite) {
-			devModeSite = new SiteMock(BaseGroupMock.testSite_ContextId, "Test Site", this, authzGroupService);
+			devModeSite = new SiteMock(AppConstants.TEST_SITE_CONTEXT_ID, "Test Site", this, authzGroupService);
 		}
 		return devModeSite;
 

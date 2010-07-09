@@ -24,7 +24,6 @@
 package org.sakaiproject.gradebook.gwt.sakai.mock;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -61,8 +60,6 @@ public class SectionAwarenessMock implements SectionAwareness {
 	private ToolManager toolManager;
 	
 	private final static int NUMBER_OF_TAS = 5;
-	private static final String[] SECTIONS = { "001", "002", "003", "004" };
-	private static final String[] SECTION_EIDs = { "/section/018u012", null, "/section/sd32122", null };
 
 	public static final int NUMBER_OF_MOCK_SECTIONS = 4;
 

@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
@@ -91,11 +92,11 @@ public class DevelopmentModeBean {
 			Gradebook2AuthzMockImpl authz = (Gradebook2AuthzMockImpl)((Gradebook2ComponentServiceImpl)service).getAuthz();
 			
 			
-			String authDetails = service.getAuthorizationDetails(new String[]{BaseGroupMock.testSite_ContextId, ArchiveServiceMock.ANOTHER_SITE_CONTEXT});
+			String authDetails = service.getAuthorizationDetails(new String[]{AppConstants.TEST_SITE_CONTEXT_ID, ArchiveServiceMock.ANOTHER_SITE_CONTEXT});
 			// since we want to set up another site's gradebook too, we have to 
 			// pass  in the uid's
 			ApplicationSetup applicationSetup = service.getApplicationSetup(
-					new String[]{BaseGroupMock.testSite_ContextId, ArchiveServiceMock.ANOTHER_SITE_CONTEXT});
+					new String[]{AppConstants.TEST_SITE_CONTEXT_ID, ArchiveServiceMock.ANOTHER_SITE_CONTEXT});
 			List<Gradebook> gbModels = applicationSetup.getGradebookModels();
 			
 			authz.setStartUp(true);
@@ -104,8 +105,8 @@ public class DevelopmentModeBean {
 			
 			Map<String, Gradebook> gradebookBySiteId = new HashMap<String, Gradebook>();
 			for (Gradebook gb : gbModels ){
-				if (BaseGroupMock.testSite_ContextId.equals(gb.getGradebookUid())) {
-					gradebookBySiteId.put(BaseGroupMock.testSite_ContextId, gb);
+				if (AppConstants.TEST_SITE_CONTEXT_ID.equals(gb.getGradebookUid())) {
+					gradebookBySiteId.put(AppConstants.TEST_SITE_CONTEXT_ID, gb);
 				} else if (ArchiveServiceMock.ANOTHER_SITE_CONTEXT.equals(gb.getGradebookUid())) {
 					gradebookBySiteId.put(ArchiveServiceMock.ANOTHER_SITE_CONTEXT, gb);
 				}
@@ -113,7 +114,7 @@ public class DevelopmentModeBean {
 			
 
 
-			createMainTestGradebook(gradebookBySiteId.get(BaseGroupMock.testSite_ContextId), populate);
+			createMainTestGradebook(gradebookBySiteId.get(AppConstants.TEST_SITE_CONTEXT_ID), populate);
 			
 			createSecondGradebook(gradebookBySiteId.get(ArchiveServiceMock.ANOTHER_SITE_CONTEXT), populate);
 			

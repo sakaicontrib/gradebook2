@@ -245,4 +245,14 @@ public interface AppConstants {
 	public static final String HEADER_CONTENT_TYPE_JSON_UTF8 = "application/json; charset=utf-8";
 
 	
+	// DEV
+	public static final String TEST_SITE_CONTEXT_ID = "TESTSITECONTEXT";
+	public static final String TEST_SITE_ID = "/site/TESTSITECONTEXT";
+	
+	// AUTHZ
+	public static final String PERMISSION_GRADE_ALL = "gradebook.gradeAll";
+	public static final String PERMISSION_GRADE_SECTION = "gradebook.gradeSection";
+	public static final String PERMISSION_EDIT_ASSIGNMENTS = "gradebook.editAssignments";
+	public static final String PERMISSION_VIEW_OWN_GRADES = "gradebook.viewOwnGrades";
+	
 }

@@ -34,6 +34,7 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.sakaiproject.component.gradebook.GradebookFrameworkServiceImpl;
 import org.sakaiproject.exception.IdUnusedException;
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.sakai.model.Realm;
 import org.sakaiproject.gradebook.gwt.sakai.model.RealmGroup;
 import org.sakaiproject.gradebook.gwt.sakai.model.RealmRlGroupId;
@@ -72,7 +73,7 @@ public class GradebookFrameworkServiceMock extends
 	public void addGradebook(final String uid, final String name) {
 		super.addGradebook(uid, name);
 		
-		if(!uid.equals(BaseGroupMock.testSite_ContextId))
+		if(!uid.equals(AppConstants.TEST_SITE_CONTEXT_ID))
 			return; // there maybe other sites' gradebooks being setup
 
 		
@@ -113,7 +114,7 @@ public class GradebookFrameworkServiceMock extends
 
 				Realm siteRealm = new Realm();
 				
-				siteRealm.setRealmId("/site/TESTSITECONTEXT");
+				siteRealm.setRealmId(AppConstants.TEST_SITE_ID);
 				try {
 					session.save(siteRealm);
 				} catch (Exception e) {

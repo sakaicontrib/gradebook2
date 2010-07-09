@@ -11,6 +11,7 @@ import org.sakaiproject.archive.api.ArchiveService;
 import org.sakaiproject.entity.api.EntityManager;
 import org.sakaiproject.entity.api.EntityProducer;
 import org.sakaiproject.entity.api.EntityTransferrer;
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.sakai.mock.ArchiveServiceMock;
 import org.sakaiproject.gradebook.gwt.sakai.mock.BaseGroupMock;
 
@@ -60,7 +61,7 @@ public class EntityArchiveTester extends Resource {
 		}
 		for (Object e : entityManager.getEntityProducers()) {
 			if (e!=null && e instanceof EntityTransferrer) {
-				((EntityTransferrer)e).transferCopyEntities(ArchiveServiceMock.ANOTHER_SITE_CONTEXT, BaseGroupMock.testSite_ContextId, null);
+				((EntityTransferrer)e).transferCopyEntities(ArchiveServiceMock.ANOTHER_SITE_CONTEXT, AppConstants.TEST_SITE_CONTEXT_ID, null);
 			}
 		}
 		

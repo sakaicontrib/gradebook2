@@ -22,6 +22,7 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.sakai.mock;
 
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2AuthzImpl;
 
 public class Gradebook2AuthzMockImpl extends Gradebook2AuthzImpl {
@@ -32,6 +33,23 @@ public class Gradebook2AuthzMockImpl extends Gradebook2AuthzImpl {
 		
 	}
 
+	@Override
+	public boolean isAdminUser() {
+
+		String roleProperty = System.getProperty("gb2.role");
+
+		if (roleProperty != null && roleProperty.equals("admin")) 
+			return true;
+
+		return false;
+	}
+
+	@Override
+	protected String getSiteContext() {
+
+		return AppConstants.TEST_SITE_CONTEXT_ID;
+	}
+	
 	@Override
 	protected boolean hasPermission(String gradebookUid, String permission) {
 		// When we're starting up we need all the permissions
@@ -44,21 +62,31 @@ public class Gradebook2AuthzMockImpl extends Gradebook2AuthzImpl {
 			return false;
 			
 		if (roleProperty.equals("ta"))
-			return "gradebook.gradeSection".equals(permission);
+			return AppConstants.PERMISSION_GRADE_SECTION.equals(permission);
 			
 		if (roleProperty.equals("student")) 
-			return "gradebook.viewOwnGrades".equals(permission);
+			return AppConstants.PERMISSION_VIEW_OWN_GRADES.equals(permission);
 			
 		return true;
 	}
 	
 	@Override
 	public boolean isUserTAinSection(String sectionUid) {
+		
 		String roleProperty = System.getProperty("gb2.role");
-		
-		if (roleProperty.equals("ta"))
-			return true;
-		
+
+		if (roleProperty.equals("ta")) {
+
+			String sectionPrefix = SiteMock.GROUP_ID_PREFIX;
+			
+			if(null != sectionUid && sectionUid.contains(sectionPrefix)) {
+				return true;
+			}
+			else if(null != sectionUid && sectionUid.equals(AppConstants.TEST_SITE_ID)) {
+				return true;
+			}
+		}
+
 		return false;
 	}
 

@@ -1580,9 +1580,21 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 	// 
 	public int[][] getGradeItemStatistics(String gradebookUid, Long assignmentId, String sectionId) throws SecurityException, InvalidDataException {
 		
-		boolean isUserAbleToGrade = authz.isUserAbleToGradeAll(gradebookUid);
+		// First, we need to check if a single section or all sections were selected
+		String siteId = getSiteId();
+		String[] realmIds = new String[1];
 
-		if (!isUserAbleToGrade)
+		if(sectionId.equals(AppConstants.ALL_SECTIONS)) {
+			realmIds[0] = new StringBuffer().append("/site/").append(siteId).toString();
+		}
+		else {
+			realmIds[0] = sectionId;
+		}
+		
+		boolean isUserAbleToGrade = authz.isUserAbleToGradeAll(gradebookUid);
+		boolean isUserTAinSection = authz.isUserTAinSection(realmIds[0]);
+
+		if (!isUserAbleToGrade && !isUserTAinSection)
 			throw new SecurityException("You are not authorized to view statistics charts.");
 		
 		// Create and initialize two dimensional array to keep track of grade frequencies
@@ -1604,7 +1616,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		}
 		else {
 
-			assignmentGradeRecords = gbService.getAllAssignmentGradeRecords(new Long[] {assignmentId}, new String[] {sectionId});
+			assignmentGradeRecords = gbService.getAllAssignmentGradeRecords(new Long[] {assignmentId}, realmIds);
 		}
 
 		// Looping over grade records and record their frequencies:
@@ -2012,10 +2024,21 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 	public List<Statistics> getGraderStatistics(String gradebookUid, Long gradebookId, String sectionId) throws SecurityException {
 
-		
-		boolean isUserAbleToGrade = authz.isUserAbleToGradeAll(gradebookUid);
+		// First, we need to check if a single section or all sections were selected
+		String siteId = getSiteId();
+		String[] realmIds = new String[1];
 
-		if (!isUserAbleToGrade)
+		if(sectionId.equals(AppConstants.ALL_SECTIONS)) {
+			realmIds[0] = new StringBuffer().append("/site/").append(siteId).toString();
+		}
+		else {
+			realmIds[0] = sectionId;
+		}
+
+		boolean isUserAbleToGrade = authz.isUserAbleToGradeAll(gradebookUid);
+		boolean isUserTAinSection = authz.isUserTAinSection(realmIds[0]);
+
+		if (!isUserAbleToGrade && !isUserTAinSection)
 			throw new SecurityException("You are not authorized to view statistics data.");
 		
 		Gradebook gradebook = null;
@@ -2041,18 +2064,6 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
 
 		int gradeType = gradebook.getGrade_type();
-
-		String siteId = getSiteId();
-
-
-		String[] realmIds = new String[1];
-
-		if(sectionId.equals(AppConstants.ALL_SECTIONS)) {
-			realmIds[0] = new StringBuffer().append("/site/").append(siteId).toString();
-		}
-		else {
-			realmIds[0] = sectionId;
-		}
 
 		String[] learnerRoleNames = getLearnerRoleNames();
 
@@ -4077,14 +4088,15 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				model.setUserName(user.getDisplayName());
 			}
 		} else {
-			String[] realmIds = { "/site/mock" };
-			List<UserRecord> userRecords = findLearnerRecordPage(gradebook, getSite(), realmIds, null, null, null, null, null, -1, -1, true, false);
-
-			if (userRecords != null && userRecords.size() > 0) {
-				UserRecord userRecord = userRecords.get(0);
-				model.setUserName(userRecord.getDisplayName());
-				model.setUserAsStudent(buildStudentRow(gradebook, userRecord, columns, assignments, categories));
-			}
+			log.error("ERROR: ++++++++++++++++++++++ FIXME : DEV MODE code +++++++++++++++++++++++++");
+//			String[] realmIds = { "/site/mock" };
+//			List<UserRecord> userRecords = findLearnerRecordPage(gradebook, getSite(), realmIds, null, null, null, null, null, -1, -1, true, false);
+//
+//			if (userRecords != null && userRecords.size() > 0) {
+//				UserRecord userRecord = userRecords.get(0);
+//				model.setUserName(userRecord.getDisplayName());
+//				model.setUserAsStudent(buildStudentRow(gradebook, userRecord, columns, assignments, categories));
+//			}
 		}
 
 		model.setConfigurationModel(configModel);
@@ -5436,7 +5448,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 	private String getSiteContext() {
 
 		if (toolManager == null)
-			return "TESTSITECONTEXT";
+			return AppConstants.TEST_SITE_CONTEXT_ID;
 
 		return toolManager.getCurrentPlacement().getContext();
 	}
@@ -5694,7 +5706,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 	private String lookupDefaultGradebookUid() {
 
 		if (toolManager == null)
-			return "TESTSITECONTEXT";
+			return AppConstants.TEST_SITE_CONTEXT_ID;
 
 		Placement placement = toolManager.getCurrentPlacement();
 		if (placement == null) {

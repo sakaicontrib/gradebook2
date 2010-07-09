@@ -450,7 +450,7 @@ public class StatisticsPanel extends ContentPanel {
 		
 		if(null != selection && selection.size() == 1) {
 
-			sectionId =  (String) selection.get(0).get(SectionKey.S_ID.name());
+			sectionId = (String) selection.get(0).get(SectionKey.S_ID.name());
 			
 		}
 		else {

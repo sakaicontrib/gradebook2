@@ -57,7 +57,7 @@ public class SiteMock implements Site {
 	private static final long serialVersionUID = 1L;
 	
 	private static final String GROUP_PROVIDER_PREFIX = "http://university.edu/section/abc";
-	private static final String GROUP_ID_PREFIX = "/site/abcdefg-hijklmnop/group/abcdefg-hijklmnop";
+	public static final String GROUP_ID_PREFIX = "48f8e8cd-0d5c-445a-bb53-2ca7ba618c8";
 	private static final String GROUP_NAME_PREFIX = "Section ";
 	
 	private String id;

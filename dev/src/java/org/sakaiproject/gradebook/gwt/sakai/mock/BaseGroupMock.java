@@ -3,8 +3,6 @@ package org.sakaiproject.gradebook.gwt.sakai.mock;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.authz.api.AuthzGroup;
 import org.sakaiproject.authz.api.Member;
 import org.sakaiproject.authz.api.Role;
@@ -12,6 +10,7 @@ import org.sakaiproject.authz.api.RoleAlreadyDefinedException;
 import org.sakaiproject.entity.api.ResourceProperties;
 import org.sakaiproject.entity.api.ResourcePropertiesEdit;
 import org.sakaiproject.exception.IdUnusedException;
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.site.api.Group;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SiteService;
@@ -27,7 +26,6 @@ public class BaseGroupMock implements Group, Identifiable {
 
 	private static final long serialVersionUID = 1L;
 	
-	public static String testSite_ContextId = "TESTSITECONTEXT";
 	private BaseResourceProperties props = new BaseResourcePropertiesEdit();
 	private String providerId = null;
 	private Site site = null;
@@ -48,7 +46,7 @@ public class BaseGroupMock implements Group, Identifiable {
 	public Site getContainingSite() {
 		Site s = null;
 		try {
-			s = (new SiteServiceMock()).getSite(testSite_ContextId);
+			s = (new SiteServiceMock()).getSite(AppConstants.TEST_SITE_CONTEXT_ID);
 		}catch (IdUnusedException e) {}
 		
 		return s;

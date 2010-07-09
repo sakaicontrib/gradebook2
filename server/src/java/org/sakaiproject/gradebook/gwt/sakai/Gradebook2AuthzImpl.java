@@ -48,13 +48,7 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 	
 	private static final int ZERO_ITEMS = 0;
 	private static final Log log = LogFactory.getLog(Gradebook2AuthzImpl.class);
-	
-	public static final String
-	PERMISSION_GRADE_ALL = "gradebook.gradeAll",
-	PERMISSION_GRADE_SECTION = "gradebook.gradeSection",
-	PERMISSION_EDIT_ASSIGNMENTS = "gradebook.editAssignments",
-	PERMISSION_VIEW_OWN_GRADES = "gradebook.viewOwnGrades";
-	
+		
 	private Gradebook2Authn authn;
 	private GradebookToolService gbToolService;
 	private SectionAwareness sectionAwareness;
@@ -234,11 +228,11 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 	}
 
 	public boolean isUserAbleToGrade(String gradebookUid) {
-		return (hasPermission(gradebookUid, PERMISSION_GRADE_ALL) || hasPermission(gradebookUid, PERMISSION_GRADE_SECTION));	
+		return (hasPermission(gradebookUid, AppConstants.PERMISSION_GRADE_ALL) || hasPermission(gradebookUid, AppConstants.PERMISSION_GRADE_SECTION));	
 	}
 
 	public boolean isUserAbleToGradeAll(String gradebookUid) {
-		return hasPermission(gradebookUid, PERMISSION_GRADE_ALL);	
+		return hasPermission(gradebookUid, AppConstants.PERMISSION_GRADE_ALL);	
 	}
 
 	public boolean isUserAbleToGradeItemForStudent(String gradebookUid, Long assignmentId, String studentUid) {
@@ -247,11 +241,11 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 	}
 
 	public boolean isUserAbleToViewOwnGrades(String gradebookUid) {
-		return hasPermission(gradebookUid, PERMISSION_VIEW_OWN_GRADES);
+		return hasPermission(gradebookUid, AppConstants.PERMISSION_VIEW_OWN_GRADES);
 	}
 
 	public boolean isUserAbleToEditAssessments(String gradebookUid) {
-		return hasPermission(gradebookUid, PERMISSION_EDIT_ASSIGNMENTS);
+		return hasPermission(gradebookUid, AppConstants.PERMISSION_EDIT_ASSIGNMENTS);
 	}
 
 	public boolean hasUserGraderPermissions(String gradebookUid) {
@@ -383,14 +377,7 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 	
 	// GRBK-487
 	public boolean isAdminUser() {
-		if (securityService == null) {
-			String roleProperty = System.getProperty("gb2.role");
-			
-			if (roleProperty != null && roleProperty.equals("admin")) 
-				return true;
-			
-			return false;
-		}
+
 		return securityService.isSuperUser();
 	}
 	
@@ -839,27 +826,10 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 	
 	protected String getSiteContext() {
 
-		if (toolManager == null)
-			return "TESTSITECONTEXT";
-
 		return toolManager.getCurrentPlacement().getContext();
 	}
 	
 	protected boolean hasPermission(String gradebookUid, String permission) {
-		if (securityService == null) {
-			String roleProperty = System.getProperty("gb2.role");
-			
-			if (roleProperty == null || roleProperty.equals("anonymous")) 
-				return false;
-			
-			if (roleProperty.equals("ta"))
-				return "gradebook.gradeSection".equals(permission);
-			
-			if (roleProperty.equals("student")) 
-				return "gradebook.viewOwnGrades".equals(permission);
-			
-			return true;
-		}
 		
 		return securityService.unlock(permission, siteService.siteReference(gradebookUid));
 	}
@@ -879,6 +849,4 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 	public void setSiteService(SiteService siteService) {
 		this.siteService = siteService;
 	}
-	
-		
 }
