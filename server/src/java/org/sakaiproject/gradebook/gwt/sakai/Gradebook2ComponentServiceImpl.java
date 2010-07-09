@@ -3227,13 +3227,18 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 						boolean changing = (null == oldValue || null== value  || oldValue.doubleValue() != value.doubleValue());
 						boolean deleting = (oldValue != null && value == null);
 						
+						// GRBK-619 : TPA
+						boolean canDeleteMissingGrades = configService.getBoolean(AppConstants.IMPORT_DELETE_MISSING_GRADES, true);
+						if(deleting && !canDeleteMissingGrades) {
+							continue;
+						}
+
+
+						gradedRecords.add(scoreItem(gradebook, gradeType, assignment, assignmentGradeRecord, studentUid, value, true, true));
+
 						if(changing) {
-							// GRBK-619 : TPA
-							boolean canDeleteMissingGrades = configService.getBoolean(AppConstants.IMPORT_DELETE_MISSING_GRADES, true);
-							if(deleting && !canDeleteMissingGrades) {
-								continue;
-							}
-								// GRBK-611 : JPG
+
+							// GRBK-611 : JPG
 							ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.GRADE_RECORD.name(), ActionType.IMPORT_GRADE_CHANGE.name());
 							actionRecord.setEntityId(String.valueOf(assignment.getId()));
 							actionRecord.setStudentUid(studentUid);
@@ -3246,12 +3251,8 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 							actionRecord.setEntityName(new StringBuilder().append((String)student.get(LearnerKey.S_DSPLY_NM.name())).append(" : ").append(assignment.getName()).toString());
 							gbService.storeActionRecord(actionRecord);
-						
-						}
 
-						gradedRecords.add(scoreItem(gradebook, gradeType, assignment, assignmentGradeRecord, studentUid, value, true, true));
-						
-						
+						}
 
 						String successProperty = Util.buildSuccessKey(String.valueOf(assignment.getId()));
 						student.set(successProperty, "S");
