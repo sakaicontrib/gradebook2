@@ -30,6 +30,7 @@ import org.sakaiproject.event.api.Event;
 import org.sakaiproject.event.api.EventTrackingService;
 import org.sakaiproject.exception.IdUnusedException;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
 import org.sakaiproject.gradebook.gwt.client.ConfigUtil;
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
@@ -2953,7 +2954,10 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			List<GradeItem> subChildren = item.getChildren();
 
 			for (GradeItem subChild : subChildren) {
-
+				for (BusinessLogicCode rule : item.getIgnoredBusinessRules()) {
+					subChild.getIgnoredBusinessRules().add(rule);
+				}
+				
 				newHandleImportItemModification(gradebookUid, gradebookId, subChild, idToAssignmentMap, categoryId);
 			}
 		}
@@ -3019,11 +3023,17 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			}
 		}
 	}
+	
+	public Upload upload(String gradebookUid, Long gradebookId, Upload upload, boolean isDryRun) throws InvalidInputException {
+		
+		return upload(gradebookUid, gradebookId, upload, isDryRun, new ArrayList<BusinessLogicCode>(){});
+	}
 
 
 	// TODO : cleanup old/new upload related methods
 	// GRBK-554 : TPA 
-	public Upload upload(String gradebookUid, Long gradebookId, Upload upload, boolean isDryRun) throws InvalidInputException {
+	public Upload upload(String gradebookUid, Long gradebookId, Upload upload, boolean isDryRun,
+			List<BusinessLogicCode> ignoredBusinessRules) throws InvalidInputException {
 
 		// Check if user is able to grade
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
@@ -3038,6 +3048,10 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 
 		GradeItem gradebookItem = (GradeItem)upload.getGradebookItemModel();
+		for (BusinessLogicCode code : ignoredBusinessRules) {
+			gradebookItem.getIgnoredBusinessRules().add(code);
+		}
+		
 
 		if (gradebookItem != null) {
 
@@ -4422,7 +4436,20 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				if (categoryId != null) {
 					assignments = gbService.getAssignmentsForCategory(categoryId);
 					// Business rule #4
-					businessLogic.applyNoDuplicateItemNamesWithinCategoryRule(categoryId, name, null, assignments);
+					try {
+						businessLogic.applyNoDuplicateItemNamesWithinCategoryRule(categoryId, name, null, assignments);
+					} catch (BusinessRuleException e) {
+						if (item.getIgnoredBusinessRules().contains(BusinessLogicCode.NoDuplicateItemNamesWithinCategoryRule)) {
+							for (Assignment a : assignments) {
+								if (name.equals(a.getName()) && !a.isRemoved()) {
+									a.setRemoved(true);
+									gbService.updateAssignment(a);
+									break;
+								}
+							}
+						} else {throw e;}
+					}
+					
 					// Business rule #6
 					if (enforceNoNewCategories)
 						businessLogic.applyMustIncludeCategoryRule(categoryId);
@@ -4430,10 +4457,25 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 			} else {
 				assignments = gbService.getAssignments(gradebook.getId());
-				businessLogic.applyNoDuplicateItemNamesRule(gradebook.getId(), name, null, assignments);
+				
+				try {
+					businessLogic.applyNoDuplicateItemNamesRule(gradebook.getId(), name, null, assignments);
+				} catch (BusinessRuleException e) {
+					if (item.getIgnoredBusinessRules().contains(BusinessLogicCode.NoDuplicateItemNamesRule)) {
+						for (Assignment a : assignments) {
+							if (name.equals(a.getName())) {
+								a.setRemoved(true);
+								gbService.updateAssignment(a);
+								break;
+							}
+						}
+					} else {throw e;}
+				}
 			}
 
-			businessLogic.applyNoZeroPointItemsRule(points);
+			if(!item.getIgnoredBusinessRules().contains(BusinessLogicCode.NoZeroPointItemsRule)) {
+				businessLogic.applyNoZeroPointItemsRule(points);
+			}
 
 			if (itemOrder == null)
 				itemOrder = assignments == null || assignments.isEmpty() ? Integer.valueOf(0) : Integer.valueOf(assignments.size());
@@ -5070,8 +5112,10 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 					if (!assignmentList.contains(assignment)) {
 						Integer itemOrder = assignment.getSortOrder();
-						if (itemOrder == null)
+						if (itemOrder == null) {
 							itemOrder = Integer.valueOf(assignmentList.size());
+							assignment.setSortOrder(itemOrder);
+						}
 						assignmentList.add(assignment);
 					}
 				}
@@ -6368,5 +6412,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			}
 		}
 	}
+
+	
 
 }

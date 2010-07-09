@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.GradebookCreationException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidDataException;
@@ -130,6 +131,10 @@ public interface Gradebook2ComponentService {
 	public void saveFullGradebookFromClientModel(Gradebook newGradebook) throws FatalException, InvalidInputException;
 	
 	public void saveAllGradebookItems(GradeItem gradebookItems, String gradebookUid) throws InvalidInputException, FatalException;
+
+	public Upload upload(String gradebookUid, Long gradebookId,
+			Upload upload, boolean isDryRun,
+			List<BusinessLogicCode> ignoredBusinessRules) throws InvalidInputException;
 
 	
 }

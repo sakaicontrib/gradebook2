@@ -1147,7 +1147,7 @@ public class ImportExportUtility {
 				return true; 
 			}
 		}
-		// If after all that, we don't find a row starting with "student_row", we're not a scantron.. 
+		// If after all that, we don't find a row starting with SCANTRON_HEADER_STUDENT_ID, we're not a scantron.. 
 		return false;
 	}
 

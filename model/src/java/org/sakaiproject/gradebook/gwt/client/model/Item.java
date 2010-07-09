@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
@@ -184,5 +185,7 @@ public interface Item {
 	public abstract boolean isScaledExtraCreditEnabled();
 	
 	public abstract void setScaledExtraCreditEnabled(Boolean allowScaledExtraCredit);
+	
+	public abstract List<BusinessLogicCode> getIgnoredBusinessRules();
 	
 }

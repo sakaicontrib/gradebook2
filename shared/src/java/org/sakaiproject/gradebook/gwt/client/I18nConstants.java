@@ -324,5 +324,7 @@ public interface I18nConstants extends Constants {
 	String importPanelNextButton();
 	String importPanelCancelButton();
 	String importPanelRetrunButton();
+	String importOverwriteExistingAssignmentsWarning();
+	String importOverwriteExistingAssignmentsButton();
 	
 }

@@ -73,7 +73,8 @@ public enum ItemKey {
 	B_CHCKD("isChecked"), 
 	S_PARENT("parent"), 
 	B_ALW_SCL_X_CRDT("isAllowScaledExtraCredit"),
-	B_ISNT_CALCBLE("isNotCalculable");
+	B_ISNT_CALCBLE("isNotCalculable"), 
+	A_IGNOR("ignoredBusinessRules");
 	
 	
 	private String property;

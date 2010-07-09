@@ -89,19 +89,6 @@ public class GradebookImportController extends SimpleFormController implements O
 		MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest)request;
 
 		String gradebookUid = multipartRequest.getParameter(AppConstants.REQUEST_FORM_FIELD_GBUID);
-
-		EnumSet<Delimiter> delimiterSet = EnumSet.noneOf(Delimiter.class);
-		for (Enumeration<String> paramNames = multipartRequest.getParameterNames();paramNames.hasMoreElements();) {
-			String name = paramNames.nextElement();
-			if (name.equals(DELIMINATOR_COMMA)) 
-				delimiterSet.add(Delimiter.COMMA);
-			else if (name.equals(DELIMINATOR_TAB)) 
-				delimiterSet.add(Delimiter.TAB);
-			else if (name.equals(DELIMINATOR_SPACE))
-				delimiterSet.add(Delimiter.SPACE);
-			else if (name.equals(DELIMINATOR_COLON))
-				delimiterSet.add(Delimiter.COLON);
-		}
 		
 		String preventScantronOverwrite = multipartRequest.getParameter(REQUEST_PARAMETER_PSO);
 		boolean doPreventScrantronOverwrite = preventScantronOverwrite == null ? Boolean.FALSE : Boolean.valueOf(preventScantronOverwrite);
@@ -133,7 +120,7 @@ public class GradebookImportController extends SimpleFormController implements O
 			response.setContentType(CONTENT_TYPE_TEXT_HTML);
 
 			// NOTE: Only use this during DEV phase
-			//saveJsonToFile(importFile, "/tmp/data.json"); 
+			saveJsonToFile(importFile, "/tmp/data.json"); 
 
 			writer.write(toJson(importFile)); 
 			writer.flush();

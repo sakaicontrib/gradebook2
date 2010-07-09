@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.server.Util;
 import org.sakaiproject.tool.gradebook.Assignment;
@@ -50,9 +51,10 @@ public class BusinessLogicImpl implements BusinessLogic {
 	public void applyCannotUnremoveItemWithRemovedCategory(boolean isRemoved, Category category) 
 	throws BusinessRuleException {
 
-		if (!isRemoved && category != null && category.isRemoved())
-			throw new BusinessRuleException("You cannot undelete a grade item when the category that owns it has been deleted. Please undelete the category first.");
-
+		if (!isRemoved && category != null && category.isRemoved()) 
+			throw new BusinessRuleException("You cannot undelete a grade item when the category that owns it has been deleted. Please undelete the category first.", 
+					BusinessLogicCode.CannotUnremoveItemWithRemovedCategory);
+	
 	}
 
 	/* (non-Javadoc)
@@ -65,7 +67,7 @@ public class BusinessLogicImpl implements BusinessLogic {
 			builder.append("Drop lowest is only valid for categories with equally weighted items. ")
 			.append("Please select equally weighted before setting a drop lowest value.");
 
-			throw new BusinessRuleException(builder.toString());
+			throw new BusinessRuleException(builder.toString(), BusinessLogicCode.OnlyEqualWeightDropLowestRule);
 		}
 
 	}
@@ -85,7 +87,7 @@ public class BusinessLogicImpl implements BusinessLogic {
 					builder.append("There is already an existing category called \"").append(name).append("\" ").append("in this gradebook. ")
 					.append("Please enter a different name for this category.");
 
-					throw new BusinessRuleException(builder.toString());
+					throw new BusinessRuleException(builder.toString(), BusinessLogicCode.NoDuplicateCategoryNamesRule);
 				} // if
 			} // for
 		} // if
@@ -106,7 +108,7 @@ public class BusinessLogicImpl implements BusinessLogic {
 					builder.append("There is already an existing item called \"").append(name).append("\" ").append("in this gradebook. ")
 					.append("Please enter a different name for the grade item.");
 
-					throw new BusinessRuleException(builder.toString());
+					throw new BusinessRuleException(builder.toString(), BusinessLogicCode.NoDuplicateItemNamesRule);
 				}
 			}
 		}
@@ -126,7 +128,7 @@ public class BusinessLogicImpl implements BusinessLogic {
 					builder.append("There is already an existing item called \"").append(name).append("\" ").append("in this category. ")
 					.append("Please enter a different name for the grade item.");
 
-					throw new BusinessRuleException(builder.toString());
+					throw new BusinessRuleException(builder.toString(), BusinessLogicCode.NoDuplicateItemNamesWithinCategoryRule);
 				}
 			}
 		}
@@ -135,7 +137,7 @@ public class BusinessLogicImpl implements BusinessLogic {
 	public void applyNoZeroPointItemsRule(Double itemPoints) throws BusinessRuleException {
 		BigDecimal points = BigDecimal.valueOf(itemPoints.doubleValue());
 		if (BigDecimal.ZERO.compareTo(points) >= 0)
-			throw new BusinessRuleException(i18n.getString("applyNoZeroPointItemsRuleException"));
+			throw new BusinessRuleException(i18n.getString("applyNoZeroPointItemsRuleException"), BusinessLogicCode.NoZeroPointItemsRule);
 	}
 
 	/* (non-Javadoc)
@@ -143,7 +145,7 @@ public class BusinessLogicImpl implements BusinessLogic {
 	 */
 	public void applyMustIncludeCategoryRule(Long categoryId) throws BusinessRuleException {
 		if (categoryId == null)
-			throw new BusinessRuleException("You must select a category to group this item under.");
+			throw new BusinessRuleException("You must select a category to group this item under.", BusinessLogicCode.MustIncludeCategoryRule);
 	}
 
 	public void applyReleaseChildItemsWhenCategoryReleased(Category category, List<Assignment> assignments, boolean isReleased) throws BusinessRuleException {
@@ -197,10 +199,12 @@ public class BusinessLogicImpl implements BusinessLogic {
 	public void applyCannotIncludeDeletedItemRule(boolean isAssignmentRemoved, boolean isCategoryRemoved, boolean isUnweighted) throws BusinessRuleException {
 		if (!isUnweighted) {		
 			if (isCategoryRemoved)
-				throw new BusinessRuleException("You cannot include a grade item whose category has been deleted in grading. Please undelete the category first.");
+				throw new BusinessRuleException("You cannot include a grade item whose category has been deleted in grading. Please undelete the category first.",
+						BusinessLogicCode.CannotIncludeDeletedItemRule);
 
 			if (isAssignmentRemoved) 
-				throw new BusinessRuleException("You cannot include a deleted grade item in grading. Please undelete the grade item first.");
+				throw new BusinessRuleException("You cannot include a deleted grade item in grading. Please undelete the grade item first.",
+						BusinessLogicCode.CannotIncludeDeletedItemRule);
 		}
 	}
 
@@ -212,7 +216,8 @@ public class BusinessLogicImpl implements BusinessLogic {
 	throws BusinessRuleException {
 		if (!isCategoryIncluded) {		
 			if (isItemIncluded)
-				throw new BusinessRuleException("You cannot include a grade item whose category is not included in grading.");
+				throw new BusinessRuleException("You cannot include a grade item whose category is not included in grading.",
+						BusinessLogicCode.CannotIncludeItemFromUnincludedCategoryRule);
 		}
 	}	
 

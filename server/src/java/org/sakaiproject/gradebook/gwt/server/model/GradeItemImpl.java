@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
@@ -520,6 +521,15 @@ public class GradeItemImpl extends BaseModel implements GradeItem {
 
 	public void setScaledExtraCreditEnabled(Boolean allowScaledExtraCredit) {
 		put(ItemKey.B_ALW_SCL_X_CRDT.name(), allowScaledExtraCredit);
+	}
+
+	public List<BusinessLogicCode> getIgnoredBusinessRules() {
+		List<BusinessLogicCode> rules = get(ItemKey.A_IGNOR.name());
+		if (rules == null) {
+			rules = new ArrayList<BusinessLogicCode>();
+			set(ItemKey.A_IGNOR.name(), rules);
+			}
+		return rules;
 	}
 	
 }

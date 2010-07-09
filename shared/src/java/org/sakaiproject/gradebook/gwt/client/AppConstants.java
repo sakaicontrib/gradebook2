@@ -188,6 +188,7 @@ public interface AppConstants {
 	public static final String OLD_UPLOAD_FRAGMENT			= "oldupload";
 	public static final String AUTHORIZATION_FRAGMENT		= "authorization";
 	public static final String INSTRUCTOR_FRAGMENT			= "instructor";
+	public static final String FORCE_FRAGMENT 				= "force";
 	
 	public static final String LIST_ROOT				= "list";
 	public static final String TOTAL					= "total";
@@ -236,10 +237,12 @@ public interface AppConstants {
 	// Component Service
 	public static final long ONEHOUR = 1000l * 60l * 60l;
 	
+
 	// REST Communication
 	public static final String X_XSRF_COOKIE = "X-XSRF-Cookie";
 	public static final String SESSION_COOKIE_KEY = "JSESSIONID";
 	public static final String NO_VALUE_COOKIE = "No-Cookie";
 	public static final String HEADER_CONTENT_TYPE_JSON_UTF8 = "application/json; charset=utf-8";
+
 	
 }

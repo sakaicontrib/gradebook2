@@ -28,8 +28,10 @@ import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
+import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestCallback;
+import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.JsonUtil;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
@@ -61,6 +63,7 @@ import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
+import com.extjs.gxt.ui.client.widget.Dialog;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.button.Button;
@@ -75,6 +78,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.ui.DialogBox;
 
 public class ImportPanel extends GradebookPanel {
 
@@ -88,6 +92,7 @@ public class ImportPanel extends GradebookPanel {
 	private FormPanel fileUploadPanel;
 	protected MessageBox uploadBox, uploadingBox;
 	private UploadModel upload;
+	private Dialog forceOverwriteDialog;
 
 	private MultiGradeContentPanel multigrade;
 	private ImportItemSetupPanel setupPanel;
@@ -98,7 +103,8 @@ public class ImportPanel extends GradebookPanel {
 	private ItemModel gradebookItemModel;
 
 	private boolean isGradingFailure;
-
+	
+	
 	public ImportPanel() {
 
 		super();
@@ -138,7 +144,7 @@ public class ImportPanel extends GradebookPanel {
 				
 				upload.setGradebookItemModel(gradebookItemModel);
 
-				uploadSpreadsheet(upload);
+				uploadSpreadsheet(upload, false);
 			}
 		});
 		
@@ -182,7 +188,40 @@ public class ImportPanel extends GradebookPanel {
 		mainCardLayoutContainer.add(errorContainer); 
 		mainCardLayout.setActiveItem(fileUploadContainer);
 		add(mainCardLayoutContainer, new FitData(50));
+		
+		forceOverwriteDialog = new Dialog()  {
+
+			@Override
+			protected void onButtonPressed(Button button) {
+				uploadingBox.close();
+				super.onButtonPressed(button);
+				
+				if (button.getItemId().equals(Dialog.OK)) {
+					submitButton.setVisible(false);
+					uploadSpreadsheet(getUploadModel(), true);
+				} else {
+					
+					
+					submitButton.setVisible(true);
+				}
+				
+			}
+
+			
+			
+		};
+		forceOverwriteDialog.setHeading("Warning!");
+		forceOverwriteDialog.setBodyStyle("fontWeight:bold;padding:13px;");
+		forceOverwriteDialog.setSize(300, 100);
+		forceOverwriteDialog.setHideOnButtonClick(true);
+		forceOverwriteDialog.setButtons(Dialog.OKCANCEL);
+		I18nConstants i18n = Registry.get(AppConstants.I18N);
+		forceOverwriteDialog.getButtonById(Dialog.OK).setText(i18n.importOverwriteExistingAssignmentsButton());
+		forceOverwriteDialog.addText(i18n.importOverwriteExistingAssignmentsWarning());
+		 
+		
 	}
+
 
 
 	protected void onRender(Element parent, int pos) {
@@ -401,7 +440,7 @@ public class ImportPanel extends GradebookPanel {
 	}
 
 
-	private void uploadSpreadsheet(UploadModel spreadsheetModel) {
+	private void uploadSpreadsheet(UploadModel spreadsheetModel, boolean forceOverwriteAssignments) {
 				
 		Gradebook gbModel = Registry.get(AppConstants.CURRENT);
 
@@ -412,18 +451,40 @@ public class ImportPanel extends GradebookPanel {
 
 		uploadingBox = MessageBox.wait(i18n.uploadingLearnerGradesTitle(), message, i18n.uploadingLearnerGradesStatus());
 
-		RestBuilder builder = RestBuilder.getInstance(RestBuilder.Method.PUT, GWT.getModuleBaseURL(),
-				AppConstants.REST_FRAGMENT,
-				AppConstants.UPLOAD_FRAGMENT, gbModel.getGradebookUid(), String.valueOf(gbModel.getGradebookId()));
+		StringBuilder url = (new StringBuilder(GWT.getModuleBaseURL()))
+			.append(AppConstants.REST_FRAGMENT).append("/")
+			.append(AppConstants.UPLOAD_FRAGMENT).append("/")
+			.append(gbModel.getGradebookUid()).append("/")
+			.append(String.valueOf(gbModel.getGradebookId()));
+		
+		
+		if(forceOverwriteAssignments) {
+			url.append("/").append(AppConstants.FORCE_FRAGMENT).append("/").append("true");
+		}
 
 		String jsonText = spreadsheetModel == null ? null : spreadsheetModel.getJSON();
-
+		RestBuilder builder = RestBuilder.getInstance(RestBuilder.Method.PUT, url.toString());
 		builder.sendRequest(200, 400, jsonText, new RestCallback() {
+
+			
 
 			@Override
 			public void onError(Request request, Throwable caught) {
+				
+				if (caught.getMessage().indexOf(": 401") != -1) {
+					uploadingBox.close();
+					forceOverwriteDialog.show();
+				} else {
+					onFailure(request, caught);
+				}
+				
+			}
+
+			@Override
+			public void onFailure(Request request, Throwable caught) {
 				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(caught));
 				uploadingBox.close();
+				
 				submitButton.setVisible(true);
 			}
 
@@ -533,4 +594,12 @@ public class ImportPanel extends GradebookPanel {
 			}
 		});
 	}
+
+	
+
+	protected UploadModel getUploadModel() {
+		return this.upload;
+	}
+
+	
 }

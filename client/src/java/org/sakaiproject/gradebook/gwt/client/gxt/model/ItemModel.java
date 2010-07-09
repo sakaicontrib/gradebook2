@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
@@ -915,5 +916,14 @@ public class ItemModel extends EntityTreeModel implements Item {
 		} else {
 			return (TreeModel) child.get("gxt-parent");
 		}
+	}
+
+	public List<BusinessLogicCode> getIgnoredBusinessRules() {
+		List<BusinessLogicCode> rules = get(ItemKey.A_IGNOR.name());
+		if (rules == null) {
+			rules = new ArrayList<BusinessLogicCode>();
+			set(ItemKey.A_IGNOR.name(), rules);
+		}
+		return rules;
 	}
 }

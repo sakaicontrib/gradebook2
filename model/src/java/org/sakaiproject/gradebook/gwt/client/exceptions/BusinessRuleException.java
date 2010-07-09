@@ -23,9 +23,19 @@
 
 package org.sakaiproject.gradebook.gwt.client.exceptions;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
+
 public class BusinessRuleException extends InvalidInputException {
 
 	private static final long serialVersionUID = 1L;
+	private List<BusinessLogicCode> codes = new ArrayList<BusinessLogicCode>();
+
+	public List<BusinessLogicCode> getCodes() {
+		return codes;
+	}
 
 	public BusinessRuleException() {
 		super();
@@ -33,6 +43,16 @@ public class BusinessRuleException extends InvalidInputException {
 
 	public BusinessRuleException(String message) {
 		super(message);
+	}
+
+	public BusinessRuleException(String message,
+			BusinessLogicCode code) {
+		
+		super(message);
+		if(code != null) {
+			codes.add(code);
+		}
+		
 	}
 
 }
