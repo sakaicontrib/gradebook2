@@ -120,7 +120,7 @@ public class GradebookImportController extends SimpleFormController implements O
 			response.setContentType(CONTENT_TYPE_TEXT_HTML);
 
 			// NOTE: Only use this during DEV phase
-			saveJsonToFile(importFile, "/tmp/data.json"); 
+			//saveJsonToFile(importFile, "/tmp/data.json"); 
 
 			writer.write(toJson(importFile)); 
 			writer.flush();
