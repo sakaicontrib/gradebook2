@@ -327,4 +327,7 @@ public interface I18nConstants extends Constants {
 	String importOverwriteExistingAssignmentsWarning();
 	String importOverwriteExistingAssignmentsButton();
 	
+	// Grade Scale
+	String gradeScaleLetterGradeMessage();
+	
 }

@@ -71,6 +71,7 @@ import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
@@ -432,6 +433,8 @@ public class InstructorView extends AppView {
 					gradeScalePanel = new GradeScalePanel(isEditable, treeView);
 					eastLayoutContainer.add(gradeScalePanel);
 				}
+				// GRBK-668
+				gradeScalePanel.setState();
 				onExpandEastPanel(EastCard.GRADE_SCALE);
 			/*}
 		});*/

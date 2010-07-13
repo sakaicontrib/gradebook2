@@ -30,13 +30,11 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
-import org.sakaiproject.gradebook.gwt.client.gxt.NewModelCallback;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeMapUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
-import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityOverlay;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.TreeView;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
@@ -44,6 +42,7 @@ import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.key.GradeFormatKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.GradeMapKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
+import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
@@ -62,6 +61,7 @@ import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
+import com.extjs.gxt.ui.client.widget.Text;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
 import com.extjs.gxt.ui.client.widget.form.LabelField;
@@ -70,7 +70,7 @@ import com.extjs.gxt.ui.client.widget.grid.CellEditor;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.EditorGrid;
-import com.extjs.gxt.ui.client.widget.layout.FitLayout;
+import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.NumberFormat;
@@ -88,9 +88,20 @@ public class GradeScalePanel extends GradebookPanel {
 	
 	private Long currentGradeScaleId;
 	
-	@SuppressWarnings("unchecked")
+	private boolean isEditable;
+	
+	private Text letterGradeScaleMessage = new Text(i18n.gradeScaleLetterGradeMessage());
+	
+	private Button closeButton;
+	private Button resetToDefaultButton;
+	
+	private NumberFormat defaultNumberFormat = DataTypeConversionUtil.getDefaultNumberFormat();
+	
 	public GradeScalePanel(boolean isEditable, final TreeView treeView) {
+		
 		super();
+		
+		this.isEditable = isEditable;
 		
 		toolbar = new ToolBar();
 		
@@ -155,9 +166,6 @@ public class GradeScalePanel extends GradebookPanel {
 
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 		
-		// Currently, the default number format is #.#####
-		NumberFormat defaultNumberFormat = DataTypeConversionUtil.getDefaultNumberFormat();
-
 		ColumnConfig column = new ColumnConfig();  
 		column.setId(GradeMapKey.S_LTR_GRD.name());  
 		column.setHeader(i18n.letterGradeHeader());
@@ -177,13 +185,7 @@ public class GradeScalePanel extends GradebookPanel {
 		column.setMenuDisabled(true);
 		column.setSortable(false);
 		column.setNumberFormat(defaultNumberFormat);
-		if (isEditable) {
-			NumberField numberField = new NumberField();
-			numberField.addInputStyleName(resources.css().gbNumericFieldInput());
-			//numberField.setMaxValue(Double.valueOf(100d));
-			numberField.setFormat(defaultNumberFormat);
-			column.setEditor(new CellEditor(numberField));
-		}
+		// GRBK-668: We determine if this columns is editable via setState()
 		configs.add(column);
 		
 		column = new ColumnConfig();  
@@ -217,12 +219,13 @@ public class GradeScalePanel extends GradebookPanel {
 		setHeaderVisible(false);
 		setHeading("Selected Grade Mapping");
 		setButtonAlign(HorizontalAlignment.RIGHT);
-		setLayout(new FitLayout());
-		setSize(600, 300);
+		setLayout(new RowLayout());
+		
 		
 		grid = new EditorGrid<ModelData>(store, cm);  
 		grid.setStyleAttribute("borderTop", "none");   
 		grid.setBorders(true);
+		grid.setAutoHeight(true);
 		grid.addListener(Events.ValidateEdit, new Listener<GridEvent>() {
 
 			public void handleEvent(GridEvent ge) {
@@ -231,8 +234,6 @@ public class GradeScalePanel extends GradebookPanel {
 				ge.stopEvent();
 				
 				final Record record = ge.getRecord();
-				// FindBugs
-				// String property = ge.getProperty();
 				Object newValue = ge.getValue();
 				Object originalValue = ge.getStartValue();
 
@@ -240,9 +241,7 @@ public class GradeScalePanel extends GradebookPanel {
 			}
 		});
 		
-		add(grid); 
-		
-		Button button = new AriaButton(i18n.close(), new SelectionListener<ButtonEvent>() {
+		closeButton = new AriaButton(i18n.close(), new SelectionListener<ButtonEvent>() {
 
 			@Override
 			public void componentSelected(ButtonEvent be) {
@@ -251,7 +250,7 @@ public class GradeScalePanel extends GradebookPanel {
 			
 		});
 		
-		Button resetButton = new AriaButton(i18n.resetGradingScale(), new SelectionListener<ButtonEvent>() {
+		resetToDefaultButton = new AriaButton(i18n.resetGradingScale(), new SelectionListener<ButtonEvent>() {
 
 			@Override
 			public void componentSelected(ButtonEvent ce) {
@@ -259,8 +258,15 @@ public class GradeScalePanel extends GradebookPanel {
 			}
 			
 		}); 
-		addButton(resetButton); 
-		addButton(button);
+		
+		// GRBK-668
+		letterGradeScaleMessage.setStyleAttribute("padding", "10px");
+		letterGradeScaleMessage.setStyleAttribute("color", "red");
+		add(letterGradeScaleMessage);
+		add(grid);
+		
+		addButton(resetToDefaultButton); 
+		addButton(closeButton);
 	}
 	
 	public void onFailedToUpdateItem(ItemUpdate itemUpdate) {
@@ -281,6 +287,39 @@ public class GradeScalePanel extends GradebookPanel {
 	
 	public void onRefreshGradeScale(Gradebook selectedGradebook) {
 		loader.load();
+	}
+	
+	/*
+	 * GRBK-668
+	 * Method that adjusts the UI according to the grade type
+	 */ 
+	 public void setState() {
+		
+		Gradebook gradebookModel = Registry.get(AppConstants.CURRENT);
+		Item itemModel = gradebookModel.getGradebookItemModel();
+		GradeType gradeType = itemModel.getGradeType();
+		
+		if(GradeType.LETTERS == gradeType) {
+			
+			letterGradeScaleMessage.show();
+			resetToDefaultButton.hide();
+			grid.getColumnModel().getColumnById(GradeMapKey.D_FROM.name()).setEditor(null);
+		}
+		else {
+			
+			letterGradeScaleMessage.hide();
+			resetToDefaultButton.show();
+
+			if (isEditable) {
+				
+				NumberField numberField = new NumberField();
+				numberField.addInputStyleName(resources.css().gbNumericFieldInput());
+				NumberFormat defaultNumberFormat = DataTypeConversionUtil.getDefaultNumberFormat();
+				numberField.setFormat(defaultNumberFormat);
+				grid.getColumnModel().getColumnById(GradeMapKey.D_FROM.name()).setEditor(new CellEditor(numberField));
+			}
+		}
+		
 	}
 	
 	@Override
