@@ -129,9 +129,59 @@ public class ImportExportUtility {
 		}
 	};
 	
+	public static enum FileType {
+		CSV("csv", ".csv", "application/ms-excel"), 
+		XLS97("xls97", ".xls", "application/ms-excel");
+		private String ext = "";
+		private String mimeType = "";
+		private String name = "";
+		
+		FileType(String name, String extension, String mimeType) {
+			this.name  = name;
+			this.ext = extension;
+			this.mimeType = mimeType;
+		}
+		
+		public String getExtension() {
+			return ext;
+		}
+		
+		public String getMimeType() {
+			return mimeType;
+		}
+		
+		public String getName() {
+			return name;
+		}
+
+		public static FileType getType(String fileType) {
+			FileType rv = CSV;
+			if( fileType != null) {
+				for (FileType f : values()) {
+					if (f.getName().equals(fileType)) {
+						rv = f;
+						break;
+					}
+				}
+			}
+			return rv;
+		}
+	}
+	
 	private Set<String> headerRowIndicatorSet, idSet, nameSet, scantronIgnoreSet;
 
 	private static String UNSAFE_FILENAME_CHAR_REGEX = "[\\p{Punct}\\p{Space}\\p{Cntrl}]";
+	public static List<String> SUPPORTED_FILE_TYPES = new ArrayList<String>() {
+		private static final long serialVersionUID = 1L;
+		{
+			for (FileType f : FileType.values()) {
+				add(f.getName());
+			}
+		}
+	};
+	public static String CONTENT_DISPOSITION_HEADER_NAME = "Content-Disposition";
+	public static String CONTENT_DISPOSITION_HEADER_ATTACHMENT = "attachment; filename=";
+		
 	
 	public ImportExportUtility() {	
 		// FIXME - Need to decide whether this should be institutional based.  
@@ -443,25 +493,21 @@ public class ImportExportUtility {
 
 		service.postEvent("gradebook2.export", String.valueOf(gradebookId));
 		
-		if (fileType.equals("xls97"))
-		{
-			filename.append(".xls");
-
-			if (response != null) {
-				response.setContentType("application/ms-excel");
-				response.setHeader("Content-Disposition", "attachment; filename=" + filename.toString());
-			}
-			createXLS97File(filename.toString(), response, out); 
-
+		FileType type = FileType.getType(fileType);
+		
+		filename.append(type.getExtension());
+		
+		if (response != null) {
+			response.setContentType(type.getMimeType());
+			response.setHeader(CONTENT_DISPOSITION_HEADER_NAME, CONTENT_DISPOSITION_HEADER_ATTACHMENT + filename.toString());
 		}
-		else if (fileType.equals("csv"))
+		
+		if (fileType.equals(FileType.XLS97.getName()))
 		{
-			filename.append(".csv");
-
-			if (response != null) {
-				response.setContentType("application/ms-excel");
-				response.setHeader("Content-Disposition", "attachment; filename=" + filename.toString());
-			}
+			createXLS97File(filename.toString(), response, out); 
+		}
+		else if (fileType.equals(FileType.CSV.getName()))
+		{
 			try {
 				if(null != response) {
 					createCSVFile(response, out);
@@ -563,8 +609,7 @@ public class ImportExportUtility {
 	private void writeXLSResponse(HSSFWorkbook wb, HttpServletResponse response) throws FatalException {
 		try {
 			wb.write(response.getOutputStream());
-			response.getOutputStream().flush();
-			response.getOutputStream().close(); 
+			response.getOutputStream().flush(); 
 		} catch (IOException e) {
 			log.error("Caught exception " + e, e); 
 			throw new FatalException(e); 
@@ -585,8 +630,7 @@ public class ImportExportUtility {
 		}
 		try {
 			csvWriter.close();
-			response.getWriter().flush();
-			response.getWriter().close(); 
+			response.getWriter().flush(); 
 		} catch (IOException e) {
 			log.error("Caught ioexception: ", e);
 		} 
