@@ -13,6 +13,7 @@ import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.server.BrowserDetect;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
+import org.sakaiproject.gradebook.gwt.server.UserAgent;
 
 @Path("export")
 public class Export extends Resource {
@@ -35,7 +36,7 @@ public class Export extends Resource {
 		
 		// GRBK-665
 		if (request.getProtocol().contains("HTTPS") &&
-				BrowserDetect.atLeast(request, BrowserDetect.getUserAgent(request), 8)) {
+				BrowserDetect.atLeast(request, UserAgent.IE, 8)) {
 			response.setHeader("Pragma", "");
 			response.setHeader("Cache-Control", "");
 		}

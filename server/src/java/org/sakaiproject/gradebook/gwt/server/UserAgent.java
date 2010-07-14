@@ -22,7 +22,7 @@ package org.sakaiproject.gradebook.gwt.server;
 	 * @modified Jon Gorrono [jpgorrono at ucdavis dot edu]
 	 *  - July 12, 2010 - added Chrome
 	 */
-	enum UserAgent
+	public enum UserAgent
 	{
 	    IE,
 	    Opera,
