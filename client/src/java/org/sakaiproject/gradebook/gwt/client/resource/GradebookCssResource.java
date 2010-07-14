@@ -24,6 +24,8 @@ public interface GradebookCssResource extends CssResource {
 	
 	String gbCellFailedImport();
 	
+	String gbCellConvertedValueImport();
+	
 	String gbCellStrong();
 	
 	String gbCellSucceeded();

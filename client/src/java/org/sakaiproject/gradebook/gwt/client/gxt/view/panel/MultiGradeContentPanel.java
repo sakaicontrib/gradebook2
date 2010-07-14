@@ -711,6 +711,10 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 						String failedProperty = DataTypeConversionUtil.buildFailedKey(property);
 						String failedMessage = r == null ? (String)model.get(failedProperty) : (String)r.get(failedProperty);
 						
+						// GRBK-668
+						String convertedProperty = DataTypeConversionUtil.buildConvertedMessageKey(property);
+						String convertedMessage = r == null ? (String)model.get(convertedProperty) : (String)r.get(convertedProperty);
+						
 						if (failedMessage != null) {
 							if (isImport)
 								css.append(" ").append(resources.css().gbCellFailedImport());
@@ -719,6 +723,17 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 									css.append(" ieGbCellFailed");
 								else {
 									css.append(" ").append(resources.css().gbCellFailed());
+								}
+							}
+						}
+						else if(null != convertedMessage) { // GRBK-668
+							if (isImport)
+								css.append(" ").append(resources.css().gbCellConvertedValueImport());
+							else {
+								if (GXT.isIE)
+									css.append(" ieGbCellSucceeded ");
+								else {
+									css.append(" ").append(resources.css().gbCellConvertedValueImport());
 								}
 							}
 						}

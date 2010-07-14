@@ -48,6 +48,12 @@
 	font-weight: bold;
 }
 
+.gbCellConvertedValueImport {
+	background-color: 66FFFF;
+	color: black;
+	font-weight: bold;
+}
+
 .gbCellStrong {
 	font-weight: bold;	
 }

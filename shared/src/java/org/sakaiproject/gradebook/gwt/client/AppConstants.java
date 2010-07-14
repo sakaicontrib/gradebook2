@@ -207,6 +207,8 @@ public interface AppConstants {
 	public static final String EXCUSE_FLAG = "B_E:";
 	public static final String FAILED_FLAG = "S_F:";
 	public static final String SUCCESS_FLAG = "S_S:";
+	public static final String CONVERTED_FLAG = "S_C:";
+	public static final String CONVERTED_GRADE = "S_G:";
 	
 	public static final String APP_COOKIE_NAME = "gb2application";
 	public static final String AUTH_COOKIE_NAME = "gb2placement";
@@ -255,4 +257,8 @@ public interface AppConstants {
 	public static final String PERMISSION_EDIT_ASSIGNMENTS = "gradebook.editAssignments";
 	public static final String PERMISSION_VIEW_OWN_GRADES = "gradebook.viewOwnGrades";
 	
+	// HISTORY
+	public static final String HISTORY_SCORE = "score";
+	public static final String HISTORY_OLD_SCORE = "oldScore";
+	public static final String HISTORY_ORIGINAL_SCORE = "origScore";
 }

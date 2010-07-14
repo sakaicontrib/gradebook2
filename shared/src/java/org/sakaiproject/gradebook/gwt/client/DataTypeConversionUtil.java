@@ -118,6 +118,11 @@ public class DataTypeConversionUtil {
 		return new StringBuilder(AppConstants.SUCCESS_FLAG).append(itemId).toString();
 	}
 	
+	// GRBK-668
+	public static String buildConvertedMessageKey(String itemId) {
+		return new StringBuilder(AppConstants.CONVERTED_FLAG).append(itemId).toString();
+	}
+	
 	public static String unpackItemIdFromKey(String key) {
 		if (key == null || key.length() < 5)
 			return null;

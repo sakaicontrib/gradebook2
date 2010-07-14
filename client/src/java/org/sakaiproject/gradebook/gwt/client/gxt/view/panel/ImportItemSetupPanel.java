@@ -26,7 +26,6 @@ package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.sakaiproject.gradebook.gwt.client.dev.ItemUtil;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
@@ -35,9 +34,9 @@ import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
+import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.form.TextField;
-import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
 import com.extjs.gxt.ui.client.widget.grid.CellEditor;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnData;
@@ -47,7 +46,6 @@ import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.grid.GridView;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
-import com.google.gwt.core.client.GWT;
 
 public class ImportItemSetupPanel extends GradebookPanel {
 
@@ -189,7 +187,6 @@ public class ImportItemSetupPanel extends GradebookPanel {
 						if(null != categoryName && !"".equals(categoryName)) {
 							
 							Item category = categoryStore.findModel(ItemKey.S_NM.name(), categoryName);
-							ItemUtil.showItem(category);
 							
 							try {
 

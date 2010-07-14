@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -73,9 +74,11 @@ import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
+import org.sakaiproject.gradebook.gwt.sakai.GradeCalculations;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookImportException;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
+import org.sakaiproject.gradebook.gwt.sakai.calculations.GradeCalculationsOOImpl;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeItem;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.gradebook.gwt.server.exceptions.ImportFormatException;
@@ -182,6 +185,7 @@ public class ImportExportUtility {
 	public static String CONTENT_DISPOSITION_HEADER_NAME = "Content-Disposition";
 	public static String CONTENT_DISPOSITION_HEADER_ATTACHMENT = "attachment; filename=";
 		
+	private GradeCalculations gradeCalculations = new GradeCalculationsOOImpl();
 	
 	public ImportExportUtility() {	
 		// FIXME - Need to decide whether this should be institutional based.  
@@ -1529,6 +1533,33 @@ public class ImportExportUtility {
 			int colIdx, ImportExportInformation ieInfo, GradeType gradeType, Gradebook2ComponentService service, String id) {
 
 		boolean isFailure = false;
+		
+		// GRBK-668 : For a letter grade type gradebook, we convert all numeric grades into letter grades
+		String grade = rowData[colIdx];
+		if(GradeType.LETTERS == gradeType && Util.isNumeric(grade)) {
+			BigDecimal numericGrade = new BigDecimal(grade);
+			String letterGrade = gradeCalculations.convertPercentageToLetterGrade(numericGrade);
+			rowData[colIdx] = letterGrade;
+			learnerRow.set(id, rowData[colIdx]);
+			learnerRow.set(Util.buildConvertedMessageKey(id), "Converted numeric to letter grade");
+			learnerRow.set(Util.buildConvertedGradeKey(id), grade);
+			//learnerRow.set(LearnerKey.S_ORIG_GRD.name(), grade);
+			log.debug("#####: Converting numberic grade [" + grade + "] to a letter grade [" + letterGrade + "]");
+			return;
+		}
+		else if(GradeType.LETTERS == gradeType && !Util.isNumeric(grade)) {
+		
+			if(!service.isValidLetterGrade(rowData[colIdx])) {
+				ieInfo.setInvalidScore(true);
+				String failedId = Util.buildFailedKey(id);
+				learnerRow.set(failedId, "This is an invalid letter grade");
+			}
+			
+			learnerRow.set(id, rowData[colIdx]);
+			return;
+		}
+		
+		
 		try {
 			double d = Double.parseDouble(rowData[colIdx]);
 			Item item = importHeader.getItem();

@@ -62,5 +62,4 @@ public class ToolManagerMock implements ToolManager {
 	public boolean isVisible(Site arg0, ToolConfiguration arg1) {
 		return true;
 	}
-
 }

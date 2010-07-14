@@ -251,10 +251,28 @@ public class Util {
 		return new StringBuilder(AppConstants.SUCCESS_FLAG).append(itemId).toString();
 	}
 	
+	// GRBK-668
+	public static String buildConvertedMessageKey(String itemId) {
+		return new StringBuilder(AppConstants.CONVERTED_FLAG).append(itemId).toString();
+	}
+	
+	public static String buildConvertedGradeKey(String itemId) {
+		return new StringBuilder(AppConstants.CONVERTED_GRADE).append(itemId).toString();
+	}
+	
 	public static String unpackItemIdFromKey(String key) {
 		if (key == null || key.length() < 5)
 			return null;
 		return key.substring(4);
+	}
+	
+	public static boolean isNumeric(String value) {
+		
+		if (value.matches("((-|\\+)?[0-9]+(\\.[0-9]+)?)+")) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 }

@@ -397,6 +397,13 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 			
 			BigDecimal decimal = minus60.divide(BigDecimal.valueOf(10d), MATH_CONTEXT);
 			
+			// FIXME:
+			// - Make this configurable
+			// - Use proper precision e.g. 3.3333333333
+			// - Also, if we look at the fixed conversion mapping, the 3.7 should be 3.6666666666 (This needs to be checked!!!)
+			// - we could use the fixed mapping value and +/- 1.6666666666
+			// -- e.g.  A+ 98.3333333333 - 1.6666666666 = 96.666666666666
+			// 
 			if (decimal.compareTo(BigDecimal.valueOf(3.7d)) >= 0)
 				return "A+";
 			if (decimal.compareTo(BigDecimal.valueOf(3.3d)) >= 0)

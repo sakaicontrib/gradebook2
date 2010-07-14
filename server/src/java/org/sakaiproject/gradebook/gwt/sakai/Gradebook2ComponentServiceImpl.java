@@ -438,7 +438,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		actionRecord.setStudentUid(studentUid);
 		Map<String, String> propertyMap = actionRecord.getPropertyMap();
 
-		propertyMap.put("score", "Excused");
+		propertyMap.put(AppConstants.HISTORY_SCORE, "Excused");
 
 		populatePropertiesFromLearner(propertyMap, student);
 
@@ -503,7 +503,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		actionRecord.setStudentUid(studentUid);
 		Map<String, String> propertyMap = actionRecord.getPropertyMap();
 
-		propertyMap.put("score", String.valueOf(value));
+		propertyMap.put(AppConstants.HISTORY_SCORE, String.valueOf(value));
 
 		populatePropertiesFromLearner(propertyMap, student);
 
@@ -567,7 +567,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			actionRecord.setStudentUid(studentUid);
 			Map<String, String> propertyMap = actionRecord.getPropertyMap();
 
-			propertyMap.put("score", value);
+			propertyMap.put(AppConstants.HISTORY_SCORE, value);
 
 			populatePropertiesFromLearner(propertyMap, student);
 
@@ -1099,6 +1099,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				EntityType entityType = EntityType.valueOf(actionRecord.getEntityType());
 				String score = null;
 				String oldScore = null;
+				String originalImportGrade = null;
 				StringBuilder text = new StringBuilder();
 				switch (actionType) {
 				case CREATE:
@@ -1106,18 +1107,27 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 					.append(entityType).toString();
 					break;
 				case IMPORT_GRADE_CHANGE:
-					oldScore = actionRecord.getPropertyMap().get("oldScore");
+					oldScore = actionRecord.getPropertyMap().get(AppConstants.HISTORY_OLD_SCORE);
+					// GRBK-668
+					originalImportGrade = actionRecord.getPropertyMap().get(AppConstants.HISTORY_ORIGINAL_SCORE);
 				case GRADED:
-					score = actionRecord.getPropertyMap().get("score");
+					score = actionRecord.getPropertyMap().get(AppConstants.HISTORY_SCORE);
 					if (score == null)
 						score = "";
-					actionModel.set("score", score);
+					actionModel.set(AppConstants.HISTORY_SCORE, score);
 
 					text.append(actionType.getVerb()).append(" '");
 					if (oldScore != null ) {
 						text.append(oldScore).append("'-->'");
 					}
 					text.append(score).append("'");
+					
+					// GRBK-668 : TODO : i18n
+					if(null != originalImportGrade && !"".equals(originalImportGrade)) {
+						text.append(" : Import converted [");
+						text.append(originalImportGrade);
+						text.append("] to a letter grade");
+					}
 
 					description = text.toString();
 					break;
@@ -2827,7 +2837,6 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 	}
 
 	// TODO : Remove/cleanup old/new upload methods and REST resources
-	// FIXME
 	// GRBK-554 : TPA 
 	private void newHandleImportItemModification(String gradebookUid, Long gradebookId, GradeItem item, 
 			Map<String, Assignment> idToAssignmentMap, Long categoryId) throws InvalidInputException {
@@ -3255,8 +3264,36 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 							actionRecord.setStudentUid(studentUid);
 							Map<String, String> propertyMap = actionRecord.getPropertyMap();
 
-							propertyMap.put("score", String.valueOf(value));
-							propertyMap.put("oldScore", String.valueOf(oldValue));
+							// GRBK-668
+							if(null != gradebookItem && GradeType.LETTERS == gradebookItem.getGradeType()) {
+								
+								String newLetterGrade = "";
+								String oldLetterGrade = "";
+								
+								if(null != value) {
+									
+									newLetterGrade = gradeCalculations.convertPercentageToLetterGrade(new BigDecimal(String.valueOf(value)));
+								}
+								
+								if(null != oldValue) {
+									
+									oldLetterGrade = gradeCalculations.convertPercentageToLetterGrade(new BigDecimal(String.valueOf(oldValue)));
+								}
+								
+								propertyMap.put(AppConstants.HISTORY_SCORE, newLetterGrade);
+								propertyMap.put(AppConstants.HISTORY_ORIGINAL_SCORE, oldLetterGrade);
+							}
+							else {
+
+								propertyMap.put(AppConstants.HISTORY_SCORE, String.valueOf(value));
+								propertyMap.put(AppConstants.HISTORY_ORIGINAL_SCORE, String.valueOf(oldValue));
+							}
+							
+							// GRBK-668
+							String originalImportGrade = student.get(Util.buildConvertedGradeKey(id));
+							if(null != originalImportGrade && !"".equals(originalImportGrade)) {
+								propertyMap.put(AppConstants.HISTORY_ORIGINAL_SCORE, originalImportGrade);
+							}
 
 							populatePropertiesFromLearner(propertyMap, student);
 
@@ -3273,7 +3310,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 						String failedProperty = Util.buildFailedKey(id);
 						student.set(failedProperty, "Invalid input");
 						
-						log.warn("Number Format: Failed to score item for " + (student == null  ? "null" : student.getDisplayName()) + " and item " + (assignment == null ? "null" : assignment.getId()) + " to " + v);
+						log.warn("Number Format: Failed to score item for " + (student == null  ? "null" : student.getDisplayName()) + " and item " + (assignment == null ? "null" : assignment.getId()) + " to " + v, nfe);
 
 						student.set(AppConstants.IMPORT_CHANGES, Boolean.TRUE);
 					} catch (InvalidInputException e) {
