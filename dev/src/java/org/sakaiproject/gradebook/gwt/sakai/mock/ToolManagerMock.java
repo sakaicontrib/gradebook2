@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.util.Set;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.site.api.Site;
+import org.sakaiproject.site.api.ToolConfiguration;
 import org.sakaiproject.tool.api.Placement;
 import org.sakaiproject.tool.api.Tool;
 import org.sakaiproject.tool.api.ToolManager;
@@ -55,6 +57,10 @@ public class ToolManagerMock implements ToolManager {
 	public void setResourceBundle(String arg0, String arg1) {
 		// TODO Auto-generated method stub
 
+	}
+
+	public boolean isVisible(Site arg0, ToolConfiguration arg1) {
+		return true;
 	}
 
 }
