@@ -35,7 +35,7 @@ public class Export extends Resource {
 		ImportExportUtility utility = new ImportExportUtility();
 		
 		// GRBK-665
-		if (request.getProtocol().contains("HTTPS") &&
+		if (request.getScheme().equals("https") &&
 				BrowserDetect.atLeast(request, UserAgent.IE, 8)) {
 			response.setHeader("Pragma", "");
 			response.setHeader("Cache-Control", "");
