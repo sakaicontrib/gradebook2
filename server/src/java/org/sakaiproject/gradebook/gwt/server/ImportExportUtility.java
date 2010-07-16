@@ -26,6 +26,8 @@ package org.sakaiproject.gradebook.gwt.server;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -173,7 +175,7 @@ public class ImportExportUtility {
 	
 	private Set<String> headerRowIndicatorSet, idSet, nameSet, scantronIgnoreSet;
 
-	private static String UNSAFE_FILENAME_CHAR_REGEX = "[\\p{Punct}\\p{Space}\\p{Cntrl}]";
+	public static String UNSAFE_FILENAME_CHAR_REGEX = "[\\p{Punct}\\p{Space}\\p{Cntrl}]";
 	public static List<String> SUPPORTED_FILE_TYPES = new ArrayList<String>() {
 		private static final long serialVersionUID = 1L;
 		{
@@ -207,9 +209,8 @@ public class ImportExportUtility {
 		}
 	}
 
-	public void exportGradebook(Gradebook2ComponentService service, String gradebookUid, 
-			final boolean includeStructure, final boolean includeComments, PrintWriter writer, 
-			HttpServletResponse response, String fileType) 
+	public static ImportExportDataFile exportGradebook(Gradebook2ComponentService service, String gradebookUid, 
+			final boolean includeStructure, final boolean includeComments) 
 	throws FatalException {
 
 		Gradebook gradebook = service.getGradebook(gradebookUid);
@@ -483,48 +484,13 @@ public class ImportExportUtility {
 
 		}
 
-		StringBuilder filename = new StringBuilder();
-		Site site = service.getSite();
-		
-		if (site == null)
-			filename.append("gradebook");
-		else {
-			String name = site.getTitle();
-			name = name.replaceAll(UNSAFE_FILENAME_CHAR_REGEX , "_");
-
-			filename.append(name);
-		}
-
 		service.postEvent("gradebook2.export", String.valueOf(gradebookId));
 		
-		FileType type = FileType.getType(fileType);
-		
-		filename.append(type.getExtension());
-		
-		if (response != null) {
-			response.setContentType(type.getMimeType());
-			response.setHeader(CONTENT_DISPOSITION_HEADER_NAME, CONTENT_DISPOSITION_HEADER_ATTACHMENT + filename.toString());
-		}
-		
-		if (fileType.equals(FileType.XLS97.getName()))
-		{
-			createXLS97File(filename.toString(), response, out); 
-		}
-		else if (fileType.equals(FileType.CSV.getName()))
-		{
-			try {
-				if(null != response) {
-					createCSVFile(response, out);
-				}
-			} catch (IOException e) {
-				log.error("Caught I/O exception ", e); 
-				throw new FatalException(e); 
-			}			
-		}
+		return out;
 
 	}
 	
-	private void exportViewOptionsAndScaleEC(ImportExportDataFile out, Gradebook gradebook) {
+	private static void exportViewOptionsAndScaleEC(ImportExportDataFile out, Gradebook gradebook) {
 		
 		Item firstGBItem = gradebook.getGradebookItemModel(); 
 		if (firstGBItem.getExtraCreditScaled().booleanValue())
@@ -568,7 +534,7 @@ public class ImportExportUtility {
 		}		
 	}
 
-	private void outputStructureTwoPartExportRow(String optionName, String optionValue, ImportExportDataFile out)
+	private static void outputStructureTwoPartExportRow(String optionName, String optionValue, ImportExportDataFile out)
 	{
 		String[] rowString; 
 		rowString = new String[3]; 
@@ -577,17 +543,39 @@ public class ImportExportUtility {
 		rowString[2] = optionValue;
 		out.addRow(rowString); 
 	}
+	
+	public static void exportGradebook(FileType fileType, String filename, OutputStream outStream,
+			Gradebook2ComponentService service, String gradebookUid,
+			final boolean includeStructure, final boolean includeComments) throws FatalException {
+		
+		
+		if (fileType.equals(FileType.XLS97.getName()))
+		{
+			exportGradebookXLS (filename, outStream, service, gradebookUid, includeStructure, true); 
+		}
+		else if (fileType.equals(FileType.CSV.getName()))
+		{
+			exportGradebookCSV (filename.toString(), outStream, service, gradebookUid, includeStructure, true);
+		}
+	}
 
-	private void createXLS97File(String title, HttpServletResponse response, ImportExportDataFile out) throws FatalException {
+	private static void exportGradebookXLS(String title, OutputStream outStream,
+			Gradebook2ComponentService service, String gradebookUid,
+			final boolean includeStructure, final boolean includeComments)
+			throws FatalException {
+		
+		final ImportExportDataFile file = exportGradebook(service,
+				gradebookUid, includeStructure, includeComments);
+
 		HSSFWorkbook wb = new HSSFWorkbook();
 		HSSFSheet s = wb.createSheet(title);
-		
-		out.startReading(); 
+
+		file.startReading(); 
 		String[] curRow = null; 
 		int row = 0; 
 		
 		HSSFRow r = null;
-		while ( (curRow = out.readNext()) != null) {
+		while ( (curRow = file.readNext()) != null) {
 			r = s.createRow(row); 
 
 			for (int i = 0; i < curRow.length ; i++) {
@@ -605,15 +593,15 @@ public class ImportExportUtility {
 				s.autoSizeColumn((short) i);
 			}
 		}
- 		writeXLSResponse(wb, response); 
+ 		writeXLSResponse(wb, outStream); 
  		
 	}
 
 
-	private void writeXLSResponse(HSSFWorkbook wb, HttpServletResponse response) throws FatalException {
+	private static void writeXLSResponse(HSSFWorkbook wb, OutputStream out) throws FatalException {
 		try {
-			wb.write(response.getOutputStream());
-			response.getOutputStream().flush(); 
+			wb.write(out);
+			out.flush(); 
 		} catch (IOException e) {
 			log.error("Caught exception " + e, e); 
 			throw new FatalException(e); 
@@ -621,20 +609,25 @@ public class ImportExportUtility {
 		}		
 	}
 
-	private void createCSVFile(HttpServletResponse response,
-			 ImportExportDataFile out) throws IOException {
+	private static void exportGradebookCSV(String title, OutputStream outStream,
+			Gradebook2ComponentService service, String gradebookUid,
+			final boolean includeStructure, final boolean includeComments)
+			throws FatalException {
+
+		final ImportExportDataFile
+		            file = exportGradebook (service, gradebookUid, includeStructure, includeComments);
+		OutputStreamWriter
+		            writer = new OutputStreamWriter(outStream);
 		
-		
-		CSVWriter csvWriter = new CSVWriter(response.getWriter());
-		out.startReading(); 
+		CSVWriter csvWriter = new CSVWriter(writer);
+		file.startReading(); 
 		String[] curRow; 
-		while ((curRow = out.readNext()) != null)
+		while ((curRow = file.readNext()) != null)
 		{
 			csvWriter.writeNext(curRow); 
 		}
 		try {
-			csvWriter.close();
-			response.getWriter().flush(); 
+			csvWriter.flush();
 		} catch (IOException e) {
 			log.error("Caught ioexception: ", e);
 		} 
@@ -2486,7 +2479,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 		}		
 	}
 	
-	private String getDisplayName(CategoryType categoryType) {
+	private static String getDisplayName(CategoryType categoryType) {
 		switch (categoryType) {
 		case NO_CATEGORIES:
 			return i18n.getString("orgTypeNoCategories");
@@ -2498,7 +2491,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 		return "N/A";
 	}
 
-	private String getDisplayName(GradeType gradeType) {
+	private static String getDisplayName(GradeType gradeType) {
 		switch (gradeType) {
 		case POINTS:
 			return i18n.getString("gradeTypePoints");
