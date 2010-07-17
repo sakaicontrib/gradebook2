@@ -3,6 +3,9 @@ package org.sakaiproject.gradebook.entity;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringBufferInputStream;
+import java.io.StringWriter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -12,9 +15,12 @@ import java.util.Stack;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
 import org.sakaiproject.entity.api.Entity;
 import org.sakaiproject.entity.api.EntityManager;
 import org.sakaiproject.entity.api.EntityProducer;
@@ -22,14 +28,20 @@ import org.sakaiproject.entity.api.EntityTransferrer;
 import org.sakaiproject.entity.api.HttpAccess;
 import org.sakaiproject.entity.api.Reference;
 import org.sakaiproject.entity.api.ResourceProperties;
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
+import org.sakaiproject.gradebook.gwt.client.model.Upload;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeItem;
+import org.sakaiproject.gradebook.gwt.server.ImportExportDataFile;
+import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
+import org.sakaiproject.gradebook.gwt.server.ImportExportUtility.FileType;
 import org.sakaiproject.service.gradebook.shared.GradebookNotFoundException;
 import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.Category;
@@ -213,58 +225,114 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 	}
 
 	public void transferCopyEntities(String from, String to, List ids) {
-		/*
-		 *  TODO: we don't have unique item id's and so can't filter with the incoming param 'ids'
-		 *  This could be a list of item *names* perhaps?
-		 */
-
-
-		Gradebook fromDB = componentService.getGradebook(from);
+		ImportExportDataFile otherGB = null;
 		
-		
-
-		Item im = fromDB.getGradebookItemModel();
-		
+		ByteArrayOutputStream result = new ByteArrayOutputStream();
 		try {
-			
-			componentService.saveAllGradebookItems((GradeItem) im, to);
-			
-		} catch (InvalidInputException e) {
+			ImportExportUtility.exportGradebook (FileType.CSV, "", result, componentService, from, true, false);
+		} catch (FatalException e1) {
 			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} 
+
+		log.info(result.toString());
+		
+		Upload importFile = null;
+		try {
+			importFile = (new ImportExportUtility()).parseImportCSV(componentService, to, new InputStreamReader(new StringBufferInputStream(result.toString())));
+		} catch (InvalidInputException e) {
 			e.printStackTrace();
 		} catch (FatalException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		org.sakaiproject.gradebook.gwt.sakai.rest.resource.Upload uploadREST = new org.sakaiproject.gradebook.gwt.sakai.rest.resource.Upload();
+		
+		try {
+			uploadREST.update(to, componentService.getGradebook(to).getGradebookId(), toJson(importFile), "true", componentService);
+		} catch (InvalidInputException e) {
+			e.printStackTrace();
+		}
+		
+		return;
 
+	}
+
+	private void markAsNewIfNecessary(GradeItem item) {
+		if(item.getItemType() == ItemType.CATEGORY) {
+			Category toCat = toolService.getCategory(item.getItemId());
+			if(null == toCat) {
+				item.setIdentifier(AppConstants.NEW_PREFIX + item.getItemId());
+			}
+		} else
+			if (item.getItemType() == ItemType.ITEM) {
+				Long catId = item.getCategoryId();
+				if (catId != null && catId != -1) {
+					Category parent = toolService.getCategory(catId);
+					List<Assignment> assignments = toolService.getAssignmentsForCategory(catId);
+				}
+			}
+		
 	}
 
 	public void transferCopyEntities(String from, String to, List ids,
 			boolean cleanup) {
 		
-		transferCopyEntities(from, to, ids);
+		Gradebook toGB = componentService.getGradebook(to);
 		
-		Gradebook fromDB = componentService.getGradebook(from);
-		
-		Item im = fromDB.getGradebookItemModel();
+		Item im = toGB.getGradebookItemModel();
 		
 		for (GradeItem level1 : ((GradeItem) im).getChildren()) {
 			for (GradeItem level2 : level1.getChildren()) {
-				level2.setRemoved(true);
-				updateGradeItem(level2);
+				if (!level2.getRemoved()) {
+					level2.setRemoved(true);
+				}
+				
 			}
-			level1.setRemoved(true);
-			updateGradeItem(level1);
+			if (!level1.getRemoved()) {
+				level1.setRemoved(true);
+			}
+			
 		}
+		
+		List<BusinessLogicCode> ignore = im.getIgnoredBusinessRules();
+		ignore.add(BusinessLogicCode.CannotIncludeDeletedItemRule);
+		ignore.add(BusinessLogicCode.CannotIncludeItemFromUnincludedCategoryRule);
+		
+		try {
+			componentService.saveFullGradebookFromClientModel(toGB);
+		} catch (FatalException e) {
+			log.error("transferCopyEntities(migrate) - from: " + from + " - to: " + to);
+			e.printStackTrace();
+		} catch (InvalidInputException e) {
+			log.error("transferCopyEntities(migrate) - from: " + from + " - to: " + to);
+			e.printStackTrace();
+		}
+		transferCopyEntities(from, to, ids);
 		
 		
 	}
+	
+	
+	protected String toJson(Object o)
+	{
+		return toJson(o, false); 
+	}
+	protected String toJson(Object o, boolean prettyPrint) {
+		ObjectMapper mapper = new ObjectMapper();
+		if (prettyPrint)
+		{
+			mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true); 
+		}
+		StringWriter w = new StringWriter();
+		try {
+			mapper.writeValue(w, o);
+		} catch (Exception e) {
+			log.error("Caught an exception serializing to JSON: ", e);
+		}
+		
+		return w.toString();
+	}
+	
 
-	private void updateGradeItem(GradeItem item) {
-		if (item.getItemType() == ItemType.CATEGORY) {
-			toolService.updateCategory((Category)item);
-		} else if (item.getItemType() == ItemType.ITEM) {
-			toolService.updateAssignment((Assignment)item);
-		}
-	}
 }

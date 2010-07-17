@@ -549,11 +549,11 @@ public class ImportExportUtility {
 			final boolean includeStructure, final boolean includeComments) throws FatalException {
 		
 		
-		if (fileType.equals(FileType.XLS97.getName()))
+		if (fileType.equals(FileType.XLS97))
 		{
 			exportGradebookXLS (filename, outStream, service, gradebookUid, includeStructure, true); 
 		}
-		else if (fileType.equals(FileType.CSV.getName()))
+		else if (fileType.equals(FileType.CSV))
 		{
 			exportGradebookCSV (filename.toString(), outStream, service, gradebookUid, includeStructure, true);
 		}

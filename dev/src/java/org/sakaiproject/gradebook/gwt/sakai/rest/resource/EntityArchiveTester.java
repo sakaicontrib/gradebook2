@@ -12,8 +12,10 @@ import org.sakaiproject.entity.api.EntityManager;
 import org.sakaiproject.entity.api.EntityProducer;
 import org.sakaiproject.entity.api.EntityTransferrer;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.sakai.mock.ArchiveServiceMock;
 import org.sakaiproject.gradebook.gwt.sakai.mock.BaseGroupMock;
+import org.sakaiproject.service.gradebook.shared.GradebookNotFoundException;
 
 @Path("archive")
 public class EntityArchiveTester extends Resource {
@@ -54,6 +56,15 @@ public class EntityArchiveTester extends Resource {
 
 		log.info("Gradebook2 transfer(" + fromContext + "," + toContext + ")");
 		
+		String c = null;
+		try {
+			c = fromContext;
+			Gradebook gb = service.getGradebook(c);
+			c = toContext;
+			gb = service.getGradebook(c);
+		} catch (GradebookNotFoundException e) {
+			return "Invalid gradebook UID: " + c;
+		}
 		
 		if (null == entityManager) {
 			log.error("EntityManager was not injected!");
@@ -61,7 +72,7 @@ public class EntityArchiveTester extends Resource {
 		}
 		for (Object e : entityManager.getEntityProducers()) {
 			if (e!=null && e instanceof EntityTransferrer) {
-				((EntityTransferrer)e).transferCopyEntities(ArchiveServiceMock.ANOTHER_SITE_CONTEXT, AppConstants.TEST_SITE_CONTEXT_ID, null);
+				((EntityTransferrer)e).transferCopyEntities(ArchiveServiceMock.ANOTHER_SITE_CONTEXT, AppConstants.TEST_SITE_CONTEXT_ID, null, true);
 			}
 		}
 		
@@ -81,7 +92,12 @@ public class EntityArchiveTester extends Resource {
 			return "EntityManager was not injected!";
 		}
 		
-		
+		for (Object e : entityManager.getEntityProducers()) {
+			if (e!=null && e instanceof EntityTransferrer) {
+				((EntityTransferrer)e).transferCopyEntities(ArchiveServiceMock.ANOTHER_SITE_CONTEXT, AppConstants.TEST_SITE_CONTEXT_ID, null);
+			}
+		}
+
 		return "done";
 	}
 	

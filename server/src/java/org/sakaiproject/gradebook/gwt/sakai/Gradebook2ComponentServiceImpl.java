@@ -118,6 +118,8 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import com.extjs.gxt.ui.client.Registry;
+
 public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentService, ApplicationContextAware {
 
 	private static ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
@@ -2668,6 +2670,8 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 			boolean isNullsAsZeros = convertBoolean(item.getNullsAsZeros()).booleanValue();
 
+			List<BusinessLogicCode> ignoredRules = item.getIgnoredBusinessRules();
+			
 			if (hasCategories && category != null) {
 				if (hasCategoryChanged) {
 					Category newCategory = gbService.getCategory(item.getCategoryId());
@@ -2679,36 +2683,52 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 				boolean isCategoryIncluded = !Util.checkBoolean(category.isUnweighted());
 				assignments = gbService.getAssignmentsForCategory(category.getId());
+				
 
 				// Business rule #12
-				businessLogic.applyCannotUnremoveItemWithRemovedCategory(isRemoved, category);
+				if(!ignoredRules.contains(BusinessLogicCode.CannotUnremoveItemWithRemovedCategory)) {
+					businessLogic.applyCannotUnremoveItemWithRemovedCategory(isRemoved, category);
+				}
 
 				// Business rule #5
-				businessLogic.applyNoDuplicateItemNamesWithinCategoryRule(item.getCategoryId(), item.getName(), assignment.getId(), assignments);
+				if(!ignoredRules.contains(BusinessLogicCode.NoDuplicateItemNamesWithinCategoryRule)) {
+					businessLogic.applyNoDuplicateItemNamesWithinCategoryRule(item.getCategoryId(), item.getName(), assignment.getId(), assignments);
+				}
 
 				// Business rule #6
-				businessLogic.applyCannotIncludeDeletedItemRule(wasRemoved && isRemoved, category.isRemoved(), isUnweighted);
+				if(!ignoredRules.contains(BusinessLogicCode.CannotIncludeDeletedItemRule)) {
+					businessLogic.applyCannotIncludeDeletedItemRule(wasRemoved && isRemoved, category.isRemoved(), isUnweighted);
+				}
 
 				// Business rule #11
-				if (!hasCategoryChanged)
+				if (!hasCategoryChanged && !ignoredRules.contains(BusinessLogicCode.CannotIncludeItemFromUnincludedCategoryRule)) {
 					businessLogic.applyCannotIncludeItemFromUnincludedCategoryRule(isCategoryIncluded, !isUnweighted, !wasUnweighted);
+				}
 
 				// Business rule #8
-				businessLogic.applyMustIncludeCategoryRule(item.getCategoryId());
+				if(!ignoredRules.contains(BusinessLogicCode.MustIncludeCategoryRule)) {
+					businessLogic.applyMustIncludeCategoryRule(item.getCategoryId());
+				}
 
 
 			} else {
 				assignments = gbService.getAssignments(gradebook.getId());
 
 				// Business rule #3
-				businessLogic.applyNoDuplicateItemNamesRule(gradebook.getId(), item.getName(), assignment.getId(), assignments);
+				if(!ignoredRules.contains(BusinessLogicCode.NoDuplicateItemNamesRule)) {
+					businessLogic.applyNoDuplicateItemNamesRule(gradebook.getId(), item.getName(), assignment.getId(), assignments);
+				}
 
 				// Business rule #4
-				businessLogic.applyCannotIncludeDeletedItemRule(wasRemoved && isRemoved, false, isUnweighted);
+				if(!ignoredRules.contains(BusinessLogicCode.CannotIncludeDeletedItemRule)) {
+					businessLogic.applyCannotIncludeDeletedItemRule(wasRemoved && isRemoved, false, isUnweighted);
+				}
 
 			}
 
-			businessLogic.applyNoZeroPointItemsRule(points);
+			if(!ignoredRules.contains(BusinessLogicCode.NoZeroPointItemsRule)) {
+				businessLogic.applyNoZeroPointItemsRule(points);
+			}
 
 			// If we don't know the old item order then we need to determine it
 			if (oldItemOrder == null) {
@@ -6248,20 +6268,15 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			throw new FatalException("Expected Gradebook implementation of type: " + GradebookImpl.class.getName());
 		}
 		
-		// FindBugs
-		// Gradebook from = gbService.getGradebook(newGradebook.getGradebookUid());
+		
+		Gradebook current = gbService.getGradebook(toolManager.getCurrentPlacement().getContext());
 				
-		GradeItem itemModel =  (GradeItem) newGradebook.getGradebookItemModel();
+		GradeItem itemModel =  (GradeItem) newGradebook.getGradebookItemModel();	
 		
-		GradeItemImpl gradebookAsGradeItem = new GradeItemImpl((Map)newGradebook);
-		
-		gradebookAsGradeItem.setItemType(ItemType.GRADEBOOK);
-		
-		gradebookAsGradeItem.setIdentifier(newGradebook.getGradebookUid());
-		
-		updateItem((Item)gradebookAsGradeItem);
-		
-		saveAllGradebookItems(itemModel, newGradebook.getGradebookUid());
+//		doUpdateGradebook(itemModel, current);	
+//		
+//		saveAllGradebookItems(itemModel, newGradebook.getGradebookUid());
+		newHandleImportItemModification(current.getUid(), current.getId(), itemModel, new HashMap<String, Assignment>(), null);
 	
 	}
 	

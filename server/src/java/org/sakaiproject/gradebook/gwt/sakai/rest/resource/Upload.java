@@ -12,6 +12,7 @@ import javax.ws.rs.PathParam;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
+import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
 import org.sakaiproject.gradebook.gwt.server.model.UploadImpl;
 
 @Path(AppConstants.UPLOAD_FRAGMENT)
@@ -44,5 +45,18 @@ public class Upload extends Resource {
 
 		return toJson(result);
 	}
+	
+	/*
+	 * for non-REST access to import process
+	 */
+	public String update(String gradebookUid,
+			Long gradebookId, String model,
+			String forceFlag, Gradebook2ComponentService serviceInstance) throws InvalidInputException {
+		service = serviceInstance;
+				return update(gradebookUid, gradebookId, model, forceFlag);
+		
+	}
+	
+	
 
 }

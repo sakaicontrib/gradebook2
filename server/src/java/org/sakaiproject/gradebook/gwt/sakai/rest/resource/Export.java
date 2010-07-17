@@ -38,9 +38,6 @@ public class Export extends Resource {
 		
 		String fileType = "".equals(format) || format.indexOf("/") == -1 ? ImportExportUtility.FileType.CSV.getExtension() : format.split("/")[2].toLowerCase();
 		
-		ImportExportUtility utility = new ImportExportUtility();
-		
-
 		try {
 			if ( ! ImportExportUtility.SUPPORTED_FILE_TYPES.contains(fileType)) {
 				throw new FatalException("Unsupported file type: " + fileType);
