@@ -384,19 +384,17 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 	
 	public String convertPercentageToLetterGrade(BigDecimal percentage) {
 		String letterGrade = null;
-		
+		BigDecimal two = new BigDecimal("2",MATH_CONTEXT); 
+		BigDecimal three = new BigDecimal("3", MATH_CONTEXT); 
+		BigDecimal oneThird = BigDecimal.ONE.divide(three, MATH_CONTEXT); 
+		BigDecimal twoThirds = two.divide(three, MATH_CONTEXT); 
 		if (percentage != null) {
 			
 			if (percentage.compareTo(BigDecimal.ZERO) == 0)
 				return "0";
-			
-			BigDecimal minus60 = percentage.subtract(BigDecimal.valueOf(60d), GradeCalculations.MATH_CONTEXT);
-			
-			if (minus60.compareTo(BigDecimal.ZERO) < 0)
-				return "F";
-			
-			BigDecimal decimal = minus60.divide(BigDecimal.valueOf(10d), MATH_CONTEXT);
-			
+						
+			if (percentage.compareTo(new BigDecimal("60.0")) < 0)
+				return "D"; 
 			// FIXME:
 			// - Make this configurable
 			// - Use proper precision e.g. 3.3333333333
@@ -404,30 +402,67 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 			// - we could use the fixed mapping value and +/- 1.6666666666
 			// -- e.g.  A+ 98.3333333333 - 1.6666666666 = 96.666666666666
 			// 
-			if (decimal.compareTo(BigDecimal.valueOf(3.7d)) >= 0)
+
+			/*
+			 * GRBK-668 
+			 * The old code did not use an evenly distributed grading scale.  
+			 * This does.  It also uses full precision numbers, possibly overkill, but it is wanted. 
+			 * 
+			 * Note:  special adds are done to fully represent fractions.  
+			 */
+			BigDecimal gradeAplus = new BigDecimal("96", MATH_CONTEXT).add(twoThirds, MATH_CONTEXT);
+			BigDecimal gradeA = new BigDecimal("93", MATH_CONTEXT).add(oneThird, MATH_CONTEXT);
+			BigDecimal gradeAminus = new BigDecimal("90");
+
+			BigDecimal gradeBplus = new BigDecimal("86", MATH_CONTEXT).add(twoThirds, MATH_CONTEXT);
+			BigDecimal gradeB = new BigDecimal("83", MATH_CONTEXT).add(oneThird, MATH_CONTEXT);
+			BigDecimal gradeBminus = new BigDecimal("80");
+
+			BigDecimal gradeCplus = new BigDecimal("76", MATH_CONTEXT).add(twoThirds, MATH_CONTEXT);
+			BigDecimal gradeC = new BigDecimal("73", MATH_CONTEXT).add(oneThird, MATH_CONTEXT);
+			BigDecimal gradeCminus = new BigDecimal("70");
+
+			BigDecimal gradeDplus = new BigDecimal("66", MATH_CONTEXT).add(twoThirds, MATH_CONTEXT);
+			BigDecimal gradeD = new BigDecimal("63", MATH_CONTEXT).add(oneThird, MATH_CONTEXT);
+			BigDecimal gradeDminus = new BigDecimal("60");
+
+
+			if (percentage.compareTo(gradeAplus) >= 0)
 				return "A+";
-			if (decimal.compareTo(BigDecimal.valueOf(3.3d)) >= 0)
+
+			if (percentage.compareTo(gradeA) >= 0)
 				return "A";
-			if (decimal.compareTo(BigDecimal.valueOf(3d)) >= 0)
+			
+			if (percentage.compareTo(gradeAminus) >= 0)
 				return "A-";
-			if (decimal.compareTo(BigDecimal.valueOf(2.7d)) >= 0)
+
+			if (percentage.compareTo(gradeBplus) >= 0)
 				return "B+";
-			if (decimal.compareTo(BigDecimal.valueOf(2.3d)) >= 0)
+
+			if (percentage.compareTo(gradeB) >= 0)
 				return "B";
-			if (decimal.compareTo(BigDecimal.valueOf(2d)) >= 0)
-				return "B-"; 
-			if (decimal.compareTo(BigDecimal.valueOf(1.7d)) >= 0)
+			
+			if (percentage.compareTo(gradeBminus) >= 0)
+				return "B-";
+	
+			if (percentage.compareTo(gradeCplus) >= 0)
 				return "C+";
-			if (decimal.compareTo(BigDecimal.valueOf(1.3d)) >= 0)
+
+			if (percentage.compareTo(gradeC) >= 0)
 				return "C";
-			if (decimal.compareTo(BigDecimal.valueOf(1d)) >= 0)
-				return "C-"; 
-			if (decimal.compareTo(BigDecimal.valueOf(0.7d)) >= 0)
+			
+			if (percentage.compareTo(gradeCminus) >= 0)
+				return "C-";
+
+			if (percentage.compareTo(gradeDplus) >= 0)
 				return "D+";
-			if (decimal.compareTo(BigDecimal.valueOf(0.3d)) >= 0)
+
+			if (percentage.compareTo(gradeD) >= 0)
 				return "D";
 			
-			return "D-"; 
+			if (percentage.compareTo(gradeDminus) >= 0)
+				return "D-";
+
 		}
 		
 		return letterGrade;
@@ -502,7 +537,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		List<GradeRecordCalculationUnit> gradeRecordUnits = new ArrayList<GradeRecordCalculationUnit>();
 
 		BigDecimal totalGradebookPoints = populateGradeRecordUnits(null, null, assignments, gradeRecordUnits, assignmentGradeRecordMap, false, false)[1];
-
+		log.debug("getNoCategoriesCourseGrade - totalGradebookPoints=" + totalGradebookPoints);
 		GradebookCalculationUnit gradebookUnit = new GradebookCalculationUnit();
 
 		return gradebookUnit.calculatePointsBasedCourseGrade(gradeRecordUnits, totalGradebookPoints, isExtraCreditScaled);
@@ -846,7 +881,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		if (percentage != null) {
 			BigDecimal percent = new BigDecimal(percentage.toString());
 			BigDecimal maxPoints = new BigDecimal(assignment.getPointsPossible().toString());
-			pointsEarned = percent.divide(BIG_DECIMAL_100, MATH_CONTEXT).multiply(maxPoints);
+			pointsEarned = percent.divide(BIG_DECIMAL_100).multiply(maxPoints);
 		}
 
 		return pointsEarned;	

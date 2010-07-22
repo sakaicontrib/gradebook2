@@ -3565,15 +3565,15 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 		String enteredGrade = null;
 		DisplayGrade displayGrade = null;
-		BigDecimal calculatedGrade = getCalculatedGrade(gradebook, assignments, categories, studentGradeMap);
-
+		BigDecimal calculatedGrade = getCalculatedGrade(gradebook, assignments, categories, studentGradeMap, true);
+		BigDecimal fullPrecisionCalculatedGrade = getCalculatedGrade(gradebook, assignments, categories, studentGradeMap, false);
 		if (courseGradeRecord != null)
 			enteredGrade = courseGradeRecord.getEnteredGrade();
 
 		if (userRecord.isCalculated())
 			displayGrade = userRecord.getDisplayGrade();
 		else
-			displayGrade = getDisplayGrade(gradebook, userRecord.getUserUid(), courseGradeRecord, calculatedGrade);
+			displayGrade = getDisplayGrade(gradebook, userRecord.getUserUid(), courseGradeRecord, fullPrecisionCalculatedGrade);
 
 		if (columns != null) {
 			for (FixedColumn column : columns) {
@@ -4623,8 +4623,9 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				// everybody's course grade
 				if (userRecords != null) {
 					for (UserRecord record : userRecords) {
-						BigDecimal calculatedGrade = getCalculatedGrade(gradebook, assignments, categories, record.getGradeRecordMap());
-						DisplayGrade displayGrade = getDisplayGrade(gradebook, record.getUserUid(), record.getCourseGradeRecord(), calculatedGrade);
+						BigDecimal calculatedGrade = getCalculatedGrade(gradebook, assignments, categories, record.getGradeRecordMap(), true);
+						BigDecimal fullPrecisionCalculatedGrade = getCalculatedGrade(gradebook, assignments, categories, record.getGradeRecordMap(), false);
+						DisplayGrade displayGrade = getDisplayGrade(gradebook, record.getUserUid(), record.getCourseGradeRecord(), fullPrecisionCalculatedGrade);
 						record.setDisplayGrade(displayGrade);
 						record.setCalculated(true);
 					}
@@ -4637,8 +4638,10 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				// everybody's course grade
 				if (userRecords != null) {
 					for (UserRecord record : userRecords) {
-						BigDecimal calculatedGrade = getCalculatedGrade(gradebook, assignments, categories, record.getGradeRecordMap());
-						DisplayGrade displayGrade = getDisplayGrade(gradebook, record.getUserUid(), record.getCourseGradeRecord(), calculatedGrade);
+						BigDecimal calculatedGrade = getCalculatedGrade(gradebook, assignments, categories, record.getGradeRecordMap(), true);
+						BigDecimal fullPrecisionCalculatedGrade = getCalculatedGrade(gradebook, assignments, categories, record.getGradeRecordMap(), false);
+
+						DisplayGrade displayGrade = getDisplayGrade(gradebook, record.getUserUid(), record.getCourseGradeRecord(), fullPrecisionCalculatedGrade);
 						record.setDisplayGrade(displayGrade);
 						record.setCalculated(true);
 					}
@@ -5095,7 +5098,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		return rv;
 	}
 
-	private BigDecimal getCalculatedGrade(Gradebook gradebook, List<Assignment> assignments, List<Category> categories, Map<Long, AssignmentGradeRecord> studentGradeMap) {
+	private BigDecimal getCalculatedGrade(Gradebook gradebook, List<Assignment> assignments, List<Category> categories, Map<Long, AssignmentGradeRecord> studentGradeMap, boolean display) {
 		BigDecimal autoCalculatedGrade = null;
 
 		boolean isScaledExtraCredit = Util.checkBoolean(gradebook.isScaledExtraCredit());
@@ -5108,8 +5111,11 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			autoCalculatedGrade = gradeCalculations.getCourseGrade(gradebook, categories, studentGradeMap, isScaledExtraCredit);
 		}
 
-		if (autoCalculatedGrade != null)
-			autoCalculatedGrade = autoCalculatedGrade.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
+		if (display)
+		{
+			if (autoCalculatedGrade != null)
+				autoCalculatedGrade = autoCalculatedGrade.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());	
+		}
 
 		return autoCalculatedGrade;
 	}
@@ -5240,7 +5246,17 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			enteredGrade = courseGradeRecord.getEnteredGrade();
 
 		if (enteredGrade == null)
-			letterGrade = getLetterGrade(autoCalculatedGrade, gradebook.getSelectedGradeMapping());
+		{
+			// GRBK-668 - if we're a letter grade gradebook, then we'll use the scale for letter grades. 
+			if (isLetterGradeMode)
+			{
+				letterGrade = gradeCalculations.convertPercentageToLetterGrade(autoCalculatedGrade); 
+			}
+			else
+			{
+				letterGrade = getLetterGrade(autoCalculatedGrade, gradebook.getSelectedGradeMapping());
+			}
+		}
 		else {
 			letterGrade = enteredGrade;
 			isOverridden = true;
