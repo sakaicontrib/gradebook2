@@ -394,7 +394,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 				return "0";
 						
 			if (percentage.compareTo(new BigDecimal("60.0")) < 0)
-				return "D"; 
+				return "F"; 
 			// FIXME:
 			// - Make this configurable
 			// - Use proper precision e.g. 3.3333333333
