@@ -187,14 +187,18 @@ public class ImportItemSetupPanel extends GradebookPanel {
 						if(null != categoryName && !"".equals(categoryName)) {
 							
 							Item category = categoryStore.findModel(ItemKey.S_NM.name(), categoryName);
+							// GRBK-681 - Since we don't care if the category id is non numeric, I assume we don't care if there's no category at all.
 							
-							try {
+							if (category != null)
+							{
+								try {
 
-								Long catId = Long.valueOf((String) category.get(ItemKey.S_ID.name()));
-								model.setCategoryId(catId);
-							}
-							catch(NumberFormatException nfe) {
-								// We don't do anything
+									Long catId = Long.valueOf((String) category.get(ItemKey.S_ID.name()));
+									model.setCategoryId(catId);
+								}
+								catch(NumberFormatException nfe) {
+									// We don't do anything
+								}
 							}
 						}	
 					}
@@ -213,10 +217,18 @@ public class ImportItemSetupPanel extends GradebookPanel {
 					}
 					
 					ItemModel category = categoryStore.findModel(ItemKey.S_ID.name(), categoryId);
-					String categoryName = category.get(ItemKey.S_NM.name());
-					model.set(ItemKey.S_PARENT.name(), categoryName);
+					// GRBK-681
+					if (category != null )
+					{
+						String categoryName = category.get(ItemKey.S_NM.name());
+						model.set(ItemKey.S_PARENT.name(), categoryName);
 					
-					return categoryName;
+						return categoryName;
+					}
+					else
+					{
+						return ""; 
+					}
 				}
 			}
 		});
