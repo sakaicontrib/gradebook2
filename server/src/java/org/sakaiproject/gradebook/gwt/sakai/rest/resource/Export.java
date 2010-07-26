@@ -36,7 +36,7 @@ public class Export extends Resource {
 					&& includeStructureFlag.indexOf("/") > -1
 					&& "true".equals(includeStructureFlag.split("/")[2].toLowerCase());
 		
-		String fileType = "".equals(format) || format.indexOf("/") == -1 ? ImportExportUtility.FileType.CSV.getExtension() : format.split("/")[2].toLowerCase();
+		String fileType = "".equals(format) || format.indexOf("/") == -1 ? ImportExportUtility.FileType.CSV.getName() : format.split("/")[2].toLowerCase();
 		
 		try {
 			if ( ! ImportExportUtility.SUPPORTED_FILE_TYPES.contains(fileType)) {
