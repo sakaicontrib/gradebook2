@@ -41,9 +41,9 @@
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/sections/sections-api/1.1-SNAPSHOT/sections-api-1.1-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-webmvc/2.5.6.SEC01/spring-webmvc-2.5.6.SEC01.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-kernel-private/1.2.0-SNAPSHOT/sakai-kernel-private-1.2.0-SNAPSHOT.jar"/>
-	<classpathentry kind="var" path="M2_REPO/com/sun/jersey/contribs/jersey-spring/1.1.4.1/jersey-spring-1.1.4.1.jar" sourcepath="/DEV"/>
-	<classpathentry kind="var" path="M2_REPO/com/sun/jersey/jersey-core/1.1.4.1/jersey-core-1.1.4.1.jar"/>
-	<classpathentry kind="var" path="M2_REPO/com/sun/jersey/jersey-server/1.1.4.1/jersey-server-1.1.4.1.jar" sourcepath="/DEV"/>
+	<classpathentry kind="var" path="M2_REPO/com/sun/jersey/contribs/jersey-spring/1.1.4.1/jersey-spring-1.1.4.1.jar" sourcepath="/M2_REPO/com/sun/jersey/contribs/jersey-spring/1.1.4.1/jersey-spring-1.1.4.1-sources.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/sun/jersey/jersey-core/1.1.4.1/jersey-core-1.1.4.1.jar" sourcepath="/M2_REPO/com/sun/jersey/jersey-core/1.1.4.1/jersey-core-1.1.4.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/sun/jersey/jersey-server/1.1.4.1/jersey-server-1.1.4.1.jar" sourcepath="/M2_REPO/com/sun/jersey/jersey-server/1.1.4.1/jersey-server-1.1.4.1-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/javax/ws/rs/jsr311-api/1.1.1/jsr311-api-1.1.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/asm/asm/3.1/asm-3.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/sun/jersey/jersey-json/1.1.4.1/jersey-json-1.1.4.1.jar"/>
