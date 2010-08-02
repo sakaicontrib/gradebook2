@@ -261,4 +261,9 @@ public interface AppConstants {
 	public static final String HISTORY_SCORE = "score";
 	public static final String HISTORY_OLD_SCORE = "oldScore";
 	public static final String HISTORY_ORIGINAL_SCORE = "origScore";
+	
+	// DATE FORMATS
+	public static final String LONG_DATE = "MM/dd/yyyy HH:mm:ss ZZZ";
+	public static final String SHORT_DATE = "yyyy-MM-dd";
+	
 }

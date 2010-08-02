@@ -22,8 +22,10 @@
  **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.server;
 
-import java.math.BigDecimal;
+import java.text.DateFormat;
 import java.text.NumberFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
@@ -31,7 +33,6 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
-import org.sakaiproject.gradebook.gwt.sakai.GradeCalculations;
 
 public class Util {
 	
@@ -83,6 +84,30 @@ public class Util {
 				d = (Date)object;
 			else if (object instanceof Long)
 				d = new Date((Long)object);
+			else if (object instanceof String) { 
+				// GRBK-673 : We receive a date as a string from the client. We apply the same
+				// format as the client side does. Also the client handles two types of date formats
+				// and we do the same thing here. See: EntityOverlay.java safeGet() {...}
+				DateFormat longDateFormat = new SimpleDateFormat(AppConstants.LONG_DATE);
+				
+				try {
+					
+					d = longDateFormat.parse((String) object);
+				}
+				catch (ParseException e) {
+					
+					DateFormat shortDateFormat = new SimpleDateFormat(AppConstants.SHORT_DATE);
+					
+					try {
+						
+						d = shortDateFormat.parse((String) object);
+					}
+					catch (ParseException e1) {
+						
+						// Don't do anything, returning null initialized date
+					}
+				}
+			}
 		}
 		
 		return d;

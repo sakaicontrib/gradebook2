@@ -76,11 +76,11 @@ public class EntityOverlay extends JavaScriptObject implements Serializable {
 			try {
 				s = getString(property);
 				if (s != null) {
-					DateTimeFormat f = DateTimeFormat.getFormat("MM/dd/yyyy HH:mm:ss ZZZ");							 // Sat Apr 03 19:51:25 PDT 2010
+					DateTimeFormat f = DateTimeFormat.getFormat(AppConstants.LONG_DATE);
 					d = f.parse(s);
 				}
 			} catch (IllegalArgumentException iae) {
-				d = DateTimeFormat.getFormat("yyyy-MM-dd").parse(getString(property));
+				d = DateTimeFormat.getFormat(AppConstants.SHORT_DATE).parse(getString(property));
 			}
 		
 			return d;
@@ -176,7 +176,7 @@ public class EntityOverlay extends JavaScriptObject implements Serializable {
 			break;
 		case AppConstants.DATE_PREFIX:
 		case AppConstants.ODD_DATE_PREFIX:
-			DateTimeFormat f = DateTimeFormat.getFormat("MM/dd/yyyy HH:mm:ss ZZZ");
+			DateTimeFormat f = DateTimeFormat.getFormat(AppConstants.LONG_DATE);
 			String s = f.format((Date)value);
 			setString(property, s);
 			break;

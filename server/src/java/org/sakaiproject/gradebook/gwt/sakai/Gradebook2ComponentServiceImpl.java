@@ -1092,7 +1092,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		String description = null;
 		SimpleDateFormat format = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
 		format.setLenient(true);
-		SimpleDateFormat toFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss ZZZ");
+		SimpleDateFormat toFormat = new SimpleDateFormat(AppConstants.LONG_DATE);
 
 		for (ActionRecord actionRecord : actionRecords) {
 			HistoryRecord actionModel = new HistoryRecordImpl();

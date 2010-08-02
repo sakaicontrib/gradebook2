@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
@@ -875,7 +876,7 @@ public class ItemModel extends EntityTreeModel implements Item {
 	
 	public DateTimeFormat getDateTimeFormat(String property) {
 		if (property.equals(ItemKey.W_DUE.name())) {
-			return DateTimeFormat.getFormat("yyyy-MM-dd");
+			return DateTimeFormat.getFormat(AppConstants.SHORT_DATE);
 		}
 		return DateTimeFormat.getMediumDateFormat();
 	}
