@@ -2410,6 +2410,20 @@ private GradeItem buildNewCategory(String curCategoryString,
 				importFile.setRows(null);
 				log.warn(e, e);
 			}
+			/*
+			 * Well, we don't really handle a percentages gradebook well... at least well enough to put it out in prod.
+			 * so as of GRBK-694 we will stop the import proces and say no. 
+			 * 
+			 * Since we're not importing, we don't want to send an event. 
+			 */
+			if (ieInfo.getGradebookItemModel().getGradeType() == GradeType.PERCENTAGES)
+			{
+				importFile = new UploadImpl();
+				importFile.setErrors(true); 
+				importFile.setRows(null); 
+				importFile.setNotes(i18n.getString("gb2CantImportPercentagesBecauseItDoesNotWork")); 
+				return importFile;
+			}
 		}
 		else
 		{
