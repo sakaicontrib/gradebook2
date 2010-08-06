@@ -24,6 +24,7 @@
 package org.sakaiproject.gradebook.gwt.sakai.calculations;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -387,8 +388,12 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		BigDecimal two = new BigDecimal("2",MATH_CONTEXT); 
 		BigDecimal three = new BigDecimal("3", MATH_CONTEXT); 
 		BigDecimal oneThird = BigDecimal.ONE.divide(three, MATH_CONTEXT); 
-		BigDecimal twoThirds = two.divide(three, MATH_CONTEXT); 
+		BigDecimal twoThirds = two.divide(three, MATH_CONTEXT);
+		
+		
 		if (percentage != null) {
+			
+			percentage = new BigDecimal(percentage.toPlainString(), new MathContext(10, RoundingMode.HALF_UP));
 			
 			if (percentage.compareTo(BigDecimal.ZERO) == 0)
 				return "0";
