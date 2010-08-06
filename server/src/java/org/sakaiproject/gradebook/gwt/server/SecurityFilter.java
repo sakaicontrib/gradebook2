@@ -81,11 +81,13 @@ public class SecurityFilter implements Filter {
 				responseData = escapedResponseString.getBytes();
 				response.setContentLength(escapedResponseString.length());
 				out.write(responseData);
+				out.flush();
 				out.close();
 			}
 			else {
 				
 				out.write(responseData);
+				out.flush();
 				out.close();
 			}
 
