@@ -24,6 +24,7 @@
 package org.sakaiproject.gradebook.gwt.server;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,10 +39,11 @@ import javax.servlet.http.HttpServletResponse;
 
 public class SecurityFilter implements Filter {
 
-	private static final String SCRIPT_REGEX = "((<[\\s\\/]*script\\b[^>]*>)([^>]*)(<\\/script>))";
+	//private static final String SCRIPT_REGEX = "((<[\\s\\/]*script\\b[^>]*>)([^>]*)(<\\/script>))";
+	private static final String SCRIPT_REGEX = "(<[\\s\\/]*script\\b[^>]*>)|(<\\/script>)";
 	// GRBK-517 : TPA : Changed the content type from gwt-rpc to "application/json"
 	private static final String APPLICATION_JSON_CONTENT_TYPE = "application/json";
-	private static final Pattern pattern = Pattern.compile(SCRIPT_REGEX);
+	private static final Pattern pattern = Pattern.compile(SCRIPT_REGEX, Pattern.CASE_INSENSITIVE);
 	private static final int HTTP_500 = 500;
 
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -52,19 +54,42 @@ public class SecurityFilter implements Filter {
 
 			SecurityRequestWrapper securityRequestWrapper = new SecurityRequestWrapper((HttpServletRequest) request);
 
+			OutputStream out = response.getOutputStream();
+			SecurityResponseWrapper securityResponseWrapper = new SecurityResponseWrapper((HttpServletResponse)response);
+
 			String body = securityRequestWrapper.getBody();
 
-			Matcher matcher = pattern.matcher(body);
-			if(matcher.find()) {
+			Matcher requestMatcher = pattern.matcher(body);
+
+			if(requestMatcher.find()) {
 				// Instead of throwing an exception here, we just set the
 				// response status and return
 				((HttpServletResponse) response).setStatus(HTTP_500);
 				return;
 			}
 
-			chain.doFilter(securityRequestWrapper, response);
-		}
-		else {
+			chain.doFilter(securityRequestWrapper, securityResponseWrapper);
+
+			// GRBK-697 : Dealing with response
+			byte[] responseData = securityResponseWrapper.getData();
+			String responseString = new String(responseData);
+			Matcher responseMatcher = pattern.matcher(responseString);
+			
+			if(responseMatcher.find()) {
+				
+				String escapedResponseString = responseMatcher.replaceAll("");
+				responseData = escapedResponseString.getBytes();
+				response.setContentLength(escapedResponseString.length());
+				out.write(responseData);
+				out.close();
+			}
+			else {
+				
+				out.write(responseData);
+				out.close();
+			}
+
+		} else {
 
 			chain.doFilter(request, response);
 		}
