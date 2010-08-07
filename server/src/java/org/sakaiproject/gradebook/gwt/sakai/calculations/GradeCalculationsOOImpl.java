@@ -53,7 +53,57 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 	
 	private static final Log log = LogFactory.getLog(GradeCalculationsOOImpl.class);
 	
-	final static BigDecimal BIG_DECIMAL_100 = new BigDecimal("100.00000");
+	public static final MathContext MATH_CONTEXT_LG = new MathContext(10, RoundingMode.HALF_UP);
+	
+	private final static BigDecimal BIG_DECIMAL_100 = new BigDecimal("100.00000");
+	
+	/*
+	 * GRBK-668 
+	 * The old code did not use an evenly distributed grading scale.  
+	 * This does.  It also uses full precision numbers, possibly overkill, but it is wanted. 
+	 * 
+	 * Note:  special adds are done to fully represent fractions.  
+	 */
+	private final static BigDecimal two = new BigDecimal("2", MATH_CONTEXT_LG);
+	private final static BigDecimal three = new BigDecimal("3", MATH_CONTEXT_LG); 
+	private final static BigDecimal oneThird = BigDecimal.ONE.divide(three, MATH_CONTEXT_LG); 
+	private final static BigDecimal twoThirds = two.divide(three, MATH_CONTEXT_LG);
+	
+	private final static int PRECISION = 7;
+	
+	private final static BigDecimal gradeAplus = new BigDecimal((new BigDecimal("96", MATH_CONTEXT_LG).add(twoThirds, MATH_CONTEXT_LG)).toPlainString().substring(0, PRECISION));
+	private final static BigDecimal gradeA = new BigDecimal((new BigDecimal("93", MATH_CONTEXT_LG).add(oneThird, MATH_CONTEXT_LG)).toPlainString().substring(0, PRECISION));
+	private final static BigDecimal gradeAminus = new BigDecimal("90.0000");
+	
+	private final static BigDecimal gradeBplus = new BigDecimal((new BigDecimal("86", MATH_CONTEXT_LG).add(twoThirds, MATH_CONTEXT_LG)).toPlainString().substring(0, PRECISION));
+	private final static BigDecimal gradeB = new BigDecimal((new BigDecimal("83", MATH_CONTEXT_LG).add(oneThird, MATH_CONTEXT_LG)).toPlainString().substring(0, PRECISION));
+	private final static BigDecimal gradeBminus = new BigDecimal("80.0000");
+	
+	private final static BigDecimal gradeCplus = new BigDecimal((new BigDecimal("76", MATH_CONTEXT_LG).add(twoThirds, MATH_CONTEXT_LG)).toPlainString().substring(0, PRECISION));
+	private final static BigDecimal gradeC = new BigDecimal((new BigDecimal("73", MATH_CONTEXT_LG).add(oneThird, MATH_CONTEXT_LG)).toPlainString().substring(0, PRECISION));
+	private final static BigDecimal gradeCminus = new BigDecimal("70.0000");
+
+	
+	private final static BigDecimal gradeDplus = new BigDecimal((new BigDecimal("66", MATH_CONTEXT_LG).add(twoThirds, MATH_CONTEXT_LG)).toPlainString().substring(0, PRECISION));
+	private final static BigDecimal gradeD = new BigDecimal((new BigDecimal("63", MATH_CONTEXT_LG).add(oneThird, MATH_CONTEXT_LG)).toPlainString().substring(0, PRECISION));
+	private final static BigDecimal gradeDminus = new BigDecimal("60.0000");
+	
+	private final static BigDecimal gradeF = new BigDecimal("60.0000");
+	
+	private final static String A_PLUS = "A+";
+	private final static String A = "A";
+	private final static String A_MINUS = "A-";
+	private final static String B_PLUS = "B+";
+	private final static String B = "B";
+	private final static String B_MINUS = "B-";
+	private final static String C_PLUS = "C+";
+	private final static String C = "C";
+	private final static String C_MINUS = "C-";
+	private final static String D_PLUS = "D+";
+	private final static String D = "D";
+	private final static String D_MINUS = "D-";
+	private final static String F = "F";
+	private final static String ZERO = "0";
 	
 	public Map<String, Double> letterGradeMap;
 	
@@ -384,93 +434,56 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 	}
 	
 	public String convertPercentageToLetterGrade(BigDecimal percentage) {
-		String letterGrade = null;
-		BigDecimal two = new BigDecimal("2",MATH_CONTEXT); 
-		BigDecimal three = new BigDecimal("3", MATH_CONTEXT); 
-		BigDecimal oneThird = BigDecimal.ONE.divide(three, MATH_CONTEXT); 
-		BigDecimal twoThirds = two.divide(three, MATH_CONTEXT);
-		
 		
 		if (percentage != null) {
 			
 			percentage = new BigDecimal(percentage.toPlainString(), new MathContext(6, RoundingMode.HALF_UP));
 			
 			if (percentage.compareTo(BigDecimal.ZERO) == 0)
-				return "0";
+				return ZERO;
 						
-			if (percentage.compareTo(new BigDecimal("60.0")) < 0)
-				return "F"; 
-			// FIXME:
-			// - Make this configurable
-			// - Use proper precision e.g. 3.3333333333
-			// - Also, if we look at the fixed conversion mapping, the 3.7 should be 3.6666666666 (This needs to be checked!!!)
-			// - we could use the fixed mapping value and +/- 1.6666666666
-			// -- e.g.  A+ 98.3333333333 - 1.6666666666 = 96.666666666666
-			// 
-
-			/*
-			 * GRBK-668 
-			 * The old code did not use an evenly distributed grading scale.  
-			 * This does.  It also uses full precision numbers, possibly overkill, but it is wanted. 
-			 * 
-			 * Note:  special adds are done to fully represent fractions.  
-			 */
-			BigDecimal gradeAplus = new BigDecimal("96", MATH_CONTEXT).add(twoThirds, MATH_CONTEXT);
-			BigDecimal gradeA = new BigDecimal("93", MATH_CONTEXT).add(oneThird, MATH_CONTEXT);
-			BigDecimal gradeAminus = new BigDecimal("90");
-
-			BigDecimal gradeBplus = new BigDecimal("86", MATH_CONTEXT).add(twoThirds, MATH_CONTEXT);
-			BigDecimal gradeB = new BigDecimal("83", MATH_CONTEXT).add(oneThird, MATH_CONTEXT);
-			BigDecimal gradeBminus = new BigDecimal("80");
-
-			BigDecimal gradeCplus = new BigDecimal("76", MATH_CONTEXT).add(twoThirds, MATH_CONTEXT);
-			BigDecimal gradeC = new BigDecimal("73", MATH_CONTEXT).add(oneThird, MATH_CONTEXT);
-			BigDecimal gradeCminus = new BigDecimal("70");
-
-			BigDecimal gradeDplus = new BigDecimal("66", MATH_CONTEXT).add(twoThirds, MATH_CONTEXT);
-			BigDecimal gradeD = new BigDecimal("63", MATH_CONTEXT).add(oneThird, MATH_CONTEXT);
-			BigDecimal gradeDminus = new BigDecimal("60");
-
+			if (percentage.compareTo(gradeF) < 0)
+				return F; 
 
 			if (percentage.compareTo(gradeAplus) >= 0)
-				return "A+";
+				return A_PLUS;
 
 			if (percentage.compareTo(gradeA) >= 0)
-				return "A";
+				return A;
 			
 			if (percentage.compareTo(gradeAminus) >= 0)
-				return "A-";
+				return A_MINUS;
 
 			if (percentage.compareTo(gradeBplus) >= 0)
-				return "B+";
+				return B_PLUS;
 
 			if (percentage.compareTo(gradeB) >= 0)
-				return "B";
+				return B;
 			
 			if (percentage.compareTo(gradeBminus) >= 0)
-				return "B-";
+				return B_MINUS;
 	
 			if (percentage.compareTo(gradeCplus) >= 0)
-				return "C+";
+				return C_PLUS;
 
 			if (percentage.compareTo(gradeC) >= 0)
-				return "C";
+				return C;
 			
 			if (percentage.compareTo(gradeCminus) >= 0)
-				return "C-";
+				return C_MINUS;
 
 			if (percentage.compareTo(gradeDplus) >= 0)
-				return "D+";
+				return D_PLUS;
 
 			if (percentage.compareTo(gradeD) >= 0)
-				return "D";
+				return D;
 			
 			if (percentage.compareTo(gradeDminus) >= 0)
-				return "D-";
+				return D_MINUS;
 
 		}
 		
-		return letterGrade;
+		return null;
 	}
 	
 	public boolean isValidLetterGrade(String letterGrade) {
