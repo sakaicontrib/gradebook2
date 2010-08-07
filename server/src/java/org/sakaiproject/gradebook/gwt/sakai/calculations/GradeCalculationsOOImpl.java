@@ -393,7 +393,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		
 		if (percentage != null) {
 			
-			percentage = new BigDecimal(percentage.toPlainString(), new MathContext(10, RoundingMode.HALF_UP));
+			percentage = new BigDecimal(percentage.toPlainString(), new MathContext(6, RoundingMode.HALF_UP));
 			
 			if (percentage.compareTo(BigDecimal.ZERO) == 0)
 				return "0";
