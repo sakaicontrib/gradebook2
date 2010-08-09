@@ -2445,18 +2445,33 @@ private GradeItem buildNewCategory(String curCategoryString,
 		GradeItem gradeItem = (GradeItem) ieInfo.getGradebookItemModel();
 		ImportHeader[] newImportHeaders = ieInfo.getHeaders();
 		
-		for(GradeItem category : gradeItem.getChildren()) {
-			
-			for(Iterator<GradeItem> iter = category.getChildren().iterator(); iter.hasNext(); ) {
-				
+		
+		if (gradeItem.getCategoryType() == CategoryType.NO_CATEGORIES)
+		{
+			for(Iterator<GradeItem> iter = gradeItem.getChildren().iterator(); iter.hasNext(); ) {
+
 				GradeItem assignment = iter.next();
-				
+
 				if(!hasAssignment(newImportHeaders, assignment.getName())) {
 					iter.remove();
 				}
 			}
+
 		}
-		
+		else
+		{
+			for(GradeItem category : gradeItem.getChildren()) {
+
+				for(Iterator<GradeItem> iter = category.getChildren().iterator(); iter.hasNext(); ) {
+
+					GradeItem assignment = iter.next();
+
+					if(!hasAssignment(newImportHeaders, assignment.getName())) {
+						iter.remove();
+					}
+				}
+			}
+		}
 	}
 	
 	
