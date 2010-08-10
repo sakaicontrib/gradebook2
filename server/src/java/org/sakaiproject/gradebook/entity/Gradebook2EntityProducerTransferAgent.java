@@ -6,9 +6,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringBufferInputStream;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.Stack;
 
@@ -59,6 +61,9 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 	private String[] myToolIds;
 	private Gradebook2ComponentService componentService;
 	private GradebookToolService toolService;
+	private static ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+
+	
 	
 	
 
@@ -235,14 +240,21 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 			e1.printStackTrace();
 		} 
 
-		log.info(result.toString());
-		
+		String structure = "";
+		int headerRow = result.toString().indexOf(i18n.getString("xxportColumnHeaderStudentId"));
+		if(headerRow > -1) {
+			int lineEnd = result.toString().indexOf('\n', headerRow);
+			structure = result.toString().substring(0, lineEnd);
+		}
+		log.debug(structure);
 		Upload importFile = null;
 		try {
-			importFile = (new ImportExportUtility()).parseImportCSV(componentService, to, new InputStreamReader(new StringBufferInputStream(result.toString())));
+			importFile = (new ImportExportUtility()).parseImportCSV(componentService, to, new InputStreamReader(new ByteArrayInputStream(structure.getBytes("UTF-8"))));
 		} catch (InvalidInputException e) {
 			e.printStackTrace();
 		} catch (FatalException e) {
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
 		
