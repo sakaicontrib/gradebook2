@@ -32,16 +32,16 @@ GB2-SPECIFIC SAKAI PROPERTIES
 Since v1.1.x:
 -------------
 
-gb2.help.url=<url to HTML help text>
+gb2.help.url = <url to HTML help text>
 - e.g. gb2.help.url=http://somelocation.edu/gradebook-help.html
 
-gb2.enabled.grade.types= [ points, percentages, letters]
+gb2.enabled.grade.types = [ points, percentages, letters]
 - points = points grade mode
 - percentage = percentage grade mode
 - letters = letters grade mode
 - e.g. gb2.enabled.grade.types=points,percentages,letters
 
-gb2.gradable.role.names=<sakai role name(s)>
+gb2.gradable.role.names = <sakai role name(s)>
 - e.g. gb2.gradable.role.names=Student,access
 
 
@@ -72,6 +72,9 @@ gb2.security.enabled = [true, false]
 - default: true
 - NOTE: If you use xsl-portal, make sure that you use the following sakai property
 -- portalPath=/xsl-portal
+
+gb2.import.delete.missing.grades = [true, false]
+- default: true
 
 
 SUPPORT
