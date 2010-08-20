@@ -5675,9 +5675,11 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 					}
 
 					// Ignoring
+					// nulls - GRBK-717 - jpgorrono
 					// - extra credit assignment weights
 					// - not counted items in any category
-					if((!isExtraCreditCategory && isExtraCreditItem) ||
+					if(null == assignment || assignment.getAssignmentWeighting() == null || // GRBK-717
+							(!isExtraCreditCategory && isExtraCreditItem) ||
 							(assignment.isNotCounted())) {
 
 						continue;
