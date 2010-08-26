@@ -118,8 +118,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-import com.extjs.gxt.ui.client.Registry;
-
 public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentService, ApplicationContextAware {
 
 	private static ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
@@ -129,6 +127,12 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 	private static enum FunctionalityStatus { OFF, ADMIN_ONLY, INSTRUCTOR_ONLY, GRADER_ONLY, STUDENT_ONLY };
 	
 	private static final Long NEG_ONE = Long.valueOf(-1l);
+	
+	private static final Double DOUBLE_100 = new Double(100d);
+	private static final Double DOUBLE_99 = new Double(99d);
+	private static final Double DOUBLE_NEG_100 = new Double(-100d);
+	private static final Double DOUBLE_NEG_99 = new Double(-99d);
+	private static final Double DOUBLE_ZERO	= new Double(0.0d);
 
 	static final Comparator<UserRecord> DEFAULT_ID_COMPARATOR = new Comparator<UserRecord>() {
 
@@ -1648,17 +1652,20 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			// negative decimal values that are less than one are counted as negative numbers
 			boolean isNegative = false;
 			
-			if(0 > gradeAsPercentage.compareTo(new Double(0.0d))) {
+			if(0 > gradeAsPercentage.compareTo(DOUBLE_ZERO)) {
 				isNegative = true;
 			}
 			
+			// GRBK-702 : If the percentage grade is greater than 100%, we treat it as 100%
+			// We do the same for negative values
+			
 			// If the percentage grade is 100%, we subtract one so that we don't
 			// get an index out of bound exception. 100% is part of the 90+ % category
-			if(0 == gradeAsPercentage.compareTo(new Double(100d))) {
-				gradeAsPercentage = new Double(99d);
+			if(0 <= gradeAsPercentage.compareTo(DOUBLE_100)) {
+				gradeAsPercentage = DOUBLE_99;
 			}
-			else if(0 == gradeAsPercentage.compareTo(new Double(-100d))) {
-				gradeAsPercentage = new Double(-99d);
+			else if(0 >= gradeAsPercentage.compareTo(DOUBLE_NEG_100)) {
+				gradeAsPercentage = DOUBLE_NEG_99;
 			}
 
 			int value = gradeAsPercentage.intValue() / 10;
@@ -1667,6 +1674,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 				
 				// Handling negative number grades
 				if(value < 0 || isNegative) {
+					
 					int positiveValue = Math.abs(value);
 					gradeFrequencies[AppConstants.NEGATIVE_NUMBER][positiveValue] = ++gradeFrequencies[AppConstants.NEGATIVE_NUMBER][positiveValue];
 				}
