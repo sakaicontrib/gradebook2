@@ -25,6 +25,7 @@ package org.sakaiproject.gradebook.gwt.sakai.mock;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -535,6 +536,16 @@ public class SiteMock implements Site {
 	public void setProviderGroupId(String providerId) {
 		this.providerId = providerId;
 
+	}
+
+	public Date getCreatedDate() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Date getModifiedDate() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

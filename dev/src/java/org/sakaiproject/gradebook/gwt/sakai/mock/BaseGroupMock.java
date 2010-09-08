@@ -1,5 +1,6 @@
 package org.sakaiproject.gradebook.gwt.sakai.mock;
 
+import java.util.Date;
 import java.util.Set;
 import java.util.Stack;
 
@@ -269,6 +270,16 @@ public class BaseGroupMock implements Group, Identifiable {
 	public int compareTo(Object o) {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+
+	public Date getCreatedDate() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Date getModifiedDate() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
