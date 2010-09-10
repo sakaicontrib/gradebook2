@@ -111,4 +111,17 @@ public class Resource {
 		this.service = service;
 	}
 	
+	
+	// some static entry points
+	
+	public static <X> X convertFromJson(String json, Class<?> type) {
+		Resource r = new Resource();
+		return r.<X>fromJson(json , type);
+	}
+	
+	public static String convertToJson(Object o) {
+		Resource r = new Resource();
+		return r.toJson(o);
+	}
+	
 }
