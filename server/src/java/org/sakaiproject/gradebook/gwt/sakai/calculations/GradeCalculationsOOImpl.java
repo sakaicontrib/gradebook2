@@ -53,8 +53,11 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 	
 	private static final Log log = LogFactory.getLog(GradeCalculationsOOImpl.class);
 	
+	/* a MathContext for inexact values. 
+	 * precision = 10 using standard engineering half-up rounding */
 	public static final MathContext MATH_CONTEXT_LG = new MathContext(10, RoundingMode.HALF_UP);
 	
+	/* a BigDecimal for percentage calculations. scale = 5 */
 	private final static BigDecimal BIG_DECIMAL_100 = new BigDecimal("100.00000");
 	
 	/*
