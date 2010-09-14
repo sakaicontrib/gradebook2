@@ -13,6 +13,7 @@ import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.sakai.GradeCalculations;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeItem;
 import org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource;
+import org.sakaiproject.gradebook.gwt.server.Util;
 import org.sakaiproject.gradebook.gwt.server.model.GradeItemImpl;
 import org.sakaiproject.service.gradebook.shared.GradebookService;
 import org.sakaiproject.tool.gradebook.Assignment;
@@ -180,14 +181,18 @@ public class GradeCalculationsOOImplTest extends TestCase {
 		
 		/// we will be removing context and the results below have a precision of 5 which
 		/// will not be apparent after the refactor
-		assertEquals("DeprecatedTestResult-1", new BigDecimal("100.000"), results[0]);
-		assertEquals("DeprecatedTestResult-2", new BigDecimal("130.0"), results[1]);
+		assertEquals("NumericalEquivalence-1", 0, (new BigDecimal("100.000")).compareTo(results[0]));
+		assertEquals("NumericalEquivalence-2", 0, (new BigDecimal("130.0")).compareTo(results[1]));
 		
 		asn1.setPointsPossible(Double.valueOf(12.222222222222));
 		results = calculator.calculatePointsCategoryPercentSum(category, assignments, isWeighted, isCategoryExtraCredit);
 		
-		assertEquals("DeprecatedTestResult-3", new BigDecimal("100.000"), results[0]);
-		assertEquals("DeprecatedTestResult-4", new BigDecimal("112.2222222"), results[1]);
+		assertEquals("NumericalEquivalence-3", (new BigDecimal("100.000")).compareTo(results[0]), 0);
+		
+		assertEquals("DeprecatedNumericalEquivalence-4", 0, (new BigDecimal("112.2222222")).compareTo(results[1]));
+		assertEquals("DeprecatedNumericalInequivalence-1", -1, (BigDecimal.valueOf(asn1.getPointsPossible())).compareTo(results[1]));
+
+		
 
 	}
 
@@ -224,20 +229,22 @@ public class GradeCalculationsOOImplTest extends TestCase {
 		
 		boolean isWeighted = false;
 		boolean isCategoryExtraCredit = false;
-		BigDecimal[] results = calculator.calculatePointsCategoryPercentSum(category, assignments, CategoryType.SIMPLE_CATEGORIES, isCategoryExtraCredit);
+		BigDecimal[] results = calculator.calculatePointsCategoryPercentSum(category, assignments, CategoryType.WEIGHTED_CATEGORIES, isCategoryExtraCredit);
 
+		
 		/// we will be removing context and the results below have a precision of 5 which
 		/// will not be apparent after the refactor
-		assertEquals("DeprecatedTestResult-1", new BigDecimal("130.0"), results[0]);
-		assertEquals("DeprecatedTestResult-2", new BigDecimal("130.0"), results[1]);
+		assertEquals("NumericalEquivalence-1", 0, (new BigDecimal("1")).compareTo(results[0]));
+		assertEquals("NumericalEquivalence-2", 0, (new BigDecimal("130.0")).compareTo(results[1]));
 		
 		asn1.setPoints(Double.valueOf(12.22222222222222222222222222222222222222222));
-		results = calculator.calculatePointsCategoryPercentSum(category, assignments, CategoryType.SIMPLE_CATEGORIES, isCategoryExtraCredit);//		System.out.print("Results: " + results[0] + ", " + results[1]);
-	
+		results = calculator.calculatePointsCategoryPercentSum(category, assignments, CategoryType.SIMPLE_CATEGORIES, isCategoryExtraCredit);
+			
 		
 				
-		assertEquals("DeprecatedTestResult-3", new BigDecimal("112.222222222222221"), results[0]);
-		assertEquals("DeprecatedTestResult-4", new BigDecimal("112.222222222222221"), results[1]);
+		assertEquals("DeprecatedNumericalEquivalence-3", 0, (new BigDecimal("112.222222222222221")).compareTo(results[0]));
+		assertEquals("DeprecatedNumericalEquivalence-4", 0, (new BigDecimal("112.222222222222221")).compareTo(results[1]));
+		assertEquals("DeprecatedNumericalInequivalence-1", -1, (BigDecimal.valueOf(asn1.getPoints()).compareTo(results[0])));
 
 	}
 
@@ -278,30 +285,102 @@ public class GradeCalculationsOOImplTest extends TestCase {
 		BigDecimal[] results = calculator.calculatePointsCategoryPercentSum(category, assignments, isWeighted, isCategoryExtraCredit);
 		BigDecimal catPercentSum = results[0];
 		BigDecimal catPercentTotal = results[1];
-		
-		System.out.println("Results: " + 
-				category.getName() + "-->" + results[0] + ", " + results[1]);
+
 		for (Assignment a : assignments) {
 			results = calculator.calculateCourseGradeCategoryPercents(a, new BigDecimal("100.000"), catPercentSum, catPercentTotal, false);
 
 			BigDecimal courseGradePercent = results[0];
 			BigDecimal percentCategory = results[1];
-			System.out.println("Results: " + 
-					a.getName() + "-->" + courseGradePercent + ", " + percentCategory);
+			
+			assertEquals("NumericalInequivalence-1:", 0, (new BigDecimal("20")).compareTo(courseGradePercent));
+			assertEquals("NumericalInequivalence-2:", 0, (new BigDecimal("20")).compareTo(percentCategory));
+
 		}
 
 	}
 
 	public void testCalculateCourseGradeCategoryPercentsGradeItemBigDecimalBigDecimalBigDecimalBoolean() {
-		System.out.println("testCalculateCourseGradeCategoryPercentsGradeItemBigDecimalBigDecimalBigDecimalBoolean yet implemented");
+		
+		GradeItem category = 
+			new GradeItemImpl((Map<String,Object>)Resource.convertFromJson(GRADE_ITEM_JSON_CATEGORY, Map.class));
+		category.setEqualWeightAssignments(true);
+		category.setExtraCredit(false);
+		
+		Date dueDate = null;
+		Gradebook gradebook = new Gradebook("GRADEBOOK_ID");
+		gradebook.setCategory_type(GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY);
+		category.setGradebook(gradebook.getUid());
+		Double weight = calculator.calculateEqualWeight(4);
+		
+		GradeItem asn1 = new GradeItemImpl((Map<String, Object>)Resource.convertFromJson(GRADE_ITEM_JSON_ASN1, Map.class));
+		asn1.setPoints(Double.valueOf(30));
+		asn1.setWeighting(weight);
+		asn1.setCategoryName(category.getCategoryName());
+		GradeItem asn2 = new GradeItemImpl((Map<String, Object>)Resource.convertFromJson(GRADE_ITEM_JSON_ASN2, Map.class));
+		asn2.setPoints(Double.valueOf(40));
+		asn2.setWeighting(weight);
+		asn1.setCategoryName(category.getCategoryName());
+		GradeItem asn3 = new GradeItemImpl((Map<String, Object>)Resource.convertFromJson(GRADE_ITEM_JSON_ASN3, Map.class));
+		asn3.setPoints(Double.valueOf(50));
+		asn3.setWeighting(weight);
+		asn1.setCategoryName(category.getCategoryName());
+		GradeItem asn4 = new GradeItemImpl((Map<String, Object>)Resource.convertFromJson(GRADE_ITEM_JSON_ASN4, Map.class));
+		asn4.setPoints(Double.valueOf(10));
+		asn4.setWeighting(weight);
+		asn1.setCategoryName(category.getCategoryName());
+		
+		List<GradeItem> assignments = Arrays.asList(asn1, asn2, asn3, asn4);
+		
+		
+		boolean isWeighted = false;
+		boolean isCategoryExtraCredit = false;
+		
+		BigDecimal[] results = calculator.calculatePointsCategoryPercentSum(category, assignments, CategoryType.WEIGHTED_CATEGORIES, isCategoryExtraCredit);
+		BigDecimal catPercentSum = results[0];
+		BigDecimal catPointSum = results[1];
+		
+//		System.out.println("Results: " + 
+//				category.getName() + "-->" + results[0] + ", " + results[1]);
+		for (GradeItem assignment: assignments) {
+			results = calculator.calculateCourseGradeCategoryPercents(assignment, BigDecimal.valueOf(100d)/* cat percent of grade */, 
+					catPercentSum, catPointSum, Util.checkBoolean(category.getEnforcePointWeighting()));
+
+			BigDecimal courseGradePercent = results[0];
+			BigDecimal percentCategory = results[1];
+			System.out.println("Results: " + 
+					assignment.getName() + "-->" + courseGradePercent + ", " + percentCategory);
+			
+			assertEquals("NumericalEquivalence-1", 0, (new BigDecimal("25")).compareTo(courseGradePercent));
+			assertEquals("NumericalEquivalence-2", 0, (new BigDecimal("0.25")).compareTo(percentCategory));
+
+		}
+		
+
+			
+		
 	}
 
 	public void testCalculateItemGradePercent() {
-		System.out.println("testCalculateItemGradePercent yet implemented");
+		
+		final String LOTTA_NINES = "25.999999999";
+		
+		// these should not be equal
+		assertEquals("DeprecatedNumericalEqualivalence-1", 0, (new BigDecimal("26"))
+				.compareTo(calculator.calculateItemGradePercent(
+						new BigDecimal("100"), new BigDecimal("100"), new BigDecimal(LOTTA_NINES), true)));
+		
+		// these should be equal
+		assertEquals("DeprecatedNumericalEqualivalence-2", -1, (new BigDecimal(LOTTA_NINES))
+				.compareTo(calculator.calculateItemGradePercent(
+						new BigDecimal("100"), new BigDecimal("100"), new BigDecimal(LOTTA_NINES), true)));
+		
+		//TODO: add coverage of nonnormalized path and some more 'fuzz'
 	}
 
 	public void testCalculateItemGradePercentDecimal() {
-		System.out.println("testCalculateItemGradePercentDecimal yet implemented");
+		//System.out.println(calculator.calculateItemGradePercent(
+		//		new BigDecimal("100"), new BigDecimal("100"), new BigDecimal(LOTTA_NINES), true));
+		
 	}
 
 	public void testCalculateStatistics() {
