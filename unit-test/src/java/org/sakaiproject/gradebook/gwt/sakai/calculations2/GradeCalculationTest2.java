@@ -1245,6 +1245,57 @@ public class GradeCalculationTest2 extends TestCase {
 		assertEqualsAtScale2(BigDecimal.valueOf(103.00d), courseGrade);
 	}
 	
+	public void testBigDecimalCalculationsWrapperDivide() {
+		
+		BigDecimalCalculationsWrapper calc = new BigDecimalCalculationsWrapper();
+		
+		BigDecimal two = new BigDecimal("2");
+		BigDecimal three = new BigDecimal("3");
+		
+		BigDecimal result = calc.divide(two, three);
+		
+		BigDecimal compare = new BigDecimal("0.66666666666666666666666666666666666666666666666667");
+		assertTrue(result.equals(compare));
+	}
+
+	public void testBigDecimalCalculationsWrapperMultiply() {
+
+		BigDecimalCalculationsWrapper calc = new BigDecimalCalculationsWrapper();
+
+		BigDecimal num1 = new BigDecimal("20.0011");
+		BigDecimal num2 = new BigDecimal("44.0102030405060708090");
+
+		BigDecimal result = calc.multiply(num1, num2);
+		BigDecimal compare = new BigDecimal("880.25247203346597285788990");
+		
+		assertTrue(result.equals(compare));
+	}
+	
+	public void testBigDecimalCalculationsWrapperAdd() {
+		
+		BigDecimalCalculationsWrapper calc = new BigDecimalCalculationsWrapper();
+
+		BigDecimal num1 = new BigDecimal("99.1317");
+		BigDecimal num2 = new BigDecimal("81.191");
+
+		BigDecimal result = calc.add(num1, num2);
+		BigDecimal compare = new BigDecimal("180.3227");
+		
+		assertTrue(result.equals(compare));
+	}
+	
+	public void testBigDecimalCalculationsWrappersubtract() {
+
+		BigDecimalCalculationsWrapper calc = new BigDecimalCalculationsWrapper();
+
+		BigDecimal num1 = new BigDecimal("99.1317");
+		BigDecimal num2 = new BigDecimal("81.191");
+
+		BigDecimal result = calc.subtract(num1, num2);
+		BigDecimal compare = new BigDecimal("17.9407");
+
+		assertTrue(result.equals(compare));
+	}
 
 	protected GradebookCalculationUnit getEssaysGradebook() {
 		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();

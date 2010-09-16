@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="org/sakaiproject/gradebook/gwt/client/GradebookState.java|org/sakaiproject/gradebook/gwt/client/gxt/view/panel/ImportPanelx.java" kind="src" path="client/src/java"/>
+	<classpathentry kind="src" path="server/src/test"/>
 	<classpathentry kind="src" path="spring-test/src/java"/>
 	<classpathentry kind="src" path="api/src/java"/>
 	<classpathentry kind="src" path="model/src/java"/>

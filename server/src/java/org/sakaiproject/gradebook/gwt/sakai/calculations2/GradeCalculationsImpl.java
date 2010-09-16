@@ -48,10 +48,10 @@ private final static BigDecimal BIG_DECIMAL_100 = new BigDecimal("100");
  * 
  * Note:  special adds are done to fully represent fractions.  
  */
-private final static BigDecimal two = new BigDecimal("2");
-private final static BigDecimal three = new BigDecimal("3"); 
-private final static BigDecimal oneThird = BigDecimal.ONE.divide(three); 
-private final static BigDecimal twoThirds = two.divide(three);
+private final BigDecimal two = new BigDecimal("2");
+private final BigDecimal three = new BigDecimal("3"); 
+private final BigDecimal oneThird = divide(BigDecimal.ONE, three); 
+private final BigDecimal twoThirds = divide(two, three);
 
 private final static int PRECISION = 7;
 
@@ -242,9 +242,10 @@ public BigDecimal calculateItemGradePercentDecimal(BigDecimal percentGrade, BigD
 	if (doNormalizeTo100)
 		categoryPercentRatio = sumCategoryPercents;
 	else
-		categoryPercentRatio = sumCategoryPercents.divide(BigDecimal.ONE, MATH_CONTEXT);
+		categoryPercentRatio = sumCategoryPercents; // TODO: Do we need the if doNormalizeTo100 ?
+		//categoryPercentRatio = sumCategoryPercents.divide(BigDecimal.ONE, MATH_CONTEXT);
 
-	return assignmentWeight.multiply(percentGrade).divide(categoryPercentRatio, MATH_CONTEXT);
+	return multiply(assignmentWeight, divide(percentGrade, categoryPercentRatio));
 }
 
 public GradeStatistics calculateStatistics(List<StudentScore> gradeList, BigDecimal sum, String rankStudentId) {
@@ -257,7 +258,7 @@ public GradeStatistics calculateStatistics(List<StudentScore> gradeList, BigDeci
 	BigDecimal mean = null;
 
 	if (count.compareTo(BigDecimal.ZERO) != 0)
-		mean = sum.divide(count, RoundingMode.HALF_EVEN);
+		mean = divide(sum, count);
 
 	BigDecimal mode = null;
 	List<FrequencyScore> frequencies = new ArrayList<FrequencyScore>();
@@ -271,9 +272,9 @@ public GradeStatistics calculateStatistics(List<StudentScore> gradeList, BigDeci
 			BigDecimal courseGrade = rec.getScore(); 
 			BigDecimal roundedCourseGrade = courseGrade.setScale(2, GradeCalculations.MATH_CONTEXT.getRoundingMode());
 			// Take the square of the difference and add it to the sum, A 
-			BigDecimal difference = courseGrade.subtract(mean, GradeCalculations.MATH_CONTEXT);
-			BigDecimal square = difference.multiply(difference);
-			sumOfSquareOfDifferences = sumOfSquareOfDifferences.add(square);
+			BigDecimal difference = subtract(courseGrade, mean);
+			BigDecimal square = multiply(difference, difference);
+			sumOfSquareOfDifferences = add(sumOfSquareOfDifferences, square);
 
 			Integer frequency = frequencyMap.get(roundedCourseGrade);
 			if (frequency == null)
@@ -334,7 +335,7 @@ public GradeStatistics calculateStatistics(List<StudentScore> gradeList, BigDeci
 		
 
 		if (count.compareTo(BigDecimal.ZERO) != 0 && sumOfSquareOfDifferences.compareTo(BigDecimal.ZERO) != 0) {
-			BigDecimal fraction = sumOfSquareOfDifferences.divide(count, RoundingMode.HALF_EVEN);
+			BigDecimal fraction = divide(sumOfSquareOfDifferences, count);
 			BigSquareRoot squareRoot = new BigSquareRoot();
 			if (fraction != null && fraction.compareTo(BigDecimal.ZERO) != 0)
 				standardDeviation = squareRoot.get(fraction);
@@ -353,12 +354,12 @@ public GradeStatistics calculateStatistics(List<StudentScore> gradeList, BigDeci
 				BigDecimal first = gradeList.get(middle - 1).getScore();
 				BigDecimal second = gradeList.get(middle).getScore();
 
-				BigDecimal s = first.add(second);
+				BigDecimal s = add(first, second);
 
 				if (s.compareTo(BigDecimal.ZERO) == 0)
 					median = BigDecimal.ZERO;
 				else
-					median = s.divide(new BigDecimal("2"), RoundingMode.HALF_EVEN);
+					median = divide(s, new BigDecimal("2"));
 			} else {
 				// If we have an odd number of elements, simply choose the middle one
 				median = gradeList.get(middle).getScore();
@@ -511,7 +512,7 @@ public BigDecimal getCategoryWeight(Category category) {
 					BigDecimal assignmentWeight = getAssignmentWeight(assignment);
 
 					if (assignmentWeight != null)
-						categoryWeight = categoryWeight.add(assignmentWeight);
+						categoryWeight = add(categoryWeight, assignmentWeight);
 				}
 			}
 			break;
@@ -591,7 +592,7 @@ private BigDecimal getCategoriesCourseGrade(Collection<Category> categoriesWithA
 			if (isExtraCreditCategory)
 				totalCategoryPoints = BigDecimal.ZERO;
 			
-			totalGradebookPoints = totalGradebookPoints.add(totalCategoryPoints);
+			totalGradebookPoints = add(totalGradebookPoints, totalCategoryPoints);
 
 			categoryGradeUnitListMap.put(categoryKey, gradeRecordUnits);
 
@@ -663,11 +664,11 @@ private BigDecimal[] populateGradeRecordUnits(Category category, CategoryCalcula
 			if //(!isExtraCreditItemOrCategory 
 				((!isExtraCreditItem || isExtraCreditCategory)
 					&& assignment.getPointsPossible() != null) {
-				totalCategoryPoints = totalCategoryPoints.add(BigDecimal.valueOf(assignment.getPointsPossible().doubleValue()), MATH_CONTEXT);
+				totalCategoryPoints = add(totalCategoryPoints, BigDecimal.valueOf(assignment.getPointsPossible().doubleValue()));
 			
 				if (!isUnweighted && null != assignmentWeight) {
 					//double assignmentCategoryPercent = assignment.getAssignmentWeighting() == null ? 0.0 : assignment.getAssignmentWeighting().doubleValue();	
-					totalCategoryPercent = totalCategoryPercent.add(assignmentWeight.multiply(BigDecimal.valueOf(100d), MATH_CONTEXT));
+					totalCategoryPercent = add(totalCategoryPercent, multiply(assignmentWeight, BIG_DECIMAL_100));
 				}
 			}
 			
@@ -719,9 +720,9 @@ private BigDecimal[] populateGradeRecordUnits(Category category, CategoryCalcula
 			dropLowest = numberOfItems;
 		
 		BigDecimal representativePointsPossible = lastPointValue == null ? BigDecimal.ZERO : BigDecimal.valueOf(lastPointValue.doubleValue());
-		totalCategoryPoints = totalCategoryPoints.subtract(BigDecimal.valueOf(dropLowest).multiply(representativePointsPossible, MATH_CONTEXT), MATH_CONTEXT);
+		totalCategoryPoints = subtract(totalCategoryPoints, multiply(BigDecimal.valueOf(dropLowest), representativePointsPossible));
 		if (totalCategoryPercent != null && lastPercentValue != null)
-			totalCategoryPercent = totalCategoryPercent.subtract(BigDecimal.valueOf(dropLowest).multiply(lastPercentValue.multiply(BigDecimal.valueOf(100d), MATH_CONTEXT), MATH_CONTEXT), MATH_CONTEXT);
+			totalCategoryPercent = subtract(totalCategoryPercent, multiply(BigDecimal.valueOf(dropLowest), multiply(lastPercentValue, BIG_DECIMAL_100)));
 	}
 	
 	if (categoryCalculationUnit != null)
@@ -789,11 +790,11 @@ private BigDecimal[] populateGradeRecordUnits(GradeItem category, CategoryCalcul
 			if //(!isExtraCreditItemOrCategory 
 				((!isExtraCreditItem || isExtraCreditCategory)
 					&& assignment.getPoints() != null) {
-				totalCategoryPoints = totalCategoryPoints.add(BigDecimal.valueOf(assignment.getPoints().doubleValue()));
+				totalCategoryPoints = add(totalCategoryPoints, BigDecimal.valueOf(assignment.getPoints().doubleValue()));
 			
 				if (null != assignmentWeight) {
 					//double assignmentCategoryPercent = assignment.getAssignmentWeighting() == null ? 0.0 : assignment.getAssignmentWeighting().doubleValue();	
-					totalCategoryPercent = totalCategoryPercent.add(assignmentWeight);
+					totalCategoryPercent = add(totalCategoryPercent, assignmentWeight);
 				}
 			}
 			
@@ -846,10 +847,10 @@ private BigDecimal[] populateGradeRecordUnits(GradeItem category, CategoryCalcul
 			dropLowest = numberOfItems;
 		
 		BigDecimal representativePointsPossible = lastPointValue == null ? BigDecimal.ZERO : BigDecimal.valueOf(lastPointValue.doubleValue());
-		totalCategoryPoints = totalCategoryPoints.subtract(BigDecimal.valueOf(dropLowest).multiply(representativePointsPossible, MATH_CONTEXT));
+		totalCategoryPoints = subtract(totalCategoryPoints, multiply(BigDecimal.valueOf(dropLowest), representativePointsPossible));
 		if (null != totalCategoryPercent  && null != lastPercentValue)
 		{
-			totalCategoryPercent = totalCategoryPercent.subtract(BigDecimal.valueOf(dropLowest).multiply(lastPercentValue, MATH_CONTEXT), MATH_CONTEXT);
+			totalCategoryPercent = subtract(totalCategoryPercent, multiply(BigDecimal.valueOf(dropLowest), lastPercentValue));
 		}
 	}
 	
@@ -870,11 +871,11 @@ public BigDecimal getNewPointsGrade(Double pointValue, Double maxPointValue, Dou
 	BigDecimal ratio = BigDecimal.ZERO; 
 	if (maxStart.compareTo(BigDecimal.ZERO) != 0)
 	{
-		ratio = max.divide(maxStart, MATH_CONTEXT);
+		ratio = divide(max, maxStart);
 	}
 	BigDecimal points = new BigDecimal(pointValue.toString());
 
-	return points.multiply(ratio, MATH_CONTEXT);
+	return multiply(points, ratio);
 }
 
 public BigDecimal getPercentAsPointsEarned(Assignment assignment, Double percentage) {
@@ -883,7 +884,7 @@ public BigDecimal getPercentAsPointsEarned(Assignment assignment, Double percent
 	if (percentage != null) {
 		BigDecimal percent = new BigDecimal(percentage.toString());
 		BigDecimal maxPoints = new BigDecimal(assignment.getPointsPossible().toString());
-		pointsEarned = percent.divide(BIG_DECIMAL_100).multiply(maxPoints);
+		pointsEarned = divide(percent, multiply(BIG_DECIMAL_100, maxPoints));
 	}
 
 	return pointsEarned;	
@@ -901,7 +902,7 @@ public BigDecimal getPointsEarnedAsPercent(Assignment assignment, AssignmentGrad
 	pointsEarned = new BigDecimal(assignmentGradeRecord.getPointsEarned().toString());
 	if (assignment.getPointsPossible() != null) {
 		pointsPossible = new BigDecimal(assignment.getPointsPossible().toString());
-		percentageEarned = pointsEarned.multiply(BIG_DECIMAL_100, MATH_CONTEXT).divide(pointsPossible, MATH_CONTEXT);
+		percentageEarned = multiply(pointsEarned, divide(BIG_DECIMAL_100, pointsPossible));
 	}
 	return percentageEarned;
 }

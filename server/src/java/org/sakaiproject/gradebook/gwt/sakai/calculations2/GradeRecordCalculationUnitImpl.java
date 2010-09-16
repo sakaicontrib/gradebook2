@@ -23,17 +23,17 @@ public class GradeRecordCalculationUnitImpl extends BigDecimalCalculationsWrappe
 	protected Object actualRecord;
 
 	public GradeRecordCalculationUnitImpl(BigDecimal pointsReceived, BigDecimal pointsPossible, BigDecimal percentOfCategory, Boolean extraCredit) {
-		this.pointsReceived = pointsReceived == null ? null : pointsReceived.setScale(AppConstants.SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
-		this.pointsPossible = pointsPossible == null ? null : pointsPossible.setScale(AppConstants.SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
-		this.percentOfCategory = percentOfCategory == null ? null : percentOfCategory.setScale(AppConstants.SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
+		this.pointsReceived = pointsReceived;
+		this.pointsPossible = pointsPossible;
+		this.percentOfCategory = percentOfCategory ;
 		calculatePercentageScore();
 		isExcused = pointsReceived == null;
 		this.isExtraCredit = extraCredit == null ? false : extraCredit.booleanValue();
 	}
 
 	public GradeRecordCalculationUnitImpl(BigDecimal percentageScore, BigDecimal percentOfCategory, Boolean extraCredit) {
-		this.percentageScore = percentageScore == null ? null : percentageScore.setScale(AppConstants.SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
-		this.percentOfCategory = percentOfCategory == null ? null : percentOfCategory.setScale(AppConstants.SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
+		this.percentageScore = percentageScore;
+		this.percentOfCategory = percentOfCategory;
 
 		isExcused = pointsReceived == null;
 		this.isExtraCredit = extraCredit == null ? false : extraCredit.booleanValue();
@@ -56,7 +56,7 @@ public class GradeRecordCalculationUnitImpl extends BigDecimalCalculationsWrappe
 			return;
 
 		if (pointsReceived.compareTo(BigDecimal.ZERO) == 0 || pointsPossible.compareTo(BigDecimal.ZERO) == 0)
-			percentageScore = BigDecimal.ZERO.setScale(AppConstants.SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
+			percentageScore = BigDecimal.ZERO;
 
 		if (pointsPossible.compareTo(BigDecimal.ZERO) != 0)
 		{

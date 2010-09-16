@@ -40,10 +40,10 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 
 				// If the points possible add up to zero, then return zero
 				if (sumPointsPossible.compareTo(BigDecimal.ZERO) == 0)
-					return BigDecimal.ZERO.setScale(AppConstants.SCALE);
+					return BigDecimal.ZERO;
 
 				if (sumPoints.compareTo(BigDecimal.ZERO) == 0) 
-					return BigDecimal.ZERO.setScale(AppConstants.SCALE);
+					return BigDecimal.ZERO;
 
 				BigDecimal percentageScore = divide(sumPoints, sumPointsPossible);
 				//BigDecimal percentageScore = sumPoints.divide(sumPointsPossible, GradeCalculations.MATH_CONTEXT);
@@ -86,7 +86,7 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 			// For extra credit categories, we simply add up all the points for that category without adding the points possible to that sum			
 			if (categoryUnit.isExtraCredit()) {
 				if (sumExtraCreditPoints == null)
-					sumExtraCreditPoints = BigDecimal.ZERO.setScale(AppConstants.SCALE);
+					sumExtraCreditPoints = BigDecimal.ZERO;
 
 				if (categoryPointsReceived != null)
 					sumExtraCreditPoints = add(sumExtraCreditPoints, categoryPointsReceived);
@@ -100,7 +100,7 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 		
 				if (categoryPointsReceived != null) {
 					if (sumPoints == null)
-						sumPoints = BigDecimal.ZERO.setScale(AppConstants.SCALE);
+						sumPoints = BigDecimal.ZERO;
 					
 					sumPoints = add(sumPoints, categoryPointsReceived);
 					//sumPoints = sumPoints.add(categoryPointsReceived);
@@ -108,7 +108,7 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 				
 				if (categoryPointsPossible != null) {
 					if (sumPointsPossible == null)
-						sumPointsPossible = BigDecimal.ZERO.setScale(AppConstants.SCALE);
+						sumPointsPossible = BigDecimal.ZERO;
 					
 					sumPointsPossible = add(sumPointsPossible, categoryPointsPossible);
 					//sumPointsPossible = sumPointsPossible.add(categoryPointsPossible);
@@ -116,7 +116,7 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 				
 				if (categoryExtraCreditPoints != null) {
 					if (sumExtraCreditPoints == null)
-						sumExtraCreditPoints = BigDecimal.ZERO.setScale(AppConstants.SCALE);
+						sumExtraCreditPoints = BigDecimal.ZERO;
 
 					if (categoryExtraCreditPoints != null)
 						sumExtraCreditPoints = add(sumExtraCreditPoints, categoryExtraCreditPoints);
@@ -131,10 +131,10 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 
 			// If the points possible add up to zero, then return zero
 			if (sumPointsPossible.compareTo(BigDecimal.ZERO) == 0)
-				return BigDecimal.ZERO.setScale(AppConstants.SCALE);
+				return BigDecimal.ZERO;
 
 			if (sumPoints.compareTo(BigDecimal.ZERO) == 0) 
-				return BigDecimal.ZERO.setScale(AppConstants.SCALE);
+				return BigDecimal.ZERO;
 
 
 			BigDecimal percentageScore = divide(sumPoints, sumPointsPossible);
@@ -156,10 +156,10 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 
 	public BigDecimal calculateWeightedCourseGrade(Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap, BigDecimal totalGradebookPoints, boolean isExtraCreditScaled) {
 
-		BigDecimal categoryWeightDesiredSum = BigDecimal.ZERO.setScale(AppConstants.SCALE);
+		BigDecimal categoryWeightDesiredSum = BigDecimal.ZERO;
 		BigDecimal categoryWeightSum = null; 
 		BigDecimal courseGrade = null;
-		BigDecimal extraCreditSum = BigDecimal.ZERO.setScale(AppConstants.SCALE);
+		BigDecimal extraCreditSum = BigDecimal.ZERO;
 
 		// First pass calculates all the grades
 		for (String categoryKey : categoryUnitMap.keySet()) {
@@ -215,7 +215,7 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 					//extraCreditSum = extraCreditSum.add(categoryWeight);
 				} else {
 					if (categoryWeightSum == null)
-						categoryWeightSum = BigDecimal.ZERO.setScale(AppConstants.SCALE);
+						categoryWeightSum = BigDecimal.ZERO;
 					categoryWeightSum = add(categoryWeightSum, categoryWeight);
 					//categoryWeightSum = categoryWeightSum.add(categoryWeight);
 				} // else
@@ -245,10 +245,10 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 					multiplicand = BigDecimal.ONE;
 
 				if (categoryGrade.compareTo(BigDecimal.ONE) > 0)
-					categoryGrade = BigDecimal.ONE.setScale(AppConstants.SCALE);
+					categoryGrade = BigDecimal.ONE;
 
 				if (categoryGrade.compareTo(BigDecimal.ZERO) < 0)
-					categoryGrade = BigDecimal.ZERO.setScale(AppConstants.SCALE);
+					categoryGrade = BigDecimal.ZERO;
 
 				if (categoryWeight != null) {
 					categoryWeight = multiply(categoryWeight, multiplicand);
@@ -304,13 +304,13 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 				if (pointsReceived != null) {
 					if (unit.isExtraCredit()) {
 						if (sumExtraCreditPoints == null)
-							sumExtraCreditPoints = BigDecimal.ZERO.setScale(AppConstants.SCALE);
+							sumExtraCreditPoints = BigDecimal.ZERO;
 
 						sumExtraCreditPoints = add(sumExtraCreditPoints, pointsReceived);
 						//sumExtraCreditPoints = sumExtraCreditPoints.add(pointsReceived);
 					} else {
 						if (sumPoints == null)
-							sumPoints = BigDecimal.ZERO.setScale(AppConstants.SCALE);
+							sumPoints = BigDecimal.ZERO;
 	
 						sumPoints = add(sumPoints, pointsReceived);
 						//sumPoints = sumPoints.add(pointsReceived);
@@ -319,7 +319,7 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 
 				if (pointsPossible != null && !unit.isExtraCredit()) {
 					if (sumPointsPossible == null)
-						sumPointsPossible = BigDecimal.ZERO.setScale(AppConstants.SCALE);
+						sumPointsPossible = BigDecimal.ZERO;
 
 					sumPointsPossible = add(sumPointsPossible, pointsPossible);
 					//sumPointsPossible = sumPointsPossible.add(pointsPossible);

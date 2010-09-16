@@ -7,7 +7,7 @@ import java.math.RoundingMode;
 public class BigDecimalCalculationsWrapper {
 	
 	public static final int MATHCONTEXT_PRECISON = 50;
-	public static final MathContext MATHCONTEXT_50_HALF_UP  = new MathContext(MATHCONTEXT_PRECISON, RoundingMode.HALF_UP);
+	public static final MathContext MATHCONTEXT_50_HALF_EVEN  = new MathContext(MATHCONTEXT_PRECISON, RoundingMode.HALF_EVEN);
 	
 	public BigDecimal add(BigDecimal addend, BigDecimal augend) {
 		
@@ -34,7 +34,7 @@ public class BigDecimalCalculationsWrapper {
 		
 		} catch(ArithmeticException ae) {
 			
-			result = dividend.divide(divisor, MATHCONTEXT_50_HALF_UP);
+			result = dividend.divide(divisor, MATHCONTEXT_50_HALF_EVEN);
 		}
 		
 		return result;
