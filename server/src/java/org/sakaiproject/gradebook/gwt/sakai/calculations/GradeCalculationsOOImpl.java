@@ -1066,6 +1066,8 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		this.letterGradeMap = letterGradeMap;
 	}
 	
+	
+	//TODO: implement hashCode()
 	static class FrequencyScore implements Comparable<FrequencyScore>
 	{
 		private BigDecimal score; 

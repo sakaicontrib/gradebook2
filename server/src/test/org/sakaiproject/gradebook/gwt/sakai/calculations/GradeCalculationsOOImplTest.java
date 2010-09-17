@@ -1,6 +1,8 @@
 package org.sakaiproject.gradebook.gwt.sakai.calculations;
 
+import java.io.File;
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -12,6 +14,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.sakai.GradeCalculations;
 import org.sakaiproject.gradebook.gwt.sakai.calculations.GradeCalculationsOOImpl;
+import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradeCalculationsImpl;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeItem;
 import org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource;
 import org.sakaiproject.gradebook.gwt.server.Util;
@@ -34,6 +37,9 @@ public class GradeCalculationsOOImplTest extends TestCase {
 	private static String GRADE_ITEM_JSON_ASN4 = "{\"B_ACTIVE\":false, \"B_EDITABLE\":true, \"L_CTGRY_ID\":1, \"S_NM\":\"ASN-4\", \"B_X_CRDT\":false, \"B_EQL_WGHT\":true, \"B_INCLD\":true, \"B_RLSD\":false, \"B_NLLS_ZEROS\":false, \"B_WT_BY_PTS\":false, \"D_PCT_GRD\":null, \"S_PCT_GRD\":\"null\", \"D_PCT_CTGRY\":null, \"S_PCT_CTGRY\":\"null\", \"D_PNTS\":null, \"S_PNTS\":\"null\", \"W_DUE\":null, \"I_DRP_LWST\":null, \"S_ITM_TYPE\":\"ITEM\"}";
 	private static String GRADE_ITEM_JSON_CATEGORY = "{\"B_ACTIVE\":false, \"B_EDITABLE\":true, \"S_CTGRY_NAME\":\"\", \"S_NM\":\"Category 1\", \"B_X_CRDT\":false, \"B_EQL_WGHT\":false, \"B_INCLD\":true, \"B_RLSD\":false, \"B_NLLS_ZEROS\":false, \"B_WT_BY_PTS\":false, \"D_PCT_GRD\":null, \"S_PCT_GRD\":\"null\", \"D_PCT_CTGRY\":null, \"S_PCT_CTGRY\":\"null\", \"D_PNTS\":null, \"S_PNTS\":\"null\", \"W_DUE\":null, \"I_DRP_LWST\":null, \"S_ITM_TYPE\":\"CATEGORY\"}";
 
+	// set this flag to true to expect high precision numbers as results
+	private static boolean FULL_PRECISION = false;
+	
 	public GradeCalculationsOOImplTest() {
 		calculator = new GradeCalculationsOOImpl();
 	}
@@ -62,11 +68,11 @@ public class GradeCalculationsOOImplTest extends TestCase {
 		caseData = 			new String[] {"2",	".5"};
 		testData.put(testName, caseData);
 		testName = "DeprecatedTestResult-1";
-		caseData = 			new String[] {"3",	".3333333333"};
+		caseData = 			new String[] {"3",	FULL_PRECISION ? ".3333333333333333333333" : ".3333333333"};
 		testData.put(testName, caseData);
 		testName = "CEWTest5";
 		caseData = 			new String[] {"3",	
-				(new BigDecimal("1")).divide(new BigDecimal("3"),GradeCalculations.MATH_CONTEXT).toString()};
+				(new BigDecimal("1")).divide(new BigDecimal("3"),FULL_PRECISION ? new MathContext(100) : GradeCalculations.MATH_CONTEXT).toString()};
 		testData.put(testName, caseData);
 		testName = "CEWTest6";
 		caseData = 			new String[] {"4",	".25"};
@@ -75,11 +81,11 @@ public class GradeCalculationsOOImplTest extends TestCase {
 		caseData = 			new String[] {"5",	".2"};
 		testData.put(testName, caseData);
 		testName = "DeprecatedTestResult-2";
-		caseData = 			new String[] {"6",	".1666666667"};
+		caseData = 			new String[] {"6",	FULL_PRECISION ? ".166666666666666666" : ".1666666667"};
 		testData.put(testName, caseData);
 		testName = "CEWTest9";
 		caseData = 			new String[] {"6",	
-				(new BigDecimal("1")).divide(new BigDecimal("6"), GradeCalculations.MATH_CONTEXT).toString()};
+				(new BigDecimal("1")).divide(new BigDecimal("6"), FULL_PRECISION ? new MathContext(100) : GradeCalculations.MATH_CONTEXT).toString()};
 		testData.put(testName, caseData);
 		
 		//TODO: test nulls
@@ -123,10 +129,9 @@ public class GradeCalculationsOOImplTest extends TestCase {
 		caseData = 			new String[] {null,	"1",	".01"};
 		testData.put(testName, caseData);
 		testName = "IWAPTest8";
-		caseData = 			new String[] {"11111111111",	null,	"111111111.1"};
 		testData.put(testName, caseData);
 		testName = "DeprecatedTestResult";
-		caseData = 			new String[] {"111111111111",	null,	"1111111111.0"};
+		caseData = 			new String[] {"111111111111",	null,	FULL_PRECISION ? "1111111111.11": "1111111111.0"};
 		// values should be 		
 		// caseData = 			new String[] {"111111111111",	null,	"1111111111.1"};
 
@@ -190,9 +195,9 @@ public class GradeCalculationsOOImplTest extends TestCase {
 		
 		assertEquals("NumericalEquivalence-3", (new BigDecimal("100.000")).compareTo(results[0]), 0);
 		
-		assertEquals("DeprecatedNumericalEquivalence-4", 0, (new BigDecimal("112.2222222")).compareTo(results[1]));
-		assertEquals("DeprecatedNumericalInequivalence-1", -1, (BigDecimal.valueOf(asn1.getPointsPossible())).compareTo(results[1]));
-
+		assertEquals("DeprecatedNumericalEquivalence-4", FULL_PRECISION? -1 : 0, (new BigDecimal("112.2222222")).compareTo(results[1]));
+		assertEquals("DeprecatedNumericalInequivalence-1", FULL_PRECISION? -1 : 0, (new BigDecimal("112.2222222")).compareTo(results[1]));
+		
 		
 
 	}
@@ -340,24 +345,44 @@ public class GradeCalculationsOOImplTest extends TestCase {
 		BigDecimal catPercentSum = results[0];
 		BigDecimal catPointSum = results[1];
 		
-//		System.out.println("Results: " + 
-//				category.getName() + "-->" + results[0] + ", " + results[1]);
-		for (GradeItem assignment: assignments) {
-			results = calculator.calculateCourseGradeCategoryPercents(assignment, BigDecimal.valueOf(100d)/* cat percent of grade */, 
-					catPercentSum, catPointSum, Util.checkBoolean(category.getEnforcePointWeighting()));
+		for (int i =0 ; i<2 ; ++i) { // first time thru with all four assignments
 
-			BigDecimal courseGradePercent = results[0];
-			BigDecimal percentCategory = results[1];
-			System.out.println("Results: " + 
-					assignment.getName() + "-->" + courseGradePercent + ", " + percentCategory);
+			for (GradeItem assignment: assignments) {
+				results = calculator.calculateCourseGradeCategoryPercents(assignment, BigDecimal.valueOf(100d)/* cat percent of grade */, 
+						catPercentSum, catPointSum, Util.checkBoolean(category.getEnforcePointWeighting()));
+
+				BigDecimal courseGradePercent = results[0];
+				BigDecimal percentCategory = results[1];
+//				System.out.println("Results: " + 
+//						assignment.getName() + "-->" + courseGradePercent + ", " + percentCategory);
+
+				
+
+				if(0 == i)  {
+					assertEquals("NumericalEquivalence-1", 0, (new BigDecimal("25")).compareTo(courseGradePercent));
+					assertEquals("NumericalEquivalence-2", 0, (new BigDecimal("0.25")).compareTo(percentCategory));
+				} else {
+					/// these are numbers with too low of a precision
+					assertEquals("DeprecatedNumericalEquivalence-3", FULL_PRECISION ? -1 : 0, (new BigDecimal("33.33333333")).compareTo(courseGradePercent));
+					assertEquals("DeprecatedNumericalEquivalence-4", FULL_PRECISION ? -1 : 0, (new BigDecimal("0.3333333333")).compareTo(percentCategory));
+					
+					/// these are numbers that stuffs 'the most' into a double
+					assertEquals("DeprecatedNumericalEquivalence-3", FULL_PRECISION ? 0 : 1, (new BigDecimal("33.333333333333330")).compareTo(courseGradePercent));
+					assertEquals("DeprecatedNumericalEquivalence-4", FULL_PRECISION ? 0 : 1, (new BigDecimal("0.3333333333333333")).compareTo(percentCategory));
+					
+					
+				}
+
+			}
 			
-			assertEquals("NumericalEquivalence-1", 0, (new BigDecimal("25")).compareTo(courseGradePercent));
-			assertEquals("NumericalEquivalence-2", 0, (new BigDecimal("0.25")).compareTo(percentCategory));
-
+			assignments = Arrays.asList(asn2, asn3, asn4); // next time thru with only three
+			
+			weight = calculator.calculateEqualWeight(3);
+			asn2.setWeighting(weight);
+			asn3.setWeighting(weight);
+			asn4.setWeighting(weight);
 		}
-		
 
-			
 		
 	}
 
@@ -366,26 +391,44 @@ public class GradeCalculationsOOImplTest extends TestCase {
 		final String LOTTA_NINES = "25.999999999";
 		
 		// these should not be equal
-		assertEquals("DeprecatedNumericalEqualivalence-1", 0, (new BigDecimal("26"))
+		assertEquals("DeprecatedNumericalEqualivalence-1", FULL_PRECISION ? 1 : 0, (new BigDecimal("26"))
 				.compareTo(calculator.calculateItemGradePercent(
 						new BigDecimal("100"), new BigDecimal("100"), new BigDecimal(LOTTA_NINES), true)));
 		
 		// these should be equal
-		assertEquals("DeprecatedNumericalEqualivalence-2", -1, (new BigDecimal(LOTTA_NINES))
+		assertEquals("DeprecatedNumericalEqualivalence-2", FULL_PRECISION ? 0 : -1, (new BigDecimal(LOTTA_NINES))
 				.compareTo(calculator.calculateItemGradePercent(
 						new BigDecimal("100"), new BigDecimal("100"), new BigDecimal(LOTTA_NINES), true)));
 		
-		//TODO: add coverage of nonnormalized path and some more 'fuzz'
+		// non-normalized: these should not be equal
+		assertEquals("DeprecatedNumericalEqualivalence-1", FULL_PRECISION ? 1 : 0, (new BigDecimal("26"))
+				.compareTo(calculator.calculateItemGradePercent(
+						new BigDecimal("1"), new BigDecimal("1"), new BigDecimal(LOTTA_NINES).divide(new BigDecimal("100", new MathContext(100))), false)));
+		
+		// non-normalized: these should not be equal
+		assertEquals("DeprecatedNumericalEqualivalence-1", FULL_PRECISION ? 0 : -1, (new BigDecimal(LOTTA_NINES))
+				.compareTo(calculator.calculateItemGradePercent(
+						new BigDecimal("1"), new BigDecimal("1"), new BigDecimal(LOTTA_NINES).divide(new BigDecimal("100", new MathContext(100))), false)));
+		
+//		System.out.println(
+//				"CalculateItemGradePercent-->" + calculator.calculateItemGradePercent(
+//						new BigDecimal("1"), new BigDecimal("1"), new BigDecimal(LOTTA_NINES).divide(new BigDecimal("100", new MathContext(100))), false));
+//				
+		//TODO: 'fuzzing'?
 	}
 
-	public void testCalculateItemGradePercentDecimal() {
-		//System.out.println(calculator.calculateItemGradePercent(
-		//		new BigDecimal("100"), new BigDecimal("100"), new BigDecimal(LOTTA_NINES), true));
-		
-	}
+	// not an api method
+//	public void testCalculateItemGradePercentDecimal() {
+//		System.out.println("testCalculateItemGradePercentDecimal not tested: not an implementation if a API method");
+//		
+//	}
 
 	public void testCalculateStatistics() {
-		System.out.println("testCalculateStatistics yet implemented");
+		GradeDataLoader data = new GradeDataLoader(new File("GradeData.txt"));
+		
+		
+
+		
 	}
 
 	public void testConvertPercentageToLetterGrade() {

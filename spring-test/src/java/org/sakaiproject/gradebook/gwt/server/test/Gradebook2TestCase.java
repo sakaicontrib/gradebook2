@@ -6,7 +6,7 @@ import org.sakaiproject.gradebook.gwt.sakai.mock.DevelopmentModeBean;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
-public class Gradebook2TestCase extends AbstractDependencyInjectionSpringContextTests
+abstract class Gradebook2TestCase extends AbstractDependencyInjectionSpringContextTests
 {
 	private Gradebook2ComponentService service = null;
 	private GradebookToolService gbToolService = null;

@@ -42,5 +42,9 @@ public class StudentScore implements Comparable<StudentScore>
 		return -1; 
 	} 
 	
+	public String toString() {
+		return "StudentScore (" + hashCode() + ") (id,score) = (" + userUid + "," + score + ")";
+	}
+	
 	
 }
