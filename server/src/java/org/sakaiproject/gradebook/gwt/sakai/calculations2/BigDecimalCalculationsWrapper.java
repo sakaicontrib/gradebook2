@@ -34,6 +34,11 @@ public class BigDecimalCalculationsWrapper {
 		
 		} catch(ArithmeticException ae) {
 			
+			/*
+			 * We are not handling divide by zero case here because the following call to divide
+			 * will generate the exception again. The calling code should handle that case.
+			 */
+			
 			result = dividend.divide(divisor, MATHCONTEXT_50_HALF_EVEN);
 		}
 		

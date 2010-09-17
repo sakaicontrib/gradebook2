@@ -1257,6 +1257,26 @@ public class GradeCalculationTest2 extends TestCase {
 		BigDecimal compare = new BigDecimal("0.66666666666666666666666666666666666666666666666667");
 		assertTrue(result.equals(compare));
 	}
+	
+	public void testBigDecimalCalculationsWrapperDivideByZero() {
+		
+		BigDecimalCalculationsWrapper calc = new BigDecimalCalculationsWrapper();
+
+		BigDecimal two = new BigDecimal("2");
+		BigDecimal zero = new BigDecimal("0");
+
+		Exception arithmeticException = null;
+		try {
+			
+			BigDecimal result = calc.divide(two, zero);
+		}
+		catch(ArithmeticException ae) {
+			arithmeticException = ae;
+		}
+		
+		assertNotNull(arithmeticException);
+
+	}
 
 	public void testBigDecimalCalculationsWrapperMultiply() {
 
