@@ -1,21 +1,24 @@
 package org.sakaiproject.gradebook.gwt.sakai.calculations;
 
-import java.io.File;
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import junit.framework.TestCase;
 
 import org.apache.commons.collections.FastHashMap;
-import org.codehaus.jackson.map.ObjectMapper;
+import org.apache.commons.math.stat.Frequency;
+import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.sakai.GradeCalculations;
-import org.sakaiproject.gradebook.gwt.sakai.calculations.GradeCalculationsOOImpl;
-import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradeCalculationsImpl;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeItem;
+import org.sakaiproject.gradebook.gwt.sakai.model.GradeStatistics;
+import org.sakaiproject.gradebook.gwt.sakai.model.StudentScore;
 import org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource;
 import org.sakaiproject.gradebook.gwt.server.Util;
 import org.sakaiproject.gradebook.gwt.server.model.GradeItemImpl;
@@ -23,10 +26,6 @@ import org.sakaiproject.service.gradebook.shared.GradebookService;
 import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.Category;
 import org.sakaiproject.tool.gradebook.Gradebook;
-
-import com.google.gwt.rpc.client.ast.DoubleValueCommand;
-
-import junit.framework.TestCase;
 
 public class GradeCalculationsOOImplTest extends TestCase {
 	
@@ -424,10 +423,40 @@ public class GradeCalculationsOOImplTest extends TestCase {
 //	}
 
 	public void testCalculateStatistics() {
-		GradeDataLoader data = new GradeDataLoader(new File("GradeData.txt"));
+		GradeDataLoader data = new GradeDataLoader("org/sakaiproject/gradebook/gwt/sakai/calculations/GradeData.txt");
+		
+		// calculate stats using commons-math
+		DescriptiveStatistics stats = new DescriptiveStatistics();
+		Frequency frequency = new Frequency();
+		
+		for (StudentScore score : data.getScores()) {
+			stats.addValue(score.getScore().doubleValue());
+			 /*
+			  *  create frequency distro buckets based on strings
+			  *  using scale of 2 and half-up rounding
+			  */	 
+			frequency.addValue(score);
+		}
+		//shouldn't commons math know how to find the mode?!
+		Set<StudentScore> modeValues = new HashSet<StudentScore>(); // should enforce uniqueness
+		long last = 0;
+		for (java.util.Iterator<Comparable<?>> i = frequency.valuesIterator();i.hasNext();) {
+			StudentScore value = (StudentScore) i.next();
+			long count = frequency.getCount(value);
+			if (count>last) {
+				modeValues.add(value);
+			}
+			
+		}
+		
+		double mean = stats.getMean();
+		double std = stats.getStandardDeviation();
+		double median = stats.getPercentile(50d);
+	
 		
 		
-
+		GradeStatistics calculatedStats = calculator.calculateStatistics(data.getScores(), BigDecimal.valueOf(stats.getSum()), null);
+//TODO: the asserts
 		
 	}
 

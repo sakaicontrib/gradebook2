@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,18 +22,34 @@ public class GradeDataLoader {
 	
 	public GradeDataLoader() {}
 	
-	public GradeDataLoader(File dataFile) {
-		if(dataFile.exists() && dataFile.canRead()) {
-			this.dataFile = dataFile;
-			try {
-				loadDataFile();
-			} catch (Exception e) {
-				this.dataFile = null;
-				this.scores = null;
+	public GradeDataLoader(String dataFileName) {
+		URL u = ClassLoader.getSystemResource(dataFileName);
+		if(u != null) {
+			File dataFile = new File(u.getPath());
+			if(dataFile.exists() && dataFile.canRead()) {
+				this.dataFile = dataFile;
+				try {
+					loadDataFile();
+				} catch (Exception e) {
+					this.dataFile = null;
+					this.scores = null;
+				}
+
+			} else {
+				System.err.println("Unable to read data file: " + dataFile.getPath());
 			}
-			
+		} else {
+			System.err.println("Unable find data file: " + dataFileName);
 		}
-		
+
+	}
+
+	public List<StudentScore> getScores() {
+		return scores;
+	}
+
+	public void setScores(List<StudentScore> scores) {
+		this.scores = scores;
 	}
 
 	private void loadDataFile() {
@@ -47,11 +64,16 @@ public class GradeDataLoader {
 				String line = null;
 				
 				while ((line = br.readLine()) != null)   {
-				      scores.add(new StudentScore("" + id, new BigDecimal(line)));
-				      id++;
-				    }
+					try {
+						scores.add(new StudentScore("" + id, new BigDecimal(line)));
+					} catch (NumberFormatException e) {
+						System.err.println("(ignored)NumberFormatException: " + line);
+						continue;
+					}
+					id++;
+				}
 				System.out.println (--id + " lines read");
-				
+
 				for (StudentScore s : scores) {
 					System.out.println(s);
 				}

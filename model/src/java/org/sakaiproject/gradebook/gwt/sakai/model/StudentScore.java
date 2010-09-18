@@ -43,7 +43,7 @@ public class StudentScore implements Comparable<StudentScore>
 	} 
 	
 	public String toString() {
-		return "StudentScore (" + hashCode() + ") (id,score) = (" + userUid + "," + score + ")";
+		return "StudentScore@" + hashCode() + " (id,score) = (" + userUid + "," + score + ")";
 	}
 	
 	
