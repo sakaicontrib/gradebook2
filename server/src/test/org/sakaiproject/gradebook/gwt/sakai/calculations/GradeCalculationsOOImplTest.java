@@ -422,7 +422,7 @@ public class GradeCalculationsOOImplTest extends TestCase {
 //		
 //	}
 
-	public void testCalculateStatistics() {
+	/*public void testCalculateStatistics() {
 		GradeDataLoader data = new GradeDataLoader("org/sakaiproject/gradebook/gwt/sakai/calculations/GradeData.txt");
 		
 		// calculate stats using commons-math
@@ -431,10 +431,10 @@ public class GradeCalculationsOOImplTest extends TestCase {
 		
 		for (StudentScore score : data.getScores()) {
 			stats.addValue(score.getScore().doubleValue());
-			 /*
-			  *  create frequency distro buckets based on strings
-			  *  using scale of 2 and half-up rounding
-			  */	 
+			 
+			  //  create frequency distro buckets based on strings
+			  //  using scale of 2 and half-up rounding
+			  	 
 			frequency.addValue(score);
 		}
 		//shouldn't commons math know how to find the mode?!
@@ -459,7 +459,7 @@ public class GradeCalculationsOOImplTest extends TestCase {
 //TODO: the asserts
 		
 	}
-
+   disabling test for now */
 	public void testConvertPercentageToLetterGrade() {
 		System.out.println("testConvertPercentageToLetterGrade yet implemented");
 	}
