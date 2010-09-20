@@ -149,6 +149,12 @@
 					<include>**/*.xml</include>
 				</includes>
 			</resource>
+			<resource>
+				<directory>${basedir}/src/test</directory>
+				<includes>
+					<include>**/*.dat</include>
+				</includes>
+			</resource>
 		</resources>
 	</build>
 </project>

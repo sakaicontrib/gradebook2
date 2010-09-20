@@ -422,8 +422,8 @@ public class GradeCalculationsOOImplTest extends TestCase {
 //		
 //	}
 
-	/*public void testCalculateStatistics() {
-		GradeDataLoader data = new GradeDataLoader("org/sakaiproject/gradebook/gwt/sakai/calculations/GradeData.txt");
+	public void testCalculateStatistics() {
+		GradeDataLoader data = new GradeDataLoader("org/sakaiproject/gradebook/gwt/sakai/calculations/GradeData.dat");
 		
 		// calculate stats using commons-math
 		DescriptiveStatistics stats = new DescriptiveStatistics();
@@ -445,6 +445,7 @@ public class GradeCalculationsOOImplTest extends TestCase {
 			long count = frequency.getCount(value);
 			if (count>last) {
 				modeValues.add(value);
+				last = count;
 			}
 			
 		}
@@ -459,7 +460,9 @@ public class GradeCalculationsOOImplTest extends TestCase {
 //TODO: the asserts
 		
 	}
-   disabling test for now */
+  
+	
+	
 	public void testConvertPercentageToLetterGrade() {
 		System.out.println("testConvertPercentageToLetterGrade yet implemented");
 	}

@@ -33,13 +33,14 @@ public class GradeDataLoader {
 				} catch (Exception e) {
 					this.dataFile = null;
 					this.scores = null;
+					System.out.println("General Exception reading: " + dataFileName);
 				}
 
 			} else {
-				System.err.println("Unable to read data file: " + dataFile.getPath());
+				System.out.println("Unable to read data file: " + dataFile.getPath());
 			}
 		} else {
-			System.err.println("Unable find data file: " + dataFileName);
+			System.out.println("Unable find data file: " + dataFileName);
 		}
 
 	}
@@ -78,14 +79,14 @@ public class GradeDataLoader {
 					System.out.println(s);
 				}
 			} catch (FileNotFoundException e) {
-				log.error("File not found: " + dataFile.getPath());
+				System.out.println("File not found: " + dataFile.getPath());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
-				log.error("error (line " + id + ") reading file: " + dataFile.getPath());
+				System.out.println("error (line " + id + ") reading file: " + dataFile.getPath());
 			}
 			
 		} else {
-			log.error("Filed to read file: " + dataFile.getPath());
+			System.out.println("Filed to read file: " + dataFile.getPath());
 		}
 		
 	}
