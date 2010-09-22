@@ -18,7 +18,7 @@ public class RestServlet extends SpringServlet {
 	private static final long serialVersionUID = 7800385748682164593L;
 	private static final Log log = LogFactory.getLog(RestServlet.class);
 	
-	public void service(URI baseUri, URI requestUri, final HttpServletRequest request, HttpServletResponse response)
+	public int service(URI baseUri, URI requestUri, final HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
 		
 		// Need to handle the case of different baseUri from requestUri
@@ -47,7 +47,7 @@ public class RestServlet extends SpringServlet {
 		((HttpServletResponse)response).setHeader("Pragma", "no-cache");
 		((HttpServletResponse)response).setHeader("Cache-Control", "no-cache");
 		((HttpServletResponse)response).setHeader("Expires", "Fri, 12 Dec 1990 12:00:00 GMT");
-		super.service(baseUri, requestUri, request, response);
+		return super.service(baseUri, requestUri, request, response);
 	}
 	
 }
