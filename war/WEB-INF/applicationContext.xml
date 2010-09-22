@@ -28,11 +28,16 @@
 		<property name="securityService" ref="org.sakaiproject.authz.api.SecurityService"/>
 		<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>
 	</bean>
+	
+	<bean id="org.sakaiproject.gradebook.gwt.server.ImportExportUtility" class="org.sakaiproject.gradebook.gwt.server.ImportExportUtilityImpl">
+		<property name="gradeCalculations" ref="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"/>
+	</bean>
 
 	<bean id="GradebookImportService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookImportController">
 		<property name="gbToolService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/>
 		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
 		<property name="commandClass" value="org.sakaiproject.gradebook.gwt.sakai.FileUploadBean"/>
+		<property name="importExportUtility" ref="org.sakaiproject.gradebook.gwt.server.ImportExportUtility"/>
 	</bean>
 	
 	
@@ -51,7 +56,7 @@
 	
 	
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"
-		class="org.sakaiproject.gradebook.gwt.sakai.calculations.GradeCalculationsOOImpl"
+		class="org.sakaiproject.gradebook.gwt.sakai.calculations2.GradeCalculationsImpl"
 		init-method="init">
 		
 		<property name="letterGradeMap">
@@ -72,6 +77,7 @@
 				<entry><key><value>0</value></key><value>0</value></entry>
 			</map>
 		</property>
+		<property name="precision" value="50"/>
 		
 	</bean>
 
