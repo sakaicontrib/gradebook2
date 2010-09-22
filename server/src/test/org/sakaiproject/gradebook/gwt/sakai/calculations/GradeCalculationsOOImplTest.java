@@ -41,11 +41,11 @@ public class GradeCalculationsOOImplTest extends TestCase {
 	private static boolean FULL_PRECISION = true;
 	
 	public GradeCalculationsOOImplTest() {
-		
+
 		if(FULL_PRECISION)
-			calculator = new GradeCalculationsOOImpl();
-		else
 			calculator = new GradeCalculationsImpl(50);
+		else
+			calculator = new GradeCalculationsOOImpl();
 	}
 
 	protected void setUp() throws Exception {
