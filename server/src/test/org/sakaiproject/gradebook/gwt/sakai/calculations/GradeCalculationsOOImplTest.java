@@ -45,7 +45,7 @@ public class GradeCalculationsOOImplTest extends TestCase {
 		if(FULL_PRECISION)
 			calculator = new GradeCalculationsOOImpl();
 		else
-			calculator = new GradeCalculationsImpl();
+			calculator = new GradeCalculationsImpl(50);
 	}
 
 	protected void setUp() throws Exception {

@@ -91,9 +91,22 @@ private final static String ZERO = "0";
 
 public Map<String, Double> letterGradeMap;
 
+// Constructor
+public GradeCalculationsImpl() {
+	super();
+	log.info("GradeCalculationsImpl default constructor called.");
+}
+
+// Constructor
+public GradeCalculationsImpl(int precision) {
+	super(precision);
+	log.info("#### TEST #### GradeCalculationsImpl(int precision) constructor called. This should only occure during JUnit tests");
+}
+
+
+// Spring IoC init
 public void init() {
 
-	System.out.println("XXXXX: GradeCalculationsImpl init");
 	two = new BigDecimal("2");
 	three = new BigDecimal("3"); 
 	oneThird = divide(BigDecimal.ONE, three); 

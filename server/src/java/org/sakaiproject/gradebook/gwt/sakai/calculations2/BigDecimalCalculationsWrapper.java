@@ -14,8 +14,20 @@ public class BigDecimalCalculationsWrapper {
 	private int precision = 0;
 	private MathContext mathContextHalfEven = null;
 	
-	public void init() {
-		System.out.println("XXXX: BigDecimalCalculationsWrapperImpl init");
+	public BigDecimalCalculationsWrapper() {
+		log.info("BigDecimalCalculationsWrapper default constructor called.");
+	}
+	
+	public BigDecimalCalculationsWrapper(int precision) {
+		
+		log.info("#### TEST #### BigDecimalCalculationsWrapper(int precision) constructor called. This should only occure during JUnit tests");
+		this.precision = precision;
+		
+		if(null == mathContextHalfEven) {
+		
+			log.info("#### TEST #### Setting MathContext precision to " + precision);
+			mathContextHalfEven  = new MathContext(precision, RoundingMode.HALF_EVEN);
+		}
 	}
 	
 	public BigDecimal add(BigDecimal addend, BigDecimal augend) {
