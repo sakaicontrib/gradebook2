@@ -340,7 +340,12 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 	}
 
 	public String getPrimarySectionEid(List<String> eids) {
-		return eids.get(0);
+		if(null == eids || eids.isEmpty()) {
+			return "";
+		}
+		else {
+			return eids.get(0);
+		}
 	}
 
 }
