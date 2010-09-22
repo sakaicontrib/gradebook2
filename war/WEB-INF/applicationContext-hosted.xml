@@ -24,6 +24,10 @@
 	
 	<bean id="org.sakaiproject.time.api.TimeService" class="org.sakaiproject.time.impl.BasicTimeService" 
 	    init-method="init" />
+	    
+	<bean id="org.sakaiproject.gradebook.gwt.server.ImportExportUtility" class="org.sakaiproject.gradebook.gwt.server.ImportExportUtilityImpl">
+		<property name="gradeCalculations" ref="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"/>
+	</bean>
 	
 	<bean id="org.sakaiproject.archive.api.ArchiveService" class="org.sakaiproject.gradebook.gwt.sakai.mock.ArchiveServiceMock">
 		<property name="timeService" ref="org.sakaiproject.time.api.TimeService" />
@@ -36,6 +40,7 @@
 		<property name="gbToolService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/>
 		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
 		<property name="commandClass" value="org.sakaiproject.gradebook.gwt.sakai.FileUploadBean"/>
+		<property name="importExportUtility" ref="org.sakaiproject.gradebook.gwt.server.ImportExportUtility"/>
 	</bean>
 	
 	
@@ -54,7 +59,7 @@
 	
 	
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"
-		class="org.sakaiproject.gradebook.gwt.sakai.calculations.GradeCalculationsOOImpl"
+		class="org.sakaiproject.gradebook.gwt.sakai.calculations2.GradeCalculationsImpl"
 		init-method="init">
 		
 		<property name="letterGradeMap">
@@ -75,6 +80,7 @@
 				<entry><key><value>0</value></key><value>0</value></entry>
 			</map>
 		</property>
+		<property name="precision" value="50"/>
 		
 	</bean>
 

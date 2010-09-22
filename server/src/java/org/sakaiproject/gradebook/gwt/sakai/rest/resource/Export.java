@@ -16,9 +16,9 @@ import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.server.BrowserDetect;
-import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
+import org.sakaiproject.gradebook.gwt.server.ImportExportUtilityImpl;
 import org.sakaiproject.gradebook.gwt.server.UserAgent;
-import org.sakaiproject.gradebook.gwt.server.ImportExportUtility.FileType;
+import org.sakaiproject.gradebook.gwt.server.ImportExportUtilityImpl.FileType;
 import org.sakaiproject.site.api.Site;
 
 @Path("export")
@@ -36,10 +36,10 @@ public class Export extends Resource {
 					&& includeStructureFlag.indexOf("/") > -1
 					&& "true".equals(includeStructureFlag.split("/")[2].toLowerCase());
 		
-		String fileType = "".equals(format) || format.indexOf("/") == -1 ? ImportExportUtility.FileType.CSV.getName() : format.split("/")[2].toLowerCase();
+		String fileType = "".equals(format) || format.indexOf("/") == -1 ? ImportExportUtilityImpl.FileType.CSV.getName() : format.split("/")[2].toLowerCase();
 		
 		try {
-			if ( ! ImportExportUtility.SUPPORTED_FILE_TYPES.contains(fileType)) {
+			if ( ! ImportExportUtilityImpl.SUPPORTED_FILE_TYPES.contains(fileType)) {
 				throw new FatalException("Unsupported file type: " + fileType);
 			}
 			
@@ -52,7 +52,7 @@ public class Export extends Resource {
 				filename.append("gradebook");
 			else {
 				String name = site.getTitle();
-				name = name.replaceAll(ImportExportUtility.UNSAFE_FILENAME_CHAR_REGEX , "_");
+				name = name.replaceAll(ImportExportUtilityImpl.UNSAFE_FILENAME_CHAR_REGEX , "_");
 
 				filename.append(name);
 			}
@@ -71,12 +71,12 @@ public class Export extends Resource {
 				
 				response.setContentType(type.getMimeType());
 				response.setHeader(
-						ImportExportUtility.CONTENT_DISPOSITION_HEADER_NAME,
-						ImportExportUtility.CONTENT_DISPOSITION_HEADER_ATTACHMENT
+						ImportExportUtilityImpl.CONTENT_DISPOSITION_HEADER_NAME,
+						ImportExportUtilityImpl.CONTENT_DISPOSITION_HEADER_ATTACHMENT
 										+ filename.toString());
 			}
 			
-				ImportExportUtility.exportGradebook (type, filename.toString(), out, service, gradebookUid, includeStructure, true); 
+				ImportExportUtilityImpl.exportGradebook (type, filename.toString(), out, service, gradebookUid, includeStructure, true); 
 						
 			
 		} catch (FatalException e) {

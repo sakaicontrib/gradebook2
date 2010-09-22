@@ -42,8 +42,8 @@ import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeItem;
 import org.sakaiproject.gradebook.gwt.server.ImportExportDataFile;
-import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
-import org.sakaiproject.gradebook.gwt.server.ImportExportUtility.FileType;
+import org.sakaiproject.gradebook.gwt.server.ImportExportUtilityImpl;
+import org.sakaiproject.gradebook.gwt.server.ImportExportUtilityImpl.FileType;
 import org.sakaiproject.service.gradebook.shared.GradebookNotFoundException;
 import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.Category;
@@ -234,7 +234,7 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 		
 		ByteArrayOutputStream result = new ByteArrayOutputStream();
 		try {
-			ImportExportUtility.exportGradebook (FileType.CSV, "", result, componentService, from, true, false);
+			ImportExportUtilityImpl.exportGradebook (FileType.CSV, "", result, componentService, from, true, false);
 		} catch (FatalException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -249,7 +249,7 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 		log.debug(structure);
 		Upload importFile = null;
 		try {
-			importFile = (new ImportExportUtility()).parseImportCSV(componentService, to, new InputStreamReader(new ByteArrayInputStream(structure.getBytes("UTF-8"))));
+			importFile = (new ImportExportUtilityImpl()).parseImportCSV(componentService, to, new InputStreamReader(new ByteArrayInputStream(structure.getBytes("UTF-8"))));
 		} catch (InvalidInputException e) {
 			e.printStackTrace();
 		} catch (FatalException e) {

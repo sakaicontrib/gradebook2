@@ -26,6 +26,7 @@ import org.sakaiproject.service.gradebook.shared.GradebookService;
 import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.Category;
 import org.sakaiproject.tool.gradebook.Gradebook;
+import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradeCalculationsImpl;
 
 public class GradeCalculationsOOImplTest extends TestCase {
 	
@@ -37,10 +38,14 @@ public class GradeCalculationsOOImplTest extends TestCase {
 	private static String GRADE_ITEM_JSON_CATEGORY = "{\"B_ACTIVE\":false, \"B_EDITABLE\":true, \"S_CTGRY_NAME\":\"\", \"S_NM\":\"Category 1\", \"B_X_CRDT\":false, \"B_EQL_WGHT\":false, \"B_INCLD\":true, \"B_RLSD\":false, \"B_NLLS_ZEROS\":false, \"B_WT_BY_PTS\":false, \"D_PCT_GRD\":null, \"S_PCT_GRD\":\"null\", \"D_PCT_CTGRY\":null, \"S_PCT_CTGRY\":\"null\", \"D_PNTS\":null, \"S_PNTS\":\"null\", \"W_DUE\":null, \"I_DRP_LWST\":null, \"S_ITM_TYPE\":\"CATEGORY\"}";
 
 	// set this flag to true to expect high precision numbers as results
-	private static boolean FULL_PRECISION = false;
+	private static boolean FULL_PRECISION = true;
 	
 	public GradeCalculationsOOImplTest() {
-		calculator = new GradeCalculationsOOImpl();
+		
+		if(FULL_PRECISION)
+			calculator = new GradeCalculationsOOImpl();
+		else
+			calculator = new GradeCalculationsImpl();
 	}
 
 	protected void setUp() throws Exception {

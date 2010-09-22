@@ -43,8 +43,9 @@ import org.codehaus.jackson.map.SerializationConfig;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.model.Upload;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
+import org.sakaiproject.gradebook.gwt.server.ImportExportUtilityImpl;
 import org.sakaiproject.gradebook.gwt.server.OpenController;
-import org.sakaiproject.gradebook.gwt.server.ImportExportUtility.Delimiter;
+import org.sakaiproject.gradebook.gwt.server.ImportExportUtilityImpl.Delimiter;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.multipart.MultipartFile;
@@ -59,6 +60,7 @@ public class GradebookImportController extends SimpleFormController implements O
 
 	private Gradebook2ComponentService service;
 	private GradebookToolService gbToolService;
+	private ImportExportUtility importExportUtility;
 	
 	private final String DELIMINATOR_COMMA = "delimiter:comma";
 	private final String DELIMINATOR_TAB = "delimiter:tab";
@@ -92,8 +94,6 @@ public class GradebookImportController extends SimpleFormController implements O
 		
 		String preventScantronOverwrite = multipartRequest.getParameter(REQUEST_PARAMETER_PSO);
 		boolean doPreventScrantronOverwrite = preventScantronOverwrite == null ? Boolean.FALSE : Boolean.valueOf(preventScantronOverwrite);
-		
-		ImportExportUtility utility = new ImportExportUtility();
 
 		for (Iterator<String> fileNameIterator = multipartRequest.getFileNames();fileNameIterator.hasNext();) {
 			String fileName = fileNameIterator.next();
@@ -106,14 +106,14 @@ public class GradebookImportController extends SimpleFormController implements O
 			if (origName.toLowerCase().endsWith(FILE_EXTENSION_XLS))
 			{
 				log.debug("Excel file detected"); 
-				importFile = utility.parseImportXLS(service, gradebookUid, file.getInputStream(), origName.toLowerCase(), gbToolService, doPreventScrantronOverwrite);
+				importFile = importExportUtility.parseImportXLS(service, gradebookUid, file.getInputStream(), origName.toLowerCase(), gbToolService, doPreventScrantronOverwrite);
 
 			}
 			else
 			{
 				log.debug("Assuming CSV file"); 
 				InputStreamReader reader = new InputStreamReader(file.getInputStream());
-				importFile = utility.parseImportCSV(service, gradebookUid, reader);
+				importFile = importExportUtility.parseImportCSV(service, gradebookUid, reader);
 			}
 
 			PrintWriter writer = response.getWriter();
@@ -201,4 +201,7 @@ public class GradebookImportController extends SimpleFormController implements O
 		this.gbToolService = gbToolService;
 	}
 
+	public void setImportExportUtility(ImportExportUtility importExportUtility) {
+		this.importExportUtility = importExportUtility;
+	}
 }

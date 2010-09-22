@@ -48,31 +48,31 @@ private final static BigDecimal BIG_DECIMAL_100 = new BigDecimal("100");
  * 
  * Note:  special adds are done to fully represent fractions.  
  */
-private final BigDecimal two = new BigDecimal("2");
-private final BigDecimal three = new BigDecimal("3"); 
-private final BigDecimal oneThird = divide(BigDecimal.ONE, three); 
-private final BigDecimal twoThirds = divide(two, three);
+private  BigDecimal two;
+private  BigDecimal three; 
+private  BigDecimal oneThird; 
+private  BigDecimal twoThirds;
 
-private final static int PRECISION = 7;
+private  static int PRECISION = 7;
 
-private final BigDecimal gradeAplus = new BigDecimal(add(new BigDecimal("96"), twoThirds).toPlainString().substring(0, PRECISION));
-private final BigDecimal gradeA = new BigDecimal(add(new BigDecimal("93"), oneThird).toPlainString().substring(0, PRECISION));
-private final BigDecimal gradeAminus = new BigDecimal("90");
+private  BigDecimal gradeAplus;
+private  BigDecimal gradeA;
+private  BigDecimal gradeAminus;
 
-private final BigDecimal gradeBplus = new BigDecimal(add(new BigDecimal("86"), twoThirds).toPlainString().substring(0, PRECISION));
-private final BigDecimal gradeB = new BigDecimal(add(new BigDecimal("83"), oneThird).toPlainString().substring(0, PRECISION));
-private final BigDecimal gradeBminus = new BigDecimal("80");
+private  BigDecimal gradeBplus;
+private  BigDecimal gradeB;
+private  BigDecimal gradeBminus;
 
-private final BigDecimal gradeCplus = new BigDecimal(add(new BigDecimal("76"), twoThirds).toPlainString().substring(0, PRECISION));
-private final BigDecimal gradeC = new BigDecimal(add(new BigDecimal("73"), oneThird).toPlainString().substring(0, PRECISION));
-private final BigDecimal gradeCminus = new BigDecimal("70");
+private  BigDecimal gradeCplus;
+private  BigDecimal gradeC;
+private  BigDecimal gradeCminus;
 
 
-private final BigDecimal gradeDplus = new BigDecimal(add(new BigDecimal("66"), twoThirds).toPlainString().substring(0, PRECISION));
-private final BigDecimal gradeD = new BigDecimal(add(new BigDecimal("63"), oneThird).toPlainString().substring(0, PRECISION));
-private final BigDecimal gradeDminus = new BigDecimal("60");
+private  BigDecimal gradeDplus;
+private  BigDecimal gradeD;
+private  BigDecimal gradeDminus;
 
-private final static BigDecimal gradeF = new BigDecimal("60");
+private  BigDecimal gradeF;
 
 private final static String A_PLUS = "A+";
 private final static String A = "A";
@@ -93,6 +93,33 @@ public Map<String, Double> letterGradeMap;
 
 public void init() {
 
+	System.out.println("XXXXX: GradeCalculationsImpl init");
+	two = new BigDecimal("2");
+	three = new BigDecimal("3"); 
+	oneThird = divide(BigDecimal.ONE, three); 
+	twoThirds = divide(two, three);
+
+	PRECISION = 7;
+
+	gradeAplus = new BigDecimal(add(new BigDecimal("96"), twoThirds).toPlainString().substring(0, PRECISION));
+	gradeA = new BigDecimal(add(new BigDecimal("93"), oneThird).toPlainString().substring(0, PRECISION));
+	gradeAminus = new BigDecimal("90");
+
+	gradeBplus = new BigDecimal(add(new BigDecimal("86"), twoThirds).toPlainString().substring(0, PRECISION));
+	gradeB = new BigDecimal(add(new BigDecimal("83"), oneThird).toPlainString().substring(0, PRECISION));
+	gradeBminus = new BigDecimal("80");
+
+	gradeCplus = new BigDecimal(add(new BigDecimal("76"), twoThirds).toPlainString().substring(0, PRECISION));
+	gradeC = new BigDecimal(add(new BigDecimal("73"), oneThird).toPlainString().substring(0, PRECISION));
+	gradeCminus = new BigDecimal("70");
+
+
+	gradeDplus = new BigDecimal(add(new BigDecimal("66"), twoThirds).toPlainString().substring(0, PRECISION));
+	gradeD = new BigDecimal(add(new BigDecimal("63"), oneThird).toPlainString().substring(0, PRECISION));
+	gradeDminus = new BigDecimal("60");
+
+	gradeF = new BigDecimal("60");
+	
 }
 
 public Double calculateEqualWeight(int numberOfItems) {
@@ -227,7 +254,7 @@ public BigDecimal calculateItemGradePercent(BigDecimal percentGrade, BigDecimal 
 	else
 		categoryPercentRatio = divide(sumCategoryPercents, BIG_DECIMAL_100);
 
-	return multiply(assignmentWeight, divide(percentGrade, categoryPercentRatio));
+	return divide(multiply(assignmentWeight, percentGrade), categoryPercentRatio);
 }
 
 public BigDecimal calculateItemGradePercentDecimal(BigDecimal percentGrade, BigDecimal sumCategoryPercents, BigDecimal assignmentWeight, boolean doNormalizeTo100) {
@@ -245,7 +272,7 @@ public BigDecimal calculateItemGradePercentDecimal(BigDecimal percentGrade, BigD
 		categoryPercentRatio = sumCategoryPercents; // TODO: Do we need the if doNormalizeTo100 ?
 		//categoryPercentRatio = sumCategoryPercents.divide(BigDecimal.ONE, MATH_CONTEXT);
 
-	return multiply(assignmentWeight, divide(percentGrade, categoryPercentRatio));
+	return divide(multiply(assignmentWeight, percentGrade), categoryPercentRatio);
 }
 
 public GradeStatistics calculateStatistics(List<StudentScore> gradeList, BigDecimal sum, String rankStudentId) {
@@ -884,7 +911,7 @@ public BigDecimal getPercentAsPointsEarned(Assignment assignment, Double percent
 	if (percentage != null) {
 		BigDecimal percent = new BigDecimal(percentage.toString());
 		BigDecimal maxPoints = new BigDecimal(assignment.getPointsPossible().toString());
-		pointsEarned = divide(percent, multiply(BIG_DECIMAL_100, maxPoints));
+		pointsEarned = multiply(divide(percent, BIG_DECIMAL_100), maxPoints);
 	}
 
 	return pointsEarned;	
@@ -902,7 +929,7 @@ public BigDecimal getPointsEarnedAsPercent(Assignment assignment, AssignmentGrad
 	pointsEarned = new BigDecimal(assignmentGradeRecord.getPointsEarned().toString());
 	if (assignment.getPointsPossible() != null) {
 		pointsPossible = new BigDecimal(assignment.getPointsPossible().toString());
-		percentageEarned = multiply(pointsEarned, divide(BIG_DECIMAL_100, pointsPossible));
+		percentageEarned = divide(multiply(pointsEarned, BIG_DECIMAL_100), pointsPossible);
 	}
 	return percentageEarned;
 }

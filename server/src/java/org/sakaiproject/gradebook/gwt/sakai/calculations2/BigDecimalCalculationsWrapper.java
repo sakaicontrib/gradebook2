@@ -4,10 +4,19 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 public class BigDecimalCalculationsWrapper {
 	
-	public static final int MATHCONTEXT_PRECISON = 50;
-	public static final MathContext MATHCONTEXT_50_HALF_EVEN  = new MathContext(MATHCONTEXT_PRECISON, RoundingMode.HALF_EVEN);
+	private static final Log log = LogFactory.getLog(BigDecimalCalculationsWrapper.class);
+	
+	private int precision = 0;
+	private MathContext mathContextHalfEven = null;
+	
+	public void init() {
+		System.out.println("XXXX: BigDecimalCalculationsWrapperImpl init");
+	}
 	
 	public BigDecimal add(BigDecimal addend, BigDecimal augend) {
 		
@@ -39,9 +48,21 @@ public class BigDecimalCalculationsWrapper {
 			 * will generate the exception again. The calling code should handle that case.
 			 */
 			
-			result = dividend.divide(divisor, MATHCONTEXT_50_HALF_EVEN);
+			result = dividend.divide(divisor, mathContextHalfEven);
 		}
 		
 		return result;
+	}
+
+	
+	public void setPrecision(int precision) {
+
+		this.precision = precision;
+		
+		if(null == mathContextHalfEven) {
+		
+			log.info("Setting MathContext precision to " + precision);
+			mathContextHalfEven  = new MathContext(precision, RoundingMode.HALF_EVEN);
+		}
 	}
 }
