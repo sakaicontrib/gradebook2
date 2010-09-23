@@ -36,6 +36,9 @@
                 <property name="eventTrackingService">
                     <ref bean="org_sakaiproject_tool_gradebook_facades_EventTrackingService"/>
                 </property>
+                <property name="gradeCalculations">
+                	<ref bean="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"/>
+                </property>
             </bean>
 		</property>
 	</bean>

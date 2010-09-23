@@ -29,6 +29,7 @@ import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.AssignmentGradeRecord;
 import org.sakaiproject.tool.gradebook.Category;
 import org.sakaiproject.tool.gradebook.Gradebook;
+import org.sakaiproject.tool.gradebook.LetterGradePercentMapping;
 
 public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper implements GradeCalculations {
 
@@ -945,6 +946,45 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 			percentageEarned = divide(multiply(pointsEarned, BIG_DECIMAL_100), pointsPossible);
 		}
 		return percentageEarned;
+	}
+	
+	public Double calculateDoublePointForRecord(Assignment assignment, AssignmentGradeRecord gradeRecordFromCall) {
+		
+		if(gradeRecordFromCall.getPercentEarned() != null)
+		{
+			if(gradeRecordFromCall.getPercentEarned().doubleValue() / 100.0 < 0)
+			{
+				throw new IllegalArgumentException("percent for record is less than 0 for percentage points in GradebookManagerHibernateImpl.calculateDoublePointForRecord");
+			}
+			return new Double(assignment.getPointsPossible().doubleValue() * (gradeRecordFromCall.getPercentEarned().doubleValue() / 100.0));
+		}
+		else
+			return null;
+	}
+
+	
+	public Double calculateDoublePointForLetterGradeRecord(Assignment assignment, LetterGradePercentMapping letterGradePercentMapping, AssignmentGradeRecord gradeRecordFromCall) {
+
+		Double doublePercentage = letterGradePercentMapping.getValue(gradeRecordFromCall.getLetterEarned());
+		if(doublePercentage == null)
+		{
+			log.error("percentage for " + gradeRecordFromCall.getLetterEarned() + " is not found in letter grade mapping in GradebookManagerHibernateImpl.calculateDoublePointForLetterGradeRecord");
+			return null;
+		}
+
+		return calculateEquivalentPointValueForPercent(assignment.getPointsPossible(), doublePercentage);
+	}
+
+	
+	protected Double calculateEquivalentPointValueForPercent(Double doublePointsPossible, Double doublePercentEarned) {
+		
+		if (doublePointsPossible == null || doublePercentEarned == null)
+			return null;
+
+		BigDecimal pointsPossible = new BigDecimal(doublePointsPossible.toString());
+		BigDecimal percentEarned = new BigDecimal(doublePercentEarned.toString());
+		BigDecimal equivPoints = multiply(pointsPossible, divide(percentEarned, BIG_DECIMAL_100));
+		return new Double(equivPoints.doubleValue());
 	}
 
 	private Collection<Category> generateCategoriesWithAssignments(Map<Long, AssignmentGradeRecord>  assignmentGradeRecordMap) {

@@ -48,18 +48,19 @@ import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.AssignmentGradeRecord;
 import org.sakaiproject.tool.gradebook.Category;
 import org.sakaiproject.tool.gradebook.Gradebook;
+import org.sakaiproject.tool.gradebook.LetterGradePercentMapping;
 
 public class GradeCalculationsOOImpl implements GradeCalculations {
-	
+
 	private static final Log log = LogFactory.getLog(GradeCalculationsOOImpl.class);
-	
+
 	/* a MathContext for inexact values. 
 	 * precision = 10 using standard engineering half-up rounding */
 	public static final MathContext MATH_CONTEXT_LG = new MathContext(10, RoundingMode.HALF_UP);
-	
+
 	/* a BigDecimal for percentage calculations. scale = 5 */
 	private final static BigDecimal BIG_DECIMAL_100 = new BigDecimal("100.00000");
-	
+
 	/*
 	 * GRBK-668 
 	 * The old code did not use an evenly distributed grading scale.  
@@ -71,28 +72,28 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 	private final static BigDecimal three = new BigDecimal("3", MATH_CONTEXT_LG); 
 	private final static BigDecimal oneThird = BigDecimal.ONE.divide(three, MATH_CONTEXT_LG); 
 	private final static BigDecimal twoThirds = two.divide(three, MATH_CONTEXT_LG);
-	
+
 	private final static int PRECISION = 7;
-	
+
 	private final static BigDecimal gradeAplus = new BigDecimal((new BigDecimal("96", MATH_CONTEXT_LG).add(twoThirds, MATH_CONTEXT_LG)).toPlainString().substring(0, PRECISION));
 	private final static BigDecimal gradeA = new BigDecimal((new BigDecimal("93", MATH_CONTEXT_LG).add(oneThird, MATH_CONTEXT_LG)).toPlainString().substring(0, PRECISION));
 	private final static BigDecimal gradeAminus = new BigDecimal("90.0000");
-	
+
 	private final static BigDecimal gradeBplus = new BigDecimal((new BigDecimal("86", MATH_CONTEXT_LG).add(twoThirds, MATH_CONTEXT_LG)).toPlainString().substring(0, PRECISION));
 	private final static BigDecimal gradeB = new BigDecimal((new BigDecimal("83", MATH_CONTEXT_LG).add(oneThird, MATH_CONTEXT_LG)).toPlainString().substring(0, PRECISION));
 	private final static BigDecimal gradeBminus = new BigDecimal("80.0000");
-	
+
 	private final static BigDecimal gradeCplus = new BigDecimal((new BigDecimal("76", MATH_CONTEXT_LG).add(twoThirds, MATH_CONTEXT_LG)).toPlainString().substring(0, PRECISION));
 	private final static BigDecimal gradeC = new BigDecimal((new BigDecimal("73", MATH_CONTEXT_LG).add(oneThird, MATH_CONTEXT_LG)).toPlainString().substring(0, PRECISION));
 	private final static BigDecimal gradeCminus = new BigDecimal("70.0000");
 
-	
+
 	private final static BigDecimal gradeDplus = new BigDecimal((new BigDecimal("66", MATH_CONTEXT_LG).add(twoThirds, MATH_CONTEXT_LG)).toPlainString().substring(0, PRECISION));
 	private final static BigDecimal gradeD = new BigDecimal((new BigDecimal("63", MATH_CONTEXT_LG).add(oneThird, MATH_CONTEXT_LG)).toPlainString().substring(0, PRECISION));
 	private final static BigDecimal gradeDminus = new BigDecimal("60.0000");
-	
+
 	private final static BigDecimal gradeF = new BigDecimal("60.0000");
-	
+
 	private final static String A_PLUS = "A+";
 	private final static String A = "A";
 	private final static String A_MINUS = "A-";
@@ -107,9 +108,9 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 	private final static String D_MINUS = "D-";
 	private final static String F = "F";
 	private final static String ZERO = "0";
-	
+
 	public Map<String, Double> letterGradeMap;
-	
+
 	public void init() {
 
 	}
@@ -136,17 +137,17 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 
 		return Double.valueOf(result.doubleValue());
 	}
-	
+
 	public BigDecimal[] calculatePointsCategoryPercentSum(Category category, List<Assignment> assignments, boolean isWeighted, boolean isCategoryExtraCredit) {		
 		return populateGradeRecordUnits(category, null, assignments, null, null, isWeighted, isCategoryExtraCredit);
 	}
-	
+
 	public BigDecimal[] calculatePointsCategoryPercentSum(GradeItem category, List<GradeItem> assignments, CategoryType categoryType, boolean isCategoryExtraCredit) {
 		return populateGradeRecordUnits(category, null, assignments, null, null, categoryType, isCategoryExtraCredit);
 	}
-	
+
 	public BigDecimal[] calculateCourseGradeCategoryPercents(Assignment a, BigDecimal percentGrade, BigDecimal percentCategorySum, BigDecimal pointsSum, boolean isEnforcePointWeighting) {
-		
+
 		boolean isUnweighted = (a != null) ? a.isNotCounted() : false;
 
 		BigDecimal courseGradePercent = BigDecimal.ZERO;
@@ -154,11 +155,11 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		if (!isUnweighted) {
 			if (isEnforcePointWeighting) {
 				double p = a == null || a.getPointsPossible() == null ? 0d : a.getPointsPossible().doubleValue();
-				
+
 				BigDecimal assignmentPoints = BigDecimal.valueOf(p);
-				
+
 				courseGradePercent = calculateItemGradePercent(percentGrade, pointsSum, assignmentPoints, true);
-				
+
 				if (assignmentPoints.compareTo(BigDecimal.ZERO) == 0 || pointsSum.compareTo(BigDecimal.ZERO) == 0)
 					percentCategory = BigDecimal.ZERO;
 				else
@@ -166,25 +167,25 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 
 			} else {
 				double w = a == null || a.getAssignmentWeighting() == null ? 0d : a.getAssignmentWeighting().doubleValue();
-				
+
 				BigDecimal assignmentWeight = BigDecimal.valueOf(w);
 				courseGradePercent = calculateItemGradePercent(percentGrade, percentCategorySum, assignmentWeight, false);
 				percentCategory = BigDecimal.valueOf(100d).multiply(assignmentWeight);
-			
+
 			}
 		}
-		
-		
+
+
 		BigDecimal[] result = new BigDecimal[2];
 		result[0] = courseGradePercent;
 		result[1] = percentCategory;
-		
+
 		return result;
 	}
-	
+
 	public BigDecimal[] calculateCourseGradeCategoryPercents(GradeItem a, BigDecimal percentGrade, 
 			BigDecimal percentCategorySum, BigDecimal pointsSum, boolean isEnforcePointWeighting) {
-		
+
 		boolean isIncluded = Util.checkBoolean((a == null) ? false : a.getIncluded());
 
 		BigDecimal courseGradePercent = BigDecimal.ZERO;
@@ -192,11 +193,11 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		if (isIncluded) {
 			if (isEnforcePointWeighting) {
 				double p = (a == null || a.getPoints() == null) ? 0d : a.getPoints().doubleValue();
-				
+
 				BigDecimal assignmentPoints = BigDecimal.valueOf(p);
-				
+
 				courseGradePercent = calculateItemGradePercent(percentGrade, pointsSum, assignmentPoints, true);
-				
+
 				if (assignmentPoints.compareTo(BigDecimal.ZERO) == 0 || pointsSum.compareTo(BigDecimal.ZERO) == 0)
 					percentCategory = BigDecimal.ZERO;
 				else
@@ -204,22 +205,22 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 
 			} else {
 				double w = a == null || a.getWeighting() == null ? 0d : a.getWeighting().doubleValue();
-				
+
 				BigDecimal assignmentWeight = BigDecimal.valueOf(w);
 				courseGradePercent = calculateItemGradePercentDecimal(percentGrade, percentCategorySum, assignmentWeight, false);
 				percentCategory = assignmentWeight;
-			
+
 			}
 		}
-		
-		
+
+
 		BigDecimal[] result = new BigDecimal[2];
 		result[0] = courseGradePercent;
 		result[1] = percentCategory;
-		
+
 		return result;
 	}
-	
+
 	/*
 	 *  For example: 
 	 *  
@@ -240,7 +241,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 			return BigDecimal.ZERO;
 
 		BigDecimal categoryPercentRatio = null;
-		
+
 		if (doNormalizeTo100)
 			categoryPercentRatio = sumCategoryPercents;
 		else
@@ -257,7 +258,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 			return BigDecimal.ZERO;
 
 		BigDecimal categoryPercentRatio = null;
-		
+
 		if (doNormalizeTo100)
 			categoryPercentRatio = sumCategoryPercents;
 		else
@@ -303,26 +304,26 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 				frequencyMap.put(roundedCourseGrade, frequency);
 
 			}
-			
+
 			if (frequencyMap.size() > 0)
 			{
 				modeList = new ArrayList<BigDecimal>(); 
-				
+
 				Set<BigDecimal> keys = frequencyMap.keySet(); 
-				
+
 				for (BigDecimal k : keys)
 				{
 					FrequencyScore sc = new FrequencyScore();
 					Integer frequency = frequencyMap.get(k);
-					
+
 					sc.setFrequency(frequency);
 					sc.setScore(k); 
 					frequencies.add(sc);
 				}
-				
+
 				Collections.sort(frequencies); 
 				Collections.reverse(frequencies);
-				
+
 				boolean first = true; 
 				Iterator<FrequencyScore> it = frequencies.iterator();
 				FrequencyScore largest = null; 
@@ -348,9 +349,9 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 				{
 					modeList.clear();
 				}
-				
+
 			}
-			
+
 
 			if (count.compareTo(BigDecimal.ZERO) != 0 && sumOfSquareOfDifferences.compareTo(BigDecimal.ZERO) != 0) {
 				BigDecimal fraction = sumOfSquareOfDifferences.divide(count, RoundingMode.HALF_EVEN);
@@ -383,10 +384,10 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 					median = gradeList.get(middle).getScore();
 				}
 			}
-			
+
 			if (rankStudentId != null && gradeList != null && gradeList.size() > 0)
 			{
-				
+
 
 				Iterator<StudentScore> it = gradeList.iterator();
 				StudentScore targ = null; 
@@ -400,7 +401,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 						targ = s; 
 					}
 				}
-				
+
 				if (targ != null)
 				{
 					Collections.reverse(gradeList); 
@@ -425,7 +426,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 			}
 		}
 
-		
+
 
 		statistics.setStudentTotal(gradeList.size()); 
 		statistics.setMean(mean);
@@ -435,16 +436,16 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 
 		return statistics;
 	}
-	
+
 	public String convertPercentageToLetterGrade(BigDecimal percentage) {
-		
+
 		if (percentage != null) {
-			
+
 			percentage = new BigDecimal(percentage.toPlainString(), new MathContext(6, RoundingMode.HALF_UP));
-			
+
 			if (percentage.compareTo(BigDecimal.ZERO) == 0)
 				return ZERO;
-						
+
 			if (percentage.compareTo(gradeF) < 0)
 				return F; 
 
@@ -453,7 +454,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 
 			if (percentage.compareTo(gradeA) >= 0)
 				return A;
-			
+
 			if (percentage.compareTo(gradeAminus) >= 0)
 				return A_MINUS;
 
@@ -462,16 +463,16 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 
 			if (percentage.compareTo(gradeB) >= 0)
 				return B;
-			
+
 			if (percentage.compareTo(gradeBminus) >= 0)
 				return B_MINUS;
-	
+
 			if (percentage.compareTo(gradeCplus) >= 0)
 				return C_PLUS;
 
 			if (percentage.compareTo(gradeC) >= 0)
 				return C;
-			
+
 			if (percentage.compareTo(gradeCminus) >= 0)
 				return C_MINUS;
 
@@ -480,29 +481,29 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 
 			if (percentage.compareTo(gradeD) >= 0)
 				return D;
-			
+
 			if (percentage.compareTo(gradeDminus) >= 0)
 				return D_MINUS;
 
 		}
-		
+
 		return null;
 	}
-	
+
 	public boolean isValidLetterGrade(String letterGrade) {
 		if (letterGrade == null || letterGrade.trim().length() == 0)
 			return true;
-		
+
 		return letterGradeMap.containsKey(letterGrade.toUpperCase());
 	}
-	
+
 	public Double convertLetterGradeToPercentage(String letterGrade) {
 		Double percentage = null;
-		
+
 		if (letterGrade != null) {
 			return letterGradeMap.get(letterGrade.toUpperCase());
 		}
-		
+
 		return percentage;
 	}
 
@@ -516,24 +517,24 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		Gradebook gradebook = category.getGradebook();
 
 		switch (gradebook.getCategory_type()) {
-			case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
-				if (null == category.getWeight() || isUnweighted(category))
-					return null;
-				categoryWeight = new BigDecimal(category.getWeight().toString());
-				break;
-			default:
-				categoryWeight = BigDecimal.ZERO;
+		case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
+			if (null == category.getWeight() || isUnweighted(category))
+				return null;
+			categoryWeight = new BigDecimal(category.getWeight().toString());
+			break;
+		default:
+			categoryWeight = BigDecimal.ZERO;
 
-				List<Assignment> assignments = (List<Assignment>)category.getAssignmentList();
-				if (assignments != null) {
-					for (Assignment assignment : assignments) {
-						BigDecimal assignmentWeight = getAssignmentWeight(assignment);
+			List<Assignment> assignments = (List<Assignment>)category.getAssignmentList();
+			if (assignments != null) {
+				for (Assignment assignment : assignments) {
+					BigDecimal assignmentWeight = getAssignmentWeight(assignment);
 
-						if (assignmentWeight != null)
-							categoryWeight = categoryWeight.add(assignmentWeight);
-					}
+					if (assignmentWeight != null)
+						categoryWeight = categoryWeight.add(assignmentWeight);
 				}
-				break;
+			}
+			break;
 		}
 
 		return categoryWeight;
@@ -543,16 +544,19 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 	public BigDecimal getCourseGrade(Gradebook gradebook, Collection<?> items, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap, boolean isExtraCreditScaled) {
 		boolean isWeighted = true;
 		switch (gradebook.getCategory_type()) {
-			case GradebookService.CATEGORY_TYPE_NO_CATEGORY:
-				return getNoCategoriesCourseGrade((Collection<Assignment>)items, assignmentGradeRecordMap, isExtraCreditScaled);
-			case GradebookService.CATEGORY_TYPE_ONLY_CATEGORY:
-				isWeighted = false;
-			case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
-				return getCategoriesCourseGrade((Collection<Category>)items, assignmentGradeRecordMap, isWeighted, isExtraCreditScaled);
+		case GradebookService.CATEGORY_TYPE_NO_CATEGORY:
+			return getNoCategoriesCourseGrade((Collection<Assignment>)items, assignmentGradeRecordMap, isExtraCreditScaled);
+		case GradebookService.CATEGORY_TYPE_ONLY_CATEGORY:
+			isWeighted = false;
+		case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
+			return getCategoriesCourseGrade((Collection<Category>)items, assignmentGradeRecordMap, isWeighted, isExtraCreditScaled);
 		}
 
 		return null;
 	}
+
+
+
 
 	private BigDecimal getNoCategoriesCourseGrade(Collection<Assignment> assignments, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap, boolean isExtraCreditScaled) {
 		List<GradeRecordCalculationUnit> gradeRecordUnits = new ArrayList<GradeRecordCalculationUnit>();
@@ -584,10 +588,10 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 
 				if (category == null)
 					continue;
-				
+
 				if (category.isRemoved())
 					continue;
-				
+
 				if (isUnweighted(category))
 					continue;
 
@@ -604,12 +608,12 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 					continue;
 
 				boolean isExtraCreditCategory = isExtraCredit(category);
-				
+
 				BigDecimal totalCategoryPoints = populateGradeRecordUnits(category, categoryCalculationUnit, assignments, gradeRecordUnits, assignmentGradeRecordMap, isWeighted, isExtraCreditCategory)[1];
 
 				if (isExtraCreditCategory)
 					totalCategoryPoints = BigDecimal.ZERO;
-				
+
 				totalGradebookPoints = totalGradebookPoints.add(totalCategoryPoints);
 
 				categoryGradeUnitListMap.put(categoryKey, gradeRecordUnits);
@@ -624,31 +628,31 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 
 		return gradebookUnit.calculatePointsBasedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, isExtraCreditScaled);
 	}
-	
+
 	private BigDecimal[] populateGradeRecordUnits(Category category, CategoryCalculationUnit categoryCalculationUnit, 
 			Collection<Assignment> assignments, List<GradeRecordCalculationUnit> gradeRecordUnits, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap, boolean isWeighted, boolean isExtraCreditCategory) {
 
 		BigDecimal totalCategoryPoints = BigDecimal.ZERO;
 		BigDecimal totalCategoryPercent = BigDecimal.ZERO;
-		
+
 		boolean isWeightByPointsCategory = category == null ? false : Util.checkBoolean(category.isEnforcePointWeighting());
 		boolean doPreventUnequalDropLowest = ((isWeighted && isWeightByPointsCategory) || !isWeighted);
-		
+
 		Double lastPointValue = null;
 		BigDecimal lastPercentValue = BigDecimal.ZERO;
-		
+
 		int dropLowest = category == null ? 0 : category.getDrop_lowest();
 		// Check to ensure that we don't apply drop lowest with unweighted, unequal point value items
 		if (dropLowest > 0 && assignments != null) {
 			for (Assignment assignment : assignments) {
-				
+
 				if (assignment.isRemoved() || assignment.isNotCounted())
 					continue;
-				
+
 				// Exclude extra credit items from determining whether drop lowest should be allowed
 				if (Util.checkBoolean(assignment.isExtraCredit()))
 					continue;
-				
+
 				if (doPreventUnequalDropLowest && lastPointValue != null && !lastPointValue.equals(assignment.getPointsPossible())) {
 					if (categoryCalculationUnit != null)
 						categoryCalculationUnit.setDropLowest(0);
@@ -656,118 +660,118 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 					break;
 				}
 				lastPointValue = assignment.getPointsPossible();
-				
+
 				BigDecimal wt = getAssignmentWeight(assignment);
 				if (wt != null)
 					lastPercentValue = wt;
 			}
 		}
-			
+
 		if (assignments != null) {
 			for (Assignment assignment : assignments) {
-	
+
 				if (assignment.isRemoved())
 					continue;
-	
+
 				if (isUnweighted(assignment))
 					continue;
-	
+
 				BigDecimal assignmentWeight = getAssignmentWeight(assignment);
-				
+
 				boolean isExtraCreditItem = Util.checkBoolean(assignment.isExtraCredit());
 				boolean isExtraCreditItemOrCategory = isExtraCreditCategory || isExtraCreditItem;
 				boolean isNullsAsZeros = Util.checkBoolean(assignment.getCountNullsAsZeros());
 				boolean isUnweighted = assignment.isNotCounted();
-				
+
 				if //(!isExtraCreditItemOrCategory 
-					((!isExtraCreditItem || isExtraCreditCategory)
+				((!isExtraCreditItem || isExtraCreditCategory)
 						&& assignment.getPointsPossible() != null) {
 					totalCategoryPoints = totalCategoryPoints.add(BigDecimal.valueOf(assignment.getPointsPossible().doubleValue()), MATH_CONTEXT);
-				
+
 					if (!isUnweighted && null != assignmentWeight) {
 						//double assignmentCategoryPercent = assignment.getAssignmentWeighting() == null ? 0.0 : assignment.getAssignmentWeighting().doubleValue();	
 						totalCategoryPercent = totalCategoryPercent.add(assignmentWeight.multiply(BigDecimal.valueOf(100d), MATH_CONTEXT));
 					}
 				}
-				
+
 				if (gradeRecordUnits != null) {
 					AssignmentGradeRecord assignmentGradeRecord = assignmentGradeRecordMap == null ? null : assignmentGradeRecordMap.get(assignment.getId());
-		
+
 					boolean isGraded = isGraded(assignmentGradeRecord);
-					
+
 					if (isNullsAsZeros || isGraded) {
 						// Make sure it's not excused
 						if (!isExcused(assignmentGradeRecord)) {
-		
+
 							BigDecimal pointsEarned = !isGraded ? BigDecimal.ZERO : new BigDecimal(assignmentGradeRecord.getPointsEarned().toString());
 							BigDecimal pointsPossible = new BigDecimal(assignment.getPointsPossible().toString());
-							
+
 							Boolean isExtraCredit = Boolean.valueOf(isExtraCreditItemOrCategory);
-							
+
 							GradeRecordCalculationUnit gradeRecordUnit = new GradeRecordCalculationUnit(pointsEarned, 
 									pointsPossible, assignmentWeight, isExtraCredit) {
-		
+
 								@Override
 								public void setDropped(boolean isDropped) {
 									super.setDropped(isDropped);
-		
+
 									AssignmentGradeRecord gradeRecord = (AssignmentGradeRecord)getActualRecord();
-									
+
 									if (gradeRecord != null && gradeRecord.getPointsEarned() != null)
 										gradeRecord.setDropped(Boolean.valueOf(isDropped));
 								}
-		
+
 							};
-		
+
 							gradeRecordUnit.setActualRecord(assignmentGradeRecord);
-		
+
 							gradeRecordUnits.add(gradeRecordUnit);
 						}
 					}
 				}
 			}
 		}
-		
+
 		// When we get here we can assume that if drop lowest is greater than 0, it means the points are equal for
 		// all items
 
 		int numberOfItems = assignments == null ? 0 : assignments.size();
-		
+
 		if (dropLowest > 0 && totalCategoryPoints != null) {
 			if (dropLowest > numberOfItems) 
 				dropLowest = numberOfItems;
-			
+
 			BigDecimal representativePointsPossible = lastPointValue == null ? BigDecimal.ZERO : BigDecimal.valueOf(lastPointValue.doubleValue());
 			totalCategoryPoints = totalCategoryPoints.subtract(BigDecimal.valueOf(dropLowest).multiply(representativePointsPossible, MATH_CONTEXT), MATH_CONTEXT);
 			if (totalCategoryPercent != null && lastPercentValue != null)
 				totalCategoryPercent = totalCategoryPercent.subtract(BigDecimal.valueOf(dropLowest).multiply(lastPercentValue.multiply(BigDecimal.valueOf(100d), MATH_CONTEXT), MATH_CONTEXT), MATH_CONTEXT);
 		}
-		
+
 		if (categoryCalculationUnit != null)
 			categoryCalculationUnit.setTotalCategoryPoints(totalCategoryPoints);
-		
+
 		BigDecimal[] result = new BigDecimal[2];
 		result[0] = totalCategoryPercent;
 		result[1] = totalCategoryPoints;
-		
+
 		return result;
 	}
 
-	
+
 	private BigDecimal[] populateGradeRecordUnits(GradeItem category, CategoryCalculationUnit categoryCalculationUnit, 
 			Collection<GradeItem> assignments, List<GradeRecordCalculationUnit> gradeRecordUnits, 
 			Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap, CategoryType categoryType, boolean isExtraCreditCategory) {
 
 		BigDecimal totalCategoryPoints = BigDecimal.ZERO;
 		BigDecimal totalCategoryPercent = BigDecimal.ZERO;
-		
+
 		boolean isWeighted = categoryType == CategoryType.WEIGHTED_CATEGORIES;
 		boolean isWeightByPointsCategory = category == null ? false : Util.checkBoolean(category.getEnforcePointWeighting());
 		boolean doPreventUnequalDropLowest = ((isWeighted && isWeightByPointsCategory) || !isWeighted);
-		
+
 		Double lastPointValue = null;
 		BigDecimal lastPercentValue = null;
-		
+
 		int dropLowest = category == null || category.getDropLowest() == null ? 0 : category.getDropLowest().intValue();
 		// Check to ensure that we don't apply drop lowest with unweighted, unequal point value items
 		if (dropLowest > 0 && assignments != null) {
@@ -775,7 +779,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 				// Exclude extra credit items from determining whether drop lowest should be allowed
 				if (Util.checkBoolean(assignment.getExtraCredit()))
 					continue;
-				
+
 				if (doPreventUnequalDropLowest && lastPointValue != null && !lastPointValue.equals(assignment.getPoints())) {
 					if (categoryCalculationUnit != null)
 						categoryCalculationUnit.setDropLowest(0);
@@ -786,84 +790,84 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 				lastPercentValue = getAssignmentWeight(assignment, categoryType);
 			}
 		}
-			
+
 		if (assignments != null) {
 			for (GradeItem assignment : assignments) {
-	
+
 				if (Util.checkBoolean(assignment.getRemoved()))
 					continue;
-	
+
 				boolean isIncluded = Util.checkBoolean(assignment.getIncluded());
-				
+
 				if (! isIncluded)
 					continue;
-	
+
 				BigDecimal assignmentWeight = getAssignmentWeight(assignment, categoryType);
-				
+
 				boolean isExtraCreditItem = Util.checkBoolean(assignment.getExtraCredit());
 				boolean isExtraCreditItemOrCategory = isExtraCreditCategory || isExtraCreditItem;
 				boolean isNullsAsZeros = Util.checkBoolean(assignment.getNullsAsZeros());
-				
-				
+
+
 				if //(!isExtraCreditItemOrCategory 
-					((!isExtraCreditItem || isExtraCreditCategory)
+				((!isExtraCreditItem || isExtraCreditCategory)
 						&& assignment.getPoints() != null) {
 					totalCategoryPoints = totalCategoryPoints.add(BigDecimal.valueOf(assignment.getPoints().doubleValue()));
-				
+
 					if (null != assignmentWeight) {
 						//double assignmentCategoryPercent = assignment.getAssignmentWeighting() == null ? 0.0 : assignment.getAssignmentWeighting().doubleValue();	
 						totalCategoryPercent = totalCategoryPercent.add(assignmentWeight);
 					}
 				}
-				
+
 
 				if (gradeRecordUnits != null) {
 					AssignmentGradeRecord assignmentGradeRecord = assignmentGradeRecordMap == null ? null : assignmentGradeRecordMap.get(assignment.getItemId());
-		
+
 					boolean isGraded = isGraded(assignmentGradeRecord);
-					
+
 					if (isNullsAsZeros || isGraded) {
 						// Make sure it's not excused
 						if (!isExcused(assignmentGradeRecord)) {
-		
+
 							BigDecimal pointsEarned = !isGraded ? BigDecimal.ZERO : new BigDecimal(assignmentGradeRecord.getPointsEarned().toString());
 							BigDecimal pointsPossible = new BigDecimal(assignment.getPoints().toString());
-							
+
 							Boolean isExtraCredit = Boolean.valueOf(isExtraCreditItemOrCategory);
-							
+
 							GradeRecordCalculationUnit gradeRecordUnit = new GradeRecordCalculationUnit(pointsEarned, 
 									pointsPossible, assignmentWeight, isExtraCredit) {
-		
+
 								@Override
 								public void setDropped(boolean isDropped) {
 									super.setDropped(isDropped);
-		
+
 									AssignmentGradeRecord gradeRecord = (AssignmentGradeRecord)getActualRecord();
-									
+
 									if (gradeRecord != null && gradeRecord.getPointsEarned() != null)
 										gradeRecord.setDropped(Boolean.valueOf(isDropped));
 								}
-		
+
 							};
-		
+
 							gradeRecordUnit.setActualRecord(assignmentGradeRecord);
-		
+
 							gradeRecordUnits.add(gradeRecordUnit);
 						}
 					}
 				}
 			}
 		}
-		
+
 		// When we get here we can assume that if drop lowest is greater than 0, it means the points are equal for
 		// all items
 
 		int numberOfItems = assignments == null ? 0 : assignments.size();
-		
+
 		if (dropLowest > 0 && totalCategoryPoints != null) {
 			if (dropLowest > numberOfItems) 
 				dropLowest = numberOfItems;
-			
+
 			BigDecimal representativePointsPossible = lastPointValue == null ? BigDecimal.ZERO : BigDecimal.valueOf(lastPointValue.doubleValue());
 			totalCategoryPoints = totalCategoryPoints.subtract(BigDecimal.valueOf(dropLowest).multiply(representativePointsPossible, MATH_CONTEXT));
 			if (null != totalCategoryPercent  && null != lastPercentValue)
@@ -871,14 +875,14 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 				totalCategoryPercent = totalCategoryPercent.subtract(BigDecimal.valueOf(dropLowest).multiply(lastPercentValue, MATH_CONTEXT), MATH_CONTEXT);
 			}
 		}
-		
+
 		if (categoryCalculationUnit != null)
 			categoryCalculationUnit.setTotalCategoryPoints(totalCategoryPoints);
-		
+
 		BigDecimal[] result = new BigDecimal[2];
 		result[0] = totalCategoryPercent;
 		result[1] = totalCategoryPoints;
-		
+
 		return result;
 	}
 
@@ -925,6 +929,45 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		return percentageEarned;
 	}
 
+	public Double calculateDoublePointForRecord(Assignment assignment, AssignmentGradeRecord gradeRecordFromCall) {
+
+		if(gradeRecordFromCall.getPercentEarned() != null)
+		{
+			if(gradeRecordFromCall.getPercentEarned().doubleValue() / 100.0 < 0)
+			{
+				throw new IllegalArgumentException("percent for record is less than 0 for percentage points in GradebookManagerHibernateImpl.calculateDoublePointForRecord");
+			}
+			return new Double(assignment.getPointsPossible().doubleValue() * (gradeRecordFromCall.getPercentEarned().doubleValue() / 100.0));
+		}
+		else
+			return null;
+	}
+
+
+	public Double calculateDoublePointForLetterGradeRecord(Assignment assignment, LetterGradePercentMapping letterGradePercentMapping, AssignmentGradeRecord gradeRecordFromCall) {
+
+		Double doublePercentage = letterGradePercentMapping.getValue(gradeRecordFromCall.getLetterEarned());
+		if(doublePercentage == null)
+		{
+			log.error("percentage for " + gradeRecordFromCall.getLetterEarned() + " is not found in letter grade mapping in GradebookManagerHibernateImpl.calculateDoublePointForLetterGradeRecord");
+			return null;
+		}
+
+		return calculateEquivalentPointValueForPercent(assignment.getPointsPossible(), doublePercentage);
+	}
+
+	protected Double calculateEquivalentPointValueForPercent(Double doublePointsPossible, Double doublePercentEarned) {
+
+		if (doublePointsPossible == null || doublePercentEarned == null)
+			return null;
+
+		BigDecimal pointsPossible = new BigDecimal(doublePointsPossible.toString());
+		BigDecimal percentEarned = new BigDecimal(doublePercentEarned.toString());
+		BigDecimal equivPoints = pointsPossible.multiply(percentEarned.divide(new BigDecimal("100"), GradebookService.MATH_CONTEXT));
+		return new Double(equivPoints.doubleValue());
+	}
+
+
 	private Collection<Category> generateCategoriesWithAssignments(Map<Long, AssignmentGradeRecord>  assignmentGradeRecordMap) {
 		Collection<Category> categoriesWithAssignments = new ArrayList<Category>();
 
@@ -968,22 +1011,22 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		Gradebook gradebook = assignment.getGradebook();
 
 		switch (gradebook.getCategory_type()) {
-			case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
-				if (null == assignment.getAssignmentWeighting() || isUnweighted(assignment)) 
-					return null;
-				assignmentWeight = new BigDecimal(assignment.getAssignmentWeighting().toString());
-				break;
-			default:
-				if (null == assignment.getPointsPossible())
-					return null;
+		case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
+			if (null == assignment.getAssignmentWeighting() || isUnweighted(assignment)) 
+				return null;
+			assignmentWeight = new BigDecimal(assignment.getAssignmentWeighting().toString());
+			break;
+		default:
+			if (null == assignment.getPointsPossible())
+				return null;
 
-				assignmentWeight = new BigDecimal(assignment.getPointsPossible().toString());
-				break;
+			assignmentWeight = new BigDecimal(assignment.getPointsPossible().toString());
+			break;
 		}
 
 		return assignmentWeight;
 	}
-	
+
 	private BigDecimal getAssignmentWeight(GradeItem assignment, CategoryType categoryType) {
 
 		BigDecimal assignmentWeight = null;
@@ -993,17 +1036,17 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 			return null;
 
 		switch (categoryType) {
-			case WEIGHTED_CATEGORIES:
-				if (null == assignment.getWeighting() || !Util.checkBoolean(assignment.getIncluded())) 
-					return null;
-				assignmentWeight = new BigDecimal(assignment.getWeighting().toString());
-				break;
-			default:
-				if (null == assignment.getPoints())
-					return null;
+		case WEIGHTED_CATEGORIES:
+			if (null == assignment.getWeighting() || !Util.checkBoolean(assignment.getIncluded())) 
+				return null;
+			assignmentWeight = new BigDecimal(assignment.getWeighting().toString());
+			break;
+		default:
+			if (null == assignment.getPoints())
+				return null;
 
-				assignmentWeight = new BigDecimal(assignment.getPoints().toString());
-				break;
+			assignmentWeight = new BigDecimal(assignment.getPoints().toString());
+			break;
 		}
 
 		return assignmentWeight;
@@ -1024,7 +1067,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 	private boolean isExtraCredit(Assignment assignment) {
 		return assignment.isExtraCredit() == null ? false : assignment.isExtraCredit().booleanValue();
 	}
-	
+
 	private boolean isExtraCredit(Category category) {
 		return category.isExtraCredit() == null ? false : category.isExtraCredit().booleanValue();
 	}
@@ -1040,7 +1083,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 	private boolean isExcused(AssignmentGradeRecord assignmentGradeRecord) {
 		if (assignmentGradeRecord == null)
 			return false;
-		
+
 		return assignmentGradeRecord.isExcludedFromGrade() == null ? false : assignmentGradeRecord.isExcludedFromGrade().booleanValue();
 	}
 
@@ -1065,14 +1108,14 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 	public void setLetterGradeMap(Map<String, Double> letterGradeMap) {
 		this.letterGradeMap = letterGradeMap;
 	}
-	
-	
+
+
 	//TODO: implement hashCode()
 	static class FrequencyScore implements Comparable<FrequencyScore>
 	{
 		private BigDecimal score; 
 		private Integer frequency;
-		
+
 		public BigDecimal getScore() {
 			return score;
 		}
@@ -1085,7 +1128,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		public void setFrequency(Integer frequency) {
 			this.frequency = frequency;
 		}
-		
+
 		public int compareTo(FrequencyScore o) {
 			if (o != null && o.getFrequency() != null)
 			{
@@ -1095,7 +1138,7 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 		}
 		@Override
 		public boolean equals(Object obj) {
-			
+
 			if (obj instanceof FrequencyScore && obj != null)
 			{
 				FrequencyScore ext = (FrequencyScore) obj; 
@@ -1106,9 +1149,9 @@ public class GradeCalculationsOOImpl implements GradeCalculations {
 			}
 			return false; 
 		} 
-	
-		
-		
+
+
+
 	}
 
 }

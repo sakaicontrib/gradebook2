@@ -22,7 +22,6 @@
  **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.sakai.hibernate;
 
-import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,6 +46,7 @@ import org.hibernate.StaleObjectStateException;
 import org.hibernate.TransientObjectException;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.exception.ConstraintViolationException;
+import org.sakaiproject.gradebook.gwt.sakai.GradeCalculations;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authn;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
 import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
@@ -103,6 +103,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	protected SectionAwareness sectionAwareness;
 	protected Gradebook2Authn authn;
 	protected EventTrackingService eventTrackingService;
+	protected GradeCalculations gradeCalculations;
 
 	// Local cache of static-between-deployment properties.
 	protected Map propertiesMap = new HashMap();
@@ -1762,7 +1763,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 			Collection<AssignmentGradeRecord> convertList = new ArrayList<AssignmentGradeRecord>();
 			for (Iterator<AssignmentGradeRecord> iter = gradeRecords.iterator(); iter.hasNext();) {
 				AssignmentGradeRecord agr = iter.next();
-				Double doubleValue = calculateDoublePointForRecord(agr);
+				Double doubleValue = getDoublePointForRecord(agr);
 				if (agr != null && doubleValue != null) {
 					agr.setPointsEarned(doubleValue);
 					convertList.add(agr);
@@ -1776,7 +1777,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 			Collection<AssignmentGradeRecord> convertList = new ArrayList<AssignmentGradeRecord>();
 			for (Iterator<AssignmentGradeRecord> iter = gradeRecords.iterator(); iter.hasNext();) {
 				AssignmentGradeRecord agr = iter.next();
-				Double doubleValue = calculateDoublePointForLetterGradeRecord(agr);
+				Double doubleValue = getDoublePointForLetterGradeRecord(agr);
 				if (agr != null && doubleValue != null) {
 					agr.setPointsEarned(doubleValue);
 					convertList.add(agr);
@@ -2176,24 +2177,13 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	 * 
 	 */
 
-	// FIXME: Need to move this to GradeCalculations
-	protected Double calculateDoublePointForRecord(AssignmentGradeRecord gradeRecordFromCall)
+	protected Double getDoublePointForRecord(AssignmentGradeRecord gradeRecordFromCall)
 	{
 		Assignment assign = getAssignment(gradeRecordFromCall.getAssignment().getId()); 
-		if(gradeRecordFromCall.getPercentEarned() != null)
-		{
-			if(gradeRecordFromCall.getPercentEarned().doubleValue() / 100.0 < 0)
-			{
-				throw new IllegalArgumentException("percent for record is less than 0 for percentage points in GradebookManagerHibernateImpl.calculateDoublePointForRecord");
-			}
-			return new Double(assign.getPointsPossible().doubleValue() * (gradeRecordFromCall.getPercentEarned().doubleValue() / 100.0));
-		}
-		else
-			return null;
+		return gradeCalculations.calculateDoublePointForRecord(assign, gradeRecordFromCall);
 	}
 
-	// FIXME: Need to move this to GradeCalculations
-	protected Double calculateDoublePointForLetterGradeRecord(AssignmentGradeRecord gradeRecordFromCall)
+	protected Double getDoublePointForLetterGradeRecord(AssignmentGradeRecord gradeRecordFromCall)
 	{
 		Assignment assign = getAssignment(gradeRecordFromCall.getAssignment().getId()); 
 		Gradebook gradebook = getGradebook(assign.getGradebook().getId());
@@ -2202,14 +2192,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 			LetterGradePercentMapping lgpm = getLetterGradePercentMapping(gradebook);
 			if(lgpm != null && lgpm.getGradeMap() != null)
 			{
-				Double doublePercentage = lgpm.getValue(gradeRecordFromCall.getLetterEarned());
-				if(doublePercentage == null)
-				{
-					log.error("percentage for " + gradeRecordFromCall.getLetterEarned() + " is not found in letter grade mapping in GradebookManagerHibernateImpl.calculateDoublePointForLetterGradeRecord");
-					return null;
-				}
-
-				return calculateEquivalentPointValueForPercent(assign.getPointsPossible(), doublePercentage);
+				return gradeCalculations.calculateDoublePointForLetterGradeRecord(assign,lgpm, gradeRecordFromCall);
 			}
 			return null;
 		}
@@ -2217,16 +2200,6 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 			return null;
 	}
 
-	// FIXME: Need to move this to GradeCalculations
-	protected Double calculateEquivalentPointValueForPercent(Double doublePointsPossible, Double doublePercentEarned) {
-		if (doublePointsPossible == null || doublePercentEarned == null)
-			return null;
-
-		BigDecimal pointsPossible = new BigDecimal(doublePointsPossible.toString());
-		BigDecimal percentEarned = new BigDecimal(doublePercentEarned.toString());
-		BigDecimal equivPoints = pointsPossible.multiply(percentEarned.divide(new BigDecimal("100"), GradebookService.MATH_CONTEXT));
-		return new Double(equivPoints.doubleValue());
-	}
 
 	/**
 	 * Oracle has a low limit on the maximum length of a parameter list
@@ -2520,6 +2493,10 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	 * DEPENDENCY INJECTION ACCESSORS
 	 * 
 	 */
+	
+	public void setGradeCalculations(GradeCalculations gradeCalculations) {
+		this.gradeCalculations = gradeCalculations;
+	}
 
 	public SectionAwareness getSectionAwareness() {
 		return sectionAwareness;
