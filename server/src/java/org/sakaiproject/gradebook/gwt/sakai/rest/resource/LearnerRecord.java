@@ -12,6 +12,8 @@ import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.server.model.GradeRecord;
 
+import com.sun.jersey.core.util.Base64;
+
 @Path("learner")
 public class LearnerRecord extends Resource {
 
@@ -28,7 +30,7 @@ public class LearnerRecord extends Resource {
 			log.debug("assignComment " + gradebookUid + " " + itemId + " " + studentUid);
 		
 		GradeRecord action = jaxbAction.getValue();
-		Learner map = service.assignComment(itemId, studentUid, action.getStringValue());
+		Learner map = service.assignComment(itemId, Base64.base64Decode(studentUid), action.getStringValue());
 		
 		return toJson(map);
 	}
@@ -44,7 +46,7 @@ public class LearnerRecord extends Resource {
 			log.debug("assignExcused " + gradebookUid + " " + itemId + " " + studentUid);
 		
 		GradeRecord action = jaxbAction.getValue();
-		Learner map = service.assignExcused(itemId, studentUid, action.getBooleanValue());
+		Learner map = service.assignExcused(itemId, Base64.base64Decode(studentUid), action.getBooleanValue());
 		
 		return toJson(map);
 	}
@@ -62,7 +64,7 @@ public class LearnerRecord extends Resource {
 		GradeRecord action = jaxbAction.getValue();
 
 		Learner map = service.assignScore(gradebookUid, 
-				studentUid, itemId, action.getValue(), 
+				Base64.base64Decode(studentUid), itemId, action.getValue(), 
 				action.getPreviousValue());
 
 		return toJson(map);
@@ -81,7 +83,7 @@ public class LearnerRecord extends Resource {
 		GradeRecord action = jaxbAction.getValue();
 
 		Learner map = service.assignScore(gradebookUid, 
-					studentUid, itemId, action.getStringValue(), 
+				Base64.base64Decode(studentUid), itemId, action.getStringValue(), 
 					action.getPreviousStringValue());
 		
 		return toJson(map);

@@ -61,6 +61,7 @@ import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.PermissionKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.ClassType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
+import org.sakaiproject.gradebook.gwt.client.util.Base64;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.data.BaseTreeModel;
@@ -704,7 +705,7 @@ public class ServiceController extends Controller {
 		RestBuilder builder = RestBuilder.getInstance(Method.PUT, 
 				GWT.getModuleBaseURL(),
 				AppConstants.REST_FRAGMENT,
-				AppConstants.LEARNER_FRAGMENT, entity, gradebookUid, itemId, studentUid);
+				AppConstants.LEARNER_FRAGMENT, entity, gradebookUid, itemId,  Base64.encode(studentUid));
 		
 		
 		builder.sendRequest(200, 400, json.toString(), new RestCallback() {
