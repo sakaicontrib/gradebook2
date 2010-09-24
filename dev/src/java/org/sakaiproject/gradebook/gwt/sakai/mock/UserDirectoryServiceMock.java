@@ -57,7 +57,7 @@ public class UserDirectoryServiceMock implements UserDirectoryService {
 		if (users == null) {
 			users = new ArrayList<User>(DEFAULT_NUMBER_TEST_LEARNERS);
 			for (int i=0;i<DEFAULT_NUMBER_TEST_LEARNERS;i++) {
-				users.add(createUserRecord(i));
+				users.add(createUserRecord(i + ";XXj7"));
 			}
 		}
 	}
@@ -328,8 +328,9 @@ public class UserDirectoryServiceMock implements UserDirectoryService {
 		return SECTIONS[getRandomInt(SECTIONS.length)];
 	}
 	
-	private User createUserRecord(int i) {
-		String id = String.valueOf(i);
+	private User createUserRecord(String userId) {
+		
+		String id = userId;
 		String displayId = id; //String.valueOf(100000 + getRandomInt(899999));
 		String firstName = FIRST_NAMES[getRandomInt(FIRST_NAMES.length)];
 		String lastName = LAST_NAMES[getRandomInt(LAST_NAMES.length)];
@@ -339,8 +340,13 @@ public class UserDirectoryServiceMock implements UserDirectoryService {
 		User userRecord = new UserMock(id, displayId, eid, firstName, lastName, email);
 		
 		return userRecord;
+		
 	}
-
+	
+	private User createUserRecord(int i) {
+		
+		return createUserRecord(String.valueOf(i));
+	}
 
 	public List<User> searchExternalUsers(String arg0, int arg1, int arg2) {
 		// TODO Auto-generated method stub
