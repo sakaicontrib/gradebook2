@@ -48,7 +48,7 @@ public class GradeDataLoader {
 		Collections.addAll(statsKeys, 
 				INPUT_KEY_MEAN, /* not currently supported -> INPUT_KEY_STDEV, */ 
 				INPUT_KEY_STDEVP, INPUT_KEY_MEDIAN,
-				INPUT_KEY_MODE);
+				INPUT_KEY_MODE, INPUT_KEY_USE_DEPRECATED);
 		
 		URL u = ClassLoader.getSystemResource(dataFileName);
 		if(u != null) {
@@ -157,7 +157,7 @@ public class GradeDataLoader {
 			System.out.println("Filed to read file: " + dataFile.getPath());
 		}
 		
-		
+		statsKeys.remove(INPUT_KEY_USE_DEPRECATED); /// this isn't a required value
 		
 	}
 
