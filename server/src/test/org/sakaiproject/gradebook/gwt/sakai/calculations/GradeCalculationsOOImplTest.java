@@ -1,7 +1,10 @@
 package org.sakaiproject.gradebook.gwt.sakai.calculations;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
@@ -14,8 +17,11 @@ import junit.framework.TestCase;
 import org.apache.commons.collections.FastHashMap;
 import org.apache.commons.math.stat.Frequency;
 import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
+import org.codehaus.jackson.map.deser.StdDeserializationContext;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.sakai.GradeCalculations;
+import org.sakaiproject.gradebook.gwt.sakai.calculations2.BigDecimalCalculationsWrapper;
+import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradeCalculationsImpl;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeItem;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeStatistics;
 import org.sakaiproject.gradebook.gwt.sakai.model.StudentScore;
@@ -28,7 +34,20 @@ import org.sakaiproject.tool.gradebook.Category;
 import org.sakaiproject.tool.gradebook.Gradebook;
 import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradeCalculationsImpl;
 
+import sun.security.util.BigInt;
+
 public class GradeCalculationsOOImplTest extends TestCase {
+	
+	public static final String GRADE_DATA_FILE_PATH = "org/sakaiproject/gradebook/gwt/sakai/calculations/GradeData.dat";
+	public static final Object PROP_GRADE_DATA_FILE_PATH = "gb2.test.gradedata.path";
+	private String dataFilePath = GRADE_DATA_FILE_PATH;
+	
+	BigDecimal meanFromFile = null;
+	BigDecimal stdevSampFromFile = null;
+	BigDecimal stdevPopFromFile = null;
+	BigDecimal medianFromFile = null;
+	BigDecimal modeFromFile = null;
+
 	
 	private GradeCalculations calculator = null;
 	private static String GRADE_ITEM_JSON_ASN1 = "{\"B_ACTIVE\":false, \"B_EDITABLE\":true, \"L_CTGRY_ID\":1, \"S_NM\":\"ASN-1\", \"B_X_CRDT\":false, \"B_EQL_WGHT\":true, \"B_INCLD\":true, \"B_RLSD\":false, \"B_NLLS_ZEROS\":false, \"B_WT_BY_PTS\":false, \"D_PCT_GRD\":null, \"S_PCT_GRD\":\"null\", \"D_PCT_CTGRY\":null, \"S_PCT_CTGRY\":\"null\", \"D_PNTS\":null, \"S_PNTS\":\"null\", \"W_DUE\":null, \"I_DRP_LWST\":null, \"S_ITM_TYPE\":\"ITEM\"}";
@@ -38,14 +57,29 @@ public class GradeCalculationsOOImplTest extends TestCase {
 	private static String GRADE_ITEM_JSON_CATEGORY = "{\"B_ACTIVE\":false, \"B_EDITABLE\":true, \"S_CTGRY_NAME\":\"\", \"S_NM\":\"Category 1\", \"B_X_CRDT\":false, \"B_EQL_WGHT\":false, \"B_INCLD\":true, \"B_RLSD\":false, \"B_NLLS_ZEROS\":false, \"B_WT_BY_PTS\":false, \"D_PCT_GRD\":null, \"S_PCT_GRD\":\"null\", \"D_PCT_CTGRY\":null, \"S_PCT_CTGRY\":\"null\", \"D_PNTS\":null, \"S_PNTS\":\"null\", \"W_DUE\":null, \"I_DRP_LWST\":null, \"S_ITM_TYPE\":\"CATEGORY\"}";
 
 	// set this flag to true to expect high precision numbers as results
-	private static boolean FULL_PRECISION = true;
+	private boolean FULL_PRECISION = true;
 	
+	final BigDecimalCalculationsWrapper helper = new BigDecimalCalculationsWrapper(50);
+
 	public GradeCalculationsOOImplTest() {
+		
 
 		if(FULL_PRECISION)
 			calculator = new GradeCalculationsImpl(50);
 		else
 			calculator = new GradeCalculationsOOImpl();
+		
+		if (System.getProperties().contains(PROP_GRADE_DATA_FILE_PATH)) {
+			if (dataFilePath != null )
+				try {
+					File file = new File(dataFilePath.trim());
+					if(!(file.exists() && file.canRead())) {
+						System.err.println("Cannot read file '" + dataFilePath + "' ... using default: " + GRADE_DATA_FILE_PATH);
+					}
+				} catch (SecurityException se) {
+					System.err.println("SecurityException: Cannot read file '" + dataFilePath + "' ... using default: " + GRADE_DATA_FILE_PATH);
+				}
+		}
 	}
 
 	protected void setUp() throws Exception {
@@ -428,7 +462,9 @@ public class GradeCalculationsOOImplTest extends TestCase {
 //	}
 
 	public void testCalculateStatistics() {
-		GradeDataLoader data = new GradeDataLoader("org/sakaiproject/gradebook/gwt/sakai/calculations/GradeData.dat");
+		GradeDataLoader data = new GradeDataLoader(GRADE_DATA_FILE_PATH);
+		
+		assertTrue(data.isAllTestStatsKeysPresent());
 		
 		// calculate stats using commons-math
 		DescriptiveStatistics stats = new DescriptiveStatistics();
@@ -460,13 +496,187 @@ public class GradeCalculationsOOImplTest extends TestCase {
 		double median = stats.getPercentile(50d);
 	
 		
+		/* since we'll be comparing results against expected
+		 * values in the file, if the file expects deprecated results, get them
+		 */
+		GradeCalculations temp = calculator;
+		if(data.isUseDeprecatedCalculations() && FULL_PRECISION) {
+			calculator = new GradeCalculationsOOImpl();
+		}
 		
-		GradeStatistics calculatedStats = calculator.calculateStatistics(data.getScores(), BigDecimal.valueOf(stats.getSum()), null);
-//TODO: the asserts
+		/**
+		 * NOTE: The result of these calculations is sensitive to 
+		 * the scale and precision of source data and the intermediary storage while calculating
+		 * the SUM of the data values (which is passed to the 'calculateStatistics' method
+		 * 
+		 * Here we will use full presision and calculate our own sum 
+		 * 
+		 */
+
+		GradeStatistics calculatedStats = calculator.calculateStatistics(data.getScores(), getScoresSum(data), null);
+
+
+		//Assertions
+		
+		// Currently the mean returned is a rounded, scale 2 value since it corresponds to one bucket of a histogram 
+		
+		/*
+		 * TODO, this could be producing a lot of error for the users of the API: the error is squared and summed for each
+		 * data point... the current assumption seems to be that it is a display value
+		 */
+		
+				// So, we only need to test that commons-math and our impl class both come up with the same rounded and scaled value
+		assertEquals("StatsTest-mean", 
+				// expected value is same as calculated with commons-math
+				// high precision, half-up rounded to scale 2
+				BigDecimal.valueOf(mean).setScale(2, RoundingMode.HALF_UP), 
+				calculatedStats.getMean().setScale(2, RoundingMode.HALF_UP));
+		
+		
+		// The standard deviation in our API returns a BigDecimal
+		// So we will first test that we can generate the same number with the given data using 
+		// a technique (code) in this test class (which is probably, but not necessarily, the same techniqye as what
+		// that is in the impl class)...
+		// ... then generate a double value using commons-math and compare that to a rounded and scaled down
+		// result from our impl class.
+		
+		/* this only tests our local 'best' algorithm for stdev (population)
+		 * It doesn't use file data, but check to see of the impl is the high precision impl first
+		 */
+		if(!data.isUseDeprecatedCalculations() && FULL_PRECISION)
+			assertEquals("High-precision-StatsTest-stddev-test-standard-population",
+				// expected value is same as calculated with algorithm used
+				// in high-precision calculations impl
+				// not that this also tests equality wrt scale and precision
+				getOnlinePopulationStandardDeviation(data), 
+				calculatedStats.getStandardDeviation());
+		
+		
+
+		
+		
+		String fromFile = (String)data.getTestStatsByKey().get(GradeDataLoader.INPUT_KEY_STDEVP);
+		
+		/// this tests value, precision and scale
+		assertEquals("StatsTest-stdevp-from-test-file", new BigDecimal(fromFile), calculatedStats.getStandardDeviation());
+			
+		fromFile = (String)data.getTestStatsByKey().get(GradeDataLoader.INPUT_KEY_MEAN);
+		
+		/// this tests value, precision and scale
+		assertEquals("StatsTest-mean-from-test-file", new BigDecimal(fromFile), calculatedStats.getMean());
+		
+		fromFile = (String)data.getTestStatsByKey().get(GradeDataLoader.INPUT_KEY_MEDIAN);
+		
+		assertEquals("StatsTest-median-from-test-file", new BigDecimal(fromFile), calculatedStats.getMedian());
+		
+		Object o = data.getTestStatsByKey().get(GradeDataLoader.INPUT_KEY_MODE);
+		
+		if (o instanceof String) {
+			String s = (String)o;
+			assertEquals("StatsTest-mode-COUNT-from-test-file", 1, calculatedStats.getModeList().size());
+		} else {
+			ArrayList<BigDecimal> l = (ArrayList<BigDecimal>) o;
+			assertEquals("StatsTest-mode-COUNT-from-test-file", l.size(), calculatedStats.getModeList().size());
+			for(int i=0;i<calculatedStats.getModeList().size();++i) {
+				assertTrue("StatsTest-mode-from-test-file-" + i + " : " + l.get(i), calculatedStats.getModeList().contains(l.get(i)));
+			}
+			
+		}
+		
+		//System.out.println("open-office stdevp: " + new BigDecimal("19.4463453858135"));
+		//System.out.println("calculated   stdev: " + calculatedStats.getStandardDeviation()
+		//		.setScale(13, RoundingMode.HALF_UP));
+		
+		
+		/*
+		 * assertEquals("StatsTest-stddev-openoffice-population",
+		 
+				// expected value is same as calculated with 
+				// open office (v3.1.1-19.34.fc12)
+				// using stdevp() : "population standard deviation"
+				// oocalc apparently uses a scale of 13 with half_up
+				0, (new BigDecimal("19.4463453858135")).compareTo( 
+				calculatedStats.getStandardDeviation().setScale(13, RoundingMode.HALF_UP)));
+		*/
+		
+		
+		/* reset the overridden calulator implementation */
+		calculator = temp;
 		
 	}
-  
 	
+	private BigDecimal getOnlineSampleStandardDeviation(GradeDataLoader data) {
+		// == sqrt ( ((pop stdev)^2 * N)/(N-1) )
+		
+		
+		BigDecimal stdevpop = getOnlinePopulationStandardDeviation(data);
+		return doSqrt(helper.
+				divide(helper.
+						multiply(BigDecimal.valueOf(data.getScores().size()),helper.
+								multiply(stdevpop, stdevpop)), BigDecimal.valueOf(data.getScores().size() - 1)));
+	}
+  
+	private BigDecimal doSqrt(BigDecimal operand) {
+		if (FULL_PRECISION) {
+			return helper.sqrt(operand);
+		} else {
+			BigSquareRoot bigSR =  new BigSquareRoot();
+			return bigSR.get(operand);
+		}
+		
+	}
+
+	private BigDecimal getOnlinePopulationStandardDeviation(GradeDataLoader data) {
+		
+		/*
+		 * Donald Knuth's "The Art of Computer Programming, Volume 2: Seminumerical Algorithms", section 4.2.2.
+		 * Knuth attributes this method to B.P. Welford, Technometrics, 4,(1962), 419-420.
+		 * 
+		 * M(1) = x(1), M(k) = M(k-1) (x(k) - M(k-1) / k
+		 * S(1) = 0, S(k) = S(k-1) (x(k) - M(k-1)) * (x(k) - M(k))
+		 *
+		 * for 2 <= k <= n, then
+		 *
+		 * sigma = sqrt(S(n) / (n - 1))
+		 * 
+		 * (also: http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance)
+		 */
+		
+		if (data.getScores().size() == 0) { return null; } 
+		
+		
+		
+		int n = 0;
+		int scale = 100;
+		// estimate the mean
+		BigDecimal mean = helper.divide(getScoresSum(data), BigDecimal.valueOf(data.getScores().size()));;
+		BigDecimal M2 = BigDecimal.ZERO;
+		BigDecimal delta = null;
+		BigDecimal variance = null;
+		
+		
+		
+		for (StudentScore score : data.getScores()) {
+			n++;
+			delta = helper.subtract(score.getScore(), mean);
+			mean = helper.add(mean, helper.divide(delta, BigDecimal.valueOf(n)));
+			
+			M2 = helper.add(M2,helper.multiply(delta, helper.subtract(score.getScore(), mean)));
+			//System.out.println("variance(" + n + "): " + helper.divide(M2, BigDecimal.valueOf(n)));
+			//System.out.println("variance : " + helper.divide(M2, BigDecimal.valueOf(n-1)));
+		}
+		// note: using n, not n-1... ie, the population variance, not the sample variance
+		variance = helper.divide(M2, BigDecimal.valueOf(n)); 
+		return helper.sqrt(variance);
+	}
+
+	private BigDecimal getScoresSum(GradeDataLoader data) {
+		BigDecimal rt = BigDecimal.ZERO;
+		for (StudentScore score : data.getScores()) {
+			rt = rt.add(score.getScore());
+		}
+		return rt;
+	}
 	
 	public void testConvertPercentageToLetterGrade() {
 		System.out.println("testConvertPercentageToLetterGrade yet implemented");

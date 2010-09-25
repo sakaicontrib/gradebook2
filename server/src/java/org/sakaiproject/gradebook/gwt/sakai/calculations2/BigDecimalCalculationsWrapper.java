@@ -6,9 +6,14 @@ import java.math.RoundingMode;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradeCalculationsImpl.BigSquareRoot;
 
 public class BigDecimalCalculationsWrapper {
 	
+	public int getPrecision() {
+		return precision;
+	}
+
 	private static final Log log = LogFactory.getLog(BigDecimalCalculationsWrapper.class);
 	
 	private int precision = 0;
@@ -77,4 +82,13 @@ public class BigDecimalCalculationsWrapper {
 			mathContextHalfEven  = new MathContext(precision, RoundingMode.HALF_EVEN);
 		}
 	}
+	
+	public BigDecimal sqrt(BigDecimal operand) {
+		
+		BigSquareRoot sqrtHelper = (new GradeCalculationsImpl(getPrecision())).new BigSquareRoot();
+		
+		return sqrtHelper.get(operand);
+		
+	}
+	
 }

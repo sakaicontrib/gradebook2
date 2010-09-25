@@ -1,6 +1,7 @@
 package org.sakaiproject.gradebook.gwt.sakai.calculations2;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -16,7 +17,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.sakai.GradeCalculations;
-import org.sakaiproject.gradebook.gwt.sakai.calculations.BigSquareRoot;
 import org.sakaiproject.gradebook.gwt.sakai.calculations.CategoryCalculationUnit;
 import org.sakaiproject.gradebook.gwt.sakai.calculations.GradeRecordCalculationUnit;
 import org.sakaiproject.gradebook.gwt.sakai.calculations.GradebookCalculationUnit;
@@ -289,33 +289,56 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 		return divide(multiply(assignmentWeight, percentGrade), categoryPercentRatio);
 	}
 
+/*
+ * Notes for calculation of running or online standard deviation:
+ * 
+ * Donald Knuth's "The Art of Computer Programming, Volume 2: Seminumerical Algorithms", section 4.2.2.
+ * Knuth attributes this method to B.P. Welford, Technometrics, 4,(1962), 419-420.
+ * 
+ * M(1) = x(1), M(k) = M(k-1) (x(k) - M(k-1) / k
+ * S(1) = 0, S(k) = S(k-1) (x(k) - M(k-1)) * (x(k) - M(k))
+ *
+ * for 2 <= k <= n, then
+ *
+ * sigma = sqrt(S(n) / (n - 1))
+ * 
+ * (also see: http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance)
+ */
+
 	public GradeStatistics calculateStatistics(List<StudentScore> gradeList, BigDecimal sum, String rankStudentId) {
 		GradeStatistics statistics = new GradeStatistics();
 		List<BigDecimal> modeList = null; 
 		if (gradeList == null || gradeList.isEmpty())
 			return statistics;
 
+		int n = 0;
 		BigDecimal count = BigDecimal.valueOf(gradeList.size());
-		BigDecimal mean = null;
+		BigDecimal mean = null; 
+		BigDecimal delta = null;
+		BigDecimal variance = null;
 
 		if (count.compareTo(BigDecimal.ZERO) != 0)
-			mean = divide(sum, count);
+			mean = divide(sum, count); /// first estimate the mean
 
-		BigDecimal mode = null;
 		List<FrequencyScore> frequencies = new ArrayList<FrequencyScore>();
 		Map<BigDecimal, Integer> frequencyMap = new HashMap<BigDecimal, Integer>();
 		BigDecimal standardDeviation = null;
 		// Once we have the mean course grade, we can calculate the standard deviation from that mean
 		// That is, for the equation S = sqrt(A/c)
 		if (gradeList != null && mean != null) {
-			BigDecimal sumOfSquareOfDifferences = BigDecimal.ZERO;
+			BigDecimal sumOfSquareOfDifferences = BigDecimal.ZERO; // the sum of squares of differences from the *current* mean
 			for (StudentScore rec : gradeList) {
+				n++;
 				BigDecimal courseGrade = rec.getScore(); 
+
 				BigDecimal roundedCourseGrade = courseGrade.setScale(2, GradeCalculations.MATH_CONTEXT.getRoundingMode());
 				// Take the square of the difference and add it to the sum, A 
 				BigDecimal difference = subtract(courseGrade, mean);
-				BigDecimal square = multiply(difference, difference);
-				sumOfSquareOfDifferences = add(sumOfSquareOfDifferences, square);
+				
+				mean = add(mean,divide(difference, BigDecimal.valueOf(n))); // new mean value
+				
+				sumOfSquareOfDifferences = // summation using new mean value
+					add(sumOfSquareOfDifferences, multiply(difference, subtract(courseGrade, mean))); 
 
 				Integer frequency = frequencyMap.get(roundedCourseGrade);
 				if (frequency == null)
@@ -327,7 +350,7 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 
 			}
 
-			if (frequencyMap.size() > 0)
+			if (frequencyMap.size() > 0) 
 			{
 				modeList = new ArrayList<BigDecimal>(); 
 
@@ -374,12 +397,11 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 
 			}
 
-
 			if (count.compareTo(BigDecimal.ZERO) != 0 && sumOfSquareOfDifferences.compareTo(BigDecimal.ZERO) != 0) {
-				BigDecimal fraction = divide(sumOfSquareOfDifferences, count);
+				variance = divide(sumOfSquareOfDifferences, count);
 				BigSquareRoot squareRoot = new BigSquareRoot();
-				if (fraction != null && fraction.compareTo(BigDecimal.ZERO) != 0)
-					standardDeviation = squareRoot.get(fraction);
+				if (variance != null && variance.compareTo(BigDecimal.ZERO) != 0)
+					standardDeviation = squareRoot.get(variance);
 			}
 		}
 
@@ -1170,5 +1192,162 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 
 
 	}
+
+	/*
+	 * BigSquareRoot is being stuffed in here as an inner class to keep it tight with this high precision
+	 * calculation class until we can remove the low precision code.
+	 */
+	
+public class BigSquareRoot {
+
+	private BigDecimal ZERO = new BigDecimal("0");
+	private BigDecimal ONE = new BigDecimal("1");
+	private BigDecimal TWO = new BigDecimal("2");
+	public final int DEFAULT_MAX_ITERATIONS = getPrecision();
+	
+
+	private BigDecimal error;
+	private int iterations;
+	private boolean traceFlag;
+	private int scale = getPrecision();
+	private int maxIterations = DEFAULT_MAX_ITERATIONS;
+
+	//---------------------------------------
+	// The error is the original number minus
+	// (sqrt * sqrt). If the original number
+	// was a perfect square, the error is 0.
+	//---------------------------------------
+
+	public BigDecimal getError() {
+		return error;
+	}
+
+	//-------------------------------------------------------------
+	// Number of iterations performed when square root was computed
+	//-------------------------------------------------------------
+
+	public int getIterations() {
+		return iterations;
+	}
+
+	//-----------
+	// Trace flag
+	//-----------
+
+	public boolean getTraceFlag() {
+		return traceFlag;
+	}
+
+	public void setTraceFlag(boolean flag) {
+		traceFlag = flag;
+	}
+
+	//------
+	// Scale
+	//------
+
+	public int getScale() {
+		return scale;
+	}
+
+	public void setScale(int scale) {
+		this.scale = scale;
+	}
+
+	//-------------------
+	// Maximum iterations
+	//-------------------
+
+	public int getMaxIterations() {
+		return maxIterations;
+	}
+
+	public void setMaxIterations(int maxIterations) {
+		this.maxIterations = maxIterations;
+	}
+
+	//--------------------------
+	// Get initial approximation
+	//--------------------------
+
+	private BigDecimal getInitialApproximation(BigDecimal n) {
+		BigInteger integerPart = n.toBigInteger();
+		int length = integerPart.toString().length();
+		if ((length % 2) == 0) {
+			length--;
+		}
+		length /= 2;
+		BigDecimal guess = ONE.movePointRight(length);
+		return guess;
+	}
+
+	//----------------
+	// Get square root
+	//----------------
+
+	public BigDecimal get(BigInteger n) {
+		return get(new BigDecimal(n));
+	}
+
+	public BigDecimal get(BigDecimal n) {
+
+		// Make sure n is a positive number
+
+		if (n.compareTo(ZERO) <= 0) {
+			throw new IllegalArgumentException();
+		}
+
+		BigDecimal initialGuess = getInitialApproximation(n);
+		trace("Initial guess " + initialGuess.toString());
+		BigDecimal lastGuess = ZERO;
+		BigDecimal guess = new BigDecimal(initialGuess.toString());
+
+		// Iterate
+
+		iterations = 0;
+		boolean more = true;
+		while (more) {
+			lastGuess = guess;
+			guess = n.divide(guess, scale, BigDecimal.ROUND_HALF_UP);
+			guess = guess.add(lastGuess);
+			guess = guess.divide(TWO, scale, BigDecimal.ROUND_HALF_UP);
+			trace("Next guess " + guess.toString());
+			error = n.subtract(guess.multiply(guess), GradeCalculations.MATH_CONTEXT);
+			if (++iterations >= maxIterations) {
+				more = false;
+			} else if (lastGuess.equals(guess)) {
+				more = error.abs(GradeCalculations.MATH_CONTEXT).compareTo(ONE) >= 0;
+			}
+		}
+		return guess;
+
+	}
+
+	//------
+	// Trace
+	//------
+
+	private void trace(String s) {
+		if (traceFlag) {
+			System.out.println(s);
+		}
+	}
+
+	//----------------------
+	// Get random BigInteger
+	//----------------------
+
+	public BigInteger getRandomBigInteger(int nDigits) {
+		StringBuffer sb = new StringBuffer();
+		java.util.Random r = new java.util.Random();
+		for (int i = 0; i < nDigits; i++) {
+			sb.append(r.nextInt(10));
+		}
+		return new BigInteger(sb.toString());
+	}
+
+
+
+}
 
 }
