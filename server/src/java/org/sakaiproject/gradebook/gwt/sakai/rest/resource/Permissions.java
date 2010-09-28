@@ -9,6 +9,8 @@ import javax.ws.rs.Produces;
 
 import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 
+import com.sun.jersey.core.util.Base64;
+
 @Path("permissions/{uid}/{id}/{graderId}")
 public class Permissions extends Resource {
 
@@ -17,7 +19,7 @@ public class Permissions extends Resource {
     public String get(@PathParam("uid") String gradebookUid, @PathParam("id") Long gradebookId,
     		@PathParam("graderId") String graderId) throws SecurityException {
 		List<org.sakaiproject.gradebook.gwt.client.model.Permission> list = 
-			service.getPermissions(gradebookUid, gradebookId, graderId);
+			service.getPermissions(gradebookUid, gradebookId, Base64.base64Decode(graderId));
 		return toJson(list, list.size());
 	}
 	

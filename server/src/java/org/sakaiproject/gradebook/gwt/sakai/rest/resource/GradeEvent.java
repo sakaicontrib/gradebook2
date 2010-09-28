@@ -7,6 +7,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
+import com.sun.jersey.core.util.Base64;
+
 
 @Path("gradeevent")
 public class GradeEvent extends Resource {
@@ -15,7 +17,7 @@ public class GradeEvent extends Resource {
     @Produces("application/json")
     public String get(@PathParam("studentUid") String studentUid, @PathParam("itemId") Long itemId) {
 		List<org.sakaiproject.gradebook.gwt.client.model.GradeEvent> list = 
-			service.getGradeEvents(itemId, studentUid);
+			service.getGradeEvents(itemId, Base64.base64Decode(studentUid));
 		return toJson(list, list.size());
 	}
 	

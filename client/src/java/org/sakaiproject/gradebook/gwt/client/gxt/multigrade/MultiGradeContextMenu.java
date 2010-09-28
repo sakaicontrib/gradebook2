@@ -36,6 +36,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.GradeEventModel;
 import org.sakaiproject.gradebook.gwt.client.model.key.GradeEventKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
+import org.sakaiproject.gradebook.gwt.client.util.Base64;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Scroll;
@@ -177,7 +178,7 @@ public class MultiGradeContextMenu extends Menu {
 				
 				initUrl = RestBuilder.buildInitUrl(GWT.getModuleBaseURL(),
 						AppConstants.REST_FRAGMENT, AppConstants.GRADE_EVENT_FRAGMENT,
-						learnerUid, String.valueOf(selectedAssignment));
+						Base64.encode(learnerUid), String.valueOf(selectedAssignment));
 
 				super.load(reader, loadConfig, callback);
 			}

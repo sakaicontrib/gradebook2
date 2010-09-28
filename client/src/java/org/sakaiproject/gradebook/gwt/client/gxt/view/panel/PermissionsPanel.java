@@ -45,6 +45,7 @@ import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.PermissionKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.SectionKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.util.Base64;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.SelectionMode;
@@ -124,7 +125,8 @@ public class PermissionsPanel extends ContentPanel {
 					public String getUrlArg() {
 						List<ModelData> users = userComboBox.getSelection();
 						if (null != users && 1 == users.size()) {
-							return (String)users.get(0).get(GraderKey.S_ID.name());
+							String userId = (String)users.get(0).get(GraderKey.S_ID.name());
+							return Base64.encode(userId);
 						}
 						return null;
 					}
