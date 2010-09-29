@@ -1036,8 +1036,9 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 
 	public Map<String,Object> getGradesVerification(String gradebookUid, Long gradebookId) throws SecurityException {
 
-		boolean isUserAbleToGrade = authz.isUserAbleToGradeAll(gradebookUid);
-
+		// GRBK-726 : TPA : replace authz.isUserAbleToGradeAll(...) with the following:
+		boolean isUserAbleToGrade = authz.isUserAbleToGrade(gradebookUid);
+		
 		if (!isUserAbleToGrade)
 			throw new SecurityException("You are not authorized to submit grades.");
 
