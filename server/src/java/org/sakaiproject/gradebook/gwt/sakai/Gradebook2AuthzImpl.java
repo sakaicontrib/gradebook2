@@ -29,8 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.authz.api.SecurityService;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.section.api.SectionAwareness;
@@ -47,7 +45,6 @@ import org.sakaiproject.tool.gradebook.Permission;
 public class Gradebook2AuthzImpl implements Gradebook2Authz {
 	
 	private static final int ZERO_ITEMS = 0;
-	private static final Log log = LogFactory.getLog(Gradebook2AuthzImpl.class);
 		
 	private Gradebook2Authn authn;
 	private GradebookToolService gbToolService;
@@ -419,13 +416,11 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 
 		if (isUserHasGraderPermissions(gradebookUid, userUid)) {
 
-			log.info("This user has grader permissions for: " + userUid);
 			// get the map of authorized item (assignment) ids to grade/view
 			// function
 			Map<Long, String> itemIdFunctionMap = getAvailableItemsForStudent(gradebookUid, userUid, studentUid, viewableSections);
 
 			if (itemIdFunctionMap == null || itemIdFunctionMap.isEmpty()) {
-				log.info("The itemIdFunctionMap is null or empty");
 				return false; // not authorized to grade/view any items for this
 				// student
 			}
@@ -435,7 +430,7 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 			String grade = AppConstants.gradePermission;
 
 			if (functionValueForItem != null) {
-				log.info("The function value for this item is: " + functionValueForItem);
+				
 				if (function.equalsIgnoreCase(grade) && functionValueForItem.equalsIgnoreCase(grade))
 					return true;
 
@@ -443,7 +438,6 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 					return true;
 			}
 
-			log.info("Found a null functionValueForItem");
 			return false;
 
 		} else {
