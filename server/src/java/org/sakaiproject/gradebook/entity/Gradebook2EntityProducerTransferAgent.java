@@ -280,7 +280,7 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 			if (item.getItemType() == ItemType.ITEM) {
 				Long catId = item.getCategoryId();
 				if (catId != null && catId != -1) {
-					Category parent = toolService.getCategory(catId);
+					//Category parent = toolService.getCategory(catId);
 					List<Assignment> assignments = toolService.getAssignmentsForCategory(catId);
 				}
 			}

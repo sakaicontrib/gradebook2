@@ -51,6 +51,7 @@ import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.poi.hssf.usermodel.HSSFCell;
@@ -82,6 +83,7 @@ import org.sakaiproject.gradebook.gwt.sakai.GradebookImportException;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
 import org.sakaiproject.gradebook.gwt.sakai.calculations.GradeCalculationsOOImpl;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeItem;
+import org.sakaiproject.gradebook.gwt.sakai.model.StudentScore;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.gradebook.gwt.server.exceptions.ImportFormatException;
 import org.sakaiproject.gradebook.gwt.server.model.GradeItemImpl;
@@ -2753,6 +2755,20 @@ class CategoryPosition implements Comparable<CategoryPosition>
 
 	public int compareTo(CategoryPosition o) {
 		return getColNumber() - o.getColNumber(); 
+	}
+	
+	public boolean equals(Object obj) {
+		if (obj == null) { return false; }
+		   if (obj == this) { return true; }
+		   if (obj.getClass() != getClass()) {
+		     return false;
+		   }
+		   CategoryPosition rhs = (CategoryPosition) obj;
+		   return new EqualsBuilder().appendSuper(super.equals(obj))
+		                 .append(colNumber, rhs.colNumber)
+		                 .append(category, rhs.category)
+		                 .append(name, rhs.name)
+		                 .isEquals();
 	}
 	
 }

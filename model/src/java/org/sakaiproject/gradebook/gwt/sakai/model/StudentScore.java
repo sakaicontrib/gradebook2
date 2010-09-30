@@ -40,7 +40,17 @@ public class StudentScore implements Comparable<StudentScore>
 			return getScore().compareTo(o.getScore()); 
 		}
 		return -1; 
-	} 
+	}
+	
+	public boolean equals(Object obj) {
+		if (obj == null) { return false; }
+		   if (obj == this) { return true; }
+		   if (obj.getClass() != getClass()) {
+		     return false;
+		   }
+		   StudentScore rhs = (StudentScore) obj;
+		   return getScore().equals(rhs.getScore());
+	}
 	
 	public String toString() {
 		return "StudentScore@" + hashCode() + " (id,score) = (" + userUid + "," + score + ")";

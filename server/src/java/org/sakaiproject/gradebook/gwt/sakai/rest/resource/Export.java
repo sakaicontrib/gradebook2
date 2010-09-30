@@ -58,7 +58,7 @@ public class Export extends Resource {
 			}
 			filename.append(type.getExtension());
 			
-			Gradebook gradebook = service.getGradebook(gradebookUid);
+			//Gradebook gradebook = service.getGradebook(gradebookUid);
 			
 			if (response != null) {
 				

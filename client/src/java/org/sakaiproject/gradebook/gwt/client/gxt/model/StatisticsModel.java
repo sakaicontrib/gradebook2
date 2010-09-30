@@ -26,8 +26,6 @@ package org.sakaiproject.gradebook.gwt.client.gxt.model;
 import org.sakaiproject.gradebook.gwt.client.model.Statistics;
 import org.sakaiproject.gradebook.gwt.client.model.key.StatisticsKey;
 
-
-
 public class StatisticsModel extends EntityModel implements Comparable<StatisticsModel>, Statistics {
 
 	private static final long serialVersionUID = 1L;
@@ -171,5 +169,14 @@ public class StatisticsModel extends EntityModel implements Comparable<Statistic
 		}
 		return -1; 
 	}
-	
+
+	public boolean equals(Object obj) {
+		if (obj == null) { return false; }
+		   if (obj == this) { return true; }
+		   if (obj.getClass() != getClass()) {
+		     return false;
+		   }
+		   StatisticsModel rhs = (StatisticsModel) obj;
+		   return getAssignmentId().equals(rhs.getAssignmentId());
+	}
 }
