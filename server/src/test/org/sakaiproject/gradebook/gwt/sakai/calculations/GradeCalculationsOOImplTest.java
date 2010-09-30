@@ -59,7 +59,7 @@ public class GradeCalculationsOOImplTest extends TestCase {
 	// set this flag to true to expect high precision numbers as results
 	private boolean FULL_PRECISION = true;
 	
-	final BigDecimalCalculationsWrapper helper = new BigDecimalCalculationsWrapper(50);
+	BigDecimalCalculationsWrapper helper = new BigDecimalCalculationsWrapper(50);
 
 	public GradeCalculationsOOImplTest() {
 		
@@ -465,6 +465,7 @@ public class GradeCalculationsOOImplTest extends TestCase {
 		GradeDataLoader data = new GradeDataLoader(GRADE_DATA_FILE_PATH);
 		
 		assertTrue(data.isAllTestStatsKeysPresent());
+		assertNotNull(data.getScores());
 		
 		// calculate stats using commons-math
 		DescriptiveStatistics stats = new DescriptiveStatistics();
@@ -502,6 +503,8 @@ public class GradeCalculationsOOImplTest extends TestCase {
 		GradeCalculations temp = calculator;
 		if(data.isUseDeprecatedCalculations() && FULL_PRECISION) {
 			calculator = new GradeCalculationsOOImpl();
+		} else if (!data.isUseDeprecatedCalculations()) {
+			calculator = new GradeCalculationsImpl(data.getScale());
 		}
 		
 		/**
@@ -520,12 +523,11 @@ public class GradeCalculationsOOImplTest extends TestCase {
 		
 		// Currently the mean returned is a rounded, scale 2 value since it corresponds to one bucket of a histogram 
 		
-		/*
-		 * TODO, this could be producing a lot of error for the users of the API: the error is squared and summed for each
-		 * data point... the current assumption seems to be that it is a display value
-		 */
 		
-				// So, we only need to test that commons-math and our impl class both come up with the same rounded and scaled value
+				/*  here, for a simple comparison,
+				 * we only need to test that commons-math 
+				 * and our impl class both come up with the same rounded and scaled value
+				 */
 		assertEquals("StatsTest-mean", 
 				// expected value is same as calculated with commons-math
 				// high precision, half-up rounded to scale 2
@@ -533,12 +535,7 @@ public class GradeCalculationsOOImplTest extends TestCase {
 				calculatedStats.getMean().setScale(2, RoundingMode.HALF_UP));
 		
 		
-		// The standard deviation in our API returns a BigDecimal
-		// So we will first test that we can generate the same number with the given data using 
-		// a technique (code) in this test class (which is probably, but not necessarily, the same techniqye as what
-		// that is in the impl class)...
-		// ... then generate a double value using commons-math and compare that to a rounded and scaled down
-		// result from our impl class.
+
 		
 		/* this only tests our local 'best' algorithm for stdev (population)
 		 * It doesn't use file data, but check to see of the impl is the high precision impl first
@@ -554,21 +551,37 @@ public class GradeCalculationsOOImplTest extends TestCase {
 		
 
 		
-		
-		String fromFile = (String)data.getTestStatsByKey().get(GradeDataLoader.INPUT_KEY_STDEVP);
+		/* STANDARD DEVIATION of the population */
+		String fromFile = (String)data.getTestStatsByKey().get(GradeDataLoader.INPUT_KEY_STDEVP);	
 		
 		/// this tests value, precision and scale
-		assertEquals("StatsTest-stdevp-from-test-file", new BigDecimal(fromFile), calculatedStats.getStandardDeviation());
+		assertEquals("StatsTest-stdevp-from-test-file", new BigDecimal(fromFile), calculatedStats.getStandardDeviation().setScale(data.getScale()));
 			
-		fromFile = (String)data.getTestStatsByKey().get(GradeDataLoader.INPUT_KEY_MEAN);
 		
-		/// this tests value, precision and scale
+		/* MEAN */
+		/* the older calculation units returned a mean of scale 2 so adjust if necessary */
+		if(data.isUseDeprecatedCalculations()) {
+			fromFile = new BigDecimal((String)data.getTestStatsByKey().get(GradeDataLoader.INPUT_KEY_MEAN))
+						.setScale(2, RoundingMode.HALF_UP)
+						.toString();
+		} else {
+			fromFile = (String)data.getTestStatsByKey().get(GradeDataLoader.INPUT_KEY_MEAN);
+		}
+		
+		
+		
+		/// this tests value, precision and scale ... the value currently returned is of scale 2
 		assertEquals("StatsTest-mean-from-test-file", new BigDecimal(fromFile), calculatedStats.getMean());
 		
+		
+		/* MEDIAN */
 		fromFile = (String)data.getTestStatsByKey().get(GradeDataLoader.INPUT_KEY_MEDIAN);
 		
+		// this is number of scale 2
 		assertEquals("StatsTest-median-from-test-file", new BigDecimal(fromFile), calculatedStats.getMedian());
 		
+		
+		/* MODE */
 		Object o = data.getTestStatsByKey().get(GradeDataLoader.INPUT_KEY_MODE);
 		
 		if (o instanceof String) {
@@ -607,7 +620,7 @@ public class GradeCalculationsOOImplTest extends TestCase {
 	
 	private BigDecimal getOnlineSampleStandardDeviation(GradeDataLoader data) {
 		// == sqrt ( ((pop stdev)^2 * N)/(N-1) )
-		
+		helper = new BigDecimalCalculationsWrapper(data.getScale());
 		
 		BigDecimal stdevpop = getOnlinePopulationStandardDeviation(data);
 		return doSqrt(helper.
@@ -628,6 +641,7 @@ public class GradeCalculationsOOImplTest extends TestCase {
 
 	private BigDecimal getOnlinePopulationStandardDeviation(GradeDataLoader data) {
 		
+		helper = new BigDecimalCalculationsWrapper(data.getScale());
 		/*
 		 * Donald Knuth's "The Art of Computer Programming, Volume 2: Seminumerical Algorithms", section 4.2.2.
 		 * Knuth attributes this method to B.P. Welford, Technometrics, 4,(1962), 419-420.
@@ -647,27 +661,29 @@ public class GradeCalculationsOOImplTest extends TestCase {
 		
 		
 		int n = 0;
-		int scale = 100;
 		// estimate the mean
 		BigDecimal mean = helper.divide(getScoresSum(data), BigDecimal.valueOf(data.getScores().size()));;
 		BigDecimal M2 = BigDecimal.ZERO;
 		BigDecimal delta = null;
 		BigDecimal variance = null;
 		
-		
+
 		
 		for (StudentScore score : data.getScores()) {
 			n++;
 			delta = helper.subtract(score.getScore(), mean);
+			
 			mean = helper.add(mean, helper.divide(delta, BigDecimal.valueOf(n)));
 			
 			M2 = helper.add(M2,helper.multiply(delta, helper.subtract(score.getScore(), mean)));
 			//System.out.println("variance(" + n + "): " + helper.divide(M2, BigDecimal.valueOf(n)));
 			//System.out.println("variance : " + helper.divide(M2, BigDecimal.valueOf(n-1)));
 		}
+		
+
 		// note: using n, not n-1... ie, the population variance, not the sample variance
 		variance = helper.divide(M2, BigDecimal.valueOf(n)); 
-		return helper.sqrt(variance);
+		return helper.sqrt(variance).setScale(data.getScale(), RoundingMode.HALF_UP);
 	}
 
 	private BigDecimal getScoresSum(GradeDataLoader data) {

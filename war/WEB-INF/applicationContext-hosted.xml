@@ -80,7 +80,7 @@
 				<entry><key><value>0</value></key><value>0</value></entry>
 			</map>
 		</property>
-		<property name="precision" value="50"/>
+		<property name="scale" value="50"/>
 		
 	</bean>
 

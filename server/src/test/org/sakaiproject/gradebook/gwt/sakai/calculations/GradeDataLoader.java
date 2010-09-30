@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,6 +19,8 @@ import javax.naming.ConfigurationException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.sakaiproject.gradebook.gwt.sakai.GradeCalculations;
+import org.sakaiproject.gradebook.gwt.sakai.calculations2.BigDecimalCalculationsWrapper;
 import org.sakaiproject.gradebook.gwt.sakai.model.StudentScore;
 
 public class GradeDataLoader {
@@ -28,6 +31,7 @@ public class GradeDataLoader {
 	public static String INPUT_KEY_MEDIAN = "median";
 	public static String INPUT_KEY_MODE = "mode"; // comma separated
 	public static String INPUT_KEY_USE_DEPRECATED = "deprecated";
+	public static String INPUT_KEY_SCALE = "scale";
 	private static List<String> statsKeys = new ArrayList<String> ();
 	
 	// tests can be threaded in parallel: use concurrency-safe hashmap
@@ -36,6 +40,7 @@ public class GradeDataLoader {
 	/* read this value to decide whether to use old calculations units or new */
 	
 	private boolean useDeprecatedCalculations = false;
+	private int scale = (new BigDecimalCalculationsWrapper()).getScale();
 	
 	private static Log log = LogFactory.getLog(GradeDataLoader.class);
 	
@@ -48,7 +53,8 @@ public class GradeDataLoader {
 		Collections.addAll(statsKeys, 
 				INPUT_KEY_MEAN, /* not currently supported -> INPUT_KEY_STDEV, */ 
 				INPUT_KEY_STDEVP, INPUT_KEY_MEDIAN,
-				INPUT_KEY_MODE, INPUT_KEY_USE_DEPRECATED);
+				INPUT_KEY_MODE, INPUT_KEY_USE_DEPRECATED,
+				INPUT_KEY_SCALE);
 		
 		URL u = ClassLoader.getSystemResource(dataFileName);
 		if(u != null) {
@@ -96,6 +102,7 @@ public class GradeDataLoader {
 
 	private void loadDataFile() {
 		
+		System.out.println("Reading test data from: " + dataFile);
 		
 		if(dataFile.exists() && dataFile.canRead()) {
 			int id = 1;
@@ -115,8 +122,12 @@ public class GradeDataLoader {
 					if (parts.length > 0 && statsKeys.contains(label)
 							&& !testStatsByKey.containsKey(label)) { // uses the first value given for a key
 						if (label.equalsIgnoreCase(INPUT_KEY_USE_DEPRECATED)) {
-							boolean choice = Boolean.valueOf(parts[1].trim());
-							useDeprecatedCalculations = choice;
+							useDeprecatedCalculations = Boolean.valueOf(parts[1].trim());
+							continue;
+						}
+						if (label.equalsIgnoreCase(INPUT_KEY_SCALE)) {
+							scale = Integer.valueOf(parts[1].trim());
+							testStatsByKey.put(INPUT_KEY_SCALE, scale);
 							continue;
 						}
 						try {
@@ -137,12 +148,16 @@ public class GradeDataLoader {
 							continue;
 						}
 					} else 
-					try {
-						scores.add(new StudentScore("" + id, new BigDecimal(line)));
-					} catch (NumberFormatException e) {
-						System.err.println("(ignored)NumberFormatException: " + line);
-						continue;
-					}
+						try {
+							scores.add(new StudentScore("" + id, new BigDecimal(line)));
+							if((new BigDecimal(line)).compareTo(new BigDecimal("0")) == 0) {
+								System.out.println("zero value from data file : " + line);
+								}
+							
+						} catch (NumberFormatException e) {
+							System.err.println("(ignored)NumberFormatException: " + line);
+							continue;
+						}
 					id++;
 					
 				}
@@ -159,6 +174,29 @@ public class GradeDataLoader {
 		
 		statsKeys.remove(INPUT_KEY_USE_DEPRECATED); /// this isn't a required value
 		
+		// make sure all the input statistics have the same requested scale
+
+		for(String key : testStatsByKey.keySet()) {
+			Object o = testStatsByKey.get(key);
+			if(o != null && key.equals(INPUT_KEY_MEAN) || key.equals(INPUT_KEY_STDEVP)) {
+				BigDecimal fromFile = new BigDecimal((String)o);
+				BigDecimal toScale = fromFile.setScale(scale, RoundingMode.HALF_UP);
+				if (!fromFile.equals(toScale)) {
+					System.err.println("Adjusting scale of input for key '" + key + "' to scale: " + scale);
+					testStatsByKey.put(key, toScale.toString());
+				}
+			}
+		}
+		
+		
+	}
+
+	public int getScale() {
+		return scale;
+	}
+
+	public void setScale(int scale) {
+		this.scale = scale;
 	}
 
 	public boolean isUseDeprecatedCalculations() {
