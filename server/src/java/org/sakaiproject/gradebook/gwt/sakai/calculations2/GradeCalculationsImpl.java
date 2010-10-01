@@ -397,9 +397,9 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 
 			}
 
-			if (count.compareTo(BigDecimal.ZERO) != 0 && sumOfSquareOfDifferences.compareTo(BigDecimal.ZERO) != 0) {
+			if (count.compareTo(BigDecimal.ZERO) != 0) {
 				variance = divide(sumOfSquareOfDifferences, count);
-				if (variance != null && variance.compareTo(BigDecimal.ZERO) != 0)
+				if (variance != null)
 					standardDeviation = sqrt(variance);
 				
 			}

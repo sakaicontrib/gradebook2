@@ -181,7 +181,7 @@ public class BigDecimalCalculationsWrapper {
 
 			// Make sure n is a positive number
 
-			if (n.compareTo(ZERO) <= 0) {
+			if (n.compareTo(ZERO) < 0) {
 				throw new IllegalArgumentException();
 			}
 
