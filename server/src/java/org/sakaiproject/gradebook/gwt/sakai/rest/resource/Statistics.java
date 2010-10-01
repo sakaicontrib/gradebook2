@@ -35,7 +35,7 @@ public class Statistics extends Resource {
 			@PathParam("studentUid") String studentUid) throws SecurityException {
 
 		List<org.sakaiproject.gradebook.gwt.client.model.Statistics> list = 
-			service.getLearnerStatistics(gradebookUid, gradebookId, studentUid);
+			service.getLearnerStatistics(gradebookUid, gradebookId, Base64.base64Decode(studentUid));
 		return toJson(list, list.size());
 	}
 

@@ -45,6 +45,7 @@ import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.StatisticsKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
+import org.sakaiproject.gradebook.gwt.client.util.Base64;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style;
@@ -215,7 +216,7 @@ public class StudentPanel extends GradebookPanel {
 
 					public String getUrlArg() {
 						String uid = learnerGradeRecordCollection.get(LearnerKey.S_UID.name());
-						return uid;
+						return Base64.encode(uid);
 					}
 			
 				},	
