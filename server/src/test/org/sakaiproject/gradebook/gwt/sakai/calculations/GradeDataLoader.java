@@ -25,6 +25,7 @@ import org.sakaiproject.gradebook.gwt.sakai.model.StudentScore;
 
 public class GradeDataLoader {
 	
+	public static String INPUT_KEY_ERROR = "error";
 	public static String INPUT_KEY_MEAN = "mean";
 	public static String INPUT_KEY_STDEV = "stdev";
 	public static String INPUT_KEY_STDEVP = "stdevp";
@@ -46,6 +47,7 @@ public class GradeDataLoader {
 	
 	private File dataFile = null;
 	private List<StudentScore> scores = null;
+	private BigDecimal acceptableError = BigDecimal.ZERO;
 	
 	public GradeDataLoader() {}
 	
@@ -54,7 +56,7 @@ public class GradeDataLoader {
 				INPUT_KEY_MEAN, /* not currently supported -> INPUT_KEY_STDEV, */ 
 				INPUT_KEY_STDEVP, INPUT_KEY_MEDIAN,
 				INPUT_KEY_MODE, INPUT_KEY_USE_DEPRECATED,
-				INPUT_KEY_SCALE);
+				INPUT_KEY_SCALE, INPUT_KEY_ERROR);
 		
 		URL u = ClassLoader.getSystemResource(dataFileName);
 		if(u != null) {
@@ -123,24 +125,37 @@ public class GradeDataLoader {
 							&& !testStatsByKey.containsKey(label)) { // uses the first value given for a key
 						if (label.equalsIgnoreCase(INPUT_KEY_USE_DEPRECATED)) {
 							useDeprecatedCalculations = Boolean.valueOf(parts[1].trim());
+							System.out.println(INPUT_KEY_USE_DEPRECATED + ": " + useDeprecatedCalculations);
 							continue;
 						}
 						if (label.equalsIgnoreCase(INPUT_KEY_SCALE)) {
 							scale = Integer.valueOf(parts[1].trim());
 							testStatsByKey.put(INPUT_KEY_SCALE, scale);
+							System.out.println(INPUT_KEY_SCALE + ": " + scale);
+							continue;
+						}
+						if (label.equalsIgnoreCase(INPUT_KEY_ERROR)) {
+							acceptableError = new BigDecimal(parts[1].trim());
+							System.out.println(INPUT_KEY_ERROR + ": " + acceptableError);
 							continue;
 						}
 						try {
-							if(label.equalsIgnoreCase(INPUT_KEY_MODE) && parts[1].split(",").length>0) {
-								String[] list = parts[1].split(",");
+							String[] list = parts[1].split(",");
+							if(label.equalsIgnoreCase(INPUT_KEY_MODE) && list.length>0) {
 								ArrayList<BigDecimal> result = new ArrayList<BigDecimal>(list.length);
+								System.out.println(INPUT_KEY_MODE + ":");
 								for (int i=0;i<list.length;++i) {
 									BigDecimal bd = new BigDecimal(list[i].trim());
 									result.add(bd);
+									System.out.println("--> " + bd);
 								}
 								testStatsByKey.put(label, result);
-							} else
+							} else {
 								testStatsByKey.put(label, (new BigDecimal(parts[1].trim())).toString());
+								System.out.println(label + ": " + testStatsByKey.get(label));
+							}
+							
+							
 							continue;
 						
 						} catch (NumberFormatException e) {
@@ -150,9 +165,6 @@ public class GradeDataLoader {
 					} else 
 						try {
 							scores.add(new StudentScore("" + id, new BigDecimal(line)));
-							if((new BigDecimal(line)).compareTo(new BigDecimal("0")) == 0) {
-								System.out.println("zero value from data file : " + line);
-								}
 							
 						} catch (NumberFormatException e) {
 							System.err.println("(ignored)NumberFormatException: " + line);
@@ -172,7 +184,12 @@ public class GradeDataLoader {
 			System.out.println("Filed to read file: " + dataFile.getPath());
 		}
 		
-		statsKeys.remove(INPUT_KEY_USE_DEPRECATED); /// this isn't a required value
+		/*
+		 *  these aren't required values
+		 *  remove them so that isAllTestStatsKeysPresent() won't send false negatives
+		 */
+		statsKeys.remove(INPUT_KEY_USE_DEPRECATED); 
+		statsKeys.remove(INPUT_KEY_ERROR);
 		
 		// make sure all the input statistics have the same requested scale
 
@@ -205,6 +222,10 @@ public class GradeDataLoader {
 
 	public Map<String, Object> getTestStatsByKey() {
 		return testStatsByKey;
+	}
+
+	public BigDecimal getAcceptableError() {
+		return acceptableError ;
 	}
 
 }
