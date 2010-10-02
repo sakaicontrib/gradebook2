@@ -64,10 +64,15 @@ public class GradeCalculationsTest extends TestCase {
 	public GradeCalculationsTest() {
 		
 
-		if(FULL_PRECISION)
-			calculator = new GradeCalculationsImpl(50);
-		else
-			calculator = new GradeCalculationsOOImpl();
+		if(FULL_PRECISION) {
+			GradeCalculationsImpl old = new GradeCalculationsImpl(50);
+			old.init();
+			calculator = old;
+		} else {
+			GradeCalculationsOOImpl newImpl = new GradeCalculationsOOImpl();
+			newImpl.init();
+			calculator = newImpl;
+		}
 		
 		if (System.getProperties().contains(PROP_GRADE_DATA_FILE_PATH)) {
 			if (dataFilePath != null )
@@ -686,7 +691,82 @@ public class GradeCalculationsTest extends TestCase {
 	}
 	
 	public void testConvertPercentageToLetterGrade() {
-		System.out.println("testConvertPercentageToLetterGrade yet implemented");
+		
+		BigDecimal oneHundred = new BigDecimal("100");
+		BigDecimal ninety = new BigDecimal("90");
+		BigDecimal eighty = new BigDecimal("80");
+		BigDecimal seventy = new BigDecimal("70");
+		BigDecimal sixty = new BigDecimal("60");
+		
+		assertEquals("Percent2Grade - (A+)", "A+", calculator.convertPercentageToLetterGrade(oneHundred));
+		
+		assertEquals("Percent2Grade - (A-)", "A-", calculator.convertPercentageToLetterGrade(ninety));
+		
+		assertEquals("Percent2Grade - (B-)", "B-", calculator.convertPercentageToLetterGrade(eighty));
+		
+		assertEquals("Percent2Grade - (C-)", "C-", calculator.convertPercentageToLetterGrade(seventy));
+		
+		assertEquals("Percent2Grade - (D-)", "D-", calculator.convertPercentageToLetterGrade(sixty));
+		
+		assertEquals("Percent2Grade - (F)", "F", calculator.convertPercentageToLetterGrade(BigDecimal.ONE));
+		
+		assertEquals("Percent2Grade - (Ungraded?)", "0", calculator.convertPercentageToLetterGrade(BigDecimal.ZERO));
+
+		/**** A's first third
+		 * 90 + ((100 - 90)/3)
+		 */
+		BigDecimal firstThird = ninety
+				.add(BigDecimal.TEN.movePointRight(1).subtract(ninety)
+				.divide(new BigDecimal("3"), helper.getScale(), RoundingMode.HALF_UP));
+		System.out.println(firstThird);
+		assertEquals("Percent2Grade - (A)", "A", calculator.convertPercentageToLetterGrade(firstThird));
+		
+		/*
+		 * service uses 6 as a precision ... with tens, there would be 4 decimal places
+		 * the smallest unit being 1x10^-4 or, in better bigdecimal notation, 1x1^-3 
+		 *
+		 */
+		BigDecimal aLittle = BigDecimal.ONE.movePointLeft(4);
+		System.out.println(firstThird.subtract(aLittle));
+		
+		/* just one unit down should change the grade */
+		BigDecimal maxAMinus = firstThird.subtract(aLittle);
+		if(maxAMinus.subtract(maxAMinus.setScale(4, RoundingMode.HALF_UP)).compareTo(BigDecimal.ZERO) < 0 ) {
+			// rounding will bump the last digit up one
+			System.out.println("maxaminus will bump");
+		}
+		System.out.println(maxAMinus);
+		System.out.println(maxAMinus.setScale(4, RoundingMode.HALF_UP));
+		System.out.println(maxAMinus.subtract(maxAMinus.setScale(4, RoundingMode.HALF_UP)));
+		assertEquals("Percent2Grade - (A-)", "A-", calculator.convertPercentageToLetterGrade(maxAMinus));
+		
+		/**** A's second third
+		 * 90 + (2*(100 - 90)/3)
+		 */
+		
+		BigDecimal secondThird = ninety
+		.add(BigDecimal.TEN.movePointRight(1).subtract(ninety)
+		.divide(new BigDecimal("3"), helper.getScale(), RoundingMode.HALF_UP).multiply(new BigDecimal("2")));
+		
+		
+		assertEquals("Percent2Grade - (A+)", "A+", calculator.convertPercentageToLetterGrade(secondThird));
+		
+		/* just one unit down should change the grade 
+		 * but we also need to make sure rounding done in the service
+		 * doesn't take that away 
+		*/
+		
+		BigDecimal maxA = secondThird.subtract(aLittle);
+		if(maxA.subtract(maxA.setScale(4, RoundingMode.HALF_UP)).compareTo(BigDecimal.ZERO) < 0 )  {
+			// rounding will bump the last digit up one
+			System.out.println("maxa will bump");
+		}
+		//assertEquals("Percent2Grade - (A)", "A", calculator.convertPercentageToLetterGrade());
+		
+		System.out.println(maxA);
+		System.out.println(maxA.setScale(4, RoundingMode.HALF_UP));
+		System.out.println(maxA.subtract(maxA.setScale(4, RoundingMode.HALF_UP)));
+		
 	}
 
 	public void testIsValidLetterGrade() {
