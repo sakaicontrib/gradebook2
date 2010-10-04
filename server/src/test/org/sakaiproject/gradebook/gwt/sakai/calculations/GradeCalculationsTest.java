@@ -712,14 +712,13 @@ public class GradeCalculationsTest extends TestCase {
 		
 		assertEquals("Percent2Grade - (Ungraded?)", "0", calculator.convertPercentageToLetterGrade(BigDecimal.ZERO));
 
-		/**** A's first third
+		/**** A min
 		 * 90 + ((100 - 90)/3)
 		 */
 		BigDecimal firstThird = ninety
 				.add(BigDecimal.TEN.movePointRight(1).subtract(ninety)
 				.divide(new BigDecimal("3"), helper.getScale(), RoundingMode.HALF_UP));
-		System.out.println(firstThird);
-		assertEquals("Percent2Grade - (A)", "A", calculator.convertPercentageToLetterGrade(firstThird));
+		assertEquals("Percent2Grade - (A min)", "A", calculator.convertPercentageToLetterGrade(firstThird));
 		
 		/*
 		 * service uses 6 as a precision ... with tens, there would be 4 decimal places
@@ -727,20 +726,17 @@ public class GradeCalculationsTest extends TestCase {
 		 *
 		 */
 		BigDecimal aLittle = BigDecimal.ONE.movePointLeft(4);
-		System.out.println(firstThird.subtract(aLittle));
 		
-		/* just one unit down should change the grade */
+		/* now, just one unit down should change the grade 
+		 * but we also need to make sure rounding done in the service
+		 * doesn't take that away 
+		 */
 		BigDecimal maxAMinus = firstThird.subtract(aLittle);
-		if(maxAMinus.subtract(maxAMinus.setScale(4, RoundingMode.HALF_UP)).compareTo(BigDecimal.ZERO) < 0 ) {
-			// rounding will bump the last digit up one
-			System.out.println("maxaminus will bump");
-		}
-		System.out.println(maxAMinus);
-		System.out.println(maxAMinus.setScale(4, RoundingMode.HALF_UP));
-		System.out.println(maxAMinus.subtract(maxAMinus.setScale(4, RoundingMode.HALF_UP)));
-		assertEquals("Percent2Grade - (A-)", "A-", calculator.convertPercentageToLetterGrade(maxAMinus));
+		maxAMinus = preemptRoundingIfNecessary(maxAMinus); // it won't be, but just for consistency
 		
-		/**** A's second third
+		assertEquals("Percent2Grade - (A- max)", "A-", calculator.convertPercentageToLetterGrade(maxAMinus));
+		
+		/**** A+ min
 		 * 90 + (2*(100 - 90)/3)
 		 */
 		
@@ -749,24 +745,197 @@ public class GradeCalculationsTest extends TestCase {
 		.divide(new BigDecimal("3"), helper.getScale(), RoundingMode.HALF_UP).multiply(new BigDecimal("2")));
 		
 		
-		assertEquals("Percent2Grade - (A+)", "A+", calculator.convertPercentageToLetterGrade(secondThird));
+		assertEquals("Percent2Grade - (A+ min)", "A+", calculator.convertPercentageToLetterGrade(secondThird));
 		
-		/* just one unit down should change the grade 
+		/* now, just one unit down should change the grade 
 		 * but we also need to make sure rounding done in the service
 		 * doesn't take that away 
-		*/
 		
+		 * A max */
 		BigDecimal maxA = secondThird.subtract(aLittle);
-		if(maxA.subtract(maxA.setScale(4, RoundingMode.HALF_UP)).compareTo(BigDecimal.ZERO) < 0 )  {
+		maxA = preemptRoundingIfNecessary(maxA);
+		assertEquals("Percent2Grade - (A max)", "A", calculator.convertPercentageToLetterGrade(maxA));
+		
+		/* take one unit off ninety and we should get 
+		 * 
+		 * B+ max
+		 */
+		BigDecimal maxBPlus = ninety.subtract(aLittle);
+		maxBPlus = preemptRoundingIfNecessary(maxBPlus);
+		assertEquals("Percent2Grade - (B+ max)", "B+", calculator.convertPercentageToLetterGrade(maxBPlus));
+		
+		/**** B min
+		 * 80 + ((90 - 80)/3)
+		 */
+		firstThird = eighty
+				.add(ninety.subtract(eighty)
+				.divide(new BigDecimal("3"), helper.getScale(), RoundingMode.HALF_UP));
+		assertEquals("Percent2Grade - (B min)", "B", calculator.convertPercentageToLetterGrade(firstThird));
+		
+		
+		/* now, just one unit down should change the grade 
+		 * but we also need to make sure rounding done in the service
+		 * doesn't take that away 
+		 *
+		  B- max */
+		BigDecimal maxBMinus = firstThird.subtract(aLittle);
+		maxAMinus = preemptRoundingIfNecessary(maxBMinus); // it won't be, but just for consistency
+		
+		assertEquals("Percent2Grade - (B- max)", "B-", calculator.convertPercentageToLetterGrade(maxBMinus));
+		
+		/**** B+ min
+		 * 80 + (2*(90 - 80)/3)
+		 */
+		
+		secondThird = eighty
+		.add(ninety.subtract(eighty)
+		.divide(new BigDecimal("3"), helper.getScale(), RoundingMode.HALF_UP).multiply(new BigDecimal("2")));
+		
+		
+		assertEquals("Percent2Grade - (B+ min)", "B+", calculator.convertPercentageToLetterGrade(secondThird));
+		
+		/* now, just one unit down should change the grade 
+		 * but we also need to make sure rounding done in the service
+		 * doesn't take that away 
+		 *
+		 B max */
+		BigDecimal maxB = secondThird.subtract(aLittle);
+		maxB = preemptRoundingIfNecessary(maxB);
+		assertEquals("Percent2Grade - (B max)", "B", calculator.convertPercentageToLetterGrade(maxB));
+		
+		
+		/*--------------------------------*/
+		
+		/* take one unit off eighty and we should get 
+		 * 
+		 * C+ max
+		 */
+		BigDecimal maxCPlus = eighty.subtract(aLittle);
+		maxCPlus = preemptRoundingIfNecessary(maxCPlus);
+		assertEquals("Percent2Grade - (C+ max)", "C+", calculator.convertPercentageToLetterGrade(maxCPlus));
+		
+		/**** C min
+		 * 70 + ((80 - 70)/3)
+		 */
+		firstThird = seventy
+				.add(eighty.subtract(seventy)
+				.divide(new BigDecimal("3"), helper.getScale(), RoundingMode.HALF_UP));
+		assertEquals("Percent2Grade - (C min)", "C", calculator.convertPercentageToLetterGrade(firstThird));
+		
+		
+		/* now, just one unit down should change the grade 
+		 * but we also need to make sure rounding done in the service
+		 * doesn't take that away 
+		 *
+		  C- max */
+		BigDecimal maxCMinus = firstThird.subtract(aLittle);
+		maxCMinus = preemptRoundingIfNecessary(maxCMinus); // it won't be, but just for consistency
+		
+		assertEquals("Percent2Grade - (C- max)", "C-", calculator.convertPercentageToLetterGrade(maxCMinus));
+		
+		/**** C+ min
+		 * 70 + (2*(80 - 70)/3)
+		 */
+		
+		secondThird = seventy
+		.add(eighty.subtract(seventy)
+		.divide(new BigDecimal("3"), helper.getScale(), RoundingMode.HALF_UP).multiply(new BigDecimal("2")));
+		
+		
+		assertEquals("Percent2Grade - (C+ min)", "C+", calculator.convertPercentageToLetterGrade(secondThird));
+		
+		/* now, just one unit down should change the grade 
+		 * but we also need to make sure rounding done in the service
+		 * doesn't take that away 
+		 *
+		 C max */
+		BigDecimal maxC = secondThird.subtract(aLittle);
+		maxC = preemptRoundingIfNecessary(maxC);
+		assertEquals("Percent2Grade - (C max)", "C", calculator.convertPercentageToLetterGrade(maxC));
+
+		
+		/*--------------------------------*/
+		
+		/* take one unit off seventy and we should get 
+		 * 
+		 * D+ max
+		 */
+		BigDecimal maxDPlus = seventy.subtract(aLittle);
+		maxDPlus = preemptRoundingIfNecessary(maxDPlus);
+		assertEquals("Percent2Grade - (D+ max)", "D+", calculator.convertPercentageToLetterGrade(maxDPlus));
+		
+		/**** D min
+		 * 60 + ((70 - 60)/3)
+		 */
+		firstThird = sixty
+				.add(seventy.subtract(sixty)
+				.divide(new BigDecimal("3"), helper.getScale(), RoundingMode.HALF_UP));
+		assertEquals("Percent2Grade - (D min)", "D", calculator.convertPercentageToLetterGrade(firstThird));
+		
+		
+		/* now, just one unit down should change the grade 
+		 * but we also need to make sure rounding done in the service
+		 * doesn't take that away 
+		 *
+		  D- max */
+		BigDecimal maxDMinus = firstThird.subtract(aLittle);
+		maxDMinus = preemptRoundingIfNecessary(maxDMinus); // it won't be, but just for consistency
+		
+		assertEquals("Percent2Grade - (D- max)", "D-", calculator.convertPercentageToLetterGrade(maxDMinus));
+		
+		/**** D+ min
+		 * 60 + (2*(70 - 60)/3)
+		 */
+		
+		secondThird = sixty
+		.add(seventy.subtract(sixty)
+		.divide(new BigDecimal("3"), helper.getScale(), RoundingMode.HALF_UP).multiply(new BigDecimal("2")));
+		
+		
+		assertEquals("Percent2Grade - (D+ min)", "D+", calculator.convertPercentageToLetterGrade(secondThird));
+		
+		/* now, just one unit down should change the grade 
+		 * but we also need to make sure rounding done in the service
+		 * doesn't take that away 
+		 *
+		 D max */
+		BigDecimal maxD = secondThird.subtract(aLittle);
+		maxD = preemptRoundingIfNecessary(maxD);
+		assertEquals("Percent2Grade - (D max)", "D", calculator.convertPercentageToLetterGrade(maxD));
+
+		/*--------------------------------*/
+		
+		/* take one unit off sixty and we should get 
+		 * 
+		 * F max
+		 */
+		BigDecimal maxF = sixty.subtract(aLittle);
+		maxF = preemptRoundingIfNecessary(maxF);
+		assertEquals("Percent2Grade - (F max)", "F", calculator.convertPercentageToLetterGrade(maxF));
+		
+		/**** F min
+		 * NOTE: zero values are treated specially in this method, returning the String "0"
+		 *    So, the value 1 is the lowest F grade
+		 *    
+		 *    TODO: find out why and if it has undesired outcomes
+		 */
+		
+		assertEquals("Percent2Grade - (Zero Grade - Special Case)", "0", calculator.convertPercentageToLetterGrade(BigDecimal.ZERO));
+		
+		/* 
+		 * So, the value 1 is the lowest F grade
+		 */
+		assertEquals("Percent2Grade - (F min)", "F", calculator.convertPercentageToLetterGrade(BigDecimal.ONE));
+		
+	}
+
+	private BigDecimal preemptRoundingIfNecessary(BigDecimal grade) {
+		if(grade.subtract(grade.setScale(4, RoundingMode.HALF_UP)).compareTo(BigDecimal.ZERO) < 0 )  {
 			// rounding will bump the last digit up one
-			System.out.println("maxa will bump");
+			// so well round it to the floor value first
+			grade = grade.setScale(4, RoundingMode.FLOOR);
 		}
-		//assertEquals("Percent2Grade - (A)", "A", calculator.convertPercentageToLetterGrade());
-		
-		System.out.println(maxA);
-		System.out.println(maxA.setScale(4, RoundingMode.HALF_UP));
-		System.out.println(maxA.subtract(maxA.setScale(4, RoundingMode.HALF_UP)));
-		
+		return grade;
 	}
 
 	public void testIsValidLetterGrade() {
