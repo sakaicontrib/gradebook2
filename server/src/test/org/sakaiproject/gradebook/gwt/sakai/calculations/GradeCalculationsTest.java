@@ -938,21 +938,87 @@ public class GradeCalculationsTest extends TestCase {
 		return grade;
 	}
 
-	public void testIsValidLetterGrade() {
-		System.out.println("testIsValidLetterGrade yet implemented");
-	}
+	
+	/*
+	 *  won't be testing .... these next two
+	 *  depend on a Spring injected map in the OOTB
+	 *  impl's .... 
+	 */
+//	public void testIsValidLetterGrade() {
+//		System.out.println("testIsValidLetterGrade yet implemented");
+//	}
 
-	public void testConvertLetterGradeToPercentage() {
-		System.out.println("testConvertLetterGradeToPercentage yet implemented");
-	}
+// won't be testing
+//	public void testConvertLetterGradeToPercentage() {
+//		System.out.println("testConvertLetterGradeToPercentage yet implemented");
+//	}
 
 	public void testGetCategoryWeight() {
-		System.out.println("testGetCategoryWeight yet implemented");
-	}
+		
+		
+		Category category = new Category();
+		category.setExtraCredit(false);
+		
+		Date dueDate = null;
+		Gradebook gradebook = new Gradebook("GRADEBOOK_ID");
+		gradebook.setCategory_type(GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY);
+		category.setGradebook(gradebook);
+		Double weight = calculator.calculateEqualWeight(4);
+		
+		// total of 130 
+		Assignment asn1 = new Assignment(gradebook, "ASN-1", Double.valueOf(30), dueDate);
+		asn1.setAssignmentWeighting(weight);
+		asn1.setCategory(category);
+		Assignment asn2 = new Assignment(gradebook, "ASN-2", Double.valueOf(40), dueDate);
+		asn2.setAssignmentWeighting(weight);
+		asn2.setCategory(category);
+		Assignment asn3 = new Assignment(gradebook, "ASN-3", Double.valueOf(50), dueDate);
+		asn3.setAssignmentWeighting(weight);
+		asn3.setCategory(category);
+		Assignment asn4 = new Assignment(gradebook, "ASN-4", Double.valueOf(10), dueDate);
+		asn4.setAssignmentWeighting(weight);
+		asn4.setCategory(category);
+		
+		List<Assignment> assignments = Arrays.asList(asn1, asn2, asn3, asn4);
+		category.setAssignmentList(assignments);
+		
+		boolean isWeighted = false;
+		boolean isCategoryExtraCredit = false;
+		
+		BigDecimal result = calculator.getCategoryWeight(category);
+		
+		assertEquals("TestGetCategoryWeight - no cat weight", null, result);
+		
+		gradebook.setCategory_type(GradebookService.CATEGORY_TYPE_NO_CATEGORY);
+		
+		result = calculator.getCategoryWeight(category);
+		
+		// no cat - 130 points 
+		assertEquals("TestGetCategoryWeight -  no cat", 0, new BigDecimal("130").compareTo(result));
+		
+		// 100%
+		gradebook.setCategory_type(GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY);
+		category.setWeight(100d);
+		result = calculator.getCategoryWeight(category);
+		assertEquals("TestGetCategoryWeight - 100%", BigDecimal.valueOf(category.getWeight()), result);
+		
+		// unweighted
+		category.setUnweighted(true);
+		result = calculator.getCategoryWeight(category);
+		assertEquals("TestGetCategoryWeight - unweighted", null, result);
+		
+		
 
-	public void testGetCourseGrade() {
-		System.out.println("testGetCourseGrade yet implemented");
 	}
+	
+	
+	/*
+	 * tested with unit tests in other units (?)
+	 * 
+	 */
+//	public void testGetCourseGrade() {
+//		System.out.println("testGetCourseGrade yet implemented");
+//	}
 
 	public void testGetNewPointsGrade() {
 		System.out.println("testGetNewPointsGrade yet implemented");
