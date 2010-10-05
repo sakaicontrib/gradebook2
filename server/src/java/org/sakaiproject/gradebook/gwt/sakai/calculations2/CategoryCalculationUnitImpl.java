@@ -7,6 +7,8 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradeRecordCalculationUnit;
+import org.sakaiproject.gradebook.gwt.sakai.calculations2.CategoryCalculationUnit;
 
 public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper implements CategoryCalculationUnit {
 
@@ -22,7 +24,12 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 
 	private List<GradeRecordCalculationUnit> unitsToDrop;
 
-	public CategoryCalculationUnitImpl(BigDecimal categoryWeightTotal, Integer dropLowest, Boolean extraCredit, Boolean usePoints) {
+	// Making default constructor private since this class needs to be instantiated with a scale
+	private CategoryCalculationUnitImpl() {
+	}
+	
+	public CategoryCalculationUnitImpl(BigDecimal categoryWeightTotal, Integer dropLowest, Boolean extraCredit, Boolean usePoints, int scale) {
+		super(scale);
 		this.categoryWeightTotal = categoryWeightTotal;
 		this.dropLowest = dropLowest == null ? 0 : dropLowest.intValue();
 		this.isExtraCredit = extraCredit == null ? false : extraCredit.booleanValue();

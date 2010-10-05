@@ -2,9 +2,6 @@ package org.sakaiproject.gradebook.gwt.sakai.calculations2;
 
 import java.math.BigDecimal;
 
-import org.sakaiproject.gradebook.gwt.client.AppConstants;
-import org.sakaiproject.gradebook.gwt.sakai.GradeCalculations;
-
 public class GradeRecordCalculationUnitImpl extends BigDecimalCalculationsWrapper implements GradeRecordCalculationUnit  {
 
 	private BigDecimal pointsReceived;
@@ -22,7 +19,12 @@ public class GradeRecordCalculationUnitImpl extends BigDecimalCalculationsWrappe
 
 	protected Object actualRecord;
 
-	public GradeRecordCalculationUnitImpl(BigDecimal pointsReceived, BigDecimal pointsPossible, BigDecimal percentOfCategory, Boolean extraCredit) {
+	// Making default constructor private since this class needs to be instantiated with a scale
+	private GradeRecordCalculationUnitImpl() {
+	}
+	
+	public GradeRecordCalculationUnitImpl(BigDecimal pointsReceived, BigDecimal pointsPossible, BigDecimal percentOfCategory, Boolean extraCredit, int scale) {
+		super(scale);
 		this.pointsReceived = pointsReceived;
 		this.pointsPossible = pointsPossible;
 		this.percentOfCategory = percentOfCategory ;
@@ -31,19 +33,10 @@ public class GradeRecordCalculationUnitImpl extends BigDecimalCalculationsWrappe
 		this.isExtraCredit = extraCredit == null ? false : extraCredit.booleanValue();
 	}
 
-	public GradeRecordCalculationUnitImpl(BigDecimal percentageScore, BigDecimal percentOfCategory, Boolean extraCredit) {
-		this.percentageScore = percentageScore;
-		this.percentOfCategory = percentOfCategory;
-
-		isExcused = pointsReceived == null;
-		this.isExtraCredit = extraCredit == null ? false : extraCredit.booleanValue();
-	}
-
 	public BigDecimal calculate(BigDecimal weight) {
 
 		if (percentageScore != null && weight != null) {
 			scaledScore = multiply(percentageScore, weight);
-			//scaledScore = percentageScore.multiply(weight);
 			return scaledScore;
 		}
 
@@ -61,18 +54,12 @@ public class GradeRecordCalculationUnitImpl extends BigDecimalCalculationsWrappe
 		if (pointsPossible.compareTo(BigDecimal.ZERO) != 0)
 		{
 			percentageScore = divide(pointsReceived, pointsPossible);
-			//percentageScore = pointsReceived.divide(pointsPossible, GradeCalculations.MATH_CONTEXT);
-		}
-		else
-		{
-			percentageScore = BigDecimal.ZERO;
 		}
 	}
 
 	public void calculateRawDifference() {
 		if (pointsReceived != null && pointsPossible != null)
 			pointsDifference = subtract(pointsPossible, pointsReceived);
-			//pointsDifference = pointsPossible.subtract(pointsReceived, GradeCalculations.MATH_CONTEXT);
 		else
 			pointsDifference = null;
 	}

@@ -56,13 +56,13 @@ public class GradeRecordCalculationUnit {
 		this.isExtraCredit = extraCredit == null ? false : extraCredit.booleanValue();
 	}
 
-	public GradeRecordCalculationUnit(BigDecimal percentageScore, BigDecimal percentOfCategory, Boolean extraCredit) {
-		this.percentageScore = percentageScore == null ? null : percentageScore.setScale(AppConstants.SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
-		this.percentOfCategory = percentOfCategory == null ? null : percentOfCategory.setScale(AppConstants.SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
-
-		isExcused = pointsReceived == null;
-		this.isExtraCredit = extraCredit == null ? false : extraCredit.booleanValue();
-	}
+//	public GradeRecordCalculationUnit(BigDecimal percentageScore, BigDecimal percentOfCategory, Boolean extraCredit) {
+//		this.percentageScore = percentageScore == null ? null : percentageScore.setScale(AppConstants.SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
+//		this.percentOfCategory = percentOfCategory == null ? null : percentOfCategory.setScale(AppConstants.SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
+//
+//		isExcused = pointsReceived == null;
+//		this.isExtraCredit = extraCredit == null ? false : extraCredit.booleanValue();
+//	}
 
 	public BigDecimal calculate(BigDecimal weight) {
 

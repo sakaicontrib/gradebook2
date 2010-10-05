@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
+import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradeRecordCalculationUnit;
+
 
 public interface GradebookCalculationUnit {
 

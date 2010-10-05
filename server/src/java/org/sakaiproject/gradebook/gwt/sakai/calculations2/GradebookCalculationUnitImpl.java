@@ -7,8 +7,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-import org.sakaiproject.gradebook.gwt.client.AppConstants;
-
+import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradebookCalculationUnit;
+import org.sakaiproject.gradebook.gwt.sakai.calculations2.CategoryCalculationUnit;
+import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradeRecordCalculationUnit;
 
 public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper implements GradebookCalculationUnit {
 
@@ -17,11 +18,17 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 
 	private Map<String, CategoryCalculationUnit> categoryUnitMap;
 
-	public GradebookCalculationUnitImpl() {
-
+	// Making default constructor private since this class needs to be instantiated with a scale
+	private GradebookCalculationUnitImpl() {
+	}
+	
+	
+	public GradebookCalculationUnitImpl(int scale) {
+		super(scale);
 	}
 
-	public GradebookCalculationUnitImpl(Map<String, CategoryCalculationUnit> categoryUnitMap) {
+	public GradebookCalculationUnitImpl(Map<String, CategoryCalculationUnit> categoryUnitMap, int scale) {
+		super(scale);
 		this.categoryUnitMap = categoryUnitMap;	
 	}
 

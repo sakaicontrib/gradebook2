@@ -16,9 +16,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.sakai.GradeCalculations;
-import org.sakaiproject.gradebook.gwt.sakai.calculations.CategoryCalculationUnit;
-import org.sakaiproject.gradebook.gwt.sakai.calculations.GradeRecordCalculationUnit;
-import org.sakaiproject.gradebook.gwt.sakai.calculations.GradebookCalculationUnit;
+import org.sakaiproject.gradebook.gwt.sakai.calculations2.CategoryCalculationUnit;
+import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradeRecordCalculationUnit;
+import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradebookCalculationUnit;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeItem;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeStatistics;
 import org.sakaiproject.gradebook.gwt.sakai.model.StudentScore;
@@ -94,13 +94,13 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 	// Constructor
 	public GradeCalculationsImpl() {
 		super();
-		log.info("GradeCalculationsImpl default constructor called.");
+		//log.info("GradeCalculationsImpl default constructor called.");
 	}
 
 	// Constructor
-	public GradeCalculationsImpl(int precision) {
-		super(precision);
-		log.info("#### TEST #### GradeCalculationsImpl(int precision) constructor called. This should only occure during JUnit tests");
+	public GradeCalculationsImpl(int scale) {
+		super(scale);
+		//log.info("#### TEST #### GradeCalculationsImpl(int scale) constructor called. This should only occure during JUnit tests");
 	}
 
 
@@ -606,7 +606,7 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 
 		BigDecimal totalGradebookPoints = populateGradeRecordUnits(null, null, assignments, gradeRecordUnits, assignmentGradeRecordMap, false, false)[1];
 		log.debug("getNoCategoriesCourseGrade - totalGradebookPoints=" + totalGradebookPoints);
-		GradebookCalculationUnit gradebookUnit = new GradebookCalculationUnit();
+		GradebookCalculationUnit gradebookUnit = new GradebookCalculationUnitImpl(getScale());
 
 		return gradebookUnit.calculatePointsBasedCourseGrade(gradeRecordUnits, totalGradebookPoints, isExtraCreditScaled);
 	}
@@ -641,7 +641,7 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 				String categoryKey = String.valueOf(category.getId());
 
 				BigDecimal categoryWeight = getCategoryWeight(category);
-				CategoryCalculationUnit categoryCalculationUnit = new CategoryCalculationUnit(categoryWeight, Integer.valueOf(category.getDrop_lowest()), category.isExtraCredit(), category.isEnforcePointWeighting());
+				CategoryCalculationUnit categoryCalculationUnit = new CategoryCalculationUnitImpl(categoryWeight, Integer.valueOf(category.getDrop_lowest()), category.isExtraCredit(), category.isEnforcePointWeighting(), getScale());
 				categoryUnitMap.put(categoryKey, categoryCalculationUnit);
 
 				List<GradeRecordCalculationUnit> gradeRecordUnits = new ArrayList<GradeRecordCalculationUnit>();
@@ -664,7 +664,7 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 			} // for
 		}
 
-		GradebookCalculationUnit gradebookUnit = new GradebookCalculationUnit(categoryUnitMap);
+		GradebookCalculationUnit gradebookUnit = new GradebookCalculationUnitImpl(categoryUnitMap, getScale());
 
 		if (isWeighted)
 			return gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, isExtraCreditScaled);
@@ -751,8 +751,8 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 
 							Boolean isExtraCredit = Boolean.valueOf(isExtraCreditItemOrCategory);
 
-							GradeRecordCalculationUnit gradeRecordUnit = new GradeRecordCalculationUnit(pointsEarned, 
-									pointsPossible, assignmentWeight, isExtraCredit) {
+							GradeRecordCalculationUnit gradeRecordUnit = new GradeRecordCalculationUnitImpl(pointsEarned, 
+									pointsPossible, assignmentWeight, isExtraCredit, getScale()) {
 
 								@Override
 								public void setDropped(boolean isDropped) {
@@ -878,8 +878,8 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 
 							Boolean isExtraCredit = Boolean.valueOf(isExtraCreditItemOrCategory);
 
-							GradeRecordCalculationUnit gradeRecordUnit = new GradeRecordCalculationUnit(pointsEarned, 
-									pointsPossible, assignmentWeight, isExtraCredit) {
+							GradeRecordCalculationUnit gradeRecordUnit = new GradeRecordCalculationUnitImpl(pointsEarned, 
+									pointsPossible, assignmentWeight, isExtraCredit, getScale()) {
 
 								@Override
 								public void setDropped(boolean isDropped) {

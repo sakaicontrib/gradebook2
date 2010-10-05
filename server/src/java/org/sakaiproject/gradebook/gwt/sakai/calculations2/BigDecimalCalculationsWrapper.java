@@ -8,63 +8,63 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class BigDecimalCalculationsWrapper {
-	
+
 	private static final Log log = LogFactory.getLog(BigDecimalCalculationsWrapper.class);
-	
+
 	private int scale = 50;
 	private RoundingMode roundingMode = RoundingMode.HALF_EVEN;
-	
+
 	public BigDecimalCalculationsWrapper() {
-		log.info("BigDecimalCalculationsWrapper default constructor called.");
+		//log.info("BigDecimalCalculationsWrapper default constructor called.");
 	}
-	
+
 	public BigDecimalCalculationsWrapper(int scale) {
-		
-		log.info("#### TEST #### BigDecimalCalculationsWrapper(int scale) constructor called. This should only occure during JUnit tests");
-		log.info("#### TEST #### Setting MathContext scale to " + scale);
+
+		//log.info("#### TEST #### BigDecimalCalculationsWrapper(int scale) constructor called. This should only occure during JUnit tests");
+		//log.info("#### TEST #### Setting MathContext scale to " + scale);
 		this.scale = scale;
-		
+
 	}
-	
+
 	public BigDecimal add(BigDecimal addend, BigDecimal augend) {
-		
+
 		return addend.add(augend);
 	}
-	
+
 	public BigDecimal subtract(BigDecimal minuend, BigDecimal subtrahend) {
-		
+
 		return minuend.subtract(subtrahend);
 	}
-	
+
 	public BigDecimal multiply(BigDecimal multiplier, BigDecimal multiplicand) {
-		
+
 		return multiplier.multiply(multiplicand);
 	}
-	
+
 	public BigDecimal divide(BigDecimal dividend, BigDecimal divisor) {
-		
+
 		BigDecimal result = null;
-		
+
 		try {
-		
+
 			result = dividend.divide(divisor);
-		
+
 		} catch(ArithmeticException ae) {
-			
+
 			/*
 			 * We are not handling divide by zero case here because the following call to divide
 			 * will generate the exception again. The calling code should handle that case.
 			 */
-			
+
 			result = dividend.divide(divisor, scale, roundingMode);
-			
-			
+
+
 		}
-		
+
 		return result;
 	}
 
-	
+
 	public RoundingMode getRoundingMode() {
 		return roundingMode;
 	}
@@ -83,20 +83,20 @@ public class BigDecimalCalculationsWrapper {
 	}
 
 	public BigDecimal sqrt(BigDecimal operand) {
-		
+
 		BigSquareRoot sqrtHelper = new BigSquareRoot();
-		
+
 		return sqrtHelper.get(operand);
-		
+
 	}
-	
+
 	public class BigSquareRoot {
 
 		private BigDecimal ZERO = new BigDecimal("0");
 		private BigDecimal ONE = new BigDecimal("1");
 		private BigDecimal TWO = new BigDecimal("2");
 		public final int DEFAULT_MAX_ITERATIONS = 50;
-		
+
 
 		private BigDecimal error;
 		private int iterations;
@@ -233,9 +233,5 @@ public class BigDecimalCalculationsWrapper {
 			}
 			return new BigInteger(sb.toString());
 		}
-
-
-
 	}
-	
 }
