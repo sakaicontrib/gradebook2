@@ -159,7 +159,6 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 						sumUnitWeight = BigDecimal.ZERO;
 
 					sumUnitWeight = add(sumUnitWeight, itemWeight);
-					//sumUnitWeight = sumUnitWeight.add(itemWeight);
 				}
 			}
 		}
