@@ -53,12 +53,10 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 					return BigDecimal.ZERO;
 
 				BigDecimal percentageScore = divide(sumPoints, sumPointsPossible);
-				//BigDecimal percentageScore = sumPoints.divide(sumPointsPossible, GradeCalculations.MATH_CONTEXT);
-
+				
 				if (sumExtraCreditPoints != null)
 					percentageScore = add(percentageScore, scaleExtraCreditPoints(sumExtraCreditPoints, sumPointsPossible, totalGradebookPoints, isExtraCreditScaled));
-					//percentageScore = percentageScore.add(scaleExtraCreditPoints(sumExtraCreditPoints, sumPointsPossible, totalGradebookPoints, isExtraCreditScaled));
-				
+					
 				courseGrade = percentageScore;
 			}
 
@@ -314,13 +312,12 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 							sumExtraCreditPoints = BigDecimal.ZERO;
 
 						sumExtraCreditPoints = add(sumExtraCreditPoints, pointsReceived);
-						//sumExtraCreditPoints = sumExtraCreditPoints.add(pointsReceived);
+						
 					} else {
 						if (sumPoints == null)
 							sumPoints = BigDecimal.ZERO;
 	
 						sumPoints = add(sumPoints, pointsReceived);
-						//sumPoints = sumPoints.add(pointsReceived);
 					}
 				}
 
@@ -329,7 +326,6 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 						sumPointsPossible = BigDecimal.ZERO;
 
 					sumPointsPossible = add(sumPointsPossible, pointsPossible);
-					//sumPointsPossible = sumPointsPossible.add(pointsPossible);
 				}
 				
 
@@ -376,7 +372,7 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 
 			// Now just go thru the list and subtract the dropped ones from both points possible and points received . . . this means they won't be included 
 			// in the calculation
-			for (int i=0;i<dropLowest;i++) {
+			for (int i = 0; i < dropLowest; i++) {
 				GradeRecordCalculationUnit entry = orderingList.get(i);
 
 				BigDecimal pointsReceived = entry.getPointsReceived();
@@ -386,9 +382,7 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 
 				if (pointsReceived != null && pointsPossible != null) {
 					sumPoints = subtract(sumPoints, pointsReceived);
-					//sumPoints = sumPoints.subtract(pointsReceived, GradeCalculations.MATH_CONTEXT);
 					sumPointsPossible = subtract(sumPointsPossible, pointsPossible);
-					//sumPointsPossible = sumPointsPossible.subtract(pointsPossible, GradeCalculations.MATH_CONTEXT);
 
 					// This is a special case where the sumPoints is non-null because the drop
 					// lowest was not taken into account earlier, but it should be null
@@ -410,14 +404,14 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 	}
 	
 	private BigDecimal scaleExtraCreditPoints(BigDecimal extraCreditPoints, BigDecimal pointsPossible, BigDecimal totalGradebookPoints, boolean isExtraCreditScaled) {
+		
 		if (extraCreditPoints == null || pointsPossible == null || extraCreditPoints.compareTo(BigDecimal.ZERO) == 0)
 			return BigDecimal.ZERO;
 		
 		if (isExtraCreditScaled)
 			return divide(extraCreditPoints, totalGradebookPoints);
- 			//return extraCreditPoints.divide(totalGradebookPoints, RoundingMode.HALF_EVEN);
 		
  		return divide(extraCreditPoints, pointsPossible);
- 		//return extraCreditPoints.divide(pointsPossible, RoundingMode.HALF_EVEN);
+
 	}
 }
