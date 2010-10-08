@@ -1514,6 +1514,10 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			learnerRow.set(LearnerKey.S_OVRD_GRD.name(), rowData[colIdx]);
 			break;
 		case S_ITEM:
+			// GRBK-760
+			if("".equals(rowData[colIdx].trim())) {
+				break;
+			}
 			decorateLearnerItemFromHeaderAndRowData(learnerRow, importHeader, rowData, colIdx, ieInfo, gradeType, service, id);
 			break;
 		case S_COMMENT:
