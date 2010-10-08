@@ -52,12 +52,17 @@ public class UserDirectoryServiceMock implements UserDirectoryService {
 	private List<User> users;
 	public static int DEFAULT_NUMBER_TEST_LEARNERS = 200;
 	
+	// GRBK-751
+	// This is used to test userIDs that have special characters
+	// e.g. set it to ";XXj7"
+	private static final String USER_ID_POSTFIX = "";
+	
 	public void init() {
 		
 		if (users == null) {
 			users = new ArrayList<User>(DEFAULT_NUMBER_TEST_LEARNERS);
 			for (int i=0;i<DEFAULT_NUMBER_TEST_LEARNERS;i++) {
-				users.add(createUserRecord(i + ";XXj7"));
+				users.add(createUserRecord(i + USER_ID_POSTFIX));
 			}
 		}
 	}
