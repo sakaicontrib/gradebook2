@@ -58,13 +58,11 @@ public class Export extends Resource {
 			}
 			filename.append(type.getExtension());
 			
-			//Gradebook gradebook = service.getGradebook(gradebookUid);
-			
 			if (response != null) {
 				
 				// GRBK-665
 				if (request.getScheme().equals("https") &&
-						BrowserDetect.atLeast(request, UserAgent.IE, 8)) {
+						BrowserDetect.atLeast(request, UserAgent.IE, 7)) {
 					response.setHeader("Pragma", "");
 					response.setHeader("Cache-Control", "");
 				}
