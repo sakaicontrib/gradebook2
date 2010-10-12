@@ -47,7 +47,7 @@ public class GradeDataLoader {
 	
 	private File dataFile = null;
 	private List<StudentScore> scores = null;
-	private BigDecimal acceptableError = BigDecimal.ZERO;
+	private BigDecimal acceptableError = BigDecimal.ONE.movePointLeft(52);
 	
 	public GradeDataLoader() {}
 	
@@ -58,24 +58,26 @@ public class GradeDataLoader {
 				INPUT_KEY_MODE, INPUT_KEY_USE_DEPRECATED,
 				INPUT_KEY_SCALE, INPUT_KEY_ERROR);
 		
-		URL u = ClassLoader.getSystemResource(dataFileName);
-		if(u != null) {
-			File dataFile = new File(u.getPath());
-			if(dataFile.exists() && dataFile.canRead()) {
-				this.dataFile = dataFile;
-				try {
-					loadDataFile();
-				} catch (Exception e) {
-					this.dataFile = null;
-					this.scores = null;
-					System.out.println("General Exception reading: " + dataFileName);
-				}
-
-			} else {
-				System.out.println("Unable to read data file: " + dataFile.getPath());
-			}
+		File dataFile = null;
+			
+		URL u = ClassLoader.getSystemResource(dataFileName); // search the classpath first
+		if (null == u) {
+			dataFile = new File(dataFileName);
 		} else {
-			System.out.println("Unable find data file: " + dataFileName);
+			dataFile = new File(u.getPath());
+		}
+		if(dataFile.exists() && dataFile.canRead()) {
+			this.dataFile = dataFile;
+			try {
+				loadDataFile();
+			} catch (Exception e) {
+				this.dataFile = null;
+				this.scores = null;
+				System.out.println("General Exception reading: " + dataFileName);
+			}
+
+		} else {
+			System.out.println("Unable to read data file: " + dataFile.getPath());
 		}
 
 	}
@@ -94,8 +96,17 @@ public class GradeDataLoader {
 		
 		for (String key : statsKeys) {
 			if (!testStatsByKey.containsKey(key)) {
-				System.err.println("Missing stats key: " + key);
-				return false;
+				if(key.equals(INPUT_KEY_MODE)) {
+					System.err.println("Test will be expecting no mode value");
+					testStatsByKey.put(INPUT_KEY_MODE, new ArrayList<BigDecimal>());
+				} else if (key.equals(INPUT_KEY_SCALE)){
+					System.err.println("no scale key found... using default (" + scale + ")...probably not what you want");
+				} else if (key.equals(INPUT_KEY_ERROR)){
+					System.err.println("no 'error' key found... using default (" + acceptableError + ")...probably not what you want");
+				} else {
+					System.err.println("Missing stats key: " + key);
+					return false;
+				}
 			}
 		}
 		return true;
@@ -118,29 +129,35 @@ public class GradeDataLoader {
 				String label = null;
 				
 				while ((line = br.readLine()) != null)   {
-					// check for stats keys
-					String[] parts = line.split(":");
+					// check for stats keysnewChar
+					String[] parts = line.replace("\"","").replace("'","").split(":");
 					label = parts[0].trim();
 					if (parts.length > 0 && statsKeys.contains(label)
 							&& !testStatsByKey.containsKey(label)) { // uses the first value given for a key
 						if (label.equalsIgnoreCase(INPUT_KEY_USE_DEPRECATED)) {
-							useDeprecatedCalculations = Boolean.valueOf(parts[1].trim());
+							useDeprecatedCalculations = Boolean.valueOf(parts[1].replace(",","").trim());
 							System.out.println(INPUT_KEY_USE_DEPRECATED + ": " + useDeprecatedCalculations);
 							continue;
 						}
 						if (label.equalsIgnoreCase(INPUT_KEY_SCALE)) {
-							scale = Integer.valueOf(parts[1].trim());
+							scale = Integer.valueOf(parts[1].replace(",","").trim());
 							testStatsByKey.put(INPUT_KEY_SCALE, scale);
 							System.out.println(INPUT_KEY_SCALE + ": " + scale);
 							continue;
 						}
 						if (label.equalsIgnoreCase(INPUT_KEY_ERROR)) {
-							acceptableError = new BigDecimal(parts[1].trim());
+							acceptableError = new BigDecimal(parts[1].replace(",","").trim());
 							System.out.println(INPUT_KEY_ERROR + ": " + acceptableError);
+							testStatsByKey.put(INPUT_KEY_ERROR, acceptableError);
 							continue;
 						}
 						try {
-							String[] list = parts[1].split(",");
+							String[] list = null;
+							if (parts[1].trim().charAt(0) ==',') {
+								list = parts[1].trim().substring(1).split(",");
+							} else {
+								list = parts[1].split(",");
+							}
 							if(label.equalsIgnoreCase(INPUT_KEY_MODE) && list.length>0) {
 								ArrayList<BigDecimal> result = new ArrayList<BigDecimal>(list.length);
 								System.out.println(INPUT_KEY_MODE + ":");
@@ -151,7 +168,7 @@ public class GradeDataLoader {
 								}
 								testStatsByKey.put(label, result);
 							} else {
-								testStatsByKey.put(label, (new BigDecimal(parts[1].trim())).toString());
+								testStatsByKey.put(label, (new BigDecimal(parts[1].replace(",","").trim())).toString());
 								System.out.println(label + ": " + testStatsByKey.get(label));
 							}
 							
@@ -164,7 +181,7 @@ public class GradeDataLoader {
 						}
 					} else 
 						try {
-							scores.add(new StudentScore("" + id, new BigDecimal(line)));
+							scores.add(new StudentScore("" + id, new BigDecimal(line.replace("\"","").replace("'","").replace(",", ""))));
 							
 						} catch (NumberFormatException e) {
 							System.err.println("(ignored)NumberFormatException: " + line);
@@ -189,7 +206,7 @@ public class GradeDataLoader {
 		 *  remove them so that isAllTestStatsKeysPresent() won't send false negatives
 		 */
 		statsKeys.remove(INPUT_KEY_USE_DEPRECATED); 
-		statsKeys.remove(INPUT_KEY_ERROR);
+		//statsKeys.remove(INPUT_KEY_ERROR);
 		
 		// make sure all the input statistics have the same requested scale
 

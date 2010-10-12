@@ -38,9 +38,9 @@ import sun.security.util.BigInt;
 
 public class GradeCalculationsTest extends TestCase {
 	
-	public static final String GRADE_DATA_FILE_PATH = "org/sakaiproject/gradebook/gwt/sakai/calculations/GradeData.dat";
-	public static final Object PROP_GRADE_DATA_FILE_PATH = "gb2.test.gradedata.path";
-	private String dataFilePath = GRADE_DATA_FILE_PATH;
+	public static final String DEFAULT_GRADE_DATA_FILE_PATH = "org/sakaiproject/gradebook/gwt/sakai/calculations/GradeData.dat";
+	public static final String PROP_GRADE_DATA_FILE_PATH = "gb2.test.gradedata.path";
+	private String dataFilePath = DEFAULT_GRADE_DATA_FILE_PATH;
 	
 	BigDecimal meanFromFile = null;
 	BigDecimal stdevSampFromFile = null;
@@ -63,7 +63,7 @@ public class GradeCalculationsTest extends TestCase {
 
 	public GradeCalculationsTest() {
 		
-
+		
 		if(FULL_PRECISION) {
 			GradeCalculationsImpl old = new GradeCalculationsImpl(50);
 			old.init();
@@ -73,18 +73,21 @@ public class GradeCalculationsTest extends TestCase {
 			newImpl.init();
 			calculator = newImpl;
 		}
+
+		try {
+			dataFilePath = System.getProperty(PROP_GRADE_DATA_FILE_PATH);
+		} catch(Exception e) {// nada
+			}
 		
-		if (System.getProperties().contains(PROP_GRADE_DATA_FILE_PATH)) {
-			if (dataFilePath != null )
-				try {
-					File file = new File(dataFilePath.trim());
-					if(!(file.exists() && file.canRead())) {
-						System.err.println("Cannot read file '" + dataFilePath + "' ... using default: " + GRADE_DATA_FILE_PATH);
-					}
-				} catch (SecurityException se) {
-					System.err.println("SecurityException: Cannot read file '" + dataFilePath + "' ... using default: " + GRADE_DATA_FILE_PATH);
-				}
+
+		if (null == dataFilePath) {
+			dataFilePath = DEFAULT_GRADE_DATA_FILE_PATH;
 		}
+
+
+
+
+
 	}
 
 	protected void setUp() throws Exception {
@@ -467,12 +470,12 @@ public class GradeCalculationsTest extends TestCase {
 //	}
 
 	public void testCalculateStatistics() {
-		GradeDataLoader data = new GradeDataLoader(GRADE_DATA_FILE_PATH);
+		GradeDataLoader data = new GradeDataLoader(dataFilePath);
 		
 		assertTrue("Missing data from test input file", data.isAllTestStatsKeysPresent());
 		assertNotNull("Null Scores", data.getScores());
 		
-		// calculate stats using commons-math
+		// calculate some stats using commons-math for giggles
 		DescriptiveStatistics stats = new DescriptiveStatistics();
 		Frequency frequency = new Frequency();
 		
@@ -562,7 +565,8 @@ public class GradeCalculationsTest extends TestCase {
 		String fromFile = (String)data.getTestStatsByKey().get(GradeDataLoader.INPUT_KEY_STDEVP);	
 		
 		/// this tests value, precision and scale
-		assertEquals("StatsTest-stdevp-from-test-file", -1, /// this is (left side < right side) 
+		assertEquals("StatsTest-stdevp-from-test-file - error:" +
+				helper.subtract(new BigDecimal(fromFile), calculatedStats.getStandardDeviation().setScale(data.getScale())).abs(), -1, /// this is (left side < right side) 
 				helper.subtract(new BigDecimal(fromFile), calculatedStats.getStandardDeviation().setScale(data.getScale())).abs()
 				.compareTo(data.getAcceptableError()));
 			
