@@ -1025,7 +1025,14 @@ public class GradeCalculationsTest extends TestCase {
 //	}
 
 	public void testGetNewPointsGrade() {
-		System.out.println("testGetNewPointsGrade yet implemented");
+		
+
+		assertEquals("NewPointsGrade - ", 
+				FULL_PRECISION ? 
+						new BigDecimal("89.189189189189189189189189189189189189189189189189100")
+						: new BigDecimal("89.18918917"), 
+						calculator.getNewPointsGrade(66d, 100d, 74d));
+		
 	}
 
 	public void testGetPercentAsPointsEarned() {

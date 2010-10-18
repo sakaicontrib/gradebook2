@@ -50,14 +50,13 @@ public class GradeCalculationTest extends TestCase {
 		GradebookCalculationUnit gradebookUnit = getEssaysHomeworkExtraCreditGradebook();
 		
 		Double[][] values = {
-				{  5d,  5d, 0.20d, null },
-				{  9d,  9d, 0.20d, null },
-				{ 10d, 10d, 0.10d, null },
-				{ 10d, 10d, 0.10d, null },
-				{ 20d, 20d, 0.40d, null },
-				{ 10d, 10d, 0.30d, null },
-				{ 10d, 10d, 0.30d, null },
-				{ 10d, 10d, 0.40d, null }
+				{  9d, 10d, 4.17d, null },
+				{  9d, 10d, 4.17d, null },
+				{  9d, 10d, 4.17d, null },
+				{  9d, 10d, 4.17d, null },
+				{  9d, 10d, 4.17d, null },
+				{  9d, 10d, 4.17d, null },
+
 		};
 
 
@@ -174,11 +173,12 @@ public class GradeCalculationTest extends TestCase {
 		GradebookCalculationUnit gradebookUnit = getEssaysHomeworkExtraCreditGradebook();
 		
 		Double[][] essayValues = {
-				{  5d,  5d, 0.20d, null },
-				{  9d,  9d, 0.20d, null },
-				{null, 10d, 0.10d, null },
-				{null, 10d, 0.10d, null },
-				{null, 20d, 0.40d, null }
+				{  9d,  10d, null, null },
+				{  9d,  10d, null, null },
+				{9d, 10d, null, null },
+				{9d, 10d, null, null },
+				{9d, 10d, null, null },
+				{9d, 10d, null, null }
 		};
 
 		Double[][] hwValues = {
@@ -1341,7 +1341,7 @@ public class GradeCalculationTest extends TestCase {
 		BigDecimal firstBig = first.setScale(2, RoundingMode.HALF_EVEN);
 		BigDecimal secondBig = second.setScale(2, RoundingMode.HALF_EVEN);
 		try {
-			assertTrue(firstBig.equals(secondBig));
+			assertEquals(firstBig,secondBig);
 		} catch (AssertionFailedError e) {
 			System.out.println("" + firstBig + " != " + secondBig);
 			throw e;
