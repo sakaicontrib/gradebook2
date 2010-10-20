@@ -6,7 +6,9 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +32,7 @@ import org.sakaiproject.gradebook.gwt.server.Util;
 import org.sakaiproject.gradebook.gwt.server.model.GradeItemImpl;
 import org.sakaiproject.service.gradebook.shared.GradebookService;
 import org.sakaiproject.tool.gradebook.Assignment;
+import org.sakaiproject.tool.gradebook.AssignmentGradeRecord;
 import org.sakaiproject.tool.gradebook.Category;
 import org.sakaiproject.tool.gradebook.Gradebook;
 import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradeCalculationsImpl;
@@ -57,7 +60,7 @@ public class GradeCalculationsTest extends TestCase {
 	private static String GRADE_ITEM_JSON_CATEGORY = "{\"B_ACTIVE\":false, \"B_EDITABLE\":true, \"S_CTGRY_NAME\":\"\", \"S_NM\":\"Category 1\", \"B_X_CRDT\":false, \"B_EQL_WGHT\":false, \"B_INCLD\":true, \"B_RLSD\":false, \"B_NLLS_ZEROS\":false, \"B_WT_BY_PTS\":false, \"D_PCT_GRD\":null, \"S_PCT_GRD\":\"null\", \"D_PCT_CTGRY\":null, \"S_PCT_CTGRY\":\"null\", \"D_PNTS\":null, \"S_PNTS\":\"null\", \"W_DUE\":null, \"I_DRP_LWST\":null, \"S_ITM_TYPE\":\"CATEGORY\"}";
 
 	// set this flag to true to expect high precision numbers as results
-	private boolean FULL_PRECISION = true;
+	private boolean FULL_PRECISION = false;
 	
 	BigDecimalCalculationsWrapper helper = new BigDecimalCalculationsWrapper(50);
 
@@ -463,11 +466,6 @@ public class GradeCalculationsTest extends TestCase {
 		//TODO: 'fuzzing'?
 	}
 
-	// not an api method
-//	public void testCalculateItemGradePercentDecimal() {
-//		System.out.println("testCalculateItemGradePercentDecimal not tested: not an implementation if a API method");
-//		
-//	}
 
 	public void testCalculateStatistics() {
 		GradeDataLoader data = new GradeDataLoader(dataFilePath);
@@ -524,7 +522,7 @@ public class GradeCalculationsTest extends TestCase {
 		 * 
 		 */
 
-		GradeStatistics calculatedStats = calculator.calculateStatistics(data.getScores(), getScoresSum(data), null);
+		GradeStatistics calculatedStats = calculator.calculateStatistics(data.getScores(), getScoresSum(data), "1");
 
 
 		//Assertions
@@ -936,7 +934,7 @@ public class GradeCalculationsTest extends TestCase {
 	private BigDecimal preemptRoundingIfNecessary(BigDecimal grade) {
 		if(grade.subtract(grade.setScale(4, RoundingMode.HALF_UP)).compareTo(BigDecimal.ZERO) < 0 )  {
 			// rounding will bump the last digit up one
-			// so well round it to the floor value first
+			// so round it to the floor value first
 			grade = grade.setScale(4, RoundingMode.FLOOR);
 		}
 		return grade;
@@ -1016,13 +1014,93 @@ public class GradeCalculationsTest extends TestCase {
 	}
 	
 	
-	/*
-	 * tested with unit tests in other units (?)
-	 * 
-	 */
-//	public void testGetCourseGrade() {
-//		System.out.println("testGetCourseGrade yet implemented");
-//	}
+
+	public void testGetCourseGrade() {
+		Category category = new Category();
+		category.setExtraCredit(false);
+		category.setId(new Long(1));
+		
+		Date dueDate = null;
+		Gradebook gradebook = new Gradebook("GRADEBOOK_ID");
+		
+		category.setGradebook(gradebook);
+		Double weight = calculator.calculateEqualWeight(6);
+		
+		Long id = new Long(0);
+		Assignment asn1 = new Assignment(gradebook, "ASN-1", Double.valueOf(30), dueDate);
+		asn1.setAssignmentWeighting(weight);
+		asn1.setCategory(category);
+		asn1.setId(++id);
+		Assignment asn2 = new Assignment(gradebook, "ASN-2", Double.valueOf(40), dueDate);
+		asn2.setAssignmentWeighting(weight);
+		asn2.setCategory(category);
+		asn2.setId(++id);
+		Assignment asn3 = new Assignment(gradebook, "ASN-3", Double.valueOf(50), dueDate);
+		asn3.setAssignmentWeighting(weight);
+		asn3.setCategory(category);
+		asn3.setId(++id);
+		Assignment asn4 = new Assignment(gradebook, "ASN-4", Double.valueOf(10), dueDate);
+		asn4.setAssignmentWeighting(weight);
+		asn4.setCategory(category);
+		asn4.setId(++id);
+		Assignment asn5 = new Assignment(gradebook, "ASN-5", Double.valueOf(10), dueDate);
+		asn4.setAssignmentWeighting(weight);
+		asn4.setCategory(category);
+		asn4.setId(++id);
+		Assignment asn6 = new Assignment(gradebook, "ASN-6", Double.valueOf(10), dueDate);
+		asn4.setAssignmentWeighting(weight);
+		asn4.setCategory(category);
+		asn4.setId(++id);
+		
+		Double[] values = {
+				0d ,
+				0d ,
+				0d ,
+				9.0000000d 
+		};
+		
+
+		
+		List<Category> items = new ArrayList<Category>();
+		items.add(category);
+		
+		List<Assignment> assignments = Arrays.asList(asn1, asn2, asn3, asn4, asn5, asn6);
+		category.setAssignmentList(assignments);
+		
+		gradebook.setCategory_type(GradebookService.CATEGORY_TYPE_ONLY_CATEGORY);
+		assertEquals("Course Grade - 9 out of 10 - Just Category Weighting", 
+				FULL_PRECISION ?
+						new BigDecimal("90.0")
+						: new BigDecimal("90.00"), 
+						
+				calculator.getCourseGrade(gradebook, items, getRecordUnits(values, asn4, "4"), false));
+		
+		gradebook.setCategory_type(GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY);
+		category.setWeight(1d);
+		assertEquals("Course Grade - 9 out of 10 - Just Category Weighting", 
+				FULL_PRECISION ?
+						new BigDecimal("89.999999999999999999999999999999999999999999999999939999999999999772000")
+						: new BigDecimal("89.999999999999999996400000000000000"),
+				
+				calculator.getCourseGrade(gradebook, items, getRecordUnits(values, asn4, "4"), false));
+		
+		
+		
+	}
+	
+	private Map<Long, AssignmentGradeRecord> getRecordUnits(Double[] scores, Assignment ass, String studentId) {
+		Map<Long, AssignmentGradeRecord> units = new HashMap<Long, AssignmentGradeRecord>();
+
+		for (int i=0;i<scores.length;i++) {
+			BigDecimal pointsEarned = scores[i] == null ? null : BigDecimal.valueOf((Double)scores[i]);
+			
+			units.put(ass.getId(), 
+					new AssignmentGradeRecord(ass, studentId, pointsEarned.doubleValue()));
+		}
+
+		return units;
+	}
+	
 
 	public void testGetNewPointsGrade() {
 		
@@ -1033,14 +1111,52 @@ public class GradeCalculationsTest extends TestCase {
 						: new BigDecimal("89.18918917"), 
 						calculator.getNewPointsGrade(66d, 100d, 74d));
 		
+		assertEquals("NewPointsGrade - ", 
+				FULL_PRECISION ? 
+						new BigDecimal("89.999999999999999999999999999999999999999999999999910")
+						: new BigDecimal("89.99999998"), 
+						calculator.getNewPointsGrade(66.6d, 100d, 74d));
+		
 	}
 
 	public void testGetPercentAsPointsEarned() {
-		System.out.println("testGetPercentAsPointsEarned yet implemented");
+		Gradebook gradebook = new Gradebook("GRADEBOOK_ID");
+		gradebook.setCategory_type(GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY);
+		Assignment asn = new Assignment(gradebook, "ASN", 10d, null);
+		
+		assertEquals("PercentAsPoints - 15 sig decimal places", new BigDecimal("8.99999999999999900"),
+				calculator.getPercentAsPointsEarned(asn, 89.99999999999999d));
+		assertEquals("PercentAsPoints - 16 sig decimal places", new BigDecimal("9.00"),
+				calculator.getPercentAsPointsEarned(asn, 89.9999999999999999d));
+		
+		
 	}
 
 	public void testGetPointsEarnedAsPercent() {
-		System.out.println("testGetPointsEarnedAsPercent yet implemented");
+		Gradebook gradebook = new Gradebook("GRADEBOOK_ID");
+		gradebook.setCategory_type(GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY);
+		Assignment asn = new Assignment(gradebook, "ASN", 10d, null);
+		
+		AssignmentGradeRecord agr = new AssignmentGradeRecord(asn, "", 9d);
+		assertEquals("Points as percent - grade = 9", 
+				FULL_PRECISION ? 
+						new BigDecimal("90") 
+						: new BigDecimal("90.00000"), 
+				calculator.getPointsEarnedAsPercent(asn, agr));
+		
+		agr.setPointsEarned(8.9999999999d);
+		assertEquals("Points as percent - grade = 8.9999999999d", 
+				FULL_PRECISION ? 
+						new BigDecimal("89.999999999") 
+						: new BigDecimal("90.000000"),
+				calculator.getPointsEarnedAsPercent(asn, agr));
+		
+		agr.setPointsEarned(8.999999999d);
+		assertEquals("Points as percent - grade = 8.999999999d", new BigDecimal("89.99999999"),
+				calculator.getPointsEarnedAsPercent(asn, agr));
+
+		assertNull("points as percent - null", calculator.getPointsEarnedAsPercent(null, agr));
+
 	}
 
 
