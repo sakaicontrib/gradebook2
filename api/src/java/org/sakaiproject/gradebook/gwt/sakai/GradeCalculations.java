@@ -98,4 +98,7 @@ public interface GradeCalculations {
 
 	public Double calculateDoublePointForLetterGradeRecord(Assignment assignment, LetterGradePercentMapping letterGradePercentMapping, AssignmentGradeRecord gradeRecordFromCall);
 
+	public Map<String, Double> getLetterGradeMap();
+	
+	public void setLetterGradeMap(Map<String, Double> map);
 }

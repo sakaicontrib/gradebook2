@@ -35,6 +35,8 @@ import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.AssignmentGradeRecord;
 import org.sakaiproject.tool.gradebook.Category;
 import org.sakaiproject.tool.gradebook.Gradebook;
+import org.sakaiproject.tool.gradebook.LetterGradeMapping;
+import org.sakaiproject.tool.gradebook.LetterGradePercentMapping;
 import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradeCalculationsImpl;
 
 import sun.security.util.BigInt;
@@ -44,6 +46,25 @@ public class GradeCalculationsTest extends TestCase {
 	public static final String DEFAULT_GRADE_DATA_FILE_PATH = "org/sakaiproject/gradebook/gwt/sakai/calculations/GradeData.dat";
 	public static final String PROP_GRADE_DATA_FILE_PATH = "gb2.test.gradedata.path";
 	private String dataFilePath = DEFAULT_GRADE_DATA_FILE_PATH;
+	private static final Map<String, Double> gradeMap;
+    static {
+        Map<String, Double> aMap = new HashMap<String, Double>();
+        aMap.put("A+", 98.3333333333d);
+        aMap.put("A", 95d);
+        aMap.put("A-", 91.6666666666d);
+        aMap.put("B+", 88.3333333333d);
+        aMap.put("B", 85d);
+        aMap.put("B-", 81.6666666666d);
+        aMap.put("C+", 78.3333333333d);
+        aMap.put("C", 75d);
+        aMap.put("C-", 71.6666666666d);
+        aMap.put("D+", 68.3333333333d);
+        aMap.put("D", 65d);
+        aMap.put("D-", 61.6666666666d);
+        aMap.put("F", 58.3333333333d);
+        aMap.put("0", 0d);
+        gradeMap = Collections.unmodifiableMap(aMap);
+    }
 	
 	BigDecimal meanFromFile = null;
 	BigDecimal stdevSampFromFile = null;
@@ -1157,6 +1178,49 @@ public class GradeCalculationsTest extends TestCase {
 
 		assertNull("points as percent - null", calculator.getPointsEarnedAsPercent(null, agr));
 
+	}
+	
+	public void testGetDoublePointForLetterGradeRecord() {
+		
+		Gradebook gradebook = new Gradebook("GRADEBOOK_ID");
+		gradebook.setCategory_type(GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY);
+		Assignment asn = new Assignment(gradebook, "ASN", 10d, null);
+		
+		LetterGradePercentMapping mapping = new LetterGradePercentMapping();
+		mapping.setGradeMap(gradeMap);
+		calculator.setLetterGradeMap(gradeMap);
+		
+		
+		/// should end up with the midpoint for the lettergrade in each case
+		
+		AssignmentGradeRecord agr = new AssignmentGradeRecord(asn, "", 9d);
+		agr.setLetterEarned(calculator.convertPercentageToLetterGrade(calculator.getPointsEarnedAsPercent(asn, agr)));
+		
+		assertEquals("get double for letter grade - 9d", 
+				FULL_PRECISION ?
+						9.16666666666d
+						: 9.166666667d,
+						calculator.calculateDoublePointForLetterGradeRecord(asn, mapping, agr));
+		
+		agr = new AssignmentGradeRecord(asn, "", 8.9d);
+		agr.setLetterEarned(calculator.convertPercentageToLetterGrade(calculator.getPointsEarnedAsPercent(asn, agr)));
+		assertEquals("get double for letter grade - 8.9d", 
+				
+				FULL_PRECISION ?
+						8.83333333333d
+						: 8.833333333d,
+						calculator.calculateDoublePointForLetterGradeRecord(asn, mapping, agr));
+		
+		agr = new AssignmentGradeRecord(asn, "", 8.999999d);
+		agr.setLetterEarned(calculator.convertPercentageToLetterGrade(calculator.getPointsEarnedAsPercent(asn, agr)));
+		assertEquals("get double for letter grade - 8.999999d", 
+				
+				FULL_PRECISION ?
+						9.16666666666d
+						: 9.166666667d,
+						calculator.calculateDoublePointForLetterGradeRecord(asn, mapping, agr));
+		
+		
 	}
 
 
