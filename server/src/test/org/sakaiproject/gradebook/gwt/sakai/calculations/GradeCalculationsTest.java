@@ -372,6 +372,47 @@ public class GradeCalculationsTest extends TestCase {
 			assertEquals("NumericalInequivalence-2:", 0, (new BigDecimal("20")).compareTo(percentCategory));
 
 		}
+		
+		isWeighted = true;
+		results = calculator.calculatePointsCategoryPercentSum(category, assignments, isWeighted, isCategoryExtraCredit);
+		catPercentSum = results[0];
+		catPercentTotal = results[1];
+			
+		
+		results = calculator.calculateCourseGradeCategoryPercents(asn1, new BigDecimal("100.000"), catPercentSum, catPercentTotal, true);
+
+		BigDecimal courseGradePercent = results[0];
+		BigDecimal percentCategory = results[1];
+		System.out.println("courseGradePercent: " + courseGradePercent);
+		System.out.println("percentCategory: " + percentCategory);
+		
+		assertEquals("NumericalInequivalence-1:", 0, 
+				FULL_PRECISION ?
+						(new BigDecimal("22.22222222222222222222222222222222222222222222222222")).compareTo(courseGradePercent)
+						: (new BigDecimal("22.22222222")).compareTo(courseGradePercent));
+		assertEquals("NumericalInequivalence-2:", 0, 
+				FULL_PRECISION ?
+						(new BigDecimal("22.22222222222222222222222222222222222222222222222200")).compareTo(percentCategory)
+						: (new BigDecimal("22.22222222000")).compareTo(percentCategory));
+		
+		
+		results = calculator.calculateCourseGradeCategoryPercents(asn3, new BigDecimal("100.000"), catPercentSum, catPercentTotal, true);
+
+		courseGradePercent = results[0];
+		percentCategory = results[1];
+		System.out.println("courseGradePercent: " + courseGradePercent);
+		System.out.println("percentCategory: " + percentCategory);
+		
+		assertEquals("NumericalInequivalence-1:", 0, 
+				FULL_PRECISION ?
+						(new BigDecimal("37.03703703703703703703703703703703703703703703703704")).compareTo(courseGradePercent)
+						: (new BigDecimal("37.03703704")).compareTo(courseGradePercent));
+		assertEquals("NumericalInequivalence-2:", 0, 
+				FULL_PRECISION ?
+						(new BigDecimal("37.03703703703703703703703703703703703703703703703700")).compareTo(percentCategory)
+						: (new BigDecimal("37.03703704000")).compareTo(percentCategory));
+
+		
 
 	}
 
@@ -1219,6 +1260,65 @@ public class GradeCalculationsTest extends TestCase {
 						9.16666666666d
 						: 9.166666667d,
 						calculator.calculateDoublePointForLetterGradeRecord(asn, mapping, agr));
+		
+		
+	}
+	
+	public void testCalculateDoublePointForRecord() {
+		Gradebook gradebook = new Gradebook("GRADEBOOK_ID");
+		gradebook.setCategory_type(GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY);
+		Assignment asn = new Assignment(gradebook, "ASN", 10d, null);
+		
+		
+		/* 0 decimal places */
+		AssignmentGradeRecord agr = new AssignmentGradeRecord(asn, "", 9d);
+		agr.setPercentEarned(calculator.getPointsEarnedAsPercent(asn, agr).doubleValue());
+		
+		assertEquals("Double Points from Record - 9d", 9d, calculator.calculateDoublePointForRecord(asn, agr));
+		
+		/* 1 decimal places */
+		agr = new AssignmentGradeRecord(asn, "", 8.9d);
+		agr.setPercentEarned(calculator.getPointsEarnedAsPercent(asn, agr).doubleValue());
+		
+		assertEquals("Double Points from Record - 8.9d", 8.9d, calculator.calculateDoublePointForRecord(asn, agr));
+		
+		/* 6 decimal places - first instance where input differs from output */
+		agr = new AssignmentGradeRecord(asn, "", 8.999999d);
+		agr.setPercentEarned(calculator.getPointsEarnedAsPercent(asn, agr).doubleValue());
+		
+		assertEquals("Double Points from Record - 8.999999d", 
+						8.999998999999999d, calculator.calculateDoublePointForRecord(asn, agr));
+		
+		/* 7 decimal places */
+		agr = new AssignmentGradeRecord(asn, "", 8.9999999d);
+		agr.setPercentEarned(calculator.getPointsEarnedAsPercent(asn, agr).doubleValue());
+		
+		assertEquals("Double Points from Record - 8.9999999d", 
+						8.999999899999999d, calculator.calculateDoublePointForRecord(asn, agr));
+		
+		/* 8 decimal places */		
+		agr = new AssignmentGradeRecord(asn, "", 8.99999999d);
+		agr.setPercentEarned(calculator.getPointsEarnedAsPercent(asn, agr).doubleValue());
+		
+		assertEquals("Double Points from Record - 8.99999999d", 
+						8.999999990000001d, calculator.calculateDoublePointForRecord(asn, agr));
+		
+		/* 9 decimal places */
+		agr = new AssignmentGradeRecord(asn, "", 8.999999999d);
+		agr.setPercentEarned(calculator.getPointsEarnedAsPercent(asn, agr).doubleValue());
+		
+		assertEquals("Double Points from Record - 8.999999999d", 
+						8.999999999d, calculator.calculateDoublePointForRecord(asn, agr));
+		
+		/* 10 decimal places */
+		agr = new AssignmentGradeRecord(asn, "", 8.9999999999d);
+		agr.setPercentEarned(calculator.getPointsEarnedAsPercent(asn, agr).doubleValue());
+		
+		assertEquals("Double Points from Record - 8.9999999999d", 
+				FULL_PRECISION ?
+						8.999999999899998d
+						: 9.0d, 
+						calculator.calculateDoublePointForRecord(asn, agr));
 		
 		
 	}
