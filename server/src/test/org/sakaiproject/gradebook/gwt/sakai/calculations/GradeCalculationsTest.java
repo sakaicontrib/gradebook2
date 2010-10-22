@@ -362,17 +362,25 @@ public class GradeCalculationsTest extends TestCase {
 		BigDecimal catPercentSum = results[0];
 		BigDecimal catPercentTotal = results[1];
 
-		for (Assignment a : assignments) {
-			results = calculator.calculateCourseGradeCategoryPercents(a, new BigDecimal("100.000"), catPercentSum, catPercentTotal, false);
-
-			BigDecimal courseGradePercent = results[0];
-			BigDecimal percentCategory = results[1];
-			
-			assertEquals("NumericalInequivalence-1:", 0, (new BigDecimal("20")).compareTo(courseGradePercent));
-			assertEquals("NumericalInequivalence-2:", 0, (new BigDecimal("20")).compareTo(percentCategory));
-
+		for (int i=0;i<1;++i) { /// second time will be with a droplowest value
+			for (Assignment a : assignments) {
+				results = calculator.calculateCourseGradeCategoryPercents(a, new BigDecimal("100.000"), catPercentSum, catPercentTotal, false);
+	
+				BigDecimal courseGradePercent = results[0];
+				BigDecimal percentCategory = results[1];
+				
+				assertEquals("NumericalInequivalence-1:", 0, (new BigDecimal("20")).compareTo(courseGradePercent));
+				assertEquals("NumericalInequivalence-2:", 0, (new BigDecimal("20")).compareTo(percentCategory));
+	
+			}
+			// results should be the same since we have 'unweighted, unequal point value items'
+			category.setDrop_lowest(1);
+			results = calculator.calculatePointsCategoryPercentSum(category, assignments, isWeighted, isCategoryExtraCredit);
+			catPercentSum = results[0];
+			catPercentTotal = results[1];
 		}
-		
+		category.setDrop_lowest(0);
+		// now test with weighted cat
 		isWeighted = true;
 		results = calculator.calculatePointsCategoryPercentSum(category, assignments, isWeighted, isCategoryExtraCredit);
 		catPercentSum = results[0];
@@ -383,8 +391,6 @@ public class GradeCalculationsTest extends TestCase {
 
 		BigDecimal courseGradePercent = results[0];
 		BigDecimal percentCategory = results[1];
-		System.out.println("courseGradePercent: " + courseGradePercent);
-		System.out.println("percentCategory: " + percentCategory);
 		
 		assertEquals("NumericalInequivalence-1:", 0, 
 				FULL_PRECISION ?
@@ -400,8 +406,6 @@ public class GradeCalculationsTest extends TestCase {
 
 		courseGradePercent = results[0];
 		percentCategory = results[1];
-		System.out.println("courseGradePercent: " + courseGradePercent);
-		System.out.println("percentCategory: " + percentCategory);
 		
 		assertEquals("NumericalInequivalence-1:", 0, 
 				FULL_PRECISION ?
@@ -413,6 +417,7 @@ public class GradeCalculationsTest extends TestCase {
 						: (new BigDecimal("37.03703704000")).compareTo(percentCategory));
 
 		
+		// now drop lowest 1
 
 	}
 
@@ -456,7 +461,7 @@ public class GradeCalculationsTest extends TestCase {
 		BigDecimal catPercentSum = results[0];
 		BigDecimal catPointSum = results[1];
 		
-		for (int i =0 ; i<2 ; ++i) { // first time thru with all four assignments
+		for (int i =0 ; i<1 ; ++i) { // first time thru with all four assignments
 
 			for (GradeItem assignment: assignments) {
 				results = calculator.calculateCourseGradeCategoryPercents(assignment, BigDecimal.valueOf(100d)/* cat percent of grade */, 
@@ -470,16 +475,34 @@ public class GradeCalculationsTest extends TestCase {
 				
 
 				if(0 == i)  {
-					assertEquals("NumericalEquivalence-1", 0, (new BigDecimal("25")).compareTo(courseGradePercent));
-					assertEquals("NumericalEquivalence-2", 0, (new BigDecimal("0.25")).compareTo(percentCategory));
+					assertEquals("calcCourseGradeCat% - NumericalEquivalence-1", 
+							0, (new BigDecimal("25")).compareTo(courseGradePercent));
+					assertEquals("calcCourseGradeCat% - NumericalEquivalence-2",
+							0, (new BigDecimal("0.25")).compareTo(percentCategory));
 				} else {
 					/// these are numbers with too low of a precision
-					assertEquals("DeprecatedNumericalEquivalence-3", FULL_PRECISION ? -1 : 0, (new BigDecimal("33.33333333")).compareTo(courseGradePercent));
-					assertEquals("DeprecatedNumericalEquivalence-4", FULL_PRECISION ? -1 : 0, (new BigDecimal("0.3333333333")).compareTo(percentCategory));
+					assertEquals("calcCourseGradeCat% - DeprecatedNumericalEquivalence-3",
+							FULL_PRECISION ?
+									-1 
+									: 0,
+									(new BigDecimal("33.33333333")).compareTo(courseGradePercent));
+					assertEquals("DeprecatedNumericalEquivalence-4", 
+							FULL_PRECISION ?
+									-1 
+									: 0,
+									(new BigDecimal("0.3333333333")).compareTo(percentCategory));
 					
 					/// these are numbers that stuffs 'the most' into a double
-					assertEquals("DeprecatedNumericalEquivalence-3", FULL_PRECISION ? 0 : 1, (new BigDecimal("33.333333333333330")).compareTo(courseGradePercent));
-					assertEquals("DeprecatedNumericalEquivalence-4", FULL_PRECISION ? 0 : 1, (new BigDecimal("0.3333333333333333")).compareTo(percentCategory));
+					assertEquals("calcCourseGradeCat% - DeprecatedNumericalEquivalence-3", 
+							FULL_PRECISION ?
+									0 
+									: 1,
+									(new BigDecimal("33.333333333333330")).compareTo(courseGradePercent));
+					assertEquals("calcCourseGradeCat% - DeprecatedNumericalEquivalence-4", 
+							FULL_PRECISION ?
+									0 
+									: 1,
+									(new BigDecimal("0.3333333333333333")).compareTo(percentCategory));
 					
 					
 				}
@@ -493,7 +516,32 @@ public class GradeCalculationsTest extends TestCase {
 			asn3.setWeighting(weight);
 			asn4.setWeighting(weight);
 		}
-
+		
+		// now test a couple of assignments using points weighting
+		
+		category.setEnforcePointWeighting(true);
+		
+		results = calculator.calculateCourseGradeCategoryPercents(asn1, BigDecimal.valueOf(100d)/* cat percent of grade */, 
+				catPercentSum, catPointSum, Util.checkBoolean(category.getEnforcePointWeighting()));
+		
+		BigDecimal courseGradePercent = results[0];
+		BigDecimal percentCategory = results[1];
+		
+		assertEquals("calcCourseGradeCat% - DeprecatedNumericalEquivalence-5",
+				FULL_PRECISION ?
+						new BigDecimal("23.07692307692307692307692307692307692307692307692308")
+						: new BigDecimal("23.07692308"),
+						courseGradePercent);
+		assertEquals("calcCourseGradeCat% - DeprecatedNumericalEquivalence-6",
+				FULL_PRECISION ?
+						new BigDecimal("23.07692307692307692307692307692307692307692307692300")
+						: new BigDecimal("23.07692308000"),
+						percentCategory);
+		
+		/*
+		 * TODO: look into why courseGradePercent abd the percentCategory are differing for
+		 * out test case with only one category... particluarly for the high-scale calculations.
+		 */
 		
 	}
 
@@ -514,12 +562,12 @@ public class GradeCalculationsTest extends TestCase {
 		// non-normalized: these should not be equal
 		assertEquals("DeprecatedNumericalEqualivalence-1", FULL_PRECISION ? 1 : 0, (new BigDecimal("26"))
 				.compareTo(calculator.calculateItemGradePercent(
-						new BigDecimal("1"), new BigDecimal("1"), new BigDecimal(LOTTA_NINES).divide(new BigDecimal("100", new MathContext(100))), false)));
+						new BigDecimal("1"), new BigDecimal("1"), helper.divide(new BigDecimal(LOTTA_NINES),new BigDecimal("100")), false)));
 		
-		// non-normalized: these should not be equal
+		// non-normalized: these should be equal
 		assertEquals("DeprecatedNumericalEqualivalence-1", FULL_PRECISION ? 0 : -1, (new BigDecimal(LOTTA_NINES))
 				.compareTo(calculator.calculateItemGradePercent(
-						new BigDecimal("1"), new BigDecimal("1"), new BigDecimal(LOTTA_NINES).divide(new BigDecimal("100", new MathContext(100))), false)));
+						new BigDecimal("1"), new BigDecimal("1"), helper.divide(new BigDecimal(LOTTA_NINES),new BigDecimal("100")), false)));
 		
 //		System.out.println(
 //				"CalculateItemGradePercent-->" + calculator.calculateItemGradePercent(
@@ -565,8 +613,10 @@ public class GradeCalculationsTest extends TestCase {
 		double median = stats.getPercentile(50d);
 	
 		
-		/* since we'll be comparing results against expected
-		 * values in the file, if the file expects deprecated results, get them
+		/* 
+		 * since we'll be comparing results against expected
+		 * values in the file, if the file expects deprecated results,
+		 * we'll need to get the old impl
 		 */
 		GradeCalculations temp = calculator;
 		if(data.isUseDeprecatedCalculations() && FULL_PRECISION) {
@@ -673,7 +723,7 @@ public class GradeCalculationsTest extends TestCase {
 		
 		
 		
-		/* reset the overridden calulator implementation */
+		/* reset the overridden calculator implementation */
 		calculator = temp;
 		
 	}
@@ -1089,15 +1139,15 @@ public class GradeCalculationsTest extends TestCase {
 		Double weight = calculator.calculateEqualWeight(6);
 		
 		Long id = new Long(0);
-		Assignment asn1 = new Assignment(gradebook, "ASN-1", Double.valueOf(30), dueDate);
+		Assignment asn1 = new Assignment(gradebook, "ASN-1", Double.valueOf(10), dueDate);
 		asn1.setAssignmentWeighting(weight);
 		asn1.setCategory(category);
 		asn1.setId(++id);
-		Assignment asn2 = new Assignment(gradebook, "ASN-2", Double.valueOf(40), dueDate);
+		Assignment asn2 = new Assignment(gradebook, "ASN-2", Double.valueOf(10), dueDate);
 		asn2.setAssignmentWeighting(weight);
 		asn2.setCategory(category);
 		asn2.setId(++id);
-		Assignment asn3 = new Assignment(gradebook, "ASN-3", Double.valueOf(50), dueDate);
+		Assignment asn3 = new Assignment(gradebook, "ASN-3", Double.valueOf(10), dueDate);
 		asn3.setAssignmentWeighting(weight);
 		asn3.setCategory(category);
 		asn3.setId(++id);
@@ -1106,28 +1156,37 @@ public class GradeCalculationsTest extends TestCase {
 		asn4.setCategory(category);
 		asn4.setId(++id);
 		Assignment asn5 = new Assignment(gradebook, "ASN-5", Double.valueOf(10), dueDate);
-		asn4.setAssignmentWeighting(weight);
-		asn4.setCategory(category);
-		asn4.setId(++id);
+		asn5.setAssignmentWeighting(weight);
+		asn5.setCategory(category);
+		asn5.setId(++id);
 		Assignment asn6 = new Assignment(gradebook, "ASN-6", Double.valueOf(10), dueDate);
-		asn4.setAssignmentWeighting(weight);
-		asn4.setCategory(category);
-		asn4.setId(++id);
+		asn6.setAssignmentWeighting(weight);
+		asn6.setCategory(category);
+		asn6.setId(++id);
 		
 		Double[] values = {
-				0d ,
-				0d ,
-				0d ,
+				9.0000000d,
+				9.0000000d,				
+				9.0000000d,				
+				9.0000000d,				
+				9.0000000d,
 				9.0000000d 
 		};
 		
 
+		
 		
 		List<Category> items = new ArrayList<Category>();
 		items.add(category);
 		
 		List<Assignment> assignments = Arrays.asList(asn1, asn2, asn3, asn4, asn5, asn6);
 		category.setAssignmentList(assignments);
+		for (Assignment a : assignments) {
+			a.setAssignmentWeighting(calculator.calculateEqualWeight(assignments.size()));
+		}
+		
+		
+		Map<Long, AssignmentGradeRecord> assignmentGrades = getRecordUnits(values, assignments, "Joe");
 		
 		gradebook.setCategory_type(GradebookService.CATEGORY_TYPE_ONLY_CATEGORY);
 		assertEquals("Course Grade - 9 out of 10 - Just Category Weighting", 
@@ -1135,29 +1194,57 @@ public class GradeCalculationsTest extends TestCase {
 						new BigDecimal("90.0")
 						: new BigDecimal("90.00"), 
 						
-				calculator.getCourseGrade(gradebook, items, getRecordUnits(values, asn4, "4"), false));
+				calculator.getCourseGrade(gradebook, items, assignmentGrades, false));
 		
 		gradebook.setCategory_type(GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY);
 		category.setWeight(1d);
 		assertEquals("Course Grade - 9 out of 10 - Just Category Weighting", 
 				FULL_PRECISION ?
-						new BigDecimal("89.999999999999999999999999999999999999999999999999939999999999999772000")
+						new BigDecimal("89.999999999999999999999999999999999999999999999999639999999999999784000")
 						: new BigDecimal("89.999999999999999996400000000000000"),
 				
-				calculator.getCourseGrade(gradebook, items, getRecordUnits(values, asn4, "4"), false));
+				calculator.getCourseGrade(gradebook, items, assignmentGrades, false));
+		
+		/* starting with just the assignments and a null category */	
+		
+		assertEquals("Course Grade - 9 out of 10 - just items", 
+				FULL_PRECISION ?
+						new BigDecimal("89.999999999999999999999999999999999999999999999999639999999999999784000")
+						: new BigDecimal("89.999999999999999996400000000000000"),
+				
+				calculator.getCourseGrade(gradebook, null, assignmentGrades, false));
+		
+		
+		/* points based gb */
+		gradebook.setCategory_type(GradebookService.CATEGORY_TYPE_NO_CATEGORY);
+		assertEquals("Course Grade - 9 out of 10 - just items", 
+						FULL_PRECISION ?
+								new BigDecimal("90.0")
+								: new BigDecimal("90.00"),
+				calculator.getCourseGrade(gradebook, assignments, assignmentGrades, false));
+		
+		
+		// set assignment 1 as xtra credit ... this will turn 90% into 100%
+		gradebook.setCategory_type(GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY);
+		asn1.setExtraCredit(true);
+		assertEquals("Course Grade - 8 out of 9 + xtra credit",
+				FULL_PRECISION ?
+						new BigDecimal("100.0")
+						: new BigDecimal("100.0000000000000000000000"),
+						calculator.getCourseGrade(gradebook, items, assignmentGrades, true));
 		
 		
 		
 	}
 	
-	private Map<Long, AssignmentGradeRecord> getRecordUnits(Double[] scores, Assignment ass, String studentId) {
+	private Map<Long, AssignmentGradeRecord> getRecordUnits(Double[] scores, List<Assignment> assignments, String studentId) {
 		Map<Long, AssignmentGradeRecord> units = new HashMap<Long, AssignmentGradeRecord>();
 
 		for (int i=0;i<scores.length;i++) {
 			BigDecimal pointsEarned = scores[i] == null ? null : BigDecimal.valueOf((Double)scores[i]);
 			
-			units.put(ass.getId(), 
-					new AssignmentGradeRecord(ass, studentId, pointsEarned.doubleValue()));
+			units.put(assignments.get(i).getId(), 
+					new AssignmentGradeRecord(assignments.get(i), studentId, null==pointsEarned ? null : pointsEarned.doubleValue()));
 		}
 
 		return units;
