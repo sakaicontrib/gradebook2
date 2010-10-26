@@ -97,7 +97,6 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 
 		if (sum.compareTo(BigDecimal.ZERO) != 0) 
 			ratio = divide(BigDecimal.ONE, sum);
-			//ratio = BigDecimal.ONE.setScale(AppConstants.SCALE).divide(sum, RoundingMode.HALF_EVEN);
 
 		BigDecimal sumScores = null;
 

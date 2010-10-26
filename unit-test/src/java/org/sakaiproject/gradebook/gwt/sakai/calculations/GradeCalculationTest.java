@@ -30,6 +30,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.sakaiproject.gradebook.gwt.sakai.calculations.CategoryCalculationUnit;
+import org.sakaiproject.gradebook.gwt.sakai.calculations.GradeRecordCalculationUnit;
+import org.sakaiproject.gradebook.gwt.sakai.calculations.GradebookCalculationUnit;
+
+
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
@@ -645,35 +650,41 @@ public class GradeCalculationTest extends TestCase {
 		assertEqualsAtScale2(BigDecimal.valueOf(80.00d), courseGrade);
 	}
 	
-	
+
 	public void testZeroBothWeightingIncomplete() {
-		GradebookCalculationUnit gradebookUnit = getEssaysHomeworkExtraCreditEmptyIncompleteGradebook();
+
+		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
+
+		CategoryCalculationUnit essayUnit = new CategoryCalculationUnit(new BigDecimal("1.0"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE);
+		
+
+		categoryUnitMap.put(ESSAYS_ID, essayUnit);
+		
+
+		GradebookCalculationUnit gradebookUnit = new GradebookCalculationUnit(categoryUnitMap);
+
+
+
 		Double[][] essayValues = {
-				{  0d,  5d, 0.20d, null },
-				{  0d,  9d, 0.20d, null },
-				{  0d, 10d, 0.10d, null },
-				{  0d, 10d, 0.10d, null },
-				{  0d, 20d, 0.40d, null }
+//				{  9.0000000000d, 10.0000000000d, 0.1666666667d, null },
+//				{  9.0000000000d, 10.0000000000d, 0.1666666667d, null },
+//				{  9.0000000000d, 10.0000000000d, 0.1666666667d, null },
+//				{  9.0000000000d, 10.0000000000d, 0.1666666667d, null },
+//				{  9.0000000000d, 10.0000000000d, 0.1666666667d, null },
+				{  9.0000000000d, 10.0000000000d, 0.1666666667d, null }
 		};
-		
-		Double[][] hwValues = {
-				{  0d, 10d, 0.30d, null },
-				{  0d, 10d, 0.30d, null },
-				{  0d, 10d, 0.40d, null }
-		};
-		
+
+
 		List<GradeRecordCalculationUnit> essayUnits = getRecordUnits(essayValues);
-		List<GradeRecordCalculationUnit> hwUnits = getRecordUnits(hwValues);
-		
+
 		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
-		categoryGradeUnitListMap.put(HW_ID, hwUnits);
-		
+
 		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, false);
-	
-		assertEqualsAtScale2(BigDecimal.valueOf(0.00d), courseGrade);
+		assertEquals(courseGrade, new BigDecimal("90"));
+		//assertEqualsAtScale2(BigDecimal.valueOf(0.00d), courseGrade);
 	}
-	
+
 	public void testZeroEssaysPerfectHWWeightingIncomplete() {
 		GradebookCalculationUnit gradebookUnit = getEssaysHomeworkExtraCreditEmptyIncompleteGradebook();
 		Double[][] essayValues = {
@@ -1346,6 +1357,52 @@ public class GradeCalculationTest extends TestCase {
 			System.out.println("" + firstBig + " != " + secondBig);
 			throw e;
 		}
+	}
+	
+	public void testPartialWeighting2() {
+		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
+
+		CategoryCalculationUnit essayUnit = new CategoryCalculationUnit(new BigDecimal(".7"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE);
+		CategoryCalculationUnit hwUnit = new CategoryCalculationUnit(new BigDecimal(".3"), Integer.valueOf(0), null, Boolean.FALSE);
+		//CategoryCalculationUnit ecUnit = new CategoryCalculationUnit(new BigDecimal(".1"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE);
+
+		categoryUnitMap.put(ESSAYS_ID, essayUnit);
+		categoryUnitMap.put(HW_ID, hwUnit);
+		//categoryUnitMap.put(EC_ID, ecUnit);
+
+		GradebookCalculationUnit gradebookUnit =  new GradebookCalculationUnit(categoryUnitMap);
+		
+		
+			 
+		
+		Double[][] essayValues = {
+				{  9.0000000000d,  10.0000000000d, 0.1666666667d, null }
+				
+				
+		};
+
+		Double[][] HWValues = {
+				{  9.0000000000d,  10.0000000000d, 0.1666666667d, null }
+				
+				
+		};
+
+		
+
+		List<GradeRecordCalculationUnit> essayUnits = getRecordUnits(essayValues);
+		List<GradeRecordCalculationUnit> HWUnits = getRecordUnits(HWValues);
+		
+	
+
+		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
+		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
+		categoryGradeUnitListMap.put(HW_ID, HWUnits);
+		
+
+
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, null, false);
+
+		assertEquals(new BigDecimal("89.99999999999999999999999999999999999999999999999999999999424000"), courseGrade);
 	}
 
 }

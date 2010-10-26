@@ -17,7 +17,7 @@
     </bean>
     
     <bean id="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService" 
-		class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentServiceImpl"
+		class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentServiceNewImpl"
 		init-method="init">
 		<property name="businessLogic" ref="org.sakaiproject.gradebook.gwt.sakai.BusinessLogic"/>
 		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/> 
@@ -31,6 +31,7 @@
 		<property name="advisor" ref="org.sakaiproject.gradebook.gwt.sakai.api.SampleInstitutionalAdvisor"/>
     	<property name="sessionManager" ref="org.sakaiproject.tool.api.SessionManager" />
     	<property name="configService" ref="org.sakaiproject.component.api.ServerConfigurationService" />
+    	<property name="scale" value="50"/>
 	</bean>
 	
 	<bean id="org.sakaiproject.authz.api.AuthzGroupService" parent="alt.gradebookTxTemplate" >

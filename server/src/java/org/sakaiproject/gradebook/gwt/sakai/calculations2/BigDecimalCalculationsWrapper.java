@@ -78,7 +78,8 @@ public class BigDecimalCalculationsWrapper {
 	}
 
 	public void setScale(int scale) {
-		log.info("Setting scale scale to " + scale);
+
+		log.info(" ## GB2 ##: Setting scale to " + scale + " : BigDecimalCalculationsWrapper's subclass is " + this.getClass().getName());
 		this.scale = scale;
 	}
 
@@ -92,15 +93,12 @@ public class BigDecimalCalculationsWrapper {
 
 	public class BigSquareRoot {
 
-		private BigDecimal ZERO = new BigDecimal("0");
-		private BigDecimal ONE = new BigDecimal("1");
-		private BigDecimal TWO = new BigDecimal("2");
+		private final BigDecimal TWO = new BigDecimal("2");
 		public final int DEFAULT_MAX_ITERATIONS = 50;
 
 
 		private BigDecimal error;
 		private int iterations;
-		private boolean traceFlag;
 		private int maxIterations = DEFAULT_MAX_ITERATIONS;
 
 		//---------------------------------------
@@ -120,27 +118,6 @@ public class BigDecimalCalculationsWrapper {
 		public int getIterations() {
 			return iterations;
 		}
-
-		//-----------
-		// Trace flag
-		//-----------
-
-		public boolean getTraceFlag() {
-			return traceFlag;
-		}
-
-		public void setTraceFlag(boolean flag) {
-			traceFlag = flag;
-		}
-
-		//------
-		// Scale
-		//------
-
-		public int getScale() {
-			return scale;
-		}
-
 
 		//-------------------
 		// Maximum iterations
@@ -165,29 +142,23 @@ public class BigDecimalCalculationsWrapper {
 				length--;
 			}
 			length /= 2;
-			BigDecimal guess = ONE.movePointRight(length);
+			BigDecimal guess = BigDecimal.ONE.movePointRight(length);
 			return guess;
 		}
 
 		//----------------
 		// Get square root
 		//----------------
-
-		public BigDecimal get(BigInteger n) {
-			return get(new BigDecimal(n));
-		}
-
 		public BigDecimal get(BigDecimal n) {
 
 			// Make sure n is a positive number
 
-			if (n.compareTo(ZERO) < 0) {
+			if (n.compareTo(BigDecimal.ZERO) < 0) {
 				throw new IllegalArgumentException();
 			}
 
 			BigDecimal initialGuess = getInitialApproximation(n);
-			trace("Initial guess " + initialGuess.toString());
-			BigDecimal lastGuess = ZERO;
+			BigDecimal lastGuess = BigDecimal.ZERO;
 			BigDecimal guess = new BigDecimal(initialGuess.toString());
 
 			// Iterate
@@ -199,39 +170,15 @@ public class BigDecimalCalculationsWrapper {
 				guess = divide(n, guess);
 				guess = add(guess, lastGuess);
 				guess = divide(guess, TWO);
-				trace("Next guess " + guess.toString());
 				error = subtract(n, guess.multiply(guess));
 				if (++iterations >= maxIterations) {
 					more = false;
 				} else if (lastGuess.equals(guess)) {
-					more = error.abs().compareTo(ONE) >= 0;
+					more = error.abs().compareTo(BigDecimal.ONE) >= 0;
 				}
 			}
 			return guess;
 
-		}
-
-		//------
-		// Trace
-		//------
-
-		private void trace(String s) {
-			if (traceFlag) {
-				System.out.println(s);
-			}
-		}
-
-		//----------------------
-		// Get random BigInteger
-		//----------------------
-
-		public BigInteger getRandomBigInteger(int nDigits) {
-			StringBuffer sb = new StringBuffer();
-			java.util.Random r = new java.util.Random();
-			for (int i = 0; i < nDigits; i++) {
-				sb.append(r.nextInt(10));
-			}
-			return new BigInteger(sb.toString());
-		}
+		}	
 	}
 }

@@ -4,7 +4,7 @@
 <beans>
 	
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService" 
-		class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentServiceImpl"
+		class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentServiceNewImpl"
 		init-method="init">
 		<property name="businessLogic" ref="org.sakaiproject.gradebook.gwt.sakai.BusinessLogic"/>
 		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/> 
@@ -19,6 +19,7 @@
     	<property name="sessionManager" ref="org.sakaiproject.tool.api.SessionManager" />
     	<property name="configService" ref="org.sakaiproject.component.api.ServerConfigurationService" />
 		<property name="eventTrackingService" ref="org.sakaiproject.event.api.EventTrackingService" />
+		<property name="scale" value="50"/>
 	</bean>
 
 	

@@ -234,7 +234,6 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 
 		if (categoryWeightSum.compareTo(BigDecimal.ZERO) != 0) 
 			ratio = divide(categoryWeightDesiredSum, categoryWeightSum);
-			//ratio = categoryWeightDesiredSum.divide(categoryWeightSum, RoundingMode.HALF_EVEN);
 
 		for (String categoryKey : categoryUnitMap.keySet()) {
 			CategoryCalculationUnit categoryUnit = categoryUnitMap.get(categoryKey);
