@@ -3581,7 +3581,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 		
 		if(null != fullPrecisionCalculatedGrade) {
 			
-			calculatedGrade = fullPrecisionCalculatedGrade.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
+			calculatedGrade = fullPrecisionCalculatedGrade.setScale(AppConstants.DISPLAY_SCALE, RoundingMode.HALF_UP);
 		}
 			
 		boolean isLetterGradeMode = gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER;
@@ -5510,7 +5510,7 @@ public class Gradebook2ComponentServiceImpl implements Gradebook2ComponentServic
 			String grade = iter.next();
 			Double mapVal = (Double) gradeMap.get(grade);
 			double m = mapVal == null ? 0d : mapVal.doubleValue();
-			BigDecimal bigMapVal = BigDecimal.valueOf(m).setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
+			BigDecimal bigMapVal = BigDecimal.valueOf(m).setScale(AppConstants.DISPLAY_SCALE, RoundingMode.HALF_UP);
 
 			// If the value in the map is less than the value passed, then the
 			// map value is the letter grade for this value
