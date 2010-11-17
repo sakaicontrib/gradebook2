@@ -57,6 +57,7 @@ public class SubmitFinalGrades extends Resource {
 				studentData.put(Column.STUDENT_NAME, (String)studentModel.get(LearnerKey.S_DSPLY_NM.name()));
 				studentData.put(Column.EXPORT_CM_ID, (String)studentModel.get(LearnerKey.S_EXPRT_CM_ID.name()));
 				studentData.put(Column.LETTER_GRADE, (String)studentModel.get(LearnerKey.S_LTR_GRD.name()));
+				studentData.put(Column.RAW_GRADE, (String)studentModel.get(LearnerKey.S_RAW_GRD.name()));
 				studentDataList.add(studentData);
 			}
 		}

@@ -37,7 +37,7 @@ import org.sakaiproject.tool.gradebook.Gradebook;
 
 public interface InstitutionalAdvisor {
 
-	public enum Column { STUDENT_NAME, STUDENT_UID, STUDENT_GRADE, LETTER_GRADE, EXPORT_USER_ID, EXPORT_CM_ID, FINAL_GRADE_USER_ID };
+	public enum Column { STUDENT_NAME, STUDENT_UID, STUDENT_GRADE, LETTER_GRADE, EXPORT_USER_ID, EXPORT_CM_ID, FINAL_GRADE_USER_ID, RAW_GRADE };
 	
 	/**
 	 * 

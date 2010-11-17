@@ -16,6 +16,7 @@ public enum LearnerKey {
 	S_CRS_GRD("courseGrade", GroupType.GRADES), 
 	S_LTR_GRD("letterGrade", GroupType.GRADES),
 	S_CALC_GRD("calculatedGrade", GroupType.GRADES),
+	S_RAW_GRD("fullPrecisionCalculatedGrade", GroupType.GRADES),
 	S_OVRD_GRD("overrideGrade", GroupType.GRADES), 
 	S_ITEM("item", GroupType.ASSIGNMENTS),
 	S_EXPRT_CM_ID("exportCMId", GroupType.STUDENT_INFORMATION),

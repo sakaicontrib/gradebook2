@@ -2460,6 +2460,7 @@ public class Gradebook2ComponentServiceNewImpl extends BigDecimalCalculationsWra
 			String studentName = studentData.get(Column.STUDENT_NAME);
 			String exportCmId = studentData.get(Column.EXPORT_CM_ID);
 			String letterGrade = studentData.get(Column.LETTER_GRADE);
+			String calculatedGrade = studentData.get(Column.RAW_GRADE);
 
 			ActionRecord actionRecord = new ActionRecord(gradebookUid, null, EntityType.GRADE_SUBMISSION.name(), ActionType.SUBMITTED.name());
 			actionRecord.setEntityName(studentName);
@@ -2470,6 +2471,7 @@ public class Gradebook2ComponentServiceNewImpl extends BigDecimalCalculationsWra
 			propertyMap.put(Column.EXPORT_USER_ID.name(), exportUserId);
 			propertyMap.put(Column.EXPORT_CM_ID.name(), exportCmId);
 			propertyMap.put(Column.LETTER_GRADE.name(), letterGrade);	
+			propertyMap.put(Column.RAW_GRADE.name(), calculatedGrade);
 
 			gbService.storeActionRecord(actionRecord);
 		}
@@ -3572,9 +3574,9 @@ public class Gradebook2ComponentServiceNewImpl extends BigDecimalCalculationsWra
 		// GRBK-721 : Only call getCalculatedGrade(...) once
 		BigDecimal calculatedGrade = null;
 		BigDecimal fullPrecisionCalculatedGrade = getCalculatedGrade(gradebook, assignments, categories, studentGradeMap);
-
+		
 		if(null != fullPrecisionCalculatedGrade) {
-
+			userRecord.setCalculatedGrade(fullPrecisionCalculatedGrade);
 			calculatedGrade = fullPrecisionCalculatedGrade.setScale(AppConstants.DISPLAY_SCALE, RoundingMode.HALF_UP);
 		}
 
@@ -3654,11 +3656,15 @@ public class Gradebook2ComponentServiceNewImpl extends BigDecimalCalculationsWra
 				case S_CALC_GRD:
 					if (displayGrade != null) 
 						cellMap.put(LearnerKey.S_CALC_GRD.name(), displayGrade.getCalculatedGradeAsString());
+					if (userRecord.getCalculatedGrade() != null) {
+						cellMap.put(LearnerKey.S_RAW_GRD.name(), userRecord.getCalculatedGrade().toString());
+					}
 					break;
 				case S_LTR_GRD:
 					if (displayGrade != null) 
 						cellMap.put(LearnerKey.S_LTR_GRD.name(), displayGrade.getLetterGrade());
 					break;
+					
 				};
 			}
 		}
