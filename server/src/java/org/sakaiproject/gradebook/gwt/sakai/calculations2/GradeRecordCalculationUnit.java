@@ -5,7 +5,9 @@ import java.math.BigDecimal;
 public interface GradeRecordCalculationUnit {
 	
 	public BigDecimal calculate(BigDecimal weight);
-	
+
+	public BigDecimal calculateEqually(int numItems);
+
 	public void calculatePercentageScore();
 	
 	public void calculateRawDifference();

@@ -1,17 +1,19 @@
 package org.sakaiproject.gradebook.gwt.sakai.calculations2;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradeRecordCalculationUnit;
-import org.sakaiproject.gradebook.gwt.sakai.calculations2.CategoryCalculationUnit;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper implements CategoryCalculationUnit {
 
+	private static final Log log = LogFactory.getLog(CategoryCalculationUnitImpl.class);
 	private BigDecimal categoryGrade;
 
 	// This is the desired weight for the category that the user enters
@@ -21,6 +23,7 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 	private boolean isExtraCredit;
 	private boolean isPointsWeighted;
 	private BigDecimal totalCategoryPoints;
+	private boolean isEqualWeighted; 
 
 	private List<GradeRecordCalculationUnit> unitsToDrop;
 
@@ -28,13 +31,15 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 	private CategoryCalculationUnitImpl() {
 	}
 	
-	public CategoryCalculationUnitImpl(BigDecimal categoryWeightTotal, Integer dropLowest, Boolean extraCredit, Boolean usePoints, int scale) {
+	public CategoryCalculationUnitImpl(BigDecimal categoryWeightTotal, Integer dropLowest, Boolean extraCredit, Boolean usePoints, Boolean useEqual, int scale) {
 		super(scale);
 		this.categoryWeightTotal = categoryWeightTotal;
 		this.dropLowest = dropLowest == null ? 0 : dropLowest.intValue();
 		this.isExtraCredit = extraCredit == null ? false : extraCredit.booleanValue();
 		this.unitsToDrop = new LinkedList<GradeRecordCalculationUnit>();
 		this.isPointsWeighted = usePoints == null ? false : usePoints.booleanValue();
+		this.isEqualWeighted = useEqual == null ? false : useEqual.booleanValue();
+		
 	}
 
 
@@ -86,8 +91,89 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 		return categoryGrade;
 	}
 
-
 	private BigDecimal sumScaledScores(List<GradeRecordCalculationUnit> units, boolean isExtraCreditScaled) {
+
+		if (isEqualWeighted)
+		{
+			return sumScaledScoresEquallyWeighted(units, isExtraCreditScaled);
+		}
+		else
+		{
+			return sumScaledScoresNormal(units, isExtraCreditScaled);
+		}
+	}
+	
+	private BigDecimal sumScaledScoresEquallyWeighted(List<GradeRecordCalculationUnit> units, boolean isExtraCreditScaled) 
+	{	
+		BigDecimal sumScores = null;
+		BigDecimal extraCreditScore = BigDecimal.ZERO; 
+		/*
+		 * If the category is an extra credit category and the extra credit scale 
+		 * is set, then we want to use the actual number of items graded to determine 
+		 * the average.  If extra credit is not scaled, then we want to calculate the 
+		 * grade based on total number of items in the category, ie including the excused 
+		 * item. 
+		 * 
+		 * This assumption/idea is based on the old method which is called sumScaledScoresNormal 
+		 * 
+		 * we implement this by inverse because if the category is not extra credit we don't want to 
+		 * do anything as well as if the extra credit is scaled we want to leave it alone.
+		 */
+		int numActiveItems;
+		if (isExtraCredit && !isExtraCreditScaled)
+		{
+			numActiveItems = units.size(); 
+		}
+		else // Not extra credit category or extra credit category with extra credit scaling turned on
+		{
+			numActiveItems = countNumberOfActiveUnit(units); 
+		}
+		
+		for (GradeRecordCalculationUnit unit : units) 
+		{
+			if (unit.isExcused())
+				continue;
+			if (unit.isExtraCredit() && !isExtraCredit) // extra credit item in a non extra credit category
+			{
+				BigDecimal scaledItemWeight = unit.getPercentOfCategory(); 
+				BigDecimal scaledScore = unit.calculate(scaledItemWeight);
+				if (scaledScore != null)
+				{
+					log.debug("EC: Adding " + scaledScore + " to " + extraCreditScore); 
+					extraCreditScore = add(extraCreditScore, scaledScore);
+				}
+			}
+			else
+			{
+				BigDecimal scaledScore = unit.getPercentageScore();
+				
+				// Calling this so drop lowest is OK.  for now. 
+				
+				unit.calculateEqually(numActiveItems);
+				if (scaledScore != null) {
+					if (sumScores == null)
+					{
+						sumScores = BigDecimal.ZERO;
+					}
+					log.debug("NM: Adding " + scaledScore + " to " + sumScores); 
+					sumScores = add(sumScores, scaledScore);
+				}
+			}
+		} // for
+
+		if (numActiveItems > 0 && sumScores != null)
+		{
+			log.debug("Dividing " + sumScores + " by " + numActiveItems);
+			sumScores = divide(sumScores, new BigDecimal(numActiveItems));
+			log.debug("sumScores before extra credit: " + sumScores);
+			sumScores = add(sumScores, extraCreditScore);
+		}
+		log.debug("returning sumScores=" + ( (sumScores == null) ? "null" : sumScores));
+		return sumScores; 
+	}
+
+
+	private BigDecimal sumScaledScoresNormal(List<GradeRecordCalculationUnit> units, boolean isExtraCreditScaled) {
 		BigDecimal sum = sumUnitWeights(units, false);
 
 		if (sum == null)
@@ -165,6 +251,25 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 		return sumUnitWeight;
 	}
 
+	private int countNumberOfActiveUnit(List<GradeRecordCalculationUnit> units) {
+
+		int numActiveUnits = 0; 
+
+		if (units != null) {
+			for (GradeRecordCalculationUnit unit : units) {
+
+				if (unit.isExtraCredit() && !isExtraCredit)
+					continue;
+
+				if (unit.isExcused())
+					continue;
+				numActiveUnits++;
+			}
+		}
+
+		return numActiveUnits;
+	}
+
 	public boolean isExtraCredit() {
 		return isExtraCredit;
 	}
@@ -212,5 +317,13 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 
 	public void setTotalCategoryPoints(BigDecimal totalCategoryPoints) {
 		this.totalCategoryPoints = totalCategoryPoints;
+	}
+
+	public boolean isEqualWeighted() {
+		return isEqualWeighted;
+	}
+
+	public void setEqualWeighted(boolean isEqualWeighted) {
+		this.isEqualWeighted = isEqualWeighted;
 	}
 }

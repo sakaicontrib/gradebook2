@@ -641,7 +641,7 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 				String categoryKey = String.valueOf(category.getId());
 
 				BigDecimal categoryWeight = getCategoryWeight(category);
-				CategoryCalculationUnit categoryCalculationUnit = new CategoryCalculationUnitImpl(categoryWeight, Integer.valueOf(category.getDrop_lowest()), category.isExtraCredit(), category.isEnforcePointWeighting(), getScale());
+				CategoryCalculationUnit categoryCalculationUnit = new CategoryCalculationUnitImpl(categoryWeight, Integer.valueOf(category.getDrop_lowest()), category.isExtraCredit(), category.isEnforcePointWeighting(), category.isEqualWeightAssignments(), getScale());
 				categoryUnitMap.put(categoryKey, categoryCalculationUnit);
 
 				List<GradeRecordCalculationUnit> gradeRecordUnits = new ArrayList<GradeRecordCalculationUnit>();

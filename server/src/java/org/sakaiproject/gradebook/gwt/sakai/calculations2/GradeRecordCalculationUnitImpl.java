@@ -43,6 +43,17 @@ public class GradeRecordCalculationUnitImpl extends BigDecimalCalculationsWrappe
 		return null;
 	}
 
+	// Calculate equally is used in situations where the category is equally weighted
+	public BigDecimal calculateEqually(int numItems) {
+
+		if (percentageScore != null && numItems > 0) {
+			scaledScore = divide(percentageScore, new BigDecimal(numItems));
+			return scaledScore;
+		}
+
+		return null;
+	}
+
 	public void calculatePercentageScore() {
 
 		if (pointsReceived == null || pointsPossible == null)

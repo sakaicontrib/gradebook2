@@ -1,6 +1,7 @@
 package org.sakaiproject.gradebook.gwt.sakai.calculations;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,9 +35,9 @@ public class GradebookCalculationUnitTest extends TestCase {
 
 		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
 
-		CategoryCalculationUnit essayUnit = new CategoryCalculationUnitImpl(new BigDecimal(".6"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
-		CategoryCalculationUnit hwUnit = new CategoryCalculationUnitImpl(new BigDecimal(".4"), Integer.valueOf(0), null, Boolean.FALSE, TEST_SCALE);
-		CategoryCalculationUnit ecUnit = new CategoryCalculationUnitImpl(new BigDecimal(".1"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE, TEST_SCALE);
+		CategoryCalculationUnit essayUnit = new CategoryCalculationUnitImpl(new BigDecimal(".6"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
+		CategoryCalculationUnit hwUnit = new CategoryCalculationUnitImpl(new BigDecimal(".4"), Integer.valueOf(0), null, Boolean.FALSE, Boolean.FALSE,TEST_SCALE);
+		CategoryCalculationUnit ecUnit = new CategoryCalculationUnitImpl(new BigDecimal(".1"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
 
 		categoryUnitMap.put(ESSAYS_ID, essayUnit);
 		categoryUnitMap.put(HW_ID, hwUnit);
@@ -66,11 +67,11 @@ public class GradebookCalculationUnitTest extends TestCase {
 
 		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
 
-		CategoryCalculationUnit essayUnit = new CategoryCalculationUnitImpl(new BigDecimal(".6"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
-		CategoryCalculationUnit hwUnit = new CategoryCalculationUnitImpl(new BigDecimal(".2"), Integer.valueOf(0), null, Boolean.FALSE, TEST_SCALE);
-		CategoryCalculationUnit ecUnit = new CategoryCalculationUnitImpl(new BigDecimal(".1"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE, TEST_SCALE);
+		CategoryCalculationUnit essayUnit = new CategoryCalculationUnitImpl(new BigDecimal(".6"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE,TEST_SCALE);
+		CategoryCalculationUnit hwUnit = new CategoryCalculationUnitImpl(new BigDecimal(".2"), Integer.valueOf(0), null, Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
+		CategoryCalculationUnit ecUnit = new CategoryCalculationUnitImpl(new BigDecimal(".1"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
 
-		CategoryCalculationUnit emptyUnit = new CategoryCalculationUnitImpl(new BigDecimal("0"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
+		CategoryCalculationUnit emptyUnit = new CategoryCalculationUnitImpl(new BigDecimal("0"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
 
 		categoryUnitMap.put(ESSAYS_ID, essayUnit);
 		categoryUnitMap.put(HW_ID, hwUnit);
@@ -111,9 +112,9 @@ public class GradebookCalculationUnitTest extends TestCase {
 
 		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
 
-		CategoryCalculationUnit essayUnit = new CategoryCalculationUnitImpl(new BigDecimal(".6"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
-		CategoryCalculationUnit hwUnit = new CategoryCalculationUnitImpl(new BigDecimal(".4"), Integer.valueOf(0), null, Boolean.FALSE, TEST_SCALE);
-		CategoryCalculationUnit ecUnit = new CategoryCalculationUnitImpl(new BigDecimal(".1"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE, TEST_SCALE);
+		CategoryCalculationUnit essayUnit = new CategoryCalculationUnitImpl(new BigDecimal(".6"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE,TEST_SCALE);
+		CategoryCalculationUnit hwUnit = new CategoryCalculationUnitImpl(new BigDecimal(".4"), Integer.valueOf(0), null, Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
+		CategoryCalculationUnit ecUnit = new CategoryCalculationUnitImpl(new BigDecimal(".1"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
 
 		categoryUnitMap.put(ESSAYS_ID, essayUnit);
 		categoryUnitMap.put(HW_ID, hwUnit);
@@ -150,6 +151,272 @@ public class GradebookCalculationUnitTest extends TestCase {
 		assertEquals(new BigDecimal("80.000000"), result);
 	}
 
+	// GBRK-774 Equal weight Category 
+	
+	// We had many problems with 8.9995 and cases where the value 
+	// would vary depending on the # of transactions in the GB.  
+	// This tests up to 41 entries in the category.
+	public void testWeightedSingleCategoryWithEqualWeightingWithManyEntries() {
+
+		boolean errorsFound = false; 
+		int totalNumberOfAssignments = 41; 
+		
+		for (int i = 1; i <= totalNumberOfAssignments; i++) 
+		{
+			String[][] hwValues = buildAssignmentArray("8.9995", "10.0", i); 
+			BigDecimal totalGradebookPoints = new BigDecimal(i * 10);
+			BigDecimal result = getResultForSingleCategoryWithEqualWeighting(hwValues, totalGradebookPoints, true, 0);
+			
+			BigDecimal expectedResult = new BigDecimal("90.00"); 
+			
+			if (result.compareTo(expectedResult) != 0)
+			{
+				System.out.println("Expected result is " + expectedResult + ", but we got " + result + " on iteration " + i);
+				errorsFound = true; 
+			}
+		}
+		assertFalse(errorsFound); 
+	}
+	// Upper Bound
+	public void testWeightedSingleCategoryWithEqualWeighting1() {
+
+		// Make the big array so we don't have to hand calculate it
+		String[][] hwValues = buildAssignmentArray("8.9995", "10", 19); 
+		// Now change just one of the values
+		hwValues[0][0] = "8.9996"; 
+		
+
+		BigDecimal totalGBPoints = new BigDecimal("190"); 
+		BigDecimal expectedRawScore = new BigDecimal("89.995052631578947368421052631578947368421052631579"); 
+		BigDecimal expectedGradeScore = new BigDecimal("90.00");  
+			
+		BigDecimal actualResult = getResultForSingleCategoryWithEqualWeighting(hwValues, totalGBPoints, false, 0);
+		assertEquals(expectedRawScore, actualResult);
+		
+		actualResult = getResultForSingleCategoryWithEqualWeighting(hwValues, totalGBPoints, true, 0);
+		assertEquals(expectedGradeScore, actualResult);
+
+	}		
+	// Lower bound
+	public void testWeightedSingleCategoryWithEqualWeighting2() {
+
+		// Make the big array so we don't have to hand calculate it
+		String[][] hwValues = buildAssignmentArray("8.9995", "10", 19); 
+		// Now change just one of the values
+		hwValues[0][0] = "8.9994"; 
+
+		BigDecimal totalGBPoints = new BigDecimal("190"); 
+		BigDecimal expectedRawScore = new BigDecimal("89.994947368421052631578947368421052631578947368421"); 
+		BigDecimal expectedGradeScore = new BigDecimal("89.99");  
+			
+		BigDecimal actualResult = getResultForSingleCategoryWithEqualWeighting(hwValues, totalGBPoints, false, 0);
+		assertEquals(expectedRawScore, actualResult);
+		
+		actualResult = getResultForSingleCategoryWithEqualWeighting(hwValues, totalGBPoints, true, 0);
+		assertEquals(expectedGradeScore, actualResult);
+
+	}		
+
+	// Drop lowest, with all equal 
+	public void testWeightedSingleCategoryWithEqualWeightingDropLowest1() {
+
+		// Make the big array so we don't have to hand calculate it
+		String[][] hwValues = buildAssignmentArray("8.9995", "10", 19); 
+
+		BigDecimal totalGBPoints = new BigDecimal("190"); 
+		BigDecimal expectedRawScore = new BigDecimal("89.995"); 
+		BigDecimal expectedGradeScore = new BigDecimal("90.00");  
+			
+		BigDecimal actualResult = getResultForSingleCategoryWithEqualWeighting(hwValues, totalGBPoints, false, 1);
+		assertEquals(expectedRawScore, actualResult);
+		
+		actualResult = getResultForSingleCategoryWithEqualWeighting(hwValues, totalGBPoints, true, 1);
+		assertEquals(expectedGradeScore, actualResult);
+
+	}		
+
+	// Drop lowest, with one lower, same as case 1 with N-1
+	public void testWeightedSingleCategoryWithEqualWeightingDropLowest2() {
+
+		// Make the big array so we don't have to hand calculate it
+		String[][] hwValues = buildAssignmentArray("8.9995", "10", 19); 
+		hwValues[0][0] = "8.9994"; 
+		
+		BigDecimal totalGBPoints = new BigDecimal("190"); 
+		BigDecimal expectedRawScore = new BigDecimal("89.995"); 
+		BigDecimal expectedGradeScore = new BigDecimal("90.00");  
+			
+		BigDecimal actualResult = getResultForSingleCategoryWithEqualWeighting(hwValues, totalGBPoints, false, 1);
+		assertEquals(expectedRawScore, actualResult);
+		
+		actualResult = getResultForSingleCategoryWithEqualWeighting(hwValues, totalGBPoints, true, 1);
+		assertEquals(expectedGradeScore, actualResult);
+
+	}		
+
+	// Drop lowest 1 with 2 values lower, basically same case as N being 18 with 1 value lower
+	public void testWeightedSingleCategoryWithEqualWeightingDropLowest3() {
+
+		// Make the big array so we don't have to hand calculate it
+		String[][] hwValues = buildAssignmentArray("8.9995", "10", 19); 
+		// Make two values smaller, shouldn't matter what for the lower one
+		hwValues[0][0] = "8.9994"; 
+		hwValues[9][0] = "8.9987"; 
+		
+		
+		BigDecimal totalGBPoints = new BigDecimal("190"); 
+		BigDecimal expectedRawScore = new BigDecimal("89.994944444444444444444444444444444444444444444444"); 
+		BigDecimal expectedGradeScore = new BigDecimal("89.99");  
+			
+		BigDecimal actualResult = getResultForSingleCategoryWithEqualWeighting(hwValues, totalGBPoints, false, 1);
+		assertEquals(expectedRawScore, actualResult);
+		
+		actualResult = getResultForSingleCategoryWithEqualWeighting(hwValues, totalGBPoints, true, 1);
+		assertEquals(expectedGradeScore, actualResult);
+
+	}		
+
+	// basically the same case except, we're  tacking on 10 percent 
+	public void testWeightedSingleCategoryWithEqualWeightingEC1() {
+
+		// Make the big array so we don't have to hand calculate it
+		String[][] hwValues = buildAssignmentArray("8.9995", "10", 19); 
+	
+		// Make item 10 in the list a fully credited EC item worth 10% of the category . 
+		hwValues[10][0] = "10"; 
+		hwValues[10][1] = "10"; 
+		hwValues[10][2] = ".10"; 
+		hwValues[10][3] = "true"; 
+		
+		BigDecimal totalGBPoints = new BigDecimal("180"); 
+		BigDecimal expectedRawScore = new BigDecimal("89.995").add(new BigDecimal("10")); 
+		BigDecimal expectedGradeScore = new BigDecimal("100.00");  
+			
+		BigDecimal actualResult = getResultForSingleCategoryWithEqualWeighting(hwValues, totalGBPoints, false, 0);
+		assertEquals(expectedRawScore, actualResult);
+		
+		actualResult = getResultForSingleCategoryWithEqualWeighting(hwValues, totalGBPoints, true, 0);
+		assertEquals(expectedGradeScore, actualResult);
+
+	}		
+	
+	// basically the same case except slightly non round numbers for the EC value. 
+	public void testWeightedSingleCategoryWithEqualWeightingEC2() {
+
+		// Make the big array so we don't have to hand calculate it
+		String[][] hwValues = buildAssignmentArray("8.9995", "10", 19); 
+	
+		// Make item 10 in the list a fully credited EC item worth 10% of the category . 
+		hwValues[10][0] = "7.3517"; 
+		hwValues[10][1] = "10"; 
+		hwValues[10][2] = ".08"; 
+		hwValues[10][3] = "true"; 
+		
+		BigDecimal totalGBPoints = new BigDecimal("180"); 
+		
+		// Doing this this way to have it make sense, basically its the total score plus the EC value.  
+		BigDecimal expectedRawScore = new BigDecimal("89.995").add(new BigDecimal("5.88136")); 
+		BigDecimal expectedGradeScore = new BigDecimal("95.88");  
+			
+		BigDecimal actualResult = getResultForSingleCategoryWithEqualWeighting(hwValues, totalGBPoints, false, 0);
+		assertEquals(expectedRawScore, actualResult);
+		
+		actualResult = getResultForSingleCategoryWithEqualWeighting(hwValues, totalGBPoints, true, 0);
+		assertEquals(expectedGradeScore, actualResult);
+
+	}		
+
+
+	// Once more with feeling... 
+	public void testWeightedSingleCategoryWithEqualWeightingECAndDropLowest() {
+
+		// Make the big array so we don't have to hand calculate it
+		String[][] hwValues = buildAssignmentArray("8.9995", "10", 19); 
+	
+		// Drop lowest, but we want to make one value higher 
+		
+		hwValues[2][0] = "8.9994"; 
+		hwValues[7][0] = "8.9997"; 
+		
+		// We'll do two ec items, first one with give 3 percent
+		hwValues[10][0] = "10"; 
+		hwValues[10][1] = "10"; 
+		hwValues[10][2] = ".03"; 
+		hwValues[10][3] = "true"; 
+
+		// Second one is all primes
+		hwValues[14][0] = "23"; 
+		hwValues[14][1] = "31"; 
+		hwValues[14][2] = ".07"; 
+		hwValues[14][3] = "true"; 
+
+		BigDecimal totalGBPoints = new BigDecimal("180"); 
+		BigDecimal expectedRawScore = new BigDecimal("89.995125").add(new BigDecimal("3")).add(new BigDecimal("5.19354838709677419354838709677419354838709677419358")); 
+		BigDecimal expectedGradeScore = new BigDecimal("98.19");  
+			
+		BigDecimal actualResult = getResultForSingleCategoryWithEqualWeighting(hwValues, totalGBPoints, false, 1);
+		assertEquals(expectedRawScore, actualResult);
+		
+		actualResult = getResultForSingleCategoryWithEqualWeighting(hwValues, totalGBPoints, true, 1);
+		assertEquals(expectedGradeScore, actualResult);
+
+	}		
+
+	
+	public BigDecimal getResultForSingleCategoryWithEqualWeighting(String[][] hwValues, BigDecimal totalGradebookPoints, boolean roundToGradedValueScale, int dropLowest) 
+	{
+		BigDecimal ret = null; 
+	
+		if (hwValues != null && totalGradebookPoints != null)
+		{
+			Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
+			CategoryCalculationUnit hwUnit = new CategoryCalculationUnitImpl(new BigDecimal("1.0"), Integer.valueOf(dropLowest), null, Boolean.FALSE, Boolean.TRUE, TEST_SCALE);
+			categoryUnitMap.put(HW_ID, hwUnit);
+			GradebookCalculationUnit gradebookCalculationUnit = new GradebookCalculationUnitImpl(categoryUnitMap, TEST_SCALE);
+			List<GradeRecordCalculationUnit> hwUnits = getRecordUnits(hwValues);
+			Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
+			categoryGradeUnitListMap.put(HW_ID, hwUnits);
+			if (roundToGradedValueScale)
+			{
+				ret = getRoundedGrade(gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, false)); 
+			}
+			else
+			{
+				ret = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, false).stripTrailingZeros(); 
+			}
+		}
+		
+		return ret; 
+	}
+	
+	
+	public BigDecimal getRoundedGrade(BigDecimal inGrade)
+	{
+		if (inGrade == null)
+			return null; 
+		
+		return inGrade.setScale(2, RoundingMode.HALF_UP);
+	}
+	
+	private String[][] buildAssignmentArray(String pointsEarned, String pointsPossible, int iterations) {
+		
+		if (iterations <= 0)
+			return null;
+		
+		String[][] ret = new String[iterations][4]; 
+		
+		BigDecimal weight = BigDecimal.ONE.divide(new BigDecimal(iterations), 10, RoundingMode.DOWN);
+		
+		for (int i = 0; i < iterations ; i++)
+		{
+			ret[i][0] = pointsEarned;
+			ret[i][1] = pointsPossible;
+			ret[i][2] = weight.toString();
+			ret[i][3] = null; 
+		}
+		return ret; 
+	}
+
 	private List<GradeRecordCalculationUnit> getRecordUnits(String[][] matrix) {
 
 		List<GradeRecordCalculationUnit> units = new ArrayList<GradeRecordCalculationUnit>();
@@ -167,11 +434,13 @@ public class GradebookCalculationUnitTest extends TestCase {
 		return units;
 	}
 	
+	
+	
 	public void testPartialWeighting() {
 		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
 
-		CategoryCalculationUnit essayUnit = new CategoryCalculationUnitImpl(new BigDecimal(".7"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
-		CategoryCalculationUnit hwUnit = new CategoryCalculationUnitImpl(new BigDecimal(".3"), Integer.valueOf(0), null, Boolean.FALSE, TEST_SCALE);
+		CategoryCalculationUnit essayUnit = new CategoryCalculationUnitImpl(new BigDecimal(".7"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
+		CategoryCalculationUnit hwUnit = new CategoryCalculationUnitImpl(new BigDecimal(".3"), Integer.valueOf(0), null, Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
 		//CategoryCalculationUnit ecUnit = new CategoryCalculationUnit(new BigDecimal(".1"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE);
 
 		categoryUnitMap.put(ESSAYS_ID, essayUnit);

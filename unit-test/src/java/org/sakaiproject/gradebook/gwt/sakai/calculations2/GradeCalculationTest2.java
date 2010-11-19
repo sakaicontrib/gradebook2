@@ -1322,7 +1322,7 @@ public class GradeCalculationTest2 extends TestCase {
 	protected GradebookCalculationUnit getEssaysGradebook() {
 		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
 
-		CategoryCalculationUnit essayUnit = new CategoryCalculationUnitImpl(new BigDecimal("1.0"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
+		CategoryCalculationUnit essayUnit = new CategoryCalculationUnitImpl(new BigDecimal("1.0"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
 
 		categoryUnitMap.put(ESSAYS_ID, essayUnit);
 
@@ -1333,9 +1333,9 @@ public class GradeCalculationTest2 extends TestCase {
 	protected GradebookCalculationUnit getEssaysHomeworkExtraCreditGradebook() {
 		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
 
-		CategoryCalculationUnit essayUnit = new CategoryCalculationUnitImpl(new BigDecimal(".6"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
-		CategoryCalculationUnit hwUnit = new CategoryCalculationUnitImpl(new BigDecimal(".4"), Integer.valueOf(0), null, Boolean.FALSE, TEST_SCALE);
-		CategoryCalculationUnit ecUnit = new CategoryCalculationUnitImpl(new BigDecimal(".1"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE, TEST_SCALE);
+		CategoryCalculationUnit essayUnit = new CategoryCalculationUnitImpl(new BigDecimal(".6"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
+		CategoryCalculationUnit hwUnit = new CategoryCalculationUnitImpl(new BigDecimal(".4"), Integer.valueOf(0), null, Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
+		CategoryCalculationUnit ecUnit = new CategoryCalculationUnitImpl(new BigDecimal(".1"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
 
 		categoryUnitMap.put(ESSAYS_ID, essayUnit);
 		categoryUnitMap.put(HW_ID, hwUnit);
@@ -1348,11 +1348,11 @@ public class GradeCalculationTest2 extends TestCase {
 	protected GradebookCalculationUnit getEssaysHomeworkExtraCreditEmptyIncompleteGradebook() {
 		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
 		
-		CategoryCalculationUnit essayUnit = new CategoryCalculationUnitImpl(new BigDecimal(".6"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
-		CategoryCalculationUnit hwUnit = new CategoryCalculationUnitImpl(new BigDecimal(".2"), Integer.valueOf(0), null, Boolean.FALSE, TEST_SCALE);
-		CategoryCalculationUnit ecUnit = new CategoryCalculationUnitImpl(new BigDecimal(".1"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE, TEST_SCALE);
+		CategoryCalculationUnit essayUnit = new CategoryCalculationUnitImpl(new BigDecimal(".6"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
+		CategoryCalculationUnit hwUnit = new CategoryCalculationUnitImpl(new BigDecimal(".2"), Integer.valueOf(0), null, Boolean.FALSE,Boolean.FALSE, TEST_SCALE);
+		CategoryCalculationUnit ecUnit = new CategoryCalculationUnitImpl(new BigDecimal(".1"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
 		
-		CategoryCalculationUnit emptyUnit = new CategoryCalculationUnitImpl(new BigDecimal("0"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
+		CategoryCalculationUnit emptyUnit = new CategoryCalculationUnitImpl(new BigDecimal("0"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE,TEST_SCALE);
 		
 		categoryUnitMap.put(ESSAYS_ID, essayUnit);
 		categoryUnitMap.put(HW_ID, hwUnit);
@@ -1366,11 +1366,11 @@ public class GradeCalculationTest2 extends TestCase {
 	protected GradebookCalculationUnit getEssaysHomeworkExtraCreditEmptyCompleteGradebook() {
 		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
 		
-		CategoryCalculationUnit essayUnit = new CategoryCalculationUnitImpl(new BigDecimal(".6"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
-		CategoryCalculationUnit hwUnit = new CategoryCalculationUnitImpl(new BigDecimal(".4"), Integer.valueOf(0), null, Boolean.FALSE, TEST_SCALE);
-		CategoryCalculationUnit ecUnit = new CategoryCalculationUnitImpl(new BigDecimal(".1"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE, TEST_SCALE);
+		CategoryCalculationUnit essayUnit = new CategoryCalculationUnitImpl(new BigDecimal(".6"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
+		CategoryCalculationUnit hwUnit = new CategoryCalculationUnitImpl(new BigDecimal(".4"), Integer.valueOf(0), null, Boolean.FALSE, Boolean.FALSE,TEST_SCALE);
+		CategoryCalculationUnit ecUnit = new CategoryCalculationUnitImpl(new BigDecimal(".1"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
 		
-		CategoryCalculationUnit emptyUnit = new CategoryCalculationUnitImpl(new BigDecimal("0"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
+		CategoryCalculationUnit emptyUnit = new CategoryCalculationUnitImpl(new BigDecimal("0"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE,TEST_SCALE);
 		
 		categoryUnitMap.put(ESSAYS_ID, essayUnit);
 		categoryUnitMap.put(HW_ID, hwUnit);
@@ -1384,11 +1384,11 @@ public class GradeCalculationTest2 extends TestCase {
 	protected GradebookCalculationUnit getEssaysHomeworkExtraCreditEmptyCompleteGradebookPointsWeightedEssays() {
 		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
 		
-		CategoryCalculationUnit essayUnit = new CategoryCalculationUnitImpl(new BigDecimal(".6"), Integer.valueOf(0), Boolean.FALSE, Boolean.TRUE, TEST_SCALE);
-		CategoryCalculationUnit hwUnit = new CategoryCalculationUnitImpl(new BigDecimal(".4"), Integer.valueOf(0), null, Boolean.FALSE, TEST_SCALE);
-		CategoryCalculationUnit ecUnit = new CategoryCalculationUnitImpl(new BigDecimal(".1"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE, TEST_SCALE);
+		CategoryCalculationUnit essayUnit = new CategoryCalculationUnitImpl(new BigDecimal(".6"), Integer.valueOf(0), Boolean.FALSE, Boolean.TRUE, Boolean.FALSE, TEST_SCALE);
+		CategoryCalculationUnit hwUnit = new CategoryCalculationUnitImpl(new BigDecimal(".4"), Integer.valueOf(0), null, Boolean.FALSE, Boolean.FALSE,TEST_SCALE);
+		CategoryCalculationUnit ecUnit = new CategoryCalculationUnitImpl(new BigDecimal(".1"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
 		
-		CategoryCalculationUnit emptyUnit = new CategoryCalculationUnitImpl(new BigDecimal("0"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
+		CategoryCalculationUnit emptyUnit = new CategoryCalculationUnitImpl(new BigDecimal("0"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE,TEST_SCALE);
 		
 		categoryUnitMap.put(ESSAYS_ID, essayUnit);
 		categoryUnitMap.put(HW_ID, hwUnit);

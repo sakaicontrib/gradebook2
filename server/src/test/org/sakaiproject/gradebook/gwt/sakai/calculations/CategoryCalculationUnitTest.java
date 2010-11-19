@@ -28,7 +28,7 @@ public class CategoryCalculationUnitTest extends TestCase {
 		boolean isExtraCredit = false;
 		boolean isPointsWeighted = false;
 		
-		CategoryCalculationUnit categoryCalculationUnit = new CategoryCalculationUnitImpl(categoryWeightTotal, dropLowest, isExtraCredit, isPointsWeighted, TEST_SCALE);
+		CategoryCalculationUnit categoryCalculationUnit = new CategoryCalculationUnitImpl(categoryWeightTotal, dropLowest, isExtraCredit, isPointsWeighted, Boolean.FALSE, TEST_SCALE);
 		
 		BigDecimal pointsReceived = new BigDecimal("7.7");
 		BigDecimal pointsPossible = new BigDecimal("10.0");
@@ -53,7 +53,7 @@ public class CategoryCalculationUnitTest extends TestCase {
 		boolean isExtraCredit = false;
 		boolean isPointsWeighted = false;
 		
-		CategoryCalculationUnit categoryCalculationUnit = new CategoryCalculationUnitImpl(categoryWeightTotal, dropLowest, isExtraCredit, isPointsWeighted, TEST_SCALE);
+		CategoryCalculationUnit categoryCalculationUnit = new CategoryCalculationUnitImpl(categoryWeightTotal, dropLowest, isExtraCredit, isPointsWeighted, Boolean.FALSE, TEST_SCALE);
 		
 		BigDecimal pointsReceived1 = new BigDecimal("6.5");
 		BigDecimal pointsPossible1 = new BigDecimal("10.0");
@@ -85,7 +85,7 @@ public class CategoryCalculationUnitTest extends TestCase {
 		boolean isExtraCredit = true;
 		boolean isPointsWeighted = false;
 		
-		CategoryCalculationUnit categoryCalculationUnit = new CategoryCalculationUnitImpl(categoryWeightTotal, dropLowest, isExtraCredit, isPointsWeighted, TEST_SCALE);
+		CategoryCalculationUnit categoryCalculationUnit = new CategoryCalculationUnitImpl(categoryWeightTotal, dropLowest, isExtraCredit, isPointsWeighted, Boolean.FALSE, TEST_SCALE);
 		
 		List<GradeRecordCalculationUnit> gradeRecordCalculationUnits = new ArrayList<GradeRecordCalculationUnit>();
 		BigDecimal result1 = categoryCalculationUnit.calculate(gradeRecordCalculationUnits, false);
@@ -104,10 +104,10 @@ public class CategoryCalculationUnitTest extends TestCase {
 	
 	public void testIsExtraCredit() {
 		
-		CategoryCalculationUnit categoryCalculationUnit1 = new CategoryCalculationUnitImpl(new BigDecimal("0.4"), 0, true, true, TEST_SCALE);
+		CategoryCalculationUnit categoryCalculationUnit1 = new CategoryCalculationUnitImpl(new BigDecimal("0.4"), 0, true, true, Boolean.FALSE, TEST_SCALE);
 		assertTrue(categoryCalculationUnit1.isExtraCredit());
 				
-		CategoryCalculationUnit categoryCalculationUnit2 = new CategoryCalculationUnitImpl(new BigDecimal("0.4"), 0, false, true, TEST_SCALE);
+		CategoryCalculationUnit categoryCalculationUnit2 = new CategoryCalculationUnitImpl(new BigDecimal("0.4"), 0, false, true, Boolean.FALSE, TEST_SCALE);
 		assertFalse(categoryCalculationUnit2.isExtraCredit());		
 	}
 	
@@ -118,7 +118,7 @@ public class CategoryCalculationUnitTest extends TestCase {
 		boolean isExtraCredit = false;
 		boolean isPointsWeighted = false;
 		
-		CategoryCalculationUnit categoryCalculationUnit = new CategoryCalculationUnitImpl(categoryWeightTotal, dropLowest, isExtraCredit, isPointsWeighted, TEST_SCALE);
+		CategoryCalculationUnit categoryCalculationUnit = new CategoryCalculationUnitImpl(categoryWeightTotal, dropLowest, isExtraCredit, isPointsWeighted, Boolean.FALSE, TEST_SCALE);
 		
 		BigDecimal result = categoryCalculationUnit.getCategoryWeightTotal();
 		assertEquals(result, categoryWeightTotal);
@@ -131,7 +131,7 @@ public class CategoryCalculationUnitTest extends TestCase {
 		boolean isExtraCredit = false;
 		boolean isPointsWeighted = false;
 		
-		CategoryCalculationUnit categoryCalculationUnit = new CategoryCalculationUnitImpl(categoryWeightTotal, dropLowest, isExtraCredit, isPointsWeighted, TEST_SCALE);
+		CategoryCalculationUnit categoryCalculationUnit = new CategoryCalculationUnitImpl(categoryWeightTotal, dropLowest, isExtraCredit, isPointsWeighted, Boolean.FALSE, TEST_SCALE);
 		
 		assertNull(categoryCalculationUnit.getCategoryGrade());
 		
@@ -149,7 +149,7 @@ public class CategoryCalculationUnitTest extends TestCase {
 		boolean isExtraCredit = false;
 		boolean isPointsWeighted = false;
 		
-		CategoryCalculationUnit categoryCalculationUnit = new CategoryCalculationUnitImpl(categoryWeightTotal, dropLowest, isExtraCredit, isPointsWeighted, TEST_SCALE);
+		CategoryCalculationUnit categoryCalculationUnit = new CategoryCalculationUnitImpl(categoryWeightTotal, dropLowest, isExtraCredit, isPointsWeighted, Boolean.FALSE, TEST_SCALE);
 		
 		assertEquals(dropLowest, categoryCalculationUnit.getDropLowest());
 		
@@ -165,7 +165,7 @@ public class CategoryCalculationUnitTest extends TestCase {
 		boolean isExtraCredit = false;
 		boolean isPointsWeighted = true;
 		
-		CategoryCalculationUnit categoryCalculationUnit = new CategoryCalculationUnitImpl(categoryWeightTotal, dropLowest, isExtraCredit, isPointsWeighted, TEST_SCALE);
+		CategoryCalculationUnit categoryCalculationUnit = new CategoryCalculationUnitImpl(categoryWeightTotal, dropLowest, isExtraCredit, isPointsWeighted, Boolean.FALSE, TEST_SCALE);
 		
 		assertTrue(categoryCalculationUnit.isPointsWeighted());
 		
@@ -182,7 +182,7 @@ public class CategoryCalculationUnitTest extends TestCase {
 		boolean isExtraCredit = false;
 		boolean isPointsWeighted = true;
 		
-		CategoryCalculationUnit categoryCalculationUnit = new CategoryCalculationUnitImpl(categoryWeightTotal, dropLowest, isExtraCredit, isPointsWeighted, TEST_SCALE);
+		CategoryCalculationUnit categoryCalculationUnit = new CategoryCalculationUnitImpl(categoryWeightTotal, dropLowest, isExtraCredit, isPointsWeighted, Boolean.FALSE, TEST_SCALE);
 		
 		BigDecimal totalCategoryPoints = new BigDecimal("40");
 		categoryCalculationUnit.setTotalCategoryPoints(totalCategoryPoints);
