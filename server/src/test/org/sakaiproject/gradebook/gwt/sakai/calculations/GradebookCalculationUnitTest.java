@@ -362,8 +362,191 @@ public class GradebookCalculationUnitTest extends TestCase {
 
 	}		
 
+	/*
+	 * time for EC categories, but EC works slightly different, we need a real category as well. 
+	 */
 	
-	public BigDecimal getResultForSingleCategoryWithEqualWeighting(String[][] hwValues, BigDecimal totalGradebookPoints, boolean roundToGradedValueScale, int dropLowest) 
+	// Case 1: Regular category 100% of grade, 0/100 - F with EC Category worth 100% of grade with 3 units as above. 
+	
+	public void testWeightedSingleCategoryWithEqualWeightingForECCategory() {
+
+		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
+
+		CategoryCalculationUnit hwUnit = new CategoryCalculationUnitImpl(BigDecimal.ONE, Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE); 
+		CategoryCalculationUnit ecUnit = new CategoryCalculationUnitImpl(new BigDecimal("1"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE, Boolean.TRUE, TEST_SCALE);
+
+		categoryUnitMap.put(HW_ID, hwUnit);
+		categoryUnitMap.put(EC_ID, ecUnit);
+
+		GradebookCalculationUnit gradebookCalculationUnit = new GradebookCalculationUnitImpl(categoryUnitMap, TEST_SCALE);
+
+		String[][] hwValues = {
+				{ "0", "100", "1.0", null }
+		};
+
+		String[][] ecValues = {
+				{ "8.9995", "10", "0.33", null },
+				{ "8.9995", "10", "0.33", null },
+				{ "8.9995", "10", "0.33", null }
+		};
+
+		List<GradeRecordCalculationUnit> ecUnits = getRecordUnits(ecValues);
+		List<GradeRecordCalculationUnit> hwUnits = getRecordUnits(hwValues);
+
+		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
+		categoryGradeUnitListMap.put(EC_ID, ecUnits);
+		categoryGradeUnitListMap.put(HW_ID, hwUnits); 
+		
+		BigDecimal totalGradebookPoints = new BigDecimal("100");
+
+		BigDecimal result = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, false).stripTrailingZeros();
+
+		assertEquals(new BigDecimal("89.995"), result);
+	}		
+
+	// Case 2: Regular category 100% of grade, 72/100 - C with EC Category worth 20% of grade with 3 units as above. 
+	
+	public void testWeightedSingleCategoryWithEqualWeightingForECCategory2() {
+
+		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
+
+		CategoryCalculationUnit hwUnit = new CategoryCalculationUnitImpl(new BigDecimal("1"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE); 
+		CategoryCalculationUnit ecUnit = new CategoryCalculationUnitImpl(new BigDecimal(".2"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE, Boolean.TRUE, TEST_SCALE);
+
+		categoryUnitMap.put(HW_ID, hwUnit);
+		categoryUnitMap.put(EC_ID, ecUnit);
+
+		GradebookCalculationUnit gradebookCalculationUnit = new GradebookCalculationUnitImpl(categoryUnitMap, TEST_SCALE);
+
+		String[][] hwValues = {
+				{ "72", "100", "1.0", null }
+		};
+
+		String[][] ecValues = {
+				{ "8.9995", "10", "0.33", null },
+				{ "8.9995", "10", "0.33", null },
+				{ "8.9995", "10", "0.33", null }
+		};
+
+		List<GradeRecordCalculationUnit> ecUnits = getRecordUnits(ecValues);
+		List<GradeRecordCalculationUnit> hwUnits = getRecordUnits(hwValues);
+
+		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
+		categoryGradeUnitListMap.put(EC_ID, ecUnits);
+		categoryGradeUnitListMap.put(HW_ID, hwUnits); 
+		
+		BigDecimal totalGradebookPoints = new BigDecimal("100");
+
+		BigDecimal result = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, false).stripTrailingZeros();
+		// Full grade
+		assertEquals(new BigDecimal("89.999"), result);
+		
+		// Check category just be sure
+		assertEquals(new BigDecimal(".89995"), ecUnit.getCategoryGrade()); 
+	}		
+
+	/*
+	 * Case 3
+	 * 
+	 * Regular category of 100% with 1 item of 62/100 - Grade 62.0 
+	 * 
+	 * EC Category worth 10% of grade.  
+	 * 5 Items, 3 Graded No scaled EC
+	 */
+	
+	public void testWeightedSingleCategoryWithEqualWeightingForECCategory3() {
+
+		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
+
+		CategoryCalculationUnit hwUnit = new CategoryCalculationUnitImpl(new BigDecimal("1"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE); 
+		CategoryCalculationUnit ecUnit = new CategoryCalculationUnitImpl(new BigDecimal(".1"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE, Boolean.TRUE, TEST_SCALE);
+
+		categoryUnitMap.put(HW_ID, hwUnit);
+		categoryUnitMap.put(EC_ID, ecUnit);
+
+		GradebookCalculationUnit gradebookCalculationUnit = new GradebookCalculationUnitImpl(categoryUnitMap, TEST_SCALE);
+
+		String[][] hwValues = {
+				{ "62", "100", "1.0", null }
+		};
+
+		String[][] ecValues = {
+				{ "8.9995", "10", "0.2", null },
+				{ "8.9995", "10", "0.2", null },
+				{ null, "10", "0.2", null },
+				{ null, "10", "0.2", null },
+				{ "8.9995", "10", "0.2", null }
+		};
+
+		List<GradeRecordCalculationUnit> ecUnits = getRecordUnits(ecValues);
+		List<GradeRecordCalculationUnit> hwUnits = getRecordUnits(hwValues);
+
+		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
+		categoryGradeUnitListMap.put(EC_ID, ecUnits);
+		categoryGradeUnitListMap.put(HW_ID, hwUnits); 
+		
+		BigDecimal totalGradebookPoints = new BigDecimal("100");
+
+		BigDecimal result = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, false).stripTrailingZeros();
+		// Full grade
+		assertEquals(new BigDecimal("67.3997"), result);
+		
+		// Check category just be sure
+		assertEquals(new BigDecimal("0.53997"), ecUnit.getCategoryGrade()); 
+	}		
+
+	/*
+	 * Case 4
+	 * 
+	 * Same as Case 3, but with scaled EC
+	 */
+	
+	public void testWeightedSingleCategoryWithEqualWeightingForECCategory4() {
+
+		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
+
+		CategoryCalculationUnit hwUnit = new CategoryCalculationUnitImpl(new BigDecimal("1"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE); 
+		CategoryCalculationUnit ecUnit = new CategoryCalculationUnitImpl(new BigDecimal(".1"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE, Boolean.TRUE, TEST_SCALE);
+
+		categoryUnitMap.put(HW_ID, hwUnit);
+		categoryUnitMap.put(EC_ID, ecUnit);
+
+		GradebookCalculationUnit gradebookCalculationUnit = new GradebookCalculationUnitImpl(categoryUnitMap, TEST_SCALE);
+
+		String[][] hwValues = {
+				{ "62", "100", "1.0", null }
+		};
+
+		String[][] ecValues = {
+				{ "8.9995", "10", "0.2", null },
+				{ "8.9995", "10", "0.2", null },
+				{ null, "10", "0.2", null },
+				{ null, "10", "0.2", null },
+				{ "8.9995", "10", "0.2", null }
+		};
+
+		List<GradeRecordCalculationUnit> ecUnits = getRecordUnits(ecValues);
+		List<GradeRecordCalculationUnit> hwUnits = getRecordUnits(hwValues);
+
+		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
+		categoryGradeUnitListMap.put(EC_ID, ecUnits);
+		categoryGradeUnitListMap.put(HW_ID, hwUnits); 
+		
+		BigDecimal totalGradebookPoints = new BigDecimal("100");
+
+		BigDecimal result = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, true).stripTrailingZeros();
+		// Full grade
+		assertEquals(new BigDecimal("70.9995"), result);
+		
+		// Check category just be sure
+		assertEquals(new BigDecimal("0.89995"), ecUnit.getCategoryGrade()); 
+	}		
+
+	
+	
+	// utility methods
+	
+	private BigDecimal getResultForSingleCategoryWithEqualWeighting(String[][] hwValues, BigDecimal totalGradebookPoints, boolean roundToGradedValueScale, int dropLowest) 
 	{
 		BigDecimal ret = null; 
 	
@@ -390,7 +573,7 @@ public class GradebookCalculationUnitTest extends TestCase {
 	}
 	
 	
-	public BigDecimal getRoundedGrade(BigDecimal inGrade)
+	private BigDecimal getRoundedGrade(BigDecimal inGrade)
 	{
 		if (inGrade == null)
 			return null; 
