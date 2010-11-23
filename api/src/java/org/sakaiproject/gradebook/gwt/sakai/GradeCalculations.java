@@ -44,6 +44,8 @@ public interface GradeCalculations {
 
 	public static final MathContext MATH_CONTEXT = new MathContext(10, RoundingMode.HALF_EVEN);
 
+	public static final RoundingMode DISPLAY_ROUNDING = RoundingMode.HALF_UP;
+
 	public Double calculateEqualWeight(int numberOfItems);
 
 	public Double calculateItemWeightAsPercentage(Double requestedItemWeight, Double requestedItemPoints);

@@ -2511,7 +2511,8 @@ public class Gradebook2ComponentServiceNewImpl extends BigDecimalCalculationsWra
 		else
 			throw new InvalidInputException(i18n.getString("noNonNumericValue"));
 
-		BigDecimal bigValue = BigDecimal.valueOf(v).setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
+		// GRBK-780 
+		BigDecimal bigValue = BigDecimal.valueOf(v).setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.DISPLAY_ROUNDING);
 
 		if (bigValue.compareTo(BigDecimal.ZERO) == 0)
 			throw new InvalidInputException(i18n.getString("noZeroValue"));
@@ -2519,7 +2520,7 @@ public class Gradebook2ComponentServiceNewImpl extends BigDecimalCalculationsWra
 			StringBuilder sb = new StringBuilder();
 			Formatter formatter = new Formatter(sb);
 			formatter.format(i18n.getString("valueMustBeLessThan100"), 
-					bigValue.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode()).toString());
+					bigValue.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.DISPLAY_ROUNDING).toString());
 
 			throw new InvalidInputException(sb.toString());
 		}
@@ -2544,7 +2545,7 @@ public class Gradebook2ComponentServiceNewImpl extends BigDecimalCalculationsWra
 				Double oldValue = gradeMapping.getGradeMap().get(letterGrade);
 
 				if (oldValue != null) {
-					BigDecimal bgOldValue = BigDecimal.valueOf(oldValue.doubleValue()).setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
+					BigDecimal bgOldValue = BigDecimal.valueOf(oldValue.doubleValue()).setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.DISPLAY_ROUNDING);
 
 					if (bgOldValue.compareTo(BigDecimal.ZERO) == 0) {
 						throw new InvalidInputException(i18n.getString("cannotModifyBase"));
@@ -2556,8 +2557,8 @@ public class Gradebook2ComponentServiceNewImpl extends BigDecimalCalculationsWra
 					StringBuilder sb = new StringBuilder();
 					Formatter formatter = new Formatter(sb);
 					formatter.format(i18n.getString("valueMustBeLessThanAbove"), 
-							bigValue.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode()).toString(),
-							bigOldUpperScale.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode()).toString());
+							bigValue.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.DISPLAY_ROUNDING).toString(),
+							bigOldUpperScale.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.DISPLAY_ROUNDING));
 
 					throw new InvalidInputException(sb.toString());
 				}
@@ -2575,8 +2576,8 @@ public class Gradebook2ComponentServiceNewImpl extends BigDecimalCalculationsWra
 						StringBuilder sb = new StringBuilder();
 						Formatter formatter = new Formatter(sb);
 						formatter.format(i18n.getString("valueMustBeGreaterThanBelow"), 
-								bigOldUpperScale.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode()).toString(),
-								bigUpperScale.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode()).toString());
+								bigOldUpperScale.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.DISPLAY_ROUNDING).toString(),
+								bigUpperScale.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.DISPLAY_ROUNDING).toString());
 						throw new InvalidInputException(sb.toString());
 					}					
 				}
@@ -3577,7 +3578,7 @@ public class Gradebook2ComponentServiceNewImpl extends BigDecimalCalculationsWra
 		
 		if(null != fullPrecisionCalculatedGrade) {
 			userRecord.setCalculatedGrade(fullPrecisionCalculatedGrade);
-			calculatedGrade = fullPrecisionCalculatedGrade.setScale(AppConstants.DISPLAY_SCALE, RoundingMode.HALF_UP);
+			calculatedGrade = fullPrecisionCalculatedGrade.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.DISPLAY_ROUNDING);
 		}
 
 		boolean isLetterGradeMode = gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER;
@@ -3595,14 +3596,12 @@ public class Gradebook2ComponentServiceNewImpl extends BigDecimalCalculationsWra
 				BigDecimal calculatedDisplayGrade = displayGrade.getCalculatedGrade();
 
 				if(null != calculatedDisplayGrade) {
-
-					calculatedDisplayGrade = calculatedDisplayGrade.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode());
+					calculatedDisplayGrade = calculatedDisplayGrade.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.DISPLAY_ROUNDING);
 					displayGrade.setCalculatedGrade(calculatedDisplayGrade);
 				}
 			}
 		}
 		else {
-
 			// GRBK-721
 			if(isLetterGradeMode) {
 
@@ -3963,12 +3962,12 @@ public class Gradebook2ComponentServiceNewImpl extends BigDecimalCalculationsWra
 		switch (gradebook.getGrade_type()) {
 		case GradebookService.GRADE_TYPE_LETTER:
 			if (isStandardDev)
-				statAsString = stat != null && stat.compareTo(BigDecimal.ZERO) != 0 ? divide(stat, BigDecimal.TEN).setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode()).toString() : AppConstants.STATISTICS_DATA_NA;
+				statAsString = stat != null && stat.compareTo(BigDecimal.ZERO) != 0 ? divide(stat, BigDecimal.TEN).setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.DISPLAY_ROUNDING).toString() : AppConstants.STATISTICS_DATA_NA;
 				else
 					statAsString = stat != null ? gradeCalculations.convertPercentageToLetterGrade(stat) : AppConstants.STATISTICS_DATA_NA;
 					break;
 		default:
-			statAsString = stat != null ? stat.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.MATH_CONTEXT.getRoundingMode()).toString() : AppConstants.STATISTICS_DATA_NA;
+			statAsString = stat != null ? stat.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.DISPLAY_ROUNDING).toString() : AppConstants.STATISTICS_DATA_NA;
 		}
 
 		return statAsString;

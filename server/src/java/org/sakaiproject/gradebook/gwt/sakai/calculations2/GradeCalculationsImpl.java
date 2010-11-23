@@ -14,6 +14,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.sakai.GradeCalculations;
 import org.sakaiproject.gradebook.gwt.sakai.calculations2.CategoryCalculationUnit;
@@ -329,7 +330,7 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 				n++;
 				BigDecimal courseGrade = rec.getScore(); 
 
-				BigDecimal roundedCourseGrade = courseGrade.setScale(2, GradeCalculations.MATH_CONTEXT.getRoundingMode());
+				BigDecimal roundedCourseGrade = courseGrade.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.DISPLAY_ROUNDING);
 				 
 				BigDecimal difference = subtract(courseGrade, mean);
 				
