@@ -542,6 +542,382 @@ public class GradebookCalculationUnitTest extends TestCase {
 		assertEquals(new BigDecimal("0.89995"), ecUnit.getCategoryGrade()); 
 	}		
 
+	// This models a real site with real grades 
+	public void testWeightedECEqualTmp1() {
+
+		String MIDTERM_ID = "1";
+		String FINAL_ID = "2";
+		String PAPER_ID = "3";
+		String SECTIONS_ID = "4";
+		String ECHW_ID = "5";
+
+		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
+
+		// Midterms - 2 assignments, equal weighted
+		CategoryCalculationUnit midtermUnit = new CategoryCalculationUnitImpl(
+				new BigDecimal(".4"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, TEST_SCALE); 
+
+		// Final - 1 assignment 
+		CategoryCalculationUnit finalUnit = new CategoryCalculationUnitImpl(
+				new BigDecimal(".25"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE); 
+
+		// paper - 1 assignment
+		CategoryCalculationUnit paperUnit = new CategoryCalculationUnitImpl(
+				new BigDecimal(".23"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE); 
+
+		// section - 6 assignments equal weighted
+		CategoryCalculationUnit sectionsUnit = new CategoryCalculationUnitImpl(
+				new BigDecimal(".12"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, TEST_SCALE); 
+
+		// extra credit homework extra credit category, 3 assignments
+		CategoryCalculationUnit ecUnit = new CategoryCalculationUnitImpl(
+				new BigDecimal(".03"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE, Boolean.TRUE, TEST_SCALE); 
+
+		
+
+		categoryUnitMap.put(MIDTERM_ID, midtermUnit);
+		categoryUnitMap.put(FINAL_ID, finalUnit);
+		categoryUnitMap.put(PAPER_ID, paperUnit);
+		categoryUnitMap.put(SECTIONS_ID, sectionsUnit);
+		categoryUnitMap.put(ECHW_ID, ecUnit);
+
+		GradebookCalculationUnit gradebookCalculationUnit = new GradebookCalculationUnitImpl(categoryUnitMap, TEST_SCALE);
+
+		String[][] midtermValues = {
+				{ "94", "100", "0.5", null },
+				{ "94", "100", "0.5", null }
+		};
+
+		String[][] finalValues = {
+				{ null, "100", "1.0", null }
+		};
+
+		String[][] paperValues = {
+				{ null, "100", "1.0", null }
+		};
+
+		String[][] sectionsValues = {
+				{ "100", "100", "0.1667", null },
+				{ "100", "100", "0.1667", null },
+				{ "100", "100", "0.1667", null },
+				{ "100", "100", "0.1667", null },
+				{ "100", "100", "0.1667", null },
+				{ "100", "100", "0.1667", null }
+		};
+
+		String[][] ecValues = {
+				{ "100", "100", "0.3333", null },
+				{ "100", "100", "0.3333", null },
+				{ "0", "10", "0.3333", null }
+		};
+
+		List<GradeRecordCalculationUnit> midtermUnits = getRecordUnits(midtermValues);
+		List<GradeRecordCalculationUnit> finalUnits = getRecordUnits(finalValues);
+		List<GradeRecordCalculationUnit> paperUnits = getRecordUnits(paperValues);
+		List<GradeRecordCalculationUnit> sectionsUnits = getRecordUnits(sectionsValues);
+		List<GradeRecordCalculationUnit> ecUnits = getRecordUnits(ecValues);
+
+		
+		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
+
+		categoryGradeUnitListMap.put(MIDTERM_ID, midtermUnits);
+		categoryGradeUnitListMap.put(FINAL_ID, finalUnits);
+		categoryGradeUnitListMap.put(PAPER_ID, paperUnits);
+		categoryGradeUnitListMap.put(SECTIONS_ID, sectionsUnits);
+		categoryGradeUnitListMap.put(ECHW_ID, ecUnits);
+		
+		
+		BigDecimal totalGradebookPoints = new BigDecimal("100");
+
+		BigDecimal result = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, true).stripTrailingZeros();
+		// Full grade
+		
+		assertEquals(new BigDecimal("97.38"), getRoundedGrade(result));
+		
+	}		
+
+	// variation on previous case, but w/o scaled EC - should not make a difference. 
+	public void testWeightedECEqualTmp2() {
+
+		String MIDTERM_ID = "1";
+		String FINAL_ID = "2";
+		String PAPER_ID = "3";
+		String SECTIONS_ID = "4";
+		String ECHW_ID = "5";
+
+		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
+
+		// Midterms - 2 assignments, equal weighted
+		CategoryCalculationUnit midtermUnit = new CategoryCalculationUnitImpl(
+				new BigDecimal(".4"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, TEST_SCALE); 
+
+		// Final - 1 assignment 
+		CategoryCalculationUnit finalUnit = new CategoryCalculationUnitImpl(
+				new BigDecimal(".25"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE); 
+
+		// paper - 1 assignment
+		CategoryCalculationUnit paperUnit = new CategoryCalculationUnitImpl(
+				new BigDecimal(".23"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE); 
+
+		// section - 6 assignments equal weighted
+		CategoryCalculationUnit sectionsUnit = new CategoryCalculationUnitImpl(
+				new BigDecimal(".12"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, TEST_SCALE); 
+
+		// extra credit homework extra credit category, 3 assignments
+		CategoryCalculationUnit ecUnit = new CategoryCalculationUnitImpl(
+				new BigDecimal(".03"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE, Boolean.TRUE, TEST_SCALE); 
+
+		
+
+		categoryUnitMap.put(MIDTERM_ID, midtermUnit);
+		categoryUnitMap.put(FINAL_ID, finalUnit);
+		categoryUnitMap.put(PAPER_ID, paperUnit);
+		categoryUnitMap.put(SECTIONS_ID, sectionsUnit);
+		categoryUnitMap.put(ECHW_ID, ecUnit);
+
+		GradebookCalculationUnit gradebookCalculationUnit = new GradebookCalculationUnitImpl(categoryUnitMap, TEST_SCALE);
+
+		String[][] midtermValues = {
+				{ "94", "100", "0.5", null },
+				{ "94", "100", "0.5", null }
+		};
+
+		String[][] finalValues = {
+				{ null, "100", "1.0", null }
+		};
+
+		String[][] paperValues = {
+				{ null, "100", "1.0", null }
+		};
+
+		String[][] sectionsValues = {
+				{ "100", "100", "0.1667", null },
+				{ "100", "100", "0.1667", null },
+				{ "100", "100", "0.1667", null },
+				{ "100", "100", "0.1667", null },
+				{ "100", "100", "0.1667", null },
+				{ "100", "100", "0.1667", null }
+		};
+
+		String[][] ecValues = {
+				{ "100", "100", "0.3333", null },
+				{ "100", "100", "0.3333", null },
+				{ "0", "10", "0.3333", null }
+		};
+
+		List<GradeRecordCalculationUnit> midtermUnits = getRecordUnits(midtermValues);
+		List<GradeRecordCalculationUnit> finalUnits = getRecordUnits(finalValues);
+		List<GradeRecordCalculationUnit> paperUnits = getRecordUnits(paperValues);
+		List<GradeRecordCalculationUnit> sectionsUnits = getRecordUnits(sectionsValues);
+		List<GradeRecordCalculationUnit> ecUnits = getRecordUnits(ecValues);
+
+		
+		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
+
+		categoryGradeUnitListMap.put(MIDTERM_ID, midtermUnits);
+		categoryGradeUnitListMap.put(FINAL_ID, finalUnits);
+		categoryGradeUnitListMap.put(PAPER_ID, paperUnits);
+		categoryGradeUnitListMap.put(SECTIONS_ID, sectionsUnits);
+		categoryGradeUnitListMap.put(ECHW_ID, ecUnits);
+		
+		
+		BigDecimal totalGradebookPoints = new BigDecimal("100");
+
+		BigDecimal result = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, false).stripTrailingZeros();
+		// Full grade
+		
+		assertEquals(new BigDecimal("97.38"), getRoundedGrade(result));
+		
+	}		
+	
+	// variation on previous case, but w/o scaled EC and one nulled out EC assignment - we lose a point
+	public void testWeightedECEqualTmp3() {
+
+		String MIDTERM_ID = "1";
+		String FINAL_ID = "2";
+		String PAPER_ID = "3";
+		String SECTIONS_ID = "4";
+		String ECHW_ID = "5";
+
+		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
+
+		// Midterms - 2 assignments, equal weighted
+		CategoryCalculationUnit midtermUnit = new CategoryCalculationUnitImpl(
+				new BigDecimal(".4"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, TEST_SCALE); 
+
+		// Final - 1 assignment 
+		CategoryCalculationUnit finalUnit = new CategoryCalculationUnitImpl(
+				new BigDecimal(".25"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE); 
+
+		// paper - 1 assignment
+		CategoryCalculationUnit paperUnit = new CategoryCalculationUnitImpl(
+				new BigDecimal(".23"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE); 
+
+		// section - 6 assignments equal weighted
+		CategoryCalculationUnit sectionsUnit = new CategoryCalculationUnitImpl(
+				new BigDecimal(".12"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, TEST_SCALE); 
+
+		// extra credit homework extra credit category, 3 assignments
+		CategoryCalculationUnit ecUnit = new CategoryCalculationUnitImpl(
+				new BigDecimal(".03"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE, Boolean.TRUE, TEST_SCALE); 
+
+		
+
+		categoryUnitMap.put(MIDTERM_ID, midtermUnit);
+		categoryUnitMap.put(FINAL_ID, finalUnit);
+		categoryUnitMap.put(PAPER_ID, paperUnit);
+		categoryUnitMap.put(SECTIONS_ID, sectionsUnit);
+		categoryUnitMap.put(ECHW_ID, ecUnit);
+
+		GradebookCalculationUnit gradebookCalculationUnit = new GradebookCalculationUnitImpl(categoryUnitMap, TEST_SCALE);
+
+		String[][] midtermValues = {
+				{ "94", "100", "0.5", null },
+				{ "94", "100", "0.5", null }
+		};
+
+		String[][] finalValues = {
+				{ null, "100", "1.0", null }
+		};
+
+		String[][] paperValues = {
+				{ null, "100", "1.0", null }
+		};
+
+		String[][] sectionsValues = {
+				{ "100", "100", "0.1667", null },
+				{ "100", "100", "0.1667", null },
+				{ "100", "100", "0.1667", null },
+				{ "100", "100", "0.1667", null },
+				{ "100", "100", "0.1667", null },
+				{ "100", "100", "0.1667", null }
+		};
+
+		String[][] ecValues = {
+				{ "100", "100", "0.3333", null },
+				{ null, "100", "0.3333", null },
+				{ "0", "10", "0.3333", null }
+		};
+
+		List<GradeRecordCalculationUnit> midtermUnits = getRecordUnits(midtermValues);
+		List<GradeRecordCalculationUnit> finalUnits = getRecordUnits(finalValues);
+		List<GradeRecordCalculationUnit> paperUnits = getRecordUnits(paperValues);
+		List<GradeRecordCalculationUnit> sectionsUnits = getRecordUnits(sectionsValues);
+		List<GradeRecordCalculationUnit> ecUnits = getRecordUnits(ecValues);
+
+		
+		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
+
+		categoryGradeUnitListMap.put(MIDTERM_ID, midtermUnits);
+		categoryGradeUnitListMap.put(FINAL_ID, finalUnits);
+		categoryGradeUnitListMap.put(PAPER_ID, paperUnits);
+		categoryGradeUnitListMap.put(SECTIONS_ID, sectionsUnits);
+		categoryGradeUnitListMap.put(ECHW_ID, ecUnits);
+		
+		
+		BigDecimal totalGradebookPoints = new BigDecimal("100");
+
+		BigDecimal result = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, false).stripTrailingZeros();
+		// Full grade
+		
+		assertEquals(new BigDecimal("96.38"), getRoundedGrade(result));
+		
+	}		
+	
+	// variation on previous case, but w scaled EC and one nulled out EC assignment - we should get 1.5 from the DB
+	public void testWeightedECEqualTmp4() {
+
+		String MIDTERM_ID = "1";
+		String FINAL_ID = "2";
+		String PAPER_ID = "3";
+		String SECTIONS_ID = "4";
+		String ECHW_ID = "5";
+
+		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
+
+		// Midterms - 2 assignments, equal weighted
+		CategoryCalculationUnit midtermUnit = new CategoryCalculationUnitImpl(
+				new BigDecimal(".4"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, TEST_SCALE); 
+
+		// Final - 1 assignment 
+		CategoryCalculationUnit finalUnit = new CategoryCalculationUnitImpl(
+				new BigDecimal(".25"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE); 
+
+		// paper - 1 assignment
+		CategoryCalculationUnit paperUnit = new CategoryCalculationUnitImpl(
+				new BigDecimal(".23"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE); 
+
+		// section - 6 assignments equal weighted
+		CategoryCalculationUnit sectionsUnit = new CategoryCalculationUnitImpl(
+				new BigDecimal(".12"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.TRUE, TEST_SCALE); 
+
+		// extra credit homework extra credit category, 3 assignments
+		CategoryCalculationUnit ecUnit = new CategoryCalculationUnitImpl(
+				new BigDecimal(".03"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE, Boolean.TRUE, TEST_SCALE); 
+
+		
+
+		categoryUnitMap.put(MIDTERM_ID, midtermUnit);
+		categoryUnitMap.put(FINAL_ID, finalUnit);
+		categoryUnitMap.put(PAPER_ID, paperUnit);
+		categoryUnitMap.put(SECTIONS_ID, sectionsUnit);
+		categoryUnitMap.put(ECHW_ID, ecUnit);
+
+		GradebookCalculationUnit gradebookCalculationUnit = new GradebookCalculationUnitImpl(categoryUnitMap, TEST_SCALE);
+
+		String[][] midtermValues = {
+				{ "94", "100", "0.5", null },
+				{ "94", "100", "0.5", null }
+		};
+
+		String[][] finalValues = {
+				{ null, "100", "1.0", null }
+		};
+
+		String[][] paperValues = {
+				{ null, "100", "1.0", null }
+		};
+
+		String[][] sectionsValues = {
+				{ "100", "100", "0.1667", null },
+				{ "100", "100", "0.1667", null },
+				{ "100", "100", "0.1667", null },
+				{ "100", "100", "0.1667", null },
+				{ "100", "100", "0.1667", null },
+				{ "100", "100", "0.1667", null }
+		};
+
+		String[][] ecValues = {
+				{ "100", "100", "0.3333", null },
+				{ null, "100", "0.3333", null },
+				{ "0", "10", "0.3333", null }
+		};
+
+		List<GradeRecordCalculationUnit> midtermUnits = getRecordUnits(midtermValues);
+		List<GradeRecordCalculationUnit> finalUnits = getRecordUnits(finalValues);
+		List<GradeRecordCalculationUnit> paperUnits = getRecordUnits(paperValues);
+		List<GradeRecordCalculationUnit> sectionsUnits = getRecordUnits(sectionsValues);
+		List<GradeRecordCalculationUnit> ecUnits = getRecordUnits(ecValues);
+
+		
+		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
+
+		categoryGradeUnitListMap.put(MIDTERM_ID, midtermUnits);
+		categoryGradeUnitListMap.put(FINAL_ID, finalUnits);
+		categoryGradeUnitListMap.put(PAPER_ID, paperUnits);
+		categoryGradeUnitListMap.put(SECTIONS_ID, sectionsUnits);
+		categoryGradeUnitListMap.put(ECHW_ID, ecUnits);
+		
+		
+		BigDecimal totalGradebookPoints = new BigDecimal("100");
+
+		BigDecimal result = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, true).stripTrailingZeros();
+		// Full grade
+		
+		assertEquals(new BigDecimal("96.88"), getRoundedGrade(result));
+		
+	}		
+	
 	
 	
 	// utility methods
