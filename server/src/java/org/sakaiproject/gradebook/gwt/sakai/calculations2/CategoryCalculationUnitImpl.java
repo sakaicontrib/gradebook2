@@ -24,6 +24,8 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 	private boolean isPointsWeighted;
 	private BigDecimal totalCategoryPoints;
 	private boolean isEqualWeighted; 
+	
+	private int totalNumberOfItems; 
 
 	private List<GradeRecordCalculationUnit> unitsToDrop;
 
@@ -39,6 +41,7 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 		this.unitsToDrop = new LinkedList<GradeRecordCalculationUnit>();
 		this.isPointsWeighted = usePoints == null ? false : usePoints.booleanValue();
 		this.isEqualWeighted = useEqual == null ? false : useEqual.booleanValue();
+		this.totalNumberOfItems = 0;  
 		
 	}
 
@@ -105,6 +108,7 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 	
 	private BigDecimal sumScaledScoresEquallyWeighted(List<GradeRecordCalculationUnit> units, boolean isExtraCreditScaled) 
 	{	
+		log.debug("sumScaledScoresEquallyWeighted for EC Category: " + this.isExtraCredit + " with EC Scaling: " + isExtraCreditScaled); 
 		BigDecimal sumScores = null;
 		BigDecimal extraCreditScore = BigDecimal.ZERO; 
 		/*
@@ -120,13 +124,16 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 		 * do anything as well as if the extra credit is scaled we want to leave it alone.
 		 */
 		int numActiveItems;
-		if (isExtraCredit && !isExtraCreditScaled)
+		if (isExtraCredit && !isExtraCreditScaled )
 		{
-			numActiveItems = units.size(); 
+			numActiveItems = totalNumberOfItems;				
+			log.debug("EC Cat w/o scaling, numActiveItems=" + numActiveItems);
 		}
 		else // Not extra credit category or extra credit category with extra credit scaling turned on
 		{
 			numActiveItems = countNumberOfActiveUnit(units); 
+			log.debug("Normal, numActiveItems=" + numActiveItems);
+
 		}
 		
 		for (GradeRecordCalculationUnit unit : units) 
@@ -325,5 +332,13 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 
 	public void setEqualWeighted(boolean isEqualWeighted) {
 		this.isEqualWeighted = isEqualWeighted;
+	}
+
+	public int getTotalNumberOfItems() {
+		return totalNumberOfItems;
+	}
+
+	public void setTotalNumberOfItems(int totalNumberOfItems) {
+		this.totalNumberOfItems = totalNumberOfItems;
 	}
 }

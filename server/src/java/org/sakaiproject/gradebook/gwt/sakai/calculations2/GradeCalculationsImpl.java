@@ -678,7 +678,7 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 
 		BigDecimal totalCategoryPoints = BigDecimal.ZERO;
 		BigDecimal totalCategoryPercent = BigDecimal.ZERO;
-
+		int totalUnexcusedItems = 0; 
 		boolean isWeightByPointsCategory = category == null ? false : Util.checkBoolean(category.isEnforcePointWeighting());
 		boolean doPreventUnequalDropLowest = ((isWeighted && isWeightByPointsCategory) || !isWeighted);
 
@@ -768,14 +768,28 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 							};
 
 							gradeRecordUnit.setActualRecord(assignmentGradeRecord);
-
+							// GRBK-784 - we need a count of items in this thing. 
+							totalUnexcusedItems++; 
 							gradeRecordUnits.add(gradeRecordUnit);
 						}
+					}
+					else
+					{
+						// GRBK-784 - we need a count of items in this thing. 
+						if (!isExcused(assignmentGradeRecord))
+						{
+							totalUnexcusedItems++; 
+						}
+						
 					}
 				}
 			}
 		}
 
+		if (categoryCalculationUnit != null && totalUnexcusedItems > 0 && isExtraCreditCategory)
+		{
+			categoryCalculationUnit.setTotalNumberOfItems(totalUnexcusedItems);
+		}
 		// When we get here we can assume that if drop lowest is greater than 0, it means the points are equal for
 		// all items
 

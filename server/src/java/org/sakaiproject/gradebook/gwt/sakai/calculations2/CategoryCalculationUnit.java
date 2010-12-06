@@ -26,4 +26,8 @@ public interface CategoryCalculationUnit {
 	public BigDecimal getTotalCategoryPoints();
 
 	public void setTotalCategoryPoints(BigDecimal totalCategoryPoints);
+	
+	public int getTotalNumberOfItems(); 
+	
+	public void setTotalNumberOfItems(int totalNumberOfItems);
 }

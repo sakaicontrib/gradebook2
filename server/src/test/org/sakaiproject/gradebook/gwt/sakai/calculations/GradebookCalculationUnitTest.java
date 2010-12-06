@@ -392,6 +392,7 @@ public class GradebookCalculationUnitTest extends TestCase {
 
 		List<GradeRecordCalculationUnit> ecUnits = getRecordUnits(ecValues);
 		List<GradeRecordCalculationUnit> hwUnits = getRecordUnits(hwValues);
+		ecUnit.setTotalNumberOfItems(3); 
 
 		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
 		categoryGradeUnitListMap.put(EC_ID, ecUnits);
@@ -428,6 +429,7 @@ public class GradebookCalculationUnitTest extends TestCase {
 				{ "8.9995", "10", "0.33", null }
 		};
 
+		ecUnit.setTotalNumberOfItems(3); 
 		List<GradeRecordCalculationUnit> ecUnits = getRecordUnits(ecValues);
 		List<GradeRecordCalculationUnit> hwUnits = getRecordUnits(hwValues);
 
@@ -478,6 +480,7 @@ public class GradebookCalculationUnitTest extends TestCase {
 				{ "8.9995", "10", "0.2", null }
 		};
 
+		ecUnit.setTotalNumberOfItems(5); 
 		List<GradeRecordCalculationUnit> ecUnits = getRecordUnits(ecValues);
 		List<GradeRecordCalculationUnit> hwUnits = getRecordUnits(hwValues);
 
@@ -705,6 +708,7 @@ public class GradebookCalculationUnitTest extends TestCase {
 				{ "0", "10", "0.3333", null }
 		};
 
+		ecUnit.setTotalNumberOfItems(3); 
 		List<GradeRecordCalculationUnit> midtermUnits = getRecordUnits(midtermValues);
 		List<GradeRecordCalculationUnit> finalUnits = getRecordUnits(finalValues);
 		List<GradeRecordCalculationUnit> paperUnits = getRecordUnits(paperValues);
@@ -799,6 +803,7 @@ public class GradebookCalculationUnitTest extends TestCase {
 				{ "0", "10", "0.3333", null }
 		};
 
+		ecUnit.setTotalNumberOfItems(3); 
 		List<GradeRecordCalculationUnit> midtermUnits = getRecordUnits(midtermValues);
 		List<GradeRecordCalculationUnit> finalUnits = getRecordUnits(finalValues);
 		List<GradeRecordCalculationUnit> paperUnits = getRecordUnits(paperValues);
@@ -893,6 +898,8 @@ public class GradebookCalculationUnitTest extends TestCase {
 				{ "0", "10", "0.3333", null }
 		};
 
+		ecUnit.setTotalNumberOfItems(3); 
+		
 		List<GradeRecordCalculationUnit> midtermUnits = getRecordUnits(midtermValues);
 		List<GradeRecordCalculationUnit> finalUnits = getRecordUnits(finalValues);
 		List<GradeRecordCalculationUnit> paperUnits = getRecordUnits(paperValues);
