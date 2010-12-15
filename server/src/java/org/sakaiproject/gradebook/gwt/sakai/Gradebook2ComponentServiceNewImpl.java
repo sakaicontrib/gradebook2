@@ -3548,6 +3548,16 @@ public class Gradebook2ComponentServiceNewImpl extends BigDecimalCalculationsWra
 		return gradeEvent;
 	}
 
+	private BigDecimal getRoundedDisplayGrade(BigDecimal in)
+	{
+		BigDecimal ret = null; 
+		if (in != null)
+		{
+			ret = in.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.DISPLAY_ROUNDING);
+		}
+		return ret; 
+
+	}
 	private Learner buildLearnerGradeRecord(Gradebook gradebook, UserRecord userRecord, List<FixedColumn> columns, List<Assignment> assignments, List<Category> categories) {
 
 		if (userRecord == null)
@@ -3578,7 +3588,7 @@ public class Gradebook2ComponentServiceNewImpl extends BigDecimalCalculationsWra
 		
 		if(null != fullPrecisionCalculatedGrade) {
 			userRecord.setCalculatedGrade(fullPrecisionCalculatedGrade);
-			calculatedGrade = fullPrecisionCalculatedGrade.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.DISPLAY_ROUNDING);
+			calculatedGrade = getRoundedDisplayGrade(fullPrecisionCalculatedGrade);
 		}
 
 		boolean isLetterGradeMode = gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER;
@@ -3592,11 +3602,11 @@ public class Gradebook2ComponentServiceNewImpl extends BigDecimalCalculationsWra
 
 			// GRBK-721
 			if(!isLetterGradeMode && null != displayGrade) {
-
+				// Uncertain why we need to re-round.  Suggest simplifying 
 				BigDecimal calculatedDisplayGrade = displayGrade.getCalculatedGrade();
 
 				if(null != calculatedDisplayGrade) {
-					calculatedDisplayGrade = calculatedDisplayGrade.setScale(AppConstants.DISPLAY_SCALE, GradeCalculations.DISPLAY_ROUNDING);
+					calculatedDisplayGrade = getRoundedDisplayGrade(calculatedDisplayGrade);
 					displayGrade.setCalculatedGrade(calculatedDisplayGrade);
 				}
 			}
@@ -4576,8 +4586,13 @@ public class Gradebook2ComponentServiceNewImpl extends BigDecimalCalculationsWra
 	private List<UserRecord> doSearchAndSortUserRecords(Gradebook gradebook, List<Assignment> assignments, List<Category> categories, List<String> studentUids, Map<String, UserRecord> userRecordMap, String searchString, String columnId, boolean isDescending, LearnerKey sortColumnKey) {
 
 		List<UserRecord> userRecords = null;
-
-		// Check to see if we're sorting or not
+		boolean isLetterGradeMode = false; 
+		
+		if (gradebook != null && gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER)
+		{
+			isLetterGradeMode = true; 
+		}
+			// Check to see if we're sorting or not
 		if (sortColumnKey != null) {
 			switch (sortColumnKey) {
 			case S_DSPLY_NM:
@@ -4620,8 +4635,8 @@ public class Gradebook2ComponentServiceNewImpl extends BigDecimalCalculationsWra
 				// everybody's course grade
 				if (userRecords != null) {
 					for (UserRecord record : userRecords) {
-						BigDecimal fullPrecisionCalculatedGrade = getCalculatedGrade(gradebook, assignments, categories, record.getGradeRecordMap());
-						DisplayGrade displayGrade = getDisplayGrade(gradebook, record.getUserUid(), record.getCourseGradeRecord(), fullPrecisionCalculatedGrade);
+						// GRBK-787 We need to get the letter grade based on 2 digit rounding to assure we're using the proper scale. 
+						DisplayGrade displayGrade = calculateAndGenerateDisplayGrade(gradebook, assignments, categories, record, isLetterGradeMode);
 						record.setDisplayGrade(displayGrade);
 						record.setCalculated(true);
 					}
@@ -4634,9 +4649,8 @@ public class Gradebook2ComponentServiceNewImpl extends BigDecimalCalculationsWra
 				// everybody's course grade
 				if (userRecords != null) {
 					for (UserRecord record : userRecords) {
-						BigDecimal fullPrecisionCalculatedGrade = getCalculatedGrade(gradebook, assignments, categories, record.getGradeRecordMap());
-
-						DisplayGrade displayGrade = getDisplayGrade(gradebook, record.getUserUid(), record.getCourseGradeRecord(), fullPrecisionCalculatedGrade);
+						// GRBK-787 We need to get the letter grade based on 2 digit rounding to assure we're using the proper scale. 
+						DisplayGrade displayGrade = calculateAndGenerateDisplayGrade(gradebook, assignments, categories, record, isLetterGradeMode);
 						record.setDisplayGrade(displayGrade);
 						record.setCalculated(true);
 					}
@@ -4683,6 +4697,38 @@ public class Gradebook2ComponentServiceNewImpl extends BigDecimalCalculationsWra
 		}
 
 		return userRecords;
+	}
+
+	/*
+	 * GRBK-787 
+	 * 
+	 * This method will call the calculation logic to get the properly calculated letter 
+	 * grade and then depending on mode, ie, letter grade or non letter grade mode it will 
+	 * call the getDisplayGrade with either the fully precise grade or a rounded value.
+	 * 
+	 */
+	private DisplayGrade calculateAndGenerateDisplayGrade(Gradebook gradebook,
+			List<Assignment> assignments, List<Category> categories,
+			UserRecord record, boolean isLetterGradeMode) {
+		
+		DisplayGrade ret; 
+		BigDecimal fullPrecisionCalculatedGrade = getCalculatedGrade(gradebook, assignments, categories, record.getGradeRecordMap());
+		BigDecimal displayRoundedCalculcatedGrade = getRoundedDisplayGrade(fullPrecisionCalculatedGrade);
+		log.debug("Full precision calculated grade=" + fullPrecisionCalculatedGrade);
+		log.debug("Rounded calculated grade=" + displayRoundedCalculcatedGrade);
+		
+		if (isLetterGradeMode)
+		{
+			ret = getDisplayGrade(gradebook, record.getUserUid(), record.getCourseGradeRecord(), fullPrecisionCalculatedGrade);							
+		}
+		else 
+			// Points and percentages use the normal grade scale, so we need to use the display rounded value
+		{
+			ret = getDisplayGrade(gradebook, record.getUserUid(), record.getCourseGradeRecord(), displayRoundedCalculcatedGrade);
+		}
+		
+		return ret; 
+		
 	}
 
 	private List<UserRecord> doSearchUsers(String searchString, List<String> studentUids, Map<String, UserRecord> userRecordMap) {
