@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -43,8 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
-
-import javax.servlet.http.HttpServletResponse;
 
 import jxl.Cell;
 import jxl.Sheet;
@@ -81,15 +78,12 @@ import org.sakaiproject.gradebook.gwt.sakai.GradeCalculations;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookImportException;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
-import org.sakaiproject.gradebook.gwt.sakai.calculations.GradeCalculationsOOImpl;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeItem;
-import org.sakaiproject.gradebook.gwt.sakai.model.StudentScore;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.gradebook.gwt.server.exceptions.ImportFormatException;
 import org.sakaiproject.gradebook.gwt.server.model.GradeItemImpl;
 import org.sakaiproject.gradebook.gwt.server.model.LearnerImpl;
 import org.sakaiproject.gradebook.gwt.server.model.UploadImpl;
-import org.sakaiproject.site.api.Site;
 import org.sakaiproject.tool.gradebook.Assignment;
 
 import au.com.bytecode.opencsv.CSVReader;

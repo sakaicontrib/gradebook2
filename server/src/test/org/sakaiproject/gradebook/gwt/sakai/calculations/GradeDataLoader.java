@@ -20,7 +20,6 @@ import javax.naming.ConfigurationException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.gradebook.gwt.sakai.GradeCalculations;
-import org.sakaiproject.gradebook.gwt.sakai.calculations2.BigDecimalCalculationsWrapper;
 import org.sakaiproject.gradebook.gwt.sakai.model.StudentScore;
 
 public class GradeDataLoader {

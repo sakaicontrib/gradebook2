@@ -4,10 +4,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.sakaiproject.gradebook.gwt.sakai.calculations2.CategoryCalculationUnitImpl;
-import org.sakaiproject.gradebook.gwt.sakai.calculations2.CategoryCalculationUnit;
-import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradeRecordCalculationUnit;
-import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradeRecordCalculationUnitImpl;
 
 import junit.framework.TestCase;
 

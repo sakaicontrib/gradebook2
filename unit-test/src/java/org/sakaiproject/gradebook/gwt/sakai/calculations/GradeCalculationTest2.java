@@ -21,7 +21,7 @@
  *
  **********************************************************************************/
 
-package org.sakaiproject.gradebook.gwt.sakai.calculations2;
+package org.sakaiproject.gradebook.gwt.sakai.calculations;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -34,9 +34,13 @@ import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
 
-import org.sakaiproject.gradebook.gwt.sakai.calculations2.CategoryCalculationUnit;
-import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradeRecordCalculationUnit;
-import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradebookCalculationUnit;
+import org.sakaiproject.gradebook.gwt.sakai.calculations.BigDecimalCalculationsWrapper;
+import org.sakaiproject.gradebook.gwt.sakai.calculations.CategoryCalculationUnit;
+import org.sakaiproject.gradebook.gwt.sakai.calculations.CategoryCalculationUnitImpl;
+import org.sakaiproject.gradebook.gwt.sakai.calculations.GradeRecordCalculationUnit;
+import org.sakaiproject.gradebook.gwt.sakai.calculations.GradeRecordCalculationUnitImpl;
+import org.sakaiproject.gradebook.gwt.sakai.calculations.GradebookCalculationUnit;
+import org.sakaiproject.gradebook.gwt.sakai.calculations.GradebookCalculationUnitImpl;
 
 public class GradeCalculationTest2 extends TestCase {
 

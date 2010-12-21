@@ -59,7 +59,7 @@
 	
 	
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"
-		class="org.sakaiproject.gradebook.gwt.sakai.calculations2.GradeCalculationsImpl"
+		class="org.sakaiproject.gradebook.gwt.sakai.calculations.GradeCalculationsImpl"
 		init-method="init">
 		
 		<property name="letterGradeMap">
@@ -87,6 +87,4 @@
 	
 	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/>
 	
-
-
 </beans>

@@ -4,7 +4,7 @@
 <beans>
 	
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService" 
-		class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentServiceNewImpl"
+		class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentServiceImpl"
 		init-method="init">
 		<property name="businessLogic" ref="org.sakaiproject.gradebook.gwt.sakai.BusinessLogic"/>
 		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/> 

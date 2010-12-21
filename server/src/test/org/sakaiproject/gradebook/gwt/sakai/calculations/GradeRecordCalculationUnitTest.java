@@ -2,8 +2,6 @@ package org.sakaiproject.gradebook.gwt.sakai.calculations;
 
 import java.math.BigDecimal;
 
-import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradeRecordCalculationUnitImpl;
-import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradeRecordCalculationUnit;
 
 
 import junit.framework.TestCase;

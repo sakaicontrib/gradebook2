@@ -1,4 +1,4 @@
-package org.sakaiproject.gradebook.gwt.sakai.calculations2;
+package org.sakaiproject.gradebook.gwt.sakai.calculations;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -7,9 +7,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradebookCalculationUnit;
-import org.sakaiproject.gradebook.gwt.sakai.calculations2.CategoryCalculationUnit;
-import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradeRecordCalculationUnit;
+import org.sakaiproject.gradebook.gwt.sakai.calculations.CategoryCalculationUnit;
+import org.sakaiproject.gradebook.gwt.sakai.calculations.GradeRecordCalculationUnit;
+import org.sakaiproject.gradebook.gwt.sakai.calculations.GradebookCalculationUnit;
 
 public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper implements GradebookCalculationUnit {
 

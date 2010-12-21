@@ -7,12 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.sakaiproject.gradebook.gwt.sakai.calculations2.CategoryCalculationUnit;
-import org.sakaiproject.gradebook.gwt.sakai.calculations2.CategoryCalculationUnitImpl;
-import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradeRecordCalculationUnit;
-import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradeRecordCalculationUnitImpl;
-import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradebookCalculationUnit;
-import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradebookCalculationUnitImpl;
 
 import junit.framework.TestCase;
 

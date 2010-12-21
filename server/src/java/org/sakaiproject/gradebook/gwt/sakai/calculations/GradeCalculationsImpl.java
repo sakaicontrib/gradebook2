@@ -1,4 +1,4 @@
-package org.sakaiproject.gradebook.gwt.sakai.calculations2;
+package org.sakaiproject.gradebook.gwt.sakai.calculations;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -17,9 +17,9 @@ import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.sakai.GradeCalculations;
-import org.sakaiproject.gradebook.gwt.sakai.calculations2.CategoryCalculationUnit;
-import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradeRecordCalculationUnit;
-import org.sakaiproject.gradebook.gwt.sakai.calculations2.GradebookCalculationUnit;
+import org.sakaiproject.gradebook.gwt.sakai.calculations.CategoryCalculationUnit;
+import org.sakaiproject.gradebook.gwt.sakai.calculations.GradeRecordCalculationUnit;
+import org.sakaiproject.gradebook.gwt.sakai.calculations.GradebookCalculationUnit;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeItem;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeStatistics;
 import org.sakaiproject.gradebook.gwt.sakai.model.StudentScore;

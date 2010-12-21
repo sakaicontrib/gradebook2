@@ -1,4 +1,4 @@
-package org.sakaiproject.gradebook.gwt.sakai.calculations2;
+package org.sakaiproject.gradebook.gwt.sakai.calculations;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;

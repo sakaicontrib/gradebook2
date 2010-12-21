@@ -38,7 +38,7 @@ import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
-import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentServiceNewImpl;
+import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentServiceImpl;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeItem;
 import org.sakaiproject.gradebook.gwt.server.model.GradeItemImpl;
 import org.sakaiproject.service.gradebook.shared.GradebookExternalAssessmentService;
@@ -89,7 +89,7 @@ public class DevelopmentModeBean {
 
 		try {
 			
-			Gradebook2AuthzMockImpl authz = (Gradebook2AuthzMockImpl)((Gradebook2ComponentServiceNewImpl)service).getAuthz();
+			Gradebook2AuthzMockImpl authz = (Gradebook2AuthzMockImpl)((Gradebook2ComponentServiceImpl)service).getAuthz();
 			
 			
 			String authDetails = service.getAuthorizationDetails(new String[]{AppConstants.TEST_SITE_CONTEXT_ID, ArchiveServiceMock.ANOTHER_SITE_CONTEXT});
