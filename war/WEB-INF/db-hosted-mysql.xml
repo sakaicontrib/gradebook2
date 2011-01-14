@@ -1,0 +1,459 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+
+	<bean id="alt.gradebookTxTemplate" lazy-init="true" abstract="true" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+		<property name="transactionManager"><ref bean="alt.gradebookTransactionManager"/></property>
+		<property name="transactionAttributes">
+			<props>
+				<prop key="deleteUserConfiguration">PROPAGATION_NOT_SUPPORTED</prop>
+	            <prop key="is*">PROPAGATION_REQUIRED,readOnly,+org.sakaiproject.service.gradebook.shared.GradebookException</prop>
+	            <prop key="get*">PROPAGATION_REQUIRED,readOnly,+org.sakaiproject.service.gradebook.shared.GradebookException</prop>
+	            <prop key="*">PROPAGATION_REQUIRED,+org.sakaiproject.service.gradebook.shared.GradebookException</prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean id="alt.gradebookTransactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		<property name="sessionFactory"><ref bean="alt.gradebookSessionFactory"/></property>
+	</bean>
+
+	<!-- An application consumer without a component. -->
+	<bean id="alt.gradebookSessionFactory" 
+		parent="org.sakaiproject.springframework.orm.hibernate.SessionFactoryBase"
+		class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+		<property name="mappingResources">
+		<list>
+  			<value>org/sakaiproject/tool/gradebook/Gradebook.hbm.xml</value>
+	  		<value>org/sakaiproject/tool/gradebook/GradableObject.hbm.xml</value>
+		  	<value>org/sakaiproject/tool/gradebook/GradeRecord.hbm.xml</value>
+			<value>org/sakaiproject/tool/gradebook/GradingEvent.hbm.xml</value>
+			<value>org/sakaiproject/tool/gradebook/GradingScale.hbm.xml</value>
+  			<value>org/sakaiproject/tool/gradebook/GradebookProperty.hbm.xml</value>
+	  		<value>org/sakaiproject/tool/gradebook/GradeMapping.hbm.xml</value>
+          	<value>org/sakaiproject/tool/gradebook/Spreadsheet.hbm.xml</value>                
+          	<value>org/sakaiproject/tool/gradebook/Comment.hbm.xml</value>   
+          	<value>org/sakaiproject/tool/gradebook/Category.hbm.xml</value>
+          	<value>org/sakaiproject/tool/gradebook/LetterGradePercenteMapping.hbm.xml</value>
+        	<value>org/sakaiproject/tool/gradebook/Permission.hbm.xml</value>
+        	<value>org/sakaiproject/gradebook/gwt/sakai/model/ActionRecord.hbm.xml</value>
+			<value>org/sakaiproject/gradebook/gwt/sakai/model/Realm.hbm.xml</value>
+			<value>org/sakaiproject/gradebook/gwt/sakai/model/RealmGroup.hbm.xml</value>
+			<value>org/sakaiproject/gradebook/gwt/sakai/model/RealmRole.hbm.xml</value>
+			<value>org/sakaiproject/gradebook/gwt/sakai/model/UserConfiguration.hbm.xml</value>
+			<value>org/sakaiproject/gradebook/gwt/sakai/model/UserDereference.hbm.xml</value>
+			<value>org/sakaiproject/gradebook/gwt/sakai/model/UserDereferenceRealmUpdate.hbm.xml</value>
+        </list>
+		</property>
+	</bean>
+	
+
+    <!-- database beans -->
+    
+	<!-- Base DataSource for all pooled database connections -->
+	<!-- See http://jakarta.apache.org/commons/dbcp/configuration.html -->
+	<bean id="javax.sql.BaseDataSourceHSQL" abstract="true"
+			class="org.apache.commons.dbcp.BasicDataSource"
+			destroy-method="close">
+
+		<!--  The fully qualified Java class name of the JDBC driver to be used. -->
+		<property name="driverClassName">
+			<value>org.hsqldb.jdbcDriver</value>
+		</property>
+
+		<!-- The connection URL to be passed to our JDBC driver to establish a connection. -->
+		<property name="url">
+			<value>jdbc:hsqldb:mem:sakai</value>
+		</property>
+
+		<!-- The connection username to be passed to our JDBC driver to establish a connection. -->
+		<property name="username">
+			<value>sa</value>
+		</property>
+
+		<!-- The connection password to be passed to our JDBC driver to establish a connection. -->
+		<property name="password">
+			<value></value>
+		</property>
+
+		<!--  The initial number of connections that are created when the pool is started. -->
+		<property name="initialSize">
+			<value>10</value>
+		</property>
+
+		<!-- The maximum number of active connections that can be allocated from this pool at the same time, or zero for no limit. -->
+		<property name="maxActive">
+			<value>50</value>
+		</property>
+
+		<!-- The maximum number of active connections that can remain idle in the pool, without extra ones being released, or zero for no limit. -->
+		<property name="maxIdle">
+			<value>10</value>
+		</property>
+
+		<!-- The minimum number of active connections that can remain idle in the pool, without extra ones being created, or 0 to create none. -->
+		<property name="minIdle">
+			<value>0</value>
+		</property>
+
+		<!-- The maximum number of milliseconds that the pool will wait (when there
+		  are no available connections) for a connection to be returned before
+		  throwing an exception, or -1 to wait indefinitely. -->
+		<property name="maxWait">
+			<value>300000</value>
+		</property>
+
+		<!-- The number of objects to examine during each run of the idle object
+		  evictor thread (if any). -->
+		<property name="numTestsPerEvictionRun">
+			<value>3</value>
+		</property>
+
+		<!--  The indication of whether objects will be validated before being
+		  borrowed from the pool. If the object fails to validate, it will be
+		  dropped from the pool, and we will attempt to borrow another.
+		  Note: this has been shown to cause performance problems with Oracle (leave it false) -->
+		<property name="testOnBorrow">
+			<value>true</value>
+		</property>
+
+		<!-- The indication of whether objects will be validated before being
+		  returned to the pool. -->
+		<property name="testOnReturn">
+			<value>false</value>
+		</property>
+
+		<!-- The indication of whether objects will be validated by the idle object
+		  evictor (if any). If an object fails to validate, it will be dropped from
+		  the pool. -->
+		<property name="testWhileIdle">
+			<value>false</value>
+		</property>
+
+		<!-- The SQL query that will be used to validate connections from this pool
+		  before returning them to the caller. If specified, this query MUST be a
+		  SQL SELECT statement that returns at least one row.
+		  Note: This has been shown to cause performance problems under Oracle: leave it unset. -->
+		<!--property name="validationQuery">
+			<value>select 1 from INFORMATION_SCHEMA.SYSTEM_USERS</value>
+		</property-->
+
+		<!-- The default auto-commit state of connections created by this pool. -->
+		<property name="defaultAutoCommit">
+			<value>true</value>
+		</property>
+
+		<!-- The default read-only state of connections created by this pool. -->
+		<property name="defaultReadOnly">
+			<value>false</value>
+		</property>
+
+		<!-- Use TRANSACTION_READ_COMMITTED for MySQL -->
+		<!-- DO NOT SET for Oracle (the default TRANSACTION_READ_COMMITTED is fine, and setting it causes performance problems) -->
+		<!-- Up to and including 1.7.1, HSQLDB supports only Connection.TRANSACTION_READ_UNCOMMITTED. -->
+		<!--property name="defaultTransactionIsolationString">
+			<value>TRANSACTION_READ_UNCOMMITTED</value>
+		</property-->
+
+		<!-- Prepared statement pooling for this pool. -->
+		<property name="poolPreparedStatements">
+			<value>false</value>
+		</property>
+
+		<!-- The maximum number of open statements that can be allocated from the
+		  statement pool at the same time, or zero for no limit. Since a connection
+		  usually only uses one or two statements at a time, this is mostly used to
+		  help detect resource leaks. -->
+		<property name="maxOpenPreparedStatements">
+			<value>0</value>
+		</property>
+
+		<!-- The minimum amount of time an object may sit idle in the pool before it
+		  is eligable for eviction by the idle object evictor (if any). -->
+		<property name="minEvictableIdleTimeMillis">
+			<value>1800000</value>
+		</property>
+
+		<!-- The number of milliseconds to sleep between runs of the idle object
+		  evictor thread. When non-positive, no idle object evictor thread will be
+		  run. -->
+		<property name="timeBetweenEvictionRunsMillis">
+			<value>900000</value>
+		</property>
+
+    </bean>
+
+	<bean id="javax.sql.BaseDataSourceMySQL" abstract="true"
+			class="org.apache.commons.dbcp.BasicDataSource"
+			destroy-method="close">
+
+		<!--  The fully qualified Java class name of the JDBC driver to be used. -->
+		<property name="driverClassName">
+			<value>com.mysql.jdbc.Driver</value>
+		</property>
+
+		<!-- The connection URL to be passed to our JDBC driver to establish a connection. -->
+		<property name="url">
+			<value><![CDATA[jdbc:mysql://127.0.0.1:3306/sakai?relaxAutoCommit=true&useUnicode=true&characterEncoding=UTF-8]]></value>
+		</property>
+
+		<!-- The connection username to be passed to our JDBC driver to establish a connection. -->
+		<property name="username">
+			<value>sakaiuser</value>
+		</property>
+
+		<!-- The connection password to be passed to our JDBC driver to establish a connection. -->
+		<property name="password">
+			<value>sakaipassword</value>
+		</property>
+
+		<!--  The initial number of connections that are created when the pool is started. -->
+		<property name="initialSize">
+			<value>10</value>
+		</property>
+
+		<!-- The maximum number of active connections that can be allocated from this pool at the same time, or zero for no limit. -->
+		<property name="maxActive">
+			<value>50</value>
+		</property>
+
+		<!-- The maximum number of active connections that can remain idle in the pool, without extra ones being released, or zero for no limit. -->
+		<property name="maxIdle">
+			<value>10</value>
+		</property>
+
+		<!-- The minimum number of active connections that can remain idle in the pool, without extra ones being created, or 0 to create none. -->
+		<property name="minIdle">
+			<value>0</value>
+		</property>
+
+		<!-- The maximum number of milliseconds that the pool will wait (when there
+		  are no available connections) for a connection to be returned before
+		  throwing an exception, or -1 to wait indefinitely. -->
+		<property name="maxWait">
+			<value>300000</value>
+		</property>
+
+		<!-- The number of objects to examine during each run of the idle object
+		  evictor thread (if any). -->
+		<property name="numTestsPerEvictionRun">
+			<value>3</value>
+		</property>
+
+		<!--  The indication of whether objects will be validated before being
+		  borrowed from the pool. If the object fails to validate, it will be
+		  dropped from the pool, and we will attempt to borrow another.
+		  Note: this has been shown to cause performance problems with Oracle (leave it false) -->
+		<property name="testOnBorrow">
+			<value>true</value>
+		</property>
+
+		<!-- The indication of whether objects will be validated before being
+		  returned to the pool. -->
+		<property name="testOnReturn">
+			<value>false</value>
+		</property>
+
+		<!-- The indication of whether objects will be validated by the idle object
+		  evictor (if any). If an object fails to validate, it will be dropped from
+		  the pool. -->
+		<property name="testWhileIdle">
+			<value>false</value>
+		</property>
+
+		<!-- The SQL query that will be used to validate connections from this pool
+		  before returning them to the caller. If specified, this query MUST be a
+		  SQL SELECT statement that returns at least one row.
+		  Note: This has been shown to cause performance problems under Oracle: leave it unset. -->
+		<!--property name="validationQuery">
+			<value>select 1 from INFORMATION_SCHEMA.SYSTEM_USERS</value>
+		</property-->
+
+		<!-- The default auto-commit state of connections created by this pool. -->
+		<property name="defaultAutoCommit">
+			<value>true</value>
+		</property>
+
+		<!-- The default read-only state of connections created by this pool. -->
+		<property name="defaultReadOnly">
+			<value>false</value>
+		</property>
+
+		<!-- Use TRANSACTION_READ_COMMITTED for MySQL -->
+		<!-- DO NOT SET for Oracle (the default TRANSACTION_READ_COMMITTED is fine, and setting it causes performance problems) -->
+		<!-- Up to and including 1.7.1, HSQLDB supports only Connection.TRANSACTION_READ_UNCOMMITTED. -->
+		<!--property name="defaultTransactionIsolationString">
+			<value>TRANSACTION_READ_UNCOMMITTED</value>
+		</property-->
+
+		<!-- Prepared statement pooling for this pool. -->
+		<property name="poolPreparedStatements">
+			<value>false</value>
+		</property>
+
+		<!-- The maximum number of open statements that can be allocated from the
+		  statement pool at the same time, or zero for no limit. Since a connection
+		  usually only uses one or two statements at a time, this is mostly used to
+		  help detect resource leaks. -->
+		<property name="maxOpenPreparedStatements">
+			<value>0</value>
+		</property>
+
+		<!-- The minimum amount of time an object may sit idle in the pool before it
+		  is eligable for eviction by the idle object evictor (if any). -->
+		<property name="minEvictableIdleTimeMillis">
+			<value>1800000</value>
+		</property>
+
+		<!-- The number of milliseconds to sleep between runs of the idle object
+		  evictor thread. When non-positive, no idle object evictor thread will be
+		  run. -->
+		<property name="timeBetweenEvictionRunsMillis">
+			<value>900000</value>
+		</property>
+
+    </bean>
+
+    <!-- Shared DataSource for all pooled database connections -->
+    <bean id="javax.sql.DataSource" parent="javax.sql.BaseDataSourceMySQL">
+    </bean>
+
+    <!-- Proxy which will keep only get the connection if one is actually needed,
+         this is especially helpful when using hibernate or wrapping transactions around requests
+         because it keeps the connection from being opened and held if it is not needed -->
+    <!--bean id="javax.sql.LazyDataSource" class="org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy">
+       <property name="targetDataSource"><ref local="javax.sql.DataSource" /></property>
+    </bean-->
+ 
+    <!-- The "slow" connection pool for streaming downloads from db -->
+    <!--bean id="javax.sql.LongDataSource"
+            parent="javax.sql.BaseDataSource">
+    </bean-->
+    
+    <!--bean id="org.sakaiproject.memory.api.MemoryService.cacheManager" 
+	    class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+  		<property name="configLocation">
+    		<value>classpath:org/sakaiproject/memory/api/ehcache.xml</value>
+  		</property>
+	</bean-->
+
+	<!-- Base Hibernate SessionFactory -->
+	<bean
+			id="org.sakaiproject.springframework.orm.hibernate.SessionFactoryBase"
+			abstract="true"
+			class="org.sakaiproject.springframework.orm.hibernate.impl.ClassicLocalSessionFactoryBeanHibernate31">
+
+		<property name="dataSource">
+			<ref local="javax.sql.DataSource" />
+		</property>
+
+		<property name="hibernateProperties">
+			<props>
+<!--  				<prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop> -->
+  				<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop> 
+
+				<prop key="hibernate.query.factory_class">org.hibernate.hql.ast.ASTQueryTranslatorFactory</prop>
+				<prop key="hibernate.show_sql">false</prop>
+				<prop key="hibernate.query.substitutions">
+					true 1, false 0, yes 'Y', no 'N'
+				</prop>
+				<prop key="hibernate.jdbc.use_streams_for_binary">true</prop>
+				<prop key="hibernate.cache.use_query_cache">false</prop>
+				<!--prop key="hibernate.cache.provider_class">
+				     org.sakaiproject.springframework.orm.hibernate.SakaiCacheProvider
+				</prop-->
+				<prop key="hibernate.cache.provider_class">
+				     org.hibernate.cache.EhCacheProvider
+				</prop>
+			</props>
+		</property>
+		<!--
+		This s 
+					org.hibernate.cache.EhCacheProvider
+		-->
+
+		<!--  update the database schema when starting -->
+		<property name="schemaUpdate">
+			<value>false</value>
+		</property>
+
+	</bean>
+
+	<!--  The "Global" Hibernate Session Factory -->
+	<!-- bean
+			id="org.sakaiproject.springframework.orm.hibernate.GlobalSessionFactory"
+			parent="org.sakaiproject.springframework.orm.hibernate.SessionFactoryBase"
+			class="org.sakaiproject.springframework.orm.hibernate.AddableSessionFactoryBean">
+	</bean-->
+
+	<!--  The "Global" Transaction Manager -->
+	<!--bean
+			id="org.sakaiproject.springframework.orm.hibernate.GlobalTransactionManager"
+			class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		<property name="sessionFactory">
+			<ref bean="org.sakaiproject.springframework.orm.hibernate.GlobalSessionFactory" />
+		</property>
+           <property name="dataSource" ref="javax.sql.DataSource" />
+	</bean-->
+	
+	<!--bean id="org.sakaiproject.springframework.orm.hibernate.L2Cache" 
+  			class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+  		<property name="cacheManager"><ref bean="org.sakaiproject.memory.api.MemoryService.cacheManager"/></property>
+    	<property name="cacheName"><value>org.sakaiproject.springframework.orm.hibernate.L2Cache</value></property>
+    	<property name="maxElementsInMemory" ><value>100000</value></property>
+    	<property name="diskPersistent" ><value>false</value></property>
+    	<property name="eternal" ><value>false</value></property>
+    	<property name="timeToLive" ><value>300</value></property>
+    	<property name="timeToIdle" ><value>600</value></property>
+  	</bean-->
+
+    <!-- beans for use in caching DB flat (uses defaults) -->
+    <!--bean id="db.cache.SAKAI_ALIAS_PROPERTY"
+           class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+       <property name="cacheManager" ref="org.sakaiproject.memory.api.MemoryService.cacheManager" />
+       <property name="cacheName" value="org.sakaiproject.db.BaseDbFlatStorage.SAKAI_ALIAS_PROPERTY" />
+    </bean>
+
+    <bean id="db.cache.SAKAI_SITE_PROPERTY"
+           class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+       <property name="cacheManager" ref="org.sakaiproject.memory.api.MemoryService.cacheManager" />
+       <property name="cacheName" value="org.sakaiproject.db.BaseDbFlatStorage.SAKAI_SITE_PROPERTY" />
+    </bean>
+
+    <bean id="db.cache.SAKAI_SITE_PAGE_PROPERTY"
+           class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+       <property name="cacheManager" ref="org.sakaiproject.memory.api.MemoryService.cacheManager" />
+       <property name="cacheName" value="org.sakaiproject.db.BaseDbFlatStorage.SAKAI_SITE_PAGE_PROPERTY" />
+    </bean>
+
+    <bean id="db.cache.SAKAI_REALM_PROPERTY"
+           class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+       <property name="cacheManager" ref="org.sakaiproject.memory.api.MemoryService.cacheManager" />
+       <property name="cacheName" value="org.sakaiproject.db.BaseDbFlatStorage.SAKAI_REALM_PROPERTY" />
+    </bean>
+
+    <bean id="db.cache.SAKAI_SITE_GROUP_PROPERTY"
+           class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+       <property name="cacheManager" ref="org.sakaiproject.memory.api.MemoryService.cacheManager" />
+       <property name="cacheName" value="org.sakaiproject.db.BaseDbFlatStorage.SAKAI_SITE_GROUP_PROPERTY" />
+    </bean>
+
+    <bean id="db.cache.SAKAI_USER_PROPERTY"
+           class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+       <property name="cacheManager" ref="org.sakaiproject.memory.api.MemoryService.cacheManager" />
+       <property name="cacheName" value="org.sakaiproject.db.BaseDbFlatStorage.SAKAI_USER_PROPERTY" />
+    </bean-->
+
+    <!-- enables JMX on hibernate -->
+	<!--bean id="org.sakaiproject.springframework.orm.hibernate.SessionFactoryBase.jmxAgent" 
+  			class="org.sakaiproject.springframework.orm.hibernate.HibernateJMXAgent"
+  			init-method="init" >
+  	
+		<property name="sessionFactory">
+			<ref bean="org.sakaiproject.springframework.orm.hibernate.GlobalSessionFactory" />
+		</property>
+	</bean-->
+	
+
+</beans>
