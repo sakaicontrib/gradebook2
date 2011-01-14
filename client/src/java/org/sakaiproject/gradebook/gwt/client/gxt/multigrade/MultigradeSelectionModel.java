@@ -36,7 +36,7 @@ public class MultigradeSelectionModel<M extends ModelData> extends CellSelection
 
 	private Callback callback = new Callback(this);
 	private boolean useClassic = false;
-	
+
 	public MultigradeSelectionModel() {
 		super();
 		setMoveEditorOnEnter(true);
@@ -56,33 +56,37 @@ public class MultigradeSelectionModel<M extends ModelData> extends CellSelection
 			e.stopEvent();
 			if (editor != null) {
 				editor.completeEdit();
-			}
-			if (isMoveEditorOnEnter()) {
-				if (e.isShiftKey()) {
-					newCell = ((GbEditorGrid<M>)grid).doWalkCells(editor.row - 1, editor.col, -1, callback, true);
-				} else {
-					newCell = ((GbEditorGrid<M>)grid).doWalkCells(editor.row + 1, editor.col, 1, callback, true);
+
+				if (isMoveEditorOnEnter()) {
+					if (e.isShiftKey()) {
+						newCell = ((GbEditorGrid<M>)grid).doWalkCells(editor.row - 1, editor.col, -1, callback, true);
+					} else {
+						newCell = ((GbEditorGrid<M>)grid).doWalkCells(editor.row + 1, editor.col, 1, callback, true);
+					}
+				} else if (k == KeyCodes.KEY_DOWN) {
+					newCell = ((GbEditorGrid<M>)grid).doWalkCells(editor.row + 1, editor.col, 1, callback, false);
+					break;
+				} else if (k == KeyCodes.KEY_UP) {
+					newCell = ((GbEditorGrid<M>)grid).doWalkCells(editor.row - 1, editor.col, -1, callback, false);
+					break;
 				}
-			} else if (k == KeyCodes.KEY_DOWN) {
-				newCell = ((GbEditorGrid<M>)grid).doWalkCells(editor.row + 1, editor.col, 1, callback, false);
-				break;
-			} else if (k == KeyCodes.KEY_UP) {
-				newCell = ((GbEditorGrid<M>)grid).doWalkCells(editor.row - 1, editor.col, -1, callback, false);
-				break;
 			}
+
 			break;
 		case KeyCodes.KEY_TAB:
 			e.stopEvent();
 			if (editor != null) {
 				editor.completeEdit();
+
+				if (e.isShiftKey()) {
+					newCell = ((GbEditorGrid<M>) grid).doWalkCells(editor.row,
+							editor.col - 1, -1, callback, true);
+				} else {
+					newCell = ((GbEditorGrid<M>) grid).doWalkCells(editor.row,
+							editor.col + 1, 1, callback, true);
+				}
 			}
-			if (e.isShiftKey()) {
-				newCell = ((GbEditorGrid<M>) grid).doWalkCells(editor.row,
-						editor.col - 1, -1, callback, true);
-			} else {
-				newCell = ((GbEditorGrid<M>) grid).doWalkCells(editor.row,
-						editor.col + 1, 1, callback, true);
-			}
+
 			break;
 		case KeyCodes.KEY_ESCAPE:
 			if (editor != null) {
@@ -90,21 +94,27 @@ public class MultigradeSelectionModel<M extends ModelData> extends CellSelection
 			}
 			break;
 		case KeyCodes.KEY_UP:
-			newCell = ((GbEditorGrid<M>)grid).doWalkCells(editor.row - 1, editor.col, -1, callback, true);
+			if(editor != null) {
+				newCell = ((GbEditorGrid<M>)grid).doWalkCells(editor.row - 1, editor.col, -1, callback, true);
+			}
 			break;
 		case KeyCodes.KEY_DOWN:
-			newCell = ((GbEditorGrid<M>)grid).doWalkCells(editor.row + 1, editor.col, 1, callback, true);
+			if(editor != null) {
+				newCell = ((GbEditorGrid<M>)grid).doWalkCells(editor.row + 1, editor.col, 1, callback, true);
+			}
 			break;
 		}
 		if (newCell != null) {
 			((GbEditorGrid<M>)grid).getEditorSupport().startEditing(newCell.row, newCell.cell);
 		} else {
 			if (k == KeyCodes.KEY_ENTER || k == KeyCodes.KEY_TAB || k == KeyCodes.KEY_ESCAPE) {
-				grid.getView().focusCell(editor.row, editor.col, false);
+				if(editor != null) {
+					grid.getView().focusCell(editor.row, editor.col, false);
+				}
 			}
 		}
 	}
-	
+
 	protected boolean isSelectable(int row, int cell, boolean acceptsNav) {
 		if (acceptsNav) {
 			return !grid.getColumnModel().isHidden(cell) && grid.getColumnModel().isCellEditable(cell);
@@ -112,7 +122,7 @@ public class MultigradeSelectionModel<M extends ModelData> extends CellSelection
 			return !grid.getColumnModel().isHidden(cell);
 		}
 	}
-	
+
 	@Override
 	protected void onKeyPress(GridEvent<M> e) {
 		if (((GbEditorGrid<M>)grid).getEditorSupport() != null) {
@@ -189,5 +199,5 @@ public class MultigradeSelectionModel<M extends ModelData> extends CellSelection
 		setMoveEditorOnEnter(!useClassic);
 		this.useClassic = useClassic;
 	}
-	
+
 }

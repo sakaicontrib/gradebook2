@@ -19,7 +19,7 @@ public class InvalidInputMapper implements ExceptionMapper<InvalidInputException
     		}
     	}
         return Response.status(status).
-            entity(ex.getMessage()).
+            entity(ex != null ? ex.getMessage() : "").
             type("text/plain").
             build();
     }

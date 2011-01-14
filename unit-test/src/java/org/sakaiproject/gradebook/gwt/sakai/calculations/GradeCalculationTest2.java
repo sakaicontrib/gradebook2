@@ -49,7 +49,7 @@ public class GradeCalculationTest2 extends TestCase {
 	private static final String EC_ID = "3";
 	private static final String EMPTY_ID = "4";
 	
-	private final int TEST_SCALE = 50;
+	private static final int TEST_SCALE = 50;
 
 	private BigDecimal totalGradebookPoints = null;
 	

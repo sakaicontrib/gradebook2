@@ -9,7 +9,7 @@ import junit.framework.TestCase;
 
 public class CategoryCalculationUnitTest extends TestCase {
 	
-	private final int TEST_SCALE = 50;
+	private static final int TEST_SCALE = 50;
 
 	public CategoryCalculationUnitTest() {
 		super();

@@ -92,7 +92,7 @@ public class DevelopmentModeBean {
 			Gradebook2AuthzMockImpl authz = (Gradebook2AuthzMockImpl)((Gradebook2ComponentServiceImpl)service).getAuthz();
 			
 			
-			String authDetails = service.getAuthorizationDetails(new String[]{AppConstants.TEST_SITE_CONTEXT_ID, ArchiveServiceMock.ANOTHER_SITE_CONTEXT});
+			//String authDetails = service.getAuthorizationDetails(new String[]{AppConstants.TEST_SITE_CONTEXT_ID, ArchiveServiceMock.ANOTHER_SITE_CONTEXT});
 			// since we want to set up another site's gradebook too, we have to 
 			// pass  in the uid's
 			ApplicationSetup applicationSetup = service.getApplicationSetup(
@@ -172,15 +172,15 @@ public class DevelopmentModeBean {
 		hwCategory.setIncluded(Boolean.TRUE);
 		hwCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, hwCategory, false));
 		
-		GradeItem emptyCategory = new GradeItemImpl();
-		emptyCategory.setName("Empty");
-		emptyCategory.setPercentCourseGrade(Double.valueOf(10d));
-		emptyCategory.setDropLowest(Integer.valueOf(0));
-		emptyCategory.setEqualWeightAssignments(Boolean.TRUE);
-		emptyCategory.setItemType(ItemType.CATEGORY);
-		emptyCategory.setIncluded(Boolean.TRUE);
-		emptyCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, emptyCategory, false));
-		
+//		GradeItem emptyCategory = new GradeItemImpl();
+//		emptyCategory.setName("Empty");
+//		emptyCategory.setPercentCourseGrade(Double.valueOf(10d));
+//		emptyCategory.setDropLowest(Integer.valueOf(0));
+//		emptyCategory.setEqualWeightAssignments(Boolean.TRUE);
+//		emptyCategory.setItemType(ItemType.CATEGORY);
+//		emptyCategory.setIncluded(Boolean.TRUE);
+//		emptyCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, emptyCategory, false));
+//		
 		
 		GradeItem ecCategory = new GradeItemImpl();
 		ecCategory.setName("Extra Credit");
@@ -349,7 +349,7 @@ private void createSecondGradebook(Gradebook gbModel, boolean populate) throws I
 		quizesCategory.setDropLowest(1);
 		quizesCategory.setPercentCategory(0.30d);
 		quizesCategory.setEqualWeightAssignments(Boolean.TRUE);
-		quizesCategory.setExtraCredit(new Boolean(true));
+		quizesCategory.setExtraCredit(Boolean.valueOf(true));
 		quizesCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, quizesCategory, false));
 		
 

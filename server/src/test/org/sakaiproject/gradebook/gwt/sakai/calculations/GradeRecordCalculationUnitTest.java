@@ -8,7 +8,7 @@ import junit.framework.TestCase;
 
 public class GradeRecordCalculationUnitTest extends TestCase {
 	
-	private final int TEST_SCALE = 50;
+	private static final int TEST_SCALE = 50;
 	
 	public GradeRecordCalculationUnitTest() {
 		super();

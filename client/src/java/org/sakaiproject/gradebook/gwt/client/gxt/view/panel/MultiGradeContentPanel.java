@@ -939,7 +939,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 					case KeyCodes.KEY_ENTER:
 						Number pageSize = pageSizeField.getValue();
 
-						if (pageSize != null && pageSize.intValue() > 0 && pageSize.intValue() <= Integer.MAX_VALUE) {
+						if (pageSize != null && pageSize.intValue() > 0) {
 							Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 							Configuration model = new ConfigurationModel(selectedGradebook.getGradebookId());
 							model.setPageSize(gridId, Integer.valueOf(pageSize.intValue()));

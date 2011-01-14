@@ -22,12 +22,14 @@
 **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.sakai;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 import org.sakaiproject.tool.gradebook.AssignmentGradeRecord;
 
-public class AssignmentComparator implements Comparator<UserRecord> {
+public class AssignmentComparator implements Comparator<UserRecord>, Serializable {
 
+	private static final long serialVersionUID = 1L;
 	private Long assignmentId;
 	private boolean isDesc;
 	

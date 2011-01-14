@@ -54,7 +54,7 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 	private  BigDecimal oneThird; 
 	private  BigDecimal twoThirds;
 
-	private  static int PRECISION = 7;
+	private  static final int PRECISION = 7;
 
 	private  BigDecimal gradeAplus;
 	private  BigDecimal gradeA;
@@ -112,8 +112,6 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 		three = new BigDecimal("3"); 
 		oneThird = divide(BigDecimal.ONE, three); 
 		twoThirds = divide(two, three);
-
-		PRECISION = 7;
 
 		gradeAplus = new BigDecimal(add(new BigDecimal("96"), twoThirds).toPlainString().substring(0, PRECISION));
 		gradeA = new BigDecimal(add(new BigDecimal("93"), oneThird).toPlainString().substring(0, PRECISION));
@@ -228,7 +226,7 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 				double w = a == null || a.getWeighting() == null ? 0d : a.getWeighting().doubleValue();
 
 				BigDecimal assignmentWeight = BigDecimal.valueOf(w);
-				courseGradePercent = calculateItemGradePercentDecimal(percentGrade, percentCategorySum, assignmentWeight, false);
+				courseGradePercent = calculateItemGradePercentDecimal(percentGrade, percentCategorySum, assignmentWeight);
 				percentCategory = assignmentWeight;
 
 			}
@@ -271,7 +269,7 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 		return divide(multiply(assignmentWeight, percentGrade), categoryPercentRatio);
 	}
 
-	public BigDecimal calculateItemGradePercentDecimal(BigDecimal percentGrade, BigDecimal sumCategoryPercents, BigDecimal assignmentWeight, boolean doNormalizeTo100) {
+	public BigDecimal calculateItemGradePercentDecimal(BigDecimal percentGrade, BigDecimal sumCategoryPercents, BigDecimal assignmentWeight) {
 
 		if (percentGrade.compareTo(BigDecimal.ZERO) == 0 
 				|| sumCategoryPercents.compareTo(BigDecimal.ZERO) == 0 
@@ -280,11 +278,7 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 
 		BigDecimal categoryPercentRatio = null;
 
-		if (doNormalizeTo100)
-			categoryPercentRatio = sumCategoryPercents;
-		else
-			categoryPercentRatio = sumCategoryPercents; // TODO: Do we need the if doNormalizeTo100 ?
-		//categoryPercentRatio = sumCategoryPercents.divide(BigDecimal.ONE, MATH_CONTEXT);
+		categoryPercentRatio = sumCategoryPercents;
 
 		return divide(multiply(assignmentWeight, percentGrade), categoryPercentRatio);
 	}
@@ -476,10 +470,10 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 		// here at the end of the process, we are using half_up
 
 		statistics.setStudentTotal(gradeList.size()); 
-		statistics.setMean(mean.setScale(getScale(), RoundingMode.HALF_UP));
+		statistics.setMean(null != mean ? mean.setScale(getScale(), RoundingMode.HALF_UP) : null);
 		statistics.setMedian(median);
 		statistics.setModeList(modeList);
-		statistics.setStandardDeviation(standardDeviation.setScale(getScale(), RoundingMode.HALF_UP));
+		statistics.setStandardDeviation(null != standardDeviation ? standardDeviation.setScale(getScale(), RoundingMode.HALF_UP) : null);
 
 		return statistics;
 	}

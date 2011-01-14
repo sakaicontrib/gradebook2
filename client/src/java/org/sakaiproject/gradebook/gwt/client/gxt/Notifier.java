@@ -66,10 +66,9 @@ public class Notifier {
 			message = i18n.unknownException();
 		} else {
 			message = e.getMessage();
-		}
-		
-		if (e.getCause() != null && e.getCause().getMessage() != null) {
-			cause = e.getCause().getMessage();
+			if (e.getCause() != null && e.getCause().getMessage() != null) {
+				cause = e.getCause().getMessage();
+			}
 		}
 		
 		if (e instanceof StatusCodeException) {

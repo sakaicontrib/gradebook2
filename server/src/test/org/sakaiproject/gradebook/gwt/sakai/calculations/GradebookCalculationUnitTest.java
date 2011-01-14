@@ -12,7 +12,7 @@ import junit.framework.TestCase;
 
 public class GradebookCalculationUnitTest extends TestCase {
 
-	private final int TEST_SCALE = 50;
+	private static final int TEST_SCALE = 50;
 
 	private static final String ESSAYS_ID = "1";
 	private static final String HW_ID = "2";

@@ -2387,7 +2387,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 					q.setLong("gradebookId", gradebookId.longValue());
 					q.setParameterList("studentUids", studentUids);
 					List totalList = (List)q.list();
-					total = new Integer(totalList.size());
+					total = Integer.valueOf(totalList.size());
 					if (log.isInfoEnabled()) log.info("total number of explicitly entered course grade records = " + total);
 				} else {
 					total = Integer.valueOf(0);

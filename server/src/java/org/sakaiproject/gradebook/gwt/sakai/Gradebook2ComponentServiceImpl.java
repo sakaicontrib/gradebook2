@@ -302,10 +302,11 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		User user = null;
 		try {
 			user = userService.getUser(studentUid);
+			return getStudent(gradebook, site, user);
 		} catch (UserNotDefinedException unde) {
 			log.warn("User not defined: " + studentUid);
 		}
-		return getStudent(gradebook, site, user);
+		return null;
 	}
 
 	private Comment doAssignComment(Long assignmentId, String studentUid, String text) {
@@ -439,6 +440,11 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		} catch (UserNotDefinedException unde) {
 			log.warn("User not defined: " + studentUid);
 		}
+		
+		if(null == user) {
+			return null;
+		}
+		
 		Learner student = getStudent(gradebook, site, user);
 
 		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.GRADE_RECORD.name(), ActionType.GRADED.name());
@@ -501,6 +507,11 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		} catch (UserNotDefinedException unde) {
 			log.warn("User not defined: " + studentUid);
 		}
+		
+		if(null == user) {
+			return null;
+		}
+		
 		Learner student = getStudent(gradebook, site, user);
 
 		ActionRecord actionRecord = new ActionRecord(gradebook.getUid(), gradebook.getId(), EntityType.GRADE_RECORD.name(), ActionType.GRADED.name());
