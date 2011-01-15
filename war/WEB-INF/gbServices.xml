@@ -44,7 +44,7 @@
 		</property>
 	</bean>
 	
-	<!--
+	<!--  GRBK-149 -->
 	<bean id="gradebook2.EntityProducerTransferrer" 
 		class="org.sakaiproject.gradebook.entity.Gradebook2EntityProducerTransferAgent"
 		init-method="init"> 
@@ -58,7 +58,5 @@
 			</set>	
 		</property>
 	</bean>
-	-->
-	
 	
 </beans>
