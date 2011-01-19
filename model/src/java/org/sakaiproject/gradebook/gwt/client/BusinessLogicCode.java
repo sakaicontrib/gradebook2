@@ -14,7 +14,10 @@ public enum BusinessLogicCode {
 	RemoveChildItemsWhenCategoryRemoved				(9),
 	RemoveEqualWeightingWhenItemWeightChangesRules	(10),
 	CannotIncludeDeletedItemRule					(11),
-	CannotIncludeItemFromUnincludedCategoryRule		(12);
+	CannotIncludeItemFromUnincludedCategoryRule		(12),
+	ItemNameCannotBeNullOrEmpty						(13),
+	EntityPointsCannotBeNegative					(14),
+	EntityWeightCannotBeNegative					(15); 
 	
 	private Integer code = null;
 	

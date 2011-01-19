@@ -669,6 +669,8 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			double w = 0.0; 
 			if (weight != null)
 			{
+				// Make sure what we are given is within range.  This validation is being done on the client as well, but we will stop if the server sees a problem. 
+				businessLogic.applyWeightTooSmallOrTooLarge(weight);
 				w = NumericUtils.divideWithPrecision(weight, 100.0);
 
 			}
@@ -679,7 +681,10 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 				businessLogic.applyNoDuplicateCategoryNamesRule(gradebook.getId(), name, null, categories);
 				if (hasWeights)
+				{
 					businessLogic.applyOnlyEqualWeightDropLowestRule(dropLowestInt, equalWeighting);
+					
+				}
 			}
 
 			categoryId = gbService.createCategory(gradebookId, name, Double.valueOf(w), dropLowest, isEqualWeighting, Boolean.valueOf(isUnweighted), isExtraCredit, categoryOrder, doEnforcePointWeighting);
@@ -2657,12 +2662,17 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 				points = Double.valueOf(100.0d);
 			else
 				points = convertDouble(item.getPoints());
+			// Do we have negative points, if so, we'll stop here. 
+			businessLogic.applyPointsNonNegative(points); 
 
 			havePointsChanged = points != null && oldPoints != null && points.compareTo(oldPoints) != 0;
 
 			Double newAssignmentWeight = item.getPercentCategory();
 			Double oldAssignmentWeight = assignment.getAssignmentWeighting();
 
+			// Lets make sure the weight is ok. 
+			businessLogic.applyWeightTooSmallOrTooLarge(newAssignmentWeight); 
+			
 			Integer newItemOrder = item.getItemOrder();
 			Integer oldItemOrder = assignment.getSortOrder();
 
@@ -4468,10 +4478,10 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		return model;
 	}
 
-	private Long doCreateItem(Gradebook gradebook, Item item, boolean hasCategories, boolean enforceNoNewCategories) throws BusinessRuleException {
+	private Long doCreateItem(Gradebook gradebook, Item item, boolean hasCategories, boolean enforceNoNewCategories) throws InvalidInputException {
 
 		String name = item.getName();
-
+		// We never validated the name server side, only client side.  So we'll do it now. 
 
 		Category category = null;
 		Long assignmentId = null;
@@ -4520,6 +4530,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 				category = gbService.getCategory(categoryId);
 
 			// Apply business rules before item creation
+			businessLogic.applyItemNameNotEmpty(name); 
 			if (hasCategories) {
 				if (categoryId != null) {
 					assignments = gbService.getAssignmentsForCategory(categoryId);

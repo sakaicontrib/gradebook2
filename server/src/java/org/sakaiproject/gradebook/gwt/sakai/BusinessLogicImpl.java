@@ -29,6 +29,7 @@ import java.util.ResourceBundle;
 
 import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
+import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.server.Util;
 import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.Category;
@@ -509,6 +510,38 @@ public class BusinessLogicImpl implements BusinessLogic {
 
 	public void setGbService(GradebookToolService gbService) {
 		this.gbService = gbService;
+	}
+
+	public void applyItemNameNotEmpty(String name) throws BusinessRuleException {
+		if (name == null || name.length() == 0 )
+		{
+			throw new BusinessRuleException(i18n.getString("businessRuleNoBlankItemCategoryName"),
+					BusinessLogicCode.ItemNameCannotBeNullOrEmpty);
+		}
+	}
+
+
+	public void applyPointsNonNegative(Double points)
+			throws BusinessRuleException {
+		if (points != null && points.doubleValue() < 0 )
+		{
+			throw new BusinessRuleException(i18n.getString("businessRulePointsCannotBeNegative"), BusinessLogicCode.EntityPointsCannotBeNegative);
+		}
+	}
+
+	public void applyWeightTooSmallOrTooLarge(Double weight)
+			throws BusinessRuleException {
+		if (weight != null) 
+		{
+			// Note this is imprecise, but we're only validating this in the gross sense, the fine validation occurs client side. 
+			double actWeight = weight.doubleValue(); 
+			
+			if (actWeight < 0 || actWeight > 100)
+			{
+				throw new BusinessRuleException(i18n.getString("businessRuleWeightCannotBeNegative"), BusinessLogicCode.EntityWeightCannotBeNegative);
+			}
+		} // Null weight will be handled elsewhere. 
+		
 	}
 
 

@@ -333,4 +333,28 @@ public interface I18nConstants extends Constants {
 	// Grade Scale
 	String gradeScaleLetterGradeMessage();
 	
+	// Item Form Panel
+	String itemFormPanelCreateNotificationTitle();
+	String itemFormPanelCreatePretext();
+	String itemFormPanelCreatePosttext();
+	String itemFormPanelCreateNameInvalid();
+	String itemFormPanelCreatePercentCatgeoryInvalid();
+	String itemFormPanelCreatePercentGradeInvalid();
+	String itemFormPanelCreatePointsInvalid();
+	String itemFormPanelCreateDropLowestInvalid();
+	String itemFormPanelCreateDropLowestNonEquallyWeighted();
+	String itemFormPanelEditNotificationTitle();
+	String itemFormPanelEditPretext();
+	String itemFormPanelEditPosttext();
+	String itemFormPanelEditNameInvalid();
+	String itemFormPanelEditPercentCatgeoryInvalid();
+	String itemFormPanelEditPercentGradeInvalid();
+	String itemFormPanelEditPointsInvalid();
+	String itemFormPanelEditDropLowestInvalid();
+	String itemFormPanelEditDropLowestNonEquallyWeighted();
+	
+	String businessRuleNoBlankItemCategoryName(); 
+	String businessRulePointsCannotBeNegative(); 
+	String businessRuleWeightCannotBeNegative();
+	
 }

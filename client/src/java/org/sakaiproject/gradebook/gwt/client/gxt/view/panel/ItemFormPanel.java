@@ -23,6 +23,7 @@
 
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +36,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemCreate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModelComparer;
@@ -94,7 +96,6 @@ import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
-import com.google.gwt.core.client.GWT;
 
 public class ItemFormPanel extends GradebookPanel {
 
@@ -331,6 +332,7 @@ public class ItemFormPanel extends GradebookPanel {
 		pointsField.setFieldLabel(i18n.pointsFieldLabel());
 		pointsField.setFormat(DataTypeConversionUtil.getDefaultNumberFormat());
 		pointsField.setAllowDecimals(true);
+		pointsField.setAllowNegative(false); 
 		//pointsField.setMinValue(Double.valueOf(0.0001d));
 		pointsField.setVisible(false);
 		formPanel.add(pointsField);
@@ -340,6 +342,7 @@ public class ItemFormPanel extends GradebookPanel {
 		dropLowestField.setName(ItemKey.I_DRP_LWST.name());
 		dropLowestField.setFieldLabel(i18n.dropLowestFieldLabel());
 		dropLowestField.setAllowDecimals(false);
+		dropLowestField.setMinValue(Integer.valueOf(0)); 
 		dropLowestField.setPropertyEditorType(Integer.class);
 		dropLowestField.setVisible(false);
 		dropLowestField.setToolTip(i18n.dropLowestToolTip());
@@ -1250,41 +1253,40 @@ public class ItemFormPanel extends GradebookPanel {
 							case CREATECLOSE:
 								close = true;
 							case CREATE:
-								if (nameField.getValue() == null) {
-									MessageBox.alert(i18n.itemNameRequiredTitle(), i18n.itemNameRequiredText(), null);
-									return;
+								// GRBK-786 GRBK-790 GRBK-789 
+								if (validateFormForEditOrCreate(false) )
+								{
+									ItemModel item = new ItemModel();
+
+									Item category = categoryPicker.getValue();
+
+									if (category != null) 
+										item.setCategoryId(category.getCategoryId());
+									else {
+										String categoryName = categoryPicker.getRawValue();
+										item.setCategoryName(categoryName);
+									}
+
+									Integer dropLowest = dropLowestField.getValue() == null ? null : Integer.valueOf(dropLowestField.getValue().intValue());
+
+									item.setName(nameField.getValue());
+									item.setExtraCredit(extraCreditField.getValue());
+									item.setEqualWeightAssignments(equallyWeightChildrenField.getValue());
+									item.setIncluded(includedField.getValue());
+									item.setReleased(releasedField.getValue());
+									item.setNullsAsZeros(nullsAsZerosField.getValue());
+									item.setEnforcePointWeighting(enforcePointWeightingField.getValue());
+									item.setPercentCourseGrade((Double)percentCourseGradeField.getValue());
+									item.setPercentCategory((Double)percentCategoryField.getValue());
+									item.setPoints((Double)pointsField.getValue());
+									item.setDueDate(dueDateField.getValue());
+									item.setDropLowest(dropLowest);
+									item.setItemType(createItemType);
+
+									clearChanges();
+									sendItemCreateEvent(item, close);
 								}
-
-								ItemModel item = new ItemModel();
-
-								Item category = categoryPicker.getValue();
-
-								if (category != null) 
-									item.setCategoryId(category.getCategoryId());
-								else {
-									String categoryName = categoryPicker.getRawValue();
-									item.setCategoryName(categoryName);
-								}
-
-								Integer dropLowest = dropLowestField.getValue() == null ? null : Integer.valueOf(dropLowestField.getValue().intValue());
-
-								item.setName(nameField.getValue());
-								item.setExtraCredit(extraCreditField.getValue());
-								item.setEqualWeightAssignments(equallyWeightChildrenField.getValue());
-								item.setIncluded(includedField.getValue());
-								item.setReleased(releasedField.getValue());
-								item.setNullsAsZeros(nullsAsZerosField.getValue());
-								item.setEnforcePointWeighting(enforcePointWeightingField.getValue());
-								item.setPercentCourseGrade((Double)percentCourseGradeField.getValue());
-								item.setPercentCategory((Double)percentCategoryField.getValue());
-								item.setPoints((Double)pointsField.getValue());
-								item.setDueDate(dueDateField.getValue());
-								item.setDropLowest(dropLowest);
-								item.setItemType(createItemType);
-
-								clearChanges();
-
-								sendItemCreateEvent(item, close);
+								
 								break;
 							case DELETE:
 								sendItemDeleteEvent(selectedItemModel);
@@ -1301,11 +1303,8 @@ public class ItemFormPanel extends GradebookPanel {
 							case SAVE:
 								clearChanges();
 								if (selectedItemModel != null) 
-									record = treeStore.getRecord(selectedItemModel);
-								if (nameField.validate() 
-										&& (!percentCategoryField.isVisible() || percentCategoryField.validate()) 
-										&& (!percentCourseGradeField.isVisible() || percentCourseGradeField.validate())
-										&& (!pointsField.isVisible() || pointsField.validate())) {
+									record = treeStore.getRecord(selectedItemModel);								
+								if (validateFormForEditOrCreate(true)) {
 
 									if (record != null) {
 									
@@ -1364,7 +1363,155 @@ public class ItemFormPanel extends GradebookPanel {
 		};
 
 	}
+	private boolean validateFormForEditOrCreate(boolean isEdit)
+	{
+		
+		List<String> errors = new ArrayList<String>(); 
+		
+		boolean nameValid = nameField.validate(); 
+		
+		boolean percentCategoryValid = (!percentCategoryField.isVisible() || percentCategoryField.validate());
+		boolean percentGradeValid = (!percentCourseGradeField.isVisible() || percentCourseGradeField.validate());
+		boolean pointsValid = (!pointsField.isVisible() || pointsField.validate());
+		boolean dropLowestValid = (!ItemFormPanel.this.dropLowestField.isVisible() || ItemFormPanel.this.dropLowestField.validate());
+		boolean dropLowestEquallyWeightedValid;
+		
+		if (dropLowestValid)
+		{
+			if (equallyWeightChildrenField != null && equallyWeightChildrenField.getValue().booleanValue())
+			{
+				dropLowestEquallyWeightedValid = true; 
+			}
+			else // Drop lowest can only occur if we're equally weighted. 
+			{
+				if (dropLowestField.getValue() != null && dropLowestField.getValue().intValue() != 0)
+				{
+					dropLowestEquallyWeightedValid = false; 
+				}
+				else
+				{
+					dropLowestEquallyWeightedValid = true; 
+				}
+			}
+		}
+		else // If drop lowest is not active, we don't care that its not equally weighted
+		{
+			dropLowestEquallyWeightedValid = true; 
+		}
+		
+		if (!nameValid)
+		{
+			if (isEdit)
+			{
+				errors.add(i18n.itemFormPanelEditNameInvalid());
+			}
+			else
+			{
+				errors.add(i18n.itemFormPanelCreateNameInvalid());
+			}
+		}
+		
+		if (!percentCategoryValid)
+		{
+			if (isEdit)
+			{
+				errors.add(i18n.itemFormPanelEditPercentCatgeoryInvalid());
+			}
+			else
+			{
+				errors.add(i18n.itemFormPanelCreatePercentCatgeoryInvalid());
+			}
+		}
+		
+		if (!percentGradeValid)
+		{
+			if (isEdit)
+			{
+				errors.add(i18n.itemFormPanelEditPercentGradeInvalid());
+			}
+			else
+			{
+				errors.add(i18n.itemFormPanelCreatePercentGradeInvalid());
+			}
+			
+		}
+		
+		if (!pointsValid)
+		{
+			if (isEdit)
+			{
+				errors.add(i18n.itemFormPanelEditPointsInvalid());
+			}
+			else
+			{
+				errors.add(i18n.itemFormPanelCreatePointsInvalid());
+			}
+		}
+		if (!dropLowestValid)
+		{
+			if (isEdit)
+			{
+				errors.add(i18n.itemFormPanelEditDropLowestInvalid());
+			}
+			else
+			{
+				errors.add(i18n.itemFormPanelCreateDropLowestInvalid());
+			}
+		}
 	
+		if (!dropLowestEquallyWeightedValid)
+		{
+			if (isEdit)
+			{
+				errors.add(i18n.itemFormPanelEditDropLowestNonEquallyWeighted());
+			}
+			else
+			{
+				errors.add(i18n.itemFormPanelCreateDropLowestNonEquallyWeighted());
+			}
+		}
+		
+		if (errors.size() > 0)
+		{
+			StringBuffer sb = new StringBuffer();
+			if (isEdit)
+			{
+				sb.append(i18n.itemFormPanelEditPretext());				
+			}
+			else
+			{
+				sb.append(i18n.itemFormPanelCreatePretext());				
+				
+			}
+			for (String c : errors)
+			{
+				sb.append("<li>");
+				sb.append(c);
+				sb.append("</li>"); 
+			}
+			
+			if (isEdit)
+			{
+				sb.append(i18n.itemFormPanelEditPosttext());
+			}
+			else
+			{
+				sb.append(i18n.itemFormPanelCreatePosttext()); 
+			}
+	
+			if (isEdit)
+			{
+				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.itemFormPanelEditNotificationTitle(), sb.toString(), true));
+			}
+			else
+			{
+				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.itemFormPanelCreateNotificationTitle(), sb.toString(), true));
+			}
+			return false; 
+		}
+		return true; 
+
+	}
 	protected void sendCancelEvent() {
 		Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
 	}

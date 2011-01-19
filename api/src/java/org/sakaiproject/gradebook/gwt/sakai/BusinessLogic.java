@@ -31,6 +31,12 @@ import org.sakaiproject.tool.gradebook.Category;
 
 public interface BusinessLogic {
 
+	public void applyItemNameNotEmpty(String name) throws BusinessRuleException;
+	
+	public void applyWeightTooSmallOrTooLarge(Double weight) throws BusinessRuleException; 
+	
+	public void applyPointsNonNegative(Double points) throws BusinessRuleException; 
+	
 	public void applyCannotUnremoveItemWithRemovedCategory(boolean isRemoved, Category category) 
 	throws BusinessRuleException;
 	
