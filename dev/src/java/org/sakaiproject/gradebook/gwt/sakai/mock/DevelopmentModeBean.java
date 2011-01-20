@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
@@ -41,6 +42,7 @@ import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentServiceImpl;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeItem;
 import org.sakaiproject.gradebook.gwt.server.model.GradeItemImpl;
+import org.sakaiproject.service.gradebook.shared.ConflictingAssignmentNameException;
 import org.sakaiproject.service.gradebook.shared.GradebookExternalAssessmentService;
 
 import com.google.gwt.core.client.GWT;
@@ -91,8 +93,9 @@ public class DevelopmentModeBean {
 			
 			Gradebook2AuthzMockImpl authz = (Gradebook2AuthzMockImpl)((Gradebook2ComponentServiceImpl)service).getAuthz();
 			
-			
-			//String authDetails = service.getAuthorizationDetails(new String[]{AppConstants.TEST_SITE_CONTEXT_ID, ArchiveServiceMock.ANOTHER_SITE_CONTEXT});
+			// The following call has side-effects that will be needed for Deve mode: creating gradebooks, groups amd other stuff
+			// TODO: make this process *not* a side-effect
+			String authDetails = service.getAuthorizationDetails(new String[]{AppConstants.TEST_SITE_CONTEXT_ID, ArchiveServiceMock.ANOTHER_SITE_CONTEXT});
 			// since we want to set up another site's gradebook too, we have to 
 			// pass  in the uid's
 			ApplicationSetup applicationSetup = service.getApplicationSetup(
@@ -161,7 +164,11 @@ public class DevelopmentModeBean {
 		essaysCategory.setItemType(ItemType.CATEGORY);
 		essaysCategory.setIncluded(Boolean.TRUE);
 		essaysCategory.setEnforcePointWeighting(Boolean.TRUE);
-		essaysCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, essaysCategory, false));
+		try {
+		  essaysCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, essaysCategory, false));
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		}  
 		
 		GradeItem hwCategory = new GradeItemImpl();
 		hwCategory.setName("My Homework");
@@ -170,7 +177,11 @@ public class DevelopmentModeBean {
 		hwCategory.setEqualWeightAssignments(Boolean.TRUE);
 		hwCategory.setItemType(ItemType.CATEGORY);
 		hwCategory.setIncluded(Boolean.TRUE);
+		try {
 		hwCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, hwCategory, false));
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
 		
 //		GradeItem emptyCategory = new GradeItemImpl();
 //		emptyCategory.setName("Empty");
@@ -181,6 +192,19 @@ public class DevelopmentModeBean {
 //		emptyCategory.setIncluded(Boolean.TRUE);
 //		emptyCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, emptyCategory, false));
 //		
+		GradeItem emptyCategory = new GradeItemImpl();
+		emptyCategory.setName("Empty");
+		emptyCategory.setPercentCourseGrade(Double.valueOf(10d));
+		emptyCategory.setDropLowest(Integer.valueOf(0));
+		emptyCategory.setEqualWeightAssignments(Boolean.TRUE);
+		emptyCategory.setItemType(ItemType.CATEGORY);
+		emptyCategory.setIncluded(Boolean.TRUE);
+		try {
+		  emptyCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, emptyCategory, false));
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
+		
 		
 		GradeItem ecCategory = new GradeItemImpl();
 		ecCategory.setName("Extra Credit");
@@ -190,8 +214,11 @@ public class DevelopmentModeBean {
 		ecCategory.setItemType(ItemType.CATEGORY);
 		ecCategory.setExtraCredit(Boolean.TRUE);
 		ecCategory.setIncluded(Boolean.TRUE);
-		ecCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, ecCategory, false));
-		
+		try {
+		  ecCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, ecCategory, false));
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
 		
 		GradeItem essay1 = new GradeItemImpl();
 		essay1.setName("Essay 1");
@@ -201,8 +228,11 @@ public class DevelopmentModeBean {
 		essay1.setReleased(Boolean.TRUE);
 		essay1.setItemType(ItemType.ITEM);
 		essay1.setIncluded(Boolean.TRUE);
-		essay1 = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, essay1, false));
-		
+		try {
+		  essay1 = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, essay1, false));
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
 		
 		Learner learner = gbModel.getUserAsStudent();
 		if (learner != null) {
@@ -217,7 +247,11 @@ public class DevelopmentModeBean {
 		essay2.setReleased(Boolean.TRUE);
 		essay2.setItemType(ItemType.ITEM);
 		essay2.setIncluded(Boolean.TRUE);
-		service.createItem(gradebookUid, gradebookId, essay2, false);
+		try {  
+		  service.createItem(gradebookUid, gradebookId, essay2, false);
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
 		
 		GradeItem essay3 = new GradeItemImpl();
 		essay3.setName("Essay 3");
@@ -227,7 +261,11 @@ public class DevelopmentModeBean {
 		essay3.setReleased(Boolean.TRUE);
 		essay3.setItemType(ItemType.ITEM);
 		essay3.setIncluded(Boolean.TRUE);
-		service.createItem(gradebookUid, gradebookId, essay3, false);
+		try {
+		  service.createItem(gradebookUid, gradebookId, essay3, false);
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
 
 		GradeItem ecEssay = new GradeItemImpl();
 		ecEssay.setName("EC Essay");
@@ -238,12 +276,19 @@ public class DevelopmentModeBean {
 		ecEssay.setIncluded(Boolean.TRUE);
 		ecEssay.setExtraCredit(Boolean.TRUE);
 		ecEssay.setReleased(Boolean.FALSE);
-		service.createItem(gradebookUid, gradebookId, ecEssay, false);
-		
+		try {
+		  service.createItem(gradebookUid, gradebookId, ecEssay, false);
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
 
-		externalService.addExternalAssessment(gradebookUid, "sakai.assignment.tool", "http://assignments.ucdavis.edu", "Assignment 1", 
+		try {
+			externalService.addExternalAssessment(gradebookUid, "sakai.assignment.tool", "http://assignments.ucdavis.edu", "Assignment 1", 
 				Double.valueOf(10d), 
 				null, "Assignments", Boolean.FALSE);
+		} catch (ConflictingAssignmentNameException ane) {
+			System.out.println("WARNING: " + ane.getMessage());
+		}
 		
 		GradeItem hw1 = new GradeItemImpl();
 		hw1.setName("HW 1");
@@ -253,7 +298,11 @@ public class DevelopmentModeBean {
 		hw1.setItemType(ItemType.ITEM);
 		hw1.setIncluded(Boolean.TRUE);
 		hw1.setReleased(Boolean.TRUE);
-		service.createItem(gradebookUid, gradebookId, hw1, false);
+		try {
+		  service.createItem(gradebookUid, gradebookId, hw1, false);
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
 		
 		GradeItem hw2 = new GradeItemImpl();
 		hw2.setName("HW 2");
@@ -263,7 +312,11 @@ public class DevelopmentModeBean {
 		hw2.setItemType(ItemType.ITEM);
 		hw2.setIncluded(Boolean.TRUE);
 		hw2.setReleased(Boolean.TRUE);
-		service.createItem(gradebookUid, gradebookId, hw2, false);
+		try {
+		  service.createItem(gradebookUid, gradebookId, hw2, false);
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
 		
 		GradeItem hw3 = new GradeItemImpl();
 		hw3.setName("HW 3");
@@ -273,7 +326,11 @@ public class DevelopmentModeBean {
 		hw3.setItemType(ItemType.ITEM);
 		hw3.setIncluded(Boolean.TRUE);
 		hw3.setReleased(Boolean.TRUE);
-		service.createItem(gradebookUid, gradebookId, hw3, false);
+		try {
+		  service.createItem(gradebookUid, gradebookId, hw3, false);
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
 		
 		GradeItem hw4 = new GradeItemImpl();
 		hw4.setName("HW 4");
@@ -283,7 +340,11 @@ public class DevelopmentModeBean {
 		hw4.setItemType(ItemType.ITEM);
 		hw4.setIncluded(Boolean.TRUE);
 		hw4.setReleased(Boolean.TRUE);
-		service.createItem(gradebookUid, gradebookId, hw4, false);
+		try { 
+		  service.createItem(gradebookUid, gradebookId, hw4, false);
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
 
 		
 		GradeItem ec1 = new GradeItemImpl();
@@ -295,7 +356,11 @@ public class DevelopmentModeBean {
 		ec1.setIncluded(Boolean.TRUE);
 		ec1.setExtraCredit(Boolean.TRUE);
 		ec1.setReleased(Boolean.FALSE);
-		service.createItem(gradebookUid, gradebookId, ec1, false);
+		try {
+		  service.createItem(gradebookUid, gradebookId, ec1, false);
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
 		
 		GradeItem ec2 = new GradeItemImpl();
 		ec2.setName("EC 2");
@@ -306,8 +371,11 @@ public class DevelopmentModeBean {
 		ec2.setIncluded(Boolean.TRUE);
 		ec2.setExtraCredit(Boolean.TRUE);
 		ec2.setReleased(Boolean.FALSE);
-		service.createItem(gradebookUid, gradebookId, ec2, false);
-		
+		try {
+		  service.createItem(gradebookUid, gradebookId, ec2, false);
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
 	}
 	
 private void createSecondGradebook(Gradebook gbModel, boolean populate) throws InvalidInputException {
@@ -349,9 +417,12 @@ private void createSecondGradebook(Gradebook gbModel, boolean populate) throws I
 		quizesCategory.setDropLowest(1);
 		quizesCategory.setPercentCategory(0.30d);
 		quizesCategory.setEqualWeightAssignments(Boolean.TRUE);
-		quizesCategory.setExtraCredit(Boolean.valueOf(true));
-		quizesCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, quizesCategory, false));
-		
+		quizesCategory.setExtraCredit(new Boolean(true));
+		try {
+		  quizesCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, quizesCategory, false));
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
 
 		GradeItem quiz1 = new GradeItemImpl();
 		quiz1.setName("Quiz 1");
@@ -361,7 +432,11 @@ private void createSecondGradebook(Gradebook gbModel, boolean populate) throws I
 		quiz1.setItemType(ItemType.ITEM);
 		quiz1.setIncluded(Boolean.TRUE);
 		quiz1.setReleased(Boolean.TRUE);
-		service.createItem(gradebookUid, gradebookId, quiz1, false);
+		try {
+		  service.createItem(gradebookUid, gradebookId, quiz1, false);
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
 		
 		GradeItem quiz2 = new GradeItemImpl();
 		quiz2.setName("Quiz 2");
@@ -371,7 +446,11 @@ private void createSecondGradebook(Gradebook gbModel, boolean populate) throws I
 		quiz2.setItemType(ItemType.ITEM);
 		quiz2.setIncluded(Boolean.TRUE);
 		quiz2.setReleased(Boolean.TRUE);
-		service.createItem(gradebookUid, gradebookId, quiz2, false);
+		try {
+		  service.createItem(gradebookUid, gradebookId, quiz2, false);
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
 		
 		GradeItem quiz3 = new GradeItemImpl();
 		quiz3.setName("Quiz 3");
@@ -381,7 +460,11 @@ private void createSecondGradebook(Gradebook gbModel, boolean populate) throws I
 		quiz3.setItemType(ItemType.ITEM);
 		quiz3.setIncluded(Boolean.TRUE);
 		quiz3.setReleased(Boolean.TRUE);
-		service.createItem(gradebookUid, gradebookId, quiz3, false);
+		try {
+		  service.createItem(gradebookUid, gradebookId, quiz3, false);
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
 		
 		GradeItem quiz4 = new GradeItemImpl();
 		quiz4.setName("Quiz 4");
@@ -391,7 +474,11 @@ private void createSecondGradebook(Gradebook gbModel, boolean populate) throws I
 		quiz4.setItemType(ItemType.ITEM);
 		quiz4.setIncluded(Boolean.TRUE);
 		quiz4.setReleased(Boolean.TRUE);
-		service.createItem(gradebookUid, gradebookId, quiz4, false);
+		try {
+		  service.createItem(gradebookUid, gradebookId, quiz4, false);
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
 		
 		GradeItem quiz5 = new GradeItemImpl();
 		quiz5.setName("Quiz 5");
@@ -401,7 +488,11 @@ private void createSecondGradebook(Gradebook gbModel, boolean populate) throws I
 		quiz5.setItemType(ItemType.ITEM);
 		quiz5.setIncluded(Boolean.TRUE);
 		quiz5.setReleased(Boolean.TRUE);
-		service.createItem(gradebookUid, gradebookId, quiz5, false);
+		try {
+		  service.createItem(gradebookUid, gradebookId, quiz5, false);
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
 		
 		GradeItem quiz6 = new GradeItemImpl();
 		quiz6.setName("Quiz 6");
@@ -411,8 +502,11 @@ private void createSecondGradebook(Gradebook gbModel, boolean populate) throws I
 		quiz6.setItemType(ItemType.ITEM);
 		quiz6.setIncluded(Boolean.TRUE);
 		quiz6.setReleased(Boolean.TRUE);
-		service.createItem(gradebookUid, gradebookId, quiz6, false);
-		
+		try {
+		  service.createItem(gradebookUid, gradebookId, quiz6, false);
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
 		
 		
 		
@@ -429,8 +523,11 @@ private void createSecondGradebook(Gradebook gbModel, boolean populate) throws I
 		testsCategory.setDropLowest(1);
 		testsCategory.setPercentCategory(0.50d);
 		testsCategory.setEqualWeightAssignments(Boolean.TRUE);
-		testsCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, testsCategory, false));
-		
+		try {
+		  testsCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, testsCategory, false));
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
 
 		GradeItem midterm1 = new GradeItemImpl();
 		midterm1.setName("Midterm 1");
@@ -440,7 +537,11 @@ private void createSecondGradebook(Gradebook gbModel, boolean populate) throws I
 		midterm1.setItemType(ItemType.ITEM);
 		midterm1.setIncluded(Boolean.TRUE);
 		midterm1.setReleased(Boolean.TRUE);
-		service.createItem(gradebookUid, gradebookId, midterm1, false);
+		try {
+		  service.createItem(gradebookUid, gradebookId, midterm1, false);
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
 		
 		GradeItem midterm2 = new GradeItemImpl();
 		midterm2.setName("Midterm 2");
@@ -450,7 +551,11 @@ private void createSecondGradebook(Gradebook gbModel, boolean populate) throws I
 		midterm2.setItemType(ItemType.ITEM);
 		midterm2.setIncluded(Boolean.TRUE);
 		midterm2.setReleased(Boolean.TRUE);
-		service.createItem(gradebookUid, gradebookId, midterm2, false);
+		try {
+		  service.createItem(gradebookUid, gradebookId, midterm2, false);
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
 		
 		GradeItem finalExam = new GradeItemImpl();
 		finalExam.setName("Final");
@@ -460,7 +565,11 @@ private void createSecondGradebook(Gradebook gbModel, boolean populate) throws I
 		finalExam.setItemType(ItemType.ITEM);
 		finalExam.setIncluded(Boolean.TRUE);
 		finalExam.setReleased(Boolean.TRUE);
-		service.createItem(gradebookUid, gradebookId, finalExam, false);
+		try {
+		  service.createItem(gradebookUid, gradebookId, finalExam, false);
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
 		
 		
 		
@@ -475,8 +584,11 @@ private void createSecondGradebook(Gradebook gbModel, boolean populate) throws I
 		essayCategory.setEnforcePointWeighting(Boolean.TRUE);
 		essayCategory.setPercentCategory(0.10d);
 		essayCategory.setEqualWeightAssignments(Boolean.FALSE);
-		essayCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, essayCategory, false));
-		
+		try {
+		  essayCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, essayCategory, false));
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
 
 		GradeItem essay = new GradeItemImpl();
 		essay.setName("Essay");
@@ -486,7 +598,11 @@ private void createSecondGradebook(Gradebook gbModel, boolean populate) throws I
 		essay.setItemType(ItemType.ITEM);
 		essay.setIncluded(Boolean.TRUE);
 		essay.setReleased(Boolean.TRUE);
-		service.createItem(gradebookUid, gradebookId, essay, false);
+		try {
+			service.createItem(gradebookUid, gradebookId, essay, false);
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
 		
 		
 		//Participation
@@ -500,7 +616,11 @@ private void createSecondGradebook(Gradebook gbModel, boolean populate) throws I
 		participationCategory.setEnforcePointWeighting(Boolean.TRUE);
 		participationCategory.setPercentCategory(0.10d);
 		participationCategory.setEqualWeightAssignments(Boolean.TRUE);
-		participationCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, participationCategory, false));
+		try {
+			participationCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, participationCategory, false));
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
 		
 
 		GradeItem participationWeek1_5 = new GradeItemImpl();
@@ -511,7 +631,11 @@ private void createSecondGradebook(Gradebook gbModel, boolean populate) throws I
 		participationWeek1_5.setItemType(ItemType.ITEM);
 		participationWeek1_5.setIncluded(Boolean.TRUE);
 		participationWeek1_5.setReleased(Boolean.TRUE);
-		service.createItem(gradebookUid, gradebookId, participationWeek1_5, false);
+		try {
+			service.createItem(gradebookUid, gradebookId, participationWeek1_5, false);
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
 		
 		GradeItem participationWeek6_10 = new GradeItemImpl();
 		participationWeek6_10.setName("Participation Week 6-10");
@@ -521,7 +645,11 @@ private void createSecondGradebook(Gradebook gbModel, boolean populate) throws I
 		participationWeek6_10.setItemType(ItemType.ITEM);
 		participationWeek6_10.setIncluded(Boolean.TRUE);
 		participationWeek6_10.setReleased(Boolean.TRUE);
-		service.createItem(gradebookUid, gradebookId, participationWeek6_10, false);
+		try {
+			service.createItem(gradebookUid, gradebookId, participationWeek6_10, false);
+		} catch (BusinessRuleException re) {
+			System.out.println("WARNING: " + re.getMessage());
+		} 
 		
 		
 	}
