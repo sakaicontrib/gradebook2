@@ -83,8 +83,6 @@ gb2.security.enabled = [true, false]
 - NOTE: If you use xsl-portal, make sure that you use the following sakai property
 -- portalPath=/xsl-portal
 
-gb2.import.delete.missing.grades = [true, false]
-- default: true
 
 
 SUPPORT
