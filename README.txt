@@ -27,6 +27,16 @@ More specifics on installing are available under one of the following files:
 - sakai/2-7-x/INSTALL.txt
 
 
+
+SAKAI TOOL REGISTRATION FILE
+
+If an institutions does not expose the student-id via DisplayAdvisorUDP.getDisplayId(), then you should
+remove the following line:
+<configuration name="displayid.value" value="student" />
+... from the sakai.gradebook.gwt.rpc.xml tool registration file. See GRBK-763 and SAK-7780 for more details. 
+
+
+
 GB2-SPECIFIC SAKAI PROPERTIES
 
 Since v1.1.x:
