@@ -215,7 +215,6 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 					sumScores = BigDecimal.ZERO;
 
 				sumScores = add(sumScores, scaledScore);
-				//sumScores = sumScores.add(scaledScore);
 			}
 		}
 
@@ -228,7 +227,6 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 			return null;
 		
 		return multiply(ratio, itemWeight);
-		//return ratio.multiply(itemWeight);
 	}
 
 	private BigDecimal sumUnitWeights(List<GradeRecordCalculationUnit> units, boolean doExtraCredit) {

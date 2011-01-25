@@ -35,10 +35,6 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 
 	private static final Log log = LogFactory.getLog(GradeCalculationsImpl.class);
 
-	/* a MathContext for inexact values. 
-	 * precision = 10 using standard engineering half-up rounding */
-	//public static final MathContext MATH_CONTEXT_LG = new MathContext(10, RoundingMode.HALF_UP);
-
 	/* a BigDecimal for percentage calculations. scale = 5 */
 	private final static BigDecimal BIG_DECIMAL_100 = new BigDecimal("100");
 
@@ -95,13 +91,11 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 	// Constructor
 	public GradeCalculationsImpl() {
 		super();
-		//log.info("GradeCalculationsImpl default constructor called.");
 	}
 
 	// Constructor
 	public GradeCalculationsImpl(int scale) {
 		super(scale);
-		//log.info("#### TEST #### GradeCalculationsImpl(int scale) constructor called. This should only occure during JUnit tests");
 	}
 
 
@@ -613,7 +607,7 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 		if (categoriesWithAssignments == null && assignmentGradeRecordMap != null) 
 			categoriesWithAssignments = generateCategoriesWithAssignments(assignmentGradeRecordMap);
 
-		if (categoriesWithAssignments == null) // || assignmentGradeRecordMap == null)
+		if (categoriesWithAssignments == null)
 			return null;
 
 		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
@@ -1203,12 +1197,5 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 
 
 	}
-
-	/*
-	 * BigSquareRoot is being stuffed in here as an inner class to keep it tight with this high precision
-	 * calculation class until we can remove the low precision code.
-	 */
-	
-
 
 }

@@ -64,7 +64,6 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 
 		if (courseGrade != null)
 			courseGrade = multiply(courseGrade, BIG_DECIMAL_100);
-			//courseGrade = courseGrade.multiply(BIG_DECIMAL_100);
 
 		return courseGrade;
 	}
@@ -95,11 +94,9 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 
 				if (categoryPointsReceived != null)
 					sumExtraCreditPoints = add(sumExtraCreditPoints, categoryPointsReceived);
-					//sumExtraCreditPoints = sumExtraCreditPoints.add(categoryPointsReceived);
 					
 				if (categoryExtraCreditPoints != null)
 					sumExtraCreditPoints = add(sumExtraCreditPoints, categoryExtraCreditPoints);
-					//sumExtraCreditPoints = sumExtraCreditPoints.add(categoryExtraCreditPoints);
 					
 			} else {
 		
@@ -108,7 +105,6 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 						sumPoints = BigDecimal.ZERO;
 					
 					sumPoints = add(sumPoints, categoryPointsReceived);
-					//sumPoints = sumPoints.add(categoryPointsReceived);
 				}
 				
 				if (categoryPointsPossible != null) {
@@ -116,7 +112,6 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 						sumPointsPossible = BigDecimal.ZERO;
 					
 					sumPointsPossible = add(sumPointsPossible, categoryPointsPossible);
-					//sumPointsPossible = sumPointsPossible.add(categoryPointsPossible);
 				}
 				
 				if (categoryExtraCreditPoints != null) {
@@ -125,7 +120,6 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 
 					if (categoryExtraCreditPoints != null)
 						sumExtraCreditPoints = add(sumExtraCreditPoints, categoryExtraCreditPoints);
-						//sumExtraCreditPoints = sumExtraCreditPoints.add(categoryExtraCreditPoints);
 				}
 			}
 
@@ -143,19 +137,16 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 
 
 			BigDecimal percentageScore = divide(sumPoints, sumPointsPossible);
-			//BigDecimal percentageScore = sumPoints.divide(sumPointsPossible, GradeCalculationsOOImpl.MATH_CONTEXT);
 
 			if (sumExtraCreditPoints != null)
 				percentageScore = add(percentageScore, scaleExtraCreditPoints(sumExtraCreditPoints, sumPointsPossible, totalGradebookPoints, isExtraCreditScaled));
-				//percentageScore = percentageScore.add(scaleExtraCreditPoints(sumExtraCreditPoints, sumPointsPossible, totalGradebookPoints, isExtraCreditScaled));
-			
+				
 			courseGrade = percentageScore;
 		}
 
 		if (courseGrade != null)
 			courseGrade = multiply(courseGrade, BIG_DECIMAL_100);
-			//courseGrade = courseGrade.multiply(BIG_DECIMAL_100);
-
+			
 		return courseGrade;
 	}
 
@@ -170,9 +161,6 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 		for (String categoryKey : categoryUnitMap.keySet()) {
 			CategoryCalculationUnit categoryUnit = categoryUnitMap.get(categoryKey);
 			List<GradeRecordCalculationUnit> units = categoryGradeUnitListMap.get(categoryKey);
-
-			//if (units == null)
-			//	continue;
 			
 			BigDecimal categoryGrade = null;
 			BigDecimal categoryWeight = categoryUnit.getCategoryWeightTotal();
@@ -188,16 +176,15 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 				if (categoryUnit.isExtraCredit()) {
 					if (categoryExtraCreditPoints != null && totalGradebookPoints != null)
 						categoryGrade = divide(categoryExtraCreditPoints, totalGradebookPoints);
-						//categoryGrade = categoryExtraCreditPoints.divide(totalGradebookPoints, GradeCalculationsOOImpl.MATH_CONTEXT);
+						
 				} else {
 					if (categoryPointsReceived != null && categoryPointsPossible != null) {
 						
 						categoryGrade = divide(categoryPointsReceived, categoryPointsPossible);
-						//categoryGrade = categoryPointsReceived.divide(categoryPointsPossible, GradeCalculationsOOImpl.MATH_CONTEXT);
+						
 						
 						if (categoryExtraCreditPoints != null) {
 							categoryGrade = add(categoryGrade, scaleExtraCreditPoints(categoryExtraCreditPoints, categoryPointsPossible, totalCategoryPoints, isExtraCreditScaled));
-							//categoryGrade = categoryGrade.add(scaleExtraCreditPoints(categoryExtraCreditPoints, categoryPointsPossible, totalCategoryPoints, isExtraCreditScaled));
 						}
 						
 					}
@@ -212,17 +199,14 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 			
 			if (categoryWeight != null && !categoryUnit.isExtraCredit())
 				categoryWeightDesiredSum = add(categoryWeightDesiredSum,categoryWeight);
-				//categoryWeightDesiredSum = categoryWeightDesiredSum.add(categoryWeight);
-	
+				
 			if (categoryGrade != null && categoryWeight != null) {
 				if (categoryUnit.isExtraCredit()) {
 					extraCreditSum = add(extraCreditSum, categoryWeight);
-					//extraCreditSum = extraCreditSum.add(categoryWeight);
 				} else {
 					if (categoryWeightSum == null)
 						categoryWeightSum = BigDecimal.ZERO;
 					categoryWeightSum = add(categoryWeightSum, categoryWeight);
-					//categoryWeightSum = categoryWeightSum.add(categoryWeight);
 				} // else
 			} // if
 		} // for
@@ -256,16 +240,14 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 
 				if (categoryWeight != null) {
 					categoryWeight = multiply(categoryWeight, multiplicand);
-					//categoryWeight = categoryWeight.multiply(multiplicand);
-
+					
 					BigDecimal contributionToCourseGrade = multiply(categoryGrade, categoryWeight);
-					//BigDecimal contributionToCourseGrade = categoryGrade.multiply(categoryWeight);
 					
 					if (courseGrade == null)
 						courseGrade = BigDecimal.ZERO;
 
 					courseGrade = add(courseGrade, contributionToCourseGrade);
-					//courseGrade = courseGrade.add(contributionToCourseGrade);
+					
 				} // if 
 			} // if
 
@@ -274,7 +256,6 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 
 		if (courseGrade != null)
 			courseGrade = multiply(courseGrade, BIG_DECIMAL_100);
-			//courseGrade = courseGrade.multiply(BIG_DECIMAL_100);
 
 		return courseGrade;
 	}
