@@ -7,40 +7,88 @@ import java.math.RoundingMode;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ * This class wraps all the BigDecimal calculation methods that are needed by
+ * Gradebook2. The gradebook2 code needs to use the methods provided by this class
+ * instead of using the BigDecimal classes directly. We want to perform all calculations
+ * using full precision. Also, in case we need to make some changes, we can do this easily
+ * in this file instead of changing all the cases of using the BigDecimal methods directly.
+ * We only apply a scale and rounding mode in cases where the divide 
+ * method encounters an ArithmeticException.
+ *
+ */
 public class BigDecimalCalculationsWrapper {
 
 	private static final Log log = LogFactory.getLog(BigDecimalCalculationsWrapper.class);
 
+	/*
+	 * The scale can be overwritten either by the gradebook2 specific spring 
+	 * bean definitions in:
+	 * - applicationContext.xml
+	 * - gbService.xml
+	 * 
+	 * ... or via the constructor
+	 * 
+	 * The scale is only used in cases where the divide method encounters an ArithmeticException
+	 * 
+	 */
 	private int scale = 50;
+	
+	/*
+	 * Gradebook2 uses the HALF_EVEN rounding method only in one specific case. It is
+	 * used when the divide method encounters an ArithmeticException.
+	 */
 	private RoundingMode roundingMode = RoundingMode.HALF_EVEN;
 
-	public BigDecimalCalculationsWrapper() {
-		//log.info("BigDecimalCalculationsWrapper default constructor called.");
-	}
+	// Default Constructor
+	public BigDecimalCalculationsWrapper() { }
 
+	/* 
+	 * Constructor that set the scale for cases where the divide method encounters
+	 * an ArithmeticException
+	 */
 	public BigDecimalCalculationsWrapper(int scale) {
 
-		//log.info("#### TEST #### BigDecimalCalculationsWrapper(int scale) constructor called. This should only occure during JUnit tests");
-		//log.info("#### TEST #### Setting MathContext scale to " + scale);
 		this.scale = scale;
-
 	}
 
+	/** 
+	 * Wrapping the BigDecimal add method
+	 * 
+	 * @see BigDecimal.add()
+	 */
 	public BigDecimal add(BigDecimal addend, BigDecimal augend) {
 
 		return addend.add(augend);
 	}
 
+	/**
+	 * Wrapping the BigDecimal subtract method
+	 * 
+	 * @see BigDecimal.subtract()
+	 */
 	public BigDecimal subtract(BigDecimal minuend, BigDecimal subtrahend) {
 
 		return minuend.subtract(subtrahend);
 	}
 
+	/**
+	 * Wrapping the BigDecimal multiply method 
+	 * 
+	 * @see BigDecimal.multiply()
+	 */
 	public BigDecimal multiply(BigDecimal multiplier, BigDecimal multiplicand) {
 
 		return multiplier.multiply(multiplicand);
 	}
 
+	/**
+	 * Wrapping the BigDecimal divide method. In case the method encounters
+	 * an ArithmeticException exception, we execute the divide method a second
+	 * time applying a scale and rounding mode.
+	 * 
+	 * @see BigDecimal.divide()
+	 */
 	public BigDecimal divide(BigDecimal dividend, BigDecimal divisor) {
 
 		BigDecimal result = null;
@@ -55,34 +103,57 @@ public class BigDecimalCalculationsWrapper {
 			 * We are not handling divide by zero case here because the following call to divide
 			 * will generate the exception again. The calling code should handle that case.
 			 */
-
 			result = dividend.divide(divisor, scale, roundingMode);
-
-
 		}
 
 		return result;
 	}
 
 
+	/**
+	 * Getter method
+	 * 
+	 * @return roundingMode
+	 */
 	public RoundingMode getRoundingMode() {
 		return roundingMode;
 	}
 
+	/**
+	 * Setter method
+	 * 
+	 * @param roundingMode
+	 */
 	public void setRoundingMode(RoundingMode roundingMode) {
 		this.roundingMode = roundingMode;
 	}
 
+	/**
+	 * Getter method
+	 * 
+	 * @return scale
+	 */
 	public int getScale() {
 		return scale;
 	}
 
+	/**
+	 * Setter method
+	 * 
+	 * @param scale
+	 */
 	public void setScale(int scale) {
 
 		log.info(" ## GB2 ##: Setting scale to " + scale + " : BigDecimalCalculationsWrapper's subclass is " + this.getClass().getName());
 		this.scale = scale;
 	}
 
+	/**
+	 * Calculates the square root
+	 * 
+	 * @param operand
+	 * @return the square root of operand
+	 */
 	public BigDecimal sqrt(BigDecimal operand) {
 
 		BigSquareRoot sqrtHelper = new BigSquareRoot();
@@ -91,6 +162,11 @@ public class BigDecimalCalculationsWrapper {
 
 	}
 
+	/**
+	 * 
+	 * Inner class definition of BigSquareRoot
+	 *
+	 */
 	public class BigSquareRoot {
 
 		private final BigDecimal TWO = new BigDecimal("2");
