@@ -1363,6 +1363,8 @@ public class ItemFormPanel extends GradebookPanel {
 		};
 
 	}
+	// GRBK-811  Removed validating the equally weighted option client side.  For some reason it was causing problems with deletes.  
+	
 	private boolean validateFormForEditOrCreate(boolean isEdit)
 	{
 		
