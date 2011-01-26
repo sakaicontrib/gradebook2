@@ -46,12 +46,21 @@ public interface GradebookCalculationUnit {
 	
 	/**
 	 * This method:
-	 * - Sums up all the points received, points possible, and extra credit points per CATEGORY 
-	 * - ...
+	 * - Sums up all the category points received, category points possible, and category extra credit points 
+	 *   for every CATEGORY
+	 *   handling the different paths for:
+	 *   - weighted by points and not weighted by points
+	 *   -- in the weighed by points path, it handles extra credit or not extra credit categories
+	 *   - it calculates a categoryGrade, which is bases on a ratio of categoryPointsReceived / categoryPointsPossible
+	 *   -- it also add any scaleExtraCreditPoints to the categoryGrade
+	 *   - The categoryGrade is then assigned to the categoryUnit
+	 * - Then it loops over all the categories again adding up all the category 
+	 *    contributions (categoryGrade * categoryWeight) and adds them to the course grade
+	 *
 	 * @param categoryGradeUnitListMap
 	 * @param totalGradebookPoints
 	 * @param isExtraCreditScaled
-	 * @return
+	 * @return returns null if the categoryWeightSum is null, otherwise it returns the course grade or 
 	 */
 	public BigDecimal calculateWeightedCourseGrade(Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap, BigDecimal totalGradebookPoints, boolean isExtraCreditScaled);
 	
