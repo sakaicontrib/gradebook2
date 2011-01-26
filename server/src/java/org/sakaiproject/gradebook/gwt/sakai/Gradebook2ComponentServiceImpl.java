@@ -2469,8 +2469,6 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 	}
 
 	public void submitFinalGrade(List<Map<Column, String>> studentDataList, String gradebookUid, HttpServletRequest request, HttpServletResponse response) {
-		List<ActionRecord> logs = new ArrayList<ActionRecord>(studentDataList.size());
-		
 		for (Map<Column, String> studentData : studentDataList) {
 			String studentUid = studentData.get(Column.STUDENT_UID);
 			String finalGradeUserId = studentData.get(Column.FINAL_GRADE_USER_ID);
@@ -2491,24 +2489,10 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			propertyMap.put(Column.LETTER_GRADE.name(), letterGrade);	
 			propertyMap.put(Column.RAW_GRADE.name(), calculatedGrade);
 
-			logs.add(actionRecord);
-		}
-		
-		try {
-			advisor.submitFinalGrade(studentDataList, gradebookUid, request, response);
-			for (ActionRecord log : logs) {
-				gbService.storeActionRecord(log);
-			}
-		} catch (Exception e) {
-			log.error("General Exception submitting grades for UID (" + gradebookUid + "): " + e.getMessage());
-			e.printStackTrace();
+			gbService.storeActionRecord(actionRecord);
 		}
 
-        eventTrackingService.post(
-        		eventTrackingService.newEvent("gradebook2.submitFinalGrades", 
-        				"/gradebook2/"+gradebookUid+"/count/" +studentDataList.size(), true)
-        				);
-
+		advisor.submitFinalGrade(studentDataList, gradebookUid, request, response);
 	}
 
 	public Boolean updateConfiguration(Long gradebookId, String field, String value) {
