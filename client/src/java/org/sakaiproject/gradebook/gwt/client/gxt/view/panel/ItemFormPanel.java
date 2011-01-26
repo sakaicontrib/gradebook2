@@ -1374,30 +1374,6 @@ public class ItemFormPanel extends GradebookPanel {
 		boolean percentGradeValid = (!percentCourseGradeField.isVisible() || percentCourseGradeField.validate());
 		boolean pointsValid = (!pointsField.isVisible() || pointsField.validate());
 		boolean dropLowestValid = (!ItemFormPanel.this.dropLowestField.isVisible() || ItemFormPanel.this.dropLowestField.validate());
-		boolean dropLowestEquallyWeightedValid;
-		
-		if (dropLowestValid)
-		{
-			if (equallyWeightChildrenField != null && equallyWeightChildrenField.getValue().booleanValue())
-			{
-				dropLowestEquallyWeightedValid = true; 
-			}
-			else // Drop lowest can only occur if we're equally weighted. 
-			{
-				if (dropLowestField.getValue() != null && dropLowestField.getValue().intValue() != 0)
-				{
-					dropLowestEquallyWeightedValid = false; 
-				}
-				else
-				{
-					dropLowestEquallyWeightedValid = true; 
-				}
-			}
-		}
-		else // If drop lowest is not active, we don't care that its not equally weighted
-		{
-			dropLowestEquallyWeightedValid = true; 
-		}
 		
 		if (!nameValid)
 		{
@@ -1459,17 +1435,6 @@ public class ItemFormPanel extends GradebookPanel {
 			}
 		}
 	
-		if (!dropLowestEquallyWeightedValid)
-		{
-			if (isEdit)
-			{
-				errors.add(i18n.itemFormPanelEditDropLowestNonEquallyWeighted());
-			}
-			else
-			{
-				errors.add(i18n.itemFormPanelCreateDropLowestNonEquallyWeighted());
-			}
-		}
 		
 		if (errors.size() > 0)
 		{
