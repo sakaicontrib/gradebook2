@@ -161,13 +161,20 @@ public interface GradeCalculations {
 	public BigDecimal[] calculatePointsCategoryPercentSum(GradeItem category, List<GradeItem> assignments, CategoryType categoryType, boolean isCategoryExtraCredit); 
 
 	/**
+	 * This method is used for weighted categories to determine the courseGradePercent and percentCategory
 	 * 
+	 * courseGradePercent = (assignmentPoints * percentGrade) / pointsSum
+	 * if weighted by points
+	 * 	  percentCategory = 100 (assignmentPoints / pointsSum)
+	 * else
+	 *    percentCategory = 100 * assignmentWeight
+	 *    
 	 * @param assignment
 	 * @param percentGrade
 	 * @param percentCategorySum
 	 * @param pointSum
 	 * @param isEnforcePointWeighting
-	 * @return
+	 * @return a BigDecimal array containing courseGradePercent at [0] and percentCategory at [1]
 	 */
 	public BigDecimal[] calculateCourseGradeCategoryPercents(Assignment assignment, BigDecimal percentGrade, BigDecimal percentCategorySum, BigDecimal pointSum, boolean isEnforcePointWeighting);
 
