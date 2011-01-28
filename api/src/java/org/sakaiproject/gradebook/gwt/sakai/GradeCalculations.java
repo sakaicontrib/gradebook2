@@ -85,60 +85,80 @@ public interface GradeCalculations {
 	public BigDecimal calculateItemGradePercent(BigDecimal percentGrade, BigDecimal sumCategoryPercents, BigDecimal assignmentWeight, boolean doNormalizeTo100);
 
 	/**
+	 * This method compares the percentage argument against the various letter grade boundary values
+	 * and returns the corresponding letter grade.
 	 * 
 	 * @param percentage
-	 * @return
+	 * @return letter grade that corresponds to the provided percentage grade
 	 */
 	public String convertPercentageToLetterGrade(BigDecimal percentage);
 
 	/**
+	 * This method looks up the letter grade in the letterGradeMap and returns the corresponding 
+	 * grade percentage value
 	 * 
 	 * @param letterGrade
-	 * @return
+	 * @return percentage grade that corresponds to the provided letter grade
 	 */
 	public Double convertLetterGradeToPercentage(String letterGrade);
 
 	/**
+	 * This method checks the letterGradeMap if the provided letterGrade exists
+	 * 
+	 * Created GRBK-816 to verify the implementation of this method.
 	 * 
 	 * @param letterGrade
-	 * @return
+	 * @return true if letterGrade is null or letterGrade length is 0, otherwise true or false 
+	 * depending if the letter grade is present in the letterGradeMap
+	 * 
 	 */
 	public boolean isValidLetterGrade(String letterGrade);
 
 	/**
+	 * This method converts the Double method arguments to BigDecimal values and then calculates:
+	 * 
+	 * ratio = maxPointValue / maxPointStartValue
+	 * points = pointValue * ratio
 	 * 
 	 * @param pointValue
 	 * @param maxPointValue
 	 * @param maxPointStartValue
-	 * @return
+	 * @return points
 	 */
 	public BigDecimal getNewPointsGrade(Double pointValue, Double maxPointValue, Double maxPointStartValue);
 
 	/**
+	 * The method converts the Double method arguments to BigDeciaml values and the calculates:
+	 * 
+	 * pointsEarned = (percentage / 100) * assignment.getPointsPossible()
 	 * 
 	 * @param assignment
 	 * @param percentage
-	 * @return
+	 * @return pointsEarned
 	 */
 	public BigDecimal getPercentAsPointsEarned(Assignment assignment, Double percentage);
 
 	/**
+	 * This method sums up the category points and percentages taking into account factors such as
+	 * excused and drop lowest grade items. 
 	 * 
 	 * @param category
 	 * @param assignments
 	 * @param isWeighted
 	 * @param isCategoryExtraCredit
-	 * @return
+	 * @return a BigDecimal array containing totalCategoryPercent at [0] and totalCategoryPoints at [1]
 	 */
 	public BigDecimal[] calculatePointsCategoryPercentSum(Category category, List<Assignment> assignments, boolean isWeighted, boolean isCategoryExtraCredit); 
 
 	/**
+	 * This method sums up the category points and percentages taking into account factors such as
+	 * excused, weighed, and drop lowest grade items.
 	 * 
 	 * @param category
 	 * @param assignments
 	 * @param categoryType
 	 * @param isCategoryExtraCredit
-	 * @return
+	 * @return a BigDecimal array containing totalCategoryPercent at [0] and totalCategoryPoints at [1]
 	 */
 	public BigDecimal[] calculatePointsCategoryPercentSum(GradeItem category, List<GradeItem> assignments, CategoryType categoryType, boolean isCategoryExtraCredit); 
 
