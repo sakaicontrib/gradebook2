@@ -84,7 +84,6 @@ import org.sakaiproject.gradebook.gwt.server.model.LearnerImpl;
 import org.sakaiproject.gradebook.gwt.server.model.PermissionImpl;
 import org.sakaiproject.gradebook.gwt.server.model.RosterImpl;
 import org.sakaiproject.gradebook.gwt.server.model.StatisticsImpl;
-import org.sakaiproject.gradebook.gwt.util.NumericUtils;
 import org.sakaiproject.section.api.SectionAwareness;
 import org.sakaiproject.section.api.coursemanagement.CourseSection;
 import org.sakaiproject.section.api.coursemanagement.EnrollmentRecord;
@@ -671,7 +670,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			{
 				// Make sure what we are given is within range.  This validation is being done on the client as well, but we will stop if the server sees a problem. 
 				businessLogic.applyWeightTooSmallOrTooLarge(weight);
-				w = NumericUtils.divideWithPrecision(weight, 100.0);
+				w = divideWithPrecision(weight, 100.0);
 
 			}
 
@@ -6054,7 +6053,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			if (newCategoryWeight != null)
 			{
 				// We need to convert this into a double with precision because the weight is stored in the db that way. 
-				w = NumericUtils.divideWithPrecision(newCategoryWeight.doubleValue(), 100.0);
+				w = divideWithPrecision(newCategoryWeight.doubleValue(), 100.0);
 			}
 			log.debug("w: " + w); 
 

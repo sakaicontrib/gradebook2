@@ -161,6 +161,25 @@ public class BigDecimalCalculationsWrapper {
 		return sqrtHelper.get(operand);
 
 	}
+	
+	/**
+	 * This method used to reside in the NumericUtils class as a static method. In order to
+	 * keep all the calculation methods centralized, and to make sure that we use a consistent
+	 * math context/rounding mode, we moved it in here.
+	 * @param dend
+	 * @param dor
+	 * @return result of the division
+	 */
+	public double divideWithPrecision(double dend, double dor) {
+		double ret = 0.0; 
+		String send = Double.toString(dend); 
+		String sor = Double.toString(dor); 
+		BigDecimal val = new BigDecimal(send); 
+		BigDecimal divisor = new BigDecimal(sor); 
+		BigDecimal result = divide(val, divisor);
+		ret = result.doubleValue(); 
+		return ret; 
+	}
 
 	/**
 	 * 
