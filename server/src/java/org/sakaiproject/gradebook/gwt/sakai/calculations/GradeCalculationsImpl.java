@@ -86,7 +86,10 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 	private final static String F = "F";
 	private final static String ZERO = "0";
 
-	public Map<String, Double> letterGradeMap;
+	/*
+	 * This is the letter grade map injected by Spring holding the static letter to percent mappings
+	 */
+	private Map<String, Double> letterGradeMap;
 
 	// Constructor
 	public GradeCalculationsImpl() {
@@ -1147,10 +1150,9 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 		return category.isUnweighted() == null ? false : category.isUnweighted().booleanValue();
 	}
 
-	public Map<String, Double> getLetterGradeMap() {
-		return letterGradeMap;
-	}
-
+	/*
+	 * Spring IoC setter method
+	 */
 	public void setLetterGradeMap(Map<String, Double> letterGradeMap) {
 		this.letterGradeMap = letterGradeMap;
 	}

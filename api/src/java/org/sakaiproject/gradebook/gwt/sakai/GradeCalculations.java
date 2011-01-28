@@ -239,15 +239,4 @@ public interface GradeCalculations {
 	 */
 	public Double calculateDoublePointForLetterGradeRecord(Assignment assignment, LetterGradePercentMapping letterGradePercentMapping, AssignmentGradeRecord gradeRecordFromCall);
 
-	/**
-	 * 
-	 * @return
-	 */
-	public Map<String, Double> getLetterGradeMap();
-	
-	/**
-	 * 
-	 * @param map
-	 */
-	public void setLetterGradeMap(Map<String, Double> map);
 }
