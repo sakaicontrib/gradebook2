@@ -2534,6 +2534,9 @@ private GradeItem buildNewCategory(String curCategoryString,
 	}
 
 	private GradeItem findModelByName(final String name, Item root) {
+		
+		final List<String> names = new ArrayList<String>();
+		
 
 		ItemModelProcessor processor = new ItemModelProcessor(root) {
 
@@ -2545,8 +2548,11 @@ private GradeItem buildNewCategory(String curCategoryString,
 				if (itemName != null) {
 					String trimmed = itemName.trim();
 
-					if (trimmed.equals(name)) {
+					if (trimmed.equals(name) && !names.contains(trimmed)) {
 						this.result = itemModel;
+						names.add(trimmed);
+					} else {
+						this.result = null;
 					}
 				}
 			}
