@@ -163,8 +163,6 @@ public interface GradebookToolService {
 	
 	public Set<AssignmentGradeRecord> updateAssignmentGradeRecords(Assignment assignment, Collection<AssignmentGradeRecord> gradeRecords);
 	
-	public Set<AssignmentGradeRecord> updateAssignmentGradeRecords(Assignment assignment, Collection<AssignmentGradeRecord> gradeRecords, int grade_type);
-	
 	public void updateCourseGradeRecords(CourseGrade courseGrade, Collection<CourseGradeRecord> gradeRecords);
 	
 	public void updateCategory(Category category);

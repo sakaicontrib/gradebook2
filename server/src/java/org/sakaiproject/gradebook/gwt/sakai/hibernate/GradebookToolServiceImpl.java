@@ -1756,42 +1756,42 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		return studentsWithExcessiveScores;
 	}
 
-	public Set<AssignmentGradeRecord> updateAssignmentGradeRecords(Assignment assignment, Collection<AssignmentGradeRecord> gradeRecords, int grade_type) {
-		if (grade_type == GradebookService.GRADE_TYPE_POINTS)
-			return updateAssignmentGradeRecords(assignment, gradeRecords);
-		else if (grade_type == GradebookService.GRADE_TYPE_PERCENTAGE) {
-			Collection<AssignmentGradeRecord> convertList = new ArrayList<AssignmentGradeRecord>();
-			for (Iterator<AssignmentGradeRecord> iter = gradeRecords.iterator(); iter.hasNext();) {
-				AssignmentGradeRecord agr = iter.next();
-				Double doubleValue = getDoublePointForRecord(agr);
-				if (agr != null && doubleValue != null) {
-					agr.setPointsEarned(doubleValue);
-					convertList.add(agr);
-				} else if (agr != null) {
-					agr.setPointsEarned(null);
-					convertList.add(agr);
-				}
-			}
-			return updateAssignmentGradeRecords(assignment, convertList);
-		} else if (grade_type == GradebookService.GRADE_TYPE_LETTER) {
-			Collection<AssignmentGradeRecord> convertList = new ArrayList<AssignmentGradeRecord>();
-			for (Iterator<AssignmentGradeRecord> iter = gradeRecords.iterator(); iter.hasNext();) {
-				AssignmentGradeRecord agr = iter.next();
-				Double doubleValue = getDoublePointForLetterGradeRecord(agr);
-				if (agr != null && doubleValue != null) {
-					agr.setPointsEarned(doubleValue);
-					convertList.add(agr);
-				} else if (agr != null) {
-					agr.setPointsEarned(null);
-					convertList.add(agr);
-				}
-			}
-			return updateAssignmentGradeRecords(assignment, convertList);
-		}
-
-		else
-			return null;
-	}
+//	public Set<AssignmentGradeRecord> updateAssignmentGradeRecords(Assignment assignment, Collection<AssignmentGradeRecord> gradeRecords, int grade_type) {
+//		if (grade_type == GradebookService.GRADE_TYPE_POINTS)
+//			return updateAssignmentGradeRecords(assignment, gradeRecords);
+//		else if (grade_type == GradebookService.GRADE_TYPE_PERCENTAGE) {
+//			Collection<AssignmentGradeRecord> convertList = new ArrayList<AssignmentGradeRecord>();
+//			for (Iterator<AssignmentGradeRecord> iter = gradeRecords.iterator(); iter.hasNext();) {
+//				AssignmentGradeRecord agr = iter.next();
+//				Double doubleValue = getDoublePointForRecord(agr);
+//				if (agr != null && doubleValue != null) {
+//					agr.setPointsEarned(doubleValue);
+//					convertList.add(agr);
+//				} else if (agr != null) {
+//					agr.setPointsEarned(null);
+//					convertList.add(agr);
+//				}
+//			}
+//			return updateAssignmentGradeRecords(assignment, convertList);
+//		} else if (grade_type == GradebookService.GRADE_TYPE_LETTER) {
+//			Collection<AssignmentGradeRecord> convertList = new ArrayList<AssignmentGradeRecord>();
+//			for (Iterator<AssignmentGradeRecord> iter = gradeRecords.iterator(); iter.hasNext();) {
+//				AssignmentGradeRecord agr = iter.next();
+//				Double doubleValue = getDoublePointForLetterGradeRecord(agr);
+//				if (agr != null && doubleValue != null) {
+//					agr.setPointsEarned(doubleValue);
+//					convertList.add(agr);
+//				} else if (agr != null) {
+//					agr.setPointsEarned(null);
+//					convertList.add(agr);
+//				}
+//			}
+//			return updateAssignmentGradeRecords(assignment, convertList);
+//		}
+//
+//		else
+//			return null;
+//	}
 
 	public void updateCategory(final Category category) throws ConflictingCategoryNameException, StaleObjectModificationException{
 		HibernateCallback hc = new HibernateCallback() {
@@ -2182,24 +2182,6 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		Assignment assign = getAssignment(gradeRecordFromCall.getAssignment().getId()); 
 		return gradeCalculations.calculateDoublePointForRecord(assign, gradeRecordFromCall);
 	}
-
-	protected Double getDoublePointForLetterGradeRecord(AssignmentGradeRecord gradeRecordFromCall)
-	{
-		Assignment assign = getAssignment(gradeRecordFromCall.getAssignment().getId()); 
-		Gradebook gradebook = getGradebook(assign.getGradebook().getId());
-		if(gradeRecordFromCall.getLetterEarned() != null)
-		{
-			LetterGradePercentMapping lgpm = getLetterGradePercentMapping(gradebook);
-			if(lgpm != null && lgpm.getGradeMap() != null)
-			{
-				return gradeCalculations.calculateDoublePointForLetterGradeRecord(assign,lgpm, gradeRecordFromCall);
-			}
-			return null;
-		}
-		else
-			return null;
-	}
-
 
 	/**
 	 * Oracle has a low limit on the maximum length of a parameter list

@@ -991,20 +991,6 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 		else
 			return null;
 	}
-
-	
-	public Double calculateDoublePointForLetterGradeRecord(Assignment assignment, LetterGradePercentMapping letterGradePercentMapping, AssignmentGradeRecord gradeRecordFromCall) {
-
-		Double doublePercentage = letterGradePercentMapping.getValue(gradeRecordFromCall.getLetterEarned());
-		if(doublePercentage == null)
-		{
-			log.error("percentage for " + gradeRecordFromCall.getLetterEarned() + " is not found in letter grade mapping in GradebookManagerHibernateImpl.calculateDoublePointForLetterGradeRecord");
-			return null;
-		}
-
-		return calculateEquivalentPointValueForPercent(assignment.getPointsPossible(), doublePercentage);
-	}
-
 	
 	protected Double calculateEquivalentPointValueForPercent(Double doublePointsPossible, Double doublePercentEarned) {
 		

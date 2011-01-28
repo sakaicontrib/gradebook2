@@ -230,13 +230,4 @@ public interface GradeCalculations {
 	 */
 	public Double calculateDoublePointForRecord(Assignment assignment, AssignmentGradeRecord gradeRecordFromCall);
 
-	/**
-	 * 
-	 * @param assignment
-	 * @param letterGradePercentMapping
-	 * @param gradeRecordFromCall
-	 * @return
-	 */
-	public Double calculateDoublePointForLetterGradeRecord(Assignment assignment, LetterGradePercentMapping letterGradePercentMapping, AssignmentGradeRecord gradeRecordFromCall);
-
 }
