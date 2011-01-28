@@ -4581,7 +4581,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 				double w = weight == null ? 0d : (multiply(new BigDecimal(Double.toString(weight)), BIG_DECIMAL_0_01)).doubleValue();
 
-				assignmentId = gbService.createAssignmentForCategory(gradebook.getId(), categoryId, name, points, Double.valueOf(w), dueDate, Boolean.valueOf(!Util.checkBoolean(isIncluded)), isExtraCredit, Boolean.FALSE,
+				assignmentId = gbService.createAssignmentForCategory(gradebook.getId(), categoryId, name, points, Double.valueOf(w), dueDate, Boolean.valueOf(!Util.checkBoolean(isIncluded)), isExtraCredit, !(isIncluded == null ? Boolean.FALSE : isIncluded),
 						isReleased, itemOrder, isNullsAsZeros);
 
 				// Apply business rules after item creation
