@@ -489,42 +489,42 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	private static void exportViewOptionsAndScaleEC(ImportExportDataFile out, Gradebook gradebook) {
 		
 		Item firstGBItem = gradebook.getGradebookItemModel(); 
-		if (firstGBItem.getExtraCreditScaled().booleanValue())
+		if (Util.checkBoolean(firstGBItem.getExtraCreditScaled()))
 		{
 			outputStructureTwoPartExportRow(StructureRow.SCALED_EC.getDisplayName(), "true", out); 
 		}
 		
-		if (firstGBItem.getReleaseGrades().booleanValue())
+		if (Util.checkBoolean(firstGBItem.getReleaseGrades()))
 		{
 			outputStructureTwoPartExportRow(StructureRow.SHOWCOURSEGRADES.getDisplayName(), "true", out); 		
 		}
 
-		if (firstGBItem.getReleaseItems().booleanValue())
+		if (Util.checkBoolean(firstGBItem.getReleaseItems()))
 		{
 			outputStructureTwoPartExportRow(StructureRow.SHOWRELEASEDITEMS.getDisplayName(), "true", out); 		
 		}
 
-		if (firstGBItem.getShowItemStatistics().booleanValue())
+		if (Util.checkBoolean(firstGBItem.getShowItemStatistics()))
 		{
 			outputStructureTwoPartExportRow(StructureRow.SHOWITEMSTATS.getDisplayName(), "true", out); 
 		}
 
-		if (firstGBItem.getShowMean().booleanValue())
+		if (Util.checkBoolean(firstGBItem.getShowMean()))
 		{
 			outputStructureTwoPartExportRow(StructureRow.SHOWMEAN.getDisplayName(), "true", out); 
 		}
 
-		if (firstGBItem.getShowMedian().booleanValue())
+		if (Util.checkBoolean(firstGBItem.getShowMedian()))
 		{
 			outputStructureTwoPartExportRow(StructureRow.SHOWMEDIAN.getDisplayName(), "true", out); 
 		}
 
-		if (firstGBItem.getShowMode().booleanValue())
+		if (Util.checkBoolean(firstGBItem.getShowMode()))
 		{
 			outputStructureTwoPartExportRow(StructureRow.SHOWMODE.getDisplayName(), "true", out); 
 		}
 
-		if (firstGBItem.getShowRank().booleanValue())
+		if (Util.checkBoolean(firstGBItem.getShowRank()))
 		{
 			outputStructureTwoPartExportRow(StructureRow.SHOWRANK.getDisplayName(), "true", out); 
 		}		
