@@ -178,23 +178,6 @@ public class BusinessLogicImpl implements BusinessLogic {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.sakaiproject.gradebook.gwt.sakai.BusinessLogic#applyRemoveEqualWeightingWhenItemWeightChangesRules(org.sakaiproject.tool.gradebook.Category, java.lang.Double, java.lang.Double, boolean, boolean, boolean)
-	 */
-	public void applyRemoveEqualWeightingWhenItemWeightChangesRules(Category category, Double oldAssignmentWeight, Double newAssignmentWeight, 
-			boolean isExtraCredit, boolean isUnweighted, boolean wasUnweighted) throws BusinessRuleException {
-		if (!isUnweighted && !wasUnweighted) {
-			if (oldAssignmentWeight == null || !oldAssignmentWeight.equals(newAssignmentWeight)) {
-				if (!isExtraCredit && category != null && category.isEqualWeightAssignments() != null && category.isEqualWeightAssignments().booleanValue()) {
-					// FIXME: Do we really need to go back to the db and get this category again? 
-					Category editCategory = gbService.getCategory(category.getId());
-					editCategory.setEqualWeightAssignments(Boolean.FALSE);
-					gbService.updateCategory(editCategory);
-				}
-			}
-		}
-	}
-
-	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.sakai.BusinessLogic#applyCannotIncludeDeletedItemRule(boolean, boolean, boolean)
 	 */
 	public void applyCannotIncludeDeletedItemRule(boolean isAssignmentRemoved, boolean isCategoryRemoved, boolean isUnweighted) throws BusinessRuleException {
@@ -250,19 +233,6 @@ public class BusinessLogicImpl implements BusinessLogic {
 		}
 		
 		return isReleased;
-	}
-
-	public void makeItemsNonExtraCredit(List<Assignment> assignments) {
-
-		if (assignments != null) {
-			for (Assignment assignment : assignments) {
-
-				if (Util.checkBoolean(assignment.isExtraCredit())) {
-					assignment.setExtraCredit(Boolean.FALSE);
-					gbService.updateAssignment(assignment);
-				}
-			}
-		}
 	}
 
 	public void reorderAllItems(Long gradebookId, Long assignmentId, Integer newItemOrder, Integer oldItemOrder) {
@@ -402,108 +372,7 @@ public class BusinessLogicImpl implements BusinessLogic {
 		}
 	}
 
-	public void reorderRemainingItemsInCategory(Category category, Category oldCategory, Integer newItemOrder, Integer oldItemOrder) {
-
-		boolean isSwitchOfCategories = oldCategory != null;
-
-		List<Assignment> assignments = gbService.getAssignmentsForCategory(category.getId());
-
-		if (isSwitchOfCategories) {
-			List<Assignment> oldAssignments = gbService.getAssignmentsForCategory(oldCategory.getId());
-			// Clean up the old assignments' order
-			if (oldAssignments != null) {
-				int count = 0;
-				for (Assignment assignment : oldAssignments) {
-
-					Integer itemOrder = assignment.getSortOrder();
-
-					if (itemOrder == null)
-						itemOrder = Integer.valueOf(count);
-
-					count++;
-
-					// Anything below (greater than) the old item needs to be advanced
-					if (oldItemOrder.compareTo(itemOrder) < 0) {
-						int idx = itemOrder.intValue() - 1;
-						assignment.setSortOrder(Integer.valueOf(idx));
-						gbService.updateAssignment(assignment);
-					}
-				}
-			}
-		}
-
-
-
-		if (oldItemOrder != null && (isSwitchOfCategories || newItemOrder.compareTo(oldItemOrder) < 0)) {
-			// Either we have moved something up, and we need to increase everything that follows its new place
-			// until we reach its old place
-
-			boolean isModifying = false;
-			if (assignments != null) {
-				int count = 0;
-				for (Assignment assignment : assignments) {
-
-					Integer itemOrder = assignment.getSortOrder();
-					if (itemOrder == null)
-						itemOrder = Integer.valueOf(count);
-
-					count++;
-
-					// We want to stop modifying immediately before pass this one
-					if (!isSwitchOfCategories && itemOrder.equals(oldItemOrder)) {
-						isModifying = false;
-						break;
-					}
-
-					// We want to start modifying at the newItemOrder, which is not the item we've just updated
-					// but the one it's replacing
-					if (itemOrder.equals(newItemOrder))
-						isModifying = true;
-
-					if (isModifying) {
-						int idx = itemOrder.intValue() + 1;
-						assignment.setSortOrder(Integer.valueOf(idx));
-						gbService.updateAssignment(assignment);
-					}
-				}
-			}
-		} else {
-			// Or we have moved something down, in which case we need to take everything that follows 
-			// its old place and reduce by 1 until we get to its new place
-
-			boolean isModifying = false;
-			if (assignments != null) {
-				int count = 0;
-				for (Assignment assignment : assignments) {
-
-					Integer itemOrder = assignment.getSortOrder();
-					if (itemOrder == null)
-						itemOrder = Integer.valueOf(count);
-
-					count++;
-
-					if (isModifying) {
-						int idx = itemOrder.intValue() - 1;
-						assignment.setSortOrder(Integer.valueOf(idx));
-						gbService.updateAssignment(assignment);
-					}
-
-					// We don't want to start modifying until we pass this one
-					if (oldItemOrder == null || itemOrder.equals(oldItemOrder)) 
-						isModifying = true;
-
-					if (oldItemOrder != null && itemOrder.equals(newItemOrder)) {
-						isModifying = false;
-						break;
-					}
-				}
-			}
-
-		} 
-
-	}
-
-
+	
 	public GradebookToolService getGbService() {
 		return gbService;
 	}

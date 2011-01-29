@@ -59,22 +59,13 @@ public interface GradebookToolService {
 	
 	public Integer getActionRecordSize(final String gradebookUid);
 	
-	public List<ActionRecord> getActionRecords(final String gradebookUid, final String learnerUid, final int offset, final int limit);
-	
-	public Integer getActionRecordSize(final String gradebookUid, final String learnerUid);
-	
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(final Long[] assignmentIds);
 	
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(final Long[] assignmentIds, final String[] realmIds);
 	
-	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(Long gradebookId, Collection<String> studentUids);
-	
 	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(Long gradebookId, String[] realmIds, String[] roleNames);
 	
 	public List<CourseGradeRecord> getAllCourseGradeRecords(Gradebook gradebook);
-	
-	public List<CourseGradeRecord> getAllCourseGradeRecords(Long gradebookId, String[] realmIds, String sortField, String searchField, 
-			String searchCriteria, int offset, int limit, boolean isAsc, String[] roleNames);
 	
 	public Assignment getAssignment(Long assignmentId);
 	
@@ -82,15 +73,9 @@ public interface GradebookToolService {
 	
 	public List<Assignment> getAssignmentsForCategory(Long categoryId);
 	
-	public List<Assignment> getAssignmentsWithNoCategory(Long gradebookId);
-	
 	public List<AssignmentGradeRecord> getAssignmentGradeRecords(Assignment assignment);
 	
-	public List<AssignmentGradeRecord> getAssignmentGradeRecords(Assignment assignment, Collection<String> studentUids);
-	
 	public List<AssignmentGradeRecord> getAssignmentGradeRecordsForStudent(Long gradebookId, String studentUid);
-	
-	public AssignmentGradeRecord getAssignmentGradeRecordForAssignmentForStudent(Assignment assignment, String studentId);
 	
 	public Category getCategory(Long categoryId);
 	
@@ -99,10 +84,7 @@ public interface GradebookToolService {
 	public List<Category> getCategoriesWithAssignments(Long gradebookId);
 	
 	public List<Comment> getComments(Long gradebookId);
-	
-	public List<Comment> getComments(Long gradebookId, String[] realmIds, String[] roleNames, String sortField, 
-			String searchField, String searchCriteria, int offset, int limit, boolean isAsc);
-	
+		
 	public CourseGrade getCourseGrade(Long gradebookId);
 	
 	public Gradebook getGradebook(Long id);
@@ -146,15 +128,7 @@ public interface GradebookToolService {
 	public boolean isAnyScoreEntered(final Long gradebookId, final boolean hasCategories);
 	
 	public boolean isStudentMissingScores(Long gradebookId, String studentId, boolean hasCategories);
-	
-	public boolean isStudentGraded(String studentId);
-	
-	public boolean isStudentGraded(String studentId, Long assignmentId);
-	
-	public boolean isStudentCommented(String studentId, Long assignmentId);
-	
-	public void saveOrUpdateLetterGradePercentMapping(Map<String, Double> gradeMap, Gradebook gradebook);
-	
+		
 	public Long storeActionRecord(ActionRecord actionRecord);
 	
 	public void syncUserDereferenceBySite(final String siteId, String realmGroupId, final List<User> users, int realmCount, String[] roleNames);
@@ -168,8 +142,6 @@ public interface GradebookToolService {
 	public void updateCategory(Category category);
 	
 	public void updateComment(Comment comment);
-	
-	public void updateComments(Collection<Comment> comments);
 	
 	public void updateGradebook(Gradebook gradebook);
 	
@@ -188,8 +160,6 @@ public interface GradebookToolService {
 	public List<Permission> getPermissionsForUserForGoupsAnyCategory(final Long gradebookId, final String userId, final List<String> groupIds) throws IllegalArgumentException;
 	
 	public List<Permission> getPermissionsForUserForCategory(final Long gradebookId, final String userId, final List<Long> cateIds) throws IllegalArgumentException;
-	
-	public List<Permission> getPermissionsForUserForGategoryForGroup(final Long gradebookId, final String userId, final Long categoryId, final String groupId) throws IllegalArgumentException;
 	
 	public List<Permission> getPermissionForUserAnyCategory(final Long gradebookId, final String userId) throws IllegalArgumentException;
 }

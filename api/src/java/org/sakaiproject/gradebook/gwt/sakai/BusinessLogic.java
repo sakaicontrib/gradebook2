@@ -56,9 +56,6 @@ public interface BusinessLogic {
 	
 	public void applyRemoveChildItemsWhenCategoryRemoved(Category category, List<Assignment> assignments) throws BusinessRuleException;
 
-	public void applyRemoveEqualWeightingWhenItemWeightChangesRules(Category category, Double oldAssignmentWeight, Double newAssignmentWeight, boolean isExtraCredit,
-			boolean isUnweighted, boolean wasUnweighted) throws BusinessRuleException;
-
 	public void applyCannotIncludeDeletedItemRule(boolean isAssignmentRemoved, boolean isCategoryRemoved, boolean isUnweighted) throws BusinessRuleException;
 
 	public void applyCannotIncludeItemFromUnincludedCategoryRule(boolean isCategoryIncluded, boolean isItemIncluded, boolean wasItemIncluded) throws BusinessRuleException;
@@ -68,15 +65,11 @@ public interface BusinessLogic {
 	public boolean checkRecalculatePointsRule(Long assignmentId, Double newPoints, Double oldPoints);
 
 	public boolean checkReleased(List<Assignment> assignments);
-	
-	public void makeItemsNonExtraCredit(List<Assignment> assignments);
 
 	public void reorderAllCategories(Long gradebookId, Long categoryId, Integer newCategoryOrder, Integer oldCategoryOrder);
 	
 	public void reorderAllItems(Long gradebookId, Long assignmentId, Integer newItemOrder, Integer oldItemOrder);
 	
 	public void reorderAllItemsInCategory(Long assignmentId, Category category, Category oldCategory, Integer newItemOrder, Integer oldItemOrder);
-	
-	public void reorderRemainingItemsInCategory(Category category, Category oldCategory, Integer newItemOrder, Integer oldItemOrder);
 	
 }

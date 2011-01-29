@@ -273,33 +273,6 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		return size == null ? 0 : Integer.valueOf(size.intValue());
 	}
 
-	public List<ActionRecord> getActionRecords(final String gradebookUid, final String learnerUid, final int offset, final int limit) {
-		HibernateCallback hc = new HibernateCallback() {
-			public Object doInHibernate(Session session) throws HibernateException {
-				Query q = session.createQuery("from ActionRecord as ar where ar.gradebookUid=:gradebookUid and ar.studentUid=:learnerUid order by ar.dateRecorded desc ");
-				q.setString("gradebookUid", gradebookUid);
-				q.setString("learnerUid", learnerUid);
-				q.setFirstResult(offset);
-				q.setMaxResults(limit);
-				return q.list();
-			}
-		};
-		return (List<ActionRecord>)getHibernateTemplate().execute(hc);	
-	}
-
-	public Integer getActionRecordSize(final String gradebookUid, final String learnerUid) {
-		Number size = (Number)getHibernateTemplate().execute(new HibernateCallback() {
-			public Object doInHibernate(Session session) throws HibernateException {
-				Query q = session.createQuery("select count(*) from ActionRecord as ar where ar.gradebookUid=:gradebookUid and ar.studentUid=:learnerUid ");
-				q.setString("gradebookUid", gradebookUid);
-				q.setString("learnerUid", learnerUid);
-				return (Number) q.iterate().next();
-			}
-		});
-
-		return size == null ? 0 : Integer.valueOf(size.intValue());
-	}
-
 	public UserDereferenceRealmUpdate getLastUserDereferenceSync(final String siteId, final String realmGroupId) {
 		HibernateCallback hc = new HibernateCallback() {
 			public Object doInHibernate(Session session) throws HibernateException {
@@ -895,25 +868,6 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		return (List<AssignmentGradeRecord>)getHibernateTemplate().execute(hc);
 	}
 
-	public List<AssignmentGradeRecord> getAllAssignmentGradeRecords(final Long gradebookId, final Collection<String> studentUids) {
-		HibernateCallback hc = new HibernateCallback() {
-			public Object doInHibernate(Session session) throws HibernateException {
-				if(studentUids.size() == 0) {
-					// If there are no enrollments, no need to execute the query.
-					if(log.isInfoEnabled()) log.info("No enrollments were specified.  Returning an empty List of grade records");
-					return new ArrayList();
-				} else {
-
-					Query q = session.createQuery("from AssignmentGradeRecord as agr where agr.gradableObject.removed=false and " +
-					"agr.gradableObject.gradebook.id=:gradebookId order by agr.pointsEarned");
-					q.setLong("gradebookId", gradebookId.longValue());
-					return filterGradeRecordsByStudents(q.list(), studentUids);
-				}
-			}
-		};
-		return (List<AssignmentGradeRecord>)getHibernateTemplate().execute(hc);
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.sakai.GradebookToolService#getAllCourseGradeRecords(org.sakaiproject.tool.gradebook.Gradebook)
@@ -932,87 +886,9 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		});
 	}
 
-	public List<CourseGradeRecord> getAllCourseGradeRecords(final Long gradebookId, final String[] realmIds, final String sortField, final String searchField, 
-			final String searchCriteria, final int offset, final int limit, final boolean isAsc, final String[] roleNames) {
-
-		HibernateCallback hc = new HibernateCallback() {
-			public Object doInHibernate(Session session) throws HibernateException {
-
-				Query query = null;
-
-				StringBuilder builder = new StringBuilder()
-				.append("select c from Realm as r, RealmGroup as rg, RealmRole rr, UserDereference as user, CourseGradeRecord c ")
-				.append("where rg.realmKey=r.realmKey ")
-				.append("and r.realmId in (:realmIds) ")
-				.append("and user.userUid=rg.userId ")
-				.append("and c.studentId=user.userUid ")
-				.append("and c.gradableObject.removed = false ")
-				.append("and c.gradableObject.gradebook.id=:gradebookId ")
-				.append("and rr.roleKey = rg.roleKey ")
-				.append("and rr.roleName in (:roleKeys) ")
-				.append("and rg.active=true ");
-
-				if (searchField != null && searchCriteria != null) {
-					builder.append("and user.").append(searchField).append(" like '").append("%").append(searchCriteria).append("%' ");
-				}
-
-				if (sortField != null) {
-
-					builder.append("order by user.").append(sortField);
-
-					if (isAsc)
-						builder.append(" asc ");
-					else
-						builder.append(" desc ");
-
-				}
-
-				query = session.createQuery(builder.toString());
-
-				query.setParameterList("realmIds", realmIds);
-				query.setLong("gradebookId", gradebookId);
-				query.setParameterList("roleKeys", roleNames);
-
-				if (offset != -1)
-					query.setFirstResult(offset);
-				if (limit != -1)
-					query.setMaxResults(limit);
-
-				return query.list();
-			}
-		};
-		return (List<CourseGradeRecord>)getHibernateTemplate().execute(hc);
-	}
-
 	public Assignment getAssignment(Long assignmentId) {
 		return (Assignment)getHibernateTemplate().load(Assignment.class, assignmentId);
 	}
-
-	public AssignmentGradeRecord getAssignmentGradeRecordForAssignmentForStudent(final Assignment assignment, final String studentUid) {
-		HibernateCallback hc = new HibernateCallback() {
-			public Object doInHibernate(Session session) throws HibernateException {
-				if(studentUid == null) {
-					if(log.isInfoEnabled()) log.info("Returning no grade records for a null student UID");
-					return new ArrayList();
-				} else if (assignment.isRemoved()) {
-					return new ArrayList();                	
-				}
-
-				Query q = session.createQuery("from AssignmentGradeRecord as agr where agr.gradableObject.id=:gradableObjectId " +
-				"and agr.studentId=:student");
-				q.setLong("gradableObjectId", assignment.getId().longValue());
-				q.setString("student", studentUid);
-				return q.list();
-			}
-		};
-		List results = (List) getHibernateTemplate().execute(hc);
-		if (results.size() > 0){
-			return (AssignmentGradeRecord)results.get(0);
-		} else {
-			return new AssignmentGradeRecord();
-		}
-	}
-
 
 	public List<AssignmentGradeRecord> getAssignmentGradeRecords(final Assignment assignment) {
 		HibernateCallback hc = new HibernateCallback() {
@@ -1025,26 +901,6 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				q.setLong("gradableObjectId", assignment.getId().longValue());
 
 				return q.list();
-			}
-		};
-		return (List<AssignmentGradeRecord>)getHibernateTemplate().execute(hc);
-	}
-
-
-	public List<AssignmentGradeRecord> getAssignmentGradeRecords(final Assignment assignment, final Collection<String> studentUids) {
-		HibernateCallback hc = new HibernateCallback() {
-			public Object doInHibernate(Session session) throws HibernateException {
-				if(studentUids == null || studentUids.size() == 0) {
-					if(log.isInfoEnabled()) log.info("Returning no grade records for an empty collection of student UIDs");
-					return new ArrayList();
-				} else if (assignment.isRemoved()) {
-					return new ArrayList();                	
-				}
-
-				Query q = session.createQuery("from AssignmentGradeRecord as agr where agr.gradableObject.id=:gradableObjectId order by agr.pointsEarned");
-				q.setLong("gradableObjectId", assignment.getId().longValue());
-				List records = filterGradeRecordsByStudents(q.list(), studentUids);
-				return records;
 			}
 		};
 		return (List<AssignmentGradeRecord>)getHibernateTemplate().execute(hc);
@@ -1115,31 +971,6 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 			}
 		};
 		return (List<Assignment>) getHibernateTemplate().execute(hc);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.sakaiproject.gradebook.gwt.sakai.GradebookToolService#getAssignmentsWithNoCategory(java.lang.Long, java.lang.String, boolean)
-	 * 
-	 * As with getAssignments above, I've decided to strip out the sorting from this method. The only difference is that in this case
-	 * we actually get a different method signature, since it would be misleading, I think, to pass arguments we don't use.
-	 * 
-	 */
-	public List<Assignment> getAssignmentsWithNoCategory(final Long gradebookId /*, String assignmentSort, boolean assignAscending*/) {
-
-		HibernateCallback hc = new HibernateCallback() {
-			public Object doInHibernate(Session session) throws HibernateException {
-				List assignments = session.createQuery(
-				"from Assignment as asn where asn.gradebook.id=? and asn.removed=false and asn.category is null").
-				setLong(0, gradebookId.longValue()).
-				list();
-				return assignments;
-			}
-		};
-
-		List<Assignment> assignList = (List)getHibernateTemplate().execute(hc);
-		
-		return assignList;
 	}
 
 	public List<Category> getCategories(final Long gradebookId) throws HibernateException {
@@ -1245,91 +1076,6 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		Boolean isGraded = (Boolean)getHibernateTemplate().execute(hc);
 
 		return isGraded != null && isGraded.booleanValue();
-	}
-
-	public boolean isStudentCommented(final String studentId, final Long assignmentId) {
-		Boolean isCommented = (Boolean)getHibernateTemplate().execute(new HibernateCallback() {
-			public Object doInHibernate(Session session) throws HibernateException {
-				Query q = session.createQuery("select count(*) from Comment as c where c.studentId=:studentId and c.gradableObject.id=:assignmentId");
-				q.setParameter("studentId", studentId);
-				q.setParameter("assignmentId",assignmentId);
-				return Boolean.valueOf(((Number) q.iterate().next() ).intValue() > 0);
-			}
-		});
-
-		return isCommented != null && isCommented.booleanValue();
-	}
-
-	public boolean isStudentGraded(final String studentId) {
-		if (log.isDebugEnabled()) log.debug("isStudentGraded called for studentId:" + studentId);
-
-		if (studentId == null) {
-			log.debug("No student id was specified.  Returning false.");
-			return false;
-		}
-
-		HibernateCallback hc = new HibernateCallback() {
-			public Object doInHibernate(Session session) throws HibernateException, SQLException {
-
-				Query q = session.createQuery("select count(*) from GradingEvent as ge where ge.studentId=:studentId and ge.gradableObject.removed=false");
-				q.setParameter("studentId", studentId);
-				return Boolean.valueOf(((Number) q.iterate().next() ).intValue() > 0);
-
-			}
-		};
-
-		Boolean isGraded = (Boolean)getHibernateTemplate().execute(hc);
-
-		return isGraded != null && isGraded.booleanValue();
-	}
-
-	// GRBK-40 : TPA : Added caching
-	public boolean isStudentGraded(final String studentId, final Long assignmentId) {
-		if (log.isDebugEnabled()) log.debug("isStudentGraded called for studentId:" + studentId);
-
-		// Don't attempt to run the query if there are no gradableObjects or student id
-		if (assignmentId == null) {
-			log.debug("No assignment specified.  Returning false.");
-			return false;
-		}
-		if (studentId == null) {
-			log.debug("No student id was specified.  Returning false.");
-			return false;
-		}
-
-		MultiKey multiKey = new MultiKey(studentId, assignmentId);
-
-		if(null == isStudentGradeCache.get(multiKey)) {
-
-			HibernateCallback hc = new HibernateCallback() {
-
-				public List<GradingEvent> doInHibernate(Session session) throws HibernateException, SQLException {
-
-					Query q = session.createQuery("from GradingEvent as ge where ge.gradableObject.id=:assignmentId");
-					q.setParameter("assignmentId", assignmentId);
-					return q.list();
-				}
-			};
-
-			List<GradingEvent> gradingEvents = (List<GradingEvent>) getHibernateTemplate().execute(hc);
-
-			for(GradingEvent gradingEvent : gradingEvents) {
-
-				isStudentGradeCache.put(new MultiKey(gradingEvent.getStudentId(), assignmentId), Boolean.TRUE);
-			}
-
-			if(isStudentGradeCache.get(multiKey).booleanValue()) {
-
-				return true;
-			}
-			else {
-
-				return false;
-			}
-		}
-		else {
-			return isStudentGradeCache.get(multiKey).booleanValue();
-		}
 	}
 
 	public boolean isStudentMissingScores(final Long gradebookId, final String studentId, final boolean hasCategories) {
@@ -1477,28 +1223,6 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		}
 	}
 
-	public List<Permission> getPermissionsForUserForGategoryForGroup(final Long gradebookId, final String userId, final Long categoryId, final String groupId) throws IllegalArgumentException {
-
-		if (gradebookId == null || userId == null || categoryId == null || groupId == null)
-			throw new IllegalArgumentException("Null parameter(s) in BaseHibernateManager.getPermissionsForUserForGroup");
-
-		HibernateCallback hc = new HibernateCallback() {
-			public Object doInHibernate(Session session)
-			throws HibernateException {
-				Query q = session
-				.createQuery("from Permission as perm where perm.gradebookId=:gradebookId and perm.userId=:userId and perm.groupId=:groupId and perm.categoryId=:categoryId");
-				q.setLong("gradebookId", gradebookId);
-				q.setString("userId", userId);
-				q.setString("groupId", groupId);
-				q.setLong("categoryId", categoryId);
-
-				return q.list();
-			}
-		};
-		return (List<Permission>) getHibernateTemplate().execute(hc);
-
-	}
-
 	public List<Comment> getComments(final Long gradebookId) {
 		return (List<Comment>)getHibernateTemplate().execute(new HibernateCallback() {
 			public Object doInHibernate(Session session) throws HibernateException {
@@ -1515,58 +1239,6 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 			}
 		});
 	}
-
-	public List<Comment> getComments(final Long gradebookId, final String[] realmIds, final String[] roleNames, final String sortField, 
-			final String searchField, final String searchCriteria, final int offset, final int limit, final boolean isAsc) {
-		HibernateCallback hc = new HibernateCallback() {
-			public Object doInHibernate(Session session) throws HibernateException {
-
-				Query query = null;
-
-				StringBuilder builder = new StringBuilder()
-				.append("select c from Comment as c, Realm as r, RealmGroup rg, RealmRole rr, UserDereference user ")
-				.append("where c.studentId=rg.userId ")
-				.append("and rg.realmKey=r.realmKey ")
-				.append("and c.gradableObject.gradebook.id=:gradebookId ")
-				.append("and r.realmId in (:realmIds) ")
-				.append("and rr.roleKey = rg.roleKey ")
-				.append("and rr.roleName in (:roleKeys) ")
-				.append("and c.gradableObject.removed=false ")
-				.append("and user.userUid=rg.userId ");
-
-				if (searchField != null && searchCriteria != null) {
-					builder.append("and user.").append(searchField).append(" like '").append("%").append(searchCriteria).append("%' ");
-				}
-
-				if (sortField != null) {
-
-					builder.append("order by user.").append(sortField);
-
-					if (isAsc)
-						builder.append(" asc ");
-					else
-						builder.append(" desc ");
-
-				}
-
-				query = session.createQuery(builder.toString());
-				query.setLong("gradebookId", gradebookId.longValue());
-
-				query.setParameterList("realmIds", realmIds);
-				query.setParameterList("roleKeys", roleNames);
-
-				if (offset != -1)
-					query.setFirstResult(offset);
-				if (limit != -1)
-					query.setMaxResults(limit);
-
-				return query.list();
-
-			}
-		};
-		return (List<Comment>) getHibernateTemplate().execute(hc);
-	}
-
 
 	public Comment getCommentForItemForStudent(final Long assignmentId, final String studentId) {
 		return (Comment)getHibernateTemplate().execute(new HibernateCallback() {
@@ -1618,46 +1290,6 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				return courseGradeRecord;
 			}
 		});
-	}
-
-	public void saveOrUpdateLetterGradePercentMapping(final Map<String, Double> gradeMap, final Gradebook gradebook) {
-		if(gradeMap == null)
-			throw new IllegalArgumentException("gradeMap is null in BaseHibernateManager.saveOrUpdateLetterGradePercentMapping");
-
-		LetterGradePercentMapping lgpm = getLetterGradePercentMappingForGradebook(gradebook);
-
-		if(lgpm == null)
-		{
-
-			HibernateCallback hcb = new HibernateCallback()
-			{
-				public Object doInHibernate(Session session) throws HibernateException,
-				SQLException
-				{
-					LetterGradePercentMapping lgpm = new LetterGradePercentMapping();
-					if (lgpm != null)
-					{                    
-						Map<String, Double> saveMap = new HashMap<String, Double>();
-						for (Iterator<String> gradeIter = gradeMap.keySet().iterator(); gradeIter.hasNext();) {
-							String letterGrade = gradeIter.next();
-							Double value = gradeMap.get(letterGrade);
-							saveMap.put(letterGrade, value);
-						}
-
-						lgpm.setGradeMap(saveMap);
-						lgpm.setGradebookId(gradebook.getId());
-						lgpm.setMappingType(2);
-						session.save(lgpm);
-					}
-					return null;
-				}
-			}; 
-			getHibernateTemplate().execute(hcb);
-		}
-		else
-		{
-			updateLetterGradePercentMapping(gradeMap, gradebook);
-		}	
 	}
 
 	public Long storeActionRecord(final ActionRecord actionRecord) {
@@ -1850,40 +1482,6 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 			// same time, this method translates the exception into an
 			// optimistic locking failure.
 			if(log.isInfoEnabled()) log.info("An optimistic locking failure occurred while attempting to update comment");
-			throw new StaleObjectModificationException(e);
-		}
-	}
-
-	public void updateComments(final Collection<Comment> comments) throws StaleObjectModificationException {
-		final Date now = new Date();
-		final String graderId = authn.getUserUid();
-
-		// Unlike the complex grade update logic, this method assumes that
-		// the client has done the work of filtering out any unchanged records
-		// and isn't interested in throwing an optimistic locking exception for untouched records
-		// which were changed by other sessions.
-		HibernateCallback hc = new HibernateCallback() {
-			public Object doInHibernate(Session session) throws HibernateException {
-				for (Iterator<Comment> iter = comments.iterator(); iter.hasNext();) {
-					Comment comment = iter.next();
-					comment.setGraderId(graderId);
-					comment.setDateRecorded(now);
-					session.saveOrUpdate(comment);
-				}
-				return null;
-			}
-		};
-		try {
-			getHibernateTemplate().execute(hc);
-		} catch (DataIntegrityViolationException e) {
-			// If a student hasn't yet received a comment for this
-			// assignment, and two graders try to save a new comment record at the
-			// same time, the database should report a unique constraint violation.
-			// Since that's similar to the conflict between two graders who
-			// are trying to update an existing comment record at the same
-			// same time, this method translates the exception into an
-			// optimistic locking failure.
-			if(log.isInfoEnabled()) log.info("An optimistic locking failure occurred while attempting to update comments");
 			throw new StaleObjectModificationException(e);
 		}
 	}

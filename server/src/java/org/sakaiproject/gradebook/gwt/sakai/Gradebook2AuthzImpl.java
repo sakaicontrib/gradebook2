@@ -78,67 +78,6 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 		this.toolManager = toolManager;
 	}
 	
-	// New helper method to replace old code in getWorkingEnrollments
-	public Map<String, EnrollmentRecord> findEnrollmentRecords(String gradebookUid, String optionalSearchString, String optionalSectionUid) {
-
-		if (optionalSearchString != null)
-			optionalSearchString = optionalSearchString.toUpperCase();
-
-		Map<String, EnrollmentRecord> enrollMap = new HashMap<String, EnrollmentRecord>();
-
-		// Start by getting a list of sections visible to the current user
-		List<CourseSection> viewableSections = getViewableSections(gradebookUid);
-
-		for (CourseSection section : viewableSections) {
-
-			List<EnrollmentRecord> sectionMembers = sectionAwareness.getSectionMembersInRole(section.getUuid(), Role.STUDENT);
-
-			// This filters by the passed sectionUid if it's not null
-			if (optionalSectionUid == null || optionalSectionUid.equals(section.getUuid())) {
-				for (EnrollmentRecord sectionMember : sectionMembers) {
-					String sectionMemberUid = sectionMember.getUser().getUserUid();
-
-					if (!enrollMap.containsKey(sectionMemberUid)) {
-						// Only bother to search if we haven't already searched
-						// on this item
-						if (optionalSearchString != null) {
-							String displayName = sectionMember.getUser().getDisplayName().toUpperCase();
-							if (displayName.contains(optionalSearchString))
-								enrollMap.put(sectionMemberUid, sectionMember);
-						} else {
-							// We're not searching
-							enrollMap.put(sectionMemberUid, sectionMember);
-						}
-					}
-				}
-			}
-		}
-
-		// If the user can grade everybody, then include the non-section members
-		if (isUserAbleToGradeAll(gradebookUid)) {
-			List<EnrollmentRecord> unassignedMembers = sectionAwareness.getUnassignedMembersInRole(gradebookUid, Role.STUDENT);
-			if (unassignedMembers != null) {
-				for (EnrollmentRecord nonMember : unassignedMembers) {
-					String nonMemberUid = nonMember.getUser().getUserUid();
-
-					if (!enrollMap.containsKey(nonMemberUid)) {
-						if (optionalSearchString != null) {
-							String displayName = nonMember.getUser().getDisplayName().toUpperCase();
-							if (displayName.contains(optionalSearchString))
-								enrollMap.put(nonMemberUid, nonMember);
-						} else {
-							// We're not searching
-							enrollMap.put(nonMemberUid, nonMember);
-						}
-					}
-				}
-
-			}
-		}
-
-		return enrollMap;
-	}
-
 	public List<CourseSection> getAllSections(String siteContext) {
 
 		return sectionAwareness.getSections(siteContext);

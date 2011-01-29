@@ -116,16 +116,6 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 		return roleKeys;
 	}
 
-
-	public boolean isLearner(Member member) {
-		String role = member.getRole() == null ? "" : member.getRole().getId();
-
-		return (role.equalsIgnoreCase("Student") 
-				|| role.equalsIgnoreCase("Open Campus")
-				|| role.equalsIgnoreCase("Access"))
-				&& member.isActive();
-	}
-
 	public boolean isExportCourseManagementIdByGroup() {
 		return false;
 	}

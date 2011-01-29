@@ -909,24 +909,9 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		return eventTrackingService;
 	}
 
-	public List<String> getExportCourseManagementSetEids(Group group) {
-
-		return advisor.getExportCourseManagementSetEids(group);
-	}
-
-	public String getExportCourseManagementId(String userEid, Group group, List<String> enrollmentSetEids) {
-
-		return advisor.getExportCourseManagementId(userEid, group, enrollmentSetEids);
-	}
-
 	public String getExportUserId(UserDereference dereference) {
 
 		return advisor.getExportUserId(dereference);
-	}
-
-	public String getFinalGradeUserId(UserDereference dereference) {
-
-		return advisor.getFinalGradeUserId(dereference);
 	}
 
 	public GradebookFrameworkService getFrameworkService() {
@@ -6357,37 +6342,6 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 	}
 
-	public void saveAllGradebookItems(GradeItem gradeItemsModel, String gradebookUid) throws InvalidInputException, FatalException {
-
-
-		Long gbId = getGradebook(gradebookUid).getGradebookId();
-
-
-		String lastCat = null;
-		for ( GradeItem item1: gradeItemsModel.getChildren() ) {
-
-			boolean newCat =  ( item1.getItemType() == ItemType.CATEGORY 
-					&& !item1.getName().equals(lastCat) );
-			lastCat = item1.getName();
-
-
-			if (log.isDebugEnabled()) {
-				log.debug("Level 1: " + item1);
-			}
-
-			if (item1.getChildCount()<1) { 
-				saveOrUpdateItem(item1, gbId, false);
-			}
-			for (GradeItem item2 : item1.getChildren()) {
-				if (log.isDebugEnabled()) {
-					log.debug("Level 2: " + item2);
-				}
-
-				saveOrUpdateItem(item2, gbId, newCat);
-				newCat=false; // in case we have more assignments in this cat
-			}
-		}
-	}
 
 	private void saveOrUpdateItem(Item item, Long gradebookId, boolean createParentCategory) {
 		List<Category> currentCategories = gbService.getCategories(gradebookId);

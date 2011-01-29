@@ -38,18 +38,6 @@ import org.sakaiproject.tool.gradebook.Permission;
 public interface Gradebook2Authz {
 
 	/**
-	 * Find enrollment records.
-	 * 
-	 * @param gradebookUid the gradebook uid
-	 * @param gradebookId the gradebook id
-	 * @param optionalSearchString the optional search string
-	 * @param optionalSectionUid the optional section uid
-	 * 
-	 * @return the map< string, enrollment record>
-	 */
-	public Map<String, EnrollmentRecord> findEnrollmentRecords(String gradebookUid, String optionalSearchString, String optionalSectionUid);
-
-	/**
 	 * Gets the all sections.
 	 * 
 	 * @param siteContext the site context
@@ -135,6 +123,12 @@ public interface Gradebook2Authz {
 	 */
 	public boolean hasUserGraderPermissions(String gradebookUid);
 
+	/**
+	 * 
+	 * @param gradebookUid
+	 * @param groupId
+	 * @return
+	 */
 	public boolean hasUserGraderPermission(String gradebookUid, String groupId);
 
 	/**
@@ -181,13 +175,29 @@ public interface Gradebook2Authz {
 	 */
 	public List<Permission> getGraderPermissionsForUser(String gradebookUid, String userId);
 
-	// GRBK-233
+	/**
+	 * GRBK-233
+	 * 
+	 * @param gradebookUid
+	 * @param categoryId
+	 * @return
+	 */
 	public boolean canUserViewCategory(String gradebookUid, Long categoryId);
 
-	// GRBK-233
+	/**
+	 * GRBK-233
+	 * 
+	 * @param gradebookUid
+	 * @param categoryId
+	 * @return
+	 */
 	public boolean canUserGradeCategory(String gradebookUid, Long categoryId);
 
-	// GRBK-487
+	/**
+	 * GRBK-487
+	 * 
+	 * @return
+	 */
 	public boolean isAdminUser();
 	
 }

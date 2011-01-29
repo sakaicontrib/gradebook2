@@ -37,9 +37,4 @@ public class Gradebook2AuthnImpl implements Gradebook2Authn {
 		return session.getUserId();
 	}
 
-	public void setAuthnContext(Object whatToAuthn) {
-		// TODO Auto-generated method stub
-
-	}
-
 }

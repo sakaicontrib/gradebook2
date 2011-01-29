@@ -47,14 +47,8 @@ public interface Gradebook2ComponentService {
 	public Permission deletePermission(String gradebookUid, Permission permissionDeleteRequest) throws SecurityException;
 	
 	public List<UserDereference> findAllUserDereferences();
-	
-	public List<String> getExportCourseManagementSetEids(Group group);
-
-	public String getExportCourseManagementId(String userEid, Group group, List<String> enrollmentSetEids);
 
 	public String getExportUserId(UserDereference dereference);
-
-	public String getFinalGradeUserId(UserDereference dereference);
 	
 	public ApplicationSetup getApplicationSetup(String... gradebookUids) throws GradebookCreationException;
 	
@@ -130,8 +124,6 @@ public interface Gradebook2ComponentService {
 	
 	public void saveFullGradebookFromClientModel(Gradebook newGradebook) throws FatalException, InvalidInputException;
 	
-	public void saveAllGradebookItems(GradeItem gradebookItems, String gradebookUid) throws InvalidInputException, FatalException;
-
 	public Upload upload(String gradebookUid, Long gradebookId,
 			Upload upload, boolean isDryRun,
 			List<BusinessLogicCode> ignoredBusinessRules) throws InvalidInputException;

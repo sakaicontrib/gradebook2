@@ -75,16 +75,20 @@ public interface InstitutionalAdvisor {
 	public String[] getLearnerRoleNames();
 
 	/**
-	 * Method to determine if the institution considers this user/member of site a "learner"
-	 * for the purposes of grading
 	 * 
-	 * @param member
-	 * @return true if user is a learner, false otherwise
+	 * @return
 	 */
-	public boolean isLearner(Member member);
-
 	public boolean isExportCourseManagementIdByGroup();
 	
+	/**
+	 * 
+	 * @param grade
+	 * @param learnerEid
+	 * @param learnerDisplayId
+	 * @param gradebook
+	 * @param scaledGrades
+	 * @return
+	 */
 	public boolean isValidOverrideGrade(String grade, String learnerEid, String learnerDisplayId, Gradebook gradebook, Set<String> scaledGrades);
 	
 	
