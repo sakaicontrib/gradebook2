@@ -23,7 +23,6 @@
 package org.sakaiproject.gradebook.gwt.sakai;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.List;
@@ -37,7 +36,6 @@ import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.AssignmentGradeRecord;
 import org.sakaiproject.tool.gradebook.Category;
 import org.sakaiproject.tool.gradebook.Gradebook;
-import org.sakaiproject.tool.gradebook.LetterGradePercentMapping;
 
 public interface GradeCalculations {
 
@@ -179,19 +177,26 @@ public interface GradeCalculations {
 	public BigDecimal[] calculateCourseGradeCategoryPercents(Assignment assignment, BigDecimal percentGrade, BigDecimal percentCategorySum, BigDecimal pointSum, boolean isEnforcePointWeighting);
 
 	/**
+	 * This method is used for included categories to determine the courseGradePercent and percentCategory
 	 * 
+	 * courseGradePercent = (assignmentPoints * percentGrade) / pointsSum
+	 * if weighted by points
+	 * 	  percentCategory = 100 (assignmentPoints / pointsSum)
+	 * else
+	 *    percentCategory = 100 * assignmentWeight
+	 *    
 	 * @param assignment
 	 * @param percentGrade
 	 * @param percentCategorySum
 	 * @param pointSum
 	 * @param isEnforcePointWeighting
-	 * @return
+	 * @return a BigDecimal array containing courseGradePercent at [0] and percentCategory at [1]
 	 */
 	public BigDecimal[] calculateCourseGradeCategoryPercents(GradeItem assignment, BigDecimal percentGrade, BigDecimal percentCategorySum, BigDecimal pointSum, boolean isEnforcePointWeighting);
 
 
 	/**
-	 * Result = PointsEarned * 100 / PointsPossible
+	 * Result = (PointsEarned * 100) / PointsPossible
 	 * 
 	 * @param assignment an assignment
 	 * @param assignmentGradeRecord an assignmentGradeRecord that is linked to the assignment, for a specific user 
@@ -211,29 +216,41 @@ public interface GradeCalculations {
 	public BigDecimal getCategoryWeight(Category category);
 	
 	/**
+	 * This method returns the course grade. The course grade is determined by following different process paths
+	 * which are determined by the gradebook type [No Category, Categories, Weighted Categories]
 	 * 
 	 * @param gradebook
 	 * @param items
 	 * @param assignmentGradeRecordMap
 	 * @param isExtraCreditScaled
-	 * @return
+	 * @return course grade or null if the gradebook type is not one of [No Category, Categories, Weighted Categories]
 	 */
 	public BigDecimal getCourseGrade(Gradebook gradebook, Collection<?> items, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap, boolean isExtraCreditScaled);
 
 	/**
+	 * This method determines the course statistics.
+	 * - If rankStudentId is null, the statistics don't include the learner's rank
+	 * - If rankStudentId is not null, the statistics include the learner's rank
+	 * 
+	 * The following statistical data points are included as declared in the GradeStatistics class:
+	 * [mean, median, mode, standard deviation, rank]
 	 * 
 	 * @param gradeList
 	 * @param sum
 	 * @param rankStudentId
-	 * @return
+	 * @return GradeStatistics
 	 */
 	public GradeStatistics calculateStatistics(List<StudentScore> gradeList, BigDecimal sum, String rankStudentId);
 
 	/**
+	 * Points Possible = assignment.getPointsPossible()
+	 * Percent Earned = gradeRecordFromCall.getPercentEarned()
+	 * 
+	 * Result = (Points Possible * Percent Earned) / 100.0
 	 * 
 	 * @param assignment
 	 * @param gradeRecordFromCall
-	 * @return
+	 * @return null if getPercentEarned is null, otherwise above result
 	 */
 	public Double calculateDoublePointForRecord(Assignment assignment, AssignmentGradeRecord gradeRecordFromCall);
 
