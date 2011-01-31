@@ -36,7 +36,6 @@ public class AuthnMock implements Gradebook2Authn, Authn {
 		return "prof123";
 	}
 
-	@Override
 	public void setAuthnContext(Object arg0) {
 		// TODO Auto-generated method stub
 		
