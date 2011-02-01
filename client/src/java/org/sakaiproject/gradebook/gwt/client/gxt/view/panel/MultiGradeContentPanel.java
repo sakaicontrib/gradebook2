@@ -72,6 +72,7 @@ import com.extjs.gxt.ui.client.data.PagingLoadConfig;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 import com.extjs.gxt.ui.client.data.PagingLoader;
 import com.extjs.gxt.ui.client.data.SortInfo;
+import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.Events;
@@ -221,6 +222,15 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 			}
 
 		});
+		
+		// GRBK-775 : Making sure that we don't loose the entered grade
+		// when the user scrolls 
+		grid.addListener(Events.BodyScroll, new Listener<BaseEvent>() {
+            @Override
+            public void handleEvent(BaseEvent be) {
+                grid.stopEditing();
+            }
+        });
 		
 		grid.setStripeRows(true);
 		
