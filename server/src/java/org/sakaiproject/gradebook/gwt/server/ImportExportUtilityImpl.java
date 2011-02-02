@@ -107,11 +107,6 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	public static String[] nameColumns =
 		{ "student name", "name", "learner" };
 	
-	public static enum Delimiter {
-		TAB, COMMA, SPACE, COLON
-	};
-	
-	public static enum OptionState { NULL, TRUE, FALSE}; 
 
 	private static enum StructureRow {
 		GRADEBOOK("Gradebook:"),  SCALED_EC("Scaled XC:"), SHOWCOURSEGRADES("ShowCourseGrades:"), SHOWRELEASEDITEMS("ShowReleasedItems:"),
@@ -130,44 +125,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		}
 	};
 	
-	public static enum FileType {
-		CSV("csv", ".csv", "application/ms-excel"), 
-		XLS97("xls97", ".xls", "application/ms-excel");
-		private String ext = "";
-		private String mimeType = "";
-		private String name = "";
-		
-		FileType(String name, String extension, String mimeType) {
-			this.name  = name;
-			this.ext = extension;
-			this.mimeType = mimeType;
-		}
-		
-		public String getExtension() {
-			return ext;
-		}
-		
-		public String getMimeType() {
-			return mimeType;
-		}
-		
-		public String getName() {
-			return name;
-		}
-
-		public static FileType getType(String fileType) {
-			FileType rv = CSV;
-			if( fileType != null) {
-				for (FileType f : values()) {
-					if (f.getName().equals(fileType)) {
-						rv = f;
-						break;
-					}
-				}
-			}
-			return rv;
-		}
-	}
+	
 	
 	private Set<String> headerRowIndicatorSet, idSet, nameSet, scantronIgnoreSet;
 
