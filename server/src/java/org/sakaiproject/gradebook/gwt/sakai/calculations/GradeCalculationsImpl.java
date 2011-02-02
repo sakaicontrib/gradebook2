@@ -202,7 +202,7 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 	public BigDecimal[] calculateCourseGradeCategoryPercents(GradeItem a, BigDecimal percentGrade, 
 			BigDecimal percentCategorySum, BigDecimal pointsSum, boolean isEnforcePointWeighting) {
 
-		boolean isIncluded = Util.checkBoolean((a == null) ? false : a.getIncluded());
+		boolean isIncluded = Util.checkBoolean((a == null) ? Boolean.FALSE : a.getIncluded());
 
 		BigDecimal courseGradePercent = BigDecimal.ZERO;
 		BigDecimal percentCategory = BigDecimal.ZERO;
