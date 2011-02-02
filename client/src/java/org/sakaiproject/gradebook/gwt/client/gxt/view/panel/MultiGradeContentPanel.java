@@ -226,7 +226,6 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		// GRBK-775 : Making sure that we don't loose the entered grade
 		// when the user scrolls 
 		grid.addListener(Events.BodyScroll, new Listener<BaseEvent>() {
-            @Override
             public void handleEvent(BaseEvent be) {
                 grid.stopEditing();
             }
