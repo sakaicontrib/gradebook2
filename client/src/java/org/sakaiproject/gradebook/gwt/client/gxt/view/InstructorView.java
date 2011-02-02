@@ -37,6 +37,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenu;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.BorderLayoutPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.GradeScalePanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.HistoryPanel;
@@ -48,6 +49,7 @@ import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -610,19 +612,19 @@ public class InstructorView extends AppView {
 						break;
 					case EXPORT_DATA_XLS:
 						ex = new ExportDetails(ExportType.XLS97, false);
-						Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType(), ex);
+						handleExport(ex);
 						break;
 					case EXPORT_STRUCTURE_XLS:
 						ex = new ExportDetails(ExportType.XLS97, true);
-						Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType(), ex);
+						handleExport(ex); 
 						break;
 					case EXPORT_DATA_CSV:
 						ex = new ExportDetails(ExportType.CSV, false);
-						Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType(), ex);
+						handleExport(ex);  
 						break;
 					case EXPORT_STRUCTURE_CSV:
 						ex = new ExportDetails(ExportType.CSV, true);
-						Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType(), ex);
+						handleExport(ex);
 						break;
 					case IMPORT:
 						Dispatcher.forwardEvent(GradebookEvents.StartImport.getEventType());
@@ -632,6 +634,24 @@ public class InstructorView extends AppView {
 						break;
 				}
 			}
+
+			private void handleExport(ExportDetails ex) {
+				Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
+				if (selectedGradebook.getGradebookItemModel().getGradeType() == GradeType.PERCENTAGES)
+				{
+					if (Window.confirm(i18n.exportWarnUserFileCannotBeImportedText()))
+					{
+						Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType(), ex);
+					}
+				}
+				else
+				{
+					Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType(), ex);
+				}
+				
+			}
+			
+			
 
 		};
 
