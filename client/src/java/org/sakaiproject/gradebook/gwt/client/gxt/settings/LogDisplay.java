@@ -40,14 +40,10 @@ import java.util.Stack;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.GradeEventModel;
 import org.sakaiproject.gradebook.gwt.client.model.GradeEvent;
 
-import com.extjs.gxt.ui.client.core.XDOM;
-import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.IconButtonEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.util.Format;
 import com.extjs.gxt.ui.client.util.Params;
-import com.extjs.gxt.ui.client.util.Point;
-import com.extjs.gxt.ui.client.util.Size;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.button.ToolButton;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
@@ -222,21 +218,11 @@ public class LogDisplay extends ContentPanel {
 		level = firstAvail();
 		slots.add(level, this);
 
-		//Point p = position();
 		el().setLeftTop(x, y);
 		setSize(config.width, config.height);
 
-		//blur();
 		if (!config.isPermanent)
 			afterShow();
-	}
-
-	private Point position() {
-		Size s = XDOM.getViewportSize();
-		int left = (s.width - config.width - 10);
-		int top = s.height - config.height - 10
-				- (level * (config.height + 10));
-		return new Point(left, top);
 	}
 
 	private void setText() {

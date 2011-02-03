@@ -17,9 +17,6 @@ import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.sakai.GradeCalculations;
-import org.sakaiproject.gradebook.gwt.sakai.calculations.CategoryCalculationUnit;
-import org.sakaiproject.gradebook.gwt.sakai.calculations.GradeRecordCalculationUnit;
-import org.sakaiproject.gradebook.gwt.sakai.calculations.GradebookCalculationUnit;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeItem;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeStatistics;
 import org.sakaiproject.gradebook.gwt.sakai.model.StudentScore;
@@ -29,7 +26,6 @@ import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.AssignmentGradeRecord;
 import org.sakaiproject.tool.gradebook.Category;
 import org.sakaiproject.tool.gradebook.Gradebook;
-import org.sakaiproject.tool.gradebook.LetterGradePercentMapping;
 
 public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper implements GradeCalculations {
 
@@ -1099,10 +1095,6 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 		return category.isRemoved();
 	}
 
-	private boolean isExtraCredit(Assignment assignment) {
-		return assignment.isExtraCredit() == null ? false : assignment.isExtraCredit().booleanValue();
-	}
-
 	private boolean isExtraCredit(Category category) {
 		return category.isExtraCredit() == null ? false : category.isExtraCredit().booleanValue();
 	}
@@ -1111,21 +1103,11 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 		return assignmentGradeRecord != null && assignmentGradeRecord.getPointsEarned() != null;
 	}
 
-	private boolean isDropped(AssignmentGradeRecord assignmentGradeRecord) {
-		return assignmentGradeRecord != null && assignmentGradeRecord.isDropped() != null && assignmentGradeRecord.isDropped().booleanValue();
-	}
-
 	private boolean isExcused(AssignmentGradeRecord assignmentGradeRecord) {
 		if (assignmentGradeRecord == null)
 			return false;
 
 		return assignmentGradeRecord.isExcludedFromGrade() == null ? false : assignmentGradeRecord.isExcludedFromGrade().booleanValue();
-	}
-
-
-	private boolean isNormalCredit(Assignment assignment) {
-		boolean isExtraCredit = isExtraCredit(assignment);
-		return assignment.isCounted() && !assignment.isRemoved() && !isExtraCredit;
 	}
 
 	private boolean isUnweighted(Assignment assignment) {
@@ -1181,9 +1163,5 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 			}
 			return false; 
 		} 
-
-
-
 	}
-
 }

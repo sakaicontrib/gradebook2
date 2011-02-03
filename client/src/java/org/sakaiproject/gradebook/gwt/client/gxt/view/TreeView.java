@@ -37,7 +37,6 @@ import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
-import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -62,12 +61,9 @@ public class TreeView extends View {
 
 	private Gradebook selectedGradebook;
 
-	private boolean isInitialized;
-
 	public TreeView(Controller controller, boolean isEditable) {
 		super(controller);
 		this.formPanel = new ItemFormPanel();
-		this.isInitialized = false;
 		
 		
 		if (treeLoader == null) {
@@ -101,7 +97,6 @@ public class TreeView extends View {
 
 			});
 
-			//treePanel.onTreeStoreInitialized(treeStore, selectedGradebook.isUserAbleToEditAssessments());
 			formPanel.onTreeStoreInitialized(treeStore);
 		}
 		
@@ -173,9 +168,6 @@ public class TreeView extends View {
 			case SWITCH_GRADEBOOK:
 				onSwitchGradebook((Gradebook)event.getData());
 				break;
-			/*case USER_CHANGE:
-				onUserChange((UserEntityAction<?>)event.getData());
-				break;*/
 		}
 	}
 
@@ -230,7 +222,6 @@ public class TreeView extends View {
 	}
 
 	protected void onMaskItemTree() {
-		//treePanel.onMaskItemTree();
 	}
 
 	protected void onNewCategory(ItemModel itemModel) {
@@ -333,12 +324,9 @@ public class TreeView extends View {
 	}
 
 	protected void onUnmaskItemTree() {
-		//treePanel.onUnmaskItemTree();
 	}
 
-	/*protected void onUserChange(UserEntityAction<?> action) {
-		treePanel.onUserChange(action);
-	}*/
+
 
 	private FixedColumnModel findFixedByColumnId(String fixedId) {
 		FixedColumnModel fixedModel = null;
@@ -393,21 +381,4 @@ public class TreeView extends View {
 	public void setTreeStore(TreeStore<ItemModel> treeStore) {
 		this.treeStore = treeStore;
 	}
-
-
-	// Helper methods
-
-	private boolean isTreeRefreshUnnecessary(Gradebook selectedGradebook) {
-		// First thing we need to do here is decide whether we can avoid making expensive ui changes
-		Item oldGradebookItemModel = this.selectedGradebook == null ? null : this.selectedGradebook.getGradebookItemModel();
-		Item newGradebookItemModel = selectedGradebook == null ? null : selectedGradebook.getGradebookItemModel();
-		CategoryType oldCategoryType = oldGradebookItemModel == null ? null : oldGradebookItemModel.getCategoryType();
-		CategoryType newCategoryType = newGradebookItemModel == null ? null : newGradebookItemModel.getCategoryType();
-
-		this.selectedGradebook = selectedGradebook;
-
-		return (isInitialized && oldCategoryType != null && newCategoryType != null
-				&& oldCategoryType == newCategoryType);
-	}
-
 }

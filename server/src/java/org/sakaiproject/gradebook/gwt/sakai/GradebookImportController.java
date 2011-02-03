@@ -60,11 +60,6 @@ public class GradebookImportController extends SimpleFormController implements O
 	private GradebookToolService gbToolService;
 	private ImportExportUtility importExportUtility;
 	
-	private final String DELIMINATOR_COMMA = "delimiter:comma";
-	private final String DELIMINATOR_TAB = "delimiter:tab";
-	private final String DELIMINATOR_SPACE = "delimiter:space";
-	private final String DELIMINATOR_COLON = "delimiter:colon";
-	
 	private final String FILE_EXTENSION_XLS = "xls";
 	
 	private final String CONTENT_TYPE_TEXT_HTML = "text/html";
@@ -78,8 +73,6 @@ public class GradebookImportController extends SimpleFormController implements O
 		
 		
 		return onSubmit(request, response, command, errors);
-		
-		
 	}
 	
 	protected ModelAndView onSubmit(HttpServletRequest request,
@@ -128,6 +121,7 @@ public class GradebookImportController extends SimpleFormController implements O
 		return null;
 	}
 	
+	// NOTE: This is a DEBUG helper class and should not be removed during a dead code sweep 
 	private void saveJsonToFile(Upload importFile, String outfile) {
 
 		File f = new File(outfile);

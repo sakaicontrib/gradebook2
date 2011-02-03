@@ -106,10 +106,6 @@ public class GradebookApplication implements EntryPoint {
 		return version;
 	}
 	
-	private native String getParamString() /*-{
-    	return $wnd.location.search;
-	}-*/;
-	
 	private void getAuthorization(final int i) {
 		
 

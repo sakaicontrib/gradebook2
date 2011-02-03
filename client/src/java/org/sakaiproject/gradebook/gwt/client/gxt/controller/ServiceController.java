@@ -34,8 +34,8 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
-import org.sakaiproject.gradebook.gwt.client.RestCallback;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
+import org.sakaiproject.gradebook.gwt.client.RestCallback;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.gxt.JsonUtil;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeMapUpdate;
@@ -64,7 +64,6 @@ import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 import org.sakaiproject.gradebook.gwt.client.util.Base64;
 
 import com.extjs.gxt.ui.client.Registry;
-import com.extjs.gxt.ui.client.data.BaseTreeModel;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Listener;
@@ -1066,23 +1065,6 @@ public class ServiceController extends Controller {
 		}
 	}
 
-	private boolean doUpdateViaRecord(Record record, ItemModel item) {
-		// Don't modify the record unless the record's item model has been passed in
-		if (!record.getModel().equals(item)) 
-			return false;
-
-		record.beginEdit();
-
-		for (String property : item.getPropertyNames()) {
-			// Do it for the property being explicitly changed
-			replaceProperty(property, record, item);
-		}
-
-		record.endEdit();
-
-		return true;
-	}
-
 	private void replaceProperty(String property, Record record, ItemModel item) {
 		Object value = item.get(property);
 
@@ -1090,27 +1072,6 @@ public class ServiceController extends Controller {
 
 		if (value != null)
 			record.set(property, value);
-	}
-
-	private Item getActiveItem(ItemModel parent) {
-		if (parent.isActive())
-			return parent;
-
-		for (ModelData m : parent.getChildren()) {
-			ItemModel c = (ItemModel)m;
-			if (c.isActive()) {
-				return c;
-			}
-
-			if (c.getChildCount() > 0) {
-				Item activeItem = getActiveItem(c);
-
-				if (activeItem != null)
-					return activeItem;
-			}
-		}
-
-		return null;
 	}
 
 	private ItemModel getCategoryItemModel(Long categoryId) {

@@ -329,10 +329,6 @@ public class UserDirectoryServiceMock implements UserDirectoryService {
 		return random.nextInt(max);
 	}
 	
-	private String getRandomSection() {
-		return SECTIONS[getRandomInt(SECTIONS.length)];
-	}
-	
 	private User createUserRecord(String userId) {
 		
 		String id = userId;

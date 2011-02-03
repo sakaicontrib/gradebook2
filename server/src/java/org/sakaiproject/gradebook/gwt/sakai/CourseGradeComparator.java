@@ -29,8 +29,6 @@ import org.apache.commons.logging.LogFactory;
 
 public class CourseGradeComparator extends EnteredGradeComparator {
 
-	private static final Log log = LogFactory.getLog(CourseGradeComparator.class);
-
 	public CourseGradeComparator(boolean isDesc) {
 		super(isDesc);
 	}

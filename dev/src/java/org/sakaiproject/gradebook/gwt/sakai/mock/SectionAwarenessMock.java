@@ -220,15 +220,6 @@ public class SectionAwarenessMock implements SectionAwareness {
 	 * Helper methods
 	 */
 
-	@SuppressWarnings("unchecked")
-	private List<String> getSectionIdList() {
-		List<String> sectionIds = new ArrayList<String>();
-		for(CourseSection s : ((List<CourseSection>) getSections(toolManager.getCurrentPlacement().getContext()))) {
-			sectionIds.add(s.getUuid());
-		}
-		return sectionIds;
-	}
-
 	public void setToolManager(ToolManager toolManager) {
 		this.toolManager = toolManager;
 	}
@@ -236,7 +227,7 @@ public class SectionAwarenessMock implements SectionAwareness {
 	@SuppressWarnings("unchecked")
 	private CourseSection getRandomSection() {
 		
-		List sections = getSections(toolManager.getCurrentPlacement().getContext());
+		List<CourseSectionImpl> sections = getSections(toolManager.getCurrentPlacement().getContext());
 
 		return (CourseSection) sections.get(getRandomInt(sections.size()));
 	}

@@ -3,12 +3,7 @@ package org.sakaiproject.gradebook.gwt.server;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 public class ImportExportDataFile {
-
-	private static final Log log = LogFactory.getLog(ImportExportDataFile.class);
 
 	private String fileType; 
 	private String messages; 

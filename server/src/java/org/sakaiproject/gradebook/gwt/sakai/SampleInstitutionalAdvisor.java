@@ -291,24 +291,6 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 	}
 
 	/*
-	 * Helper Methods
-	 */
-	private String extractLetterGrade(String studentGrade) {
-
-		if (null == studentGrade) {
-			return null;
-		}
-
-		int indexOf = studentGrade.indexOf(" (");
-		
-		if (indexOf != -1) {
-			return studentGrade.substring(0, indexOf);
-		}
-
-		return null;
-	}
-
-	/*
 	 * IOC setters:
 	 */
 

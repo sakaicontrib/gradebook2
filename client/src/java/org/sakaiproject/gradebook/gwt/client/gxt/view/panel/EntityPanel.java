@@ -7,11 +7,9 @@ import org.sakaiproject.gradebook.gwt.client.gxt.InlineEditNumberField;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.NullSensitiveCheckBox;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
-import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.key.ActionKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
-import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
@@ -401,40 +399,6 @@ public abstract class EntityPanel extends ContentPanel {
 		sourceField.setVisible(false);
 		this.sourceField = sourceField;
 	
-	}
-
-	
-	private void initField(Field field, boolean isEnabled, boolean isVisible) {
-
-		field.setEnabled(isEnabled);
-		field.setVisible(isVisible);
-	}
-
-	private boolean checkIfDropLowestVisible(ItemModel category, CategoryType categoryType, boolean isEditable, 
-			boolean isCategory, boolean isWeightByPoints, boolean isExtraCredit) {
-		boolean isDropLowestVisible = isEditable && isCategory && !isExtraCredit;
-		boolean isWeightedCategories = categoryType == CategoryType.WEIGHTED_CATEGORIES;
-		boolean isUnweightedCategories = categoryType == CategoryType.SIMPLE_CATEGORIES;
-		
-		if (isDropLowestVisible && category != null 
-				&& ((isWeightByPoints && isWeightedCategories) || isUnweightedCategories)) {
-			if (category.getChildCount() > 0) {
-				Double points = null;
-				for (int i=0;i<category.getChildCount();i++) {
-					Item item = (Item) category.getChild(i);
-					if (!DataTypeConversionUtil.checkBoolean(item.getExtraCredit())) {
-						if (points == null)
-							points = item.getPoints();
-						else if (!points.equals(item.getPoints())) {
-							isDropLowestVisible = false;
-							break;
-						}
-					}
-				}
-			}
-		}
-		
-		return isDropLowestVisible;
 	}
 	
 	private ToolTipConfig newToolTipConfig(String text) {

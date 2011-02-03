@@ -1104,30 +1104,6 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		}
 		return null; 
 	}
-
-	private String getStringValueFromCell(HSSFCell c)
-	{
-		String ret = ""; 
-		StringBuilder sb = new StringBuilder(); 
-
-		switch (c.getCellType())
-		{
-			case HSSFCell.CELL_TYPE_NUMERIC:
-				sb.append( Double.toString( c.getNumericCellValue() ) );
-				break; 
-			case HSSFCell.CELL_TYPE_STRING: 
-				sb.append(c.getRichStringCellValue().getString());
-				break;
-
-			default:
-				sb.append(""); 
-		}
-
-		ret = sb.toString();
-		sb = null; 
-		return ret; 
-	}
-	
 	
 	private boolean isScantronSheetFromPoi(HSSFSheet s) {
 		Iterator<Row> rowIter = s.rowIterator(); 
