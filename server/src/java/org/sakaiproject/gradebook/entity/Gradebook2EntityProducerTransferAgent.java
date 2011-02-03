@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.StringBufferInputStream;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
@@ -30,23 +29,20 @@ import org.sakaiproject.entity.api.EntityTransferrer;
 import org.sakaiproject.entity.api.HttpAccess;
 import org.sakaiproject.entity.api.Reference;
 import org.sakaiproject.entity.api.ResourceProperties;
-import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.Upload;
-import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeItem;
 import org.sakaiproject.gradebook.gwt.server.ImportExportDataFile;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility.FileType;
+import org.sakaiproject.service.gradebook.shared.GradebookFrameworkService;
 import org.sakaiproject.service.gradebook.shared.GradebookNotFoundException;
-import org.sakaiproject.tool.gradebook.Assignment;
-import org.sakaiproject.tool.gradebook.Category;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -55,18 +51,22 @@ import org.xml.sax.SAXException;
 public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 		EntityTransferrer {
 	
-	private EntityManager entityManager;
+	private EntityManager entityManager = null;
 	private Log log = LogFactory.getLog(Gradebook2EntityProducerTransferAgent.class);
-	private String label;
-	private String[] myToolIds;
+	private String label = null;
+	private String[] myToolIds = null;
 	private Gradebook2ComponentService componentService;
 	private GradebookToolService toolService;
 	private static ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 	private ImportExportUtility importExportUtil = null;
+	private GradebookFrameworkService frameworkService = null;
+	
+	
+	
 
-	
-	
-	
+	public void setFrameworkService(GradebookFrameworkService frameworkService) {
+		this.frameworkService = frameworkService;
+	}
 
 	public Gradebook2ComponentService getComponentService() {
 		return componentService;
@@ -239,10 +239,21 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 		try {
 			importExportUtil.exportGradebook (FileType.CSV, "", result, componentService, from, true, false);
 		} catch (FatalException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		} 
 
+		log.debug(result.toString());
+		
+		/*
+		 *  this could be going to a new site as part of the site creation process
+		 *  So, check for the target gb, if not there, create one.
+		 */
+
+		if (!frameworkService.isGradebookDefined(to)) {
+
+			frameworkService.addGradebook(to, i18n
+					.getString("defaultGradebookName"));
+		}
 		String structure = "";
 		int headerRow = result.toString().indexOf(i18n.getString("xxportColumnHeaderStudentId"));
 		if(headerRow > -1) {
