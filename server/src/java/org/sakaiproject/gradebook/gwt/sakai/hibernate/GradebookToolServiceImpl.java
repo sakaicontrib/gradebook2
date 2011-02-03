@@ -1095,7 +1095,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 				if (hasCategories) 
 					query.append(", Category cat where a.category.id = cat.id ")
-					.append("and cat.removed = false and ")
+					.append("and cat.removed = false ")
 					.append("and cat.extraCredit = false and ");
 				else
 					query.append(" where ");
