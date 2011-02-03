@@ -42,8 +42,8 @@ import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeItem;
 import org.sakaiproject.gradebook.gwt.server.ImportExportDataFile;
-import org.sakaiproject.gradebook.gwt.server.ImportExportUtilityImpl;
-import org.sakaiproject.gradebook.gwt.server.ImportExportUtilityImpl.FileType;
+import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
+import org.sakaiproject.gradebook.gwt.server.ImportExportUtility.FileType;
 import org.sakaiproject.service.gradebook.shared.GradebookNotFoundException;
 import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.Category;
@@ -62,6 +62,7 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 	private Gradebook2ComponentService componentService;
 	private GradebookToolService toolService;
 	private static ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	private ImportExportUtility importExportUtil = null;
 
 	
 	
@@ -96,6 +97,7 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 		this.entityManager = entityManager;
 	}
 
+	@SuppressWarnings("unchecked")
 	public String archive(String siteId, Document doc, Stack stack,
 			String archivePath, List attachments) {
 		log.info("-------gradebook2 -------- archive('"
@@ -167,6 +169,7 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 		return null;
 	}
 
+	@SuppressWarnings("unchecked")
 	public Collection getEntityAuthzGroups(Reference arg0, String arg1) {
 		// TODO Auto-generated method stub
 		return null;
@@ -202,6 +205,7 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 		log.info("setting entityproducer label: " + label);
 	}
 
+	@SuppressWarnings("unchecked")
 	public String merge(String arg0, Element arg1, String arg2, String arg3,
 			Map arg4, Map arg5, Set arg6) {
 		// TODO Auto-generated method stub
@@ -229,12 +233,11 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 		this.myToolIds = myToolIds;
 	}
 
+	@SuppressWarnings("unchecked")
 	public void transferCopyEntities(String from, String to, List ids) {
-		ImportExportDataFile otherGB = null;
-		
 		ByteArrayOutputStream result = new ByteArrayOutputStream();
 		try {
-			ImportExportUtilityImpl.exportGradebook (FileType.CSV, "", result, componentService, from, true, false);
+			importExportUtil.exportGradebook (FileType.CSV, "", result, componentService, from, true, false);
 		} catch (FatalException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -249,7 +252,7 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 		log.debug(structure);
 		Upload importFile = null;
 		try {
-			importFile = (new ImportExportUtilityImpl()).parseImportCSV(componentService, to, new InputStreamReader(new ByteArrayInputStream(structure.getBytes("UTF-8"))));
+			importFile = importExportUtil.parseImportCSV(componentService, to, new InputStreamReader(new ByteArrayInputStream(structure.getBytes("UTF-8"))));
 		} catch (InvalidInputException e) {
 			e.printStackTrace();
 		} catch (FatalException e) {
@@ -270,23 +273,11 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 
 	}
 
-	private void markAsNewIfNecessary(GradeItem item) {
-		if(item.getItemType() == ItemType.CATEGORY) {
-			Category toCat = toolService.getCategory(item.getItemId());
-			if(null == toCat) {
-				item.setIdentifier(AppConstants.NEW_PREFIX + item.getItemId());
-			}
-		} else
-			if (item.getItemType() == ItemType.ITEM) {
-				Long catId = item.getCategoryId();
-				if (catId != null && catId != -1) {
-					//Category parent = toolService.getCategory(catId);
-					List<Assignment> assignments = toolService.getAssignmentsForCategory(catId);
-				}
-			}
-		
+	public void setImportExportUtil(ImportExportUtility importExportUtil) {
+		this.importExportUtil = importExportUtil;
 	}
 
+	@SuppressWarnings("unchecked")
 	public void transferCopyEntities(String from, String to, List ids,
 			boolean cleanup) {
 		

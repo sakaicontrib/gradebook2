@@ -57,6 +57,14 @@
 				<value>sakai.gradebook.gwt.rpc</value>
 			</set>	
 		</property>
+		<property name="importExportUtil" ref="org.sakaiproject.gradebook.gwt.server.ImportExportUtility" />	
+		
 	</bean>
+	
+	
+	<bean name="org.sakaiproject.gradebook.gwt.server.ImportExportUtility" 
+		class="org.sakaiproject.gradebook.gwt.server.ImportExportUtilityImpl">
+	</bean>
+	
 	
 </beans>

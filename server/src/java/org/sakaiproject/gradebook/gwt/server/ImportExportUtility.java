@@ -2,8 +2,10 @@ package org.sakaiproject.gradebook.gwt.server;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Reader;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.Upload;
@@ -79,5 +81,15 @@ public interface ImportExportUtility {
 			String gradebookUid,
 			Reader reader)
 	throws InvalidInputException, FatalException;
+
+	public ImportExportDataFile exportGradebook(Gradebook2ComponentService service, String gradebookUid, 
+			final boolean includeStructure, final boolean includeComments) 
+	throws FatalException;
+	
+	public void exportGradebook(FileType fileType, String filename, OutputStream outStream,
+			Gradebook2ComponentService service, String gradebookUid,
+			final boolean includeStructure, final boolean includeComments) throws FatalException;
+			
+
 
 }

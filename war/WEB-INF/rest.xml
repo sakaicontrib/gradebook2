@@ -74,7 +74,9 @@
 		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
 
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Export" 
-		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" >
+		<property name="importExportUtility" ref="org.sakaiproject.gradebook.gwt.server.ImportExportUtility" />
+	</bean>
 		  
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.SubmitFinalGrades" 
 		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />

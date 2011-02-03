@@ -163,7 +163,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		}
 	}
 
-	public static ImportExportDataFile exportGradebook(Gradebook2ComponentService service, String gradebookUid, 
+	public ImportExportDataFile exportGradebook(Gradebook2ComponentService service, String gradebookUid, 
 			final boolean includeStructure, final boolean includeComments) 
 	throws FatalException {
 
@@ -444,7 +444,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 
 	}
 	
-	private static void exportViewOptionsAndScaleEC(ImportExportDataFile out, Gradebook gradebook) {
+	private void exportViewOptionsAndScaleEC(ImportExportDataFile out, Gradebook gradebook) {
 		
 		Item firstGBItem = gradebook.getGradebookItemModel(); 
 		if (Util.checkBoolean(firstGBItem.getExtraCreditScaled()))
@@ -488,7 +488,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		}		
 	}
 
-	private static void outputStructureTwoPartExportRow(String optionName, String optionValue, ImportExportDataFile out)
+	private void outputStructureTwoPartExportRow(String optionName, String optionValue, ImportExportDataFile out)
 	{
 		String[] rowString; 
 		rowString = new String[3]; 
@@ -498,7 +498,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		out.addRow(rowString); 
 	}
 	
-	public static void exportGradebook(FileType fileType, String filename, OutputStream outStream,
+	public void exportGradebook(FileType fileType, String filename, OutputStream outStream,
 			Gradebook2ComponentService service, String gradebookUid,
 			final boolean includeStructure, final boolean includeComments) throws FatalException {
 		
@@ -513,7 +513,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		}
 	}
 
-	private static void exportGradebookXLS(String title, OutputStream outStream,
+	private void exportGradebookXLS(String title, OutputStream outStream,
 			Gradebook2ComponentService service, String gradebookUid,
 			final boolean includeStructure, final boolean includeComments)
 			throws FatalException {
@@ -552,7 +552,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	}
 
 
-	private static void writeXLSResponse(HSSFWorkbook wb, OutputStream out) throws FatalException {
+	private void writeXLSResponse(HSSFWorkbook wb, OutputStream out) throws FatalException {
 		try {
 			wb.write(out);
 			out.flush(); 
@@ -563,7 +563,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		}		
 	}
 
-	private static void exportGradebookCSV(String title, OutputStream outStream,
+	private void exportGradebookCSV(String title, OutputStream outStream,
 			Gradebook2ComponentService service, String gradebookUid,
 			final boolean includeStructure, final boolean includeComments)
 			throws FatalException {
@@ -2466,7 +2466,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 		}		
 	}
 	
-	private static String getDisplayName(CategoryType categoryType) {
+	private String getDisplayName(CategoryType categoryType) {
 		switch (categoryType) {
 		case NO_CATEGORIES:
 			return i18n.getString("orgTypeNoCategories");
@@ -2478,7 +2478,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 		return "N/A";
 	}
 
-	private static String getDisplayName(GradeType gradeType) {
+	private String getDisplayName(GradeType gradeType) {
 		switch (gradeType) {
 		case POINTS:
 			return i18n.getString("gradeTypePoints");

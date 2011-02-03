@@ -14,11 +14,11 @@ import javax.ws.rs.core.Context;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
-import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.server.BrowserDetect;
+import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtilityImpl;
 import org.sakaiproject.gradebook.gwt.server.UserAgent;
-import org.sakaiproject.gradebook.gwt.server.ImportExportUtilityImpl.FileType;
+import org.sakaiproject.gradebook.gwt.server.ImportExportUtility.FileType;
 import org.sakaiproject.site.api.Site;
 
 @Path("export")
@@ -26,6 +26,12 @@ public class Export extends Resource {
 
 	private static Log log = LogFactory.getLog(Export.class);
 	
+	private ImportExportUtility importExportUtility = null;
+	
+	public void setImportExportUtility(ImportExportUtility importExportUtility) {
+		this.importExportUtility = importExportUtility;
+	}
+
 	@GET @Path("{uid}{structure:(/structure/[^/]+?)?}{filetype:(/filetype/[^/]+?)?}")
 	@Produces("application/json")
 	public String export(@PathParam("uid") String gradebookUid, 
@@ -74,7 +80,7 @@ public class Export extends Resource {
 										+ filename.toString());
 			}
 			
-				ImportExportUtilityImpl.exportGradebook (type, filename.toString(), out, service, gradebookUid, includeStructure, true); 
+				importExportUtility.exportGradebook (type, filename.toString(), out, service, gradebookUid, includeStructure, true); 
 						
 			
 		} catch (FatalException e) {
