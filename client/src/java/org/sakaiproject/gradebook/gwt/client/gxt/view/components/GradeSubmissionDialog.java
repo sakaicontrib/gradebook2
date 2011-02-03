@@ -115,7 +115,7 @@ public class GradeSubmissionDialog extends Dialog {
 					setHeading(i18n.finalGradeSubmissionConfirmTitle());
 					text.append(i18n.finalGradeSubmissionWarningPrefix1()).append(" ");
 					text.append(numberOfLearners).append(" ");
-					text.append(i18n.finalGradeSubmissionWarningSuffix1());
+					text.append(i18n.finalGradeSubmissionWarningSuffix1()).append(" ");
 					
 					if (isMissingScores)
 						text.append("<p>").append(i18n.finalGradeSubmissionWarningPrefix2()).append(" ");
