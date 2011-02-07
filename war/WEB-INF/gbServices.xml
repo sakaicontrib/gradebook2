@@ -58,8 +58,7 @@
 			</set>	
 		</property>
 		<property name="importExportUtil" ref="org.sakaiproject.gradebook.gwt.server.ImportExportUtility" />	
-		
-	</bean>
+		<property name="frameworkService" ref="org.sakaiproject.service.gradebook.GradebookFrameworkService"/>
 	
 	
 	<bean name="org.sakaiproject.gradebook.gwt.server.ImportExportUtility" 
