@@ -142,7 +142,18 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				asn.setAssignmentWeighting(weight);
 				asn.setDueDate(dueDate);
 				asn.setNotCounted(Util.checkBoolean(isUnweighted));
-				asn.setExtraCredit(isExtraCredit);
+				
+				// GRBK-833: All grade items in an extra credit category are by default
+				// extra credit items. Here we set this explicitly. We can remove this once
+				// the UI handles this correctly
+				if(cat != null && Util.checkBoolean(cat.isExtraCredit())) {
+					asn.setExtraCredit(Boolean.TRUE);
+				}
+				else {
+
+					asn.setExtraCredit(isExtraCredit);
+				}
+				
 				asn.setUngraded(false);
 				if (isNotCounted != null) {
 					asn.setNotCounted(isNotCounted.booleanValue());

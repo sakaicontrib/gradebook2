@@ -168,6 +168,10 @@ public class TreeView extends View {
 			case SWITCH_GRADEBOOK:
 				onSwitchGradebook((Gradebook)event.getData());
 				break;
+			case FINISH_TREE_ITEM_DRAG_AND_DROP:
+				// GRBK-833 : This event is dispatched in the ItemTreePanel drag and drop code section
+				formPanel.setTreeItemDragAndDropMarker(true);
+				break;
 		}
 	}
 

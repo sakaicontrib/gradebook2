@@ -148,9 +148,12 @@ public class ItemFormPanel extends GradebookPanel {
 	private boolean hasChanges;
 
 	private Mode mode;
+	
+	private boolean hasTreeItemDragAndDropMarker;
 
 	public ItemFormPanel() {
 		super();
+		this.hasTreeItemDragAndDropMarker = false;
 		this.isListeningEnabled = true;
 		setHeaderVisible(true);
 		setFrame(true);
@@ -412,6 +415,16 @@ public class ItemFormPanel extends GradebookPanel {
 		
 	}
 
+	// GRBK-833 : This is called from the TreeView once it receives a FINISH_TREE_ITEM_DRAG_AND_DROP event
+	public void setTreeItemDragAndDropMarker(boolean state) {
+		
+		this.hasTreeItemDragAndDropMarker = state;
+		// Also we hide the edit form panel when we drag and drop, otherwise it's not updated
+		if(formPanel.isVisible()) {
+			//hideFormPanel();
+		}
+	}
+	
 	public void clearSelected() {
 		this.selectedItemModel = null;
 	}
@@ -487,10 +500,13 @@ public class ItemFormPanel extends GradebookPanel {
 
 		clearActiveRecord();
 		
-		if (mode == Mode.EDIT && selectedItemModel != null && itemModel != null && itemModel.equals(selectedItemModel))
+		// This seems to prevent double click propagations in the item tree
+		// GRBK-833 : don't execute this in case a tree item was dragged and dropped 
+		if (!hasTreeItemDragAndDropMarker && mode == Mode.EDIT && selectedItemModel != null && itemModel != null && itemModel.equals(selectedItemModel)) {
 			return;
+		}
 		
-		if (hasChanges) {
+		if (hasChanges && !hasTreeItemDragAndDropMarker) {
 			MessageBox.confirm(i18n.hasChangesTitle(), i18n.hasChangesMessage(), new Listener<MessageBoxEvent>() {
 
 				public void handleEvent(MessageBoxEvent be) {
@@ -503,6 +519,11 @@ public class ItemFormPanel extends GradebookPanel {
 			});
 		} else {
 			doEditItem(itemModel, expand, true);
+		}
+		
+		// GRBK-833 : At this point, we can reset the hasTreeItemDragAndDropMarker state to false 
+		if(hasTreeItemDragAndDropMarker) {
+			hasTreeItemDragAndDropMarker = false;
 		}
 	}
 	
@@ -871,6 +892,11 @@ public class ItemFormPanel extends GradebookPanel {
 			// GRBK-599 : Determine if the item's category is an extra credit category. Don't show the % Category field
 			// for items that are part of an extra credit category and the category is equally weighted
 			isParentExtraCreditCategory = (category != null && category.getExtraCredit()) ? true : false;
+			
+			// GRBK-833 : Make sure that grade items in an extra credit category have the extra credit checkbox checked
+			if(isParentExtraCreditCategory) {
+				extraCreditField.setValue(Boolean.TRUE);
+			}
 			isWeightByPoints = category == null ? false : DataTypeConversionUtil.checkBoolean(category.getEnforcePointWeighting());
 			isEqualWeight = category == null ? false : DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments());
 			isPercentCategoryVisible = hasWeights && (!isEqualWeight || isExtraCredit) && isItem && !isWeightByPoints && (!isParentExtraCreditCategory || !isEqualWeight);
@@ -888,7 +914,7 @@ public class ItemFormPanel extends GradebookPanel {
 		initField(percentCategoryField, isAllowedToEdit && !isDelete && (isItem || isCreateNewItem), isEditable && isPercentCategoryVisible);
 		initField(percentCourseGradeField, isAllowedToEdit && !isDelete, isEditable && isCategory && hasWeights);
 		initField(equallyWeightChildrenField, isAllowedToEdit && !isDelete, isEditable && isCategory && hasWeights && !isWeightByPoints);
-		initField(extraCreditField, isAllowedToEdit && !isDelete, isEditable && isNotGradebook);
+		initField(extraCreditField, !isParentExtraCreditCategory && isAllowedToEdit && !isDelete, isEditable && isNotGradebook); // GRBK-833
 		initField(dropLowestField, isAllowedToEdit && !isDelete, isDropLowestVisible);
 		initField(dueDateField, isAllowedToEdit && !isDelete && !isExternal, isEditable && isItem);
 		initField(includedField, isAllowedToEdit && !isDelete, isEditable && isNotGradebook);

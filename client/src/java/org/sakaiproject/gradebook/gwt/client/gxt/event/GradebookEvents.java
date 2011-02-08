@@ -120,6 +120,6 @@ public class GradebookEvents {
 	public static final GradebookEvent UpdateGradeMap				= registerEvent(EventKey.UPDATE_GRADE_MAP);
 	public static final GradebookEvent UpdateItem					= registerEvent(EventKey.UPDATE_ITEM);
 	public static final GradebookEvent UserChange 					= registerEvent(EventKey.USER_CHANGE);
+	public static final GradebookEvent FinishTreeItemDragAndDrop	= registerEvent(EventKey.FINISH_TREE_ITEM_DRAG_AND_DROP);
 	
-		
 }

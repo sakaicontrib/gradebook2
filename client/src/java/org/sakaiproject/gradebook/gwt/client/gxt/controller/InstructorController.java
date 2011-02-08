@@ -84,6 +84,7 @@ public class InstructorController extends Controller {
 		registerEventTypes(GradebookEvents.UserChange.getEventType());
 		registerEventTypes(GradebookEvents.StartFinalgrade.getEventType());
 		registerEventTypes(GradebookEvents.StopGraderPermissionSettings.getEventType());
+		registerEventTypes(GradebookEvents.FinishTreeItemDragAndDrop.getEventType());
 	}
 	
 	@Override
@@ -238,6 +239,10 @@ public class InstructorController extends Controller {
 			case PERMISSION_CREATED:
 			case PERMISSION_DELETED:
 				forwardToView(permissionsView, event);
+				break;
+			case FINISH_TREE_ITEM_DRAG_AND_DROP:
+				// GRBK-833
+				forwardToView(treeView, event);
 				break;
 		}
 	}

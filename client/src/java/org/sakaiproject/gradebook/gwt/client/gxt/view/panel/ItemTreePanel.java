@@ -787,15 +787,9 @@ public class ItemTreePanel extends GradebookPanel {
 								}
 
 								public void onSuccess(Request request, Response response) {
-									/*String result = response.getText();
-
-									JsonTranslater translater = new JsonTranslater(EnumSet.allOf(ItemKey.class)) {
-										protected ModelData newModelInstance() {
-											return new ItemModel();
-										}
-									};*/
+						
 									EntityOverlay overlay = JsonUtil.toOverlay(response.getText());
-									ItemModel itemModel = new ItemModel(overlay); // (ItemModel)translater.translate(result);
+									ItemModel itemModel = new ItemModel(overlay); 
 									
 									Dispatcher.forwardEvent(GradebookEvents.BeginItemUpdates.getEventType());
 
@@ -805,6 +799,9 @@ public class ItemTreePanel extends GradebookPanel {
 												selectedGradebook);
 									Dispatcher.forwardEvent(GradebookEvents.EndItemUpdates.getEventType(), selectedGradebook);
 									Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
+									// GRBK-833 : we need to signal the TreeView/ItemFormPanel that a drag and drop event occurred,
+									// in order to handle form edit state correctly.
+									Dispatcher.forwardEvent(GradebookEvents.FinishTreeItemDragAndDrop.getEventType());
 								}
 								
 							});
