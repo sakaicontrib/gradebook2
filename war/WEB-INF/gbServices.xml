@@ -66,9 +66,6 @@
 		class="org.sakaiproject.gradebook.gwt.server.ImportExportUtilityImpl">
 	</bean>
 	
-		<bean name="org.sakaiproject.gradebook.gwt.server.ImportExportUtility" 
-		class="org.sakaiproject.gradebook.gwt.server.ImportExportUtilityImpl">
-	</bean>
 	
 	<bean id="gradebook2.EntityProducerContextListener" 
 		class="org.sakaiproject.gradebook.entity.AssureGradebookContextObserver"> 
