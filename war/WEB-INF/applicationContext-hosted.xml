@@ -25,8 +25,37 @@
 	<bean id="org.sakaiproject.time.api.TimeService" class="org.sakaiproject.time.impl.BasicTimeService" 
 	    init-method="init" />
 	    
-	<bean id="org.sakaiproject.gradebook.gwt.server.ImportExportUtility" class="org.sakaiproject.gradebook.gwt.server.ImportExportUtilityImpl">
+	<bean id="org.sakaiproject.gradebook.gwt.server.ImportExportUtility" class="org.sakaiproject.gradebook.gwt.server.ImportExportUtilityImpl" init-method="init">
 		<property name="gradeCalculations" ref="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"/>
+		<property name="scantronScoreHeader" value="score" />
+		<property name="scantronRescoreHeader" value="test" />
+		<property name="scantronStudentIdHeader" value="student_id" />
+		<property name="scantronIgnoreColumns">
+			<list>
+			  <value>last name</value>
+			  <value>first name</value>
+			  <value>initial</value>
+			  <value>first_name</value>
+			  <value>last_name</value>
+			</list>
+		</property>
+		<property name="idColumns">
+			<list>
+				<value>student_id</value>
+				<value>student id</value>
+				<value>identifier</value>
+				<value>userId</value>
+				<value>learnerid</value>
+				<value>id</value>
+			</list>
+		</property>
+		<property name="nameColumns">
+			<list>
+				<value>student name</value>
+				<value>name</value>
+				<value>learner</value>
+			</list>
+		</property>
 	</bean>
 	
 	<bean id="org.sakaiproject.archive.api.ArchiveService" class="org.sakaiproject.gradebook.gwt.sakai.mock.ArchiveServiceMock">

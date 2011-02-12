@@ -89,6 +89,10 @@ import org.sakaiproject.tool.gradebook.Assignment;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 
+/*
+ * TODO: too many setters here?
+ */
+
 public class ImportExportUtilityImpl implements ImportExportUtility {
 
 	private static final Log log = LogFactory.getLog(ImportExportUtilityImpl.class);
@@ -96,16 +100,19 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	private final static int RAWFIELD_FIRST_POSITION = 0; 
 	private final static int RAWFIELD_SECOND_POSITION = 1; 
 
-	private static final String SCANTRON_HEADER_STUDENT_ID = "student_id"; 
-	private static final String SCANTRON_HEADER_SCORE = "score"; 
+	/// these are injected as of GRBK-407
+	private String scantronStudentIdHeader = null; 
+	private String scantronScoreHeader = null;
+	private String scantronRescoreHeader = null;
+	
 	private static ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 
-	public static String[] scantronIgnoreColumns = 
-		{ "last name", "first name", "initial" };
-	public static String[] idColumns = 
-		{ "student id", "identifier", "userId", "learnerid", "id" };
-	public static String[] nameColumns =
-		{ "student name", "name", "learner" };
+	public String[] scantronIgnoreColumns = null;
+
+	public String[] idColumns = null;
+
+	public String[] nameColumns = null;
+
 	
 
 	private static enum StructureRow {
@@ -143,9 +150,11 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		
 	private GradeCalculations gradeCalculations;
 	
-	public ImportExportUtilityImpl() {	
-		// FIXME - Need to decide whether this should be institutional based.  
-		// FIXME - does this need i18n ? 
+	
+	
+	
+	public void init() throws Exception {	
+		
 		this.headerRowIndicatorSet = new HashSet<String>();
 		this.nameSet = new HashSet<String>();
 		for (int i=0;i<nameColumns.length;i++) {
@@ -162,6 +171,52 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			scantronIgnoreSet.add(scantronIgnoreColumns[i].toLowerCase());
 		}
 	}
+	
+
+	public void setScantronIgnoreColumns(String[] scantronIgnoreColumns) {
+		this.scantronIgnoreColumns = scantronIgnoreColumns;
+	}
+
+
+	public void setIdColumns(String[] idColumns) {
+		this.idColumns = idColumns;
+	}
+
+
+	public void setNameColumns(String[] nameColumns) {
+		this.nameColumns = nameColumns;
+	}
+
+
+	public void setScantronScoreHeader(String scantronScoreHeader) {
+		this.scantronScoreHeader = scantronScoreHeader;
+	}
+
+
+	public void setScantronRescoreHeader(String scantronRescoreHeader) {
+		this.scantronRescoreHeader = scantronRescoreHeader;
+	}
+
+
+	public void setIdSet(Set<String> idSet) {
+		this.idSet = idSet;
+	}
+
+
+	public void setNameSet(Set<String> nameSet) {
+		this.nameSet = nameSet;
+	}
+
+
+	public void setScantronIgnoreSet(Set<String> scantronIgnoreSet) {
+		this.scantronIgnoreSet = scantronIgnoreSet;
+	}
+	
+	public void setScantronStudentIdHeader(String scantronStudentIdHeader) {
+		this.scantronStudentIdHeader = scantronStudentIdHeader;
+	}
+	
+
 
 	public ImportExportDataFile exportGradebook(Gradebook2ComponentService service, String gradebookUid, 
 			final boolean includeStructure, final boolean includeComments) 
@@ -792,8 +847,8 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		ImportExportDataFile raw = new ImportExportDataFile(); 
 		boolean stop = false; 
 
-		Cell studentIdHeader = s.findCell(SCANTRON_HEADER_STUDENT_ID);
-		Cell scoreHeader = s.findCell(SCANTRON_HEADER_SCORE);
+		Cell studentIdHeader = s.findCell(scantronStudentIdHeader);
+		Cell scoreHeader = s.findCell(scantronScoreHeader);
 
 		if (studentIdHeader == null)
 		{
@@ -803,9 +858,12 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 
 		if (scoreHeader == null)
 		{
-			err.append("There is no column with the header score");
-			stop = true; 
-
+			// check for rescore header - GRBK-407
+			scoreHeader = s.findCell(scantronRescoreHeader);
+			if (scoreHeader == null) {
+				err.append("There is no column with the header score");
+				stop = true; 
+			}
 		}
 
 		if (! stop) 
@@ -859,10 +917,11 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		return header; 
 	}
 	private boolean isScantronSheetForJExcelApi(Sheet s) {
-		Cell studentIdHeader = s.findCell(SCANTRON_HEADER_STUDENT_ID);
-		Cell scoreHeader = s.findCell("score");
+		Cell studentIdHeader = s.findCell(scantronStudentIdHeader);
+		Cell scoreHeader = s.findCell(scantronScoreHeader);
+		Cell reScoreHeader = s.findCell(scantronRescoreHeader);
 
-		return (studentIdHeader != null && scoreHeader != null); 
+		return (studentIdHeader != null && scoreHeader != null && reScoreHeader != null); 
 	}
 
 	private Upload handlePoiSpreadSheet(HSSFWorkbook inspread, Gradebook2ComponentService service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName) throws InvalidInputException, FatalException
@@ -996,8 +1055,8 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		StringBuilder err = new StringBuilder("Scantron File with errors"); 
 		boolean stop = false; 
 
-		org.apache.poi.ss.usermodel.Cell studentIdHeader = findCellWithTextonSheetForPoi(s, SCANTRON_HEADER_STUDENT_ID);
-		org.apache.poi.ss.usermodel.Cell scoreHeader = findCellWithTextonSheetForPoi(s, SCANTRON_HEADER_SCORE);
+		org.apache.poi.ss.usermodel.Cell studentIdHeader = findCellWithTextonSheetForPoi(s, scantronStudentIdHeader);
+		org.apache.poi.ss.usermodel.Cell scoreHeader = findCellWithTextonSheetForPoi(s, scantronScoreHeader);
 		if (studentIdHeader == null)
 		{
 			err.append("There is no column with the header student_id");
@@ -1006,9 +1065,12 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 
 		if (scoreHeader == null)
 		{
-			err.append("There is no column with the header score");
-			stop = true; 
-
+			// check for a rescore header - GRBK-407
+			scoreHeader = findCellWithTextonSheetForPoi(s, scantronRescoreHeader);
+			if(scoreHeader == null) {
+				err.append("There is no column with the header score");
+				stop = true; 
+			}
 		}
 
 		if (! stop) 
@@ -1113,7 +1175,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			org.apache.poi.ss.usermodel.Cell possibleHeader = curRow.getCell(0); 
 
 			if (possibleHeader != null && possibleHeader.getCellType() == org.apache.poi.ss.usermodel.Cell.CELL_TYPE_STRING 
-					&&  SCANTRON_HEADER_STUDENT_ID.equals(possibleHeader.getRichStringCellValue().getString()) )
+					&&  scantronStudentIdHeader.equals(possibleHeader.getRichStringCellValue().getString()) )
 			{
 				return true; 
 			}
@@ -2501,6 +2563,10 @@ private GradeItem buildNewCategory(String curCategoryString,
 	public void setGradeCalculations(GradeCalculations gradeCalculations) {
 		this.gradeCalculations = gradeCalculations;
 	}
+
+
+	
+	
 }
 
 class ImportExportInformation 
