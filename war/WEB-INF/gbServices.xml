@@ -61,12 +61,6 @@
 		<property name="frameworkService" ref="org.sakaiproject.service.gradebook.GradebookFrameworkService"/>
 	</bean>
 	
-	
-	<bean name="org.sakaiproject.gradebook.gwt.server.ImportExportUtility" 
-		class="org.sakaiproject.gradebook.gwt.server.ImportExportUtilityImpl">
-	</bean>
-	
-	
 	<bean id="gradebook2.EntityProducerContextListener" 
 		class="org.sakaiproject.gradebook.entity.AssureGradebookContextObserver"> 
 		<property name="myToolIds">
