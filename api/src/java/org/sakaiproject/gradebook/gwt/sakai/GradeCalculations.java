@@ -254,4 +254,7 @@ public interface GradeCalculations {
 	 */
 	public Double calculateDoublePointForRecord(Assignment assignment, AssignmentGradeRecord gradeRecordFromCall);
 
+	// GRBK-483 calc and return EarnedWeightedPercentage
+	public BigDecimal getEarnedWeightedPercentage(Assignment gradableObject, AssignmentGradeRecord gradeRecord);
+
 }

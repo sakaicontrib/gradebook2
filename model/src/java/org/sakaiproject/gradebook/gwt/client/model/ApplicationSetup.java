@@ -24,4 +24,8 @@ public interface ApplicationSetup {
 
 	public abstract void setEnabledGradeTypes(List<GradeType> enabledGradeTypes);
 
+	public abstract boolean isShowWeightedEnabled();
+
+	public abstract void setShowWeightedEnabled(boolean isShowWeightedEnabled);
+
 }

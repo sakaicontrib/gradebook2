@@ -72,7 +72,7 @@ public interface Gradebook2ComponentService {
 	
 	public List<Item> getItems(String gradebookUid, Long gradebookId, String type);
 	
-	public Roster getRoster(String gradebookUid, Long gradebookId, Integer limit, Integer offset, String sectionUuid, String searchString, String sortField, boolean includeCMId, boolean isDescending);
+	public Roster getRoster(String gradebookUid, Long gradebookId, Integer limit, Integer offset, String sectionUuid, String searchString, String sortField, boolean includeCMId, boolean isDescending, boolean isShowWeighted);
 	
 	public List<Permission> getPermissions(String gradebookUid, Long gradebookId, String graderId) throws SecurityException;
 	

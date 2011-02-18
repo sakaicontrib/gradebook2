@@ -113,6 +113,7 @@ import org.sakaiproject.tool.gradebook.Permission;
 import org.sakaiproject.user.api.User;
 import org.sakaiproject.user.api.UserDirectoryService;
 import org.sakaiproject.user.api.UserNotDefinedException;
+import org.sakaiproject.util.ResourceLoader;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -283,6 +284,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 	private ToolManager toolManager;	
 	private UserDirectoryService userService;
 
+	protected boolean isShowWeightedEnabled = false;
 
 	public Learner assignComment(String itemId, String studentUid, String text) {
 
@@ -821,6 +823,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		setup.setGradebookModels(getGradebookModels(gradebookUids));
 		setup.setHelpUrl(helpUrl);
 		setup.setEnabledGradeTypes(enabledGradeTypes);
+		setup.setShowWeightedEnabled(this.isShowWeightedEnabled());
 
 		return setup;
 	}
@@ -1343,7 +1346,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 	@SuppressWarnings("unchecked")
 	public Roster getRoster(String gradebookUid, Long gradebookId,
 			Integer numberLimit, Integer numberOffset, String sectionUuid,
-			String searchCriteria, String sortField, boolean includeCMId, boolean isDescending) {
+			String searchCriteria, String sortField, boolean includeCMId, boolean isDescending, boolean isShowWeighted) {
 
 		List<Learner> rows = new ArrayList<Learner>();
 
@@ -1503,7 +1506,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 				// FIXME : GRBK-233 : If a site has sections as well as adhoc groups users that are 
 				// in both sections and adhoc groups show up twice
-				userRecords = findLearnerRecordPage(gradebook, site, realmIds, groupReferences, groupReferenceMap, sortField, searchField, searchCriteria, offset, limit, !isDescending, includeCMId);
+				userRecords = findLearnerRecordPage(gradebook, site, realmIds, groupReferences, groupReferenceMap, sortField, searchField, searchCriteria, offset, limit, !isDescending, includeCMId, isShowWeighted);
 				totalUsers = gbService.getUserCountForSite(realmIds, sortField, searchField, searchCriteria, learnerRoleNames);
 
 				List<FixedColumn> columns = getColumns(true);
@@ -1513,7 +1516,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 				// We only want to populate the rowData and rowValues for
 				// the requested rows
 				for (UserRecord userRecord : userRecords) {
-					rows.add(buildStudentRow(gradebook, userRecord, columns, assignments, categories));
+					rows.add(buildStudentRow(gradebook, userRecord, columns, assignments, categories, isShowWeighted));
 				}
 
 				return new RosterImpl(rows, Integer.valueOf(totalUsers));
@@ -1525,7 +1528,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			case S_CALC_GRD:
 			case S_ITEM:
 
-				userRecords = findLearnerRecordPage(gradebook, site, realmIds, groupReferences, groupReferenceMap, null, searchField, searchCriteria, -1, -1, !isDescending, includeCMId);
+				userRecords = findLearnerRecordPage(gradebook, site, realmIds, groupReferences, groupReferenceMap, null, searchField, searchCriteria, -1, -1, !isDescending, includeCMId, isShowWeighted);
 
 				Map<String, UserRecord> userRecordMap = new HashMap<String, UserRecord>();
 
@@ -1573,7 +1576,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 				}
 			}
 
-			rows.add(buildStudentRow(gradebook, userRecord, columns, assignments, categories));
+			rows.add(buildStudentRow(gradebook, userRecord, columns, assignments, categories, isShowWeighted));
 		}
 
 		return new RosterImpl(rows, Integer.valueOf(totalUsers));
@@ -2334,7 +2337,9 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 					limitScaledExtraCreditToCategoryType = CategoryType.SIMPLE_CATEGORIES;
 			}
 
-
+			String enableShowWeighted = configService.getString(AppConstants.ENABLE_SHOW_WEIGHTED_TOGGLE);
+			this.setShowWeightedEnabled(enableShowWeighted != null && Boolean.TRUE.toString().equalsIgnoreCase(enableShowWeighted.trim()));
+			//MultiGradeContextPanel.setShowWeightedEnabled(this.isShowWeightedEnabled());
 		} else {
 			enabledGradeTypes.add(GradeType.POINTS);
 			enabledGradeTypes.add(GradeType.PERCENTAGES);
@@ -3489,7 +3494,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		return getGradeItem(gradebook, assignments, categories, categoryId, null);
 	}
 
-	private Map<String, Object> appendItemData(Long assignmentId, Map<String, Object> cellMap, UserRecord userRecord, Gradebook gradebook, Boolean countNullsAsZeros) {
+	private Map<String, Object> appendItemData(Long assignmentId, Map<String, Object> cellMap, UserRecord userRecord, Gradebook gradebook, Boolean countNullsAsZeros, boolean isShowWeighted) {
 
 		AssignmentGradeRecord gradeRecord = null;
 
@@ -3522,6 +3527,12 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			switch (gradebook.getGrade_type()) {
 			case GradebookService.GRADE_TYPE_POINTS:
 				Double value = gradeRecord != null && gradeRecord.getPointsEarned() != null ? gradeRecord.getPointsEarned() : (isCountNullsAsZeros ? Double.valueOf(0) : null);
+
+				// GRBK-483: to replace points with earnedWeightedPercentage				
+				if (isShowWeighted && gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY && value != null && value > 0) {
+					BigDecimal earnedWeightedPercentage = gradeCalculations.getEarnedWeightedPercentage((Assignment) gradeRecord.getGradableObject(), gradeRecord);
+					value = earnedWeightedPercentage != null ? getRoundedDisplayGrade(earnedWeightedPercentage).doubleValue() : Double.valueOf(0);
+				}
 				cellMap.put(id, value);
 				break;
 			case GradebookService.GRADE_TYPE_PERCENTAGE:
@@ -3579,7 +3590,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		return ret; 
 
 	}
-	private Learner buildLearnerGradeRecord(Gradebook gradebook, UserRecord userRecord, List<FixedColumn> columns, List<Assignment> assignments, List<Category> categories) {
+	private Learner buildLearnerGradeRecord(Gradebook gradebook, UserRecord userRecord, List<FixedColumn> columns, List<Assignment> assignments, List<Category> categories, boolean isShowWeighted) {
 
 		if (userRecord == null)
 			return null;
@@ -3702,25 +3713,25 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		if (assignments != null) {
 
 			for (Assignment assignment : assignments) {
-				cellMap = appendItemData(assignment.getId(), cellMap, userRecord, gradebook, assignment.getCountNullsAsZeros());
+				cellMap = appendItemData(assignment.getId(), cellMap, userRecord, gradebook, assignment.getCountNullsAsZeros(), isShowWeighted);
 			}
-
+			
 		} else {
 
 			if (studentGradeMap != null) {
 				for (AssignmentGradeRecord gradeRecord : studentGradeMap.values()) {
 					Assignment assignment = gradeRecord.getAssignment();
-					cellMap = appendItemData(assignment.getId(), cellMap, userRecord, gradebook, assignment.getCountNullsAsZeros());
+					cellMap = appendItemData(assignment.getId(), cellMap, userRecord, gradebook, assignment.getCountNullsAsZeros(), isShowWeighted);
 				}
 			}
 
 		}
-
+		
 		return new LearnerImpl(cellMap);
 	}
 
-	private Learner buildStudentRow(Gradebook gradebook, UserRecord userRecord, List<FixedColumn> columns, List<Assignment> assignments, List<Category> categories) {
-		return buildLearnerGradeRecord(gradebook, userRecord, columns, assignments, categories);
+	private Learner buildStudentRow(Gradebook gradebook, UserRecord userRecord, List<FixedColumn> columns, List<Assignment> assignments, List<Category> categories, boolean isShowWeighted) {
+		return buildLearnerGradeRecord(gradebook, userRecord, columns, assignments, categories, isShowWeighted);
 	}
 
 	private UserRecord buildUserRecord(Site site, User user, Gradebook gradebook) {
@@ -4090,6 +4101,8 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		model.setGradebookUid(gradebookUid);
 		model.setGradebookId(gradebook.getId());
 		model.setName(gradebook.getName());
+		
+		boolean isShowWeighted = false;
 
 		// GRBK-233 create new assignment and category list
 		GradeItem gradebookGradeItem = getGradebookGradeItem(gradebook, assignments, categories, isSingleUserView);
@@ -4169,7 +4182,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 				// single user view
 				if (isSingleUserView) {
 					UserRecord userRecord = buildUserRecord(site, user, gradebook);
-					model.setUserAsStudent(buildStudentRow(gradebook, userRecord, columns, assignments, categories));
+					model.setUserAsStudent(buildStudentRow(gradebook, userRecord, columns, assignments, categories, isShowWeighted));
 				}
 
 				model.setUserName(user.getDisplayName());
@@ -4400,6 +4413,8 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			List<Category> categories = null;
 			if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
 				categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+			
+			boolean isShowWeighted = false;  // set temporarily to false, need to check the status from @QueryParams
 
 			isNewGradebook = assignments != null && assignments.size() > 0;
 
@@ -4748,7 +4763,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 	}
 
 	private List<UserRecord> findLearnerRecordPage(Gradebook gradebook, Site site, String[] realmIds, List<String> groupReferences, Map<String, Group> groupReferenceMap, String sortField, String searchField, String searchCriteria,
-			int offset, int limit, boolean isAscending, boolean includeCMId) {
+			int offset, int limit, boolean isAscending, boolean includeCMId, boolean isShowWeighted) {
 
 		String[] learnerRoleKeys = getLearnerRoleNames();
 		verifyUserDataIsUpToDate(site, learnerRoleKeys);
@@ -5458,7 +5473,8 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		List<Category> categories = null;
 		if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
 			categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
-		return buildLearnerGradeRecord(gradebook, userRecord, columns, assignments, categories);
+		boolean isShowWeighted = false;  // set temporarily to false, need to check the status from @QueryParams
+		return buildLearnerGradeRecord(gradebook, userRecord, columns, assignments, categories, isShowWeighted);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -6184,4 +6200,19 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			}
 		}
 	}
+
+	/**
+	 * @return the isShowWeightedEnabled
+	 */
+	public boolean isShowWeightedEnabled() {
+		return isShowWeightedEnabled;
+	}
+
+	/**
+	 * @param isShowWeightedEnabled the isShowWeightedEnabled to set
+	 */
+	public void setShowWeightedEnabled(boolean isShowWeightedEnabled) {
+		this.isShowWeightedEnabled = isShowWeightedEnabled;
+	}
+
 }

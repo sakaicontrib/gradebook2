@@ -87,4 +87,11 @@ public class ApplicationSetupImpl extends BaseModel implements
 		set(ApplicationKey.S_PLACE_ID.name(), placementId);
 	}
 
+	public void setShowWeightedEnabled(boolean isShowWeightedEnabled) {
+		set(ApplicationKey.S_SH_WTD_ENABLED.name(), Boolean.toString(isShowWeightedEnabled));
+	}
+	
+	public boolean isShowWeightedEnabled() {
+		return ("true".equals(get(ApplicationKey.S_SH_WTD_ENABLED.name())));
+	}
 }

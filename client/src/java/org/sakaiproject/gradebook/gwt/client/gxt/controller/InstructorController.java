@@ -278,6 +278,7 @@ public class InstructorController extends Controller {
 
 		Registry.register(AppConstants.HELP_URL, model.getHelpUrl());
 		Registry.register(AppConstants.ENABLED_GRADE_TYPES, model.getEnabledGradeTypes());
+		Registry.register(AppConstants.SHOW_WEIGHTED_ENABLED, Boolean.toString(model.isShowWeightedEnabled()));
 
 		// FIXME: Currently we only evaluate the first gradebook model to determine if we have
 		// FIXME: an instructor or a student. This needs to be refined.

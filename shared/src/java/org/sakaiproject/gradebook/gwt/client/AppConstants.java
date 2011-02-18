@@ -135,6 +135,9 @@ public interface AppConstants {
 	
 	public static final String LEARNER_ROLE_NAMES	= "gb2.gradable.role.names";
 	
+	public static final String SHOW_WEIGHTED_ENABLED	= "showWeightedEnabled";
+	public static final String ENABLE_SHOW_WEIGHTED_TOGGLE = "gb2.show.weighted.enabled";
+	
 	public static final String ENABLE_SCALED_EC	= "gb2.enable.scaled.extra.credit";
 	public static final String LIMIT_SCALED_EC	= "gb2.limit.scaled.extra.credit";
 	

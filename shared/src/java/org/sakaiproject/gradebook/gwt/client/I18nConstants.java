@@ -302,6 +302,7 @@ public interface I18nConstants extends Constants {
 	String viewMenuHistoryHeading();
 
 	String weightName();	
+	String showWeightedButton();
 	
 	// Statistics
 	String statisticsDataErrorTitle();

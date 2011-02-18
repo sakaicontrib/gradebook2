@@ -32,6 +32,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.GbCellEditor;
 import org.sakaiproject.gradebook.gwt.client.gxt.GbEditorGrid;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
+import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaToggleButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.CustomColumnModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid.CustomGridView;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
@@ -129,6 +130,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	protected EntityType entityType;
 	
 	protected NumberFormat defaultNumberFormat;
+	protected NumberFormat twoDecimalFormat = NumberFormat.getFormat("#.##");
 	
 	protected CustomColumnModel cm;
 	protected PagingLoadConfig loadConfig;
@@ -165,7 +167,11 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	//private Listener<UserChangeEvent> userChangeEventListener;
 
 	private MultigradeSelectionModel<ModelData> cellSelectionModel;
-	
+
+	private AriaToggleButton showWeightedToggleButton;
+	private String showWeightedString;
+	protected boolean isShowWeightedEnabled = false;
+
 	public MultiGradeContentPanel(ListStore<ModelData> store, boolean isImport) {
 		super();
 		this.isImport = isImport;
@@ -458,10 +464,19 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 						name.append(itemModel.getName());
 						switch (gradeType) {
 							case POINTS:
-								name.append(" [").append(itemModel.getPoints()).append("]");
+								// 
+								if (showWeightedString != null && showWeightedString.trim().equalsIgnoreCase("true")) {
+									// TODO: i18n needs to deal with number format and inserting numbers into string rather than appending string to number
+									name.append(twoDecimalFormat.format(((Double)itemModel.getPercentCourseGrade()))).append(i18n.columnSuffixPercentages());
+								} else {
+									// TODO: i18n needs to deal with number format and inserting numbers into string rather than appending string to number
+									name.append(itemModel.getPoints()).append(i18n.columnSuffixPoints());
+								}
+
+								//name.append(" [").append(itemModel.getPoints()).append("]");
 								break;
 							case PERCENTAGES:
-								name.append(" [%]");
+								name.append(i18n.columnSuffixPercentages());
 						}
 						column.setHeader(name.toString());
 						queueDeferredRefresh(RefreshAction.REFRESHLOCALCOLUMNS);
@@ -495,9 +510,14 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 
 
 				// FIXME: This could be condensed significantly
-				if (ce.getType() == GradebookEvents.DoSearch.getEventType()) {
+				if (ce.getType() == GradebookEvents.DoSearch.getEventType() || ce.getType() == GradebookEvents.ShowWeighted.getEventType()) {
 					int pageSize = getPageSize();
 					String searchString = searchField.getValue();
+					if(showWeightedToggleButton != null) {
+						showWeightedString = Boolean.toString(showWeightedToggleButton.isPressed());
+					} else if(showWeightedString == null) {
+						showWeightedString = Boolean.FALSE.toString();
+					}
 					String sectionUuid = null;
 					if (sectionListBox != null) {
 						List<ModelData> selectedItems = sectionListBox.getSelection();
@@ -510,9 +530,15 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 					loadConfig.setLimit(0);
 					loadConfig.setOffset(pageSize);
 					((MultiGradeLoadConfig) loadConfig).setSearchString(searchString);
+					((MultiGradeLoadConfig) loadConfig).setShowWeighted(showWeightedString);
 					((MultiGradeLoadConfig) loadConfig).setSectionUuid(sectionUuid);
 					((BasePagingLoader)newLoader()).useLoadConfig(loadConfig);
 					newLoader().load(0, pageSize);
+					
+					refreshColumnHeaders();
+					
+					
+
 				} else if (ce.getType() == GradebookEvents.ClearSearch.getEventType()) {
 					int pageSize = getPageSize();
 					searchField.setValue(null);
@@ -603,6 +629,16 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 			}
 
 		};*/
+	}
+	
+	protected void refreshColumnHeaders() {
+		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
+		Configuration configModel = selectedGradebook.getConfigurationModel();
+		ItemModel gradebookItemModel = (ItemModel)selectedGradebook.getGradebookItemModel();
+		List<FixedColumn> staticColumns = selectedGradebook.getColumns();
+		
+		reconfigureGrid(newColumnModel(configModel, staticColumns, gradebookItemModel));
+		grid.getView().getHeader().refresh();
 	}
 
 	public void onShowColumns(ShowColumnsEvent event) {
@@ -918,6 +954,21 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 			searchToolBar.add(clearSearchItem);
 			searchToolBar.add(new SeparatorToolItem());
 			searchToolBar.add(sectionListBox);
+			searchToolBar.add(new SeparatorToolItem());
+			addListener(GradebookEvents.ShowWeighted.getEventType(), componentEventListener);
+			showWeightedToggleButton = new AriaToggleButton(i18n.showWeightedButton(), new SelectionListener<ButtonEvent>() {
+				public void componentSelected(ButtonEvent ce) {
+					fireEvent(GradebookEvents.ShowWeighted.getEventType(), ce);
+				}
+			});
+			searchToolBar.add(showWeightedToggleButton);
+			if(this.isShowWeightedEnabled()) {
+				showWeightedToggleButton.show();
+				showWeightedToggleButton.enable();
+			} else {
+				showWeightedToggleButton.disable();
+				showWeightedToggleButton.hide();
+			}
 		}
 		
 		/*useClassicNavigationCheckBox = new CheckBox();
@@ -993,6 +1044,14 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 
 		grid.addListener(Events.CellClick, gridEventListener);
 		grid.addListener(Events.ContextMenu, gridEventListener);
+		
+		grid.addListener(Events.BeforeEdit, new Listener<GridEvent>() {
+			public void handleEvent(GridEvent be) {
+				ColumnConfig myCm = be.getGrid().getColumnModel().getColumn(be.getColIndex());
+				if (showWeightedString != null && showWeightedString.equalsIgnoreCase("true") && (!"Grade Override".equals(myCm.getHeader())))			
+					be.setCancelled(true);
+				}
+		});
 
 		cellSelectionModel = new MultigradeSelectionModel<ModelData>();
 		cellSelectionModel.setSelectionMode(SelectionMode.SINGLE);
@@ -1044,7 +1103,8 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 			.append(getDisplayName(gradebookItem.getCategoryType()))
 			.append("/")
 			.append(getDisplayName(gradebookItem.getGradeType()))
-			.append(" ").append(i18n.modeText());
+			.append(" ").append(i18n.modeText())
+			.append(" -- ").append(this.showWeightedString);
 
 			modeLabel.setText(modeLabelText.toString());	
 		}
@@ -1058,7 +1118,8 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 			.append(getDisplayName(gradebookModel.getGradebookItemModel().getCategoryType()))
 			.append("/")
 			.append(getDisplayName(gradebookModel.getGradebookItemModel().getGradeType()))
-			.append(" Mode");
+			.append(" Mode")
+			.append(" -- ").append(this.showWeightedString);
 
 			modeLabel.setText(modeLabelText.toString());	
 		}
@@ -1101,7 +1162,17 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 			columnNameBuilder.append(" ").append(i18n.columnSuffixPrefix());
 			switch (gradeType) {
 				case POINTS:
-					columnNameBuilder.append(item.getPoints()).append(i18n.columnSuffixPoints());
+					// GWT.log(showWeightedString);
+					if(this.showWeightedToggleButton != null) {
+						this.showWeightedString = Boolean.toString(this.showWeightedToggleButton.isPressed());
+					}
+					if (showWeightedString != null && showWeightedString.trim().equalsIgnoreCase("true")) {
+						// TODO: i18n needs to deal with number format and inserting numbers into string rather than appending string to number
+						columnNameBuilder.append(twoDecimalFormat.format(((Double)item.getPercentCourseGrade()))).append(i18n.columnSuffixPercentages());
+					} else {
+						// TODO: i18n needs to deal with number format and inserting numbers into string rather than appending string to number
+						columnNameBuilder.append(item.getPoints()).append(i18n.columnSuffixPoints());
+					}
 					break;
 				case PERCENTAGES:
 					columnNameBuilder.append(i18n.columnSuffixPercentages());
@@ -1472,6 +1543,22 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 
 	public void setRefreshAction(RefreshAction refreshAction) {
 		this.refreshAction = refreshAction;
+	}
+
+	/**
+	 * @return the isShowWeightedEnabled
+	 */
+	public boolean isShowWeightedEnabled() {
+		if(! this.isShowWeightedEnabled) {
+			// check config value
+			String showWeightedEnabledStr = Registry.get(AppConstants.SHOW_WEIGHTED_ENABLED);
+			this.setShowWeightedEnabled(showWeightedEnabledStr != null && showWeightedEnabledStr.trim().equalsIgnoreCase(Boolean.toString(true)));
+		}
+		return isShowWeightedEnabled;
+	}
+
+	protected void setShowWeightedEnabled(boolean enabled) {
+		this.isShowWeightedEnabled = enabled;
 	}
 
 }

@@ -124,4 +124,12 @@ public class ApplicationModel extends EntityModel implements ApplicationSetup {
 
 		return new BaseModel();
 	}
+
+	public void setShowWeightedEnabled(boolean isShowWeightedEnabled) {
+		set(ApplicationKey.S_SH_WTD_ENABLED.name(), Boolean.toString(isShowWeightedEnabled));
+	}
+	
+	public boolean isShowWeightedEnabled() {
+		return ("true".equals(get(ApplicationKey.S_SH_WTD_ENABLED.name())));
+	}
 }

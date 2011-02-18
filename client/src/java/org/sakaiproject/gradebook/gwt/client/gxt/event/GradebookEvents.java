@@ -72,6 +72,7 @@ public class GradebookEvents {
 	public static final GradebookEvent Exception 					= registerEvent(EventKey.EXCEPTION);
 	public static final GradebookEvent ExpandEastPanel 				= registerEvent(EventKey.EXPAND_EAST_PANEL);
 	public static final GradebookEvent GradebookChange 				= registerEvent(EventKey.GRADEBOOK_CHANGE);
+	public static final GradebookEvent ShowWeighted 				= registerEvent(EventKey.SHOW_WEIGHTED);	
 	public static final GradebookEvent GradeTypeUpdated				= registerEvent(EventKey.GRADE_TYPE_UPDATED);
 	public static final GradebookEvent HideColumn					= registerEvent(EventKey.HIDE_COLUMN);
 	public static final GradebookEvent HideEastPanel				= registerEvent(EventKey.HIDE_EAST_PANEL);

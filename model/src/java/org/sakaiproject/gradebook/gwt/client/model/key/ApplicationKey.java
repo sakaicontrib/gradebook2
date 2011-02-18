@@ -4,7 +4,9 @@ public enum ApplicationKey {
 	A_GB_MODELS("gradebookModels"), 
 	S_PLACE_ID("placementId"), 
 	S_HELPURL("helpUrl"), 
-	V_ENBLD_GRD_TYPES("enabledGradeTypes");
+	V_ENBLD_GRD_TYPES("enabledGradeTypes"),
+	S_SH_WTD_ENABLED("showWeightedEnabled");
+
 	
 	private String property;
 
