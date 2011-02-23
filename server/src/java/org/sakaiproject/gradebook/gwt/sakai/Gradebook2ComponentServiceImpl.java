@@ -5520,6 +5520,9 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 				BigDecimal categoryAssignmentWeightSum = BigDecimal.ZERO;
 
+				// GRBK-862 : keeping tack of the smallest item weight scale. This we initialize it with a large enough number
+				int scale = 100;
+				
 				// Adding up all the assignment weights
 				for(Assignment assignment : categoryAssignmentList) {
 
@@ -5543,16 +5546,32 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 						continue;
 					}
 
-					double assignmentWeighting = ( multiply(new BigDecimal(Double.toString(assignment.getAssignmentWeighting())), BIG_DECIMAL_100)).doubleValue();
-					categoryAssignmentWeightSum = add(categoryAssignmentWeightSum, BigDecimal.valueOf(assignmentWeighting));
-
+					// Convert  the item weight from Double to BigDecimal
+					BigDecimal assignmentWeighting = new BigDecimal(assignment.getAssignmentWeighting().toString());
+					
+					// GRBK-862 : keep track of smallest item weight scale
+					if(scale > assignmentWeighting.scale()) {
+						scale = assignmentWeighting.scale();
+					}
+					
+					// Adding all the item weights
+					categoryAssignmentWeightSum = add(categoryAssignmentWeightSum, assignmentWeighting);
 				}
 
-				// Scale/round the sum
-				categoryAssignmentWeightSum = categoryAssignmentWeightSum.setScale(AppConstants.DISPLAY_SCALE, BigDecimal.ROUND_HALF_UP);
-
-				// Check if the sum of assignment weights adds up to 100%
-				isCategoryFullyWeighted = categoryAssignmentWeightSum.compareTo(BIG_DECIMAL_100) == 0;
+				/*
+				 *  GRBK-862 : We scale the item weight sum value to match the smallest item scale that we encountered
+				 *  We are doing this for the following reason:
+				 *  Use Case:
+				 *  - user has an equally weighted category with three items
+				 *  - user unchecks the equally weighed option, and now each items shows a value of 33.33333
+				 *  -- however, in the database, the value is stored as 0.333333333333333
+				 *  - users adjusts one item weight so that they add up to 100%
+				 *  -- 33.33333 + 33.33333 + 33.33334 = 100
+				 *  - however, it calculates now 0.333333333333333 + 0.333333333333333 + 0.3333334 = 1.0000000666666666, which is greater than 1
+				 * 
+				 */
+				categoryAssignmentWeightSum = categoryAssignmentWeightSum.setScale(scale, RoundingMode.DOWN);
+				isCategoryFullyWeighted = categoryAssignmentWeightSum.compareTo(BigDecimal.ONE) == 0;
 
 				// If the weighted assignment sum doesn't add up to 100%, we just return and stop checking the rest
 				if(!isCategoryFullyWeighted) { 
