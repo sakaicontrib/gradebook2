@@ -36,7 +36,8 @@ public class CategoryCalculationUnitTest extends TestCase {
 		gradeRecordCalculationUnits.add(gradeRecordCalculationUnit);
 		
 		BigDecimal result1 = categoryCalculationUnit.calculate(gradeRecordCalculationUnits, false);
-		assertEquals(result1, new BigDecimal("0.7700"));
+		//assertEquals(result1, new BigDecimal("0.7700"));
+		assertTrue(result1.compareTo(new BigDecimal("0.7700")) == 0);
 		
 		BigDecimal result2 = categoryCalculationUnit.calculate(null, false);
 		assertNull(result2);
@@ -68,7 +69,8 @@ public class CategoryCalculationUnitTest extends TestCase {
 		gradeRecordCalculationUnits.add(gradeRecordCalculationUnit2);
 		
 		BigDecimal result1 = categoryCalculationUnit.calculate(gradeRecordCalculationUnits, false);
-		assertEquals(result1, new BigDecimal("0.81300"));
+		//assertEquals(result1, new BigDecimal("0.81300"));
+		assertTrue(result1.compareTo(new BigDecimal("0.81300")) == 0);
 		
 		BigDecimal result2 = categoryCalculationUnit.calculate(null, false);
 		assertNull(result2);
@@ -95,7 +97,8 @@ public class CategoryCalculationUnitTest extends TestCase {
 		gradeRecordCalculationUnit.setExcused(false);
 		gradeRecordCalculationUnits.add(gradeRecordCalculationUnit);
 		BigDecimal result2 = categoryCalculationUnit.calculate(gradeRecordCalculationUnits, true);
-		assertEquals(result2, new BigDecimal("0.7700"));
+		//assertEquals(result2, new BigDecimal("0.7700"));
+		assertTrue(result2.compareTo(new BigDecimal("0.7700")) == 0);
 	}
 	
 	public void testIsExtraCredit() {

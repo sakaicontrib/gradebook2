@@ -214,11 +214,9 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 		if (categoryWeightSum == null)
 			return null;
 
-		BigDecimal ratio = BigDecimal.ONE;
-
-		if (categoryWeightSum.compareTo(BigDecimal.ZERO) != 0) 
-			ratio = divide(categoryWeightDesiredSum, categoryWeightSum);
-
+		if(categoryWeightDesiredSum.compareTo(BigDecimal.ONE) != 0)
+			System.out.println("categoryWeightDesiredSum = " + categoryWeightDesiredSum);
+		
 		for (String categoryKey : categoryUnitMap.keySet()) {
 			CategoryCalculationUnit categoryUnit = categoryUnitMap.get(categoryKey);
 
@@ -227,10 +225,6 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 
 			if (categoryGrade != null) {
 
-				BigDecimal multiplicand = ratio;
-
-				if (categoryUnit.isExtraCredit())
-					multiplicand = BigDecimal.ONE;
 
 				if (categoryGrade.compareTo(BigDecimal.ONE) > 0)
 					categoryGrade = BigDecimal.ONE;
@@ -239,15 +233,22 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 					categoryGrade = BigDecimal.ZERO;
 
 				if (categoryWeight != null) {
-					categoryWeight = multiply(categoryWeight, multiplicand);
-					
+
+					if (categoryUnit.isExtraCredit()) {
+						categoryWeight = multiply(categoryWeight, BigDecimal.ONE);
+					}
+					else {
+
+						categoryWeight = divide(categoryWeight, categoryWeightSum);
+					}
+
 					BigDecimal contributionToCourseGrade = multiply(categoryGrade, categoryWeight);
-					
+
 					if (courseGrade == null)
 						courseGrade = BigDecimal.ZERO;
 
 					courseGrade = add(courseGrade, contributionToCourseGrade);
-					
+
 				} // if 
 			} // if
 

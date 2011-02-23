@@ -1,6 +1,7 @@
 package org.sakaiproject.gradebook.gwt.sakai.calculations;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -186,30 +187,21 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 		if (sum == null)
 			return null;
 
-		BigDecimal ratio = BigDecimal.ONE;
-
-		if (sum.compareTo(BigDecimal.ZERO) != 0) 
-			ratio = divide(BigDecimal.ONE, sum);
-
 		BigDecimal sumScores = null;
 
 		for (GradeRecordCalculationUnit unit : units) {
 
 			if (unit.isExcused())
 				continue;
-
-			BigDecimal multiplicand = ratio;
-
-			if (unit.isExtraCredit()) {
-				if (isExtraCreditScaled && isExtraCredit) 
-					multiplicand = ratio; // GRBK-476 : was BigDecimal.valueOf(100d).multiply(categoryWeightTotal);
-				else
-					multiplicand = BigDecimal.ONE;
+			
+			if (unit.isExtraCredit() && !(isExtraCreditScaled && isExtraCredit)) {
+			
+				sum = BigDecimal.ONE;
 			}
 			
-			BigDecimal scaledItemWeight = findScaledItemWeight(multiplicand, unit.getPercentOfCategory());
+			BigDecimal scaledItemWeight = divide(unit.getPercentOfCategory(), sum);
 			BigDecimal scaledScore = unit.calculate(scaledItemWeight);
-
+			
 			if (scaledScore != null) {
 				if (sumScores == null)
 					sumScores = BigDecimal.ZERO;
@@ -219,14 +211,6 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 		}
 
 		return sumScores;
-	}
-
-
-	private BigDecimal findScaledItemWeight(BigDecimal ratio, BigDecimal itemWeight) {
-		if (ratio == null || itemWeight == null)
-			return null;
-		
-		return multiply(ratio, itemWeight);
 	}
 
 	private BigDecimal sumUnitWeights(List<GradeRecordCalculationUnit> units, boolean doExtraCredit) {
