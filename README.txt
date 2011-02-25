@@ -83,13 +83,23 @@ gb2.security.enabled = [true, false]
 - NOTE: If you use xsl-portal, make sure that you use the following sakai property
 -- portalPath=/xsl-portal
 
+
 Since v1.4.x:
+-------------
+
+No new properties
+
+
+Since v1.5.x:
 -------------
 
 gb2.show.weighted.enabled = [true, false]
 - default: false
 - For more details, please see https://jira.sakaiproject.org/browse/GRBK-483
 
+gb2.enable.search.roster.by.field = [true, false]
+- default: false
+- For more details, please see https://jira.sakaiproject.org/browse/GRBK-485
 
 
 SUPPORT
