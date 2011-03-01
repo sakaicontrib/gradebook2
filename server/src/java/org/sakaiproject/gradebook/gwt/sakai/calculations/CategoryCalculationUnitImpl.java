@@ -25,7 +25,7 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 	private boolean isPointsWeighted;
 	private BigDecimal totalCategoryPoints;
 	private boolean isEqualWeighted; 
-	
+
 	private int totalNumberOfItems; 
 
 	private List<GradeRecordCalculationUnit> unitsToDrop;
@@ -33,7 +33,7 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 	// Making default constructor private since this class needs to be instantiated with a scale
 	private CategoryCalculationUnitImpl() {
 	}
-	
+
 	public CategoryCalculationUnitImpl(BigDecimal categoryWeightTotal, Integer dropLowest, Boolean extraCredit, Boolean usePoints, Boolean useEqual, int scale) {
 		super(scale);
 		this.categoryWeightTotal = categoryWeightTotal;
@@ -43,7 +43,7 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 		this.isPointsWeighted = usePoints == null ? false : usePoints.booleanValue();
 		this.isEqualWeighted = useEqual == null ? false : useEqual.booleanValue();
 		this.totalNumberOfItems = 0;  
-		
+
 	}
 
 
@@ -51,7 +51,7 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 
 		if (units == null)
 			return null;
-		
+
 		BigDecimal sumScores = sumScaledScores(units, isExtraCreditScaled);
 
 		// When drop lowest is not set, the calculation is very straightforward
@@ -103,10 +103,53 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 		}
 		else
 		{
-			return sumScaledScoresNormal(units, isExtraCreditScaled);
+			/*
+			 * GRBK-875 : Adding logic to calculate a category that has manually equally weighted items the same
+			 * way as if it calculates it when the category has the "Weight items equally" option checked.
+			 */
+			if(!isEqualWeighted && !hasEqualWeights(units)) {
+
+				return sumScaledScoresNormal(units, isExtraCreditScaled);
+			}
+			else {
+
+				return sumScaledScoresEquallyWeighted(units, isExtraCreditScaled);
+			}
 		}
+
 	}
-	
+
+	/*
+	 * Helper method that determines if a manually weighed category 
+	 * has equally weighted grade items
+	 */
+	private boolean hasEqualWeights(List<GradeRecordCalculationUnit> units ) {
+
+		BigDecimal weight = null;
+
+		if(null == units || units.size() < 2) {
+			return false;
+		}
+
+		for(GradeRecordCalculationUnit unit : units) {
+
+			if(null == weight) {
+				weight = unit.getPercentOfCategory();
+			}
+			else if(unit.isExtraCredit()) {
+				continue;
+			}
+			else {
+				if(unit.getPercentOfCategory().compareTo(weight) != 0) {
+					return false;
+				}
+			}
+
+		}
+
+		return true;
+	}
+
 	private BigDecimal sumScaledScoresEquallyWeighted(List<GradeRecordCalculationUnit> units, boolean isExtraCreditScaled) 
 	{	
 		log.debug("sumScaledScoresEquallyWeighted for EC Category: " + this.isExtraCredit + " with EC Scaling: " + isExtraCreditScaled); 
@@ -136,7 +179,7 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 			log.debug("Normal, numActiveItems=" + numActiveItems);
 
 		}
-		
+
 		for (GradeRecordCalculationUnit unit : units) 
 		{
 			if (unit.isExcused())
@@ -154,9 +197,9 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 			else
 			{
 				BigDecimal scaledScore = unit.getPercentageScore();
-				
+
 				// Calling this so drop lowest is OK.  for now. 
-				
+
 				unit.calculateEqually(numActiveItems);
 				if (scaledScore != null) {
 					if (sumScores == null)
@@ -193,15 +236,15 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 
 			if (unit.isExcused())
 				continue;
-			
+
 			if (unit.isExtraCredit() && !(isExtraCreditScaled && isExtraCredit)) {
-			
+
 				sum = BigDecimal.ONE;
 			}
-			
+
 			BigDecimal scaledItemWeight = divide(unit.getPercentOfCategory(), sum);
 			BigDecimal scaledScore = unit.calculate(scaledItemWeight);
-			
+
 			if (scaledScore != null) {
 				if (sumScores == null)
 					sumScores = BigDecimal.ZERO;

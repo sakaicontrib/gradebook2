@@ -1106,4 +1106,31 @@ public class GradebookCalculationUnitTest extends TestCase {
 		//assertEquals(new BigDecimal("89.99500000000"), courseGrade);
 		assertTrue(courseGrade.compareTo(new BigDecimal("89.995")) == 0);
 	}
+	
+	public void testGRBK_875_Part1() {
+		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
+
+		CategoryCalculationUnit essayUnit = new CategoryCalculationUnitImpl(new BigDecimal("1.0"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
+
+		categoryUnitMap.put(ESSAYS_ID, essayUnit);
+
+		GradebookCalculationUnit gradebookUnit =  new GradebookCalculationUnitImpl(categoryUnitMap, TEST_SCALE);
+	
+		String[][] essayValues = {
+				{"89.995", "100", "0.25", null},
+				{"89.995", "100", "0.25", null},
+				{"89.995", "100", "0.25", null},
+				{null, "100", "0.25", null}
+		};
+		
+		List<GradeRecordCalculationUnit> essayUnits = getRecordUnits(essayValues);
+
+		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
+		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
+	
+
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, new BigDecimal("400"), false);
+
+		assertTrue(courseGrade.compareTo(new BigDecimal("89.995")) == 0);
+	}
 }
