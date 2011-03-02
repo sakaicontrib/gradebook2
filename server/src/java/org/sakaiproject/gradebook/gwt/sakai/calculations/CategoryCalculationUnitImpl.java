@@ -136,7 +136,7 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 			if(null == weight) {
 				weight = unit.getPercentOfCategory();
 			}
-			else if(unit.isExtraCredit()) {
+			else if(unit.isExtraCredit() && !isExtraCredit()) {
 				continue;
 			}
 			else {
