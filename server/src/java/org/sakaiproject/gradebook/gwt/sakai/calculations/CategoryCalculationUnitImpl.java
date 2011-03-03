@@ -242,7 +242,13 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 				sum = BigDecimal.ONE;
 			}
 
-			BigDecimal scaledItemWeight = divide(unit.getPercentOfCategory(), sum);
+			BigDecimal scaledItemWeight = null;
+			
+			if(null != unit.getPercentOfCategory() && sum.compareTo(BigDecimal.ZERO) > 0) {
+				
+				scaledItemWeight = divide(unit.getPercentOfCategory(), sum);
+			}
+			
 			BigDecimal scaledScore = unit.calculate(scaledItemWeight);
 
 			if (scaledScore != null) {
