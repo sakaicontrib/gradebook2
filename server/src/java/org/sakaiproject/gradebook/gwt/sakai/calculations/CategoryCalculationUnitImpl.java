@@ -123,6 +123,10 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 					{
 						remCount++; 
 					}
+					else if(null != unit && unit.getPercentOfCategory().compareTo(BigDecimal.ZERO) == 0)
+					{
+						remCount++;
+					}
 					else
 					{
 						tmpUnits.add(unit); 
@@ -155,7 +159,10 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 			{
 				if (null != unit.getPercentOfCategory() )
 				{
-					if(null == weight) {
+					if(unit.getPercentOfCategory().compareTo(BigDecimal.ZERO) == 0) {
+						continue;
+					}
+					else if(null == weight) {
 						weight = unit.getPercentOfCategory();
 					}
 					else if(unit.isExtraCredit() && !isExtraCredit()) {
