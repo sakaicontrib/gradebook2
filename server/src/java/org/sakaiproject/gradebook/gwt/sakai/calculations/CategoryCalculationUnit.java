@@ -91,13 +91,6 @@ public interface CategoryCalculationUnit {
 	public void setTotalCategoryPoints(BigDecimal totalCategoryPoints);
 	
 	/**
-	 * Getter method
-	 * 
-	 * @return totalNumberOfItems
-	 */
-	public int getTotalNumberOfItems();
-	
-	/**
 	 * Setter method
 	 * 
 	 * @param totalNumberOfItems

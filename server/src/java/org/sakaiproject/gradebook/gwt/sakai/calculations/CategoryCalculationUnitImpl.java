@@ -112,8 +112,25 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 				return sumScaledScoresNormal(units, isExtraCreditScaled);
 			}
 			else {
-
-				return sumScaledScoresEquallyWeighted(units, isExtraCreditScaled);
+				// Note that since we're not equally weighted set, we cannot drop lowest.  If we ever 
+				// let them drop lowest when equal weighted is set this will likely fail hard.
+				int remCount = 0; 
+				List<GradeRecordCalculationUnit> tmpUnits;
+				tmpUnits = new ArrayList<GradeRecordCalculationUnit>();
+				// This list cannot have any null weighted items in it for this list. 
+				for(GradeRecordCalculationUnit unit : units) {
+					if (null != unit && unit.getPercentOfCategory() == null)
+					{
+						remCount++; 
+					}
+					else
+					{
+						tmpUnits.add(unit); 
+					}
+				}
+				this.totalNumberOfItems -= remCount; 
+				
+				return sumScaledScoresEquallyWeighted(tmpUnits, isExtraCreditScaled);
 			}
 		}
 
@@ -125,29 +142,46 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 	 */
 	private boolean hasEqualWeights(List<GradeRecordCalculationUnit> units ) {
 
+		int numActive = 0; 
 		BigDecimal weight = null;
 
 		if(null == units || units.size() < 2) {
 			return false;
 		}
-
+		
 		for(GradeRecordCalculationUnit unit : units) {
 
-			if(null == weight) {
-				weight = unit.getPercentOfCategory();
-			}
-			else if(unit.isExtraCredit() && !isExtraCredit()) {
-				continue;
-			}
-			else {
-				if(unit.getPercentOfCategory().compareTo(weight) != 0) {
-					return false;
+			if (null != unit)
+			{
+				if (null != unit.getPercentOfCategory() )
+				{
+					if(null == weight) {
+						weight = unit.getPercentOfCategory();
+					}
+					else if(unit.isExtraCredit() && !isExtraCredit()) {
+						continue;
+					}
+					else {
+						if(unit.getPercentOfCategory().compareTo(weight) != 0) {
+							return false;
+						}
+					}
+					numActive++; 
 				}
 			}
-
+			
 		}
+		// If the category doesn't have enough items active, meaning non null unit weights we'll return false and let it go thru the normal method. 
+		
+		if (numActive > 1)
+		{
 
-		return true;
+			return true;
+		}
+		else
+		{
+			return false; 
+		}
 	}
 
 	private BigDecimal sumScaledScoresEquallyWeighted(List<GradeRecordCalculationUnit> units, boolean isExtraCreditScaled) 
@@ -363,10 +397,6 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 
 	public void setEqualWeighted(boolean isEqualWeighted) {
 		this.isEqualWeighted = isEqualWeighted;
-	}
-
-	public int getTotalNumberOfItems() {
-		return totalNumberOfItems;
 	}
 
 	public void setTotalNumberOfItems(int totalNumberOfItems) {
