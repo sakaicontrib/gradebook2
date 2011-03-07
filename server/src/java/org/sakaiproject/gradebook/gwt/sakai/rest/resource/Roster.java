@@ -28,7 +28,7 @@ public class Roster extends Resource {
     	if (searchString != null && searchString.equalsIgnoreCase("null")) 
     		searchString = null;
     	
-    	boolean isShowWeighted = "true".equalsIgnoreCase(showWeighted);
+    	boolean isShowWeighted = Boolean.TRUE.toString().equalsIgnoreCase(showWeighted);
     	
     	org.sakaiproject.gradebook.gwt.client.model.Roster roster = 
     		service.getRoster(gradebookUid, gradebookId, limit, offset, sectionUuid, searchString, sortField, false, isDescending, isShowWeighted);

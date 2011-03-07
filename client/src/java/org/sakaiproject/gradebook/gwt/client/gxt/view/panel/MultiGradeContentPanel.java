@@ -464,16 +464,12 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 						name.append(itemModel.getName());
 						switch (gradeType) {
 							case POINTS:
-								// 
+								// GRBK 483
 								if (showWeightedString != null && showWeightedString.trim().equalsIgnoreCase("true")) {
-									// TODO: i18n needs to deal with number format and inserting numbers into string rather than appending string to number
 									name.append(twoDecimalFormat.format(((Double)itemModel.getPercentCourseGrade()))).append(i18n.columnSuffixPercentages());
 								} else {
-									// TODO: i18n needs to deal with number format and inserting numbers into string rather than appending string to number
 									name.append(itemModel.getPoints()).append(i18n.columnSuffixPoints());
 								}
-
-								//name.append(" [").append(itemModel.getPoints()).append("]");
 								break;
 							case PERCENTAGES:
 								name.append(i18n.columnSuffixPercentages());
@@ -1048,7 +1044,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		grid.addListener(Events.BeforeEdit, new Listener<GridEvent>() {
 			public void handleEvent(GridEvent be) {
 				ColumnConfig myCm = be.getGrid().getColumnModel().getColumn(be.getColIndex());
-				if (showWeightedString != null && showWeightedString.equalsIgnoreCase("true") && (!"Grade Override".equals(myCm.getHeader())))			
+				if (showWeightedString != null && Boolean.TRUE.toString().equalsIgnoreCase(showWeightedString))			
 					be.setCancelled(true);
 				}
 		});
@@ -1103,8 +1099,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 			.append(getDisplayName(gradebookItem.getCategoryType()))
 			.append("/")
 			.append(getDisplayName(gradebookItem.getGradeType()))
-			.append(" ").append(i18n.modeText())
-			.append(" -- ").append(this.showWeightedString);
+			.append(" ").append(i18n.modeText());
 
 			modeLabel.setText(modeLabelText.toString());	
 		}
@@ -1118,8 +1113,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 			.append(getDisplayName(gradebookModel.getGradebookItemModel().getCategoryType()))
 			.append("/")
 			.append(getDisplayName(gradebookModel.getGradebookItemModel().getGradeType()))
-			.append(" Mode")
-			.append(" -- ").append(this.showWeightedString);
+			.append(" ").append(i18n.modeText());
 
 			modeLabel.setText(modeLabelText.toString());	
 		}
@@ -1166,7 +1160,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 					if(this.showWeightedToggleButton != null) {
 						this.showWeightedString = Boolean.toString(this.showWeightedToggleButton.isPressed());
 					}
-					if (showWeightedString != null && showWeightedString.trim().equalsIgnoreCase("true")) {
+					if (showWeightedString != null && showWeightedString.trim().equalsIgnoreCase(Boolean.TRUE.toString())) {
 						// TODO: i18n needs to deal with number format and inserting numbers into string rather than appending string to number
 						columnNameBuilder.append(twoDecimalFormat.format(((Double)item.getPercentCourseGrade()))).append(i18n.columnSuffixPercentages());
 					} else {
@@ -1549,16 +1543,20 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	 * @return the isShowWeightedEnabled
 	 */
 	public boolean isShowWeightedEnabled() {
-		if(! this.isShowWeightedEnabled) {
+		if(! isShowWeightedEnabled) {
 			// check config value
 			String showWeightedEnabledStr = Registry.get(AppConstants.SHOW_WEIGHTED_ENABLED);
-			this.setShowWeightedEnabled(showWeightedEnabledStr != null && showWeightedEnabledStr.trim().equalsIgnoreCase(Boolean.toString(true)));
+			setShowWeightedEnabled(showWeightedEnabledStr != null && showWeightedEnabledStr.trim().equalsIgnoreCase(Boolean.TRUE.toString()));
 		}
 		return isShowWeightedEnabled;
 	}
 
 	protected void setShowWeightedEnabled(boolean enabled) {
-		this.isShowWeightedEnabled = enabled;
+		isShowWeightedEnabled = enabled;
 	}
 
+	protected String getShowWeightedString() {
+		return showWeightedString;
+	}
+	
 }

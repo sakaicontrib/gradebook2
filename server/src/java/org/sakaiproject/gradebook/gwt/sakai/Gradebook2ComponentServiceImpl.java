@@ -113,7 +113,6 @@ import org.sakaiproject.tool.gradebook.Permission;
 import org.sakaiproject.user.api.User;
 import org.sakaiproject.user.api.UserDirectoryService;
 import org.sakaiproject.user.api.UserNotDefinedException;
-import org.sakaiproject.util.ResourceLoader;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -2339,7 +2338,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 			String enableShowWeighted = configService.getString(AppConstants.ENABLE_SHOW_WEIGHTED_TOGGLE);
 			this.setShowWeightedEnabled(enableShowWeighted != null && Boolean.TRUE.toString().equalsIgnoreCase(enableShowWeighted.trim()));
-			//MultiGradeContextPanel.setShowWeightedEnabled(this.isShowWeightedEnabled());
+			
 		} else {
 			enabledGradeTypes.add(GradeType.POINTS);
 			enabledGradeTypes.add(GradeType.PERCENTAGES);

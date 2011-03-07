@@ -659,13 +659,13 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 
 		return gradebookUnit.calculatePointsBasedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, isExtraCreditScaled);
 	}
-//						 populateGradeRecordUnits
+
 	private BigDecimal[] populateGradeRecordUnits(Category category, CategoryCalculationUnit categoryCalculationUnit, 
 			Collection<Assignment> assignments, List<GradeRecordCalculationUnit> gradeRecordUnits, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap, boolean isWeighted, boolean isExtraCreditCategory) {
 
 		BigDecimal totalCategoryPoints = BigDecimal.ZERO;
 		BigDecimal totalCategoryPercent = BigDecimal.ZERO;
-		BigDecimal mytotalCategoryPercent = BigDecimal.ZERO;
+		BigDecimal myTotalCategoryPercent = BigDecimal.ZERO;
 		int totalUnexcusedItems = 0; 
 		boolean isWeightByPointsCategory = category == null ? false : Util.checkBoolean(category.isEnforcePointWeighting());
 		boolean doPreventUnequalDropLowest = ((isWeighted && isWeightByPointsCategory) || !isWeighted);
@@ -723,7 +723,7 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 					if (!isUnweighted && null != assignmentWeight) {
 						//double assignmentCategoryPercent = assignment.getAssignmentWeighting() == null ? 0.0 : assignment.getAssignmentWeighting().doubleValue();	
 						totalCategoryPercent = add(totalCategoryPercent, multiply(assignmentWeight, BIG_DECIMAL_100));
-						mytotalCategoryPercent = add(mytotalCategoryPercent, multiply(assignmentWeight, BIG_DECIMAL_100));;
+						myTotalCategoryPercent = add(myTotalCategoryPercent, multiply(assignmentWeight, BIG_DECIMAL_100));;
 					}
 
 				}
@@ -763,13 +763,13 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 							gradeRecordUnits.add(gradeRecordUnit);
 						} else {  
 							// GRBK 483 - we deduct this assignment weight
-							mytotalCategoryPercent = subtract(mytotalCategoryPercent, multiply(assignmentWeight, BIG_DECIMAL_100));
+							myTotalCategoryPercent = subtract(myTotalCategoryPercent, multiply(assignmentWeight, BIG_DECIMAL_100));
 						}
 					}
 					else						
 					{						
 						// GRBK 483 - we deduct this assignment weight
-						mytotalCategoryPercent = subtract(mytotalCategoryPercent, multiply(assignmentWeight, BIG_DECIMAL_100));
+						myTotalCategoryPercent = subtract(myTotalCategoryPercent, multiply(assignmentWeight, BIG_DECIMAL_100));
 						
 						// GRBK-784 - we need a count of items in this thing. 
 						if (!isExcused(assignmentGradeRecord))
@@ -799,8 +799,8 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 			totalCategoryPoints = subtract(totalCategoryPoints, multiply(BigDecimal.valueOf(dropLowest), representativePointsPossible));
 			if (totalCategoryPercent != null && lastPercentValue != null)
 				totalCategoryPercent = subtract(totalCategoryPercent, multiply(BigDecimal.valueOf(dropLowest), multiply(lastPercentValue, BIG_DECIMAL_100)));
-			if (mytotalCategoryPercent != null && lastPercentValue != null)
-				mytotalCategoryPercent = subtract(mytotalCategoryPercent, multiply(BigDecimal.valueOf(dropLowest), multiply(lastPercentValue, BIG_DECIMAL_100)));
+			if (myTotalCategoryPercent != null && lastPercentValue != null)
+				myTotalCategoryPercent = subtract(myTotalCategoryPercent, multiply(BigDecimal.valueOf(dropLowest), multiply(lastPercentValue, BIG_DECIMAL_100)));
 		}
 
 		if (categoryCalculationUnit != null)
@@ -810,7 +810,7 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 		result[0] = totalCategoryPercent;
 		result[1] = totalCategoryPoints;
 
-		// GRBK-483. Using mytotalCategoryPercent and totalCategoryPoints just calculated to set the earnedPercentage within category.
+		// GRBK-483. Using the myTotalCategoryPercent and totalCategoryPoints just calculated to set the earnedPercentage within category.
 		if (assignments != null) {
 			for (Assignment assignment : assignments) {
 				if (assignment.isRemoved())
@@ -841,7 +841,7 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 							if (isWeightByPointsCategory) {
 								earnedPercentWithinCategory = divide(pointsEarned,totalCategoryPoints);
 							} else {
-								earnedPercentWithinCategory = multiply(BIG_DECIMAL_100, multiply(gradeRecordUnit.getPercentageScore(), divide(assignmentWeight, mytotalCategoryPercent)));
+								earnedPercentWithinCategory = multiply(BIG_DECIMAL_100, multiply(gradeRecordUnit.getPercentageScore(), divide(assignmentWeight, myTotalCategoryPercent)));
 							}
 							assignmentGradeRecord.setEarnedWeightedPercentage(earnedPercentWithinCategory);
 						}							
