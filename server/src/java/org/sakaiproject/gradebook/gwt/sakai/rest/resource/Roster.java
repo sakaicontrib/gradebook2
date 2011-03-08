@@ -15,7 +15,7 @@ public class Roster extends Resource {
     		@QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset,
     		@QueryParam("sortField") String sortField, @QueryParam("sortDir") String sortDir, 
     		@QueryParam("sectionUuid") String sectionUuid, @QueryParam("searchString") String searchString,
-    		@QueryParam("showWeighted") String showWeighted) {
+    		@QueryParam("searchField") String searchField, @QueryParam("showWeighted") String showWeighted) {
     	
     	boolean isDescending = sortDir == null || "DESC".equals(sortDir);
     	
@@ -27,11 +27,14 @@ public class Roster extends Resource {
     		sectionUuid = null;
     	if (searchString != null && searchString.equalsIgnoreCase("null")) 
     		searchString = null;
+    	if(searchField != null && searchField.equalsIgnoreCase("null")) {
+    		searchField = null;
+    	}
     	
     	boolean isShowWeighted = Boolean.TRUE.toString().equalsIgnoreCase(showWeighted);
     	
     	org.sakaiproject.gradebook.gwt.client.model.Roster roster = 
-    		service.getRoster(gradebookUid, gradebookId, limit, offset, sectionUuid, searchString, sortField, false, isDescending, isShowWeighted);
+    		service.getRoster(gradebookUid, gradebookId, limit, offset, sectionUuid, searchString, searchField, sortField, false, isDescending, isShowWeighted);
     
     	return toJson(roster.getLearnerPage(), roster.getTotal());
     }

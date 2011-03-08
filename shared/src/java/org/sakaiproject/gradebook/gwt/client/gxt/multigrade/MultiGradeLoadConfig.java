@@ -52,6 +52,14 @@ public class MultiGradeLoadConfig extends BasePagingLoadConfig {
 		return get("showWeighted");
 	}
 
+	public String getSearchField() {
+		return get("searchField");
+	}
+	
+	public void setSearchField(String searchField) {
+		set("searchField", searchField);
+	}
+
 	public void setShowWeighted(String showWeighted) {
 		set("showWeighted", showWeighted);
 	}

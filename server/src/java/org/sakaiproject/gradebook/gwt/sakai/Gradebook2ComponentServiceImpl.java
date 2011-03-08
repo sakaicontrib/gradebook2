@@ -269,6 +269,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 	private BusinessLogic businessLogic;
 	private ServerConfigurationService configService;
 	private List<GradeType> enabledGradeTypes;
+	private Boolean searchRosterByFieldEnabled;
 	private EventTrackingService eventTrackingService;
 	private GradebookFrameworkService frameworkService;
 	private GradebookToolService gbService;
@@ -805,7 +806,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		realmIds = new String[1];
 		realmIds[0] = new StringBuffer().append("/site/").append(siteId).toString();
 
-		List<UserDereference> dereferences = gbService.getUserDereferences(realmIds, "sortName", null, null, -1, -1, true, learnerRoleNames);
+		List<UserDereference> dereferences = gbService.getUserDereferences(realmIds, AppConstants.USER_FIELD_SORT_NAME, null, null, -1, -1, true, learnerRoleNames);
 
 		return dereferences;
 	}
@@ -821,6 +822,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		ApplicationSetup setup = new ApplicationSetupImpl();
 		setup.setGradebookModels(getGradebookModels(gradebookUids));
 		setup.setHelpUrl(helpUrl);
+		setup.setSearchRosterByFieldEnabled(searchRosterByFieldEnabled.booleanValue());
 		setup.setEnabledGradeTypes(enabledGradeTypes);
 		setup.setShowWeightedEnabled(this.isShowWeightedEnabled());
 
@@ -1049,7 +1051,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		verifyUserDataIsUpToDate(site, roleNames);
 
-		List<UserDereference> dereferences = gbService.getUserDereferences(realmIds, "sortName", null, null, -1, -1, true, roleNames);
+		List<UserDereference> dereferences = gbService.getUserDereferences(realmIds, AppConstants.USER_FIELD_SORT_NAME, null, null, -1, -1, true, roleNames);
 
 		Gradebook gradebook = gbService.getGradebook(gradebookId);
 
@@ -1345,7 +1347,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 	@SuppressWarnings("unchecked")
 	public Roster getRoster(String gradebookUid, Long gradebookId,
 			Integer numberLimit, Integer numberOffset, String sectionUuid,
-			String searchCriteria, String sortField, boolean includeCMId, boolean isDescending, boolean isShowWeighted) {
+			String searchCriteria, String searchField, String sortField, boolean includeCMId, boolean isDescending, boolean isShowWeighted) {
 
 		List<Learner> rows = new ArrayList<Learner>();
 
@@ -1379,8 +1381,6 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		int offset = numberOffset == null ? -1 : numberOffset.intValue() ;
 		int limit = numberLimit == null ? -1 : numberLimit.intValue();
 
-		String searchField = "sortName";
-
 		if (sortField != null) {
 			columnId = sortField;
 
@@ -1397,6 +1397,18 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		if (searchCriteria != null) {
 			searchCriteria = searchCriteria.toUpperCase();
 			sortColumnKey = LearnerKey.S_DSPLY_NM;
+			if(searchField == null) {
+				searchField = AppConstants.USER_FIELD_SORT_NAME;
+			} else if (AppConstants.USER_FIELD_DISPLAY_ID.equalsIgnoreCase(searchField) || 
+					AppConstants.USER_FIELD_LAST_NAME_FIRST.equalsIgnoreCase(searchField) || 
+					AppConstants.USER_FIELD_DISPLAY_NAME.equalsIgnoreCase(searchField) || 
+					AppConstants.USER_FIELD_EMAIL.equalsIgnoreCase(searchField)) {
+				// do nothing
+			} else {
+				searchField = AppConstants.USER_FIELD_SORT_NAME;
+		}
+		} else {
+			searchField = AppConstants.USER_FIELD_SORT_NAME;
 		}
 
 		if (sortColumnKey == null)
@@ -1488,18 +1500,18 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			case S_LST_NM_FRST:
 			case S_DSPLY_ID:
 			case S_EMAIL:
-				sortField = "lastNameFirst";
+				sortField = AppConstants.USER_FIELD_LAST_NAME_FIRST;
 
 				switch (sortColumnKey) {
 				case S_DSPLY_ID:
-					sortField = "displayId";
+					sortField = AppConstants.USER_FIELD_DISPLAY_ID;
 					break;
 				case S_DSPLY_NM:
 				case S_LST_NM_FRST:
-					sortField = "sortName";
+					sortField = AppConstants.USER_FIELD_SORT_NAME;
 					break;
 				case S_EMAIL:
-					sortField = "email";
+					sortField = AppConstants.USER_FIELD_EMAIL;
 					break;
 				}
 
@@ -2308,6 +2320,13 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			if (isLettersEnabled)
 				enabledGradeTypes.add(GradeType.LETTERS);
 
+			String searchRosterByField = configService.getString(AppConstants.ENABLED_SEARCH_ROSTER_BY_FIELD);
+			if(searchRosterByField != null && Boolean.TRUE.toString().equalsIgnoreCase(searchRosterByField)) {
+				this.searchRosterByFieldEnabled = new Boolean(true);
+			} else {
+				this.searchRosterByFieldEnabled = new Boolean(false);
+			}
+
 			String learnerRoleNameString = configService.getString(AppConstants.LEARNER_ROLE_NAMES);
 
 			if (learnerRoleNameString != null && !learnerRoleNameString.equals(""))
@@ -2351,6 +2370,13 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		if (learnerRoleNames == null)
 			learnerRoleNames = new String[] { "Student", "access" };
 
+	}
+
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService#isSearchRosterByFieldEnabled()
+	 */
+	public boolean isSearchRosterByFieldEnabled() {
+		return searchRosterByFieldEnabled.booleanValue();
 	}
 
 	public boolean isValidLetterGrade(String letterGrade) {
@@ -5064,10 +5090,10 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		List<FixedColumn> columns = new ArrayList<FixedColumn>(10);
 
-		columns.add(new FixedColumnImpl(LearnerKey.S_DSPLY_ID, i18n.getString("displayId"), 80, true));
-		columns.add(new FixedColumnImpl(LearnerKey.S_DSPLY_NM, i18n.getString("displayName"), 180, true));
-		columns.add(new FixedColumnImpl(LearnerKey.S_LST_NM_FRST, i18n.getString("lastNameFirst"), 180, false));
-		columns.add(new FixedColumnImpl(LearnerKey.S_EMAIL, i18n.getString("email"), 230, true));
+		columns.add(new FixedColumnImpl(LearnerKey.S_DSPLY_ID, i18n.getString(AppConstants.USER_FIELD_DISPLAY_ID), 80, true));
+		columns.add(new FixedColumnImpl(LearnerKey.S_DSPLY_NM, i18n.getString(AppConstants.USER_FIELD_DISPLAY_NAME), 180, true));
+		columns.add(new FixedColumnImpl(LearnerKey.S_LST_NM_FRST, i18n.getString(AppConstants.USER_FIELD_LAST_NAME_FIRST), 180, false));
+		columns.add(new FixedColumnImpl(LearnerKey.S_EMAIL, i18n.getString(AppConstants.USER_FIELD_EMAIL), 230, true));
 		columns.add(new FixedColumnImpl(LearnerKey.S_SECT, i18n.getString("section"), 120, true));
 		columns.add(new FixedColumnImpl(LearnerKey.S_CRS_GRD, i18n.getString("courseGrade"), 140, false));
 		if (isUserAbleToGradeAll) {

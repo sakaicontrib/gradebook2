@@ -147,6 +147,8 @@ public interface AppConstants {
 	public static final String SECURITY_CHECK_CONTEXT_PREFIX_PROPNAME = "portalPath";
 	public static final String SECURITY_CHECK_CONTEXT_PREFIX_DEFAULT = "/portal/";
 	
+	public static final String ENABLED_SEARCH_ROSTER_BY_FIELD = "gb2.enable.search.roster.by.field";
+	
 	public static final String DEFAULT_CATEGORY_NAME = "Unassigned";
 	
 	public static final String EXTRA_CREDIT_INDICATOR = " (+)";
@@ -268,5 +270,12 @@ public interface AppConstants {
 	// DATE FORMATS
 	public static final String LONG_DATE = "MM/dd/yyyy HH:mm:ss ZZZ";
 	public static final String SHORT_DATE = "yyyy-MM-dd";
+	
+	// USER FIELDS
+	public static final String USER_FIELD_SORT_NAME = "sortName";
+	public static final String USER_FIELD_EMAIL = "email";
+	public static final String USER_FIELD_DISPLAY_NAME = "displayName";
+	public static final String USER_FIELD_LAST_NAME_FIRST = "lastNameFirst";
+	public static final String USER_FIELD_DISPLAY_ID = "displayId";
 	
 }

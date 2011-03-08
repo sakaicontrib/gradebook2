@@ -67,6 +67,25 @@ public class ApplicationSetupImpl extends BaseModel implements
 	}
 
 	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup#isSearchRosterByFieldEnabled()
+	 */
+	public boolean isSearchRosterByFieldEnabled() {
+		boolean enabled = false;
+		Boolean enabledObj = get(ApplicationKey.S_FIND_BY_FIELD.name());
+		if(enabledObj != null) {
+			enabled = enabledObj.booleanValue();
+		}
+		return enabled;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup#setSearchRosterByFieldEnabled(boolean)
+	 */
+	public void setSearchRosterByFieldEnabled(boolean isEnabled) {
+		set(ApplicationKey.S_FIND_BY_FIELD.name(), new Boolean(isEnabled));
+	}
+
+	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Application#setGradebookModels(java.util.List)
 	 */
 	public void setGradebookModels(List<Gradebook> gradebookModels) {

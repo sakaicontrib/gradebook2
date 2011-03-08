@@ -20,6 +20,18 @@ public interface ApplicationSetup {
 
 	public abstract void setHelpUrl(String helpUrl);
 
+	/**
+	 * Does system config setting enable finding learners by user-id, email address, 
+	 * last-name-first, etc, when using the search form in the instructor's view of grades?
+	 * @return true if search-by-field is enabled, false otherwise.
+	 */
+	public abstract boolean isSearchRosterByFieldEnabled();
+
+	/**
+	 * @param isEnabled
+	 */
+	public abstract void setSearchRosterByFieldEnabled(boolean isEnabled);
+
 	public abstract List<GradeType> getEnabledGradeTypes();
 
 	public abstract void setEnabledGradeTypes(List<GradeType> enabledGradeTypes);

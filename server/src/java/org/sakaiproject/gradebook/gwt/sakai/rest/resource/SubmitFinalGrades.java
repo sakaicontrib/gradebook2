@@ -32,7 +32,7 @@ public class SubmitFinalGrades extends Resource {
 
 		try {
 
-			Roster result = service.getRoster(gradebookUid, null, null, null, null, null, null, Boolean.TRUE, true, false);
+			Roster result = service.getRoster(gradebookUid, null, null, null, null, null, null, null, Boolean.TRUE, true, false);
 
 			if (result != null)
 				rows = result.getLearnerPage();

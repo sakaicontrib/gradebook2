@@ -96,6 +96,22 @@ public class ApplicationModel extends EntityModel implements ApplicationSetup {
 		set(ApplicationKey.S_HELPURL.name(), helpUrl);
 	}
 
+	public boolean isSearchRosterByFieldEnabled() {
+		boolean enabled = false;
+		Boolean enabledObj = get(ApplicationKey.S_FIND_BY_FIELD.name());
+		if(enabledObj != null) {
+			enabled = enabledObj.booleanValue();
+		}
+		return enabled;
+	}
+
+	/**
+	 * @param isEnabled
+	 */
+	public void setSearchRosterByFieldEnabled(boolean isEnabled) {
+		set(ApplicationKey.S_FIND_BY_FIELD.name(), new Boolean(isEnabled));
+	}
+
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.Application#getEnabledGradeTypes()
 	 */

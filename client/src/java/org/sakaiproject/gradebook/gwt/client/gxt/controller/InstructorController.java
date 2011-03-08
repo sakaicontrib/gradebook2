@@ -277,6 +277,7 @@ public class InstructorController extends Controller {
 		List<Gradebook> gradebookModels = model.getGradebookModels();
 
 		Registry.register(AppConstants.HELP_URL, model.getHelpUrl());
+		Registry.register(AppConstants.ENABLED_SEARCH_ROSTER_BY_FIELD, new Boolean(model.isSearchRosterByFieldEnabled()));
 		Registry.register(AppConstants.ENABLED_GRADE_TYPES, model.getEnabledGradeTypes());
 		Registry.register(AppConstants.SHOW_WEIGHTED_ENABLED, Boolean.toString(model.isShowWeightedEnabled()));
 

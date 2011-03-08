@@ -118,6 +118,10 @@ public interface I18nConstants extends Constants {
 	String finalGradeSubmissionWarningPrefix2();
 	String finalGradeSubmissionWarningSuffix1();
 	String findButton();
+	String searchByDisplayId();
+	String searchByDisplayName();
+	String searchByLastNameFirst();
+	String searchByEmail();
 	String fromHeader();
 	String gradeFormatLabel();
 	String graderPermissionSettingsHeading();

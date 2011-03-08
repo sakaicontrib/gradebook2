@@ -48,6 +48,8 @@ import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultiGradeLoadConfig
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.MultigradeSelectionModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.StudentModelOwner;
 import org.sakaiproject.gradebook.gwt.client.gxt.multigrade.UnweightedNumericCellRenderer;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.components.SearchFieldListBox;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.components.SearchFieldListBox.SearchFieldData;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.SectionsComboBox;
 import org.sakaiproject.gradebook.gwt.client.model.Configuration;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
@@ -160,6 +162,9 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	private NumberField pageSizeField;
 	
 	private SectionsComboBox<ModelData> sectionListBox;
+
+	private Boolean searchRosterByFieldEnabled = null;
+	private SearchFieldListBox searchFieldListBox;
 
 	private Listener<ComponentEvent> componentEventListener;
 	private Listener<GridEvent<ModelData>> gridEventListener;
@@ -509,6 +514,13 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 				if (ce.getType() == GradebookEvents.DoSearch.getEventType() || ce.getType() == GradebookEvents.ShowWeighted.getEventType()) {
 					int pageSize = getPageSize();
 					String searchString = searchField.getValue();
+					String fieldToSearch = null;
+					if(searchFieldListBox != null) {
+						ModelData selectedField = searchFieldListBox.getValue();
+						if(selectedField != null) {
+							fieldToSearch = ((SearchFieldData) selectedField).getId();
+						}
+					}
 					if(showWeightedToggleButton != null) {
 						showWeightedString = Boolean.toString(showWeightedToggleButton.isPressed());
 					} else if(showWeightedString == null) {
@@ -526,6 +538,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 					loadConfig.setLimit(0);
 					loadConfig.setOffset(pageSize);
 					((MultiGradeLoadConfig) loadConfig).setSearchString(searchString);
+					((MultiGradeLoadConfig) loadConfig).setSearchField(fieldToSearch);
 					((MultiGradeLoadConfig) loadConfig).setShowWeighted(showWeightedString);
 					((MultiGradeLoadConfig) loadConfig).setSectionUuid(sectionUuid);
 					((BasePagingLoader)newLoader()).useLoadConfig(loadConfig);
@@ -538,6 +551,9 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 				} else if (ce.getType() == GradebookEvents.ClearSearch.getEventType()) {
 					int pageSize = getPageSize();
 					searchField.setValue(null);
+					if(searchFieldListBox != null) {
+						searchFieldListBox.reset();
+					}
 					String sectionUuid = null;
 					if (sectionListBox != null) {
 						List<ModelData> selectedItems = sectionListBox.getSelection();
@@ -887,6 +903,13 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 					ModelData model = se.getSelectedItem();
 	
 					String searchString = searchField.getValue();
+					String fieldToSearch = null;
+					if(searchFieldListBox != null) {
+						ModelData selectedField = searchFieldListBox.getValue();
+						if(selectedField != null) {
+							fieldToSearch = ((SearchFieldData) selectedField).getId();
+						}
+					}
 					String sectionUuid = null;
 	
 					if (model != null) 
@@ -897,6 +920,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 					loadConfig.setLimit(0);
 					loadConfig.setOffset(pageSize);				
 					((MultiGradeLoadConfig) loadConfig).setSearchString(searchString);
+					((MultiGradeLoadConfig) loadConfig).setSearchField(fieldToSearch);
 					((MultiGradeLoadConfig) loadConfig).setSectionUuid(sectionUuid);
 					((BasePagingLoader)newLoader()).useLoadConfig(loadConfig);
 					newLoader().load(0, pageSize);
@@ -922,6 +946,9 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	
 			addListener(GradebookEvents.ClearSearch.getEventType(), componentEventListener);
 	
+			if(isSearchRosterByFieldEnabled()) {
+				this.searchFieldListBox = new SearchFieldListBox();
+			}
 			
 			AriaButton doSearchItem = new AriaButton(i18n.findButton(), new SelectionListener<ButtonEvent>() {
 	
@@ -946,6 +973,9 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 			
 
 			searchToolBar.add(searchField);
+			if(isSearchRosterByFieldEnabled()) {
+				searchToolBar.add(searchFieldListBox);
+			}
 			searchToolBar.add(doSearchItem);
 			searchToolBar.add(clearSearchItem);
 			searchToolBar.add(new SeparatorToolItem());
@@ -1529,6 +1559,29 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	
 	public ListStore<ModelData> getStore() {
 		return newStore();
+	}
+
+	/**
+	 * @return the searchRosterByFieldEnabled
+	 */
+	public boolean isSearchRosterByFieldEnabled() {
+		if(searchRosterByFieldEnabled == null) {
+			// check the registry
+			Boolean enabled = Registry.get(AppConstants.ENABLED_SEARCH_ROSTER_BY_FIELD);
+			if(enabled == null) {
+				return false;
+			} else {
+				setSearchRosterByFieldEnabled(enabled.booleanValue());
+			}
+		}
+		return searchRosterByFieldEnabled.booleanValue();
+	}
+
+	/**
+	 * @param searchRosterByFieldEnabled the searchRosterByFieldEnabled to set
+	 */
+	public void setSearchRosterByFieldEnabled(boolean searchRosterByFieldEnabled) {
+		this.searchRosterByFieldEnabled = new Boolean(searchRosterByFieldEnabled);
 	}
 
 	public RefreshAction getRefreshAction() {

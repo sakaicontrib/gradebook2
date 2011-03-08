@@ -72,7 +72,7 @@ public interface Gradebook2ComponentService {
 	
 	public List<Item> getItems(String gradebookUid, Long gradebookId, String type);
 	
-	public Roster getRoster(String gradebookUid, Long gradebookId, Integer limit, Integer offset, String sectionUuid, String searchString, String sortField, boolean includeCMId, boolean isDescending, boolean isShowWeighted);
+	public Roster getRoster(String gradebookUid, Long gradebookId, Integer limit, Integer offset, String sectionUuid, String searchString, String searchField, String sortField, boolean includeCMId, boolean isDescending, boolean isShowWeighted);
 	
 	public List<Permission> getPermissions(String gradebookUid, Long gradebookId, String graderId) throws SecurityException;
 	
@@ -105,6 +105,13 @@ public interface Gradebook2ComponentService {
 	public List<Statistics> getLearnerStatistics(String gradebookUid, Long gradebookId, String learnerId) throws SecurityException;
 	
 	public List<Map<String,Object>> getVisibleSections(String gradebookUid, boolean enableAllSectionsEntry, String allSectionsEntryTitle);
+
+	/**
+	 * Does system config setting enable finding learners by user-id, email address, 
+	 * last-name-first, etc, when using the search form in the instructor's view of grades?
+	 * @return true if search-by-field is enabled, false otherwise.
+	 */
+	public boolean isSearchRosterByFieldEnabled();
 
 	public boolean isValidLetterGrade(String letterGrade);
 

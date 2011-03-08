@@ -438,7 +438,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 
 		out.addRow(headerColumns.toArray(new String[headerColumns.size()]));
 
-		Roster result = service.getRoster(gradebookUid, gradebookId, null, null, null, null, null, true, false, false);
+		Roster result = service.getRoster(gradebookUid, gradebookId, null, null, null, null, null, null, true, false, false);
 
 		List<Learner> rows = result.getLearnerPage();
 
