@@ -213,9 +213,6 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 
 		if (categoryWeightSum == null)
 			return null;
-
-		if(categoryWeightDesiredSum.compareTo(BigDecimal.ONE) != 0)
-			System.out.println("categoryWeightDesiredSum = " + categoryWeightDesiredSum);
 		
 		for (String categoryKey : categoryUnitMap.keySet()) {
 			CategoryCalculationUnit categoryUnit = categoryUnitMap.get(categoryKey);
@@ -224,7 +221,6 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 			BigDecimal categoryWeight = categoryUnit.getCategoryWeightTotal();
 
 			if (categoryGrade != null) {
-
 
 				if (categoryGrade.compareTo(BigDecimal.ONE) > 0)
 					categoryGrade = BigDecimal.ONE;
