@@ -239,7 +239,15 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 					}
 					else {
 
-						categoryWeight = divide(categoryWeight, categoryWeightSum);
+						// GRBK-887 : Prevent division by zero
+						if(categoryWeightSum.compareTo(BigDecimal.ZERO) == 0) {
+							
+							categoryWeight = BigDecimal.ZERO;
+						}
+						else {
+							
+							categoryWeight = divide(categoryWeight, categoryWeightSum);
+						}
 					}
 
 					BigDecimal contributionToCourseGrade = multiply(categoryGrade, categoryWeight);
