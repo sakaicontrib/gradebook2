@@ -21,6 +21,6 @@ public class ExportDetails {
 	}
 	public void setIncludeStructure(boolean includeStructure) {
 		this.includeStructure = includeStructure;
-	} 
+	}
 
 }

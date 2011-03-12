@@ -62,14 +62,13 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>gwt-maven-plugin</artifactId>
-				<version>1.2</version>
+				<version>2.2.0</version>
 				<executions>
 					<execution>
 						<configuration>
 							<module>org.sakaiproject.gradebook.gwt.GradebookApplication</module>
 							<extraJvmArgs>-Xmx512m</extraJvmArgs>
 							<inplace>true</inplace>
-							<soyc>false</soyc>
 							<warSourceDirectory>${basedir}/../war</warSourceDirectory>
 						</configuration>
 						<goals>

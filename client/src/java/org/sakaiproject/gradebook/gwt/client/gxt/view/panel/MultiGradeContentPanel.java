@@ -124,6 +124,8 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	
 	public enum RefreshAction { NONE, REFRESHDATA, REFRESHCOLUMNS, REFRESHLOCALCOLUMNS, REFRESHCOLUMNSANDDATA, REFRESHLOCALCOLUMNSANDDATA };
 	
+	protected static final String EMPTY_STRING = "";
+	
 	protected EditorGrid<ModelData> grid;
 	//protected ListStore<ModelData> store;
 	
@@ -275,6 +277,16 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	public void editCell(Gradebook selectedGradebook, Record record, String property, Object value, Object startValue, GridEvent gridEvent) {
 
 		String columnHeader = "";
+		
+		/*
+		 * In case where the value and startValue are either both null or the empty string,
+		 * we don't do anything. We don't need to dispatch the UpdateLearnerGradeRecord because its handler
+		 * checks if the value and startValue are null or empty as well and then just returns
+		 */
+		if ((value == null || value.equals(EMPTY_STRING)) && (startValue == null || startValue.equals(EMPTY_STRING))) {
+			return;
+		}
+		
 		if (gridEvent != null) {
 			String className = grid.getView().getCell(gridEvent.getRowIndex(), gridEvent.getColIndex()).getClassName();
 			String gbDroppedText = new StringBuilder(" ").append(resources.css().gbCellDropped()).toString();

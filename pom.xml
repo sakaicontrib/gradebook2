@@ -27,8 +27,8 @@
 
 	<properties>
 		<gb2.version>1.5.0-SNAPSHOT</gb2.version>
-		<gxt.version>2.1.1</gxt.version>
-		<gwt.version>2.0.4</gwt.version>
+		<gxt.version>2.2.3</gxt.version>
+		<gwt.version>2.2.0</gwt.version>
 		<gb2.commons.logging.version>1.0.4</gb2.commons.logging.version>
 		<gb2.jackson.version>1.1.1</gb2.jackson.version> 
 		<gb2.jersey.version>1.1.5.1</gb2.jersey.version>
@@ -485,6 +485,8 @@
 		<dependency>
 			<groupId>com.extjs</groupId>
 			<artifactId>gxt</artifactId>
+			<version>${gxt.version}</version>
+			<scope>provided</scope>
 		</dependency>
     
     	<!-- Gradebook1 Dependencies -->
@@ -581,6 +583,7 @@
 				<groupId>com.extjs</groupId>
 				<artifactId>gxt</artifactId>
 				<version>${gxt.version}</version>
+				<scope>provided</scope>
 			</dependency>
 		  	
 			<!-- Gradebook1 Dependencies -->
