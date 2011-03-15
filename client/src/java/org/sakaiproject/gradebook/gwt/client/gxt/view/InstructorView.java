@@ -63,6 +63,7 @@ import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.util.Margins;
+import com.extjs.gxt.ui.client.widget.Component;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.form.LabelField;
@@ -384,6 +385,15 @@ public class InstructorView extends AppView {
 	
 		if (singleGradeContainer != null)
 			singleGradeContainer.onRefreshGradebookSetup(gradebookModel);
+		
+		
+		Boolean isLetterGrade = gradebookModel.getGradebookItemModel().getGradeType() == GradeType.LETTERS;
+		MenuItem gradeScale = (MenuItem) editMenu.getItemByItemId(AppConstants.WINDOW_MENU_ITEM_PREFIX  + AppConstants.TAB_GRADESCALE);
+		if(isLetterGrade){
+			gradeScale.disable();
+		} else {
+			gradeScale.enable();
+		}
 	}
 
 	@Override
@@ -536,7 +546,15 @@ public class InstructorView extends AppView {
 
 		if (addCategoryMenuItem != null)
 			addCategoryMenuItem.setVisible(selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
-
+		
+		
+		Boolean isLetterGrade = (selectedGradebook.getGradebookItemModel().getGradeType() == GradeType.LETTERS);
+		MenuItem gradeScale = (MenuItem) editMenu.getItemByItemId(AppConstants.WINDOW_MENU_ITEM_PREFIX  + AppConstants.TAB_GRADESCALE);
+		if(isLetterGrade){
+			gradeScale.disable();
+		} else {
+			gradeScale.enable();
+		}
 	}
 
 	/*
