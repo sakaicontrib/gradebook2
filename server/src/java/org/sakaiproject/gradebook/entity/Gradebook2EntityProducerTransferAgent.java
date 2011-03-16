@@ -237,7 +237,7 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 	public void transferCopyEntities(String from, String to, List ids) {
 		ByteArrayOutputStream result = new ByteArrayOutputStream();
 		try {
-			importExportUtil.exportGradebook (FileType.CSV, "", result, componentService, from, true, false);
+			importExportUtil.exportGradebook (FileType.CSV, "", result, componentService, from, true, false, null);
 		} catch (FatalException e1) {
 			e1.printStackTrace();
 		} 

@@ -13,6 +13,7 @@ import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.View;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -39,6 +40,7 @@ public class ImportExportView extends View {
 		case START_EXPORT:
 			ExportDetails ed = (ExportDetails) event.getData(); 
 			boolean includeStructure = ed.isIncludeStructure(); 
+			String sectionUid = ed.getSectionUid();
 			String fileType = "";
 			
 			switch (ed.getFileType())
@@ -63,6 +65,10 @@ public class ImportExportView extends View {
 			if (fileType != "") {
 				uri.append("/").append("filetype").append("/").append(fileType);
 			}
+			if (sectionUid != null) {
+				uri.append("/").append("section").append("/").append(URL.encodePathSegment(sectionUid));
+			}
+
 			uri.append("?form-token=").append(Cookies.getCookie("JSESSIONID"));
 			if (downloadFileFrame == null) {
 				downloadFileFrame = new Frame(uri.toString());

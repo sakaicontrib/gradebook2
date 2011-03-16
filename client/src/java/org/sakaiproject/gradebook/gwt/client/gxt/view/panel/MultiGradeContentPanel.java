@@ -1624,4 +1624,16 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		return showWeightedString;
 	}
 	
+	public String getSelectedSectionUid() {
+		String sectionUid = null;
+		if (sectionListBox != null) {
+			List<ModelData> selectedItems = sectionListBox.getSelection();
+			if (selectedItems != null && selectedItems.size() > 0) {
+				ModelData m = selectedItems.get(0);
+				sectionUid = m.get(SectionKey.S_ID.name());
+			}
+		}
+		return sectionUid;
+	}
+	
 }

@@ -5,6 +5,13 @@ public class ExportDetails {
 
 	private ExportType fileType; 
 	private boolean includeStructure;
+	private String sectionUid;
+	public String getSectionUid() {
+		return sectionUid;
+	}
+	public void setSectionUid(String sectionUid) {
+		this.sectionUid = sectionUid;
+	}
 	public ExportDetails(ExportType fileType, boolean includeStructure) {
 		super();
 		this.fileType = fileType;

@@ -630,18 +630,22 @@ public class InstructorView extends AppView {
 						break;
 					case EXPORT_DATA_XLS:
 						ex = new ExportDetails(ExportType.XLS97, false);
+						ex.setSectionUid(multigradeView.getMultiGradeContentPanel().getSelectedSectionUid());
 						handleExport(ex);
 						break;
 					case EXPORT_STRUCTURE_XLS:
 						ex = new ExportDetails(ExportType.XLS97, true);
+						ex.setSectionUid(multigradeView.getMultiGradeContentPanel().getSelectedSectionUid());
 						handleExport(ex); 
 						break;
 					case EXPORT_DATA_CSV:
 						ex = new ExportDetails(ExportType.CSV, false);
+						ex.setSectionUid(multigradeView.getMultiGradeContentPanel().getSelectedSectionUid());
 						handleExport(ex);  
 						break;
 					case EXPORT_STRUCTURE_CSV:
 						ex = new ExportDetails(ExportType.CSV, true);
+						ex.setSectionUid(multigradeView.getMultiGradeContentPanel().getSelectedSectionUid());
 						handleExport(ex);
 						break;
 					case IMPORT:

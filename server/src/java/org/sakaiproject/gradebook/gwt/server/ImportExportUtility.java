@@ -83,12 +83,12 @@ public interface ImportExportUtility {
 	throws InvalidInputException, FatalException;
 
 	public ImportExportDataFile exportGradebook(Gradebook2ComponentService service, String gradebookUid, 
-			final boolean includeStructure, final boolean includeComments) 
+			final boolean includeStructure, final boolean includeComments, String sectionUid) 
 	throws FatalException;
 	
 	public void exportGradebook(FileType fileType, String filename, OutputStream outStream,
 			Gradebook2ComponentService service, String gradebookUid,
-			final boolean includeStructure, final boolean includeComments) throws FatalException;
+			final boolean includeStructure, final boolean includeComments, String SectionUid) throws FatalException;
 			
 
 
