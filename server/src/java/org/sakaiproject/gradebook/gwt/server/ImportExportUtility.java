@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.util.List;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
@@ -83,12 +84,12 @@ public interface ImportExportUtility {
 	throws InvalidInputException, FatalException;
 
 	public ImportExportDataFile exportGradebook(Gradebook2ComponentService service, String gradebookUid, 
-			final boolean includeStructure, final boolean includeComments, String sectionUid) 
+			final boolean includeStructure, final boolean includeComments, List<String> sectionUidList) 
 	throws FatalException;
 	
 	public void exportGradebook(FileType fileType, String filename, OutputStream outStream,
 			Gradebook2ComponentService service, String gradebookUid,
-			final boolean includeStructure, final boolean includeComments, String SectionUid) throws FatalException;
+			final boolean includeStructure, final boolean includeComments, List<String> SectionUid) throws FatalException;
 			
 
 

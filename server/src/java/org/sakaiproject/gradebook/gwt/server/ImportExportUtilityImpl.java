@@ -219,7 +219,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 
 
 	public ImportExportDataFile exportGradebook(Gradebook2ComponentService service, String gradebookUid, 
-			final boolean includeStructure, final boolean includeComments, String sectionUid) 
+			final boolean includeStructure, final boolean includeComments, List<String> sectionUidList) 
 	throws FatalException {
 
 		Gradebook gradebook = service.getGradebook(gradebookUid);
@@ -438,7 +438,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 
 		out.addRow(headerColumns.toArray(new String[headerColumns.size()]));
 
-		Roster result = service.getRoster(gradebookUid, gradebookId, null, null, sectionUid, null, null, null, true, false, false);
+		Roster result = service.getRoster(gradebookUid, gradebookId, null, null, sectionUidList, null, null, null, true, false, false);
 
 		List<Learner> rows = result.getLearnerPage();
 
@@ -555,26 +555,26 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	
 	public void exportGradebook(FileType fileType, String filename, OutputStream outStream,
 			Gradebook2ComponentService service, String gradebookUid,
-			final boolean includeStructure, final boolean includeComments, String sectionUid) throws FatalException {
+			final boolean includeStructure, final boolean includeComments, List<String> sectionUidList) throws FatalException {
 		
 		
 		if (fileType.equals(FileType.XLS97))
 		{
-			exportGradebookXLS (filename, outStream, service, gradebookUid, includeStructure, true, sectionUid); 
+			exportGradebookXLS (filename, outStream, service, gradebookUid, includeStructure, true, sectionUidList); 
 		}
 		else if (fileType.equals(FileType.CSV))
 		{
-			exportGradebookCSV (filename.toString(), outStream, service, gradebookUid, includeStructure, true, sectionUid);
+			exportGradebookCSV (filename.toString(), outStream, service, gradebookUid, includeStructure, true, sectionUidList);
 		}
 	}
 
 	private void exportGradebookXLS(String title, OutputStream outStream,
 			Gradebook2ComponentService service, String gradebookUid,
-			final boolean includeStructure, final boolean includeComments, String sectionUid)
+			final boolean includeStructure, final boolean includeComments, List<String> sectionUidList)
 			throws FatalException {
 		
 		final ImportExportDataFile file = exportGradebook(service,
-				gradebookUid, includeStructure, includeComments, sectionUid);
+				gradebookUid, includeStructure, includeComments, sectionUidList);
 
 		HSSFWorkbook wb = new HSSFWorkbook();
 		HSSFSheet s = wb.createSheet(title);
@@ -620,11 +620,11 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 
 	private void exportGradebookCSV(String title, OutputStream outStream,
 			Gradebook2ComponentService service, String gradebookUid,
-			final boolean includeStructure, final boolean includeComments, String sectionUid)
+			final boolean includeStructure, final boolean includeComments, List<String> sectionUidList)
 			throws FatalException {
 
 		final ImportExportDataFile
-		            file = exportGradebook (service, gradebookUid, includeStructure, includeComments, sectionUid);
+		            file = exportGradebook (service, gradebookUid, includeStructure, includeComments, sectionUidList);
 		OutputStreamWriter
 		            writer = new OutputStreamWriter(outStream);
 		
@@ -2563,6 +2563,9 @@ private GradeItem buildNewCategory(String curCategoryString,
 	public void setGradeCalculations(GradeCalculations gradeCalculations) {
 		this.gradeCalculations = gradeCalculations;
 	}
+
+
+	
 
 
 	

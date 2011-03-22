@@ -1343,7 +1343,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 	@SuppressWarnings("unchecked")
 	public Roster getRoster(String gradebookUid, Long gradebookId,
-			Integer numberLimit, Integer numberOffset, String sectionUuid,
+			Integer numberLimit, Integer numberOffset, List<String> sectionUidList,
 			String searchCriteria, String searchField, String sortField, boolean includeCMId, boolean isDescending, boolean isShowWeighted) {
 
 		List<Learner> rows = new ArrayList<Learner>();
@@ -1443,12 +1443,8 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		boolean isLimitedToSelectedSection = false;
 		Set<String> authorizedGroups = new HashSet<String>();
 
-		if (sectionUuid != null) {
-			String[] parts = sectionUuid.split(",");
-			for (String part : parts) {
-				if(!"".equals(part.trim()));
-				authorizedGroups.add(part);
-			}
+		if (sectionUidList != null) {
+			authorizedGroups.addAll(sectionUidList);
 			isLimitedToSelectedSection = true;
 		}
 

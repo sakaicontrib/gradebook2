@@ -1,5 +1,8 @@
 package org.sakaiproject.gradebook.gwt.sakai.rest.resource;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -18,13 +21,24 @@ public class Roster extends Resource {
     		@QueryParam("searchField") String searchField, @QueryParam("showWeighted") String showWeighted) {
     	
     	boolean isDescending = sortDir == null || "DESC".equals(sortDir);
+    	List<String> sectionList = new ArrayList<String>();
     	
     	if (sortField != null && sortField.equalsIgnoreCase("null"))
     		sortField = null;
     	if (sortDir != null && sortDir.equalsIgnoreCase("null"))
     		sortDir = null;
-    	if (sectionUuid != null && (sectionUuid.equalsIgnoreCase("null") || sectionUuid.equalsIgnoreCase("ALL")))
-    		sectionUuid = null;
+    	if (sectionUuid != null) {
+    		if (sectionUuid.equalsIgnoreCase("null") || sectionUuid.equalsIgnoreCase("ALL")) {
+    			sectionUuid = null;
+    		} else {
+    			String[] sectionsIn = sectionUuid.split(",");
+    			for (String s : sectionsIn) {
+    				sectionList.add(s);
+    			}
+    			
+    	}
+    	}
+    		
     	if (searchString != null && searchString.equalsIgnoreCase("null")) 
     		searchString = null;
     	if(searchField != null && searchField.equalsIgnoreCase("null")) {
@@ -34,7 +48,7 @@ public class Roster extends Resource {
     	boolean isShowWeighted = Boolean.TRUE.toString().equalsIgnoreCase(showWeighted);
     	
     	org.sakaiproject.gradebook.gwt.client.model.Roster roster = 
-    		service.getRoster(gradebookUid, gradebookId, limit, offset, sectionUuid, searchString, searchField, sortField, false, isDescending, isShowWeighted);
+    		service.getRoster(gradebookUid, gradebookId, limit, offset, sectionList, searchString, searchField, sortField, false, isDescending, isShowWeighted);
     
     	return toJson(roster.getLearnerPage(), roster.getTotal());
     }

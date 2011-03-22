@@ -69,9 +69,6 @@ public class Export extends Resource {
 		
 		List<String> sectionList = new ArrayList<String>();
 		
-		///short term
-		StringBuffer sectionsAsOneString = new StringBuffer();
-		
 		boolean error = false;
 		
 
@@ -101,11 +98,7 @@ public class Export extends Resource {
 						Collections.sort(ids);
 						
 						for (int i=0;i<sectionNumbers.length;++i) {
-							if(i>0){
-								sectionsAsOneString.append(",");
-								}
 							String fullRef = "/site/" + gradebookUid + "/group/" + ids.get(i);
-							sectionsAsOneString.append(fullRef);//temp
 							sectionList.add(fullRef);
 						}
 					} else {error = true;}
@@ -157,7 +150,7 @@ public class Export extends Resource {
 											+ filename.toString());
 				}
 				
-					importExportUtility.exportGradebook (type, filename.toString(), out, service, gradebookUid, includeStructure, true, sectionsAsOneString.toString()); 
+					importExportUtility.exportGradebook (type, filename.toString(), out, service, gradebookUid, includeStructure, true, sectionList); 
 							
 				
 			} catch (FatalException e) {
