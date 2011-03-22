@@ -1,11 +1,21 @@
 package org.sakaiproject.gradebook.gwt.client;
 
+import java.util.List;
+
 public class ExportDetails {
 	public enum ExportType { XLS97, CSV }; 
 
 	private ExportType fileType; 
 	private boolean includeStructure;
 	private String sectionUid;
+	private List<String> allSections;
+	
+	public List<String> getAllSections() {
+		return allSections;
+	}
+	public void setAllSections(List<String> allSections) {
+		this.allSections = allSections;
+	}
 	public String getSectionUid() {
 		return sectionUid;
 	}

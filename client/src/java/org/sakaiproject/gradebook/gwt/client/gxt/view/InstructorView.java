@@ -24,7 +24,11 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
@@ -37,7 +41,6 @@ import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenu;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.BorderLayoutPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.GradeScalePanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.HistoryPanel;
@@ -63,7 +66,6 @@ import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.util.Margins;
-import com.extjs.gxt.ui.client.widget.Component;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.form.LabelField;
@@ -74,7 +76,6 @@ import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
@@ -614,13 +615,23 @@ public class InstructorView extends AppView {
 			}
 
 		};
-
+		
+		final Map<MenuSelector, ExportType> exportTypeByMenuSelector = new HashMap<MenuSelector, ExportType>();
+		exportTypeByMenuSelector.put(MenuSelector.EXPORT_DATA_XLS, ExportType.XLS97);
+		exportTypeByMenuSelector.put(MenuSelector.EXPORT_STRUCTURE_XLS, ExportType.XLS97);
+		exportTypeByMenuSelector.put(MenuSelector.EXPORT_DATA_CSV, ExportType.CSV);
+		exportTypeByMenuSelector.put(MenuSelector.EXPORT_STRUCTURE_CSV, ExportType.CSV);
+		final EnumSet<MenuSelector> exportingSelections = EnumSet.of(MenuSelector.EXPORT_STRUCTURE_XLS,MenuSelector.EXPORT_STRUCTURE_CSV);
+		
 		menuSelectionListener = new SelectionListener<MenuEvent>() {
 
 			@Override
 			public void componentSelected(MenuEvent me) {
 				MenuSelector selector = me.getItem().getData(MENU_SELECTOR_FLAG);
 				ExportDetails ex;
+				
+				ExportType exportType = exportTypeByMenuSelector.get(selector);
+				boolean includeStructure = exportingSelections.contains(selector);
 				switch (selector) {
 					case ADD_CATEGORY:
 						Dispatcher.forwardEvent(GradebookEvents.NewCategory.getEventType());
@@ -629,23 +640,14 @@ public class InstructorView extends AppView {
 						Dispatcher.forwardEvent(GradebookEvents.NewItem.getEventType());
 						break;
 					case EXPORT_DATA_XLS:
-						ex = new ExportDetails(ExportType.XLS97, false);
-						ex.setSectionUid(multigradeView.getMultiGradeContentPanel().getSelectedSectionUid());
-						handleExport(ex);
-						break;
 					case EXPORT_STRUCTURE_XLS:
-						ex = new ExportDetails(ExportType.XLS97, true);
-						ex.setSectionUid(multigradeView.getMultiGradeContentPanel().getSelectedSectionUid());
-						handleExport(ex); 
-						break;
 					case EXPORT_DATA_CSV:
-						ex = new ExportDetails(ExportType.CSV, false);
-						ex.setSectionUid(multigradeView.getMultiGradeContentPanel().getSelectedSectionUid());
-						handleExport(ex);  
-						break;
 					case EXPORT_STRUCTURE_CSV:
-						ex = new ExportDetails(ExportType.CSV, true);
+						ex = new ExportDetails(exportType, includeStructure);
 						ex.setSectionUid(multigradeView.getMultiGradeContentPanel().getSelectedSectionUid());
+						List<String> allSections = multigradeView.getMultiGradeContentPanel().getSectionList();
+						Collections.sort(allSections);
+						ex.setAllSections(allSections);								
 						handleExport(ex);
 						break;
 					case IMPORT:

@@ -1340,9 +1340,6 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 	}
 
 
-	/*
-	 * PRIVATE METHODS
-	 */
 
 	@SuppressWarnings("unchecked")
 	public Roster getRoster(String gradebookUid, Long gradebookId,
@@ -1447,7 +1444,11 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		Set<String> authorizedGroups = new HashSet<String>();
 
 		if (sectionUuid != null) {
-			authorizedGroups.add(sectionUuid);
+			String[] parts = sectionUuid.split(",");
+			for (String part : parts) {
+				if(!"".equals(part.trim()));
+				authorizedGroups.add(part);
+			}
 			isLimitedToSelectedSection = true;
 		}
 

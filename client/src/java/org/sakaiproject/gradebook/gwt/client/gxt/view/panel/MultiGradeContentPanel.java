@@ -1636,4 +1636,18 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		return sectionUid;
 	}
 	
+	public List<String> getSectionList() {
+		List<String> sectionIds = new ArrayList<String>();
+		ListStore<ModelData> theStore = sectionListBox.getStore();
+		for (int i= 0;i<theStore.getCount();++i) {
+			ModelData data = theStore.getAt(i);
+			String propId = (String) data.get("S_ID");
+			if("ALL".equals(propId)) {
+				continue;
+			}
+			sectionIds.add(propId);
+		}
+		return sectionIds;
+	}
+	
 }

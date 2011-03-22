@@ -1,7 +1,8 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view;
 
+import java.util.List;
+
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
-import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.ExportDetails;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ImportPanel;
@@ -13,7 +14,6 @@ import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.View;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -66,7 +66,7 @@ public class ImportExportView extends View {
 				uri.append("/").append("filetype").append("/").append(fileType);
 			}
 			if (sectionUid != null) {
-				uri.append("/").append("section").append("/").append(URL.encodePathSegment(sectionUid));
+				uri.append("/").append("section").append("/").append(getSectionsIndexed(sectionUid, ed.getAllSections()));
 			}
 
 			uri.append("?form-token=").append(Cookies.getCookie("JSESSIONID"));
@@ -79,6 +79,22 @@ public class ImportExportView extends View {
 			}
 			break;
 		}
+	}
+
+	private String getSectionsIndexed(String sectionUid, List<String> allSections) {
+		StringBuffer sb = new StringBuffer();
+		String[] parts = sectionUid.split(",");
+		if(parts.length>0) {
+			for(int i=0;i<parts.length;++i) {
+				if(allSections.contains(parts[i])) {
+					if(sb.length()>0) {
+						sb.append(",");
+					}
+					sb.append(allSections.indexOf(parts[i]));
+				}
+			}
+		}
+		return sb.toString();
 	}
 
 	public ContentPanel getImportDialog() {

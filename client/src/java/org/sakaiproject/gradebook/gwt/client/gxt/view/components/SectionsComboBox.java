@@ -97,4 +97,8 @@ public class SectionsComboBox<D extends ModelData> extends Composite {
 			sectionComboBox.reset();
 		}
 	}
+	
+	public ListStore<D> getStore() {
+		return sectionComboBox.getStore();
+	}
 }
