@@ -839,9 +839,28 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 						if (assignmentGradeRecord != null && assignmentGradeRecord.getPointsEarned() != null) {
 							BigDecimal earnedPercentWithinCategory = null;
 							if (isWeightByPointsCategory) {
-								earnedPercentWithinCategory = divide(pointsEarned,totalCategoryPoints);
+
+								// GBRK-869 : prevent division by zero
+								if(BigDecimal.ZERO.compareTo(totalCategoryPoints) == 0) {
+									
+									earnedPercentWithinCategory = BigDecimal.ZERO;
+								}
+								else {
+								
+									earnedPercentWithinCategory = divide(pointsEarned,totalCategoryPoints);
+								}
+								
 							} else {
-								earnedPercentWithinCategory = multiply(BIG_DECIMAL_100, multiply(gradeRecordUnit.getPercentageScore(), divide(assignmentWeight, myTotalCategoryPercent)));
+								
+								// GRBK-869 : prevent division by zero
+								if(BigDecimal.ZERO.compareTo(myTotalCategoryPercent) == 0) {
+									
+									earnedPercentWithinCategory = multiply(BIG_DECIMAL_100, gradeRecordUnit.getPercentageScore());
+								}
+								else {
+									
+									earnedPercentWithinCategory = multiply(BIG_DECIMAL_100, multiply(gradeRecordUnit.getPercentageScore(), divide(assignmentWeight, myTotalCategoryPercent)));
+								}
 							}
 							assignmentGradeRecord.setEarnedWeightedPercentage(earnedPercentWithinCategory);
 						}							
