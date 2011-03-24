@@ -365,4 +365,7 @@ public interface I18nConstants extends Constants {
 	String exportWarnUserFileCannotBeImportedText();
 	String exportWarnUserFileCannotBeImportedTitle();
 	
+	String errorOccurredGeneric();
+	String exportError();
+	
 }

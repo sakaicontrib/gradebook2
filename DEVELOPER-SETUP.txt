@@ -16,6 +16,9 @@ command.
 Our suggestion is that you use the Google Plugin with Eclipse with GWT 2+. This is a 
 standard Eclipse plugin, with update sites at the following locations:
 
+Eclipse 3.6 (Helios)
+http://dl.google.com/eclipse/plugin/3.6
+
 Eclipse 3.5 (Galileo)
 http://dl.google.com/eclipse/plugin/3.5
 
