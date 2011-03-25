@@ -1311,6 +1311,7 @@ public class ItemFormPanel extends GradebookPanel {
 
 									clearChanges();
 									sendItemCreateEvent(item, close);
+									selectedItemModel = item;
 								}
 								
 								break;
@@ -1378,7 +1379,8 @@ public class ItemFormPanel extends GradebookPanel {
 										}
 									}
 									
-									sendItemUpdateEvent(record, selectedItemModel, close);								}
+									sendItemUpdateEvent(record, selectedItemModel, close);								
+									}
 								break;
 						}
 					}
