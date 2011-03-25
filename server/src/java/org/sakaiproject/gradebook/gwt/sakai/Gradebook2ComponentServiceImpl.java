@@ -4702,23 +4702,21 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			List<Assignment> assignments, List<Category> categories,
 			UserRecord record, boolean isLetterGradeMode) {
 		
-		DisplayGrade ret; 
 		BigDecimal fullPrecisionCalculatedGrade = getCalculatedGrade(gradebook, assignments, categories, record.getGradeRecordMap());
-		BigDecimal displayRoundedCalculcatedGrade = getRoundedDisplayGrade(fullPrecisionCalculatedGrade);
-		log.debug("Full precision calculated grade=" + fullPrecisionCalculatedGrade);
-		log.debug("Rounded calculated grade=" + displayRoundedCalculcatedGrade);
+
+		BigDecimal grade = null;
 		
 		if (isLetterGradeMode)
 		{
-			ret = getDisplayGrade(gradebook, record.getUserUid(), record.getCourseGradeRecord(), fullPrecisionCalculatedGrade);							
+			grade = fullPrecisionCalculatedGrade;						
 		}
 		else 
 			// Points and percentages use the normal grade scale, so we need to use the display rounded value
 		{
-			ret = getDisplayGrade(gradebook, record.getUserUid(), record.getCourseGradeRecord(), displayRoundedCalculcatedGrade);
+			grade = getRoundedDisplayGrade(fullPrecisionCalculatedGrade);
 		}
 		
-		return ret; 
+		return getDisplayGrade(gradebook, record.getUserUid(), record.getCourseGradeRecord(), grade); 
 		
 	}
 
@@ -5105,13 +5103,14 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 	}
 
 
-	/*
-	 * DEPENDENCY INJECTION ACCESSORS
-	 */
 
 	private DisplayGrade getDisplayGrade(Gradebook gradebook, String studentUid, CourseGradeRecord courseGradeRecord, BigDecimal autoCalculatedGrade) {
 
 		DisplayGrade displayGrade = new DisplayGrade();
+		
+		GradeItem gradeItem = getGradebookGradeItem(gradebook, gbService.getAssignments(gradebook.getId()),gbService.getCategories(gradebook.getId()),false);
+		
+		
 
 		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
 		boolean isLetterGradeMode = gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER;
@@ -5145,7 +5144,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		displayGrade.setLetterGrade(letterGrade);
 		displayGrade.setCalculatedGrade(autoCalculatedGrade);
-		displayGrade.setMissingGrades(isMissingScores);
+		displayGrade.setMissingGrades(isMissingScores && !gradeItem.getNullsAsZeros());
 		displayGrade.setLetterGradeMode(isLetterGradeMode);
 		displayGrade.setOverridden(isOverridden);
 
