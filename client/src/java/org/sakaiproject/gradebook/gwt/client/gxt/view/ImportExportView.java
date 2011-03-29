@@ -130,7 +130,6 @@ public class ImportExportView extends View {
 			
 			downloadFileForm.addSubmitCompleteHandler(new FormPanel.SubmitCompleteHandler() {
 				
-				@Override
 				public void onSubmitComplete(SubmitCompleteEvent event) {
 					/// if this is called then something went wrong in the download
 					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), 
