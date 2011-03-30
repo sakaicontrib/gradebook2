@@ -69,7 +69,6 @@ import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.KeyboardListener;
 
 public class MultiGradeContextMenu extends Menu {
 
@@ -102,7 +101,7 @@ public class MultiGradeContextMenu extends Menu {
 			    super.onKeyPress(fe);
 
 			    switch (fe.getKeyCode()) {
-			    case KeyboardListener.KEY_ENTER:
+			    case KeyCodes.KEY_ENTER:
 			    	addComment(owner, getValue());
 			    	break;
 			    }
