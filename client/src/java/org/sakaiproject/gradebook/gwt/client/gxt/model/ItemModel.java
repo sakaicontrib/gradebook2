@@ -37,6 +37,7 @@ import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ClassType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
+import org.sakaiproject.gradebook.gwt.server.Util;
 
 import com.extjs.gxt.ui.client.data.ChangeEvent;
 import com.extjs.gxt.ui.client.data.ModelData;
@@ -447,7 +448,8 @@ public class ItemModel extends EntityTreeModel implements Item {
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Item#getNullsAsZeros()
 	 */
 	public Boolean getNullsAsZeros() {
-		return get(ItemKey.B_NLLS_ZEROS.name());
+		return get(ItemKey.B_NLLS_ZEROS.name()) != null 
+	      && ((Boolean)get(ItemKey.B_NLLS_ZEROS.name()));
 	}
 	
 	/* (non-Javadoc)

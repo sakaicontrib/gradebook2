@@ -253,7 +253,8 @@ public class GradeItemImpl extends BaseModel implements GradeItem {
 	}
 
 	public Boolean getNullsAsZeros() {
-		return Util.toBoolean(get(ItemKey.B_NLLS_ZEROS.name()));
+		return get(ItemKey.B_NLLS_ZEROS.name()) != null 
+	      && ((Boolean)get(ItemKey.B_NLLS_ZEROS.name()));
 	}
 
 	public String getParentName() {
