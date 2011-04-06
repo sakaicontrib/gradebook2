@@ -180,7 +180,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 			public Object doInHibernate(Session session) throws HibernateException {
 				Gradebook gb = (Gradebook)session.load(Gradebook.class, gradebookId);
 				List conflictList = ((List)session.createQuery(
-				"select ca from Category as ca where ca.name = ? and ca.gradebook = ? and ca.removed=false ").
+				"select ca from Category as ca where ca.name = ? and ca.gradebook = ? and (ca.removed=false or ca.removed is null) ").
 				setString(0, name).
 				setEntity(1, gb).list());
 				int numNameConflicts = conflictList.size();
@@ -865,7 +865,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				.append(" and r.realmKey = rg.realmKey ")
 				.append(" and go.gradebook.id=:gradebookId ")
 				.append(" and r.realmId in (:realmIds) ")
-				.append(" and go.removed=false ")
+				.append(" and (go.removed=false or go.removed is null) ")
 				.append(" and rr.roleName in (:roleKeys) ");
 
 				query = session.createQuery(builder.toString());
@@ -925,7 +925,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 					return new ArrayList();
 				} 
 
-				Query q = session.createQuery("from AssignmentGradeRecord as agr where agr.gradableObject.removed=false and agr.gradableObject.gradebook.id=:gradebookId and agr.studentId=:studentUid");
+				Query q = session.createQuery("from AssignmentGradeRecord as agr where (agr.gradableObject.removed=false or agr.gradableObject.removed is null) and agr.gradableObject.gradebook.id=:gradebookId and agr.studentId=:studentUid");
 				q.setLong("gradebookId", gradebookId);
 				q.setString("studentUid", studentUid);
 
@@ -1064,12 +1064,12 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 				if (hasCategories) 
 					query.append(", Category cat where a.category.id = cat.id ")
-					.append(" and cat.removed = false and ");
+					.append(" and (cat.removed = false or cat.removed is null) and ");
 				else
 					query.append(" where ");
 
 				query.append(" a.gradebook.id = :gradebookId ")
-				.append("and a.removed = false ")
+				.append("and (a.removed = false or a.removed is null) ")
 				.append("and a.name != 'Course Grade' ")
 				.append("and a.id in ( ")
 				.append("select r.gradableObject.id ")
@@ -1106,15 +1106,16 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 				if (hasCategories) 
 					query.append(", Category cat where a.category.id = cat.id ")
-					.append("and cat.removed = false ")
-					.append("and cat.extraCredit = false and ");
+					.append("and (cat.removed = false or cat.removed is null) ")
+					.append("and (cat.extraCredit = false or cat.extraCredit is null) and ");
 				else
 					query.append(" where ");
 
 				query.append(" a.gradebook.id = :gradebookId ")
-				.append("and a.removed = false ")
+				.append("and (a.removed = false or a.removed is null) ")
 				.append("and a.name != 'Course Grade' ")
-				.append("and a.extraCredit = false ")
+				.append("and (a.extraCredit = false or a.extraCredit is null) ")
+				.append("and (a.countNullsAsZeros = false or a.countNullsAsZeros is null) ")
 				.append("and a.id not in ( ")
 				.append("select r.gradableObject.id ")
 				.append("from AssignmentGradeRecord r ")
@@ -1444,7 +1445,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				session.evict(category);
 				Category persistentCat = (Category)session.load(Category.class, category.getId());
 				List conflictList = ((List)session.createQuery(
-				"select ca from Category as ca where ca.name = ? and ca.gradebook = ? and ca.id != ? and ca.removed=false").
+				"select ca from Category as ca where ca.name = ? and ca.gradebook = ? and ca.id != ? and (ca.removed=false or ca.removed is null)").
 				setString(0, category.getName()).
 				setEntity(1, category.getGradebook()).
 				setLong(2, category.getId().longValue()).list());
@@ -1824,7 +1825,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 	protected List<Assignment> getAssignments(Long gradebookId, Session session) throws HibernateException {
 		List<Assignment> assignments = session.createQuery(
-		"from Assignment as asn where asn.gradebook.id=? and asn.removed=false order by asn.sortOrder, asn.id asc").
+		"from Assignment as asn where asn.gradebook.id=? and (asn.removed=false or asn.removed is null) order by asn.sortOrder, asn.id asc").
 		setLong(0, gradebookId.longValue()).
 		list();
 		return assignments;
