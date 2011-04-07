@@ -2277,12 +2277,21 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		{
 			beans = parentApplicationContext.getBeanNamesForType(InstitutionalAdvisor.class);
 		}
-		// Make sure that there is just one implementation in the parent context
-		if(beans != null && beans.length == 1) {
-			advisor = (InstitutionalAdvisor) parentApplicationContext.getBean(beans[0]);
-			log.info("Using institutional adviser " + beans[0]);
+		
+		// If there is one imple use it, otherwise defer to advisorBeanName property and select that
+		if(beans != null && beans.length > 0) {
+			if (beans.length == 1) {
+				advisor = (InstitutionalAdvisor) parentApplicationContext.getBean(beans[0]);
+				log.info("Using institutional adviser " + beans[0]);
+			} else {
+				String advisorBeanName = configService.getString("advisor@org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service");
+				advisor = (InstitutionalAdvisor) parentApplicationContext.getBean(advisorBeanName);
+				log.info("Using institutional adviser " + advisorBeanName);
+			}
 		}
-		else {
+			
+		if (advisor == null) {
+
 			// If the parent context didn't have an implementation, we use the sample
 			advisor = (InstitutionalAdvisor) applicationContext.getBean("org.sakaiproject.gradebook.gwt.sakai.api.SampleInstitutionalAdvisor");
 
