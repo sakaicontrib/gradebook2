@@ -13,6 +13,10 @@
 	
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.InvalidDataMapper"/>
 	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.StaleObjectModificationMapper"/>
+	
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.DataIntegrityViolationMapper"/>
+	
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" 
 		  abstract="true"
 		  class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource">

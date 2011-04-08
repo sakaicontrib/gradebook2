@@ -56,7 +56,4 @@ public class Upload extends Resource {
 				return update(gradebookUid, gradebookId, model, forceFlag);
 		
 	}
-	
-	
-
 }

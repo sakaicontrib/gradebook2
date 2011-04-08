@@ -32,9 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.collections.keyvalue.MultiKey;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
@@ -84,7 +82,7 @@ import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureExcep
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
- * This is the Hibernate implementation of the GradebookToolService for Gradebook2/GradebookNG. At the time of this
+ * This is the Hibernate implementation of the GradebookToolService for Gradebook2. At the time of this
  * writing 1/2/2009 it represents a subset of the functionality provided by the old Gradebook services (GradebookManagerHibernateImpl.java
  * and BaseHibernateManager.java) and licensed under ECL 1.0. 
  * 
@@ -106,8 +104,8 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	protected GradeCalculations gradeCalculations;
 
 	// Local cache of static-between-deployment properties.
-	protected Map propertiesMap = new HashMap();
-	protected Map<MultiKey, Boolean> isStudentGradeCache = new ConcurrentHashMap<MultiKey, Boolean>();
+	//protected Map propertiesMap = new HashMap();
+	//protected Map<MultiKey, Boolean> isStudentGradeCache = new ConcurrentHashMap<MultiKey, Boolean>();
 
 
 	/*
@@ -1323,21 +1321,45 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	}
 
 	public void updateAssignment(final Assignment assignment)  throws ConflictingAssignmentNameException, StaleObjectModificationException {
+		
 		HibernateCallback hc = new HibernateCallback() {
 			public Object doInHibernate(Session session) throws HibernateException {
-				updateAssignment(assignment, session);
+							
+				session.evict(assignment);
+				session.update(assignment);
+				
+				/*
+				 * GRBK-913 : flushing the session so that we don't need to further evict the assignment object
+				 * in case an exception occurs. In the exception handling bellow, we get the assignment from DB and compare
+				 * it against the passed in assignment object
+				 */
+				session.flush();
 				return null;
 			}
 		};
+		
 		try {
-			/** synchronize from external application*/
-			String oldTitle = null;
 			
-			getHibernateTemplate().execute(hc);
+			getHibernateTemplate().execute(hc);	
 			
-		} catch (HibernateOptimisticLockingFailureException holfe) {
-			if(log.isInfoEnabled()) log.info("An optimistic locking failure occurred while attempting to update an assignment");
-			throw new StaleObjectModificationException(holfe);
+		} catch (HibernateOptimisticLockingFailureException e) {
+			
+			// GRBK-913
+			/*
+			 * Getting the current assignment from the DB so that we can compare it 
+			 * against the assignment instance that was supposed to be saved.
+			 */
+			Assignment persistedAssignment = getAssignment(assignment.getId());
+			
+			if(!hasEqualValues(assignment, persistedAssignment)) {
+				
+				if(log.isInfoEnabled()) log.info("An optimistic locking failure occurred while attempting to update an assignment");
+				throw new StaleObjectModificationException(e);
+			}
+			else {
+				
+				if(log.isInfoEnabled()) log.info("An optimistic locking failure occurred while attempting to update an assignment, but the assignments have the same values");
+			}
 		}
 	}
 
@@ -1366,13 +1388,18 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 					gradeRecordFromCall.setDateRecorded(now);
 					try {
 						session.saveOrUpdate(gradeRecordFromCall);
-					} catch (TransientObjectException e) {
+					}
+					catch (TransientObjectException e) {
 						// It's possible that a previously unscored student
 						// was scored behind the current user's back before
 						// the user saved the new score. This translates
 						// that case into an optimistic locking failure.
 						if (log.isInfoEnabled())
 							log.info("An optimistic locking failure occurred while attempting to add a new assignment grade record");
+						throw new StaleObjectModificationException(e);
+					}
+					catch(DataIntegrityViolationException e) {
+						
 						throw new StaleObjectModificationException(e);
 					}
 
@@ -1388,7 +1415,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 					studentsWithUpdatedAssignmentGradeRecords.add(gradeRecordFromCall.getStudentId());
 				}
-				//}
+				
 				if (logData.isDebugEnabled())
 					logData.debug("Updated " + studentsWithUpdatedAssignmentGradeRecords.size() + " assignment score records");
 
@@ -1401,43 +1428,6 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 			logData.debug("END: Update " + gradeRecordsFromCall.size() + " scores for gradebook=" + assignment.getGradebook().getUid() + ", assignment=" + assignment.getName());
 		return studentsWithExcessiveScores;
 	}
-
-//	public Set<AssignmentGradeRecord> updateAssignmentGradeRecords(Assignment assignment, Collection<AssignmentGradeRecord> gradeRecords, int grade_type) {
-//		if (grade_type == GradebookService.GRADE_TYPE_POINTS)
-//			return updateAssignmentGradeRecords(assignment, gradeRecords);
-//		else if (grade_type == GradebookService.GRADE_TYPE_PERCENTAGE) {
-//			Collection<AssignmentGradeRecord> convertList = new ArrayList<AssignmentGradeRecord>();
-//			for (Iterator<AssignmentGradeRecord> iter = gradeRecords.iterator(); iter.hasNext();) {
-//				AssignmentGradeRecord agr = iter.next();
-//				Double doubleValue = getDoublePointForRecord(agr);
-//				if (agr != null && doubleValue != null) {
-//					agr.setPointsEarned(doubleValue);
-//					convertList.add(agr);
-//				} else if (agr != null) {
-//					agr.setPointsEarned(null);
-//					convertList.add(agr);
-//				}
-//			}
-//			return updateAssignmentGradeRecords(assignment, convertList);
-//		} else if (grade_type == GradebookService.GRADE_TYPE_LETTER) {
-//			Collection<AssignmentGradeRecord> convertList = new ArrayList<AssignmentGradeRecord>();
-//			for (Iterator<AssignmentGradeRecord> iter = gradeRecords.iterator(); iter.hasNext();) {
-//				AssignmentGradeRecord agr = iter.next();
-//				Double doubleValue = getDoublePointForLetterGradeRecord(agr);
-//				if (agr != null && doubleValue != null) {
-//					agr.setPointsEarned(doubleValue);
-//					convertList.add(agr);
-//				} else if (agr != null) {
-//					agr.setPointsEarned(null);
-//					convertList.add(agr);
-//				}
-//			}
-//			return updateAssignmentGradeRecords(assignment, convertList);
-//		}
-//
-//		else
-//			return null;
-//	}
 
 	public void updateCategory(final Category category) throws ConflictingCategoryNameException, StaleObjectModificationException{
 		HibernateCallback hc = new HibernateCallback() {
@@ -2027,14 +2017,6 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		session.save(new GradingEvent(assignment, graderId, gradeRecord.getStudentId(), gradeEntry));
 	}
 
-	protected void updateAssignment(Assignment assignment, Session session) throws ConflictingAssignmentNameException, HibernateException {
-		// Ensure that we don't have the assignment in the session, since
-		// we need to compare the existing one in the db to our edited
-		// assignment
-		session.evict(assignment);
-		session.update(assignment);
-	}
-
 	protected void updateLetterGradePercentMapping(final Map<String, Double> gradeMap, final Gradebook gradebook) {
 		HibernateCallback hcb = new HibernateCallback() {
 			public Object doInHibernate(Session session) throws HibernateException, SQLException {
@@ -2082,6 +2064,86 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		return true;
 	}
 
+	private boolean hasEqualValues(Assignment a1, Assignment a2) {
+		
+		if(null == a1 || null == a2) {
+			return false;
+		}
+		else if(null != a1.isExtraCredit() && null == a2.isExtraCredit()) {
+			return false;
+		}
+		else if(null == a1.isExtraCredit() && null != a2.isExtraCredit()) {
+			return false;
+		}
+		else if(null != a1.isExtraCredit() && null != a2.isExtraCredit() && !a1.isExtraCredit().equals(a2.isExtraCredit())) {
+			return false;
+		}
+		else if(a1.isReleased() != a2.isReleased()) {
+			return false;
+		}
+		else if(null != a1.getPointsPossible() && null == a2.getPointsPossible()) {
+			return false;
+		}
+		else if(null == a1.getPointsPossible() && null != a2.getPointsPossible()) {
+			return false;
+		}
+		else if(null != a1.getPointsPossible() && null != a2.getPointsPossible() && !a1.getPointsPossible().equals(a2.getPointsPossible())) {
+			return false;
+		}
+		else if(null != a1.getDueDate() && null == a2.getDueDate()) {
+			return false;
+		}
+		else if(null == a1.getDueDate() && null != a2.getDueDate()) {
+			return false;
+		}
+		else if(null != a1.getDueDate() && null != a2.getDueDate() && !a1.getDueDate().equals(a2.getDueDate())) {
+			return false;
+		}
+		else if(a1.isRemoved() != a2.isRemoved()) {
+			return false;
+		}
+		else if(a1.isNotCounted() != a2.isNotCounted()) {
+			return false;
+		}
+		else if(null != a1.getSortOrder() && null == a2.getSortOrder()) {
+			return false;
+		}
+		else if(null == a1.getSortOrder() && null != a2.getSortOrder()) {
+			return false;
+		}
+		else if(null != a1.getSortOrder() && null != a2.getSortOrder() && !a1.getSortOrder().equals(a2.getSortOrder())) {
+			return false;
+		}
+		else if(null != a1.getCountNullsAsZeros() && null == a2.getCountNullsAsZeros()) {
+			return false;
+		}
+		else if(null == a1.getCountNullsAsZeros() && null != a2.getCountNullsAsZeros()) {
+			return false;
+		}
+		else if(null != a1.getCountNullsAsZeros() && null != a2.getCountNullsAsZeros() && !a1.getCountNullsAsZeros().equals(a2.getCountNullsAsZeros())) {
+			return false;
+		}
+		else if(null != a1.getAssignmentWeighting() && null == a2.getAssignmentWeighting()) {
+			return false;
+		}
+		else if(null == a1.getAssignmentWeighting() && null != a2.getAssignmentWeighting()) {
+			return false;
+		}
+		else if(null != a1.getAssignmentWeighting() && null != a2.getAssignmentWeighting() && !a1.getAssignmentWeighting().equals(a2.getAssignmentWeighting())) {
+			return false;
+		}
+		else if(null != a1.getCategory() && null == a2.getCategory()) {
+			return false;
+		}
+		else if(null == a1.getCategory() && null != a2.getCategory()) {
+			return false;
+		}
+		else if(null != a1.getCategory() && null != a2.getCategory() && !a1.getCategory().getId().equals(a2.getCategory().getId())) {
+			return false;
+		}
+		
+		return true;
+	}
 
 	/*
 	 * DEPENDENCY INJECTION ACCESSORS

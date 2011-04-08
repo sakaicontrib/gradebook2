@@ -34,6 +34,8 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class RestBuilder extends RequestBuilder {
 
+	private static final String EMPTY_STRING = "";
+	
 	public enum Method {
 		
 		GET, POST, PUT, DELETE
@@ -159,16 +161,25 @@ public class RestBuilder extends RequestBuilder {
 
 				public void onResponseReceived(Request request,
 						Response response) {
-					if (response.getStatusCode() == successCode
-							|| (GXT.isIE && response.getStatusCode() == 1223 && successCode == 204))
+					if(response.getStatusCode() == successCode || (GXT.isIE && response.getStatusCode() == 1223 && successCode == 204)) {
+						
 						callback.onSuccess(request, response);
-					else if (response.getStatusCode() == failureCode)
-						callback.onFailure(request, new Exception(response
-								.getText()));
-					else
-						callback.onError(request, new Exception(
-								"Unexpected response from server: "
-										+ response.getStatusCode()));
+					}
+					else if(response.getStatusCode() == failureCode && null != response.getText() && !EMPTY_STRING.equals(response.getText())) {
+					
+						callback.onFailure(request, new Exception(response.getText()));
+					}
+					else if(response.getStatusCode() == 409 && null != response.getText() && !EMPTY_STRING.equals(response.getText())) {
+						
+						callback.onError(request, new Exception(response.getStatusText() + " : " + response.getStatusCode())); 
+					}
+					else if(response.getStatusCode() == 500 && null != response.getText() && !EMPTY_STRING.equals(response.getText())) {
+						
+						callback.onError(request, new Exception(response.getText() + " : " + response.getStatusCode())); 
+					}
+					else {
+						callback.onError(request, new Exception("Unexpected response from server: " + response.getStatusCode()));
+					}
 				}
 
 			});

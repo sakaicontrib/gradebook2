@@ -14,6 +14,7 @@ import javax.ws.rs.QueryParam;
 
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.server.model.GradeItemImpl;
+import org.sakaiproject.service.gradebook.shared.StaleObjectModificationException;
 
 @Path("item")
 public class Item extends Resource {
