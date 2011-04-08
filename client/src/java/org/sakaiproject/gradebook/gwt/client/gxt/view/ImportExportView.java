@@ -6,7 +6,6 @@ import java.util.List;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.ExportDetails;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
-import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ImportPanel;
@@ -19,23 +18,12 @@ import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.mvc.View;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.FormElement;
-import com.google.gwt.dom.client.IFrameElement;
-import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.Cookies;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.FormHandler;
 import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
-import com.google.gwt.user.client.ui.FormPanel.SubmitHandler;
-import com.google.gwt.user.client.ui.FormSubmitEvent;
-import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 public class ImportExportView extends View {
 
@@ -114,18 +102,19 @@ public class ImportExportView extends View {
 			
 			
 				StringBuffer iName = new StringBuffer();
-				final String iNamePrefix = "section_";
+				final String iNamePrefix = "sections";
 				int i = 0;
 				
 				for (String section : sectionsAsList) {
 					if (section != null) {
 						TextBox s = new TextBox();
-						s.setName(iName.append(iNamePrefix).append(i++).toString());
+						s.setName(iNamePrefix);
 						s.setValue(section);
 						panel.add(s);
 					}
 					
 				}
+				
 			}
 			
 			downloadFileForm.addSubmitCompleteHandler(new FormPanel.SubmitCompleteHandler() {
@@ -137,18 +126,7 @@ public class ImportExportView extends View {
 
 					
 				}
-			});
-			      
-			      
-			
-			// Add a 'submit' button. TODO: necessary?
-			//Button sub = new Button("Submit");
-			//sub.setEnabled(true);
-			
-			
-		    //panel.add(sub);
-		    
-		    
+			});		    
 			
 			RootPanel.get().add(downloadFileForm);
 			

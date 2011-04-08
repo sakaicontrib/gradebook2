@@ -3,6 +3,7 @@ package org.sakaiproject.gradebook.gwt.sakai.rest.resource;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -12,6 +13,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -56,7 +58,7 @@ public class Export extends Resource {
 	@Produces("application/json")
 	public String export(@PathParam("uid") String gradebookUid, 
 			@PathParam("structure") String includeStructureFlag, @PathParam("filetype") String format,
-			MultivaluedMap<String, String> sections,
+			@FormParam("sections") List<String> sections,
 			@Context HttpServletResponse response, @Context HttpServletRequest request) throws IOException {
 		
 		boolean includeStructure = !"".equals(includeStructureFlag)
@@ -69,14 +71,14 @@ public class Export extends Resource {
 	
 		List<String> sectionList = null;
 		
-		if (sections != null) {
+		
+		if (sections != null && sections.size()>0) {
+			/*
+			 *  this may not be necessary: jersey should be setting to null and not
+			 *  creating zero-length lists... but just in case
+			 */
+			sectionList = sections;
 			
-			sectionList = new ArrayList<String>(sections.size());
-			for (String key : sections.keySet()) {
-				if (key != null ) {
-					sectionList.addAll((List<String>)sections.get(key));
-				}
-			}
 		}
 
 		try {

@@ -24,7 +24,6 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -33,8 +32,8 @@ import java.util.Map;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.ExportDetails;
-import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.ExportDetails.ExportType;
+import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenu;
@@ -644,10 +643,7 @@ public class InstructorView extends AppView {
 					case EXPORT_DATA_CSV:
 					case EXPORT_STRUCTURE_CSV:
 						ex = new ExportDetails(exportType, includeStructure);
-						ex.setSectionUid(multigradeView.getMultiGradeContentPanel().getSelectedSectionUid());
-						List<String> allSections = multigradeView.getMultiGradeContentPanel().getSectionList();
-						Collections.sort(allSections);
-						ex.setAllSections(allSections);								
+						ex.setSectionUid(multigradeView.getMultiGradeContentPanel().getSelectedSectionUid());							
 						handleExport(ex);
 						break;
 					case IMPORT:
