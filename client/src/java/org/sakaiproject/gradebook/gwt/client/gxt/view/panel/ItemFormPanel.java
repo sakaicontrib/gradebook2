@@ -1568,7 +1568,14 @@ public class ItemFormPanel extends GradebookPanel {
 		boolean isAllowedToEdit = DataTypeConversionUtil.checkBoolean((Boolean)Registry.get(AppConstants.IS_ABLE_TO_EDIT));
 		boolean hasWeights = categoryType == CategoryType.WEIGHTED_CATEGORIES;
 		boolean isPercentCategoryVisible = false;
-		boolean isItem = selectedItemModel != null && selectedItemModel.getItemType() == ItemType.ITEM;
+		/*
+		 * GRBK-592 This method seems only to be called for the category picker, which s
+		 * eems to only be displayed for an item. 
+		 * 
+		 */
+
+//		boolean isItem = selectedItemModel != null && selectedItemModel.getItemType() == ItemType.ITEM;
+		boolean isItem = true; 
 		boolean isCreateNewItem = createItemType == ItemType.ITEM && mode == Mode.NEW;
 
 		if (itemModel != null) {
