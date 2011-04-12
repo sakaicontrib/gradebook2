@@ -79,6 +79,7 @@ import com.extjs.gxt.ui.client.widget.layout.FillLayout;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
+import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.extjs.gxt.ui.client.widget.treegrid.TreeGrid;
@@ -519,6 +520,7 @@ public class ItemTreePanel extends GradebookPanel {
 					
 					if (!isCategoryFullyWeighted || !isFullyWeighted) {
 
+						String tooltip = result.get(VerificationKey.S_GB_WGHTD_TT.name());
 						status.setText(i18nTemplates.itemTreePanelAlertMessage(resources.css().gbCellError(), 
 								i18n.categoriesNot100Percent()));
 						
@@ -531,8 +533,10 @@ public class ItemTreePanel extends GradebookPanel {
 						} else if (!isFullyWeighted) {
 							text.append("sum of categories");
 						}
-						
-						status.setToolTip(text.toString());
+						ToolTipConfig c = new ToolTipConfig(tooltip);
+						// Setting to 400 so the string fits on one line.  
+						c.setMaxWidth(400);
+						status.setToolTip(c); 
 						
 						if (!topStatus.isVisible()) {
 							topStatus.show();

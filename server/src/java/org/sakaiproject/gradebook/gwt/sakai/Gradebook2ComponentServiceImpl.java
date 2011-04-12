@@ -2,6 +2,7 @@ package org.sakaiproject.gradebook.gwt.sakai;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1035,6 +1036,34 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 	private enum WeightedCategoriesState { VALID, INVALID_PERCENT_GRADE, INVALID_PERCENT_CATEGORY };
 
+	class WeightedCategoryStatePair 
+	{
+		private List<WeightedCategoriesState> states; 
+		private List<String> tooltip;
+		
+		public WeightedCategoryStatePair() 
+		{
+			states = null;
+			tooltip = null; 
+			
+		}
+		
+		public List<WeightedCategoriesState> getStates() {
+			return states;
+		}
+		public void setStates(List<WeightedCategoriesState> states) {
+			this.states = states;
+		}
+
+		public List<String> getTooltip() {
+			return tooltip;
+		}
+
+		public void setTooltip(List<String> tooltip) {
+			this.tooltip = tooltip;
+		}
+	}
+
 	public Map<String,Object> getGradesVerification(String gradebookUid, Long gradebookId) throws SecurityException {
 
 		// GRBK-726 : TPA : replace authz.isUserAbleToGradeAll(...) with the following:
@@ -1057,7 +1086,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
 		boolean isMissingScores = false;
-		List<WeightedCategoriesState> state = isFullyWeighted(gradebook);
+		WeightedCategoryStatePair p = isFullyWeighted(gradebook);
 
 		if (dereferences != null) {
 			for (UserDereference dereference : dereferences) {
@@ -1070,14 +1099,31 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		}
 
 		int numberOfLearners = dereferences == null ? 0 : dereferences.size();
-
+		String tooltip = makeVerificationTooltip(p.getTooltip(), p.getStates().contains(WeightedCategoriesState.INVALID_PERCENT_GRADE) || p.getStates().contains(WeightedCategoriesState.INVALID_PERCENT_CATEGORY) ); 
 		Map<String,Object> map = new HashMap<String,Object>();
 		map.put(VerificationKey.I_NUM_LRNRS.name(), Integer.valueOf(numberOfLearners));
 		map.put(VerificationKey.B_MISS_SCRS.name(), Boolean.valueOf(isMissingScores));
-		map.put(VerificationKey.B_GB_WGHTD.name(), Boolean.valueOf(!state.contains(WeightedCategoriesState.INVALID_PERCENT_GRADE)));
-		map.put(VerificationKey.B_CTGRY_WGHTD.name(), Boolean.valueOf(!state.contains(WeightedCategoriesState.INVALID_PERCENT_CATEGORY)));
+		map.put(VerificationKey.S_GB_WGHTD_TT.name(), tooltip); 
+		map.put(VerificationKey.B_GB_WGHTD.name(), Boolean.valueOf(!p.getStates().contains(WeightedCategoriesState.INVALID_PERCENT_GRADE)));		
+		map.put(VerificationKey.B_CTGRY_WGHTD.name(), Boolean.valueOf(!p.getStates().contains(WeightedCategoriesState.INVALID_PERCENT_CATEGORY)));
 
 		return map;
+	}
+
+	private String makeVerificationTooltip(List<String> tooltip, boolean problem) {
+		String ret = ""; 
+		if (problem)
+		{
+			StringBuilder sb = new StringBuilder(i18n.getString("componentServiceFullyWeightedTooltipIntro")); 
+			sb.append("<br/>"); 
+			for (String c : tooltip)
+			{
+				sb.append(" <br/>");
+				sb.append(c); 
+			}
+			ret = sb.toString(); 
+		}
+		return ret; 
 	}
 
 	public History getHistory(String gradebookUid, Long gradebookId,
@@ -5609,11 +5655,14 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		return true;
 	}
 
-	private List<WeightedCategoriesState> isFullyWeighted(Gradebook gradebook) {
+	
+	private WeightedCategoryStatePair isFullyWeighted(Gradebook gradebook) {
 
-
+		List<String> tooltips = new ArrayList<String>();
 		List<WeightedCategoriesState> statuses = new ArrayList<WeightedCategoriesState>();
-
+		
+		WeightedCategoryStatePair ret = new WeightedCategoryStatePair(); 
+		
 		switch (gradebook.getCategory_type()) {
 		case GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY:
 			List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
@@ -5623,10 +5672,19 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 			// It's not possible to be ready for final grading when there are no categories in a weighted categories gradebook
 			if (categories == null || categories.isEmpty()) {
-				return  Arrays.asList(WeightedCategoriesState.INVALID_PERCENT_GRADE);
+				
+				//GRBK-867 since we're now using a pair object, lets just use what we have made.
+				statuses.add(WeightedCategoriesState.INVALID_PERCENT_GRADE);
+				tooltips.add(i18n.getString("componentServiceFullyWeightedTooltipNotEnoughInfo"));
+
+				ret.setStates(statuses);
+				ret.setTooltip(tooltips);
+
+				return ret; 
 			}
 
 			BigDecimal gradebookWeightSum = BigDecimal.ZERO;
+			MessageFormat mf = new MessageFormat(i18n.getString("componentServiceFullyWeightedTooltipCategoryMF")); 
 			for (Category category : categories) {
 
 				// Don't count deleted categories
@@ -5646,7 +5704,10 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 				// If one of the categories doesn't add up, then we can just fail the test now
 				if (!doItemsInCategoryAddUp) {
-					statuses.add(WeightedCategoriesState.INVALID_PERCENT_CATEGORY);	
+					statuses.add(WeightedCategoriesState.INVALID_PERCENT_CATEGORY);
+					Object[] args = new Object[1]; 
+					args[0] = category.getName(); 
+					tooltips.add(mf.format(args));
 				}
 
 				// Don't count extra credit categories once we've verified the items add up
@@ -5661,18 +5722,28 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			isFullyWeighted = gradebookWeightSum.compareTo(BigDecimal.ONE) == 0;
 
 			if (!isFullyWeighted)
+			{
 				statuses.add(WeightedCategoriesState.INVALID_PERCENT_GRADE);
+				tooltips.add(i18n.getString("componentServiceFullyWeightedTooltipGradebook"));
+			}
 		}
 
 
 		if(statuses.size() == 0) 
-			return Arrays.asList(WeightedCategoriesState.VALID);
+		{
+			statuses.add(WeightedCategoriesState.VALID); 
+			tooltips.add(i18n.getString("componentServiceFullyWeightedTooltipAllOK"));
 
+			ret.setStates(statuses); 
+			ret.setTooltip(tooltips);
+		}
 		//make unique entries:
 		Set<WeightedCategoriesState> set = new HashSet<WeightedCategoriesState>(statuses);
 		List<WeightedCategoriesState> rv = new ArrayList<WeightedCategoriesState>(set);
 
-		return rv;
+		ret.setStates(statuses);
+		ret.setTooltip(tooltips);
+		return ret;
 	}
 
 	private String lookupDefaultGradebookUid() {
