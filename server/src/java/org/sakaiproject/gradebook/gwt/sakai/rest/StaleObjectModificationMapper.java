@@ -15,7 +15,6 @@ public class StaleObjectModificationMapper implements ExceptionMapper<StaleObjec
 
 	private static ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 	
-	@Override
 	public Response toResponse(StaleObjectModificationException some) {
 		
 		/*
