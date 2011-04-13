@@ -4624,12 +4624,38 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 			if (category == null && categoryId != null)
 				category = gbService.getCategory(categoryId);
-
+			
 			// Apply business rules before item creation
-			businessLogic.applyItemNameNotEmpty(name); 
+			businessLogic.applyItemNameNotEmpty(name);
+			
 			if (hasCategories) {
 				if (categoryId != null) {
 					assignments = gbService.getAssignmentsForCategory(categoryId);
+					
+					// GRBK-577 : Start
+					// Iterating over all category grade items and check if they all have the same point values
+					Double comparePointsPossible = (null == item.getPoints()) ? new Double(100d) : item.getPoints(); 
+					boolean hasEqualPoints = true;
+					for(Assignment assignment : assignments) {
+						
+						Double pointsPossible = assignment.getPointsPossible();
+						
+						if(!comparePointsPossible.equals(pointsPossible)) {
+							
+							hasEqualPoints = false;
+							break;
+						}
+					}
+					// Using almost identical logic as in doUpdateItem(...)
+					boolean hasWeightedCategories = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY;
+					if (!hasEqualPoints && category.getDrop_lowest() > 0 
+							&& (!hasWeightedCategories || (hasWeightedCategories && Util.checkBoolean(category.isEnforcePointWeighting())))) {
+						category.setDrop_lowest(0);
+						gbService.updateCategory(category);
+					}
+					
+					// GRBK-577 : End
+					
 					// Business rule #4
 					try {
 						businessLogic.applyNoDuplicateItemNamesWithinCategoryRule(categoryId, name, null, assignments);
