@@ -5,20 +5,11 @@
 
 	<bean id="urlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
     	<property name="mappings">
-                        <map>
-                        
-                                <entry key="/**/import" value-ref="ImportWrappingController" />
-
-								<entry key="/*" value-ref="RestWrappingController" />
-
-                                <!-- entry key="/" value-ref="ResourceController" />
-                                
-                                <entry key="/*" value-ref="DefaultWrappingController" /-->
-                        </map>
+    		<map>
+    			<entry key="/**/import" value-ref="ImportWrappingController" />
+    			<entry key="/*" value-ref="RestWrappingController" />
+    		</map>
         </property>
-        <!-- property name="defaultHandler">
-            <bean class="org.sakaiproject.gradebook.gwt.server.DefaultFilenameHandler" />
-        </property-->
    	</bean>
  	
 	<bean id="RestWrappingController"
