@@ -3570,8 +3570,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		return getGradeItem(gradebook, assignments, categories, categoryId, null);
 	}
-
-	private Map<String, Object> appendItemData(Long assignmentId, Map<String, Object> cellMap, UserRecord userRecord, Gradebook gradebook, Boolean countNullsAsZeros, boolean isShowWeighted) {
+	private Map<String, Object> appendItemData(Long assignmentId, Map<String, Object> cellMap, UserRecord userRecord, Gradebook gradebook, Boolean countNullsAsZeros, boolean isShowWeighted, Map<Long, Boolean> droppedValues) {
 
 		AssignmentGradeRecord gradeRecord = null;
 
@@ -3591,7 +3590,13 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 
 		boolean isExcused = gradeRecord == null ? false : gradeRecord.isExcludedFromGrade() != null && gradeRecord.isExcludedFromGrade().booleanValue();
-		boolean isDropped = gradeRecord == null ? false : gradeRecord.isDropped() != null && gradeRecord.isDropped().booleanValue();
+		
+		boolean isDropped = false;
+		if (droppedValues != null) {
+			isDropped = droppedValues.get(assignmentId) != null ? droppedValues.get(assignmentId): false;
+		} else {
+			isDropped = gradeRecord == null ? false : gradeRecord.isDropped() != null && gradeRecord.isDropped().booleanValue();
+		}
 
 		if (isDropped || isExcused)
 			cellMap.put(Util.buildDroppedKey(id), Boolean.TRUE);
@@ -3787,10 +3792,13 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			}
 		}
 
+		//GRBK-680 - 'Give Ungraded No Credit' - Zeros given in scores not marked when dropped
+		Map<Long, Boolean> droppedValues = getDroppedValues(userRecord, categories);
+		
 		if (assignments != null) {
 
 			for (Assignment assignment : assignments) {
-				cellMap = appendItemData(assignment.getId(), cellMap, userRecord, gradebook, assignment.getCountNullsAsZeros(), isShowWeighted);
+				cellMap = appendItemData(assignment.getId(), cellMap, userRecord, gradebook, assignment.getCountNullsAsZeros(), isShowWeighted, droppedValues);
 			}
 			
 		} else {
@@ -3798,7 +3806,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			if (studentGradeMap != null) {
 				for (AssignmentGradeRecord gradeRecord : studentGradeMap.values()) {
 					Assignment assignment = gradeRecord.getAssignment();
-					cellMap = appendItemData(assignment.getId(), cellMap, userRecord, gradebook, assignment.getCountNullsAsZeros(), isShowWeighted);
+					cellMap = appendItemData(assignment.getId(), cellMap, userRecord, gradebook, assignment.getCountNullsAsZeros(), isShowWeighted, null);
 				}
 			}
 
@@ -3806,7 +3814,71 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		
 		return new LearnerImpl(cellMap);
 	}
+	
+	private Map<Long, Boolean> getDroppedValues(UserRecord userRecord, List<Category> categories) {
 
+		Map<Long, Boolean> droppedValues = new HashMap<Long, Boolean>();
+		if (categories != null) {
+			for (Category category: categories) {
+				if (category != null && !category.isRemoved() && !category.isUnweighted()&& !category.isExtraCredit() && category.getDrop_lowest() > 0) {
+					List<Assignment> assignmentsByCategory = category.getAssignmentList();
+					droppedValues.putAll(isDropped(assignmentsByCategory, userRecord, category.getDrop_lowest()));
+				}
+			}
+		}
+		return droppedValues;
+	}
+
+	private Map<Long, Boolean> isDropped(List<Assignment> assignmentsByCategory, UserRecord userRecord, int dropLowest) {
+		Map<Long, Boolean> droppedValues = new HashMap<Long, Boolean>();
+		Map<Long, AssignmentGradeRecord> studentGradeMap = null;
+
+		if (assignmentsByCategory == null) {
+			return droppedValues;
+		}
+
+		if (userRecord != null) {
+			studentGradeMap = userRecord.getGradeRecordMap();
+		}
+
+		int numberOfUnitsDropped = 0;
+
+		// start with populating the values form the existing student records
+		if (studentGradeMap != null) {
+			for (Assignment assignment : assignmentsByCategory) {
+				if (assignment.getId() != null) {
+					AssignmentGradeRecord assignmentGradeRecord = studentGradeMap.get(assignment.getId());
+					if (assignmentGradeRecord != null) {
+						Boolean isDropped = assignmentGradeRecord.isDropped();
+						if (isDropped != null){
+							droppedValues.put(assignment.getId(), isDropped);
+							if (isDropped) {
+								numberOfUnitsDropped++;
+							}
+						} else {
+							droppedValues.put(assignment.getId(), false);
+						}
+					}
+				}
+			}
+		}
+		//populate the rest of the records
+		for (Assignment assignment : assignmentsByCategory) {
+			if (assignment.getId() != null && droppedValues.get(assignment.getId()) == null) {
+				//!unit.isExcused()
+				if (assignment.isCounted() && numberOfUnitsDropped < dropLowest && !assignment.isExtraCredit()) {
+					droppedValues.put(assignment.getId(), true);
+					numberOfUnitsDropped ++;
+				} else {
+					droppedValues.put(assignment.getId(), false);
+				}
+			}
+		}
+
+		return droppedValues;
+
+	}
+	
 	private Learner buildStudentRow(Gradebook gradebook, UserRecord userRecord, List<FixedColumn> columns, List<Assignment> assignments, List<Category> categories, boolean isShowWeighted) {
 		return buildLearnerGradeRecord(gradebook, userRecord, columns, assignments, categories, isShowWeighted);
 	}

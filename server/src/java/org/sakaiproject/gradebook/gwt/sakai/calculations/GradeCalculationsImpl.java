@@ -751,7 +751,8 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 
 									AssignmentGradeRecord gradeRecord = (AssignmentGradeRecord)getActualRecord();
 
-									if (gradeRecord != null && gradeRecord.getPointsEarned() != null)
+									//GRBK-680 - 'Give Ungraded No Credit' - Zeros given in scores not marked when dropped
+									if (gradeRecord != null)
 										gradeRecord.setDropped(Boolean.valueOf(isDropped));
 								}
 
