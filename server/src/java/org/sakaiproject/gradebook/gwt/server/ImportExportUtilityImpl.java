@@ -48,7 +48,9 @@ import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
 
+import org.apache.commons.io.filefilter.HiddenFileFilter;
 import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.poi.hssf.usermodel.HSSFCell;
@@ -589,8 +591,17 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 
 			for (int i = 0; i < curRow.length ; i++) {
 				HSSFCell cl = r.createCell(i);
-				cl.setCellType(HSSFCell.CELL_TYPE_STRING); 
-				cl.setCellValue(new HSSFRichTextString(curRow[i])); 
+				//GRBK-840 If the cell is numeric, we should make it numeric... 
+				if ( NumberUtils.isNumber(curRow[i]) )
+				{
+					cl.setCellType(HSSFCell.CELL_TYPE_NUMERIC);
+					cl.setCellValue(Double.valueOf(curRow[i])); 
+				}
+				else
+				{
+					cl.setCellType(HSSFCell.CELL_TYPE_STRING); 
+					cl.setCellValue(new HSSFRichTextString(curRow[i])); 
+				}
 			}
 			
 			row++; 
