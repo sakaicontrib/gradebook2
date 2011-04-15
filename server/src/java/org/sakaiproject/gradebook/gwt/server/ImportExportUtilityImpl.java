@@ -2153,6 +2153,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 			// If we have the points and percent Category from the structure information, this will put it where it needs to be. 
 			handlePointsAndPercentCategoryForHeader(pointsColumns, percentCategoryColumns, headerNumber, header); 
 		}
+		
 		CategoryItemPair p = getCategoryAndItemInformation(categoryType, itemName, gradebookItemModel, header, headerNumber, ieInfo); 
 		GradeItem itemModel = p.getItem();
 		GradeItem categoryModel = p.getCategory();
@@ -2544,31 +2545,33 @@ private GradeItem buildNewCategory(String curCategoryString,
 		
 		final List<String> names = new ArrayList<String>();
 		
-
+		log.debug("Looking for |" + name +"|"); 
 		ItemModelProcessor processor = new ItemModelProcessor(root) {
-
+			
 			@Override
 			public void doItem(Item itemModel) {
 
 				String itemName = itemModel.getName();
-
+				log.debug("itemName: " + itemName); 
 				if (itemName != null) {
 					String trimmed = itemName.trim();
 
 					if (trimmed.equals(name) && !names.contains(trimmed)) {
 						this.result = itemModel;
 						names.add(trimmed);
-					} else {
-						this.result = null;
 					}
+					// GRBK-834 we don't want to null out a found result.. 
+
 				}
 			}
 			
 		};
 
 		processor.process();
-
-		return (GradeItem)processor.getResult();
+		GradeItem ret = (GradeItem)processor.getResult();
+		
+		log.debug("ret = " + (ret != null ? ret.getName() : "null")); 
+		return ret; 
 	}
 	
 	public void setGradeCalculations(GradeCalculations gradeCalculations) {
