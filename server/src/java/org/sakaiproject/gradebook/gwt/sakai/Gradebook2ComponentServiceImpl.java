@@ -2695,6 +2695,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		Gradebook gradebook = assignment.getGradebook();
 
 		Category oldCategory = null;
+		Category currentCategory = gbService.getCategory(item.getCategoryId());
 		Category category = assignment.getCategory();
 
 		if (!authz.isUserAbleToEditAssessments(gradebook.getUid()))
@@ -2734,6 +2735,19 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 			boolean wasExtraCredit = Util.checkBoolean(assignment.isExtraCredit());
 			boolean isExtraCredit = Util.checkBoolean(item.getExtraCredit());
+			
+			/*
+			 * GRBK-833 : We need to check if the item is still extra credit.
+			 * If the item was in an extra credit category and is moved to a
+			 * non extra credit category, then we reset the item's extra credit status
+			 */
+			if(null != oldCategory && Util.checkBoolean(oldCategory.isExtraCredit()) && !Util.checkBoolean(currentCategory.isExtraCredit())) {
+				isExtraCredit = false;
+			}
+			else if(currentCategory.isExtraCredit()) {
+				// All grade items in an extra credit category need to be marked as extra credit
+				isExtraCredit = true;
+			}
 
 			isWeightChanged = wasExtraCredit != isExtraCredit;
 
@@ -2784,9 +2798,9 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 			if (hasCategories && category != null) {
 				if (hasCategoryChanged) {
-					Category newCategory = gbService.getCategory(item.getCategoryId());
-					if (newCategory != null) {
-						category = newCategory;
+					currentCategory = gbService.getCategory(item.getCategoryId());
+					if (currentCategory != null) {
+						category = currentCategory;
 						assignment.setCategory(category);
 					}
 				}
