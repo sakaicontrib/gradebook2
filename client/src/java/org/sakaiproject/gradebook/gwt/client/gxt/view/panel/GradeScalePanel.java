@@ -1,25 +1,25 @@
 /**********************************************************************************
-*
-* $Id: SettingsGradingScaleContentPanel.java 6638 2009-01-22 01:27:23Z jrenfro $
-*
-***********************************************************************************
-*
-* Copyright (c) 2008, 2009 The Regents of the University of California
-*
-* Licensed under the
-* Educational Community License, Version 2.0 (the "License"); you may
-* not use this file except in compliance with the License. You may
-* obtain a copy of the License at
-* 
-* http://www.osedu.org/licenses/ECL-2.0
-* 
-* Unless required by applicable law or agreed to in writing,
-* software distributed under the License is distributed on an "AS IS"
-* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-* or implied. See the License for the specific language governing
-* permissions and limitations under the License.
-*
-**********************************************************************************/
+ *
+ * $Id: SettingsGradingScaleContentPanel.java 6638 2009-01-22 01:27:23Z jrenfro $
+ *
+ ***********************************************************************************
+ *
+ * Copyright (c) 2008, 2009 The Regents of the University of California
+ *
+ * Licensed under the
+ * Educational Community License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may
+ * obtain a copy of the License at
+ * 
+ * http://www.osedu.org/licenses/ECL-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS"
+ * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ *
+ **********************************************************************************/
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import java.util.ArrayList;
@@ -77,37 +77,37 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Element;
 
 public class GradeScalePanel extends GradebookPanel {
-	
+
 	private ListLoader<ListLoadResult<ModelData>> loader;
 	private ListLoader<ListLoadResult<ModelData>> gradeFormatLoader;
 	private ListStore<ModelData> gradeFormatStore;
-	
+
 	private ComboBox<ModelData> gradeFormatListBox;
 	private EditorGrid<ModelData> grid;
 	private ToolBar toolbar;
-	
+
 	private Long currentGradeScaleId;
-	
+
 	private boolean isEditable;
-	
+
 	private Text letterGradeScaleMessage = new Text(i18n.gradeScaleLetterGradeMessage());
-	
+
 	private Button closeButton;
 	private Button resetToDefaultButton;
-	
+
 	private NumberFormat defaultNumberFormat = DataTypeConversionUtil.getDefaultNumberFormat();
-	
+
 	public GradeScalePanel(boolean isEditable, final TreeView treeView) {
-		
+
 		super();
-		
+
 		this.isEditable = isEditable;
-		
+
 		toolbar = new ToolBar();
-		
+
 		LabelField gradeScale = new LabelField(i18n.gradeFormatLabel());
 		toolbar.add(gradeScale);
-		
+
 		gradeFormatLoader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, 
 				EnumSet.allOf(GradeFormatKey.class), Method.GET, null, null,
 				GWT.getModuleBaseURL(), 
@@ -117,7 +117,7 @@ public class GradeScalePanel extends GradebookPanel {
 
 		gradeFormatStore = new ListStore<ModelData>(gradeFormatLoader);
 		gradeFormatStore.setModelComparer(new EntityModelComparer<ModelData>(GradeFormatKey.L_ID.name()));
-		
+
 		gradeFormatListBox = new ComboBox<ModelData>(); 
 		gradeFormatListBox.setAllQuery(null);
 		gradeFormatListBox.setEditable(false);
@@ -134,9 +134,9 @@ public class GradeScalePanel extends GradebookPanel {
 				Gradebook selectedGradebookModel = Registry.get(AppConstants.CURRENT);
 				Item selectedItemModel = selectedGradebookModel.getGradebookItemModel();
 				ModelData gradeFormatModel = se.getSelectedItem();
-				
+
 				currentGradeScaleId = gradeFormatModel == null ? null : (Long)gradeFormatModel.get(GradeFormatKey.L_ID.name());
-				
+
 				if (currentGradeScaleId != null && !currentGradeScaleId.equals(selectedItemModel.getGradeScaleId())) {
 					Record record = treeView.getTreeStore().getRecord((ItemModel)selectedItemModel);
 					record.beginEdit();
@@ -149,23 +149,23 @@ public class GradeScalePanel extends GradebookPanel {
 					loader.load();
 				}
 			}
-			
+
 		});
-		
+
 		toolbar.add(gradeFormatListBox);
-		
+
 		setTopComponent(toolbar);
-		
+
 		gradeFormatLoader.addListener(Loader.Load, new Listener<LoadEvent>() {
 
 			public void handleEvent(LoadEvent be) {
 				loadIfPossible();
 			}
-			
+
 		});
 
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
-		
+
 		ColumnConfig column = new ColumnConfig();  
 		column.setId(GradeMapKey.S_LTR_GRD.name());  
 		column.setHeader(i18n.letterGradeHeader());
@@ -175,7 +175,7 @@ public class GradeScalePanel extends GradebookPanel {
 		column.setMenuDisabled(true);
 		column.setSortable(false);
 		configs.add(column); 
-		
+
 		column = new ColumnConfig();  
 		column.setId(GradeMapKey.D_FROM.name());  
 		column.setHeader(i18n.fromHeader());
@@ -187,7 +187,7 @@ public class GradeScalePanel extends GradebookPanel {
 		column.setNumberFormat(defaultNumberFormat);
 		// GRBK-668: We determine if this columns is editable via setState()
 		configs.add(column);
-		
+
 		column = new ColumnConfig();  
 		column.setId(GradeMapKey.D_TO.name());
 		column.setHeader(i18n.toHeader());
@@ -211,17 +211,17 @@ public class GradeScalePanel extends GradebookPanel {
 			public void handleEvent(LoadEvent be) {
 				grid.unmask();
 			}
-			
+
 		});
-		
+
 		final ColumnModel cm = new ColumnModel(configs);
 		setBodyBorder(false);
 		setHeaderVisible(false);
 		setHeading("Selected Grade Mapping");
 		setButtonAlign(HorizontalAlignment.RIGHT);
 		setLayout(new RowLayout());
-		
-		
+
+
 		grid = new EditorGrid<ModelData>(store, cm);  
 		grid.setStyleAttribute("borderTop", "none");   
 		grid.setBorders(true);
@@ -229,10 +229,10 @@ public class GradeScalePanel extends GradebookPanel {
 		grid.addListener(Events.ValidateEdit, new Listener<GridEvent>() {
 
 			public void handleEvent(GridEvent ge) {
-				
+
 				// By setting ge.doit to false, we ensure that the AfterEdit event is not thrown. Which means we have to throw it ourselves onSuccess
 				ge.stopEvent();
-				
+
 				final Record record = ge.getRecord();
 				Object newValue = ge.getValue();
 				Object originalValue = ge.getStartValue();
@@ -240,78 +240,78 @@ public class GradeScalePanel extends GradebookPanel {
 				Dispatcher.forwardEvent(GradebookEvents.UpdateGradeMap.getEventType(), new GradeMapUpdate(record, newValue, originalValue));
 			}
 		});
-		
+
 		closeButton = new AriaButton(i18n.close(), new SelectionListener<ButtonEvent>() {
 
 			@Override
 			public void componentSelected(ButtonEvent be) {
 				Dispatcher.forwardEvent(GradebookEvents.HideEastPanel.getEventType(), Boolean.FALSE);
 			}
-			
+
 		});
-		
+
 		resetToDefaultButton = new AriaButton(i18n.resetGradingScale(), new SelectionListener<ButtonEvent>() {
 
 			@Override
 			public void componentSelected(ButtonEvent ce) {
 				Dispatcher.forwardEvent(GradebookEvents.DeleteGradeMap.getEventType());
 			}
-			
+
 		}); 
-		
+
 		// GRBK-668
 		letterGradeScaleMessage.setStyleAttribute("padding", "10px");
 		letterGradeScaleMessage.setStyleAttribute("color", "red");
 		add(letterGradeScaleMessage);
 		add(grid);
-		
+
 		addButton(resetToDefaultButton); 
 		addButton(closeButton);
 	}
-	
+
 	public void onFailedToUpdateItem(ItemUpdate itemUpdate) {
-		
+
 		// Ensure that the failure is on an attempt to update the GRADESCALEID
 		if (itemUpdate.property != null && itemUpdate.property.equals(ItemKey.L_GRD_SCL_ID.name())) {
-			
+
 			Long gradeScaleId = itemUpdate.item.get(ItemKey.L_GRD_SCL_ID.name());
-		
+
 			if (gradeScaleId != null && currentGradeScaleId != null &&
 					!currentGradeScaleId.equals(gradeScaleId)) {
-				
+
 				loadGradeScaleData(gradeScaleId);
 			}
 		}
-		
+
 	}
-	
+
 	public void onRefreshGradeScale(Gradebook selectedGradebook) {
 		loader.load();
 	}
-	
+
 	/*
 	 * GRBK-668
 	 * Method that adjusts the UI according to the grade type
 	 */ 
-	 public void setState() {
-		
+	public void setState() {
+
 		Gradebook gradebookModel = Registry.get(AppConstants.CURRENT);
 		Item itemModel = gradebookModel.getGradebookItemModel();
 		GradeType gradeType = itemModel.getGradeType();
-		
+
 		if(GradeType.LETTERS == gradeType) {
-			
+
 			letterGradeScaleMessage.show();
 			resetToDefaultButton.hide();
 			grid.getColumnModel().getColumnById(GradeMapKey.D_FROM.name()).setEditor(null);
 		}
 		else {
-			
+
 			letterGradeScaleMessage.hide();
 			resetToDefaultButton.show();
 
 			if (isEditable) {
-				
+
 				NumberField numberField = new NumberField();
 				numberField.addInputStyleName(resources.css().gbNumericFieldInput());
 				NumberFormat defaultNumberFormat = DataTypeConversionUtil.getDefaultNumberFormat();
@@ -319,16 +319,16 @@ public class GradeScalePanel extends GradebookPanel {
 				grid.getColumnModel().getColumnById(GradeMapKey.D_FROM.name()).setEditor(new CellEditor(numberField));
 			}
 		}
-		
+
 	}
-	
+
 	@Override
 	protected void onRender(Element parent, int pos) {
 		super.onRender(parent, pos);
 		gradeFormatLoader.load();
 	}
-	
-	
+
+
 	private void loadGradeScaleData(Long selectedGradeScaleId) {
 		for (int i=0;i<gradeFormatStore.getCount();i++) {
 			ModelData m = gradeFormatStore.getAt(i);
@@ -341,7 +341,7 @@ public class GradeScalePanel extends GradebookPanel {
 			}
 		}
 	}
-	
+
 	private void loadGradeScaleData(Gradebook selectedGradebook) {
 		Long selectedGradeScaleId = selectedGradebook.getGradebookItemModel().getGradeScaleId();
 		loadGradeScaleData(selectedGradeScaleId);
@@ -349,11 +349,11 @@ public class GradeScalePanel extends GradebookPanel {
 
 	private void loadIfPossible() {
 		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
-		
+
 		if (selectedGradebook != null) {
 			loadGradeScaleData(selectedGradebook);
 		}
 	}
-	
+
 }
 

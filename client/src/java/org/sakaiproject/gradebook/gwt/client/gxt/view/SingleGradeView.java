@@ -24,7 +24,6 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.ViewAsStudentPanel;
@@ -73,9 +72,6 @@ public class SingleGradeView extends View {
 			learnerGradeRecordCollection = (ModelData)event.getData();
 			onChangeModel(learnerGradeRecordCollection);
 			break;
-		/*case USER_CHANGE:
-			onUserChange((UserEntityAction<?>)event.getData());
-			break;*/
 		case LEARNER_GRADE_RECORD_UPDATED:
 			onLearnerGradeRecordUpdated((UserEntityUpdateAction)event.getData());
 			break;
@@ -112,13 +108,8 @@ public class SingleGradeView extends View {
 	private void onLearnerGradeRecordUpdated(UserEntityUpdateAction action) {
 		dialog.onLearnerGradeRecordUpdated(action.getModel());
 	}
-	
-	/*private void onUserChange(UserEntityAction<?> action) {
-		dialog.onUserChange(action);
-	}*/
 
 	public ViewAsStudentPanel getDialog() {
 		return dialog;
 	}
-	
 }

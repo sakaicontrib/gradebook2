@@ -104,8 +104,8 @@ public class ItemFormPanel extends GradebookPanel {
 
 	private static final String selectionTypeField = "selectionType";
 	private static final String NAME_DISPLAY_FIELD = "name", VALUE_DISPLAY_FIELD = "value";
-	
-	
+
+
 	private FormPanel formPanel;
 	private FormBinding formBindings;
 
@@ -122,7 +122,7 @@ public class ItemFormPanel extends GradebookPanel {
 	private TextField<String> sourceField;
 
 	private FieldSet displayToStudentFieldSet;
-	
+
 	private ListStore<ItemModel> categoryStore;
 	private TreeStore<ItemModel> treeStore;
 	private ListStore<ModelData> gradeTypeStore;
@@ -139,7 +139,6 @@ public class ItemFormPanel extends GradebookPanel {
 	private Button deleteButton, okButton, okCloseButton, cancelButton;
 
 	private Item gradebookItemModel;
-	//private Gradebook selectedGradebook;
 	private ItemModel selectedItemModel;
 	private ItemType createItemType;
 
@@ -148,7 +147,7 @@ public class ItemFormPanel extends GradebookPanel {
 	private boolean hasChanges;
 
 	private Mode mode;
-	
+
 	private boolean hasTreeItemDragAndDropMarker;
 
 	public ItemFormPanel() {
@@ -161,22 +160,22 @@ public class ItemFormPanel extends GradebookPanel {
 		setLayout(new FlowLayout());
 
 		initListeners();
-		
+
 		formPanel = new FormPanel();
 		formPanel.setButtonAlign(Style.HorizontalAlignment.LEFT);
 		formPanel.setHeaderVisible(false);
 		formPanel.setLabelWidth(180);
 		formPanel.setVisible(false);
-		
+
 		categoryStore = new ListStore<ItemModel>();
 		categoryStore.setModelComparer(new ItemModelComparer<ItemModel>());
-		
+
 		deleteButton = new AriaButton(i18n.deleteButton(), selectionListener, 'd');
 		deleteButton.setData(selectionTypeField, SelectionType.REQUEST_DELETE);
 		formPanel.addButton(deleteButton);
-		
+
 		formPanel.getButtonBar().add(new FillToolItem());
-		
+
 		okButton = new AriaButton("", selectionListener, 's');
 		formPanel.addButton(okButton);
 
@@ -187,9 +186,9 @@ public class ItemFormPanel extends GradebookPanel {
 		cancelButton.setData(selectionTypeField, SelectionType.CANCEL);
 
 		formPanel.addButton(cancelButton);
-	    
-	    ListStore<ModelData> categoryTypeStore = new ListStore<ModelData>();
-	    categoryTypeStore.setModelComparer(new EntityModelComparer<ModelData>(VALUE_DISPLAY_FIELD));
+
+		ListStore<ModelData> categoryTypeStore = new ListStore<ModelData>();
+		categoryTypeStore.setModelComparer(new EntityModelComparer<ModelData>(VALUE_DISPLAY_FIELD));
 		categoryTypeStore.add(getCategoryTypeModel(CategoryType.NO_CATEGORIES));
 		categoryTypeStore.add(getCategoryTypeModel(CategoryType.SIMPLE_CATEGORIES));
 		categoryTypeStore.add(getCategoryTypeModel(CategoryType.WEIGHTED_CATEGORIES));		
@@ -223,10 +222,10 @@ public class ItemFormPanel extends GradebookPanel {
 		scaledExtraCreditField.setVisible(false);
 		scaledExtraCreditField.setToolTip(newToolTipConfig(i18n.scaledExtraCreditToolTip()));
 		formPanel.add(scaledExtraCreditField);
-		
+
 		final LayoutContainer main = new LayoutContainer();
 		main.setLayout(new ColumnLayout());
-		
+
 		displayToStudentFieldSet = new FieldSet();  
 		displayToStudentFieldSet.setHeading(i18n.displayToStudentsHeading());  
 		displayToStudentFieldSet.setCheckboxToggle(false);  
@@ -236,21 +235,21 @@ public class ItemFormPanel extends GradebookPanel {
 		displayToStudentFieldSet.setVisible(false);
 
 		main.setWidth(500);
-		
+
 		FormLayout leftLayout = new FormLayout(); 
 		leftLayout.setLabelWidth(140);
 		leftLayout.setDefaultWidth(100);
-		
+
 		LayoutContainer left = new LayoutContainer();
 		left.setLayout(leftLayout);
-		
+
 		FormLayout rightLayout = new FormLayout(); 
 		rightLayout.setLabelWidth(140);
 		rightLayout.setDefaultWidth(50);
-		
+
 		LayoutContainer right = new LayoutContainer();
 		right.setLayout(rightLayout);
-		
+
 		releaseGradesField = new NullSensitiveCheckBox();
 		releaseGradesField.setName(ItemKey.B_REL_GRDS.name());
 		releaseGradesField.setFieldLabel(i18n.releaseGradesFieldLabel());
@@ -264,47 +263,47 @@ public class ItemFormPanel extends GradebookPanel {
 		releaseItemsField.setVisible(false);
 		releaseItemsField.setToolTip(newToolTipConfig(i18n.releaseItemsToolTip()));
 		left.add(releaseItemsField);
-		
+
 		showMeanField = new NullSensitiveCheckBox();
 		showMeanField.setName(ItemKey.B_SHW_MEAN.name());
 		showMeanField.setFieldLabel(i18n.showMeanFieldLabel());
 		showMeanField.setVisible(false);
 		showMeanField.setToolTip(newToolTipConfig(i18n.showMeanToolTip()));
 		left.add(showMeanField);
-		
+
 		showMedianField = new NullSensitiveCheckBox();
 		showMedianField.setName(ItemKey.B_SHW_MEDIAN.name());
 		showMedianField.setFieldLabel(i18n.showMedianFieldLabel());
 		showMedianField.setVisible(false);
 		showMedianField.setToolTip(newToolTipConfig(i18n.showMedianToolTip()));
 		left.add(showMedianField);
-		
+
 		showModeField = new NullSensitiveCheckBox();
 		showModeField.setName(ItemKey.B_SHW_MODE.name());
 		showModeField.setFieldLabel(i18n.showModeFieldLabel());
 		showModeField.setVisible(false);
 		showModeField.setToolTip(newToolTipConfig(i18n.showModeToolTip()));
 		right.add(showModeField);
-		
+
 		showRankField = new NullSensitiveCheckBox();
 		showRankField.setName(ItemKey.B_SHW_RANK.name());
 		showRankField.setFieldLabel(i18n.showRankFieldLabel());
 		showRankField.setVisible(false);
 		showRankField.setToolTip(newToolTipConfig(i18n.showRankToolTip()));
 		right.add(showRankField);
-		
+
 		showItemStatsField = new NullSensitiveCheckBox();
 		showItemStatsField.setName(ItemKey.B_SHW_ITM_STATS.name());
 		showItemStatsField.setFieldLabel(i18n.showItemStatsFieldLabel());
 		showItemStatsField.setVisible(false);
 		showItemStatsField.setToolTip(newToolTipConfig(i18n.showItemStatsToolTip()));
 		right.add(showItemStatsField);
-		
+
 		main.add(left, new ColumnData(.5));
 		main.add(right, new ColumnData(.5));
-		
+
 		displayToStudentFieldSet.add(main);
-		
+
 		formPanel.add(displayToStudentFieldSet);
 
 		percentCourseGradeField = new InlineEditNumberField();
@@ -336,10 +335,9 @@ public class ItemFormPanel extends GradebookPanel {
 		pointsField.setFormat(DataTypeConversionUtil.getDefaultNumberFormat());
 		pointsField.setAllowDecimals(true);
 		pointsField.setAllowNegative(false); 
-		//pointsField.setMinValue(Double.valueOf(0.0001d));
 		pointsField.setVisible(false);
 		formPanel.add(pointsField);
-		
+
 		dropLowestField = new InlineEditNumberField();
 		dropLowestField.setEmptyText("0");
 		dropLowestField.setName(ItemKey.I_DRP_LWST.name());
@@ -393,14 +391,14 @@ public class ItemFormPanel extends GradebookPanel {
 		releasedField.setVisible(false);
 		releasedField.setToolTip(newToolTipConfig(i18n.releasedToolTip()));
 		formPanel.add(releasedField);
-		
+
 		nullsAsZerosField = new NullSensitiveCheckBox();
 		nullsAsZerosField.setName(ItemKey.B_NLLS_ZEROS.name());
 		nullsAsZerosField.setFieldLabel(i18n.nullsAsZerosFieldLabel());
 		nullsAsZerosField.setVisible(false);
 		nullsAsZerosField.setToolTip(newToolTipConfig(i18n.nullsAsZerosToolTip()));
 		formPanel.add(nullsAsZerosField);
-		
+
 		enforcePointWeightingField = new NullSensitiveCheckBox();
 		enforcePointWeightingField.setName(ItemKey.B_WT_BY_PTS.name());
 		enforcePointWeightingField.setFieldLabel(i18n.enforcePointWeightingFieldLabel());
@@ -412,40 +410,40 @@ public class ItemFormPanel extends GradebookPanel {
 		bottomRowData = new RowData(1, 1, new Margins(0, 0, 5, 0));
 		add(directionsField, topRowData);
 		add(formPanel, bottomRowData);
-		
+
 	}
 
 	// GRBK-833 : This is called from the TreeView once it receives a FINISH_TREE_ITEM_DRAG_AND_DROP event
 	public void setTreeItemDragAndDropMarker(boolean state) {
-		
+
 		this.hasTreeItemDragAndDropMarker = state;
 		// Also we hide the edit form panel when we drag and drop, otherwise it's not updated
 		if(formPanel.isVisible()) {
 			//hideFormPanel();
 		}
 	}
-	
+
 	public void clearSelected() {
 		this.selectedItemModel = null;
 	}
-	
+
 	public void onRequestDeleteItem(final ItemModel itemModel) {
 		if (hasChanges) {
 			MessageBox.confirm(i18n.hasChangesTitle(), i18n.hasChangesMessage(), new Listener<MessageBoxEvent>() {
 
 				public void handleEvent(MessageBoxEvent be) {
 					Button button = be.getButtonClicked();
-				
+
 					if (button.getItemId().equals(Dialog.YES))
 						doConfirmDeleteItem(itemModel);
 				}
-				
+
 			});
 		} else {
 			doConfirmDeleteItem(itemModel);
 		}
 	}
-	
+
 	private void doConfirmDeleteItem(ItemModel itemModel) {
 		formPanel.hide();
 		removeListeners();
@@ -463,7 +461,7 @@ public class ItemFormPanel extends GradebookPanel {
 
 		if (itemModel != null) {
 			clearChanges();
-			
+
 			ItemType itemType = itemModel.getItemType();
 			initState(itemType, itemModel, true, true);
 			directionsField.setHeight(80);
@@ -484,9 +482,9 @@ public class ItemFormPanel extends GradebookPanel {
 			return;
 
 		AppView.EastCard activeCard = AppView.EastCard.EDIT_ITEM;
-		
+
 		if (itemModel != null) {
-			
+
 			switch (itemModel.getItemType()) {
 			case CATEGORY:
 				activeCard = AppView.EastCard.EDIT_CATEGORY;
@@ -494,39 +492,39 @@ public class ItemFormPanel extends GradebookPanel {
 			case GRADEBOOK:
 				activeCard = AppView.EastCard.EDIT_GRADEBOOK;
 			}
-			
+
 		}
 		showEditScreen(activeCard);
 
 		clearActiveRecord();
-		
+
 		// This seems to prevent double click propagations in the item tree
 		// GRBK-833 : don't execute this in case a tree item was dragged and dropped 
 		if (!hasTreeItemDragAndDropMarker && mode == Mode.EDIT && selectedItemModel != null && itemModel != null && itemModel.equals(selectedItemModel)) {
 			return;
 		}
-		
+
 		if (hasChanges && !hasTreeItemDragAndDropMarker) {
 			MessageBox.confirm(i18n.hasChangesTitle(), i18n.hasChangesMessage(), new Listener<MessageBoxEvent>() {
 
 				public void handleEvent(MessageBoxEvent be) {
 					Button button = be.getButtonClicked();
-				
+
 					if (button.getText().equals("Yes"))
 						doEditItem(itemModel, expand, true);
 				}
-				
+
 			});
 		} else {
 			doEditItem(itemModel, expand, true);
 		}
-		
+
 		// GRBK-833 : At this point, we can reset the hasTreeItemDragAndDropMarker state to false 
 		if(hasTreeItemDragAndDropMarker) {
 			hasTreeItemDragAndDropMarker = false;
 		}
 	}
-	
+
 	private void doEditItemButtons(Item itemModel) {
 		boolean isAllowedToEdit = DataTypeConversionUtil.checkBoolean((Boolean)Registry.get(AppConstants.IS_ABLE_TO_EDIT));
 
@@ -541,7 +539,7 @@ public class ItemFormPanel extends GradebookPanel {
 		okCloseButton.setData(selectionTypeField, SelectionType.SAVECLOSE);
 		okCloseButton.setText(i18n.saveAndCloseButton());
 	}
-	
+
 	private void doEditItem(ItemModel itemModel, boolean expand, boolean doEnableButtons) {
 		removeListeners();
 		formPanel.hide();
@@ -572,7 +570,7 @@ public class ItemFormPanel extends GradebookPanel {
 
 		if (doEnableButtons)
 			doEditItemButtons(selectedItemModel);
-		
+
 		formPanel.show();
 		nameField.focus();
 	}
@@ -588,7 +586,7 @@ public class ItemFormPanel extends GradebookPanel {
 
 			@Override
 			public void doItem(Item itemModel) {
-			
+
 			}
 
 		};
@@ -632,17 +630,17 @@ public class ItemFormPanel extends GradebookPanel {
 
 				public void handleEvent(MessageBoxEvent be) {
 					Button button = be.getButtonClicked();
-				
+
 					if (button.getText().equals("Yes"))
 						doNewCategory(itemModel);
 				}
-				
+
 			});
 		} else {
 			doNewCategory(itemModel);
 		}
 	}
-	
+
 	private void doNewCategory(ItemModel itemModel) {
 		formPanel.hide();
 		removeListeners();
@@ -680,24 +678,24 @@ public class ItemFormPanel extends GradebookPanel {
 	}
 
 	public void onNewItem(final ItemModel itemModel) {
-		
+
 		if (hasChanges) {
 			MessageBox.confirm(i18n.hasChangesTitle(), i18n.hasChangesMessage(), new Listener<MessageBoxEvent>() {
 
 				public void handleEvent(MessageBoxEvent be) {
 					Button button = be.getButtonClicked();
-				
+
 					if (button.getText().equals("Yes"))
 						doNewItem(itemModel);
 				}
-				
+
 			});
 		} else {
 			doNewItem(itemModel);
 		}
-		
+
 	}
-	
+
 	private void doNewItem(ItemModel itemModel) {
 		formPanel.hide();
 		removeListeners();
@@ -746,7 +744,7 @@ public class ItemFormPanel extends GradebookPanel {
 
 	public void onRefreshGradebookSetup(Gradebook selectedGradebook, ItemModel gradebookItemModel) {
 		this.gradebookItemModel = gradebookItemModel;
-		
+
 		if (formBindings != null) {
 			if (mode == Mode.EDIT && selectedItemModel != null 
 					&& selectedItemModel.getItemType() == ItemType.GRADEBOOK) {
@@ -756,7 +754,7 @@ public class ItemFormPanel extends GradebookPanel {
 			}
 		}
 	}
-	
+
 	public void onTreeStoreInitialized(TreeStore<ItemModel> treeStore) {
 		this.treeStore = treeStore;
 
@@ -775,22 +773,22 @@ public class ItemFormPanel extends GradebookPanel {
 
 	public void onSwitchGradebook(Gradebook selectedGradebook, Item gradebookItemModel) {
 		this.gradebookItemModel = gradebookItemModel;
-		
+
 		if (gradeTypeStore == null) {
 			gradeTypeStore = new ListStore<ModelData>();
 			gradeTypeStore.setModelComparer(new EntityModelComparer<ModelData>(VALUE_DISPLAY_FIELD));
-			
+
 			List<GradeType> enabledGradeTypes = Registry.get(AppConstants.ENABLED_GRADE_TYPES);
-			
+
 			if (enabledGradeTypes != null) {
 				for (int i=0;i<enabledGradeTypes.size();i++) {
 					gradeTypeStore.add(getGradeTypeModel(enabledGradeTypes.get(i)));
 				}
 			}
-			
+
 			gradeTypePicker.setStore(gradeTypeStore);
 		}
-		
+
 	}
 
 	private ModelData getCategoryTypeModel(CategoryType categoryType) {
@@ -798,18 +796,18 @@ public class ItemFormPanel extends GradebookPanel {
 
 		// Initialize type picker
 		switch (categoryType) {
-			case NO_CATEGORIES:
-				model.set(NAME_DISPLAY_FIELD, i18n.orgTypeNoCategories());
-				model.set(VALUE_DISPLAY_FIELD, CategoryType.NO_CATEGORIES);
-				break;
-			case SIMPLE_CATEGORIES:
-				model.set(NAME_DISPLAY_FIELD, i18n.orgTypeCategories());
-				model.set(VALUE_DISPLAY_FIELD, CategoryType.SIMPLE_CATEGORIES);
-				break;	
-			case WEIGHTED_CATEGORIES:
-				model.set(NAME_DISPLAY_FIELD, i18n.orgTypeWeightedCategories());
-				model.set(VALUE_DISPLAY_FIELD, CategoryType.WEIGHTED_CATEGORIES);
-				break;	
+		case NO_CATEGORIES:
+			model.set(NAME_DISPLAY_FIELD, i18n.orgTypeNoCategories());
+			model.set(VALUE_DISPLAY_FIELD, CategoryType.NO_CATEGORIES);
+			break;
+		case SIMPLE_CATEGORIES:
+			model.set(NAME_DISPLAY_FIELD, i18n.orgTypeCategories());
+			model.set(VALUE_DISPLAY_FIELD, CategoryType.SIMPLE_CATEGORIES);
+			break;	
+		case WEIGHTED_CATEGORIES:
+			model.set(NAME_DISPLAY_FIELD, i18n.orgTypeWeightedCategories());
+			model.set(VALUE_DISPLAY_FIELD, CategoryType.WEIGHTED_CATEGORIES);
+			break;	
 		}
 
 		return model;
@@ -819,18 +817,18 @@ public class ItemFormPanel extends GradebookPanel {
 		ModelData model = new BaseModel();
 
 		switch (gradeType) {
-			case LETTERS:
-				model.set(NAME_DISPLAY_FIELD, i18n.gradeTypeLetters());
-				model.set(VALUE_DISPLAY_FIELD, GradeType.LETTERS);
-				break;
-			case POINTS:
-				model.set(NAME_DISPLAY_FIELD, i18n.gradeTypePoints());
-				model.set(VALUE_DISPLAY_FIELD, GradeType.POINTS);
-				break;
-			case PERCENTAGES:
-				model.set(NAME_DISPLAY_FIELD, i18n.gradeTypePercentages());
-				model.set(VALUE_DISPLAY_FIELD, GradeType.PERCENTAGES);
-				break;
+		case LETTERS:
+			model.set(NAME_DISPLAY_FIELD, i18n.gradeTypeLetters());
+			model.set(VALUE_DISPLAY_FIELD, GradeType.LETTERS);
+			break;
+		case POINTS:
+			model.set(NAME_DISPLAY_FIELD, i18n.gradeTypePoints());
+			model.set(VALUE_DISPLAY_FIELD, GradeType.POINTS);
+			break;
+		case PERCENTAGES:
+			model.set(NAME_DISPLAY_FIELD, i18n.gradeTypePercentages());
+			model.set(VALUE_DISPLAY_FIELD, GradeType.PERCENTAGES);
+			break;
 		}
 
 		return model;
@@ -844,7 +842,7 @@ public class ItemFormPanel extends GradebookPanel {
 			okButton.setEnabled(true);
 			okCloseButton.setEnabled(true);
 		}
-		
+
 		Item gradebookItem = gradebookItemModel;
 		CategoryType categoryType = gradebookItem.getCategoryType();
 
@@ -859,7 +857,7 @@ public class ItemFormPanel extends GradebookPanel {
 
 		boolean isPercentCategoryVisible = false;
 		boolean isWeightByPointsVisible = false;
-		
+
 		formPanel.clear();
 
 		boolean isEditable = true;
@@ -868,7 +866,7 @@ public class ItemFormPanel extends GradebookPanel {
 		boolean isDropLowestVisible = isEditable && isCategory;
 		boolean isWeightByPoints = false;
 		boolean isParentExtraCreditCategory = false;
-		
+
 		if (itemModel != null) {
 			isExtraCredit = DataTypeConversionUtil.checkBoolean(itemModel.getExtraCredit());
 			isEditable = itemModel.isEditable();
@@ -876,23 +874,23 @@ public class ItemFormPanel extends GradebookPanel {
 			isExternal = source != null && source.trim().length() > 0;
 			ItemModel category = null;
 			switch (itemModel.getItemType()) {
-				case GRADEBOOK:
-					isPercentCategoryVisible = false;
-					break;
-				case CATEGORY:
-					category = itemModel;
-					break;
-				case ITEM:
-					category = getCategoryItemModel(itemModel.getCategoryId());
-					break;
-				default:
-					isPercentCategoryVisible = (hasWeights && isExtraCredit) && isItem;
+			case GRADEBOOK:
+				isPercentCategoryVisible = false;
+				break;
+			case CATEGORY:
+				category = itemModel;
+				break;
+			case ITEM:
+				category = getCategoryItemModel(itemModel.getCategoryId());
+				break;
+			default:
+				isPercentCategoryVisible = (hasWeights && isExtraCredit) && isItem;
 			}
 
 			// GRBK-599 : Determine if the item's category is an extra credit category. Don't show the % Category field
 			// for items that are part of an extra credit category and the category is equally weighted
 			isParentExtraCreditCategory = (category != null && category.getExtraCredit()) ? true : false;
-			
+
 			// GRBK-833 : Make sure that grade items in an extra credit category have the extra credit checkbox checked
 			if(isParentExtraCreditCategory) {
 				extraCreditField.setValue(Boolean.TRUE);
@@ -902,13 +900,13 @@ public class ItemFormPanel extends GradebookPanel {
 			isPercentCategoryVisible = hasWeights && (!isEqualWeight || isExtraCredit) && isItem && !isWeightByPoints && (!isParentExtraCreditCategory || !isEqualWeight);
 			isWeightByPointsVisible = isEditable && isCategory && hasWeights;
 			isWeightByPointsVisible = category == null ? isWeightByPointsVisible : isWeightByPointsVisible && !DataTypeConversionUtil.checkBoolean(category.getExtraCredit());
-			
+
 			isDropLowestVisible = checkIfDropLowestVisible(category, categoryType, isEditable, isCategory, isWeightByPoints, isExtraCredit);
-			
+
 		} else {
 			isPercentCategoryVisible = hasWeights && isItem;
 		}
-		
+
 		initField(nameField, isAllowedToEdit && isEditable && !isDelete && !isExternal, true);
 		initField(pointsField, isAllowedToEdit && !isDelete && !isExternal, isEditable && isItem);
 		initField(percentCategoryField, isAllowedToEdit && !isDelete && (isItem || isCreateNewItem), isEditable && isPercentCategoryVisible);
@@ -926,7 +924,7 @@ public class ItemFormPanel extends GradebookPanel {
 		initField(sourceField, false, isEditable && isItem);
 		initField(scaledExtraCreditField, !isDelete && isAllowedToEdit, !isNotGradebook && gradebookItem.isScaledExtraCreditEnabled());
 		initField(enforcePointWeightingField, !isDelete && isAllowedToEdit, isWeightByPointsVisible);
-		
+
 		initField(releaseGradesField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
 		initField(releaseItemsField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
 		initField(showMeanField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
@@ -934,18 +932,18 @@ public class ItemFormPanel extends GradebookPanel {
 		initField(showModeField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
 		initField(showRankField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
 		initField(showItemStatsField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
-		
+
 		displayToStudentFieldSet.setEnabled(isAllowedToEdit && !isDelete);
 		displayToStudentFieldSet.setVisible(isEditable && !isNotGradebook);
 	}
-	
-	
+
+
 	private boolean checkIfDropLowestVisible(ItemModel category, CategoryType categoryType, boolean isEditable, 
 			boolean isCategory, boolean isWeightByPoints, boolean isExtraCredit) {
 		boolean isDropLowestVisible = isEditable && isCategory && !isExtraCredit;
 		boolean isWeightedCategories = categoryType == CategoryType.WEIGHTED_CATEGORIES;
 		boolean isUnweightedCategories = categoryType == CategoryType.SIMPLE_CATEGORIES;
-		
+
 		if (isDropLowestVisible && category != null 
 				&& ((isWeightByPoints && isWeightedCategories) || isUnweightedCategories)) {
 			if (category.getChildCount() > 0) {
@@ -963,10 +961,10 @@ public class ItemFormPanel extends GradebookPanel {
 				}
 			}
 		}
-		
+
 		return isDropLowestVisible;
 	}
-	
+
 
 	private void initField(Field field, boolean isEnabled, boolean isVisible) {
 		field.setEnabled(isEnabled);
@@ -987,17 +985,17 @@ public class ItemFormPanel extends GradebookPanel {
 								public void updateModel() {
 									final Object val = onConvertFieldValue(field.getValue());
 									if (store != null) {
-										
-											Record r = store.getRecord(model);
-											if (r != null) {
-												if (!r.isEditing())
-													r.beginEdit();
-	
-												r.setValid(property, field
-														.isValid());
-												r.set(property, val);
-											}
-										
+
+										Record r = store.getRecord(model);
+										if (r != null) {
+											if (!r.isEditing())
+												r.beginEdit();
+
+											r.setValid(property, field
+													.isValid());
+											r.set(property, val);
+										}
+
 									} 
 								}
 
@@ -1066,7 +1064,7 @@ public class ItemFormPanel extends GradebookPanel {
 	private void addListeners() {
 		if (isListeningEnabled)
 			return;
-		
+
 		categoryPicker.addSelectionChangedListener(categorySelectionChangedListener);
 		categoryTypePicker.addSelectionChangedListener(otherSelectionChangedListener);
 		gradeTypePicker.addSelectionChangedListener(otherSelectionChangedListener);
@@ -1089,7 +1087,7 @@ public class ItemFormPanel extends GradebookPanel {
 		showModeField.addListener(Events.Change, checkboxChangeListener);
 		showRankField.addListener(Events.Change, checkboxChangeListener);
 		showItemStatsField.addListener(Events.Change, checkboxChangeListener);	
-		
+
 		isListeningEnabled = true;
 	}
 
@@ -1101,7 +1099,7 @@ public class ItemFormPanel extends GradebookPanel {
 			formBindings.removeListener(Events.Bind, bindListener);
 			formBindings.removeListener(Events.UnBind, bindListener);
 		}
-		
+
 		categoryPicker.removeListener(Events.SelectionChange, categorySelectionChangedListener);
 		categoryTypePicker.removeListener(Events.SelectionChange, otherSelectionChangedListener);
 		gradeTypePicker.removeListener(Events.SelectionChange, otherSelectionChangedListener);
@@ -1124,7 +1122,7 @@ public class ItemFormPanel extends GradebookPanel {
 		showModeField.removeListener(Events.Change, checkboxChangeListener);
 		showRankField.removeListener(Events.Change, checkboxChangeListener);
 		showItemStatsField.removeListener(Events.Change, checkboxChangeListener);
-		
+
 		isListeningEnabled = false;
 	}
 
@@ -1135,9 +1133,9 @@ public class ItemFormPanel extends GradebookPanel {
 			public void handleEvent(BindingEvent be) {
 				addListeners();
 			}
-			
+
 		};
-		
+
 		categorySelectionChangedListener = new SelectionChangedListener<ItemModel>() {
 
 			@Override
@@ -1154,9 +1152,9 @@ public class ItemFormPanel extends GradebookPanel {
 			public void handleEvent(DatePickerEvent be) {
 				setChanges();
 			}
-			
+
 		};
-		
+
 		otherSelectionChangedListener = new SelectionChangedListener<ModelData>() {
 
 			@Override
@@ -1183,7 +1181,7 @@ public class ItemFormPanel extends GradebookPanel {
 		};
 
 		enforcePointWeightingListener = new Listener<FieldEvent>() {
-			
+
 			public void handleEvent(FieldEvent fe) {
 				boolean isChecked = DataTypeConversionUtil.checkBoolean(((CheckBox)fe.getField()).getValue());
 				CategoryType categoryType = gradebookItemModel.getCategoryType();
@@ -1191,13 +1189,13 @@ public class ItemFormPanel extends GradebookPanel {
 				setChanges();
 				boolean isDropLowestVisible = false;
 				boolean isExtraCredit = DataTypeConversionUtil.checkBoolean(extraCreditField.getValue());
-				
+
 				if (selectedItemModel != null) {
 					switch (selectedItemModel.getItemType()) {
-						case CATEGORY:
-							initField(equallyWeightChildrenField, !isDelete, !isChecked && hasWeights);
-							isDropLowestVisible = checkIfDropLowestVisible(selectedItemModel, categoryType, true, true, isChecked, isExtraCredit);
-							initField(dropLowestField, !isDelete, isDropLowestVisible);
+					case CATEGORY:
+						initField(equallyWeightChildrenField, !isDelete, !isChecked && hasWeights);
+						isDropLowestVisible = checkIfDropLowestVisible(selectedItemModel, categoryType, true, true, isChecked, isExtraCredit);
+						initField(dropLowestField, !isDelete, isDropLowestVisible);
 						break;
 					}
 				} else if (createItemType == ItemType.CATEGORY) {
@@ -1206,9 +1204,9 @@ public class ItemFormPanel extends GradebookPanel {
 					initField(dropLowestField, !isDelete, isDropLowestVisible);
 				}
 			}
-			
+
 		};
-		
+
 		extraCreditChangeListener = new Listener<FieldEvent>() {
 
 			public void handleEvent(FieldEvent fe) {
@@ -1220,36 +1218,36 @@ public class ItemFormPanel extends GradebookPanel {
 				boolean hasWeights = categoryType == CategoryType.WEIGHTED_CATEGORIES;
 				setChanges();
 				boolean isDropLowestVisible = false;
-				
+
 				if (selectedItemModel != null) {
 					switch (selectedItemModel.getItemType()) {
-						case CATEGORY:
-							isWeightByPoints = DataTypeConversionUtil.checkBoolean(enforcePointWeightingField.getValue());
-							isEqualWeight = DataTypeConversionUtil.checkBoolean(equallyWeightChildrenField.getValue());
-							
-							isDropLowestVisible = checkIfDropLowestVisible(selectedItemModel, categoryType, true, true, isWeightByPoints, isChecked);
-							initField(dropLowestField, !isDelete, isDropLowestVisible);
-							initField(enforcePointWeightingField, !isDelete, hasWeights && !isChecked);
-							initField(equallyWeightChildrenField, !isDelete, hasWeights && !isWeightByPoints);
+					case CATEGORY:
+						isWeightByPoints = DataTypeConversionUtil.checkBoolean(enforcePointWeightingField.getValue());
+						isEqualWeight = DataTypeConversionUtil.checkBoolean(equallyWeightChildrenField.getValue());
+
+						isDropLowestVisible = checkIfDropLowestVisible(selectedItemModel, categoryType, true, true, isWeightByPoints, isChecked);
+						initField(dropLowestField, !isDelete, isDropLowestVisible);
+						initField(enforcePointWeightingField, !isDelete, hasWeights && !isChecked);
+						initField(equallyWeightChildrenField, !isDelete, hasWeights && !isWeightByPoints);
 						break;
-						case ITEM:
-							isWeightByPoints = category == null ? false : DataTypeConversionUtil.checkBoolean(category.getEnforcePointWeighting());
-							isEqualWeight = category == null ? false : DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments());
-							
-							initField(percentCategoryField, !isDelete, hasWeights && !isWeightByPoints
-									&& (!isEqualWeight || isChecked));
+					case ITEM:
+						isWeightByPoints = category == null ? false : DataTypeConversionUtil.checkBoolean(category.getEnforcePointWeighting());
+						isEqualWeight = category == null ? false : DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments());
+
+						initField(percentCategoryField, !isDelete, hasWeights && !isWeightByPoints
+								&& (!isEqualWeight || isChecked));
 						break;
 					}
 				} else if (createItemType == ItemType.ITEM) {
 					isWeightByPoints = category == null ? false : DataTypeConversionUtil.checkBoolean(category.getEnforcePointWeighting());
 					isEqualWeight = category == null ? false : DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments());
-					
+
 					initField(percentCategoryField, !isDelete, hasWeights && !isWeightByPoints
 							&& (!isEqualWeight || isChecked));
 				} else if (createItemType == ItemType.CATEGORY) {
 					isWeightByPoints = DataTypeConversionUtil.checkBoolean(enforcePointWeightingField.getValue());
 					isEqualWeight = DataTypeConversionUtil.checkBoolean(equallyWeightChildrenField.getValue());
-					
+
 					isDropLowestVisible = checkIfDropLowestVisible(selectedItemModel, categoryType, true, true, isWeightByPoints, isChecked);
 					initField(dropLowestField, !isDelete, isDropLowestVisible);
 					initField(equallyWeightChildrenField, !isDelete, hasWeights && !isWeightByPoints);
@@ -1261,7 +1259,7 @@ public class ItemFormPanel extends GradebookPanel {
 		selectionListener = new SelectionListener<ButtonEvent>() {
 
 			private boolean close;
-			
+
 			@Override
 			public void componentSelected(ButtonEvent be) {
 				Button button = be.getButton();
@@ -1273,138 +1271,135 @@ public class ItemFormPanel extends GradebookPanel {
 						Record record = null;
 
 						switch (selectionType) {
-							case CLOSE:
-								hideFormPanel();
-								break;
-							case CREATECLOSE:
-								close = true;
-							case CREATE:
-								// GRBK-786 GRBK-790 GRBK-789 
-								if (validateFormForEditOrCreate(false) )
-								{
-									ItemModel item = new ItemModel();
+						case CLOSE:
+							hideFormPanel();
+							break;
+						case CREATECLOSE:
+							close = true;
+						case CREATE:
+							// GRBK-786 GRBK-790 GRBK-789 
+							if (validateFormForEditOrCreate(false) )
+							{
+								ItemModel item = new ItemModel();
 
-									Item category = categoryPicker.getValue();
+								Item category = categoryPicker.getValue();
 
-									if (category != null) 
-										item.setCategoryId(category.getCategoryId());
-									else {
-										String categoryName = categoryPicker.getRawValue();
-										item.setCategoryName(categoryName);
-									}
-
-									Integer dropLowest = dropLowestField.getValue() == null ? null : Integer.valueOf(dropLowestField.getValue().intValue());
-
-									item.setName(nameField.getValue());
-									item.setExtraCredit(extraCreditField.getValue());
-									item.setEqualWeightAssignments(equallyWeightChildrenField.getValue());
-									item.setIncluded(includedField.getValue());
-									item.setReleased(releasedField.getValue());
-									item.setNullsAsZeros(nullsAsZerosField.getValue());
-									item.setEnforcePointWeighting(enforcePointWeightingField.getValue());
-									item.setPercentCourseGrade((Double)percentCourseGradeField.getValue());
-									item.setPercentCategory((Double)percentCategoryField.getValue());
-									item.setPoints((Double)pointsField.getValue());
-									item.setDueDate(dueDateField.getValue());
-									item.setDropLowest(dropLowest);
-									item.setItemType(createItemType);
-
-									clearChanges();
-									sendItemCreateEvent(item, close);
-									selectedItemModel = item;
+								if (category != null) 
+									item.setCategoryId(category.getCategoryId());
+								else {
+									String categoryName = categoryPicker.getRawValue();
+									item.setCategoryName(categoryName);
 								}
-								
-								break;
-							case DELETE:
-								sendItemDeleteEvent(selectedItemModel);
-								break;
-							case CANCEL:
-								clearActiveRecord();
-								sendCancelEvent();
-								break;
-							case REQUEST_DELETE:
-								onRequestDeleteItem(selectedItemModel);
-								break;
-							case SAVECLOSE:
-								close = true;
-							case SAVE:
-								clearChanges();
-								if (selectedItemModel != null) 
-									record = treeStore.getRecord(selectedItemModel);								
-								if (validateFormForEditOrCreate(true)) {
 
-									if (record != null) {
-									
-										Map<String, Object> changes = record.getChanges();
-										
-										
-										if (changes != null 
-												&& changes.get(ItemKey.D_PNTS.name()) != null
-												&& !changes.get(ItemKey.D_PNTS.name())
-												.equals(selectedItemModel.get(ItemKey.D_PNTS.name()))) {
-											
-											Listener<MessageBoxEvent> listener = new Listener<MessageBoxEvent>() {
-	
-												public void handleEvent(MessageBoxEvent be) {
-													Button btn = be.getButtonClicked();
-													
-													Record r = treeStore.getRecord(selectedItemModel);
-													if (r != null) {
-														if (!r.isEditing())
-															r.beginEdit();
-													
-														if (btn.getItemId().equals(Dialog.CANCEL)) {
-															return;
-														} else if (btn.getItemId().equals(Dialog.YES)) {
-															r.set(ItemKey.B_RECALC_PTS.name(), Boolean.TRUE);
-														} else {
-															r.set(ItemKey.B_RECALC_PTS.name(), Boolean.FALSE);
-														}
-														
-														sendItemUpdateEvent(r, selectedItemModel, close);
+								Integer dropLowest = dropLowestField.getValue() == null ? null : Integer.valueOf(dropLowestField.getValue().intValue());
+
+								item.setName(nameField.getValue());
+								item.setExtraCredit(extraCreditField.getValue());
+								item.setEqualWeightAssignments(equallyWeightChildrenField.getValue());
+								item.setIncluded(includedField.getValue());
+								item.setReleased(releasedField.getValue());
+								item.setNullsAsZeros(nullsAsZerosField.getValue());
+								item.setEnforcePointWeighting(enforcePointWeightingField.getValue());
+								item.setPercentCourseGrade((Double)percentCourseGradeField.getValue());
+								item.setPercentCategory((Double)percentCategoryField.getValue());
+								item.setPoints((Double)pointsField.getValue());
+								item.setDueDate(dueDateField.getValue());
+								item.setDropLowest(dropLowest);
+								item.setItemType(createItemType);
+
+								clearChanges();
+								sendItemCreateEvent(item, close);
+								selectedItemModel = item;
+							}
+
+							break;
+						case DELETE:
+							sendItemDeleteEvent(selectedItemModel);
+							break;
+						case CANCEL:
+							clearActiveRecord();
+							sendCancelEvent();
+							break;
+						case REQUEST_DELETE:
+							onRequestDeleteItem(selectedItemModel);
+							break;
+						case SAVECLOSE:
+							close = true;
+						case SAVE:
+							clearChanges();
+							if (selectedItemModel != null) 
+								record = treeStore.getRecord(selectedItemModel);								
+							if (validateFormForEditOrCreate(true)) {
+
+								if (record != null) {
+
+									Map<String, Object> changes = record.getChanges();
+
+
+									if (changes != null 
+											&& changes.get(ItemKey.D_PNTS.name()) != null
+											&& !changes.get(ItemKey.D_PNTS.name())
+											.equals(selectedItemModel.get(ItemKey.D_PNTS.name()))) {
+
+										Listener<MessageBoxEvent> listener = new Listener<MessageBoxEvent>() {
+
+											public void handleEvent(MessageBoxEvent be) {
+												Button btn = be.getButtonClicked();
+
+												Record r = treeStore.getRecord(selectedItemModel);
+												if (r != null) {
+													if (!r.isEditing())
+														r.beginEdit();
+
+													if (btn.getItemId().equals(Dialog.CANCEL)) {
+														return;
+													} else if (btn.getItemId().equals(Dialog.YES)) {
+														r.set(ItemKey.B_RECALC_PTS.name(), Boolean.TRUE);
+													} else {
+														r.set(ItemKey.B_RECALC_PTS.name(), Boolean.FALSE);
 													}
-													
+
+													sendItemUpdateEvent(r, selectedItemModel, close);
 												}
-											};
-											
-											MessageBox box = new MessageBox();
-										    box.setTitle(i18n.doRecalculatePointsTitle());
-										    box.setMessage(i18n.doRecalculatePointsMessage());
-										    box.addCallback(listener);
-										    box.setIcon(MessageBox.QUESTION);
-										    box.setButtons(MessageBox.YESNOCANCEL);
-										    box.show();
-										    
-										    return;
-										}
+
+											}
+										};
+
+										MessageBox box = new MessageBox();
+										box.setTitle(i18n.doRecalculatePointsTitle());
+										box.setMessage(i18n.doRecalculatePointsMessage());
+										box.addCallback(listener);
+										box.setIcon(MessageBox.QUESTION);
+										box.setButtons(MessageBox.YESNOCANCEL);
+										box.show();
+
+										return;
 									}
-									
-									sendItemUpdateEvent(record, selectedItemModel, close);								
-									}
-								break;
+								}
+
+								sendItemUpdateEvent(record, selectedItemModel, close);								
+							}
+							break;
 						}
 					}
 				}
-
 			}
-
 		};
-
 	}
 	// GRBK-811  Removed validating the equally weighted option client side.  For some reason it was causing problems with deletes.  
-	
+
 	private boolean validateFormForEditOrCreate(boolean isEdit)
 	{
-		
+
 		List<String> errors = new ArrayList<String>(); 
-		
+
 		boolean nameValid = nameField.validate(); 
-		
+
 		boolean percentCategoryValid = (!percentCategoryField.isVisible() || percentCategoryField.validate());
 		boolean percentGradeValid = (!percentCourseGradeField.isVisible() || percentCourseGradeField.validate());
 		boolean pointsValid = (!pointsField.isVisible() || pointsField.validate());
 		boolean dropLowestValid = (!ItemFormPanel.this.dropLowestField.isVisible() || ItemFormPanel.this.dropLowestField.validate());
-		
+
 		if (!nameValid)
 		{
 			if (isEdit)
@@ -1416,7 +1411,7 @@ public class ItemFormPanel extends GradebookPanel {
 				errors.add(i18n.itemFormPanelCreateNameInvalid());
 			}
 		}
-		
+
 		if (!percentCategoryValid)
 		{
 			if (isEdit)
@@ -1428,7 +1423,7 @@ public class ItemFormPanel extends GradebookPanel {
 				errors.add(i18n.itemFormPanelCreatePercentCatgeoryInvalid());
 			}
 		}
-		
+
 		if (!percentGradeValid)
 		{
 			if (isEdit)
@@ -1439,9 +1434,9 @@ public class ItemFormPanel extends GradebookPanel {
 			{
 				errors.add(i18n.itemFormPanelCreatePercentGradeInvalid());
 			}
-			
+
 		}
-		
+
 		if (!pointsValid)
 		{
 			if (isEdit)
@@ -1464,8 +1459,8 @@ public class ItemFormPanel extends GradebookPanel {
 				errors.add(i18n.itemFormPanelCreateDropLowestInvalid());
 			}
 		}
-	
-		
+
+
 		if (errors.size() > 0)
 		{
 			StringBuffer sb = new StringBuffer();
@@ -1476,7 +1471,7 @@ public class ItemFormPanel extends GradebookPanel {
 			else
 			{
 				sb.append(i18n.itemFormPanelCreatePretext());				
-				
+
 			}
 			for (String c : errors)
 			{
@@ -1484,7 +1479,7 @@ public class ItemFormPanel extends GradebookPanel {
 				sb.append(c);
 				sb.append("</li>"); 
 			}
-			
+
 			if (isEdit)
 			{
 				sb.append(i18n.itemFormPanelEditPosttext());
@@ -1493,7 +1488,7 @@ public class ItemFormPanel extends GradebookPanel {
 			{
 				sb.append(i18n.itemFormPanelCreatePosttext()); 
 			}
-	
+
 			if (isEdit)
 			{
 				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.itemFormPanelEditNotificationTitle(), sb.toString(), true));
@@ -1510,28 +1505,28 @@ public class ItemFormPanel extends GradebookPanel {
 	protected void sendCancelEvent() {
 		Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
 	}
-	
+
 	protected void sendItemCreateEvent(ItemModel item, boolean close) {
 		Dispatcher.forwardEvent(GradebookEvents.CreateItem.getEventType(), new ItemCreate(treeStore, item, close));
 	}
-	
+
 	protected void sendItemDeleteEvent(ItemModel item) {
 		Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
 		Dispatcher.forwardEvent(GradebookEvents.DeleteItem.getEventType(), new ItemUpdate(treeStore, item, ItemKey.B_RMVD.name(), Boolean.FALSE, Boolean.TRUE));
 	}
-	
+
 	protected void sendItemUpdateEvent(Record record, ItemModel item, boolean close) {
 		Dispatcher.forwardEvent(GradebookEvents.UpdateItem.getEventType(), new ItemUpdate(treeStore, record, item, close));
 	}
-	
+
 	protected void showDeleteScreen() {
 		Dispatcher.forwardEvent(GradebookEvents.ExpandEastPanel.getEventType(), AppView.EastCard.DELETE_ITEM);
 	}
-	
+
 	protected void showEditScreen(AppView.EastCard activeCard) {
 		Dispatcher.forwardEvent(GradebookEvents.ExpandEastPanel.getEventType(), activeCard);
 	}
-	
+
 	protected void hideFormPanel() {
 		Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
 	}
@@ -1548,16 +1543,16 @@ public class ItemFormPanel extends GradebookPanel {
 
 			ItemModel category = null;
 			switch (itemModel.getItemType()) {
-				case GRADEBOOK:
-					break;
-				case CATEGORY:
-					categoryPicker.select(itemModel);
-					break;
-				case ITEM:
-					category = getCategoryItemModel(itemModel.getCategoryId());
-					if (category != null && category.getItemType() == ItemType.CATEGORY)
-						categoryPicker.select(category);
-					break;
+			case GRADEBOOK:
+				break;
+			case CATEGORY:
+				categoryPicker.select(itemModel);
+				break;
+			case ITEM:
+				category = getCategoryItemModel(itemModel.getCategoryId());
+				if (category != null && category.getItemType() == ItemType.CATEGORY)
+					categoryPicker.select(category);
+				break;
 			}
 		} 
 	}
@@ -1569,12 +1564,11 @@ public class ItemFormPanel extends GradebookPanel {
 		boolean hasWeights = categoryType == CategoryType.WEIGHTED_CATEGORIES;
 		boolean isPercentCategoryVisible = false;
 		/*
-		 * GRBK-592 This method seems only to be called for the category picker, which s
-		 * eems to only be displayed for an item. 
+		 * GRBK-592 This method seems only to be called for the category picker, which 
+		 * seems to only be displayed for an item. 
 		 * 
 		 */
 
-//		boolean isItem = selectedItemModel != null && selectedItemModel.getItemType() == ItemType.ITEM;
 		boolean isItem = true; 
 		boolean isCreateNewItem = createItemType == ItemType.ITEM && mode == Mode.NEW;
 
@@ -1582,21 +1576,21 @@ public class ItemFormPanel extends GradebookPanel {
 
 			Item category = null;
 			switch (itemModel.getItemType()) {
-				case CATEGORY:
-					category = itemModel;
-					break;
-				case ITEM:
-					category = getCategoryItemModel(itemModel.getCategoryId());
-					break;
+			case CATEGORY:
+				category = itemModel;
+				break;
+			case ITEM:
+				category = getCategoryItemModel(itemModel.getCategoryId());
+				break;
 			}
 
 			if (category != null && category.getItemType() == ItemType.CATEGORY) {
 				boolean isNotEquallyWeighted = !DataTypeConversionUtil.checkBoolean(category.getEqualWeightAssignments());
 				boolean isExtraCreditItem = DataTypeConversionUtil.checkBoolean(extraCreditField.getValue());
 				boolean isWeightedByPoints = DataTypeConversionUtil.checkBoolean(category.getEnforcePointWeighting());
-				
+
 				isPercentCategoryVisible = (hasWeights && isItem) && !isWeightedByPoints &&
-					(isNotEquallyWeighted || isExtraCreditItem);
+				(isNotEquallyWeighted || isExtraCreditItem);
 			}
 		}
 
@@ -1646,15 +1640,15 @@ public class ItemFormPanel extends GradebookPanel {
 	private void clearFields() {
 
 	}
-	
+
 	private ToolTipConfig newToolTipConfig(String text) {
 		ToolTipConfig ttc = new ToolTipConfig(text);
 		ttc.setDismissDelay(10000);
 		return ttc;
 	}
-	
+
 	private ItemModel getCategoryItemModel(Long categoryId) {
-		
+
 		Gradebook gradebookModel = Registry.get(AppConstants.CURRENT);
 		return (ItemModel) gradebookModel.getCategoryItemModel(categoryId);
 	}

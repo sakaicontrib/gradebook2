@@ -4,9 +4,7 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view.components;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
@@ -17,15 +15,8 @@ import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.Composite;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
 import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
-import com.extjs.gxt.ui.client.widget.form.SimpleComboBox;
-
 import com.google.gwt.core.client.GWT;
 
-
-/**
- * 
- *
- */
 public class SearchFieldListBox extends Composite {
 	
 	
@@ -50,7 +41,6 @@ public class SearchFieldListBox extends Composite {
 		listStore.add(searchFieldList);
 
 		searchFieldComboBox = new ComboBox<SearchFieldData>();
-		//searchFieldComboBox.setEmptyText(i18n.searchByDisplayName());
 		searchFieldComboBox.setValue(searchFieldList.get(0));
 		searchFieldComboBox.setDisplayField(SearchFieldData.LABEL);  
 		searchFieldComboBox.setWidth(150);  

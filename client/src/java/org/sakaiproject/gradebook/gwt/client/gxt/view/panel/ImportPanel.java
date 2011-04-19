@@ -202,11 +202,7 @@ public class ImportPanel extends GradebookPanel {
 					
 					submitButton.setVisible(true);
 				}
-				
 			}
-
-			
-			
 		};
 		forceOverwriteDialog.setHeading("Warning!");
 		forceOverwriteDialog.setBodyStyle("fontWeight:bold;padding:13px;");
@@ -216,11 +212,8 @@ public class ImportPanel extends GradebookPanel {
 		I18nConstants i18n = Registry.get(AppConstants.I18N);
 		forceOverwriteDialog.getButtonById(Dialog.OK).setText(i18n.importOverwriteExistingAssignmentsButton());
 		forceOverwriteDialog.addText(i18n.importOverwriteExistingAssignmentsWarning());
-		 
 		
 	}
-
-
 
 	protected void onRender(Element parent, int pos) {
 		
@@ -579,10 +572,8 @@ public class ImportPanel extends GradebookPanel {
 
 				} catch (Exception e) {
 					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(e));
-					//GWT.log("Caught unexpected exception.", e);
 				} finally {
 					Dispatcher.forwardEvent(GradebookEvents.SwitchGradebook.getEventType(), selectedGradebook);
-					//Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades.getEventType(), selectedGradebook);
 					uploadingBox.close();
 				}
 
@@ -593,11 +584,7 @@ public class ImportPanel extends GradebookPanel {
 		});
 	}
 
-	
-
 	protected UploadModel getUploadModel() {
 		return this.upload;
 	}
-
-	
 }

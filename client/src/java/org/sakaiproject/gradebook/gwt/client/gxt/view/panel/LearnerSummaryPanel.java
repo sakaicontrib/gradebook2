@@ -79,7 +79,6 @@ import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
 public class LearnerSummaryPanel extends GradebookPanel {
 
 	private static final String FIELD_STATE_FIELD = "fieldState";
-	//private static final String ITEM_IDENTIFIER_FLAG = "itemIdentifier";
 	private static final String BUTTON_SELECTOR_FLAG = "buttonSelector";
 	private enum ButtonSelector { CLOSE, COMMENT, NEXT, PREVIOUS, VIEW_AS_LEARNER };
 
@@ -89,7 +88,6 @@ public class LearnerSummaryPanel extends GradebookPanel {
 	private LayoutContainer commentFormPanel;
 	private LayoutContainer excuseFormPanel;
 	private LayoutContainer scoreFormPanel;
-	//private KeyListener keyListener;
 	private SelectionListener<ComponentEvent> selectionListener;
 	private ModelData learner;
 
@@ -100,7 +98,7 @@ public class LearnerSummaryPanel extends GradebookPanel {
 	private FlexTableContainer learnerInfoTable;
 
 	private boolean isPossibleGradeTypeChanged = false;
-	
+
 	public LearnerSummaryPanel() {
 		setHeaderVisible(false);
 		setId("learnerSummaryPanel");
@@ -110,10 +108,10 @@ public class LearnerSummaryPanel extends GradebookPanel {
 
 		initListeners();
 
-		add(newLearnerInfoPanel()); //, new RowData(1, -1));
+		add(newLearnerInfoPanel());
 
 		FlowLayout formLayout = new FlowLayout();
-		
+
 		formPanel = new FormPanel();
 		formPanel.setHeaderVisible(false);
 		formPanel.setLayout(formLayout);
@@ -145,9 +143,8 @@ public class LearnerSummaryPanel extends GradebookPanel {
 		tabPanel.add(tab);
 
 		formPanel.add(tabPanel);
-		//setLayoutData(formPanel, new MarginData(10));
 
-		add(formPanel); //, new RowData(1, 1));
+		add(formPanel);
 
 		Button button = new AriaButton(i18n.prevLearner(), selectionListener);
 		button.setData(BUTTON_SELECTOR_FLAG, ButtonSelector.PREVIOUS);
@@ -199,21 +196,21 @@ public class LearnerSummaryPanel extends GradebookPanel {
 	public void onGradeTypeUpdated(Gradebook selectedGradebook) {
 		this.isPossibleGradeTypeChanged = true;
 	}
-	
+
 	public void onLearnerGradeRecordUpdated(ModelData learner) {
 		if (this.learner != null && learner != null) { 
 			String uid1 = this.learner.get(LearnerKey.S_UID.name());
 			String uid2 = learner.get(LearnerKey.S_UID.name());
-			
+
 			if (uid1 != null && uid2 != null && uid1.equals(uid2))
 				updateLearnerInfo(learner, true);
 		}
 	}
 
 	public void onRefreshGradebookSetup(Gradebook gradebookModel) {
-		
+
 	}
-	
+
 	@Override
 	protected void onResize(final int width, final int height) {
 		commentFormLayout.setDefaultWidth(width - 60);
@@ -239,10 +236,10 @@ public class LearnerSummaryPanel extends GradebookPanel {
 					isEmptyTextFilled = true;
 				case POINTS:
 					NumberField field = new InlineEditNumberField();
-	
+
 					if (!isEmptyTextFilled)
 						emptyText.append("Enter a value between 0 and ").append(DataTypeConversionUtil.formatDoubleAsPointsString(item.getPoints()));
-	
+
 					field.setItemId(itemId);
 					field.addInputStyleName(resources.css().gbNumericFieldInput());
 					//field.addKeyListener(keyListener);
@@ -252,27 +249,26 @@ public class LearnerSummaryPanel extends GradebookPanel {
 					field.setToolTip(emptyText.toString());
 					field.setWidth(50);
 					field.setLabelStyle("overflow: hidden");
-	
+
 					verifyFieldState(field, item);
-	
+
 					scoreFormPanel.add(field);
 					break;
 				case LETTERS:
 					TextField<String> textField = new InlineEditField<String>();
 
 					emptyText.append("Enter a letter grade");
-					
+
 					textField.setItemId(itemId);
 					textField.addInputStyleName(resources.css().gbTextFieldInput());
-					//textField.addKeyListener(keyListener);
 					textField.setFieldLabel(item.getName());
 					textField.setName(item.getIdentifier());
 					textField.setToolTip(emptyText.toString());
 					textField.setWidth(50);
 					textField.setLabelStyle("overflow: hidden");
-	
+
 					verifyFieldState(textField, item);
-	
+
 					scoreFormPanel.add(textField);
 				}
 
@@ -291,25 +287,11 @@ public class LearnerSummaryPanel extends GradebookPanel {
 				textArea.setName(commentId);
 
 				commentFormPanel.add(textArea);
-
 			}
 		}
-
 	}
 
 	private void initListeners() {
-
-//		keyListener = new KeyListener() {
-//
-//			@Override
-//			public void componentKeyPress(ComponentEvent event) {
-//				/*switch (event.getEvent().getKeyCode()) {
-//					case KeyCodes.KEY_ENTER:
-//						break;
-//				}*/
-//			}
-//
-//		};
 
 		selectionListener = new SelectionListener<ComponentEvent>() {
 
@@ -321,24 +303,22 @@ public class LearnerSummaryPanel extends GradebookPanel {
 				BrowseLearner bse = null;
 
 				switch (selector) {
-					case CLOSE:
-						Dispatcher.forwardEvent(GradebookEvents.HideEastPanel.getEventType(), Boolean.FALSE);
-						break;
-					case COMMENT:
-						// FindBugs
-						// String id = c.getData(ITEM_IDENTIFIER_FLAG);
-						break;
-					case NEXT:
-						bse = new BrowseLearner(learner, BrowseType.NEXT);
-						Dispatcher.forwardEvent(GradebookEvents.BrowseLearner.getEventType(), bse);
-						break;
-					case PREVIOUS:
-						bse = new BrowseLearner(learner, BrowseType.PREV);
-						Dispatcher.forwardEvent(GradebookEvents.BrowseLearner.getEventType(), bse);
-						break;
-					case VIEW_AS_LEARNER:
-						Dispatcher.forwardEvent(GradebookEvents.SingleView.getEventType(), learner);
-						break;
+				case CLOSE:
+					Dispatcher.forwardEvent(GradebookEvents.HideEastPanel.getEventType(), Boolean.FALSE);
+					break;
+				case COMMENT:
+					break;
+				case NEXT:
+					bse = new BrowseLearner(learner, BrowseType.NEXT);
+					Dispatcher.forwardEvent(GradebookEvents.BrowseLearner.getEventType(), bse);
+					break;
+				case PREVIOUS:
+					bse = new BrowseLearner(learner, BrowseType.PREV);
+					Dispatcher.forwardEvent(GradebookEvents.BrowseLearner.getEventType(), bse);
+					break;
+				case VIEW_AS_LEARNER:
+					Dispatcher.forwardEvent(GradebookEvents.SingleView.getEventType(), learner);
+					break;
 				}
 
 			}
@@ -388,7 +368,6 @@ public class LearnerSummaryPanel extends GradebookPanel {
 		learnerInfoPanel = new ContentPanel();
 		learnerInfoPanel.setHeaderVisible(false);
 		learnerInfoPanel.setHeading("Individual Grade Summary");
-		//learnerInfoPanel.setLayout(new FillLayout());
 		learnerInfoPanel.setScrollMode(Scroll.AUTO);
 		learnerInfoPanel.add(learnerInfoTable);
 
@@ -396,7 +375,7 @@ public class LearnerSummaryPanel extends GradebookPanel {
 	}
 
 	private static final String rowHeight = "22px";
-	
+
 	private void updateLearnerInfo(ModelData learnerGradeRecordCollection, boolean isByEvent) {		
 		// To force a refresh, let's first hide the owning panel
 		learnerInfoPanel.hide();
@@ -410,28 +389,24 @@ public class LearnerSummaryPanel extends GradebookPanel {
 		learnerInfoTable.setText(1, 1, (String)learnerGradeRecordCollection.get(LearnerKey.S_DSPLY_NM.name()));
 		formatter.setHeight(1, 1, rowHeight);
 		learnerInfoTable.setAutoHeight(true);
-		
+
 		learnerInfoTable.setText(2, 0, i18n.columnTitleEmail());
 		formatter.setStyleName(2, 0, resources.css().gbImpact());
 		formatter.setHeight(2, 0, rowHeight);
 		learnerInfoTable.setText(2, 1, (String)learnerGradeRecordCollection.get(LearnerKey.S_EMAIL.name()));
 		formatter.setHeight(2, 1, rowHeight);
-		
+
 		learnerInfoTable.setText(3, 0, i18n.columnTitleDisplayId());
 		formatter.setStyleName(3, 0, resources.css().gbImpact());
 		formatter.setHeight(3, 0, rowHeight);
 		learnerInfoTable.setText(3, 1, (String)learnerGradeRecordCollection.get(LearnerKey.S_DSPLY_ID.name()));
 		formatter.setHeight(3, 1, rowHeight);
-		
+
 		learnerInfoTable.setText(4, 0, i18n.columnTitleSection());
 		formatter.setStyleName(4, 0, resources.css().gbImpact());
 		formatter.setHeight(4, 0, rowHeight);
 		learnerInfoTable.setText(4, 1, (String)learnerGradeRecordCollection.get(LearnerKey.S_SECT.name()));
 		formatter.setHeight(4, 1, rowHeight);
-		
-		//learnerInfoTable.setText(5, 0, "");
-		//formatter.setColSpan(5, 0, 2);
-		//formatter.setHeight(25, 0, "20px");
 
 		learnerInfoTable.setText(5, 0, "Course Grade");
 		formatter.setStyleName(5, 0, resources.css().gbImpact());
@@ -453,7 +428,7 @@ public class LearnerSummaryPanel extends GradebookPanel {
 			this.isPossibleGradeTypeChanged = false;
 			isLayoutNecessary = true;
 		}
-		
+
 		List<ItemModel> rootItems = treeStore.getRootItems();
 
 		List<Component> allItems = scoreFormPanel.getItems();
@@ -492,7 +467,7 @@ public class LearnerSummaryPanel extends GradebookPanel {
 
 			}
 		}
-		
+
 		if (isLayoutNecessary) {
 			scoreFormPanel.layout();
 		}
@@ -507,20 +482,20 @@ public class LearnerSummaryPanel extends GradebookPanel {
 								FieldBinding b = new FieldBinding(f, f.getName()) {
 
 									private boolean isBinding = false;
-									
+
 									@Override
 									public void bind(ModelData model) {
 										this.isBinding = true;
 										super.bind(model);
 										this.isBinding = false;
 									}
-									
+
 									@Override
 									protected void onFieldChange(FieldEvent e) {
 										// We don't want to send events when we're still binding
 										if (isBinding)
 											return;
-										
+
 										ModelData learner = this.model;
 										e.getField().setEnabled(false);
 
@@ -588,7 +563,5 @@ public class LearnerSummaryPanel extends GradebookPanel {
 		public void setWidget(int row, int column, Widget widget) {
 			table.setWidget(row, column, widget);
 		}
-
 	}
-
 }

@@ -121,31 +121,30 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	private enum PageOverflow { TOP, BOTTOM, NONE };
 
 	protected static final int DEFAULT_PAGE_SIZE = 19;
-	
+
 	public enum RefreshAction { NONE, REFRESHDATA, REFRESHCOLUMNS, REFRESHLOCALCOLUMNS, REFRESHCOLUMNSANDDATA, REFRESHLOCALCOLUMNSANDDATA };
-	
+
 	protected static final String EMPTY_STRING = "";
-	
+
 	protected EditorGrid<ModelData> grid;
-	//protected ListStore<ModelData> store;
-	
+
 	protected String gridId;
 	protected PagingToolBar pagingToolBar;
 	protected EntityType entityType;
-	
+
 	protected NumberFormat defaultNumberFormat;
 	protected NumberFormat twoDecimalFormat = NumberFormat.getFormat("#.##");
-	
+
 	protected CustomColumnModel cm;
 	protected PagingLoadConfig loadConfig;
-	
+
 	protected ContentPanel gridOwner;
-	
+
 	protected RefreshAction refreshAction = RefreshAction.NONE;
-	
+
 	protected boolean isPopulated = false;
 	protected final boolean isImport;
-	
+
 	private ToolBar searchToolBar;
 	private LayoutContainer toolBarContainer;
 	private Long commentingAssignmentId; 
@@ -158,11 +157,10 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 
 	private MultiGradeContextMenu contextMenu;
 
-	//private CheckBox useClassicNavigationCheckBox;
 	private LabelField modeLabel;
 	private TextField<String> searchField;
 	private NumberField pageSizeField;
-	
+
 	private SectionsComboBox<ModelData> sectionListBox;
 
 	private Boolean searchRosterByFieldEnabled = null;
@@ -170,8 +168,6 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 
 	private Listener<ComponentEvent> componentEventListener;
 	private Listener<GridEvent<ModelData>> gridEventListener;
-	//private Listener<RefreshCourseGradesEvent> refreshCourseGradesListener;
-	//private Listener<UserChangeEvent> userChangeEventListener;
 
 	private MultigradeSelectionModel<ModelData> cellSelectionModel;
 
@@ -182,83 +178,79 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	public MultiGradeContentPanel(ListStore<ModelData> store, boolean isImport) {
 		super();
 		this.isImport = isImport;
-		
+
 		if (isImport) {
 			setHeading(i18n.multigradeImportHeader());
 			setHeaderVisible(true);
 		} else
 			setHeaderVisible(false);
-		
+
 		setLayout(new FitLayout());
 		setIconStyle("icon-table");
 		setMonitorWindowResize(true);
-	
+
 		this.defaultNumberFormat = DataTypeConversionUtil.getDefaultNumberFormat();
 
 		initListeners();
 
 		pagingToolBar = newPagingToolBar(DEFAULT_PAGE_SIZE);	
-		
-		addComponents();
 
-		// This UserChangeEvent listener
-//		addListener(GradebookEvents.UserChange.getEventType(), userChangeEventListener);
-//		addListener(GradebookEvents.RefreshCourseGrades.getEventType(), refreshCourseGradesListener);
+		addComponents();
 	}
-	
+
 	public void addGrid(Configuration configModel, List<FixedColumn> staticColumns, ItemModel gradebookItemModel) {
-		
+
 		pagingToolBar.bind(newLoader());
-		
+
 		cm = newColumnModel(configModel, staticColumns, gradebookItemModel);
 		grid = new GbEditorGrid<ModelData>(newStore(), cm);
 		loadConfig = newLoadConfig(newStore(), getPageSize());
-		
+
 		addGridListenersAndPlugins(grid);
-		
+
 		GridView view = newGridView();
-		
+
 		grid.setView(view);
 		grid.setLoadMask(true);
 		grid.setBorders(true);
-	
+
 		grid.addListener(Events.ValidateEdit, new Listener<GridEvent>() {
 
 			public void handleEvent(final GridEvent ge) {
 				// By setting ge.doit to false, we ensure that the AfterEdit event is not thrown. Which means we have to throw it ourselves onSuccess
 				ge.stopEvent();
-				
+
 				Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
-				
+
 				if (selectedGradebook != null)
 					editCell(selectedGradebook, ge.getRecord(), ge.getProperty(), ge.getValue(), ge.getStartValue(), ge);
 			}
 
 		});
-		
+
 		// GRBK-775 : Making sure that we don't loose the entered grade
 		// when the user scrolls 
 		grid.addListener(Events.BodyScroll, new Listener<BaseEvent>() {
-            public void handleEvent(BaseEvent be) {
-                grid.stopEditing();
-            }
-        });
-		
+			public void handleEvent(BaseEvent be) {
+				grid.stopEditing();
+			}
+		});
+
 		grid.setStripeRows(true);
-		
+
 		Menu gridContextMenu = newContextMenu();
-		
+
 		if (gridContextMenu != null)
 			grid.setContextMenu(gridContextMenu);
-		
-		
+
+
 		add(grid);
 	}
 
 	public void deselectAll() {
 		cellSelectionModel.deselectAll();
 	}
-	
+
 	public void doRefresh(Configuration configModel, List<FixedColumn> staticColumns, ItemModel gradebookItemModel) {
 		switch (refreshAction) {
 		case REFRESHDATA:
@@ -277,7 +269,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	public void editCell(Gradebook selectedGradebook, Record record, String property, Object value, Object startValue, GridEvent gridEvent) {
 
 		String columnHeader = "";
-		
+
 		/*
 		 * In case where the value and startValue are either both null or the empty string,
 		 * we don't do anything. We don't need to dispatch the UpdateLearnerGradeRecord because its handler
@@ -286,7 +278,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		if ((value == null || value.equals(EMPTY_STRING)) && (startValue == null || startValue.equals(EMPTY_STRING))) {
 			return;
 		}
-		
+
 		if (gridEvent != null) {
 			String className = grid.getView().getCell(gridEvent.getRowIndex(), gridEvent.getColIndex()).getClassName();
 			String gbDroppedText = new StringBuilder(" ").append(resources.css().gbCellDropped()).toString();
@@ -311,12 +303,12 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	public void onBeginItemUpdates() {
 		refreshAction = RefreshAction.NONE;
 	}
-	
+
 	protected abstract ListStore<ModelData> newStore();
 
 	protected abstract PagingLoader<PagingLoadResult<ModelData>> newLoader();
-	
-	
+
+
 	/*
 	 * When the user clicks on the next or previous buttons in the student view dialog, an event is thrown to the dispatcher and this 
 	 * method is eventually called. It must decide whether the next learner in the grid is on the current page or not, and choose whether 
@@ -331,18 +323,18 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		PageOverflow pageOverflow = PageOverflow.NONE;
 		// Do processing for paging -- if we reach the end or beginning of a page
 		switch (be.type) {
-			case PREV:
-				currentIndex--;
-				if (currentIndex < 0)
-					pageOverflow = PageOverflow.TOP;
-				break;
-			case NEXT:
-				currentIndex++;
-				if (currentIndex >= pageSize || grid.getStore().getAt(currentIndex) == null) 
-					pageOverflow = PageOverflow.BOTTOM;
-				break;
-			case CURRENT:
-				break;
+		case PREV:
+			currentIndex--;
+			if (currentIndex < 0)
+				pageOverflow = PageOverflow.TOP;
+			break;
+		case NEXT:
+			currentIndex++;
+			if (currentIndex >= pageSize || grid.getStore().getAt(currentIndex) == null) 
+				pageOverflow = PageOverflow.BOTTOM;
+			break;
+		case CURRENT:
+			break;
 		}
 
 		boolean requiresPageChange = pageOverflow != PageOverflow.NONE;
@@ -351,25 +343,25 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		int numberOfPages = pagingToolBar.getTotalPages();
 
 		switch (pageOverflow) {
-			case TOP:
-				// Go to the last record on the page
-				currentIndex = pageSize - 1;
-				// And we are on the first page, then go to the last page
-				if (activePage == 1)
-					pagingToolBar.last();
-				// Otherwise, go to the one before
-				else
-					pagingToolBar.previous();
-				break;
-			case BOTTOM:
-				currentIndex = 0;
-				// And if we are on the last page
-				if (activePage == numberOfPages) {
-					pagingToolBar.first();
-				} else {
-					pagingToolBar.next();
-				}
-				break;
+		case TOP:
+			// Go to the last record on the page
+			currentIndex = pageSize - 1;
+			// And we are on the first page, then go to the last page
+			if (activePage == 1)
+				pagingToolBar.last();
+			// Otherwise, go to the one before
+			else
+				pagingToolBar.previous();
+			break;
+		case BOTTOM:
+			currentIndex = 0;
+			// And if we are on the last page
+			if (activePage == numberOfPages) {
+				pagingToolBar.first();
+			} else {
+				pagingToolBar.next();
+			}
+			break;
 		}
 
 		// Any of these cases indicate that we may have gone off the page
@@ -422,12 +414,12 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 
 		ItemModel gradebookModel = (ItemModel)selectedGradebook.getGradebookItemModel();
-		
+
 		ItemModel categoryItemModel = (ItemModel) selectedGradebook.getCategoryItemModel(itemModel.getCategoryId());
-		
+
 		if(gradebookModel.equals(categoryItemModel)) {
 			gradebookModel.getChildren().add(itemModel);
-		
+
 		} else {
 			for (ModelData category : gradebookModel.getChildren()) {
 				if (category.equals(categoryItemModel))
@@ -480,16 +472,16 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 						StringBuilder name = new StringBuilder();
 						name.append(itemModel.getName());
 						switch (gradeType) {
-							case POINTS:
-								// GRBK 483
-								if (showWeightedString != null && showWeightedString.trim().equalsIgnoreCase("true")) {
-									name.append(twoDecimalFormat.format(((Double)itemModel.getPercentCourseGrade()))).append(i18n.columnSuffixPercentages());
-								} else {
-									name.append(itemModel.getPoints()).append(i18n.columnSuffixPoints());
-								}
-								break;
-							case PERCENTAGES:
-								name.append(i18n.columnSuffixPercentages());
+						case POINTS:
+							// GRBK 483
+							if (showWeightedString != null && showWeightedString.trim().equalsIgnoreCase("true")) {
+								name.append(twoDecimalFormat.format(((Double)itemModel.getPercentCourseGrade()))).append(i18n.columnSuffixPercentages());
+							} else {
+								name.append(itemModel.getPoints()).append(i18n.columnSuffixPoints());
+							}
+							break;
+						case PERCENTAGES:
+							name.append(i18n.columnSuffixPercentages());
 						}
 						column.setHeader(name.toString());
 						queueDeferredRefresh(RefreshAction.REFRESHLOCALCOLUMNS);
@@ -510,8 +502,8 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		};
 
 		processor.process();
-		
-		
+
+
 	}
 
 
@@ -520,7 +512,6 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		componentEventListener = new Listener<ComponentEvent>() {
 
 			public void handleEvent(ComponentEvent ce) {
-
 
 				// FIXME: This could be condensed significantly
 				if (ce.getType() == GradebookEvents.DoSearch.getEventType() || ce.getType() == GradebookEvents.ShowWeighted.getEventType()) {
@@ -555,10 +546,8 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 					((MultiGradeLoadConfig) loadConfig).setSectionUuid(sectionUuid);
 					((BasePagingLoader)newLoader()).useLoadConfig(loadConfig);
 					newLoader().load(0, pageSize);
-					
+
 					refreshColumnHeaders();
-					
-					
 
 				} else if (ce.getType() == GradebookEvents.ClearSearch.getEventType()) {
 					int pageSize = getPageSize();
@@ -618,12 +607,12 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 						commentingAssignmentId = Long.valueOf(assignId);
 
 						String commentedKey = DataTypeConversionUtil.buildCommentKey(commentingAssignmentId.toString());
-						
+
 						Boolean commentFlag = (Boolean) commentingStudentModel
-								.get(commentedKey);
+						.get(commentedKey);
 
 						boolean isCommented = commentFlag != null
-								&& commentFlag.booleanValue();
+						&& commentFlag.booleanValue();
 
 						if (isCommented) {
 							contextMenu.enableAddComment(false);
@@ -633,8 +622,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 							contextMenu.enableEditComment(false);
 						}
 
-						boolean isGraded = true; // gradedFlag != null &&
-													// gradedFlag.booleanValue();
+						boolean isGraded = true; 
 
 						contextMenu.enableViewGradeHistory(isGraded);
 					} else
@@ -642,25 +630,14 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 				}
 			}
 		};
-
-		/*refreshCourseGradesListener = new Listener<RefreshCourseGradesEvent>() {
-
-			public void handleEvent(RefreshCourseGradesEvent rcge) {
-				// These events are fired from the setup screens or the student view dialog/container
-				// so they can be triggered by onShow rather than via an immediate refresh.
-
-				queueDeferredRefresh(RefreshAction.REFRESHDATA);
-			}
-
-		};*/
 	}
-	
+
 	protected void refreshColumnHeaders() {
 		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 		Configuration configModel = selectedGradebook.getConfigurationModel();
 		ItemModel gradebookItemModel = (ItemModel)selectedGradebook.getGradebookItemModel();
 		List<FixedColumn> staticColumns = selectedGradebook.getColumns();
-		
+
 		reconfigureGrid(newColumnModel(configModel, staticColumns, gradebookItemModel));
 		grid.getView().getHeader().refresh();
 	}
@@ -668,13 +645,13 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	public void onShowColumns(ShowColumnsEvent event) {
 		showColumns(event, cm);
 	}
-	
+
 	public void onSwitchGradebook(Gradebook selectedGradebook) {
 
 		Configuration configModel = selectedGradebook.getConfigurationModel();
 		ItemModel gradebookItemModel = (ItemModel)selectedGradebook.getGradebookItemModel();
 		List<FixedColumn> staticColumns = selectedGradebook.getColumns();
-		
+
 		if (newStore() != null) {
 			// Set the default sort field and direction on the store based on Cookies
 			String storedSortField = configModel.getSortField(gridId);
@@ -685,19 +662,16 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 			if (storedSortField != null) 
 				newStore().setDefaultSort(storedSortField, sortDir);
 		}
-		
-		//Boolean useClassicNavigation = Boolean.valueOf(configModel.isClassicNavigation());
-		//useClassicNavigationCheckBox.setValue(useClassicNavigation);
-		
+
 		int pageSize = configModel.getPageSize(gridId);
-		
+
 		if (pageSize == -1)
 			pageSize = DEFAULT_PAGE_SIZE;
-		
+
 		pagingToolBar.setPageSize(pageSize);
-		
+
 		onRefreshGradebookSetup(selectedGradebook);
-		
+
 		if (!isPopulated) 
 			reconfigureGrid(newColumnModel(configModel, staticColumns, gradebookItemModel));
 
@@ -713,12 +687,12 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		CustomColumnModel columnModel = assembleColumnModel(configModel, staticColumns, gradebookItemModel);
 		return columnModel;
 	}
-	
+
 	protected void reconfigureGrid(CustomColumnModel cm) {
 		this.cm = cm;
-		
+
 		newLoader().setRemoteSort(true);
-		
+
 		loadConfig = newLoadConfig(newStore(), getPageSize());
 
 		((BasePagingLoader)newLoader()).useLoadConfig(loadConfig);
@@ -739,10 +713,10 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 			protected boolean isClickable(ModelData model, String property) {
 				if (isImport)
 					return false;
-				
+
 				return property.equals(LearnerKey.S_DSPLY_NM.name()) ||
-					property.equals(LearnerKey.S_LST_NM_FRST.name()) ||
-					property.equals(LearnerKey.S_DSPLY_ID.name());
+				property.equals(LearnerKey.S_LST_NM_FRST.name()) ||
+				property.equals(LearnerKey.S_DSPLY_ID.name());
 			}
 
 			protected boolean isCommented(ModelData model, String property) {
@@ -773,17 +747,17 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 					if (isUserNotFound)
 						return resources.css().gbCellDropped();
 				}
-				
+
 				if (!LearnerUtil.isFixed(property)) {
-										
+
 					if (isImport || (isShowDirtyCells && r != null)) {
 						String failedProperty = DataTypeConversionUtil.buildFailedKey(property);
 						String failedMessage = r == null ? (String)model.get(failedProperty) : (String)r.get(failedProperty);
-						
+
 						// GRBK-668
 						String convertedProperty = DataTypeConversionUtil.buildConvertedMessageKey(property);
 						String convertedMessage = r == null ? (String)model.get(convertedProperty) : (String)r.get(convertedProperty);
-						
+
 						if (failedMessage != null) {
 							if (isImport)
 								css.append(" ").append(resources.css().gbCellFailedImport());
@@ -807,11 +781,11 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 							}
 						}
 					}
-					
-					if (isShowDirtyCells && r != null /*&& isPropertyChanged*/) {
+
+					if (isShowDirtyCells && r != null) {
 						String successProperty = DataTypeConversionUtil.buildSuccessKey(property);
 						String successMessage = (String)r.get(successProperty);
-	
+
 						if (successMessage != null) {
 							if (GXT.isIE)
 								css.append(" ieGbCellSucceeded");
@@ -819,16 +793,16 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 								css.append(" ").append(resources.css().gbCellSucceeded());
 						}
 					}
-	
+
 					if (isDropped(model, property)) {
 						css.append(" ").append(resources.css().gbCellDropped());
 					}
-	
+
 					if (isReleased(model, property)) {
 						css.append(" ").append(resources.css().gbReleased());
 					}
 				} 
-				
+
 				if (css.length() > 0)
 					return css.toString();
 
@@ -838,45 +812,45 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 			@Override
 			protected String markupInnerCss(ModelData model, String property, boolean isShowDirtyCells, boolean isPropertyChanged) {
 				StringBuilder innerCssClass = new StringBuilder();
-				
+
 				GradebookResources resources = Registry.get(AppConstants.RESOURCES);
-					
+
 				if (isCommented(model, property)) {
 					if (GXT.isIE)
 						innerCssClass.append(" ieGbCellCommented");
 					else
 						innerCssClass.append(" ").append(resources.css().gbCellCommented());
 				}
-	
+
 				if (isClickable(model, property)) {
 					innerCssClass.append(" ").append(resources.css().gbCellClickable());
 				}
-									
+
 				if (innerCssClass.length() > 0)
 					return innerCssClass.toString();
-				
+
 				return null;
 			}
-			
-			
+
+
 		};
 		view.setEmptyText("-");
 
 		return view;
 	}
-	
+
 	protected Menu newContextMenu() {
 		contextMenu = new MultiGradeContextMenu(this);
 		return contextMenu;
 	}
-	
+
 	protected PagingToolBar newPagingToolBar(int pageSize) {
 		PagingToolBar pagingToolBar = new PagingToolBar(pageSize);
 		PagingToolBar.PagingToolBarMessages messages = pagingToolBar.getMessages();
 		messages.setAfterPageText(i18n.pagingAfterPageText());
 		messages.setBeforePageText(i18n.pagingPageText());
 		messages.setDisplayMsg(i18n.pagingDisplayMsgText());
-		
+
 		return pagingToolBar;
 	}
 
@@ -903,17 +877,17 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		extraCreditNumericCellRenderer = new ExtraCreditNumericCellRenderer();
 
 		searchToolBar = new ToolBar();
-		
+
 		if (!isImport) {
-			
-	
+
+
 			sectionListBox = new SectionsComboBox<ModelData>();	
 			sectionListBox.addSelectionChangedListener(new SelectionChangedListener<ModelData>() {
-	
+
 				@Override
 				public void selectionChanged(SelectionChangedEvent<ModelData> se) {
 					ModelData model = se.getSelectedItem();
-	
+
 					String searchString = searchField.getValue();
 					String fieldToSearch = null;
 					if(searchFieldListBox != null) {
@@ -923,10 +897,10 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 						}
 					}
 					String sectionUuid = null;
-	
+
 					if (model != null) 
 						sectionUuid = model.get(SectionKey.S_ID.name());
-	
+
 					int pageSize = getPageSize();
 					loadConfig = new MultiGradeLoadConfig();
 					loadConfig.setLimit(0);
@@ -937,52 +911,52 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 					((BasePagingLoader)newLoader()).useLoadConfig(loadConfig);
 					newLoader().load(0, pageSize);
 				}
-	
+
 			});
-	
-			
+
+
 			searchField = new TextField<String>();
 			searchField.setEmptyText(i18n.searchLearnerEmptyText());
 			searchField.setWidth(180);
 			searchField.addKeyListener(new KeyListener() {
 				public void componentKeyPress(ComponentEvent event) {
 					switch (event.getKeyCode()) {
-						case KeyCodes.KEY_ENTER:
-							fireEvent(GradebookEvents.DoSearch.getEventType(), event);
-							break;
+					case KeyCodes.KEY_ENTER:
+						fireEvent(GradebookEvents.DoSearch.getEventType(), event);
+						break;
 					}
 				}
 			});
-	
+
 			addListener(GradebookEvents.DoSearch.getEventType(), componentEventListener);
-	
+
 			addListener(GradebookEvents.ClearSearch.getEventType(), componentEventListener);
-	
+
 			if(isSearchRosterByFieldEnabled()) {
 				this.searchFieldListBox = new SearchFieldListBox();
 			}
-			
+
 			AriaButton doSearchItem = new AriaButton(i18n.findButton(), new SelectionListener<ButtonEvent>() {
-	
+
 				@Override
 				public void componentSelected(ButtonEvent ce) {
 					fireEvent(GradebookEvents.DoSearch.getEventType(), ce);
 				}
-	
+
 			});
-	
+
 			doSearchItem.setToolTip("Search for all students with name matching the entered text");
-	
-	
+
+
 			AriaButton clearSearchItem = new AriaButton(i18n.clearButton(), new SelectionListener<ButtonEvent>() {
-	
+
 				@Override
 				public void componentSelected(ButtonEvent ce) {
 					fireEvent(GradebookEvents.ClearSearch.getEventType(), ce);
 				}
-	
+
 			});
-			
+
 
 			searchToolBar.add(searchField);
 			if(isSearchRosterByFieldEnabled()) {
@@ -1008,25 +982,9 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 				showWeightedToggleButton.hide();
 			}
 		}
-		
-		/*useClassicNavigationCheckBox = new CheckBox();
-		useClassicNavigationCheckBox.setBoxLabel(i18n.useClassicNavigation());
-		useClassicNavigationCheckBox.addListener(Events.Change, new Listener<FieldEvent>() {
 
-			public void handleEvent(FieldEvent be) {
-				Boolean isChecked = (Boolean)be.getValue();	
-				cellSelectionModel.setUseClassic(isChecked != null && isChecked.booleanValue());
-				
-				Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
-				Configuration model = new ConfigurationModel(selectedGradebook.getGradebookId());
-				model.setClassicNavigation(isChecked);
-				Dispatcher.forwardEvent(GradebookEvents.Configuration.getEventType(), model);
-			}
-			
-		});*/
-		
 		modeLabel = new LabelField();
-		
+
 		int pageSize = getPageSize();
 		pageSizeField = new NumberField();
 		pageSizeField.setValue(Integer.valueOf(pageSize));
@@ -1034,29 +992,25 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		pageSizeField.addKeyListener(new KeyListener() {
 			public void componentKeyPress(ComponentEvent event) {
 				switch (event.getKeyCode()) {
-					case KeyCodes.KEY_ENTER:
-						Number pageSize = pageSizeField.getValue();
+				case KeyCodes.KEY_ENTER:
+					Number pageSize = pageSizeField.getValue();
 
-						if (pageSize != null && pageSize.intValue() > 0) {
-							Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
-							Configuration model = new ConfigurationModel(selectedGradebook.getGradebookId());
-							model.setPageSize(gridId, Integer.valueOf(pageSize.intValue()));
+					if (pageSize != null && pageSize.intValue() > 0) {
+						Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
+						Configuration model = new ConfigurationModel(selectedGradebook.getGradebookId());
+						model.setPageSize(gridId, Integer.valueOf(pageSize.intValue()));
 
-							Dispatcher.forwardEvent(GradebookEvents.Configuration.getEventType(), model);
-							
-							newLoader().setLimit(pageSize.intValue());
-							pagingToolBar.setPageSize(pageSize.intValue());
-							pagingToolBar.refresh();
-						}
-						break;
+						Dispatcher.forwardEvent(GradebookEvents.Configuration.getEventType(), model);
+
+						newLoader().setLimit(pageSize.intValue());
+						pagingToolBar.setPageSize(pageSize.intValue());
+						pagingToolBar.refresh();
+					}
+					break;
 				}
 			}
 		});
 
-		
-		
-		//searchToolBar.add(new SeparatorToolItem());
-		//searchToolBar.add(useClassicNavigationCheckBox);
 		searchToolBar.add(new FillToolItem());
 		searchToolBar.add(modeLabel);
 
@@ -1082,13 +1036,13 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 
 		grid.addListener(Events.CellClick, gridEventListener);
 		grid.addListener(Events.ContextMenu, gridEventListener);
-		
+
 		grid.addListener(Events.BeforeEdit, new Listener<GridEvent>() {
 			public void handleEvent(GridEvent be) {
 				ColumnConfig myCm = be.getGrid().getColumnModel().getColumn(be.getColIndex());
 				if (showWeightedString != null && Boolean.TRUE.toString().equalsIgnoreCase(showWeightedString))			
 					be.setCancelled(true);
-				}
+			}
 		});
 
 		cellSelectionModel = new MultigradeSelectionModel<ModelData>();
@@ -1110,33 +1064,32 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	public void onRefreshCourseGrades(Configuration configModel, List<FixedColumn> staticColumns, ItemModel gradebookItemModel) {
 		RefreshAction actualAction = RefreshAction.REFRESHDATA;
 		switch (this.refreshAction) {
-			case REFRESHLOCALCOLUMNS:
-				actualAction = RefreshAction.REFRESHLOCALCOLUMNSANDDATA;
-				break;
-			case REFRESHCOLUMNS:
-				actualAction = RefreshAction.REFRESHCOLUMNSANDDATA;	
-				break;
+		case REFRESHLOCALCOLUMNS:
+			actualAction = RefreshAction.REFRESHLOCALCOLUMNSANDDATA;
+			break;
+		case REFRESHCOLUMNS:
+			actualAction = RefreshAction.REFRESHCOLUMNSANDDATA;	
+			break;
 		}
 		refreshGrid(actualAction, configModel, staticColumns, gradebookItemModel);
 	}
 
 	public void onRefreshGradebookItems(Gradebook gradebookModel, Item gradebookItem) {
 		switch (this.refreshAction) {
-			case REFRESHDATA:
-				this.refreshAction = RefreshAction.REFRESHCOLUMNSANDDATA;	
-				break;
-			default:
-				this.refreshAction = RefreshAction.REFRESHCOLUMNS;
-				break;
+		case REFRESHDATA:
+			this.refreshAction = RefreshAction.REFRESHCOLUMNSANDDATA;	
+			break;
+		default:
+			this.refreshAction = RefreshAction.REFRESHCOLUMNS;
+			break;
 		}
-		// FIXME: Probably need this!
-		//doRefresh(false);
+		
 		if (modeLabel != null) {
 			StringBuilder modeLabelText = new StringBuilder();
 
 			if (gradebookItem == null)
 				gradebookItem = gradebookModel.getGradebookItemModel();
-			
+
 			modeLabelText
 			.append(getDisplayName(gradebookItem.getCategoryType()))
 			.append("/")
@@ -1188,34 +1141,34 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 
 	private ColumnConfig buildColumn(Configuration configModel, GradeType gradeType, Item item) {
 		boolean isHidden = configModel.isColumnHidden(AppConstants.ITEMTREE, item.getIdentifier(), true);
-		
+
 		if (isImport) 
 			isHidden = !item.isChecked();
-		
+
 		StringBuilder columnNameBuilder = new StringBuilder().append(item.getName());
 
 		if (gradeType != null) {
 			columnNameBuilder.append(" ").append(i18n.columnSuffixPrefix());
 			switch (gradeType) {
-				case POINTS:
-					// GWT.log(showWeightedString);
-					if(this.showWeightedToggleButton != null) {
-						this.showWeightedString = Boolean.toString(this.showWeightedToggleButton.isPressed());
-					}
-					if (showWeightedString != null && showWeightedString.trim().equalsIgnoreCase(Boolean.TRUE.toString())) {
-						// TODO: i18n needs to deal with number format and inserting numbers into string rather than appending string to number
-						columnNameBuilder.append(twoDecimalFormat.format(((Double)item.getPercentCourseGrade()))).append(i18n.columnSuffixPercentages());
-					} else {
-						// TODO: i18n needs to deal with number format and inserting numbers into string rather than appending string to number
-						columnNameBuilder.append(item.getPoints()).append(i18n.columnSuffixPoints());
-					}
-					break;
-				case PERCENTAGES:
-					columnNameBuilder.append(i18n.columnSuffixPercentages());
-					break;
-				case LETTERS:
-					columnNameBuilder.append(i18n.columnSuffixLetterGrades());
-					break;
+			case POINTS:
+				
+				if(this.showWeightedToggleButton != null) {
+					this.showWeightedString = Boolean.toString(this.showWeightedToggleButton.isPressed());
+				}
+				if (showWeightedString != null && showWeightedString.trim().equalsIgnoreCase(Boolean.TRUE.toString())) {
+					// TODO: i18n needs to deal with number format and inserting numbers into string rather than appending string to number
+					columnNameBuilder.append(twoDecimalFormat.format(((Double)item.getPercentCourseGrade()))).append(i18n.columnSuffixPercentages());
+				} else {
+					// TODO: i18n needs to deal with number format and inserting numbers into string rather than appending string to number
+					columnNameBuilder.append(item.getPoints()).append(i18n.columnSuffixPoints());
+				}
+				break;
+			case PERCENTAGES:
+				columnNameBuilder.append(i18n.columnSuffixPercentages());
+				break;
+			case LETTERS:
+				columnNameBuilder.append(i18n.columnSuffixLetterGrades());
+				break;
 			}
 		} else {
 			GWT.log("Grade Type is null for some reason", null);
@@ -1240,58 +1193,58 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		Field<?> field = null;
 		LearnerKey key = LearnerKey.valueOf(property);
 		switch (key) {
-			case S_ITEM:
-				if (gradeType != null) {
-					switch (gradeType) {
-						case POINTS:
-						case PERCENTAGES:
-							config.setAlignment(HorizontalAlignment.RIGHT);
-							config.setNumberFormat(defaultNumberFormat);
-	
-							NumberField numberField = new NumberField();
-							numberField.setFormat(defaultNumberFormat);
-							numberField.setPropertyEditorType(Double.class);
-							numberField.setSelectOnFocus(true);
-							numberField.addInputStyleName(resources.css().gbNumericFieldInput());
-							field = numberField;
-	
-							if (!isIncluded)
-								config.setRenderer(unweightedNumericCellRenderer);
-							else if (isExtraCredit)
-								config.setRenderer(extraCreditNumericCellRenderer);
-	
-							break;
-						case LETTERS:
-							TextField<String> textField = new TextField<String>();
-							textField.setSelectOnFocus(true);
-							textField.addInputStyleName(resources.css().gbTextFieldInput());
-							field = textField;
-	
-							if (!isIncluded)
-								config.setRenderer(unweightedTextCellRenderer);
-							else if (isExtraCredit)
-								config.setRenderer(extraCreditTextCellRenderer);
-	
-							break;
-					}
-				} else {
-					GWT.log("Grade Type is null for some reason", null);
+		case S_ITEM:
+			if (gradeType != null) {
+				switch (gradeType) {
+				case POINTS:
+				case PERCENTAGES:
+					config.setAlignment(HorizontalAlignment.RIGHT);
+					config.setNumberFormat(defaultNumberFormat);
+
+					NumberField numberField = new NumberField();
+					numberField.setFormat(defaultNumberFormat);
+					numberField.setPropertyEditorType(Double.class);
+					numberField.setSelectOnFocus(true);
+					numberField.addInputStyleName(resources.css().gbNumericFieldInput());
+					field = numberField;
+
+					if (!isIncluded)
+						config.setRenderer(unweightedNumericCellRenderer);
+					else if (isExtraCredit)
+						config.setRenderer(extraCreditNumericCellRenderer);
+
+					break;
+				case LETTERS:
+					TextField<String> textField = new TextField<String>();
+					textField.setSelectOnFocus(true);
+					textField.addInputStyleName(resources.css().gbTextFieldInput());
+					field = textField;
+
+					if (!isIncluded)
+						config.setRenderer(unweightedTextCellRenderer);
+					else if (isExtraCredit)
+						config.setRenderer(extraCreditTextCellRenderer);
+
+					break;
 				}
+			} else {
+				GWT.log("Grade Type is null for some reason", null);
+			}
 
-				break;
-			case S_CRS_GRD:
+			break;
+		case S_CRS_GRD:
 
-				break;
-			case S_OVRD_GRD:
-				TextField<String> textField = new TextField<String>();
-				textField.addInputStyleName(resources.css().gbTextFieldInput());
-				textField.setSelectOnFocus(true);
-				field = textField;
+			break;
+		case S_OVRD_GRD:
+			TextField<String> textField = new TextField<String>();
+			textField.addInputStyleName(resources.css().gbTextFieldInput());
+			textField.setSelectOnFocus(true);
+			field = textField;
 
-				if (!isIncluded)
-					config.setRenderer(unweightedTextCellRenderer);
+			if (!isIncluded)
+				config.setRenderer(unweightedTextCellRenderer);
 
-				break;
+			break;
 		}
 
 		if (field != null && isEditable && !isImport) {
@@ -1308,7 +1261,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	private CustomColumnModel assembleColumnModel(Configuration configModel, List<FixedColumn> staticColumns, ItemModel gradebookItemModel) {
 
 		GradeType gradeType = (null != gradebookItemModel) ? gradebookItemModel.getGradeType() : null;
-		
+
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 
 		if (staticColumns != null) {
@@ -1324,14 +1277,14 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 			for (ModelData m : gradebookItemModel.getChildren()) {
 				ItemModel child = (ItemModel)m;
 				switch (child.getItemType()) {
-					case CATEGORY:
-						for (ModelData item : child.getChildren()) {
-							configs.add(buildColumn(configModel, gradeType, (Item) item));
-						}
-						break;
-					case ITEM:
-						configs.add(buildColumn(configModel, gradeType, child));
-						break;
+				case CATEGORY:
+					for (ModelData item : child.getChildren()) {
+						configs.add(buildColumn(configModel, gradeType, (Item) item));
+					}
+					break;
+				case ITEM:
+					configs.add(buildColumn(configModel, gradeType, child));
+					break;
 				}
 			}
 		}
@@ -1362,47 +1315,47 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		case LETTERS:
 			return i18n.gradeTypeLetters();
 		}
-		
+
 		return "N/A";
 	}
-	
+
 	protected void doRefreshGrid(RefreshAction action, boolean useExistingColumnModel, 
 			Configuration configModel, List<FixedColumn> staticColumns, ItemModel gradebookItemModel) {
 
 		if (!useExistingColumnModel || cm == null)
 			cm = newColumnModel(configModel, staticColumns, gradebookItemModel);
-		
+
 		grid.reconfigure(newStore(), cm);
-		
+
 		if (grid.isRendered())
 			grid.el().unmask();
 	}
-	
+
 	public void refreshGrid(RefreshAction refreshAction, 
 			Configuration configModel, List<FixedColumn> staticColumns, ItemModel gradebookItemModel) {
 
 		boolean includeData = false;
 
 		switch (refreshAction) {
-			case REFRESHDATA:
-				includeData = true;
-				break;
-			case REFRESHLOCALCOLUMNSANDDATA:
-				includeData = true;
-			case REFRESHLOCALCOLUMNS:
-				doRefreshGrid(refreshAction, true, configModel, staticColumns, gradebookItemModel);
-				return;
-			case REFRESHCOLUMNSANDDATA:
-				includeData = true;
-			case REFRESHCOLUMNS:
-				doRefreshGrid(refreshAction, false, configModel, staticColumns, gradebookItemModel);
-				break;
-			case NONE:
-				// Do nothing
-				break;
-			default:
-				includeData = true;
-				break;
+		case REFRESHDATA:
+			includeData = true;
+			break;
+		case REFRESHLOCALCOLUMNSANDDATA:
+			includeData = true;
+		case REFRESHLOCALCOLUMNS:
+			doRefreshGrid(refreshAction, true, configModel, staticColumns, gradebookItemModel);
+			return;
+		case REFRESHCOLUMNSANDDATA:
+			includeData = true;
+		case REFRESHCOLUMNS:
+			doRefreshGrid(refreshAction, false, configModel, staticColumns, gradebookItemModel);
+			break;
+		case NONE:
+			// Do nothing
+			break;
+		default:
+			includeData = true;
+			break;
 		}
 
 		if (includeData)
@@ -1450,20 +1403,20 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 			break;
 		}
 	}
-	
+
 	public PagingToolBar getPagingToolBar() {
 		return pagingToolBar;
 	}
 
 	public int getPageSize() {
 		int pageSize = DEFAULT_PAGE_SIZE;
-		
+
 		if (pagingToolBar != null) 
 			pageSize = pagingToolBar.getPageSize();
-		
+
 		return pageSize;
 	}
-	
+
 	private GridCellRenderer<ModelData> unweightedTextCellRenderer = new GridCellRenderer<ModelData>() {
 
 		public Object render(ModelData model, String property,
@@ -1523,7 +1476,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 			}
 		}
 	}
-	
+
 	private void toggle(ItemModel m, boolean isHidden) {
 		grid.hide();
 		switch (m.getItemType()) {
@@ -1540,7 +1493,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		grid.show();
 		grid.getView().layout();
 	}
-	
+
 	private void toggleCategory(ItemModel m, boolean isHidden) {
 		if (m.getChildCount() > 0) {
 			for (int i=0;i<m.getChildCount();i++) {
@@ -1556,7 +1509,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 			}
 		}
 	}
-	
+
 	private void toggleItem(Item m, boolean isHidden) {
 		int columnIndex = cm.findColumnIndex(m.getIdentifier());
 
@@ -1564,11 +1517,11 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 			cm.setHidden(columnIndex, isHidden);
 		}
 	}
-	
+
 	public EditorGrid<ModelData> getGrid() {
 		return grid;
 	}
-	
+
 	public ListStore<ModelData> getStore() {
 		return newStore();
 	}
@@ -1623,7 +1576,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	protected String getShowWeightedString() {
 		return showWeightedString;
 	}
-	
+
 	public String getSelectedSectionUid() {
 		String sectionUid = null;
 		if (sectionListBox != null) {
@@ -1635,5 +1588,4 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		}
 		return sectionUid;
 	}
-	
 }

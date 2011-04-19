@@ -83,7 +83,7 @@ public class InstructorView extends AppView {
 
 	private static final String MENU_SELECTOR_FLAG = "menuSelector";
 	public enum MenuSelector { ADD_CATEGORY, ADD_ITEM, IMPORT, EXPORT, EXPORT_DATA, EXPORT_DATA_CSV, EXPORT_STRUCTURE, EXPORT_STRUCTURE_CSV, EXPORT_DATA_XLS, EXPORT_STRUCTURE_XLS, FINAL_GRADE, GRADE_SCALE, SETUP, HISTORY, GRADER_PERMISSION_SETTINGS, STATISTICS };
-	
+
 	private TreeView treeView;
 	private MultigradeView multigradeView;
 	private SingleGradeView singleGradeView;
@@ -118,7 +118,7 @@ public class InstructorView extends AppView {
 	private BorderLayoutData eastData;
 	private BorderLayoutData northData;
 	private BorderLayoutData westData;
-	
+
 	private GradebookResources resources;
 	private I18nConstants i18n;
 	private boolean isEditable;
@@ -135,9 +135,9 @@ public class InstructorView extends AppView {
 		this.i18n = Registry.get(AppConstants.I18N);
 		this.permissionsView = permissionsView;
 		this.resources = Registry.get(AppConstants.RESOURCES);
-		
+
 		initListeners();
-		
+
 		toolBar = new ToolBar();
 		borderLayoutContainer = new BorderLayoutPanel(); 
 		borderLayoutContainer.setId("borderLayoutContainer");
@@ -171,10 +171,6 @@ public class InstructorView extends AppView {
 		centerLayoutContainer = new LayoutContainer();
 		centerCardLayout = new CardLayout();
 		centerLayoutContainer.setLayout(centerCardLayout);
-
-		//centerLayoutContainer.add(multigradeView.getMultiGradeContentPanel());
-		//centerLayoutContainer.add(treeView.getFormPanel());
-		//centerCardLayout.setActiveItem(multigradeView.getMultiGradeContentPanel());
 
 		eastLayoutContainer = new ContentPanel() {
 			protected void onRender(Element parent, int index) {
@@ -221,10 +217,10 @@ public class InstructorView extends AppView {
 
 		if (addCategoryMenuItem != null)
 			addCategoryMenuItem.setVisible(selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
-		
+
 		if (DataTypeConversionUtil.checkBoolean(selectedGradebook.isNewGradebook()))
 			Dispatcher.forwardEvent(GradebookEvents.StartEditItem.getEventType(), selectedGradebook.getGradebookItemModel());
-	
+
 		centerLayoutContainer.add(multigradeView.getMultiGradeContentPanel());
 		centerLayoutContainer.add(treeView.getFormPanel());
 		centerCardLayout.setActiveItem(multigradeView.getMultiGradeContentPanel());
@@ -232,7 +228,7 @@ public class InstructorView extends AppView {
 		Boolean isNewGBFromAuth = Registry.get(AppConstants.IS_NEW_GRADEBOOK);
 		Boolean isNewGBFromApp = selectedGradebook.isNewGradebook();
 		boolean isNewGradebook = DataTypeConversionUtil.checkBoolean(isNewGBFromAuth) ||
-			DataTypeConversionUtil.checkBoolean(isNewGBFromApp);
+		DataTypeConversionUtil.checkBoolean(isNewGBFromApp);
 		if (isNewGradebook) {
 			onShowSetup();
 		}
@@ -248,77 +244,69 @@ public class InstructorView extends AppView {
 		ItemFormPanel formPanel = treeView.getFormPanel();
 
 		switch (activeCard) {
-			case GRADE_SCALE:
-			case HELP:
-			case HISTORY:
-			case LEARNER_SUMMARY:
-			case STATISTICS:
-				borderLayout.show(LayoutRegion.EAST);
-				borderLayout.expand(LayoutRegion.EAST);
-				break;
-			default:
-				borderLayout.hide(LayoutRegion.EAST);
-				break;
+		case GRADE_SCALE:
+		case HELP:
+		case HISTORY:
+		case LEARNER_SUMMARY:
+		case STATISTICS:
+			borderLayout.show(LayoutRegion.EAST);
+			borderLayout.expand(LayoutRegion.EAST);
+			break;
+		default:
+			borderLayout.hide(LayoutRegion.EAST);
+			break;
 		}
 
 		switch (activeCard) {
-			case DELETE_CATEGORY:
-				formPanel.setHeading(i18n.deleteCategoryHeading());
-				centerCardLayout.setActiveItem(treeView.getFormPanel());
-				multigradeView.deselectAll();
-				break;
-			case DELETE_ITEM:
-				formPanel.setHeading(i18n.deleteItemHeading());
-				centerCardLayout.setActiveItem(treeView.getFormPanel());
-				multigradeView.deselectAll();
-				break;
-			case GRADE_SCALE:
-				eastLayoutContainer.setHeading(i18n.gradeScaleHeading());
-				eastCardLayout.setActiveItem(gradeScalePanel);
-				break;
-			case STATISTICS:
-				//eastLayoutContainer.setHeading(i18n.statisticsHeading());
-				//eastCardLayout.setActiveItem(statisticsPanel);
-				viewportLayout.setActiveItem(statisticsPanel);
-				break;
-			//case HELP:
-			//	eastLayoutContainer.setHeading(i18n.helpHeading());
-			//	eastCardLayout.setActiveItem(helpPanel);
-			//	break;
-			case HISTORY:
-				//eastLayoutContainer.setHeading(i18n.historyHeading());
-				//eastCardLayout.setActiveItem(historyPanel);
-				viewportLayout.setActiveItem(historyPanel);
-				break;
-			case NEW_CATEGORY:
-				formPanel.setHeading(i18n.newCategoryHeading());
-				centerCardLayout.setActiveItem(treeView.getFormPanel());
-				multigradeView.deselectAll();
-				break;
-			case NEW_ITEM:
-				formPanel.setHeading(i18n.newItemHeading());
-				centerCardLayout.setActiveItem(treeView.getFormPanel());
-				multigradeView.deselectAll();
-				break;
-			case EDIT_CATEGORY:
-				formPanel.setHeading(i18n.editCategoryHeading());
-				centerCardLayout.setActiveItem(treeView.getFormPanel());
-				multigradeView.deselectAll();
-				break;
-			case EDIT_GRADEBOOK:
-				formPanel.setHeading(i18n.editGradebookHeading());
-				centerCardLayout.setActiveItem(treeView.getFormPanel());
-				multigradeView.deselectAll();
-				break;
-			case EDIT_ITEM:
-				formPanel.setHeading(i18n.editItemHeading());
-				centerCardLayout.setActiveItem(treeView.getFormPanel());
-				multigradeView.deselectAll();
-				break;
-			case LEARNER_SUMMARY:
-				eastLayoutContainer.setHeading(i18n.learnerSummaryHeading());
-				eastCardLayout.setActiveItem(singleGradeContainer);
-				break;
+		case DELETE_CATEGORY:
+			formPanel.setHeading(i18n.deleteCategoryHeading());
+			centerCardLayout.setActiveItem(treeView.getFormPanel());
+			multigradeView.deselectAll();
+			break;
+		case DELETE_ITEM:
+			formPanel.setHeading(i18n.deleteItemHeading());
+			centerCardLayout.setActiveItem(treeView.getFormPanel());
+			multigradeView.deselectAll();
+			break;
+		case GRADE_SCALE:
+			eastLayoutContainer.setHeading(i18n.gradeScaleHeading());
+			eastCardLayout.setActiveItem(gradeScalePanel);
+			break;
+		case STATISTICS:
+			viewportLayout.setActiveItem(statisticsPanel);
+			break;
+		case HISTORY:
+			viewportLayout.setActiveItem(historyPanel);
+			break;
+		case NEW_CATEGORY:
+			formPanel.setHeading(i18n.newCategoryHeading());
+			centerCardLayout.setActiveItem(treeView.getFormPanel());
+			multigradeView.deselectAll();
+			break;
+		case NEW_ITEM:
+			formPanel.setHeading(i18n.newItemHeading());
+			centerCardLayout.setActiveItem(treeView.getFormPanel());
+			multigradeView.deselectAll();
+			break;
+		case EDIT_CATEGORY:
+			formPanel.setHeading(i18n.editCategoryHeading());
+			centerCardLayout.setActiveItem(treeView.getFormPanel());
+			multigradeView.deselectAll();
+			break;
+		case EDIT_GRADEBOOK:
+			formPanel.setHeading(i18n.editGradebookHeading());
+			centerCardLayout.setActiveItem(treeView.getFormPanel());
+			multigradeView.deselectAll();
+			break;
+		case EDIT_ITEM:
+			formPanel.setHeading(i18n.editItemHeading());
+			centerCardLayout.setActiveItem(treeView.getFormPanel());
+			multigradeView.deselectAll();
+			break;
+		case LEARNER_SUMMARY:
+			eastLayoutContainer.setHeading(i18n.learnerSummaryHeading());
+			eastCardLayout.setActiveItem(singleGradeContainer);
+			break;
 		}
 
 	}
@@ -329,14 +317,14 @@ public class InstructorView extends AppView {
 			gradeScalePanel.onFailedToUpdateItem(itemUpdate);
 		}
 	}
-	
+
 	@Override
 	protected void onGradeTypeUpdated(Gradebook selectedGradebook) {
 		if (singleGradeContainer != null) {
 			singleGradeContainer.onGradeTypeUpdated(selectedGradebook);
 		}
 	}
-	
+
 	@Override
 	protected void onItemCreated(Item itemModel) {
 		onHideEastPanel(Boolean.FALSE);
@@ -382,11 +370,11 @@ public class InstructorView extends AppView {
 	protected void onRefreshGradebookSetup(Gradebook gradebookModel) {
 		if (addCategoryMenuItem != null)
 			addCategoryMenuItem.setVisible(gradebookModel.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
-	
+
 		if (singleGradeContainer != null)
 			singleGradeContainer.onRefreshGradebookSetup(gradebookModel);
-		
-		
+
+
 		Boolean isLetterGrade = gradebookModel.getGradebookItemModel().getGradeType() == GradeType.LETTERS;
 		MenuItem gradeScale = (MenuItem) editMenu.getItemByItemId(AppConstants.WINDOW_MENU_ITEM_PREFIX  + AppConstants.TAB_GRADESCALE);
 		if(isLetterGrade){
@@ -411,20 +399,14 @@ public class InstructorView extends AppView {
 
 	@Override
 	protected void onSingleGrade(final ModelData learnerGradeRecordCollection) {
-		/*GWT.runAsync(new RunAsyncCallback() {
-			public void onFailure(Throwable caught) {
 
-			}
+		if (singleGradeContainer == null) {
+			singleGradeContainer = new LearnerSummaryPanel();
+			eastLayoutContainer.add(singleGradeContainer);
+		}
+		singleGradeContainer.onChangeModel(multigradeView.getStore(), treeView.getTreeStore(), learnerGradeRecordCollection);
+		onExpandEastPanel(EastCard.LEARNER_SUMMARY);
 
-			public void onSuccess() {*/
-				if (singleGradeContainer == null) {
-					singleGradeContainer = new LearnerSummaryPanel();
-					eastLayoutContainer.add(singleGradeContainer);
-				}
-				singleGradeContainer.onChangeModel(multigradeView.getStore(), treeView.getTreeStore(), learnerGradeRecordCollection);
-				onExpandEastPanel(EastCard.LEARNER_SUMMARY);
-			/*}
-		});*/
 	}
 
 	@Override
@@ -435,49 +417,35 @@ public class InstructorView extends AppView {
 
 	@Override
 	protected void onShowGradeScale(Boolean show) {
-		/*GWT.runAsync(new RunAsyncCallback() {
-			public void onFailure(Throwable caught) {
-
-			}
-
-			public void onSuccess() {*/
-				if (gradeScalePanel == null) {
-					gradeScalePanel = new GradeScalePanel(isEditable, treeView);
-					eastLayoutContainer.add(gradeScalePanel);
-				}
-				// GRBK-668
-				gradeScalePanel.setState();
-				onExpandEastPanel(EastCard.GRADE_SCALE);
-			/*}
-		});*/
+		
+		if (gradeScalePanel == null) {
+			gradeScalePanel = new GradeScalePanel(isEditable, treeView);
+			eastLayoutContainer.add(gradeScalePanel);
+		}
+		// GRBK-668
+		gradeScalePanel.setState();
+		onExpandEastPanel(EastCard.GRADE_SCALE);
 	}
 
 	@Override
 	protected void onShowHistory(String identifier) {
-		/*GWT.runAsync(new RunAsyncCallback() {
-			public void onFailure(Throwable caught) {
-
-			}
-
-			public void onSuccess() {*/
-				if (historyPanel == null) {
-					historyPanel = new HistoryPanel(i18n);
-					viewport.add(historyPanel);
-				}
-				viewportLayout.setActiveItem(historyPanel);
-			/*}
-		});*/
+		
+		if (historyPanel == null) {
+			historyPanel = new HistoryPanel(i18n);
+			viewport.add(historyPanel);
+		}
+		viewportLayout.setActiveItem(historyPanel);
 	}
 
 	protected void onShowSetup() {
 		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
-		
+
 		if (selectedGradebook != null) {
 			Item itemModel = selectedGradebook.getGradebookItemModel();
 			Dispatcher.forwardEvent(GradebookEvents.StartEditItem.getEventType(), itemModel);
 		}
 	}
-	
+
 	@Override
 	protected void onShowStatistics() {
 		if (statisticsPanel == null) {
@@ -486,25 +454,24 @@ public class InstructorView extends AppView {
 		}
 		statisticsPanel.onLearnerGradeRecordUpdated(null);
 		viewportLayout.setActiveItem(statisticsPanel);
-		//onExpandEastPanel(EastCard.STATISTICS);
 	}
 
 	@Override
 	protected void onStopStatistics() {
 		viewportLayout.setActiveItem(borderLayoutContainer);
 	}
-	
+
 	@Override
 	protected void onStartEditItem(Item itemModel) {
 		AppView.EastCard activeCard = AppView.EastCard.EDIT_ITEM;
 
 		if (itemModel != null) {
 			switch (itemModel.getItemType()) {
-				case CATEGORY:
-					activeCard = AppView.EastCard.EDIT_CATEGORY;
-					break;
-				case GRADEBOOK:
-					activeCard = AppView.EastCard.EDIT_GRADEBOOK;
+			case CATEGORY:
+				activeCard = AppView.EastCard.EDIT_CATEGORY;
+				break;
+			case GRADEBOOK:
+				activeCard = AppView.EastCard.EDIT_GRADEBOOK;
 			}
 		}
 		onExpandEastPanel(activeCard);
@@ -512,7 +479,7 @@ public class InstructorView extends AppView {
 
 	@Override
 	protected void onStartImport() {
-		
+
 	}
 
 	@Override
@@ -546,8 +513,8 @@ public class InstructorView extends AppView {
 
 		if (addCategoryMenuItem != null)
 			addCategoryMenuItem.setVisible(selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
-		
-		
+
+
 		Boolean isLetterGrade = (selectedGradebook.getGradebookItemModel().getGradeType() == GradeType.LETTERS);
 		MenuItem gradeScale = (MenuItem) editMenu.getItemByItemId(AppConstants.WINDOW_MENU_ITEM_PREFIX  + AppConstants.TAB_GRADESCALE);
 		if(isLetterGrade){
@@ -556,29 +523,6 @@ public class InstructorView extends AppView {
 			gradeScale.enable();
 		}
 	}
-
-	/*
-	@SuppressWarnings("unchecked")
-	@Override
-	protected void onUserChange(UserEntityAction<?> action) {
-
-		switch (action.getEntityType()) {
-			case GRADEBOOK:
-				switch (action.getActionType()) {
-					case UPDATE:
-						UserEntityUpdateAction<GradebookModel> updateAction = (UserEntityUpdateAction<GradebookModel>)action;
-						GradebookModel.Key gradebookModelKey = GradebookModel.Key.valueOf(updateAction.getKey());
-						switch (gradebookModelKey) {
-							case CATEGORYTYPE:
-								GradebookModel selectedGradebook = updateAction.getModel();
-								addCategoryMenuItem.setVisible(selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
-								break;
-						}
-						break;
-				}
-				break;
-		}
-	}*/
 
 	/*
 	 * The goal here is to reduce the number of overall listeners in the application to a minimum
@@ -594,68 +538,69 @@ public class InstructorView extends AppView {
 					MenuSelector menuSelector = menuItem.getData(MENU_SELECTOR_FLAG);
 
 					switch (menuSelector) {
-						case GRADE_SCALE:
-							onShowGradeScale(Boolean.TRUE);
-							break;
-						case HISTORY:
-							onShowHistory(null);
-							break;
-						case GRADER_PERMISSION_SETTINGS:
-							onStartGraderPermissions();
-							break;
-						case STATISTICS:
-							onShowStatistics();
-							break;
-						case SETUP:
-							onShowSetup();
-							break;
+					case GRADE_SCALE:
+						onShowGradeScale(Boolean.TRUE);
+						break;
+					case HISTORY:
+						onShowHistory(null);
+						break;
+					case GRADER_PERMISSION_SETTINGS:
+						onStartGraderPermissions();
+						break;
+					case STATISTICS:
+						onShowStatistics();
+						break;
+					case SETUP:
+						onShowSetup();
+						break;
 					}
 				}
 			}
 
 		};
-		
+
 		final Map<MenuSelector, ExportType> exportTypeByMenuSelector = new HashMap<MenuSelector, ExportType>();
 		exportTypeByMenuSelector.put(MenuSelector.EXPORT_DATA_XLS, ExportType.XLS97);
 		exportTypeByMenuSelector.put(MenuSelector.EXPORT_STRUCTURE_XLS, ExportType.XLS97);
 		exportTypeByMenuSelector.put(MenuSelector.EXPORT_DATA_CSV, ExportType.CSV);
 		exportTypeByMenuSelector.put(MenuSelector.EXPORT_STRUCTURE_CSV, ExportType.CSV);
 		final EnumSet<MenuSelector> exportingSelections = EnumSet.of(MenuSelector.EXPORT_STRUCTURE_XLS,MenuSelector.EXPORT_STRUCTURE_CSV);
-		
+
 		menuSelectionListener = new SelectionListener<MenuEvent>() {
 
 			@Override
 			public void componentSelected(MenuEvent me) {
 				MenuSelector selector = me.getItem().getData(MENU_SELECTOR_FLAG);
 				ExportDetails ex;
-				
+
 				ExportType exportType = exportTypeByMenuSelector.get(selector);
 				boolean includeStructure = exportingSelections.contains(selector);
 				switch (selector) {
-					case ADD_CATEGORY:
-						Dispatcher.forwardEvent(GradebookEvents.NewCategory.getEventType());
-						break;
-					case ADD_ITEM:
-						Dispatcher.forwardEvent(GradebookEvents.NewItem.getEventType());
-						break;
-					case EXPORT_DATA_XLS:
-					case EXPORT_STRUCTURE_XLS:
-					case EXPORT_DATA_CSV:
-					case EXPORT_STRUCTURE_CSV:
-						ex = new ExportDetails(exportType, includeStructure);
-						ex.setSectionUid(multigradeView.getMultiGradeContentPanel().getSelectedSectionUid());							
-						handleExport(ex);
-						break;
-					case IMPORT:
-						Dispatcher.forwardEvent(GradebookEvents.StartImport.getEventType());
-						break;
-					case FINAL_GRADE:
-						Dispatcher.forwardEvent(GradebookEvents.StartFinalgrade.getEventType());
-						break;
+				case ADD_CATEGORY:
+					Dispatcher.forwardEvent(GradebookEvents.NewCategory.getEventType());
+					break;
+				case ADD_ITEM:
+					Dispatcher.forwardEvent(GradebookEvents.NewItem.getEventType());
+					break;
+				case EXPORT_DATA_XLS:
+				case EXPORT_STRUCTURE_XLS:
+				case EXPORT_DATA_CSV:
+				case EXPORT_STRUCTURE_CSV:
+					ex = new ExportDetails(exportType, includeStructure);
+					ex.setSectionUid(multigradeView.getMultiGradeContentPanel().getSelectedSectionUid());							
+					handleExport(ex);
+					break;
+				case IMPORT:
+					Dispatcher.forwardEvent(GradebookEvents.StartImport.getEventType());
+					break;
+				case FINAL_GRADE:
+					Dispatcher.forwardEvent(GradebookEvents.StartFinalgrade.getEventType());
+					break;
 				}
 			}
 
 			private void handleExport(ExportDetails ex) {
+				
 				Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 				if (selectedGradebook.getGradebookItemModel().getGradeType() == GradeType.PERCENTAGES)
 				{
@@ -668,11 +613,7 @@ public class InstructorView extends AppView {
 				{
 					Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType(), ex);
 				}
-				
 			}
-			
-			
-
 		};
 
 		toolBarSelectionListener = new SelectionListener<ButtonEvent>() {
@@ -683,7 +624,6 @@ public class InstructorView extends AppView {
 				String helpUrl = Registry.get(AppConstants.HELP_URL);
 				Window.open(helpUrl, "_blank", "resizable=yes,scrollbars=yes,outerHeight=600,outerWidth=350");
 			}
-
 		};
 	}
 
@@ -704,7 +644,7 @@ public class InstructorView extends AppView {
 			editItem.setMenu(editMenu);
 			toolBar.add(editItem);
 		}
-			
+
 		AriaButton viewItem = new AriaButton(i18n.viewMenuHeader());
 		viewMenu = newViewMenu(i18n);
 		viewItem.setMenu(viewMenu);
@@ -718,9 +658,9 @@ public class InstructorView extends AppView {
 		toolBar.add(viewItem);
 		toolBar.add(moreItem);
 		toolBar.add(helpItem);
-		
+
 		toolBar.add(new FillToolItem());
-		
+
 		String version = Registry.get(AppConstants.VERSION);
 		LabelField versionLabel = new LabelField(version);
 		toolBar.add(versionLabel);
@@ -812,18 +752,18 @@ public class InstructorView extends AppView {
 		menuItem.setSubMenu(subMenu);
 
 		Menu typeMenu = subMenu; 
-		
+
 		// If we're dealing with an "editable" instance of the tool, then make the appropriate submenus for export
 		if (isEditable) {
 			menuItem = new AriaMenuItem(i18n.headerExportData());
 			menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_DATA);
 			menuItem.setTitle(i18n.headerExportDataTitle());
 			subMenu.add(menuItem);
-	
+
 			typeMenu = new AriaMenu();
 			menuItem.setSubMenu(typeMenu);
 		}
-		
+
 		menuItem = new AriaMenuItem(i18n.headerExportCSV(), menuSelectionListener);
 		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_DATA_CSV);
 		menuItem.setTitle(i18n.headerExportCSVTitle());
@@ -840,15 +780,15 @@ public class InstructorView extends AppView {
 			menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_STRUCTURE);
 			menuItem.setTitle(i18n.headerExportStructureTitle());
 			subMenu.add(menuItem);
-	
+
 			typeMenu = new AriaMenu();
 			menuItem.setSubMenu(typeMenu);
-			
+
 			menuItem = new AriaMenuItem(i18n.headerExportCSV(), menuSelectionListener);
 			menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_STRUCTURE_CSV);
 			menuItem.setTitle(i18n.headerExportCSVTitle());
 			typeMenu.add(menuItem);
-	
+
 			menuItem = new AriaMenuItem(i18n.headerExportXLS(), menuSelectionListener);
 			menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_STRUCTURE_XLS);
 			menuItem.setTitle(i18n.headerExportXLSTitle());
@@ -856,7 +796,6 @@ public class InstructorView extends AppView {
 
 			menuItem = new AriaMenuItem(i18n.headerImport(), menuSelectionListener);
 			menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.IMPORT);
-			//menuItem.setIconStyle(resources.css().gbImportItemIcon());
 			menuItem.setIcon(AbstractImagePrototype.create(resources.page_white_get()));
 			menuItem.setTitle(i18n.headerImportTitle());
 			moreActionsMenu.add(menuItem);
@@ -864,7 +803,6 @@ public class InstructorView extends AppView {
 			// GRBK-37 : TPA
 			menuItem = new AriaMenuItem(i18n.headerFinalGrade(), menuSelectionListener);
 			menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.FINAL_GRADE);
-			//menuItem.setIconStyle(resources.css().gbExportItemIcon());
 			menuItem.setIcon(AbstractImagePrototype.create(resources.page_white_put()));
 			menuItem.setTitle(i18n.headerFinalGradeTitle());
 			moreActionsMenu.add(menuItem);

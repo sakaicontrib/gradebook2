@@ -8,8 +8,8 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
-import org.sakaiproject.gradebook.gwt.client.RestCallback;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
+import org.sakaiproject.gradebook.gwt.client.RestCallback;
 import org.sakaiproject.gradebook.gwt.client.gxt.JsonUtil;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenu;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
@@ -47,10 +47,10 @@ import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.TreeLoader;
 import com.extjs.gxt.ui.client.data.TreeModel;
 import com.extjs.gxt.ui.client.data.TreeModelReader;
-import com.extjs.gxt.ui.client.dnd.TreeGridDragSource;
-import com.extjs.gxt.ui.client.dnd.TreeGridDropTarget;
 import com.extjs.gxt.ui.client.dnd.DND.Feedback;
 import com.extjs.gxt.ui.client.dnd.DND.TreeSource;
+import com.extjs.gxt.ui.client.dnd.TreeGridDragSource;
+import com.extjs.gxt.ui.client.dnd.TreeGridDropTarget;
 import com.extjs.gxt.ui.client.event.CheckChangedEvent;
 import com.extjs.gxt.ui.client.event.CheckChangedListener;
 import com.extjs.gxt.ui.client.event.DNDEvent;
@@ -92,7 +92,6 @@ import com.extjs.gxt.ui.client.widget.treepanel.TreePanel.Joint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.Response;
-import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
 
@@ -101,47 +100,45 @@ public class ItemTreePanel extends GradebookPanel {
 	private static int CHARACTER_WIDTH = 7;
 	private enum SelectionType { CREATE_CATEGORY, CREATE_ITEM, UPDATE_ITEM, DELETE_ITEM, MOVE_DOWN, MOVE_UP };
 	private static final String selectionTypeField = "selectionType";
-	
+
 	private Menu treeContextMenu;
 	private MenuItem addCategoryMenuItem, updateGradebookMenuItem, updateCategoryMenuItem, updateItemMenuItem, deleteCategoryMenuItem, deleteItemMenuItem;
-	//private MenuItem moveDownMenuItem, moveUpMenuItem;
-	
+
 	private TabPanel tabPanel;
-	
+
 	private TreeLoader<FixedColumnModel> learnerAttributeLoader;
 	private TreeGrid<ItemModel> itemGrid;
 	private TreePanel<FixedColumnModel> learnerAttributeTree;
-	
+
 	private final boolean isEditable;
 	private final boolean isImport;
-	
+
 	// Listeners
 	private CheckChangedListener<FixedColumnModel> checkListener;
 	private LoadListener itemLoadListener, attributeLoadListener;
 	private Listener<GridEvent<ItemModel>> gridEventListener;
 	private SelectionListener<MenuEvent> menuSelectionListener;
 	private SelectionChangedListener<ItemModel> selectionChangedListener;
-		
+
 	private ColumnConfig percentCourseGradeColumn, percentCategoryColumn, pointsColumn;
 	private ColumnModel cm;
 	private ItemTreeSelectionModel sm;
 	private TreeStore<FixedColumnModel> learnerAttributeStore;
 	private TreeStore<ItemModel> treeStore;
-	
+
 	private FixedColumnModel learnerAttributeRoot, learnerAttributes, gradingColumns; 
-	
+
 	private HashSet<String> fullStaticIdSet;
 	private List<FixedColumnModel> checkedSelection;
-	
-	//private boolean isAllowedToDropToGradebook = false;
+
 	private boolean isLearnerAttributeTreeLoaded = false;
-	
+
 	private MessageBox verifyingCatsBox = null;
 
 	private ToolBar topStatus;
 
 	private Status status;
-	
+
 	public ItemTreePanel(TreeStore<ItemModel> treeStore, boolean isEditable, boolean isImport) {
 		super();
 		this.treeStore = treeStore;
@@ -156,7 +153,7 @@ public class ItemTreePanel extends GradebookPanel {
 		setLayout(new FillLayout());
 		initListeners();
 
-		
+
 		topStatus = new ToolBar();
 		topStatus.add(new FillToolItem());
 		status = new Status();
@@ -165,41 +162,41 @@ public class ItemTreePanel extends GradebookPanel {
 		topStatus.add(status);
 		setTopComponent(topStatus); 
 		topStatus.hide();
-		
+
 		sm = new ItemTreeSelectionModel() {
-			
+
 			@Override
 			protected void sendShowColumnsEvent(ShowColumnsEvent event) {
 				ItemTreePanel.this.sendShowColumnsEvent(event);
 			}
-			
+
 		};
 		sm.addSelectionChangedListener(selectionChangedListener);
 		sm.setSelectionMode(SelectionMode.MULTI);
-		
+
 		List<ColumnConfig> columns = new ArrayList<ColumnConfig>();
 
 		columns.add(sm.getColumn());
-		
+
 		TreeGridCellRenderer<ItemModel> renderer = new TreeGridCellRenderer<ItemModel>();
-		
+
 		ColumnConfig nameColumn = new ColumnConfig(ItemKey.S_NM.name(), 
 				i18n.nameFieldLabel(), 200);
 		nameColumn.setMenuDisabled(true);
 		nameColumn.setRenderer(renderer);
 		nameColumn.setSortable(false);
 		columns.add(nameColumn);
-		
+
 		GridCellRenderer<ItemModel> numericRenderer = new GridCellRenderer<ItemModel>() {
 
 			public Object render(ItemModel itemModel, String property,
 					ColumnData config, int rowIndex, int colIndex,
 					ListStore<ItemModel> store, Grid<ItemModel> grid) {
-				
+
 				String prefix = "";
 				String result = null;
 				Object value = (null != itemModel) ? itemModel.get(property) : null;
-				
+
 				if (itemModel != null && itemModel.getItemType() != null) {
 					boolean isItem = itemModel.getItemType() == ItemType.ITEM;
 					boolean isCategory = itemModel.getItemType() == ItemType.CATEGORY;
@@ -207,64 +204,64 @@ public class ItemTreePanel extends GradebookPanel {
 					boolean isPercentCategory = property.equals(ItemKey.D_PCT_CTGRY.name());
 					boolean isPercentGrade = property.equals(ItemKey.D_PCT_GRD.name());
 					boolean isPoints = property.equals(ItemKey.D_PNTS.name());
-					
+
 					if (isPercentGrade || (isPoints && !isItem)) {
 						boolean isNotCalculable = DataTypeConversionUtil.checkBoolean((Boolean)itemModel.get(ItemKey.B_ISNT_CALCBLE.name()));
-					
+
 						if (isNotCalculable)
 							return "?";
 					}
-					
+
 					if (value == null)
 						return null;
-					
+
 					if (isGradebook && isPercentCategory)
 						return "-";
-											
+
 					boolean isIncluded = itemModel.getIncluded() != null && itemModel.getIncluded().booleanValue();				
 					boolean isTooBig = (isPercentCategory || isPercentGrade) 
-						&& ((Double)value).doubleValue() > 100.00001d;
+					&& ((Double)value).doubleValue() > 100.00001d;
 					boolean isTooSmall = ((isPercentCategory && isCategory) || (isPercentGrade && isGradebook)) && ((Double)value).doubleValue() < 99.9994d;
-					
+
 					result = DataTypeConversionUtil.getShortNumberFormat().format(((Double)value).doubleValue());
-					
+
 					StringBuilder cssClasses = new StringBuilder();
-					
+
 					if (!isIncluded && (isItem || isCategory))
 						cssClasses.append(resources.css().gbNotIncluded());
-					
+
 					if (!isItem) 
 						cssClasses.append(" ").append(resources.css().gbCellStrong());
-					
+
 					if (isTooBig || isTooSmall)
 						cssClasses.append(" ").append(resources.css().gbCellError());
-						
+
 					boolean isExtraCredit = itemModel.getExtraCredit() != null && itemModel.getExtraCredit().booleanValue();
 					if (isExtraCredit) {
-						
+
 						if (isPercentGrade || (isPercentCategory && isItem) || isPoints) {
 							cssClasses.append(" ").append(resources.css().gbCellExtraCredit());
 							prefix = "+ ";
 						}
 
 					}
-					
+
 					StringBuilder builder = new StringBuilder().append("<span class=\"").append(cssClasses.toString())
-						.append("\">").append(prefix).append(result).append("</span>");
-					
+					.append("\">").append(prefix).append(result).append("</span>");
+
 					if ((isCategory && isPercentCategory) || (isGradebook && isPercentGrade)) {
 						builder.append(" / 100");
 					} 
-						
-					
+
+
 					return builder.toString();
-				
+
 				}
 				return "";
 			}
-			
+
 		};
-		
+
 		percentCourseGradeColumn =  new ColumnConfig(ItemKey.D_PCT_GRD.name(), 
 				i18n.percentCourseGradeFieldLabel(), i18n.percentCourseGradeFieldLabel().length() * CHARACTER_WIDTH + 30);
 		percentCourseGradeColumn.setAlignment(HorizontalAlignment.RIGHT);
@@ -285,15 +282,15 @@ public class ItemTreePanel extends GradebookPanel {
 		pointsColumn.setRenderer(numericRenderer);
 		pointsColumn.setSortable(false);
 		columns.add(pointsColumn);
-		
+
 		cm = new ColumnModel(columns);
-		
-		
+
+
 		TreeGridView itemGridView = new ItemTreeGridView() {
-			
+
 			private String collapseHtml = GXT.IMAGES.tree_collapsed().getHTML();
 			private String expandHtml = GXT.IMAGES.tree_expanded().getHTML();
-			
+
 			public String getTemplate(ModelData m, String id, String text,
 					AbstractImagePrototype icon, boolean checkable,
 					Joint joint, int level) {
@@ -305,7 +302,7 @@ public class ItemTreePanel extends GradebookPanel {
 				boolean isCategory = itemModel.getItemType() == ItemType.CATEGORY;
 				boolean isReleased = itemModel.getReleased() != null && itemModel.getReleased().booleanValue();
 				int dropLowest = itemModel.getDropLowest() == null ? 0 : itemModel.getDropLowest().intValue();			
-				
+
 				StringBuffer sb = new StringBuffer();
 				sb.append("<div id=\"");
 				sb.append(id);
@@ -323,7 +320,7 @@ public class ItemTreePanel extends GradebookPanel {
 					break;
 				default:
 					h = "<img src=\"" + GXT.BLANK_IMAGE_URL
-							+ "\" style='width: 16px'>";
+					+ "\" style='width: 16px'>";
 				}
 
 				sb.append("<img src=\"");
@@ -356,7 +353,7 @@ public class ItemTreePanel extends GradebookPanel {
 						sb.append(" ").append(resources.css().gbNotIncluded());
 					}
 				}
-				
+
 				if (!isItem) 
 					sb.append(" ").append(resources.css().gbCellStrong());
 				else if (isReleased)
@@ -370,7 +367,7 @@ public class ItemTreePanel extends GradebookPanel {
 						sb.append(" ").append(resources.css().gbReleased());		
 					}
 				}
-				
+
 				if (isExtraCredit) 
 					sb.append(" ").append(resources.css().gbCellExtraCredit());
 				sb.append("\">&nbsp;");
@@ -378,7 +375,7 @@ public class ItemTreePanel extends GradebookPanel {
 					sb.append("<font style=\"font-style: regular;font-size:9pt\"> -").append(dropLowest).append("</font>&nbsp;");
 				}
 				sb.append(text);
-				
+
 				sb.append("</span>");		
 
 				sb.append("</div>");
@@ -404,10 +401,10 @@ public class ItemTreePanel extends GradebookPanel {
 		itemGrid.setStripeRows(false);
 		itemGrid.setView(itemGridView);
 		itemGrid.setWidth(500);
-		
+
 		if (isEditable)
 			itemGrid.setContextMenu(newTreeContextMenu(i18n)); 
-		
+
 		tabPanel = new AriaTabPanel();
 
 		TabItem item = new AriaTabItem(i18n.navigationPanelFixedTabHeader()) {
@@ -420,7 +417,7 @@ public class ItemTreePanel extends GradebookPanel {
 		};
 		item.setLayout(new FitLayout());
 		item.add(itemGrid);
-	
+
 		tabPanel.add(item);
 
 		learnerAttributeLoader = new BaseTreeLoader<FixedColumnModel>(new TreeModelReader());
@@ -440,15 +437,15 @@ public class ItemTreePanel extends GradebookPanel {
 			gradingColumns.setParent(learnerAttributeRoot);
 			learnerAttributeRoot.add(gradingColumns);
 		}
-			
+
 		learnerAttributeStore = new TreeStore<FixedColumnModel>(learnerAttributeLoader);
 		learnerAttributeTree = new TreePanel<FixedColumnModel>(learnerAttributeStore) {
 			@Override
-			  protected void onRender(Element target, int index) {
-			    super.onRender(target, index);
-			    learnerAttributeTree.removeCheckListener(checkListener);
-			    learnerAttributeTree.setCheckedSelection(checkedSelection);
-			    learnerAttributeTree.addCheckListener(checkListener);
+			protected void onRender(Element target, int index) {
+				super.onRender(target, index);
+				learnerAttributeTree.removeCheckListener(checkListener);
+				learnerAttributeTree.setCheckedSelection(checkedSelection);
+				learnerAttributeTree.addCheckListener(checkListener);
 			}
 		};
 		learnerAttributeTree.setAutoLoad(true);
@@ -456,9 +453,7 @@ public class ItemTreePanel extends GradebookPanel {
 		learnerAttributeTree.setCheckStyle(CheckCascade.CHILDREN);
 		learnerAttributeTree.setCheckNodes(CheckNodes.LEAF);
 		learnerAttributeTree.setDisplayProperty(FixedColumnKey.S_NAME.name());
-		//learnerAttributeTree.setStateful(true);
-		//learnerAttributeTree.setStateId(AppConstants.LEARNER_ATTRIBUTE_TREE);
-		
+
 		if (isImport)
 			item = new AriaTabItem(i18n.navigationPanelDynamicTabImportHeader());
 		else
@@ -469,13 +464,12 @@ public class ItemTreePanel extends GradebookPanel {
 		tabPanel.add(item);
 
 		add(tabPanel);
-		//add(new message)
 	}
-	
+
 	private void checkCategoryTotals() {
 
 		Gradebook gb = Registry.get(AppConstants.CURRENT);
-		
+
 		if (gb != null) {
 
 			verifyingCatsBox = MessageBox.wait("", i18n
@@ -485,7 +479,7 @@ public class ItemTreePanel extends GradebookPanel {
 			RestBuilder rest = RestBuilder.getInstance(Method.GET, GWT
 					.getModuleBaseURL(), AppConstants.REST_FRAGMENT,
 					AppConstants.GRADES_VERIFICATION_FRAGMENT, gb
-							.getGradebookUid(), String.valueOf(gb.getGradebookId()));
+					.getGradebookUid(), String.valueOf(gb.getGradebookId()));
 
 			rest.sendRequest(200, 400, "", new RestCallback() {
 				//TODO: i18n for error messages in this class
@@ -495,7 +489,7 @@ public class ItemTreePanel extends GradebookPanel {
 							.getEventType(), new NotificationEvent(exception,
 							"Unable to verify student grades")); 
 					verifyingCatsBox.close();
-					
+
 					status.setText("Error: server error verifying gradebook");
 					topStatus.show();		
 				}
@@ -505,29 +499,29 @@ public class ItemTreePanel extends GradebookPanel {
 
 					EntityOverlay overlay = JsonUtil.toOverlay(response
 							.getText());
-					ModelData result = new EntityModel(overlay); // translater.translate(response.getText());
+					ModelData result = new EntityModel(overlay);
 
 					verifyingCatsBox.close();
 
 					StringBuilder text = new StringBuilder();
 
 					boolean isCategoryFullyWeighted = result
-							.get(VerificationKey.B_CTGRY_WGHTD.name()) != null
-							&& ((Boolean) result.get(VerificationKey.B_CTGRY_WGHTD.name())).booleanValue();
-					
+					.get(VerificationKey.B_CTGRY_WGHTD.name()) != null
+					&& ((Boolean) result.get(VerificationKey.B_CTGRY_WGHTD.name())).booleanValue();
+
 					boolean isFullyWeighted = result.get(VerificationKey.B_GB_WGHTD.name()) != null
-							&& ((Boolean) result.get(VerificationKey.B_GB_WGHTD.name())).booleanValue();					
-					
+					&& ((Boolean) result.get(VerificationKey.B_GB_WGHTD.name())).booleanValue();					
+
 					if (!isCategoryFullyWeighted || !isFullyWeighted) {
 
 						String tooltip = result.get(VerificationKey.S_GB_WGHTD_TT.name());
 						status.setText(i18nTemplates.itemTreePanelAlertMessage(resources.css().gbCellError(), 
 								i18n.categoriesNot100Percent()));
-						
+
 						if (!isCategoryFullyWeighted && !isFullyWeighted) {
 							text.append("one or more categories").append(", ")
 							.append("sum of categories");
-							
+
 						} else if (!isCategoryFullyWeighted) {
 							text.append("one or more categories");
 						} else if (!isFullyWeighted) {
@@ -537,7 +531,7 @@ public class ItemTreePanel extends GradebookPanel {
 						// Setting to 400 so the string fits on one line.  
 						c.setMaxWidth(400);
 						status.setToolTip(c); 
-						
+
 						if (!topStatus.isVisible()) {
 							topStatus.show();
 						}					
@@ -546,21 +540,15 @@ public class ItemTreePanel extends GradebookPanel {
 							topStatus.hide();
 						}
 					}
-
 				}
 			});
 		}
-
-		
-				
-		
-		
 	}
 
 	public void onBeforeLoadItemTreeModel(Gradebook selectedGradebook, Item rootItem) {
 		checkCategoryTotals();
 	}
-	
+
 	public void onHideColumn(FixedColumnModel fixedModel) {
 		if (fixedModel == null)
 			return;
@@ -572,40 +560,39 @@ public class ItemTreePanel extends GradebookPanel {
 			showColumns(checkedSelection);
 		}
 	}
-	
+
 	public void onHideColumn(ItemModel itemModel) {
 		if (itemModel == null)
 			return;
-	
+
 		sm.toggle(itemModel, false);
 	}
-	
+
 	public void onItemCreated(ItemModel itemModel) {
 		if (itemModel == null)
 			return;
-		
+
 		sm.toggle(itemModel, true);
 	}
-	
+
 	public void onMaskItemTree() {
-		
+
 	}
-	
+
 	private boolean isLoadEventRun = false;
-	
+
 	public void onRefreshGradebookItems(final Gradebook gradebookModel, TreeLoader<ItemModel> treeLoader, final ItemModel rootItem) {
 		if (itemLoadListener != null)
 			treeLoader.removeLoadListener(itemLoadListener);
-				
+
 		itemLoadListener = new LoadListener() {
 			public void loaderLoad(LoadEvent le) {
 				if (isLoadEventRun) 
 					return;
-				
+
 				isLoadEventRun = true;
-				
+
 				verifyCheckedState(gradebookModel);
-				
 			}
 		};
 
@@ -621,18 +608,18 @@ public class ItemTreePanel extends GradebookPanel {
 			Configuration configModel = gradebookModel.getConfigurationModel();
 			checkedSelection = new ArrayList<FixedColumnModel>();
 			for (FixedColumn column : gradebookModel.getColumns()) {
-				
+
 				fullStaticIdSet.add(column.getIdentifier());
-				
+
 				boolean isDefaultHidden = DataTypeConversionUtil.checkBoolean(column.isHidden());
 				boolean isChecked = !configModel.isColumnHidden(AppConstants.ITEMTREE, column.getIdentifier(), isDefaultHidden);
-				
+
 				if (isChecked)
 					checkedSelection.add((FixedColumnModel)column);
 				column.setChecked(isChecked);
-				
+
 				LearnerKey key = LearnerKey.valueOf(column.getIdentifier());
-				
+
 				switch (key.getGroup()) {
 				case GRADES:
 					if (!isImport) {
@@ -645,15 +632,15 @@ public class ItemTreePanel extends GradebookPanel {
 					learnerAttributes.add((ModelData)column);	
 				}
 			}
-			
+
 			learnerAttributeLoader.addLoadListener(attributeLoadListener);
-	
+
 			learnerAttributeLoader.load(learnerAttributeRoot);
 			isLearnerAttributeTreeLoaded = true;			
-			 
+
 		}
 	}
-	
+
 	public void onRefreshGradebookSetup(Gradebook gradebookModel, Item gradebookItemModel) {
 		if (addCategoryMenuItem != null)
 			addCategoryMenuItem.setVisible(!isImport && gradebookItemModel.getCategoryType() != CategoryType.NO_CATEGORIES);
@@ -663,74 +650,71 @@ public class ItemTreePanel extends GradebookPanel {
 		if (configModel != null) {
 			CategoryType categoryType = gradebookItemModel.getCategoryType();
 			switch (categoryType) {
-				case NO_CATEGORIES:
-				case SIMPLE_CATEGORIES:
-					cm.setHidden(2, true);
-					cm.setHidden(3, true);
-					cm.setHidden(4, configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_POINTS_NOWEIGHTS, false));
-					break;
-				case WEIGHTED_CATEGORIES:
-					cm.setHidden(2, configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_PERCENT_GRADE, false));
-					cm.setHidden(3, configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_PERCENT_CATEGORY, false));
-					cm.setHidden(4, configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_POINTS_WEIGHTS, false));
-					break;
+			case NO_CATEGORIES:
+			case SIMPLE_CATEGORIES:
+				cm.setHidden(2, true);
+				cm.setHidden(3, true);
+				cm.setHidden(4, configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_POINTS_NOWEIGHTS, false));
+				break;
+			case WEIGHTED_CATEGORIES:
+				cm.setHidden(2, configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_PERCENT_GRADE, false));
+				cm.setHidden(3, configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_PERCENT_CATEGORY, false));
+				cm.setHidden(4, configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_POINTS_WEIGHTS, false));
+				break;
 			}
 		}
 	}
-	
+
 	public void onSingleGrade() {
 		sm.deselectAll();
 	}
-	
+
 	private void verifyCheckedState(Gradebook selectedGradebook) {
 		Configuration configModel = selectedGradebook.getConfigurationModel();
-		
+
 		Item gradebookItemModel = selectedGradebook.getGradebookItemModel();
 		if (gradebookItemModel != null) {
 			boolean isEntireGradebookChecked = true;
 			for (ModelData m1 : ((BaseTreeModel)gradebookItemModel).getChildren()) {
 				ItemModel c1 = (ItemModel)m1;
 				switch (c1.getItemType()) {
-					case CATEGORY:
-						boolean isEntireCategoryChecked = c1.getChildCount() >= 0;
-						for (ModelData m2 : c1.getChildren()) {
-							Item c2 = (Item)m2;
-							boolean isChecked = !configModel.isColumnHidden(AppConstants.ITEMTREE, c2.getIdentifier(), true);
-							c2.setChecked(isChecked);
-							if (!isChecked) {
-								isEntireCategoryChecked = false;
-								isEntireGradebookChecked = false;
-							}
-						}
-						c1.setChecked(isEntireCategoryChecked);
-						break;
-					case ITEM:
-						boolean isChecked = !configModel.isColumnHidden(AppConstants.ITEMTREE, c1.getIdentifier(), true);
-						c1.setChecked(isChecked);
+				case CATEGORY:
+					boolean isEntireCategoryChecked = c1.getChildCount() >= 0;
+					for (ModelData m2 : c1.getChildren()) {
+						Item c2 = (Item)m2;
+						boolean isChecked = !configModel.isColumnHidden(AppConstants.ITEMTREE, c2.getIdentifier(), true);
+						c2.setChecked(isChecked);
 						if (!isChecked) {
 							isEntireCategoryChecked = false;
 							isEntireGradebookChecked = false;
 						}
-						break;
+					}
+					c1.setChecked(isEntireCategoryChecked);
+					break;
+				case ITEM:
+					boolean isChecked = !configModel.isColumnHidden(AppConstants.ITEMTREE, c1.getIdentifier(), true);
+					c1.setChecked(isChecked);
+					if (!isChecked) {
+						isEntireCategoryChecked = false;
+						isEntireGradebookChecked = false;
+					}
+					break;
 				}
 			}
 			gradebookItemModel.setChecked(isEntireGradebookChecked);
 		}
 	}
-	
+
 	public void onSwitchGradebook(Gradebook selectedGradebook) {
+
 		verifyCheckedState(selectedGradebook);
-		
-		//Item gradebookItemModel = selectedGradebook.getGradebookItemModel();
-		
-		//isAllowedToDropToGradebook = gradebookItemModel.getCategoryType() == CategoryType.NO_CATEGORIES;
-		
+
 		// Only allow the user to reorder if s/he has the permission
 		if (DataTypeConversionUtil.checkBoolean(isEditable)) {
 
 			TreeGridDragSource source = new TreeGridDragSource(itemGrid) {
-				
-				
+
+
 				@Override
 				protected void onDragDrop(DNDEvent event) {
 
@@ -740,10 +724,10 @@ public class ItemTreePanel extends GradebookPanel {
 			source.addDNDListener(new DNDListener() {
 				@Override
 				public void dragStart(DNDEvent e) {
-					
+
 					TreeGrid<ItemModel>.TreeNode item = itemGrid.findNode(e.getTarget());
 					Item itemModel = item == null ? null : item.getModel();
-					
+
 					if (itemModel != null && itemModel.getItemType() == ItemType.GRADEBOOK) {
 						e.stopEvent();
 						e.getStatus().setStatus(false);
@@ -765,24 +749,24 @@ public class ItemTreePanel extends GradebookPanel {
 						TreeModel test = (TreeModel) models.get(0);
 						// drop is in form from tree store
 						if (test.getPropertyNames().contains("model")) {
-							
-							
+
+
 							final ItemModel item = (ItemModel)test.get("model");
-							
+
 							if(null != item) {
-								
+
 								item.setItemOrder(Integer.valueOf(index));
 								if (p != null && item.getItemType() == ItemType.ITEM)
 									item.setCategoryId(((Item)p).getCategoryId());
 							}
-							
+
 							RestBuilder builder = RestBuilder.getInstance(Method.PUT, 
 									GWT.getModuleBaseURL(),
 									AppConstants.REST_FRAGMENT,
 									AppConstants.ITEM_FRAGMENT);
-							
+
 							String jsonText = item == null ? null : item.getJSON();
-							
+
 							builder.sendRequest(200, 400, jsonText, new RestCallback() {
 
 								public void onError(Request request, Throwable exception) {
@@ -791,28 +775,28 @@ public class ItemTreePanel extends GradebookPanel {
 								}
 
 								public void onSuccess(Request request, Response response) {
-						
+
 									EntityOverlay overlay = JsonUtil.toOverlay(response.getText());
 									ItemModel itemModel = new ItemModel(overlay); 
-									
+
 									Dispatcher.forwardEvent(GradebookEvents.BeginItemUpdates.getEventType());
 
 									Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 									selectedGradebook.setGradebookGradeItem(itemModel);
 									Dispatcher.forwardEvent(GradebookEvents.RefreshGradebookItems.getEventType(),
-												selectedGradebook);
+											selectedGradebook);
 									Dispatcher.forwardEvent(GradebookEvents.EndItemUpdates.getEventType(), selectedGradebook);
 									Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
 									// GRBK-833 : we need to signal the TreeView/ItemFormPanel that a drag and drop event occurred,
 									// in order to handle form edit state correctly.
 									Dispatcher.forwardEvent(GradebookEvents.FinishTreeItemDragAndDrop.getEventType());
 								}
-								
+
 							});
-							
+
 							return;
 						}
-						
+
 					}
 				}
 
@@ -823,91 +807,69 @@ public class ItemTreePanel extends GradebookPanel {
 			source.setTreeGridSource(TreeSource.BOTH);
 		}
 	}
-	
+
 	public void onTreeStoreInitialized(TreeStore<ItemModel> treeStore, Boolean isAbleToEdit) {
 
 		// FIXME: This one can be removed ultimately
 	}
-	
+
 	public void onUnmaskItemTree() {
 		itemGrid.show();
 		tabPanel.unmask();
 	}
-	
-	/*
-	public void onUserChange(UserEntityAction<?> action) {
-		switch (action.getEntityType()) {
-		case GRADEBOOK:
-			switch (action.getActionType()) {
-				case UPDATE:
-					// We want to do this immediately, since these actions are now being
-					// fired from the top level menu and multigrade may well be visible.
-					GradebookModel.Key gradebookModelKey = GradebookModel.Key.valueOf(((UserEntityUpdateAction)action).getKey());
-					switch (gradebookModelKey) {
-						case CATEGORYTYPE: 
-							addCategoryMenuItem.setVisible(((GradebookModel)action.getModel()).getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES);
-							break;
-					}
 
-					break;
-			}
-			break;
-
-		}
-	}*/
-	
 	protected void doNewCategory(Item item) {
 		Dispatcher.forwardEvent(GradebookEvents.NewCategory.getEventType(), item);
 	}
-	
+
 	protected void doNewItem(Item item) {
 		Dispatcher.forwardEvent(GradebookEvents.NewItem.getEventType(), item);
 	}
-	
+
 	protected void doDeleteItem(Item item) {
 		Dispatcher.forwardEvent(GradebookEvents.ConfirmDeleteItem.getEventType(), item);
 	}
-	
+
 	protected void doChangeEditItem(Item item) {
 		Dispatcher.forwardEvent(GradebookEvents.SwitchEditItem.getEventType(), item);
 	}
-	
+
 	protected void doEditItem(Item item) {
 		Dispatcher.forwardEvent(GradebookEvents.StartEditItem.getEventType(), item);
 	}
-	
+
 	protected String getAdvice() {
 		return i18n.treeDirections();
 	}
-	
+
 	protected void sendShowColumnsEvent(ShowColumnsEvent event) {
 		Dispatcher.forwardEvent(GradebookEvents.ShowColumns.getEventType(), event);
 	}
-	
-	
+
+
 	private void initListeners() {
 
 		attributeLoadListener = new LoadListener() {
 			public void loaderBeforeLoad(LoadEvent le) {
 			}
-			
+
 			public void loaderLoad(LoadEvent le) {
 				learnerAttributeTree.setExpanded(learnerAttributes, true, true);
 				if (!isImport)
 					learnerAttributeTree.setExpanded(gradingColumns, true, true);
 			}
 		};
-		
+
 		checkListener = new CheckChangedListener<FixedColumnModel>() {
-			
+
 			public void checkChanged(CheckChangedEvent<FixedColumnModel> event) {
 				List<FixedColumnModel> models = event.getCheckedSelection();
 				showColumns(models);
 			}
-			
+
 		};
-		
-		
+
+
 		menuSelectionListener = new SelectionListener<MenuEvent>() {
 
 			public void componentSelected(MenuEvent me) {
@@ -915,26 +877,26 @@ public class ItemTreePanel extends GradebookPanel {
 				ItemModel item = sm.getSelectedItem();
 				int itemOrder = item.getItemOrder() == null ? 0 : item.getItemOrder().intValue();
 				switch (selectionType) {
-					case CREATE_CATEGORY:
-						doNewCategory(item);
-						break;
-					case CREATE_ITEM:
-						doNewItem(item);
-						break;
-					case UPDATE_ITEM:
-						doEditItem(item);
-						break;
-					case DELETE_ITEM:
-						doDeleteItem(item);
-						break;
-					case MOVE_DOWN:
-						item.setItemOrder(Integer.valueOf(itemOrder + 1));
-						Dispatcher.forwardEvent(GradebookEvents.UpdateItem.getEventType(), new ItemUpdate(treeStore, null, item, false));
-						break;
-					case MOVE_UP:
-						item.setItemOrder(Integer.valueOf(itemOrder - 1));
-						Dispatcher.forwardEvent(GradebookEvents.UpdateItem.getEventType(), new ItemUpdate(treeStore, null, item, false));
-						break;
+				case CREATE_CATEGORY:
+					doNewCategory(item);
+					break;
+				case CREATE_ITEM:
+					doNewItem(item);
+					break;
+				case UPDATE_ITEM:
+					doEditItem(item);
+					break;
+				case DELETE_ITEM:
+					doDeleteItem(item);
+					break;
+				case MOVE_DOWN:
+					item.setItemOrder(Integer.valueOf(itemOrder + 1));
+					Dispatcher.forwardEvent(GradebookEvents.UpdateItem.getEventType(), new ItemUpdate(treeStore, null, item, false));
+					break;
+				case MOVE_UP:
+					item.setItemOrder(Integer.valueOf(itemOrder - 1));
+					Dispatcher.forwardEvent(GradebookEvents.UpdateItem.getEventType(), new ItemUpdate(treeStore, null, item, false));
+					break;
 				}
 			}
 
@@ -949,27 +911,27 @@ public class ItemTreePanel extends GradebookPanel {
 				if (itemModel != null && isEditable) {
 
 					switch (itemModel.getItemType()) {
-						case CATEGORY:
-							updateGradebookMenuItem.setVisible(false);
-							updateCategoryMenuItem.setVisible(true);
-							updateItemMenuItem.setVisible(false);
-							deleteCategoryMenuItem.setVisible(itemModel.isEditable() && !isImport);
-							deleteItemMenuItem.setVisible(false);	
-							break;
-						case GRADEBOOK:
-							updateGradebookMenuItem.setVisible(true);
-							updateCategoryMenuItem.setVisible(false);
-							updateItemMenuItem.setVisible(false);
-							deleteCategoryMenuItem.setVisible(false);
-							deleteItemMenuItem.setVisible(false);		
-							break;
-						case ITEM:
-							updateGradebookMenuItem.setVisible(false);
-							updateCategoryMenuItem.setVisible(false);
-							updateItemMenuItem.setVisible(true);
-							deleteCategoryMenuItem.setVisible(false);
-							deleteItemMenuItem.setVisible(!isImport);
-							break;
+					case CATEGORY:
+						updateGradebookMenuItem.setVisible(false);
+						updateCategoryMenuItem.setVisible(true);
+						updateItemMenuItem.setVisible(false);
+						deleteCategoryMenuItem.setVisible(itemModel.isEditable() && !isImport);
+						deleteItemMenuItem.setVisible(false);	
+						break;
+					case GRADEBOOK:
+						updateGradebookMenuItem.setVisible(true);
+						updateCategoryMenuItem.setVisible(false);
+						updateItemMenuItem.setVisible(false);
+						deleteCategoryMenuItem.setVisible(false);
+						deleteItemMenuItem.setVisible(false);		
+						break;
+					case ITEM:
+						updateGradebookMenuItem.setVisible(false);
+						updateCategoryMenuItem.setVisible(false);
+						updateItemMenuItem.setVisible(true);
+						deleteCategoryMenuItem.setVisible(false);
+						deleteItemMenuItem.setVisible(!isImport);
+						break;
 					}
 
 					doChangeEditItem(itemModel);
@@ -986,15 +948,14 @@ public class ItemTreePanel extends GradebookPanel {
 			}
 
 		};
-
 	}
-	
+
 	private void doSelectItem(GridEvent ge) {
 		Item itemModel = (Item)ge.getModel();
 		doEditItem(itemModel);
 		ge.stopEvent();
 	}
-	
+
 	private Menu newTreeContextMenu(I18nConstants i18n) {
 
 		treeContextMenu = new AriaMenu();
@@ -1007,7 +968,7 @@ public class ItemTreePanel extends GradebookPanel {
 		updateGradebookMenuItem.setText(i18n.headerEditGradebook());
 		updateGradebookMenuItem.addSelectionListener(menuSelectionListener);
 		treeContextMenu.add(updateGradebookMenuItem);
-		
+
 		addCategoryMenuItem = new AriaMenuItem();
 		addCategoryMenuItem.setData(selectionTypeField, SelectionType.CREATE_CATEGORY);
 		addCategoryMenuItem.setIcon(AbstractImagePrototype.create(resources.folder_add()));
@@ -1060,35 +1021,19 @@ public class ItemTreePanel extends GradebookPanel {
 		deleteItemMenuItem.setText(i18n.headerDeleteItem());
 		deleteItemMenuItem.addSelectionListener(menuSelectionListener);
 		treeContextMenu.add(deleteItemMenuItem);
-		
-		/*moveDownMenuItem = new AriaMenuItem();
-		moveDownMenuItem.setData(selectionTypeField, SelectionType.MOVE_DOWN);
-		moveDownMenuItem.setIconStyle("gbMoveDownIcon");
-		moveDownMenuItem.setItemId(AppConstants.ID_CT_MOVE_DOWN_MENUITEM);
-		moveDownMenuItem.setText(i18n.headerMoveDown());
-		moveDownMenuItem.addSelectionListener(menuSelectionListener);
-		treeContextMenu.add(moveDownMenuItem);
-		
-		moveUpMenuItem = new AriaMenuItem();
-		moveUpMenuItem.setData(selectionTypeField, SelectionType.MOVE_UP);
-		moveUpMenuItem.setIconStyle("gbMoveUpIcon");
-		moveUpMenuItem.setItemId(AppConstants.ID_CT_MOVE_UP_MENUITEM);
-		moveUpMenuItem.setText(i18n.headerMoveUp());
-		moveUpMenuItem.addSelectionListener(menuSelectionListener);
-		treeContextMenu.add(moveUpMenuItem);*/
-		
+
 		return treeContextMenu;
 	}
-	
+
 	private void showColumns(List<FixedColumnModel> models) {
 		HashSet<String> staticIds = new HashSet<String>();
-		
+
 		if (models == null)
 			return;
-		
+
 		for (int i=0;i<models.size();i++) {
 			FixedColumnModel model = models.get(i);
-		
+
 			String id = model.get("id");
 
 			if (id == null)
@@ -1097,7 +1042,7 @@ public class ItemTreePanel extends GradebookPanel {
 			if (id != null)
 				staticIds.add(id);
 		}
-		 
+
 		sendShowColumnsEvent(new ShowColumnsEvent(fullStaticIdSet, staticIds));
 	}
 }

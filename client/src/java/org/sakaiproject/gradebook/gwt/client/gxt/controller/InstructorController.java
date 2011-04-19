@@ -21,7 +21,6 @@ import com.extjs.gxt.ui.client.mvc.Controller;
 
 public class InstructorController extends Controller {
 
-	//private SingleGradeView singleGrade;
 	private SingleGradeView singleView;
 	private TreeView treeView;
 	private ImportExportView importExportView;
@@ -171,8 +170,6 @@ public class InstructorController extends Controller {
 				forwardToView(treeView, event);
 				break;
 			case USER_CHANGE:
-				//if (singleGrade != null)
-				//	forwardToView(singleGrade, event);
 				forwardToView(multigradeView, event);
 				break;
 			case LOAD_ITEM_TREE_MODEL:

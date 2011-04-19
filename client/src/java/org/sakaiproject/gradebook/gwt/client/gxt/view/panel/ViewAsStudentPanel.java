@@ -24,11 +24,9 @@ package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
-import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner.BrowseType;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 
@@ -104,25 +102,6 @@ public class ViewAsStudentPanel extends ContentPanel {
 	public void onLearnerGradeRecordUpdated(ModelData learnerGradeRecordModel) {
 		container.onLearnerGradeRecordUpdated(learnerGradeRecordModel);
 	}
-
-	/*
-	public void onUserChange(UserEntityAction<?> action) {
-		switch (action.getEntityType()) {
-			case GRADEBOOK:
-				switch (action.getActionType()) {
-					case UPDATE:
-						// Update actions will (always?) result from user changes on the setup 
-						// screens, so they should be deferred to the "onShow" method
-						GradebookModel.Key gradebookModelKey = GradebookModel.Key.valueOf(((UserEntityUpdateAction)action).getKey());
-						switch (gradebookModelKey) {
-							case GRADETYPE:
-								queueDeferredRefresh(RefreshAction.REFRESHCOLUMNS);
-								break;
-						}
-						break;
-				}
-		}
-	}*/
 
 	protected void queueDeferredRefresh(RefreshAction refreshAction) {
 		switch (this.refreshAction) {

@@ -1,25 +1,25 @@
 /**********************************************************************************
-*
-* $Id: GraderPermissionSettingsPanel.java 65687 2010-01-12 22:03:47Z jlrenfro@ucdavis.edu $
-*
-***********************************************************************************
-*
-* Copyright (c) 2008, 2009 The Regents of the University of California
-*
-* Licensed under the
-* Educational Community License, Version 2.0 (the "License"); you may
-* not use this file except in compliance with the License. You may
-* obtain a copy of the License at
-* 
-* http://www.osedu.org/licenses/ECL-2.0
-* 
-* Unless required by applicable law or agreed to in writing,
-* software distributed under the License is distributed on an "AS IS"
-* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-* or implied. See the License for the specific language governing
-* permissions and limitations under the License.
-*
-**********************************************************************************/
+ *
+ * $Id: GraderPermissionSettingsPanel.java 65687 2010-01-12 22:03:47Z jlrenfro@ucdavis.edu $
+ *
+ ***********************************************************************************
+ *
+ * Copyright (c) 2008, 2009 The Regents of the University of California
+ *
+ * Licensed under the
+ * Educational Community License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may
+ * obtain a copy of the License at
+ * 
+ * http://www.osedu.org/licenses/ECL-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS"
+ * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ *
+ **********************************************************************************/
 
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
@@ -79,11 +79,10 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.HTML;
 
 public class PermissionsPanel extends ContentPanel {
-	
+
 	private final static int DELETE_ACTION_GRID_CELL_WITHOUT_CATEGORIES = 3;
 	private final static int DELETE_ACTION_GRID_CELL_WITH_CATEGORIES = 4;
-	
-	//private final static String CAN_VIEW_PERMISSION = "view";
+
 	private final static String CAN_GRADE_PERMISSION = "grade";
 
 	private VerticalPanel mainVerticalPanel = null;
@@ -92,54 +91,54 @@ public class PermissionsPanel extends ContentPanel {
 	private HorizontalPanel createPermissionHorizontalPanel = null;
 	private Grid<ModelData> grid = null;
 	private ListStore<ModelData> permissionEntryListStore = null;
-	
+
 	private ComboBox<ModelData> userComboBox = null;
 	private ComboBox<PermissionType> permissionComboBox = null;
 	private ComboBox<ModelData> categoryComboBox = null;
 	private SectionsComboBox<ModelData> sectionComboBox = null;
-	
+
 	private ListLoader<ListLoadResult<ModelData>> categoryLoader, permissionLoader, userLoader;
-	
+
 	public PermissionsPanel(I18nConstants i18n) {
 		super();
 
 		setFrame(true);
 		setHeading(i18n.permissionsHeading());
-		
+
 		mainVerticalPanel = new VerticalPanel();
 		mainVerticalPanel.setSpacing(5);
 		mainVerticalPanel.setSize("100%", "100%");
-		
+
 		inputHorizontalPanel = new HorizontalPanel();
-		
+
 		userSelectionHorizontalPanel = new HorizontalPanel();
 		userSelectionHorizontalPanel.setSpacing(5);
-		
+
 		createPermissionHorizontalPanel = new HorizontalPanel();
 		createPermissionHorizontalPanel.setSpacing(5);
-		
+
 		// PERMISSIONS
 		permissionLoader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, 
 				EnumSet.allOf(PermissionKey.class), Method.GET, new UrlArgsCallback() {
 
-					public String getUrlArg() {
-						List<ModelData> users = userComboBox.getSelection();
-						if (null != users && 1 == users.size()) {
-							String userId = (String)users.get(0).get(GraderKey.S_ID.name());
-							return Base64.encode(userId);
-						}
-						return null;
-					}
-					
-				}, null,
-				GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, 
-				AppConstants.PERMISSIONS_FRAGMENT);
-		
+			public String getUrlArg() {
+				List<ModelData> users = userComboBox.getSelection();
+				if (null != users && 1 == users.size()) {
+					String userId = (String)users.get(0).get(GraderKey.S_ID.name());
+					return Base64.encode(userId);
+				}
+				return null;
+			}
+
+		}, null,
+		GWT.getModuleBaseURL(), AppConstants.REST_FRAGMENT, 
+		AppConstants.PERMISSIONS_FRAGMENT);
+
 		permissionEntryListStore = new ListStore<ModelData>(permissionLoader);
 		permissionEntryListStore.setModelComparer(new EntityModelComparer<ModelData>(PermissionKey.L_ID.name()));
-		
+
 		// LOADING DATA
-		
+
 		// USERS
 		userLoader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, 
 				EnumSet.allOf(GraderKey.class), Method.GET, null, null,
@@ -147,7 +146,7 @@ public class PermissionsPanel extends ContentPanel {
 		//userLoader.load();
 		ListStore<ModelData> userListStore = new ListStore<ModelData>(userLoader);
 		userListStore.setModelComparer(new EntityModelComparer<ModelData>(GraderKey.S_ID.name()));
-		
+
 		// PERMISSION TYPES
 		List<PermissionType> permissionList = new ArrayList<PermissionType>();
 		permissionList.add(new PermissionType(CAN_GRADE_PERMISSION));
@@ -155,7 +154,7 @@ public class PermissionsPanel extends ContentPanel {
 		// be tracked int GRBK-245
 		ListStore<PermissionType> permissionListStore = new ListStore<PermissionType>();
 		permissionListStore.add(permissionList);		
-		
+
 		// CATEGORIES
 		categoryLoader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, 
 				EnumSet.allOf(ItemKey.class), Method.GET, null, null,
@@ -163,13 +162,13 @@ public class PermissionsPanel extends ContentPanel {
 		//categoryLoader.load();
 		ListStore<ModelData> categoryListStore = new ListStore<ModelData>(categoryLoader);
 		categoryListStore.setModelComparer(new EntityModelComparer<ModelData>(ItemKey.S_ID.name()));
-		
-		
+
+
 		// SECTIONS
 		// The section loader is defined in the SectionsComboBox component
-		
+
 		// Combo Boxes
-		
+
 		// Users
 		userComboBox = new ComboBox<ModelData>();
 		userComboBox.setEmptyText(i18n.usersEmptyText());
@@ -183,19 +182,19 @@ public class PermissionsPanel extends ContentPanel {
 
 			@Override
 			public void selectionChanged(SelectionChangedEvent<ModelData> se) {
-				
+
 				// Reset UI components
 				permissionComboBox.reset();
 				sectionComboBox.reset();
 				categoryComboBox.reset();
 				permissionEntryListStore.removeAll();
-				
+
 				permissionLoader.load();
 				//loadGrid();
 				createPermissionHorizontalPanel.show();	
 			}
 		});
-		
+
 		// Permissions
 		permissionComboBox = new ComboBox<PermissionType>();
 		permissionComboBox.setEmptyText(i18n.permissionsEmptyText());
@@ -219,16 +218,16 @@ public class PermissionsPanel extends ContentPanel {
 
 		// Sections
 		sectionComboBox = new SectionsComboBox<ModelData>(false);		
-		
+
 		// Add Button
 		Button addButton = new Button(i18n.addButton());
 		addButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
 
 			@Override
 			public void componentSelected(ButtonEvent ce) {
-				
+
 				Permission permissionEntryModel = new PermissionsModel();
-				
+
 				// Enforce selection
 				List<ModelData> users = userComboBox.getSelection();
 				if(null != users && 1 == users.size()) {
@@ -239,7 +238,7 @@ public class PermissionsPanel extends ContentPanel {
 					MessageBox.alert("Warn", "Please select a user", null);
 					return;
 				}
-				
+
 				// Enforce selection
 				List<PermissionType> permissions = permissionComboBox.getSelection();
 				if(null != permissions && 1 == permissions.size()) {
@@ -249,9 +248,9 @@ public class PermissionsPanel extends ContentPanel {
 					MessageBox.alert("Warn", "Please select a permission", null);
 					return;
 				}
-				
+
 				// If no category and or section is selected, we assume that all categories and or all sections are selected
-				
+
 				List<ModelData> categories = categoryComboBox.getSelection();
 				if(null != categories && 1 == categories.size()) {
 					ModelData categoryModel = categories.get(0);
@@ -264,7 +263,7 @@ public class PermissionsPanel extends ContentPanel {
 					permissionEntryModel.setCategoryId(null);
 					permissionEntryModel.setCategoryDisplayName("All");
 				}
-				
+
 				List<ModelData> sections = sectionComboBox.getSelection();
 				if(null != sections && 1 == sections.size()) {
 					ModelData sectionModel = sections.get(0);
@@ -277,24 +276,14 @@ public class PermissionsPanel extends ContentPanel {
 					permissionEntryModel.setSectionId(null);
 					permissionEntryModel.setSectionDisplayName("All");
 				}
-				
+
 				permissionEntryModel.setDeleteAction("Delete");
-				
+
 				Dispatcher.forwardEvent(GradebookEvents.CreatePermission.getEventType(), permissionEntryModel);
-				
-				// Before we actually add the permission, we check if it's a duplicate
-				/*if(isDuplicate(permissionEntryModel)) {
-					
-					MessageBox.alert("WARN", "Selected permission already exists", null);
-				}
-				else {*/
-					// RPC Create Call
-					//create(permissionEntryModel);
-				//}
 			}
 		});
 
-		
+
 		// GRID
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();  
 
@@ -305,7 +294,7 @@ public class PermissionsPanel extends ContentPanel {
 		column.setMenuDisabled(true);
 		column.setSortable(false);
 		configs.add(column);  
-		
+
 		column = new ColumnConfig();  
 		column.setId(PermissionKey.S_PERM_ID.name());  
 		column.setHeader(i18n.permissionHeader());  
@@ -316,7 +305,7 @@ public class PermissionsPanel extends ContentPanel {
 
 		// We only show the categories if the GB is setup that way
 		if(hasCategories()) {
-			
+
 			column = new ColumnConfig();
 			column.setId(PermissionKey.S_CTGRY_NAME.name());
 			column.setHeader(i18n.categoryHeader());
@@ -325,7 +314,7 @@ public class PermissionsPanel extends ContentPanel {
 			column.setSortable(false);
 			configs.add(column);
 		}
-		
+
 		column = new ColumnConfig();  
 		column.setId(PermissionKey.S_SECT_NM.name());  
 		column.setHeader(i18n.sectionHeader());  
@@ -333,7 +322,7 @@ public class PermissionsPanel extends ContentPanel {
 		column.setMenuDisabled(true);
 		column.setSortable(false);
 		configs.add(column);
-		
+
 		column = new ColumnConfig();  
 		column.setId(PermissionKey.S_DEL_ACT.name());  
 		column.setHeader(i18n.deleteHeader());  
@@ -342,8 +331,8 @@ public class PermissionsPanel extends ContentPanel {
 		column.setSortable(false);
 		column.setRenderer(new PermissionDeleteCellRenderer());
 		configs.add(column);
-		
-		  
+
+
 		ColumnModel permissionEntryColumnModel = new ColumnModel(configs);
 		final CellSelectionModel<ModelData> cellSelectionModel = new CellSelectionModel<ModelData>();
 		cellSelectionModel.setSelectionMode(SelectionMode.SINGLE);
@@ -356,25 +345,17 @@ public class PermissionsPanel extends ContentPanel {
 			public void handleEvent(GridEvent gridEvent) {
 
 				if(hasCategories()) {
-					
+
 					if(DELETE_ACTION_GRID_CELL_WITH_CATEGORIES == cellSelectionModel.getSelectCell().cell) {
 						ModelData permissionEntryModel = cellSelectionModel.getSelectCell().model;
 						Dispatcher.forwardEvent(GradebookEvents.DeletePermission.getEventType(), permissionEntryModel);
-						/*Gradebook2RPCServiceAsync service = Registry.get("service");
-						GradebookModel model = Registry.get(AppConstants.CURRENT);
-						service.delete(model.getGradebookUid(), model.getGradebookId(), permissionEntryModel, EntityType.PERMISSION_ENTRY, SecureToken.get(), getDeletePermissionEntryAsyncCallback());
-						*/
 					}
 				}
 				else {
-					
+
 					if(DELETE_ACTION_GRID_CELL_WITHOUT_CATEGORIES == cellSelectionModel.getSelectCell().cell) {
 						ModelData permissionEntryModel = cellSelectionModel.getSelectCell().model;
 						Dispatcher.forwardEvent(GradebookEvents.DeletePermission.getEventType(), permissionEntryModel);
-						/*Gradebook2RPCServiceAsync service = Registry.get("service");
-						GradebookModel model = Registry.get(AppConstants.CURRENT);
-						service.delete(model.getGradebookUid(), model.getGradebookId(), permissionEntryModel, EntityType.PERMISSION_ENTRY, SecureToken.get(), getDeletePermissionEntryAsyncCallback());
-						*/
 					}
 				}
 			}
@@ -382,7 +363,7 @@ public class PermissionsPanel extends ContentPanel {
 
 		inputHorizontalPanel.add(userSelectionHorizontalPanel);
 		inputHorizontalPanel.add(createPermissionHorizontalPanel);
-		
+
 		userSelectionHorizontalPanel.add(userComboBox);
 		createPermissionHorizontalPanel.add(new HTML("can"));
 		createPermissionHorizontalPanel.add(permissionComboBox);
@@ -392,16 +373,16 @@ public class PermissionsPanel extends ContentPanel {
 		}
 		createPermissionHorizontalPanel.add(sectionComboBox);
 		createPermissionHorizontalPanel.add(addButton);
-		
+
 		// Initially we hide the create permission panel
 		createPermissionHorizontalPanel.hide();
 
 		mainVerticalPanel.add(new Html(i18n.permissionPanelCaption()));
 		mainVerticalPanel.add(inputHorizontalPanel);
 		mainVerticalPanel.add(grid);
-		
+
 		add(mainVerticalPanel);
-		
+
 		// Standard Close button
 		Button button = new AriaButton(i18n.close(), new SelectionListener<ButtonEvent>() {
 
@@ -409,100 +390,32 @@ public class PermissionsPanel extends ContentPanel {
 			public void componentSelected(ButtonEvent be) {
 				Dispatcher.forwardEvent(GradebookEvents.StopGraderPermissionSettings.getEventType());
 			}
-			
+
 		});
 
 		addButton(button);		
 	}
-	
+
 	public void onPermissionCreated(ModelData model) {
 		permissionLoader.load();
 	}
-	
+
 	public void onPermissionDeleted(ModelData model) {
 		permissionLoader.load();
 	}
-	
+
 	@Override
 	protected void onRender(Element parent, int pos) {	    
 		super.onRender(parent, pos);
 		categoryLoader.load();
 		userLoader.load();
-		//sectionsLoader.load();
 		sectionComboBox.load();
 	}
-	
-	/*
-	private AsyncCallback<PermissionEntryListModel> getPermissionEntryListAsyncCallback() {
-		return new AsyncCallback<PermissionEntryListModel>() {
 
-			public void onFailure(Throwable caught) {
-				// FIXME: show message
-			}
-
-			public void onSuccess(PermissionEntryListModel result) {
-				permissionEntryListStore.removeAll();
-				List<PermissionEntryModel> permissionEntryModelList = result.getEntries();
-				
-				if(null != permissionEntryModelList && permissionEntryModelList.size() > 0) {
-					permissionEntryListStore.add(permissionEntryModelList);
-				}
-			}
-		};
-	}*/
-	/*
-	private AsyncCallback<PermissionEntryModel> getCreatePermissionEntryAsyncCallback() {
-		
-		return new AsyncCallback<PermissionEntryModel>() {
-
-			public void onFailure(Throwable caught) {
-				// FIXME: show message
-			}
-
-			public void onSuccess(PermissionEntryModel result) {
-
-				permissionEntryListStore.add(result);
-			}
-		};
-	}
-	
-	private AsyncCallback<PermissionEntryModel> getDeletePermissionEntryAsyncCallback() {
-		return new AsyncCallback<PermissionEntryModel>() {
-
-			public void onFailure(Throwable caught) {
-				// FIXME: show message
-			}
-
-			public void onSuccess(PermissionEntryModel result) {
-				permissionEntryListStore.remove(result);
-				loadGrid();
-			}
-		};
-	}
-	
-	private void loadGrid() {
-		
-		List<ModelData> users = userComboBox.getSelection();
-		if(null != users && 1 == users.size()) {
-
-			String userId = (String)users.get(0).get(GraderKey.ID.name());
-			Gradebook2RPCServiceAsync service = Registry.get("service");
-			GradebookModel gbModel = Registry.get(AppConstants.CURRENT);
-			service.get(gbModel.getGradebookUid(), gbModel.getGradebookId(), EntityType.PERMISSION_ENTRY, userId, Boolean.TRUE, SecureToken.get(), getPermissionEntryListAsyncCallback());
-		}
-	}
-	
-	private void create(PermissionEntryModel permissionEntryModel) {
-		Gradebook2RPCServiceAsync service = Registry.get("service");
-		GradebookModel model = Registry.get(AppConstants.CURRENT);
-		service.create(model.getGradebookUid(), model.getGradebookId(), permissionEntryModel, EntityType.PERMISSION_ENTRY, SecureToken.get(), getCreatePermissionEntryAsyncCallback());
-		
-	}*/
-			
 	private boolean hasCategories() {
 		Gradebook gbModel = Registry.get(AppConstants.CURRENT);
 		CategoryType categoryType = gbModel.getGradebookItemModel().getCategoryType();
-		
+
 		switch(categoryType) {
 		case NO_CATEGORIES:
 			return false;
@@ -513,75 +426,16 @@ public class PermissionsPanel extends ContentPanel {
 			return false;
 		}
 	}
-	
-	/*
-	private boolean isDuplicate(PermissionEntryModel newPermissionEntryModel) {
-		
-		List<ModelData> permissionEntryModels = permissionEntryListStore.getModels();
-		
-		for(ModelData permissionEntryModel : permissionEntryModels) {
-			
-			// Compare user
-			if(!permissionEntryModel.getUserId().equals(newPermissionEntryModel.getUserId())) {
-				continue;
-			}
-			
-			// Compare permission
-			if(!permissionEntryModel.getPermissionId().equals(newPermissionEntryModel.getPermissionId())) {
-				continue;
-			}
-			
-			// Compare sections
-			if((null != permissionEntryModel.getSectionId() && null != newPermissionEntryModel.getSectionId()) &&
-				(!permissionEntryModel.getSectionId().equals(newPermissionEntryModel.getSectionId()))) {
-				continue;
-			}
-			
-			if(null == permissionEntryModel.getSectionId() && null != newPermissionEntryModel.getSectionId()) {
-				continue;
-			}
-			
-			if(null != permissionEntryModel.getSectionId() && null == newPermissionEntryModel.getSectionId()) {
-				continue;
-			}
-			
-			// If the gradebook is setup with no categories, we are done
-			if(!hasCategories()) {
-				return true;
-			}
-			
-			// At this point of the checking, the gradebook was setup with categories
-			
-			// Compare categories
-			if((null != permissionEntryModel.getCategoryId() && null != newPermissionEntryModel.getCategoryId()) &&
-			    (!permissionEntryModel.getCategoryId().equals(newPermissionEntryModel.getCategoryId()))) {
-				continue;
-			}
-			
-			if(null == permissionEntryModel.getCategoryId() && null != newPermissionEntryModel.getCategoryId()) {
-				continue;
-			}
-			
-			if(null != permissionEntryModel.getCategoryId() && null == newPermissionEntryModel.getCategoryId()) {
-				continue;
-			}
-			
-			return true;
-		}
-		
-		return false;
-	}
-	*/
-	
+
 	private static class PermissionType extends BaseModel {
 
 		private static final long serialVersionUID = 1L;
-		
+
 		public PermissionType(String name) {
 			super();
 			setName(name);
 		}
-		
+
 		public String getName() {
 			return get("name");
 		}
