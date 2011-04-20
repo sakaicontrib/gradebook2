@@ -648,8 +648,11 @@ public class ItemTreePanel extends GradebookPanel {
 		Configuration configModel = gradebookModel.getConfigurationModel();
 
 		if (configModel != null) {
+			
 			CategoryType categoryType = gradebookItemModel.getCategoryType();
+			
 			switch (categoryType) {
+			
 			case NO_CATEGORIES:
 			case SIMPLE_CATEGORIES:
 				cm.setHidden(2, true);
@@ -662,6 +665,9 @@ public class ItemTreePanel extends GradebookPanel {
 				cm.setHidden(4, configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_POINTS_WEIGHTS, false));
 				break;
 			}
+			
+			// GRBK-932
+			itemGrid.repaint();
 		}
 	}
 
