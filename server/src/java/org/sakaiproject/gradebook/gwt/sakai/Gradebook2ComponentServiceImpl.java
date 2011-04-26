@@ -5,7 +5,6 @@ import java.math.RoundingMode;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -14,6 +13,7 @@ import java.util.Formatter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -1646,6 +1646,77 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		return siteService;
 	}
 
+	public Map<String, Integer> getCourseGradeStatistics(String gradebookUid) throws SecurityException, InvalidDataException {
+
+
+		boolean isUserAbleToGrade = authz.isUserAbleToGradeAll(gradebookUid);
+
+		if (!isUserAbleToGrade) {
+
+			throw new SecurityException(i18n.getString("statisticsGradebookNotPermitted"));
+		}
+
+		// Return value
+		Map<String, Integer> gradeFrequencies = new HashMap<String, Integer>();
+
+		// Check method arguments
+		if(null == gradebookUid) {
+
+			throw new InvalidDataException(i18n.getString("statisticsGradebookUidNull"));
+		}
+
+		// Get gradebook
+		Gradebook gradebook = gbService.getGradebook(gradebookUid);
+		if(null == gradebook) {
+
+			throw new InvalidDataException(i18n.getString("statisticsGradebookNull"));
+		}
+
+		// Get all the letter grades
+		GradeMapping gradeMapping = gradebook.getSelectedGradeMapping();
+		if(null == gradeMapping) {
+			throw new InvalidDataException(i18n.getString("statisticsGradebookGradeMappingNull"));
+		}
+
+		// Initialize gradeFrequencies keys
+		Set<String> letterGrades = gradeMapping.getGradeMap().keySet();
+		for(String letterGrade : letterGrades) {
+
+			gradeFrequencies.put(letterGrade, new Integer(0));
+		}
+
+		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
+		List<Category> categories =  getCategoriesWithAssignments(gradebook.getId(), assignments, true);
+		Site site = getSite();
+		List<User> users = findAllMembers(site, getLearnerRoleNames());
+		boolean isLetterGrading = gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER;
+
+		for(User user : users) {
+
+			UserRecord userRecord = buildUserRecord(site, user, gradebook);
+			DisplayGrade displayGrade = calculateAndGenerateDisplayGrade(gradebook, assignments, categories, userRecord, isLetterGrading);
+			String letterGrade = displayGrade.getLetterGrade();
+			if(null != letterGrade && gradeFrequencies.containsKey(letterGrade)) {
+				Integer frequency = gradeFrequencies.get(letterGrade);
+				gradeFrequencies.put(letterGrade, ++frequency);
+			}
+		}
+
+		// Sort  and reverse the result
+		List<String> letterGradeList = new LinkedList<String>();
+		letterGradeList.addAll(gradeFrequencies.keySet());
+		Collections.sort(letterGradeList, LETTER_GRADE_COMPARATOR);
+		Collections.reverse(letterGradeList);
+		Map<String, Integer> result = new LinkedHashMap<String, Integer>();
+		for(String letterGrade : letterGradeList) {
+
+			result.put(letterGrade, gradeFrequencies.get(letterGrade));
+		}
+
+		return result;
+	}
+	
+	
 	// 
 	public int[][] getGradeItemStatistics(String gradebookUid, Long assignmentId, String sectionId) throws SecurityException, InvalidDataException {
 

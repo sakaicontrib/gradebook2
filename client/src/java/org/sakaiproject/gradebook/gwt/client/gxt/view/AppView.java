@@ -24,6 +24,7 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityAction;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.FullScreen;
@@ -34,12 +35,15 @@ import org.sakaiproject.gradebook.gwt.client.gxt.view.components.Viewport;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
+import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.data.ModelData;
+import com.extjs.gxt.ui.client.fx.FxConfig;
 import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.View;
+import com.extjs.gxt.ui.client.widget.Label;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.layout.CardLayout;
 import com.extjs.gxt.ui.client.widget.layout.FillLayout;
@@ -53,15 +57,23 @@ public abstract class AppView extends View {
 		GRADE_SCALE, HELP, HISTORY, LEARNER_SUMMARY, NEW_CATEGORY, NEW_ITEM,
 		STATISTICS };
 
+	protected final GradebookResources resources;
+	protected final I18nConstants i18n;
 
 	protected Viewport realViewport;
 	protected CardLayout viewportLayout;
 	
 	protected LayoutContainer viewport;
-
+	
+	private Label userFeedbackLabel;
+	private FxConfig fxFadeOutConfig = new FxConfig(2000);
 	
 	public AppView(Controller controller) {
 		super(controller);
+		
+		this.resources = Registry.get(AppConstants.RESOURCES);
+		this.i18n = Registry.get(AppConstants.I18N);
+		
 		this.viewportLayout = new CardLayout();
 		this.realViewport = new Viewport() {
 			protected void onRender(Element parent, int pos) {
@@ -80,11 +92,27 @@ public abstract class AppView extends View {
 		viewport.setLayout(viewportLayout);
 		
 		RootPanel.get().add(realViewport);
+		
+		userFeedbackLabel = new Label();
+		userFeedbackLabel.addStyleName(resources.css().userFeedbackLabel());
+		userFeedbackLabel.setText(i18n.applicationLoading());
+		
+		RootPanel.get("user-feedback").add(userFeedbackLabel);
+		userFeedbackLabel.el().fadeOut(FxConfig.NONE);
 	}
 
 	@Override
 	protected void handleEvent(AppEvent event) {
 		switch(GradebookEvents.getEvent(event.getType()).getEventKey()) {
+		case SHOW_USER_FEEDBACK:
+			userFeedbackLabel.setText((String)event.getData());
+			userFeedbackLabel.el().fadeIn(FxConfig.NONE);
+			// TODO: Add default fadeOut, like after 10 seconds, in case of an error
+			// condition where the HIDE_USER_FEEDBACK is never sent
+			break;
+		case HIDE_USER_FEEDBACK:
+			userFeedbackLabel.el().fadeOut(fxFadeOutConfig);
+			break;
 		case CONFIRMATION:
 		case NOTIFICATION:
 			onOpenNotification();

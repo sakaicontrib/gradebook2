@@ -1,10 +1,6 @@
 /**********************************************************************************
  *
- * $Id: SettingsGradingScaleContentPanel.java 6638 2009-01-22 01:27:23Z jrenfro $
- *
- ***********************************************************************************
- *
- * Copyright (c) 2008, 2009 The Regents of the University of California
+ * Copyright (c) 2008, 2009, 2010, 2011 The Regents of the University of California
  *
  * Licensed under the
  * Educational Community License, Version 2.0 (the "License"); you may
@@ -20,20 +16,25 @@
  * permissions and limitations under the License.
  *
  **********************************************************************************/
+
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
+import org.sakaiproject.gradebook.gwt.client.RestCallback;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeMapUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.TreeView;
@@ -61,6 +62,7 @@ import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
+import com.extjs.gxt.ui.client.widget.HorizontalPanel;
 import com.extjs.gxt.ui.client.widget.Text;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
@@ -73,8 +75,20 @@ import com.extjs.gxt.ui.client.widget.grid.EditorGrid;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.http.client.Request;
+import com.google.gwt.http.client.Response;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONParser;
+import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Element;
+import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
+import com.google.gwt.visualization.client.DataTable;
+import com.google.gwt.visualization.client.LegendPosition;
+import com.google.gwt.visualization.client.VisualizationUtils;
+import com.google.gwt.visualization.client.visualizations.ColumnChart;
+import com.google.gwt.visualization.client.visualizations.LineChart;
+import com.google.gwt.visualization.client.visualizations.PieChart;
 
 public class GradeScalePanel extends GradebookPanel {
 
@@ -97,9 +111,18 @@ public class GradeScalePanel extends GradebookPanel {
 
 	private NumberFormat defaultNumberFormat = DataTypeConversionUtil.getDefaultNumberFormat();
 
+	private HorizontalPanel horizontalPanel;
+
+	private StatisticsChartPanel statisticsChartPanel;
+	private DataTable dataTable;
+	private boolean isVisualizationApiLoaded = false;
+
 	public GradeScalePanel(boolean isEditable, final TreeView treeView) {
 
 		super();
+
+		// Loading visualization APIs
+		VisualizationUtils.loadVisualizationApi(new VisualizationRunnable(), PieChart.PACKAGE,  ColumnChart.PACKAGE, LineChart.PACKAGE);
 
 		this.isEditable = isEditable;
 
@@ -131,6 +154,7 @@ public class GradeScalePanel extends GradebookPanel {
 
 			@Override
 			public void selectionChanged(SelectionChangedEvent<ModelData> se) {
+
 				Gradebook selectedGradebookModel = Registry.get(AppConstants.CURRENT);
 				Item selectedItemModel = selectedGradebookModel.getGradebookItemModel();
 				ModelData gradeFormatModel = se.getSelectedItem();
@@ -138,6 +162,7 @@ public class GradeScalePanel extends GradebookPanel {
 				currentGradeScaleId = gradeFormatModel == null ? null : (Long)gradeFormatModel.get(GradeFormatKey.L_ID.name());
 
 				if (currentGradeScaleId != null && !currentGradeScaleId.equals(selectedItemModel.getGradeScaleId())) {
+
 					Record record = treeView.getTreeStore().getRecord((ItemModel)selectedItemModel);
 					record.beginEdit();
 					record.set(ItemKey.L_GRD_SCL_ID.name(), currentGradeScaleId);
@@ -145,6 +170,7 @@ public class GradeScalePanel extends GradebookPanel {
 					ItemUpdate itemUpdate = new ItemUpdate(treeView.getTreeStore(), record, selectedItemModel, false);
 					itemUpdate.property = ItemKey.L_GRD_SCL_ID.name();
 					Dispatcher.forwardEvent(GradebookEvents.UpdateItem.getEventType(), itemUpdate);
+
 				} else {
 					loader.load();
 				}
@@ -226,9 +252,9 @@ public class GradeScalePanel extends GradebookPanel {
 		grid.setStyleAttribute("borderTop", "none");   
 		grid.setBorders(true);
 		grid.setAutoHeight(true);
-		grid.addListener(Events.ValidateEdit, new Listener<GridEvent>() {
+		grid.addListener(Events.ValidateEdit, new Listener<GridEvent<ModelData>>() {
 
-			public void handleEvent(GridEvent ge) {
+			public void handleEvent(GridEvent<ModelData> ge) {
 
 				// By setting ge.doit to false, we ensure that the AfterEdit event is not thrown. Which means we have to throw it ourselves onSuccess
 				ge.stopEvent();
@@ -237,7 +263,15 @@ public class GradeScalePanel extends GradebookPanel {
 				Object newValue = ge.getValue();
 				Object originalValue = ge.getStartValue();
 
-				Dispatcher.forwardEvent(GradebookEvents.UpdateGradeMap.getEventType(), new GradeMapUpdate(record, newValue, originalValue));
+				Double nValue = (Double) newValue;
+				Double oValue = (Double) originalValue;
+
+				// Only update if the user actually changed a grade scale value
+				if(null != nValue && nValue.compareTo(oValue) != 0) {
+
+					Dispatcher.forwardEvent(GradebookEvents.UpdateGradeMap.getEventType(), new GradeMapUpdate(record, newValue, originalValue));
+
+				}
 			}
 		});
 
@@ -256,14 +290,21 @@ public class GradeScalePanel extends GradebookPanel {
 			public void componentSelected(ButtonEvent ce) {
 				Dispatcher.forwardEvent(GradebookEvents.DeleteGradeMap.getEventType());
 			}
-
 		}); 
 
 		// GRBK-668
 		letterGradeScaleMessage.setStyleAttribute("padding", "10px");
 		letterGradeScaleMessage.setStyleAttribute("color", "red");
 		add(letterGradeScaleMessage);
-		add(grid);
+
+		horizontalPanel = new HorizontalPanel();
+		horizontalPanel.add(grid);
+		statisticsChartPanel = new StatisticsChartPanel();
+		statisticsChartPanel.setLegendPosition(LegendPosition.TOP);
+		statisticsChartPanel.setChartWidth(500);
+		horizontalPanel.add(statisticsChartPanel);
+		horizontalPanel.setSpacing(10);
+		add(horizontalPanel);
 
 		addButton(resetToDefaultButton); 
 		addButton(closeButton);
@@ -282,11 +323,17 @@ public class GradeScalePanel extends GradebookPanel {
 				loadGradeScaleData(gradeScaleId);
 			}
 		}
-
 	}
 
 	public void onRefreshGradeScale(Gradebook selectedGradebook) {
+
 		loader.load();
+
+		// The onRefreshGradeScale method is called after the user selects a grade scale from the ComboBox
+		if(isVisualizationApiLoaded) {
+	
+			getStatisticsChartData();
+		}
 	}
 
 	/*
@@ -320,6 +367,10 @@ public class GradeScalePanel extends GradebookPanel {
 			}
 		}
 
+		if(isVisualizationApiLoaded) {
+
+			getStatisticsChartData();
+		}
 	}
 
 	@Override
@@ -330,24 +381,32 @@ public class GradeScalePanel extends GradebookPanel {
 
 
 	private void loadGradeScaleData(Long selectedGradeScaleId) {
+
 		for (int i=0;i<gradeFormatStore.getCount();i++) {
+
 			ModelData m = gradeFormatStore.getAt(i);
 			Long id1 = m.get(GradeFormatKey.L_ID.name());
+
 			if (id1 != null && id1.equals(selectedGradeScaleId)) {
+
 				if (currentGradeScaleId == null || !currentGradeScaleId.equals(selectedGradeScaleId)) {
+
 					gradeFormatListBox.setValue(m);
 				}
+
 				break;
 			}
 		}
 	}
 
 	private void loadGradeScaleData(Gradebook selectedGradebook) {
+
 		Long selectedGradeScaleId = selectedGradebook.getGradebookItemModel().getGradeScaleId();
 		loadGradeScaleData(selectedGradeScaleId);
 	}
 
 	private void loadIfPossible() {
+
 		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 
 		if (selectedGradebook != null) {
@@ -355,5 +414,85 @@ public class GradeScalePanel extends GradebookPanel {
 		}
 	}
 
+	/*
+	 * An instance of this runnable class is called once the
+	 * Visualization APIs have been loaded via
+	 * VisualizationUtils.loadVisualizationApi(...)
+	 */
+	private class VisualizationRunnable implements Runnable {
+
+		public void run() {
+
+			getStatisticsChartData();
+			isVisualizationApiLoaded = true;
+		}
+	}
+
+	private void getStatisticsChartData() {
+
+		Dispatcher.forwardEvent(GradebookEvents.ShowUserFeedback.getEventType(), i18n.statisticsGradebookUpdatingChart(), false);
+
+		Gradebook gbModel = Registry.get(AppConstants.CURRENT);
+
+		RestBuilder builder = RestBuilder.getInstance(
+				Method.GET,
+				GWT.getModuleBaseURL(),
+				AppConstants.REST_FRAGMENT,
+				AppConstants.STATISTICS_FRAGMENT,
+				AppConstants.COURSE_FRAGMENT,
+				gbModel.getGradebookUid());
+
+
+		builder.sendRequest(200, 400, null, new RestCallback() {
+
+			public void onError(Request request, Throwable caught) {
+
+				Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType());
+				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsDataErrorMsg(), true));
+			}
+
+			public void onFailure(Request request, Throwable exception) {
+
+				Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType());
+				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsDataErrorMsg(), true));
+			}
+
+			public void onSuccess(Request request, Response response) {
+
+				/*
+				 * The response text contains a sorted linked-list map, where the keys are the letter grades and the values
+				 * are the frequency.
+				 * e.g. {"F":0, "D-":3, "D":1, "D+":0, "C-":5, "C":0, "C+":1, "B-":0, "B":20, "B+":0, "A-":3, "A":12, "A+":1}
+				 * 
+				 */
+				JSONValue jsonValue = JSONParser.parseStrict(response.getText());
+				JSONObject jsonObject = jsonValue.isObject();
+				Set<String> keys = jsonObject.keySet();
+
+				// Initialize the datatable
+				dataTable = DataTable.create();
+				dataTable.addColumn(ColumnType.STRING, i18n.statisticsChartLabelDistribution());
+				dataTable.addColumn(ColumnType.NUMBER, i18n.statisticsChartLabelFrequency());
+				dataTable.addRows(keys.size());
+
+				Iterator<String> iter = keys.iterator();
+				int index = 0;
+				while(iter.hasNext()) {
+
+					String key = iter.next();
+					dataTable.setValue(index, 0, key);
+					dataTable.setValue(index, 1, jsonObject.get(key).isNumber().doubleValue());
+					index++;
+				}
+
+				statisticsChartPanel.setDataTable(dataTable);
+
+				statisticsChartPanel.show();
+				
+				Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType());
+			}
+		});
+	}
 }
+
 

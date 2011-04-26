@@ -84,6 +84,8 @@ public class InstructorController extends Controller {
 		registerEventTypes(GradebookEvents.StartFinalgrade.getEventType());
 		registerEventTypes(GradebookEvents.StopGraderPermissionSettings.getEventType());
 		registerEventTypes(GradebookEvents.FinishTreeItemDragAndDrop.getEventType());
+		registerEventTypes(GradebookEvents.ShowUserFeedback.getEventType());
+		registerEventTypes(GradebookEvents.HideUserFeedback.getEventType());
 	}
 	
 	@Override
@@ -91,6 +93,12 @@ public class InstructorController extends Controller {
 		// Note: the 'missing' break statements in this switch are intentional, they
 		// allow certain events to drop through to multiple views
 		switch (GradebookEvents.getEvent(event.getType()).getEventKey()) {
+			case SHOW_USER_FEEDBACK:
+				forwardToView(appView, event);
+				break;
+			case HIDE_USER_FEEDBACK:
+				forwardToView(appView, event);
+				break;
 			case BEGIN_ITEM_UPDATES:
 			case END_ITEM_UPDATES:
 				forwardToView(multigradeView, event);

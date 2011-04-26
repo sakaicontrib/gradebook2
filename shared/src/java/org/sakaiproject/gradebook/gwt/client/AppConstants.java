@@ -1,10 +1,6 @@
 /**********************************************************************************
  *
-s * $Id:$
- *
- ***********************************************************************************
- *
- * Copyright (c) 2008, 2009 The Regents of the University of California
+ * Copyright (c) 2008, 2009, 2010, 2011 The Regents of the University of California
  *
  * Licensed under the
  * Educational Community License, Version 2.0 (the "License"); you may
@@ -194,6 +190,7 @@ public interface AppConstants {
 	public static final String AUTHORIZATION_FRAGMENT		= "authorization";
 	public static final String INSTRUCTOR_FRAGMENT			= "instructor";
 	public static final String FORCE_FRAGMENT 				= "force";
+	public static final String COURSE_FRAGMENT				="course";
 	
 	public static final String LIST_ROOT				= "list";
 	public static final String TOTAL					= "total";
@@ -227,6 +224,9 @@ public interface AppConstants {
 	public static final String ALL_SECTIONS = "ALL";
 	public static final int POSITIVE_NUMBER = 0;
 	public static final int NEGATIVE_NUMBER = 1;
+	public final static int CHART_WIDTH = 600;
+	public final static int CHART_HEIGHT = 300;
+	public final static boolean IS_CHART_3D = true;
 	
 	// Statistics Data
 	public static final String STATISTICS_DATA_NA = "-";

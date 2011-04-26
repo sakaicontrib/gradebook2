@@ -1,4 +1,15 @@
 
+
+.userFeedbackLabel {
+	background-color:#FDF5E6;
+	position:absolute;
+	left:48%;
+	top:1px;
+	padding:3px;
+	border-radius:3px;
+	font: 12px tahoma, arial, helvetica;
+}
+
 .gbAdvice { 	
   	color: #555555;
   	font-size: 10pt;

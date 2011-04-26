@@ -44,7 +44,6 @@ import org.sakaiproject.gradebook.gwt.client.gxt.view.components.SectionsComboBo
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.key.SectionKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.StatisticsKey;
-import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 import org.sakaiproject.gradebook.gwt.client.util.Base64;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -70,14 +69,11 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONValue;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.VisualizationUtils;
@@ -92,11 +88,9 @@ public class StatisticsPanel extends ContentPanel {
 
 	private ListLoader<ListLoadResult<ModelData>> loader;
 
-	private GradebookResources resources;
-
 	private HorizontalPanel gridAndChartHorizontalPanel;
 	
-	private ChartPanel chartPanel;
+	private StatisticsChartPanel chartPanel;
 
 	private SectionsComboBox<ModelData> sectionsComboBox;
 
@@ -113,10 +107,6 @@ public class StatisticsPanel extends ContentPanel {
 	private Map<String, DataTable> dataTableCache = new HashMap<String, DataTable>();
 
 	private final static int FIRST_ROW = 0;
-	private final static int CHART_WIDTH = 600;
-	private final static int CHART_HEIGHT = 300;
-	private final static boolean IS_CHART_3D = true;
-
 
 	private final static String[] RANGE = new String[]{
 		"0-9",
@@ -139,7 +129,6 @@ public class StatisticsPanel extends ContentPanel {
 
 		// Getting needed resources
 		this.i18n = i18n;
-		this.resources = Registry.get(AppConstants.RESOURCES);
 
 		// Configure main ContentPanel
 		setHeading(i18n.statisticsHeading());
@@ -175,8 +164,8 @@ public class StatisticsPanel extends ContentPanel {
 		grid = getGrid();
 		
 		// Creating the chart panel and initially hide it
-		chartPanel = new ChartPanel();
-		chartPanel.setSize(CHART_WIDTH, CHART_HEIGHT + 80);
+		chartPanel = new StatisticsChartPanel();
+		chartPanel.setSize(AppConstants.CHART_WIDTH, AppConstants.CHART_HEIGHT + 80);
 		chartPanel.hide();
 		
 		gridAndChartHorizontalPanel = new HorizontalPanel();
@@ -227,6 +216,7 @@ public class StatisticsPanel extends ContentPanel {
 			
 			// Cache hit
 			dataTable = dataTableCache.get(cacheKey);
+			chartPanel.setDataTable(dataTable);
 			chartPanel.show();
 		}
 		else {
@@ -295,6 +285,7 @@ public class StatisticsPanel extends ContentPanel {
 
 					// adding the dataTable to the cache
 					dataTableCache.put(selectedAssignmentId + selectedSectionId, dataTable);
+					chartPanel.setDataTable(dataTable);
 					chartPanel.show();
 				}
 			});
@@ -464,113 +455,6 @@ public class StatisticsPanel extends ContentPanel {
 		// decoded the URL and then return a 400
 		return Base64.encode(sectionId);
 
-	}
-	
-	private class ChartPanel extends ContentPanel {
-
-		private Image columnChartIcon;
-		private Image pieChartIcon;
-		private Image lineChartIcon;
-		
-		private HorizontalPanel graphPanel;
-		private HorizontalPanel chartIconPanel;
-
-		public ChartPanel() {
-			
-			setFrame(true);
-			setBodyBorder(true);
-			setTitle(i18n.statisticsChartTitle());
-			setHeading(i18n.statisticsChartTitle());
-			
-			graphPanel = new HorizontalPanel();
-			add(graphPanel);
-			
-			// Create the image icons
-			columnChartIcon = new Image(resources.chart_bar());
-			pieChartIcon = new Image(resources.chart_pie());
-			lineChartIcon = new Image(resources.chart_line());
-
-			columnChartIcon.addClickHandler(new ClickHandler() {
-
-				public void onClick(ClickEvent event) {
-					graphPanel.removeAll();
-					graphPanel.add(new ColumnChart(dataTable, createColumnChartOptions()));
-					graphPanel.layout();
-				}
-			});
-
-			lineChartIcon.addClickHandler(new ClickHandler() {
-
-				public void onClick(ClickEvent event) {
-					graphPanel.removeAll();
-					graphPanel.add(new LineChart(dataTable, createLineChartOptions()));
-					graphPanel.layout();
-				}
-			});
-
-			pieChartIcon.addClickHandler(new ClickHandler() {
-
-				public void onClick(ClickEvent event) {
-					graphPanel.removeAll();
-					graphPanel.add(new PieChart(dataTable, createPieChartOptions()));
-					graphPanel.layout();
-				}
-			});
-
-			chartIconPanel = new HorizontalPanel();
-			chartIconPanel.setSpacing(15);
-			chartIconPanel.add(columnChartIcon);
-			chartIconPanel.add(pieChartIcon);
-			chartIconPanel.add(lineChartIcon);
-			add(chartIconPanel);
-			
-			layout();
-		}
-		
-		
-		@Override
-		public void show() {
-			
-			if(null != dataTable) {
-				
-				super.show();
-				graphPanel.removeAll();
-				graphPanel.add(new ColumnChart(dataTable, createColumnChartOptions()));
-				graphPanel.layout();
-				
-			}
-			else {
-				
-				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsDataErrorMsg(), true));
-			}
-		}
-		
-		private PieChart.Options createPieChartOptions() {
-			
-			PieChart.Options options = PieChart.Options.create();
-			options.setWidth(CHART_WIDTH);
-			options.setHeight(CHART_HEIGHT);
-			options.set3D(IS_CHART_3D);
-			return options;
-		}
-
-		private ColumnChart.Options createColumnChartOptions() {
-			
-			ColumnChart.Options options = ColumnChart.Options.create();
-			options.setWidth(CHART_WIDTH);
-			options.setHeight(CHART_HEIGHT);
-			options.set3D(IS_CHART_3D);
-			//options.setStacked(true);
-			return options;
-		}
-
-		private LineChart.Options createLineChartOptions() {
-			
-			LineChart.Options options = LineChart.Options.create();
-			options.setWidth(CHART_WIDTH);
-			options.setHeight(CHART_HEIGHT);
-			return options;
-		}
 	}
 
 	/*

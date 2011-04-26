@@ -122,5 +122,7 @@ public class GradebookEvents {
 	public static final GradebookEvent UpdateItem					= registerEvent(EventKey.UPDATE_ITEM);
 	public static final GradebookEvent UserChange 					= registerEvent(EventKey.USER_CHANGE);
 	public static final GradebookEvent FinishTreeItemDragAndDrop	= registerEvent(EventKey.FINISH_TREE_ITEM_DRAG_AND_DROP);
+	public static final GradebookEvent ShowUserFeedback				= registerEvent(EventKey.SHOW_USER_FEEDBACK);
+	public static final GradebookEvent HideUserFeedback				= registerEvent(EventKey.HIDE_USER_FEEDBACK);
 	
 }

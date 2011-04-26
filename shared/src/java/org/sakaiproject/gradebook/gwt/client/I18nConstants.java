@@ -368,4 +368,10 @@ public interface I18nConstants extends Constants {
 	String errorOccurredGeneric();
 	String exportError();
 	
+	// Course Grade Statistics
+	String statisticsGradebookUpdatingChart();
+	
+	//User Feedback Messages
+	String applicationLoading();
+	
 }

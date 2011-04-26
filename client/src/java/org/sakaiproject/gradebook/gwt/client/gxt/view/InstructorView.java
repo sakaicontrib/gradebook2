@@ -151,12 +151,12 @@ public class InstructorView extends AppView {
 		centerData.setMinSize(100);
 		centerData.setMargins(new Margins(5, 0, 5, 0)); 
 
-		eastData = new BorderLayoutData(LayoutRegion.EAST, 420);
+		eastData = new BorderLayoutData(LayoutRegion.EAST, 840);
 		eastData.setSplit(true);
 		eastData.setCollapsible(true);
 		eastData.setFloatable(false);
 		eastData.setMargins(new Margins(5));
-		eastData.setMaxSize(800);
+		eastData.setMaxSize(840);
 		eastData.setHidden(true);
 
 		northData = new BorderLayoutData(LayoutRegion.NORTH, 50);
@@ -179,7 +179,7 @@ public class InstructorView extends AppView {
 		};
 
 		eastLayoutContainer.setId("cardLayoutContainer");
-		eastLayoutContainer.setWidth(400);
+		eastLayoutContainer.setWidth(600);
 		eastLayoutContainer.setBorders(true);
 		eastLayoutContainer.setBodyBorder(true);
 		eastLayoutContainer.setFrame(true);

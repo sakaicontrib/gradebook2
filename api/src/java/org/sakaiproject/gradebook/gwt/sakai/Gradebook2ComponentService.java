@@ -104,6 +104,12 @@ public interface Gradebook2ComponentService {
 	 */
 	public List<Statistics> getLearnerStatistics(String gradebookUid, Long gradebookId, String learnerId) throws SecurityException;
 	
+	/*
+	 * @since 1.5.0
+	 */
+	public Map<String, Integer> getCourseGradeStatistics(String gradebookUid) throws SecurityException, InvalidDataException;
+	
+	
 	public List<Map<String,Object>> getVisibleSections(String gradebookUid, boolean enableAllSectionsEntry, String allSectionsEntryTitle);
 
 	/**

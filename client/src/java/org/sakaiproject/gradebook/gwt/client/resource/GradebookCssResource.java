@@ -91,5 +91,7 @@ public interface GradebookCssResource extends CssResource {
 	String gbStatisticsChartPanel();
 	
 	String gbStatisticsChartIconPanel();
+	
+	String userFeedbackLabel();
 
 }
