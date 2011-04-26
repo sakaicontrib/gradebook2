@@ -6231,7 +6231,8 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		gradebook.setName(item.getName());
 
 		int newCategoryType = -1;
-
+		int oldCategoryType = gradebook.getCategory_type();  
+		
 		boolean hasCategories = item.getCategoryType() != CategoryType.NO_CATEGORIES;
 
 		switch (item.getCategoryType()) {
@@ -6246,6 +6247,11 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			break;
 		}
 
+		if (oldCategoryType != newCategoryType)
+		{
+			clearDropLowestFromCategories(gradebook); 
+		}
+		
 		gradebook.setCategory_type(newCategoryType);
 
 		int oldGradeType = gradebook.getGrade_type();
@@ -6319,6 +6325,61 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		gbService.updateGradebook(gradebook);
 
 		return gradebook.getId();
+	}
+
+	private void clearDropLowestFromCategories(Gradebook gradebook) {
+		/* 
+		 * This is done in this way on the off chance we have a category in a no cats
+		 * gradebook... After all the GB may have categories from yesteryear.. 
+		 * 
+		 * So on any transition, we will go thru all cats, even 
+		 * deleted ones and eliminate their drop lowest. 
+		 * 
+		 * Of course if we ever switch it so that a no cats gb will always have no cats then this can change. 
+		 * 
+		 */
+		List<Category> cats = gbService.getCategories(gradebook.getId()); 
+
+		if (cats != null && cats.size() > 0)
+		{
+			for (Category c : cats )
+			{
+				if (c.getDrop_lowest() != 0)
+				{
+					c.setDrop_lowest(0);
+					/*
+					 * We store the adjusted weight in the individual assignments. 
+					 * So when we cleared the drop lowest it caused the weights to act strange
+					 * this was evidenced when you went from Weighted Categories to No Cats
+					 * and then back to Weighted Categories. 
+					 * 
+					 */
+					if (gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
+					{
+						reweighWCEqualWeightedCategoryForNoDropLowest(c); 
+					}
+
+					gbService.updateCategory(c); 
+				}
+			}
+		}
+	}
+
+	private void reweighWCEqualWeightedCategoryForNoDropLowest(Category c) 
+	{
+
+		List<Assignment> catAssignments = gbService.getAssignmentsForCategory(c.getId());
+
+		if (catAssignments != null && catAssignments.size() > 0)
+		{
+			BigDecimal weight = divide(BigDecimal.ONE, new BigDecimal(catAssignments.size())); 
+			
+			for (Assignment a : catAssignments)
+			{
+				a.setAssignmentWeighting(weight.doubleValue()); 
+				gbService.updateAssignment(a);
+			}
+		}
 	}
 
 	private Item updateGradebookModel(Item item) throws InvalidInputException {
