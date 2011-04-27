@@ -1,4 +1,8 @@
-
+.gradeScaleInstructions {
+	font:14px tahoma, arial, helvetica;
+	color:red;
+	padding:10px;
+}
 
 .userFeedbackLabel {
 	background-color:#FDF5E6;

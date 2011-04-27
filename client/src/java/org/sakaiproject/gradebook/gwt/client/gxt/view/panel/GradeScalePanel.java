@@ -63,6 +63,7 @@ import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.widget.HorizontalPanel;
+import com.extjs.gxt.ui.client.widget.Label;
 import com.extjs.gxt.ui.client.widget.Text;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
@@ -116,6 +117,8 @@ public class GradeScalePanel extends GradebookPanel {
 	private StatisticsChartPanel statisticsChartPanel;
 	private DataTable dataTable;
 	private boolean isVisualizationApiLoaded = false;
+	
+	private Label instructionLabel;
 
 	public GradeScalePanel(boolean isEditable, final TreeView treeView) {
 
@@ -223,6 +226,8 @@ public class GradeScalePanel extends GradebookPanel {
 		column.setMenuDisabled(true);
 		column.setSortable(false);
 		column.setNumberFormat(defaultNumberFormat);
+		column.setStyle("background-color:#A9A9A9!important;"); // GRBK-874
+		
 		configs.add(column);
 
 		loader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, 
@@ -274,7 +279,7 @@ public class GradeScalePanel extends GradebookPanel {
 				}
 			}
 		});
-
+		
 		closeButton = new AriaButton(i18n.close(), new SelectionListener<ButtonEvent>() {
 
 			@Override
@@ -306,6 +311,11 @@ public class GradeScalePanel extends GradebookPanel {
 		horizontalPanel.setSpacing(10);
 		add(horizontalPanel);
 
+		// GRBK-874
+		instructionLabel = new Label(i18n.gradeScaleInstructions());
+		instructionLabel.addStyleName(resources.css().gradeScaleInstructions());
+		add(instructionLabel);
+		
 		addButton(resetToDefaultButton); 
 		addButton(closeButton);
 	}
