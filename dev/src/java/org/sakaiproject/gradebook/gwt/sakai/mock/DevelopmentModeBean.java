@@ -163,6 +163,7 @@ public class DevelopmentModeBean {
 		essaysCategory.setEqualWeightAssignments(Boolean.TRUE);
 		essaysCategory.setItemType(ItemType.CATEGORY);
 		essaysCategory.setIncluded(Boolean.TRUE);
+		essaysCategory.setExtraCredit(Boolean.FALSE);
 		essaysCategory.setEnforcePointWeighting(Boolean.TRUE);
 		try {
 		  essaysCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, essaysCategory, false));
@@ -176,6 +177,7 @@ public class DevelopmentModeBean {
 		hwCategory.setDropLowest(Integer.valueOf(0));
 		hwCategory.setEqualWeightAssignments(Boolean.TRUE);
 		hwCategory.setItemType(ItemType.CATEGORY);
+		hwCategory.setExtraCredit(Boolean.FALSE);
 		hwCategory.setIncluded(Boolean.TRUE);
 		try {
 		hwCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, hwCategory, false));
@@ -199,6 +201,7 @@ public class DevelopmentModeBean {
 		emptyCategory.setEqualWeightAssignments(Boolean.TRUE);
 		emptyCategory.setItemType(ItemType.CATEGORY);
 		emptyCategory.setIncluded(Boolean.TRUE);
+		emptyCategory.setExtraCredit(Boolean.FALSE);
 		try {
 		  emptyCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, emptyCategory, false));
 		} catch (BusinessRuleException re) {
@@ -417,7 +420,7 @@ private void createSecondGradebook(Gradebook gbModel, boolean populate) throws I
 		quizesCategory.setDropLowest(1);
 		quizesCategory.setPercentCategory(0.30d);
 		quizesCategory.setEqualWeightAssignments(Boolean.TRUE);
-		quizesCategory.setExtraCredit(new Boolean(true));
+		quizesCategory.setExtraCredit(Boolean.TRUE);
 		try {
 		  quizesCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, quizesCategory, false));
 		} catch (BusinessRuleException re) {
@@ -523,6 +526,7 @@ private void createSecondGradebook(Gradebook gbModel, boolean populate) throws I
 		testsCategory.setDropLowest(1);
 		testsCategory.setPercentCategory(0.50d);
 		testsCategory.setEqualWeightAssignments(Boolean.TRUE);
+		testsCategory.setExtraCredit(Boolean.FALSE);
 		try {
 		  testsCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, testsCategory, false));
 		} catch (BusinessRuleException re) {
@@ -584,6 +588,7 @@ private void createSecondGradebook(Gradebook gbModel, boolean populate) throws I
 		essayCategory.setEnforcePointWeighting(Boolean.TRUE);
 		essayCategory.setPercentCategory(0.10d);
 		essayCategory.setEqualWeightAssignments(Boolean.FALSE);
+		essayCategory.setExtraCredit(Boolean.FALSE);
 		try {
 		  essayCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, essayCategory, false));
 		} catch (BusinessRuleException re) {
@@ -616,6 +621,7 @@ private void createSecondGradebook(Gradebook gbModel, boolean populate) throws I
 		participationCategory.setEnforcePointWeighting(Boolean.TRUE);
 		participationCategory.setPercentCategory(0.10d);
 		participationCategory.setEqualWeightAssignments(Boolean.TRUE);
+		participationCategory.setExtraCredit(Boolean.FALSE);
 		try {
 			participationCategory = getActiveItem((GradeItem)service.createItem(gradebookUid, gradebookId, participationCategory, false));
 		} catch (BusinessRuleException re) {
