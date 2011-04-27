@@ -4721,31 +4721,47 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 					// First we check if we are dealing with an equally weighted category
 					boolean hasWeightedCategories = gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY;
 
-					if(!hasWeightedCategories || Util.checkBoolean(category.isUnweighted())) {
-						
-						// Iterating over all category grade items and check if they all have the same point values
-						Double comparePointsPossible = (null == item.getPoints()) ? new Double(100d) : item.getPoints(); 
-						boolean hasEqualPoints = true;
-						for(Assignment assignment : assignments) {
+					/*
+					 * GRBK-929 
+					 * If the item being created is an EC item, we don't want to adjust drop lowest 
+					 * because EC items are outside the drop lowest process. 
+					 */
+					if (!Util.checkBoolean(isExtraCredit))
+					{
+						if(!hasWeightedCategories || Util.checkBoolean(category.isUnweighted())) {
 
-							Double pointsPossible = assignment.getPointsPossible();
+							// Iterating over all category grade items and check if they all have the same point values
+							Double comparePointsPossible = (null == item.getPoints()) ? new Double(100d) : item.getPoints(); 
+							boolean hasEqualPoints = true;
+							for(Assignment assignment : assignments) {
 
-							if(!comparePointsPossible.equals(pointsPossible)) {
+								/* 
+								 * GRBK-929
+								 *  We don't care if EC items have odd point values 
+								 *  so we skip any EC item.  
+								 */
+								if (Util.checkBoolean(assignment.isExtraCredit()))
+								{
+									continue; 
+								}
+								Double pointsPossible = assignment.getPointsPossible();
 
-								hasEqualPoints = false;
-								break;
+								if(!comparePointsPossible.equals(pointsPossible)) {
+
+									hasEqualPoints = false;
+									break;
+								}
 							}
-						}
-						
-						// Using almost identical logic as in doUpdateItem(...)
-						if (!hasEqualPoints && category.getDrop_lowest() > 0 
-								&& (!hasWeightedCategories || (hasWeightedCategories && Util.checkBoolean(category.isEnforcePointWeighting())))) {
-							category.setDrop_lowest(0);
-							gbService.updateCategory(category);
-						}
+
+							// Using almost identical logic as in doUpdateItem(...)
+							if (!hasEqualPoints && category.getDrop_lowest() > 0 
+									&& (!hasWeightedCategories || (hasWeightedCategories && Util.checkBoolean(category.isEnforcePointWeighting())))) {
+								category.setDrop_lowest(0);
+								gbService.updateCategory(category);
+							}
 					}
 					// GRBK-577 : End
-					
+					}
 					// Business rule #4
 					try {
 						businessLogic.applyNoDuplicateItemNamesWithinCategoryRule(categoryId, name, null, assignments);
