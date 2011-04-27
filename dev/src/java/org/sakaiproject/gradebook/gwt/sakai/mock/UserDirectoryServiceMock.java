@@ -50,7 +50,7 @@ import org.w3c.dom.Element;
 public class UserDirectoryServiceMock implements UserDirectoryService {
 
 	private List<User> users;
-	public static int DEFAULT_NUMBER_TEST_LEARNERS = 20;
+	public static int DEFAULT_NUMBER_TEST_LEARNERS = 200;
 	
 	// GRBK-751
 	// This is used to test userIDs that have special characters
