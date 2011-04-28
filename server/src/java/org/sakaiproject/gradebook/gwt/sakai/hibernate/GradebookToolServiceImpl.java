@@ -1353,12 +1353,12 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 			
 			if(!hasEqualValues(assignment, persistedAssignment)) {
 				
-				if(log.isInfoEnabled()) log.info("An optimistic locking failure occurred while attempting to update an assignment");
+				if(log.isInfoEnabled()) log.info("An optimistic locking failure occurred while attempting to update an assignment", e);
 				throw new StaleObjectModificationException(e);
 			}
 			else {
 				
-				if(log.isInfoEnabled()) log.info("An optimistic locking failure occurred while attempting to update an assignment, but the assignments have the same values");
+				if(log.isInfoEnabled()) log.info("An optimistic locking failure occurred while attempting to update an assignment, but the assignments have the same values", e);
 			}
 		}
 	}

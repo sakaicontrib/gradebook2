@@ -34,8 +34,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class RestBuilder extends RequestBuilder {
 
-	private static final String EMPTY_STRING = "";
-	
 	public enum Method {
 		
 		GET, POST, PUT, DELETE
@@ -165,15 +163,15 @@ public class RestBuilder extends RequestBuilder {
 						
 						callback.onSuccess(request, response);
 					}
-					else if(response.getStatusCode() == failureCode && null != response.getText() && !EMPTY_STRING.equals(response.getText())) {
+					else if(response.getStatusCode() == failureCode && null != response.getText() && !"".equals(response.getText())) {
 					
 						callback.onFailure(request, new Exception(response.getText()));
 					}
-					else if(response.getStatusCode() == 409 && null != response.getText() && !EMPTY_STRING.equals(response.getText())) {
+					else if(response.getStatusCode() == 409 && null != response.getText() && !"".equals(response.getText())) {
 						
 						callback.onError(request, new Exception(response.getStatusText() + " : " + response.getStatusCode())); 
 					}
-					else if(response.getStatusCode() == 500 && null != response.getText() && !EMPTY_STRING.equals(response.getText())) {
+					else if(response.getStatusCode() == 500 && null != response.getText() && !"".equals(response.getText())) {
 						
 						callback.onError(request, new Exception(response.getText() + " : " + response.getStatusCode())); 
 					}
