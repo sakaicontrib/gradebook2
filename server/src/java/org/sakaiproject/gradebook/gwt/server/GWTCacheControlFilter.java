@@ -24,17 +24,14 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class GWTCacheControlFilter implements Filter {
 
-	@Override
 	public void destroy() {
 		// Nothing to do
 	}
 
-	@Override
 	public void init(FilterConfig arg0) throws ServletException {
 		// Nothing to do
 	}
 
-	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
 
 		HttpServletRequest httpRequest = (HttpServletRequest) request;
