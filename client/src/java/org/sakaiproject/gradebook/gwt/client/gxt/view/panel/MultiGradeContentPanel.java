@@ -1039,7 +1039,6 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 
 		grid.addListener(Events.BeforeEdit, new Listener<GridEvent>() {
 			public void handleEvent(GridEvent be) {
-				ColumnConfig myCm = be.getGrid().getColumnModel().getColumn(be.getColIndex());
 				if (showWeightedString != null && Boolean.TRUE.toString().equalsIgnoreCase(showWeightedString))			
 					be.setCancelled(true);
 			}
@@ -1546,7 +1545,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	 * @param searchRosterByFieldEnabled the searchRosterByFieldEnabled to set
 	 */
 	public void setSearchRosterByFieldEnabled(boolean searchRosterByFieldEnabled) {
-		this.searchRosterByFieldEnabled = new Boolean(searchRosterByFieldEnabled);
+		this.searchRosterByFieldEnabled = Boolean.valueOf(searchRosterByFieldEnabled);
 	}
 
 	public RefreshAction getRefreshAction() {

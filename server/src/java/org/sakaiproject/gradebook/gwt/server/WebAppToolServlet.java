@@ -115,11 +115,14 @@ public class WebAppToolServlet extends HttpServlet {
 	}
 	
 	private synchronized void readVersionFromFile() {
+		
+		InputStream inputStream = null;
+		
 		try {
 			if (version != null)
 				return;
 			
-			InputStream inputStream = this.getClass().getResourceAsStream("VERSION.txt");
+			inputStream = this.getClass().getResourceAsStream("VERSION.txt");
 			
 			if (inputStream != null) {
 				BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
@@ -130,5 +133,19 @@ public class WebAppToolServlet extends HttpServlet {
 		} catch (Exception e) {
 			log.warn("Unable to read version file", e);
 		} 
+		finally {
+
+			if(null != inputStream) {
+				
+				try {
+					
+					inputStream.close();
+					
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					log.warn("Unable to close InputStream", e);
+				}
+			}
+		}
 	}
 }

@@ -98,12 +98,7 @@ public class ImportExportView extends View {
 				 *  be removed
 				 */
 				
-			
-			
-			
-				StringBuffer iName = new StringBuffer();
 				final String iNamePrefix = "sections";
-				int i = 0;
 				
 				for (String section : sectionsAsList) {
 					if (section != null) {

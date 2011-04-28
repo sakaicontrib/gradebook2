@@ -1682,7 +1682,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		Set<String> letterGrades = gradeMapping.getGradeMap().keySet();
 		for(String letterGrade : letterGrades) {
 
-			gradeFrequencies.put(letterGrade, new Integer(0));
+			gradeFrequencies.put(letterGrade, Integer.valueOf(0));
 		}
 
 		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
@@ -2447,7 +2447,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			if(searchRosterByField != null && Boolean.TRUE.toString().equalsIgnoreCase(searchRosterByField)) {
 				this.searchRosterByFieldEnabled = new Boolean(true);
 			} else {
-				this.searchRosterByFieldEnabled = new Boolean(false);
+				this.searchRosterByFieldEnabled = Boolean.FALSE;
 			}
 
 			String learnerRoleNameString = configService.getString(AppConstants.LEARNER_ROLE_NAMES);
@@ -5941,10 +5941,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			ret.setStates(statuses); 
 			ret.setTooltip(tooltips);
 		}
-		//make unique entries:
-		Set<WeightedCategoriesState> set = new HashSet<WeightedCategoriesState>(statuses);
-		List<WeightedCategoriesState> rv = new ArrayList<WeightedCategoriesState>(set);
-
+		
 		ret.setStates(statuses);
 		ret.setTooltip(tooltips);
 		return ret;

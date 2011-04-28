@@ -82,7 +82,7 @@ public class ApplicationSetupImpl extends BaseModel implements
 	 * @see org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup#setSearchRosterByFieldEnabled(boolean)
 	 */
 	public void setSearchRosterByFieldEnabled(boolean isEnabled) {
-		set(ApplicationKey.S_FIND_BY_FIELD.name(), new Boolean(isEnabled));
+		set(ApplicationKey.S_FIND_BY_FIELD.name(), Boolean.valueOf(isEnabled));
 	}
 
 	/* (non-Javadoc)

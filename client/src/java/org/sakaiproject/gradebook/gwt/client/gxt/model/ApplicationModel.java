@@ -109,7 +109,7 @@ public class ApplicationModel extends EntityModel implements ApplicationSetup {
 	 * @param isEnabled
 	 */
 	public void setSearchRosterByFieldEnabled(boolean isEnabled) {
-		set(ApplicationKey.S_FIND_BY_FIELD.name(), new Boolean(isEnabled));
+		set(ApplicationKey.S_FIND_BY_FIELD.name(), Boolean.valueOf(isEnabled));
 	}
 
 	/* (non-Javadoc)
