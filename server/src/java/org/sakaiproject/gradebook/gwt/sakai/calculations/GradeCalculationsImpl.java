@@ -770,7 +770,8 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 					else						
 					{						
 						// GRBK 483 - we deduct this assignment weight
-						myTotalCategoryPercent = subtract(myTotalCategoryPercent, multiply(assignmentWeight, BIG_DECIMAL_100));
+						if (!isExtraCreditItem)
+							myTotalCategoryPercent = subtract(myTotalCategoryPercent, multiply(assignmentWeight, BIG_DECIMAL_100));
 						
 						// GRBK-784 - we need a count of items in this thing. 
 						if (!isExcused(assignmentGradeRecord))
@@ -854,9 +855,9 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 							} else {
 								
 								// GRBK-869 : prevent division by zero
-								if(BigDecimal.ZERO.compareTo(myTotalCategoryPercent) == 0) {
+								if(BigDecimal.ZERO.compareTo(myTotalCategoryPercent) == 0  || isExtraCreditItem) {
 									
-									earnedPercentWithinCategory = multiply(BIG_DECIMAL_100, gradeRecordUnit.getPercentageScore());
+									earnedPercentWithinCategory = gradeRecordUnit.getPercentageScore();
 								}
 								else {
 									

@@ -40,6 +40,9 @@ import org.sakaiproject.gradebook.gwt.client.model.Configuration;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
+import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
+import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
+import org.sakaiproject.service.gradebook.shared.GradebookService;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.SortDir;
@@ -244,9 +247,16 @@ public class MultigradeView extends View {
 					return multigradeStore;
 				}
 			};
+
 			Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 			multigrade.addGrid(selectedGradebook.getConfigurationModel(),
 					selectedGradebook.getColumns(), (ItemModel)selectedGradebook.getGradebookItemModel());
+			// GRBK-483 hide and disable the toggle button when not usable
+			if (selectedGradebook.getGradebookItemModel().getCategoryType() == CategoryType.WEIGHTED_CATEGORIES &&
+			selectedGradebook.getGradebookItemModel().getGradeType() == GradeType.POINTS)
+				multigrade.enableShowWeightedButton();
+			else 
+				multigrade.disableShowWeightedButton();
 		}
 		return multigrade;
 	}

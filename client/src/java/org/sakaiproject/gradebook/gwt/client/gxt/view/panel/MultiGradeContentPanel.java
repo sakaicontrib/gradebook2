@@ -974,13 +974,9 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 				}
 			});
 			searchToolBar.add(showWeightedToggleButton);
-			if(this.isShowWeightedEnabled()) {
-				showWeightedToggleButton.show();
-				showWeightedToggleButton.enable();
-			} else {
-				showWeightedToggleButton.disable();
-				showWeightedToggleButton.hide();
-			}
+			showWeightedToggleButton.disable();
+			showWeightedToggleButton.hide();
+			
 		}
 
 		modeLabel = new LabelField();
@@ -1572,10 +1568,20 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		isShowWeightedEnabled = enabled;
 	}
 
-	protected String getShowWeightedString() {
-		return showWeightedString;
+	public void disableShowWeightedButton() {
+		if (showWeightedToggleButton != null) {
+			showWeightedToggleButton.disable();
+			showWeightedToggleButton.hide();
+		}
 	}
-
+	
+	public void enableShowWeightedButton() {
+		if (showWeightedToggleButton != null && this.isShowWeightedEnabled()) {
+			showWeightedToggleButton.show();
+			showWeightedToggleButton.enable();		
+		}
+	}
+	
 	public String getSelectedSectionUid() {
 		String sectionUid = null;
 		if (sectionListBox != null) {
