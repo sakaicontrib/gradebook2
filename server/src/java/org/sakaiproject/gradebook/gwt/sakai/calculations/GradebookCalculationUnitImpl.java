@@ -277,7 +277,16 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 
 		if (units != null && !units.isEmpty()) {
 
-			boolean doCalculateDropLowest = dropLowest > 0;
+			
+			/*
+			 * GRBK-942 / GRBK-504
+			 * 
+			 *  We want to only do drop lowest if we have enough units to 
+			 *  do so.  The way units is constructed is it doesn't include 
+			 *  excused items, so... 
+			 */
+			int nonECCnt = countNonECItems(units); 
+			boolean doCalculateDropLowest = (dropLowest > 0) && (nonECCnt > dropLowest);
 			List<GradeRecordCalculationUnit> orderingList = null;
 
 			if (doCalculateDropLowest)
@@ -388,6 +397,29 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 		return result;
 	}
 	
+	private int countNonECItems(List<GradeRecordCalculationUnit> units) {
+		int cnt = 0; 
+		
+		if (null != units && units.size() > 0)
+		{
+			for (GradeRecordCalculationUnit u : units)
+			{
+				/*
+				 * Note that at the present time isExcused appears a no-op, but 
+				 * in case that changes we'll check anyways... 
+				 */
+				if (u.isExcused() || u.isExtraCredit())
+				{
+					continue; 
+				}
+				cnt++; 
+			}
+		}
+		
+		return cnt; 
+	}
+
+
 	private BigDecimal scaleExtraCreditPoints(BigDecimal extraCreditPoints, BigDecimal pointsPossible, BigDecimal totalGradebookPoints, boolean isExtraCreditScaled) {
 		
 		if (extraCreditPoints == null || pointsPossible == null || extraCreditPoints.compareTo(BigDecimal.ZERO) == 0)
@@ -399,4 +431,5 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
  		return divide(extraCreditPoints, pointsPossible);
 
 	}
+	
 }

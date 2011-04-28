@@ -55,7 +55,19 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 		BigDecimal sumScores = sumScaledScores(units, isExtraCreditScaled);
 
 		// When drop lowest is not set, the calculation is very straightforward
-		if (dropLowest <= 0) {
+		/*
+		 * GRBK-942 - drop lowest should only drop if we have 
+		 * enough items to drop. So this means we need N + 1 items where
+		 * N is the drop lowest #. 
+		 * 
+		 * NOTE: this code depends on that all items in units are not excused which is
+		 * how it works when it was written, if that changes this could break. 
+		 * 
+		 * Units can contain EC items, so we have to find the non EC items. 
+		 */
+		int nonECItems = countNumberOfNonECActiveUnit(units);
+		
+		if (dropLowest <= 0 || (units != null && nonECItems <= dropLowest) ) {
 			categoryGrade = sumScores;
 			return categoryGrade;
 		}
@@ -338,6 +350,25 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 			for (GradeRecordCalculationUnit unit : units) {
 
 				if (unit.isExtraCredit() && !isExtraCredit)
+					continue;
+
+				if (unit.isExcused())
+					continue;
+				numActiveUnits++;
+			}
+		}
+
+		return numActiveUnits;
+	}
+
+	private int countNumberOfNonECActiveUnit(List<GradeRecordCalculationUnit> units) {
+
+		int numActiveUnits = 0; 
+
+		if (units != null) {
+			for (GradeRecordCalculationUnit unit : units) {
+
+				if ( unit.isExtraCredit() )
 					continue;
 
 				if (unit.isExcused())

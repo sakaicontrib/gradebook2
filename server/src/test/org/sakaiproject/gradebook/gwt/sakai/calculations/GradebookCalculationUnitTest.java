@@ -1287,4 +1287,201 @@ public class GradebookCalculationUnitTest extends TestCase {
 		
 		assertTrue(courseGrade.compareTo(BigDecimal.ZERO) == 0);
 	}
+	
+	public void testGRBK_942_WC_1()
+	{
+		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
+
+		CategoryCalculationUnit essayUnit = new CategoryCalculationUnitImpl(new BigDecimal("1.0"), 
+				Integer.valueOf(2), 
+				Boolean.FALSE, 
+				Boolean.FALSE, 
+				Boolean.TRUE, 
+				TEST_SCALE);
+
+		categoryUnitMap.put(ESSAYS_ID, essayUnit);
+
+		GradebookCalculationUnit gradebookUnit =  new GradebookCalculationUnitImpl(categoryUnitMap, TEST_SCALE);
+	
+		
+		String[][] essayValues = {
+				{"42", "50", null, null},
+				{"40", "50", null, null}
+		};
+
+		List<GradeRecordCalculationUnit> essayUnits = getRecordUnits(essayValues);
+
+		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
+		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
+	
+
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, new BigDecimal("100"), false);
+		assertTrue(courseGrade.compareTo(new BigDecimal("82.0")) == 0);
+
+	}
+
+	public void testGRBK_942_WC_2()
+	{
+		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
+
+		CategoryCalculationUnit essayUnit = new CategoryCalculationUnitImpl(new BigDecimal("1.0"), 
+				Integer.valueOf(1), 
+				Boolean.FALSE, 
+				Boolean.FALSE, 
+				Boolean.TRUE, 
+				TEST_SCALE);
+
+		categoryUnitMap.put(ESSAYS_ID, essayUnit);
+
+		GradebookCalculationUnit gradebookUnit =  new GradebookCalculationUnitImpl(categoryUnitMap, TEST_SCALE);
+	
+		
+		String[][] essayValues = {
+				{"42", "50", null, null},
+				{"40", "50", null, null}
+		};
+
+		List<GradeRecordCalculationUnit> essayUnits = getRecordUnits(essayValues);
+
+		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
+		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
+	
+
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, new BigDecimal("100"), false);
+		assertTrue(courseGrade.compareTo(new BigDecimal("84.0")) == 0);
+
+	}
+	
+	public void testGRBK_942_WC_3()
+	{
+		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
+
+		CategoryCalculationUnit essayUnit = new CategoryCalculationUnitImpl(new BigDecimal("1.0"), 
+				Integer.valueOf(1), 
+				Boolean.FALSE, 
+				Boolean.FALSE, 
+				Boolean.TRUE, 
+				TEST_SCALE);
+
+		categoryUnitMap.put(ESSAYS_ID, essayUnit);
+
+		GradebookCalculationUnit gradebookUnit =  new GradebookCalculationUnitImpl(categoryUnitMap, TEST_SCALE);
+	
+		
+		String[][] essayValues = {
+				{"42", "50", null, null},
+				{"10", "10", "0.10", "true"},
+				{"40", "50", null, null}
+		};
+
+		List<GradeRecordCalculationUnit> essayUnits = getRecordUnits(essayValues);
+
+		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
+		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
+	
+
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, new BigDecimal("100"), false);
+		assertTrue(courseGrade.compareTo(new BigDecimal("94.0")) == 0);
+
+	}
+
+
+	public void testGRBK_942_SC_1()
+	{
+		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
+
+		CategoryCalculationUnit essayUnit = new CategoryCalculationUnitImpl(new BigDecimal("1.0"), 
+				Integer.valueOf(4), 
+				Boolean.FALSE, 
+				Boolean.TRUE, 
+				Boolean.FALSE, 
+				TEST_SCALE);
+
+		categoryUnitMap.put(ESSAYS_ID, essayUnit);
+
+		GradebookCalculationUnit gradebookUnit =  new GradebookCalculationUnitImpl(categoryUnitMap, TEST_SCALE);
+		
+		String[][] essayValues = {
+				{"35", "50", null, null},
+				{"40", "50", null, null},
+				{"20", "50", null, null},
+				{"45", "50", null, null}
+		};
+
+		List<GradeRecordCalculationUnit> essayUnits = getRecordUnits(essayValues);
+
+		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
+		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
+
+		BigDecimal courseGrade = gradebookUnit.calculatePointsBasedCourseGrade(categoryGradeUnitListMap, new BigDecimal("200"), false);
+
+		assertTrue(courseGrade.compareTo(new BigDecimal("70.0")) == 0);
+	}
+	
+	public void testGRBK_942_SC_2()
+	{
+		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
+
+		CategoryCalculationUnit essayUnit = new CategoryCalculationUnitImpl(new BigDecimal("1.0"), 
+				Integer.valueOf(2), 
+				Boolean.FALSE, 
+				Boolean.TRUE, 
+				Boolean.FALSE, 
+				TEST_SCALE);
+
+		categoryUnitMap.put(ESSAYS_ID, essayUnit);
+
+		GradebookCalculationUnit gradebookUnit =  new GradebookCalculationUnitImpl(categoryUnitMap, TEST_SCALE);
+		
+		String[][] essayValues = {
+				{"35", "50", null, null},
+				{"40", "50", null, null},
+				{"20", "50", null, null},
+				{"45", "50", null, null}
+		};
+
+		List<GradeRecordCalculationUnit> essayUnits = getRecordUnits(essayValues);
+
+		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
+		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
+
+		BigDecimal courseGrade = gradebookUnit.calculatePointsBasedCourseGrade(categoryGradeUnitListMap, new BigDecimal("200"), false);
+
+		assertTrue(courseGrade.compareTo(new BigDecimal("85.0")) == 0);
+	}
+
+	public void testGRBK_942_SC_3()
+	{
+		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
+
+		CategoryCalculationUnit essayUnit = new CategoryCalculationUnitImpl(new BigDecimal("1.0"), 
+				Integer.valueOf(2), 
+				Boolean.FALSE, 
+				Boolean.TRUE, 
+				Boolean.FALSE, 
+				TEST_SCALE);
+
+		categoryUnitMap.put(ESSAYS_ID, essayUnit);
+
+		GradebookCalculationUnit gradebookUnit =  new GradebookCalculationUnitImpl(categoryUnitMap, TEST_SCALE);
+		
+		String[][] essayValues = {
+				{"35", "50", null, null},
+				{"40", "50", null, null},
+				{"20", "50", null, null},
+				{"7", "10", null, "true"},
+				{"45", "50", null, null}
+		};
+
+		List<GradeRecordCalculationUnit> essayUnits = getRecordUnits(essayValues);
+
+		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
+		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
+
+		BigDecimal courseGrade = gradebookUnit.calculatePointsBasedCourseGrade(categoryGradeUnitListMap, new BigDecimal("220"), false);
+
+		assertTrue(courseGrade.compareTo(new BigDecimal("92.0")) == 0);
+	}
+
+
 }
