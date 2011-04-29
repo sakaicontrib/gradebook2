@@ -24,8 +24,12 @@
 	</filter>
 	<filter-mapping>
 		<filter-name>gwtCacheControlFilter</filter-name>
- 		<url-pattern>/*</url-pattern>
+		<url-pattern>/*</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>FORWARD</dispatcher>
+		<dispatcher>INCLUDE</dispatcher>
 	</filter-mapping>
+
 	<filter>
 		<filter-name>gwt.security</filter-name>
 		<filter-class>org.sakaiproject.gradebook.gwt.server.SecurityFilter</filter-class>
@@ -58,7 +62,7 @@
         <dispatcher>FORWARD</dispatcher>
         <dispatcher>INCLUDE</dispatcher>
     </filter-mapping>
-
+	
 	<servlet>
 		<servlet-name>sakai.gradebook.gwt.rpc</servlet-name>
 		<servlet-class>org.sakaiproject.gradebook.gwt.server.WebAppToolServlet</servlet-class>
