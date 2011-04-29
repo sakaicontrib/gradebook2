@@ -34,11 +34,15 @@ public class GWTCacheControlFilter implements Filter {
 
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
 
+		CacheResponseWrapper cacheResponseWrapper = null;
 		HttpServletRequest httpRequest = (HttpServletRequest) request;
 		String requestURI = httpRequest.getRequestURI();
 
 		if (requestURI.contains(".nocache.")) {
 
+			cacheResponseWrapper = new CacheResponseWrapper((HttpServletResponse)response);
+			filterChain.doFilter(request, cacheResponseWrapper);
+			
 			Date now = new Date();
 			HttpServletResponse httpResponse = (HttpServletResponse) response;
 			httpResponse.setDateHeader("Date", now.getTime());
@@ -47,8 +51,10 @@ public class GWTCacheControlFilter implements Filter {
 			httpResponse.setHeader("Pragma", "no-cache");
 			httpResponse.setHeader("Cache-control", "no-cache, no-store, must-revalidate");
 		}
-
-		filterChain.doFilter(request, response);
+		else {
+			
+			filterChain.doFilter(request, response);
+		}
 	}
 }
 
