@@ -111,6 +111,11 @@ public class InstructorController extends Controller {
 				break;
 			case CONFIRM_DELETE_ITEM:
 			case SELECT_DELETE_ITEM:
+				// GRBK-943 - Give the treeview's form panel the multi grid
+				if (treeView.getFormPanel().getMultiGradePanel() == null)
+				{
+					treeView.getFormPanel().setMultiGradePanel(this.multigradeView.getMultiGradeContentPanel());
+				}
 				forwardToView(treeView, event);
 				break;
 			case LEARNER_GRADE_RECORD_UPDATED:
@@ -121,6 +126,11 @@ public class InstructorController extends Controller {
 				break;
 			case NEW_CATEGORY:
 			case NEW_ITEM:
+				// GRBK-943 - Give the treeview's form panel the multi grid
+				if (treeView.getFormPanel().getMultiGradePanel() == null)
+				{
+					treeView.getFormPanel().setMultiGradePanel(this.multigradeView.getMultiGradeContentPanel());
+				}
 				forwardToView(appView, event);
 				forwardToView(treeView, event);
 				break;
@@ -201,6 +211,11 @@ public class InstructorController extends Controller {
 			case HIDE_EAST_PANEL:
 			case SELECT_ITEM:
 			case SWITCH_EDIT_ITEM:
+				// GRBK-943 - Give the treeview's form panel the multi grid
+				if (treeView.getFormPanel().getMultiGradePanel() == null)
+				{
+					treeView.getFormPanel().setMultiGradePanel(this.multigradeView.getMultiGradeContentPanel());
+				}
 				forwardToView(treeView, event);
 				forwardToView(appView, event);
 				break;

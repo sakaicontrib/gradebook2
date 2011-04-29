@@ -96,6 +96,7 @@ import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
+import com.google.gwt.user.client.Window;
 
 public class ItemFormPanel extends GradebookPanel {
 
@@ -146,6 +147,8 @@ public class ItemFormPanel extends GradebookPanel {
 	private boolean isDelete;
 	private boolean hasChanges;
 
+	// GRBK-943 - we need to know what the multigrid has in terms of page size. 
+	private MultiGradeContentPanel multiGradePanel; 
 	private Mode mode;
 
 	private boolean hasTreeItemDragAndDropMarker;
@@ -158,7 +161,8 @@ public class ItemFormPanel extends GradebookPanel {
 		setFrame(true);
 		setScrollMode(Scroll.AUTO);
 		setLayout(new FlowLayout());
-
+		// GRBK-943
+		multiGradePanel = null; 
 		initListeners();
 
 		formPanel = new FormPanel();
@@ -445,6 +449,8 @@ public class ItemFormPanel extends GradebookPanel {
 	}
 
 	private void doConfirmDeleteItem(ItemModel itemModel) {
+		// GRBK-943
+		checkMGPanelForPageSize();
 		formPanel.hide();
 		removeListeners();
 		this.mode = Mode.DELETE;
@@ -481,6 +487,9 @@ public class ItemFormPanel extends GradebookPanel {
 		if (!expand && !isVisible())
 			return;
 
+		// GRBK-943
+		checkMGPanelForPageSize();
+		
 		AppView.EastCard activeCard = AppView.EastCard.EDIT_ITEM;
 
 		if (itemModel != null) {
@@ -625,6 +634,8 @@ public class ItemFormPanel extends GradebookPanel {
 	}
 
 	public void onNewCategory(final ItemModel itemModel) {
+		// GRBK-943
+		checkMGPanelForPageSize();
 		if (hasChanges) {
 			MessageBox.confirm(i18n.hasChangesTitle(), i18n.hasChangesMessage(), new Listener<MessageBoxEvent>() {
 
@@ -678,7 +689,8 @@ public class ItemFormPanel extends GradebookPanel {
 	}
 
 	public void onNewItem(final ItemModel itemModel) {
-
+		// GRBK-943
+		checkMGPanelForPageSize();
 		if (hasChanges) {
 			MessageBox.confirm(i18n.hasChangesTitle(), i18n.hasChangesMessage(), new Listener<MessageBoxEvent>() {
 
@@ -1651,6 +1663,26 @@ public class ItemFormPanel extends GradebookPanel {
 
 		Gradebook gradebookModel = Registry.get(AppConstants.CURRENT);
 		return (ItemModel) gradebookModel.getCategoryItemModel(categoryId);
+	}
+
+	// GRBK-943
+	public MultiGradeContentPanel getMultiGradePanel() {
+		return multiGradePanel;
+	}
+
+	public void setMultiGradePanel(MultiGradeContentPanel multiGradePanel) {
+		this.multiGradePanel = multiGradePanel;
+	}
+	
+	public void checkMGPanelForPageSize()
+	{
+		if (multiGradePanel != null)
+		{
+			if (multiGradePanel.getPagingToolBar().getPageSize() > AppConstants.ITEM_MANIP_PERFORMANCE_TRIGGER)
+			{
+				Window.alert(i18n.performanceItemFormPanelMsg()); 
+			}
+		}
 	}
 
 }
