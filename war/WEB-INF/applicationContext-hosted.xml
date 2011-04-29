@@ -54,6 +54,7 @@
 				<value>student name</value>
 				<value>name</value>
 				<value>learner</value>
+				<value>section</value>
 			</list>
 		</property>
 	</bean>

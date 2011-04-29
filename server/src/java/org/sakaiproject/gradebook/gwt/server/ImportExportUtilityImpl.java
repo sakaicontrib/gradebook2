@@ -235,6 +235,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 
 		headerColumns.add("Student Id");
 		headerColumns.add("Student Name");
+		headerColumns.add("Section"); 
 
 		GradeType gradeType = gradebookItemModel.getGradeType();
 		
@@ -260,21 +261,27 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 
 			categoriesRow.add("");
 			categoriesRow.add(StructureRow.CATEGORY.getDisplayName());
+			categoriesRow.add("");
 
 			percentageGradeRow.add("");
 			percentageGradeRow.add(StructureRow.PERCENT_GRADE.getDisplayName());
+			percentageGradeRow.add("");
 
 			pointsRow.add("");
 			pointsRow.add(StructureRow.POINTS.getDisplayName());
+			pointsRow.add("");
 
 			percentCategoryRow.add("");
 			percentCategoryRow.add(StructureRow.PERCENT_CATEGORY.getDisplayName());
+			percentCategoryRow.add("");
 
 			dropLowestRow.add("");
 			dropLowestRow.add(StructureRow.DROP_LOWEST.getDisplayName());
+			dropLowestRow.add("");
 
 			equalWeightRow.add("");
 			equalWeightRow.add(StructureRow.EQUAL_WEIGHT.getDisplayName());
+			equalWeightRow.add("");
 
 			ItemModelProcessor processor = new ItemModelProcessor(gradebookItemModel) {
 
@@ -451,6 +458,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 					List<String> dataColumns = new LinkedList<String>();
 					dataColumns.add((String)row.get(LearnerKey.S_EXPRT_USR_ID.name()));
 					dataColumns.add((String)row.get(LearnerKey.S_LST_NM_FRST.name()));
+					dataColumns.add((String) row.get(LearnerKey.S_SECT.name()));
 
 					for (int column = 0; column < headerIds.size(); column++) {
 						String columnIndex = headerIds.get(column);
