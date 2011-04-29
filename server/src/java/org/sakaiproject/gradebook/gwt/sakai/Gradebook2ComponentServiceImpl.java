@@ -2812,12 +2812,15 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			 * If the item was in an extra credit category and is moved to a
 			 * non extra credit category, then we reset the item's extra credit status
 			 */
-			if(null != oldCategory && Util.checkBoolean(oldCategory.isExtraCredit()) && !Util.checkBoolean(currentCategory.isExtraCredit())) {
-				isExtraCredit = false;
-			}
-			else if(currentCategory.isExtraCredit()) {
-				// All grade items in an extra credit category need to be marked as extra credit
-				isExtraCredit = true;
+			if(hasCategories) { // GRBK-949
+				
+				if(null != oldCategory && null != currentCategory && Util.checkBoolean(oldCategory.isExtraCredit()) && !Util.checkBoolean(currentCategory.isExtraCredit())) {
+					isExtraCredit = false;
+				}
+				else if(null != currentCategory && currentCategory.isExtraCredit()) {
+					// All grade items in an extra credit category need to be marked as extra credit
+					isExtraCredit = true;
+				}
 			}
 
 			isWeightChanged = wasExtraCredit != isExtraCredit;
