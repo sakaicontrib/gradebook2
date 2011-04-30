@@ -256,37 +256,57 @@ public class StatisticsPanel extends ContentPanel {
 				public void onSuccess(Request request, Response response) {
 
 					// Getting two dimensional INT array
-					JSONValue jsonValue = JSONParser.parse(response.getText());
-					JSONArray jsonArray = jsonValue.isArray();
-
-					JSONArray positiveFrequencies = jsonArray.get(AppConstants.POSITIVE_NUMBER).isArray();
+					// GRBK-939 
+					// deprecated method can cause security problems as it evals. 
 					
-					// TODO: For now, we don't show the negative grade frequency : leaving code in place
-					// until we handle negative number frequencies
-					//JSONArray negativeFrequencies = jsonArray.get(AppConstants.NEGATIVE_NUMBER).isArray();
+					/*
+					 * GRBK-939 According to google this will toss exceptions if the input
+					 * is null or empty, so we'll guard against that and send a notify if
+					 * we have this problem... 
+					 * 
+					 */
 					
-					dataTable = DataTable.create();
-					dataTable.addColumn(ColumnType.STRING, i18n.statisticsChartLabelDistribution());
-					dataTable.addColumn(ColumnType.NUMBER, i18n.statisticsChartLabelFrequency());
-					//dataTable.addColumn(ColumnType.NUMBER, "Negative Grade Frequency");
-					dataTable.addRows(positiveFrequencies.size());
+					String jsonText = response.getText(); 
+					
+					if (jsonText != null && !"".equals(jsonText) )
+					{
+					
+						JSONValue jsonValue = JSONParser.parseStrict(jsonText);
+						JSONArray jsonArray = jsonValue.isArray();
 
-					for (int i = 0; i < positiveFrequencies.size(); i++) {
+						JSONArray positiveFrequencies = jsonArray.get(AppConstants.POSITIVE_NUMBER).isArray();
 
-						// Set label
-						dataTable.setValue(i, 0, RANGE[i]);
+						// TODO: For now, we don't show the negative grade frequency : leaving code in place
+						// until we handle negative number frequencies
+						//JSONArray negativeFrequencies = jsonArray.get(AppConstants.NEGATIVE_NUMBER).isArray();
 
-						// Set value
-						double positiveValue = positiveFrequencies.get(i).isNumber().doubleValue();
-						//double negativeValue = negativeFrequencies.get(i).isNumber().doubleValue() * -1;
-						dataTable.setValue(i, 1, positiveValue);
-						//dataTable.setValue(i, 2, negativeValue);
+						dataTable = DataTable.create();
+						dataTable.addColumn(ColumnType.STRING, i18n.statisticsChartLabelDistribution());
+						dataTable.addColumn(ColumnType.NUMBER, i18n.statisticsChartLabelFrequency());
+						//dataTable.addColumn(ColumnType.NUMBER, "Negative Grade Frequency");
+						dataTable.addRows(positiveFrequencies.size());
+
+						for (int i = 0; i < positiveFrequencies.size(); i++) {
+
+							// Set label
+							dataTable.setValue(i, 0, RANGE[i]);
+
+							// Set value
+							double positiveValue = positiveFrequencies.get(i).isNumber().doubleValue();
+							//double negativeValue = negativeFrequencies.get(i).isNumber().doubleValue() * -1;
+							dataTable.setValue(i, 1, positiveValue);
+							//dataTable.setValue(i, 2, negativeValue);
+						}
+
+						// adding the dataTable to the cache
+						dataTableCache.put(selectedAssignmentId + selectedSectionId, dataTable);
+						chartPanel.setDataTable(dataTable);
+						chartPanel.show();
 					}
-
-					// adding the dataTable to the cache
-					dataTableCache.put(selectedAssignmentId + selectedSectionId, dataTable);
-					chartPanel.setDataTable(dataTable);
-					chartPanel.show();
+					else
+					{
+						Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsDataErrorMsg(), true));
+					}
 				}
 			});
 		}
