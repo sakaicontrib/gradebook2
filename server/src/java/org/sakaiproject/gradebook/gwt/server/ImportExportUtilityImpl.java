@@ -48,8 +48,8 @@ import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
 
-import org.apache.commons.io.filefilter.HiddenFileFilter;
 import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -62,6 +62,8 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Row;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
+import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
@@ -2124,7 +2126,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 		for (int i=0;i<headers.length;i++) {
 		
 			ImportHeader header = headers[i];
-			
+
 			// Ignore null headers
 			if (header == null)
 				continue;
@@ -2162,25 +2164,66 @@ private GradeItem buildNewCategory(String curCategoryString,
 			handlePointsAndPercentCategoryForHeader(pointsColumns, percentCategoryColumns, headerNumber, header); 
 		}
 		
-		CategoryItemPair p = getCategoryAndItemInformation(categoryType, itemName, gradebookItemModel, header, headerNumber, ieInfo); 
+		CategoryItemPair p = null;
+		try {
+			p = getCategoryAndItemInformation(categoryType, itemName, gradebookItemModel, header, headerNumber, ieInfo);
+		} catch (BusinessRuleException e) {
+			throw new ImportFormatException(e.getMessage());
+		} 
 		GradeItem itemModel = p.getItem();
 		GradeItem categoryModel = p.getCategory();
 		boolean isNewItem = false;
+		
+		if (itemModel == null && header.getField() == Field.S_COMMENT) {
+			// could be in the newItems List
+			itemModel = getItemWithNameFromCategoryPairs(itemName, ieInfo.newItems);
+			}
+		
+		boolean itemMatched = ieInfo.getMatchedItems().contains(p);
 
-		if (itemModel == null) {
+		if (itemModel == null || 
+				header.getField()==Field.S_ITEM
+				&& itemMatched) {
 			isNewItem = true;
 			itemModel =  createNewGradeItem(header, headerNumber);
+			if(itemMatched) {
+				categoryModel = ieInfo.getCategoryIdItemMap().get("-1");
+			}
 		} else {
-			header.setId(itemModel.getIdentifier());
+			if (!ieInfo.getMatchedItems().contains(p)) {
+				ieInfo.getMatchedItems().add(p);
+			}
 		}
+
 
 		if (header.getField() == Field.S_ITEM) {
 			decorateItemFromHeader(header, itemModel, categoryModel); 
 		}
 
-		putItemInGradebookModelHierarchy(categoryType, itemModel, gradebookItemModel, categoryModel, isNewItem); 
+		if (isNewItem) {
+			p.setCategory(categoryModel);
+			p.setItem(itemModel);
+			ieInfo.getNewItems().add(p);
+		} else {
+			header.setId(itemModel.getIdentifier());
+			putItemInGradebookModelHierarchy(categoryType, itemModel, gradebookItemModel, categoryModel, false); 
+		}
 	}
 	
+	private GradeItem getItemWithNameFromCategoryPairs(String itemName,
+			List<CategoryItemPair> newItems) {
+		GradeItem itemModel = null;
+		for (CategoryItemPair p : newItems) {
+			if (p.getItem() != null && p.getItem().getName() != null
+					&& p.getItem().getName().equals(itemName)) {
+				itemModel = p.getItem();
+				break;
+			}
+		}
+		return itemModel;
+	}
+
+
 	private void decorateItemFromHeader(ImportHeader header,
 			GradeItem itemModel, GradeItem categoryModel) throws ImportFormatException {
 		/*
@@ -2263,23 +2306,33 @@ private GradeItem buildNewCategory(String curCategoryString,
 	private CategoryItemPair getCategoryAndItemInformation(
 			CategoryType categoryType, String itemName,
 			Item gradebookItemModel, ImportHeader header, int headerNumber,
-			ImportExportInformation ieInfo) {
+			ImportExportInformation ieInfo) throws BusinessRuleException {
 
 		String[] assignmentPositionToCategoryIdQuick = ieInfo.getAssignmentPositionToCategoryIdQuick();
 		CategoryItemPair p = null; 
 
 		switch (categoryType) {
 		case NO_CATEGORIES:
+			/* 
+			 * This will toss out a BusinessRuleException of there are more than one item
+			 * with the same name
+			 */
 			p = new CategoryItemPair(null, findModelByName(itemName, gradebookItemModel));
+			
 			break;
 		case SIMPLE_CATEGORIES:
 		case WEIGHTED_CATEGORIES:
+			/*
+			 * try to find an item with the same name in the supplied category, or if null, any category. 
+			 * If there is only one, merge, otherwise, put a new item in unassigned cat (-1)
+			 * 
+			 */
 			String categoryId = null; 
 			if (assignmentPositionToCategoryIdQuick != null)
 			{
 				categoryId = assignmentPositionToCategoryIdQuick[headerNumber];
 			}
-			p = getCategoryAndItemModel(categoryId, itemName, gradebookItemModel, header, ieInfo.getCategoryIdItemMap());
+			p = getCategoryAndItemModel(categoryId, itemName, header, ieInfo);
 			
 			break;
 		}
@@ -2302,25 +2355,36 @@ private GradeItem buildNewCategory(String curCategoryString,
 	}
 
 	private CategoryItemPair getCategoryAndItemModel(String categoryId,
-			String itemName, Item gradebookItemModel, ImportHeader header,
-			Map<String, GradeItem> categoryIdItemMap) {
+			String itemName, ImportHeader header,
+			ImportExportInformation ieInfo) {
 		GradeItem itemModel = null; 
 		GradeItem categoryModel = null; 
+		Item gradebookItemModel = ieInfo.getGradebookItemModel();
 		
 		if (categoryId == null) {
-			itemModel = findModelByName(itemName, gradebookItemModel);
+			boolean ambiguous = false;
+			for (GradeItem i : ((GradeItem) gradebookItemModel).getChildren()) {
+				GradeItem itemModelInCat = findItemInCategory(i, itemName);
+				if (itemModelInCat != null) {
+					if (itemModel != null) { // there are more than one so
+						ambiguous = true; // we want the item to be put in 'Unassigned'
+						break;
+					} else {
+						itemModel = itemModelInCat;
+						categoryModel = i; 
+					}
+				}
+				
+			}
 			// If this is a new item, and we don't have structure info, then
 			// we have to make it "Unassigned"
-			if (itemModel == null)
-				categoryModel = categoryIdItemMap.get("-1");
+			if (ambiguous || itemModel == null)
+				categoryModel = ieInfo.getCategoryIdItemMap().get("-1");
 		} else {
-			categoryModel = categoryIdItemMap.get(categoryId);
+			categoryModel = ieInfo.getCategoryIdItemMap().get(categoryId);
 			if (categoryModel != null) {
 				decorateHeaderWithCategoryModel(header, categoryModel); 
-				if (findItemInCategory(categoryModel, itemName) != null)
-				{
-					itemModel = findItemInCategory(categoryModel, itemName); 
-				}
+				itemModel = findItemInCategory(categoryModel, itemName); 
 			} 
 			else
 			{
@@ -2458,12 +2522,28 @@ private GradeItem buildNewCategory(String curCategoryString,
 	 */
 	private void adjustGradebookItemModel(ImportExportInformation ieInfo) {
 		
+		
+		
 		GradeItem gradeItem = (GradeItem) ieInfo.getGradebookItemModel();
 		ImportHeader[] newImportHeaders = ieInfo.getHeaders();
+		List<String> dups = findDuplicateHeaders(newImportHeaders);
+		
+		// add all the collected new items now that we have the searches safely behind us
+		for (CategoryItemPair p : ieInfo.getNewItems()) {
+			putItemInGradebookModelHierarchy(gradeItem.getCategoryType(), p.getItem(), gradeItem, p.getCategory(), true);
+		}
 		
 		
 		if (gradeItem.getCategoryType() == CategoryType.NO_CATEGORIES)
 		{
+			/// GBRK-414 fore we do anything check here for dups in imported headers and throw up if found
+			if (dups.size() > 0) {
+				throw new RuntimeException(new BusinessRuleException(
+						"mutiple items with same name and no stucture: " + dups.get(0),
+						BusinessLogicCode.NoDuplicateItemNamesRule));
+			}
+			
+			
 			for(Iterator<GradeItem> iter = gradeItem.getChildren().iterator(); iter.hasNext(); ) {
 
 				GradeItem assignment = iter.next();
@@ -2476,6 +2556,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 		}
 		else
 		{
+			
 			for(GradeItem category : gradeItem.getChildren()) {
 
 				for(Iterator<GradeItem> iter = category.getChildren().iterator(); iter.hasNext(); ) {
@@ -2491,6 +2572,25 @@ private GradeItem buildNewCategory(String curCategoryString,
 	}
 	
 	
+	private List<String> findDuplicateHeaders(ImportHeader[] newImportHeaders) {
+		
+		List<String> names = new ArrayList<String>(newImportHeaders.length);
+		List<String> dups = new ArrayList<String>();
+		for (int i=0;i<newImportHeaders.length;++i) {
+			
+			ImportHeader header = newImportHeaders[i];
+			if (header != null && header.getItem() != null && header.getItem().getName() != null ) {
+				if (!names.contains(header.getItem().getName())) {	
+				names.add(header.getItem().getName());
+				} else {
+					dups.add(header.getItem().getName());
+				}
+			}
+		}
+		return dups;
+	}
+
+
 	private boolean hasAssignment(ImportHeader[] importHeaders, String assignmentName) {
 		
 		for(ImportHeader importHeader : importHeaders) {
@@ -2567,9 +2667,21 @@ private GradeItem buildNewCategory(String curCategoryString,
 					if (trimmed.equals(name) && !names.contains(trimmed)) {
 						this.result = itemModel;
 						names.add(trimmed);
-					}
-					// GRBK-834 we don't want to null out a found result.. 
+					} else {
+						BusinessRuleException e = new BusinessRuleException("Multiple items with the name in the same tree branch", BusinessLogicCode.NoDuplicateItemNamesWithinCategoryRule);
+						e.getCodes().add(BusinessLogicCode.NoDuplicateItemNamesWithinCategoryRule);
+						throw new RuntimeException ( e ) {
 
+							private static final long serialVersionUID = 1L;
+
+							public String getMessage() {
+								if (getCause() != null) {
+									return getCause().getMessage();
+								}
+								return super.getMessage();
+							}
+						};
+					}
 				}
 			}
 			
@@ -2612,10 +2724,22 @@ class ImportExportInformation
 	boolean isUserNotFound;
 	
 	List<Integer> activeHeaderIndexes;
+	public List<CategoryItemPair> getNewItems() {
+		return newItems;
+	}
+
 	List<CategoryPosition> categoryPositions; 
 	Item gradebookItemModel;
+	// can only be matched once
+	List<CategoryItemPair> matchedItems = new ArrayList<CategoryItemPair>(); 
+	 // all the new items saved up so as to not be matched during collision searches
+	List<CategoryItemPair> newItems = new ArrayList<CategoryItemPair>();
 	
 	
+	public List<CategoryItemPair> getMatchedItems() {
+		return matchedItems;
+	}
+
 	public ImportExportInformation() 
 	{
 		ignoreColumns = new HashSet<Integer>();
@@ -2825,6 +2949,49 @@ class CategoryItemPair
 	public void setItem(GradeItem item) {
 		this.item = item;
 	} 
+	
+	public boolean equals (Object obj) {
+		if (obj == null) { return false; }
+		if (obj == this) { return true; }
+		if (obj.getClass() != getClass()) {
+			return false;
+		}
+		CategoryItemPair rhs = (CategoryItemPair) obj;
+		
+		boolean catsMatch = false;
+		if (rhs.category == null) {
+			if (this.category == null) {
+				catsMatch = true;
+			} 
+		} 
+		if (rhs.item == null) {
+			if (this.item == null) {
+				return true && catsMatch;
+			}
+		}
+		 
+		String thisCatName = this.category == null ? null : this.category.getName();
+		String thisItemName = this.item == null ? null : this.item.getName();
+		String rhsCatName = rhs.category == null ? null : rhs.category.getName();
+		String rhsItemName = rhs.item == null ? null : rhs.item.getName();
+		
+		boolean rv = new EqualsBuilder()
+		.append(thisCatName, rhsCatName)
+		.append(thisItemName, rhsItemName)
+		.isEquals();
+		
+		return rv;
+	}
+
+	public int hashCode() {
+
+		return new HashCodeBuilder(3311, 55511).
+		append(category).
+		append(item).
+		toHashCode();
+	}
+
+	 
 	
 	
 }
