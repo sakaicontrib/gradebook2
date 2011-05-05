@@ -3683,7 +3683,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		if (droppedValues != null) {
 			isDropped = droppedValues.get(assignmentId) != null ? droppedValues.get(assignmentId): false;
 		} else {
-			isDropped = gradeRecord == null ? false : gradeRecord.isDropped() != null && gradeRecord.isDropped().booleanValue();
+			isDropped = gradeRecord == null ? false : Util.checkBoolean(gradeRecord.isDropped());
 		}
 
 		if (isDropped || isExcused)
@@ -3881,7 +3881,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		}
 
 		//GRBK-680 - 'Give Ungraded No Credit' - Zeros given in scores not marked when dropped
-		Map<Long, Boolean> droppedValues = getDroppedValues(userRecord, categories);
+		Map<Long, Boolean> droppedValues = getDroppedValues(gradebook, userRecord, categories);
 		
 		if (assignments != null) {
 
@@ -3903,18 +3903,50 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		return new LearnerImpl(cellMap);
 	}
 	
-	private Map<Long, Boolean> getDroppedValues(UserRecord userRecord, List<Category> categories) {
-
+	private Map<Long, Boolean> getDroppedValues(Gradebook gradebook, UserRecord userRecord, List<Category> categories) {
 		Map<Long, Boolean> droppedValues = new HashMap<Long, Boolean>();
 		if (categories != null) {
 			for (Category category: categories) {
-				if (category != null && !category.isRemoved() && !category.isUnweighted()&& !category.isExtraCredit() && category.getDrop_lowest() > 0) {
+				if (category != null && !category.isRemoved() && !Util.checkBoolean(category.isExtraCredit()) && category.getDrop_lowest() > 0) {
+					
 					List<Assignment> assignmentsByCategory = category.getAssignmentList();
-					droppedValues.putAll(isDropped(assignmentsByCategory, userRecord, category.getDrop_lowest()));
+					
+					// Currently GB allows drop lowest score when categories are weighted or when all the items within a category have the same possible point. 
+					// When GRBK-480 (Allow dropped score in category when all items don't have same point value) is deployed this portion of the code needs to be
+					// modified to reflect that.
+					Boolean enforcePointWeighting = Util.checkBoolean(category.isEnforcePointWeighting());
+					if ((isGradebookWeighted(gradebook) && !enforcePointWeighting) || hasEqualPossiblePoints(assignmentsByCategory)) {
+						droppedValues.putAll(isDropped(assignmentsByCategory, userRecord, category.getDrop_lowest()));
+					}
 				}
 			}
 		}
 		return droppedValues;
+	}
+	
+	private boolean hasEqualPossiblePoints(
+			List<Assignment> assignmentsByCategory) {
+		
+		Double lastPointValue = null;
+
+		for (Assignment assignment : assignmentsByCategory) {
+			if (assignment == null || assignment.isRemoved() || assignment.isNotCounted())
+				continue;
+
+			// Exclude extra credit items from determining whether drop lowest should be allowed
+			if (Util.checkBoolean(assignment.isExtraCredit()))
+				continue;
+
+			if (lastPointValue != null && assignment.getPointsPossible() != null && !lastPointValue.equals(assignment.getPointsPossible())) {
+				return false;
+			}
+			lastPointValue = assignment.getPointsPossible();
+		}
+		return true;
+	}
+
+	private boolean isGradebookWeighted(Gradebook gradebook) {
+		return GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY == gradebook.getCategory_type();
 	}
 
 	private Map<Long, Boolean> isDropped(List<Assignment> assignmentsByCategory, UserRecord userRecord, int dropLowest) {
@@ -3932,29 +3964,45 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		int numberOfUnitsDropped = 0;
 
 		// start with populating the values form the existing student records
-		if (studentGradeMap != null) {
-			for (Assignment assignment : assignmentsByCategory) {
-				if (assignment.getId() != null) {
+		for (Assignment assignment : assignmentsByCategory) {
+			
+			if (assignment != null && assignment.getId() != null) {
+				boolean isCountNullsAsZeros = Util.checkBoolean(assignment.getCountNullsAsZeros());
+			
+				if (studentGradeMap != null) {
 					AssignmentGradeRecord assignmentGradeRecord = studentGradeMap.get(assignment.getId());
+				
 					if (assignmentGradeRecord != null) {
-						Boolean isDropped = assignmentGradeRecord.isDropped();
+						Boolean isDropped = Util.checkBoolean(assignmentGradeRecord.isDropped());
+					
 						if (isDropped != null){
 							droppedValues.put(assignment.getId(), isDropped);
+						
 							if (isDropped) {
 								numberOfUnitsDropped++;
 							}
 						} else {
 							droppedValues.put(assignment.getId(), false);
 						}
+					} else if (!isCountNullsAsZeros) {
+						// not include "ungraded" assignments in drop values
+						droppedValues.put(assignment.getId(), false);
 					}
+				
+				} else if (!isCountNullsAsZeros) {
+					// not include "ungraded" assignments in drop values
+					droppedValues.put(assignment.getId(), false);
 				}
 			}
 		}
-		//populate the rest of the records
+			
+		//populate the rest of the records without student records
 		for (Assignment assignment : assignmentsByCategory) {
-			if (assignment.getId() != null && droppedValues.get(assignment.getId()) == null) {
-				//!unit.isExcused()
-				if (assignment.isCounted() && numberOfUnitsDropped < dropLowest && !assignment.isExtraCredit()) {
+			
+			if (assignment != null && assignment.getId() != null && droppedValues.get(assignment.getId()) == null) {
+				boolean isExtraCredit = Util.checkBoolean(assignment.isExtraCredit());
+			
+				if (assignment.isCounted() && numberOfUnitsDropped < dropLowest && !isExtraCredit) {
 					droppedValues.put(assignment.getId(), true);
 					numberOfUnitsDropped ++;
 				} else {
@@ -3966,7 +4014,6 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		return droppedValues;
 
 	}
-	
 	private Learner buildStudentRow(Gradebook gradebook, UserRecord userRecord, List<FixedColumn> columns, List<Assignment> assignments, List<Category> categories, boolean isShowWeighted) {
 		return buildLearnerGradeRecord(gradebook, userRecord, columns, assignments, categories, isShowWeighted);
 	}
