@@ -5767,6 +5767,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 	// GRBK-488 : TPA
 	// GRBK-602 : JPG
+	// GRBK-951 : MJW
 	private boolean isCategoryFullyWeighted(Category category) {
 
 		if (null == category) {
@@ -5775,6 +5776,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		}
 
 		boolean isExtraCreditCategory = Util.checkBoolean(category.isExtraCredit());
+		boolean isEqualWeightCategory = Util.checkBoolean(category.isEqualWeightAssignments());
 		boolean isCategoryWeightingItemsEqually = Util.checkBoolean(category.isEqualWeightAssignments());
 		boolean isCategoryPointsWeighted = Util.checkBoolean(category.isEnforcePointWeighting()); 
 		boolean isUnweighted = category.isUnweighted() != null && category.isUnweighted().booleanValue();
@@ -5785,76 +5787,106 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		if (!category.isRemoved()) {
 
 			if (!isUnweighted) {
-
+				
 				// We only verify categories for which equal weight and weighting by points has been turned off
-
-
 				// Get the category's assignments
 				List<Assignment> categoryAssignmentList = getUncheckedAssignmentList(category);
 
-				// need to have at least on assigment to be fully weighted
-				if(null == categoryAssignmentList || categoryAssignmentList.size() == 0) {
-					return false;
+				// GRBK-951 - We only go into this in a non equal weighted category
+				if (!isEqualWeightCategory)
+				{
+
+					// need to have at least on assigment to be fully weighted
+					if(null == categoryAssignmentList || categoryAssignmentList.size() == 0) {
+						return false;
+					}
+
+					BigDecimal categoryAssignmentWeightSum = BigDecimal.ZERO;
+
+					// GRBK-862 : keeping tack of the smallest item weight scale. This we initialize it with a large enough number
+					int scale = 100;
+
+					// Adding up all the assignment weights
+					for(Assignment assignment : categoryAssignmentList) {
+
+						boolean isExtraCreditItem = Util.checkBoolean(assignment.isExtraCredit()); 
+						// For equally weighted and points weighted categories, this is success: we have at least one
+						// non-extra credit item in a non-extra credit category or at least one item
+						// in an extra credit category 
+						if( (isCategoryWeightingItemsEqually || isCategoryPointsWeighted) 
+								&& !isExtraCreditCategory && !isExtraCreditItem) {
+							return true;
+						}
+
+						// Ignoring
+						// nulls - GRBK-717 - jpgorrono
+						// - extra credit assignment weights
+						// - not counted items in any category
+						if(null == assignment || assignment.getAssignmentWeighting() == null || // GRBK-717
+								(!isExtraCreditCategory && isExtraCreditItem) ||
+								(assignment.isNotCounted())) {
+
+							continue;
+						}
+
+						// Convert  the item weight from Double to BigDecimal
+						BigDecimal assignmentWeighting = new BigDecimal(assignment.getAssignmentWeighting().toString());
+
+						// GRBK-862 : keep track of smallest item weight scale
+						if(scale > assignmentWeighting.scale()) {
+							scale = assignmentWeighting.scale();
+						}
+
+						// Adding all the item weights
+						categoryAssignmentWeightSum = add(categoryAssignmentWeightSum, assignmentWeighting);
+					}
+
+					/*
+					 *  GRBK-862 : We scale the item weight sum value to match the smallest item scale that we encountered
+					 *  We are doing this for the following reason:
+					 *  Use Case:
+					 *  - user has an equally weighted category with three items
+					 *  - user unchecks the equally weighed option, and now each items shows a value of 33.33333
+					 *  -- however, in the database, the value is stored as 0.333333333333333
+					 *  - users adjusts one item weight so that they add up to 100%
+					 *  -- 33.33333 + 33.33333 + 33.33334 = 100
+					 *  - however, it calculates now 0.333333333333333 + 0.333333333333333 + 0.3333334 = 1.0000000666666666, which is greater than 1
+					 * 
+					 */
+					categoryAssignmentWeightSum = categoryAssignmentWeightSum.setScale(scale, RoundingMode.DOWN);
+					isCategoryFullyWeighted = categoryAssignmentWeightSum.compareTo(BigDecimal.ONE) == 0;
+
+					// If the weighted assignment sum doesn't add up to 100%, we just return and stop checking the rest
+					if(!isCategoryFullyWeighted) { 
+						return isCategoryFullyWeighted;
+					}
 				}
-
-				BigDecimal categoryAssignmentWeightSum = BigDecimal.ZERO;
-
-				// GRBK-862 : keeping tack of the smallest item weight scale. This we initialize it with a large enough number
-				int scale = 100;
-				
-				// Adding up all the assignment weights
-				for(Assignment assignment : categoryAssignmentList) {
-
-					boolean isExtraCreditItem = Util.checkBoolean(assignment.isExtraCredit()); 
-					// For equally weighted and points weighted categories, this is success: we have at least one
-					// non-extra credit item in a non-extra credit category or at least one item
-					// in an extra credit category 
-					if( (isCategoryWeightingItemsEqually || isCategoryPointsWeighted) 
-							&& !isExtraCreditCategory && !isExtraCreditItem) {
-						return true;
-					}
-
-					// Ignoring
-					// nulls - GRBK-717 - jpgorrono
-					// - extra credit assignment weights
-					// - not counted items in any category
-					if(null == assignment || assignment.getAssignmentWeighting() == null || // GRBK-717
-							(!isExtraCreditCategory && isExtraCreditItem) ||
-							(assignment.isNotCounted())) {
-
-						continue;
-					}
-
-					// Convert  the item weight from Double to BigDecimal
-					BigDecimal assignmentWeighting = new BigDecimal(assignment.getAssignmentWeighting().toString());
+				else
+				{
 					
-					// GRBK-862 : keep track of smallest item weight scale
-					if(scale > assignmentWeighting.scale()) {
-						scale = assignmentWeighting.scale();
+					/*
+					 * if we're equal weighted, then the actual weights do not matter.  
+					 * If we have one active assignment, the category is fine.
+					 * 
+					 * emphasis active.  So we have to walk the list in case the user 
+					 * unincluded it.  
+					 */
+					if(null == categoryAssignmentList || categoryAssignmentList.size() == 0) 
+					{
+						return false;
 					}
-					
-					// Adding all the item weights
-					categoryAssignmentWeightSum = add(categoryAssignmentWeightSum, assignmentWeighting);
-				}
-
-				/*
-				 *  GRBK-862 : We scale the item weight sum value to match the smallest item scale that we encountered
-				 *  We are doing this for the following reason:
-				 *  Use Case:
-				 *  - user has an equally weighted category with three items
-				 *  - user unchecks the equally weighed option, and now each items shows a value of 33.33333
-				 *  -- however, in the database, the value is stored as 0.333333333333333
-				 *  - users adjusts one item weight so that they add up to 100%
-				 *  -- 33.33333 + 33.33333 + 33.33334 = 100
-				 *  - however, it calculates now 0.333333333333333 + 0.333333333333333 + 0.3333334 = 1.0000000666666666, which is greater than 1
-				 * 
-				 */
-				categoryAssignmentWeightSum = categoryAssignmentWeightSum.setScale(scale, RoundingMode.DOWN);
-				isCategoryFullyWeighted = categoryAssignmentWeightSum.compareTo(BigDecimal.ONE) == 0;
-
-				// If the weighted assignment sum doesn't add up to 100%, we just return and stop checking the rest
-				if(!isCategoryFullyWeighted) { 
-					return isCategoryFullyWeighted;
+					else
+					{
+						// unfortunately we need to walk the list to see if we see one assignment that's active. 
+						for(Assignment a : categoryAssignmentList) 
+						{
+							if (!a.isNotCounted())
+							{
+								return true; 
+							}
+						}
+						return false; 
+					}
 				}
 			}
 		}
@@ -5905,8 +5937,6 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 					continue;
 
 				boolean isExtraCredit = Util.checkBoolean(category.isExtraCredit());
-
-
 				boolean doItemsInCategoryAddUp = isCategoryFullyWeighted(category);
 
 				// If one of the categories doesn't add up, then we can just fail the test now
