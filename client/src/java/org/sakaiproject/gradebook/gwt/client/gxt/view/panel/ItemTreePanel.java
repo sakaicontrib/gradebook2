@@ -41,6 +41,7 @@ import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.SelectionMode;
+import com.extjs.gxt.ui.client.core.El;
 import com.extjs.gxt.ui.client.data.BaseTreeLoader;
 import com.extjs.gxt.ui.client.data.BaseTreeModel;
 import com.extjs.gxt.ui.client.data.LoadEvent;
@@ -93,6 +94,7 @@ import com.extjs.gxt.ui.client.widget.treepanel.TreePanel.Joint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.Response;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
 
@@ -332,95 +334,126 @@ public class ItemTreePanel extends GradebookPanel {
 
 		TreeGridView itemGridView = new ItemTreeGridView() {
 
-			private String collapseHtml = GXT.IMAGES.tree_collapsed().getHTML();
-			private String expandHtml = GXT.IMAGES.tree_expanded().getHTML();
-
-			public String getTemplate(ModelData m, String id, String text,
-					AbstractImagePrototype icon, boolean checkable,
+			/*
+			 * (non-Javadoc)
+			 * @see com.extjs.gxt.ui.client.widget.treegrid.TreeGridView#getTemplate(com.extjs.gxt.ui.client.data.ModelData, java.lang.String, java.lang.String, com.google.gwt.user.client.ui.AbstractImagePrototype, boolean, com.extjs.gxt.ui.client.widget.treepanel.TreePanel.Joint, int)
+			 * 
+			 * GRBK-936 : GRBK-935
+			 * NOTE:
+			 * When we upgraded to GXT v2.2.3, I had to grab the getTemplate(...) source from the GXT TreeGridView class.
+			 * I ported the previous changes that we had w.r.t. formating the text. See bellow for more details
+			 */
+			public String getTemplate(ModelData m, String id, String text, AbstractImagePrototype icon, boolean checkable,
 					Joint joint, int level) {
-
+				
+				// GRBK-936 : Start adding
 				Item itemModel = (Item)m;
-
 				boolean isIncluded = itemModel.getIncluded() != null && itemModel.getIncluded().booleanValue();
 				boolean isItem = itemModel.getItemType() == ItemType.ITEM;
 				boolean isCategory = itemModel.getItemType() == ItemType.CATEGORY;
 				boolean isReleased = itemModel.getReleased() != null && itemModel.getReleased().booleanValue();
-				int dropLowest = itemModel.getDropLowest() == null ? 0 : itemModel.getDropLowest().intValue();			
-
+				int dropLowest = itemModel.getDropLowest() == null ? 0 : itemModel.getDropLowest().intValue();	
+				// GRBK-936 : Stop adding
+				
 				StringBuffer sb = new StringBuffer();
-				sb.append("<div id=\"");
+				sb.append("<div role=\"presentation\" unselectable=\"on\" id=\"");
 				sb.append(id);
 				sb.append("\" class=\"x-tree3-node\">");
 
-				sb.append("<div class=\"x-tree3-el\">");
+				String cls = "x-tree3-el";
+				if (GXT.isHighContrastMode) {
+					switch (joint) {
+					case COLLAPSED:
+						cls += " x-tree3-node-joint-collapse";
+						break;
+					case EXPANDED:
+						cls += " x-tree3-node-joint-expand";
+						break;
+					}
+				}
 
-				String h = "";
+				sb.append("<div role=\"presentation\" unselectable=\"on\" class=\"" + cls + "\">");
+
+				Element jointElement = null;
 				switch (joint) {
 				case COLLAPSED:
-					h = collapseHtml;
+					jointElement = (Element) tree.getStyle().getJointCollapsedIcon().createElement().cast();
 					break;
 				case EXPANDED:
-					h = expandHtml;
+					jointElement = (Element) tree.getStyle().getJointExpandedIcon().createElement().cast();
 					break;
-				default:
-					h = "<img src=\"" + GXT.BLANK_IMAGE_URL
-					+ "\" style='width: 16px'>";
+				}
+				if (jointElement != null) {
+					El.fly(jointElement).addStyleName("x-tree3-node-joint");
 				}
 
 				sb.append("<img src=\"");
 				sb.append(GXT.BLANK_IMAGE_URL);
 				sb.append("\" style=\"height: 18px; width: ");
-				sb.append(level * 18);
+				sb.append(level * getIndenting(findNode(m)));
 				sb.append("px;\" />");
-				sb.append(h);
+				sb.append(jointElement == null ? "<img src=\"" + GXT.BLANK_IMAGE_URL
+						+ "\" style=\"width: 16px\" class=\"x-tree3-node-joint\" />" : DOM.toString(jointElement));
 				if (checkable) {
-					sb.append(GXT.IMAGES.unchecked().getHTML());
+					Element e = (Element) GXT.IMAGES.unchecked().createElement().cast();
+					El.fly(e).addStyleName("x-tree3-node-check");
+					sb.append(DOM.toString(e));
 				} else {
-					sb.append("<span></span>");
+					sb.append("<span class=\"x-tree3-node-check\"></span>");
 				}
 				if (icon != null) {
-					sb.append(icon.getHTML());
+					Element e = icon.createElement().cast();
+					El.fly(e).addStyleName("x-tree3-node-icon");
+					sb.append(DOM.toString(e));
 				} else {
-					sb.append("<span></span>");
+					sb.append("<span class=\"x-tree3-node-icon\"></span>");
 				}
-				sb.append("<span class=\"x-tree3-node-text");
+				sb.append("<span unselectable=\"on\" class=\"x-tree3-node-text"); // GRBK-936 : Start editing/adding : keep the <span tag open
+				
 				boolean isExtraCredit = itemModel.getExtraCredit() != null && itemModel.getExtraCredit().booleanValue();
 
-				if (!isIncluded && (isItem || isCategory))
-				{
-					if (isExtraCredit)
-					{
+				if (!isIncluded && (isItem || isCategory)) {
+					
+					if (isExtraCredit) {
+						
 						sb.append(" ").append(resources.css().gbNotIncludedEC());
 					}
-					else
-					{
+					else {
+						
 						sb.append(" ").append(resources.css().gbNotIncluded());
 					}
 				}
 
-				if (!isItem) 
+				if (!isItem)  {
+					
 					sb.append(" ").append(resources.css().gbCellStrong());
-				else if (isReleased)
-				{
-					if (isExtraCredit)
-					{
+				
+				} else if (isReleased) {
+					
+					if (isExtraCredit) {
+						
 						sb.append(" ").append(resources.css().gbReleasedEC());
 					}
-					else
-					{
+					else {
+						
 						sb.append(" ").append(resources.css().gbReleased());		
 					}
 				}
 
-				if (isExtraCredit) 
+				if (isExtraCredit) {
+					
 					sb.append(" ").append(resources.css().gbCellExtraCredit());
+				}
+				
 				sb.append("\">&nbsp;");
 				if (dropLowest > 0) {
+					
 					sb.append("<font style=\"font-style: regular;font-size:9pt\"> -").append(dropLowest).append("</font>&nbsp;");
 				}
+				// GRBK-936 : Stop editing/adding
+				
 				sb.append(text);
-
-				sb.append("</span>");		
+				sb.append("</span>");
 
 				sb.append("</div>");
 				sb.append("</div>");
