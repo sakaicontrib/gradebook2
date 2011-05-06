@@ -1,10 +1,6 @@
 /**********************************************************************************
 *
-* $Id:$
-*
-***********************************************************************************
-*
-* Copyright (c) 2008, 2009 The Regents of the University of California
+* Copyright (c) 2008, 2009, 2010, 2011 The Regents of the University of California
 *
 * Licensed under the
 * Educational Community License, Version 2.0 (the "License"); you may
@@ -20,9 +16,9 @@
 * permissions and limitations under the License.
 *
 **********************************************************************************/
+
 package org.sakaiproject.gradebook.gwt.client;
 
-import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.gxt.JsonUtil;
 import org.sakaiproject.gradebook.gwt.client.gxt.controller.NotificationController;
 import org.sakaiproject.gradebook.gwt.client.gxt.controller.StartupController;
@@ -36,12 +32,7 @@ import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
 import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Registry;
-import com.extjs.gxt.ui.client.event.BaseEvent;
-import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
-import com.extjs.gxt.ui.client.util.DelayedTask;
-import com.extjs.gxt.ui.client.widget.Info;
-import com.extjs.gxt.ui.client.widget.Label;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.Request;
@@ -81,21 +72,7 @@ public class GradebookApplication implements EntryPoint {
 		Registry.register(AppConstants.I18N, i18n);
 		Registry.register(AppConstants.I18N_TEMPLATES, i18nTemplates);
 
-		String layout = Cookies.getCookie(AppConstants.AUTH_COOKIE_NAME);
-		
-		AuthModel authModel = null;
-
-		if (layout != null && layout.length() > 0) {			
-			authModel = new AuthModel();
-			authModel.parse(layout);
-		}
-		
-		if (authModel != null && authModel.getPlacementId() != null) {
-			readAuthorization(authModel);
-		} else {
-			getAuthorization(0);
-		}
-		findApplicationModel();
+		getApplicationSetup();		
 	}
 	
 	private String getVersion() {
@@ -106,121 +83,77 @@ public class GradebookApplication implements EntryPoint {
 		
 		return version;
 	}
-	
-	private void getAuthorization(final int i) {
-		
+
+	/*
+	 * This method get both the AuthModel and ApplicationSetup objects
+	 */
+	private void getApplicationSetup() {
 
 		RestBuilder builder = RestBuilder.getInstance(RestBuilder.Method.GET, 
 				GWT.getModuleBaseURL(),
 				AppConstants.REST_FRAGMENT,
-				AppConstants.AUTHORIZATION_FRAGMENT);
-	
-		builder.sendRequest(200, 400, null, new RestCallback() {
+				AppConstants.STARTUP_FRAGMENT);
+
+		builder.sendRequest(200, 202, null, new RestCallback() {
 
 			public void onError(Request request, Throwable exception) {
+				
 				warnUser(exception);
 			}
-			
-			public void onSuccess(Request request, Response response) {
-				AuthModel authModel = new AuthModel();
-				authModel.parse(response.getText());
-				readAuthorization(authModel);
+
+			public void onFailure(Request request, Throwable exception) {
+
+				// TODO: do we need to do retries like it used to in the
+				// deprecated getApplicationModel() method?
+				warnUser(exception);
 			}
-		
+
+			public void onSuccess(Request request, Response response) {
+
+				EntityOverlay overlay = JsonUtil.toOverlay(response.getText());
+
+				ApplicationSetup applicationSetup = new ApplicationModel(overlay);
+				
+				String authToken = applicationSetup.getAuthorizationDetails();
+				
+				AuthModel authModel = new AuthModel();
+				authModel.parse(authToken);
+				
+				if (GWT.isScript()) {
+					String placementId = authModel.getPlacementId();
+					if (placementId != null) {
+						String modifiedId = placementId.replace('-', 'x');
+						resizeMainFrame("Main" + modifiedId, screenHeight);
+					}
+				}
+				
+				processApplicationSetup(authModel, applicationSetup);
+			}
 		});
 	}
 	
-	private void readAuthorization(AuthModel authModel) {
-		if (GWT.isScript()) {
-			String placementId = authModel.getPlacementId();
-			if (placementId != null) {
-				String modifiedId = placementId.replace('-', 'x');
-				resizeMainFrame("Main" + modifiedId, screenHeight);
-			}
-		}
+	private void warnUser(Throwable e) {
+		
+		GXT.hideLoadingPanel("loading");
+		RootPanel.get().clear();
+		RootPanel rootPanel = RootPanel.get("alert");
+		rootPanel.clear();
+		String warning = e == null ? i18n.gradebookApplicationWarnUser() : e.getMessage();
+		rootPanel.add(new HTML(warning));
+	}
+	
+	private void processApplicationSetup(AuthModel authModel, ApplicationSetup applicationSetup) {
+
+		Registry.register(AppConstants.APP_MODEL, applicationSetup);
 		
 		dispatcher.dispatch(GradebookEvents.Load.getEventType(), authModel);
 		GXT.hideLoadingPanel("loading");
 	}
 	
-	private void findApplicationModel() {
-		String appAsJson = Cookies.getCookie(AppConstants.APP_COOKIE_NAME);
-		
-		if (appAsJson != null && !appAsJson.equals("")) {
-			Info.display("Application", "As cookie");
-			onApplicationModelSuccess(appAsJson);
-		} else {
-			getApplicationModel(0);
-		}
-	}
-	
-	private DelayedTask retrieveDataTask;
-	
-	private void getApplicationModel(final int i) {
-		
-		RestBuilder builder = RestBuilder.getInstance(Method.GET, 
-				GWT.getModuleBaseURL(),
-				AppConstants.REST_FRAGMENT,
-				AppConstants.APPLICATION_FRAGMENT);
-
-
-		builder.sendRequest(200, 202, null, new RestCallback() {
-
-			public void onError(Request request, Throwable caught) {
-				onApplicationModelFailure(i, caught);
-			}
-			
-			public void onFailure(Request request, Throwable exception) {
-				if (i > 5)
-					super.onError(request, exception);
-				
-				if (retrieveDataTask != null)
-					retrieveDataTask.cancel();
-				
-				retrieveDataTask = new DelayedTask(new Listener<BaseEvent>() {
-					
-					public void handleEvent(BaseEvent be) {
-						getApplicationModel(i+1);
-					}
-					
-				});
-				
-				retrieveDataTask.delay(500*(i+1));
-			}
-
-			public void onSuccess(Request request, Response response) {
-				onApplicationModelSuccess(response.getText());
-			}
-
-		});
-
-	}
-	
-	private void warnUser(Throwable e) {
-		GXT.hideLoadingPanel("loading");
-		RootPanel.get().clear();
-		RootPanel rootPanel = RootPanel.get("alert");
-		rootPanel.clear();
-		String warning = e == null ? "Unable to communicate with server." : e.getMessage();
-		rootPanel.add(new HTML(warning));
-	}
-	
-	private void onApplicationModelSuccess(String result) {
-		EntityOverlay overlay = JsonUtil.toOverlay(result);
-		
-		ApplicationSetup applicationModel = new ApplicationModel(overlay);
-		
-		Boolean hasControllers = Registry.get(AppConstants.HAS_CONTROLLERS);
-		if (DataTypeConversionUtil.checkBoolean(hasControllers)) {
-			Dispatcher.forwardEvent(GradebookEvents.Startup.getEventType(), applicationModel);
-		} else {
-			Registry.register(AppConstants.APP_MODEL, applicationModel);
-		}
-	}
-	
 	private void onApplicationModelFailure(int i, Throwable caught) {
+		
 		// If this is the first try, then give it another shot
-		dispatcher.dispatch(GradebookEvents.Exception.getEventType(), new NotificationEvent(caught, "Unable to communicate with server"));
+		dispatcher.dispatch(GradebookEvents.Exception.getEventType(), new NotificationEvent(caught, i18n.gradebookApplicaitonFailure()));
 	}
 	
 	public native void resizeMainFrame(String placementId, int setHeight) /*-{	
@@ -266,7 +199,6 @@ public class GradebookApplication implements EntryPoint {
 		       objToResize.height=newHeight + "px";
 	
 		    } 
-		    
 	 }-*/;
 
 }

@@ -113,4 +113,14 @@ public class ApplicationSetupImpl extends BaseModel implements
 	public boolean isShowWeightedEnabled() {
 		return ("true".equals(get(ApplicationKey.S_SH_WTD_ENABLED.name())));
 	}
+
+	public void setAuthorizationDetails(String authorizationDetails) {
+		
+		set(ApplicationKey.S_AUTH_DETAILS.name(), authorizationDetails);
+	}
+
+	public String getAuthorizationDetails() {
+		
+		return get(ApplicationKey.S_AUTH_DETAILS.name());
+	}
 }

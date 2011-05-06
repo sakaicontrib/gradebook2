@@ -6,7 +6,8 @@ public enum ApplicationKey {
 	S_HELPURL("helpUrl"), 
 	S_FIND_BY_FIELD("searchRosterByFieldEnabled"), 
 	V_ENBLD_GRD_TYPES("enabledGradeTypes"),
-	S_SH_WTD_ENABLED("showWeightedEnabled");
+	S_SH_WTD_ENABLED("showWeightedEnabled"),
+	S_AUTH_DETAILS("authorizationDetails");
 
 	
 	private String property;

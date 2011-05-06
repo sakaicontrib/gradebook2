@@ -39,5 +39,9 @@ public interface ApplicationSetup {
 	public abstract boolean isShowWeightedEnabled();
 
 	public abstract void setShowWeightedEnabled(boolean isShowWeightedEnabled);
+	
+	public abstract void setAuthorizationDetails(String authorizationDetails);
+	
+	public abstract String getAuthorizationDetails();
 
 }

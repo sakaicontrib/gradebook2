@@ -6,6 +6,12 @@ import javax.ws.rs.Produces;
 
 import org.sakaiproject.gradebook.gwt.client.exceptions.GradebookCreationException;
 
+/*
+ * @deprecated As of 1.5.0
+ * 
+ */
+
+@Deprecated
 @Path("application")
 public class Application extends Resource {
 	
@@ -14,5 +20,4 @@ public class Application extends Resource {
     public String get() throws GradebookCreationException {
 		return toJson(service.getApplicationSetup());
 	}
-
 }

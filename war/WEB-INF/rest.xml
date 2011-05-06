@@ -23,11 +23,13 @@
 		 <property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/> 
 	</bean>
 	
+	<!-- DEPRECATED since v1.5.0 : See Startup REST EndPoint
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Application" 
 		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
 	
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Authorization" 
 		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+	-->
 	
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Configuration"
 		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
@@ -86,5 +88,6 @@
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.SubmitFinalGrades" 
 		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
 		  
-
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Startup" 
+		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
 </beans>

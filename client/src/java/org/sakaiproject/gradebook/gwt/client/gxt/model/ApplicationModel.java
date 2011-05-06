@@ -148,4 +148,15 @@ public class ApplicationModel extends EntityModel implements ApplicationSetup {
 	public boolean isShowWeightedEnabled() {
 		return (Boolean.TRUE.toString().equals(get(ApplicationKey.S_SH_WTD_ENABLED.name())));
 	}
+
+	public void setAuthorizationDetails(String authorizationDetails) {
+		
+		set(ApplicationKey.S_AUTH_DETAILS.name(), authorizationDetails);
+		
+	}
+
+	public String getAuthorizationDetails() {
+		
+		return get(ApplicationKey.S_AUTH_DETAILS.name());
+	}
 }

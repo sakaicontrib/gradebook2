@@ -1,3 +1,22 @@
+/**********************************************************************************
+*
+* Copyright (c) 2008, 2009, 2010, 2011 The Regents of the University of California
+*
+* Licensed under the
+* Educational Community License, Version 2.0 (the "License"); you may
+* not use this file except in compliance with the License. You may
+* obtain a copy of the License at
+* 
+* http://www.osedu.org/licenses/ECL-2.0
+* 
+* Unless required by applicable law or agreed to in writing,
+* software distributed under the License is distributed on an "AS IS"
+* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+* or implied. See the License for the specific language governing
+* permissions and limitations under the License.
+*
+**********************************************************************************/
+
 package org.sakaiproject.gradebook.gwt.client.gxt.controller;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
@@ -48,7 +67,7 @@ public class StartupController extends Controller {
 		if (isUserAbleToGrade) {
 			GWT.runAsync(new RunAsyncCallback() {
 				public void onFailure(Throwable caught) {
-					RootPanel.get().add(new HTML("Server failed to respond with necessary data. Please ensure that your network connection is working and reload."));
+					RootPanel.get().add(new HTML(i18n.serverNetworkConnectionError()));
 				}
 	
 				public void onSuccess() {
@@ -56,13 +75,13 @@ public class StartupController extends Controller {
 					dispatcher.addController(new InstructorController(i18n, isUserAbleToEditItems, isNewGradebook));					
 					dispatcher.addController(new ServiceController(i18n));
 					
-					doNextStep();
+					doNextStep(i18n);
 				}
 			});
 		} else if (isUserAbleToViewOwnGrades) {
 			GWT.runAsync(new RunAsyncCallback() {
 				public void onFailure(Throwable caught) {
-					RootPanel.get().add(new HTML("Server failed to respond with necessary data. Please ensure that your network connection is working and reload."));					
+					RootPanel.get().add(new HTML(i18n.serverNetworkConnectionError()));					
 				}
 	
 				public void onSuccess() {
@@ -70,22 +89,26 @@ public class StartupController extends Controller {
 					dispatcher.addController(new StudentController());
 					dispatcher.addController(new ServiceController(i18n));
 					
-					doNextStep();
+					doNextStep(i18n);
 				}
 			});
 		} else {
-			RootPanel.get().add(new HTML("This user is not authorized to view grade information."));
+			RootPanel.get().add(new HTML(i18n.userAuthorizationError()));
 		}
 	}
 	
-	private void doNextStep() {
+	private void doNextStep(I18nConstants i18n) {
+		
 		ApplicationSetup appModel = Registry.get(AppConstants.APP_MODEL);
 		
-		if (appModel == null) 
-			Registry.register(AppConstants.HAS_CONTROLLERS, Boolean.TRUE);
-		else 
+		if (appModel != null) {
+		
 			Dispatcher.forwardEvent(GradebookEvents.Startup.getEventType(), appModel);
-	
+		}
+		else {
+			
+			RootPanel.get().add(new HTML(i18n.applicationStartupError()));
+		}
 	}
 
 }

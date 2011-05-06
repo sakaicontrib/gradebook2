@@ -378,4 +378,17 @@ public interface I18nConstants extends Constants {
 	
 	String performanceItemFormPanelMsg(); 
 	
+	// GradebookApplication
+	String gradebookApplicationWarnUser();
+	String gradebookApplicaitonFailure();
+	
+	// StartupController
+	String serverNetworkConnectionError();
+	String userAuthorizationError();
+	String applicationStartupError();
+	
+	// GRBK-932
+	String columnConfigVisabilityError();
+	String columnConfigVisabilityErrorMessage();
+	
 }

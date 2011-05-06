@@ -25,6 +25,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityOverlay;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.FixedColumnModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.Configuration;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
@@ -261,7 +262,7 @@ public class ItemTreePanel extends GradebookPanel {
 			}
 
 		};
-
+		
 		percentCourseGradeColumn =  new ColumnConfig(ItemKey.D_PCT_GRD.name(), 
 				i18n.percentCourseGradeFieldLabel(), i18n.percentCourseGradeFieldLabel().length() * CHARACTER_WIDTH + 30);
 		percentCourseGradeColumn.setAlignment(HorizontalAlignment.RIGHT);
@@ -282,7 +283,50 @@ public class ItemTreePanel extends GradebookPanel {
 		pointsColumn.setRenderer(numericRenderer);
 		pointsColumn.setSortable(false);
 		columns.add(pointsColumn);
-
+		
+		// GRBK-932
+		ApplicationSetup applicationSetup = Registry.get(AppConstants.APP_MODEL);
+		if(null != applicationSetup) {
+			List<Gradebook> gradebooks = applicationSetup.getGradebookModels();
+			if(gradebooks.size() > 0) {
+				// Currently, we only have one gradebook
+				Gradebook gradebook = gradebooks.get(0);
+				if(null != gradebook) {
+					
+					Item item = gradebook.getGradebookItemModel();
+					if(null != item) {
+						
+						CategoryType categoryType = item.getCategoryType();
+						
+						if(CategoryType.WEIGHTED_CATEGORIES == categoryType) {
+							
+							percentCourseGradeColumn.setHidden(false);
+							percentCategoryColumn.setHidden(false);
+							pointsColumn.setHidden(false);
+						}
+						else {
+							
+							percentCourseGradeColumn.setHidden(true);
+							percentCategoryColumn.setHidden(true);
+							pointsColumn.setHidden(false);		
+						}
+					}
+					else {
+						Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.columnConfigVisabilityError(), i18n.columnConfigVisabilityErrorMessage())); 
+					}
+				}
+				else {
+					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.columnConfigVisabilityError(), i18n.columnConfigVisabilityErrorMessage()));
+				}
+			}
+			else {
+				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.columnConfigVisabilityError(), i18n.columnConfigVisabilityErrorMessage()));
+			}
+		}
+		else {
+			Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.columnConfigVisabilityError(), i18n.columnConfigVisabilityErrorMessage()));
+		}
+		
 		cm = new ColumnModel(columns);
 
 
@@ -666,8 +710,8 @@ public class ItemTreePanel extends GradebookPanel {
 				break;
 			}
 			
-			// GRBK-932
-			itemGrid.repaint();
+//			// GRBK-932
+//			itemGrid.repaint();
 		}
 	}
 
