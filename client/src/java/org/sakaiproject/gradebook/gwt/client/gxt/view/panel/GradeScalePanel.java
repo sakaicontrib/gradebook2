@@ -47,6 +47,7 @@ import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
+import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
 import com.extjs.gxt.ui.client.data.ListLoader;
 import com.extjs.gxt.ui.client.data.LoadEvent;
@@ -318,6 +319,9 @@ public class GradeScalePanel extends GradebookPanel {
 		
 		addButton(resetToDefaultButton); 
 		addButton(closeButton);
+		
+		// GRBK-959
+		setScrollMode(Scroll.AUTO);
 	}
 
 	public void onFailedToUpdateItem(ItemUpdate itemUpdate) {
