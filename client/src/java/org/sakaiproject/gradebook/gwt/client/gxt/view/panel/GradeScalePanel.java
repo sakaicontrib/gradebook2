@@ -120,6 +120,8 @@ public class GradeScalePanel extends GradebookPanel {
 	private boolean isVisualizationApiLoaded = false;
 	
 	private Label instructionLabel;
+	
+	private boolean hasActiveNotifications = false;
 
 	public GradeScalePanel(boolean isEditable, final TreeView treeView) {
 
@@ -167,6 +169,7 @@ public class GradeScalePanel extends GradebookPanel {
 
 				if (currentGradeScaleId != null && !currentGradeScaleId.equals(selectedItemModel.getGradeScaleId())) {
 
+					showUserFeedback();
 					Record record = treeView.getTreeStore().getRecord((ItemModel)selectedItemModel);
 					record.beginEdit();
 					record.set(ItemKey.L_GRD_SCL_ID.name(), currentGradeScaleId);
@@ -275,8 +278,8 @@ public class GradeScalePanel extends GradebookPanel {
 				// Only update if the user actually changed a grade scale value
 				if(null != nValue && nValue.compareTo(oValue) != 0) {
 
+					showUserFeedback();
 					Dispatcher.forwardEvent(GradebookEvents.UpdateGradeMap.getEventType(), new GradeMapUpdate(record, newValue, originalValue));
-
 				}
 			}
 		});
@@ -285,6 +288,9 @@ public class GradeScalePanel extends GradebookPanel {
 
 			@Override
 			public void componentSelected(ButtonEvent be) {
+				
+				hideUserFeedback();
+				
 				Dispatcher.forwardEvent(GradebookEvents.HideEastPanel.getEventType(), Boolean.FALSE);
 			}
 
@@ -444,8 +450,8 @@ public class GradeScalePanel extends GradebookPanel {
 
 	private void getStatisticsChartData() {
 
-		Dispatcher.forwardEvent(GradebookEvents.ShowUserFeedback.getEventType(), i18n.statisticsGradebookUpdatingChart(), false);
-
+		showUserFeedback();
+		
 		Gradebook gbModel = Registry.get(AppConstants.CURRENT);
 
 		RestBuilder builder = RestBuilder.getInstance(
@@ -461,13 +467,13 @@ public class GradeScalePanel extends GradebookPanel {
 
 			public void onError(Request request, Throwable caught) {
 
-				Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType());
+				hideUserFeedback();
 				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsDataErrorMsg(), true));
 			}
 
 			public void onFailure(Request request, Throwable exception) {
 
-				Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType());
+				hideUserFeedback();
 				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsDataErrorMsg(), true));
 			}
 
@@ -503,9 +509,29 @@ public class GradeScalePanel extends GradebookPanel {
 
 				statisticsChartPanel.show();
 				
-				Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType());
+				hideUserFeedback();
 			}
 		});
+	}
+	
+	private void showUserFeedback() {
+
+		if(!hasActiveNotifications) {
+		
+			Dispatcher.forwardEvent(GradebookEvents.ShowUserFeedback.getEventType(), i18n.statisticsGradebookUpdatingChart(), false);
+			statisticsChartPanel.mask();
+			hasActiveNotifications = true;
+		}
+	}
+	
+	private void hideUserFeedback() {
+		
+		if(hasActiveNotifications) {
+		
+			Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType(), false);
+			statisticsChartPanel.unmask();
+			hasActiveNotifications = false;
+		}
 	}
 }
 

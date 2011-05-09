@@ -66,7 +66,7 @@ public abstract class AppView extends View {
 	protected LayoutContainer viewport;
 	
 	private Label userFeedbackLabel;
-	private FxConfig fxFadeOutConfig = new FxConfig(2000);
+	private FxConfig fxFadeOutConfig = new FxConfig(1000);
 	
 	public AppView(Controller controller) {
 		super(controller);
