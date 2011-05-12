@@ -5598,18 +5598,14 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 				BigDecimal gradebookWeightSum = BigDecimal.ZERO;
 				BigDecimal gradebookPointsSum = BigDecimal.ZERO;
 				for (GradeItem categoryGradeItem : categoryGradeItems) {
+
 					boolean isExtraCredit = categoryGradeItem.getExtraCredit() != null && categoryGradeItem.getExtraCredit().booleanValue();
-					boolean isUnweighted = categoryGradeItem.getIncluded() == null || ! categoryGradeItem.getIncluded().booleanValue();
+					boolean isNotIncluded = categoryGradeItem.getIncluded() == null || ! categoryGradeItem.getIncluded().booleanValue();
 					boolean isRemoved = Util.checkBoolean(categoryGradeItem.getRemoved());
 
 					if (!isRemoved || isNotInCategoryMode) {
-						double categoryWeight = categoryGradeItem.getWeighting() == null ? 0d : ( multiply(new BigDecimal(Double.toString(categoryGradeItem.getWeighting())), BIG_DECIMAL_100)).doubleValue();
 
 						List<GradeItem> items = categoryGradeItem.getChildren();
-
-						if (!isNotInCategoryMode) {
-							gradebookGradeItem.addChild(categoryGradeItem);
-						}
 
 						if (categoryId != null && categoryGradeItem.getIdentifier().equals(String.valueOf(categoryId)))
 							categoryGradeItem.setActive(true);
@@ -5618,8 +5614,8 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 						double categoryPoints = categoryGradeItem.getPoints() == null ? 0d : categoryGradeItem.getPoints().doubleValue();
 
-						if (!isExtraCredit && !isUnweighted) {
-							categoryWeight = categoryGradeItem.getPercentCourseGrade() == null ? 0d : categoryGradeItem.getPercentCourseGrade().doubleValue();
+						if (!isExtraCredit && !isNotIncluded) {
+							double categoryWeight = categoryGradeItem.getPercentCourseGrade() == null ? 0d : categoryGradeItem.getPercentCourseGrade().doubleValue();
 							gradebookWeightSum = add(gradebookWeightSum, BigDecimal.valueOf(categoryWeight));
 							gradebookPointsSum = add(gradebookPointsSum, BigDecimal.valueOf(categoryPoints));
 						}

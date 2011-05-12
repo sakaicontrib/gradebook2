@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -61,6 +62,8 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Row;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
@@ -1692,29 +1695,11 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		return gType; 
 		
 	}
-	
-	private void processStructureInformationForGradebookRow(GradeItem gradebookItemModel, String[] gradebookRow)
-	{
-
-		if (gradebookRow != null && gradebookItemModel != null) {
-			CategoryType cType = getGradebookCategoryTypeFromGradebookRow(gradebookRow, gradebookItemModel);
-			GradeType gType = getGradeTypeFromGradebookRow(gradebookRow, gradebookItemModel);
-			String gradebookName = getGradebookNameFromGradebookRow(gradebookRow, gradebookItemModel);
-			gradebookItemModel.setCategoryType(cType);
-			gradebookItemModel.setGradeType(gType);
-			gradebookItemModel.setName(gradebookName);
-		}
-
-	}
-		
+			
 	private void processStructureInformation(ImportExportInformation ieInfo, Map<StructureRow, String[]> structureColumnsMap) throws InvalidInputException
 	{
-		// Now, modify gradebook structure according to the data stored
-		String[] gradebookRow = structureColumnsMap.get(StructureRow.GRADEBOOK);
 		GradeItem gradebookItemModel = (GradeItem) ieInfo.getGradebookItemModel();
 		
-		// this reads from the "Gradebook:" row and processes its options. 
-		processStructureInformationForGradebookRow(gradebookItemModel, gradebookRow);
 		// this reads from a set of  having to do with display and scaled EC liens. 
 		processStructureInformationForDisplayAndScaledOptions(gradebookItemModel, ieInfo, structureColumnsMap);
 		
@@ -2158,20 +2143,33 @@ private GradeItem buildNewCategory(String curCategoryString,
 		Item gradebookItemModel = ieInfo.getGradebookItemModel();
 		CategoryType categoryType = gradebookItemModel.getCategoryType();
 		String itemName = header.getHeaderName();
+		CategoryItemPair p = null;
+		GradeItem itemModel = null;
+		GradeItem categoryModel = null;
 		
 		if (header.getField() == Field.S_ITEM) {
 			// If we have the points and percent Category from the structure information, this will put it where it needs to be. 
 			handlePointsAndPercentCategoryForHeader(pointsColumns, percentCategoryColumns, headerNumber, header); 
+			try {
+				p = getCategoryAndItemInformation(categoryType, itemName, gradebookItemModel, header, headerNumber, ieInfo);
+			} catch (BusinessRuleException e) {
+				throw new ImportFormatException(e.getMessage());
+			} 
+			itemModel = p.getItem();
+			categoryModel = p.getCategory();
+		} else { 
+			itemModel = getItemWithNameFromCategoryPairs(itemName, ieInfo.getMatchedItems());
+			if (null == itemModel) {
+				itemModel = getItemWithNameFromCategoryPairs(itemName, ieInfo.getNewItems());
+				if (null == itemModel) {
+					itemModel = findModelByName(itemName, gradebookItemModel);
+				}
+			}
+			
 		}
 		
-		CategoryItemPair p = null;
-		try {
-			p = getCategoryAndItemInformation(categoryType, itemName, gradebookItemModel, header, headerNumber, ieInfo);
-		} catch (BusinessRuleException e) {
-			throw new ImportFormatException(e.getMessage());
-		} 
-		GradeItem itemModel = p.getItem();
-		GradeItem categoryModel = p.getCategory();
+		
+		
 		boolean isNewItem = false;
 		
 		if (itemModel == null && header.getField() == Field.S_COMMENT) {
@@ -2182,7 +2180,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 		boolean itemMatched = ieInfo.getMatchedItems().contains(p);
 
 		if (itemModel == null || 
-				header.getField()==Field.S_ITEM
+				header.getField() == Field.S_ITEM
 				&& itemMatched) {
 			isNewItem = true;
 			itemModel =  createNewGradeItem(header, headerNumber);
@@ -2190,14 +2188,14 @@ private GradeItem buildNewCategory(String curCategoryString,
 				categoryModel = ieInfo.getCategoryIdItemMap().get("-1");
 			}
 		} else {
-			if (!ieInfo.getMatchedItems().contains(p)) {
+			if (!ieInfo.getMatchedItems().contains(p) && header.getField() == Field.S_ITEM) {
 				ieInfo.getMatchedItems().add(p);
 			}
 		}
 
 
 		if (header.getField() == Field.S_ITEM) {
-			decorateItemFromHeader(header, itemModel, categoryModel); 
+			decorateItemFromHeader(header, itemModel); 
 		}
 
 		if (isNewItem) {
@@ -2206,7 +2204,9 @@ private GradeItem buildNewCategory(String curCategoryString,
 			ieInfo.getNewItems().add(p);
 		} else {
 			header.setId(itemModel.getIdentifier());
-			putItemInGradebookModelHierarchy(categoryType, itemModel, gradebookItemModel, categoryModel, false); 
+			if(header.getField() == Field.S_ITEM) {
+				putItemInGradebookModelHierarchy(categoryType, itemModel, gradebookItemModel, categoryModel, false); 
+			}
 		}
 	}
 	
@@ -2225,7 +2225,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 
 
 	private void decorateItemFromHeader(ImportHeader header,
-			GradeItem itemModel, GradeItem categoryModel) throws ImportFormatException {
+			GradeItem itemModel) throws ImportFormatException {
 		/*
 		 * This stuff is because we can include indicators on the normal header row which have points and percent grade. 
 		 */
@@ -2241,7 +2241,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 			GradeItem itemModel, Item gradebookItemModel,
 			GradeItem categoryModel, boolean isNewItem) {
 
-		if (categoryType == CategoryType.NO_CATEGORIES) {
+		if (categoryType == CategoryType.NO_CATEGORIES || categoryModel == null && !isNewItem) {
 			((GradeItem)gradebookItemModel).addChild(itemModel);
 		} else if (categoryModel != null) {
 			if (categoryModel.getName() != null && categoryModel.getName().equals(AppConstants.DEFAULT_CATEGORY_NAME))
@@ -2447,7 +2447,6 @@ private GradeItem buildNewCategory(String curCategoryString,
 			if (!rawData.isNewAssignment()) // FIXME - i18n 
 				importFile.addNotes("The scantron assignment entered has previously been imported.  We have changed the assignment name so that it will be imported uniquely. If you wanted to replace the old data, then please change it back.");
 		}
-		
 		ieInfo.setGradebookItemModel(gradebookItemModel);
 		
 		ArrayList<Learner> importRows = new ArrayList<Learner>();
@@ -2466,13 +2465,11 @@ private GradeItem buildNewCategory(String curCategoryString,
 				readInHeaderRow(rawData, ieInfo, structureStop);
 				processStructureInformation(ieInfo, structureColumnsMap);
 				processHeaders(ieInfo, structureColumnsMap);
-				
 				// At this point, we need to remove assignments that are not in the import
 				// file
 				adjustGradebookItemModel(ieInfo);
-				
 				readInGradeDataFromImportFile(rawData, ieInfo, userDereferenceMap, importRows, structureStop, service);
-				GradeItem gradebookGradeItem = (GradeItem)ieInfo.getGradebookItemModel();
+				GradeItem gradebookGradeItem = (GradeItem)ieInfo.getGradebookItemModel();//+
 				service.decorateGradebook(gradebookGradeItem, null, null);
 				importFile.setGradebookItemModel(gradebookGradeItem);
 				importFile.setRows(importRows);
@@ -2540,9 +2537,19 @@ private GradeItem buildNewCategory(String curCategoryString,
 			if (dups.size() > 0) {
 				throw new RuntimeException(new BusinessRuleException(
 						"mutiple items with same name and no stucture: " + dups.get(0),
-						BusinessLogicCode.NoDuplicateItemNamesRule));
-			}
-			
+						BusinessLogicCode.NoDuplicateItemNamesRule)) {
+
+					private static final long serialVersionUID = 1L;
+
+					public String getMessage() {
+						if (getCause() != null) {
+							return getCause().getMessage();
+						}
+						return super.getMessage();
+					}
+				};
+		}
+
 			
 			for(Iterator<GradeItem> iter = gradeItem.getChildren().iterator(); iter.hasNext(); ) {
 
@@ -2664,23 +2671,25 @@ private GradeItem buildNewCategory(String curCategoryString,
 				if (itemName != null) {
 					String trimmed = itemName.trim();
 
-					if (trimmed.equals(name) && !names.contains(trimmed)) {
-						this.result = itemModel;
-						names.add(trimmed);
-					} else {
-						BusinessRuleException e = new BusinessRuleException("Multiple items with the name in the same tree branch", BusinessLogicCode.NoDuplicateItemNamesWithinCategoryRule);
-						e.getCodes().add(BusinessLogicCode.NoDuplicateItemNamesWithinCategoryRule);
-						throw new RuntimeException ( e ) {
-
-							private static final long serialVersionUID = 1L;
-
-							public String getMessage() {
-								if (getCause() != null) {
-									return getCause().getMessage();
+					if (trimmed.equals(name)) {
+						if(!names.contains(trimmed)) {
+							this.result = itemModel;
+							names.add(trimmed);
+						} else {
+							BusinessRuleException e = new BusinessRuleException("Multiple items with the name in the same tree branch", BusinessLogicCode.NoDuplicateItemNamesWithinCategoryRule);
+							e.getCodes().add(BusinessLogicCode.NoDuplicateItemNamesWithinCategoryRule);
+							throw new RuntimeException ( e ) {
+	
+								private static final long serialVersionUID = 1L;
+	
+								public String getMessage() {
+									if (getCause() != null) {
+										return getCause().getMessage();
+									}
+									return super.getMessage();
 								}
-								return super.getMessage();
-							}
-						};
+							};
+						}
 					}
 				}
 			}
@@ -2700,8 +2709,22 @@ private GradeItem buildNewCategory(String curCategoryString,
 
 
 	
-
-
+	protected String toJson(Object o, boolean prettyPrint) {
+		ObjectMapper mapper = new ObjectMapper();
+		if (prettyPrint)
+		{
+			mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true); 
+		}
+		StringWriter w = new StringWriter();
+		try {
+			mapper.writeValue(w, o);
+		} catch (Exception e) {
+			log.error("Caught an exception serializing to JSON: ", e);
+		}
+		
+		return w.toString();
+	}
+	
 	
 	
 }
@@ -2724,6 +2747,7 @@ class ImportExportInformation
 	boolean isUserNotFound;
 	
 	List<Integer> activeHeaderIndexes;
+	
 	public List<CategoryItemPair> getNewItems() {
 		return newItems;
 	}
@@ -2863,7 +2887,6 @@ class ImportExportInformation
 	public void setAssignmentPositionToCategoryIdQuick(String[] categoryRangeColumns) {
 		this.assignmentPositionToCategoryIdQuick = categoryRangeColumns;
 	}
-
 }
 /*
  * This class exists because the way the import file is structured.  Stuff like categories 
