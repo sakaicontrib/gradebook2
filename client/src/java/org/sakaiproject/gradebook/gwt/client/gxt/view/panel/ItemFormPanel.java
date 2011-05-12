@@ -152,6 +152,7 @@ public class ItemFormPanel extends GradebookPanel {
 	private Mode mode;
 
 	private boolean hasTreeItemDragAndDropMarker;
+	private boolean alertDone;
 
 	public ItemFormPanel() {
 		super();
@@ -162,7 +163,9 @@ public class ItemFormPanel extends GradebookPanel {
 		setScrollMode(Scroll.AUTO);
 		setLayout(new FlowLayout());
 		// GRBK-943
-		multiGradePanel = null; 
+		multiGradePanel = null;
+		alertDone = false; 
+		
 		initListeners();
 
 		formPanel = new FormPanel();
@@ -1680,7 +1683,11 @@ public class ItemFormPanel extends GradebookPanel {
 		{
 			if (multiGradePanel.getPagingToolBar().getPageSize() > AppConstants.ITEM_MANIP_PERFORMANCE_TRIGGER)
 			{
-				Window.alert(i18n.performanceItemFormPanelMsg()); 
+				if (!alertDone)
+				{
+					Window.alert(i18n.performanceItemFormPanelMsg());
+					alertDone = true; 
+				}
 			}
 		}
 	}
