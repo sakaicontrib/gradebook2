@@ -2641,11 +2641,8 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			e.printStackTrace();
 		}
 
-        eventTrackingService.post(
-        		eventTrackingService.newEvent("gradebook2.submitFinalGrades", 
-        				"/gradebook2/"+gradebookUid+"/count/" +studentDataList.size(), true)
-        				);
-
+		// GRBK-971
+		postEvent("gradebook2.submitFinalGrades", gradebookUid, "count", String.valueOf(studentDataList.size()));
 	}
 
 	public Boolean updateConfiguration(Long gradebookId, String field, String value) {
