@@ -27,7 +27,7 @@
 
 	<properties>
 		<gb2.version>1.5.0-SNAPSHOT</gb2.version>
-		<gxt.version>2.2.3</gxt.version>
+		<gxt.version>2.2.4-gwt22</gxt.version>
 		<gwt.version>2.3.0</gwt.version>
 		<gb2.commons.logging.version>1.0.4</gb2.commons.logging.version>
 		<gb2.jackson.version>1.1.1</gb2.jackson.version> 

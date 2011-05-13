@@ -129,6 +129,24 @@
     		<scope>compile</scope>
     	</dependency>
     	
+    	<!--
+    		The following tow javax.validaiton dependencies are needed because the gwt-maven-plugin v2.2.0 doesn't handle this GWT v2.3.0 dependency
+    		For more information, see: http://goo.gl/deqTg
+    	 -->
+    	<dependency>
+			<groupId>javax.validation</groupId>
+			<artifactId>validation-api</artifactId>
+			<version>1.0.0.GA</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.validation</groupId>
+			<artifactId>validation-api</artifactId>
+			<version>1.0.0.GA</version>
+			<classifier>sources</classifier>
+			<scope>provided</scope>
+		</dependency>
+    	
 	</dependencies>	
 </project>
 
