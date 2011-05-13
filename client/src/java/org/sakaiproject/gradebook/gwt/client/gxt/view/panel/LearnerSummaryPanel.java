@@ -98,6 +98,7 @@ public class LearnerSummaryPanel extends GradebookPanel {
 	private FlexTableContainer learnerInfoTable;
 
 	private boolean isPossibleGradeTypeChanged = false;
+	private int scoresDropped = 0;
 
 	public LearnerSummaryPanel() {
 		setHeaderVisible(false);
@@ -165,7 +166,8 @@ public class LearnerSummaryPanel extends GradebookPanel {
 
 	public void onChangeModel(ListStore<ModelData> learnerStore, TreeStore<ItemModel> treeStore, ModelData learner) {
 		this.learner = learner;
-		updateLearnerInfo(learner, false);
+		this.scoresDropped = 0;
+		
 
 		if (learner != null) {
 			verifyFormPanelComponents(treeStore, learnerStore);
@@ -191,6 +193,12 @@ public class LearnerSummaryPanel extends GradebookPanel {
 			if (item instanceof Field)
 				((Field<?>)item).setEnabled(true);
 		}
+		
+		/*
+		 *  GRBK-504 this call should occur after call to VerifyFieldState
+		 *  in order to get updated count for dropped grades
+		 */
+		updateLearnerInfo(learner, false);
 	}
 
 	public void onGradeTypeUpdated(Gradebook selectedGradebook) {
@@ -408,12 +416,23 @@ public class LearnerSummaryPanel extends GradebookPanel {
 		learnerInfoTable.setText(4, 1, (String)learnerGradeRecordCollection.get(LearnerKey.S_SECT.name()));
 		formatter.setHeight(4, 1, rowHeight);
 
-		learnerInfoTable.setText(5, 0, "Course Grade");
+		learnerInfoTable.setText(5, 0, i18n.courseGrade());
 		formatter.setStyleName(5, 0, resources.css().gbImpact());
 		formatter.setHeight(5, 0, rowHeight);
 		learnerInfoTable.setText(5, 1, (String)learnerGradeRecordCollection.get(LearnerKey.S_CRS_GRD.name()));
 		formatter.setHeight(5, 1, rowHeight);
 		learnerInfoPanel.show();
+		
+		learnerInfoTable.setText(6, 0, i18n.scoresDropped());
+		formatter.setStyleName(6, 0, resources.css().gbImpact());
+		formatter.setHeight(6, 0, rowHeight);
+		learnerInfoTable.setText(6, 1, "" + getCountOfScoresDropped());
+		formatter.setHeight(6, 1, rowHeight);
+		learnerInfoPanel.show();
+	}
+
+	private int getCountOfScoresDropped() {
+		return scoresDropped ;
 	}
 
 	private void verifyFormPanelComponents(TreeStore<ItemModel> treeStore, final ListStore<ModelData> learnerStore) {
@@ -534,6 +553,7 @@ public class LearnerSummaryPanel extends GradebookPanel {
 		if (isDropped) {
 			field.setData(FIELD_STATE_FIELD, Boolean.TRUE);
 			field.addInputStyleName(resources.css().gbCellDropped());
+			scoresDropped ++;
 		} else {
 			dropFlagValue = field.getData(FIELD_STATE_FIELD);
 			isDropped = dropFlagValue != null && dropFlagValue.booleanValue();

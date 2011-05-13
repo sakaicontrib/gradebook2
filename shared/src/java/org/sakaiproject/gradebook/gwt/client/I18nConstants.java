@@ -65,6 +65,7 @@ public interface I18nConstants extends Constants {
 	String columnTitleSection();
 	String commentName();
 	String confirmChangingWeightEquallyWeighted();
+	String courseGrade();
 	String createAndCloseButton();
 	String createButton();
 	String dateDueName();
@@ -258,6 +259,7 @@ public interface I18nConstants extends Constants {
 	String scaledExtraCreditFieldLabel();
 	String scaledExtraCreditToolTip();
 	String scoreName();
+	String scoresDropped();
 	String searchLearnerEmptyText();
 	String sectionEmptyText();
 	String sectionHeader();
