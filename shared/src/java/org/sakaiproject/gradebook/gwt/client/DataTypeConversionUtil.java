@@ -28,8 +28,8 @@ import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.ClassType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 
-
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 
 public class DataTypeConversionUtil {
@@ -61,7 +61,7 @@ public class DataTypeConversionUtil {
 	}
 	
 	public static String convertDateToString(Date d) {
-		return DateTimeFormat.getShortDateFormat().format(d);
+		return DateTimeFormat.getFormat(PredefinedFormat.DATE_SHORT).format(d);
 	}
 	
 	public static Integer convertStringToInteger(String s) {

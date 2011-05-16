@@ -89,6 +89,7 @@ import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
@@ -263,11 +264,11 @@ public class StudentPanel extends GradebookPanel {
 		column.setGroupable(false);
 		column.setAlignment(Style.HorizontalAlignment.RIGHT);
 		column.setMenuDisabled(true);
-		column.setRenderer(new GridCellRenderer() {
+		column.setRenderer(new GridCellRenderer<ModelData>() {
 
 			public Object render(ModelData model, String property,
 					com.extjs.gxt.ui.client.widget.grid.ColumnData config,
-					int rowIndex, int colIndex, ListStore store, Grid grid) {
+					int rowIndex, int colIndex, ListStore<ModelData> store, Grid<ModelData> grid) {
 
 				if (DataTypeConversionUtil.checkBoolean((Boolean)model.get(Key.B_DROPPED.name()))) {
 					return new StringBuilder().append("<span class=\"").append(resources.css().gbCellDropped()).append("\">")
@@ -288,7 +289,7 @@ public class StudentPanel extends GradebookPanel {
 
 		dateDueColumn = new ColumnConfig(Key.T_DATEDUE.name(), i18n.dateDueName(), 90);
 		dateDueColumn.setGroupable(false);
-		dateDueColumn.setDateTimeFormat(DateTimeFormat.getShortDateFormat());
+		dateDueColumn.setDateTimeFormat(DateTimeFormat.getFormat(PredefinedFormat.DATE_SHORT));
 		dateDueColumn.setMenuDisabled(true);
 		columns.add(dateDueColumn);
 
