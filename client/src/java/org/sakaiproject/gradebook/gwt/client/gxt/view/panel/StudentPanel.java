@@ -24,7 +24,6 @@ package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -32,11 +31,12 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
-import org.sakaiproject.gradebook.gwt.client.UrlArgsCallback;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
+import org.sakaiproject.gradebook.gwt.client.UrlArgsCallback;
 import org.sakaiproject.gradebook.gwt.client.gxt.NewModelCallback;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityOverlay;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.StatisticsComparator;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.StatisticsModel;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
@@ -70,10 +70,10 @@ import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.Html;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
+import com.extjs.gxt.ui.client.widget.form.FormPanel.LabelAlign;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.form.TextArea;
 import com.extjs.gxt.ui.client.widget.form.TextField;
-import com.extjs.gxt.ui.client.widget.form.FormPanel.LabelAlign;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
@@ -88,8 +88,8 @@ import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
@@ -153,7 +153,7 @@ public class StudentPanel extends GradebookPanel {
 		this.defaultTextArea.addInputStyleName(resources.css().gbTextAreaInput());
 		this.defaultTextField.addInputStyleName(resources.css().gbTextFieldInput());
 		this.displayRank = displayRank;
-		//this.statsList = null;
+		
 		setFrame(true);
 		setHeaderVisible(false);
 		setLayout(new FlowLayout());
@@ -875,20 +875,11 @@ public class StudentPanel extends GradebookPanel {
 
 		Statistics key = new StatisticsModel();
 		key.setAssignmentId(id);
-		idx = Collections.binarySearch(statsList, key, new Comparator<Statistics>() {
 
-			public int compare(Statistics o1, Statistics o2) {
-				if (o1 != null && o2 != null) {
-					String id1 = o1.getAssignmentId();
-					String id2 = o2.getAssignmentId();
-					if (id1 != null && id2 != null) {
-						return id1.compareTo(id2); 
-					}
-				}
-				return -1;
-			}
-
-		});
+		// GRBK-777
+		StatisticsComparator statisticsComparator = new StatisticsComparator();
+		Collections.sort(statsList, statisticsComparator);
+		idx = Collections.binarySearch(statsList, key, statisticsComparator);
 
 		if (idx >= 0)
 		{
