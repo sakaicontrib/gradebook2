@@ -115,10 +115,51 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.Window;
 
 public abstract class MultiGradeContentPanel extends GradebookPanel implements StudentModelOwner {
 
 	private enum PageOverflow { TOP, BOTTOM, NONE };
+	
+	class RefreshData 
+	{
+		private RefreshAction action; 
+		private boolean useExistingColumnModel; 
+		private Configuration configModel;
+		private List<FixedColumn> staticColumns;  
+		private ItemModel gradebookItemModel; 
+		
+		public RefreshData(RefreshAction action, boolean useExistingColumnModel, Configuration configModel, List<FixedColumn> staticColumns, ItemModel gradebookItemModel)
+		{
+			this.action = action; 
+			this.useExistingColumnModel = useExistingColumnModel; 
+			this.configModel = configModel; 
+			this.staticColumns = staticColumns; 
+			this.gradebookItemModel = gradebookItemModel; 
+		}
+
+		public RefreshAction getAction() {
+			return action;
+		}
+
+		public boolean isUseExistingColumnModel() {
+			return useExistingColumnModel;
+		}
+
+		public Configuration getConfigModel() {
+			return configModel;
+		}
+
+		public List<FixedColumn> getStaticColumns() {
+			return staticColumns;
+		}
+
+		public ItemModel getGradebookItemModel() {
+			return gradebookItemModel;
+		}
+		
+		
+	}; 
 
 	protected static final int DEFAULT_PAGE_SIZE = 19;
 
@@ -174,11 +215,17 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	private AriaToggleButton showWeightedToggleButton;
 	private String showWeightedString;
 	protected boolean isShowWeightedEnabled = false;
+	
+	protected boolean refreshOnShow; 
+	protected RefreshData refreshData; 
 
 	public MultiGradeContentPanel(ListStore<ModelData> store, boolean isImport) {
 		super();
 		this.isImport = isImport;
 
+		refreshOnShow = false; 
+		refreshData = null; 
+		
 		if (isImport) {
 			setHeading(i18n.multigradeImportHeader());
 			setHeaderVisible(true);
@@ -448,7 +495,6 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	}
 
 	public void onItemUpdated(Item itemModel) {
-
 		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 		final GradeType gradeType = selectedGradebook.getGradebookItemModel().getGradeType();
 
@@ -647,7 +693,6 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	}
 
 	public void onSwitchGradebook(Gradebook selectedGradebook) {
-
 		Configuration configModel = selectedGradebook.getConfigurationModel();
 		ItemModel gradebookItemModel = (ItemModel)selectedGradebook.getGradebookItemModel();
 		List<FixedColumn> staticColumns = selectedGradebook.getColumns();
@@ -1119,7 +1164,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 
 
 	@Override
-	protected void onRender(Element parent, int pos) {	    
+	protected void onRender(Element parent, int pos) {
 		super.onRender(parent, pos);
 	}
 
@@ -1317,18 +1362,26 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	protected void doRefreshGrid(RefreshAction action, boolean useExistingColumnModel, 
 			Configuration configModel, List<FixedColumn> staticColumns, ItemModel gradebookItemModel) {
 
-		if (!useExistingColumnModel || cm == null)
-			cm = newColumnModel(configModel, staticColumns, gradebookItemModel);
+		if (isVisible())
+		{
+			if (!useExistingColumnModel || cm == null)
+				cm = newColumnModel(configModel, staticColumns, gradebookItemModel);
 
-		grid.reconfigure(newStore(), cm);
+			grid.reconfigure(newStore(), cm);
 
-		if (grid.isRendered())
-			grid.el().unmask();
+			if (grid.isRendered())
+				grid.el().unmask();
+		}
+		else
+		{
+			this.refreshOnShow = true; 
+			// Need to make sure this won't cause a memory leak or something as evil... 
+			this.refreshData = new RefreshData(action, useExistingColumnModel, configModel, staticColumns, gradebookItemModel);
+		}
 	}
 
 	public void refreshGrid(RefreshAction refreshAction, 
 			Configuration configModel, List<FixedColumn> staticColumns, ItemModel gradebookItemModel) {
-
 		boolean includeData = false;
 
 		switch (refreshAction) {
@@ -1593,4 +1646,17 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		}
 		return sectionUid;
 	}
+	
+	@Override
+	protected void onShow() {
+		super.onShow();		
+		if (refreshOnShow)
+		{
+			refreshOnShow = false; 
+			doRefreshGrid(refreshData.getAction(), refreshData.isUseExistingColumnModel(), refreshData.getConfigModel(), refreshData.getStaticColumns(), refreshData.getGradebookItemModel());
+			refreshData = null; 
+		}
+	}
+
+
 }
