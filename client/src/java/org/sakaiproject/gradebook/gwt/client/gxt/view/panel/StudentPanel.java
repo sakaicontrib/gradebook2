@@ -141,6 +141,8 @@ public class StudentPanel extends GradebookPanel {
 	private Gradebook selectedGradebook;
 
 	private boolean isPossibleStatsChanged = true;
+	
+	private StatisticsComparator statisticsComparator = new StatisticsComparator();
 
 	private List<Statistics> statsList;
 
@@ -494,6 +496,11 @@ public class StudentPanel extends GradebookPanel {
 	}
 
 	private void refreshGradeData(ModelData learnerGradeRecordCollection, List<Statistics> statsList) {
+		
+		// GRBK-777 : We are sorting the statsList because the following calls to getStatsModelForItem(...) 
+		// perform a binary search. We only want to sort the list once for performance reasons. 
+		Collections.sort(statsList, statisticsComparator);
+		
 		Statistics m = getStatsModelForItem(String.valueOf(Long.valueOf(-1)), statsList);
 		setStudentInfoTable(m);
 		setGradeInfoTable(selectedGradebook, learnerGradeRecordCollection, statsList);
@@ -876,9 +883,8 @@ public class StudentPanel extends GradebookPanel {
 		Statistics key = new StatisticsModel();
 		key.setAssignmentId(id);
 
-		// GRBK-777
-		StatisticsComparator statisticsComparator = new StatisticsComparator();
-		Collections.sort(statsList, statisticsComparator);
+		// GRBK-777 : NOTE the statsList is sorted at this point. The sorting is done 
+		// earlier in refreshGradeData(...)
 		idx = Collections.binarySearch(statsList, key, statisticsComparator);
 
 		if (idx >= 0)
