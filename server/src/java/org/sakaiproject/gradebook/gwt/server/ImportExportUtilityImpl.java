@@ -590,6 +590,35 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		
 		final ImportExportDataFile file = exportGradebook(service,
 				gradebookUid, includeStructure, includeComments, sectionUidList);
+		
+		// GRBK-797 - find the Column with StudentId so we can treat it as a String
+		Map<String, StructureRow> structureRowIndicatorMap = new HashMap<String, StructureRow>();
+		Map<StructureRow, String[]> structureColumnsMap = new HashMap<StructureRow, String[]>();
+		ImportExportInformation ieInfo = new ImportExportInformation();
+
+		buildRowIndicatorMap(structureRowIndicatorMap);
+
+		int structureStop = 0; 
+
+		structureStop = readDataForStructureInformation(file, structureRowIndicatorMap, structureColumnsMap);
+		if (structureStop != -1)
+		readInHeaderRow(file, ieInfo, structureStop);
+				
+		int studentId = -1;
+		if(ieInfo.getHeaders() != null) 
+			for (int i=0;i<ieInfo.getHeaders().length;++i) {
+				if (ieInfo.getHeaders()[i] != null) {
+					String thisHeaderName = ieInfo.getHeaders()[i].getValue();
+					for (int j=0;j<idColumns.length;j++) {
+						String idColumn = idColumns[j];
+						if ( idColumn != null && idColumn.equalsIgnoreCase(thisHeaderName)) {
+							studentId = i;
+							break;
+						}
+					}
+				}
+				if (studentId != -1) break;
+			}
 
 		HSSFWorkbook wb = new HSSFWorkbook();
 		HSSFSheet s = wb.createSheet(title);
@@ -604,8 +633,9 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 
 			for (int i = 0; i < curRow.length ; i++) {
 				HSSFCell cl = r.createCell(i);
-				//GRBK-840 If the cell is numeric, we should make it numeric... 
-				if ( NumberUtils.isNumber(curRow[i]) )
+				//GRBK-840 If the cell is numeric, we should make it numeric...
+				// GRBK-979 .... unless it is the student id
+				if ( NumberUtils.isNumber(curRow[i]) && i != studentId)
 				{
 					cl.setCellType(HSSFCell.CELL_TYPE_NUMERIC);
 					cl.setCellValue(Double.valueOf(curRow[i])); 

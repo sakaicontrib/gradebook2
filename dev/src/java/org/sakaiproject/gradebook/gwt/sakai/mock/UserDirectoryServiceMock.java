@@ -335,7 +335,7 @@ public class UserDirectoryServiceMock implements UserDirectoryService {
 		String displayId = id; //String.valueOf(100000 + getRandomInt(899999));
 		String firstName = FIRST_NAMES[getRandomInt(FIRST_NAMES.length)];
 		String lastName = LAST_NAMES[getRandomInt(LAST_NAMES.length)];
-		String eid = lastName.toLowerCase();
+		String eid = "eid:" + firstName.toLowerCase() + "." + lastName.toLowerCase();
 		String email = firstName.toLowerCase() + "." + lastName.toLowerCase() + "@nowhere.edu";
 	
 		User userRecord = new UserMock(id, displayId, eid, firstName, lastName, email);
