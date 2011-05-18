@@ -28,13 +28,21 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 
 public class Util {
+	
+	private static ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	
+	private static DateFormat longDateFormat = new SimpleDateFormat(AppConstants.LONG_DATE);
+	private static DateFormat shortDateFormat = new SimpleDateFormat(AppConstants.SHORT_DATE);
+	private static DateFormat inputDateFormat = new SimpleDateFormat(AppConstants.INPUT_DATE);
 	
 	public static Double fromPercentString(String s) throws NumberFormatException {
 		if (s != null) {
@@ -76,7 +84,7 @@ public class Util {
 		return t;
 	}
 	
-	public static Date toDate(Object object) {
+	public static Date toDate(Object object) throws InvalidInputException {
 		Date d = null;
 		
 		if (object != null) {
@@ -85,10 +93,10 @@ public class Util {
 			else if (object instanceof Long)
 				d = new Date((Long)object);
 			else if (object instanceof String) { 
+				
 				// GRBK-673 : We receive a date as a string from the client. We apply the same
 				// format as the client side does. Also the client handles two types of date formats
 				// and we do the same thing here. See: EntityOverlay.java safeGet() {...}
-				DateFormat longDateFormat = new SimpleDateFormat(AppConstants.LONG_DATE);
 				
 				try {
 					
@@ -96,15 +104,21 @@ public class Util {
 				}
 				catch (ParseException e) {
 					
-					DateFormat shortDateFormat = new SimpleDateFormat(AppConstants.SHORT_DATE);
-					
 					try {
 						
 						d = shortDateFormat.parse((String) object);
 					}
 					catch (ParseException e1) {
 						
-						// Don't do anything, returning null initialized date
+						// GRBK-961
+						try {
+							
+							d = inputDateFormat.parse((String) object);
+						}
+						catch (ParseException e2) {
+							
+							throw new InvalidInputException(i18n.getString("invalidDateObjectError"));
+						}
 					}
 				}
 			}

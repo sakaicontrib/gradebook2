@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
+import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
@@ -188,7 +189,7 @@ public class GradeItemImpl extends BaseModel implements GradeItem {
 		return Util.toInteger(get(ItemKey.I_DRP_LWST.name()));
 	}
 
-	public Date getDueDate() {
+	public Date getDueDate() throws InvalidInputException {
 		return Util.toDate(get(ItemKey.W_DUE.name()));
 	}
 

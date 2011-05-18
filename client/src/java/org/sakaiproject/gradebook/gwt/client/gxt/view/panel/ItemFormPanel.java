@@ -96,6 +96,7 @@ import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Window;
 
 public class ItemFormPanel extends GradebookPanel {
@@ -361,6 +362,9 @@ public class ItemFormPanel extends GradebookPanel {
 		dueDateField.setFieldLabel(i18n.dueDateFieldLabel());
 		dueDateField.setVisible(false);
 		dueDateField.setEmptyText(i18n.dueDateEmptyText());
+		// GRBK-961 : Setting the date input format so that it doesn't change as the default
+		// GXT version format changes between updates
+		dueDateField.getPropertyEditor().setFormat(DateTimeFormat.getFormat(AppConstants.INPUT_DATE));
 		formPanel.add(dueDateField);
 
 		sourceField = new TextField<String>();

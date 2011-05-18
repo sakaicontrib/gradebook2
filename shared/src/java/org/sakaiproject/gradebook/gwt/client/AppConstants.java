@@ -272,6 +272,7 @@ public interface AppConstants {
 	// DATE FORMATS
 	public static final String LONG_DATE = "MM/dd/yyyy HH:mm:ss ZZZ";
 	public static final String SHORT_DATE = "yyyy-MM-dd";
+	public static final String INPUT_DATE = "MM/dd/yyyy";
 	
 	// USER FIELDS
 	public static final String USER_FIELD_SORT_NAME = "sortName";

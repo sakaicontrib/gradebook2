@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
+import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
@@ -26,7 +27,7 @@ public interface Item {
 
 	public abstract Integer getDropLowest();
 
-	public abstract Date getDueDate();
+	public abstract Date getDueDate() throws InvalidInputException;
 
 	public abstract Boolean getEnforcePointWeighting();
 
