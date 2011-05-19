@@ -158,6 +158,14 @@
 	padding-top: 10px;	
 }
 
+.gbGradeScaleChartUpdateToggle {
+	padding-left: 10px;
+}
+
+.gbGradeScaleSeparatorToolItem {
+	padding-left: 10px;
+}
+
 @sprite .gbItemIcon {
 	gwt-image: "table";	
 }

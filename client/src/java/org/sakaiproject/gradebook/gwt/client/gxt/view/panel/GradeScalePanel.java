@@ -31,6 +31,7 @@ import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.RestCallback;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
+import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaToggleButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeMapUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
@@ -67,6 +68,7 @@ import com.extjs.gxt.ui.client.widget.HorizontalPanel;
 import com.extjs.gxt.ui.client.widget.Label;
 import com.extjs.gxt.ui.client.widget.Text;
 import com.extjs.gxt.ui.client.widget.button.Button;
+import com.extjs.gxt.ui.client.widget.button.ToggleButton;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
 import com.extjs.gxt.ui.client.widget.form.LabelField;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
@@ -75,6 +77,7 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.EditorGrid;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
+import com.extjs.gxt.ui.client.widget.toolbar.SeparatorToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.Request;
@@ -120,6 +123,8 @@ public class GradeScalePanel extends GradebookPanel {
 	private boolean isVisualizationApiLoaded = false;
 	
 	private Label instructionLabel;
+	
+	private AriaToggleButton toggleButton;
 	
 	private boolean hasActiveNotifications = false;
 	
@@ -189,7 +194,39 @@ public class GradeScalePanel extends GradebookPanel {
 		});
 
 		toolbar.add(gradeFormatListBox);
+		
+		// GRBK-982 : Adding tool item separator and chart update toggle button
+		
+		SeparatorToolItem separatorToolItem = new SeparatorToolItem();
+		separatorToolItem.addStyleName(resources.css().gbGradeScaleSeparatorToolItem());
+		
+		toolbar.add(separatorToolItem);
+		
+		toggleButton = new AriaToggleButton(i18n.gradeScaleChartUpdateToggle(), new SelectionListener<ButtonEvent>() {
+			
+			public void componentSelected(ButtonEvent ce) {
+				
+				if(toggleButton.isPressed()) {
+					
+					statisticsChartPanel.unmask();
+					
+					if(isVisualizationApiLoaded && hasGradeScaleUpdates) {
+						
+						getStatisticsChartData();
+					}
+				}
+				else {
+					statisticsChartPanel.mask();
+				}
+			}
+		});
 
+		toggleButton.toggle(true);
+		toggleButton.setToolTip(i18n.gradeScaleChartUpdateToggleToolTip());
+		toggleButton.setStylePrimaryName(resources.css().gbGradeScaleChartUpdateToggle());
+		
+	    toolbar.add(toggleButton);
+	    
 		setTopComponent(toolbar);
 
 		gradeFormatLoader.addListener(Loader.Load, new Listener<LoadEvent>() {
@@ -293,13 +330,10 @@ public class GradeScalePanel extends GradebookPanel {
 			@Override
 			public void componentSelected(ButtonEvent be) {
 				
-				hideUserFeedback();
+				onClose();
 				
 				Dispatcher.forwardEvent(GradebookEvents.HideEastPanel.getEventType(), Boolean.FALSE);
-				
-				refreshCourseGrades();
 			}
-
 		});
 
 		resetToDefaultButton = new AriaButton(i18n.resetGradingScale(), new SelectionListener<ButtonEvent>() {
@@ -357,8 +391,8 @@ public class GradeScalePanel extends GradebookPanel {
 	 */
 	public void onClose() {
 		
+		toggleButton.toggle(true);
 		hideUserFeedback();
-		
 		refreshCourseGrades();
 	}
 
@@ -367,7 +401,7 @@ public class GradeScalePanel extends GradebookPanel {
 		loader.load();
 
 		// The onRefreshGradeScale method is called after the user selects a grade scale from the ComboBox
-		if(isVisualizationApiLoaded) {
+		if(isVisualizationApiLoaded && toggleButton.isPressed()) {
 	
 			getStatisticsChartData();
 		}
@@ -533,7 +567,7 @@ public class GradeScalePanel extends GradebookPanel {
 	
 	private void showUserFeedback() {
 
-		if(!hasActiveNotifications) {
+		if(!hasActiveNotifications && toggleButton.isPressed()) {
 		
 			Dispatcher.forwardEvent(GradebookEvents.ShowUserFeedback.getEventType(), i18n.statisticsGradebookUpdatingChart(), false);
 			statisticsChartPanel.mask();
@@ -543,7 +577,7 @@ public class GradeScalePanel extends GradebookPanel {
 	
 	private void hideUserFeedback() {
 		
-		if(hasActiveNotifications) {
+		if(hasActiveNotifications && toggleButton.isPressed()) {
 		
 			Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType(), false);
 			statisticsChartPanel.unmask();

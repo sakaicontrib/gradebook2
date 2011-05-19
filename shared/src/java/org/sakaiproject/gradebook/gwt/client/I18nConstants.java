@@ -393,4 +393,7 @@ public interface I18nConstants extends Constants {
 	String columnConfigVisabilityError();
 	String columnConfigVisabilityErrorMessage();
 	
+	String gradeScaleChartUpdateToggle();
+	String gradeScaleChartUpdateToggleToolTip();
+	
 }
