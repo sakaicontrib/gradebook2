@@ -122,6 +122,9 @@ public class GradeScalePanel extends GradebookPanel {
 	private Label instructionLabel;
 	
 	private boolean hasActiveNotifications = false;
+	
+	// GRBK-981
+	private boolean hasGradeScaleUpdates = false;
 
 	public GradeScalePanel(boolean isEditable, final TreeView treeView) {
 
@@ -277,7 +280,8 @@ public class GradeScalePanel extends GradebookPanel {
 
 				// Only update if the user actually changed a grade scale value
 				if(null != nValue && nValue.compareTo(oValue) != 0) {
-
+					
+					hasGradeScaleUpdates = true;
 					showUserFeedback();
 					Dispatcher.forwardEvent(GradebookEvents.UpdateGradeMap.getEventType(), new GradeMapUpdate(record, newValue, originalValue));
 				}
@@ -292,6 +296,8 @@ public class GradeScalePanel extends GradebookPanel {
 				hideUserFeedback();
 				
 				Dispatcher.forwardEvent(GradebookEvents.HideEastPanel.getEventType(), Boolean.FALSE);
+				
+				refreshCourseGrades();
 			}
 
 		});
@@ -343,6 +349,17 @@ public class GradeScalePanel extends GradebookPanel {
 				loadGradeScaleData(gradeScaleId);
 			}
 		}
+	}
+	
+	/*
+	 * This method is called if GradeScalePanel is closed, set inactive, in the eastCardLayout.
+	 * For example, this happens when a grade item edit is started and the ItemFromPanel is shown.
+	 */
+	public void onClose() {
+		
+		hideUserFeedback();
+		
+		refreshCourseGrades();
 	}
 
 	public void onRefreshGradeScale(Gradebook selectedGradebook) {
@@ -531,6 +548,20 @@ public class GradeScalePanel extends GradebookPanel {
 			Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType(), false);
 			statisticsChartPanel.unmask();
 			hasActiveNotifications = false;
+		}
+	}
+	
+	/*
+	 * GRBK-981 : Helper method that send an event to refresh the course grades
+	 */
+	private void refreshCourseGrades() {
+
+		if(hasGradeScaleUpdates) {
+			
+			// This used to be done in the ServiceController's onUpdateGradeMap(...) method
+			Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
+			Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades.getEventType(), selectedGradebook);
+			hasGradeScaleUpdates = false;
 		}
 	}
 }

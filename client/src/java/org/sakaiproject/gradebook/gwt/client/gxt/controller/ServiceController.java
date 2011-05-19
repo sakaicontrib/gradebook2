@@ -538,8 +538,6 @@ public class ServiceController extends Controller {
 				Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 				Dispatcher.forwardEvent(GradebookEvents.RefreshGradeScale.getEventType(),
 						selectedGradebook);
-				Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades.getEventType(),
-						selectedGradebook);
 				record.commit(false);
 			}
 

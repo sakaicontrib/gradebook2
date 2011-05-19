@@ -253,6 +253,10 @@ public class InstructorView extends AppView {
 			borderLayout.expand(LayoutRegion.EAST);
 			break;
 		default:
+			// GRBK-981 : Check if this action is hiding, setting inactive, the grade scale panel
+			if(null != gradeScalePanel && gradeScalePanel.equals(eastCardLayout.getActiveItem())){
+				gradeScalePanel.onClose();
+			}
 			borderLayout.hide(LayoutRegion.EAST);
 			break;
 		}
