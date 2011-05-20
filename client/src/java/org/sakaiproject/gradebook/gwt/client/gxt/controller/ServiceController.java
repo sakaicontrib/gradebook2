@@ -526,10 +526,11 @@ public class ServiceController extends Controller {
 			json.put(AppConstants.START_VALUE_CONSTANT, new JSONNumber(startValue.doubleValue()));
 
 		builder.sendRequest(204, 400, json.toString(), new RestCallback() {
-
+			
 			@Override
 			public void onFailure(Request request, Throwable exception) {
 				super.onFailure(request, exception);
+				Dispatcher.forwardEvent(GradebookEvents.GradeScaleUpdateError.getEventType());
 				record.reject(false);
 			}
 

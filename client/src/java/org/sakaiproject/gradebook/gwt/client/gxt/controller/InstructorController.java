@@ -86,6 +86,7 @@ public class InstructorController extends Controller {
 		registerEventTypes(GradebookEvents.FinishTreeItemDragAndDrop.getEventType());
 		registerEventTypes(GradebookEvents.ShowUserFeedback.getEventType());
 		registerEventTypes(GradebookEvents.HideUserFeedback.getEventType());
+		registerEventTypes(GradebookEvents.GradeScaleUpdateError.getEventType());
 	}
 	
 	@Override
@@ -144,6 +145,9 @@ public class InstructorController extends Controller {
 				break;
 			case REFRESH_GRADE_SCALE:
 				forwardToView(multigradeView, event);
+				forwardToView(appView, event);
+				break;
+			case GRADE_SCALE_UPDATE_ERROR:
 				forwardToView(appView, event);
 				break;
 			case REFRESH_COURSE_GRADES:

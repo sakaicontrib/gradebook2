@@ -68,7 +68,6 @@ import com.extjs.gxt.ui.client.widget.HorizontalPanel;
 import com.extjs.gxt.ui.client.widget.Label;
 import com.extjs.gxt.ui.client.widget.Text;
 import com.extjs.gxt.ui.client.widget.button.Button;
-import com.extjs.gxt.ui.client.widget.button.ToggleButton;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
 import com.extjs.gxt.ui.client.widget.form.LabelField;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
@@ -370,6 +369,11 @@ public class GradeScalePanel extends GradebookPanel {
 		setScrollMode(Scroll.AUTO);
 	}
 
+	public void onGradeScaleUpdateError() {
+		
+		hideUserFeedback();
+	}
+	
 	public void onFailedToUpdateItem(ItemUpdate itemUpdate) {
 
 		// Ensure that the failure is on an attempt to update the GRADESCALEID
@@ -383,6 +387,8 @@ public class GradeScalePanel extends GradebookPanel {
 				loadGradeScaleData(gradeScaleId);
 			}
 		}
+		
+		hideUserFeedback();
 	}
 	
 	/*

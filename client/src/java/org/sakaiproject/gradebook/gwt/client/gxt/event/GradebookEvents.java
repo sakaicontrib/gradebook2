@@ -124,5 +124,6 @@ public class GradebookEvents {
 	public static final GradebookEvent FinishTreeItemDragAndDrop	= registerEvent(EventKey.FINISH_TREE_ITEM_DRAG_AND_DROP);
 	public static final GradebookEvent ShowUserFeedback				= registerEvent(EventKey.SHOW_USER_FEEDBACK);
 	public static final GradebookEvent HideUserFeedback				= registerEvent(EventKey.HIDE_USER_FEEDBACK);
+	public static final GradebookEvent GradeScaleUpdateError		= registerEvent(EventKey.GRADE_SCALE_UPDATE_ERROR);
 	
 }

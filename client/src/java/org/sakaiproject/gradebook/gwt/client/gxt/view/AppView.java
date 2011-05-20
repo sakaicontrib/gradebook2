@@ -147,6 +147,9 @@ public abstract class AppView extends View {
 		case REFRESH_GRADE_SCALE:
 			onRefreshGradeScale((Gradebook)event.getData());
 			break;
+		case GRADE_SCALE_UPDATE_ERROR:
+			onGradeScaleUpdateError();
+			break;
 		case SELECT_LEARNER:
 			onSelectLearner((ModelData)event.getData());
 			break;
@@ -343,6 +346,10 @@ public abstract class AppView extends View {
 	}
 	
 	protected void onUserChange(UserEntityAction<?> action) {
+		
+	}
+	
+	protected void onGradeScaleUpdateError() {
 		
 	}
 

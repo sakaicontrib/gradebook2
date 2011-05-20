@@ -527,6 +527,13 @@ public class InstructorView extends AppView {
 			gradeScale.enable();
 		}
 	}
+	
+	@Override
+	protected void onGradeScaleUpdateError() {
+		if (gradeScalePanel != null) {
+			gradeScalePanel.onGradeScaleUpdateError();
+		}
+	}
 
 	/*
 	 * The goal here is to reduce the number of overall listeners in the application to a minimum
