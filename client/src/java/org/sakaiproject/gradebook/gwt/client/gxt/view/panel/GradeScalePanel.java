@@ -212,6 +212,7 @@ public class GradeScalePanel extends GradebookPanel {
 					if(isVisualizationApiLoaded && hasGradeScaleUpdates) {
 						
 						getStatisticsChartData();
+						hasGradeScaleUpdates = false;
 					}
 				}
 				else {
@@ -318,7 +319,10 @@ public class GradeScalePanel extends GradebookPanel {
 				// Only update if the user actually changed a grade scale value
 				if(null != nValue && nValue.compareTo(oValue) != 0) {
 					
-					hasGradeScaleUpdates = true;
+					if(!toggleButton.isPressed()) {
+						
+						hasGradeScaleUpdates = true;
+					}
 					showUserFeedback();
 					Dispatcher.forwardEvent(GradebookEvents.UpdateGradeMap.getEventType(), new GradeMapUpdate(record, newValue, originalValue));
 				}
@@ -600,6 +604,7 @@ public class GradeScalePanel extends GradebookPanel {
 			Dispatcher.forwardEvent(GradebookEvents.ShowUserFeedback.getEventType(), i18n.statisticsGradebookUpdatingChart(), false);
 			statisticsChartPanel.mask();
 			hasActiveNotifications = true;
+			toggleButton.disable();
 		}
 	}
 	
@@ -610,6 +615,7 @@ public class GradeScalePanel extends GradebookPanel {
 			Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType(), false);
 			statisticsChartPanel.unmask();
 			hasActiveNotifications = false;
+			toggleButton.enable();
 		}
 	}
 	
