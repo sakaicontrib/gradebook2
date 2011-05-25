@@ -3958,6 +3958,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			studentGradeMap = userRecord.getGradeRecordMap();
 		}
 
+		int numberOfUnitsGraded = 0; 
 		int numberOfUnitsDropped = 0;
 
 		// start with populating the values form the existing student records
@@ -3965,7 +3966,6 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			
 			if (assignment != null && assignment.getId() != null) {
 				boolean isCountNullsAsZeros = Util.checkBoolean(assignment.getCountNullsAsZeros());
-			
 				if (studentGradeMap != null) {
 					AssignmentGradeRecord assignmentGradeRecord = studentGradeMap.get(assignment.getId());
 				
@@ -3974,40 +3974,66 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 					
 						if (isDropped != null){
 							droppedValues.put(assignment.getId(), isDropped);
-						
 							if (isDropped) {
 								numberOfUnitsDropped++;
 							}
 						} else {
 							droppedValues.put(assignment.getId(), false);
 						}
+						numberOfUnitsGraded++; 
 					} else if (!isCountNullsAsZeros) {
 						// not include "ungraded" assignments in drop values
 						droppedValues.put(assignment.getId(), false);
+					}
+					else // agr is null and we are isCountNullsAsZeros
+						/*
+						 * This means we are a "graded" assignment
+						 */
+					{
+						
+						numberOfUnitsGraded++; 
 					}
 				
 				} else if (!isCountNullsAsZeros) {
 					// not include "ungraded" assignments in drop values
 					droppedValues.put(assignment.getId(), false);
 				}
-			}
-		}
-			
-		//populate the rest of the records without student records
-		for (Assignment assignment : assignmentsByCategory) {
-			
-			if (assignment != null && assignment.getId() != null && droppedValues.get(assignment.getId()) == null) {
-				boolean isExtraCredit = Util.checkBoolean(assignment.isExtraCredit());
-			
-				if (assignment.isCounted() && numberOfUnitsDropped < dropLowest && !isExtraCredit) {
-					droppedValues.put(assignment.getId(), true);
-					numberOfUnitsDropped ++;
-				} else {
-					droppedValues.put(assignment.getId(), false);
+				else // student grade record is null and isCountNullsAsZeros is true
+				{
+					numberOfUnitsGraded++; 
 				}
 			}
 		}
+		
+		/* 
+		 * GRBK-973
+		 * 
+		 * The way this was done wasn't taking into account changes to DL for GRBK-504/GRBK-942 
+		 * 
+		 * Now we don't drop lowest unless we have one more unit than the drop lowest count is. 
+		 * 
+		 * So if we don't have enough items graded (and "give ungraded no credit items" count as a graded items) then
+		 * we don't mark anything.   
+		 */
+		
+		if ( numberOfUnitsGraded > dropLowest)
+		{
+			//populate the rest of the records without student records
+			for (Assignment assignment : assignmentsByCategory) {
 
+				if (assignment != null && assignment.getId() != null && droppedValues.get(assignment.getId()) == null) {
+					boolean isExtraCredit = Util.checkBoolean(assignment.isExtraCredit());
+
+					if (assignment.isCounted() && numberOfUnitsDropped < dropLowest && !isExtraCredit) {
+						droppedValues.put(assignment.getId(), true);
+						numberOfUnitsDropped ++;
+					} else {
+						droppedValues.put(assignment.getId(), false);
+					}
+				}
+			}
+		}
+		
 		return droppedValues;
 
 	}
