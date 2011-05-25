@@ -127,7 +127,7 @@ public class GradebookImportController extends SimpleFormController implements O
 		File f = new File(outfile);
 		boolean isDeleted = f.delete();
 		
-		if(f.exists() && !isDeleted) {
+		if(!isDeleted) {
 			log.error("Was not able to delete file = " + f.getName());
 		}
 
