@@ -1489,7 +1489,8 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		boolean isLimitedToSelectedSection = false;
 		Set<String> authorizedGroups = new HashSet<String>();
 
-		if (sectionUidList != null) {
+		// GRBK-960 : Also check that sectionUidList has section items
+		if (sectionUidList != null && sectionUidList.size() > 0) {
 			authorizedGroups.addAll(sectionUidList);
 			isLimitedToSelectedSection = true;
 		}
