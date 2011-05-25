@@ -1369,8 +1369,11 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 
 			grid.reconfigure(newStore(), cm);
 
-			if (grid.isRendered())
+			if (grid.isRendered()) {
 				grid.el().unmask();
+			}
+			
+			Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType(), false);
 		}
 		else
 		{
@@ -1406,8 +1409,10 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 			break;
 		}
 
-		if (includeData)
+		if (includeData && isVisible()) {
+			Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType(), false);
 			pagingToolBar.refresh();
+		}
 	}
 
 	protected void queueDeferredRefresh(RefreshAction newRefreshAction) {
@@ -1601,10 +1606,6 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		return refreshAction;
 	}
 
-	public void setRefreshAction(RefreshAction refreshAction) {
-		this.refreshAction = refreshAction;
-	}
-
 	/**
 	 * @return the isShowWeightedEnabled
 	 */
@@ -1658,5 +1659,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		}
 	}
 
-
+	public void maskMultiGradeGrid() {
+		grid.mask();
+	}
 }

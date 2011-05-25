@@ -158,6 +158,9 @@ public class MultigradeView extends View {
 			case USER_CHANGE:
 				onUserChange((UserEntityAction<?>)event.getData());
 				break;
+			case MASK_MULTI_GRADE_GRID:
+				maskMultiGradeGrid();
+				break;
 		}
 	}
 
@@ -259,6 +262,11 @@ public class MultigradeView extends View {
 				multigrade.disableShowWeightedButton();
 		}
 		return multigrade;
+	}
+	
+	protected void maskMultiGradeGrid() {
+		
+		multigrade.maskMultiGradeGrid();
 	}
 	
 }

@@ -87,6 +87,7 @@ public class InstructorController extends Controller {
 		registerEventTypes(GradebookEvents.ShowUserFeedback.getEventType());
 		registerEventTypes(GradebookEvents.HideUserFeedback.getEventType());
 		registerEventTypes(GradebookEvents.GradeScaleUpdateError.getEventType());
+		registerEventTypes(GradebookEvents.MaskMultiGradeGrid.getEventType());
 	}
 	
 	@Override
@@ -267,6 +268,9 @@ public class InstructorController extends Controller {
 			case FINISH_TREE_ITEM_DRAG_AND_DROP:
 				// GRBK-833
 				forwardToView(treeView, event);
+				break;
+			case MASK_MULTI_GRADE_GRID:
+				forwardToView(multigradeView, event);
 				break;
 		}
 	}

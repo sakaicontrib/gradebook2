@@ -510,6 +510,7 @@ public class InstructorView extends AppView {
 
 	protected void onHideFormPanel() {
 		centerCardLayout.setActiveItem(multigradeView.getMultiGradeContentPanel());
+		
 	}
 
 	@Override

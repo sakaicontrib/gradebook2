@@ -5,6 +5,7 @@
 }
 
 .userFeedbackLabel {
+	opacity: 1 !important;
 	background-color:#FDF5E6;
 	position:absolute;
 	left:48%;

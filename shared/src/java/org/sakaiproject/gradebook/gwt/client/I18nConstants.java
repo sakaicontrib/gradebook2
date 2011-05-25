@@ -375,6 +375,7 @@ public interface I18nConstants extends Constants {
 	
 	//User Feedback Messages
 	String applicationLoading();
+	String applicationUpdating();
 	
 	String gradeScaleInstructions();
 	

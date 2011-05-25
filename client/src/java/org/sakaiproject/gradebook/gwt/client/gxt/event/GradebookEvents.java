@@ -125,5 +125,5 @@ public class GradebookEvents {
 	public static final GradebookEvent ShowUserFeedback				= registerEvent(EventKey.SHOW_USER_FEEDBACK);
 	public static final GradebookEvent HideUserFeedback				= registerEvent(EventKey.HIDE_USER_FEEDBACK);
 	public static final GradebookEvent GradeScaleUpdateError		= registerEvent(EventKey.GRADE_SCALE_UPDATE_ERROR);
-	
+	public static final GradebookEvent MaskMultiGradeGrid			= registerEvent(EventKey.MASK_MULTI_GRADE_GRID);
 }

@@ -719,8 +719,6 @@ public class ServiceController extends Controller {
 	}
 
 	private void onUpdateItemSuccess(ItemUpdate event, ItemModel result) {
-		if (event.close)
-			Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
 
 		boolean isCategoryTypeUpdated = false;
 		boolean isGradeTypeUpdated = false;
@@ -799,7 +797,7 @@ public class ServiceController extends Controller {
 	}
 
 	private void onUpdateItem(final ItemUpdate event) {
-
+			
 		Dispatcher.forwardEvent(GradebookEvents.MaskItemTree.getEventType());
 
 		RestBuilder builder = RestBuilder.getInstance(Method.PUT, 

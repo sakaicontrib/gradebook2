@@ -155,6 +155,8 @@ public class ItemFormPanel extends GradebookPanel {
 	private boolean hasTreeItemDragAndDropMarker;
 	private boolean alertDone;
 
+	private boolean hasUnprocessedSaveState;
+	
 	public ItemFormPanel() {
 		super();
 		this.hasTreeItemDragAndDropMarker = false;
@@ -853,6 +855,7 @@ public class ItemFormPanel extends GradebookPanel {
 	}	
 
 	private void initState(ItemType itemType, ItemModel itemModel, boolean isDelete, boolean doEnableButtons) {
+		hasUnprocessedSaveState = false;
 		this.isDelete = isDelete;
 		clearChanges();
 
@@ -1289,9 +1292,7 @@ public class ItemFormPanel extends GradebookPanel {
 						Record record = null;
 
 						switch (selectionType) {
-						case CLOSE:
-							hideFormPanel();
-							break;
+
 						case CREATECLOSE:
 							close = true;
 						case CREATE:
@@ -1334,16 +1335,54 @@ public class ItemFormPanel extends GradebookPanel {
 						case DELETE:
 							sendItemDeleteEvent(selectedItemModel);
 							break;
+						case CLOSE:
+							/*
+							 * IMPORTANT: Do not change the method order in this case statement:
+							 * hideFormPanel() needs to be called before the RefreshCourseGrades event is dispatched
+							 */
+							hideFormPanel();
+							if(null != selectedItemModel) {
+								record = treeStore.getRecord(selectedItemModel);
+								if(record.isDirty() || hasUnprocessedSaveState) {
+									Dispatcher.forwardEvent(GradebookEvents.ShowUserFeedback.getEventType(), i18n.applicationUpdating(), false);
+									Dispatcher.forwardEvent(GradebookEvents.MaskMultiGradeGrid.getEventType());
+									Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
+									Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades.getEventType(), selectedGradebook);
+									clearActiveRecord();
+								}
+							}
+							hasUnprocessedSaveState = false;
+							break;
 						case CANCEL:
+							/*
+							 * IMPORTANT: Do not change the method order in this case statement:
+							 * hideFormPanel() needs to be called before the RefreshCourseGrades event is dispatched
+							 */
+							hideFormPanel();
+							if(hasUnprocessedSaveState) {
+								Dispatcher.forwardEvent(GradebookEvents.ShowUserFeedback.getEventType(), i18n.applicationUpdating(), false);
+								Dispatcher.forwardEvent(GradebookEvents.MaskMultiGradeGrid.getEventType());
+								Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
+								Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades.getEventType(), selectedGradebook);
+							}
 							clearActiveRecord();
-							sendCancelEvent();
+							hasUnprocessedSaveState = false;
 							break;
 						case REQUEST_DELETE:
 							onRequestDeleteItem(selectedItemModel);
 							break;
 						case SAVECLOSE:
 							close = true;
+							Dispatcher.forwardEvent(GradebookEvents.ShowUserFeedback.getEventType(), i18n.applicationUpdating(), false);
+							Dispatcher.forwardEvent(GradebookEvents.MaskMultiGradeGrid.getEventType());
+							hideFormPanel();
 						case SAVE:
+							if(close) {
+								hasUnprocessedSaveState = false;
+							}
+							else {
+								hasUnprocessedSaveState = true;
+							}
 							clearChanges();
 							if (selectedItemModel != null) 
 								record = treeStore.getRecord(selectedItemModel);								
@@ -1520,10 +1559,7 @@ public class ItemFormPanel extends GradebookPanel {
 		return true; 
 
 	}
-	protected void sendCancelEvent() {
-		Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
-	}
-
+	
 	protected void sendItemCreateEvent(ItemModel item, boolean close) {
 		Dispatcher.forwardEvent(GradebookEvents.CreateItem.getEventType(), new ItemCreate(treeStore, item, close));
 	}
@@ -1633,6 +1669,7 @@ public class ItemFormPanel extends GradebookPanel {
 			okButton.setEnabled(true);
 			okCloseButton.setEnabled(true);
 			cancelButton.setText(i18n.cancelButton());
+			cancelButton.setData(selectionTypeField, SelectionType.CANCEL);
 		}
 	}
 
@@ -1641,6 +1678,7 @@ public class ItemFormPanel extends GradebookPanel {
 		okButton.setEnabled(false);
 		okCloseButton.setEnabled(false);
 		cancelButton.setText(i18n.closeButton());
+		cancelButton.setData(selectionTypeField, SelectionType.CLOSE);
 	}
 
 	private void clearActiveRecord() {
