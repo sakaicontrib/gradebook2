@@ -214,10 +214,21 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 
 	private AriaToggleButton showWeightedToggleButton;
 	private String showWeightedString;
+	
+	public Boolean isGridLocked() {
+		return gridLocked;
+	}
+
+	public void setGridLocked(Boolean gridLocked) {
+		this.gridLocked = gridLocked;
+	}
+
 	protected boolean isShowWeightedEnabled = false;
 	
 	protected boolean refreshOnShow; 
 	protected RefreshData refreshData; 
+
+	private Boolean gridLocked = false;
 
 	public MultiGradeContentPanel(ListStore<ModelData> store, boolean isImport) {
 		super();
@@ -252,7 +263,8 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		cm = newColumnModel(configModel, staticColumns, gradebookItemModel);
 		grid = new GbEditorGrid<ModelData>(newStore(), cm);
 		loadConfig = newLoadConfig(newStore(), getPageSize());
-
+		((GbEditorGrid)grid).setLocked(gridLocked);
+		
 		addGridListenersAndPlugins(grid);
 
 		GridView view = newGridView();
@@ -662,9 +674,9 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 
 						if (isCommented) {
 							contextMenu.enableAddComment(false);
-							contextMenu.enableEditComment(true);
+							contextMenu.enableEditComment(!gridLocked);
 						} else {
-							contextMenu.enableAddComment(true);
+							contextMenu.enableAddComment(!gridLocked);
 							contextMenu.enableEditComment(false);
 						}
 

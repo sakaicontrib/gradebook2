@@ -49,22 +49,41 @@ public class ViewAsStudentPanel extends ContentPanel {
 	private StudentPanel container;
 	private RefreshAction refreshAction = RefreshAction.NONE;
 
-	private boolean isStudentView;
+	private boolean showStudentViewButton;
+	
+	public boolean isShowStudentViewButton() {
+		return showStudentViewButton;
+	}
 
-	public ViewAsStudentPanel(boolean isStudentView) {
-		this.isStudentView = isStudentView;
+	public void setShowStudentViewButton(boolean showStudentViewButton) {
+		this.showStudentViewButton = showStudentViewButton;
+	}
+
+	public boolean isEditLocked() {
+		return isEditLocked;
+	}
+
+	public void setEditLocked(boolean isEditLocked) {
+		this.isEditLocked = isEditLocked;
+	}
+
+	private boolean isEditLocked = false;
+
+	public ViewAsStudentPanel(boolean showStudentViewButton) {
+		this.showStudentViewButton = showStudentViewButton;
 		setBodyBorder(true);
 		setFrame(true);
 		setHeaderVisible(true);
 		setLayout(new FitLayout());
 
 		I18nConstants i18n = Registry.get(AppConstants.I18N);
-		if (isStudentView)
+		if (showStudentViewButton)
 			setHeading(i18n.singleViewHeader());
 		else 
 			setHeading(i18n.singleGradeHeader());
 
-		container = new StudentPanel(i18n, isStudentView, false);
+		container = new StudentPanel(i18n, showStudentViewButton, false);
+		container.setEditLocked(isEditLocked);
 		add(container);
 
 		setupNavigation(i18n);
@@ -148,7 +167,7 @@ public class ViewAsStudentPanel extends ContentPanel {
 			}
 		});
 
-		if (!isStudentView)
+		if (showStudentViewButton)
 			addButton(studentView);
 		addButton(prev);
 		addButton(next);

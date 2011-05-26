@@ -39,11 +39,28 @@ import com.extjs.gxt.ui.client.mvc.View;
 public class SingleGradeView extends View {
 
 	private ViewAsStudentPanel dialog;
-	private boolean isEditable;
+	private boolean hiddenStudentViewButton;
+	private boolean isLocked = false;
 	
-	public SingleGradeView(Controller controller, boolean isEditable) {
+	public boolean isHiddenStudentViewButton() {
+		return hiddenStudentViewButton;
+	}
+
+	public void setHiddenStudentViewButton(boolean showStudentViewButton) {
+		this.hiddenStudentViewButton = showStudentViewButton;
+	}
+
+	public boolean isLocked() {
+		return isLocked;
+	}
+
+	public void setLocked(boolean isLocked) {
+		this.isLocked = isLocked;
+	}
+
+	public SingleGradeView(Controller controller, boolean hideStudentViewButton) {
 		super(controller);
-		this.isEditable = isEditable;
+		this.hiddenStudentViewButton = hideStudentViewButton;
 	}
 	
 	public boolean isDialogVisible() {
@@ -83,7 +100,8 @@ public class SingleGradeView extends View {
 	
 	@Override
 	protected void initialize() {
-		dialog = new ViewAsStudentPanel(!isEditable);
+		dialog = new ViewAsStudentPanel(!hiddenStudentViewButton);
+		dialog.setEditLocked(isLocked);
 		dialog.setSize(400, 350);
 	}
 	

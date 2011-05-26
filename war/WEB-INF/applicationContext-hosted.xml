@@ -81,10 +81,12 @@
 	The sakai.properties file sets the "advisor@org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service" property
 	which then is injected via Sakai's bean configuration mechanism
 	-->
-	<bean id="org.sakaiproject.gradebook.gwt.sakai.api.SampleInstitutionalAdvisor" class="org.sakaiproject.gradebook.gwt.sakai.SampleInstitutionalAdvisor">
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.api.SampleInstitutionalAdvisor" 
+	class="org.sakaiproject.gradebook.gwt.sakai.SampleInstitutionalAdvisor">
 		<property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/>
 		<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>
 		<property name="finalGradeSubmissionPath" value="tmp"/>
+		<property name="editLock" value="TESTSITECONTEXT" />
 	</bean>
 	
 	
