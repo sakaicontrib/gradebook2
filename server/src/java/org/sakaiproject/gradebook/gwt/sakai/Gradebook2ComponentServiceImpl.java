@@ -3005,7 +3005,8 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 					recalculateAssignmentGradeRecords(assignment, points, oldPoints);
 			}
 
-			if (havePointsChanged && category.getDrop_lowest() > 0 
+			// GRBK-929 - If we're an extra credit item, it doesn't matter if our points change, we don't effect drop lowest. 
+			if (!isExtraCredit && havePointsChanged && category.getDrop_lowest() > 0 
 					&& (!hasWeightedCategories 
 							|| (hasWeightedCategories 
 									&& Util.checkBoolean(category.isEnforcePointWeighting())))) {
