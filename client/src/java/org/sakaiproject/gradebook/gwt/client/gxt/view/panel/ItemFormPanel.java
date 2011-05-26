@@ -856,7 +856,7 @@ public class ItemFormPanel extends GradebookPanel {
 	}	
 
 	private void initState(ItemType itemType, ItemModel itemModel, boolean isDelete, boolean doEnableButtons) {
-		hasUnprocessedSaveState = false;
+		
 		this.isDelete = isDelete;
 		clearChanges();
 
