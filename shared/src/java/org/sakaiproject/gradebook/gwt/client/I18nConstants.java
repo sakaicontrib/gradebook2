@@ -398,4 +398,6 @@ public interface I18nConstants extends Constants {
 	String gradeScaleChartUpdateToggle();
 	String gradeScaleChartUpdateToggleToolTip();
 	
+	String multiGradeCellEditFeedback();
+	
 }

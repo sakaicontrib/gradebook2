@@ -337,13 +337,16 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		if ((value == null || value.equals(EMPTY_STRING)) && (startValue == null || startValue.equals(EMPTY_STRING))) {
 			return;
 		}
+		else if(value != null && startValue != null && startValue.equals(value)) { // GRBK-991
+			return;
+		}
 
 		if (gridEvent != null) {
 			String className = grid.getView().getCell(gridEvent.getRowIndex(), gridEvent.getColIndex()).getClassName();
 			String gbDroppedText = new StringBuilder(" ").append(resources.css().gbCellDropped()).toString();
 			className = className.replace(gbDroppedText, "");
 			grid.getView().getCell(gridEvent.getRowIndex(), gridEvent.getColIndex()).setClassName(className);
-			grid.getView().getCell(gridEvent.getRowIndex(), gridEvent.getColIndex()).setInnerText("Saving...");
+			grid.getView().getCell(gridEvent.getRowIndex(), gridEvent.getColIndex()).setInnerText(i18n.multiGradeCellEditFeedback());
 
 			columnHeader = grid.getColumnModel().getColumnHeader(gridEvent.getColIndex());
 		}
