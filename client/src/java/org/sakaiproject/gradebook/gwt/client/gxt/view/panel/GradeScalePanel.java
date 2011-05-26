@@ -113,7 +113,7 @@ public class GradeScalePanel extends GradebookPanel {
 	private Button closeButton;
 	private Button resetToDefaultButton;
 
-	private NumberFormat shortNumberFormat = DataTypeConversionUtil.getShortNumberFormat();
+	private NumberFormat defaultNumberFormat = DataTypeConversionUtil.getDefaultNumberFormat();
 
 	private HorizontalPanel horizontalPanel;
 
@@ -237,7 +237,6 @@ public class GradeScalePanel extends GradebookPanel {
 
 		});
 
-
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 
 		ColumnConfig column = new ColumnConfig();  
@@ -258,7 +257,7 @@ public class GradeScalePanel extends GradebookPanel {
 		column.setGroupable(false);
 		column.setMenuDisabled(true);
 		column.setSortable(false);
-		column.setNumberFormat(shortNumberFormat);
+		column.setNumberFormat(defaultNumberFormat);
 		// GRBK-668: We determine if this columns is editable via setState()
 		configs.add(column);
 
@@ -270,7 +269,7 @@ public class GradeScalePanel extends GradebookPanel {
 		column.setGroupable(false);
 		column.setMenuDisabled(true);
 		column.setSortable(false);
-		column.setNumberFormat(shortNumberFormat);
+		column.setNumberFormat(defaultNumberFormat);
 		column.setStyle("background-color:#A9A9A9!important;"); // GRBK-874
 		
 		configs.add(column);
@@ -325,27 +324,6 @@ public class GradeScalePanel extends GradebookPanel {
 					}
 					showUserFeedback();
 					Dispatcher.forwardEvent(GradebookEvents.UpdateGradeMap.getEventType(), new GradeMapUpdate(record, newValue, originalValue));
-				}
-			}
-		});
-		
-		// GRBK-969 : Only allow the user to enter numbers that have a max of two decimal places
-		grid.addListener(Events.OnKeyPress, new Listener<GridEvent<ModelData>>() {
-
-			@Override
-			public void handleEvent(GridEvent<ModelData> e) {
-
-				if(null != grid && null != grid.getActiveEditor()) {
-
-					String value = grid.getActiveEditor().getValue().toString();
-					String [] result = value.split("\\.");
-
-					if(result.length == 2) {
-
-						if(result[1].length() == 2) {
-							e.stopEvent();
-						}
-					}
 				}
 			}
 		});
