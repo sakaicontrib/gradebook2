@@ -828,8 +828,7 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 		
 		if (checkForLocks) {
 			return editLocked 
-		       || componentService.isExternallyLocked(uid) 
-		       || !securityService.unlock(Gradebook2Authz.GRADEBOOK_LOCK, siteService.siteReference(uid));
+		       || componentService.isExternallyLocked(uid);
 		} 
 			
 		return false;
