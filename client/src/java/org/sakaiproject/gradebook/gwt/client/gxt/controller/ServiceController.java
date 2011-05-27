@@ -201,20 +201,21 @@ public class ServiceController extends Controller {
 			public void onError(Request request, Throwable exception) {
 				super.onError(request, exception);
 				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
+				Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType());
+				Dispatcher.forwardEvent(GradebookEvents.UnmaskMultiGradeGrid.getEventType());
 			}
 
 			public void onFailure(Request request, Throwable exception) {
 				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(exception, "Failed to create item: "));
 				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
+				Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType());
+				Dispatcher.forwardEvent(GradebookEvents.UnmaskMultiGradeGrid.getEventType());
 			}
 
 			public void onSuccess(Request request, Response response) {
 				
 				EntityOverlay overlay = JsonUtil.toOverlay(response.getText());
 				ItemModel itemModel = new ItemModel(overlay); 
-
-				if (event.close)
-					Dispatcher.forwardEvent(GradebookEvents.HideFormPanel.getEventType(), Boolean.FALSE);
 
 				switch (itemModel.getItemType()) {
 				case GRADEBOOK:
@@ -814,11 +815,15 @@ public class ServiceController extends Controller {
 				super.onError(request, exception);
 				onUpdateItemFailure(event, exception);
 				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
+				Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType());
+				Dispatcher.forwardEvent(GradebookEvents.UnmaskMultiGradeGrid.getEventType());
 			}
 
 			public void onFailure(Request request, Throwable exception) {
 				onUpdateItemFailure(event, exception);
 				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
+				Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType());
+				Dispatcher.forwardEvent(GradebookEvents.UnmaskMultiGradeGrid.getEventType());
 			}
 
 			public void onSuccess(Request request, Response response) {
@@ -832,9 +837,7 @@ public class ServiceController extends Controller {
 				Dispatcher.forwardEvent(GradebookEvents.EndItemUpdates.getEventType(), selectedGradebook);
 				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
 			}
-
 		});
-
 	}
 
 	private void doCreateItem(ItemCreate itemCreate, ItemModel createdItem) {

@@ -161,6 +161,9 @@ public class MultigradeView extends View {
 			case MASK_MULTI_GRADE_GRID:
 				maskMultiGradeGrid();
 				break;
+			case UNMASK_MULTI_GRADE_GRID:
+				unmaskMultiGradeGrid();
+				break;
 		}
 	}
 
@@ -267,6 +270,11 @@ public class MultigradeView extends View {
 	protected void maskMultiGradeGrid() {
 		
 		multigrade.maskMultiGradeGrid();
+	}
+	
+	protected void unmaskMultiGradeGrid() {
+		
+		multigrade.unmaskMultiGradeGrid();
 	}
 	
 }

@@ -115,7 +115,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Element;
-import com.google.gwt.user.client.Window;
 
 public abstract class MultiGradeContentPanel extends GradebookPanel implements StudentModelOwner {
 
@@ -309,6 +308,10 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		case REFRESHCOLUMNSANDDATA:
 			refreshGrid(refreshAction, configModel, staticColumns, gradebookItemModel);
 			break;
+		default:
+			Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType());
+			grid.el().unmask();
+			
 		}
 		refreshAction = RefreshAction.NONE;
 	}
@@ -1376,7 +1379,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 				grid.el().unmask();
 			}
 			
-			Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType(), false);
+			Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType());
 		}
 		else
 		{
@@ -1413,7 +1416,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		}
 
 		if (includeData && isVisible()) {
-			Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType(), false);
+			Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType());
 			pagingToolBar.refresh();
 		}
 	}
@@ -1663,6 +1666,12 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	}
 
 	public void maskMultiGradeGrid() {
+		
 		grid.mask();
+	}
+	
+	public void unmaskMultiGradeGrid() {
+		
+		grid.el().unmask();
 	}
 }

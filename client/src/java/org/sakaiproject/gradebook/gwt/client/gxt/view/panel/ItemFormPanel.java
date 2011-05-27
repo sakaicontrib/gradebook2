@@ -1,10 +1,5 @@
 /**********************************************************************************
- *
- * $Id:$
- *
- ***********************************************************************************
- *
- * Copyright (c) 2008, 2009 The Regents of the University of California
+ * Copyright (c) 2008, 2009, 2010, 2011 The Regents of the University of California
  *
  * Licensed under the
  * Educational Community License, Version 2.0 (the "License"); you may
@@ -635,10 +630,8 @@ public class ItemFormPanel extends GradebookPanel {
 				if (category.getItemType() == ItemType.CATEGORY) {
 					categoryStore.add(category);
 				}
-
 			}
 		}
-
 	}
 
 	public void onNewCategory(final ItemModel itemModel) {
@@ -1295,10 +1288,20 @@ public class ItemFormPanel extends GradebookPanel {
 
 						case CREATECLOSE:
 							close = true;
+							Dispatcher.forwardEvent(GradebookEvents.ShowUserFeedback.getEventType(), i18n.applicationUpdating(), false);
+							Dispatcher.forwardEvent(GradebookEvents.MaskMultiGradeGrid.getEventType());
+							hideFormPanel();
 						case CREATE:
 							// GRBK-786 GRBK-790 GRBK-789 
 							if (validateFormForEditOrCreate(false) )
 							{
+								if(close) {
+									hasUnprocessedSaveState = false;
+								}
+								else {
+									hasUnprocessedSaveState = true;
+								}
+								
 								ItemModel item = new ItemModel();
 
 								Item category = categoryPicker.getValue();
