@@ -393,7 +393,6 @@ public interface I18nConstants extends Constants {
 	// GRBK-932
 	String columnConfigVisabilityError();
 	String columnConfigVisabilityErrorMessage();
-	String lockWarning();
 	
 	String gradeScaleChartUpdateToggle();
 	String gradeScaleChartUpdateToggleToolTip();

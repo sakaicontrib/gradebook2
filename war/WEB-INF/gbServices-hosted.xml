@@ -70,12 +70,7 @@
 		<property name="authn" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authn"/>
 		<property name="sectionAwareness" ref="org.sakaiproject.section.api.SectionAwareness"/>
 		<property name="gbToolService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/>
-		<property name="componentService" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService" />
-		<property name="securityService" ref="org.sakaiproject.authz.api.SecurityService"/>
-		<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>
-		<property name="configService" ref="org.sakaiproject.component.api.ServerConfigurationService"/>
-		<!-- property name="checkForLocks"><value>true</value></property-->
-		<!-- property name="editLocked"><value>true</value></property-->
+		<!-- property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/-->
 	</bean>
 	
 	
@@ -84,26 +79,17 @@
 	</bean>
 	
 	<bean id="org.sakaiproject.site.api.SiteService" 
-               class="org.sakaiproject.gradebook.gwt.sakai.mock.SiteServiceMock">
-               <property name="authzGroupService" ref="org.sakaiproject.authz.api.AuthzGroupService"/>
+		class="org.sakaiproject.gradebook.gwt.sakai.mock.SiteServiceMock">
+		<property name="authzGroupService" ref="org.sakaiproject.authz.api.AuthzGroupService"/>
 	</bean>
-	
-	<bean id="org.sakaiproject.authz.api.SecurityService" 
-			class="org.sakaiproject.gradebook.gwt.sakai.mock.SakaiSecurityMock"
-			destroy-method="destroy"
-			singleton="true">
-		
-		<property name="userDirectoryService" ref="org.sakaiproject.user.api.UserDirectoryService"/>
-
-  		<property name="cacheMinutes"><value>5</value></property>
-	</bean>
-	
 	
 	<bean id="org_sakaiproject_tool_gradebook_facades_Authz" class="org.sakaiproject.gradebook.gwt.sakai.mock.Gradebook2AuthzMockImpl">
 		<property name="sectionAwareness" ref="org.sakaiproject.section.api.SectionAwareness"/>
 	</bean>
 
-	<bean id="org.sakaiproject.tool.api.ToolManager" class="org.sakaiproject.gradebook.gwt.sakai.mock.ToolManagerMock" />
+	<bean id="org.sakaiproject.tool.api.ToolManager" 
+		class="org.sakaiproject.gradebook.gwt.sakai.mock.ToolManagerMock">
+	</bean>
 	
 	
 	<bean id="org_sakaiproject_tool_gradebook_facades_Authn" class="org.sakaiproject.gradebook.gwt.sakai.mock.AuthnMock">

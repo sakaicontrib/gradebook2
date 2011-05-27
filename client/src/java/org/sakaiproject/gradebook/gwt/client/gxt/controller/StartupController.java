@@ -57,7 +57,6 @@ public class StartupController extends Controller {
 		final boolean isUserAbleToViewOwnGrades = authModel.isUserAbleToViewOwnGrades() == null ? false : authModel.isUserAbleToViewOwnGrades().booleanValue();
 		final boolean isUserAbleToEditItems = DataTypeConversionUtil.checkBoolean(authModel.isUserAbleToEditAssessments());
 		final boolean isNewGradebook = DataTypeConversionUtil.checkBoolean(authModel.isNewGradebook());
-		final boolean isGridLocked = DataTypeConversionUtil.checkBoolean(authModel.isGridLocked());
 		
 		Registry.register(AppConstants.IS_NEW_GRADEBOOK, Boolean.valueOf(isNewGradebook));
 		Registry.register(AppConstants.IS_ABLE_TO_GRADE, Boolean.valueOf(isUserAbleToGrade));
@@ -73,7 +72,7 @@ public class StartupController extends Controller {
 	
 				public void onSuccess() {
 					Dispatcher dispatcher = Dispatcher.get();
-					dispatcher.addController(new InstructorController(i18n, isUserAbleToEditItems, isNewGradebook, isGridLocked));					
+					dispatcher.addController(new InstructorController(i18n, isUserAbleToEditItems, isNewGradebook));					
 					dispatcher.addController(new ServiceController(i18n));
 					
 					doNextStep(i18n);

@@ -36,7 +36,6 @@ public class AuthModel {
 	private Boolean isUserAbleToEditAssessments;
 	private Boolean isNewGradebook;
 	private String placementId;
-	private Boolean gridLocked;
 	
 	public AuthModel() {
 		
@@ -104,11 +103,11 @@ public class AuthModel {
 		return Boolean.FALSE;
 	}
 	
-	private String pack(Boolean b1, Boolean b2, Boolean b3, Boolean b4, Boolean b5, Boolean b6, Boolean b7, String id) {
+	private String pack(Boolean b1, Boolean b2, Boolean b3, Boolean b4, Boolean b5, Boolean b6, String id) {
 		StringBuilder builder = new StringBuilder();
 		
 		builder.append(fromBoolean(b1)).append(fromBoolean(b2)).append(fromBoolean(b3))
-			.append(fromBoolean(b4)).append(fromBoolean(b5)).append(fromBoolean(b6)).append(fromBoolean(b7)).append(id);
+			.append(fromBoolean(b4)).append(fromBoolean(b5)).append(fromBoolean(b6)).append(id);
 		
 		return builder.toString();
 	}
@@ -121,16 +120,14 @@ public class AuthModel {
 			isUserAbleToGrade = toBoolean(s.charAt(2));
 			isUserAbleToEditAssessments = toBoolean(s.charAt(3));
 			isNewGradebook = toBoolean(s.charAt(4));
-			gridLocked = toBoolean(s.charAt(6));
-			placementId = s.substring(7);
-			
+			placementId = s.substring(6);
 		}
 	}
 	
 	public String toString() {
 		return new StringBuilder()
 			.append(pack(isUserAbleToViewOwnGrades, isUserHasGraderPermissions, isUserAbleToGrade,
-				isUserAbleToEditAssessments, isNewGradebook, Boolean.FALSE, gridLocked, placementId)).toString();
+				isUserAbleToEditAssessments, isNewGradebook, Boolean.FALSE, placementId)).toString();
 	}
 	
 	public void parse(String authString) {
@@ -148,14 +145,6 @@ public class AuthModel {
 				&& parts[index] != null && parts[index].length()>0) {
 			unpack(parts[index]);
 		}
-	}
-
-	public Boolean isGridLocked() {
-		return gridLocked;
-	}
-	
-	public void setGridLocked(Boolean value) {
-		this.gridLocked = value;
 	}
 	
 }

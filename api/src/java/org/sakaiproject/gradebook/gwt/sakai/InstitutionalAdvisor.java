@@ -38,7 +38,7 @@ import org.sakaiproject.tool.gradebook.Gradebook;
 public interface InstitutionalAdvisor {
 
 	public enum Column { STUDENT_NAME, STUDENT_UID, STUDENT_GRADE, LETTER_GRADE, EXPORT_USER_ID, EXPORT_CM_ID, FINAL_GRADE_USER_ID, RAW_GRADE };
-	public static String PROP_EXTERNAL_LOCK_SERVICE_URL = "gb2.external.lock.service.url";
+	
 	/**
 	 * 
 	 * @param group : The Authz Group
@@ -121,25 +121,6 @@ public interface InstitutionalAdvisor {
 	 * @param eids : a list of eids to sort out
 	 */
 	public String getPrimarySectionEid(List<String> eids);
-	
-	/*
-	 * given a site id and gradebook uid, return true if the gradebook is locked for editing. The gradebook may be locked, 
-	 * for example, if the grade have been finalized and recorded by an external Student Information System.
-	 * (see component property 'editLocked' to set)
-	 * 
-	 * @param gradebookUid : Gradebook identifier
-	 */
-	public boolean isEditLocked(String siteId, String gradebookUid);
-	
-	/*
-	 * given a gradebook uid, return true if the gradebook is locked for editing. The gradebook may be locked, 
-	 * for example, if the grade have been finalized and recorded by an external Student Information System.
-	 * The site is determined via current tool context.
-	 * (see component property 'editLocked' to set)
-	 * 
-	 * @param gradebookUid : Gradebook identifier
-	 */
-	public boolean isEditLocked(String gradebookUid);
 
 	
 }

@@ -512,8 +512,7 @@ public class ItemFormPanel extends GradebookPanel {
 			}
 
 		}
-		showEditScreen(activeCard);
-
+		
 		clearActiveRecord();
 
 		// This seems to prevent double click propagations in the item tree

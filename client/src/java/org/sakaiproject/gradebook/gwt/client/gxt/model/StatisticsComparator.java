@@ -25,6 +25,7 @@ import org.sakaiproject.gradebook.gwt.client.model.Statistics;
 
 public class StatisticsComparator implements Comparator<Statistics> {
 
+	@Override
 	public int compare(Statistics arg0, Statistics arg1) {
 		
 		if (arg0 != null && arg1 != null) {

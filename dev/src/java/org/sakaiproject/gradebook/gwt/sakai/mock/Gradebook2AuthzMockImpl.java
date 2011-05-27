@@ -30,12 +30,7 @@ public class Gradebook2AuthzMockImpl extends Gradebook2AuthzImpl {
 	private boolean isStartUp = false;
 	
 	public Gradebook2AuthzMockImpl() {
-	}
-
-	@Override
-	public boolean isUserAbleToEditAssessments(String gradebookUid) {
-		return super.isUserAbleToEditAssessments(gradebookUid)
-						|| isStartUp;
+		
 	}
 
 	@Override
