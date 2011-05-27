@@ -3910,6 +3910,10 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 					
 					List<Assignment> assignmentsByCategory = category.getAssignmentList();
 					
+					// GRBK-1001
+					if(null == assignmentsByCategory) {
+						continue;
+					}
 					// Currently GB allows drop lowest score when categories are weighted or when all the items within a category have the same possible point. 
 					// When GRBK-480 (Allow dropped score in category when all items don't have same point value) is deployed this portion of the code needs to be
 					// modified to reflect that.
