@@ -113,7 +113,7 @@ public class GradeScalePanel extends GradebookPanel {
 	private Button closeButton;
 	private Button resetToDefaultButton;
 
-	private NumberFormat defaultNumberFormat = DataTypeConversionUtil.getDefaultNumberFormat();
+	private NumberFormat shortNumberFormat = DataTypeConversionUtil.getShortNumberFormat();
 
 	private HorizontalPanel horizontalPanel;
 
@@ -257,7 +257,7 @@ public class GradeScalePanel extends GradebookPanel {
 		column.setGroupable(false);
 		column.setMenuDisabled(true);
 		column.setSortable(false);
-		column.setNumberFormat(defaultNumberFormat);
+		column.setNumberFormat(shortNumberFormat);
 		// GRBK-668: We determine if this columns is editable via setState()
 		configs.add(column);
 
@@ -269,7 +269,7 @@ public class GradeScalePanel extends GradebookPanel {
 		column.setGroupable(false);
 		column.setMenuDisabled(true);
 		column.setSortable(false);
-		column.setNumberFormat(defaultNumberFormat);
+		column.setNumberFormat(shortNumberFormat);
 		column.setStyle("background-color:#A9A9A9!important;"); // GRBK-874
 		
 		configs.add(column);
