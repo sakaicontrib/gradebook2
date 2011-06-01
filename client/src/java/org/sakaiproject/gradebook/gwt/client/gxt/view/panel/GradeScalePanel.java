@@ -128,6 +128,9 @@ public class GradeScalePanel extends GradebookPanel {
 	private boolean hasActiveNotifications = false;
 	
 	// GRBK-981
+	private boolean hasChartUpdates = false;
+	
+	// GRBK-1013
 	private boolean hasGradeScaleUpdates = false;
 
 	public GradeScalePanel(boolean isEditable, final TreeView treeView) {
@@ -209,10 +212,10 @@ public class GradeScalePanel extends GradebookPanel {
 					
 					statisticsChartPanel.unmask();
 					
-					if(isVisualizationApiLoaded && hasGradeScaleUpdates) {
+					if(isVisualizationApiLoaded && hasChartUpdates) {
 						
 						getStatisticsChartData();
-						hasGradeScaleUpdates = false;
+						hasChartUpdates = false;
 					}
 				}
 				else {
@@ -318,9 +321,11 @@ public class GradeScalePanel extends GradebookPanel {
 				// Only update if the user actually changed a grade scale value
 				if(null != nValue && nValue.compareTo(oValue) != 0) {
 					
+					hasGradeScaleUpdates = true;
+					
 					if(!toggleButton.isPressed()) {
 						
-						hasGradeScaleUpdates = true;
+						hasChartUpdates = true;
 					}
 					showUserFeedback();
 					Dispatcher.forwardEvent(GradebookEvents.UpdateGradeMap.getEventType(), new GradeMapUpdate(record, newValue, originalValue));
@@ -607,6 +612,7 @@ public class GradeScalePanel extends GradebookPanel {
 			// This used to be done in the ServiceController's onUpdateGradeMap(...) method
 			Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 			Dispatcher.forwardEvent(GradebookEvents.RefreshCourseGrades.getEventType(), selectedGradebook);
+			hasChartUpdates = false;
 			hasGradeScaleUpdates = false;
 		}
 	}
