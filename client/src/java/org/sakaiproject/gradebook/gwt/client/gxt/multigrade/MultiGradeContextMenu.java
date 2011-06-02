@@ -282,6 +282,11 @@ public class MultiGradeContextMenu extends Menu {
 		});
 	}
 	
+	@Override
+	public void showAt(int x, int y) {
+		super.showAt(x - 3, y - 3);
+	}
+	
 	public void enableAddComment(boolean isEnabled) {
 		contextMenuAddCommentItem.setEnabled(isEnabled);
 	}

@@ -96,6 +96,7 @@ import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
 
 public class ItemTreePanel extends GradebookPanel {
@@ -469,6 +470,15 @@ public class ItemTreePanel extends GradebookPanel {
 					if (e.getColIndex() != -1) {
 						fireEvent(Events.CellDoubleClick, e);
 					}
+				}
+			}
+			// GRBK-1002
+			public void onBrowserEvent(Event event) {
+				
+				super.onBrowserEvent(event);
+				int type = DOM.eventGetType(event);
+				if (type == Event.ONCLICK && getContextMenu().isVisible()) {
+					getContextMenu().hide();
 				}
 			}
 		};
@@ -1041,7 +1051,13 @@ public class ItemTreePanel extends GradebookPanel {
 
 	private Menu newTreeContextMenu(I18nConstants i18n) {
 
-		treeContextMenu = new AriaMenu();
+		treeContextMenu = new AriaMenu() {
+
+			@Override
+			public void showAt(int x, int y) {
+				super.showAt(x - 3, y - 3);
+			}
+		};
 		treeContextMenu.setWidth(180);
 
 		updateGradebookMenuItem = new AriaMenuItem();

@@ -114,7 +114,9 @@ import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.Event;
 
 public abstract class MultiGradeContentPanel extends GradebookPanel implements StudentModelOwner {
 
@@ -249,7 +251,17 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		pagingToolBar.bind(newLoader());
 
 		cm = newColumnModel(configModel, staticColumns, gradebookItemModel);
-		grid = new GbEditorGrid<ModelData>(newStore(), cm);
+		grid = new GbEditorGrid<ModelData>(newStore(), cm) {
+			// GRBK-1002
+			public void onBrowserEvent(Event event) {
+				
+				super.onBrowserEvent(event);
+				int type = DOM.eventGetType(event);
+				if (type == Event.ONCLICK && getContextMenu().isVisible()) {
+					getContextMenu().hide();
+				}
+			}
+		};
 		loadConfig = newLoadConfig(newStore(), getPageSize());
 
 		addGridListenersAndPlugins(grid);
