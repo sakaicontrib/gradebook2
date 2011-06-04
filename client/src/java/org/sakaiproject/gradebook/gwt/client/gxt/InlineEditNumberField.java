@@ -30,9 +30,16 @@ import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.google.gwt.event.dom.client.KeyCodes;
 
 public class InlineEditNumberField extends NumberField {
+	protected boolean editable = true;
+
+
 
 	@Override
 	protected void onKeyPress(FieldEvent fe) {
+		if(!editable) {
+			fe.stopEvent();
+			return;
+		}
 		super.onKeyPress(fe);
 		
 		switch (fe.getEvent().getKeyCode()) {
@@ -58,5 +65,15 @@ public class InlineEditNumberField extends NumberField {
 		}
 		fireEvent(Events.Blur, new FieldEvent(this));
 	}
+	
+	
+	public boolean isEditable() {
+		return editable;
+	}
+
+	public void setEditable(boolean editable) {
+		this.editable = editable;
+	}
+	
 	
 }

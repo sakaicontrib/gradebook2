@@ -24,6 +24,7 @@
 package org.sakaiproject.gradebook.gwt.client.gxt;
 
 import com.extjs.gxt.ui.client.data.ModelData;
+import com.extjs.gxt.ui.client.event.GridEvent;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.EditorGrid;
@@ -32,6 +33,16 @@ import com.extjs.gxt.ui.client.widget.grid.GridSelectionModel.Callback;
 import com.extjs.gxt.ui.client.widget.grid.GridSelectionModel.Cell;
 
 public class GbEditorGrid<M extends ModelData> extends EditorGrid<M> {
+	
+	private Boolean locked = false;
+
+	public Boolean isLocked() {
+		return locked;
+	}
+
+	public void setLocked(Boolean locked) {
+		this.locked = locked;
+	}
 
 	public GbEditorGrid(ListStore<M> store, ColumnModel cm) {
 		super(store, cm);
@@ -45,5 +56,15 @@ public class GbEditorGrid<M extends ModelData> extends EditorGrid<M> {
 	public EditorSupport<M> getEditorSupport() {
 	    return editSupport;
 	}
+
+	@Override
+	protected void onClick(GridEvent<M> e) {
+		//GRBK-824
+		if(!locked || e.getColIndex() <= 2) {
+				super.onClick(e);
+		}
+	}
+	
+	
 	
 }

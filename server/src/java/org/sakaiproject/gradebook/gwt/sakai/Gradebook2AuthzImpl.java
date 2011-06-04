@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.sakaiproject.authz.api.SecurityService;
+import org.sakaiproject.component.api.ServerConfigurationService;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.section.api.SectionAwareness;
 import org.sakaiproject.section.api.coursemanagement.CourseSection;
@@ -46,14 +47,41 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 	
 	private static final int ZERO_ITEMS = 0;
 		
+	private boolean editLocked = false;
 	private Gradebook2Authn authn;
 	private GradebookToolService gbToolService;
 	private SectionAwareness sectionAwareness;
 	private ToolManager toolManager;
 	private SecurityService securityService;
 	private SiteService siteService;
+	private Gradebook2ComponentService componentService;
+	private ServerConfigurationService configService;
+	boolean checkForLocks = false;
 
 	
+	public boolean isCheckForLocks() {
+		return checkForLocks;
+	}
+
+
+	public void setEditLocked(boolean isEditLocked) {
+		this.editLocked = isEditLocked;
+	}
+
+
+	public void init() {
+		
+		if (configService != null) {
+			checkForLocks = configService.getBoolean(Gradebook2Authz.PROP_CHECK_FOR_GRADEBOOK_LOCKS, checkForLocks);
+		}
+		
+	}
+	
+	
+	public void setConfigService(ServerConfigurationService configService) {
+		this.configService = configService;
+	}
+
 	// SPRING DI
 	public void setAuthn(Gradebook2Authn authn) {
 		this.authn = authn;
@@ -181,7 +209,8 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 	}
 
 	public boolean isUserAbleToEditAssessments(String gradebookUid) {
-		return hasPermission(gradebookUid, AppConstants.PERMISSION_EDIT_ASSIGNMENTS);
+		return hasPermission(gradebookUid, AppConstants.PERMISSION_EDIT_ASSIGNMENTS)
+		         && !isGradebookLocked(gradebookUid);
 	}
 
 	public boolean hasUserGraderPermissions(String gradebookUid) {
@@ -782,4 +811,33 @@ public class Gradebook2AuthzImpl implements Gradebook2Authz {
 	public void setSiteService(SiteService siteService) {
 		this.siteService = siteService;
 	}
+	
+	public void setComponentService(Gradebook2ComponentService componentService) {
+		this.componentService = componentService;
+	}
+
+	/*
+	 * GRBK-824: can be set 
+	 *  - via Spring, 
+	 *  - an advisor implementation (via componentservice,
+	 *  - or a security function in a role
+	 * (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authz#isGradebookLocked(java.lang.String)
+	 */
+	public Boolean isGradebookLocked(String uid) {
+		
+		if (checkForLocks) {
+			return editLocked 
+		       || componentService.isExternallyLocked(uid) 
+		       || !securityService.unlock(Gradebook2Authz.GRADEBOOK_LOCK, siteService.siteReference(uid));
+		} 
+			
+		return false;
+		
+	}
+
+	public void setCheckForLocks(boolean checkForLocks) {
+		this.checkForLocks = checkForLocks;
+	}
+	
 }
