@@ -52,6 +52,14 @@
 			<scope>provided</scope>
 		</dependency>
 		
+		<!-- Spring Dependency : Added this as part of the Jersey 1.7 upgrade -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring</artifactId>
+			<version>${sakai.spring.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		
 		<!-- Jersey JAX-RS Dependencies -->
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
