@@ -73,7 +73,6 @@ public class SakaiSecurityMock extends SakaiSecurity {
 		return super.unlock(userId, lock, reference, authzGroupIds);
 	}
 
-	@Override
 	public SecurityAdvisor popAdvisor(SecurityAdvisor advisor) {
 		// TODO Auto-generated method stub
 		return super.popAdvisor();
