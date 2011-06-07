@@ -155,7 +155,7 @@ public class InstructorView extends AppView {
 		centerData.setMinSize(100);
 		centerData.setMargins(new Margins(5, 0, 5, 0)); 
 
-		eastData = new BorderLayoutData(LayoutRegion.EAST, 840);
+		eastData = new BorderLayoutData(LayoutRegion.EAST,840, 420, 840);
 		eastData.setSplit(true);
 		eastData.setCollapsible(true);
 		eastData.setFloatable(false);
@@ -251,8 +251,13 @@ public class InstructorView extends AppView {
 		case GRADE_SCALE:
 		case HELP:
 		case HISTORY:
-		case LEARNER_SUMMARY:
 		case STATISTICS:
+			eastData.setSize(840); 
+			borderLayout.show(LayoutRegion.EAST);
+			borderLayout.expand(LayoutRegion.EAST);
+			break;
+		case LEARNER_SUMMARY:
+			eastData.setSize(420); 
 			borderLayout.show(LayoutRegion.EAST);
 			borderLayout.expand(LayoutRegion.EAST);
 			break;
