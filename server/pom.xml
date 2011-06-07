@@ -96,11 +96,6 @@
 		
 		<!-- Other External Dependencies -->
 		<dependency>
-			<groupId>com.thoughtworks.xstream</groupId>
-			<artifactId>xstream</artifactId>
-			<version>1.3</version>
-		</dependency>
-		<dependency>
 			<groupId>commons-collections</groupId>
 			<artifactId>commons-collections</artifactId>
 			<version>3.2.1</version>
@@ -110,11 +105,11 @@
 			<artifactId>commons-digester</artifactId>
 			<version>1.6</version>
 		</dependency>
-		        <dependency>
-		        <groupId>commons-io</groupId>
-		        <artifactId>commons-io</artifactId>
-		        <version>1.4</version>
-	        </dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>1.4</version>
+		</dependency>
 
 		<dependency>
 			<groupId>jexcelapi</groupId>

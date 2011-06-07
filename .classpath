@@ -17,7 +17,6 @@
 	<classpathentry kind="var" path="M2_REPO/org/hibernate/hibernate/3.2.7.ga/hibernate-3.2.7.ga.jar"/>
 	<classpathentry kind="var" path="M2_REPO/commons-logging/commons-logging/1.0.4/commons-logging-1.0.4.jar"/>
 	<classpathentry kind="var" path="M2_REPO/commons-fileupload/commons-fileupload/1.1.1/commons-fileupload-1.1.1.jar"/>
-	<classpathentry kind="var" path="M2_REPO/com/thoughtworks/xstream/xstream/1.3/xstream-1.3.jar"/>
 	<classpathentry kind="var" path="M2_REPO/commons-io/commons-io/1.4/commons-io-1.4.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/extjs/gxt/2.2.4-gwt22/gxt-2.2.4-gwt22.jar"/>
 	<classpathentry kind="var" path="M2_REPO/javax/servlet/servlet-api/2.4/servlet-api-2.4.jar" sourcepath="M2_REPO/javax/servlet/servlet-api/2.4/servlet-api-2.4-sources.jar"/>
@@ -28,7 +27,6 @@
 	<classpathentry kind="var" path="M2_REPO/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/hsqldb/hsqldb/1.7.3.0/hsqldb-1.7.3.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/javax/transaction/jta/1.0.1B/jta-1.0.1B.jar"/>
-	<classpathentry kind="var" path="M2_REPO/net/sf/ehcache/ehcache/1.6.1/ehcache-1.6.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/cglib/cglib-nodep/2.1_3/cglib-nodep-2.1_3.jar"/>
 	<classpathentry kind="var" path="M2_REPO/antlr/antlr/2.7.6/antlr-2.7.6.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/apache/poi/poi/3.6/poi-3.6.jar"/>
@@ -49,11 +47,11 @@
 	<classpathentry kind="var" path="M2_REPO/javax/xml/stream/stax-api/1.0-2/stax-api-1.0-2.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/sun/xml/bind/jaxb-impl/2.1.12/jaxb-impl-2.1.12.jar"/>
 	<classpathentry kind="var" path="M2_REPO/javax/xml/bind/jaxb-api/2.1/jaxb-api-2.1.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/codehaus/jackson/jackson-core-asl/1.8.1/jackson-core-asl-1.8.1.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/codehaus/jackson/jackson-jaxrs/1.8.1/jackson-jaxrs-1.8.1.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/codehaus/jackson/jackson-mapper-asl/1.8.1/jackson-mapper-asl-1.8.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/codehaus/jackson/jackson-core-asl/1.7.1/jackson-core-asl-1.7.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/codehaus/jackson/jackson-jaxrs/1.7.1/jackson-jaxrs-1.7.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/codehaus/jackson/jackson-mapper-asl/1.7.1/jackson-mapper-asl-1.7.1.jar"/>
 	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
-	<classpathentry kind="var" path="M2_REPO/com/google/gwt/google-apis/gwt-visualization/1.1.0/gwt-visualization-1.1.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/google/gwt/google-apis/gwt-visualization/1.1.1/gwt-visualization-1.1.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-kernel-util/1.2.0-SNAPSHOT/sakai-kernel-util-1.2.0-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="M2_REPO/javax/activation/activation/1.1.1/activation-1.1.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/sections/sections-model/1.1-SNAPSHOT/sections-model-1.1-SNAPSHOT.jar"/>
@@ -66,5 +64,6 @@
 	<classpathentry kind="var" path="M2_REPO/org/apache/commons/commons-math/2.1/commons-math-2.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/gradebook/gradebook-service-api/1.1-SNAPSHOT/gradebook-service-api-1.1-SNAPSHOT.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="var" path="M2_REPO/net/sf/ehcache/ehcache/1.6.1/ehcache-1.6.1.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

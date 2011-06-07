@@ -30,7 +30,7 @@
 		<gxt.version>2.2.4-gwt22</gxt.version>
 		<gwt.version>2.3.0</gwt.version>
 		<gb2.commons.logging.version>1.0.4</gb2.commons.logging.version>
-		<gb2.jackson.version>1.8.1</gb2.jackson.version> 
+		<gb2.jackson.version>1.7.1</gb2.jackson.version> 
 		<gb2.jersey.version>1.7</gb2.jersey.version>
 	</properties>
 	
@@ -670,16 +670,7 @@
 				<artifactId>poi</artifactId>
 				<version>3.6</version>
 			</dependency>
-			
-			<!-- This entry below is to prevent jackson and jersey
-			from bringing in 1.0.1 and 1.0-2 together -->
-			<!-- <dependency>
-				<groupId>stax</groupId>
-				<artifactId>stax-api</artifactId>
-				<version>1.0.1</version>
-				<scope>provided</scope>
-			</dependency> -->
-			
+
     	</dependencies>
     </dependencyManagement> 
 </project>
