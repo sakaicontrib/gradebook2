@@ -81,6 +81,18 @@
 			<artifactId>jackson-jaxrs</artifactId>
 			<version>${gb2.jackson.version}</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-core-asl</artifactId>
+			<version>${gb2.jackson.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-mapper-asl</artifactId>
+			<version>${gb2.jackson.version}</version>
+		</dependency>
 		
 		<!-- Other External Dependencies -->
 		<dependency>
