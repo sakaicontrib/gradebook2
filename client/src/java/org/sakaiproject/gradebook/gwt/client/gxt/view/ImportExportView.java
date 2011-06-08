@@ -74,8 +74,7 @@ public class ImportExportView extends View {
 				uri.append("/").append("filetype").append("/").append(fileType);
 			}
 			
-
-			uri.append("?form-token=").append(Cookies.getCookie("JSESSIONID"));
+			uri.append("?").append(AppConstants.REQUEST_FORM_FIELD_FORM_TOKEN).append("=").append(Cookies.getCookie(AppConstants.GB2_TOKEN));
 			
 			downloadFileForm = new FormPanel();
 			

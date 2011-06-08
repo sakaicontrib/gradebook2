@@ -98,7 +98,7 @@ public class FileUploadPanel extends FormPanel {
 		
 		HiddenField<String> formTokenField = new HiddenField<String>();
 		formTokenField.setName(AppConstants.REQUEST_FORM_FIELD_FORM_TOKEN);
-		formTokenField.setValue(Cookies.getCookie("JSESSIONID"));
+		formTokenField.setValue(Cookies.getCookie(AppConstants.GB2_TOKEN));
 		add(formTokenField);
 
 		Button submitButton = new Button(i18n.nextButton());

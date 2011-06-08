@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -55,6 +56,21 @@ public class WebAppToolServlet extends HttpServlet {
 
 	protected void service(final HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
+		
+		// GRBK-908
+		HttpSession httpSession = request.getSession();
+		if(null == httpSession) {
+			
+			log.error("ERROR: HttpSession is null");
+		}
+		else {
+			
+			// Generate random UUID
+			String uuid = java.util.UUID.randomUUID().toString();
+			httpSession.setAttribute(AppConstants.GB2_TOKEN, uuid);
+			Cookie userCookie = new Cookie(AppConstants.GB2_TOKEN, uuid);
+			response.addCookie(userCookie);
+		}
 		
 		final String contextPath = request.getContextPath();
 		request.setAttribute(Tool.NATIVE_URL, Tool.NATIVE_URL);

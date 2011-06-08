@@ -62,11 +62,11 @@ public class RestBuilder extends RequestBuilder {
 			builder.setHeader("X-HTTP-Method-Override", header);
 
 		builder.setHeader("Content-Type", AppConstants.HEADER_CONTENT_TYPE_JSON_UTF8);
-		String jSessionId = Cookies.getCookie(AppConstants.SESSION_COOKIE_KEY);
-		if (null == jSessionId || "".equals(jSessionId)) {
+		String gb2Token = Cookies.getCookie(AppConstants.GB2_TOKEN);
+		if (null == gb2Token || "".equals(gb2Token)) {
 			builder.setHeader(AppConstants.X_XSRF_COOKIE, AppConstants.NO_VALUE_COOKIE);
 		} else {
-			builder.setHeader(AppConstants.X_XSRF_COOKIE, jSessionId);
+			builder.setHeader(AppConstants.X_XSRF_COOKIE, gb2Token);
 		}
 
 		return builder;

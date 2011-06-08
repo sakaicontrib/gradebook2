@@ -248,7 +248,8 @@ public interface AppConstants {
 
 	// REST Communication
 	public static final String X_XSRF_COOKIE = "X-XSRF-Cookie";
-	public static final String SESSION_COOKIE_KEY = "JSESSIONID";
+	//public static final String SESSION_COOKIE_KEY = "JSESSIONID";
+	public static final String GB2_TOKEN = "GB2TOKEN";
 	public static final String NO_VALUE_COOKIE = "No-Cookie";
 	public static final String HEADER_CONTENT_TYPE_JSON_UTF8 = "application/json; charset=utf-8";
 	public static final String CONTENT_TYPE_TEXT_PLAIN = "text/plain";
