@@ -2466,7 +2466,19 @@ private GradeItem buildNewCategory(String curCategoryString,
 				log.warn(e, e);
 			}
 			
-			// GRBK-806 code was here to disable percentage gradebooks. 
+			// GRBK-806 code was here to disable percentage gradebooks in general but if we're a scantron we will not allow it.
+			
+			if (ieInfo.getGradebookItemModel().getGradeType() == GradeType.PERCENTAGES) {
+				if (rawData.isScantronFile())
+				{
+					importFile = new UploadImpl();
+					importFile.setErrors(true);
+					importFile.setRows(null);
+					importFile.setNotes(i18n.getString("gb2CantImportPercentagesScantron"));
+					return importFile;
+				}
+			}
+
 		}
 		else
 		{
