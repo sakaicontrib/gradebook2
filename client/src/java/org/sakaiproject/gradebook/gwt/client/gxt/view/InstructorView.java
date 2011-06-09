@@ -625,17 +625,8 @@ public class InstructorView extends AppView {
 			private void handleExport(ExportDetails ex) {
 				
 				Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
-				if (selectedGradebook.getGradebookItemModel().getGradeType() == GradeType.PERCENTAGES)
-				{
-					if (Window.confirm(i18n.exportWarnUserFileCannotBeImportedText()))
-					{
-						Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType(), ex);
-					}
-				}
-				else
-				{
-					Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType(), ex);
-				}
+				// GRBK-804 we'll now not popup as we can import percentages
+				Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType(), ex);
 			}
 		};
 
