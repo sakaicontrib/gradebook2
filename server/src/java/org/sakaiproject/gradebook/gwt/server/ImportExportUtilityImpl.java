@@ -1596,23 +1596,33 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			learnerRow.set(id, rowData[colIdx]);
 			return;
 		}
-		
-		
-		try {
+		// GRBK-806 - Percentages are valid if they are in range of 0..100 inclusive. 
+		if (GradeType.PERCENTAGES == gradeType)
+		{
 			double d = Double.parseDouble(rowData[colIdx]);
-			Item item = importHeader.getItem();
-			isFailure = handleSpecialPointsCaseForItem(item, d, ieInfo); 
-		} catch (NumberFormatException nfe) {
-			// This is not necessarily an exception, for example, we might be
-			// reading letter grades
-			
-			if (gradeType != GradeType.LETTERS || !service.isValidLetterGrade(rowData[colIdx])) {
-				log.info("Caught exception " + nfe + " while importing grades.", nfe); 
-				isFailure = true;
+			if (d < 0.0 || d > 100.0)
+			{
+				isFailure = true; 
 				ieInfo.setInvalidScore(true);
-			} 
+			}
 		}
-		
+		else
+		{
+			try {
+				double d = Double.parseDouble(rowData[colIdx]);
+				Item item = importHeader.getItem();
+				isFailure = handleSpecialPointsCaseForItem(item, d, ieInfo); 
+			} catch (NumberFormatException nfe) {
+				// This is not necessarily an exception, for example, we might be
+				// reading letter grades
+			
+				if (gradeType != GradeType.LETTERS || !service.isValidLetterGrade(rowData[colIdx])) {
+					log.info("Caught exception " + nfe + " while importing grades.", nfe); 
+					isFailure = true;
+					ieInfo.setInvalidScore(true);
+				} 
+			}
+		}
 		if (isFailure) {
 			String failedId = Util.buildFailedKey(id);
 			learnerRow.set(failedId, "This entry is not valid");
@@ -2455,20 +2465,8 @@ private GradeItem buildNewCategory(String curCategoryString,
 				importFile.setRows(null);
 				log.warn(e, e);
 			}
-			/*
-			 * Well, we don't really handle a percentages gradebook well... at least well enough to put it out in prod.
-			 * so as of GRBK-694 we will stop the import proces and say no. 
-			 * 
-			 * Since we're not importing, we don't want to send an event. 
-			 */
-			if (ieInfo.getGradebookItemModel().getGradeType() == GradeType.PERCENTAGES)
-			{
-				importFile = new UploadImpl();
-				importFile.setErrors(true); 
-				importFile.setRows(null); 
-				importFile.setNotes(i18n.getString("gb2CantImportPercentagesBecauseItDoesNotWork")); 
-				return importFile;
-			}
+			
+			// GRBK-806 code was here to disable percentage gradebooks. 
 		}
 		else
 		{
