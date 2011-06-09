@@ -970,7 +970,8 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		Cell scoreHeader = s.findCell(scantronScoreHeader);
 		Cell reScoreHeader = s.findCell(scantronRescoreHeader);
 
-		return (studentIdHeader != null && scoreHeader != null && reScoreHeader != null); 
+		// GRBK-1044 scantron's can contain either a score header or a rescore header, but not necessarily both
+		return (studentIdHeader != null && (scoreHeader != null || reScoreHeader != null)); 
 	}
 
 	private Upload handlePoiSpreadSheet(HSSFWorkbook inspread, Gradebook2ComponentService service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName) throws InvalidInputException, FatalException
