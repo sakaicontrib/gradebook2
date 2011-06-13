@@ -32,6 +32,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.entity.api.Entity;
 import org.sakaiproject.entity.api.HttpAccess;
 import org.sakaiproject.entity.api.Reference;
@@ -49,6 +51,8 @@ import org.w3c.dom.Element;
 
 public class UserDirectoryServiceMock implements UserDirectoryService {
 
+	private static final Log log = LogFactory.getLog(UserDirectoryServiceMock.class);
+
 	private List<User> users;
 	public static int DEFAULT_NUMBER_TEST_LEARNERS = 200;
 	
@@ -58,15 +62,35 @@ public class UserDirectoryServiceMock implements UserDirectoryService {
 	private static final String USER_ID_POSTFIX = "";
 	
 	public void init() {
-		
+		int numUsers = getUserCount(); 
 		if (users == null) {
-			users = new ArrayList<User>(DEFAULT_NUMBER_TEST_LEARNERS);
-			for (int i=0;i<DEFAULT_NUMBER_TEST_LEARNERS;i++) {
+			users = new ArrayList<User>(numUsers);
+			for (int i=0;i<numUsers;i++) {
 				users.add(createUserRecord(i + USER_ID_POSTFIX));
 			}
 		}
 	}
 	
+	private int getUserCount() {
+		String p = System.getProperty("gb2.mockuser.count"); 
+		if (p != null && !"".equals(p))
+		{
+			try {
+				int uc = Integer.parseInt(p);
+				log.info("Overriding default number of mock users to count " + uc); 
+				return uc; 
+			} catch (NumberFormatException e) {
+				log.warn("Could not read property gb2.mockuser.count - using default count of" + DEFAULT_NUMBER_TEST_LEARNERS);
+				return DEFAULT_NUMBER_TEST_LEARNERS; 
+			} 
+		}
+		else
+		{
+			log.info("Using default number of mock users of " + DEFAULT_NUMBER_TEST_LEARNERS); 
+			return DEFAULT_NUMBER_TEST_LEARNERS;
+		}
+	}
+
 	public UserEdit addUser(String arg0, String arg1)
 			throws UserIdInvalidException, UserAlreadyDefinedException,
 			UserPermissionException {
