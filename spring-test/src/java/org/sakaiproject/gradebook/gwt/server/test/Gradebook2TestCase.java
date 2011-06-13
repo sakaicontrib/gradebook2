@@ -22,7 +22,7 @@ abstract class Gradebook2TestCase extends AbstractDependencyInjectionSpringConte
 		return context;
 	}
 
-	protected void onSetup() throws Exception
+	protected void onSetUp() throws Exception
 	{
 		if (service == null || gbToolService == null)
 		{

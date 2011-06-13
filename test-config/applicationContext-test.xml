@@ -2,7 +2,6 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 
 <beans>
-
 	<!-- Performance analysis using AOP -->
 	<!--import resource="performanceAnalysis.xml"/-->
 	
@@ -12,20 +11,62 @@
 	<import resource="db-test.xml" />
 	
 	<import resource="rest-test.xml" />
-	
-	<bean id="org.sakaiproject.log.api.LogConfigurationManager" class="org.sakaiproject.gradebook.gwt.server.Log4jConfigurationManager" singleton="true" init-method="init"/>
 		
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.BusinessLogic" class="org.sakaiproject.gradebook.gwt.sakai.BusinessLogicImpl">
 		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/> 
 	</bean>
-		
-	<bean id="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authn" class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2AuthnImpl">
+			
+	<bean id="org.sakaiproject.entity.api.EntityManager" class="org.sakaiproject.entity.impl.EntityManagerComponent" />
+	
+	<bean id="org.sakaiproject.time.api.TimeService" class="org.sakaiproject.time.impl.BasicTimeService" 
+	    init-method="init" />
+	    
+	<bean id="org.sakaiproject.gradebook.gwt.server.ImportExportUtility" class="org.sakaiproject.gradebook.gwt.server.ImportExportUtilityImpl" init-method="init">
+		<property name="gradeCalculations" ref="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"/>
+		<property name="scantronScoreHeader" value="score" />
+		<property name="scantronRescoreHeader" value="test" />
+		<property name="scantronStudentIdHeader" value="student_id" />
+		<property name="scantronIgnoreColumns">
+			<list>
+			  <value>last name</value>
+			  <value>first name</value>
+			  <value>initial</value>
+			  <value>first_name</value>
+			  <value>last_name</value>
+			</list>
+		</property>
+		<property name="idColumns">
+			<list>
+				<value>student_id</value>
+				<value>student id</value>
+				<value>identifier</value>
+				<value>userId</value>
+				<value>learnerid</value>
+				<value>id</value>
+			</list>
+		</property>
+		<property name="nameColumns">
+			<list>
+				<value>student name</value>
+				<value>name</value>
+				<value>learner</value>
+				<value>section</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="org.sakaiproject.archive.api.ArchiveService" class="org.sakaiproject.gradebook.gwt.sakai.mock.ArchiveServiceMock">
+		<property name="timeService" ref="org.sakaiproject.time.api.TimeService" />
+		<property name="siteService" ref="org.sakaiproject.site.api.SiteService" />
+		<property name="entityManager" ref="org.sakaiproject.entity.api.EntityManager" />
+		<property name="storagePath"><value>./</value></property>
 	</bean>
 	
 	<bean id="GradebookImportService" class="org.sakaiproject.gradebook.gwt.sakai.GradebookImportController">
 		<property name="gbToolService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/>
 		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
 		<property name="commandClass" value="org.sakaiproject.gradebook.gwt.sakai.FileUploadBean"/>
+		<property name="importExportUtility" ref="org.sakaiproject.gradebook.gwt.server.ImportExportUtility"/>
 	</bean>
 	
 	
@@ -36,15 +77,17 @@
 	The sakai.properties file sets the "advisor@org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service" property
 	which then is injected via Sakai's bean configuration mechanism
 	-->
-	<bean id="org.sakaiproject.gradebook.gwt.sakai.api.SampleInstitutionalAdvisor" class="org.sakaiproject.gradebook.gwt.sakai.SampleInstitutionalAdvisor">
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.api.SampleInstitutionalAdvisor" 
+	class="org.sakaiproject.gradebook.gwt.sakai.SampleInstitutionalAdvisor">
 		<property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/>
 		<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>
 		<property name="finalGradeSubmissionPath" value="tmp"/>
+		<property name="editLock" value="TESTSITECONTEXT" />
 	</bean>
 	
 	
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"
-		class="org.sakaiproject.gradebook.gwt.sakai.calculations.GradeCalculationsOOImpl"
+		class="org.sakaiproject.gradebook.gwt.sakai.calculations.GradeCalculationsImpl"
 		init-method="init">
 		
 		<property name="letterGradeMap">
@@ -65,12 +108,11 @@
 				<entry><key><value>0</value></key><value>0</value></entry>
 			</map>
 		</property>
+		<property name="scale" value="50"/>
 		
 	</bean>
 
 	
 	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/>
-	
-
 
 </beans>

@@ -3,8 +3,7 @@
 
 <beans>
 
-	<!--  This stuff originally came from the db.xml... putting it hear because of paranoia of a name collision -->
-		<bean id="alt.gradebookTxTemplate" lazy-init="true" abstract="true" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+	<bean id="alt.gradebookTxTemplate" lazy-init="true" abstract="true" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
 		<property name="transactionManager"><ref bean="alt.gradebookTransactionManager"/></property>
 		<property name="transactionAttributes">
 			<props>
@@ -20,7 +19,6 @@
 		<property name="sessionFactory"><ref bean="alt.gradebookSessionFactory"/></property>
 	</bean>
 		
-	<!-- end of stuff from db.xml -->
 	<!-- An application consumer without a component. -->
 	<bean id="alt.gradebookSessionFactory" 
 		parent="org.sakaiproject.springframework.orm.hibernate.SessionFactoryBase"
@@ -50,13 +48,6 @@
 		</property>
 	</bean>
 	
-
-	<!-- bean id="org.sakaiproject.log.api.LogConfigurationManager"
-			class="org.sakaiproject.gradebook2.test.sakai.Log4jConfigurationManager"
-			init-method="init"
-			destroy-method="destroy"
-			singleton="true">
-	</bean-->
 
 
     <!-- database beans -->
