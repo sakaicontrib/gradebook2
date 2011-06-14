@@ -44,6 +44,7 @@ import org.sakaiproject.gradebook.gwt.sakai.model.GradeItem;
 import org.sakaiproject.gradebook.gwt.server.model.GradeItemImpl;
 import org.sakaiproject.service.gradebook.shared.ConflictingAssignmentNameException;
 import org.sakaiproject.service.gradebook.shared.GradebookExternalAssessmentService;
+import org.sakaiproject.service.gradebook.shared.GradebookFrameworkService;
 
 import com.google.gwt.core.client.GWT;
 
@@ -58,6 +59,7 @@ public class DevelopmentModeBean {
 	private static final long serialVersionUID = 1L;
 	private Gradebook2ComponentService service;
 	private GradebookExternalAssessmentService externalService;
+	private GradebookFrameworkService frameworkService; 
 	
 	
 	public void init() {	
@@ -86,7 +88,18 @@ public class DevelopmentModeBean {
 		
 		
 	}
+	// In the spring based unit testing we need to delete gradebooks, so this method will do that. 
 	
+	public void deleteAndRecreateGradebook(String gradebookUid) 
+	{
+		if (gradebookUid != null && !"".equals(gradebookUid))
+		{
+			frameworkService.deleteGradebook(gradebookUid); 
+		}
+		setUpMockData(false);
+	}
+	
+
 	private void setUpMockData(boolean populate) {
 
 		try {
@@ -697,5 +710,13 @@ private void createSecondGradebook(Gradebook gbModel, boolean populate) throws I
 	public void setExternalService(
 			GradebookExternalAssessmentService externalService) {
 		this.externalService = externalService;
+	}
+
+	public GradebookFrameworkService getFrameworkService() {
+		return frameworkService;
+	}
+
+	public void setFrameworkService(GradebookFrameworkService frameworkService) {
+		this.frameworkService = frameworkService;
 	}
 }

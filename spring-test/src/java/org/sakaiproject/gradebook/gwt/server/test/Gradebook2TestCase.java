@@ -10,6 +10,7 @@ abstract class Gradebook2TestCase extends AbstractDependencyInjectionSpringConte
 {
 	private Gradebook2ComponentService service = null;
 	private GradebookToolService gbToolService = null;
+	private DevelopmentModeBean devModeBean = null; 
 
 	public Gradebook2TestCase()
 	{
@@ -32,8 +33,8 @@ abstract class Gradebook2TestCase extends AbstractDependencyInjectionSpringConte
 			{
 				if (context.containsBean("DevelopmentModeBean"))
 				{
-					DevelopmentModeBean dmb = (DevelopmentModeBean) context.getBean("DevelopmentModeBean");
-					service = dmb.getService(); 
+					devModeBean = (DevelopmentModeBean) context.getBean("DevelopmentModeBean");
+					service = devModeBean.getService(); 
 					gbToolService = (GradebookToolService) context.getBean("org.sakaiproject.gradebook.gwt.sakai.GradebookToolService", GradebookToolService.class);
 				}
 			}
@@ -74,6 +75,10 @@ abstract class Gradebook2TestCase extends AbstractDependencyInjectionSpringConte
 
 	public GradebookToolService getGbToolService() {
 		return gbToolService;
+	}
+
+	public DevelopmentModeBean getDevModeBean() {
+		return devModeBean;
 	}
 
 }

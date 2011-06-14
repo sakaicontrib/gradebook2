@@ -39,15 +39,17 @@ import org.sakaiproject.gradebook.gwt.sakai.model.Realm;
 import org.sakaiproject.gradebook.gwt.sakai.model.RealmGroup;
 import org.sakaiproject.gradebook.gwt.sakai.model.RealmRlGroupId;
 import org.sakaiproject.gradebook.gwt.sakai.model.RealmRole;
+import org.sakaiproject.service.gradebook.shared.GradebookNotFoundException;
 import org.sakaiproject.site.api.Group;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SiteService;
 import org.sakaiproject.tool.api.ToolManager;
+import org.sakaiproject.tool.gradebook.GradeMapping;
+import org.sakaiproject.tool.gradebook.Gradebook;
 import org.sakaiproject.user.api.User;
 import org.sakaiproject.user.api.UserDirectoryService;
 import org.springframework.orm.hibernate3.HibernateCallback;
-
-import com.google.gwt.core.client.GWT;
+import org.springframework.orm.hibernate3.HibernateTemplate;
 
 public class GradebookFrameworkServiceMock extends
 		GradebookFrameworkServiceImpl {
@@ -253,6 +255,54 @@ public class GradebookFrameworkServiceMock extends
 				e.printStackTrace();
 			}
 		}
+	}
+
+	/*
+	 * There seems to be a bug in FND, I didn't bother running it down, but I got a HQL constraint on the GradeMapping
+	 * 
+	 * I couldn't figure out a clean way to eliminate the mapping, so I do the next best thing, I point it at another gradebook. 
+	 * 
+	 * I don't think much calls deleteGradebook 
+	 * 
+	 * (non-Javadoc)
+	 * @see org.sakaiproject.component.gradebook.GradebookFrameworkServiceImpl#deleteGradebook(java.lang.String)
+	 */
+	@Override
+	public void deleteGradebook(String uid) throws GradebookNotFoundException {
+		Gradebook dump = getDumpGradebook(); 
+		final Long gradebookId = getGradebook(uid).getId();
+		HibernateTemplate hibTempl = getHibernateTemplate();
+		
+		List<GradeMapping> mappings;
+		int numberDeleted;
+
+		mappings = hibTempl.find("from GradeMapping as gm where gm.gradebook.id=?", gradebookId);
+		numberDeleted = mappings.size();
+		
+		if (numberDeleted > 0 )
+		{
+			for (GradeMapping m : mappings)
+			{
+				m.setGradebook(dump);
+			}
+		}
+		hibTempl.saveOrUpdateAll(mappings); 		
+
+		super.deleteGradebook(uid);
+	}
+
+	private Gradebook getDumpGradebook() {
+		
+		Gradebook d;
+		
+		try {
+			d = getGradebook("DUMP");
+		} catch (GradebookNotFoundException e) {
+			addGradebook("DUMP", "DUMP"); 
+			d = getGradebook("DUMP"); 
+		}
+		
+		return d; 
 	}
 
 }
