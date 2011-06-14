@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.Roster;
@@ -12,7 +13,6 @@ import org.sakaiproject.gradebook.gwt.client.model.Upload;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
-import org.sakaiproject.tool.gradebook.Gradebook;
 import org.springframework.context.ConfigurableApplicationContext;
 
 public class ImportExportUtilityTest extends Gradebook2TestCase 
@@ -62,7 +62,8 @@ public class ImportExportUtilityTest extends Gradebook2TestCase
 		// Check the student count.
 		List<Learner>  dataRows = data.getRows(); 
 		int numStudents = dataRows.size(); 
-		Gradebook g = getGbToolService().getGradebook(AppConstants.TEST_SITE_CONTEXT_ID); 
+		
+		org.sakaiproject.tool.gradebook.Gradebook g = getGbToolService().getGradebook(AppConstants.TEST_SITE_CONTEXT_ID); 
 		assertTrue("The number of students is unexpected", numStudents == 10); 
 
 		// Now finish the import by calling the upload. 
@@ -97,7 +98,73 @@ public class ImportExportUtilityTest extends Gradebook2TestCase
 
 		
 	}
+	
+	// GRBK-804 - percentage import of grades 
+	
+	public void testImportGRBK_804_NoCats() throws Exception
+	{
+		clearGB();
+		Gradebook g = getService().getGradebook(AppConstants.TEST_SITE_CONTEXT_ID); 
+		assertNotNull(g); 
+		String dataFileName = "importGRBK_804_NC.csv"; 
+		URL ifname = getClass().getResource(dataFileName); 
+		assertNotNull("Cannot find required test file", ifname); 
+		Upload data = null; 
+		FileReader r = null; 
+		r = new FileReader(ifname.getPath()); 
+		data = ieutil.parseImportCSV(getService(), AppConstants.TEST_SITE_CONTEXT_ID, r);
+		assertNotNull(data); 
+		assertFalse(data.hasErrors()); 
 
+		// Make sure we're a points / no cats gb 
+		boolean isNoCats = false; 
+		boolean isPercentages = false; 
+
+		Item im = data.getGradebookItemModel(); 
+		isNoCats = im.getCategoryType() == CategoryType.NO_CATEGORIES;
+		isPercentages = im.getGradeType() == GradeType.PERCENTAGES; 
+		
+		assertTrue("Bad Category type", isNoCats); 
+		assertTrue("Bad Grade type", isPercentages); 
+		
+		// Check the student count.
+		List<Learner>  dataRows = data.getRows(); 
+		int numStudents = dataRows.size(); 
+		
+		assertTrue("The number of students is unexpected", numStudents == 10); 
+		getService().upload(AppConstants.TEST_SITE_CONTEXT_ID, g.getGradebookId(), data, false); 
+	
+		Roster roster = getService().getRoster(AppConstants.TEST_SITE_CONTEXT_ID, g.getGradebookId(), Integer.valueOf(20), 
+				Integer.valueOf(0), null, null, null, null, true, true, false);
+		assertNotNull(roster); 
+		
+		/*
+		 * Now lets check the file for a couple of students to make sure the final grade they get is OK. 
+		 * 
+		 */
+		Learner currentStudent = null; 
+		String cgrade = ""; 
+		
+		// First check student 1
+		currentStudent = getLearnerFromRosterById(roster, "1"); 
+		
+		assertNotNull(currentStudent); 
+		cgrade = currentStudent.getCalculatedGrade(); 
+		assertEquals("64.03",cgrade); 
+		
+		currentStudent = null; 
+		cgrade = ""; 
+		// Now student 7 
+		
+		currentStudent = getLearnerFromRosterById(roster, "7"); 
+		cgrade = currentStudent.getCalculatedGrade(); 
+		assertEquals("72.56", cgrade);		
+	}
+
+
+	private void clearGB() {
+		getDevModeBean().deleteAndRecreateGradebook(AppConstants.TEST_SITE_CONTEXT_ID); 
+	}
 
 	/**
 	 * This probably should move into some util, but for now its fine where it is. 
