@@ -1,0 +1,25 @@
+Instructions for spring-test setup 
+
+I will use ImportExportUtilityTest.java as my example test file. 
+
+
+1) Open context menu on ImportExportUtilityTest.java and say Run As -> "JUnit Test" 
+
+This will create the test launcher.  At this time the test launch will fail.  
+
+2) Go into Run Configurations and open up the launcher that was just created, it should be called "ImportExportUtilityTest".  You will notice that there are command line arguments, and it needs these to run.  The best way to do this is to copy what you have from a running dev mode Web application to the test launcher config.  Or you can paste these in: 
+
+-Xmx1028m -XX:PermSize=256m -XX:MaxPermSize=400m -Dgb2.security.enabled=false -Dgb2.mode=hosted -Dgb2.role=instructor -Dgb2.enable.scaled.extra.credit=instructor -Dgb2.dev.mockGradebook=true -Dgb2.dev.mockGradebookWithData=false -Dgb2.mockuser.count=10
+
+Note those can change, you're better off using what you have that works, this test config is much like hosted mode.  
+
+3) Click apply and then run, and the test should work as well as it is written now.  
+
+
+Instructions for making test files
+
+1) extend Gradebook2TestCase 
+2) If you need other beans, just grab the context and get those beans.  Use ImportExportUtilityTest as an example. 
+3) The base case has the component service and the GradebookToolService available by just calling a method.  
+
+

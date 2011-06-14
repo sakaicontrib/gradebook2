@@ -37,21 +37,23 @@ abstract class Gradebook2TestCase extends AbstractDependencyInjectionSpringConte
 					gbToolService = (GradebookToolService) context.getBean("org.sakaiproject.gradebook.gwt.sakai.GradebookToolService", GradebookToolService.class);
 				}
 			}
+			
+			checkWiring(); 
+			checkCLI(); 
 		}
 	}
 	
 	// We always want to make sure wiring is OK, that we have a comp service.  If we don't no reason to continue.  Children can do this as well...
-	public void testWiring() 
+	private void checkWiring() 
 	{
-		boolean good = getService() != null;
-		assertTrue("There is an issue with the wiring of the base test case. ", good); 
+		assertNotNull("There is an issue with the wiring of the base test case. ", service); 
 	}
 	
 	// This test is to ensure that we've a proper command line argument set
 	/*
 	 * At the time of writing, the gb2.mode should be hosted, and we disable security ala hosted mode. 
 	 */
-	public void testCLArgs()
+	private void checkCLI()
 	{
 		String setupMessage = "The test system is not configured properly for spring testing. " +
 				"While creating the launcher for this test you need to configure the command line to " +
