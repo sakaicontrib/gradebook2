@@ -28,7 +28,7 @@ public class ImportExportUtilityTest extends Gradebook2TestCase
 		{
 			good = ieutil != null; 
 		}
-		assertTrue(good); 
+		assertTrue("There is a wiring issue with this test class", good); 
 	}
 	
 	/*
