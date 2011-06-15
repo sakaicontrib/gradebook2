@@ -40,16 +40,19 @@ import org.sakaiproject.gradebook.gwt.sakai.model.RealmGroup;
 import org.sakaiproject.gradebook.gwt.sakai.model.RealmRlGroupId;
 import org.sakaiproject.gradebook.gwt.sakai.model.RealmRole;
 import org.sakaiproject.service.gradebook.shared.GradebookNotFoundException;
+import org.sakaiproject.service.gradebook.shared.GradebookService;
 import org.sakaiproject.site.api.Group;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SiteService;
 import org.sakaiproject.tool.api.ToolManager;
+import org.sakaiproject.tool.gradebook.Category;
 import org.sakaiproject.tool.gradebook.GradeMapping;
 import org.sakaiproject.tool.gradebook.Gradebook;
 import org.sakaiproject.user.api.User;
 import org.sakaiproject.user.api.UserDirectoryService;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
+
 
 public class GradebookFrameworkServiceMock extends
 		GradebookFrameworkServiceImpl {
@@ -269,13 +272,15 @@ public class GradebookFrameworkServiceMock extends
 	 */
 	@Override
 	public void deleteGradebook(String uid) throws GradebookNotFoundException {
-		Gradebook dump = getDumpGradebook(); 
-		final Long gradebookId = getGradebook(uid).getId();
+		Gradebook dump = getDumpGradebook();
+		final Gradebook g = getGradebook(uid); 
+		final Long gradebookId = g.getId();
 		HibernateTemplate hibTempl = getHibernateTemplate();
-		
+
+		// Handle the mappings
 		List<GradeMapping> mappings;
 		int numberDeleted;
-
+		
 		mappings = hibTempl.find("from GradeMapping as gm where gm.gradebook.id=?", gradebookId);
 		numberDeleted = mappings.size();
 		
@@ -288,6 +293,20 @@ public class GradebookFrameworkServiceMock extends
 		}
 		hibTempl.saveOrUpdateAll(mappings); 		
 
+		// Handle the categories 
+		// What I wouldn't give for a cascading delete... :( 
+		if (g.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY)
+		{
+			List<Category> cats = hibTempl.find("from Category as c where c.gradebook.id=?", gradebookId); 
+			numberDeleted = cats.size(); 
+			log.debug("Remapping " + numberDeleted + " categories.");
+			
+			for (Category c : cats)
+			{
+				c.setGradebook(dump); 
+			}
+			hibTempl.saveOrUpdateAll(cats); 
+		}
 		super.deleteGradebook(uid);
 	}
 
