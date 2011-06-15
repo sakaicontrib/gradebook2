@@ -1,5 +1,6 @@
 package org.sakaiproject.gradebook.gwt.server.test;
 
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.net.URL;
 import java.util.List;
@@ -161,7 +162,166 @@ public class ImportExportUtilityTest extends Gradebook2TestCase
 		assertEquals("72.56", cgrade);		
 	}
 
+	public void testImportGRBK_804_SimpleCategories() throws Exception
+	{
+		clearGB();
+		Gradebook g = getService().getGradebook(AppConstants.TEST_SITE_CONTEXT_ID); 
+		assertNotNull(g); 
+		String dataFileName = "importGRBK_804_SC.csv"; 
+		URL ifname = getClass().getResource(dataFileName); 
+		assertNotNull("Cannot find required test file", ifname); 
+		Upload data = null; 
+		FileReader r = null; 
+		r = new FileReader(ifname.getPath()); 
+		data = ieutil.parseImportCSV(getService(), AppConstants.TEST_SITE_CONTEXT_ID, r);
+		assertNotNull(data); 
+		assertFalse(data.hasErrors()); 
 
+		// Make sure we're a points / no cats gb 
+		boolean isSimpleCats = false; 
+		boolean isPercentages = false; 
+
+		Item im = data.getGradebookItemModel(); 
+		isSimpleCats = im.getCategoryType() == CategoryType.SIMPLE_CATEGORIES;
+		isPercentages = im.getGradeType() == GradeType.PERCENTAGES; 
+		
+		assertTrue("Bad Category type", isSimpleCats); 
+		assertTrue("Bad Grade type", isPercentages); 
+		
+		// Check the student count.
+		List<Learner>  dataRows = data.getRows(); 
+		int numStudents = dataRows.size(); 
+		
+		assertTrue("The number of students is unexpected", numStudents == 10); 
+		getService().upload(AppConstants.TEST_SITE_CONTEXT_ID, g.getGradebookId(), data, false); 
+	
+		Roster roster = getService().getRoster(AppConstants.TEST_SITE_CONTEXT_ID, g.getGradebookId(), Integer.valueOf(20), 
+				Integer.valueOf(0), null, null, null, null, true, true, false);
+		assertNotNull(roster); 
+		
+		/*
+		 * Now lets check the file for a couple of students to make sure the final grade they get is OK. 
+		 * 
+		 */
+		Learner currentStudent = null; 
+		String cgrade = ""; 
+		
+		// First check student 4
+		currentStudent = getLearnerFromRosterById(roster, "4"); 
+		
+		assertNotNull(currentStudent); 
+		cgrade = currentStudent.getCalculatedGrade(); 
+		assertEquals("93.71",cgrade); 
+		
+		currentStudent = null; 
+		cgrade = ""; 
+		// Now student 8
+		
+		currentStudent = getLearnerFromRosterById(roster, "8"); 
+		cgrade = currentStudent.getCalculatedGrade(); 
+		assertEquals("72.30", cgrade);		
+	}
+
+	public void testImportGRBK_804_WeightedCategories() throws Exception
+	{
+		clearGB();
+		Gradebook g = getService().getGradebook(AppConstants.TEST_SITE_CONTEXT_ID); 
+		assertNotNull(g); 
+		String dataFileName = "importGRBK_804_WC.csv"; 
+		URL ifname = getClass().getResource(dataFileName); 
+		assertNotNull("Cannot find required test file", ifname); 
+		Upload data = null; 
+		FileReader r = null; 
+		r = new FileReader(ifname.getPath()); 
+		data = ieutil.parseImportCSV(getService(), AppConstants.TEST_SITE_CONTEXT_ID, r);
+		assertNotNull(data); 
+		assertFalse(data.hasErrors()); 
+
+		// Make sure we're a points / no cats gb 
+		boolean isWeightedCats = false; 
+		boolean isPercentages = false; 
+
+		Item im = data.getGradebookItemModel(); 
+		isWeightedCats = im.getCategoryType() == CategoryType.WEIGHTED_CATEGORIES;
+		isPercentages = im.getGradeType() == GradeType.PERCENTAGES; 
+		
+		assertTrue("Bad Category type", isWeightedCats); 
+		assertTrue("Bad Grade type", isPercentages); 
+		
+		// Check the student count.
+		List<Learner>  dataRows = data.getRows(); 
+		int numStudents = dataRows.size(); 
+		
+		assertTrue("The number of students is unexpected", numStudents == 10); 
+		getService().upload(AppConstants.TEST_SITE_CONTEXT_ID, g.getGradebookId(), data, false); 
+	
+		Roster roster = getService().getRoster(AppConstants.TEST_SITE_CONTEXT_ID, g.getGradebookId(), Integer.valueOf(20), 
+				Integer.valueOf(0), null, null, null, null, true, true, false);
+		assertNotNull(roster); 
+		
+		/*
+		 * Now lets check the file for a couple of students to make sure the final grade they get is OK. 
+		 * 
+		 */
+		Learner currentStudent = null; 
+		String cgrade = ""; 
+		
+		// First check student 3
+		currentStudent = getLearnerFromRosterById(roster, "3"); 
+		
+		assertNotNull(currentStudent); 
+		cgrade = currentStudent.getCalculatedGrade(); 
+		assertEquals("77.47",cgrade); 
+		
+		currentStudent = null; 
+		cgrade = ""; 
+		// Now student 7 
+		
+		currentStudent = getLearnerFromRosterById(roster, "7"); 
+		cgrade = currentStudent.getCalculatedGrade(); 
+		assertEquals("85.31", cgrade);		
+		
+		currentStudent = null; 
+		cgrade = ""; 
+		// Now student 0 
+		
+		currentStudent = getLearnerFromRosterById(roster, "0"); 
+		cgrade = currentStudent.getCalculatedGrade(); 
+		assertEquals("0.00", cgrade);		
+	
+	}
+	
+	public void testImportGRBK_804_scantron_normal() throws Exception
+	{
+		// so for a scantron, we need to be a particular mode, so easiest way is to do the simple cats thing
+		testImportGRBK_804_SimpleCategories();
+		String dataFileName = "importGRBK_804_scantron.xls"; 
+		URL ifname = getClass().getResource(dataFileName); 
+		assertNotNull("Cannot find required test file", ifname); 
+		Upload data = null; 
+		FileInputStream is = null; 
+		is = new FileInputStream(ifname.getPath()); 
+		data = ieutil.parseImportXLS(getService(), AppConstants.TEST_SITE_CONTEXT_ID, is, dataFileName, getGbToolService(), false);
+		assertNotNull(data); 
+		assertTrue("Scantron files can be imported but should not be", data.hasErrors()); 
+		
+	}
+	public void testImportGRBK_804_scantron_rescore() throws Exception
+	{
+		// so for a scantron, we need to be a particular mode, so easiest way is to do the simple cats thing
+		testImportGRBK_804_SimpleCategories();
+		String dataFileName = "importGRBK_804_scantron.xls"; 
+		URL ifname = getClass().getResource(dataFileName); 
+		assertNotNull("Cannot find required test file", ifname); 
+		Upload data = null; 
+		FileInputStream is = null; 
+		is = new FileInputStream(ifname.getPath()); 
+		data = ieutil.parseImportXLS(getService(), AppConstants.TEST_SITE_CONTEXT_ID, is, dataFileName, getGbToolService(), false);
+		assertNotNull(data); 
+		assertTrue("Scantron files can be imported but should not be", data.hasErrors()); 
+		
+	}
+	
 	private void clearGB() {
 		getDevModeBean().deleteAndRecreateGradebook(AppConstants.TEST_SITE_CONTEXT_ID); 
 	}
