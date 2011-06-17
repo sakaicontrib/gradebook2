@@ -2178,4 +2178,10 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 		this.eventTrackingService = eventTrackingService;
 	}
 
+	
+	public Boolean hasGradeOverrides(Long gradebookId) {
+		
+		return Boolean.valueOf(isExplicitlyEnteredCourseGradeRecords(gradebookId));
+	}
+
 }

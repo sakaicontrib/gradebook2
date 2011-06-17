@@ -86,6 +86,7 @@ import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.LegendPosition;
@@ -170,23 +171,41 @@ public class GradeScalePanel extends GradebookPanel {
 
 			@Override
 			public void selectionChanged(SelectionChangedEvent<ModelData> se) {
-
+				Boolean isFormatLocked = Boolean.FALSE; 
 				Gradebook selectedGradebookModel = Registry.get(AppConstants.CURRENT);
 				Item selectedItemModel = selectedGradebookModel.getGradebookItemModel();
 				ModelData gradeFormatModel = se.getSelectedItem();
 
 				currentGradeScaleId = gradeFormatModel == null ? null : (Long)gradeFormatModel.get(GradeFormatKey.L_ID.name());
 
+				if (gradeFormatModel != null)
+				{
+					isFormatLocked = (Boolean) gradeFormatModel.get(GradeFormatKey.B_LK.name());
+					// Unsure if this could happen, but will guard it anyways.. 
+					if (isFormatLocked == null) 
+					{
+						isFormatLocked = Boolean.FALSE; 
+					}
+				}
 				if (currentGradeScaleId != null && !currentGradeScaleId.equals(selectedItemModel.getGradeScaleId())) {
 
-					showUserFeedback();
-					Record record = treeView.getTreeStore().getRecord((ItemModel)selectedItemModel);
-					record.beginEdit();
-					record.set(ItemKey.L_GRD_SCL_ID.name(), currentGradeScaleId);
-					grid.mask();
-					ItemUpdate itemUpdate = new ItemUpdate(treeView.getTreeStore(), record, selectedItemModel, false);
-					itemUpdate.property = ItemKey.L_GRD_SCL_ID.name();
-					Dispatcher.forwardEvent(GradebookEvents.UpdateItem.getEventType(), itemUpdate);
+					if (isFormatLocked.booleanValue())
+					{
+						Window.alert(i18n.gradeFormatCannotBeChangedWarning());
+						loader.load(); 
+					}
+					else
+					{
+						showUserFeedback();
+						Record record = treeView.getTreeStore().getRecord((ItemModel)selectedItemModel);
+						record.beginEdit();
+						record.set(ItemKey.L_GRD_SCL_ID.name(), currentGradeScaleId);
+						grid.mask();
+						ItemUpdate itemUpdate = new ItemUpdate(treeView.getTreeStore(), record, selectedItemModel, false);
+						itemUpdate.property = ItemKey.L_GRD_SCL_ID.name();
+						Dispatcher.forwardEvent(GradebookEvents.UpdateItem.getEventType(), itemUpdate);
+					}
+					
 
 				} else {
 					loader.load();

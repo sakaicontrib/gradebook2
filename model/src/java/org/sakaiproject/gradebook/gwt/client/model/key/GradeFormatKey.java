@@ -3,7 +3,8 @@ package org.sakaiproject.gradebook.gwt.client.model.key;
 public enum GradeFormatKey { 
 	
 	L_ID("id"), 
-	S_NM("name"); 
+	S_NM("name"),
+	B_LK("locked");
 	
 	private String property;
 

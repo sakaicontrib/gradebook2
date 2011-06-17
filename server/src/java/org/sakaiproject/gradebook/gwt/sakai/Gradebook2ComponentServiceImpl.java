@@ -847,15 +847,22 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		List<Map<String,Object>> models = new ArrayList<Map<String,Object>>();
 
 		Set<GradeMapping> gradeMappings = gbService.getGradeMappings(gradebookId);
+		// If the gradebook has grade overrides it is considered format locked, meaning the grade scale format cannot change.   
+		Boolean isLocked = isGradeFormatLocked(gradebookId); 
 
 		for (GradeMapping mapping : gradeMappings) {
 			Map<String,Object> model = new HashMap<String,Object>();
 			model.put(GradeFormatKey.L_ID.name(), mapping.getId());
 			model.put(GradeFormatKey.S_NM.name(), mapping.getName());
+			model.put(GradeFormatKey.B_LK.name(), isLocked); 
 			models.add(model);
 		}
 
 		return models;
+	}
+
+	private Boolean isGradeFormatLocked(Long gradebookId) {
+		return gbService.hasGradeOverrides(gradebookId);
 	}
 
 	public BusinessLogic getBusinessLogic() {

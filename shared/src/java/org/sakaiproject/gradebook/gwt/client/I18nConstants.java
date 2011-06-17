@@ -400,4 +400,7 @@ public interface I18nConstants extends Constants {
 	
 	String multiGradeCellEditFeedback();
 	
+	// GRBK-1032
+	String gradeFormatCannotBeChangedWarning();
+	String gradeFormatNormalTooltip();
 }
