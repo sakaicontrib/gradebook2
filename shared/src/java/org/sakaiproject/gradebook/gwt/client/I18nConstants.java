@@ -396,7 +396,8 @@ public interface I18nConstants extends Constants {
 	String lockWarning();
 	
 	String gradeScaleChartUpdateToggle();
-	String gradeScaleChartUpdateToggleToolTip();
+	String gradeScaleChartUpdateToggleToolTipOff();
+	String gradeScaleChartUpdateToggleToolTipOn();
 	
 	String multiGradeCellEditFeedback();
 	

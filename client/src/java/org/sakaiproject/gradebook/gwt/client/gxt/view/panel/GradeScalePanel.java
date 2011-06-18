@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
+import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.RestCallback;
@@ -39,6 +40,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.TreeView;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.components.NullSensitiveCheckBox;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.key.GradeFormatKey;
@@ -55,7 +57,9 @@ import com.extjs.gxt.ui.client.data.LoadEvent;
 import com.extjs.gxt.ui.client.data.Loader;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
+import com.extjs.gxt.ui.client.event.EventType;
 import com.extjs.gxt.ui.client.event.Events;
+import com.extjs.gxt.ui.client.event.FieldEvent;
 import com.extjs.gxt.ui.client.event.GridEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
@@ -68,6 +72,7 @@ import com.extjs.gxt.ui.client.widget.HorizontalPanel;
 import com.extjs.gxt.ui.client.widget.Label;
 import com.extjs.gxt.ui.client.widget.Text;
 import com.extjs.gxt.ui.client.widget.button.Button;
+import com.extjs.gxt.ui.client.widget.form.CheckBox;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
 import com.extjs.gxt.ui.client.widget.form.LabelField;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
@@ -79,6 +84,8 @@ import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.toolbar.SeparatorToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.i18n.client.NumberFormat;
@@ -124,7 +131,9 @@ public class GradeScalePanel extends GradebookPanel {
 	
 	private Label instructionLabel;
 	
-	private AriaToggleButton toggleButton;
+	private CheckBox toggleCheckBox; 
+	// GXT's checkbox is a form item, and such the field label isn't shown.  So we work around this by using a regular label
+	private Label toggleCheckBoxLabel; 
 	
 	private boolean hasActiveNotifications = false;
 	
@@ -221,33 +230,45 @@ public class GradeScalePanel extends GradebookPanel {
 		SeparatorToolItem separatorToolItem = new SeparatorToolItem();
 		separatorToolItem.addStyleName(resources.css().gbGradeScaleSeparatorToolItem());
 		
+		
 		toolbar.add(separatorToolItem);
 		
-		toggleButton = new AriaToggleButton(i18n.gradeScaleChartUpdateToggle(), new SelectionListener<ButtonEvent>() {
+		final String toolTipOn = i18n.gradeScaleChartUpdateToggleToolTipOn(); 
+		final String toolTipOff = i18n.gradeScaleChartUpdateToggleToolTipOff(); 
+
+		toggleCheckBoxLabel = new Label(i18n.gradeScaleChartUpdateToggle()); 
+		toggleCheckBoxLabel.setToolTip(toolTipOn); 
+		toolbar.add(toggleCheckBoxLabel);
+		
+		toggleCheckBox = new NullSensitiveCheckBox(); 
+		toggleCheckBox.setToolTip(toolTipOn); 
+		toggleCheckBox.setValue(Boolean.TRUE); 
+		
+		toggleCheckBox.addListener(Events.Change, new Listener<FieldEvent>() {
 			
-			public void componentSelected(ButtonEvent ce) {
-				
-				if(toggleButton.isPressed()) {
-					
+			public void handleEvent(FieldEvent be) {
+				boolean isChecked = DataTypeConversionUtil.checkBoolean(((CheckBox)be.getField()).getValue());
+				if (isChecked) 
+				{
+					toggleCheckBoxLabel.setToolTip(toolTipOn); 
+					toggleCheckBox.setToolTip(toolTipOn); 
 					statisticsChartPanel.unmask();
-					
 					if(isVisualizationApiLoaded && hasChartUpdates) {
-						
 						getStatisticsChartData();
 						hasChartUpdates = false;
 					}
 				}
-				else {
+				else
+				{
+					toggleCheckBoxLabel.setToolTip(toolTipOff); 
+					toggleCheckBox.setToolTip(toolTipOff); 					
 					statisticsChartPanel.mask();
 				}
+				
 			}
 		});
-
-		toggleButton.toggle(true);
-		toggleButton.setToolTip(i18n.gradeScaleChartUpdateToggleToolTip());
-		toggleButton.setStylePrimaryName(resources.css().gbGradeScaleChartUpdateToggle());
-		
-	    toolbar.add(toggleButton);
+				
+	    toolbar.add(toggleCheckBox);
 	    
 		setTopComponent(toolbar);
 
@@ -342,7 +363,7 @@ public class GradeScalePanel extends GradebookPanel {
 					
 					hasGradeScaleUpdates = true;
 					
-					if(!toggleButton.isPressed()) {
+					if(!toggleCheckBox.getValue().booleanValue()) {
 						
 						hasChartUpdates = true;
 					}
@@ -425,7 +446,7 @@ public class GradeScalePanel extends GradebookPanel {
 	 */
 	public void onClose() {
 		
-		toggleButton.toggle(true);
+//		toggleButton.toggle(true);
 		hideUserFeedback();
 		refreshCourseGrades();
 	}
@@ -435,7 +456,7 @@ public class GradeScalePanel extends GradebookPanel {
 		loader.load();
 
 		// The onRefreshGradeScale method is called after the user selects a grade scale from the ComboBox
-		if(isVisualizationApiLoaded && toggleButton.isPressed()) {
+		if(isVisualizationApiLoaded && toggleCheckBox.getValue().booleanValue()) {
 	
 			getStatisticsChartData();
 		}
@@ -601,23 +622,23 @@ public class GradeScalePanel extends GradebookPanel {
 	
 	private void showUserFeedback() {
 
-		if(!hasActiveNotifications && toggleButton.isPressed()) {
+		if(!hasActiveNotifications && toggleCheckBox.getValue().booleanValue()) {
 		
 			Dispatcher.forwardEvent(GradebookEvents.ShowUserFeedback.getEventType(), i18n.statisticsGradebookUpdatingChart(), false);
 			statisticsChartPanel.mask();
 			hasActiveNotifications = true;
-			toggleButton.disable();
+			toggleCheckBox.disable();
 		}
 	}
 	
 	private void hideUserFeedback() {
 		
-		if(hasActiveNotifications && toggleButton.isPressed()) {
+		if(hasActiveNotifications && toggleCheckBox.getValue().booleanValue()) {
 		
 			Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType(), false);
 			statisticsChartPanel.unmask();
 			hasActiveNotifications = false;
-			toggleButton.enable();
+			toggleCheckBox.enable();
 		}
 	}
 	
