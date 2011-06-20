@@ -60,6 +60,17 @@
 			<scope>provided</scope>
 		</dependency>
 		
+		<!--
+		This dependency brings in stax-api v1.0.1 instead of v1.0-2 via jersey-json. Bellow, we
+		exclude stax-api so that we don't end up with two JARs in WEB-INF/lib
+		-->
+		<dependency>
+			<groupId>stax</groupId>
+			<artifactId>stax-api</artifactId>
+			<version>1.0.1</version>
+			<scope>compile</scope>
+		</dependency>
+		
 		<!-- Jersey JAX-RS Dependencies -->
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
@@ -70,11 +81,23 @@
 		    <groupId>com.sun.jersey.contribs</groupId>
 		    <artifactId>jersey-spring</artifactId>
 		    <version>${gb2.jersey.version}</version>
+		    <exclusions>
+		    	<exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-aop</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-json</artifactId>
 			<version>${gb2.jersey.version}</version>
+			<exclusions> 
+        			<exclusion> 
+          				<groupId>javax.xml.stream</groupId> 
+         	 			<artifactId>stax-api</artifactId>
+        			</exclusion> 
+      			</exclusions> 
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
