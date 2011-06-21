@@ -4,12 +4,13 @@ import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.component.api.ServerConfigurationService;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.tool.api.Session;
+import org.sakaiproject.tool.api.SessionManager;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -30,6 +31,8 @@ org.springframework.web.servlet.mvc.ServletWrappingController implements Applica
 	private String controllerBeanName = null;
 
 	private OpenController controllerBean = null;
+	
+	private SessionManager sessionManager = null;
 
 	// IOC init method
 	public void init() {
@@ -97,20 +100,22 @@ org.springframework.web.servlet.mvc.ServletWrappingController implements Applica
 
 
 			// In case gb2.security is enabled: validating GB2_TOKEN
-			HttpSession httpSession = request.getSession();
-			if(null != httpSession) {
+			Session session = sessionManager.getCurrentSession();
+			
+			if(null != session) {
 
 				// X-XSRF-Cookie is a client side defined cookie : RestBuilder.java
 				String gb2ClientToken = request.getHeader(AppConstants.X_XSRF_COOKIE);
 
 				if(null == gb2ClientToken) {
+					
 					gb2ClientToken = request.getParameter(AppConstants.REQUEST_FORM_FIELD_FORM_TOKEN);
 				}
 
 				// DEV mode requires hosted switch
 				if ((null != gb2ClientToken) || hosted) {
 
-					String gb2ServerToken = (String)httpSession.getAttribute(AppConstants.GB2_TOKEN);
+					String gb2ServerToken = (String)session.getAttribute(AppConstants.GB2_TOKEN);
 
 					// We only continue if the GB2_TOKENs match
 					// DEV mode requires hosted switch
@@ -170,6 +175,11 @@ org.springframework.web.servlet.mvc.ServletWrappingController implements Applica
 	// IOC setter
 	public void setConfigService(ServerConfigurationService configService) {
 		this.configService = configService;
+	}
+	
+	// IOC setter
+	public void setSessionManager(SessionManager sessionManager) {
+		this.sessionManager = sessionManager;
 	}
 
 	public boolean isUseControllerBean() {

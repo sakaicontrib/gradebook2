@@ -13,6 +13,9 @@ import org.sakaiproject.tool.impl.MySession;
 
 public class SessionManagerMock implements SessionManager {
 
+	MySession session = null;
+	
+	
 	public int getActiveUserCount(int arg0) {
 		// TODO Auto-generated method stub
 		return 0;
@@ -21,14 +24,22 @@ public class SessionManagerMock implements SessionManager {
 	public Session getCurrentSession() {
 		// TODO Auto-generated method stub
 		
-		MySession session = new MySession(this, "sessionid", null, null, null, null, 0, null, new MutableLong(1000l* 60l* 60l* 24l));
-		
+		if(null == session) {
+		 
+			session = new MySession(this, java.util.UUID.randomUUID().toString(), null, null, null, null, 0, null, new MutableLong(1000l* 60l* 60l* 24l));
+		}
 		
 		return session;
 	}
 
 	public String getCurrentSessionUserId() {
 		// TODO Auto-generated method stub
+		
+		if(null != session) {
+			
+			return session.getId();
+		}
+		
 		return null;
 	}
 

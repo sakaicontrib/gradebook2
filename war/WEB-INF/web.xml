@@ -78,7 +78,7 @@
 		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
 		<load-on-startup>2</load-on-startup>
 	</servlet>
-	
+
 	<servlet-mapping>
 		<servlet-name>sakai.gradebook2.dispatcher</servlet-name>
 		<url-pattern>/gradebook/rest/*</url-pattern>

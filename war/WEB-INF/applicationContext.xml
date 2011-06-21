@@ -13,6 +13,10 @@
 		
 	<import resource="rest.xml" />
 	
+	<bean id="org.sakaiproject.gradebook.gwt.server.WebAppToolServlet" class="org.sakaiproject.gradebook.gwt.server.WebAppToolServlet">
+		<property name="sessionManager" ref="org.sakaiproject.tool.api.SessionManager" />
+	</bean>
+	
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.BusinessLogic" class="org.sakaiproject.gradebook.gwt.sakai.BusinessLogicImpl">
 		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/> 
 	</bean>

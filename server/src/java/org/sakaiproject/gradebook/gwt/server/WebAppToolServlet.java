@@ -26,18 +26,21 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.tool.api.SessionManager;
 import org.sakaiproject.tool.api.Tool;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
 // This code was contributed by CARET to Sakai, it' modified below
 // for use in Gradebook2
@@ -49,33 +52,65 @@ public class WebAppToolServlet extends HttpServlet {
 
 	private static String version = null;
 	
+	@Autowired
+	SessionManager sessionManager = null;
+	
 	/**
 	 * This init parameter should contain an url to the welcome page
 	 */
 	public static final String FIRST_PAGE = "main-page";
 
+	@Override
+	public void init(ServletConfig config) throws ServletException {
+		
+		super.init(config);
+	    SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
+	}
+
+	
 	protected void service(final HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		
 		// GRBK-908
-		HttpSession httpSession = request.getSession();
-		if(null == httpSession) {
+		if(null == sessionManager) {
 			
-			log.error("ERROR: HttpSession is null");
+			log.error("ERROR: SessionManager is null");
 		}
 		else {
 			
-			// Generate random UUID
-			String uuid = java.util.UUID.randomUUID().toString();
-			httpSession.setAttribute(AppConstants.GB2_TOKEN, uuid);
-			Cookie userCookie = new Cookie(AppConstants.GB2_TOKEN, uuid);
-			response.addCookie(userCookie);
+			String currentSessionId = sessionManager.getCurrentSession().getId();
+			String currentToken = (String) sessionManager.getCurrentSession().getAttribute(AppConstants.GB2_TOKEN);
+			Cookie cookie = getCookie(request.getCookies());
+			
+			/*
+			 *  Creating a new GB2 TOKEN if:
+			 *  1: During bootstrapping time, fist access
+			 *  2: User deleted cookies
+			 */
+			if(((null == currentToken || "".equals(currentToken)) && null != currentSessionId) || 
+				(null == cookie && null != currentSessionId)) {
+				
+				String uuid = java.util.UUID.randomUUID().toString();
+				String gb2Token = new StringBuilder(uuid).append(":").append(currentSessionId).toString();
+				sessionManager.getCurrentSession().setAttribute(AppConstants.GB2_TOKEN, gb2Token);
+				
+				// If the cookie exists, we just change its value, otherwise we create a new one
+				if(null != cookie) {
+					
+					cookie.setValue(gb2Token);
+				}
+				else {
+					
+					cookie = new Cookie(AppConstants.GB2_TOKEN, gb2Token);
+				}
+				
+				response.addCookie(cookie);
+			}
 		}
 		
 		final String contextPath = request.getContextPath();
 		request.setAttribute(Tool.NATIVE_URL, Tool.NATIVE_URL);
-		HttpServletRequest wrappedRequest = new HttpServletRequestWrapper(
-				request) {
+		HttpServletRequest wrappedRequest = new HttpServletRequestWrapper(request) {
 			public String getContextPath() {
 				return contextPath;
 			}
@@ -163,5 +198,35 @@ public class WebAppToolServlet extends HttpServlet {
 				}
 			}
 		}
+	}
+	
+	/*
+	 * Helper method that iterates over all the cookies and 
+	 * returns the cookie that matches the GB2_TOKEN name
+	 */
+	private Cookie getCookie(Cookie[] cookies) {
+		
+		if(null == cookies) {
+			
+			return null;
+		}
+		else {
+			
+			for(Cookie cookie : cookies) {
+				
+				if(AppConstants.GB2_TOKEN.equals(cookie.getName())) {
+					
+					return cookie;
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	// Spring IoC
+	public void setSessionManager(SessionManager sessionManager) {
+		
+		this.sessionManager = sessionManager;
 	}
 }

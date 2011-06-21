@@ -27,6 +27,7 @@
        		<prop key="com.sun.jersey.spi.container.ContainerRequestFilters">com.sun.jersey.api.container.filter.PostReplaceFilter</prop>
     	</props>
    		</property>
+   		<property name="sessionManager" ref="org.sakaiproject.tool.api.SessionManager"/>
    		<property name="configService" ref="org.sakaiproject.component.api.ServerConfigurationService" />
  	</bean>
  	
@@ -39,6 +40,7 @@
        		<prop key="com.sun.jersey.spi.container.ContainerRequestFilters">com.sun.jersey.api.container.filter.PostReplaceFilter</prop>
     	</props>
    		</property>
+   		<property name="sessionManager" ref="org.sakaiproject.tool.api.SessionManager"/>
    		<property name="configService" ref="org.sakaiproject.component.api.ServerConfigurationService" />
    		<property name="useControllerBean"><value>true</value></property>
        	<property name="controllerBeanName"><value>GradebookImportService</value></property>
