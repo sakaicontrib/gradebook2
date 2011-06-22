@@ -127,8 +127,6 @@ public class GradeScalePanel extends GradebookPanel {
 	private Label instructionLabel;
 	
 	private CheckBox toggleCheckBox; 
-	// GXT's checkbox is a form item, and such the field label isn't shown.  So we work around this by using a regular label
-	private Label toggleCheckBoxLabel; 
 	
 	private boolean hasActiveNotifications = false;
 	
@@ -230,14 +228,11 @@ public class GradeScalePanel extends GradebookPanel {
 		
 		final String toolTipOn = i18n.gradeScaleChartUpdateToggleToolTipOn(); 
 		final String toolTipOff = i18n.gradeScaleChartUpdateToggleToolTipOff(); 
-
-		toggleCheckBoxLabel = new Label(i18n.gradeScaleChartUpdateToggle()); 
-		toggleCheckBoxLabel.setToolTip(toolTipOn); 
-		toolbar.add(toggleCheckBoxLabel);
 		
 		toggleCheckBox = new NullSensitiveCheckBox(); 
 		toggleCheckBox.setToolTip(toolTipOn); 
-		toggleCheckBox.setValue(Boolean.TRUE); 
+		toggleCheckBox.setValue(Boolean.TRUE);
+		toggleCheckBox.setBoxLabel(i18n.gradeScaleChartUpdateToggle());
 		
 		toggleCheckBox.addListener(Events.Change, new Listener<FieldEvent>() {
 			
@@ -245,7 +240,6 @@ public class GradeScalePanel extends GradebookPanel {
 				boolean isChecked = DataTypeConversionUtil.checkBoolean(((CheckBox)be.getField()).getValue());
 				if (isChecked) 
 				{
-					toggleCheckBoxLabel.setToolTip(toolTipOn); 
 					toggleCheckBox.setToolTip(toolTipOn); 
 					statisticsChartPanel.unmask();
 					if(isVisualizationApiLoaded && hasChartUpdates) {
@@ -255,11 +249,9 @@ public class GradeScalePanel extends GradebookPanel {
 				}
 				else
 				{
-					toggleCheckBoxLabel.setToolTip(toolTipOff); 
 					toggleCheckBox.setToolTip(toolTipOff); 					
 					statisticsChartPanel.mask();
 				}
-				
 			}
 		});
 				
@@ -441,7 +433,13 @@ public class GradeScalePanel extends GradebookPanel {
 	 */
 	public void onClose() {
 		
-//		toggleButton.toggle(true);
+		/*
+		 * This is done so when the user closes the grade scale, the checkbox is active
+		 * and the chart is rendered the next time they enter the grade scale panel. If we 
+		 * don't "reset" the checkbox, then the chart area is grayed out "inactive" the next
+		 * time they view the grade scale.
+		 */
+		toggleCheckBox.setValue(Boolean.TRUE);
 		hideUserFeedback();
 		refreshCourseGrades();
 	}
