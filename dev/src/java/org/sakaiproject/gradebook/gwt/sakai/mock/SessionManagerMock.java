@@ -22,7 +22,6 @@ public class SessionManagerMock implements SessionManager {
 	}
 
 	public Session getCurrentSession() {
-		// TODO Auto-generated method stub
 		
 		if(null == session) {
 		 
@@ -33,7 +32,6 @@ public class SessionManagerMock implements SessionManager {
 	}
 
 	public String getCurrentSessionUserId() {
-		// TODO Auto-generated method stub
 		
 		if(null != session) {
 			
