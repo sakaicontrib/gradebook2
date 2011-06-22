@@ -24,6 +24,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
@@ -34,6 +36,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
@@ -90,8 +93,11 @@ public class WebAppToolServlet extends HttpServlet {
 			if(((null == currentToken || "".equals(currentToken)) && null != currentSessionId) || 
 				(null == cookie && null != currentSessionId)) {
 				
+				String hexCurrentSessionId = DigestUtils.md5Hex(currentSessionId.getBytes());
+				
 				String uuid = java.util.UUID.randomUUID().toString();
-				String gb2Token = new StringBuilder(uuid).append(":").append(currentSessionId).toString();
+				String gb2Token = new StringBuilder(uuid).append("-").append(hexCurrentSessionId).toString();
+				
 				sessionManager.getCurrentSession().setAttribute(AppConstants.GB2_TOKEN, gb2Token);
 				
 				// If the cookie exists, we just change its value, otherwise we create a new one
@@ -102,6 +108,8 @@ public class WebAppToolServlet extends HttpServlet {
 				else {
 					
 					cookie = new Cookie(AppConstants.GB2_TOKEN, gb2Token);
+					cookie.setPath("/");
+					cookie.setMaxAge(-1);
 				}
 				
 				response.addCookie(cookie);
