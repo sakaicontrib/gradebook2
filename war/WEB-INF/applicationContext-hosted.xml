@@ -24,10 +24,25 @@
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authn" class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2AuthnImpl">
 	</bean>
 	
+	 <bean id="org.sakaiproject.memory.api.MemoryService.cacheManager" 
+	    class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+  		<property name="configLocation">
+    		<value>classpath:org/sakaiproject/memory/api/ehcache.xml</value>
+  		</property>
+	</bean>
+	
+	
 	<bean id="org.sakaiproject.entity.api.EntityManager" class="org.sakaiproject.entity.impl.EntityManagerComponent" />
 	
+	<bean id="org.sakaiproject.memory.api.MemoryService" class="org.sakaiproject.gradebook.gwt.sakai.mock.MockMemoryService">
+		<property name="cacheManager" ref="org.sakaiproject.memory.api.MemoryService.cacheManager" />
+		<property name="serverConfigurationService" ref="org.sakaiproject.component.api.ServerConfigurationService" />
+	</bean>
+	
 	<bean id="org.sakaiproject.time.api.TimeService" class="org.sakaiproject.time.impl.BasicTimeService" 
-	    init-method="init" />
+	    init-method="init" >
+	    <property name="memoryService" ref="org.sakaiproject.memory.api.MemoryService" />
+	</bean>
 	    
 	<bean id="org.sakaiproject.gradebook.gwt.server.ImportExportUtility" class="org.sakaiproject.gradebook.gwt.server.ImportExportUtilityImpl" init-method="init">
 		<property name="gradeCalculations" ref="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"/>

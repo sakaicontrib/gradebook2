@@ -59,6 +59,12 @@ Additional DEV mode configurations:
 
 Select the '(x)= Arguments' tab and in the 'VM' field, paste the above as one long line of text.
 
+Eclipse classpath:
+  Dev mode requires access to implementations in order to instantiate spring beans for services etc. And, since circa the start of 2.9 in Sakai trunk, some of these implementations do not get installed in the maven repo (~/.m2/repository by default). Archive service is one example. So the eclipse .classpath that is in the svn repository now inclues a TOMCAT classpath var and relative paths to ArchiveService jars... make sure to run 'mvn clean install sakai:deploy' in the sakai trunk to install them there. 
+
+Why is .classpath in the svn repo?
+  While gradebook2 is has muliple parts with individual poms, we like to have one eclipse project to rule the all. the eclipse:ecliplse goal of the eclipse maven plugin will not create a .project and .classpath at the root level since the artifact type there is 'pom'. 
+
 
 Finally, you will need to configure your browser to support GWT development mode. In Firefox, simply install the GWT Developer Plugin for Firefox:
 https://dl-ssl.google.com/gwt/plugins/firefox/gwt-dev-plugin.xpi

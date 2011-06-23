@@ -18,7 +18,11 @@ public class SakaiSecurityMock extends SakaiSecurity {
 
 	private UserDirectoryService userDirectoryService;
 
+	private MemoryService memoryService;
 
+	public void setMemoryService(MemoryService memoryService) {
+		this.memoryService = memoryService;
+	}
 
 	public void init() {
 		/// this will disable any caching
