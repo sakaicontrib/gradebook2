@@ -77,9 +77,8 @@ import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.VisualizationUtils;
-import com.google.gwt.visualization.client.visualizations.ColumnChart;
-import com.google.gwt.visualization.client.visualizations.LineChart;
-import com.google.gwt.visualization.client.visualizations.PieChart;
+import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
+
 
 
 public class StatisticsPanel extends ContentPanel {
@@ -125,7 +124,7 @@ public class StatisticsPanel extends ContentPanel {
 		super();
 
 		// Loading visualization APIs
-		VisualizationUtils.loadVisualizationApi(new VisualizationRunnable(), PieChart.PACKAGE,  ColumnChart.PACKAGE, LineChart.PACKAGE);
+		VisualizationUtils.loadVisualizationApi(new VisualizationRunnable(), CoreChart.PACKAGE);
 
 		// Getting needed resources
 		this.i18n = i18n;
@@ -485,6 +484,7 @@ public class StatisticsPanel extends ContentPanel {
 	private class VisualizationRunnable implements Runnable {
 
 		public void run() {
+			
 			isVisualizationApiLoaded = true;
 		}
 	}

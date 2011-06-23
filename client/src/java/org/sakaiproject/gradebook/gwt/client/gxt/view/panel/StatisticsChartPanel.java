@@ -34,9 +34,11 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.LegendPosition;
-import com.google.gwt.visualization.client.visualizations.ColumnChart;
-import com.google.gwt.visualization.client.visualizations.LineChart;
-import com.google.gwt.visualization.client.visualizations.PieChart;
+import com.google.gwt.visualization.client.visualizations.corechart.Options;
+import com.google.gwt.visualization.client.visualizations.corechart.ColumnChart;
+import com.google.gwt.visualization.client.visualizations.corechart.LineChart;
+import com.google.gwt.visualization.client.visualizations.corechart.PieChart;
+
 
 public class StatisticsChartPanel extends ContentPanel {
 
@@ -149,9 +151,9 @@ public class StatisticsChartPanel extends ContentPanel {
 		this.chartWidth = width;
 	}
 	
-	private PieChart.Options createPieChartOptions() {
+	private PieChart.PieOptions createPieChartOptions() {
 		
-		PieChart.Options options = PieChart.Options.create();
+		PieChart.PieOptions options = PieChart.createPieOptions();
 		options.setWidth(chartWidth);
 		options.setHeight(chartHeight);
 		options.set3D(AppConstants.IS_CHART_3D);
@@ -159,23 +161,22 @@ public class StatisticsChartPanel extends ContentPanel {
 		return options;
 	}
 
-	private ColumnChart.Options createColumnChartOptions() {
+	private Options createColumnChartOptions() {
 		
-		ColumnChart.Options options = ColumnChart.Options.create();
+		Options options = Options.create();
 		options.setWidth(chartWidth);
 		options.setHeight(chartHeight);
-		options.set3D(AppConstants.IS_CHART_3D);
+		//.set3D(AppConstants.IS_CHART_3D);
 		options.setLegend(legendPosition);
 		return options;
 	}
 
-	private LineChart.Options createLineChartOptions() {
+	private Options createLineChartOptions() {
 		
-		LineChart.Options options = LineChart.Options.create();
+		Options options = Options.create();
 		options.setWidth(chartWidth);
 		options.setHeight(chartHeight);
 		options.setLegend(legendPosition);
 		return options;
 	}
-	
 }

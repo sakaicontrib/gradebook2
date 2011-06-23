@@ -93,9 +93,7 @@ import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.LegendPosition;
 import com.google.gwt.visualization.client.VisualizationUtils;
-import com.google.gwt.visualization.client.visualizations.ColumnChart;
-import com.google.gwt.visualization.client.visualizations.LineChart;
-import com.google.gwt.visualization.client.visualizations.PieChart;
+import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
 
 public class GradeScalePanel extends GradebookPanel {
 
@@ -141,8 +139,7 @@ public class GradeScalePanel extends GradebookPanel {
 		super();
 
 		// Loading visualization APIs
-		VisualizationUtils.loadVisualizationApi(new VisualizationRunnable(), PieChart.PACKAGE,  ColumnChart.PACKAGE, LineChart.PACKAGE);
-
+		VisualizationUtils.loadVisualizationApi(new VisualizationRunnable(), CoreChart.PACKAGE);
 		this.isEditable = isEditable;
 
 		toolbar = new ToolBar();
