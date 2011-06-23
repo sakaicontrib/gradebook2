@@ -24,8 +24,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
@@ -104,6 +102,8 @@ public class WebAppToolServlet extends HttpServlet {
 				if(null != cookie) {
 					
 					cookie.setValue(gb2Token);
+					cookie.setPath("/");
+					cookie.setMaxAge(-1);
 				}
 				else {
 					
