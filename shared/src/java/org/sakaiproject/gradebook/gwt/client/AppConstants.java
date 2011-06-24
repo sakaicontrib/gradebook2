@@ -221,8 +221,11 @@ public interface AppConstants {
 	public static final String EXPORT_SERVLET = "export";
 	public static final String SUBMISSION_SERVLET = "submit";
 	
+	// Sections
+	public static final String ALL = "ALL";
+	public static final String ALL_DISPLAY = "All";
+	
 	// Statistics panel
-	public static final String ALL_SECTIONS = "ALL";
 	public static final int POSITIVE_NUMBER = 0;
 	public static final int NEGATIVE_NUMBER = 1;
 	public final static int CHART_WIDTH = 600;

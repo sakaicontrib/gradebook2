@@ -372,6 +372,7 @@ public interface I18nConstants extends Constants {
 	
 	// Course Grade Statistics
 	String statisticsGradebookUpdatingChart();
+	String statisticsGradebookLoadingChart();
 	
 	//User Feedback Messages
 	String applicationLoading();

@@ -166,7 +166,6 @@ public class StatisticsChartPanel extends ContentPanel {
 		Options options = Options.create();
 		options.setWidth(chartWidth);
 		options.setHeight(chartHeight);
-		//.set3D(AppConstants.IS_CHART_3D);
 		options.setLegend(legendPosition);
 		return options;
 	}

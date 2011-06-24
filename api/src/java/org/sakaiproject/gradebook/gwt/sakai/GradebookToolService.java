@@ -113,6 +113,11 @@ public interface GradebookToolService {
 	
 	public List<String> getFullUserListForSite(String siteId, String[] roleNames);
 	
+	/*
+	 * @since 1.6.0
+	 */
+	public List<String> getUserListForSections(final String[] roleNames, final String[] realmIds);
+	
 	public int getFullUserCountForSite(String siteId, String realmGroupId, String[] roleNames);
 	
 	public List<UserConfiguration> getUserConfigurations(String userUid, Long gradebookId);

@@ -565,6 +565,35 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 
 		return result;
 	}
+	
+	public List<String> getUserListForSections(final String[] roleNames, final String[] realmIds) {
+		
+		HibernateCallback hc = new HibernateCallback() {
+		
+			public Object doInHibernate(Session session) throws HibernateException {
+
+				Query query = null;
+
+				StringBuilder builder = new StringBuilder()
+				.append("select rg.userId from Realm as r, RealmGroup rg, RealmRole rr ")
+				.append("where rg.realmKey = r.realmKey ")
+				.append("and rr.roleKey = rg.roleKey ")
+				.append("and rr.roleName in (:roleNames) ")
+				.append("and r.realmId in (:realmIds) ")
+				.append("and rg.active=true ");
+
+				query = session.createQuery(builder.toString());
+				query.setParameterList("realmIds", realmIds);
+				query.setParameterList("roleNames", roleNames);
+				
+				return query.list();
+			}
+		};
+
+		List<String> result = (List<String>)getHibernateTemplate().execute(hc);
+
+		return result;
+	}
 
 	//FIXME: this might be better done with Site.getMembers()
 	public int getFullUserCountForSite(final String siteId, final String realmGroupId, final String[] roleNames) {

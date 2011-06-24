@@ -26,8 +26,10 @@ package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
@@ -72,13 +74,14 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.json.client.JSONArray;
+import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;
+import com.google.gwt.visualization.client.LegendPosition;
 import com.google.gwt.visualization.client.VisualizationUtils;
 import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
-
 
 
 public class StatisticsPanel extends ContentPanel {
@@ -97,11 +100,12 @@ public class StatisticsPanel extends ContentPanel {
 
 	private DataTable dataTable;
 
-	private int selectedGradeItemRow = 0;
+	private int selectedGradeItemRow = -1;
 	private String selectedAssignmentId;
 	private String selectedSectionId;
 
 	private boolean isVisualizationApiLoaded = false;
+	private boolean hasActiveNotifications = false;
 
 	private Map<String, DataTable> dataTableCache = new HashMap<String, DataTable>();
 
@@ -118,6 +122,8 @@ public class StatisticsPanel extends ContentPanel {
 		"70-79",
 		"80-89",
 		"90-100"};
+	
+	private final static String COURSE_CACHE_KEY_PREFIX = "course-grade";
 
 	public StatisticsPanel(final I18nConstants i18n) {
 
@@ -147,7 +153,7 @@ public class StatisticsPanel extends ContentPanel {
 				chartPanel.hide();
 				grid.getStore().removeAll();
 				grid.getStore().getLoader().load();
-				selectedGradeItemRow = 0;
+				selectedGradeItemRow = -1;
 			}
 		});
 
@@ -164,6 +170,7 @@ public class StatisticsPanel extends ContentPanel {
 		
 		// Creating the chart panel and initially hide it
 		chartPanel = new StatisticsChartPanel();
+		chartPanel.setLegendPosition(LegendPosition.TOP);
 		chartPanel.setSize(AppConstants.CHART_WIDTH, AppConstants.CHART_HEIGHT + 80);
 		chartPanel.hide();
 		
@@ -185,7 +192,7 @@ public class StatisticsPanel extends ContentPanel {
 				chartPanel.hide();
 
 				// Reset the last selected grade item row
-				selectedGradeItemRow = 0;
+				selectedGradeItemRow = -1;
 
 				// Clearing the data table cache
 				dataTableCache.clear();
@@ -206,7 +213,7 @@ public class StatisticsPanel extends ContentPanel {
 
 	
 
-	private void getStatisticsChartData(String assignmentId, String sectionId) {
+	private void getGradeItemStatisticsChartData(String assignmentId, String sectionId) {
 
 		// First we check the cache if we have the data already
 		String cacheKey = assignmentId + sectionId;
@@ -219,6 +226,8 @@ public class StatisticsPanel extends ContentPanel {
 			chartPanel.show();
 		}
 		else {
+			
+			showUserFeedback();
 			
 			// Data is not in cache yet
 			Gradebook gbModel = Registry.get(AppConstants.CURRENT);
@@ -243,12 +252,14 @@ public class StatisticsPanel extends ContentPanel {
 			builder.sendRequest(200, 400, null, new RestCallback() {
 
 				public void onError(Request request, Throwable caught) {
-
+					
+					hideUserFeedback();
 					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsDataErrorMsg(), true));
 				}
 
 				public void onFailure(Request request, Throwable exception) {
-
+					
+					hideUserFeedback();
 					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsDataErrorMsg(), true));
 				}
 
@@ -264,7 +275,6 @@ public class StatisticsPanel extends ContentPanel {
 					 * we have this problem... 
 					 * 
 					 */
-					
 					String jsonText = response.getText(); 
 					
 					if (jsonText != null && !"".equals(jsonText) )
@@ -306,12 +316,116 @@ public class StatisticsPanel extends ContentPanel {
 					{
 						Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsDataErrorMsg(), true));
 					}
+					
+					hideUserFeedback();
 				}
 			});
 		}
 	}
 
+	private void getCourseStatisticsChartData(String sectionId) {
 
+		// First we check the cache if we have the data already
+		String cacheKey = COURSE_CACHE_KEY_PREFIX + sectionId;
+
+		if(dataTableCache.containsKey(cacheKey)) {
+
+			// Cache hit
+			dataTable = dataTableCache.get(cacheKey);
+			chartPanel.setDataTable(dataTable);
+			chartPanel.show();
+		}
+		else {
+
+			showUserFeedback();
+
+			Gradebook gbModel = Registry.get(AppConstants.CURRENT);
+
+			RestBuilder builder = RestBuilder.getInstance(
+					Method.GET,
+					GWT.getModuleBaseURL(),
+					AppConstants.REST_FRAGMENT,
+					AppConstants.STATISTICS_FRAGMENT,
+					AppConstants.COURSE_FRAGMENT,
+					gbModel.getGradebookUid(),
+					sectionId);
+
+			selectedSectionId = sectionId;
+
+			builder.sendRequest(200, 400, null, new RestCallback() {
+
+				public void onError(Request request, Throwable caught) {
+
+					hideUserFeedback();
+					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsDataErrorMsg(), true));
+				}
+
+				public void onFailure(Request request, Throwable exception) {
+
+					hideUserFeedback();
+					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsDataErrorMsg(), true));
+				}
+
+				public void onSuccess(Request request, Response response) {
+
+					/*
+					 * The response text contains a sorted linked-list map, where the keys are the letter grades and the values
+					 * are the frequency.
+					 * e.g. {"F":0, "D-":3, "D":1, "D+":0, "C-":5, "C":0, "C+":1, "B-":0, "B":20, "B+":0, "A-":3, "A":12, "A+":1}
+					 * 
+					 */
+					JSONValue jsonValue = JSONParser.parseStrict(response.getText());
+					JSONObject jsonObject = jsonValue.isObject();
+					Set<String> keys = jsonObject.keySet();
+
+					// Initialize the datatable
+					dataTable = DataTable.create();
+					dataTable.addColumn(ColumnType.STRING, i18n.statisticsChartLabelDistribution());
+					dataTable.addColumn(ColumnType.NUMBER, i18n.statisticsChartLabelFrequency());
+					dataTable.addRows(keys.size());
+
+					Iterator<String> iter = keys.iterator();
+					int index = 0;
+					while(iter.hasNext()) {
+
+						String key = iter.next();
+						dataTable.setValue(index, 0, key);
+						dataTable.setValue(index, 1, jsonObject.get(key).isNumber().doubleValue());
+						index++;
+					}
+
+					chartPanel.setDataTable(dataTable);
+					chartPanel.show();
+					
+					// adding the dataTable to the cache
+					dataTableCache.put(COURSE_CACHE_KEY_PREFIX + selectedSectionId, dataTable);
+
+					hideUserFeedback();
+				}
+			});
+		}
+	}
+
+	private void showUserFeedback() {
+
+		if(!hasActiveNotifications) {
+		
+			Dispatcher.forwardEvent(GradebookEvents.ShowUserFeedback.getEventType(), i18n.statisticsGradebookLoadingChart(), false);
+			chartPanel.mask();
+			hasActiveNotifications = true;
+		}
+	}
+	
+	private void hideUserFeedback() {
+		
+		if(hasActiveNotifications) {
+		
+			Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType(), false);
+			chartPanel.unmask();
+			hasActiveNotifications = false;
+		}
+	}
+	
 	private Grid<StatisticsModel> getGrid() {
 
 		// Passing the selected section to the rest builder
@@ -352,44 +466,49 @@ public class StatisticsPanel extends ContentPanel {
 				// If we click on the first row, which shows the Course Grade data, we don't do anything
 				int rowIndex = gridEvent.getRowIndex();
 
-				if(rowIndex != FIRST_ROW) {
+				// We keep track of the selected row in case the user keeps
+				// clicking on the same grade item, in which case we don't
+				// need to fetch new data
+				if(selectedGradeItemRow == rowIndex) {
+					
+					return;
+				}
+				else {
 
-					// We keep track of the selected row in case the user keeps
-					// clicking on the same grade item, in which case we don't
-					// need to fetch new data
-					if(selectedGradeItemRow == rowIndex) {
-						return;
-					}
-					else {
+					selectedGradeItemRow = rowIndex;
+				}
 
-						selectedGradeItemRow = rowIndex;
-					}
+				String assignmentId = gridEvent.getModel().get(StatisticsKey.S_ITEM_ID.name());
 
-					String assignmentId = gridEvent.getModel().get(StatisticsKey.S_ITEM_ID.name());
+				// Getting the mean so that we can determine if any grades have been entered
+				// for the selected grade item
+				String mean = gridEvent.getModel().get(StatisticsKey.S_MEAN.name());
 
-					// Getting the mean so that we can determine if any grades have been entered
-					// for the selected grade item
-					String mean = gridEvent.getModel().get(StatisticsKey.S_MEAN.name());
+				if(null != mean && !AppConstants.STATISTICS_DATA_NA.equals(mean)) {
 
-					if(null != mean && !AppConstants.STATISTICS_DATA_NA.equals(mean)) {
+					// Before we get the data and show the graph, we check
+					// if the Visualization APIs have been loaded properly
+					if(isVisualizationApiLoaded) {
 
-						// Before we get the data and show the graph, we check
-						// if the Visualization APIs have been loaded properly
-						if(isVisualizationApiLoaded) {
+						if(FIRST_ROW == rowIndex) {
 							
-							getStatisticsChartData(assignmentId, getSelectedSection());
+							getCourseStatisticsChartData(getSelectedSection());
 						}
 						else {
-							
-							Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsVisualizationErrorMsg(), true));
-							chartPanel.hide();
+
+							getGradeItemStatisticsChartData(assignmentId, getSelectedSection());
 						}
 					}
 					else {
 
-						// If there is no data to show, we hide the chart
+						Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsVisualizationErrorMsg(), true));
 						chartPanel.hide();
 					}
+				}
+				else {
+
+					// If there is no data to show, we hide the chart
+					chartPanel.hide();
 				}
 			}
 		});
@@ -465,7 +584,7 @@ public class StatisticsPanel extends ContentPanel {
 		}
 		else {
 
-			sectionId = AppConstants.ALL_SECTIONS;
+			sectionId = AppConstants.ALL;
 		}
 		
 		// GRBK-636 : Since the sctionIds have characters that are not URL safe, we Base64 encode

@@ -79,4 +79,14 @@ public class Statistics extends Resource {
 		Map<String, Integer> gradeFrequencies = service.getCourseGradeStatistics(gradebookUid);
 		return toJson(gradeFrequencies);
 	}
+	
+	@GET @Path("/course/{uid}/{sectionId}")
+	@Produces("application/json")
+	public String getCourseStatisticsData(
+			@PathParam("uid") String gradebookUid,
+			@PathParam("sectionId") String sectionId) throws SecurityException, InvalidDataException {
+
+		Map<String, Integer> gradeFrequencies = service.getCourseGradeStatistics(gradebookUid, Base64.base64Decode(sectionId));
+		return toJson(gradeFrequencies);
+	}
 }

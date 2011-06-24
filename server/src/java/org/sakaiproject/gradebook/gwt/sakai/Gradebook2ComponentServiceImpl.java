@@ -730,7 +730,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			newPermission.setCategoryId(null);
 		}
 
-		if (newGroupId != null && newGroupId.equalsIgnoreCase("ALL")) {
+		if (newGroupId != null && newGroupId.equalsIgnoreCase(AppConstants.ALL)) {
 			newGroupId = null;
 			newPermission.setGroupId(null);
 		}
@@ -747,7 +747,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 					String groupId = permission.getGroupId();
 
 
-					if (groupId != null && groupId.equalsIgnoreCase("ALL"))
+					if (groupId != null && groupId.equalsIgnoreCase(AppConstants.ALL))
 						groupId = null;
 
 					if (categoryId != null && categoryId.longValue() == -1l) {
@@ -1301,7 +1301,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			List<Category> categoryList = gbService.getCategories(gradebookId);
 
 			Item item = new GradeItemImpl();
-			item.setIdentifier("ALL");
+			item.setIdentifier(AppConstants.ALL);
 			item.setCategoryId(Long.valueOf(-1l));
 			item.setName("All Categories");
 			list.add(item);
@@ -1367,11 +1367,11 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 			} else {
 				p.setCategoryId(Long.valueOf(-1));
-				p.setCategoryDisplayName("All");
+				p.setCategoryDisplayName(AppConstants.ALL_DISPLAY);
 			}
 
 			// If section id is null, then all sections were selected
-			if (null != permission.getGroupId() && !permission.getGroupId().equalsIgnoreCase("ALL")) {
+			if (null != permission.getGroupId() && !permission.getGroupId().equalsIgnoreCase(AppConstants.ALL)) {
 				p.setSectionId(permission.getGroupId());
 				CourseSection courseSection = sectionAwareness.getSection(permission.getGroupId());
 				if (null != courseSection) {
@@ -1381,8 +1381,8 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 					log.error("CourseSection is null");
 				}
 			} else {
-				p.setSectionId("ALL");
-				p.setSectionDisplayName("All");
+				p.setSectionId(AppConstants.ALL);
+				p.setSectionDisplayName(AppConstants.ALL_DISPLAY);
 			}
 
 			p.setDeleteAction("Delete");
@@ -1654,9 +1654,15 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		return siteService;
 	}
 
+	
 	public Map<String, Integer> getCourseGradeStatistics(String gradebookUid) throws SecurityException, InvalidDataException {
-
-
+		
+		return getCourseGradeStatistics(gradebookUid, AppConstants.ALL);
+	}
+	
+	
+	public Map<String, Integer> getCourseGradeStatistics(String gradebookUid, String sectionId) throws SecurityException, InvalidDataException {
+	
 		boolean isUserAbleToGrade = authz.isUserAbleToGradeAll(gradebookUid);
 
 		if (!isUserAbleToGrade) {
@@ -1696,7 +1702,20 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
 		List<Category> categories =  getCategoriesWithAssignments(gradebook.getId(), assignments, true);
 		Site site = getSite();
-		List<User> users = findAllMembers(site, getLearnerRoleNames());
+		
+		// Checking if a single section or all sections were selected
+		String siteId = getSiteId();
+		String[] realmIds = new String[1];
+
+		if(sectionId.equals(AppConstants.ALL)) {
+			realmIds[0] = new StringBuffer().append("/site/").append(siteId).toString();
+		}
+		else {
+			realmIds[0] = sectionId;
+		}
+		
+		List<User> users = findSectionMembers(getLearnerRoleNames(), realmIds);
+		System.out.println("DEBUG: number of users = " + users.size());
 		boolean isLetterGrading = gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER;
 
 		for(User user : users) {
@@ -1704,7 +1723,9 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			UserRecord userRecord = buildUserRecord(site, user, gradebook);
 			DisplayGrade displayGrade = calculateAndGenerateDisplayGrade(gradebook, assignments, categories, userRecord, isLetterGrading);
 			String letterGrade = displayGrade.getLetterGrade();
+			
 			if(null != letterGrade && gradeFrequencies.containsKey(letterGrade)) {
+			
 				Integer frequency = gradeFrequencies.get(letterGrade);
 				gradeFrequencies.put(letterGrade, ++frequency);
 			}
@@ -1732,7 +1753,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		String siteId = getSiteId();
 		String[] realmIds = new String[1];
 
-		if(sectionId.equals(AppConstants.ALL_SECTIONS)) {
+		if(sectionId.equals(AppConstants.ALL)) {
 			realmIds[0] = new StringBuffer().append("/site/").append(siteId).toString();
 		}
 		else {
@@ -1758,7 +1779,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		// Getting grade records either for all sections or just for the specified one
 		List<AssignmentGradeRecord> assignmentGradeRecords = null;
 
-		if(sectionId.equals(AppConstants.ALL_SECTIONS)) {
+		if(sectionId.equals(AppConstants.ALL)) {
 
 			assignmentGradeRecords = gbService.getAllAssignmentGradeRecords(new Long[] {assignmentId});
 		}
@@ -2180,7 +2201,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		String siteId = getSiteId();
 		String[] realmIds = new String[1];
 
-		if(sectionId.equals(AppConstants.ALL_SECTIONS)) {
+		if(sectionId.equals(AppConstants.ALL)) {
 			realmIds[0] = new StringBuffer().append("/site/").append(siteId).toString();
 		}
 		else {
@@ -2371,7 +2392,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		if (enableAllSectionsEntry) {
 			Map<String,Object> map = new HashMap<String,Object>();
-			map.put(SectionKey.S_ID.name(), "ALL");
+			map.put(SectionKey.S_ID.name(), AppConstants.ALL);
 			map.put(SectionKey.S_NM.name(), allSectionsEntryTitle);
 			sections.add(map);
 		}
@@ -5111,6 +5132,18 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			if (userService != null && userUids != null)
 				users = userService.getUsers(userUids);
 		}
+		return users;
+	}
+	
+	private List<User> findSectionMembers(String[] learnerRoleKeys, String[] realmIds) {
+
+		List<User> users = new ArrayList<User>();
+
+		List<String> userUids = gbService.getUserListForSections(learnerRoleKeys, realmIds);
+
+		if (userService != null && userUids != null)
+			users = userService.getUsers(userUids);
+		
 		return users;
 	}
 
