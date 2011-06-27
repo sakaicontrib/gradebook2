@@ -1,5 +1,6 @@
-DEVELOPER BEST PRACTICES
----------------------------------------------------------------------------------------------
+============================
+* DEVELOPER BEST PRACTICES *
+============================
 
 This is a quick reference document for developer best practices when working on the 
 Gradebook2 project.

@@ -1,14 +1,6 @@
-Upgrading GXT Version & Minimized CSS Files
--------------------------------------------
-
-Since v1.2.0, we use minimized CSS files. See GRBK-573 for more details.
-This means that we need to keep "gradebook2/trunk/war/css/gxt-all-min.css" 
-current for every GXT update
-
-
-
-Change Gradebook Version in pom.xml
------------------------------------
+============================
+* Change Gradebook Version *
+============================
 
 To change the gradebook version in all the pom.xml files, use the following command:
 
