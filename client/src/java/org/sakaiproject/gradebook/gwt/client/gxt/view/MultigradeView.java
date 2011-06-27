@@ -70,15 +70,6 @@ public class MultigradeView extends View {
 	private Listener<StoreEvent> storeListener;
 
 	private DelayedTask syncTask;
-	private Boolean gridLocked = false;
-
-	public Boolean getGridLocked() {
-		return gridLocked;
-	}
-
-	public void setGridLocked(Boolean gridLocked) {
-		this.gridLocked = gridLocked;
-	}
 
 	public MultigradeView(Controller controller, I18nConstants i18n) {
 		super(controller);
@@ -251,7 +242,7 @@ public class MultigradeView extends View {
 	}
 
 	public MultiGradeContentPanel getMultiGradeContentPanel() {
-		if (multigrade == null) { // may need to always null this out to get the grid lock refreshed
+		if (multigrade == null) {
 			this.multigrade = new MultiGradeContentPanel(multigradeStore, false) {
 
 				protected PagingLoader<PagingLoadResult<ModelData>> newLoader() {
@@ -262,7 +253,7 @@ public class MultigradeView extends View {
 					return multigradeStore;
 				}
 			};
-			multigrade.setGridLocked(gridLocked);
+
 			Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 			multigrade.addGrid(selectedGradebook.getConfigurationModel(),
 					selectedGradebook.getColumns(), (ItemModel)selectedGradebook.getGradebookItemModel());

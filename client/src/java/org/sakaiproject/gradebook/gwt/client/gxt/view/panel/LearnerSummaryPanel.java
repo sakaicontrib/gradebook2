@@ -100,22 +100,7 @@ public class LearnerSummaryPanel extends GradebookPanel {
 	private boolean isPossibleGradeTypeChanged = false;
 	private int scoresDropped = 0;
 
-	public boolean isEditLocked() {
-		return editLocked;
-	}
-
-	public void setEditLocked(boolean isEditLocked) {
-		this.editLocked = isEditLocked;
-	}
-
-	private boolean editLocked = false;
-	
 	public LearnerSummaryPanel() {
-		this(false);
-	}
-	
-	public LearnerSummaryPanel(boolean locked) {
-		this.editLocked = locked;
 		setHeaderVisible(false);
 		setId("learnerSummaryPanel");
 		setLayout(new FlowLayout());
@@ -259,7 +244,6 @@ public class LearnerSummaryPanel extends GradebookPanel {
 					isEmptyTextFilled = true;
 				case POINTS:
 					NumberField field = new InlineEditNumberField();
-					field.setEditable(!editLocked);
 
 					if (!isEmptyTextFilled)
 						emptyText.append("Enter a value between 0 and ").append(DataTypeConversionUtil.formatDoubleAsPointsString(item.getPoints()));
@@ -275,8 +259,7 @@ public class LearnerSummaryPanel extends GradebookPanel {
 					field.setLabelStyle("overflow: hidden");
 
 					verifyFieldState(field, item);
-					field.setEnabled(!editLocked);
-					
+
 					scoreFormPanel.add(field);
 					break;
 				case LETTERS:
@@ -293,7 +276,7 @@ public class LearnerSummaryPanel extends GradebookPanel {
 					textField.setLabelStyle("overflow: hidden");
 
 					verifyFieldState(textField, item);
-					textField.setEnabled(!editLocked);
+
 					scoreFormPanel.add(textField);
 				}
 
@@ -310,7 +293,6 @@ public class LearnerSummaryPanel extends GradebookPanel {
 				textArea.setFieldLabel(item.getName());
 				textArea.setItemId(itemId);
 				textArea.setName(commentId);
-				textArea.setEnabled(!editLocked);
 
 				commentFormPanel.add(textArea);
 			}
@@ -360,7 +342,6 @@ public class LearnerSummaryPanel extends GradebookPanel {
 		commentFormLayout.setLabelAlign(LabelAlign.TOP);
 		commentFormPanel.setLayout(commentFormLayout);
 		commentFormPanel.setScrollMode(Scroll.AUTOY);
-		commentFormPanel.setEnabled(!editLocked);
 
 		return commentFormPanel;
 	}
@@ -373,8 +354,7 @@ public class LearnerSummaryPanel extends GradebookPanel {
 		excuseFormLayout.setLabelWidth(180);
 		excuseFormPanel.setLayout(excuseFormLayout);
 		excuseFormPanel.setScrollMode(Scroll.AUTOY);
-		excuseFormPanel.setEnabled(!editLocked);
-		
+
 		return excuseFormPanel;
 	}
 
@@ -386,8 +366,7 @@ public class LearnerSummaryPanel extends GradebookPanel {
 		scoreFormLayout.setLabelWidth(180);
 		scoreFormPanel.setLayout(scoreFormLayout);
 		scoreFormPanel.setScrollMode(Scroll.AUTOY);
-		scoreFormPanel.setEnabled(!editLocked);
-		
+
 		return scoreFormPanel;
 	}
 

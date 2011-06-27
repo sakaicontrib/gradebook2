@@ -34,7 +34,6 @@ import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.ExportDetails;
 import org.sakaiproject.gradebook.gwt.client.ExportDetails.ExportType;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
-import org.sakaiproject.gradebook.gwt.client.I18nMessages;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenu;
@@ -75,7 +74,6 @@ import com.extjs.gxt.ui.client.widget.layout.CardLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
-import com.extjs.gxt.ui.client.widget.toolbar.SeparatorToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
@@ -123,15 +121,13 @@ public class InstructorView extends AppView {
 
 	private GradebookResources resources;
 	private I18nConstants i18n;
-	private boolean isEditable; // this creates menu item generally appropriate for the user
-	protected boolean gridLocked = false; // and this disables them if necessary - GRBK-824
+	private boolean isEditable;
 
 	public InstructorView(Controller controller, TreeView treeView, 
 			MultigradeView multigradeView, SingleGradeView singleGradeView, 
-			PermissionsView permissionsView, boolean isEditable, final boolean gridLocked, boolean isNewGradebook) {
+			PermissionsView permissionsView, boolean isEditable, final boolean isNewGradebook) {
 		super(controller);
 		this.isEditable = isEditable;
-		this.gridLocked = gridLocked;
 		this.tabConfigurations = new ArrayList<TabConfig>();
 		this.treeView = treeView;
 		this.multigradeView = multigradeView;
@@ -414,7 +410,7 @@ public class InstructorView extends AppView {
 	protected void onSingleGrade(final ModelData learnerGradeRecordCollection) {
 
 		if (singleGradeContainer == null) {
-			singleGradeContainer = new LearnerSummaryPanel(gridLocked);
+			singleGradeContainer = new LearnerSummaryPanel();
 			eastLayoutContainer.add(singleGradeContainer);
 		}
 		singleGradeContainer.onChangeModel(multigradeView.getStore(), treeView.getTreeStore(), learnerGradeRecordCollection);
@@ -530,13 +526,11 @@ public class InstructorView extends AppView {
 
 
 		Boolean isLetterGrade = (selectedGradebook.getGradebookItemModel().getGradeType() == GradeType.LETTERS);
-		if (editMenu != null) {
-			MenuItem gradeScale = (MenuItem) editMenu.getItemByItemId(AppConstants.WINDOW_MENU_ITEM_PREFIX  + AppConstants.TAB_GRADESCALE);
-			if(isLetterGrade){
-				gradeScale.disable();
-			} else {
-				gradeScale.enable();
-			}
+		MenuItem gradeScale = (MenuItem) editMenu.getItemByItemId(AppConstants.WINDOW_MENU_ITEM_PREFIX  + AppConstants.TAB_GRADESCALE);
+		if(isLetterGrade){
+			gradeScale.disable();
+		} else {
+			gradeScale.enable();
 		}
 	}
 	
@@ -672,19 +666,6 @@ public class InstructorView extends AppView {
 		toolBar.add(viewItem);
 		toolBar.add(moreItem);
 		toolBar.add(helpItem);
-		
-		
-		SeparatorToolItem separator = new SeparatorToolItem();
-		toolBar.add(separator);
-		
-		if (gridLocked) {
-			LabelField lockWarning = new LabelField(
-					((I18nMessages) Registry.get(AppConstants.I18N_TEMPLATES))
-							.itemTreePanelAlertMessage(resources.css()
-									.gbCellError(), i18n.lockWarning()));
-			lockWarning.setStyleAttribute("padding-left", "10px");
-			toolBar.add(lockWarning);
-		}
 
 		toolBar.add(new FillToolItem());
 
@@ -837,5 +818,5 @@ public class InstructorView extends AppView {
 
 		return moreActionsMenu;
 	}
-	
+
 }

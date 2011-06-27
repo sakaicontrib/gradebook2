@@ -37,10 +37,6 @@ import org.sakaiproject.tool.gradebook.Permission;
  */
 public interface Gradebook2Authz {
 
-	String GRADEBOOK_LOCK = "gradebook2.can.edit.locked";
-	String PROP_CHECK_FOR_GRADEBOOK_LOCKS = "gb2.check.locks";
-
-
 	/**
 	 * Gets the all sections.
 	 * 
@@ -203,11 +199,5 @@ public interface Gradebook2Authz {
 	 * @return
 	 */
 	public boolean isAdminUser();
-
-	
-	/*
-	 * GRBK-824
-	 */
-	public Boolean isGradebookLocked(String gradebookUid);
 	
 }

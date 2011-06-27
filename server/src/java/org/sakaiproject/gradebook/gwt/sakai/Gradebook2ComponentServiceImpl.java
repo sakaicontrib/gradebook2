@@ -5353,7 +5353,6 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			authModel.setUserHasGraderPermissions(Boolean.valueOf(authz.hasUserGraderPermissions(gradebook.getUid())));
 			authModel.setNewGradebook(Boolean.valueOf(isNewGradebook));
 			authModel.setPlacementId(getPlacementId());
-			authModel.setGridLocked(authz.isGradebookLocked(gradebookUids[i]));
 
 			rv.add(authModel);
 		}
@@ -6741,10 +6740,6 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 	 */
 	public void setShowWeightedEnabled(boolean isShowWeightedEnabled) {
 		this.isShowWeightedEnabled = isShowWeightedEnabled;
-	}
-
-	public Boolean isExternallyLocked(String gradebookUid) {
-		return advisor.isEditLocked(gradebookUid);
 	}
 
 }

@@ -24,16 +24,13 @@
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authn" class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2AuthnImpl">
 	</bean>
 
-	<bean id="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authz" class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2AuthzImpl"
-	init-method="init">
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authz" class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2AuthzImpl">
 		<property name="authn" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authn"/>
 		<property name="sectionAwareness" ref="org.sakaiproject.section.api.SectionAwareness"/>
 		<property name="gbToolService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/>
 		<property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/>
 		<property name="securityService" ref="org.sakaiproject.authz.api.SecurityService"/>
 		<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>
-		<property name="componentService" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService" />
-		<property name="configService" ref="org.sakaiproject.component.api.ServerConfigurationService" />
 	</bean>
 	
 	<bean id="org.sakaiproject.gradebook.gwt.server.ImportExportUtility" class="org.sakaiproject.gradebook.gwt.server.ImportExportUtilityImpl" init-method="init">

@@ -146,5 +146,5 @@ public interface Gradebook2ComponentService {
 			Upload upload, boolean isDryRun,
 			List<BusinessLogicCode> ignoredBusinessRules) throws InvalidInputException;
 
-	public Boolean isExternallyLocked(String gradebookUid);
+	
 }

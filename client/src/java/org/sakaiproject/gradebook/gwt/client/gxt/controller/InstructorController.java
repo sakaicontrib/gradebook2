@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
-import org.sakaiproject.gradebook.gwt.client.gxt.GbEditorGrid;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.FinalGradeSubmissionView;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.ImportExportView;
@@ -29,27 +28,15 @@ public class InstructorController extends Controller {
 	private FinalGradeSubmissionView finalGradeSubmissionView;
 	private InstructorView appView;
 	private PermissionsView permissionsView;
-	private Boolean gridLocked = false;
 	
 	public InstructorController(I18nConstants i18n, boolean isUserAbleToEditItems, boolean isNewGradebook) {
-		this(i18n, isUserAbleToEditItems, isNewGradebook, false);
-		
-	}
-	
-	public InstructorController(I18nConstants i18n,
-			boolean isUserAbleToEditItems, boolean isNewGradebook,
-			boolean isGridLocked) {
 		super();
-		gridLocked = isGridLocked;
 		singleView = new SingleGradeView(this, false);
-		singleView.setLocked(gridLocked);
 		treeView = new TreeView(this, isUserAbleToEditItems);
 		multigradeView = new MultigradeView(this, i18n);
-		multigradeView.setGridLocked(gridLocked);
 		permissionsView = new PermissionsView(this);
-		appView = new InstructorView(this, treeView, multigradeView, singleView, permissionsView, 
-				isUserAbleToEditItems, gridLocked, isNewGradebook);
-
+		appView = new InstructorView(this, treeView, multigradeView, singleView, permissionsView, isUserAbleToEditItems, isNewGradebook);
+		
 		registerEventTypes(GradebookEvents.BeginItemUpdates.getEventType());
 		registerEventTypes(GradebookEvents.BrowseLearner.getEventType());
 		registerEventTypes(GradebookEvents.ConfirmDeleteItem.getEventType());
@@ -96,14 +83,14 @@ public class InstructorController extends Controller {
 		registerEventTypes(GradebookEvents.UserChange.getEventType());
 		registerEventTypes(GradebookEvents.StartFinalgrade.getEventType());
 		registerEventTypes(GradebookEvents.StopGraderPermissionSettings.getEventType());
-		registerEventTypes(GradebookEvents.FinishTreeItemDragAndDrop.getEventType());	
+		registerEventTypes(GradebookEvents.FinishTreeItemDragAndDrop.getEventType());
 		registerEventTypes(GradebookEvents.ShowUserFeedback.getEventType());
 		registerEventTypes(GradebookEvents.HideUserFeedback.getEventType());
 		registerEventTypes(GradebookEvents.GradeScaleUpdateError.getEventType());
 		registerEventTypes(GradebookEvents.MaskMultiGradeGrid.getEventType());
 		registerEventTypes(GradebookEvents.UnmaskMultiGradeGrid.getEventType());
 	}
-
+	
 	@Override
 	public void handleEvent(AppEvent event) {
 		// Note: the 'missing' break statements in this switch are intentional, they
@@ -197,8 +184,6 @@ public class InstructorController extends Controller {
 			case SINGLE_VIEW:
 				if (singleView == null)
 					singleView = new SingleGradeView(this, false);
-				singleView.setLocked(gridLocked);
-				singleView.setHiddenStudentViewButton(!singleView.isHiddenStudentViewButton());
 
 				forwardToView(singleView, event);
 				forwardToView(appView, event);
@@ -336,9 +321,6 @@ public class InstructorController extends Controller {
 			Boolean isUserAbleToGradeBoolean = Registry.get(AppConstants.IS_ABLE_TO_GRADE);
 			boolean isUserAbleToGrade = isUserAbleToGradeBoolean == null ? false : isUserAbleToGradeBoolean.booleanValue();
 
-			
-
-			
 			if (isUserAbleToGrade) {
 				forwardToView(treeView, event);
 				forwardToView(multigradeView, event);

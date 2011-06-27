@@ -35,7 +35,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -69,15 +68,6 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 
 	private SiteService siteService = null;
 	private ToolManager toolManager = null;
-	private static Map<String, Boolean> editLocks = new ConcurrentHashMap<String, Boolean>();
-
-	public void setEditLock(String uid) {
-		editLocks.put(uid, Boolean.TRUE);
-	}
-
-	public void removeEditLock(String uid) {
-		editLocks.put(uid, Boolean.FALSE);
-	}
 
 	public List<String> getExportCourseManagementSetEids(Group group) {
 		if(null == group) {
@@ -328,15 +318,6 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 		else {
 			return eids.get(0);
 		}
-	}
-
-	public boolean isEditLocked(String gradebookUid) {
-		return isEditLocked(null, gradebookUid);
-	}
-
-	public boolean isEditLocked(String siteId, String gradebookUid) {
-		return editLocks.containsKey(gradebookUid) 
-		&& editLocks.get(gradebookUid).booleanValue();
 	}
 
 }

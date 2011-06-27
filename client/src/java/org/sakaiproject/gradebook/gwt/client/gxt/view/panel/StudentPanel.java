@@ -142,17 +142,6 @@ public class StudentPanel extends GradebookPanel {
 
 	private boolean isPossibleStatsChanged = true;
 	
-	private boolean editLocked = false;
-	
-	public boolean isEditLocked() {
-		return editLocked;
-	}
-
-	public void setEditLocked(boolean editLocked) {
-		this.editLocked = editLocked;
-	}
-
-
 	private StatisticsComparator statisticsComparator = new StatisticsComparator();
 
 	private List<Statistics> statsList;
