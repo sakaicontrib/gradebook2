@@ -543,25 +543,21 @@ public class SiteMock implements Site {
 		return null;
 	}
 
-	@Override
 	public Element toXml(Document arg0, Stack<Element> arg1) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public Date getSoftlyDeletedDate() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public boolean isSoftlyDeleted() {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	@Override
 	public void setSoftlyDeleted(boolean arg0) {
 		// TODO Auto-generated method stub
 		
