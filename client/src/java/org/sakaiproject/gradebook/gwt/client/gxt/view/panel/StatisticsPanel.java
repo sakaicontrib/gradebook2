@@ -80,9 +80,6 @@ import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.LegendPosition;
-import com.google.gwt.visualization.client.VisualizationUtils;
-import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
-
 
 public class StatisticsPanel extends ContentPanel {
 
@@ -92,7 +89,7 @@ public class StatisticsPanel extends ContentPanel {
 
 	private HorizontalPanel gridAndChartHorizontalPanel;
 	
-	private StatisticsChartPanel chartPanel;
+	private StatisticsChartPanel statisticsChartPanel;
 
 	private SectionsComboBox<ModelData> sectionsComboBox;
 
@@ -104,33 +101,15 @@ public class StatisticsPanel extends ContentPanel {
 	private String selectedAssignmentId;
 	private String selectedSectionId;
 
-	private boolean isVisualizationApiLoaded = false;
-	private boolean hasActiveNotifications = false;
-
 	private Map<String, DataTable> dataTableCache = new HashMap<String, DataTable>();
 
 	private final static int FIRST_ROW = 0;
 
-	private final static String[] RANGE = new String[]{
-		"0-9",
-		"10-19",
-		"20-29",
-		"30-39",
-		"40-49",
-		"50-59",
-		"60-69",
-		"70-79",
-		"80-89",
-		"90-100"};
-	
 	private final static String COURSE_CACHE_KEY_PREFIX = "course-grade";
 
 	public StatisticsPanel(final I18nConstants i18n) {
 
 		super();
-
-		// Loading visualization APIs
-		VisualizationUtils.loadVisualizationApi(new VisualizationRunnable(), CoreChart.PACKAGE);
 
 		// Getting needed resources
 		this.i18n = i18n;
@@ -150,7 +129,7 @@ public class StatisticsPanel extends ContentPanel {
 
 			public void selectionChanged(SelectionChangedEvent<ModelData> se) {
 
-				chartPanel.hide();
+				statisticsChartPanel.hide();
 				grid.getStore().removeAll();
 				grid.getStore().getLoader().load();
 				selectedGradeItemRow = -1;
@@ -169,15 +148,15 @@ public class StatisticsPanel extends ContentPanel {
 		grid = getGrid();
 		
 		// Creating the chart panel and initially hide it
-		chartPanel = new StatisticsChartPanel();
-		chartPanel.setLegendPosition(LegendPosition.TOP);
-		chartPanel.setSize(AppConstants.CHART_WIDTH, AppConstants.CHART_HEIGHT + 80);
-		chartPanel.hide();
+		statisticsChartPanel = new StatisticsChartPanel();
+		statisticsChartPanel.setLegendPosition(LegendPosition.TOP);
+		statisticsChartPanel.setSize(AppConstants.CHART_WIDTH, AppConstants.CHART_HEIGHT + 80);
+		statisticsChartPanel.hide();
 		
 		gridAndChartHorizontalPanel = new HorizontalPanel();
 		gridAndChartHorizontalPanel.setSpacing(10);
 		gridAndChartHorizontalPanel.add(grid);
-		gridAndChartHorizontalPanel.add(chartPanel);
+		gridAndChartHorizontalPanel.add(statisticsChartPanel);
 		add(gridAndChartHorizontalPanel);
 		
 		
@@ -189,7 +168,7 @@ public class StatisticsPanel extends ContentPanel {
 				Dispatcher.forwardEvent(GradebookEvents.StopStatistics.getEventType(), Boolean.FALSE);
 
 				// Hide the chart panel
-				chartPanel.hide();
+				statisticsChartPanel.hide();
 
 				// Reset the last selected grade item row
 				selectedGradeItemRow = -1;
@@ -222,12 +201,12 @@ public class StatisticsPanel extends ContentPanel {
 			
 			// Cache hit
 			dataTable = dataTableCache.get(cacheKey);
-			chartPanel.setDataTable(dataTable);
-			chartPanel.show();
+			statisticsChartPanel.setDataTable(dataTable);
+			statisticsChartPanel.show();
 		}
 		else {
 			
-			showUserFeedback();
+			statisticsChartPanel.showUserFeedback(null);
 			
 			// Data is not in cache yet
 			Gradebook gbModel = Registry.get(AppConstants.CURRENT);
@@ -253,13 +232,13 @@ public class StatisticsPanel extends ContentPanel {
 
 				public void onError(Request request, Throwable caught) {
 					
-					hideUserFeedback();
+					statisticsChartPanel.hideUserFeedback(null);
 					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsDataErrorMsg(), true));
 				}
 
 				public void onFailure(Request request, Throwable exception) {
 					
-					hideUserFeedback();
+					statisticsChartPanel.hideUserFeedback(null);
 					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsDataErrorMsg(), true));
 				}
 
@@ -285,46 +264,42 @@ public class StatisticsPanel extends ContentPanel {
 
 						JSONArray positiveFrequencies = jsonArray.get(AppConstants.POSITIVE_NUMBER).isArray();
 
-						// TODO: For now, we don't show the negative grade frequency : leaving code in place
-						// until we handle negative number frequencies
-						//JSONArray negativeFrequencies = jsonArray.get(AppConstants.NEGATIVE_NUMBER).isArray();
 
 						dataTable = DataTable.create();
 						dataTable.addColumn(ColumnType.STRING, i18n.statisticsChartLabelDistribution());
 						dataTable.addColumn(ColumnType.NUMBER, i18n.statisticsChartLabelFrequency());
-						//dataTable.addColumn(ColumnType.NUMBER, "Negative Grade Frequency");
 						dataTable.addRows(positiveFrequencies.size());
 
+						String[] xAxisRangeLables = statisticsChartPanel.getXAxisRangeLabels();
+						
 						for (int i = 0; i < positiveFrequencies.size(); i++) {
 
 							// Set label
-							dataTable.setValue(i, 0, RANGE[i]);
+							dataTable.setValue(i, 0, xAxisRangeLables[i]);
 
 							// Set value
 							double positiveValue = positiveFrequencies.get(i).isNumber().doubleValue();
-							//double negativeValue = negativeFrequencies.get(i).isNumber().doubleValue() * -1;
 							dataTable.setValue(i, 1, positiveValue);
-							//dataTable.setValue(i, 2, negativeValue);
 						}
 
 						// adding the dataTable to the cache
 						dataTableCache.put(selectedAssignmentId + selectedSectionId, dataTable);
-						chartPanel.setDataTable(dataTable);
-						chartPanel.show();
+						statisticsChartPanel.setDataTable(dataTable);
+						statisticsChartPanel.show();
 					}
 					else
 					{
 						Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsDataErrorMsg(), true));
 					}
 					
-					hideUserFeedback();
+					statisticsChartPanel.hideUserFeedback(null);
 				}
 			});
 		}
 	}
 
 	private void getCourseStatisticsChartData(String sectionId) {
-
+		
 		// First we check the cache if we have the data already
 		String cacheKey = COURSE_CACHE_KEY_PREFIX + sectionId;
 
@@ -332,12 +307,12 @@ public class StatisticsPanel extends ContentPanel {
 
 			// Cache hit
 			dataTable = dataTableCache.get(cacheKey);
-			chartPanel.setDataTable(dataTable);
-			chartPanel.show();
+			statisticsChartPanel.setDataTable(dataTable);
+			statisticsChartPanel.show();
 		}
 		else {
 
-			showUserFeedback();
+			statisticsChartPanel.showUserFeedback(null);
 
 			Gradebook gbModel = Registry.get(AppConstants.CURRENT);
 
@@ -356,13 +331,13 @@ public class StatisticsPanel extends ContentPanel {
 
 				public void onError(Request request, Throwable caught) {
 
-					hideUserFeedback();
+					statisticsChartPanel.hideUserFeedback(null);
 					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsDataErrorMsg(), true));
 				}
 
 				public void onFailure(Request request, Throwable exception) {
 
-					hideUserFeedback();
+					statisticsChartPanel.hideUserFeedback(null);
 					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsDataErrorMsg(), true));
 				}
 
@@ -394,38 +369,18 @@ public class StatisticsPanel extends ContentPanel {
 						index++;
 					}
 
-					chartPanel.setDataTable(dataTable);
-					chartPanel.show();
+					statisticsChartPanel.setDataTable(dataTable);
+					statisticsChartPanel.show();
 					
 					// adding the dataTable to the cache
 					dataTableCache.put(COURSE_CACHE_KEY_PREFIX + selectedSectionId, dataTable);
 
-					hideUserFeedback();
+					statisticsChartPanel.hideUserFeedback(null);
 				}
 			});
 		}
 	}
 
-	private void showUserFeedback() {
-
-		if(!hasActiveNotifications) {
-		
-			Dispatcher.forwardEvent(GradebookEvents.ShowUserFeedback.getEventType(), i18n.statisticsGradebookLoadingChart(), false);
-			chartPanel.mask();
-			hasActiveNotifications = true;
-		}
-	}
-	
-	private void hideUserFeedback() {
-		
-		if(hasActiveNotifications) {
-		
-			Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType(), false);
-			chartPanel.unmask();
-			hasActiveNotifications = false;
-		}
-	}
-	
 	private Grid<StatisticsModel> getGrid() {
 
 		// Passing the selected section to the rest builder
@@ -486,29 +441,19 @@ public class StatisticsPanel extends ContentPanel {
 
 				if(null != mean && !AppConstants.STATISTICS_DATA_NA.equals(mean)) {
 
-					// Before we get the data and show the graph, we check
-					// if the Visualization APIs have been loaded properly
-					if(isVisualizationApiLoaded) {
+					if(FIRST_ROW == rowIndex) {
 
-						if(FIRST_ROW == rowIndex) {
-							
-							getCourseStatisticsChartData(getSelectedSection());
-						}
-						else {
-
-							getGradeItemStatisticsChartData(assignmentId, getSelectedSection());
-						}
+						getCourseStatisticsChartData(getSelectedSection());
 					}
 					else {
 
-						Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsVisualizationErrorMsg(), true));
-						chartPanel.hide();
+						getGradeItemStatisticsChartData(assignmentId, getSelectedSection());
 					}
 				}
 				else {
 
 					// If there is no data to show, we hide the chart
-					chartPanel.hide();
+					statisticsChartPanel.hide();
 				}
 			}
 		});
@@ -593,18 +538,5 @@ public class StatisticsPanel extends ContentPanel {
 		// decoded the URL and then return a 400
 		return Base64.encode(sectionId);
 
-	}
-
-	/*
-	 * An instance of this runnable class is called once the
-	 * Visualization APIs have been loaded via
-	 * VisualizationUtils.loadVisualizationApi(...)
-	 */
-	private class VisualizationRunnable implements Runnable {
-
-		public void run() {
-			
-			isVisualizationApiLoaded = true;
-		}
 	}
 }

@@ -34,6 +34,8 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.LegendPosition;
+import com.google.gwt.visualization.client.VisualizationUtils;
+import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
 import com.google.gwt.visualization.client.visualizations.corechart.Options;
 import com.google.gwt.visualization.client.visualizations.corechart.ColumnChart;
 import com.google.gwt.visualization.client.visualizations.corechart.LineChart;
@@ -58,8 +60,37 @@ public class StatisticsChartPanel extends ContentPanel {
 	
 	private int chartWidth = AppConstants.CHART_WIDTH;
 	private int chartHeight = AppConstants.CHART_HEIGHT;
+	
+	private StatisticsChartLoaderListener statisticsChartLoaderListener;
+	
+	// This is used by the various panels that use chars
+	private final static String[] RANGE = new String[] {
+		"0-9",
+		"10-19",
+		"20-29",
+		"30-39",
+		"40-49",
+		"50-59",
+		"60-69",
+		"70-79",
+		"80-89",
+		"90-100"};
+	
+	private boolean hasActiveNotifications = false;
+	
+	private boolean isVisualizationApiLoaded = false;
 
-	public StatisticsChartPanel() {
+	public StatisticsChartPanel() { 
+	
+		this(null);
+	}
+	
+	public StatisticsChartPanel(StatisticsChartLoaderListener statisticsChartLoaderListener) {
+		
+		this.statisticsChartLoaderListener = statisticsChartLoaderListener;
+		
+		// Loading visualization APIs
+		VisualizationUtils.loadVisualizationApi(new VisualizationRunnable(), CoreChart.PACKAGE);
 		
 		this.i18n = Registry.get(AppConstants.I18N);
 		this.resources = Registry.get(AppConstants.RESOURCES);
@@ -117,6 +148,15 @@ public class StatisticsChartPanel extends ContentPanel {
 	@Override
 	public void show() {
 		
+		// Before we instantiate a graph, we check
+		// if the Visualization APIs have been loaded properly
+		if(!isVisualizationApiLoaded) {
+		
+			Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsVisualizationErrorMsg(), true));
+			hide();
+			return;
+		}
+			
 		if(null != dataTable) {
 			
 			super.show();
@@ -151,6 +191,63 @@ public class StatisticsChartPanel extends ContentPanel {
 		this.chartWidth = width;
 	}
 	
+	public String[] getXAxisRangeLabels() {
+		
+		return RANGE;
+	}
+	
+	/*
+	 * If no additional condition needs to be checked, pass "null"
+	 * as the function argument
+	 */
+	public void showUserFeedback(Boolean additionalCondition) {
+
+		/*
+		 * If additionalCondition is not null, we use its boolean value.
+		 * If additionalCondition is null we use true so that we don't alter the boolean logic
+		 * X && TRUE = X
+		 */
+		boolean condition = (null != additionalCondition ? additionalCondition.booleanValue() : true);
+		
+		if(!hasActiveNotifications && condition) {
+		
+			Dispatcher.forwardEvent(GradebookEvents.ShowUserFeedback.getEventType(), i18n.statisticsGradebookLoadingChart(), false);
+			mask();
+			hasActiveNotifications = true;
+		}
+	}
+	
+	/*
+	 * If no additional condition needs to be checked, pass "null"
+	 * as the function argument
+	 */
+	public void hideUserFeedback(Boolean additionalCondition) {
+		
+		/*
+		 * If additionalCondition is not null, we use its boolean value.
+		 * If additionalCondition is null we use true so that we don't alter the boolean logic
+		 * X && TRUE = X
+		 */
+		boolean condition = (null != additionalCondition ? additionalCondition.booleanValue() : true);
+		
+		if(hasActiveNotifications && condition) {
+		
+			Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType(), false);
+			unmask();
+			hasActiveNotifications = false;
+		}
+	}
+	
+	/*
+	 * Creates a DataTabel, keeps a reference to it,
+	 * and returns it
+	 */
+	public DataTable createDataTable() {
+		
+		dataTable = DataTable.create();
+		return dataTable;
+	}
+	
 	private PieChart.PieOptions createPieChartOptions() {
 		
 		PieChart.PieOptions options = PieChart.createPieOptions();
@@ -177,5 +274,23 @@ public class StatisticsChartPanel extends ContentPanel {
 		options.setHeight(chartHeight);
 		options.setLegend(legendPosition);
 		return options;
+	}
+	
+	/*
+	 * An instance of this runnable class is called once the
+	 * Visualization APIs have been loaded via
+	 * VisualizationUtils.loadVisualizationApi(...)
+	 */
+	private class VisualizationRunnable implements Runnable {
+
+		public void run() {
+			
+			isVisualizationApiLoaded = true;
+			
+			if(null != statisticsChartLoaderListener) {
+			
+				statisticsChartLoaderListener.load();
+			}
+		}
 	}
 }

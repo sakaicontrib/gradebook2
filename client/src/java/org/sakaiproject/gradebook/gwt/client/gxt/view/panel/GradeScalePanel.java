@@ -92,10 +92,8 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.LegendPosition;
-import com.google.gwt.visualization.client.VisualizationUtils;
-import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
 
-public class GradeScalePanel extends GradebookPanel {
+public class GradeScalePanel extends GradebookPanel implements StatisticsChartLoaderListener {
 
 	private ListLoader<ListLoadResult<ModelData>> loader;
 	private ListLoader<ListLoadResult<ModelData>> gradeFormatLoader;
@@ -119,14 +117,10 @@ public class GradeScalePanel extends GradebookPanel {
 	private HorizontalPanel horizontalPanel;
 
 	private StatisticsChartPanel statisticsChartPanel;
-	private DataTable dataTable;
-	private boolean isVisualizationApiLoaded = false;
 	
 	private Label instructionLabel;
 	
 	private CheckBox toggleCheckBox; 
-	
-	private boolean hasActiveNotifications = false;
 	
 	// GRBK-981
 	private boolean hasChartUpdates = false;
@@ -138,8 +132,6 @@ public class GradeScalePanel extends GradebookPanel {
 
 		super();
 
-		// Loading visualization APIs
-		VisualizationUtils.loadVisualizationApi(new VisualizationRunnable(), CoreChart.PACKAGE);
 		this.isEditable = isEditable;
 
 		toolbar = new ToolBar();
@@ -239,7 +231,8 @@ public class GradeScalePanel extends GradebookPanel {
 				{
 					toggleCheckBox.setToolTip(toolTipOn); 
 					statisticsChartPanel.unmask();
-					if(isVisualizationApiLoaded && hasChartUpdates) {
+					if(hasChartUpdates) {
+						
 						getStatisticsChartData();
 						hasChartUpdates = false;
 					}
@@ -446,7 +439,7 @@ public class GradeScalePanel extends GradebookPanel {
 		loader.load();
 
 		// The onRefreshGradeScale method is called after the user selects a grade scale from the ComboBox
-		if(isVisualizationApiLoaded && toggleCheckBox.getValue().booleanValue()) {
+		if(toggleCheckBox.getValue().booleanValue()) {
 	
 			getStatisticsChartData();
 		}
@@ -483,10 +476,7 @@ public class GradeScalePanel extends GradebookPanel {
 			}
 		}
 
-		if(isVisualizationApiLoaded) {
-
-			getStatisticsChartData();
-		}
+		getStatisticsChartData();
 	}
 
 	@Override
@@ -527,20 +517,6 @@ public class GradeScalePanel extends GradebookPanel {
 
 		if (selectedGradebook != null) {
 			loadGradeScaleData(selectedGradebook);
-		}
-	}
-
-	/*
-	 * An instance of this runnable class is called once the
-	 * Visualization APIs have been loaded via
-	 * VisualizationUtils.loadVisualizationApi(...)
-	 */
-	private class VisualizationRunnable implements Runnable {
-
-		public void run() {
-
-			getStatisticsChartData();
-			isVisualizationApiLoaded = true;
 		}
 	}
 
@@ -585,8 +561,8 @@ public class GradeScalePanel extends GradebookPanel {
 				JSONObject jsonObject = jsonValue.isObject();
 				Set<String> keys = jsonObject.keySet();
 
-				// Initialize the datatable
-				dataTable = DataTable.create();
+				// Initialize the DataTable
+				DataTable dataTable = statisticsChartPanel.createDataTable();
 				dataTable.addColumn(ColumnType.STRING, i18n.statisticsChartLabelDistribution());
 				dataTable.addColumn(ColumnType.NUMBER, i18n.statisticsChartLabelFrequency());
 				dataTable.addRows(keys.size());
@@ -601,8 +577,6 @@ public class GradeScalePanel extends GradebookPanel {
 					index++;
 				}
 
-				statisticsChartPanel.setDataTable(dataTable);
-
 				statisticsChartPanel.show();
 				
 				hideUserFeedback();
@@ -610,24 +584,28 @@ public class GradeScalePanel extends GradebookPanel {
 		});
 	}
 	
+	/*
+	 * Dispatching showUserFeedback() as well as handle local logic
+	 */
 	private void showUserFeedback() {
 
-		if(!hasActiveNotifications && toggleCheckBox.getValue().booleanValue()) {
+		statisticsChartPanel.showUserFeedback(toggleCheckBox.getValue().booleanValue());
 		
-			Dispatcher.forwardEvent(GradebookEvents.ShowUserFeedback.getEventType(), i18n.statisticsGradebookUpdatingChart(), false);
-			statisticsChartPanel.mask();
-			hasActiveNotifications = true;
+		if(toggleCheckBox.getValue().booleanValue()) {
+		
 			toggleCheckBox.disable();
 		}
 	}
 	
+	/*
+	 * Dispatching hideUserFeedback() as well as handle local logic
+	 */
 	private void hideUserFeedback() {
 		
-		if(hasActiveNotifications && toggleCheckBox.getValue().booleanValue()) {
+		statisticsChartPanel.hideUserFeedback(toggleCheckBox.getValue().booleanValue());
 		
-			Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType(), false);
-			statisticsChartPanel.unmask();
-			hasActiveNotifications = false;
+		if(toggleCheckBox.getValue().booleanValue()) {
+		
 			toggleCheckBox.enable();
 		}
 	}
@@ -645,6 +623,12 @@ public class GradeScalePanel extends GradebookPanel {
 			hasChartUpdates = false;
 			hasGradeScaleUpdates = false;
 		}
+	}
+
+	@Override
+	public void load() {
+		
+		getStatisticsChartData();
 	}
 }
 

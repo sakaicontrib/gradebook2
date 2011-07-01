@@ -189,6 +189,7 @@ public interface AppConstants {
 	public static final String OLD_UPLOAD_FRAGMENT			= "oldupload";
 	public static final String AUTHORIZATION_FRAGMENT		= "authorization";
 	public static final String INSTRUCTOR_FRAGMENT			= "instructor";
+	public static final String STUDENT_FRAGMENT 			= "student";
 	public static final String FORCE_FRAGMENT 				= "force";
 	public static final String COURSE_FRAGMENT				= "course";
 	public static final String STARTUP_FRAGMENT				= "startup";

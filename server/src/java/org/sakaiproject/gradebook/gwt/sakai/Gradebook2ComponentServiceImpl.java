@@ -1762,8 +1762,9 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		boolean isUserAbleToGrade = authz.isUserAbleToGradeAll(gradebookUid);
 		boolean isUserTAinSection = authz.isUserTAinSection(realmIds[0]);
+		boolean isUserAbleToViewOwnGrades = authz.isUserAbleToViewOwnGrades(gradebookUid);
 
-		if (!isUserAbleToGrade && !isUserTAinSection)
+		if (!isUserAbleToGrade && !isUserTAinSection && !isUserAbleToViewOwnGrades)
 			throw new SecurityException("You are not authorized to view statistics charts.");
 
 		// Create and initialize two dimensional array to keep track of grade frequencies

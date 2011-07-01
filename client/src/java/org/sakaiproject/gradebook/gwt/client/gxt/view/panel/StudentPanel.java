@@ -1,10 +1,5 @@
 /**********************************************************************************
- *
- * $Id:$
- *
- ***********************************************************************************
- *
- * Copyright (c) 2008, 2009 The Regents of the University of California
+ * Copyright (c) 2008, 2009, 2010, 2011 The Regents of the University of California
  *
  * Licensed under the
  * Educational Community License, Version 2.0 (the "License"); you may
@@ -25,15 +20,20 @@ package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
+import org.sakaiproject.gradebook.gwt.client.RestCallback;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.UrlArgsCallback;
 import org.sakaiproject.gradebook.gwt.client.gxt.NewModelCallback;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityOverlay;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.StatisticsComparator;
@@ -62,6 +62,7 @@ import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.LoadListener;
 import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
 import com.extjs.gxt.ui.client.event.SelectionChangedListener;
+import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.GroupingStore;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Store;
@@ -87,39 +88,50 @@ import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.http.client.Request;
+import com.google.gwt.http.client.Response;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.json.client.JSONArray;
+import com.google.gwt.json.client.JSONParser;
+import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
+import com.google.gwt.visualization.client.DataTable;
+import com.google.gwt.visualization.client.LegendPosition;
+import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 
 public class StudentPanel extends GradebookPanel {
 
 	private enum Key { 
-		S_CTGRY_NM, 
-		S_ITM_NM, 
-		S_ITM_WGHT, 
-		S_GRD, 
-		S_MEAN, 
-		S_STDV, 
-		S_MEDI, 
-		S_MODE, 
-		S_RANK, 
-		S_COMMENT, 
-		S_ORDER, 
-		S_ID, 
-		S_OUTOF,
-		T_DATEDUE, 
-		B_DROPPED
+		S_CTGRY_NM, S_ITM_ID, S_ITM_NM, S_ITM_WGHT, 
+		S_GRD, S_MEAN, S_STDV, S_MEDI, S_MODE, S_RANK, 
+		S_COMMENT, S_ORDER, S_ID, S_OUTOF, T_DATEDUE, B_DROPPED
 	};
 
+	private static final String COURSE_GRADE_ID = "-1";
+	
+	private static final int PI_ROW_NAME = 1; 
+	private static final int PI_ROW_EMAIL = 2; 
+	private static final int PI_ROW_ID = 3; 
+	private static final int PI_ROW_SECTION = 4;  
+	private static final int PI_ROW_COURSE_GRADE = 5; 
+	private static final int PI_ROW_CALCULATED_GRADE = 6;
+	private static final int PI_ROW_RANK = 7; 
+	
+	private static final int PI_COL_HEADING = 0; 
+	private static final int PI_COL_VALUE = 1; 
+
+	private static final String FIRST_COLUMN_WIDTH = "170px";
+	
 	private TextField<String> defaultTextField= new TextField<String>();
 	private TextArea defaultTextArea = new TextArea();
-	private NumberFormat defaultNumberFormat = NumberFormat.getFormat("#.###");
-	private NumberField defaultNumberField = new NumberField();
+//	private NumberFormat defaultNumberFormat = NumberFormat.getFormat("#.###");
+//	private NumberField defaultNumberField = new NumberField();
 	private FlexTable studentInformation;
-	private ContentPanel studentInformationPanel, gradeInformationPanel, textPanel;
+	private ContentPanel studentInformationPanel, gradeInformationPanel, textPanel, topPanel;
 	private Html textNotification;
 	private LayoutContainer cardLayoutContainer;
 	private CardLayout cardLayout;
@@ -145,13 +157,19 @@ public class StudentPanel extends GradebookPanel {
 	private StatisticsComparator statisticsComparator = new StatisticsComparator();
 
 	private List<Statistics> statsList;
+	
+	// Statistics Charts
+	private StatisticsChartPanel statisticsChartPanel;
+	private DataTable dataTable;
+	private Map<String, DataTable> dataTableCache = new HashMap<String, DataTable>();
+	private String selectedAssignmentId;
 
 	public StudentPanel(I18nConstants i18n, boolean isStudentView, boolean displayRank) {
 		super();
 		this.isStudentView = isStudentView;
-		this.defaultNumberField.setFormat(defaultNumberFormat);
-		this.defaultNumberField.setSelectOnFocus(true);
-		this.defaultNumberField.addInputStyleName(resources.css().gbNumericFieldInput());
+//		this.defaultNumberField.setFormat(defaultNumberFormat);
+//		this.defaultNumberField.setSelectOnFocus(true);
+//		this.defaultNumberField.addInputStyleName(resources.css().gbNumericFieldInput());
 		this.defaultTextArea.addInputStyleName(resources.css().gbTextAreaInput());
 		this.defaultTextField.addInputStyleName(resources.css().gbTextFieldInput());
 		this.displayRank = displayRank;
@@ -167,10 +185,29 @@ public class StudentPanel extends GradebookPanel {
 		studentInformationPanel.setBorders(true);
 		studentInformationPanel.setFrame(true);
 		studentInformationPanel.setHeaderVisible(false);
-		studentInformationPanel.setHeight(190);
+		// Make it the same height as the chart
+		studentInformationPanel.setHeight(AppConstants.CHART_HEIGHT);
 		studentInformationPanel.setLayout(new FitLayout());
+		studentInformationPanel.setStyleAttribute("padding", "5px");
 		studentInformationPanel.add(studentInformation);
-		add(studentInformationPanel); 
+		
+		statisticsChartPanel = new StatisticsChartPanel();
+		statisticsChartPanel.setLegendPosition(LegendPosition.TOP);
+		statisticsChartPanel.setSize(AppConstants.CHART_WIDTH, AppConstants.CHART_HEIGHT);
+		statisticsChartPanel.setChartHeight(AppConstants.CHART_HEIGHT - 50);
+		statisticsChartPanel.setStyleAttribute("padding", "5px");
+		statisticsChartPanel.mask();
+		
+		/*
+		 *  TODO: May have to override onResize() similar to what we do in gradeInformationPanel
+		 */
+		topPanel = new ContentPanel();
+		topPanel.setLayout(new ColumnLayout());
+		
+		topPanel.add(studentInformationPanel, new ColumnData(500));
+		topPanel.add(statisticsChartPanel, new ColumnData(610));
+		
+		add(topPanel); 
 
 		store = new GroupingStore<BaseModel>();
 		store.setGroupOnSort(false);
@@ -246,7 +283,7 @@ public class StudentPanel extends GradebookPanel {
 
 		ArrayList<ColumnConfig> columns = new ArrayList<ColumnConfig>();
 
-		categoryColumn = new ColumnConfig(Key.S_CTGRY_NM.name(), i18n.categoryName(), 200);
+		categoryColumn = new ColumnConfig(Key.S_CTGRY_NM.name(), i18n.categoryName(), 250);
 		categoryColumn.setGroupable(true);
 		categoryColumn.setHidden(true);
 		categoryColumn.setMenuDisabled(true);
@@ -264,7 +301,7 @@ public class StudentPanel extends GradebookPanel {
 
 		column = new ColumnConfig(Key.S_GRD.name(), i18n.scoreName(), 60);
 		column.setGroupable(false);
-		column.setAlignment(Style.HorizontalAlignment.RIGHT);
+		//column.setAlignment(Style.HorizontalAlignment.RIGHT);
 		column.setMenuDisabled(true);
 		column.setRenderer(new GridCellRenderer<ModelData>() {
 
@@ -285,7 +322,7 @@ public class StudentPanel extends GradebookPanel {
 
 		outOfColumn = new ColumnConfig(Key.S_OUTOF.name(), i18n.outOfName(), 60);
 		outOfColumn.setGroupable(false);
-		outOfColumn.setAlignment(Style.HorizontalAlignment.RIGHT);
+		//outOfColumn.setAlignment(Style.HorizontalAlignment.RIGHT);
 		outOfColumn.setMenuDisabled(true);
 		columns.add(outOfColumn);
 
@@ -313,7 +350,7 @@ public class StudentPanel extends GradebookPanel {
 		medianColumn.setHidden(true);
 		columns.add(medianColumn);
 
-		modeColumn = new ColumnConfig(Key.S_MODE.name(), i18n.modeName(), 60);
+		modeColumn = new ColumnConfig(Key.S_MODE.name(), i18n.modeName(), 150);
 		modeColumn.setGroupable(false);
 		modeColumn.setMenuDisabled(true);
 		modeColumn.setHidden(true);
@@ -328,16 +365,25 @@ public class StudentPanel extends GradebookPanel {
 			@Override
 			public void selectionChanged(SelectionChangedEvent<BaseModel> sce) {
 				BaseModel score = sce.getSelectedItem();
-
+				
 				if (score != null) {
-					formBinding.bind(score);
-					commentsPanel.show();
-				} else {
+					
+					// Don't show the comments form if the user clicks on the Course Grade item
+					if(COURSE_GRADE_ID.equals(score.get(Key.S_ID.name()))) {
+						commentsPanel.hide();
+					}
+					else {
+						
+						getGradeItemStatisticsChartData((String)score.get(Key.S_ITM_ID.name()));
+						formBinding.bind(score);
+						commentsPanel.show();
+					}
+				}
+				else {
 					commentsPanel.hide();
 					formBinding.unbind();
 				}
 			}
-
 		});
 
 		GroupingView view = new GroupingView();
@@ -366,6 +412,7 @@ public class StudentPanel extends GradebookPanel {
 			protected void onResize(final int width, final int height) {
 				super.onResize(width, height);
 
+				grid.setHeight(height - 42);
 				grid.setSize(width - 300, height - 42);
 				if (grid.isRendered() && grid.getView() != null)
 					grid.getView().refresh(true);
@@ -375,10 +422,9 @@ public class StudentPanel extends GradebookPanel {
 		};
 		gradeInformationPanel.setBorders(true);
 		gradeInformationPanel.setFrame(true);
-		gradeInformationPanel.setHeading("Individual Scores (click on a row to see comments)");
+		gradeInformationPanel.setHeading("Individual Scores (click on a row to see comments and statistics char)");
 		gradeInformationPanel.setLayout(new ColumnLayout());
-		gradeInformationPanel.add(grid, new ColumnData(1));
-
+		gradeInformationPanel.add(grid, new ColumnData(795));
 		FormLayout commentLayout = new FormLayout();
 		commentLayout.setLabelAlign(LabelAlign.TOP);
 		commentLayout.setDefaultWidth(280);
@@ -392,12 +438,12 @@ public class StudentPanel extends GradebookPanel {
 		commentArea = new TextArea();
 		commentArea.setName(Key.S_COMMENT.name());
 		commentArea.setFieldLabel(i18n.commentName());
-		commentArea.setWidth(270);
+		commentArea.setWidth(275);
 		commentArea.setHeight(300);
 		commentArea.setReadOnly(true);
 		commentsPanel.add(commentArea);
 
-		gradeInformationPanel.add(commentsPanel, new ColumnData(300));
+		gradeInformationPanel.add(commentsPanel, new ColumnData(305));
 
 		formBinding = new FormBinding(commentsPanel, true);
 
@@ -469,6 +515,17 @@ public class StudentPanel extends GradebookPanel {
 
 	}
 
+	public boolean isStudentView() {
+		return isStudentView;
+	}
+
+	public void setStudentView(boolean isStudentView) {
+		this.isStudentView = isStudentView;
+	}
+
+	public ModelData getStudentModel() {
+		return learnerGradeRecordCollection;
+	}
 
 	private void updateCourseGrade(String newGrade, String calcGrade)
 	{
@@ -501,36 +558,13 @@ public class StudentPanel extends GradebookPanel {
 		// perform a binary search. We only want to sort the list once for performance reasons. 
 		Collections.sort(statsList, statisticsComparator);
 		
+		// Get the course level stats
 		Statistics m = getStatsModelForItem(String.valueOf(Long.valueOf(-1)), statsList);
 		setStudentInfoTable(m);
+		
+		// Populate the assignment's table
 		setGradeInfoTable(selectedGradebook, learnerGradeRecordCollection, statsList);
 	}
-
-
-	// FIXME - i18n 
-	// FIXME - need to assess impact of doing it this way... 
-
-
-	private static final int PI_ROW_NAME = 1; 
-	private static final int PI_ROW_EMAIL = 2; 
-	private static final int PI_ROW_ID = 3; 
-	private static final int PI_ROW_SECTION = 4;  
-	private static final int PI_ROW_COURSE_GRADE = 5; 
-	private static final int PI_ROW_CALCULATED_GRADE = 6;
-	private static final int PI_ROW_STATS = 1;
-	private static final int PI_ROW_MEAN = 2; 
-	private static final int PI_ROW_STDV = 3; 
-	private static final int PI_ROW_MEDI = 4; 
-	private static final int PI_ROW_MODE = 5; 
-	private static final int PI_ROW_RANK = 6; 
-
-
-	private static final int PI_COL_HEADING = 0; 
-	private static final int PI_COL_VALUE = 1; 
-	private static final int PI_COL2_HEADING = 2;
-	private static final int PI_COL2_VALUE = 3;
-
-	private static final String FIRST_COLUMN_WIDTH = "200px";
 
 	private void setStudentInfoTable(Statistics courseGradeStats) {		
 		// To force a refresh, let's first hide the owning panel
@@ -574,7 +608,6 @@ public class StudentPanel extends GradebookPanel {
 			boolean isShowMode = DataTypeConversionUtil.checkBoolean(gradebookItemModel.getShowMode());
 			boolean isShowRank = DataTypeConversionUtil.checkBoolean(gradebookItemModel.getShowRank());
 			boolean isShowItemStatistics = DataTypeConversionUtil.checkBoolean(gradebookItemModel.getShowItemStatistics());
-			boolean isShowAny = isShowMean || isShowMedian || isShowMode || isShowRank;
 
 
 			if (doReleaseGrades) {
@@ -592,72 +625,20 @@ public class StudentPanel extends GradebookPanel {
 					formatter.setWordWrap(PI_ROW_CALCULATED_GRADE, PI_COL_HEADING, false);
 					studentInformation.setText(PI_ROW_CALCULATED_GRADE, PI_COL_VALUE, calculatedGrade);
 				}
-
-				if (courseGradeStats != null) {
-
-					if (isShowAny) {
-						studentInformation.setText(PI_ROW_STATS, PI_COL2_HEADING, "Course Statistics");
-						formatter.setStyleName(PI_ROW_STATS, PI_COL2_HEADING, resources.css().gbHeading());
-					}
-
-					int row = PI_ROW_MEAN;
-					if (isShowMean) {
-						studentInformation.setText(PI_ROW_MEAN, PI_COL2_HEADING, "Mean");
-						formatter.setStyleName(PI_ROW_MEAN, PI_COL2_HEADING, resources.css().gbImpact());
-						formatter.setWordWrap(PI_ROW_MEAN, PI_COL2_HEADING, false);
-						studentInformation.setText(PI_ROW_MEAN, PI_COL2_VALUE, courseGradeStats.getMean());
-
-						row++;
-
-						studentInformation.setText(PI_ROW_STDV, PI_COL2_HEADING, "Standard Deviation");
-						formatter.setStyleName(PI_ROW_STDV, PI_COL2_HEADING, resources.css().gbImpact());
-						formatter.setWordWrap(PI_ROW_STDV, PI_COL2_HEADING, false);
-						studentInformation.setText(PI_ROW_STDV, PI_COL2_VALUE, courseGradeStats.getStandardDeviation());
-
-						row++;
-					} else {
-						studentInformation.setText(PI_ROW_MEAN, PI_COL2_HEADING, "");
-						studentInformation.setText(PI_ROW_MEAN, PI_COL2_VALUE, "");
-						studentInformation.setText(PI_ROW_STDV, PI_COL2_HEADING, "");
-						studentInformation.setText(PI_ROW_STDV, PI_COL2_VALUE, "");
-					}
-
-					if (isShowMedian) {
-						studentInformation.setText(row, PI_COL2_HEADING, "Median");
-						formatter.setStyleName(row, PI_COL2_HEADING, resources.css().gbImpact());
-						studentInformation.setText(row, PI_COL2_VALUE, (String)courseGradeStats.getMedian());
-
-						row++;
-					} else {
-						studentInformation.setText(PI_ROW_MEDI, PI_COL2_HEADING, "");
-						studentInformation.setText(PI_ROW_MEDI, PI_COL2_VALUE, "");
-					}
-
-					if (isShowMode) {
-						studentInformation.setText(row, PI_COL2_HEADING, "Mode");
-						formatter.setStyleName(row, PI_COL2_HEADING, resources.css().gbImpact());
-						studentInformation.setText(row, PI_COL2_VALUE, courseGradeStats.getMode());
-
-						row++;
-					} else {
-						studentInformation.setText(PI_ROW_MODE, PI_COL2_HEADING, "");
-						studentInformation.setText(PI_ROW_MODE, PI_COL2_VALUE, "");
-					}
-
-
-					if (isShowRank)
-					{
-						studentInformation.setText(row, PI_COL2_HEADING, "Rank");
-						formatter.setStyleName(row, PI_COL2_HEADING, resources.css().gbImpact());
-						if (displayRank)
-							studentInformation.setText(row, PI_COL2_VALUE, courseGradeStats.getRank());
-						else
-							studentInformation.setText(row, PI_COL2_VALUE, "Visible to Student");
-					} else {
-						studentInformation.setText(PI_ROW_RANK, PI_COL2_HEADING, "");
-						studentInformation.setText(PI_ROW_RANK, PI_COL2_VALUE, "");
-					}
+				
+				if (isShowRank)
+				{
+					studentInformation.setText(PI_ROW_RANK, PI_COL_HEADING, "Rank");
+					formatter.setStyleName(PI_ROW_RANK, PI_COL_HEADING, resources.css().gbImpact());
+					if (displayRank)
+						studentInformation.setText(PI_ROW_RANK, PI_COL_VALUE, courseGradeStats.getRank());
+					else
+						studentInformation.setText(PI_ROW_RANK, PI_COL_VALUE, "Visible to Student");
+				} else {
+					studentInformation.setText(PI_ROW_RANK, PI_COL_HEADING, "");
+					studentInformation.setText(PI_ROW_RANK, PI_COL_VALUE, "");
 				}
+
 			} 
 
 			if (doReleaseItems) {
@@ -678,6 +659,7 @@ public class StudentPanel extends GradebookPanel {
 
 
 	private BaseModel populateGradeInfoRow(int row, ItemModel item, ItemModel category, ModelData learner, Statistics stats, CategoryType categoryType, GradeType gradeType) {
+		
 		String itemId = item.getIdentifier();
 		Object value = learner.get(itemId);
 		String commentFlag = DataTypeConversionUtil.buildCommentTextKey(String.valueOf(itemId));
@@ -766,6 +748,7 @@ public class StudentPanel extends GradebookPanel {
 			model.set(Key.S_MEDI.name(), median);
 			model.set(Key.S_MODE.name(), mode);
 			model.set(Key.S_RANK.name(), rank);
+			model.set(Key.S_ITM_ID.name(), stats.getAssignmentId());
 		}
 
 
@@ -805,24 +788,81 @@ public class StudentPanel extends GradebookPanel {
 		store.removeAll();
 
 		boolean isDisplayReleasedItems = DataTypeConversionUtil.checkBoolean(gradebookItemModel.getReleaseItems());
+		
 		if (isDisplayReleasedItems) {
+		
 			boolean isNothingToDisplay = true;
 			isAnyCommentPopulated = false;
 			int row=0;
 
 			ArrayList<BaseModel> models = new ArrayList<BaseModel>();
+			
+			/*
+			 * Adding the gradebook level statistics information to the table
+			 */
+			boolean doReleaseGrades = DataTypeConversionUtil.checkBoolean(selectedGradebook.getGradebookItemModel().getReleaseGrades());
+			boolean doReleaseItems = DataTypeConversionUtil.checkBoolean(selectedGradebook.getGradebookItemModel().getReleaseItems());
+
+			if (!isStudentView || doReleaseGrades || doReleaseItems) {
+
+				boolean isShowMean = DataTypeConversionUtil.checkBoolean(gradebookItemModel.getShowMean());
+				boolean isShowMedian = DataTypeConversionUtil.checkBoolean(gradebookItemModel.getShowMedian());
+				boolean isShowMode = DataTypeConversionUtil.checkBoolean(gradebookItemModel.getShowMode());
+				
+				if (doReleaseGrades) {
+				
+					Statistics gradebookStatistics = getStatsModelForItem(String.valueOf(Long.valueOf(-1)), statsList);
+					
+					if(null != gradebookStatistics) {
+					
+						BaseModel gradebookStatisticsModel = new BaseModel();
+
+						gradebookStatisticsModel.set(Key.S_ID.name(), COURSE_GRADE_ID);
+						gradebookStatisticsModel.set(Key.S_CTGRY_NM.name(), "Course Statistics");
+						gradebookStatisticsModel.set(Key.S_ITM_NM.name(), gradebookStatistics.getName());
+						gradebookStatisticsModel.set(Key.S_ITM_WGHT.name(), "-");
+						gradebookStatisticsModel.set(Key.S_GRD.name(), "-");
+						gradebookStatisticsModel.set(Key.S_OUTOF.name(), "-");
+						gradebookStatisticsModel.set(Key.T_DATEDUE.name(), "-");
+
+						gradebookStatisticsModel.set(Key.S_MEAN.name(), (isShowMean ? gradebookStatistics.getMean() : ""));
+						gradebookStatisticsModel.set(Key.S_STDV.name(), (isShowMean ? gradebookStatistics.getStandardDeviation() : ""));
+						gradebookStatisticsModel.set(Key.S_MEDI.name(), (isShowMedian ? gradebookStatistics.getMedian() : ""));
+						gradebookStatisticsModel.set(Key.S_MODE.name(), (isShowMode ? gradebookStatistics.getMode() : ""));
+
+						models.add(gradebookStatisticsModel);
+						row++;
+					}
+				}
+			}
+
+			
+			/*
+			 * Adding category and assignment level statistics information to the table
+			 */
 			int childCount = gradebookItemModel.getChildCount();
 			if (childCount > 0) {
+				
+				/*
+				 * The children are either Categories or Items depending on the gradebook setup
+				 */
 				for (int i=0;i<childCount;i++) {
+					
 					ModelData m = gradebookItemModel.getChild(i);
 					ItemModel child = (ItemModel)m;
 					switch (child.getItemType()) {
 					case CATEGORY:
 						int itemCount = child.getChildCount();
 						if (itemCount > 0) {
+							/*
+							 * Adding all the assignments within a category
+							 */
 							for (int j=0;j<itemCount;j++) {
+								
 								ItemModel item = (ItemModel)child.getChild(j);
+								
 								if (DataTypeConversionUtil.checkBoolean(item.getReleased())) {
+									
 									Statistics stats = null; 
 									stats = getStatsModelForItem(item.getIdentifier(), statsList); 
 
@@ -894,16 +934,96 @@ public class StudentPanel extends GradebookPanel {
 
 		return null;
 	}
+	
+	private void getGradeItemStatisticsChartData(String assignmentId) {
 
-	public boolean isStudentView() {
-		return isStudentView;
-	}
+		// First we check the cache if we have the data already
+		String cacheKey = assignmentId;
+		
+		if(dataTableCache.containsKey(cacheKey)) {
+			
+			// Cache hit
+			dataTable = dataTableCache.get(cacheKey);
+			statisticsChartPanel.setDataTable(dataTable);
+			statisticsChartPanel.show();
+		}
+		else {
+			
+			statisticsChartPanel.showUserFeedback(null);
+			
+			// Data is not in cache yet
+			Gradebook gbModel = Registry.get(AppConstants.CURRENT);
+			
+			RestBuilder builder = RestBuilder.getInstance(
+					Method.GET,
+					GWT.getModuleBaseURL(),
+					AppConstants.REST_FRAGMENT,
+					AppConstants.STATISTICS_FRAGMENT,
+					AppConstants.STUDENT_FRAGMENT,
+					gbModel.getGradebookUid(),
+					gbModel.getGradebookId().toString(),
+					assignmentId);
 
-	public void setStudentView(boolean isStudentView) {
-		this.isStudentView = isStudentView;
-	}
 
-	public ModelData getStudentModel() {
-		return learnerGradeRecordCollection;
+			// Keeping track of the assignmentId so that we can add the dataTable to
+			// the cache once the call returns
+			selectedAssignmentId = assignmentId;
+
+			builder.sendRequest(200, 400, null, new RestCallback() {
+
+				public void onError(Request request, Throwable caught) {
+					
+					statisticsChartPanel.hideUserFeedback(null);
+					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsDataErrorMsg(), true));
+				}
+
+				public void onFailure(Request request, Throwable exception) {
+					
+					statisticsChartPanel.hideUserFeedback(null);
+					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsDataErrorMsg(), true));
+				}
+
+				public void onSuccess(Request request, Response response) {
+
+					String jsonText = response.getText(); 
+					
+					if (jsonText != null && !"".equals(jsonText) ) {
+					
+						JSONValue jsonValue = JSONParser.parseStrict(jsonText);
+						JSONArray jsonArray = jsonValue.isArray();
+
+						JSONArray positiveFrequencies = jsonArray.get(AppConstants.POSITIVE_NUMBER).isArray();
+
+						dataTable = DataTable.create();
+						dataTable.addColumn(ColumnType.STRING, i18n.statisticsChartLabelDistribution());
+						dataTable.addColumn(ColumnType.NUMBER, i18n.statisticsChartLabelFrequency());
+						dataTable.addRows(positiveFrequencies.size());
+
+						String[] xAxisRangeLabels = statisticsChartPanel.getXAxisRangeLabels();
+						
+						for (int i = 0; i < positiveFrequencies.size(); i++) {
+
+							// Set label
+							dataTable.setValue(i, 0, xAxisRangeLabels[i]);
+
+							// Set value
+							double positiveValue = positiveFrequencies.get(i).isNumber().doubleValue();
+							dataTable.setValue(i, 1, positiveValue);
+						}
+
+						// adding the dataTable to the cache
+						dataTableCache.put(selectedAssignmentId, dataTable);
+						statisticsChartPanel.setDataTable(dataTable);
+						statisticsChartPanel.show();
+					}
+					else
+					{
+						Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsDataErrorMsg(), true));
+					}
+					
+					statisticsChartPanel.hideUserFeedback(null);
+				}
+			});
+		}
 	}
 }
