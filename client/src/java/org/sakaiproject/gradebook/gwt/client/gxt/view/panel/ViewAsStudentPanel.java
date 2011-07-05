@@ -135,6 +135,7 @@ public class ViewAsStudentPanel extends ContentPanel {
 
 			@Override
 			public void componentSelected(ButtonEvent ce) {
+				container.onClose();
 				Dispatcher.forwardEvent(GradebookEvents.StopStatistics.getEventType());
 			}
 

@@ -29,16 +29,20 @@ import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.HorizontalPanel;
+import com.extjs.gxt.ui.client.widget.LayoutContainer;
+import com.extjs.gxt.ui.client.widget.VerticalPanel;
+import com.extjs.gxt.ui.client.widget.layout.ColumnData;
+import com.extjs.gxt.ui.client.widget.layout.ColumnLayout;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.LegendPosition;
 import com.google.gwt.visualization.client.VisualizationUtils;
-import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
-import com.google.gwt.visualization.client.visualizations.corechart.Options;
 import com.google.gwt.visualization.client.visualizations.corechart.ColumnChart;
+import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
 import com.google.gwt.visualization.client.visualizations.corechart.LineChart;
+import com.google.gwt.visualization.client.visualizations.corechart.Options;
 import com.google.gwt.visualization.client.visualizations.corechart.PieChart;
 
 
@@ -51,8 +55,8 @@ public class StatisticsChartPanel extends ContentPanel {
 	private Image pieChartIcon;
 	private Image lineChartIcon;
 	
-	private HorizontalPanel graphPanel;
-	private HorizontalPanel chartIconPanel;
+	private LayoutContainer graphPanelContainer;
+	private LayoutContainer chartIconPanelContainer;
 	
 	private DataTable dataTable;
 	
@@ -79,13 +83,21 @@ public class StatisticsChartPanel extends ContentPanel {
 	private boolean hasActiveNotifications = false;
 	
 	private boolean isVisualizationApiLoaded = false;
+	
+	
+	public enum ChartIconPlacement { BOTTOM, RIGHT };
 
 	public StatisticsChartPanel() { 
 	
-		this(null);
+		this(null, ChartIconPlacement.BOTTOM);
 	}
 	
-	public StatisticsChartPanel(StatisticsChartLoaderListener statisticsChartLoaderListener) {
+	public StatisticsChartPanel(ChartIconPlacement chartIconPlacement) {
+		
+		this(null, chartIconPlacement);
+	}
+	
+	public StatisticsChartPanel(StatisticsChartLoaderListener statisticsChartLoaderListener, ChartIconPlacement chartIconPlacement) {
 		
 		this.statisticsChartLoaderListener = statisticsChartLoaderListener;
 		
@@ -95,52 +107,75 @@ public class StatisticsChartPanel extends ContentPanel {
 		this.i18n = Registry.get(AppConstants.I18N);
 		this.resources = Registry.get(AppConstants.RESOURCES);
 		
-		setFrame(true);
-		setBodyBorder(true);
-		setTitle(i18n.statisticsChartTitle());
-		setHeading(i18n.statisticsChartTitle());
-		
-		graphPanel = new HorizontalPanel();
-		add(graphPanel);
-		
 		// Create the image icons
 		columnChartIcon = new Image(resources.chart_bar());
+		columnChartIcon.setStyleName(resources.css().statisticsChartIcon());
 		pieChartIcon = new Image(resources.chart_pie());
+		pieChartIcon.setStyleName(resources.css().statisticsChartIcon());
 		lineChartIcon = new Image(resources.chart_line());
-
+		lineChartIcon.setStyleName(resources.css().statisticsChartIcon());
+		
 		columnChartIcon.addClickHandler(new ClickHandler() {
 
 			public void onClick(ClickEvent event) {
-				graphPanel.removeAll();
-				graphPanel.add(new ColumnChart(dataTable, createColumnChartOptions()));
-				graphPanel.layout();
+				graphPanelContainer.removeAll();
+				graphPanelContainer.add(new ColumnChart(dataTable, createColumnChartOptions()));
+				graphPanelContainer.layout();
 			}
 		});
 
 		lineChartIcon.addClickHandler(new ClickHandler() {
 
 			public void onClick(ClickEvent event) {
-				graphPanel.removeAll();
-				graphPanel.add(new LineChart(dataTable, createLineChartOptions()));
-				graphPanel.layout();
+				graphPanelContainer.removeAll();
+				graphPanelContainer.add(new LineChart(dataTable, createLineChartOptions()));
+				graphPanelContainer.layout();
 			}
 		});
 
 		pieChartIcon.addClickHandler(new ClickHandler() {
 
 			public void onClick(ClickEvent event) {
-				graphPanel.removeAll();
-				graphPanel.add(new PieChart(dataTable, createPieChartOptions()));
-				graphPanel.layout();
+				graphPanelContainer.removeAll();
+				graphPanelContainer.add(new PieChart(dataTable, createPieChartOptions()));
+				graphPanelContainer.layout();
 			}
 		});
 
-		chartIconPanel = new HorizontalPanel();
-		chartIconPanel.setSpacing(15);
-		chartIconPanel.add(columnChartIcon);
-		chartIconPanel.add(pieChartIcon);
-		chartIconPanel.add(lineChartIcon);
-		add(chartIconPanel);
+		
+		setFrame(true);
+		setBodyBorder(true);
+		setTitle(i18n.statisticsChartTitle());
+		setHeading(i18n.statisticsChartTitle());
+		
+		graphPanelContainer = new HorizontalPanel();
+		
+		/*
+		 * We allow to place the statistics' chart type icons
+		 * either at the bottom or on the right of the chart. The 
+		 * following switch statement configures the containers accordingly
+		 */
+		switch (chartIconPlacement) {
+		
+		case BOTTOM:
+			chartIconPanelContainer = new HorizontalPanel();
+			chartIconPanelContainer.setStyleName(resources.css().statisticsChartIconPanelContainer());
+			add(graphPanelContainer);
+			add(chartIconPanelContainer);
+			break;
+		case RIGHT:
+			chartIconPanelContainer = new VerticalPanel();
+			setLayout(new ColumnLayout());
+			add(graphPanelContainer, new ColumnData(.95));
+			add(chartIconPanelContainer, new ColumnData(0.05));
+			break;
+		default:
+			
+		}
+		
+		chartIconPanelContainer.add(columnChartIcon);
+		chartIconPanelContainer.add(pieChartIcon);
+		chartIconPanelContainer.add(lineChartIcon);
 		
 		layout();
 	}
@@ -160,9 +195,10 @@ public class StatisticsChartPanel extends ContentPanel {
 		if(null != dataTable) {
 			
 			super.show();
-			graphPanel.removeAll();
-			graphPanel.add(new ColumnChart(dataTable, createColumnChartOptions()));
-			graphPanel.layout();
+			graphPanelContainer.removeAll();
+			graphPanelContainer.add(new ColumnChart(dataTable, createColumnChartOptions()));
+			unmask();
+			graphPanelContainer.layout();
 			
 		}
 		else {

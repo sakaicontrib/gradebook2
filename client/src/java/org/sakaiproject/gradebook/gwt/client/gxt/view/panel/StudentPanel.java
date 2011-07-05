@@ -28,8 +28,8 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
-import org.sakaiproject.gradebook.gwt.client.RestCallback;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
+import org.sakaiproject.gradebook.gwt.client.RestCallback;
 import org.sakaiproject.gradebook.gwt.client.UrlArgsCallback;
 import org.sakaiproject.gradebook.gwt.client.gxt.NewModelCallback;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
@@ -38,6 +38,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityOverlay;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.StatisticsComparator;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.StatisticsModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.StatisticsChartPanel.ChartIconPlacement;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.Statistics;
@@ -72,7 +73,6 @@ import com.extjs.gxt.ui.client.widget.Html;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.FormPanel.LabelAlign;
-import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.form.TextArea;
 import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
@@ -99,9 +99,9 @@ import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
+import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.LegendPosition;
-import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 
 public class StudentPanel extends GradebookPanel {
 
@@ -167,9 +167,6 @@ public class StudentPanel extends GradebookPanel {
 	public StudentPanel(I18nConstants i18n, boolean isStudentView, boolean displayRank) {
 		super();
 		this.isStudentView = isStudentView;
-//		this.defaultNumberField.setFormat(defaultNumberFormat);
-//		this.defaultNumberField.setSelectOnFocus(true);
-//		this.defaultNumberField.addInputStyleName(resources.css().gbNumericFieldInput());
 		this.defaultTextArea.addInputStyleName(resources.css().gbTextAreaInput());
 		this.defaultTextField.addInputStyleName(resources.css().gbTextFieldInput());
 		this.displayRank = displayRank;
@@ -188,15 +185,19 @@ public class StudentPanel extends GradebookPanel {
 		// Make it the same height as the chart
 		studentInformationPanel.setHeight(AppConstants.CHART_HEIGHT);
 		studentInformationPanel.setLayout(new FitLayout());
-		studentInformationPanel.setStyleAttribute("padding", "5px");
+		studentInformationPanel.setStyleName(resources.css().containerPadding());
 		studentInformationPanel.add(studentInformation);
 		
-		statisticsChartPanel = new StatisticsChartPanel();
+		statisticsChartPanel = new StatisticsChartPanel(ChartIconPlacement.RIGHT);
 		statisticsChartPanel.setLegendPosition(LegendPosition.TOP);
 		statisticsChartPanel.setSize(AppConstants.CHART_WIDTH, AppConstants.CHART_HEIGHT);
 		statisticsChartPanel.setChartHeight(AppConstants.CHART_HEIGHT - 50);
-		statisticsChartPanel.setStyleAttribute("padding", "5px");
+		statisticsChartPanel.setChartWidth(AppConstants.CHART_WIDTH - 50);
+		statisticsChartPanel.setStyleName(resources.css().containerPadding());
+		
+		// Initially, we mask and hide the statistics chart panel
 		statisticsChartPanel.mask();
+		statisticsChartPanel.hide();
 		
 		/*
 		 *  TODO: May have to override onResize() similar to what we do in gradeInformationPanel
@@ -377,6 +378,7 @@ public class StudentPanel extends GradebookPanel {
 						getGradeItemStatisticsChartData((String)score.get(Key.S_ITM_ID.name()));
 						formBinding.bind(score);
 						commentsPanel.show();
+						//statisticsChartPanel.setVisible(true);
 					}
 				}
 				else {
@@ -422,7 +424,7 @@ public class StudentPanel extends GradebookPanel {
 		};
 		gradeInformationPanel.setBorders(true);
 		gradeInformationPanel.setFrame(true);
-		gradeInformationPanel.setHeading("Individual Scores (click on a row to see comments and statistics char)");
+		gradeInformationPanel.setHeading("Individual Scores (click on a row to see comments and statistics chart)");
 		gradeInformationPanel.setLayout(new ColumnLayout());
 		gradeInformationPanel.add(grid, new ColumnData(795));
 		FormLayout commentLayout = new FormLayout();
@@ -494,6 +496,15 @@ public class StudentPanel extends GradebookPanel {
 
 	public void onLearnerGradeRecordUpdated(ModelData learnerGradeRecordModel) {
 		this.isPossibleStatsChanged = true;
+	}
+	
+	/*
+	 * This is called from the ViewAsStudentPanel when clicking on
+	 * the close button
+	 */
+	protected void onClose() {
+		statisticsChartPanel.mask();
+		statisticsChartPanel.hide();
 	}
 
 	protected void onRender(Element parent, int pos) {
@@ -986,7 +997,6 @@ public class StudentPanel extends GradebookPanel {
 				public void onSuccess(Request request, Response response) {
 
 					String jsonText = response.getText(); 
-					
 					if (jsonText != null && !"".equals(jsonText) ) {
 					
 						JSONValue jsonValue = JSONParser.parseStrict(jsonText);
@@ -994,7 +1004,7 @@ public class StudentPanel extends GradebookPanel {
 
 						JSONArray positiveFrequencies = jsonArray.get(AppConstants.POSITIVE_NUMBER).isArray();
 
-						dataTable = DataTable.create();
+						dataTable = statisticsChartPanel.createDataTable();
 						dataTable.addColumn(ColumnType.STRING, i18n.statisticsChartLabelDistribution());
 						dataTable.addColumn(ColumnType.NUMBER, i18n.statisticsChartLabelFrequency());
 						dataTable.addRows(positiveFrequencies.size());
@@ -1013,7 +1023,6 @@ public class StudentPanel extends GradebookPanel {
 
 						// adding the dataTable to the cache
 						dataTableCache.put(selectedAssignmentId, dataTable);
-						statisticsChartPanel.setDataTable(dataTable);
 						statisticsChartPanel.show();
 					}
 					else

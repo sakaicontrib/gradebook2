@@ -88,10 +88,6 @@ public interface GradebookCssResource extends CssResource {
 	
 	String gbStatisticsInstructions();
 	
-	String gbStatisticsChartPanel();
-	
-	String gbStatisticsChartIconPanel();
-	
 	String userFeedbackLabel();
 	
 	String gradeScaleInstructions();
@@ -99,5 +95,11 @@ public interface GradebookCssResource extends CssResource {
 	String gbGradeScaleChartUpdateToggle();
 	
 	String gbGradeScaleSeparatorToolItem();
+	
+	String statisticsChartIconPanelContainer();
+	
+	String statisticsChartIcon();
+	
+	String containerPadding();
 
 }

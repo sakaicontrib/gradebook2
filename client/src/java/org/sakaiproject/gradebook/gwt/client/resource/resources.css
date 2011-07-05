@@ -1,3 +1,16 @@
+
+.containerPadding {
+	padding: 5px;
+}
+
+.statisticsChartIconPanelContainer {
+	padding-top:5px;
+}
+
+.statisticsChartIcon {
+	padding:3px;
+}
+
 .gradeScaleInstructions {
 	font:14px tahoma, arial, helvetica;
 	color:red;
@@ -149,14 +162,6 @@
 
 .gbStatisticsInstructions {
 	padding-left: 10px;
-}
-
-.gbStatisticsChartPanel {
-	padding-left: 20px;
-}
-
-.gbStatisticsChartIconPanel {
-	padding-top: 10px;	
 }
 
 .gbGradeScaleChartUpdateToggle {

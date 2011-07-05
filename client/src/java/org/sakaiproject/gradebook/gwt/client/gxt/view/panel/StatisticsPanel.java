@@ -264,8 +264,7 @@ public class StatisticsPanel extends ContentPanel {
 
 						JSONArray positiveFrequencies = jsonArray.get(AppConstants.POSITIVE_NUMBER).isArray();
 
-
-						dataTable = DataTable.create();
+						dataTable = statisticsChartPanel.createDataTable();
 						dataTable.addColumn(ColumnType.STRING, i18n.statisticsChartLabelDistribution());
 						dataTable.addColumn(ColumnType.NUMBER, i18n.statisticsChartLabelFrequency());
 						dataTable.addRows(positiveFrequencies.size());
@@ -284,7 +283,6 @@ public class StatisticsPanel extends ContentPanel {
 
 						// adding the dataTable to the cache
 						dataTableCache.put(selectedAssignmentId + selectedSectionId, dataTable);
-						statisticsChartPanel.setDataTable(dataTable);
 						statisticsChartPanel.show();
 					}
 					else
@@ -354,7 +352,7 @@ public class StatisticsPanel extends ContentPanel {
 					Set<String> keys = jsonObject.keySet();
 
 					// Initialize the datatable
-					dataTable = DataTable.create();
+					dataTable = statisticsChartPanel.createDataTable();
 					dataTable.addColumn(ColumnType.STRING, i18n.statisticsChartLabelDistribution());
 					dataTable.addColumn(ColumnType.NUMBER, i18n.statisticsChartLabelFrequency());
 					dataTable.addRows(keys.size());
@@ -369,7 +367,6 @@ public class StatisticsPanel extends ContentPanel {
 						index++;
 					}
 
-					statisticsChartPanel.setDataTable(dataTable);
 					statisticsChartPanel.show();
 					
 					// adding the dataTable to the cache
