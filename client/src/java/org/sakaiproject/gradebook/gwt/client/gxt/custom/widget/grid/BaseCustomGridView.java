@@ -107,7 +107,7 @@ public class BaseCustomGridView extends GridView {
 			}
 			buf.append("\" style=\"");
 			buf.append(tstyle);
-			buf.append("\"><table class=x-grid3-row-table border=0 cellspacing=0 cellpadding=0 style=\"");
+			buf.append("\"><table class=\"x-grid3-row-table\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\" style=\"");
 			buf.append(tstyle);
 			buf.append("\"><tbody><tr>");
 			widgetList.add(rowIndex, new ArrayList<Widget>());
@@ -139,7 +139,7 @@ public class BaseCustomGridView extends GridView {
 
 				buf.append("\" style=\"");
 				buf.append(c.style);
-				buf.append("\" tabIndex=0 ");
+				buf.append("\" tabIndex=\"0\" ");
 				buf.append(cellAttr);
 				buf.append("><div unselectable=\"");
 				buf.append(selectable ? "off" : "on");

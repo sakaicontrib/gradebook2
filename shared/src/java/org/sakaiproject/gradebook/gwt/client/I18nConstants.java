@@ -309,6 +309,7 @@ public interface I18nConstants extends Constants {
 
 	String weightName();	
 	String showWeightedButton();
+	String showPointsButton();
 	
 	// Statistics
 	String statisticsDataErrorTitle();

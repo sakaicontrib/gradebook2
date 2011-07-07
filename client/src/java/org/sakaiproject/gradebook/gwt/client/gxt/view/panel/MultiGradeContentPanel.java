@@ -293,6 +293,60 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 				grid.stopEditing();
 			}
 		});
+		if(grid.getStore() != null) {
+			grid.getStore().addListener(ListStore.BeforeSort, new Listener<StoreEvent<ModelData>>(){
+	
+				@Override
+				public void handleEvent(StoreEvent<ModelData> event) {
+					
+				
+					int pageSize = getPageSize();
+	
+					String fieldToSearch = null;
+					if(searchFieldListBox != null) {
+						ModelData selectedField = searchFieldListBox.getValue();
+						if(selectedField != null) {
+							fieldToSearch = ((SearchFieldData) selectedField).getId();
+						}
+					}
+					String searchString = searchField.getValue();
+					String sectionUuid = null;
+					if (sectionListBox != null) {
+						List<ModelData> selectedItems = sectionListBox.getSelection();
+						if (selectedItems != null && selectedItems.size() > 0) {
+							ModelData m = selectedItems.get(0);
+							sectionUuid = m.get(SectionKey.S_ID.name());
+						}
+					}
+					if(showWeightedToggleButton != null) {
+						showWeightedString = Boolean.toString(showWeightedToggleButton.isPressed());
+					} else if(showWeightedString == null) {
+						showWeightedString = Boolean.FALSE.toString();
+					}
+					
+					SortInfo sortInfo = event.getSortInfo();
+					
+					loadConfig = new MultiGradeLoadConfig();
+					loadConfig.setSortField(sortInfo.getSortField());
+					loadConfig.setSortDir(sortInfo.getSortDir());
+					loadConfig.setLimit(pageSize);
+					loadConfig.setOffset(0);
+					((MultiGradeLoadConfig) loadConfig).setSearchString(searchString);
+					((MultiGradeLoadConfig) loadConfig).setSearchField(fieldToSearch);
+					((MultiGradeLoadConfig) loadConfig).setShowWeighted(showWeightedString);
+					((MultiGradeLoadConfig) loadConfig).setSectionUuid(sectionUuid);
+	
+					((BasePagingLoader)newLoader()).useLoadConfig(loadConfig);
+					newLoader().load(0, pageSize);
+	
+					refreshColumnHeaders();
+	
+					event.setCancelled(true);
+				}
+				
+			});
+		}
+
 
 		grid.setStripeRows(true);
 
@@ -576,64 +630,70 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		componentEventListener = new Listener<ComponentEvent>() {
 
 			public void handleEvent(ComponentEvent ce) {
+				int pageSize = getPageSize();
+				int page = getPage();
 
 				// FIXME: This could be condensed significantly
-				if (ce.getType() == GradebookEvents.DoSearch.getEventType() || ce.getType() == GradebookEvents.ShowWeighted.getEventType()) {
-					int pageSize = getPageSize();
-					String searchString = searchField.getValue();
-					String fieldToSearch = null;
-					if(searchFieldListBox != null) {
-						ModelData selectedField = searchFieldListBox.getValue();
-						if(selectedField != null) {
-							fieldToSearch = ((SearchFieldData) selectedField).getId();
-						}
-					}
-					if(showWeightedToggleButton != null) {
-						showWeightedString = Boolean.toString(showWeightedToggleButton.isPressed());
-					} else if(showWeightedString == null) {
-						showWeightedString = Boolean.FALSE.toString();
-					}
-					String sectionUuid = null;
-					if (sectionListBox != null) {
-						List<ModelData> selectedItems = sectionListBox.getSelection();
-						if (selectedItems != null && selectedItems.size() > 0) {
-							ModelData m = selectedItems.get(0);
-							sectionUuid = m.get(SectionKey.S_ID.name());
-						}
-					}
-					loadConfig = new MultiGradeLoadConfig();
-					loadConfig.setLimit(0);
-					loadConfig.setOffset(pageSize);
-					((MultiGradeLoadConfig) loadConfig).setSearchString(searchString);
-					((MultiGradeLoadConfig) loadConfig).setSearchField(fieldToSearch);
-					((MultiGradeLoadConfig) loadConfig).setShowWeighted(showWeightedString);
-					((MultiGradeLoadConfig) loadConfig).setSectionUuid(sectionUuid);
-					((BasePagingLoader)newLoader()).useLoadConfig(loadConfig);
-					newLoader().load(0, pageSize);
-
-					refreshColumnHeaders();
-
+				if (ce.getType() == GradebookEvents.DoSearch.getEventType()) {
+					page = 0;
 				} else if (ce.getType() == GradebookEvents.ClearSearch.getEventType()) {
-					int pageSize = getPageSize();
 					searchField.setValue(null);
 					if(searchFieldListBox != null) {
 						searchFieldListBox.reset();
 					}
-					String sectionUuid = null;
-					if (sectionListBox != null) {
-						List<ModelData> selectedItems = sectionListBox.getSelection();
-						if (selectedItems != null && selectedItems.size() > 0) {
-							ModelData m = selectedItems.get(0);
-							sectionUuid = m.get(SectionKey.S_ID.name());
-						}
+					page = 0;
+				} else if(ce.getType() == GradebookEvents.ShowWeighted.getEventType()) {
+					if(showWeightedToggleButton == null) {
+						// this is wrong -- why would there be a show-weighted event if there's no show-weighted button??
+					} else if (showWeightedToggleButton.isPressed()) {
+						// need to update button to "show points"
+						showWeightedToggleButton.setText(i18n.showPointsButton());
+					} else {
+						// need to update button to "show weighted"
+						showWeightedToggleButton.setText(i18n.showWeightedButton());
 					}
-					loadConfig = new MultiGradeLoadConfig();
-					loadConfig.setLimit(0);
-					loadConfig.setOffset(pageSize);
-					((MultiGradeLoadConfig) loadConfig).setSectionUuid(sectionUuid);
-					((BasePagingLoader)newLoader()).useLoadConfig(loadConfig);
-					newLoader().load(0, pageSize);
+				} 
+				String fieldToSearch = null;
+				if(searchFieldListBox != null) {
+					ModelData selectedField = searchFieldListBox.getValue();
+					if(selectedField != null) {
+						fieldToSearch = ((SearchFieldData) selectedField).getId();
+					}
 				}
+				String searchString = searchField.getValue();
+				String sectionUuid = null;
+				if (sectionListBox != null) {
+					List<ModelData> selectedItems = sectionListBox.getSelection();
+					if (selectedItems != null && selectedItems.size() > 0) {
+						ModelData m = selectedItems.get(0);
+						sectionUuid = m.get(SectionKey.S_ID.name());
+					}
+				}
+				if(showWeightedToggleButton != null) {
+					showWeightedString = Boolean.toString(showWeightedToggleButton.isPressed());
+				} else if(showWeightedString == null) {
+					showWeightedString = Boolean.FALSE.toString();
+				}
+				Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
+				Configuration configModel = selectedGradebook.getConfigurationModel();
+				
+				ListStore store = grid.getStore();
+				SortInfo sortInfo = store.getSortState();
+				
+				loadConfig = new MultiGradeLoadConfig();
+				loadConfig.setSortField(sortInfo.getSortField());
+				loadConfig.setSortDir(sortInfo.getSortDir());
+				loadConfig.setLimit(pageSize);
+				loadConfig.setOffset((page - 1) * pageSize);
+				((MultiGradeLoadConfig) loadConfig).setSearchString(searchString);
+				((MultiGradeLoadConfig) loadConfig).setSearchField(fieldToSearch);
+				((MultiGradeLoadConfig) loadConfig).setShowWeighted(showWeightedString);
+				((MultiGradeLoadConfig) loadConfig).setSectionUuid(sectionUuid);
+
+				((BasePagingLoader)newLoader()).useLoadConfig(loadConfig);
+				newLoader().load(0, pageSize);
+
+				refreshColumnHeaders();
 			}
 		};
 
@@ -960,9 +1020,14 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 						}
 					}
 					String sectionUuid = null;
-
-					if (model != null) 
+					if (model != null) {
 						sectionUuid = model.get(SectionKey.S_ID.name());
+					}
+					if(showWeightedToggleButton != null) {
+						showWeightedString = Boolean.toString(showWeightedToggleButton.isPressed());
+					} else if(showWeightedString == null) {
+						showWeightedString = Boolean.FALSE.toString();
+					}
 
 					int pageSize = getPageSize();
 					loadConfig = new MultiGradeLoadConfig();
@@ -970,6 +1035,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 					loadConfig.setOffset(pageSize);				
 					((MultiGradeLoadConfig) loadConfig).setSearchString(searchString);
 					((MultiGradeLoadConfig) loadConfig).setSearchField(fieldToSearch);
+					((MultiGradeLoadConfig) loadConfig).setShowWeighted(showWeightedString);
 					((MultiGradeLoadConfig) loadConfig).setSectionUuid(sectionUuid);
 					((BasePagingLoader)newLoader()).useLoadConfig(loadConfig);
 					newLoader().load(0, pageSize);
@@ -1036,6 +1102,12 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 					fireEvent(GradebookEvents.ShowWeighted.getEventType(), ce);
 				}
 			});
+			// set showWeightedToggleButton if pressed showWeightedString is "true" 
+			if(showWeightedString != null && showWeightedString.trim().equalsIgnoreCase("true")) {
+				showWeightedToggleButton.toggle(true);
+			} else {
+				showWeightedToggleButton.toggle(false);
+			}
 			searchToolBar.add(showWeightedToggleButton);
 			showWeightedToggleButton.disable();
 			showWeightedToggleButton.hide();
@@ -1487,6 +1559,14 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 
 		return pageSize;
 	}
+	
+	public int getPage() {
+		int page = 0;
+		if(pagingToolBar != null) {
+			page = pagingToolBar.getActivePage();
+		}
+		return page;
+	}
 
 	private GridCellRenderer<ModelData> unweightedTextCellRenderer = new GridCellRenderer<ModelData>() {
 
@@ -1650,7 +1730,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	public void enableShowWeightedButton() {
 		if (showWeightedToggleButton != null && this.isShowWeightedEnabled()) {
 			showWeightedToggleButton.show();
-			showWeightedToggleButton.enable();		
+			showWeightedToggleButton.enable();
 		}
 	}
 	
