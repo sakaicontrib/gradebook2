@@ -625,7 +625,6 @@ public class GradeScalePanel extends GradebookPanel implements StatisticsChartLo
 		}
 	}
 
-	@Override
 	public void load() {
 		
 		getStatisticsChartData();
