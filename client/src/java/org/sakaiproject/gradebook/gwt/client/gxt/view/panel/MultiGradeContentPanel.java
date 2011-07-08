@@ -296,7 +296,6 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		if(grid.getStore() != null) {
 			grid.getStore().addListener(ListStore.BeforeSort, new Listener<StoreEvent<ModelData>>(){
 	
-				@Override
 				public void handleEvent(StoreEvent<ModelData> event) {
 					
 				
