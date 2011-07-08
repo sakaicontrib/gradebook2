@@ -405,4 +405,28 @@ public interface I18nConstants extends Constants {
 	// GRBK-1032
 	String gradeFormatCannotBeChangedWarning();
 	String gradeFormatNormalTooltip();
+	
+	// GRBK-1054
+	
+	String gradebookSetupCategoryMessageForNoCats();
+	String gradebookSetupCategoryMessageForSimpleCats();
+	String gradebookSetupCategoryMessageForWeightedCats();
+
+	String gradebookSetupCategoryMessageForDefault();
+
+	String gradebookSetupGradeTypeMessageForDefault();
+	String gradebookSetupGradeTypeMessageForPoints();
+	String gradebookSetupGradeTypeMessageForPercentages();
+	String gradebookSetupGradeTypeMessageForLetterGrades();
+
+	String gradebookSetupDialogTitle();
+	String gradebookSetupDialogMessage();
+	
+	String gradebookSetupInstructionalForCategoryTypeGroupingHeading();
+	String gradebookSetupInstructionalForGradeTypeGroupingHeading();
+
+	String categoryTypePickerTooltip();
+	String gradeTypePickerTooltip(); 
+
+
 }

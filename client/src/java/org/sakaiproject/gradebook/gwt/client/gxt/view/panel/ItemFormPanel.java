@@ -19,6 +19,7 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -47,6 +48,7 @@ import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style;
+import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.binding.Converter;
 import com.extjs.gxt.ui.client.binding.FieldBinding;
@@ -72,8 +74,10 @@ import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.store.TreeStore;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.Dialog;
+import com.extjs.gxt.ui.client.widget.Label;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
+import com.extjs.gxt.ui.client.widget.VerticalPanel;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.CheckBox;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
@@ -89,9 +93,11 @@ import com.extjs.gxt.ui.client.widget.layout.ColumnLayout;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
+import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
 
 public class ItemFormPanel extends GradebookPanel {
@@ -100,8 +106,10 @@ public class ItemFormPanel extends GradebookPanel {
 	private enum SelectionType { CLOSE, CREATE, CREATECLOSE, CANCEL, REQUEST_DELETE, DELETE, SAVE, SAVECLOSE };
 
 	private static final String selectionTypeField = "selectionType";
-	private static final String NAME_DISPLAY_FIELD = "name", VALUE_DISPLAY_FIELD = "value";
-
+	private static final String NAME_DISPLAY_FIELD = "name";
+	private static final String VALUE_DISPLAY_FIELD = "value";
+	// GRBK-1054 
+	private static final String INSTRUCTIONAL_MSG_DISPLAY_FIELD = "imesg";
 
 	private FormPanel formPanel;
 	private FormBinding formBindings;
@@ -120,6 +128,12 @@ public class ItemFormPanel extends GradebookPanel {
 
 	private FieldSet displayToStudentFieldSet;
 
+	// GRBK-1054
+	private Label informationMessageCategoryTypeInGradebookSetup; 
+	private Label informationMessageGradeTypeInGradebookSetup; 
+	private FieldSet instructionsForCategoryTypePickerSet;
+	private FieldSet instructionsForGradeTypePickerSet;
+
 	private ListStore<ItemModel> categoryStore;
 	private TreeStore<ItemModel> treeStore;
 	private ListStore<ModelData> gradeTypeStore;
@@ -130,7 +144,9 @@ public class ItemFormPanel extends GradebookPanel {
 	private Listener<FieldEvent> extraCreditChangeListener, checkboxChangeListener, enforcePointWeightingListener;
 	private SelectionListener<ButtonEvent> selectionListener;
 	private SelectionChangedListener<ItemModel> categorySelectionChangedListener;
-	private SelectionChangedListener<ModelData> otherSelectionChangedListener;
+	// GRBK-1054
+	private SelectionChangedListener<ModelData> categoryTypeSelectionChangedListener;
+	private SelectionChangedListener<ModelData> gradeTypeSelectionChangedListener;
 
 	private RowData topRowData, bottomRowData;
 	private Button deleteButton, okButton, okCloseButton, cancelButton;
@@ -143,6 +159,10 @@ public class ItemFormPanel extends GradebookPanel {
 	private boolean isDelete;
 	private boolean hasChanges;
 
+	// GRBK-1054
+	private boolean firstTimeInEditGradebook; 	
+	private Dialog initialSetupMessage; 
+		
 	// GRBK-943 - we need to know what the multigrid has in terms of page size. 
 	private MultiGradeContentPanel multiGradePanel; 
 	private Mode mode;
@@ -163,7 +183,8 @@ public class ItemFormPanel extends GradebookPanel {
 		// GRBK-943
 		multiGradePanel = null;
 		alertDone = false; 
-		
+		// GRBK-1054 - we use this to show a dialog and to prepopulate the instructional messages in the help boxes. 
+		firstTimeInEditGradebook = true; 
 		initListeners();
 
 		formPanel = new FormPanel();
@@ -197,7 +218,7 @@ public class ItemFormPanel extends GradebookPanel {
 		categoryTypeStore.add(getCategoryTypeModel(CategoryType.NO_CATEGORIES));
 		categoryTypeStore.add(getCategoryTypeModel(CategoryType.SIMPLE_CATEGORIES));
 		categoryTypeStore.add(getCategoryTypeModel(CategoryType.WEIGHTED_CATEGORIES));		
-
+		
 		directionsField = new LabelField();
 		directionsField.setName("directions");
 
@@ -216,9 +237,47 @@ public class ItemFormPanel extends GradebookPanel {
 
 		categoryTypePicker = new ItemFormComboBox<ModelData>(NAME_DISPLAY_FIELD, ItemKey.C_CTGRY_TYPE.name(), i18n.categoryTypeFieldLabel());
 		categoryTypePicker.setStore(categoryTypeStore);
+		// GRBK-1054 - we set a tooltip, perhaps overkill, perhaps not. 
+		categoryTypePicker.setToolTip(i18n.categoryTypePickerTooltip());
+
+		// GRBK-1054 - we pop up a dialog with some instructions the first time a user enters gradebook setup. 
+		initialSetupMessage = new Dialog(); 
+		initialSetupMessage.setHeading(i18n.gradebookSetupDialogTitle());  
+		initialSetupMessage.setButtons(Dialog.OK);  
+		initialSetupMessage.addText(i18n.gradebookSetupDialogMessage());  
+		initialSetupMessage.getItem(0).getFocusSupport().setIgnore(true);  
+		initialSetupMessage.setScrollMode(Scroll.AUTO);  
+		initialSetupMessage.setHideOnButtonClick(true);
+
+		// GRBK-1054 - This is the box that appears above the field for instructions with it.  
+		informationMessageCategoryTypeInGradebookSetup = new Label();
+		informationMessageCategoryTypeInGradebookSetup.setText(i18n.gradebookSetupCategoryMessageForDefault());
+		instructionsForCategoryTypePickerSet = new FieldSet();  
+		instructionsForCategoryTypePickerSet.setHeading(i18n.gradebookSetupInstructionalForCategoryTypeGroupingHeading());  
+		instructionsForCategoryTypePickerSet.setCheckboxToggle(false);  
+		instructionsForCategoryTypePickerSet.setAutoHeight(true);
+		instructionsForCategoryTypePickerSet.setScrollMode(Scroll.AUTO);
+		instructionsForCategoryTypePickerSet.setVisible(false);
+		instructionsForCategoryTypePickerSet.add(informationMessageCategoryTypeInGradebookSetup);
+		formPanel.add(instructionsForCategoryTypePickerSet); 
 		formPanel.add(categoryTypePicker);
 
 		gradeTypePicker = new ItemFormComboBox<ModelData>(NAME_DISPLAY_FIELD, ItemKey.G_GRD_TYPE.name(), i18n.gradeTypeFieldLabel());
+		// GRBK-1054 - for consistency, we put a tooltip on the grade type picker. 
+		gradeTypePicker.setToolTip(i18n.gradeTypePickerTooltip());
+
+		// GRBK-1054 - This is the box that appears above the field for instructions with it.  
+		informationMessageGradeTypeInGradebookSetup = new Label();
+		informationMessageGradeTypeInGradebookSetup.setText(i18n.gradebookSetupGradeTypeMessageForDefault());
+		instructionsForGradeTypePickerSet = new FieldSet();  
+		instructionsForGradeTypePickerSet.setHeading(i18n.gradebookSetupInstructionalForGradeTypeGroupingHeading());  
+		instructionsForGradeTypePickerSet.setCheckboxToggle(false);  
+		instructionsForGradeTypePickerSet.setAutoHeight(true);
+		instructionsForGradeTypePickerSet.setScrollMode(Scroll.AUTO);
+		instructionsForGradeTypePickerSet.setVisible(false);
+		instructionsForGradeTypePickerSet.add(informationMessageGradeTypeInGradebookSetup);
+		
+		formPanel.add(instructionsForGradeTypePickerSet); 
 		formPanel.add(gradeTypePicker);
 
 		scaledExtraCreditField = new NullSensitiveCheckBox();
@@ -418,6 +477,7 @@ public class ItemFormPanel extends GradebookPanel {
 		bottomRowData = new RowData(1, 1, new Margins(0, 0, 5, 0));
 		add(directionsField, topRowData);
 		add(formPanel, bottomRowData);
+		
 
 	}
 
@@ -555,13 +615,17 @@ public class ItemFormPanel extends GradebookPanel {
 	private void doEditItem(ItemModel itemModel, boolean expand, boolean doEnableButtons) {
 		removeListeners();
 		formPanel.hide();
-
+		
 		this.mode = Mode.EDIT;
 		this.createItemType = null;
 		this.selectedItemModel = itemModel;
 		this.directionsField.setText("");
 		this.directionsField.setVisible(false);
 
+		// GRBK-1054 - We hide our messages as we do not know if they'll be visible or not. 
+		informationMessageCategoryTypeInGradebookSetup.hide();
+		informationMessageGradeTypeInGradebookSetup.hide(); 
+		
 		if (formBindings == null) {
 			initFormBindings();
 		} else {
@@ -575,6 +639,25 @@ public class ItemFormPanel extends GradebookPanel {
 			formBindings.addListener(Events.Bind, bindListener);
 			formBindings.bind(itemModel);
 			initState(itemType, itemModel, false, doEnableButtons);
+			
+			// GRBK-1054 - We want to add some instructional messages for gradebook setup. 
+			if (itemType == ItemType.GRADEBOOK)
+			{
+				if (firstTimeInEditGradebook)
+				{
+					// The first time through, we want to set the messages to be proper for the types in the item model
+					// Later, if it changes, the selection listner on the combo box will take care of this. 
+					informationMessageCategoryTypeInGradebookSetup.setText(getCategoryTypePickerInstString(itemModel.getCategoryType()));	
+					informationMessageGradeTypeInGradebookSetup.setText(getGradeTypePickerInstString(itemModel.getGradeType()));	
+	
+					firstTimeInEditGradebook = false; 
+					initialSetupMessage.show(); 
+				}
+				// The initState above will show the boxes, we just show the labels at this point. 
+				informationMessageCategoryTypeInGradebookSetup.show();
+				informationMessageGradeTypeInGradebookSetup.show(); 
+
+			}
 		} else {
 			formBindings.addListener(Events.UnBind, bindListener);
 			formBindings.unbind();
@@ -585,6 +668,36 @@ public class ItemFormPanel extends GradebookPanel {
 
 		formPanel.show();
 		nameField.focus();
+	}
+
+	// GRBK-1054 	
+	private String getGradeTypePickerInstString(GradeType gradeType) {
+		
+		switch (gradeType)
+		{
+		case LETTERS:
+			return i18n.gradebookSetupGradeTypeMessageForLetterGrades();
+		case PERCENTAGES:
+			return i18n.gradebookSetupGradeTypeMessageForPercentages(); 
+		case POINTS:
+			return i18n.gradebookSetupGradeTypeMessageForPoints(); 
+
+		}
+		return ""; 
+	}
+	// GRBK-1054 
+	private String getCategoryTypePickerInstString(CategoryType categoryType) {
+		switch (categoryType)
+		{
+		case NO_CATEGORIES:
+			return i18n.gradebookSetupCategoryMessageForNoCats(); 
+		case SIMPLE_CATEGORIES:
+			return i18n.gradebookSetupCategoryMessageForSimpleCats(); 
+		case WEIGHTED_CATEGORIES:
+			return i18n.gradebookSetupCategoryMessageForWeightedCats(); 
+
+		}
+		return ""; 
 	}
 
 	public void onItemCreated(Item itemModel) {
@@ -822,7 +935,8 @@ public class ItemFormPanel extends GradebookPanel {
 			model.set(VALUE_DISPLAY_FIELD, CategoryType.WEIGHTED_CATEGORIES);
 			break;	
 		}
-
+		// GRBK-1054 - we set the message for the instructions here to make it a bit easier for the selection changed listner. 
+		model.set(INSTRUCTIONAL_MSG_DISPLAY_FIELD, getCategoryTypePickerInstString(categoryType));
 		return model;
 	}
 
@@ -843,7 +957,8 @@ public class ItemFormPanel extends GradebookPanel {
 			model.set(VALUE_DISPLAY_FIELD, GradeType.PERCENTAGES);
 			break;
 		}
-
+		// GRBK-1054 - we set the message for the instructions here to make it a bit easier for the selection changed listner. 
+		model.set(INSTRUCTIONAL_MSG_DISPLAY_FIELD, getGradeTypePickerInstString(gradeType));
 		return model;
 	}	
 
@@ -949,6 +1064,14 @@ public class ItemFormPanel extends GradebookPanel {
 
 		displayToStudentFieldSet.setEnabled(isAllowedToEdit && !isDelete);
 		displayToStudentFieldSet.setVisible(isEditable && !isNotGradebook);
+		
+		// GRBK-1054 - these sets should mirror the logic for the grade type picker and the category type picker respectively. 
+		instructionsForCategoryTypePickerSet.setEnabled(isAllowedToEdit && !isDelete);
+		instructionsForCategoryTypePickerSet.setVisible(isEditable && !isNotGradebook);
+		instructionsForGradeTypePickerSet.setEnabled(isAllowedToEdit && !isDelete);
+		instructionsForGradeTypePickerSet.setVisible(isEditable && !isNotGradebook);
+
+
 	}
 
 
@@ -1080,8 +1203,9 @@ public class ItemFormPanel extends GradebookPanel {
 			return;
 
 		categoryPicker.addSelectionChangedListener(categorySelectionChangedListener);
-		categoryTypePicker.addSelectionChangedListener(otherSelectionChangedListener);
-		gradeTypePicker.addSelectionChangedListener(otherSelectionChangedListener);
+		// GRBK-1054 we now use separate listeners for the two type pickers. 
+		categoryTypePicker.addSelectionChangedListener(categoryTypeSelectionChangedListener);
+		gradeTypePicker.addSelectionChangedListener(gradeTypeSelectionChangedListener);
 		releaseGradesField.addListener(Events.Change, checkboxChangeListener);
 		releaseItemsField.addListener(Events.Change, checkboxChangeListener);
 		percentCourseGradeField.addKeyListener(keyListener);
@@ -1115,8 +1239,9 @@ public class ItemFormPanel extends GradebookPanel {
 		}
 
 		categoryPicker.removeListener(Events.SelectionChange, categorySelectionChangedListener);
-		categoryTypePicker.removeListener(Events.SelectionChange, otherSelectionChangedListener);
-		gradeTypePicker.removeListener(Events.SelectionChange, otherSelectionChangedListener);
+		// GRBK-1054
+		categoryTypePicker.removeListener(Events.SelectionChange, categoryTypeSelectionChangedListener);
+		gradeTypePicker.removeListener(Events.SelectionChange, gradeTypeSelectionChangedListener);
 		releaseGradesField.removeListener(Events.Change, checkboxChangeListener);
 		releaseItemsField.removeListener(Events.Change, checkboxChangeListener);
 		percentCourseGradeField.removeKeyListener(keyListener);
@@ -1168,11 +1293,25 @@ public class ItemFormPanel extends GradebookPanel {
 			}
 
 		};
-
-		otherSelectionChangedListener = new SelectionChangedListener<ModelData>() {
+		// GRBK-1054
+		categoryTypeSelectionChangedListener = new SelectionChangedListener<ModelData>() {
 
 			@Override
 			public void selectionChanged(SelectionChangedEvent<ModelData> se) {
+				ModelData d = se.getSelectedItem(); 
+				String catText = d.get(INSTRUCTIONAL_MSG_DISPLAY_FIELD);
+				informationMessageCategoryTypeInGradebookSetup.setText(catText);
+				setChanges();
+			}
+		};
+		// GRBK-1054
+		gradeTypeSelectionChangedListener = new SelectionChangedListener<ModelData>() {
+
+			@Override
+			public void selectionChanged(SelectionChangedEvent<ModelData> se) {
+				ModelData d = se.getSelectedItem(); 
+				String catText = d.get(INSTRUCTIONAL_MSG_DISPLAY_FIELD);
+				informationMessageGradeTypeInGradebookSetup.setText(catText);
 				setChanges();
 			}
 
