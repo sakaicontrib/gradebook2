@@ -140,6 +140,10 @@
 	text-align: right;
 }
 
+.setupInstructionsLabels {
+	padding-top: 10px !important; 
+}
+
 .gbHeading {
 	color: black;
 	text-decoration: underline;

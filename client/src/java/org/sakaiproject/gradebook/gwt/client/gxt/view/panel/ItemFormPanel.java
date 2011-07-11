@@ -19,7 +19,6 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -48,7 +47,6 @@ import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style;
-import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.binding.Converter;
 import com.extjs.gxt.ui.client.binding.FieldBinding;
@@ -74,10 +72,9 @@ import com.extjs.gxt.ui.client.store.Record;
 import com.extjs.gxt.ui.client.store.TreeStore;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.Dialog;
-import com.extjs.gxt.ui.client.widget.Label;
+import com.extjs.gxt.ui.client.widget.Html;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
-import com.extjs.gxt.ui.client.widget.VerticalPanel;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.CheckBox;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
@@ -93,11 +90,9 @@ import com.extjs.gxt.ui.client.widget.layout.ColumnLayout;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
-import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
 import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
 
 public class ItemFormPanel extends GradebookPanel {
@@ -129,8 +124,8 @@ public class ItemFormPanel extends GradebookPanel {
 	private FieldSet displayToStudentFieldSet;
 
 	// GRBK-1054
-	private Label informationMessageCategoryTypeInGradebookSetup; 
-	private Label informationMessageGradeTypeInGradebookSetup; 
+	private Html informationMessageCategoryTypeInGradebookSetup; 
+	private Html informationMessageGradeTypeInGradebookSetup; 
 	private FieldSet instructionsForCategoryTypePickerSet;
 	private FieldSet instructionsForGradeTypePickerSet;
 
@@ -235,11 +230,6 @@ public class ItemFormPanel extends GradebookPanel {
 		categoryPicker.setStore(categoryStore);
 		formPanel.add(categoryPicker);
 
-		categoryTypePicker = new ItemFormComboBox<ModelData>(NAME_DISPLAY_FIELD, ItemKey.C_CTGRY_TYPE.name(), i18n.categoryTypeFieldLabel());
-		categoryTypePicker.setStore(categoryTypeStore);
-		// GRBK-1054 - we set a tooltip, perhaps overkill, perhaps not. 
-		categoryTypePicker.setToolTip(i18n.categoryTypePickerTooltip());
-
 		// GRBK-1054 - we pop up a dialog with some instructions the first time a user enters gradebook setup. 
 		initialSetupMessage = new Dialog(); 
 		initialSetupMessage.setHeading(i18n.gradebookSetupDialogTitle());  
@@ -248,37 +238,46 @@ public class ItemFormPanel extends GradebookPanel {
 		initialSetupMessage.getItem(0).getFocusSupport().setIgnore(true);  
 		initialSetupMessage.setScrollMode(Scroll.AUTO);  
 		initialSetupMessage.setHideOnButtonClick(true);
+		// GRBK-1054
+		categoryTypePicker = new ItemFormComboBox<ModelData>(NAME_DISPLAY_FIELD, ItemKey.C_CTGRY_TYPE.name(), "");
+		categoryTypePicker.setStore(categoryTypeStore);
+		// GRBK-1054 - we set a tooltip, perhaps overkill, perhaps not. 
+		categoryTypePicker.setToolTip(i18n.categoryTypePickerTooltip());
 
 		// GRBK-1054 - This is the box that appears above the field for instructions with it.  
-		informationMessageCategoryTypeInGradebookSetup = new Label();
-		informationMessageCategoryTypeInGradebookSetup.setText(i18n.gradebookSetupCategoryMessageForDefault());
+		informationMessageCategoryTypeInGradebookSetup = new Html();
+		informationMessageCategoryTypeInGradebookSetup.setHtml(i18n.gradebookSetupCategoryMessageForDefault());
+		informationMessageCategoryTypeInGradebookSetup.setStyleName(resources.css().setupInstructionsLabels());
+		
 		instructionsForCategoryTypePickerSet = new FieldSet();  
+		instructionsForCategoryTypePickerSet.setCollapsible(false);
 		instructionsForCategoryTypePickerSet.setHeading(i18n.gradebookSetupInstructionalForCategoryTypeGroupingHeading());  
 		instructionsForCategoryTypePickerSet.setCheckboxToggle(false);  
 		instructionsForCategoryTypePickerSet.setAutoHeight(true);
 		instructionsForCategoryTypePickerSet.setScrollMode(Scroll.AUTO);
 		instructionsForCategoryTypePickerSet.setVisible(false);
+		instructionsForCategoryTypePickerSet.add(categoryTypePicker);
 		instructionsForCategoryTypePickerSet.add(informationMessageCategoryTypeInGradebookSetup);
 		formPanel.add(instructionsForCategoryTypePickerSet); 
-		formPanel.add(categoryTypePicker);
 
-		gradeTypePicker = new ItemFormComboBox<ModelData>(NAME_DISPLAY_FIELD, ItemKey.G_GRD_TYPE.name(), i18n.gradeTypeFieldLabel());
+		gradeTypePicker = new ItemFormComboBox<ModelData>(NAME_DISPLAY_FIELD, ItemKey.G_GRD_TYPE.name(), "");
 		// GRBK-1054 - for consistency, we put a tooltip on the grade type picker. 
 		gradeTypePicker.setToolTip(i18n.gradeTypePickerTooltip());
 
 		// GRBK-1054 - This is the box that appears above the field for instructions with it.  
-		informationMessageGradeTypeInGradebookSetup = new Label();
-		informationMessageGradeTypeInGradebookSetup.setText(i18n.gradebookSetupGradeTypeMessageForDefault());
+		informationMessageGradeTypeInGradebookSetup = new Html();
+		informationMessageGradeTypeInGradebookSetup.setHtml(i18n.gradebookSetupGradeTypeMessageForDefault());
+		informationMessageGradeTypeInGradebookSetup.setStyleName(resources.css().setupInstructionsLabels());
 		instructionsForGradeTypePickerSet = new FieldSet();  
 		instructionsForGradeTypePickerSet.setHeading(i18n.gradebookSetupInstructionalForGradeTypeGroupingHeading());  
 		instructionsForGradeTypePickerSet.setCheckboxToggle(false);  
 		instructionsForGradeTypePickerSet.setAutoHeight(true);
 		instructionsForGradeTypePickerSet.setScrollMode(Scroll.AUTO);
 		instructionsForGradeTypePickerSet.setVisible(false);
+		instructionsForGradeTypePickerSet.add(gradeTypePicker); 
 		instructionsForGradeTypePickerSet.add(informationMessageGradeTypeInGradebookSetup);
 		
 		formPanel.add(instructionsForGradeTypePickerSet); 
-		formPanel.add(gradeTypePicker);
 
 		scaledExtraCreditField = new NullSensitiveCheckBox();
 		scaledExtraCreditField.setName(ItemKey.B_SCL_X_CRDT.name());
@@ -647,8 +646,8 @@ public class ItemFormPanel extends GradebookPanel {
 				{
 					// The first time through, we want to set the messages to be proper for the types in the item model
 					// Later, if it changes, the selection listner on the combo box will take care of this. 
-					informationMessageCategoryTypeInGradebookSetup.setText(getCategoryTypePickerInstString(itemModel.getCategoryType()));	
-					informationMessageGradeTypeInGradebookSetup.setText(getGradeTypePickerInstString(itemModel.getGradeType()));	
+					informationMessageCategoryTypeInGradebookSetup.setHtml(getCategoryTypePickerInstString(itemModel.getCategoryType()));	
+					informationMessageGradeTypeInGradebookSetup.setHtml(getGradeTypePickerInstString(itemModel.getGradeType()));	
 	
 					firstTimeInEditGradebook = false; 
 					initialSetupMessage.show(); 
@@ -1300,7 +1299,7 @@ public class ItemFormPanel extends GradebookPanel {
 			public void selectionChanged(SelectionChangedEvent<ModelData> se) {
 				ModelData d = se.getSelectedItem(); 
 				String catText = d.get(INSTRUCTIONAL_MSG_DISPLAY_FIELD);
-				informationMessageCategoryTypeInGradebookSetup.setText(catText);
+				informationMessageCategoryTypeInGradebookSetup.setHtml(catText);
 				setChanges();
 			}
 		};
@@ -1311,7 +1310,7 @@ public class ItemFormPanel extends GradebookPanel {
 			public void selectionChanged(SelectionChangedEvent<ModelData> se) {
 				ModelData d = se.getSelectedItem(); 
 				String catText = d.get(INSTRUCTIONAL_MSG_DISPLAY_FIELD);
-				informationMessageGradeTypeInGradebookSetup.setText(catText);
+				informationMessageGradeTypeInGradebookSetup.setHtml(catText);
 				setChanges();
 			}
 
