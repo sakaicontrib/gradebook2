@@ -39,6 +39,7 @@ import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.LegendPosition;
 import com.google.gwt.visualization.client.VisualizationUtils;
+import com.google.gwt.visualization.client.visualizations.corechart.AxisOptions;
 import com.google.gwt.visualization.client.visualizations.corechart.ColumnChart;
 import com.google.gwt.visualization.client.visualizations.corechart.CoreChart;
 import com.google.gwt.visualization.client.visualizations.corechart.LineChart;
@@ -67,18 +68,35 @@ public class StatisticsChartPanel extends ContentPanel {
 	
 	private StatisticsChartLoaderListener statisticsChartLoaderListener;
 	
+	// GRBK-897 
+	/*
+	 * This value is necessary because when we get above a certain point of haxis labels, there's overlap.  So we tilt 
+	 * the labels to get more in.  
+	 */
+	private final static int tiltAfterNumberOfRows = 15; 
 	// This is used by the various panels that use chars
+	// GRBK-897, now we have 20 buckets
 	private final static String[] RANGE = new String[] {
-		"0-9",
-		"10-19",
-		"20-29",
-		"30-39",
-		"40-49",
-		"50-59",
-		"60-69",
-		"70-79",
-		"80-89",
-		"90-100"};
+		"0-4",
+		"5-9",
+		"10-14",
+		"15-19",
+		"20-24",
+		"25-29",
+		"30-34",
+		"35-39",
+		"40-44",
+		"45-49",
+		"50-54",
+		"55-59",
+		"60-64",
+		"65-69",
+		"70-74",
+		"75-79",
+		"80-84",
+		"85-89",
+		"90-94",
+		"95-100"};
 	
 	private boolean hasActiveNotifications = false;
 	
@@ -119,7 +137,9 @@ public class StatisticsChartPanel extends ContentPanel {
 
 			public void onClick(ClickEvent event) {
 				graphPanelContainer.removeAll();
-				graphPanelContainer.add(new ColumnChart(dataTable, createColumnChartOptions()));
+				// GRBK-897, we set the tilt on the chart if the number of items in the chart are above a certain value
+				boolean tilt = dataTable.getNumberOfRows() > tiltAfterNumberOfRows; 
+				graphPanelContainer.add(new ColumnChart(dataTable, createColumnChartOptions(tilt)));
 				graphPanelContainer.layout();
 			}
 		});
@@ -128,7 +148,9 @@ public class StatisticsChartPanel extends ContentPanel {
 
 			public void onClick(ClickEvent event) {
 				graphPanelContainer.removeAll();
-				graphPanelContainer.add(new LineChart(dataTable, createLineChartOptions()));
+				// GRBK-897, we set the tilt on the chart if the number of items in the chart are above a certain value
+				boolean tilt = dataTable.getNumberOfRows() > tiltAfterNumberOfRows; 
+				graphPanelContainer.add(new LineChart(dataTable, createLineChartOptions(tilt)));
 				graphPanelContainer.layout();
 			}
 		});
@@ -196,7 +218,8 @@ public class StatisticsChartPanel extends ContentPanel {
 			
 			super.show();
 			graphPanelContainer.removeAll();
-			graphPanelContainer.add(new ColumnChart(dataTable, createColumnChartOptions()));
+			boolean tilt = dataTable.getNumberOfRows() > tiltAfterNumberOfRows; 
+			graphPanelContainer.add(new ColumnChart(dataTable, createColumnChartOptions(tilt)));
 			unmask();
 			graphPanelContainer.layout();
 			
@@ -294,21 +317,39 @@ public class StatisticsChartPanel extends ContentPanel {
 		return options;
 	}
 
-	private Options createColumnChartOptions() {
+	private Options createColumnChartOptions(boolean tilt) {
 		
 		Options options = Options.create();
 		options.setWidth(chartWidth);
 		options.setHeight(chartHeight);
 		options.setLegend(legendPosition);
+		// GRBK-897 - these options show every axis entry as well as tilt them 60 degrees
+		if (tilt)
+		{
+			AxisOptions hopts = AxisOptions.create(); 
+			hopts.set("showTextEvery", 1.0);
+			hopts.set("slantedText", true); 
+			hopts.set("slantedTextAngle", 60.0);
+			options.setHAxisOptions(hopts);
+		}
 		return options;
 	}
 
-	private Options createLineChartOptions() {
+	private Options createLineChartOptions(boolean tilt) {
 		
 		Options options = Options.create();
 		options.setWidth(chartWidth);
 		options.setHeight(chartHeight);
 		options.setLegend(legendPosition);
+		// GRBK-897 - these options show every axis entry as well as tilt them 60 degrees
+		if (tilt)
+		{
+			AxisOptions hopts = AxisOptions.create(); 
+			hopts.set("showTextEvery", 1.0);
+			hopts.set("slantedText", true); 
+			hopts.set("slantedTextAngle", 60.0);
+			options.setHAxisOptions(hopts);
+		}		
 		return options;
 	}
 	

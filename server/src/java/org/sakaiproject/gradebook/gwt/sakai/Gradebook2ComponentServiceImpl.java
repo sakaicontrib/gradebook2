@@ -1768,11 +1768,14 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			throw new SecurityException("You are not authorized to view statistics charts.");
 
 		// Create and initialize two dimensional array to keep track of grade frequencies
+		// GRBK-897
 		// NOTE: we keep track of both positive as well at negative grades
-		final int TEN = 10;
-		int[][] gradeFrequencies = new int[2][TEN];
+		final int NumberOfBuckets = 20;
+		// The bucket divisor is how to determine which bucket to toss this into, its integral to the above #, such its location. 
+		final int BucketDivisor = 5; 
+		int[][] gradeFrequencies = new int[2][NumberOfBuckets];
 
-		for(int i = 0; i < TEN; i++) {
+		for(int i = 0; i < NumberOfBuckets; i++) {
 			gradeFrequencies[AppConstants.POSITIVE_NUMBER][i] = 0;
 			gradeFrequencies[AppConstants.NEGATIVE_NUMBER][i] = 0;
 		}
@@ -1789,9 +1792,10 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			assignmentGradeRecords = gbService.getAllAssignmentGradeRecords(new Long[] {assignmentId}, realmIds);
 		}
 
+	
 		// Looping over grade records and record their frequencies:
-		// The frequency intervals are:
-		// 0-9, 10-19, 20-29, ..., 80-89, 90-100
+		// The frequency intervals are (as of GRBK-897) : 
+		// 0-4, 5-9, 10-14, 15-19, ..., 80-84, 85-89, 90-94, 95-100
 		for(AssignmentGradeRecord assignmentGradeRecord : assignmentGradeRecords) {
 
 			Double gradeAsPercentage = assignmentGradeRecord.getGradeAsPercentage();
@@ -1821,8 +1825,9 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			else if(0 >= gradeAsPercentage.compareTo(DOUBLE_NEG_100)) {
 				gradeAsPercentage = DOUBLE_NEG_99;
 			}
-
-			int value = gradeAsPercentage.intValue() / 10;
+			// GRBK-897
+			int value = gradeAsPercentage.intValue() / BucketDivisor;
+			log.debug("value=" + value); 
 
 			try {
 
