@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.sakaiproject.gradebook.gwt.client.model.ImportSettings;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.Upload;
@@ -11,12 +12,15 @@ import org.sakaiproject.gradebook.gwt.client.model.key.UploadKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeItem;
+
+import org.sakaiproject.gradebook.gwt.server.ImportSettingsImpl;
 import org.sakaiproject.gradebook.gwt.server.Util;
 
 public class UploadImpl extends BaseModel implements Upload {
 
 	private static final long serialVersionUID = 1L;
-
+	
+	
 	public UploadImpl() {	
 		super();
 	}
@@ -160,5 +164,16 @@ public class UploadImpl extends BaseModel implements Upload {
 	public void setNotifyAssignmentName(boolean doNotify) {
 		put(UploadKey.B_NTFY_ITM_NM.name(), Boolean.valueOf(doNotify));
 	}
+	
+	public ImportSettings getImportSettings() {
+		if (null == get(UploadKey.M_IMPRTSETGS.name())) set(UploadKey.M_IMPRTSETGS.name(), new ImportSettingsImpl());
+		return (ImportSettings) get(UploadKey.M_IMPRTSETGS.name());
+	}
+
+	public void setImportSettings(ImportSettings importSettings) {
+		set(UploadKey.M_IMPRTSETGS.name(), importSettings);
+	}
+
+	
 
 }

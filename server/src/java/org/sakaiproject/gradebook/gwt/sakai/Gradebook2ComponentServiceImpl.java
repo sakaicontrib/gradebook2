@@ -1715,7 +1715,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		}
 		
 		List<User> users = findSectionMembers(getLearnerRoleNames(), realmIds);
-		System.out.println("DEBUG: number of users = " + users.size());
+		log.debug("DEBUG: number of users = " + users.size());
 		boolean isLetterGrading = gradebook.getGrade_type() == GradebookService.GRADE_TYPE_LETTER;
 
 		for(User user : users) {
@@ -3321,8 +3321,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		for (BusinessLogicCode code : ignoredBusinessRules) {
 			gradebookItem.getIgnoredBusinessRules().add(code);
 		}
-
-
+		
 		if (gradebookItem != null) {
 
 			// If the user changed an assignment's category via the UI, we need to 
@@ -3469,7 +3468,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 								}
 							}
 						} else
-							value = (Double) v;
+							value = (Double) v;						
 
 						AssignmentGradeRecord assignmentGradeRecord = null;
 

@@ -1,5 +1,6 @@
 package org.sakaiproject.gradebook.gwt.server.model;
 
+import java.util.Collection;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.model.Learner;
@@ -246,6 +247,11 @@ public class LearnerImpl extends BaseModel implements Learner, Comparable<Learne
 
 	public int compareTo(Learner o) {
 		return getIdentifier().compareTo(o.getIdentifier());
+	}
+
+	@Override
+	public Collection<String> getPropertyNames() {
+		return super.getPropertyNames();
 	}
 
 }

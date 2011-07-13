@@ -9,39 +9,72 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
+import org.sakaiproject.gradebook.gwt.server.ImportSettingsImpl;
 import org.sakaiproject.gradebook.gwt.server.model.UploadImpl;
 
 @Path(AppConstants.UPLOAD_FRAGMENT)
 public class Upload extends Resource {
-
+	
+	private static final Log log = LogFactory.getLog(Upload.class);
+	
 	@PUT
-	@Path("{uid}/{id}{force:(/" + AppConstants.FORCE_FRAGMENT + "/[^/]+?)?}")
+	@Path("{uid}/{id}{force:(/" + AppConstants.OVERWRITE_FRAGMENT + "/[^/]+?)?}{maxpnts:(/" + AppConstants.MAXPNTS_FRAGMENT + "/[^/]+?)?}")
 	@Consumes( { "application/json" })
 	public String update(@PathParam("uid") String gradebookUid,
 			@PathParam("id") Long gradebookId, String model,
-			@PathParam("force") String forceFlag) throws InvalidInputException {
+			@PathParam("force") String forceFlag,
+			@PathParam("maxpnts") String maxPoints) throws InvalidInputException {
 
 		boolean force = !"".equals(forceFlag) && forceFlag.indexOf("/") > -1
 				&& "true".equals(forceFlag.split("/")[2].toLowerCase());
+		
+		boolean hasSantronPoints = !"".equals(maxPoints) && maxPoints.indexOf("/") > -1;
+		
 
 		org.sakaiproject.gradebook.gwt.client.model.Upload result = null;
 		Map<String, Object> map = fromJson(model, Map.class);
 		
+		List<BusinessLogicCode> ignoredBusinessRules = 
+			new ArrayList<BusinessLogicCode>();
+		
+		ImportSettingsImpl importSettings = new ImportSettingsImpl();
+		importSettings.setForceOverwriteAssignments(force);
+		importSettings.setScantron(hasSantronPoints);
+		
+		
 		if(force) {
-			List<BusinessLogicCode> ignoredBusinessRules = 
-				new ArrayList<BusinessLogicCode>();
+			/*
+			 *  note: this is not currently used, since the client is enforceing the business rule;
+			 *  but it may be needed if we have different access points to this method (eg, not gb2 client)
+			 */
 			ignoredBusinessRules.add(BusinessLogicCode.NoDuplicateItemNamesWithinCategoryRule);
+		} 
+		if(hasSantronPoints) {
+			String value = maxPoints.split("/")[2];
+			try {
+				Integer max = Integer.valueOf(value);/// in case the client-side validation isn't catching it
+				importSettings.setScantronMaxPoints(value); //set the string value
+				ignoredBusinessRules.add(BusinessLogicCode.ScanTronScoresMustBeNormalized);
 				
-			result = service
-				.upload(gradebookUid, gradebookId, new UploadImpl(map), false, ignoredBusinessRules);
-		} else {
-			result = service
-				.upload(gradebookUid, gradebookId, new UploadImpl(map), false);
-		}
+			} catch (NumberFormatException e) { 
+				//TODO: throw invalidinputexception
+				log.error("url param ["+AppConstants.MAXPNTS_FRAGMENT+"] not an integer value: " + maxPoints);
+			}
+		} 
+		
+		UploadImpl uploadData = 
+			 new UploadImpl(map);
+
+		uploadData.setImportSettings(importSettings);
+		
+		result = service
+				.upload(gradebookUid, gradebookId, uploadData, false);
 
 		return toJson(result);
 	}
@@ -51,9 +84,9 @@ public class Upload extends Resource {
 	 */
 	public String update(String gradebookUid,
 			Long gradebookId, String model,
-			String forceFlag, Gradebook2ComponentService serviceInstance) throws InvalidInputException {
+			String forceFlag, String maxPoints, Gradebook2ComponentService serviceInstance) throws InvalidInputException {
 		service = serviceInstance;
-				return update(gradebookUid, gradebookId, model, forceFlag);
+				return update(gradebookUid, gradebookId, model, forceFlag, maxPoints);
 		
 	}
 }

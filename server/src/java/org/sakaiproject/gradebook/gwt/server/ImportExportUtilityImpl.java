@@ -62,12 +62,15 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Row;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
+import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader.Field;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
+import org.sakaiproject.gradebook.gwt.client.model.ImportSettings;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.Roster;
@@ -914,7 +917,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 				stop = true; 
 			}
 		}
-
+		
 		if (! stop) 
 		{
 			raw.addRow(getScantronHeaderRow(fileName)); 
@@ -1598,37 +1601,39 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			return;
 		}
 		// GRBK-806 - Percentages are valid if they are in range of 0..100 inclusive. 
-		if (GradeType.PERCENTAGES == gradeType)
-		{
-			double d = Double.parseDouble(rowData[colIdx]);
-			if (d < 0.0 || d > 100.0)
+		// GRBK-1056 - give scantrons a pass since we control max points in the client
+		if (! ieInfo.getImportsettings().isScantron()){
+			if (GradeType.PERCENTAGES == gradeType)
 			{
-				isFailure = true; 
-				ieInfo.setInvalidScore(true);
-			}
-		}
-		else
-		{
-			try {
 				double d = Double.parseDouble(rowData[colIdx]);
-				Item item = importHeader.getItem();
-				isFailure = handleSpecialPointsCaseForItem(item, d, ieInfo); 
-			} catch (NumberFormatException nfe) {
-				// This is not necessarily an exception, for example, we might be
-				// reading letter grades
-			
-				if (gradeType != GradeType.LETTERS || !service.isValidLetterGrade(rowData[colIdx])) {
-					log.info("Caught exception " + nfe + " while importing grades.", nfe); 
-					isFailure = true;
+				if (d < 0.0 || d > 100.0)
+				{
+					isFailure = true; 
 					ieInfo.setInvalidScore(true);
-				} 
+				}
+			}
+			else
+			{
+				try {
+					double d = Double.parseDouble(rowData[colIdx]);
+					Item item = importHeader.getItem();
+					isFailure = handleSpecialPointsCaseForItem(item, d, ieInfo); 
+				} catch (NumberFormatException nfe) {
+					// This is not necessarily an exception, for example, we might be
+					// reading letter grades
+				
+					if (gradeType != GradeType.LETTERS || !service.isValidLetterGrade(rowData[colIdx])) {
+						log.info("Caught exception " + nfe + " while importing grades.", nfe); 
+						isFailure = true;
+						ieInfo.setInvalidScore(true);
+					} 
+				}
 			}
 		}
 		if (isFailure) {
 			String failedId = Util.buildFailedKey(id);
 			learnerRow.set(failedId, "This entry is not valid");
 		}
-		
 		learnerRow.set(id, rowData[colIdx]);
 		
 	}
@@ -2416,12 +2421,14 @@ private GradeItem buildNewCategory(String curCategoryString,
 		ImportExportInformation ieInfo = new ImportExportInformation();
 		
 		UploadImpl importFile = new UploadImpl();
-
+		importFile.getImportSettings().setScantron(rawData.isScantronFile());
+		ieInfo.setImportsettings(importFile.getImportSettings());
+		
 		if (rawData.isScantronFile())
 		{
 			importFile.setNotifyAssignmentName(!rawData.isNewAssignment()); 
 			if (!rawData.isNewAssignment()) // FIXME - i18n 
-				importFile.addNotes("The scantron assignment entered has previously been imported.  We have changed the assignment name so that it will be imported uniquely. If you wanted to replace the old data, then please change it back.");
+				importFile.addNotes(i18n.getString("gb2ImportScantronSameName"));
 		}
 		
 		ieInfo.setGradebookItemModel(gradebookItemModel);
@@ -2469,16 +2476,6 @@ private GradeItem buildNewCategory(String curCategoryString,
 			
 			// GRBK-806 code was here to disable percentage gradebooks in general but if we're a scantron we will not allow it.
 			
-			if (ieInfo.getGradebookItemModel().getGradeType() == GradeType.PERCENTAGES) {
-				if (rawData.isScantronFile())
-				{
-					importFile = new UploadImpl();
-					importFile.setErrors(true);
-					importFile.setRows(null);
-					importFile.setNotes(i18n.getString("gb2CantImportPercentagesScantron"));
-					return importFile;
-				}
-			}
 
 		}
 		else
@@ -2647,6 +2644,8 @@ class ImportExportInformation
 	List<CategoryPosition> categoryPositions; 
 	Item gradebookItemModel;
 	
+	ImportSettings importsettings = null;
+	
 	
 	public ImportExportInformation() 
 	{
@@ -2718,6 +2717,14 @@ class ImportExportInformation
 
 	public void setCategoryIdItemMap(Map<String, GradeItem> categoryIdItemMap) {
 		this.categoryIdItemMap = categoryIdItemMap;
+	}
+	
+	public ImportSettings getImportsettings() {
+		return importsettings;
+	}
+
+	public void setImportsettings(ImportSettings importsettings) {
+		this.importsettings = importsettings;
 	}
 
 	public ImportHeader[] findActiveHeaders() {

@@ -48,6 +48,7 @@ public interface AppConstants {
 	public static final String IS_NEW_GRADEBOOK	= "newGradebook";
 	public static final String HAS_CONTROLLERS	= "hasControllers";
 	public static final String APP_MODEL		= "appModel";
+	public static final String WIDGET_INJECTOR = "_widgetInjector"; 
 	
 	// Item type constants
 	public static final String GRADEBOOK 	= "Gradebook";
@@ -189,8 +190,9 @@ public interface AppConstants {
 	public static final String OLD_UPLOAD_FRAGMENT			= "oldupload";
 	public static final String AUTHORIZATION_FRAGMENT		= "authorization";
 	public static final String INSTRUCTOR_FRAGMENT			= "instructor";
+	public static final String OVERWRITE_FRAGMENT 				= "overwrite";
+	public static final String MAXPNTS_FRAGMENT 				= "maxpnts";
 	public static final String STUDENT_FRAGMENT 			= "student";
-	public static final String FORCE_FRAGMENT 				= "force";
 	public static final String COURSE_FRAGMENT				= "course";
 	public static final String STARTUP_FRAGMENT				= "startup";
 	
@@ -286,6 +288,7 @@ public interface AppConstants {
 	public static final String USER_FIELD_LAST_NAME_FIRST = "lastNameFirst";
 	public static final String USER_FIELD_DISPLAY_ID = "displayId";
 	// GRBK-943 - We present an alert message if the number of GB rows is bigger than...
-	public static final int ITEM_MANIP_PERFORMANCE_TRIGGER = 24; 
+	public static final int ITEM_MANIP_PERFORMANCE_TRIGGER = 24;
+	
 	
 }

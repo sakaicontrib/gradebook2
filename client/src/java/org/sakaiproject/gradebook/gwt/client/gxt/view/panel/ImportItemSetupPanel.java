@@ -271,7 +271,7 @@ public class ImportItemSetupPanel extends GradebookPanel {
 	/*
 	 * Get all the grade items
 	 */
-	private ArrayList<? extends Item> getGradeItems(Item gradebookItemModel) {
+	public ArrayList<? extends Item> getGradeItems(Item gradebookItemModel) {
 
 		ArrayList<Item> items = new ArrayList<Item>();
 
@@ -311,5 +311,10 @@ public class ImportItemSetupPanel extends GradebookPanel {
 
 			processor.process();
 		}
+	}
+
+	public ListStore<ItemModel> getItemStore() {
+		return itemStore;
+		
 	}
 }

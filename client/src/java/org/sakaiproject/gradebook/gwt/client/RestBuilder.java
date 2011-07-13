@@ -148,7 +148,7 @@ public class RestBuilder extends RequestBuilder {
 
 	public Request sendRequest(final int successCode, final int failureCode,
 			String requestData, final RestCallback callback) {
-		
+
 		Request request = null;
 		try {
 			super.sendRequest(requestData, new RequestCallback() {
@@ -159,24 +159,36 @@ public class RestBuilder extends RequestBuilder {
 
 				public void onResponseReceived(Request request,
 						Response response) {
-					if(response.getStatusCode() == successCode || (GXT.isIE && response.getStatusCode() == 1223 && successCode == 204)) {
-						
+					if (response.getStatusCode() == successCode
+							|| (GXT.isIE && response.getStatusCode() == 1223 && successCode == 204)) {
+
 						callback.onSuccess(request, response);
-					}
-					else if(response.getStatusCode() == failureCode && null != response.getText() && !"".equals(response.getText())) {
-					
-						callback.onFailure(request, new Exception(response.getText()));
-					}
-					else if(response.getStatusCode() == 409 && null != response.getText() && !"".equals(response.getText())) {
-						
-						callback.onError(request, new Exception(response.getStatusText() + " : " + response.getStatusCode())); 
-					}
-					else if(response.getStatusCode() == 500 && null != response.getText() && !"".equals(response.getText())) {
-						
-						callback.onError(request, new Exception(response.getText() + " : " + response.getStatusCode())); 
-					}
-					else {
-						callback.onError(request, new Exception("Unexpected response from server: " + response.getStatusCode()));
+					} else if (response.getStatusCode() == failureCode
+							&& null != response.getText()
+							&& !"".equals(response.getText())) {
+
+						callback.onFailure(request,
+								new Exception(response.getText()));
+					} else { 
+						// handle special status code cases
+						if (null != response.getText()
+								&& !"".equals(response.getText())) {
+							switch (response.getStatusCode()) {
+							case 409:
+							case 500:
+								callback.onError(request, new Exception(
+										response.getStatusText() + " : "
+												+ response.getStatusCode()), response.getStatusCode());
+							default:
+								callback.onError(request, new Exception(
+										"Unexpected response from server: "
+												+ response.getStatusCode()), response.getStatusCode());
+							}
+						} else {
+							callback.onError(request, new Exception(
+									"Unexpected response from server: "
+											+ response.getStatusCode()), response.getStatusCode());
+						}
 					}
 				}
 

@@ -275,7 +275,7 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 		org.sakaiproject.gradebook.gwt.sakai.rest.resource.Upload uploadREST = new org.sakaiproject.gradebook.gwt.sakai.rest.resource.Upload();
 		
 		try {
-			uploadREST.update(to, componentService.getGradebook(to).getGradebookId(), toJson(importFile), "true", componentService);
+			uploadREST.update(to, componentService.getGradebook(to).getGradebookId(), toJson(importFile), "true", null, componentService);
 		} catch (InvalidInputException e) {
 			e.printStackTrace();
 		}

@@ -325,6 +325,7 @@ public interface I18nConstants extends Constants {
 	
 	
 	// Import
+	String importPromptScantronMaxPoints();
 	String importSetupGridItemHeader();
 	String importSetupGridCategoryPercentHeader();
 	String importSetupGridPointsHeader();
@@ -405,6 +406,10 @@ public interface I18nConstants extends Constants {
 	// GRBK-1032
 	String gradeFormatCannotBeChangedWarning();
 	String gradeFormatNormalTooltip();
+	
+	// Mr. Wizard
+	String needValidEmail();
+	
 	
 	// GRBK-1054
 	

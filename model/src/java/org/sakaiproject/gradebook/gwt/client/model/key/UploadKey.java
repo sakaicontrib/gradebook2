@@ -16,7 +16,12 @@ public enum UploadKey {
 	S_NOTES("notes"),
 	B_NTFY_ITM_NM("isNotifyItemName"),
 	G_GRD_TYPE("gradeType"),
-	C_CTGRY_TYPE("categoryType");
+	C_CTGRY_TYPE("categoryType"),
+	// import settings
+	M_IMPRTSETGS("importsettings"),
+	B_SCNTRN("scantron"),
+	B_OVRWRT("overwrite"),
+	S_MXPNTS("maxpoints");
 	
 	private String property;
 

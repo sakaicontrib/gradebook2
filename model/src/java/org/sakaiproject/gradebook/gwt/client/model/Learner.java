@@ -1,5 +1,6 @@
 package org.sakaiproject.gradebook.gwt.client.model;
 
+import java.util.Collection;
 import java.util.Map;
 
 public interface Learner {
@@ -67,5 +68,8 @@ public interface Learner {
 	public abstract Boolean getUserNotFound();
 	
 	public abstract void setUserNotFound(Boolean isNotFound);
+	
+	public Collection<String> getPropertyNames();
+	
 	
 }

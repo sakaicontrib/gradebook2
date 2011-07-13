@@ -17,7 +17,8 @@ public enum BusinessLogicCode {
 	CannotIncludeItemFromUnincludedCategoryRule		(12),
 	ItemNameCannotBeNullOrEmpty						(13),
 	EntityPointsCannotBeNegative					(14),
-	EntityWeightCannotBeNegative					(15); 
+	EntityWeightCannotBeNegative					(15), 
+	ScanTronScoresMustBeNormalized					(16);
 	
 	private Integer code = null;
 	

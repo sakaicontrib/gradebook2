@@ -74,10 +74,10 @@ public class EntityModel extends BaseModel implements EntityOverlayOwner {
 				    } else if (key.startsWith("A_")) {
 				    	return new JSONArray(overlay.getArray(key));
 				    }
-				    
 				    return super.get(key);
 				}
 			};
+			
 			return jso.toString();
 		}
 			

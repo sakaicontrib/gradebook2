@@ -1,6 +1,6 @@
 /**********************************************************************************
 *
-* $Id:$
+* $Id$
 *
 ***********************************************************************************
 *
@@ -29,5 +29,9 @@ public interface I18nMessages extends Messages {
 	
 	String itemTreePanelAlertMessage(String cssClasses, String msg);
 	
+	String greaterThanOrEqualToValue(String value);
 	
+	String importDataMinValue(String value);
+	
+	String importDataMaxValue(String value);
 }

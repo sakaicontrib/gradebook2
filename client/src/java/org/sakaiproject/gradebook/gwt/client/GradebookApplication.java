@@ -19,6 +19,7 @@
 
 package org.sakaiproject.gradebook.gwt.client;
 
+import org.sakaiproject.gradebook.gwt.client.gin.WidgetInjector;
 import org.sakaiproject.gradebook.gwt.client.gxt.JsonUtil;
 import org.sakaiproject.gradebook.gwt.client.gxt.controller.NotificationController;
 import org.sakaiproject.gradebook.gwt.client.gxt.controller.StartupController;
@@ -44,13 +45,14 @@ import com.google.gwt.user.client.ui.RootPanel;
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
  */
-public class GradebookApplication implements EntryPoint {
+public class GradebookApplication implements EntryPoint  {
 
 	private Dispatcher dispatcher;
 	private GradebookResources resources;
 	private I18nConstants i18n;
 	private I18nMessages i18nTemplates;
 	private int screenHeight = 580;
+	private WidgetInjector injector = GWT.create(WidgetInjector.class);;
 	
     public GradebookApplication() {
 
@@ -70,7 +72,8 @@ public class GradebookApplication implements EntryPoint {
 		Registry.register(AppConstants.RESOURCES, resources);
 		Registry.register(AppConstants.VERSION, getVersion());
 		Registry.register(AppConstants.I18N, i18n);
-		Registry.register(AppConstants.I18N_TEMPLATES, i18nTemplates);
+		Registry.register(AppConstants.I18N_TEMPLATES, i18nTemplates);		
+		
 
 		getApplicationSetup();		
 	}
@@ -145,6 +148,8 @@ public class GradebookApplication implements EntryPoint {
 	private void processApplicationSetup(AuthModel authModel, ApplicationSetup applicationSetup) {
 
 		Registry.register(AppConstants.APP_MODEL, applicationSetup);
+		
+		Registry.register(AppConstants.WIDGET_INJECTOR, injector);
 		
 		dispatcher.dispatch(GradebookEvents.Load.getEventType(), authModel);
 		GXT.hideLoadingPanel("loading");

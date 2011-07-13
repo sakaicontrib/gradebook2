@@ -5,6 +5,7 @@ import java.util.List;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 
+
 public interface Upload {
 
 	public List<Item> getHeaders();
@@ -46,5 +47,9 @@ public interface Upload {
 	public CategoryType getCategoryType();
 	
 	public void setCategoryType(CategoryType categoryType);
+
+	public abstract void setImportSettings(ImportSettings importSettings);
+
+	public abstract ImportSettings getImportSettings();
 	
 }

@@ -152,13 +152,13 @@ public class GradebookImportController extends SimpleFormController implements O
 		{
 			mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true); 
 		}
+
 		StringWriter w = new StringWriter();
 		try {
 			mapper.writeValue(w, o);
 		} catch (Exception e) {
 			log.error("Caught an exception serializing to JSON: ", e);
 		}
-		
 		return w.toString();
 	}
 

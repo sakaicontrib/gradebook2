@@ -16,8 +16,14 @@
 	<!-- Inherit the Ext-GWT Toolkit library -->
 	<inherits name='com.extjs.gxt.ui.GXT'/>
 	
+	<!-- GIN -->
+	<inherits name="com.google.gwt.inject.Inject"/>
+	
 	<!-- Specify the app entry point class.                   -->
 	<entry-point class='org.sakaiproject.gradebook.gwt.client.GradebookApplication'/>
+	
+	<!--  WizardCard CSS -->
+	<stylesheet src="ext.ux.wiz.css"/>
 
 	<!-- devel-mode-only 
 

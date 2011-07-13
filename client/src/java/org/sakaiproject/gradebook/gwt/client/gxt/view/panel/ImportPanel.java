@@ -23,6 +23,7 @@
 
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
+import java.awt.ItemSelectable;
 import java.util.Collection;
 import java.util.List;
 
@@ -31,21 +32,30 @@ import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestCallback;
+import org.sakaiproject.gradebook.gwt.client.api.Card;
+import org.sakaiproject.gradebook.gwt.client.api.Wizard;
+import org.sakaiproject.gradebook.gwt.client.gin.WidgetInjector;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.JsonUtil;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityOverlay;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.ImportSettingsImpl;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.LearnerModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.UploadModel;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
+import org.sakaiproject.gradebook.gwt.client.model.ImportSettings;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.UploadKey;
+import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
+import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
+import org.sakaiproject.gradebook.gwt.client.wizard.validators.IntegerValidator;
+import org.sakaiproject.gradebook.gwt.client.wizard.validators.MinValueIntegerValidator;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.LayoutRegion;
@@ -55,7 +65,9 @@ import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 import com.extjs.gxt.ui.client.data.PagingLoader;
 import com.extjs.gxt.ui.client.data.PagingModelMemoryProxy;
+import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
+import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.store.ListStore;
@@ -67,6 +79,7 @@ import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
+import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayout;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayoutData;
 import com.extjs.gxt.ui.client.widget.layout.CardLayout;
@@ -101,6 +114,11 @@ public class ImportPanel extends GradebookPanel {
 	private ItemModel gradebookItemModel;
 
 	private boolean isGradingFailure;
+	
+	private ImportSettings importSettings = new ImportSettingsImpl();
+	private Wizard wizard;
+	
+	private GradebookResources resources = Registry.get(AppConstants.RESOURCES);
 	
 	
 	public ImportPanel() {
@@ -141,8 +159,8 @@ public class ImportPanel extends GradebookPanel {
 				submitButton.setVisible(false);
 				
 				upload.setGradebookItemModel(gradebookItemModel);
-
-				uploadSpreadsheet(upload, false);
+				uploadSpreadsheet(upload, importSettings);
+								
 			}
 		});
 		
@@ -196,7 +214,8 @@ public class ImportPanel extends GradebookPanel {
 				
 				if (button.getItemId().equals(Dialog.OK)) {
 					submitButton.setVisible(false);
-					uploadSpreadsheet(getUploadModel(), true);
+					importSettings.setForceOverwriteAssignments(true);
+					uploadSpreadsheet(getUploadModel(), importSettings);
 				} else {
 					
 					
@@ -243,100 +262,33 @@ public class ImportPanel extends GradebookPanel {
 		try {
 
 			// Getting the JSON from REST call and create an UploadModel
+			
 			EntityOverlay overlay = JsonUtil.toOverlay(result);
 			upload = new UploadModel(overlay);
-
 			boolean hasErrors = upload.hasErrors(); 
 			
 			msgsFromServer = upload.getNotes(); 
 			
+			importSettings = upload.getImportSettings();
+			
+			
+						
 			// If we have errors we want to do something different
 			if (hasErrors) {
 				errorContainer.addText(msgsFromServer); 
 				mainCardLayout.setActiveItem(errorContainer);
 				return; 
 			}
-
-			if(setupPanel == null) {
-				setupPanel = new ImportItemSetupPanel();
-			}
-
-			Gradebook gradebookModel = Registry.get(AppConstants.CURRENT);
+			
 			gradebookItemModel = (ItemModel)upload.getGradebookItemModel();
 
 			fixMangledHtmlNames(gradebookItemModel); 
 			if (gradebookItemModel == null) {
 				throw new Exception("Could not find the gradebook item model");
 			}
+			
 
-			// Populate the item setup panel
-			setupPanel.onRender(gradebookItemModel);
-
-			// Populate the multi grade grid panel
-			if (multigrade == null) {
-				PagingModelMemoryProxy proxy = new PagingModelMemoryProxy(upload.getRows());  
-				multigradeLoader = new BasePagingLoader<PagingLoadResult<ModelData>>(proxy);  
-				multigradeLoader.setRemoteSort(true);
-
-				multigradeStore = new ListStore<ModelData>(multigradeLoader);
-				multigradeStore.setModelComparer(new EntityModelComparer<ModelData>(LearnerKey.S_UID.name()));
-				multigradeStore.setMonitorChanges(true);
-				multigradeStore.setDefaultSort(LearnerKey.S_LST_NM_FRST.name(), SortDir.ASC);
-
-
-				multigrade = new MultiGradeContentPanel(multigradeStore, true) {
-
-					protected PagingLoader<PagingLoadResult<ModelData>> newLoader() {
-						return multigradeLoader;
-					}
-
-					protected ListStore<ModelData> newStore() {
-						return multigradeStore;
-					}
-
-				};
-
-				multigrade.addGrid(gradebookModel.getConfigurationModel(), gradebookModel.getColumns(),
-						gradebookItemModel);
-
-				BorderLayoutData westData = new BorderLayoutData(LayoutRegion.WEST, 550, 200, 800);  
-				westData.setSplit(true);  
-				westData.setCollapsible(true);  
-				westData.setMargins(new Margins(5));
-
-				BorderLayoutData centerData = new BorderLayoutData(LayoutRegion.CENTER); 
-				centerData.setMinSize(100);
-				centerData.setMargins(new Margins(5, 0, 5, 0)); 
-
-				centerCardLayoutContainer.add(multigrade);
-				centerCardLayout.setActiveItem(multigrade);
-
-				borderLayoutContainer.add(setupPanel, westData);
-				borderLayoutContainer.add(centerCardLayoutContainer, centerData);
-				multigrade.setHeight(mainCardLayoutContainer.getHeight() - 100);
-			}
-
-			refreshGradebookItemModel(gradebookItemModel);
-
-			mainCardLayout.setActiveItem(borderLayoutContainer);
-			mainCardLayoutContainer.layout();
-
-			multigradeLoader.load();
-
-			boolean showPanel =  false; 
-			boolean hasDefaultMsg = false;
-			StringBuilder sb = null; 
-
-			if (showPanel) {
-
-				String sendText = ""; 
-				if (sb != null )
-				{
-					sendText = sb.toString(); 
-					sb = null;
-				}
-				showMessageBox(sendText, !hasDefaultMsg);
-			}
+			refreshSetupPanel();
 			
 		} catch (Exception e) {
 			
@@ -347,10 +299,85 @@ public class ImportPanel extends GradebookPanel {
 			
 			uploadBox.close();
 		}
+		
+		if(((Gradebook)Registry.get(AppConstants.CURRENT)).getGradebookItemModel().getGradeType() == GradeType.PERCENTAGES
+				&& importSettings.isScantron()) {
+			
+			getScantronPointsWithWizard();
+		}
 
 		if (msgsFromServer != null && msgsFromServer.length() > 0){
 			Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent("Warning", msgsFromServer, true, true));
 		}
+	}
+
+	private void refreshSetupPanel() {
+		
+		
+		Gradebook gradebookModel = Registry.get(AppConstants.CURRENT);
+		
+		if(setupPanel == null) {
+			setupPanel = new ImportItemSetupPanel();
+		}
+
+		
+
+		// Populate the item setup panel
+		setupPanel.onRender(gradebookItemModel);
+
+		// Populate the multi grade grid panel
+		if (multigrade == null) {
+			PagingModelMemoryProxy proxy = new PagingModelMemoryProxy(upload.getRows());  
+			multigradeLoader = new BasePagingLoader<PagingLoadResult<ModelData>>(proxy);  
+			multigradeLoader.setRemoteSort(true);
+
+			multigradeStore = new ListStore<ModelData>(multigradeLoader);
+			multigradeStore.setModelComparer(new EntityModelComparer<ModelData>(LearnerKey.S_UID.name()));
+			multigradeStore.setMonitorChanges(true);
+			multigradeStore.setDefaultSort(LearnerKey.S_LST_NM_FRST.name(), SortDir.ASC);
+
+
+			multigrade = new MultiGradeContentPanel(multigradeStore, true) {
+
+				protected PagingLoader<PagingLoadResult<ModelData>> newLoader() {
+					return multigradeLoader;
+				}
+
+				protected ListStore<ModelData> newStore() {
+					return multigradeStore;
+				}
+
+			};
+
+			multigrade.addGrid(gradebookModel.getConfigurationModel(), gradebookModel.getColumns(),
+					gradebookItemModel);
+
+			BorderLayoutData westData = new BorderLayoutData(LayoutRegion.WEST, 550, 200, 800);  
+			westData.setSplit(true);  
+			westData.setCollapsible(true);  
+			westData.setMargins(new Margins(5));
+
+			BorderLayoutData centerData = new BorderLayoutData(LayoutRegion.CENTER); 
+			centerData.setMinSize(100);
+			centerData.setMargins(new Margins(5, 0, 5, 0)); 
+
+			centerCardLayoutContainer.add(multigrade);
+			centerCardLayout.setActiveItem(multigrade);
+
+			borderLayoutContainer.add(setupPanel, westData);
+			borderLayoutContainer.add(centerCardLayoutContainer, centerData);
+			multigrade.setHeight(mainCardLayoutContainer.getHeight() - 100);
+		}
+
+		refreshGradebookItemModel(gradebookItemModel);
+
+		mainCardLayout.setActiveItem(borderLayoutContainer);
+		mainCardLayoutContainer.layout();
+
+		multigradeLoader.load();
+
+		
+		
 	}
 
 	private native String repairString(String inStr) /*-{
@@ -431,7 +458,7 @@ public class ImportPanel extends GradebookPanel {
 	}
 
 
-	private void uploadSpreadsheet(UploadModel spreadsheetModel, boolean forceOverwriteAssignments) {
+	private void uploadSpreadsheet(UploadModel spreadsheetModel, ImportSettings importSettings2) {
 				
 		Gradebook gbModel = Registry.get(AppConstants.CURRENT);
 
@@ -449,8 +476,12 @@ public class ImportPanel extends GradebookPanel {
 			.append(String.valueOf(gbModel.getGradebookId()));
 		
 		
-		if(forceOverwriteAssignments) {
-			url.append("/").append(AppConstants.FORCE_FRAGMENT).append("/").append("true");
+		if(importSettings2.isForceOverwriteAssignments()) {
+			url.append("/").append(AppConstants.OVERWRITE_FRAGMENT).append("/").append("true");
+		}
+		String maxPoints = importSettings2.getScantronMaxPoints();
+		if(maxPoints != null) {
+			url.append("/").append(AppConstants.MAXPNTS_FRAGMENT).append("/").append(maxPoints);
 		}
 
 		String jsonText = spreadsheetModel == null ? null : spreadsheetModel.getJSON();
@@ -460,11 +491,15 @@ public class ImportPanel extends GradebookPanel {
 			
 
 			@Override
-			public void onError(Request request, Throwable caught) {
+			public void onError(Request request, Throwable caught, Integer statusCode) {
 				
-				if (caught.getMessage().indexOf(": 401") != -1) {
+				if (401 == statusCode) {
 					uploadingBox.close();
 					forceOverwriteDialog.show();
+				} else if (411 == statusCode) {
+					uploadingBox.close();
+					submitButton.setVisible(true);
+					getScantronPointsWithWizard();
 				} else {
 					onFailure(request, caught);
 				}
@@ -582,6 +617,116 @@ public class ImportPanel extends GradebookPanel {
 				}
 			}
 		});
+	}
+
+	protected void getScantronPointsWithWizard() {
+		//show the wizard and ask for points possible for scantron
+		WidgetInjector injector = Registry.get(AppConstants.WIDGET_INJECTOR);
+		wizard = injector.getWizardProvider().get();
+		
+		// setup an array of WizardCards
+
+
+		// 1st card - a welcome
+		
+		Card card1 = wizard.newCard("Points Possible");//TODO i18n
+		
+		wizard.setClosable(false);
+		wizard.setShowWestImageContainer(false);
+		wizard.setPanelBackgroundColor("#FFFFFF");
+		wizard.setContainer(this.getElement());
+		//wizard.setModalCssClassName("gbModalDark");
+		wizard.setProgressIndicator(Wizard.Indicator.PROGRESSBAR);
+		wizard.addCancelListener(new Listener<BaseEvent>() {
+
+			@Override
+			public void handleEvent(BaseEvent be) { /// need to max points to proceed, cancel import
+				Dispatcher.forwardEvent(GradebookEvents.StopImport.getEventType());
+				fileUploadPanel.clear();
+			}
+			
+		});
+		
+		
+		
+		//get the min a max values from the data
+		@SuppressWarnings("unchecked")
+		List<ItemModel> gradeItems = (List<ItemModel>) setupPanel.getGradeItems(gradebookItemModel);
+		List<Learner> rows = upload.getRows();
+		/*
+		 * this is scantron with only one key in it which is *not* in LearnerKey: an item
+		 */
+		ItemModel i = gradeItems.get(0);
+		Double minScore = getMinScoreForItem(i, rows);
+		Double maxScore = getMaxScoreForItem(i, rows);
+		
+		card1.setHtmlText(i18n.importPromptScantronMaxPoints() 
+				+ "<br/>"
+				+ i18nTemplates.importDataMinValue("" + minScore.intValue())
+				+ i18nTemplates.importDataMaxValue("" + maxScore.intValue()));
+		
+		FormPanel formpanel = new FormPanel();
+		final TextField<String> pntsField = new TextField<String>();
+		pntsField.setFieldLabel(i18n.importSetupGridPointsHeader());
+		pntsField.setAllowBlank(false);
+		pntsField.setSelectOnFocus(true);
+		pntsField.setValidator(new MinValueIntegerValidator(new Double(Math.floor(maxScore.doubleValue())).intValue(), 
+				i18n.itemFormPanelEditPointsInvalid()));
+		formpanel.add(pntsField);
+		
+		card1.addFinishListener(new Listener<BaseEvent>() {
+
+			@Override
+			public void handleEvent(BaseEvent be) {
+				importSettings.setScantronMaxPoints(pntsField.getValue());
+
+				@SuppressWarnings("unchecked")
+				List<ItemModel> gradeItems = (List<ItemModel>) setupPanel.getGradeItems(gradebookItemModel);
+				List<Learner> rows = upload.getRows();
+				/*
+				 * this is scantron with only one key in it which is *not* in LearnerKey: an item
+				 */
+				ItemModel i = gradeItems.get(0);
+				gradeItems.remove(i);
+				i.setPoints(Double.valueOf(Integer.parseInt(importSettings.getScantronMaxPoints())));
+				gradeItems.add(i);
+				setupPanel.getItemStore().removeAll();
+				refreshSetupPanel();
+			}
+
+			
+
+			
+		});
+		
+		
+		card1.setFormPanel(formpanel);
+		
+		wizard.setHeading("Import Process Input Request");
+		wizard.setHeaderTitle("SCANTRON");
+		
+		wizard.show();
+		
+		wizard.resize(0,-50);
+
+	}
+
+	private Double getMaxScoreForItem(ItemModel i, List<Learner> rows) {
+		Double max = 0d;
+		for (Learner row : rows) {
+			Double d = Double.valueOf((String) row.get(i.getIdentifier()));
+			max = d>max ? d : max;
+			}
+		return max;
+	}
+
+	private Double getMinScoreForItem(ItemModel i, List<Learner> rows) {
+		Double min = Double.MAX_VALUE;
+		for (Learner row : rows) {
+			Double d = Double.valueOf((String) row.get(i.getIdentifier()));
+			min = d<min ? d : min;
+			}
+		return min;
 	}
 
 	protected UploadModel getUploadModel() {

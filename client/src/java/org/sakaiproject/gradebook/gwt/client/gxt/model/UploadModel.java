@@ -3,6 +3,7 @@ package org.sakaiproject.gradebook.gwt.client.gxt.model;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
+import org.sakaiproject.gradebook.gwt.client.model.ImportSettings;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.Upload;
@@ -11,6 +12,7 @@ import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 
 import com.extjs.gxt.ui.client.data.ModelData;
+import com.google.gwt.core.client.JavaScriptObject;
 
 public class UploadModel extends EntityModel implements Upload {
 
@@ -130,6 +132,17 @@ public class UploadModel extends EntityModel implements Upload {
 		
 		
 		return new EntityModel(overlay);
+	}
+
+	public void setImportSettings(ImportSettings importSettings) {
+		set(UploadKey.M_IMPRTSETGS.name(), importSettings);
+	}
+
+	public ImportSettings getImportSettings() {
+		if (null == get(UploadKey.M_IMPRTSETGS.name())) set(UploadKey.M_IMPRTSETGS.name(), new ImportSettingsImpl());
+		EntityModel e = get(UploadKey.M_IMPRTSETGS.name());
+		ImportSettingsImpl s = new ImportSettingsImpl(e);
+		return (ImportSettings) s;
 	}
 
 }
