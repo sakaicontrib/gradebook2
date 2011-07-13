@@ -116,7 +116,7 @@ public class ItemFormPanel extends GradebookPanel {
 	private CheckBox includedField, extraCreditField, equallyWeightChildrenField, releasedField;
 	private CheckBox nullsAsZerosField, releaseGradesField, releaseItemsField, scaledExtraCreditField;
 	private CheckBox enforcePointWeightingField, showMeanField, showMedianField, showModeField;
-	private CheckBox showRankField, showItemStatsField;
+	private CheckBox showRankField, showItemStatsField, showStatisticsChartField;
 	private NumberField percentCourseGradeField, percentCategoryField, pointsField, dropLowestField;
 	private DateField dueDateField;
 	private TextField<String> sourceField;
@@ -213,7 +213,7 @@ public class ItemFormPanel extends GradebookPanel {
 		categoryTypeStore.add(getCategoryTypeModel(CategoryType.NO_CATEGORIES));
 		categoryTypeStore.add(getCategoryTypeModel(CategoryType.SIMPLE_CATEGORIES));
 		categoryTypeStore.add(getCategoryTypeModel(CategoryType.WEIGHTED_CATEGORIES));		
-		
+
 		directionsField = new LabelField();
 		directionsField.setName("directions");
 
@@ -361,6 +361,13 @@ public class ItemFormPanel extends GradebookPanel {
 		showItemStatsField.setVisible(false);
 		showItemStatsField.setToolTip(newToolTipConfig(i18n.showItemStatsToolTip()));
 		right.add(showItemStatsField);
+		
+		showStatisticsChartField = new NullSensitiveCheckBox();
+		showStatisticsChartField.setName(ItemKey.B_SHW_STATS_CHART.name());
+		showStatisticsChartField.setFieldLabel(i18n.showStatisticsChartFieldLabel());
+		showStatisticsChartField.setVisible(false);
+		showStatisticsChartField.setToolTip(newToolTipConfig(i18n.showStatisticsChartToolTip()));
+		right.add(showStatisticsChartField);
 
 		main.add(left, new ColumnData(.5));
 		main.add(right, new ColumnData(.5));
@@ -1060,6 +1067,7 @@ public class ItemFormPanel extends GradebookPanel {
 		initField(showModeField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
 		initField(showRankField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
 		initField(showItemStatsField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
+		initField(showStatisticsChartField, isAllowedToEdit && !isDelete, isEditable && !isNotGradebook);
 
 		displayToStudentFieldSet.setEnabled(isAllowedToEdit && !isDelete);
 		displayToStudentFieldSet.setVisible(isEditable && !isNotGradebook);
@@ -1223,8 +1231,8 @@ public class ItemFormPanel extends GradebookPanel {
 		showMedianField.addListener(Events.Change, checkboxChangeListener);
 		showModeField.addListener(Events.Change, checkboxChangeListener);
 		showRankField.addListener(Events.Change, checkboxChangeListener);
-		showItemStatsField.addListener(Events.Change, checkboxChangeListener);	
-
+		showItemStatsField.addListener(Events.Change, checkboxChangeListener);
+		showStatisticsChartField.addListener(Events.Change, checkboxChangeListener);
 		isListeningEnabled = true;
 	}
 
@@ -1260,7 +1268,7 @@ public class ItemFormPanel extends GradebookPanel {
 		showModeField.removeListener(Events.Change, checkboxChangeListener);
 		showRankField.removeListener(Events.Change, checkboxChangeListener);
 		showItemStatsField.removeListener(Events.Change, checkboxChangeListener);
-
+		showStatisticsChartField.removeListener(Events.Change, checkboxChangeListener);
 		isListeningEnabled = false;
 	}
 

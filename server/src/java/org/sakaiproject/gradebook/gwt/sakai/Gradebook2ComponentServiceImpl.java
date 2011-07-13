@@ -6552,7 +6552,16 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		boolean isShowItemStatistics = Util.checkBoolean(item.getShowItemStatistics());
 
 		gradebook.setShowItemStatistics(Boolean.valueOf(isShowItemStatistics));
-
+		
+		/*
+		 *  TODO: GRBK-616
+		 *  
+		 *  Waiting to hear on how to modify Sakai edu-service. See GRBK-616 for more details
+		 */
+		boolean isShowStatisticsChart = Util.checkBoolean(item.getShowStatisticsChart());
+		// FIXME: persist in Sakai edu-service like all the other statistic fields 
+		
+		
 		GradeMapping mapping = gradebook.getSelectedGradeMapping();
 		Long gradeScaleId = item.getGradeScaleId();
 		if (mapping != null && gradeScaleId != null && !mapping.getId().equals(gradeScaleId)) {

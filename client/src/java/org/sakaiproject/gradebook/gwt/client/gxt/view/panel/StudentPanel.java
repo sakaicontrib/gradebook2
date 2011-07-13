@@ -21,8 +21,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
@@ -94,6 +96,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.json.client.JSONArray;
+import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Element;
@@ -128,8 +131,6 @@ public class StudentPanel extends GradebookPanel {
 	
 	private TextField<String> defaultTextField= new TextField<String>();
 	private TextArea defaultTextArea = new TextArea();
-//	private NumberFormat defaultNumberFormat = NumberFormat.getFormat("#.###");
-//	private NumberField defaultNumberField = new NumberField();
 	private FlexTable studentInformation;
 	private ContentPanel studentInformationPanel, gradeInformationPanel, textPanel, topPanel;
 	private Html textNotification;
@@ -163,6 +164,7 @@ public class StudentPanel extends GradebookPanel {
 	private DataTable dataTable;
 	private Map<String, DataTable> dataTableCache = new HashMap<String, DataTable>();
 	private String selectedAssignmentId;
+	private final static String COURSE_CACHE_KEY_PREFIX = "course-grade";
 
 	public StudentPanel(I18nConstants i18n, boolean isStudentView, boolean displayRank) {
 		super();
@@ -372,13 +374,13 @@ public class StudentPanel extends GradebookPanel {
 					// Don't show the comments form if the user clicks on the Course Grade item
 					if(COURSE_GRADE_ID.equals(score.get(Key.S_ID.name()))) {
 						commentsPanel.hide();
+						getCourseStatisticsChartData();
 					}
 					else {
 						
 						getGradeItemStatisticsChartData((String)score.get(Key.S_ITM_ID.name()));
 						formBinding.bind(score);
 						commentsPanel.show();
-						//statisticsChartPanel.setVisible(true);
 					}
 				}
 				else {
@@ -745,7 +747,6 @@ public class StudentPanel extends GradebookPanel {
 				resultBuilder.append(value);
 				break;
 			}
-
 		}
 
 		if (!isIncluded || isExcused) 
@@ -761,7 +762,6 @@ public class StudentPanel extends GradebookPanel {
 			model.set(Key.S_RANK.name(), rank);
 			model.set(Key.S_ITM_ID.name(), stats.getAssignmentId());
 		}
-
 
 		model.set(Key.S_ORDER.name(), String.valueOf(row));
 
@@ -1030,6 +1030,86 @@ public class StudentPanel extends GradebookPanel {
 						Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsDataErrorMsg(), true));
 					}
 					
+					statisticsChartPanel.hideUserFeedback(null);
+				}
+			});
+		}
+	}
+	
+	private void getCourseStatisticsChartData() {
+		
+		// First we check the cache if we have the data already
+		String cacheKey = COURSE_CACHE_KEY_PREFIX;
+
+		if(dataTableCache.containsKey(cacheKey)) {
+
+			// Cache hit
+			dataTable = dataTableCache.get(cacheKey);
+			statisticsChartPanel.setDataTable(dataTable);
+			statisticsChartPanel.show();
+		}
+		else {
+
+			statisticsChartPanel.showUserFeedback(null);
+
+			Gradebook gbModel = Registry.get(AppConstants.CURRENT);
+
+			RestBuilder builder = RestBuilder.getInstance(
+					Method.GET,
+					GWT.getModuleBaseURL(),
+					AppConstants.REST_FRAGMENT,
+					AppConstants.STATISTICS_FRAGMENT,
+					AppConstants.COURSE_FRAGMENT,
+					gbModel.getGradebookUid(),
+					AppConstants.ALL);
+
+			builder.sendRequest(200, 400, null, new RestCallback() {
+
+				public void onError(Request request, Throwable caught) {
+
+					statisticsChartPanel.hideUserFeedback(null);
+					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsDataErrorMsg(), true));
+				}
+
+				public void onFailure(Request request, Throwable exception) {
+
+					statisticsChartPanel.hideUserFeedback(null);
+					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.statisticsDataErrorTitle(), i18n.statisticsDataErrorMsg(), true));
+				}
+
+				public void onSuccess(Request request, Response response) {
+
+					/*
+					 * The response text contains a sorted linked-list map, where the keys are the letter grades and the values
+					 * are the frequency.
+					 * e.g. {"F":0, "D-":3, "D":1, "D+":0, "C-":5, "C":0, "C+":1, "B-":0, "B":20, "B+":0, "A-":3, "A":12, "A+":1}
+					 * 
+					 */
+					JSONValue jsonValue = JSONParser.parseStrict(response.getText());
+					JSONObject jsonObject = jsonValue.isObject();
+					Set<String> keys = jsonObject.keySet();
+
+					// Initialize the datatable
+					dataTable = statisticsChartPanel.createDataTable();
+					dataTable.addColumn(ColumnType.STRING, i18n.statisticsChartLabelDistribution());
+					dataTable.addColumn(ColumnType.NUMBER, i18n.statisticsChartLabelFrequency());
+					dataTable.addRows(keys.size());
+
+					Iterator<String> iter = keys.iterator();
+					int index = 0;
+					while(iter.hasNext()) {
+
+						String key = iter.next();
+						dataTable.setValue(index, 0, key);
+						dataTable.setValue(index, 1, jsonObject.get(key).isNumber().doubleValue());
+						index++;
+					}
+
+					statisticsChartPanel.show();
+					
+					// adding the dataTable to the cache
+					dataTableCache.put(COURSE_CACHE_KEY_PREFIX, dataTable);
+
 					statisticsChartPanel.hideUserFeedback(null);
 				}
 			});

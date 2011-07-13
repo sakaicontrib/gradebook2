@@ -48,6 +48,7 @@ public abstract class EntityPanel extends ContentPanel {
 	protected CheckBox showModeField;
 	protected CheckBox showRankField;
 	protected CheckBox showItemStatsField;
+	protected CheckBox showStatisticsChart;
 	protected Field percentCourseGradeField;
 	protected Field percentCategoryField;
 	protected Field pointsField;
@@ -155,6 +156,7 @@ public abstract class EntityPanel extends ContentPanel {
 		right.add(showModeField);
 		right.add(showRankField);
 		right.add(showItemStatsField);
+		right.add(showStatisticsChart);
 	}
 
 	protected abstract void initializeStores(); 
@@ -193,6 +195,7 @@ public abstract class EntityPanel extends ContentPanel {
 		showModeField = newCheckBox(ItemKey.B_SHW_MODE.name(), i18n.showModeFieldLabel(), i18n.showModeToolTip());
 		showRankField = newCheckBox(ItemKey.B_SHW_RANK.name(), i18n.showRankFieldLabel(), i18n.showRankToolTip());
 		showItemStatsField = newCheckBox(ItemKey.B_SHW_ITM_STATS.name(), i18n.showItemStatsFieldLabel(), i18n.showItemStatsToolTip());
+		showStatisticsChart = newCheckBox(ItemKey.B_SHW_STATS_CHART.name(), i18n.showStatisticsChartFieldLabel(), i18n.showStatisticsChartToolTip());
 		includedField = newCheckBox(ItemKey.B_INCLD.name(), i18n.includedFieldLabel(), i18n.includedToolTip());
 		extraCreditField = newCheckBox(ItemKey.B_X_CRDT.name(), i18n.extraCreditFieldLabel(), i18n.extraCreditToolTip());
 		equallyWeightChildrenField = newCheckBox(ItemKey.B_EQL_WGHT.name(), i18n.equallyWeightChildrenFieldLabel(), i18n.equallyWeightChildrenToolTip());

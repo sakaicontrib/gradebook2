@@ -756,6 +756,22 @@ public class ItemModel extends EntityTreeModel implements Item {
 		set(ItemKey.B_SHW_ITM_STATS.name(), showItemStatistics);
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Item#getShowStatisticsChart()
+	 */
+	public Boolean getShowStatisticsChart() {
+		return get(ItemKey.B_SHW_STATS_CHART.name());
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.client.model.Item#setShowStatisticsChart(java.lang.Boolean)
+	 */
+	public void setShowStatisticsChart(Boolean showStatisticsChart) {
+		set(ItemKey.B_SHW_STATS_CHART.name(), showStatisticsChart);
+	}
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof ItemModel) {

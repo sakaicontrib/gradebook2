@@ -78,6 +78,8 @@ public interface Item {
 	public abstract Boolean getRemoved();
 
 	public abstract Boolean getShowItemStatistics();
+	
+	public abstract Boolean getShowStatisticsChart();
 
 	public abstract Boolean getShowMean();
 
@@ -168,6 +170,8 @@ public interface Item {
 	public abstract void setRemoved(Boolean removed);
 
 	public abstract void setShowItemStatistics(Boolean showItemStatistics);
+	
+	public abstract void setShowStatisticsChart(Boolean showStatisticsChart);
 
 	public abstract void setShowMean(Boolean showMean);
 	

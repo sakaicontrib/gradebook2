@@ -266,8 +266,10 @@ public interface I18nConstants extends Constants {
 	String studentSectionDisplayIdFieldLabel();
 	String sectionsEmptyText();
 	String serviceException();
-	String showItemStatsFieldLabel();	
+	String showItemStatsFieldLabel();
+	String showStatisticsChartFieldLabel();
 	String showItemStatsToolTip();
+	String showStatisticsChartToolTip();
 	String showMeanFieldLabel();	
 	String showMeanToolTip();
 	String showMedianFieldLabel();
