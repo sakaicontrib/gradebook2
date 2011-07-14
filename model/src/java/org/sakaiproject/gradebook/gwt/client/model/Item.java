@@ -192,5 +192,9 @@ public interface Item {
 	public abstract void setScaledExtraCreditEnabled(Boolean allowScaledExtraCredit);
 	
 	public abstract List<BusinessLogicCode> getIgnoredBusinessRules();
+
+	public abstract void setNotCalculable(boolean isNotCalculable);
+
+	public abstract boolean isNotCalculable();
 	
 }

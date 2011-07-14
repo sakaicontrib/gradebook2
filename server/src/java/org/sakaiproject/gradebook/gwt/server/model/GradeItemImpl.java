@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
+import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
@@ -542,5 +543,14 @@ public class GradeItemImpl extends BaseModel implements GradeItem {
 			}
 		return rules;
 	}
+
+	public boolean isNotCalculable() {
+		return DataTypeConversionUtil.checkBoolean((Boolean)get(ItemKey.B_ISNT_CALCBLE.name()));
+	}
+	
+	public void setNotCalculable(boolean isNotCalculable) {
+		set(ItemKey.B_ISNT_CALCBLE.name(), Boolean.valueOf(isNotCalculable));
+	}
+
 	
 }

@@ -34,4 +34,6 @@ public interface I18nMessages extends Messages {
 	String importDataMinValue(String value);
 	
 	String importDataMaxValue(String value);
+	
+	String valueConfusing(String value);
 }

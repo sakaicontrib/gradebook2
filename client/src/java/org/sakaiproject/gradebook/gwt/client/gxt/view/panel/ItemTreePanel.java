@@ -209,11 +209,13 @@ public class ItemTreePanel extends GradebookPanel {
 					boolean isPercentGrade = property.equals(ItemKey.D_PCT_GRD.name());
 					boolean isPoints = property.equals(ItemKey.D_PNTS.name());
 
-					if (isPercentGrade || (isPoints && !isItem)) {
+					if (/* GRBK-678 isPercentGrade || */ isPoints && !isItem) {
 						boolean isNotCalculable = DataTypeConversionUtil.checkBoolean((Boolean)itemModel.get(ItemKey.B_ISNT_CALCBLE.name()));
-
-						if (isNotCalculable)
+						
+						if (isNotCalculable) {
 							return "?";
+						}
+							
 					}
 
 					if (value == null)
@@ -224,7 +226,7 @@ public class ItemTreePanel extends GradebookPanel {
 
 					boolean isIncluded = itemModel.getIncluded() != null && itemModel.getIncluded().booleanValue();				
 					boolean isTooBig = (isPercentCategory || isPercentGrade) 
-					&& ((Double)value).doubleValue() > 100.00001d;
+										&& ((Double)value).doubleValue() > 100.00001d;
 					boolean isTooSmall = ((isPercentCategory && isCategory) || (isPercentGrade && isGradebook)) && ((Double)value).doubleValue() < 99.9994d;
 
 					result = DataTypeConversionUtil.getShortNumberFormat().format(((Double)value).doubleValue());
@@ -552,6 +554,7 @@ public class ItemTreePanel extends GradebookPanel {
 
 		add(tabPanel);
 	}
+
 
 	private void checkCategoryTotals() {
 

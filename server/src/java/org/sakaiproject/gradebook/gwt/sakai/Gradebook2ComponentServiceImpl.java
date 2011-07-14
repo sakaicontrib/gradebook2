@@ -4191,13 +4191,30 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		BigDecimal percentGrade = BigDecimal.valueOf(pG);
 		BigDecimal percentCategorySum = BigDecimal.ZERO;
 		BigDecimal pointsSum = BigDecimal.ZERO;
+		boolean itemsDropped = categoryGradeItem != null && categoryGradeItem.getDropLowest() != null
+					&& categoryGradeItem.getDropLowest() > 0;
+		boolean unevenPoints  = false;
 
 		if (assignments != null) {
 			BigDecimal[] sums = gradeCalculations.calculatePointsCategoryPercentSum(category, assignments, isWeighted, isCategoryExtraCredit);
 			percentCategorySum = sums[0];
 			pointsSum = sums[1];
 
+			double lastPnts = -1d;
+			
+			
 			for (Assignment a : assignments) {
+				double pnts = a.getPointsPossible();
+				if(pnts != lastPnts) {
+					if (lastPnts != -1d) {
+						unevenPoints = true;
+						break;
+					}
+					lastPnts = pnts;
+				}
+			}
+			for (Assignment a : assignments) {
+				
 				BigDecimal[] result = gradeCalculations.calculateCourseGradeCategoryPercents(a, percentGrade, percentCategorySum, pointsSum, isEnforcePointWeighting);
 
 				BigDecimal courseGradePercent = result[0];
@@ -4218,6 +4235,10 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		if (gradebookGradeItem != null) {
 			gradebookGradeItem.setPoints(Double.valueOf(pointsSum.doubleValue()));
+			//GRBK-678
+			if(isWeighted && itemsDropped && unevenPoints) {
+				categoryGradeItem.setNotCalculable(true);
+			}
 		}
 
 		if (categoryGradeItem != null) {
