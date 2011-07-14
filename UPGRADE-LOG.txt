@@ -1,0 +1,34 @@
+Documenting the upgrade process between gradebook2 versions:
+
+==================
+* 1.5.x To 1.6.0 *
+==================
+
+LOG:
+- GRBK-616 : Adding DO_SHOW_STATISTICS_CHART field to edu-service/gradebook-service
+
+SQL:
+- upgrade/sakai/GRBK-616-oracle.sql
+
+PATCH:
+- upgrade/sakai/GRBK-616-edu-service.patch
+- upgrade/gradebook2/GRBK-616.patch
+
+NOTES:
+In order to run GWT DEV mode with GRBK-616 in place, you need to patch and build the 
+version of edu-service that you are referencing in .classpath.
+e.g.
+svn co https://source.sakaiproject.org/svn/edu-services/branches/edu-services-1.1.x
+cd edu-services-1.1.x
+patch -p0 < upgrade/sakai/GRBK-616-edu-service.patch
+mvn clean install
+
+Then make sure that you reference the newly built edu-service JAR, which is located
+in your local maven repository, in your .classpath file.
+
+Since the GRBK-616 changes have not been applied to the Sakai Foundation
+edu-service yet, see SAK-20844, we "disabled" the gradebook2 dependent code so that 
+it builds (Sakai Hudson). This will change once the gradebook2 dependent version of
+edu-service gets updated with the above changes.
+
+So the last step is to patch the gradebook2 source with upgrade/gradebook2/GRBK-616.patch

@@ -1,0 +1,22 @@
+diff --git server/src/java/org/sakaiproject/gradebook/gwt/sakai/Gradebook2ComponentServiceImpl.java server/src/java/org/sakaiproject/gradebook/gwt/sakai/Gradebook2ComponentServiceImpl.java
+index af4f8a3..2aa967a 100644
+--- server/src/java/org/sakaiproject/gradebook/gwt/sakai/Gradebook2ComponentServiceImpl.java
++++ server/src/java/org/sakaiproject/gradebook/gwt/sakai/Gradebook2ComponentServiceImpl.java
+@@ -4652,7 +4652,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
+ 		itemModel.setShowMode(gradebook.getShowMode());
+ 		itemModel.setShowRank(gradebook.getShowRank());
+ 		itemModel.setShowItemStatistics(gradebook.getShowItemStatistics());
+-//		itemModel.setShowStatisticsChart(gradebook.getShowStatisticsChart());
++		itemModel.setShowStatisticsChart(gradebook.getShowStatisticsChart());
+ 
+ 		Boolean isScaledExtraCreditEnabled = Boolean.FALSE;
+ 		if (stateOfScaledExtraCredit != null) {
+@@ -6556,7 +6556,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
+ 		
+ 		boolean isShowStatisticsChart = Util.checkBoolean(item.getShowStatisticsChart());
+ 		
+-//		gradebook.setShowStatisticsChart(Boolean.valueOf(isShowStatisticsChart));
++		gradebook.setShowStatisticsChart(Boolean.valueOf(isShowStatisticsChart));
+ 		
+ 		GradeMapping mapping = gradebook.getSelectedGradeMapping();
+ 		Long gradeScaleId = item.getGradeScaleId();
