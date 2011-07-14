@@ -100,8 +100,10 @@ public interface GradebookCssResource extends CssResource {
 	
 	String statisticsChartIcon();
 	
-	String containerPadding();
+	String gbStudentChart();
 	
-	String setupInstructionsLabels(); 
+	String setupInstructionsLabels();
+	
+	String gbStudentInformationPanel();
 
 }

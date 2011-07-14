@@ -1,0 +1,40 @@
+Index: hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Gradebook.hbm.xml
+===================================================================
+--- hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Gradebook.hbm.xml	(revision 94439)
++++ hibernate/src/hibernate/org/sakaiproject/tool/gradebook/Gradebook.hbm.xml	(working copy)
+@@ -49,6 +49,8 @@
+ 		<property name="showRank" column="DO_SHOW_RANK" type="boolean" not-null="false"/>
+ 		
+ 		<property name="showItemStatistics" column="DO_SHOW_ITEM_STATS" type="boolean" not-null="false"/>
++
++		<property name="showStatisticsChart" column="DO_SHOW_STATISTICS_CHART" type="boolean" not-null="false"/>
+ 		
+ 
+ 	</class>
+Index: hibernate/src/java/org/sakaiproject/tool/gradebook/Gradebook.java
+===================================================================
+--- hibernate/src/java/org/sakaiproject/tool/gradebook/Gradebook.java	(revision 94439)
++++ hibernate/src/java/org/sakaiproject/tool/gradebook/Gradebook.java	(working copy)
+@@ -56,6 +56,7 @@
+     private Boolean showMode;
+     private Boolean showRank;
+     private Boolean showItemStatistics;
++    private Boolean showStatisticsChart;
+ 
+     /**
+      * Default no-arg constructor needed for persistence
+@@ -319,6 +320,14 @@
+ 		public Boolean getScaledExtraCredit() {
+ 			return scaledExtraCredit;
+ 		}
++
++		public Boolean getShowStatisticsChart() {
++			return showStatisticsChart;
++		}
++
++		public void setShowStatisticsChart(Boolean showStatisticsChart) {
++			this.showStatisticsChart = showStatisticsChart;
++		}
+ }
+ 
+ 

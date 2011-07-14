@@ -124,7 +124,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		GRADEBOOK("Gradebook:"),  SCALED_EC("Scaled XC:"), SHOWCOURSEGRADES("ShowCourseGrades:"), SHOWRELEASEDITEMS("ShowReleasedItems:"),
 		SHOWITEMSTATS("ShowItemStats:"), SHOWMEAN("ShowMean:"), SHOWMEDIAN("ShowMedian:"), SHOWMODE("ShowMode:"), SHOWRANK("ShowRank:"),  
 		CATEGORY("Category:"), PERCENT_GRADE("% Grade:"), POINTS("Points:"), 
-		PERCENT_CATEGORY("% Category:"), DROP_LOWEST("Drop Lowest:"), EQUAL_WEIGHT("Equal Weight Items:");
+		PERCENT_CATEGORY("% Category:"), DROP_LOWEST("Drop Lowest:"), EQUAL_WEIGHT("Equal Weight Items:"), SHOWSTATISTICSCHART("ShowStatisticsChart:");
 
 		private String displayName;
 
@@ -553,7 +553,12 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		if (Util.checkBoolean(firstGBItem.getShowRank()))
 		{
 			outputStructureTwoPartExportRow(StructureRow.SHOWRANK.getDisplayName(), "true", out); 
-		}		
+		}
+		
+		if (Util.checkBoolean(firstGBItem.getShowStatisticsChart()))
+		{
+			outputStructureTwoPartExportRow(StructureRow.SHOWSTATISTICSCHART.getDisplayName(), "true", out);
+		}
 	}
 
 	private void outputStructureTwoPartExportRow(String optionName, String optionValue, ImportExportDataFile out)
@@ -2092,6 +2097,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 		OptionState showMode = checkRowOption(StructureRow.SHOWMODE, structureColumnsMap);
 		OptionState showRank = checkRowOption(StructureRow.SHOWRANK, structureColumnsMap); 
 		OptionState showReleasedItems = checkRowOption(StructureRow.SHOWRELEASEDITEMS, structureColumnsMap);
+		OptionState showStatisticsChart = checkRowOption(StructureRow.SHOWSTATISTICSCHART, structureColumnsMap);
 		
 		if (scaledEC != OptionState.NULL)
 		{
@@ -2130,6 +2136,11 @@ private GradeItem buildNewCategory(String curCategoryString,
 		if (showReleasedItems != OptionState.NULL)
 		{
 			gradebookItemModel.setReleaseItems(showReleasedItems == OptionState.TRUE ? Boolean.TRUE : Boolean.FALSE);
+		}
+		
+		if (showStatisticsChart != OptionState.NULL)
+		{
+			gradebookItemModel.setShowStatisticsChart(showStatisticsChart == OptionState.TRUE ? Boolean.TRUE : Boolean.FALSE);
 		}
 
 	}

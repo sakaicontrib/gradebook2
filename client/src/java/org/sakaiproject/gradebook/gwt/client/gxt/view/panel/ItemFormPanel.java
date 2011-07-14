@@ -1279,7 +1279,6 @@ public class ItemFormPanel extends GradebookPanel {
 			public void handleEvent(BindingEvent be) {
 				addListeners();
 			}
-
 		};
 
 		categorySelectionChangedListener = new SelectionChangedListener<ItemModel>() {
@@ -1290,7 +1289,6 @@ public class ItemFormPanel extends GradebookPanel {
 				refreshSelectedCategoryState(itemModel);
 				setChanges();
 			}
-
 		};
 
 		datePickerListener = new Listener<DatePickerEvent>() {
@@ -1298,8 +1296,8 @@ public class ItemFormPanel extends GradebookPanel {
 			public void handleEvent(DatePickerEvent be) {
 				setChanges();
 			}
-
 		};
+		
 		// GRBK-1054
 		categoryTypeSelectionChangedListener = new SelectionChangedListener<ModelData>() {
 
@@ -1311,6 +1309,7 @@ public class ItemFormPanel extends GradebookPanel {
 				setChanges();
 			}
 		};
+		
 		// GRBK-1054
 		gradeTypeSelectionChangedListener = new SelectionChangedListener<ModelData>() {
 
@@ -1321,7 +1320,6 @@ public class ItemFormPanel extends GradebookPanel {
 				informationMessageGradeTypeInGradebookSetup.setHtml(catText);
 				setChanges();
 			}
-
 		};
 
 		keyListener = new KeyListener() {
@@ -1329,15 +1327,14 @@ public class ItemFormPanel extends GradebookPanel {
 			public void componentKeyPress(ComponentEvent event) {
 				setChanges();
 			}
-
 		};
 
 		checkboxChangeListener = new Listener<FieldEvent>() {
 
 			public void handleEvent(FieldEvent fe) {
 				setChanges();
+				manageDisplayToStudentOptions();
 			}
-
 		};
 
 		enforcePointWeightingListener = new Listener<FieldEvent>() {
@@ -1364,7 +1361,6 @@ public class ItemFormPanel extends GradebookPanel {
 					initField(dropLowestField, !isDelete, isDropLowestVisible);
 				}
 			}
-
 		};
 
 		extraCreditChangeListener = new Listener<FieldEvent>() {
@@ -1413,7 +1409,6 @@ public class ItemFormPanel extends GradebookPanel {
 					initField(equallyWeightChildrenField, !isDelete, hasWeights && !isWeightByPoints);
 				}
 			}
-
 		};
 
 		selectionListener = new SelectionListener<ButtonEvent>() {
@@ -1830,6 +1825,27 @@ public class ItemFormPanel extends GradebookPanel {
 		cancelButton.setData(selectionTypeField, SelectionType.CLOSE);
 	}
 
+	/*
+	 * GRBK-616
+	 * Helper method that manages the "Released items:" (RI) and "Statistics Chart:" SC
+	 * dependencies.
+	 * If RI is checked enable SC
+	 * If RI is unchecked disable SC and un-check SC
+	 */
+	private void manageDisplayToStudentOptions() {
+		
+		boolean enableShowStatisticsChartField = DataTypeConversionUtil.checkBoolean(releaseItemsField.getValue());
+		
+		if(enableShowStatisticsChartField) {
+		
+			showStatisticsChartField.enable();
+		}
+		else {
+			showStatisticsChartField.setValue(Boolean.FALSE);
+			showStatisticsChartField.disable();
+		}
+	}
+	
 	private void clearActiveRecord() {
 		Record record = null;
 		if (selectedItemModel != null) {

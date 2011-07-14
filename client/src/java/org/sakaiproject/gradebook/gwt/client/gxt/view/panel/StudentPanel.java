@@ -71,6 +71,7 @@ import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Store;
 import com.extjs.gxt.ui.client.store.StoreSorter;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
+import com.extjs.gxt.ui.client.widget.HorizontalPanel;
 import com.extjs.gxt.ui.client.widget.Html;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
@@ -132,7 +133,8 @@ public class StudentPanel extends GradebookPanel {
 	private TextField<String> defaultTextField= new TextField<String>();
 	private TextArea defaultTextArea = new TextArea();
 	private FlexTable studentInformation;
-	private ContentPanel studentInformationPanel, gradeInformationPanel, textPanel, topPanel;
+	private ContentPanel studentInformationPanel, gradeInformationPanel, textPanel;
+	private HorizontalPanel topPanel;
 	private Html textNotification;
 	private LayoutContainer cardLayoutContainer;
 	private CardLayout cardLayout;
@@ -181,13 +183,14 @@ public class StudentPanel extends GradebookPanel {
 		studentInformation = new FlexTable(); 
 		studentInformation.setStyleName(resources.css().gbStudentInformation());
 		studentInformationPanel = new ContentPanel();
-		studentInformationPanel.setBorders(true);
+		studentInformationPanel.setBorders(false);
 		studentInformationPanel.setFrame(true);
 		studentInformationPanel.setHeaderVisible(false);
 		// Make it the same height as the chart
 		studentInformationPanel.setHeight(AppConstants.CHART_HEIGHT);
+		studentInformationPanel.setWidth(500);
 		studentInformationPanel.setLayout(new FitLayout());
-		studentInformationPanel.setStyleName(resources.css().containerPadding());
+		studentInformationPanel.setStyleName(resources.css().gbStudentInformationPanel());
 		studentInformationPanel.add(studentInformation);
 		
 		statisticsChartPanel = new StatisticsChartPanel(ChartIconPlacement.RIGHT);
@@ -195,20 +198,16 @@ public class StudentPanel extends GradebookPanel {
 		statisticsChartPanel.setSize(AppConstants.CHART_WIDTH, AppConstants.CHART_HEIGHT);
 		statisticsChartPanel.setChartHeight(AppConstants.CHART_HEIGHT - 50);
 		statisticsChartPanel.setChartWidth(AppConstants.CHART_WIDTH - 50);
-		statisticsChartPanel.setStyleName(resources.css().containerPadding());
+		statisticsChartPanel.setStyleName(resources.css().gbStudentChart());
+		statisticsChartPanel.setWidth(610);
 		
 		// Initially, we mask and hide the statistics chart panel
 		statisticsChartPanel.mask();
 		statisticsChartPanel.hide();
 		
-		/*
-		 *  TODO: May have to override onResize() similar to what we do in gradeInformationPanel
-		 */
-		topPanel = new ContentPanel();
-		topPanel.setLayout(new ColumnLayout());
-		
-		topPanel.add(studentInformationPanel, new ColumnData(500));
-		topPanel.add(statisticsChartPanel, new ColumnData(610));
+		topPanel = new HorizontalPanel();
+		topPanel.add(studentInformationPanel);
+		topPanel.add(statisticsChartPanel);
 		
 		add(topPanel); 
 
@@ -304,7 +303,6 @@ public class StudentPanel extends GradebookPanel {
 
 		column = new ColumnConfig(Key.S_GRD.name(), i18n.scoreName(), 60);
 		column.setGroupable(false);
-		//column.setAlignment(Style.HorizontalAlignment.RIGHT);
 		column.setMenuDisabled(true);
 		column.setRenderer(new GridCellRenderer<ModelData>() {
 
@@ -325,7 +323,6 @@ public class StudentPanel extends GradebookPanel {
 
 		outOfColumn = new ColumnConfig(Key.S_OUTOF.name(), i18n.outOfName(), 60);
 		outOfColumn.setGroupable(false);
-		//outOfColumn.setAlignment(Style.HorizontalAlignment.RIGHT);
 		outOfColumn.setMenuDisabled(true);
 		columns.add(outOfColumn);
 
@@ -367,18 +364,38 @@ public class StudentPanel extends GradebookPanel {
 
 			@Override
 			public void selectionChanged(SelectionChangedEvent<BaseModel> sce) {
+				
+				// Check if user selected show statistics chart 
+				
 				BaseModel score = sce.getSelectedItem();
 				
 				if (score != null) {
 					
 					// Don't show the comments form if the user clicks on the Course Grade item
 					if(COURSE_GRADE_ID.equals(score.get(Key.S_ID.name()))) {
+						
 						commentsPanel.hide();
-						getCourseStatisticsChartData();
+						
+						/*
+						 * Only show statistics charts if the user checked the 
+						 * "Statistics Chart" option in the "Set Up Gradebook" page
+						 */
+						if(showStatisticsChart()) {
+						
+							getCourseStatisticsChartData();
+						}
 					}
 					else {
 						
-						getGradeItemStatisticsChartData((String)score.get(Key.S_ITM_ID.name()));
+						/*
+						 * Only show statistics charts if the user checked the 
+						 * "Statistics Chart" option in the "Set Up Gradebook" page
+						 */
+						if(showStatisticsChart()) {
+							
+							getGradeItemStatisticsChartData((String)score.get(Key.S_ITM_ID.name()));
+						}
+						
 						formBinding.bind(score);
 						commentsPanel.show();
 					}
@@ -394,7 +411,6 @@ public class StudentPanel extends GradebookPanel {
 
 		grid = new Grid<BaseModel>(store, cm);
 		grid.setBorders(true);
-		//grid.setAutoHeight(true);
 		grid.setSelectionModel(selectionModel);
 		grid.setView(view);
 
@@ -1114,5 +1130,25 @@ public class StudentPanel extends GradebookPanel {
 				}
 			});
 		}
+	}
+	
+	/*
+	 * Helper method that checks if the user selected the show statistics chart option
+	 */
+	private boolean showStatisticsChart() {
+		
+		if(null == selectedGradebook) {
+			
+			return false;
+		}
+		
+		Item gradebookItemModel = selectedGradebook.getGradebookItemModel();
+		
+		if(null == gradebookItemModel) {
+			
+			return false;
+		}
+		
+		return DataTypeConversionUtil.checkBoolean(gradebookItemModel.getShowStatisticsChart());
 	}
 }

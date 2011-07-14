@@ -4652,6 +4652,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		itemModel.setShowMode(gradebook.getShowMode());
 		itemModel.setShowRank(gradebook.getShowRank());
 		itemModel.setShowItemStatistics(gradebook.getShowItemStatistics());
+//		itemModel.setShowStatisticsChart(gradebook.getShowStatisticsChart());
 
 		Boolean isScaledExtraCreditEnabled = Boolean.FALSE;
 		if (stateOfScaledExtraCredit != null) {
@@ -6553,14 +6554,9 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		gradebook.setShowItemStatistics(Boolean.valueOf(isShowItemStatistics));
 		
-		/*
-		 *  TODO: GRBK-616
-		 *  
-		 *  Waiting to hear on how to modify Sakai edu-service. See GRBK-616 for more details
-		 */
 		boolean isShowStatisticsChart = Util.checkBoolean(item.getShowStatisticsChart());
-		// FIXME: persist in Sakai edu-service like all the other statistic fields 
 		
+//		gradebook.setShowStatisticsChart(Boolean.valueOf(isShowStatisticsChart));
 		
 		GradeMapping mapping = gradebook.getSelectedGradeMapping();
 		Long gradeScaleId = item.getGradeScaleId();
