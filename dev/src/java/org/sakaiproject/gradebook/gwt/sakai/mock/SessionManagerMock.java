@@ -34,8 +34,7 @@ public class SessionManagerMock implements SessionManager {
 	public String getCurrentSessionUserId() {
 		
 		if(null != session) {
-			
-			return session.getId();
+			return session.getUserId();
 		}
 		
 		return null;
