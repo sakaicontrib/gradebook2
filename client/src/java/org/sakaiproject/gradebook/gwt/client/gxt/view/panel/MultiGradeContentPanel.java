@@ -354,7 +354,6 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		if (gridContextMenu != null)
 			grid.setContextMenu(gridContextMenu);
 
-
 		add(grid);
 	}
 
@@ -997,7 +996,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 
 		unweightedNumericCellRenderer = new UnweightedNumericCellRenderer();
 		extraCreditNumericCellRenderer = new ExtraCreditNumericCellRenderer();
-
+		
 		searchToolBar = new ToolBar();
 
 		if (!isImport) {

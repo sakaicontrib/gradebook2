@@ -680,15 +680,24 @@ public class ImportPanel extends GradebookPanel {
 			public void handleEvent(BaseEvent be) {
 				importSettings.setScantronMaxPoints(pntsField.getValue());
 
+				Double maxPnts = Double.valueOf(Integer.parseInt(importSettings.getScantronMaxPoints()));
+				
+				
 				@SuppressWarnings("unchecked")
 				List<ItemModel> gradeItems = (List<ItemModel>) setupPanel.getGradeItems(gradebookItemModel);
+				ItemModel i = gradeItems.get(0);
+				
 				List<Learner> rows = upload.getRows();
+				for (Learner row : rows) {
+					Double pnts = Double.valueOf((String)row.get(i.getIdentifier()));
+					row.set(i.getIdentifier(), "" + pnts/maxPnts);
+				}
 				/*
 				 * this is scantron with only one key in it which is *not* in LearnerKey: an item
 				 */
-				ItemModel i = gradeItems.get(0);
+				
 				gradeItems.remove(i);
-				i.setPoints(Double.valueOf(Integer.parseInt(importSettings.getScantronMaxPoints())));
+				i.setPoints(maxPnts);
 				gradeItems.add(i);
 				setupPanel.getItemStore().removeAll();
 				refreshSetupPanel();
