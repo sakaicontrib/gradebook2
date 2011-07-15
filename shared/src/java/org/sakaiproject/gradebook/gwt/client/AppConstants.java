@@ -289,6 +289,7 @@ public interface AppConstants {
 	public static final String USER_FIELD_DISPLAY_ID = "displayId";
 	// GRBK-943 - We present an alert message if the number of GB rows is bigger than...
 	public static final int ITEM_MANIP_PERFORMANCE_TRIGGER = 24;
+	public static final String LOADINGPANELID = "loading";
 	
 	
 }

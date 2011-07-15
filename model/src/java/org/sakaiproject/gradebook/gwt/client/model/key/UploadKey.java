@@ -18,7 +18,7 @@ public enum UploadKey {
 	G_GRD_TYPE("gradeType"),
 	C_CTGRY_TYPE("categoryType"),
 	// import settings
-	M_IMPRTSETGS("importsettings"),
+	M_IMPRTSETGS("importSettings"),
 	B_SCNTRN("scantron"),
 	B_OVRWRT("overwrite"),
 	S_MXPNTS("maxpoints");

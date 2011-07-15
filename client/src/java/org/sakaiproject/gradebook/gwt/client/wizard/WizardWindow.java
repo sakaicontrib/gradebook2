@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.api.Card;
 import org.sakaiproject.gradebook.gwt.client.api.Wizard.Indicator;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
@@ -87,27 +88,28 @@ import com.google.gwt.user.client.ui.Image;
  */
 public class WizardWindow extends Window {
 
-
+	I18nConstants i18n = Registry.get(AppConstants.I18N);
+	
 	/** The status bar text. */
-	private String statusBarText = "Saving...";
+	private String statusBarText = i18n.wizardDefaultStatusBarText(); // "Saving...";
 
 	/** The previous button text. */
-	private String previousButtonText = "< Previous";
+	private String previousButtonText = i18n.wizardDefaultPreviousButton(); // "< Previous";
 
 	/** The next button text. */
-	private String nextButtonText = "Next >";
+	private String nextButtonText = i18n.wizardDefaultNextButton(); // "Next >";
 
 	/** The cancel button text. */
-	private String cancelButtonText = "Cancel";
+	private String cancelButtonText = i18n.cancelButton(); // "Cancel";
 
 	/** The finish button text. */
-	private String finishButtonText = "Finish";
+	private String finishButtonText = i18n.wizardDefaultFinishButton(); // "Finish";
 
 	/** The indicate step text. */
-	private String indicateStepText = "Step ";
+	private String indicateStepText = i18n.wizardDefaultStepDescriptor(); // "Step ";
 
 	/** The indicate of text. */
-	private String indicateOfText = " of ";
+	private String indicateOfText = i18n.wizardDefaultOutOfDescriptor(); // " of ";
 
 	/** The current step. */
 	private int currentStep = 0;

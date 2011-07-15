@@ -409,10 +409,6 @@ public interface I18nConstants extends Constants {
 	String gradeFormatCannotBeChangedWarning();
 	String gradeFormatNormalTooltip();
 	
-	// Mr. Wizard
-	String needValidEmail();
-	
-	
 	// GRBK-1054
 	
 	String gradebookSetupCategoryMessageForNoCats();
@@ -433,7 +429,19 @@ public interface I18nConstants extends Constants {
 	String gradebookSetupInstructionalForGradeTypeGroupingHeading();
 
 	String categoryTypePickerTooltip();
-	String gradeTypePickerTooltip(); 
+	String gradeTypePickerTooltip();
+	String unexpectedResponseFromServer();
+	
+	// Mr. Wizard
+	String needValidEmail();
+	String importWizardCardTitlePointsPossible();
+	String importWizardTitle();
+	String wizardDefaultStatusBarText();
+	String wizardDefaultPreviousButton();
+	String wizardDefaultNextButton();
+	String wizardDefaultFinishButton();
+	String wizardDefaultStepDescriptor();
+	String wizardDefaultOutOfDescriptor(); 
 
 
 }

@@ -137,7 +137,7 @@ public class GradebookApplication implements EntryPoint  {
 	
 	private void warnUser(Throwable e) {
 		
-		GXT.hideLoadingPanel("loading");
+		GXT.hideLoadingPanel(AppConstants.LOADINGPANELID);
 		RootPanel.get().clear();
 		RootPanel rootPanel = RootPanel.get("alert");
 		rootPanel.clear();
@@ -152,7 +152,7 @@ public class GradebookApplication implements EntryPoint  {
 		Registry.register(AppConstants.WIDGET_INJECTOR, injector);
 		
 		dispatcher.dispatch(GradebookEvents.Load.getEventType(), authModel);
-		GXT.hideLoadingPanel("loading");
+		GXT.hideLoadingPanel(AppConstants.LOADINGPANELID);
 	}
 	
 	private void onApplicationModelFailure(int i, Throwable caught) {

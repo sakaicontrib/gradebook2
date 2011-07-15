@@ -38,6 +38,8 @@ public class RestBuilder extends RequestBuilder {
 		
 		GET, POST, PUT, DELETE
 	};
+	
+	protected I18nConstants i18n = Registry.get(AppConstants.I18N);
 
 	protected RestBuilder(String method, String url) {
 		
@@ -181,12 +183,12 @@ public class RestBuilder extends RequestBuilder {
 												+ response.getStatusCode()), response.getStatusCode());
 							default:
 								callback.onError(request, new Exception(
-										"Unexpected response from server: "
+										i18n.unexpectedResponseFromServer()
 												+ response.getStatusCode()), response.getStatusCode());
 							}
 						} else {
 							callback.onError(request, new Exception(
-									"Unexpected response from server: "
+									i18n.unexpectedResponseFromServer()
 											+ response.getStatusCode()), response.getStatusCode());
 						}
 					}

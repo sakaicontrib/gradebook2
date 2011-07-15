@@ -83,7 +83,7 @@ public abstract class AppView extends View {
 		};
 		realViewport.setEnableScroll(false);
 		realViewport.setLayout(new FillLayout());
-		realViewport.setLoadingPanelId("loading");
+		realViewport.setLoadingPanelId(AppConstants.LOADINGPANELID);
 		
 		viewport = new LayoutContainer();
 		realViewport.add(viewport);

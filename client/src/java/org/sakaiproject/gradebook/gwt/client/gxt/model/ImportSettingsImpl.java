@@ -19,10 +19,6 @@ public class ImportSettingsImpl extends EntityModel implements ImportSettings {
 	
 	public ImportSettingsImpl(EntityModel e) {
 		super(e.getOverlay());
-		
-		 //TODO: remove below cuz it is only there to make me feel safe, I think.
-		setScantron(isScantron());
-		setForceOverwriteAssignments(isForceOverwriteAssignments());
 	}
 	
 	

@@ -223,7 +223,7 @@ public class ImportPanel extends GradebookPanel {
 				}
 			}
 		};
-		forceOverwriteDialog.setHeading("Warning!");
+		forceOverwriteDialog.setHeading(i18n.exportWarnUserFileCannotBeImportedTitle());
 		forceOverwriteDialog.setBodyStyle("fontWeight:bold;padding:13px;");
 		forceOverwriteDialog.setSize(300, 100);
 		forceOverwriteDialog.setHideOnButtonClick(true);
@@ -307,7 +307,7 @@ public class ImportPanel extends GradebookPanel {
 		}
 
 		if (msgsFromServer != null && msgsFromServer.length() > 0){
-			Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent("Warning", msgsFromServer, true, true));
+			Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.exportWarnUserFileCannotBeImportedTitle(), msgsFromServer, true, true));
 		}
 	}
 
@@ -629,7 +629,7 @@ public class ImportPanel extends GradebookPanel {
 
 		// 1st card - a welcome
 		
-		Card card1 = wizard.newCard("Points Possible");//TODO i18n
+		Card card1 = wizard.newCard(i18n.importWizardCardTitlePointsPossible());//TODO i18n
 		
 		wizard.setClosable(false);
 		wizard.setShowWestImageContainer(false);
@@ -711,7 +711,7 @@ public class ImportPanel extends GradebookPanel {
 		
 		card1.setFormPanel(formpanel);
 		
-		wizard.setHeading("Import Process Input Request");
+		wizard.setHeading(i18n.importWizardTitle());
 		wizard.setHeaderTitle("SCANTRON");
 		
 		wizard.show();
