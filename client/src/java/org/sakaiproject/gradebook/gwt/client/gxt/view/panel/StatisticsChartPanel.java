@@ -115,6 +115,11 @@ public class StatisticsChartPanel extends ContentPanel {
 
 		this(null, chartIconPlacement);
 	}
+	
+	public StatisticsChartPanel(StatisticsChartLoaderListener statisticsChartLoaderListener) {
+		
+		this(statisticsChartLoaderListener, ChartIconPlacement.BOTTOM);
+	}
 
 	public StatisticsChartPanel(
 			StatisticsChartLoaderListener statisticsChartLoaderListener,

@@ -127,6 +127,13 @@ public class GradeScalePanel extends GradebookPanel implements StatisticsChartLo
 	
 	// GRBK-1013
 	private boolean hasGradeScaleUpdates = false;
+	
+	/*
+	 *  GRBK-1071:
+	 *  We don't need to get the statistics data if the visualization
+	 *  API hasn't been loaded yet.
+	 */
+	private boolean canGetStatisticsChartData = false;
 
 	public GradeScalePanel(boolean isEditable, final TreeView treeView) {
 
@@ -232,7 +239,6 @@ public class GradeScalePanel extends GradebookPanel implements StatisticsChartLo
 					toggleCheckBox.setToolTip(toolTipOn); 
 					statisticsChartPanel.unmask();
 					if(hasChartUpdates) {
-						
 						getStatisticsChartData();
 						hasChartUpdates = false;
 					}
@@ -376,7 +382,7 @@ public class GradeScalePanel extends GradebookPanel implements StatisticsChartLo
 
 		horizontalPanel = new HorizontalPanel();
 		horizontalPanel.add(grid);
-		statisticsChartPanel = new StatisticsChartPanel();
+		statisticsChartPanel = new StatisticsChartPanel(this);
 		statisticsChartPanel.setLegendPosition(LegendPosition.TOP);
 		statisticsChartPanel.setChartWidth(500);
 		horizontalPanel.add(statisticsChartPanel);
@@ -522,6 +528,15 @@ public class GradeScalePanel extends GradebookPanel implements StatisticsChartLo
 
 	private void getStatisticsChartData() {
 
+		/*
+		 *  GRBK-1071
+		 *  No need to get the data if the visualization API hasn't been loaded yet
+		 */
+		if(!canGetStatisticsChartData) {
+			
+			return;
+		}
+		
 		showUserFeedback();
 		
 		Gradebook gbModel = Registry.get(AppConstants.CURRENT);
@@ -625,8 +640,13 @@ public class GradeScalePanel extends GradebookPanel implements StatisticsChartLo
 		}
 	}
 
+	/*
+	 * Implementing the StatisticsChartLoaderListener API. The StatisticsChartPanel
+	 * does calls this method once the visualization API has been loaded. 
+	 */
 	public void load() {
 		
+		canGetStatisticsChartData = true;
 		getStatisticsChartData();
 	}
 }
