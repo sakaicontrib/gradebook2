@@ -442,7 +442,7 @@ public class StudentPanel extends GradebookPanel {
 		};
 		gradeInformationPanel.setBorders(true);
 		gradeInformationPanel.setFrame(true);
-		gradeInformationPanel.setHeading("Individual Scores (click on a row to see comments and statistics chart)");
+		// NOTE: The header is set in the setGradeInfoTable() method
 		gradeInformationPanel.setLayout(new ColumnLayout());
 		gradeInformationPanel.add(grid, new ColumnData(795));
 		FormLayout commentLayout = new FormLayout();
@@ -602,25 +602,25 @@ public class StudentPanel extends GradebookPanel {
 		// Now, let's update the student information table
 		FlexCellFormatter formatter = studentInformation.getFlexCellFormatter();
 
-		studentInformation.setText(PI_ROW_NAME, PI_COL_HEADING, "Name");
+		studentInformation.setText(PI_ROW_NAME, PI_COL_HEADING, i18n.studentPanelHeadingName());
 		formatter.setWidth(PI_ROW_NAME, PI_COL_HEADING, FIRST_COLUMN_WIDTH);
 		formatter.setStyleName(PI_ROW_NAME, PI_COL_HEADING, resources.css().gbImpact());
 		formatter.setWordWrap(PI_ROW_NAME, PI_COL_HEADING, false);
 		studentInformation.setText(PI_ROW_NAME, PI_COL_VALUE, (String)learnerGradeRecordCollection.get(LearnerKey.S_DSPLY_NM.name()));
 
-		studentInformation.setText(PI_ROW_EMAIL, PI_COL_HEADING, "Email");
+		studentInformation.setText(PI_ROW_EMAIL, PI_COL_HEADING, i18n.studentPanelHeadingEmail());
 		formatter.setWidth(PI_ROW_EMAIL, PI_COL_HEADING, FIRST_COLUMN_WIDTH);
 		formatter.setStyleName(PI_ROW_EMAIL, PI_COL_HEADING, resources.css().gbImpact());
 		formatter.setWordWrap(PI_ROW_EMAIL, PI_COL_HEADING, false);
 		studentInformation.setText(PI_ROW_EMAIL, PI_COL_VALUE, (String)learnerGradeRecordCollection.get(LearnerKey.S_EMAIL.name()));
 
-		studentInformation.setText(PI_ROW_ID, PI_COL_HEADING, "Id");
+		studentInformation.setText(PI_ROW_ID, PI_COL_HEADING, i18n.studentPanelHeadingId());
 		formatter.setWidth(PI_ROW_ID, PI_COL_HEADING, FIRST_COLUMN_WIDTH);
 		formatter.setStyleName(PI_ROW_ID, PI_COL_HEADING, resources.css().gbImpact());
 		formatter.setWordWrap(PI_ROW_ID, PI_COL_HEADING, false);
 		studentInformation.setText(PI_ROW_ID, PI_COL_VALUE, (String)learnerGradeRecordCollection.get(LearnerKey.S_DSPLY_ID.name()));
 
-		studentInformation.setText(PI_ROW_SECTION, PI_COL_HEADING, "Section");
+		studentInformation.setText(PI_ROW_SECTION, PI_COL_HEADING, i18n.studentPanelHeadingSection());
 		formatter.setWidth(PI_ROW_SECTION, PI_COL_HEADING, FIRST_COLUMN_WIDTH);
 		formatter.setStyleName(PI_ROW_SECTION, PI_COL_HEADING, resources.css().gbImpact());
 		formatter.setWordWrap(PI_ROW_SECTION, PI_COL_HEADING, false);
@@ -640,7 +640,7 @@ public class StudentPanel extends GradebookPanel {
 
 
 			if (doReleaseGrades) {
-				studentInformation.setText(PI_ROW_COURSE_GRADE, PI_COL_HEADING, "Course Grade");
+				studentInformation.setText(PI_ROW_COURSE_GRADE, PI_COL_HEADING, i18n.studentPanelCourseGrade());
 				formatter.setStyleName(PI_ROW_COURSE_GRADE, PI_COL_HEADING, resources.css().gbImpact());
 				studentInformation.setText(PI_ROW_COURSE_GRADE, PI_COL_VALUE, (String)learnerGradeRecordCollection.get(LearnerKey.S_LTR_GRD.name()));
 
@@ -649,7 +649,7 @@ public class StudentPanel extends GradebookPanel {
 				if (!isLetterGrading)
 				{
 					String calculatedGrade = (String)learnerGradeRecordCollection.get(LearnerKey.S_CALC_GRD.name());
-					studentInformation.setHTML(PI_ROW_CALCULATED_GRADE, PI_COL_HEADING, "Calculated Grade");
+					studentInformation.setHTML(PI_ROW_CALCULATED_GRADE, PI_COL_HEADING, i18n.studentPanelCalculatedGrade());
 					formatter.setStyleName(PI_ROW_CALCULATED_GRADE, PI_COL_HEADING, resources.css().gbImpact());
 					formatter.setWordWrap(PI_ROW_CALCULATED_GRADE, PI_COL_HEADING, false);
 					studentInformation.setText(PI_ROW_CALCULATED_GRADE, PI_COL_VALUE, calculatedGrade);
@@ -657,12 +657,12 @@ public class StudentPanel extends GradebookPanel {
 				
 				if (isShowRank)
 				{
-					studentInformation.setText(PI_ROW_RANK, PI_COL_HEADING, "Rank");
+					studentInformation.setText(PI_ROW_RANK, PI_COL_HEADING, i18n.studentPanelRank());
 					formatter.setStyleName(PI_ROW_RANK, PI_COL_HEADING, resources.css().gbImpact());
 					if (displayRank)
 						studentInformation.setText(PI_ROW_RANK, PI_COL_VALUE, courseGradeStats.getRank());
 					else
-						studentInformation.setText(PI_ROW_RANK, PI_COL_VALUE, "Visible to Student");
+						studentInformation.setText(PI_ROW_RANK, PI_COL_VALUE, i18n.studentPanelVisibleToStudent());
 				} else {
 					studentInformation.setText(PI_ROW_RANK, PI_COL_HEADING, "");
 					studentInformation.setText(PI_ROW_RANK, PI_COL_VALUE, "");
@@ -677,11 +677,6 @@ public class StudentPanel extends GradebookPanel {
 				cm.setHidden(cm.getIndexById(medianColumn.getId()), !isShowItemStatistics || !isShowMedian);	
 				cm.setHidden(cm.getIndexById(modeColumn.getId()), !isShowItemStatistics || !isShowMode);
 			}
-			else
-			{
-				GWT.log("Course stats is null", null);
-			}
-
 		} 
 		studentInformationPanel.show();
 	}
@@ -712,11 +707,11 @@ public class StudentPanel extends GradebookPanel {
 
 		switch (categoryType) {
 		case WEIGHTED_CATEGORIES:
-			categoryName.append(" (").append(category.getPercentCourseGrade()).append("% of course grade)");
+			categoryName.append(" (").append(category.getPercentCourseGrade()).append(i18n.studentPanelPercentOfCourseGrade()).append(")");
 			if (!isIncluded)
-				model.set(Key.S_ITM_WGHT.name(), "Excluded");
+				model.set(Key.S_ITM_WGHT.name(), i18n.studentPanelExcluded());
 			else if (isExcused) 
-				model.set(Key.S_ITM_WGHT.name(), "Dropped");
+				model.set(Key.S_ITM_WGHT.name(), i18n.studentPanelDropped());
 			else
 				model.set(Key.S_ITM_WGHT.name(), NumberFormat.getDecimalFormat().format(((Double)item.getPercentCourseGrade())));
 
@@ -724,7 +719,7 @@ public class StudentPanel extends GradebookPanel {
 			if (category != null) {
 				int dropLowest = category.getDropLowest() == null ? 0 : category.getDropLowest().intValue();
 				if (dropLowest > 0)
-					categoryName.append(" (drop lowest ").append(dropLowest).append(")");
+					categoryName.append(" (").append(i18n.studentPanelDropLowest()).append(" ").append(dropLowest).append(")");
 			}
 			model.set(Key.S_CTGRY_NM.name(), categoryName.toString());
 			id.append(item.getCategoryId()).append(":");
@@ -793,6 +788,20 @@ public class StudentPanel extends GradebookPanel {
 		CategoryType categoryType = gradebookItemModel.getCategoryType();
 		GradeType gradeType = gradebookItemModel.getGradeType();
 
+		/*
+		 * Setting the Grade Info Table (gradeInformationPanel) heading. We show
+		 * a different heading depending if the student can click on a row to see 
+		 * the statistics chart
+		 */
+		if(showStatisticsChart()) {
+			
+			gradeInformationPanel.setHeading(i18n.studentPanelGradeInfoTableHeaderWithChart());
+		}
+		else {
+			
+			gradeInformationPanel.setHeading(i18n.studentPanelGradeInfoTableHeader());
+		}
+		
 		int weightColumnIndex = cm.findColumnIndex(weightColumn.getDataIndex());
 		int outOfColumnIndex = cm.findColumnIndex(outOfColumn.getDataIndex());
 
@@ -845,7 +854,7 @@ public class StudentPanel extends GradebookPanel {
 						BaseModel gradebookStatisticsModel = new BaseModel();
 
 						gradebookStatisticsModel.set(Key.S_ID.name(), COURSE_GRADE_ID);
-						gradebookStatisticsModel.set(Key.S_CTGRY_NM.name(), "Course Statistics");
+						gradebookStatisticsModel.set(Key.S_CTGRY_NM.name(), i18n.studentPanelCourseStatistics());
 						gradebookStatisticsModel.set(Key.S_ITM_NM.name(), gradebookStatistics.getName());
 						gradebookStatisticsModel.set(Key.S_ITM_WGHT.name(), "-");
 						gradebookStatisticsModel.set(Key.S_GRD.name(), "-");

@@ -443,5 +443,22 @@ public interface I18nConstants extends Constants {
 	String wizardDefaultStepDescriptor();
 	String wizardDefaultOutOfDescriptor(); 
 
-
+	// Student Panel : GRBK-616
+	String studentPanelVisibleToStudent();
+	String studentPanelPercentOfCourseGrade();
+	String studentPanelExcluded();
+	String studentPanelDropped();
+	String studentPanelDropLowest();
+	String studentPanelGradeInfoTableHeader();
+	String studentPanelGradeInfoTableHeaderWithChart();
+	String studentPanelCourseStatistics();
+	String studentPanelHeadingName();
+	String studentPanelHeadingEmail();
+	String studentPanelHeadingId();
+	String studentPanelHeadingSection();
+	String studentPanelCourseGrade();
+	String studentPanelCalculatedGrade();
+	String studentPanelRank();
+	
+	
 }
