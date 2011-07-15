@@ -1662,14 +1662,15 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 	
 	
 	public Map<String, Integer> getCourseGradeStatistics(String gradebookUid, String sectionId) throws SecurityException, InvalidDataException {
-	
-		boolean isUserAbleToGrade = authz.isUserAbleToGradeAll(gradebookUid);
 
-		if (!isUserAbleToGrade) {
+		// GRBK-1072
+		boolean isUserAbleToViewOwnGrades = authz.isUserAbleToViewOwnGrades(gradebookUid);
+
+		if (!isUserAbleToViewOwnGrades) {
 
 			throw new SecurityException(i18n.getString("statisticsGradebookNotPermitted"));
 		}
-
+		
 		// Return value
 		Map<String, Integer> gradeFrequencies = new HashMap<String, Integer>();
 
