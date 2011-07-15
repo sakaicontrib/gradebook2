@@ -291,5 +291,11 @@ public interface AppConstants {
 	public static final int ITEM_MANIP_PERFORMANCE_TRIGGER = 24;
 	public static final String LOADINGPANELID = "loading";
 	
+	// export fields (GRBK-893)
+	
+	public static final String INCLUDE_COMMENTS_FIELD = "include_comments";
+	public static final String SECTIONS_FIELD = "sections";
+	
+	
 	
 }

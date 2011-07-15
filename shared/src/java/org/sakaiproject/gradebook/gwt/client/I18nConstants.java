@@ -441,7 +441,11 @@ public interface I18nConstants extends Constants {
 	String wizardDefaultNextButton();
 	String wizardDefaultFinishButton();
 	String wizardDefaultStepDescriptor();
-	String wizardDefaultOutOfDescriptor(); 
+	String wizardDefaultOutOfDescriptor();
+	String exportIncludeComments();
+	String exportWizardHeading();
+	String exportWizardTitle();
+	String exportChoices(); 
 
 	// Student Panel : GRBK-616
 	String studentPanelVisibleToStudent();

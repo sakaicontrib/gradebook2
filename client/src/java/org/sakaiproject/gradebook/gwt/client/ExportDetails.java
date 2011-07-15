@@ -7,6 +7,7 @@ public class ExportDetails {
 	private ExportType fileType; 
 	private boolean includeStructure;
 	private String sectionUid;
+	private Boolean includeComments = true;
 
 	public String getSectionUid() {
 		return sectionUid;
@@ -19,6 +20,10 @@ public class ExportDetails {
 		this.fileType = fileType;
 		this.includeStructure = includeStructure;
 	}
+	public ExportDetails() {
+		super();
+	}
+	
 	public ExportType getFileType() {
 		return fileType;
 	}
@@ -30,6 +35,12 @@ public class ExportDetails {
 	}
 	public void setIncludeStructure(boolean includeStructure) {
 		this.includeStructure = includeStructure;
+	}
+	public void setIncludeComments(Boolean value) {
+		includeComments  = value;
+	}
+	public boolean includeComments() {
+		return includeComments;
 	}
 
 }

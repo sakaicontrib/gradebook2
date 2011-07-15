@@ -35,11 +35,15 @@ import org.sakaiproject.gradebook.gwt.client.ExportDetails;
 import org.sakaiproject.gradebook.gwt.client.ExportDetails.ExportType;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
+import org.sakaiproject.gradebook.gwt.client.api.Card;
+import org.sakaiproject.gradebook.gwt.client.api.Wizard;
+import org.sakaiproject.gradebook.gwt.client.gin.WidgetInjector;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenu;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.components.NullSensitiveCheckBox;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.BorderLayoutPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.GradeScalePanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.HistoryPanel;
@@ -50,6 +54,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.StatisticsPanel;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
+import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
@@ -57,6 +62,7 @@ import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.LayoutRegion;
 import com.extjs.gxt.ui.client.data.ModelData;
+import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
@@ -66,13 +72,22 @@ import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
+import com.extjs.gxt.ui.client.widget.Layout;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
+import com.extjs.gxt.ui.client.widget.form.CheckBox;
+import com.extjs.gxt.ui.client.widget.form.FieldSet;
+import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.LabelField;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayout;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayoutData;
 import com.extjs.gxt.ui.client.widget.layout.CardLayout;
+import com.extjs.gxt.ui.client.widget.layout.FitLayout;
+import com.extjs.gxt.ui.client.widget.layout.FormLayout;
+import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
+import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
+import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
 import com.google.gwt.user.client.Element;
@@ -82,6 +97,7 @@ import com.google.gwt.user.client.ui.AbstractImagePrototype;
 public class InstructorView extends AppView {
 
 	private static final String MENU_SELECTOR_FLAG = "menuSelector";
+	private static final String INCLUDE_COMMENTS = "inc_comments";
 	public enum MenuSelector { ADD_CATEGORY, ADD_ITEM, IMPORT, EXPORT, EXPORT_DATA, EXPORT_DATA_CSV, EXPORT_STRUCTURE, EXPORT_STRUCTURE_CSV, EXPORT_DATA_XLS, EXPORT_STRUCTURE_XLS, FINAL_GRADE, GRADE_SCALE, SETUP, HISTORY, GRADER_PERMISSION_SETTINGS, STATISTICS };
 
 	private TreeView treeView;
@@ -122,6 +138,10 @@ public class InstructorView extends AppView {
 	private GradebookResources resources;
 	private I18nConstants i18n;
 	private boolean isEditable;
+	
+	protected Wizard exportWizard = null;
+	private CheckBox exportCommentsCheckbox;
+	private ExportDetails exportDetails;
 
 	public InstructorView(Controller controller, TreeView treeView, 
 			MultigradeView multigradeView, SingleGradeView singleGradeView, 
@@ -203,6 +223,8 @@ public class InstructorView extends AppView {
 
 		viewport.add(borderLayoutContainer);
 		viewportLayout.setActiveItem(borderLayoutContainer);
+		
+		
 	}
 
 	@Override
@@ -585,11 +607,12 @@ public class InstructorView extends AppView {
 
 		menuSelectionListener = new SelectionListener<MenuEvent>() {
 
+			private CheckBox exportCommentsCheckbox = null;
+			protected ExportDetails ex;
+
 			@Override
 			public void componentSelected(MenuEvent me) {
 				MenuSelector selector = me.getItem().getData(MENU_SELECTOR_FLAG);
-				ExportDetails ex;
-
 				ExportType exportType = exportTypeByMenuSelector.get(selector);
 				boolean includeStructure = exportingSelections.contains(selector);
 				switch (selector) {
@@ -603,9 +626,11 @@ public class InstructorView extends AppView {
 				case EXPORT_STRUCTURE_XLS:
 				case EXPORT_DATA_CSV:
 				case EXPORT_STRUCTURE_CSV:
-					ex = new ExportDetails(exportType, includeStructure);
+					ex = getExportDetails();
+					ex.setFileType(exportType);
+					ex.setIncludeStructure(includeStructure);
 					ex.setSectionUid(multigradeView.getMultiGradeContentPanel().getSelectedSectionUid());							
-					handleExport(ex);
+					//handleExport(ex);
 					break;
 				case IMPORT:
 					Dispatcher.forwardEvent(GradebookEvents.StartImport.getEventType());
@@ -616,12 +641,7 @@ public class InstructorView extends AppView {
 				}
 			}
 
-			private void handleExport(ExportDetails ex) {
-				
-				Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
-				// GRBK-804 we'll now not popup as we can import percentages
-				Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType(), ex);
-			}
+			
 		};
 
 		toolBarSelectionListener = new SelectionListener<ButtonEvent>() {
@@ -633,6 +653,62 @@ public class InstructorView extends AppView {
 				Window.open(helpUrl, "_blank", "resizable=yes,scrollbars=yes,outerHeight=600,outerWidth=350");
 			}
 		};
+	}
+
+	protected ExportDetails getExportDetails() {
+		
+
+			WidgetInjector injector = Registry.get(AppConstants.WIDGET_INJECTOR);
+			exportWizard = injector.getWizardProvider().get();
+
+
+		exportDetails = new ExportDetails();
+		
+		exportWizard.setHeading(i18n.exportWizardHeading());
+		exportWizard.setHeaderTitle(i18n.exportWizardTitle());
+		exportWizard.setClosable(false);
+		exportWizard.setShowWestImageContainer(false);
+		exportWizard.setPanelBackgroundColor("#FFFFFF");
+		exportWizard.setProgressIndicator(Wizard.Indicator.PROGRESSBAR);
+		exportWizard.setFinishButtonText(i18n.headerExport());
+		
+		FormPanel formPanel = new FormPanel();
+		formPanel.setLabelWidth(500);
+		
+		Card exportBooleanChoices = exportWizard.newCard(i18n.exportChoices());
+		
+		exportCommentsCheckbox = newCheckBox(INCLUDE_COMMENTS, i18n.exportIncludeComments(), i18n.exportIncludeComments());
+		
+		exportCommentsCheckbox.setValue(true);
+		
+		formPanel.setLayout(new FormLayout());
+		formPanel.add(exportCommentsCheckbox);
+		
+		exportBooleanChoices.setFormPanel(formPanel);
+		
+		exportBooleanChoices.addFinishListener(new Listener<BaseEvent>() {
+
+			@Override
+			public void handleEvent(BaseEvent be) {
+				exportDetails.setIncludeComments(exportCommentsCheckbox.getValue());
+				handleExport(exportDetails);
+				
+			}
+			
+			private void handleExport(ExportDetails ex) {
+				
+				
+				// GRBK-804 we'll now not popup as we can import percentages
+				Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType(), ex);
+			}
+			
+		});
+		
+		exportWizard.show();
+		
+		exportWizard.resize(-60, -100);
+		
+		return exportDetails;
 	}
 
 	/*
@@ -818,5 +894,29 @@ public class InstructorView extends AppView {
 
 		return moreActionsMenu;
 	}
+	
+	protected CheckBox newCheckBox(String name, String label, String tooltip) {
+		CheckBox checkbox = null;
+		
+		checkbox = new NullSensitiveCheckBox();
+
+		checkbox.setName(name);
+		checkbox.setFieldLabel(label);
+		checkbox.setAutoHeight(false);
+		checkbox.setAutoWidth(false);
+		checkbox.setVisible(true);
+		checkbox.setToolTip(newToolTipConfig(tooltip));
+		checkbox.setReadOnly(false);
+
+		return checkbox;
+	}
+	
+	protected ToolTipConfig newToolTipConfig(String text) {
+		ToolTipConfig ttc = new ToolTipConfig(text);
+		ttc.setDismissDelay(10000);
+		return ttc;
+	}
+	
+
 
 }

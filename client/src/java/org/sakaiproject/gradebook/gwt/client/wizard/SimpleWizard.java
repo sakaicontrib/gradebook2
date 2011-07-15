@@ -45,6 +45,10 @@ public class SimpleWizard extends WizardWindow implements Wizard  {
 				
 		return newCard;
 	}
+	
+	public void reset() {
+		super.reset();
+	}
 
 	public void setHeaderTitle(String hdrtitle) {
 		super.setHeaderTitle(hdrtitle);

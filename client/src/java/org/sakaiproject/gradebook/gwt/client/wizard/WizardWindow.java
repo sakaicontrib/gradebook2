@@ -175,6 +175,43 @@ public class WizardWindow extends Window {
 		
 		
 	}
+	
+	public void reset() {
+		/*
+		 * Note: this resetting process still has some things 
+		 * to work out. Finish listeners seem to not be called
+		 * after a reset and rebuild of a card.
+		 */
+		cards = null;
+		setSize(540, 400);
+		setClosable(true);
+		setResizable(false);
+		setModal(true);
+		
+		statusBarText = i18n.wizardDefaultStatusBarText(); // "Saving...";
+		previousButtonText = i18n.wizardDefaultPreviousButton(); // "< Previous";
+		nextButtonText = i18n.wizardDefaultNextButton(); // "Next >";
+		cancelButtonText = i18n.cancelButton(); // "Cancel";
+		finishButtonText = i18n.wizardDefaultFinishButton(); // "Finish";
+		indicateStepText = i18n.wizardDefaultStepDescriptor(); // "Step ";
+		indicateOfText = i18n.wizardDefaultOutOfDescriptor(); // " of ";
+		currentStep = 0;
+		headerTitle = null;
+		headerPanel = null;
+		cardPanel = null;
+		status = new Status();
+		buttonBar = null;
+		prevBtn = null;
+		nextBtn =  null;
+		cancelBtn =  null;
+		progressIndicator = Indicator.DOT;
+		wizMainImg = GWT.getModuleBaseURL() + "ext-ux-wiz-default-pic.png";
+		hideOnFinish = true;
+		showWestImageContainer = true;
+		panelBackgroundColor ="#F6F6F6";
+		cancelListeners = new ArrayList<Listener<BaseEvent>>();
+
+	}
 
 	/**
 	 * On button pressed.
@@ -670,4 +707,5 @@ public class WizardWindow extends Window {
 		}
 		
 	}
+
 }

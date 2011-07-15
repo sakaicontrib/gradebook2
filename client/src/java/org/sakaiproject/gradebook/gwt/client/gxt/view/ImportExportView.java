@@ -49,6 +49,7 @@ public class ImportExportView extends View {
 			ExportDetails ed = (ExportDetails) event.getData(); 
 			boolean includeStructure = ed.isIncludeStructure(); 
 			String sectionUid = ed.getSectionUid();
+			boolean includeComments = ed.includeComments();
 			String fileType = "";
 			
 			switch (ed.getFileType())
@@ -97,12 +98,11 @@ public class ImportExportView extends View {
 				 *  be removed
 				 */
 				
-				final String iNamePrefix = "sections";
 				
 				for (String section : sectionsAsList) {
 					if (section != null) {
 						TextBox s = new TextBox();
-						s.setName(iNamePrefix);
+						s.setName(AppConstants.SECTIONS_FIELD);
 						s.setValue(section);
 						panel.add(s);
 					}
@@ -110,6 +110,12 @@ public class ImportExportView extends View {
 				}
 				
 			}
+			
+			TextBox commentsFlag = new TextBox();
+			commentsFlag.setName(AppConstants.INCLUDE_COMMENTS_FIELD);
+			commentsFlag.setValue(""+includeComments);
+			
+			panel.add(commentsFlag);
 			
 			downloadFileForm.addSubmitCompleteHandler(new FormPanel.SubmitCompleteHandler() {
 				

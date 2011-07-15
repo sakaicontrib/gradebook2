@@ -27,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.entity.api.Entity;
 import org.sakaiproject.exception.IdUnusedException;
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.server.BrowserDetect;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
@@ -58,7 +59,8 @@ public class Export extends Resource {
 	@Produces("application/json")
 	public String export(@PathParam("uid") String gradebookUid, 
 			@PathParam("structure") String includeStructureFlag, @PathParam("filetype") String format,
-			@FormParam("sections") List<String> sections,
+			@FormParam(AppConstants.SECTIONS_FIELD) List<String> sections,
+			@FormParam(AppConstants.INCLUDE_COMMENTS_FIELD) boolean includeComments,
 			@Context HttpServletResponse response, @Context HttpServletRequest request) throws IOException {
 		
 		boolean includeStructure = !"".equals(includeStructureFlag)
@@ -70,8 +72,7 @@ public class Export extends Resource {
 					format.split("/")[2].toLowerCase();
 	
 		List<String> sectionList = null;
-		
-		
+				
 		if (sections != null && sections.size()>0) {
 			/*
 			 *  this may not be necessary: jersey should be setting to null and not
@@ -117,7 +118,7 @@ public class Export extends Resource {
 										+ filename.toString());
 			}
 			
-				importExportUtility.exportGradebook (type, filename.toString(), out, service, gradebookUid, includeStructure, true, sectionList); 
+				importExportUtility.exportGradebook (type, filename.toString(), out, service, gradebookUid, includeStructure, includeComments, sectionList); 
 						
 			
 		} catch (FatalException e) {

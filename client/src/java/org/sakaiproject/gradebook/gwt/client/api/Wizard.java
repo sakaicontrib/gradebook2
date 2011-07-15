@@ -102,4 +102,6 @@ public interface Wizard {
 	 */
 	public void resize(int dw, int dh);
 
+	public void reset();
+
 }

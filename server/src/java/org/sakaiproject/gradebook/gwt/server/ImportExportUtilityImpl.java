@@ -578,11 +578,11 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		
 		if (fileType.equals(FileType.XLS97))
 		{
-			exportGradebookXLS (filename, outStream, service, gradebookUid, includeStructure, true, sectionUidList); 
+			exportGradebookXLS (filename, outStream, service, gradebookUid, includeStructure, includeComments, sectionUidList); 
 		}
 		else if (fileType.equals(FileType.CSV))
 		{
-			exportGradebookCSV (filename.toString(), outStream, service, gradebookUid, includeStructure, true, sectionUidList);
+			exportGradebookCSV (filename.toString(), outStream, service, gradebookUid, includeStructure, includeComments, sectionUidList);
 		}
 	}
 
