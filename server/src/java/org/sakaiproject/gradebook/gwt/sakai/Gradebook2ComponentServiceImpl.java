@@ -1663,11 +1663,24 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 	
 	public Map<String, Integer> getCourseGradeStatistics(String gradebookUid, String sectionId) throws SecurityException, InvalidDataException {
 
+		// Checking if a single section or all sections were selected
+		String siteId = getSiteId();
+		String[] realmIds = new String[1];
+
+		if(sectionId.equals(AppConstants.ALL)) {
+			realmIds[0] = new StringBuffer().append("/site/").append(siteId).toString();
+		}
+		else {
+			realmIds[0] = sectionId;
+		}
+		
 		// GRBK-1072
+		boolean isUserAbleToGrade = authz.isUserAbleToGradeAll(gradebookUid);
+		boolean isUserTAinSection = authz.isUserTAinSection(realmIds[0]);
 		boolean isUserAbleToViewOwnGrades = authz.isUserAbleToViewOwnGrades(gradebookUid);
 
-		if (!isUserAbleToViewOwnGrades) {
-
+		if (!isUserAbleToGrade && !isUserTAinSection && !isUserAbleToViewOwnGrades) {
+		
 			throw new SecurityException(i18n.getString("statisticsGradebookNotPermitted"));
 		}
 		
@@ -1703,17 +1716,6 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
 		List<Category> categories =  getCategoriesWithAssignments(gradebook.getId(), assignments, true);
 		Site site = getSite();
-		
-		// Checking if a single section or all sections were selected
-		String siteId = getSiteId();
-		String[] realmIds = new String[1];
-
-		if(sectionId.equals(AppConstants.ALL)) {
-			realmIds[0] = new StringBuffer().append("/site/").append(siteId).toString();
-		}
-		else {
-			realmIds[0] = sectionId;
-		}
 		
 		List<User> users = findSectionMembers(getLearnerRoleNames(), realmIds);
 		log.debug("DEBUG: number of users = " + users.size());
