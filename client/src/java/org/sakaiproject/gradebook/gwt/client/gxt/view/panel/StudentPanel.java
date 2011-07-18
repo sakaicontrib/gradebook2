@@ -73,7 +73,6 @@ import com.extjs.gxt.ui.client.store.StoreSorter;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.HorizontalPanel;
 import com.extjs.gxt.ui.client.widget.Html;
-import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.FormPanel.LabelAlign;
 import com.extjs.gxt.ui.client.widget.form.TextArea;
@@ -84,9 +83,6 @@ import com.extjs.gxt.ui.client.widget.grid.Grid;
 import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.grid.GridSelectionModel;
 import com.extjs.gxt.ui.client.widget.grid.GroupingView;
-import com.extjs.gxt.ui.client.widget.layout.CardLayout;
-import com.extjs.gxt.ui.client.widget.layout.ColumnData;
-import com.extjs.gxt.ui.client.widget.layout.ColumnLayout;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
@@ -133,11 +129,9 @@ public class StudentPanel extends GradebookPanel {
 	private TextField<String> defaultTextField= new TextField<String>();
 	private TextArea defaultTextArea = new TextArea();
 	private FlexTable studentInformation;
-	private ContentPanel studentInformationPanel, gradeInformationPanel, textPanel;
-	private HorizontalPanel topPanel;
+	private ContentPanel studentInformationPanel, textPanel, gradeInformationContentPanel;
+	private HorizontalPanel topPanel, gradeInformationPanel;
 	private Html textNotification;
-	private LayoutContainer cardLayoutContainer;
-	private CardLayout cardLayout;
 	private FormPanel commentsPanel;
 	private Grid<BaseModel> grid;
 	private GroupingStore<BaseModel> store;
@@ -188,7 +182,7 @@ public class StudentPanel extends GradebookPanel {
 		studentInformationPanel.setHeaderVisible(false);
 		// Make it the same height as the chart
 		studentInformationPanel.setHeight(AppConstants.CHART_HEIGHT);
-		studentInformationPanel.setWidth(500);
+		studentInformationPanel.setWidth(510);
 		studentInformationPanel.setLayout(new FitLayout());
 		studentInformationPanel.setStyleName(resources.css().gbStudentInformationPanel());
 		studentInformationPanel.add(studentInformation);
@@ -413,57 +407,41 @@ public class StudentPanel extends GradebookPanel {
 		grid.setBorders(true);
 		grid.setSelectionModel(selectionModel);
 		grid.setView(view);
+		grid.setWidth(810);
+		grid.setHeight(360);
 
-		cardLayoutContainer = new LayoutContainer() {
-			protected void onResize(final int width, final int height) {
-				super.onResize(width, height);
-
-				if (gradeInformationPanel.getWidth() != width ||
-						gradeInformationPanel.getHeight() != 340)
-					gradeInformationPanel.setSize(width, 340);
-			}
-		};
-		cardLayout = new CardLayout();
-		cardLayoutContainer.setLayout(cardLayout);
-		cardLayoutContainer.setHeight(365);
-
-		gradeInformationPanel = new ContentPanel() {
-
-			protected void onResize(final int width, final int height) {
-				super.onResize(width, height);
-
-				grid.setHeight(height - 42);
-				grid.setSize(width - 300, height - 42);
-				if (grid.isRendered() && grid.getView() != null)
-					grid.getView().refresh(true);
-				commentArea.setHeight(height - 76);
-			}
-
-		};
-		gradeInformationPanel.setBorders(true);
-		gradeInformationPanel.setFrame(true);
+		gradeInformationContentPanel = new ContentPanel();
 		// NOTE: The header is set in the setGradeInfoTable() method
-		gradeInformationPanel.setLayout(new ColumnLayout());
-		gradeInformationPanel.add(grid, new ColumnData(795));
+		gradeInformationContentPanel.setBorders(true);
+		gradeInformationContentPanel.setFrame(true);
+		gradeInformationContentPanel.setWidth(1120);
+		gradeInformationContentPanel.setHeight(400);
+		gradeInformationContentPanel.hide();
+		
+		
+		gradeInformationPanel = new HorizontalPanel();
+		gradeInformationPanel.add(grid);
+		
 		FormLayout commentLayout = new FormLayout();
 		commentLayout.setLabelAlign(LabelAlign.TOP);
 		commentLayout.setDefaultWidth(280);
-
+		
 		commentsPanel = new FormPanel();
 		commentsPanel.setHeaderVisible(false);
 		commentsPanel.setLayout(commentLayout);
 		commentsPanel.setVisible(false);
 		commentsPanel.setWidth(300);
+		commentsPanel.setHeight(360);
 
 		commentArea = new TextArea();
 		commentArea.setName(Key.S_COMMENT.name());
 		commentArea.setFieldLabel(i18n.commentName());
 		commentArea.setWidth(275);
-		commentArea.setHeight(300);
+		commentArea.setHeight(325);
 		commentArea.setReadOnly(true);
 		commentsPanel.add(commentArea);
 
-		gradeInformationPanel.add(commentsPanel, new ColumnData(305));
+		gradeInformationPanel.add(commentsPanel);
 
 		formBinding = new FormBinding(commentsPanel, true);
 
@@ -471,14 +449,15 @@ public class StudentPanel extends GradebookPanel {
 		textPanel.setBorders(true);
 		textPanel.setFrame(true);
 		textPanel.setHeaderVisible(false);
+		textPanel.setWidth(495);
+		textPanel.hide();
 
 		textNotification = textPanel.addText("");
 
-		cardLayoutContainer.add(gradeInformationPanel);
-		cardLayout.setActiveItem(gradeInformationPanel);
+		gradeInformationContentPanel.add(gradeInformationPanel);
 
-		cardLayoutContainer.add(textPanel);
-		add(cardLayoutContainer);
+		add(textPanel);
+		add(gradeInformationContentPanel);
 	}
 
 	public ModelData getStudentRow() {
@@ -795,11 +774,11 @@ public class StudentPanel extends GradebookPanel {
 		 */
 		if(showStatisticsChart()) {
 			
-			gradeInformationPanel.setHeading(i18n.studentPanelGradeInfoTableHeaderWithChart());
+			gradeInformationContentPanel.setHeading(i18n.studentPanelGradeInfoTableHeaderWithChart());
 		}
 		else {
 			
-			gradeInformationPanel.setHeading(i18n.studentPanelGradeInfoTableHeader());
+			gradeInformationContentPanel.setHeading(i18n.studentPanelGradeInfoTableHeader());
 		}
 		
 		int weightColumnIndex = cm.findColumnIndex(weightColumn.getDataIndex());
@@ -936,20 +915,23 @@ public class StudentPanel extends GradebookPanel {
 			}
 
 			if (isNothingToDisplay) {
-				cardLayout.setActiveItem(textPanel);
+				
 				I18nConstants i18n = Registry.get(AppConstants.I18N);
 				textNotification.setHtml(i18n.notifyNoReleasedItems());
 				textPanel.show();
+				gradeInformationContentPanel.hide();
 			} else {
-				cardLayout.setActiveItem(gradeInformationPanel);
-				gradeInformationPanel.show();
+
+				gradeInformationContentPanel.show();
+				textPanel.hide();
 			}
 
 		} else {
+			
 			I18nConstants i18n = Registry.get(AppConstants.I18N);
 			textNotification.setHtml(i18n.notifyNotDisplayingReleasedItems());
-			cardLayout.setActiveItem(textPanel);
 			textPanel.show();
+			gradeInformationContentPanel.hide();
 		}
 	}
 
