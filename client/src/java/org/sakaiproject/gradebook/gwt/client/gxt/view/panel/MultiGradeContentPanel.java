@@ -672,8 +672,6 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 				} else if(showWeightedString == null) {
 					showWeightedString = Boolean.FALSE.toString();
 				}
-				Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
-				Configuration configModel = selectedGradebook.getConfigurationModel();
 				
 				ListStore store = grid.getStore();
 				SortInfo sortInfo = store.getSortState();

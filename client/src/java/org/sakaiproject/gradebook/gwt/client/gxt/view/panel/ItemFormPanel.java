@@ -560,20 +560,6 @@ public class ItemFormPanel extends GradebookPanel {
 		// GRBK-943
 		checkMGPanelForPageSize();
 		
-		AppView.EastCard activeCard = AppView.EastCard.EDIT_ITEM;
-
-		if (itemModel != null) {
-
-			switch (itemModel.getItemType()) {
-			case CATEGORY:
-				activeCard = AppView.EastCard.EDIT_CATEGORY;
-				break;
-			case GRADEBOOK:
-				activeCard = AppView.EastCard.EDIT_GRADEBOOK;
-			}
-
-		}
-		
 		clearActiveRecord();
 
 		// This seems to prevent double click propagations in the item tree

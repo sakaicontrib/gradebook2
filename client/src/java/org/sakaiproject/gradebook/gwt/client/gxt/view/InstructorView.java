@@ -607,7 +607,6 @@ public class InstructorView extends AppView {
 
 		menuSelectionListener = new SelectionListener<MenuEvent>() {
 
-			private CheckBox exportCommentsCheckbox = null;
 			protected ExportDetails ex;
 
 			@Override

@@ -2483,7 +2483,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 			String searchRosterByField = configService.getString(AppConstants.ENABLED_SEARCH_ROSTER_BY_FIELD);
 			if(searchRosterByField != null && Boolean.TRUE.toString().equalsIgnoreCase(searchRosterByField)) {
-				this.searchRosterByFieldEnabled = new Boolean(true);
+				this.searchRosterByFieldEnabled = Boolean.TRUE;
 			} else {
 				this.searchRosterByFieldEnabled = Boolean.FALSE;
 			}
