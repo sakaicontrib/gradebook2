@@ -60,7 +60,9 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
@@ -576,19 +578,20 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			final boolean includeStructure, final boolean includeComments, List<String> sectionUidList) throws FatalException {
 		
 		
-		if (fileType.equals(FileType.XLS97))
+		if (fileType.equals(FileType.XLS97) || fileType.equals(FileType.XLSX))
 		{
-			exportGradebookXLS (filename, outStream, service, gradebookUid, includeStructure, includeComments, sectionUidList); 
+			exportGradebookXLS (filename, outStream, service, gradebookUid, includeStructure, includeComments, sectionUidList, 
+					fileType.equals(FileType.XLSX)); 
 		}
 		else if (fileType.equals(FileType.CSV))
 		{
-			exportGradebookCSV (filename.toString(), outStream, service, gradebookUid, includeStructure, includeComments, sectionUidList);
+			exportGradebookCSV (filename, outStream, service, gradebookUid, includeStructure, includeComments, sectionUidList);
 		}
 	}
 
 	private void exportGradebookXLS(String title, OutputStream outStream,
 			Gradebook2ComponentService service, String gradebookUid,
-			final boolean includeStructure, final boolean includeComments, List<String> sectionUidList)
+			final boolean includeStructure, final boolean includeComments, List<String> sectionUidList, boolean isXSSF)
 			throws FatalException {
 		
 		final ImportExportDataFile file = exportGradebook(service,
@@ -623,19 +626,21 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 				if (studentId != -1) break;
 			}
 
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet s = wb.createSheet(title);
+		org.apache.poi.ss.usermodel.Workbook wb = isXSSF ? new XSSFWorkbook() : new HSSFWorkbook();
+		
+		CreationHelper helper = wb.getCreationHelper();
+		org.apache.poi.ss.usermodel.Sheet s = wb.createSheet(title);
 
 		file.startReading(); 
 		String[] curRow = null; 
 		int row = 0; 
 		
-		HSSFRow r = null;
+		Row r = null;
 		while ( (curRow = file.readNext()) != null) {
 			r = s.createRow(row); 
 
 			for (int i = 0; i < curRow.length ; i++) {
-				HSSFCell cl = r.createCell(i);
+				org.apache.poi.ss.usermodel.Cell cl = r.createCell(i);
 				//GRBK-840 If the cell is numeric, we should make it numeric...
 				// GRBK-979 .... unless it is the student id
 				if ( NumberUtils.isNumber(curRow[i]) && i != studentId)
@@ -646,7 +651,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 				else
 				{
 					cl.setCellType(HSSFCell.CELL_TYPE_STRING); 
-					cl.setCellValue(new HSSFRichTextString(curRow[i])); 
+					cl.setCellValue(helper.createRichTextString(curRow[i])); 
 				}
 			}
 			
@@ -664,7 +669,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	}
 
 
-	private void writeXLSResponse(HSSFWorkbook wb, OutputStream out) throws FatalException {
+	private void writeXLSResponse(org.apache.poi.ss.usermodel.Workbook wb, OutputStream out) throws FatalException {
 		try {
 			wb.write(out);
 			out.flush(); 
@@ -700,32 +705,43 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	}
 
 
-	private HSSFWorkbook readPoiSpreadsheet(BufferedInputStream is) throws IOException 
+	private org.apache.poi.ss.usermodel.Workbook readPoiSpreadsheet(BufferedInputStream is) throws IOException 
 	{
-		HSSFWorkbook ret = null; 
-		HSSFWorkbook inspread = null;
+		org.apache.poi.ss.usermodel.Workbook spread = null;
 
-		is.mark(1024*1024*512); 
+		is.mark(1024*1024*512); // file-size limit is 512MB
 		try {
-			inspread = new HSSFWorkbook(POIFSFileSystem.createNonClosingInputStream(is));
-			log.debug("here!"); 
+			spread = new HSSFWorkbook(POIFSFileSystem.createNonClosingInputStream(is));
+			log.debug("HSSF file detected"); 
+			log.debug("HSSF file detected");
 		} 
 		catch (IOException e) 
 		{
 			log.debug("Caught I/O Exception", e);
-			ret = null; 
 		} 
 		catch (IllegalArgumentException iae)
 		{
 			log.debug("Caught IllegalArgumentException Exception", iae);
-			ret = null; 
 		}
-		if (ret == null)
+		if (spread == null)
 		{
 			is.reset(); 
+			try {
+				spread = new XSSFWorkbook(POIFSFileSystem.createNonClosingInputStream(is));
+				log.debug("XSSF file detected");
+
+			} catch (IOException e) 
+			{
+				log.debug("Caught I/O Exception checking for xlsx format", e);
+			} 
+			catch (IllegalArgumentException iae)
+			{
+				log.debug("Caught IllegalArgumentException Exception checking for xlsx format", iae);
+			}
+
 		}
 
-		return inspread; 
+		return spread; 
 
 	}
 
@@ -808,7 +824,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		log.debug("realFileName=" + realFileName);
 		log.debug("isOriginalName=" + isOriginalName);
 
-		HSSFWorkbook inspread = null;
+		org.apache.poi.ss.usermodel.Workbook inspread = null;
 
 		BufferedInputStream bufStream = new BufferedInputStream(is); 
 
@@ -982,14 +998,14 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		return (studentIdHeader != null && (scoreHeader != null || reScoreHeader != null)); 
 	}
 
-	private Upload handlePoiSpreadSheet(HSSFWorkbook inspread, Gradebook2ComponentService service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName) throws InvalidInputException, FatalException
+	private Upload handlePoiSpreadSheet(org.apache.poi.ss.usermodel.Workbook inspread, Gradebook2ComponentService service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName) throws InvalidInputException, FatalException
 	{
 		log.debug("handlePoiSpreadSheet() called"); 
 		// FIXME - need to do multiple sheets, and structure
 		int numSheets = inspread.getNumberOfSheets();  
 		if (numSheets > 0)
 		{
-			HSSFSheet cur = inspread.getSheetAt(0);
+			org.apache.poi.ss.usermodel.Sheet cur = inspread.getSheetAt(0);
 			ImportExportDataFile ret; 
 			if (isScantronSheetFromPoi(cur))
 			{
@@ -1016,11 +1032,11 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		}
 	}
 
-	private ImportExportDataFile processNormalXls(HSSFSheet s) {
+	private ImportExportDataFile processNormalXls(org.apache.poi.ss.usermodel.Sheet cur) {
 		log.debug("processNormalXls() called");
 		ImportExportDataFile data = new ImportExportDataFile();
-		int numCols = getNumberOfColumnsFromSheet(s); 
-		Iterator<Row> rowIter = s.rowIterator(); 
+		int numCols = getNumberOfColumnsFromSheet(cur); 
+		Iterator<Row> rowIter = cur.rowIterator(); 
 		boolean headerFound = false;
 		int id_col = -1; 
 		while (rowIter.hasNext())
@@ -1072,9 +1088,9 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		return data; 
 	}
 
-	private int getNumberOfColumnsFromSheet(HSSFSheet s) {
+	private int getNumberOfColumnsFromSheet(org.apache.poi.ss.usermodel.Sheet cur) {
 		int numCols = 0; 
-		Iterator<Row> rowIter = s.rowIterator(); 
+		Iterator<Row> rowIter = cur.rowIterator(); 
 		while (rowIter.hasNext())
 		{
 			Row curRow = rowIter.next(); 
@@ -1095,8 +1111,8 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 
 		while (cellIterator.hasNext())
 		{
-			HSSFCell cl = (HSSFCell) cellIterator.next();
-			String cellData =  new HSSFDataFormatter().formatCellValue(cl).toLowerCase();
+			org.apache.poi.ss.usermodel.Cell cl = (org.apache.poi.ss.usermodel.Cell) cellIterator.next();
+			String cellData =  new org.apache.poi.ss.usermodel.DataFormatter().formatCellValue(cl).toLowerCase();
 
 			if ("student id".equals(cellData))
 			{
@@ -1107,14 +1123,14 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		return ret; 
 	}
 
-	private ImportExportDataFile processScantronXls(HSSFSheet s, String fileName) {
+	private ImportExportDataFile processScantronXls(org.apache.poi.ss.usermodel.Sheet cur, String fileName) {
 		ImportExportDataFile data = new ImportExportDataFile(); 
-		Iterator<Row> rowIter = s.rowIterator(); 
+		Iterator<Row> rowIter = cur.rowIterator(); 
 		StringBuilder err = new StringBuilder("Scantron File with errors"); 
 		boolean stop = false; 
 
-		org.apache.poi.ss.usermodel.Cell studentIdHeader = findCellWithTextonSheetForPoi(s, scantronStudentIdHeader);
-		org.apache.poi.ss.usermodel.Cell scoreHeader = findCellWithTextonSheetForPoi(s, scantronScoreHeader);
+		org.apache.poi.ss.usermodel.Cell studentIdHeader = findCellWithTextonSheetForPoi(cur, scantronStudentIdHeader);
+		org.apache.poi.ss.usermodel.Cell scoreHeader = findCellWithTextonSheetForPoi(cur, scantronScoreHeader);
 		if (studentIdHeader == null)
 		{
 			err.append("There is no column with the header student_id");
@@ -1124,7 +1140,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		if (scoreHeader == null)
 		{
 			// check for a rescore header - GRBK-407
-			scoreHeader = findCellWithTextonSheetForPoi(s, scantronRescoreHeader);
+			scoreHeader = findCellWithTextonSheetForPoi(cur, scantronRescoreHeader);
 			if(scoreHeader == null) {
 				err.append("There is no column with the header score");
 				stop = true; 
@@ -1195,14 +1211,14 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	// if we can't find it, we return null. 
 	// 
 
-	private org.apache.poi.ss.usermodel.Cell findCellWithTextonSheetForPoi(HSSFSheet s, String searchText)
+	private org.apache.poi.ss.usermodel.Cell findCellWithTextonSheetForPoi(org.apache.poi.ss.usermodel.Sheet cur, String searchText)
 	{
-		if (searchText == null || s == null) 
+		if (searchText == null || cur == null) 
 		{
 			return null; 			
 		}
 
-		Iterator<Row> rIter = s.rowIterator(); 
+		Iterator<Row> rIter = cur.rowIterator(); 
 
 		while (rIter.hasNext())
 		{
@@ -1225,8 +1241,8 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		return null; 
 	}
 	
-	private boolean isScantronSheetFromPoi(HSSFSheet s) {
-		Iterator<Row> rowIter = s.rowIterator(); 
+	private boolean isScantronSheetFromPoi(org.apache.poi.ss.usermodel.Sheet cur) {
+		Iterator<Row> rowIter = cur.rowIterator(); 
 		while (rowIter.hasNext())
 		{
 			Row curRow = rowIter.next();  

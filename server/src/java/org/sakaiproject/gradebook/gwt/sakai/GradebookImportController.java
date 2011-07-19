@@ -44,6 +44,7 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.model.Upload;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
 import org.sakaiproject.gradebook.gwt.server.OpenController;
+import org.sakaiproject.gradebook.gwt.server.ImportExportUtility.FileType;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.multipart.MultipartFile;
@@ -92,9 +93,10 @@ public class GradebookImportController extends SimpleFormController implements O
 			MultipartFile file = multipartRequest.getFile(fileName);
 			String origName = file.getOriginalFilename(); 
 			Upload importFile;
+			FileType fileType = FileType.getTypeFromExtension(origName.substring(origName.lastIndexOf(".")));
 
-			log.debug("Original Name: " + origName);
-			if (origName.toLowerCase().endsWith(FILE_EXTENSION_XLS))
+			log.debug("Original Name: " + origName + "; type: " + fileType);
+			if (fileType.isExcelNative())
 			{
 				log.debug("Excel file detected"); 
 				importFile = importExportUtility.parseImportXLS(service, gradebookUid, file.getInputStream(), origName.toLowerCase(), gbToolService, doPreventScrantronOverwrite);

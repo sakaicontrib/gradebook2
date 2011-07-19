@@ -28,7 +28,8 @@ public interface ImportExportUtility {
 	
 	public static enum FileType {
 		CSV("csv", ".csv", "application/ms-excel"), 
-		XLS97("xls97", ".xls", "application/ms-excel");
+		XLS97("xls97", ".xls", "application/ms-excel"),
+		XLSX("xlsx", ".xlsx", "application/ms-excel");
 		private String ext = "";
 		private String mimeType = "";
 		private String name = "";
@@ -50,6 +51,19 @@ public interface ImportExportUtility {
 		public String getName() {
 			return name;
 		}
+		
+		public static FileType getTypeFromExtension(String extension) {
+			FileType rv = CSV;
+			if( extension != null) {
+				for (FileType f : values()) {
+					if (f.getExtension().equals(extension)) {
+						rv = f;
+						break;
+					}
+				}
+			}
+			return rv;
+		}
 
 		public static FileType getType(String fileType) {
 			FileType rv = CSV;
@@ -62,6 +76,10 @@ public interface ImportExportUtility {
 				}
 			}
 			return rv;
+		}
+		
+		public boolean isExcelNative() {
+			return this.equals(XLS97) || this.equals(XLSX);
 		}
 	}
 

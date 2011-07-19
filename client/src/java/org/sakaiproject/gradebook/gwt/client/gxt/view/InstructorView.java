@@ -98,7 +98,7 @@ public class InstructorView extends AppView {
 
 	private static final String MENU_SELECTOR_FLAG = "menuSelector";
 	private static final String INCLUDE_COMMENTS = "inc_comments";
-	public enum MenuSelector { ADD_CATEGORY, ADD_ITEM, IMPORT, EXPORT, EXPORT_DATA, EXPORT_DATA_CSV, EXPORT_STRUCTURE, EXPORT_STRUCTURE_CSV, EXPORT_DATA_XLS, EXPORT_STRUCTURE_XLS, FINAL_GRADE, GRADE_SCALE, SETUP, HISTORY, GRADER_PERMISSION_SETTINGS, STATISTICS };
+	public enum MenuSelector { ADD_CATEGORY, ADD_ITEM, IMPORT, EXPORT, EXPORT_DATA, EXPORT_DATA_CSV, EXPORT_STRUCTURE, EXPORT_STRUCTURE_CSV, EXPORT_DATA_XLS, EXPORT_STRUCTURE_XLS, FINAL_GRADE, GRADE_SCALE, SETUP, HISTORY, GRADER_PERMISSION_SETTINGS, STATISTICS, EXPORT_STRUCTURE_XLSX, EXPORT_DATA_XLSX };
 
 	private TreeView treeView;
 	private MultigradeView multigradeView;
@@ -603,6 +603,7 @@ public class InstructorView extends AppView {
 		exportTypeByMenuSelector.put(MenuSelector.EXPORT_STRUCTURE_XLS, ExportType.XLS97);
 		exportTypeByMenuSelector.put(MenuSelector.EXPORT_DATA_CSV, ExportType.CSV);
 		exportTypeByMenuSelector.put(MenuSelector.EXPORT_STRUCTURE_CSV, ExportType.CSV);
+		exportTypeByMenuSelector.put(MenuSelector.EXPORT_STRUCTURE_XLSX, ExportType.XLSX);
 		final EnumSet<MenuSelector> exportingSelections = EnumSet.of(MenuSelector.EXPORT_STRUCTURE_XLS,MenuSelector.EXPORT_STRUCTURE_CSV);
 
 		menuSelectionListener = new SelectionListener<MenuEvent>() {
@@ -622,7 +623,9 @@ public class InstructorView extends AppView {
 					Dispatcher.forwardEvent(GradebookEvents.NewItem.getEventType());
 					break;
 				case EXPORT_DATA_XLS:
+				case EXPORT_DATA_XLSX:
 				case EXPORT_STRUCTURE_XLS:
+				case EXPORT_STRUCTURE_XLSX:
 				case EXPORT_DATA_CSV:
 				case EXPORT_STRUCTURE_CSV:
 					ex = getExportDetails();
@@ -856,6 +859,11 @@ public class InstructorView extends AppView {
 		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_DATA_XLS);
 		menuItem.setTitle(i18n.headerExportXLSTitle());
 		typeMenu.add(menuItem);
+		
+		menuItem = new AriaMenuItem(i18n.headerExportXLSX(), menuSelectionListener);
+		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_DATA_XLSX);
+		menuItem.setTitle(i18n.headerExportXLSXTitle());
+		typeMenu.add(menuItem);
 
 		// If we're dealing with an "editable" instance of the tool, show the other editing menu items
 		if (isEditable) {
@@ -875,6 +883,11 @@ public class InstructorView extends AppView {
 			menuItem = new AriaMenuItem(i18n.headerExportXLS(), menuSelectionListener);
 			menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_STRUCTURE_XLS);
 			menuItem.setTitle(i18n.headerExportXLSTitle());
+			typeMenu.add(menuItem);
+			
+			menuItem = new AriaMenuItem(i18n.headerExportXLSX(), menuSelectionListener);
+			menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_STRUCTURE_XLSX);
+			menuItem.setTitle(i18n.headerExportXLSXTitle());
 			typeMenu.add(menuItem);
 
 			menuItem = new AriaMenuItem(i18n.headerImport(), menuSelectionListener);

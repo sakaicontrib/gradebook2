@@ -52,15 +52,8 @@ public class ImportExportView extends View {
 			boolean includeComments = ed.includeComments();
 			String fileType = "";
 			
-			switch (ed.getFileType())
-			{
-			case XLS97:
-				fileType = "xls97";
-				break; 
-			case CSV:
-			default:
-				fileType = "csv"; 
-				break;
+			if (ed.getFileType() != null) {
+				fileType = ed.getFileType().name();
 			}
 		
 			Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);

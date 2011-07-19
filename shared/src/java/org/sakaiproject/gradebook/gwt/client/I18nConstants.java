@@ -157,6 +157,7 @@ public interface I18nConstants extends Constants {
 	String headerExportStructureTitle();
 	String headerExportTitle();
 	String headerExportXLS();
+	String headerExportXLSX();
 	String headerExportXLSTitle();
 	String headerFinalGrade();
 	String headerFinalGradeTitle();
@@ -463,6 +464,7 @@ public interface I18nConstants extends Constants {
 	String studentPanelCourseGrade();
 	String studentPanelCalculatedGrade();
 	String studentPanelRank();
+	String headerExportXLSXTitle();
 	
 	
 }

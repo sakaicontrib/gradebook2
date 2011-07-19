@@ -2,7 +2,7 @@ package org.sakaiproject.gradebook.gwt.client;
 
 
 public class ExportDetails {
-	public enum ExportType { XLS97, CSV }; 
+	public enum ExportType { XLS97, CSV, XLSX }; 
 
 	private ExportType fileType; 
 	private boolean includeStructure;
