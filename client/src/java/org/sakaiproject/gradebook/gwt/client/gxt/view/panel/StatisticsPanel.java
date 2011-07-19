@@ -296,6 +296,12 @@ public class StatisticsPanel extends ContentPanel {
 		}
 	}
 
+	/*
+	 * Gets the course/section specific statistics data and renders
+	 * the chart.
+	 * 
+	 *  @param sectionId : This needs to be a Base64 encoded string
+	 */
 	private void getCourseStatisticsChartData(String sectionId) {
 		
 		// First we check the cache if we have the data already

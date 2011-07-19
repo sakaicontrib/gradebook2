@@ -1068,7 +1068,7 @@ public class StudentPanel extends GradebookPanel {
 					AppConstants.STATISTICS_FRAGMENT,
 					AppConstants.COURSE_FRAGMENT,
 					gbModel.getGradebookUid(),
-					AppConstants.ALL);
+					Base64.encode(AppConstants.ALL));
 
 			builder.sendRequest(200, 400, null, new RestCallback() {
 
