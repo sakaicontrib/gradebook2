@@ -719,7 +719,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				.append("and rg.active=true ");
 
 				if (searchField != null && searchCriteria != null) {
-					builder.append("and user.").append(searchField).append(" like :searchCriteria ");
+					builder.append("and lower(user.").append(searchField).append(") like lower(:searchCriteria) ");
 				}
 
 				query = session.createQuery(builder.toString());
@@ -794,7 +794,7 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 				.append("and rg.active = true ");
 
 				if (searchField != null && searchCriteria != null) 
-					builder.append("and user.").append(searchField).append(" like :searchCriteria ");
+					builder.append("and lower(user.").append(searchField).append(") like lower(:searchCriteria) ");
 				
 				if (sortField != null) {
 
