@@ -258,14 +258,14 @@ public class ImportPanel extends GradebookPanel {
 	protected void readSubmitResponse(String result) {
 		
 		String msgsFromServer = null;
-		
+		boolean hasErrors = false;
 		try {
 
 			// Getting the JSON from REST call and create an UploadModel
 			
 			EntityOverlay overlay = JsonUtil.toOverlay(result);
 			upload = new UploadModel(overlay);
-			boolean hasErrors = upload.hasErrors(); 
+			hasErrors = upload.hasErrors(); 
 			
 			msgsFromServer = upload.getNotes(); 
 			
@@ -273,22 +273,23 @@ public class ImportPanel extends GradebookPanel {
 			
 			
 						
-			// If we have errors we want to do something different
+			// If we have errors make sure the text box gets all the attention
 			if (hasErrors) {
-				errorContainer.addText(msgsFromServer); 
+				
 				mainCardLayout.setActiveItem(errorContainer);
-				return; 
+				 
+			} else {
+			
+				gradebookItemModel = (ItemModel)upload.getGradebookItemModel();
+	
+				fixMangledHtmlNames(gradebookItemModel); 
+				if (gradebookItemModel == null) {
+					throw new Exception(i18n.noItemModelFound());
+				}
+				
+				refreshSetupPanel();
 			}
 			
-			gradebookItemModel = (ItemModel)upload.getGradebookItemModel();
-
-			fixMangledHtmlNames(gradebookItemModel); 
-			if (gradebookItemModel == null) {
-				throw new Exception("Could not find the gradebook item model");
-			}
-			
-
-			refreshSetupPanel();
 			
 		} catch (Exception e) {
 			
@@ -300,14 +301,15 @@ public class ImportPanel extends GradebookPanel {
 			uploadBox.close();
 		}
 		
-		if(((Gradebook)Registry.get(AppConstants.CURRENT)).getGradebookItemModel().getGradeType() == GradeType.PERCENTAGES
+		if(!hasErrors && ((Gradebook)Registry.get(AppConstants.CURRENT)).getGradebookItemModel().getGradeType() == GradeType.PERCENTAGES
 				&& importSettings.isScantron()) {
 			
 			getScantronPointsWithWizard();
 		}
 
 		if (msgsFromServer != null && msgsFromServer.length() > 0){
-			Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.exportWarnUserFileCannotBeImportedTitle(), msgsFromServer, true, true));
+			String severity = hasErrors ? i18n.errorOccurredGeneric() : i18n.exportWarnUserFileCannotBeImportedTitle();
+			Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(severity, msgsFromServer, true, true));
 		}
 	}
 

@@ -465,6 +465,7 @@ public interface I18nConstants extends Constants {
 	String studentPanelCalculatedGrade();
 	String studentPanelRank();
 	String headerExportXLSXTitle();
+	String noItemModelFound();
 	
 	
 }

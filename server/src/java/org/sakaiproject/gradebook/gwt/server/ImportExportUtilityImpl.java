@@ -53,6 +53,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.poi.POIXMLException;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFDataFormatter;
 import org.apache.poi.hssf.usermodel.HSSFRichTextString;
@@ -712,31 +713,33 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		is.mark(1024*1024*512); // file-size limit is 512MB
 		try {
 			spread = new HSSFWorkbook(POIFSFileSystem.createNonClosingInputStream(is));
-			log.debug("HSSF file detected"); 
-			log.debug("HSSF file detected");
+			log.info("HSSF file detected"); 
 		} 
 		catch (IOException e) 
 		{
-			log.debug("Caught I/O Exception", e);
+			log.info("Caught I/O Exception", e);
 		} 
 		catch (IllegalArgumentException iae)
 		{
-			log.debug("Caught IllegalArgumentException Exception", iae);
+			log.info("Caught IllegalArgumentException Exception", iae);
 		}
 		if (spread == null)
 		{
 			is.reset(); 
 			try {
 				spread = new XSSFWorkbook(POIFSFileSystem.createNonClosingInputStream(is));
-				log.debug("XSSF file detected");
+				log.info("XSSF file detected");
 
 			} catch (IOException e) 
 			{
-				log.debug("Caught I/O Exception checking for xlsx format", e);
+				log.info("Caught I/O Exception checking for xlsx format", e);
 			} 
 			catch (IllegalArgumentException iae)
 			{
-				log.debug("Caught IllegalArgumentException Exception checking for xlsx format", iae);
+				log.info("Caught IllegalArgumentException Exception checking for xlsx format", iae);
+			} catch (POIXMLException e) 
+			{
+				log.info("Caught POIXMLException Exception checking for xlsx format", e);
 			}
 
 		}
@@ -857,14 +860,19 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	private Upload handleJExcelAPISpreadSheet(BufferedInputStream is,
 			Gradebook2ComponentService service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName) throws InvalidInputException, FatalException, IOException {
 		Workbook wb = null; 
+		Upload rv = new UploadImpl();
 		try {
 			wb = Workbook.getWorkbook(is);
 		} catch (BiffException e) {
 			log.error("Caught a biff exception from JExcelAPI: " + e.getLocalizedMessage(), e); 
-			return null; 
+			rv.setErrors(true);
+			rv.setNotes(i18n.getString("unknownExcelFileFormat"));
+			return rv; 
 		} catch (IOException e) {
 			log.error("Caught an IO exception from JExcelAPI: " + e.getLocalizedMessage(), e); 
-			return null; 
+			rv.setErrors(true);
+			rv.setNotes(i18n.getString("unknownExcelFileFormat"));
+			return rv; 
 		} 
 
 		is.close();
@@ -882,7 +890,9 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		}
 		else
 		{
-			return null;
+			rv.setErrors(true);
+			rv.setNotes(i18n.getString("unknownExcelFileFormat"));
+			return rv;
 		}
 	}
 

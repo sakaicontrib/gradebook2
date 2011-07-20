@@ -3334,8 +3334,6 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			// Create, update gradebook items such as (gradebook, categories, assignments)
 			newHandleImportItemModification(gradebookUid, gradebookId, gradebookItem, idToAssignmentMap, null);
 
-			gradebook = gbService.getGradebook(gradebookUid);
-
 			CategoryType categoryType = gradebookItem.getCategoryType();
 			GradeType gradeType = gradebookItem.getGradeType();
 

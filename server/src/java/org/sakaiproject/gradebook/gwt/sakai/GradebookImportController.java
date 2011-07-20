@@ -28,9 +28,8 @@ import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.EnumSet;
-import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.ResourceBundle;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -43,8 +42,9 @@ import org.codehaus.jackson.map.SerializationConfig;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.model.Upload;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
-import org.sakaiproject.gradebook.gwt.server.OpenController;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility.FileType;
+import org.sakaiproject.gradebook.gwt.server.OpenController;
+import org.sakaiproject.gradebook.gwt.server.model.UploadImpl;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.multipart.MultipartFile;
@@ -66,6 +66,8 @@ public class GradebookImportController extends SimpleFormController implements O
 	private final String CONTENT_TYPE_TEXT_HTML = "text/html";
 	
 	private final String REQUEST_PARAMETER_PSO = "preventScantronOverwrite";
+	
+	private static ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 	
 	public ModelAndView submit(HttpServletRequest request,
 			HttpServletResponse response,
@@ -92,21 +94,30 @@ public class GradebookImportController extends SimpleFormController implements O
 
 			MultipartFile file = multipartRequest.getFile(fileName);
 			String origName = file.getOriginalFilename(); 
-			Upload importFile;
-			FileType fileType = FileType.getTypeFromExtension(origName.substring(origName.lastIndexOf(".")));
+			Upload importFile = null;
+			
+			FileType fileType = null;
+			if (origName.lastIndexOf(".")>0) {
+				fileType = FileType.getTypeFromExtension(origName.substring(origName.lastIndexOf(".")));
+			} else {
+				importFile = new UploadImpl();
+				importFile.setNotes(i18n.getString("noFileExtensionFound"));
+				importFile.setErrors(true);
+			}
 
 			log.debug("Original Name: " + origName + "; type: " + fileType);
-			if (fileType.isExcelNative())
-			{
-				log.debug("Excel file detected"); 
-				importFile = importExportUtility.parseImportXLS(service, gradebookUid, file.getInputStream(), origName.toLowerCase(), gbToolService, doPreventScrantronOverwrite);
-
-			}
-			else
-			{
-				log.debug("Assuming CSV file"); 
-				InputStreamReader reader = new InputStreamReader(file.getInputStream());
-				importFile = importExportUtility.parseImportCSV(service, gradebookUid, reader);
+			if (fileType != null) {
+				if (fileType.isExcelNative())
+				{
+					log.debug("Excel file detected"); 
+					importFile = importExportUtility.parseImportXLS(service, gradebookUid, file.getInputStream(), origName.toLowerCase(), gbToolService, doPreventScrantronOverwrite);
+				}
+				else
+				{
+					log.debug("Assuming CSV file"); 
+					InputStreamReader reader = new InputStreamReader(file.getInputStream());
+					importFile = importExportUtility.parseImportCSV(service, gradebookUid, reader);
+				}
 			}
 
 			PrintWriter writer = response.getWriter();
@@ -115,6 +126,11 @@ public class GradebookImportController extends SimpleFormController implements O
 			// NOTE: Only use this during DEV phase
 			//saveJsonToFile(importFile, "/tmp/data.json"); 
 
+			if (null == importFile) {
+				importFile = new UploadImpl();
+				importFile.setErrors(true);
+				importFile.setNotes(i18n.getString("unknownExcelFileFormat"));
+			}
 			writer.write(toJson(importFile)); 
 			writer.flush();
 			writer.close();
