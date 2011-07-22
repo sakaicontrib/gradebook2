@@ -641,7 +641,6 @@ public class ImportPanel extends GradebookPanel {
 		wizard.setProgressIndicator(Wizard.Indicator.PROGRESSBAR);
 		wizard.addCancelListener(new Listener<BaseEvent>() {
 
-			@Override
 			public void handleEvent(BaseEvent be) { /// need to max points to proceed, cancel import
 				Dispatcher.forwardEvent(GradebookEvents.StopImport.getEventType());
 				fileUploadPanel.clear();
@@ -678,7 +677,6 @@ public class ImportPanel extends GradebookPanel {
 		
 		card1.addFinishListener(new Listener<BaseEvent>() {
 
-			@Override
 			public void handleEvent(BaseEvent be) {
 				importSettings.setScantronMaxPoints(pntsField.getValue());
 

@@ -690,7 +690,6 @@ public class InstructorView extends AppView {
 		
 		exportBooleanChoices.addFinishListener(new Listener<BaseEvent>() {
 
-			@Override
 			public void handleEvent(BaseEvent be) {
 				exportDetails.setIncludeComments(exportCommentsCheckbox.getValue());
 				handleExport(exportDetails);

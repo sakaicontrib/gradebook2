@@ -7,7 +7,6 @@ import com.google.inject.Provider;
 
 public class WizardServiceProvider implements Provider<WizardService>{
 
-	@Override
 	public WizardService get() {
 		return new SimpleWizardService();
 	}
