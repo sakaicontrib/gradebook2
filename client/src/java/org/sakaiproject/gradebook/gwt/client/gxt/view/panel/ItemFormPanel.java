@@ -237,6 +237,7 @@ public class ItemFormPanel extends GradebookPanel {
 		initialSetupMessage.addText(i18n.gradebookSetupDialogMessage());  
 		initialSetupMessage.getItem(0).getFocusSupport().setIgnore(true);  
 		initialSetupMessage.setScrollMode(Scroll.AUTO);  
+		initialSetupMessage.setModal(true);
 		initialSetupMessage.setHideOnButtonClick(true);
 		// GRBK-1054
 		categoryTypePicker = new ItemFormComboBox<ModelData>(NAME_DISPLAY_FIELD, ItemKey.C_CTGRY_TYPE.name(), "");
