@@ -842,6 +842,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		else
 		{
 			log.debug("POI couldn't handle the spreadsheet, using jexcelapi");
+			bufStream.reset();
 			return handleJExcelAPISpreadSheet(bufStream, service, gradebookUid, realFileName, isOriginalName); 
 		}
 
