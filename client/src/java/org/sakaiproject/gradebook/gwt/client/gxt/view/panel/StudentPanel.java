@@ -449,7 +449,7 @@ public class StudentPanel extends GradebookPanel {
 		textPanel.setBorders(true);
 		textPanel.setFrame(true);
 		textPanel.setHeaderVisible(false);
-		textPanel.setWidth(495);
+		textPanel.setWidth(505);
 		textPanel.hide();
 
 		textNotification = textPanel.addText("");
