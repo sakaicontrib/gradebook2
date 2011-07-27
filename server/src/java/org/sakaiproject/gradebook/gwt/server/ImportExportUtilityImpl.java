@@ -48,7 +48,6 @@ import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
 
-import org.apache.commons.io.filefilter.HiddenFileFilter;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
@@ -56,17 +55,12 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.poi.POIXMLException;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFDataFormatter;
-import org.apache.poi.hssf.usermodel.HSSFRichTextString;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
-import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
-import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
@@ -239,9 +233,9 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 
 		final List<String> headerColumns = new LinkedList<String>();
 
-		headerColumns.add("Student Id");
-		headerColumns.add("Student Name");
-		headerColumns.add("Section"); 
+		headerColumns.add(i18n.getString("xxportColumnHeaderStudentId"));
+		headerColumns.add(i18n.getString("xxportColumnHeaderStudentName"));
+		headerColumns.add(i18n.getString("xxportColumnHeaderSection")); 
 
 		GradeType gradeType = gradebookItemModel.getGradeType();
 		
@@ -713,33 +707,33 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		is.mark(1024*1024*512); // file-size limit is 512MB
 		try {
 			spread = new HSSFWorkbook(POIFSFileSystem.createNonClosingInputStream(is));
-			log.info("HSSF file detected"); 
+			log.debug("HSSF file detected"); 
 		} 
 		catch (IOException e) 
 		{
-			log.info("Caught I/O Exception", e);
+			log.debug("Caught I/O Exception", e);
 		} 
 		catch (IllegalArgumentException iae)
 		{
-			log.info("Caught IllegalArgumentException Exception", iae);
+			log.debug("Caught IllegalArgumentException Exception", iae);
 		}
 		if (spread == null)
 		{
 			is.reset(); 
 			try {
 				spread = new XSSFWorkbook(POIFSFileSystem.createNonClosingInputStream(is));
-				log.info("XSSF file detected");
+				log.debug("XSSF file detected");
 
 			} catch (IOException e) 
 			{
-				log.info("Caught I/O Exception checking for xlsx format", e);
+				log.debug("Caught I/O Exception checking for xlsx format", e);
 			} 
 			catch (IllegalArgumentException iae)
 			{
-				log.info("Caught IllegalArgumentException Exception checking for xlsx format", iae);
+				log.debug("Caught IllegalArgumentException Exception checking for xlsx format", iae);
 			} catch (POIXMLException e) 
 			{
-				log.info("Caught POIXMLException Exception checking for xlsx format", e);
+				log.debug("Caught POIXMLException Exception checking for xlsx format", e);
 			}
 
 		}
@@ -794,7 +788,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 
 			if (i > 1000)
 			{
-				throw new GradebookImportException("Couldn't find a unique filename within 1000 tries, please rename filename manually and import again"); 
+				throw new GradebookImportException(i18n.getString("importUniqueFileNameMessage")); 
 			}
 		}
 	}
@@ -1036,7 +1030,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		else
 		{
 			ImportExportDataFile d = new ImportExportDataFile(); 
-			d.setMessages("The XLS spreadsheet entered does not contain any valid sheets.  Please correct and try again.");
+			d.setMessages(i18n.getString("importValidSheetsMessage"));
 			d.setErrorsFound(true); 
 			return parseImportGeneric(service, gradebookUid, d);
 
@@ -2501,10 +2495,10 @@ private GradeItem buildNewCategory(String curCategoryString,
 				importFile.setCategoryType(gradebookItemModel.getCategoryType());
 					
 				if (ieInfo.isUserNotFound()) 
-					importFile.addNotes("One or more users were not found based on the import identifier provided. This could indicate that the wrong import id is being used, or that the file is incorrectly formatted for import.");
+					importFile.addNotes(i18n.getString("importUserNotFoundMessage"));
 
 				if (ieInfo.isInvalidScore()) 
-					importFile.addNotes("One or more uploaded scores cannot be accepted because they are not in the correct format or the scores are higher than the maximum allowed for those items. These entries have been highlighted in red.");
+					importFile.addNotes(i18n.getString("importInvalidScoresMessage"));
 			} catch (Exception e) {
 				importFile.setErrors(true);
 				importFile.setNotes(e.getMessage());
@@ -2519,7 +2513,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 		else
 		{
 			importFile.setErrors(true); 
-			importFile.setNotes("The file loaded does not contain the required header information to load."); 
+			importFile.setNotes(i18n.getString("importMissingHeaderMessage")); 
 		}
 		
 		service.postEvent("gradebook2.import", String.valueOf(gradebook.getGradebookId()));
