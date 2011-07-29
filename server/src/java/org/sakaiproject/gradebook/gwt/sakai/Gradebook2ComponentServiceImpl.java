@@ -4243,6 +4243,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			//GRBK-678
 			if(isWeighted && itemsDropped && unevenPoints) {
 				categoryGradeItem.setNotCalculable(true);
+				gradebookGradeItem.setNotCalculable(true);
 			}
 		}
 
