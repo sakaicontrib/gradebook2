@@ -79,6 +79,7 @@ import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
+import com.extjs.gxt.ui.client.widget.form.FormPanel.LabelAlign;
 import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayout;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayoutData;
@@ -86,6 +87,8 @@ import com.extjs.gxt.ui.client.widget.layout.CardLayout;
 import com.extjs.gxt.ui.client.widget.layout.FitData;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
+import com.extjs.gxt.ui.client.widget.layout.FormLayout;
+import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.Response;
@@ -625,11 +628,8 @@ public class ImportPanel extends GradebookPanel {
 		//show the wizard and ask for points possible for scantron
 		WidgetInjector injector = Registry.get(AppConstants.WIDGET_INJECTOR);
 		wizard = injector.getWizardProvider().get();
-		
-		// setup an array of WizardCards
 
-
-		// 1st card - a welcome
+		// 1st and only card 
 		
 		Card card1 = wizard.newCard(i18n.importWizardCardTitlePointsPossible());//TODO i18n
 		
@@ -637,7 +637,7 @@ public class ImportPanel extends GradebookPanel {
 		wizard.setShowWestImageContainer(false);
 		wizard.setPanelBackgroundColor("#FFFFFF");
 		wizard.setContainer(this.getElement());
-		//wizard.setModalCssClassName("gbModalDark");
+		
 		wizard.setProgressIndicator(Wizard.Indicator.PROGRESSBAR);
 		wizard.addCancelListener(new Listener<BaseEvent>() {
 
@@ -666,14 +666,20 @@ public class ImportPanel extends GradebookPanel {
 				+ i18nTemplates.importDataMinValue("" + minScore.intValue())
 				+ i18nTemplates.importDataMaxValue("" + maxScore.intValue()));
 		
-		FormPanel formpanel = new FormPanel();
+		card1.setTitle(i18n.importWizardCardTitlePointsPossible());
+		LayoutContainer form = new LayoutContainer();
+		
+		FormLayout layout = new FormLayout();
+		layout.setLabelAlign(LabelAlign.TOP);
+		form.setLayout(layout);
+		
 		final TextField<String> pntsField = new TextField<String>();
-		pntsField.setFieldLabel(i18n.importSetupGridPointsHeader());
+		pntsField.setFieldLabel(i18n.scantronMaxPointsFieldLabel());
 		pntsField.setAllowBlank(false);
 		pntsField.setSelectOnFocus(true);
 		pntsField.setValidator(new MinValueIntegerValidator(new Double(Math.floor(maxScore.doubleValue())).intValue(), 
 				i18n.itemFormPanelEditPointsInvalid()));
-		formpanel.add(pntsField);
+		form.add(pntsField);
 		
 		card1.addFinishListener(new Listener<BaseEvent>() {
 
@@ -690,7 +696,7 @@ public class ImportPanel extends GradebookPanel {
 				List<Learner> rows = upload.getRows();
 				for (Learner row : rows) {
 					Double pnts = Double.valueOf((String)row.get(i.getIdentifier()));
-					row.set(i.getIdentifier(), "" + pnts/maxPnts);
+					row.set(i.getIdentifier(), "" + 100 * pnts/maxPnts);
 				}
 				/*
 				 * this is scantron with only one key in it which is *not* in LearnerKey: an item
@@ -709,10 +715,10 @@ public class ImportPanel extends GradebookPanel {
 		});
 		
 		
-		card1.setFormPanel(formpanel);
+		card1.setLayoutContainer(form);
 		
 		wizard.setHeading(i18n.importWizardTitle());
-		wizard.setHeaderTitle("SCANTRON");
+		wizard.setHeaderTitle("Scantron");
 		
 		wizard.show();
 		

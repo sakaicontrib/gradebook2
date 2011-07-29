@@ -1,6 +1,8 @@
 package org.sakaiproject.gradebook.gwt.client.api;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+
+import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.form.Validator;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 
@@ -25,6 +27,12 @@ public interface Card {
 	public boolean isValid();
 
 	public void notifyFinishListeners();
+	
+	public FormPanel getFormPanel();
+	
+	public void setLayoutContainer(LayoutContainer container);
+	
+	public LayoutContainer getLayoutContainer();
 	
 	
 		

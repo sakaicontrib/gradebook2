@@ -467,5 +467,9 @@ public interface I18nConstants extends Constants {
 	String headerExportXLSXTitle();
 	String noItemModelFound();
 	
+	// GRBK-1056 - get scantron max points
+	String scantronMaxPointsFieldLabel();
+	
+	
 	
 }

@@ -58,6 +58,7 @@ public class WizardCard extends LayoutContainer implements Card {
 	private ArrayList<Listener<BaseEvent>> finishListeners;
 	private String cardTitle;
 	private FormPanel panel;
+	private LayoutContainer layoutContainer;
 
 	/**
 	 * Creates a new wizard card.
@@ -147,4 +148,18 @@ public class WizardCard extends LayoutContainer implements Card {
 		if (finishListeners == null) finishListeners = new ArrayList<Listener<BaseEvent>>();
 		finishListeners.add(listener);
 	}
+
+	public FormPanel getFormPanel() {
+		return panel;
+	}
+
+	public void setLayoutContainer(LayoutContainer container) {
+		this.layoutContainer = container;
+		add(container);
+	}
+	
+	public LayoutContainer getLayoutContainer() {
+		return this.layoutContainer;
+	}
+	
 }
