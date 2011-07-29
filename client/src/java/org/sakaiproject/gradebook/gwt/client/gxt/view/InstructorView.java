@@ -604,6 +604,7 @@ public class InstructorView extends AppView {
 		exportTypeByMenuSelector.put(MenuSelector.EXPORT_DATA_CSV, ExportType.CSV);
 		exportTypeByMenuSelector.put(MenuSelector.EXPORT_STRUCTURE_CSV, ExportType.CSV);
 		exportTypeByMenuSelector.put(MenuSelector.EXPORT_STRUCTURE_XLSX, ExportType.XLSX);
+		exportTypeByMenuSelector.put(MenuSelector.EXPORT_DATA_XLSX, ExportType.XLSX);
 		final EnumSet<MenuSelector> exportingSelections = EnumSet.of(MenuSelector.EXPORT_STRUCTURE_XLS,MenuSelector.EXPORT_STRUCTURE_CSV);
 
 		menuSelectionListener = new SelectionListener<MenuEvent>() {
