@@ -2792,7 +2792,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 	}
 
 
-	private Long doUpdateItem(Item item, Assignment assignment) throws InvalidInputException {
+	private Long doUpdateItem(Item item, Assignment assignment, boolean isImport) throws InvalidInputException {
 		boolean isWeightChanged = false;
 		boolean havePointsChanged = false;
 
@@ -2989,7 +2989,12 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			assignment.setName(convertString(item.getName()));
 
 			assignment.setExtraCredit(Boolean.valueOf(isExtraCredit));
-			assignment.setReleased(convertBoolean(item.getReleased()).booleanValue());
+			// GRBK-896 
+			if (!isImport)
+			{
+				assignment.setReleased(convertBoolean(item.getReleased()).booleanValue());
+			} // We're importing, and as of now we can't mess with the released flag on import.  
+			
 			assignment.setPointsPossible(points);
 			assignment.setDueDate(convertDate(item.getDueDate()));
 			assignment.setRemoved(isRemoved);
@@ -3080,7 +3085,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		Gradebook gradebook = assignment.getGradebook();
 		boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
 
-		doUpdateItem(item, assignment);
+		doUpdateItem(item, assignment, false);
 
 		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
 		List<Category> categories = null;
@@ -3143,7 +3148,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 				if(null != assignment) {
 
 					item.setIdentifier(String.valueOf(itemId));
-					itemId = doUpdateItem(item, assignment);
+					itemId = doUpdateItem(item, assignment, true);
 				}
 				else {
 
@@ -3179,7 +3184,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 				if(null != category) {
 
-					itemId = doUpdateCategory(item, category);
+					itemId = doUpdateCategory(item, category, true);
 				}
 				else {
 
@@ -3257,13 +3262,13 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 				Assignment assignment = gbService.getAssignment(itemId);
 
 				item.setIdentifier(String.valueOf(itemId));
-				itemId = doUpdateItem(item, assignment);
+				itemId = doUpdateItem(item, assignment, true);
 				break;
 			case CATEGORY:
 				itemId = Long.valueOf(item.getIdentifier());
 				Category category = gbService.getCategory(itemId);
 
-				itemId = doUpdateCategory(item, category);
+				itemId = doUpdateCategory(item, category, true);
 				break;
 			case GRADEBOOK:
 				Gradebook gradebook = gbService.getGradebook(gradebookUid);
@@ -6310,7 +6315,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		return perm;
 	}
 
-	private Long doUpdateCategory(Item item, Category category) throws InvalidInputException {
+	private Long doUpdateCategory(Item item, Category category, boolean isImport) throws InvalidInputException {
 
 		Long categoryId = category.getId();
 
@@ -6440,7 +6445,12 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 				if (oldCategoryOrder == null || (newCategoryOrder != null && newCategoryOrder.compareTo(oldCategoryOrder) != 0))
 					businessLogic.reorderAllCategories(gradebook.getId(), category.getId(), newCategoryOrder, oldCategoryOrder);
 
-				businessLogic.applyReleaseChildItemsWhenCategoryReleased(category, assignmentsForCategory, isReleased);
+				// GRBK-796 
+				// In an import, we dont want to mess with the released state of the GB.  
+				if (!isImport)
+				{
+					businessLogic.applyReleaseChildItemsWhenCategoryReleased(category, assignmentsForCategory, isReleased);
+				}
 			}
 
 		} catch (RuntimeException e) {
@@ -6476,7 +6486,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		Gradebook gradebook = category.getGradebook();
 
-		doUpdateCategory(item, category);
+		doUpdateCategory(item, category, false);
 
 		List<Assignment> assignments = gbService.getAssignments(gradebook.getId());
 		List<Category> categories = getCategoriesWithAssignments(gradebook.getId(), assignments, true);
