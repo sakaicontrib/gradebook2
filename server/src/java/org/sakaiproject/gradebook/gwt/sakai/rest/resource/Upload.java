@@ -49,11 +49,8 @@ public class Upload extends Resource {
 		
 		
 		if(force) {
-			/*
-			 *  note: this is not currently used, since the client is enforceing the business rule;
-			 *  but it may be needed if we have different access points to this method (eg, not gb2 client)
-			 */
 			ignoredBusinessRules.add(BusinessLogicCode.NoDuplicateItemNamesWithinCategoryRule);
+			ignoredBusinessRules.add(BusinessLogicCode.NoDuplicateItemNamesRule);
 		} 
 		if(hasSantronPoints) {
 			String value = maxPoints.split("/")[2];
@@ -68,8 +65,9 @@ public class Upload extends Resource {
 			}
 		} 
 		
-		UploadImpl uploadData = 
-			 new UploadImpl(map);
+		importSettings.setIgnoredBusinessRules(ignoredBusinessRules);
+		
+		UploadImpl uploadData = new UploadImpl(map);
 
 		uploadData.setImportSettings(importSettings);
 		

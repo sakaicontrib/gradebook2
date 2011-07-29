@@ -1,5 +1,8 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.model;
 
+import java.util.List;
+
+import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
 import org.sakaiproject.gradebook.gwt.client.gxt.JsonUtil;
 import org.sakaiproject.gradebook.gwt.client.model.ImportSettings;
 import org.sakaiproject.gradebook.gwt.client.model.key.UploadKey;
@@ -8,6 +11,7 @@ public class ImportSettingsImpl extends EntityModel implements ImportSettings {
 
 	
 	private static final long serialVersionUID = 43434L;
+	private List<BusinessLogicCode> ignoredBusinessRules;
 
 	
 	public ImportSettingsImpl() {
@@ -63,6 +67,16 @@ public class ImportSettingsImpl extends EntityModel implements ImportSettings {
 	 */
 	public void setScantronMaxPoints(String scantronMaxPoints) {
 		set(UploadKey.S_MXPNTS.name(),scantronMaxPoints);
+	}
+
+	@Override
+	public List<BusinessLogicCode> getIgnoredBusinessRules() {
+		return this.ignoredBusinessRules;
+	}
+
+	@Override
+	public void setIgnoredBusinessRules(List<BusinessLogicCode> rules) {
+		this.ignoredBusinessRules = rules;
 	}
 	
 }

@@ -3299,8 +3299,12 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 	}
 
 	public Upload upload(String gradebookUid, Long gradebookId, Upload upload, boolean isDryRun) throws InvalidInputException {
+		List<BusinessLogicCode> ruleOverrides = upload.getImportSettings().getIgnoredBusinessRules();
+		if (null == upload.getImportSettings().getIgnoredBusinessRules()) {
+			ruleOverrides = new ArrayList<BusinessLogicCode> ();
+		}
 
-		return upload(gradebookUid, gradebookId, upload, isDryRun, new ArrayList<BusinessLogicCode>(){});
+		return upload(gradebookUid, gradebookId, upload, isDryRun, ruleOverrides);
 	}
 
 
