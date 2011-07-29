@@ -69,12 +69,10 @@ public class ImportSettingsImpl extends EntityModel implements ImportSettings {
 		set(UploadKey.S_MXPNTS.name(),scantronMaxPoints);
 	}
 
-	@Override
 	public List<BusinessLogicCode> getIgnoredBusinessRules() {
 		return this.ignoredBusinessRules;
 	}
 
-	@Override
 	public void setIgnoredBusinessRules(List<BusinessLogicCode> rules) {
 		this.ignoredBusinessRules = rules;
 	}
