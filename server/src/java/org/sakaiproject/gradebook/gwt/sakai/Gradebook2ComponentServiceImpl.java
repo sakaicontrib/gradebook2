@@ -1173,16 +1173,26 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 					originalImportGrade = actionRecord.getPropertyMap().get(AppConstants.HISTORY_ORIGINAL_SCORE);
 				case GRADED:
 					score = actionRecord.getPropertyMap().get(AppConstants.HISTORY_SCORE);
-					if (score == null)
+					if (score == null || "null".equals(score)) {
 						score = "";
-					actionModel.set(AppConstants.HISTORY_SCORE, score);
+						if(actionType != ActionType.IMPORT_GRADE_CHANGE) {
+							text.append(actionType.toString()).append(" ");
+							actionType = ActionType.DELETE;
+						}
+					}
+					String singleOrNoQuote = "'";
+					
+					if (actionType.equals(ActionType.DELETE)) {
+						singleOrNoQuote = "";
+					}
 
-					text.append(actionType.getVerb()).append(" '");
+					text.append(actionType.getVerb()).append(" ").append(singleOrNoQuote);
 					if (oldScore != null ) {
 						text.append(oldScore).append("'-->'");
 					}
-					text.append(score).append("'");
-
+					text.append(score).append(singleOrNoQuote);
+					
+					actionModel.set(AppConstants.HISTORY_SCORE, score);
 					// GRBK-668 : TODO : i18n
 					if(null != originalImportGrade && !"".equals(originalImportGrade)) {
 						text.append(" : Import converted [");
