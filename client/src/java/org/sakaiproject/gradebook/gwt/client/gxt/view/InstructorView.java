@@ -606,7 +606,8 @@ public class InstructorView extends AppView {
 		exportTypeByMenuSelector.put(MenuSelector.EXPORT_STRUCTURE_CSV, ExportType.CSV);
 		exportTypeByMenuSelector.put(MenuSelector.EXPORT_STRUCTURE_XLSX, ExportType.XLSX);
 		exportTypeByMenuSelector.put(MenuSelector.EXPORT_DATA_XLSX, ExportType.XLSX);
-		final EnumSet<MenuSelector> exportingSelections = EnumSet.of(MenuSelector.EXPORT_STRUCTURE_XLS,MenuSelector.EXPORT_STRUCTURE_CSV);
+		final EnumSet<MenuSelector> exportingStructureSelections = EnumSet.of(
+				MenuSelector.EXPORT_STRUCTURE_XLS,MenuSelector.EXPORT_STRUCTURE_CSV,MenuSelector.EXPORT_STRUCTURE_XLSX);
 
 		menuSelectionListener = new SelectionListener<MenuEvent>() {
 
@@ -616,7 +617,7 @@ public class InstructorView extends AppView {
 			public void componentSelected(MenuEvent me) {
 				MenuSelector selector = me.getItem().getData(MENU_SELECTOR_FLAG);
 				ExportType exportType = exportTypeByMenuSelector.get(selector);
-				boolean includeStructure = exportingSelections.contains(selector);
+				boolean includeStructure = exportingStructureSelections.contains(selector);
 				switch (selector) {
 				case ADD_CATEGORY:
 					Dispatcher.forwardEvent(GradebookEvents.NewCategory.getEventType());
