@@ -584,4 +584,11 @@ public class LearnerSummaryPanel extends GradebookPanel {
 			table.setWidget(row, column, widget);
 		}
 	}
+
+
+	public void updateLearnerItems(ListStore<ModelData> store,
+			TreeStore<ItemModel> treeStore) {
+		onChangeModel(store, treeStore, this.learner);
+		
+	}
 }

@@ -364,6 +364,7 @@ public class InstructorView extends AppView {
 	@Override
 	protected void onLearnerGradeRecordUpdated(UserEntityUpdateAction action) {
 		if (singleGradeContainer != null && singleGradeContainer.isVisible()) {
+			singleGradeContainer.updateLearnerItems(multigradeView.getStore(), treeView.getTreeStore());
 			singleGradeContainer.onLearnerGradeRecordUpdated(action.getModel());
 		}
 
