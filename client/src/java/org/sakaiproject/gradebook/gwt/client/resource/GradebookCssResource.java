@@ -102,7 +102,9 @@ public interface GradebookCssResource extends CssResource {
 	
 	String gbStudentChart();
 	
-	String setupInstructionsLabels();
+	String setupInstructionsLabelForCategory();
+	
+	String setupInstructionsLabelForGradeType(); 
 	
 	String gbStudentInformationPanel();
 

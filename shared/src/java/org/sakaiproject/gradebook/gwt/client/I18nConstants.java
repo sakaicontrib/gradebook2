@@ -422,9 +422,6 @@ public interface I18nConstants extends Constants {
 	String gradebookSetupGradeTypeMessageForPoints();
 	String gradebookSetupGradeTypeMessageForPercentages();
 	String gradebookSetupGradeTypeMessageForLetterGrades();
-
-	String gradebookSetupDialogTitle();
-	String gradebookSetupDialogMessage();
 	
 	String gradebookSetupInstructionalForCategoryTypeGroupingHeading();
 	String gradebookSetupInstructionalForGradeTypeGroupingHeading();

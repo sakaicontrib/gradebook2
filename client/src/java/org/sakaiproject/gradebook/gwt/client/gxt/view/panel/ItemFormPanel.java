@@ -156,7 +156,6 @@ public class ItemFormPanel extends GradebookPanel {
 
 	// GRBK-1054
 	private boolean firstTimeInEditGradebook; 	
-	private Dialog initialSetupMessage; 
 		
 	// GRBK-943 - we need to know what the multigrid has in terms of page size. 
 	private MultiGradeContentPanel multiGradePanel; 
@@ -230,15 +229,6 @@ public class ItemFormPanel extends GradebookPanel {
 		categoryPicker.setStore(categoryStore);
 		formPanel.add(categoryPicker);
 
-		// GRBK-1054 - we pop up a dialog with some instructions the first time a user enters gradebook setup. 
-		initialSetupMessage = new Dialog(); 
-		initialSetupMessage.setHeading(i18n.gradebookSetupDialogTitle());  
-		initialSetupMessage.setButtons(Dialog.OK);  
-		initialSetupMessage.addText(i18n.gradebookSetupDialogMessage());  
-		initialSetupMessage.getItem(0).getFocusSupport().setIgnore(true);  
-		initialSetupMessage.setScrollMode(Scroll.AUTO);  
-		initialSetupMessage.setModal(true);
-		initialSetupMessage.setHideOnButtonClick(true);
 		// GRBK-1054
 		categoryTypePicker = new ItemFormComboBox<ModelData>(NAME_DISPLAY_FIELD, ItemKey.C_CTGRY_TYPE.name(), "");
 		categoryTypePicker.setStore(categoryTypeStore);
@@ -248,7 +238,7 @@ public class ItemFormPanel extends GradebookPanel {
 		// GRBK-1054 - This is the box that appears above the field for instructions with it.  
 		informationMessageCategoryTypeInGradebookSetup = new Html();
 		informationMessageCategoryTypeInGradebookSetup.setHtml(i18n.gradebookSetupCategoryMessageForDefault());
-		informationMessageCategoryTypeInGradebookSetup.setStyleName(resources.css().setupInstructionsLabels());
+		informationMessageCategoryTypeInGradebookSetup.setStyleName(resources.css().setupInstructionsLabelForCategory());
 		
 		instructionsForCategoryTypePickerSet = new FieldSet();  
 		instructionsForCategoryTypePickerSet.setCollapsible(false);
@@ -268,7 +258,7 @@ public class ItemFormPanel extends GradebookPanel {
 		// GRBK-1054 - This is the box that appears above the field for instructions with it.  
 		informationMessageGradeTypeInGradebookSetup = new Html();
 		informationMessageGradeTypeInGradebookSetup.setHtml(i18n.gradebookSetupGradeTypeMessageForDefault());
-		informationMessageGradeTypeInGradebookSetup.setStyleName(resources.css().setupInstructionsLabels());
+		informationMessageGradeTypeInGradebookSetup.setStyleName(resources.css().setupInstructionsLabelForGradeType());
 		instructionsForGradeTypePickerSet = new FieldSet();  
 		instructionsForGradeTypePickerSet.setHeading(i18n.gradebookSetupInstructionalForGradeTypeGroupingHeading());  
 		instructionsForGradeTypePickerSet.setCheckboxToggle(false);  
@@ -644,7 +634,6 @@ public class ItemFormPanel extends GradebookPanel {
 					informationMessageGradeTypeInGradebookSetup.setHtml(getGradeTypePickerInstString(itemModel.getGradeType()));	
 	
 					firstTimeInEditGradebook = false; 
-					initialSetupMessage.show(); 
 				}
 				// The initState above will show the boxes, we just show the labels at this point. 
 				informationMessageCategoryTypeInGradebookSetup.show();
