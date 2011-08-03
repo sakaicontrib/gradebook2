@@ -624,7 +624,8 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		org.apache.poi.ss.usermodel.Workbook wb = isXSSF ? new XSSFWorkbook() : new HSSFWorkbook();
 		
 		CreationHelper helper = wb.getCreationHelper();
-		org.apache.poi.ss.usermodel.Sheet s = wb.createSheet(title);
+		// GRBK-1086 
+		org.apache.poi.ss.usermodel.Sheet s = wb.createSheet(i18n.getString("exportSheetTitle"));
 
 		file.startReading(); 
 		String[] curRow = null; 
