@@ -927,6 +927,22 @@ public class GradebookToolServiceImpl extends HibernateDaoSupport implements Gra
 	public Assignment getAssignment(Long assignmentId) {
 		return (Assignment)getHibernateTemplate().load(Assignment.class, assignmentId);
 	}
+	
+	public boolean hasAssignments(final Long gradebookId) {
+		
+		Number size = (Number)getHibernateTemplate().execute(new HibernateCallback() {
+			
+			public Object doInHibernate(Session session) throws HibernateException {
+				
+				Query q = session.createQuery("select count(*) from Assignment a where a.gradebook.id=:gradebookId");
+				q.setParameter("gradebookId", gradebookId);
+				return (Number) q.iterate().next();
+			}
+		});
+
+		return (size != null && size.intValue() == 0) ? false : true;
+		
+	}
 
 	public List<AssignmentGradeRecord> getAssignmentGradeRecords(final Assignment assignment) {
 		HibernateCallback hc = new HibernateCallback() {

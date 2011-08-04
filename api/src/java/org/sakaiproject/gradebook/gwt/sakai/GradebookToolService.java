@@ -69,6 +69,16 @@ public interface GradebookToolService {
 	
 	public Assignment getAssignment(Long assignmentId);
 	
+	/*
+	 * Method that checks if a gradebook has any assignments 
+	 * 
+	 * @since 1.7.0
+	 * 
+	 * @param gradebookId
+	 * @return true if the gradebook has assignments, false otherwise
+	 */
+	public boolean hasAssignments(Long gradebookId);
+	
 	public List<Assignment> getAssignments(Long gradebookId);
 	
 	public List<Assignment> getAssignmentsForCategory(Long categoryId);

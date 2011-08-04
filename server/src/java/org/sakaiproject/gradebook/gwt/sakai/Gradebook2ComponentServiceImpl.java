@@ -5381,10 +5381,17 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		for (int i = 0; i < gradebookUids.length; i++) {
 			boolean isNewGradebook = false;
 			Gradebook gradebook = null;
+			
+			/*
+			 * GRBK-1087 : The following code is most likely not needed because of the work that
+			 * was done in GRBK-584. For now we leave the following code in place just in case
+			 */
 			try {
 				// First thing, grab the default gradebook if one exists
 				gradebook = gbService.getGradebook(gradebookUids[i]);
 			} catch (GradebookNotFoundException gnfe) {
+				
+				// TODO: Check if this section is still needed. See GRBK-584
 				// If it doesn't exist, then create it
 				if (frameworkService != null) {
 					frameworkService.addGradebook(gradebookUids[i], i18n.getString("defaultGradebookName"));
@@ -5392,6 +5399,12 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 					isNewGradebook = true;
 				} 
 			}
+			
+			// GRBK-1087
+			if(!isNewGradebook && hasDefaultSetup(gradebook)) {
+				isNewGradebook = true;
+			}
+			
 			AuthModel authModel = new AuthModel();
 			boolean isUserAbleToGrade = authz.isUserAbleToGrade(gradebookUids[i]);
 			boolean isUserAbleToViewOwnGrades = authz.isUserAbleToViewOwnGrades(gradebookUids[i]);
@@ -5406,6 +5419,32 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			rv.add(authModel);
 		}
 		return rv;
+	}
+	
+	/*
+	 * GRBK-1087 : Method to determines if a gradebook is in its default 
+	 * state, meaning that it hasn't been modified via the  gradebook setup panel
+	 */
+	private boolean hasDefaultSetup(Gradebook gradebook) {
+		
+		if(!gradebook.getName().equals(i18n.getString("defaultGradebookName"))) {
+			
+			return false;
+		}
+		else if(gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY) {
+			
+			return false;
+		}
+		else if(gradebook.getGrade_type() != GradebookService.GRADE_TYPE_POINTS) {
+			
+			return false;
+		}
+		else if(gbService.hasAssignments(gradebook.getId())) {
+			
+			return false;
+		}
+		
+		return true;
 	}
 
 	private BigDecimal getCalculatedGrade(Gradebook gradebook, List<Assignment> assignments, List<Category> categories, Map<Long, AssignmentGradeRecord> studentGradeMap) {
