@@ -1405,13 +1405,15 @@ public class ItemFormPanel extends GradebookPanel {
 
 						case CREATECLOSE:
 							close = true;
-							Dispatcher.forwardEvent(GradebookEvents.ShowUserFeedback.getEventType(), i18n.applicationUpdating(), false);
 							Dispatcher.forwardEvent(GradebookEvents.MaskMultiGradeGrid.getEventType());
 							hideFormPanel();
 						case CREATE:
 							// GRBK-786 GRBK-790 GRBK-789 
 							if (validateFormForEditOrCreate(false) )
 							{
+								
+								Dispatcher.forwardEvent(GradebookEvents.ShowUserFeedback.getEventType(), i18n.applicationUpdating(), false);
+								
 								if(close) {
 									hasUnprocessedSaveState = false;
 								}
@@ -1449,6 +1451,15 @@ public class ItemFormPanel extends GradebookPanel {
 								clearChanges();
 								sendItemCreateEvent(item, close);
 								selectedItemModel = item;
+							}
+							else {
+								
+								/*
+								 *  GRBK-1092
+								 *  Canceling any ongoing user notification message and grid masking  
+								 */
+								Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType());
+								Dispatcher.forwardEvent(GradebookEvents.UnmaskMultiGradeGrid.getEventType());
 							}
 
 							break;
@@ -1493,7 +1504,6 @@ public class ItemFormPanel extends GradebookPanel {
 							break;
 						case SAVECLOSE:
 							close = true;
-							Dispatcher.forwardEvent(GradebookEvents.ShowUserFeedback.getEventType(), i18n.applicationUpdating(), false);
 							Dispatcher.forwardEvent(GradebookEvents.MaskMultiGradeGrid.getEventType());
 							hideFormPanel();
 						case SAVE:
@@ -1507,6 +1517,8 @@ public class ItemFormPanel extends GradebookPanel {
 							if (selectedItemModel != null) 
 								record = treeStore.getRecord(selectedItemModel);								
 							if (validateFormForEditOrCreate(true)) {
+								
+								Dispatcher.forwardEvent(GradebookEvents.ShowUserFeedback.getEventType(), i18n.applicationUpdating(), false);
 
 								if (record != null) {
 
@@ -1556,7 +1568,17 @@ public class ItemFormPanel extends GradebookPanel {
 
 								sendItemUpdateEvent(record, selectedItemModel, close);								
 							}
-							break;
+							else {
+								
+								/*
+								 *  GRBK-1092
+								 *  Canceling any ongoing user notification message and grid masking
+								 */
+								Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType());
+								Dispatcher.forwardEvent(GradebookEvents.UnmaskMultiGradeGrid.getEventType());
+							}
+							
+							break; // End of switch case SAVE:
 						}
 					}
 				}
