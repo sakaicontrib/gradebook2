@@ -1628,8 +1628,11 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			return;
 		}
 		// GRBK-806 - Percentages are valid if they are in range of 0..100 inclusive. 
-		// GRBK-1056 - give scantrons a pass since we control max points in the client
-		if (! ieInfo.getImportsettings().isScantron()){
+		// GRBK-1056 - give scantrons a pass since we control max points in the client]
+		// GRBK-1105 - We need to do this error checking if it is scantron 
+		// but not percentages mode as the client side stuff only works if the 
+		// wizard code is called, and that only happens for percentages... 
+		if (! (ieInfo.getImportsettings().isScantron() && GradeType.PERCENTAGES == gradeType) ){
 			if (GradeType.PERCENTAGES == gradeType)
 			{
 				double d = Double.parseDouble(rowData[colIdx]);

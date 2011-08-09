@@ -95,6 +95,11 @@ import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.Element;
 
 public class ImportPanel extends GradebookPanel {
+	
+	// GRBK-1105
+	private final static int I100 = 100; 
+	private final static Double MINIMUM_PERCENTAGE_VALUE = Double.valueOf("0"); 
+	private final static Double MAXIMUM_PERCENTAGE_VALUE = Double.valueOf("100"); 
 
 	private CardLayout mainCardLayout, centerCardLayout;
 	private LayoutContainer mainCardLayoutContainer, centerCardLayoutContainer; 
@@ -687,16 +692,35 @@ public class ImportPanel extends GradebookPanel {
 				importSettings.setScantronMaxPoints(pntsField.getValue());
 
 				Double maxPnts = Double.valueOf(Integer.parseInt(importSettings.getScantronMaxPoints()));
-				
-				
 				@SuppressWarnings("unchecked")
 				List<ItemModel> gradeItems = (List<ItemModel>) setupPanel.getGradeItems(gradebookItemModel);
 				ItemModel i = gradeItems.get(0);
 				
 				List<Learner> rows = upload.getRows();
 				for (Learner row : rows) {
+					// GRBK-1105
+					// Note the below string has not been vetted, but GRBK-1104 should correct this to not be able to happen. 
+					String newValStr = "??"; 
 					Double pnts = Double.valueOf((String)row.get(i.getIdentifier()));
-					row.set(i.getIdentifier(), "" + 100 * pnts/maxPnts);
+					boolean errorFound = false; 
+					if (Double.valueOf(0).compareTo(maxPnts) != 0 ) {
+						Double derivedPercentageVal = Double.valueOf(pnts / maxPnts * I100); 
+						if (derivedPercentageVal.compareTo(MINIMUM_PERCENTAGE_VALUE) < 0 || derivedPercentageVal.compareTo(MAXIMUM_PERCENTAGE_VALUE) > 0) {
+							errorFound = true; 
+						}
+						newValStr = derivedPercentageVal.toString(); 
+					}
+					else {
+						errorFound = true; 
+					}
+					
+					row.set(i.getIdentifier(), newValStr);
+					if (errorFound)
+					{
+						String errorProp = DataTypeConversionUtil.buildFailedKey(i.getIdentifier());
+						row.set(errorProp, "true");
+						
+					}
 				}
 				/*
 				 * this is scantron with only one key in it which is *not* in LearnerKey: an item
