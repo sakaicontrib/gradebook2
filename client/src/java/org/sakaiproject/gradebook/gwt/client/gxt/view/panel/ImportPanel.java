@@ -680,7 +680,6 @@ public class ImportPanel extends GradebookPanel {
 		final NumberField maxPointsNumberField = new InlineEditNumberField() {
 			protected boolean validateValue(String value) {
 				if (null == value || "".equals(value.trim())) {
-					setValue(maxScore);
 					return true;
 				}
 				return super.validateValue(value);
@@ -704,10 +703,16 @@ public class ImportPanel extends GradebookPanel {
 
 			public void handleEvent(BaseEvent be) {
 				
-				importSettings.setScantronMaxPoints(maxPointsNumberField.getValue().toString());
+				Number entry = maxPointsNumberField.getValue();
+				Double maxPoints = null;
 				
-				Double maxPoints = Double.valueOf(maxPointsNumberField.getValue().doubleValue());
+				if (null == entry) 
+					maxPoints = maxScore;
+				else 
+					maxPoints = Double.valueOf(entry.doubleValue());
 								
+				importSettings.setScantronMaxPoints(maxPoints.toString());
+				
 				@SuppressWarnings("unchecked")
 				List<ItemModel> gradeItems = (List<ItemModel>) setupPanel.getGradeItems(gradebookItemModel);
 				ItemModel i = gradeItems.get(0);
