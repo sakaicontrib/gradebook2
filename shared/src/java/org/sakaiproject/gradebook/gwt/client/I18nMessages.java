@@ -36,4 +36,6 @@ public interface I18nMessages extends Messages {
 	String importDataMaxValue(String value);
 	
 	String valueConfusing(String value);
+
+	String pointsFieldEmptyText(String value);
 }

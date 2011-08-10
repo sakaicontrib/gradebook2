@@ -153,6 +153,8 @@ public class WizardCard extends LayoutContainer implements Card {
 		return panel;
 	}
 
+	
+	
 	public void setLayoutContainer(LayoutContainer container) {
 		this.layoutContainer = container;
 		add(container);

@@ -30,6 +30,12 @@ public interface Card {
 	
 	public FormPanel getFormPanel();
 	
+	/*
+	 *  NOTE: Using a LayoutContainer instead of a form means you forfeit meaningful use of 
+	 *  panel.isValid() for button presses.
+	 *  
+	 */
+	
 	public void setLayoutContainer(LayoutContainer container);
 	
 	public LayoutContainer getLayoutContainer();

@@ -23,7 +23,6 @@
 
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
-import java.awt.ItemSelectable;
 import java.util.Collection;
 import java.util.List;
 
@@ -35,6 +34,7 @@ import org.sakaiproject.gradebook.gwt.client.RestCallback;
 import org.sakaiproject.gradebook.gwt.client.api.Card;
 import org.sakaiproject.gradebook.gwt.client.api.Wizard;
 import org.sakaiproject.gradebook.gwt.client.gin.WidgetInjector;
+import org.sakaiproject.gradebook.gwt.client.gxt.InlineEditNumberField;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
 import org.sakaiproject.gradebook.gwt.client.gxt.JsonUtil;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
@@ -49,14 +49,13 @@ import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.ImportSettings;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.Learner;
+import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.UploadKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
-import org.sakaiproject.gradebook.gwt.client.wizard.validators.IntegerValidator;
-import org.sakaiproject.gradebook.gwt.client.wizard.validators.MinValueIntegerValidator;
-
+import org.sakaiproject.gradebook.gwt.client.wizard.validators.MinMaxDoubleValidator;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.LayoutRegion;
 import com.extjs.gxt.ui.client.Style.SortDir;
@@ -80,7 +79,7 @@ import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.FormPanel.LabelAlign;
-import com.extjs.gxt.ui.client.widget.form.TextField;
+import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayout;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayoutData;
 import com.extjs.gxt.ui.client.widget.layout.CardLayout;
@@ -88,7 +87,6 @@ import com.extjs.gxt.ui.client.widget.layout.FitData;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
-import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.Response;
@@ -664,7 +662,7 @@ public class ImportPanel extends GradebookPanel {
 		 */
 		ItemModel i = gradeItems.get(0);
 		Double minScore = getMinScoreForItem(i, rows);
-		Double maxScore = getMaxScoreForItem(i, rows);
+		final Double maxScore = getMaxScoreForItem(i, rows);
 		
 		card1.setHtmlText(i18n.importPromptScantronMaxPoints() 
 				+ "<br/>"
@@ -672,26 +670,44 @@ public class ImportPanel extends GradebookPanel {
 				+ i18nTemplates.importDataMaxValue("" + maxScore.intValue()));
 		
 		card1.setTitle(i18n.importWizardCardTitlePointsPossible());
-		LayoutContainer form = new LayoutContainer();
+		FormPanel form = new FormPanel();
 		
 		FormLayout layout = new FormLayout();
 		layout.setLabelAlign(LabelAlign.TOP);
 		form.setLayout(layout);
 		
-		final TextField<String> pntsField = new TextField<String>();
-		pntsField.setFieldLabel(i18n.scantronMaxPointsFieldLabel());
-		pntsField.setAllowBlank(false);
-		pntsField.setSelectOnFocus(true);
-		pntsField.setValidator(new MinValueIntegerValidator(new Double(Math.floor(maxScore.doubleValue())).intValue(), 
-				i18n.itemFormPanelEditPointsInvalid()));
-		form.add(pntsField);
+		// GRBK-1104 : change TextField to NumberField
+		final NumberField maxPointsNumberField = new InlineEditNumberField() {
+			protected boolean validateValue(String value) {
+				if (null == value || "".equals(value.trim())) {
+					setValue(maxScore);
+					return true;
+				}
+				return super.validateValue(value);
+			}
+		};
+		
+		
+		maxPointsNumberField.setName(ItemKey.D_PNTS.name());
+		maxPointsNumberField.setEmptyText(i18nTemplates.pointsFieldEmptyText(maxScore.toString()));
+		maxPointsNumberField.setFieldLabel(i18n.scantronMaxPointsFieldLabel());
+		maxPointsNumberField.setFormat(DataTypeConversionUtil.getDefaultNumberFormat());
+		maxPointsNumberField.setAllowDecimals(true);
+		maxPointsNumberField.setAllowNegative(false);
+		maxPointsNumberField.setAutoValidate(true);
+		maxPointsNumberField.setMinValue(maxScore);
+		maxPointsNumberField.setAllowBlank(false);
+		maxPointsNumberField.setValidator(new MinMaxDoubleValidator(maxScore, i18n.itemFormPanelEditPointsInvalid()));
+		form.add(maxPointsNumberField);
 		
 		card1.addFinishListener(new Listener<BaseEvent>() {
 
 			public void handleEvent(BaseEvent be) {
-				importSettings.setScantronMaxPoints(pntsField.getValue());
-
-				Double maxPnts = Double.valueOf(Integer.parseInt(importSettings.getScantronMaxPoints()));
+				
+				importSettings.setScantronMaxPoints(maxPointsNumberField.getValue().toString());
+				
+				Double maxPoints = Double.valueOf(maxPointsNumberField.getValue().doubleValue());
+								
 				@SuppressWarnings("unchecked")
 				List<ItemModel> gradeItems = (List<ItemModel>) setupPanel.getGradeItems(gradebookItemModel);
 				ItemModel i = gradeItems.get(0);
@@ -703,11 +719,15 @@ public class ImportPanel extends GradebookPanel {
 					String newValStr = "??"; 
 					Double pnts = Double.valueOf((String)row.get(i.getIdentifier()));
 					boolean errorFound = false; 
-					if (Double.valueOf(0).compareTo(maxPnts) != 0 ) {
-						Double derivedPercentageVal = Double.valueOf(pnts / maxPnts * I100); 
+					if (Double.valueOf(0).compareTo(maxPoints) != 0 ) {
+						
+						Double derivedPercentageVal = Double.valueOf(pnts / maxPoints * I100); 
+						
 						if (derivedPercentageVal.compareTo(MINIMUM_PERCENTAGE_VALUE) < 0 || derivedPercentageVal.compareTo(MAXIMUM_PERCENTAGE_VALUE) > 0) {
+							
 							errorFound = true; 
 						}
+						
 						newValStr = derivedPercentageVal.toString(); 
 					}
 					else {
@@ -727,19 +747,16 @@ public class ImportPanel extends GradebookPanel {
 				 */
 				
 				gradeItems.remove(i);
-				i.setPoints(maxPnts);
+				i.setPoints(maxPoints);
 				gradeItems.add(i);
 				setupPanel.getItemStore().removeAll();
 				refreshSetupPanel();
 			}
 
 			
-
-			
 		});
 		
-		
-		card1.setLayoutContainer(form);
+		card1.setFormPanel(form);
 		
 		wizard.setHeading(i18n.importWizardTitle());
 		wizard.setHeaderTitle("Scantron");
@@ -749,6 +766,7 @@ public class ImportPanel extends GradebookPanel {
 		wizard.resize(0,-50);
 
 	}
+
 
 	private Double getMaxScoreForItem(ItemModel i, List<Learner> rows) {
 		Double max = 0d;
