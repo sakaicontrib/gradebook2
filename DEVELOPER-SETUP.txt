@@ -64,6 +64,7 @@ set to "" for security checks if gb2.security.enabled=true
 Additional DEV mode configurations:
 - By default, the gradebook is populated with test data in DEV mode.
   This can be turned off via : -Dgb2.dev.mockItems=false 
+- An optional argument gb2.mockuser.oldnames can be added by -Dgb2.mockuser.oldnames=true and this will cause the user first and last names to be determined by a random shuffle, see createUserRecord in UserDirectoryServiceMock.java for details.  You may want to use this if you want to test sorting/searching with a more realistic data set in developer mode.  You don't want to use this if you plan on using the data for anything as there exists the possibility of a random name colliding with a real student.  It is recommended to not run with this argument enabled.  
 
 (if you are building with a version other than trunk, you'll need a property for the point release: add -Dsakai2.6 or -Dsakai2.5, for example.)
 
