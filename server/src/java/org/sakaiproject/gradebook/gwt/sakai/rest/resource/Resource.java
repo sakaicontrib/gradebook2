@@ -66,7 +66,7 @@ public class Resource {
 		} catch (Exception e) {
 			log.error("Caught an exception serializing to JSON: ", e);
 		}
-		
+		log.debug(w);
 		return w.toString();
 	}
 	

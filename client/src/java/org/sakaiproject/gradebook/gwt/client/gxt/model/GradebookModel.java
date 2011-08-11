@@ -31,9 +31,11 @@ import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.Statistics;
 import org.sakaiproject.gradebook.gwt.client.model.key.GradebookKey;
+import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.ModelData;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 public class GradebookModel extends EntityModel implements IsSerializable, Gradebook {
@@ -247,4 +249,42 @@ public class GradebookModel extends EntityModel implements IsSerializable, Grade
 	}
 	
 	public void fromXml(String xml) {}
+
+	@Override
+	public Item getItemByIdentifier(String id) {
+
+		if (null == id)
+			return null;
+		
+		ItemModel gradebookItemModel = (ItemModel) this.getGradebookItemModel();
+		
+		if(null == gradebookItemModel)
+			return null;
+				
+		return findItemByIdAmongChildren(id, gradebookItemModel.getChildren());
+		
+	}
+
+	private Item findItemByIdAmongChildren(String id, List<ModelData> children) {
+		
+		if (null == id || null == children) 
+			return null;
+		
+		for (ModelData m : children) {
+			GWT.log("search in: " + m.get(ItemKey.S_ID.name()));
+			if (id.equals(m.get(ItemKey.S_ID.name()))) {
+				Item i = (Item) m;
+				return i;
+			} else {
+				Item i = findItemByIdAmongChildren(id, ((ItemModel)m).getChildren());
+				if (i != null) 
+					return i;
+			}
+				
+		}
+		
+		
+		return null;
+		
+	}
 }

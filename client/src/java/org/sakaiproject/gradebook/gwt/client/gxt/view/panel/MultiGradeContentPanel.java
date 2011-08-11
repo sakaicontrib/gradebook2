@@ -55,6 +55,7 @@ import org.sakaiproject.gradebook.gwt.client.model.Configuration;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
+import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.SectionKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
@@ -62,7 +63,6 @@ import org.sakaiproject.gradebook.gwt.client.model.type.EntityType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GroupType;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
-
 import com.extjs.gxt.ui.client.GXT;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
@@ -78,6 +78,7 @@ import com.extjs.gxt.ui.client.data.SortInfo;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
+import com.extjs.gxt.ui.client.event.EventType;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.GridEvent;
 import com.extjs.gxt.ui.client.event.KeyListener;
@@ -285,7 +286,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 			}
 
 		});
-
+		
 		// GRBK-775 : Making sure that we don't loose the entered grade
 		// when the user scrolls 
 		grid.addListener(Events.BodyScroll, new Listener<BaseEvent>() {
@@ -383,19 +384,48 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 	public void editCell(Gradebook selectedGradebook, Record record, String property, Object value, Object startValue, GridEvent gridEvent) {
 
 		String columnHeader = "";
+		/*
+		 * GRBK-992 
+		 */
+		
+		ColumnConfig c = grid.getColumnModel().getColumn(gridEvent.getColIndex());
+		String assignIdStr = c.getId();
+		long assignId = -100;
+		try {
+			assignId = Long.parseLong(assignIdStr);
+		} catch (NumberFormatException e) {
+			GWT.log("assignment id for clicked cell not a parsable long");
+		}
+		
+		// if this is null, the item has not been scored yet
+		Double og = (Double) record.get(assignIdStr + ItemKey.ACTUAL_SCORE_SUFFIX); 
 
+		Item i = selectedGradebook.getItemByIdentifier(""+assignId);
+		
+		boolean zerosCouldBeNulls = i != null && i.getNullsAsZeros();
+		boolean cancelEdit = zerosCouldBeNulls  && value == null && og == null;
+		
+		
+				
+		if(value != null && startValue != null && startValue.equals(value)) { // GRBK-991
+			return;
+		}
+		
 		/*
 		 * In case where the value and startValue are either both null or the empty string,
 		 * we don't do anything. We don't need to dispatch the UpdateLearnerGradeRecord because its handler
 		 * checks if the value and startValue are null or empty as well and then just returns
 		 */
-		if ((value == null || value.equals(EMPTY_STRING)) && (startValue == null || startValue.equals(EMPTY_STRING))) {
-			return;
-		}
-		else if(value != null && startValue != null && startValue.equals(value)) { // GRBK-991
+		if ((value == null || value.equals(EMPTY_STRING)) 
+				&& (startValue == null || startValue.equals(EMPTY_STRING)) 
+				|| cancelEdit) {// GRBK-992
+			if (cancelEdit) {
+				//grid.getColumnModel().getEditor(gridEvent.getColIndex()).cancelEdit();
+			}
 			return;
 		}
 
+		
 		if (gridEvent != null) {
 			String className = grid.getView().getCell(gridEvent.getRowIndex(), gridEvent.getColIndex()).getClassName();
 			String gbDroppedText = new StringBuilder(" ").append(resources.css().gbCellDropped()).toString();
@@ -1166,9 +1196,49 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 
 		grid.addListener(Events.BeforeEdit, new Listener<GridEvent>() {
 			public void handleEvent(GridEvent be) {
-				if (showWeightedString != null && Boolean.TRUE.toString().equalsIgnoreCase(showWeightedString))			
+				if (showWeightedString != null && Boolean.TRUE.toString().equalsIgnoreCase(showWeightedString))	{
 					be.setCancelled(true);
+				}
+				
+				 //GRBK-992
+				String assignmentId = grid.getColumnModel().getColumn(be.getColIndex()).getId();
+				
+				Item i = ((Gradebook)Registry.get(AppConstants.CURRENT)).getItemByIdentifier(assignmentId);
+				
+				boolean zeroCouldBeNull = i != null && i.getNullsAsZeros();
+				Double val = (Double) be.getRecord().get(assignmentId);
+
+				if (isOriginalValueNull(be) && zeroCouldBeNull && val != null && val == 0d) {
+
+						//This value should be emptied from the cell
+						be.getRecord().set(assignmentId, null);
+
+					}
+
+				
+
+				 
 			}
+
+			
+		});
+		
+		grid.addListener(Events.AfterEdit, new Listener<GridEvent>() {
+
+			@Override
+			public void handleEvent(GridEvent be) {
+				String assignmentId = grid.getColumnModel().getColumn(be.getColIndex()).getId();
+				
+				Item i = ((Gradebook)Registry.get(AppConstants.CURRENT)).getItemByIdentifier(assignmentId);
+				
+				boolean zeroCouldBeNull = i != null && i.getNullsAsZeros();
+				if (isOriginalValueNull(be) && zeroCouldBeNull && be.getValue() == null) { 
+					be.getRecord().set(assignmentId, 0d);
+					//be.cancelBubble();
+				}
+				
+			}
+			
 		});
 
 		cellSelectionModel = new MultigradeSelectionModel<ModelData>();
@@ -1185,6 +1255,21 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 
 		});
 		grid.setSelectionModel(cellSelectionModel);
+	}
+
+	protected boolean isOriginalValueNull(GridEvent be) {
+			Record r = be.getRecord();
+			String assignIdStr = grid.getColumnModel().getColumn(be.getColIndex()).getId();
+			long assignId = -100;
+			try {
+				assignId = Long.parseLong(assignIdStr);
+			} catch (NumberFormatException e) {
+				GWT.log("assignment id for clicked cell not a parsable long");
+			}
+			
+			// if this is null, the item has not been scored yet
+			Double og = (Double) r.get(assignIdStr + ItemKey.ACTUAL_SCORE_SUFFIX); 
+			return og == null || "".equals(og);
 	}
 
 	public void onRefreshCourseGrades(Configuration configModel, List<FixedColumn> staticColumns, ItemModel gradebookItemModel) {

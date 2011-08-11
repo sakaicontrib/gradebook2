@@ -54,4 +54,5 @@ public interface Gradebook {
 	
 	public abstract void fromXml(String xml);
 
+	public abstract Item getItemByIdentifier(String id);
 }

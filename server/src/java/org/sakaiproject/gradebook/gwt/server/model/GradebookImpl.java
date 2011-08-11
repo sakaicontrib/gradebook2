@@ -6,7 +6,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,6 +18,7 @@ import org.sakaiproject.gradebook.gwt.client.model.Statistics;
 import org.sakaiproject.gradebook.gwt.client.model.key.GradebookKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.EntityType;
+import org.sakaiproject.gradebook.gwt.sakai.model.GradeItem;
 import org.sakaiproject.gradebook.gwt.server.Util;
 
 public class GradebookImpl extends BaseModel implements Gradebook {
@@ -269,6 +269,44 @@ public class GradebookImpl extends BaseModel implements Gradebook {
 			items.put(ItemKey.S_GB_NAME.name(), get(ItemKey.S_NM.name()));
 		}
 
+	}
+
+	/// TODO: This (server impl) has not been tested
+	@Override
+	public Item getItemByIdentifier(String id) {
+
+		if (null == id)
+			return null;
+		
+		GradeItem gradebookItemModel = (GradeItem) this.getGradebookItemModel();
+		
+		if(null == gradebookItemModel)
+			return null;
+				
+		return findItemByIdAmongChildren(id, gradebookItemModel.getChildren());
+		
+	}
+
+	private Item findItemByIdAmongChildren(String id, List<GradeItem> list) {
+		
+		if (null == id || null == list) 
+			return null;
+		
+		for (GradeItem m : list) {
+			if (id.equals(m.get(ItemKey.S_ID.name()))) {
+				Item i = (Item) m.get(ItemKey.S_ID.name());
+				return i;
+			} else {
+				Item i = findItemByIdAmongChildren(id, ((GradeItem)m).getChildren());
+				if (i != null) 
+					return i;
+			}
+				
+		}
+		
+		
+		return null;
+		
 	}
 
 }

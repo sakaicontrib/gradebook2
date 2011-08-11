@@ -77,6 +77,7 @@ public enum ItemKey {
 	B_ISNT_CALCBLE("isNotCalculable"), 
 	A_IGNOR("ignoredBusinessRules");
 	
+	public static String ACTUAL_SCORE_SUFFIX = "-OG";
 	
 	private String property;
 

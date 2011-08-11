@@ -195,6 +195,11 @@ public interface AppConstants {
 	public static final String STUDENT_FRAGMENT 			= "student";
 	public static final String COURSE_FRAGMENT				= "course";
 	public static final String STARTUP_FRAGMENT				= "startup";
+	public static final String EXCUSE_FRAGMENT				= "excuse";
+	public static final String NUMERIC_FRAGMENT				= "numeric";
+	public static final String STRING_FRAGMENT				= "string";
+	public static final String COMMENT_FRAGMENT				= "comment";
+	
 	
 	public static final String LIST_ROOT				= "list";
 	public static final String TOTAL					= "total";

@@ -572,23 +572,23 @@ public class ServiceController extends Controller {
 				json.put(AppConstants.BOOL_VALUE_CONSTANT, JSONBoolean.getInstance(DataTypeConversionUtil.checkBoolean((Boolean)event.value)));
 			if (event.oldValue != null)
 				json.put(AppConstants.BOOL_START_VALUE_CONSTANT, JSONBoolean.getInstance(DataTypeConversionUtil.checkBoolean((Boolean)event.oldValue)));
-			entity = "excuse";
+			entity = AppConstants.EXCUSE_FRAGMENT;
 			break;
 		case STRING:
 			if (event.value != null)
 				json.put(AppConstants.STR_VALUE_CONSTANT, new JSONString((String)event.value));
 			if (event.oldValue != null)
 				json.put(AppConstants.STR_START_VALUE_CONSTANT, new JSONString((String)event.oldValue));
-			json.put("numeric", JSONBoolean.getInstance(false));
-			entity = "string";
+			json.put(AppConstants.NUMERIC_FRAGMENT, JSONBoolean.getInstance(false));
+			entity = AppConstants.STRING_FRAGMENT;
 			break;
 		case DOUBLE:
 			if (event.value != null)
 				json.put(AppConstants.VALUE_CONSTANT, new JSONNumber((Double)event.value));
 			if (event.oldValue != null)
 				json.put(AppConstants.START_VALUE_CONSTANT, new JSONNumber((Double)event.oldValue));
-			json.put("numeric", JSONBoolean.getInstance(true));
-			entity = "numeric";
+			json.put(AppConstants.NUMERIC_FRAGMENT, JSONBoolean.getInstance(true));
+			entity = AppConstants.NUMERIC_FRAGMENT;
 			break;
 		}
 

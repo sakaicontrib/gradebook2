@@ -3710,6 +3710,8 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		return getGradeItem(gradebook, assignments, categories, categoryId, null);
 	}
+	
+	@SuppressWarnings("unchecked")
 	private Map<String, Object> appendItemData(Long assignmentId, Map<String, Object> cellMap, UserRecord userRecord, Gradebook gradebook, Boolean countNullsAsZeros, boolean isShowWeighted, Map<Long, Boolean> droppedValues) {
 
 		AssignmentGradeRecord gradeRecord = null;
@@ -3748,7 +3750,16 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			BigDecimal percentage = null;
 			switch (gradebook.getGrade_type()) {
 			case GradebookService.GRADE_TYPE_POINTS:
-				Double value = gradeRecord != null && gradeRecord.getPointsEarned() != null ? gradeRecord.getPointsEarned() : (isCountNullsAsZeros ? Double.valueOf(0) : null);
+				Double value = null;
+				if (gradeRecord != null && gradeRecord.getPointsEarned() != null) {
+					value = gradeRecord.getPointsEarned();
+					cellMap.put(id + ItemKey.ACTUAL_SCORE_SUFFIX, value); //GRBK-992 - client has to know that this was scored ....
+				} else {
+					cellMap.remove(id + ItemKey.ACTUAL_SCORE_SUFFIX); // ... or not
+					if (isCountNullsAsZeros) {
+						value = Double.valueOf(0);
+					}
+				} 
 
 				// GRBK-483: to replace points with earnedWeightedPercentage				
 				if (isShowWeighted && gradebook.getCategory_type() == GradebookService.CATEGORY_TYPE_WEIGHTED_CATEGORY && value != null && value > 0) {
@@ -3758,12 +3769,32 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 				cellMap.put(id, value);
 				break;
 			case GradebookService.GRADE_TYPE_PERCENTAGE:
-				percentage = gradeRecord == null ? null : gradeCalculations.getPointsEarnedAsPercent((Assignment) gradeRecord.getGradableObject(), gradeRecord);
+				percentage = null;
+				if (gradeRecord == null) {
+					cellMap.remove(id + ItemKey.ACTUAL_SCORE_SUFFIX);
+				} else {
+					percentage = gradeCalculations.getPointsEarnedAsPercent((Assignment) gradeRecord.getGradableObject(), gradeRecord);
+					if (null == percentage) {
+						cellMap.remove(id + ItemKey.ACTUAL_SCORE_SUFFIX);
+					} else {
+						cellMap.put(id + ItemKey.ACTUAL_SCORE_SUFFIX, percentage);
+					}
+				}
 				Double percentageDouble = percentage != null ? Double.valueOf(percentage.doubleValue()) : (isCountNullsAsZeros ? Double.valueOf(0) : null);
 				cellMap.put(id, percentageDouble);
 				break;
 			case GradebookService.GRADE_TYPE_LETTER:
-				percentage = gradeRecord == null ? null : gradeCalculations.getPointsEarnedAsPercent((Assignment) gradeRecord.getGradableObject(), gradeRecord);
+				percentage = null;
+				if (gradeRecord == null) {
+					cellMap.remove(id + ItemKey.ACTUAL_SCORE_SUFFIX);
+				} else {
+					percentage = gradeCalculations.getPointsEarnedAsPercent((Assignment) gradeRecord.getGradableObject(), gradeRecord);
+					if (null == percentage) {
+						cellMap.remove(id + ItemKey.ACTUAL_SCORE_SUFFIX);
+					} else {
+						cellMap.put(id + ItemKey.ACTUAL_SCORE_SUFFIX, percentage);
+					}
+				}
 				String letterGrade = percentage != null ? gradeCalculations.convertPercentageToLetterGrade(percentage) : (isCountNullsAsZeros ? "0" : "");
 				cellMap.put(id, letterGrade);
 				break;
@@ -6273,7 +6304,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 	private AssignmentGradeRecord scoreItem(Gradebook gradebook, int gradeType, Assignment assignment, AssignmentGradeRecord assignmentGradeRecord, String studentUid, Double value, boolean includeExcluded, boolean deferUpdate)
 	throws InvalidInputException {
-
+		
 		boolean isUserAbleToGrade = authz.isUserAbleToGradeAll(gradebook.getUid()) || authz.isUserAbleToGradeItemForStudent(gradebook.getUid(), assignment.getId(), studentUid);
 
 		if (!isUserAbleToGrade)
