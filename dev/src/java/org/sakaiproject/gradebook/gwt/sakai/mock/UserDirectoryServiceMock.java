@@ -63,14 +63,30 @@ public class UserDirectoryServiceMock implements UserDirectoryService {
 	
 	public void init() {
 		int numUsers = getUserCount(); 
+		boolean useOldName = useOldUserNames(); 
 		if (users == null) {
 			users = new ArrayList<User>(numUsers);
 			for (int i=0;i<numUsers;i++) {
-				users.add(createUserRecord(i + USER_ID_POSTFIX));
+				users.add(createUserRecord(i + USER_ID_POSTFIX, useOldName, i + ""));
 			}
 		}
 	}
 	
+	private boolean useOldUserNames() {
+		boolean oldnames = false; 
+		String p = System.getProperty("gb2.mockuser.oldnames"); 
+		if (p != null && !"".equals(p))
+		{
+			 try {
+				oldnames = Boolean.parseBoolean(p);
+			} catch (Exception e) {
+				// If its badly formatted, we'll just use the new method.  let the dev know, but likely it will be missed in log spam...
+				log.error("argument gb2.mockuser.oldnames (" + p + ") is formatted incorrectly.  It must be able to be parsed as a boolean"); 
+			} 
+		}
+		return oldnames; 
+	}
+
 	private int getUserCount() {
 		String p = System.getProperty("gb2.mockuser.count"); 
 		if (p != null && !"".equals(p))
@@ -188,7 +204,7 @@ public class UserDirectoryServiceMock implements UserDirectoryService {
 	}
 
 	public User getCurrentUser() {
-		return createUserRecord(0);
+		return createUserRecord(0,false);
 	}
 
 	public User getUser(String arg0) throws UserNotDefinedException {
@@ -353,12 +369,17 @@ public class UserDirectoryServiceMock implements UserDirectoryService {
 		return random.nextInt(max);
 	}
 	
-	private User createUserRecord(String userId) {
+	private User createUserRecord(String userId, boolean useOldName, String numericId) {
 		
 		String id = userId;
 		String displayId = id; //String.valueOf(100000 + getRandomInt(899999));
 		String firstName = FIRST_NAMES[getRandomInt(FIRST_NAMES.length)];
 		String lastName = LAST_NAMES[getRandomInt(LAST_NAMES.length)];
+		if (!useOldName)
+		{
+			firstName = "Student"; // FIXME - maybe i18n, but this is testdata... 
+			lastName = numericId; 
+		}
 		String eid = "eid:" + firstName.toLowerCase() + "." + lastName.toLowerCase();
 		String email = firstName.toLowerCase() + "." + lastName.toLowerCase() + "@nowhere.edu";
 	
@@ -368,9 +389,9 @@ public class UserDirectoryServiceMock implements UserDirectoryService {
 		
 	}
 	
-	private User createUserRecord(int i) {
+	private User createUserRecord(int i, boolean useOldName) {
 		
-		return createUserRecord(String.valueOf(i));
+		return createUserRecord(String.valueOf(i), useOldName, String.valueOf(i));
 	}
 
 	public List<User> searchExternalUsers(String arg0, int arg1, int arg2) {
