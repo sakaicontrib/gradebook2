@@ -5458,7 +5458,12 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 	 */
 	private boolean hasDefaultSetup(Gradebook gradebook) {
 		
-		if(!gradebook.getName().equals(i18n.getString("defaultGradebookName"))) {
+		/*
+		 * During testing, I discovered that the initial gradebook name is the 
+		 * site's UUID. That's why we have to test for both cases.
+		 */
+		if(!gradebook.getName().trim().equals(gradebook.getUid()) &&
+		   !gradebook.getName().trim().equals(i18n.getString("defaultGradebookName").trim())) {
 			
 			return false;
 		}
