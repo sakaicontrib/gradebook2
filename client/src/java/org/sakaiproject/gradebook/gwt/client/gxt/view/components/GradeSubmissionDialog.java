@@ -61,6 +61,7 @@ public class GradeSubmissionDialog extends Dialog {
 		setButtons(Dialog.YESNO);
 		setHeading(i18n.finalGradeSubmissionConfirmTitle());
 		setHideOnButtonClick(true);
+		setModal(true);
 	}
 
 	public void verify() {
