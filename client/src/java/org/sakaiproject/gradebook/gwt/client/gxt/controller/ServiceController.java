@@ -250,6 +250,7 @@ public class ServiceController extends Controller {
 				}
 
 				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
+				Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType());
 			}
 
 		});
@@ -836,6 +837,7 @@ public class ServiceController extends Controller {
 				Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
 				Dispatcher.forwardEvent(GradebookEvents.EndItemUpdates.getEventType(), selectedGradebook);
 				Dispatcher.forwardEvent(GradebookEvents.UnmaskItemTree.getEventType());
+				Dispatcher.forwardEvent(GradebookEvents.HideUserFeedback.getEventType());
 			}
 		});
 	}
