@@ -1,0 +1,30 @@
+==================================
+* Gradebook2 Code Review Process *
+==================================
+
+- Go to http://codereview.appspot.com/use_uploadpy and download "upload.py"
+- Move "upload.py" to a location where you keep your executables such as "~/bin/"
+- Make sure that "upload.py" is executable:
+-- chmod 755 ~/bin/upload.py
+
+====================
+* GIT Instructions *
+====================
+
+- Go to code location
+-- e.g. cd ~/src/gradebook2-git/
+- Upload a specific committed revision
+-- upload.py --rev b243dd90e69d2db22439b6c5cc948a2b83dfe1b9^
+--- NOTE: There is a "^" at the end of the revision hash. This is a GIT notation to mark a specific commit
+
+The following is a sample upload output:
+e.g.
+~/src/gradebook2-git/(master) # upload.py --rev b243dd90e69d2db22439b6c5cc948a2b83dfe1b9^
+Upload server: codereview.appspot.com (change with -s/--server)
+New issue subject: GRBK-1117
+...
+Issue created. URL: http://codereview.appspot.com/4973056
+Uploading base file for client/src/java/org/sakaiproject/gradebook/gwt/client/gxt/view/panel/StudentPanel.java
+Uploading base file for client/src/java/org/sakaiproject/gradebook/gwt/client/gxt/view/SingleGradeView.java
+
+
