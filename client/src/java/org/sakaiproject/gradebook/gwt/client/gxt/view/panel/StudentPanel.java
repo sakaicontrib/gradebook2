@@ -272,8 +272,14 @@ public class StudentPanel extends GradebookPanel {
 				statsList = result.getData();
 				refreshGradeData(learnerGradeRecordCollection, statsList);
 				isPossibleStatsChanged = false;
+				
+				/*
+				 * GRBK-1117 : Making sure that the grid gets refreshed after the loader has finished loading.
+				 * This fixes the issue where the vertical scroll bar doesn't allow to scroll to the
+				 * last row in the grid. The layout() method fixes the grid's height.
+				 */
+				grid.getView().layout();
 			}
-
 		});
 
 
@@ -511,8 +517,6 @@ public class StudentPanel extends GradebookPanel {
 
 	public void onResize(int width, int height) {
 		super.onResize(width, height);
-
-		gradeInformationPanel.setHeight(height - 225);
 	}
 
 	public void refreshColumns() {

@@ -84,7 +84,6 @@ public class SingleGradeView extends View {
 	@Override
 	protected void initialize() {
 		dialog = new ViewAsStudentPanel(!isEditable);
-		dialog.setSize(400, 350);
 	}
 	
 	private void onRefreshGradebookSetup(Gradebook selectedGradebook) {
