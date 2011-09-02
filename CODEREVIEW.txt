@@ -14,8 +14,8 @@
 - Go to code location
 -- e.g. cd ~/src/gradebook2-git/
 - Upload a specific committed revision
--- upload.py --rev b243dd90e69d2db22439b6c5cc948a2b83dfe1b9^
---- NOTE: There is a "^" at the end of the revision hash. This is a GIT notation to mark a specific commit
+-- upload.py --rev b243dd90e69d2db22439b6c5cc948a2b83dfe1b9^!
+--- NOTE: There is a "^!" at the end of the revision hash. This is a GIT notation to mark a specific commit
 
 The following is a sample upload output:
 e.g.
