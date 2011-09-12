@@ -1,6 +1,6 @@
 package org.sakaiproject.gradebook.gwt.sakai.rest;
 
-import java.util.ResourceBundle;
+import org.sakaiproject.util.ResourceLoader;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -13,7 +13,7 @@ import org.sakaiproject.service.gradebook.shared.StaleObjectModificationExceptio
 @Provider
 public class StaleObjectModificationMapper implements ExceptionMapper<StaleObjectModificationException> {
 
-	private static ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	private static ResourceLoader i18n =  new ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 	
 	public Response toResponse(StaleObjectModificationException some) {
 		

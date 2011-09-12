@@ -2,7 +2,7 @@ package org.sakaiproject.gradebook.gwt.sakai.rest.resource;
 
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
+import org.sakaiproject.util.ResourceLoader;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -12,7 +12,7 @@ import javax.ws.rs.Produces;
 @Path("sections/{uid}/{id}")
 public class Sections extends Resource {
 
-	private ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	private ResourceLoader i18n =  new ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 	
 	@GET
     @Produces("application/json")

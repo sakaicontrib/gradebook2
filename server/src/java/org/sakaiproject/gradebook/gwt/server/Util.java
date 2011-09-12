@@ -28,7 +28,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
-import java.util.ResourceBundle;
+import org.sakaiproject.util.ResourceLoader;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
@@ -38,7 +38,7 @@ import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 
 public class Util {
 	
-	private static ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	private static ResourceLoader i18n =  new ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 	
 	private static DateFormat longDateFormat = new SimpleDateFormat(AppConstants.LONG_DATE);
 	private static DateFormat shortDateFormat = new SimpleDateFormat(AppConstants.SHORT_DATE);

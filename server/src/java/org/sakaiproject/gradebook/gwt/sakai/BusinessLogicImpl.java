@@ -25,7 +25,7 @@ package org.sakaiproject.gradebook.gwt.sakai;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.ResourceBundle;
+import org.sakaiproject.util.ResourceLoader;
 
 import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
@@ -36,7 +36,7 @@ import org.sakaiproject.tool.gradebook.Category;
 
 public class BusinessLogicImpl implements BusinessLogic {
 
-	private static ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	private static ResourceLoader i18n = new ResourceLoader ("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 	
 	private GradebookToolService gbService;
 

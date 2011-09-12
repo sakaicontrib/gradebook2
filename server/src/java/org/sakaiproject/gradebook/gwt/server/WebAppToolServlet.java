@@ -131,6 +131,9 @@ public class WebAppToolServlet extends HttpServlet {
 			String uri = new StringBuilder().append(contextPath).append(getInitParameter(FIRST_PAGE)).toString();
 
 			addVersionAsCookie(response, contextPath);
+			// Set locale preferences for user
+			org.sakaiproject.util.ResourceLoader rb = new org.sakaiproject.util.ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+			uri = uri+"?locale="+rb.getLocale();
 			
 			// Do redirect to first-page
 			response.sendRedirect(uri);

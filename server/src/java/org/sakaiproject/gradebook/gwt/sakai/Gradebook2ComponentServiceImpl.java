@@ -17,7 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
+import org.sakaiproject.util.ResourceLoader;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -120,7 +120,7 @@ import org.springframework.context.ApplicationContextAware;
 
 public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrapper implements Gradebook2ComponentService, ApplicationContextAware {
 
-	private static ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	private static ResourceLoader i18n = new ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 	private static final Log log = LogFactory.getLog(Gradebook2ComponentServiceImpl.class);
 
 	private static final String UNIQUESET = "N/A";

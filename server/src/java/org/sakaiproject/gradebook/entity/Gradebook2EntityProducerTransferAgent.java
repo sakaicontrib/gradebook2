@@ -9,7 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
+import org.sakaiproject.util.ResourceLoader;
 import java.util.Set;
 import java.util.Stack;
 
@@ -57,7 +57,7 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 	private String[] myToolIds = null;
 	private Gradebook2ComponentService componentService;
 	private GradebookToolService toolService;
-	private static ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	private static ResourceLoader i18n = new ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 	private ImportExportUtility importExportUtil = null;
 	private GradebookFrameworkService frameworkService = null;
 	

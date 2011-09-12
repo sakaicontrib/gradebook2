@@ -29,7 +29,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Iterator;
-import java.util.ResourceBundle;
+import org.sakaiproject.util.ResourceLoader;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -67,7 +67,7 @@ public class GradebookImportController extends SimpleFormController implements O
 	
 	private final String REQUEST_PARAMETER_PSO = "preventScantronOverwrite";
 	
-	private static ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	private static ResourceLoader i18n = new ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 	
 	public ModelAndView submit(HttpServletRequest request,
 			HttpServletResponse response,

@@ -40,7 +40,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
+import org.sakaiproject.util.ResourceLoader;
 import java.util.Set;
 
 import jxl.Cell;
@@ -107,7 +107,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	private String scantronScoreHeader = null;
 	private String scantronRescoreHeader = null;
 	
-	private static ResourceBundle i18n = ResourceBundle.getBundle("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	private static ResourceLoader i18n =  new ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 
 	public String[] scantronIgnoreColumns = null;
 
