@@ -57,6 +57,7 @@ You will also need to include the following VM args in the Run Configuration:
 -Dgb2.security.enabled=false
 -DportalPath=/portal/
 -Dgb2.dev.mockItems=true
+-Dgb2.locale=en_US (optional)
 
 portalPath is really ignored in DEV mode now and the portal path is 
 set to "" for security checks if gb2.security.enabled=true

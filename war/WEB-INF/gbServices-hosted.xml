@@ -31,6 +31,7 @@
 		<property name="advisor" ref="org.sakaiproject.gradebook.gwt.sakai.api.SampleInstitutionalAdvisor"/>
     	<property name="sessionManager" ref="org.sakaiproject.tool.api.SessionManager" />
     	<property name="configService" ref="org.sakaiproject.component.api.ServerConfigurationService" />
+    	<property name="i18n" ref="gradebook2.I18N" />
     	<property name="scale" value="50"/>
 	</bean>
 	
@@ -129,6 +130,12 @@
 		
 	</bean>
 	
+	<bean id="gradebook2.I18N" class="org.sakaiproject.gradebook.gwt.sakai.mock.DevelopmentModeResourceLoader">
+		<property name="baseName" value="org.sakaiproject.gradebook.gwt.client.I18nConstants" />
+		<lookup-method name="preferencesService" bean="org.sakaiproject.user.api.PreferencesService" />
+		<property name="sessionManager"><ref bean="org.sakaiproject.tool.api.SessionManager" /></property>
+	</bean>
+	
 	<bean id="gradebook2.EntityProducerContextListener" 
 		class="org.sakaiproject.gradebook.entity.AssureGradebookContextObserver"> 
 		<property name="myToolIds">
@@ -137,6 +144,7 @@
 			</set>	
 		</property>
 		<property name="frameworkService" ref="org.sakaiproject.service.gradebook.GradebookFrameworkService"/>
+		<property name="i18n"><ref bean="gradebook2.I18N" /></property>
 		
 	</bean>
 	

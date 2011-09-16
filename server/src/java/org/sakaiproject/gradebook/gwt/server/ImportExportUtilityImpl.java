@@ -107,7 +107,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	private String scantronScoreHeader = null;
 	private String scantronRescoreHeader = null;
 	
-	private static ResourceLoader i18n =  new ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	private ResourceLoader i18n =  new ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 
 	public String[] scantronIgnoreColumns = null;
 
@@ -2649,6 +2649,11 @@ private GradeItem buildNewCategory(String curCategoryString,
 	
 	public void setGradeCalculations(GradeCalculations gradeCalculations) {
 		this.gradeCalculations = gradeCalculations;
+	}
+
+
+	public void setI18n(ResourceLoader i18n) {
+		this.i18n = i18n;
 	}
 
 

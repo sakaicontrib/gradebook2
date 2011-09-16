@@ -21,4 +21,10 @@ public class Sections extends Resource {
 		return toJson(sections, sections.size());
 	}
 
+	public void setI18n(ResourceLoader i18n) {
+		this.i18n = i18n;
+	}
+	
+	
+
 }

@@ -15,10 +15,12 @@
 	
 	<bean id="org.sakaiproject.gradebook.gwt.server.WebAppToolServlet" class="org.sakaiproject.gradebook.gwt.server.WebAppToolServlet">
 		<property name="sessionManager" ref="org.sakaiproject.tool.api.SessionManager" />
+		<property name="rb" ref="gradebook2.I18N" />
 	</bean>
 	
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.BusinessLogic" class="org.sakaiproject.gradebook.gwt.sakai.BusinessLogicImpl">
 		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/> 
+		<property name="i18n" ref="gradebook2.I18N"/>
 	</bean>
 		
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authn" class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2AuthnImpl">
@@ -76,6 +78,7 @@
 				<value>section</value>
 			</list>
 		</property>
+		<property name="i18n" ref="gradebook2.I18N" />
 	</bean>
 	
 	<bean id="org.sakaiproject.archive.api.ArchiveService" class="org.sakaiproject.gradebook.gwt.sakai.mock.ArchiveServiceMock">
@@ -90,6 +93,7 @@
 		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
 		<property name="commandClass" value="org.sakaiproject.gradebook.gwt.sakai.FileUploadBean"/>
 		<property name="importExportUtility" ref="org.sakaiproject.gradebook.gwt.server.ImportExportUtility"/>
+		<property name="i18n" ref="gradebook2.I18N"/>
 	</bean>
 	
 	
@@ -135,5 +139,8 @@
 
 	
 	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/>
+	
+	<bean id="org.sakaiproject.user.api.PreferencesService" class="org.sakaiproject.user.impl.DbPreferencesService" 
+	abstract="true" />
 	
 </beans>

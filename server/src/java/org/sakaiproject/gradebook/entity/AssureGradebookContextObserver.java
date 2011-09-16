@@ -8,7 +8,8 @@ import org.sakaiproject.service.gradebook.shared.GradebookFrameworkService;
 
 public class AssureGradebookContextObserver implements ContextObserver {
 
-	private static ResourceLoader i18n = new ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	private ResourceLoader i18n = new ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	
 	private GradebookFrameworkService frameworkService = null;
 	private String[] myToolIds;
 
@@ -43,5 +44,10 @@ public class AssureGradebookContextObserver implements ContextObserver {
 	public void setMyToolIds(String[] myToolIds) {
 		this.myToolIds = myToolIds;
 	}
+	
+	public void setI18n(ResourceLoader i18n) {
+		this.i18n = i18n;
+	}
+
 
 }

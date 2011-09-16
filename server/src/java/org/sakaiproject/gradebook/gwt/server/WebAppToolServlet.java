@@ -40,6 +40,7 @@ import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.tool.api.SessionManager;
 import org.sakaiproject.tool.api.Tool;
+import org.sakaiproject.util.ResourceLoader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
@@ -53,8 +54,11 @@ public class WebAppToolServlet extends HttpServlet {
 
 	private static String version = null;
 	
+	private ResourceLoader rb = new ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	
 	@Autowired
 	SessionManager sessionManager = null;
+	
 	
 	/**
 	 * This init parameter should contain an url to the welcome page
@@ -132,7 +136,6 @@ public class WebAppToolServlet extends HttpServlet {
 
 			addVersionAsCookie(response, contextPath);
 			// Set locale preferences for user
-			org.sakaiproject.util.ResourceLoader rb = new org.sakaiproject.util.ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 			uri = uri+"?locale="+rb.getLocale();
 			
 			// Do redirect to first-page
@@ -239,5 +242,10 @@ public class WebAppToolServlet extends HttpServlet {
 	public void setSessionManager(SessionManager sessionManager) {
 		
 		this.sessionManager = sessionManager;
+	}
+
+
+	public void setRb(ResourceLoader rb) {
+		this.rb = rb;
 	}
 }

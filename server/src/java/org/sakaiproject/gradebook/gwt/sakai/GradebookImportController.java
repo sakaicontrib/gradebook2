@@ -67,7 +67,7 @@ public class GradebookImportController extends SimpleFormController implements O
 	
 	private final String REQUEST_PARAMETER_PSO = "preventScantronOverwrite";
 	
-	private static ResourceLoader i18n = new ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	private ResourceLoader i18n = new ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 	
 	public ModelAndView submit(HttpServletRequest request,
 			HttpServletResponse response,
@@ -213,5 +213,9 @@ public class GradebookImportController extends SimpleFormController implements O
 
 	public void setImportExportUtility(ImportExportUtility importExportUtility) {
 		this.importExportUtility = importExportUtility;
+	}
+
+	public void setI18n(ResourceLoader i18n) {
+		this.i18n = i18n;
 	}
 }

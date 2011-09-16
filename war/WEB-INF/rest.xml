@@ -13,9 +13,13 @@
 	
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.InvalidDataMapper"/>
 	
-	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.StaleObjectModificationMapper"/>
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.StaleObjectModificationMapper">
+		<property name="i18n" ref="gradebook2.I18N"/>
+	</bean>
 	
-	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.DataIntegrityViolationMapper"/>
+	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.DataIntegrityViolationMapper">
+		<property name="i18n" ref="gradebook2.I18N"/>
+	</bean>
 	
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" 
 		  abstract="true"
@@ -71,7 +75,9 @@
 		parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
 	
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Sections" 
-		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" >
+		  <property name="i18n"><ref bean="gradebook2.I18N"/></property>
+	 </bean>
 
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Statistics"
 		parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />

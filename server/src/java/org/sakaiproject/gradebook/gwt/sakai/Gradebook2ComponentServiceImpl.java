@@ -120,7 +120,9 @@ import org.springframework.context.ApplicationContextAware;
 
 public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrapper implements Gradebook2ComponentService, ApplicationContextAware {
 
-	private static ResourceLoader i18n = new ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	private ResourceLoader i18n = new ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+
+
 	private static final Log log = LogFactory.getLog(Gradebook2ComponentServiceImpl.class);
 
 	private static final String UNIQUESET = "N/A";
@@ -6874,6 +6876,11 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 	 */
 	public void setShowWeightedEnabled(boolean isShowWeightedEnabled) {
 		this.isShowWeightedEnabled = isShowWeightedEnabled;
+	}
+	
+	
+	public void setI18n(ResourceLoader i18n) {
+		this.i18n = i18n;
 	}
 
 }

@@ -36,7 +36,7 @@ import org.sakaiproject.tool.gradebook.Category;
 
 public class BusinessLogicImpl implements BusinessLogic {
 
-	private static ResourceLoader i18n = new ResourceLoader ("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	private ResourceLoader i18n = new ResourceLoader ("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 	
 	private GradebookToolService gbService;
 
@@ -411,6 +411,10 @@ public class BusinessLogicImpl implements BusinessLogic {
 			}
 		} // Null weight will be handled elsewhere. 
 		
+	}
+
+	public void setI18n(ResourceLoader i18n) {
+		this.i18n = i18n;
 	}
 
 

@@ -13,7 +13,7 @@ import org.sakaiproject.service.gradebook.shared.StaleObjectModificationExceptio
 @Provider
 public class StaleObjectModificationMapper implements ExceptionMapper<StaleObjectModificationException> {
 
-	private static ResourceLoader i18n =  new ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	private ResourceLoader i18n =  new ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 	
 	public Response toResponse(StaleObjectModificationException some) {
 		
@@ -22,6 +22,10 @@ public class StaleObjectModificationMapper implements ExceptionMapper<StaleObjec
 		 * http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.10
 		 */
 		return Response.status(409).entity(i18n.getString("staleObjectModificationExceptionMessage")).type(AppConstants.CONTENT_TYPE_TEXT_PLAIN).build();
+	}
+
+	public void setI18n(ResourceLoader i18n) {
+		this.i18n = i18n;
 	}
 }
 

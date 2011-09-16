@@ -59,6 +59,7 @@
 		</property>
 		<property name="importExportUtil" ref="org.sakaiproject.gradebook.gwt.server.ImportExportUtility" />	
 		<property name="frameworkService" ref="org.sakaiproject.service.gradebook.GradebookFrameworkService"/>
+		<property name="i18n" ref="gradebook2.I18N"/>
 	</bean>
 	
 	<bean id="gradebook2.EntityProducerContextListener" 
@@ -70,6 +71,10 @@
 		</property>
 		<property name="frameworkService" ref="org.sakaiproject.service.gradebook.GradebookFrameworkService"/>
 		
+	</bean>
+	
+	<bean id="gradebook2.I18N" class="org.sakaiproject.util.ResourceLoader">
+		<property name="baseName" value="org.sakaiproject.gradebook.gwt.client.I18nConstants" />
 	</bean>
 	
 </beans>

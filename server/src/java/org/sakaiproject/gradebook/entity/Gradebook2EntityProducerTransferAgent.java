@@ -57,7 +57,7 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 	private String[] myToolIds = null;
 	private Gradebook2ComponentService componentService;
 	private GradebookToolService toolService;
-	private static ResourceLoader i18n = new ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	private ResourceLoader i18n = new ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
 	private ImportExportUtility importExportUtil = null;
 	private GradebookFrameworkService frameworkService = null;
 	
@@ -346,6 +346,10 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 		}
 		
 		return w.toString();
+	}
+
+	public void setI18n(ResourceLoader i18n) {
+		this.i18n = i18n;
 	}
 	
 

@@ -157,4 +157,34 @@ public class ServerConfigurationServiceMock implements ServerConfigurationServic
 		return null;
 	}
 
+	@Override
+	public <T> T getConfig(String arg0, T arg1) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ConfigData getConfigData() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ConfigItem getConfigItem(String arg0) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ConfigItem registerConfigItem(ConfigItem arg0) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void registerListener(ConfigurationListener arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
