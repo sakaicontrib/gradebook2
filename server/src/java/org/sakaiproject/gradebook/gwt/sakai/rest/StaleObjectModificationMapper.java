@@ -13,7 +13,8 @@ import org.sakaiproject.service.gradebook.shared.StaleObjectModificationExceptio
 @Provider
 public class StaleObjectModificationMapper implements ExceptionMapper<StaleObjectModificationException> {
 
-	private ResourceLoader i18n =  new ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	// Set via IoC
+	private ResourceLoader i18n;
 	
 	public Response toResponse(StaleObjectModificationException some) {
 		

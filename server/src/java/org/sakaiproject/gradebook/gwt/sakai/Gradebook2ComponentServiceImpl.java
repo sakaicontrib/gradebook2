@@ -120,8 +120,8 @@ import org.springframework.context.ApplicationContextAware;
 
 public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrapper implements Gradebook2ComponentService, ApplicationContextAware {
 
-	private ResourceLoader i18n = new ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
-
+	// Set via IoC
+	private ResourceLoader i18n;
 
 	private static final Log log = LogFactory.getLog(Gradebook2ComponentServiceImpl.class);
 

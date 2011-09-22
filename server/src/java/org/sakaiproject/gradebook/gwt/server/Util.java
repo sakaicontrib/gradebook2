@@ -38,7 +38,8 @@ import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 
 public class Util {
 	
-	private static ResourceLoader i18n =  new ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	// Set via IoC
+	private static ResourceLoader i18n;
 	
 	private static DateFormat longDateFormat = new SimpleDateFormat(AppConstants.LONG_DATE);
 	private static DateFormat shortDateFormat = new SimpleDateFormat(AppConstants.SHORT_DATE);

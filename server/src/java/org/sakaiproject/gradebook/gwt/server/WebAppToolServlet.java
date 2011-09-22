@@ -54,7 +54,8 @@ public class WebAppToolServlet extends HttpServlet {
 
 	private static String version = null;
 	
-	private ResourceLoader rb = new ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	// Set via IoC
+	private ResourceLoader rb;
 	
 	@Autowired
 	SessionManager sessionManager = null;

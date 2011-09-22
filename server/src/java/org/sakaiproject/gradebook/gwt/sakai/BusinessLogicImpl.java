@@ -25,18 +25,18 @@ package org.sakaiproject.gradebook.gwt.sakai;
 
 import java.math.BigDecimal;
 import java.util.List;
-import org.sakaiproject.util.ResourceLoader;
 
 import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
-import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.server.Util;
 import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.Category;
+import org.sakaiproject.util.ResourceLoader;
 
 public class BusinessLogicImpl implements BusinessLogic {
 
-	private ResourceLoader i18n = new ResourceLoader ("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	// Set via IoC
+	private ResourceLoader i18n;
 	
 	private GradebookToolService gbService;
 

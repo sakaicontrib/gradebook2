@@ -12,7 +12,8 @@ import javax.ws.rs.Produces;
 @Path("sections/{uid}/{id}")
 public class Sections extends Resource {
 
-	private ResourceLoader i18n =  new ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	// Set via IoC
+	private ResourceLoader i18n;
 	
 	@GET
     @Produces("application/json")

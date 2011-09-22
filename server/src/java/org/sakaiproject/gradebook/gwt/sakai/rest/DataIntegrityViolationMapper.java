@@ -12,7 +12,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 @Provider
 public class DataIntegrityViolationMapper implements ExceptionMapper<DataIntegrityViolationException> {
 
-	private ResourceLoader i18n =  new ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	// Set via IoC
+	private ResourceLoader i18n;
 	
 	public Response toResponse(DataIntegrityViolationException arg0) {
 		

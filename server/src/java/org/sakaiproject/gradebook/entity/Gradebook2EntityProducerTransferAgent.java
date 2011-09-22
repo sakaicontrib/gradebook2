@@ -9,7 +9,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import org.sakaiproject.util.ResourceLoader;
 import java.util.Set;
 import java.util.Stack;
 
@@ -38,11 +37,11 @@ import org.sakaiproject.gradebook.gwt.client.model.Upload;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
 import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
 import org.sakaiproject.gradebook.gwt.sakai.model.GradeItem;
-import org.sakaiproject.gradebook.gwt.server.ImportExportDataFile;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility.FileType;
 import org.sakaiproject.service.gradebook.shared.GradebookFrameworkService;
 import org.sakaiproject.service.gradebook.shared.GradebookNotFoundException;
+import org.sakaiproject.util.ResourceLoader;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -57,7 +56,8 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 	private String[] myToolIds = null;
 	private Gradebook2ComponentService componentService;
 	private GradebookToolService toolService;
-	private ResourceLoader i18n = new ResourceLoader("org.sakaiproject.gradebook.gwt.client.I18nConstants");
+	// Set via IoC
+	private ResourceLoader i18n;
 	private ImportExportUtility importExportUtil = null;
 	private GradebookFrameworkService frameworkService = null;
 	
