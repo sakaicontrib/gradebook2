@@ -55,10 +55,11 @@ public class WebAppToolServlet extends HttpServlet {
 	private static String version = null;
 	
 	// Set via IoC
-	private ResourceLoader rb;
+	@Autowired
+	private ResourceLoader rb = null;
 	
 	@Autowired
-	SessionManager sessionManager = null;
+	private SessionManager sessionManager = null;
 	
 	
 	/**
