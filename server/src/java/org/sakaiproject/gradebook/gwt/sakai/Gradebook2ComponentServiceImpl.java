@@ -3107,9 +3107,8 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		return getGradeItem(gradebook, assignments, categories, null, assignment.getId());
 	}
 
-	// TODO : Remove/cleanup old/new upload methods and REST resources
-	// GRBK-554 : TPA 
-	private void newHandleImportItemModification(String gradebookUid, Long gradebookId, GradeItem item, 
+	
+	private void handleImportItemModification(String gradebookUid, Long gradebookId, GradeItem item, 
 			Map<String, Assignment> idToAssignmentMap, Long categoryId) throws InvalidInputException {
 
 		Long itemId = null;
@@ -3249,68 +3248,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 					subChild.getIgnoredBusinessRules().add(rule);
 				}
 
-				newHandleImportItemModification(gradebookUid, gradebookId, subChild, idToAssignmentMap, categoryId);
-			}
-		}
-	}
-
-	private void handleImportItemModification(String gradebookUid, Long gradebookId, GradeItem item, Map<String, Assignment> idToAssignmentMap) throws InvalidInputException {
-
-		Long itemId = null;
-
-		String identifier = item.getIdentifier();
-
-		if (identifier.startsWith(AppConstants.NEW_PREFIX) && item.getItemId().equals(NEG_ONE)) {
-
-			Gradebook gradebook = gbService.getGradebook(gradebookUid);
-			boolean hasCategories = gradebook.getCategory_type() != GradebookService.CATEGORY_TYPE_NO_CATEGORY;
-			itemId = doCreateItem(gradebook, item, hasCategories, false);
-
-		} else if (!item.getIdentifier().equals("-1")) {
-
-			switch (item.getItemType()) {
-			case ITEM:
-				itemId = item.getItemId();
-				Assignment assignment = gbService.getAssignment(itemId);
-
-				item.setIdentifier(String.valueOf(itemId));
-				itemId = doUpdateItem(item, assignment, true);
-				break;
-			case CATEGORY:
-				itemId = Long.valueOf(item.getIdentifier());
-				Category category = gbService.getCategory(itemId);
-
-				itemId = doUpdateCategory(item, category, true);
-				break;
-			case GRADEBOOK:
-				Gradebook gradebook = gbService.getGradebook(gradebookUid);
-
-				itemId = doUpdateGradebook(item, gradebook);
-				break;
-			}
-		} else {
-
-			itemId = NEG_ONE;
-		}
-
-		if (item.getItemType() == ItemType.ITEM) {
-
-			if (itemId != null) {
-
-				// First, check to make sure we haven't already stored this item
-				Assignment assignment = idToAssignmentMap.get(identifier);
-
-				if (assignment == null) {
-					assignment = gbService.getAssignment(itemId);
-					idToAssignmentMap.put(identifier, assignment);
-				}
-			}
-		} else {
-
-			List<GradeItem> subChildren = item.getChildren();
-
-			for (GradeItem subChild : subChildren) {
-				handleImportItemModification(gradebookUid, gradebookId, subChild, idToAssignmentMap);
+				handleImportItemModification(gradebookUid, gradebookId, subChild, idToAssignmentMap, categoryId);
 			}
 		}
 	}
@@ -3353,7 +3291,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			cleanupGradeItem(gradebookItem);
 
 			// Create, update gradebook items such as (gradebook, categories, assignments)
-			newHandleImportItemModification(gradebookUid, gradebookId, gradebookItem, idToAssignmentMap, null);
+			handleImportItemModification(gradebookUid, gradebookId, gradebookItem, idToAssignmentMap, null);
 
 			CategoryType categoryType = gradebookItem.getCategoryType();
 			GradeType gradeType = gradebookItem.getGradeType();
@@ -6802,7 +6740,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		GradeItem itemModel = (GradeItem) newGradebook.getGradebookItemModel();	
 
-		newHandleImportItemModification(current.getUid(), current.getId(), itemModel, new HashMap<String, Assignment>(), null);
+		handleImportItemModification(current.getUid(), current.getId(), itemModel, new HashMap<String, Assignment>(), null);
 
 	}
 

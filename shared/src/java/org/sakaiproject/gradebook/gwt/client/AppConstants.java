@@ -150,6 +150,8 @@ public interface AppConstants {
 	
 	public static final String EXTRA_CREDIT_INDICATOR = " (+)";
 	public static final String UNINCLUDED_INDICATOR = " (-)";
+	public static final String RELEASE_SCORES_INDICATOR = " (R)";
+	public static final String GIVE_UNGRADED_NO_CREDIT_INDICATOR = " (0)";
 	public static final String COMMENTS_INDICATOR = "Comment : ";
 	public static final String COMMENT_SUFFIX = "::C";
 	

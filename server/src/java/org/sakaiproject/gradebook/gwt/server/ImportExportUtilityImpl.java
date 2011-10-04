@@ -119,10 +119,25 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	
 
 	private static enum StructureRow {
-		GRADEBOOK("Gradebook:"),  SCALED_EC("Scaled XC:"), SHOWCOURSEGRADES("ShowCourseGrades:"), SHOWRELEASEDITEMS("ShowReleasedItems:"),
-		SHOWITEMSTATS("ShowItemStats:"), SHOWMEAN("ShowMean:"), SHOWMEDIAN("ShowMedian:"), SHOWMODE("ShowMode:"), SHOWRANK("ShowRank:"),  
-		CATEGORY("Category:"), PERCENT_GRADE("% Grade:"), POINTS("Points:"), 
-		PERCENT_CATEGORY("% Category:"), DROP_LOWEST("Drop Lowest:"), EQUAL_WEIGHT("Equal Weight Items:"), SHOWSTATISTICSCHART("ShowStatisticsChart:");
+		// Gradebook level
+		GRADEBOOK("Gradebook:"),
+		SCALED_EC("Scaled XC:"),
+		SHOWCOURSEGRADES("ShowCourseGrades:"),
+		SHOWRELEASEDITEMS("ShowReleasedItems:"),
+		SHOWITEMSTATS("ShowItemStats:"),
+		SHOWMEAN("ShowMean:"),
+		SHOWMEDIAN("ShowMedian:"),
+		SHOWMODE("ShowMode:"),
+		SHOWRANK("ShowRank:"),
+		SHOWSTATISTICSCHART("ShowStatisticsChart:"),
+		// Category level
+		CATEGORY("Category:"),
+		PERCENT_GRADE("% Grade:"),
+		POINTS("Points:"), 
+		PERCENT_CATEGORY("% Category:"),
+		DROP_LOWEST("Drop Lowest:"),
+		EQUAL_WEIGHT("Equal Weight Items:"),
+		WEIGHT_ITEMS_BY_POINTS("Weight Items By Points:");
 
 		private String displayName;
 
@@ -258,6 +273,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			final List<String> percentCategoryRow = new LinkedList<String>();
 			final List<String> dropLowestRow = new LinkedList<String>();
 			final List<String> equalWeightRow = new LinkedList<String>();
+			final List<String> weightItemsByPointsRow = new LinkedList<String>();
 
 
 			categoriesRow.add("");
@@ -283,6 +299,10 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			equalWeightRow.add("");
 			equalWeightRow.add(StructureRow.EQUAL_WEIGHT.getDisplayName());
 			equalWeightRow.add("");
+			
+			weightItemsByPointsRow.add("");
+			weightItemsByPointsRow.add(StructureRow.WEIGHT_ITEMS_BY_POINTS.getDisplayName());
+			weightItemsByPointsRow.add("");
 
 			ItemModelProcessor processor = new ItemModelProcessor(gradebookItemModel) {
 
@@ -303,16 +323,23 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 					.append(String.valueOf(itemModel.getPercentCourseGrade()))
 					.append("%").toString());
 					Integer dropLowest = itemModel.getDropLowest();
+					
 					if (dropLowest == null)
 						dropLowestRow.add("");
 					else
 						dropLowestRow.add(String.valueOf(dropLowest));
+					
 					Boolean isEqualWeight = itemModel.getEqualWeightAssignments();
 					if (isEqualWeight == null)
 						equalWeightRow.add("");
 					else
 						equalWeightRow.add(String.valueOf(isEqualWeight));
 
+					Boolean weightItemsByPoints = itemModel.getEnforcePointWeighting();
+					if(null == weightItemsByPoints)
+						weightItemsByPointsRow.add("");
+					else
+						weightItemsByPointsRow.add(String.valueOf(weightItemsByPoints));
 
 					if (((GradeItem)itemModel).getChildCount() == 0) {
 						headerIds.add(AppConstants.EXPORT_SKIPCOLUMN_INDICATOR);
@@ -330,6 +357,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 						percentageGradeRow.add("");
 						dropLowestRow.add("");
 						equalWeightRow.add("");
+						weightItemsByPointsRow.add("");
 					} 
 
 					if (includeComments) {
@@ -337,6 +365,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 						percentageGradeRow.add("");
 						dropLowestRow.add("");
 						equalWeightRow.add("");
+						weightItemsByPointsRow.add("");
 					}
 
 					StringBuilder text = new StringBuilder();
@@ -348,6 +377,14 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 
 					if (!Util.checkBoolean(itemModel.getIncluded())) {
 						text.append(AppConstants.UNINCLUDED_INDICATOR);
+					}
+					
+					if (Util.checkBoolean(itemModel.getReleased())) {
+						text.append(AppConstants.RELEASE_SCORES_INDICATOR);
+					}
+					
+					if (Util.checkBoolean(itemModel.getNullsAsZeros())) {
+						text.append(AppConstants.GIVE_UNGRADED_NO_CREDIT_INDICATOR);
 					}
 
 					if (!includeStructure) {
@@ -397,6 +434,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 					out.addRow(equalWeightRow.toArray(new String[equalWeightRow.size()]));
 					out.addRow(pointsRow.toArray(new String[pointsRow.size()]));
 					out.addRow(percentCategoryRow.toArray(new String[percentCategoryRow.size()]));
+					out.addRow(weightItemsByPointsRow.toArray(new String[weightItemsByPointsRow.size()]));
 
 					break;
 			}
@@ -418,6 +456,14 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 
 					if (!Util.checkBoolean(itemModel.getIncluded())) {
 						text.append(AppConstants.UNINCLUDED_INDICATOR);
+					}
+					
+					if (Util.checkBoolean(itemModel.getReleased())) {
+						text.append(AppConstants.RELEASE_SCORES_INDICATOR);
+					}
+					
+					if (Util.checkBoolean(itemModel.getNullsAsZeros())) {
+						text.append(AppConstants.GIVE_UNGRADED_NO_CREDIT_INDICATOR);
 					}
 
 					if (!includeStructure) {
@@ -1451,6 +1497,16 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			name = name.replace(AppConstants.UNINCLUDED_INDICATOR, ""); 
 		}
 		
+		if (name.contains(AppConstants.RELEASE_SCORES_INDICATOR)) {
+			
+			name = name.replace(AppConstants.RELEASE_SCORES_INDICATOR, "");
+		}
+		
+		if (name.contains(AppConstants.GIVE_UNGRADED_NO_CREDIT_INDICATOR)) {
+			
+			name = name.replace(AppConstants.GIVE_UNGRADED_NO_CREDIT_INDICATOR, "");
+		}
+		
 		if (name.startsWith(AppConstants.COMMENTS_INDICATOR)) {
 			name = name.substring(AppConstants.COMMENTS_INDICATOR.length());
 		}
@@ -1466,13 +1522,15 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		
 		boolean isExtraCredit = text.contains(AppConstants.EXTRA_CREDIT_INDICATOR);
 		boolean isUnincluded = text.contains(AppConstants.UNINCLUDED_INDICATOR);
+		boolean isReleaseScores = text.contains(AppConstants.RELEASE_SCORES_INDICATOR);
+		boolean isGiveungradedNoCredit = text.contains(AppConstants.GIVE_UNGRADED_NO_CREDIT_INDICATOR);
 		boolean isComment = text.startsWith(AppConstants.COMMENTS_INDICATOR);
 		text = removeIndicatorsFromAssignmentName(text);
 		name = text; 
 		points = getPointsFromName(name, entryNumber); 
 		name = removePointsInfoFromName(name, entryNumber); 
 		if (name != null) {
-			header = createHeaderForItemOrComment(text, name, entryNumber, points, isExtraCredit, isUnincluded, isComment, ieInfo);
+			header = createHeaderForItemOrComment(text, name, entryNumber, points, isExtraCredit, isUnincluded, isReleaseScores, isGiveungradedNoCredit, isComment, ieInfo);
 		}
 		return header; 
 	}
@@ -1481,7 +1539,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 
 	private ImportHeader createHeaderForItemOrComment(String text,
 			String name, int entryNumber, String points, boolean isExtraCredit,
-			boolean isUnincluded, boolean isComment, ImportExportInformation ieInfo) {
+			boolean isUnincluded, boolean isReleaseScores, boolean isGiveungradedNoCredit, boolean isComment, ImportExportInformation ieInfo) {
 		ImportHeader header = null; 
 		
 		if (isComment) {
@@ -1491,6 +1549,8 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			header = new ImportHeader(Field.S_ITEM, name, entryNumber);
 			header.setExtraCredit(isExtraCredit);
 			header.setUnincluded(isUnincluded);
+			header.setReleaseScores(isReleaseScores);
+			header.setGiveungradedNoCredit(isGiveungradedNoCredit);
 			header.setPoints(points);
 			ieInfo.trackActiveHeaderIndex(entryNumber);
 		}
@@ -1803,6 +1863,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		String[] percentGradeRow = structureColumnsMap.get(StructureRow.PERCENT_GRADE);
 		String[] dropLowestRow = structureColumnsMap.get(StructureRow.DROP_LOWEST);
 		String[] equalWeightRow = structureColumnsMap.get(StructureRow.EQUAL_WEIGHT);
+		String[] weightItemsByPointsRow = structureColumnsMap.get(StructureRow.WEIGHT_ITEMS_BY_POINTS);
 
 		/*
 		 *  In order to understand this, one needs to know that the import data is positional 
@@ -1821,7 +1882,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		categoryPositions = processCategoryRow(categoryRow, gradebookItemModel, ieInfo);
 		if (categoryPositions != null)
 		{
-			processExtraCategoryRelatedData(equalWeightRow, percentGradeRow, dropLowestRow, gradebookItemModel, categoryPositions);
+			processExtraCategoryRelatedData(weightItemsByPointsRow, equalWeightRow, percentGradeRow, dropLowestRow, gradebookItemModel, categoryPositions);
 		}
 		else 
 			/*
@@ -1862,7 +1923,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		}		
 	}
 
-	private void processExtraCategoryRelatedData(String[] equalWeightRow, String[] percentGradeRow, String[] dropLowestRow,
+	private void processExtraCategoryRelatedData(String[] weightItemsByPointsRow, String[] equalWeightRow, String[] percentGradeRow, String[] dropLowestRow,
 			GradeItem gradebookItemModel,
 			List<CategoryPosition> categoryPositions) {
 			for (CategoryPosition p : categoryPositions)
@@ -1872,7 +1933,33 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 				processPercentGradeRow(percentGradeRow, categoryModel, col);
 				processEqualWeightRow(equalWeightRow, categoryModel, col); 
 				processDropLowestRow(dropLowestRow, categoryModel, col);
+				processWeightItemsByPointsRow(weightItemsByPointsRow, categoryModel, col);
 			}
+	}
+	
+	private void processWeightItemsByPointsRow(String[] weightItemsByPointsRow, GradeItem categoryModel, int col) {
+		// GRBK-627
+		
+		if(null != weightItemsByPointsRow) {
+			
+			if(weightItemsByPointsRow.length > col) {
+				
+				String curWeightItemsByPoints = weightItemsByPointsRow[col];
+				
+				if(!isEmpty(curWeightItemsByPoints)) {
+					
+					try {
+						
+						boolean isWeightItemsByPoints = Boolean.parseBoolean(curWeightItemsByPoints);
+						categoryModel.setEnforcePointWeighting(Boolean.valueOf(isWeightItemsByPoints));
+					}
+					catch(NumberFormatException nfe) {
+						
+						log.info("Failed to parse " + curWeightItemsByPoints + " as an Boolean for col " + col + " on Weight Items By Points ROW.", nfe);
+					}
+				}
+			}
+		}
 	}
 
 	private void processEqualWeightRow(String[] equalWeightRow, GradeItem categoryModel, int col) {
@@ -2063,6 +2150,8 @@ private GradeItem buildOrGetExistingCategoryForUpdate(int col, String curCategor
 		else
 		{
 			categoryModel = categoryMap.get(removeIndicators(curCategoryString));
+			// GRBK-627 : Updating the GradeItem/Category
+			categoryModel.setIncluded(!isUnincluded);
 		}
 	}
 	return categoryModel;
@@ -2272,6 +2361,8 @@ private GradeItem buildNewCategory(String curCategoryString,
 		decorateItemForStructureInfo(header, itemModel); 
 		itemModel.setIncluded(Boolean.valueOf(!header.isUnincluded()));
 		itemModel.setExtraCredit(Boolean.valueOf(header.isExtraCredit()));
+		itemModel.setReleased(Boolean.valueOf(header.isReleaseScores()));
+		itemModel.setNullsAsZeros(Boolean.valueOf(header.isGiveungradedNoCredit()));
 		itemModel.setChecked(true);
 		header.setItem(itemModel);
 	}

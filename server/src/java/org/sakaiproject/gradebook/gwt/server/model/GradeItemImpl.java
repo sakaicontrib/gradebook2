@@ -42,76 +42,6 @@ public class GradeItemImpl extends BaseModel implements GradeItem {
 		setChildren(items);	
 	}
 	
-//	public GradeItemImpl(String id, String name, CategoryType categoryType, GradeType gradeType, Long gradeScaleId,
-//			Boolean doReleaseGrades, Boolean doReleaseItems, Boolean doScaleExtraCredit, Boolean doShowMean, Boolean doShowMedian,
-//			Boolean doShowMode, Boolean doShowRank, Boolean doShowItemStatistics, Boolean doShowStatisticsChart) {
-//		
-//		put(ItemKey.S_ID.name(), id);
-//		put(ItemKey.S_NM.name(), name);
-//		put(ItemKey.S_ITM_TYPE.name(), ItemType.GRADEBOOK);
-//		put(ItemKey.C_CTGRY_TYPE.name(), categoryType);
-//		put(ItemKey.G_GRD_TYPE.name(), gradeType);
-//		put(ItemKey.B_REL_GRDS.name(), doReleaseGrades);
-//		put(ItemKey.B_REL_ITMS.name(), doReleaseItems);
-//		put(ItemKey.L_GRD_SCL_ID.name(), gradeScaleId);
-//		put(ItemKey.B_SCL_X_CRDT.name(), doScaleExtraCredit);
-//		put(ItemKey.B_SHW_MEAN.name(), doShowMean);
-//		put(ItemKey.B_SHW_MEDIAN.name(), doShowMedian);
-//		put(ItemKey.B_SHW_MODE.name(), doShowMode);
-//		put(ItemKey.B_SHW_RANK.name(), doShowRank);
-//		put(ItemKey.B_SHW_ITM_STATS.name(), doShowItemStatistics);
-//		put(ItemKey.B_SHW_STATS_CHART.name(), doShowStatisticsChart);
-//	}
-	
-//	public GradeItemImpl(String id, String name, String gradebookName, Long categoryId, Double percentCourseGrade,
-//			Integer dropLowest, Integer sortOrder, Boolean doEqualWeight, Boolean doExtraCredit, Boolean doInclude, Boolean doRemove,
-//			Boolean doRelease, Boolean isEditable, Boolean doPointWeighting) {
-//
-//		put(ItemKey.S_ID.name(), id);
-//		put(ItemKey.S_NM.name(), name);
-//		put(ItemKey.S_ITM_TYPE.name(), ItemType.CATEGORY);
-//		put(ItemKey.S_GB_NAME.name(), gradebookName);
-//		put(ItemKey.L_CTGRY_ID.name(), categoryId);
-//		put(ItemKey.D_WGHT.name(), percentCourseGrade);
-//		put(ItemKey.B_EQL_WGHT.name(), doEqualWeight);
-//		put(ItemKey.B_X_CRDT.name(), doExtraCredit);
-//		put(ItemKey.B_INCLD.name(), doInclude);
-//		put(ItemKey.I_DRP_LWST.name(), dropLowest);
-//		put(ItemKey.B_RMVD.name(), doRemove);
-//		put(ItemKey.B_RLSD.name(), doRelease);
-//		put(ItemKey.D_PCT_GRD.name(), percentCourseGrade);	
-//		put(ItemKey.B_EDITABLE.name(), isEditable);
-//		put(ItemKey.I_SRT_ORDR.name(), sortOrder);
-//		put(ItemKey.B_WT_BY_PTS.name(), doPointWeighting);
-//	}
-	
-//	public GradeItemImpl(String id, String name, String categoryName, Long categoryId, Long itemId,
-//			Double points, Double percentCategory, Double percentCourseGrade, Double itemWeight, Boolean doRelease, Boolean doInclude,
-//			Date dueDate, Boolean doExtraCredit, Boolean doRemove, String source, String dataType, String learnerKey, Integer itemOrder, 
-//			Boolean doNullsAsZeros) {
-//		
-//		put(ItemKey.S_ID.name(), id);
-//		put(ItemKey.S_NM.name(), name);
-//		put(ItemKey.S_ITM_TYPE.name(), ItemType.ITEM);
-//		put(ItemKey.S_CTGRY_NAME.name(), categoryName);
-//		put(ItemKey.L_CTGRY_ID.name(), categoryId);
-//		put(ItemKey.L_ITM_ID.name(), itemId);
-//		put(ItemKey.D_WGHT.name(), itemWeight);
-//		put(ItemKey.B_RLSD.name(), doRelease);
-//		put(ItemKey.B_INCLD.name(), doInclude);
-//		put(ItemKey.W_DUE.name(), dueDate);
-//		put(ItemKey.D_PNTS.name(), points);
-//		put(ItemKey.B_X_CRDT.name(), doExtraCredit);
-//		put(ItemKey.B_RMVD.name(), doRemove);
-//		put(ItemKey.S_SOURCE.name(), source);
-//		put(ItemKey.S_DATA_TYPE.name(), dataType);
-//		put(ItemKey.O_LRNR_KEY.name(), learnerKey);
-//		put(ItemKey.I_SRT_ORDR.name(), itemOrder);
-//		put(ItemKey.D_PCT_CTGRY.name(), percentCategory);
-//		put(ItemKey.D_PCT_GRD.name(), percentCourseGrade);
-//		put(ItemKey.B_NLLS_ZEROS.name(), doNullsAsZeros);
-//	}
-	
 	public void addChild(GradeItem child) {
 
 		assert(child != null);
@@ -163,14 +93,6 @@ public class GradeItemImpl extends BaseModel implements GradeItem {
 		
 		if (children == null)
 			children = new ArrayList<GradeItem>();
-		
-		/*List<Map<String,Object>> childrenList = (List<Map<String,Object>>)get(ItemKey.A_CHILDREN.name());
-		
-		if (childrenList != null) {
-			for (Map<String,Object> childMap : childrenList) {
-				children.add(new GradeItemImpl(childMap));
-			}
-		}*/
 		
 		return children;
 	}

@@ -49,6 +49,25 @@ public class ImportHeader implements Serializable {
 	private String percentCategory;
 	private boolean extraCredit;
 	private boolean unincluded;
+	private boolean isReleaseScores;
+	
+	public boolean isReleaseScores() {
+		return isReleaseScores;
+	}
+
+	public void setReleaseScores(boolean isReleaseScores) {
+		this.isReleaseScores = isReleaseScores;
+	}
+
+	public boolean isGiveungradedNoCredit() {
+		return isGiveungradedNoCredit;
+	}
+
+	public void setGiveungradedNoCredit(boolean isGiveungradedNoCredit) {
+		this.isGiveungradedNoCredit = isGiveungradedNoCredit;
+	}
+
+	private boolean isGiveungradedNoCredit;
 	private int columnIndex;
 	private Item item;
 	
