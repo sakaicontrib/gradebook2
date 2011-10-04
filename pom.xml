@@ -27,8 +27,8 @@
 
 	<properties>
 		<gb2.version>1.7.0-SNAPSHOT</gb2.version>
-		<gxt.version>2.2.4-gwt22</gxt.version>
-		<gwt.version>2.3.0</gwt.version>
+		<gxt.version>2.2.5-gwt22</gxt.version>
+		<gwt.version>2.4.0</gwt.version>
 		<!-- following fix for bug in gwt 2.3.0 poms (should've been included in those but were not) -->
 		<javax.validation.version>1.0.0.GA</javax.validation.version>
 		<gb2.commons.logging.version>1.0.4</gb2.commons.logging.version>
