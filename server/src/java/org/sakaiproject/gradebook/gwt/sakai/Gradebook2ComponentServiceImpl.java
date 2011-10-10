@@ -3269,7 +3269,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		// Check if user is able to grade
 		Gradebook gradebook = gbService.getGradebook(gradebookUid);
-		boolean isUserAbleToGrade = authz.isUserAbleToGradeAll(gradebook.getUid());
+		boolean isUserAbleToGrade = authz.isUserAbleToGrade(gradebook.getUid());
 		if (!isUserAbleToGrade)
 			throw new InvalidInputException("You are not authorized to upload grades.");
 
