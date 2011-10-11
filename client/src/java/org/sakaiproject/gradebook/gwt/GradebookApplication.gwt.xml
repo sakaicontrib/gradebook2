@@ -21,7 +21,17 @@
 	
 	<!-- Specify the app entry point class.                   -->
 	<entry-point class='org.sakaiproject.gradebook.gwt.client.GradebookApplication'/>
+	
+	<!-- English -->
+	<extend-property name="locale" values="en"/>
+	
+	<!-- Spanish -->
 	<extend-property name="locale" values="es"/>
+	
+	<!-- Default locale -->
+	<set-property-fallback name="locale" value="en"/>
+	
+	
 	<!--  WizardCard CSS -->
 	<stylesheet src="ext.ux.wiz.css"/>
 
