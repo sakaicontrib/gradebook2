@@ -146,6 +146,8 @@ public interface AppConstants {
 	
 	public static final String ENABLED_SEARCH_ROSTER_BY_FIELD = "gb2.enable.search.roster.by.field";
 	
+	public static final String ENABLE_FINAL_GRADE_SUBMISSION_CHECK = "gb2.enable.final.grade.submission.check";
+	
 	public static final String DEFAULT_CATEGORY_NAME = "Unassigned";
 	
 	public static final String EXTRA_CREDIT_INDICATOR = " (+)";
@@ -192,8 +194,8 @@ public interface AppConstants {
 	public static final String OLD_UPLOAD_FRAGMENT			= "oldupload";
 	public static final String AUTHORIZATION_FRAGMENT		= "authorization";
 	public static final String INSTRUCTOR_FRAGMENT			= "instructor";
-	public static final String OVERWRITE_FRAGMENT 				= "overwrite";
-	public static final String MAXPNTS_FRAGMENT 				= "maxpnts";
+	public static final String OVERWRITE_FRAGMENT 			= "overwrite";
+	public static final String MAXPNTS_FRAGMENT 			= "maxpnts";
 	public static final String STUDENT_FRAGMENT 			= "student";
 	public static final String COURSE_FRAGMENT				= "course";
 	public static final String STARTUP_FRAGMENT				= "startup";
@@ -201,6 +203,7 @@ public interface AppConstants {
 	public static final String NUMERIC_FRAGMENT				= "numeric";
 	public static final String STRING_FRAGMENT				= "string";
 	public static final String COMMENT_FRAGMENT				= "comment";
+	public static final String FINAL_GRADES_SUB_FRAGMENT	= "fgs";
 	
 	
 	public static final String LIST_ROOT				= "list";

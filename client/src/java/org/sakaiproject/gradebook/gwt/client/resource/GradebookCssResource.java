@@ -107,5 +107,7 @@ public interface GradebookCssResource extends CssResource {
 	String setupInstructionsLabelForGradeType(); 
 	
 	String gbStudentInformationPanel();
+	
+	String gbFinalGradeSubissionStatus();
 
 }

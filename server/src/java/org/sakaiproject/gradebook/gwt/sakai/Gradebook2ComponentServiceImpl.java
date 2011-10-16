@@ -286,8 +286,15 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 	private SiteService siteService;
 	private ToolManager toolManager;	
 	private UserDirectoryService userService;
-
+	
+	/*
+	 * GRBK-824 : Adding class member that is only set during init via sakai properties.
+	 * Thus, there are no thread safety concerns.
+	 */
+	private boolean checkFinalGradeSubmition = false;
+	
 	protected boolean isShowWeightedEnabled = false;
+	
 
 	public Learner assignComment(String itemId, String studentUid, String text) {
 
@@ -828,7 +835,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		setup.setSearchRosterByFieldEnabled(searchRosterByFieldEnabled.booleanValue());
 		setup.setEnabledGradeTypes(enabledGradeTypes);
 		setup.setShowWeightedEnabled(this.isShowWeightedEnabled());
-
+		
 		return setup;
 	}
 
@@ -2530,6 +2537,9 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 			String enableShowWeighted = configService.getString(AppConstants.ENABLE_SHOW_WEIGHTED_TOGGLE);
 			this.setShowWeightedEnabled(enableShowWeighted != null && Boolean.TRUE.toString().equalsIgnoreCase(enableShowWeighted.trim()));
+			
+			// GRBK-824
+			checkFinalGradeSubmition = configService.getBoolean(AppConstants.ENABLE_FINAL_GRADE_SUBMISSION_CHECK, false);
 			
 		} else {
 			enabledGradeTypes.add(GradeType.POINTS);
@@ -6819,6 +6829,26 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 	
 	public void setI18n(ResourceLoader i18n) {
 		this.i18n = i18n;
+	}
+
+	public boolean getFinalGradeSubmissionStatus(String gradebookUid) {
+		
+		boolean status = false;
+		
+		// GRBK-824
+		if(checkFinalGradeSubmition) {
+			
+			if(null != gradebookUid) {
+			
+				status = advisor.hasFinalGradeSubmission(gradebookUid);
+			}
+			else {
+				
+				log.warn(i18n.getString("finalGradeSubmissionStatusWarning"));
+			}
+		}
+
+		return status;
 	}
 
 }

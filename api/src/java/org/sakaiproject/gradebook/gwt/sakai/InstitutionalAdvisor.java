@@ -1,10 +1,6 @@
 /**********************************************************************************
 *
-* $Id:$
-*
-***********************************************************************************
-*
-* Copyright (c) 2008, 2009 The Regents of the University of California
+* Copyright (c) 2008, 2009, 2010, 2011 The Regents of the University of California
 *
 * Licensed under the
 * Educational Community License, Version 2.0 (the "License"); you may
@@ -30,7 +26,6 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.sakaiproject.authz.api.Member;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.site.api.Group;
 import org.sakaiproject.tool.gradebook.Gradebook;
@@ -103,7 +98,7 @@ public interface InstitutionalAdvisor {
 	public void submitFinalGrade(List<Map<Column,String>> studentDataList, String gradebookUid, HttpServletRequest request, HttpServletResponse response);
 	
 		
-	/*
+	/**
 	 * given a section eid as a string, return a unique human readable form of the section id. 
 	 * Depending on the CMS implementation, this could be the same as the eid,
 	 * the section title, or something other locally identifiable id number or code for a section. 
@@ -113,7 +108,7 @@ public interface InstitutionalAdvisor {
 	public String getDisplaySectionId(String sectionEid);
 	
 	
-	/*
+	/**
 	 * given a list of section eids, return one that should be used to identify a students primary enrollment in a site
 	 *  - since GB[2] cannot differentiate among the different sections it is an institutional obligation to determine 
 	 *  the chosen section (for grading etc)
@@ -121,6 +116,19 @@ public interface InstitutionalAdvisor {
 	 * @param eids : a list of eids to sort out
 	 */
 	public String getPrimarySectionEid(List<String> eids);
+	
+	/**
+	 * @since 1.7.0
+	 * 
+	 * Method that determines if the current user accesses a gradebook
+	 * for which the grades have been submitted.
+	 * 
+	 * @param gradebookUid Gradebook UID
+	 * 
+	 * @return true if grades have been submitted, false otherwise
+	 * 
+	 */
+	public boolean hasFinalGradeSubmission(String gradebookUid);
 
 	
 }

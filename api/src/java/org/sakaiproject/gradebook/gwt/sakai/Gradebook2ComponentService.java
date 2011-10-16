@@ -75,6 +75,7 @@ public interface Gradebook2ComponentService {
 	
 	public List<Permission> getPermissions(String gradebookUid, Long gradebookId, String graderId) throws SecurityException;
 	
+	
 	public Site getSite();
 
 	/*
@@ -145,7 +146,11 @@ public interface Gradebook2ComponentService {
 			Upload upload, boolean isDryRun,
 			List<BusinessLogicCode> ignoredBusinessRules) throws InvalidInputException;
 	
-	
-
+	/*
+	 * @since 1.7.0
+	 * 
+	 * Method that dispatches a final grade submission status request to the InstitutionalAdvisor 
+	 */
+	public boolean getFinalGradeSubmissionStatus(String gradebookUid);
 	
 }

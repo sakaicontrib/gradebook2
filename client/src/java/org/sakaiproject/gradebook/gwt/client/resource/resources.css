@@ -1,5 +1,4 @@
 
-
 .gbStudentChart {
 	padding: 0px 0px 5px 0px;
 }
@@ -187,6 +186,12 @@
 
 .gbGradeScaleSeparatorToolItem {
 	padding-left: 10px;
+}
+
+.gbFinalGradeSubissionStatus {
+	font-size: 12pt !important;
+	color: red;
+	padding-left: 200px;
 }
 
 @sprite .gbItemIcon {

@@ -118,6 +118,12 @@ gb2.enable.search.roster.by.field = [true, false]
 
 No new properties
 
+----------------
+* Since v1.7.x *
+----------------
+gb2.enable.final.grade.submission.check = [true, false]
+- default: false
+- For more details, please see https://jira.sakaiproject.org/browse/GRBK-824
 
 ===========
 * SUPPORT *

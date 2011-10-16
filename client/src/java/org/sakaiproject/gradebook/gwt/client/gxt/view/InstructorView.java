@@ -34,6 +34,8 @@ import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.ExportDetails;
 import org.sakaiproject.gradebook.gwt.client.ExportDetails.ExportType;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
+import org.sakaiproject.gradebook.gwt.client.RestBuilder;
+import org.sakaiproject.gradebook.gwt.client.RestCallback;
 import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.api.Card;
 import org.sakaiproject.gradebook.gwt.client.api.Wizard;
@@ -43,6 +45,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenu;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.NullSensitiveCheckBox;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.BorderLayoutPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.GradeScalePanel;
@@ -54,7 +57,6 @@ import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.StatisticsPanel;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
-import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
@@ -72,24 +74,22 @@ import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
-import com.extjs.gxt.ui.client.widget.Layout;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.form.CheckBox;
-import com.extjs.gxt.ui.client.widget.form.FieldSet;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.LabelField;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayout;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayoutData;
 import com.extjs.gxt.ui.client.widget.layout.CardLayout;
-import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
-import com.extjs.gxt.ui.client.widget.layout.VBoxLayout;
-import com.extjs.gxt.ui.client.widget.layout.VBoxLayout.VBoxLayoutAlign;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
 import com.extjs.gxt.ui.client.widget.toolbar.ToolBar;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.http.client.Request;
+import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
@@ -142,6 +142,8 @@ public class InstructorView extends AppView {
 	protected Wizard exportWizard = null;
 	private CheckBox exportCommentsCheckbox;
 	private ExportDetails exportDetails;
+	
+	private LabelField finalGradeSubmissionStatus;
 
 	public InstructorView(Controller controller, TreeView treeView, 
 			MultigradeView multigradeView, SingleGradeView singleGradeView, 
@@ -223,14 +225,11 @@ public class InstructorView extends AppView {
 
 		viewport.add(borderLayoutContainer);
 		viewportLayout.setActiveItem(borderLayoutContainer);
-		
-		
 	}
 
 	@Override
 	protected void initialize() {
 		super.initialize();
-
 	}
 
 	@Override
@@ -254,6 +253,9 @@ public class InstructorView extends AppView {
 		if (isNewGradebook) {
 			onShowSetup();
 		}
+		
+		// GRBK-824
+		checkFinalGradeSubmissionStatus(selectedGradebook.getGradebookUid());
 	}
 
 	@Override
@@ -747,6 +749,12 @@ public class InstructorView extends AppView {
 		toolBar.add(moreItem);
 		toolBar.add(helpItem);
 
+		// GRBK-824
+		finalGradeSubmissionStatus = new LabelField(i18n.finalGradeSubmissionStatusMessage());
+		finalGradeSubmissionStatus.setStyleName(resources.css().gbFinalGradeSubissionStatus());
+		finalGradeSubmissionStatus.hide();
+		toolBar.add(finalGradeSubmissionStatus);
+		
 		toolBar.add(new FillToolItem());
 
 		String version = Registry.get(AppConstants.VERSION);
@@ -931,6 +939,48 @@ public class InstructorView extends AppView {
 		return ttc;
 	}
 	
+	/*
+	 * GRBK-824
+	 * Make a REST call that checks if the final grades have been submitted for 
+	 * the current gradebook
+	 */
+	private void checkFinalGradeSubmissionStatus(String gradebookUid) {
+		
+		if(null == gradebookUid) {
+		
+			Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.finalGradeSubmissionStatusErrorTitle(), i18n.finalGradeSubmissionStatusErrorMessage()));
+			return;
+		}
+		
+		RestBuilder builder = RestBuilder.getInstance(RestBuilder.Method.GET, 
+				GWT.getModuleBaseURL(),
+				AppConstants.REST_FRAGMENT,
+				AppConstants.STARTUP_FRAGMENT,
+				AppConstants.FINAL_GRADES_SUB_FRAGMENT,
+				gradebookUid);
 
+		builder.sendRequest(200, 400, null, new RestCallback() {
 
+			public void onError(Request request, Throwable exception) {
+				
+				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.finalGradeSubmissionStatusErrorTitle(), i18n.finalGradeSubmissionStatusErrorMessage()));
+			}
+
+			public void onFailure(Request request, Throwable exception) {
+				
+				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.finalGradeSubmissionStatusErrorTitle(), i18n.finalGradeSubmissionStatusErrorMessage()));
+			}
+
+			public void onSuccess(Request request, Response response) {
+
+				boolean status = Boolean.valueOf(response.getText());
+
+				if(status) {
+					
+					// Show final grades submission status
+					finalGradeSubmissionStatus.show();
+				}
+			}
+		});
+	}
 }

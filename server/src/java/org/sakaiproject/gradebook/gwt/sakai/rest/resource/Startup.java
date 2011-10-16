@@ -21,9 +21,11 @@ package org.sakaiproject.gradebook.gwt.sakai.rest.resource;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
 import org.sakaiproject.gradebook.gwt.client.exceptions.GradebookCreationException;
+import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 
 /*
@@ -46,5 +48,19 @@ public class Startup extends Resource {
 		applicationSetup.setAuthorizationDetails(authorizationDetails);
 		
 		return toJson(applicationSetup);
+	}
+	
+	/*
+	 * @since 1.7.0
+	 * 
+	 * Check final grade submission status
+	 */
+	@GET @Path("/fgs/{uid}")
+	@Produces("application/json")
+	public String getFinalGradeSubmissionStatus(@PathParam("uid") String gradebookUid) throws SecurityException {
+
+		boolean status = service.getFinalGradeSubmissionStatus(gradebookUid);
+		
+		return toJson(status);
 	}
 }

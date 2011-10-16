@@ -30,19 +30,16 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.sakaiproject.authz.api.Member;
 import org.sakaiproject.exception.IdUnusedException;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.site.api.Group;
@@ -51,16 +48,12 @@ import org.sakaiproject.site.api.SiteService;
 import org.sakaiproject.tool.api.ToolManager;
 import org.sakaiproject.tool.gradebook.Gradebook;
 
-import com.google.gwt.core.client.GWT;
-
 
 public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 
 	private static final Log log = LogFactory.getLog(SampleInstitutionalAdvisor.class);
 
 	private final String CONTENT_TYPE_TEXT_HTML_UTF8 = "text/html; charset=UTF-8";
-	private final char PLUS = '+';
-	private final char MINUS = '-';
 	private final String FILE_EXTENSION = ".csv";
 	private final String FILE_HEADER = "User Eid,Name,Site Title : Group Title,Grade";
 
@@ -289,6 +282,16 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 		}
 
 	}
+	
+	// API Impl
+	public boolean hasFinalGradeSubmission(String gradebookUid) {
+		
+		/*
+		 * An institution could check the final grade submission system,
+		 * and indicate if grades have been submitted for a course.
+		 */
+		return false;
+	}
 
 	/*
 	 * IOC setters:
@@ -319,5 +322,4 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 			return eids.get(0);
 		}
 	}
-
 }
