@@ -40,12 +40,15 @@ import org.sakaiproject.gradebook.gwt.client.action.UserEntityUpdateAction;
 import org.sakaiproject.gradebook.gwt.client.api.Card;
 import org.sakaiproject.gradebook.gwt.client.api.Wizard;
 import org.sakaiproject.gradebook.gwt.client.gin.WidgetInjector;
+import org.sakaiproject.gradebook.gwt.client.gxt.JsonUtil;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenu;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaMenuItem;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityOverlay;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.FinalGradeSubmissionStatusModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.NullSensitiveCheckBox;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.BorderLayoutPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.GradeScalePanel;
@@ -55,6 +58,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.LearnerSummaryPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.PermissionsPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.StatisticsPanel;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
+import org.sakaiproject.gradebook.gwt.client.model.FinalGradeSubmissionStatus;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
@@ -62,6 +66,8 @@ import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
 import com.extjs.gxt.ui.client.Registry;
+import com.extjs.gxt.ui.client.Style.ButtonArrowAlign;
+import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.LayoutRegion;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.BaseEvent;
@@ -74,6 +80,7 @@ import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
+import com.extjs.gxt.ui.client.widget.Dialog;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.form.CheckBox;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
@@ -143,7 +150,7 @@ public class InstructorView extends AppView {
 	private CheckBox exportCommentsCheckbox;
 	private ExportDetails exportDetails;
 	
-	private LabelField finalGradeSubmissionStatus;
+	private LabelField finalGradeSubmissionStatusBanner;
 
 	public InstructorView(Controller controller, TreeView treeView, 
 			MultigradeView multigradeView, SingleGradeView singleGradeView, 
@@ -255,7 +262,10 @@ public class InstructorView extends AppView {
 		}
 		
 		// GRBK-824
-		checkFinalGradeSubmissionStatus(selectedGradebook.getGradebookUid());
+		if(model.checkFinalGradeSubmissionStatus()) {
+			
+			checkFinalGradeSubmissionStatus(selectedGradebook.getGradebookUid());
+		}
 	}
 
 	@Override
@@ -750,10 +760,10 @@ public class InstructorView extends AppView {
 		toolBar.add(helpItem);
 
 		// GRBK-824
-		finalGradeSubmissionStatus = new LabelField(i18n.finalGradeSubmissionStatusMessage());
-		finalGradeSubmissionStatus.setStyleName(resources.css().gbFinalGradeSubissionStatus());
-		finalGradeSubmissionStatus.hide();
-		toolBar.add(finalGradeSubmissionStatus);
+		finalGradeSubmissionStatusBanner = new LabelField();
+		finalGradeSubmissionStatusBanner.setStyleName(resources.css().gbFinalGradeSubissionStatus());
+		finalGradeSubmissionStatusBanner.hide();
+		toolBar.add(finalGradeSubmissionStatusBanner);
 		
 		toolBar.add(new FillToolItem());
 
@@ -948,7 +958,7 @@ public class InstructorView extends AppView {
 		
 		if(null == gradebookUid) {
 		
-			Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.finalGradeSubmissionStatusErrorTitle(), i18n.finalGradeSubmissionStatusErrorMessage()));
+			Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.finalGradeSubmissionStatusDialogTitle(), i18n.finalGradeSubmissionStatusErrorMessage()));
 			return;
 		}
 		
@@ -963,22 +973,41 @@ public class InstructorView extends AppView {
 
 			public void onError(Request request, Throwable exception) {
 				
-				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.finalGradeSubmissionStatusErrorTitle(), i18n.finalGradeSubmissionStatusErrorMessage()));
+				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.finalGradeSubmissionStatusDialogTitle(), i18n.finalGradeSubmissionStatusErrorMessage()));
 			}
 
 			public void onFailure(Request request, Throwable exception) {
 				
-				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.finalGradeSubmissionStatusErrorTitle(), i18n.finalGradeSubmissionStatusErrorMessage()));
+				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.finalGradeSubmissionStatusDialogTitle(), i18n.finalGradeSubmissionStatusErrorMessage()));
 			}
 
 			public void onSuccess(Request request, Response response) {
+				
+				EntityOverlay overlay = JsonUtil.toOverlay(response.getText());
 
-				boolean status = Boolean.valueOf(response.getText());
+				FinalGradeSubmissionStatus finalGradeSubmissionStatus = new FinalGradeSubmissionStatusModel(overlay);
+				
+				String dialogMessage = finalGradeSubmissionStatus.getDialogNotificationMessage();
+				String bannerMessage = finalGradeSubmissionStatus.getBannerNotificationMessage();
+				
+				if(null != dialogMessage && !"".equals(dialogMessage) && null != bannerMessage && !"".equals(bannerMessage)) {
 
-				if(status) {
-					
-					// Show final grades submission status
-					finalGradeSubmissionStatus.show();
+					// Banner
+					finalGradeSubmissionStatusBanner.setText(bannerMessage);
+					finalGradeSubmissionStatusBanner.show();
+
+					// Dialog
+					Dialog dialog = new Dialog();
+					dialog.setHeading(i18n.finalGradeSubmissionStatusDialogTitle());
+					dialog.setButtons(Dialog.OK);
+					dialog.addText(dialogMessage);
+					dialog.setButtonAlign(HorizontalAlignment.CENTER);
+					dialog.setBodyStyleName(resources.css().gbFinalGradeSubissionStatusDialog());
+					dialog.setHeight(150);
+					dialog.setWidth(400);
+					dialog.setModal(true);
+					dialog.setHideOnButtonClick(true);  
+					dialog.show();
 				}
 			}
 		});

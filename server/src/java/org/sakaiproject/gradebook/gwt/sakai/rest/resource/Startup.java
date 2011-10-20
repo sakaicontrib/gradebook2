@@ -27,6 +27,7 @@ import javax.ws.rs.Produces;
 import org.sakaiproject.gradebook.gwt.client.exceptions.GradebookCreationException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
+import org.sakaiproject.gradebook.gwt.client.model.FinalGradeSubmissionStatus;
 
 /*
  * This is a new REST point, combining the deprecated Authorization.java and Application.java REST points
@@ -59,7 +60,7 @@ public class Startup extends Resource {
 	@Produces("application/json")
 	public String getFinalGradeSubmissionStatus(@PathParam("uid") String gradebookUid) throws SecurityException {
 
-		boolean status = service.getFinalGradeSubmissionStatus(gradebookUid);
+		FinalGradeSubmissionStatus status = service.getFinalGradeSubmissionStatus(gradebookUid);
 		
 		return toJson(status);
 	}

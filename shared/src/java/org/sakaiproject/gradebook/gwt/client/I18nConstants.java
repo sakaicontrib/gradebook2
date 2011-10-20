@@ -470,8 +470,7 @@ public interface I18nConstants extends Constants {
 	/*
 	 * @since 1.7.0
 	 */
-	String finalGradeSubmissionStatusMessage();
-	String finalGradeSubmissionStatusErrorTitle();
+	String finalGradeSubmissionStatusDialogTitle();
 	String finalGradeSubmissionStatusErrorMessage();
 	
 }

@@ -17,7 +17,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import org.sakaiproject.util.ResourceLoader;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -41,6 +40,7 @@ import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
 import org.sakaiproject.gradebook.gwt.client.model.Configuration;
+import org.sakaiproject.gradebook.gwt.client.model.FinalGradeSubmissionStatus;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
 import org.sakaiproject.gradebook.gwt.client.model.GradeEvent;
 import org.sakaiproject.gradebook.gwt.client.model.History;
@@ -75,6 +75,7 @@ import org.sakaiproject.gradebook.gwt.sakai.model.UserDereferenceRealmUpdate;
 import org.sakaiproject.gradebook.gwt.server.Util;
 import org.sakaiproject.gradebook.gwt.server.model.ApplicationSetupImpl;
 import org.sakaiproject.gradebook.gwt.server.model.ConfigurationImpl;
+import org.sakaiproject.gradebook.gwt.server.model.FinalGradeSubmissionStatusImpl;
 import org.sakaiproject.gradebook.gwt.server.model.FixedColumnImpl;
 import org.sakaiproject.gradebook.gwt.server.model.GradeEventImpl;
 import org.sakaiproject.gradebook.gwt.server.model.GradeItemImpl;
@@ -114,6 +115,7 @@ import org.sakaiproject.tool.gradebook.Permission;
 import org.sakaiproject.user.api.User;
 import org.sakaiproject.user.api.UserDirectoryService;
 import org.sakaiproject.user.api.UserNotDefinedException;
+import org.sakaiproject.util.ResourceLoader;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -835,6 +837,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		setup.setSearchRosterByFieldEnabled(searchRosterByFieldEnabled.booleanValue());
 		setup.setEnabledGradeTypes(enabledGradeTypes);
 		setup.setShowWeightedEnabled(this.isShowWeightedEnabled());
+		setup.setCheckFinalGradeSubmissionStatus(checkFinalGradeSubmition);
 		
 		return setup;
 	}
@@ -2701,6 +2704,14 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			e.printStackTrace();
 		}
 
+		/*
+		 *  GRBK-824 : Indicating that the final grades have been submitted from GB2.
+		 *  We use the Gradebook locked member to keep track of this state. 
+		 */
+		Gradebook gradebook = gbService.getGradebook(gradebookUid);
+		gradebook.setLocked(true);
+		gbService.updateGradebook(gradebook);
+		
 		// GRBK-971
 		postEvent("gradebook2.submitFinalGrades", gradebookUid, "count", String.valueOf(studentDataList.size()));
 	}
@@ -6831,9 +6842,9 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		this.i18n = i18n;
 	}
 
-	public boolean getFinalGradeSubmissionStatus(String gradebookUid) {
+	public FinalGradeSubmissionStatus getFinalGradeSubmissionStatus(String gradebookUid) {
 		
-		boolean status = false;
+		FinalGradeSubmissionStatus status = null;
 		
 		// GRBK-824
 		if(checkFinalGradeSubmition) {
@@ -6848,7 +6859,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			}
 		}
 
-		return status;
+		return (null != status ? status : new FinalGradeSubmissionStatusImpl());
 	}
 
 }

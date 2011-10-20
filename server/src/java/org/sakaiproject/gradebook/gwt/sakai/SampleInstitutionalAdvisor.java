@@ -41,7 +41,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.exception.IdUnusedException;
+import org.sakaiproject.gradebook.gwt.client.model.FinalGradeSubmissionStatus;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
+import org.sakaiproject.gradebook.gwt.server.model.FinalGradeSubmissionStatusImpl;
 import org.sakaiproject.site.api.Group;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SiteService;
@@ -56,11 +58,16 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 	private final String CONTENT_TYPE_TEXT_HTML_UTF8 = "text/html; charset=UTF-8";
 	private final String FILE_EXTENSION = ".csv";
 	private final String FILE_HEADER = "User Eid,Name,Site Title : Group Title,Grade";
+	
+	// Final Grade Submission Status (FGSS)
+	private final String FGSS_BANNER_MESSAGE = "The final grade process has begun";
+	private final String FGSS_DIALOG_MESSAGE = "The final grade process has begun";
 
 	String finalGradeSubmissionPath = null;
 
 	private SiteService siteService = null;
 	private ToolManager toolManager = null;
+	private GradebookToolService gbToolService = null;
 
 	public List<String> getExportCourseManagementSetEids(Group group) {
 		if(null == group) {
@@ -146,14 +153,13 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 			
 			
 			if (log.isDebugEnabled()) {
+				
 				log.debug("found relative path for gradefiles, setting relative to webroot: " + outputPath);
 			}
 			
 			relativePath = true;
 			
-			log
-					.info("found relative path for gradefiles, setting relative to webroot: "
-							+ outputPath);
+			log.info("found relative path for gradefiles, setting relative to webroot: " + outputPath);
 		}
 
 		response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF8);
@@ -284,13 +290,36 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 	}
 	
 	// API Impl
-	public boolean hasFinalGradeSubmission(String gradebookUid) {
+	public FinalGradeSubmissionStatus hasFinalGradeSubmission(String gradebookUid) {
 		
 		/*
-		 * An institution could check the final grade submission system,
-		 * and indicate if grades have been submitted for a course.
+		 * By default, when the user clicks on the final grade submission menu item,
+		 * GB2 marks the gradebook as "locked". So we check for locked status, and
+		 * set the messages in the FinalGradeSubmissionStatus object accordingly.
+		 * 
+		 * In addition, an institution could check its final grade submission system,
+		 * and show appropriate messages to the user in case final grades 
+		 * have been submitted.
+		 * 
 		 */
-		return false;
+		
+		Gradebook gradebook = gbToolService.getGradebook(gradebookUid);
+		
+		FinalGradeSubmissionStatus finalGradeSubmissionStatus = new FinalGradeSubmissionStatusImpl();
+
+		if(gradebook != null && gradebook.isLocked()) {
+
+			finalGradeSubmissionStatus.setBannerNotificationMessage(FGSS_BANNER_MESSAGE);
+			finalGradeSubmissionStatus.setDialogNotificationMessage(FGSS_DIALOG_MESSAGE);
+		}
+		else {
+			
+			/*
+			 * We don't set the banner and dialog messages so that the client doesn't show the messages
+			 */
+		}
+
+		return finalGradeSubmissionStatus;
 	}
 
 	/*
@@ -310,6 +339,10 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 		this.toolManager = toolManager;
 	}
 
+	public void setGbToolService(GradebookToolService gbToolService) {
+		this.gbToolService = gbToolService;
+	}
+	
 	public String getDisplaySectionId(String enrollmentSetEid) {
 		return "DisplayId for eid: " + enrollmentSetEid;
 	}

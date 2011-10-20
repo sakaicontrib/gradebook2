@@ -86,9 +86,6 @@ public class SubmitFinalGrades extends Resource {
 
 		service.submitFinalGrade(studentDataList, gradebookUid, request, response);
 
-		
-		
-		
 		return null;
 	}
 

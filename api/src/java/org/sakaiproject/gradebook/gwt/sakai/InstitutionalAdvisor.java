@@ -26,6 +26,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.sakaiproject.gradebook.gwt.client.model.FinalGradeSubmissionStatus;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.site.api.Group;
 import org.sakaiproject.tool.gradebook.Gradebook;
@@ -125,10 +126,10 @@ public interface InstitutionalAdvisor {
 	 * 
 	 * @param gradebookUid Gradebook UID
 	 * 
-	 * @return true if grades have been submitted, false otherwise
+	 * @return status messages if final grades have been submitted
 	 * 
 	 */
-	public boolean hasFinalGradeSubmission(String gradebookUid);
+	public FinalGradeSubmissionStatus hasFinalGradeSubmission(String gradebookUid);
 
 	
 }

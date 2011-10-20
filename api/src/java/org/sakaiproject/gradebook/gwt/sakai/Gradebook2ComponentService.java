@@ -13,6 +13,7 @@ import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidDataException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
+import org.sakaiproject.gradebook.gwt.client.model.FinalGradeSubmissionStatus;
 import org.sakaiproject.gradebook.gwt.client.model.GradeEvent;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.History;
@@ -151,6 +152,6 @@ public interface Gradebook2ComponentService {
 	 * 
 	 * Method that dispatches a final grade submission status request to the InstitutionalAdvisor 
 	 */
-	public boolean getFinalGradeSubmissionStatus(String gradebookUid);
+	public FinalGradeSubmissionStatus getFinalGradeSubmissionStatus(String gradebookUid);
 	
 }

@@ -43,5 +43,15 @@ public interface ApplicationSetup {
 	public abstract void setAuthorizationDetails(String authorizationDetails);
 	
 	public abstract String getAuthorizationDetails();
+	
+	/*
+	 * @since v1.7.0
+	 */
+	public abstract boolean checkFinalGradeSubmissionStatus();
+	
+	/*
+	 * @since v1.7.0
+	 */
+	public abstract void setCheckFinalGradeSubmissionStatus(boolean status);
 
 }

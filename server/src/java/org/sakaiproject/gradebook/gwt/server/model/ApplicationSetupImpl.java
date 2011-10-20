@@ -123,4 +123,14 @@ public class ApplicationSetupImpl extends BaseModel implements
 		
 		return get(ApplicationKey.S_AUTH_DETAILS.name());
 	}
+
+	public boolean checkFinalGradeSubmissionStatus() {
+
+		return get(ApplicationKey.B_CHECK_FINAL_GRADE_SUBMISSION_STATUS.name());
+	}
+
+	public void setCheckFinalGradeSubmissionStatus(boolean status) {
+
+		set(ApplicationKey.B_CHECK_FINAL_GRADE_SUBMISSION_STATUS.name(), status);
+	}
 }

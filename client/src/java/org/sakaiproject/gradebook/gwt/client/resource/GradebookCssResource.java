@@ -109,5 +109,7 @@ public interface GradebookCssResource extends CssResource {
 	String gbStudentInformationPanel();
 	
 	String gbFinalGradeSubissionStatus();
+	
+	String gbFinalGradeSubissionStatusDialog();
 
 }
