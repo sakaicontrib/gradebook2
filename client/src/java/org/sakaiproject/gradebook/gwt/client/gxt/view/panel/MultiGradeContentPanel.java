@@ -1206,21 +1206,34 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 				Item i = ((Gradebook)Registry.get(AppConstants.CURRENT)).getItemByIdentifier(assignmentId);
 				
 				boolean zeroCouldBeNull = i != null && i.getNullsAsZeros();
-				Double val = (Double) be.getRecord().get(assignmentId);
-
-				if (isOriginalValueNull(be) && zeroCouldBeNull && val != null && val == 0d) {
-
-						//This value should be emptied from the cell
-						be.getRecord().set(assignmentId, null);
-
-					}
-
-				
-
-				 
-			}
-
 			
+				/*
+				 *  GRBK-1152
+				 *  For letter grade gradebooks, the grade type is not double, but is string.  However, sometimes it is double, so both cases
+				 *  must be handled.  
+				 */
+				Object o = be.getRecord().get(assignmentId); 
+				
+				if (o != null)
+				{
+					if (o instanceof Double)
+					{
+						Double val = (Double) o;
+						if (isOriginalValueNull(be) && zeroCouldBeNull && val == 0d) {
+							//This value should be emptied from the cell
+							be.getRecord().set(assignmentId, null);
+						}
+					}
+					else if (o instanceof String)
+					{
+						String val = (String) o; 
+						if (isOriginalValueNull(be) && zeroCouldBeNull && "0".equals(val))
+						{
+							be.getRecord().set(assignmentId, null);
+						}
+					}
+				}				
+			}
 		});
 		
 		grid.addListener(Events.AfterEdit, new Listener<GridEvent>() {
@@ -1231,10 +1244,23 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 				
 				Item i = ((Gradebook)Registry.get(AppConstants.CURRENT)).getItemByIdentifier(assignmentId);
 				
+				/*
+				 * GRBK-1152 
+				 * Grade type should be string zero for letter grades, double 0.0 for others. 
+				 * 
+				 */
+				boolean isLetterGrades = ((Gradebook)Registry.get(AppConstants.CURRENT)).getGradebookItemModel().getGradeType() == GradeType.LETTERS;
 				boolean zeroCouldBeNull = i != null && i.getNullsAsZeros();
 				if (isOriginalValueNull(be) && zeroCouldBeNull && be.getValue() == null) { 
-					be.getRecord().set(assignmentId, 0d);
-					//be.cancelBubble();
+					
+					if (isLetterGrades)
+					{
+						be.getRecord().set(assignmentId, "0"); 
+					}
+					else
+					{
+						be.getRecord().set(assignmentId, 0d);
+					}
 				}
 				
 			}
