@@ -126,11 +126,18 @@ public class ApplicationSetupImpl extends BaseModel implements
 
 	public boolean checkFinalGradeSubmissionStatus() {
 
-		return get(ApplicationKey.B_CHECK_FINAL_GRADE_SUBMISSION_STATUS.name());
+		Boolean status = get(ApplicationKey.B_CHECK_FINAL_GRADE_SUBMISSION_STATUS.name());
+		
+		if(null != status) {
+			
+			return status.booleanValue();
+		}
+		
+		return false;
 	}
 
 	public void setCheckFinalGradeSubmissionStatus(boolean status) {
 
-		set(ApplicationKey.B_CHECK_FINAL_GRADE_SUBMISSION_STATUS.name(), status);
+		set(ApplicationKey.B_CHECK_FINAL_GRADE_SUBMISSION_STATUS.name(), Boolean.valueOf(status));
 	}
 }

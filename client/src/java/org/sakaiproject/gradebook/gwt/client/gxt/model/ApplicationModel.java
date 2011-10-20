@@ -160,15 +160,20 @@ public class ApplicationModel extends EntityModel implements ApplicationSetup {
 		return get(ApplicationKey.S_AUTH_DETAILS.name());
 	}
 
-	@Override
 	public boolean checkFinalGradeSubmissionStatus() {
-
-		return get(ApplicationKey.B_CHECK_FINAL_GRADE_SUBMISSION_STATUS.name());
+		
+		Boolean status = get(ApplicationKey.B_CHECK_FINAL_GRADE_SUBMISSION_STATUS.name());
+		
+		if(null != status) {
+			
+			return status.booleanValue();
+		}
+		
+		return false;
 	}
 
-	@Override
 	public void setCheckFinalGradeSubmissionStatus(boolean status) {
 
-		set(ApplicationKey.B_CHECK_FINAL_GRADE_SUBMISSION_STATUS.name(), status);
+		set(ApplicationKey.B_CHECK_FINAL_GRADE_SUBMISSION_STATUS.name(), Boolean.valueOf(status));
 	}
 }
