@@ -67,7 +67,6 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 
 	private SiteService siteService = null;
 	private ToolManager toolManager = null;
-	private GradebookToolService gbToolService = null;
 
 	public List<String> getExportCourseManagementSetEids(Group group) {
 		if(null == group) {
@@ -290,7 +289,7 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 	}
 	
 	// API Impl
-	public FinalGradeSubmissionStatus hasFinalGradeSubmission(String gradebookUid) {
+	public FinalGradeSubmissionStatus hasFinalGradeSubmission(String gradebookUid, boolean hasFinalGradeSubmission) {
 		
 		/*
 		 * By default, when the user clicks on the final grade submission menu item,
@@ -303,11 +302,9 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 		 * 
 		 */
 		
-		Gradebook gradebook = gbToolService.getGradebook(gradebookUid);
-		
 		FinalGradeSubmissionStatus finalGradeSubmissionStatus = new FinalGradeSubmissionStatusImpl();
 
-		if(gradebook != null && gradebook.isLocked()) {
+		if(hasFinalGradeSubmission) {
 
 			finalGradeSubmissionStatus.setBannerNotificationMessage(FGSS_BANNER_MESSAGE);
 			finalGradeSubmissionStatus.setDialogNotificationMessage(FGSS_DIALOG_MESSAGE);
@@ -337,10 +334,6 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 
 	public void setToolManager(ToolManager toolManager) {
 		this.toolManager = toolManager;
-	}
-
-	public void setGbToolService(GradebookToolService gbToolService) {
-		this.gbToolService = gbToolService;
 	}
 	
 	public String getDisplaySectionId(String enrollmentSetEid) {

@@ -107,7 +107,6 @@
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.api.SampleInstitutionalAdvisor" class="org.sakaiproject.gradebook.gwt.sakai.SampleInstitutionalAdvisor">
 		<property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/>
 		<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>
-		<property name="gbToolService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/>
 		<property name="finalGradeSubmissionPath" value="tmp"/>
 	</bean>
 	

@@ -125,11 +125,12 @@ public interface InstitutionalAdvisor {
 	 * for which the grades have been submitted.
 	 * 
 	 * @param gradebookUid Gradebook UID
+	 * @param hasFinalGradeSubmission indicates if the final grades have been submitted via GB2
 	 * 
 	 * @return status messages if final grades have been submitted
 	 * 
 	 */
-	public FinalGradeSubmissionStatus hasFinalGradeSubmission(String gradebookUid);
+	public FinalGradeSubmissionStatus hasFinalGradeSubmission(String gradebookUid, boolean hasFinalGradeSubmission);
 
 	
 }

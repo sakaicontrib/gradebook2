@@ -6851,7 +6851,12 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			
 			if(null != gradebookUid) {
 			
-				status = advisor.hasFinalGradeSubmission(gradebookUid);
+				Gradebook gradebook = gbService.getGradebook(gradebookUid);
+				
+				if(null != gradebook) {
+				
+					status = advisor.hasFinalGradeSubmission(gradebookUid, gradebook.isLocked());
+				}
 			}
 			else {
 				
