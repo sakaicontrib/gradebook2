@@ -66,7 +66,6 @@ import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
 import com.extjs.gxt.ui.client.Registry;
-import com.extjs.gxt.ui.client.Style.ButtonArrowAlign;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.LayoutRegion;
 import com.extjs.gxt.ui.client.data.ModelData;
@@ -1003,7 +1002,7 @@ public class InstructorView extends AppView {
 					dialog.addText(dialogMessage);
 					dialog.setButtonAlign(HorizontalAlignment.CENTER);
 					dialog.setBodyStyleName(resources.css().gbFinalGradeSubissionStatusDialog());
-					dialog.setHeight(150);
+					dialog.setHeight(230);
 					dialog.setWidth(400);
 					dialog.setModal(true);
 					dialog.setHideOnButtonClick(true);  
