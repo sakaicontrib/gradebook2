@@ -214,6 +214,9 @@ public abstract class AppView extends View {
 		case USER_CHANGE:
 			onUserChange((UserEntityAction<?>)event.getData());
 			break;
+		case SHOW_FINAL_GRADE_SUBMISSION_STATUS:
+			onShowFinalGradeSubmissionStatus();
+			break;
 		}
 	}
 	
@@ -350,6 +353,10 @@ public abstract class AppView extends View {
 	}
 	
 	protected void onGradeScaleUpdateError() {
+		
+	}
+	
+	protected void onShowFinalGradeSubmissionStatus() {
 		
 	}
 

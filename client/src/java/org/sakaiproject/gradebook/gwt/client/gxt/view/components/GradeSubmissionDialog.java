@@ -1,10 +1,6 @@
 /**********************************************************************************
  *
- * $Id:$
- *
- ***********************************************************************************
- *
- * Copyright (c) 2008, 2009 The Regents of the University of California
+ * Copyright (c) 2008, 2009, 2010, 2011 The Regents of the University of California
  *
  * Licensed under the
  * Educational Community License, Version 2.0 (the "License"); you may
@@ -26,8 +22,8 @@ package org.sakaiproject.gradebook.gwt.client.gxt.view.components;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
-import org.sakaiproject.gradebook.gwt.client.RestCallback;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
+import org.sakaiproject.gradebook.gwt.client.RestCallback;
 import org.sakaiproject.gradebook.gwt.client.advisor.ClientExportAdvisorImpl;
 import org.sakaiproject.gradebook.gwt.client.api.ClientExportAdvisor;
 import org.sakaiproject.gradebook.gwt.client.gxt.JsonUtil;
@@ -46,7 +42,6 @@ import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.Request;
-import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
@@ -174,6 +169,8 @@ public class GradeSubmissionDialog extends Dialog {
 							ClientExportAdvisor clientExportAdvisor = new ClientExportAdvisorImpl();
 
 							clientExportAdvisor.handleServerResponse(responseText);
+							
+							Dispatcher.forwardEvent(GradebookEvents.ShowFinalGradeSubmissionStatus.getEventType());
 						}
 						else if(500 == response.getStatusCode()) {
 

@@ -89,6 +89,7 @@ public class InstructorController extends Controller {
 		registerEventTypes(GradebookEvents.GradeScaleUpdateError.getEventType());
 		registerEventTypes(GradebookEvents.MaskMultiGradeGrid.getEventType());
 		registerEventTypes(GradebookEvents.UnmaskMultiGradeGrid.getEventType());
+		registerEventTypes(GradebookEvents.ShowFinalGradeSubmissionStatus.getEventType());
 	}
 	
 	@Override
@@ -275,6 +276,9 @@ public class InstructorController extends Controller {
 				break;
 			case UNMASK_MULTI_GRADE_GRID:
 				forwardToView(multigradeView, event);
+				break;
+			case SHOW_FINAL_GRADE_SUBMISSION_STATUS:
+				forwardToView(appView, event);
 				break;
 		}
 	}

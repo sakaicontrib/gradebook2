@@ -1,10 +1,6 @@
 /**********************************************************************************
  *
- * $Id:$
- *
- ***********************************************************************************
- *
- * Copyright (c) 2008, 2009 The Regents of the University of California
+ * Copyright (c) 2008, 2009, 2010, 2011 The Regents of the University of California
  *
  * Licensed under the
  * Educational Community License, Version 2.0 (the "License"); you may
@@ -263,7 +259,7 @@ public class InstructorView extends AppView {
 		// GRBK-824
 		if(model.checkFinalGradeSubmissionStatus()) {
 			
-			checkFinalGradeSubmissionStatus(selectedGradebook.getGradebookUid());
+			checkFinalGradeSubmissionStatus(selectedGradebook.getGradebookUid(), true);
 		}
 	}
 
@@ -575,6 +571,13 @@ public class InstructorView extends AppView {
 		}
 	}
 
+	@Override
+	protected void onShowFinalGradeSubmissionStatus() {
+	
+		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
+		checkFinalGradeSubmissionStatus(selectedGradebook.getGradebookUid(), false);
+	}
+	
 	/*
 	 * The goal here is to reduce the number of overall listeners in the application to a minimum
 	 */
@@ -953,7 +956,7 @@ public class InstructorView extends AppView {
 	 * Make a REST call that checks if the final grades have been submitted for 
 	 * the current gradebook
 	 */
-	private void checkFinalGradeSubmissionStatus(String gradebookUid) {
+	private void checkFinalGradeSubmissionStatus(String gradebookUid, final boolean showDialog) {
 		
 		if(null == gradebookUid) {
 		
@@ -995,18 +998,20 @@ public class InstructorView extends AppView {
 					finalGradeSubmissionStatusBanner.setText(bannerMessage);
 					finalGradeSubmissionStatusBanner.show();
 
-					// Dialog
-					Dialog dialog = new Dialog();
-					dialog.setHeading(i18n.finalGradeSubmissionStatusDialogTitle());
-					dialog.setButtons(Dialog.OK);
-					dialog.addText(dialogMessage);
-					dialog.setButtonAlign(HorizontalAlignment.CENTER);
-					dialog.setBodyStyleName(resources.css().gbFinalGradeSubissionStatusDialog());
-					dialog.setHeight(230);
-					dialog.setWidth(400);
-					dialog.setModal(true);
-					dialog.setHideOnButtonClick(true);  
-					dialog.show();
+					if(showDialog) {
+
+						// Dialog
+						Dialog dialog = new Dialog();
+						dialog.setHeading(i18n.finalGradeSubmissionStatusDialogTitle());
+						dialog.setButtons(Dialog.OK);
+						dialog.addText(dialogMessage);
+						dialog.setButtonAlign(HorizontalAlignment.CENTER);
+						dialog.setBodyStyleName(resources.css().gbFinalGradeSubissionStatusDialog());
+						dialog.setMinWidth(450);					
+						dialog.setModal(true);
+						dialog.setHideOnButtonClick(true);  
+						dialog.show();
+					}
 				}
 			}
 		});

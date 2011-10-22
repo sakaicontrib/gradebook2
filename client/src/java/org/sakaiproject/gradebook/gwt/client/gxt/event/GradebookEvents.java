@@ -127,4 +127,5 @@ public class GradebookEvents {
 	public static final GradebookEvent GradeScaleUpdateError		= registerEvent(EventKey.GRADE_SCALE_UPDATE_ERROR);
 	public static final GradebookEvent MaskMultiGradeGrid			= registerEvent(EventKey.MASK_MULTI_GRADE_GRID);
 	public static final GradebookEvent UnmaskMultiGradeGrid			= registerEvent(EventKey.UNMASK_MULTI_GRADE_GRID);
+	public static final GradebookEvent ShowFinalGradeSubmissionStatus = registerEvent(EventKey.SHOW_FINAL_GRADE_SUBMISSION_STATUS);
 }

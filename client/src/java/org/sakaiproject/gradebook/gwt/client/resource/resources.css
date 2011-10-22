@@ -201,9 +201,10 @@
 
 .gbFinalGradeSubissionStatusDialog {
 	 text-align: center;
-	 padding-top: 15px;
+	 padding: 15px 15px 15px 15px;
 	 background: #ffffff;
 	 margin: 0px;
+	 white-space: nowrap;
 }
 
 @sprite .gbItemIcon {
