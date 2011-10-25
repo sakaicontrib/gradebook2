@@ -13,6 +13,7 @@ import org.sakaiproject.service.gradebook.shared.AssessmentNotFoundException;
 import org.sakaiproject.service.gradebook.shared.AssignmentHasIllegalPointsException;
 import org.sakaiproject.service.gradebook.shared.ConflictingAssignmentNameException;
 import org.sakaiproject.service.gradebook.shared.ConflictingExternalIdException;
+import org.sakaiproject.service.gradebook.shared.ExternalAssignmentProvider;
 import org.sakaiproject.service.gradebook.shared.GradebookExternalAssessmentService;
 import org.sakaiproject.service.gradebook.shared.GradebookNotFoundException;
 import org.sakaiproject.service.gradebook.shared.InvalidCategoryException;
@@ -274,6 +275,33 @@ public class GradebookExternalAssessmentServiceMock extends HibernateDaoSupport
 			AssessmentNotFoundException {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public boolean isExternalAssignmentGrouped(String arg0, String arg1)
+			throws GradebookNotFoundException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isExternalAssignmentVisible(String arg0, String arg1,
+			String arg2) throws GradebookNotFoundException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void registerExternalAssignmentProvider(
+			ExternalAssignmentProvider arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void unregisterExternalAssignmentProvider(String arg0) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
