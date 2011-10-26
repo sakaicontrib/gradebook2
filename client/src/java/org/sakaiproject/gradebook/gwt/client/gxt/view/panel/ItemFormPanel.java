@@ -640,6 +640,22 @@ public class ItemFormPanel extends GradebookPanel {
 				informationMessageGradeTypeInGradebookSetup.show(); 
 
 			}
+			else if (itemType == ItemType.CATEGORY)
+			{
+				if (itemModel.getChildCount() == 0)
+				{
+					// GRBK-1083 
+					
+					/*
+					 *  NOTE: Cannot set disabled as that disabled the tooltip as well, best
+					 *  solution I came up with is to set the component read only, which disables clicking, and then set the style to make it look dead. 
+					 */
+					
+					releasedField.setToolTip(i18n.itemFormPanelReleasedItemForCategoryEmptyMessage()); 
+					releasedField.setStyleName(resources.css().gbDisableCheckbox());
+					releasedField.setReadOnly(true); 
+				}
+			}
 		} else {
 			formBindings.addListener(Events.UnBind, bindListener);
 			formBindings.unbind();
@@ -776,6 +792,18 @@ public class ItemFormPanel extends GradebookPanel {
 		clearChanges();
 
 		initState(ItemType.CATEGORY, itemModel, false, true);
+
+		// GRBK-1083 - New categories are always empty... 
+		// So we disable the checkbox... 
+		
+		/*
+		 *  NOTE: Cannot set disabled as that disabled the tooltip as well, best
+		 *  solution I came up with is to set the component read only, which disables clicking, and then set the style to make it look dead. 
+		 */
+		releasedField.setToolTip(i18n.itemFormPanelReleasedItemForCategoryEmptyMessage()); 
+		releasedField.setStyleName(resources.css().gbDisableCheckbox());
+		releasedField.setReadOnly(true); 
+
 		establishSelectedCategoryState(itemModel);
 
 		includedField.setValue(Boolean.TRUE);
@@ -1053,7 +1081,11 @@ public class ItemFormPanel extends GradebookPanel {
 		instructionsForCategoryTypePickerSet.setVisible(isEditable && !isNotGradebook);
 		instructionsForGradeTypePickerSet.setEnabled(isAllowedToEdit && !isDelete);
 		instructionsForGradeTypePickerSet.setVisible(isEditable && !isNotGradebook);
-
+		
+		// GRBK-1083
+		releasedField.setReadOnly(false); 
+		releasedField.removeToolTip();
+		releasedField.removeStyleName(resources.css().gbDisableCheckbox()); 
 
 	}
 

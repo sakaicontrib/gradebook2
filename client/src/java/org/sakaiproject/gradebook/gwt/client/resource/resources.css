@@ -1,4 +1,8 @@
 
+.gbDisableCheckbox
+{
+	opacity: 0.6 !important; 
+}
 .gbStudentChart {
 	padding: 0px 0px 5px 0px;
 }

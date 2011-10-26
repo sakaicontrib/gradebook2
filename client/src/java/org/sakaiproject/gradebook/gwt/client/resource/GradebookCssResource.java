@@ -4,6 +4,8 @@ import com.google.gwt.resources.client.CssResource;
 
 public interface GradebookCssResource extends CssResource {
 	
+	String gbDisableCheckbox(); 
+	
 	String gbAdvice();
 	
 	String gbAddCategoryIcon();

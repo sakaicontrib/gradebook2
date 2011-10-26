@@ -473,4 +473,10 @@ public interface I18nConstants extends Constants {
 	String finalGradeSubmissionStatusDialogTitle();
 	String finalGradeSubmissionStatusErrorMessage();
 	
+	/*
+	 * GRBK-1083
+	 * @since 1.7.0
+	 */
+	String itemFormPanelReleasedItemForCategoryEmptyMessage();
+	
 }
