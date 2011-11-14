@@ -3319,6 +3319,10 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 			hasCategories = categoryType != CategoryType.NO_CATEGORIES;
 			isLetterGrading = gradeType == GradeType.LETTERS;
+			// GRBK-1158 - Need to reload the GB in case it changes in type.  
+			gradebook = null; 
+			gradebook = gbService.getGradebook(gradebookUid);
+
 
 		}
 
