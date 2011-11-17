@@ -193,14 +193,13 @@
 }
 
 .gbFinalGradeSubissionStatus {
-	font-size: 12pt !important;
-	color: red;
+	
+	color: black;
 	padding: 4px 5px 4px 5px;
-	margin-left: 183px;
-	background: #ffffff;
-	border-style: solid;
-	border-width: 1px;
-	border-color: #8db2e3;
+	margin-left: 10px;
+	background: #FDF5E6;
+	border-radius:3px;
+	font: normal 14px tahoma, arial, helvetica !important;
 }
 
 .gbFinalGradeSubissionStatusDialog {
@@ -208,7 +207,6 @@
 	 padding: 15px 15px 15px 15px;
 	 background: #ffffff;
 	 margin: 0px;
-	 white-space: nowrap;
 }
 
 @sprite .gbItemIcon {

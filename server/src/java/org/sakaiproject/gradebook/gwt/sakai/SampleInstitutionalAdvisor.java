@@ -61,7 +61,7 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 	
 	// Final Grade Submission Status (FGSS)
 	private final String FGSS_BANNER_MESSAGE = "The final grade process has begun";
-	private final String FGSS_DIALOG_MESSAGE = "The final grade process has begun";
+	private final String FGSS_DIALOG_MESSAGE = "The final grade process has begun.  Please contact all course graders before making any Gradebook changes.";
 
 	String finalGradeSubmissionPath = null;
 
