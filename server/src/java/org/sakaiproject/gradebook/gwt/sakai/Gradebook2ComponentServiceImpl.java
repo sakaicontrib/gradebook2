@@ -466,31 +466,12 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		Map<String, String> propertyMap = actionRecord.getPropertyMap();
 
 		propertyMap.put(AppConstants.HISTORY_SCORE, "Excused");
-
-		populatePropertiesFromLearner(propertyMap, student);
+		propertyMap.put(LearnerKey.S_DSPLY_CM_ID.name(), (String) student.get(LearnerKey.S_DSPLY_CM_ID.name()));
 
 		actionRecord.setEntityName(new StringBuilder().append((String)student.get(LearnerKey.S_DSPLY_NM.name())).append(" : ").append(assignment.getName()).toString());
 		gbService.storeActionRecord(actionRecord);
 
 		return student;
-	}
-
-	private void populatePropertiesFromLearner(Map<String, String> propertyMap,
-			Learner student) {
-
-		for (String propertyName : student.getProperties().keySet()) { 
-			Object value = student.get(propertyName);
-			if (value != null) {
-				String stringValue = String.valueOf(value);
-
-				if (stringValue.length() >= 756) {
-					log.warn("Trying to store a property with a value that's too long for the field, truncating the property " + propertyName + " : " + stringValue);
-					stringValue = stringValue.substring(0, 755);
-				}
-				propertyMap.put(propertyName, stringValue);
-			}
-		}
-
 	}
 
 	public Learner assignScore(String gradebookUid, String studentUid, String assignmentId, Double value, Double previousValue) throws InvalidInputException {
@@ -533,8 +514,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		Map<String, String> propertyMap = actionRecord.getPropertyMap();
 
 		propertyMap.put(AppConstants.HISTORY_SCORE, String.valueOf(value));
-
-		populatePropertiesFromLearner(propertyMap, student);
+		propertyMap.put(LearnerKey.S_DSPLY_CM_ID.name(), (String) student.get(LearnerKey.S_DSPLY_CM_ID.name()));
 
 		actionRecord.setEntityName(new StringBuilder().append((String)student.get(LearnerKey.S_DSPLY_NM.name())).append(" : ").append(assignment.getName()).toString());
 		gbService.storeActionRecord(actionRecord);
@@ -595,8 +575,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			Map<String, String> propertyMap = actionRecord.getPropertyMap();
 
 			propertyMap.put(AppConstants.HISTORY_SCORE, value);
-
-			populatePropertiesFromLearner(propertyMap, student);
+			propertyMap.put(LearnerKey.S_DSPLY_CM_ID.name(), (String) student.get(LearnerKey.S_DSPLY_CM_ID.name()));
 
 			actionRecord.setEntityName(new StringBuilder().append((String)student.get(LearnerKey.S_DSPLY_NM.name())).append(" : ").append(gradebook.getName()).toString());
 			gbService.storeActionRecord(actionRecord);
@@ -3528,8 +3507,15 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 							if(null != originalImportGrade && !"".equals(originalImportGrade)) {
 								propertyMap.put(AppConstants.HISTORY_ORIGINAL_SCORE, originalImportGrade);
 							}
-
-							populatePropertiesFromLearner(propertyMap, student);
+							
+							/* 
+							 * FIXME: GRBK-1164
+							 * Once we get the section info from the import file, we can populate 
+							 * the propertyMap with the section info
+							 * 
+							 * e.g.
+							 * propertyMap.put(LearnerKey.S_DSPLY_CM_ID.name(), (String) student.get(LearnerKey.S_DSPLY_CM_ID.name()));
+							 */
 
 							actionRecord.setEntityName(new StringBuilder().append((String)student.get(LearnerKey.S_DSPLY_NM.name())).append(" : ").append(assignment.getName()).toString());
 							gbService.storeActionRecord(actionRecord);
