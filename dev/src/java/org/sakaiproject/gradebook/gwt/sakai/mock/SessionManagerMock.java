@@ -53,7 +53,7 @@ public class SessionManagerMock implements SessionManager {
 		if(null == session) {
 		 
 			session = new MySession(this, java.util.UUID.randomUUID().toString(), null, null, null, null, 0, null, new MutableLong(1000l* 60l* 60l* 24l));
-			session.setUserId("UserIdForDevMode");
+			session.setUserId("0");
 			session.setUserEid("UserEidForDevMode");
 			session.setAttribute(LOCALE_SESSION_KEY+getCurrentSessionUserId(), locale);
 			session.setAttribute("locale", locale);
