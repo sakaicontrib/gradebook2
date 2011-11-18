@@ -19,7 +19,8 @@ import org.sakaiproject.gradebook.gwt.server.model.GradeItemImpl;
 public class Item extends Resource {
 	
 	@POST @Path("{uid}/{id}")
-	@Consumes({"application/xml", "application/json"})
+	@Consumes("application/json")
+	@Produces("application/json")
 	public String create(@PathParam("uid") String gradebookUid, @PathParam("id") Long gradebookId, 
 			String model) throws InvalidInputException {
 		
@@ -38,7 +39,8 @@ public class Item extends Resource {
 	}
 	
 	@DELETE
-	@Consumes({"application/xml", "application/json"})
+	@Consumes("application/json")
+	@Produces("application/json")
 	public String remove(String model) throws InvalidInputException {
 		Map<String,Object> map = fromJson(model, Map.class);
 		org.sakaiproject.gradebook.gwt.client.model.Item result = 
@@ -48,7 +50,8 @@ public class Item extends Resource {
 	}
 	
 	@PUT
-	@Consumes({"application/xml", "application/json"})
+	@Consumes("application/json")
+	@Produces("application/json")
 	public String update(String model) throws InvalidInputException {
 		Map<String,Object> map = fromJson(model, Map.class);
 		org.sakaiproject.gradebook.gwt.client.model.Item result = 

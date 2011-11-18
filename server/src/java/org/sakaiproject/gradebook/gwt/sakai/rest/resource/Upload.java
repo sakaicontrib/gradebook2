@@ -8,6 +8,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,7 +26,8 @@ public class Upload extends Resource {
 	
 	@PUT
 	@Path("{uid}/{id}{force:(/" + AppConstants.OVERWRITE_FRAGMENT + "/[^/]+?)?}{maxpnts:(/" + AppConstants.MAXPNTS_FRAGMENT + "/[^/]+?)?}")
-	@Consumes( { "application/json" })
+	@Consumes("application/json")
+	@Produces("application/json")
 	public String update(@PathParam("uid") String gradebookUid,
 			@PathParam("id") Long gradebookId, String model,
 			@PathParam("force") String forceFlag,

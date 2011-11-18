@@ -1,8 +1,5 @@
 package org.sakaiproject.gradebook.gwt.server.model;
 
-import javax.xml.bind.annotation.XmlRootElement;
-
-@XmlRootElement
 public class GradeRecord {
 
 	private String gradebookUid;
@@ -140,7 +137,4 @@ public class GradeRecord {
 	public void setPreviousBooleanValue(Boolean previousBooleanValue) {
 		this.previousBooleanValue = previousBooleanValue;
 	}
-
-	
-	
 }

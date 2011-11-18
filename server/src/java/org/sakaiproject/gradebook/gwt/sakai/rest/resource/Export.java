@@ -2,38 +2,28 @@ package org.sakaiproject.gradebook.gwt.sakai.rest.resource;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.sakaiproject.entity.api.Entity;
-import org.sakaiproject.exception.IdUnusedException;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.server.BrowserDetect;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
+import org.sakaiproject.gradebook.gwt.server.ImportExportUtility.FileType;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtilityImpl;
 import org.sakaiproject.gradebook.gwt.server.UserAgent;
-import org.sakaiproject.gradebook.gwt.server.ImportExportUtility.FileType;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SiteService;
 

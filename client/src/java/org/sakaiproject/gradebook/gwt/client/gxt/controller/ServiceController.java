@@ -601,7 +601,6 @@ public class ServiceController extends Controller {
 				AppConstants.REST_FRAGMENT,
 				AppConstants.LEARNER_FRAGMENT, entity, gradebookUid, itemId,  Base64.encode(studentUid));
 
-
 		builder.sendRequest(200, 400, json.toString(), new RestCallback() {
 
 			public void onError(Request request, Throwable exception) {

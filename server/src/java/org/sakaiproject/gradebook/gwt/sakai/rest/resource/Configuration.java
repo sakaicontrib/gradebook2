@@ -6,6 +6,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.key.ConfigurationKey;
@@ -14,7 +15,8 @@ import org.sakaiproject.gradebook.gwt.client.model.key.ConfigurationKey;
 public class Configuration extends Resource {
 
 	@PUT @Path("{gradebookId}")
-	@Consumes({"application/xml", "application/json"})
+	@Consumes("application/json")
+	@Produces("application/json")
 	public String update(@PathParam("gradebookId") Long gradebookId,
 			String model) throws InvalidInputException {
 

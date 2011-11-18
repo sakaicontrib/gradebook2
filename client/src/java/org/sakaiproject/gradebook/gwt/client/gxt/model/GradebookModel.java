@@ -271,7 +271,7 @@ public class GradebookModel extends EntityModel implements IsSerializable, Grade
 			return null;
 		
 		for (ModelData m : children) {
-			GWT.log("search in: " + m.get(ItemKey.S_ID.name()));
+			//GWT.log("search in: " + m.get(ItemKey.S_ID.name()));
 			if (id.equals(m.get(ItemKey.S_ID.name()))) {
 				Item i = (Item) m;
 				return i;
