@@ -113,7 +113,15 @@ public class ConfigurationModel extends EntityModel implements Configuration {
 		int cw = 200;
 			
 		if (columnWidth != null)
-			cw = Integer.parseInt(columnWidth);
+			// GRBK-1151
+			// The columnWidth should be an int field.  But reports of floats
+			// have occurred which causes a failure in the display of the grid.
+			// Converting to int here to account for that scenario.
+			try {
+				cw = (int) Double.parseDouble(columnWidth);
+			} catch (NumberFormatException e) {
+				//If a numberFormatException occurs, then use the default of 200 above for cw.
+			}
 		else {
 			if (name != null) {
 				cw = name.length() * 7;
