@@ -11,7 +11,7 @@
   	<name>Sakai Gradebook2 Project</name>
 	<groupId>org.sakaiproject.gradebook2</groupId>
 	<artifactId>gradebook2-base</artifactId>
-	<version>1.7.0-SNAPSHOT</version>
+	<version>1.8.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<repositories>
@@ -26,7 +26,7 @@
 	</repositories>
 
 	<properties>
-		<gb2.version>1.7.0-SNAPSHOT</gb2.version>
+		<gb2.version>1.8.0-SNAPSHOT</gb2.version>
 		<gxt.version>2.2.5-gwt22</gxt.version>
 		<gwt.version>2.4.0</gwt.version>
 		<!-- following fix for bug in gwt 2.3.0 poms (should've been included in those but were not) -->
