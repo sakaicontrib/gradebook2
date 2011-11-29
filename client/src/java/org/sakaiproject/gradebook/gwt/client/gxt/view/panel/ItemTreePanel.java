@@ -539,7 +539,7 @@ public class ItemTreePanel extends GradebookPanel {
 		};
 		learnerAttributeTree.setAutoLoad(true);
 		learnerAttributeTree.setCheckable(true);
-		learnerAttributeTree.setCheckStyle(CheckCascade.CHILDREN);
+		learnerAttributeTree.setCheckStyle(CheckCascade.NONE);
 		learnerAttributeTree.setCheckNodes(CheckNodes.LEAF);
 		learnerAttributeTree.setDisplayProperty(FixedColumnKey.S_NAME.name());
 
