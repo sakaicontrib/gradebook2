@@ -10,7 +10,7 @@
 .gbStudentInformationPanel {
 	padding: 0px 5px 5px 0px;
 }
-	
+
 .statisticsChartIconPanelContainer {
 	padding-top:5px;
 }
@@ -209,6 +209,15 @@
 	 margin: 0px;
 }
 
+.helpIcon {
+	border-style: solid;
+	border-color: transparent;
+	border-top-width: 3px;
+	border-bottom-width: 3px;
+	border-left-width: 2px;
+	border-right-width: 2px;
+}
+
 @sprite .gbItemIcon {
 	gwt-image: "table";	
 }
@@ -275,6 +284,10 @@
 
 @sprite .gbStatisticsButtonBar {
 	gwt-image: "chart_bar";
+}
+
+@sprite .helpIcon {
+	gwt-image: "help";
 }
 
 @sprite .loadingIndicator {

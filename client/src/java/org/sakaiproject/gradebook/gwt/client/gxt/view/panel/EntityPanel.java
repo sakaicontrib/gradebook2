@@ -267,7 +267,6 @@ public abstract class EntityPanel extends ContentPanel {
 		dropLowestField.setFieldLabel(i18n.dropLowestFieldLabel());
 		dropLowestField.setStyleAttribute("font-size", "12pt");
 		dropLowestField.setVisible(false);
-		dropLowestField.setToolTip(i18n.dropLowestToolTip());
 		this.dropLowestField = dropLowestField;
 
 		LabelField dueDateField = new LabelField();
@@ -377,7 +376,6 @@ public abstract class EntityPanel extends ContentPanel {
 		dropLowestField.setAllowDecimals(false);
 		dropLowestField.setPropertyEditorType(Integer.class);
 		dropLowestField.setVisible(false);
-		dropLowestField.setToolTip(i18n.dropLowestToolTip());
 		this.dropLowestField = dropLowestField;
 
 		DateField dueDateField = new DateField();

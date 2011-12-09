@@ -685,7 +685,7 @@ public class InstructorView extends AppView {
 		
 		exportWizard.setHeading(i18n.exportWizardHeading());
 		exportWizard.setHeaderTitle(i18n.exportWizardTitle());
-		exportWizard.setClosable(false);
+		exportWizard.setClosable(true);
 		exportWizard.setShowWestImageContainer(false);
 		exportWizard.setPanelBackgroundColor("#FFFFFF");
 		exportWizard.setProgressIndicator(Wizard.Indicator.PROGRESSBAR);

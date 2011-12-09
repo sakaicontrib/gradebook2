@@ -47,10 +47,12 @@ import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style;
+import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.binding.Converter;
 import com.extjs.gxt.ui.client.binding.FieldBinding;
 import com.extjs.gxt.ui.client.binding.FormBinding;
+import com.extjs.gxt.ui.client.core.Template;
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.BaseTreeModel;
 import com.extjs.gxt.ui.client.data.ModelData;
@@ -75,7 +77,9 @@ import com.extjs.gxt.ui.client.widget.Dialog;
 import com.extjs.gxt.ui.client.widget.Html;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
+import com.extjs.gxt.ui.client.widget.WidgetComponent;
 import com.extjs.gxt.ui.client.widget.button.Button;
+import com.extjs.gxt.ui.client.widget.form.AdapterField;
 import com.extjs.gxt.ui.client.widget.form.CheckBox;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
 import com.extjs.gxt.ui.client.widget.form.DateField;
@@ -92,8 +96,10 @@ import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Image;
 
 public class ItemFormPanel extends GradebookPanel {
 
@@ -109,6 +115,7 @@ public class ItemFormPanel extends GradebookPanel {
 	private FormPanel formPanel;
 	private FormBinding formBindings;
 
+	private AdapterField dropLowestAdapterField;
 	private LabelField directionsField;
 	private TextField<String> nameField;
 	private ComboBox<ModelData> categoryTypePicker, gradeTypePicker;
@@ -165,7 +172,7 @@ public class ItemFormPanel extends GradebookPanel {
 	private boolean alertDone;
 
 	private boolean hasUnprocessedSaveState;
-	
+		
 	public ItemFormPanel() {
 		super();
 		this.hasTreeItemDragAndDropMarker = false;
@@ -398,18 +405,38 @@ public class ItemFormPanel extends GradebookPanel {
 		pointsField.setAllowNegative(false); 
 		pointsField.setVisible(false);
 		formPanel.add(pointsField);
-
+		
+		// GRBK-1128
 		dropLowestField = new InlineEditNumberField();
 		dropLowestField.setEmptyText("0");
 		dropLowestField.setName(ItemKey.I_DRP_LWST.name());
-		dropLowestField.setFieldLabel(i18n.dropLowestFieldLabel());
 		dropLowestField.setAllowDecimals(false);
 		dropLowestField.setMinValue(Integer.valueOf(0)); 
 		dropLowestField.setPropertyEditorType(Integer.class);
 		dropLowestField.setVisible(false);
-		dropLowestField.setToolTip(i18n.dropLowestToolTip());
-		formPanel.add(dropLowestField);
-
+		dropLowestField.setWidth(210);
+		
+		Image helpIcon = new Image(resources.help());
+		helpIcon.setStyleName(resources.css().helpIcon());   	
+		WidgetComponent wc = new WidgetComponent(helpIcon);
+		
+		ToolTipConfig config = new ToolTipConfig();  
+	    config.setTitle(i18n.dropLowestHelpTextTitle());  
+		config.setCloseable(true);
+	    config.setMouseOffset(new int[] {0, 0});
+	    config.setTemplate(new Template(getTemplate(GWT.getHostPageBaseURL(), i18n.dropLowestHelpText())));  
+	    
+	    wc.setToolTip(config);
+	   		
+		HorizontalPanel hp = new HorizontalPanel();
+		hp.add(dropLowestField);
+		hp.add(wc);		
+		
+		dropLowestAdapterField = new AdapterField(hp);
+		dropLowestAdapterField.setFieldLabel(i18n.dropLowestFieldLabel());
+		formPanel.add(dropLowestAdapterField);
+		// end GRBK-1128
+		
 		dueDateField = new DateField();
 		dueDateField.setName(ItemKey.W_DUE.name());
 		dueDateField.setFieldLabel(i18n.dueDateFieldLabel());
@@ -629,7 +656,7 @@ public class ItemFormPanel extends GradebookPanel {
 				if (firstTimeInEditGradebook)
 				{
 					// The first time through, we want to set the messages to be proper for the types in the item model
-					// Later, if it changes, the selection listner on the combo box will take care of this. 
+					// Later, if it changes, the selection listener on the combo box will take care of this. 
 					informationMessageCategoryTypeInGradebookSetup.setHtml(getCategoryTypePickerInstString(itemModel.getCategoryType()));	
 					informationMessageGradeTypeInGradebookSetup.setHtml(getGradeTypePickerInstString(itemModel.getGradeType()));	
 	
@@ -652,7 +679,7 @@ public class ItemFormPanel extends GradebookPanel {
 					 */
 					
 					releasedField.setToolTip(i18n.itemFormPanelReleasedItemForCategoryEmptyMessage()); 
-					releasedField.setStyleName(resources.css().gbDisableCheckbox());
+					releasedField.addStyleName(resources.css().gbDisableCheckbox());
 					releasedField.setReadOnly(true); 
 				}
 			}
@@ -801,7 +828,7 @@ public class ItemFormPanel extends GradebookPanel {
 		 *  solution I came up with is to set the component read only, which disables clicking, and then set the style to make it look dead. 
 		 */
 		releasedField.setToolTip(i18n.itemFormPanelReleasedItemForCategoryEmptyMessage()); 
-		releasedField.setStyleName(resources.css().gbDisableCheckbox());
+		releasedField.addStyleName(resources.css().gbDisableCheckbox());
 		releasedField.setReadOnly(true); 
 
 		establishSelectedCategoryState(itemModel);
@@ -1052,6 +1079,7 @@ public class ItemFormPanel extends GradebookPanel {
 		initField(percentCourseGradeField, isAllowedToEdit && !isDelete, isEditable && isCategory && hasWeights);
 		initField(equallyWeightChildrenField, isAllowedToEdit && !isDelete, isEditable && isCategory && hasWeights && !isWeightByPoints);
 		initField(extraCreditField, !isParentExtraCreditCategory && isAllowedToEdit && !isDelete, isEditable && isNotGradebook); // GRBK-833
+		initField(dropLowestAdapterField, isAllowedToEdit && !isDelete, isDropLowestVisible);
 		initField(dropLowestField, isAllowedToEdit && !isDelete, isDropLowestVisible);
 		initField(dueDateField, isAllowedToEdit && !isDelete && !isExternal, isEditable && isItem);
 		initField(includedField, isAllowedToEdit && !isDelete, isEditable && isNotGradebook);
@@ -1361,12 +1389,14 @@ public class ItemFormPanel extends GradebookPanel {
 						initField(equallyWeightChildrenField, !isDelete, !isChecked && hasWeights);
 						isDropLowestVisible = checkIfDropLowestVisible(selectedItemModel, categoryType, true, true, isChecked, isExtraCredit);
 						initField(dropLowestField, !isDelete, isDropLowestVisible);
+						initField(dropLowestAdapterField, !isDelete, isDropLowestVisible);
 						break;
 					}
 				} else if (createItemType == ItemType.CATEGORY) {
 					initField(equallyWeightChildrenField, !isDelete, !isChecked && hasWeights);
 					isDropLowestVisible = checkIfDropLowestVisible(selectedItemModel, categoryType, true, true, isChecked, isExtraCredit);
 					initField(dropLowestField, !isDelete, isDropLowestVisible);
+					initField(dropLowestAdapterField, !isDelete, isDropLowestVisible);
 				}
 			}
 		};
@@ -1391,6 +1421,7 @@ public class ItemFormPanel extends GradebookPanel {
 
 						isDropLowestVisible = checkIfDropLowestVisible(selectedItemModel, categoryType, true, true, isWeightByPoints, isChecked);
 						initField(dropLowestField, !isDelete, isDropLowestVisible);
+						initField(dropLowestAdapterField, !isDelete, isDropLowestVisible);
 						initField(enforcePointWeightingField, !isDelete, hasWeights && !isChecked);
 						initField(equallyWeightChildrenField, !isDelete, hasWeights && !isWeightByPoints);
 						break;
@@ -1414,6 +1445,7 @@ public class ItemFormPanel extends GradebookPanel {
 
 					isDropLowestVisible = checkIfDropLowestVisible(selectedItemModel, categoryType, true, true, isWeightByPoints, isChecked);
 					initField(dropLowestField, !isDelete, isDropLowestVisible);
+					initField(dropLowestAdapterField, !isDelete, isDropLowestVisible);
 					initField(equallyWeightChildrenField, !isDelete, hasWeights && !isWeightByPoints);
 				}
 			}
@@ -1919,13 +1951,30 @@ public class ItemFormPanel extends GradebookPanel {
 		{
 			if (multiGradePanel.getPagingToolBar().getPageSize() > AppConstants.ITEM_MANIP_PERFORMANCE_TRIGGER)
 			{
-				if (!alertDone)
-				{
-					Window.alert(i18n.performanceItemFormPanelMsg());
-					alertDone = true; 
-				}
+				//GRBK-1147
+				Dialog dialog = new Dialog();
+				dialog.setHeading(i18n.performanceItemFormPanelTitle());
+				dialog.addText(i18n.performanceItemFormPanelMsg());
+				dialog.setButtons(Dialog.OK);
+				dialog.setButtonAlign(HorizontalAlignment.CENTER);
+				dialog.setMinWidth(450);
+				dialog.setModal(true);
+				dialog.setHideOnButtonClick(true);  
+				dialog.show();
 			}
 		}
 	}
+	
+	//GRBK-1128
+    private native String getTemplate(String base, String toolTipText) /*-{ 
+    var html = [ 
+    '<div>',
+    '<p>'+toolTipText,
+    '</p>',
+    '</div>' 
+    
+    ]; 
+    return html.join(""); 
+  }-*/; 
 
 }

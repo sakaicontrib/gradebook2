@@ -78,7 +78,6 @@ public interface I18nConstants extends Constants {
 	String doRecalculatePointsMessage();
 	String doRecalculatePointsTitle();
 	String dropLowestFieldLabel();
-	String dropLowestToolTip();
 	String dueDateEmptyText();
 	String dueDateFieldLabel();
 	String editCategoryHeading();
@@ -385,6 +384,7 @@ public interface I18nConstants extends Constants {
 	
 	String gradeScaleInstructions();
 	
+	String performanceItemFormPanelTitle(); 
 	String performanceItemFormPanelMsg(); 
 	
 	// GradebookApplication
@@ -478,5 +478,12 @@ public interface I18nConstants extends Constants {
 	 * @since 1.7.0
 	 */
 	String itemFormPanelReleasedItemForCategoryEmptyMessage();
+	
+	/*
+	 * GRBK-1128
+	 * @since 1.7.1
+	 */
+	String dropLowestHelpText();
+	String dropLowestHelpTextTitle();
 	
 }

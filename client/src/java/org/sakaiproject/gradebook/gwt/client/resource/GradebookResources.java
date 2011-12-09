@@ -49,6 +49,9 @@ public interface GradebookResources extends ClientBundle {
 	@Source("folder_edit.png")
 	ImageResource folder_edit();
 	
+	@Source("help.png")
+	ImageResource help();
+	
 	@Source("large_loading.gif")
 	ImageResource large_loading();
 	
