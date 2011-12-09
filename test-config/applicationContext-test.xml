@@ -2,6 +2,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 
 <beans>
+
 	<!-- Performance analysis using AOP -->
 	<!--import resource="performanceAnalysis.xml"/-->
 	
@@ -11,15 +12,39 @@
 	<import resource="db-test.xml" />
 	
 	<import resource="rest-test.xml" />
-		
+	
+	<bean id="org.sakaiproject.gradebook.gwt.server.WebAppToolServlet" class="org.sakaiproject.gradebook.gwt.server.WebAppToolServlet">
+		<property name="sessionManager" ref="org.sakaiproject.tool.api.SessionManager" />
+		<property name="rb" ref="gradebook2.I18N" />
+	</bean>
+	
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.BusinessLogic" class="org.sakaiproject.gradebook.gwt.sakai.BusinessLogicImpl">
 		<property name="gbService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService"/> 
+		<property name="i18n" ref="gradebook2.I18N"/>
 	</bean>
-			
+		
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.Gradebook2Authn" class="org.sakaiproject.gradebook.gwt.sakai.Gradebook2AuthnImpl">
+	</bean>
+	
+	 <bean id="org.sakaiproject.memory.api.MemoryService.cacheManager" 
+	    class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+  		<property name="configLocation">
+    		<value>classpath:org/sakaiproject/memory/api/ehcache.xml</value>
+  		</property>
+	</bean>
+	
+	
 	<bean id="org.sakaiproject.entity.api.EntityManager" class="org.sakaiproject.entity.impl.EntityManagerComponent" />
 	
+	<bean id="org.sakaiproject.memory.api.MemoryService" class="org.sakaiproject.gradebook.gwt.sakai.mock.MockMemoryService">
+		<property name="cacheManager" ref="org.sakaiproject.memory.api.MemoryService.cacheManager" />
+		<property name="serverConfigurationService" ref="org.sakaiproject.component.api.ServerConfigurationService" />
+	</bean>
+	
 	<bean id="org.sakaiproject.time.api.TimeService" class="org.sakaiproject.time.impl.BasicTimeService" 
-	    init-method="init" />
+	    init-method="init" >
+	    <property name="memoryService" ref="org.sakaiproject.memory.api.MemoryService" />
+	</bean>
 	    
 	<bean id="org.sakaiproject.gradebook.gwt.server.ImportExportUtility" class="org.sakaiproject.gradebook.gwt.server.ImportExportUtilityImpl" init-method="init">
 		<property name="gradeCalculations" ref="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"/>
@@ -53,6 +78,7 @@
 				<value>section</value>
 			</list>
 		</property>
+		<property name="i18n" ref="gradebook2.I18N" />
 	</bean>
 	
 	<bean id="org.sakaiproject.archive.api.ArchiveService" class="org.sakaiproject.gradebook.gwt.sakai.mock.ArchiveServiceMock">
@@ -67,6 +93,7 @@
 		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/>
 		<property name="commandClass" value="org.sakaiproject.gradebook.gwt.sakai.FileUploadBean"/>
 		<property name="importExportUtility" ref="org.sakaiproject.gradebook.gwt.server.ImportExportUtility"/>
+		<property name="i18n" ref="gradebook2.I18N"/>
 	</bean>
 	
 	
@@ -77,12 +104,10 @@
 	The sakai.properties file sets the "advisor@org.sakaiproject.gradebook.gwt.sakai.Gradebook2Service" property
 	which then is injected via Sakai's bean configuration mechanism
 	-->
-	<bean id="org.sakaiproject.gradebook.gwt.sakai.api.SampleInstitutionalAdvisor" 
-	class="org.sakaiproject.gradebook.gwt.sakai.SampleInstitutionalAdvisor">
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.api.SampleInstitutionalAdvisor" class="org.sakaiproject.gradebook.gwt.sakai.SampleInstitutionalAdvisor">
 		<property name="toolManager" ref="org.sakaiproject.tool.api.ToolManager"/>
 		<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>
 		<property name="finalGradeSubmissionPath" value="tmp"/>
-		<property name="editLock" value="TESTSITECONTEXT" />
 	</bean>
 	
 	
@@ -114,5 +139,8 @@
 
 	
 	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/>
-
+	
+	<bean id="org.sakaiproject.user.api.PreferencesService" class="org.sakaiproject.user.impl.DbPreferencesService" 
+	abstract="true" />
+	
 </beans>
