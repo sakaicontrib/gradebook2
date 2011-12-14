@@ -19,9 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.component.api.ServerConfigurationService;
@@ -40,6 +37,7 @@ import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.AuthModel;
 import org.sakaiproject.gradebook.gwt.client.model.Configuration;
+import org.sakaiproject.gradebook.gwt.client.model.FinalGradeSubmissionResult;
 import org.sakaiproject.gradebook.gwt.client.model.FinalGradeSubmissionStatus;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
 import org.sakaiproject.gradebook.gwt.client.model.GradeEvent;
@@ -2647,10 +2645,14 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		this.userService = userService;
 	}
 
-	public void submitFinalGrade(List<Map<Column, String>> studentDataList, String gradebookUid, HttpServletRequest request, HttpServletResponse response) {
+	public FinalGradeSubmissionResult submitFinalGrade(List<Map<Column, String>> studentDataList, String gradebookUid) {
+		
 		List<ActionRecord> logs = new ArrayList<ActionRecord>(studentDataList.size());
 		
+		FinalGradeSubmissionResult finalGradeSubmissionResult = null; 
+		
 		for (Map<Column, String> studentData : studentDataList) {
+			
 			String studentUid = studentData.get(Column.STUDENT_UID);
 			String finalGradeUserId = studentData.get(Column.FINAL_GRADE_USER_ID);
 			String exportUserId = studentData.get(Column.EXPORT_USER_ID);
@@ -2674,13 +2676,17 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		}
 		
 		try {
-			advisor.submitFinalGrade(studentDataList, gradebookUid, request, response);
+			
+			finalGradeSubmissionResult = advisor.submitFinalGrade(studentDataList, gradebookUid);
+			
 			for (ActionRecord log : logs) {
+			
 				gbService.storeActionRecord(log);
 			}
+			
 		} catch (Exception e) {
-			log.error("General Exception submitting grades for UID (" + gradebookUid + "): " + e.getMessage());
-			e.printStackTrace();
+			
+			log.error("General Exception submitting grades for UID (" + gradebookUid + "): " + e.getMessage(), e);
 		}
 
 		/*
@@ -2693,6 +2699,8 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		
 		// GRBK-971
 		postEvent("gradebook2.submitFinalGrades", gradebookUid, "count", String.valueOf(studentDataList.size()));
+		
+		return finalGradeSubmissionResult;
 	}
 
 	public Boolean updateConfiguration(Long gradebookId, String field, String value) {

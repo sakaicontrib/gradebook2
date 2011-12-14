@@ -17,37 +17,44 @@
  *
  **********************************************************************************/
 
-package org.sakaiproject.gradebook.gwt.server.model;
+package org.sakaiproject.gradebook.gwt.client.gxt.model;
 
-import org.sakaiproject.gradebook.gwt.client.model.FinalGradeSubmissionStatus;
-import org.sakaiproject.gradebook.gwt.client.model.key.FinalGradeSubmissionStatusKey;
+import org.sakaiproject.gradebook.gwt.client.model.FinalGradeSubmissionResult;
+import org.sakaiproject.gradebook.gwt.client.model.key.FinalGradeSubmissionResultKey;
 
-public class FinalGradeSubmissionStatusImpl extends BaseModel implements FinalGradeSubmissionStatus {
+public class FinalGradeSubmissionResultModel extends EntityModel implements FinalGradeSubmissionResult {
 
 	private static final long serialVersionUID = 1L;
 
+	public FinalGradeSubmissionResultModel() {
+		super();
+	}
+	
+	public FinalGradeSubmissionResultModel(EntityOverlay overlay) {
+		super(overlay);
+	}
+	
 	@Override
-	public String getDialogNotificationMessage() {
+	public int getStatus() {
 		
-		return get(FinalGradeSubmissionStatusKey.S_DIALOG.name());
+		return get(FinalGradeSubmissionResultKey.I_STATUS.name());
 	}
 
 	@Override
-	public void setDialogNotificationMessage(final String message) {
+	public void setStatus(int result) {
+
+		set(FinalGradeSubmissionResultKey.I_STATUS.name(), result);
+	}
+
+	@Override
+	public String getData() {
 		
-		set(FinalGradeSubmissionStatusKey.S_DIALOG.name(), message);
-
+		return get(FinalGradeSubmissionResultKey.S_DATA.name());
 	}
 
 	@Override
-	public String getBannerNotificationMessage() {
+	public void setData(String data) {
 
-		return get(FinalGradeSubmissionStatusKey.S_BANNER.name());
-	}
-
-	@Override
-	public void setBannerNotificationMessage(final String message) {
-
-		set(FinalGradeSubmissionStatusKey.S_BANNER.name(), message);
+		set(FinalGradeSubmissionResultKey.S_DATA.name(), data);
 	}
 }

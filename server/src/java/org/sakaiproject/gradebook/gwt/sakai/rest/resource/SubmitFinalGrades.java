@@ -5,31 +5,33 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Context;
+import javax.ws.rs.Produces;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.sakaiproject.gradebook.gwt.client.model.FinalGradeSubmissionResult;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.Roster;
 import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.sakai.InstitutionalAdvisor.Column;
+import org.sakaiproject.gradebook.gwt.server.model.FinalGradeSubmissionResultImpl;
 
 @Path("submit")
 public class SubmitFinalGrades extends Resource {
 	
 	private static Log log = LogFactory.getLog(SubmitFinalGrades.class);
 	
-	
-	@Path("{uid}")
-	public String submitFinalGrades(@PathParam("uid") String gradebookUid,
-			@Context HttpServletResponse response, @Context HttpServletRequest request) {
+	@GET
+	@Path("/{uid}")
+	@Produces("application/json")
+	public String submitFinalGrades(@PathParam("uid") String gradebookUid) {
 		
+		FinalGradeSubmissionResult finalGradeSubmissionResult = null;
 		List<Learner> rows = null;
 
 		try {
@@ -40,18 +42,19 @@ public class SubmitFinalGrades extends Resource {
 				rows = result.getLearnerPage();
 
 		} catch (Exception e) {
-			log.error("EXCEPTION: Wasn't able to get the list of Student Models");
+			
+			log.error("EXCEPTION: Wasn't able to get the list of Student Models", e);
 			// 500 Internal Server Error
-			response.setStatus(500);
-			e.printStackTrace();
-			return null;
+			finalGradeSubmissionResult = new FinalGradeSubmissionResultImpl();
+			finalGradeSubmissionResult.setStatus(500);
+			return toJson(finalGradeSubmissionResult);
 		}
 		
 		
 		/*
 		 * GRBK-853
 		 * 853 says that for final grade submission we submit an 'F' if the grade is '0' per the grading scale.  Since '0' is a valid grade 
-		 * per the hardcoded scale, but is not displayed to the user. 
+		 * per the hard coded scale, but is not displayed to the user. 
 		 * 
 		 */
 
@@ -84,9 +87,14 @@ public class SubmitFinalGrades extends Resource {
 			}
 		}
 
-		service.submitFinalGrade(studentDataList, gradebookUid, request, response);
+		finalGradeSubmissionResult = service.submitFinalGrade(studentDataList, gradebookUid);
 
-		return null;
+		if(null == finalGradeSubmissionResult) {
+			
+			finalGradeSubmissionResult = new FinalGradeSubmissionResultImpl();
+			finalGradeSubmissionResult.setStatus(500);
+		}
+		
+		return toJson(finalGradeSubmissionResult);
 	}
-
 }

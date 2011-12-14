@@ -19,35 +19,33 @@
 
 package org.sakaiproject.gradebook.gwt.server.model;
 
-import org.sakaiproject.gradebook.gwt.client.model.FinalGradeSubmissionStatus;
-import org.sakaiproject.gradebook.gwt.client.model.key.FinalGradeSubmissionStatusKey;
+import org.sakaiproject.gradebook.gwt.client.model.FinalGradeSubmissionResult;
 
-public class FinalGradeSubmissionStatusImpl extends BaseModel implements FinalGradeSubmissionStatus {
+public class FinalGradeSubmissionResultImpl implements FinalGradeSubmissionResult {
 
-	private static final long serialVersionUID = 1L;
+	int status = 0;
+	String data = null;
+	
+	public int getStatus() {
+
+		return status;
+	}
 
 	@Override
-	public String getDialogNotificationMessage() {
+	public void setStatus(int status) {
 		
-		return get(FinalGradeSubmissionStatusKey.S_DIALOG.name());
+		this.status = status;
 	}
 
 	@Override
-	public void setDialogNotificationMessage(final String message) {
+	public String getData() {
 		
-		set(FinalGradeSubmissionStatusKey.S_DIALOG.name(), message);
-
+		return data;
 	}
 
 	@Override
-	public String getBannerNotificationMessage() {
-
-		return get(FinalGradeSubmissionStatusKey.S_BANNER.name());
-	}
-
-	@Override
-	public void setBannerNotificationMessage(final String message) {
-
-		set(FinalGradeSubmissionStatusKey.S_BANNER.name(), message);
+	public void setData(String data) {
+		
+		this.data = data;
 	}
 }

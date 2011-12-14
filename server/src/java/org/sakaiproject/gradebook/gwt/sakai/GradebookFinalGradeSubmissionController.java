@@ -86,7 +86,7 @@ public class GradebookFinalGradeSubmissionController implements Controller {
 			}
 		}
 
-		service.submitFinalGrade(studentDataList, gradebookUid, request, response);
+		service.submitFinalGrade(studentDataList, gradebookUid);
 
 		return null;
 	}

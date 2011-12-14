@@ -23,9 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import org.sakaiproject.gradebook.gwt.client.model.FinalGradeSubmissionResult;
 import org.sakaiproject.gradebook.gwt.client.model.FinalGradeSubmissionStatus;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
 import org.sakaiproject.site.api.Group;
@@ -93,10 +91,10 @@ public interface InstitutionalAdvisor {
 	 * 
 	 * @param studentDataList : a list of Map objects containing all the student data properties
 	 * @param gradebookUid : a String identifier for this gradebook
-	 * @param request : the current HttpServletRequest 
-	 * @param response : the current HttpServletResponse
+	 *
+	 * @return finalGradeSubmissionResult
 	 */
-	public void submitFinalGrade(List<Map<Column,String>> studentDataList, String gradebookUid, HttpServletRequest request, HttpServletResponse response);
+	public FinalGradeSubmissionResult submitFinalGrade(List<Map<Column,String>> studentDataList, String gradebookUid);
 	
 		
 	/**

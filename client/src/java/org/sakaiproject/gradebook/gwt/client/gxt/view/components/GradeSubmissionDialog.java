@@ -31,6 +31,8 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityOverlay;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.FinalGradeSubmissionResultModel;
+import org.sakaiproject.gradebook.gwt.client.model.FinalGradeSubmissionResult;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.key.VerificationKey;
 
@@ -145,8 +147,8 @@ public class GradeSubmissionDialog extends Dialog {
 					AppConstants.SUBMISSION_SERVLET,
 					selectedGradebook.getGradebookUid());
 
-			restBuilder.setHeader("Content-Type", "text/html");
 			try {
+				
 				restBuilder.sendRequest("", new RequestCallback() {
 
 					public void onError(Request request, Throwable exception) {
@@ -159,10 +161,14 @@ public class GradeSubmissionDialog extends Dialog {
 					public void onResponseReceived(Request request, Response response) {
 
 						box.close();
+						
+						EntityOverlay overlay = JsonUtil.toOverlay(response.getText());
 
-						if (201 == response.getStatusCode()) {
+						FinalGradeSubmissionResult finalGradeSubmissionResult = new FinalGradeSubmissionResultModel(overlay);
 
-							String responseText = response.getText().trim();
+						if (201 == finalGradeSubmissionResult.getStatus()) {
+
+							String responseText = finalGradeSubmissionResult.getData().trim();
 
 							// FIXME : Find a GWT IOC solution, so that we can inject the desired implementation
 							// GRBK-417
@@ -172,14 +178,16 @@ public class GradeSubmissionDialog extends Dialog {
 							
 							Dispatcher.forwardEvent(GradebookEvents.ShowFinalGradeSubmissionStatus.getEventType());
 						}
-						else if(500 == response.getStatusCode()) {
+						else if(500 == finalGradeSubmissionResult.getStatus()) {
 
 							Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText5a(), true));
 						}
 					}
 
 				});
-			} catch (RequestException e) {
+			}
+			catch (RequestException e) {
+				
 				Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText6a(), true));
 				e.printStackTrace();
 			}

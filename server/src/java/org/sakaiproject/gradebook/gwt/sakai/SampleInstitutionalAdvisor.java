@@ -35,14 +35,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.exception.IdUnusedException;
+import org.sakaiproject.gradebook.gwt.client.model.FinalGradeSubmissionResult;
 import org.sakaiproject.gradebook.gwt.client.model.FinalGradeSubmissionStatus;
 import org.sakaiproject.gradebook.gwt.sakai.model.UserDereference;
+import org.sakaiproject.gradebook.gwt.server.model.FinalGradeSubmissionResultImpl;
 import org.sakaiproject.gradebook.gwt.server.model.FinalGradeSubmissionStatusImpl;
 import org.sakaiproject.site.api.Group;
 import org.sakaiproject.site.api.Site;
@@ -55,7 +54,6 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 
 	private static final Log log = LogFactory.getLog(SampleInstitutionalAdvisor.class);
 
-	private final String CONTENT_TYPE_TEXT_HTML_UTF8 = "text/html; charset=UTF-8";
 	private final String FILE_EXTENSION = ".csv";
 	private final String FILE_HEADER = "User Eid,Name,Site Title : Group Title,Grade";
 	
@@ -127,41 +125,25 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 		return false;
 	}
 
-	public void submitFinalGrade(List<Map<Column, String>> studentDataList, String gradebookUid, HttpServletRequest request, HttpServletResponse response) {
+	public FinalGradeSubmissionResult submitFinalGrade(List<Map<Column, String>> studentDataList, String gradebookUid) {
 
+		FinalGradeSubmissionResult finalGradeSubmissionResult = new FinalGradeSubmissionResultImpl();
+		
 		if (null == finalGradeSubmissionPath || "".equals(finalGradeSubmissionPath)) {
 			log.error("ERROR: Null and or empty test failed for finalGradeSubmissionPath");
 			// 500 Internal Server Error
-			response.setStatus(500);
-			return;
+			finalGradeSubmissionResult.setStatus(500);
+			return finalGradeSubmissionResult;
 		}
 
 		
 		// Test if the path has a trailing file separator
 		if(!finalGradeSubmissionPath.endsWith(File.separator)) {
+			
 			finalGradeSubmissionPath += File.separator;
 		}
 		
 		String outputPath = finalGradeSubmissionPath;
-		
-		boolean relativePath = false;
-		// if the path does not begin with a file separator, save relative to webroot
-		if(!finalGradeSubmissionPath.startsWith((File.separator))) {
-			////WARNING: This may not work in Weblogic J2EE containers: getRealPath() is optional
-			outputPath = request.getSession().getServletContext().getRealPath("/") + outputPath;
-			
-			
-			if (log.isDebugEnabled()) {
-				
-				log.debug("found relative path for gradefiles, setting relative to webroot: " + outputPath);
-			}
-			
-			relativePath = true;
-			
-			log.info("found relative path for gradefiles, setting relative to webroot: " + outputPath);
-		}
-
-		response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF8);
 
 		// Getting the siteId
 		String siteId = null;
@@ -171,44 +153,47 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 			Site site = siteService.getSite(toolManager.getCurrentPlacement().getContext());
 			siteId = site.getId();
 
-		} catch (IdUnusedException e2) {
-			log.error("EXCEPTION: Wasn't able to get the siteId");
+		} catch (IdUnusedException e) {
+			
+			log.error("EXCEPTION: Wasn't able to get the siteId", e);
 			// 500 Internal Server Error
-			response.setStatus(500);
-			e2.printStackTrace();
-			return;
+			finalGradeSubmissionResult.setStatus(500);
+			return finalGradeSubmissionResult;
 		}
 
 		try {
 
 			siteId = URLEncoder.encode(siteId, "utf-8");
 
-		} catch (UnsupportedEncodingException e1) {
-			log.error("EXCEPTION: Wasn't able to url encode the siteId");
+		} catch (UnsupportedEncodingException e) {
+			
+			log.error("EXCEPTION: Wasn't able to url encode the siteId", e);
 			// 500 Internal Server Error
-			response.setStatus(500);
-			e1.printStackTrace();
-			return;
+			finalGradeSubmissionResult.setStatus(500);
+			return finalGradeSubmissionResult;
 		}
 
 		// Test if path to final grade submission file exits
 		File finalGradesPath = new File(outputPath);
+		
 		if(!finalGradesPath.exists()) {
+			
 			try {
 
 				if(!finalGradesPath.mkdirs()) {
+					
 					log.error("Wasn't able to create final grade submission folder(s)");
 					// 500 Internal Server Error
-					response.setStatus(500);
-					return;
+					finalGradeSubmissionResult.setStatus(500);
+					return finalGradeSubmissionResult;
 				}
 			}
 			catch(SecurityException se) {
-				log.error("EXCEPTION: Wasn't able to create final grade submission folder(s)");
+				
+				log.error("EXCEPTION: Wasn't able to create final grade submission folder(s)", se);
 				// 500 Internal Server Error
-				response.setStatus(500);
-				se.printStackTrace();
-				return;
+				finalGradeSubmissionResult.setStatus(500);
+				return finalGradeSubmissionResult;
 			}
 		}
 
@@ -224,6 +209,7 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 		PrintWriter filePrintWriter = null;
 
 		try {
+			
 			if ((finalGradesFile.createNewFile() || (finalGradesFile.delete() && finalGradesFile.createNewFile())) && finalGradesFile.canWrite()) {
 
 				filePrintWriter = new PrintWriter(new BufferedWriter(new FileWriter(finalGradesFile)));
@@ -250,42 +236,24 @@ public class SampleInstitutionalAdvisor implements InstitutionalAdvisor {
 				
 				
 				// 201 Created
-				response.setStatus(201);
-
-				if(relativePath) {
-					PrintWriter w = response.getWriter();
-					StringBuffer next = new StringBuffer(request.getScheme());
-					next.append("://")
-					.append(request.getServerName())
-					.append(":")
-					.append(request.getLocalPort())
-					.append("/")
-					.append(finalGradeSubmissionPath) 
-					.append(siteId)
-					.append(FILE_EXTENSION);
-				
-	
-					log.info("returning URL: " + next);
-					w.append(next.toString());
-					w.close();
-				}
+				finalGradeSubmissionResult.setStatus(201);
 				
 			} else {
 				log.error("Wasn't able to create final grade submission file");
 				// 500 Internal Server Error
-				response.setStatus(500);
-				return;
+				finalGradeSubmissionResult.setStatus(500);
+				return finalGradeSubmissionResult;
 			}
 
 		} catch (IOException e) {
 
-			log.error("EXCEPTION: Wasn't able to access the final grade submission file");
+			log.error("EXCEPTION: Wasn't able to access the final grade submission file", e);
 			// 500 Internal Server Error
-			response.setStatus(500);
-			e.printStackTrace();
-			return;
+			finalGradeSubmissionResult.setStatus(500);
+			return finalGradeSubmissionResult;
 		}
-
+		
+		return finalGradeSubmissionResult;
 	}
 	
 	// API Impl
