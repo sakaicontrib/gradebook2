@@ -467,21 +467,16 @@ public interface I18nConstants extends Constants {
 	// GRBK-1056 - get scantron max points
 	String scantronMaxPointsFieldLabel();
 	
-	/*
-	 * @since 1.7.0
-	 */
 	String finalGradeSubmissionStatusDialogTitle();
 	String finalGradeSubmissionStatusErrorMessage();
 	
 	/*
 	 * GRBK-1083
-	 * @since 1.7.0
 	 */
 	String itemFormPanelReleasedItemForCategoryEmptyMessage();
 	
 	/*
 	 * GRBK-1128
-	 * @since 1.7.1
 	 */
 	String dropLowestHelpText();
 	String dropLowestHelpTextTitle();

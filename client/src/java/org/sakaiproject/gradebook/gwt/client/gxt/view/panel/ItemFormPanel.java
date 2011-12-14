@@ -96,7 +96,6 @@ import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.extjs.gxt.ui.client.widget.toolbar.FillToolItem;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
@@ -424,7 +423,7 @@ public class ItemFormPanel extends GradebookPanel {
 	    config.setTitle(i18n.dropLowestHelpTextTitle());  
 		config.setCloseable(true);
 	    config.setMouseOffset(new int[] {0, 0});
-	    config.setTemplate(new Template(getTemplate(GWT.getHostPageBaseURL(), i18n.dropLowestHelpText())));  
+	    config.setTemplate(new Template(getTemplate(i18n.dropLowestHelpText())));  
 	    
 	    wc.setToolTip(config);
 	   		
@@ -1951,22 +1950,27 @@ public class ItemFormPanel extends GradebookPanel {
 		{
 			if (multiGradePanel.getPagingToolBar().getPageSize() > AppConstants.ITEM_MANIP_PERFORMANCE_TRIGGER)
 			{
-				//GRBK-1147
-				Dialog dialog = new Dialog();
-				dialog.setHeading(i18n.performanceItemFormPanelTitle());
-				dialog.addText(i18n.performanceItemFormPanelMsg());
-				dialog.setButtons(Dialog.OK);
-				dialog.setButtonAlign(HorizontalAlignment.CENTER);
-				dialog.setMinWidth(450);
-				dialog.setModal(true);
-				dialog.setHideOnButtonClick(true);  
-				dialog.show();
+				if (!alertDone) 
+				{
+					//GRBK-1147
+					Dialog dialog = new Dialog();
+					dialog.setHeading(i18n.performanceItemFormPanelTitle());
+					dialog.addText(i18n.performanceItemFormPanelMsg());
+					dialog.setButtons(Dialog.OK);
+					dialog.setButtonAlign(HorizontalAlignment.CENTER);
+					dialog.setMinWidth(450);
+					dialog.setModal(true);
+					dialog.setHideOnButtonClick(true);  
+					dialog.show();
+					
+					alertDone = true; 
+				}
 			}
 		}
 	}
 	
 	//GRBK-1128
-    private native String getTemplate(String base, String toolTipText) /*-{ 
+    private native String getTemplate(String toolTipText) /*-{ 
     var html = [ 
     '<div>',
     '<p>'+toolTipText,
