@@ -35,13 +35,13 @@ public class FinalGradeSubmissionResultModel extends EntityModel implements Fina
 	}
 	
 	@Override
-	public int getStatus() {
+	public Integer getStatus() {
 		
 		return get(FinalGradeSubmissionResultKey.I_STATUS.name());
 	}
 
 	@Override
-	public void setStatus(int result) {
+	public void setStatus(Integer result) {
 
 		set(FinalGradeSubmissionResultKey.I_STATUS.name(), result);
 	}

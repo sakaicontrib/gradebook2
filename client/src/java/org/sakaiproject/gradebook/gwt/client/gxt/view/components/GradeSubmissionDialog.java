@@ -166,7 +166,7 @@ public class GradeSubmissionDialog extends Dialog {
 
 						FinalGradeSubmissionResult finalGradeSubmissionResult = new FinalGradeSubmissionResultModel(overlay);
 
-						if (201 == finalGradeSubmissionResult.getStatus()) {
+						if (Integer.valueOf(201).compareTo(finalGradeSubmissionResult.getStatus()) == 0) {
 
 							String responseText = finalGradeSubmissionResult.getData().trim();
 
@@ -178,7 +178,7 @@ public class GradeSubmissionDialog extends Dialog {
 							
 							Dispatcher.forwardEvent(GradebookEvents.ShowFinalGradeSubmissionStatus.getEventType());
 						}
-						else if(500 == finalGradeSubmissionResult.getStatus()) {
+						else if(Integer.valueOf(500).compareTo(finalGradeSubmissionResult.getStatus()) == 0) {
 
 							Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText5a(), true));
 						}

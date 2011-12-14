@@ -21,9 +21,9 @@ package org.sakaiproject.gradebook.gwt.client.model;
 
 public interface FinalGradeSubmissionResult {
 	
-	public int getStatus();
+	public Integer getStatus();
 	
-	public void setStatus(int status);
+	public void setStatus(Integer status);
 	
 	public String getData();
 	

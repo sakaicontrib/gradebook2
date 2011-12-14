@@ -23,16 +23,16 @@ import org.sakaiproject.gradebook.gwt.client.model.FinalGradeSubmissionResult;
 
 public class FinalGradeSubmissionResultImpl implements FinalGradeSubmissionResult {
 
-	int status = 0;
+	Integer status = Integer.valueOf(0);
 	String data = null;
 	
-	public int getStatus() {
+	public Integer getStatus() {
 
 		return status;
 	}
 
 	@Override
-	public void setStatus(int status) {
+	public void setStatus(Integer status) {
 		
 		this.status = status;
 	}
