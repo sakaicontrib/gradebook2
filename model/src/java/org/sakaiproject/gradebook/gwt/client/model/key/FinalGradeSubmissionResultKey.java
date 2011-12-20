@@ -3,7 +3,7 @@ package org.sakaiproject.gradebook.gwt.client.model.key;
 public enum FinalGradeSubmissionResultKey {
 	
 	I_STATUS("status"),
-	S_DATA("date");
+	S_DATA("data");
 	
 	private String property;
 	

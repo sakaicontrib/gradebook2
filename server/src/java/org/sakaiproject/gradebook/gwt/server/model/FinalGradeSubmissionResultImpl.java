@@ -20,32 +20,32 @@
 package org.sakaiproject.gradebook.gwt.server.model;
 
 import org.sakaiproject.gradebook.gwt.client.model.FinalGradeSubmissionResult;
+import org.sakaiproject.gradebook.gwt.client.model.key.FinalGradeSubmissionResultKey;
 
-public class FinalGradeSubmissionResultImpl implements FinalGradeSubmissionResult {
+public class FinalGradeSubmissionResultImpl extends BaseModel implements FinalGradeSubmissionResult {
 
-	Integer status = Integer.valueOf(0);
-	String data = null;
-	
+	private static final long serialVersionUID = 1L;
+
 	public Integer getStatus() {
 
-		return status;
+		return get(FinalGradeSubmissionResultKey.I_STATUS.name());
 	}
 
 	@Override
 	public void setStatus(Integer status) {
 		
-		this.status = status;
+		set(FinalGradeSubmissionResultKey.I_STATUS.name(), status);
 	}
 
 	@Override
 	public String getData() {
 		
-		return data;
+		return get(FinalGradeSubmissionResultKey.S_DATA.name());
 	}
 
 	@Override
 	public void setData(String data) {
 		
-		this.data = data;
+		set(FinalGradeSubmissionResultKey.S_DATA.name(), data);
 	}
 }

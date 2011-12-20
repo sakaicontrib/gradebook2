@@ -168,7 +168,7 @@ public class GradeSubmissionDialog extends Dialog {
 
 						if (Integer.valueOf(201).compareTo(finalGradeSubmissionResult.getStatus()) == 0) {
 
-							String responseText = finalGradeSubmissionResult.getData().trim();
+							String responseText = finalGradeSubmissionResult.getData();
 
 							// FIXME : Find a GWT IOC solution, so that we can inject the desired implementation
 							// GRBK-417
