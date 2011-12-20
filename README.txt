@@ -125,6 +125,12 @@ gb2.enable.final.grade.submission.check = [true, false]
 - default: false
 - For more details, please see https://jira.sakaiproject.org/browse/GRBK-824
 
+----------------
+* Since v1.8.x *
+----------------
+
+No new properties
+
 ===========
 * SUPPORT *
 ===========
