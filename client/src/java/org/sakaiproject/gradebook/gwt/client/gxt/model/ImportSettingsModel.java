@@ -3,25 +3,24 @@ package org.sakaiproject.gradebook.gwt.client.gxt.model;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
-import org.sakaiproject.gradebook.gwt.client.gxt.JsonUtil;
 import org.sakaiproject.gradebook.gwt.client.model.ImportSettings;
 import org.sakaiproject.gradebook.gwt.client.model.key.UploadKey;
 
-public class ImportSettingsImpl extends EntityModel implements ImportSettings {
+public class ImportSettingsModel extends EntityModel implements ImportSettings {
 
 	
 	private static final long serialVersionUID = 43434L;
 	private List<BusinessLogicCode> ignoredBusinessRules;
 
 	
-	public ImportSettingsImpl() {
+	public ImportSettingsModel() {
 		super();
 		
 		setScantron(false);
 		setForceOverwriteAssignments(false);
 	}
 	
-	public ImportSettingsImpl(EntityModel e) {
+	public ImportSettingsModel(EntityModel e) {
 		super(e.getOverlay());
 	}
 	

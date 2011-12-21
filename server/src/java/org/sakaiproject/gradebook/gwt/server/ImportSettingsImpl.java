@@ -10,19 +10,13 @@ import org.sakaiproject.gradebook.gwt.server.model.BaseModel;
 
 public class ImportSettingsImpl extends BaseModel implements ImportSettings {
 	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1334L;
 	private List<BusinessLogicCode> ignoredBusinessRules;
-	
-
 	
 	public ImportSettingsImpl () {
 		super();
 		setScantron(false);
 		setForceOverwriteAssignments(false);
-		
 	}
 	
 	

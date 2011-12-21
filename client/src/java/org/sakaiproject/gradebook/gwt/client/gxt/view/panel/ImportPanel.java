@@ -41,7 +41,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityOverlay;
-import org.sakaiproject.gradebook.gwt.client.gxt.model.ImportSettingsImpl;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.ImportSettingsModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.LearnerModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.UploadModel;
@@ -121,7 +121,7 @@ public class ImportPanel extends GradebookPanel {
 
 	private boolean isGradingFailure;
 	
-	private ImportSettings importSettings = new ImportSettingsImpl();
+	private ImportSettings importSettings = new ImportSettingsModel();
 	private Wizard wizard;
 	
 	private GradebookResources resources = Registry.get(AppConstants.RESOURCES);
