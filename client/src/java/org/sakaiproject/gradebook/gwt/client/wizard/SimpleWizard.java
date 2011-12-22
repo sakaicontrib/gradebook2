@@ -9,12 +9,10 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.api.Card;
 import org.sakaiproject.gradebook.gwt.client.api.Wizard;
 import org.sakaiproject.gradebook.gwt.client.gin.WidgetInjector;
-import org.sakaiproject.gradebook.gwt.client.wizard.WizardWindow;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Listener;
-import com.extjs.gxt.ui.client.widget.ModalPanel;
 import com.google.gwt.user.client.Element;
 
 

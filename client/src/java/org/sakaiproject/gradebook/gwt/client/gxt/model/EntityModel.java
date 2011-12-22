@@ -143,28 +143,6 @@ public class EntityModel extends BaseModel implements EntityOverlayOwner {
 		
 		return null;
 	}
-	
-	/*@Override
-	public boolean equals(Object obj) {
-		if (obj instanceof EntityModel) {
-			EntityModel other = (EntityModel) obj;
-
-			if (getIdentifier() == null || other.getIdentifier() == null)
-				return false;
-			
-			return getIdentifier().equals(other.getIdentifier());
-		}
-		return false;
-	}
-	
-	 @Override
-	 public int hashCode() {
-		 String id = getIdentifier();
-		 int hash = 0;
-		 if (id != null) 
-			 hash = id.hashCode();
-		 return hash;
-	 }*/
 	 
 	 public boolean isChildString(String property) {
 		 return isGradeType(property) || isCategoryType(property);
@@ -177,23 +155,6 @@ public class EntityModel extends BaseModel implements EntityOverlayOwner {
 	 public boolean isCategoryType(String property) {
 		 return false;
 	 }
-	 
-	 /*public boolean isDate(String property) {
-		 return false;
-	 }
-	 
-	 public boolean isLong(String property) {
-		 if (property == null)
-			 return false;
-		 
-		 return property.equals(GradeFormatKey.L_ID.name()) ||
-		 	property.equals(ConfigurationKey.L_GB_ID.name()) ||
-		 	property.equals(GradebookKey.L_GB_ID.name()) ||
-		 	property.equals(Key.ASSIGNMENT_ID.name()) ||
-		 	property.equals(PermissionKey.L_CTGRY_ID.name()) ||
-		 	property.equals(PermissionKey.L_GB_ID.name()) ||
-		 	property.equals(PermissionKey.L_ID.name());
-	 }*/
 	 
 	 public DateTimeFormat getDateTimeFormat(String property) {
 		 return DateTimeFormat.getMediumDateFormat();

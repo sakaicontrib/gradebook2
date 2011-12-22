@@ -79,16 +79,6 @@ public abstract class Action extends EntityModel {
 		setGradebookId(gradebookId);
 	}
 
-	/*@Override
-	public String getDisplayName() {
-		return getEntityName();
-	}
-
-	@Override
-	public String getIdentifier() {
-		return get(ActionKey.S_ID.name());
-	}*/
-
 	public void setIdentifier(String id) {
 		set(ActionKey.S_ID.name(), id);
 	}
@@ -202,5 +192,4 @@ public abstract class Action extends EntityModel {
 	public void setDescription(String description) {
 		set(ActionKey.S_DESC.name(), description);
 	}
-
 }

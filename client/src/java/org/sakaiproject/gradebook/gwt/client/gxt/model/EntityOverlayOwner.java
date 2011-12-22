@@ -12,10 +12,6 @@ public interface EntityOverlayOwner {
 	public boolean isGradeType(String property);
 	 
 	public boolean isCategoryType(String property);
-	 
-	//public boolean isDate(String property);
-	 
-	//public boolean isLong(String property);
 	
 	public DateTimeFormat getDateTimeFormat(String property);
 	

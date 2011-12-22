@@ -38,20 +38,6 @@ public class GradeScaleRecordModel extends EntityModel {
 		set(GradeMapKey.D_TO.name(), toRange);		
 	}
 	
-	/*@Override
-	public String getIdentifier() {
-		return get(GradeMapKey.S_ID.name());
-	}
-	
-	public void setIdentifier(String letterGrade) {
-		set(GradeMapKey.S_ID.name(), letterGrade);
-	}
-	
-	@Override
-	public String getDisplayName() {
-		return getLetterGrade();
-	}*/
-	
 	public String getLetterGrade() {
 		return get(GradeMapKey.S_LTR_GRD.name());
 	}

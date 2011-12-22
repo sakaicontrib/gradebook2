@@ -94,11 +94,4 @@ public class GradeEventModel extends EntityModel implements GradeEvent {
 	public void setDateGraded(String dateGraded) {
 		set(GradeEventKey.T_GRADED.name(), dateGraded);
 	}
-
-	/*@Override
-	public String getDisplayName() {
-		return getGrade();
-	}*/
-
-	
 }

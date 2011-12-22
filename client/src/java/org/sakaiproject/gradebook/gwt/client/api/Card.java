@@ -1,15 +1,12 @@
 package org.sakaiproject.gradebook.gwt.client.api;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
-
-import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.extjs.gxt.ui.client.widget.form.Validator;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Listener;
-import com.extjs.gxt.ui.client.widget.form.Field;
+import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 
 public interface Card {
@@ -40,6 +37,4 @@ public interface Card {
 	
 	public LayoutContainer getLayoutContainer();
 	
-	
-		
 }

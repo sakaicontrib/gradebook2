@@ -300,7 +300,6 @@ public class ImportPanel extends GradebookPanel {
 		} catch (Exception e) {
 			
 			Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(e));
-			// GWT.log("Caught exception: ", e);
 			
 		} finally {
 			

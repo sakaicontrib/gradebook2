@@ -24,8 +24,6 @@ public class ImportSettingsModel extends EntityModel implements ImportSettings {
 		super(e.getOverlay());
 	}
 	
-	
-	
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.gxt.model.ImportSetting#isScantron()
 	 */
@@ -75,5 +73,4 @@ public class ImportSettingsModel extends EntityModel implements ImportSettings {
 	public void setIgnoredBusinessRules(List<BusinessLogicCode> rules) {
 		this.ignoredBusinessRules = rules;
 	}
-	
 }

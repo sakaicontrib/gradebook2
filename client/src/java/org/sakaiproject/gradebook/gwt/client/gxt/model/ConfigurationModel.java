@@ -218,19 +218,5 @@ public class ConfigurationModel extends EntityModel implements Configuration {
 
 	public void setClassicNavigation(Boolean useClassicNavigation) {
 		set(ConfigurationKey.B_CLASSIC_NAV.name(), useClassicNavigation);
-	}
-
-	/*
-	@Override
-	public String getDisplayName() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getIdentifier() {
-		// TODO Auto-generated method stub
-		return null;
-	}*/
-		
+	}	
 }

@@ -106,8 +106,6 @@ public class GradebookApplication implements EntryPoint  {
 
 			public void onFailure(Request request, Throwable exception) {
 
-				// TODO: do we need to do retries like it used to in the
-				// deprecated getApplicationModel() method?
 				warnUser(exception);
 			}
 

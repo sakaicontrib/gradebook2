@@ -129,22 +129,6 @@ public class ImportExportView extends View {
 		}
 	}
 
-	private String getSectionsIndexed(String sectionUid, List<String> allSections) {
-		StringBuffer sb = new StringBuffer();
-		String[] parts = sectionUid.split(",");
-		if(parts.length>0) {
-			for(int i=0;i<parts.length;++i) {
-				if(allSections.contains(parts[i])) {
-					if(sb.length()>0) {
-						sb.append(",");
-					}
-					sb.append(allSections.indexOf(parts[i]));
-				}
-			}
-		}
-		return sb.toString();
-	}
-
 	public ContentPanel getImportDialog() {
 		if (importPanel == null) {
 			importPanel = new ImportPanel();

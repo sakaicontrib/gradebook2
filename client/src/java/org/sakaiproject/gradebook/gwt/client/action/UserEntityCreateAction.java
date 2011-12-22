@@ -71,10 +71,8 @@ public class UserEntityCreateAction<M extends BaseModel> extends UserEntityActio
 		StringBuilder text = new StringBuilder();
 
 		text.append(getActionType().getVerb()).append(" ")
-		.append(getEntityType());//.append(" '").append(getEntityName())
-		//.append("' ");
+		.append(getEntityType());
 
 		return text.toString();
 	}
-
 }

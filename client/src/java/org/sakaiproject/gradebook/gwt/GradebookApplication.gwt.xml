@@ -29,11 +29,4 @@
 	<!--  WizardCard CSS -->
 	<stylesheet src="ext.ux.wiz.css"/>
 
-	<!-- devel-mode-only 
-
-	<set-property name="user.agent" value="gecko" />
-  	<set-property name="locale" value="default" />
-
-	 end devel-mode-only -->
-
 </module>

@@ -35,7 +35,6 @@ import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.ModelData;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 public class GradebookModel extends EntityModel implements IsSerializable, Gradebook {
@@ -271,7 +270,6 @@ public class GradebookModel extends EntityModel implements IsSerializable, Grade
 			return null;
 		
 		for (ModelData m : children) {
-			//GWT.log("search in: " + m.get(ItemKey.S_ID.name()));
 			if (id.equals(m.get(ItemKey.S_ID.name()))) {
 				Item i = (Item) m;
 				return i;
@@ -283,8 +281,6 @@ public class GradebookModel extends EntityModel implements IsSerializable, Grade
 				
 		}
 		
-		
 		return null;
-		
 	}
 }

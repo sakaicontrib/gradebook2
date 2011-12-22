@@ -11,8 +11,8 @@ public class Viewport extends LayoutContainer {
 	  private boolean enableScroll;
 
 	  public Viewport() {
+		  
 	    monitorWindowResize = true;
-	    //baseStyle = "x-viewport";
 	  }
 
 	  /**

@@ -70,6 +70,8 @@ public class SearchFieldListBox extends Composite {
 	
 	public class SearchFieldData extends BaseModelData implements ModelData 
 	{
+		
+		private static final long serialVersionUID = 1L;
 		public static final String ID = "id";
 		public static final String LABEL = "label";
 		

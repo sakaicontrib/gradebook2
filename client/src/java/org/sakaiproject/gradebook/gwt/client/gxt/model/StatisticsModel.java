@@ -136,17 +136,6 @@ public class StatisticsModel extends EntityModel implements Comparable<Statistic
 		set(StatisticsKey.S_STD_DEV.name(), sd);
 	}
 
-	/*@Override
-	public String getDisplayName() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getIdentifier() {
-		return get(StatisticsKey.S_ID.name());
-	}*/
-
 	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.client.model.Statistics#getAssignmentId()
 	 */

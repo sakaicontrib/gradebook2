@@ -1,7 +1,5 @@
 package org.sakaiproject.gradebook.gwt.client.gin;
 
-
-
 import org.sakaiproject.gradebook.gwt.client.api.Card;
 import org.sakaiproject.gradebook.gwt.client.wizard.WizardCard;
 
@@ -10,12 +8,7 @@ import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.google.gwt.user.client.Element;
 
-
 public class SimpleCard extends WizardCard implements Card {
-
-	
-
-	
 
 	public SimpleCard(String cardtitle) {
 		super(cardtitle);
@@ -56,5 +49,4 @@ public class SimpleCard extends WizardCard implements Card {
 	public boolean isValid() {
 		return super.isValid();
 	}
-	
 }

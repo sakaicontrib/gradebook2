@@ -46,11 +46,12 @@ public class ClientExportAdvisorImpl implements ClientExportAdvisor {
 	public void handleServerResponse(String responseText) {
 		
 		if(null == responseText || "".equals(responseText)) {
+			
 			Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText8a(), true));
 		}
 		else {
+			
 			Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText4a(), true));
-			//Info.display(i18n.finalGradeSubmissionTitle(), i18n.finalGradeSubmissionMessageText4a());
 			showStatus(responseText, i18n.popupBlockerDetected());
 		}
 	}

@@ -209,7 +209,7 @@ public class ItemTreePanel extends GradebookPanel {
 					boolean isPercentGrade = property.equals(ItemKey.D_PCT_GRD.name());
 					boolean isPoints = property.equals(ItemKey.D_PNTS.name());
 
-					if (/* GRBK-678 isPercentGrade || */ isPoints && !isItem) {
+					if (isPoints && !isItem) {
 						boolean isNotCalculable = DataTypeConversionUtil.checkBoolean((Boolean)itemModel.get(ItemKey.B_ISNT_CALCBLE.name()));
 						
 						if (isNotCalculable) {
@@ -755,9 +755,6 @@ public class ItemTreePanel extends GradebookPanel {
 				cm.setHidden(4, configModel.isColumnHidden(AppConstants.ITEMTREE_HEADER, AppConstants.ITEMTREE_POINTS_WEIGHTS, false));
 				break;
 			}
-			
-//			// GRBK-932
-//			itemGrid.repaint();
 		}
 	}
 
