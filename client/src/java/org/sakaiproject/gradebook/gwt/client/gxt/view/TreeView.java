@@ -172,6 +172,9 @@ public class TreeView extends View {
 				// GRBK-833 : This event is dispatched in the ItemTreePanel drag and drop code section
 				formPanel.setTreeItemDragAndDropMarker(true);
 				break;
+			case LAYOUT_ITEM_TREE_PANEL:
+				treePanel.onLayout();
+				break;
 		}
 	}
 

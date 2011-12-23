@@ -671,6 +671,13 @@ public class ItemTreePanel extends GradebookPanel {
 
 	private boolean isLoadEventRun = false;
 
+	// GRBK-1119
+	public void onLayout() {
+
+		itemGrid.getView().layout();
+	}
+
+	
 	public void onRefreshGradebookItems(final Gradebook gradebookModel, TreeLoader<ItemModel> treeLoader, final ItemModel rootItem) {
 		if (itemLoadListener != null)
 			treeLoader.removeLoadListener(itemLoadListener);

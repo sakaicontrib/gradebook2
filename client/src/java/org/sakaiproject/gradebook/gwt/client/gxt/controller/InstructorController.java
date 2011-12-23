@@ -90,6 +90,7 @@ public class InstructorController extends Controller {
 		registerEventTypes(GradebookEvents.MaskMultiGradeGrid.getEventType());
 		registerEventTypes(GradebookEvents.UnmaskMultiGradeGrid.getEventType());
 		registerEventTypes(GradebookEvents.ShowFinalGradeSubmissionStatus.getEventType());
+		registerEventTypes(GradebookEvents.LayoutItemTreePanel.getEventType());
 	}
 	
 	@Override
@@ -279,6 +280,9 @@ public class InstructorController extends Controller {
 				break;
 			case SHOW_FINAL_GRADE_SUBMISSION_STATUS:
 				forwardToView(appView, event);
+				break;
+			case LAYOUT_ITEM_TREE_PANEL:
+				forwardToView(treeView, event);
 				break;
 		}
 	}

@@ -128,4 +128,5 @@ public class GradebookEvents {
 	public static final GradebookEvent MaskMultiGradeGrid			= registerEvent(EventKey.MASK_MULTI_GRADE_GRID);
 	public static final GradebookEvent UnmaskMultiGradeGrid			= registerEvent(EventKey.UNMASK_MULTI_GRADE_GRID);
 	public static final GradebookEvent ShowFinalGradeSubmissionStatus = registerEvent(EventKey.SHOW_FINAL_GRADE_SUBMISSION_STATUS);
+	public static final GradebookEvent LayoutItemTreePanel			= registerEvent(EventKey.LAYOUT_ITEM_TREE_PANEL);
 }

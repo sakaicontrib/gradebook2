@@ -179,6 +179,7 @@ public class ImportPanel extends GradebookPanel {
 			@Override
 			public void componentSelected(ButtonEvent ce) {
 				Dispatcher.forwardEvent(GradebookEvents.StopImport.getEventType());
+				Dispatcher.forwardEvent(GradebookEvents.LayoutItemTreePanel.getEventType());
 				fileUploadPanel.clear();
 			}
 		});
