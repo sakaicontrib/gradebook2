@@ -75,21 +75,6 @@
 				</dependency>
 				<dependency>
 					<groupId>org.sakaiproject.kernel</groupId>
-					<artifactId>sakai-kernel-impl</artifactId>
-					<version>${sakai.kernel.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.sakaiproject.common</groupId>
-					<artifactId>archive-api</artifactId>
-					<version>${sakai.common.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.sakaiproject.common</groupId>
-					<artifactId>archive-impl</artifactId>
-					<version>${sakai.common.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.sakaiproject.kernel</groupId>
 					<artifactId>sakai-component-manager</artifactId>
 				</dependency>
 				<dependency>
