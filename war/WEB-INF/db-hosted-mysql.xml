@@ -205,7 +205,7 @@
 
 		<!-- The connection password to be passed to our JDBC driver to establish a connection. -->
 		<property name="password">
-			<value>sakaiuser./</value>
+			<value>sakaipassword</value>
 		</property>
 
 		<!--  The initial number of connections that are created when the pool is started. -->
@@ -354,7 +354,7 @@
   				<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop> 
 
 				<prop key="hibernate.query.factory_class">org.hibernate.hql.ast.ASTQueryTranslatorFactory</prop>
-				<prop key="hibernate.show_sql">fale</prop>
+				<prop key="hibernate.show_sql">false</prop>
 				<prop key="hibernate.query.substitutions">
 					true 1, false 0, yes 'Y', no 'N'
 				</prop>
@@ -375,7 +375,7 @@
 
 		<!--  update the database schema when starting -->
 		<property name="schemaUpdate">
-			<value>true</value>
+			<value>false</value>
 		</property>
 
 	</bean>

@@ -9,7 +9,7 @@
 	<!-- Normal injection of services w/o performance analysis -->
 	<import resource="gbServices-hosted.xml" />
 	
-	<import resource="db-hosted-mysql.xml" />
+	<import resource="db-hosted.xml" />
 	
 	<import resource="rest-hosted.xml" />
 	
@@ -95,7 +95,6 @@
 		<property name="importExportUtility" ref="org.sakaiproject.gradebook.gwt.server.ImportExportUtility"/>
 		<property name="i18n" ref="gradebook2.I18N"/>
 	</bean>
-	
 	
 	
 	<!--
