@@ -61,26 +61,12 @@ public interface AppConstants {
 	// Component id constants
 	public static final String ID_ADD_CATEGORY_MENUITEM 	= "addCategoryMenuItem";
 	public static final String ID_ADD_ITEM_MENUITEM 		= "addItemMenuItem";
-	public static final String ID_ENABLE_POPUPS_MENUITEM	= "enablePopupsMenuItem";
-	public static final String ID_GT_POINTS_MENUITEM		= "gradeTypePointsMenuItem";
-	public static final String ID_GT_PERCENTAGES_MENUITEM	= "gradeTypePercentagesMenuItem";
-	public static final String ID_RG_YES_MENUITEM			= "releaseGradesYesMenuItem";
-	public static final String ID_RG_NO_MENUITEM			= "releaseGradesNoMenuItem";
 	public static final String ID_CT_EDIT_GRADEBOOK_MENUITEM = "contextEditGradebookMenuItem";
 	public static final String ID_CT_ADD_CATEGORY_MENUITEM  = "contextAddCategoryMenuItem";
 	public static final String ID_CT_ADD_ITEM_MENUITEM  	= "contextAddItemMenuItem";
 	public static final String ID_CT_DELETE_ITEM_MENUITEM  	= "contextDeleteItemMenuItem";
 	public static final String ID_CT_EDIT_CATEGORY_MENUITEM = "contextEditCategoryMenuItem";
 	public static final String ID_CT_EDIT_ITEM_MENUITEM  	= "contextEditItemMenuItem";
-	public static final String ID_CT_MOVE_DOWN_MENUITEM 	= "contextMoveDownMenuItem";
-	public static final String ID_CT_MOVE_UP_MENUITEM 		= "contextMoveUpMenuItem";
-	public static final String ID_HD_ADD_CATEGORY_MENUITEM	= "headerAddCategoryMenuItem";
-	public static final String ID_HD_ADD_ITEM_MENUITEM		= "headerAddItemMenuItem";
-	public static final String ID_HD_EDIT_ITEM_MENUITEM		= "headerEditItemMenuItem";
-	public static final String ID_HD_DELETE_ITEM_MENUITEM	= "headerDeleteItemMenuItem";
-	public static final String ID_HD_GRADESCALE_MENUITEM	= "headerGradeScaleMenuItem";
-	public static final String ID_HD_HIDE_ITEM_MENUITEM		= "headerHideItemMenuItem";
-	public static final String ID_HD_HISTORY_MENUITEM		= "headerHistoryMenuItem";
 	public static final String ID_CONFIRM_OK_BUTTON			= "confirmationOkButton";
 	public static final String ID_CONFIRM_CANCEL_BUTTON		= "confirmationCancelButton";
 

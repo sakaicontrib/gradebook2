@@ -39,7 +39,6 @@ import org.sakaiproject.gradebook.gwt.client.model.Configuration;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
-import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GroupType;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
@@ -57,15 +56,12 @@ import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
 import com.extjs.gxt.ui.client.widget.menu.CheckMenuItem;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
-import com.extjs.gxt.ui.client.widget.menu.SeparatorMenuItem;
-import com.google.gwt.user.client.ui.AbstractImagePrototype;
-
 
 // SAK-2394 
 
 public abstract class CustomGridView extends BaseCustomGridView {
 
-	private enum SelectionType { SORT_ASC, SORT_DESC, ADD_CATEGORY, ADD_ITEM, DELETE_ITEM, EDIT_ITEM, GRADE_SCALE, HIDE_ITEM, HISTORY, START_GRADER_PERMISSION_SETTINGS, STATISTICS };
+	private enum SelectionType { SORT_ASC, SORT_DESC, HISTORY, START_GRADER_PERMISSION_SETTINGS, STATISTICS };
 
 	private static final String selectionTypeField = "selectionType";
 
@@ -79,8 +75,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	
 	private DelayedTask[] syncTask;
 
-	private SelectionListener<MenuEvent> selectionListener; 
-	
+	private SelectionListener<MenuEvent> selectionListener;
 	
 	public CustomGridView(String gridId) {
 		this.gridId = gridId;
@@ -105,26 +100,8 @@ public abstract class CustomGridView extends BaseCustomGridView {
 						Integer colIndexInteger = item.getData("colIndex");
 						int colIndex = colIndexInteger == null ? -1 : colIndexInteger.intValue();
 						switch (selectionType) {
-							case ADD_CATEGORY:
-								Dispatcher.forwardEvent(GradebookEvents.NewCategory.getEventType());
-								break;
-							case ADD_ITEM:
-								Dispatcher.forwardEvent(GradebookEvents.NewItem.getEventType());
-								break;
-							case DELETE_ITEM:
-								Dispatcher.forwardEvent(GradebookEvents.SelectDeleteItem.getEventType(), cm.getDataIndex(colIndex));
-								break;
-							case EDIT_ITEM:
-								Dispatcher.forwardEvent(GradebookEvents.SelectItem.getEventType(), cm.getDataIndex(colIndex));
-								break;
-							case GRADE_SCALE:
-								Dispatcher.forwardEvent(GradebookEvents.ShowGradeScale.getEventType(), Boolean.TRUE);
-								break;
 							case START_GRADER_PERMISSION_SETTINGS:
 								Dispatcher.forwardEvent(GradebookEvents.StartGraderPermissionSettings.getEventType(), Boolean.TRUE);
-								break;
-							case HIDE_ITEM:
-								Dispatcher.forwardEvent(GradebookEvents.HideColumn.getEventType(), cm.getDataIndex(colIndex));
 								break;
 							case HISTORY:
 								Dispatcher.forwardEvent(GradebookEvents.ShowHistory.getEventType(), cm.getDataIndex(colIndex));
@@ -157,10 +134,6 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	@Override
 	protected Menu createContextMenu(int colIndex) {
 		I18nConstants i18n = Registry.get(AppConstants.I18N);
-		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
-
-		ColumnConfig config = cm.getColumn(colIndex);
-		boolean isStatic = isStaticColumn(config.getId()); 
 
 		Menu menu = new Menu();
 
@@ -183,85 +156,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 			item.setIconStyle("my-icon-desc");
 			item.addSelectionListener(selectionListener);
 			menu.add(item);
-
-			menu.add(new SeparatorMenuItem());
 		}
-
-		if (config.getId().equals(LearnerKey.S_CRS_GRD.name())) {
-			item = new AriaMenuItem();
-			item.setData(selectionTypeField, SelectionType.GRADE_SCALE);
-			item.setItemId(AppConstants.ID_HD_GRADESCALE_MENUITEM);
-			item.setData("colIndex", Integer.valueOf(colIndex));
-			item.setText(i18n.headerGradeScale());
-			item.setTitle(i18n.headerGradeScaleTitle());
-			item.setIcon(AbstractImagePrototype.create(resources.calculator_edit()));
-			item.addSelectionListener(selectionListener);
-
-			menu.add(item);
-		}
-
-		if (selectedGradebook.getGradebookItemModel().getCategoryType() != CategoryType.NO_CATEGORIES) {
-			item = new AriaMenuItem();
-			item.setData(selectionTypeField, SelectionType.ADD_CATEGORY);
-			item.setItemId(AppConstants.ID_HD_ADD_CATEGORY_MENUITEM);
-			item.setData("colIndex", Integer.valueOf(colIndex));
-			item.setText(i18n.headerAddCategory());
-			item.setTitle(i18n.headerAddCategoryTitle());
-			item.setIcon(AbstractImagePrototype.create(resources.folder_add()));
-			item.addSelectionListener(selectionListener);
-
-			menu.add(item);
-		}
-
-		item = new AriaMenuItem();
-		item.setData(selectionTypeField, SelectionType.ADD_ITEM);
-		item.setItemId(AppConstants.ID_HD_ADD_ITEM_MENUITEM);
-		item.setData("colIndex", Integer.valueOf(colIndex));
-		item.setText(i18n.headerAddItem());
-		item.setTitle(i18n.headerAddItemTitle());
-		item.setIcon(AbstractImagePrototype.create(resources.table_add()));
-		item.addSelectionListener(selectionListener);
-
-		menu.add(item);
-
-		if (! isStatic) {
-			item = new AriaMenuItem();
-			item.setData(selectionTypeField, SelectionType.EDIT_ITEM);
-			item.setItemId(AppConstants.ID_HD_EDIT_ITEM_MENUITEM);
-			item.setData("colIndex", Integer.valueOf(colIndex));
-			item.setText(i18n.headerEditItem());
-			item.setTitle(i18n.headerEditItemTitle());
-			item.setIcon(AbstractImagePrototype.create(resources.table_edit()));
-			item.addSelectionListener(selectionListener);
-
-			menu.add(item);
-
-			item = new AriaMenuItem();
-			item.setData(selectionTypeField, SelectionType.DELETE_ITEM);
-			item.setItemId(AppConstants.ID_HD_DELETE_ITEM_MENUITEM);
-			item.setData("colIndex", Integer.valueOf(colIndex));
-			item.setText(i18n.headerDeleteItem());
-			item.setTitle(i18n.headerDeleteItemTitle());
-			item.setIcon(AbstractImagePrototype.create(resources.table_delete()));
-			item.addSelectionListener(selectionListener);
-
-			menu.add(item);
-
-		}
-
-		menu.add(new SeparatorMenuItem());
-
-		item = new AriaMenuItem();
-		item.setData(selectionTypeField, SelectionType.HIDE_ITEM);
-		item.setItemId(AppConstants.ID_HD_HIDE_ITEM_MENUITEM);
-		item.setData("colIndex", Integer.valueOf(colIndex));
-		item.setText(i18n.headerHideItem());
-		item.setTitle(i18n.headerHideItemTitle());
-		item.setIconStyle("x-cols-icon");
-		item.addSelectionListener(selectionListener);
-
-		menu.add(item);
-
 
 		return menu;
 	}
@@ -460,19 +355,6 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	protected int getColumnIndex(LearnerKey key) {
 
 		return cm.getIndexById(key.name());
-	}
-
-
-	private boolean isStaticColumn(String id) {
-		Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
-		List<FixedColumn> columns = selectedGradebook.getColumns();
-
-		for (FixedColumn column : columns) {
-			if (column.getIdentifier().equals(id))
-				return true;
-		}
-
-		return false;
 	}
 
 //	public void setDisplayLoadMaskOnRender(boolean isDisplayLoadMaskOnRender) {
