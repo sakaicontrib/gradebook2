@@ -129,7 +129,14 @@ gb2.enable.final.grade.submission.check = [true, false]
 * Since v1.8.x *
 ----------------
 
-No new properties
+useCache@org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource = [true, false] 
+- default: false
+timeToLive@org.sakaiproject.gradebook.gwt.sakai.rest.resource.cache = [seconds] 
+- default: 30
+timeToIdel@org.sakaiproject.gradebook.gwt.sakai.rest.resource.cache = [seconds]
+- default: 30
+- For more details, please see https://jira.sakaiproject.org/browse/GRBK-1210
+
 
 ===========
 * SUPPORT *
