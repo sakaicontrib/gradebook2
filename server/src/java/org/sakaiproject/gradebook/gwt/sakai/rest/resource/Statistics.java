@@ -27,6 +27,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.Element;
+import net.sf.ehcache.config.CacheConfiguration;
+
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidDataException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.SecurityException;
@@ -35,17 +39,30 @@ import com.sun.jersey.core.util.Base64;
 
 @Path("statistics")
 public class Statistics extends Resource {
-
+	
 	@GET @Path("/instructor/{uid}/{id}/{sectionId}")
 	@Produces("application/json")
 	public String getInstructorStatistics(
 			@PathParam("uid") String gradebookUid,
 			@PathParam("id") Long gradebookId,
 			@PathParam("sectionId") String sectionId) throws SecurityException {
-
-		List<org.sakaiproject.gradebook.gwt.client.model.Statistics> list = 
-			service.getGraderStatistics(gradebookUid, gradebookId, Base64.base64Decode(sectionId));
-		return toJson(list, list.size());
+		
+		
+		String cacheKey = null;
+		String stats = null;
+		if(useCache != null && useCache.booleanValue()) {
+			cacheKey = getCacheKey("getInstructorStatistics",gradebookUid,gradebookId.toString(),sectionId);
+			stats = (String) cache.get(cacheKey).getObjectKey();
+		}
+		if(stats == null) {
+			List<org.sakaiproject.gradebook.gwt.client.model.Statistics> list = 
+				service.getGraderStatistics(gradebookUid, gradebookId, Base64.base64Decode(sectionId));
+			stats = toJson(list, list.size());
+			if(cacheKey != null) {
+				cache.put(new Element(cacheKey,stats));
+			}
+		}
+		return stats;
 	}
 
 	@GET @Path("/{uid}/{id}/{studentUid}")
@@ -55,9 +72,21 @@ public class Statistics extends Resource {
 			@PathParam("id") Long gradebookId,
 			@PathParam("studentUid") String studentUid) throws SecurityException {
 
-		List<org.sakaiproject.gradebook.gwt.client.model.Statistics> list = 
-			service.getLearnerStatistics(gradebookUid, gradebookId, Base64.base64Decode(studentUid));
-		return toJson(list, list.size());
+		String cacheKey = null;
+		String stats = null;
+		if(useCache != null && useCache.booleanValue()) {
+			cacheKey = getCacheKey("getStudentStatistics",gradebookUid,gradebookId.toString(),studentUid);
+			stats = (String) cache.get(cacheKey).getObjectKey();
+		}
+		if(stats == null) {
+			List<org.sakaiproject.gradebook.gwt.client.model.Statistics> list = 
+				service.getLearnerStatistics(gradebookUid, gradebookId, Base64.base64Decode(studentUid));
+			stats = toJson(list, list.size());
+			if(cacheKey != null) {
+				cache.put(new Element(cacheKey,stats));
+			}
+		}
+		return stats;
 	}
 
 	@GET @Path("/instructor/{uid}/{id}/{assignmentId}/{sectionId}")
@@ -68,8 +97,20 @@ public class Statistics extends Resource {
 			@PathParam("assignmentId") Long assignmentId,
 			@PathParam("sectionId") String sectionId) throws SecurityException, InvalidDataException {
 
-		int[][] gradeFrequencies = service.getGradeItemStatistics(gradebookUid, assignmentId, Base64.base64Decode(sectionId));
-		return toJson(gradeFrequencies);
+		String cacheKey = null;
+		String stats = null;
+		if(useCache != null && useCache.booleanValue()) {
+			cacheKey = getCacheKey("getStatisticsData",gradebookUid,gradebookId.toString(),sectionId);
+			stats = (String) cache.get(cacheKey).getObjectKey();
+		}
+		if(stats == null) {
+			int[][] gradeFrequencies = service.getGradeItemStatistics(gradebookUid, assignmentId, Base64.base64Decode(sectionId));
+			stats = toJson(gradeFrequencies);
+			if(cacheKey != null) {
+				cache.put(new Element(cacheKey,stats));
+			}
+		}
+		return stats;
 	}
 	
 	@GET @Path("/student/{uid}/{id}/{assignmentId}")
@@ -79,8 +120,20 @@ public class Statistics extends Resource {
 			@PathParam("id") Long gradebookId,
 			@PathParam("assignmentId") Long assignmentId) throws SecurityException, InvalidDataException {
 
-		int[][] gradeFrequencies = service.getGradeItemStatistics(gradebookUid, assignmentId, AppConstants.ALL);
-		return toJson(gradeFrequencies);
+		String cacheKey = null;
+		String stats = null;
+		if(useCache != null && useCache.booleanValue()) {
+			cacheKey = getCacheKey("getStudentStatisticsData",gradebookUid,gradebookId.toString(),assignmentId.toString());
+			stats = (String) cache.get(cacheKey).getObjectKey();
+		}
+		if(stats == null) {
+			int[][] gradeFrequencies = service.getGradeItemStatistics(gradebookUid, assignmentId, AppConstants.ALL);
+			stats = toJson(gradeFrequencies);
+			if(cacheKey != null) {
+				cache.put(new Element(cacheKey,stats));
+			}
+		}
+		return stats;
 	}
 	
 	@GET @Path("/course/{uid}")
@@ -88,8 +141,20 @@ public class Statistics extends Resource {
 	public String getCourseStatisticsData(
 			@PathParam("uid") String gradebookUid) throws SecurityException, InvalidDataException {
 
-		Map<String, Integer> gradeFrequencies = service.getCourseGradeStatistics(gradebookUid);
-		return toJson(gradeFrequencies);
+		String cacheKey = null;
+		String stats = null;
+		if(useCache != null && useCache.booleanValue()) {
+			cacheKey = getCacheKey("getCourseStatisticsData",gradebookUid, null, null);
+			stats = (String) cache.get(cacheKey).getObjectKey();
+		}
+		if(stats == null) {
+			Map<String, Integer> gradeFrequencies = service.getCourseGradeStatistics(gradebookUid);
+			stats = toJson(gradeFrequencies);
+			if(cacheKey != null) {
+				cache.put(new Element(cacheKey,stats));
+			}
+		}
+		return stats;
 	}
 	
 	@GET @Path("/course/{uid}/{sectionId}")
@@ -98,7 +163,20 @@ public class Statistics extends Resource {
 			@PathParam("uid") String gradebookUid,
 			@PathParam("sectionId") String sectionId) throws SecurityException, InvalidDataException {
 
-		Map<String, Integer> gradeFrequencies = service.getCourseGradeStatistics(gradebookUid, Base64.base64Decode(sectionId));
-		return toJson(gradeFrequencies);
+		String cacheKey = null;
+		String stats = null;
+		if(useCache != null && useCache.booleanValue()) {
+			cacheKey = getCacheKey("getCourseStatisticsData",gradebookUid, null, sectionId);
+			stats = (String) cache.get(cacheKey).getObjectKey();
+		}
+		if(stats == null) {
+			Map<String, Integer> gradeFrequencies = service.getCourseGradeStatistics(gradebookUid, Base64.base64Decode(sectionId));
+			stats = toJson(gradeFrequencies);
+			if(cacheKey != null) {
+				cache.put(new Element(cacheKey,stats));
+			}
+		}
+		return stats;
 	}
+	
 }

@@ -25,6 +25,8 @@
 		  abstract="true"
 		  class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource">
 		 <property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/> 
+		 <property name="cache" ref="org.sakaiproject.gradebook.gwt.sakai.rest.resource.cache" />
+		 <property name="useCache"><value>true</value></property>
 	</bean>
 	
 	<!-- DEPRECATED since v1.5.0 : See Startup REST EndPoint
@@ -78,9 +80,25 @@
 		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" >
 		  <property name="i18n"><ref bean="gradebook2.I18N"/></property>
 	 </bean>
+	 
+	<bean id="org.sakaiproject.gradebook.gwt.sakai.rest.resource.cache"
+		class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+		<property name="cacheManager">
+		    <ref bean="org.sakaiproject.memory.api.MemoryService.cacheManager"/>
+		</property>
+		<property name="cacheName">
+		    <value>org.sakaiproject.gradebook.gwt.sakai.rest.resource.cache</value>
+		</property>
+		<property name="maxElementsInMemory" value="100000" />
+		<property name="diskPersistent" value="false" />
+		<property name="eternal" value="false" />
+		<!-- default is to expire elements in cache after 30 seconds -->
+		<property name="timeToLive" value="30" />
+		<property name="timeToIdle" value="30" />
+    </bean>
 
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Statistics"
-		parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
+		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />
 
 	<bean class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Upload" 
 		  parent="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" />

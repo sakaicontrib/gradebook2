@@ -8,6 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.config.CacheConfiguration;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -20,6 +23,18 @@ public class Resource {
 	private static final Log log = LogFactory.getLog(Resource.class);
 	
 	protected Gradebook2ComponentService service;
+	
+	protected static final String DELIMITER = "@";
+	
+	protected Boolean useCache = Boolean.FALSE;
+	public void setUseCache(Boolean cacheStats) {
+		this.useCache = cacheStats;
+	}
+	
+	protected Cache cache;
+	public void setCache(Cache cache) {
+		this.cache = cache;
+	}
 	
 	protected <X> X fromJson(String text, Class<?> type) {
 		X o = null;
@@ -110,6 +125,38 @@ public class Resource {
 		this.service = service;
 	}
 	
+	/**
+	 * Access the Cache TTL
+	 * @return the TTL in seconds, or -1 if the cache is not in use.
+	 */
+	public long getCacheTimeToLive() {
+		long ttl = -1L;
+		if(useCache != null && useCache.booleanValue() && cache != null) {
+			CacheConfiguration config = cache.getCacheConfiguration();
+			ttl = config.getTimeToLiveSeconds();
+		}
+		return ttl;
+	}
+	
+	protected String getCacheKey(String identifier0, String identifier1,
+			String identifier2, String identifier3) {
+		StringBuilder buf = new StringBuilder();
+		buf.append(identifier0);
+		if(identifier1 != null) {
+			buf.append(DELIMITER);
+			buf.append(identifier1);
+		}
+		if(identifier2 != null) {
+			buf.append(DELIMITER);
+			buf.append(identifier2);
+		}
+		if(identifier3 != null) {
+			buf.append(DELIMITER);
+			buf.append(identifier3);
+		}
+		return buf.toString();
+	}
+
 	
 	// some static entry points
 	
