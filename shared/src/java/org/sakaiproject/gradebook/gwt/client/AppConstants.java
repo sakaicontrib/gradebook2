@@ -291,6 +291,7 @@ public interface AppConstants {
 	
 	public static final String INCLUDE_COMMENTS_FIELD = "include_comments";
 	public static final String SECTIONS_FIELD = "sections";
+	public static final String ACTUAL_SCORE_SUFFIX = "-OG";
 	
 	
 	

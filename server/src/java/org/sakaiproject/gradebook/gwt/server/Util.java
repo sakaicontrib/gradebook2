@@ -41,10 +41,6 @@ public class Util {
 	// Set via IoC
 	private static ResourceLoader i18n;
 	
-	private static DateFormat longDateFormat = new SimpleDateFormat(AppConstants.LONG_DATE);
-	private static DateFormat shortDateFormat = new SimpleDateFormat(AppConstants.SHORT_DATE);
-	private static DateFormat inputDateFormat = new SimpleDateFormat(AppConstants.INPUT_DATE);
-	
 	public static Double fromPercentString(String s) throws NumberFormatException {
 		if (s != null) {
 			s = s.replace("%", "");
@@ -101,12 +97,14 @@ public class Util {
 				
 				try {
 					
+					DateFormat longDateFormat = new SimpleDateFormat(AppConstants.LONG_DATE);
 					d = longDateFormat.parse((String) object);
 				}
 				catch (ParseException e) {
 					
 					try {
 						
+						DateFormat shortDateFormat = new SimpleDateFormat(AppConstants.SHORT_DATE);
 						d = shortDateFormat.parse((String) object);
 					}
 					catch (ParseException e1) {
@@ -114,6 +112,7 @@ public class Util {
 						// GRBK-961
 						try {
 							
+							DateFormat inputDateFormat = new SimpleDateFormat(AppConstants.INPUT_DATE);
 							d = inputDateFormat.parse((String) object);
 						}
 						catch (ParseException e2) {

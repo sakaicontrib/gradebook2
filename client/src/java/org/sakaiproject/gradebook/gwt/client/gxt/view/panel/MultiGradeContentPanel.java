@@ -55,7 +55,6 @@ import org.sakaiproject.gradebook.gwt.client.model.Configuration;
 import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
-import org.sakaiproject.gradebook.gwt.client.model.key.ItemKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.SectionKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
@@ -398,7 +397,7 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 		}
 		
 		// if this is null, the item has not been scored yet
-		Double og = (Double) record.get(assignIdStr + ItemKey.ACTUAL_SCORE_SUFFIX); 
+		Double og = (Double) record.get(assignIdStr + AppConstants.ACTUAL_SCORE_SUFFIX); 
 
 		Item i = selectedGradebook.getItemByIdentifier(""+assignId);
 		
@@ -1294,8 +1293,8 @@ public abstract class MultiGradeContentPanel extends GradebookPanel implements S
 			}
 			
 			// if this is null, the item has not been scored yet
-			Double og = (Double) r.get(assignIdStr + ItemKey.ACTUAL_SCORE_SUFFIX); 
-			return og == null || "".equals(og);
+			Double og = (Double) r.get(assignIdStr + AppConstants.ACTUAL_SCORE_SUFFIX); 
+			return og == null;
 	}
 
 	public void onRefreshCourseGrades(Configuration configModel, List<FixedColumn> staticColumns, ItemModel gradebookItemModel) {

@@ -1,10 +1,6 @@
 /**********************************************************************************
  *
- * $Id: CustomGridView.java 6638 2009-01-22 01:27:23Z jrenfro $
- *
- ***********************************************************************************
- *
- * Copyright (c) 2008, 2009 The Regents of the University of California
+ * Copyright (c) 2008, 2009, 2010, 2011, 2012 The Regents of the University of California
  *
  * Licensed under the
  * Educational Community License, Version 2.0 (the "License"); you may
@@ -40,7 +36,6 @@ import org.sakaiproject.gradebook.gwt.client.model.FixedColumn;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.GroupType;
-import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.SortDir;
@@ -57,21 +52,13 @@ import com.extjs.gxt.ui.client.widget.menu.CheckMenuItem;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 
-// SAK-2394 
-
 public abstract class CustomGridView extends BaseCustomGridView {
 
 	private enum SelectionType { SORT_ASC, SORT_DESC, HISTORY, START_GRADER_PERMISSION_SETTINGS, STATISTICS };
 
 	private static final String selectionTypeField = "selectionType";
 
-
-	// Member variables
-	// FindBugs
-//	private Gradebook gradebookModel = null;
-//	private boolean isDisplayLoadMaskOnRender = true;
 	private String gridId;
-	private GradebookResources resources;
 	
 	private DelayedTask[] syncTask;
 
@@ -79,15 +66,6 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	
 	public CustomGridView(String gridId) {
 		this.gridId = gridId;
-		this.resources = Registry.get(AppConstants.RESOURCES);
-		
-		/*addListener(Events.Refresh, new Listener() {
-
-			public void handleEvent(BaseEvent be) {
-				grid.el().unmask();
-			}
-
-		});*/
 
 		selectionListener = new SelectionListener<MenuEvent>() {
 
@@ -118,9 +96,7 @@ public abstract class CustomGridView extends BaseCustomGridView {
 						}
 					}
 				}
-
 			}
-
 		};
 	}
 	
@@ -160,31 +136,11 @@ public abstract class CustomGridView extends BaseCustomGridView {
 
 		return menu;
 	}
-	
-	/*@Override
-	protected void onBeforeDataChanged(StoreEvent se) {
-		if (grid.isLoadMask()) {
-			isDisplayLoadMaskOnRender = false;
-			grid.el().mask("Loading learner data...");
-		}
-	}*/
 
 	@Override
 	protected void onDataChanged(StoreEvent se) {
 		super.onDataChanged(se);
-		// Ensure that we set this to false in case the data changes before the grid view is rendered
-		//isDisplayLoadMaskOnRender = false;
 	}
-
-	/*@Override
-	protected void renderUI() {
-		super.renderUI();
-
-		if (isDisplayLoadMaskOnRender) {
-			grid.el().mask("Loading learner data...");
-			isDisplayLoadMaskOnRender = false;
-		}
-	}*/
 
 	// Helper method
 	protected void showAllColumns(Menu categoryMenu, List<FixedColumnModel> columns, boolean show) {
@@ -295,47 +251,6 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	}
 
 	// Helper method
-	// FindBugs
-//	protected ArrayList<ColumnGroup> getColumnGroups() {
-//
-//		LinkedHashMap<GroupType, ColumnGroup> columnGroupMap = new LinkedHashMap<GroupType, ColumnGroup>();
-//		List<FixedColumn> gradebookColumunConfigs = gradebookModel.getColumns();
-//
-//		for(FixedColumn gradebookColumnConfig : gradebookColumunConfigs) {
-//			LearnerKey key = LearnerKey.valueOf(gradebookColumnConfig.getKey());
-//			GroupType group = key.getGroup();
-//			ColumnGroup columnGroup = columnGroupMap.get(group);
-//
-//			if (columnGroup == null) {
-//				columnGroup = new ColumnGroup(group);
-//				columnGroupMap.put(group, columnGroup);
-//			}
-//			columnGroup.addColumn((FixedColumnModel)gradebookColumnConfig);
-//		}
-//
-//		return new ArrayList<ColumnGroup>(columnGroupMap.values());
-//	}
-
-	// Helper method
-	// FindBugs
-//	protected Collection<LearnerKey> getGroupColumnKeys(GroupType group) {
-//
-//		ArrayList<LearnerKey> groupColumnKeys = new ArrayList<LearnerKey>();
-//		List<FixedColumn> gradebookColumunConfigs = gradebookModel.getColumns();
-//
-//		for(FixedColumn gradebookColumnConfig : gradebookColumunConfigs) {
-//
-//			LearnerKey key = LearnerKey.valueOf(gradebookColumnConfig.getKey());
-//
-//			if(group.equals(key.getGroup())) {
-//				groupColumnKeys.add(key);
-//			}
-//		}
-//
-//		return groupColumnKeys;
-//	}
-
-	// Helper method
 	protected Collection<LearnerKey> getGroupColumnKeys(ColumnGroup columnGroup) {
 
 		ArrayList<LearnerKey> groupColumnKeys = new ArrayList<LearnerKey>();
@@ -355,10 +270,5 @@ public abstract class CustomGridView extends BaseCustomGridView {
 	protected int getColumnIndex(LearnerKey key) {
 
 		return cm.getIndexById(key.name());
-	}
-
-//	public void setDisplayLoadMaskOnRender(boolean isDisplayLoadMaskOnRender) {
-//		this.isDisplayLoadMaskOnRender = isDisplayLoadMaskOnRender;
-//	}
-	
+	}	
 }

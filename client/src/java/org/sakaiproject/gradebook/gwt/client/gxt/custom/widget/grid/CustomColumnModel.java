@@ -1,10 +1,6 @@
 /**********************************************************************************
 *
-* $Id:$
-*
-***********************************************************************************
-*
-* Copyright (c) 2008, 2009 The Regents of the University of California
+* Copyright (c) 2008, 2009, 2010, 2011, 2012 The Regents of the University of California
 *
 * Licensed under the
 * Educational Community License, Version 2.0 (the "License"); you may
@@ -20,6 +16,7 @@
 * permissions and limitations under the License.
 *
 **********************************************************************************/
+
 package org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid;
 
 import java.util.HashMap;
@@ -50,11 +47,7 @@ public class CustomColumnModel extends ColumnModel {
 			if (val != null)
 				return val.intValue();
 		}
-		/*for (int i = 0, len = configs.size(); i < len; i++) {
-			if (configs.get(i).getDataIndex().equals(dataIndex)) {
-				return i;
-			}
-		}*/
+		
 		return -1;
 	}
 	

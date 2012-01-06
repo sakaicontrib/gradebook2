@@ -1,3 +1,22 @@
+/**********************************************************************************
+*
+* Copyright (c) 2008, 2009, 2010, 2011, 2012 The Regents of the University of California
+*
+* Licensed under the
+* Educational Community License, Version 2.0 (the "License"); you may
+* not use this file except in compliance with the License. You may
+* obtain a copy of the License at
+* 
+* http://www.osedu.org/licenses/ECL-2.0
+* 
+* Unless required by applicable law or agreed to in writing,
+* software distributed under the License is distributed on an "AS IS"
+* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+* or implied. See the License for the specific language governing
+* permissions and limitations under the License.
+*
+**********************************************************************************/
+
 package org.sakaiproject.gradebook.gwt.client.gxt.custom.widget.grid;
 
 import java.util.Date;
@@ -119,25 +138,10 @@ public class ItemTreeGridView extends TreeGridView {
 	protected String getRenderedValue(ColumnData data, int rowIndex,
 			int colIndex, ModelData m, String property) {
 		GridCellRenderer<ModelData> r = cm.getRenderer(colIndex);
-		//List<Widget> rowMap = widgetList.get(rowIndex);
-		//rowMap.add(colIndex, null);
 		if (r != null) {
 			Object o = r.render(ds.getAt(rowIndex), property, data, rowIndex,
 					colIndex, ds, grid);
 			if (o instanceof Widget || r instanceof WidgetTreeGridCellRenderer) {
-				//Widget w = null;
-				//if (o instanceof Widget) {
-				//	w = (Widget) o;
-				//} else {
-				//	w = ((WidgetTreeGridCellRenderer) r).getWidget(ds
-				//			.getAt(rowIndex), property, data, rowIndex,
-				//			colIndex, ds, grid);
-				//}
-
-				//rowMap.set(colIndex, w);
-				//if (colIndex == treeColumn) {
-				//	return o.toString();
-				//}
 				return "";
 			} else {
 				if (o == null)

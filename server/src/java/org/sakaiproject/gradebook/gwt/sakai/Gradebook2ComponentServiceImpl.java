@@ -3712,9 +3712,9 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 				Double value = null;
 				if (gradeRecord != null && gradeRecord.getPointsEarned() != null) {
 					value = gradeRecord.getPointsEarned();
-					cellMap.put(id + ItemKey.ACTUAL_SCORE_SUFFIX, value); //GRBK-992 - client has to know that this was scored ....
+					cellMap.put(id + AppConstants.ACTUAL_SCORE_SUFFIX, value); //GRBK-992 - client has to know that this was scored ....
 				} else {
-					cellMap.remove(id + ItemKey.ACTUAL_SCORE_SUFFIX); // ... or not
+					cellMap.remove(id + AppConstants.ACTUAL_SCORE_SUFFIX); // ... or not
 					if (isCountNullsAsZeros) {
 						value = Double.valueOf(0);
 					}
@@ -3730,13 +3730,13 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			case GradebookService.GRADE_TYPE_PERCENTAGE:
 				percentage = null;
 				if (gradeRecord == null) {
-					cellMap.remove(id + ItemKey.ACTUAL_SCORE_SUFFIX);
+					cellMap.remove(id + AppConstants.ACTUAL_SCORE_SUFFIX);
 				} else {
 					percentage = gradeCalculations.getPointsEarnedAsPercent((Assignment) gradeRecord.getGradableObject(), gradeRecord);
 					if (null == percentage) {
-						cellMap.remove(id + ItemKey.ACTUAL_SCORE_SUFFIX);
+						cellMap.remove(id + AppConstants.ACTUAL_SCORE_SUFFIX);
 					} else {
-						cellMap.put(id + ItemKey.ACTUAL_SCORE_SUFFIX, percentage);
+						cellMap.put(id + AppConstants.ACTUAL_SCORE_SUFFIX, percentage);
 					}
 				}
 				Double percentageDouble = percentage != null ? Double.valueOf(percentage.doubleValue()) : (isCountNullsAsZeros ? Double.valueOf(0) : null);
@@ -3745,13 +3745,13 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			case GradebookService.GRADE_TYPE_LETTER:
 				percentage = null;
 				if (gradeRecord == null) {
-					cellMap.remove(id + ItemKey.ACTUAL_SCORE_SUFFIX);
+					cellMap.remove(id + AppConstants.ACTUAL_SCORE_SUFFIX);
 				} else {
 					percentage = gradeCalculations.getPointsEarnedAsPercent((Assignment) gradeRecord.getGradableObject(), gradeRecord);
 					if (null == percentage) {
-						cellMap.remove(id + ItemKey.ACTUAL_SCORE_SUFFIX);
+						cellMap.remove(id + AppConstants.ACTUAL_SCORE_SUFFIX);
 					} else {
-						cellMap.put(id + ItemKey.ACTUAL_SCORE_SUFFIX, percentage);
+						cellMap.put(id + AppConstants.ACTUAL_SCORE_SUFFIX, percentage);
 					}
 				}
 				String letterGrade = percentage != null ? gradeCalculations.convertPercentageToLetterGrade(percentage) : (isCountNullsAsZeros ? "0" : "");

@@ -1,10 +1,6 @@
 /**********************************************************************************
  *
- * $Id:$
- *
- ***********************************************************************************
- *
- * Copyright (c) 2008, 2009 The Regents of the University of California
+ * Copyright (c) 2008, 2009, 2010, 2011, 2012 The Regents of the University of California
  *
  * Licensed under the
  * Educational Community License, Version 2.0 (the "License"); you may
@@ -168,30 +164,4 @@ public class BaseCustomGridView extends GridView {
 
 		return buf.toString();
 	}
-	
-	/*protected String getRenderedValue(ColumnData data, int rowIndex,
-			int colIndex, ModelData m, String property) {
-		GridCellRenderer r = cm.getRenderer(colIndex);
-		if (r != null) {
-			return (String) r.render(ds.getAt(rowIndex), property, data, rowIndex,
-					colIndex, ds, grid);
-		}
-		Object val = m.get(property);
-
-		ColumnConfig c = cm.getColumn(colIndex);
-
-		if (val != null && c.getNumberFormat() != null && val instanceof Number) {
-			Number n = (Number) val;
-			NumberFormat nf = cm.getColumn(colIndex).getNumberFormat();
-			val = nf.format(n.doubleValue());
-		} else if (val != null && c.getDateTimeFormat() != null) {
-			DateTimeFormat dtf = c.getDateTimeFormat();
-			val = dtf.format((Date) val);
-		}
-
-		if (val != null) {
-			return val.toString();
-		}
-		return "";
-	}*/
 }
