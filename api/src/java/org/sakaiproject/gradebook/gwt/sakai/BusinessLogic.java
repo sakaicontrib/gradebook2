@@ -48,6 +48,10 @@ public interface BusinessLogic {
 
 	public void applyNoDuplicateItemNamesWithinCategoryRule(Long categoryId, String name, Long assignmentId, List<Assignment> assignments) throws BusinessRuleException;
 
+	public void applyNoImportedDuplicateItemNamesRule(Long gradebookId, String name, Long assignmentId, List<Assignment> assignments) throws BusinessRuleException;
+
+	public void applyNoImportedDuplicateItemNamesWithinCategoryRule(Long categoryId, String name, Long assignmentId, List<Assignment> assignments) throws BusinessRuleException;
+
 	public void applyNoZeroPointItemsRule(Double itemPoints) throws BusinessRuleException;
 	
 	public void applyMustIncludeCategoryRule(Long categoryId) throws BusinessRuleException;

@@ -2895,7 +2895,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			Double newAssignmentWeight = item.getPercentCategory();
 			Double oldAssignmentWeight = assignment.getAssignmentWeighting();
 
-			// Lets make sure the weight is ok. 
+			// Lets make sure the weight is okay. 
 			businessLogic.applyWeightTooSmallOrTooLarge(newAssignmentWeight); 
 			
 			Integer newItemOrder = item.getItemOrder();
@@ -2944,8 +2944,14 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 				}
 
 				// Business rule #5
-				if(!ignoredRules.contains(BusinessLogicCode.NoDuplicateItemNamesWithinCategoryRule)) {
-					businessLogic.applyNoDuplicateItemNamesWithinCategoryRule(item.getCategoryId(), item.getName(), assignment.getId(), assignments);
+				if (isImport) {
+					if(!ignoredRules.contains(BusinessLogicCode.NoImportedDuplicateItemNamesWithinCategoryRule)) {
+						businessLogic.applyNoImportedDuplicateItemNamesWithinCategoryRule(item.getCategoryId(), item.getName(), assignment.getId(), assignments);
+					}
+				} else {
+					if(!ignoredRules.contains(BusinessLogicCode.NoDuplicateItemNamesWithinCategoryRule)) {
+						businessLogic.applyNoDuplicateItemNamesWithinCategoryRule(item.getCategoryId(), item.getName(), assignment.getId(), assignments);
+					}
 				}
 
 				// Business rule #6
@@ -2968,8 +2974,14 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 				assignments = gbService.getAssignments(gradebook.getId());
 
 				// Business rule #3
-				if(!ignoredRules.contains(BusinessLogicCode.NoDuplicateItemNamesRule)) {
-					businessLogic.applyNoDuplicateItemNamesRule(gradebook.getId(), item.getName(), assignment.getId(), assignments);
+				if (isImport) {
+					if(!ignoredRules.contains(BusinessLogicCode.NoImportedDuplicateItemNamesRule)) {
+						businessLogic.applyNoImportedDuplicateItemNamesRule(gradebook.getId(), item.getName(), assignment.getId(), assignments);
+					}
+				} else {
+					if(!ignoredRules.contains(BusinessLogicCode.NoDuplicateItemNamesRule)) {
+						businessLogic.applyNoDuplicateItemNamesRule(gradebook.getId(), item.getName(), assignment.getId(), assignments);
+					}
 				}
 
 				// Business rule #4
@@ -6656,7 +6668,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 	private void clearDropLowestFromCategories(Gradebook gradebook) {
 		/* 
 		 * This is done in this way on the off chance we have a category in a no cats
-		 * gradebook... After all the GB may have categories from yesteryear.. 
+		 * gradebook... After all the GB may have categories from yesteryear.
 		 * 
 		 * So on any transition, we will go thru all cats, even 
 		 * deleted ones and eliminate their drop lowest. 

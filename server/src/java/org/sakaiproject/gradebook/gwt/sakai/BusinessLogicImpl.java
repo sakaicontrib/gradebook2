@@ -116,6 +116,26 @@ public class BusinessLogicImpl implements BusinessLogic {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.sakai.BusinessLogic#applyNoImportedDuplicateItemNamesRule(java.lang.Long, java.lang.String, java.lang.Long, java.util.List)
+	 */
+	public void applyNoImportedDuplicateItemNamesRule(Long gradebookId, String name, Long assignmentId, List<Assignment> assignments) throws BusinessRuleException {
+		if (assignments != null) {
+			for (Assignment a : assignments) {
+				if (!a.isRemoved() && a.getName() != null && name != null && a.getName().trim().equalsIgnoreCase(name.trim())) {
+					if (assignmentId != null && assignmentId.equals(a.getId()))
+						continue;
+
+					StringBuilder builder = new StringBuilder();
+					builder.append("There is already an existing item called \"").append(name).append("\" ").append("in this gradebook. ")
+					.append("Please enter a different name for the grade item.");
+
+					throw new BusinessRuleException(builder.toString(), BusinessLogicCode.NoImportedDuplicateItemNamesRule);
+				}
+			}
+		}
+	}
+
+	/* (non-Javadoc)
 	 * @see org.sakaiproject.gradebook.gwt.sakai.BusinessLogic#applyNoDuplicateItemNamesWithinCategoryRule(java.lang.Long, java.lang.String, java.lang.Long, java.util.List)
 	 */
 	public void applyNoDuplicateItemNamesWithinCategoryRule(Long categoryId, String name, Long assignmentId, List<Assignment> assignments) throws BusinessRuleException {
@@ -130,6 +150,26 @@ public class BusinessLogicImpl implements BusinessLogic {
 					.append("Please enter a different name for the grade item.");
 
 					throw new BusinessRuleException(builder.toString(), BusinessLogicCode.NoDuplicateItemNamesWithinCategoryRule);
+				}
+			}
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.sakaiproject.gradebook.gwt.sakai.BusinessLogic#applyNoImportedDuplicateItemNamesWithinCategoryRule(java.lang.Long, java.lang.String, java.lang.Long, java.util.List)
+	 */
+	public void applyNoImportedDuplicateItemNamesWithinCategoryRule(Long categoryId, String name, Long assignmentId, List<Assignment> assignments) throws BusinessRuleException {
+		if (assignments != null) {
+			for (Assignment a : assignments) {
+				if (!a.isRemoved() && a.getName().trim().equalsIgnoreCase(name.trim())) {
+					if (assignmentId != null && assignmentId.equals(a.getId()))
+						continue;
+
+					StringBuilder builder = new StringBuilder();
+					builder.append("There is already an existing item called \"").append(name).append("\" ").append("in this category. ")
+					.append("Please enter a different name for the grade item.");
+
+					throw new BusinessRuleException(builder.toString(), BusinessLogicCode.NoImportedDuplicateItemNamesWithinCategoryRule);
 				}
 			}
 		}

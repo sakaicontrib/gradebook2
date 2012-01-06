@@ -51,8 +51,8 @@ public class Upload extends Resource {
 		
 		
 		if(force) {
-			ignoredBusinessRules.add(BusinessLogicCode.NoDuplicateItemNamesWithinCategoryRule);
-			ignoredBusinessRules.add(BusinessLogicCode.NoDuplicateItemNamesRule);
+			ignoredBusinessRules.add(BusinessLogicCode.NoImportedDuplicateItemNamesWithinCategoryRule);
+			ignoredBusinessRules.add(BusinessLogicCode.NoImportedDuplicateItemNamesRule);
 		} 
 		if(hasSantronPoints) {
 			String value = maxPoints.split("/")[2];
