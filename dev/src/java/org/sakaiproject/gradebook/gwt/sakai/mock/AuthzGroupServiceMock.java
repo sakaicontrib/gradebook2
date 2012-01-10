@@ -217,12 +217,6 @@ public class AuthzGroupServiceMock extends HibernateDaoSupport implements AuthzG
 
 	}
 
-	public String archive(String siteId, Document doc, Stack stack,
-			String archivePath, List attachments) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	public Entity getEntity(Reference ref) {
 		// TODO Auto-generated method stub
 		return null;
@@ -258,13 +252,6 @@ public class AuthzGroupServiceMock extends HibernateDaoSupport implements AuthzG
 		return null;
 	}
 
-	public String merge(String siteId, Element root, String archivePath,
-			String fromSiteId, Map attachmentNames, Map userIdTrans,
-			Set userListAllowImport) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	public boolean parseEntityReference(String reference, Reference ref) {
 		// TODO Auto-generated method stub
 		return false;
@@ -276,6 +263,23 @@ public class AuthzGroupServiceMock extends HibernateDaoSupport implements AuthzG
 	}
 
 	public Map<String, String> getUserRoles(String arg0, Collection<String> arg1) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String archive(String arg0, Document arg1, Stack<Element> arg2,
+			String arg3, List<Reference> arg4) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String merge(String arg0, Element arg1, String arg2, String arg3,
+			Map<String, String> arg4, Map<String, String> arg5, Set<String> arg6) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Collection<String> getAuthzUsersInGroups(Set<String> arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
