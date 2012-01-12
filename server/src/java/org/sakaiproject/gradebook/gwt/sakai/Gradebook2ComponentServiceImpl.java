@@ -1153,6 +1153,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 				StringBuilder text = new StringBuilder();
 				switch (actionType) {
 				case CREATE:
+				case DELETE:
 					description = new StringBuilder().append(actionType.getVerb()).append(" ")
 					.append(entityType).toString();
 					break;
@@ -1217,10 +1218,17 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 					for (String key : propertyMap.keySet()) {
 						String value = propertyMap.get(key);
 
+						// GRBK-715, GRBK-638
+						if (key.equals(ItemKey.W_DUE.name())) {
+							actionModel.set(key, value);
+							continue;
+						}
+						
 						// FIXME: Need to translate old keys to new keys here
 						if (value != null && !value.equals("null")) {
-							if (key.charAt(0) == AppConstants.DATE_PREFIX ||
-									key.charAt(0) == AppConstants.ODD_DATE_PREFIX) {
+							if (key.charAt(0) == AppConstants.DATE_PREFIX 
+									|| key.charAt(0) == AppConstants.ODD_DATE_PREFIX) { 
+								
 								Date d = format.parse(value);
 								value = toFormat.format(d);
 							} 
@@ -3035,9 +3043,10 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			assignment.setCountNullsAsZeros(Boolean.valueOf(isNullsAsZeros));
 			gbService.updateAssignment(assignment);
 
-			if (isRemoved)
+			if (isRemoved) {
 				postEvent("gradebook2.deleteItem", String.valueOf(gradebook.getId()), String.valueOf(assignmentId));
-			else
+				actionRecord.setActionType(ActionType.DELETE.name());
+			} else
 				postEvent("gradebook2.updateItem", String.valueOf(gradebook.getId()), String.valueOf(assignmentId));
 
 			if (hasCategories) {
@@ -6483,9 +6492,10 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 			gbService.updateCategory(category);
 
-			if (isRemoved)
+			if (isRemoved) {
 				postEvent("gradebook2.deleteCategory", String.valueOf(gradebook.getId()), String.valueOf(category.getId()));
-			else
+				actionRecord.setActionType(ActionType.DELETE.name());
+			} else
 				postEvent("gradebook2.updateCategory", String.valueOf(gradebook.getId()), String.valueOf(category.getId()));
 
 			if (hasCategories) {

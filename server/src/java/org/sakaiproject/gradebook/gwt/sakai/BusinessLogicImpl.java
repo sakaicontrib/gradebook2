@@ -28,9 +28,13 @@ import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
+import org.sakaiproject.gradebook.gwt.client.model.type.ActionType;
+import org.sakaiproject.gradebook.gwt.client.model.type.EntityType;
+import org.sakaiproject.gradebook.gwt.sakai.model.ActionRecord;
 import org.sakaiproject.gradebook.gwt.server.Util;
 import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.tool.gradebook.Category;
+import org.sakaiproject.tool.gradebook.Gradebook;
 import org.sakaiproject.util.ResourceLoader;
 
 public class BusinessLogicImpl implements BusinessLogic {
@@ -208,9 +212,27 @@ public class BusinessLogicImpl implements BusinessLogic {
 	 */
 	public void applyRemoveChildItemsWhenCategoryRemoved(Category category, List<Assignment> assignments) throws BusinessRuleException {
 
+		String gradebookUid = null;
+		Long gradebookId = null;
+		
+		if (assignments.size() == 0) 
+			return;
+		
+		// GRBK-715: create and store actionrecords for the deleted items.
+		Gradebook gb = assignments.get(0).getGradebook();
+		ActionRecord actionRecord = new ActionRecord(gb.getUid(), gb.getId(), null, ActionType.DELETE.name());
+		
+		
 		if (assignments != null) {
 			for (Assignment assignment : assignments) {
 				assignment.setRemoved(true);
+				
+				actionRecord.setEntityType(EntityType.ITEM.name());
+				actionRecord.setEntityName(assignment.getName());
+				actionRecord.setEntityId(String.valueOf(assignment.getId()));
+				
+				gbService.storeActionRecord(actionRecord);
+
 				gbService.updateAssignment(assignment);
 			}
 		}
