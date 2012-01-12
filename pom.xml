@@ -68,34 +68,44 @@
 				<gwt.unpack.skip>true</gwt.unpack.skip>
 			</properties>
 			<dependencies>
-				<!-- Misc Sakai Dependencies -->
-				<dependency>
-					<groupId>org.sakaiproject.kernel</groupId>
-					<artifactId>sakai-kernel-api</artifactId>
-				</dependency>
+				<!-- Development-Mode-specific dependencies
+				     some notes are in GRBK-1209 -->
 				<dependency>
 					<groupId>org.sakaiproject.kernel</groupId>
 					<artifactId>sakai-kernel-impl</artifactId>
 					<version>${sakai.kernel.version}</version>
+					<scope>provided</scope>
 					<optional>true</optional>
 				</dependency>
 				<dependency>
 					<groupId>org.sakaiproject.common</groupId>
 					<artifactId>archive-api</artifactId>
 					<version>${sakai.common.version}</version>
+					<scope>provided</scope>
+					<optional>true</optional>
 				</dependency>
 				<dependency>
 					<groupId>org.sakaiproject.common</groupId>
 					<artifactId>archive-impl</artifactId>
 					<version>${sakai.common.version}</version>
+					<scope>provided</scope>
+					<optional>true</optional>
+				</dependency>
+				<!-- Misc Sakai Dependencies -->
+				<dependency>
+					<groupId>org.sakaiproject.kernel</groupId>
+					<artifactId>sakai-kernel-api</artifactId>
+					<scope>provided</scope>
 				</dependency>
 				<dependency>
 					<groupId>org.sakaiproject.kernel</groupId>
 					<artifactId>sakai-component-manager</artifactId>
+					<scope>provided</scope>
 				</dependency>
 				<dependency>
 					<groupId>org.sakaiproject.kernel</groupId>
 					<artifactId>sakai-kernel-util</artifactId>
+					<scope>provided</scope>
 				</dependency>
 				<dependency>
 					<groupId>org.springframework</groupId>
