@@ -28,6 +28,7 @@ import org.sakaiproject.exception.IdUnusedException;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
 import org.sakaiproject.gradebook.gwt.client.ConfigUtil;
+import org.sakaiproject.gradebook.gwt.client.I18nMessages;
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.GradebookCreationException;
@@ -117,6 +118,8 @@ import org.sakaiproject.util.ResourceLoader;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
+import com.google.gwt.i18n.client.LocaleInfo;
 
 public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrapper implements Gradebook2ComponentService, ApplicationContextAware {
 
@@ -1161,6 +1164,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 					oldScore = actionRecord.getPropertyMap().get(AppConstants.HISTORY_OLD_SCORE);
 					// GRBK-668
 					originalImportGrade = actionRecord.getPropertyMap().get(AppConstants.HISTORY_ORIGINAL_SCORE);
+					originalImportGrade = (null==originalImportGrade||"null".equals(originalImportGrade) ? "" : originalImportGrade);
 				case GRADED:
 					score = actionRecord.getPropertyMap().get(AppConstants.HISTORY_SCORE);
 					if (score == null || "null".equals(score)) {
@@ -1183,11 +1187,24 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 					text.append(score).append(singleOrNoQuote);
 					
 					actionModel.set(AppConstants.HISTORY_SCORE, score);
-					// GRBK-668 : TODO : i18n
+					// GRBK-668 
 					if(null != originalImportGrade && !"".equals(originalImportGrade)) {
-						text.append(" : Import converted [");
+						
 						text.append(originalImportGrade);
-						text.append("] to a letter grade");
+						if ("".equals(score)) {
+							text.append(" : ");
+							text.append(i18n.getString("importProcessName"));
+							text.append(" ").append(i18n.getString("deleted"));
+							text.append(" ").append(i18n.getString("scoreName")).append(" '");
+							text.append(originalImportGrade);
+							text.append("'");
+						} else{
+							text.append(" : ");
+							text.append(i18n.getString("importProcessName"));
+							text.append(" ").append(i18n.getString("converted")).append(" '");
+							text.append(originalImportGrade);
+							text.append("' ").append(i18n.getString("to")).append(" '").append(score).append("'");
+						}
 					}
 
 					description = text.toString();

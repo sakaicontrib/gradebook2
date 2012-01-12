@@ -475,4 +475,12 @@ public interface I18nConstants extends Constants {
 	String dropLowestHelpText();
 	String dropLowestHelpTextTitle();
 	
+	/*
+	 * GRBK-700
+	 */
+	String importProcessName();
+	String deleted();
+	String converted();
+	String to();
+	
 }
