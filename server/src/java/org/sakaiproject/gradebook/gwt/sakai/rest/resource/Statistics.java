@@ -27,9 +27,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
-import net.sf.ehcache.Cache;
 import net.sf.ehcache.Element;
-import net.sf.ehcache.config.CacheConfiguration;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidDataException;
@@ -51,7 +49,7 @@ public class Statistics extends Resource {
 		String cacheKey = null;
 		String stats = null;
 		if(useCache != null && useCache.booleanValue()) {
-			cacheKey = getCacheKey("getInstructorStatistics",gradebookUid,gradebookId.toString(),sectionId);
+			cacheKey = getCacheKey(Resource.CACHE_KEY_INSTRUCTOR_STATISTICS, gradebookUid, sectionId);
 			stats = (String) cache.get(cacheKey).getObjectKey();
 		}
 		if(stats == null) {
@@ -75,7 +73,7 @@ public class Statistics extends Resource {
 		String cacheKey = null;
 		String stats = null;
 		if(useCache != null && useCache.booleanValue()) {
-			cacheKey = getCacheKey("getStudentStatistics",gradebookUid,gradebookId.toString(),studentUid);
+			cacheKey = getCacheKey(Resource.CACHE_KEY_STUDENT_STATISTICS, gradebookUid, studentUid);
 			stats = (String) cache.get(cacheKey).getObjectKey();
 		}
 		if(stats == null) {
@@ -100,7 +98,7 @@ public class Statistics extends Resource {
 		String cacheKey = null;
 		String stats = null;
 		if(useCache != null && useCache.booleanValue()) {
-			cacheKey = getCacheKey("getStatisticsData",gradebookUid,gradebookId.toString(),sectionId);
+			cacheKey = getCacheKey(Resource.CACHE_KEY_ASSIGNMENT_STATISTICS_DATA, gradebookUid, assignmentId.toString(), sectionId);
 			stats = (String) cache.get(cacheKey).getObjectKey();
 		}
 		if(stats == null) {
@@ -123,7 +121,7 @@ public class Statistics extends Resource {
 		String cacheKey = null;
 		String stats = null;
 		if(useCache != null && useCache.booleanValue()) {
-			cacheKey = getCacheKey("getStudentStatisticsData",gradebookUid,gradebookId.toString(),assignmentId.toString());
+			cacheKey = getCacheKey(Resource.CACHE_KEY_STUDENT_STATISTICS_DATA, gradebookUid, assignmentId.toString());
 			stats = (String) cache.get(cacheKey).getObjectKey();
 		}
 		if(stats == null) {
@@ -144,7 +142,7 @@ public class Statistics extends Resource {
 		String cacheKey = null;
 		String stats = null;
 		if(useCache != null && useCache.booleanValue()) {
-			cacheKey = getCacheKey("getCourseStatisticsData",gradebookUid, null, null);
+			cacheKey = getCacheKey(Resource.CACHE_KEY_COURSE_STATISTICS_DATA, gradebookUid);
 			stats = (String) cache.get(cacheKey).getObjectKey();
 		}
 		if(stats == null) {
@@ -166,7 +164,7 @@ public class Statistics extends Resource {
 		String cacheKey = null;
 		String stats = null;
 		if(useCache != null && useCache.booleanValue()) {
-			cacheKey = getCacheKey("getCourseStatisticsData",gradebookUid, null, sectionId);
+			cacheKey = getCacheKey(Resource.CACHE_KEY_COURSE_STATISTICS_DATA, gradebookUid, sectionId);
 			stats = (String) cache.get(cacheKey).getObjectKey();
 		}
 		if(stats == null) {

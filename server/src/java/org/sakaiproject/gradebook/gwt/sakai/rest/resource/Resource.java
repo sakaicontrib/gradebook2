@@ -24,7 +24,13 @@ public class Resource {
 	
 	protected Gradebook2ComponentService service;
 	
-	protected static final String DELIMITER = "@";
+	protected static final String CACHE_KEY_DELIMITER = "@";
+
+	public static final String CACHE_KEY_ASSIGNMENT_STATISTICS_DATA = "StatisticsData";
+	public static final String CACHE_KEY_COURSE_STATISTICS_DATA = "CourseStatisticsData";
+	public static final String CACHE_KEY_INSTRUCTOR_STATISTICS = "InstructorStatistics";
+	public static final String CACHE_KEY_STUDENT_STATISTICS = "StudentStatistics";
+	public static final String CACHE_KEY_STUDENT_STATISTICS_DATA = "StudentStatisticsData";
 	
 	protected Boolean useCache = Boolean.FALSE;
 	public void setUseCache(Boolean cacheStats) {
@@ -138,25 +144,23 @@ public class Resource {
 		return ttl;
 	}
 	
-	protected String getCacheKey(String identifier0, String identifier1,
-			String identifier2, String identifier3) {
+	protected String getCacheKey(String ... identifiers) {
 		StringBuilder buf = new StringBuilder();
-		buf.append(identifier0);
-		if(identifier1 != null) {
-			buf.append(DELIMITER);
-			buf.append(identifier1);
-		}
-		if(identifier2 != null) {
-			buf.append(DELIMITER);
-			buf.append(identifier2);
-		}
-		if(identifier3 != null) {
-			buf.append(DELIMITER);
-			buf.append(identifier3);
+		boolean first = true;
+		if(identifiers != null) {
+			for(String identifier : identifiers) {
+				if(identifier != null) {
+					if(! first) {
+						buf.append(CACHE_KEY_DELIMITER);
+					} else {
+						first = false;
+					}
+					buf.append(identifier);
+				}
+			}
 		}
 		return buf.toString();
 	}
-
 	
 	// some static entry points
 	
