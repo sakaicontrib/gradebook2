@@ -50,7 +50,10 @@ public class Statistics extends Resource {
 		String stats = null;
 		if(useCache != null && useCache.booleanValue()) {
 			cacheKey = getCacheKey(Resource.CACHE_KEY_INSTRUCTOR_STATISTICS, gradebookUid, sectionId);
-			stats = (String) cache.get(cacheKey).getObjectKey();
+			Element e = cache.get(cacheKey);
+			if (e != null) {
+				stats = (String) e.getObjectKey();
+			}
 		}
 		if(stats == null) {
 			List<org.sakaiproject.gradebook.gwt.client.model.Statistics> list = 
@@ -74,7 +77,10 @@ public class Statistics extends Resource {
 		String stats = null;
 		if(useCache != null && useCache.booleanValue()) {
 			cacheKey = getCacheKey(Resource.CACHE_KEY_STUDENT_STATISTICS, gradebookUid, studentUid);
-			stats = (String) cache.get(cacheKey).getObjectKey();
+			Element e = cache.get(cacheKey);
+			if (e != null) {
+				stats = (String) e.getObjectKey();
+			}
 		}
 		if(stats == null) {
 			List<org.sakaiproject.gradebook.gwt.client.model.Statistics> list = 
@@ -99,7 +105,10 @@ public class Statistics extends Resource {
 		String stats = null;
 		if(useCache != null && useCache.booleanValue()) {
 			cacheKey = getCacheKey(Resource.CACHE_KEY_ASSIGNMENT_STATISTICS_DATA, gradebookUid, assignmentId.toString(), sectionId);
-			stats = (String) cache.get(cacheKey).getObjectKey();
+			Element e = cache.get(cacheKey);
+			if (e != null) {
+				stats = (String) e.getObjectKey();
+			}
 		}
 		if(stats == null) {
 			int[][] gradeFrequencies = service.getGradeItemStatistics(gradebookUid, assignmentId, Base64.base64Decode(sectionId));
@@ -122,7 +131,10 @@ public class Statistics extends Resource {
 		String stats = null;
 		if(useCache != null && useCache.booleanValue()) {
 			cacheKey = getCacheKey(Resource.CACHE_KEY_STUDENT_STATISTICS_DATA, gradebookUid, assignmentId.toString());
-			stats = (String) cache.get(cacheKey).getObjectKey();
+			Element e = cache.get(cacheKey);
+			if (e != null) {
+				stats = (String) e.getObjectKey();
+			}
 		}
 		if(stats == null) {
 			int[][] gradeFrequencies = service.getGradeItemStatistics(gradebookUid, assignmentId, AppConstants.ALL);
@@ -143,7 +155,10 @@ public class Statistics extends Resource {
 		String stats = null;
 		if(useCache != null && useCache.booleanValue()) {
 			cacheKey = getCacheKey(Resource.CACHE_KEY_COURSE_STATISTICS_DATA, gradebookUid);
-			stats = (String) cache.get(cacheKey).getObjectKey();
+			Element e = cache.get(cacheKey);
+			if (e != null) {
+				stats = (String) e.getObjectKey();
+			}
 		}
 		if(stats == null) {
 			Map<String, Integer> gradeFrequencies = service.getCourseGradeStatistics(gradebookUid);
@@ -165,7 +180,10 @@ public class Statistics extends Resource {
 		String stats = null;
 		if(useCache != null && useCache.booleanValue()) {
 			cacheKey = getCacheKey(Resource.CACHE_KEY_COURSE_STATISTICS_DATA, gradebookUid, sectionId);
-			stats = (String) cache.get(cacheKey).getObjectKey();
+			Element e = cache.get(cacheKey);
+			if (e != null) {
+				stats = (String) e.getObjectKey();
+			}
 		}
 		if(stats == null) {
 			Map<String, Integer> gradeFrequencies = service.getCourseGradeStatistics(gradebookUid, Base64.base64Decode(sectionId));

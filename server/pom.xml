@@ -181,8 +181,7 @@
 		</dependency>
 		<dependency>
 			<groupId>net.sf.ehcache</groupId>
-			<artifactId>ehcache</artifactId>
-			<version>1.6.1</version>
+			<artifactId>ehcache-core</artifactId>
 		</dependency>
 	</dependencies>
 	<build>
