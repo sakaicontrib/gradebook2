@@ -38,9 +38,220 @@
 	
 	<profiles>
 		<profile>
-			<id>sakai2.7</id>
+			<id>sakai2.9</id>
 			<activation>
 				<activeByDefault>true</activeByDefault>
+				<property><name>sakai2.9</name></property>
+			</activation>
+			<modules>
+				<module>model</module>
+				<module>api</module>
+				<module>shared</module>
+				<module>server</module>
+				<module>client</module>
+				<module>war</module>
+			</modules>
+			<properties>
+				<gb2.cm.groupId>org.sakaiproject.edu-services.course-management</gb2.cm.groupId>
+				<gb2.cm.artifactId>coursemanagement-api</gb2.cm.artifactId>
+				<gb2.cm.version>${sakai.edu-services.version}</gb2.cm.version>
+				
+				<gb1.groupId>org.sakaiproject.edu-services.gradebook</gb1.groupId>
+				<gb1.api.artifactId>gradebook-service-api</gb1.api.artifactId>
+				<gb1.hibernate.artifactId>gradebook-service-hibernate</gb1.hibernate.artifactId>
+				<gb1.service.artifactId>gradebook-service-impl</gb1.service.artifactId>
+				<gb1.version>${sakai.edu-services.version}</gb1.version>
+				
+				<gb2.sections.groupId>org.sakaiproject.edu-services.sections</gb2.sections.groupId>
+				<gb2.sections.artifactId>sections-api</gb2.sections.artifactId>
+				<gb2.sections.version>${sakai.edu-services.version}</gb2.sections.version>
+				<gwt.unpack.skip>true</gwt.unpack.skip>
+			</properties>
+			<dependencies>
+				<!-- Development-Mode-specific dependencies
+				     some notes are in GRBK-1209 -->
+				<dependency>
+					<groupId>org.sakaiproject.kernel</groupId>
+					<artifactId>sakai-kernel-impl</artifactId>
+					<version>${sakai.kernel.version}</version>
+					<scope>provided</scope>
+					<optional>true</optional>
+				</dependency>
+				<dependency>
+					<groupId>org.sakaiproject.common</groupId>
+					<artifactId>archive-api</artifactId>
+					<version>${sakai.common.version}</version>
+					<scope>provided</scope>
+					<optional>true</optional>
+				</dependency>
+				<dependency>
+					<groupId>org.sakaiproject.common</groupId>
+					<artifactId>archive-impl</artifactId>
+					<version>${sakai.common.version}</version>
+					<scope>provided</scope>
+					<optional>true</optional>
+				</dependency>
+				<!-- Misc Sakai Dependencies -->
+				<dependency>
+					<groupId>org.sakaiproject.kernel</groupId>
+					<artifactId>sakai-kernel-api</artifactId>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.sakaiproject.kernel</groupId>
+					<artifactId>sakai-component-manager</artifactId>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.sakaiproject.kernel</groupId>
+					<artifactId>sakai-kernel-util</artifactId>
+				</dependency>
+				<dependency>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-beans</artifactId>
+					<version>${sakai.spring.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-context</artifactId>
+					<version>${sakai.spring.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-core</artifactId>
+					<version>${sakai.spring.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-web</artifactId>
+					<version>${sakai.spring.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-webmvc</artifactId>
+					<version>${sakai.spring.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>net.sf.ehcache</groupId>
+					<artifactId>ehcache-core</artifactId>
+					<scope>provided</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+		
+		<profile>
+			<id>sakai2.8</id>
+			<activation>
+				<property><name>sakai2.8</name></property>
+			</activation>
+			<modules>
+				<module>model</module>
+				<module>api</module>
+				<module>shared</module>
+				<module>server</module>
+				<module>client</module>
+				<module>war</module>
+			</modules>
+			<properties>
+				<gb2.cm.groupId>org.sakaiproject.edu-services.course-management</gb2.cm.groupId>
+				<gb2.cm.artifactId>coursemanagement-api</gb2.cm.artifactId>
+				<gb2.cm.version>${sakai.edu-services.version}</gb2.cm.version>
+				
+				<gb1.groupId>org.sakaiproject.edu-services.gradebook</gb1.groupId>
+				<gb1.api.artifactId>gradebook-service-api</gb1.api.artifactId>
+				<gb1.hibernate.artifactId>gradebook-service-hibernate</gb1.hibernate.artifactId>
+				<gb1.service.artifactId>gradebook-service-impl</gb1.service.artifactId>
+				<gb1.version>${sakai.edu-services.version}</gb1.version>
+				
+				<gb2.sections.groupId>org.sakaiproject.edu-services.sections</gb2.sections.groupId>
+				<gb2.sections.artifactId>sections-api</gb2.sections.artifactId>
+				<gb2.sections.version>${sakai.edu-services.version}</gb2.sections.version>
+				<gwt.unpack.skip>true</gwt.unpack.skip>
+			</properties>
+			<dependencies>
+				<!-- Development-Mode-specific dependencies
+				     some notes are in GRBK-1209 -->
+				<dependency>
+					<groupId>org.sakaiproject.kernel</groupId>
+					<artifactId>sakai-kernel-impl</artifactId>
+					<version>${sakai.kernel.version}</version>
+					<scope>provided</scope>
+					<optional>true</optional>
+				</dependency>
+				<dependency>
+					<groupId>org.sakaiproject.common</groupId>
+					<artifactId>archive-api</artifactId>
+					<version>${sakai.common.version}</version>
+					<scope>provided</scope>
+					<optional>true</optional>
+				</dependency>
+				<dependency>
+					<groupId>org.sakaiproject.common</groupId>
+					<artifactId>archive-impl</artifactId>
+					<version>${sakai.common.version}</version>
+					<scope>provided</scope>
+					<optional>true</optional>
+				</dependency>
+				<!-- Misc Sakai Dependencies -->
+				<dependency>
+					<groupId>org.sakaiproject.kernel</groupId>
+					<artifactId>sakai-kernel-api</artifactId>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.sakaiproject.kernel</groupId>
+					<artifactId>sakai-component-manager</artifactId>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.sakaiproject.kernel</groupId>
+					<artifactId>sakai-kernel-util</artifactId>
+				</dependency>
+				<dependency>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-beans</artifactId>
+					<version>${sakai.spring.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-context</artifactId>
+					<version>${sakai.spring.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-core</artifactId>
+					<version>${sakai.spring.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-web</artifactId>
+					<version>${sakai.spring.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-webmvc</artifactId>
+					<version>${sakai.spring.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>net.sf.ehcache</groupId>
+					<artifactId>ehcache</artifactId>
+					<version>${sakai.ehcache.version}</version>
+					<scope>provided</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+	
+		<profile>
+			<id>sakai2.7</id>
+			<activation>
 				<property><name>sakai2.7</name></property>
 			</activation>
 			<modules>
@@ -145,79 +356,6 @@
 		</profile>
 		
 		<profile>
-			<id>sakai2.7-nogwt</id>
-			<activation>
-				<property><name>sakai2.7-nogwt</name></property>
-			</activation>
-			<modules>
-				<module>model</module>
-				<module>api</module>
-				<module>shared</module>
-				<module>server</module>
-				<module>war</module>
-			</modules>
-			<properties>
-				<gb2.cm.groupId>org.sakaiproject.edu-services.course-management</gb2.cm.groupId>
-				<gb2.cm.artifactId>coursemanagement-api</gb2.cm.artifactId>
-				<gb2.cm.version>${sakai.edu-services.version}</gb2.cm.version>
-				
-				<gb1.groupId>org.sakaiproject.edu-services.gradebook</gb1.groupId>
-				<gb1.api.artifactId>gradebook-service-api</gb1.api.artifactId>
-				<gb1.hibernate.artifactId>gradebook-service-hibernate</gb1.hibernate.artifactId>
-				<gb1.service.artifactId>gradebook-service-impl</gb1.service.artifactId>
-				<gb1.version>${sakai.edu-services.version}</gb1.version>
-				
-				<gb2.sections.groupId>org.sakaiproject.edu-services.sections</gb2.sections.groupId>
-				<gb2.sections.artifactId>sections-api</gb2.sections.artifactId>
-				<gb2.sections.version>${sakai.edu-services.version}</gb2.sections.version>
-			</properties>
-			<dependencies>
-				<!-- Misc Sakai Dependencies -->
-				<dependency>
-					<groupId>org.sakaiproject.kernel</groupId>
-					<artifactId>sakai-kernel-api</artifactId>
-				</dependency>
-				<dependency>
-					<groupId>org.sakaiproject.kernel</groupId>
-					<artifactId>sakai-component-manager</artifactId>
-				</dependency>
-				<dependency>
-					<groupId>org.sakaiproject.kernel</groupId>
-					<artifactId>sakai-kernel-util</artifactId>
-				</dependency>
-				<dependency>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-beans</artifactId>
-					<version>${sakai.spring.version}</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-context</artifactId>
-					<version>${sakai.spring.version}</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-core</artifactId>
-					<version>${sakai.spring.version}</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-web</artifactId>
-					<version>${sakai.spring.version}</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-webmvc</artifactId>
-					<version>${sakai.spring.version}</version>
-				</dependency>
-			</dependencies>
-		</profile>
-		
-		<profile>
 			<id>sakai2.6</id>
 			<activation>
 				<property><name>sakai2.6</name></property>
@@ -270,56 +408,6 @@
 		</profile>
 		
 		<profile>
-			<id>sakai2.6-nogwt</id>
-			<activation>
-				<property><name>sakai2.6-nogwt</name></property>
-			</activation>
-			<properties>
-				<gb2.cm.groupId>org.sakaiproject</gb2.cm.groupId>
-				<gb2.cm.artifactId>sakai-coursemanagement-api</gb2.cm.artifactId>
-				<gb2.cm.version>${sakai.version}</gb2.cm.version>
-				
-				<gb1.groupId>org.sakaiproject</gb1.groupId>
-				<gb1.api.artifactId>sakai-gradebook-service-api</gb1.api.artifactId>
-				<gb1.hibernate.artifactId>sakai-gradebook-service-hibernate</gb1.hibernate.artifactId>
-				<gb1.service.artifactId>sakai-gradebook-service-impl</gb1.service.artifactId>
-				<gb1.version>${sakai.version}</gb1.version>
-				
-				<gb2.sections.groupId>org.sakaiproject</gb2.sections.groupId>
-				<gb2.sections.artifactId>sakai-sections-api</gb2.sections.artifactId>
-				<gb2.sections.version>${sakai.version}</gb2.sections.version>
-			</properties>
-			<modules>
-				<module>model</module>
-				<module>api</module>
-				<module>shared</module>
-				<module>server</module>
-				<module>war</module>
-			</modules>
-			<dependencies>
-				<!-- Misc Sakai Dependencies -->
-				<dependency>
-					<groupId>org.sakaiproject.kernel</groupId>
-					<artifactId>sakai-kernel-api</artifactId>
-				</dependency>
-				<dependency>
-					<groupId>org.sakaiproject.kernel</groupId>
-					<artifactId>sakai-component-manager</artifactId>
-				</dependency>
-				<dependency>
-					<groupId>org.sakaiproject.kernel</groupId>
-					<artifactId>sakai-kernel-util</artifactId>
-				</dependency>
-				<dependency>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring</artifactId>
-					<version>${sakai.spring.version}</version>
-					<scope>provided</scope>
-				</dependency>
-			</dependencies>
-		</profile>
-		
-		<profile>
 			<id>sakai2.5</id>
 			<activation>
 				<property><name>sakai2.5</name></property>
@@ -346,95 +434,6 @@
 				<module>shared</module>
 				<module>server</module>
 				<module>client</module>
-				<module>war</module>
-			</modules>
-			<dependencies>
-				<!-- Misc Sakai Dependencies -->
-				<dependency>
-		 			<groupId>org.sakaiproject</groupId>
-		 			<artifactId>sakai-authz-api</artifactId>
-		 			<version>${sakai.version}</version>
-		  		</dependency>
-		  		<dependency>
-		 			<groupId>org.sakaiproject</groupId>
-		 			<artifactId>sakai-component</artifactId>
-		 			<version>${sakai.version}</version>
-		  		</dependency>
-		  		<dependency>
-		 			<groupId>org.sakaiproject</groupId>
-		 			<artifactId>sakai-component-api</artifactId>
-		 			<version>${sakai.version}</version>
-		  		</dependency>
-		 		<dependency>
-		 			<groupId>org.sakaiproject</groupId>
-		 			<artifactId>sakai-entity-api</artifactId>
-		 			<version>${sakai.version}</version>
-		 		</dependency>
-		 		<dependency>
-		 			<groupId>org.sakaiproject</groupId>
-		 			<artifactId>sakai-event-api</artifactId>
-		 			<version>${sakai.version}</version>
-		 		</dependency>
-		 		<dependency>
-		 			<groupId>org.sakaiproject</groupId>
-		 			<artifactId>sakai-site-api</artifactId>
-		 			<version>${sakai.version}</version>
-		 		</dependency>
-		 		<dependency>
-		 			<groupId>org.sakaiproject</groupId>
-		 			<artifactId>sakai-tool-api</artifactId>
-		 			<version>${sakai.version}</version>
-		 		</dependency>
-		 		<dependency>
-		 			<groupId>org.sakaiproject</groupId>
-		 			<artifactId>sakai-tool-servlet</artifactId>
-		 			<version>${sakai.version}</version>
-		 			<scope>provided</scope>
-		 		</dependency>
-		 		<dependency>
-		 			<groupId>org.sakaiproject</groupId>
-		 			<artifactId>sakai-user-api</artifactId>
-		 			<version>${sakai.version}</version>
-		 		</dependency>
-		 		<dependency>
-		 			<groupId>org.sakaiproject</groupId>
-		 			<artifactId>sakai-util-api</artifactId>
-		 			<version>${sakai.version}</version>
-		 		</dependency>
-		 		<dependency>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring</artifactId>
-					<version>${sakai.spring.version}</version>
-					<scope>provided</scope>
-				</dependency>
-			</dependencies>		
-		</profile>
-		
-		<profile>
-			<id>sakai2.5-nogwt</id>
-			<activation>
-				<property><name>sakai2.5-nogwt</name></property>
-			</activation>
-			<properties>
-				<gb2.cm.groupId>org.sakaiproject</gb2.cm.groupId>
-				<gb2.cm.artifactId>sakai-coursemanagement-api</gb2.cm.artifactId>
-				<gb2.cm.version>${sakai.version}</gb2.cm.version>
-				
-				<gb1.groupId>org.sakaiproject</gb1.groupId>
-				<gb1.api.artifactId>sakai-gradebook-service-api</gb1.api.artifactId>
-				<gb1.hibernate.artifactId>sakai-gradebook-service-hibernate</gb1.hibernate.artifactId>
-				<gb1.service.artifactId>sakai-gradebook-service-impl</gb1.service.artifactId>
-				<gb1.version>${sakai.version}</gb1.version>
-				
-				<gb2.sections.groupId>org.sakaiproject</gb2.sections.groupId>
-				<gb2.sections.artifactId>sakai-sections-api</gb2.sections.artifactId>
-				<gb2.sections.version>${sakai.version}</gb2.sections.version>
-			</properties>
-			<modules>
-				<module>model</module>
-				<module>api</module>
-				<module>shared</module>
-				<module>server</module>
 				<module>war</module>
 			</modules>
 			<dependencies>
