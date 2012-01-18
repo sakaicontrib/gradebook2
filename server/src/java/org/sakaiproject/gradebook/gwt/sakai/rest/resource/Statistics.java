@@ -52,7 +52,7 @@ public class Statistics extends Resource {
 			cacheKey = getCacheKey(Resource.CACHE_KEY_INSTRUCTOR_STATISTICS, gradebookUid, sectionId);
 			Element e = cache.get(cacheKey);
 			if (e != null) {
-				stats = (String) e.getObjectKey();
+				stats = (String) e.getObjectValue();
 			}
 		}
 		if(stats == null) {
@@ -79,7 +79,7 @@ public class Statistics extends Resource {
 			cacheKey = getCacheKey(Resource.CACHE_KEY_STUDENT_STATISTICS, gradebookUid, studentUid);
 			Element e = cache.get(cacheKey);
 			if (e != null) {
-				stats = (String) e.getObjectKey();
+				stats = (String) e.getObjectValue();
 			}
 		}
 		if(stats == null) {
@@ -107,7 +107,7 @@ public class Statistics extends Resource {
 			cacheKey = getCacheKey(Resource.CACHE_KEY_ASSIGNMENT_STATISTICS_DATA, gradebookUid, assignmentId.toString(), sectionId);
 			Element e = cache.get(cacheKey);
 			if (e != null) {
-				stats = (String) e.getObjectKey();
+				stats = (String) e.getObjectValue();
 			}
 		}
 		if(stats == null) {
@@ -133,7 +133,7 @@ public class Statistics extends Resource {
 			cacheKey = getCacheKey(Resource.CACHE_KEY_STUDENT_STATISTICS_DATA, gradebookUid, assignmentId.toString());
 			Element e = cache.get(cacheKey);
 			if (e != null) {
-				stats = (String) e.getObjectKey();
+				stats = (String) e.getObjectValue();
 			}
 		}
 		if(stats == null) {
@@ -157,7 +157,7 @@ public class Statistics extends Resource {
 			cacheKey = getCacheKey(Resource.CACHE_KEY_COURSE_STATISTICS_DATA, gradebookUid);
 			Element e = cache.get(cacheKey);
 			if (e != null) {
-				stats = (String) e.getObjectKey();
+				stats = (String) e.getObjectValue();
 			}
 		}
 		if(stats == null) {
@@ -182,7 +182,7 @@ public class Statistics extends Resource {
 			cacheKey = getCacheKey(Resource.CACHE_KEY_COURSE_STATISTICS_DATA, gradebookUid, sectionId);
 			Element e = cache.get(cacheKey);
 			if (e != null) {
-				stats = (String) e.getObjectKey();
+				stats = (String) e.getObjectValue();
 			}
 		}
 		if(stats == null) {
