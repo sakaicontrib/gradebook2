@@ -1070,6 +1070,7 @@ public class StudentPanel extends GradebookPanel {
 					GWT.getModuleBaseURL(),
 					AppConstants.REST_FRAGMENT,
 					AppConstants.STATISTICS_FRAGMENT,
+					AppConstants.STUDENT_FRAGMENT,
 					AppConstants.COURSE_FRAGMENT,
 					gbModel.getGradebookUid(),
 					Base64.encode(AppConstants.ALL));

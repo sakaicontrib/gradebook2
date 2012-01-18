@@ -44,28 +44,15 @@ public class Statistics extends Resource {
 			@PathParam("uid") String gradebookUid,
 			@PathParam("id") Long gradebookId,
 			@PathParam("sectionId") String sectionId) throws SecurityException {
-		
-		
-		String cacheKey = null;
-		String stats = null;
-		if(useCache != null && useCache.booleanValue()) {
-			cacheKey = getCacheKey(Resource.CACHE_KEY_INSTRUCTOR_STATISTICS, gradebookUid, sectionId);
-			Element e = cache.get(cacheKey);
-			if (e != null) {
-				stats = (String) e.getObjectValue();
-			}
-		}
-		if(stats == null) {
-			List<org.sakaiproject.gradebook.gwt.client.model.Statistics> list = 
-				service.getGraderStatistics(gradebookUid, gradebookId, Base64.base64Decode(sectionId));
-			stats = toJson(list, list.size());
-			if(cacheKey != null) {
-				cache.put(new Element(cacheKey,stats));
-			}
-		}
-		return stats;
+
+
+		List<org.sakaiproject.gradebook.gwt.client.model.Statistics> list = 
+			service.getGraderStatistics(gradebookUid, gradebookId, Base64.base64Decode(sectionId));
+		return toJson(list, list.size());
+
 	}
 
+	// Accessed by client StudentPanel : use caching
 	@GET @Path("/{uid}/{id}/{studentUid}")
 	@Produces("application/json")
 	public String getStudentStatistics(
@@ -101,25 +88,12 @@ public class Statistics extends Resource {
 			@PathParam("assignmentId") Long assignmentId,
 			@PathParam("sectionId") String sectionId) throws SecurityException, InvalidDataException {
 
-		String cacheKey = null;
-		String stats = null;
-		if(useCache != null && useCache.booleanValue()) {
-			cacheKey = getCacheKey(Resource.CACHE_KEY_ASSIGNMENT_STATISTICS_DATA, gradebookUid, assignmentId.toString(), sectionId);
-			Element e = cache.get(cacheKey);
-			if (e != null) {
-				stats = (String) e.getObjectValue();
-			}
-		}
-		if(stats == null) {
-			int[][] gradeFrequencies = service.getGradeItemStatistics(gradebookUid, assignmentId, Base64.base64Decode(sectionId));
-			stats = toJson(gradeFrequencies);
-			if(cacheKey != null) {
-				cache.put(new Element(cacheKey,stats));
-			}
-		}
-		return stats;
+
+		int[][] gradeFrequencies = service.getGradeItemStatistics(gradebookUid, assignmentId, Base64.base64Decode(sectionId));
+		return toJson(gradeFrequencies);
 	}
 	
+	// Accessed by client StudentPanel : use caching
 	@GET @Path("/student/{uid}/{id}/{assignmentId}")
 	@Produces("application/json")
 	public String getStudentStatisticsData(
@@ -151,28 +125,24 @@ public class Statistics extends Resource {
 	public String getCourseStatisticsData(
 			@PathParam("uid") String gradebookUid) throws SecurityException, InvalidDataException {
 
-		String cacheKey = null;
-		String stats = null;
-		if(useCache != null && useCache.booleanValue()) {
-			cacheKey = getCacheKey(Resource.CACHE_KEY_COURSE_STATISTICS_DATA, gradebookUid);
-			Element e = cache.get(cacheKey);
-			if (e != null) {
-				stats = (String) e.getObjectValue();
-			}
-		}
-		if(stats == null) {
-			Map<String, Integer> gradeFrequencies = service.getCourseGradeStatistics(gradebookUid);
-			stats = toJson(gradeFrequencies);
-			if(cacheKey != null) {
-				cache.put(new Element(cacheKey,stats));
-			}
-		}
-		return stats;
+		Map<String, Integer> gradeFrequencies = service.getCourseGradeStatistics(gradebookUid);
+		return toJson(gradeFrequencies);
 	}
 	
 	@GET @Path("/course/{uid}/{sectionId}")
 	@Produces("application/json")
 	public String getCourseStatisticsData(
+			@PathParam("uid") String gradebookUid,
+			@PathParam("sectionId") String sectionId) throws SecurityException, InvalidDataException {
+
+		Map<String, Integer> gradeFrequencies = service.getCourseGradeStatistics(gradebookUid, Base64.base64Decode(sectionId));
+		return  toJson(gradeFrequencies);
+	}
+
+	// Accessed by client StudentPanel : use caching
+	@GET @Path("/student/course/{uid}/{sectionId}")
+	@Produces("application/json")
+	public String getStudentCourseStatisticsData(
 			@PathParam("uid") String gradebookUid,
 			@PathParam("sectionId") String sectionId) throws SecurityException, InvalidDataException {
 
