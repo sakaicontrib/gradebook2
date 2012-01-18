@@ -34,9 +34,9 @@ import org.sakaiproject.gradebook.gwt.client.gxt.InlineEditNumberField;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaButton;
 import org.sakaiproject.gradebook.gwt.client.gxt.a11y.AriaTabPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner;
+import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner.BrowseType;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradeRecordUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.BrowseLearner.BrowseType;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
@@ -65,16 +65,16 @@ import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.CheckBox;
 import com.extjs.gxt.ui.client.widget.form.Field;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
+import com.extjs.gxt.ui.client.widget.form.FormPanel.LabelAlign;
 import com.extjs.gxt.ui.client.widget.form.NumberField;
 import com.extjs.gxt.ui.client.widget.form.TextArea;
 import com.extjs.gxt.ui.client.widget.form.TextField;
-import com.extjs.gxt.ui.client.widget.form.FormPanel.LabelAlign;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
+import com.google.gwt.user.client.ui.Widget;
 
 public class LearnerSummaryPanel extends GradebookPanel {
 
@@ -492,12 +492,19 @@ public class LearnerSummaryPanel extends GradebookPanel {
 		}
 
 		if (formBinding == null) {
+
 			formBinding = new FormBinding(formPanel, true) {
+			
 				public void autoBind() {
+				
 					for (Field f : panel.getFields()) {
-						if (!bindings.containsKey(f)) {
+						
+						if (!bindings.containsKey(f.getName())) {
+					
 							String name = f.getName();
+							
 							if (name != null && name.length() > 0) {
+							
 								FieldBinding b = new FieldBinding(f, f.getName()) {
 
 									private boolean isBinding = false;
@@ -534,8 +541,11 @@ public class LearnerSummaryPanel extends GradebookPanel {
 										}
 									}
 								};
-								bindings.put(f.getId(), b);
+								
+								bindings.put(f.getName(), b);
 							}
+						}
+						else {
 						}
 					}
 				}

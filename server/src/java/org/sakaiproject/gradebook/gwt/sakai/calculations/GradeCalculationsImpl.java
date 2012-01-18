@@ -721,9 +721,8 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 					totalCategoryPoints = add(totalCategoryPoints, BigDecimal.valueOf(assignment.getPointsPossible().doubleValue()));
 
 					if (!isUnweighted && null != assignmentWeight) {
-						//double assignmentCategoryPercent = assignment.getAssignmentWeighting() == null ? 0.0 : assignment.getAssignmentWeighting().doubleValue();	
 						totalCategoryPercent = add(totalCategoryPercent, multiply(assignmentWeight, BIG_DECIMAL_100));
-						myTotalCategoryPercent = add(myTotalCategoryPercent, multiply(assignmentWeight, BIG_DECIMAL_100));;
+						myTotalCategoryPercent = add(myTotalCategoryPercent, multiply(assignmentWeight, BIG_DECIMAL_100));
 					}
 
 				}
@@ -932,7 +931,6 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 					totalCategoryPoints = add(totalCategoryPoints, BigDecimal.valueOf(assignment.getPoints().doubleValue()));
 
 					if (null != assignmentWeight) {
-						//double assignmentCategoryPercent = assignment.getAssignmentWeighting() == null ? 0.0 : assignment.getAssignmentWeighting().doubleValue();	
 						totalCategoryPercent = add(totalCategoryPercent, assignmentWeight);
 					}
 				}

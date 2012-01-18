@@ -68,9 +68,7 @@ public class EnteredGradeComparator implements Comparator<UserRecord>, Serializa
 			c1_2 = d2.charAt(1);
 
 		char s1 = getCompareChar(c1_1);
-		char s2 = getCompareChar(c1_2);;
-
-		//int diff2 = s1 - s2;
+		char s2 = getCompareChar(c1_2);
 
 		return s1<s2 ? -1 : (s1==s2 ? 0 : 1);
 	}
@@ -101,6 +99,4 @@ public class EnteredGradeComparator implements Comparator<UserRecord>, Serializa
 
 		return s1;
 	}
-
-
 }

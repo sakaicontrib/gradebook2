@@ -209,7 +209,6 @@ public class WebAppToolServlet extends HttpServlet {
 					inputStream.close();
 					
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					log.warn("Unable to close InputStream", e);
 				}
 			}

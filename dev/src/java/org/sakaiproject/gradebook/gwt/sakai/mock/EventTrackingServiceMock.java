@@ -4,20 +4,13 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Observer;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.sakaiproject.entity.api.Reference;
 import org.sakaiproject.event.api.Event;
 import org.sakaiproject.event.api.EventDelayHandler;
 import org.sakaiproject.event.api.EventTrackingService;
 import org.sakaiproject.event.api.NotificationService;
 import org.sakaiproject.event.api.UsageSession;
-import org.sakaiproject.event.impl.BaseEventTrackingService;
 import org.sakaiproject.time.api.Time;
-import org.sakaiproject.tool.api.Placement;
 import org.sakaiproject.user.api.User;
-
-import com.google.gwt.core.client.GWT;
 
 public class EventTrackingServiceMock implements EventTrackingService {
 	
@@ -128,7 +121,7 @@ public class EventTrackingServiceMock implements EventTrackingService {
 		protected int m_priority = NotificationService.NOTI_OPTIONAL;
 
 		/** Event creation time. */
-		protected Time m_time = null;
+		//protected Time m_time = null;
 
 		/**
 		 * Access the event id string
@@ -351,9 +344,8 @@ public class EventTrackingServiceMock implements EventTrackingService {
 		}
 
 		public Date getEventTime() {
-			return new Date(m_time.getTime());
+			
+			return new Date();
 		}
 	}
-	
-
 }

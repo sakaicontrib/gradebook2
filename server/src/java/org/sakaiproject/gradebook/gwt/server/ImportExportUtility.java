@@ -6,7 +6,6 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.util.List;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.Upload;
@@ -84,9 +83,7 @@ public interface ImportExportUtility {
 	}
 
 	/*
-	 * 
 	 * methods
-	 * 
 	 */
 	public Upload parseImportXLS(Gradebook2ComponentService service,
 			String gradebookUid,
@@ -109,6 +106,4 @@ public interface ImportExportUtility {
 			Gradebook2ComponentService service, String gradebookUid,
 			final boolean includeStructure, final boolean includeComments, List<String> SectionUid) throws FatalException;
 			
-
-
 }

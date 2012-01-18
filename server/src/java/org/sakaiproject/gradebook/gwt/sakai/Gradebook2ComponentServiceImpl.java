@@ -5428,6 +5428,11 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 				} 
 			}
 			
+			if(null == gradebook) {
+				
+				return rv;
+			}
+			
 			// GRBK-1087
 			if(!isNewGradebook && hasDefaultSetup(gradebook)) {
 				isNewGradebook = true;

@@ -25,7 +25,6 @@ import org.sakaiproject.gradebook.gwt.server.ImportExportUtility.FileType;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtilityImpl;
 import org.sakaiproject.gradebook.gwt.server.UserAgent;
 import org.sakaiproject.site.api.Site;
-import org.sakaiproject.site.api.SiteService;
 
 @Path("export")
 public class Export extends Resource {
@@ -33,12 +32,6 @@ public class Export extends Resource {
 	private static Log log = LogFactory.getLog(Export.class);
 	
 	private ImportExportUtility importExportUtility = null;
-	
-	private SiteService siteService = null;
-	
-	public void setSiteService(SiteService siteService) {
-		this.siteService = siteService;
-	}
 
 	public void setImportExportUtility(ImportExportUtility importExportUtility) {
 		this.importExportUtility = importExportUtility;

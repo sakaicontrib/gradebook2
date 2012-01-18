@@ -142,7 +142,4 @@ public class ImportExportDataFile {
 	public void setErrorsFound(boolean errorsFound) {
 		this.errorsFound = errorsFound;
 	}
-
-
-
 }

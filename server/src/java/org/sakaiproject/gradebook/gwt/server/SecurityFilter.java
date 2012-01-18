@@ -39,7 +39,6 @@ import javax.servlet.http.HttpServletResponse;
 
 public class SecurityFilter implements Filter {
 
-	//private static final String SCRIPT_REGEX = "((<[\\s\\/]*script\\b[^>]*>)([^>]*)(<\\/script>))";
 	private static final String SCRIPT_REGEX = "(<[\\s\\/]*script\\b[^>]*>)|(<\\/script>)";
 	// GRBK-517 : TPA : Changed the content type from gwt-rpc to "application/json"
 	private static final String APPLICATION_JSON_CONTENT_TYPE = "application/json";

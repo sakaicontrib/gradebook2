@@ -1155,7 +1155,7 @@ public class ItemFormPanel extends GradebookPanel {
 		formBindings = new FormBinding(formPanel, true) {
 			public void autoBind() {
 				for (Field f : panel.getFields()) {
-					if (!bindings.containsKey(f)) {
+					if (!bindings.containsKey(f.getName())) {
 						String name = f.getName();
 						if (name != null && name.length() > 0) {
 							FieldBinding b = new FieldBinding(f, f.getName()) {
@@ -1231,7 +1231,7 @@ public class ItemFormPanel extends GradebookPanel {
 								});
 
 							} 
-							bindings.put(f.getId(), b);
+							bindings.put(f.getName(), b);
 						}
 					}
 				}

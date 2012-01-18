@@ -52,7 +52,7 @@ public class GradebookApplication implements EntryPoint  {
 	private I18nConstants i18n;
 	private I18nMessages i18nTemplates;
 	private int screenHeight = 580;
-	private WidgetInjector injector = GWT.create(WidgetInjector.class);;
+	private WidgetInjector injector = GWT.create(WidgetInjector.class);
 	
     public GradebookApplication() {
 
