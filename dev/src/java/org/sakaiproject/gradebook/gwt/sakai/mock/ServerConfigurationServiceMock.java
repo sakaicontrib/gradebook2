@@ -52,8 +52,26 @@ public class ServerConfigurationServiceMock implements ServerConfigurationServic
 	}
 
 	public int getInt(String arg0, int arg1) {
-		// TODO Auto-generated method stub
-		return 0;
+
+		String configProperty = System.getProperty(arg0);
+		
+		if(configProperty == null || "".equals(configProperty)) {
+			
+			return arg1;
+		}
+		
+		int num;
+		
+		try {
+			
+			num = Integer.parseInt(configProperty);
+		}
+		catch(NumberFormatException nfe) {
+			
+			num = arg1;
+		}
+		
+		return num;
 	}
 
 	public String getLoggedOutUrl() {

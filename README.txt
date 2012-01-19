@@ -3,7 +3,7 @@
 * GRADEBOOK2 *
 ==============
 
-Compatible with Sakai 2.5.x, 2.6.x, 2.7.x, 2.8.x, trunk
+Compatible with Sakai 2.5.x, 2.6.x, 2.7.x, 2.8.x, 2.9.x, trunk
 
 ===================
 * GETTING STARTED *
@@ -129,11 +129,11 @@ gb2.enable.final.grade.submission.check = [true, false]
 * Since v1.8.x *
 ----------------
 
-useCache@org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource = [true, false] 
+gb2.enable.statistics.cache = [true, false] 
 - default: false
-timeToLive@org.sakaiproject.gradebook.gwt.sakai.rest.resource.cache = [seconds] 
+gb2.statistics.cache.time.to.idle.seconds = [seconds] 
 - default: 30
-timeToIdel@org.sakaiproject.gradebook.gwt.sakai.rest.resource.cache = [seconds]
+gb2.statistics.cache.time.to.live.seconds = [seconds]
 - default: 30
 - For more details, please see https://jira.sakaiproject.org/browse/GRBK-1210
 

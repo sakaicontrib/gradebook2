@@ -23,10 +23,11 @@
 	
 	<bean id="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource" 
 		  abstract="true"
-		  class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource">
+		  class="org.sakaiproject.gradebook.gwt.sakai.rest.resource.Resource"
+		  init-method="init">
 		 <property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService"/> 
 		 <property name="cache" ref="org.sakaiproject.gradebook.gwt.sakai.rest.resource.cache" />
-		 <property name="useCache"><value>false</value></property>
+		 <property name="configService" ref="org.sakaiproject.component.api.ServerConfigurationService" />
 	</bean>
 	
 	<!-- DEPRECATED since v1.5.0 : See Startup REST EndPoint

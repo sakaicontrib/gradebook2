@@ -134,6 +134,12 @@ public interface AppConstants {
 	
 	public static final String ENABLE_FINAL_GRADE_SUBMISSION_CHECK = "gb2.enable.final.grade.submission.check";
 	
+	public static final String ENABLE_STATISTICS_CACHE = "gb2.enable.statistics.cache";
+	public static final String STATISTICS_CACHE_TIME_TO_IDLE_SECONDS = "gb2.statistics.cache.time.to.idle.seconds";
+	public static final String STATISTICS_CACHE_TIME_TO_LIVE_SECONDS = "gb2.statistics.cache.time.to.live.seconds";
+	public static final int STATISTICS_CACHE_TIME_TO_IDLE_SECONDS_DEFAULT = 30;
+	public static final int STATISTICS_CACHE_TIME_TO_LIVE_SECONDS_DEFAULT = 30;
+	
 	public static final String DEFAULT_CATEGORY_NAME = "Unassigned";
 	
 	public static final String EXTRA_CREDIT_INDICATOR = " (+)";

@@ -15,6 +15,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
+import org.sakaiproject.component.api.ServerConfigurationService;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
 
@@ -23,26 +24,39 @@ public class Resource {
 	private static final Log log = LogFactory.getLog(Resource.class);
 	
 	protected Gradebook2ComponentService service;
+	protected ServerConfigurationService configService;
 	
 	protected static final String CACHE_KEY_DELIMITER = "@";
 
-	public static final String CACHE_KEY_ASSIGNMENT_STATISTICS_DATA = "StatisticsData";
 	public static final String CACHE_KEY_COURSE_STATISTICS_DATA = "CourseStatisticsData";
-	public static final String CACHE_KEY_INSTRUCTOR_STATISTICS = "InstructorStatistics";
 	public static final String CACHE_KEY_STUDENT_STATISTICS = "StudentStatistics";
 	public static final String CACHE_KEY_STUDENT_STATISTICS_DATA = "StudentStatisticsData";
 	
-	protected Boolean useCache = Boolean.FALSE;
-	public void setUseCache(Boolean cacheStats) {
-		this.useCache = cacheStats;
-	}
-	
+	protected Boolean useCache;
 	protected Cache cache;
-	public void setCache(Cache cache) {
-		this.cache = cache;
+
+	// Spring IoC init
+	public void init() {
+	
+		if (configService != null) {
+
+			useCache = configService.getBoolean(AppConstants.ENABLE_STATISTICS_CACHE, Boolean.FALSE);
+
+			System.out.println("DEBUG: useCache = " + useCache);
+			if(useCache && null != cache) {
+
+				int cacheTimeToLive = configService.getInt(AppConstants.STATISTICS_CACHE_TIME_TO_LIVE_SECONDS, AppConstants.STATISTICS_CACHE_TIME_TO_LIVE_SECONDS_DEFAULT);
+				int cacheTimeToIdle = configService.getInt(AppConstants.STATISTICS_CACHE_TIME_TO_IDLE_SECONDS, AppConstants.STATISTICS_CACHE_TIME_TO_IDLE_SECONDS_DEFAULT);
+				
+				CacheConfiguration cacheConfiguration = cache.getCacheConfiguration();
+				cacheConfiguration.setTimeToLiveSeconds(cacheTimeToLive);
+				cacheConfiguration.setTimeToIdleSeconds(cacheTimeToIdle);
+			}
+		}
 	}
 	
 	protected <X> X fromJson(String text, Class<?> type) {
+		
 		X o = null;
 		
 		ObjectMapper mapper = new ObjectMapper();
@@ -56,11 +70,12 @@ public class Resource {
 	}
 	
 	protected String toJson(List<?> list, int size) {
+		
 		return toJson(list, size, false); 
 	}
 	
-	protected String toJson(List<?> list, int size, boolean pretty) 
-	{
+	protected String toJson(List<?> list, int size, boolean pretty)  {
+		
 		Map<String,Object> wrapper = new HashMap<String, Object>();
 		wrapper.put(AppConstants.LIST_ROOT, list);
 		wrapper.put(AppConstants.TOTAL, String.valueOf(size));
@@ -68,11 +83,14 @@ public class Resource {
 		return toJson(wrapper, pretty);
 		
 	}
-	protected String toJson(Object o)
-	{
+	
+	protected String toJson(Object o) {
+		
 		return toJson(o, false); 
 	}
+	
 	protected String toJson(Object o, boolean pretty) {
+		
 		ObjectMapper mapper = new ObjectMapper();
 		
 		if (pretty)
@@ -90,21 +108,22 @@ public class Resource {
 		return w.toString();
 	}
 	
-	protected void logJsonToFile(List<?> list, int s, String outfile)
-	{
+	protected void logJsonToFile(List<?> list, int s, String outfile) {
+		
 		String jsonData; 
 		jsonData = toJson(list, s, true); 
 		logJsonToFileActual(jsonData, outfile); 
 	}
 	
-	protected void logJsonToFile(Object o, String outfile) 
-	{
+	protected void logJsonToFile(Object o, String outfile) {
+		
 		String jsonData; 
 		jsonData = toJson(o, true); 
 		logJsonToFileActual(jsonData, outfile);
 	}
-	private void logJsonToFileActual(String s, String outfile) 
-	{
+	
+	private void logJsonToFileActual(String s, String outfile) {
+		
 		File f = new File(outfile);
 		boolean isDeleted = f.delete(); 
 
@@ -121,14 +140,21 @@ public class Resource {
 		} catch (FileNotFoundException e) {
 			log.warn("Caught exception: " + e, e); 
 		} 
-
-	}
-	public Gradebook2ComponentService getService() {
-		return service;
 	}
 
+	// Spring IoC setter
+	public void setCache(Cache cache) {
+		this.cache = cache;
+	}
+	
+	// Spring IoC setter
 	public void setService(Gradebook2ComponentService service) {
 		this.service = service;
+	}
+	
+	// Spring IoC setter
+	public void setConfigService(ServerConfigurationService configService) {
+		this.configService = configService;
 	}
 	
 	/**
@@ -161,17 +187,4 @@ public class Resource {
 		}
 		return buf.toString();
 	}
-	
-	// some static entry points
-	
-	public static <X> X convertFromJson(String json, Class<?> type) {
-		Resource r = new Resource();
-		return r.<X>fromJson(json , type);
-	}
-	
-	public static String convertToJson(Object o) {
-		Resource r = new Resource();
-		return r.toJson(o);
-	}
-	
 }
