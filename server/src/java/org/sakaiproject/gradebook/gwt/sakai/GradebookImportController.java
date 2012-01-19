@@ -144,25 +144,29 @@ public class GradebookImportController extends SimpleFormController implements O
 				
 				boolean dupsFound = false;
 				
-				for (Learner student : rows) {
-					String id = student.getIdentifier();
-					if (null == id)
-						continue;
-					if (studentIds.contains(id)) {
-						dupsFound = true;
-						if (null == msg) {
-							msg = new StringBuffer("Duplicate rows found in the table. The following Student Id's where duplicated: ").append(id);
+				if (rows != null) {
+					for (Learner student : rows) {
+						String id = student.getIdentifier();
+						if (null == id)
+							continue;
+						if (studentIds.contains(id)) {
+							dupsFound = true;
+							if (null == msg) {
+								msg = new StringBuffer("Duplicate rows found in the table. The following Student Id's where duplicated: ").append(id);
+							} else {
+								msg.append(",").append(id);
+							}
 						} else {
-							msg.append(",").append(id);
+							studentIds.add(id);
 						}
-					} else {
-						studentIds.add(id);
 					}
-				}
 				
-				if (dupsFound) {
-					importFile.setErrors(true);
-					importFile.setNotes(msg.toString());
+				
+					if (dupsFound) {
+						importFile.setErrors(true);
+						importFile.setNotes(msg.toString());
+					}
+					
 				}
 			}
 			writer.write(toJson(importFile)); 

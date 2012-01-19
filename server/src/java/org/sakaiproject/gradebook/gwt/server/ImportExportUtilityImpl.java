@@ -1327,6 +1327,8 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		} catch (IOException e) {
 			// FIXME - error handling
 			log.error(e);
+			rawData.setErrorsFound(true);
+			rawData.setMessages(e.getMessage());
 		}
 
 		rawData.setFileType("CSV file"); 
