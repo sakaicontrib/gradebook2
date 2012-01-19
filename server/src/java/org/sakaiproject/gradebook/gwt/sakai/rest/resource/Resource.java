@@ -42,7 +42,6 @@ public class Resource {
 
 			useCache = configService.getBoolean(AppConstants.ENABLE_STATISTICS_CACHE, Boolean.FALSE);
 
-			System.out.println("DEBUG: useCache = " + useCache);
 			if(useCache && null != cache) {
 
 				int cacheTimeToLive = configService.getInt(AppConstants.STATISTICS_CACHE_TIME_TO_LIVE_SECONDS, AppConstants.STATISTICS_CACHE_TIME_TO_LIVE_SECONDS_DEFAULT);
