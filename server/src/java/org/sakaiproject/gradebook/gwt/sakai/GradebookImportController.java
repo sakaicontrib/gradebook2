@@ -28,7 +28,10 @@ import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+
 import org.sakaiproject.util.ResourceLoader;
 
 import javax.servlet.ServletException;
@@ -40,6 +43,8 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
+import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.Upload;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility.FileType;
@@ -131,6 +136,32 @@ public class GradebookImportController extends SimpleFormController implements O
 				importFile = new UploadImpl();
 				importFile.setErrors(true);
 				importFile.setNotes(i18n.getString("unknownExcelFileFormat"));
+			} else {
+				//GRBK-1194
+				List<Learner> rows = importFile.getRows();
+				List<String> studentIds = new ArrayList<String>();
+				StringBuffer msg = null;
+				
+				boolean dupsFound = false;
+				
+				for (Learner student : rows) {
+					String id = student.getIdentifier();
+					if (studentIds.contains(id)) {
+						dupsFound = true;
+						if (null == msg) {
+							msg = new StringBuffer("Duplicate rows found in the table. The following Student Id's where duplicated: ").append(id);
+						} else {
+							msg.append(",").append(id);
+						}
+					} else {
+						studentIds.add(id);
+					}
+				}
+				
+				if (dupsFound) {
+					importFile.setErrors(true);
+					importFile.setNotes(msg.toString());
+				}
 			}
 			writer.write(toJson(importFile)); 
 			writer.flush();

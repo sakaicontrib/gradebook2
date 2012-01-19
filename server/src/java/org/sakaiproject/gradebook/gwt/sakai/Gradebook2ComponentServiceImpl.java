@@ -3352,7 +3352,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		}
 
 		Site site = getSite();
-		Map<String, UserRecord> userRecordMap = new HashMap<String, UserRecord>();
+		Map<String, UserRecord> userRecordByStudentId = new HashMap<String, UserRecord>();
 
 		String[] learnerRoleNames = getLearnerRoleNames();
 		String siteId = site == null ? null : site.getId();
@@ -3374,21 +3374,21 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			for (AssignmentGradeRecord gradeRecord : allGradeRecords) {
 				gradeRecord.setUserAbleToView(true);
 				String studentUid = gradeRecord.getStudentId();
-				UserRecord userRecord = userRecordMap.get(studentUid);
+				UserRecord userRecord = userRecordByStudentId.get(studentUid);
 
 				if (userRecord == null) {
 					userRecord = new UserRecord(studentUid);
-					userRecordMap.put(studentUid, userRecord);
+					userRecordByStudentId.put(studentUid, userRecord);
 				}
 
-				Map<Long, AssignmentGradeRecord> studentMap = userRecord.getGradeRecordMap();
-				if (studentMap == null) {
-					studentMap = new HashMap<Long, AssignmentGradeRecord>();
+				Map<Long, AssignmentGradeRecord> studentGradeRecordByAssignmentId = userRecord.getGradeRecordMap();
+				if (studentGradeRecordByAssignmentId == null) {
+					studentGradeRecordByAssignmentId = new HashMap<Long, AssignmentGradeRecord>();
+					userRecord.setGradeRecordMap(studentGradeRecordByAssignmentId);
 				}
 				GradableObject go = gradeRecord.getGradableObject();
-				studentMap.put(go.getId(), gradeRecord);
-
-				userRecord.setGradeRecordMap(studentMap);
+				studentGradeRecordByAssignmentId.put(go.getId(), gradeRecord);
+				
 			}
 		}
 
@@ -3407,14 +3407,14 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 				if (rows == null)
 					continue;
-
+				
 				for (Learner student : rows) {
 					String studentUid = student.getIdentifier();
 
 					if (! Util.isNotNullOrEmpty(studentUid))
 						continue;
 
-					UserRecord userRecord = userRecordMap.get(studentUid);
+					UserRecord userRecord = userRecordByStudentId.get(studentUid);
 
 					Map<Long, AssignmentGradeRecord> gradeRecordMap = userRecord == null ? null : userRecord.getGradeRecordMap();
 
