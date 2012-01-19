@@ -146,6 +146,8 @@ public class GradebookImportController extends SimpleFormController implements O
 				
 				for (Learner student : rows) {
 					String id = student.getIdentifier();
+					if (null == id)
+						continue;
 					if (studentIds.contains(id)) {
 						dupsFound = true;
 						if (null == msg) {
