@@ -225,6 +225,10 @@ public class BusinessLogicImpl implements BusinessLogic {
 		
 		if (assignments != null) {
 			for (Assignment assignment : assignments) {
+				
+				if (assignment.isRemoved())
+					continue;
+				
 				assignment.setRemoved(true);
 				
 				actionRecord.setEntityType(EntityType.ITEM.name());
