@@ -48,6 +48,7 @@ import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
@@ -60,6 +61,7 @@ import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.hibernate.mapping.Join;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
@@ -1371,6 +1373,11 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		rawData.startReading();
 		while ( !headerFound && (curRow = rawData.readNext()) != null) 
 		{
+			log.debug(StringUtils.join(curRow, ","));
+			if (curRow.length == 0) {//empty rows are ignored
+				curRowNumber++;
+				continue;
+			}
 			String firstColumnLowerCase = curRow[0].toLowerCase();
 			log.debug("SI[" + curRowNumber + "]: firstColumnLowerCase=" + firstColumnLowerCase);
 			/*
