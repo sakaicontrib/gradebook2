@@ -12,7 +12,7 @@
 	<classpathentry kind="src" path="dev/src/java"/>
 	<classpathentry kind="src" path="unit-test/src/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
-	<classpathentry kind="var" path="M2_REPO/org/springframework/spring/2.5.6.SEC01/spring-2.5.6.SEC01.jar" sourcepath="/M2_REPO/org/springframework/spring/2.0.6/spring-2.0.6-sources.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/springframework/spring/2.5.6.SEC03/spring-2.5.6.SEC03.jar" sourcepath="/M2_REPO/org/springframework/spring/2.0.6/spring-2.0.6-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/commons-lang/commons-lang/2.1/commons-lang-2.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/hibernate/hibernate/3.2.7.ga/hibernate-3.2.7.ga.jar"/>
 	<classpathentry kind="var" path="M2_REPO/commons-logging/commons-logging/1.0.4/commons-logging-1.0.4.jar"/>
@@ -22,7 +22,7 @@
 	<classpathentry kind="var" path="M2_REPO/javax/servlet/servlet-api/2.4/servlet-api-2.4.jar" sourcepath="M2_REPO/javax/servlet/servlet-api/2.4/servlet-api-2.4-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/commons-collections/commons-collections/3.2.1/commons-collections-3.2.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/net/sf/opencsv/opencsv/1.8/opencsv-1.8.jar"/>
-	<classpathentry kind="var" path="M2_REPO/commons-dbcp/commons-dbcp/1.2.1/commons-dbcp-1.2.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/commons-dbcp/commons-dbcp/1.2.2/commons-dbcp-1.2.2.jar"/>
 	<classpathentry kind="var" path="M2_REPO/commons-pool/commons-pool/1.2/commons-pool-1.2.jar"/>
 	<classpathentry kind="var" path="M2_REPO/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/hsqldb/hsqldb/1.7.3.0/hsqldb-1.7.3.0.jar"/>
@@ -36,7 +36,7 @@
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/gradebook/gradebook-service-impl/1.2-SNAPSHOT/gradebook-service-impl-1.2-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-component-manager/1.3.0-SNAPSHOT/sakai-component-manager-1.3.0-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/sections/sections-api/1.2-SNAPSHOT/sections-api-1.2-SNAPSHOT.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-webmvc/2.5.6.SEC01/spring-webmvc-2.5.6.SEC01.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-webmvc/2.5.6.SEC03/spring-webmvc-2.5.6.SEC03.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/sun/jersey/contribs/jersey-spring/1.11/jersey-spring-1.11.jar" sourcepath="/M2_REPO/com/sun/jersey/contribs/jersey-spring/1.1.5.1/jersey-spring-1.1.5.1-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/sun/jersey/jersey-core/1.11/jersey-core-1.11.jar" sourcepath="/M2_REPO/com/sun/jersey/jersey-core/1.1.5.1/jersey-core-1.1.5.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/sun/jersey/jersey-server/1.11/jersey-server-1.11.jar" sourcepath="/M2_REPO/com/sun/jersey/jersey-server/1.1.5.1/jersey-server-1.1.5.1-sources.jar"/>
@@ -52,7 +52,7 @@
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-kernel-util/1.3.0-SNAPSHOT/sakai-kernel-util-1.3.0-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="M2_REPO/javax/activation/activation/1.1.1/activation-1.1.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/edu-services/sections/sections-model/1.2-SNAPSHOT/sections-model-1.2-SNAPSHOT.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-test/2.5.6.SEC01/spring-test-2.5.6.SEC01.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-test/2.5.6.SEC03/spring-test-2.5.6.SEC03.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/common/archive-api/1.2-SNAPSHOT/archive-api-1.2-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/common/archive-impl/1.2-SNAPSHOT/archive-impl-1.2-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/kernel/sakai-kernel-api/1.3.0-SNAPSHOT/sakai-kernel-api-1.3.0-SNAPSHOT.jar"/>
