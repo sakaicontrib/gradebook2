@@ -28,6 +28,7 @@ import org.sakaiproject.exception.IdUnusedException;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
 import org.sakaiproject.gradebook.gwt.client.ConfigUtil;
+import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nMessages;
 import org.sakaiproject.gradebook.gwt.client.exceptions.BusinessRuleException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
@@ -6636,7 +6637,9 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 
 		if (oldGradeType != newGradeType) {
 			if (gbService.isAnyScoreEntered(gradebook.getId(), hasCategories))
-				throw new InvalidInputException("There are one or more scores already entered for this gradebook. To switch grade types at this time you will have to remove those scores.");
+				throw new InvalidInputException(i18n.getString("scoresEnteredNoGradeTypeChange",
+						"There are one or more scores already entered for this gradebook. " +
+						"To switch grade types at this time you will have to remove those scores."));
 		}
 
 		gradebook.setGrade_type(newGradeType);
