@@ -152,7 +152,8 @@ public class GradebookImportController extends SimpleFormController implements O
 						if (studentIds.contains(id)) {
 							dupsFound = true;
 							if (null == msg) {
-								msg = new StringBuffer("Duplicate rows found in the table. The following Student Id's where duplicated: ").append(id);
+								msg = new StringBuffer(i18n.getString("importDuplicateStudentsFound", 
+										"Duplicate rows found in the table. The following Student Id's where duplicated: ")).append(id);
 							} else {
 								msg.append(",").append(id);
 							}

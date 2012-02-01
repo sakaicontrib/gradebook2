@@ -1014,7 +1014,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		
 		if (! stop) 
 		{
-			raw.addRow(getScantronHeaderRow(fileName)); 
+			raw.addRow(createScantronHeaderRow(fileName)); 
 			for (int i = 0 ; i < s.getRows() ; i++)
 			{
 				Cell idCell; 
@@ -1048,7 +1048,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 
 	}
 
-	private String[] getScantronHeaderRow(String fileName)
+	private String[] createScantronHeaderRow(String fileName)
 	{
 		String[] header = new String[2]; 
 		header[RAWFIELD_FIRST_POSITION] = "Student Id"; 
@@ -1296,7 +1296,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 
 		if (! stop) 
 		{
-			data.addRow(getScantronHeaderRow(fileName));
+			data.addRow(createScantronHeaderRow(fileName));
 			while (rowIter.hasNext())
 			{ 
 				Row curRow = rowIter.next();  
