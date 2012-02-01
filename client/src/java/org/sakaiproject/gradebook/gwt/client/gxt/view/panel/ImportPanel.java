@@ -154,7 +154,7 @@ public class ImportPanel extends GradebookPanel {
 
 		/*
 		 * This is the next button that uploads the imported data to the server
-		 */ImportPanel
+		 */
 		submitButton = new Button(i18n.importPanelNextButton());
 		submitButton.setMinWidth(120);
 		submitButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
