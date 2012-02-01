@@ -123,6 +123,8 @@ public class DataTypeConversionUtil {
 		return new StringBuilder(AppConstants.CONVERTED_FLAG).append(itemId).toString();
 	}
 	
+	//TODO: this is really brittle... convert to two args, one being the flag constant 
+	// 		Or use a delimiter like the colon (':')
 	public static String unpackItemIdFromKey(String key) {
 		if (key == null || key.length() < 5)
 			return null;

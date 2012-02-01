@@ -50,6 +50,14 @@
 		<property name="gradeCalculations" ref="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"/>
 		<property name="scantronScoreHeader" value="score" />
 		<property name="scantronRescoreHeader" value="test" />
+		<property name="clickerStudentIdHeader" value="student id" />
+		<property name="clickerIgnoreColumns">
+			<list>
+				<value>prs total</value>
+				<value>first</value>
+				<value>name</value>
+			</list>
+		</property>
 		<property name="scantronStudentIdHeader" value="student_id" />
 		<property name="scantronIgnoreColumns">
 			<list>

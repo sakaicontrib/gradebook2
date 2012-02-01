@@ -107,11 +107,27 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	private String scantronStudentIdHeader = null; 
 	private String scantronScoreHeader = null;
 	private String scantronRescoreHeader = null;
+
 	
+	// GRBK-689
+	private String clickerStudentIdHeader;
+
+	
+	public void setClickerStudentIdHeader(String clickerStudentIdHeader) {
+		this.clickerStudentIdHeader = clickerStudentIdHeader;
+	}
+
+
+	public void setClickerIgnoreColumns(String[] clickerIgnoreColumns) {
+		this.clickerIgnoreColumns = clickerIgnoreColumns;
+	}
+
+
 	// Set via IoC
 	private ResourceLoader i18n;
 
 	public String[] scantronIgnoreColumns = null;
+	public String[] clickerIgnoreColumns = null;
 
 	public String[] idColumns = null;
 
@@ -153,7 +169,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	
 	
 	
-	private Set<String> headerRowIndicatorSet, idSet, nameSet, scantronIgnoreSet;
+	private Set<String> headerRowIndicatorSet, idSet, nameSet, scantronIgnoreSet, clickerIgnoreSet;
 
 	public static String UNSAFE_FILENAME_CHAR_REGEX = "[\\p{Punct}\\p{Space}\\p{Cntrl}]";
 	public static List<String> SUPPORTED_FILE_TYPES = new ArrayList<String>() {
@@ -167,8 +183,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	public static String CONTENT_DISPOSITION_HEADER_NAME = "Content-Disposition";
 	public static String CONTENT_DISPOSITION_HEADER_ATTACHMENT = "attachment; filename=";
 		
-	private GradeCalculations gradeCalculations;
-	
+	private GradeCalculations gradeCalculations;	
 	
 	
 	
@@ -188,6 +203,10 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		this.scantronIgnoreSet = new HashSet<String>();
 		for (int i=0;i<scantronIgnoreColumns.length;i++) {
 			scantronIgnoreSet.add(scantronIgnoreColumns[i].toLowerCase());
+		}
+		this.clickerIgnoreSet = new HashSet<String>();
+		for (int i=0;i<clickerIgnoreColumns.length;i++) {
+			clickerIgnoreSet.add(clickerIgnoreColumns[i].toLowerCase());
 		}
 	}
 	
@@ -1027,7 +1046,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			return parseImportGeneric(service, gradebookUid, raw);
 		}
 
-			}
+	}
 
 	private String[] getScantronHeaderRow(String fileName)
 	{
@@ -1043,6 +1062,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		}
 		return header; 
 	}
+	
 	private boolean isScantronSheetForJExcelApi(Sheet s) {
 		Cell studentIdHeader = s.findCell(scantronStudentIdHeader);
 		Cell scoreHeader = s.findCell(scantronScoreHeader);
@@ -1051,6 +1071,79 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		// GRBK-1044 scantron's can contain either a score header or a rescore header, but not necessarily both
 		return (studentIdHeader != null && (scoreHeader != null || reScoreHeader != null)); 
 	}
+	
+	private boolean isClickerSheetForJExcelApi(Sheet s) {
+		Cell studentIdHeader = s.findCell(clickerStudentIdHeader);
+		boolean clicker = studentIdHeader != null && clickerIgnoreColumns.length>0;
+		for (String header : clickerIgnoreColumns) {
+			header = header.trim().toLowerCase();
+			clicker = clicker && s.findCell(header) != null;
+		}
+
+		return clicker; 
+	}
+	
+	private boolean isClickerSheetFromPoi(org.apache.poi.ss.usermodel.Sheet sheet) {
+		//skip all empty rows
+		for (Row row : sheet) {
+			for (org.apache.poi.ss.usermodel.Cell cell : row) {
+				if (!"".equals(cell.getStringCellValue().trim())) {
+					return isClickerHeaderRowPoi(row);
+				}
+			}
+		}
+		
+		return false; /// empty sheet
+	}
+	
+
+	private boolean isClickerHeaderRowPoi(Row row) {
+		boolean clicker = clickerIgnoreColumns.length>0;
+		for (String header : clickerIgnoreColumns ) {
+			clicker = clicker && poiRowContainsString(row, header);
+			}
+		
+		return clicker && poiRowContainsString(row, clickerStudentIdHeader);
+	}
+
+
+	private boolean poiRowContainsString(Row row, String text) {
+		if (null == text) 
+			return false;
+		text = text.trim();
+		boolean contains = row!=null && row.cellIterator().hasNext();
+		for (org.apache.poi.ss.usermodel.Cell cell : row) {
+			contains = contains && cell.getStringCellValue().trim().equalsIgnoreCase(text);
+		}
+		return contains;
+	}
+	
+	private boolean isClickerSheetCSV(ImportExportDataFile rawData) {
+		boolean isClicker = rawData.getAllRows().size()>0;
+		
+		for (String[] row : rawData.getAllRows()) {
+			List<String> rowLowerCase = new ArrayList<String>();
+			for (String cell : Arrays.asList(row)) {
+				rowLowerCase.add(cell.trim().toLowerCase());
+			}
+			isClicker = isClicker && isListAClickerHeaderRow(rowLowerCase);
+			// accept first qualified match
+			if (isClicker)
+				return true;
+		}
+		return false;
+	}
+
+
+	private boolean isListAClickerHeaderRow(List<String> list) {
+		boolean clicker = clickerIgnoreColumns.length>0;
+		for (String header : clickerIgnoreColumns ) {
+			clicker = clicker && list !=null && list.contains(header.trim().toLowerCase());
+			}
+		
+		return clicker && list.contains(clickerStudentIdHeader.trim().toLowerCase());
+	}
+
 
 	private Upload handlePoiSpreadSheet(org.apache.poi.ss.usermodel.Workbook inspread, Gradebook2ComponentService service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName) throws InvalidInputException, FatalException
 	{
@@ -1333,6 +1426,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		}
 
 		rawData.setFileType("CSV file"); 
+		rawData.setScantronFile(isClickerSheetCSV(rawData));
 		return parseImportGeneric(service, gradebookUid, rawData);
 	}	
 
@@ -1423,6 +1517,10 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	{
 		return scantronIgnoreSet.contains(in);
 	}
+	
+	private boolean isClickerHeader(String in) {
+		return clickerIgnoreSet.contains(in);
+	}
 
 	private void readInHeaderRow(ImportExportDataFile rawData, ImportExportInformation ieInfo, int startRow) {
 		String[] headerRow = null;
@@ -1467,7 +1565,8 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		 * FIXME - There's gotta be a better way to handle this. 
 		 * 
 		 */
-		if (isEmpty(lowerText) || isScantronHeader(lowerText)) { // Empty rows or scantron data in general needs to be skipped. 
+		// Empty rows,scantron,clicker headers need to be skipped. 
+		if (isEmpty(lowerText) || isScantronHeader(lowerText) || isClickerHeader(lowerText)) { 
 			return new ImportHeader(Field.S_EMPTY, text, entryNumber); 
 		} else if (isName(lowerText)) {
 			header = new ImportHeader(Field.S_NAME, text, entryNumber);
@@ -2053,6 +2152,9 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	private List<CategoryPosition> processCategoryRow(String[] categoryRow,
 			GradeItem gradebookItemModel, ImportExportInformation ieInfo) {
 		
+		if (categoryRow == null  || categoryRow.length < 3)
+			return null;
+		
 		List<CategoryPosition> ret = new ArrayList<CategoryPosition>();
 		Map<String, GradeItem> categoryMap = new HashMap<String, GradeItem>();
 		
@@ -2060,16 +2162,11 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		// First position is a blank, second is the Category row identifier.
 		// Since this had already been read in as a category, probably don't 
 		// need to check twice
-		if (categoryRow != null && categoryRow.length > 2)
-		{
+		
+		processActualCategoryRowData(categoryRow, categoryMap, gradebookItemModel, ret, ieInfo);
+		
+		return ret;			
 
-			processActualCategoryRowData(categoryRow, categoryMap, gradebookItemModel, ret, ieInfo);
-			return ret;			
-		}
-		else
-		{
-			return null; 
-		}
 	}
 
 private void processActualCategoryRowData(String[] categoryRow, Map<String, GradeItem> categoryMap, 
@@ -2300,7 +2397,6 @@ private GradeItem buildNewCategory(String curCategoryString,
 		String[] pointsColumns = structureColumnsMap.get(StructureRow.POINTS);
 		String[] percentCategoryColumns = structureColumnsMap.get(StructureRow.PERCENT_CATEGORY);
 			
-		// Iterate through each header once
 		for (int i=0;i<headers.length;i++) {
 		
 			ImportHeader header = headers[i];
@@ -2625,6 +2721,9 @@ private GradeItem buildNewCategory(String curCategoryString,
 	/*
 	 * This method removes assignments that are not present in the import file
 	 * but are already in the gradebook
+	 * 
+	 * TODO: fix the name of this method
+	 * 
 	 */
 	private void adjustGradebookItemModel(ImportExportInformation ieInfo) {
 		

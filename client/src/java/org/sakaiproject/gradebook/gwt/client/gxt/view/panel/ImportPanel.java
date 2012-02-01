@@ -154,7 +154,7 @@ public class ImportPanel extends GradebookPanel {
 
 		/*
 		 * This is the next button that uploads the imported data to the server
-		 */
+		 */ImportPanel
 		submitButton = new Button(i18n.importPanelNextButton());
 		submitButton.setMinWidth(120);
 		submitButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
@@ -310,7 +310,7 @@ public class ImportPanel extends GradebookPanel {
 		if(!hasErrors && ((Gradebook)Registry.get(AppConstants.CURRENT)).getGradebookItemModel().getGradeType() == GradeType.PERCENTAGES
 				&& importSettings.isScantron()) {
 			
-			getScantronPointsWithWizard();
+			getScantonOrClickerPointsWithWizard();
 		}
 
 		if (msgsFromServer != null && msgsFromServer.length() > 0){
@@ -507,7 +507,7 @@ public class ImportPanel extends GradebookPanel {
 				} else if (411 == statusCode) {
 					uploadingBox.close();
 					submitButton.setVisible(true);
-					getScantronPointsWithWizard();
+					getScantonOrClickerPointsWithWizard();
 				} else {
 					onFailure(request, caught);
 				}
@@ -627,7 +627,7 @@ public class ImportPanel extends GradebookPanel {
 		});
 	}
 
-	protected void getScantronPointsWithWizard() {
+	protected void getScantonOrClickerPointsWithWizard() {
 		//show the wizard and ask for points possible for scantron
 		WidgetInjector injector = Registry.get(AppConstants.WIDGET_INJECTOR);
 		wizard = injector.getWizardProvider().get();
@@ -711,8 +711,8 @@ public class ImportPanel extends GradebookPanel {
 				else 
 					maxPoints = Double.valueOf(entry.doubleValue());
 								
-				importSettings.setScantronMaxPoints(maxPoints.toString());
-				
+				importSettings.setScantronMaxPoints(maxPoints.toString().substring(0, maxPoints.toString().indexOf(".")));
+
 				@SuppressWarnings("unchecked")
 				List<ItemModel> gradeItems = (List<ItemModel>) setupPanel.getGradeItems(gradebookItemModel);
 				ItemModel i = gradeItems.get(0);
@@ -722,7 +722,14 @@ public class ImportPanel extends GradebookPanel {
 					// GRBK-1105
 					// Note the below string has not been vetted, but GRBK-1104 should correct this to not be able to happen. 
 					String newValStr = "??"; 
-					Double pnts = Double.valueOf((String)row.get(i.getIdentifier()));
+					Double pnts = null;
+					try {
+						pnts = Double.valueOf((String)row.get(i.getIdentifier()));
+					} catch (NumberFormatException e) {
+						pnts = 0d;
+					} catch (NullPointerException npe) {
+						pnts = 0d;
+					}
 					boolean errorFound = false; 
 					if (Double.valueOf(0).compareTo(maxPoints) != 0 ) {
 						
@@ -748,11 +755,12 @@ public class ImportPanel extends GradebookPanel {
 					}
 				}
 				/*
-				 * this is scantron with only one key in it which is *not* in LearnerKey: an item
+				 * this is scantron or clicker with only one key in it which is *not* in LearnerKey: an item
 				 */
 				
 				gradeItems.remove(i);
 				i.setPoints(maxPoints);
+				i.setIdentifier(DataTypeConversionUtil.unpackItemIdFromKey(i.getIdentifier()));
 				gradeItems.add(i);
 				setupPanel.getItemStore().removeAll();
 				refreshSetupPanel();
@@ -771,24 +779,46 @@ public class ImportPanel extends GradebookPanel {
 		wizard.resize(0,-50);
 
 	}
-
-
-	private Double getMaxScoreForItem(ItemModel i, List<Learner> rows) {
-		Double max = 0d;
+	
+	/* pass in true as last param to find lowest value, false to find the highest */
+	private Double getBoundaryScoreForItem(ItemModel i, List<Learner> rows, boolean findlower) {
+		Double boundary = findlower ? Double.MAX_VALUE : 0d;
+		String score = null;
+		Double d = null;
 		for (Learner row : rows) {
-			Double d = Double.valueOf((String) row.get(i.getIdentifier()));
-			max = d>max ? d : max;
+			try {
+				score = (String) row.get(i.getIdentifier());
+				if (null == score)
+					continue;
+				d = Double.valueOf(score);
+			} catch (NumberFormatException e) {
+				continue;
 			}
-		return max;
+			if(findlower){
+				boundary = d<boundary ? d : boundary;
+			} else {
+				boundary = d>boundary ? d : boundary;
+			}
+			
+			}
+		/* set reasonable limits if no values were found */
+		if (findlower) {
+			if (boundary == Double.MAX_VALUE) {
+				boundary = 0d;
+			}
+			
+		} else if(boundary == 0d) {
+			boundary = 100d;
+		}
+		return boundary;
+	}
+	
+	private Double getMaxScoreForItem(ItemModel i, List<Learner> rows) {
+		return getBoundaryScoreForItem(i, rows, false);
 	}
 
 	private Double getMinScoreForItem(ItemModel i, List<Learner> rows) {
-		Double min = Double.MAX_VALUE;
-		for (Learner row : rows) {
-			Double d = Double.valueOf((String) row.get(i.getIdentifier()));
-			min = d<min ? d : min;
-			}
-		return min;
+		return getBoundaryScoreForItem(i, rows, true);
 	}
 
 	protected UploadModel getUploadModel() {
