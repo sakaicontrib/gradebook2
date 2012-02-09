@@ -760,7 +760,9 @@ public class ImportPanel extends GradebookPanel {
 				
 				gradeItems.remove(i);
 				i.setPoints(maxPoints);
-				i.setIdentifier(DataTypeConversionUtil.unpackItemIdFromKey(i.getIdentifier()));
+				if(i.getIdentifier().startsWith(AppConstants.FAILED_FLAG)) {
+					i.setIdentifier(DataTypeConversionUtil.unpackItemIdFromKey(i.getIdentifier()));
+				}
 				gradeItems.add(i);
 				setupPanel.getItemStore().removeAll();
 				refreshSetupPanel();
