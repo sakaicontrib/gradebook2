@@ -959,6 +959,8 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		}
 	}
 
+	
+
 	private Upload handleNormalXLSSheetForJExcelApi(Sheet s,
 			Gradebook2ComponentService service, String gradebookUid) throws InvalidInputException, FatalException {
 		ImportExportDataFile raw = new ImportExportDataFile(); 
@@ -980,8 +982,9 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			}
 			raw.addRow(data); 
 		}
-		raw.setFileType("Excel 5.0/7.0 Non Scantron"); 
-		raw.setScantronFile(false); 
+		boolean isClicker = isClickerSheetForJExcelApi(s);
+		raw.setFileType("Excel 5.0/7.0" + ( isClicker ? " clicker": "")); 
+		raw.setScantronFile(isClicker); 
 
 		return parseImportGeneric(service, gradebookUid, raw);
 	}
@@ -989,25 +992,25 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	private Upload handleScantronSheetForJExcelApi(Sheet s,
 			Gradebook2ComponentService service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName) throws InvalidInputException, FatalException 
 			{
-		StringBuilder err = new StringBuilder("Scantron File with errors"); 
+		StringBuilder err = new StringBuilder(i18n.getString("scantronHasErrors", "Scantron File with errors: ")); 
 		ImportExportDataFile raw = new ImportExportDataFile(); 
 		boolean stop = false; 
 
 		Cell studentIdHeader = s.findCell(scantronStudentIdHeader);
 		Cell scoreHeader = s.findCell(scantronScoreHeader);
-
+		
 		if (studentIdHeader == null)
 		{
-			err.append("There is no column with the header student_id");
-			stop = true; 
+				err.append(i18n.getString("noColumnWithHeader","- There is no column with the header: ") + scantronStudentIdHeader);
+				stop = true; 
 		}
 
-		if (scoreHeader == null)
+		if (!stop && scoreHeader == null)
 		{
 			// check for rescore header - GRBK-407
 			scoreHeader = s.findCell(scantronRescoreHeader);
 			if (scoreHeader == null) {
-				err.append("There is no column with the header score");
+				err.append(i18n.getString("noColumnWithHeader","- There is no column with the header: ") + scantronRescoreHeader);
 				stop = true; 
 			}
 		}
@@ -1073,10 +1076,10 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	}
 	
 	private boolean isClickerSheetForJExcelApi(Sheet s) {
+		// no way to find case-insensitively AFAICS
 		Cell studentIdHeader = s.findCell(clickerStudentIdHeader);
 		boolean clicker = studentIdHeader != null && clickerIgnoreColumns.length>0;
 		for (String header : clickerIgnoreColumns) {
-			header = header.trim().toLowerCase();
 			clicker = clicker && s.findCell(header) != null;
 		}
 
@@ -1166,7 +1169,8 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 				log.debug("POI: Not scantron");
 				ret = processNormalXls(cur); 
 			}
-
+			
+			ret.setScantronFile(ret.isScantronFile() || isClickerSheetFromPoi(cur));
 			return parseImportGeneric(service, gradebookUid, ret);
 		}
 		else

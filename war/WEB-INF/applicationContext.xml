@@ -39,12 +39,12 @@
 		<property name="gradeCalculations" ref="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"/>
 		<property name="scantronScoreHeader" value="score" />
 		<property name="scantronRescoreHeader" value="test" />
-		<property name="clickerStudentIdHeader" value="student id" />
+		<property name="clickerStudentIdHeader" value="Student ID" />
 		<property name="clickerIgnoreColumns">
 			<list>
-				<value>prs total</value>
-				<value>first</value>
-				<value>name</value>
+				<value>PRS Total</value>
+				<value>First</value>
+				<value>Name</value>
 			</list>
 		</property>
 		<property name="scantronStudentIdHeader" value="student_id" />

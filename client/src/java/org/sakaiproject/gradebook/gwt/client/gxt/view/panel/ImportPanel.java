@@ -710,7 +710,7 @@ public class ImportPanel extends GradebookPanel {
 					maxPoints = maxScore;
 				else 
 					maxPoints = Double.valueOf(entry.doubleValue());
-								
+								// TODO: i18n (Decimal format symbol)
 				importSettings.setScantronMaxPoints(maxPoints.toString().substring(0, maxPoints.toString().indexOf(".")));
 
 				@SuppressWarnings("unchecked")
