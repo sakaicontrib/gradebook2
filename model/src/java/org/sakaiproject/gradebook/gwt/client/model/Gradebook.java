@@ -2,8 +2,6 @@ package org.sakaiproject.gradebook.gwt.client.model;
 
 import java.util.List;
 
-import org.sakaiproject.entity.api.Entity;
-
 public interface Gradebook {
 
 	public abstract String getGradebookUid();

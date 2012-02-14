@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.sakaiproject.section.api.coursemanagement.CourseSection;
-import org.sakaiproject.section.api.coursemanagement.EnrollmentRecord;
 import org.sakaiproject.tool.gradebook.Permission;
 
 

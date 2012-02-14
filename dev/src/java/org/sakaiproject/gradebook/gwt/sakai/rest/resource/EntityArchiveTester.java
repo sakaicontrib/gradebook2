@@ -9,12 +9,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.archive.api.ArchiveService;
 import org.sakaiproject.entity.api.EntityManager;
-import org.sakaiproject.entity.api.EntityProducer;
 import org.sakaiproject.entity.api.EntityTransferrer;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.sakai.mock.ArchiveServiceMock;
-import org.sakaiproject.gradebook.gwt.sakai.mock.BaseGroupMock;
 import org.sakaiproject.service.gradebook.shared.GradebookNotFoundException;
 
 @Path("archive")

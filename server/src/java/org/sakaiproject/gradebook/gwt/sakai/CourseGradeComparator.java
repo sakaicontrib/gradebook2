@@ -24,9 +24,6 @@ package org.sakaiproject.gradebook.gwt.sakai;
 
 import java.math.BigDecimal;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 public class CourseGradeComparator extends EnteredGradeComparator {
 
 	public CourseGradeComparator(boolean isDesc) {
