@@ -26,7 +26,4 @@
 
 	<set-property-fallback name="locale" value="default"/>
 
-	<!--  WizardCard CSS -->
-	<stylesheet src="ext.ux.wiz.css"/>
-
 </module>

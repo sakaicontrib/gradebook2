@@ -299,6 +299,12 @@ public interface AppConstants {
 	public static final String SECTIONS_FIELD = "sections";
 	public static final String ACTUAL_SCORE_SUFFIX = "-OG";
 	
+	public static final String EXPORT_DATA_FIELD = "edf";
+	public static final String EXPORT_DATA_COMMENTS = "edc";
+	public static final String EXPORT_DATA_SECTIONS = "eds";
+	public static final String EXPORT_DATA_TYPE = "edt";
+	public static final String EXPORT_DATA_STRUCTURE = "edst";
+	
 	
 	
 }

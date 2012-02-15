@@ -1,6 +1,13 @@
 
-.gbDisableCheckbox
-{
+.gbCheckBoxAlignLeft input {
+	left:0px !important;
+}
+
+.gbComboBoxWidth {
+	width:150px !important;
+}
+
+.gbDisableCheckbox {
 	opacity: 0.6 !important; 
 }
 .gbStudentChart {

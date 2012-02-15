@@ -45,11 +45,9 @@ public class Statistics extends Resource {
 			@PathParam("id") Long gradebookId,
 			@PathParam("sectionId") String sectionId) throws SecurityException {
 
-
 		List<org.sakaiproject.gradebook.gwt.client.model.Statistics> list = 
 			service.getGraderStatistics(gradebookUid, gradebookId, Base64.base64Decode(sectionId));
 		return toJson(list, list.size());
-
 	}
 
 	// Accessed by client StudentPanel : use caching

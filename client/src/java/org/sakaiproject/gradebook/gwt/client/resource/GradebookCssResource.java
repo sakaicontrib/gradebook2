@@ -115,5 +115,9 @@ public interface GradebookCssResource extends CssResource {
 	String gbFinalGradeSubissionStatusDialog();
 	
 	String helpIcon();
+	
+	String gbComboBoxWidth();
+	
+	String gbCheckBoxAlignLeft();
 
 }

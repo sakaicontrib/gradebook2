@@ -1,6 +1,6 @@
 /**********************************************************************************
  *
- * Copyright (c) 2008, 2009, 2010, 2011 The Regents of the University of California
+ * Copyright (c) 2008, 2009, 2010, 2011, 2012 The Regents of the University of California
  *
  * Licensed under the
  * Educational Community License, Version 2.0 (the "License"); you may
@@ -20,15 +20,12 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
 import org.sakaiproject.gradebook.gwt.client.ExportDetails;
-import org.sakaiproject.gradebook.gwt.client.ExportDetails.ExportType;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestCallback;
@@ -45,6 +42,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityOverlay;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.FinalGradeSubmissionStatusModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.type.ExportType;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.NullSensitiveCheckBox;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.BorderLayoutPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.GradeScalePanel;
@@ -60,6 +58,7 @@ import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
+import org.sakaiproject.gradebook.gwt.client.wizard.formpanel.ExportFormPanel;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
@@ -78,12 +77,10 @@ import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.Dialog;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.form.CheckBox;
-import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.LabelField;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayout;
 import com.extjs.gxt.ui.client.widget.layout.BorderLayoutData;
 import com.extjs.gxt.ui.client.widget.layout.CardLayout;
-import com.extjs.gxt.ui.client.widget.layout.FormLayout;
 import com.extjs.gxt.ui.client.widget.menu.Menu;
 import com.extjs.gxt.ui.client.widget.menu.MenuItem;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
@@ -99,8 +96,7 @@ import com.google.gwt.user.client.ui.AbstractImagePrototype;
 public class InstructorView extends AppView {
 
 	private static final String MENU_SELECTOR_FLAG = "menuSelector";
-	private static final String INCLUDE_COMMENTS = "inc_comments";
-	public enum MenuSelector { ADD_CATEGORY, ADD_ITEM, IMPORT, EXPORT, EXPORT_DATA, EXPORT_DATA_CSV, EXPORT_STRUCTURE, EXPORT_STRUCTURE_CSV, EXPORT_DATA_XLS, EXPORT_STRUCTURE_XLS, FINAL_GRADE, GRADE_SCALE, SETUP, HISTORY, GRADER_PERMISSION_SETTINGS, STATISTICS, EXPORT_STRUCTURE_XLSX, EXPORT_DATA_XLSX };
+	public enum MenuSelector { ADD_CATEGORY, ADD_ITEM, IMPORT, EXPORT, FINAL_GRADE, GRADE_SCALE, SETUP, HISTORY, GRADER_PERMISSION_SETTINGS, STATISTICS };
 
 	private TreeView treeView;
 	private MultigradeView multigradeView;
@@ -142,7 +138,6 @@ public class InstructorView extends AppView {
 	private boolean isEditable;
 	
 	protected Wizard exportWizard = null;
-	private CheckBox exportCommentsCheckbox;
 	private ExportDetails exportDetails;
 	
 	private LabelField finalGradeSubmissionStatusBanner;
@@ -613,25 +608,11 @@ public class InstructorView extends AppView {
 
 		};
 
-		final Map<MenuSelector, ExportType> exportTypeByMenuSelector = new HashMap<MenuSelector, ExportType>();
-		exportTypeByMenuSelector.put(MenuSelector.EXPORT_DATA_XLS, ExportType.XLS97);
-		exportTypeByMenuSelector.put(MenuSelector.EXPORT_STRUCTURE_XLS, ExportType.XLS97);
-		exportTypeByMenuSelector.put(MenuSelector.EXPORT_DATA_CSV, ExportType.CSV);
-		exportTypeByMenuSelector.put(MenuSelector.EXPORT_STRUCTURE_CSV, ExportType.CSV);
-		exportTypeByMenuSelector.put(MenuSelector.EXPORT_STRUCTURE_XLSX, ExportType.XLSX);
-		exportTypeByMenuSelector.put(MenuSelector.EXPORT_DATA_XLSX, ExportType.XLSX);
-		final EnumSet<MenuSelector> exportingStructureSelections = EnumSet.of(
-				MenuSelector.EXPORT_STRUCTURE_XLS,MenuSelector.EXPORT_STRUCTURE_CSV,MenuSelector.EXPORT_STRUCTURE_XLSX);
-
 		menuSelectionListener = new SelectionListener<MenuEvent>() {
-
-			protected ExportDetails ex;
 
 			@Override
 			public void componentSelected(MenuEvent me) {
 				MenuSelector selector = me.getItem().getData(MENU_SELECTOR_FLAG);
-				ExportType exportType = exportTypeByMenuSelector.get(selector);
-				boolean includeStructure = exportingStructureSelections.contains(selector);
 				switch (selector) {
 				case ADD_CATEGORY:
 					Dispatcher.forwardEvent(GradebookEvents.NewCategory.getEventType());
@@ -639,17 +620,8 @@ public class InstructorView extends AppView {
 				case ADD_ITEM:
 					Dispatcher.forwardEvent(GradebookEvents.NewItem.getEventType());
 					break;
-				case EXPORT_DATA_XLS:
-				case EXPORT_DATA_XLSX:
-				case EXPORT_STRUCTURE_XLS:
-				case EXPORT_STRUCTURE_XLSX:
-				case EXPORT_DATA_CSV:
-				case EXPORT_STRUCTURE_CSV:
-					ex = getExportDetails();
-					ex.setFileType(exportType);
-					ex.setIncludeStructure(includeStructure);
-					ex.setSectionUid(multigradeView.getMultiGradeContentPanel().getSelectedSectionUid());							
-					//handleExport(ex);
+				case EXPORT:
+					doExport();
 					break;
 				case IMPORT:
 					Dispatcher.forwardEvent(GradebookEvents.StartImport.getEventType());
@@ -659,8 +631,6 @@ public class InstructorView extends AppView {
 					break;
 				}
 			}
-
-			
 		};
 
 		toolBarSelectionListener = new SelectionListener<ButtonEvent>() {
@@ -674,15 +644,11 @@ public class InstructorView extends AppView {
 		};
 	}
 
-	protected ExportDetails getExportDetails() {
-		
+	protected void doExport() {
 
-			WidgetInjector injector = Registry.get(AppConstants.WIDGET_INJECTOR);
-			exportWizard = injector.getWizardProvider().get();
+		WidgetInjector injector = Registry.get(AppConstants.WIDGET_INJECTOR);
+		exportWizard = injector.getWizardProvider().get();
 
-
-		exportDetails = new ExportDetails();
-		
 		exportWizard.setHeading(i18n.exportWizardHeading());
 		exportWizard.setHeaderTitle(i18n.exportWizardTitle());
 		exportWizard.setClosable(true);
@@ -690,43 +656,29 @@ public class InstructorView extends AppView {
 		exportWizard.setPanelBackgroundColor("#FFFFFF");
 		exportWizard.setProgressIndicator(Wizard.Indicator.PROGRESSBAR);
 		exportWizard.setFinishButtonText(i18n.headerExport());
-		
-		FormPanel formPanel = new FormPanel();
-		formPanel.setLabelWidth(500);
-		
-		Card exportBooleanChoices = exportWizard.newCard(i18n.exportChoices());
-		
-		exportCommentsCheckbox = newCheckBox(INCLUDE_COMMENTS, i18n.exportIncludeComments(), i18n.exportIncludeComments());
-		
-		exportCommentsCheckbox.setValue(true);
-		
-		formPanel.setLayout(new FormLayout());
-		formPanel.add(exportCommentsCheckbox);
-		
-		exportBooleanChoices.setFormPanel(formPanel);
-		
-		exportBooleanChoices.addFinishListener(new Listener<BaseEvent>() {
+
+		final ExportFormPanel exportFormPanel = new ExportFormPanel();
+
+		Card exportCard = exportWizard.newCard(i18n.exportChoices());
+
+		exportCard.setFormPanel(exportFormPanel);
+		exportCard.addFinishListener(new Listener<BaseEvent>() {
 
 			public void handleEvent(BaseEvent be) {
-				exportDetails.setIncludeComments(exportCommentsCheckbox.getValue());
-				handleExport(exportDetails);
+
+				ExportDetails exportDetails = new ExportDetails();
 				
+				Map<Integer, Object> selectedExportValues = exportFormPanel.getValues();
+				
+				exportDetails.setIncludeComments((Boolean) selectedExportValues.get(ExportFormPanel.COMMENTS_CHECKBOX_VALUE));
+				exportDetails.setFileType((ExportType) selectedExportValues.get(ExportFormPanel.EXPORT_TYPE_VALUE));
+				exportDetails.setSectionUid((String) selectedExportValues.get(ExportFormPanel.SECTIONS_VAlUE));
+				exportDetails.setIncludeStructure(true);
+				Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType(), exportDetails);
 			}
-			
-			private void handleExport(ExportDetails ex) {
-				
-				
-				// GRBK-804 we'll now not popup as we can import percentages
-				Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType(), ex);
-			}
-			
 		});
 		
 		exportWizard.show();
-		
-		exportWizard.resize(-60, -100);
-		
-		return exportDetails;
 	}
 
 	/*
@@ -847,70 +799,18 @@ public class InstructorView extends AppView {
 
 
 	private Menu newMoreActionsMenu() {
+		
 		Menu moreActionsMenu = new AriaMenu();
 
-		MenuItem menuItem = new AriaMenuItem(i18n.headerExport());
+		MenuItem menuItem = new AriaMenuItem(i18n.headerExport(), menuSelectionListener);
 		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT);
 		//menuItem.setIconStyle(resources.css().gbExportItemIcon());
 		menuItem.setIcon(AbstractImagePrototype.create(resources.page_white_put()));
 		menuItem.setTitle(i18n.headerExportTitle());
 		moreActionsMenu.add(menuItem);
 
-		Menu subMenu = new AriaMenu();
-		menuItem.setSubMenu(subMenu);
-
-		Menu typeMenu = subMenu; 
-
-		// If we're dealing with an "editable" instance of the tool, then make the appropriate submenus for export
-		if (isEditable) {
-			menuItem = new AriaMenuItem(i18n.headerExportData());
-			menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_DATA);
-			menuItem.setTitle(i18n.headerExportDataTitle());
-			subMenu.add(menuItem);
-
-			typeMenu = new AriaMenu();
-			menuItem.setSubMenu(typeMenu);
-		}
-
-		menuItem = new AriaMenuItem(i18n.headerExportCSV(), menuSelectionListener);
-		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_DATA_CSV);
-		menuItem.setTitle(i18n.headerExportCSVTitle());
-		typeMenu.add(menuItem);
-
-		menuItem = new AriaMenuItem(i18n.headerExportXLS(), menuSelectionListener);
-		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_DATA_XLS);
-		menuItem.setTitle(i18n.headerExportXLSTitle());
-		typeMenu.add(menuItem);
-		
-		menuItem = new AriaMenuItem(i18n.headerExportXLSX(), menuSelectionListener);
-		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_DATA_XLSX);
-		menuItem.setTitle(i18n.headerExportXLSXTitle());
-		typeMenu.add(menuItem);
-
 		// If we're dealing with an "editable" instance of the tool, show the other editing menu items
 		if (isEditable) {
-			menuItem = new AriaMenuItem(i18n.headerExportStructure());
-			menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_STRUCTURE);
-			menuItem.setTitle(i18n.headerExportStructureTitle());
-			subMenu.add(menuItem);
-
-			typeMenu = new AriaMenu();
-			menuItem.setSubMenu(typeMenu);
-
-			menuItem = new AriaMenuItem(i18n.headerExportCSV(), menuSelectionListener);
-			menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_STRUCTURE_CSV);
-			menuItem.setTitle(i18n.headerExportCSVTitle());
-			typeMenu.add(menuItem);
-
-			menuItem = new AriaMenuItem(i18n.headerExportXLS(), menuSelectionListener);
-			menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_STRUCTURE_XLS);
-			menuItem.setTitle(i18n.headerExportXLSTitle());
-			typeMenu.add(menuItem);
-			
-			menuItem = new AriaMenuItem(i18n.headerExportXLSX(), menuSelectionListener);
-			menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.EXPORT_STRUCTURE_XLSX);
-			menuItem.setTitle(i18n.headerExportXLSXTitle());
-			typeMenu.add(menuItem);
 
 			menuItem = new AriaMenuItem(i18n.headerImport(), menuSelectionListener);
 			menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.IMPORT);

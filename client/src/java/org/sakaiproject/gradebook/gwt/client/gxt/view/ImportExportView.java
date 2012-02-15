@@ -1,8 +1,5 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.view;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.ExportDetails;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
@@ -17,12 +14,16 @@ import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.mvc.View;
 import com.extjs.gxt.ui.client.widget.ContentPanel;
+import com.extjs.gxt.ui.client.widget.form.HiddenField;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.json.client.JSONArray;
+import com.google.gwt.json.client.JSONBoolean;
+import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONString;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
 import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class ImportExportView extends View {
@@ -53,7 +54,7 @@ public class ImportExportView extends View {
 			String fileType = "";
 			
 			if (ed.getFileType() != null) {
-				fileType = ed.getFileType().name();
+				fileType = ed.getFileType().getTypeName();
 			}
 		
 			Gradebook selectedGradebook = Registry.get(AppConstants.CURRENT);
@@ -61,12 +62,6 @@ public class ImportExportView extends View {
 				.append(AppConstants.REST_FRAGMENT)
 				.append("/").append(AppConstants.EXPORT_SERVLET)
 				.append("/").append(selectedGradebook.getGradebookUid());
-			
-			if (includeStructure)
-				uri.append("/").append("structure").append("/").append("true");
-			if (fileType != "") {
-				uri.append("/").append("filetype").append("/").append(fileType);
-			}
 			
 			uri.append("?").append(AppConstants.REQUEST_FORM_FIELD_FORM_TOKEN).append("=").append(Cookies.getCookie(AppConstants.GB2_TOKEN));
 			
@@ -78,37 +73,34 @@ public class ImportExportView extends View {
 			
 			downloadFileForm.setMethod(FormPanel.METHOD_POST);
 			
+			/*
+			 * Constructing export details JSON, which we add as a hidden form field
+			 */
+			JSONObject jsonObject = new JSONObject();
+			
+			jsonObject.put(AppConstants.EXPORT_DATA_COMMENTS, JSONBoolean.getInstance(includeComments));
+			
+			jsonObject.put(AppConstants.EXPORT_DATA_STRUCTURE, JSONBoolean.getInstance(includeStructure));
+		
+			JSONArray sections = new JSONArray();
+			if(null != sectionUid && !"".equals(sectionUid)) {
+				
+				sections.set(0, new JSONString(sectionUid));
+			}
+			jsonObject.put(AppConstants.EXPORT_DATA_SECTIONS, sections);
+			
+			jsonObject.put(AppConstants.EXPORT_DATA_TYPE, new JSONString(fileType));
+			
+			HiddenField<String> exportData = new HiddenField<String>();
+			exportData.setName(AppConstants.EXPORT_DATA_FIELD);
+			exportData.setValue(jsonObject.toString());
+			
+			
 			VerticalPanel panel = new VerticalPanel();
 			downloadFileForm.setWidget(panel);
 			panel.setVisible(false);
 			
-			if (sectionUid != null) { 
-				List<String> sectionsAsList = new ArrayList<String>();
-				sectionsAsList.add(sectionUid);
-				/*
-				 *  this is being coded as if sectionUid were *not* a single value
-				 *  so that it can be used with a list later. The above two could then
-				 *  be removed
-				 */
-				
-				
-				for (String section : sectionsAsList) {
-					if (section != null) {
-						TextBox s = new TextBox();
-						s.setName(AppConstants.SECTIONS_FIELD);
-						s.setValue(section);
-						panel.add(s);
-					}
-					
-				}
-				
-			}
-			
-			TextBox commentsFlag = new TextBox();
-			commentsFlag.setName(AppConstants.INCLUDE_COMMENTS_FIELD);
-			commentsFlag.setValue(""+includeComments);
-			
-			panel.add(commentsFlag);
+			panel.add(exportData);
 			
 			downloadFileForm.addSubmitCompleteHandler(new FormPanel.SubmitCompleteHandler() {
 				
@@ -116,8 +108,6 @@ public class ImportExportView extends View {
 					/// if this is called then something went wrong in the download
 					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), 
 							new NotificationEvent(i18n.errorOccurredGeneric(), i18n.exportError()), true);
-
-					
 				}
 			});		    
 			

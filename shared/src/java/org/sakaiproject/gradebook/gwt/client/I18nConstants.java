@@ -483,4 +483,12 @@ public interface I18nConstants extends Constants {
 	String converted();
 	String to();
 	
+	String exportFormPanelLabelSections();
+	String exportFormPanelLabelExportType();
+	String exportFormPanelExportTypeEmptyText();
+	String exportTypeCSV();
+	String exportTypeXLS();
+	String exportTypeXLSX();
+	String exportTypeTemplate();
+	
 }

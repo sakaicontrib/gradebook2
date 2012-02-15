@@ -9,7 +9,9 @@ import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder.Method;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.model.key.SectionKey;
+import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
+import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.data.ListLoadResult;
 import com.extjs.gxt.ui.client.data.ListLoader;
 import com.extjs.gxt.ui.client.data.ModelData;
@@ -24,6 +26,7 @@ public class SectionsComboBox<D extends ModelData> extends Composite {
 	
 	private ComboBox<D> sectionComboBox = null;
 	private I18nConstants i18n = null;
+	private GradebookResources resources;
 	private ListLoader<ListLoadResult<D>> sectionsLoader;
 	
 	// The default constructor automatically loads all the sections
@@ -34,7 +37,8 @@ public class SectionsComboBox<D extends ModelData> extends Composite {
 	// The boolean argument doLoad tells the component to load or not to load the data
 	public SectionsComboBox(boolean doLoad) {
 		
-		i18n = (I18nConstants) GWT.create(I18nConstants.class);
+		this.i18n = Registry.get(AppConstants.I18N);
+		this.resources = Registry.get(AppConstants.RESOURCES);
 		
 		sectionsLoader = RestBuilder.getDelayLoader(AppConstants.LIST_ROOT, 
 													EnumSet.allOf(SectionKey.class),
@@ -51,7 +55,8 @@ public class SectionsComboBox<D extends ModelData> extends Composite {
 		sectionComboBox = new ComboBox<D>();
 		sectionComboBox.setEmptyText(i18n.sectionsEmptyText());
 		sectionComboBox.setDisplayField(SectionKey.S_NM.name());
-		sectionComboBox.setWidth(150); 
+		//sectionComboBox.addStyleName(resources.css().gbComboBoxWidth());
+		//sectionComboBox.setAutoWidth(true);
 		sectionComboBox.setStore(sectionStore);
 		sectionComboBox.setTypeAhead(true);
 		sectionComboBox.setTriggerAction(TriggerAction.ALL);
