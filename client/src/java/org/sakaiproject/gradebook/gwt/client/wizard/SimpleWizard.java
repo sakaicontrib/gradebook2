@@ -56,6 +56,10 @@ public class SimpleWizard extends WizardWindow implements Wizard  {
 		super.show();
 	}
 	
+	public void hide() {
+		super.hide();
+	}
+	
 	public void setClosable(boolean closable) {
 		super.setClosable(closable);
 	}
@@ -195,7 +199,14 @@ public class SimpleWizard extends WizardWindow implements Wizard  {
 	public void resize(int dw, int dh) {
 		setSize(getWidth()+dw, getHeight()+dh);
 	}
-
 	
+	public boolean isHidePreviousButtonOnFirstCard() {
+		return super.isHidePreviousButtonOnFirstCard();
+	}
+
+	public void setHidePreviousButtonOnFirstCard(
+			boolean hidePreviousButtonOnFirstCard) {
+		super.setHidePreviousButtonOnFirstCard(hidePreviousButtonOnFirstCard);
+	}
 
 }

@@ -25,7 +25,6 @@ import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
-import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.gxt.type.ExportType;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.NullSensitiveCheckBox;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.SectionsComboBox;
@@ -33,13 +32,10 @@ import org.sakaiproject.gradebook.gwt.client.model.key.SectionKey;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 
 import com.extjs.gxt.ui.client.Registry;
-import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.ModelData;
-import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.form.AdapterField;
 import com.extjs.gxt.ui.client.widget.form.CheckBox;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
-import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 
@@ -48,9 +44,6 @@ public class ExportFormPanel extends FormPanel {
 	public final static Integer COMMENTS_CHECKBOX_VALUE = Integer.valueOf(0);
 	public final static Integer EXPORT_TYPE_VALUE = Integer.valueOf(1);
 	public final static Integer SECTIONS_VAlUE = Integer.valueOf(2);
-	
-	private static final String DISPLAY_NAME = "name";
-	private static final String DISPLAY_VALUE = "value";
 	
 	private SectionsComboBox<ModelData> sectionsComboBox;
 	private ComboBox<ModelData> exportTypeComboBox;
@@ -86,20 +79,7 @@ public class ExportFormPanel extends FormPanel {
 		commentsCheckbox.addStyleName(resources.css().gbCheckBoxAlignLeft());
 		add(commentsCheckbox);
 		
-		ListStore<ModelData> exportTypeStore = new ListStore<ModelData>();
-		exportTypeStore.setModelComparer(new EntityModelComparer<ModelData>(DISPLAY_NAME));
-		exportTypeStore.add(getExportTypeModel(ExportType.CSV));
-		exportTypeStore.add(getExportTypeModel(ExportType.XLS97));
-		exportTypeStore.add(getExportTypeModel(ExportType.XLSX));
-		exportTypeStore.add(getExportTypeModel(ExportType.TEMPLATE));
-		exportTypeComboBox = new ComboBox<ModelData>();
-		exportTypeComboBox.setStore(exportTypeStore);
-		exportTypeComboBox.setDisplayField(DISPLAY_NAME);
-		exportTypeComboBox.setFieldLabel(i18n.exportFormPanelLabelExportType());
-		exportTypeComboBox.setEmptyText(i18n.exportFormPanelExportTypeEmptyText());
-		exportTypeComboBox.setTypeAhead(true);
-		exportTypeComboBox.setEditable(false);
-		exportTypeComboBox.setTriggerAction(TriggerAction.ALL);
+		exportTypeComboBox = new ImportExportTypeComboBox();
 
 		add(exportTypeComboBox);
 		
@@ -115,7 +95,7 @@ public class ExportFormPanel extends FormPanel {
 		
 		if(null != exportTypeModelData && exportTypeModelData.size() > 0) {
 			
-			values.put(EXPORT_TYPE_VALUE, exportTypeModelData.get(0).get(DISPLAY_VALUE));
+			values.put(EXPORT_TYPE_VALUE, exportTypeModelData.get(0).get(ExportType.DISPLAY_VALUE));
 		}
 		else {
 			
@@ -145,12 +125,5 @@ public class ExportFormPanel extends FormPanel {
 		return values;
 	}
 	
-	private ModelData getExportTypeModel(ExportType exportType) {
-
-		ModelData model = new BaseModel();
-		model.set(DISPLAY_NAME, exportType.getDisplayName());
-		model.set(DISPLAY_VALUE, exportType);
-
-		return model;
-	}
+	
 }

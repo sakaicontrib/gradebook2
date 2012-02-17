@@ -328,7 +328,7 @@ public interface I18nConstants extends Constants {
 	String importSetupGridCategoryHeader();
 	String importPanelNextButton();
 	String importPanelCancelButton();
-	String importPanelRetrunButton();
+	String importPanelReturnButton();
 	String importOverwriteExistingAssignmentsWarning();
 	String importOverwriteExistingAssignmentsButton();
 	
@@ -490,5 +490,18 @@ public interface I18nConstants extends Constants {
 	String exportTypeXLS();
 	String exportTypeXLSX();
 	String exportTypeTemplate();
+	
+	//GRBK-514 GRBK-1221
+	String importFormPanelLabelExportType();
+	String importFormPanelImportTypeEmptyText();
+	String structureOnlyCheckbox();
+	String structureOnlyCheckboxToolTip();
+	String importFileStep1Label();
+	String preparingPreview();
+	String done();
+	String importCompletedTitle();
+	String importCompleted();
+	String loading();
+	
 	
 }

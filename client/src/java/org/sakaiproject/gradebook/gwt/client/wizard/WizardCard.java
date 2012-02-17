@@ -59,6 +59,8 @@ public class WizardCard extends LayoutContainer implements Card {
 	private String cardTitle;
 	private FormPanel panel;
 	private LayoutContainer layoutContainer;
+	
+	private ArrayList<Listener<BaseEvent>> cardCloseListeners;
 
 	/**
 	 * Creates a new wizard card.
@@ -78,11 +80,7 @@ public class WizardCard extends LayoutContainer implements Card {
 	}
 
 	public void notifyFinishListeners() {
-		if (finishListeners != null) {
-			for (Listener<BaseEvent> listener : finishListeners) {
-				listener.handleEvent(new BaseEvent(this));
-			}
-		}
+		notifyListeners(finishListeners);
 	}
 
 	/**
@@ -162,6 +160,26 @@ public class WizardCard extends LayoutContainer implements Card {
 	
 	public LayoutContainer getLayoutContainer() {
 		return this.layoutContainer;
+	}
+
+	@Override
+	public void addCardCloseListener(Listener<BaseEvent> listener) {
+		if (cardCloseListeners == null) cardCloseListeners = new ArrayList<Listener<BaseEvent>>();
+		cardCloseListeners.add(listener);
+		
+	}
+
+	@Override
+	public void notifyCardCloseListeners() {
+		notifyListeners(cardCloseListeners);
+	}
+	
+	private void notifyListeners(ArrayList<Listener<BaseEvent>> listeners) {
+		if (listeners != null) {
+			for (Listener<BaseEvent> listener : listeners) {
+				listener.handleEvent(new BaseEvent(this));
+			}
+		}
 	}
 	
 }

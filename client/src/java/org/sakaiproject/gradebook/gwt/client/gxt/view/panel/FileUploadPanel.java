@@ -23,47 +23,63 @@
 
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
-import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
+//import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
+import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
+import org.sakaiproject.gradebook.gwt.client.gxt.type.ExportType;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.components.NullSensitiveCheckBox;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
+import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
+import org.sakaiproject.gradebook.gwt.client.wizard.formpanel.ImportExportTypeComboBox;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
-import com.extjs.gxt.ui.client.event.ButtonEvent;
+//import com.extjs.gxt.ui.client.event.ButtonEvent;
+import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FormEvent;
 import com.extjs.gxt.ui.client.event.Listener;
-import com.extjs.gxt.ui.client.event.SelectionListener;
-import com.extjs.gxt.ui.client.mvc.Dispatcher;
+//import com.extjs.gxt.ui.client.event.SelectionListener;
+//import com.extjs.gxt.ui.client.mvc.Dispatcher;
+import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.MessageBox;
-import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.form.FileUploadField;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.HiddenField;
-import com.extjs.gxt.ui.client.widget.layout.FormLayout;
+import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Cookies;
 
 public class FileUploadPanel extends FormPanel {
 
-	private FileUploadField file;
+	private FileUploadField file = null;
 	private final I18nConstants i18n;
 	private final ImportPanel newImportPanel;
+	private ImportExportTypeComboBox importTypeComboBox;
+	NullSensitiveCheckBox justStructureChoice;
+	
+	public final static Integer COMMENTS_CHECKBOX_VALUE = Integer.valueOf(0);
+	public final static Integer EXPORT_TYPE_VALUE = Integer.valueOf(1);
+	
 	
 	public FileUploadPanel(final ImportPanel newImportPanel) {
 		
 		super();
+		
+		GradebookResources resources = Registry.get(AppConstants.RESOURCES);
 	
 		this.newImportPanel = newImportPanel;
 		i18n = Registry.get(AppConstants.I18N);
 
 		final Gradebook gbModel = Registry.get(AppConstants.CURRENT);
 
-		FormLayout formLayout = new FormLayout();
-		formLayout.setDefaultWidth(350);
-		formLayout.setLabelWidth(120);
+		setLabelWidth(200);
 
 		setHeaderVisible(false);
 
@@ -76,13 +92,14 @@ public class FileUploadPanel extends FormPanel {
 		setPadding(4);
 		setButtonAlign(HorizontalAlignment.RIGHT);
 
-		setLayout(formLayout);
-
-
 		file = new FileUploadField() {
 			@Override
 			protected void onChange(ComponentEvent ce) {
+				
 				super.onChange(ce);
+				ExportType type = ExportType.getExportTypeFromFilename(getValue());
+				importTypeComboBox.setSelectionByExportType(type);
+				
 			}
 		};
 		file.setAllowBlank(false);
@@ -100,32 +117,31 @@ public class FileUploadPanel extends FormPanel {
 		formTokenField.setName(AppConstants.REQUEST_FORM_FIELD_FORM_TOKEN);
 		formTokenField.setValue(Cookies.getCookie(AppConstants.GB2_TOKEN));
 		add(formTokenField);
+		
+		ListStore<ModelData> exportTypeStore = new ListStore<ModelData>();
+		exportTypeStore.setModelComparer(new EntityModelComparer<ModelData>(ExportType.DISPLAY_NAME));
+		for (ExportType type : ExportType.values()){
+			exportTypeStore.add(ExportType.getExportTypeModel(type));
+		}
+		importTypeComboBox = new ImportExportTypeComboBox();
+		importTypeComboBox.setFieldLabel(i18n.importFormPanelLabelExportType());
+		importTypeComboBox.setEmptyText(i18n.importFormPanelImportTypeEmptyText());
+		importTypeComboBox.setAllowBlank(false);
 
-		Button submitButton = new Button(i18n.nextButton());
-		submitButton.setMinWidth(120);
-		submitButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
+		add(importTypeComboBox);
+		
+		justStructureChoice = new NullSensitiveCheckBox();
 
-			@Override
-			public void componentSelected(ButtonEvent ce) {
-				readFile();
-			}
+		ToolTipConfig checkBoxToolTipConfig = new ToolTipConfig("Importo solamente lo stucture-o");
+		checkBoxToolTipConfig.setDismissDelay(10000);
+		justStructureChoice.setToolTip(checkBoxToolTipConfig);
+		justStructureChoice.setFieldLabel("Importo solamente lo stucture-o");
+		justStructureChoice.setValue(false);
+		justStructureChoice.setAutoHeight(false);
+		justStructureChoice.setAutoWidth(false);
+		justStructureChoice.addStyleName(resources.css().gbLeftAlignFlushNoWrapInput());
 
-		});
-		addButton(submitButton);
-
-		Button cancelButton = new Button(i18n.cancelButton());
-		cancelButton.setMinWidth(120);
-		cancelButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
-
-			@Override
-			public void componentSelected(ButtonEvent ce) {
-				Dispatcher.forwardEvent(GradebookEvents.StopImport.getEventType());
-				clear();
-			}
-		});
-
-		addButton(cancelButton);
-
+		
 		addListener(Events.Submit, new Listener<FormEvent>() {
 
 			public void handleEvent(FormEvent fe) {
@@ -135,13 +151,38 @@ public class FileUploadPanel extends FormPanel {
 		});
 	}
 	
-	private void readFile() {
 
+	public void readFile() {
+		// TODO Auto-generated method stub
 		if (file.getValue() != null && file.getValue().trim().length() > 0) {
 			newImportPanel.uploadBox = MessageBox.wait(i18n.importProgressTitle(), i18n.importReadingFileMessage(), i18n.importParsingMessage());
 			submit();
 		}
 	}
 	
+	public Map<Integer, Object> getValues() {
+		
+		Map<Integer, Object> values = new HashMap<Integer, Object>();
+		
+		values.put(COMMENTS_CHECKBOX_VALUE, justStructureChoice.getValue());
+		
+		List<ModelData> exportTypeModelData = importTypeComboBox.getSelection();
+		
+		if(null != exportTypeModelData && exportTypeModelData.size() > 0) {
+			
+			values.put(EXPORT_TYPE_VALUE, exportTypeModelData.get(0).get(ExportType.DISPLAY_VALUE));
+		}
+		else {
+			
+			// TODO: We should make a choice mandatory (rather than using this default) after
+			//       we've put the right filetype checks into place.
+			values.put(EXPORT_TYPE_VALUE, ExportType.CSV);
+		}
+
+		
+		return values;
+	}
+ 
+
 	
 }

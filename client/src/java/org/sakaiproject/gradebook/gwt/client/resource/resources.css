@@ -302,4 +302,11 @@
 	width: 32;
 	height: 32;
 }
+
+/* GRBK-514 */
+
+.gbLeftAlignFlushNoWrapInput input {
+	left:0px !important;
+	white-space:nowrap;
+}
 	

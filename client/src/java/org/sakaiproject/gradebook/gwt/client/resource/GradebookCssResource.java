@@ -119,5 +119,8 @@ public interface GradebookCssResource extends CssResource {
 	String gbComboBoxWidth();
 	
 	String gbCheckBoxAlignLeft();
+	
+	/* GRBK-514 */
+	String gbLeftAlignFlushNoWrapInput();
 
 }

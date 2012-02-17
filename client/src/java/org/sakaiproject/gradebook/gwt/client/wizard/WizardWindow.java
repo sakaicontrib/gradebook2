@@ -43,6 +43,7 @@ import com.extjs.gxt.ui.client.Style.LayoutRegion;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.event.Listener;
+import com.extjs.gxt.ui.client.event.ResizeEvent;
 import com.extjs.gxt.ui.client.event.SelectionListener;
 import com.extjs.gxt.ui.client.widget.CardPanel;
 import com.extjs.gxt.ui.client.widget.Component;
@@ -152,6 +153,8 @@ public class WizardWindow extends Window {
 	
 	private ArrayList<Listener<BaseEvent>> cancelListeners = new ArrayList<Listener<BaseEvent>>();
 	
+	private boolean hidePreviousButtonOnFirstCard = false;
+	
 
 	/**
 	 * Creates a new wizard window.
@@ -235,6 +238,7 @@ public class WizardWindow extends Window {
 				if (hideOnFinish) hide();
 			}
 			else {
+				cards.get(currentStep).notifyCardCloseListeners();
 				currentStep++;
 				updateWizard();
 			}
@@ -259,10 +263,30 @@ public class WizardWindow extends Window {
 
 		if (currentStep == 0) {
 			prevBtn.setEnabled(false);
+			if (hidePreviousButtonOnFirstCard)
+				prevBtn.setVisible(false);
 		}
 		else {
 			prevBtn.setEnabled(true);
+			prevBtn.setVisible(true);
 		}
+	}
+
+	public Button getPrevBtn() {
+		return prevBtn;
+	}
+
+	public void setPrevBtn(Button prevBtn) {
+		this.prevBtn = prevBtn;
+	}
+
+	public boolean isHidePreviousButtonOnFirstCard() {
+		return hidePreviousButtonOnFirstCard;
+	}
+
+	public void setHidePreviousButtonOnFirstCard(
+			boolean hidePreviousButtonOnFirstCard) {
+		this.hidePreviousButtonOnFirstCard = hidePreviousButtonOnFirstCard;
 	}
 
 	/*
@@ -701,5 +725,13 @@ public class WizardWindow extends Window {
 		}
 		
 	}
+
+	@Override
+	protected void onEndResize(ResizeEvent re) {
+		super.onEndResize(re);
+		updateWizard();
+	}
+	
+	
 
 }

@@ -23,12 +23,12 @@
 
 package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.DataTypeConversionUtil;
-import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.RestBuilder;
 import org.sakaiproject.gradebook.gwt.client.RestCallback;
 import org.sakaiproject.gradebook.gwt.client.api.Card;
@@ -45,6 +45,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.model.ImportSettingsModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.LearnerModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.UploadModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.view.components.NullSensitiveCheckBox;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.ImportSettings;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
@@ -54,7 +55,6 @@ import org.sakaiproject.gradebook.gwt.client.model.key.LearnerKey;
 import org.sakaiproject.gradebook.gwt.client.model.key.UploadKey;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.model.type.ItemType;
-import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
 import org.sakaiproject.gradebook.gwt.client.wizard.validators.MinMaxDoubleValidator;
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.LayoutRegion;
@@ -87,6 +87,7 @@ import com.extjs.gxt.ui.client.widget.layout.FitData;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
+import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.Response;
@@ -106,11 +107,13 @@ public class ImportPanel extends GradebookPanel {
 	private BorderLayout borderLayout;
 	private ContentPanel errorContainer; 
 	private LayoutContainer fileUploadContainer;
-	private FormPanel fileUploadPanel;
+	private FileUploadPanel fileUploadPanel;
 	protected MessageBox uploadBox, uploadingBox;
 	private UploadModel upload;
 	private Dialog forceOverwriteDialog;
 
+	private List<NotificationEvent> finishNotifications = new ArrayList<NotificationEvent> ();
+	
 	private MultiGradeContentPanel multigrade;
 	private ImportItemSetupPanel setupPanel;
 
@@ -123,9 +126,7 @@ public class ImportPanel extends GradebookPanel {
 	
 	private ImportSettings importSettings = new ImportSettingsModel();
 	private Wizard wizard;
-	
-	private GradebookResources resources = Registry.get(AppConstants.RESOURCES);
-	
+		
 	
 	public ImportPanel() {
 
@@ -185,8 +186,9 @@ public class ImportPanel extends GradebookPanel {
 		});
 
 		borderLayoutContainer.addButton(cancelButton);
+		
 
-		errorReturnButton = new Button(i18n.importPanelRetrunButton());
+		errorReturnButton = new Button(i18n.importPanelReturnButton());
 		errorReturnButton.setMinWidth(120);
 		errorReturnButton.addSelectionListener(new SelectionListener<ButtonEvent>() {
 
@@ -203,9 +205,66 @@ public class ImportPanel extends GradebookPanel {
 
 		fileUploadContainer = new LayoutContainer();
 		fileUploadContainer.setLayout(new FlowLayout());
-		fileUploadPanel = new FileUploadPanel(this);
-		fileUploadContainer.add(fileUploadPanel);
+		
+		/// file import wizard setup
+		WidgetInjector injector = Registry.get(AppConstants.WIDGET_INJECTOR);
+		wizard = injector.getWizardProvider().get();
+		
+		wizard.setHeading(i18n.importWizardTitle());
+		wizard.setHeaderTitle("PlaceHolder Text");
+		
+		wizard.setResizable(true);
+		wizard.setClosable(false);
+		wizard.setShowWestImageContainer(false);
+		wizard.setPanelBackgroundColor("#FFFFFF");
+		wizard.setContainer(fileUploadContainer.getElement());
+		
+		wizard.setProgressIndicator(Wizard.Indicator.PROGRESSBAR);
+		wizard.addCancelListener(new Listener<BaseEvent>() {
 
+			public void handleEvent(BaseEvent be) { /// need to max points to proceed, cancel import
+				Dispatcher.forwardEvent(GradebookEvents.StopImport.getEventType());
+			}
+			
+		});
+		
+		NullSensitiveCheckBox justStructureChoice = new NullSensitiveCheckBox();
+		
+		ToolTipConfig checkBoxToolTipConfig = new ToolTipConfig(i18n.structureOnlyCheckboxToolTip());
+		checkBoxToolTipConfig.setDismissDelay(10000);
+		justStructureChoice.setToolTip(checkBoxToolTipConfig);
+		justStructureChoice.setFieldLabel(i18n.structureOnlyCheckbox());
+		justStructureChoice.setValue(false);
+		justStructureChoice.setAutoHeight(false);
+		justStructureChoice.setAutoWidth(false);
+		justStructureChoice.addStyleName(resources.css().gbLeftAlignFlushNoWrapInput());
+			
+		fileUploadPanel = new FileUploadPanel(this);		
+		Card card1 = wizard.newCard(i18n.importFileStep1Label());	
+		card1.setFormPanel(fileUploadPanel);
+		fileUploadPanel.add(justStructureChoice);
+		
+
+		/*
+		 * we want the progress indicator to indicate another step
+		 * but that step will handled outside of the wizard. This'll 
+		 * work as long as the first card has a finish listener that 
+		 * closes everything up cleanly.
+		 */
+		
+		wizard.setFinishButtonText(wizard.getNextButtonText());
+		
+		wizard.newCard(i18n.preparingPreview());
+
+		card1.addCardCloseListener(new Listener<BaseEvent>() {
+			
+			@Override
+			public void handleEvent(BaseEvent be) {
+				fileUploadPanel.readFile();
+				
+			}
+		});
+		
 		mainCardLayoutContainer.add(fileUploadContainer);
 		mainCardLayoutContainer.add(borderLayoutContainer);
 		mainCardLayoutContainer.add(errorContainer); 
@@ -235,7 +294,6 @@ public class ImportPanel extends GradebookPanel {
 		forceOverwriteDialog.setSize(300, 100);
 		forceOverwriteDialog.setHideOnButtonClick(true);
 		forceOverwriteDialog.setButtons(Dialog.OKCANCEL);
-		I18nConstants i18n = Registry.get(AppConstants.I18N);
 		forceOverwriteDialog.getButtonById(Dialog.OK).setText(i18n.importOverwriteExistingAssignmentsButton());
 		forceOverwriteDialog.addText(i18n.importOverwriteExistingAssignmentsWarning());
 		
@@ -297,13 +355,12 @@ public class ImportPanel extends GradebookPanel {
 				refreshSetupPanel();
 			}
 			
-			
+			wizard.hide();
 		} catch (Exception e) {
 			
 			Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(e));
 			
 		} finally {
-			
 			uploadBox.close();
 		}
 		
@@ -592,9 +649,9 @@ public class ImportPanel extends GradebookPanel {
 						}
 					}
 
-					uploadingBox.setProgressText("Loading");
-
-					cancelButton.setText("Done");
+					uploadingBox.setProgressText(i18n.loading());
+					
+					finishNotifications.add(new NotificationEvent(i18n.importCompletedTitle(), i18n.importCompleted(), true));
 
 					ItemModel gradebookItem = result.get(UploadKey.M_GB_ITM.name());
 
@@ -623,8 +680,21 @@ public class ImportPanel extends GradebookPanel {
 				if (isGradingFailure) {
 					Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), new NotificationEvent(i18n.importGradesFailedTitle(), i18n.importGradesFailedMessage(), true, true));
 				}
+				
+				Dispatcher.forwardEvent(GradebookEvents.StopImport.getEventType());
+				Dispatcher.forwardEvent(GradebookEvents.LayoutItemTreePanel.getEventType());
+				fileUploadPanel.clear();
 			}
 		});
+	}
+	
+	
+	public void startImportWizard() {
+		
+		wizard.show();
+		
+		//wizard.resize(150,0);
+		
 	}
 
 	protected void getScantonOrClickerPointsWithWizard() {
@@ -634,7 +704,7 @@ public class ImportPanel extends GradebookPanel {
 
 		// 1st and only card 
 		
-		Card card1 = wizard.newCard(i18n.importWizardCardTitlePointsPossible());//TODO i18n
+		Card card1 = wizard.newCard(i18n.importWizardCardTitlePointsPossible());
 		
 		wizard.setClosable(false);
 		wizard.setShowWestImageContainer(false);
@@ -826,4 +896,12 @@ public class ImportPanel extends GradebookPanel {
 	protected UploadModel getUploadModel() {
 		return this.upload;
 	}
+
+	public void finish() {
+		for (NotificationEvent event : finishNotifications) {
+			Dispatcher.forwardEvent(GradebookEvents.Notification.getEventType(), event);
+		}
+		
+	}
+
 }

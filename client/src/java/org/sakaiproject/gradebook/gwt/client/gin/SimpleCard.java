@@ -49,4 +49,12 @@ public class SimpleCard extends WizardCard implements Card {
 	public boolean isValid() {
 		return super.isValid();
 	}
+	
+	public void addCardCloseListener(Listener<BaseEvent> listener) {
+		super.addCardCloseListener(listener);
+	}
+	public void notifyCardCloseListeners() {
+		super.notifyCardCloseListeners();
+	}
+	
 }

@@ -29,6 +29,8 @@ public interface Wizard {
 	public void setHeaderTitle(String string);
 
 	public void show();
+	
+	public void hide();
 
 	public abstract void setResizable(boolean resizable);
 
@@ -98,10 +100,14 @@ public interface Wizard {
 	
 	/*
 	 * note that an implementation may require that this 
-	 * be called after show()
+	 * method be called after show()
 	 */
 	public void resize(int dw, int dh);
 
 	public void reset();
+	
+	public boolean isHidePreviousButtonOnFirstCard();
 
+	public void setHidePreviousButtonOnFirstCard(boolean hidePreviousButtonOnFirstCard);
+	
 }

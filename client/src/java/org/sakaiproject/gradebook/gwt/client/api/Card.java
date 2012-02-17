@@ -20,10 +20,14 @@ public interface Card {
 	public void setFormPanel(FormPanel formpanel);
 
 	public void addFinishListener(Listener<BaseEvent> listener);
+	
+	public void addCardCloseListener(Listener<BaseEvent> listener);
 
 	public boolean isValid();
 
 	public void notifyFinishListeners();
+	
+	public void notifyCardCloseListeners();
 	
 	public FormPanel getFormPanel();
 	

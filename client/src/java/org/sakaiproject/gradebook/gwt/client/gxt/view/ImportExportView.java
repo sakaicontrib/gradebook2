@@ -13,7 +13,6 @@ import com.extjs.gxt.ui.client.mvc.AppEvent;
 import com.extjs.gxt.ui.client.mvc.Controller;
 import com.extjs.gxt.ui.client.mvc.Dispatcher;
 import com.extjs.gxt.ui.client.mvc.View;
-import com.extjs.gxt.ui.client.widget.ContentPanel;
 import com.extjs.gxt.ui.client.widget.form.HiddenField;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.json.client.JSONArray;
@@ -28,7 +27,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class ImportExportView extends View {
 
-	private ContentPanel importPanel;
+	private ImportPanel importPanel;
 	private FormPanel downloadFileForm;
 	private final I18nConstants i18n = (I18nConstants) GWT.create(I18nConstants.class);
 	
@@ -41,9 +40,11 @@ public class ImportExportView extends View {
 		
 		switch (GradebookEvents.getEvent(event.getType()).getEventKey()) {
 		case START_IMPORT:
-			
+			// this event arrives after the panel is instantiated
+			((ImportPanel)importPanel).startImportWizard();
 			break;
 		case STOP_IMPORT:
+			importPanel.finish();
 			importPanel = null;
 			break;
 		case START_EXPORT:
@@ -119,7 +120,7 @@ public class ImportExportView extends View {
 		}
 	}
 
-	public ContentPanel getImportDialog() {
+	public ImportPanel getImportDialog() {
 		if (importPanel == null) {
 			importPanel = new ImportPanel();
 		}
