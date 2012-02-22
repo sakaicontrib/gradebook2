@@ -265,9 +265,9 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 
 		final List<String> headerColumns = new LinkedList<String>();
 
-		headerColumns.add(i18n.getString("xxportColumnHeaderStudentId"));
-		headerColumns.add(i18n.getString("xxportColumnHeaderStudentName"));
-		headerColumns.add(i18n.getString("xxportColumnHeaderSection")); 
+		headerColumns.add(i18n.getString("exportColumnHeaderStudentId"));
+		headerColumns.add(i18n.getString("exportColumnHeaderStudentName"));
+		headerColumns.add(i18n.getString("exportColumnHeaderSection")); 
 
 		GradeType gradeType = gradebookItemModel.getGradeType();
 		
@@ -636,14 +636,17 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			final boolean includeStructure, final boolean includeComments, List<String> sectionUidList) throws FatalException {
 		
 		
-		if (fileType.equals(FileType.XLS97) || fileType.equals(FileType.XLSX))
-		{
-			exportGradebookXLS (filename, outStream, service, gradebookUid, includeStructure, includeComments, sectionUidList, 
-					fileType.equals(FileType.XLSX)); 
+		if(fileType.equals(FileType.XLS97) || fileType.equals(FileType.XLSX)) {
+			
+			exportGradebookXLS(filename, outStream, service, gradebookUid, includeStructure, includeComments, sectionUidList, fileType.equals(FileType.XLSX)); 
 		}
-		else if (fileType.equals(FileType.CSV))
-		{
-			exportGradebookCSV (filename, outStream, service, gradebookUid, includeStructure, includeComments, sectionUidList);
+		else if(fileType.equals(FileType.CSV)) {
+			
+			exportGradebookCSV(filename, outStream, service, gradebookUid, includeStructure, includeComments, sectionUidList);
+		}
+		else if(fileType.equals(FileType.TEMPLATE)) {
+			
+			exportGradebookTemplate(filename, outStream, service, gradebookUid, includeStructure, includeComments, sectionUidList);
 		}
 	}
 
@@ -763,6 +766,80 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		} 
 	}
 
+	private void exportGradebookTemplate(
+			String title,
+			OutputStream outStream,
+			Gradebook2ComponentService service,
+			String gradebookUid,
+			final boolean includeStructure,
+			final boolean includeComments,
+			List<String> sectionUidList)
+			throws FatalException {
+
+		ImportExportDataFile importExportDataFile = new ImportExportDataFile();
+		
+		// File Headers
+		String[] headerColumns = new String[3];
+		headerColumns[0] = i18n.getString("exportColumnHeaderStudentId");
+		headerColumns[1] = i18n.getString("exportColumnHeaderStudentName");
+		headerColumns[2] = i18n.getString("exportColumnHeaderNewAssignment");
+		importExportDataFile.addRow(headerColumns);
+		
+		Gradebook gradebook = service.getGradebook(gradebookUid);
+		Long gradebookId = gradebook.getGradebookId();
+		
+		// Learner rows
+		Roster roster = service.getRoster(gradebookUid, gradebookId, null, null, sectionUidList, null, null, null, true, false, false);
+		List<Learner> learners = roster.getLearnerPage();
+		
+		if(null != learners) {
+			
+			for(Learner learner : learners) {
+				
+				String[] learnerData = new String[2];
+				learnerData[0] = (String)learner.get(LearnerKey.S_EXPRT_USR_ID.name());
+				learnerData[1] = (String)learner.get(LearnerKey.S_LST_NM_FRST.name());
+				importExportDataFile.addRow(learnerData);
+			}
+		}
+		
+		OutputStreamWriter writer = new OutputStreamWriter(outStream);
+		
+		CSVWriter csvWriter = new CSVWriter(writer);
+		
+		importExportDataFile.startReading(); 
+		
+		String[] curRow; 
+		
+		while((curRow = importExportDataFile.readNext()) != null) {
+			
+			csvWriter.writeNext(curRow); 
+		}
+		
+		try {
+		
+			csvWriter.flush();
+		}
+		catch(IOException e) {
+			
+			log.error("Caught ioexception: ", e);
+		}
+		finally {
+			
+			try {
+
+				if(null != csvWriter) {
+			
+					csvWriter.close();
+				}
+			}
+			catch(IOException ioe) {
+				
+				log.error("IOException", ioe);
+			}
+		}
+	}
+	
 
 	private org.apache.poi.ss.usermodel.Workbook readPoiSpreadsheet(BufferedInputStream is) throws IOException 
 	{

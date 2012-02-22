@@ -56,7 +56,7 @@ public class Export extends Resource {
 		/*
 		 * FIXME:
 		 * Further down in the service, we call getRoster(), which expects a null
-		 * sections lists if the user selected ALL sections. At some point we need to 
+		 * sections list if the user selected ALL sections. At some point we need to 
 		 * fix this to pass in the AppConstants.ALL string instead, as we do in other places.
 		 */
 		if (sections != null && sections.size() == 0) {
@@ -101,7 +101,7 @@ public class Export extends Resource {
 				response.setHeader(ImportExportUtilityImpl.CONTENT_DISPOSITION_HEADER_NAME, ImportExportUtilityImpl.CONTENT_DISPOSITION_HEADER_ATTACHMENT + filename.toString());
 			}
 
-			importExportUtility.exportGradebook (type, filename.toString(), out, service, gradebookUid, includeStructure, includeComment, sections); 
+			importExportUtility.exportGradebook(type, filename.toString(), out, service, gradebookUid, includeStructure, includeComment, sections); 
 
 
 		} catch (FatalException e) {

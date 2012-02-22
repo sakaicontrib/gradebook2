@@ -332,8 +332,8 @@ public interface I18nConstants extends Constants {
 	String importOverwriteExistingAssignmentsWarning();
 	String importOverwriteExistingAssignmentsButton();
 	
-	String xxportColumnHeaderStudentId();
-	String xxportColumnHeaderStudentName();
+	String exportColumnHeaderStudentId();
+	String exportColumnHeaderStudentName();
 	
 	// Grade Scale
 	String gradeScaleLetterGradeMessage();
@@ -502,6 +502,5 @@ public interface I18nConstants extends Constants {
 	String importCompletedTitle();
 	String importCompleted();
 	String loading();
-	
 	
 }

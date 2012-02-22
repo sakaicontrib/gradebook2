@@ -1,3 +1,22 @@
+/**********************************************************************************
+ *
+ * Copyright (c) 2012 The Regents of the University of California
+ *
+ * Licensed under the
+ * Educational Community License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may
+ * obtain a copy of the License at
+ * 
+ * http://www.osedu.org/licenses/ECL-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS"
+ * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ *
+ **********************************************************************************/
+
 package org.sakaiproject.gradebook.gwt.client.wizard.formpanel;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
@@ -10,16 +29,17 @@ import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
 
-
 public class ImportExportTypeComboBox extends ComboBox<ModelData> {
 	
 	private static I18nConstants i18n = Registry.get(AppConstants.I18N);
 	
-	
 	public ImportExportTypeComboBox() {
+		
 		ListStore<ModelData> exportTypeStore = new ListStore<ModelData>();
 		exportTypeStore.setModelComparer(new EntityModelComparer<ModelData>(ExportType.DISPLAY_NAME));
+		
 		for (ExportType type : ExportType.values()){
+		
 			exportTypeStore.add(ExportType.getExportTypeModel(type));
 		}
 
@@ -35,8 +55,11 @@ public class ImportExportTypeComboBox extends ComboBox<ModelData> {
 	public void setSelectionByExportType (ExportType type) {
 		
 		if( null != type ) {
+			
 			for (ModelData item : store.getModels()) {
+				
 				if (type.getDisplayName().equals(item.get(ExportType.DISPLAY_NAME))) {
+					
 					setValue(item);
 					return;
 				}

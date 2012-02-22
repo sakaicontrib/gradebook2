@@ -305,6 +305,9 @@ public interface AppConstants {
 	public static final String EXPORT_DATA_TYPE = "edt";
 	public static final String EXPORT_DATA_STRUCTURE = "edst";
 	
-	
+	public static final String FILE_TYPE_CSV = "csv";
+	public static final String FILE_TYPE_XLS = "xls97";
+	public static final String FILE_TYPE_XLSX = "xlsx";
+	public static final String FILE_TYPE_TEMPLATE = "template";
 	
 }

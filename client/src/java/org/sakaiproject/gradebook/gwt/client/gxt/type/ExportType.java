@@ -7,11 +7,12 @@ import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.ModelData;
 
-public enum ExportType { 
+public enum ExportType implements AppConstants { 
 	
-	CSV("csv", ".csv"), XLS97("xls97", ".xls"), XLSX("xlsx", ".xlsx"), TEMPLATE("template");
+	CSV(FILE_TYPE_CSV, ".csv"), XLS97(FILE_TYPE_XLS, ".xls"), XLSX(FILE_TYPE_XLSX, ".xlsx"), TEMPLATE(FILE_TYPE_TEMPLATE);
 	
-	public static String DISPLAY_NAME = "name", DISPLAY_VALUE = "value";
+	public static String DISPLAY_NAME = "name";
+	public static String DISPLAY_VALUE = "value";
 	
 	private I18nConstants i18n;
 	private String displayName;
@@ -79,6 +80,4 @@ public enum ExportType {
 	public String getFileExtension() {
 		return fileExtension;
 	}
-	
-	
 }

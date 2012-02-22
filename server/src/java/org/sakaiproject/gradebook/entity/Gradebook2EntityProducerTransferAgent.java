@@ -255,7 +255,7 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 					.getString("defaultGradebookName"));
 		}
 		String structure = "";
-		int headerRow = result.toString().indexOf(i18n.getString("xxportColumnHeaderStudentId"));
+		int headerRow = result.toString().indexOf(i18n.getString("exportColumnHeaderStudentId"));
 		if(headerRow > -1) {
 			int lineEnd = result.toString().indexOf('\n', headerRow);
 			structure = result.toString().substring(0, lineEnd);

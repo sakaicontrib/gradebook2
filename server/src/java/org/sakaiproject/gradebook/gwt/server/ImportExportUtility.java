@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.util.List;
 
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.Upload;
@@ -25,10 +26,11 @@ public interface ImportExportUtility {
 	public static enum OptionState { NULL, TRUE, FALSE}; 
 
 	
-	public static enum FileType {
-		CSV("csv", ".csv", "application/ms-excel"), 
-		XLS97("xls97", ".xls", "application/ms-excel"),
-		XLSX("xlsx", ".xlsx", "application/ms-excel");
+	public static enum FileType implements AppConstants {
+		CSV(FILE_TYPE_CSV, ".csv", "application/ms-excel"), 
+		XLS97(FILE_TYPE_XLS, ".xls", "application/ms-excel"),
+		XLSX(FILE_TYPE_XLSX, ".xlsx", "application/ms-excel"),
+		TEMPLATE(FILE_TYPE_TEMPLATE, ".csv", "application/ms-excel");
 		private String ext = "";
 		private String mimeType = "";
 		private String name = "";
