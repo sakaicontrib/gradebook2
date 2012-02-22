@@ -723,9 +723,7 @@ public class StudentPanel extends GradebookPanel {
 		};
 
 		StringBuilder resultBuilder = new StringBuilder();
-		if (value == null)
-			resultBuilder.append("- ");
-		else {
+		if (value != null) {
 
 			switch (gradeType) {
 			case POINTS:
