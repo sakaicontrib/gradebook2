@@ -2,6 +2,7 @@ package org.sakaiproject.gradebook.gwt.server;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.util.List;
@@ -92,12 +93,16 @@ public interface ImportExportUtility {
 			InputStream is,
 			String fileName,
 			GradebookToolService gbToolService, 
-			boolean doPreventOverwrite)
+			Boolean isJustStructure)
 	throws InvalidInputException, FatalException, IOException;
 	
 	public Upload parseImportCSV(Gradebook2ComponentService service,
+			String gradebookUid, InputStreamReader reader)
+	throws InvalidInputException, FatalException;
+	
+	public Upload parseImportCSV(Gradebook2ComponentService service,
 			String gradebookUid,
-			Reader reader)
+			Reader reader, boolean importOnlyStructure)
 	throws InvalidInputException, FatalException;
 
 	public ImportExportDataFile exportGradebook(Gradebook2ComponentService service, String gradebookUid, 
@@ -107,5 +112,6 @@ public interface ImportExportUtility {
 	public void exportGradebook(FileType fileType, String filename, OutputStream outStream,
 			Gradebook2ComponentService service, String gradebookUid,
 			final boolean includeStructure, final boolean includeComments, List<String> SectionUid) throws FatalException;
+
 			
 }

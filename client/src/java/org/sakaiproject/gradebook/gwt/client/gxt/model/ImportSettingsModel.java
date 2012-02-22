@@ -73,4 +73,13 @@ public class ImportSettingsModel extends EntityModel implements ImportSettings {
 	public void setIgnoredBusinessRules(List<BusinessLogicCode> rules) {
 		this.ignoredBusinessRules = rules;
 	}
+
+	public Boolean isJustStructure() {
+		return get(UploadKey.B_STRUC.name());
+	}
+
+	public void setJustStructure(Boolean yes) {
+		set(UploadKey.B_STRUC.name(), yes);
+		
+	}
 }

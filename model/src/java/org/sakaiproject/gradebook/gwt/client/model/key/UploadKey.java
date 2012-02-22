@@ -21,7 +21,8 @@ public enum UploadKey {
 	M_IMPRTSETGS("importSettings"),
 	B_SCNTRN("scantron"),
 	B_OVRWRT("overwrite"),
-	S_MXPNTS("maxpoints");
+	S_MXPNTS("maxpoints"),
+	B_STRUC("justStructure");
 	
 	private String property;
 

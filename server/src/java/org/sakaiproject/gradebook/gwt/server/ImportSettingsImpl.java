@@ -73,6 +73,16 @@ public class ImportSettingsImpl extends BaseModel implements ImportSettings {
 	public List<BusinessLogicCode> getIgnoredBusinessRules() {
 		return ignoredBusinessRules;
 	}
+
+
+	public Boolean isJustStructure() {
+		return Util.checkBoolean((Boolean)get(UploadKey.B_STRUC.name()));
+	}
+
+
+	public void setJustStructure(Boolean yes) {
+		put(UploadKey.B_STRUC.name(),Boolean.valueOf(yes));
+	}
 	
 
 }

@@ -65,12 +65,8 @@ public class GradebookImportController extends SimpleFormController implements O
 	private GradebookToolService gbToolService;
 	private ImportExportUtility importExportUtility;
 	
-	private final String FILE_EXTENSION_XLS = "xls";
-	
 	private final String CONTENT_TYPE_TEXT_HTML = "text/html";
-	
-	private final String REQUEST_PARAMETER_PSO = "preventScantronOverwrite";
-	
+		
 	// Set via IoC
 	private ResourceLoader i18n;
 	
@@ -91,8 +87,9 @@ public class GradebookImportController extends SimpleFormController implements O
 
 		String gradebookUid = multipartRequest.getParameter(AppConstants.REQUEST_FORM_FIELD_GBUID);
 		
-		String preventScantronOverwrite = multipartRequest.getParameter(REQUEST_PARAMETER_PSO);
-		boolean doPreventScrantronOverwrite = preventScantronOverwrite == null ? Boolean.FALSE : Boolean.valueOf(preventScantronOverwrite);
+		String justStructureCheckBox = multipartRequest.getParameter(AppConstants.IMPORT_PARAM_STRUCTURE);
+		
+		Boolean importOnlyStructure =  "on".equalsIgnoreCase(justStructureCheckBox);
 
 		for (Iterator<String> fileNameIterator = multipartRequest.getFileNames();fileNameIterator.hasNext();) {
 			String fileName = fileNameIterator.next();
@@ -115,13 +112,13 @@ public class GradebookImportController extends SimpleFormController implements O
 				if (fileType.isExcelNative())
 				{
 					log.debug("Excel file detected"); 
-					importFile = importExportUtility.parseImportXLS(service, gradebookUid, file.getInputStream(), origName.toLowerCase(), gbToolService, doPreventScrantronOverwrite);
+					importFile = importExportUtility.parseImportXLS(service, gradebookUid, file.getInputStream(), origName.toLowerCase(), gbToolService, importOnlyStructure);
 				}
 				else
 				{
 					log.debug("Assuming CSV file"); 
 					InputStreamReader reader = new InputStreamReader(file.getInputStream());
-					importFile = importExportUtility.parseImportCSV(service, gradebookUid, reader);
+					importFile = importExportUtility.parseImportCSV(service, gradebookUid, reader, importOnlyStructure);
 				}
 			}
 
@@ -136,6 +133,7 @@ public class GradebookImportController extends SimpleFormController implements O
 				importFile.setErrors(true);
 				importFile.setNotes(i18n.getString("unknownExcelFileFormat"));
 			} else {
+				
 				//GRBK-1194
 				List<Learner> rows = importFile.getRows();
 				List<String> studentIds = new ArrayList<String>();

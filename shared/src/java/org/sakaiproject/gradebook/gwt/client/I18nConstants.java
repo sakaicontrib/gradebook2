@@ -502,5 +502,6 @@ public interface I18nConstants extends Constants {
 	String importCompletedTitle();
 	String importCompleted();
 	String loading();
+	String importingJustStructure();
 	
 }

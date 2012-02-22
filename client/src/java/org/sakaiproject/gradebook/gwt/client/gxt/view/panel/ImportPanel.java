@@ -45,7 +45,6 @@ import org.sakaiproject.gradebook.gwt.client.gxt.model.ImportSettingsModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.LearnerModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.UploadModel;
-import org.sakaiproject.gradebook.gwt.client.gxt.view.components.NullSensitiveCheckBox;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.ImportSettings;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
@@ -87,7 +86,6 @@ import com.extjs.gxt.ui.client.widget.layout.FitData;
 import com.extjs.gxt.ui.client.widget.layout.FitLayout;
 import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.layout.FormLayout;
-import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.Response;
@@ -228,21 +226,9 @@ public class ImportPanel extends GradebookPanel {
 			
 		});
 		
-		NullSensitiveCheckBox justStructureChoice = new NullSensitiveCheckBox();
-		
-		ToolTipConfig checkBoxToolTipConfig = new ToolTipConfig(i18n.structureOnlyCheckboxToolTip());
-		checkBoxToolTipConfig.setDismissDelay(10000);
-		justStructureChoice.setToolTip(checkBoxToolTipConfig);
-		justStructureChoice.setFieldLabel(i18n.structureOnlyCheckbox());
-		justStructureChoice.setValue(false);
-		justStructureChoice.setAutoHeight(false);
-		justStructureChoice.setAutoWidth(false);
-		justStructureChoice.addStyleName(resources.css().gbLeftAlignFlushNoWrapInput());
-			
 		fileUploadPanel = new FileUploadPanel(this);		
 		Card card1 = wizard.newCard(i18n.importFileStep1Label());	
 		card1.setFormPanel(fileUploadPanel);
-		fileUploadPanel.add(justStructureChoice);
 		
 
 		/*
@@ -352,7 +338,7 @@ public class ImportPanel extends GradebookPanel {
 					throw new Exception(i18n.noItemModelFound());
 				}
 				
-				refreshSetupPanel();
+				refreshSetupPanel(importSettings.isJustStructure());
 			}
 			
 			wizard.hide();
@@ -376,7 +362,7 @@ public class ImportPanel extends GradebookPanel {
 		}
 	}
 
-	private void refreshSetupPanel() {
+	private void refreshSetupPanel(boolean hideGrid) {
 		
 		
 		Gradebook gradebookModel = Registry.get(AppConstants.CURRENT);
@@ -386,7 +372,7 @@ public class ImportPanel extends GradebookPanel {
 		}
 
 		
-
+		
 		// Populate the item setup panel
 		setupPanel.onRender(gradebookItemModel);
 
@@ -417,9 +403,14 @@ public class ImportPanel extends GradebookPanel {
 			multigrade.addGrid(gradebookModel.getConfigurationModel(), gradebookModel.getColumns(),
 					gradebookItemModel);
 
-			BorderLayoutData westData = new BorderLayoutData(LayoutRegion.WEST, 550, 200, 800);  
+			BorderLayoutData westData = null;
+			if(!hideGrid) {
+				westData = new BorderLayoutData(LayoutRegion.WEST, 550, 200, 800);
+			}else{
+				westData = new BorderLayoutData(LayoutRegion.CENTER, 550, 200, 800);
+			}
 			westData.setSplit(true);  
-			westData.setCollapsible(true);  
+			westData.setCollapsible(!hideGrid);  
 			westData.setMargins(new Margins(5));
 
 			BorderLayoutData centerData = new BorderLayoutData(LayoutRegion.CENTER); 
@@ -432,6 +423,9 @@ public class ImportPanel extends GradebookPanel {
 			borderLayoutContainer.add(setupPanel, westData);
 			borderLayoutContainer.add(centerCardLayoutContainer, centerData);
 			multigrade.setHeight(mainCardLayoutContainer.getHeight() - 100);
+			if (hideGrid) {
+				centerCardLayoutContainer.hide();
+				}
 		}
 
 		refreshGradebookItemModel(gradebookItemModel);
@@ -529,8 +523,14 @@ public class ImportPanel extends GradebookPanel {
 
 		int numberOfLearners = upload.getRows() == null ? 0 : upload.getRows().size();
 
-		String message = new StringBuilder().append(i18n.uploadingLearnerGradesPrefix()).append(" ")
-		.append(numberOfLearners).append(" ").append(i18n.uploadingLearnerGradesSuffix()).toString();
+		String message = null;
+		if(!importSettings2.isJustStructure()) {
+			message = new StringBuilder().append(i18n.uploadingLearnerGradesPrefix()).append(" ")
+			.append(numberOfLearners).append(" ").append(i18n.uploadingLearnerGradesSuffix()).toString();
+		} else {
+			message = i18n.importingJustStructure();
+		}
+		
 
 		uploadingBox = MessageBox.wait(i18n.uploadingLearnerGradesTitle(), message, i18n.uploadingLearnerGradesStatus());
 
@@ -835,7 +835,7 @@ public class ImportPanel extends GradebookPanel {
 				}
 				gradeItems.add(i);
 				setupPanel.getItemStore().removeAll();
-				refreshSetupPanel();
+				refreshSetupPanel(false);
 			}
 
 			

@@ -309,5 +309,9 @@ public interface AppConstants {
 	public static final String FILE_TYPE_XLS = "xls97";
 	public static final String FILE_TYPE_XLSX = "xlsx";
 	public static final String FILE_TYPE_TEMPLATE = "template";
+
+	// GRBK-514
+	// true == import only structure
+	public static final String IMPORT_PARAM_STRUCTURE = "juststruct";
 	
 }

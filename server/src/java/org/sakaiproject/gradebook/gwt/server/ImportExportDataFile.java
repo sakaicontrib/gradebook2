@@ -12,6 +12,7 @@ public class ImportExportDataFile {
 	private boolean scantronFile;
 	private List<String[]> allRows; 
 	private int curRow; 
+	private boolean isJustStructure = false;
 
 	public ImportExportDataFile()
 	{
@@ -141,5 +142,13 @@ public class ImportExportDataFile {
 
 	public void setErrorsFound(boolean errorsFound) {
 		this.errorsFound = errorsFound;
+	}
+
+	public boolean isJustStructure() {
+		return isJustStructure;
+	}
+
+	public void setJustStructure(boolean isJustStructure) {
+		this.isJustStructure = isJustStructure;
 	}
 }

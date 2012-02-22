@@ -129,18 +129,20 @@ public class FileUploadPanel extends FormPanel {
 		importTypeComboBox.setAllowBlank(false);
 
 		add(importTypeComboBox);
-		
+							
+		// GRBK-514
 		justStructureChoice = new NullSensitiveCheckBox();
-
-		ToolTipConfig checkBoxToolTipConfig = new ToolTipConfig("Importo solamente lo stucture-o");
+		justStructureChoice.setName(AppConstants.IMPORT_PARAM_STRUCTURE);
+		
+		ToolTipConfig checkBoxToolTipConfig = new ToolTipConfig(i18n.structureOnlyCheckboxToolTip());
 		checkBoxToolTipConfig.setDismissDelay(10000);
 		justStructureChoice.setToolTip(checkBoxToolTipConfig);
-		justStructureChoice.setFieldLabel("Importo solamente lo stucture-o");
+		justStructureChoice.setFieldLabel(i18n.structureOnlyCheckbox());
 		justStructureChoice.setValue(false);
 		justStructureChoice.setAutoHeight(false);
 		justStructureChoice.setAutoWidth(false);
 		justStructureChoice.addStyleName(resources.css().gbLeftAlignFlushNoWrapInput());
-
+		add(justStructureChoice);
 		
 		addListener(Events.Submit, new Listener<FormEvent>() {
 

@@ -22,6 +22,7 @@ package org.sakaiproject.gradebook.gwt.server;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
@@ -940,7 +941,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	 */
 	public Upload parseImportXLS(Gradebook2ComponentService service, 
 			String gradebookUid, InputStream is, String fileName, GradebookToolService gbToolService, 
-			boolean doPreventOverwrite) throws InvalidInputException, FatalException, IOException {
+			Boolean isJustStructure) throws InvalidInputException, FatalException, IOException {
 		log.debug("parseImportXLS() called"); 
 
 		// Strip off extension
@@ -962,6 +963,9 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		log.debug("realFileName=" + realFileName);
 		log.debug("isOriginalName=" + isOriginalName);
 
+		ImportSettings settings = new ImportSettingsImpl();
+		settings.setJustStructure(isJustStructure);
+		
 		org.apache.poi.ss.usermodel.Workbook inspread = null;
 
 		BufferedInputStream bufStream = new BufferedInputStream(is); 
@@ -972,14 +976,14 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		{
 			log.debug("Found a POI readable spreadsheet");
 			bufStream.close(); 
-			return handlePoiSpreadSheet(inspread, service, gradebookUid, realFileName, isOriginalName);
+			return handlePoiSpreadSheet(inspread, service, gradebookUid, realFileName, isOriginalName, settings);
 		}
-		else
-		{
-			log.debug("POI couldn't handle the spreadsheet, using jexcelapi");
-			bufStream.reset();
-			return handleJExcelAPISpreadSheet(bufStream, service, gradebookUid, realFileName, isOriginalName); 
-		}
+		// else
+		
+		log.debug("POI couldn't handle the spreadsheet, using jexcelapi");
+		bufStream.reset();
+		return handleJExcelAPISpreadSheet(bufStream, service, gradebookUid, realFileName, isOriginalName, settings); 
+		
 
 	}
 
@@ -994,7 +998,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	}
 
 	private Upload handleJExcelAPISpreadSheet(BufferedInputStream is,
-			Gradebook2ComponentService service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName) throws InvalidInputException, FatalException, IOException {
+			Gradebook2ComponentService service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName, ImportSettings settings) throws InvalidInputException, FatalException, IOException {
 		Workbook wb = null; 
 		Upload rv = new UploadImpl();
 		try {
@@ -1017,25 +1021,25 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		{
 			if (isScantronSheetForJExcelApi(s))
 			{
-				return handleScantronSheetForJExcelApi(s, service, gradebookUid, fileName, isNewAssignmentByFileName);
+				return handleScantronSheetForJExcelApi(s, service, gradebookUid, fileName, isNewAssignmentByFileName, settings);
 			}
-			else
-			{
-				return handleNormalXLSSheetForJExcelApi(s, service, gradebookUid);
-			}
+			//else
+			
+			return handleNormalXLSSheetForJExcelApi(s, service, gradebookUid, settings);
+			
 		}
-		else
-		{
-			rv.setErrors(true);
-			rv.setNotes(i18n.getString("unknownExcelFileFormat"));
-			return rv;
-		}
+		//else
+		
+		rv.setErrors(true);
+		rv.setNotes(i18n.getString("unknownExcelFileFormat"));
+		return rv;
+		
 	}
 
 	
 
 	private Upload handleNormalXLSSheetForJExcelApi(Sheet s,
-			Gradebook2ComponentService service, String gradebookUid) throws InvalidInputException, FatalException {
+			Gradebook2ComponentService service, String gradebookUid, ImportSettings settings) throws InvalidInputException, FatalException {
 		ImportExportDataFile raw = new ImportExportDataFile(); 
 		int numRows; 
 
@@ -1058,12 +1062,13 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		boolean isClicker = isClickerSheetForJExcelApi(s);
 		raw.setFileType("Excel 5.0/7.0" + ( isClicker ? " clicker": "")); 
 		raw.setScantronFile(isClicker); 
+		raw.setJustStructure(settings.isJustStructure());
 
 		return parseImportGeneric(service, gradebookUid, raw);
 	}
 
 	private Upload handleScantronSheetForJExcelApi(Sheet s,
-			Gradebook2ComponentService service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName) throws InvalidInputException, FatalException 
+			Gradebook2ComponentService service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName, ImportSettings settings) throws InvalidInputException, FatalException 
 			{
 		StringBuilder err = new StringBuilder(i18n.getString("scantronHasErrors", "Scantron File with errors: ")); 
 		ImportExportDataFile raw = new ImportExportDataFile(); 
@@ -1111,16 +1116,17 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			raw.setFileType("Scantron File"); 
 			raw.setScantronFile(true);
 			raw.setNewAssignment(isNewAssignmentByFileName);
+			raw.setJustStructure(settings.isJustStructure());
 			return parseImportGeneric(service, gradebookUid, raw);
 		}
-		else
-		{
-			raw.setMessages(err.toString());
-			err = null; 
-			raw.setErrorsFound(true); 
+		//else
+		
+		raw.setMessages(err.toString());
+		err = null; 
+		raw.setErrorsFound(true); 
 
-			return parseImportGeneric(service, gradebookUid, raw);
-		}
+		return parseImportGeneric(service, gradebookUid, raw);
+		
 
 	}
 
@@ -1221,7 +1227,9 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	}
 
 
-	private Upload handlePoiSpreadSheet(org.apache.poi.ss.usermodel.Workbook inspread, Gradebook2ComponentService service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName) throws InvalidInputException, FatalException
+	private Upload handlePoiSpreadSheet(org.apache.poi.ss.usermodel.Workbook inspread, Gradebook2ComponentService service, 
+				String gradebookUid, String fileName, boolean isNewAssignmentByFileName, ImportSettings settings) 
+		throws InvalidInputException, FatalException
 	{
 		log.debug("handlePoiSpreadSheet() called"); 
 		// FIXME - need to do multiple sheets, and structure
@@ -1233,30 +1241,31 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			if (isScantronSheetFromPoi(cur))
 			{
 				log.debug("POI: Scantron");
-				ret = processScantronXls(cur, fileName); 
+				ret = processScantronXls(cur, fileName, settings); 
 				ret.setScantronFile(true); 
 				ret.setNewAssignment(isNewAssignmentByFileName);
 			}
 			else
 			{
 				log.debug("POI: Not scantron");
-				ret = processNormalXls(cur); 
+				ret = processNormalXls(cur, settings); 
 			}
 			
 			ret.setScantronFile(ret.isScantronFile() || isClickerSheetFromPoi(cur));
+			ret.setJustStructure(settings.isJustStructure());
 			return parseImportGeneric(service, gradebookUid, ret);
 		}
-		else
-		{
-			ImportExportDataFile d = new ImportExportDataFile(); 
-			d.setMessages(i18n.getString("importValidSheetsMessage"));
-			d.setErrorsFound(true); 
-			return parseImportGeneric(service, gradebookUid, d);
+		//else
+		
+		ImportExportDataFile d = new ImportExportDataFile(); 
+		d.setMessages(i18n.getString("importValidSheetsMessage"));
+		d.setErrorsFound(true); 
+		return parseImportGeneric(service, gradebookUid, d);
 
-		}
+		
 	}
 
-	private ImportExportDataFile processNormalXls(org.apache.poi.ss.usermodel.Sheet cur) {
+	private ImportExportDataFile processNormalXls(org.apache.poi.ss.usermodel.Sheet cur, ImportSettings settings) {
 		log.debug("processNormalXls() called");
 		ImportExportDataFile data = new ImportExportDataFile();
 		int numCols = getNumberOfColumnsFromSheet(cur); 
@@ -1307,6 +1316,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 				}
 			}
 			data.addRow(dataEntity);
+						
 		}
 
 		return data; 
@@ -1347,7 +1357,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		return ret; 
 	}
 
-	private ImportExportDataFile processScantronXls(org.apache.poi.ss.usermodel.Sheet cur, String fileName) {
+	private ImportExportDataFile processScantronXls(org.apache.poi.ss.usermodel.Sheet cur, String fileName, ImportSettings settings) {
 		ImportExportDataFile data = new ImportExportDataFile(); 
 		Iterator<Row> rowIter = cur.rowIterator(); 
 		StringBuilder err = new StringBuilder("Scantron File with errors"); 
@@ -1374,6 +1384,12 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		if (! stop) 
 		{
 			data.addRow(createScantronHeaderRow(fileName));
+			
+			// GRBK-514
+			if(settings.isJustStructure()){
+				return data;
+			}
+			
 			while (rowIter.hasNext())
 			{ 
 				Row curRow = rowIter.next();  
@@ -1481,12 +1497,15 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		// If after all that, we don't find a row starting with SCANTRON_HEADER_STUDENT_ID, we're not a scantron.. 
 		return false;
 	}
+	
 
-	public Upload parseImportCSV(Gradebook2ComponentService service, 
-			String gradebookUid, Reader reader) throws InvalidInputException, FatalException 
-			{
-
+	public Upload parseImportCSV(Gradebook2ComponentService service,
+			String gradebookUid, Reader reader, boolean importOnlyStructure) 
+			throws InvalidInputException, FatalException {
+		
 		ImportExportDataFile rawData = new ImportExportDataFile(); 
+		rawData.setJustStructure(importOnlyStructure);
+		
 		CSVReader csvReader = new CSVReader(reader);
 		String[] ent;
 		try {
@@ -1505,6 +1524,14 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		rawData.setFileType("CSV file"); 
 		rawData.setScantronFile(isClickerSheetCSV(rawData));
 		return parseImportGeneric(service, gradebookUid, rawData);
+	}
+
+	public Upload parseImportCSV(Gradebook2ComponentService service,
+			String gradebookUid, InputStreamReader reader)
+			throws InvalidInputException, FatalException 
+			{
+
+		return parseImportCSV(service, gradebookUid, reader, false);
 	}	
 
 	/*
@@ -2727,8 +2754,12 @@ private GradeItem buildNewCategory(String curCategoryString,
 		ImportExportInformation ieInfo = new ImportExportInformation();
 		
 		UploadImpl importFile = new UploadImpl();
+		
+		// this is just housekeeping and may not be immediately necessary
 		importFile.getImportSettings().setScantron(rawData.isScantronFile());
+		importFile.getImportSettings().setJustStructure(rawData.isJustStructure());
 		ieInfo.setImportsettings(importFile.getImportSettings());
+		//
 		
 		if (rawData.isScantronFile())
 		{
@@ -2760,7 +2791,10 @@ private GradeItem buildNewCategory(String curCategoryString,
 				// file
 				adjustGradebookItemModel(ieInfo);
 				
-				readInGradeDataFromImportFile(rawData, ieInfo, userDereferenceMap, importRows, structureStop, service);
+				if(!ieInfo.getImportsettings().isJustStructure()) {// GRBK-514
+					readInGradeDataFromImportFile(rawData, ieInfo, userDereferenceMap, importRows, structureStop, service);
+				}
+				
 				GradeItem gradebookGradeItem = (GradeItem)ieInfo.getGradebookItemModel();
 				service.decorateGradebook(gradebookGradeItem, null, null);
 				importFile.setGradebookItemModel(gradebookGradeItem);
@@ -2928,6 +2962,8 @@ private GradeItem buildNewCategory(String curCategoryString,
 	public void setI18n(ResourceLoader i18n) {
 		this.i18n = i18n;
 	}
+
+
 }
 
 class ImportExportInformation 

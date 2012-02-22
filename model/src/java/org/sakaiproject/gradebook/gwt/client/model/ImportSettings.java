@@ -22,5 +22,9 @@ public interface ImportSettings {
 	public List<BusinessLogicCode> getIgnoredBusinessRules();
 	
 	public void setIgnoredBusinessRules(List<BusinessLogicCode> rules);
+	
+	public Boolean isJustStructure();
+	
+	public void setJustStructure (Boolean yes);
 
 }
