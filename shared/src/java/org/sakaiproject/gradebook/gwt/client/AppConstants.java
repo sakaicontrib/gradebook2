@@ -313,5 +313,7 @@ public interface AppConstants {
 	// GRBK-514
 	// true == import only structure
 	public static final String IMPORT_PARAM_STRUCTURE = "juststruct";
+	public static final String IMPORT_PARAM_FILETYPE = "filetype";
+	public static final String IMPORT_PARAM_FILEFORMAT = "fileformat";
 	
 }

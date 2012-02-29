@@ -29,29 +29,26 @@ import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
-//import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
-import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.gxt.type.ExportType;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.NullSensitiveCheckBox;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
-import org.sakaiproject.gradebook.gwt.client.wizard.formpanel.ImportExportTypeComboBox;
+import org.sakaiproject.gradebook.gwt.client.wizard.formpanel.ExportTypeComboBox;
+import org.sakaiproject.gradebook.gwt.client.wizard.formpanel.FileFormatComboBox;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
-//import com.extjs.gxt.ui.client.event.ButtonEvent;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.FormEvent;
 import com.extjs.gxt.ui.client.event.Listener;
-//import com.extjs.gxt.ui.client.event.SelectionListener;
-//import com.extjs.gxt.ui.client.mvc.Dispatcher;
-import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.MessageBox;
+import com.extjs.gxt.ui.client.widget.form.Field;
 import com.extjs.gxt.ui.client.widget.form.FileUploadField;
 import com.extjs.gxt.ui.client.widget.form.FormPanel;
 import com.extjs.gxt.ui.client.widget.form.HiddenField;
+import com.extjs.gxt.ui.client.widget.form.Validator;
 import com.extjs.gxt.ui.client.widget.tips.ToolTipConfig;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Cookies;
@@ -61,8 +58,9 @@ public class FileUploadPanel extends FormPanel {
 	private FileUploadField file = null;
 	private final I18nConstants i18n;
 	private final ImportPanel newImportPanel;
-	private ImportExportTypeComboBox importTypeComboBox;
+	private ExportTypeComboBox importTypeComboBox;
 	NullSensitiveCheckBox justStructureChoice;
+	private FileFormatComboBox importFormatComboBox;
 	
 	public final static Integer COMMENTS_CHECKBOX_VALUE = Integer.valueOf(0);
 	public final static Integer EXPORT_TYPE_VALUE = Integer.valueOf(1);
@@ -101,7 +99,28 @@ public class FileUploadPanel extends FormPanel {
 				importTypeComboBox.setSelectionByExportType(type);
 				
 			}
+			
 		};
+		file.setValidator(new Validator() {
+			
+			@Override
+			public String validate(Field<?> field, String value) {
+				if (value != null) {
+					int dot = value.lastIndexOf(".");
+					if (dot > 0 &&
+							ExportType.getExportTypeFromFilename(value.substring(dot)) != null ) {
+						return null;
+					}
+				}
+				StringBuffer sb = new StringBuffer(i18n.importFileTypesWarning());
+				
+				for (ExportType type : ExportType.values()) {
+					sb.append(type.getFileExtension()).append(",");	
+				}
+				sb.deleteCharAt(sb.length()-1); // TODO: multibyte charset aware?
+				return sb.toString();
+			}
+		});
 		file.setAllowBlank(false);
 		file.setFieldLabel(i18n.fileLabel());
 		file.setName("Test");
@@ -118,17 +137,23 @@ public class FileUploadPanel extends FormPanel {
 		formTokenField.setValue(Cookies.getCookie(AppConstants.GB2_TOKEN));
 		add(formTokenField);
 		
-		ListStore<ModelData> exportTypeStore = new ListStore<ModelData>();
-		exportTypeStore.setModelComparer(new EntityModelComparer<ModelData>(ExportType.DISPLAY_NAME));
-		for (ExportType type : ExportType.values()){
-			exportTypeStore.add(ExportType.getExportTypeModel(type));
-		}
-		importTypeComboBox = new ImportExportTypeComboBox();
-		importTypeComboBox.setFieldLabel(i18n.importFormPanelLabelExportType());
-		importTypeComboBox.setEmptyText(i18n.importFormPanelImportTypeEmptyText());
+		importTypeComboBox = new ExportTypeComboBox();
+		importTypeComboBox.setName(AppConstants.IMPORT_PARAM_FILETYPE);
+		
 		importTypeComboBox.setAllowBlank(false);
+		
+		importTypeComboBox.setVisible(false);
 
 		add(importTypeComboBox);
+		
+				
+		importFormatComboBox = new FileFormatComboBox();
+		
+		importFormatComboBox.setName(AppConstants.IMPORT_PARAM_FILEFORMAT);
+		importFormatComboBox.setEmptyText(i18n.importFormPanelImportTypeEmptyText());
+		importFormatComboBox.setAllowBlank(false);
+				
+		add(importFormatComboBox);
 							
 		// GRBK-514
 		justStructureChoice = new NullSensitiveCheckBox();

@@ -489,10 +489,10 @@ public interface I18nConstants extends Constants {
 	String exportTypeCSV();
 	String exportTypeXLS();
 	String exportTypeXLSX();
-	String exportTypeTemplate();
+	String exportFormatTemplate();
 	
 	//GRBK-514 GRBK-1221
-	String importFormPanelLabelExportType();
+	String importFormPanelLabelFileFormat();
 	String importFormPanelImportTypeEmptyText();
 	String structureOnlyCheckbox();
 	String structureOnlyCheckboxToolTip();
@@ -503,5 +503,9 @@ public interface I18nConstants extends Constants {
 	String importCompleted();
 	String loading();
 	String importingJustStructure();
+	String importFileTypesWarning();
+	String importFormatSCANTRON();
+	String importFormatCLICKER();
+	String importFullGradebook();
 	
 }

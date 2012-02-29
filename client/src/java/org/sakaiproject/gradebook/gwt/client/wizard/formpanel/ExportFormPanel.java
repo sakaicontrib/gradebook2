@@ -79,7 +79,7 @@ public class ExportFormPanel extends FormPanel {
 		commentsCheckbox.addStyleName(resources.css().gbCheckBoxAlignLeft());
 		add(commentsCheckbox);
 		
-		exportTypeComboBox = new ImportExportTypeComboBox();
+		exportTypeComboBox = new ExportTypeComboBox();
 
 		add(exportTypeComboBox);
 		

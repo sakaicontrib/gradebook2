@@ -113,5 +113,7 @@ public interface ImportExportUtility {
 			Gradebook2ComponentService service, String gradebookUid,
 			final boolean includeStructure, final boolean includeComments, List<String> SectionUid) throws FatalException;
 
+	public boolean canBeReadAs(FileType type, InputStream inputStream);
+
 			
 }

@@ -23,33 +23,42 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.gxt.type.ExportType;
+import org.sakaiproject.gradebook.gwt.client.gxt.type.FileFormat;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
 
-public class ImportExportTypeComboBox extends ComboBox<ModelData> {
+public class ExportTypeComboBox extends ComboBox<ModelData> {
 	
 	private static I18nConstants i18n = Registry.get(AppConstants.I18N);
-	
-	public ImportExportTypeComboBox() {
+
+	public ExportTypeComboBox() {
 		
 		ListStore<ModelData> exportTypeStore = new ListStore<ModelData>();
 		exportTypeStore.setModelComparer(new EntityModelComparer<ModelData>(ExportType.DISPLAY_NAME));
 		
 		for (ExportType type : ExportType.values()){
 		
-			exportTypeStore.add(ExportType.getExportTypeModel(type));
+			exportTypeStore.add(ExportType.getFileModel(type));
+		}
+		
+		for (FileFormat format : FileFormat.values()) {
+			if (format.isExportable()) {
+				exportTypeStore.add(FileFormat.getFileModel(format));
+			}
 		}
 
 		setStore(exportTypeStore);
 		setDisplayField(ExportType.DISPLAY_NAME);
+		setValueField(ExportType.DISPLAY_VALUE_STRING);
 		setFieldLabel(i18n.exportFormPanelLabelExportType());
 		setEmptyText(i18n.exportFormPanelExportTypeEmptyText());
 		setTypeAhead(true);
 		setEditable(false);
 		setTriggerAction(TriggerAction.ALL);
+		
 	}
 	
 	public void setSelectionByExportType (ExportType type) {

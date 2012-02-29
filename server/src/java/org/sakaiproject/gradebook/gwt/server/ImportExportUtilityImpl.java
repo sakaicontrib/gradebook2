@@ -842,7 +842,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	}
 	
 
-	private org.apache.poi.ss.usermodel.Workbook readPoiSpreadsheet(BufferedInputStream is) throws IOException 
+	private org.apache.poi.ss.usermodel.Workbook readPoiSpreadsheet(BufferedInputStream is) 
 	{
 		org.apache.poi.ss.usermodel.Workbook spread = null;
 
@@ -858,11 +858,13 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		catch (IllegalArgumentException iae)
 		{
 			log.debug("Caught IllegalArgumentException Exception", iae);
+			log.info(iae.getMessage());
 		}
 		if (spread == null)
 		{
-			is.reset(); 
+			
 			try {
+				is.reset(); 
 				spread = new XSSFWorkbook(POIFSFileSystem.createNonClosingInputStream(is));
 				log.debug("XSSF file detected");
 
@@ -880,6 +882,13 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 
 		}
 
+		if (null == spread) {
+			try {
+				is.reset();
+			} catch (IOException e) {
+				/// suggestions?
+			}
+		}
 		return spread; 
 
 	}
@@ -1025,7 +1034,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			}
 			//else
 			
-			return handleNormalXLSSheetForJExcelApi(s, service, gradebookUid, settings);
+			return handleNormalXLSSheetForJExcelApi(s, service, gradebookUid, isNewAssignmentByFileName, settings);
 			
 		}
 		//else
@@ -1039,9 +1048,13 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	
 
 	private Upload handleNormalXLSSheetForJExcelApi(Sheet s,
-			Gradebook2ComponentService service, String gradebookUid, ImportSettings settings) throws InvalidInputException, FatalException {
+			Gradebook2ComponentService service, String gradebookUid, boolean isNewAssignmentByFileName, ImportSettings settings) throws InvalidInputException, FatalException {
 		ImportExportDataFile raw = new ImportExportDataFile(); 
 		int numRows; 
+		
+		if (isClickerSheetForJExcelApi(s)) {
+			raw.setNewAssignment(isNewAssignmentByFileName);
+		}
 
 		numRows = s.getRows(); 
 
@@ -1238,12 +1251,13 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		{
 			org.apache.poi.ss.usermodel.Sheet cur = inspread.getSheetAt(0);
 			ImportExportDataFile ret; 
-			if (isScantronSheetFromPoi(cur))
+			boolean isScantron = isScantronSheetFromPoi(cur);
+			boolean isClicker = isClickerSheetFromPoi(cur);
+			if (isScantron)
 			{
 				log.debug("POI: Scantron");
 				ret = processScantronXls(cur, fileName, settings); 
-				ret.setScantronFile(true); 
-				ret.setNewAssignment(isNewAssignmentByFileName);
+				
 			}
 			else
 			{
@@ -1251,7 +1265,10 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 				ret = processNormalXls(cur, settings); 
 			}
 			
-			ret.setScantronFile(ret.isScantronFile() || isClickerSheetFromPoi(cur));
+			if (isScantron || isClicker){
+				ret.setNewAssignment(isNewAssignmentByFileName);
+			}
+			ret.setScantronFile(isScantron || isClicker);
 			ret.setJustStructure(settings.isJustStructure());
 			return parseImportGeneric(service, gradebookUid, ret);
 		}
@@ -2962,9 +2979,85 @@ private GradeItem buildNewCategory(String curCategoryString,
 	public void setI18n(ResourceLoader i18n) {
 		this.i18n = i18n;
 	}
+	
+	public boolean canBeReadAs(FileType type, InputStream inputStream) {
+		boolean rv = false;
+		BufferedInputStream bis = new BufferedInputStream(inputStream);
+		if (FileType.XLSX.equals(type)) {
+			return readPoiSpreadsheet(bis) != null;
+		}
+		if(FileType.XLS97.equals(type)) {
+			return readPoiSpreadsheet(bis) != null || isJexcelReadable(bis);
+		}
+		if(FileType.CSV.equals(type) || FileType.TEMPLATE.equals(type) ) {
+			return isCSVReadable(inputStream);
+		}
+		
+		return rv; // unknown filetype
+	}
+	
+	@SuppressWarnings("unchecked")
+	private boolean isCSVReadable(InputStream inputStream) {
+		boolean noTroubleReading = true;
+		
+		InputStreamReader input = new InputStreamReader(inputStream);
+		CSVReader csv = new CSVReader(input);
+		
+		List<String[]> list = null;
+		
+		try {
+			list = csv.readAll();
+		} catch (IOException e) {
+			noTroubleReading = false;
+		}
+		
+		try {
+			inputStream.reset();
+		} catch (IOException e) {	
+			log.error("InputStream.reset() error");
+			e.printStackTrace();
+		}
+		
+		return list != null && list.size() > 1 && noTroubleReading;
+	}
+
+
+	/*
+	 * this will return false if Workbook != null but there was 
+	 * an error opening the Workbook
+	 */
+	private boolean isJexcelReadable(InputStream inputStream) {
+		boolean rv = true;
+		Workbook wb = null;
+		
+		try {
+			 wb = Workbook.getWorkbook(inputStream);
+		} catch (BiffException e) {
+			rv = false;
+			log.error(e.getMessage());
+			e.printStackTrace();
+		} catch (IOException e) {
+			rv = false; 
+		} 
+		if(null == wb || wb.getSheet(0) == null ) {
+			rv=false;
+		} else {
+			wb.close();
+			try {
+				inputStream.reset();
+			} catch (IOException e) {	
+				log.error("InputStream.reset() error");
+				e.printStackTrace();
+			}
+		}
+		
+		
+		return rv;
+	}
 
 
 }
+
 
 class ImportExportInformation 
 {
