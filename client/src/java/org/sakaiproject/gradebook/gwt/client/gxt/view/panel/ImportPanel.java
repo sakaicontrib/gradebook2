@@ -350,10 +350,12 @@ public class ImportPanel extends GradebookPanel {
 			uploadBox.close();
 		}
 		
-		if(!hasErrors && ((Gradebook)Registry.get(AppConstants.CURRENT)).getGradebookItemModel().getGradeType() == GradeType.PERCENTAGES
-				&& importSettings.isScantron()) {
+		if(!hasErrors && importSettings.isScantron()) {
+			GradeType type = ((Gradebook)Registry.get(AppConstants.CURRENT)).getGradebookItemModel().getGradeType();
 			
-			getScantonOrClickerPointsWithWizard();
+			if( type == GradeType.PERCENTAGES || type == GradeType.LETTERS ) {
+				getScantonOrClickerPointsWithWizard();
+			}
 		}
 
 		if (msgsFromServer != null && msgsFromServer.length() > 0){
@@ -844,7 +846,8 @@ public class ImportPanel extends GradebookPanel {
 		card1.setFormPanel(form);
 		
 		wizard.setHeading(i18n.importWizardTitle());
-		wizard.setHeaderTitle("Scantron");
+		wizard.setHeaderTitle(i18n.importScantronClickerPointsConversionTitle());
+		wizard.setFinishButtonText(i18n.importScantronClickerPointsConversionFinish());
 		
 		wizard.show();
 		

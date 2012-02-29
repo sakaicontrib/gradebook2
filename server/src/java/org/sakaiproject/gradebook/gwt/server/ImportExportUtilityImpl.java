@@ -858,7 +858,6 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		catch (IllegalArgumentException iae)
 		{
 			log.debug("Caught IllegalArgumentException Exception", iae);
-			log.info(iae.getMessage());
 		}
 		if (spread == null)
 		{
