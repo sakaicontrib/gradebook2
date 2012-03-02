@@ -1187,7 +1187,6 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 					// GRBK-668 
 					if(null != originalImportGrade && !"".equals(originalImportGrade)) {
 						
-						text.append(originalImportGrade);
 						if ("".equals(score)) {
 							text.append(" : ");
 							text.append(i18n.getString("importProcessName"));
@@ -1198,9 +1197,9 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 						} else{
 							text.append(" : ");
 							text.append(i18n.getString("importProcessName"));
-							text.append(" ").append(i18n.getString("converted")).append(" '");
+							text.append(" ").append(i18n.getString("replaced")).append(" '");
 							text.append(originalImportGrade);
-							text.append("' ").append(i18n.getString("to")).append(" '").append(score).append("'");
+							text.append("' ").append(i18n.getString("by")).append(" '").append(score).append("'");
 						}
 					}
 
