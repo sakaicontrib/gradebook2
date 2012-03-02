@@ -714,6 +714,7 @@ public class ImportPanel extends GradebookPanel {
 		wizard.setContainer(this.getElement());
 		
 		wizard.setProgressIndicator(Wizard.Indicator.NONE);
+		wizard.setHidePreviousButtonOnFirstCard(true);
 		wizard.addCancelListener(new Listener<BaseEvent>() {
 
 			public void handleEvent(BaseEvent be) { /// need to max points to proceed, cancel import
