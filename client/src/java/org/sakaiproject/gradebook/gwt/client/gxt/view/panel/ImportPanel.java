@@ -713,7 +713,7 @@ public class ImportPanel extends GradebookPanel {
 		wizard.setPanelBackgroundColor("#FFFFFF");
 		wizard.setContainer(this.getElement());
 		
-		wizard.setProgressIndicator(Wizard.Indicator.PROGRESSBAR);
+		wizard.setProgressIndicator(Wizard.Indicator.NONE);
 		wizard.addCancelListener(new Listener<BaseEvent>() {
 
 			public void handleEvent(BaseEvent be) { /// need to max points to proceed, cancel import
