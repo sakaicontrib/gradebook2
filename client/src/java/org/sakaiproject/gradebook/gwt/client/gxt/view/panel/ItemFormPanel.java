@@ -187,7 +187,16 @@ public class ItemFormPanel extends GradebookPanel {
 		firstTimeInEditGradebook = true; 
 		initListeners();
 
-		formPanel = new FormPanel();
+		formPanel = new FormPanel(){
+
+			@Override
+			public List<Field<?>> getFields() {
+				List<Field<?>> rv = super.getFields();
+				rv.add(dropLowestField);
+				return rv;
+				}
+			
+		};
 		formPanel.setButtonAlign(Style.HorizontalAlignment.LEFT);
 		formPanel.setHeaderVisible(false);
 		formPanel.setLabelWidth(180);
@@ -430,7 +439,7 @@ public class ItemFormPanel extends GradebookPanel {
 		HorizontalPanel hp = new HorizontalPanel();
 		hp.add(dropLowestField);
 		hp.add(wc);		
-		
+
 		dropLowestAdapterField = new AdapterField(hp);
 		dropLowestAdapterField.setFieldLabel(i18n.dropLowestFieldLabel());
 		formPanel.add(dropLowestAdapterField);
