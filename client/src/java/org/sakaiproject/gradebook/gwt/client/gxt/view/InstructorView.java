@@ -42,7 +42,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityOverlay;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.FinalGradeSubmissionStatusModel;
-import org.sakaiproject.gradebook.gwt.client.gxt.type.ExportType;
+import org.sakaiproject.gradebook.gwt.client.gxt.type.FileFormat;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.NullSensitiveCheckBox;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.BorderLayoutPanel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.GradeScalePanel;
@@ -671,7 +671,7 @@ public class InstructorView extends AppView {
 				Map<Integer, Object> selectedExportValues = exportFormPanel.getValues();
 				
 				exportDetails.setIncludeComments((Boolean) selectedExportValues.get(ExportFormPanel.COMMENTS_CHECKBOX_VALUE));
-				exportDetails.setFileType((ExportType) selectedExportValues.get(ExportFormPanel.EXPORT_TYPE_VALUE));
+				exportDetails.setFileType((FileFormat) selectedExportValues.get(ExportFormPanel.EXPORT_TYPE_VALUE));
 				exportDetails.setSectionUid((String) selectedExportValues.get(ExportFormPanel.SECTIONS_VAlUE));
 				exportDetails.setIncludeStructure(true);
 				Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType(), exportDetails);
