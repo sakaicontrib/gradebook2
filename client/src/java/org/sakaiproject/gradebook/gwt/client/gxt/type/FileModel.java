@@ -30,6 +30,7 @@ public interface FileModel {
 			return model;
 		}
 	}
+	public String getTypeName();
 	
 
 }

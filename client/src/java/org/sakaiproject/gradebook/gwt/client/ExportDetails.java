@@ -1,11 +1,11 @@
 package org.sakaiproject.gradebook.gwt.client;
 
-import org.sakaiproject.gradebook.gwt.client.gxt.type.FileFormat;
+import org.sakaiproject.gradebook.gwt.client.gxt.type.FileModel;
 
 
 public class ExportDetails {
 
-	private FileFormat fileType; 
+	private FileModel fileType; 
 	private boolean includeStructure;
 	private String sectionUid;
 	private Boolean includeComments = true;
@@ -16,7 +16,7 @@ public class ExportDetails {
 	public void setSectionUid(String sectionUid) {
 		this.sectionUid = sectionUid;
 	}
-	public ExportDetails(FileFormat fileType, boolean includeStructure) {
+	public ExportDetails(FileModel fileType, boolean includeStructure) {
 		super();
 		this.fileType = fileType;
 		this.includeStructure = includeStructure;
@@ -25,10 +25,10 @@ public class ExportDetails {
 		super();
 	}
 	
-	public FileFormat getFileType() {
+	public FileModel getFileType() {
 		return fileType;
 	}
-	public void setFileType(FileFormat fileType) {
+	public void setFileType(FileModel fileType) {
 		this.fileType = fileType;
 	}
 	public boolean isIncludeStructure() {
