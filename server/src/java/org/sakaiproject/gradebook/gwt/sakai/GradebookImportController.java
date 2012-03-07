@@ -170,7 +170,7 @@ public class GradebookImportController extends SimpleFormController implements O
 										"Duplicate rows found in the table. The following Student Id's where duplicated: "))
 								      .append("'").append(student.getStudentName()).append("'");
 							} else {
-								msg.append(",").append(id);
+								msg.append(",").append("'").append(student.getStudentName()).append("'");
 							}
 						} else {
 							studentIds.add(id);
