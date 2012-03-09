@@ -161,7 +161,6 @@ public class FileUploadPanel extends FormPanel {
 			@Override
 			public String validate(Field<?> field, String value) {
 				if (value != null) {
-					importFormatComboBox.getValue().get(importFormatComboBox.getDisplayField());
 					FileFormat f = FileFormat.valueOf((String)
 							importFormatComboBox.getValue().get(importFormatComboBox.getValueField()));
 					if (f != null) {
