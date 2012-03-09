@@ -502,5 +502,6 @@ public interface I18nConstants extends Constants {
 	String importFullGradebook();
 	String importScantronClickerPointsConversionTitle();
 	String importScantronClickerPointsConversionFinish();
+	String noImportJustStructureForTemplateFormat();
 	
 }

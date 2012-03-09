@@ -29,7 +29,9 @@ import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
+import org.sakaiproject.gradebook.gwt.client.I18nMessages;
 import org.sakaiproject.gradebook.gwt.client.gxt.type.ExportType;
+import org.sakaiproject.gradebook.gwt.client.gxt.type.FileFormat;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.NullSensitiveCheckBox;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
@@ -61,6 +63,7 @@ public class FileUploadPanel extends FormPanel {
 	private ExportTypeComboBox importTypeComboBox;
 	NullSensitiveCheckBox justStructureChoice;
 	private FileFormatComboBox importFormatComboBox;
+	private I18nMessages i18nMessages;
 	
 	public final static Integer COMMENTS_CHECKBOX_VALUE = Integer.valueOf(0);
 	public final static Integer EXPORT_TYPE_VALUE = Integer.valueOf(1);
@@ -74,6 +77,7 @@ public class FileUploadPanel extends FormPanel {
 	
 		this.newImportPanel = newImportPanel;
 		i18n = Registry.get(AppConstants.I18N);
+		i18nMessages = Registry.get(AppConstants.I18N_TEMPLATES);
 
 		final Gradebook gbModel = Registry.get(AppConstants.CURRENT);
 
@@ -152,11 +156,46 @@ public class FileUploadPanel extends FormPanel {
 		importFormatComboBox.setName(AppConstants.IMPORT_PARAM_FILEFORMAT);
 		importFormatComboBox.setEmptyText(i18n.importFormPanelImportTypeEmptyText());
 		importFormatComboBox.setAllowBlank(false);
+		importFormatComboBox.setValidator(new Validator() {
+			
+			@Override
+			public String validate(Field<?> field, String value) {
+				if (value != null) {
+					importFormatComboBox.getValue().get(importFormatComboBox.getDisplayField());
+					FileFormat f = FileFormat.valueOf((String)
+							importFormatComboBox.getValue().get(importFormatComboBox.getValueField()));
+					if (f != null) {
+						if (f.equals(FileFormat.TEMPLATE)) {
+							if(justStructureChoice.getValue()) {
+								return i18n.noImportJustStructureForTemplateFormat() 
+								+ "'" + i18n.importingJustStructure() + "'";
+							}
+							justStructureChoice.setEnabled(false);
+							return null;
+						}
+						justStructureChoice.setEnabled(true);
+						return null;
+					}
+					return "This should not happen: format not valid";
+				}
+				return "This should not happen: format dropdown value == null";
+			}
+		});
+
 				
 		add(importFormatComboBox);
 							
 		// GRBK-514
-		justStructureChoice = new NullSensitiveCheckBox();
+		justStructureChoice = new NullSensitiveCheckBox() {
+
+			@Override
+			protected void onClick(ComponentEvent ce) {
+				super.onClick(ce);
+				// hack for setting it Dirty?
+				importFormatComboBox.setSelection(importFormatComboBox.getSelection());
+			}
+			
+		};
 		justStructureChoice.setName(AppConstants.IMPORT_PARAM_STRUCTURE);
 		
 		ToolTipConfig checkBoxToolTipConfig = new ToolTipConfig(i18n.structureOnlyCheckboxToolTip());
