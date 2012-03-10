@@ -1,10 +1,6 @@
-/**********************************************************************************
+/***********************************************************************************
 *
-* $Id:$
-*
-***********************************************************************************
-*
-* Copyright (c) 2008, 2009 The Regents of the University of California
+* Copyright (c) 2008, 2009, 2010, 2011, 2012 The Regents of the University of California
 *
 * Licensed under the
 * Educational Community License, Version 2.0 (the "License"); you may
@@ -43,9 +39,10 @@ public class StudentView extends AppView {
 	}
 	
 	@Override
-	protected void initUI(ApplicationSetup model) {
+	protected void initUI(ApplicationSetup applicationSetup) {
+		
 		I18nConstants i18n = Registry.get(AppConstants.I18N);
-		Gradebook gbModel = model.getGradebookModels().get(0);
+		Gradebook gbModel = applicationSetup.getGradebookModels().get(0);
 		studentViewContainer = new StudentPanel(i18n, true, true);
 		studentViewContainer.onChangeModel(gbModel, (ModelData)gbModel.getUserAsStudent());
 		viewport.setLayout(new FitLayout());
@@ -53,5 +50,4 @@ public class StudentView extends AppView {
 		viewportLayout.setActiveItem(studentViewContainer);
 		viewport.layout();
 	}
-	
 }

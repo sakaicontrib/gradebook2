@@ -38,4 +38,6 @@ public interface I18nMessages extends Messages {
 	String valueConfusing(String value);
 
 	String pointsFieldEmptyText(String value);
+	
+	String statisticsDataAge(int age);
 }

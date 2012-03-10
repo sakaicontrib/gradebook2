@@ -295,6 +295,13 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 	
 	protected boolean isShowWeightedEnabled = false;
 	
+	/*
+	 * GRBK-1244: Check if we cache the statistics chart data and notify the client 
+	 * accordingly.
+	 */
+	private boolean isStatisticsDataChached = false;
+	private int statisticsDataCacheAge = AppConstants.CURRENT_STATISTICS_DATA;
+	
 
 	public Learner assignComment(String itemId, String studentUid, String text) {
 
@@ -815,6 +822,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 		setup.setEnabledGradeTypes(enabledGradeTypes);
 		setup.setShowWeightedEnabled(this.isShowWeightedEnabled());
 		setup.setCheckFinalGradeSubmissionStatus(checkFinalGradeSubmition);
+		setup.setCachedDataAge(statisticsDataCacheAge);
 		
 		return setup;
 	}
@@ -2542,7 +2550,19 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 			// GRBK-824
 			checkFinalGradeSubmition = configService.getBoolean(AppConstants.ENABLE_FINAL_GRADE_SUBMISSION_CHECK, false);
 			
-		} else {
+			// GRBK-1244
+			isStatisticsDataChached = configService.getBoolean(AppConstants.ENABLE_STATISTICS_CACHE, false);
+			
+			if(isStatisticsDataChached) {
+				
+				statisticsDataCacheAge = configService.getInt(AppConstants.STATISTICS_CACHE_TIME_TO_LIVE_SECONDS, AppConstants.STATISTICS_CACHE_TIME_TO_LIVE_SECONDS_DEFAULT);
+			}
+			else {
+				
+				statisticsDataCacheAge = AppConstants.CURRENT_STATISTICS_DATA;
+			}
+		}
+		else {
 			enabledGradeTypes.add(GradeType.POINTS);
 			enabledGradeTypes.add(GradeType.PERCENTAGES);
 			enabledGradeTypes.add(GradeType.LETTERS);

@@ -53,5 +53,17 @@ public interface ApplicationSetup {
 	 * @since v1.7.0
 	 */
 	public abstract void setCheckFinalGradeSubmissionStatus(boolean status);
+	
+	/*
+	 * @since v1.8.0
+	 * 
+	 * @return -1 if no caching is in place, otherwise N seconds
+	 */
+	public abstract int getCachedDataAge();
+	
+	/*
+	 * @since v1.8.0
+	 */
+	public abstract void setCachedDataAge(int age);
 
 }

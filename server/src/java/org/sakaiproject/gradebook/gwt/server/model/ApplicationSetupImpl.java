@@ -3,6 +3,7 @@ package org.sakaiproject.gradebook.gwt.server.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.key.ApplicationKey;
@@ -139,5 +140,24 @@ public class ApplicationSetupImpl extends BaseModel implements
 	public void setCheckFinalGradeSubmissionStatus(boolean status) {
 
 		set(ApplicationKey.B_CHECK_FINAL_GRADE_SUBMISSION_STATUS.name(), Boolean.valueOf(status));
+	}
+
+	@Override
+	public int getCachedDataAge() {
+	
+		Integer age = get(ApplicationKey.I_CACHED_DATA_AGE.name());
+
+		if(null != age) {
+
+			return age.intValue();
+		}
+
+		return AppConstants.CURRENT_STATISTICS_DATA;
+	}
+
+	@Override
+	public void setCachedDataAge(int age) {
+		
+		set(ApplicationKey.I_CACHED_DATA_AGE.name(), Integer.valueOf(age));
 	}
 }

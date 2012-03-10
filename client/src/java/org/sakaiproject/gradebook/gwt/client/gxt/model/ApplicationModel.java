@@ -1,10 +1,6 @@
-/**********************************************************************************
+/***********************************************************************************
 *
-* $Id:$
-*
-***********************************************************************************
-*
-* Copyright (c) 2008, 2009 The Regents of the University of California
+* Copyright (c) 2008, 2009, 2010, 2011, 2012 The Regents of the University of California
 *
 * Licensed under the
 * Educational Community License, Version 2.0 (the "License"); you may
@@ -24,6 +20,7 @@ package org.sakaiproject.gradebook.gwt.client.gxt.model;
 
 import java.util.List;
 
+import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.key.ApplicationKey;
@@ -175,5 +172,22 @@ public class ApplicationModel extends EntityModel implements ApplicationSetup {
 	public void setCheckFinalGradeSubmissionStatus(boolean status) {
 
 		set(ApplicationKey.B_CHECK_FINAL_GRADE_SUBMISSION_STATUS.name(), Boolean.valueOf(status));
+	}
+	
+	public int getCachedDataAge() {
+		
+		Integer age = get(ApplicationKey.I_CACHED_DATA_AGE.name());
+		
+		if(null != age) {
+			
+			return age.intValue();
+		}
+		
+		return AppConstants.CURRENT_STATISTICS_DATA;
+	}
+	
+	public void setCachedDataAge(int age) {
+		
+		set(ApplicationKey.I_CACHED_DATA_AGE.name(), Integer.valueOf(age));
 	}
 }

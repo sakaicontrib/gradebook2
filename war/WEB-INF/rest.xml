@@ -93,7 +93,11 @@
 		<property name="maxElementsInMemory" value="100000" />
 		<property name="diskPersistent" value="false" />
 		<property name="eternal" value="false" />
-		<!-- default is to expire elements in cache after 30 seconds -->
+		<!--
+			default is to expire elements in cache after 30 seconds
+			NOTE: If you change the following value(s), make sure that you also
+			adjust them in AppConstants.java
+		 -->
 		<property name="timeToLive" value="30" />
 		<property name="timeToIdle" value="30" />
     </bean>

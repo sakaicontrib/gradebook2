@@ -41,6 +41,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.model.ItemModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.StatisticsComparator;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.StatisticsModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.StatisticsChartPanel.ChartIconPlacement;
+import org.sakaiproject.gradebook.gwt.client.model.ApplicationSetup;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.Statistics;
@@ -161,13 +162,17 @@ public class StudentPanel extends GradebookPanel {
 	private Map<String, DataTable> dataTableCache = new HashMap<String, DataTable>();
 	private String selectedAssignmentId;
 	private final static String COURSE_CACHE_KEY_PREFIX = "course-grade";
-
+	
+	private ApplicationSetup applicationSetup;
+	
 	public StudentPanel(I18nConstants i18n, boolean isStudentView, boolean displayRank) {
 		super();
 		this.isStudentView = isStudentView;
 		this.defaultTextArea.addInputStyleName(resources.css().gbTextAreaInput());
 		this.defaultTextField.addInputStyleName(resources.css().gbTextFieldInput());
 		this.displayRank = displayRank;
+		
+		applicationSetup = Registry.get(AppConstants.APP_MODEL);
 		
 		setFrame(true);
 		setHeaderVisible(false);
@@ -187,7 +192,7 @@ public class StudentPanel extends GradebookPanel {
 		studentInformationPanel.setStyleName(resources.css().gbStudentInformationPanel());
 		studentInformationPanel.add(studentInformation);
 		
-		statisticsChartPanel = new StatisticsChartPanel(ChartIconPlacement.RIGHT);
+		statisticsChartPanel = new StatisticsChartPanel(ChartIconPlacement.RIGHT, applicationSetup.getCachedDataAge());
 		statisticsChartPanel.setLegendPosition(LegendPosition.TOP);
 		statisticsChartPanel.setSize(AppConstants.CHART_WIDTH, AppConstants.CHART_HEIGHT);
 		statisticsChartPanel.setChartHeight(AppConstants.CHART_HEIGHT - 50);

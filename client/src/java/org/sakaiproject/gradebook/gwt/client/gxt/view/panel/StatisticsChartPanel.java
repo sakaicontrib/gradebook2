@@ -21,6 +21,7 @@ package org.sakaiproject.gradebook.gwt.client.gxt.view.panel;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
+import org.sakaiproject.gradebook.gwt.client.I18nMessages;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.GradebookEvents;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
@@ -49,6 +50,7 @@ import com.google.gwt.visualization.client.visualizations.corechart.PieChart;
 public class StatisticsChartPanel extends ContentPanel {
 
 	private final I18nConstants i18n;
+	private I18nMessages i18nMessages;
 	private GradebookResources resources;
 
 	private Image columnChartIcon;
@@ -66,7 +68,6 @@ public class StatisticsChartPanel extends ContentPanel {
 	private int chartHeight = AppConstants.CHART_HEIGHT;
 
 	private StatisticsChartLoaderListener statisticsChartLoaderListener;
-
 	
 	// GRBK-897 
 	/*
@@ -108,22 +109,23 @@ public class StatisticsChartPanel extends ContentPanel {
 
 	public StatisticsChartPanel() {
 
-		this(null, ChartIconPlacement.BOTTOM);
+		this(null, ChartIconPlacement.BOTTOM, AppConstants.CURRENT_STATISTICS_DATA);
 	}
 
-	public StatisticsChartPanel(ChartIconPlacement chartIconPlacement) {
+	public StatisticsChartPanel(ChartIconPlacement chartIconPlacement, int dataAge) {
 
-		this(null, chartIconPlacement);
+		this(null, chartIconPlacement, dataAge);
 	}
 	
 	public StatisticsChartPanel(StatisticsChartLoaderListener statisticsChartLoaderListener) {
 		
-		this(statisticsChartLoaderListener, ChartIconPlacement.BOTTOM);
+		this(statisticsChartLoaderListener, ChartIconPlacement.BOTTOM, AppConstants.CURRENT_STATISTICS_DATA);
 	}
 
 	public StatisticsChartPanel(
 			StatisticsChartLoaderListener statisticsChartLoaderListener,
-			ChartIconPlacement chartIconPlacement) {
+			ChartIconPlacement chartIconPlacement,
+			int dataAge) {
 
 		this.statisticsChartLoaderListener = statisticsChartLoaderListener;
 
@@ -132,6 +134,7 @@ public class StatisticsChartPanel extends ContentPanel {
 				CoreChart.PACKAGE);
 
 		this.i18n = Registry.get(AppConstants.I18N);
+		this.i18nMessages = Registry.get(AppConstants.I18N_TEMPLATES);
 		this.resources = Registry.get(AppConstants.RESOURCES);
 
 		// Create the image icons
@@ -176,9 +179,18 @@ public class StatisticsChartPanel extends ContentPanel {
 
 		setFrame(true);
 		setBodyBorder(true);
-		setTitle(i18n.statisticsChartTitle());
-		setHeading(i18n.statisticsChartTitle());
-
+		
+		if(AppConstants.CURRENT_STATISTICS_DATA != dataAge) {
+			
+			StringBuilder sb = new StringBuilder(i18n.statisticsChartTitle());
+			sb.append(" <span style=\"color:black; background-color:#FDF5E6; font-weight:normal; float:right; border-radius:3px; padding:4px 5px;font-size:120%\">").append(i18nMessages.statisticsDataAge(dataAge)).append("</span>");
+			setHeading(sb.toString());
+		}
+		else {
+			
+			setHeading(i18n.statisticsChartTitle());
+		}
+		
 		graphPanelContainer = new HorizontalPanel();
 
 		/*
@@ -325,7 +337,7 @@ public class StatisticsChartPanel extends ContentPanel {
 		dataTable = DataTable.create();
 		return dataTable;
 	}
-
+	
 	private PieChart.PieOptions createPieChartOptions() {
 
 		PieChart.PieOptions options = PieChart.createPieOptions();
