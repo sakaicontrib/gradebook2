@@ -699,8 +699,13 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 			}
 		}
 
+		int numberOfItemsNotCounted = 0;
 		if (assignments != null) {
+			
 			for (Assignment assignment : assignments) {
+				
+				if (assignment.isNotCounted())
+					numberOfItemsNotCounted++;
 
 				if (assignment.isRemoved())
 					continue;
@@ -793,8 +798,8 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 		int numberOfItems = assignments == null ? 0 : assignments.size();
 
 		if (dropLowest > 0 && totalCategoryPoints != null) {
-			if (dropLowest > numberOfItems) 
-				dropLowest = numberOfItems;
+			if (dropLowest > numberOfItems - numberOfItemsNotCounted) 
+				dropLowest = numberOfItems - numberOfItemsNotCounted;
 
 			BigDecimal representativePointsPossible = lastPointValue == null ? BigDecimal.ZERO : BigDecimal.valueOf(lastPointValue.doubleValue());
 			totalCategoryPoints = subtract(totalCategoryPoints, multiply(BigDecimal.valueOf(dropLowest), representativePointsPossible));
