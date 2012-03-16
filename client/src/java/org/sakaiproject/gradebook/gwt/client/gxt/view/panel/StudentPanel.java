@@ -109,7 +109,7 @@ public class StudentPanel extends GradebookPanel {
 	private enum Key { 
 		S_CTGRY_NM, S_ITM_ID, S_ITM_NM, S_ITM_WGHT, 
 		S_GRD, S_MEAN, S_STDV, S_MEDI, S_MODE, S_RANK, 
-		S_COMMENT, S_ORDER, S_ID, S_OUTOF, T_DATEDUE, B_DROPPED
+		S_HAS_COMMENT, S_COMMENT, S_ORDER, S_ID, S_OUTOF, T_DATEDUE, B_DROPPED
 	};
 
 	private static final String COURSE_GRADE_ID = "-1";
@@ -142,7 +142,7 @@ public class StudentPanel extends GradebookPanel {
 	private GridSelectionModel<BaseModel> selectionModel;
 	private TextArea commentArea;
 	private ModelData learnerGradeRecordCollection;
-	private ColumnConfig categoryColumn, weightColumn, outOfColumn, dateDueColumn, meanColumn, medianColumn, modeColumn, stdvColumn;
+	private ColumnConfig categoryColumn, weightColumn, outOfColumn, dateDueColumn, meanColumn, medianColumn, modeColumn, stdvColumn, hasCommentColumn;
 
 	private boolean isStudentView;
 	private boolean displayRank; 
@@ -360,6 +360,12 @@ public class StudentPanel extends GradebookPanel {
 		modeColumn.setMenuDisabled(true);
 		modeColumn.setHidden(true);
 		columns.add(modeColumn);
+		
+		hasCommentColumn = new ColumnConfig(Key.S_HAS_COMMENT.name(), i18n.hasCommentName(), 80);
+		hasCommentColumn.setGroupable(false);
+		hasCommentColumn.setMenuDisabled(true);
+		hasCommentColumn.setHidden(false);
+		columns.add(hasCommentColumn);
 
 		cm = new ColumnModel(columns);
 
@@ -714,6 +720,11 @@ public class StudentPanel extends GradebookPanel {
 		default:
 			model.set(Key.S_ITM_NM.name(), item.getName());
 			model.set(Key.S_COMMENT.name(), comment);
+			if (comment == null) {
+				model.set(Key.S_HAS_COMMENT.name(), new String(""));
+			} else {
+				model.set(Key.S_HAS_COMMENT.name(), new String("more..."));
+			}
 			id.append(itemId);
 		}
 

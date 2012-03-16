@@ -133,6 +133,7 @@ public interface I18nConstants extends Constants {
 	String gradeUpdateFailedException();
 	String hasChangesMessage();
 	String hasChangesTitle();
+	String hasCommentName();
 	String headerAddCategory();
 	String headerAddCategoryTitle();
 	String headerAddItem();
@@ -503,5 +504,6 @@ public interface I18nConstants extends Constants {
 	String importScantronClickerPointsConversionTitle();
 	String importScantronClickerPointsConversionFinish();
 	String noImportJustStructureForTemplateFormat();
+	
 	
 }
