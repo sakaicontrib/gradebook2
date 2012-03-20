@@ -1207,7 +1207,7 @@ public class Gradebook2ComponentServiceImpl extends BigDecimalCalculationsWrappe
 							text.append(i18n.getString("importProcessName"));
 							text.append(" ").append(i18n.getString("replaced")).append(" '");
 							text.append(originalImportGrade);
-							text.append("' ").append(i18n.getString("by")).append(" '").append(score).append("'");
+							text.append("' ").append(i18n.getString("with")).append(" '").append(score).append("'");
 						}
 					}
 
