@@ -674,6 +674,9 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 		BigDecimal lastPercentValue = BigDecimal.ZERO;
 
 		int dropLowest = category == null ? 0 : category.getDrop_lowest();
+		// GRBK-989, if the category is extra credit, then don't allow drop lowest
+		if (isExtraCreditCategory) 
+			dropLowest = 0;
 		// Check to ensure that we don't apply drop lowest with unweighted, unequal point value items
 		if (dropLowest > 0 && assignments != null) {
 			for (Assignment assignment : assignments) {
@@ -894,6 +897,9 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 		BigDecimal lastPercentValue = null;
 
 		int dropLowest = category == null || category.getDropLowest() == null ? 0 : category.getDropLowest().intValue();
+		// GRBK-989, if the category is extra credit, then don't allow drop lowest
+		if (isExtraCreditCategory) 
+			dropLowest = 0;
 		// Check to ensure that we don't apply drop lowest with unweighted, unequal point value items
 		if (dropLowest > 0 && assignments != null) {
 			for (GradeItem assignment : assignments) {
