@@ -449,7 +449,7 @@ public class ItemTreePanel extends GradebookPanel {
 				}
 				
 				sb.append("\">&nbsp;");
-				if (dropLowest > 0) {
+				if (!isExtraCredit && dropLowest > 0) {
 					
 					sb.append("<font style=\"font-style: regular;font-size:9pt\"> -").append(dropLowest).append("</font>&nbsp;");
 				}
