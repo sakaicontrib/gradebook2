@@ -420,6 +420,7 @@ public class ItemFormPanel extends GradebookPanel {
 		dropLowestField.setName(ItemKey.I_DRP_LWST.name());
 		dropLowestField.setAllowDecimals(false);
 		dropLowestField.setMinValue(Integer.valueOf(0)); 
+		dropLowestField.setMaxValue(Integer.valueOf(99));
 		dropLowestField.setPropertyEditorType(Integer.class);
 		dropLowestField.setVisible(false);
 		dropLowestField.setWidth(210);
