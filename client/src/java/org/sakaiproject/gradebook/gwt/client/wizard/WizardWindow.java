@@ -155,6 +155,8 @@ public class WizardWindow extends Window {
 	
 	private boolean hidePreviousButtonOnFirstCard = false;
 	
+	protected boolean isHeaderPanelHidden = false;
+	
 
 	/**
 	 * Creates a new wizard window.
@@ -165,7 +167,7 @@ public class WizardWindow extends Window {
 	public WizardWindow(List<Card> cards) {
 		super();
 		this.cards = cards;
-		setSize(540, 400);
+		setSize(540, 300);
 		setClosable(true);
 		setResizable(false);
 		setModal(true);
@@ -180,7 +182,7 @@ public class WizardWindow extends Window {
 		 * after a reset and rebuild of a card.
 		 */
 		cards = null;
-		setSize(540, 400);
+		setSize(540, 300);
 		setClosable(true);
 		setResizable(false);
 		setModal(true);
@@ -326,7 +328,10 @@ public class WizardWindow extends Window {
 		super.onRender(parent, pos);
 
 		headerPanel = new Header();
-		add(headerPanel, new BorderLayoutData(LayoutRegion.NORTH, 60));
+		if(!isHeaderPanelHidden) {
+		
+			add(headerPanel, new BorderLayoutData(LayoutRegion.NORTH, 60));
+		}
 		cardPanel = new CardPanel();
 		cardPanel.setStyleAttribute("padding", "40px 15px 5px 5px");
 		cardPanel.setStyleAttribute("backgroundColor", panelBackgroundColor);

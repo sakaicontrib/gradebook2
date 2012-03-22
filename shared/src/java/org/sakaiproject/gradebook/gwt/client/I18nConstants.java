@@ -156,10 +156,13 @@ public interface I18nConstants extends Constants {
 	String headerExportStructure();
 	String headerExportStructureTitle();
 	String headerExportTitle();
+	String headerDownloadNewItemTemplateTitle();
 	String headerExportXLS();
 	String headerExportXLSX();
 	String headerExportXLSTitle();
 	String headerFinalGrade();
+	String headerDownloadNewItemTemplate();
+	String headerDownload();
 	String headerFinalGradeTitle();
 	String headerHistory();
 	String headerHistoryTitle();
@@ -437,7 +440,6 @@ public interface I18nConstants extends Constants {
 	String wizardDefaultOutOfDescriptor();
 	String exportIncludeComments();
 	String exportWizardHeading();
-	String exportWizardTitle();
 	String exportChoices(); 
 
 	// Student Panel : GRBK-616
@@ -504,6 +506,9 @@ public interface I18nConstants extends Constants {
 	String importScantronClickerPointsConversionTitle();
 	String importScantronClickerPointsConversionFinish();
 	String noImportJustStructureForTemplateFormat();
+	
+	// GRBK-1220
+	String downloadNewItemTemplateWizardHeading();
 	
 	
 }

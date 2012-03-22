@@ -42,6 +42,7 @@ import org.sakaiproject.gradebook.gwt.client.gxt.event.ItemUpdate;
 import org.sakaiproject.gradebook.gwt.client.gxt.event.NotificationEvent;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityOverlay;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.FinalGradeSubmissionStatusModel;
+import org.sakaiproject.gradebook.gwt.client.gxt.type.FileFormat;
 import org.sakaiproject.gradebook.gwt.client.gxt.type.FileModel;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.NullSensitiveCheckBox;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.panel.BorderLayoutPanel;
@@ -58,6 +59,7 @@ import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.client.resource.GradebookResources;
+import org.sakaiproject.gradebook.gwt.client.wizard.formpanel.DownloadNewItemFormPanel;
 import org.sakaiproject.gradebook.gwt.client.wizard.formpanel.ExportFormPanel;
 
 import com.extjs.gxt.ui.client.Registry;
@@ -96,7 +98,9 @@ import com.google.gwt.user.client.ui.AbstractImagePrototype;
 public class InstructorView extends AppView {
 
 	private static final String MENU_SELECTOR_FLAG = "menuSelector";
-	public enum MenuSelector { ADD_CATEGORY, ADD_ITEM, IMPORT, EXPORT, FINAL_GRADE, GRADE_SCALE, SETUP, HISTORY, GRADER_PERMISSION_SETTINGS, STATISTICS };
+	public enum MenuSelector {
+		ADD_CATEGORY, ADD_ITEM, IMPORT, EXPORT, FINAL_GRADE, GRADE_SCALE, SETUP,
+		HISTORY, GRADER_PERMISSION_SETTINGS, STATISTICS, DOWNLOAD_NEW_ITEM_TEMPLATE };
 
 	private TreeView treeView;
 	private MultigradeView multigradeView;
@@ -138,7 +142,7 @@ public class InstructorView extends AppView {
 	private boolean isEditable;
 	
 	protected Wizard exportWizard = null;
-	private ExportDetails exportDetails;
+	//private ExportDetails exportDetails;
 	
 	private LabelField finalGradeSubmissionStatusBanner;
 
@@ -583,6 +587,7 @@ public class InstructorView extends AppView {
 			public void handleEvent(MenuEvent me) {
 
 				if (me.getType().equals(Events.Select)) {
+					
 					MenuItem menuItem = (MenuItem)me.getItem();
 					MenuSelector menuSelector = menuItem.getData(MENU_SELECTOR_FLAG);
 
@@ -612,7 +617,9 @@ public class InstructorView extends AppView {
 
 			@Override
 			public void componentSelected(MenuEvent me) {
+				
 				MenuSelector selector = me.getItem().getData(MENU_SELECTOR_FLAG);
+				
 				switch (selector) {
 				case ADD_CATEGORY:
 					Dispatcher.forwardEvent(GradebookEvents.NewCategory.getEventType());
@@ -628,6 +635,9 @@ public class InstructorView extends AppView {
 					break;
 				case FINAL_GRADE:
 					Dispatcher.forwardEvent(GradebookEvents.StartFinalgrade.getEventType());
+					break;
+				case DOWNLOAD_NEW_ITEM_TEMPLATE:
+					doDownloadNewItemTemplate();
 					break;
 				}
 			}
@@ -647,15 +657,16 @@ public class InstructorView extends AppView {
 	protected void doExport() {
 
 		WidgetInjector injector = Registry.get(AppConstants.WIDGET_INJECTOR);
-		exportWizard = injector.getWizardProvider().get();
+		Wizard exportWizard = injector.getWizardProvider().get();
 
 		exportWizard.setHeading(i18n.exportWizardHeading());
-		exportWizard.setHeaderTitle(i18n.exportWizardTitle());
 		exportWizard.setClosable(true);
 		exportWizard.setShowWestImageContainer(false);
 		exportWizard.setPanelBackgroundColor("#FFFFFF");
 		exportWizard.setProgressIndicator(Wizard.Indicator.PROGRESSBAR);
 		exportWizard.setFinishButtonText(i18n.headerExport());
+		exportWizard.setHideHeaderPanel(true);
+		exportWizard.setHidePreviousButtonOnFirstCard(true);
 
 		final ExportFormPanel exportFormPanel = new ExportFormPanel();
 
@@ -679,6 +690,41 @@ public class InstructorView extends AppView {
 		});
 		
 		exportWizard.show();
+	}
+	
+	protected void doDownloadNewItemTemplate() {
+		
+		WidgetInjector injector = Registry.get(AppConstants.WIDGET_INJECTOR);
+		Wizard downloadNewItemTemplateWizard = injector.getWizardProvider().get();
+
+		downloadNewItemTemplateWizard.setHeading(i18n.downloadNewItemTemplateWizardHeading());
+		downloadNewItemTemplateWizard.setClosable(true);
+		downloadNewItemTemplateWizard.setShowWestImageContainer(false);
+		downloadNewItemTemplateWizard.setPanelBackgroundColor("#FFFFFF");
+		downloadNewItemTemplateWizard.setProgressIndicator(Wizard.Indicator.PROGRESSBAR);
+		downloadNewItemTemplateWizard.setFinishButtonText(i18n.headerDownload());
+		downloadNewItemTemplateWizard.setHideHeaderPanel(true);
+		downloadNewItemTemplateWizard.setHidePreviousButtonOnFirstCard(true);
+
+		final DownloadNewItemFormPanel downloadNewItemFormPanel = new DownloadNewItemFormPanel();
+
+		Card exportCard = downloadNewItemTemplateWizard.newCard(i18n.exportChoices());
+
+		exportCard.setFormPanel(downloadNewItemFormPanel);
+		exportCard.addFinishListener(new Listener<BaseEvent>() {
+
+			public void handleEvent(BaseEvent be) {
+
+				ExportDetails exportDetails = new ExportDetails();
+				
+				Map<Integer, Object> selectedExportValues = downloadNewItemFormPanel.getValues();
+				exportDetails.setFileType(FileFormat.TEMPLATE);
+				exportDetails.setSectionUid((String) selectedExportValues.get(DownloadNewItemFormPanel.SECTIONS_VAlUE));
+				Dispatcher.forwardEvent(GradebookEvents.StartExport.getEventType(), exportDetails);
+			}
+		});
+		
+		downloadNewItemTemplateWizard.show();
 	}
 
 	/*
@@ -807,6 +853,13 @@ public class InstructorView extends AppView {
 		//menuItem.setIconStyle(resources.css().gbExportItemIcon());
 		menuItem.setIcon(AbstractImagePrototype.create(resources.page_white_put()));
 		menuItem.setTitle(i18n.headerExportTitle());
+		moreActionsMenu.add(menuItem);
+		
+		// TODO: add DOWNLOAD_NEW_ITEM_TEMPLATE
+		menuItem = new AriaMenuItem(i18n.headerDownloadNewItemTemplate(), menuSelectionListener);
+		menuItem.setData(MENU_SELECTOR_FLAG, MenuSelector.DOWNLOAD_NEW_ITEM_TEMPLATE);
+		menuItem.setIcon(AbstractImagePrototype.create(resources.page_white_put()));
+		menuItem.setTitle(i18n.headerDownloadNewItemTemplateTitle());
 		moreActionsMenu.add(menuItem);
 
 		// If we're dealing with an "editable" instance of the tool, show the other editing menu items

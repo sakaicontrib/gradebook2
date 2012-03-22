@@ -110,4 +110,6 @@ public interface Wizard {
 
 	public void setHidePreviousButtonOnFirstCard(boolean hidePreviousButtonOnFirstCard);
 	
+	public void setHideHeaderPanel(boolean isHidden);
+	
 }

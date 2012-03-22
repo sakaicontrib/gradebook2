@@ -16,7 +16,6 @@ import com.extjs.gxt.ui.client.event.Listener;
 import com.google.gwt.user.client.Element;
 
 
-
 public class SimpleWizard extends WizardWindow implements Wizard  {
 
 
@@ -207,6 +206,10 @@ public class SimpleWizard extends WizardWindow implements Wizard  {
 	public void setHidePreviousButtonOnFirstCard(
 			boolean hidePreviousButtonOnFirstCard) {
 		super.setHidePreviousButtonOnFirstCard(hidePreviousButtonOnFirstCard);
+	}
+	
+	public void setHideHeaderPanel(boolean isHidden) {
+		isHeaderPanelHidden = isHidden;
 	}
 
 }
