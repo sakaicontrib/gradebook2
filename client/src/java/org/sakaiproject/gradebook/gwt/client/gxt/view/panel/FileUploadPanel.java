@@ -196,6 +196,8 @@ public class FileUploadPanel extends FormPanel {
 			
 		};
 		justStructureChoice.setName(AppConstants.IMPORT_PARAM_STRUCTURE);
+		justStructureChoice.setValueAttribute("c");// we just check for ! null serverside
+
 		
 		ToolTipConfig checkBoxToolTipConfig = new ToolTipConfig(i18n.structureOnlyCheckboxToolTip());
 		checkBoxToolTipConfig.setDismissDelay(10000);

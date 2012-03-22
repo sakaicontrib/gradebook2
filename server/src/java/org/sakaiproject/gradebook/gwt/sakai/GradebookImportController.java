@@ -88,8 +88,8 @@ public class GradebookImportController extends SimpleFormController implements O
 		String gradebookUid = multipartRequest.getParameter(AppConstants.REQUEST_FORM_FIELD_GBUID);
 		
 		String justStructureCheckBox = multipartRequest.getParameter(AppConstants.IMPORT_PARAM_STRUCTURE);
-		
-		Boolean importOnlyStructure =  "on".equalsIgnoreCase(justStructureCheckBox);
+
+		Boolean importOnlyStructure =  justStructureCheckBox!=null;
 		
 		String fileTypeNameFromClient = multipartRequest.getParameter(AppConstants.IMPORT_PARAM_FILETYPE + "-hidden");
 		String fileFormatChosen = multipartRequest.getParameter(AppConstants.IMPORT_PARAM_FILEFORMAT + "-hidden");
