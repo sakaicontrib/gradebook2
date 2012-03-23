@@ -1,3 +1,10 @@
+.commentIcon {
+	padding:3px;
+}
+
+.commentsIcon {
+	padding:3px;
+}
 
 .gbCheckBoxAlignLeft input {
 	left:0px !important;

@@ -53,6 +53,7 @@ import org.sakaiproject.gradebook.gwt.client.util.Base64;
 
 import com.extjs.gxt.ui.client.Registry;
 import com.extjs.gxt.ui.client.Style;
+import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.binding.FormBinding;
@@ -100,6 +101,7 @@ import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.LegendPosition;
@@ -143,6 +145,7 @@ public class StudentPanel extends GradebookPanel {
 	private TextArea commentArea;
 	private ModelData learnerGradeRecordCollection;
 	private ColumnConfig categoryColumn, weightColumn, outOfColumn, dateDueColumn, meanColumn, medianColumn, modeColumn, stdvColumn, hasCommentColumn;
+	private Image hasCommentIcon;
 
 	private boolean isStudentView;
 	private boolean displayRank; 
@@ -365,6 +368,23 @@ public class StudentPanel extends GradebookPanel {
 		hasCommentColumn.setGroupable(false);
 		hasCommentColumn.setMenuDisabled(true);
 		hasCommentColumn.setHidden(false);
+		hasCommentColumn.setAlignment(HorizontalAlignment.CENTER);
+		hasCommentColumn.setRenderer(new GridCellRenderer<ModelData>() {
+
+			public Object render(ModelData model, String property,
+					com.extjs.gxt.ui.client.widget.grid.ColumnData config,
+					int rowIndex, int colIndex, ListStore<ModelData> store, Grid<ModelData> grid) {
+				boolean hasComment = model.get(property);
+				if (hasComment) {					
+					hasCommentIcon = new Image(resources.comment());
+					hasCommentIcon.setStyleName(resources.css().commentIcon());
+					return hasCommentIcon;
+				} else {
+					return new String("");
+				}
+			}
+
+		});		
 		columns.add(hasCommentColumn);
 
 		cm = new ColumnModel(columns);
@@ -721,9 +741,9 @@ public class StudentPanel extends GradebookPanel {
 			model.set(Key.S_ITM_NM.name(), item.getName());
 			model.set(Key.S_COMMENT.name(), comment);
 			if (comment == null) {
-				model.set(Key.S_HAS_COMMENT.name(), new String(""));
+				model.set(Key.S_HAS_COMMENT.name(), false);
 			} else {
-				model.set(Key.S_HAS_COMMENT.name(), new String("more..."));
+				model.set(Key.S_HAS_COMMENT.name(), true);
 			}
 			id.append(itemId);
 		}
