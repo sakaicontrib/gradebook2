@@ -374,7 +374,7 @@ public class StudentPanel extends GradebookPanel {
 			public Object render(ModelData model, String property,
 					com.extjs.gxt.ui.client.widget.grid.ColumnData config,
 					int rowIndex, int colIndex, ListStore<ModelData> store, Grid<ModelData> grid) {
-				boolean hasComment = model.get(property);
+				Boolean hasComment = (Boolean) model.get(property);
 				if (hasComment) {					
 					hasCommentIcon = new Image(resources.comment());
 					hasCommentIcon.setStyleName(resources.css().commentIcon());
@@ -741,9 +741,9 @@ public class StudentPanel extends GradebookPanel {
 			model.set(Key.S_ITM_NM.name(), item.getName());
 			model.set(Key.S_COMMENT.name(), comment);
 			if (comment == null) {
-				model.set(Key.S_HAS_COMMENT.name(), false);
+				model.set(Key.S_HAS_COMMENT.name(), Boolean.FALSE);
 			} else {
-				model.set(Key.S_HAS_COMMENT.name(), true);
+				model.set(Key.S_HAS_COMMENT.name(), Boolean.TRUE);
 			}
 			id.append(itemId);
 		}
