@@ -3010,12 +3010,6 @@ private GradeItem buildNewCategory(String curCategoryString,
 			noTroubleReading = false;
 		}
 		
-		try {
-			inputStream.reset();
-		} catch (IOException e) {	
-			log.error("InputStream.reset() error");
-			e.printStackTrace();
-		}
 		
 		return list != null && list.size() > 1 && noTroubleReading;
 	}
