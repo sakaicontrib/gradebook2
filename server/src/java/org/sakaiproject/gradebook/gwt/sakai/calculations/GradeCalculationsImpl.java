@@ -612,8 +612,9 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
 
 		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
-
+		Map<String, Boolean> hasCategoryManuallyEqualWeightedAssignmentsMap = new HashMap<String, Boolean>();
 		BigDecimal totalGradebookPoints = BigDecimal.ZERO;
+		
 		if (categoriesWithAssignments != null) {
 			for (Category category : categoriesWithAssignments) {
 
@@ -639,29 +640,42 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 					continue;
 
 				boolean isExtraCreditCategory = isExtraCredit(category);
-
 				BigDecimal totalCategoryPoints = populateGradeRecordUnits(category, categoryCalculationUnit, assignments, gradeRecordUnits, assignmentGradeRecordMap, isWeighted, isExtraCreditCategory)[1];
 
-				if (isExtraCreditCategory)
+				if (isExtraCreditCategory) {
+				
 					totalCategoryPoints = BigDecimal.ZERO;
+				}
 
 				totalGradebookPoints = add(totalGradebookPoints, totalCategoryPoints);
 
 				categoryGradeUnitListMap.put(categoryKey, gradeRecordUnits);
-
+				if(isWeighted && category.isExtraCredit()) {
+				
+					hasCategoryManuallyEqualWeightedAssignmentsMap.put(categoryKey, hasEqualWeights(assignments));
+				}
+				
 			} // for
 		}
 
 		GradebookCalculationUnit gradebookUnit = new GradebookCalculationUnitImpl(categoryUnitMap, getScale());
 
-		if (isWeighted)
-			return gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, isExtraCreditScaled);
+		if (isWeighted) {
+		
+			return gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, hasCategoryManuallyEqualWeightedAssignmentsMap, totalGradebookPoints, isExtraCreditScaled);
+		}
 
 		return gradebookUnit.calculatePointsBasedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, isExtraCreditScaled);
 	}
 
-	private BigDecimal[] populateGradeRecordUnits(Category category, CategoryCalculationUnit categoryCalculationUnit, 
-			Collection<Assignment> assignments, List<GradeRecordCalculationUnit> gradeRecordUnits, Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap, boolean isWeighted, boolean isExtraCreditCategory) {
+	private BigDecimal[] populateGradeRecordUnits(
+			Category category,
+			CategoryCalculationUnit categoryCalculationUnit, 
+			Collection<Assignment> assignments,
+			List<GradeRecordCalculationUnit> gradeRecordUnits,
+			Map<Long, AssignmentGradeRecord> assignmentGradeRecordMap,
+			boolean isWeighted,
+			boolean isExtraCreditCategory) {
 
 		BigDecimal totalCategoryPoints = BigDecimal.ZERO;
 		BigDecimal totalCategoryPercent = BigDecimal.ZERO;
@@ -1209,6 +1223,44 @@ public class GradeCalculationsImpl extends BigDecimalCalculationsWrapper impleme
 
 	private boolean isUnweighted(Category category) {
 		return category.isUnweighted() == null ? false : category.isUnweighted().booleanValue();
+	}
+	
+	// GRBK-1255
+	private Boolean hasEqualWeights(List<Assignment> assignments) {
+	
+		System.out.println("DEBUG: hasEqualWeights num assignments = " + assignments.size());
+		if(null == assignments || assignments.size() < 2) {
+
+			return Boolean.FALSE;
+		}
+		
+		Double weight = null;
+		
+		for(Assignment assignment : assignments) {
+			
+			if(assignment.isNotCounted()) {
+
+				continue;
+			}
+			else if(null == assignment.getAssignmentWeighting()) {
+				
+				/*
+				 * In case of a NULL assignment weight, we set the compare weight to -1.
+				 * This will handles cases where we have NULL and non NULL assignment weights
+				 */
+				weight = Double.valueOf(-1);
+			}
+			else if(null == weight) {
+				
+				weight = assignment.getAssignmentWeighting();
+			}
+			else if(weight.compareTo(assignment.getAssignmentWeighting()) != 0) {
+
+				return Boolean.FALSE;
+			}
+		}
+
+		return Boolean.TRUE;
 	}
 
 	/*

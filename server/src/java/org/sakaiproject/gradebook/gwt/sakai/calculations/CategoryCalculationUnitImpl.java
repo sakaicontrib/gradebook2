@@ -45,12 +45,12 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 	}
 
 
-	public BigDecimal calculate(List<GradeRecordCalculationUnit> units, boolean isExtraCreditScaled) {	
+	public BigDecimal calculate(List<GradeRecordCalculationUnit> units, Boolean hasCategoryManuallyEqualWeightedAssignments, boolean isExtraCreditScaled) {	
 
 		if (units == null)
 			return null;
 
-		BigDecimal sumScores = sumScaledScores(units, isExtraCreditScaled);
+		BigDecimal sumScores = sumScaledScores(units, isExtraCreditScaled, hasCategoryManuallyEqualWeightedAssignments);
 
 		// When drop lowest is not set, the calculation is very straightforward
 		/*
@@ -101,27 +101,31 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 			}
 		}
 
-		categoryGrade = sumScaledScores(unitsToCount, isExtraCreditScaled);
+		categoryGrade = sumScaledScores(unitsToCount, isExtraCreditScaled, hasCategoryManuallyEqualWeightedAssignments);
 		return categoryGrade;
 	}
 
-	private BigDecimal sumScaledScores(List<GradeRecordCalculationUnit> units, boolean isExtraCreditScaled) {
+	private BigDecimal sumScaledScores(List<GradeRecordCalculationUnit> units, boolean isExtraCreditScaled, Boolean hasCategoryManuallyEqualWeightedAssignments) {
 
-		if (isEqualWeighted)
-		{
+		if (isEqualWeighted) {
+			
 			return sumScaledScoresEquallyWeighted(units, isExtraCreditScaled);
 		}
-		else
-		{
+		else {
 			/*
 			 * GRBK-875 : Adding logic to calculate a category that has manually equally weighted items the same
 			 * way as if it calculates it when the category has the "Weight items equally" option checked.
 			 */
 			if(!isEqualWeighted && !hasEqualWeights(units)) {
-
+			
+				return sumScaledScoresNormal(units, isExtraCreditScaled);
+			}
+			else if(isExtraCredit && (null == hasCategoryManuallyEqualWeightedAssignments || !hasCategoryManuallyEqualWeightedAssignments.booleanValue())) { // GRBK-1255
+				
 				return sumScaledScoresNormal(units, isExtraCreditScaled);
 			}
 			else {
+				
 				// Note that since we're not equally weighted set, we cannot drop lowest.  If we ever 
 				// let them drop lowest when equal weighted is set this will likely fail hard.
 				int remCount = 0; 
@@ -200,7 +204,7 @@ public class CategoryCalculationUnitImpl extends BigDecimalCalculationsWrapper i
 			return false; 
 		}
 	}
-
+	
 	private BigDecimal sumScaledScoresEquallyWeighted(List<GradeRecordCalculationUnit> units, boolean isExtraCreditScaled) 
 	{	
 		log.debug("sumScaledScoresEquallyWeighted for EC Category: " + this.isExtraCredit + " with EC Scaling: " + isExtraCreditScaled); 

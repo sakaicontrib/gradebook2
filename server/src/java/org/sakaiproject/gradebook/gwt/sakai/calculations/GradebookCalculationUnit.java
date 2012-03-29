@@ -60,8 +60,9 @@ public interface GradebookCalculationUnit {
 	 * @param categoryGradeUnitListMap
 	 * @param totalGradebookPoints
 	 * @param isExtraCreditScaled
+	 * @param hasCategoryManuallyEqualWeightedAssignmentsMap
 	 * @return returns null if the categoryWeightSum is null, otherwise it returns the course grade or 
 	 */
-	public BigDecimal calculateWeightedCourseGrade(Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap, BigDecimal totalGradebookPoints, boolean isExtraCreditScaled);
+	public BigDecimal calculateWeightedCourseGrade(Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap, Map<String, Boolean> hasCategoryManuallyEqualWeightedAssignmentsMap, BigDecimal totalGradebookPoints, boolean isExtraCreditScaled);
 	
 }

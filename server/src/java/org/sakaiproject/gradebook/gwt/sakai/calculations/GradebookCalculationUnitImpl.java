@@ -150,7 +150,7 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 		return courseGrade;
 	}
 
-	public BigDecimal calculateWeightedCourseGrade(Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap, BigDecimal totalGradebookPoints, boolean isExtraCreditScaled) {
+	public BigDecimal calculateWeightedCourseGrade(Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap, Map<String, Boolean> hasCategoryManuallyEqualWeightedAssignmentsMap, BigDecimal totalGradebookPoints, boolean isExtraCreditScaled) {
 
 		BigDecimal categoryWeightDesiredSum = BigDecimal.ZERO;
 		BigDecimal categoryWeightSum = null; 
@@ -194,7 +194,7 @@ public class GradebookCalculationUnitImpl extends BigDecimalCalculationsWrapper 
 					categoryUnit.setCategoryGrade(categoryGrade);
 				
 			} else {
-				categoryGrade = categoryUnit.calculate(units, isExtraCreditScaled);	
+				categoryGrade = categoryUnit.calculate(units, hasCategoryManuallyEqualWeightedAssignmentsMap.get(categoryKey), isExtraCreditScaled);	
 			} // else
 			
 			if (categoryWeight != null && !categoryUnit.isExtraCredit())

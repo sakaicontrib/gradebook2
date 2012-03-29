@@ -15,10 +15,12 @@ public interface CategoryCalculationUnit {
 	 * drop lowest and extra credit
 	 * 
 	 * @param units in the category
+	 * @param hasCategoryManuallyEqualWeightedAssignments
 	 * @param isExtraCreditScaled
+	 * @param categoryId
 	 * @return the sum of all relevant scaled scores
 	 */
-	public BigDecimal calculate(List<GradeRecordCalculationUnit> units, boolean isExtraCreditScaled);
+	public BigDecimal calculate(List<GradeRecordCalculationUnit> units, Boolean hasCategoryManuallyEqualWeightedAssignments, boolean isExtraCreditScaled);
 	
 	/**
 	 * Getter method

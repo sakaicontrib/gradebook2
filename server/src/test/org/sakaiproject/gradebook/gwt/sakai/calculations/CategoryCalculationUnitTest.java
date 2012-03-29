@@ -35,11 +35,11 @@ public class CategoryCalculationUnitTest extends TestCase {
 		List<GradeRecordCalculationUnit> gradeRecordCalculationUnits = new ArrayList<GradeRecordCalculationUnit>();
 		gradeRecordCalculationUnits.add(gradeRecordCalculationUnit);
 		
-		BigDecimal result1 = categoryCalculationUnit.calculate(gradeRecordCalculationUnits, false);
+		BigDecimal result1 = categoryCalculationUnit.calculate(gradeRecordCalculationUnits, null, false);
 		//assertEquals(result1, new BigDecimal("0.7700"));
 		assertTrue(result1.compareTo(new BigDecimal("0.7700")) == 0);
 		
-		BigDecimal result2 = categoryCalculationUnit.calculate(null, false);
+		BigDecimal result2 = categoryCalculationUnit.calculate(null, null, false);
 		assertNull(result2);
 	}
 	
@@ -68,11 +68,11 @@ public class CategoryCalculationUnitTest extends TestCase {
 		gradeRecordCalculationUnits.add(gradeRecordCalculationUnit1);
 		gradeRecordCalculationUnits.add(gradeRecordCalculationUnit2);
 		
-		BigDecimal result1 = categoryCalculationUnit.calculate(gradeRecordCalculationUnits, false);
+		BigDecimal result1 = categoryCalculationUnit.calculate(gradeRecordCalculationUnits, null, false);
 		//assertEquals(result1, new BigDecimal("0.81300"));
 		assertTrue(result1.compareTo(new BigDecimal("0.81300")) == 0);
 		
-		BigDecimal result2 = categoryCalculationUnit.calculate(null, false);
+		BigDecimal result2 = categoryCalculationUnit.calculate(null, null, false);
 		assertNull(result2);
 	}
 	
@@ -86,7 +86,7 @@ public class CategoryCalculationUnitTest extends TestCase {
 		CategoryCalculationUnit categoryCalculationUnit = new CategoryCalculationUnitImpl(categoryWeightTotal, dropLowest, isExtraCredit, isPointsWeighted, Boolean.FALSE, TEST_SCALE);
 		
 		List<GradeRecordCalculationUnit> gradeRecordCalculationUnits = new ArrayList<GradeRecordCalculationUnit>();
-		BigDecimal result1 = categoryCalculationUnit.calculate(gradeRecordCalculationUnits, false);
+		BigDecimal result1 = categoryCalculationUnit.calculate(gradeRecordCalculationUnits, null, false);
 		assertNull(result1);
 		
 		BigDecimal pointsReceived = new BigDecimal("7.7");
@@ -96,7 +96,7 @@ public class CategoryCalculationUnitTest extends TestCase {
 		GradeRecordCalculationUnit gradeRecordCalculationUnit = new GradeRecordCalculationUnitImpl(pointsReceived, pointsPossible, percentOfCategory, extraCredit, TEST_SCALE);
 		gradeRecordCalculationUnit.setExcused(false);
 		gradeRecordCalculationUnits.add(gradeRecordCalculationUnit);
-		BigDecimal result2 = categoryCalculationUnit.calculate(gradeRecordCalculationUnits, true);
+		BigDecimal result2 = categoryCalculationUnit.calculate(gradeRecordCalculationUnits, null, true);
 		//assertEquals(result2, new BigDecimal("0.7700"));
 		assertTrue(result2.compareTo(new BigDecimal("0.7700")) == 0);
 	}

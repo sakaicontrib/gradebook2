@@ -137,10 +137,13 @@ public class GradebookCalculationUnitTest extends TestCase {
 		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 		categoryGradeUnitListMap.put(HW_ID, hwUnits);
+		Map<String, Boolean> isManuallyEqualWeightedMap = new HashMap<String, Boolean>();
+		isManuallyEqualWeightedMap.put(ESSAYS_ID, Boolean.FALSE);
+		isManuallyEqualWeightedMap.put(HW_ID, Boolean.FALSE);
 
 		BigDecimal totalGradebookPoints = new BigDecimal("100");
 
-		BigDecimal result = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, false);
+		BigDecimal result = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isManuallyEqualWeightedMap, totalGradebookPoints, false);
 
 		//assertEquals(new BigDecimal("80.000000"), result);
 		assertTrue(result.compareTo(new BigDecimal("80.00")) == 0);
@@ -391,11 +394,15 @@ public class GradebookCalculationUnitTest extends TestCase {
 
 		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
 		categoryGradeUnitListMap.put(EC_ID, ecUnits);
-		categoryGradeUnitListMap.put(HW_ID, hwUnits); 
+		categoryGradeUnitListMap.put(HW_ID, hwUnits);
+		
+		Map<String, Boolean> isManuallyEqualWeightedMap = new HashMap<String, Boolean>();
+		isManuallyEqualWeightedMap.put(HW_ID, Boolean.FALSE);
+		isManuallyEqualWeightedMap.put(EC_ID, Boolean.TRUE);
 		
 		BigDecimal totalGradebookPoints = new BigDecimal("100");
 
-		BigDecimal result = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, false).stripTrailingZeros();
+		BigDecimal result = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isManuallyEqualWeightedMap, totalGradebookPoints, false).stripTrailingZeros();
 
 		assertEquals(new BigDecimal("89.995"), result);
 	}		
@@ -432,9 +439,13 @@ public class GradebookCalculationUnitTest extends TestCase {
 		categoryGradeUnitListMap.put(EC_ID, ecUnits);
 		categoryGradeUnitListMap.put(HW_ID, hwUnits); 
 		
+		Map<String, Boolean> isManuallyEqualWeightedMap = new HashMap<String, Boolean>();
+		isManuallyEqualWeightedMap.put(HW_ID, Boolean.FALSE);
+		isManuallyEqualWeightedMap.put(EC_ID, Boolean.TRUE);
+		
 		BigDecimal totalGradebookPoints = new BigDecimal("100");
 
-		BigDecimal result = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, false).stripTrailingZeros();
+		BigDecimal result = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isManuallyEqualWeightedMap, totalGradebookPoints, false).stripTrailingZeros();
 		// Full grade
 		assertEquals(new BigDecimal("89.999"), result);
 		
@@ -483,9 +494,13 @@ public class GradebookCalculationUnitTest extends TestCase {
 		categoryGradeUnitListMap.put(EC_ID, ecUnits);
 		categoryGradeUnitListMap.put(HW_ID, hwUnits); 
 		
+		Map<String, Boolean> isManuallyEqualWeightedMap = new HashMap<String, Boolean>();
+		isManuallyEqualWeightedMap.put(HW_ID, Boolean.FALSE);
+		isManuallyEqualWeightedMap.put(EC_ID, Boolean.TRUE);
+		
 		BigDecimal totalGradebookPoints = new BigDecimal("100");
 
-		BigDecimal result = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, false).stripTrailingZeros();
+		BigDecimal result = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isManuallyEqualWeightedMap, totalGradebookPoints, false).stripTrailingZeros();
 		// Full grade
 		assertEquals(new BigDecimal("67.3997"), result);
 		
@@ -532,7 +547,11 @@ public class GradebookCalculationUnitTest extends TestCase {
 		
 		BigDecimal totalGradebookPoints = new BigDecimal("100");
 
-		BigDecimal result = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, true).stripTrailingZeros();
+		Map<String, Boolean> isManuallyEqualWeightedMap = new HashMap<String, Boolean>();
+		isManuallyEqualWeightedMap.put(HW_ID, Boolean.FALSE);
+		isManuallyEqualWeightedMap.put(EC_ID, Boolean.TRUE);
+		
+		BigDecimal result = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isManuallyEqualWeightedMap, totalGradebookPoints, true).stripTrailingZeros();
 		// Full grade
 		assertEquals(new BigDecimal("70.9995"), result);
 		
@@ -624,10 +643,16 @@ public class GradebookCalculationUnitTest extends TestCase {
 		categoryGradeUnitListMap.put(SECTIONS_ID, sectionsUnits);
 		categoryGradeUnitListMap.put(ECHW_ID, ecUnits);
 		
+		Map<String, Boolean> isManuallyEqualWeightedMap = new HashMap<String, Boolean>();
+		isManuallyEqualWeightedMap.put(MIDTERM_ID, Boolean.TRUE);
+		isManuallyEqualWeightedMap.put(FINAL_ID, Boolean.FALSE);
+		isManuallyEqualWeightedMap.put(PAPER_ID, Boolean.FALSE);
+		isManuallyEqualWeightedMap.put(SECTIONS_ID, Boolean.TRUE);
+		isManuallyEqualWeightedMap.put(ECHW_ID, Boolean.TRUE);
 		
 		BigDecimal totalGradebookPoints = new BigDecimal("100");
 
-		BigDecimal result = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, true).stripTrailingZeros();
+		BigDecimal result = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isManuallyEqualWeightedMap, totalGradebookPoints, true).stripTrailingZeros();
 		// Full grade
 		
 		assertEquals(new BigDecimal("97.38"), getRoundedGrade(result));
@@ -719,10 +744,16 @@ public class GradebookCalculationUnitTest extends TestCase {
 		categoryGradeUnitListMap.put(SECTIONS_ID, sectionsUnits);
 		categoryGradeUnitListMap.put(ECHW_ID, ecUnits);
 		
+		Map<String, Boolean> isManuallyEqualWeightedMap = new HashMap<String, Boolean>();
+		isManuallyEqualWeightedMap.put(MIDTERM_ID, Boolean.TRUE);
+		isManuallyEqualWeightedMap.put(FINAL_ID, Boolean.FALSE);
+		isManuallyEqualWeightedMap.put(PAPER_ID, Boolean.FALSE);
+		isManuallyEqualWeightedMap.put(SECTIONS_ID, Boolean.TRUE);
+		isManuallyEqualWeightedMap.put(ECHW_ID, Boolean.TRUE);
 		
 		BigDecimal totalGradebookPoints = new BigDecimal("100");
 
-		BigDecimal result = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, false).stripTrailingZeros();
+		BigDecimal result = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isManuallyEqualWeightedMap, totalGradebookPoints, false).stripTrailingZeros();
 		// Full grade
 		
 		assertEquals(new BigDecimal("97.38"), getRoundedGrade(result));
@@ -814,10 +845,16 @@ public class GradebookCalculationUnitTest extends TestCase {
 		categoryGradeUnitListMap.put(SECTIONS_ID, sectionsUnits);
 		categoryGradeUnitListMap.put(ECHW_ID, ecUnits);
 		
+		Map<String, Boolean> isManuallyEqualWeightedMap = new HashMap<String, Boolean>();
+		isManuallyEqualWeightedMap.put(MIDTERM_ID, Boolean.TRUE);
+		isManuallyEqualWeightedMap.put(FINAL_ID, Boolean.FALSE);
+		isManuallyEqualWeightedMap.put(PAPER_ID, Boolean.FALSE);
+		isManuallyEqualWeightedMap.put(SECTIONS_ID, Boolean.TRUE);
+		isManuallyEqualWeightedMap.put(ECHW_ID, Boolean.TRUE);
 		
 		BigDecimal totalGradebookPoints = new BigDecimal("100");
 
-		BigDecimal result = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, false).stripTrailingZeros();
+		BigDecimal result = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isManuallyEqualWeightedMap, totalGradebookPoints, false).stripTrailingZeros();
 		// Full grade
 		
 		assertEquals(new BigDecimal("96.38"), getRoundedGrade(result));
@@ -854,8 +891,6 @@ public class GradebookCalculationUnitTest extends TestCase {
 		// extra credit homework extra credit category, 3 assignments
 		CategoryCalculationUnit ecUnit = new CategoryCalculationUnitImpl(
 				new BigDecimal(".03"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE, Boolean.TRUE, TEST_SCALE); 
-
-		
 
 		categoryUnitMap.put(MIDTERM_ID, midtermUnit);
 		categoryUnitMap.put(FINAL_ID, finalUnit);
@@ -910,10 +945,16 @@ public class GradebookCalculationUnitTest extends TestCase {
 		categoryGradeUnitListMap.put(SECTIONS_ID, sectionsUnits);
 		categoryGradeUnitListMap.put(ECHW_ID, ecUnits);
 		
+		Map<String, Boolean> isManuallyEqualWeightedMap = new HashMap<String, Boolean>();
+		isManuallyEqualWeightedMap.put(MIDTERM_ID, Boolean.TRUE);
+		isManuallyEqualWeightedMap.put(FINAL_ID, Boolean.FALSE);
+		isManuallyEqualWeightedMap.put(PAPER_ID, Boolean.FALSE);
+		isManuallyEqualWeightedMap.put(SECTIONS_ID, Boolean.TRUE);
+		isManuallyEqualWeightedMap.put(ECHW_ID, Boolean.TRUE);
 		
 		BigDecimal totalGradebookPoints = new BigDecimal("100");
 
-		BigDecimal result = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, true).stripTrailingZeros();
+		BigDecimal result = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isManuallyEqualWeightedMap, totalGradebookPoints, true).stripTrailingZeros();
 		// Full grade
 		
 		assertEquals(new BigDecimal("96.88"), getRoundedGrade(result));
@@ -937,13 +978,16 @@ public class GradebookCalculationUnitTest extends TestCase {
 			List<GradeRecordCalculationUnit> hwUnits = getRecordUnits(hwValues);
 			Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
 			categoryGradeUnitListMap.put(HW_ID, hwUnits);
+			
+			
+			
 			if (roundToGradedValueScale)
 			{
-				ret = getRoundedGrade(gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, false)); 
+				ret = getRoundedGrade(gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, new HashMap<String, Boolean>(), totalGradebookPoints, false)); 
 			}
 			else
 			{
-				ret = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, totalGradebookPoints, false).stripTrailingZeros(); 
+				ret = gradebookCalculationUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, new HashMap<String, Boolean>(), totalGradebookPoints, false).stripTrailingZeros(); 
 			}
 		}
 		
@@ -1002,47 +1046,34 @@ public class GradebookCalculationUnitTest extends TestCase {
 
 		CategoryCalculationUnit essayUnit = new CategoryCalculationUnitImpl(new BigDecimal(".7"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
 		CategoryCalculationUnit hwUnit = new CategoryCalculationUnitImpl(new BigDecimal(".3"), Integer.valueOf(0), null, Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
-		//CategoryCalculationUnit ecUnit = new CategoryCalculationUnit(new BigDecimal(".1"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE);
 
 		categoryUnitMap.put(ESSAYS_ID, essayUnit);
 		categoryUnitMap.put(HW_ID, hwUnit);
-		//categoryUnitMap.put(EC_ID, ecUnit);
 
 		GradebookCalculationUnit gradebookUnit =  new GradebookCalculationUnitImpl(categoryUnitMap, TEST_SCALE);
 		
-		
-			 
-		
 		String[][] essayValues = {
 				{  "9.0000000000",  "10.0000000000", "0.1666666667", null },
-				
-				
 		};
 
 		String[][] HWValues = {
 				{  "9.0000000000",  "10.0000000000", "0.1666666667", null },
-				
-				
 		};
-
-		
 
 		List<GradeRecordCalculationUnit> essayUnits = getRecordUnits(essayValues);
 		List<GradeRecordCalculationUnit> HWUnits = getRecordUnits(HWValues);
 		
-	
-
 		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 		categoryGradeUnitListMap.put(HW_ID, HWUnits);
 		
+		Map<String, Boolean> isManuallyEqualWeightedMap = new HashMap<String, Boolean>();
+		isManuallyEqualWeightedMap.put(ESSAYS_ID, Boolean.FALSE);
+		isManuallyEqualWeightedMap.put(HW_ID, Boolean.FALSE);
 
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isManuallyEqualWeightedMap, null, false);
 
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, null, false);
-
-		//assertEquals(new BigDecimal("89.99999999999999999999999999999999999999999999999999999999424000"), courseGrade);
 		// GRBK-861
-		//assertEquals(new BigDecimal("90.00000000"), courseGrade);
 		assertTrue(courseGrade.compareTo(new BigDecimal("90.00")) == 0);
 	}
 	
@@ -1072,11 +1103,13 @@ public class GradebookCalculationUnitTest extends TestCase {
 		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 		categoryGradeUnitListMap.put(HW_ID, hwUnits);
-	
 
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, null, false);
+		Map<String, Boolean> isManuallyEqualWeightedMap = new HashMap<String, Boolean>();
+		isManuallyEqualWeightedMap.put(ESSAYS_ID, Boolean.FALSE);
+		isManuallyEqualWeightedMap.put(HW_ID, Boolean.FALSE);
 
-		//assertEquals(new BigDecimal("89.995000000000"), courseGrade);
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isManuallyEqualWeightedMap, null, false);
+
 		assertTrue(courseGrade.compareTo(new BigDecimal("89.995")) == 0);
 	}
 	
@@ -1100,8 +1133,10 @@ public class GradebookCalculationUnitTest extends TestCase {
 		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 	
-
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, new BigDecimal("300"), false);
+		Map<String, Boolean> isManuallyEqualWeightedMap = new HashMap<String, Boolean>();
+		isManuallyEqualWeightedMap.put(ESSAYS_ID, Boolean.FALSE);
+		
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isManuallyEqualWeightedMap, new BigDecimal("300"), false);
 
 		//assertEquals(new BigDecimal("89.99500000000"), courseGrade);
 		assertTrue(courseGrade.compareTo(new BigDecimal("89.995")) == 0);
@@ -1127,9 +1162,11 @@ public class GradebookCalculationUnitTest extends TestCase {
 
 		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
-	
 
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, new BigDecimal("400"), false);
+		Map<String, Boolean> isManuallyEqualWeightedMap = new HashMap<String, Boolean>();
+		isManuallyEqualWeightedMap.put(ESSAYS_ID, Boolean.FALSE);
+
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isManuallyEqualWeightedMap, new BigDecimal("400"), false);
 
 		assertTrue(courseGrade.compareTo(new BigDecimal("89.995")) == 0);
 	}
@@ -1156,8 +1193,10 @@ public class GradebookCalculationUnitTest extends TestCase {
 		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 	
-
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, new BigDecimal("400"), false);
+		Map<String, Boolean> isManuallyEqualWeightedMap = new HashMap<String, Boolean>();
+		isManuallyEqualWeightedMap.put(ESSAYS_ID, Boolean.FALSE);
+		
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isManuallyEqualWeightedMap, new BigDecimal("400"), false);
 
 		assertTrue(courseGrade.compareTo(new BigDecimal("89.995")) == 0);
 	}
@@ -1193,12 +1232,55 @@ public class GradebookCalculationUnitTest extends TestCase {
 		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 		categoryGradeUnitListMap.put(EC_ID, ecUnits);
-	
 
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, new BigDecimal("400"), false);
+		Map<String, Boolean> isManuallyEqualWeightedMap = new HashMap<String, Boolean>();
+		isManuallyEqualWeightedMap.put(ESSAYS_ID, Boolean.FALSE);
+		isManuallyEqualWeightedMap.put(EC_ID, Boolean.TRUE);
+
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isManuallyEqualWeightedMap, new BigDecimal("400"), false);
 
 		assertTrue(courseGrade.compareTo(new BigDecimal("44.9975")) == 0);
 	}
+	
+	public void testGRBK_1255_ECCatSimEQWith() {
+		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
+
+		CategoryCalculationUnit ecUnit = new CategoryCalculationUnitImpl(new BigDecimal("0.1"), Integer.valueOf(0), Boolean.TRUE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
+		CategoryCalculationUnit essayUnit = new CategoryCalculationUnitImpl(new BigDecimal("1.0"), Integer.valueOf(0), Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, TEST_SCALE);
+			
+		ecUnit.setTotalNumberOfItems(4); 
+		categoryUnitMap.put(ESSAYS_ID, essayUnit);
+		categoryUnitMap.put(EC_ID, ecUnit);
+
+		
+		GradebookCalculationUnit gradebookUnit =  new GradebookCalculationUnitImpl(categoryUnitMap, TEST_SCALE);
+	
+		
+		String[][] essayValues = {
+				{ "100", "100", "1.0", null }
+		};
+
+		String[][] ecValues = {
+				{"3", "3", "0.3", "true"},
+				{"3", "3", "0.3", "true"}
+		};
+		
+		List<GradeRecordCalculationUnit> essayUnits = getRecordUnits(essayValues);
+		List<GradeRecordCalculationUnit> ecUnits = getRecordUnits(ecValues);
+
+		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
+		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
+		categoryGradeUnitListMap.put(EC_ID, ecUnits);
+	
+		Map<String, Boolean> isManuallyEqualWeightedMap = new HashMap<String, Boolean>();
+		isManuallyEqualWeightedMap.put(ESSAYS_ID, Boolean.FALSE);
+		isManuallyEqualWeightedMap.put(EC_ID, Boolean.FALSE);
+
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isManuallyEqualWeightedMap, new BigDecimal("106"), false);
+
+		assertTrue(courseGrade.compareTo(new BigDecimal("106")) == 0);
+	}
+	
 
 	public void testGRBK_875_ECCatSimEQWithNullWithScaling() {
 		Map<String, CategoryCalculationUnit> categoryUnitMap = new HashMap<String, CategoryCalculationUnit>();
@@ -1232,8 +1314,11 @@ public class GradebookCalculationUnitTest extends TestCase {
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 		categoryGradeUnitListMap.put(EC_ID, ecUnits);
 	
+		Map<String, Boolean> isManuallyEqualWeightedMap = new HashMap<String, Boolean>();
+		isManuallyEqualWeightedMap.put(ESSAYS_ID, Boolean.FALSE);
+		isManuallyEqualWeightedMap.put(EC_ID, Boolean.FALSE);
 
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, new BigDecimal("400"), true);
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isManuallyEqualWeightedMap, new BigDecimal("400"), true);
 
 		assertTrue(courseGrade.compareTo(new BigDecimal("89.995")) == 0);
 	}
@@ -1258,9 +1343,11 @@ public class GradebookCalculationUnitTest extends TestCase {
 
 		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
-	
 
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, new BigDecimal("100"), false);
+		Map<String, Boolean> isManuallyEqualWeightedMap = new HashMap<String, Boolean>();
+		isManuallyEqualWeightedMap.put(ESSAYS_ID, Boolean.FALSE);
+
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isManuallyEqualWeightedMap, new BigDecimal("100"), false);
 		assertNull(courseGrade);
 	}
 	
@@ -1283,7 +1370,10 @@ public class GradebookCalculationUnitTest extends TestCase {
 		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 	
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, new BigDecimal("100"), false);
+		Map<String, Boolean> isManuallyEqualWeightedMap = new HashMap<String, Boolean>();
+		isManuallyEqualWeightedMap.put(ESSAYS_ID, Boolean.FALSE);
+		
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isManuallyEqualWeightedMap, new BigDecimal("100"), false);
 		
 		assertTrue(courseGrade.compareTo(BigDecimal.ZERO) == 0);
 	}
@@ -1314,8 +1404,10 @@ public class GradebookCalculationUnitTest extends TestCase {
 		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 	
+		Map<String, Boolean> isManuallyEqualWeightedMap = new HashMap<String, Boolean>();
+		isManuallyEqualWeightedMap.put(ESSAYS_ID, Boolean.FALSE);
 
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, new BigDecimal("100"), false);
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isManuallyEqualWeightedMap, new BigDecimal("100"), false);
 		assertTrue(courseGrade.compareTo(new BigDecimal("82.0")) == 0);
 
 	}
@@ -1345,9 +1437,11 @@ public class GradebookCalculationUnitTest extends TestCase {
 
 		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
-	
 
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, new BigDecimal("100"), false);
+		Map<String, Boolean> isManuallyEqualWeightedMap = new HashMap<String, Boolean>();
+		isManuallyEqualWeightedMap.put(ESSAYS_ID, Boolean.FALSE);
+
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isManuallyEqualWeightedMap, new BigDecimal("100"), false);
 		assertTrue(courseGrade.compareTo(new BigDecimal("84.0")) == 0);
 
 	}
@@ -1379,8 +1473,10 @@ public class GradebookCalculationUnitTest extends TestCase {
 		Map<String, List<GradeRecordCalculationUnit>> categoryGradeUnitListMap = new HashMap<String, List<GradeRecordCalculationUnit>>();
 		categoryGradeUnitListMap.put(ESSAYS_ID, essayUnits);
 	
+		Map<String, Boolean> isManuallyEqualWeightedMap = new HashMap<String, Boolean>();
+		isManuallyEqualWeightedMap.put(ESSAYS_ID, Boolean.FALSE);
 
-		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, new BigDecimal("100"), false);
+		BigDecimal courseGrade = gradebookUnit.calculateWeightedCourseGrade(categoryGradeUnitListMap, isManuallyEqualWeightedMap, new BigDecimal("100"), false);
 		assertTrue(courseGrade.compareTo(new BigDecimal("94.0")) == 0);
 
 	}
