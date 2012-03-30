@@ -156,6 +156,8 @@ public class WizardWindow extends Window {
 	private boolean hidePreviousButtonOnFirstCard = false;
 	
 	protected boolean isHeaderPanelHidden = false;
+
+	protected HorizontalAlignment buttonAlignment = HorizontalAlignment.RIGHT;
 	
 
 	/**
@@ -323,7 +325,7 @@ public class WizardWindow extends Window {
 		buttonBar.add(cancelBtn);
 		//add(status);
 		
-		
+		buttonBar.setAlignment(buttonAlignment );
 
 		super.onRender(parent, pos);
 
@@ -515,8 +517,10 @@ public class WizardWindow extends Window {
 		 */
 		protected void updateIndicatorStep(String cardtitle) {
 
+			final boolean titleEmpty = null == cardtitle || "".equals(cardtitle.trim());
+			
 			final String stepStr = indicateStepText + (1 + currentStep) + indicateOfText + cards.size()
-					+ " : " + cardtitle;
+					+ (titleEmpty ? "" : " : " + cardtitle);
 			final double stepRatio = (double) (1 + currentStep) / (double) cards.size();
 			titleHTML.setHtml(headerTitle);
 
@@ -735,6 +739,14 @@ public class WizardWindow extends Window {
 	protected void onEndResize(ResizeEvent re) {
 		super.onEndResize(re);
 		updateWizard();
+	}
+
+	public HorizontalAlignment getButtonAlignment() {
+		return buttonAlignment;
+	}
+
+	public void setButtonAlignment(HorizontalAlignment buttonAlignment) {
+		this.buttonAlignment = buttonAlignment;
 	}
 	
 	

@@ -208,14 +208,15 @@ public class ImportPanel extends GradebookPanel {
 		WidgetInjector injector = Registry.get(AppConstants.WIDGET_INJECTOR);
 		wizard = injector.getWizardProvider().get();
 		
-		wizard.setHeading(i18n.importWizardTitle());
-		wizard.setHeaderTitle("PlaceHolder Text");
+		wizard.setHeading(i18n.importWizardHeading());
+		wizard.setHeaderTitle(i18n.importWizardTitle());
 		
 		wizard.setResizable(true);
 		wizard.setClosable(false);
 		wizard.setShowWestImageContainer(false);
 		wizard.setPanelBackgroundColor("#FFFFFF");
 		wizard.setContainer(fileUploadContainer.getElement());
+		wizard.setHidePreviousButtonOnFirstCard(true);
 		
 		wizard.setProgressIndicator(Wizard.Indicator.PROGRESSBAR);
 		wizard.addCancelListener(new Listener<BaseEvent>() {
@@ -354,7 +355,7 @@ public class ImportPanel extends GradebookPanel {
 			GradeType type = ((Gradebook)Registry.get(AppConstants.CURRENT)).getGradebookItemModel().getGradeType();
 			
 			if( type == GradeType.PERCENTAGES || type == GradeType.LETTERS ) {
-				getScantonOrClickerPointsWithWizard();
+				getScantronOrClickerPointsWithWizard();
 			}
 		}
 
@@ -566,7 +567,7 @@ public class ImportPanel extends GradebookPanel {
 				} else if (411 == statusCode) {
 					uploadingBox.close();
 					submitButton.setVisible(true);
-					getScantonOrClickerPointsWithWizard();
+					getScantronOrClickerPointsWithWizard();
 				} else {
 					onFailure(request, caught);
 				}
@@ -699,7 +700,7 @@ public class ImportPanel extends GradebookPanel {
 		
 	}
 
-	protected void getScantonOrClickerPointsWithWizard() {
+	protected void getScantronOrClickerPointsWithWizard() {
 		//show the wizard and ask for points possible for scantron
 		WidgetInjector injector = Registry.get(AppConstants.WIDGET_INJECTOR);
 		wizard = injector.getWizardProvider().get();
@@ -846,7 +847,7 @@ public class ImportPanel extends GradebookPanel {
 		
 		card1.setFormPanel(form);
 		
-		wizard.setHeading(i18n.importWizardTitle());
+		wizard.setHeading(i18n.importWizardHeading());
 		wizard.setHeaderTitle(i18n.importScantronClickerPointsConversionTitle());
 		wizard.setFinishButtonText(i18n.importScantronClickerPointsConversionFinish());
 		

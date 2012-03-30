@@ -3,6 +3,7 @@ package org.sakaiproject.gradebook.gwt.client.api;
 import java.util.List;
 
 
+import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.google.gwt.user.client.Element;
@@ -111,5 +112,9 @@ public interface Wizard {
 	public void setHidePreviousButtonOnFirstCard(boolean hidePreviousButtonOnFirstCard);
 	
 	public void setHideHeaderPanel(boolean isHidden);
+
+	public abstract void setButtonAlignment(HorizontalAlignment buttonAlignment);
+
+	public abstract HorizontalAlignment getButtonAlignment();
 	
 }

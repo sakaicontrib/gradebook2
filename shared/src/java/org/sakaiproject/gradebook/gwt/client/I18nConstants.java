@@ -431,7 +431,7 @@ public interface I18nConstants extends Constants {
 	// Mr. Wizard
 	String needValidEmail();
 	String importWizardCardTitlePointsPossible();
-	String importWizardTitle();
+	String importWizardHeading();
 	String wizardDefaultStatusBarText();
 	String wizardDefaultPreviousButton();
 	String wizardDefaultNextButton();
@@ -506,6 +506,7 @@ public interface I18nConstants extends Constants {
 	String importScantronClickerPointsConversionTitle();
 	String importScantronClickerPointsConversionFinish();
 	String noImportJustStructureForTemplateFormat();
+	String importWizardTitle();
 	
 	// GRBK-1220
 	String downloadNewItemTemplateWizardHeading();

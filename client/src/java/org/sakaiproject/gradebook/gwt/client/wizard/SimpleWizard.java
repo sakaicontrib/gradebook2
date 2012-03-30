@@ -11,6 +11,7 @@ import org.sakaiproject.gradebook.gwt.client.api.Wizard;
 import org.sakaiproject.gradebook.gwt.client.gin.WidgetInjector;
 
 import com.extjs.gxt.ui.client.Registry;
+import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.google.gwt.user.client.Element;
@@ -210,6 +211,14 @@ public class SimpleWizard extends WizardWindow implements Wizard  {
 	
 	public void setHideHeaderPanel(boolean isHidden) {
 		isHeaderPanelHidden = isHidden;
+	}
+	
+	public HorizontalAlignment getButtonAlignment() {
+		return buttonAlignment;
+	}
+
+	public void setButtonAlignment(HorizontalAlignment buttonAlignment) {
+		this.buttonAlignment = buttonAlignment;
 	}
 
 }
