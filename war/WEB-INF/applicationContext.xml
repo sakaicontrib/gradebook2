@@ -76,6 +76,8 @@
 			</list>
 		</property>
 		<property name="i18n" ref="gradebook2.I18N" />
+		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService" />
+		<property name="toolService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService" />
 	</bean>
 
 

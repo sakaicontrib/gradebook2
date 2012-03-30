@@ -2,6 +2,7 @@ package org.sakaiproject.gradebook.gwt.client.model;
 
 import java.util.List;
 
+import org.sakaiproject.gradebook.gwt.client.api.ImportSettings;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 

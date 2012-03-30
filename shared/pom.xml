@@ -19,6 +19,11 @@
 			<artifactId>gradebook2-model</artifactId>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.sakaiproject.gradebook2</groupId>
+			<artifactId>gradebook2-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 
 	<build>

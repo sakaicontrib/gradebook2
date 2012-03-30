@@ -57,14 +57,17 @@ import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.tika.Tika;
+import org.apache.tika.io.TikaInputStream;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.api.ImportSettings;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.gxt.ItemModelProcessor;
+import org.sakaiproject.gradebook.gwt.client.gxt.type.FileFormat;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader;
 import org.sakaiproject.gradebook.gwt.client.gxt.upload.ImportHeader.Field;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
-import org.sakaiproject.gradebook.gwt.client.model.ImportSettings;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.Roster;
@@ -85,6 +88,7 @@ import org.sakaiproject.gradebook.gwt.server.model.LearnerImpl;
 import org.sakaiproject.gradebook.gwt.server.model.UploadImpl;
 import org.sakaiproject.tool.gradebook.Assignment;
 import org.sakaiproject.util.ResourceLoader;
+import org.springframework.web.multipart.MultipartFile;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
@@ -104,28 +108,18 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	private String scantronStudentIdHeader = null; 
 	private String scantronScoreHeader = null;
 	private String scantronRescoreHeader = null;
-
+	// ... and these, as of GRBK-1221
+	private Gradebook2ComponentService service = null;
+	private GradebookToolService toolService;	
+	
 	
 	// GRBK-689
 	private String clickerStudentIdHeader;
-
-	
-	public void setClickerStudentIdHeader(String clickerStudentIdHeader) {
-		this.clickerStudentIdHeader = clickerStudentIdHeader;
-	}
-
-
-	public void setClickerIgnoreColumns(String[] clickerIgnoreColumns) {
-		this.clickerIgnoreColumns = clickerIgnoreColumns;
-	}
-
-
 	// Set via IoC
 	private ResourceLoader i18n;
 
 	public String[] scantronIgnoreColumns = null;
 	public String[] clickerIgnoreColumns = null;
-
 	public String[] idColumns = null;
 
 	public String[] nameColumns = null;
@@ -166,7 +160,9 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	
 	
 	
-	private Set<String> headerRowIndicatorSet, idSet, nameSet, scantronIgnoreSet, clickerIgnoreSet;
+	private Set<String> headerRowIndicatorSet, idSet, nameSet, scantronIgnoreSet, 
+						clickerIgnoreSet;
+	private List<String> templateHeaderColumnSet;
 
 	public static String UNSAFE_FILENAME_CHAR_REGEX = "[\\p{Punct}\\p{Space}\\p{Cntrl}]";
 	public static List<String> SUPPORTED_FILE_TYPES = new ArrayList<String>() {
@@ -180,7 +176,12 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	public static String CONTENT_DISPOSITION_HEADER_NAME = "Content-Disposition";
 	public static String CONTENT_DISPOSITION_HEADER_ATTACHMENT = "attachment; filename=";
 		
-	private GradeCalculations gradeCalculations;	
+	private GradeCalculations gradeCalculations;
+
+	private Tika filetypeDetector;
+
+
+
 	
 	
 	
@@ -205,6 +206,13 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		for (int i=0;i<clickerIgnoreColumns.length;i++) {
 			clickerIgnoreSet.add(clickerIgnoreColumns[i].toLowerCase());
 		}
+		
+		/// The order is important here
+		this.templateHeaderColumnSet = new ArrayList<String>();
+		templateHeaderColumnSet.add(i18n.getString("exportColumnHeaderStudentId").trim());
+		templateHeaderColumnSet.add(i18n.getString("exportColumnHeaderStudentName").trim());
+		
+		
 	}
 	
 
@@ -659,16 +667,14 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		final ImportExportDataFile file = exportGradebook(service,
 				gradebookUid, includeStructure, includeComments, sectionUidList);
 		
-		// GRBK-797 - find the Column with StudentId so we can treat it as a String
-		Map<String, StructureRow> structureRowIndicatorMap = new HashMap<String, StructureRow>();
 		Map<StructureRow, String[]> structureColumnsMap = new HashMap<StructureRow, String[]>();
 		ImportExportInformation ieInfo = new ImportExportInformation();
 
-		buildRowIndicatorMap(structureRowIndicatorMap);
+		
 
 		int structureStop = 0; 
 
-		structureStop = readDataForStructureInformation(file, structureRowIndicatorMap, structureColumnsMap);
+		structureStop = readDataForStructureInformation(file, buildRowIndicatorMap(), structureColumnsMap);
 		if (structureStop != -1)
 		readInHeaderRow(file, ieInfo, structureStop);
 				
@@ -845,40 +851,58 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	private org.apache.poi.ss.usermodel.Workbook readPoiSpreadsheet(BufferedInputStream is) 
 	{
 		org.apache.poi.ss.usermodel.Workbook spread = null;
-
-		is.mark(1024*1024*512); // file-size limit is 512MB
-		try {
-			spread = new HSSFWorkbook(POIFSFileSystem.createNonClosingInputStream(is));
-			log.debug("HSSF file detected"); 
-		} 
-		catch (IOException e) 
-		{
-			log.debug("Caught I/O Exception", e);
-		} 
-		catch (IllegalArgumentException iae)
-		{
-			log.debug("Caught IllegalArgumentException Exception", iae);
-		}
-		if (spread == null)
-		{
+		String detected = getMimeType(is);
+		
+		/*
+		 *  Until we get better detection with Tika
+		 *  we can only test if this *could be* a 
+		 *  OOXML container... reading the file with POI could still fail
+		 *  but we can at least differentiate CSV and other types from
+		 *  OOXML
+		 *  
+		 *  Also TODO: this defers all XLS97 format files to JExcel which
+		 *  may not be what we want to do
+		 *  
+		 */
+		if(DETECTOR_OOXML_CONTAINER_MIMETYPE.equals(detected)) {
 			
+			
+			
+	
+			is.mark(1024*1024*512); // file-size limit is 512MB
 			try {
-				is.reset(); 
-				spread = new XSSFWorkbook(POIFSFileSystem.createNonClosingInputStream(is));
-				log.debug("XSSF file detected");
-
-			} catch (IOException e) 
+				spread = new HSSFWorkbook(POIFSFileSystem.createNonClosingInputStream(is));
+				log.debug("HSSF file detected"); 
+			} 
+			catch (IOException e) 
 			{
-				log.debug("Caught I/O Exception checking for xlsx format", e);
+				log.debug("Caught I/O Exception", e);
 			} 
 			catch (IllegalArgumentException iae)
 			{
-				log.debug("Caught IllegalArgumentException Exception checking for xlsx format", iae);
-			} catch (POIXMLException e) 
-			{
-				log.debug("Caught POIXMLException Exception checking for xlsx format", e);
+				log.debug("Caught IllegalArgumentException Exception", iae);
 			}
-
+			if (spread == null)
+			{
+				
+				try {
+					is.reset(); 
+					spread = new XSSFWorkbook(POIFSFileSystem.createNonClosingInputStream(is));
+					log.debug("XSSF file detected");
+	
+				} catch (IOException e) 
+				{
+					log.debug("Caught I/O Exception checking for xlsx format", e);
+				} 
+				catch (IllegalArgumentException iae)
+				{
+					log.debug("Caught IllegalArgumentException Exception checking for xlsx format", iae);
+				} catch (POIXMLException e) 
+				{
+					log.debug("Caught POIXMLException Exception checking for xlsx format", e);
+				}
+	
+			}
 		}
 
 		if (null == spread) {
@@ -893,10 +917,26 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	}
 
 
-	private boolean checkForCurrentAssignmentInGradebook(String fileName, Gradebook2ComponentService service, GradebookToolService gbToolService, String gradebookUid)
+	private String getMimeType(InputStream is) {
+		String detected = null;
+		/// get Tika's opinion about the file type in mime-type form
+		try {
+			detected = filetypeDetector.detect(TikaInputStream.get(is));
+			log.debug("------->" + detected);
+			
+		} catch (IOException e) {
+			log.error("ERROR: using Tika file type detector");
+			e.printStackTrace();
+			
+		}
+		return detected;
+	}
+
+
+	private boolean checkForCurrentAssignmentInGradebook(String fileName, String gradebookUid)
 	{
 		Gradebook gm = service.getGradebook(gradebookUid); 
-		List<Assignment> assignments = gbToolService.getAssignments(gm.getGradebookId()); 
+		List<Assignment> assignments = this.toolService.getAssignments(gm.getGradebookId()); 
 		for (Assignment curAssignment : assignments)
 		{
 			String curAssignmentName = curAssignment.getName(); 
@@ -910,8 +950,8 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		return false; 
 	}
 
-	private String getUniqueFileNameForFileName(String fileName,
-			Gradebook2ComponentService service, GradebookToolService gbToolService, String gradebookUid) throws GradebookImportException {
+	private String getUniqueFileNameForFileName(String fileName,String gradebookUid) 
+	throws GradebookImportException {
 
 		log.debug("fileName=" + fileName);
 		if (fileName == null || fileName.equals(""))
@@ -925,15 +965,15 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		while (true)
 		{
 			log.debug("curFileName: " + curFileName); 
-			if (!checkForCurrentAssignmentInGradebook(curFileName, service, gbToolService, gradebookUid))
+			if (!checkForCurrentAssignmentInGradebook(curFileName, gradebookUid))
 			{
 				log.debug("returning curFileName"); 
 				return curFileName; 
 			}
-			else
-			{
-				curFileName = fileName + "-" +i; 
-			}
+			// else
+			
+			curFileName = fileName + "-" +i; 
+			
 			i++; 
 
 			if (i > 1000)
@@ -947,19 +987,18 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	 * so basically, we'll do: 
 	 * 1) Scan the sheet for scantron artifacts, and if so convert to a simple CSV file which is 
 	 */
-	public Upload parseImportXLS(Gradebook2ComponentService service, 
-			String gradebookUid, InputStream is, String fileName, GradebookToolService gbToolService, 
-			Boolean isJustStructure) throws InvalidInputException, FatalException, IOException {
+	public Upload parseImportXLS(MultipartFile file, ImportSettings settings) throws InvalidInputException, FatalException, IOException {
 		log.debug("parseImportXLS() called"); 
 
 		// Strip off extension
-		fileName = removeFileExenstion(fileName);
+		String fileName = removeFileExenstion(file.getOriginalFilename().toLowerCase());
 
+		
 		String realFileName = fileName; 
 		boolean isOriginalName; 
 		
 		try {
-			realFileName = getUniqueFileNameForFileName(fileName, service, gbToolService, gradebookUid);
+			realFileName = getUniqueFileNameForFileName(fileName, settings.getGradebookUid());
 		} catch (GradebookImportException e) {
 			Upload importFile = new UploadImpl(); 
 			importFile.setErrors(true); 
@@ -970,13 +1009,10 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		
 		log.debug("realFileName=" + realFileName);
 		log.debug("isOriginalName=" + isOriginalName);
-
-		ImportSettings settings = new ImportSettingsImpl();
-		settings.setJustStructure(isJustStructure);
 		
 		org.apache.poi.ss.usermodel.Workbook inspread = null;
 
-		BufferedInputStream bufStream = new BufferedInputStream(is); 
+		BufferedInputStream bufStream = new BufferedInputStream(file.getInputStream()); 
 
 		inspread = readPoiSpreadsheet(bufStream);
 
@@ -984,13 +1020,13 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		{
 			log.debug("Found a POI readable spreadsheet");
 			bufStream.close(); 
-			return handlePoiSpreadSheet(inspread, service, gradebookUid, realFileName, isOriginalName, settings);
+			return handlePoiSpreadSheet(inspread, realFileName, isOriginalName, settings);
 		}
 		// else
 		
 		log.debug("POI couldn't handle the spreadsheet, using jexcelapi");
 		bufStream.reset();
-		return handleJExcelAPISpreadSheet(bufStream, service, gradebookUid, realFileName, isOriginalName, settings); 
+		return handleJExcelAPISpreadSheet(bufStream, realFileName, isOriginalName, settings); 
 		
 
 	}
@@ -1005,21 +1041,29 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		return fileName; 
 	}
 
-	private Upload handleJExcelAPISpreadSheet(BufferedInputStream is,
-			Gradebook2ComponentService service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName, ImportSettings settings) throws InvalidInputException, FatalException, IOException {
+	private Upload handleJExcelAPISpreadSheet(InputStream is,
+			String fileName, boolean isNewAssignmentByFileName, ImportSettings settings) throws InvalidInputException, FatalException, IOException {
 		Workbook wb = null; 
+		final String unexpectedTypeErrorMessage = i18n.getString("expectedFormat" + settings.getExportTypeName(), 
+				"The file format did not match your selection: " 
+				+ settings.getExportTypeName());
+		
+		final String unexpectedFormatErrorMessage = i18n.getString("expectedFormat" + settings.getFileFormatName(), 
+				"The file format did not match your selection: " 
+				+ settings.getFileFormatName());
+		
 		Upload rv = new UploadImpl();
 		try {
 			wb = Workbook.getWorkbook(is);
 		} catch (BiffException e) {
 			log.error("Caught a biff exception from JExcelAPI: " + e.getLocalizedMessage(), e); 
 			rv.setErrors(true);
-			rv.setNotes(i18n.getString("unknownExcelFileFormat"));
+			rv.setNotes(unexpectedTypeErrorMessage);
 			return rv; 
 		} catch (IOException e) {
 			log.error("Caught an IO exception from JExcelAPI: " + e.getLocalizedMessage(), e); 
 			rv.setErrors(true);
-			rv.setNotes(i18n.getString("unknownExcelFileFormat"));
+			rv.setNotes(unexpectedTypeErrorMessage);
 			return rv; 
 		} 
 
@@ -1027,33 +1071,49 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		Sheet s = wb.getSheet(0); 
 		if (s != null)
 		{
-			if (isScantronSheetForJExcelApi(s))
-			{
-				return handleScantronSheetForJExcelApi(s, service, gradebookUid, fileName, isNewAssignmentByFileName, settings);
-			}
-			//else
+			boolean shouldBeScantron = FileFormat.SCANTRON.name().equals(settings.getFileFormatName());
+			boolean isReallyScantron = isScantronSheetForJExcelApi(s);
 			
-			return handleNormalXLSSheetForJExcelApi(s, service, gradebookUid, isNewAssignmentByFileName, settings);
+			if (shouldBeScantron && !isReallyScantron
+					|| !shouldBeScantron && isReallyScantron) {
+				rv.setErrors(true);
+				rv.setNotes(unexpectedFormatErrorMessage);
+				return rv;
+			}
+			if (shouldBeScantron && isReallyScantron) {
+				return handleScantronSheetForJExcelApi(s, settings.getGradebookUid(), fileName, isNewAssignmentByFileName, settings);
+			} 
+			
+			return handleNormalXLSSheetForJExcelApi(s, settings.getGradebookUid(), isNewAssignmentByFileName, settings);
 			
 		}
-		//else
+		
 		
 		rv.setErrors(true);
-		rv.setNotes(i18n.getString("unknownExcelFileFormat"));
+		rv.setNotes(unexpectedTypeErrorMessage);
 		return rv;
 		
 	}
 
-	
+	/*
+	 * for Jexcel compat. file types, the clickers and templates and full gradeboook formats are
+	 * all passed into this method
+	 * so this where we will check for chosen format errors
+	 * 
+	 */
 
 	private Upload handleNormalXLSSheetForJExcelApi(Sheet s,
-			Gradebook2ComponentService service, String gradebookUid, boolean isNewAssignmentByFileName, ImportSettings settings) throws InvalidInputException, FatalException {
+			String gradebookUid, boolean isNewAssignmentByFileName, ImportSettings settings) 
+	throws InvalidInputException, FatalException {
 		ImportExportDataFile raw = new ImportExportDataFile(); 
 		int numRows; 
 		
-		if (isClickerSheetForJExcelApi(s)) {
-			raw.setNewAssignment(isNewAssignmentByFileName);
-		}
+		final String unexpectedFormatErrorMessage = i18n.getString("expectedFormat" + settings.getFileFormatName(), 
+				"The file format did not match your selection: " 
+				+ settings.getFileFormatName());
+		
+		
+		
 
 		numRows = s.getRows(); 
 
@@ -1071,16 +1131,37 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			}
 			raw.addRow(data); 
 		}
+		boolean shouldBeFullGradebook = FileFormat.FULL.name().equals(settings.getFileFormatName());
 		boolean isClicker = isClickerSheetForJExcelApi(s);
+		boolean shouldBeClicker = FileFormat.CLICKER.name().equals(settings.getFileFormatName());
+		boolean isTemplate = isAssignmentTemplateFormat(raw);
+		boolean shouldBeTemplate = FileFormat.TEMPLATE.name().equals(settings.getFileFormatName());
+		boolean isBadFormat = isClicker && !shouldBeClicker
+				||!isClicker && shouldBeClicker
+				|| !isTemplate && shouldBeTemplate
+				|| isTemplate && !shouldBeTemplate
+				|| shouldBeFullGradebook && 
+				1 > readDataForStructureInformation(raw, buildRowIndicatorMap(), new HashMap<StructureRow, String[]> ());
+		if (isBadFormat) {
+			Upload nothing = new UploadImpl();
+			nothing.setErrors(true);
+			nothing.setNotes(unexpectedFormatErrorMessage);
+			return nothing;
+		}
+		
+		if (isClicker || isTemplate) {
+			raw.setNewAssignment(isNewAssignmentByFileName); //// TODO: this may not be appropriate for anything but scantrons
+		}
 		raw.setFileType("Excel 5.0/7.0" + ( isClicker ? " clicker": "")); 
-		raw.setScantronFile(isClicker); 
+		raw.setScantronFile(isClicker || isTemplate); 
 		raw.setJustStructure(settings.isJustStructure());
 
-		return parseImportGeneric(service, gradebookUid, raw);
+		return parseImportGeneric(gradebookUid, raw);
 	}
 
-	private Upload handleScantronSheetForJExcelApi(Sheet s,
-			Gradebook2ComponentService service, String gradebookUid, String fileName, boolean isNewAssignmentByFileName, ImportSettings settings) throws InvalidInputException, FatalException 
+	private Upload handleScantronSheetForJExcelApi(Sheet s, String gradebookUid, 
+			String fileName, boolean isNewAssignmentByFileName, ImportSettings settings) 
+	throws InvalidInputException, FatalException 
 			{
 		StringBuilder err = new StringBuilder(i18n.getString("scantronHasErrors", "Scantron File with errors: ")); 
 		ImportExportDataFile raw = new ImportExportDataFile(); 
@@ -1129,7 +1210,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			raw.setScantronFile(true);
 			raw.setNewAssignment(isNewAssignmentByFileName);
 			raw.setJustStructure(settings.isJustStructure());
-			return parseImportGeneric(service, gradebookUid, raw);
+			return parseImportGeneric(gradebookUid, raw);
 		}
 		//else
 		
@@ -1137,7 +1218,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		err = null; 
 		raw.setErrorsFound(true); 
 
-		return parseImportGeneric(service, gradebookUid, raw);
+		return parseImportGeneric(gradebookUid, raw);
 		
 
 	}
@@ -1179,40 +1260,77 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	
 	private boolean isClickerSheetFromPoi(org.apache.poi.ss.usermodel.Sheet sheet) {
 		//skip all empty rows
-		for (Row row : sheet) {
-			for (org.apache.poi.ss.usermodel.Cell cell : row) {
-				if (!"".equals(cell.getStringCellValue().trim())) {
-					return isClickerHeaderRowPoi(row);
-				}
+		if(sheet!=null) {
+			for (Row row : sheet) {
+				if (isClickerHeaderRowPoi(row))
+					return true;
 			}
 		}
+
+		return false; /// empty sheet
+	}
+	
+	private boolean isTemplateSheetFromPoi(org.apache.poi.ss.usermodel.Sheet sheet) {
+		//skip all empty rows
+		if(sheet!=null)
+			for (Row row : sheet) {
+				for (org.apache.poi.ss.usermodel.Cell cell : row) {
+					if (!"".equals(cell.getStringCellValue().trim())) {
+						return isTemplateHeaderRow(row);
+					}
+				}
+			}
 		
 		return false; /// empty sheet
 	}
 	
 
+	private boolean isTemplateHeaderRow(Row row) {
+		boolean isTemplate = templateHeaderColumnSet.size()>0;
+		List<String> headers =  new ArrayList<String> (templateHeaderColumnSet);
+		for (int i=0;i<headers.size();++i) {
+			isTemplate = isTemplate && row !=null  
+						&& row.getCell(i).getStringCellValue().trim().toLowerCase().equals(
+								headers.get(i).trim().toLowerCase());
+			}
+		return isTemplate;
+	}
+
+
 	private boolean isClickerHeaderRowPoi(Row row) {
-		boolean clicker = clickerIgnoreColumns.length>0;
+		if (clickerIgnoreColumns.length<=0)
+			return false;
 		for (String header : clickerIgnoreColumns ) {
-			clicker = clicker && poiRowContainsString(row, header);
+			if(!poiRowContainsString(row, header)) {
+				return false;
+				}
 			}
 		
-		return clicker && poiRowContainsString(row, clickerStudentIdHeader);
+		return poiRowContainsString(row, clickerStudentIdHeader);
 	}
 
 
 	private boolean poiRowContainsString(Row row, String text) {
 		if (null == text) 
 			return false;
-		text = text.trim();
-		boolean contains = row!=null && row.cellIterator().hasNext();
-		for (org.apache.poi.ss.usermodel.Cell cell : row) {
-			contains = contains && cell.getStringCellValue().trim().equalsIgnoreCase(text);
-		}
-		return contains;
+		text = text.trim().toLowerCase();
+		
+		if (row != null && row.cellIterator().hasNext())
+			for (org.apache.poi.ss.usermodel.Cell cell : row) {
+				if (cell.getCellType() == org.apache.poi.ss.usermodel.Cell.CELL_TYPE_STRING
+						&& cell.getStringCellValue().trim().toLowerCase().equals(text)) {
+					return true;
+				}
+			}
+		return false;
 	}
 	
 	private boolean isClickerSheetCSV(ImportExportDataFile rawData) {
+		
+		// if it has structure, it's not a clicker file
+		if( 0 < readDataForStructureInformation(rawData, buildRowIndicatorMap(), new HashMap<StructureRow, String[]>()))
+			return false;
+		
 		boolean isClicker = rawData.getAllRows().size()>0;
 		
 		for (String[] row : rawData.getAllRows()) {
@@ -1237,49 +1355,103 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		
 		return clicker && list.contains(clickerStudentIdHeader.trim().toLowerCase());
 	}
+	
+	/// this requires all header values and fails if the order is different
+	private boolean isListTemplateHeaderRow(List<String> list) {
+		boolean isTemplate = templateHeaderColumnSet.size()>0;
+		List<String> headers =  new ArrayList<String> (templateHeaderColumnSet);
+		for (int i=0;i<headers.size();++i) {
+			isTemplate = isTemplate && list !=null  
+						&& list.get(i).trim().toLowerCase().equals(
+								headers.get(i).trim().toLowerCase());
+			}
+		
+		return isTemplate;
+	}
 
 
-	private Upload handlePoiSpreadSheet(org.apache.poi.ss.usermodel.Workbook inspread, Gradebook2ComponentService service, 
-				String gradebookUid, String fileName, boolean isNewAssignmentByFileName, ImportSettings settings) 
-		throws InvalidInputException, FatalException
+	private Upload handlePoiSpreadSheet(org.apache.poi.ss.usermodel.Workbook inspread, 
+			String fileName, boolean isNewAssignmentByFileName, ImportSettings settings)
 	{
 		log.debug("handlePoiSpreadSheet() called"); 
-		// FIXME - need to do multiple sheets, and structure
+		// FIXME - need to do multiple sheets
 		int numSheets = inspread.getNumberOfSheets();  
 		if (numSheets > 0)
 		{
 			org.apache.poi.ss.usermodel.Sheet cur = inspread.getSheetAt(0);
-			ImportExportDataFile ret; 
-			boolean isScantron = isScantronSheetFromPoi(cur);
-			boolean isClicker = isClickerSheetFromPoi(cur);
-			if (isScantron)
-			{
-				log.debug("POI: Scantron");
-				ret = processScantronXls(cur, fileName, settings); 
-				
-			}
-			else
-			{
-				log.debug("POI: Not scantron");
-				ret = processNormalXls(cur, settings); 
-			}
+			ImportExportDataFile ret = null;
+			FileFormat fileFormatChosen = FileFormat.valueOf(settings.getFileFormatName());
+			final String unexpectedFormatErrorMessage = i18n.getString("expectedFormat" + fileFormatChosen.name(), 
+					"The file format did not match your selection: " 
+					+ fileFormatChosen.name());
 			
-			if (isScantron || isClicker){
-				ret.setNewAssignment(isNewAssignmentByFileName);
-			}
-			ret.setScantronFile(isScantron || isClicker);
-			ret.setJustStructure(settings.isJustStructure());
-			return parseImportGeneric(service, gradebookUid, ret);
+			
+			boolean mismatch = false;
+			if (FileFormat.SCANTRON.equals(fileFormatChosen)) {
+				boolean isScantron = isScantronSheetFromPoi(cur);
+				if (isScantron)
+				{
+					log.debug("POI: Scantron");
+					ret = processScantronXls(cur, fileName, settings); 
+					ret.setNewAssignment(isNewAssignmentByFileName);
+					ret.setScantronFile(true);
+				} else {
+					mismatch  = true;	
+				}
+			} else 
+				if (FileFormat.CLICKER.equals(fileFormatChosen)) {
+				
+					log.debug("POI: Not scantron");
+					if (isClickerSheetFromPoi(cur)) {
+						ret = processNormalXls(cur, settings);
+						ret.setNewAssignment(isNewAssignmentByFileName);
+						ret.setScantronFile(true);
+					} else {
+						mismatch = true;
+					}
+			} else 
+				if (FileFormat.TEMPLATE.equals(fileFormatChosen)) {
+					if (isTemplateSheetFromPoi(cur)) {
+						ret = processNormalXls(cur, settings);
+						ret.setScantronFile(false);
+					} else {
+						mismatch = true;
+					}
+			} else
+				if (FileFormat.FULL.equals(fileFormatChosen)) {
+					ret = processNormalXls(cur, settings); ///cart before the horse but this is mid refactor
+					if ( 0 >= readDataForStructureInformation(ret, buildRowIndicatorMap(), new HashMap<StructureRow, String[]>()) ) {
+						mismatch = true;
+					}
+				}
+				
+				
+				if (mismatch) {
+					return nothingWithErrorMessage(unexpectedFormatErrorMessage, settings);
+				} 
+				
+				///#### everything checks out... continue ####
+				ret.setJustStructure(settings.isJustStructure());
+				return parseImportGeneric(settings.getGradebookUid(), ret);
+				
+			
 		}
-		//else
+		//else numsheets == 0 
 		
-		ImportExportDataFile d = new ImportExportDataFile(); 
-		d.setMessages(i18n.getString("importValidSheetsMessage"));
-		d.setErrorsFound(true); 
-		return parseImportGeneric(service, gradebookUid, d);
+		return nothingWithErrorMessage(i18n.getString("importValidSheetsMessage"), settings);
+		
 
 		
 	}
+
+	private Upload nothingWithErrorMessage(String string, ImportSettings settings) {
+		ImportExportDataFile d = new ImportExportDataFile();
+		d.setMessages(string);
+		d.setErrorsFound(true); 
+		return parseImportGeneric(settings.getGradebookUid(), d);
+
+	}
+
 
 	private ImportExportDataFile processNormalXls(org.apache.poi.ss.usermodel.Sheet cur, ImportSettings settings) {
 		log.debug("processNormalXls() called");
@@ -1361,7 +1533,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 
 		while (cellIterator.hasNext())
 		{
-			org.apache.poi.ss.usermodel.Cell cl = (org.apache.poi.ss.usermodel.Cell) cellIterator.next();
+			org.apache.poi.ss.usermodel.Cell cl = cellIterator.next();
 			String cellData =  new org.apache.poi.ss.usermodel.DataFormatter().formatCellValue(cl).toLowerCase();
 
 			if ("student id".equals(cellData))
@@ -1515,12 +1687,15 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	}
 	
 
-	public Upload parseImportCSV(Gradebook2ComponentService service,
-			String gradebookUid, Reader reader, boolean importOnlyStructure) 
+	public Upload parseImportCSV(String gradebookUid, Reader reader, ImportSettings importSettings) 
 			throws InvalidInputException, FatalException {
 		
 		ImportExportDataFile rawData = new ImportExportDataFile(); 
-		rawData.setJustStructure(importOnlyStructure);
+		if(importSettings != null) {
+			rawData.setJustStructure(importSettings.isJustStructure());
+		}else{
+			importSettings = new ImportSettingsImpl();
+		}
 		
 		CSVReader csvReader = new CSVReader(reader);
 		String[] ent;
@@ -1538,17 +1713,18 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 		}
 
 		rawData.setFileType("CSV file"); 
-		rawData.setScantronFile(isClickerSheetCSV(rawData));
-		return parseImportGeneric(service, gradebookUid, rawData);
+		rawData.setScantronFile(isClickerSheetCSV(rawData) /*||isScantronCSV(rawData)*/);
+		return parseImportGeneric(gradebookUid, rawData);
+	}
+	
+	public Upload parseImportCSV(String gradebookUid, Reader reader,
+			boolean importOnlyStructure) throws InvalidInputException,
+			FatalException {
+		
+		return parseImportCSV(gradebookUid, reader, null);
 	}
 
-	public Upload parseImportCSV(Gradebook2ComponentService service,
-			String gradebookUid, InputStreamReader reader)
-			throws InvalidInputException, FatalException 
-			{
-
-		return parseImportCSV(service, gradebookUid, reader, false);
-	}	
+	
 
 	/*
 	 * Some background on how the actual file data looks is needed for this method. 
@@ -1574,6 +1750,8 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	 * 
 	 * This method has two goals, bring in the structure information, and find where the 
 	 * header row is for later use. 
+	 * 
+	 * note: if return value < 1 then it can be assumed to not be a gradebook with structure
 	 *   
 	 */
 	private int readDataForStructureInformation(ImportExportDataFile rawData, Map<String, StructureRow> structureRowIndicatorMap, Map<StructureRow, String[]> structureColumnsMap) 
@@ -1799,8 +1977,8 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 
 		if (name != null)
 			return name.trim();
-		else
-			return name; 
+		//else
+		return name; 
 	}
 
 	private String getPointsFromName(String text, int entryNumber) {
@@ -1846,7 +2024,8 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 				if (colIdx >= curRow.length)
 					continue;
 				if (curRow[colIdx] != null && !curRow[colIdx].equals("") && importHeader.getField() != null) { 
-					decorateLearnerForSingleHeaderAndRowData(importHeader, curRow, learnerRow, userDereferenceMap, ieInfo, gradeType, service, colIdx, id);
+					decorateLearnerForSingleHeaderAndRowData(importHeader, curRow, learnerRow, userDereferenceMap, 
+							ieInfo, gradeType, colIdx, id);
 				}
 			}
 			
@@ -1857,8 +2036,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	
 	private void decorateLearnerForSingleHeaderAndRowData(ImportHeader importHeader, String[] rowData, 
 			Learner learnerRow, Map<String, UserDereference> userDereferenceMap, 
-			ImportExportInformation ieInfo, GradeType gradeType, Gradebook2ComponentService service,
-			int colIdx, String id)
+			ImportExportInformation ieInfo, GradeType gradeType, int colIdx, String id)
 	{
 
 		switch (importHeader.getField()) {
@@ -1876,7 +2054,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 			if("".equals(rowData[colIdx].trim())) {
 				break;
 			}
-			decorateLearnerItemFromHeaderAndRowData(learnerRow, importHeader, rowData, colIdx, ieInfo, gradeType, service, id);
+			decorateLearnerItemFromHeaderAndRowData(learnerRow, importHeader, rowData, colIdx, ieInfo, gradeType, id);
 			break;
 		case S_COMMENT:
 			learnerRow.set(Util.buildCommentKey(id), Boolean.TRUE);
@@ -1887,7 +2065,7 @@ public class ImportExportUtilityImpl implements ImportExportUtility {
 	}
 
 	private void decorateLearnerItemFromHeaderAndRowData(Learner learnerRow, ImportHeader importHeader, String[] rowData,
-			int colIdx, ImportExportInformation ieInfo, GradeType gradeType, Gradebook2ComponentService service, String id) {
+			int colIdx, ImportExportInformation ieInfo, GradeType gradeType, String id) {
 
 		boolean isFailure = false;
 		
@@ -2536,10 +2714,9 @@ private GradeItem buildNewCategory(String curCategoryString,
 		if (row != null && row.length > col && Util.isNotNullOrEmpty(row[col])) {
 			return row[col];
 		}
-		else
-		{
-			return "";
-		}
+		// else
+		
+		return "";
 		
 	}
 	
@@ -2748,8 +2925,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 		}		
 	}
 
-	public Upload parseImportGeneric(Gradebook2ComponentService service, 
-			String gradebookUid, ImportExportDataFile rawData) throws InvalidInputException, FatalException {
+	public Upload parseImportGeneric(String gradebookUid, ImportExportDataFile rawData) {
 		
 		String msgs = rawData.getMessages();
 		boolean errorsFound = rawData.isErrorsFound(); 
@@ -2764,9 +2940,9 @@ private GradeItem buildNewCategory(String curCategoryString,
 		Gradebook gradebook = service.getGradebook(gradebookUid);
 		Item gradebookItemModel = gradebook.getGradebookItemModel();
 
-		List<UserDereference> userDereferences = service.findAllUserDereferences();
+		List<UserDereference> userDereferences = this.service.findAllUserDereferences();
 		Map<String, UserDereference> userDereferenceMap = new HashMap<String, UserDereference>();
-		buildDereferenceIdMap(userDereferences, userDereferenceMap, service);
+		buildDereferenceIdMap(userDereferences, userDereferenceMap);
 		ImportExportInformation ieInfo = new ImportExportInformation();
 		
 		UploadImpl importFile = new UploadImpl();
@@ -2788,14 +2964,13 @@ private GradeItem buildNewCategory(String curCategoryString,
 		
 		ArrayList<Learner> importRows = new ArrayList<Learner>();
 
-		Map<String, StructureRow> structureRowIndicatorMap = new HashMap<String, StructureRow>();
 		Map<StructureRow, String[]> structureColumnsMap = new HashMap<StructureRow, String[]>();
 
-		buildRowIndicatorMap(structureRowIndicatorMap);
+		
 
 		int structureStop = 0; 
 
-		structureStop = readDataForStructureInformation(rawData, structureRowIndicatorMap, structureColumnsMap);
+		structureStop = readDataForStructureInformation(rawData, buildRowIndicatorMap(), structureColumnsMap);
 		if (structureStop != -1)
 		{
 			try {
@@ -2903,8 +3078,7 @@ private GradeItem buildNewCategory(String curCategoryString,
 	}
 
 	private void buildDereferenceIdMap(List<UserDereference> userDereferences,
-			Map<String, UserDereference> userDereferenceMap,
-			Gradebook2ComponentService service) {
+			Map<String, UserDereference> userDereferenceMap) {
 
 		for (UserDereference dereference : userDereferences) {
 			String exportUserId = service.getExportUserId(dereference); 
@@ -2912,12 +3086,15 @@ private GradeItem buildNewCategory(String curCategoryString,
 		}
 	}
 
-	private void buildRowIndicatorMap(
-			Map<String, StructureRow> structureRowIndicatorMap) {
+	private Map<String, StructureRow> buildRowIndicatorMap() {
+		
+		Map<String, StructureRow> structureRowIndicatorMap = new HashMap<String, StructureRow>();
+
 		for (StructureRow structureRow : EnumSet.allOf(StructureRow.class)) {
 			String lowercase = structureRow.getDisplayName().toLowerCase();
 			structureRowIndicatorMap.put(lowercase, structureRow);
-		}		
+		}
+		return structureRowIndicatorMap;
 	}
 	
 	private String getDisplayName(CategoryType categoryType) {
@@ -2979,39 +3156,244 @@ private GradeItem buildNewCategory(String curCategoryString,
 		this.i18n = i18n;
 	}
 	
-	public boolean canBeReadAs(FileType type, InputStream inputStream) {
-		boolean rv = false;
-		BufferedInputStream bis = new BufferedInputStream(inputStream);
-		if (FileType.XLSX.equals(type)) {
-			return readPoiSpreadsheet(bis) != null;
-		}
-		if(FileType.XLS97.equals(type)) {
-			return readPoiSpreadsheet(bis) != null || isJexcelReadable(bis);
-		}
-		if(FileType.CSV.equals(type) || FileType.TEMPLATE.equals(type) ) {
-			return isCSVReadable(inputStream);
-		}
-		
-		return rv; // unknown filetype
-	}
-	
-	@SuppressWarnings("unchecked")
-	private boolean isCSVReadable(InputStream inputStream) {
-		boolean noTroubleReading = true;
-		
-		InputStreamReader input = new InputStreamReader(inputStream);
-		CSVReader csv = new CSVReader(input);
-		
-		List<String[]> list = null;
+	public Upload getImportFile(MultipartFile file, ImportSettings importSettings) {
+		Upload rv = null;
+		boolean typeOK = true;
+		final FileType type = FileType.valueOf(importSettings.getExportTypeName());
+		BufferedInputStream bis = null;
+		String errorMessage = "";
+		final String unexpectedTypeErrorMessage = i18n.getString("expectedFormat" + importSettings.getExportTypeName(), 
+				"The file format did not match your selection: " 
+				+ importSettings.getExportTypeName());
+		final String unexpectedFormatErrorMessage = i18n.getString("expectedFormat" + importSettings.getFileFormatName(), 
+				"The file format did not match your selection: " 
+				+ importSettings.getFileFormatName());
 		
 		try {
-			list = csv.readAll();
-		} catch (IOException e) {
-			noTroubleReading = false;
+			bis = new BufferedInputStream(file.getInputStream());
+		} catch (IOException e1) {
+			e1.printStackTrace(); //TODO: be more nice
+			return null;
 		}
 		
+		// first level of problems would be from declared/detected type mismatch
+		errorMessage = unexpectedTypeErrorMessage;
 		
-		return list != null && list.size() > 1 && noTroubleReading;
+		org.apache.poi.ss.usermodel.Workbook wbPoi = null;
+		jxl.Workbook wbJxl = null;
+		try {
+			if (FileType.XLSX.equals(type)) {
+				
+				wbPoi = readPoiSpreadsheet(bis);
+				typeOK = wbPoi != null;
+				
+				if(typeOK) {
+					//proceed
+					rv = handlePoiSpreadSheet(wbPoi, file.getOriginalFilename(), importSettings.isScantron(), importSettings);
+				} else {
+					errorMessage = unexpectedTypeErrorMessage;
+				}
+			}
+			if(FileType.XLS97.equals(type)) {
+				/*
+				 * since POI is needed read newer xls files we need to make sure
+				 * that the detected mime type is compatible with XLS97
+				 * (and not XLSX, for example)typeOk = getMimeType(bis)
+				 */
+				typeOK = DETECTOR_MS_OFFICE_GENERIC_MIMETYPE.equals(getMimeType(bis));
+				if(typeOK) {
+					wbPoi = readPoiSpreadsheet(bis); //this is not really doing anything with xls97 files anymore
+					if (null == wbPoi) {
+						wbJxl = getJexcelWorkbook(bis);
+						typeOK = wbJxl != null;
+						if (typeOK) {
+							try {
+								rv = handleJExcelAPISpreadSheet(file.getInputStream(), file.getOriginalFilename(), importSettings.isScantron(), importSettings);
+							} catch (InvalidInputException e) {
+								typeOK = false;
+							} catch (FatalException e) {
+								log.error("cannot read Jexcel File: " + file.getOriginalFilename());
+								errorMessage = unexpectedTypeErrorMessage;
+							}
+						} else {
+							errorMessage = unexpectedTypeErrorMessage;
+						}
+					} else { /// got a POI sheet.. does this happen in the 'wild'?
+						log.info("gradebook2 field study: poi/xls97 ; gradebook: "
+								+ importSettings.getGradebookUid()
+								+ " ; file: " + file.getOriginalFilename());
+						
+						rv = handlePoiSpreadSheet(wbPoi, file.getOriginalFilename(), importSettings.isScantron(), importSettings);
+					}
+				}
+				
+			}
+			if(FileType.CSV.equals(type) || FileType.TEMPLATE.equals(type) ) {
+				
+				ImportExportDataFile rawData = new ImportExportDataFile(); 
+				String[] ent;
+				
+				String detected = getMimeType(file.getInputStream());
+				
+				if (!DETECTOR_CSV_MIMETYPE.equals(detected)) {
+					typeOK = false;
+					errorMessage = unexpectedTypeErrorMessage;
+				} else {
+					/// if there is an error after this is it a format error
+					errorMessage = unexpectedFormatErrorMessage;
+				
+			
+					InputStreamReader reader = new InputStreamReader(file.getInputStream());
+					CSVReader csvReader = new CSVReader(reader);
+					
+					while ( (ent = csvReader.readNext() ) != null)
+					{
+						rawData.addRow(ent); 
+					}
+					csvReader.close();
+					
+					/*
+					 * If the above did not throw up 
+					 * it does ##not necessarily mean## that
+					 * the file is a well formed CSV file
+					 */
+					
+					/* 
+					 * for now just check for headers and then, 
+					 * if they are ok, then pass
+					 * the lot to the generic handler... 
+					 */
+					
+					if (FileFormat.CLICKER.equals(FileFormat.valueOf(importSettings.getFileFormatName()))) {
+						rawData.setScantronFile(true); // scantrons & clickers are processed similarly
+						if (!isClickerSheetCSV(rawData)) {
+							typeOK = false;
+						}
+						
+					} else if(FileFormat.SCANTRON.equals(FileFormat.valueOf(importSettings.getFileFormatName()))) {
+						rawData.setScantronFile(true);					
+						if (!isScantronSheetCSV(rawData)) {
+							typeOK = false;
+						}
+						
+					} else if (FileFormat.TEMPLATE.equals(FileFormat.valueOf(importSettings.getFileFormatName()))) {
+						if(!isAssignmentTemplateFormat(rawData)) {
+							typeOK = false;
+						} 
+					} else if (FileFormat.FULL.equals(FileFormat.valueOf(importSettings.getFileFormatName()))) {
+						if (0 >= readDataForStructureInformation(rawData, buildRowIndicatorMap(), new HashMap<StructureRow, String[]>())){
+							typeOK = false;
+						}
+					}
+				}
+				if (typeOK) {
+					rv = parseImportGeneric(importSettings.getGradebookUid(), rawData);
+
+				}
+			}
+		} catch (IOException e) { // file isn't CSV?
+			errorMessage = i18n.getString("errorReadingFile", 
+			                                  "The file could not be read.");
+			log.error(e);
+			
+			typeOK = false;
+		}
+			
+			
+		
+		
+		
+		
+//		
+//		if (FileFormat.CLICKER.equals(importSettings.getFileFormat())) {
+//			if (FileType.CSV.equals(type)) {
+//				
+//				
+//				if(isClickerSheetCSV(rawData)) {
+//					return parseImportCSV(service, gradebookUid, reader, importOnlyStructure)
+//				}
+//			} else if (FileType.XLSX.equals(type)) {
+//				return isClickerSheetFromPoi(rawData);
+//			} else if (FileType.XLS97.equals(type)) {
+//				return isClickerSheetFromPoi(rawData) || isClickerSheetForJExcelApi(rawData);
+//			} else return false;
+//		} 
+		
+		if (!typeOK) {
+			rv = new UploadImpl();
+			rv.setErrors(true);
+			rv.setNotes(errorMessage);
+		}
+		
+		return rv; 
+	}
+	
+	
+	
+	private boolean isScantronSheetCSV(ImportExportDataFile rawData) {
+		
+		// if there is structure found it is not a scantron
+		if (0 < readDataForStructureInformation(rawData, buildRowIndicatorMap(), new HashMap<StructureRow, String[]>()))
+			return false;
+		
+		boolean isScantron = false;
+		
+		if(rawData != null && rawData.getAllRows().size()>0)
+			for (String[] row : rawData.getAllRows()) {
+				List<String> rowLowerCase = new ArrayList<String>();
+				for (String cell : Arrays.asList(row)) {
+					rowLowerCase.add(cell.trim().toLowerCase());
+				}
+				isScantron = isListAScantronHeaderRow(rowLowerCase);
+				// accept first qualified match
+				if (isScantron)
+					break;
+			}
+		return isScantron;
+	}
+
+
+	private boolean isListAScantronHeaderRow(List<String> rowLowerCase) {
+		boolean answer = rowLowerCase != null && rowLowerCase.size()>0;
+		
+		for (String v : rowLowerCase) {
+			answer = answer && 
+				(scantronIgnoreSet.contains(v) 
+						|| scantronScoreHeader.equalsIgnoreCase(v) 
+						|| scantronRescoreHeader.equalsIgnoreCase(v)
+						|| scantronStudentIdHeader.equalsIgnoreCase(v));
+			if (!answer) 
+				break; // fail on first wrong answer
+		}
+		
+		return answer;
+	}
+
+
+	public void setFiletypeDetector(Tika filetypeDetector) {
+		this.filetypeDetector = filetypeDetector;
+	}
+
+
+	private boolean isAssignmentTemplateFormat(ImportExportDataFile rawData) {
+		
+		if (null == rawData || 0 == rawData.getAllRows().size())
+			return false;
+		
+		/// if there is structure found, it is a full gradebook format
+		if (0 < readDataForStructureInformation(rawData, buildRowIndicatorMap(), new HashMap<StructureRow, String[]>()))
+			return false;
+		
+		for (String[] row : rawData.getAllRows()) {
+			List<String> rowLowerCase = new ArrayList<String>();
+			for (String cell : Arrays.asList(row)) {
+				rowLowerCase.add(cell.trim().toLowerCase());
+			}
+			// accept first qualified match
+			if (isListTemplateHeaderRow(rowLowerCase))
+				return true;
+		}
+		return false;
 	}
 
 
@@ -3019,34 +3401,100 @@ private GradeItem buildNewCategory(String curCategoryString,
 	 * this will return false if Workbook != null but there was 
 	 * an error opening the Workbook
 	 */
-	private boolean isJexcelReadable(InputStream inputStream) {
-		boolean rv = true;
+	private Workbook getJexcelWorkbook(InputStream inputStream) {
+		boolean ok = true;
 		Workbook wb = null;
+		String detected = getMimeType(inputStream);
+		
+		/*
+		 *  Until we get better detection with Tika
+		 *  we can only test if this *could be* a 
+		 *  OOXML container... reading the file with POI could still fail
+		 *  but we can at least differentiate CSV and other types from
+		 *  OOXML
+		 *  
+		 */
+		if(!DETECTOR_MS_OFFICE_GENERIC_MIMETYPE.equals(detected)) {
+			return null;
+		}
 		
 		try {
 			 wb = Workbook.getWorkbook(inputStream);
 		} catch (BiffException e) {
-			rv = false;
+			ok = false;
 			log.error(e.getMessage());
 			e.printStackTrace();
 		} catch (IOException e) {
-			rv = false; 
+			ok = false; 
 		} 
 		if(null == wb || wb.getSheet(0) == null ) {
-			rv=false;
-		} else {
-			wb.close();
-			try {
-				inputStream.reset();
-			} catch (IOException e) {	
-				log.error("InputStream.reset() error");
-				e.printStackTrace();
-			}
-		}
+			ok=false;
+		} 
 		
-		
-		return rv;
+		return ok?wb:null;
 	}
+
+
+	public Gradebook2ComponentService getGradebook2ComponentService() {
+		return service;
+	}
+
+
+	public void setGradebook2ComponentService(Gradebook2ComponentService service) {
+		this.service = service;
+	}
+
+
+	@Override
+	public Upload parseImportCSV(String gradebookUid, InputStreamReader reader)
+			throws InvalidInputException, FatalException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+
+
+	@Override
+	public ImportExportDataFile exportGradebook(String gradebookUid,
+			boolean includeStructure, boolean includeComments,
+			List<String> sectionUidList) throws FatalException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public GradebookToolService getToolService() {
+		return toolService;
+	}
+
+
+	public void setToolService(GradebookToolService toolService) {
+		this.toolService = toolService;
+	}
+	
+	public void setClickerStudentIdHeader(String clickerStudentIdHeader) {
+		this.clickerStudentIdHeader = clickerStudentIdHeader;
+	}
+
+
+	public void setClickerIgnoreColumns(String[] clickerIgnoreColumns) {
+		this.clickerIgnoreColumns = clickerIgnoreColumns;
+	}
+
+
+	public void setService(Gradebook2ComponentService service) {
+		this.service = service;
+	}
+
+
+	public void setTemplateIgnoreColumns(String[] templateIgnoreColumns) {
+	}
+
+
+	public void setTemplateStudentIdHeader(String templateStudentIdHeader) {
+	}
+
 
 
 }

@@ -1,7 +1,11 @@
 <projectDescription>
-  <name>gradebook-gwt-client</name>
+  <name>gradebook2-client</name>
   <comment/>
-  <projects/>
+  <projects>
+    <project>gradebook2-api</project>
+    <project>gradebook2-model</project>
+    <project>gradebook2-shared</project>
+  </projects>
   <buildSpec>
     <buildCommand>
       <name>org.eclipse.jdt.core.javabuilder</name>

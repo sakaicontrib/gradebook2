@@ -40,7 +40,7 @@ public class ExportTypeComboBox extends ComboBox<ModelData> {
 		
 		for (ExportType type : ExportType.values()){
 		
-			exportTypeStore.add(ExportType.getFileModel(type));
+			exportTypeStore.add(ExportType.getFileModel(type, i18n));
 		}
 
 		setStore(exportTypeStore);
@@ -60,7 +60,7 @@ public class ExportTypeComboBox extends ComboBox<ModelData> {
 			
 			for (ModelData item : store.getModels()) {
 				
-				if (type.getDisplayName().equals(item.get(ExportType.DISPLAY_NAME))) {
+				if (type.getDisplayName(null).equals(item.get(ExportType.DISPLAY_NAME))) {
 					
 					setValue(item);
 					return;

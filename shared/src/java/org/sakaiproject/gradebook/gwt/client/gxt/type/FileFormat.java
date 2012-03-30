@@ -16,10 +16,10 @@
  * permissions and limitations under the License.
  *
  **********************************************************************************/
-
 package org.sakaiproject.gradebook.gwt.client.gxt.type;
 
-import com.extjs.gxt.ui.client.data.BaseModel;
+import org.sakaiproject.gradebook.gwt.client.I18nConstants;
+
 import com.extjs.gxt.ui.client.data.ModelData;
 
 public enum FileFormat implements FileModel { 
@@ -31,19 +31,19 @@ public enum FileFormat implements FileModel {
 
 	private String typeName;
 	private String displayName;
+
+
 	
 	FileFormat(String typeName) {
 		
 		this.typeName = typeName;
+		
 	}
 	
 
-	public String getDisplayName() {
-		
+	public String getDisplayName(I18nConstants i18n) {
 		if (null == displayName) {
-			
 			switch(this) {
-			
 			case SCANTRON:
 				displayName = i18n.importFormatSCANTRON();
 				break;
@@ -63,22 +63,22 @@ public enum FileFormat implements FileModel {
 	}
 	
 	public String  getTypeName() {
-		
 		return typeName;
 	}
 	
-	public static ModelData getExportFormatModel(FileFormat exportFormat) {
+	public static ModelData getFileModel(FileModel fileModel, I18nConstants i18n) {
+		return FileModel.Util.getFileModel(fileModel, i18n);
+	}
 
-		ModelData model = new BaseModel();
-		model.set(DISPLAY_NAME, exportFormat.getDisplayName());
-		model.set(DISPLAY_VALUE, exportFormat);
-		model.set(DISPLAY_VALUE_STRING, exportFormat.name());
-
-		return model;
+	public static FileFormat getFormatByName(String name) {
+		for (FileFormat f : values()) {
+			if (f.name().equals(name)) {
+				return f;
+			}
+		}
+		return null;
 	}
 	
-	public static ModelData getFileModel(FileModel fileModel) {
-		
-		return FileModel.Util.getFileModel(fileModel);
-	}
+
+	
 }

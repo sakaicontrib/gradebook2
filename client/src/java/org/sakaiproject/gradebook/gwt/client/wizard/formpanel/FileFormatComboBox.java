@@ -43,7 +43,7 @@ public class FileFormatComboBox extends ComboBox<ModelData> {
 		importFormatStore.setModelComparer(new EntityModelComparer<ModelData>(FileFormat.DISPLAY_NAME));
 		
 		for (FileFormat format : FileFormat.values()) {
-			importFormatStore.add(FileFormat.getFileModel(format));
+			importFormatStore.add(FileFormat.getFileModel(format, i18n));
 		}
 
 		setStore(importFormatStore);
@@ -56,7 +56,7 @@ public class FileFormatComboBox extends ComboBox<ModelData> {
 		setTriggerAction(TriggerAction.ALL);
 		
 		List<ModelData> initialSelection = new ArrayList<ModelData>();
-		initialSelection.add(FileFormat.getExportFormatModel(FileFormat.FULL));
+		initialSelection.add(FileFormat.getFileModel(FileFormat.FULL, i18n));
 		setSelection(initialSelection);
 		
 	}

@@ -1,4 +1,4 @@
-package org.sakaiproject.gradebook.gwt.client.model;
+package org.sakaiproject.gradebook.gwt.client.api;
 
 import java.util.List;
 
@@ -26,5 +26,17 @@ public interface ImportSettings {
 	public Boolean isJustStructure();
 	
 	public void setJustStructure (Boolean yes);
+	
+	public void setFileFormatName(String fileFormatName);
+	
+	public String getFileFormatName();
+	
+	public void setExportTypeName(String exportTypeName);
+	
+	public String getExportTypeName();	
+	
+	public String getGradebookUid();
+	
+	public void setGradebookUid(String Uid);
 
 }

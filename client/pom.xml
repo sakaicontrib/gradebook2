@@ -62,7 +62,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>gwt-maven-plugin</artifactId>
-				<version>2.2.0</version>
+				<version>2.4.0</version>
 				<dependencies>
 					<dependency>
 						<groupId>com.google.gwt</groupId>
@@ -88,6 +88,11 @@
 						</goals>
 					</execution>
 				</executions>
+				<configuration>
+				    <compileSourcesArtifacts>
+					<artifact>org.sakaiproject.gradebook2:gradebook2-api:jar</artifact>
+				    </compileSourcesArtifacts>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

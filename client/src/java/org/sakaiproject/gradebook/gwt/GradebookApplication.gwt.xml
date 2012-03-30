@@ -19,6 +19,10 @@
 	<!-- GIN -->
 	<inherits name="com.google.gwt.inject.Inject"/>
 	
+	<!-- Gradeboook2 api for client -->
+	<inherits name="org.sakaiproject.gradebook.gwt.client.API"/>
+
+	
 	<!-- Specify the app entry point class.                   -->
 	<entry-point class='org.sakaiproject.gradebook.gwt.client.GradebookApplication'/>
 

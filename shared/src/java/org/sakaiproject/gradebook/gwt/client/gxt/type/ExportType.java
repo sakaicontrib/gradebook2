@@ -1,6 +1,8 @@
 package org.sakaiproject.gradebook.gwt.client.gxt.type;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.I18nConstants;
+
 import com.extjs.gxt.ui.client.data.ModelData;
 
 public enum ExportType implements AppConstants, FileModel { 
@@ -11,8 +13,6 @@ public enum ExportType implements AppConstants, FileModel {
 	private String displayName;
 	private String typeName;
 	private String fileExtension;
-
-	
 	ExportType(String typeName) {
 		
 		this(typeName, null);
@@ -24,7 +24,7 @@ public enum ExportType implements AppConstants, FileModel {
 		this.fileExtension = fileExtension;
 	}
 	
-	public String getDisplayName() {
+	public String getDisplayName(I18nConstants i18n) {
 		
 		if(null == displayName) {
 			switch(this) {
@@ -47,8 +47,8 @@ public enum ExportType implements AppConstants, FileModel {
 		return typeName;
 	}
 	
-	public static ModelData getFileModel(FileModel fileModel) {
-		return FileModel.Util.getFileModel(fileModel);
+	public static ModelData getFileModel(FileModel fileModel, I18nConstants i18n) {
+		return FileModel.Util.getFileModel(fileModel, i18n);
 	}
 
 	public static ExportType getExportTypeFromFilename(String value) {

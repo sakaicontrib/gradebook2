@@ -263,7 +263,7 @@ public class Gradebook2EntityProducerTransferAgent implements EntityProducer,
 		log.debug(structure);
 		Upload importFile = null;
 		try {
-			importFile = importExportUtil.parseImportCSV(componentService, to, new InputStreamReader(new ByteArrayInputStream(structure.getBytes("UTF-8"))));
+			importFile = importExportUtil.parseImportCSV(to, new InputStreamReader(new ByteArrayInputStream(structure.getBytes("UTF-8"))));
 		} catch (InvalidInputException e) {
 			e.printStackTrace();
 		} catch (FatalException e) {

@@ -3,7 +3,7 @@ package org.sakaiproject.gradebook.gwt.client.gxt.model;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.BusinessLogicCode;
-import org.sakaiproject.gradebook.gwt.client.model.ImportSettings;
+import org.sakaiproject.gradebook.gwt.client.api.ImportSettings;
 import org.sakaiproject.gradebook.gwt.client.model.key.UploadKey;
 
 public class ImportSettingsModel extends EntityModel implements ImportSettings {
@@ -11,6 +11,9 @@ public class ImportSettingsModel extends EntityModel implements ImportSettings {
 	
 	private static final long serialVersionUID = 43434L;
 	private List<BusinessLogicCode> ignoredBusinessRules;
+	private String fileFormatName = null;
+	private String exportTypeName = null;
+	private String gradebookUid =  null;
 
 	
 	public ImportSettingsModel() {
@@ -82,4 +85,32 @@ public class ImportSettingsModel extends EntityModel implements ImportSettings {
 		set(UploadKey.B_STRUC.name(), yes);
 		
 	}
+
+	public void setFileFormatName(String fileFormatName) {
+		this.fileFormatName = fileFormatName;
+	}
+
+	
+	public String getFileFormatName() {
+		return fileFormatName;
+	}
+
+
+	public void setExportTypeName(String exportTypeName) {
+		this.exportTypeName = exportTypeName;
+	}
+	
+
+	public String getExportTypeName() {
+		return exportTypeName;
+	}
+
+	public String getGradebookUid() {
+		return gradebookUid;
+	}
+
+	public void setGradebookUid(String gradebookUid) {
+		this.gradebookUid = gradebookUid;
+	}
+	
 }

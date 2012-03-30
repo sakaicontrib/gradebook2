@@ -29,7 +29,6 @@ import java.util.Map;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
-import org.sakaiproject.gradebook.gwt.client.I18nMessages;
 import org.sakaiproject.gradebook.gwt.client.gxt.type.ExportType;
 import org.sakaiproject.gradebook.gwt.client.gxt.type.FileFormat;
 import org.sakaiproject.gradebook.gwt.client.gxt.view.components.NullSensitiveCheckBox;
@@ -63,8 +62,6 @@ public class FileUploadPanel extends FormPanel {
 	private ExportTypeComboBox importTypeComboBox;
 	NullSensitiveCheckBox justStructureChoice;
 	private FileFormatComboBox importFormatComboBox;
-	private I18nMessages i18nMessages;
-	
 	public final static Integer COMMENTS_CHECKBOX_VALUE = Integer.valueOf(0);
 	public final static Integer EXPORT_TYPE_VALUE = Integer.valueOf(1);
 	
@@ -77,7 +74,7 @@ public class FileUploadPanel extends FormPanel {
 	
 		this.newImportPanel = newImportPanel;
 		i18n = Registry.get(AppConstants.I18N);
-		i18nMessages = Registry.get(AppConstants.I18N_TEMPLATES);
+		Registry.get(AppConstants.I18N_TEMPLATES);
 
 		final Gradebook gbModel = Registry.get(AppConstants.CURRENT);
 

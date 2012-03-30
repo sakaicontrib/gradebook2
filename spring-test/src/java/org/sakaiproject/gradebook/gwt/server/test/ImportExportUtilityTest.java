@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.api.ImportSettings;
 import org.sakaiproject.gradebook.gwt.client.model.Gradebook;
 import org.sakaiproject.gradebook.gwt.client.model.Item;
 import org.sakaiproject.gradebook.gwt.client.model.Learner;
@@ -14,7 +15,9 @@ import org.sakaiproject.gradebook.gwt.client.model.Upload;
 import org.sakaiproject.gradebook.gwt.client.model.type.CategoryType;
 import org.sakaiproject.gradebook.gwt.client.model.type.GradeType;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
+import org.sakaiproject.gradebook.gwt.server.ImportSettingsImpl;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.mock.web.MockMultipartFile;
 
 public class ImportExportUtilityTest extends Gradebook2TestCase 
 {
@@ -43,7 +46,7 @@ public class ImportExportUtilityTest extends Gradebook2TestCase
 		Upload data = null; 
 		FileReader r = null; 
 		r = new FileReader(ifname.getPath()); 
-		data = ieutil.parseImportCSV(getService(), AppConstants.TEST_SITE_CONTEXT_ID, r);
+		data = ieutil.parseImportCSV(AppConstants.TEST_SITE_CONTEXT_ID, r);
 		// Make sure what we get back is non null
 		assertNotNull(data); 		
 		// Don't want errors, the file importTest1 is very simple. 
@@ -113,7 +116,7 @@ public class ImportExportUtilityTest extends Gradebook2TestCase
 		Upload data = null; 
 		FileReader r = null; 
 		r = new FileReader(ifname.getPath()); 
-		data = ieutil.parseImportCSV(getService(), AppConstants.TEST_SITE_CONTEXT_ID, r);
+		data = ieutil.parseImportCSV(AppConstants.TEST_SITE_CONTEXT_ID, r);
 		assertNotNull(data); 
 		assertFalse(data.hasErrors()); 
 
@@ -173,7 +176,7 @@ public class ImportExportUtilityTest extends Gradebook2TestCase
 		Upload data = null; 
 		FileReader r = null; 
 		r = new FileReader(ifname.getPath()); 
-		data = ieutil.parseImportCSV(getService(), AppConstants.TEST_SITE_CONTEXT_ID, r);
+		data = ieutil.parseImportCSV(AppConstants.TEST_SITE_CONTEXT_ID, r);
 		assertNotNull(data); 
 		assertFalse(data.hasErrors()); 
 
@@ -233,7 +236,7 @@ public class ImportExportUtilityTest extends Gradebook2TestCase
 		Upload data = null; 
 		FileReader r = null; 
 		r = new FileReader(ifname.getPath()); 
-		data = ieutil.parseImportCSV(getService(), AppConstants.TEST_SITE_CONTEXT_ID, r);
+		data = ieutil.parseImportCSV(AppConstants.TEST_SITE_CONTEXT_ID, r);
 		assertNotNull(data); 
 		assertFalse(data.hasErrors()); 
 
@@ -301,7 +304,9 @@ public class ImportExportUtilityTest extends Gradebook2TestCase
 		Upload data = null; 
 		FileInputStream is = null; 
 		is = new FileInputStream(ifname.getPath()); 
-		data = ieutil.parseImportXLS(getService(), AppConstants.TEST_SITE_CONTEXT_ID, is, dataFileName, getGbToolService(), false);
+		MockMultipartFile file = new MockMultipartFile(dataFileName,is);
+		ImportSettings settings = new ImportSettingsImpl();
+		data = ieutil.parseImportXLS(file, settings);
 		assertNotNull(data); 
 		assertTrue("Scantron files can be imported but should not be", data.hasErrors()); 
 		
@@ -316,7 +321,9 @@ public class ImportExportUtilityTest extends Gradebook2TestCase
 		Upload data = null; 
 		FileInputStream is = null; 
 		is = new FileInputStream(ifname.getPath()); 
-		data = ieutil.parseImportXLS(getService(), AppConstants.TEST_SITE_CONTEXT_ID, is, dataFileName, getGbToolService(), false);
+		MockMultipartFile file = new MockMultipartFile(dataFileName,is);
+		ImportSettings settings = new ImportSettingsImpl();
+		data = ieutil.parseImportXLS(file, settings);
 		assertNotNull(data); 
 		assertTrue("Scantron files can be imported but should not be", data.hasErrors()); 
 		

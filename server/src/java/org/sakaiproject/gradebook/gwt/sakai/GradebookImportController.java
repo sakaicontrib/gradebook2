@@ -25,7 +25,6 @@ package org.sakaiproject.gradebook.gwt.sakai;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -43,10 +42,14 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.api.ImportSettings;
+import org.sakaiproject.gradebook.gwt.client.gxt.type.ExportType;
+import org.sakaiproject.gradebook.gwt.client.gxt.type.FileFormat;
 import org.sakaiproject.gradebook.gwt.client.model.Learner;
 import org.sakaiproject.gradebook.gwt.client.model.Upload;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility;
 import org.sakaiproject.gradebook.gwt.server.ImportExportUtility.FileType;
+import org.sakaiproject.gradebook.gwt.server.ImportSettingsImpl;
 import org.sakaiproject.gradebook.gwt.server.OpenController;
 import org.sakaiproject.gradebook.gwt.server.model.UploadImpl;
 import org.springframework.validation.BindException;
@@ -93,50 +96,74 @@ public class GradebookImportController extends SimpleFormController implements O
 		
 		String fileTypeNameFromClient = multipartRequest.getParameter(AppConstants.IMPORT_PARAM_FILETYPE + "-hidden");
 		String fileFormatChosen = multipartRequest.getParameter(AppConstants.IMPORT_PARAM_FILEFORMAT + "-hidden");
-			
+		FileFormat fileFormatFromClient = FileFormat.getFormatByName(fileFormatChosen);
+	
+		ImportSettings importSettings = new ImportSettingsImpl();
+		importSettings.setJustStructure(importOnlyStructure);
+		importSettings.setGradebookUid(gradebookUid);
+		
 		for (Iterator<String> fileNameIterator = multipartRequest.getFileNames();fileNameIterator.hasNext();) {
 			String fileName = fileNameIterator.next();
+			
 
 			MultipartFile file = multipartRequest.getFile(fileName);
 			String origName = file.getOriginalFilename(); 
 			Upload importFile = null;
 			
+			// first check for sane choices on the client side
 			FileType fileTypeFromFileExt = null;
-			int theLastDot = origName.lastIndexOf(".");
-			if (theLastDot>0) { 
-				fileTypeFromFileExt = FileType.getTypeFromExtension(origName.substring(theLastDot));
-				if (!fileTypeFromFileExt.equals(FileType.getType(fileTypeNameFromClient))){
+			if( fileFormatFromClient == null) {
+				importFile = new UploadImpl();
+				importFile.setNotes(i18n.getString("unknownFormatSelected"));
+				importFile.setErrors(true);
+			} else {
+				int theLastDot = origName.lastIndexOf(".");
+			
+				if (theLastDot>0) { 
+					fileTypeFromFileExt = FileType.getTypeFromExtension(origName.substring(theLastDot));
+					if (!fileTypeFromFileExt.equals(FileType.valueOf(fileTypeNameFromClient))){
+						importFile = new UploadImpl();
+						importFile.setNotes(i18n.getString("filetypeExtensionMismatch"));
+						importFile.setErrors(true);
+						System.out.println("file extension not matching file type: from ext->" + fileTypeFromFileExt
+								+ ";from hidden field->" + FileType.valueOf(fileTypeNameFromClient));
+					}
+				} else {//client should be preventing this as of SAK-1221
 					importFile = new UploadImpl();
-					importFile.setNotes(i18n.getString("filetypeExtensionMismatch"));
+					importFile.setNotes(i18n.getString("noFileExtensionFound"));
 					importFile.setErrors(true);
 				}
-			} else {//client should be preventing this as of SAK-1221
-				importFile = new UploadImpl();
-				importFile.setNotes(i18n.getString("noFileExtensionFound"));
-				importFile.setErrors(true);
 			}
+			
 			
 
 			log.debug("Original Name: " + origName + "; type: " + fileTypeFromFileExt);
-			if (fileTypeFromFileExt != null) {
-				if (!importExportUtility.canBeReadAs(fileTypeFromFileExt, file.getInputStream())) {
-					importFile = new UploadImpl();
-					importFile.setNotes(i18n.getString("filetypeExtensionMismatch"));
-					importFile.setErrors(true); 
-				} else if (fileTypeFromFileExt.isExcelNative()) {
-					
-					log.debug("Excel file detected"); 
-					importFile = importExportUtility.parseImportXLS(service, gradebookUid, file.getInputStream(), origName.toLowerCase(), gbToolService, importOnlyStructure);
-					
-					} else if(fileTypeFromFileExt.equals(FileType.CSV)) { /// no assumptions, but this should be ensured by the client
-						log.debug("CSV file"); 
-						InputStreamReader reader = new InputStreamReader(file.getInputStream());
-						importFile = importExportUtility.parseImportCSV(service, gradebookUid, reader, importOnlyStructure);
-					} else { // we are are in outer space
-						importFile = new UploadImpl();
-						importFile.setNotes(i18n.getString("unknownFileType"));
-						importFile.setErrors(true); 
-					}
+			if ((importFile == null || !importFile.hasErrors()) && fileTypeFromFileExt != null) {
+				
+				importSettings.setExportTypeName((ExportType.valueOf(fileTypeNameFromClient)).name());
+				importSettings.setFileFormatName(fileFormatFromClient.name());
+				
+				importFile = importExportUtility.getImportFile(file, importSettings);
+				
+				
+//				if (!importExportUtility.canBeReadAs(fileTypeFromFileExt, 
+//						fileFormatFromClient, file.getInputStream())) {
+//					importFile = new UploadImpl();
+//					 
+//				} else if (fileTypeFromFileExt.isExcelNative()) {
+//					
+//					log.debug("Excel file detected"); 
+//					importFile = importExportUtility.parseImportXLS(service, gradebookUid, file.getInputStream(), origName.toLowerCase(), gbToolService, importOnlyStructure);
+//					
+//					} else if(fileTypeFromFileExt.equals(FileType.CSV)) { /// no assumptions, but this should be ensured by the client
+//						log.debug("CSV file"); 
+//						InputStreamReader reader = new InputStreamReader(file.getInputStream());
+//						importFile = importExportUtility.parseImportCSV(service, gradebookUid, reader, importOnlyStructure);
+//					} else { // we are are in outer space
+//						importFile = new UploadImpl();
+//						importFile.setNotes(i18n.getString("unknownFileType"));
+//						importFile.setErrors(true); 
+//					}
 			}
 
 			PrintWriter writer = response.getWriter();
@@ -148,7 +175,7 @@ public class GradebookImportController extends SimpleFormController implements O
 			if (null == importFile) {
 				importFile = new UploadImpl();
 				importFile.setErrors(true);
-				importFile.setNotes(i18n.getString("unknownExcelFileFormat"));
+				importFile.setNotes(i18n.getString("unknownFileType"));
 			} else if(!importOnlyStructure) { /// to save a few cycles
 				
 				//GRBK-1194

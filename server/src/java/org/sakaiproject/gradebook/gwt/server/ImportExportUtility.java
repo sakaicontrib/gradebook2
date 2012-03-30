@@ -1,20 +1,24 @@
 package org.sakaiproject.gradebook.gwt.server;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.Reader;
 import java.util.List;
 
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
+import org.sakaiproject.gradebook.gwt.client.api.ImportSettings;
 import org.sakaiproject.gradebook.gwt.client.exceptions.FatalException;
 import org.sakaiproject.gradebook.gwt.client.exceptions.InvalidInputException;
 import org.sakaiproject.gradebook.gwt.client.model.Upload;
 import org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService;
-import org.sakaiproject.gradebook.gwt.sakai.GradebookToolService;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface ImportExportUtility {
+	
+	public static String DETECTOR_OOXML_CONTAINER_MIMETYPE = "application/zip";
+	public static String DETECTOR_CSV_MIMETYPE = "text/plain";
+	public static String DETECTOR_MS_OFFICE_GENERIC_MIMETYPE = "application/x-tika-msoffice";
+
 	
 	/*
 	 * public enums
@@ -41,6 +45,11 @@ public interface ImportExportUtility {
 			this.ext = extension;
 			this.mimeType = mimeType;
 		}
+		
+		
+		/*
+		 * methods
+		 */
 		
 		public String getExtension() {
 			return ext;
@@ -85,27 +94,14 @@ public interface ImportExportUtility {
 		}
 	}
 
-	/*
-	 * methods
-	 */
-	public Upload parseImportXLS(Gradebook2ComponentService service,
-			String gradebookUid,
-			InputStream is,
-			String fileName,
-			GradebookToolService gbToolService, 
-			Boolean isJustStructure)
+
+	public Upload parseImportXLS(MultipartFile file, ImportSettings settings)
 	throws InvalidInputException, FatalException, IOException;
 	
-	public Upload parseImportCSV(Gradebook2ComponentService service,
-			String gradebookUid, InputStreamReader reader)
+	public Upload parseImportCSV(String gradebookUid, InputStreamReader reader)
 	throws InvalidInputException, FatalException;
 	
-	public Upload parseImportCSV(Gradebook2ComponentService service,
-			String gradebookUid,
-			Reader reader, boolean importOnlyStructure)
-	throws InvalidInputException, FatalException;
-
-	public ImportExportDataFile exportGradebook(Gradebook2ComponentService service, String gradebookUid, 
+	public ImportExportDataFile exportGradebook(String gradebookUid, 
 			final boolean includeStructure, final boolean includeComments, List<String> sectionUidList) 
 	throws FatalException;
 	
@@ -113,7 +109,7 @@ public interface ImportExportUtility {
 			Gradebook2ComponentService service, String gradebookUid,
 			final boolean includeStructure, final boolean includeComments, List<String> SectionUid) throws FatalException;
 
-	public boolean canBeReadAs(FileType type, InputStream inputStream);
+	public Upload getImportFile(MultipartFile file, ImportSettings importSettings);
 
 			
 }
