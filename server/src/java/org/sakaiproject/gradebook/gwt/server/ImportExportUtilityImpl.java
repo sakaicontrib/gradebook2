@@ -3298,31 +3298,22 @@ private GradeItem buildNewCategory(String curCategoryString,
 			
 			typeOK = false;
 		}
-			
-			
-		
-		
-		
-		
-//		
-//		if (FileFormat.CLICKER.equals(importSettings.getFileFormat())) {
-//			if (FileType.CSV.equals(type)) {
-//				
-//				
-//				if(isClickerSheetCSV(rawData)) {
-//					return parseImportCSV(service, gradebookUid, reader, importOnlyStructure)
-//				}
-//			} else if (FileType.XLSX.equals(type)) {
-//				return isClickerSheetFromPoi(rawData);
-//			} else if (FileType.XLS97.equals(type)) {
-//				return isClickerSheetFromPoi(rawData) || isClickerSheetForJExcelApi(rawData);
-//			} else return false;
-//		} 
-		
+
 		if (!typeOK) {
 			rv = new UploadImpl();
 			rv.setErrors(true);
 			rv.setNotes(errorMessage);
+		} else {
+			/// TODO: this scantron flag is being too overloaded methinks
+			FileFormat format = null;
+			try {
+				format = FileFormat.valueOf(importSettings.getFileFormatName());
+				rv.getImportSettings().setScantron(!format.equals(FileFormat.FULL));
+			} catch (Exception e) {
+				rv = new UploadImpl();
+				rv.setErrors(true);
+				rv.setNotes(unexpectedFormatErrorMessage);
+			}
 		}
 		
 		return rv; 
