@@ -35,6 +35,9 @@
 		<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>
 	</bean>
 	
+	 <bean name="bean.Tika" class="org.apache.tika.Tika"/>
+
+
 	<bean id="org.sakaiproject.gradebook.gwt.server.ImportExportUtility" class="org.sakaiproject.gradebook.gwt.server.ImportExportUtilityImpl" init-method="init">
 		<property name="gradeCalculations" ref="org.sakaiproject.gradebook.gwt.sakai.GradeCalculations"/>
 		<property name="scantronScoreHeader" value="score" />
@@ -78,6 +81,7 @@
 		<property name="i18n" ref="gradebook2.I18N" />
 		<property name="service" ref="org.sakaiproject.gradebook.gwt.sakai.Gradebook2ComponentService" />
 		<property name="toolService" ref="org.sakaiproject.gradebook.gwt.sakai.GradebookToolService" />
+		<property name="filetypeDetector" ref="bean.Tika" />
 	</bean>
 
 
