@@ -206,7 +206,7 @@
 	padding-left: 10px;
 }
 
-.gbFinalGradeSubissionStatus {
+.gbFinalGradeSubmissionStatus {
 	
 	color: black;
 	padding: 4px 5px 4px 5px;
@@ -216,7 +216,7 @@
 	font: normal 14px tahoma, arial, helvetica !important;
 }
 
-.gbFinalGradeSubissionStatusDialog {
+.gbFinalGradeSubmissionStatusDialog {
 	 text-align: center;
 	 padding: 15px 15px 15px 15px;
 	 background: #ffffff;

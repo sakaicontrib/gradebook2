@@ -761,7 +761,7 @@ public class InstructorView extends AppView {
 
 		// GRBK-824
 		finalGradeSubmissionStatusBanner = new LabelField();
-		finalGradeSubmissionStatusBanner.setStyleName(resources.css().gbFinalGradeSubissionStatus());
+		finalGradeSubmissionStatusBanner.setStyleName(resources.css().gbFinalGradeSubmissionStatus());
 		finalGradeSubmissionStatusBanner.hide();
 		toolBar.add(finalGradeSubmissionStatusBanner);
 		
@@ -959,7 +959,7 @@ public class InstructorView extends AppView {
 						dialog.setButtons(Dialog.OK);
 						dialog.addText(dialogMessage);
 						dialog.setButtonAlign(HorizontalAlignment.CENTER);
-						dialog.setBodyStyleName(resources.css().gbFinalGradeSubissionStatusDialog());
+						dialog.setBodyStyleName(resources.css().gbFinalGradeSubmissionStatusDialog());
 						dialog.setMinWidth(450);					
 						dialog.setModal(true);
 						dialog.setHideOnButtonClick(true);  

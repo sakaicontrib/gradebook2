@@ -55,6 +55,8 @@ public class GradeSubmissionDialog extends Dialog {
 	public GradeSubmissionDialog(I18nConstants i18n) {
 		this.i18n = i18n;
 
+		setWidth(500);
+		setAutoHeight(true);
 		setButtons(Dialog.YESNO);
 		setHeading(i18n.finalGradeSubmissionConfirmTitle());
 		setHideOnButtonClick(true);
