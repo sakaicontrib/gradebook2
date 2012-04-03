@@ -27,8 +27,10 @@ import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.gxt.type.ExportType;
 import org.sakaiproject.gradebook.gwt.client.gxt.type.FileFormat;
+import org.sakaiproject.gradebook.gwt.client.gxt.type.FileModel;
 
 import com.extjs.gxt.ui.client.Registry;
+import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
@@ -43,7 +45,12 @@ public class FileFormatComboBox extends ComboBox<ModelData> {
 		importFormatStore.setModelComparer(new EntityModelComparer<ModelData>(FileFormat.DISPLAY_NAME));
 		
 		for (FileFormat format : FileFormat.values()) {
-			importFormatStore.add(FileFormat.getFileModel(format, i18n));
+			ModelData d = new BaseModel();
+			ModelData model = new BaseModel();
+			model.set(FileModel.DISPLAY_NAME, format.getDisplayName(i18n));
+			model.set(FileModel.DISPLAY_VALUE, format);
+			model.set(FileModel.DISPLAY_VALUE_STRING, format.name());
+			importFormatStore.add(d);
 		}
 
 		setStore(importFormatStore);
@@ -56,7 +63,11 @@ public class FileFormatComboBox extends ComboBox<ModelData> {
 		setTriggerAction(TriggerAction.ALL);
 		
 		List<ModelData> initialSelection = new ArrayList<ModelData>();
-		initialSelection.add(FileFormat.getFileModel(FileFormat.FULL, i18n));
+		ModelData model = new BaseModel();
+		model.set(FileModel.DISPLAY_NAME, FileFormat.FULL.getDisplayName(i18n));
+		model.set(FileModel.DISPLAY_VALUE, FileFormat.FULL);
+		model.set(FileModel.DISPLAY_VALUE_STRING, FileFormat.FULL.name());
+		initialSelection.add(model);
 		setSelection(initialSelection);
 		
 	}

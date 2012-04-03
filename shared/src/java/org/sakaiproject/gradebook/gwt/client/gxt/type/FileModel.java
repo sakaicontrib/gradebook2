@@ -20,9 +20,6 @@ package org.sakaiproject.gradebook.gwt.client.gxt.type;
 
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 
-import com.extjs.gxt.ui.client.data.BaseModel;
-import com.extjs.gxt.ui.client.data.ModelData;
-
 public interface FileModel {
 	
 	public static String DISPLAY_NAME = "name";
@@ -34,17 +31,7 @@ public interface FileModel {
 	public String getDisplayName(I18nConstants i18n);
 	
 	public String name();
-	public static class Util {
-		public static ModelData getFileModel(FileModel fileModel, I18nConstants i18n) {
-
-			ModelData model = new BaseModel();
-			model.set(DISPLAY_NAME, fileModel.getDisplayName(i18n));
-			model.set(DISPLAY_VALUE, fileModel);
-			model.set(DISPLAY_VALUE_STRING, fileModel.name());
-
-			return model;
-		}
-	}
+	
 	public String getTypeName();
 	
 

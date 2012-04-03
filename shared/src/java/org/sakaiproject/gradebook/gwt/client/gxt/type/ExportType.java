@@ -3,8 +3,6 @@ package org.sakaiproject.gradebook.gwt.client.gxt.type;
 import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 
-import com.extjs.gxt.ui.client.data.ModelData;
-
 public enum ExportType implements AppConstants, FileModel { 
 	
 	CSV(FILE_TYPE_CSV, ".csv"), XLS97(FILE_TYPE_XLS, ".xls"), XLSX(FILE_TYPE_XLSX, ".xlsx");
@@ -45,10 +43,6 @@ public enum ExportType implements AppConstants, FileModel {
 	
 	public String  getTypeName() {
 		return typeName;
-	}
-	
-	public static ModelData getFileModel(FileModel fileModel, I18nConstants i18n) {
-		return FileModel.Util.getFileModel(fileModel, i18n);
 	}
 
 	public static ExportType getExportTypeFromFilename(String value) {

@@ -23,8 +23,10 @@ import org.sakaiproject.gradebook.gwt.client.AppConstants;
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 import org.sakaiproject.gradebook.gwt.client.gxt.model.EntityModelComparer;
 import org.sakaiproject.gradebook.gwt.client.gxt.type.ExportType;
+import org.sakaiproject.gradebook.gwt.client.gxt.type.FileModel;
 
 import com.extjs.gxt.ui.client.Registry;
+import com.extjs.gxt.ui.client.data.BaseModel;
 import com.extjs.gxt.ui.client.data.ModelData;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
@@ -39,8 +41,11 @@ public class ExportTypeComboBox extends ComboBox<ModelData> {
 		exportTypeStore.setModelComparer(new EntityModelComparer<ModelData>(ExportType.DISPLAY_NAME));
 		
 		for (ExportType type : ExportType.values()){
-		
-			exportTypeStore.add(ExportType.getFileModel(type, i18n));
+			ModelData model = new BaseModel();
+			model.set(FileModel.DISPLAY_NAME, type.getDisplayName(i18n));
+			model.set(FileModel.DISPLAY_VALUE, type);
+			model.set(FileModel.DISPLAY_VALUE_STRING, type.name());
+			exportTypeStore.add(model);
 		}
 
 		setStore(exportTypeStore);

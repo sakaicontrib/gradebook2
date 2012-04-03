@@ -65,10 +65,6 @@ public enum FileFormat implements FileModel {
 	public String  getTypeName() {
 		return typeName;
 	}
-	
-	public static ModelData getFileModel(FileModel fileModel, I18nConstants i18n) {
-		return FileModel.Util.getFileModel(fileModel, i18n);
-	}
 
 	public static FileFormat getFormatByName(String name) {
 		for (FileFormat f : values()) {
