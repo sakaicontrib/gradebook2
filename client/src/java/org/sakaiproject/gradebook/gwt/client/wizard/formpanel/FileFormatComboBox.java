@@ -45,12 +45,11 @@ public class FileFormatComboBox extends ComboBox<ModelData> {
 		importFormatStore.setModelComparer(new EntityModelComparer<ModelData>(FileFormat.DISPLAY_NAME));
 		
 		for (FileFormat format : FileFormat.values()) {
-			ModelData d = new BaseModel();
 			ModelData model = new BaseModel();
 			model.set(FileModel.DISPLAY_NAME, format.getDisplayName(i18n));
 			model.set(FileModel.DISPLAY_VALUE, format);
 			model.set(FileModel.DISPLAY_VALUE_STRING, format.name());
-			importFormatStore.add(d);
+			importFormatStore.add(model);
 		}
 
 		setStore(importFormatStore);

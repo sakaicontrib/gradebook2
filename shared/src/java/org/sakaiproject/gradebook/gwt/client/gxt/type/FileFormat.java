@@ -20,8 +20,6 @@ package org.sakaiproject.gradebook.gwt.client.gxt.type;
 
 import org.sakaiproject.gradebook.gwt.client.I18nConstants;
 
-import com.extjs.gxt.ui.client.data.ModelData;
-
 public enum FileFormat implements FileModel { 
 	
 	FULL("full"),
